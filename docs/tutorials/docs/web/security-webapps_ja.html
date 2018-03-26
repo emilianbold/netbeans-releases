@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>NetBeans IDEでのWebアプリケーションのセキュリティ保護</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Style-Type" content="text/css">
+        <meta name="keywords"
+              content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, IDE, Platform, free, open source, developer">
+        <meta name="description"
+              content="This document takes you through the basics of adding security to a web application that is deployed to either the Tomcat server or the Oracle GlassFish Open Source server.">
+        <meta name="author" content="Dan Kolar">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+        <h1>NetBeans IDEでのWebアプリケーションのセキュリティ保護</h1>
+        <div class="articledate" style="margin-left: 0px;">執筆: Dan Kolar、管理: James Branam、Jeff Rubinoff </div>
+        <p>このドキュメントでは、Oracle GlassFish Open Source Edition、Oracle WebLogicまたはApache TomcatサーバーにデプロイされるWebアプリケーションにセキュリティを追加する基本的な手順を学ぶことができます。</p>
+        <p>このドキュメントでは、基本的なログイン・ウィンドウとWebページのログイン・フォームを使用してセキュリティ認証を構成する方法を説明します。このドキュメントでは、TomcatサーバーおよびGlassFishサーバーでユーザーを作成する手順を学習できます。ユーザーを作成した後、デプロイメント・ディスクリプタでセキュリティ・プロパティを設定してセキュリティ・ロールを作成します。このドキュメントでは、GlassFishサーバーにデプロイするときに、JDBC認証を使用してアプリケーションのセキュリティ保護を行う方法も説明します。</p>
+        <!-- END VCD1 OVERVIEW COMPONENT  -->
+        <p class="align-center"><b>予測される所要時間: <i>40</i>分</b></p>
+        <!-- BEGIN VCD5 ANCHOR LINKS COMPONENT  -->
+        <p><b>目次</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        <ul class="toc">
+
+            <li><a href="#Exercise_0">作業環境のインストールと構成</a></li>
+            <li><a href="#Creating_Web_App">Webアプリケーションの作成</a>
+                <ul>
+                    <li><a href="#createdir">セキュリティ保護されたディレクトリの作成</a></li>
+                    <li><a href="#indexpage">JSPのインデックス・ページの作成</a></li>
+                    <li><a href="#loginform">ログイン・フォームの作成(Tomcatでは必須、GlassFishまたはWebLogicサーバーではオプション)</a></li>
+                </ul>
+            </li>
+            <li><a href="#Creating_users_roles">ターゲット・サーバーでのユーザーとロールの作成</a>
+                <ul>
+                    <li><a href="#SJSAS">GlassFishサーバーでのロールの定義</a></li>
+                    <li><a href="#Tomcat">Tomcat Webサーバーでのロールの定義</a></li>
+                    <li><a href="#wl">WebLogicサーバーでのロールとグループの定義</a></li>
+
+                </ul>
+            </li>
+            <li><a href="#Basic_login_config">ログイン方法の構成</a>
+
+                <ul>
+
+                    <li><a href="#Basic">基本的なログイン</a></li>
+                    <li><a href="#Form">フォームによるログイン</a></li>
+                </ul></li>
+
+            <li><a href="#sec-dd">サーバーのデプロイメント・ディスクリプタの構成</a>
+                <ul>
+                    <li><a href="#gf-dd">GlassFish Serverのデプロイメント・ディスクリプタの構成</a></li>
+                    <li><a href="#wl-dd">WebLogicサーバーのデプロイメント・ディスクリプタの構成</a> </li>
+                </ul>
+            </li>
+            <li><a href="#Deploy_run">アプリケーションのデプロイと実行</a></li>
+
+        </ul>
+        <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java EEバージョン</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Developer Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Java EEプラットフォーム</td>
+                    <td class="tbltd1">Java EE 6または7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Travelデータベース</td>
+                    <td class="tbltd1">オプション</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Java EE互換のWebサーバーまたはアプリケーション・サーバー</td>
+                    <td class="tbltd1">Tomcat Webサーバー7.xまたは8.x、Oracle WebLogic 11g、または<br /> GlassFish Server Open Source Edition 4.x
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <!-- ===================================================================================== -->
+        <h2><a name="Exercise_0"></a>作業環境のインストールと構成</h2>
+        <p>NetBeans IDEをインストールし、起動します。このチュートリアルは、バンドルされたTomcatサーバーまたはGlassFishサーバーを使用して実行できます。</p>
+        <p>サーバーがインストールされ、サーバー・インスタンスがIDEに登録されていることを確認します。サーバー・マネージャを使用して、インストール済のサーバー・インスタンスを登録できます。(「ツール」>「サーバー」>「サーバーを追加」を選択します。「GlassFish Server &lt;バージョン番号>」または「Tomcat &lt;バージョン番号>」を選択し、「次」をクリックします。「参照」をクリックし、アプリケーション・サーバーのインストール・ディレクトリを探します。「終了」をクリックします。)</p>
+        <!-- ===================================================================================== -->
+
+        <h2 class="tutorial"><a name="Creating_Web_App"></a><!--Exercise 1: -->
+            Webアプリケーションの作成</h2>
+        <p>この課題では、まずWebアプリケーション・プロジェクトとディレクトリ構造を作成します。次に、セキュリティ保護された各ディレクトリで、単純な<tt>html</tt>ファイルをいくつか作成します。Webアプリケーションは、セキュリティ保護されたディレクトリへのアクセスに、基本的なログイン認証を使用します。認証にログイン・フォームを使用する場合は、フォームがある<tt>jsp</tt>ページを追加できます。</p>
+        <div class="indent">
+            <a name="createdir"></a>
+            <h3 class="tutorial">セキュリティ保護されたディレクトリの作成</h3>
+
+            <ol>
+                <li>「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N])を選択し、「Java Web」カテゴリから「Webアプリケーション」を選択して「次」をクリックします。</li>
+                <li>プロジェクトに<tt>WebApplicationSecurity</tt>という名前を付けます。デフォルトの設定を受け入れます。</li>
+                <li>(オプション)「ライブラリの格納用に専用フォルダを使用」チェックボックスを選択し、ライブラリ・フォルダの場所を指定します。このオプションの詳細は、<em>NetBeans IDEによるアプリケーションの開発</em>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">他のユーザーとのライブラリの共有</a>を参照してください。</li>
+                <li>「次」をクリックします。</li><li>アプリケーションをデプロイするサーバーを選択します。表示されるのは、IDEに登録されているサーバーのみです。「次」をクリックします。</li>
+                <li>フレームワークを追加する必要はないので、「終了」をクリックします。</li>
+                <li>EE 6アプリケーションを作成した場合は、IDEの「プロジェクト」ウィンドウに移動してプロジェクトのノードを右クリックし、「新規」>「その他」>「Web」>「標準のデプロイメント・ディスクリプタ(web.xml)」を選択します。デフォルト設定をすべて受け入れてクリックしてウィザードを進めます。
+                    <p class="notes" ><b>注意:</b> このチュートリアルではデプロイメント・ディスクリプタでセキュリティを構成する方法を示しますが、EE 6およびEE 7アプリケーションはデフォルトでデプロイメント・ディスクリプタのかわりに注釈を使用します。</p></li>
+                <li>GlassFishまたはWebLogicサーバーとNetBeans IDE 7.0.1以降を使用している場合は、サーバー固有のディスクリプタを生成する必要があります。プロジェクトのノードを右クリックし、「新規」>「その他」>「GlassFish」>「GlassFishディスクリプタ」または「新規」>「その他」>「WebLogic」>「WebLogicディスクリプタ」を選択します。「サーバー固有のディスクリプタを作成」ダイアログが開きます。デフォルトをすべて受け入れ、「終了」をクリックします。<tt>glassfish-web.xml</tt>または<tt>weblogic.xml</tt>という名前の、サーバー固有のディスクリプタが、プロジェクトの「構成ファイル」フォルダに表示されます。</li>
+                <li>IDEの「プロジェクト」ウィンドウで「Webページ」を右クリックし、「新規」>「その他」を選択します。</li>
+                <li>新規ファイル・ウィザードで、「カテゴリ」に「その他」を選択し、「ファイル・タイプ」に「フォルダ」を選択します。「次」をクリックします。</li>
+                <li>
+                    <p>新規フォルダ・ウィザードでフォルダに「secureAdmin」という名前を付け、「終了」をクリックします。</p>
+                    「プロジェクト」ウィンドウの「Webページ」フォルダに、secureAdminフォルダが表示されます。
+                </li>
+                <li>前の3つの手順を繰り返して、secureUserという名前の別のフォルダを作成します。</li>
+                <li>「プロジェクト」ウィンドウで、secureUserフォルダを右クリックして「新規」>「その他」を選択し、secureUserフォルダ内に新しい<tt>html</tt>ファイルを作成します。</li>
+                <li>「その他」カテゴリで「HTML」ファイル・タイプを選択します。「次」をクリックします。</li>
+                <li>新しいファイルにpageUという名前を付け、「終了」をクリックします。
+                    <p>「終了」をクリックすると、ソース・エディタでファイル<tt>pageU.html</tt>が開きます。</p></li>
+                <li>ソース・エディタで、<tt>pageU.html</tt>内の既存コードを次のコードに置き換えます。
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+   &lt;head&gt;
+      &lt;title&gt;</span>User secure area<span class="html-tag">&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h1&gt;</span>User Secure Area<span class="html-tag">&lt;/h1&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+                <li>secureAdminフォルダを右クリックし、pageAという名前の新しい<tt>html</tt>ファイルを作成します。</li>
+                <li>ソース・エディタで、<tt>pageA.html</tt>内の既存コードを次のコードに置き換えます。
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+   &lt;head&gt;
+      &lt;title&gt;</span>Admin secure area<span class="html-tag">&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h1&gt;</span>Admin secure area<span class="html-tag">&lt;/h1&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+            </ol>
+
+            <a name="indexpage"></a>
+            <h3 class="tutorial">JSPのインデックス・ページの作成</h3>
+            <p>セキュリティ保護された領域へのリンクを含むJSPのインデックス・ページを作成します。ユーザーがリンクをクリックすると、ユーザー名とパスワードの入力が求められます。基本的なログインを使用している場合は、デフォルト・ブラウザのログイン・ウィンドウが表示されます。ログイン・フォーム・ページを使用する場合、ユーザーはフォームにユーザー名とパスワードを入力します。</p>
+            <ol>
+                <li>ソース・エディタで<tt>index.jsp</tt>を開き、次の<tt>pageA.html</tt>および<tt>pageU.html</tt>へのリンクを追加します。
+                    <pre class="examplecode"><span class="jsp-html-tag">&lt;p&gt;</span>Request a secure Admin page <span
+ class="jsp-html-tag">&lt;a</span> <span
+ class="jsp-html-argument">href=</span><span class="jsp-xml-value">"secureAdmin/pageA.html"</span><span
+ class="jsp-html-tag">&gt;</span>here!<span class="jsp-html-tag">&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;</span>Request a secure User page <span
+ class="jsp-html-tag">&lt;a</span> <span
+ class="jsp-html-argument">href=</span><span
+ class="jsp-xml-value">"secureUser/pageU.html"</span> <span
+                class="jsp-html-tag">&gt;</span>here!<span class="jsp-html-tag">&lt;/a&gt;&lt;/p&gt;</span></pre>
+                </li>
+                <li>変更を保存します。</li>
+            </ol>
+
+
+            <a name="loginform"></a>
+            <h3 class="tutorial">ログイン・フォームの作成(Tomcatでは必須、GlassFishまたはWebLogicサーバーではオプション)</h3>
+            <p>基本的なログインのかわりにログイン・フォームを使用する場合、フォームを含む<tt>jsp</tt>ページを作成できます。<a href="#Basic_login_config">ログイン方法を構成</a>するときに、ログイン・ページとエラー・ページを指定します。</p>
+            <p class="alert"><strong>重要:</strong> Tomcatユーザーはログイン・フォームを作成する必要があります。</p>
+            <ol>
+                <li>「プロジェクト」ウィンドウで「Webページ」フォルダを右クリックし、「新規」>「JSP」を選択します。</li>
+                <li>ファイルに<tt>login</tt>という名前を付け、その他のフィールドはデフォルトの値のままにし、「終了」をクリックします。</li>
+                <li>ソース・エディタで、<tt>login.jsp</tt>の<tt>&lt;body></tt>タグの間に次のコードを挿入します。<br>
+                    <pre class="examplecode">&lt;<span class="jsp-html-tag">form</span> <span
+              class="jsp-html-argument">action=</span><span
+              class="jsp-xml-value">"j_security_check"</span> <span
+              class="jsp-html-argument">method=</span><span
+              class="jsp-xml-value">"POST"</span><span class="jsp-html-tag">&gt;</span>
+   Username:<span class="jsp-html-tag">&lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"text"</span> <span class="jsp-html-argument">name=</span><span class="jsp-xml-value">"j_username"</span><span
+              class="jsp-html-tag">&gt;&lt;br&gt;</span>
+   Password:<span class="jsp-html-tag">&lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"password"</span> <span class="jsp-html-argument">name=</span><span class="jsp-xml-value">"j_password"</span><span
+                  class="jsp-html-tag">&gt;
+   &lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"submit"</span> <span class="jsp-html-argument">value=</span><span class="jsp-xml-value">"Login"</span><span class="jsp-html-tag">&gt;
+&lt;/form&gt;</span></pre>
+                </li>
+                <li><tt>loginError.html</tt>という名前の新しい<tt>html</tt>ファイルを「Webページ」フォルダに作成します。これは、単純なエラー・ページです。</li>
+                <li>ソース・エディタで、<tt>loginError.html</tt>内の既存コードを次のコードに置き換えます。
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;</span>Login Test: Error logging in<span class="html-tag">&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;</span>Error Logging In<span class="html-tag">&lt;/h1&gt;
+        &lt;br/&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+            </ol>
+
+
+        </div>
+        <!-- ======================================================================================== -->
+        <h2 class="tutorial"><a name="Creating_users_roles"></a>ターゲット・サーバーでのユーザーの作成</h2>
+        <p class="tutorial">Webアプリケーションで、基本的なログインまたはフォームに基づくログインのユーザーおよびパスワードの認証セキュリティを使用できるようにするには、ユーザーとその適切なロールがターゲット・サーバーに対して定義されている必要があります。サーバーにログインするには、そのサーバーにユーザー・アカウントが存在している必要があります。</p>
+        <p>ユーザーとロールの定義方法は、指定したターゲット・サーバーに応じて異なります。このチュートリアルでは、セキュリティの設定をテストするために、<tt>admin</tt>ユーザーと<tt>user</tt>ユーザーを使用します。これらのユーザーがそれぞれのサーバーに存在し、適切なロールがユーザーに割り当てられていることを確認する必要があります。</p>
+
+        <div class="indent">
+            <h3 class="tutorial"><a name="SJSAS"></a>GlassFish Serverでのユーザーの定義 </h3>
+            <p>このシナリオでは、GlassFishサーバーの管理コンソールを使用して、<tt>user</tt>と<tt>admin</tt>という名前の2つの新しいユーザーを作成する必要があります。<tt>user</tt>という名前のユーザーにはアプリケーションへのアクセス権を制限し、<tt>admin</tt>には管理権限を付与します。 
+            <ol>
+                <li>
+                    <p>IDEの「サービス」ウィンドウに移動して「サーバー」>「GlassFish Server」を右クリックし、「ドメイン管理コンソールの表示」を選択して管理コンソールを開きます。GlassFishサーバーのログイン・ページがブラウザ・ウィンドウで開きます。管理コンソールにアクセスするには、adminのユーザー名とパスワードを使用してログインする必要があります。</p>
+                    <p class="notes"><b>注意:</b> 管理コンソールにアクセスする前に、Application Serverを起動している必要があります。サーバーを起動するには、GlassFishサーバーのノードを右クリックし、「起動」を選択します。</p>
+                </li>
+                <li>管理コンソールで、「構成」>「server-config」>「セキュリティ」>「レルム」>「file」の順に展開します。「レルムを編集」パネルが開きます。<br> <img alt="GlassFish 3.1管理コンソールのserver-configのfileレルム" class="margin-around" src="../../../images_www/articles/72/web/security/edit-realm.png"></li>
+
+                <li>「レルムを編集」パネルの上部にある「ユーザーを管理」ボタンをクリックします。「ファイル・ユーザー」パネルが開きます。<br> <img alt="「新規」ユーザー・ボタンが強調表示された「ファイル・ユーザー」パネル" class="margin-around" src="../../../images_www/articles/72/web/security/file-users.png">
+                </li>
+                <li>「新規」をクリックします。新規ファイル・レルム・ユーザー・パネルが開きます。「ユーザーID」に「<tt>user</tt>」、パスワードに「<tt>userpw01</tt>」と入力します。「OK」をクリックします。          </li>
+                <li>前の手順に従って、名前が<tt>admin</tt>、パスワードが<tt>adminpw1</tt>のユーザーを<tt>file</tt>レルムに作成します。</li>
+            </ol>
+            <h3 class="tutorial"><a name="Tomcat"></a>Tomcat Webサーバーでのロールとユーザーの定義</h3>
+            <p>Tomcat 7では、サーバーをNetBeans IDEに登録するときに、manager-scriptロールのユーザーとそのユーザーのパスワードを作成します。</p>
+            <p>Tomcatサーバーの基本的なユーザーとロールは、<tt>tomcat-users.xml</tt>に記述されています。<tt>tomcat-users.xml</tt>は、<tt><i>&lt;CATALINA_BASE></i>\conf</tt>ディレクトリにあります。</p>
+            <p class="notes"><b>注意:</b> CATALINA_BASEの場所は、「サービス」ウィンドウでTomcatサーバーのノードを右クリックし、「プロパティ」を選択して調べることができます。サーバーのプロパティが表示されます。CATALINA_BASEの場所は「接続」タブに示されます。</p>
+            <img alt="Tomcat 7.0のプロパティを開くコンテキスト・メニューが表示された「サービス」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/web/security/tomcat-properties.png"> <img alt="CATALINA_BASEの場所が表示されたTomcat 7サーバーの「プロパティ」ダイアログ" class="margin-around" src="../../../images_www/articles/72/web/security/catalina-base.png">
+
+
+            <p class="notes"><b>注意:</b> 以前のバージョンのIDEにバンドルされていたTomcat 6を使用する場合、このサーバーに存在する<tt>ide</tt>ユーザーには、パスワードと、管理者およびマネージャのロールが定義されています。ユーザー<tt>ide</tt>のパスワードは、Tomcat 6がインストールされるときに生成されます。ユーザー<tt>ide</tt>のパスワードは変更できます。つまり、<tt>tomcat-users.xml</tt>にパスワードをコピーできます。</p>
+            <p><b>ユーザーをTomcatに追加するには:</b></p>
+            <ol>
+                <li><tt><i>&lt;CATALINA_BASE></i>/conf/tomcat-users.xml</tt>をエディタで開きます。 
+                </li>
+                <li><tt>AdminRole</tt>という名前のロールを追加します。 <pre class="examplecode">&lt;role rolename="AdminRole"/&gt;</pre></li>
+                <li><tt>UserRole</tt>という名前のロールを追加します。<pre class="examplecode">&lt;role rolename="UserRole"/&gt;</pre></li>
+                <li>名前が<tt>admin</tt>、パスワードが<tt>adminpw1</tt>、ロールが<tt>AdminRole</tt>のユーザーを追加します。
+                    <pre class="examplecode">&lt;user username="admin" password="adminpw1" roles="AdminRole"/&gt;</pre></li>
+                <li>名前が<tt>user</tt>、パスワードが<tt>userpw01</tt>、ロールが<tt>UserRole</tt>のユーザーを追加します。
+                    <pre class="examplecode">&lt;user username="user" password="userpw01" roles="UserRole"/&gt;</pre></li>
+
+
+            </ol>
+            <p><tt>tomcat-users.xml</tt>ファイルは次のようになります。</p>
+            <pre class="examplecode">&lt;tomcat-users&gt;
+&lt;!--
+  &lt;role rolename="tomcat"/&gt;
+  &lt;role rolename="role1"/&gt;
+  &lt;user username="tomcat" password="tomcat" roles="tomcat"/&gt;
+  &lt;user username="both" password="tomcat" roles="tomcat,role1"/&gt;
+  &lt;user username="role1" password="tomcat" roles="role1"/&gt;
+--&gt;
+...
+&lt;role rolename="AdminRole"/&gt;
+&lt;role rolename="UserRole"/&gt;
+&lt;user username="user" password="userpw01" roles="UserRole"/&gt;
+&lt;user username="admin" password="adminpw1" roles="AdminRole"/&gt;
+[User with manager-script role, defined when Tomcat 7 was registered with the IDE]
+...
+&lt;/tomcat-users&gt;</pre>
+            <h3><a name="wl"></a>WebLogicサーバーでのユーザーとグループの定義</h3>
+            <p>このシナリオでは、まずWebLogicサーバーの管理コンソールを使用して、<tt>user</tt>と<tt>admin</tt>という名前の2つの新しいユーザーを作成する必要があります。これらのユーザーを、それぞれ<tt>userGroup</tt>グループと<tt>adminGroup</tt>グループに追加します。後で、これらのグループにセキュリティ・ロールを割り当てます。<tt>userGroup</tt>にはアプリケーションへのアクセス権を制限し、<tt>adminGroup</tt>には管理権限を付与します。</p>
+            <p>WebLogicサーバーにユーザーとグループを追加する一般的な手順については、WebLogic<a href="http://download.oracle.com/docs/cd/E21764_01/apirefs.1111/e13952/taskhelp/security/ManageUsersAndGroups.html">管理コンソール・オンライン・ヘルプ</a>を参照してください。 </p>
+            <p><b>「user」および「admin」のユーザーとグループをWebLogicに追加するには:</b></p>
+            <ol>
+                <li>
+                    <p>IDEの「サービス」ウィンドウに移動して「サーバー」>「WebLogic Server」を右クリックし、「管理コンソールを表示」を選択して管理コンソールを開きます。GlassFishサーバーのログイン・ページがブラウザ・ウィンドウで開きます。管理コンソールにアクセスするには、adminのユーザー名とパスワードを使用してログインする必要があります。</p>
+                    <p class="notes"><b>注意:</b> 管理コンソールにアクセスする前に、Application Serverを起動している必要があります。サーバーを起動するには、WebLogicサーバーのノードを右クリックし、「起動」を選択します。</p>
+                </li>
+                <li>左ペインで、「セキュリティ・レルム」を選択します。セキュリティ・レルムのサマリー・ページが開きます。</li>
+                <li>セキュリティ・レルムのサマリー・ページで、レルムの名前を選択します(デフォルト・レルムは「myrealm」)。レルム名の設定ページが開きます。</li>
+                <li>レルム名の設定ページで、「ユーザー」を選択し、「グループ」>「ユーザー」を選択します。「ユーザー」表が表示されます。
+                </li>
+                <li>「ユーザー」表で「新規」をクリックします。新規ユーザーを作成ページが開きます。</li>
+                <li>名前に「user」、パスワードに「userpw01」と入力します。必要に応じて、説明を入力します。デフォルトの認証プロバイダを受け入れます。<br><img alt="新規ユーザー・ダイアログが表示されたWebLogic管理コンソール" class="margin-around" src="../../../images_www/articles/72/web/security/wl-admin-newuser.png"></li>
+                <li>「OK」をクリックします。「ユーザー」表に戻ります。</li>
+                <li>「新規」をクリックし、名前が「admin」、パスワードが「admin1」のユーザーを追加します。</li>
+                <li>「グループ」タブを開きます。「グループ」表が表示されます。 </li>
+                <li>「新規」をクリックします。「新規グループを作成」ウィンドウが開きます。</li>
+                <li>グループにuserGroupという名前を付けます。デフォルトのプロバイダを受け入れ、「OK」をクリックします。「グループ」表に戻ります。</li>
+                <li>「新規」をクリックし、adminGroupというグループを作成します。</li>
+                <li>次の手順のために「ユーザー」タブを開きます。</li>
+
+            </ol>
+            <p>次に、<tt>admin</tt>ユーザーを<tt>adminGroup</tt>、<tt>user</tt>ユーザーを<tt>userGroup</tt>に追加します。</p>
+            <p><b>ユーザーをグループに追加するには:</b></p>
+            <ol>
+                <li>「ユーザー」タブで<tt>admin</tt>ユーザーをクリックします。ユーザーの設定ページが開きます。</li>
+                <li>設定ページで「グループ」タブを開きます。</li>
+                <li>「親グループ:」「使用可能:」表で、<tt>adminGroup</tt>を選択します。</li>
+                <li>右矢印(>)をクリックします。「親グループ: 選択:」表に<tt>adminGroup</tt>が表示されます。<br><img alt="adminユーザーの設定を示すWebLogic管理コンソール" class="margin-around" src="../../../images_www/articles/72/web/security/wl-admin-usersettings.png"></li>
+                <li>「保存」をクリックします。</li>
+                <li>「ユーザー」タブに戻ります。</li>
+                <li><tt>user</tt>ユーザーをクリックし、<tt>userGroup</tt>に追加します。</li>
+
+            </ol>
+        </div>
+
+        <a name="Basic_login_config"></a>
+        <h2 class="tutorial">ログイン方法の構成</h2>
+        <p>アプリケーションのログイン方法を構成するには、基本的なログイン認証用のブラウザによって提供されるログイン・ウィンドウを使用できます。または、ログイン・フォームがあるWebページを作成できます。両方のタイプのログイン構成は、ユーザーおよびパスワードによる認証に基づいています。</p>
+        <p>ログインを構成するには、<em>セキュリティ制約</em>を作成し、ロールをこれらのセキュリティ制約に割り当てます。セキュリティ制約では一連のファイルを定義します。ロールを制約に割り当てると、そのロールを持つユーザーは、制約によって定義された一連のファイルにアクセスできるようになります。たとえば、このチュートリアルでは、AdminRoleをAdminConstraintに、UserRoleとAdminRoleをUserConstraintに割り当てます。これは、AdminRoleを持つユーザーはAdminファイルとUserファイルの両方にアクセスでき、UserRoleを持つユーザーはUserファイルのみにアクセスできることを意味します。</p>
+        <p class="notes"><b>注意:</b> ユーザー・ファイルに個別の管理者ロール・アクセス権を割り当てることは、一般的な使用方法ではありません。別の方法としては、UserRoleのみをUserConstraintに割り当て、サーバー側で、管理者でもある特定の*users*にAdminRoleを付与します。アクセス権をどのように付与するかは、個々の場合に応じて決定してください。 </p>
+    <p><tt>web.xml</tt>を構成することによって、アプリケーションのログイン方法を構成できます。<tt>web.xml</tt>ファイルは、「プロジェクト」ウィンドウの「構成ファイル」ディレクトリにあります。</p>
+
+        <div class="indent">
+            <a name="Basic"></a>
+            <h3 class="tutorial">基本的なログイン</h3>
+            <p>基本的なログイン構成を使用する場合は、ログイン・ウィンドウがブラウザに表示されます。セキュリティ保護されたコンテンツにアクセスするには、有効なユーザー名とパスワードが必要です。</p>
+
+            <p>次の手順は、GlassFishサーバーとWebLogicサーバーの基本的なログインの構成方法を示します。Tomcatユーザーは<a href="#form-login">フォームによるログイン</a>を使用する必要があります。</p>
+            <p><b>基本的なログインを構成するには:</b></p>
+            <ol>
+                <li>「プロジェクト」ウィンドウで、プロジェクトの「構成ファイル」ノードを展開し、<tt>web.xml</tt>をダブルクリックします。ビジュアル・エディタで<tt>web.xml</tt>ファイルが開きます。</li>
+                <li>ツールバーの「セキュリティ」をクリックし、セキュリティ・ビューでファイルを開きます。</li>
+                <li>「ログイン構成」ノードを展開し、「ログイン構成」を「基本」に設定します。
+                    <p class="notes"><b>注意:</b> フォームを使用する場合は、「基本」のかわりに「フォーム」を選択し、ログイン・ページおよびログイン・エラー・ページを指定します。          </li>
+                <li>サーバーに応じたレルム名を入力します。
+                    <ul>
+                        <li><b>GlassFish:</b> 「レルム名」に「<tt>file</tt>」と入力します。これは、GlassFishサーバーでユーザーを作成した場所のデフォルト・レルム名です。</li>
+                        <li><b>Tomcat:</b> レルム名は入力しないでください。</li>
+                        <li><b>WebLogic:</b> 自分のレルム名を入力します。デフォルト・レルムは<tt>myrealm</tt>です。</li>
+                    </ul>
+
+                    <img alt="web.xmlへの基本ログインとロールの追加" class="margin-around" src="../../../images_www/articles/72/web/security/security-roles.png"></li>
+                <li>「セキュリティ・ロール」ノードを展開し、「追加」をクリックしてロール名を追加します。</li>
+                <li>次のセキュリティ・ロールを追加します。
+                    <ul>
+                        <li><tt>AdminRole</tt>。このロールに追加したユーザーは、サーバーの<tt>secureAdmin</tt>ディレクトリへのアクセス権を持ちます。</li>
+                        <li><tt>UserRole</tt>。このロールに追加したユーザーは、サーバーの<tt>secureUser</tt>ディレクトリへのアクセス権を持ちます。</li>
+                    </ul>
+                    <p class="alert"><b>注意:</b> GlassFishのロール名は先頭が大文字である必要があります。</p>
+                </li>
+                <li>次の手順に従って、<tt>AdminConstraint</tt>という名前のセキュリティ制約を作成および構成します。
+                    <ol>
+                        <li>「セキュリティ制約を追加」をクリックします。新しいセキュリティ制約のセクションが表示されます。</li>
+                        <li>新しいセキュリティ制約の「表示名」に「<tt>AdminConstraint</tt>」と入力します。<br> <img alt="AdminConstraintの追加" class="margin-around" src="../../../images_www/articles/72/web/security/admin-constraint.png"></li>
+                        <li>「追加」をクリックします。「Webリソースを追加」ダイアログが開きます。</li>
+                        <li><p>「Webリソースを追加」ダイアログで「リソース名」に「<tt>Admin</tt>」、「URLパターン」に「<tt>/secureAdmin/*</tt>」を設定し、「OK」をクリックします。ダイアログが閉じます。</p>
+                            <p class="notes"><b>注意:</b> アスタリスク(*)を使用すると、そのフォルダにあるすべてのファイルに対するユーザー・アクセス権を与えることになります。</p><img alt="「Webリソースを追加」ダイアログ・ボックス" class="margin-around" src="../../../images_www/articles/72/web/security/addwebresource.png"></li>
+                        <li>「認証制約を有効にする」を選択し、「編集」をクリックします。「ロール名を編集」ダイアログが開きます。</li>
+                        <li>「ロール名を編集」ダイアログ・ボックスで左ペインの「AdminRole」を選択して「追加」をクリックし、「OK」をクリックします。
+                            <p>前述の手順を完了すると、次の図に示すような結果になるはずです。</p>
+                            <img alt="AdminおよびUserの制約" border="1" class="margin-around" src="../../../images_www/articles/72/web/security/constraints.png"></li>
+                    </ol>
+                </li>
+                <li>次の手順に従って、<tt>UserConstraint</tt>という名前のセキュリティ制約を作成および構成します。
+                    <ol>
+                        <li>「セキュリティ制約を追加」をクリックして新しいセキュリティ制約を作成します。</li>
+                        <li>新しいセキュリティ制約の「表示名」に「<tt>UserConstraint</tt>」と入力します。</li>
+                        <li>「追加」をクリックしてWebリソース・コレクションを追加します。</li>
+                        <li>「Webリソースを追加」ダイアログ・ボックスで「リソース名」に「<tt>User</tt>」、「URLパターン」に「<tt>/secureUser/*</tt>」を設定し、「OK」をクリックします。</li>
+                        <li>「認証制約を有効にする」を選択して「編集」をクリックし、「ロール名」フィールドを編集します。</li>
+                        <li>「ロール名を編集」ダイアログ・ボックスで左ペインの「AdminRole」および「UserRole」を選択して「追加」をクリックし、「OK」をクリックします。 </li>
+                    </ol>
+                    注意: web.xmlでセッションのタイム・アウトも設定できます。タイム・アウトを設定するには、ビジュアル・エディタの「一般」タブをクリックし、セッションの持続時間を指定します。デフォルトは30分です。 <a name="Form"></a> <a name="form-login" /></a>
+                    <h3 class="tutorial">フォームによるログイン</h3>
+                    <p>ログイン用のフォームを使用すると、ログイン・ページおよびエラー・ページの内容をカスタマイズできます。フォームを使用して認証を構成する手順は、作成した<a href="#loginform">ログイン・ページおよびエラー・ページ</a>を指定する以外は基本的なログイン構成と同じです。</p>
+                    <p>次の手順は、ログイン・フォームを構成する方法を示しています</p>
+                    <ol>
+                        <li>「プロジェクト」ウィンドウで「<tt>Webページ/WEB-INF</tt>」ディレクトリにある<tt>web.xml</tt>をダブルクリックし、ビジュアル・エディタでファイルを開きます。</li>
+
+                        <li>ツールバーの「セキュリティ」をクリックし、セキュリティ・ビューでファイルを開き、「ログイン構成」ノードを展開します。</li>
+                        <li>「ログイン構成」を「フォーム」に設定します。</li>
+                        <li>「参照」をクリックして<tt>login.jsp</tt>を検索し、フォームのログイン・ページを設定します。</li>
+                        <li>
+                            <p>「参照」をクリックして<tt>loginError.html</tt>を検索し、フォームのエラー・ページを設定します。</p><img alt="web.xmlでのログイン・フォームの設定" class="margin-around" src="../../../images_www/articles/72/web/security/login-forms.png">  </li>
+                        <li>サーバーに応じたレルム名を入力します。
+                            <ul>
+                                <li><b>GlassFish:</b> 「レルム名」に「<tt>file</tt>」と入力します。これは、GlassFishサーバーでユーザーを作成した場所のデフォルト・レルム名です。</li>
+                                <li><b>Tomcat:</b> レルム名は入力しないでください。</li>
+                                <li><b>WebLogic:</b> 自分のレルム名を入力します。デフォルト・レルムは<tt>myrealm</tt>です。</li>
+                            </ul>
+                        </li>
+                        <li>「セキュリティ・ロール」ノードを展開し、「追加」をクリックしてロール名を追加します。</li>
+                        <li>次のセキュリティ・ロールを追加します。
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <th class="tblheader" scope="col">サーバー・ロール</th>
+
+                                        <th class="tblheader" scope="col">説明</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1">AdminRole</td>
+
+                                        <td class="tbltd1">このロールに追加したユーザーは、サーバーの<tt>secureAdmin</tt>ディレクトリへのアクセス権を持ちます。</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1">UserRole</td>
+
+                                        <td class="tbltd1">このロールに追加したユーザーは、サーバーの<tt>secureUser</tt>ディレクトリへのアクセス権を持ちます。</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </li>
+                        <li>次の手順に従って、<tt>AdminConstraint</tt>という名前のセキュリティ制約を作成および構成します。
+                            <ol>
+                                <li>「セキュリティ制約を追加」をクリックして新しいセキュリティ制約を作成します。</li>
+                                <li>新しいセキュリティ制約の「表示名」に「<tt>AdminConstraint</tt>」と入力します。</li>
+                                <li>「追加」をクリックしてWebリソース・コレクションを追加します。</li>
+                                <li>
+                                    <p>「Webリソースを追加」ダイアログ・ボックスで「リソース名」に「<tt>Admin</tt>」、「URLパターン」に「<tt>/secureAdmin/*</tt>」を設定し、「OK」をクリックします。</p>
+                                    <p class="notes"><b>注意:</b> アスタリスク(*)を使用すると、そのフォルダにあるすべてのファイルに対するユーザー・アクセス権を与えることになります。</p>
+                                    <img alt="「Webリソースを追加」ダイアログ・ボックス" class="margin-around" src="../../../images_www/articles/72/web/security/addwebresource.png"></li>
+                                <li>「認証制約を有効にする」を選択し、「編集」をクリックします。「ロール名を編集」ダイアログが開きます。</li>
+                                <li>「ロール名を編集」ダイアログ・ボックスで左ペインの「AdminRole」を選択して「追加」をクリックし、「OK」をクリックします。
+                                    <p>前述の手順を完了すると、次の図に示すような結果になるはずです。</p>
+                                    <img alt="AdminおよびUserの制約" border="1" class="margin-around" src="../../../images_www/articles/72/web/security/constraints.png"></li>
+                            </ol>
+                        </li>
+                        <li>次の手順に従って、<tt>UserConstraint</tt>という名前のセキュリティ制約を作成および構成します。
+                            <ol>
+                                <li>「セキュリティ制約を追加」をクリックして新しいセキュリティ制約を作成します。</li>
+                                <li>新しいセキュリティ制約の「表示名」に「<tt>UserConstraint</tt>」と入力します。</li>
+                                <li>「追加」をクリックしてWebリソース・コレクションを追加します。</li>
+                                <li>「Webリソースを追加」ダイアログ・ボックスで「リソース名」に「<tt>User</tt>」、「URLパターン」に「<tt>/secureUser/*</tt>」を設定し、「OK」をクリックします。</li>
+                                <li>「認証制約を有効にする」を選択して「編集」をクリックし、「ロール名」フィールドを編集します。</li>
+                                <li>「ロール名を編集」ダイアログ・ボックスで左ペインの「AdminRole」および「UserRole」を選択して「追加」をクリックし、「OK」をクリックします。 </li>
+                            </ol>
+                            注意: web.xmlでセッションのタイム・アウトも設定できます。タイム・アウトを設定するには、ビジュアル・エディタの「一般」タブをクリックし、セッションの持続時間を指定します。デフォルトは30分です。<a name="Form"></a>            
+                    </ol>
+
+                    <!--<li>Add Admin and Tomcat (<span style="color: rgb(204, 51, 204);">User</span>) role</li>-->
+            </ol>
+
+        </div>
+        <h2><a name="sec-dd"></a>サーバーのデプロイメント・ディスクリプタの構成</h2>
+        <p>アプリケーションをGlassFishサーバーまたはWebLogicサーバーにデプロイメントする場合、<tt>web.xml</tt>に定義されたセキュリティ・ロールをマッピングするため、サーバーのデプロイメント・ディスクリプタを構成する必要があります。サーバーのデプロイメント・ディスクリプタは、「プロジェクト」ウィンドウのプロジェクトの「構成ファイル」ノードの下に表示されます。 </p>
+        <div class="indent">
+            <h3><a name="gf-dd">GlassFish Serverのデプロイメント・ディスクリプタの構成</a></h3>
+            <p>GlassFishサーバーのデプロイメント・ディスクリプタの名前は<tt>glassfish-web.xml</tt>です。サーバーのデプロイメント・ディスクリプタは「構成ファイル」フォルダにあります。そこにない場合は、プロジェクトのノードを右クリックし、「新規」>「その他」>「GlassFish」>「GlassFishデプロイメント・ディスクリプタ」に移動して作成します。すべてのデフォルトを受け入れます。</p>
+            <p><tt>web.xml</tt>に入力した値は、<tt>glassfish-web.xml</tt>に表示されます。IDEはこれらの値を<tt>web.xml</tt>から取得します。</p>
+            <p><b>GlassFishデプロイメント・ディスクリプタを構成するには:</b></p>
+            <ol>
+                <li>「プロジェクト」ウィンドウで、プロジェクトの「構成ファイル」ノードを展開し、<tt>glassfish-web.xml</tt>をダブルクリックします。GlassFishデプロイメント・ディスクリプタ用の特別なタブ付きエディタで<tt>glassfish-web.xml</tt>デプロイメント・ディスクリプタが開きます。
+                    <p class="notes"><b>注意:</b> 3.1よりも古いバージョンのGlassFishサーバーでは、このファイルの名前は<tt>sun-web.xml</tt>です。</p></li>
+                <li>「セキュリティ」タブを選択し、セキュリティ・ロールを表示します。</li>
+                <li>AdminRoleのセキュリティ・ロール・ノードを選択し、「セキュリティ・ロールのマッピング」ペインを開きます。</li>
+                <li><p>「プリンシパルの追加」をクリックし、「プリンシパル名」に「<tt>admin</tt>」と入力します。「OK」をクリックします。</p>
+                    <img alt="「プリンシパルの追加」ダイアログ・ボックス" class="marin-around" src="../../../images_www/articles/72/web/security/add-principal.png"></li>
+                <li>UserRoleのセキュリティ・ロール・ノードを選択し、「セキュリティ・ロールのマッピング」ペインを開きます。</li>
+                <li>「プリンシパルの追加」をクリックし、「プリンシパル名」に「<tt>user</tt>」と入力します。「OK」をクリックします。</li>
+                <li><tt>glassfish-web.xml</tt>に変更を保存します。</li>
+            </ol>
+            <p>「XML」タブをクリックして、XMLエディタで<tt>glassfish-web.xml</tt>を表示および編集することもできます。XMLエディタで<tt>glassfish-web.xml</tt>を開くと、<tt>glassfish-web.xml</tt>に次のセキュリティ・ロールのマッピング情報があることがわかります。</p>
+            <pre class="examplecode"><span class="xml-tag">&lt;security-role-mapping&gt;
+    &lt;role-name&gt;</span>AdminRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>admin<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-mapping&gt;
+&lt;security-role-mapping&gt;
+    &lt;role-name&gt;</span>UserRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>user<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-mapping&gt;</span></pre>
+
+            <!--<a name="jdbc"></a>
+            <h2 class="tutorial">Using JDBC Authorization</h2>
+            <p>If you are deploying your application to the Sun Java System Application Server, you can also configure your application to retrieve the authorization information from a JDBC database table. 
+            Using this method, managing user accounts is much easier than managing user accounts directly on the server.</p>
+            <p>The JDBC authorization method is already supported in <a href="http://glassfish.dev.java.net/downloads/31May06.html">the GlassFish server
+            2.1</a>, but if you are using Sun Java System Application Server 9.0 you need to use a <a
+             href="http://glassfish.dev.java.net/nonav/issues/showattachment.cgi/65/JDBCRealm.jar">precompiled jar</a>.
+            To enable the realm <tt>jdbc-realm</tt> on the Sun Java System Application Server you need to do the following steps. 
+            (The steps are based on <a href="http://glassfish.dev.java.net/issues/show_bug.cgi?id=171">JDBCRealm for the GlassFish server.</a>)</p>
+            <ol>
+              <li>Download <a href="http://glassfish.dev.java.net/nonav/issues/showattachment.cgi/65/JDBCRealm.jar">JDBCRealm.jar</a>.</li>
+              <li>Copy the <tt>jar</tt> to the <tt>lib</tt> directory located in the Sun Java System Application Server installation directory.</li>
+              <li>Add the following to the <tt>login.conf</tt> file located in the <tt><i>&lt;APPSERVER_HOME&gt;</i>/domains/domain1/config/</tt><br>
+            <pre class="examplecode">jdbcRealm {
+            net.java.the GlassFish server.security.auth.realm.jdbc.JDBCLoginModule required;
+            };
+            </pre></li>
+              <li>Start the server and open the Admin Console.</li>
+              <li>In Configuration &gt; Security &gt; Realms, create a new Realm named
+            "jdbc-realm" and enter the following classname:
+            <pre>net.java.the GlassFish server.security.auth.realm.jdbc.JDBCRealm</pre></li>
+             <li>Add the following properties and values to the realm:
+              <ul>
+                <li>jaas-context : jdbcRealm</li>
+                <li>datasource : jdbc/__default</li>
+                <li>user : APP</li>
+                <li>password : APP</li>
+                <li>find user query : A SQL query that return the user's identifier
+            when injected two parameters (username/password), like<br>
+            "SELECT IDENTIFIER FROM PERSON WHERE USERID = ? AND PASSWORD = ?" </li>
+                <li>find-groups-query : A SQL query that return group name(s) when
+            injected the user name, like<br>
+            "SELECT GROUP_NAME FROM PERSON P, GROUP G WHERE P.GROUP_ID = G.ID AND
+            USERID = ?"</li>
+              </ul>
+              <p><b>Note:</b> The user and password are for the Java DB database server bundled with the Sun Java System Application Server.</p>
+              </li>
+              <li>In the Admin Console, locate Application Server/JVM Settings/Path Settings/Classpath suffix and
+            add the following line:<pre> ${com.sun.aas.installRoot}/lib/JDBCRealm.jar</pre></li>
+              <li>Create the appropriate tables in <tt>jdbc/__default</tt> and add the proper data to the table.</li>
+            </ol>
+            -->
+            <h3><a name="wl-dd"></a>WebLogicサーバーのデプロイメント・ディスクリプタの構成</h3>
+            <p>WebLogicデプロイメント・ディスクリプタの名前は<tt>weblogic.xml</tt>です。現在、IDEの<a href="#gf-dd">GlassFishデプロイメント・ディスクリプタのサポート</a>は、WebLogicデプロイメント・ディスクリプタまで拡張されていません。したがって、<tt>weblogic.xml</tt>の変更はすべて手動で行う必要があります。</p>
+            <p>WebLogicサーバーのデプロイメント・ディスクリプタは「構成ファイル」フォルダにあります。そこにない場合は、プロジェクトのノードを右クリックし、「新規」>「その他」>「WebLogic」>「WebLogicデプロイメント・ディスクリプタ」に移動して作成します。すべてのデフォルトを受け入れます。</p></p>
+            <p class="notes" ><b>注意:</b> 宣言やプログラムによるセキュリティなど、WebLogicでのWebアプリケーションのセキュリティ保護に関する詳細は、<a href="http://download.oracle.com/docs/cd/E21764_01/web.1111/e13711/thin_client.htm" target="_blank">Oracle Fusion Middleware Oracle WebLogic Serverセキュリティのプログラミング</a>を参照してください。 </p>
+            <p><b>WebLogicデプロイメント・ディスクリプタを構成するには:</b></p>
+            <ol>
+                <li>「プロジェクト」ウィンドウで、プロジェクトの「構成ファイル」ノードを展開し、<tt>weblogic.xml</tt>をダブルクリックします。<tt>weblogic.xml</tt>デプロイメント・ディスクリプタがエディタで開きます。</li>
+                <li><tt>&lt;weblogic-web-app></tt>要素の内部に、次のセキュリティ・ロール割当て要素を入力または貼り付けます。
+                    <pre class="examplecode"><span class="xml-tag">&lt;security-role-assignment&gt;
+    &lt;role-name&gt;</span>AdminRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>adminGroup<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-assignment&gt;
+&lt;security-role-assignment&gt;
+    &lt;role-name&gt;</span>UserRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>userGroup<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-assignment&gt;</span></pre>
+                </li>
+                <li><tt>weblogic.xml</tt>に変更を保存します。</li>
+            </ol>
+        </div>
+        <a name="Deploy_run"></a>
+        <h2 class="tutorial">アプリケーションのデプロイと実行</h2>
+        <p>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「実行」を選択します。</p>
+        <p class="notes"><b>注意:</b> プロジェクトはデフォルトで「保存時にコンパイル」機能が有効になっている状態で作成されているので、アプリケーションをIDEで実行するときに先にコードをコンパイルする必要はありません。保存時にコンパイル機能の詳細は、<em>NetBeans IDEによるアプリケーションの開発ユーザー・ガイド</em>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG510">Javaプロジェクトのビルド</a>を参照してください。</p>
+        <p>アプリケーションをサーバーにビルドおよびデプロイした後、Webブラウザで開始ページが開きます。<b>admin</b>または<b>user</b>のいずれかをクリックして、アクセスするセキュリティ保護された領域を選択します。</p>
+        <img alt="デプロイされたアプリケーション1" border="0" class="margin-around" src="../../../images_www/articles/72/web/security/deploy1.png">
+        <p>ユーザーとパスワードを入力した後、考えられる結果は次の3つです。
+        <ul>
+            <li><p>このユーザーのパスワードが正しく、ユーザーがセキュリティ保護されたコンテンツに対する権限を持っている場合、セキュリティ保護されたコンテンツ・ページが表示されます。</p><img alt="ユーザーのセキュリティ保護された領域" border="0" class="margin-around" src="../../../images_www/articles/72/web/security/deploy2.png"></li>
+            <li><p>このユーザーのパスワードが間違っている場合、エラー・ページが表示されます。</p><img alt="ログイン・エラー・ページ" border="0" class="margin-around" src="../../../images_www/articles/72/web/security/deploy3.png"></li>
+            <li><p>このユーザーのパスワードは正しいが、ユーザーがセキュリティ保護されたコンテンツへのアクセス権を持っていない場合、ブラウザには、リクエストされたリソースへのアクセスが拒否されたことを示すエラー403が表示されます。</p><img alt="アクセスの拒否" border="0" class="margin-around" src="../../../images_www/articles/72/web/security/deploy4.png"></li>
+        </ul>
+        <h2><a name="06"></a>サマリー</h2>
+        <p>このチュートリアルでは、セキュリティ保護されたWebアプリケーションを作成しました。web.xmlディスクリプタとglassfish-web.xmlディスクリプタのエディタを使用してセキュリティの設定を編集し、セキュリティ保護されたログインと複数のIDを持つWebページを作成しました。</p>
+
+        <br>
+        <h2>関連項目</h2>
+        <ul>
+
+            <li><a href="quickstart-webapps.html">Webアプリケーション開発入門</a></li>
+            <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+        </ul>
+        <hr class="light">
+        <br>
+        
+        <table class="b-none" cellpadding="10" cellspacing="0" width="100%">
+            <!-- BEGIN SPACER ROW -->
+            <tr>
+                <td><br>
+                    <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback: Securing a Web Application">このチュートリアルに関するご意見をお寄せください</a></div>
+                    <br style="clear:both;" />
+
+
+                    <br style="clear:both;" />
+                </td>
+            </tr>
+            <!-- END SPACER ROW -->
+        </table>
+        <!-- END WRAPPER TABLE, 2 COLUMN, MAIN/RIGHT -->
+    </body>
+</html>
+
+</body>
+</html>

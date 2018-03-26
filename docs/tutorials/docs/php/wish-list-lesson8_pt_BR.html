@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Criando uma Aplicação Orientada pelo Banco de Dados Com o PHP. Usando divs e classes CSS </title>
+        <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Using CSS classes and divs. Hiding forms using Javascript" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+    </head>
+    <body>
+        <h1>Criando uma Aplicação Orientada pelo Banco de Dados com o PHP</h1>
+        <h1>Lição 8: Melhorando a Aparência da Aplicação Usando a Tecnologia CSS </h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+                <h4>Conteúdo do tutorial:</h4>
+                <ol start="0">
+                    <li><a href="wish-list-tutorial-main-page.html">Criando uma Aplicação Orientada pelo Banco de Dados com o PHP - Página Principal</a></li>
+                    <li><p>Criando o Banco de Dados</p> <ol type="a"><li><a href="wish-list-lesson1.html">Criando um Banco de Dados MySQL</a></li>
+                            <li><a href="wish-list-oracle-lesson1.html">Criando Tabelas do Banco de Dados Oracle</a></li>
+                        </ol></li>
+                    <li>
+                        <p><a href="wish-list-lesson2.html">Projetando a Aplicação. Lendo o Banco de Dados</a></p>
+                    </li>
+                    <li><a href="wish-list-lesson3.html">Criando um Novo Usuário de Aplicação</a></li>
+                    <li><a href="wish-list-lesson4.html">Otimizando o Código</a></li>
+                    <li><a href="wish-list-lesson5.html">Adicionando Segurança. Implementando o Log-in de Usuário da Aplicação</a></li>
+                    <li><a href="wish-list-lesson6.html">Adicionando um Novo Desejo ao Banco de Dados</a></li>
+                    <li>      <a href="wish-list-lesson7.html">Atualizando e Deletando Entradas no Banco de Dados</a></li>
+                    <li>
+                        <p><b>=> Melhorando a Aparência da Aplicação Usando a Tecnologia CSS</b></p>
+                        <ul class="toc">
+                            <li><a href="#previousLessonSourceCode">Código-fonte da Aplicação da Lição Anterior</a></li>
+                            <li><a href="#hideLogonForm">Ocultando Forms</a>
+                                <ul>
+                                    <li><a href="#javaScriptFunctions">Funções JavaScript</a></li>
+                                    <li><a href="#showHideLogonInIndex">Atualizando o index.php</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#designStyles">Definindo Estilos Usando a Folha de Estilo em Cascata</a>
+                                <ul>
+                                    <li><a href="#creatingCSSFile">Criando um Arquivo CSS</a></li>
+                                    <li><a href="#defineCSSStyles">Definindo Estilos CSS</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#divs">Implementando o Design Usando Divs de HTML</a></li>
+                            <li><a href="#lessonResultSourceCode">O Código-fonte da Aplicação após a Lição Atual está Concluído</a></li>
+                            <li><a href="#nextSteps">Próximas Etapas</a></li>
+                        </ul>
+
+                    </li>
+                    <li><a href="wish-list-lesson9.html">Implantando a Aplicação em um Servidor Web Remoto</a></li>
+                </ol>
+            </div>
+        </div>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+        <p>Nesta lição, você aprenderá a fazer o seguinte:</p>
+        <ul>
+            <li style="margin-left:40em"><a href="#hideLogonForm">Ocultar forms de entrada quando eles não forem usados, implementando funções JavaScript</a></li>
+            <li style="margin-left:40em"><a href="#designStyles">Definir os estilos e o posicionamento dos elementos da página aplicando a Folha de Estilo em Cascata</a></li>
+            <li style="margin-left:40em"><a href="#divs">Implementar o design da aplicação usando divs</a>. </li>
+        </ul>
+        <p>O documento atual é uma parte do tutorial Criando uma Aplicação CRUD no NetBeans IDE para PHP. </p>
+        <br style="clear:left">
+        <h2><a name="previousLessonSourceCode"></a>Código-fonte da Aplicação da Lição Anterior</h2>
+        <p>Usuários MySQL: clique <a href="https://netbeans.org/files/documents/4/1933/lesson7.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição anterior estiver concluída. </p>
+        <p>Usuários do banco de dados Oracle: clique <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson7.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição anterior for concluída.</p>
+        <h2><a id="hideLogonForm" name="hideLogonForm"></a>Ocultando Forms </h2>
+        <p>Atualmente, a página principal <tt>index.php</tt> da aplicação sempre exibe o log-in completo e forms showWishList. Para aprimorar a aparência da aplicação, você pode ocultar os forms e substitui-los por botões. Quando o usuário pressionar um botão, o form oculto correspondente expandirá. </p>
+        <p>Para implementar esse comportamento:</p>
+        <ol>
+            <li>Adicione um bloco &lt;script>&lt;/script> ao arquivo <tt>index.php</tt> logo acima da tag &lt;/body> de encerramento.</li>
+            <li><a href="#javaScriptFunctions">Desenvolva duas funções JavaScript dentro das tags &lt;script>&lt;/script></a>.</li>
+            <li><a href="#showHideLogonInIndex">Faça algumas pequenas alterações no arquivo index.php</a></li>
+        </ol>
+        <div class="indent"><h3><a id="javaScriptFunctions" name="javaScriptFunctions"></a>Funções JavaScript </h3>
+            <p>As funções JavaScript não requerem nenhum parâmetro de entrada e não retornam nenhum resultado. O código a seguir verifica o status de visibilidade do form correspondente e o altera para o status oposto. Ele também altera o texto no botão. Para realizar essas alterações, digite o seguinte código dentro das tags &lt;script>&lt;/script>:</p>
+            <pre class="examplecode">&lt;script&gt;
+function showHideLogonForm() {
+    if (document.all.logon.style.visibility == "visible"){
+        document.all.logon.style.visibility = "hidden";
+        document.all.myWishList.value = "My Wishlist &gt;&gt;";
+    } 
+    else {
+        document.all.logon.style.visibility = "visible";
+        document.all.myWishList.value = "&lt;&lt; My Wishlist";
+    }
+}
+function showHideShowWishListForm() {
+    if (document.all.wishList.style.visibility == "visible") {
+        document.all.wishList.style.visibility = "hidden";
+        document.all.showWishList.value = "Show Wish List of >>";
+    }
+    else {
+        document.all.wishList.style.visibility = "visible";
+        document.all.showWishList.value = "&lt;&lt; Show Wish List of";
+    }
+}
+&lt;/script&gt;	</pre>
+            <h3><a id="showHideLogonInIndex" name="showHideLogonInIndex"></a>Atualizando o <tt>index.php</tt> </h3>
+            <ol>
+                <li>Adicione um atributo <tt>style</tt> ao form de log-in: 
+                    <pre class="examplecode">&lt;form name=&quot;logon&quot; action=&quot;index.php&quot; method=&quot;POST&quot; 
+        <strong>style=&quot;visibility:&lt;?php if ($logonSuccess) echo &quot;hidden&quot;;
+        else echo &quot;visible&quot;;?&gt;&quot;</strong>&gt;</pre>
+                    O atributo <tt>style</tt> define se o form está oculto ou visível. O bloco &lt;?php ?> é usado para manter o form visível até que o usuário efetue log-in com êxito.<br>
+                </li>
+                <li> Digite o seguinte código acima do código do form de entrada de log-in: 
+                    <pre class="examplecode"> &lt;input type=&quot;submit&quot; name=&quot;myWishList&quot; value=&quot;My Wishlist &gt;&gt;&quot; onclick=&quot;javascript:showHideLogonForm()&quot;/&gt;</pre>
+                    O código implementa um botão com o texto "My Wishlist >>". O botão fica no lugar do form de log-in. Se você pressionar o botão, a função showHideLog-inForm será chamada.</li>
+                <li>Adicione um atributo <tt>style</tt> ao form wishList:
+                    <pre class="examplecode">&lt;form name=&quot;wishList&quot; action=&quot;wishlist.php&quot; method=&quot;GET&quot; <strong>style=&quot;visibility:hidden&quot;</strong>&gt;
+Show wish list of: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>            &lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>&lt;/form&gt;</pre>
+                </li>
+                <li>Digite o seguinte código acima do form WishList:
+                    <pre class="examplecode">&lt;input type=&quot;submit&quot; name=&quot;showWishList&quot; value=&quot;Show Wish List of &gt;&gt;&quot; onclick=&quot;javascript:showHideShowWishListForm()&quot;/&gt;</pre>
+                </li>
+                <li>Remova o seguinte código do form porque ele já foi colocado no botão: 
+                    <pre class="examplecode">Show wishlist of: </pre>
+                </li>
+            </ol>
+        </div>
+
+        <h2><a id="designStyles" name="designStyles"></a>Definindo Estilos Usando a Folha de Estilo em Cascata</h2>
+        <p>Atualmente, os controles na aplicação estão "presos" uns aos outros e geralmente são colocados no canto esquerdo superior da tela. Para aprimorar a aparência das páginas da aplicação, especifique o tamanho, a posição, cor, fonte e outros parâmetros dos controles definindo estilos e designando esses estilos a controles específicos. Os estilos são definidos em um arquivo de Folha de Estilo em Cascata (CSS) separado. </p>
+        <p>Todas as recomendações e sugestões a respeito do design da aplicação são opcionais. As definições de estilo abaixo têm o objetivo apenas de fornecer um exemplo de como melhorar a aparência da aplicação. As definições são apropriadas para resolução de tela de 1024x768 pixels ou superior. </p>
+        <div class="indent"><h3><a name="creatingCSSFile"></a>Criando um Arquivo CSS</h3>
+            <ol>
+                <li>Clique com o botão direito do mouse no nó dos Arquivos de Código-Fonte e, no menu de contexto, selecione Novo > Folha de Estilos em Cascata.</li>
+                <li>No painel Folha de Estilo em Cascata, na caixa de edição Nome do Arquivo, digite wishlist. Clique em Finalizar. <br> <img alt="Painel Novo Arquivo CSS" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson8/newCascadingStyleSheetFile.png"><br> O novo arquivo <tt>wishlist.css</tt> é mostrado na árvore do projeto.</li>
+            </ol>
+
+            <h3><a name="defineCSSStyles"></a>Definindo Estilos CSS</h3>
+            
+            <p>Abra o arquivo wishlist.css. O arquivo já contém uma classe "root", que pode ser removida. Você pode obter uma cópia do <tt>wishlist.css</tt> fazendo download da versão completa deste tutorial, disponível <a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">aqui</a>. O código é intuitivamente claro e contém:</p>
+            <ul>
+                <li>Dois estilos: "body" e "input" - que são aplicados automaticamente dentro de qualquer tag <tt>&lt;body>&lt;/body></tt> ou <tt>&lt;input/></tt>.  </li>
+                <li>Classes CSS que são aplicadas quando especificadas explicitamente. Os nomes das classes têm pontos na frente, por exemplo,<tt>.createWishList</tt>. Algumas classes são usadas várias vezes, por exemplo, a classe ".error" é aplicada a todas as mensagens de erro na aplicação. Outras classes são usadas apenas uma vez, por exemplo, ".showWishList", ".logon".</li>
+            </ul></div>
+        <h2><a id="divs" name="divs"></a>Implementando o Design Usando Divs de HTML </h2>
+        <p>Todas as recomendações e sugestões a respeito do design da aplicação são opcionais. Como as definições de estilo acima, elas têm o objetivo apenas de dar um exemplo de como aprimorar a aparência da aplicação. </p>
+        <p> O exemplo abaixo mostra como você pode aprimorar a aparência da página <tt>index.php</tt>. </p>
+
+        <ol>
+            <li>Para ativar o uso de classes CSS que você definiu, digite o seguinte código no bloco <tt>&lt;head>&lt;/head></tt>:
+                <pre class="examplecode">     &lt;link href=&quot;wishlist.css&quot; type=&quot;text/css&quot; rel=&quot;stylesheet&quot; media=&quot;all&quot; /&gt;</pre>Os estilos "body" e "input" são aplicados automaticamente dentro das tags correspondentes, assim, você precisa indicá-los explicitamente.</li>
+            <li>Para aplicar outro estilo (classe) em uma área, circunde o código que implementa a área com as tags <tt>&lt;div class="">&lt;/div></tt>:
+                <pre class="examplecode"> &lt;div class=&quot;showWishList&quot;&gt;<br>            &lt;input type=&quot;submit&quot; name=&quot;showWishList&quot; value=&quot;Show Wish List of &gt;&gt;&quot; onclick=&quot;javascript:showHideShowWishListForm()&quot;/&gt;<br>            <br>            &lt;form name=&quot;wishList&quot; action=&quot;wishlist.php&quot; method=&quot;GET&quot; style=&quot;visibility:hidden&quot;&gt;<br>               &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>               &lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>            &lt;/form&gt;<br>&lt;/div&gt;</pre> 
+                <p><strong>Observação:</strong>quando uma classe é especificada dentro de uma tag &lt;div> , não é necessário um ponto na frente.</p> </li>
+            <li>Você pode usar tags &lt;div> incorporadas:
+                <pre class="examplecode">&lt;div class=&quot;logon&quot;&gt;<br>     &lt;input type=&quot;submit&quot; name=&quot;myWishList&quot; value=&quot;My Wishlist &gt;&gt;&quot; onclick=&quot;javascript:showHideLogonForm()&quot;/&gt;<br>            &lt;form name=&quot;logon&quot; action=&quot;index.php&quot; method=&quot;POST&quot; <br>                      style=&quot;visibility:&lt;?php if ($logonSuccess) echo &quot;hidden&quot;; else echo &quot;visible&quot;;?&gt;&quot;&gt;<br>                Username: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>                Password:  &lt;input type=&quot;password&quot; name=&quot;userpassword&quot;/&gt;&lt;br/&gt;<br>                &lt;div class=&quot;error&quot;&gt;<br>                  &lt;?php<br>                     if (!$logonSuccess) echo &quot;Invalid name and/or password&quot;;<br>                   ?&gt;<br>                &lt;/div&gt;<br>                &lt;input type=&quot;submit&quot; value=&quot;Edit My Wish List&quot;/&gt;<br>            &lt;/form&gt;<br>&lt;/div&gt;  </pre>
+                A classe "logon" é aplicada em todo o form e a classe "error" é aplicada em uma mensagem de erro no form.  </li>
+        </ol>
+        <p>Para obter mais detalhes sobre o uso de Folhas de Estilo em Cascata (CSS), consulte <span lang="ru"><a href="http://www.htmlpedia.org/wiki/List_of_CSS_Properties" onClick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.htmlpedia.org/wiki/List_of_CSS_Properties</a></span></p>
+
+        <h2><a name="lessonResultSourceCode"></a>O código-fonte da Aplicação após a Lição Atual está Concluído </h2>
+        <p>Usuários do MySQL: clique <a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">aqui</a> para fazer download do código-fonte que inclui o projeto de exemplo e o arquivo CSS.</p>
+        <p>Usuários do Banco de Dados Oracle: clique <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson8.zip" target="_blank">aqui</a> para baixar o código-fonte que inclui o design exemplo e o arquivo CSS.</p>
+        <p>PDO: Goran Miskovic, um membro da comunidade, forneceu uma versão PDO deste tutorial completo, disponível <a href="https://netbeans.org/projects/www/downloads/download/php/wishlist-pdo.zip" target="_blank">aqui</a>. Nesse projeto, você pode alternar entre Oracle XE e bancos de dados MySQL ao trocar o parâmetro DSN. O projeto inclui todos os scritps SQL necessários e está documentado no código. Observe no entanto que o PDO_OCI é experimental.</p>
+        <p>A equipe NetBeans IDE gostaria de agradecer Ozan Hazer pela contribuição do CSS e o aprimoramento do código no exemplo concluído.</p>
+        <h2><a name="nextSteps"></a>Próximas Etapas</h2>
+        <p><a href="wish-list-lesson7.html">&lt;&lt; Lição anterior</a></p>
+        <p><a href="wish-list-lesson9.html">Próxima lição >></a>    </p>
+        <p>
+            <a href="wish-list-tutorial-main-page.html">Voltar à página principal do Tutorial</a></p>
+
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">Enviar Feedback neste Tutorial</a></div>
+        <br style="clear:both;" >
+        <p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>.
+        <p><a href="../../trails/php.html">Voltar à Trilha do Aprendizado PHP</a></p>
+
+    </body>
+</html>

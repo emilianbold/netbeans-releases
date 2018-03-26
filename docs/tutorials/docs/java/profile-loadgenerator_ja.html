@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   
+   <head>
+      <title>NetBeans IDEでの負荷ジェネレータの使用</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <meta name="description" content="An overview of how to use a JMeter load testing script in NetBeans IDE.">
+      <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+   </head>
+   <body>
+      <h2>NetBeans IDEでの負荷ジェネレータの使用</h2>
+      
+      <p>アプリケーションのパフォーマンスをテストするときは、標準的な負荷の下でテストを実行すると有効な場合があります。開発環境でアプリケーションを実行している場合は、これが困難なことがあります。負荷の下でのアプリケーション実行をエミュレートする方法の1つに、負荷ジェネレータのスクリプトを使用する方法があります。このドキュメントでは、IDEによって提供される負荷ジェネレータのサポートの概要について説明します。</p>
+      <p>独自の負荷ジェネレータ・ランタイムを提供するかわりに、IDEは、サードパーティ製ツールの統合を使用しています。NetBeans IDEは、負荷テスト・スクリプトを再実行するためのApache JMeter負荷テスト・ツール(<a href="http://jakarta.apache.org/jmeter">ホーム・ページ</a>)をサポートしています。IDEでJMeterツールを使用するには、まず、必要なプラグインを更新センターからダウンロードする必要があります。</p>
+      
+      <div class="indent"> 
+         
+         <h3 class="tutorial">内容</h3>
+       <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+         <ul>
+            <li><a href="#Exercise_1">JMeterプラグインのインストール</a></li>
+            <li><a href="#Exercise_2">JMeter負荷テスト・スクリプトの操作</a>
+               <ul>
+                  <li><a href="#Exercise_2a">負荷テスト・スクリプトの作成</a></li>
+                  <li><a href="#Exercise_2b">負荷テスト・スクリプトの編集</a></li>
+                  <li><a href="#Exercise_2c">負荷テスト・スクリプトの開始</a></li>
+                  <li><a href="#Exercise_2d">負荷テスト・スクリプトの停止と再開</a></li>                    
+               </ul>
+            </li>
+         </ul>
+         </div>
+         
+          <h2>開始</h2>
+         <div class="indent">   
+            <h3>前提条件</h3>
+            <p>このドキュメントは、次のテクノロジについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。</p>
+            <ul>
+                <li>Javaプログラミング</li>
+                <li>NetBeans IDE</li>
+            </ul>
+            
+            <h3>チュートリアルに必要なソフトウェア</h3>
+            <p>このチュートリアルでは、コンピュータに次のソフトウェアをインストールしておく必要があります。</p>
+            <table>
+            <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+           <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">バージョン7または8</td>
+            </tr>
+
+            <tr>
+                <td class="tbltd1">JMeter Kitおよび負荷ジェネレータ・プラグイン</td>
+                <td class="tbltd1">NetBeans更新センターからのダウンロード</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFishアプリケーション・サーバー</td>
+                <td class="tbltd1">3.x、4.x</td>
+            </tr>
+            
+            </tbody>
+            </table>
+         <p class="notes"><strong>注意:</strong></p>
+            <ul>
+                <li>プロファイリング・ツールはNetBeans IDEにバンドルされているため、アプリケーションのプロファイリングを開始するための特殊な設定は必要ありません。</li>
+                <li>JMeter負荷テスト・ツールのサポートを追加するには、プラグイン・マネージャを使用して、JMeter Kitおよび負荷ジェネレータ・プラグインを更新センターからダウンロードします。</li>
+            </ul>
+      </div>
+      <!-- ===================================================================================== -->
+      <a name="Exercise_1"></a>
+      <h2>JMeterプラグインのインストール</h2>
+      <p><b>JMeter Kit</b>および<b>負荷ジェネレータ</b>・プラグインをNetBeans更新センターからダウンロードしてインストールすることによって、JMeter負荷ジェネレータのサポートを容易に追加できます。</p>
+      <p>プラグインをダウンロードするには、次を実行します。</p>
+      <ol>
+         <li>メイン・メニューから「ツール」>「プラグイン」を選択して、プラグイン・マネージャを開きます。</li>
+         <li>「使用可能なプラグイン」タブをクリックし、JMeter Kitおよび負荷ジェネレータ・プラグインのチェックボックスを選択します。「インストール」をクリックします。<br> <img alt="プラグイン・マネージャのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/profile-loadgen/generator-plugin.png" title="プラグイン・マネージャの負荷ジェネレータ・プラグイン" />
+         </li>
+         <li>インストーラの手順に従ってプラグインをダウンロードおよびインストールし、「終了」をクリックします。「閉じる」をクリックしてプラグイン・マネージャを終了します。</li>
+      </ol>
+      
+      <p>プラグインをインストールすると、新規ファイル・ウィザードに負荷テスト・スクリプト・カテゴリが追加されます。</p>
+      
+      <a name="Exercise_2"></a>
+      <h2>JMeter負荷テスト・スクリプトの操作</h2>
+      <p>JMeterプラグインのサポートは、IDEのプロファイリング・ツールに緊密に統合されています。JMeterプラグインを使用すると、IDE内からJMeter負荷テスト・スクリプトを容易に作成して実行できます。</p>
+      <p>負荷ジェネレータのスクリプトを使用するには、特定のプロジェクト用のスクリプトを作成し、アプリケーションを実行しているサーバーにかかるプロジェクトの負荷のタイプに応じてそのスクリプトを変更します。スクリプトを実行すると、このスクリプトによって、標準的な実行条件の下でのアプリケーションの動作をエミュレートする負荷がサーバーにかけられます。その後、アプリケーションのパフォーマンスをテストできるため、得られるテスト結果は、標準的な条件の下でのアプリケーションのパフォーマンスにより近いものになります。</p>
+      
+      <div class="indent">
+         <a name="Exercise_2a"></a>
+         <h3>新しい負荷テスト・スクリプトの作成</h3>
+         <p>プラグインをダウンロードしてインストールすると、新規ファイル・ウィザードで新しいカテゴリが作成されます。プロジェクトで負荷スクリプト・ファイルを作成するには、新規ファイル・ウィザードを使用します。</p>
+         <p>新しい負荷テスト・スクリプトを作成するには、次を実行します。</p>
+         <ol>
+            <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「新規」>「その他」を選択します。</li>
+            <li>「カテゴリ」ペインで負荷テスト・スクリプトを展開し、JMeterプランを選択した後、「ファイル・タイプ」ペインで新規JMeterプランを選択します。「次」をクリックします。</li>
+            <li>スクリプトの名前を入力し、「終了」をクリックします。</li>
+         </ol>
+         <p>新しいスクリプトを作成すると、IDEによって、そのスクリプトが「プロジェクト」ウィンドウ内のロード・ジェネレータのスクリプト・ノードの下に配置されます。「ファイル」ウィンドウでは、そのスクリプトがIDEによって<tt>jmeter</tt>ディレクトリ内に保存されることがわかります。IDEの外部ですでに負荷テスト・スクリプトを作成している場合は、<tt>jmeter</tt>ディレクトリを作成し、そのディレクトリにスクリプトを追加することによって、IDE内からそのスクリプトを実行できます。</p>
+         
+         <img alt="新しいJMeter負荷テスト・スクリプトの作成" class="margin-around b-all" src="../../../images_www/articles/74/java/profile-loadgen/new-plan.png" /> <a name="Exercise_2b"></a>
+         <h3>負荷テスト・スクリプトの編集</h3>
+         <p>JMeter外部エディタを使用すると、アプリケーションのニーズに従ってスクリプトを変更できます。負荷テスト・スクリプトを作成するか、またはスクリプトをプロジェクトに追加した後、「プロジェクト」ウィンドウでそのスクリプトを右クリックし、<b>外部編集</b>を選択することによって外部エディタを起動できます。</p>
+         <p>JMeterテスト・スクリプトの編集の詳細は、<a href="http://jakarta.apache.org/jmeter/usermanual/index.html">JMeterユーザー・マニュアル</a>を参照してください。</p>
+         <img alt="プロジェクト構造内のJMeter負荷テスト・スクリプト" class="margin-around b-all" src="../../../images_www/articles/74/java/profile-loadgen/jmeter-externaledit.png" title="プロジェクト構造内のJMeter負荷テスト・スクリプト" /> <a name="Exercise_2c"></a>
+         <h3>負荷テスト・スクリプトの開始</h3>
+         <p>負荷テスト・スクリプトは、次の方法で開始できます。</p>
+         <ul>
+            <li>
+               <b>スタンドアロン・モードで</b>
+               <p>「<b>サービス</b>」ウィンドウで、「ロード・ジェネレータ」ノードを右クリックし、<b>「JMeter」>「開始」</b>を選択します。このアクションによって、実行するスクリプトを指定できる参照ダイアログが表示されます。</p>
+               <img alt="実行時タブの負荷ジェネレータ" class="margin-around b-all" src="../../../images_www/articles/74/java/profile-loadgen/jmeter-services.png" />
+            </li>
+            <li>
+               <b>プロファイリング・タスクの選択ウィンドウから</b>
+               <p>Webアプリケーションをプロファイリングする場合は、「プロファイリング・タスクの選択」ウィンドウで、実行する負荷テスト・スクリプトを指定できます。選択されたスクリプトは、ブラウザ・ウィンドウが開く直前に開始されます。</p>
+               <img alt="「タスクの選択」パネルからの負荷ジェネレータのスクリプトの開始" class="margin-around b-all" src="../../../images_www/articles/74/java/profile-loadgen/jmeter-profilewindow72.png" />
+            </li>
+         </ul>
+         
+         <a name="Exercise_2d"></a>
+         <h3>負荷テスト・スクリプトの停止と再開</h3>
+         <p>負荷テスト・スクリプトは、<b>「出力」ウィンドウ</b>または<b>「サービス」ウィンドウ</b>から停止したり、再開したりすることができます。</p>
+         <p>スクリプトがロードされた後、<b>「出力」ウィンドウ</b>に「JMeter」タブが開きます。このウィンドウには、負荷ジェネレータの現在の状態が表示されます。「出力」ウィンドウの左マージンには、スクリプトを開始、停止、または再開するためのコントロールが存在します。</p>
+         <img alt="負荷ジェネレータの「出力」ウィンドウ - 実行中" class="margin-around b-all" src="../../../images_www/articles/74/java/profile-loadgen/jmeter-output.png" title="負荷ジェネレータのステータスを示す「出力」ウィンドウ" />
+         <p>負荷ジェネレータの現在のステータスは、<b>「サービス」ウィンドウ</b>にも表示されます。「JMeter」ノードの下にあるノードを選択し、ポップアップ・メニューから項目を選択することによって、スクリプトを停止したり、再開したりすることができます。</p>
+         <img alt="「サービス」ウィンドウ - 負荷ジェネレータ実行中" class="margin-around b-all" src="../../../images_www/articles/74/java/profile-loadgen/jmeter-services2.png" title="負荷ジェネレータのステータスを示す「サービス」ウィンドウ" />
+         
+         
+      </div>
+      
+      
+      <br>
+      
+      <br style="clear:both;">
+      <a name="Exercise_3"></a>
+      <h2>その他のリソース</h2>
+      <p>この基本的な概要は、IDE内からJMeter負荷テスト・スクリプトを使用する方法を示しています。特定のアプリケーション用の負荷テスト・スクリプトの開発については、次のリソースを参照してください。</p>
+      <ul>
+         <li><a href="http://jakarta.apache.org/jmeter">Apache JMeter負荷テスト・ツール</a></li>
+         <li><a href="http://jakarta.apache.org/jmeter/usermanual/index.html">JMeterユーザー・マニュアル</a></li>
+      </ul>
+      
+      <div class="feedback-box">
+         <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20a%20Load%20Generator">このチュートリアルに関するご意見をお寄せください</a>
+      </div>
+      <br style="clear:both;">
+      
+      <h2>関連項目</h2>
+      <ul>
+         <li><a href="../web/quickstart-webapps.html">Webアプリケーション開発入門</a></li>
+         <li><a href="profiler-intro.html">Javaアプリケーションのプロファイリング入門</a></li>
+         <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+      </ul>
+      
+   </body>
+</html>

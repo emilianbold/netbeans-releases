@@ -1,0 +1,286 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><!-- -*- xhtml -*- -->
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+<title>在 Java EE 中构建安全企业 Bean</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="description" content="A guide to creating a simple enterprise application with NetBeans IDE">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+</head>
+<body>
+<h1>在 Java EE 中构建安全企业 Bean</h1>
+
+<p>通过 NetBeans IDE 中的 Java EE 规范支持，您可以充分利用许多 Java EE 功能来简化应用程序开发。Java EE 5 规范的一个重大改进是采用了标注。使用标注，您可以消除在对应用程序进行编码时所使用的许多模板代码，并最大限度地减少部署应用程序时所需的配置量。
+</p>
+
+<p>通过使用标注而得到极大简化的一个领域是企业 Bean 的开发和配置。使用标注，您可以指定以前在部署描述符文件中所指定的许多配置属性，从而使很多部署描述符文件变得不再必需。尽管应用程序可能仍然需要一些部署描述符文件（如 <tt>web.xml</tt>），但 IDE 的多视图部署描述符编辑器大大简化了对这些文件的编辑。</p>
+
+<p>通过使用标注，现在构建安全的企业 Bean 要简单得多。您可以使用安全标注直接在源代码中配置授权，而无需在 <tt>ejb-jar.xml</tt> 部署描述符中配置企业 Bean 安全性。Java EE 5 企业应用程序不需要 <tt>ejb-jar.xml</tt> 或 <tt>application.xml</tt>。</p>
+
+<p>有关 Java EE 规范的一些特性的概述，请参见 <a href="javaee-intro.html">Java EE 技术简介</a>。有关标注规范的详细信息，请参见 <a href="http://jcp.org/en/jsr/detail?id=250" target="_blank">JSR 250：Java 平台的常用标注</a>。</p>
+
+
+    <p><b>目录</b></p>
+    <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+    <ul>
+      <li><a href="#ex2">在应用服务器上创建安全组</a></li>
+      <li><a href="#ex2b">为远程接口创建 Java 类库</a></li>
+      <li><a href="#ex3">创建和保护企业应用程序</a>
+          <ul>
+          <li><a href="#ex3a">创建企业应用程序项目</a></li>
+          <li><a href="#ex3b">确保会话 Bean 中的方法安全</a></li>
+          <li><a href="#ex3c">配置部署描述符</a></li>
+          </ul>
+      </li>
+      <li><a href="#ex4">创建应用程序客户端</a></li>
+      <li><a href="#ex5">运行应用程序</a></li>
+    </ul>
+
+        <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+        <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">软件或资源</th>
+                <th class="tblheader" scope="col">要求的版本</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE 版本</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                <td class="tbltd1">版本 7 或 8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFish Server</td>
+                <td class="tbltd1">3.1.x、4.x</td>
+            </tr>
+
+            </tbody>
+        </table>
+            
+        <p class="tip">在学习本教程之前，您需要在 IDE 中注册 GlassFish Server 的本地实例。如果您安装了 "Java EE" 版本的 IDE，则应已安装并注册应用服务器。如果在 IDE 中未注册该应用服务器，请选择 "Tools"（工具）> "Servers"（服务器），以在服务器管理器中注册它。您不能将企业应用程序部署到 Tomcat Web 服务器。</p>
+        
+        <p><b>先决条件</b></p>
+        <p>本文档假定您具备以下技术的一些基本知识或编程经验：</p>
+        <ul>
+            <li>Java 编程</li>
+            <li>NetBeans IDE</li>
+        </ul>
+
+
+<h2><a name="ex2"></a>在应用服务器上创建安全组</h2>
+  <p>在本示例中，您仅希望 <tt>bank_users</tt> 组的用户访问企业 Bean。您将在应用服务器 <tt>file</tt> 安全领域的 <tt>bank_users</tt> 组中创建 <tt>manager</tt> 用户。</p>
+  <ol>
+    <li>启动应用服务器，方法是：在 "Services"（服务）窗口中右键单击应用服务器的节点，然后选择 "Start"（启动）。</li>
+    <li>右键单击应用服务器节点，然后选择 "View Domain Admin Console"（查看域管理控制台），以便在浏览器中打开 GlassFish Server 管理控制台。</li>
+    <li>展开左导航栏中 "Configurations"（配置）节点下方的 <strong>server-config</strong> 节点。</li>
+    <li>单击 <strong>"Security"（安全性）> "Realms"（领域）> "file"</strong>，以打开 "Edit Realm"（编辑领域）框架。<br> <img alt="管理控制台中导航栏的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/console-file-realm.png" title="在应用服务器的管理控制台中选择文件领域节点" />
+    </li>
+    <li>单击 "Edit Realm"（编辑领域）面板顶部的 "Manage Users"（管理用户）按钮，打开 "File Users"（文件用户）面板。<br> <img alt="管理控制台中 &quot;Edit Realm&quot;（编辑领域）面板的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/console-edit-realm.png" title="应用服务器的管理控制台中的 &quot;Edit Realm&quot;（编辑领域）面板代码" />
+    </li>
+    <li>单击 "File Users"（文件用户）面板中 "File Users"（文件用户）表顶部的 "New"（新建）按钮。</li>
+    <li>在 "New File Realm User"（新建文件领域用户）窗体中输入以下数据。单击 "OK"（确定）。
+         <table width="25%" >
+          <tr>
+            <th width="50%" class="tblheader" scope="col">名称</th>
+            <th width="50%" class="tblheader" scope="col">值</th>
+          </tr>
+          <tr>
+            <td class="tbltd1">用户 ID</td>
+            <td class="tbltd1">manager</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">组列表</td>
+            <td class="tbltd1">bank_users</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">Password</td>
+            <td class="tbltd1">password</td>
+          </tr>
+        </table>
+
+<p>该窗体应与下图类似。</p>
+    <img alt="管理控制台中 &quot;New File Realm User&quot;（新建文件领域用户）面板的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/console-new-user.png" title="应用服务器的管理控制台中的 &quot;New File Realm User&quot;（新建文件领域用户）面板" />
+    <p>在单击 "OK"（确定）后，该服务器将创建用户，并打开 "File Users"（文件用户）面板。您将会看到，现在有一个名为 <tt>manager</tt> 的用户。</p>
+
+    <img alt="管理控制台中 &quot;File Users&quot;（文件用户）面板的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/console-file-users.png" title="管理控制台中包含用户列表的 &quot;File Users&quot;（文件用户）面板" />
+
+    </li>
+  </ol>
+  <p>创建用户之后，将创建企业应用程序，以检查该用户是否能够查看数据。</p>
+
+  
+  
+  
+  <a name="ex2b"></a>
+    <h2>为远程接口创建 Java 类库</h2>
+    <p>在本练习中，将创建一个简单的 Java 类库项目，其中包含会话 Bean 的远程接口。然后，将编译的类库 JAR 添加到 EJB 模块以及用于调用会话 Bean 的应用程序客户端的类路径中。</p>
+    <ol>
+        <li>选择 "File"（文件）> "New Project"（新建项目），然后在 "Java" 类别中选择 "Java Class Library"（Java 类库）。单击 "Next"（下一步）。</li>
+        <li>键入 SecureRemoteInterface 作为项目名称。 </li>
+        <li>指定项目的位置。单击 "Finish"（完成）。</li>
+    </ol>
+  
+    <p>在下一部分中，将在企业应用程序中创建一个会话 Bean。该会话 Bean 可通过远程接口进行访问。在创建会话 Bean 时，IDE 将自动创建类库中的远程接口，并将类库 JAR 添加到企业应用程序的类路径中。</p>
+  
+    
+    
+    
+    <h2><a name="ex3"></a>创建和保护企业应用程序</h2>
+    <p>企业应用程序中将包含一个简单的会话 Bean，该会话 Bean 可通过类库项目中的远程接口进行访问。</p>
+    
+    <div class="indent">
+    <a name="ex3a"></a>    
+    <h3>创建企业应用程序项目</h3>
+    <p>在本练习中，将创建一个包含 EJB 模块的企业应用程序。</p>
+    <ol>
+        <li>选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键），然后从 "Java EE" 类别中选择 "Enterprise Application"（企业应用程序）模板。单击 "Next"（下一步）。</li>
+        <li>键入 <strong>Secure</strong> 作为项目名称，并设置项目位置。</li>
+        <li>取消选中 "Use Dedicated Folder"（使用专用文件夹）选项（如果该选项处于选中状态）。<br />
+        <p>在本教程中，我们将项目库复制到一个专门的文件夹中，因为需要与其他用户或项目共享库。</p>
+        单击 "Next"（下一步）。</li>
+        <li>将服务器设置为 "GlassFish"，并将 Java EE 版本设置为 "Java EE 6"。</li>
+        <li>选中 "Create EJB Module"（创建 EJB 模块），并取消选中 "Create Web Application Module"（创建 Web 应用程序模块）。单击 "Finish"（完成）。</li>
+    </ol>
+    <img alt="管理控制台中 &quot;New File Realm User&quot;（新建文件领域用户）面板的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/new-entapp-wizard.png" title="应用服务器的管理控制台中的 &quot;New File Realm User&quot;（新建文件领域用户）面板" /> <a name="ex3b"></a>
+    <h3>确保会话 Bean 中的方法安全</h3>
+    <p>在本练习中，将在 EJB 模块项目中创建一个会话 Bean。该会话 Bean 没有任何特殊的功能。它仅仅返回一个余额样例。您将创建一个 <tt>getStatus</tt> 方法，并通过使用 <tt>@RolesAllowed</tt> 标注对其进行标注以保护该方法 Bean，然后指定可以访问该方法的安全角色。此安全角色由应用程序使用，它与服务器上的用户和组不同。此后，将在配置部署描述符时将此安全角色映射到用户和组。</p>
+
+    <p>安全标注可以分别应用于类中的每个方法，也可以应用于整个类。在此简单练习中，将使用 <tt>@RolesAllowed</tt> 标注方法，但 Java EE 规范还定义了其他可用在企业 Bean 中的安全标注。 </p>
+    <ol>
+        <li>在 "Projects"（项目）窗口中，右键单击 EJB 模块的节点 (Secure-ejb)，然后选择 "New"（新建）> "Session Bean"（会话 Bean）。</li>
+        <li>键入 <strong>AccountStatus</strong> 作为 Bean 名称，并键入 <strong>bean</strong> 作为包。</li>
+        <li>选中 "Remote in project"（以远程方式位于项目中）作为接口类型。</li>
+        <li>在下拉列表中选择 "SecureRemoteInterface"。单击 "Finish"（完成）。<br> <img alt="新建会话 Bean 向导的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/new-sessionbean-wizard.png" title="新建会话 Bean 向导中选中了远程接口" />
+        <p>单击 "Finish"（完成），此时 IDE 将创建 <tt>AccountStatus</tt> 类并在源代码编辑器中打开该文件。
+        <p>IDE 还将在 SecureRemoteInterface 类库项目中为 <tt>bean</tt> 包中的 Bean 创建 <tt>AccountStatusRemote</tt> 远程接口，并将 SecureRemoteInterface 类库 JAR 添加到了 EJB 模块项目的类路径中。</p>
+        <img alt="显示结构的 &quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/projects-window-bean.png" title="显示类路径上的会话 Bean 和类库的 &quot;Projects&quot;（项目）窗口" />
+        <p>如果打开 EJB 模块的 "Properties"（属性）对话框的 "Libraries"（库）类别，则会看到 JAR 已添加到编译时库中。</p>
+        </li>
+        <li>在源代码编辑器中，将以下字段声明（以粗体显示）添加到 <tt>AccountStatus</tt> 中：<br />
+        <pre class="examplecode">public class AccountStatus implements AccountStatusRemote {
+    <b>private String amount = "250";</b></pre>
+        </li>
+        <li>在源代码编辑器中，右键单击类，并选择 "Insert Code"（插入代码）（Alt-Insert 组合键；在 Mac 上为 Ctrl-I 组合键），然后选择 "Add Business Method"（添加 Business 方法），以打开 "Add Business Method"（添加 Business 方法）对话框。</li>
+        <li>键入 <strong>getStatus</strong> 作为方法名称，并将返回类型设置为 <tt>String</tt>。
+        <p>IDE 将自动在远程接口中公开此业务方法。</p></li>
+        <li>在源代码编辑器中，将以下代码行（以粗体显示）添加到 <tt>getStatus</tt> 方法中。
+        <pre class="examplecode">public String getStatus() {
+<b>    return "The account contains $" + amount;</b>
+}</pre>
+        </li>
+        <li>键入以下内容（以粗体显示）来标注 <tt>getStatus</tt> 方法。
+        <pre class="examplecode"><b>@RolesAllowed({"USERS"})</b>
+public String getStatus() {</pre>
+        <p>此标注表示只有安全角色为 <tt>USERS</tt> 的用户才能访问 <tt>getStatus</tt> 方法。</p>
+        </li>
+        <li>在编辑器中右键单击并选择 "Fix Imports"（修复导入）（Alt-Shift-I 组合键；在 Mac 中为 ⌘-Shift-I 组合键），然后保存您的更改。确保 <tt>javax.annotation.security.RolesAllowed</tt> 已添加到该文件中。</li>
+    </ol>
+
+
+    <h3><a name="ex3c"></a>配置部署描述符</h3>
+    <p>Java EE 企业应用程序通常不需要部署描述符文件，如 <tt>ejb-jar.xml</tt>。如果展开 Secure-ejb 或 Secure 企业应用程序下面的 "Configuration Files"（配置文件）节点，则会看到没有部署描述符。您可以使用标注指定很多已在 <tt>ejb-jar.xml</tt> 中配置的属性。在本示例中，您通过在会话 Bean 中使用 <tt>@RolesAllowed</tt> 标注为 EJB 方法指定了安全角色。</p>
+
+    <p>不过，在为应用程序配置安全性时，仍然需要在部署描述符中指定一些属性。在本示例中，您需要将企业应用程序中使用的安全角色 (<tt>USERS</tt>) 映射到在应用服务器上配置的用户和组。您已在应用服务器上创建了 <tt>bank_users</tt> 组，现在需要将该组映射到企业应用程序中的安全角色 <tt>USERS</tt>。为此，可以编辑企业应用程序的 <tt>glassfish-application.xml</tt> 部署描述符。</p>
+      
+    <p>因为企业应用程序不需要部署描述符便可运行，所以 IDE 默认情况下不创建部署描述符。因此，首先需要创建部署描述符文件，然后在多视图编辑器中编辑该文件，以配置安全角色映射。</p>
+    <ol>
+        <li>右键单击 "Secure" 企业应用程序项目，然后选择 "New"（新建）> "Other"（其他），以打开新建文件向导。
+        <p>此外，也可以从主菜单中选择 "File"（文件）> "New File"（新建文件），以打开新建文件向导。在这种情况下，请确保在 "Project"（项目）下拉列表中选择了 "Secure" 项目。</p></li>
+        <li>选择 "GlassFish" 类别，然后再选择 "GlassFish Descriptor"（GlassFish 描述符）文件类型。单击 "Next"（下一步）。<br> <img alt="新建文件向导的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/new-gf-descriptor.png" title="新建文件向导中的 GlassFish 描述符文件类型" />
+        </li>
+        <li>接受该向导中的默认值，然后单击 "Finish"（完成）。
+        <p>单击 "Finish"（完成），此时 IDE 将创建 <tt>glassfish-application.xml</tt> 并在多视图编辑器中打开该文件。 <p>
+        <p>如果在 "Projects"（项目）窗口中展开 "Secure" 企业应用程序项目节点，则可以看到描述符文件在 "Configuration Files"（配置文件）节点的下方创建。</p>
+        <img alt="描述符多视图编辑器的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/glassfish-application-descriptor.png" title="多视图编辑器中的 &quot;Security&quot;（安全）标签" />
+        </li>
+        <li>在多视图编辑器的 "Security"（安全）标签中，单击 "Add Security Role Mapping"（添加安全角色映射），然后在 "Security Role Name"（安全角色名称）中键入 <b>USERS</b>。</li>
+        <li>单击 "Add Group"（添加组），然后在对话框的 "Group Name"（组名称）中键入 <b>bank_users</b>。单击 "OK"（确定）。
+            <p>编辑器现在应如下所示。</p>
+        <img alt="描述符多视图编辑器的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/security-tab-descriptor.png" title="多视图编辑器中的 &quot;Security&quot;（安全）标签" />
+        </li>
+        <li>保存所做的更改。</li>
+    </ol>
+    <p>通过单击多视图编辑器中的 "XML" 标签，可以在 XML 视图中查看部署描述符文件。您可以看到该部署描述符文件现在包含以下代码：</p>
+    <pre class="examplecode">&lt;glassfish-application&gt;
+  &lt;security-role-mapping&gt;
+    &lt;role-name&gt;USERS&lt;/role-name&gt;
+    &lt;group-name&gt;bank_users&lt;/group-name&gt;
+  &lt;/security-role-mapping&gt;
+&lt;/glassfish-application&gt;</pre>
+
+    <p><tt>getStatus</tt> 方法现在是安全的，只有在服务器上指定的 <tt>bank_users</tt> 组中的用户才能访问该方法。 </p>
+    
+    <p>现在，您需要一种安全设置测试方法。最简单的方法是，创建一个基本应用程序客户端，以提示用户输入用户名和口令。</p>
+          
+</div>
+
+    <a name="ex4"></a>
+    <h2>创建应用程序客户端</h2>
+    <p>在本部分中，将创建一个简单的应用程序客户端，以访问 <tt>AccountStatus</tt> 会话 Bean。您可以在代码中使用 <tt>@EJB</tt> 标注，以便通过远程接口调用 Bean。IDE 会将包含该接口的类库 JAR 自动添加到应用程序客户端的类路径中。</p>
+    <ol>
+        <li>选择 "File"（文件）> "New Project"（新建项目），然后在 "Java EE" 类别中选择 "Enterprise Application Client"（企业应用程序客户端）。单击 "Next"（下一步）。</li>
+        <li>键入 SecureAppClient 作为项目名称。单击 "Next"（下一步）。</li>
+        <li>在 "Add to Enterprise Application"（添加到企业应用程序）下拉列表中选择 <strong>&lt;None&gt;</strong>。</li>
+        <li>在 "Server"（服务器）下拉列表中选择 "GlassFish Server"，并选择 "Java EE 6" 或 "Java EE 7" 作为 Java EE 版本。单击 "Finish"（完成）。
+            <p>单击 "Finish"（完成），此时将在源代码编辑器中打开 <tt>Main.java</tt>。</p></li>
+        <li>在源代码编辑器中，右键单击 <tt>Main.java</tt> 文件，并选择 "Insert Code"（插入代码）（Alt-Insert 组合键；在 Mac 上为 Ctrl-I 组合键），然后选择 "Call Enterprise Bean"（调用企业 Bean）。</li>
+        <li>在 "Call Enterprise Bean"（调用企业 Bean）对话框中，展开 "Secure-ejb" 节点，然后选择 "AccountStatus"。单击 "OK"（确定）。<br> <img alt="&quot;Call Enterprise Bean&quot;（调用企业 Bean）对话框的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/call-enterprise-bean.png" title="&quot;Call Enterprise Bean&quot;（调用企业 Bean）对话框中选中了接口" />
+
+        <p>IDE 将在应用程序客户端中添加以下代码，用于查找会话 Bean。</p>
+        <pre class="examplecode">@EJB
+private static AccountStatusRemote accountStatus;</pre>
+        <p>如果在 "Projects"（项目）窗口中展开 "Libraries"（库）节点，则可以看到 IDE 已将 SecureRemoteInterface JAR 添加到了项目类路径中。</p>
+        </li>
+        <li>通过添加以下代码来修改 <tt>main</tt> 方法，然后保存所做的更改。
+        <pre class="examplecode">public static void main(String[] args) {
+    <b>System.out.println(accountStatus.getStatus());</b>
+}</pre>
+        </li>
+    </ol>
+
+  <p class="tips">有关应用程序客户端的详细信息，请参见<a href="entappclient.html">在 GlassFish Server 上创建和运行应用程序客户端</a>。</p>
+  
+    
+
+<h2><a name="ex5"></a>运行应用程序</h2>
+    <p>现在该应用程序已准备就绪。首先，将企业应用程序部署到服务器。部署企业应用程序之后，可以运行应用程序客户端，以测试该企业应用程序中的方法是否安全，以及用户角色映射是否正确。在运行应用程序客户端时，系统将提示您输入 <tt>bank_users</tt> 组中用户的用户名和口令。</p>
+    <ol>
+        <li>在 "Projects"（项目）窗口中右键单击 "Secure" 企业应用程序项目节点，然后选择 "Deploy"（部署）。
+        <p>在单击 "Deploy"（部署）后，IDE 将构建 EAR 文件，启动应用服务器（如果没有运行），并将该 EAR 文件部署到该服务器。</p>
+        </li>
+        <li>在 "Projects"（项目）窗口中右键单击 "SecureAppClient" 项目节点，然后选择 "Run"（运行）。此时将出现一个对话框，提示您输入用户名和口令。<br /> <img alt="&quot;Login&quot;（登录）窗口的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/javaee/secure-ejbs/login-window.png" title="提示输入用户名和口令的登录窗口" />
+      <li>在对话框中输入用户名 (<tt>manager</tt>) 和口令 (<tt>password</tt>)，然后单击 "OK"（确定）。"Output"（输出）窗口中将显示以下内容： 
+      <pre class="examplecode">The account contains 250$</pre></li>
+    </ol>
+
+    <p>这是一个非常基本的示例，用于说明如何使用 Java 标注保护企业 Bean 中的方法。</p>
+
+    <div class="feedback-box">
+        <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Building%20Secure%20Enterprise%20Beans">发送有关此教程的反馈意见</a>
+    </div>
+
+    <br style="clear:both;" />
+    <!-- ======================================================================================= -->
+    <h2><a name="nextsteps"></a>另请参见</h2>
+    <p>有关使用标注和部署描述符来确保企业 Bean 安全的更多信息，请参见以下资源：</p>
+    <ul>
+        <li>Java EE 7 教程的<a href="http://docs.oracle.com/javaee/7/tutorial/doc/partsecurity.htm">安全性</a>部分的<a href="http://docs.oracle.com/javaee/7/tutorial/doc/security-intro003.htm">确保容器的安全</a>和<a href="http://docs.oracle.com/javaee/7/tutorial/doc/security-advanced008.htm">使用部署描述符配置安全性</a>这两章</li>
+    </ul>
+
+    <p>有关使用 NetBeans IDE 开发 Java EE 应用程序的更多信息，请参见以下资源：</p>
+    <ul>
+        <li><a href="javaee-intro.html">Java EE 技术简介</a></li>
+        <li><a href="javaee-gettingstarted.html">Java EE 应用程序入门指南</a></li>
+        <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+    </ul>
+    <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee 邮件列表</a>。</p>
+    </body>
+</html>
+
+

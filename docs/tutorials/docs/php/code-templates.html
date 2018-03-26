@@ -1,0 +1,524 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><title>Code Templates in NetBeans IDE for PHP - Tutorial</title>
+
+
+
+
+
+        <meta name="KEYWORDS" content="NetBeans, tutorial, configure, PHP, PHP engine, guide, documentation, code template">
+        <meta name="DESCRIPTION" content="This document describes the PHP code templates available in NetBeans IDE, how to use them,
+              and some common use cases.">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script></head><body>
+
+        <!--
+        Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>Code Templates in NetBeans IDE for PHP</h1>
+
+        <p>Code
+            templates are prewritten snippets of code provided by NetBeans IDE. You
+            can paste a snippet into your code by using code completion or the
+            template's abbreviation followed by the Tab key. You can also surround
+            your code with appropriate PHP snippets. Finally, you can define your
+            own code templates. This tutorial shows how to use code templates and
+            suggests useful cases for defining your own code templates.</p>
+
+        <p><b>Contents</b></p>
+
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+        <ul class="toc">
+            <li><a href="#define">Defined PHP Code Templates</a></li>
+            <li><a href="#using-templates">Using PHP Code Templates</a>
+                <ul>
+                    <li><a href="#expand-with-abb">Expanding the code template by using the abbreviation + Tab</a></li>
+
+                    <li><a href="#expand-with-cc">Inserting the code template with code completion</a></li>
+                    <li><a href="#surround-code">Surrounding  code with a template</a></li>
+                    <li><a href="#edit-parameters">Editing parameters in expanded templates</a></li>
+                </ul>
+            </li>
+            <li><a href="#syntax">PHP Code Template Syntax</a>
+                <ul>
+                    <li><a href="#placeholder">Placeholder name</a></li>
+                    <li><a href="#reserved-name">Reserved names</a></li>
+                    <li><a href="#complex">Parameter defined by hints</a></li>
+                    
+                </ul>
+            </li>
+            <li><a href="#create">Creating Your Own Code Templates</a>
+                <ul>
+                    <li><a href="#uc-html">Use case: Inserting PHP into HTML</a> </li>
+                    <li><a href="#joomla">Use case: Joomla</a> </li>
+                    <li><a href="#mysql-conn">Use case: MySQL connection</a> </li>
+                    <li><a href="#z-action">Use case: Action in Zend controller</a> </li>
+                    <li><a href="#z-form-element">Use case: Zend form element</a> </li>
+                </ul>
+            </li>
+        </ul>
+
+        <p><b>To complete this tutorial, you need the following software and resources.</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a> </td>
+                    <td class="tbltd1">PHP download bundle</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a target="_blank" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a> </td>
+                    <td class="tbltd1">7 or 8</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>&nbsp;</p>
+
+
+        <h2><a name="define"></a>Defined PHP Code Templates</h2>
+        <p>To
+            view the code templates that are defined in NetBeans, open Tools &gt;
+            Options (NetBeans &gt; Preferences on Mac), select the Editor features,
+            and select the Code Templates tab. To see the PHP code templates,
+            select PHP in the Languages drop-down list. A table appears of code
+            template abbreviations and expanded texts. If you select a code
+            template in the table, its expanded text appears in the Expanded Text
+            tab. </p>
+        <img src="../../../images_www/articles/72/php/code-templates/code-template-options.png" class="margin-around" alt="PHP code templates in the Options window, with the cli template selected" height="613" width="597">
+        <p>In this image the new class (<tt>cls)</tt>
+            code template is selected, and in the Expanded Text tab you see what
+            the template looks like when it's expanded. In the next section, you
+            use the Tab function to expand this template in your code.</p>
+        <p class="notes"><strong>Note:</strong> The syntax of the new class (<tt>cls</tt>) code template is explored in the section <a href="#syntax">PHP Code Template Syntax</a>.</p>
+        <h2><a name="using-templates"></a>Using PHP Code Templates</h2>
+        <p>There
+            are three ways to insert code templates in your PHP code. Each way of
+            inserting code templates is useful in different situations. The three
+            ways to insert code templates are:</p>
+        <ul>
+            <li><a href="#expand-with-abb">Expand the template</a> by using the template abbreviation followed by the Tab key (or a different key or key combo that you define).</li>
+            <li><a href="#expand-with-cc">Insert the expanded template</a> by using code completion.</li>
+            <li><a href="#surround-code">Surround your code</a> with the template, by using the margin hint or Alt-Enter.</li>
+        </ul>
+        <p>After you insert the template, the IDE helps you <a href="#edit-parameters">edit parameters</a> in the expanded template code.</p>
+        <div class="indent">
+            <h3><a name="expand-with-abb"></a>Expanding the code template by using the abbreviation + Tab</h3>
+            <p>Look
+                again at the Code Templates tab in the Options dialog. At the bottom
+                there is a drop-down field for selecting the Expand Template On
+                key-combo. This is the key-combo you press after typing in the code
+                template's abbreviation in order to expand the code template. By
+                default the Tab key is selected but you can select other combos instead.</p><img src="../../../images_www/articles/72/php/code-templates/expand-template-on.png" alt="Expand Template On drop-down box" class="margin-around" height="94" width="208">
+            <p>The rest of this section assumes that you have the default Tab key selected in the Expand Template on: field.</p>
+            <p class="tips">When
+                the abbreviation for a template is also part of a keyword for code
+                completion, it may be difficult to expand the abbreviation. In this
+                case it is easier for you to use <a href="#expand-with-cc">code completion</a> to insert the template.</p>
+            <p><strong>To expand the new class code template using its abbreviation + Tab:</strong></p>
+            <ol>
+                <li>Create an empty PHP file.</li>
+                <li>In the PHP block of that file, type <tt>cls</tt> and press Tab. The <tt>cls</tt> code template expands.
+                    <p class="alert"><b>Caution:</b> Spell the abbreviation correctly! Expansion does not work if you misspell the abbreviation. </p><img src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png" class="margin-around" alt="Expanding a code template" border="1" height="166" width="586"></li>
+                <li>The placeholder class name (<tt><strong>class_name</strong></tt>)
+                    is selected automatically. You can move between placeholders by pressing Tab. You can immediately type the name you want
+                    for the class and this name overwrites the placeholder. Press Enter
+                    when you are done and the IDE selects the name of the first function,
+                    which in this case is the constructor. 
+                  <p class="notes"><strong>Note: </strong>Placeholder names are discussed in more detail in the <a href="#placeholder">Placeholder name section</a>.</p>
+                    <img src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png" alt="Constructor function name selected after class name edited" class="margin-around" border="1" height="120" width="233"></li>
+              <li>Edit
+                    the function name or accept the default. Press Enter again, and the
+                    cursor moves to the inside of the function's body. In a real world
+                    scenario, you would now start coding the function and the rest of the
+                    class. <p class="notes">The final position of the cursor is determined by the <tt>${cursor}</tt> parameter. This parameter is described in the section <a href="#reserved-name">Reserved names</a>.
+                    </p></li></ol>
+          <h3><a name="expand-with-cc"></a>Inserting the code template with code completion</h3>
+
+
+            <p>To insert a code template by using code completion, type the beginning of the expanded snippet (<em>not</em> the template abbreviation). The code completion  dialog opens, showing you the snippet.</p>
+            <p><strong>To insert the new class code template using code completion:</strong></p>
+            <ol>
+                <li>In the PHP block of a PHP file, type <tt>cla</tt>.</li>
+                <li>Wait for the code completion dialog to open.</li>
+                <li>Locate the new class template, which is listed with its abbreviation (<tt>cls</tt>). The PHPDoc frame shows the  expanded template.<br>
+                    <img src="../../../images_www/articles/72/php/code-templates/insert-template-with-cc.png" alt="Code completion dialog showing new class template" class="margin-around" border="1" height="397" width="483"></li>
+                <li>Select the new class template and press Enter. The IDE inserts it into your code.</li>
+                <li>The placeholder class name (<tt><strong>class_name</strong></tt>)
+                    is selected automatically. You can move between placeholders by pressing Tab. You can immediately type the name you want
+                    for the class and this name overwrites the placeholder. Press Enter
+                    when you are done and the IDE selects the name of the first function,
+                    which in this case is the constructor.<br>
+                    <img src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png" alt="Constructor function name selected after class name edited" class="margin-around" border="1" height="120" width="233"></li>
+                <li>Edit
+                    the function name or accept the default. Press Enter again, and the
+                    cursor moves to the inside of the function's body. In a real world
+                    scenario, you would now start coding the function and the rest of the
+                    class.</li>
+            </ol>
+            <h3><a name="surround-code"></a>Surrounding  code with a template</h3>
+            <p>You can surround your code with the following PHP templates:</p>
+            <ul>
+                <li><tt>while</tt></li>
+                <li><tt>do</tt><br>
+                </li>
+                <li><tt>switch</tt></li>
+                <li><tt>if</tt> / <tt>elseif</tt></li>
+                <li><tt>try</tt> &amp; <tt>catch</tt></li>
+                <li><tt>foreach</tt></li>
+                <li><tt>for</tt></li>
+                <li><tt>ob_start</tt> &amp; <tt>ob_end_clean</tt></li>
+            </ul>
+            <p>In addition, you can <a href="#create">create a new template</a> that
+                can surround code if the template includes the 
+                <code>allowSurround</code> <a href="#complex">parameter hint</a>. (Hat tip to the 
+                <a href="http://www.mybelovedphp.com/2012/05/14/tips-for-using-the-netbeans-editor-for-kohana-and-kostache-mustache-templates-using-surround-with/">
+                    My Beloved PHP blog</a>.)</p>
+            <p>To
+                surround code with a template, select the code and open the Surround
+                with... dialog. To open the Surround with... dialog, either press
+                Alt-Enter or click the Hint <img src="../../../images_www/articles/72/php/code-templates/hint-icon.png" alt="Hint icon" height="19" width="14"> icon. </p>
+            <p><strong>To surround code with an if(true) template:</strong></p>
+            <ol>
+                <li>Create a PHP block with the variables <tt>$a = true</tt> and <tt>$b = 10</tt>.
+                    <pre class="examplecode">&lt;?php<br>$a = false;<br>        <br>$b = 10;<br>?&gt;</pre>
+                </li>
+                <li>Select the line <tt>$b = 10;</tt><br>
+                    <img src="../../../images_www/articles/72/php/code-templates/selected-variable.png" alt="Selected variable $b = 10" class="margin-around" border="1" height="82" width="196">
+                </li>
+                <li>Click the Hint <img src="../../../images_www/articles/72/php/code-templates/hint-icon.png" alt="Hint icon" height="19" width="14"> icon or press Alt-Enter. The Surround with... dialog opens.<br>
+                    <img src="../../../images_www/articles/72/php/code-templates/surround-hint.png" alt="Open surround-with dialog" class="margin-around" height="382" width="530"></li>
+                <li>Click<tt> Surround with if{<strong>true</strong>){...</tt><br>
+                    <img src="../../../images_www/articles/72/php/code-templates/surround-if-true.png" alt="Surround-with dialog with Surround with if(true) selected" class="margin-around" height="333" width="480"></li>
+                <li>The IDE surrounds the line <tt>$b = 10;</tt> with an <tt>if(<strong>true</strong>){... </tt>template.<br>
+                    <img src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png" alt="Inserted if (true) template" class="margin-around" border="1" height="116" width="212"></li>
+            </ol>
+            <p>The IDE automatically inserts the nearest preceding suitable variable  as the <tt>if</tt> statement's condition. In this case, that variable is <tt>$a</tt>, because <tt>$a</tt> is a boolean and the <tt>if(<strong>true</strong>){} </tt>statement
+                takes a boolean variable as its condition. Furthermore, the condition
+                is automatically selected for editing, in case the variable that the
+                IDE inserts into the condition is not the correct variable. This means
+                you can begin typing the correct variable immediately after the
+                template is inserted. Code completion can help you select the correct
+                variable in this case.</p>
+            <p class="notes"><strong>Note: </strong>The <tt>if(<strong>true</strong>){}</tt> template is described in detail in the section <a href="#complex">Parameter defined by hints</a>.</p>
+            <p><img src="../../../images_www/articles/72/php/code-templates/change-condition.png" alt="Selecting the variable to use as a condition, from code completion" class="margin-around" border="1" height="162" width="438">        </p>
+            <p>Press
+                Enter to exit the statement's condition. The cursor moves to the
+                appropriate location, which in this case is the end of the line <tt>$b = 10;</tt>.
+                You can edit the condition and press Enter or accept the automatically
+                inserted condition and press Enter. In either case the cursor exits the
+                condition and moves to the appropriate location.</p>
+            <p><img src="../../../images_www/articles/72/php/code-templates/cursor-after-not-editing.png" alt="Cursor after not editing" class="margin-around" height="138" width="212"><img src="../../../images_www/articles/72/php/code-templates/cursor-after-editing.png" alt="Cursor after editing" class="margin-around" height="184" width="215">        </p>
+            <p>The next section contains more details about editing the parameters in expanded templates.</p>
+            <h3><a name="edit-parameters"></a>Editing parameters in expanded templates</h3>
+            <p>In the
+                sections on inserting templates into your code, you saw how the IDE
+                automatically selected the class name for editing when you expandede
+                the new class template, and how the IDE automatically selected the
+                condition name for editing when you expanded the <tt>if(<strong>true</strong>)</tt> template. Now you will see some more ways the IDE helps you edit parameters in expanded templates.</p>
+            <p><strong>To simultaneously edit multiple instances of a parameter:</strong></p>
+            <ol>
+                <li>In an empty PHP block, type <tt>for</tt> and press Ctrl-Space to open code completion. Select the iteration template (abbreviation <tt>iter</tt>) and press Enter. A new iteration is inserted into your code.<br>
+                    <img src="../../../images_www/articles/72/php/code-templates/iter-cc.png" alt="Code completion showing iteration template selected" class="margin-around" height="335" width="600"></li>
+                <li>The iteration has two variables as parameters, <tt>$index</tt> and <tt>$array</tt>. <tt>$index</tt> is selected automatically for editing. (Pressing Tab moves between parameters.)<br>
+              <img src="../../../images_www/articles/72/php/code-templates/iteration1.png" alt="Inserted iteration line with parameters, with $index parameter selected for editing" class="valign-bottom" height="22" width="420"> <p>Type <tt>i</tt>. All three instances of <tt>$index</tt> change to <tt>$i</tt>. </p><img src="../../../images_www/articles/72/php/code-templates/iteration2.png" alt="Inserted iteration line with parameter $index changed to $i" height="18" width="322"></li>
+              <li>Press Enter or Tab. The parameter <tt>$array</tt> is selected. </li>
+                <li>Press Enter. The cursor enters the method body of the iteration. </li>
+            </ol>
+            <p>The
+                variable name refactoring feature in NetBeans enables you to change all
+                instances of a variable name by editing only one instance. You see here
+                how this is helpful when applied to template parameters.</p>
+            <p>The NetBeans IDE PHP editor also helps identify the correct method for variables.</p>
+            <p><strong>To associate a variable in a template with the correct method:</strong></p>
+            <ol>
+                <li>In an empty PHP block, type the follwing code:
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>?&gt;</pre></li>
+                <li>After the line declaring the <tt>$arr</tt> array, type <tt>fore</tt> and use code completion to insert the<tt> foreach</tt> template (abbreviation: <tt>fore</tt>).<br>
+                    <img src="../../../images_www/articles/72/php/code-templates/cc-foreach.png" alt="Code completion for inserting the foreach template" class="margin-around" height="283" width="590"></li>
+                <li>Place the cursor in the body of the <tt>foreach</tt> function (you can press Enter twice to move the cursor there) and type <tt>$value</tt>, or only type <tt>$</tt> and select <tt>$value</tt> from code completion.
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>foreach ($arr as $value) {<br>    $value<br>}<br><br>?&gt;</pre></li>
+                <li>After <tt>$value</tt>, type <tt>-&gt;</tt>. Code completion offers you the correct methods for the <tt>$value</tt> variable, which is derived from the array <tt>$arr</tt>.<br>
+                    <img src="../../../images_www/articles/72/php/code-templates/value-method-cc.png" alt="Code completion for the $value variable, where $value is an Array Iterator method" class="margin-around" border="1" height="424" width="527"></li>
+            </ol>
+        </div>
+
+        <h2><a name="syntax"></a>PHP Code Template Syntax</h2>
+        <p>NetBeans IDE provides code
+            templates for all the languages it supports. Some of the syntax is
+            general for all languages. Other syntax is specific to a language. In
+            this section, you see the most relevant general template syntax and the
+            syntax specific to PHP templates.</p>
+        <p>A PHP code template can
+            contain PHP code and template parameters. A PHP template may consist of
+            only PHP code, only parameters, or both code and parameters. </p>
+        <p>The syntax of a code template parameter is a dollar sign, <tt>$</tt>, followed by the parameter's definition between curly brackets <tt>{...}</tt>. Within this syntax, template parameters have one of four forms:</p>
+        <ul>
+            <li>An arbitrary <a href="#placeholder">placeholder name</a>, such as <tt>${SomeName}</tt></li>
+            <li>A <a href="#reserved-name">reserved name</a> that gives processing instructions to the IDE</li>
+            <li>A descriptive parameter name and a set of <a href="#complex">hints that define the parameter</a></li>
+            <li><a href="#pre-defined">Pre-defined parameters</a>.
+            </li>
+
+        </ul>
+        <p>The following sections discuss each form of a code template parameter.</p>
+        <p class="notes"><strong>Note:</strong> <tt>$$${VARIABLE...} </tt>Sometimes you see a PHP code template where the syntax seems to be three dollar signs followed by curly brackets <tt>$$${...}</tt>.
+            In this case, the code template includes a variable and its name. The
+            syntax here is an escaped dollar sign, written as a double dollar sign <tt>$$</tt>, followed by a parameter for the variable name, <tt>${VARIABLE...}</tt>.  For example, the code template <tt>catch ${Exception} $$${exc}</tt> is expanded as <span class="examplecode"><tt>catch Exception $exc</tt></span>.</p>
+        <div class="indent">
+            <h3><a name="placeholder"></a>Placeholder  name</h3><br>
+            <p>In the simplest
+                case, a code template parameter is an arbitrary placeholder value. When
+                the template is expanded, the IDE selects this placeholder name for
+                editing.</p><br>
+            <p>For example, consider the new class template <tt>(cls)</tt> that this tutorial shows in the sections <a href="#define">Defined PHP Templates</a> and <a href="#expand-with-abb">Expanding the code template by using the abbreviation + Tab</a>. The expanded text of the new class template begins <tt>class ${className}</tt>. Here, the word <tt>class</tt> is PHP code and  <tt>${className}</tt>
+                is a parameter. This parameter is only an arbitrary placeholder value
+                for the name of the class. When the IDE expands the template, <tt>${className}</tt> becomes <tt><strong>class_name</strong></tt>. The IDE expects that <tt><strong>class_name</strong></tt> is only a placeholder value and automatically selects this value for you to edit.</p>
+
+            <img src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png" class="margin-around" alt="Expanding a code template" border="1" height="166" width="586">
+            <h3><a name="reserved-name"></a>Reserved names</h3>
+            <p>The IDE reserves two parameter names for use as operating instructions.</p>
+            <ul><li><tt>${cursor}</tt> defines the location of the cursor after you finish editing all automatically selected values in the expanded template.</li>
+                <li><tt>${selection}</tt>
+                    defines a position for pasting the content of the editor selection.
+                    This is used by so-called 'selection templates' that appear as hints
+                    whenever the user selects text in the editor. If a template includes <tt>${selection}</tt>, it usually refers to the same location as <tt>${cursor}</tt>.</li></ul>
+            <p>For example, again consider the new class template <tt>(cls)</tt> that this tutorial shows in the sections <a href="#define">Defined PHP Templates</a> and <a href="#expand-with-abb">Expanding the code template by using the abbreviation + Tab</a>. It contains two placeholder name parameters, <tt>${ClassName}</tt> and <tt>$__construct</tt>. In the function body, it has the parameters <tt>${cursor}</tt> and <tt>${selection}</tt>.</p>
+
+            <pre class="examplecode">class ${ClassName} {<br><br>    function ${__construct} {<br>        ${selection}${cursor}<br><br>    }<br><br>}</pre>
+            <p>After the template expands, the placeholder <tt><strong>class_name</strong></tt> is selected automatically (1). Press Enter, and the placeholder <tt><strong>__construct</strong></tt>
+                is selected automatically (2). There are no other values to edit. Press
+                Enter again, and the cursor moves to the location indicated by <tt>${cursor}</tt> in the template's text (3).</p>
+
+            <p><img src="../../../images_www/articles/72/php/code-templates/cursor-position-changes.png" alt="Three code snippets showing cursor position change from placeholder name to placeholder name to ${cursor} position" class="margin-around" height="104" width="600"></p>
+            <h3><a name="complex"></a>Parameter defined by hints</h3><br>
+            <p>Parameters can consist of an arbitrary, descriptive name in ALL-CAPS and one or more hints. </p>
+            
+            <pre class="examplecode">${PARAMETER_NAME hint1[=value] [hint2...hint n]}</pre>
+            <p>The name does not appear
+                anywhere in the code. However, it is useful if you want to use the
+                parameter more than once in a code template. You only have to define
+                the parameter the first time, and can refer to it by name all
+                subsequent times. For example, in the following code template the
+                parameter <tt>${CONLINK}</tt> is defined only the first time but is referred by its name two more times.</p><br>
+            <pre class="examplecode"><a name="complex"></a>$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre><br>
+            <p>Hints help the IDE
+                to compute the value of the template parameter when the IDE expands the
+                code template. For example, look at the <tt>if(<strong>true</strong>)</tt> template, which is used in this tutorial in the section on <a href="#surround-code">surrounding your code with a template</a>. The expanded text of this template is</p>
+            <pre class="examplecode">if (${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}) {<br>    ${selection}${cursor}<br>}</pre>
+            <p>Examine the parameter <tt>${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}</tt>. This parameter sets the condition of the <tt>if</tt> statement. Therefore the parameter is named CONDITION. The first hint is <tt>variableFromPreviousAssignment</tt> and the second hint is <tt>instanceof="boolean"</tt>.
+                Together, these two hints tell the IDE to look for the closest boolean
+                variable that is assigned in the code previous to the code template.
+                Add the third hint, <tt>default="true"</tt>, and the parameter sets the condition as "if the closest previous boolean variable's value is true." </p>
+
+            <p>For example, when the line <tt>$b = 10</tt> in the following code snippet is surrounded by an<tt> if(<strong>true</strong>) </tt>code template...</p>
+            <p><img src="../../../images_www/articles/72/php/code-templates/selected-variable.png" alt="Snippet $a = false $b = 10" class="margin-around" border="1" height="82" width="196"></p>
+            <p>...the IDE looks for the closest boolean variable that was assigned previously, finds <tt>$a</tt>, and generates an <tt>if</tt> statement with the condition <tt>$a</tt>[=true]. The condition is automatically selected for editing, so the PHP programmer can change <tt>$a</tt> to another variable or to <tt>!$a</tt>.</p>
+
+            <p><img src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png" alt="Expanded template if $a=true then $b=10, with condition $a=true selected for editing" class="margin-around" border="1" height="116" width="212"></p>
+            <p>The following table lists the hints used in PHP code templates and descriptions of the hints.</p>
+            <table>
+
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Hint</th>
+                        <th class="tblheader" scope="col">Description</th>
+
+                    </tr>
+                    <tr>
+                        <td><tt>newVarName</tt></td>
+                        <td> The parameter value should be a 'fresh' unused variable name. Usually used with <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+
+                        <td><tt>default=""</tt></td>
+                        <td>The default value of the parameter.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>instanceof=""</tt></td>
+                        <td>Type of PHP variable defined in the parameter.</td>
+                    </tr>
+
+                    <tr>
+                        <td><tt>variableFromPreviousAssignment</tt></td>
+                        <td>The parameter value is the closest previously assigned variable. Usually used with <tt>instanceof </tt>and <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentName</tt></td>
+
+                        <td>The parameter value is the name of the closest variable assigned after the code template. Usually used with <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentType</tt></td>
+                        <td>The parameter value is the type of the closest variable assigned after the code template. Usually used with <tt>default</tt>.</td>
+
+                    </tr>
+                    <tr>
+                        <td><tt>editable=false</tt></td>
+                        <td>The parameter value cannot be edited after the template is expanded.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>allowSurround</tt></td>
+                        <td>Allows the template to be used to <a href="#surround-code">surround code</a>.</td>
+                    </tr>
+                </tbody>
+            </table>
+       </div>
+        <h2><a name="create"></a>Creating Your Own Code Templates</h2>
+        <p>You can create your own
+            code templates in NetBeans IDE. This section tells you how to create
+            code templates, explores their syntax, and suggests some useful
+            templates to create.</p>
+        <p><strong>To create a code template:</strong></p>
+        <ol>
+            <li>Open Tools &gt; Options (NetBeans &gt; Preferences on Mac), select the Editor features, and select the Code Templates tab. <br>
+                <img src="../../../images_www/articles/72/php/code-templates/code-template-options.png" class="margin-around" alt="PHP code templates in the Options window, with the cli template selected" height="613" width="597"></li>
+            <li>Click New to open the New Code Template
+                dialog box. Type in the abbreviation you want for the template and
+                click OK. <br>
+                <img src="../../../images_www/articles/72/php/code-templates/new-abb.png" alt="New Code Template dialog asking for template abbreviation" class="margin-around" height="118" width="304"></li>
+            <li>A new row is added to
+                the table of code templates. This row contains only the abbreviation
+                you provided. The cursor is in the Expanded Text tab, where the IDE
+                placed the cursor automatically. You can begin typing the template's
+                code immediately. <p class="notes"><b>Note: </b>To learn about the syntax of the code template's expanded text, see the section <a href="#syntax">PHP Code Template Syntax.</a></p>
+                <img src="../../../images_www/articles/72/php/code-templates/new-abb-text.png" alt="Typing the expanded text of the new abb template" class="margin-around" height="609" width="608"></li>
+        </ol>
+        <p>The
+            following sections describe some use cases for creating your own PHP
+            code templates. If you have any further use cases to suggest, please
+            share them with the community at the <a target="_blank" href="http://forums.netbeans.org/php-users.html">PHP Users' Forum.</a></p>
+        <div class="indent">
+            <h3><a name="uc-html"></a>Use case: Inserting PHP into HTML</h3>
+            <p>If you frequently insert
+                PHP snippets into a block of HTML, you can create an HTML code template
+                that inserts the PHP without you typing <tt>&lt;?php ?&gt;</tt> again and again.</p>
+            <p>The following code template inserts a PHP <tt>echo</tt> statement into HTML.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Language:</th>
+                        <td>HTML</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abbreviation:</th>
+                        <td>php</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Expanded text:</th>
+                        <td><pre>&lt;?php echo ${cursor}&nbsp;  ?&gt;</pre></td>
+                    </tr>
+
+                </tbody></table>
+            <p><img src="../../../images_www/articles/72/php/code-templates/uc-php.png" alt="Options window showing new php in html template" class="margin-around" height="565" width="600"></p>
+            <h3><a name="joomla"></a>Use case: Joomla</h3>
+            <p>Code templates can help
+                you use PHP frameworks in NetBeans IDE, especially frameworks that do
+                not have built-in support. Here is a code template one user developed
+                to use with Joomla.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Language:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abbreviation:</th>
+                        <td>joomdef</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Expanded text:</th>
+                        <td><pre class="examplecode">defined('_JEXEC')<br>   	or die('Restricted access');<br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img src="../../../images_www/articles/72/php/code-templates/uc-joomdef.png" alt="Options dialog with new joomdef code template" class="margin-around" height="569" width="600"></p>
+            <h3><a name="mysql-conn"></a>Use case: MySQL connection</h3>
+            <p>PHP developers
+                often need to create a connection to a MySQL database. This code
+                template creates one for you. The variable assigned to the MySQL
+                connection has the placeholder name<tt> link</tt>. Note the use of the "triple" dollar sign <tt>$$$</tt>--really
+                a double dollar sign, which produces a single dollar sign when
+                expanded, followed by the parameter for the variable name.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Language:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abbreviation:</th>
+                        <td>my_con</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Expanded text:</th>
+                        <td><pre class="examplecode">$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img src="../../../images_www/articles/72/php/code-templates/uc-mycon.png" alt="New code template for MySQL connection" class="margin-around" height="569" width="600"></p>
+            <h3><a name="z-action"></a>Use case: Action in Zend controller</h3>
+            <p>Rather than use the
+                NetBeans wizard for creating an action, you can use a code template to
+                insert an action in a Zend Framework controller, such as <tt>indexController{}</tt>.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Language:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abbreviation:</th>
+                        <td>zf_act</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Expanded text:</th>
+                        <td><pre class="examplecode">public function ${functionName}Action () {<br>      ${selection}${cursor}  <br>}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img src="../../../images_www/articles/72/php/code-templates/uc-zfact.png" alt="New Zend action code template" class="margin-around" height="569" width="600"></p>
+            <h3><a name="z-form-element"></a>Use case: Zend form element</h3>
+            <p>This template inserts an element into a Zend form. Use it after you generate a form by calling the Zend <tt>create form &lt;name&gt;</tt> command.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Language:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abbreviation:</th>
+                        <td>zf_element</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Expanded text:</th>
+                        <td><pre class="examplecode">$$${ELEMENT newVarName default="element"} = new Zend_Form_Element_Submit('submit', array('label' =&gt; 'Send data to server'));  <br>$$this-&gt;addElement($$${ELEMENT});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <img src="../../../images_www/articles/72/php/code-templates/uc-zelement.png" alt="New code template for Zend Framework elements to insert in ZF forms" class="margin-around" height="605" width="597">
+        </div>
+        <p>&nbsp;</p>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Code%20Templates">Send Feedback on This Tutorial</a></div>
+        <p><br style="clear: both;">
+
+
+        </p>
+        <h2><a name="seeAlso"></a>See Also</h2>
+
+        <p>For more information about PHP technology on <a target="_blank" href="https://netbeans.org/">netbeans.org</a>,
+            see the following resources:</p>
+
+        <ul>
+            <li><a href="../java/editor-codereference.html">Code
+                    Assistance in the NetBeans IDE Java Editor</a>. A reference guide to
+                NetBeans IDE code assistance, including code templates and macro
+                recording.</li>
+            <li><a target="_blank" href="http://forums.netbeans.org/php-users.html">NetBeans PHP Users Forum</a></li>
+            <li><a target="_blank" href="http://blogs.oracle.com/netbeansphp/">NetBeans
+                    for PHP Blog</a>. A blog written by the developers of the NetBeans PHP
+                editor. The best place to discover the latest features and improvements.</li>
+        </ul>
+
+        <p>To send comments and suggestions, get support, and keep informed on the latest
+            developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+                the users@php.netbeans.org mailing list.</a></p>
+
+    </body></html>

@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Creating a Database Driven Application With PHP. Implementing Security. Logon</title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Implementing Security. Logon" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+       <h1>Creating a Database Driven Application With PHP </h1>
+       <h1>Lesson 5: Adding Security. Implementing Application User Logon</h1>
+       <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Tutorial contents:</h4>
+<ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Creating a Database Driven Application With PHP - Main page</a></li>
+    <li><p>Creating the Database</p> <ol type="a"><li><a href="wish-list-lesson1.html">Creating a MySQL Database</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Creating Oracle Database Tables</a></li>
+    </ol></li>
+    <li><a href="wish-list-lesson2.html">Designing the Application. Reading from the Database
+    </a></li>
+    <li><a href="wish-list-lesson3.html">Creating a New Application User</a></li>
+    <li><a href="wish-list-lesson4.html"> Optimizing the Code</a></li>
+    <li>
+      <p><b>=&gt; Adding Security. Implementing Application User Logon</b></p>
+      <ul>
+		<li><a href="#previousLessonSourceCode">Application Source Code from the Previous Lesson</a></li>
+		<li><a href="#savingWisherIDInSessionUponCreation">Saving the Wisher's ID in the Session Upon Creation</a></li>
+		<li><a href="#validateWisherLogon">Validating User Logon</a>
+		  <ul>
+		<li><a href="#retrievingUserNameFromSession">Retrieving the wisher's name from the Session</a></li>
+		<li><a href="#redirectingNotLoggedInUserToIndexPage">Redirecting a User Who Is Not Logged In</a></li>
+		</ul>
+		</li>
+		<li><a href="#logonFromIndexPage">Logging In from the index.php Page</a>
+		  <ul>
+		<li><a href="#logonForm">HTML Form for Logon on index.php</a></li>
+		<li><a href="#logonValidation">Logon Validation</a></li>
+		<li><a href="#verifyWisherCredentials">Function verify_wisher_credentials</a></li>
+		
+		 <li><a href="#displayErrorMessage">Displaying Error Messages</a></li>
+		</ul>
+		</li>
+		<li><a href="#testingLogonFromIndexPage">Testing the Logon from the index.php Page</a></li>
+		<li><a href="#lessonResultSourceCode">Application Source Code after the Current Lesson Is Completed</a></li>
+   </ul></li>
+    <li><a href="wish-list-lesson6.html">Adding a New Wish to the Database</a></li>
+    <li><a href="wish-list-lesson7.html">Updating and Deleting Entries in the Database</a></li>
+    <li><a href="wish-list-lesson8.html">Making the Application Look Better Using the CSS Technology</a></li>
+    <li><a href="wish-list-lesson9.html">Deploying the Application on a Remote Web Server</a></li>
+</ol>
+</div>
+</div>
+       <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+   <p>In this lesson you  implement the logon functionality for a wisher. This  affects 
+       the following files: </p>
+       <ul>
+         <li style="margin-left:40em"><tt>index.php</tt></li>
+         <li style="margin-left:40em"><tt>createNewWisher.php</tt></li>
+         <li style="margin-left:40em"><tt>editWishlist.php</tt></li>
+         <li style="margin-left:40em"><tt>db.php</tt></li>
+       </ul>
+       Implementing the logon functionality consists of the following steps:
+       <ol>
+         <li style="margin-left:40em"><a href="#savingWisherIDInSessionUponCreation">Saving the wisher's ID in the Session upon the creation of a wisher</a></li>
+         <li style="margin-left:40em"><a href="#validateWisherLogon">Validating that the user who attempts to edit a wish list is logged in</a></li>
+         <li style="margin-left:40em"><a href="#logonFromIndexPage">Logging on wisher  from the index.php page</a></li>
+       </ol>
+   <p>The current document is a part of the Creating a CRUD Application in the NetBeans IDE for PHP tutorial. </p>
+       <br style="clear:left">
+
+   <h2><a name="previousLessonSourceCode"></a>Application Source Code from the Previous Lesson</h2>
+<p>MySQL users: Click <a target="_blank" href="https://netbeans.org/files/documents/4/1930/lesson4.zip">here</a> to download the source code that reflects the project state after the previous lesson is completed. </p>
+<p>Oracle Database users: Click <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson4.zip"> here</a> to download the source code that reflects the project state after the previous lesson is completed.</p>
+<h2><a name="savingWisherIDInSessionUponCreation" id="savingWisherIDInSessionUponCreation"></a>Saving the Wisher's ID in the Session Upon Creation</h2>
+        <p>A <a target="_blank" href="http://us2.php.net/manual/en/ref.session.php">Session</a> is persistent storage for transferring information from one page to another without 
+        using an <a href="wish-list-lesson5.html#htmlForm">HTML input form</a>. This functionality is supported through the predefined PHP array <tt>$_SESSION</tt>. </p>
+   <p>For the sake of security, after a new wisher is created he should be logged on automatically without filling in a form. 
+          Therefore you need  to modify the <tt>createNewWisher.php</tt> file to implement the following functionality:</p>
+<ul>
+          <li>Add a new wisher to the database.</li>
+  <li>Open a  session.  </li>
+  <li>Store the  wisher's name in the session.</li>
+		  <li>Transfer the wisher's name in the session when the wisher is redirected to the <tt>editWishList.php</tt> page. </li>
+   </ul>
+       In the <tt>createNewWisher.php</tt> file, locate the line:
+<pre class="examplecode">WishDB::getInstance()-&gt;create_wisher($_POST[&quot;user&quot;], $_POST[&quot;password&quot;]);</pre> 
+	   and enter the following code block right below: 
+<pre class="examplecode">session_start();
+$_SESSION['user'] = $_POST['user'];</pre>
+		The code block starts a session, which means opening the <tt>$_SESSION</tt> array for entering or retrieving data. Then the code adds an element to the <tt>$_SESSION</tt> array. The added element contains a value and an identifier (key). The value is the name of the newly created wishers and the identifier is &quot;user&quot;. Then the program redirects the wisher to the <tt>editWishList.php</tt> page.
+        <h2><a name="validateWisherLogon" id="validateWisherLogon"></a>Validating User Logon </h2>
+        <p>When a user reaches the <tt>editWishList.php</tt> page the application should confirm that the page is accessed by the same person who was just registered on the <tt>createNewWisher.php</tt> page. </p>
+   <p>Implementing this functionality consists of two steps:
+        </p>
+        <ul>
+            <li><a href="#retrievingUserNameFromSession">Retrieving the wisher's name from the Session</a></li>
+            <li><a href="#redirectingNotLoggedInUserToIndexPage">Redirecting the user to the index.php if retrieving the wisher's name from the Session failed</a></li>
+        </ul>
+        <div class="indent">
+        <h3><a name="retrievingUserNameFromSession" id="retrievingUserNameFromSession"></a>Retrieving the Wisher's Name from the Session</h3>
+        Replace the default code in the PHP block of  <tt>editWishList.php</tt> with the following:
+        <pre class="examplecode">session_start();
+if (array_key_exists("user", $_SESSION)) {
+    echo "Hello " . $_SESSION['user'];
+}</pre>
+	    <p>The code block	opens the <tt>$_SESSION</tt> array for retrieving data and verifies that  <tt>$_SESSION</tt> contains an element with the identifier &quot;user&quot;. If the check is successful, the code prints a welcome message.  </p>
+	    To check that the session is implemented correctly:
+	    <ol>
+	      <li>	      Run the <tt>createNewWisher.php</tt> file and create a new wisher, for example Jack.<br>
+          The <tt>editWishList.php</tt> opens with Hello Jack. </li>
+          <li>Clear session cookies in your browser or end the session  and run <tt>editWishList.php</tt>  from the IDE.<br>
+	       The <tt>editWishList.php</tt> file opens with  Hello because no user has been transferred through a session.  
+	         This is not correct because it  	enables someone who is not logged in and not registered to create or  	edit a wish list.  In order to avoid this, the user needs to be  	redirected to the <tt>index.php</tt> page.</li>
+	    </ol>
+	    <h3><a name="redirectingNotLoggedInUserToIndexPage" id="redirectingNotLoggedInUserToIndexPage"></a>Redirecting a User Who Is Not Logged In </h3>
+        Add the following code block to  <tt>editWishList.php</tt>, below the <tt>if</tt> clause:
+        <pre class="examplecode">else {
+   header('Location: index.php');
+   exit;
+}</pre>
+        
+		<p>The code redirects the user to the index.php page and cancels PHP code execution. </p>
+		To check that the functionality is implemented correctly, run the  <tt>editWishList.php</tt> file. 
+		  The expected result is that the <tt>index.php</tt> page opens.</div>
+		<h2><a name="logonFromIndexPage" id="logonFromIndexPage"></a>Logging In from the index.php Page</h2>
+		<p>The logon from the index.php page consists of two steps:</p>
+		<ul>
+		  <li><a href="#logonForm">Entering the user's name and password in an HTML input form and submitting the data for validation to the  index.php page.</a></li>
+          <li><a href="#logonValidation">Validating the logon</a></li>
+	</ul>
+		<div class="indent"><h3><a name="logonForm" id="logonForm"></a>HTML Form for Logon on index.php</h3>
+        In the <tt>index.php</tt> file, enter the following code before the closing <tt>&lt;/body&gt;</tt> tag:
+        <pre class="examplecode">&lt;form name="logon" action="index.php" method="POST" >
+    Username: &lt;input type="text" name="user">
+    Password  &lt;input type="password" name="userpassword">
+    &lt;input type="submit" value="Edit My Wish List">
+&lt;/form></pre>
+                <p class="notes"><b>Note: </b>You can ignore warnings from the HTML validator.</p>
+
+The code presents an <a href="wish-list-lesson3.html#htmlForm">HTML form</a> that enables entering the name and password of the user in the text fields. When the user clicks Edit My Wish List, the data is transferred to the same page, index.php.  
+<h3><a name="logonValidation" id="logonValidation"></a>Logon Validation</h3>
+<p>Logon validation involves: </p>
+<ul>
+            <li><a href="#checkWhereUserCameFrom">Checking where the user was redirected from</a>. </li>
+            <li><a href="#verifyCredentials">Verifying the user's name and password</a>. </li>
+            <li>Saving the user name to the Session and redirecting the user to  the editWishList.php page or 
+            <a href="#displayErrorMessage">Displaying an error message.</a> </li>
+   </ul>
+       
+        <p> A user may access the <tt>index.php</tt> page on starting the application, or from the<a href="#validateWisherLogon"> editWishList.php</a> page, or when 
+        redirected from the <tt>index.php</tt> page after entering name and  password.</p>
+        <p>Because only in the last case
+          is the <a target="_blank" href="http://www.htmlcodetutorial.com/forms/_FORM_METHOD.html">HTML request method</a> POST used, you can always learn 
+          where the user was located when they accessed  <tt>index.php</tt>.</p>
+        In the index.php file, create a &lt;?php ?&gt; block above the HTML block, with the following code: 
+        <pre class="examplecode">&lt;?php
+
+require_once("Includes/db.php");
+$logonSuccess = false;<br><br>
+// verify user's credentials
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    $logonSuccess = (WishDB::getInstance()->verify_wisher_credentials($_POST['user'], $_POST['userpassword']));
+    if ($logonSuccess == true) {
+        session_start();
+        $_SESSION['user'] = $_POST['user'];
+        header('Location: editWishList.php');
+        exit;
+    }
+}
+?&gt;
+</pre>
+        <p>The top of the code block enables the use of the <tt>db.php</tt> file and initializes the <tt>$logonSuccess</tt> variable with the value <tt>false</tt>. If validation succeeds, this value will change to <tt>true</tt>.  </p>
+     
+       
+        <p>The code that verifies the user's credentials first checks if the request method is POST. If the request method is POST, the user was redirected after submitting the <a href="#logonForm">logon form</a>.  In this case, the code block calls the <tt>verify_wisher_credentials</tt> function with the  name and password entered in the logon form. </p>
+        <p>The <tt>verify_wisher_credentials</tt> function, which you write in <a href="#verifyWisherCredentials">the next section</a>, checks whether there is a record in the <tt>wishers</tt> table where the user and password match the values submitted in the <a href="#logonForm">logon form</a>. If the           <tt>verify_wisher_credentials</tt>  function returns <tt>true</tt>,  a wisher with the specified combination of name and password is registered in the database. This means that validation succeeds, and <tt>$logonSuccess</tt> changes value to <tt>true</tt>. In this case, a session starts, and the <tt>$_SESSION</tt> array opens. The code adds a new element  to the <tt>$_SESSION</tt> array. The element contains a value and an identifier (key). The value is the name of the wisher and the identifier is &quot;user&quot;. Then the code redirects the user  to the <tt>editWishList.php</tt> page in order to edit the wish list.		</p>
+		<p>If the <tt>verify_wisher_credentials</tt> function returns <tt>false</tt>, the value of the <tt>$logonSuccess</tt> variable remains false. The value of the variable is used in <a href="#displayErrorMessage">displaying an error message</a>. </p>
+		<h3><a name="verifyWisherCredentials" id="verifyWisherCredentials"></a>Function verify_wisher_credentials</h3>
+        <p>In order to implement verification of the wisher's credentials, you need to add a new function  to the <tt>WishDB</tt> class in the <tt>db.php</tt> file. The function requires a name and a password as the input parameters and returns 0 or 1.</p>
+       <strong>For the MySQL database</strong>, enter the following code block:
+        <pre class="examplecode">public function verify_wisher_credentials ($name, $password){<br>   $name = $this-&gt;real_escape_string($name);<br>
+   $password = $this-&gt;real_escape_string($password);<br>   $result = $this-&gt;query(&quot;SELECT 1 FROM wishers
+ 	           WHERE name = '&quot; . $name . &quot;' AND password = '&quot; . $password . &quot;'&quot;);
+   return $result-&gt;data_seek(0);
+}</pre>
+<p><b>For the Oracle Database</b>, enter the following code block (Because OCI8 has no equivalent to <tt>mysql_num_rows</tt>, this code is a modified form of <tt>get_wisher_id_by_name</tt>):</p>
+<pre class="examplecode">public function verify_wisher_credentials($name, $password) {
+    $query = "SELECT 1 FROM wishers WHERE name = :name_bv AND password = :pwd_bv";
+    $stid = oci_parse($this->con, $query);
+    oci_bind_by_name($stid, ':name_bv', $name);
+    oci_bind_by_name($stid, ':pwd_bv', $password);
+    oci_execute($stid);
+//Because name is a unique value I only expect one row
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    if ($row) 
+        return true;
+    else
+        return false;
+}</pre>
+<p>The code block executes the query <tt>
+"SELECT 1 FROM wishers WHERE Name = '" . $name . "' AND Password = '" . $password . "'"</tt> and returns the number of records that meet the specified query. If such record is found, the function returns <tt>true</tt>. If there is no such record in the database, the function returns <tt>false</tt>. 
+          <h3><a name="displayErrorMessage" id="displayErrorMessage"></a>Displaying Error Messages</h3>
+    
+In order to enable the application to display error messages,  enter
+   the following &lt;? php ?&gt; code block into the logon form in <tt>index.php</tt>,  below the input fields but above the button:
+         <pre class="examplecode">&lt;?php
+  if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) { 
+      if (!$logonSuccess)
+          echo "Invalid name and/or password";
+  }
+?></pre>
+   The code block checks the value of the $logonSuccess variable and if it is false, displays an error message.</div>
+         <h2><a name="testingLogonFromIndexPage"></a>Testing the Logon from the index.php Page </h2>
+         To check that the logon functionality works correctly on the  <tt>index.php</tt> front page:
+<ol>
+           <li>Run the application.</li>
+           <li>On the <tt>index.php</tt> page, enter Tom in the Username edit box and   Tim in the Password edit box. </li>
+           <li>Press Edit My Wish List. An error message is displayed (Note that browser window below is reduced to 600px width, which adds some line breaks):
+             <br><img src="../../../images_www/articles/72/php/wish-list-lesson5/incorrectNamePasswordIndex.png" alt="The index.php page displays an error message: Incorrect Name aand/or Password" class="margin-around"></li>
+           <li>Enter Tom in the Username edit box and   tomcat in the Password edit box.</li>
+           <li>Press Edit My Wish list. The editWishList.php page is displayed:
+             <br><img src="../../../images_www/articles/72/php/wish-list-lesson5/SuccessfulLogonOnIndexRedirectToEditWishList.png" alt="index.php: Successful Logon" class="margin-around"></li>
+         </ol>
+		 <h2><a name="lessonResultSourceCode"></a>Application Source Code after the Current Lesson Is Completed </h2>
+<p>MySQL users: Click <a target="_blank" href="https://netbeans.org/files/documents/4/1931/lesson5.zip"> here</a> to download the source code that reflects the project state after the lesson is completed.</p>
+<p>Oracle Database users: Click <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson5.zip"> here</a> to download the source code that reflects the project state after the lesson is completed.</p>
+<h2><a name="nextSteps"></a>Next Steps</h2>
+		 <p><a href="wish-list-lesson4.html">&lt;&lt; Previous lesson</a></p>
+		 <p><a href="wish-list-lesson6.html">Next lesson >></a></p>
+		 <p><a href="wish-list-tutorial-main-page.html">Back to the Tutorial main page</a></p><br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%205:%20Implementing%20Security">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;" >
+<p>To send comments and suggestions, get support, and keep informed on the latest
+  developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+  the users@php.netbeans.org mailing list</a>.
+   <p><a href="wish-list-tutorial-main-page.html"></a>
+   <p><a href="../../trails/php.html">Back to the PHP Learning Trail</a></p>
+</body>
+</html>

@@ -1,0 +1,858 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+    <title>Creating a Maven Swing Application Using Hibernate - NetBeans IDE Tutorial</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <meta name="description" content="Demonstrates how to create a Maven Swing application that uses Hibernate as the persistence layer.">
+   <meta name="KEYWORDS" content="NetBeans, Maven, Hibernate, Swing, J2SE, Java SE, MySQL, mapping, reveng.xml">
+   <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Creating a Maven Swing Application Using Hibernate - NetBeans IDE Tutorial</h1>
+
+    <p>In this tutorial, you use the NetBeans IDE to create a Java Swing application from a Maven archetype.
+    The application uses the Hibernate framework as the persistence layer to
+    retrieve POJOs (plain old Java objects) from a relational database.
+    The tutorial demonstrates how wizards in the IDE can help you
+    create the necessary Hibernate files and add Hibernate dependencies to the POM.
+    After creating the Java objects and configuring the application to use Hibernate,
+    you create a GUI interface for searching and displaying the data.
+    </p>
+
+    <p>Support for Maven is fully integrated in NetBeans IDE and 
+    Maven 3 is bundled with the IDE.
+    You can create applications from the bundled Maven archetypes
+    or from archetypes in remote repositories in the New Project wizard.
+    The Maven Repository Browser enables you to explore your local and remote
+    Maven repositories, examine artifacts and add project dependencies to the project's POM.
+    </p>
+
+    <p class="tips">To build this application using Ant, see <a href="hibernate-java-se.html">Using Hibernate in a Java Swing Application</a>.</p>
+    <p class="tips">To build a Maven Java EE application, see <a href="../javaee/maven-entapp.html">Creating an Enterprise Application Using Maven</a>.</p>
+
+   
+    <p><b>Contents</b></p>
+    <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+    <ul class="toc">
+        <li><a href="#01">Creating the Database</a></li>
+        <li><a href="#02">Configuring Maven</a>
+            <ul>
+                <li><a href="#02a">Viewing the Maven Repositories</a></li>
+            </ul>
+        </li>
+        <li><a href="#03">Creating the Maven Application</a>
+            <ul>
+                <li><a href="#03b">Modifying the Maven Project Properties</a></li>
+            </ul>
+        </li>
+        <li><a href="#04">Adding Hibernate Files and Dependencies</a>
+        <ul>
+            <li><a href="#04a">Creating the Hibernate Configuration File</a></li>
+            <li><a href="#04b">Modifying the Hibernate Configuration File</a></li>
+            <li><a href="#04c">Creating the <tt>HibernateUtil.java</tt> Helper File</a></li>
+        </ul>
+        </li>
+        <li><a href="#05">Generating Hibernate Mapping Files and Java Classes</a>
+        <ul>
+             <li><a href="#05a">Creating Hibernate Mapping Files and POJOs From a Database</a></li>
+        </ul>
+        </li>
+        <li><a href="#06">Creating the Application GUI</a>
+        <ul>
+             <li><a href="#06a">Creating the JFrame Form</a></li>
+             <li><a href="#06b">Adding Elements to the Form</a></li>
+        </ul>
+        
+        </li>
+        <li><a href="#07">Creating the Query in the HQL Query Editor</a></li>
+        <li><a href="#08">Adding the Query to the Form</a></li>
+        <li><a href="#09">Running a Maven Project</a>
+        <ul>
+            <li><a href="#09a">Downloading the Solution Project</a></li>
+        </ul>
+        </li>
+        <li><a href="#10">Creating POJOs and Mapping Files Individually</a> (Optional)</li>
+    </ul>
+
+   
+   <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://download.netbeans.org/">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java bundle</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">version 7 or 8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://maven.apache.org/">Maven</a></td>
+                <td class="tbltd1">version 2.09 or newer</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.mysql.com/">MySQL database server</a></td>
+                <td class="tbltd1">version 5.x</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Sakila Database</td>
+                <td class="tbltd1">plugin available from update center</td>
+            </tr>            
+        </tbody>
+</table>
+
+      <p>Before starting this tutorial you may want to familiarize yourself with
+    the following documentation.</p>
+    <ul>
+        <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Best Practices for Apache Maven in NetBeans 6.x</a></li>
+        <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Chapter 1. Introducing Apache Maven</a>
+         (from <a href="http://books.sonatype.com/mvnex-book/reference/public-book.html" target="_blank">Maven by Example</a>)</li>
+        <li>Hibernate documentation at <a href="http://www.hibernate.org/" target="_blank">hibernate.org</a></li>
+        <li><a href="gui-functionality.html">Introduction to GUI Building</a></li>
+        <li><a href="../ide/mysql.html">Connecting to a MySQL Database</a> tutorial</li>
+    </ul>
+
+<p class="tips">You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/DVDStoreAdmin-Maven.zip">a zip archive of the finished project</a>.</p>
+
+<!-- ++++++++++++++ Creating Database ++++++++++++++ -->
+
+<a name="01"></a>
+<h2>Creating the Database</h2>
+    <p>This tutorial uses a MySQL database called <tt>sakila</tt>.
+    The sample database is not included when you install the IDE so you need to 
+    first create the database to follow this tutorial.
+    </p>
+    <p>The sakila database is a free sample MySQL database that is available from the MySQL site.
+    To create the sakila database you can download and install the Sakila Sample Database plugin 
+    using the Plugins manager.
+    After you install the plugin you can create the sakila database from the Services window.
+    The sakila database is added to the list of databases in the Create MySQL database dialog box.</p>
+    <p>For more information on configuring the IDE to work with MySQL, see the
+    <a href="../ide/mysql.html">Connecting to a MySQL Database</a> tutorial.</p>
+        
+    <ol>
+        <li>Open the Plugins manager and install the Sakila Sample Database plugin.</li>
+        <li>After installing the plugin, start the MySQL database server by expanding the Databases node in the Services window,
+        right-clicking the MySQL Server node and choosing Start.</li>
+        <li>Right-click the MySQL Server node and choose Create Database.</li>
+        <li>Select the Sakila database from the New Database Name drop down list in the Create MySQL Database dialog box. Click OK.<br/>
+        <img src="../../../images_www/articles/72/java/hibernate-j2se/create-sakila-mysql.png" width="393" height="176" alt="Screenshot of Create MySQL Database dialog" title="Screenshot of Create MySQL Database dialog" class="margin-around b-all">
+        
+        <p>When you click OK the IDE will run a script to create the Sakila database and populate the database tables.
+            You can see the results of running the script in the Output window.
+            A node for the Sakila database is also added under the MySQL Server node.</p>
+        <li>Right-click the Sakila node and choose Connect.</li>
+    </ol>
+    <p>When you click Connect, a database connection node for the Sakila database
+    (<tt>jdbc:mysql://localhost:3306/sakila [<i>username</i> on Default]</tt>)
+    is listed under the Databases node. 
+    When a connection is open you can view the data in the database by expanding the connection node.</p>
+
+
+<!-- ++++++++++++++ Configuring Maven ++++++++++++++ -->
+
+<a name="02"></a>
+<h2>Configuring Maven</h2>
+
+    <p>Maven is bundled with the IDE and installed when you install the IDE, 
+    but if this is your first Maven project you will want to check the Maven configuration settings in the Options window.
+    </p>
+
+    <ol>
+        <li>Open the Options window in the IDE (Tools &gt; Options; NetBeans &gt; Preferences on Mac).</li>
+        <li>Select the Java category in the Options window and click the Maven tab.</li>
+        <li>Confirm that a Maven Home is specified.
+            <p>You can use the Maven version bundled with the IDE or specify the location of a
+            local Maven installation (requires 2.0.9 or newer).</p></li>
+        <li>Click OK to close the Options window.</li>
+    </ol>
+    <p class="notes"><strong>Notes.</strong></p>
+        <ul>
+            <li>Maven support is automatically enabled when Java is enabled in the IDE. 
+            You will need to enable the Java EE plugin if it is not enabled.</li>
+            <li>In NetBeans IDE 7.1 and earlier versions of the IDE, the Maven tab in the Options window is located in the Miscellaneous category.</li>
+        </ul>
+
+
+    <div class="indent">
+    <a name="02a"></a>
+        <h3>Viewing the Maven Repositories</h3>
+        <p>The artifacts that are used by Maven to build all your projects are stored in your local Maven repository.
+        When an artifact is declared as a project dependency, the artifact is downloaded to your local repository
+        from one of the registered remote repositories.</p>
+
+        <p>Several well-known indexed Maven repositories are registered and listed in the repository browser by default.
+        The registered repositories contain most of the public artifacts necessary for you to build your project.
+        In most cases, you do not need to register any additional repositories unless your project
+        requires artifacts found only in a private repository.
+        </p>
+
+        <p>You can explore your local and remote Maven repositories and perform an immediate check for updates in the Services window.
+        Any artifact that is in your local or remote repositories can be added as a project dependency.
+        You can expand the Local repository node in the Services window to see the artifacts that are present locally.
+        The artifacts listed under the remote repository nodes can be added as project dependencies, but not all of
+        them are present locally. They are only added to the Local repository when they are declared as project
+        dependencies.</p>
+
+        <p>To browse and update the Maven repositories perform the following steps.</p>
+        <ol>
+            <li>Choose Window &gt; Services to open the Services window.</li>
+            <li>Expand the Maven Repositories node in the Services window to view the repositories.</li>
+            <li>Expand a repository node to view the artifacts.</li>
+            <li>Right-click a repository node and choose Update Index in the popup menu to update the repository.</li>
+        </ol>
+
+        <img src="../../../images_www/articles/72/java/maven-create-se/maven-repositories.png" alt="Screenshot of Maven Repositories in Services window" title="Maven Repositories in Services window" class="margin-around b-all">
+
+        <p>When your cursor is over an artifact, the IDE displays a tooltip with the artifact's coordinates.
+            You can double-click an artifact's JAR file to view additional details about the artifact.</p>
+
+        <p class="tips">You can search for an artifact by right-clicking the Maven Repositories node in the Services window and choosing Find.</p>
+        <p class="tips">For more about managing Maven classpath dependencies and working with Maven repositories in the IDE,
+        see the <a href="http://wiki.netbeans.org/MavenBestPractices#section-MavenBestPractices-DependencyManagement">Dependency Management</a>
+        section of <a href="http://wiki.netbeans.org/MavenBestPractices">Best Practices for Apache Maven in NetBeans IDE</a>.
+        </p>
+        <p class="notes"><strong>Notes for NetBeans IDE 7.1 and earlier versions of the IDE.</strong></p>
+        <ul>
+            <li>Choose Window &gt; Other &gt; Maven Repositories Browser to view Maven repositories.</li>
+            <li>You can use the buttons in the toolbar of the Maven Repositories Browser to update indexes and search for artifacts.</li>
+        </ul>
+</div>
+
+<a name="03"></a>
+<h2>Creating the Maven Application</h2>
+<p>In this tutorial you create a simple Java Swing application project called DVDStoreAdmin.
+You will create the project from one of the bundled Maven archetypes and then modify the default project settings.</p>
+<div class="indent">
+    <a name="03a"></a>
+    <h3>Choosing an Archetype</h3>
+    <p>The New Project wizard enables you to create a Maven project from a Maven archetype.
+        The IDE includes several archetypes for common NetBeans project types, but you can also
+        locate and choose archetypes in remote repositories in the wizard.</p>
+    <ol>
+        <li>Choose File &gt; New Project (Ctrl-Shift-N; &#8984;-Shift-N on Mac) from the main menu
+            to open the New Project wizard. </li>
+        <li>Select Java Application from the Maven category. Click Next.
+            <br>
+        <img src="../../../images_www/articles/72/java/maven-create-se/maven-project-wizard.png"  alt="Screenshot of Maven Archetypes in New Project wizard" title="Maven Archetypes in New Project wizard" class="margin-around b-all"></li>
+        <li>Type <strong>DVDStoreAdmin</strong> for the project name and set the project location.</li>
+        <li>Modify the default Group Id and Version (optional).
+            <p>The Group Id and Version will be used as the coordinates for the artifact in your local repository when you build the project.</p></li>
+        <li>Click Finish.</li>
+
+   </ol>
+
+
+
+    <p>When you click finish the IDE creates the Maven project and opens the project in the Projects window.
+        The IDE automatically creates the class <tt>App.java</tt> in the <tt>com.mycompany.dvdstoreadmin</tt> package.
+    You can delete <tt>App.java</tt> because the application does not need it.</p>
+
+    <p class="notes"><strong>Note.</strong> If this is the first time you are creating a Maven project,
+        Maven will need to download some necessary plugins and artifacts to the local repository.
+        This can take some time.
+    </p>
+
+    
+    <a name="03b"></a>
+    <h3>Modifying Project Properties</h3>
+    <p>When you create a Maven project using the wizard, the default project properties are based on the archetype.
+    In some cases, you may need to modify the default properties according to your system and the project's requirements.
+    For example, for this project you want to confirm that the Source level is set to 1.5 or higher because the project
+    uses annotations.</p>
+    <ol>
+        <li>Right-click the project node and choose Properties.</li>
+        <li>Select the Sources category in the Properties window.</li>
+        <li>Confirm that the Source/Binary Format that is selected in the drop-down list is 1.5 or higher.</li>
+        <li>Select UTF-8 from the drop-down list for the Encoding property. Click OK. </li>
+    </ol>
+</div>
+
+<a name="04"></a>
+    <h2>Adding Hibernate Files and Dependencies</h2>
+    <p>To add support for Hibernate you need to make the Hibernate libraries available
+    by declaring the necessary artifacts as dependencies in the POM.
+    The IDE includes wizards to help you create the Hibernate files you may need in your project.
+    You can use the wizards in the IDE to create a Hibernate configuration file and a utility helper class.
+    If you create the Hibernate configuration file using a wizard the IDE automatically updates the POM to add
+    the Hibernate dependencies to the project.</p>
+
+   <p>You can add dependencies to the project in the Projects window or by editing <tt>pom.xml</tt> directly.
+   To add a dependency in the Projects window, right-click the Dependencies node in the Projects window and
+   choose Add Dependency from the popup menu to open the Add Dependency dialog box.
+   When you add a dependency, the IDE updates the POM and downloads any required artifacts to the local repository
+   that are not already present locally.</p>
+
+   <p>To edit <tt>pom.xml</tt> directly, open the file by expanding the Project Files node in the Projects window
+        and double-clicking <tt>pom.xml</tt>.
+        </p>
+
+    
+<a name="04a"></a>
+    <div class="indent">
+    <h3>Creating the Hibernate Configuration File</h3>
+    <p>The Hibernate configuration file (<tt>hibernate.cfg.xml</tt>) contains information about the database connection, resource mappings, and other connection properties. 
+    When you create a Hibernate configuration file using a wizard 
+    you specify the database connection by choosing from a list of database connection registered with the IDE.
+    When generating the configuration file the IDE automatically adds the connection details and dialect information
+    based on the selected database connection.
+    The IDE also automatically modifies the POM to add the required Hibernate dependencies.
+    After you create the configuration file you can edit the file using the multi-view editor, 
+    or edit the XML directly in the XML editor.</p>
+
+    <ol>
+        <li>Right-click the Sakila database connection in the Services window and choose Connect.</li>
+        <li>Right-click the Source Packages node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+        <li>Select Hibernate Configuration Wizard from the Hibernate category. Click Next.</li>
+        <li>Keep the default file name (<tt>hibernate.cfg</tt>).</li>
+        <li>Click Browse and specify the <tt>src/main/resources</tt> directory as the Location (if not already specified).
+            Click Next.</li>
+        <li>Select the sakila connection in the Database Connection drop down list. Click Finish.</li>
+    
+    </ol>
+    <img src="../../../images_www/articles/72/java/hibernate-j2se/hib-config.png" width="500" height="193" alt="Screenshot of create database connection" title="Dialog for selecting database connection" class="margin-around b-all">
+    
+    <p>When you click Finish the IDE opens <tt>hibernate.cfg.xml</tt> in the editor.
+    The configuration file contains information about a single database.
+    </p>
+    
+    <p>If you expand the Dependencies node in the Projects window you can see that the IDE added the required
+    Hibernate artifacts.
+    The IDE lists all direct and transitive dependencies required to compile the project under the Dependencies node.
+    The artifacts that are direct dependencies (dependencies that are specified in the project's POM) are indicated by color JAR icons.
+    An artifact is greyed out if it is a transitive dependency (an artifact that is the dependency
+    of one or more direct dependencies). </p>
+    <img src="../../../images_www/articles/80/java/maven-create-se/maven-project-libs.png" alt="Screenshot of dependencies under Libraries node in Projects window" title="Dependencies under Libraries node in Projects window" class="margin-around b-all">
+    
+    <p>You can view details of artifacts by right-clicking a JAR and choosing View Artifact Details.
+    The Artifact Viewer contains tabs that provide details about the selected artifact.
+    For example, the Basic tab provides details about the artifact's coordinates and available versions.
+    The Graph tab provides a visual representation of the dependencies of the selected artifact.</p>
+    <img src="../../../images_www/articles/72/java/maven-create-se/maven-artifacts-viewer.png" alt="Screenshot of Graphs tab or Artifact Viewer showing dependencies" title="Graphs tab or Artifact Viewer showing dependencies" class="margin-around b-all">
+    <p class="tips">You can also use the Graphs tab to discover and resolve version conflicts among dependencies.</p>
+
+    
+
+    <a name="04b"></a>
+    <h3>Modifying the Hibernate Configuration File</h3>
+    <p>In this exercise you will edit the default properties specified in <tt>hibernate.cfg.xml</tt> to enable debug logging for SQL statements.
+    This exercise is optional.</p>
+    <ol>
+        <li>Open <tt>hibernate.cfg.xml</tt> in the Design tab.
+        You can open the file by expanding the Configuration Files node in the Projects window and double-clicking <tt>hibernate.cfg.xml</tt>.</li>
+        <li>Expand the Configuration Properties node under Optional Properties.</li>
+        <li>Click Add to open the Add Hibernate Property dialog box.</li>
+        <li>In the dialog box, select the <tt>hibernate.show_sql</tt> property and set the value to <tt>true</tt>.
+        Click OK.
+        This enables the debug logging of the SQL statements.<br/>
+        <img src="../../../images_www/articles/72/java/hibernate-j2se/add-property-showsql.png" width="392" height="161" alt="Add Hibernate Property dialog box the hibernate.show_sql property" title="Add Hibernate Property dialog box showing setting value for the hibernate.show_sql property" class="margin-around b-all"></li>
+        <li>Click Add under the Miscellaneous Properties node and select <tt>hibernate.query.factory_class</tt> in the Property Name dropdown list.</li>
+        <li>Type <strong>org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory</strong> in the text field. Click OK.
+            <p class="notes"><strong>Note.</strong> Do not select the value from the drop-down list.</p>
+        <img src="../../../images_www/articles/80/web/hibernate-webapp/add-property-factoryclass-4.png" alt="Add Hibernate Property dialog box for properties hibernate.query.factory_class" title="Add Hibernate Property dialog box showing setting value for the hibernate.query.factory_class property" class="margin-around b-all">
+        <p>If you click the XML tab in the editor you can see the file in XML view. Your file should look similar to the following:</p>
+        <pre class="examplecode">&lt;hibernate-configuration&gt;
+    &lt;session-factory name="session1"&gt;
+        &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+        &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+        &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+        &lt;property name="hibernate.connection.username"&gt;root&lt;/property&gt;
+        &lt;property name="hibernate.connection.password"&gt;######&lt;/property&gt;
+        &lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+        &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory&lt;/property&gt;
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+        </li>
+        <li>Save your changes to the file.</li>
+    </ol>
+    <p>When you run your project you will be able to see the SQL query printed in the IDE's Output window.</p>
+
+    <a name="04c"></a>
+    <h3>Creating the <tt>HibernateUtil.java</tt> Helper File</h3>
+    <p>To use Hibernate you need to create a helper class that handles startup
+    and that accesses Hibernate's <tt>SessionFactory</tt> to obtain a Session object.
+    The class calls Hibernate's <tt>configure()</tt> method, loads the <tt>hibernate.cfg.xml</tt> configuration file
+    and then builds the <tt>SessionFactory</tt> to obtain the Session object.
+    </p>
+
+    <p>In this section you use the New File wizard to create the helper class <tt>HibernateUtil.java</tt>.</p>
+    <ol>
+        <li>Right-click the Source Packages node and select New &gt; Other to open the New File wizard.</li>
+        <li>Select Hibernate from the Categories list and HibernateUtil.java from the File Types list. Click Next.</li>
+        <li>Type <strong>HibernateUtil</strong> for the class name and <strong>sakila.util</strong> as the package name. Click Finish.</li>
+
+    </ol>
+    <img src="../../../images_www/articles/72/java/hibernate-j2se/maven-hibutil-wizard.png" width="600" alt="Screenshot of create Hibernate Util wizard" title="Hibernate Util wizard" class="margin-around b-all">
+    <p>When you click Finish, <tt>HibernateUtil.java</tt> opens in the editor.
+    You can close the file because you do not need to edit the file.</p>
+    
+    
+</div>
+
+
+
+<a name="05"></a>
+<h2>Generating Hibernate Mapping Files and Java Classes</h2>
+
+<p>In this tutorial you use a plain old Java object (POJO), <tt>Actor.java</tt>,
+to represent the data in the table ACTOR in the database.
+The class specifies the fields for the columns in the tables and uses simple setters and getters to retrieve and
+write the data. 
+To map <tt>Actor.java</tt> to the ACTOR table you can use a Hibernate mapping file or use annotations in the class.</p>
+
+<p>You can use the Reverse Engineering wizard and the Hibernate Mapping Files and POJOs from a Database wizard to
+create multiple POJOs and mapping files based on database tables that you select.
+Alternatively, you can use wizards in the IDE to help you create individual POJOs and mapping files from scratch.
+</p>
+
+<p class="notes"><strong>Note.</strong>
+When you want to create files for multiple tables you will most likely want to use the wizards.
+In this tutorial you only need to create one POJO and one mapping file
+so it is fairly easy to create the files individually.
+You can see the steps for <a href="#10">creating the POJOs and mapping files individually</a> at the end of this tutorial.</p>
+
+<div class="indent">
+    <a name="05a"></a>
+    <h3>Create Reverse Engineering File</h3>
+    <p>To use the POJOs and Mapping Files from Database wizard, you need to first create the <tt>reveng.xml</tt> reverse
+        engineering file in the <tt>src/main/resources</tt> directory where you created <tt>hibernate.cfg.xml</tt>.
+    </p>
+
+    <ol>
+        <li>Right-click the Source Packages node and select New &gt; Other to open the New File wizard.</li>
+        <li>Select Hibernate from the Categories list and Hibernate Reverse Engineering Wizard from the File Types list. Click Next.</li>
+        <li>Type <strong>hibernate.reveng</strong> for the file name.</li>
+        <li>Specify <strong><tt>src/main/resources</tt></strong> as the Location. Click Next.</li>
+        <li>Select <strong>actor</strong> in the Available Tables pane and click Add. Click Finish.</li>
+    </ol>
+    <p>The wizard generates a <tt>hibernate.reveng.xml</tt> reverse engineering file.
+    You can close the reverse engineering file because you will not need to edit the file.</p>
+
+    <p class="notes"><strong>Note.</strong> This project requires a MySQL connector jar library (<tt>mysql-connector-jar-5.1.13.jar</tt>, for example).
+    If a suitable JAR is not listed as a project dependency under the Dependencies node, you can add the dependency by
+    right-clicking the Dependencies node and choosing Add Dependency.</p>
+
+    <h3>Creating Hibernate Mapping Files and POJOs From a Database</h3>
+    <p>The Hibernate Mapping Files and POJOs from a Database wizard generates files based on tables in a database.
+    When you use the wizard, the IDE generates
+    POJOs and mapping files for you based on the database tables specified in <tt>hibernate.reveng.xml</tt> and
+    then adds the mapping entries to <tt>hibernate.cfg.xml</tt>.
+    When you use the wizard you can choose the files that you want the IDE to generate (only the POJOs, for example) 
+    and select code generation options (generate code that uses EJB 3 annotations, for example).</p>
+
+    <ol>
+        <li>Right-click the Source Packages node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+        <li>Select Hibernate Mapping Files and POJOs from a Database in the Hibernate category. Click Next.</li>
+        <li>Select <tt>hibernate.cfg.xml</tt> from the Hibernate Configuration File dropdown list, if not selected.</li>
+        <li>Select <tt>hibernate.reveng.xml</tt> from the Hibernate Reverse Engineering File dropdown list, if not selected.</li>
+        <li>Ensure that the <strong>Domain Code</strong> and <strong>Hibernate XML Mappings</strong> options are selected.</li>
+        <li>Type <strong>sakila.entity</strong> for the Package name. Click Finish.</li>
+    </ol>
+    <img src="../../../images_www/articles/72/java/hibernate-j2se/mapping-pojos-wizard.png" width="600" alt="Generate Hibernate Mapping Files and POJOs wizard" title="Generate Hibernate Mapping Files and POJOs wizard" class="margin-around b-all">
+    <p>
+        When you click Finish, the IDE generates the POJO <tt>Actor.java</tt> with all the required fields
+        in the <tt>src/main/java/sakila/entity</tt> directory.
+        The IDE also generates a Hibernate mapping file
+        in the <tt>src/main/resources/sakila/entity</tt> directory
+        and adds the mapping entry to <tt>hibernate.cfg.xml</tt>.
+        </p>
+
+</div>
+
+
+<p>
+Now that you have the POJO and necessary Hibernate-related files you can create a simple Java GUI front end for the application. 
+You will also create and then add an HQL query that queries the database to retrieve the data. 
+In this process we also use the HQL editor to build and test the query.</p>
+
+<a name="06"></a>
+<h2>Creating the Application GUI</h2>
+<p>In this exercise you will create a simple JFrame Form with some fields for entering and displaying data.
+You will also add a button that will trigger a database query to retrieve the data.</p>
+<p class="tips">If you are not familiar with using the GUI builder to create forms,
+you might want to review the <a href="gui-functionality.html">Introduction to GUI Building</a> tutorial.
+</p>
+
+<a name="06a"></a>
+<div class="indent">
+    <h3>Creating the JFrame Form</h3>
+    <ol>
+        <li>Right-click the project node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+        <li>Select JFrame Form from the Swing GUI Forms category. Click Next.</li>
+        <li>Type <strong>DVDStoreAdmin</strong> for the Class Name and type <strong>sakila.ui</strong> for the Package. 
+        Click Finish.</li>
+    </ol>
+    <p>When you click Finish, the IDE creates the class and opens the JFrame Form in the Design view of the editor.</p>
+
+<a name="06b"></a>
+    <h3>Adding Elements to the Form</h3>
+    <p>You now need to add the UI elements to the form.
+    When the form is open in Design view in the editor, the Palette appears in the right side of the IDE.
+    To add an element to the form, drag the element from the Palette into the form area.
+    After you add an element to the form you need to modify the default value of the Variable Name property for that element.</p>
+
+    <ol>
+        <li>Drag a Label element from the Palette and change the text to <strong>Actor Profile</strong>. </li>
+        <li>Drag a Label element from the Palette and change the text to <strong>First Name</strong>.</li>
+        <li>Drag a Text Field element next to the First Name label and delete the default text.
+            <p>When you delete the default text, the text field will collapse.
+            You can resize the text field later to adjust the alignment of the form elements.</p></li>
+        <li>Drag a Label element from the Palette and change the text to <strong>Last Name</strong>.</li>
+        <li>Drag a Text Field element next to the Last Name label and delete the default text.</li>
+        <li>Drag a Button element from the Palette and change the text to <strong>Query</strong>.</li>
+        <li>Drag a Table element from the Palette into the form.</li>
+        <li>Modify the Variable Name values of the following UI elements according to the values in the following table.
+        <p>You can modify the Variable Name value of an element by right-clicking the element in the Design view and then choosing Change Variable Name.
+        Alternatively, you can change the Variable Name directly in the Inspector window.</p>
+        <p class="notes">You do not need to assign Variable Name values to the Label elements.</p>
+
+        <table>
+            <tr>
+                <th class="tblheader" scope="col">Element</th><th class="tblheader" scope="col">Variable Name</th>
+            </tr>
+            <tr>
+                <td class="tbltd1">First Name text field</td><td class="tbltd1"><tt>firstNameTextField</tt></td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Last Name text field</td><td class="tbltd1"><tt>lastNameTextField</tt></td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Query button</td><td class="tbltd1"><tt>queryButton</tt></td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Table</td><td class="tbltd1"><tt>resultTable</tt></td>
+            </tr>
+
+        </table>
+        </li>
+        <li>Resize the text fields and align the form elements.
+        <p>You can enable the Horizontal Resizable property for the text fields to ensure that the
+        text fields resize with the window and that the spacing between elements remains constant.</p></li>
+        <li>Save your changes.</li>
+    </ol>
+    <p>In Design view your form should look similar to the following image.</p>
+    <img src="../../../images_www/articles/72/java/hibernate-j2se/hib-jframe-form.png" width="585" height="481" alt="GUI form in Design view of the editor" title="GUI form in Design view of the editor" class="margin-around b-all">
+    <p>Now that you have a form you need to create the code to assign events to the form elements.
+    In the next exercise you will construct queries based on Hibernate Query Language to retrieve data.
+    After you construct the queries you will add methods to the form to invoke the appropriate query 
+    when the Query button is pressed.</p> 
+</div>
+
+<a name="07"></a>
+<h2>Creating the Query in the HQL Query Editor</h2>
+<p>In the IDE you can construct and test queries based on the Hibernate Query Language (HQL) using the HQL Query Editor.
+As you type the query the editor shows the equivalent (translated) SQL query.
+When you click the 'Run HQL Query' button in the toolbar, the IDE executes the query and shows the results at the bottom of editor.
+</p>
+<p>In this exercise you use the HQL Editor to construct simple HQL queries that retrieve a list of actors' 
+details based on matching the first name or last name. Before you add the query to the class you will use the HQL
+Query Editor to test that the connection is working correctly and that the query produces the desired results.
+Before you can run the query you first need to compile the application.</p>
+
+<ol>
+    <li>Right-click the project node and choose Build.
+        <p>When you click Build, the IDE will download the necessary artifacts to your local Maven repository.</p></li>
+    <li>Expand the <tt>&lt;default package&gt;</tt> source package node under the Other Sources node in the Projects window.</li>
+    <li>Right-click <tt>hibernate.cfg.xml</tt> and choose Run HQL Query to open the HQL Editor.</li>
+    <li>Test the connection by typing <tt>from Actor</tt> in the HQL Query Editor. Click the Run HQL Query button (&nbsp;<img src="../../../images_www/articles/72/java/hibernate-j2se/run_hql_query_16.png" width="16" height="16" alt="Run HQL Query button" title="Run HQL Query button" />&nbsp;) in the toolbar.
+        <p>When you click Run HQL Query you should see the query results in the bottom pane of the HQL Query Editor.</p>
+        <img src="../../../images_www/articles/72/java/hibernate-j2se/hib-query-hqlresults.png" width="585" height="370" alt="HQL Query Editor showing HQL query results" title="HQL Query Editor showing HQL query results" class="margin-around b-all">
+    </li>
+    <li>Type the following query in the HQL Query Editor and click Run HQL Query to check the query results
+    when the search string is 'PE'.
+    <pre class="examplecode">from Actor a where a.firstName like 'PE%'</pre>
+    <p>The query returns a list of actors' details for those actors whose first names begin with 'PE'.</p>
+    <p>If you click the SQL button above the results you should see the following equivalent SQL query.</p>
+    <pre class="examplecode">select actor0_.actor_id as col_0_0_ from sakila.actor actor0_ where (actor0_.first_name like 'PE%' )</pre>
+    </li>
+    <li>Open a new HQL Query Editor tab and type the following query in the editor pane. Click Run HQL Query.
+    <pre class="examplecode">from Actor a where a.lastName like 'MO%'</pre>
+    <p>The query returns a list of actors' details for those actors whose last names begin with 'MO'.
+    </p>
+    </li>
+</ol>
+<p>Testing the queries shows that the queries return the desired results.
+The next step is to implement the queries in the application so that the appropriate query is invoked by clicking the Query button
+in the form.</p>
+
+<a name="08"></a>
+<h2>Adding the Query to the Form</h2>
+<p>You now need to modify <tt>DVDStoreAdmin.java</tt> to add the query strings and create the methods to construct and invoke a
+query that incorporates the input variables.
+You also need to modify the button event handler to invoke the correct query and add a method to display the query results in the table.</p>
+
+<ol>
+    <li>Open <tt>DVDStoreAdmin.java</tt> and click the Source tab.</li>
+    <li>Add the following query strings (in bold) to the class. 
+    <pre class="examplecode">public DVDStoreAdmin() {
+    initComponents();
+}
+
+<strong>private static String QUERY_BASED_ON_FIRST_NAME="from Actor a where a.firstName like '";
+private static String QUERY_BASED_ON_LAST_NAME="from Actor a where a.lastName like '";</strong></pre>
+    <p class="tips">It is possible to copy the queries from the HQL Query Editor tabs into the file and then modify the code.</p>
+    </li>
+    <li>Add the following methods to create the query based on the user input string.
+<pre class="examplecode">private void runQueryBasedOnFirstName() {
+    executeHQLQuery(QUERY_BASED_ON_FIRST_NAME + firstNameTextField.getText() + "%'");
+}
+    
+private void runQueryBasedOnLastName() {
+    executeHQLQuery(QUERY_BASED_ON_LAST_NAME + lastNameTextField.getText() + "%'");
+}</pre>
+    <p>The methods call a method called <tt>executeHQLQuery()</tt> and create the query by combining the query string with the user entered search string.</p>
+    </li>
+    <li>Add the <tt>executeHQLQuery()</tt> method. 
+
+<pre class="examplecode">private void executeHQLQuery(String hql) {
+    try {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+        Query q = session.createQuery(hql);
+        List resultList = q.list();
+        displayResult(resultList);
+        session.getTransaction().commit();
+    } catch (HibernateException he) {
+        he.printStackTrace();
+    }
+}</pre>
+    <p>The <tt>executeHQLQuery()</tt> method calls Hibernate to execute the selected query. 
+    This method makes use of the <tt>HibernateUtil.java</tt> utility class to obtain the Hibernate Session.</p>
+    </li>
+    <li>Fix your imports to add import statements for the Hibernate libraries (<tt>org.hibernate.Query</tt>, <tt>org.hibernate.Session</tt>) and <tt>java.util.List</tt>.</li>
+    <li>Create a Query button event handler by switching to the Design view and double-clicking the Query button.
+    <p>The IDE creates the <tt>queryButtonActionPerformed</tt> method and displays the method in the Source view.</p></li>
+    <li>Modify the <tt>queryButtonActionPerformed</tt> method in the Source view by adding the following code so that a query is run when the user clicks the button.
+
+<pre class="examplecode">private void queryButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    <strong>if(!firstNameTextField.getText().trim().equals("")) {
+        runQueryBasedOnFirstName();
+    } else if(!lastNameTextField.getText().trim().equals("")) {
+        runQueryBasedOnLastName();
+    }</strong>
+}</pre>
+    </li>
+    <li>Add the following method to display the results in the JTable.
+    <pre class="examplecode">private void displayResult(List resultList) {
+    Vector&lt;String&gt; tableHeaders = new Vector&lt;String&gt;();
+    Vector tableData = new Vector();
+    tableHeaders.add("ActorId"); 
+    tableHeaders.add("FirstName");
+    tableHeaders.add("LastName");
+    tableHeaders.add("LastUpdated");
+
+    for(Object o : resultList) {
+        Actor actor = (Actor)o;
+        Vector&lt;Object&gt; oneRow = new Vector&lt;Object&gt;();
+        oneRow.add(actor.getActorId());
+        oneRow.add(actor.getFirstName());
+        oneRow.add(actor.getLastName());
+        oneRow.add(actor.getLastUpdate());
+        tableData.add(oneRow);
+    }
+    resultTable.setModel(new DefaultTableModel(tableData, tableHeaders));
+}</pre>
+    </li>
+    <li>Fix your imports (Ctrl+Shift+I) to add <tt>java.util.Vector</tt> and save your changes.</li>
+</ol>
+
+<p>After you save the form you can run the project.</p>
+
+
+
+
+<!-- Running a Maven Project -->
+<a name="09"></a>
+<h2>Running a Maven Project</h2>
+<p>
+    Now that the coding is finished, you can build the project and launch the application.
+    When you build a Maven project in the IDE, Maven reads the project's POM to identify the project dependencies.
+    All the artifacts specified as dependencies must be in your local Maven repository in order to build the project.
+    If a required artifact is not in the local repository, Maven will checkout the artifact from a remote repository
+    before attempting to build and run the project.
+    After building the project, Maven will install the resulting binary as an artifact in your local repository.
+</p>
+
+<p class="notes"><strong>Notes.</strong></p>
+<div class="indent">
+    <ul>
+        <li>Building and running a project for the first time can take some time if the IDE needs to checkout any project dependencies.
+        Subsequent builds will be much faster.</li>
+        <li>To run this application, you first need to specify the Main Class.</li>
+    </ul>
+</div>
+
+<p>To compile and launch this application, perform the following tasks.</p>
+
+<ol>
+    <li>Right-click the project node in the Projects window and choose Properties.</li>
+    <li>Select the Run category in the Project Properties dialog box.</li>
+    <li>Type <strong>sakila.ui.DVDStoreAdmin</strong> for the Main Class. Click OK.
+    <p>Alternatively, you can click the Browse button and choose the main class in the dialog box.</p>
+    <img src="../../../images_www/articles/72/java/hibernate-j2se/browse-main-class.png" width="339" height="201" alt="Setting the main class in the Browse Main Classes dialog" title="Setting the main class in the Browse Main Classes dialog" class="margin-around b-all">
+    </li>
+    <li>Click Run Project in the main toolbar to launch the application.</li>
+</ol>
+
+<p>When you invoke the Run action on a Maven project in the IDE, the IDE runs the Maven goals associated with the Run action.
+The IDE has default goals bound to IDE actions according to the project packaging.
+You can view the goals bound to the Run action in the Actions pane of the project's Properties window</p>
+
+
+<img src="../../../images_www/articles/72/java/hibernate-j2se/maven-projectproperties.png" width="600" alt="Actions pane of DVDStoreAdmin project properties window" title="Actions pane of DVDStoreAdmin project properties window" class="margin-around b-all">
+
+
+<p class="tips">You can customize the binding of goals to actions in the Actions pane of the project's Properties window.</p>
+
+<p>The GUI form opens when you launch the application. Type in a search string in the First Name or Last Name text field and click Query to search for an actor and see the details. </p>
+<img src="../../../images_www/articles/72/java/hibernate-j2se/application-run.png" width="575" height="423" alt="DVDStoreAdmin application showing results" title="DVDStoreAdmin application showing results" class="margin-around b-all">
+<p>If you look in the Output window of the IDE you can see the SQL query that retrieved
+the displayed results.</p>
+
+<div class="indent">
+    <a name="09a"></a>
+    <h3>Downloading the Solution Project</h3>
+    <p>You can download the solution to this tutorial as a project in the following ways.</p>
+    <ul>
+        <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/DVDStoreAdmin-Maven.zip">a zip archive of the finished project</a>.</li>
+        <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+            <ol>
+                <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                <li>In the Checkout dialog box, enter the following Repository URL:<br/>
+                    <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br/>
+                    Click Next.</li>
+                <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                <li>Expand the root node and select <strong>samples/java/DVDStoreAdmin-Maven</strong>. Click OK.</li>
+                <li>Specify the Local Folder for the sources (the local folder must be empty).</li>
+                <li>Click Finish.
+                    <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                    and checks out the project sources.</p>
+                </li>
+                <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+            </ol>
+            <p class="notes"><strong>Notes.</strong></p>
+            <ul>
+                <li>Steps for checking out sources from Kenai only apply to NetBeans IDE 6.7 and 6.8.</li>
+                <li>You need a Subversion client to checkout the sources from Kenai.
+                For more about installing Subversion, see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</li>
+            </ul>
+        </li>
+    </ul>
+ </div>
+
+
+<a name="10"></a>
+    <h2>Creating POJOs and Mapping Files Individually</h2>
+    <p>Because a POJO is a simple Java class you can use the New Java Class wizard to create the class and then edit the class
+    in the source editor to add the necessary fields and getters and setters.
+    After you create the POJO you then use a wizard to create a Hibernate mapping file to map the class to the table and
+    add mapping information to <tt>hibernate.cfg.xml</tt>.
+    When you create a mapping file from scratch you need to map the fields to the columns in the XML editor.</p>
+
+<p class="notes"><strong>Note.</strong> This exercise is optional and describes how to create the POJO and mapping file that you created with
+the Hibernate Mapping Files and POJOs from Database wizard.</p>
+    <ol>
+        <li>Right-click the Source Packages node in the Projects window and choose New &gt; Java Class to open the New Java Class wizard.</li>
+        <li>In the wizard, type <b>Actor</b> for the class name and type <b>sakila.entity</b> for the package. Click Finish.</li>
+        <li>Make the following changes (displayed in bold) to the class to implement the Serializable interface and add fields for the table columns.
+        <pre class="examplecode">public class Actor <b>implements Serializable</b> {
+    <b>private Short actorId;
+    private String firstName;
+    private String lastName;
+    private Date lastUpdate;</b>
+}</pre>
+        </li>
+        <li>Generate the getters and setters for the fields by placing the insertion cursor in the source editor, typing Alt-Insert and then selecting Getter and Setter.</li>
+        <li>In the Generate Getters and Setters dialog box, select all the fields and click Generate.<br />
+        <img src="../../../images_www/articles/72/java/hibernate-j2se/getters-setters.png" width="359" height="246" alt="Generate Getters and Setters dialog box" title="Generate Getters and Setters dialog box" class="margin-around b-all">
+
+        <p class="tips">In the Generate Getters and Setters dialog box, you can use the Up arrow on the keyboard
+        to move the selected item to the Actor node and then press the Space bar to select all fields in Actor.</p></li>
+        <li>Fix your imports and save your changes.</li>
+    </ol>
+
+    <p>After you create the POJO for the table you will want to create an Hibernate Mapping File for <tt>Actor.java</tt>.</p>
+    <ol>
+        <li>Right-click the <tt>sakila.entity</tt> source packages node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+        <li>Select Hibernate Mapping Wizard in the Hibernate category. Click Next.</li>
+        <li>Type <strong>Actor.hbm</strong> for the File Name and set the Folder to <b>src/main/resources/sakila/entity</b> . Click Next.</li>
+        <li>Type <b>sakila.entity.Actor</b> for the Class to Map.</li>
+        <li>Select <b>actor</b> from the Database Table drop down list if not already selected.
+        Click Finish.<br/>
+        <img src="../../../images_www/articles/72/java/hibernate-j2se/mapping-wizard.png" width="586" height="272" alt="Generate Hibernate Mapping Files wizard" title="Generate Hibernate Mapping Files wizard" class="margin-around b-all">
+        <p>When you click Finish the <tt>Actor.hbm.xml</tt> Hibernate mapping file opens in the source editor.
+        The IDE also automatically adds an entry for the mapping resource to <tt>hibernate.cfg.xml</tt>.
+        You can view the entry details by expanding the Mapping node in the Design view of <tt>hibernate.cfg.xml</tt> or
+        in the XML view. The <tt>mapping</tt> entry in the XML view will look like the following:
+        </p>
+        <pre class="examplecode">
+        &lt;mapping resource="sakila/entity/Actor.hbm.xml"/&gt;
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+        </li>
+        <li>Map the fields in <tt>Actor.java</tt> to the columns in the ACTOR table by making the following changes (in bold)
+        to <tt>Actor.hbm.xml</tt>.
+
+<pre class="examplecode">&lt;hibernate-mapping>
+  &lt;class name="sakila.entity.Actor" <strong>table="actor"&gt;
+    &lt;id name="actorId" type="java.lang.Short"&gt;
+      &lt;column name="actor_id"/&gt;
+      &lt;generator class="identity"/&gt;
+    &lt;/id&gt;
+    &lt;property name="firstName" type="string"&gt;
+      &lt;column length="45" name="first_name" not-null="true"/&gt;
+    &lt;/property&gt;
+    &lt;property name="lastName" type="string"&gt;
+      &lt;column length="45" name="last_name" not-null="true"/&gt;
+    &lt;/property&gt;
+    &lt;property name="lastUpdate" type="timestamp"&gt;
+      &lt;column length="19" name="last_update" not-null="true"/&gt;
+    &lt;/property&gt;
+  &lt;/class&gt;</strong>
+&lt;/hibernate-mapping&gt;</pre>
+
+        <p class="tips">You can use code completion in the editor to complete the values when
+        modifying the mapping file.</p>
+        <p class="notes"><b>Note:</b> By default, the generated <tt>class</tt> element has a closing tag.
+        Because you need to add property elements between the opening and closing <tt>class</tt> element tags,
+        you need to make the following changes (displayed in bold).
+        After making the changes you can then use code completion between the <tt>class</tt> tags.</p>
+        <pre class="examplecode">&lt;hibernate-mapping&gt;
+  &lt;class name="sakila.entity.Actor" <strong>table="actor"&gt;
+  &lt;/class&gt;</strong>
+&lt;/hibernate-mapping&gt;</pre>
+
+        </li>
+        <li>Click the Validate XML button in the toolbar and save your changes.</li>
+    </ol>
+
+  <p>Creating individual POJOs and Hibernate mapping files might be a convenient way to further customize your application.</p>
+
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20a%20Maven%20Project">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;" />
+
+<h2>See Also</h2>
+<p>For additional information on creating Swing GUI applications, see the following tutorials.</p>
+    <ul>
+        <li><a href="quickstart-gui.html">Designing a Swing GUI in NetBeans IDE</a></li>
+        <li><a href="gui-functionality.html">Introduction to GUI Building</a></li>
+        <li><a href="../../trails/matisse.html">Java GUI Applications Learning Trail</a></li>
+    </ul>
+
+   
+</body>
+</html>

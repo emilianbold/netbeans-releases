@@ -1,0 +1,421 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit introduces the IDE's interface, describes how to create a web project, and demonstrates how to set up and connect to the MySQL database server.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>NetBeans Eコマースのチュートリアル - 開発環境の設定</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans Eコマースのチュートリアル - 開発環境の設定</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>チュートリアルの目次</h4>
+
+                <ol>
+                    <li><a href="intro.html">概要</a></li>
+                    <li><a href="design.html">アプリケーションの設計</a></li>
+                    <li><strong>開発環境の設定</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#create">Webプロジェクトの作成</a></li>
+                            <li><a href="#run">Webプロジェクトの実行</a></li>
+                            <li><a href="#communicate">データベース・サーバーとの通信</a></li>
+                            <li><a href="#seeAlso">関連項目</a></li>
+                        </ul></li>
+
+                    <li><a href="data-model.html">データ・モデルの設計</a></li>
+                    <li><a href="page-views-controller.html">ページ・ビューおよびコントローラ・サーブレットの準備</a></li>
+                    <li><a href="connect-db.html">データベースへのアプリケーションの接続</a></li>
+                    <li><a href="entity-session.html">エンティティ・クラスおよびセッションBeanの追加</a></li>
+                    <li><a href="manage-sessions.html">セッションの管理</a></li>
+                    <li><a href="transaction.html">トランザクション・ビジネス・ロジックの統合</a></li>
+                    <li><a href="language.html">言語サポートの追加</a></li>
+                    <li><a href="security.html">アプリケーションの保護</a></li>
+                    <li><a href="test-profile.html">テストとプロファイリング</a></li>
+                    <li><a href="conclusion.html">まとめ</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="このページの内容は、NetBeans IDEバージョン6.8および6.9に適用されます" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="このページの内容は、NetBeans IDEバージョン6.8および6.9に適用されます"></p>
+
+        <p>以下の手順では、開発環境の設定方法について説明します。このプロセスでは、IDEのいくつかのプライマリ・ウィンドウについて学習し、IDEが<a href="http://ant.apache.org/" target="_blank">Ant</a>ビルド・スクリプトを使用してプロジェクトに共通するアクションをどのように実行するかを理解します。このチュートリアル・ユニットを終了するまでには、Webアプリケーション・プロジェクトの作成を完了し、プロジェクトをビルドして開発サーバーにデプロイし、IDEから実行できることを確認していることでしょう。</p>
+
+        <p>また、IDEをMySQLデータベース・サーバーに接続し、データベース・インスタンスを作成し、IDEの「サービス」ウィンドウからデータベース・インスタンスに接続する方法を学習します。このユニットでは、チュートリアル全体で使用する<code>affablebean</code>という名前の新しいデータベースを作成します。</p>
+
+        <p>このチュートリアルでビルドするアプリケーションのライブ・デモを、<a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">NetBeans Eコマースのチュートリアルのデモ・アプリケーション</a>で表示できます。</p>
+
+        <br style="clear:left">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Javaバンドル版、6.8または6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFishサーバー</a></td>
+                    <td class="tbltd1">v3またはOpen Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQLデータベース・サーバー</a></td>
+                    <td class="tbltd1">バージョン5.1</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>注意: </strong></p>
+
+        <ul>
+            <li>NetBeans IDEが正常に動作するには、JDK (Java Development Kit)が必要です。上記に一覧表示されているいずれのリソースもインストールされていない場合は、最初にJDKをダウンロードしてインストールするようにしてください。</li>
+
+            <li>NetBeans IDEのJavaバンドル版には、このチュートリアルでビルドするアプリケーションに必要なJava WebおよびEEテクノロジが含まれています。</li>
+
+            <li id="glassFish">NetBeans IDEのJavaバンドル版には、このチュートリアルに必要なGlassFishサーバーも含まれています。<a href="https://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">GlassFishサーバーを別個にダウンロードする</a>こともできますが、NetBeansダウンロードに付属するバージョンを使用すると、IDEに自動的に登録されるので便利です。</li>
+        </ul>
+
+
+        <br>
+        <h2 id="create">Webプロジェクトの作成</h2>
+
+        <ol>
+            <li>NetBeans IDEを起動します。初めてIDEを実行している場合は、IDEのスタート・ページが表示されます。<br><img alt="NetBeans IDEのスタート・ページ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ide-start-page.png" title="NetBeans IDEのスタート・ページ"></li>
+
+            <li>「新規プロジェクト」(<img alt="「新規プロジェクト」アイコン" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-project-btn.png">)ボタンをクリックして([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])、新しいJava Webプロジェクトを作成します。プロセスをガイドする新規プロジェクト・ウィザードが開きます。「カテゴリ」から「Java Web」を選択し、次に「プロジェクト」から「Webアプリケーション」を選択します。<br><img alt="新規プロジェクト・ウィザード" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/new-project-wzd.png" title="新規プロジェクト・ウィザードを使用したプロジェクトの作成" width="688px"></li>
+
+            <li>「次」をクリックします。</li>
+
+            <li>ステップ2の「名前と場所」で、プロジェクトに「<code>AffableBean</code>」という名前を付けます。このステップでは、プロジェクトが存在するコンピュータ上の場所を指定することもできます。デフォルトでは、IDEはホーム・ディレクトリ内に<code>NetBeansProjects</code>フォルダを作成します。場所を変更する場合は、「プロジェクトの場所」テキスト・フィールドにパスを入力します。</li>
+
+            <li>「次」をクリックします。</li>
+
+            <li>ステップ3の「サーバーと設定」で、開発中にプロジェクトをデプロイするサーバーとしてGlassFish v3を指定します。NetBeansインストールにはGlassFish v3が含まれているので、「サーバー」ドロップダウン・フィールドには「GlassFish v3」が表示されています。<br><br>
+                <p class="tips">IDEにまだ登録していないサーバーをデプロイする場合は、「追加」ボタンをクリックしてサーバー・インスタンスの追加ウィザードを実行します。IDEに登録されているすべてのサーバーは、「サーバー」ウィンドウ(メイン・メニューから「ツール」>「サーバー」を選択)から表示できます。</p></li>
+
+            <li>「Java EEバージョン」で、「Java EE 6 Web」を選択します。<br><br>作成するアプリケーションでは、Java EE 6の様々な機能、つまり、サーブレット注釈(<a href="http://jcp.org/en/jsr/summary?id=315" target="_blank">サーブレット3.0仕様</a>の新機能)とサーブレット・コンテナ内で直接使用されるEJB (<a href="http://jcp.org/en/jsr/summary?id=318" target="_blank">EJB 3.1仕様の新機能</a>)を使用します。サーブレット3.0とEJB 3.1はどちらもJava EE 6プラットフォームの一部であるため、このチュートリアルに沿って作業するには、GlassFish v3などのEE 6準拠サーバーが必要です。詳細は、<a href="entity-session.html#specification">仕様および実装について</a>を参照してください。</li>
+
+            <li>「コンテキストと依存性の注入を有効にする」オプションが選択されていないことを確認します。このオプションは、<a href="http://jcp.org/en/jsr/detail?id=299" target="_blank">JSR-299</a>で規定されているコンテキストと依存性の注入(CDI: Contexts and Dependency Injection)テクノロジに固有のもので、このチュートリアルでは使用しません。詳細は、<a href="../cdi-intro.html">コンテキストと依存性の注入およびJSF 2.0の開始</a>を参照してください。<br><img alt="新規Webアプリケーション・ウィザード、ステップ3: サーバーと設定" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/new-project-wzd2.png" title="開発サーバー、EEバージョン、CDIサポートを含めるかどうかの指定" width="688px"><br><br>デフォルトでは、アプリケーションのコンテキスト・パスはプロジェクトの名前です。これは、アプリケーションがサーバーにデプロイされた後でアクセスできるパスです。たとえば、GlassFishはデフォルトのポート番号として8080を使用するため、開発中はブラウザ・ウィンドウで以下からプロジェクトにアクセスできます。
+
+                <pre class="examplecode">http://localhost:8080/AffableBean/</pre></li>
+
+            <li>「終了」をクリックします。IDEは、<a href="http://java.sun.com/blueprints/code/projectconventions.html#99632" target="_blank">J2EE BlueprintsのWebアプリケーション構造の規約</a>に準拠した<code>AffableBean</code>という名前のスケルトン・プロジェクトを生成します。IDEに、デフォルト・レイアウトで様々なウィンドウが表示されます。<br><a href="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ide-default-layout.png" rel="lytebox" title="Java Webプロジェクトのデフォルト・レイアウト"><img alt="NetBeans IDE - デフォルト・レイアウト" class="b-all margin-around" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ide-default-layout.png" width="688px"></a></li>
+
+            <li>IDEのデフォルト・レイアウトを確認します。ここでは、表示されるウィンドウとタブについて簡単に説明します。
+
+                <ul style="margin: 5px 0 0 -1.5em">
+                    <li><strong>エディタ: </strong>エディタ([Ctrl]-[0]、Macの場合は[⌘]-[0])は、IDEの中心的なコンポーネントであり、作業時間のほとんどを費やす可能性がある場所です。エディタは、使用している言語に自動的に適応し、コーディングで使用するテクノロジに固有のドキュメント・サポート、コード補完、ヒントおよびエラー・メッセージを提供します。</li>
+
+                    <li><strong>「プロジェクト」ウィンドウ: </strong>「プロジェクト」ウィンドウ([Ctrl]-[1]、Macの場合は[⌘]-[1])は、プロジェクト・ソースへのエントリ・ポイントです。重要なプロジェクト内容の<em>論理ビュー</em>が表示され、ファイルがその機能(たとえば、<code>構成ファイル</code>)に基づいてグループ分けされています。「プロジェクト」ウィンドウ内でファイル・ノードを右クリックすると、開発タスクに共通するアクション(つまり、<code>Build</code>、<code>Clean</code>、<code>Deploy</code>、<code>Run</code>)をコールできます。</li>
+
+                    <li><strong>「ファイル」ウィンドウ: </strong>「ファイル」ウィンドウ([Ctrl]-[2]、Macの場合は[⌘]-[2])には、プロジェクトがディレクトリ・ベースで表示されます。つまり、コンピュータのファイル・システムに存在するプロジェクトの構造を表示できます。このウィンドウから、Antビルド・スクリプト(<code>build.xml</code>)やIDEでプロジェクトを処理するのに必要な(<code>nbproject</code>フォルダに格納された)ファイルを含む、プロジェクトに関係するすべてのファイルを表示できます。プロジェクトを実行した場合は、コンパイルされたJavaファイルの場所(<code>build</code>フォルダ)を表示できます。(「プロジェクト」ウィンドウのプロジェクト・ノードの右クリック・メニューから「ビルド」または「消去してビルド」を選択して)プロジェクトを明示的にビルドした場合は、(<code>dist</code>フォルダに格納された)プロジェクトの配布可能WARファイルを表示できます。</li>
+
+                    <li><strong>ナビゲータ: </strong>ナビゲータ([Ctrl]-[7]、Macの場合は[⌘]-[7])には、エディタで開いたファイルの構造の概要が表示されます。たとえば、HTML Webページが表示されている場合は、ナビゲータに、そのページのDocument Object Model (DOM)に対応する方法でタグ・ノードが一覧表示されます。エディタでJavaクラスを開いている場合は、ナビゲータに、そのクラスに関係するプロパティとメソッドが表示されます。ナビゲータを使用して、エディタ内の項目に移動できます。たとえば、ナビゲータ内のノードをダブルクリックすると、カーソルがエディタ内のその要素に直接移動します。</li>
+
+                    <li><strong>「タスク」ウィンドウ: </strong>「タスク」ウィンドウ([Ctrl]-[6]、Macの場合は[⌘]-[6])では、コードが自動的にスキャンされ、コンパイル・エラー、簡易修正およびスタイルの警告を含む行が一覧表示されます。Javaクラスの場合は、「<code>TODO</code>」や「<code>FIXME</code>」などの語句を含むコメント行が一覧表示されます。</li>
+
+                    <li><strong>「サービス」ウィンドウ: </strong>「サービス」ウィンドウ([Ctrl]-[5]、Macの場合は[⌘]-[5])は、サーバー、Webサービス、データベースとデータベース接続、およびチーム開発に関連するその他のサービスを管理するためのインタフェースを提供します。</li>
+
+                    <li><strong>「出力」ウィンドウ: </strong><em>(表示されていません)</em>「出力」ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])は、一般にサーバーなどの外部リソースからのサービスを起動するアクションをコールしたときに自動的に表示され、サーバーのログ・ファイルをミラー化できます。また、Webプロジェクトでは、Antタスクに関連する情報(たとえば、<code>Build</code> (ビルド)、<code>Clean and Build</code> (消去してビルド)、<code>Clean</code> (消去)など)も表示できます。</li>
+
+                    <li><strong>パレット: </strong><em>(表示されていません)</em>パレット([Ctrl]-[Shift]-[8]、Macの場合は[⌘]-[Shift]-[8])は、エディタにドラッグ・アンド・ドロップできる各種の便利なコード・スニペットを提供します。パレットに含まれるスニペットの多くは、後で説明するように、エディタ内でコード補完を呼び出すことによってアクセスできます。</li>
+                </ul>
+
+                <p class="notes"><strong>注意: </strong>IDEのウィンドウは、すべて「ウィンドウ」メニュー項目からアクセスできます。</p>
+            </li>
+        </ol>
+
+
+        <h2 id="run">Webプロジェクトの実行</h2>
+
+        <ol>
+            <li>新しい<code>AffableBean</code>プロジェクトを実行します。「プロジェクト」ウィンドウで、プロジェクト・ノードを右クリックして「実行」を選択するか、IDEのメイン・ツールバーで「プロジェクトの実行」(<img alt="「プロジェクトの実行」アイコン" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png">)ボタンをクリックすることで([F6]、Macの場合は[fn]-[F6])、これを実行できます。<br><br>ブラウザ・ウィンドウが開き、プロジェクトの開始画面が表示されます。<br><img alt="ブラウザに表示されたプロジェクト開始画面" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/hello-world.png" title="プロジェクトがサーバーに自動的にデプロイされてブラウザに表示される"><br>では、何か起きたのでしょうか。Webプロジェクトを実行すると、IDEはプロジェクトのビルド・スクリプト内の<code>run</code> Antターゲットを呼び出します。プロジェクトの<code>build.xml</code>ファイルをエディタで開いて調べることができます。</li>
+
+            <li>「ファイル」ウィンドウに切り替えて([Ctrl]-[2]、Macの場合は[⌘]-[2])、プロジェクト・ノードを展開し、プロジェクトに含まれる<code>build.xml</code>ファイルをダブルクリックします。<code>build.xml</code>ファイルがエディタで開くと、スクリプトで使用できるすべてのAntターゲットがナビゲータに一覧表示されます。<br><img alt="build.xmlのAntターゲットが表示されたナビゲータ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/navigator-ant-targets.png" title="ナビゲータにbuild.xmlスクリプトの使用可能なすべてのAntターゲットが一覧表示される">
+
+                <p class="tips">通常のAntターゲットは汎用のターゲット(<img alt="通常のAntターゲット・アイコン" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ant-normal-icon.png">)アイコンを使用して表示されます。<em>強調された</em>Antターゲット(<img alt="強調されたAntターゲット・アイコン" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ant-emphasized-icon.png">)アイコンは、単にそのターゲットに(前述のイメージに示すように)ツールチップとして表示される説明が含まれることを示しています。詳細は、<a href="../../java/project-setup.html">Javaプロジェクトの作成、インポート、および構成</a>を参照してください。</p></li>
+
+            <li><code>run</code>ターゲットをダブルクリックします。<code>build-impl.xml</code>ファイルがエディタで開き、ターゲットの定義が表示されます。
+
+                <pre class="examplecode">&lt;target depends=&quot;run-deploy,run-display-browser&quot; description=&quot;Deploy to server and show in browser.&quot; name=&quot;run&quot;/&gt;</pre>
+
+                <code>build.xml</code>のターゲットをクリックしたときに、なぜ<code>build-impl.xml</code>ファイルが開いたのでしょうか。([Ctrl]-[Tab]を押して)再度<code>build.xml</code>に切り替えてファイルの内容を調べると、以下の行が表示されます。
+
+                <pre class="examplecode">&lt;import file=&quot;nbproject/build-impl.xml&quot;/&gt;</pre>
+
+                <p>プロジェクトのビルド・スクリプトは、<code>nbproject/build-impl.xml</code>からNetBeansで定義されたターゲットがインポートされる、基本的に空のファイルです。</p>
+
+                <p class="alert">プロジェクトの標準の<code>build.xml</code>スクリプトは、新しいターゲットを追加するか、NetBeansで定義された既存のターゲットをオーバーライドすることによって、自由に編集できます。しかし、<code>build-impl.xml</code>ファイルは編集しないでください。</p>
+
+                <code>run</code>ターゲットの定義を見ると、以下のターゲットに依存していることがわかります。
+
+                <ul style="margin: 5px 0 0 -1.5em">
+                    <li><code>run-deploy</code></li>
+                    <li><code>run-display-browser</code></li>
+                </ul>
+
+                <code>build-impl.xml</code>ファイルの他の部分を調べると、これらのターゲットが互いにもう一方のターゲットに依存していることがわかります。しかし、基本的には<code>run</code>ターゲットが呼び出されたときに以下のアクションが行われます。
+
+                <ol style="margin: 5px 0 0 -1em">
+                    <li>プロジェクトがコンパイルされます。</li>
+                    <li>WARファイルが作成されます。</li>
+                    <li>サーバーが起動します(まだ実行されていない場合)。</li>
+                    <li>WARファイルが指定されたサーバーにデプロイされます。</li>
+                    <li>ブラウザが開き、サーバーのURLとアプリケーションのコンテキスト・パスが表示されます。</li>
+                </ol>
+
+                <p class="tips">Antの使用方法については、<a href="http://ant.apache.org/manual/index.html" target="_blank">Ant公式マニュアル</a>を参照してください。</p>
+            </li>
+
+            <li>プロジェクトの配布可能WARファイルを生成するには、IDEの「実行」メニューから「プロジェクトを消去してビルド」(または「メイン・プロジェクトを消去してビルド」)を選択します。</li>
+
+            <li>「ファイル」ウィンドウ([Ctrl]-[2]、Macの場合は[⌘]-[2])でプロジェクト・ノードを展開します。<code>dist</code>フォルダにプロジェクトのWARファイルが格納されています。<code>build</code>フォルダにコンパイルされたプロジェクトが格納されています。<br><img alt="「ファイル」ウィンドウ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/files-window.png" title="「ファイル」ウィンドウにプロジェクトがディレクトリ・ベースで表示される">
+
+                <p class="notes"><strong>注意: </strong>(「プロジェクト」ウィンドウでプロジェクト・ノードの右クリック・メニューから「消去」を選択して)プロジェクトを<em>消去</em>すると、これらのフォルダが両方とも除去されます。</p></li>
+
+            <li>「サービス」ウィンドウに切り替えて([Ctrl]-[5]、Macの場合は[⌘]-[5])、「サーバー」>「GlassFish Server 3」>「アプリケーション」ノードを展開します。<br><img alt="「サービス」ウィンドウ - GlassFish v3" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/services-win-deployed-app.png" title="「サービス」ウィンドウにサーバー・ステータス、デプロイされたアプリケーションおよびリソースが表示される">
+
+                <p class="notes"><strong>注意: </strong>「GlassFish v3」はNetBeans 6.8ユーザー用のデフォルトのサーバー名です。</p>
+
+                GlassFishサーバー・ノード上の緑色の矢印アイコン(<img alt="「サービス」ウィンドウのGlassFishサーバー・ノード" src="../../../../images_www/articles/73/javaee/ecommerce/common/gf-server-running-node.png">)は、サーバーが実行されていることを示します。「アプリケーション」フォルダには、デプロイされたすべてのアプリケーションが一覧表示されます。<code>AffableBean</code>アプリケーションが正常にデプロイされていることがわかります。</li>
+        </ol>
+
+        <p>この段階で、IDEでのJava Webプロジェクトの作成を完了し、それを問題なくビルドして開発サーバーにデプロイし、実行時にブラウザで開くことができることを確認しました。</p>
+
+
+        <br>
+        <h2 id="communicate">データベース・サーバーとの通信</h2>
+
+        <p>MySQLデータベース・サーバーをダウンロードしてインストールすると、IDEから接続できるようになります。デフォルトのインストールでは、ユーザー・アカウントとして「<code>root</code>」、パスワードとして「」(空文字列)を使用してデータベース・サーバーに接続します。ただし、GlassFishでは接続の問題があるため、パスワードが空でないアカウントを使用することをお薦めします。<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>以下の手順では、MySQLのコマンド行からデータベース・サーバーを実行し、<code>root</code>アカウントのパスワードを「<code>nbuser</code>」に変更する方法を示します。この「<code>root</code>」と「<code>nbuser</code>」の組合せは、NetBeans Eコマース・チュートリアル全体で使用します。データベース・サーバーを実行して適切に構成したら、IDEにそれを登録し、データベース・インスタンスを作成します。</p>
+
+        <p class="notes"><strong>注意: </strong>以下のコマンド行の手順は、<code>PATH</code>環境変数に<code>mysql</code>コマンドを追加したことが前提になっています。(していない場合は、コマンド行に<code>mysql</code>コマンドを入力したときに「<code>mysql: command not found</code>」というエラーが表示されます。)<br><br><code>PATH</code>に<code>mysql</code>を追加していない場合は、かわりにMySQLインストールの<code>bin</code>ディレクトリへのフル・パスを入力してコマンドをコールできます。たとえば、<code>mysql</code>コマンドがコンピュータの<code>/usr/local/mysql/bin</code>にある場合は、以下を入力します。</p>
+
+        <pre class="examplecode" style="width: 700px; margin-left:30px">shell&gt; <strong>/usr/local/mysql/bin/</strong>mysql -u root</pre>
+
+        <p style="margin-left:30px">詳細は、MySQL公式リファレンス・マニュアルの以下を参照してください。</p>
+
+        <ul>
+            <li><a href="http://dev.mysql.com/doc/refman/5.1/en/general-installation-issues.html" target="_blank">2.1. 一般的なインストールのガイド</a></li>
+
+            <li><a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html" target="_blank">2.13.2. 初期MySQLアカウントの保護</a></li>
+
+            <li><a href="http://dev.mysql.com/doc/refman/5.1/en/invoking-programs.html" target="_blank">4.2.1. MySQLプログラムの起動</a></li>
+
+            <li><a href="http://dev.mysql.com/doc/refman/5.1/en/setting-environment-variables.html" target="_blank">4.2.4. 環境変数の設定</a></li>
+        </ul>
+
+        <br>
+        <p>次の手順を実行します。</p>
+
+        <ul>
+            <li><a href="#check">MySQLが実行中かどうかの確認</a></li>
+            <li><a href="#start">データベース・サーバーの起動</a></li>
+            <li><a href="#password">パスワードの変更</a></li>
+            <li><a href="#register">IDEでのサーバーの登録</a></li>
+            <li><a href="#database">データベース・インスタンスの作成</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="check">MySQLが実行中かどうかの確認</h3>
+
+            <p>IDEからMySQLサーバーに接続する前に、サーバーが実行されていることを確認する必要があります。これを行う1つの方法は、<a href="http://dev.mysql.com/doc/refman/5.1/en/mysqladmin.html" target="_blank"><code>mysqladmin</code></a>クライアントの<code>ping</code>コマンドを使用することです。</p>
+
+            <ol>
+                <li>コマンド行プロンプトを開き、以下を入力します。
+
+                    <pre class="examplecode" style="width:660px">shell&gt; mysqladmin ping</pre>
+
+                    サーバーが実行されている場合は、以下のような出力が表示されます。
+
+                    <pre class="examplecode" style="width:660px">mysqld is alive</pre>
+
+                    サーバーが実行されていない場合は、以下のような出力が表示されます。
+
+                    <pre class="examplecode" style="width:660px">
+mysqladmin: connect to server at 'localhost' failed
+error: 'Can't connect to local MySQL server through socket '/tmp/mysql.sock'
+Check that mysqld is running and that the socket: '/tmp/mysql.sock' exists!</pre>
+                </li>
+            </ol>
+
+
+            <h3 id="start">データベース・サーバーの起動</h3>
+
+            <p>MySQLサーバーが実行されていない場合は、コマンド行から起動できます。プラットフォーム間共通の簡単な概要については、<a href="http://dev.mysql.com/doc/refman/5.1/en/automatic-start.html" target="_blank">2.13.1.2. MySQLの自動的な開始と停止</a>を参照してください。以下の手順は、オペレーティング・システムに応じた一般的なガイダンスを示しています。</p>
+
+            <h4>UNIX系システム:</h4>
+
+            <p>UNIX系システムでは、<a href="http://dev.mysql.com/doc/mysql-startstop-excerpt/5.1/en/mysqld-safe.html" target="_blank"><code>mysqld_safe</code></a>を呼び出してMySQLサーバーを起動することをお薦めします。</p>
+
+            <ol>
+                <li>コマンド行プロンプトを開き、<code>mysqld_safe</code>コマンドを実行します。
+
+                    <pre class="examplecode" style="width:660px">shell&gt; sudo ./mysqld_safe</pre>
+
+                    次のような出力が表示されます。
+
+                    <pre class="examplecode" style="width:660px">090906 02:14:37 mysqld_safe Starting mysqld daemon with databases from /usr/local/mysql/data</pre></li>
+            </ol>
+
+            <h4>Windows:</h4>
+
+            <p>MySQLのWindowsインストーラを使用すると、データベース・サーバーをWindowsサービスとしてインストールすることで、MySQLをオペレーティング・システムと一緒に自動的に起動および停止できます。データベースを手動で起動する必要がある場合は、インストール・ディレクトリの<code>bin</code>フォルダにある<a href="http://dev.mysql.com/doc/mysql-startstop-excerpt/5.1/en/mysqld.html" target="_blank"><code>mysqld</code></a>コマンドを実行します。</p>
+
+            <ol>
+                <li>Windowsのコンソール・ウィンドウを開きます(「スタート」メニューから「ファイルを指定して実行」を選択し、テキスト・フィールドに「<code>cmd</code>」と入力します)。コマンド行ウィンドウが表示されます。</li>
+
+                <li>このコマンドを入力します(示されているパスは、バージョン5.1をデフォルトのインストール場所にインストールした場合のものです)。
+
+                    <pre class="examplecode" style="width:660px">C:\&gt; &quot;C:\Program Files\MySQL\MySQL Server 5.1\bin\mysqld&quot;</pre></li>
+            </ol>
+
+            <p>詳細は、MySQL公式リファレンス・マニュアルの<a href="http://dev.mysql.com/doc/refman/5.1/en/windows-start-command-line.html" target="_blank">2.4.5.5. Windowsコマンド行からのMySQLの開始</a>を参照してください。</p>
+
+
+            <h3 id="password">パスワードの変更</h3>
+
+            <p><code>root</code>アカウントのパスワードを「<code>nbuser</code>」に設定するには、以下の手順を実行します。</p>
+
+            <ol>
+                <li>コマンド行プロンプトを開き、以下を入力します。
+
+                    <pre class="examplecode" style="width:660px">
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('nbuser') WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+                </li>
+            </ol>
+
+            <p>詳細は、MySQL公式リファレンス・マニュアルの<a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html" target="_blank">2.13.2. 初期MySQLアカウントの保護</a>を参照してください。</p>
+
+
+            <h3 id="register">IDEでのサーバーの登録</h3>
+
+            <p>IDEの「サービス」ウィンドウでは、サーバーへの接続、サーバーの起動と停止、データベース・インスタンスとそれらに含まれるデータの表示、およびサーバーに対する外部管理ツールの実行ができます。</p>
+
+            <ol>
+                <li>「サービス」ウィンドウで、「データベース」ノードを右クリックして「MySQLサーバーを登録」を選択します。<br><img alt="「サービス」ウィンドウ - 「データベース」ノードの右クリック・オプション" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/register-mysql-server.png" title="IDEの「サービス」ウィンドウの「MySQLサーバーを登録」"><br>「MySQLサーバー・プロパティ」ダイアログの「基本プロパティ」タブに、MySQLサーバー・インストールのデフォルト設定を表示できます。これらを次に示します。
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li><strong>サーバー・ホスト名: </strong><code>localhost</code></li>
+                        <li><strong>サーバー・ポート番号: </strong><code>3306</code></li>
+                        <li><strong>管理ユーザー名: </strong><code>root</code></li>
+                        <li><strong>管理パスワード: </strong><code>nbuser</code></li>
+                    </ul></li>
+
+                <li>「パスワードを保存」オプションを選択します。<br><img alt="「MySQLサーバー・プロパティ」ダイアログ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/mysql-server-properties.png" title="MySQLサーバーの設定の指定"></li>
+
+                <li>「OK」をクリックします。IDEがMySQLデータベース・サーバーに接続し、サーバーによって管理されているデータベース・インスタンスが一覧表示されます。また、「ドライバ」ノードを展開すると、IDEにMySQL用の<a href="http://dev.mysql.com/doc/refman/5.1/en/connector-j.html" target="_blank">Connector/J JDBCドライバ</a>が含まれていることがわかります。<br><img alt="「サービス」ウィンドウ - MySQLサーバー" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/services-win-mysql.png" title="「サービス」ウィンドウでのMySQLサーバーへの接続"><br>アプリケーション・サーバー(つまり、GlassFish)には、JavaコードとMySQLデータベース間の通信を有効にするドライバが必要です。IDEにはすでにConnector/Jドライバが含まれているので、ダウンロードする必要はありません。また、後で説明するように、サーバー設定でJDBCドライバをデプロイするように指定できるので、ドライバがサーバー上にない場合は自動的にGlassFishにデプロイされます。<br><br>以下のステップ4から7はオプションです。MySQLサーバーを起動および停止したり、サーバーに対して外部管理ツールを実行したりするようにIDEを構成できます。</li>
+
+                <li>「MySQLサーバー」ノードを右クリックして「プロパティ」を選択します。「MySQLサーバー・プロパティ」ダイアログで「管理プロパティ」を選択します。</li>
+
+                <li>「管理ツールのパスまたはURL」フィールドに、コンピュータ上にあるデータベース管理ツール(<a href="http://dev.mysql.com/doc/administrator/en/mysql-administrator-introduction.html" target="_blank">MySQL Administrator</a>など)の実行可能ファイルへのパスを入力します。MySQL Administratorは、<a href="http://dev.mysql.com/downloads/gui-tools/" target="_blank">MySQL GUI Tools</a>バンドルに含まれています。</li>
+
+                <li>「起動コマンドへのパス」フィールドに、オペレーティング・システムに応じたMySQLの起動コマンド(つまり、<code>mysqld</code>または<code>mysqld_safe</code>)へのパスを入力します。(上記の<a href="#start">データベース・サーバーの起動</a>を参照してください。)<br><br>
+                    <p class="notes"><strong>注意: </strong>Unix系システムでは、起動コマンドを呼び出すことができるのはrootまたは管理者権限を持つユーザーのみである場合があります。これを解決するため、(LinuxおよびSolarisの場合は<a href="http://www.nongnu.org/gksu/" target="_blank">GKSu</a>、Macの場合は<a href="http://developer.apple.com/mac/library/documentation/Darwin/Reference/ManPages/man1/osascript.1.html" target="_blank">osascript</a>を使用して)この作業を行うスクリプトを作成できます。詳細は、<a href="http://davidvancouvering.blogspot.com/2008/09/starting-mysql-in-netbeans-as.html" target="_blank">このブログ投稿</a>を参照してください。</li>
+
+                <li>「停止コマンドへのパス」フィールドに、MySQLの停止コマンド(つまり、<code>mysqladmin shutdown</code>)へのパスを入力します。このコマンドは停止権限を持つユーザー・アカウントを必要とするので、「引数」フィールドにユーザー名/パスワード資格情報を入力する必要があります。例:
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li><strong>引数: </strong><code>-u root -pnbuser shutdown</code></li>
+                    </ul>
+                </li>
+            </ol>
+
+            <p>「詳細プロパティ」タブの下に一覧表示されたフィールドを設定すると、以下ができるようになります。</p>
+
+            <ul>
+                <li><strong>MySQLサーバーの起動: </strong>MySQLサーバー・ノードを右クリックして「起動」を選択します。</li>
+                <li><strong>MySQLサーバーの停止: </strong>MySQLサーバー・ノードを右クリックして「停止」を選択します。</li>
+                <li><strong>外部管理ツールの実行: </strong>MySQLサーバー・ノードを右クリックして「管理ツールを実行」を選択します。</li>
+            </ul>
+
+
+            <h3 id="database">データベース・インスタンスの作成</h3>
+
+            <ol>
+                <li>このチュートリアルで使用するデータベース・インスタンスを作成します。これを行うには、MySQLサーバー・ノードを右クリックして「データベースを作成」を選択します。</li>
+
+                <li>表示されるダイアログで、「<code>affablebean</code>」と入力します。「フル・アクセスを許可」オプションを選択し、ドロップダウン・フィールドから「<code>root@localhost</code>」を選択します。これにより、<code>localhost</code>ホスト上の<code>root</code>アカウントがデータベースにアクセスできるようになります。後でサーバー上に接続プールを作成するときは、サーバーにデータベースへのアクセスを許可するため、ユーザー名/パスワード資格情報として<code>root</code>アカウントと<code>nbuser</code>パスワードを設定する必要があります。<br><img alt="「MySQLデータベースの作成」ダイアログ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/create-mysql-db-dialog.png" title="サーバー・ノードを右クリックして「データベースを作成」を選択し、新しいデータベース・インスタンスを作成する"></li>
+
+                <li>「OK」をクリックします。これを行うと、<code>affablebean</code>という名前のデータベースが作成され、データベースへの接続が自動的に確立されます。接続は、接続ノード(<img alt="「データベース」接続ノード" src="../../../../images_www/articles/73/javaee/ecommerce/common/db-connection-node.png">)を使用して「サービス」ウィンドウに表示されます。
+
+                    <p class="notes"><strong>注意: </strong>接続ノードは「サービス」ウィンドウ内で維持されます。IDEを再起動すると、ギザギザの線が入った接続ノード(<img alt="データベース接続ノード - 切断" src="../../../../images_www/articles/73/javaee/ecommerce/common/connection-broken.png">)が表示され、接続が切断されたことを示します。データベースに再接続するには、データベース・サーバーが実行されていることを確認してから、そのノードを右クリックして「接続」を選択します。</p></li>
+
+                <li><code>affablebean</code>データベースの接続ノードを展開します。接続にはデータベースのデフォルト・スキーマ(<code>affablebean</code>)が含まれており、その中に表、ビューおよびプロシージャのノードが含まれています。まだ何も作成していないので、現時点ではこれらは空です。<br><img alt="「サービス」ウィンドウ - affablebeanのデータベース接続" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/db-conn-affable-bean.png" title="データベース接続に、データベースのデフォルト・スキーマと、表、ビューおよびプロシージャのノードが含まれている"></li>
+            </ol>
+        </div>
+
+        <p>この段階で、IDEからMySQLサーバーへの接続が完了し、チュートリアル全体で使用する<code>affablebean</code>という名前の新しいデータベースが作成されました。また、IDEでのJava Webプロジェクトの作成を完了し、それを問題なくビルドして開発サーバーにデプロイし、実行時にブラウザで開くことができることを確認しました。これで、開発環境の準備が完了し、アプリケーションのデータ・モデルの設計を開始できます。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Setting up the Development Environment">ご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">関連項目</h2>
+
+        <div class="indent">
+            <h3>NetBeansリソース</h3>
+
+            <ul>
+                <li><a href="../../java/project-setup.html" target="_blank">Javaプロジェクトの作成、インポート、および構成</a></li>
+                <li><a href="../../../articles/mysql.html" target="_blank">MySQLおよびNetBeans IDE</a></li>
+                <li><a href="../../ide/mysql.html" target="_blank">MySQLデータベースへの接続</a></li>
+                <li><a href="../../web/mysql-webapp.html" target="_blank">MySQLデータベースを使用した単純なWebアプリケーションの作成</a></li>
+            </ul>
+
+            <h3>外部リソース</h3>
+
+            <ul>
+                <li><a href="http://ant.apache.org/manual/index.html" target="_blank">Apache Antユーザー・マニュアル</a></li>
+                <li><a href="http://ant.apache.org/manual/tutorial-HelloWorldWithAnt.html" target="_blank">AntによるHello World</a></li>
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/" target="_blank">MySQL 5.1リファレンス・マニュアル</a></li>
+                <li><a href="http://dev.mysql.com/doc/administrator/en/index.html" target="_blank">MySQL管理者リファレンス・マニュアル</a></li>
+            </ul>
+
+            <h3>書籍</h3>
+
+            <ul>
+                <li><a href="https://netbeans.org/kb/articles/books.html" target="_blank">NetBeansの書籍</a></li>
+                <li><a href="http://www.apress.com/book/view/1590598954" target="_blank">Pro NetBeans IDE 6 Rich Client Platform Edition</a></li>
+                <li><a href="http://apress.com/book/view/1430219548" target="_blank">Beginning Java EE 6 Platform with GlassFish 3: From Novice to Professional</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>参考資料</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> GlassFish v3を使用する場合は、空のパスワードを使用してMySQLデータベース・サーバーへの接続プールを作成できます。NetBeans IDE 6.9に付属するGlassFish Open Source Edition 3.0.1では、空のパスワードを使用した接続はできません。<a href="https://glassfish.dev.java.net/issues/show_bug.cgi?id=12221" target="_blank">GlassFishの問題12221</a>を参照してください。</li>
+        </ol>
+
+    </body>
+</html>

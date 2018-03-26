@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>使用 NetBeans IDE 在远程 Web 服务器上部署 PHP 应用程序  </title>
+     <meta name="KEYWORDS" content="NETBEANS, PHP">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Deploying a PHP application on a remote hosting account through FTP using NetBeans" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+        <h1>使用 NetBeans IDE 在远程 Web 服务器上部署 PHP 应用程序</h1>
+        <p>通常，PHP 应用程序实际上在远程服务器上运行。远程应用程序是通过版本控制系统或文件传输协议 (FTP) 来访问的。 </p> 
+        <p class="alert"><b>注：</b>NetBeans 为 FTP/SFTP 提供的基本支持足以让开发者独自处理简单的项目。如果处理的是复杂项目或与多名开发者协同工作，则应使用版本控制系统。NetBeans IDE 支持多种版本控制系统。例如，请参见我们的 <a href="../ide/subversion.html">Subversion</a> 和 <a href="../ide/git.html">Git</a> 教程。如果必须在处理复杂项目时使用 FTP/SFTP，则可以考虑将 IDE 与功能全面的 FTP 客户端结合使用，并在 IDE 中将 PHP 项目作为本地 Web 站点来编辑。</p>
+        <p class="alert"><b>JDK 7 + Windows 7/Vista：</b>Windows 7 和 Windows Vista 防火墙会阻止某些由 JDK 7 启动的 FTP 操作。有关解决方法，请参见 <a href="http://forums.netbeans.org/post-115176.html#113923" target="_blank">NetBeans 论坛</a>。</p>
+   <p>要在远程服务器上部署 PHP 应用程序，您将需要向托管提供商注册一个帐户。您还可以在具有托管帐户的远程服务器上部署一个 MySQL 数据库。</p>
+        <p class="notes">所有的用户名、口令和电子邮件地址都是虚构的，仅用作示例。如果用户未登录论坛的时间超过了一个星期，则托管管理会阻止该用户的帐户。因此您可能无法再使用与本教程中完全相同的用户名、口令、电子邮件地址和其他凭证。</p>
+   
+        <p><b>目录</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<ul>
+		<li><a href="#runPHPApplicationOnRemoteServer">为远程托管的 PHP 项目设置运行配置</a>
+		  <ul>
+		<li><a href="#chooisngRunConfigurationType">选择运行配置类型</a></li>
+		<li><a href="#specifyFTPConnectionSettings">指定 FTP 连接设置</a></li>
+		</ul>
+		</li>
+		<li><a href="#uploadSourcesOnRemoteServer">将源文件上载到远程服务器</a></li>
+                <li><a href="#remote-synchronization">远程同步</a></li>
+                <li><a href="#runPHPApplication">运行 PHP 应用程序</a></li>
+                <li><a href="#remote-mysql-database">使用远程 MySQL 数据库</a></li>
+		
+		
+   </ul>
+   
+   <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+   <table>
+     <tbody>
+       <tr>
+         <th class="tblheader" scope="col">软件或资源</th>
+         <th class="tblheader" scope="col">要求的版本</th>
+       </tr>
+       <tr>
+         <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+         <td class="tbltd1">PHP 下载包</td>
+       </tr>
+       <tr>
+         <td class="tbltd1">PHP 引擎</td>
+         <td class="tbltd1">版本 5
+       </tr>
+       <tr>
+         <td class="tbltd1">远程服务器上的托管帐户和 <br> FTP 帐户</td>
+         <td>例如，<a href="http://x10hosting.com/" target="_blank">x10Hosting</a>  <br>提供免费的 FTP 帐户托管。</td>
+       </tr>
+       <tr>
+         <td class="tbltd1">PHP 调试器（可选）</td>
+         <td><a href="http://www.xdebug.org" target="_blank">XDebug 2.0 或更高版本</a></td>
+       </tr>
+     </tbody>
+   </table>
+   
+		
+   
+		
+
+		<h2><a name="runPHPApplicationOnRemoteServer"></a>为远程托管的 PHP 项目设置运行配置 </h2>
+		<p>如果您在远程 Web 服务器上具有一个托管帐户和一个 FTP 帐户，可用于将您的源文件传输到远程服务器，则可以在本地创建和调试 PHP 项目，然后在远程服务器上对它进行部署。通过“运行配置”的概念，您可以在同一个 NetBeans PHP 项目中的这些工作流之间切换，方法是将 "Run Configuration"（运行配置）类型从 "Local Web Site"（本地 Web 站点）更改为 "Remote Web Site"（远程 Web 站点）。 </p>
+		<p>要在远程 Web 服务器上运行 PHP 应用程序，您需要设置其中包含 FTP 连接配置文件的运行配置。 </p>
+		<p>如果您已经有一个具有默认运行配置的项目，并希望添加新的远程运行配置，<a href="project-setup.html#managingProjectSetup">则定制您的项目</a>：</p>
+		<ol>
+<li>在项目节点上单击鼠标右键，然后从弹出式菜单中选择 "Properties"（属性）。"Project Properties"（项目属性）面板打开。</li>
+<li>从 "Categories"（类别）列表中，选择 "Run Configuration"（运行配置）。"Run Configuration"（运行配置）面板打开。 </li>
+<li>如以下部分所述，<a href="#chooisngRunConfigurationType">选择运行配置类型</a>并<a href="#specifyFTPConnectionSettings">指定 (S)FTP 连接设置</a>。 </li>
+   </ol>
+要在远程服务器上为 PHP 应用程序创建 NetBeans 项目，或者要创建将远程运行配置作为默认配置的新项目，请执行以下操作：<br>		
+		<ol>
+		<li>启动 IDE，选择 "File"（文件）-&gt; "New Project"（新建项目）。"New Project"（新建项目）面板打开。</li>
+		<li>从 "Categories"（类别）中选择 "PHP"，然后选择 "PHP Application from Remote Server"（来自远程服务器的 PHP 应用程序）。然后，单击 "Next"（下一步）。"Name and Location"（名称和位置）面板打开。 </li>
+		<li>指定项目名称、应用程序源文件的位置和项目内部文件的位置（可选）。单击 "Next"（下一步）。"Run Configuration"（运行配置）面板打开。</li>
+		<li>按照下一节所述，<a href="#specifyFTPConnectionSettings">指定 FTP 连接设置</a>。 </li>
+   </ol>
+		<div class="indent">
+		<h3><a name="chooisngRunConfigurationType"></a>选择运行配置类型</h3>
+		<p>在 "Run Configuration"（运行配置）面板的 "Run As"（运行方式）下拉列表中，选择 "Remote web Site (FTP, SFTP)"（远程 Web 站点 (FTP, SFTP)）。此时将显示用于设置配置的隐藏区域。</p>
+		<p class="notes">如果要使用 "PHP Application from Remote Server"（来自远程服务器的 PHP 应用程序）向导创建新项目，则不需要从 "Run As"（运行方式）下拉列表中进行选择。该向导会自动转至 "Remote Connection"（远程连接）面板。此面板中只包含 "Project URL"（项目 URL）、"Remote Connections"（远程连接）和 "Upload Directory"（上载目录）字段。</p>
+		<img alt="&quot;Remote Web Site&quot;（远程 Web 站点）的 &quot;Run Configuration&quot;（运行配置）屏幕，其中未选择配置" class="margin-around" height="425" src="../../../images_www/articles/72/php/remote-hosting/ftp-run-config-blank.png" width="600">
+		<h3><a id="specifyFTPConnectionSettings" name="specifyFTPConnectionSettings"></a>指定 (S)FTP 连接设置 </h3>
+		要创建 FTP 连接，请执行以下操作：<br><br>
+		<ol>
+		<li>单击 "FTP Connection"（FTP 连接）下拉列表旁边的 "Manage"（管理）。此时将显示 "Manage Remote Connections"（管理远程连接）对话框。</li>
+		<li>单击 "ADD"（添加）。"Create New Connection"（创建新连接）对话框打开。（如果定义的是第一个连接，可能会自动打开该对话框。）</li>
+		<li>在 "Connection Name"（连接名称）字段中，输入新连接的名称。在此示例中，连接名称是 <tt>x10hosting</tt>。从 "Type"（类型）下拉列表中，选择 "FTP" 或 "SFTP"。单击 "OK"（确定）。此时将显示 "Manage Remote Connections"（管理远程连接）对话框，并在 "Connection Name"（连接名称）显示字段中包含新连接的名称。</li>
+		<li>在 "Host Name"（主机名）字段中，输入在 FTP 帐户创建确认消息中包含的 FTP 服务器名称。在本示例中，FTP 服务器是 <tt>nbuser.x10.mx</tt>。</li>
+		<li>在 "Port"（端口）字段中，指定 21。</li>
+		<li>在 "User Name"（用户名）字段中，输入在 FTP 帐户创建确认消息中包含的 FTP 用户名。在本示例中，FTP 用户名是 <tt>nbuser</tt>。</li>
+		<li>填写 "Password"（口令）字段。在此示例中，口令是 <tt>qwerty1234</tt>。 </li>
+		<li>在 "Initial Directory"（初始目录）字段中，输入 FTP 服务器上的帐户目录名称。在此示例中，不指定任何帐户目录，而是在该字段中输入一个正斜杠。 <br> <img alt="&quot;Manage FTP Connections&quot;（管理 FTP 连接）对话框。" class="margin-around" height="487" src="../../../images_www/articles/72/php/remote-hosting/manageremoteconnections.png" width="599"></li>
+		<li>单击 "OK"（确定）。返回到 "Run Configuration"（运行配置）面板。 </li>
+		<li>在 "Upload Directory"（上载目录）字段中，输入初始目录中将上载源文件的子文件夹名称。该字段下的提示显示 FTP 主机 URL。 </li>
+		<!--
+		<li>To specify when the files will be uploaded, choose the relevant option from the <a name="uploadFilesDropdownBox"></a>Upload Files dropdown list. The available options are: Manually and On Run.</li>
+		
+		<li>Click OK if you are updating the existing project settings.</li> -->
+		<li>要完成对新项目的设置，请单击 "Finish"（完成）。 </li>
+		</ol>
+   </div>
+		<h2><a name="uploadSourcesOnRemoteServer"></a>将源文件上载到远程服务器 </h2>
+		<p>为项目选择远程连接后，请选择是在运行时、保存时还是手动上载源文件。</p>
+		<ul>
+		  <li><strong>运行时：</strong>在运行项目时将源文件上载到服务器。</li>
+          <li><strong>保存时：</strong>将每项更改（创建、编辑、重命名、删除）立即传播到远程服务器。如果该操作用时超过 1 秒，则将显示一个进度栏。</li>
+          <li><strong>手动：</strong>从不自动上载文件。您必须使用此部分介绍的 IDE 的手动上载功能。</li>
+   </ul>
+		<p><img alt="用于保存的 &quot;Run Configuration&quot;（运行配置）面板选项" class="margin-around" height="67" src="../../../images_www/articles/72/php/remote-hosting/ftp-run-config.png" width="589"></p>
+   <p>要将项目文件手动上载到 FTP 服务器，请右键单击项目的 "Source Files"（源文件）节点，然后选择 "Upload"（上载）。请注意，您还可以在同一个菜单中从 FTP 服务器下载文件。</p>
+		<img alt="项目管理器中针对 PHP 项目 &quot;Source Files&quot;（源文件）显示 &quot;Upload&quot;（上载）选项的上下文菜单" border="1" class="margin-around" src="../../../images_www/articles/72/php/remote-hosting/beta-source-upload.png">
+		    
+   
+		<p>当开始上载文件时，打开一个包含源文件树视图的对话框。在此对话框中，可以选择是否要上载每个文件。有关详细信息，请参见 <a href="http://blogs.oracle.com/netbeansphp/entry/new_download_upload_dialog" target="_blank">NetBeans PHP 博客条目</a>中的 "File Upload"（文件上载）对话框。</p>
+        <p><img alt="可用于选择要上载的文件的对话框" height="359" src="../../../images_www/articles/72/php/remote-hosting/file-upload-dialog.png" width="439">        </p>
+        <p>当上载文件时，上载的结果会出现在 "Output"（输出）标签中。</p>
+        <p><img alt="用于文件上载的 &quot;Output&quot;（输出）标签" height="319" src="../../../images_www/articles/72/php/remote-hosting/upload-output.png" width="465"></p>
+        <h2 id="remote-synchronization">远程同步</h2>
+        <p>对于必须通过 (S)FTP 在多个没有正确版本控制的开发者环境中工作的开发者，NetBeans IDE 提供了远程同步。通过远程同步，可以将项目文件的本地副本与 (S)FTP 服务器上的副本进行比较。可以将本地副本上载到该服务器，也可以将该服务器的副本下载到本地计算机。在您开始处理本地副本后，如果服务器上的副本进行了更新，则 NetBeans IDE 将向您发出文件冲突警告。当存在文件冲突时，使用 NetBeans IDE 能够逐行比较本地版本与服务器上的版本，并决定要接受的版本。 </p>
+        
+        <p  class="alert"><strong>警告：</strong>远程同步从来不会完全可靠，因为 FTP 服务器上的时间戳不是完全可靠的。版本控制是更安全的解决方案。</p>
+        <p  class="alert"><strong>注：</strong>当您对整个项目执行远程同步时，远程同步工作起来会更可靠。可以对单个文件执行远程同步，但这样会有更高的风险。</p>
+        <p><strong>要执行远程同步，请执行以下操作：</strong></p>
+        <ol>
+          <li>在 "Projects"（项目）窗口中（Ctrl-1 组合键），展开要同步的 PHP 项目的节点。右键单击 "Source Files"（源文件）节点。此时将显示包括 "Synchronize"（同步）选项的上下文菜单。<br> <img alt="显示 &quot;Synchronize&quot;（同步）选项的项目源文件上下文菜单" class="margin-around b-bottom b-right" height="287" src="../../../images_www/articles/72/php/remote-hosting/sync-ctxmenuitem.png" width="250"></li>
+          <li>选择 "Synchronize"（同步）。IDE 将从远程服务器检索文件名和路径并打开 "Remote Synchronization"（远程同步）对话框。
+            <p>"Remote Synchronization"（远程同步）对话框将显示项目文件表。文件的远程版本位于左侧，本地版本位于右侧。中间列中有图标，用于显示 IDE 将在同步时执行的操作。"Warning"（警告）图标位于最左侧。表底部显示操作和问题的概要。表下方显示所有错误的详细说明。表上方是复选框集合，用于过滤对话框显示哪些问题和操作。有关此对话框的详细信息，请单击 "Help"（帮助）。 </p>
+          <img alt="&quot;Main remote synchronization&quot;（主远程同步）对话框" class="margin-around" height="518" src="../../../images_www/articles/72/php/remote-hosting/main-dialog.png" width="600"></li>
+          <li>在表中选择多个项。表底部的概要现在只包含这些项。<br><img alt="选定多个项的 &quot;Remote synchronization&quot;（远程同步）对话框" class="margin-around" height="518" src="../../../images_www/articles/72/php/remote-hosting/multiple-items.png" width="600"></li>
+          <li>右键单击所选项。此时将显示可能操作的上下文菜单。<br><img alt="上下文菜单" class="margin-around" height="200" src="../../../images_www/articles/72/php/remote-hosting/context-menu.png" width="151"></li>
+          <li>如果某一项具有 "Resolve Conflicts"（解决冲突）错误图标，则选择该项。表底部将显示错误说明。<br><img alt="选择的出错项" class="margin-around b-all" height="158" src="../../../images_www/articles/72/php/remote-hosting/error-item.png" width="501"></li>
+          <li>选择出错的项。从按钮行或从上下文菜单选择 "Diff..."（比较...）<img alt="&quot;diff&quot;（比较）图标" height="15" src="../../../images_www/articles/72/php/remote-hosting/diff-icon.png" width="16">。此时将打开 "Diff"（比较）对话框。在此对话框中，向下滚动到文件的远程版本和本地版本之间的每个差异。在图形视图中，您可以应用或拒绝应用远程更改到本地文件。如果您要手动编辑文件，请切换到 "Textual"（文本）标签。完成比较操作后，单击 "OK"（确定）。您将返回到 "Remote Synchronization"（远程同步）对话框。对该文件的操作更改为 "Upload"（上载），并且该文件将用星号标记，因为您更改了它。<br><img alt="&quot;Diff&quot;（比较）对话框" class="margin-around" height="561" src="../../../images_www/articles/72/php/remote-hosting/diff.png" width="600"></li>
+          <li>如果您没有冲突，请单击 "Synchronize"（同步）。如果选择了 "Show Summary Before Start"（开始之前显示概要），则将显示 "Synchronize"（同步）概要，以便您可以在执行同步之前再一次检查操作。如果您批准操作，请单击 "OK"（确定）。<br><img alt="同步概要" class="margin-around" height="178" src="../../../images_www/articles/72/php/remote-hosting/sync-summary.png" width="182"></li>
+        </ol>
+        <p>IDE 执行同步。您可以在 IDE 打开的窗口中观察同步的进度。</p><img alt="&quot;Synchronization progress&quot;（同步进度）对话框" class="margin-around" height="334" src="../../../images_www/articles/72/php/remote-hosting/sync-progress.png" width="341">
+        <h2><a name="runPHPApplication"></a>运行 PHP 应用程序</h2>
+   <br>要在远程服务器上运行 PHP 应用程序，请执行以下操作：
+		<ol>
+		<li>在 "Properties"（属性）面板上，确保从 <a href="#chooisngRunConfigurationType">"Run As"（运行方式）下拉列表</a>中选择 "Remote Web Site"（远程 Web 站点）。 </li>
+		<li>检查 "Run Configuration"（运行配置）设置。</li>
+                <li>如果此项目设置为主项目，请单击工具栏上的 <img alt="&quot;run main project&quot;（运行主项目）按钮" height="26" src="../../../images_www/articles/72/php/remote-hosting/run-main-project-button.png" width="24">。  </li>
+		<li>如果此项目未设置为主项目，请将光标放置在此项目节点上，并从弹出式菜单中选择 "Run"（运行）。 </li>
+		
+		</ol>
+                <h2 id="remote-mysql-database">使用远程 MySQL 数据库</h2>
+   <p>通过远程托管服务（如 x10Hosting.com），您通常可以在其服务器上设置 MySQL 数据库。通过远程托管服务提供的工具，您可以创建数据库、管理用户，以及复制、读取、更新或删除 (CRUD) 数据。 </p>
+   <p>例如，如果您使用的是 x10Hosting.com，则可以通过以下方式创建 MySQL 数据库：登录到x10Hosting cPanel，然后打开 "MySQL Databases"（MySQL 数据库）面板。您还可以在 "MySQL Databases"（MySQL 数据库）面板中创建用户，将用户指定到数据库，以及向用户授予权限。然后，可以使用 "phpMyAdmin" 面板中的 CRUD 工具。</p>
+   <p>使用远程数据库 CRUD 工具的另一种方法是通过 NetBeans IDE 的 CRUD 功能来使用本地数据库。然后，您可以将本地数据库复制或转储到远程数据库。在 x10Hosting.com 上，您可以使用其 "phpMyAdmin" 面板来上载本地数据库。</p>
+   <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Remote%20Hosting%20and%20FTP">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" >
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+		<p><a href="../../trails/php.html">返回至学习资源</a></p>
+   </body>
+</html>

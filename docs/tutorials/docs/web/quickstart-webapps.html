@@ -1,0 +1,448 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>       
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A short guide to creating and using web
+              applications in NetBeans IDE.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              web applications, open source, JSP, JavaServer Pages, JavaBeans">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+        <title>Introduction to Developing Web Applications - NetBeans IDE Tutorial</title>
+    </head>
+
+    <body>
+        <h1>Introduction to Developing Web Applications</h1>
+
+        <p>This document takes you through the basics of using NetBeans IDE to develop
+            web applications. It demonstrates how to create a simple web application,
+            deploy it to a server, and view its presentation in a browser. The application
+            employs a <a href="http://www.oracle.com/technetwork/java/javaee/jsp/index.html">JavaServer
+            Pages</a>&trade; (JSP) page to ask you to input your name. It then uses
+            a JavaBeans component to persist the name during the HTTP session, and retrieves the
+            name for output on a second JSP page.</p>
+
+        <p><strong>Contents</strong></p>
+
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+        <ul class="toc">
+            <li><a href="#setting">Setting Up a Web Application Project</a></li>
+            <li><a href="#creating">Creating and Editing Web Application Source Files</a>
+                <ul>
+                    <li><a href="#creatingJava">Creating a Java Package and a Java Source File</a></li>
+                    <li><a href="#generating">Generating Getter and Setter Methods</a></li>
+                    <li><a href="#editing">Editing the Default JavaServer Pages File</a></li>
+                    <li><a href="#creatingJSP">Creating a JavaServer Pages File</a></li>
+            </ul></li>
+            <li><a href="#building"> Running a Web Application Project</a></li>
+          <li><a href="#trouble">Troubleshooting</a></li>
+            <li><a href="#seeAlso">See Also</a></li>
+        </ul>
+
+        <p><strong>To follow this tutorial, you need the following software and resources.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java EE version</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or 8</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition
+                        <br><em class="indent margin-around">or</em>
+                    <br>Tomcat servlet container
+                    <br>
+                    <em class="indent margin-around">or</em>
+                    <br>
+                    Oracle Web Logic server </td>
+                    <td class="tbltd1" valign="top">4.x <br>
+                        <em class="margin-around indent">&nbsp;</em>
+                    <br>7.x or 8.x<br>
+                    <br>11gR1 (10.3.3) or later</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong>Notes:</strong></p>
+
+        <ul>
+            <li>The  Java EE installation (not Java SE!) enables you to optionally install the
+                 GlassFish server and the Apache Tomcat servlet container.</li>
+          
+          <li>If you would like to compare your project with a working solution, you can
+                <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/HelloWebEE6.zip">download
+            the sample application</a>.</li>
+        </ul>
+
+        <a name="setting"></a>
+        <h2>Setting Up a Web Application Project</h2>
+
+        <ol>
+            <li>Choose File &gt; New Project (Ctrl-Shift-N) from the main menu. Under
+                Categories, select Java Web. Under Projects, select Web Application then
+            click Next.</li>
+            <li>In Step 2, enter <tt>HelloWeb</tt> in the Project Name text box. </li>
+            <li>Specify the Project Location to any directory on your computer. For
+                purposes of this tutorial, this directory is referred to as
+            <tt><i>$PROJECTHOME</i></tt>.          </li>
+            <li>(Optional) Select the Use Dedicated Folder for Storing Libraries checkbox and specify the location for the libraries folder. 
+                See <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">Creating Java Projects</a> in <em>Developing Applications with NetBeans IDE</em> 
+                for more information on this option.</li>
+
+            <li>Click Next. The Server and Settings panel opens. Select the version of Java EE you want to use with your application. </li>
+            <li>Select the server to which you want to deploy your application. Only
+              servers that are registered with the IDE are listed. Note
+              that the Context Path (i.e., on the server) becomes <tt>/HelloWeb</tt>, which is based on the name you gave the project in a previous step. 
+            </li>
+            <li>Click Finish. 
+                <p>The IDE creates the <tt><i>$PROJECTHOME</i>/HelloWeb</tt> project folder. 
+                You can view the project's file structure in the Files window
+                (Ctrl-2), and its logical structure in the Projects window (Ctrl-1). </p>
+                <img src="../../../images_www/articles/72/web/quickstart-web/projects-window.png" class="margin-around"
+                 alt="HelloWeb project logical structure displayed in Projects window" >
+            </li>
+        </ol>
+                <p>The project folder contains all of your sources and project metadata, such
+                    as the project's Ant build script. The HelloWeb project opens in the IDE.
+                    The welcome page, <tt>index.jsp</tt>, opens in the Source Editor in the main
+                    window. </p>
+                <p class="notes"><strong>Note.</strong> Depending on the server and Java EE version
+                    that you specified when you created the project, the IDE might generate <tt>index.html</tt>
+                    as the default welcome page for the web project. You can perform the steps in this tutorial
+                    and use the <tt>index.html</tt> file or you can use the New File wizard to generate
+                    an <tt>index.jsp</tt> file to use as the welcome page, in which case you should delete the
+                    <tt>index.html</tt> file.</p>
+
+
+        <a name="creating"></a>
+        <h2>Creating and Editing Web Application Source Files</h2>
+
+        <p>Creating and editing source files is the most important function that the
+            IDE serves. After all, that is probably what you spend most of your day doing.
+            The IDE provides a wide range of tools that can compliment any developer's
+            personal style, whether you prefer to code everything by hand or want the
+        IDE to generate large chunks of code for you.</p>
+
+        <div class="indent">
+            <a name="creatingJava"></a>
+            <h3>Creating a Java Package and a Java Source File</h3>
+
+            <ol>
+                <li>In the Projects window, expand the Source Packages node. Note the
+                Source Packages node only contains an empty default package node.</li>
+                <li>Right-click the Source Packages node and choose New &gt; Java Class.
+                    Enter <tt>NameHandler</tt> in the Class Name text box and type
+                    <tt>org.mypackage.hello</tt> in the Package combo box. Click Finish.
+                    Notice that the new <tt>NameHandler.java</tt> file opens in the
+                Source Editor.</li>
+                <li>In the Source Editor, declare a <tt>String</tt> variable by
+                    typing the following line directly below the class declaration.
+                <pre class="examplecode">String name;</pre></li>
+                <li>Add the following constructor to the class:
+                <pre class="examplecode">public NameHandler() { }</pre></li>
+                <li>Add the following line in the <tt>NameHandler()</tt> constructor:
+                <pre class="examplecode">name = null;</pre></li>
+            </ol>
+
+            <a name="generating"></a>
+            <h3>Generating Getter and Setter Methods</h3>
+
+            <ol>
+                <li>Right-click the <tt>name</tt> field in the Source Editor and choose
+                    Refactor &gt; Encapsulate Fields. 
+                    <p>The Encapsulate Fields dialog opens,
+                    listing the <tt>name</tt> field. Notice that Fields' Visibility is by
+                    default set to private, and Accessors' Visibility to public, indicating
+                    that the access modifier for class variable declaration will be
+                    specified as private, whereas getter and setter methods will be
+                    generated with <tt>public</tt> and <tt>private</tt> modifiers,
+                respectively.</p>
+                    <img src="../../../images_www/articles/72/web/quickstart-web/encapsulatefields-dialog.png" alt="The encapsulate fields dialog" class="margin-around b-all"></li>
+                <li>Click Refactor. 
+                    <p>Getter and setter methods are generated for the
+                    <tt>name</tt> field. The modifier for the class variable is set to
+                    <tt>private</tt> while getter and setter methods are generated with
+                    public modifiers. The Java class should now look similar to the
+                    following.</p>
+
+                    <pre class="examplecode">package org.mypackage.hello;
+
+/**
+ *
+ * @author nbuser
+ */
+
+public class NameHandler {
+
+    private String name;
+
+    /** Creates a new instance of NameHandler */
+    public NameHandler() {
+       name = null;
+    }
+
+    public String getName() {
+       return name;
+    }
+
+    public void setName(String name) {
+       this.name = name;
+    }
+
+}</pre>
+                </li>
+            </ol>
+
+            <a name="editing"></a>
+            <h3>Editing the Default JavaServer Pages File</h3>
+
+            <ol>
+                <li>Refocus the <tt>index.jsp</tt> file by clicking its tab displayed
+                at the top of the Source Editor.</li>
+                <li><p>In the Palette (Ctrl-Shift-8) located to the right of the Source Editor, expand HTML Forms and drag a Form item to a point after the <tt>&lt;h1&gt;</tt> tags in the Source Editor. </p>
+             <p>  The Insert Form dialog box displays.</p></li>
+                  
+                  
+          <li>        Specify the following values:
+                  <ul>
+                    <li><strong>Action: </strong>response.jsp
+                    <li><strong>Method: </strong>GET
+                    <li><strong>Name: </strong>Name Input Form
+            </ul>
+                  <p>Click OK. An HTML form is added to the <tt>index.jsp</tt> file.</p>
+                  <img src="../../../images_www/articles/72/web/quickstart-web/input-form.png" alt="Input Form dialog box"></li>
+                <li>Drag a Text Input item to a point just before the <tt>&lt;/form&gt;</tt>
+                    tag, then specify the following values:
+
+                    <ul>
+                        <li><strong>Name: </strong>name
+                        <li><strong>Type: </strong>text
+                    </ul>
+
+                    Click OK. An HTML <tt>&lt;input&gt;</tt> tag is added between the
+                <tt>&lt;form&gt;</tt> tags. Delete the <tt>value</tt> attribute from this tag.</li>
+
+                <li>Drag a Button item to a point just before the <tt>&lt;/form&gt;</tt>
+                    tag. Specify the following values:
+
+                    <ul>
+                        <li><strong>Label: </strong>OK
+                        <li><strong>Type: </strong>submit
+                    </ul>
+
+                    Click OK. An HTML button is added between the <tt>&lt;form&gt;</tt>
+                tags.</li>
+
+                <li>Type <tt>Enter your name:</tt> just before the first <tt>&lt;input&gt;</tt>
+                    tag, then change the default <tt>Hello World!</tt> text between the
+                <tt>&lt;h1&gt;</tt> tags to <tt>Entry Form</tt>.</li>
+
+                <li>Right-click within the Source Editor and choose Format (Alt-Shift-F)
+                    to tidy the format of your code. Your <tt>index.jsp</tt> file should
+                    now appear similar to the following:
+
+                    <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;JSP Page&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Entry Form&lt;/h1&gt;
+
+        &lt;form name=&quot;Name Input Form&quot; action=&quot;response.jsp&quot;&gt;
+            Enter your name:
+            &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;
+            &lt;input type=&quot;submit&quot; value=&quot;OK&quot; /&gt;
+        &lt;/form&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+                </li>
+            </ol>
+
+      <a name="creatingJSP"></a>
+            <h3>Creating a JavaServer Pages File</h3>
+
+            <ol>
+                <li>In the Projects window, right-click the HelloWeb project node and
+                    choose New &gt; JSP. The New JSP File wizard opens. Name the file
+                    <tt>response</tt>, and click Finish. Notice that a <tt>response.jsp</tt>
+                    file node displays in the Projects window beneath <tt>index.jsp</tt>, and
+                the new file opens in the Source Editor.</li>
+                <li>
+                    <p>In the Palette to the right of the Source Editor, expand JSP and
+                        drag a Use Bean item to a point just below the <tt>&lt;body&gt;</tt>
+                        tag in the Source Editor. The Insert Use Bean dialog opens. Specify
+                    the values shown in the following figure.</p>
+
+
+                    <img src="../../../images_www/articles/72/web/quickstart-web/usebean-dialog.png"
+                         class="margin-around" alt="Use Bean dialog containing specified fields" >
+
+                    <ul>
+                        <li><strong>ID: </strong>mybean
+                        <li><strong>Class: </strong>org.mypackage.hello.NameHandler
+                        <li><strong>Scope: </strong>session
+                    </ul>
+
+                    Click OK. Notice that the <tt>&lt;jsp:useBean&gt;</tt>
+                tag is added beneath the <tt>&lt;body&gt;</tt> tag.</li>
+
+                <li>Drag a Set Bean Property item from the Palette to a point just before
+                    the <tt>&lt;h1&gt;</tt> tag and click OK. In the
+                    <tt>&lt;jsp:setProperty&gt;</tt>
+                    tag that appears, delete the empty <tt>value</tt> attribute and edit as follows.
+                    Delete the <tt>value = &quot;&quot;</tt> attribute if the IDE created it! Otherwise, it overwrites the value for <tt>name</tt> that you pass in <tt>index.jsp</tt>.
+
+                    <pre class="examplecode">&lt;jsp:setProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;</pre>
+
+                    <p>As indicated in the </p><tt>&lt;jsp:setProperty&gt;</tt>
+                    documentation, you can set a property value in various ways. In this case,
+                    the user input coming from <tt>index.jsp</tt> becomes a name/value pair that
+                    is passed to the <tt>request</tt> object. When you set a property using the
+                    <tt>&lt;jsp:setProperty&gt;</tt> tag, you can specify the value according to
+                    the name of a property contained in the <tt>request</tt> object. Therefore,
+                    by setting <tt>property</tt> to <tt>name</tt>, you can retrieve the value
+                    specified by user input.</p></li>
+
+                <li>Change the text between the &lt;h1&gt; tags so that it looks like this:
+                    <pre class="examplecode">&lt;h1&gt;Hello, !&lt;/h1&gt;</pre>
+                </li>
+                <li>Drag a Get Bean Property item from the Palette and drop it after the
+                    comma between the <tt>&lt;h1&gt;</tt> tags. Specify the following
+                    values in the Insert Get Bean Property dialog:
+
+                    <ul>
+                        <li><strong>Bean Name: </strong>mybean
+                        <li><strong>Property Name: </strong>name
+                    </ul>
+
+                    <p>Click OK. Notice that <tt>&lt;jsp:getProperty&gt;</tt>
+                tag is now added between the <tt>&lt;h1&gt;</tt> tags.</p>
+                <p class="alert"><b>Caution:</b> Property names are case-sensitive. The "name" property must be in the same case in <tt>response.jsp</tt> and in the input form in <tt>index.jsp</tt>.
+              </li>
+
+                <li>Right-click within the Source Editor and choose Format (Alt-Shift-F)
+                    to tidy the format of your code. The <tt>&lt;body&gt;</tt> tags of
+                    your <tt>response.jsp</tt> file should now appear similar to the following:
+
+                    <pre class="examplecode">&lt;body&gt;
+    &lt;jsp:useBean id=&quot;mybean&quot; scope=&quot;session&quot; class=&quot;org.mypackage.hello.NameHandler&quot; /&gt;
+    &lt;jsp:setProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;
+    &lt;h1&gt;Hello, &lt;jsp:getProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;!&lt;/h1&gt;
+&lt;/body&gt;</pre>
+                </li>
+            </ol>
+        </div>
+
+        <a name="building"></a>
+        <h2>Running a Web Application Project</h2>
+
+    <p>The IDE uses an Ant build script to build and run your web applications.
+            The IDE generates the build script based on the options you specify in the
+            New Project wizard, as well as those from the project's Project Properties
+            dialog box (In the Projects window, choose Properties from the project node's
+        right click menu).</p>
+
+        <ol>
+            <li>
+              <p>In the Projects window, right-click the HelloWeb project node and choose
+                    Run (F6). When you run a web application, the IDE performs the following steps:</p>
+                    <ul>
+                    <li>Building and compiling the application code (see note below). You can perform this step in isolation by selecting Build or Clean and Build from the project node context menu.</li>
+                    <li>Launching the server.</li>
+                    <li>Deploying the application to the server. You can perform this step in isolation by selecting Deploy from the project node context menu.</li>
+                    <li>Displaying the application in a browser window.</li>
+                    </ul>
+                    <p class="notes"><b>Note:</b> By default, the project has been created with the Compile on Save feature enabled, so you do not need to compile your code first in order to run the application in the IDE. </p>
+            </li>
+
+            <li>
+              <p>The IDE opens an output window that shows the progress of running the application. Look at the HelloWeb tab in the Output window. In this tab, you can follow all the steps that the IDE performs. If there is a problem, the IDE displays error information in this window.</p>
+          <img src="../../../images_www/articles/72/web/quickstart-web/app-output-tab.png" alt="NetBeans IDE's output window for running the Hello Web application"  class="margin-around b-all"></li>
+            <li>The IDE opens an output window showing the server status.
+              Look at the tab in the Output window with the name of your server.
+              <p class="alert"><b>Important:</b> If the GlassFish server fails to start, start it manually and run the project again. You can start the server manually
+                from the Services window, by right-clicking the server node and selecting Start.</p>
+                <p class="tips">The server output window is very informative about problems running Web applications. The server's logs can also be helpful. They are  located in the server's relevant domain directory. You can also view  the IDE log, visible by selecting View &gt; IDE log.</p>
+                <img src="../../../images_www/articles/72/web/quickstart-web/gf-output-tab.png" alt="NetBeans IDE's output window for the GlassFish 3 server, when running the Hello Web application" class="margin-around b-all">
+            </li>
+            <li>
+              <p>The <tt>index.jsp</tt> page
+                opens in your default browser. Note that the browser window may open before the IDE displays the server output.</p>
+              
+              <img src="../../../images_www/articles/72/web/quickstart-web/result1.png"
+                 class="margin-around" border="1" alt="index.jsp displayed in browser" ></li>
+            <li><p>Enter your name in the text box, then click OK. The <tt>response.jsp</tt>
+                page displays, providing you with a simple greeting.</p>
+
+
+                <img src="../../../images_www/articles/72/web/quickstart-web/result2.png"
+                 class="margin-around" border="1" alt="response.jsp displayed in browser" ></li>
+        </ol>
+
+<a name="trouble"></a>
+        <h2>Troubleshooting</h2>
+
+        <p><em>I've built and run the project.  When I click the OK button for <tt>index.jsp</tt>,
+        an error page displays indicating that <tt>response.jsp</tt> is not available.</em></p>
+
+        <div class="indent">
+            <p>Have you looked in the IDE's Output window (Ctrl-4) in the project tab or in the server tab?
+                What error messages are there? What JDK does your project use? What server? JDK 7 requires GlassFish 3.x or Tomcat
+                7.x. Right-click the project's node in the Projects window and select Properties. The
+                JDK is in the Libraries category, in the Java Platform field. The server version is in
+                the Run category. Lastly, download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/HelloWebEE6.zip">
+            the sample project</a> and compare it with your own.</p>
+        </div>
+		<p><em>I've built and run the project but no name appears, only "Hello, !"</em></p>
+		<div class="indent">
+		<p>Does your &lt;jsp:setProperty&gt; tag contain a <tt>value = ""</tt> attribute? This overwrites the value you passed in the <tt>index.jsp</tt> form and replaces it with an empty string. Delete the <tt>value</tt> attribute.</p></div>
+        <p><em>I've built and run the project but get "Hello, null!"</em></p>
+        <div class="indent">
+        <p>First, check the IDE's Output windows for both application and server, and the server log. Is the server running? Was the application deployed? If the server is running and the application was deployed, are you getting an <tt>org.apache.jasper.JasperException: java.lang.NullPointerException?</tt> This usually means that a value in your code is not initialized correctly. In this tutorial, it means that you probably have a typo somewhere in a property name in your JSP files. Remember that property names are case-sensitive!</p>
+        </div>
+
+        <div class="feedback-box">
+        <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Developing%20Web%20Applications">Send Feedback on This Tutorial</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>See Also</h2>
+
+        <p>This concludes the Introduction to Developing Web Applications tutorial.
+            This document demonstrated how to create a simple web application using
+            NetBeans IDE, deploy it to a server, and view its presentation in a browser.
+            It also showed how to use JavaServer Pages and JavaBeans in your application
+        to collect, persist, and output user data.</p>
+
+        <p>For related and more advanced information about developing web applications
+        in NetBeans IDE, see the following resources:</p>
+
+        <ul>
+            
+            <li><a href="quickstart-webapps-struts.html">Introduction to the
+                Struts Web Framework</a>. Describes the basics of using NetBeans IDE to
+            develop web applications using the Struts framework.</li>
+          <li><a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a></li>
+        </ul>
+
+    </body>
+</html>

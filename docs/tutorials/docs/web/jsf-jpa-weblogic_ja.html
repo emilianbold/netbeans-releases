@@ -1,0 +1,450 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Oracle WebLogic Server用のエンタープライズ・アプリケーションの開発 - NetBeans IDEチュートリアル</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="Demonstrates how to create an enterprise application that is deployed to the Oracle WebLogic server.">
+   <meta name="KEYWORDS" content="NetBeans, CRUD, JPA, JSF, WebLogic, weblogic, Tutorial, Database">
+   <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+       <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Oracle WebLogic Server用のエンタープライズ・アプリケーションの開発</h1>
+
+    <p>このチュートリアルでは、IDEを使用して、JSF (JavaServer Faces) 2.xとJPA (Java Persistence API) 2.0を使用するWebアプリケーションを作成し、そのアプリケーションをOracle WebLogic Serverにデプロイする方法を示します。このチュートリアルでは、IDEにWebLogic Serverを登録し、IDEのウィザードを使用してJDBCリソース、エンティティ・クラスおよびBeanクラスを作成します。その後、IDEを使用してサーバーにアプリケーションをデプロイし、新しいデータソースを登録します。</p>
+    
+    
+    <p><b>目次</b></p>
+    <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+    <ul class="toc">
+        <li><a href="#01">Oracle WebLogic Serverの登録</a>
+        <ul class="toc">
+            <li><a href="#01a">サーバーのインストール</a></li>
+            <li><a href="#01b">IDEへのサーバーの登録</a></li>
+            <li><a href="#01c">管理コンソールを開く</a></li>
+            <li><a href="#01e">JPA 2.0のサポートの有効化</a></li>
+        </ul>
+        </li>
+        <li><a href="#02">Webアプリケーション・プロジェクトの作成</a>
+        <ul>
+            <li><a href="#02b">データベース接続の作成</a></li>
+            <li><a href="#02c">持続性ユニットの作成</a></li>
+            <li><a href="#02d">エンティティ・クラスの作成</a></li>
+            <li><a href="#02e">JSFページの生成</a></li>
+            <li><a href="#02f">アプリケーションの実行</a></li>
+        </ul>
+        </li>
+<!--        <li><a href="#03">Troubleshooting</a></li>-->
+    </ul>
+
+   
+   <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="/downloads/">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">バージョン6または7</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/middleware/weblogic/downloads/index.html">Oracle WebLogic Server</a></td>
+                <td class="tbltd1">11g リリース1 (10.3.4、10.3.5)、12c (12.1.1.0)</td>
+            </tr>   
+            <tr>
+                <td class="tbltd1">サンプル・データベース</td>
+                <td class="tbltd1">MySQLまたはJavaDB</td>
+            </tr>
+        </tbody>
+</table>
+
+ <p class="notes"><strong>注意:</strong></p>
+    <div class="indent">
+    <ul>
+        <li>このプロジェクトでは、MySQLまたはJavaDBデータベース・サーバー向けに用意された<strong><tt>sample</tt></strong>データベースを使用します。IDEでのMySQLデータベースの使用およびデータベース接続の作成の詳細は、<a href="../ide/mysql.html">MySQLデータベースへの接続</a>のチュートリアルを参照してください。または、JavaDB <tt>sample</tt>データベースへのデータベース接続を使用することもできます。これは、IDEのインストール時にGlassFishサーバーをインストールした場合に、デフォルトでIDEに登録されています。
+        </li>
+    </ul>
+    </div>
+
+
+ 
+ <!--+++++++++++++++++++++++ Registering +++++++++++++++++++++++-->
+    <a name="01"></a>
+    <h2>Oracle WebLogic Serverの登録</h2>
+    <p>このチュートリアルでは、Oracle WebLogic ServerにWebアプリケーションをデプロイします。IDEからWebLogic Serverにアプリケーションをデプロイするには、サーバーのインスタンスをIDEに登録する必要があります。この項では、IDEの「サーバー・インスタンスの追加」ウィザードを使用してWebLogic Serverのインスタンスを登録する方法について説明します。
+    </p>
+
+<!--+++++++++++++++++++++++ Downloading +++++++++++++++++++++++-->    
+    <div class="indent">
+        <a name="01a"></a>
+        <h3>サーバーのダウンロードとインストール</h3>
+        <p>サーバーを登録する前に、WebLogic Serverのインストーラをダウンロードし、<a href="http://download.oracle.com/docs/cd/E17904_01/doc.1111/e14142/toc.htm" target="_blank">Oracle WebLogic Serverインストレーション・ガイド</a>で説明されている手順に従って、サーバーをローカル・マシンにインストールする必要があります。サーバーのインストールに加え、サーバーをIDEに登録する前にWebLogicドメインを作成する必要があります。</p>
+        <ol>
+            <li><a href="http://www.oracle.com/technetwork/middleware/weblogic/downloads/index.html" target="_blank">Oracle WebLogic Serverのダウンロード</a>・ページからインストーラをダウンロードします。</li>
+            <li><a href="http://download.oracle.com/docs/cd/E17904_01/doc.1111/e14142/toc.htm" target="_blank">Oracle WebLogic Serverインストレーション・ガイド</a>の手順に従って、サーバーをインストールします。
+                <p>ユーザー名とパスワードを必ずメモしておいてください。</p></li>
+            <li>WebLogicドメインを作成します。
+                <p>ドメインの作成には、<a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e14140/newdom.htm#i1073602">WebLogic構成ウィザードのグラフィカル・モード</a>を使用できます。</p>
+            </li>
+        </ol>
+
+        <p class="tips">サーバーのインストールと設定の詳細は、WebLogic Serverインストレーション・ガイドの次に示す項を参照してください。 </p>
+        <ul>
+            <li><a href="http://download.oracle.com/docs/cd/E17904_01/doc.1111/e14142/prepare.htm">インストールの準備</a></li>
+            <li><a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e14140/intro.htm">WebLogicドメインの紹介</a></li>
+            <li><a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e14140/newdom.htm">WebLogicドメインの作成</a></li>
+        </ul>
+                
+
+<!--+++++++++++++++++++++++ Registering with IDE +++++++++++++++++++++++-->        
+        <a name="01b"></a>
+        <h3>IDEへのサーバーの登録</h3>
+        <p>サーバーをインストールした後、「サーバー・インスタンスの追加」ウィザードを使用して、サーバー・ドメインを指定することによってサーバーのインスタンスを登録できます。</p>
+        <ol>
+            <li>「サービス」ウィンドウを開きます。</li>
+            <li>「サーバー」ノードを右クリックし、「サーバーを追加」を選択します。</li>
+            <li>「Oracle WebLogic Server」を選択します。「次」をクリックします。</li>
+            <li>「参照」をクリックし、サーバーのインストールが含まれているディレクトリを指定します。「次」をクリックします。
+                <p>IDEはサーバー・インスタンスのドメインを自動的に特定します。</p>
+                </li>
+            <li>ドメインのユーザー名とパスワードを入力します。 </li>
+            <li>JPA 2.0を有効にします(WebLogic Server 10.3.4または10.3.5のみ)。「終了」をクリックします。
+                <p class="notes"><strong>注意:</strong>WebLogic Server 12c (12.1.1.0)のインスタンスを登録する場合、JPA 2.0はデフォルトで有効になるため、有効にする必要はありません。WebLogic Server 11g リリース1 (10.3.4または10.3.5)のインスタンスを登録する場合は、サーバーの登録時か、サーバーの登録後にサーバー・マネージャで、JPA 2.0を有効にできます。詳細は、後述の<a href="#01e">「Oracle WebLogic Server 11gでのJPA 2.0のサポートの有効化」</a>を参照してください。</p></li>
+        </ol>
+
+        <img alt="「サーバーの追加」ウィザード" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/add-weblogic-server2.png" title="「サーバーの追加」ウィザード">
+
+
+        <p>「終了」をクリックすると、「サービス」ウィンドウの「サーバー」ノードにOracle WebLogic Serverが表示されます。</p>
+        <p>Oracle WebLogic Serverのノードを右クリックすると、次のような様々なアクションを実行できます。</p>
+        <ul>
+            <li>サーバーを起動および停止する</li>
+            <li>ブラウザで管理コンソールを開く</li>
+            <li>IDEの「出力」ウィンドウでサーバー・ログを表示する </li>
+        </ul>
+        <img alt="「サービス」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/weblogic-services-window1.png" title="「サービス」ウィンドウのWebLogic Server">
+
+        
+
+
+<!--+++++++++++++++++++++++ Opening Admin Console +++++++++++++++++++++++-->
+        <a name="01c"></a>
+        <h3>管理コンソールを開く</h3>
+        <p>この課題では、WebLogic Serverの管理コンソールをブラウザで開きます。管理コンソールでは、サーバー設定を構成したり、デプロイ済アプリケーションおよび使用可能なリソースを表示したりできます。</p>
+        <ol>
+            <li>「サービス」ウィンドウでOracle WebLogic Serverのノードを右クリックし、「起動」を選択しすることで、サーバーを起動します。
+            <p>サーバーを起動すると、「出力」ウィンドウの「Oracle WebLogic Server」タブでサーバー・ログを確認できます。</p>
+            <p class="tips">このタブが表示されていない場合は、Oracle WebLogic Serverのノードを右クリックし、「サーバー・ログの表示」を選択します。</p></li>
+
+            <li>Oracle WebLogic Serverのノードを右クリックし、「管理コンソールを表示」を選択します。
+            <p>「管理コンソールを表示」を選択すると、サーバーのログイン画面がブラウザで開きます。</p></li>
+            <li>サーバーのインストール時に指定したユーザー名とパスワードを使用してログインします。 </li>
+
+        </ol>
+        <p>ログインすると、管理コンソールのホーム・ページがブラウザに表示されます。</p>
+        <img alt="Oracle WebLogic Server管理コンソールのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/admin-console1.png" title="Oracle WebLogic Server管理コンソール">
+
+
+
+<!--+++++++++++++++++++++++ Setting Persistence Provider +++++++++++++++++++++++-->
+<!--+++++++++++++++++++++++ Enabling JPA 2.0 +++++++++++++++++++++++-->
+
+        
+        <h3>Oracle WebLogic Server 11gでのJPA 2.0のサポートの有効化<a name="01e"></a></h3>
+        <p>Oracle WebLogic Server 11g (10.3.4、10.3.5)を使用している場合は、JPA (Java Persistence API) 2.0のサポートを有効にし、デフォルトの持続性プロバイダをTopLinkに設定する必要があります。Oracle WebLogic Server 11gはJava EE 5コンテナで、JPA 1.0とJPA 2.0に準拠しています。Oracle WebLogic Server 10.3.4および10.3.5をインストールすると、JPA 1.0がデフォルトで有効になりますが、WebLogic ServerのインストールにはJPA 2.0をサポートするために必要なファイルが含まれています。WebLogic ServerのJPA 2.0は、サーバー・インスタンスの登録時またはIDEのサービス・マネージャで有効にできます。または、WebLogic Serverのドキュメントの<a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e13720/using_toplink.htm#EJBAD1309">WebLogic ServerにおけるJPA 2.0とTopLinkの併用</a>の手順に従うこともできます。</p>
+        
+        <p>WebLogic ServerはJPA (Java Persistence API)をサポートし、Oracle TopLinkとKodoの持続性ライブラリがバンドルされています。この課題では、WebLogic Serverの管理コンソールで、デフォルトの持続性プロバイダをKodoからOracle Toplinkに変更します。</p>
+        
+        <p class="notes"><strong>注意:</strong>WebLogic Server 12cをインストールする場合、TopLinkとJPA 2.0サポートはデフォルトで有効になります。</p>
+            
+            
+        <p>サーバー・マネージャでJPA 2.0のサポートを有効にし、デフォルトの持続性プロバイダを設定するには、次の手順を実行します。</p>
+        
+        <ol>
+            <li>「サービス」ウィンドウでOracle WebLogic Serverのノードを右クリックし、「プロパティ」を選択してサーバー・マネージャを開きます。
+                <p>または、メイン・メニューから「ツール」>「サーバー」を選択してサーバー・マネージャを開くこともできます。</p>
+            <img alt="サーバー・マネージャの「ドメイン」タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/weblogic-properties-enablejpa.png" title="サーバー・マネージャの「ドメイン」タブ">
+            <p>サーバー・マネージャの「ドメイン」タブでは、ユーザー名とパスワードを表示および変更できます。</p>
+            </li>
+            <li>「JPA 2を有効化」をクリックします。「閉じる」をクリックします。
+            <p>「JPA 2を有効化」をクリックすると、IDEでWebLogic Serverのクラスパスが変更され、JPA 2のサポートを有効にするためのファイルが追加されます。</p>
+
+            <p class="notes"><strong>注意:</strong>Oracle Smart Updateを使用するか、WebLogicクラスパスを手動で変更することで、JPA 2.0を有効にすることもできます。JPA 2.0サポートの有効化の詳細は、次のリンクを参照してください。</p>
+            <ul>             
+                <li><a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e13720/using_toplink.htm#EJBAD1309">WebLogic ServerにおけるJPA 2.0とTopLinkの併用</a></li>
+                <li><a href="http://forums.oracle.com/forums/thread.jspa?threadID=1112476">OTNディスカッション・フォーラム: 11g リリース1パッチ・セット3 (WLS 10.3.4) </a></li>
+                <li><a href="http://wiki.eclipse.org/EclipseLink/Development/JPA_2.0/weblogic">WebLogic 10.3でのJPA 2.0 APIの実行</a></li>
+            </ul>
+        
+            </li>
+            <li>Oracle WebLogic Serverの管理コンソールをブラウザで開き、ログインします。</li>
+            <li>管理コンソールの「ドメイン構成」セクションの「<strong>ドメイン</strong>」をクリックします。</li>
+            <li>「構成」タブの「<strong>JPA</strong>」タブをクリックします。</li>
+            <li>「デフォルトJPAプロバイダ」ドロップダウン・リストで「<strong>TopLink</strong>」を選択します。「保存」をクリックします。 </li>
+        </ol>
+        <img alt="Oracle WebLogic Server管理コンソールの「JPA」タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/admin-console-jpa.png" title="Oracle WebLogic Server管理コンソールの「JPA」タブ">
+
+        <p>「保存」をクリックすると、アプリケーションで明示的に持続性プロバイダが指定されていない場合には、サーバーにデプロイされたアプリケーションのデフォルトの持続性プロバイダはOracle TopLinkになります。</p>
+
+        <p class="notes"><strong>注意:</strong>このチュートリアルのアプリケーションは、JTA (Java Transaction API)を使用してトランザクションを管理します。JTAはWebLogicのインストール時にデフォルトで有効になっています。JTAの設定は、ドメインの「構成」タブの「JTA」タブで変更できます。</p>
+        
+    </div>
+
+
+
+
+<!--+++++++++++++++++++++++ Creating Application +++++++++++++++++++++++-->
+
+    <a name="02"></a>
+    <h2>Webアプリケーションの作成</h2>
+    <p>このチュートリアルでは、Java EE Webアプリケーションを作成します。このWebアプリケーションには、sampleデータベースの表に基づくエンティティ・クラスが含まれます。データベースへの接続を作成した後で、持続性ユニットを作成し、IDEのウィザードを使用してデータベースからエンティティ・クラスを生成します。次に、ウィザードを使用して、エンティティ・クラスに基づいてJSFページを作成します。
+    </p>
+
+    <div class="indent">
+        
+
+<!--+++++++++++++++++++++++ Creating Project +++++++++++++++++++++++-->
+
+        <a name="02"></a>
+        <h3>プロジェクトの作成</h3>
+        <p>この課題では、新規プロジェクト・ウィザードを使用してWebアプリケーションを作成し、Oracle WebLogic Serverをターゲット・サーバーとして指定します。</p>
+
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[&#8984]-[Shift]-[N])を選択します。</li>
+            <li>「Java Web」カテゴリから「Webアプリケーション」を選択します。「次」をクリックします。</li>
+            <li>プロジェクト名として「<strong>WebLogicCustomer</strong>」と入力し、プロジェクトの場所を指定します。</li>
+            <li>専用フォルダを使用するオプションが選択されている場合は選択を解除します。「次」をクリックします。</li>
+            <li>「サーバー」ドロップダウン・リストから「<strong>Oracle WebLogic Server</strong>」を選択します。</li>
+            <li>「Java EEバージョン」に<strong>「Java EE 5」</strong>または<strong>「Java EE 6 Web」</strong>を選択します。「次」をクリックします。<br>
+                <p class="notes"><strong>注意:</strong>Java EE 6 Webは、WebLogic Server 12 cのインスタンスを登録した場合にのみ使用可能です。</p>
+            <img alt="新規プロジェクト・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/new-project-ee6.png" title="新規プロジェクト・ウィザードで選択されたWeblogic"></li>
+            <li>JavaServer Facesフレームワークを選択します。</li>
+            <li>「サーバー・ライブラリ」ドロップダウン・リストから「JSF 2.x」を選択します。「終了」をクリックします。<br> <img alt="新規プロジェクト・ウィザードの「フレームワーク」パネルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/projectwizard-serverlib.png" title="新規プロジェクト・ウィザードの「フレームワーク」パネル">
+            
+            
+            
+            </li>
+        </ol>
+            <p>「終了」をクリックすると、IDEによってWebアプリケーション・プロジェクトが作成され、<tt>index.xhtml</tt>がエディタに表示されます。「プロジェクト」ウィンドウで、<tt>weblogic.xml</tt>ディスクリプタ・ファイルおよび<tt>web.xml</tt>が「構成ファイル」ノードに作成されたことを確認できます。</p>
+            <img alt="「プロジェクト」ウィンドウのweblogic.xmlのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/wl-projects-window1.png" title="「プロジェクト」ウィンドウで選択されたweblogic.xml">
+            <p>エディタで<tt>web.xml</tt>を開くと、<tt>faces/index.xhtml</tt>がデフォルトのindexページとして指定されていることが確認できます。<tt>weblogic.xml</tt>をエディタで開くと、ファイルは次のような内容です。</p>
+            
+            <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;weblogic-web-app xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.0/weblogic-web-app.xsd"&gt;
+  &lt;jsp-descriptor&gt;
+    &lt;keepgenerated&gt;true&lt;/keepgenerated&gt;
+    &lt;debug&gt;true&lt;/debug&gt;
+  &lt;/jsp-descriptor&gt;
+  &lt;context-root&gt;/WebLogicCustomer&lt;/context-root&gt;
+&lt;/weblogic-web-app&gt;</pre>
+            
+        <p class="notes"><strong>注意:</strong></p>
+            <ul>
+                <li><tt>weblogic.xml</tt>ファイルに<tt>&lt;fast-swap></tt>要素が含まれている場合、<tt>&lt;enabled></tt>要素の値が<strong>false</strong>であることを確認し、<tt>fast-swap</tt>が無効であることを確認します。
+            <pre class="examplecode">
+    &lt;fast-swap&gt;
+        &lt;enabled&gt;<strong>false</strong>&lt;/enabled&gt;
+    &lt;/fast-swap&gt;</pre>
+        </li>                
+                <li>ターゲット・サーバーがWebLogic Server 11g (10.3.4または10.3.5)の場合、サーバーのインストールにJSF 1.2とJSF 2.xをアプリケーションで使用するために必要なライブラリが含まれますが、これらはデフォルトでは非アクティブ化されています。JSF 2.xライブラリの使用を開始する前に、ライブラリのデプロイとインストールを行う必要があります。新規プロジェクト・ウィザードでライブラリを選択すると、ライブラリがまだインストールされていない場合はIDEでメッセージが表示され、ライブラリをインストールできます。ライブラリをインストールする必要があるのは1回のみです。<br> <img alt="「不足しているサーバー・ライブラリの問題を解決」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/install-libraries-dialog.png" title="「不足しているサーバー・ライブラリの問題を解決」ダイアログ">
+            <p>アプリケーションの作成後、<tt>weblogic.xml</tt>ディスクリプタ・ファイルを表示すると、IDEによってファイルが変更され、アプリケーションで使用されるJSFライブラリが指定されていることがわかります。</p>
+            
+            <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;weblogic-web-app xmlns="http://www.bea.com/ns/weblogic/90" xmlns:j2ee="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-web-app.xsd"&gt;
+  &lt;context-root&gt;/WebLogicCustomer&lt;/context-root&gt;
+  <strong>&lt;library-ref&gt;
+      &lt;library-name&gt;jsf&lt;/library-name&gt;
+      &lt;specification-version&gt;2.0&lt;/specification-version&gt;
+      &lt;implementation-version&gt;1.0.0.0_2-0-2&lt;/implementation-version&gt;
+      &lt;exact-match&gt;true&lt;/exact-match&gt;
+  &lt;/library-ref&gt;</strong>
+&lt;/weblogic-web-app&gt;</pre>
+
+            </li>
+        </ul>
+
+        
+<!--+++++++++++++++++++++++ Creating DB Connection +++++++++++++++++++++++-->
+
+        <a name="02b"></a>
+        <h3>データベース接続の作成</h3>
+
+        <p>このチュートリアルでは、MySQLデータベース・サーバーで実行される<strong>sample</strong>という名前のデータベースを使用します。この課題では、IDEを使用してこのデータベースを作成し、データベース表を生成します。次に、このデータベースへのデータベース接続を開きます。IDEはデータベース接続の詳細を使用して、アプリケーションの持続性ユニットを作成します。IDEでのMySQLデータベースの使用に関する詳細は、<a href="../ide/mysql.html">MySQLデータベースへの接続</a>のチュートリアルを参照してください。
+        </p>
+
+            <p class="notes"><strong>注意:</strong>または、IDEのインストール時にGlassFishサーバーをインストールした場合は、JavaDBデータベース・サーバー上のsampleデータベースへのデータベース接続が自動的に登録されるため、それを使用することもできます。</p>
+            <p>この課題では、データベースへの接続を作成して開きます。</p>
+
+        <ol>
+            <li>「サービス」ウィンドウでMySQLサーバーのノードを右クリックし、「接続」を選択します。</li>
+            <li>ユーザー名とパスワードを入力します。「OK」をクリックします。</li>
+            <li>「MySQLサーバー」ノードを右クリックし、「データベースを作成」を選択します。</li>
+            <li>「新規データベース名」ドロップダウン・リストで「<strong>sample</strong>」を選択します。「OK」をクリックします。<br> <img alt="「データベースを作成」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/create-db.png" title="「データベースを作成」ダイアログ・ボックス">
+                <p class="notes"><strong>注意:</strong>データベースの構成によっては、新しいデータベースに対するアクセス権を明示的に指定する必要がある場合があります。</p>
+                <p>「OK」をクリックすると、sampleデータベースが作成され、データベース表が生成されます。MySQLサーバーのノードを展開すると、データベースのリストに新しい<tt>sample</tt>データベースが追加されていることがわかります。</p>
+            </li>
+            <li>MySQLサーバーのノードを展開し、sampleデータベースを右クリックし、「接続」を選択します。</li>
+        </ol>
+        <p>「接続」をクリックすると、そのデータベースに対するデータベース接続ノードが「データベース」ノードの下に表示されます。ノードを展開すると、データベース表を表示できます。</p>
+        <img alt="「サービス」ウィンドウのデータベース・ノードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/services-window2.png" title="「サービス」ウィンドウのsampleデータベース・ノード">
+
+
+        <p>IDEはデータベース接続を使用してデータベースに接続し、データベースの詳細を取得します。また、IDEはデータベース接続の詳細を使用してXMLファイルも作成し、WebLogic Serverはこれを使用してサーバーにデータ・ソースを作成して適切なドライバを特定します。</p>
+        
+        <p class="tips">MySQLデータベースをインストールしていない場合は、JavaDBで実行される<tt>sample</tt>データベースを使用できます。<tt>sample</tt>データベースが存在しない場合は、MySQL (またはJavaDB)ノードを右クリックし、「データベースを作成」を選択します。</p>
+
+        <p>詳細は、<a href="../ide/mysql.html">MySQLデータベースへの接続</a>のチュートリアルを参照してください。</p>
+
+
+        
+<!--+++++++++++++++++++++++ Creating PU +++++++++++++++++++++++-->
+
+        <a name="02c"></a>
+        <h3>持続性ユニットの作成</h3>
+
+        <p>アプリケーション内の持続性を管理するには、持続性ユニットの作成と、使用するデータ・ソースとエンティティ・マネージャの指定のみが必要で、エンティティと持続性の管理作業はコンテナに任せます。持続性ユニットは、<tt>persistence.xml</tt>で定義することによって作成します。</p>
+
+        <p class="notes"><strong>注意:</strong>デモンストレーションのために、この課題では新規持続性ユニット・ウィザードを使用して<tt>persistence.xml</tt>ファイルを作成します。このウィザードを利用して、持続性ユニットのプロパティを指定できます。データベースからの新規エンティティ・クラス・ウィザードで持続性ユニットを作成することもできます。持続性ユニットが存在しない場合、このウィザードはプロジェクトの持続性ユニットを作成するオプションを表示します。このウィザードでは、WebLogic Serverのデフォルトの持続性プロバイダを使用する持続性ユニットが作成されます。</p>
+
+
+        <ol>
+            <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「プロパティ」を選択します。</li>
+            <li>「プロパティ」ウィンドウの「ソース」カテゴリで、「ソース/バイナリ形式」として「<strong>JDK 6</strong>」を選択します。「OK」をクリックします。</li>
+            <li>「新規ファイル」([Ctrl]-[N]、Macの場合は[&#8984]-[N])を選択して新規ファイル・ウィザードを開きます。</li>
+            <li>「持続性」カテゴリから「持続性ユニット」を選択します。「次」をクリックします。</li>
+            <li>ウィザードが提案する持続性ユニットのデフォルト名のままにしておきます。</li>
+            <li>「持続性プロバイダ」ドロップダウン・リストで「<strong>EclipseLink</strong>」を選択します。</li>
+            <li>「データ・ソース」ドロップダウン・リストで「新しいデータ・ソース」を選択します。</li>
+            <li>「新しいデータ・ソース」ダイアログ・ボックスで、JNDI名に「<strong>jdbc/mysql-sample</strong>」と入力します。</li>
+            <li>MySQL sampleデータベース接続を選択します。「OK」をクリックしてダイアログ・ボックスを閉じます。</li>
+            <li>新規持続性ユニット・ウィザードで「終了」をクリックします。</li>
+        </ol>
+        <img alt="新規持続性ユニット・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/new-persistence-eclipselink1.png" title="新規持続性ユニット・ウィザード">
+
+
+        <p>「終了」をクリックすると、プロジェクトのための<tt>persistence.xml</tt>が作成され、エディタに表示されます。エディタのツールバーで「ソース」をクリックし、XMLソース・エディタで<tt>persistence.xml</tt>を開きます。このファイルには、アプリケーションのエンティティおよび持続性を管理するためにサーバーが必要とする情報がすべて含まれています。</p>
+
+
+        <p class="notes"><strong>注意:</strong>既存のデータソースを使用しない場合は、サーバー上にデータソースを作成するための詳細(データベースのJDBCドライバなど)が含まれるXMLファイル(たとえば、<tt>datasource-1-jdbc.xml</tt>)が、IDEによって「サーバー・リソース」ノードに生成されます。</p>
+
+        <p>
+        <tt>persistence.xml</tt>をXMLソース・エディタで開くと、持続性のバージョンは2.0、スキーマは<tt>persistence_2_0.xsd</tt>として指定されていることがわかります。IDEは、<tt>persistence.xml</tt>内に持続性プロバイダとして<tt>org.eclipse.persistence.jpa.PersistenceProvider</tt>を指定します。EclipseLinkはOracle TopLinkの持続性のプライマリ実装で、JPAのリファレンス実装です。
+        </p>
+
+        <pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;persistence <strong>version="2.0"</strong> xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/<strong>persistence_2_0.xsd</strong>"&gt;
+  &lt;persistence-unit name="WebLogicCustomerPU" transaction-type="JTA"&gt;
+    &lt;provider&gt;org.eclipse.persistence.jpa.PersistenceProvider&lt;/provider&gt;
+    &lt;jta-data-source&gt;jdbc/mysql-sample&lt;/jta-data-source&gt;
+    &lt;exclude-unlisted-classes&gt;false&lt;/exclude-unlisted-classes&gt;
+    &lt;properties&gt;
+      &lt;property name="eclipselink.ddl-generation" value="create-tables"/&gt;
+    &lt;/properties&gt;
+  &lt;/persistence-unit&gt;
+&lt;/persistence&gt;</pre>
+        
+        <p>ウィザードで「TopLink」を選択することもでき、その場合ウィザードは、<tt>persistence.xml</tt>内の持続性プロバイダとして<tt>oracle.toplink.essentials.PersistenceProvider</tt>を指定します。IDEはOracle TopLink Essentials - 2.0.1ライブラリをクラスパスに追加します。Oracle TopLinkの現在および将来のバージョンでは、Oracle TopLink EssentialsはEclipseLinkで置き換えられます。可能な場合は、Oracle TopLink EssentialsのかわりにOracle TopLink/EclipseLinkを使用してください。</p>
+
+
+<!--+++++++++++++++++++++++ Creating Entity Classes +++++++++++++++++++++++-->
+
+        <a name="02d"></a>
+        <h3>エンティティ・クラスの作成</h3>
+        <p>ここでは、データベースからのエンティティ・クラス・ウィザードを使用して、リレーショナル・データベースに基づいたエンティティ・クラスを作成します。</p>
+
+        <ol>
+            <li>「新規ファイル」([Ctrl]-[N])を選択し、新規ファイル・ウィザードを開きます。 </li>
+            <li>「持続性」カテゴリから「データベースからのエンティティ・クラス」を選択します。「次」をクリックします。</li>
+            <li>データベースからのエンティティ・クラス・ウィザードで、「データ・ソース」ドロップダウン・リストから「<strong>jdbc/mysql-sample</strong>」を選択し、必要に応じてパスワードを入力します。</li>
+            <li>「使用可能な表」から<strong>Customer</strong>表を選択し、「追加」をクリックします。「次」をクリックします。
+            <p><tt>customer</tt>表とそれに関連する表がウィザードの「選択した表」の下に一覧表示されます。</p></li>
+            <li>生成されるクラスのパッケージとして「<strong>ejb</strong>」と入力します。「終了」をクリックします。</li>
+        </ol>
+
+        <p>「終了」をクリックすると、選択した各表のエンティティ・クラスがIDEによって生成されます。<tt>ejb</tt>ソース・パッケージ・ノードを展開すると、生成されたエンティティ・クラスを表示できます。</p>
+
+        
+        
+<!--+++++++++++++++++++++++ Creating JSF Pages+++++++++++++++++++++++-->        
+
+        <a name="02e"></a>
+        <h3>JSFページの生成</h3>
+        <p>
+        この課題では、ウィザードを使用して、既存のエンティティ・クラスに基づいたJSFページを生成します。</p>
+
+        <ol>
+            <li>プロジェクト・ノードを右クリックし、「新規」>「その他」を選択します。</li>
+            <li>新規ファイル・ウィザードの「JavaServer Faces」カテゴリで、「エンティティからのJSFページ・クラス」を選択します。「次」をクリックします。</li>
+            <li>使用可能なすべてのエンティティのJSFページを作成するために、「すべてを追加」をクリックします。「次」をクリックします。</li>
+            <li>セッションBeanおよびJPAコントローラ・クラスのパッケージに「<strong>web</strong>」と入力します。「終了」をクリックします。</li>
+        </ol>
+        <p>「終了」をクリックすると、JSF 2.0ページおよびそれらのJSFページのコントローラ・クラスとコンバータ・クラスが生成されます。IDEによってエンティティ・クラスごとにJSFページのセットがデフォルトWebページ・ディレクトリに生成されます。また、IDEは、各エンティティに対する管理対象Beanクラスも生成します。これは、エンティティに対応するセッション・ファサード・クラスにアクセスします。</p>
+
+
+   
+
+<!--+++++++++++++++++++++++ Running Project +++++++++++++++++++++++-->        
+        
+        <a name="02f"></a>
+        <h3>プロジェクトの実行</h3>
+
+        <p>この課題では、Webアプリケーションをビルドし、WebLogic Serverにデプロイします。アプリケーションのビルド、デプロイおよび起動には、IDEの「実行」コマンドを使用します。</p>
+        <ol>
+            <li>プロジェクトのノードを右クリックし、「実行」を選択します。</li>
+        </ol>
+
+        <p>「実行」をクリックすると、IDEによってプロジェクトがビルドされ、WARアーカイブがWebLogic Serverにデプロイされ、新しいJDBCデータ・ソースが作成されて登録されます。アプリケーションの開始ページ(<a href="http://localhost:7001/WebLogicCustomer/">http://localhost:7001/WebLogicCustomer/</a>)がブラウザに表示されます。</p>
+        <img alt="ブラウザに表示された開始ページのサマリー表のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/browser-welcome.png" title="ブラウザに表示された開始ページ">
+
+        <p>管理コンソールにログインすると、「デプロイされたリソース」セクションの「デプロイメント」をクリックして、現在サーバーにデプロイされているリソースの表を確認できます。</p>
+        <img alt="WebLogic Server管理コンソールの「デプロイメント」表のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/adminconsole-deployments.png" title="WebLogic Server管理コンソールの「デプロイメント」表">
+
+        <p>各リソースの名前をクリックすると、そのリソースに関する追加の詳細を表示できます。「デプロイメント」表のリソースを削除することもできます。</p>
+        
+        <p class="notes"><strong>WebLogic 10.3.4または10.3.5へのデプロイに関する注意</strong>.</p>
+        <ul>
+        <li>WebLogic Server 10.3.4または10.3.5にアプリケーションをデプロイした場合は、<tt>WebLogicCustomer.war</tt> Webアプリケーションおよび<tt>jdbc/mysql-sample</tt> JDBC構成以外にJSF 2.0ライブラリもサーバーにデプロイされたことが表で確認できます。<br> <img alt="WebLogic Server管理コンソールの「デプロイメント」表のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/admin-console-deployments.png" title="WebLogic Server管理コンソールの「デプロイメント」表">
+        </li>
+        <li>「サービス」ウィンドウでOracle WebLogic Serverのインスタンスを展開すると、そのサーバーにデプロイされているアプリケーションとリソースを表示できます。サーバーにJDBCリソースが作成されていることと、JSFライブラリがインストールされていることがわかります。<br> <img alt="「サービス」ウィンドウに表示されたWebLogic Serverのアプリケーションとリソースのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/weblogic-services-window2.png" title="「サービス」ウィンドウに表示されたWebLogic Serverのアプリケーションとリソース">
+        </li>
+    </ul>
+        <p class="tips">アプリケーションのデプロイの詳細は、<a href="http://download.oracle.com/docs/cd/E12840_01/wls/docs103/deployment/index.html">WebLogic Serverへのアプリケーションのデプロイ</a>を参照してください。
+        </p>
+
+    </div>
+
+
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Developing%20an%20Enterprise%20Application%20on%20Oracle%20WebLogic">このチュートリアルに関するご意見をお寄せください</a></div>
+<br style="clear:both;">
+
+<h2>関連項目</h2>
+
+<p>NetBeans IDEを使用して、Java PersistenceとJavaServer Facesを使用するWebアプリケーションを開発する方法については、次のリソースを参照してください。</p>
+    <ul>
+        <li><a href="../javaee/weblogic-javaee-m1-screencast.html">Oracle WebLogic ServerへのWebアプリケーションのデプロイのビデオ</a></li>
+        <li><a href="jsf20-intro.html">JavaServer Faces 2.0入門</a></li>
+        <li><a href="../../docs/javaee/ecommerce/intro.html">NetBeans Eコマースのチュートリアル</a></li>
+        <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+    </ul>
+
+   
+</body>
+</html>

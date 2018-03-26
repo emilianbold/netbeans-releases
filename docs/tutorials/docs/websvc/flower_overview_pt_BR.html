@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>Visão geral, Web Service Passando Dados Binários parte 1 - Tutorial do NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, web service, soap, ejb, binary attachment, jax-ws">
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial provides an overview and specifies requirements.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    
+    
+    <body>
+        <h1>Aplicação de Web Service Passando Dados Binários, parte 1: Visão Geral</h1>
+        
+        
+
+        
+        <p>Neste tutorial, você criará uma aplicação da Web EE que contém um Web service implementado como um bean de sessão sem estado. Você também adicionará um pacote com quatro arquivos JPEG à aplicação Web. O Web service tem duas operações acessíveis pelos clientes, para obter imagens individuais e para obter um conjunto de todas as quatro imagens como miniaturas. Adicione métodos privados que convertem os arquivos JPEG em arrays de bytes e que convertem esses arrays de bytes em objetos <tt>Imagem</tt>. No Java EE5 você coloca esses métodos privados diretamente no Web service, pois o Web service também é um EJB. </p>
+        <p>Após criar o web service, implante-o em uma instância do GlassFish server 3.1 ou superior. Utilize o testador do Web service integrado do NetBeans IDE para exibir a solicitação SOAP de amostra e responder mensagens.</p>
+        <p>A infraestrutura do serviço JAX-WS default não pode informar aos clientes que os dados binários precisam ser interpretados como arquivos JPEG. Portanto, você gera uma cópia do Esquema XML e dos arquivos WSDL e edita o esquema XML para informar a qualquer cliente para esperar o tipo de conteúdo <tt>image/jpeg</tt> para o elemento de retorno. Você também irá altera o código de serviço para utilizar o Esquema e o WSDL personalizados.</p>
+        <p>Por fim, você criará uma aplicação cliente Java que exibirá as imagens em um álbum criado com base em componentes Swing. </p>
+        <p>É possível fazer download de uma versão completa de aplicações clientes e serviços no <a href="https://netbeans.org/projects/samples/downloads/directory/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6" target="_blank">Catálogo de Amostras do NetBeans</a>.</p>
+    <p><b>Lições Deste Tutorial</b></p>
+            <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+            <ol>
+                <li> => Visão Geral</li>
+              <li><a href="./flower_ws.html"> Criando o Web Service</a></li>
+                <li><a href="./flower-code-ws.html"> Codificando e Testando o Web Service</a></li>
+                <li><a href="./flower_wsdl_schema.html"> Modificando o Esquema e os Arquivos WSDL para Passar Dados Binários</a></li>
+                <li><a href="./flower_swing.html"> Criando o Cliente Swing</a></li>
+            </ol>  
+            
+    <h3>Software Necessário para o Tutorial</h3>
+            
+            
+            <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+            
+            <table>
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Software ou Recurso</th>
+                        <th class="tblheader" scope="col">Versão Necessária</th>
+                    </tr> 
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                        <td class="tbltd1">Pacote de download do Java EE</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">JDK (Java Development Kit)</a></td>
+                        <td class="tbltd1">versão 7 ou 8</td>
+                  </tr>
+                    
+                    
+                    <tr>
+                        <td class="tbltd1">Servidor de aplicações ou Web compatível com Java EE</td>
+                        <td class="tbltd1"><a href="http://glassfish.java.net/" target="_blank">GlassFish Server Open Source Edition 3.1 ou superior</a><br />
+						
+                    </td>
+                    </tr>
+                    <tr><td class="tbltd1">Imagens usadas neste tutorial</td>
+                        <td class="tbltd1"><a href="../../../images_www/articles/73/websvc/flower/rose.jpg">rose.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/sunflower.jpg">sunflower.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/aster.jpg">aster.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/honeysuckle.jpg">honeysuckle.jpg</a></td></tr>
+                    
+                </tbody>
+            </table>
+			<p class="alert"><b>Observação: </b>o GlassFish Server pode ser instalado com o conjunto Java EE obtido por download do NetBeans IDE. Como alternativa, você pode visitar <a href="https://glassfish.java.net/download.html">a página de downloads do GlassFish Server</a>.</p>
+			<p class="tips"><b>Dica:</b>como opção, para fins de solução de problemas, você pode <a href="https://netbeans.org/files/documents/4/2343/SoapWithAttachments.zip" target="_blank">fazer o download da amostra completa</a> e inspecionar os códigos-fonte.</p>
+	<p>No fim deste tutorial, você terá uma aplicação Java Swing em execução que consome imagens JPEG por meio de um Web service, com o resultado exibido a seguir:</p>
+        
+        <img alt="JFrame mostrando todas as imagens de flores obtidas do Web Service" class="margin-around" height="507" src="../../../images_www/articles/73/websvc/flower/running-client.png" title="JFrame mostrando todas as imagens de flores obtidas do Web Service" width="600">
+        <h2>Próxima etapa:</h2>
+        <p><a href="./flower_ws.html"> Criando o Web Service</a></p>
+        
+        
+    <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Overview%20EE6">Enviar Feedback neste Tutorial</a></div>
+        
+        <!-- ======================================================================================= -->
+        <br>
+		<h2><a name="seealso"></a>Consulte Também</h2>
+        <p>Para obter informações detalhadas antes de usar este tutorial, consulte os seguintes recursos:
+        </p>
+        <ul>
+            <li><a href="./jax-ws.html">Introdução aos Web Services JAX-WS</a></li>
+            <li><a href="../../docs/websvc/client.html">Desenvolvendo Clientes de Web Services</a></li>
+            <li><a href="../javaee/javaee-gettingstarted.html">Conceitos Básicos sobre Aplicações do Java EE</a></li>
+            <li><a href="./wsit.html">Interoperabilidade Avançada de Web Service</a></li>
+            
+        </ul>
+        
+        <p>Para enviar comentários e sugestões, obter suporte e se manter informado sobre os mais recentes desenvolvimentos das funcionalidades de desenvolvimento Java EE do NetBeans IDE, <a href="../../../community/lists/top.html">inscreva-se na lista de notícias nbj2ee@netbeans.org</a>.</p>
+    </body>
+</html>

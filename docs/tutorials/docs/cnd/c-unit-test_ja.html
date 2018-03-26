@@ -1,0 +1,565 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>C/C++プロジェクトへの単体テストの追加</title>
+        <meta name="DESCRIPTION" content="A tutorial for using unit testing in C/++ projects in NetBeans IDE and
+              Oracle Solaris Studio IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,Oracle Solaris Studio
+              tutorial, guide, user, documentation, open source, unit testing, CUnit, CppUnit, C, C++">
+        <meta name="author" content="Susan Morgan"><!--Optional tag-->
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+    </head>
+    <body>
+        <h1>Cプロジェクトへの単体テストの追加 - NetBeans IDEチュートリアル</h1>
+        <!-- START INTRO ---------------------------------------------------------------------------------------* -->
+        <div class="articledate" style="margin-left: 0px;font-style:italic;">
+           <p><em>執筆: <a href="mailto:susanm@netbeans.org"><i>Susan Morgan</i></a><br> 2014年3月</em> [リビジョン番号: V8.0-1]</div>
+        <!-- END INTRO -->
+        <h3>目次</h3>
+        <img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます">
+        <table class="b-none vatop" cellpadding="0" cellspacing="0">
+            <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#requirements">要件</a></td>
+            </tr>
+            <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#intro">概要</a></td>
+            </tr>
+             <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#cunit">CUnitテスト・フレームワークのインストール</a></td>
+            </tr>
+            <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#project">チュートリアル用のプロジェクトの作成</a></td>
+            </tr>
+           
+            <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#addtest">CUnitテストのNetBeans管理対象プロジェクトへの追加</a></td>
+            </tr>
+
+            <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#runtest">CUnitテストの実行</a></td>
+            </tr>
+
+        <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#addmore">別のCUnitテストの追加</a></td>
+        </tr>
+
+         <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#debug">テストのデバッグ</a></td>
+            </tr>
+
+            <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#addsimple">簡易テストの追加</a></td>
+            </tr>
+              <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#editsimple">簡易テストの編集</a></td>
+            </tr>
+              <tr>
+                <td class="hyphen">-&nbsp;</td>
+                <td><a href="#commandline">コマンドラインからのテストの実行</a></td>
+            </tr>
+
+
+        </table>
+
+        <h2><a NAME="requirements"></a>要件</h2>
+        <p><b>このチュートリアルに従うには、次のソフトウェアが必要です。</b></p>
+
+<table>
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">ソフトウェア</th>
+    <th class="tblheader" scope="col">必須バージョン</th>
+</tr>
+
+<tr>
+<td class="tbltd1">NetBeans IDE (C/C++/Fortranのサポートを含む) </td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">バージョン7.4または8.0とNetBeans C/C++プラグイン</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Java Development Kit (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">バージョン7または8</a></td>
+</tr>
+
+<tr>
+     <td class="tbltd1">
+        CUnit 2.1テスト・フレームワーク
+    </td>
+    <td class="tbltd1">
+       <a href="http://sourceforge.net/projects/cunit/">sourceforge上のCUnitテスト・フレームワーク・プロジェクト</a>
+</tr>
+</tbody>
+</table>
+      <br>
+<p>必要なNetBeansソフトウェアのダウンロードとインストールについては、<a href="../../../community/releases/80/install.html">NetBeans IDEのインストール</a>および<a href="../../../community/releases/80/cpp-setup-instructions.html">C/C++/Fortran向けのNetBeans IDEの構成</a>を参照してください。<br></p>
+
+        <a name="intro"></a>
+        <h2>概要</h2>
+         <p>
+        C/C++/Fortranプラグインを備えるNetBeans IDEはC/C++プロジェクトの単体テストをサポートしています。IDEを使用してCテストおよびC++テストの作成、実行、デバッグおよび結果表示を行うことができます。この記事では、IDEの単体テストをC/C++プロジェクトで使用する方法を示します。
+    </p>
+    <p>管理対象プロジェクトが、「テスト・ファイル」という論理フォルダとともに作成され、ここではプロジェクトの単体テストを管理できます。この「テスト・ファイル」フォルダ下に直接テストを作成するか、論理サブ・フォルダでテストを編成することができます。「テスト・ファイル」フォルダ内のテスト・ノードは、テスト関連アクションを伴う特殊なフォルダです。テストがビルドされると、メイン・ファイルがプロジェクトから除外され、それ以外は他のすべてのプロジェクト設定が使用されます。 </p>
+        <p>
+        IDEではCUnit、CppUnitおよび独自の簡易出力フォーマットのみがサポートされるため、テストでは、これらのテスト・タイプの中の1つで出力が生成される必要があります。IDEは次のような単体テストのテンプレートを備えています。
+    <ul>
+        <li>C簡易テスト</li>
+        <li>C++簡易テスト</li>
+        <li>CUnitテスト</li>
+        <li>CppUnitテスト</li>
+        <li>CppUnitテスト・ランナー</li>
+    </ul>
+        <p>このチュートリアルでは、Ubuntu Linux上のCUnitテスト・フレームワークおよびNetBeans C簡易テストを使用しますが、ここで示される手法は、他のプラットフォーム上の他のタイプのテストにも役立ちます。このチュートリアルでは、CUnitまたはCppUnitのテスト・フレームワークについては説明しません。これらの使用方法の詳細は、対象のフレームワークのドキュメントを参照する必要があります。</p>
+
+        <h2><a name="cunit"></a>CUnitテスト・フレームワークのインストール</h2>
+    <p>このチュートリアルを開始するには、最初にCUnitをシステム上にインストールする必要があります。CUnitテスト・フレームワークの詳細は、<a href="http://sourceforge.net/projects/cunit/">sourceforge上のCUnitテスト・フレームワーク・プロジェクト</a>を参照してください。</p>
+    
+    <p>CUnitドキュメントはCUnitダウンロードに含まれています。また、<a href="http://cunit.sourceforge.net/doc/index.html">http://cunit.sourceforge.net/doc/index.html</a>で参照することもできます。</p>
+    <p>使用するプラットフォームに該当するインストール手順の項を参照してください。</p>
+    <ul>
+        <li><a href="#linux">LinuxまたはMac OSでのCUnitのインストール手順</a></li>
+        <li><a href="#solaris">Oracle Solaris 11でのCUnitのインストール手順</a></li>
+        <li><a href="#mingw">WindowsおよびMinGWでのCUnitのインストール手順</a></li>
+        <li><a href="#cygwin">WindowsおよびCygwinでのCUnitのインストール手順</a></li>
+    </ul>
+
+          
+    <h3><a name='linux'></a>LinuxまたはMac OSでのCUnitのインストール手順</h3>
+    
+    <p>Linuxシステムでは、libcunitl、libcunitl-docおよびlibcunitl-devのパッケージをパッケージ・リポジトリからインストールできる必要があります。 </p>
+    <p>Mac OSでは、あるいはlibcunitl*パッケージが使用できない場合のLinuxでは、CUnitソースをダウンロードして、ここの記述どおりにビルドすることができます。 </p>
+     <p>次の手順は、CUnit-2.1-2-src.tar.bz2ファイルが/tmpディレクトリにダウンロード済であることが前提です。ダウンロード・ファイルの名前が異なる場合は、必ず、実際のCUnitダウンロード・ファイルと、ファイルを保存した実際のディレクトリを指定してください。</p>
+    <ol>
+        <li><a href="http://sourceforge.net/projects/cunit/files">CUnitファイル・ページ</a>からCUnit-2.1-2-src.tar.bz2ソースをダウンロードして、/tmpなどの一時ディレクトリに保存します。
+        </li>
+         <li>ターミナル・ウィンドウで、<tt>CUnit-2.1-2-src.tar.bz2</tt>ファイルを次のように解凍します。
+             <pre>$ cd /tmp
+$ bunzip2 CUnit-2.1-2-src.tar.bz2
+$ tar -xvf CUnit-2.1-2-src.tar</pre></li>
+        <li>次のようにCUinitを/tmpから構成、ビルドおよびインストールします。
+            <pre>$ cd CUnit-2.1-2
+$ ./configure --prefix=/usr
+$ make
+$ sudo make install</pre></li>
+    </ol>
+<p>'make install'が終了すると、CUnitテスト・フレームワークをIDEで使用する準備が整い、<a href='#project'>チュートリアル用のプロジェクトの作成</a>に進むことができます。
+</p>
+   
+    <h3 name='solaris'>Oracle Solaris 11でのCUnitのインストール手順</h3>
+ <p>CUnitテストを使用するには、最初にCUnitを<a href="http://en.wikipedia.org/wiki/GNU_build_system">GNUビルド・システム</a>でビルドする必要があります。Oracle Solaris 11システムでは、GNUビルド・システムは通常、デフォルトでインストールされません。GNUビルド・システム・コンポーネントは、Oracle Solaris 11パッケージ・リポジトリから次のコマンドで取得できます。</p>
+    <pre>pkg install pkg://solaris/developer/build/gnu-make
+pkg install pkg://solaris/developer/build/make
+pkg install pkg://solaris/developer/gcc-45
+pkg install pkg://solaris/system/header
+pkg install pkg://solaris/developer/build/autoconf
+pkg install pkg://solaris/developer/build/automake-110</pre>
+
+   <p>次の手順は、CUnit-2.1-2-src.tar.bz2ファイルが/tmpディレクトリにダウンロード済であることが前提です。ダウンロード・ファイルの名前が異なる場合は、必ず、実際のCUnitダウンロード・ファイルと、ファイルを保存した実際のディレクトリを指定してください。</p>
+    <ol>
+        <li><a href="http://sourceforge.net/projects/cunit/files">CUnitファイル・ページ</a>からCUnit-2.1-2-src.tar.bz2ソースをダウンロードして、/tmpなどの一時ディレクトリに保存します。
+        </li>
+         <li>ターミナル・ウィンドウで、<tt>CUnit-2.1-2-src.tar.bz2</tt>ファイルを次のように解凍します。
+             <pre>$ cd /tmp
+$ bunzip2 CUnit-2.1-2-src.tar.bz2
+$ tar -xvf CUnit-2.1-2-src.tar</pre></li>
+        <li>次のようにCUinitを/tmpから構成、ビルドおよびインストールします。
+            <pre>$ cd CUnit-2.1-2
+$ ./configure --prefix=/usr
+$ make
+$ make install</pre></li>
+    </ol>
+<p>'make install'が終了すると、CUnitテスト・フレームワークをIDEで使用する準備が整い、<a href='#project'>チュートリアル用のプロジェクトの作成</a>に進むことができます。
+</p>
+
+<h3><a name='mingw'></a>WindowsおよびMinGWでのCUnitのインストール手順</h3>
+    <p>次の手順は、CUnit-2.1-2-src.tar.bz2ファイルがC:/distrディレクトリにダウンロード済であることが前提です。ダウンロード・ファイルの名前が異なる場合は、必ず、実際のCUnitダウンロード・ファイルと、ファイルを保存した実際のディレクトリを指定してください。</p>
+    <ol>
+        <li><a href="http://sourceforge.net/projects/cunit/files">CUnitファイル・ページ</a>からCUnit-2.1-2-src.tar.bz2ソースをダウンロードして、C:/distrなどの一時ディレクトリに保存します。
+        </li><li>Windowsで「スタート」>「すべてのプログラム」>「MinGW」>「MinGW Shell」と選択して、MinGW Shellアプリケーションを起動します。</li>
+        <li>MinGW Shellウィンドウで、<tt>CUnit-2.1-2-src.tar.bz2</tt>ファイルを次のように解凍します。
+             <pre>$ cd c:/distr
+$ bunzip2.exe CUnit-2.1-2-src.tar.bz2
+$ tar xvf CUnit-2.1-2-src.tar
+$ cd ./CUnit-2.1-2</pre></li>
+          <li>mountコマンドを使用して、MinGWへのUNIXパスを検索します。
+              <pre>$ mount</pre>
+              次のような出力が表示されます。
+              <pre>C:\Users\username\AppData\Local\Temp on /tmp type user (binmode,noumount)
+C:\MinGW\msys\1.0 on /usr type user (binmode,noumount)
+C:\MinGW\msys\1.0 on / type user (binmode,noumount)
+<b>C:\MinGW on /mingw type user (binmode)</b></pre>
+          前述の太字の最終行は、UNIXパスが/mingwであることを示しています。システムでは異なる結果が示される場合があるため、これを書き留めておいてください。これは、次のコマンドでパスを指定する必要があるためです。</li>
+           <li>次のコマンドを使用して、Makefileを構成します。<br>MinGWが/mingw内にない場合は、必ず、該当するMinGWのUNIXロケーションを、--prefix=オプションを使用して指定します。
+
+               <pre>$ ./configure --prefix=/mingw
+<i>(lots of output about checking and configuring)<br>
+...</i>
+config.status: executing depfiles commands
+config.status: executing libtool commands
+</pre></li>
+<li>CUnitのライブラリをビルドします。
+    <pre>$ make
+make all-recursive
+make[1]: Entering directory 'c/distr/CUnit-2.1-2'
+Making all in CUnit
+...
+<i>(lots of other output)</i>
+make[1]: Leaving directory 'c/distr/CUnit-2.1-2'
+$</pre>
+ </li>
+<li>make installを実行して、CUnitライブラリをC:/MinGW/include/CUnit、C:/MinGW/share/CUnitおよびC:/MinGW/doc/CUnit内にインストールします。
+  <pre>$ make install
+Making install in CUnit
+make[1]: Entering directory 'c/distr/CUnit-2.1-2/CUnit'
+Making install in Sources
+make[1]: Entering directory 'c/distr/CUnit-2.1-2/Cunit/Sources'
+...
+ <i>(lots of other output)</i>
+make[1]: Leaving directory 'c/distr/CUnit-2.1-2'
+$</pre>
+   </li>
+<li>Java 7アップデート21、25または40を使用する場合、CUnitを取得してこのチュートリアルを機能させるために、<a href='https://netbeans.org/bugzilla/show_bug.cgi?id=236867'>issue 236867</a>の原因による次の回避策を実行する必要があります。<br><br>
+        <ol type="a">
+            <li>「ツール」>「オプション」>「C/C++」>「ビルド・ツール」と選択して、MinGWツール・コレクションを選択します。</li>
+        <li>Makeコマンド・エントリを、完全パスのないmake.exeに変更します。</li>
+        <li>IDEを終了します。</li>
+        <li>Windows 7以上のバージョンで、「スタート」メニューの検索ボックスに<b>var</b>と入力して、システム環境変数を編集するためのリンクを迅速に検索します。</li>
+        <li>「詳細設定」タブを選択し、「環境変数」をクリックします。</li>
+        <li>「環境変数」ダイアログの「システム環境変数」パネルで、「新規」をクリックします。</li>
+        <li>「変数名」をMAKE、「変数値」をmake.exeに設定します。</li>
+        <li>各ダイアログで「OK」をクリックして変更を保存します。</li>
+        <li>IDEを起動して、次の項に進みます。</li></ol></li>
+    </ol>
+     <p>'make install'が終了すると、CUnitをIDEで使用する準備が整い、<a href='#project'>チュートリアル用のプロジェクトの作成</a>に進むことができます。
+        </p>
+
+        <h3><a name='cygwin'></a>WindowsおよびCygwinでのCUnitのインストール手順</h3>
+     <p>
+     Cygwinでは、http://cygwin.com/install.htmlから入手可能な標準のCygwinインストーラ、setup-x86.exeまたはsetup-x86_64.exeを使用して、CUnitをインストールできます。CUnitパッケージは"Libs"カテゴリ内に配置され、他のパッケージをインストールするのと同じ方法でインストールできます。</p>
+     <p class="notes">必ず正しいバージョンを使用してください。64ビットのNetBeans IDEを実行中の場合は、64ビットのCygwinおよびCUnitを使用する必要があります。</p>
+     <p>Cygwinをまだインストールしていない場合は、一般的なCygwinインストール情報を<a href='../../../community/releases/80/cpp-setup-instructions.html#cygwin'>C/C++/Fortran向けのNetBeans IDEの構成</a>で参照してください。セットアップ・プログラムでCUnitをLibsカテゴリで選択することでインストールできます。
+     </p>
+     
+        <h2><a name="project"></a>チュートリアル用のプロジェクトの作成</h2>
+        <p>単体テスト機能を確認するには、最初に新規のCアプリケーションを作成します。
+         <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択します。</li>
+            <li>プロジェクト・ウィザードで、「C/C++」をクリックしてから「C/C++アプリケーション」を選択します。</li>
+            <li>「新規C/C++アプリケーション」ダイアログ・ボックスで、「mainファイルの作成」を選択してから、C言語を選択します。他のすべてのオプションはデフォルトを受け入れます。<br /> <img alt="「新規プロジェクト」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-new-project.png">
+             </li>
+            <li>「終了」をクリックするとCpp_Application_<i>x</i>プロジェクトが作成されます。</li>
+            <li>「プロジェクト」ウィンドウで、「ソース・ファイル」フォルダを開いて<code>main.c</code>ファイルをダブルクリックし、エディタでそのファイルを開きます。ファイルの内容はここに示す内容と同様です。<br /> <img alt="編集前のmain.cファイルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-initial.png">
+            </li>
+         <li>プログラムに処理を与えるには、<code>main.c</code>ファイル内のコードを次のコードに置き換えて、単純な階乗カリキュレータを作成します。
+<pre class="examplecode">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+long factorial(int arg) {
+    long result = 1;
+    int i;
+    for (i = 2; i <= arg; ++i) {
+        result *= i;
+     }
+    return result;
+}
+
+int main(int argc, char** argv) {
+    printf("Type an integer and press Enter to calculate the integer's factorial: \n");
+    int arg;
+    fflush(stdout);
+    scanf("%d", &arg);
+    
+    printf("factorial(%d) = %ld\n", arg, factorial(arg));
+
+    return (EXIT_SUCCESS);
+}
+ </pre>
+
+   <p>ファイルは編集後に次のようになります。</p>
+             <img alt="編集後のmain.cファイルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-edited.png">
+         </li>
+         <li>[Ctrl]+[S]を押してファイルを保存します。</li>
+
+         <li>IDEツールバーの「実行」ボタンをクリックすることで、機能することを確かめるためにプロジェクトをビルドおよび実行します。<br>出力は、8を整数として入力した場合、次のようになります。<br /> <img alt="階乗プログラム出力のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-output-factorial.png">
+         <p class="tips">
+        一部のプラットフォームで、[Enter]を2回押すことが必要になる場合があります。
+    </p>
+         </li>
+
+         </ol>
+
+        <h2><a name="addtest"></a>CUnitテストのNetBeans管理対象プロジェクトへの追加</h2>
+    <p>アプリケーションを開発する場合は、開発プロセスの一環として単体テストを追加することをお薦めします。
+     </p>
+     <p class="tips">
+        各テストには、1つの<code>main</code>関数が含まれ、1つの実行可能ファイルが生成される必要があります。
+    </p>
+     <ol>
+         <li>
+     「プロジェクト」ウィンドウで、<code>main.c</code>ソース・ファイルを右クリックし、「テストを作成」>新規CUnitテストを選択します。<br /> <img alt="新規テストの作成のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-create-test.png">
+    <p>テストを作成するためのウィザードが開かれます。</p>
+    </li>
+    <li>ウィザードの「要素を選択」ウィンドウで、<code>main</code>関数のチェックボックスをクリックします。これによって、<code>main</code>内の関数もすべて選択されます。このプログラムでは、他の関数は<code>factorial()</code>の1つだけです。</li>
+    <li>「次」をクリックします。</li>
+
+    <li>デフォルト名の新規CUnitテストを保持して、「終了」をクリックします。
+        <p>「新規CUnitテスト」ノードが「テスト・ファイル」フォルダの下に表示されます。</p>
+    
+        「新規CUnitテスト」フォルダにはテストのテンプレート・ファイルが含まれます。ソース・ファイルをプロジェクトに追加するのと同じように、フォルダを右クリックすることで新しいファイルをフォルダに追加できます。
+    </li>
+    <li>「新規CUnitテスト」フォルダを展開すると、<code>newcunittest.c</code>ファイルが含まれていることが示され、ソース・エディタに表示されます。</li>
+   
+    <li><code>newcunittest.c</code>ファイルで、CUnitライブラリにアクセスするための<code>#include "CUnit/Basic.h"</code>文に注意します。<code>newcunittest.c</code>ファイルには、<code>main.c</code>の<code>factorial()</code>関数に対して自動生成されたテスト関数、<code>testFactorial</code>が含まれます。        
+     </li>
+     </ol>
+
+     <img alt="newcunittest.cインクルードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-includes.png">
+     <p class="tips">
+        IDEで<code>CUnit/Basic.h</code>ファイルが検出されなかった場合、正しいロケーションを示すようにインクルード・パスを編集できます。たとえば、CUnitをWindowsで<code>C:\Tools\CUnit-2.1-2</code>にインストールした場合は、パスを次のように編集します。<br> <br> <code>#include &lt;C:\Tools\CUnit-2.1-2\CUnit\Headers\Basic.h></code>
+    </p>
+     <p>生成されたテストはスタブなので有用なテストにするには編集が必要ですが、生成されたテストは編集しなくても正常に実行できます。</p>
+
+    <h2><a name="runtest"></a>CUnitテストの実行</h2>
+
+        <p>IDEにはいくつかのテストの実行方法があります。プロジェクト・ノード、「テスト・ファイル」フォルダ、またはテスト・サブフォルダを右クリックして、「テスト」を選択します。メニュー・バーを使用して「実行」>「プロジェクトのテスト」を選択するか、[Alt]+[F6]を押すこともできます。
+         </p>
+
+    <ol>
+     <li>「新規CUnitテスト」フォルダを右クリックして「テスト」を選択することで、テストを実行します。 
+         <p>IDEでは新しい「テスト結果」ウィンドウが開き、次のような出力が表示され、テストが失敗したことが示されます。</p>
+         <p class="tips">「テスト結果」ウィンドウが表示されない場合、「ウィンドウ」→「IDEツール」→「テスト結果」を選択するか、[Alt]+[Shift]+[R]を押して開きます。</p>
+
+     <img alt="初期テスト実行のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-test-orig.png">
+     </li>
+     <li>「テスト結果」ウィンドウが2つのパネルに分割されていることに注意してください。<br>右側のパネルにはテストからのコンソール出力が表示されます。左側のパネルには、成功したテストと失敗したテスト、さらに失敗したテストの詳細のサマリーが表示されます。</li>
+     <li>「テスト結果」ウィンドウで、<code>testFactorial caused an ERROR</code>ノードをダブルクリックして、ソース・エディタの<code>testFactorial</code>関数にジャンプします。<br>関数を参照すると、実際には何かがテストされたのではなく、CU_ASSERT(0)の設定によって単体テストが失敗したと単純にアサーションしていることが示されます。条件は0に評価され、これはFALSEに相当するため、CUnitフレームワークではこれがテストの失敗として解釈されます。 </li>
+
+     <li>CU_ASSERT(0)行をCU_ASSERT(1)に変更して、ファイルを保存します([Ctrl]+[S])。</li>
+     <li>「新規CUnitテスト」フォルダを右クリックして「テスト」を選択することで、テストを再実行します。<br>「テスト結果」ウィンドウにテストが成功したことが示されます。<br /> <img alt="CU_ASSERTを変更した後のテスト実行のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-test-pass.png">
+    </li>
+
+    </ol>
+
+         <h2><a name="addmore"></a>別のCUnitテストの追加</h2>
+     <ol>
+     <li>「テスト・ファイル」フォルダを右クリックして新規CUnitテストを選択することで、汎用CUnitテスト・テンプレートを作成します。<br /> <img alt="新しいCUnitテストのテスト・ファイルへの追加のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-new-cunit-test.png">
+    </li>
+     <li>テストはMy CUnit Test、テスト・ファイル名は<code>mycunittest</code>という名前を付けて「終了」をクリックします。<br /> <img alt="「テストを作成」ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-create-mycunittest.png">
+    </li>
+         <li>My CUnit Testという新規テスト・フォルダが作成されて、そのフォルダには<code>mycunittest.c</code>ファイルが含まれ、エディタに表示されます。</li>
+
+     <li><code>mycunittest.c</code>テスト・ファイルを調べると、2つのテストが含まれています。test1はTRUEに評価されるため、成功します。test2は、2*2が5と等しくないためFALSEに評価されて失敗します。
+         <pre class="examplecode">
+void test1()
+{
+CU_ASSERT(2*2 == 4);
+}
+void test2()
+{
+CU_ASSERT(2*2 == 5);
+}    </pre>
+</li>
+     <li>前と同じようにテストを実行すると次のように表示されます。<br /> <img alt="テストの成功および失敗のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-mytest1.png">
+    </li>
+     <li>「実行」>「プロジェクトのテスト」(Cpp_Application_<i>x</i>)を選択してIDEメイン・メニューからすべてのテストを実行します。両方のテスト・スイートが実行され、「テスト結果」ウィンドウに成功および失敗が表示されるのを確認します。
+     </li>
+    
+     <li>失敗の詳細を表示するには、失敗したテストの上にマウスを移動します。<br /> <img alt="失敗したテストの注釈のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-test-fail-annotation.png">
+     </li>
+     <li>「テスト結果」ウィンドウの左マージンのボタンをクリックして、成功または失敗したテストを表示または非表示にします。
+     </ol>
+
+
+         <h2><a name="debug"></a>My CUnit Testのデバッグ</h2>
+     <p><a href="https://netbeans.org/kb/docs/cnd/debugging.html">C/C++プロジェクトのデバッグのチュートリアル</a>で説明されている、プロジェクトのソース・ファイルのデバッグに使用するのと同じ手法を使用して、テストをデバッグできます。</p>
+
+     <ol>
+     <li>「プロジェクト」ウィンドウでMy CUnit Testフォルダを右クリックし、「ステップ・イン・テスト」を選択します。
+          <p class="tips">「テスト結果」ウィンドウでテストを右クリックして「デバッグ」を選択して、デバッガを実行することもできます。</p>
+         <br>デバッガ・ツールバーが表示されます。
+         </li>
+     <li>「ステップ・イン」ボタンをクリックして、ボタンをクリックするたびに1回で1行、プログラムを実行します。<br /> <img alt="デバッグ・ステップイン・アイコンのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-debug-icons.png">
+</li>
+  <li>「ウィンドウ」>「デバッグ」>「呼出しスタック」を選択して「呼出しスタック」ウィンドウを開きます。これによって、テストの進行に従った関数の呼出しを参照できます。</li>
+     </ol>
+
+    
+     <h2><a name="addsimple"></a>簡易テストの追加</h2>
+     <p>C簡易テストは、IDE内蔵の単純なテスト・フレームワークを使用します。簡易テストを使用するためにテスト・フレームワークをダウンロードする必要はありません。</p>
+
+       <ol>
+         <li>
+     「プロジェクト」ウィンドウで、<tt>main.c</tt>ソース・ファイルを右クリックし、「テストを作成」>新規C簡易テストを選択します。<br /> <img alt="新規簡易テストの作成のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test.png">
+        </li>
+        <li>ウィザードの「要素を選択」ウィンドウで、<tt>main</tt>関数のチェックボックスをクリックしてから、「次」をクリックします。<br /> <img alt="テスト・ウィザードの「要素を選択」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-select.png">
+        </li>
+    <li>「名前と場所」ウィンドウで、デフォルト名の新規C簡易テストを保持して、「終了」をクリックします。
+
+        <p>「新規C簡易テスト」ノードが「テスト・ファイル」フォルダの下に表示されます。</p>
+    </li>
+    <li>「新規C簡易テスト」フォルダを展開すると、<code>newsimpletest.c</code>ファイルが含まれていることが示されます。このファイルはソース・エディタで開かれます。<br /> <img alt="「新規C簡易テスト」フォルダのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-folder.png">
+    </li>
+    <li><code>newsimpletest.c</code>ファイルには、CUnitと同様に、<code>main.c</code>の<code>factorial()</code>関数に対して自動生成されたテスト関数、<code>testFactorial</code>が含まれることに注意してください。<br /> <img alt="新規C簡易テスト・コードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-code.png">
+
+     <p><tt>if</tt>文は、trueの場合は、テストが失敗したことを示す条件をテストする必要があります。<tt>%%TEST_FAILED%%</tt>トークンは、「テスト結果」ウィンドウでのテスト失敗のグラフィカル・インジケータの表示をトリガーします。生成されたテスト内の<tt>if</tt>文は、1に設定することで条件をtrueに設定するため、未変更のまま実行するとテストは常に失敗します。</p>
+     <p><tt>%%TEST_STARTED%%</tt>および<tt>%%TEST_FINISHED%%</tt>などの<tt>main</tt>関数の他のトークンは、テストの実行時にコマンドライン出力の読取りに役立ちます。</p>
+     <p><tt>time=0</tt>オプションは、テストに時間測定値を追加するために使用します。</p>
+     <p><tt>message</tt>オプションを使用すると、テスト失敗に関するメッセージをテストで出力できます。</p>
+    </li>
+     <li>テストを実行し、「テスト結果」ウィンドウに表示される失敗が生成されることを確認します。</li>
+       </ol>
+
+     <p class="note">次に、成功したテストを参照するためにテスト・ファイルを編集します。</p>
+
+     <h2><a name="editsimple"></a>C簡易テストの編集</h2>
+     <ol>
+         <li><code>testFactorial</code>関数の下に新規関数をコピーして貼り付けます。<br>新規関数は次のとおりです。
+         <pre class="examplecode">
+void testNew() {
+    int arg = 8;
+    long result = factorial(arg);
+    if(result != 40320) {
+        printf("%%TEST_FAILED%% time=0 testname=testNew (newsimpletest) message=Error calculating %d factorial.\n", arg);
+    }
+}</pre>
+         <p>新規テスト関数を呼び出すように、<code>main</code>関数も変更する必要があります。</p>
+ 
+     </li>
+
+     <li><code>main</code>関数で、次の行をコピーします。
+    <pre class="examplecode">
+printf("%%TEST_STARTED%%  testFactorial (newsimpletest)\n");
+    testFactorial();
+    printf("%%TEST_FINISHED%% time=0 testFactorial (newsimpletest)\n");
+    </pre>
+</li>
+<li>その行を、コピーした行のすぐ下に貼り付けて、貼り付けられた行で<code>testFactorial</code>を<code>testNew</code>に名前を変更します。変更が必要な箇所は3箇所あります。<br>完全な<code>newsimpletest.c</code>ファイルは次のようになります。
+<pre class="examplecode">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+/*
+ * Simple C Test Suite
+ */
+
+long factorial(int arg);
+
+void testFactorial() {
+    int arg;
+    long result = factorial(arg);
+    if(1 /*check result*/) {
+        printf("%%TEST_FAILED%% time=0 testname=testFactorial (newsimpletest) message=When value is 1 this statement is executed.\n");
+    }
+}
+
+
+void testNew() {
+    int arg = 8;
+    long result = factorial(arg);
+    if(result != 40320) {
+        printf("%%TEST_FAILED%% time=0 testname=testNew (newsimpletest) message=Error calculating %d factorial.\n", arg);
+    }
+}
+
+
+int main(int argc, char** argv) {
+    printf("%%SUITE_STARTING%% newsimpletest\n");
+    printf("%%SUITE_STARTED%%\n");
+
+    printf("%%TEST_STARTED%%  testFactorial (newsimpletest)\n");
+    testFactorial();
+    printf("%%TEST_FINISHED%% time=0 testFactorial (newsimpletest)\n");
+
+    printf("%%TEST_STARTED%%  testNew (newsimpletest)\n");
+    testNew();
+    printf("%%TEST_FINISHED%% time=0 testNew (newsimpletest)\n");
+
+    printf("%%SUITE_FINISHED%% time=0\n");
+
+    return (EXIT_SUCCESS);
+}
+
+</pre></li>
+<li>「プロジェクト」ウィンドウで、新規C簡易テストを右クリックして「テスト」を選択することで、テストを実行します。<br>テスト結果は次のようになります。<br /> <img alt="簡易テスト結果のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-simpletest-results.png">
+  <p>testNew passedと表示されない場合は、「テスト結果」ウィンドウの左マージンの緑色のチェック・ボタンをクリックして、成功したテストを表示します。</p>
+  <p class="tips">%%TEST_FAILED%%トークンは、「テスト結果」ウィンドウでのテスト失敗の表示をトリガーします。if文は、trueでない場合は、テストが失敗することを示す条件をテストする必要があります。 </p>
+  <p class="tips">%%SUITE_STARTING%%および他の類似トークンは、IDEの出力に表示されません。これらはコンソール出力に使用されます。
+      </li>
+       </ol>
+
+
+    <h2><a name="commandline"></a>コマンドラインからのテストの実行</h2>
+    <p>
+        IDE外部のコマンドラインから<code>make build-tests</code>によってテストをビルドして、<code>make test</code>によって実行することができます。プロジェクトがLinuxシステム上の~/NetBeansProjects/Cpp_Application_<i>x</i>内にある場合、この記事の例は次のようにビルドおよび実行されます。
+    <ol>
+        <li>「ウィンドウ」>「出力」と選択し、「出力」ウィンドウの左マージンで「ターミナル」ボタンをクリックすることで、IDEのターミナル・ウィンドウを開きます。これによって現行プロジェクトの作業ディレクトリでターミナル・ウィンドウが開かれます。
+    </li>
+        <li>ターミナルで、太字で示したコマンドを入力します。
+            <pre class="examplecode">
+ <b>make test</b></pre>
+            <p>テストのビルドおよび実行の出力は次のようになります。一部の<code>make</code>出力は削除されているので注意してください。</p>
+    
+    <pre class="examplecode">
+"make" -f nbproject/Makefile-Debug.mk QMAKE= SUBPROJECTS= .build-conf
+make[1]: Entering directory `/home/tester/NetBeansProjects/CppApplication_1'
+"make"  -f nbproject/Makefile-Debug.mk dist/Debug/GNU-Linux-x86/cppapplication_1
+make[2]: Entering directory `/home/tester/NetBeansProjects/CppApplication_1'
+make[2]: `dist/Debug/GNU-Linux-x86/cppapplication_1' is up to date.
+...
+
+     CUnit - A Unit testing framework for C - Version 2.1-2
+     http://cunit.sourceforge.net/
+
+
+Suite: mycunittest
+  Test: test1 ... passed
+  Test: test2 ... FAILED
+    1. tests/mycunittest.c:33  - 2*2 == 5
+  Test: test3 ... passed
+
+--Run Summary: Type      Total     Ran  Passed  Failed
+               suites        1       1     n/a       0
+               tests         3       3       2       1
+               asserts       3       3       2       1
+%SUITE_STARTING% newsimpletest
+%SUITE_STARTED%
+%TEST_STARTED%  testFactorial (newsimpletest)
+%TEST_FAILED% time=0 testname=testFactorial (newsimpletest) message=error message sample
+%TEST_FINISHED% time=0 testFactorial (newsimpletest)
+%SUITE_FINISHED% time=0
+
+
+     CUnit - A Unit testing framework for C - Version 2.1-2
+     http://cunit.sourceforge.net/
+
+
+Suite: newcunittest
+  Test: testFactorial ... passed
+
+--Run Summary: Type      Total     Ran  Passed  Failed
+               suites        1       1     n/a       0
+               tests         1       1       1       0
+               asserts       1       1       1       0
+make[1]: Leaving directory `/home/tester/NetBeansProjects/CppApplication_1'
+
+    </pre>
+    </li>
+    </ol>
+    
+    <h2>他のテスト・フレームワークのサポートの追加</h2>
+    <p>NetBeansモジュールを作成することで、よく使用するC/C++テスト・フレームワークのサポートを追加できます。NetBeans wikiでNetBeans開発者用の<a href="http://wiki.netbeans.org/CND69UnitTestsPluginTutotial" target="_blank">C/C++単体テスト・プラグイン・チュートリアル</a>を参照してください。 </p>
+
+   
+
+        <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Adding%20Unit%20Tests%20to%20a%20C/C++%20Project%20-%20NetBeans%20IDE%207.4%20Tutorial">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear: both;">
+</body></html>

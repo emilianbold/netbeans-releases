@@ -1,0 +1,921 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>在 NetBeans IDE 中编写 JUnit 测试</title>
+        <meta name="description"
+        content="A tutorial on writing JUnit 3 and JUnit 4 tests in NetBeans IDE.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+    <body>
+        <!-- Begin Content Area -->
+        <h1>在 NetBeans IDE 中编写 JUnit 测试</h1>
+        
+        <p>本教程介绍在 NetBeans IDE 中编写和运行 JUnit 测试的基础知识。测试应用程序是开发周期中不可缺少的一部分，并且编写和维护测试单元有利于确保源代码中的方法能正常运行。IDE 集成了对 JUnit 单元测试框架的支持，它允许您快速和轻松地创建 JUnit 测试和测试套件。</p>
+
+        <p>在本教程中，您将为 Java 类库项目创建简单的 JUnit 3 和 JUnit 4 单元测试及测试套件。教程的第 1 部分演示如何在 JUnit 3 中创建测试。第 2 部分演示如何使用 JUnit 标注在 JUnit 4 中创建相同的测试。这两部分创建的测试是相同的，因此没必要同时完成这两部分的内容，但是查看两个版本的测试编写方法可以帮助您了解 JUnit 4 中引入的一些变化。</p>
+        <p class="tips">有关使用 JUnit 的更多信息，请参见 <a href="http://www.junit.org">www.junit.org</a>。</p>
+        
+        
+        <p><b>目录</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+        <ul class="toc">
+            <li><a href="#Exercise_10">创建项目</a>
+            <ul class="toc">
+                <li><a href="#Exercise_11">创建 Java 类库项目</a>
+                <li><a href="#Exercise_12">下载解决方案项目</a>
+                <li><a href="#Exercise_13">创建 Java 类</a>
+            </ul>
+            </li>
+            <li><a href="#Exercise_20">编写 JUnit 3 测试</a>
+                <ul class="toc">
+                    <li><a href="#Exercise_21">为<tt> Vectors.java</tt> 创建测试类</a></li>
+                    <li><a href="#Exercise_22">为 <tt>Vectors.java</tt> 编写测试方法</a></li>
+                    <li><a href="#Exercise_23">为 <tt>Utils.java</tt> 创建测试类</a></li>
+                    <li><a href="#Exercise_24">为 <tt>Utils.java</tt> 编写测试方法</a></li>
+                    <li><a href="#Exercise_25">运行测试</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_30">编写 JUnit 4 测试</a>
+                <ul class="toc">
+                    <li><a href="#Exercise_31">为<tt> Vectors.java</tt> 创建测试类</a></li>
+                    <li><a href="#Exercise_32">为 <tt>Vectors.java</tt> 编写测试方法</a></li>
+                    <li><a href="#Exercise_33">为 <tt>Utils.java</tt> 创建测试类</a></li>
+                    <li><a href="#Exercise_34">为 <tt>Utils.java</tt> 编写测试方法</a></li>
+                    <li><a href="#Exercise_35">运行测试</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_40">创建 JUnit 测试套件</a>
+            <ul class="toc">
+                <li><a href="#Exercise_41">创建 JUnit 3 测试套件</a></li>
+                <li><a href="#Exercise_42">创建 JUnit 4 测试套件</a></li>
+                <li><a href="#Exercise_43">运行测试套件</a></li>
+            </ul>
+            </li>
+            <li><a href="#Exercise_50">小结</a></li>
+        </ul>
+        
+        <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+        <table>
+        <tr>
+            <th class="tblheader" scope="col">软件或资源</th>
+            <th class="tblheader" scope="col">要求的版本</th>
+        </tr> 
+        <tr>
+            <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+            <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+            <td class="tbltd1">版本 7 或 8</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">JUnitSampleSol 项目</td>
+            <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/JUnitSampleSol.zip">下载</a></td>
+        </tr>
+        </table>
+        <p class="alert">要执行本教程中的步骤，您需要从更新中心安装 JUnit 插件。如果在安装 IDE 时未安装 JUnit 插件，可以在插件管理器中安装此插件。</p>
+
+
+    <!-- ===================================================================================== -->
+    <a name="Exercise_10"></a>
+    <h2>创建项目</h2>
+    <p>要完成本教程，您首先需要创建一个名称为 JUnit-Sample 的 Java 类库项目。创建项目后，您需要将样例项目 JUnitSampleSol 中的两个类复制到项目 JUnit-Sample 中。</p>
+
+    <div class="indent">
+        <a name="Exercise_11"></a>
+        <h3>创建 Java 类库项目</h3>
+            <ol>
+                <li>从主菜单中选择 "File"（文件）> "New Project"（新建项目）。</li>
+                <li>从 "Java" 类别中选择 "Java Class Library"（Java 类库）并单击 "Next"（下一步）。 </li>
+                <li>键入 <b>JUnit-Sample</b> 作为项目名称并设置项目位置。</li>
+                <li>取消选中 "Use Dedicated Folder"（使用专用文件夹）选项（如果该选项处于选中状态）。
+                <p>在本教程中，我们将项目库复制到一个专门的文件夹中，因为需要与其他用户或项目共享库。</p>
+                单击 "Finish"（完成）。</li>
+            </ol>
+            <p>
+            首次创建 JUnit 测试时，IDE 将提示您选择一个版本，然后依次添加 "Test Libraries"（测试库）节点和 "JUnit" 库。</p>
+
+        <a name="Exercise_12"></a>
+        <h3>下载解决方案项目</h3>
+        <p>您可以采用下列方法下载本教程中使用的样例项目 JUnitSampleSol。</p>
+        <ul>
+            <li>下载<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/JUnitSampleSol.zip">已完成项目的 zip 档案文件</a>。</li>
+            <li>通过执行以下步骤从 NetBeans 样例检出项目源代码：
+                <ol>
+                    <li>从主菜单中选择 "Team"（团队开发）> "Subversion" > "Checkout"（检出）。</li>
+                    <li>在 "Checkout"（检出）对话框中，输入以下资源库 URL：<br /> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br /> 单击 "Next"（下一步）。</li>
+                    <li>在 "Folders to Checkout"（要检出的文件夹）面板中，单击 "Browse"（浏览），以打开 "Browse Repository Folders"（浏览资源库文件夹）对话框。</li>
+                    <li>展开根节点，然后选择 <strong>samples/java/JUnitSampleSol</strong>。单击 "OK"（确定）。</li>
+                    <li>指定用于存储源代码的 "Local Folder"（本地文件夹）。单击 "Finish"（完成）。
+                        <p>单击 "Finish"（完成），此时 IDE 会将本地文件夹初始化为 Subversion 资源库，并检出项目源代码。</p>
+                    </li>
+                    <li>在完成检出操作后将会显示一个对话框，在该对话框中单击 "Open Project"（打开项目）。</li>
+                </ol>
+                <p class="tips">有关安装 Subversion 的更多信息，请参见 <a href="../ide/subversion.html">NetBeans IDE 中的 Subversion 指南</a>中有关<a href="../ide/subversion.html#settingUp">设置 Subversion</a> 的部分。</p>
+            </li>
+        </ul>
+
+        <p class="notes"><strong>注：</strong>如果在安装 IDE 时未安装 JUnit 插件，则在打开 NetBeans 项目时将提示您安装 JUnit 插件以解析对 JUnit 库的引用。</p>
+
+
+        <a name="Exercise_13"></a>
+        <h3>创建 Java 类</h3>
+            
+            <p>在本练习中，您需要将样例项目 JUnitSampleSol 中的文件 <tt>Utils.java</tt> 和 <tt>Vectors.java</tt> 复制到您创建的类库项目中。</p>
+            <ol>
+                <li>在 "Projects"（项目）窗口中，右键单击 <strong>JUnit-Sample</strong> 项目的 "Source Packages"（源包）节点，然后从弹出式菜单中选择 "New"（新建）> "Java Package"（Java 包）。</li>
+                <li>键入 <b>sample</b> 作为包名。单击 "Finish"（完成）。</li>
+                <li>在 "Projects"（项目）窗口中，打开 <strong>JUnitSampleSol</strong> 项目（如果尚未打开），然后展开 "Source Packages"（源包）节点。<br> <img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/java/junit/projects-window.png" title="&quot;Projects&quot;（项目）窗口中的 JUnit-Sample 和 JUnitSampleSol 项目">
+                </li>
+                <li>复制 JUnitSampleSol 项目中的 <tt>Utils.java</tt> 和 <tt>Vectors.java</tt> 类，然后将其粘贴到 JUnit-Sample 的 <tt>sample</tt> 源包中。
+                </li>
+            </ol>
+            <p>如果查看这些类的源代码，则可以看到 <tt>Utils.java</tt> 包含三个方法（<tt>computeFactorial</tt>、<tt>concatWords</tt> 和 <tt>normalizeWord</tt>），而 <tt>Vectors.java</tt> 包含两个方法（<tt>equal</tt> 和 <tt>scalarMultiplication</tt>）。接下来，为各类创建测试类并为这些方法编写一些测试用例。</p>
+            <p class="notes"><strong>注：</strong>您可以关闭 JUnitSampleSol 项目，因为不再需要它。JUnitSampleSol 项目包含本文档所述的所有测试。
+            </p>
+
+    </div>
+
+<!-- ===================================================================================== -->
+<!-- JUnit 3 Tests -->
+    <a name="Exercise_20"></a>
+    <h2>编写 JUnit 3 单元测试</h2>
+    <p>在本节中，您将为 <tt>Vectors.java</tt> 和 <tt>Utils.java</tt> 类创建基本的 JUnit 3 单元测试。您将使用 IDE 根据您项目中的类来创建框架测试类。然后，您将修改生成的测试方法并添加新测试方法。</p>
+    <p>第一次使用 IDE 在项目中创建测试时，IDE 将提示您选择一个 JUnit 版本。您选择的版本将成为默认的 JUnit 版本，并且 IDE 将为该版本生成所有后续测试和测试套件。 </p>
+    
+    <div class="indent">
+<!-- ===================================================================================== -->        
+        <a name="Exercise_21"></a>
+        <h3>为 <tt>Vectors.java</tt> 创建测试类</h3>
+        <p>在本练习中，您将为 <tt>Vectors.java</tt> 创建一个 JUnit 测试框架。您还将选择 JUnit 作为测试框架，并选择 JUnit 3 作为版本。
+        </p>
+        <p class="notes"><b>注：</b>如果您使用的是 NetBeans IDE 7.1 或更早版本，则不需要指定测试框架，因为默认情况下将指定 JUnit。在 NetBeans IDE 7.2 中，您可以选择指定 JUnit 或 TestNG 作为测试框架。</p>
+        <ol>
+            <li>右键单击 <tt>Vectors.java</tt> 并选择 "Tools"（工具）> "Create Tests"（创建测试）。</li>
+            <li>在 "Create Tests"（创建测试）对话框中，将测试类的名称修改为 <b>VectorsJUnit3Test</b>。
+            <p>更改测试类的名称之后，您将看到一个关于修改名称的警告。默认名称基于要测试的类名，并在该名称后面附加单词 Test。举例来说，对于 <tt>MyClass.java</tt> 类，测试类的默认名称为 <tt>MyClassTest.java</tt>。通常，最好是保留默认名称，但是在教程中您将更改该名称，因为您还将在相同的包中创建 JUnit 4 测试，并且测试类的名称必须是惟一的。</p></li>
+            <li>在 "Framework"（框架）下拉列表中选择 "JUnit"。</li>
+            <li>取消选中 "Test Initializer"（测试初始化函数）和 "Test Finalizer"（测试终结方法）。单击 "OK"（确定）。<br /> <img alt="选择 &quot;JUnit version&quot;（JUnit 版本）对话框" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit3-vectors-createtests.png" title="选择 &quot;JUnit version&quot;（JUnit 版本）对话框">
+            </li>
+            <li>在 "Select JUnit Version"（选择 JUnit 版本）对话框中，选择 "JUnit 3.x"。<br /> <img alt="选择 &quot;JUnit version&quot;（JUnit 版本）对话框" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit3-select-version.png" title="选择 &quot;JUnit version&quot;（JUnit 版本）对话框">
+
+            <p>选择 "JUnit 3.x" 时，IDE 会将 JUnit 3 库添加到项目中。</p>
+            
+            <p>单击 "Select"（选择）后，IDE 将在 "Projects"（项目）窗口 "Test Packages"（测试包）节点下方的 <tt>sample</tt> 包中生成 <tt>VectorsJUnit3Test.java</tt> 测试类。</p>
+            <img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/java/junit/projects-window2.png" title="&quot;Projects&quot;（项目）窗口中 JUnit-Sample 项目的结构">
+            <p>项目需要一个目录供测试包创建测试。测试包目录的默认位置为项目的根目录，但是根据项目的不同，您可以在项目的 "Properties"（属性）对话框中为目录指定不同的位置。</p>
+
+            <p>在编辑器中查看生成的测试类 <tt>VectorsJUnit3Test.java</tt>，您可以看到 IDE 为 <tt>equal</tt> 和 <tt>scalarMultiplication</tt> 方法生成了以下具备测试方法的测试类。</p>
+            <pre class="examplecode">public class VectorsJUnit3Test extends TestCase {
+    /**
+     * Test of equal method, of class Vectors.
+     */
+    public void testEqual() {
+        System.out.println("equal");
+        int[] a = null;
+        int[] b = null;
+        boolean expResult = false;
+        boolean result = Vectors.equal(a, b);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of scalarMultiplication method, of class Vectors.
+     */
+    public void testScalarMultiplication() {
+        System.out.println("scalarMultiplication");
+        int[] a = null;
+        int[] b = null;
+        int expResult = 0;
+        int result = Vectors.scalarMultiplication(a, b);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+}</pre>
+            </li>
+        </ol>
+        <p>各生成测试的方法主体是作为指导单独提供的，因此需要将它们修改为实际的测试用例。如果您不需要生成的代码，可以在 "Create Tests"（创建测试）对话框中取消选中 "Default Method Bodies"（默认方法主体）。</p>
+        
+        <p>IDE 生成测试方法的名称时，各方法名称将前面附加一个 <tt>test</tt>，因为 JUnit 3 使用命名惯例和反射来标识测试。要标识测试方法，各测试方法需要遵循 <tt>test<i>&lt;NAME></i></tt> 这一语法。</p>
+        <p class="notes"><b>注：</b>在 JUnit 4 中，不再需要使用这种测试方法命名语法，因为您可以使用标注来标识测试方法，并且测试类不再需要扩展 <tt>TestCase</tt>。</p>
+
+
+<!-- ===================================================================================== -->            
+        <a name="Exercise_22"></a>
+        <h3>为 <tt>Vectors.java</tt> 编写测试方法</h3>
+        <p>在本练习中，您将修改生成的方法以实现测试功能，并修改默认的输出消息。您不需要修改运行测试的输出消息，但是您可能希望修改输出来帮助标识显示在 "JUnit Test Results"（JUnit 测试结果）输出窗口中的结果。</p>
+        <ol>
+            <li>在编辑器中打开 <tt>VectorsJUnit3Test.java</tt>。</li>
+            <li>修改 <tt>testScalarMultiplication</tt> 的测试框架，方法是修改 <tt>println</tt> 的值并删除生成的变量。现在，测试方法应如下所示（粗体为更改部分）：
+                <pre class="examplecode">public void testScalarMultiplication() {
+    System.out.println("<b>* VectorsJUnit3Test: testScalarMultiplication()</b>");
+    assertEquals(expResult, result);
+}</pre>
+            </li>
+            <li>现在，添加一些断言来测试方法。
+                <pre class="examplecode">public void testScalarMultiplication() {
+    System.out.println("* VectorsJUnit3Test: testScalarMultiplication()");
+    <b>assertEquals(  0, Vectors.scalarMultiplication(new int[] { 0, 0}, new int[] { 0, 0}));
+    assertEquals( 39, Vectors.scalarMultiplication(new int[] { 3, 4}, new int[] { 5, 6}));
+    assertEquals(-39, Vectors.scalarMultiplication(new int[] {-3, 4}, new int[] { 5,-6}));
+    assertEquals(  0, Vectors.scalarMultiplication(new int[] { 5, 9}, new int[] {-9, 5}));
+    assertEquals(100, Vectors.scalarMultiplication(new int[] { 6, 8}, new int[] { 6, 8}));</b>
+}</pre>
+                <p>该测试方法使用 JUnit <tt>assertEquals</tt> 方法。要使用断言，您需要提供输入变量和预期的结果。在运行被测试的方法时，要通过测试，测试方法必须根据提供的变量成功返回所有预期的结果。您应该添加足够数量的断言来涵盖各种可能的排列。</p>
+            </li>
+
+            <li>修改 <tt>testEqual</tt> 的测试框架：删除生成的方法主体并添加以下 <tt>println</tt>。
+                <pre class="examplecode">
+    <b>System.out.println("* VectorsJUnit3Test: testEqual()");</b></pre>
+                <p>现在，测试方法应如下所示：</p>
+                <pre class="examplecode">public void testEqual() {
+    System.out.println("* VectorsJUnit3Test: testEqual()");
+}</pre>
+                
+            <li>修改 <tt>testEqual</tt> 方法：添加以下断言（显示为粗体）。
+                <pre class="examplecode">public void testEqual() {
+    System.out.println("* VectorsJUnit3Test: testEqual()");
+    <b>assertTrue(Vectors.equal(new int[] {}, new int[] {}));
+    assertTrue(Vectors.equal(new int[] {0}, new int[] {0}));
+    assertTrue(Vectors.equal(new int[] {0, 0}, new int[] {0, 0}));
+    assertTrue(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 0}));
+    assertTrue(Vectors.equal(new int[] {5, 6, 7}, new int[] {5, 6, 7}));
+
+    assertFalse(Vectors.equal(new int[] {}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {}));
+
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 1}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 1, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {1, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 1}, new int[] {0, 0, 3}));</b>
+}</pre>
+                <p>此方法使用 JUnit <tt>assertTrue</tt> 和 <tt>assertFalse</tt> 方法来测试各种可能的结果。要通过此方法的测试，<tt>assertTrue</tt> 必须全部为 true，并且 <tt>assertFalse</tt> 必须全部为 false。</p>
+                    
+            </li>
+            <li>保存所做的更改。</li>
+        </ol>
+        
+        <p class="tips">比较：<a href="#Exercise_32">为 <tt>Vectors.java</tt> 编写测试方法（JUnit 4）</a></p>
+        
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_23"></a>
+    <h3>为 <tt>Utils.java</tt> 创建测试类</h3>
+    <p>现在，您可以为 <tt>Utils.java</tt> 创建测试框架。在上一练习中创建了测试之后，IDE 会提示您选择 JUnit 的版本。但这次，并没有提示要求您选择版本。</p>
+    <ol>
+        <li>右键单击 <tt>Utils.java</tt> 并选择 "Tools"（工具）> "Create Tests"（创建测试）。</li>
+        <li>在 "Framework"（框架）下拉列表中选择 "JUnit"（如果未选中）。</li>
+        <li>在对话框中，选中 "Test Initializer"（测试初始化函数）和 "Test Finalizer"（测试终结方法）（如果未选中）。</li>
+        <li>在 "Create Tests"（创建测试）对话框中，将测试类的名称修改为 <b>UtilsJUnit3Test</b>。单击 "OK"（确定）。</li>
+    </ol>
+
+    <p>单击 "OK"（确定）之后，IDE 将在 "Test Packages"（测试包）> "samples"（样例）目录中创建测试文件 <tt>UtilsJUnit3Test.java</tt>。可以看到，除了为 <tt>Utils.java</tt> 中的方法创建 <tt>testComputeFactorial</tt>、<tt>testConcatWords</tt> 和 <tt>testNormalizeWord</tt> 测试框架之外，IDE 还创建了测试初始化函数方法 <tt>setUp</tt> 和测试终结方法 <tt>tearDown</tt>。</p>
+               
+<!-- ===================================================================================== -->                
+    <a name="Exercise_24"></a>
+    <h3>为 <tt>Utils.java</tt> 编写测试方法</h3>
+    <p>在本练习中，您将添加一些测试用例来演示一些常用的 JUnit 测试元素。您还将在方法中添加 <tt>println</tt>，因为一些方法默认不打印任何输出。通过在方法中添加 <tt>println</tt>，您可以稍后在 JUnit 测试结果窗口中查看方法是否已经运行以及它们运行的顺序。</p>
+        
+    <div class="indent">
+        <a name="Exercise_241"></a>
+        <h4>测试初始化函数和终结方法</h4>
+        <p><tt>setUp</tt> 和 <tt>tearDown</tt> 方法用于初始化和释放测试条件。您不需要使用 <tt>setUp</tt> 和 <tt>tearDown</tt> 方法来测试 <tt>Utils.java</tt>，但是此处演示了它们的运行原理。</p>
+        <p><tt>setUp</tt> 方法是一个测试初始化方法，它在测试类中的各测试用例之前运行。运行测试不需要测试初始化方法，但是，如果您需要在运行测试之前初始化一些变量，则可以使用测试初始化方法。</p>
+
+        <p><tt>tearDown</tt> 方法是一个测试终结方法，它在测试类中的各测试用例之后运行。运行测试不需要测试终结方法，但是，您可能需要使用终结方法来清理运行测试用例时所需的任何数据。</p>
+        <ol>
+            <li>执行以下更改（显示为粗体），在各方法中添加一个 <tt>println</tt>。
+            <pre class="examplecode">@Override
+protected void setUp() throws Exception {
+    super.setUp();
+    <b>System.out.println("* UtilsJUnit3Test: setUp() method");</b>
+}
+
+@Override
+protected void tearDown() throws Exception {
+    super.tearDown();
+    <b>System.out.println("* UtilsJUnit3Test: tearDown() method");</b>
+}</pre>
+            <p>运行测试时，各方法的 <tt>println</tt> 文本将出现在 "JUnit Test Results"（JUnit 测试结果）输出窗口中。如果您没有添加 <tt>println</tt>，则不会在输出中显示方法已经运行。</p>
+            </li>
+        </ol>
+
+        <a name="Exercise_242"></a>
+        <h4>在测试中使用简单的断言</h4>
+        <p>这个简单的测试用例将测试 <tt>concatWords</tt> 方法。您没有使用生成的 <tt>testConcatWords</tt> 测试方法，而是使用新的 <tt>testHelloWorld</tt> 测试方法，该方法使用单个简单的断言来测试方法是否正确地连接了字符串。测试用例中的 <tt>assertEquals</tt> 将使用 <tt>assertEquals(<i>EXPECTED_RESULT, ACTUAL_RESULT</i>)</tt> 语法来测试预期结果是否等于实际结果。在本例中，如果 <tt>concatWords</tt> 方法的输入为 "<tt>Hello</tt>"、"<tt>, </tt>"、"<tt>world</tt>" 和 "<tt>!</tt>"，则预期结果应该等于 <tt>"Hello, world!"</tt>。</p>
+        
+        <ol>
+            <li>删除在 <tt>UtilsJUnit3Test.java</tt> 中生成的 <tt>testConcatWords</tt> 测试方法。</li>
+            <li>添加以下方法来测试 <tt>concatWords</tt> 方法。
+
+            <pre class="examplecode"><b>public void testHelloWorld() {
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));
+}</b></pre> 
+            </li>
+            <li>添加一个 <tt>println</tt> 语句，用于在 "JUnit Test Results"（JUnit 测试结果）窗口中显示关于测试的文本。
+                <pre class="examplecode">public void testHelloWorld() {
+    <b>System.out.println("* UtilsJUnit3Test: test method 1 - testHelloWorld()");</b>
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));</pre>
+            </li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_342">在测试中使用简单的断言（JUnit 4）</a></p>
+
+        <a name="Exercise_243"></a>
+        <h4>在测试中使用超时</h4>
+        <p>此测试演示如何检查方法的完成是否花费了过长的时间。如果方法花费了过长的时间，则测试线程将中断并导致测试失败。您可以在测试中指定时间限制。</p>
+        
+        <p>测试方法将调用 <tt>Utils.java</tt> 中的 <tt>computeFactorial</tt> 方法。您可以假定 <tt>computeFactorial</tt> 方法是正确的，但是在本例中，您希望测试计算是否是在 1000 毫秒之内完成的。<tt>computeFactorial</tt> 线程和测试线程是在相同时间启动的。测试线程将在 1000 毫秒过后停止并抛出一个 <tt>TimeoutException</tt> 异常错误，除非 <tt>computeFactorial</tt> 线程先于它完成。您将添加一条消息，这样在抛出 <tt>TimeoutException</tt> 时会显示该消息。</p>
+
+        <ol>
+            <li>删除生成的测试方法 <tt>testComputeFactorial</tt>。</li>
+            <li>添加 <tt>testWithTimeout</tt> 方法，该方法用于计算随机生成数的阶乘。
+            <pre class="examplecode"><b>public void testWithTimeout() throws InterruptedException, TimeoutException {
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+
+    Thread testThread = new Thread() {
+        public void run() {
+            System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        }
+    };
+}</b></pre>
+            </li>
+            <li>修复导入，以导入 <tt>java.util.concurrent.TimeoutException</tt>。</li>
+            <li>在方法中添加以下代码（显示为粗体），其作用是当测试任务的执行时间过长时中断线程并显示一条消息。
+            <pre class="examplecode">
+    Thread testThread = new Thread() {
+        public void run() {
+            System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        }
+    };
+
+    <b>testThread.start();
+    Thread.sleep(1000);
+    testThread.interrupt();
+
+    if (testThread.isInterrupted()) {
+        throw new TimeoutException("the test took too long to complete");
+    }</b>
+}</pre>
+            <p>在抛出超时之前，您可以通过修改 <tt>Thread.sleep</tt> 代码行来更改毫秒数。</p>
+            </li>
+            <li>添加以下 <tt>println</tt>（显示为粗体），用于在 "JUnit Test Results"（JUnit 测试结果）窗口中输出关于测试的文本。
+            <pre class="examplecode">public void testWithTimeout() throws InterruptedException, TimeoutException {
+    <b>System.out.println("* UtilsJUnit3Test: test method 2 - testWithTimeout()");</b>
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+            </pre>
+            </li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_343">在测试中使用超时（JUnit 4）</a></p>
+ 
+ 
+        <a name="Exercise_244"></a>
+        <h4>针对预期异常错误的测试</h4>
+        <p>此测试演示如何针对预期异常错误进行测试。如果未抛出指定的预期异常错误，则会导致方法失败。在本例中，您将测试当输入变量为负数时（-5），<tt>computeFactorial</tt> 方法是否会抛出 <tt>IllegalArgumentException</tt>。</p>
+        <ol>
+            <li>添加以下 <tt>testExpectedException</tt> 方法，它将以输入 -5 调用 <tt>computeFactorial</tt> 方法。
+            <pre class="examplecode"><b>public void testExpectedException() {
+    try {
+        final int factorialOf = -5;
+        System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        fail("IllegalArgumentException was expected");
+    } catch (IllegalArgumentException ex) {
+    }
+}</b></pre>
+            </li>
+            <li>添加以下 <tt>println</tt>（显示为粗体），用于在 "JUnit Test Results"（JUnit 测试结果）窗口中输出关于测试的文本。
+            <pre class="examplecode">public void testExpectedException() {
+    <b>System.out.println("* UtilsJUnit3Test: test method 3 - testExpectedException()");</b>
+    try {</pre>
+            </li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_344">针对预期异常错误的测试（JUnit 4）</a></p>
+        
+        
+        <a name="Exercise_245"></a>
+        <h4>禁用测试</h4>
+        <p>此测试演示如何临时禁用测试方法。在 JUnit 3 中，如果某个方法名称没有以 <tt>test</tt> 开头，则它不会被识别为测试方法。在这种情况下，将 <tt>DISABLED_</tt> 放在测试方法名称之前即可禁用它。</p>
+
+        <ol>
+            <li>删除生成的测试方法 <tt>testNormalizeWord</tt>。</li>
+            <li>在测试类中添加以下测试方法。
+            <pre class="examplecode"><b>public void testTemporarilyDisabled() throws Exception {
+    System.out.println("* UtilsJUnit3Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</b></pre>
+            <p>测试方法 <tt>testTemporarilyDisabled</tt> 将在您运行测试类时运行。</p>
+            </li>
+            <li>将 <tt>DISABLED_</tt>（显示为粗体）置于测试方法的名称之前。
+            <pre class="examplecode">public void <b>DISABLED_</b>testTemporarilyDisabled() throws Exception {
+    System.out.println("* UtilsJUnit3Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</pre>
+            </li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_345">禁用测试（JUnit 4）</a></p>
+    </div>
+   
+   <p>现在，您已经编写了测试。接下来，您可以运行测试并在 "JUnit Test Results"（JUnit 测试结果）窗口中查看测试输出。</p>
+    
+<!-- ===================================================================================== -->
+    <a name="Exercise_25"></a>
+    <h3>运行测试</h3>
+    <p>运行 JUnit 测试之后，结果将显示在 IDE 的 "Test Results"（测试结果）窗口中。您可以单独运行 JUnit 测试类，或者也可以从主菜单中选择 "Run"（运行）> "Test <i>PROJECT_NAME</i>"（测试 PROJECT_NAME）来运行项目的所有测试。如果您选择 "Run"（运行）> "Test"（测试），则 IDE 将运行 "Test Packages"（测试包）文件夹中的所有测试类。要运行单独的测试类，右键单击 "Test Packages"（测试包）节点下的测试类并选择 "Run File"（运行文件）。</p>
+    
+    <ol>
+        <li>在主菜单中选择 "Run"（运行）> "Set Main Project"（设置为主项目），然后选择 "JUnit-Sample" 项目。</li>
+        <li>从主菜单中选择 "Run"（运行）> "Test Project (JUnit-Sample)"（测试项目 (JUnit-Sample)）。</li>
+        <li>选择 "Window"（窗口）> "IDE Tools"（IDE 工具）> "Test Results"（测试结果）以打开 "Test Results"（测试结果）窗口。</li>
+    </ol>
+    
+    <p>运行测试之后，您将在 "JUnit Test Results"（JUnit 测试结果）窗口中看到以下结果之一。</p>
+    
+    <a href="../../../images_www/articles/72/java/junit/junit3-test-pass.png"><img alt="&quot;JUnit Test Results&quot;（JUnit 测试结果）窗口的屏幕快照" class="box" src="../../../images_www/articles/72/java/junit/junit3-test-pass-sm.png" title="显示通过的测试的 &quot;JUnit Test Results&quot;（JUnit 测试结果）窗口。单击查看大图。"></a>
+    <p>在此图像中（单击图像查看大图），您可以看到项目通过了所有测试。左侧窗格显示各测试方法的结果，右侧窗格显示测试输出。如果您查看输出，您可以看到测试运行的顺序。添加到各测试方法中的 <tt>println</tt> 在输出窗口中输出测试的名称。您还可以看到，在 <tt>UtilJUnit3Test</tt> 中，<tt>setUp</tt> 方法在各测试方法之前运行，而 <tt>tearDown</tt> 方法在各方法之后运行。</p>
+    <a href="../../../images_www/articles/72/java/junit/junit3-test-fail.png"><img alt="&quot;JUnit Test Results&quot;（JUnit 测试结果）窗口的屏幕快照" class="box" src="../../../images_www/articles/72/java/junit/junit3-test-fail-sm.png" title="显示未通过的测试的 &quot;JUnit Test Results&quot;（JUnit 测试结果）窗口。单击查看大图。"></a>
+    <p>在此图像中（单击图像查看大图），您可以看到项目未通过其中一个测试。<tt>testTimeout</tt> 方法花费了过长的运行时间，并且测试线程被中断，导致测试失败。它花了超过 1000 毫秒来计算出随机生成数（22991）的阶乘。</p>
+
+
+    </div>
+        <p>创建单元测试类后，下一步将创建测试套件。请参见<a href="#Exercise_41">创建 JUnit 3 测试套件</a>，了解如何以组的方式运行特定的测试，从而避免单独运行各个测试。</p>
+    
+    
+    
+    
+    
+            
+<!-- ===================================================================================== -->
+<!-- JUnit 4 Tests -->  
+<a name="Exercise_30"></a>
+<h2>编写 JUnit 4 测试</h2>
+    <p>在本练习中，您将为 <tt>Vectors.java</tt> 和 <tt>Utils.java</tt> 创建 JUnit 4 单元测试。JUnit 4 测试用例与 JUnit 3 测试用例相同，但是您会发现其编写测试的语法更加简单。 </p>
+    
+    <p>您将使用 IDE 的向导根据项目中的类来创建测试框架。第一次使用 IDE 创建测试框架时，IDE 会提示您选择 JUnit 版本。 </p>
+        
+    <p class="notes"><b>注：</b>如果已选择 JUnit 3.x 作为默认测试版本，则需要将默认版本更改为 JUnit 4.x。要更改默认的 JUnit 版本，请展开 "Test Libraries"（测试库）节点，右键单击 "JUnit" 库，然后选择 "Remove"（删除）。现在，您可以使用 "Add Library"（添加库）对话框来明确添加 "JUnit 4" 库，也可以在创建新测试期间系统提示您选择 JUnit 版本时选择版本 4.x。您仍然可以运行 JUnit 3 测试，但是您创建的任何新测试都将使用 JUnit 4。</p>
+    
+    
+    <div class="indent">
+<!-- ===================================================================================== -->
+        <a name="Exercise_31"></a>
+        <h3>为 <tt>Vectors.java</tt> 创建测试类</h3>
+        <p>在本练习中，您将为 <tt>Vectors.java</tt> 创建 JUnit 测试框架。</p>
+        <p class="notes"><b>注：</b>如果您使用的是 NetBeans IDE 7.1 或更早版本，则不需要指定测试框架，因为默认情况下将指定 JUnit。在 NetBeans IDE 7.2 中，您可以选择指定 JUnit 或 TestNG 作为测试框架。</p>
+        
+        <ol>
+            <li>右键单击 <tt>Vectors.java</tt> 并选择 "Tools"（工具）> "Create Tests"（创建测试）。</li>
+            <li>在 "Create Tests"（创建测试）对话框中，将测试类的名称修改为 <b>VectorsJUnit4Test</b>。
+            <p>更改测试类的名称之后，您将看到一个关于修改名称的警告。默认名称基于要测试的类名，并在该名称后面附加单词 Test。举例来说，对于 <tt>MyClass.java</tt> 类，测试类的默认名称为 <tt>MyClassTest.java</tt>。与 JUnit 3 不同，在 JUnit 4 中，测试不需要以单词 Test 结尾。通常，最好是保留默认名称，但由于在本教程中您将在相同的包中创建所有 JUnit 测试，因此测试类的名称必须是惟一的。</p></li>
+            <li>在 "Framework"（框架）下拉列表中选择 "JUnit"。</li>
+            <li>取消选中 "Test Initializer"（测试初始化函数）和 "Test Finalizer"（测试终结方法）。单击 "OK"（确定）。<br /> <img alt="JUnit 4 &quot;Create Tests&quot;（创建测试）对话框的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit4-vectors-createtests.png" title="JUnit 4 &quot;Create Tests&quot;（创建测试）对话框">
+            </li>
+            <li>在 "Select JUnit Version"（选择 JUnit 版本）对话框中，选择 "JUnit 4.x"。单击 "Select"（选择）。<br /> <img alt="选择 &quot;JUnit version&quot;（JUnit 版本）对话框" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit4-select-version.png" title="选择 &quot;JUnit version&quot;（JUnit 版本）对话框">
+            </li>
+        </ol>
+        <p>单击 "OK"（确定）后，IDE 将在 "Projects"（项目）窗口 "Test Packages"（测试包）节点下方的 <tt>sample</tt> 包中创建 <tt>VectorsJUnit4Test.java</tt> 测试类。</p>
+
+        <img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/java/junit/projects-window3.png" title="包含 JUnit 3 和 JUnit 4 测试类的 JUnit-Sample 项目的结构">
+        <p class="notes"><strong>注：</strong>项目需要一个目录供测试包创建测试。测试包目录的默认位置为项目的根目录，但是根据项目的类型不同，您可以在项目的 "Properties"（属性）对话框中为目录指定不同的位置。</p>
+
+
+        <p>在编辑器中查看 <tt>VectorsJUnit3Test.java</tt>，您可以看到 IDE 生成了测试方法 <tt>testEqual</tt> 和 <tt>testScalarMultiplication</tt>。在 <tt>VectorsJUnit4Test.java</tt> 中，每个测试方法都使用 <tt>@Test</tt> 进行标注。IDE 根据 <tt>Vectors.java</tt> 中的方法的名称为测试方法生成了名称，但是，不需要将 <tt>test</tt> 置于测试方法的名称之前。各生成测试方法的默认主体是作为指导单独提供的，因此需要将它们修改为实际的测试用例。</p>
+        
+        <p class="tips">如果您不需要生成的方法主体，可以在 "Create Tests"（创建测试）对话框中取消选中 "Default Method Bodies"（默认方法主体）”。</p>
+        
+        
+        <p>IDE 还生成了以下测试类初始化函数和终结方法：</p>
+            <pre class="examplecode">@BeforeClass
+public static void setUpClass() throws Exception {
+}
+
+@AfterClass
+public static void tearDownClass() throws Exception {
+}</pre>
+        
+        <p>创建 JUnit 4 测试类时，IDE 会生成默认的类初始化函数和终结方法。标注 <tt>@BeforeClass</tt> 和 <tt>@AfterClass</tt> 用于标记应在测试类之前及之后运行的方法。您可以删除这些方法，因为您在 <tt>Vectors.java</tt> 测试时不需要它们。</p>
+        
+        <p class="tips">您可以通过在 "Options"（选项）窗口中配置 "JUnit" 选项来配置默认生成的方法。</p>
+        
+        <p class="notes"><strong>注：</strong>对于 JUnit 4 测试，请注意默认情况下 IDE 为 <tt>org.junit.Assert.*</tt> 添加静态导入声明。</p>
+        
+        
+
+<!-- ===================================================================================== -->            
+        <a name="Exercise_32"></a>
+        <h3>为 <tt>Vectors.java</tt> 编写测试方法</h3>
+        <p>在本练习中，您将修改生成的各测试方法：使用 JUnit <tt>assert</tt> 方法来测试方法，并更改测试方法的名称。在 JUnit 4 中，您在命名测试方法时拥有了更好的灵活性，因为测试方法是由 <tt>@Test</tt> 标注指示的，并且不需要将单词 <tt>test</tt> 置于测试方法之前。</p>
+        
+        <ol>
+            <li>在编辑器中打开 <tt>VectorsJUnit4Test.java</tt>。</li>
+            <li>修改 <tt>testScalarMultiplication</tt> 的测试框架，方法是修改方法名称、修改 <tt>println</tt> 的值并删除生成的变量。现在，测试方法应如下所示（粗体为更改部分）：
+            <pre class="examplecode">@Test
+public void <b>ScalarMultiplicationCheck</b>() {
+    System.out.println("<b>* VectorsJUnit4Test: ScalarMultiplicationCheck()</b>");
+    assertEquals(expResult, result);
+}</pre>
+            <p class="notes"><strong>注：</strong>在编写测试时，不需要更改打印的输出。在本练习中，其作用是能够更加轻松地识别输出窗口中的测试结果。</p>
+            </li>
+            <li>现在，添加一些断言来测试方法。
+            <pre class="examplecode">@Test
+public void ScalarMultiplicationCheck() {
+    System.out.println("* VectorsJUnit4Test: ScalarMultiplicationCheck()");
+    <b>assertEquals(  0, Vectors.scalarMultiplication(new int[] { 0, 0}, new int[] { 0, 0}));
+    assertEquals( 39, Vectors.scalarMultiplication(new int[] { 3, 4}, new int[] { 5, 6}));
+    assertEquals(-39, Vectors.scalarMultiplication(new int[] {-3, 4}, new int[] { 5,-6}));
+    assertEquals(  0, Vectors.scalarMultiplication(new int[] { 5, 9}, new int[] {-9, 5}));
+    assertEquals(100, Vectors.scalarMultiplication(new int[] { 6, 8}, new int[] { 6, 8}));</b>
+}</pre>
+            <p>在此测试方法中，您使用了 JUnit <tt>assertEquals</tt> 方法。要使用断言，您需要提供输入变量和预期的结果。在运行被测试的方法时，要通过测试，测试方法必须根据提供的变量成功返回所有预期的结果。您应该添加足够数量的断言来涵盖各种可能的排列。</p>
+            </li>
+            <li>将 <tt>testEqual</tt> 测试方法的名称更改为 <tt>equalsCheck</tt>。</li>
+            <li>删除 <tt>equalsCheck</tt> 测试方法的已生成方法主体。</li>
+            <li>将以下 <tt>println</tt> 添加到 <tt>equalsCheck</tt> 测试方法中。
+            <pre class="examplecode"><b>System.out.println("* VectorsJUnit4Test: equalsCheck()");</b></pre>
+            <p>现在，测试方法应如下所示：</p>
+            <pre class="examplecode">@Test
+public void equalsCheck() {
+    System.out.println("* VectorsJUnit4Test: equalsCheck()");
+}</pre>
+            <li>修改 <tt>equalsCheck</tt> 方法：添加以下断言（显示为粗体）。
+            <pre class="examplecode">@Test
+public void equalsCheck() {
+    System.out.println("* VectorsJUnit4Test: equalsCheck()");
+    <b>assertTrue(Vectors.equal(new int[] {}, new int[] {}));
+    assertTrue(Vectors.equal(new int[] {0}, new int[] {0}));
+    assertTrue(Vectors.equal(new int[] {0, 0}, new int[] {0, 0}));
+    assertTrue(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 0}));
+    assertTrue(Vectors.equal(new int[] {5, 6, 7}, new int[] {5, 6, 7}));
+
+    assertFalse(Vectors.equal(new int[] {}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {}));
+
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 1}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 1, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {1, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 1}, new int[] {0, 0, 3}));</b>
+}</pre>
+            <p>此方法使用 JUnit <tt>assertTrue</tt> 和 <tt>assertFalse</tt> 方法来测试各种可能的结果。要通过此方法的测试，<tt>assertTrue</tt> 必须全部为 true，并且 <tt>assertFalse</tt> 必须全部为 false。</p>
+            </li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_22">为 <tt>Vectors.java</tt> 编写测试方法（JUnit 3）</a></p>
+
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_33"></a>
+    <h3>为 <tt>Utils.java</tt> 创建测试类</h3>
+    <p>现在，您将为 <tt>Utils.java</tt> 创建 JUnit 测试方法。在上一练习中创建了测试类之后，IDE 会提示您选择 JUnit 的版本。这次，IDE 并未提示您选择版本，因为您已经选择了 JUnit 版本，并且该版本中已经创建了所有后续 JUnit 测试。</p>
+    <p class="notes"><strong>注：</strong>如果您选择 JUnit 4 作为版本，那么仍然可以编写和运行 JUnit 3 测试，但是 IDE 将使用 JUnit 4 模板来生成测试框架。</p>
+    <ol>
+        <li>右键单击 <tt>Utils.java</tt> 并选择 "Tools"（工具）> "Create Tests"（创建测试）。</li>
+        <li>在 "Framework"（框架）下拉列表中选择 "JUnit"（如果未选中）。</li>
+        <li>在对话框中，选中 "Test Initializer"（测试初始化函数）和 "Test Finalizer"（测试终结方法）（如果未选中）。</li>
+        <li>在 "Create Tests"（创建测试）对话框中，将测试类的名称修改为 <b>UtilsJUnit4Test</b>。单击 "OK"（确定）。</li>
+    </ol>
+
+    <p>单击 "OK"（确定）后，IDE 将在 "Test Packages"（测试包）> "sample"（样例）目录中创建测试文件 <tt>UtilsJUnit4Test.java</tt>。可以看到，IDE 为 <tt>Utils.java</tt> 中的方法生成了 <tt>testComputeFactorial</tt>、<tt>testConcatWords</tt> 和 <tt>testNormalizeWord</tt> 测试方法。IDE 还为测试和测试类生成了初始化函数和终结方法。 
+    </p>
+               
+<!-- ===================================================================================== -->                
+    <a name="Exercise_34"></a>
+    <h3>为 <tt>Utils.java</tt> 编写测试方法</h3>
+    <p>在本练习中，您将添加一些测试用例来演示一些常用的 JUnit 测试元素。您还将在方法中添加一个 <tt>println</tt>，因为一些方法不会在 "JUnit Test Results"（JUnit 测试结果）窗口中打印任何输出，以表示方法已运行或通过测试。通过在方法中添加 <tt>println</tt>，您可以了解方法是否已经运行以及它们运行的顺序。</p>
+        
+    <div class="indent">
+        <a name="Exercise_341"></a>
+        <h4>测试初始化函数和终结方法</h4>
+        <p>为 <tt>Utils.java</tt> 创建测试类之后，IDE 将生成标注初始化函数和终结方法。您可以为方法选择任何名称，因为没有既定的命名惯例。</p>
+        <p class="notes"><strong>注：</strong>您不需要使用初始化函数和终结方法来测试 <tt>Utils.java</tt>，但是本教程演示了它们的运行原理。</p>
+        <p>在 JUnit 4 中，您可以使用标注来标记以下类型的初始化函数和终结方法。</p>
+        
+        <ul>
+            <li><b>测试类初始化程序。</b><tt>@BeforeClass</tt> 标注将方法标记为测试类初始化方法。测试类初始化方法只能运行一次，并且在测试类中的任何其他方法之前运行。举例来说，您不必在测试初始化函数中创建数据库连接并在各测试方法之前创建新连接，您可以在运行测试之前使用测试类初始化函数打开连接。然后，您可以使用测试类终结方法来关闭连接。</li>
+
+            <li><b>测试类终结方法。</b><tt>@AfterClass</tt> 标注将方法标记为测试类终结方法。测试类终结方法只能运行一次，并且在测试类中的任何其他方法完成之后运行。</li>
+            
+            <li><b>测试初始化程序。</b><tt>@Before</tt> 标注将方法标记为测试初始化方法。测试初始化方法在测试类中的各测试用例之前运行。运行测试不需要测试初始化方法，但是，如果您需要在运行测试之前初始化一些变量，则可以使用测试初始化方法。</li>
+
+            <li><b>测试终结方法。</b><tt>@After</tt> 标注将方法标记为测试终结方法。测试终结方法在测试类中的各测试用例之后运行。运行测试不需要测试终结方法，但是，您可能需要使用终结方法来清理运行测试用例时所需的任何数据。</li>
+        </ul>
+        
+        <p>在 <tt>UtilsJUnit4Test.java</tt> 中进行如下更改（以粗体显示）。</p>
+        <pre class="examplecode">@BeforeClass
+public static void setUpClass() throws Exception {
+    <b>System.out.println("* UtilsJUnit4Test: @BeforeClass method");</b>
+}
+
+@AfterClass
+public static void tearDownClass() throws Exception {
+    <b>System.out.println("* UtilsJUnit4Test: @AfterClass method");</b>
+}
+
+@Before
+public void setUp() {
+    <b>System.out.println("* UtilsJUnit4Test: @Before method");</b>
+}
+
+@After
+public void tearDown() {
+    <b>System.out.println("* UtilsJUnit4Test: @After method");</b>
+}</pre>
+
+        <p class="tips">比较：<a href="#Exercise_241">测试初始化函数和终结方法（JUnit 3）</a></p>
+        <p>运行测试类时，您添加的 <tt>println</tt> 文本将显示在 "JUnit Test Results"（JUnit 测试结果）窗口的输出窗格中。如果您没有添加 <tt>println</tt>，则不会在输出中显示初始化函数和终结方法已经运行。</p>
+
+        <a name="Exercise_342"></a>
+        <h4>在测试中使用简单的断言</h4>
+        <p>这个简单的测试用例将测试 <tt>concatWords</tt> 方法。您没有使用生成的 <tt>testConcatWords</tt> 测试方法，而是使用新的 <tt>helloWorldCheck</tt> 测试方法，该方法使用单个简单的断言来测试方法是否正确地连接了字符串。测试用例中的 <tt>assertEquals</tt> 将使用 <tt>assertEquals(<i>EXPECTED_RESULT, ACTUAL_RESULT</i>)</tt> 语法来测试预期结果是否等于实际结果。在本例中，如果 <tt>concatWords</tt> 方法的输入为 "<tt>Hello</tt>"、"<tt>, </tt>"、"<tt>world</tt>" 和 "<tt>!</tt>"，则预期结果应该等于 <tt>"Hello, world!"</tt>。</p>
+        
+        <ol>
+            <li>删除生成的测试方法 <tt>testConcatWords</tt>。</li>
+            <li>添加以下 <tt>helloWorldCheck</tt> 方法来测试 <tt>Utils.concatWords</tt>。
+
+            <pre class="examplecode"><b>@Test
+public void helloWorldCheck() {
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));
+}</b></pre> 
+            </li>
+            <li>添加一个 <tt>println</tt> 语句，用于在 "JUnit Test Results"（JUnit 测试结果）窗口中显示关于测试的文本。
+                <pre class="examplecode">@Test
+public void helloWorldCheck() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 1 - helloWorldCheck()");</b>
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));</pre>
+            </li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_242">在测试中使用简单的断言（JUnit 3）</a></p>
+
+
+        <a name="Exercise_343"></a>
+        <h4>在测试中使用超时</h4>
+        <p>此测试演示如何检查方法的完成是否花费了过长的时间。如果方法花费了过长的时间，则测试线程将中断并导致测试失败。您可以在测试中指定时间限制。</p>
+        
+        <p>测试方法将调用 <tt>Utils.java</tt> 中的 <tt>computeFactorial</tt> 方法。您可以假定 <tt>computeFactorial</tt> 方法是正确的，但是在本例中，您希望测试计算是否是在 1000 毫秒之内完成的。其作用是在 1000 毫秒之好中断测试线程。如果线程被中断，则测试方法将抛出一个 <tt>TimeoutException</tt>。</p>
+
+        <ol>
+            <li>删除生成的测试方法 <tt>testComputeFactorial</tt>。</li>
+            <li>添加 <tt>testWithTimeout</tt> 方法，该方法用于计算随机生成数的阶乘。
+            <pre class="examplecode"><b>@Test
+public void testWithTimeout() {
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</b></pre>
+            </li>
+            <li>添加以下代码（显示为粗体），用于设置超时并在方法执行时间过长时中断线程。
+            <pre class="examplecode">@Test<b>(timeout=1000)</b>
+public void testWithTimeout() {
+    final int factorialOf = 1 + (int) (30000 * Math.random());</pre>
+            <p>可以看到，超时被设置为 1000 毫秒。</p>
+            </li>
+            <li>添加以下 <tt>println</tt>（显示为粗体），用于在 "JUnit Test Results"（JUnit 测试结果）窗口中输出关于测试的文本。
+            <pre class="examplecode">@Test(timeout=1000)
+public void testWithTimeout() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 2 - testWithTimeout()");</b>
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+            </pre>
+            </li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_243">在测试中使用超时（JUnit 3）</a></p>
+
+        <a name="Exercise_344"></a>
+        <h4>针对预期异常错误的测试</h4>
+        <p>此测试演示如何针对预期异常错误进行测试。如果未抛出指定的预期异常错误，则会导致方法失败。在本例中，您将测试当输入变量为负数时（-5），<tt>computeFactorial</tt> 方法是否会抛出 <tt>IllegalArgumentException</tt>。</p>
+        <ol>
+            <li>添加以下 <tt>testExpectedException</tt> 方法，它将以输入 -5 调用 <tt>computeFactorial</tt> 方法。
+            <pre class="examplecode"><b>@Test
+public void checkExpectedException() {
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</b></pre>
+            </li>
+            <li>在 <tt>@Test</tt> 标注中添加以下属性（显示为粗体），指定测试应该抛出 <tt>IllegalArgumentException</tt>。
+            <pre class="examplecode">@Test<b>(expected=IllegalArgumentException.class)</b>
+public void checkExpectedException() {
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</pre>
+            
+            </li>
+            <li>添加以下 <tt>println</tt>（显示为粗体），用于在 "JUnit Test Results"（JUnit 测试结果）窗口中输出关于测试的文本。
+            <pre class="examplecode">@Test (expected=IllegalArgumentException.class)
+public void checkExpectedException() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 3 - checkExpectedException()");</b>
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</pre>
+            </li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_244">针对预期异常错误的测试（JUnit 3）</a></p>
+
+        <a name="Exercise_345"></a>
+        <h4>禁用测试</h4>
+        <p>此测试演示如何临时禁用测试方法。在 JUnit 4 中，您只需通过添加 <tt>@Ignore</tt> 标注来禁用测试。</p>
+
+        <ol>
+            <li>删除生成的测试方法 <tt>testNormalizeWord</tt>。</li>
+            <li>在测试类中添加以下测试方法。
+            <pre class="examplecode"><b>@Test
+public void temporarilyDisabledTest() throws Exception {
+    System.out.println("* UtilsJUnit4Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</b></pre>
+            <p>测试方法 <tt>temporarilyDisabledTest</tt> 将在您运行测试类时运行。</p>
+            </li>
+            <li>在 <tt>@Test</tt> 上方添加 <tt>@Ignore</tt> 标注（显示为粗体）来禁用测试。
+            <pre class="examplecode"><b>@Ignore</b>
+@Test
+public void temporarilyDisabledTest() throws Exception {
+    System.out.println("* UtilsJUnit4Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</pre>
+            </li>
+            <li>修复导入，以导入 <tt>org.junit.Ignore</tt>。</li>
+        </ol>
+        <p class="tips">比较：<a href="#Exercise_245">禁用测试（JUnit 3）</a></p>
+    </div>
+   
+   <p>现在，您已经编写了测试。接下来，您可以运行测试并在 "JUnit Test Results"（JUnit 测试结果）窗口中查看测试输出。</p>
+    
+<!-- ===================================================================================== -->
+    
+    <a name="Exercise_35"></a>
+    <h3>运行测试</h3>
+    <p>
+    您可以对整个应用程序或单独的文件运行 JUnit 测试，并在 IDE 中查看结果。要运行项目的所有单元测试，最简单的方法是从主菜单中选择 "Run"（运行）> "Test <i>&lt;PROJECT_NAME></i>"（测试 &lt;PROJECT_NAME>）。如果您选择此方法，则 IDE 将运行 "Test Packages"（测试包）中的所有测试类。要运行单独的测试类，右键单击 "Test Packages"（测试包）节点下的测试类并选择 "Run File"（运行文件）。</p>
+    
+    <ol>
+        <li>在 "Projects"（项目）窗口中，右键单击 <tt>UtilsJUnit4Test.java</tt>。</li>
+        <li>选择 "Test File"（测试文件）。</li>
+        <li>选择 "Window"（窗口）> "IDE Tools"（IDE 工具）> "Test Results"（测试结果）以打开 "Test Results"（测试结果）窗口。</li>
+    </ol>
+    
+    <p>在运行 <tt>UtilsJUnit4Test.java</tt> 时，IDE 仅运行测试类中的测试。如果类通过了所有测试，那么您将在 "JUnit Test Results"（JUnit 测试结果）窗口中看到与下图相似的结果。</p>
+    
+    <a href="../../../images_www/articles/72/java/junit/junit4-utilstest-pass.png"><img alt="&quot;JUnit Test Results&quot;（JUnit 测试结果）窗口的屏幕快照" class="box" src="../../../images_www/articles/72/java/junit/junit4-utilstest-pass-sm.png" title="显示通过的测试的 &quot;JUnit Test Results&quot;（JUnit 测试结果）窗口。单击查看大图。"></a>
+    <p>在该图中（单击图像查看大图），您可以看到 IDE 对 <tt>Utils.java</tt> 运行了 JUnit 测试，并且类通过了所有测试。左侧窗格显示各测试方法的结果，右侧窗格显示测试输出。如果您查看输出，您可以看到测试运行的顺序。您向每个测试方法添加的 <tt>println</tt> 已将测试的名称输出到 "Test Results"（测试结果）窗口和 "Output"（输出）窗口中。</p>
+    <p>从 <tt>UtilsJUnit4Test</tt> 中可以看到，使用 <tt>@BeforeClass</tt> 进行标注的测试类初始化方法运行于任何其他方法之前，并且只运行一次。使用 <tt>@AfterClass</tt> 进行标注的测试类终结方法在类中的所有其他方法之后运行。使用 <tt>@Before</tt> 进行标注的测试初始化方法在各测试方法之前运行。</p>
+    
+    <p>使用 "Test Results"（测试结果）窗口左侧的控件，可以方便地再次运行测试。您可以使用过滤器在显示所有测试结果和仅显示失败的测试之间进行切换。使用相应的箭头，可以跳至下一个或上一个失败的测试。</p>
+
+    <p class="tips">在 "Test Results"（测试结果）窗口中右键单击某个测试结果时，将会出现一个弹出式菜单，您可以选择转至测试的源、再次运行测试或调试测试。</p>
+
+</div>
+    
+<p>创建单元测试之后的下一步是创建测试套件。请参见<a href="#Exercise_42">创建 JUnit 4 测试套件</a>，了解如何以组的方式运行特定的测试，从而避免单独运行各个测试。</p>
+    
+            
+<!-- ===================================================================================== -->
+<!-- JUnit 4 Tests -->
+    <a name="Exercise_40"></a>
+    <h2>创建测试套件</h2>
+    <p>为项目创建测试之后，您最后将得到许多测试类。虽然您可以单独运行测试类，也可以运行项目中的所有测试，但在许多情况下，您希望运行测试的子集或按特定的顺序运行测试。您可以通过创建一个或多个测试套件来实现此目的。举例来说，您可以创建测试套件来测试代码的具体方面或具体的条件。
+    </p>
+    
+    <p>从根本上讲，测试套件是一个类，其中包含对指定测试用例（例如，特定测试类、测试类中的测试方法以及其他测试套件）进行调用的方法。测试套件可以作为测试类的一部分包括在其中，但最佳实践建议单独创建测试套件类。</p>
+
+    <p>您可以手动为项目创建 JUnit 3 和 JUnit 4 测试套件，也可以通过 IDE 来生成套件。使用 IDE 生成测试套件之后，默认情况下，IDE 将生成代码来调用与测试套件相同的包中的所有测试类。创建测试套件之后，您可以对类进行修改，指定希望作为该套件一部分运行的测试。</p>
+
+<!-- ===================================================================================== -->
+<div class="indent">
+<a name="Exercise_41"></a>
+    <h3>创建 JUnit 3 测试套件</h3>
+    <p>如果您选择 JUnit 3 作为测试的版本，则 IDE 可以根据测试包中的测试类来生成 JUnit 3 测试套件。在 JUnit 3 中，您可以指定要包含在测试套件中的测试类，方法是创建一个 <tt>TestSuite</tt> 实例并调用各测试的 <tt>addTest</tt> 方法。</p>
+
+    <ol>
+        <li>在 "Projects"（项目）窗口中，右键单击 <strong>JUnit-Sample</strong> 项目节点，然后选择 "New"（新建）> "Other"（其他），以打开新建文件向导。</li>
+        <li>在 "Unit Tests"（单元测试）类别中选择 "Test Suite"（测试套件）。单击 "Next"（下一步）。</li>
+        <li>键入 <b>JUnit3TestSuite</b> 作为类名。</li>
+        <li>选择 <tt>sample</tt> 包，在测试包文件夹的 sample 文件夹中创建测试套件。</li>
+        <li>取消选中 "Test Initializer"（测试初始化函数）和 "Test Finalizer"（测试终结方法）。单击 "Finish"（完成）。<br> <img alt="JUnit 测试套件向导的屏幕快照" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit-testsuite-wizard.png" title="JUnit 测试套件向导">
+        <p>单击 "Finish"（完成），此时 IDE 将在 <tt>sample</tt> 包中创建测试套件类，并在编辑器中打开类。该测试套件中包含以下代码。</p>
+
+        <pre class="examplecode">public class JUnit3TestSuite extends TestCase {
+    public JUnit3TestSuite(String testName) {
+        super(testName);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new TestSuite("JUnit3TestSuite");
+        return suite;
+    }
+}</pre>
+        </li>
+        <li>修改 <tt>suite()</tt> 方法，以添加要作为套件的一部分运行的测试类。
+        <pre class="examplecode">public JUnit3TestSuite(String testName) {
+    super(testName);
+}
+
+public static Test suite() {
+    TestSuite suite = new TestSuite("JUnit3TestSuite");
+    <strong>suite.addTest(new TestSuite(sample.VectorsJUnit3Test.class));
+    suite.addTest(new TestSuite(sample.UtilsJUnit3Test.class));</strong>
+    return suite;
+}</pre>
+        </li>
+        <li>保存所做的更改。</li>
+    </ol>
+
+<!-- ===================================================================================== -->
+<a name="Exercise_42"></a>
+    <h3>创建 JUnit 4 测试套件</h3>
+    <p>如果您选择 JUnit 4 作为测试的版本，则 IDE 可以生成 JUnit 4 测试套件。JUnit 4 是向后兼容的，因此您可以运行包含 JUnit 4 和 JUnit 3 测试的 JUnit 4 测试套件。在 JUnit 4 测试套件中，您可以以 <tt>@Suite</tt> 标注的值的形式指定要包括的测试类。</p>
+    <p class="notes"><strong>注：</strong>要让 JUnit 3 作为 JUnit 4 的一部分来运行，需要 JUnit 4.4 或更高版本。</p>
+
+    <ol>
+        <li>在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "New"（新建）> "Other"（其他）以打开新建文件向导。</li>
+        <li>在 "Unit Tests"（单元测试）类别中选择 "Test Suite"（测试套件）。单击 "Next"（下一步）。</li>
+        <li>键入 <b>JUnit4TestSuite</b> 作为文件名称。</li>
+        <li>选择 <tt>sample</tt> 包，在测试包文件夹的 sample 文件夹中创建测试套件。</li>
+        <li>取消选中 "Test Initializer"（测试初始化函数）和 "Test Finalizer"（测试终结方法）。单击 "Finish"（完成）。</li>
+    </ol>
+
+    <p>单击 "Finish"（完成），此时 IDE 将在 <tt>sample</tt> 包中创建测试套件类，并在编辑器中打开类。该测试套件中包含如下所示的代码。</p>
+
+    <pre class="examplecode">@RunWith(Suite.class)
+@Suite.SuiteClasses(value={UtilsJUnit4Test.class, VectorsJUnit4Test.class})
+public class JUnit4TestSuite {
+}</pre>
+
+    <p>运行该测试套件时，IDE 将按照其列出顺序来运行测试类。</p>
+
+
+
+<a name="Exercise_43"></a>
+    <h3>运行测试套件</h3>
+    <p>运行测试套件与运行任何单独测试类的方法相同。 </p>
+    <ol>
+        <li>在 "Projects"（项目）窗口中展开 "Test Packages"（测试包）节点。</li>
+        <li>右键单击测试套件类，然后选择 "Test File"（测试文件）。</li>
+    </ol>
+    <p>运行测试套件之后，IDE 将按照套件中的测试的列出顺序来运行它们。JUnit 测试结果显示在 "JUnit Test Results"（JUnit 测试结果）窗口中。</p>
+
+
+    <a href="../../../images_www/articles/72/java/junit/junit3-suite-results.png"><img alt="JUnit 3 测试套件的 JUnit 测试结果的屏幕快照" class="box" src="../../../images_www/articles/72/java/junit/junit3-suite-results-sm.png" title="显示 JUnit 3 测试套件结果的 &quot;JUnit Test Results&quot;（JUnit 测试结果）窗口。单击查看大图。"></a>
+    <p>在该图中（单击图像查看大图），您可以看到 JUnit 3 测试套件的测试结果。测试套件将以单独测试的形式来运行 <tt>UtilsJUnit3Test</tt> 和 <tt>VectorsJUnit3Test</tt> 测试类，并在左侧窗格中显示各测试的结果。单独运行测试时，右侧窗格中的输出与左侧相同。</p>
+
+    <a href="../../../images_www/articles/72/java/junit/junit4-suite-results.png"><img alt="JUnit 4 测试套件的 &quot;JUnit Test Results&quot;（JUnit 测试结果）窗口的屏幕快照" class="box" src="../../../images_www/articles/72/java/junit/junit4-suite-results-sm.png" title="显示 JUnit 4 测试套件结果的 &quot;JUnit Test Results&quot;（JUnit 测试结果）窗口。单击查看大图。"></a>
+    <p>在该图中（单击图像查看大图），您可以看到 JUnit 4 测试套件的测试结果。测试套件将以单独测试的形式来运行 <tt>UtilsJUnit4Test</tt> 和 <tt>VectorsJUnit4Test</tt> 测试类，并在左侧窗格中显示各测试的结果。单独运行测试时，右侧窗格中的输出与左侧相同。</p>
+
+
+    <a href="../../../images_www/articles/72/java/junit/junitmix3and4-suite-results.png"><img alt="混合测试套件的 &quot;JUnit Test Results&quot;（JUnit 测试结果）窗口的屏幕快照" class="box" src="../../../images_www/articles/72/java/junit/junitmix3and4-suite-results-sm.png" title="显示混合测试套件结果的 &quot;JUnit Test Results&quot;（JUnit 测试结果）窗口。单击查看大图。"></a>
+    <p>在该图中（单击图像查看大图），您可以看到混合测试套件的测试结果。该测试套件包括 JUnit 4 测试套件和一个 JUnit 3 测试类。测试套件将以单独测试的形式来运行 <tt>UtilsJUnit3Test.java</tt> 和 <tt>JUnit4TestSuite.java</tt> 测试类，并在左侧窗格中显示各测试的结果。单独运行测试时，右侧窗格中的输出与左侧相同。</p>
+
+    </div>
+    
+
+
+
+<a name="Exercise_50"></a>
+<!-- ===================================================================================== -->
+<h2>小结</h2>
+<p>本教程是在 NetBeans IDE 中创建 JUnit 单元测试和测试套件的基本介绍。IDE 支持 JUnit 3 和 JUnit 4；本文档介绍了 JUnit 4 中引入的一些更改，这些更改可简化测试的创建和运行过程。</p>
+
+<p>如本教程中所述，JUnit 4 的主要改进之一就是提供了对标注的支持。在 JUnit 4 中，您现在可以将标注用于以下用途：</p>
+<ul>
+    <li>使用 <tt>@Test</tt> 标注标识测试，而不使用命名惯例</li>
+    <li>使用 <tt>@Before</tt> 和 <tt>@After</tt> 标注标识 <tt>setUp</tt> 和 <tt>tearDown</tt> 方法</li>
+    <li>标识适用于整个测试类的 <tt>setUp</tt> 和 <tt>tearDown</tt> 方法。带有 <tt>@BeforeClass</tt> 标注的方法仅在类中的所有测试方法运行之前运行一次。同样，带有 <tt>@AfterClass</tt> 标注的方法仅在所有测试方法运行完之后运行一次。</li>
+    <li>标识预期的异常错误</li>
+    <li>使用 <tt>@Ignore</tt> 标注标识应跳过的测试</li>
+    <li>为测试指定超时参数</li>
+</ul>
+
+<p>有关使用 JUnit 以及 JUnit 4 中引入的其他更改的详细信息，请参见以下资源：</p>
+    <ul>
+        <li><a href="http://tech.groups.yahoo.com/group/junit/">Yahoo Groups 上的 JUnit 小组</a></li>
+        <li><a href="http://www.junit.org">www.junit.org</a></li>
+    </ul>
+
+<p>通常，测试代码能帮助确保对代码中所做的小更改不会中断应用程序。JUnit 等自动化测试工具简化了测试的流程，并且经常性的测试能帮助及时捕获代码错误。
+</p>
+        
+        
+<!-- End Content Area -->
+        
+    <br>
+    <div class="feedback-box"><a href="https://netbeans.org/about/contact_form.html?to=3&amp;subject=Feedback:%20Writing%20JUnit%20Tests%20in%20NetBeans%20IDE">发送有关此教程的反馈意见</a></div>
+    <br style="clear:both;" />
+    <!-- ======================================================================================= -->
+    <h2><a name="nextsteps"></a>另请参见</h2>
+
+    <p>有关使用 NetBeans IDE 开发 Java 应用程序的更多信息，请参见以下资源：</p>
+    <ul>
+        <li><em>使用 NetBeans IDE 开发应用程序</em>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">创建 Java 项目</a></li>
+        <li><a href="../../trails/java-se.html">基本 IDE 和 Java 编程学习资源</a></li>
+
+    </ul>
+    </body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+  <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>SaaS: Zillow - NetBeans IDE Tutorial</title>
+    <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, WEB SERVICES, REST, SAAS, ZILLOW, API-KEY">
+    <meta name="description"
+          content="This tutorial shows how to use NetBeans IDE
+          to work with api-key authenticated SaaS (Software as a Service) RESTful services. The Zillow real estate service is used as an example.">
+    <link rel="stylesheet" href="../../../netbeans.css">
+  </head>
+
+  <body>
+    <h1>SaaS (Software as a Service): Zillow Tutorial</h1>
+    <p>NetBeans IDE provides a Web Services Manager that supports Software as a Service (SaaS) applications. SaaS refers to a software application delivery model where a software vendor develops a web-native software application and hosts and operates the application for use by its customers over the Internet. SaaS is an increasingly popular model for providing software functionality as it is economical in terms of both cost and customer hardware resources. The IDE now makes it easy for Java developers to access all the popular SaaS services on the web.</p>
+    <p>This tutorial shows how to use the simple SaaS provided by <a target="_blank" href="http://www.zillow.com/">zillow.com</a>. Zillow.com is a Seattle, Washington-based online real estate service company founded in 2005 by Rich Barton and Lloyd Frink, former Microsoft executives and founders of Expedia. Zillow allows users to see the value of millions of homes across the United States, not just those up for sale. In addition to giving value estimates of homes, it offers several unique features including value changes of each home in a given time frame (e.g., 1, 5, or 10 years), aerial views of homes and prices of homes in the area. Where it can access appropriate data, it also provides basic information on a given home such as square footage and the number of bedrooms and bathrooms. Users can also get current estimates of homes if there was a significant change made.</p>
+    <p>In this tutorial, you display a chart showing average house prices in a US region over 12 months. To set this up, first you use the Service Manager to insert the ZillowRealEstateService.GetRegionChart operation into a servlet. The IDE handles the basic infrastructure, but you have to modify the servlet code to extract the Region Chart URL. This tutorial shows you how to use JAXB Objects to extract the URL. This is the simplest approach. </p>
+    <p><b>Contents</b></p>
+    <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+    <ul>
+      <li><a href="#get-api-key">
+
+      Registering To Receive the Zillow API Key</a></li>
+      <li><a href="#create-servlet">
+
+      Creating the Servlet</a></li>
+      <li><a href="#drop-zillow-op">
+
+      Adding the Zillow GetRegionChart Operation to the Servlet</a></li>
+      <li><a href="#adding-api-key">
+
+      Adding the API Key to the Project</a></li>
+      <li><a href="#modify-servlet-code">
+      Modifying the Servlet to Return the Chart Graphic</a></li>
+      <li><a href="#running">Running the Zillow Region Chart Servlet</a></li>
+    </ul>
+
+
+
+    <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+
+    <table>
+      <tbody>
+        <tr>
+          <th class="tblheader" scope="col">Software or Resource</th>
+          <th class="tblheader" scope="col">Version Required</th>
+        </tr>
+        <tr>
+          <td class="tbltd1"><a target="_blank" href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+          <td class="tbltd1">
+            Java EE download bundle
+          </td>
+        </tr>
+        <tr>
+          <td class="tbltd1"><a target="_blank" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+          <td class="tbltd1">version 7 or 8</td>
+        </tr>
+        <tr>
+          <td class="tbltd1">Java EE-compliant web or application server</td>
+          <td class="tbltd1">Tomcat web server 7.x, 8.x 
+            GlassFish Server Open Source Edition 3.1.x, 4.x or <a href="http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html" target="_blank">Oracle WebLogic Server 11g-12c</a><br>
+            <b>Important:</b> If you use Tomcat with this Tutorial, see <br>
+            <a target="_blank" href="http://wiki.netbeans.org/DeployREST2Tomcat55">the NetBeans Wiki on Tomcat with REST</a>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+    <h2><a name="get-api-key"></a>Registering To Receive the Zillow API Key</h2>
+    <p>Zillow services use API-key authentication. <a target="_blank" href="http://www.zillow.com/webservice/Registration.htm">Sign up with Zillow here</a> to receive an API key. You will have to fill out a registration form, but registration is free. </p>
+    <p>Other services use HTTP Authentication, header signing, or user login for authentication. These mechanisms will be covered in upcoming tutorials. </p>
+    <h2><a name="create-servlet"></a>Creating the Servlet</h2>
+    <p>The IDE lets you  insert SaaS operations into servlets, existing RESTful services, JSP pages, or plain Java objects (POJOs). In this tutorial, you create a web application with a servlet.</p>
+    <p><strong>To create the servlet:</strong></p>
+    <ol>
+      <li>Choose File &gt; New Project. Under Categories, select Java Web.
+      Under Projects, select Web Application and click Next.</li>
+      <li>In the Project Name field, type <tt>ZillowRegionChart</tt>.</li>
+      <li>Select the GlassFish server or Tomcat server and Java EE 6 or Java EE 7. Click through the remaining options and click Finish.</li>
+      <li>Right-click the ZillowRegionChart project node and select Properties from the context window. The Project Properties dialog opens.</li>
+      <li>Right-click the project node and choose New &gt; Servlet. The New Servlet wizard opens.
+      <br><img src="../../../images_www/articles/72/websvc/zillow/new-zillow-servlet.png" class="margin-around" alt="New Servlet wizard with class name ZillowRegionChartServlet and arbitrary package name" title="New Servlet wizard with ZillowRegionChartServlet" height="373" width="600"></li>
+      <li>Name the servlet ZillowRegionChartServlet. Create an arbitrary package for it, such as zillow.regionchart. Keep all other defaults and click Finish. </li>
+    </ol>
+
+  <p>The servlet opens in an editor tab and the servlet and its parent package are visible in the Projects view, in the Source Packages node of the project. </p>
+    <img src="../../../images_www/articles/72/websvc/zillow/zillow-project-new.png" class="margin-around" alt="Projects tab in IDE showing servlet and its parent package in the ZillowRegionChart project" title="Projects tab in IDE showing new servlet" width="393" height="238">
+    <h2><a name="drop-zillow-op"></a>Adding the Zillow GetRegionChart Operation to the Servlet</h2>
+    <p>Use the Service Manager to add Zillow's SaaS functionality to your servlet. The IDE takes care of all the infrastructure for you.</p>
+    <p><strong>To add the GetRegionChart operation:</strong></p>
+    <ol>
+      <li>Open the Services tab in the IDE. Expand the Web Services node. Navigate to the Zillow GetRegionChart operation.
+      <br><img src="../../../images_www/articles/72/websvc/zillow/z-llow-getregionchart.png" alt="Services tab showing expanded Web Services node, showing Zillow GetRegionChart service" title="Services tab with expanded Web Services and Zillow nodes" class="margin-around" height="362" width="393"></li>
+      <li>In the editor, locate the processRequest method in  ZillowRegionChartServlet.java. Add an empty line at the beginning of the try block. Drag and drop the getRegionChart operation into the try block of processRequest(). </li>
+      <li>The Customize GET SaaS dialog box opens. You can enter real US city, state and zip code values or leave them null. (If you leave null values, you will get a chart of average house prices for the entire country.) Click OK.</li>
+    </ol>
+    <p>The IDE generates code for the GET SaaS service. When this is completed, the processRequest() method looks as follows.</p>
+    <p><br>
+    <img src="../../../images_www/articles/72/websvc/zillow/droppedcode.png" alt="Code of servlet with getRegionChart try block inserted, before modification" title="Code of servlet showing inserted getRegionChart try block" class="margin-around b-all" width="600" height="449">      </p>
+    <p>The IDE also creates two new packages, <tt>org.netbeans.saas</tt> and <tt>org.netbeans.saas.zillow</tt>, containing RESTful connection and Zillow-specific classes, respectively. The complete package structure is shown below. The IDE also imports the <tt>RestConnection</tt> and <tt>ZillowRealEstateService</tt> classes into your servlet. </p>
+    <img src="../../../images_www/articles/72/websvc/zillow/zillow-project-complete.png" class="margin-around" alt="Structure of Zillow Region Chart project showing packages created by IDE after dragging and dropping getRegionChart operation" title="Complete structure of ZillowRegionChart project" height="325" width="395">
+    <h2><a name="adding-api-key"></a>Adding the API Key to the Project</h2>
+    <p>In order for the project to access Zillow services, you have to pass the API key you obtained when you <a href="#get-api-key">registered</a>. Open the <tt>zillowrealestateserviceauthenticator.properties</tt> file and copy and paste in the API key you received in the email from Zillow that acknowleged your registration. </p>
+    <h2><a name="modify-servlet-code"></a>Modifying the Servlet to Return the Chart Graphic</h2>
+    <p>The servlet you have created does not produce any useable output. In order to get the Region Chart graphic to appear in a browser, you have to extract the chart's URL from the String that the Zillow service returns, which is in the form of an XML file. One approach is to parse the XML file and pass the URL to a JSP page. This approach is described in Adam Myatt's <a target="_blank" href="http://netbeans.dzone.com/news/consuming-zillow-web-services-">Consuming Zillow Web Services</a> article in NetBeans Zone. In this tutorial you use a simpler approach involving JAXB objects.</p>
+    <p><strong>To return the chart graphic:  </strong></p>
+    <ol><li>Modify the output line <tt><span class="Code">//out.println("The SaasService returned: "+result.getDataAsString());</span></tt>. Uncomment the line and change it to produce an HTML &lt;img&gt; tag instead of text. Be careful to escape the quotation marks that will surround the URL! The line now looks like this.
+      <pre class="examplecode">out.println(&quot;&lt;img src=\&quot;&quot;+result.getDataAsString() + &quot;\&quot; /&gt;&quot;);</pre></li>
+      <li>Move the output line to inside the <tt>if</tt> block, at the end. The <tt>if</tt> block now looks like this:
+      <pre class="examplecode">if (result.getDataAsObject(zillow.realestateservice.regionchart.Regionchart.class) instanceof
+  zillow.realestateservice.regionchart.Regionchart) {
+        zillow.realestateservice.regionchart.Regionchart resultObj = result.getDataAsObject(zillow.realestateservice.regionchart.Regionchart.class);
+        out.println("&lt;img src=\"" + result.getDataAsString() + "\" /&gt;");
+}</pre></li>
+      <li>Replace the <tt>result.getDataAsString()</tt> method in the output with <tt>resultObj.getResponse().getUrl()</tt>. You can use code completion to select <tt>getResponse()</tt> from the different <tt>resultObj</tt> methods, as shown below, and then use code completion to select <tt>getUrl()</tt> from the <tt>getResponse</tt> methods. <br>
+        <img src="../../../images_www/articles/72/websvc/zillow/zillow-getresponse-cc.png" class="margin-around b-all" alt="Code completion for resultObj methods" title="Editor showing code completion for resultObj methods" height="182" width="594"></li>
+      <li>Change the catch block to catch <tt>JAXBException</tt> instead of <tt>Exception</tt>. You can also use a <tt>Logger.getLogger(...)</tt> method instead of printing a stack trace. You will have to import the relevant classes. See if you can use code completion and the Fix Imports context menu action to reproduce the following catch block: <pre class="examplecode">} catch (JAXBException ex) {
+    Logger.getLogger(ZillowRegionChartServlet.class.getName()).log(Level.SEVERE, null, ex);
+}</pre>
+      </li>
+      <li>Remove the commented-out output section from the parent try block in the servlet code.</li>
+    </ol>
+  <p>Your modifications to the code are now complete! The final servlet code should look like the following:</p>
+    <pre class="examplecode">package zillow.regionchart;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.JAXBException;
+import org.netbeans.saas.zillow.ZillowRealEstateService;
+import org.netbeans.saas.RestResponse;
+
+/**
+ *
+ * @author jeff
+ */
+public class ZillowRegionChartServlet extends HttpServlet {
+
+    /** 
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        try {
+
+            try {
+                String unittype = "dollar";
+                String city = null;
+                String state = null;
+                String zIP = null;
+                String width = null;
+                String height = null;
+                String chartduration = null;
+
+                RestResponse result = ZillowRealEstateService.getRegionChart(
+                        unittype, city, state, zIP, width, height, chartduration);
+                if (result.getDataAsObject(
+                        zillow.realestateservice.regionchart.Regionchart.class) instanceof zillow.realestateservice.regionchart.Regionchart) {
+                    zillow.realestateservice.regionchart.Regionchart resultObj =
+                            result.getDataAsObject(
+                            zillow.realestateservice.regionchart.Regionchart.class);
+                    out.println("&lt;img src=\"" + resultObj.getResponse().getUrl() + "\" /&gt;");
+
+                }
+                //TODO - Uncomment the print Statement below to print result.
+
+            } catch (JAXBException ex) {
+                Logger.getLogger(ZillowRegionChartServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } finally {
+            out.close();
+        }
+    }</pre>
+  <h2><a name="running"></a>Running the Zillow Region Chart Servlet</h2>
+    <p>The simplest way to run the servlet is to right-click the servlet in the Projects view and select Run File. Alternatively, right-click the Project node and select Properties. In the Properties tree, select Run. In the Relative URL field, type /ZillowRegionChartServlet, as shown below. Click OK, and then run the project. </p>
+    <img src="../../../images_www/articles/72/websvc/zillow/zillow-run-properties.png" class="margin-around" alt="Properties dialog for ZillowRegionChart project showing relative URL" title="Properties dialog for ZillowRegionChart project" height="404" width="575">
+    <p>When you successfully run the project, a browser window opens showing the Region Chart.</p>
+    <img src="../../../images_www/articles/72/websvc/zillow/zillow-chart.png" class="margin-around" alt="Zillow region chart in browser" title="Zillow region chart" width="265" height="146" >
+    <h2><a name="more-exercises"></a>More Exercises</h2>
+    <p>Here are a few more ideas for you to explore:</p>
+    <ul>
+      <li>Try different real  values for city, state and ZIP code. Run the servlet again.</li>
+      <li>Write a client that would let you pass city, state and ZIP to the service and would return the matching Region Chart.</li>
+      <li>Use a JSP page instead of JAXB Object to return the chart, as shown in this <a target="_blank" href="http://netbeans.dzone.com/news/consuming-zillow-web-services-">NetBeans Zone article</a>. </li>
+    </ul>
+    <br>
+    <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20SaaS%20Zillow">Send Feedback on This Tutorial</a></div>
+    <br style="clear:both;" >
+    <!-- ======================================================================================= -->
+    <h2><a name="seealso"></a>See Also</h2>
+
+    <p>For more information about using NetBeans IDE to develop RESTful web services, SaaS, and other Java EE applications, see the following resources:
+    </p>
+
+    <ul>
+      <li><a href="./rest.html">Getting Started with RESTful Web Sevices</a></li>
+      <li><a target="_blank" href="http://wiki.netbeans.org/JavaClientForDeliciousUsingNetBeans">Creating a Java Client for del.icio.us RESTful Web Services</a>, by Amit Kumar Saha</li>
+
+      <li><a target="_blank" href="http://wiki.netbeans.org/RESTRemoting">NetBeans Wiki: RESTful Web Service Client Stub</a>
+      </li>
+
+      <li><a href="../../trails/web.html">Web Services Learning Trail</a></li>
+      <li>YouTube: <a target="_blank" href="http://www.youtube.com/watch?v=cDdfVMro99s" title="RESTful Web Services, Building and Deploying (Part 1)">RESTful Web Services, Building and Deploying (Part 1)</a></li>
+      <li>YouTube: <a target="_blank" href="http://www.youtube.com/watch?v=_c-CCVy4_Eo" title="NetBeans RESTful Testing and Invoking RESTful Resources (Part 2)">NetBeans RESTful Testing and Invoking RESTful Resources (Part 2)</a></li>
+
+    </ul>
+    <p>To send comments and suggestions, get support, and keep informed about the latest
+      developments on the NetBeans IDE Java EE development features, <a href="../../../community/lists/top.html">join
+    the nbj2ee@netbeans.org mailing list</a>.</p>
+  </body>
+</html>

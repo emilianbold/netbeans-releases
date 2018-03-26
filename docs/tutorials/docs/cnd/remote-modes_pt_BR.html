@@ -1,0 +1,332 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Modos de Desenvolvimento Remoto de C/C++</title>
+    <meta name="DESCRIPTION" content="A short guide to using C/C++ remote development in NetBeans IDE
+          and Oracle Solaris Studio IDE.">
+    <meta name="keywords" content="NetBeans, IDE, Oracle Solaris Studio, integrated development environment,
+          tutorial, guide, user, documentation, open source, remote development, C, C++">
+   
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+<link rel="stylesheet" type="text/css" href="../../../print.css" media="print">
+<link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+<meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+<body>
+
+
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.3, 7.4 e 8.0">
+
+<h1>Modos de Desenvolvimento Remoto de C/C++ no IDE</h1>
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+    Março de 2014 [Número da revisão: V8.0-1]</div>
+<p>Este artigo descreve os recursos de desenvolvimento remoto disponíveis no NetBeans IDE quando você tiver o módulo C/C++ instalado, e como escolher a melhor forma de usá-los no seu ambiente de desenvolvimento.</p>
+<p><b>Conteúdo</b></p>
+<ul class="toc">
+<li><p><a href="#glxfe">O Que É Desenvolvimento Remoto</a></p>
+
+</li>
+<li><p><a href="#glxir">Quando Usar o Desenvolvimento Remoto</a></p>
+
+</li>
+<li><p><a href="#glxiu">Como Funciona o Desenvolvimento Remoto</a></p>
+
+</li>
+<li><p><a href="#glxie">Benefícios do Desenvolvimento Remoto</a></p>
+
+</li>
+<li><p><a href="#glxhr">Modos do Desenvolvimento Remoto</a></p>
+
+</li>
+<li><p><a href="#glxhu">Decidindo Qual Modo de Desenvolvimento Remoto Usar</a></p>
+
+</li>
+<li><p><a href="#glxjy">Selecionando seu Modo de Desenvolvimento Remoto</a></p>
+
+</li>
+<li><p><a href="#gmvfz">Desenvolvimento Totalmente Remoto Usando a Barra de Ferramentas</a></p>
+
+</li>
+<li><p><a href="#glyqe">Caches e Segurança</a></p>
+
+</li>
+<li><p><a href="#gmbed">Para Obter Mais Informações</a></p>
+
+</li></ul>
+
+
+<a name="glxfe"></a>
+
+<h2>O Que É Desenvolvimento Remoto</h2>
+<p>O desenvolvimento remoto é uma funcionalidade do NetBeans IDE que permite executar o IDE em um computador executando Microsoft Windows, Mac OS X, Oracle Solaris ou Linux. Ele permite ainda compilar, executar e depurar seu programa em outro computador que execute Oracle Solaris ou Linux.</p>
+
+
+
+<a name="glxir"></a>
+
+<h2>Quando Usar o Desenvolvimento Remoto</h2>
+<p>Você pode usar o desenvolvimento remoto se uma das circunstâncias abaixo for verdadeira para você:</p>
+
+
+<ul>
+    <li><p>Seu sistema operacional não está executando Oracle Solaris ou Linux.</p>
+
+</li>
+<li><p>Você está executando o IDE em um sistema Solaris que às vezes tem cargas altas.</p>
+
+</li>
+<li><p>Seu acesso aos sistemas que executam o Oracle Solaris ou Linux se limita ao SSH (Shell Seguro) por motivos de segurança.</p>
+
+</li>
+<li><p>A execução das ferramentas da interface gráfica do usuário é difícil no ambiente do Solaris.</p>
+
+</li>
+<li><p>O software que você está desenvolvendo deve ser compilado e executado em várias plataformas, como Solaris e Linux.</p>
+
+</li></ul>
+
+
+<a name="glxiu"></a>
+
+<h2>Como Funciona o Desenvolvimento Remoto</h2>
+<p>O IDE fornece funcionalidades para gerenciar hosts remotos. Você pode configurar um host remoto para usar para compilação, execução e depuração dos projetos em C, C++ e Fortran. O host remoto deve atender às seguintes condições:</p>
+
+
+<ul><li><p>O sistema operacional do host remoto deve ser Oracle Solaris ou Linux.</p>
+
+</li>
+<li><p>O host remoto deve executar o daemon do SSH, <code>sshd</code>.</p>
+
+</li>
+<li><p>Pelo menos um conjunto de ferramentas (GNU, Oracle Solaris Studio ou Sun Studio) deve estar acessível no host remoto.</p>
+
+</li>
+<li><p>Você deve ter uma conta de usuário no host.</p>
+
+</li></ul>
+<p>Você pode gerenciar seus hosts remotos na janela Serviços do IDE.</p>
+
+<img alt="Janela Serviços" height="336" src="../../../images_www/articles/73/cnd/remote-modes/services_window.png" width="353">
+<p>Depois de configurar o host remoto e conectá-lo, você poderá compilar, executar e depurar projetos como faz no seu sistema local. Os comandos do IDE Remoto são executados em SSH. </p>
+
+<p>Quando você usa um host de desenvolvimento remoto, os hosts locais e remotos precisam acessar os arquivos do projeto. Esse acesso pode ser realizado por meio de compartilhamento de arquivos ou cópia segura dos arquivos. Antes de o IDE usar o compartilhamento de arquivos entre os sistemas locais e remotos, o sistema de arquivos compartilhado  ou a pasta deve ser configurada e ficar acessível para ambos os sistemas. Os arquivos remotos são acessados por SFTP ou outro mecanismo de compartilhamento de arquivo disponível no sistema operacional em que o host está sendo executado (por exemplo, NFS, Samba ou WebDAV).</p>
+
+<p>Se o compartilhamento de arquivos não for possível, você poderá usar a Cópia Automática para copiar os arquivos no servidor usando SSH.</p>
+
+
+
+<a name="glxie"></a>
+
+<h2>Benefícios do Desenvolvimento Remoto</h2>
+<p>O desenvolvimento remoto oferece os seguintes benefícios:</p>
+
+
+<ul><li><p>Você pode usar o mesmo ambiente de desenvolvimento para todos os projetos.</p>
+
+</li>
+<li><p>Os recursos para seu sistema de desktop são melhor utilizados.</p>
+
+</li>
+<li><p>O tráfego de rede é otimizado.</p>
+
+</li>
+<li><p>O tempo de resposta do IDE é melhor.</p>
+
+</li>
+<li><p>Você pode navegar por sistemas de arquivo remotos do IDE.</p>
+
+</li>
+<li><p>Você pode abrir uma janela de terminal no IDE para um host remoto.</p>
+
+</li>
+<li><p>Você só pode usá-lo em ambientes seguros de SSH.</p>
+
+</li></ul>
+
+
+<a name="glxhr"></a> <img alt="Diagrama mostrando o local dos arquivos de origem e como eles são acessados em cada modo." height="354" src="../../../images_www/articles/73/cnd/remote-modes/modes_diagram.png" width="589">
+<p>No modo simples, os arquivos de origem residem principalmente no host local. Quando você cria seu projeto, os arquivos de origem são entregues sob demanda para o host remoto com o uso do SFTP (Protocolo de Transferência de Arquivos do SSH).</p>
+
+<p>No modo misto ou compartilhado, os arquivos de origem residem em um local compartilhado entre o host local e o remoto usando o NFS, Samba, WebDAV ou outro sistema de compartilhamento de arquivos.</p>
+
+<p>No modo totalmente remoto, os arquivos de origem residem no host remoto. O IDE acessa os arquivos usando SFTP.</p>
+
+
+
+<a name="glxhu"></a>
+
+<h2>Decidindo Qual Modo de Desenvolvimento Remoto Usar</h2>
+<p>O melhor modo de desenvolvimento para sua situação específica depende do ambiente de desenvolvimento em que você trabalha. Cada seção a seguir descreve um exemplo de um ambiente de desenvolvimento em que um modo de desenvolvimento oferece os maiores benefícios.</p>
+
+
+
+<a name="glxod"></a><h3>Modo Simples</h3>
+<p>O modo simples pode ser o melhor modo remoto para suas necessidades se o diagrama a seguir descrever seu ambiente de desenvolvimento.</p>
+
+<img alt="Diagrama mostrando um ambiente de desenvolvimento em que os arquivos de origem residem localmente e o desenvolvedor desenvolve localmente para várias plataformas de destino remoto." height="371" src="../../../images_www/articles/73/cnd/remote-modes/simple_mode_diagram.png" width="637">
+<p>Neste ambiente, o modo simples oferece estes benefícios:</p>
+
+
+<ul><li><p>Você pode usar o mesmo IDE para desenvolvimento local e remoto.</p>
+
+</li>
+<li><p>Você pode alternar facilmente entre hosts e plataformas no IDE.</p>
+
+</li>
+<li><p>Você pode usar o IDE em um ambiente somente SSH.</p>
+
+</li>
+<li><p>Sua mobilidade aumentou.</p>
+
+</li></ul>
+
+
+<a name="glxjk"></a><h3>Modo Misto (Compartilhado)</h3>
+<p>O modo misto ou compartilhado pode ser uma boa escolha se seu ambiente de desenvolvimento tiver a aparência mostrada no seguinte diagrama.</p>
+
+<img alt="Diagrama mostrando um ambiente de desenvolvimento intensivo de NFS com arquivos de origem localizados nos servidores na rede." height="318" src="../../../images_www/articles/73/cnd/remote-modes/mixed_mode_diagram.png" width="627">
+<p>Os benefícios do uso de modo misto neste ambiente são:</p>
+
+
+<ul><li><p>Você pode alternar facilmente entre hosts e plataformas no IDE.</p>
+
+</li>
+<li><p>Não há nenhuma duplicação de arquivos (armazenamento no cache) como ocorreria na outros dois modos.</p>
+
+</li>
+<li><p>O throughput de rede será tão bom quanto seu mecanismo de compartilhamento de arquivo (por exemplo, NFS, Samba ou WebDAV) puder especificar.</p>
+
+</li></ul>
+
+
+<a name="glxlz"></a><h3>Modo Totalmente Remoto</h3>
+<p>O modo totalmente remoto pode ser o melhor para você se o seu ambiente de desenvolvimento tiver a aparência mostrada no diagrama a seguir.</p>
+
+<img alt="Diagrama mostrando um ambiente de desenvolvimento em um servidor compartilhado e altamente carregado acessado com o X-windows e VNC" height="312" src="../../../images_www/articles/73/cnd/remote-modes/full_mode_diagram.png" width="606"><p>Neste ambiente, os benefícios do uso de modo totalmente remoto são:</p>
+
+
+<ul><li><p>A migração com o uso de encaminhamento de X-window ou VNC é praticamente inigualável.</p>
+
+</li>
+<li><p>O tempo de resposta do IDE aumenta. </p>
+
+</li>
+<li><p>Você dependerá menos dos recursos do host de desenvolvimento.</p>
+
+</li>
+<li><p>Uma carga menor no host de desenvolvimento reduz a carga no Oracle Solaris.</p>
+
+</li>
+<li><p>Você pode criar novos projetos remotos de arquivos binários remotos.</p>
+
+</li></ul>
+
+
+<a name="glxjy"></a>
+
+<h2>Selecionando seu Modo de Desenvolvimento Remoto</h2>
+<p>O modo de desenvolvimento remoto que você usa é determinado pela forma que você configura um host de compilação remoto, mas também pela forma como você acessa o projeto no IDE.</p>
+
+<p>Para cada modo, você deve primeiro configurar um host de compilação remota, como descrito no <a href="./remotedev-tutorial.html">tutorial de Desenvolvimento Remoto do C/C++</a> e na Ajuda do IDE.</p>
+
+<p>Você pode selecionar o modo simples ou misto para o host remoto no IDE usando a caixa de diálogo Propriedades do Host para especificar como os arquivos de projeto devem ser acessados quando você usa o host.</p>
+
+<p>Abra a janela Serviços, expanda o nó Hosts de Compilação do C/C++, clique com o botão direito do mouse em um host remoto e selecione Propriedades.</p>
+
+<img alt="Caixa de diálogo Propriedades do Host" height="399" src="../../../images_www/articles/73/cnd/remote-modes/host_properties_dialog.png" width="506"><br>
+<h3>Modo Simples</h3>
+<p>Para o modo simples, defina Acessar arquivos do projeto pela cópia Automática.</p>
+
+<p>É possível clicar com o botão direito do mouse, selecionar Definir Host da Compilação e selecionar o host remoto que você configurou para acessar os arquivos do projeto via cópia automática. Em seguida, você usará o modo de desenvolvimento remoto simples. Quando você compilar o projeto, os arquivos de projeto serão copiados automaticamente para seu diretório de usuário do NetBeans no host remoto.</p>
+
+<h3>Modo misto</h3>
+<p>Para o modo misto, defina o Acesso aos arquivos do projeto via Compartilhamento de arquivos no nível do sistema.</p>
+
+<p>É possível clicar com o botão direito do mouse, selecionar Definir Host da Compilação e selecionar o host remoto que você configurou para acessar os arquivos do projeto via compartilhamento do arquivo no nível do sistema. Em seguida, você usará o modo de desenvolvimento remoto misto. Quando você criar o projeto, os arquivos do projeto permanecerão onde estão, pois poderão ser acessados do host local e do host de compilação remota.</p>
+
+<h3>Modo totalmente remoto</h3>
+<p>Para usar o modo totalmente remoto no IDE, use a barra de ferramentas Desenvolvimento Remoto descrita na seção a seguir.</p>
+
+
+
+<a name="gmvfz"></a>
+
+<h2>Desenvolvimento Totalmente Remoto Usando a Barra de Ferramentas</h2>
+<p>No modo totalmente remoto, você pode usar o IDE em execução no host local para trabalhar em projetos localizados em um host remoto, usando a barra de ferramentas de desenvolvimento remoto.</p>
+
+<p>A barra de ferramentas é mostrada na figura a seguir.</p>
+
+<img alt="Imagem da barra de ferramentas remota" height="37" src="../../../images_www/articles/73/cnd/remote-modes/RemoteToolbar.gif" width="299"> <br><p>Se você não vir a barra de ferramentas no IDE, poderá exibi-la escolhendo Exibir > Barras de Ferramentas > Remota.</p>
+
+<p>Você pode usar a barra de ferramentas remota para selecionar um host remoto que já tenha configurado e trabalhar com projetos e arquivos no host remoto como se eles fossem locais.</p>
+
+<p>Use os ícones conforme descrito na tabela a seguir.</p>
+
+<table><col width="8%"><col width="91%"><tr><td align="left" valign="top" scope="row"><img alt="Ícone de Status Conectado" height="24" src="../../../images_www/articles/73/cnd/remote-modes/connected24.gif" width="24"><br></td>
+<td align="left" valign="top" scope="row"><p>Status da conexão. Clique no ícone para conectar o servidor selecionado na lista ao lado do ícone. Se você já estiver conectado, poderá clicar nesse ícone para se desconectar do servidor.</p>
+
+<p>O ícone indica o status da conexão, ficando verde quando conectado e vermelho quando não conectado.</p>
+
+</td>
+</tr>
+<tr><td align="left" valign="top" scope="row"><img alt="Ícone Criar projeto remoto" height="24" src="../../../images_www/articles/73/cnd/remote-modes/newProject24.gif" width="24"><br></td>
+<td align="left" valign="top" scope="row"><p>Criar projeto remoto. Clique no ícone para criar um novo projeto no host conectado no momento.</p>
+
+<p>Por default, o projeto é criado no seu diretório <code>~/NetBeansProjects</code> no host remoto.</p>
+
+</td>
+</tr>
+<tr><td align="left" valign="top" scope="row"><img alt="Ícone Abrir projeto remoto" height="24" src="../../../images_www/articles/73/cnd/remote-modes/openProject24.gif" width="24"><br></td>
+<td align="left" valign="top" scope="row"><p>Abrir projeto remoto. Clique no ícone para abrir projeto existente no host conectado no momento.</p>
+
+<p>Você pode navegar até o projeto no sistema de arquivos remoto.</p>
+
+</td>
+</tr>
+<tr><td align="left" valign="top" scope="row"><img alt="Ícone Abrir arquivo remoto" height="24" src="../../../images_www/articles/73/cnd/remote-modes/openFile24.gif" width="24"><br></td>
+<td align="left" valign="top" scope="row"><p>Abrir arquivo remoto. Clique no ícone para abrir um arquivo no host conectado no momento.</p>
+
+<p>Você pode navegar até o arquivo no sistema de arquivos remoto.</p>
+
+</td>
+</tr>
+</table>
+
+<a name="glyqe"></a>
+
+<h2>Caches e Segurança</h2>
+<p>Para oferecer acesso rápido aos arquivos remotos, o IDE usa um cache em disco no sistema local. O cache se localiza em <code><em>userdir</em>/var/cache/remote-files</code>, em que <code><em>userdir</em></code> é exclusivo para o usuário e sua localização varia de acordo com a plataforma que você está executando o IDE. </p>
+<p class='tips"'>Consulte uma descrição do <code><em>userdir</em></code> e dos locais de cada plataforma em <a href="http://wiki.netbeans.org/FaqWhatIsUserdir">http://wiki.netbeans.org/FaqWhatIsUserdir</a>.</p>
+<p>
+Quando você usar um desenvolvimento remoto em modos simples e compartilhados, somente cabeçalhos do sistema serão acessados pelo cache local, de forma que não haja risco de segurança.</p>
+<p>
+No modo totalmente remoto, embora os arquivos se localizem no host remoto, o projeto é analisado no computador local. Quando os arquivos de origem são acessados para análise, eles são armazenados em cache no host local em <code><em>userdir</em>/var/cache/remote-files</code> e eventualmente todos os arquivos de origem ficam no cache. </p>
+<p>Nos computadores remotos, isso pode ser considerado risco de segurança. Para aumentar a segurança, o diretório de cache pode ser criptografado ou excluído regularmente.</p>
+<p class="notes">Os caches que residem no <code> ~/.netbeans/remote</code> no host remoto são criados quando você usa o modo simples e os arquivos de origem são copiados automaticamente sob demanda do host local para o host remoto, durante a compilação do projeto. Esses arquivos estão tão seguros quanto qualquer outro do servidor, portanto eles não geram preocupação de segurança.
+</p>
+
+
+<a name="gmbed"></a>
+
+<h2>Para Obter Mais Informações</h2>
+<p>Consulte os seguintes locais para obter mais informações:</p>
+
+
+<ul><li><p>O menu Ajuda do IDE oferece acesso a muitas informações sobre o uso do IDE.</p>
+
+</li>
+<li><p>O <a href="./remotedev-tutorial.html">tutorial de Desenvolvimento Remoto do C/C++</a> informa como fazer o desenvolvimento remoto simples passo a passo</p></li>
+<li><p>A  <a href="https://netbeans.org/kb/trails/cnd.html">Trilha de Aprendizado C/C++</a> oferece diversos artigos e tutoriais para o desenvolvimento em C/C++ no IDE.</p>
+
+</li></ul>
+
+
+
+
+<br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20C/C++%20Remote%20Development%20Modes%20-%20NetBeans%20IDE%20Article">Envie-nos Seu Feedback</a></div>
+  <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20C/C++%20Remote%20Development%20Modes%20-%20NetBeans%20IDE%20Article">Enviar Feedback sobre Este Artigo</a></div>
+<br style="clear:both;">
+
+</body>
+</html>

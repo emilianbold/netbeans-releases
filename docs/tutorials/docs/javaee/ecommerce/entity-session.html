@@ -1,0 +1,1286 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to use the IDE to create JPA entity classes from a database, and EJB session beans from entity classes.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>The NetBeans E-commerce Tutorial - Adding Entity Classes and Session Beans</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>The NetBeans E-commerce Tutorial - Adding Entity Classes and Session Beans</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Tutorial Contents</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introduction</a></li>
+                    <li><a href="design.html">Designing the Application</a></li>
+                    <li><a href="setup-dev-environ.html">Setting up the Development Environment</a></li>
+                    <li><a href="data-model.html">Designing the Data Model</a></li>
+                    <li><a href="page-views-controller.html">Preparing the Page Views and Controller Servlet</a></li>
+                    <li><a href="connect-db.html">Connecting the Application to the Database</a></li>
+                    <li><strong>Adding Entity Classes and Session Beans</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#whatEJB">What are EJB and JPA Technologies?</a></li>
+                            <li><a href="#whatSession">What are Session Beans?</a></li>
+                            <li><a href="#specification">About Specifications and Implementations</a></li>
+                            <li><a href="#addEntity">Adding Entity Classes</a></li>
+                            <li><a href="#addSession">Adding Session Beans</a></li>
+                            <li><a href="#access">Accessing Data with EJBs</a></li>
+                            <li><a href="#seeAlso">See Also</a></li>
+                        </ul></li>
+
+                    <li><a href="manage-sessions.html">Managing Sessions</a></li>
+                    <li><a href="transaction.html">Integrating Transactional Business Logic</a></li>
+                    <li><a href="language.html">Adding Language Support</a></li>
+                    <li><a href="security.html">Securing the Application</a></li>
+                    <li><a href="test-profile.html">Testing and Profiling</a></li>
+                    <li><a href="conclusion.html">Conclusion</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>This tutorial unit introduces the <a href="http://java.sun.com/products/ejb/" target="_blank">Enterprise
+            JavaBeans</a> (EJB) and <a href="http://java.sun.com/javaee/technologies/persistence.jsp" target="_blank">Java
+            Persistence</a> (JPA) technologies. In it, you use two of the IDE's wizards that are essential
+            to Java EE development. These are:</p>
+
+        <ul style="margin-left: 320px">
+            <li><strong>Entity Classes from Database wizard:</strong> Creates a Java Persistence API
+                entity class for each selected database table, complete with named query annotations,
+                fields representing columns, and relationships representing foreign keys.</li>
+
+            <li><strong>Session Beans for Entity Classes wizard:</strong> Creates an EJB session facade
+                for each entity class with basic access methods.</li>
+        </ul>
+
+        <p>These two wizards provide an efficient way for you to quickly set up the model for your
+            application. If you reexamine the <a href="design.html#mvcDiagram">MVC diagram</a> for
+            the application you are building, you can see where EJB session beans and JPA entity
+            classes fit into its structure.</p>
+
+        <div class="indent" style="text-align: center">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mvc-diagram.png"
+                 style="width:596px; margin-top:10px; margin-bottom:10px"
+                 title="MVC diagram of the AffableBean application"
+                 alt="MVC diagram of the AffableBean application">
+        </div>
+
+        <p>In this unit, the entity classes you create form a Java-based representation of the <code>affablebean</code>
+            database. While each entity class represents a database table, instances of entity classes
+            correspond to records that can be saved (i.e., <em>persisted</em>) to the database. The business
+            logic of the application is encapsulated by session beans, which can either be used as <em>facade</em>
+            classes that enable CRUD (Create-Read-Update-Delete) access to entities (as demonstrated here),
+            or they can contain code that implements actions specific to your application. (An example of this
+            is provided in <a href="transaction.html">Unit 9: Integrating Transactional Business Logic</a>).</p>
+
+        <p>You can view a live demo of the application that you build in this tutorial:
+            <a href="http://services.netbeans.org/AffableBean/" target="_blank">NetBeans E-commerce
+            Tutorial Demo Application</a>.</p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java bundle, 6.8 or 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFish server</a></td>
+                    <td class="tbltd1">v3 or Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQL database server</a></td>
+                    <td class="tbltd1">version 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot3.zip">AffableBean
+                            project</a></td>
+                    <td class="tbltd1">snapshot 3</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The NetBeans IDE requires the Java Development Kit (JDK) to run properly.
+                If you do not have any of the resources listed above, the JDK should be
+                the first item that you download and install.</li>
+
+            <li>The NetBeans IDE Java Bundle includes Java Web and EE technologies, which are
+                required for the application you build in this tutorial.</li>
+
+            <li id="glassFish">The NetBeans IDE Java Bundle also includes the GlassFish server,
+                which you require for this tutorial. You could
+                <a href="http://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">download
+                the GlassFish server independently</a>, but the version provided with the
+                NetBeans download has the added benefit of being automatically registered with
+                the IDE.</li>
+
+            <li>You can follow this tutorial unit without having completed previous units. To
+                do so, see the <a href="setup.html">setup instructions</a>, which describe how
+                to prepare the database and establish connectivity between the IDE, GlassFish,
+                and MySQL.</li>
+
+            <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot4.zip">Snapshot
+                4</a> of the <code>AffableBean</code> project is available for download and
+                corresponds to state the project after completing this unit using NetBeans IDE
+                6.9.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="whatEJB">What are EJB and JPA Technologies?</h2>
+
+        <p>Up until now, the project that you've been developing in this tutorial could be run
+            in a web server with a servlet container, such as Apache Tomcat. After all, you've
+            so far only made use of JSTL and servlet technologies, and are connecting to the
+            database directly using JDBC. In fact, you could theoretically continue to develop
+            the application using just these technologies, while manually coding for all aspects
+            of your application, including thread-safety, transactions, and security. However,
+            using Enterprise beans with JPA entity classes allows you focus on the business logic
+            of your application while relying on solutions that have already been tried and tested.
+            The following sections introduce the two technologies and define their role in EE
+            development.</p>
+
+        <ul>
+            <li><a href="#ejb">Enterprise JavaBeans</a></li>
+            <li><a href="#jpa">Java Persistence</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="ejb">Enterprise JavaBeans</h3>
+
+            <p>The official <a href="http://java.sun.com/products/ejb/" target="_blank">EJB product
+                page</a> describes EnterPrise JavaBeans technology as a &quot;server-side component
+                architecture&quot; that &quot;enables rapid and simplified development of distributed,
+                transactional, secure and portable applications.&quot; You can apply EJBs (i.e.,
+                Enterprise beans) to your projects, and the services provided by the technology
+                remain transparent to you as a developer, thus eliminating the tedious and often
+                error-prone task of adding a lot of boiler plate code which would otherwise be
+                required. If you are new to EE development, you may question the need for EJBs in
+                your Java web application. The book
+                <a href="http://www.manning.com/panda/" target="_blank">EJB 3 In Action</a>, by Debu
+                Panda, Reza Rahman and Derek Lane, paraphrases the role of EJB technology nicely:</p>
+
+            <blockquote style="margin-top: 0">
+                <em>Although many people think EJBs are overkill for developing relatively
+                    simple web applications of moderate size, nothing could be further from
+                    the truth. When you build a house, you don't build everything from scratch.
+                    Instead, you buy materials or even the services of a contractor as you need
+                    it. It isn't too practical to build an enterprise application from scratch
+                    either. Most server-side applications have a lot in common, including churning
+                    business logic, managing application state, storing and retrieving information
+                    from a relational database, managing transactions, implementing security,
+                    performing asynchronous processing, integrating systems, and so on.
+
+                    <br><br>
+                    As a framework, the EJB container provides these kinds of common functionality
+                    as out-of-the-box services so that your EJB components can use them in your
+                    applications without reinventing the wheel. For instance, let's say that when
+                    you build a credit card module in your web application, you write a lot of
+                    complex and error-prone code to manage transactions and security access control.
+                    You could have avoided that by using the declarative transaction and security
+                    services provided by the EJB container. These services as well as many others
+                    are available to EJB components when they are deployed in an EJB container.
+                    This means writing high-quality, feature-rich applications much faster than
+                    you might think.</em><sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>
+            </blockquote>
+
+            <p>You can think of EJB both as components, or Java classes that are incorporated in
+                your project, as well as a <em>framework</em> that provides numerous enterprise-related
+                services. Some of the services that we take advantage of in this tutorial are described
+                in <a href="http://www.manning.com/panda/" target="_blank">EJB 3 In Action</a> as follows:</p>
+
+            <ul>
+                <li><strong>Pooling:</strong> For each EJB component, the EJB platform creates
+                    a pool of component instances that are shared by clients. At any point in
+                    time, each pooled instance is only allowed to be used by a single client.
+                    As soon as an instance is finished servicing a client, it is returned to
+                    the pool for reuse instead of being frivolously discarded for the garbage
+                    collector to reclaim.</li>
+
+                <li><strong>Thread Safety:</strong> EJB makes all components thread-safe and
+                    highly performant in ways athat are completely invisible. This means that
+                    you can write your server components as if you were developing a single-threaded
+                    desktop application. It doesn't matter how complex the component itself is;
+                    EJB will make sure it is thread-safe.</li>
+
+                <li><strong>Transactions:</strong> EJB supports declarative transaction management
+                    that helps you add transactional behavior to components using simple
+                    configuration instead of code. In effect, you can designate any component
+                    method to be transactional. If the method completes normally, EJB commits
+                    the transaction and makes the data changes made by the method permanent.
+                    Otherwise the transaction is rolled back. Container-managed EJB transactions
+                    are demonstrated in Unit 9, <a href="transaction.html">Integrating Transactional
+                    Business Logic</a>.</li>
+
+                <li><strong>Security:</strong> EJB supports integration with the Java Authentication
+                    and Authorization Service (JAAS) API, so it is easy to completely externalize
+                    security and secure an application using simple configuration instead of cluttering
+                    up your application with security code.<sup><a href="#footnote2" id="2"
+                    style="text-decoration:none">[2]</a></sup> In Unit 11, <a href="security.html#secureEJB">Securing
+                    the Application</a>, a demonstration of EJB's <a href="http://download.oracle.com/javaee/6/api/javax/annotation/security/RolesAllowed.html"
+                    target="_blank"<code>@RolesAllowed</code></a> annotation is provided.</li>
+            </ul>
+
+
+            <h3 id="jpa">Java Persistence</h3>
+
+            <p>In the context of Java Enterprise, <em>persistence</em> refers to the act of
+                automatically storing data contained in Java objects into a relational database.
+                The <a href="http://java.sun.com/javaee/technologies/persistence.jsp" target="_blank">Java
+                Persistence API</a> (JPA) is an object-relational mapping (ORM) technology that
+                enables applications to manage data between Java objects and a relational database
+                in a way that is transparent to the developer. This means that you can apply
+                JPA to your projects by creating and configuring a set of Java classes (<em>entities</em>)
+                that mirror your data model. Your application can then access these entities
+                as though it were directly accessing the database.</p>
+
+            <p>There are various benefits to using JPA in your projects:</p>
+
+            <ul>
+                <li>JPA has its own rich, SQL-like query language for static and dynamic queries.
+                    Using the Java Persistence Query Language (JPQL), your applications remain
+                    portable across different database vendors.</li>
+
+                <li>You can avoid the task of writing low-level, verbose and error-prone JDBC/SQL code.</li>
+
+                <li>JPA transparently provides services for data caching and performance optimization.</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="whatSession">What are Session Beans?</h2>
+
+        <p>Enterprise session beans are invoked by a client in order to perform a specific business
+            operation. The name <em>session</em> implies that a bean instance is available for the
+            duration of a &quot;unit of work&quot;. The <a href="http://jcp.org/aboutJava/communityprocess/final/jsr318/index.html" target="_blank">EJB
+            3.1 specification</a> describes a typical session object as having the following
+            characteristics:</p>
+
+        <ul class="toc">
+            <li>Executes on behalf of a single client</li>
+            <li>Can be transaction-aware</li>
+            <li>Updates shared data in an underlying database</li>
+            <li>Does not represent directly shared data in the database, although it may
+                access and update such data</li>
+            <li>Is relatively short-lived</li>
+            <li>Is removed when the EJB container crashes. The client has to re-establish
+                a new session object to continue computation.</li>
+        </ul>
+
+        <p>EJB provides three types of session beans: <em>stateful</em>, <em>stateless</em>,
+            and <em>singleton</em>. The following descriptions are adapted from the
+            <a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/index.html" target="_blank">Java
+            EE 6 Tutorial</a>.</p>
+
+        <ul>
+            <li><strong>Stateful:</strong> The state of the bean is maintained across multiple
+                method calls. The &quot;state&quot; refers to the values of its instance variables.
+                Because the client interacts with the bean, this state is often called the
+                <em>conversational</em> state.</li>
+
+            <li><strong>Stateless:</strong> Stateless beans are used for operations that can
+                occur in a single method call. When the method finishes processing, the
+                client-specific state of the bean is not retained. A stateless session bean
+                therefore does not maintain a conversational state with the client.</li>
+
+            <li><strong>Singleton:</strong> A singleton session bean is instantiated once
+                per application, and exists for the lifecycle of the application. Singleton
+                session beans are designed for circumstances where a single enterprise bean
+                instance is shared across and concurrently accessed by clients.</li>
+        </ul>
+
+        <p class="tips">For more information on EJB session beans, see the
+            <a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/gipjg.html" target="_blank">Java
+            EE 6 Tutorial: What is a Session Bean?</a>.</p>
+
+        <p>For purposes of developing the e-commerce application in this tutorial, we will
+            only be working with stateless session beans.</p>
+
+
+        <br>
+        <h2 id="specification">About Specifications and Implementations</h2>
+
+        <p>EJB and JPA technologies are defined by the following specifications:</p>
+
+        <ul>
+            <li><a href="http://jcp.org/en/jsr/summary?id=317" target="_blank">JSR 317: Java Persistence 2.0</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=318" target="_blank">JSR 318: Enterprise JavaBeans 3.1</a></li>
+        </ul>
+
+        <p>These specifications define the technologies. To apply a technology to your
+            project however, you must use an <em>implementation</em> of the specification.
+            When a specification becomes finalized, it includes a reference implementation,
+            which is a free implementation of the technology. If you find this concept
+            confusing, consider the following analogy: A musical composition (i.e., the notes
+            on a page) defines a piece of music. When a musician learns the composition and
+            records her performance, she provides an <em>interpretation</em> of the piece.
+            In this manner the musical composition is likened to the technical specification,
+            and the musician's recording corresponds to the specification's implementation.</p>
+
+        <p class="tips">See <a href="intro.html#jcp">What is the Java Community Process?</a>
+            for an explanation of Java technical specifications, and how they are formally
+            standardized.</p>
+
+        <p>If you examine the download pages for the final releases of the EJB and JPA specifications,
+            you'll find links to the following reference implementations:</p>
+
+        <ul>
+            <li><strong>JPA:</strong> <a href="http://www.eclipse.org/eclipselink/downloads/ri.php" target="_blank">http://www.eclipse.org/eclipselink/downloads/ri.php</a></li>
+            <li><strong>EJB:</strong> <a href="http://glassfish.dev.java.net/downloads/ri" target="_blank">http://glassfish.dev.java.net/downloads/ri</a></li>
+        </ul>
+
+        <p>Implementations of the JPA specification are dubbed <em>persistence providers</em>,
+            and the persistence provider which has been chosen as the reference implementation
+            for the JPA 2.0 specification is <a href="http://www.eclipse.org/eclipselink/" target="_blank">EclipseLink</a>.</p>
+
+        <p>If you examine the link for the EJB reference implementation, you'll come to a page
+            that lists not only the implementation for EJB, but for all reference implementations
+            provided by <a href="http://glassfish.dev.java.net/" target="_blank">Project GlassFish</a>.
+            The reason for this is that Project GlassFish forms the reference implementation of the
+            Java EE 6 platform specification (<a href="http://jcp.org/en/jsr/summary?id=316" target="_blank">JSR
+            316</a>). The GlassFish v3 application server (or the Open Source Edition), which you
+            are using to build the e-commerce project in this tutorial, contains the reference
+            implementations of all technologies developed under Project GlassFish. As such, it
+            is referred to as a Java EE 6 <em>container</em>.</p>
+
+        <p>A Java EE container contains three essential components: a web (i.e., servlet) container,
+            an EJB container, and a persistence provider. The deployment scenario for the e-commerce
+            application is displayed in the diagram below. Entity classes that you create in this
+            unit are managed by the persistence provider. The session beans that you create in this
+            unit are managed by the EJB container. Views are rendered in JSP pages, which are
+            managed by the web container.</p>
+
+        <div id="gf-java-ee-container" class="indent">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/java-ee-container.png"
+                 class="margin-around" alt="GlassFish v3 Java EE container"
+                 title="As a Java EE container, GlassFish v3 contains web and EJB containers, and EclipseLink, the persistence provider">
+        </div>
+
+
+        <br>
+        <h2 id="addEntity">Adding Entity Classes</h2>
+
+        <p>Begin by using the IDE's Entity Classes from Database wizard to generate entity classes
+            based on the <code>affablebean</code> schema. The wizard relies on the underlying
+            persistence provider to accomplish this task.</p>
+
+        <ol>
+            <li>Open the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot3.zip">project
+                snapshot</a> in the IDE. In the IDE, press Ctrl-Shift-O (âŚ�-Shift-O on Mac) and
+                navigate to the location on your computer where you unzipped the downloaded file.</li>
+
+            <li>Press Ctrl-N (&#8984;-N on Mac) to open the File wizard.</li>
+
+            <li>Select the Persistence category, then select Entity Classes from Database. Click Next.</li>
+
+            <li>In Step 2: Database Tables, choose <code>jdbc/affablebean</code> from the Data Source
+                drop-down list. The drop-down list is populated by data sources registered with the
+                application server.
+
+                <br><br>
+                When you choose the <code>jdbc/affablebean</code> data source, the IDE scans the
+                database and lists the database tables in the Available Tables pane.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/entity-from-database.png"
+                     class="margin-around b-all" alt="Entity Classes from Database wizard" style="width: 688px"
+                     title="Choose an available data source to have the IDE read in database tables"></li>
+
+            <li>Click the Add All button, then click Next.</li>
+
+            <li>Step 3 of the Entity Classes from Database wizard differs slightly between NetBeans
+                IDE 6.8 and 6.9. Depending on the version IDE you are using, perform the following steps.
+
+                <ul style="margin: 5px 0 0 -1em">
+                    <li><a href="#68">NetBeans IDE 6.8</a></li>
+                    <li><a href="#69">NetBeans IDE 6.9</a></li>
+                </ul>
+
+                <h4 id="68">NetBeans IDE 6.8</h4>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/entity-classes-68.png"
+                     class="margin-around b-all" alt="Entity Classes from Database wizard, Step 3: Entity Classes"
+                     title="NetBeans 6.8 - Entity Classes from Database wizard, Step 3: Entity Classes" width="688px">
+
+                <ol style="list-style-type: lower-alpha">
+                    <li>Type in <strong>entity</strong> in the Package field. The wizard will create a new
+                        package for the entity classes upon completing.</li>
+
+                    <li>Click the Create Persistence Unit button. The Create Persistence Unit dialog opens.
+
+                        <br>
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/create-pu.png"
+                             class="margin-around b-all" alt="Create Persistence Unit dialog"
+                             title="Use the Create Persistence Unit dialog to generate a persistence.xml file">
+
+                        <br>
+                        A <em>persistence unit</em> refers to a collection of entity classes that exist in an
+                        application. The above dialog generates a <code>persistence.xml</code> file, which is
+                        used by your persistence provider to specify configuration settings for the persistence
+                        unit. Note that 'EclipseLink (JPA 2.0)' is the default selection for the server associated
+                        with the project. Leave 'Table Generation Strategy' set to '<code>None</code>'. This
+                        prevents the persistence provider from affecting your database. (For example, if you
+                        want the persistence provider to delete then recreate the database based on the existing
+                        entity classes, you could set the strategy to '<code>Drop and Create</code>'. This action
+                        would then be taken each time the project is deployed.)</li>
+
+                    <li>Click Create.</li>
+
+                    <li>Back in Step 3: Entity Classes, note that the class names for the entities are based
+                        on database tables. For example, the <code>CustomerOrder</code> entity is mapped to
+                        the <code>customer_order</code> database table. Also note that the 'Generate Named
+                        Query Annotations for Persistent Fields' option is selected by default. We will be
+                        using various named queries later in the tutorial.</li>
+
+                    <li>Continue to <a href="#step7">step 7</a> below.</li>
+                </ol>
+
+                <h4 id="69">NetBeans IDE 6.9</h4>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/entity-classes-69.png"
+                    class="margin-around b-all" alt="Entity Classes from Database wizard, Step 3: Entity Classes"
+                    title="NetBeans 6.9 - Entity Classes from Database wizard, Step 3: Entity Classes" width="688px">
+
+                <ol style="list-style-type: lower-alpha">
+
+                    <li>Type in <strong>entity</strong> in the Package field. The wizard will create a new
+                        package for the entity classes upon completing.</li>
+
+                    <li>Note the following:
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li>The class names for the entities are based on database tables. For example, the
+                                <code>CustomerOrder</code> entity will be mapped to the <code>customer_order</code>
+                                database table.</li>
+
+                            <li>The 'Generate Named Query Annotations for Persistent Fields' option is selected by
+                                default. We will be using various named queries later in the tutorial.</li>
+
+                            <li>The 'Create Persistence Unit' option is selected by default. A <em>persistence
+                                unit</em> is a collection of entity classes that exist in an application. The
+                                persistence unit is defined by a <code>persistence.xml</code> configuration file,
+                                which is read by your persistence provider. Enabling this option therefore means
+                                that the wizard will also generate a <code>persistence.xml</code> file and populate
+                                it with default settings.</li>
+                        </ul>
+                    </li>
+                </ol></li>
+
+            <li id="step7">Click Finish. The JPA entity classes are generated, based on the <code>affablebean</code>
+                database tables. You can examine the entity classes in the Projects window by expanding
+                the newly created <code>entity</code> package. Also, note that the new persistence unit
+                exists under the Configuration Files node.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/entity-classes.png"
+                     class="margin-around b-all" alt="Projects window - entity classes displayed in project"
+                     title="View new entity classes in the Projects window">
+
+                <br><br>
+                Note that the wizard generated an additional entity class, <code>OrderedProductPK</code>.
+                Recall that the data model's <code>ordered_product</code> table uses a composite
+                primary key that comprises the primary keys of both the <code>customer_order</code>
+                and <code>product</code> tables. (See <a href="data-model.html#manyToMany">Designing
+                the Data Model - Creating Many-To-Many Relationships</a>.) Because of this, the
+                persistence provider creates a separate entity class for the composite key, and
+                <em>embeds</em> it into the <code>OrderedProduct</code> entity. You can open
+                <code>OrderedProduct</code> in the editor to inspect it. JPA uses the <code>@EmbeddedId</code>
+                annotation to signify that the embeddable class is a composite primary key.
+
+                <pre class="examplecode">
+public class OrderedProduct implements Serializable {
+    private static final long serialVersionUID = 1L;
+    <strong>@EmbeddedId</strong>
+    protected OrderedProductPK orderedProductPK;</pre>
+
+                <p class="tips">Press Ctrl-Space on the <code>@EmbeddedId</code> annotation to
+                    invoke the API documentation.</p>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/embedded-id.png"
+                     class="margin-around b-all" alt="API documentation invoked on @EmbeddedId"
+                     title="Press Ctrl-Space to invoke the API documentation"></li>
+
+            <li id="pu">Open the persistence unit (<code>persistence.xml</code>) in the editor. The
+                IDE provides a Design view for persistence units, in addition to the XML view. The
+                Design view provides a convenient way to make configuration changes to the persistence
+                provider's management of the project.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/persistence-unit.png"
+                     class="margin-around b-all" alt="Design view of AffableBeanPU persistence unit" style="width: 688px"
+                     title="Design view of the AffableBeanPU persistence unit"></li>
+
+            <li>Click the XML tab at the top of the <code>AffableBeanPU</code> persistence unit
+                to open the XML view. Add the following property to the file.
+
+                <pre class="examplecode">
+&lt;persistence-unit name=&quot;AffableBeanPU&quot; transaction-type=&quot;JTA&quot;&gt;
+  &lt;jta-data-source&gt;jdbc/affablebean&lt;/jta-data-source&gt;
+  <strong>&lt;properties&gt;
+    &lt;property name=&quot;eclipselink.logging.level&quot; value=&quot;FINEST&quot;/&gt;
+  &lt;/properties&gt;</strong>
+&lt;/persistence-unit&gt;</pre>
+
+                You set the logging level property to <code>FINEST</code> so that you can view all
+                possible output produced by the persistence provider when the application runs. This
+                enables you to see the SQL that the persistence provider is using on the database,
+                and can facilitate in any required debugging.
+
+                <br><br>
+                <p class="tips">See the official EclipseLink documentation for an explanation
+                    of logging and a list of all logging values:
+                    <a href="http://wiki.eclipse.org/EclipseLink/Examples/JPA/Logging" target="_blank">How
+                    To Configure Logging</a></p></li>
+        </ol>
+
+
+        <br>
+        <h2 id="addSession">Adding Session Beans</h2>
+
+        <p>In this section, we use the IDE's Session Beans for Entity Classes wizard to generate
+            an EJB <em>session facade</em> for each of the entity classes that you just created.
+            Each session bean will contain basic access methods for its respective entity class.</p>
+
+        <p>A <em>session facade</em> is a design pattern advertised in the
+            <a href="http://java.sun.com/blueprints/enterprise/index.html" target="_blank">Enterprise
+            BluePrints program</a>. As stated in the
+            <a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/SessionFacade.html" target="_blank">Core
+            J2EE Pattern Catalog</a>, it attempts to resolve common problems that arise in a
+            multi-tiered application environment, such as:</p>
+
+        <ul class="toc">
+            <li>Tight coupling, which leads to direct dependence between clients and business objects</li>
+            <li>Too many method invocations between client and server, leading to network performance problems</li>
+            <li>Lack of a uniform client access strategy, exposing business objects to misuse</li>
+        </ul>
+
+        <p>A session facade abstracts the underlying business object interactions and provides a
+            service layer that exposes only the required functionality. Thus, it hides from the
+            client's view the complex interactions between the participants. Thus, the session
+            bean (representing the session facade) manages the relationships between business
+            objects. The session bean also manages the life cycle of these participants by
+            creating, locating, modifying, and deleting them as required by the workflow.</p>
+
+        <ol>
+            <li>Press Ctrl-N (&#8984;-N on Mac) to open the File wizard.</li>
+
+            <li>Select the Persistence category, then select Session Beans for Entity Classes.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/session-beans-for-entity-classes.png"
+                     class="margin-around b-all" alt="File wizard: Persistence category, Session Beans for Entity Classes file type"
+                     style="width: 688px" title="Select Session Beans for Entity Classes to generate a session facade for your persistence model"></li>
+
+            <li>Click Next.</li>
+
+            <li>In Step 2: Entity Classes, note that all entity classes contained in your project
+                are listed on the left, under Available Entity Classes. Click Add All. All entity
+                classes are moved to the right, under Selected Entity Classes.</li>
+
+            <li>Click Next.</li>
+
+            <li>In Step 3: Generated Session Beans, type in <strong>session</strong> into the Package field.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/generated-session-beans.png"
+                     class="margin-around b-all" alt="Session Beans for Entity Classes wizard - Step 3: Generated Session Beans"
+                     title="Specify the location of the new session beans, and whether to create interfaces">
+
+                <br>
+                <p class="notes"><strong>Note:</strong> You can use the wizard to generate local and remote
+                interfaces for the session beans. While there is benefit to programming session beans to
+                interfaces (For example, hiding business object interactions behind an interface enables
+                you to further decouple the client from your business logic. This also means that you can
+                code multiple implementations of the interface for your application, should the need arise.),
+                this lies outside the scope of the tutorial. Note that EJB versions prior to 3.1 <em>require</em>
+                that you implement an interface for each session bean.</p></li>
+
+            <li>Click Finish. The IDE generates session beans for each of the entity classes contained
+                in your project. In the Projects window, expand the new <code>session</code> package to
+                examine the session beans.
+
+                <br><br>
+                <table>
+                    <tr class="align-left">
+                        <th style="padding-left:10px">NetBeans 6.8</th>
+                        <th style="padding-left:10px">NetBeans 6.9</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/projects-window-session-beans.png"
+                                 class="margin-around b-all" alt="Projects window - session beans displayed in project"
+                                 title="Examine new session beans in the Projects window">
+                        </td>
+                        <td>
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/projects-window-session-beans-69.png"
+                                 class="margin-around b-all" alt="Projects window - session beans displayed in project"
+                                 title="Examine new session beans in the Projects window">
+                        </td>
+                    </tr>
+                </table>
+
+                <p class="notes"><strong>Note:</strong> As shown above, NetBeans IDE 6.9 provides slight
+                    improvements in the way the Session Beans for Entity Classes wizard generates facade
+                    classes. Namely, boiler-plate code that is common to all classes is factored out
+                    into an abstract class named <code>AbstractFacade</code>. If you are working in version
+                    6.9, open any of the facade classes that have been generated (aside from <code>AbstractFacade</code>).
+                    You'll see that the class extends <code>AbstractFacade</code>.</p></li>
+
+                <li>Open a session facade in the editor, for example, <code>ProductFacade</code>. All of
+                    the generated session facades instantiate an
+                    <a href="http://java.sun.com/javaee/6/docs/api/javax/persistence/EntityManager.html"
+                    target="_blank"><code>EntityManager</code></a> using the
+                    <a href="http://download.oracle.com/javaee/6/api/javax/persistence/PersistenceContext.html"
+                    target="_blank"><code>@PersistenceContext</code></a> annotation.
+
+                    <pre class="examplecode">
+@PersistenceContext(unitName = "AffableBeanPU")
+private EntityManager em;</pre>
+
+                    The <code>@PersistenceContext</code> annotation is used to inject a container-managed
+                    <code>EntityManager</code> into the class. In other words, we rely on GlassFish' EJB
+                    container to open and close <code>EntityManager</code>s as and when needed. The
+                    <code>unitName</code> element specifies the <code>AffableBeanPU</code> persistence unit,
+                    which has been defined in the application's <code>persistence.xml</code> file.
+
+                    <br><br>
+                    The <code>EntityManager</code> is an integral component of the Java Persistence
+                    API, and is responsible for performing persistence actions on the database.
+                    The book <a href="http://www.manning.com/panda/" target="_blank">EJB 3 In Action</a>
+                    describes the <code>EntityManager</code> as follows:
+
+                    <blockquote>
+                        <em>The JPA <code>EntityManager</code> interface manages entities in terms
+                            of actually providing persistence services. While entities tell a JPA
+                            provider how they map to the database, they do not persist themselves.
+                            The <code>EntityManager</code> interface reads the ORM metadata for an
+                            entity and performs persistence operations.</em>
+                    </blockquote></li>
+
+<!--                TEXT CURRENTLY NOT USED:
+
+                    In the above example, the <code>EntityManager</code>'s <code>createQuery</code>
+                    method is called to perform a query on the database. If you examine the
+                    <code>createQuery</code> API documentation (press Ctrl-Space on the method
+                    in the editor), you see that the method takes a Java Persistence Query Language
+                    (JPQL) query string as an argument, and returns a <code>Query</code> object.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/create-query-api.png"
+                         class="margin-around b-all" alt="API documentation for EntityManager's createQuery method"
+                         style="width:688px" title="Press Ctrl-Space to view API documentation">
+
+                    <br>
+                    <p class="tips">For more information on the JPQL, including terminology, syntax,
+                        and example queries, see the
+                        <a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/bnbtg.html" target="_blank">Java
+                        EE 6 Tutorial, Chapter 21: The Java Persistence Query Language</a>.</p>
+
+                    The <code>Query</code> object in turn calls <code>setParameter</code> to
+                    bind the <code>categoryId</code> parameter used in the query string with the
+                    the <code>Category</code> object that is passed into the method. Finally,
+                    <code>getResultList()</code> is called to execute a <code>SELECT</code> query
+                    and return the query results as a <code>List</code> of <code>Product</code>s.
+-->
+        </ol>
+
+        <p>Your application now contains a persistence model of the <code>affablebean</code> database in
+            the form of JPA entity classes. It also contains a session facade consisting of Enterprise
+            beans that can be used to access the entity classes. The next section demonstrates how you
+            can access the database using the session beans and entity classes.</p>
+
+
+        <br>
+        <h2 id="access">Accessing Data with EJBs</h2>
+
+        <p>In the <a href="connect-db.html">previous tutorial unit</a>, you learned how to access the
+            database from the application by configuring a data source on GlassFish, adding a resource
+            reference to the application's deployment descriptor, and using JSTL <code>&lt;sql&gt;</code>
+            tags in the application's JSP pages. This is a valuable technique, as it allows you to
+            quickly set up prototypes that include data from the database. However, this is not a
+            realistic scenario for medium to large-sized applications, or applications managed by a
+            team of developers, as it would prove difficult to maintain or scale. Furthermore, if you
+            are developing the application into multiple tiers or are adhering to the MVC pattern, you
+            would not want to keep data-access code in your front-end. Using Enterprise beans with a
+            persistence model enables you better conform to the MVC pattern by effectively decoupling
+            the presentation and model components.</p>
+
+        <p>The following instructions demonstrate how to begin using the session and entity beans in
+            the <code>AffableBean</code> project. You are going to remove the JSTL data access logic
+            that you previously set up for the index and category pages. In its place, you'll utilize
+            the data access methods provided by the session beans, and store the data in scoped
+            variables so that it can be retrieved from front-end page views. We'll tackle the index
+            page first, then move on to the more complicated category page.</p>
+
+        <ul>
+            <li><a href="#index">index page</a></li>
+            <li><a href="#category">category page</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="index">index page</h3>
+
+            <p>The index page requires data for the four product categories. In our current setup,
+                the JSTL <code>&lt;sql&gt;</code> tags query the database for category details each
+                time the index page is requested. Since this information is rarely modified, it makes
+                more sense from a performance standpoint to perform the query only once after the
+                application has been deployed, and store the data in an application-scoped attribute.
+                We can accomplish this by adding this code to the <code>ControllerServlet</code>'s
+                <code>init</code> method.</p>
+
+            <ol>
+                <li>In the Projects window, double-click the Source Packages &gt; <code>controller</code>
+                    &gt; <code>ControllerServlet</code> node to open it in the editor.</li>
+
+                <li>Declare an instance of <code>CategoryFacade</code>, and apply the <code>@EJB</code>
+                    annotation to the instance.
+
+                    <pre class="examplecode">
+public class ControllerServlet extends HttpServlet {
+
+    <strong>@EJB
+    private CategoryFacade categoryFacade;</strong>
+
+    ...
+}</pre>
+
+                    The <code>@EJB</code> annotation instructs the EJB container to instantiate
+                    the <code>categoryFacade</code> variable with the EJB named <code>CategoryFacade</code>.</li>
+
+                <li>Use the IDE's hints to add import statements for:
+
+                    <ul style="margin: 5px 0 0 -1em">
+                        <li><code>javax.ejb.EJB</code></li>
+                        <li><code>session.CategoryFacade</code></li>
+                    </ul>
+
+                    <p class="tips">Pressing Ctrl-Shift-I (&#8984;-Shift-I on Mac) automatically adds
+                        required imports to your class.</p></li>
+
+                <li>Add the following <code>init</code> method to the class. The web container
+                    initializes the servlet by calling its <code>init</code> method. This occurs
+                    only once, after the servlet is loaded and before it begins servicing requests.
+
+                    <pre class="examplecode">
+public class ControllerServlet extends HttpServlet {
+
+    @EJB
+    private CategoryFacade categoryFacade;
+
+    <strong>public void init() throws ServletException {
+
+        // store category list in servlet context
+        getServletContext().setAttribute(&quot;categories&quot;, categoryFacade.findAll());
+    }</strong>
+
+    ...
+}</pre>
+
+                    Here, you apply the facade class' <code>findAll</code> method to query
+                    the database for all records of <code>Category</code>. You then set the resulting
+                    <code>List</code> of <code>Category</code> objects as an attribute that can be
+                    referenced by the &quot;<code>categories</code>&quot; string. Placing the
+                    reference in the <code>ServletContext</code> means that the reference exists
+                    in a scope that is application-wide.
+
+                    <br><br>
+                    <p class="tips">To quickly determine the method signature of the <code>findAll</code>
+                        method, hover your mouse over the method while holding down the Ctrl key
+                        (&#8984; on Mac). (The image below displays the popup that appears using
+                        NetBeans IDE 6.8.)</p>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/method-signature.png"
+                         class="margin-around b-all" alt="Editor displaying method signature in a pop-up"
+                         title="Over your mouse over the method while holding down the Ctrl key to view its signature">
+
+                    <br>
+                    Clicking the hyperlink enables you to navigate directly to the method.</li>
+
+                <li>Use the IDE's hint to add the <code>@Overrides</code> annotation. The <code>init</code>
+                    method is defined by <code>HttpServlet</code>'s superclass, <code>GenericServlet</code>.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/override.png"
+                         class="margin-around b-all" alt="Hint displayed in editor"
+                         title="Use the IDE's hint to add the @Overrides annotation to the method">
+
+                    <br>
+                    Adding the annotation is not required, however it does provide several advantages:
+
+                    <ul style="margin: 5px 0 0 -1em">
+                        <li>It enables you to use compiler checking to ensure that you are actually
+                            overriding a method that you assume you are overriding.</li>
+
+                        <li>It improves readability, as it becomes clear when methods in your source code
+                            are being overridden.</li>
+                    </ul>
+
+                    <p class="tips">For more information on annotations, see the
+                        <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">Java
+                        Tutorials: Annotations</a>.</p></li>
+
+                <li>Now that you have set up an application-scoped attribute that contains a list of
+                    categories, modify the index page to access the newly created attribute.
+
+                    <br><br>
+                    Double-click the Web Pages &gt; <code>index.jsp</code> node in the Projects window
+                    to open the file in the editor.</li>
+
+                <li>Comment out (or delete) the <code>&lt;sql:query&gt;</code> statement that is
+                    listed at the top of the file. To comment out code in the editor, highlight
+                    the code, then press Ctrl-/ (&#8984;-/ on Mac).
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/commented-out.png"
+                         class="margin-around b-all" alt="Commented-out snippet displayed in editor"
+                         title="Press Ctrl-/ to comment out a code snippet in the editor"></li>
+
+                <li>Modify the opening <code>&lt;c:forEach&gt;</code> tag so that its <code>items</code>
+                    attribute references the new application-scoped <code>categories</code> attribute.
+
+                    <pre class="examplecode">&lt;c:forEach var=&quot;category&quot; items=&quot;<strong>${categories}</strong>&quot;&gt;</pre></li>
+
+                <li>Open the project's web deployment descriptor. Press Alt-Shift-O (Ctrl-Shift-O on Mac)
+                    and in the Go to File dialog, type '<code>web</code>', then click OK.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/go-to-file.png"
+                         class="margin-around b-all" alt="Go to File dialog"
+                         title="Use the Go to File dialog to quickly open files in the editor"></li>
+
+                <li>Comment out (or delete) the <code>&lt;resource-ref&gt;</code> entry. The entry was required
+                    for the <code>&lt;sql&gt;</code> tags in order to identify the data source registered on the
+                    server. We are now relying on JPA to access the database, and the <code>jdbc/affablebean</code>
+                    data source has already been specified in the persistence unit. (Refer to the <a href="#pu">Design
+                    view of the project's persistence unit</a> above.)
+
+                    <br><br>
+                    Highlight the entire <code>&lt;resource-ref&gt;</code> entry, then press Ctrl-/ (&#8984;-/ on Mac).
+
+                    <pre class="examplecode">
+<strong>&lt;!-- </strong>&lt;resource-ref&gt;
+         &lt;description&gt;Connects to database for AffableBean application&lt;/description&gt;
+         &lt;res-ref-name&gt;jdbc/affablebean&lt;/res-ref-name&gt;
+         &lt;res-type&gt;javax.sql.ConnectionPoolDataSource&lt;/res-type&gt;
+         &lt;res-auth&gt;Container&lt;/res-auth&gt;
+         &lt;res-sharing-scope&gt;Shareable&lt;/res-sharing-scope&gt;
+     &lt;/resource-ref&gt; <strong>--&gt;</strong></pre></li>
+
+                <li>Run the project. Click the Run Project (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                    alt="Run Project button"> ) button. The project's index page opens in the browser,
+                    and you see that all four category names and images display.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/index-page.png"
+                         class="margin-around b-all" alt="Index page displaying category details" style="width:688px"
+                         title="Verify that the index page is able to retrieve category details"></li>
+            </ol>
+
+
+            <h3 id="category">category page</h3>
+
+            <p>The <a href="design.html#category">category page</a> requires three pieces of data
+                in order to render properly:</p>
+
+            <ol style="margin: 5px 0 0 -1em" class="toc">
+                <li><strong>category data:</strong> for left column category buttons</li>
+
+                <li><strong>selected category:</strong> the selected category is highlighted in
+                    the left column, and the name of the selected category displays above the
+                    product table</li>
+
+                <li><strong>product data for selected category:</strong> for products displayed
+                    in the product table</li>
+            </ol>
+
+            <p>Let's approach each of the three pieces of data individually.</p>
+
+            <ul style="margin: 5px 0 0 -1.5em">
+                <li><a href="#categoryData">category data</a></li>
+                <li><a href="#selectedCategoryData">selected category</a></li>
+                <li><a href="#productData">product data for selected category</a></li>
+            </ul>
+
+            <h4 id="categoryData">category data</h4>
+
+            <p>To account for category data, we can reuse the application-scoped <code>categories</code>
+                attribute that we created for the index page.</p>
+
+            <ol>
+                <li>Open <code>category.jsp</code> in the editor, and comment out (Ctrl-/; &#8984;-/ on Mac)
+                    the JSTL <code>&lt;sql&gt;</code> statements that are listed at the top of the file.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/comment-out-sql.png"
+                         class="margin-around b-all" alt="<sql> statements commented out in editor"
+                         title="Comment out JSTL <sql> statements in the category page"></li>
+
+                <li>Modify the opening <code>&lt;c:forEach&gt;</code> tag so that its <code>items</code>
+                    attribute references the application-scoped <code>categories</code> attribute.
+                    (This is identical to what you did above for <code>index.jsp</code>.)
+
+                    <pre class="examplecode">&lt;c:forEach var=&quot;category&quot; items=&quot;<strong>${categories}</strong>&quot;&gt;</pre></li>
+
+                <li>Run the project to examine the current state of the category page. Click the Run Project (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                    alt="Run Project button"> ) button. When the project's index page opens in the browser,
+                    click any of the four categories. The category buttons in the left column display and
+                    function as expected.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/category-page-left-column.png"
+                         class="margin-around b-all" alt="Category page displaying category buttons in left column"
+                         style="width:688px" title="Category buttons in left column display and function as expected"></li>
+            </ol>
+
+            <h4 id="selectedCategoryData">selected category</h4>
+
+            <p>To retrieve the selected category, we can use the <code>categoryFacade</code>
+                that we already created to find the <code>Category</code> whose ID matches
+                the request query string.</p>
+
+            <ol>
+                <li>Open the <code>ControllerServlet</code> in the editor. (If already opened, press Ctrl-Tab
+                    and choose from the pop-up list.)</li>
+
+                <li>Start implementing functionality to acquire the selected category. Locate
+                    the <code>TODO: Implement category request</code> comment, delete it and
+                    add the following code (in <strong>bold</strong>).
+
+                    <pre class="examplecode">
+// if category page is requested
+if (userPath.equals(&quot;/category&quot;)) {
+
+    <strong>// get categoryId from request
+    String categoryId = request.getQueryString();
+
+    if (categoryId != null) {
+
+    }</strong>
+
+// if cart page is requested
+} else if (userPath.equals(&quot;/viewCart&quot;)) {</pre>
+
+                    You retrieve the requested category ID by calling <code>getQueryString()</code>
+                    on the request.
+
+                    <br><br>
+                    <p class="notes"><strong>Note:</strong> The logic to determine the selected
+                        category within the left column category buttons is already implemented
+                        in <code>category.jsp</code> using an EL expression, which is comparable
+                        to calling <code>getQueryString()</code> in the servlet. The EL expression
+                        is: <code>pageContext.request.queryString</code>.</p></li>
+
+                <li>Add the following line of code within the <code>if</code> statement.
+
+                    <pre class="examplecode">
+// get categoryId from request
+String categoryId = request.getQueryString();
+
+if (categoryId != null) {
+
+    <strong>// get selected category
+    selectedCategory = categoryFacade.find(Short.parseShort(categoryId));</strong>
+}</pre>
+
+                    You use the <code>CategoryFacade</code>'s <code>find</code> method to
+                    retrieve the <code>Category</code> object based on the requested category
+                    ID. Note that you must cast <code>categoryId</code> to a <code>Short</code>,
+                    as this is the type used for the <code>id</code> field in the <code>Category</code>
+                    entity class.</li>
+
+                <li>Click the badge ( <img src="../../../../images_www/articles/73/javaee/ecommerce/common/editor-badge.png"
+                    alt="Hint badge"> ) in the left margin to use the editor's hint to declare
+                    <code>selectedCategory</code> as a local variable within the <code>doGet</code>
+                    method.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/local-variable.png"
+                         class="margin-around b-all" alt="Editor hints"
+                         title="Use editor hints to declare local variables">
+
+                    <br>
+                    Because <code>selectedCategory</code> is of type <code>Category</code>, which
+                    hasn't yet been imported into the class, the IDE automatically adds an import
+                    statement for <code>entity.Category</code> to the top of the file.</li>
+
+                <li>Add the following line to place the retrieved <code>Category</code> object
+                    in the request scope.
+
+                    <pre class="examplecode">
+// get categoryId from request
+String categoryId = request.getQueryString();
+
+if (categoryId != null) {
+
+    // get selected category
+    selectedCategory = categoryFacade.find(Short.parseShort(categoryId));
+
+    <strong>// place selected category in request scope
+    request.setAttribute(&quot;selectedCategory&quot;, selectedCategory);</strong>
+}</pre></li>
+
+                <li>In the editor, switch to <code>category.jsp</code>. (Press Ctrl-Tab and choose from
+                    the pop-up list.)</li>
+
+                <li>Locate <code>&lt;p id=&quot;categoryTitle&quot;&gt;</code> and make the following
+                    change.
+
+                    <pre class="examplecode">
+&lt;p id=&quot;categoryTitle&quot;&gt;
+    &lt;span style=&quot;background-color: #f5eabe; padding: 7px;&quot;&gt;<strong>${selectedCategory.name}</strong>&lt;/span&gt;
+&lt;/p&gt;</pre>
+
+                    You are now using the <code>selectedCategory</code> attribute, which you just placed
+                    in the request scope from the <code>ControllerServlet</code>. Using '<code>.name</code>'
+                    within the EL expression calls the <code>getName</code> method on the given
+                    <code>Category</code> object.</li>
+
+                <li>Switch back to the browser and refresh the category page. The name of the selected
+                    category now displays in the page.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/category-page-selected-category.png"
+                         class="margin-around b-all" alt="Category page displaying name of selected category"
+                         style="width:688px" title="Selected category name displays in the category page">
+                </li>
+            </ol>
+
+            <h4 id="productData">product data for selected category</h4>
+
+            <p>In order to retrieve all products for a selected category, we'll make use of the
+                <code>Category</code> entity's <code>getProductCollection()</code> method. Start
+                by calling this method on <code>selectedCategory</code> to get a collection of
+                all <code>Product</code>s associated with the <code>selectedCategory</code>.
+                Then store the collection of products as an attribute in the request scope, and
+                finally reference the scoped attribute from the <code>category.jsp</code> page
+                view.</p>
+
+            <ol>
+                <li>In the <code>ControllerServlet</code>, add the following statement to the code that
+                    manages the category request.
+
+                    <pre class="examplecode">
+// if category page is requested
+if (userPath.equals(&quot;/category&quot;)) {
+
+    // get categoryId from request
+    String categoryId = request.getQueryString();
+
+    if (categoryId != null) {
+
+        // get selected category
+        selectedCategory = categoryFacade.find(Short.parseShort(categoryId));
+
+        // place selected category in request scope
+        request.setAttribute(&quot;selectedCategory&quot;, selectedCategory);
+
+        <strong>// get all products for selected category
+        categoryProducts = selectedCategory.getProductCollection();</strong>
+    }</pre>
+
+                    Calling <code>getProductCollection()</code> here enables us to get a collection
+                    of all <code>Product</code>s associated with the <code>selectedCategory</code>.</li>
+
+                <li>Use the editor's hint to define <code>categoryProducts</code> as a local variable
+                    for the <code>doGet</code> method.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/local-variable2.png"
+                         class="margin-around b-all" alt="Editor hints"
+                         title="Use editor hints to declare local variables"></li>
+
+                <li>Place the collection of <code>Product</code>s in the request scope so that it
+                    can be retrieved from the application's front-end.
+
+                    <pre class="examplecode">
+// if category page is requested
+if (userPath.equals(&quot;/category&quot;)) {
+
+    // get categoryId from request
+    String categoryId = request.getQueryString();
+
+    if (categoryId != null) {
+
+        // get selected category
+        selectedCategory = categoryFacade.find(Short.parseShort(categoryId));
+
+        // place selected category in request scope
+        request.setAttribute(&quot;selectedCategory&quot;, selectedCategory);
+
+        // get all products for selected category
+        categoryProducts = selectedCategory.getProductCollection();
+
+        <strong>// place category products in request scope
+        request.setAttribute(&quot;categoryProducts&quot;, categoryProducts);
+    }</strong></pre></li>
+
+                <li>Open the <code>category.jsp</code> file in the editor and make the following
+                    change to the product table.
+
+                    <pre class="examplecode">
+&lt;table id=&quot;productTable&quot;&gt;
+
+    &lt;c:forEach var=&quot;product&quot; items=&quot;<strong>${categoryProducts}</strong>&quot; varStatus=&quot;iter&quot;&gt;</pre>
+
+                The <code>&lt;c:forEach&gt;</code> tag now references the <code>categoryProducts</code>
+                collection. The <code>c:forEach</code> loop will now iterate over each <code>Product</code>
+                object contained in the collection, and extract data accordingly.</li>
+
+                <li>Press F6 (fn-F6 on Mac) to run the project. Navigate to the category
+                    page in the browser and note that all products now display for each category.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/entity-session/category-page-product-table.png"
+                         class="margin-around b-all" alt="Category page displaying products in table"
+                         style="width:688px" title="Product table displays products of a given category">
+                </li>
+            </ol>
+        </div>
+
+        <p>This tutorial unit provided a brief introduction to JPA and EJB technologies. It also
+            described the role of Java specifications, and how their reference implementations are
+            used by the GlassFish application server. It then demonstrated how to create a set of
+            JPA entity classes that provide a Java implementation of the project database. Then,
+            following the <em>session facade</em> pattern, it showed how to create a set of EJB
+            session beans that exist on top of the entity classes and enable convenient access to
+            them. Finally, you modified the <code>AffableBean</code> project to utilize the new
+            session beans and entities for database access required in the index and category pages.</p>
+
+        <p>You can download
+            <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot4.zip">snapshot
+            4</a> of the <code>AffableBean</code> project, which corresponds to state the project
+            after completing this unit using NetBeans IDE 6.9.</p>
+
+        <p>In the next unit you explore session management, and how to enable the application to
+            remember a user's actions as he or she clicks through the site. This is key to implementing
+            a shopping cart mechanism in an e-commerce application.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Adding Entity Classes and Session Beans">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <br>
+        <h2 id="seeAlso">See Also</h2>
+
+        <div class="indent">
+            <h3>NetBeans Resources</h3>
+
+            <ul>
+                <li><a href="../../../trails/java-ee.html" target="_blank">Java EE & Java Web Learning Trail</a></li>
+                <li><a href="../javaee-intro.html" target="_blank">Introduction to Java EE Technology</a></li>
+                <li><a href="../javaee-gettingstarted.html" target="_blank">Getting Started with Java EE Applications</a></li>
+                <li><a href="../secure-ejb.html" target="_blank">Building Secure Enterprise Beans in Java EE</a></li>
+                <li><a href="../javaee-entapp-ejb.html" target="_blank">Creating an Enterprise Application with EJB 3.1</a></li>
+                <li><a href="../jpa-eclipselink-screencast.html" target="_blank">Using JPA Support with EclipseLink</a> [screencast]</li>
+                <li><a href="../../../../community/media.html" target="_blank">Video Tutorials and Demos for NetBeans IDE</a></li>
+                <li><a href="http://refcardz.dzone.com/refcardz/netbeans-java-editor-68" target="_blank">NetBeans Java Editor 6.8 Reference Card</a></li>
+            </ul>
+
+            <h3>EJB Resources</h3>
+
+            <ul>
+                <li><strong>Product Page:</strong> <a href="http://java.sun.com/products/ejb/" target="_blank">Enterprise JavaBeans Technology</a></li>
+                <li><strong>Specification Download:</strong> <a href="http://jcp.org/aboutJava/communityprocess/final/jsr318/index.html" target="_blank">JSR 318: EJB 3.1 Final Release</a></li>
+                <li><strong>Reference Implementation:</strong> <a href="http://glassfish.dev.java.net/downloads/ri" target="_blank">http://glassfish.dev.java.net/downloads/ri</a></li>
+                <li><strong>Official Forum:</strong> <a href="http://forums.sun.com/forum.jspa?forumID=13" target="_blank">Enterprise Technologies - Enterprise JavaBeans</a></li>
+                <li><strong>Java EE 6 Tutorial:</strong> <a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/bnblr.html" target="_blank">Part IV - Enterprise Beans</a></li>
+            </ul>
+
+            <h3>JPA Resources</h3>
+
+            <ul>
+                <li><strong>Product Page:</strong> <a href="http://java.sun.com/javaee/technologies/persistence.jsp" target="_blank">Java Persistence API</a></li>
+                <li><strong>Specification Download:</strong> <a href="http://jcp.org/aboutJava/communityprocess/final/jsr317/index.html" target="_blank">JSR 317: Java Persistence 2.0 Final Release</a></li>
+                <li><strong>Reference Implementation:</strong> <a href="http://www.eclipse.org/eclipselink/downloads/ri.php" target="_blank">http://www.eclipse.org/eclipselink/downloads/ri.php</a></li>
+                <li><strong>Java EE 6 Tutorial:</strong> <a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/bnbpy.html" target="_blank">Part VI - Persistence</a></li>
+            </ul>
+
+            <h3>GlassFish Resources</h3>
+
+            <ul>
+                <li><a href="http://glassfish.dev.java.net/docs/index.html" target="_blank">GlassFish v3 Documentation</a></li>
+                <li><a href="http://www.sun.com/offers/details/GlassFish_Tomcat.html" target="_blank">Learning GlassFish for Tomcat Users</a></li>
+                <li><a href="http://glassfish.dev.java.net/javaee5/persistence/persistence-example.html" target="_blank">GlassFish Project - Java Persistence Example</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/820-7759" target="_blank">Your First Cup: An Introduction to the Java EE Platform</a></li>
+                <li><a href="http://glassfish.dev.java.net/downloads/ri/" target="_blank">Reference Implementation Downloads</a></li>
+            </ul>
+
+            <h3>Technical Articles</h3>
+
+            <ul>
+                <li><a href="http://www.theserverside.com/news/1363656/New-Features-in-EJB-31" target="_blank">New Features in EJB 3.1</a></li>
+                <li><a href="http://www.ibm.com/developerworks/java/library/j-ejb1008.html" target="_blank">EJB Best Practices: Entity Bean Protection</a></li>
+                <li><a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/SessionFacade.html" target="_blank">Core J2EE Patterns - Session Facade</a></li>
+                <li><a href="http://www.ibm.com/developerworks/websphere/library/techarticles/0106_brown/sessionfacades.html" target="_blank">Rules and Patterns for Session Facades</a></li>
+                <li><a href="http://www.oracle.com/technology/sample_code/tech/java/j2ee/designpattern/businesstier/sessionfacade/readme.html" target="_blank">Design Pattern Sample Application - Session Facade</a></li>
+                <li><a href="http://www.ibm.com/developerworks/websphere/library/bestpractices/using_httpservlet_method.html" target="_blank">Best Practice: Using HttpServlet <code>init</code> Method</a></li>
+            </ul>
+
+            <h3>Books</h3>
+
+            <ul>
+                <li><a href="http://www.amazon.com/Beginning-Java-EE-GlassFish-Second/dp/143022889X/ref=dp_ob_title_bk" target="_blank">Beginning Java EE 6 with GlassFish 3</a></li>
+                <li><a href="http://www.amazon.com/Java-EE-GlassFish-Application-Server/dp/1849510369/ref=sr_1_1?s=books&ie=UTF8&qid=1281888153&sr=1-1" target="_blank">Java EE 6 with GlassFish 3 Application Server</a></li>
+                <li><a href="http://www.apress.com/book/view/1590598954" target="_blank">Pro NetBeans IDE 6 Rich Client Platform Edition</a></li>
+                <li><a href="http://www.amazon.com/Real-World-Patterns-Rethinking-Practices/dp/0557078326/ref=pd_sim_b_4" target="_blank">Real World Java EE Patterns Rethinking Best Practices</a></li>
+                <li><a href="http://www.amazon.com/Patterns-Enterprise-Application-Architecture-Martin/dp/0321127420/ref=sr_1_1?s=books&ie=UTF8&qid=1281985949&sr=1-1" target="_blank">Patterns of Enterprise Application Architecture</a></li>
+                <li><a href="http://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215/ref=sr_1_1?s=books&ie=UTF8&qid=1281985959&sr=1-1" target="_blank">Domain-Driven Design: Tackling Complexity in the Heart of Software</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>References</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> Adapted from <a href="http://www.manning.com/panda/" target="_blank">EJB
+                3 In Action</a> Chapter 1, section 1.1.2: EJB as a framework.</li>
+
+            <li id="footnote2"><a href="#2" style="text-decoration:none">^</a> There are many other services
+                provided by EJB. For a more comprehensive list, see <a href="http://www.manning.com/panda/" target="_blank">EJB
+                3 In Action</a>, Chapter 1, section 1.3.3: Gaining functionality with EJB services.</li>
+        </ol>
+
+    </body>
+</html>

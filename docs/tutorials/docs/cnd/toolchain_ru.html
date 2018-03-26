@@ -1,0 +1,609 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="author" content="alexander.simon@oracle.com">
+        <meta name="description" content="A short guide to modify or create a new tool collection for C/C++ in NetBeans IDE 8.0.  Most content
+              also applies to Oracle Solaris Studio IDE.">
+        <meta name="keywords" content="NetBeans, Oracle Solaris Studio, Sun Studio, Solaris Studio, IDE, tool collection,
+            tutorial, guide, user, documentation, open source, C, C++, make, dbx, gdb">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Использование дескрипторов наборов средств C/C++ - Практическое руководство по IDE NetBeans</title>
+    </head><body style="padding: 2px;">
+<h1>Использование дескрипторов наборов средств C/C++ - Практическое руководство по IDE NetBeans</h1>
+      <div class="articledate" style="margin-left: 0px;font-style:italic;">
+   <p><em>Составитель: <a href="mailto:alexander.simon@oracle.com"><i>Александр Саймон (Alexander Simon)</i></a><!-- maintained by susan.morgan@oracle.com --><br> Март 2014 г.</em> [Номер версии: V8.0-1]</div>
+<p><b>Содержание</b></p>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="Содержимое этой страницы применимо к IDE NetBeans 8.0">     
+<ul class="toc">
+         <li><a href="#intro">Введение</a></li>
+         <li><a href="#tool">Наборы средств</a></li>
+         <li><a href="#community">Наборы инструментов, предоставленные сообществом</a></li>
+         <li><a href="#edit">Изменение дескрипторов наборов средств</a></li>
+         <li><a href="#create">Создание пользовательского набора средств</a></li>
+         <li><a href="#details">Дополнительные сведения о файле XML набора средств</a></li>
+         <li><a href="#provider">Создание поставщика особого компилятора</a></li>
+         <li><a href="#errorhandler">Создание обработчика ошибок для пользовательского компилятора</a></li>
+      </ul>
+
+<p><b>Для работы с этим учебным курсом требуется программное обеспечение, указанное ниже.</b></p>
+
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">Программное обеспечение</th>
+    <th class="tblheader" scope="col">Требуемая версия</th>
+</tr>
+<tr>
+<td class="tbltd1">IDE NetBeans (включая поддержку C/C++)</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">Версия 8.0</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Комплект для разработчика на языке Java (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Версия 7 или 8</a>  </td>
+</tr>
+</tbody>
+</table>
+      <br>
+<p>Дополнительные сведения о загрузке и установке необходимого программного обеспечения см. в разделах <a href="../../../community/releases/80/install.html">Инструкции по установке IDE NetBeans</a> и <a HREF="../../../community/releases/80/cpp-setup-instructions.html">Настройка IDE NetBeans для C/C++/Fortran</a>.</p>
+
+
+<a id="intro"></a>
+<h2>Введение</h2>
+
+<p>Это практическое руководство содержит инструкции по изменению существующих наборов средств и созданию собственной версии набора средств на основе существующего в IDE NetBeans 8.0.</p>
+<p>Показанный пример относится к набору средств GNU для Oracle Solaris и Linux, но общие принципы применимы также для Windows и Mac. Используя информацию в этом руководстве, вы научитесь делать следующее:
+</p>
+<ul>
+	<li>Менять флаги компиляторов, которые IDE NetBeans по умолчанию использует для компиляции файлов C/C++</li>
+	<li>Добавлять компиляторы, которые не поддерживаются в среде IDE</li>
+</ul>
+
+<h2><a name="tool"></a>Наборы средств</h2>
+
+<p>В набор средств входят набор компиляторов, утилита make и отладчик. Набор средств определяется в IDE с помощью <em>дескриптора наборов инструментов</em>. При каждой компиляции, создании или отладке кода IDE NetBeans запускает исполняемый файл, описанный в дескрипторе наборов средств для набора средств, заданного в настройках проекта. Функции 'Помощь при работе с кодом' используют пути include и макросы из дескриптора наборов средств.</p>
+
+<p>Дескриптор набора средств - это XML-файл, расположенный в модуле <tt><em>IDE_HOME</em>/cnd/modules/org-netbeans-modules-cnd-toolchain.jar</tt>, который находится в папке <tt>org/netbeans/modules/cnd/toolchain/resources/toolchaindefinition/</tt>. Вносить изменения в исходные XML-файлы дескриптора средств IDE не рекомендуется. </p>
+<p>Эта статья содержит инструкции по созданию дубликатов дескрипторов средств в собственном каталоге пользователя NetBeans, доступном для редактирования. IDE будет использовать данные дескрипторов наборов средств, расположенных в вашем каталоге пользователя, вместо исходных версий. </p>
+<h2><a name="community"></a>Наборы инструментов, предоставленные сообществом</h2>
+<p>Некоторые подключаемые модули для наборов средств разработаны участниками сообщества NetBeans:</p>
+<ul><li><a href="http://plugins.netbeans.org/plugin/36176/cuda-plugin">Cuda</a></li>
+	<li><a href="http://plugins.netbeans.org/plugin/27033/msp430-toolchain">TI msp430 microcontroller toolchain</a></li>
+    <li><a href="http://plugins.netbeans.org/plugin/42519/">Visual Studio</a></li>
+</ul>
+<p>Напоминаем, что эти подключаемые модули официально не поддерживаются, но приводятся со справочной целью, так как могут послужить в качестве основы для создания ваших собственных подключаемых модулей.</p>
+<p>Пользователям Windows также будет интересна статья одного из участников сообщества NetBeans: <a href="http://minghuasweblog.wordpress.com/2012/09/27/netbeans-setup-and-gnu-cross-toolchain-configuration-for-arm-developmen/">Настройка NetBeans и общие настройки наборов средств GNU для разработки ARM</a>.
+</p>
+
+<h2><a name="edit"></a>Изменение дескрипторов наборов средств</h2>
+<p>Изменение дескрипторов наборов средств представляет собой непростую задачу, поскольку в IDE NetBeans отсутствует графический пользовательский интерфейс для изменения дескрипторов. В этом разделе описывается создание 'теневых' копий дескрипторов наборов инструментов, которые можно изменить, если требуется, чтобы в среде IDE использовались другие средства. </p>
+<ol>
+<li>Завершите работу среды IDE, если она запущена.</li>
+<li>Отредактируйте файл <tt><em>IDE-HOME</em>/etc/netbeans.conf</tt>, где <tt><em>IDE-HOME</em></tt> - каталог установки NetBeans.</li>
+<li>Добавьте следующий флаг в запись <tt>netbeans_default_options</tt>:
+<pre>-J-Dcnd.toolchain.personality.create_shadow=true</pre>
+</li>
+<li>
+Запустите среду IDE, выберите &quot;Сервис&quot; &gt; &quot;Параметры&quot;, затем в верхней панели окна параметров выберите &quot;C/C++&quot;. <br>
+<p>IDE создает 'теневые' версии дескрипторов наборов средств в каталоге пользователя NetBeans: </p>
+<pre><em>userdir</em>/config/CND/ToolChain</pre>
+
+<p class="note">Местоположение каталога пользователя NetBeans зависит от операционной системы. Возможные варианты местоположения каталога <tt><em>userdir</em>/config/CND/ToolChain</tt>:</p>
+<ul>
+	<li>﻿Windows: <tt>C:\Documents and Settings\<em>username</em>\Application Data\NetBeans\<em>version</em>\config\CND\ToolChain</tt></li>
+	<li>Mac: <tt>/Users/<em>username</em>/Library/Application Support/NetBeans/<em>version</em>/config/CND/ToolChain</tt></li>
+	<li>Linux и Solaris: <tt>/home/<em>username</em>/.netbeans/<em>version</em>/config/CND/ToolChain</tt></li>
+</ul>
+
+<p>
+    Список дескрипторов должен быть аналогичен следующему:</p>
+<pre>CLang.xml                             SunStudio.xml
+CLang_mac.xml                         SunStudio_10.xml
+CLang_solaris.xml                     SunStudio_11.xml
+Cygwin.xml                            SunStudio_12.1_solaris-sparc.xml
+Cygwin_4.x.xml                        SunStudio_12.1_solaris-x86_linux.xml
+GNU.xml                               SunStudio_12.2_linuxCompatGNU.xml
+GNU_mac.xml                           SunStudio_12.2_solaris-sparc.xml
+GNU_solaris.xml                       SunStudio_12.2_solaris-x86_linux.xml
+Intel.xml                             SunStudio_12.3_linuxCompatGNU.xml
+Interix.xml                           SunStudio_12.3_solaris-sparc.xml
+MinGW.xml                             SunStudio_12.3_solaris-x86_linux.xml
+MinGW_TDM.xml                         SunStudio_12.xml
+OSS_linuxCompatGNU.xml                SunStudio_8.xml
+OSS_solaris-sparc.xml                 SunStudio_9.xml
+OSS_solaris-x86_linux.xml             WinAVR.xml
+OracleSolarisStudio.xml
+</pre>
+
+
+<p>Вы можете изменить дескриптор для используемого набора средств. Например, если вы используете средства GNU в ОС Solaris, необходимо отредактировать файл <tt>GNU_solaris.xml</tt>; если вы используете MinGW в ОС Windows, необходимо отредактировать файл <tt>MinGW.xml</tt>. </p>
+<p>Сведения о тегах, используемых в XML-файлах дескриптора, см. в разделе <a href="#details">Подробно об XML-файлах набора средств</a>. Значения тегов можно изменить. В этом случае соответствующим образом изменится функционирование средств в IDE.</p>
+<p>Дескрипторы, находящиеся в этом каталоге, имеют более высокий приоритет по сравнению с официальными версиями в каталоге <em>IDE-HOME</em>. Если вы не хотите, чтобы в среде IDE использовались некоторые дескрипторы средств, удалите их из своего каталога пользователя.</p></li>
+<li>Удалите флаг <tt>-J-Dcnd.toolchain.personality.create_shadow=true</tt> из файла <tt><em>IDE-HOME</em>/etc/netbeans.conf</tt>, чтобы в среде IDE больше не создавались теневые копии дескрипторов.</li>
+<li>Перед использованием измененного дескриптора средств необходимо перезапустить IDE. </li>
+
+</ol>
+
+
+<h2><a name="create">Создание пользовательского набора средств</a></h2>
+<p>Этот раздел содержит инструкции по созданию набора средств на основе набора средств GNU. В новом наборе средств будут изменены флаги компилятора для отладки. В примере показаны этапы создания нового модуля NetBeans с новым набором средств. Это модуль позволяет совместно использовать набор средств, а также использовать набор средств в других экземплярах IDE.</p> 
+<p>Для получения общих сведений о создании модулей NetBeans см. раздел <a href="http://platform.netbeans.org/tutorials/nbm-google.html">Руководство по началу работы с подключаемыми модулями в среде NetBeans</a>.</p>
+<br><b>Чтобы создать собственный набор средств:</b>
+<ol>
+    <li>Убедитесь, что в состав установленного экземпляра NetBeans входит модуль NetBeans Plugin Development.<br><br> Выберите Сервис > Подключаемые модули и перейдите на вкладку 'Установленные'. Если модуль разработки подключаемых модулей NetBeans не установлен, перейдите на вкладку &quot;Доступные подключаемые модули&quot; и установите модуль. Его можно быстро найти путем ввода текста &quot;plugin&quot; в окне поиска.</li>
+<li>Создайте новый модуль NetBeans путем выбора &quot;Файл&quot; &gt; &quot;Создать проект&quot;.  На странице &quot;Выбор проекта&quot; в мастере создания нового проекта выберите категорию &quot;Модули NetBeans&quot; и в первом шаге мастера укажите проект &quot;Модуль&quot;. Нажмите кнопку &quot;Далее&quot;. 
+</li>
+<li>На странице &quot;Имя и местоположение&quot; введите имя проекта, например, <tt>mytoolchain</tt>, а в остальных полях оставьте значения по умолчанию. Нажмите кнопку &quot;Далее&quot;.</li>
+<li>На странице 'Основные настройки модуля' в поле 'Основа имени кода ' введите <tt>org.myhome.mytoolchain</tt>. Это имя определяет уникальный строковый ресурс для идентификации создаваемого модуля. Основа имени кода также используется в качестве основного пакета модуля. </li>
+<li>Не устанавливайте флажок 'Создать пакет OSGi', так как в этом примере будет использоваться стандартная система модулей NetBeans, а не OSGi.</li>
+<li>Нажмите кнопку "Готово". IDE создает новый проект с именем mytoolchain.</li>
+<li>На вкладке 'Проекты' щелкните узел проекта mytoolchain правой кнопкой мыши и выберите Создать > Другое. </li>
+<li>В мастере создания файлов выберите категорию 'Разработка модулей' и тип файла 'Слой XML', затем нажмите 'Далее' и 'Готово'. <br><br>IDE создает файл <tt>layer.xml</tt> в структуре узла 'Исходные пакеты' внутри основного пакета <tt>org.myhome.mytoolchain</tt> и открывает файл <tt>layer.xml</tt> в редакторе.</li>
+<li>Если файл содержит тег <tt>&lt;filesystem/></tt>, замените его парными тегами <tt>filesystem</tt>:<pre><tt>&lt;filesystem&gt;</tt>
+
+<tt>&lt;/filesystem&gt;</tt></pre></li>
+
+<li>Скопируйте и вставьте следующий текст в файл <tt>layer.xml</tt> внутри тега <tt>filesystem</tt>:
+    <pre>
+&lt;folder name="CND"&gt;
+        &lt;folder name="Tool"&gt;
+            &lt;file name="GNU_tuned_flavor" url="toolchain/GNU_tuned_flavor.xml"&gt;
+                &lt;attr name="extends" stringvalue="GNU_flavor"/&gt;
+            &lt;/file&gt;
+            &lt;file name="GNU_tuned_cpp" url="toolchain/GNU_tuned_cpp.xml"&gt;
+                &lt;attr name="extends" stringvalue="GNU_cpp"/&gt;
+            &lt;/file&gt;
+        &lt;/folder&gt;
+        &lt;folder name="ToolChains"&gt;
+            &lt;folder name="GNU_tuned"&gt;
+                &lt;attr name="position" intvalue="5000"/&gt;
+                &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="org.myhome.mytoolchain.Bundle"/&gt;
+                &lt;file name="flavor.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_tuned_flavor"/&gt;
+                &lt;/file&gt;
+                &lt;file name="c.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_c"/&gt;
+                &lt;/file&gt;
+                &lt;file name="cpp.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_tuned_cpp"/&gt;
+                &lt;/file&gt;
+                &lt;file name="fortran.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_fortran"/&gt;
+                &lt;/file&gt;
+                &lt;file name="assembler.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_assembler"/&gt;
+                &lt;/file&gt;
+                &lt;file name="scanner.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_scanner"/&gt;
+                &lt;/file&gt;
+                &lt;file name="linker.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_linker"/&gt;
+                &lt;/file&gt;
+                &lt;file name="make.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_make"/&gt;
+                &lt;/file&gt;
+                &lt;file name="debugger.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/&gt;
+                &lt;/file&gt;
+                &lt;file name="qmake.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_qmake"/&gt;
+                &lt;/file&gt;
+                &lt;file name="cmake.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;
+    </pre>
+   
+</li>
+<li>Откройте файл <tt>Bundle.properties</tt> и добавьте следующую строку:<br> <tt>CND/ToolChains/GNU_tuned=My GNU Tuned Tool Collection</tt></li>
+
+<li>Создайте подпакет <tt>toolchain</tt>. Для этого щелкните правой кнопкой мыши пакет <tt>org.myhome.mytoolchain</tt> в структуре узла 'Исходные пакеты' и выберите Создать > Пакет Java. Замените заданное по умолчанию имя пакета <tt>newpackage</tt> на <tt>toolchain</tt> и нажмите 'Готово'. IDE создает подпакет <tt>org.myhome.mytoolchain.toolchain</tt>. </li>
+<li>Создайте новый файл. Щелкните правой кнопкой мыши подпакет <tt>org.myhome.mytoolchain.toolchain</tt> и выберите Создать > Пустой файл. Назовите файл <tt>GNU_tuned_flavor.xml</tt> и нажмите 'Готово'.
+	<p class="notes">Если в меню отсутствует пункт 'Пустой файл', выберите 'Другие'. Затем в мастере создания файлов выберите категорию 'Другие', тип файла 'Пустой файл' и нажмите 'Далее'.</p>
+	<p>Этот файл является дескриптором для нового набора средств.</p></li>
+
+<li>Скопируйте следующий текст в <tt>GNU_tuned_flavor.xml</tt>:
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;toolchaindefinition xmlns="https://netbeans.org/ns/cnd-toolchain-definition/1"&gt;
+    &lt;toolchain name="GNU_tuned_flavor" display="GNU_tuned" family="GNU" qmakespec="${os}-g++"/&gt;
+    &lt;platforms stringvalue="linux,sun_intel,sun_sparc"/&gt;
+&lt;/toolchaindefinition&gt;
+</pre>
+</li>
+<li>Создайте еще один файл. Щелкните правой кнопкой мыши подпакет <tt>org.myhome.mytoolchain.toolchain</tt> и выберите Создать > Пустой файл. Назовите файл <tt>GNU_tuned_cpp.xml</tt> и нажмите кнопку Next (&quot;Далее&quot;).
+    
+<li>Скопируйте следующий текст в <tt>GNU_tuned_cpp.xml</tt>:
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;toolchaindefinition xmlns="https://netbeans.org/ns/cnd-toolchain-definition/1"&gt;
+    &lt;cpp&gt;
+        &lt;compiler name="g++"/&gt;
+        &lt;development_mode&gt;
+            &lt;fast_build flags=""/&gt;
+            &lt;debug flags="-g3 -gdwarf-2" default="true"/&gt;
+            &lt;performance_debug flags="-g -O"/&gt;
+            &lt;test_coverage flags="-g"/&gt;
+            &lt;diagnosable_release flags="-g -O2"/&gt;
+            &lt;release flags="-O2"/&gt;
+            &lt;performance_release flags="-O3"/&gt;
+        &lt;/development_mode&gt;
+    &lt;/cpp&gt;
+&lt;/toolchaindefinition&gt;
+</pre>
+    <p>Обратите внимание на установленные флаги отладки -g3 и -gdwarf-2, которые отличаются от флагов, установленных в описании набора средств GNU по умолчанию.</p>
+    <p>Дерево проекта должно выглядеть следующим образом:</p>
+<img alt="снимок дерева проекта" class="margin-around b-all" src="../../../images_www/articles/73/cnd/toolchain/project.png" title="Дерево проектов">
+<p>Папки 'Тест модуля' могут отсутствовать.</p>
+</li>
+<li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта <tt>mytoolchain</tt> и выберите 'Выполнить'. В новом экземпляре среды IDE будет создан и установлен модуль, представляющий собой целевую платформу по умолчанию для модулей. Откроется целевая платформа для тестирования нового модуля.</li>
+<li>В выполняемом модуле выберите &quot;Сервис&quot; &gt; &quot;Параметры&quot;, затем в верхней панели окна параметров выберите &quot;C/C++&quot; и перейдите на вкладку &quot;Средства сборки&quot;.</li>
+<li>Если новый набор средств (GNU_tuned) не отображается, нажмите кнопку &quot;Восстановить параметры по умолчанию&quot;. В запросе на повторный поиск в среде нажмите кнопку &quot;Да&quot; для продолжения работы. 
+    <p>В среде IDE появится новый набор средств:</p>
+<img alt="снимок окна &apos;Параметры&apos;" class="margin-around b-all" src="../../../images_www/articles/73/cnd/toolchain/options.png" title="Панель &apos;Параметры&apos;">
+</li>
+<li>Создайте новый пример проекта C/C++ <tt>Welcome</tt> путем выбора &quot;Файл&quot; &gt; &quot;Создать проект&quot; &gt; &quot;Примеры&quot; &gt; &quot;C/C++&quot; &gt; &quot;Welcome&quot;.
+<li>Щелкните правой кнопкой узел проекта и выберите команду &quot;Свойства&quot;. В диалоговом окне &quot;Свойства проекта&quot; выберите узел &quot;Сборка&quot;, укажите набор средств GNU_tuned, затем нажмите кнопку &quot;OK&quot; . </li>
+<li>Выполните сборку проекта. Убедитесь, что для компилятора установлены флаги <tt>-g3 -gdwarf-2</tt>
+<pre class="examplecode">g++ -c -g3 -gdwarf-2 -MMD -MP -MF build/Debug/GNU_tuned-Solaris-x86/welcome.o.d -o build/Debug/GNU_tuned-Solaris-x86/welcome.o welcome.cc</pre>
+</li>
+<li>В диалоговом окне &quot;Свойства проекта&quot; выберите набор средств GNU и нажмите кнопку &quot;ОК&quot;.</li>
+<li>Выполните повторную сборку проекта и сравните строку компиляции со строкой в окне вывода:
+<pre class ="examplecode">g++ -c -g -MMD -MP -MF build/Debug/GNU-Solaris-x86/welcome.o.d -o build/Debug/GNU-Solaris-x86/welcome.o welcome.cc</pre>
+</li>
+</ol>
+<p>Как видите, набор средств GNU_tuned содержит другие флаги компилятора для отладки, режима разработки в компиляторе GNU.</p>
+<p class="notes">Для использования нового модуля для набора средств GNU_tuned в стандартной среде можно создать двоичный файл (файл .nbm) и добавить его в качестве подключаемого модуля: </p>
+<ol><li>Щелкните правой кнопкой мыши проект модуля mytoolchain и выберите &quot;Создать NBM&quot;. В подкаталоге сборки проекта будет создан файл .nbm, который также отображается на вкладке файлов.</li>
+    <li>Выберите &quot;Сервис&quot; &gt; &quot;Подключаемые модули&quot;, затем в диалоговом окне &quot;Подключаемые модули&quot; перейдите на вкладку &quot;Загрузки&quot;.
+    </li>
+    <li>Нажмите кнопку &quot;Добавить подключаемые модули&quot;, перейдите к каталогу сборки, выберите модуль файла .nbm и нажмите кнопку &quot;Открыть&quot;. Подключаемый модуль будет добавлен в список на вкладке &quot;Загрузки&quot;. </li>
+    <li>Для выбора модуля установите флажок на вкладке &quot;Загрузки&quot;, затем нажмите кнопку &quot;Установить&quot;. Откроется мастер установки подключаемых модулей NetBeans.
+    </li>
+    <li>Нажимайте кнопку &quot;Далее&quot; для перехода к последующим действиям мастера вплоть до последнего действия. </li>
+    <li>Перезапустите среду IDE, выберите &quot;Сервис&quot; &gt; &quot;Параметры&quot;, затем в верхней панели окна параметров нажмите &quot;С/С++&quot; и перейдите на вкладку &quot;Средства сборки&quot;.</li>
+<li>Если новый набор средств (GNU_tuned) не отображается, нажмите 'Восстановить параметры по умолчанию'. В запросе на повторный поиск в среде нажмите кнопку &quot;Да&quot; для продолжения работы. 
+    </li></ol>
+
+
+
+<h3><a name="details"></a>Дополнительные сведения о файле XML набора средств</h3>
+<p>В этом разделе описывается большая часть наиболее важных тегов в файле XML набора средств. 
+    </p>
+    <p class="tips">Схему всех поддерживаемых тегов и атрибутов xml-файлов набора средств можно посмотреть в файле <tt>toolchaindefinition.xsd</tt> в <a href="http://hg.netbeans.org/cnd-main">дереве исходного кода IDE NetBeans</a>.</p>
+
+<h4>Теги определения набора средств</h4>
+<table>
+    <tbody>
+        <tr>
+            <th class="tblheader" scope="col">Теги</th>
+            <th class="tblheader" scope="col">Атрибуты</th>
+            <th class="tblheader" scope="col">Описание</th>
+        </tr>
+<tr>
+            <td class="tbltd1">инструментальная цепочка</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Имя набора средств</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">&quot;name&quot; &ndash; имя</td>
+            <td class="tbltd1">Имя набора средств</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">отображение</td>
+            <td class="tbltd1">Отображаемое имя набора средств</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">семейство</td>
+            <td class="tbltd1">Имя группы набора средств</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">платформы</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Поддерживаемые платформы</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">stringvalue</td>
+            <td class="tbltd1">Перечень поддерживаемых платформ, разделенных запятой<br> Допустимые значения:
+                <ul>
+                <li>Linux</li>
+                <li>unix</li>
+                <li>sun_intel</li>
+                <li>sun_sparc</li>
+                <li>Windows</li>
+                <li>mac</li>
+                <li>нет</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="tbltd1">makefile_writer</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Пользовательский файл makefile</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">класс</td>
+            <td class="tbltd1">Имя класса для пользовательского создателя файла makefile Класс реализует<br> org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter.</td>
+
+
+        <tr>
+            <td class="tbltd1">drive_letter_prefix</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Специальный префикс для имен</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">stringvalue</td>
+            <td class="tbltd1">&quot;/&quot; для unix<br>&quot;/cygdrive/&quot; для cygwin на ОС Windows</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">base_folders</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Контейнер для тегов base_folder. <br> В теге base_folders содержится один или несколько тегов. </td>
+        </tr>
+
+        <tr>
+            <td class="tbltd1">base_folder</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Описание базового каталога для компиляторов<br> Данный тег может содержать следующие теги:</td></tr>
+
+      
+
+    
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">реестр</td>
+            <td class="tbltd1">Ключ реестра Windows для средства. Обратите внимание на то, что тег XML пишется как &quot;regestry&quot;, несмотря на орфографическую ошибку. </td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">шаблон</td>
+            <td class="tbltd1">Регулярное выражение, позволяющее IDE NetBeans найти компилятор в реестре</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">суффикс</td>
+            <td class="tbltd1">Папка с исполняемыми файлами</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">path_patern</td>
+            <td class="tbltd1">Регулярное выражение, позволяющее IDE NetBeans найти компилятор путем сканирования путей. Обратите внимание на то, что тег XML пишется как &quot;path_patern&quot;, несмотря на орфографическую ошибку.</td>
+           </tr>
+  
+       
+    <tr>
+            <td class="tbltd1">command_folders</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Контейнер для тегов command_folder. <br> В одном теге command_folders содержится один или несколько тегов commander_folder. </td>
+        </tr>
+        <tr>
+            <td class="tbltd1">command_folder</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Описывает каталог, где находятся UNIX-подобные команды.<br> Требуется только для компилятора MinGW на ОС Windows.  Тег command_folder может содержать следующие теги:</td></tr>
+      
+           
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">реестр</td>
+            <td class="tbltd1">Ключ реестра Windows для команд.  Обратите внимание на то, что тег XML пишется как &quot;regestry&quot;, несмотря на орфографическую ошибку.</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">шаблон</td>
+            <td class="tbltd1">Регулярное выражение, позволяющее IDE NetBeans найти папку команд в реестре</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">суффикс</td>
+            <td class="tbltd1">Папка с исполняемыми файлами</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">path_patern</td>
+            <td class="tbltd1">Регулярное выражение, позволяющее IDE NetBeans найти команды. Обратите внимание на то, что тег XML пишется как &quot;path_patern&quot;, несмотря на орфографическую ошибку.
+
+       </td>
+    </tr>
+    <tr>
+            <td class="tbltd1">сканер</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">Имя службы синтаксического анализатора, см. раздел <a href="#errorhandler">Создание обработчика ошибок пользовательского компилятора</a>. </td>
+        </tr>
+         <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">идентификатор</td>
+            <td class="tbltd1">Имя службы синтаксического анализатора</td>
+        </tr>
+    </tbody>
+</table>
+<h4>Флаги компилятора</h4>
+<p>В данной таблице описаны теги, используемые в описании компиляторов и в определении флагов компиляторов для интсорументальной цепочки.</p>
+<table>
+    <tbody>
+        <tr>
+            <th class="tblheader" scope="col">Теги</th>
+            <th class="tblheader" scope="col">Описание</th>
+            <th class="tblheader" scope="col">Пример для компилятора GNU</th>
+        </tr>
+        <tr>
+            <td class="tbltd1">c,cpp</td>
+            <td class="tbltd1">Набор флагов компилятора находится в следующих подузлах:</td>
+            <td class="tbltd1"></td>
+        </tr>
+  
+        <tr>
+            <td class="tbltd1">средство распознавания</td>
+            <td class="tbltd1">Регулярное выражение, позволяющее IDE найти компилятор</td>
+            <td class="tbltd1">Для GNU в среде cygwin на ОС Windows<br>.*[\\/].*cygwin.*[\\/]bin[\\/]?$</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">компилятор</td>
+            <td class="tbltd1">Имя компилятора (имя исполняемого файла)</td>
+            <td class="tbltd1">gcc или g++</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">версия</td>
+            <td class="tbltd1">флаг версии</td>
+            <td class="tbltd1">--версия</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">system_include_paths</td>
+            <td class="tbltd1">Флаги для получения путей к системным файлам include.</td>
+            <td class="tbltd1">-x c -E -v</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">system_macros</td>
+            <td class="tbltd1">Флаги для получения системных макросов.</td>
+            <td class="tbltd1">-x c -E -dM</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">user_include</td>
+            <td class="tbltd1">Флаг для добавления пути к пользовательскому файлу include.</td>
+            <td class="tbltd1">-I</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">user_file</td>
+            <td class="tbltd1">Флаг для добавления содержимого <i>файла</i> перед содержимым других файлов </td>
+            <td class="tbltd1">-include <i>файл</i></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">user_macro</td>
+            <td class="tbltd1">Флаг для добавления пользовательского макроса.</td>
+            <td class="tbltd1">-D</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">development_mode</td>
+            <td class="tbltd1">Группы флагов для различных режимов разработки.</td>
+            <td class="tbltd1"></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">warning_level</td>
+            <td class="tbltd1">Группы флагов для различных уровней предупреждения.</td>
+            <td class="tbltd1"></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">архитектура</td>
+            <td class="tbltd1">Группы флагов для различных архитектур.</td>
+            <td class="tbltd1"></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">удалить</td>
+            <td class="tbltd1">Флаг для удаления информации об отладке.</td>
+            <td class="tbltd1">-s</td>
+        </tr>
+                 <tr>
+            <td class="tbltd1">c_standard</td>
+            <td class="tbltd1">Определяет флаги для стандартных выражений C. Используется с тегами c89, c99 и c11.</td>
+            <td class="tbltd1"> c89 flags="-std=c89"<br> c99 flags="-std=c99"<br> c11 flags="-std=c11"</td>
+           </tr>
+        <tr>
+            <td class="tbltd1">cpp_standard</td>
+            <td class="tbltd1">Определяет флаги для стандартных выражений C++. Используется с тегами cpp98 и cpp11.</td>
+            <td class="tbltd1"> cpp98 flags="-std=c++98"<br> cpp11 flags="-std=c++11"<br> cpp11 flags="-std=gnu++0x"</td>
+        </tr>
+          <tr>
+            <td class="tbltd1">output_object_file</td>
+            <td class="tbltd1">Флаги для указания файла объектов</td>
+            <td class="tbltd1">-o <i>(после -o необходим пробел)</i></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">dependency_generation</td>
+            <td class="tbltd1">Флаги для создания зависимостей.</td>
+            <td class="tbltd1">-MMD -MP -MF $@.d</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">precompiled_header</td>
+            <td class="tbltd1">Флаги для предварительно скомпилированного заголовка.</td>
+            <td class="tbltd1">-o $@</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">important_flags</td>
+            <td class="tbltd1">Регулярное выражение, которое определяет флаги компилятора, изменяющие систему по умолчанию, включая пути и предопределенные макросы для помощи при работе с кодом </td>
+            <td class="tbltd1">-O1|-O2|-O3|-O4|-O5|-Ofast|-Og|-Os|-ansi|-fPIC|-fPIE|-fasynchronous-unwind-tables|-fbuilding-libgcc|-fexceptions|-ffast-math|-ffinite-math-only|-ffreestanding|-fgnu-tm|-fhandle-exceptions|-fleading-underscore|-fno-exceptions|-fno-rtti|-fnon-call-exceptions|-fnon-call-exceptions|-fopenmp|-fpic|-fpie|-fsanitize=address|-fshort-double|-fshort-wchar|-fsignaling-nans|-fstack-protector(\W|$|-)|-fstack-protector-all|-funsigned-char|-funwind-tables|-g(\W|$|-)|-ggdb|-gsplit-dwarf|-gtoggle|-m128bit-long-double|-m3dnow|-m64|-mabm|-madx|-maes|-march=.*|-mavx|-mavx2|-mbmi|-mbmi2|-mf16c|-mfma(\W|$|-)|-mfma4|-mfsgsbase|-mlong-double-64|-mlwp|-mlzcnt|-mpclmul|-mpopcnt|-mprfchw|-mrdrnd|-mrdseed|-mrtm|-msse3|-msse4(\W|$|-)|-msse4.1|-msse4.2|-msse4a|-msse5|-mssse3|-mtbm|-mtune=.*|-mx32|-mxop|-mxsave|-mxsaveopt|-pthreads|-std=.*|-xc($|\+\+$) </td>
+        </tr>
+        <tr>
+            <td class="tbltd1">многопоточность</td>
+            <td class="tbltd1">Группы флагов для поддержки многопоточности.</td>
+            <td class="tbltd1">Только для наборов средств Oracle Solaris Studio. Не используется в наборах средств на основе GNU.</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">стандартный</td>
+            <td class="tbltd1">Группы флагов для различных языковых стандартов.</td>
+            <td class="tbltd1">Только для наборов средств Oracle Solaris Studio. Не используется в наборах средств на основе GNU.</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">language_extension</td>
+            <td class="tbltd1">Группы флагов для различных языковых расширений.</td>
+            <td class="tbltd1">Только для наборов средств Oracle Solaris Studio. Не используется в наборах средств на основе GNU.</td>
+        </tr>
+    </tbody>
+</table>
+<h2><a name="provider"></a>Создание поставщика пользовательского компилятора</h2>
+<p>В IDE NetBeans имеется поставщик компиляторов по умолчанию:<br> org.netbeans.modules.cnd.toolchain.compilers.MakeProjectCompilerProvider <br> Этот поставщик работает для большей части инструментальных цепочек, но пользователи могут создавать собственных поставщиков.</p>
+<p>
+    <b>Для создания собственного поставщика компилятора выполните следующие действия:</b></p>
+<ul>
+<li>расширьте абстрактный класс org.netbeans.modules.cnd.api.compilers.CompilerProvider,
+    </li>
+    <li>определите класс как службу и поместите ее перед поставщиком по умолчанию:
+<pre>
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.toolchain.CompilerProvider.class,
+position=500)
+public class CustomCompilerProvider extends CompilerProvider {
+...
+}
+</pre>
+Атрибут position=500 отвечает за вызов пользовательского поставщика перед поставщиком по умолчанию. Пользовательский поставщик должен возвращать ссылку на объект &quot;Tool&quot;, не равную NULL, в методе createCompiler() для перезаписываемого средства.
+</li>
+</ul>
+
+<h2><a name="errorhandler"></a>Создание обработчика ошибок для пользовательского компилятора</h2>
+
+<p>В IDE NetBeans имеется два обработчика ошибок компиляторов, заданные по умолчанию.</p>
+<ul><li>для компилятора GNU,</li>
+    <li>для компилятора Sun Studio.</li>
+</ul>
+
+<p>Обработчик ошибок компилятора GNU совместим с любыми компиляторами GNU, однако можно создать собственный обработчик ошибок компилятора.</p>
+<p>
+<b>Для создания собственного обработчика ошибок выполните следующие действия:</b>
+</p>
+<ul><li>Расширьте абстрактный класс org.netbeans.modules.cnd.spi.toolchain.CompilerProvider.
+
+    </li>
+<li>Определите класс как службу:
+    <pre>@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.toolchain.CompilerProvider.class)
+      public class CustomCompilerProvider extends ErrorParserProvider {
+          ...
+          @Override
+          public String getID() {
+      	return "MyParser";  // NOI18N
+          }
+      }</pre>
+
+    </li>
+<li>Соедините сканер ошибок и описание набора средств с помощью идентификатора:
+    <pre>&lt;/scanner id="MyParser"&gt;
+...
+  &lt;/scanner&gt;</pre>
+    </li>
+</ul>
+
+<h2>См. также</h2>
+   <p>Дополнительные статьи о разработке с помощью C/C++/Fortran в IDE NetBeans см. в разделе <a href="https://netbeans.org/kb/trails/cnd.html">Учебные карты C/C++</a>.</p>
+
+
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:Using%20the%20C/C++%20Tool%20Collection%20Descriptors%20-%20NetBeans%20IDE%208.0%20Tutorial">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear: both;">
+</body></html>

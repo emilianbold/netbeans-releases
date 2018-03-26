@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Overview of JDK 8 Support in NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+       
+        <meta name="description" content="A short guide to using JDK 7 features in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>Overview of JDK 8 Support in NetBeans IDE</h1>
+		<div class="articledate" style="margin-left: 0px;">Written by Tomas Zezula and Alyona Stashkova</div>
+        <p>NetBeans IDE  supports  <a href="http://openjdk.java.net/projects/jdk8/features/" target="_blank">JDK 8  features</a>, such as lambda expressions, repeatable annotations, compact profiles, etc. When these constructs are used in your code, the IDE recognizes them, correctly highlights errors, and lets you automatically fix syntax. Thus,  NetBeans IDE  helps you write code that is compatible with <a href="http://download.oracle.com/otndocs/jcp/java_se-8-edr-spec/index.html">Java SE 8 Release Contents Early Draft Review Specification</a>. </p>
+		
+        <p>In this tutorial, you will learn  how to get started with JDK 8 in NetBeans IDE and how to use the IDE support for such Java SE 8 features as compact profiles, lambda expressions, and repeating annotations. </p>
+        <p><b>Contents</b></p>
+        <img src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.4 and 8.0 Beta" title="Content on this page applies to NetBeans IDE 7.4 and 8.0 Beta">
+        <ul class="toc">
+		    <li><a href="#platform" title="Enabling JDK 8 Support in NetBeans IDE">Enabling JDK 8 Support in NetBeans IDE</a></li>
+			<li><a href="#project" title="Configuring a Project to use JDK 8">Configuring a Project to use JDK 8</a></li>
+			<li><a href="#compact" title="Using Compact Profiles Support">Using Compact Profiles Support</a></li>
+            <li><a href="#lambda" title="Using Lambda Expressions Support">Using Lambda Expressions Support</a></li>
+            <li><a href="#annot" title="Using Repeating Annotations Support">Using Repeating Annotations Support</a></li>
+			
+            <li><a href="#see" title="See Also">See Also</a></li>
+        </ul>
+
+        <p><b>To complete this tutorial, you need the software and resources listed in the following
+        table.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">version 7.4 and 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">version 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>Enabling JDK 8 Support in  NetBeans IDE</h2>
+        <p>After JDK 8 is downloaded and installed on your system, it needs to be registered in the  IDE as follows:</p>
+		
+        <ol>
+          <li>In the IDE, choose Tools &gt; Java Platforms  from the main menu.</li>
+		  <li>Click Add Platform in the Java Platform Manager dialog. </li>
+		  <li>In the Add Java Platform dialog, select Java Standard Edition and click Next. </li>
+		  <li>Specify the directory that contains the JDK and click Next. 
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/jdk8.png" rel="lytebox"
+                       title="JDK 8 selected">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/jdk8_small.png"
+                     alt="JDK 8 selected" border=1></a> </p></li>
+		  <li>Verify that the default locations of the Platform Sources zip file and API documentation are valid. Click Finish to close the Add Java Platform dialog box.<br> 
+		  JDK 8  is registered as a platform in the IDE. 
+		    <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/jdk8registered.png" rel="lytebox"
+                       title="Registered Java Platform">
+	      <img src="../../../images_www/articles/80/java/javase-jdk8/jdk8registered_small.png"
+                     alt="Registered Java Platform" border=1></a> </p></li>
+		<li>Ensure JDK 1.8 is chosen in the Platforms list and click Close.</li>
+    </ol>
+	<h2><a name="project"></a>Configuring a Project to use JDK 8</h2>
+	<p>After you registered JDK 8 in the IDE, your project needs to be configured to use JDK 8 for compilation, running, and debugging. </p>
+	<p>We will start by creating a new Java SE project with the Anagram game example which is shipped with NetBeans IDE.</p>
+	<ol>
+	<li>In the IDE, choose File &gt; New Project.</li>
+	<li>In the New Project wizard, expand the Samples category and select Java.</li>
+	<li>Choose Anagram Game in the Projects list. Then click Next.</li>
+	<li>In the Name and Location panel, leave the default values for the Project Name and Project Location fields.</li>
+	<li>Click Finish.<br> 
+	The IDE creates and opens the Java SE project in the Projects window.</li>
+	</ol>
+	<p><b>To configure your project to use JDK 8:</b></p>
+	<ol>
+	<li>Right-click the AnagramGame project in the Projects window and select Properties from the context menu. </li>
+	<li>In the Project Properties dialog box, choose the Libraries category and set JDK 1.8 as the Java Platform. 
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_jdk8.png" rel="lytebox"
+                       title="JDK 8 set as Java Platform">
+      <img src="../../../images_www/articles/80/java/javase-jdk8/prj_jdk8_small.png"
+                     alt="JDK 8 set as Java Platform" border=1></a> </p></li>
+	 <li>Select the Sources category and set Source/Binary Format to JDK 8.
+		
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_source_jdk8.png" rel="lytebox"
+                       title="Setting Source/Binary Format to JDK 8">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/prj_source_jdk8_small.png"
+                     alt="Setting Source/Binary Format to JDK 8" border=1></a> </p> </li>
+	<li>Click OK to save the changes. <br>Your project is set to recognize new JDK 8 language features.</li>
+	</ol>
+	<h2><a name="compact"></a>Using Compact Profiles Support</h2>
+		 <p>Java SE 8 introduces <a href="http://openjdk.java.net/jeps/161">subset profiles of the Java SE platform specification</a> that  can be used to deploy and run applications  that do not require the entire platform.  </p>
+		 <p>Three profiles that have been defined so far are named <i>compact1</i>, <i>compact2</i>, and <i>compact3</i>.  Each profile specifies a particular set of Java API packages and contains all of the APIs in profiles smaller  than itself: <i>compact1</i>  is a subset of  <i>compact2</i>, which is a subset of <i>compact3</i>, which in its turn is a subset of the <i>full JRE</i>. The table below lists packages that are comprised in  each profile. </p>
+		 
+		 <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Compact1</th>
+                    <th class="tblheader" scope="col">Compact2</th>
+					<th class="tblheader" scope="col">Compact3</th>
+					<th class="tblheader" scope="col">Full JRE</th>
+                </tr>
+                <tr>
+                    <td>
+					<ul>
+					<li>java.lang</li>
+					<li>java.io</li>
+                    <li>java.nio</li>
+                    <li>java.text</li>
+                    <li>java.math</li>
+                    <li>java.net</li>
+                    <li>javax.net</li>
+<li>java.util</li>
+<li>java.util.logging</li>
+<li>java.security</li>
+<li>javax.crypto</li>
+<li>javax.security</li>
+					</ul></td>
+                    <td><i>compact1</i> plus the following:
+					<ul>
+<li>java.sql</li>
+<li>javax.sql</li>
+<li>javax.xml</li>
+<li>org.w3c.dom</li>
+<li>org.xml.sax</li>
+<li>java.rmi</li>
+<li>javax.rmi</li>
+<li>javax.transaction</li></ul></td>
+					<td><i>compact2</i> plus the following:
+					<ul>
+<li>java.lang.management</li>
+<li>javax.management</li>
+<li>javax.naming</li>
+<li>javax.sql.rowset</li>
+<li>javax.security.auth.kerberos</li>
+<li>org.ietf.jgss</li>
+<li>javax.script</li>
+<li>javax.xml.crypto</li>
+<li>java.util.prefs</li>
+<li>javax.security.sasl</li>
+<li>javax.security.acl</li>
+<li>java.lang.instrument</li>
+<li>javax.annotation.processing</li>
+<li>javax.lang.model</li>
+<li>javax.lang.model.element</li>
+<li>javax.lang.model.type</li>
+<li>javax.lang.model.util</li>
+<li>javax.tools</li>
+</ul></td>
+					<td ><i>compact3</i> plus the following:
+					<ul>
+					<li>corba</li>
+					<li> awt</li> 
+					<li>swing</li></ul></td>
+                </tr>
+				<tr>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td></tr>
+		   </tbody>
+	</table>
+	<p>The IDE allows you to switch between the profiles and the full JRE when needed. </p>
+		 <p><b>To set a project profile for a Java SE Project:</b></p>
+		 <ol>
+		 <li>Right-cick a project and choose Properties from the context menu. </li>
+		 <li>In the Project Properties dialog box, select the Sources category. </li>
+		 <li>Use the Profile drop-down list to specify the JDK 8 profile that your application will support.
+		 
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_src_profile.png" rel="lytebox"
+                       title="List of profiles">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/prj_src_profile_small.png"
+                     alt="List of profiles" border=1></a> </p> 
+		   </li>
+		<li>Click OK.</li>
+		 </ol>
+		<p>To see how the IDE checks whether classes used in your project belong to the specified profile, select  Compact1 as a profile for  the AnagramGame project and click OK.<br>
+	    The IDE displays errors to notify that the AnagramGame project is not compliant with the <i>compact1</i> profile.</p>
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/profile.png" rel="lytebox"
+                       title="Profile">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/profile_small.png"
+                     alt="Profile" border=1></a> </p> 
+		 <p>You can go back and set the AnagramGame project's profile to Full JRE which is supported by the Anagrams application. </p>
+		 
+		 
+
+	 
+         <h2><a name="lambda"></a>Using Lambda Expressions Support</h2>
+    
+	<p><a href="http://openjdk.java.net/projects/lambda/">Lambda expressions</a> address the bulkiness of anonymous inner classes by expressing the machinery of anonymous inner classes more compactly.</p>
+	<p>The general syntax of a lambda expression consists of a set of parameters, an arrow token, and a function body (either a single expression or a statement  block):</p>
+	<pre>(int a, int b) -&gt; a * a + b * b;</pre>
+	<p>NetBeans IDE detects pre-lambda expressions and displays the hints in the Editor proposing to turn such constructs into lambda expressions.</p>
+	<p>For example, the AnagramGame project features a pre-lambda construct in the <tt>Anagrams.java</tt> file as shown in the screenshot below.</p>
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda.png" rel="lytebox"
+                       title="Lambda">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/lambda_small.png"
+                     alt="Lambda clicked" border=1></a> </p> 
+					 <p>After you click the light bulb in the margin or press Alt-Enter, the IDE shows the Use Lambda hint with a set of options available: </p>
+					  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_clicked.png" rel="lytebox"
+                       title="Lambda clicked">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/lambda_clicked_small.png"
+                     alt="Lambda clicked" border=1></a> </p> 
+					 <p>If the Use Lambda hint is selected, the IDE converts the anonymous inner class into a lambda expression. </p>
+                     <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_converted.png" rel="lytebox"
+                       title="Lambda converted">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/lambda_converted_small.png"
+                     alt="Lambda converted" border=1></a> </p> 
+					 <p>If you choose the Run Inspect on option, the IDE displays the Inspect dialog box that allows to run a single Convert to Lambda inspection on the specified file.</p>
+					 <p class="notes"><b>Note:</b> For more information on initiating the Inspect operation in the IDE, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&amp;id=NBDAG613">Using Hints in Source Code Analysis and Refactoring</a> in <i>Developing Applications with NetBeans IDE</i>.</p>
+					 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/inspect.png" rel="lytebox"
+                       title="Run Inspect">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/inspect_small.png"
+                     alt="Run Inspect" border=1></a> </p> 
+					 
+					 <p>After you press the Inspect button to launch the inspection, the IDE identifies all the pre-lambda constructs in the file and displays them in the Inspector window. </p>
+					 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_inspection.png" rel="lytebox"
+                       title="Lambda Inspection">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/lambda_inspection_small.png"
+                     alt="Lambda Inspection" border=1></a> </p> 
+					 <p>If you choose the Run Inspect&amp;Transform on option, the IDE displays the Inspect and Transform dialog box that allows to run  a single Convert to Lambda inspection (or a  selected configuration) on the specified code and refactor it if needed.</p>
+					 <p class="notes"><b>Note:</b> For more information on initiating the Inspect and Transform operation, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&amp;id=NBDAG613">Using Hints in Source Code Analysis and Refactoring</a> in <i>Developing Applications with NetBeans IDE</i>.</p>
+					  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_transform.png" rel="lytebox"
+                       title="Lambda Refactoring">
+					   <img src="../../../images_www/articles/80/java/javase-jdk8/lambda_transform_small.png"
+                     alt="Lambda Refactoring" border=1></a> </p>
+		             <h2><a name="annot"></a>Using Repeating Annotations Support</h2>
+        <p>Java SE 8 features include <a href="http://openjdk.java.net/jeps/120">repeating annotations</a> that enable you to apply annotations with the same type to a single program element, as shown in the following code example:</p>
+        
+		  <pre class="examplecode">
+@ProjectServiceProvider(service=Foo.class,&quot;org-nebeans-modules-j2seproject&quot;)
+@ProjectServiceProvider(service=Foo.class,&quot;org-nebeans-modules-j2eeproject&quot;)
+public class MyService extends Foo {}
+ </pre>
+ <p>NetBeans IDE support for repeating annotations allows you to write code with the same annotations provided the repeatable and containing annotation types are declared: </p>
+ <ul>
+ <li>a repeatable annotation type must be marked with <tt>@Repeatable ()</tt>, otherwise you get an error at compilation
+ </li>
+ <li>a containing annotation type must have a <tt>value</tt> element with an array type; the component type of the array type must be the repeatable annotation type</li>
+ </ul>
+        
+        
+
+         <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Overview%20of%20JDK%208%20Support%20in%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>See Also</h2>
+        <p>For more information about  JDK 8, see: </p>
+        <ul>
+            
+			
+			<li><a href="http://jdk8.java.net/">JDK 8 Project</a></li>
+			<li><a href="http://download.java.net/jdk8/docs/">Java Platform Standard Edition 8 Early Access Documentation</a></li>
+			<li><a href="http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/Lambda-QuickStart/index.html" target="_blank">Java SE 8: Lambda Quick Start </a> </li>
+            <li><a href="http://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html" target="_blank">The Java Tutorials: Lambda Expressions</a></li>
+			<li><a href="http://docs.oracle.com/javase/tutorial/java/annotations/repeating.html">The Java Tutorials: Repeating Annotations</a></li>
+    </ul>
+
+        <p>For more information about developing Java applications in the NetBeans IDE, see: </p>
+        <ul>
+		<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&amp;id=NBDAG366">Creating Java Projects</a> in <i>Developing Applications with NetBeans IDE</i></li>
+          <li><a href="javase-intro.html">Developing General Java Applications</a></li>
+          
+          <li><a href="../../trails/java-se.html">General Java Development Learning Trail</a></li>
+        </ul>
+</body>
+</html>

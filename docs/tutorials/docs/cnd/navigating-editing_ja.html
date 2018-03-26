@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>C/C++ソース・ファイルの編集とナビゲートのチュートリアル</TITLE>
+   <meta name="DESCRIPTION" content="Short tutorial that demonstrates editing
+   and navigating C and C++ source files in NetBeans IDE">
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>C/C++ソース・ファイルの編集とナビゲート - NetBeans IDEチュートリアル</h1>
+<!-- START INTRO  -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+   <p><em>執筆: <i>Ann Rice</i>、管理: <i>Susan Morgan</i><br> 2014年3月</em> [リビジョン番号: V8.0]
+</div>
+
+<p>このチュートリアルでは、NetBeans IDEのC/C++プロジェクトのソース・ファイルを編集およびナビゲートするための機能の一部を学ぶことができます。</p>
+<!-- END INTRO -->
+<h3>内容</h3>
+<img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" />
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#requirements" title="要件">要件</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#project" title="サンプル・プロジェクトの作成">サンプル・プロジェクトの作成</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#editing" title="C/C++ソース・ファイルの編集">C/C++ソース・ファイルの編集</a></td>
+   </tr>
+ <!-- <table cellspacing="0" cellpadding="0">
+  <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#formatting" title="Setting the Formatting Style">Setting
+      the Formatting Style</a></td>
+      </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#folding" title="Folding Blocks of Code in C and C++ Files">
+      Folding Blocks of Code in C and C++ Files</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href=#markoccurrences" title="Using Semantic Highlighting">Using
+      Semantic Highlighting</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#completion" title="Using Code Completion">Using Code
+      Completion</a></td>
+   </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#templates" title="Using Code Templates">Using Code Templates</a></td>
+   </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#pairs" title="Using Pair Completion">Using Pair
+      Completion</a></td>
+   </tr> 
+   </table>
+   -->
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#navigating" title="C/C++ソース・ファイルのナビゲート">C/C++ソース・ファイルのナビゲート</a></td>
+   </tr>
+   <!-- <table cellspacing="0" cellpadding"0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#classes" title="Using the Classes Window">Using the
+      Classes Window</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#navigator" title="Using the Navigator Window">Using the Navigator 
+      Window</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#findusages" title="Finding Class, Method, and Field
+      Usages">Finding Class, Method, and Field Usages</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#callgraph" title="Using the Call Graph">Using the Call
+      Graph</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#classes" title="Using Hyperlinks">Using Hyperlinks</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#include" title="Using the Include Hierarchy">Using the
+      Include Hierarchy</a></td>
+   </tr> 
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#type" title="Using the Type Hierarchy">Using the
+      Type Hierarchy</a></td>
+   </tr>
+    </table>
+    -->
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#nextsteps" title="次の手順">次の手順</a></td>
+   </tr>
+  
+   
+</table>
+
+<h2><a NAME="requirements"></a>要件</h2>
+<p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+<th class="tblheader" scope="col">必須バージョン</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html"> バージョン7.4または8.0とNetBeans C/C++プラグイン</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java Developer Kit (JDK)</td>
+<td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">バージョン7または8</a></td>
+</tr>
+
+</tbody>
+</table>
+<br>
+<p>必要なソフトウェアのダウンロードとインストールについては、<a href="../../../community/releases/80/install.html">NetBeans IDE 8.0のインストール手順</a>および<a HREF="../../../community/releases/80/cpp-setup-instructions.html">C/C++/Fortran向けのNetBeans IDEの構成</a>を参照してください。<br></p>
+
+<p><b>サンプル・プロジェクト</b> 
+</p>
+<p>プロジェクトをいくつか試しに操作できます。IDEで「ファイル」>「新規プロジェクト」を選択し、「サンプル」カテゴリ、「C/C++」サブカテゴリの順に開きます。IDEには、知識を深めるのに役立つC/C++サンプル・プロジェクトがいくつか用意されています。 
+</p>
+<h2><a name="project"></a>サンプル・プロジェクトの作成</h2>
+      <p>C/C++プラグインを使用したNetBeans IDEには、ソース・コードを変更するための高度な編集機能が提供されています。<tt>Quote</tt>プロジェクトを使用して、これらの機能を確認します。まだこのプロジェクトを作成していない場合は、次の操作を実行します。</p>
+         <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択します。</li>            
+            <li>プロジェクトのウィザードで「サンプル」カテゴリを展開し、「C/C++」サブカテゴリを選択します。</li>            
+            <li><tt>Quote</tt>プロジェクトを選択します。「次」をクリックして、「終了」をクリックします。
+            </li>
+         </ol>
+      <h2><a name="editing"></a>C/C++ソース・ファイルの編集</h2>
+
+     
+      <h3><a name="formatting"></a>フォーマット・スタイルの設定</h3>
+      「オプション」ウィンドウを使用して、C/C++プロジェクトに対するデフォルトのフォーマット・スタイルを構成できます。
+<ol>
+<li>「ツール」>「オプション」を選択します。</li>
+<li>ウィンドウの上ペインの「エディタ」をクリックします。</li>
+<li>「フォーマット」タブをクリックします。</li>
+
+<li>QuoteプロジェクトはC++を使用するため、「言語」ドロップダウン・リストから「C++」を選択します。
+</li>
+<li>設定するスタイルを「スタイル」ドロップダウン・リストから選択します。<br> <img alt="「フォーマット・スタイル」タブのスクリーンショット" src="../../../images_www/articles/74/cnd/navigating-editing/formatting_style.png">
+</li>
+<li>必要に応じて、スタイルのプロパティを変更します。</li>
+</ol>
+      <h3><a name="folding"></a>C/C++ファイルのコード・ブロックの折りたたみ</h3>
+      <p>
+         ファイルのタイプによっては、コード折りたたみ機能を使用してコード・ブロックを縮小し、ブロックの最初の行のみがソース・エディタに表示されるようにできます。
+      </p>
+      <ol>
+         <li><tt>Quote_1</tt>アプリケーション・プロジェクトで、「Source Files」フォルダを開き、<tt>cpu.cc</tt>ファイルをダブルクリックして、ソース・エディタで開きます。
+         </li>
+         <li>左マージンにある縮小アイコン(マイナス記号の付いた小さなボックス)をクリックし、いずれかのメソッドのコードを折りたたみます。</li>
+         <li>折りたたまれたブロックの右側にある<tt>{...}</tt>記号にマウスを置いて、そのブロック内のコードを表示します。 <br> <img alt="ソース・エディタで折りたたまれているコードのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/code_folding.png">
+         </li>
+      </ol>
+      <h3><a name="markoccurrences"></a>意味解釈の強調表示の使用</h3>
+      <p>このオプションを設定すると、クラス、関数、変数またはマクロをクリックしたときに、現在のファイル内でそのクラス、関数、変数またはマクロが出現する箇所がすべて強調表示されます。
+      </p>
+      <ol>
+            <li>「ツール」>「オプション」を選択します。</li>
+            <li>ウィンドウの上ペインの「エディタ」をクリックします。</li>
+            <li>「強調表示」タブをクリックします。</li>
+            <li>すべてのチェックボックスにチェック・マークが付いていることを確認します。</li>
+            <li>「OK」をクリックします。</li>
+            <li><tt>Quote_1</tt>プロジェクトの<tt>customer.cc</tt>ファイルで、メソッド名が太字で強調表示されていることを確認します。</li>
+            <li><tt>Customer</tt>クラスの出現箇所をクリックします。
+            </li>
+            <li>ファイル内にある<tt>Customer</tt>クラスのすべての出現箇所が、黄色の背景で強調表示されます。右マージンにも、ファイル内の出現箇所を示すマークが表示されます。このマークにより、ファイルをスクロールしなくても、出現箇所がどのくらいあるかを確認できます。マークをクリックすると、それが示す出現箇所へジャンプできます。<br> <img alt="ソース・エディタでコードが強調表示されたスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/highlighting1.png">
+            </li>
+            <li>出現箇所の間を簡単に移動するには、[Alt]+[Down]を押すと次の出現箇所に移動し、[Alt]+[Up]を押すと前の出現箇所に移動します。</li>
+            <li>ヘッダー・フォルダにある<tt>customer.h</tt>ファイルを開くと、ここでもクラス名が太字で強調表示されているのが確認できます。<br> <img alt="ソース・エディタでメソッドが強調表示されたファイルのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/highlighting2.png">
+            </li>
+    </ol>
+      
+    <h3><a name="completion"></a>コード補完およびドキュメントの使用</h3>
+      <p>
+      IDEの動的C/C++コード補完機能によって、ユーザーが文字を1文字以上入力すると、その式を自動的に補完するためのクラス、メソッド、変数といった選択肢のリストが表示されます。</p>
+      <p>また、IDEはクラス、関数、メソッドなどのドキュメントを動的に検索して、ポップアップ・ウィンドウにドキュメントを表示します。</p>
+      <ol>
+         <li><tt>Quote_1</tt>プロジェクトの<tt>quote.cc</tt>ファイルを開きます。</li>
+       
+         <li><tt>quote.cc</tt>の最初の空白行で、大文字のCを入力して[Ctrl]-[Space]を押します。コード補完ボックスに、<tt>Cpu</tt>および<tt>Customer</tt>クラスを含む候補一覧が表示されます。ドキュメント・ウィンドウも開きますが、そのコードのドキュメントがプロジェクト・ソースに含まれていないため、ドキュメントが見つからないというメッセージが表示されます。</li>
+         <li>再度[Ctrl]-[Space]を押して、項目の一覧を展開します。 <br> <img alt="コード補完ボックスのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_completion1.png">
+         
+         </li>
+         <li>矢印キーまたはマウスを使用してリストから<tt>calloc</tt>などの標準ライブラリ関数を強調表示すると、IDEがマニュアル・ページにアクセスできる場合は、ドキュメント・ウィンドウにその関数のマニュアル・ページが表示されます。<br> <img alt="コード補完ドキュメントのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code-completion-documentation.png">
+         </li>
+         <li><tt>Customer</tt>クラスを選択し、[Enter]キーを押します。
+         </li>
+         <li>「<tt>andrew;</tt>」を入力して、<tt>Customer</tt>クラスの新しいインスタンスを完了させます。次の行で、文字「<tt>a</tt>」を入力し、[Ctrl]-[Space]を2回押します。コード補完ボックスに、文字「<tt>a</tt>」から始まる、現在のコンテキストからアクセス可能なメソッド引数、クラス・フィールド、グローバル名などの選択肢が一覧表示されます。<br> <img alt="コード補完ボックスのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_completion2.png">
+         </li>
+         <li><tt>andrew</tt>オプションをダブルクリックして受け入れ、その後にピリオド1つを入力します。[Ctrl]-[Space]を押すと、<tt>Customer</tt>クラスのpublicメソッドおよびフィールドの一覧が自動的に表示されます。<br> <img alt="コード補完ボックスのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_completion3.png">
+         </li>
+         <li>追加したコードを削除します。</li>
+      </ol>
+
+      <h3><a name="documentation"></a>ソース・コード・ドキュメントの追加</h3>
+      <p>コードにコメントを追加して、関数、クラスおよびメソッドのドキュメントを自動的に生成できます。IDEは、Doxygen構文を使用したコメントを認識して、ドキュメントを自動的に生成します。また、IDEは、関数を説明するためのコメント・ブロックをコメントの下に自動的に生成することもできます。</p>
+    
+      <ol>
+          <li><tt>quote.cc</tt>ファイルの75行目(次に示す行の上の行)にカーソルを置きます。<br><tt>int readNumberOf(const char* item, int min, int max){</tt>
+          </li>
+           <li>スラッシュおよび2つのアスタリスクを入力して、[Enter]を押します。エディタによって、<tt>readNumberOf</tt>クラスにDoxygen形式のコメントが挿入されます。<br> <img alt="自動的に生成されたDoxygenコメントのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_comment.png">
+           </li>
+            <li>それぞれの@paramの行に説明文を追加して、ファイルを保存します。 <br> <img alt="編集されるDoxygenコメントのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_comment_edited.png">
+            </li>
+            <li>黄色で強調表示されている<tt>readNumberOf</tt>クラスをクリックし、次に右にある出現箇所のマークの1つをクリックして、このクラスが使用されている場所へジャンプします。
+            </li>
+            <li>ジャンプした行で<tt>readNumberOf</tt>クラスをクリックして[Ctrl]-[Shift]-[Space]を押すと、追加したパラメータのドキュメントが表示されます。<br> <img alt="Doxygenドキュメントが表示されたスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_displayed.png">
+            </li>
+             <li>ファイル内のどこかをクリックしてドキュメント・ウィンドウを閉じ、再度<tt>readNumberOf</tt>クラスをクリックします。</li>
+             <li>「ソース」>「ドキュメントを表示」を選択して、クラスのドキュメント・ウィンドウを再度開きます。</li>
+
+      </ol>
+      <h3><a name="templates"></a>コード・テンプレートの使用方法</h3>
+      <p>ソース・エディタには、一般的なC/C++コード断片に対するカスタマイズ可能なコード・テンプレートの一式があります。省略名を入力し、[Tab]キーを押すことによって、そのコード・スニペットの全体を生成できます。たとえば、<tt>Quote</tt>プロジェクトの<tt>quote.cc</tt>ファイル内では次のようになります。
+      </p>
+      <ol>
+         <li>「<tt>uns</tt>」の後にタブを入力すると、「<tt>uns</tt>」が「<tt>unsigned</tt>」に展開されます。</li>
+         <li>「<tt>iff</tt>」の後にタブを入力すると、「<tt>iff</tt>」が「<tt>if (exp){}</tt>」に展開されます。</li>
+         <li>「<tt>ife</tt>」の後にタブを入力すると、「<tt>ife</tt>」が「<tt>if (exp){} else {}</tt>」に展開されます。
+         </li>
+         <li>「<tt>fori</tt>」の後にタブを入力すると、「<tt>fori</tt>」が「<tt>for (int i = 0; i &lt; size; i++) { Object elem = array[i];</tt>」に展開されます。</li>
+
+      </ol>
+      <p class="tips">使用できるすべてのコード・テンプレートの表示、コード・テンプレートの変更、独自のコード・テンプレートの作成、または別のキーを選択したコード・テンプレートの展開を実行するには:</p>
+      <ol>
+            <li>
+                      「ツール」>「オプション」を選択します。
+            </li>
+            <li>「オプション」ダイアログ・ボックスで、「エディタ」を選択して「コード・テンプレート」タブをクリックします。
+            </li>
+            <li>「言語」ドロップダウン・リストから適切な言語を選択します。<br> <img alt="「オプション」ダイアログ・ボックスのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_templates.png"></li>
+</ol>
+      
+      <h3><a name="pairs"></a>ペア補完機能の使用方法</h3>
+      <p>C/C++ソース・ファイルを編集するときは、ソース・エディタは大括弧、丸括弧、引用符などのペア文字を自動的に一致させます。これらの文字の1つを入力すると、ソース・エディタが自動的に対応する閉じる側の文字を挿入します。
+      </p>
+      <ol>
+         <li><tt>Quote_1</tt>プロジェクトで、<tt>module.cc</tt>ファイルの空白行115の上にカーソルを置き、[Return]キーを押して新しい行を開きます。
+         </li>
+         <li>「<tt>enum state {</tt>」を入力し、[Return]キーを押します。閉じ中括弧とセミコロンが自動的に追加され、カーソルが括弧の間の行に置かれます。
+         </li>
+         <li><tt>invalid=0, success=1</tt>を括弧の間の行に入力し、列挙を完了します。
+         </li>
+         <li>この列挙の閉じる<tt>};</tt>の後の行で<tt>if (</tt>を入力します。閉じ括弧が自動的に追加され、カーソルが括弧の間に置かれます。</li>
+         <li><tt>v==null</tt>を括弧の間に入力します。さらに「<tt>{</tt>」を入力し、右括弧の後で改行します。閉じ角括弧が自動的に追加されます。 </li>
+         <li>追加したコードを削除します。</li>
+      </ol>
+    <h3><a name="finding"></a>プロジェクト・ファイルでのテキストの検索</h3>
+    <p>「プロジェクト内を検索」ダイアログ・ボックスを使用すると、プロジェクトの特定のテキストまたは正規表現のインスタンスを検索できます。</p>
+    <ol>
+        <li>「プロジェクト内を検索」ダイアログ・ボックスを開くには、次のいずれかを実行します。
+            <ul>
+            <li>「編集」>「プロジェクト内を検索」を選択します。</li>
+            <li>「プロジェクト」ウィンドウでプロジェクトを右クリックし、「検索」を選択します。</li>
+            <li>[Ctrl]+[Shift]+[F]を押します。</li>
+            </ul>
+        </li>
+        <li>「プロジェクト内を検索」ダイアログ・ボックスで、「デフォルト検索」タブまたは「Grep」タブを選択します。「Grep」タブでは、特にリモート・プロジェクトに対して高速検索を提供する<tt>grep</tt>ユーティリティが使用されます。<br> <img alt="「プロジェクト内を検索」ダイアログ・ボックスのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/find_in_projects.png"></li>
+        <li>「Grep」タブで、検索するテキストまたは正規表現を入力し、検索範囲およびファイル名パターンを指定して、複数の検索を別々のタブで保存できるように「新しいタブで開く」チェックボックスを選択します。
+        </li>
+        <li>「検索」をクリックします。<br> 「検索結果」タブには、該当のテキストまたは正規表現が検出されたファイルが一覧表示されます。
+        
+        <p>左マージンのボタンを使用すると、検索結果の表示を変更できます。 </p>
+        <img alt="「検索結果」タブのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/find_in_projects2.png"></li>
+        <li>ファイル名のみが表示されるようにファイルのリストを縮小する場合は、展開/縮小ボタンをクリックします。検索結果をディレクトリ・ツリーまたはファイルのリストとして表示するには、他のボタンをクリックします。これらのオプションは、複数のプロジェクトにわたる検索を実行するときに役立ちます。</li>
+        <li>リスト内のアイテムの1つをダブルクリックすると、IDEではソース・エディタ内の該当する場所まで移動できます。</li>
+    </ol>
+      
+      <h2><a name="navigating"></a>C/C++ソース・ファイルのナビゲート</h2>
+      <p>C/C++プラグインを使用したNetBeans IDEには、ソース・コードを表示するための高度なナビゲーション機能が提供されています。<tt>Quote_1</tt>プロジェクトを引続き使用して、これらの機能を確認します。
+           
+      <h3><a name="classes"></a>「クラス」ウィンドウの使用</h3>
+      <p>
+         「クラス」ウィンドウでは、プロジェクトのすべてのクラスと、各クラスのメンバーおよびフィールドを表示できます。</p>
+      <ol>
+          <li>「クラス」タブをクリックし、「クラス」ウィンドウを表示します。「クラス」タブが表示されていない場合は、「ウィンドウ」>「クラス」を選択します。</li>
+         <li>「クラス」ウィンドウで「<tt>Quote_1</tt>」ノードを展開します。プロジェクト内のすべてのクラスが一覧表示されます。
+         </li>
+         <li><tt>Customer</tt>クラスを展開します。<br> <img alt="「クラス」ビュー・タブのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/classes_window.png">
+         </li>
+         <li><tt>name</tt>変数をダブルクリックし、<tt>customer.h</tt>ヘッダー・ファイルを開きます。</li>
+      </ol>
+      <h3><a name="navigator"></a>「ナビゲータ」ウィンドウの使用</h3>
+      <p>「ナビゲータ」ウィンドウには、現在選択されているファイルが縮小表示され、ファイル内の様々な部分を簡単に移動できます。「ナビゲータ」ウィンドウが表示されていない場合は、「ウィンドウ」>「ナビゲート」>「ナビゲータ」を選択して開きます。
+      </p>
+      <ol>
+      <li>「エディタ」ウィンドウで<tt>quote.cc</tt>ファイルの任意の場所をクリックします。</li>
+      <li>ファイルが縮小表示され、「ナビゲータ」ウィンドウに表示されます。<br> <img alt="「ナビゲータ」ウィンドウのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/navigator_window.png">
+      </li> 
+      <li>ファイルの要素へ移動するには、「ナビゲータ」ウィンドウで要素をダブルクリックすると、「エディタ」ウィンドウでカーソルがその要素へ移動します。
+        </li>
+         <li>「ナビゲータ」で右クリックすると、要素のソート、項目のグループ化やフィルタの方法を別の方法に変更できます。</li> 
+      </ol>
+         <p class="tips">「ナビゲータ」の各アイコンが何を示しているかを確認するには、「ヘルプ」>「ヘルプの目次」を選択してIDEオンライン・ヘルプを開き、ヘルプ・ウィンドウで「navigator icons」を検索してください。 </p>
+          
+     
+      <h3><a name="findusages"></a>クラス、メソッド、およびフィールドの使用状況の検索</h3>
+      <p>「使用状況」ウィンドウを使用して、プロジェクトのソース・コード内でクラス(構造)、関数、変数、マクロまたはファイルが使用されている箇所を確認できます。</p>
+      <ol>
+      <li><tt>customer.cc</tt>ファイルの行42にある<tt>Customer</tt>クラスを右クリックし、「使用状況を検索」を選択します。
+      </li>
+      <li>「使用状況を検索」ダイアログ・ボックスで、「検索」をクリックします。
+      </li>
+      <li>「使用状況」ウィンドウが開き、プロジェクトのソース・ファイル内での<tt>Customer</tt>クラスの使用状況がすべて表示されます。<br> <img alt="「使用状況」ウィンドウのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/usages_window.png">
+        </li>
+         <li>左マージンの矢印ボタンをクリックして表示項目を移動し、エディタで表示するか、論理ビューおよび物理ビュー間を変更します。左マージンの2列目のボタンを使用して、情報をフィルタリングすることもできます。</li>
+</ol>
+      <h3><a name="callgraph"></a>コール・グラフの使用</h3>
+      <p>「コール・グラフ」ウィンドウには、プロジェクト内の関数間のコール関係を示す2つのビューが表示されます。ツリー・ビューには、選択した関数のコール先の関数、または選択した関数のコール元の関数が表示されます。グラフィカル・ビューには、コール先とコール元の関数の関係が矢印で表示されます。
+      </p>
+      <ol>
+      <li><tt>quote.cc</tt>ファイルで<tt>main</tt>関数を右クリックし、「コール・グラフを表示」を選択します。</li>
+      <li>「コール・グラフ」ウィンドウが開き、<tt>main</tt>関数からコールされるすべての関数のツリーおよびグラフィカル・ビューが表示されます。<br> <img alt="「コール・グラフ」ウィンドウのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/call_graph1.png">
+      <p class="tips">ここに示すようにすべての関数が表示されない場合は、「コール・グラフ」ウィンドウの左側の3つ目のボタンをクリックして、「この関数のコール先」を表示します。</p>
+        </li>
+         <li><tt>endl</tt>ノードを展開し、その関数によってコールされる関数を表示します。グラフも更新され、<tt>endl</tt>によってコールされる関数が表示されます。</li>
+      <li>ウィンドウの左側の2つ目のボタン、「フォーカス」をクリックして<tt>endl</tt>関数にフォーカスを置いてから、4つ目のボタンの「関数の呼出し元」をクリックして<tt>endl</tt>関数をコールするすべての関数を表示します。<br> <img alt="「コール・グラフ」ウィンドウのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/call_graph2.png">
+      </li>
+      <li>ツリー内のノードの一部を展開すると、より多くの関数が表示されます。<br> <img alt="「コール・グラフ」ウィンドウのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/call_graph3.png">
+      </li>
+     </ol>
+         
+      <h3><a name="hyperlinks"></a>ハイパーリンクの使用方法</h3>
+      <p>ハイパーリンク・ナビゲーション機能を使用して、クラス、メソッド、変数または定数の呼出しからその宣言にジャンプしたり、その宣言から定義にジャンプしたりできます。また、ハイパーリンクを使用すると、オーバーライドされるメソッドからオーバーライドするメソッドへジャンプしたり、その逆を実行することもできます。
+      </p>
+      <ol>
+         <li><tt>Quote_1</tt>プロジェクトの<tt>cpu.cc</tt>ファイルで、Ctrlキーを押しながら行37にマウス・ポインタを置きます。<tt>ComputeSupportMetric</tt>関数が強調表示され、関数についての情報が注釈に表示されます。<br> <img alt="関数の呼出しと注釈のスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks1.png">
+         </li>
+         <li> 
+            ハイパーリンクをクリックすると、エディタがその関数の定義にジャンプします。<br> <img alt="関数の定義のスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks2.png">
+         </li>
+         <li>Ctrlキーを押しながら定義にマウスを置き、ハイパーリンクをクリックします。エディタが、<tt>cpu.h</tt>ヘッダー・ファイル内のその関数の宣言にジャンプします。<br> <img alt="関数の宣言のスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks3.png">
+         </li>
+         <li>エディタ・ツールバーの左向き矢印(左から2番目のボタン)をクリックすると、エディタは<tt>cpu.cc</tt>内の定義へジャンプして戻ります。
+         </li>
+         <li>左マージンにある緑色の円の上にマウスを置くと、このメソッドが別のメソッドをオーバーライドすることを示す注釈が表示されます。<br> <img alt="オーバーライドの注釈のスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/overide_annotation.png">
+         </li>
+         <li>オーバーライドされているメソッドに移動するには、緑色の円をクリックします。<tt>module.h</tt>ヘッダー・ファイルにジャンプし、メソッドがオーバーライドされていることを示す灰色の円がマージンに表示されます。</li>
+         <li>灰色の円をクリックすると、エディタはこのメソッドをオーバーライドするメソッドの一覧を表示します。<br> <img alt="オーバーライドするメソッドのスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/overridden_by_list.png">
+         </li>
+         <li><tt>Cpu::ComputeSupportMetric</tt>の項目をクリックすると、<tt>cpu.h</tt>ヘッダー・ファイル内のメソッドの宣言へジャンプして戻ります。</li>
+      </ol>
+      <h3><a name="include"></a>インクルードの階層の使用</h3>
+      <p>「インクルードの階層」ウィンドウでは、ソース・ファイルに直接または間接的にインクルードされているすべてのヘッダーおよびソース・ファイル、またはヘッダー・ファイルを直接または間接的にインクルードするすべてのソースおよびヘッダー・ファイルを検査できます。
+      </p>
+      <ol>
+         <li><tt>Quote_1</tt>プロジェクトの<tt>module.cc</tt>ファイルをソース・エディタで開きます。</li>
+         <li>ファイルの<tt>#include "module.h"</tt>行を右クリックし、「ナビゲート」>「インクルードの階層を表示」を選択します。
+         </li>
+         <li>デフォルトでは、階層ウィンドウにはヘッダー・ファイルを直接含むプレーン・ファイルの一覧が表示されます。ウィンドウの右下隅ボタンをクリックすると、表示がツリー・ビューに変わります。右から2番目のボタンをクリックすると、表示がインクルードするかインクルードされているすべてのファイルに変わります。ツリー・ビューのノードを展開して、ヘッダー・ファイルを含むソース・ファイルをすべて表示します。<br> <img alt="インクルードの階層のスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/includes_hierarchy.png">
+         </li>
+      </ol>
+      <h3><a name="type"></a>タイプの階層の使用</h3>
+      <p>「タイプの階層」ウィンドウでは、クラスのすべてのサブタイプまたはスーパー・タイプを検査できます。 
+      </p>
+      <ol>
+      <li><tt>Quote_1</tt>プロジェクトの<tt>module.h</tt>ファイルを開きます。</li>
+      <li><tt>Module</tt>クラスの宣言を右クリックし、「ナビゲート」>「タイプの階層を表示」をクリックします。
+      </li>
+      <li>「階層」ウィンドウには、Moduleクラスのすべてのサブタイプが表示されます。<br> <img alt="タイプの階層のスクリーンショット" class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/type_hierarchy.png">
+      </li>
+      </ol>
+       <h3><a name="nextsteps">次の手順</a></h3>
+      <p>NetBeans IDEのC/C++プロジェクトのデバッグ機能の使用についてのチュートリアルは、<a href="debugging.html">C/C++プロジェクトのデバッグ</a>を参照してください。
+      </p>
+  
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Editing%20and%20Navigating%20C/C++%20Source%20Files%20-%20NetBeans%20IDE%207.3%20Tutorial">このチュートリアルに関するご意見をお寄せください</a></div>
+
+</body>
+</html>

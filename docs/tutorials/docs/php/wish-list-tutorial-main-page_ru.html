@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Создание приложения, управляемого базой данных, с помощью редактора PHP IDE NetBeans</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, PHP, MYSQL, CRUD">
+        <meta name="DESCRIPTION" content="This 9-part tutorial describes how to create a CRUD (Create, Read, Update, Delete) PHP application accessing a MySQL database, using the NetBeans IDE PHP editor." >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+    <body>
+        <h1>Создание приложения, управляемого базой данных, с помощью редактора PHP IDE NetBeans</h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+                <h4>Содержание учебного курса.</h4>
+                <ol start="0">
+                    <li>
+                        <p><b>=&gt; Создание приложения на основе базы данных с помощью языка PHP &ndash; главная страница</b></p>
+                    </li>
+                    <li><p>Создание базы данных</p> <ol type="a"><li><a href="wish-list-lesson1.html">Создание базы данных MySQL</a></li>
+                            <li><a href="wish-list-oracle-lesson1.html">Создание таблиц базы данных Oracle</a></li>
+                        </ol></li>
+                    <li>
+                        <p><a href="wish-list-lesson2.html">Проектирование приложения. Чтение из базы данных</a></p>
+                    </li>
+                    <li><a href="wish-list-lesson3.html">Создание нового пользователя приложения</a></li>
+                    <li><a href="wish-list-lesson4.html">Усовершенствование кода</a></li>
+                    <li><a href="wish-list-lesson5.html">Добавление функций безопасности. Реализация входа пользователя в приложение</a></li>
+                    <li><a href="wish-list-lesson6.html">Добавление к базе данных новых желаний</a></li>
+                    <li><a href="wish-list-lesson7.html">Обновление и удаление записей в базе данных</a></li>
+                    <li><a href="wish-list-lesson8.html">Усовершенствование внешнего вида приложения с использованием технологии CSS</a></li>
+                    <li><a href="wish-list-lesson9.html">Развертывание приложения на удаленном веб-сервере</a></li>
+                </ol>
+            </div>
+        </div>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+        <p>В этом кратком учебном курсе поддержка PHP используется в IDE NetBeans для создания и запуска простого веб-приложения. Приводится пример создания списка пожеланий (&quot;Wish list&quot;).  После создания и развертывания приложения пользователи получают возможность размещения и совместного использования информация в списках пожеланий, например создания списков подарков к свадьбе, дню рождения или другим праздникам.  Информация хранится в базе данных, созданной в уроке 1. </p>
+        <p> Любой зарегистрированный пользователь может просмотреть списки пожеланий других пользователей &ndash; разработка этих функциональных возможностей описывается в уроке 2. </p>
+        <p> Приложение поддерживает регистрацию новых пользователей &ndash; разработка этих функциональных возможностей описывается в уроке 3.  </p>
+        <p>В уроке 4 приводятся советы по упрощению процесса создания кода.  </p>
+        <p>В уроке 5 представлены возможные решения проблем безопасности. </p>
+        <p>В уроках 6 и 7 представлена разработка функциональных возможностей редактирования собственных списков пожеланий для всех зарегистрированных пользователей. </p>   
+        <p>В уроке 8 описываются способы добавления стилей для усовершенствования внешнего вида приложения с помощью таблиц CSS.  После этого выполняется развертывание приложения на удаленном веб-сервере с помощью советов, содержащихся в уроке 9. </p>
+        <p>Предоставляется код для пользователей базы данных MySQL и базы данных Oracle. В этом учебном курсе используются API<tt>mysqli</tt> и OCI8.  Пользователи, заинтересованные в PDO, могут<a href="https://netbeans.org/projects/www/downloads/download/php/wishlist-pdo.zip" target="_blank">загрузить</a> PDO-версию всего учебного курса.  Обратите внимание: API PDO_OCI является экспериментальным!</p>
+        <br style="clear:left">
+
+        <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">Пакет загрузки PHP</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Механизм PHP</td>
+                    <td class="tbltd1">Версия 5
+                </tr>
+                <tr>
+                    <td class="tbltd1">Веб-сервер</td>
+                    <td>Рекомендуется использовать <a href="http://httpd.apache.org/download.cgi" target="_blank">сервер HTTP Apache версии 2.2</a>.<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Сервер базы данных</td>
+                    <td>MySQL, OracleXE или Oracle11g</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>Для получения подробной информации об установке и настройке требуемого программного обеспечения см. документ, в котором описывается <a href="../../trails/php.html#configuration">подготовка среды для разработки PHP</a> в операционной системе. </p>
+        <h2>Что дальше?</h2>
+        <p><a href="wish-list-lesson1.html">Создание базы данных MySQL</a></p>
+        <p>или</p>
+        <p><a href="wish-list-oracle-lesson1.html">Создание таблиц базы данных Oracle</a></p>
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%20Main">Отправить отзыв по этому учебному курсу</a></div>
+        <br style="clear:both;" >
+        <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+
+
+        <p><a href="../../trails/php.html">Возврат к учебной карте PHP</a></p>
+    </body>
+</html>

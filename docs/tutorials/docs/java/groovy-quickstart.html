@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Introduction to Groovy</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="A very simple and quick introduction to 
+      the Grails application development workflow by walking you through the creation of a
+         simple Hello World Java console application." >
+</head>
+   
+<body>
+
+<h1>Introduction to Groovy</h1>
+<p>
+    This document gets you started
+    with <a href="http://groovy.codehaus.org/">Groovy</a> in NetBeans IDE. You will
+    create a Java application, add a JFrame, and retrieve a simple message from
+    a Groovy file.
+</p>
+
+<p><b>Contents</b></p>
+    <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+    <ul>
+        <li><a href="#activate">Activate the Groovy Plugin</a></li>
+        <li><a href="#application">Creating the Application</a></li>
+        <li><a href="#java">Creating the Java Class and the Groovy File</a></li>
+        <li><a href="#groovy">Calling Groovy from Java</a></li>
+    </ul>
+
+
+
+<p><b>To follow this tutorial, you need the following software and resources.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+             <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java bundle</td>
+          </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+              <td class="tbltd1">version 7 or 8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Groovy plugin</td>
+                <td class="tbltd1">-</td>
+            </tr>
+        </tbody>
+    </table>
+      
+<a name="activate"></a>
+<h2>Activate the Groovy Plugin</h2>
+<p>Support for Groovy is disabled by default when you install the Java version of the IDE.
+    To work with Groovy in the IDE you first need to activate the Groovy plugin in the Plugins manager.</p>
+
+<ol>
+    <li>Choose <strong>Tools</strong> &gt; <strong>Plugins</strong> from the main menu to open the Plugins manager.</li>
+    <li>Click the <strong>Installed</strong> tab in the Plugins manager.</li>
+    <li>Select Show Details and locate the <strong>Groovy and Grails</strong> plugin in the list of plugins.
+        <p class="tips">Alternatively, you can type <code>groovy</code> in the Search field to filter the list of plugins.</p></li>
+    <li>Select the checkbox for the Groovy and Grails plugin and click Activate.<br>
+    <img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-plugin.png" alt="screenshot of Plugins manager" title="Groovy plugin selected in the Plugins manager" class="margin-around b-all"></li>
+    <li>Click Activate in the NetBeans IDE Installer window to activate the Groovy plugin.</li>
+    <li>Click Finish in the NetBeans IDE Installer window after the installation is complete
+    and then click Close in the Plugins manager.</li>
+</ol>
+
+<a name="application"></a>
+<h2>Creating the Application</h2>
+
+<p>In this section you will create a new Java application.</p>
+
+<ol>
+    <li>Choose File &gt; New Project (Ctrl-Shift-N;&#8984;-Shift-N on Mac) from the main menu
+    to open the New Project wizard.</li>
+    <li>Select Java Application in the Java category. Click Next.</li>
+
+    <li>Type <strong>GroovyJavaDemo</strong> as the Project Name and specify the folder where 
+    you want to create the application in the Project Location field.</li>
+    <li>Deselect the Create Main Class checkbox. Click Finish.</li>
+</ol>
+<p>When you click Finish the IDE creates the project and displays a project node in the Projects window.</p>
+
+<a name="java"></a>
+<h2>Creating the Java Class and the Groovy File</h2>
+
+<p>In this section you will create a JFrame and a Groovy class.</p>
+
+<ol>
+  <li>Right-click the project node in the Projects window and choose New &gt; Other
+      to open the New File dialog box. </li>
+  <li>Select JFrame Form in the Swing GUI Forms category. Click Next.<br>
+  <img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-newjframe.png" alt="screenshot of JFrame Form template in New File wizard" title="JFrame Form template in New File wizard" class="margin-around b-all"></li>
+  <li>Type <strong>DisplayJFrame</strong> as the Class Name.</li>
+  <li>Type <strong>org.demo</strong> as the Package. Click Finish.<br> 
+      <img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-newjframe2.png" alt="screenshot of Name and Location panel in New JFrame Form wizard" title="Name and Location panel in New JFrame Form wizard" class="margin-around b-all">
+        <p>When you click Finish the IDE creates the JFrame form and opens the file in the editor.</li>
+    <li>Right-click the project node in the Projects window and choose New &gt; Other
+      to open the New File dialog box. </li>
+    <li>Select Groovy Class in the Groovy category. Click Next.<br>
+    <img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-newgroovyclass.png" alt="screenshot of Groovy Class template in New File wizard" title="Groovy Class template in New File wizard" class="margin-around b-all">
+    <li>Type <strong>GreetingProvider</strong> as the Class Name.</li>
+    <li>Select the <tt>org.demo</tt> package from the Package dropdown list. Click Finish.<br>
+    <p>When you click Finish the IDE creates the Groovy file and opens the file in the editor. </p></li>
+</ol>
+<p>If you expand the project node in the Projects window you can see that the two files that you created are under the 
+    Source Packages node. </p>
+      <!--<img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-projectswindow.png" alt="screenshot of Groovy project in Projects window" title="Groovy project in Projects window" class="margin-around b-all">-->
+
+<a name="groovy"></a>
+<h2>Calling Groovy from Java</h2>
+
+<p>In this section, you will code the interaction between the Groovy file and the Java class.</p>
+
+<ol>
+    <li>Open <tt>GreetingProvider.groovy</tt> in the editor (if not already open).</li>
+    <li>Define a greeting variable within the class definition by adding the following code (in bold). Save your changes.
+<pre class="examplecode">class GreetingProvider {
+
+    <strong>def greeting = "Hello from Groovy"</strong>
+
+}</pre>
+    </li>
+    <li>Open <tt>DisplayJFrame.java</tt> in the editor (if not already open) and click the Design tab. </li>
+    <li>Open the Palette (Window &gt; Palette from the main menu) and drag and drop a Text Field element (<tt>jTextField</tt>)
+        from the Palette and into the JFrame.<br>
+    <img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-jtextfield.png" alt="screenshot of JTextfield in DesignJFrame open in the Design view of the editor" title="JTextfield in DesignJFrame open in the Design view of the editor" class="margin-around"></li>
+    <li>Click the Source tab in the editor and add the following code at the top of the class body
+        to instantiate the Groovy class and in the constructor to call the <tt>getGreeting()</tt> method in the Groovy class.
+        <pre class="examplecode">public class DisplayJFrameForm extends javax.swing.JFrame {<strong>
+
+    GreetingProvider provider = new GreetingProvider();</strong>
+
+    public DisplayJFrame() {
+        initComponents();
+        <strong>String greeting = provider.getGreeting().toString();
+        jTextField1.setText(greeting);</strong>
+    }</pre>
+    <p class="tips">You can use code completion in the Java class to find the methods you need in the Groovy class.</p>
+    <img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-codecompletion.png" alt="screenshot of code completion in the editor" title="Code completion in the editor" class="margin-around b-all">
+    </li>        
+    <li>Right-click the project node in the Projects window and choose Run.
+    <p>When you choose Run the IDE compiles and launches the application.</p>
+    <img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-runproject.png" alt="screenshot of the application" title="Window of the application displaying text from the Groovy class in the text field" class="margin-around b-all">
+    <p>In the window of the application you can see that the text from the Groovy class is displayed in the text field.</p>
+</ol>
+
+<p>You now know how to create a basic Java application that interacts with Groovy.</p>
+      
+      <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20NetBeans%20IDE%20Groovy%20Quick%20Start">Send Feedback on This Tutorial</a></div>
+      <br style="clear:both;" />
+     <a name="seealso"></a>
+<h2>See Also</h2>
+<p>NetBeans IDE also supports the Grails web framework, which uses the Groovy language 
+    in Java web development. To learn how to use the Grails framework with NetBeans IDE,
+    see <a href="../web/grails-quickstart.html">Introduction to the Grails Framework</a>.</p>
+</body>
+
+</html>

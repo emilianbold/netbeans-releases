@@ -1,0 +1,390 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This introductory tutorial demonstrates 
+            how to work with the Java DB (Derby) database in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, 
+            database, derby, Java, relational database management system, RDBMS, Apache,
+            transaction processing, SQL, JDBC">
+        
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+        
+        <title>Trabalhando com o Banco de Dados Java DB (Derby) - Tutorial do NetBeans IDE</title>
+
+</head>
+    
+    <body>
+        <h1>Trabalhando com o Banco de Dados Java DB (Derby)</h1>
+
+        <p>Este documento demonstra como configurar uma conexão com o banco de dados <a href="http://www.oracle.com/technetwork/java/javadb/overview/index.html">Java DB</a> no NetBeans IDE. Quando uma conexão for estabelecida, você poderá começar a trabalhar com o banco de dados no IDE, podendo criar tabelas, preenchê-las com dados, executar instruções SQL e consultas e mais.</p>
+        
+        <p>O banco de dados Java DB é uma distribuição da Sun com suporte do <a href="http://db.apache.org/derby/">Apache Derby</a>. O Java DB é um servidor de banco de dados com base em padrões, seguro e totalmente transacional, escrito inteiramente em Java, e dá suporte total a SQL, JDBC API e à tecnologia Java EE. O banco de dados Java DB é encapsulado com o servidor de aplicações <a href="http://glassfish.dev.java.net/">GlassFish</a> e está incluído no <a href="http://download.oracle.com/javase/6/">JDK 6</a> também. Para obter mais informações sobre o banco de dados Java DB, consulte a <a href="http://www.oracle.com/technetwork/java/javadb/documentation/index.html">documentação oficial</a>.</p>
+
+            <p><strong>Conteúdo</strong></p>
+
+         <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+        <ul class="toc">
+            <li><a href="#configuring">Configurando o Banco de Dados</a></li>
+            <li><a href="#registering">Registrando o Banco de Dados no NetBeans IDE</a></li>
+            <li><a href="#starting">Iniciando o Servidor e Criando um Banco de Dados</a></li>
+            <li><a href="#connecting">Estabelecendo Conexão com o Banco de Dados</a></li>
+            <li><a href="#creating">Criando Tabelas</a></li>
+            <li><a href="#adding">Adicionando Dados na Tabela</a></li>
+            <li><a href="#deleting">Deletando Tabelas</a></li>
+            <li><a href="#using">Usando um Script SQL Externo</a></li>
+            <li><a href="#recreating">Recriando Tabelas de um Banco de Dados Diferente</a></li>
+            <li><a href="#seeAlso">Consulte Também</a></li>
+        </ul>            
+        
+        <p><strong>Para seguir este tutorial, os recursos e softwares a seguir são necessários.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java EE 7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">Versão 7 ou 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Java&nbsp;DB</td>
+                    <td class="tbltd1">versão 10.4.x, 10.5.x</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p><strong class="notes">Observação.</strong></p>
+        <ul>
+            <li>O Java DB é instalado quando o JDK 7 ou JDK 8 é instalado (com exceção do Mac OS X). Se estiver usando Mac OS X é possível fazer o download e instalar o <a href="http://www.oracle.com/technetwork/java/javadb/downloads/index.html">Java DB</a> manualmente ou usar o Java DB que é instalado pela versão do Java EE do instalador do NetBeans IDE.</li>
+        </ul>
+
+        <a name="configuring"></a>
+        <h2>Configurando o Banco de Dados</h2>
+        
+        <p>Se você tem o GlassFish Server Enterprise registrado na instalação NetBeans IDE, o Java DB já estará registrado. Portanto, é possível pular para <a href="#starting">Iniciando o Servidor e Criando um Banco de Dados</a>. </p>
+        <p>Se fizer download do GlassFish Server separadamente e necessitar de ajuda ao registrar no NetBeans IDE, consulte <strong>Registrando uma Instância do GlassFish Server</strong> no Conteúdo de Ajuda IDE (F1). </p>
+        <p>Se você tiver submetido o Java DB a download, siga as etapas a seguir.</p>
+        <ol>
+            <li>Execute o arquivo de autoextração. Uma pasta denominada 'javadb' será criada no mesmo local do arquivo. Se você tiver apenas submetido o Java DB a download e desejar que o servidor de banco de dados fique em um local diferente de onde ele foi extraído, deverá realocá-lo agora.</li>
+            <li>No sistema, crie um novo diretório para ser utilizado como diretório home para as instâncias individuais do servidor de banco de dados. Por exemplo, é possível criar esta pasta no diretório-raiz Java DB (javadb) ou em qualquer outra localização.</li>
+        </ol>
+        
+        <p>Antes de prosseguir, é importante compreender os componentes encontrados no diretório raiz do Java DB:</p>
+        
+        <ul>
+            <li>O subdiretório <tt>demo</tt> contém os programas de demonstração.</li>
+            <li>O subdiretório <tt>bin</tt> contém os scripts para executar utilitários e configurar o ambiente.</li>
+            <li>O subdiretório <tt>javadoc</tt> contém a documentação da API que foi gerada de comentários de código-fonte.</li>
+            <li>O subdiretório <tt>docs</tt> contém a documentação do Java DB.</li>
+            <li>O subdiretório <tt>lib</tt> contém os arquivos jar do Java DB.</li>
+        </ul>
+        
+        <a name="registering"></a>
+        <h2>Registrando o Banco de Dados no NetBeans IDE</h2>
+        
+        <p>Agora que o banco de dados está configurado, execute as etapas a seguir para registrar o Java DB no IDE.</p>
+        
+        <ol>
+            <li>Na janela Serviços, clique com o botão direito do mouse no nó do Banco de Dados Java DB e escolha Propriedades para abrir a caixa de diálogo das Definições do Java DB.</li>
+            <li>No campo de texto Instalação de Java DB, insira o caminho para o diretório-raiz de Java DB (javadb) especificado na etapa anterior.</li>
+            <li>Para a Localização do Banco de Dados, use o local default se um local já foi fornecido. Clique em OK
+                <p>Por exemplo, a localização default pode parecer com <tt>C:\Documents and Settings\username\.netbeans-derby</tt> em um computador Windows.</p>
+                
+                <img alt="caixa de diálogo definições do Java DB" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/javadb-props.png" title="exemplo de definições default do servidor e banco de dados Java DB">
+                <p class="notes"><strong>Observação.</strong> Se o campo Localização do Banco de Dados estiver vazio será necessário definir o caminho para o diretório que contém seus bancos de dados. Será necessário criar um diretório para os bancos de dados se nenhum diretório existir.</p>
+            </li>
+        </ol>
+
+        <a name="starting"></a>
+        <h2>Iniciando o Servidor e Criando um Banco de Dados</h2>
+        
+        <p>As opções de menu do Banco de Dados Java DB são exibidas quando você clica com o botão direito do mouse no nó Java DB na janela Serviços. Os itens desse menu contextual permitem o início e a interrupção do servidor de banco de dados, a criação de uma nova instância de banco de dados e o registro de servidores de bancos de dados no IDE (como demonstrado na etapa anterior). Para iniciar o servidor de banco de dados:</p>
+        
+        <ol>
+            <li>Na janela Serviços, clique com o botão direito do mouse no nó Java DB e escolha Iniciar Servidor. Observe a seguinte saída na janela de Saída, indicando que o servidor foi iniciado:<br> <img alt="Exibição da janela de saída depois de iniciar o servidor de banco de dados" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/output-start-db.png">
+            </li>
+            <li>Clique com o botão direito do mouse no nó do Java DB e escolha Criar Banco de Dados para abrir a caixa de diálogo de criação do Banco de Dados do Java DB.</li>
+            <li>Insira <tt>contato</tt> para o Nome do Banco de Dados.</li>
+            <li>Digite <tt>nbuser</tt> para o Nome de Usuário e a Senha. Clique em OK.<br> <img alt="Caixa de diálogo Criar Banco de Dados BD Java" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/javadb-createdb.png">
+                <p class="notes"><strong>Observação.</strong> Localização do Banco de Dados é o local default definido durante a instalação do Java DB do GlassFish. Se você tiver instalado o Java DB separadamente, essa localização pode ser diferente.</p>
+            </li>
+        </ol>
+        <p>Após você criar o Banco de Dados, se você expandir os bancos de dados nó na janela Serviços que você pode ver o IDE criada uma conexão de banco de dados e que o banco de dados foi adicionado à lista sob o nó do BD Java.</p>
+         
+        <a name="connecting"></a>
+        <h2>Estabelecendo Conexão com o Banco de Dados</h2>
+        
+        <p>Até agora, você iniciou com êxito o servidor de banco de dados e criou uma instância de banco de dados denominada <tt>contact</tt> no IDE. Na janela Serviços do IDE você pode realizar as seguintes tarefas comuns em estruturas de banco de dados.</p>
+            
+            <ul>
+                <li>criação, exclusão, modificação de tabelas</li>
+                <li>preenchimento de tabelas com dados</li>
+                <li>exibição de dados tabulares</li>                                
+                <li>execução de consultas e instruções SQL</li>
+            </ul>
+            
+        <p>Para começar a trabalhar com o banco de dados <tt>contact</tt>, você precisa criar uma conexão com o mesmo. Para estabelecer conexão com o banco de dados <tt>contato</tt> execute as etapas a seguir.</p>
+
+        <ol>
+            <li>Expanda o nó do Bancos de Dados na janela Serviços e localize o novo banco de dados e os nós de conexão de banco de dados.
+                <p>O nó de conexão do banco de dados( <img alt="ícone do nó da conexão" src="../../../images_www/articles/72/ide/java-db/connection-node-icon.png">) é exibido no nó dos Bancos de Dados. O nó do banco de dados é exibido no nó do Java DB.</p>
+               
+                <img alt="banco de dados de contato na janela Serviços" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/services-window.png"><br>
+                <p class="notes"><strong>Observação.</strong> Você também visualizará a conexão do banco de dados <code>amostra [app em app]</code> que é o esquema do banco de dados default.</p>
+          
+            <li><p> Clique com o botão direito do mouse no nó da conexão do banco de dados <strong>contact</strong>(<tt>jdbc:derby://localhost:1527/contact [nbuser em NBUSER]</tt>) e escolha Conectar.</p>
+            O ícone do nó da conexão aparecerá em todo (<img alt="ícone do nó da conexão" src="../../../images_www/articles/72/ide/java-db/connection-node-icon.png">), significando que a conexão foi bem-sucedida.                </li>
+            
+          <li>Crie um nome de exibição conveniente para o banco de dados clicando com o botão direito do mouse no nó da conexão do banco de dados (<tt>jdbc:derby://localhost:1527/contact [nbuser on NBUSER]</tt>) e selecione Renomear. Digite <tt>BD de Contato</tt> no campo de texto e clique em Ok.</li>
+        </ol>		
+
+        <a name="creating"></a>
+        <h2>Criando Tabelas</h2>        
+        
+        <p>O banco de dados <tt>contact</tt> recém-criado está vazio no momento. Ele não contém ainda tabelas ou dados. No NetBeans IDE, você pode adicionar uma tabela de banco de dados usando a caixa de diálogo Criar Tabela ou inserindo uma instrução SQL e executando-a diretamente do Editor SQL. É possível explorar ambos os métodos:</p>
+        
+        <ul>
+            <li><a href="#createTable">Usando a Caixa de Diálogo Criar Tabela</a></li>
+            <li><a href="#sqlEditor">Usando o Editor SQL</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="createTable"></a>
+            <h3>Usando a Caixa de Diálogo Criar Tabela</h3>    
+
+            <ol>
+                <li>
+              <p>Expanda o nó de conexão <tt>BD de Contato</tt> e observe que existem vários subnós do esquema. O esquema app é o único esquema que se aplica a este tutorial. Clique com o botão direito do mouse no nó APP e escolha Definir como Esquema Default.</li>
+                <li>Expanda o nó APP e observe que existem três subpastas: Tabelas, Views e Procedimentos. Clique com o botão direito no nó Tabelas e escolha Criar Tabela para abrir a caixa de diálogo Criar Tabela.</li>
+                <li>No campo de texto Nome da Tabela, digite <tt>AMIGOS</tt>.</li>
+                <li>Clique em Adicionar Coluna. A caixa de diálogo Adicionar Coluna é exibida. </li>
+                <li>Para Nome de Coluna, insira <tt>id</tt>. Para Tipo de Dados, selecione <tt>INTEIRO</tt> da lista drop-down. </li>
+                <li>Em Restrições, marque a caixa de seleção Chave Primária para especificar que essa coluna é a chave primária da tabela. Todas as tabelas de bancos de dados relacionais devem conter uma chave primária. Observe que quando você marca a caixa de seleção Chave Primária, as caixas de seleção Índice e Exclusivo são automaticamente marcadas e a caixa de seleção Nulo é desmarcada. Isso ocorre porque as chaves primárias são usadas para identificar uma linha exclusiva no banco de dados e por default são usadas como o índice da tabela. Como todas as linhas devem ser identificadas, as chaves primárias não podem conter um valor <tt>Nulo</tt>.<br> <img alt="Adicionando colunas na tabela" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/add-column.png"></li>
+                <li>Repita este procedimento agora especificando campos conforme exibido na tabela abaixo:</li>
+                <li>
+                  <table class="margin-around">
+                    <tr>
+                      <th class="tblheader" scope="col">Chave</th>
+                      <th class="tblheader" scope="col">Índice</th>
+                      <th class="tblheader" scope="col">Nulo</th>
+                      <th class="tblheader" scope="col">Exclusiva</th>
+                      <th class="tblheader" scope="col">Nome da coluna</th>
+                      <th class="tblheader" scope="col">Tipo de dados</th>
+                      <th class="tblheader" scope="col">Tamanho</th>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1">[marcada]</td>
+                      <td class="tbltd1">[marcada]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[marcada]</td>
+                      <td class="tbltd1">id</td>
+                      <td class="tbltd1">INTEIRO</td>
+                      <td class="tbltd1">0</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[marcada]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">firstName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">20</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[marcada]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">lastName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">20</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[marcada]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">nickName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">30</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[marcada]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">friendSince</td>
+                      <td class="tbltd1">DATA</td>
+                      <td class="tbltd1">0</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[marcada]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">e-mail</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">60</td>
+                    </tr>
+                  </table>
+                  <p>Você está criando uma tabela chamada <tt>AMIGOS</tt> que contém os seguintes dados para cada registro de contato:</p>
+                  <ul>
+                    <li><strong>Nome</strong></li>
+                    <li><strong>Sobrenome</strong></li>
+                    <li><strong>Apelido</strong></li>
+                    <li><strong>Amigo Desde</strong></li>
+                    <li><strong>Endereço de E-mail</strong></li>
+                  </ul>
+                  <img alt="Caixa de Diálogo Criar Tabela com campos selecionados para tabela de contatos" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/create-table-friends.png"></li>
+                    
+                <li><p>Quando tiver certeza que a caixa de diálogo Criar Tabela contém as mesmas especificações que as exibidas acima, clique em OK. O IDE gera a tabela <tt>AMIGOS</tt> no banco de dados, e você pode ver um novo nó da tabela <tt>AMIGOS</tt> (<img alt="ícone do nó da tabela" src="../../../images_www/articles/72/ide/java-db/table-node.png">) são exibidos no nó de Tabelas. Sob o nó da tabela as colunas (campos) são listadas, iniciando com a chave primária (<img alt="ícone do nó da chave primária" src="../../../images_www/articles/72/ide/java-db/primary-key-icon.png">).</p>
+
+                    
+                    <img alt="Tabela AMIGOS exibida na janela Serviços" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/friends-table.png"></li>
+            </ol>
+
+        <a name="sqlEditor"></a>
+            <h3>Usando o Editor SQL:</h3>                   
+
+            <ol>
+                <li>No janela Serviço, clique com o botão direito no nó de conexão <tt>BD de Contato</tt> ou no nó Tabelas embaixo e escolha o Comando Executar. Uma tela em branco é aberta no Editor SQL na janela principal.</li>
+                <li>Insira a seguinte consulta no Editor SQL. Esta é uma definição da tabela COLEGAS que você irá criar:
+
+                <pre class="examplecode">CREATE TABLE &quot;COLLEAGUES&quot; (
+    &quot;ID&quot; INTEGER not null primary key,
+    &quot;FIRSTNAME&quot; VARCHAR(30),
+    &quot;LASTNAME&quot; VARCHAR(30),
+    &quot;TITLE&quot; VARCHAR(10),
+    &quot;DEPARTMENT&quot; VARCHAR(20),
+    &quot;EMAIL&quot; VARCHAR(60)
+);</pre>
+
+                    <p class="notes"><strong>Observação: </strong>instruções e consultas formadas no Editor SQL faz parse em SQL. A linguagem SQL utiliza regras de sintaxe estritas com as quais você deve estar familiarizado ao trabalhar no editor do IDE. A sintaxe do SQL também pode diferir dependendo do sistema de gerenciamento de banco de dados. Consulte o <a href="http://www.oracle.com/technetwork/java/javadb/documentation/index.html">Manual de Referência do JavaDB</a> para obter instruções específicas.
+                    </p></li>
+
+                <li>Clique no botão Executar SQL (<img alt="botão executar SQL" src="../../../images_www/articles/72/ide/java-db/run-sql-button.png">) na barra de tarefas na parte superior do editor (Ctrl-Shift-E) para executar a consulta. Na janela de Saída (Ctrl-4), uma mensagem é exibida indicando que uma instrução foi executada com êxito.<br> <img alt="A janela de saída indica execução com êxito" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/run-query.png"></li>
+
+                <li>Para verificar as alterações, clique com o botão direito no nó de conexão <tt>BD de Contato </tt> na janela Serviços e escolha Atualizar. Isso atualiza o componente UI de Runtime para o status atual do banco de dados especificado. Esta etapa é necessária ao executar consultas do Editor SQL no NetBeans IDE. Observe que o novo nó da tabela COLEGAS (<img alt="ícone do nó da tabela" src="../../../images_www/articles/72/ide/java-db/table-node.png">) é exibida agora em Tabelas na janela Serviços.</li>
+            </ol>
+        </div>
+
+        <a name="adding"></a>
+        <h2>Adicionando Dados na Tabela</h2>     
+
+        <p>Agora que você criou uma ou mais tabelas no banco de dados <tt>contact</tt>, pode começar a preenchê-lo com dados. Existem várias maneiras que você pode adicionar registros em sua tabela.</p>
+        <ul>
+          <li><a href="#sqlstatement">Escreva uma instrução SQL</a> no Editor SQL que fornece um valor para cada campo presente no esquema da tabela. </li>
+          <li><a href="#usesqleditor">Utilize o Editor SQL</a> para adicionar registros à tabela.</li>
+          <li><a href="#using">Utilize um script SQL externo</a> para importar registros para a tabela. </li>
+        </ul>
+        <p>Leia as seções abaixo para aprender como utilizar todos os métodos de preenchimento da tabela <tt>AMIGOS</tt> com dados.  </p>
+        <h3><a name="sqlstatement"></a>Executando uma Instrução SQL </h3>
+        <ol>
+            <li>Expanda as Tabelas no nó do <tt>BD de Contato</tt> na janela Serviços, clique com o botão direito na tabela <tt>AMIGOS</tt> e escolha executar comando para abrir a janela do Editor SQL.</li>
+            <li>No Editor SQL, insira a seguinte instrução.
+              <pre class="examplecode">INSERT INTO APP.FRIENDS VALUES (1,'Theodore','Bagwell','T-Bag','2004-12-25','tbag@foxriver.com')</pre>
+              <p class="tips">Enquanto estiver digitando, é possível utilizar a funcionalidade autocompletar código do Editor SQL.</p>
+            </li>
+
+            <li>Clique com o botão direito do mouse no Editor SQL e escolha Executar Instrução. A janela de Saída exibe uma mensagem indicando que uma instrução foi executada com êxito.</li>
+
+            <li>Para verificar se o novo registro foi adicionado à tabela <tt>AMIGOS</tt>, clique com o botão direito do mouse no nó da tabela <tt>AMIGOS</tt> na janela Serviços e escolha Exibir Dados.
+                <p>Quando você escolhe Exibir Dados, é gerada automaticamente no painel superior do Editor SQL uma consulta para selecionar todos os dados da tabela. Os resultados da instrução são exibidos no painel inferior do Editor de SQL. Nesse caso, a tabela <tt>AMIGOS</tt> é exibida no painel inferior. Observe que uma nova linha foi adicionada com os dados que você acabou de fornecer da instrução SQL.</p>
+
+              
+          <img alt="Registro novo adicionado à tabela AMIGOS" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/new-record.png"></li>
+        </ol>
+
+        <h3><a name="usesqleditor"></a>Usando o Editor SQL </h3>
+        <ol>
+          <li>Clique com o botão direito no nó da tabela <tt>AMIGOS</tt> e escolha Exibir Dados (se não tiver feito isso na última etapa da seção anterior). </li>
+          <li>Clique no botão Inserir Registro(s) (<tt>Alt-I</tt>) para adicionar uma linha.<br> A caixa de diálogo Inserir Registros aparece.</li>
+          <li>Clique em cada célula e insira registros. Observe que para células com tipo de dados Data, é possível escolher uma data do calendário. Clique em OK quando tiver acabado. <br> <img alt="novos registros adicionados à tabela AMIGOS" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/insert-records.png"><br> No Editor SQL, é possível ordenar os resultados clicando na linha de cabeçalho, modifique e delete registros existentes e veja o script SQL para ações que estão sendo feitas no editor (o comando Exibir Script SQL do menu pop-up). </li>
+        </ol>
+        <h2><a name="deleting"></a> Deletando Tabelas
+        </h2>
+        <p>Na etapa a seguir, use um script SQL externo para criar uma nova tabela <tt>COLEGAS</tt>. Entretanto, uma tabela <tt>COLEGAS</tt> acabou de ser criada na seção <a href="#sqlEditor">Utilizando o Editor SQL</a> acima. Para deixar claro que o script SQL realmente cria uma nova tabela, você pode deletar a tabela <tt>COLEGAS</tt> já criada agora. Para deletar uma tabela do banco de dados execute as seguintes etapas.</p>
+            
+        <ol>
+            <li>Expanda o nó Tabelas no nó de conexão do banco de dados na janela Serviços.</li>
+            <li>Clique com o botão direito do mouse na tabela que você deseja deletar e escolha Deletar.</li>
+        </ol>
+ 
+        <h2><a name="using"></a>Usando um Script SQL Externo</h2>
+        <p>A emissão de comandos de um script SQL externo é uma forma popular de gerenciar o banco de dados. É possível já ter sido criado um script SQL em outro lugar, e deseja importá-lo para o NetBeans IDE para executá-lo em um banco de dados específico.</p>
+        
+        <p>Neste exercício, o script criará uma nova tabela denominada <tt>COLEGAS</tt> e a preencherá com dados. Execute as seguintes etapas para executar o script no banco de dados <tt>contato</tt>.</p>
+        
+        <ol>
+            <li>Faça download de <a href="https://netbeans.org/project_downloads/usersguide/colleagues.sql" target="_blank">colleagues.sql</a> em seu sistema local</li>
+            <li>Escolha Arquivo > Abrir Arquivo no menu principal do IDE. No browser de arquivos, vá até o local do arquivo <tt>colleagues.sql</tt> salvo e clique em Abrir. O script se abre automaticamente no Editor SQL.
+                <p class="tips">Se preferir, copie o conteúdo de <a href="https://netbeans.org/project_downloads/usersguide/colleagues.sql" target="_blank">colleagues.sql</a> e, depois abra o editor SQL e cole o conteúdo do arquivo no editor SQL.</p>
+            </li>
+            <li>Certifique-se que sua conexão com <tt>BD de Contato</tt> esteja selecionada na caixa drop-down Conexão na barra de ferramentas na parte superior do editor.<br> <img alt="Caixa drop-down de conexão na barra de ferramentas do Editor SQL" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/conn-drop-down.png"></li> 
+            
+            <li>Clique no botão Executar SQL (<img alt="botão executar SQL" src="../../../images_www/articles/72/ide/java-db/run-sql-button.png">) na barra de tarefas do Editor SQL. O script é executado no banco de dados selecionado e qualquer feedback é gerado na janela de Saída.</li>
+            
+            <li>Para verificar as alterações, clique com o botão direito no nó de conexão <tt>BD de Contato </tt> na janela Serviços e escolha Atualizar. Observe que a nova tabela <tt>COLEGAS</tt> do script SQL agora é exibida como um nó de tabela em <tt>contact</tt> na janela Serviços.</li>
+            
+            <li>Para exibir os dados contidos nas novas tabelas, clique com o botão direito na tabela <tt>COLEGAS</tt> e escolha Exibir Dados. Dessa maneira, você também pode comparar os dados tabulares com os dados contidos no script SQL para ver se eles coincidem.</li>
+        </ol>
+        
+        <h2><a name="recreating"></a> Recriando Tabelas de um Banco de Dados Diferente
+        </h2>
+        <p>Se você tiver uma tabela de outro banco de dados que deseja recriar no banco de dados em que está trabalhando do NetBeans IDE, o IDE oferece uma ferramenta útil para isso. É necessário primeiro registrar o segundo banco de dados no IDE, de forma similar à que foi descrita no início deste tutorial. Para a finalidade deste tutorial, use o banco de dados de <tt>amostra</tt> incluído com o Java DB. Esse processo é realizado essencialmente em duas partes: primeiro você 'captura' a definição da tabela selecionada, depois pode recriar a tabela no banco de dados escolhido:</p>
+            
+        <ol>
+            <li>Estabeleça conexão com o banco de dados de <tt>amostra</tt> clicando com o botão direito no nó de conexão nos Bancos de Dados na janela Serviços e escolhendo Conectar (o usuário e a senha é <tt>app</tt>).</li>           
+            <li>
+                <p>Expanda o nó das Tabelas na conexão do banco de dados <tt>amostra</tt>, clique com o botão direito do mouse na tabela <tt>CLIENTE</tt> e escolha Obter Estrutura.</p>
+            
+                
+                <img alt="Item de menu Obter Estrutura exibido na janela Serviços" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/grab-structure.png"></li> 
+ 
+            <li>Na caixa de diálogo Obter Tabela exibida, especifique um local no computador para salvar o arquivo obtido que será criado. Clique em Salvar. 
+                <p>O arquivo obtido registra a definição de tabela da tabela selecionada.</p></li>
+            <li>Expanda o nó do esquema APP na conexão do banco de dados <tt>BD de Contato</tt>, clique no nó Tabelas e escolha Recriar Tabela para abrir a caixa de diálogo Recriar Tabela.</li>
+            <li><p>Na caixa de diálogo Recriar Tabela, navegue até o local no qual você salvou o arquivo de obtenção <tt>CLIENTE</tt> e clique em Abrir para abrir a caixa de diálogo Nome da Tabela.</p>
+               
+                    <img alt="A caixa de diálogo Nome da Tabela contém a definição da tabela do CLIENTE" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/recreate-table.png"></li> 
+            <li>
+              <p>Neste ponto, é possível alterar o nome da tabela ou editar a definição da tabela. Do contrário, clique em OK para criar imediatamente a tabela no banco de dados <tt>contact</tt>. Um novo nó de tabela <tt>CLIENTE</tt> é exibido abaixo do nó de conexão BD de <tt>Contato</tt>.</p>           
+                
+              
+                <img alt="novo nó da tabela CLIENTE exibido na janela Serviços" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/new-customer-node.png"></li>
+        </ol>
+        
+        <p>Se você exibir os dados na nova tabela <tt>CLIENTE</tt> você verá que não há registros no banco de dados, mas que a estrutura da tabela é idêntica à tabela que você obteve.</p>
+          
+    <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20With%20Java%20DB">Envie-nos Seu Feedback</a></div>
+        
+        <br style="clear:both;">
+            
+        <a name="seeAlso"></a>
+        <h2>Consulte Também</h2>
+        
+        <p>Isto conclui o tutorial Trabalho com o Banco de Dados Java DB (Derby). Este tutorial demonstrou como configurar uma conexão com o banco de dados Java DB no NetBeans IDE. Em seguida, ele demonstrou como criar, exibir, modificar e deletar tabelas na janela Serviços do IDE. Ele também exibiu como trabalhar com o Editor SQL para adicionar dados em tabelas e usar a funcionalidade do IDE permitindo que você recriasse tabelas usando definições de outros bancos de dados.</p>
+            
+        <p>Para tutoriais relacionados e mais avançados, consulte os seguintes recursos:</p>
+        
+        <ul>
+            <li><a href="mysql.html">Estabelecendo Conexão com um Banco de Dados MySQL</a>. Demonstra como configurar um banco de dados MySQL e conectar-se a ele no NetBeans IDE.</li>
+            <li><a href="../web/mysql-webapp.html">Criando uma Aplicação Web Simples Usando um Banco de Dados MySQL</a>. Demonstra como criar uma aplicação Web simples que se conecta com um servidor de banco de dados MySQL.</li>
+            <li><a href="http://platform.netbeans.org/tutorials/nbm-crud.html">Tutorial da Aplicação CRUD da Plataforma do NetBeans.</a> Demonstra como integrar um banco de dados Java DB com uma aplicação da Plataforma do NetBeans.</li>
+        </ul>
+        
+    </body>
+</html>

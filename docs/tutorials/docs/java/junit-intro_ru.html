@@ -1,0 +1,921 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Написание тестов JUnit в IDE NetBeans</title>
+        <meta name="description"
+        content="A tutorial on writing JUnit 3 and JUnit 4 tests in NetBeans IDE.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+    <body>
+        <!-- Begin Content Area -->
+        <h1>Написание тестов JUnit в IDE NetBeans</h1>
+        
+        <p>В этом учебном курсе описываются основы написания и запуска тестов JUnit в IDE NetBeans. Тестирование приложения является неотъемлемой частью цикла разработки, а написание и поддержка модульных тестов могут гарантировать корректную работу отдельных методов исходного кода.  Интегрированная поддержка среды IDE для инфраструктуры модульного тестирования JUnit позволяет быстро и просто создавать тесты JUnit и наборы тестов.</p>
+
+        <p>В этом руководстве создаются простые модульные тесты JUnit 3 и JUnit 4 и наборы тестов для проекта библиотеки классов Java.  Первая часть руководства посвящена созданию тестов в JUnit 3.  Во второй части показан способ создания этих тестов в JUnit 4 с помощью аннотаций JUnit.  Не обязательно завершать обе части курса, поскольку тесты в них одинаковы, но с помощью сравнения тестов в обеих версиях можно увидеть изменения, представленные в JUnit 4.</p>
+        <p class="tips">Для получения дополнительных сведений относительно JUnit см. <a href="http://www.junit.org">www.junit.org</a>.</p>
+        
+        
+        <p><b>Содержание</b></p>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+        <ul class="toc">
+            <li><a href="#Exercise_10">Создание проекта</a>
+            <ul class="toc">
+                <li><a href="#Exercise_11">Создание проекта библиотеки классов Java</a>
+                <li><a href="#Exercise_12">Загрузка проекта решения</a>
+                <li><a href="#Exercise_13">Создание классов Java</a>
+            </ul>
+            </li>
+            <li><a href="#Exercise_20">Написание тестов JUnit 3</a>
+                <ul class="toc">
+                    <li><a href="#Exercise_21">Создание тестового класса для <tt>Vectors.java</tt></a></li>
+                    <li><a href="#Exercise_22">Написание тестовых методов для <tt>Vectors.java</tt></a></li>
+                    <li><a href="#Exercise_23">Создание тестового класса для <tt>Utils.java</tt></a></li>
+                    <li><a href="#Exercise_24">Написание тестовых методов для <tt>Utils.java</tt></a></li>
+                    <li><a href="#Exercise_25">Выполнение тестов</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_30">Написание тестов JUnit 4</a>
+                <ul class="toc">
+                    <li><a href="#Exercise_31">Создание тестового класса для <tt>Vectors.java</tt></a></li>
+                    <li><a href="#Exercise_32">Написание тестовых методов для <tt>Vectors.java</tt></a></li>
+                    <li><a href="#Exercise_33">Создание тестового класса для <tt>Utils.java</tt></a></li>
+                    <li><a href="#Exercise_34">Написание тестовых методов для <tt>Utils.java</tt></a></li>
+                    <li><a href="#Exercise_35">Выполнение тестов</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_40">Создание наборов тестов JUnit</a>
+            <ul class="toc">
+                <li><a href="#Exercise_41">Создание наборов тестов JUnit 3</a></li>
+                <li><a href="#Exercise_42">Создание набора тестов JUnit 4</a></li>
+                <li><a href="#Exercise_43">Выполнение наборов тестов</a></li>
+            </ul>
+            </li>
+            <li><a href="#Exercise_50">Заключение</a></li>
+        </ul>
+        
+        <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+        <table>
+        <tr>
+            <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+            <th class="tblheader" scope="col">Требуемая версия</th>
+        </tr> 
+        <tr>
+            <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+            <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+            <td class="tbltd1">версия 7 или 8</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">Проект JUnitSampleSol</td>
+            <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/JUnitSampleSol.zip">загрузить</a></td>
+        </tr>
+        </table>
+        <p class="alert">Для выполнения действий данной учебной программы необходимо установить подключаемый модуль JUnit, загрузив его из Центра обновлений. Вы можете установить подключаемый модуль JUnit в диспетчере подключаемых модулей, если не сделали это в процессе установки IDE.</p>
+
+
+    <!-- ===================================================================================== -->
+    <a name="Exercise_10"></a>
+    <h2>Создание проекта</h2>
+    <p>Для работы с этим руководством требуется сначала создать проект библиотеки класса Java с именем JUnit-Sample. После создания проекта JUnit-Sample необходимо скопировать в него два класса из демонстрационного проекта JUnitSampleSol.</p>
+
+    <div class="indent">
+        <a name="Exercise_11"></a>
+        <h3>Создание проекта библиотеки классов Java</h3>
+            <ol>
+                <li>В главном меню выберите &quot;Файл&quot; &gt; &quot;Новый проект&quot;.</li>
+                <li>Выберите библиотеку классов Java в категории Java и нажмите кнопку &quot;Next&quot;. </li>
+                <li>Введите <b>JUnit-Sample</b> в качестве имени проекта и укажите местоположение проекта.</li>
+                <li>Снимите флажок &quot;Использовать отдельную папку&quot;, если он установлен.
+                <p>В рамках этого руководства копирование библиотек проекта в выделенную папку не целесообразно, поскольку совместное использование библиотек с другими пользователями или проектами не требуется. </p>
+                Нажмите кнопку &quot;Завершить&quot;.</li>
+            </ol>
+            <p>
+            При первом создании теста JUnit среда IDE требует выбрать версию, после чего добавляет узел &quot;Тестовые библиотеки&quot; и библиотеку JUnit.</p>
+
+        <a name="Exercise_12"></a>
+        <h3>Загрузка проекта решения</h3>
+        <p>Загрузить демонстрационный проект JUnitSampleSol, который используется в данном учебном курсе, можно следующими способами.</p>
+        <ul>
+            <li>Загрузите <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/JUnitSampleSol.zip">архив завершенного проекта в формате zip</a>.</li>
+            <li>Выполните проверку исходных файлов проекта на выходе из примеров NetBeans, выполнив перечисленные ниже действия.
+                <ol>
+                    <li>Выберите в главном меню &quot;Группа &gt; Subversion &gt; Проверить&quot;.</li>
+                    <li>В диалоговом окне &quot;Проверка&quot; введите следующий URL-адрес репозитория:<br /> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br /> Нажмите кнопку &quot;Далее&quot;.</li>
+                    <li>В папках на панели &quot;Взятие для изменения&quot; нажмите кнопку &quot;Обзор&quot;, чтобы открыть диалоговое окно &quot;Обзор папок репозитория&quot;.</li>
+                    <li>Разверните корневой узел и выберите <strong>samples/java/JUnitSampleSol</strong>. Нажмите кнопку &quot;ОК&quot;.</li>
+                    <li>Укажите локальную папку для исходных файлов. Нажмите кнопку &quot;Завершить&quot;.
+                        <p>После нажатия кнопки &quot;Готово&quot; среда IDE инициализирует локальную папку в качестве репозитория Subversion и выполняет проверку исходных файлов проекта на выходе.</p>
+                    </li>
+                    <li>Щелкните команду &quot;Открыть проект&quot; в диалоговом окне, которое появится после завершения проверки.</li>
+                </ol>
+                <p class="tips">Дополнительные сведения об установке Subversion см. в разделе <a href="../ide/subversion.html#settingUp">Настройка Subversion</a> в <a href="../ide/subversion.html">Руководстве по Subversion в IDE NetBeans</a>.</p>
+            </li>
+        </ul>
+
+        <p class="notes"><strong>Примечание.</strong> Если вы не установите плагин JUnit при установке IDE, то когда вы откроете проект NetBeans, будет отображен запрос на установку подключаемого модуля JUnit для разрешения ссылки на библиотеки JUnit.</p>
+
+
+        <a name="Exercise_13"></a>
+        <h3>Создание классов Java</h3>
+            
+            <p>В этом упражнении требуется скопировать файлы <tt>Utils.java</tt> и <tt>Vectors.java</tt> из демонстрационного проекта JUnitSampleSol в проект библиотеки классов, созданный ранее.</p>
+            <ol>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши узел 'Исходные пакеты' проекта <strong>JUnit-Sample</strong> и выберите 'Создать' > 'Пакет Java' во всплывающем меню.</li>
+                <li>Введите <b>sample</b> в качестве имени пакета.  Нажмите кнопку &quot;Завершить&quot;.</li>
+                <li>Откройте проект <strong>JUnitSampleSol</strong> (если он еще не открыт) и разверните узел &quot;Пакеты исходных файлов&quot; в окне проектов.<br> <img alt="снимок окна &apos;Проекты&apos;" class="margin-around box" src="../../../images_www/articles/72/java/junit/projects-window.png" title="Проекты JUnit-Sample и JUnitSampleSol в окне &apos;Проекты&apos;">
+                </li>
+                <li>Скопируйте файлы классов <tt>Utils.java</tt> и <tt>Vectors.java</tt> из проекта JUnitSampleSol в пакет исходного кода <tt>sample</tt> в JUnit-Sample.
+                </li>
+            </ol>
+            <p>Если открыть исходный код этих классов, можно заметить, что класс <tt>Utils.java</tt> содержит три метода (<tt>computeFactorial</tt>, <tt>concatWords</tt> и <tt>normalizeWord</tt>), а класс <tt>Vectors.java</tt> — два (<tt>equal</tt><tt>scalarMultiplication</tt>). В следующем действии будут созданы тестовые классы для каждого класса и написаны тестовые примеры для методов.</p>
+            <p class="notes"><strong>Примечание.</strong> Проект JUnitSampleSol можно закрыть. поскольку он более не потребуется. Проект JUnitSampleSol содержит все тесты, описанные в документе.
+            </p>
+
+    </div>
+
+<!-- ===================================================================================== -->
+<!-- JUnit 3 Tests -->
+    <a name="Exercise_20"></a>
+    <h2>Написание модульных тестов JUnit 3</h2>
+    <p>В этой части руководства рассматривается создание основных модульных тестов JUnit 3 для классов <tt>Vectors.java</tt> и <tt>Utils.java</tt>.  Для создания скелетных тестовых классов, основанных на классах проекта, будет использована среда IDE.  Затем созданные тестовые методы будут изменены, а также добавлены новые тестовые методы.</p>
+    <p>При первом использовании среды IDE для создания тестов для проекта будет выведен запрос на выбор версии JUnit.  Выбранная версия определяется как версия JUnit по умолчанию, и все последующие тесты и наборы тестов в среде IDE будут создаваться для этой версии. </p>
+    
+    <div class="indent">
+<!-- ===================================================================================== -->        
+        <a name="Exercise_21"></a>
+        <h3>Создание тестового класса для <tt>Vectors.java</tt></h3>
+        <p>В этом упражнении будет создан скелет теста JUnit для <tt>Vectors.java</tt>. В качестве тестовой среды также выберите JUnit, а в качестве версии - JUnit 3.
+        </p>
+        <p class="notes"><b>Примечание.</b> Если используется NetBeans IDE 7.1 или более ранняя версия, указывать тип тестовой среды не требуется, так как JUnit выбран по умолчанию. В NetBeans IDE 7.2 можно выбрать в качестве тестовой среды JUnit или TestNG.</p>
+        <ol>
+            <li>Щелкните правой кнопкой мыши <tt>Vectors.java</tt> и выберите "Сервис > Создать тесты".</li>
+            <li>Измените имя тестового класса на <b>VectorsJUnit3Test</b> в диалоговом окне &quot;Create Tests&quot;.
+            <p>В результате изменения имени тестового класса появится предупреждение об изменении имени.  Имя по умолчанию &ndash; это имя тестируемого класса с добавленным словом &quot;Test&quot;.  Например, для класса <tt>MyClass.java</tt> именем по умолчанию тестового класса будет <tt>MyClassTest.java</tt>.  Рекомендуется сохранить имя по умолчанию, но в рамках данного руководства имя будет изменено, так как в этом же пакете будут созданы тесты JUnit 4, а имена тестовых классов должны быть различными.</p></li>
+            <li>В списке "Среда" выберите JUnit.</li>
+            <li>Снимите флажки &quot;Test Initializer&quot; и &quot;Test Finalizer&quot;.  Нажмите кнопку &quot;ОК&quot;.<br /> <img alt="Диалоговое окно &apos;Выбрать версию JUnit&apos;" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit3-vectors-createtests.png" title="Диалоговое окно &apos;Выбрать версию JUnit&apos;">
+            </li>
+            <li>В диалоговом окне &quot;Select JUnit Version&quot; выберите JUnit 3.x.<br /> <img alt="Диалоговое окно &apos;Выбрать версию JUnit&apos;" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit3-select-version.png" title="Диалоговое окно &apos;Выбрать версию JUnit&apos;">
+
+            <p>Если выбрана версия JUnit 3.x, среда IDE добавляет в проект библиотеку JUnit 3.</p>
+            
+            <p>При нажатии кнопки "Выбрать" среда IDE создает тестовый класс <tt>VectorsJUnit3Test.java</tt> в пакете <tt>sample</tt> под узлом "Тестовые пакеты" в окне "Проекты".</p>
+            <img alt="снимок окна &apos;Проекты&apos;" class="margin-around box" src="../../../images_www/articles/72/java/junit/projects-window2.png" title="структура проекта JUnit-Sample в окне &apos;Проекты&apos;">
+            <p>Для создания тестов в пакетах тестов необходимо указать каталог.  Местоположение по умолчанию для каталога пакетов тестов находится на корневом уровне проекта, но в зависимости от типа проекта можно указать другое местоположение для каталога в диалоговом окне свойств проекта &quot;Properties&quot;.</p>
+
+            <p>Анализ созданного тестового класса <tt>VectorsJUnit3Test.java</tt> в редакторе показывает, что в среде IDE был создан следующий тестовый класс с тестовыми методами для методов <tt>equal</tt> и <tt>scalarMultiplication</tt>.</p>
+            <pre class="examplecode">public class VectorsJUnit3Test extends TestCase {
+    /**
+     * Test of equal method, of class Vectors.
+     */
+    public void testEqual() {
+        System.out.println("equal");
+        int[] a = null;
+        int[] b = null;
+        boolean expResult = false;
+        boolean result = Vectors.equal(a, b);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of scalarMultiplication method, of class Vectors.
+     */
+    public void testScalarMultiplication() {
+        System.out.println("scalarMultiplication");
+        int[] a = null;
+        int[] b = null;
+        int expResult = 0;
+        int result = Vectors.scalarMultiplication(a, b);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+}</pre>
+            </li>
+        </ol>
+        <p>Тело метода каждого созданного теста приводится исключительно в учебных целях и для рассматриваемого теста должно быть изменено.  Если автоматическое создание кода не требуется, можно снять флажок &quot;Default Method Bodies&quot; в диалоговом окне &quot;Create Tests&quot;.</p>
+        
+        <p>При создании средой IDE имен для тестовых методов каждому имени метода предшествует слово <tt>test</tt>, так как в JUnit 3 для определения тестов используются правила именования и отражения.  Чтобы тестовые методы могли быть определены, имя каждого из них должно соответствовать синтаксису <tt>test<i>&lt;NAME&gt;</i></tt>.</p>
+        <p class="notes"><b>Примечание.</b> В JUnit 4 не требуется использовать этот синтаксис для имен тестовых методов, так как для идентификации тестовых методов можно применять аннотации, а тестовый класс больше не используется для расширения <tt>TestCase</tt>.</p>
+
+
+<!-- ===================================================================================== -->            
+        <a name="Exercise_22"></a>
+        <h3>Написание тестовых методов для <tt>Vectors.java</tt></h3>
+        <p>В этом упражнении созданные тестовые методы будут изменены для обеспечения их функционирования, а также будут изменены выходные сообщения по умолчанию.  Изменять выходные сообщения для выполнения тестов не требуется, но может потребоваться их изменение для идентификации результатов, отображаемых в окне вывода &quot;JUnit Test Results&quot;.</p>
+        <ol>
+            <li>Откройте файл <tt>VectorsJUnit3Test.java</tt> в редакторе.</li>
+            <li>Измените скелет теста для <tt>testScalarMultiplication</tt> путем изменения значения <tt>println</tt> и удаления созданных переменных.  После этого тестовый метод должен выглядеть следующим образом (изменения выделены полужирным шрифтом):
+                <pre class="examplecode">public void testScalarMultiplication() {
+    System.out.println("<b>* VectorsJUnit3Test: testScalarMultiplication()</b>");
+    assertEquals(expResult, result);
+}</pre>
+            </li>
+            <li>Затем добавьте несколько подтверждений для тестирования метода.
+                <pre class="examplecode">public void testScalarMultiplication() {
+    System.out.println("* VectorsJUnit3Test: testScalarMultiplication()");
+    <b>assertEquals(  0, Vectors.scalarMultiplication(new int[] { 0, 0}, new int[] { 0, 0}));
+    assertEquals( 39, Vectors.scalarMultiplication(new int[] { 3, 4}, new int[] { 5, 6}));
+    assertEquals(-39, Vectors.scalarMultiplication(new int[] {-3, 4}, new int[] { 5,-6}));
+    assertEquals(  0, Vectors.scalarMultiplication(new int[] { 5, 9}, new int[] {-9, 5}));
+    assertEquals(100, Vectors.scalarMultiplication(new int[] { 6, 8}, new int[] { 6, 8}));</b>
+}</pre>
+                <p>В этом тестовом методе используется метод JUnit <tt>assertEquals</tt>.  Для использования утверждения необходимо указать входные переменные и ожидаемый результат.  Для успешного прохождения теста метод теста должен выдать все ожидаемые результаты на основе переменных, введенных при выполнении тестового метода.  Для охвата возможных перестановок следует добавить достаточное количество утверждений.</p>
+            </li>
+
+            <li>Измените скелет теста для <tt>testEqual</tt> путем удаления созданных тел методов и добавления следующего <tt>println</tt>.
+                <pre class="examplecode">
+    <b>System.out.println("* VectorsJUnit3Test: testEqual()");</b></pre>
+                <p>Тестовый метод в результате должен выглядеть следующим образом:</p>
+                <pre class="examplecode">public void testEqual() {
+    System.out.println("* VectorsJUnit3Test: testEqual()");
+}</pre>
+                
+            <li>Измените метод <tt>testEqual</tt> путем добавления следующих утверждений (выделены полужирным шрифтом).
+                <pre class="examplecode">public void testEqual() {
+    System.out.println("* VectorsJUnit3Test: testEqual()");
+    <b>assertTrue(Vectors.equal(new int[] {}, new int[] {}));
+    assertTrue(Vectors.equal(new int[] {0}, new int[] {0}));
+    assertTrue(Vectors.equal(new int[] {0, 0}, new int[] {0, 0}));
+    assertTrue(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 0}));
+    assertTrue(Vectors.equal(new int[] {5, 6, 7}, new int[] {5, 6, 7}));
+
+    assertFalse(Vectors.equal(new int[] {}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {}));
+
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 1}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 1, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {1, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 1}, new int[] {0, 0, 3}));</b>
+}</pre>
+                <p>В этом тесте используются методы JUnit <tt>assertTrue</tt> и <tt>assertFalse</tt> для тестирования всех возможных результатов.  Для успешного прохождения теста утверждения <tt>assertTrue</tt> должны быть истинными, а <tt>assertFalse</tt> &ndash; ложными.</p>
+                    
+            </li>
+            <li>Сохраните изменения.</li>
+        </ol>
+        
+        <p class="tips">Сравните: <a href="#Exercise_32">Написание тестовых методов для <tt>Vectors.java</tt> (JUnit 4)</a></p>
+        
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_23"></a>
+    <h3>Создание тестового класса для <tt>Utils.java</tt></h3>
+    <p>Теперь следует создать скелеты тестов для <tt>Utils.java</tt>.  При создании теста в предыдущем упражнении в среде IDE запрашивалась версия JUnit.  В этом случае запрос выбора версии не выводится.</p>
+    <ol>
+        <li>Щелкните правой кнопкой мыши <tt>Utils.java</tt> и выберите "Сервис > Создать тесты".</li>
+        <li>В списке "Среда" выберите JUnit (если среда еще не выбрана).</li>
+        <li>В диалоговом окне установите флажки "Инициализатор теста" и "Финализатор теста"(если они еще не установлены).</li>
+        <li>Измените имя тестового класса на <b>UtilsJUnit3Test</b> в диалоговом окне &quot;Create Tests&quot;.  Нажмите кнопку &quot;ОК&quot;.</li>
+    </ol>
+
+    <p>При нажатии кнопки &quot;OK&quot; в среде IDE создается файл теста <tt>UtilsJUnit3Test.java</tt> в каталоге &quot;Test Packages &gt; samples&quot;.  Обратите внимание на то, что помимо создания скелетов тестов <tt>testComputeFactorial</tt>, <tt>testConcatWords</tt> и <tt>testNormalizeWord</tt> для методов в <tt>Utils.java</tt> в среде IDE также создаются методы инициализатора теста <tt>setUp</tt> и финализатора теста <tt>tearDown</tt>.</p>
+               
+<!-- ===================================================================================== -->                
+    <a name="Exercise_24"></a>
+    <h3>Написание тестовых методов для <tt>Utils.java</tt></h3>
+    <p>В этом упражнении будет добавлено несколько тестов, демонстрирующих общие принципы работы тестов JUnit.  К методам также будет добавлен <tt>println</tt>, так как некоторые из методов не выводят данные по умолчанию.  В результате добавления к методам <tt>println</tt> можно просмотреть окно результата тестирования JUnit для проверки выполнения методов и порядка их запуска.</p>
+        
+    <div class="indent">
+        <a name="Exercise_241"></a>
+        <h4>Инициализаторы и финализаторы тестов</h4>
+        <p>Методы <tt>setUp</tt> и <tt>tearDown</tt> используются для инициализации и финализации условий теста.  Для тестирования <tt>Utils.java</tt> методы <tt>setUp</tt> и <tt>tearDown</tt> не требуются, они представлены здесь для демонстрации принципов их работы.</p>
+        <p>Метод <tt>setUp</tt> является методом инициализации теста и выполняется перед каждым тестом в классе теста.  Для выполнения тестов метод инициализации теста не требуется, однако его следует использовать при необходимости инициализации некоторых переменных до выполнения теста.</p>
+
+        <p>Метод <tt>tearDown</tt> является методом финализатора теста и выполняется после каждого тестового примера в тестовом классе.  Метод финализатора теста не требуется для выполнения тестов, однако он может использоваться для удаления всех данных, задействованных при выполнении тестов.</p>
+        <ol>
+            <li>Внесите следующие изменения (выделены полужирным шрифтом) в код <tt>println</tt> каждого метода.
+            <pre class="examplecode">@Override
+protected void setUp() throws Exception {
+    super.setUp();
+    <b>System.out.println("* UtilsJUnit3Test: setUp() method");</b>
+}
+
+@Override
+protected void tearDown() throws Exception {
+    super.tearDown();
+    <b>System.out.println("* UtilsJUnit3Test: tearDown() method");</b>
+}</pre>
+            <p>При выполнении теста для каждого метода в окне вывода &quot;Test Results&quot; отображается текст <tt>println</tt>.  Если код <tt>println</tt> не добавлен, окно результата выполнения методов не появится.</p>
+            </li>
+        </ol>
+
+        <a name="Exercise_242"></a>
+        <h4>Тестирование с помощью простого подтверждения</h4>
+        <p>Этот простой тест предназначен для тестирования метода <tt>concatWords</tt>.  Вместо использования созданного метода теста <tt>testConcatWords</tt> будет добавлен новый метод теста с именем <tt>testHelloWorld</tt>, использующий единственное простое утверждение для проверки правильности сцепления строк методом.  Для утверждения <tt>assertEquals</tt> в тесте используется синтаксис <tt>assertEquals(<i>EXPECTED_RESULT, ACTUAL_RESULT</i>)</tt> для проверки соответствия фактического результата ожидаемому результату.  Если входные данные для метода <tt>concatWords</tt> &ndash; &quot;<tt>Hello</tt>&quot;, &quot;<tt>, </tt>&quot;, &quot;<tt>world</tt>&quot; и &quot;<tt>!</tt>&quot;, то ожидаемый результат должен быть равен <tt>&quot;Hello, world!&quot;</tt>.</p>
+        
+        <ol>
+            <li>Удалите автоматически созданный тестовый метод <tt>testConcatWords</tt> из класса <tt>UtilsJUnit3Test.java</tt>.</li>
+            <li>Добавьте следующий метод для тестирования метода <tt>concatWords</tt>.
+
+            <pre class="examplecode"><b>public void testHelloWorld() {
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));
+}</b></pre> 
+            </li>
+            <li>Добавьте оператор <tt>println</tt> для вывода на экран текста о тесте в окне &quot;JUnit Test Results&quot;.
+                <pre class="examplecode">public void testHelloWorld() {
+    <b>System.out.println("* UtilsJUnit3Test: test method 1 - testHelloWorld()");</b>
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));</pre>
+            </li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_342">Тестирование с помощью простого утверждения (JUnit 4)</a></p>
+
+        <a name="Exercise_243"></a>
+        <h4>Тестирование с использованием тайм-аута</h4>
+        <p>Этот тест демонстрирует проверку метода на длительность выполнения.  Если метод выполняется слишком долго, поток выполнения теста прерывается, а тест завершается сбоем.  Можно указать предел времени для теста.</p>
+        
+        <p>Тестовый метод вызывает метод <tt>computeFactorial</tt> в <tt>Utils.java</tt>.  Можно предположить, что метод <tt>computeFactorial</tt> правилен, но в этом случае требуется его протестировать на выполнение вычисления за 1000 миллисекунд.  Поток выполнения <tt>computeFactorial</tt> и поток выполнения теста запускаются одновременно.  Поток выполнения теста останавливается через 1000 миллисекунд и выдает <tt>TimeoutException</tt>, если поток выполнения <tt>computeFactorial</tt> не завершается раньше.  Потребуется добавить сообщение для его отображения при выдаче <tt>TimeoutException</tt>.</p>
+
+        <ol>
+            <li>Удалите созданный тестовый метод <tt>testComputeFactorial</tt>.</li>
+            <li>Добавьте метод <tt>testWithTimeout</tt>, вычисляющий факториал случайного числа.
+            <pre class="examplecode"><b>public void testWithTimeout() throws InterruptedException, TimeoutException {
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+
+    Thread testThread = new Thread() {
+        public void run() {
+            System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        }
+    };
+}</b></pre>
+            </li>
+            <li>Исправьте операторы импорта для импорта <tt>java.util.concurrent.TimeoutException</tt>.</li>
+            <li>Добавьте к методу следующий код (выделен полужирным шрифтом) для прерывания потока выполнения и вывода на экран сообщения в случае слишком долгого выполнения теста.
+            <pre class="examplecode">
+    Thread testThread = new Thread() {
+        public void run() {
+            System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        }
+    };
+
+    <b>testThread.start();
+    Thread.sleep(1000);
+    testThread.interrupt();
+
+    if (testThread.isInterrupted()) {
+        throw new TimeoutException("the test took too long to complete");
+    }</b>
+}</pre>
+            <p>Можно изменить строку <tt>Thread.sleep</tt> для изменения количества миллисекунд до выдачи тайм-аута.</p>
+            </li>
+            <li>Добавьте следующий код <tt>println</tt> (выделен полужирным шрифтом) для отображения текста о тесте в окне &quot;JUnit Test Results&quot;.
+            <pre class="examplecode">public void testWithTimeout() throws InterruptedException, TimeoutException {
+    <b>System.out.println("* UtilsJUnit3Test: test method 2 - testWithTimeout()");</b>
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+            </pre>
+            </li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_343">Тестирование с использованием тайм-аута (JUnit 4)</a></p>
+ 
+ 
+        <a name="Exercise_244"></a>
+        <h4>Тестирование на ожидаемое исключение</h4>
+        <p>Этот тест предназначен для тестирования на ожидаемое исключение.  Метод завершится сбоем, если не будет выдано ожидаемое исключение.  В этом случае выполняется тестирование метода <tt>computeFactorial</tt> на результат <tt>IllegalArgumentException</tt> с отрицательной входной переменной (-5).</p>
+        <ol>
+            <li>Добавьте следующий метод <tt>testExpectedException</tt> для вызова метода <tt>computeFactorial</tt> со входной переменной -5.
+            <pre class="examplecode"><b>public void testExpectedException() {
+    try {
+        final int factorialOf = -5;
+        System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        fail("IllegalArgumentException was expected");
+    } catch (IllegalArgumentException ex) {
+    }
+}</b></pre>
+            </li>
+            <li>Добавьте следующий код <tt>println</tt> (выделен полужирным шрифтом) для отображения текста о тесте в окне &quot;JUnit Test Results&quot;.
+            <pre class="examplecode">public void testExpectedException() {
+    <b>System.out.println("* UtilsJUnit3Test: test method 3 - testExpectedException()");</b>
+    try {</pre>
+            </li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_344">Тестирование на ожидаемое исключение (JUnit 4)</a></p>
+        
+        
+        <a name="Exercise_245"></a>
+        <h4>Отключение теста</h4>
+        <p>Этот тест включает способы временного отключения тестового метода.  В JUnit 3 в качестве тестовых методов распознаются только методы с именем, начинающимся с <tt>test</tt>.  В этом случае для отключения тестового метода к его имени добавляется приставка <tt>DISABLED_</tt>.</p>
+
+        <ol>
+            <li>Удалите созданный тестовый метод <tt>testNormalizeWord</tt>.</li>
+            <li>Добавьте следующий тестовый метод к тестовму классу.
+            <pre class="examplecode"><b>public void testTemporarilyDisabled() throws Exception {
+    System.out.println("* UtilsJUnit3Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</b></pre>
+            <p>При выполнении тестового класса будет выполнен тестовый метод <tt>testTemporarilyDisabled</tt>.</p>
+            </li>
+            <li>Введите <tt>DISABLED_</tt> (выделено полужирным шрифтом) перед именем тестового метода.
+            <pre class="examplecode">public void <b>DISABLED_</b>testTemporarilyDisabled() throws Exception {
+    System.out.println("* UtilsJUnit3Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</pre>
+            </li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_345">Отключение теста (JUnit 4)</a></p>
+    </div>
+   
+   <p>После написания всех тестов можно выполнить тест и просмотреть результат в окне &quot;JUnit Test Results&quot;.</p>
+    
+<!-- ===================================================================================== -->
+    <a name="Exercise_25"></a>
+    <h3>Выполнение тестов</h3>
+    <p>При выполнении теста JUnit результаты отображаются в окне "Результаты теста JUnit" в среде IDE. Можно выполнить отдельные тестовые классы JUnit либо выбрать в главном меню &quot;Run &gt; Test <i>ИМЯ_ПРОЕКТА</i>&quot; для выполнения всех тестов проекта.  При выборе &quot;Run &gt; Test&quot; в среде IDE выполняются все тестовые классы в папке &quot;Test Packages&quot;.  Для выполнения отдельного класса тестирования щелкните правой кнопкой мыши класс теста в узле 'Пакеты тестов' и выберите 'Выполнить файл'.</p>
+    
+    <ol>
+        <li>Выберите "Выполнить > Выбрать основной проект" в главном меню, затем выберите проект JUnit-Sample.</li>
+        <li>Выберите &quot;Run &gt; Test Project (JUnit-Sample)&quot; из главного меню.</li>
+        <li>Выберите "Окно > Инструменты IDE > Результаты теста", чтобы открыть окно "Результаты теста".</li>
+    </ol>
+    
+    <p>При выполнении теста будет получен один из следующих результатов в окне &quot;JUnit Test Results&quot;.</p>
+    
+    <a href="../../../images_www/articles/72/java/junit/junit3-test-pass.png"><img alt="Снимок окна &apos;Результаты теста JUnit&apos;" class="box" src="../../../images_www/articles/72/java/junit/junit3-test-pass-sm.png" title="Окно результатов теста JUnit с отображением пройденного теста. Щелкните, чтобы увеличить изображение."></a>
+    <p>В примере на этом рисунке (для увеличения щелкните изображение) проект успешно прошел все тесты.  На левой панели выводятся результаты отдельных тестовых методов, а на правой панели выводится результат теста.  В окне вывода отображается порядок выполнения тестов.  Добавление к каждому тестовому методу <tt>println</tt> обеспечивает вывод имени теста в окне вывода.  Можно также отметить, что в <tt>UtilJUnit3Test</tt> метод <tt>setUp</tt> выполнялся перед каждым тестовым методу, а метод <tt>tearDown</tt> выполнялся после каждого метода.</p>
+    <a href="../../../images_www/articles/72/java/junit/junit3-test-fail.png"><img alt="Снимок окна &apos;Результаты теста JUnit&apos;" class="box" src="../../../images_www/articles/72/java/junit/junit3-test-fail-sm.png" title="Окно результатов теста JUnit с отображением неудачно пройденного теста. Щелкните, чтобы увеличить изображение."></a>
+    <p>В примере на этом рисунке (для увеличения щелкните изображение) тестирование проекта завершилось сбоем.  Выполнение метода <tt>testTimeout</tt> заняло слишком много времени, поэтому поток выполнения теста был прерван и явился причиной сбоя теста.  Для вычисления факториала случайного числа потребовалось более 1000 миллисекунд (22 991).</p>
+
+
+    </div>
+        <p>Следующим действием после создания классов модульных тестов будет создание тестовых наборов. Описание способа запуска указанных тестов группой вместо выполнения каждого теста по отдельности приводится в разделе <a href="#Exercise_41">Создание наборов тестов &quot;JUnit 3&quot;</a>.</p>
+    
+    
+    
+    
+    
+            
+<!-- ===================================================================================== -->
+<!-- JUnit 4 Tests -->  
+<a name="Exercise_30"></a>
+<h2>Написание тестов JUnit 4</h2>
+    <p>В этом упражнении будут созданы модульные тесты JUnit 4 для классов <tt>Vectors.java</tt> и <tt>Utils.java</tt>.  Тесты JUnit 4 аналогичны тестам JUnit 3, однако при написании этих тестов применяется более простой синтаксис. </p>
+    
+    <p>Для создания скелетов тестов на основе классов проекта будут использоваться мастера IDE. При первом использовании среды IDE для создания некоторых скелетов тестов будет выведен запрос на выбор версии JUnit. </p>
+        
+    <p class="notes"><b>Примечание.</b> Если JUnit 3.x уже выбрана как версия по умолчанию для тестирования, необходимо изменить настройки по умолчанию на настройки версии JUnit 4.x. Чтобы изменить версию по умолчанию JUnit, разверните узел 'Библиотеки тестов', щелкните правой кнопкой мыши библиотеку JUnit и выберите 'Удалить'. Теперь можно использовать диалоговое окно &quot;Добавить библиотеку&quot;, чтобы добавить библиотеку JUnit 4, или выбрать версию 4.х, если при создании нового теста требуется выбрать версию JUnit. Тесты JUnit 3 также можно будет выполнять, но для новых тестов будет использоваться JUnit 4.</p>
+    
+    
+    <div class="indent">
+<!-- ===================================================================================== -->
+        <a name="Exercise_31"></a>
+        <h3>Создание тестового класса для <tt>Vectors.java</tt></h3>
+        <p>В этом упражнении будут созданы скелеты теста JUnit для <tt>Vectors.java</tt>.</p>
+        <p class="notes"><b>Примечание.</b> Если используется NetBeans IDE 7.1 или более ранняя версия, указывать тип тестовой среды не требуется, так как JUnit выбран по умолчанию. В NetBeans IDE 7.2 можно выбрать в качестве тестовой среды JUnit или TestNG.</p>
+        
+        <ol>
+            <li>Щелкните правой кнопкой мыши <tt>Vectors.java</tt> и выберите "Сервис > Создать тесты".</li>
+            <li>В диалоговом окне &quot;Create Tests&quot; измените имя тестового класса на <b>VectorsJUnit4Test</b>.
+            <p>В результате изменения имени тестового класса появится предупреждение об изменении имени.  Имя по умолчанию &ndash; это имя тестируемого класса с добавленным словом &quot;Test&quot;.  Например, для класса <tt>MyClass.java</tt> именем по умолчанию тестового класса будет <tt>MyClassTest.java</tt>.  В отличие от JUnit 3, в JUnit 4 добавление слова &quot;Test&quot; к имени теста не обязательно.  Рекомендуется сохранить имя по умолчанию, но так как в рамках данного руководства все тесты JUnit создаются в одном пакете, имена тестовых классов должны быть различны.</p></li>
+            <li>В списке "Среда" выберите JUnit.</li>
+            <li>Снимите флажки &quot;Test Initializer&quot; и &quot;Test Finalizer&quot;.  Нажмите кнопку &quot;ОК&quot;.<br /> <img alt="снимок диалогового окна &apos;Создать тесты для JUnit 4&apos;" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit4-vectors-createtests.png" title="Диалоговое окно &apos;Создать тесты для JUnit 4&apos;">
+            </li>
+            <li>В диалоговом окне &quot;Select JUnit Version&quot; выберите JUnit 4.x. Нажмите кнопку "Выбрать".<br /> <img alt="Диалоговое окно &apos;Выбрать версию JUnit&apos;" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit4-select-version.png" title="Диалоговое окно &apos;Выбрать версию JUnit&apos;">
+            </li>
+        </ol>
+        <p>При нажатии кнопки &quot;ОК&quot; среда IDE создает тестовый класс <tt>VectorsJUnit4Test.java</tt> в пакете <tt>sample</tt> под узлом &quot;Тестовые пакеты&quot; окна проектов.</p>
+
+        <img alt="снимок окна &apos;Проекты&apos;" class="margin-around box" src="../../../images_www/articles/72/java/junit/projects-window3.png" title="структура проекта JUnit-Sample с классами тестов JUnit 3 и JUnit 4">
+        <p class="notes"><strong>Примечание.</strong> Для создания тестов в пакетах тестов необходимо указать каталог.  Местоположение по умолчанию для каталога пакетов тестов находится на корневом уровне проекта, но можно указать другое местоположение для каталога в диалоговом окне свойств проекта &quot;Properties&quot;.</p>
+
+
+        <p>При просмотре в редакторе <tt>VectorsJUnit3Test.java</tt> можно отметить, что в среде IDE созданы тестовые методы <tt>testEqual</tt> и <tt>testScalarMultiplication</tt>.  В <tt>VectorsJUnit4Test.java</tt> для каждого тестового метода используется аннотация <tt>@Test</tt>. В среде IDE имена для тестовых методов создаются на основе имен метода в <tt>Vectors.java</tt>, но к имени тестового метода не обязательно добавлять <tt>test</tt>.  Тело по умолчанию каждого созданного тестового метода представлено исключительно в учебных целях и для фактического использования должно быть изменено.</p>
+        
+        <p class="tips">Если автоматическое создание тел методов не требуется, можно снять флажок &quot;Default Method Bodies&quot; в диалоговом окне &quot;Create Tests&quot;.</p>
+        
+        
+        <p>В среде IDE также создаются следующие методы инициализатора и финализатора классов теста:</p>
+            <pre class="examplecode">@BeforeClass
+public static void setUpClass() throws Exception {
+}
+
+@AfterClass
+public static void tearDownClass() throws Exception {
+}</pre>
+        
+        <p>В среде IDE методы инициализатора и финализатора классов создаются по умолчанию при создании класса теста JUnit 4.  Аннотации <tt>@BeforeClass</tt> и <tt>@AfterClass</tt> используются для выбора методов, которые должны быть запущены до и после выполнения тестового класса.  Методы можно удалить, так как для тестирования <tt>Vectors.java</tt> они не нужны.</p>
+        
+        <p class="tips">Также можно выполнить настройку методов, созданных по умолчанию при настройке свойств JUnit в окне &quot;Options&quot;.</p>
+        
+        <p class="notes"><strong>Примечание.</strong> Для тестов JUnit обраите внимание, что по умолчанию среда IDE добавляет статическое объявление импорта для <tt>org.junit.Assert.*</tt>.</p>
+        
+        
+
+<!-- ===================================================================================== -->            
+        <a name="Exercise_32"></a>
+        <h3>Написание тестовых методов для <tt>Vectors.java</tt></h3>
+        <p>В этом упражнении будет изменен каждый из автоматически созданных тестовых методов для тестирования методов при помощи метода JUnit <tt>assert</tt> и изменения имен тестовых методов.  JUnit 4 предоставляет дополнительную гибкость при именовании тестовых методов, поскольку они определяются аннотацией <tt>@Test</tt> и не требуют добавления слова <tt>test</tt> к имени.</p>
+        
+        <ol>
+            <li>Откройте в редакторе <tt>VectorsJUnit4Test.java</tt>.</li>
+            <li>Измените тестовый метод для <tt>testScalarMultiplication</tt> путем изменения имени метода, значения <tt>println</tt> и удаления созданных переменных.  После этого тестовый метод должен выглядеть следующим образом (изменения выделены полужирным шрифтом):
+            <pre class="examplecode">@Test
+public void <b>ScalarMultiplicationCheck</b>() {
+    System.out.println("<b>* VectorsJUnit4Test: ScalarMultiplicationCheck()</b>");
+    assertEquals(expResult, result);
+}</pre>
+            <p class="notes"><strong>Примечание.</strong> При написании тестов изменять результат вывода не требуется.  В этом упражнении это выполнено для упрощения идентификации результатов тестирования в окне вывода.</p>
+            </li>
+            <li>Затем добавьте несколько подтверждений для тестирования метода.
+            <pre class="examplecode">@Test
+public void ScalarMultiplicationCheck() {
+    System.out.println("* VectorsJUnit4Test: ScalarMultiplicationCheck()");
+    <b>assertEquals(  0, Vectors.scalarMultiplication(new int[] { 0, 0}, new int[] { 0, 0}));
+    assertEquals( 39, Vectors.scalarMultiplication(new int[] { 3, 4}, new int[] { 5, 6}));
+    assertEquals(-39, Vectors.scalarMultiplication(new int[] {-3, 4}, new int[] { 5,-6}));
+    assertEquals(  0, Vectors.scalarMultiplication(new int[] { 5, 9}, new int[] {-9, 5}));
+    assertEquals(100, Vectors.scalarMultiplication(new int[] { 6, 8}, new int[] { 6, 8}));</b>
+}</pre>
+            <p>В этом тестовом методе используется метод JUnit <tt>assertEquals</tt>.  Для использования утверждения необходимо указать входные переменные и ожидаемый результат.  Для успешного прохождения теста метод теста должен выдать все ожидаемые результаты на основе переменных, введенных при выполнении тестового метода.  Для охвата возможных перестановок следует добавить достаточное количество утверждений.</p>
+            </li>
+            <li>Измените имя тестового метода с <tt>testEqual</tt> на <tt>equalsCheck</tt>.</li>
+            <li>Удалите созданное тело тестового метода <tt>equalsCheck</tt>.</li>
+            <li>Добавьте следующий метод <tt>println</tt> в тестовый метод <tt>equalsCheck</tt>.
+            <pre class="examplecode"><b>System.out.println("* VectorsJUnit4Test: equalsCheck()");</b></pre>
+            <p>Тестовый метод в результате должен выглядеть следующим образом:</p>
+            <pre class="examplecode">@Test
+public void equalsCheck() {
+    System.out.println("* VectorsJUnit4Test: equalsCheck()");
+}</pre>
+            <li>Измените метод <tt>equalsCheck</tt> путем добавления следующих утверждений (выделены полужирным шрифтом).
+            <pre class="examplecode">@Test
+public void equalsCheck() {
+    System.out.println("* VectorsJUnit4Test: equalsCheck()");
+    <b>assertTrue(Vectors.equal(new int[] {}, new int[] {}));
+    assertTrue(Vectors.equal(new int[] {0}, new int[] {0}));
+    assertTrue(Vectors.equal(new int[] {0, 0}, new int[] {0, 0}));
+    assertTrue(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 0}));
+    assertTrue(Vectors.equal(new int[] {5, 6, 7}, new int[] {5, 6, 7}));
+
+    assertFalse(Vectors.equal(new int[] {}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {}));
+
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 1}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 1, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {1, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 1}, new int[] {0, 0, 3}));</b>
+}</pre>
+            <p>В этом тесте используются методы JUnit <tt>assertTrue</tt> и <tt>assertFalse</tt> для тестирования всех возможных результатов.  Для успешного прохождения теста утверждения <tt>assertTrue</tt> должны быть истинными, а <tt>assertFalse</tt> &ndash; ложными.</p>
+            </li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_22">Написание тестовых методов для <tt>Vectors.java</tt> (JUnit 3)</a></p>
+
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_33"></a>
+    <h3>Создание тестового класса для <tt>Utils.java</tt></h3>
+    <p>Теперь перейдем к созданию тестовых методов JUnit для <tt>Utils.java</tt>.  При создании тестового класса в предыдущем упражнении в среде IDE выводился запрос на выбор версии JUnit.  В этот раз выбирать версию не потребуется, так как версия JUnit уже определена, и все последующие тесты JUnit будут созданы с использованием этой версии.</p>
+    <p class="notes"><strong>Примечание.</strong> Если выбрана версия JUnit 4, написание и выполнение тестов JUnit 3 также допустимо, но в среде IDE для создания скелетов теста используется шаблон JUnit 4.</p>
+    <ol>
+        <li>Щелкните правой кнопкой мыши <tt>Utils.java</tt> и выберите "Сервис > Создать тесты".</li>
+        <li>В списке "Среда" выберите JUnit (если среда еще не выбрана).</li>
+        <li>В диалоговом окне установите флажки "Инициализатор теста" и "Финализатор теста"(если они еще не установлены).</li>
+        <li>В диалоговом окне &quot;Create Tests&quot; измените имя тестового класса на <b>UtilsJUnit4Test</b>.  Нажмите кнопку &quot;ОК&quot;.</li>
+    </ol>
+
+    <p>При нажатии кнопки &quot;OК&quot; в среде IDE создается тестовый файл <tt>UtilsJUnit4Test.java</tt> в каталоге &quot;Тестовые пакеты&quot; &gt; демонстрационный каталог. При этом в среде IDE будут созданы тестовые методы <tt>testComputeFactorial</tt>, <tt>testConcatWords</tt> и <tt>testNormalizeWord</tt> для методов в <tt>Utils.java</tt>.  В среде IDE также создаются методы инициализатора и финализатора для теста и тестового класса. 
+    </p>
+               
+<!-- ===================================================================================== -->                
+    <a name="Exercise_34"></a>
+    <h3>Написание тестовых методов для <tt>Utils.java</tt></h3>
+    <p>В этом упражнении будет добавлено несколько тестов, демонстрирующих общие элементы теста JUnit.  Также необходимо добавить в методы <tt>println</tt>, так как выполнение некоторых методов не приводит к отображению в окне &quot;JUnit Test Results&quot; информации, указывающей на выполнение или успешное прохождение теста.  Добавление <tt>println</tt> в методы позволит отслеживать процесс выполнения методов и порядок их выполнения.</p>
+        
+    <div class="indent">
+        <a name="Exercise_341"></a>
+        <h4>Инициализаторы и финализаторы тестов</h4>
+        <p>При создании тестового класса для <tt>Utils.java</tt> в среде IDE создаются аннотированные методы инициализатора и финализатора.  В качестве имени метода можно выбрать любое имя, так как обязательных требований в отношении имен не существует.</p>
+        <p class="notes"><strong>Примечание.</strong> Для тестирования <tt>Utils.java</tt> не требуются методы инициализатора и финализатора, но они рассматриваются в этом руководстве для демонстрации принципов их работы.</p>
+        <p>В JUnit 4 для обозначения следующих типов методов инициализатора и финализатора можно использовать аннотации.</p>
+        
+        <ul>
+            <li><b>Инициализатор класса тестов.</b> Аннотация <tt>@BeforeClass</tt> отмечает метод как метод инициализации класса теста. Метод инициализации тестового класса запускается только один раз и выполняется только перед выполнением любых других методов в тестовом классе.  Например, вместо создания подключения к базе данных в инициализаторе теста и создания нового подключения перед каждым тестовым методом можно использовать инициализатор тестового класса для открытия подключения перед выполнением тестов.  Затем можно закрыть подключение в финализаторе тестового класса.</li>
+
+            <li><b>Финализатор класса тестов.</b> Аннотация <tt>@AfterClass</tt> помечает метод как метод финализации класса теста. Метод финализатора тестового класса выполняется только один раз и только после выполнения других методов в тестовом классе.</li>
+            
+            <li><b>Инициализатор теста.</b> Аннотация <tt>@Before</tt> отмечает метод как метод инициализации теста. Метод инициализации теста выполняется перед каждым тестом в тестовом классе.  Для выполнения тестов метод инициализации теста не требуется, однако его следует использовать при необходимости инициализации некоторых переменных до выполнения теста.</li>
+
+            <li><b>Финализатор теста.</b> Аннотация <tt>@After</tt> помечает метод как метод финализации теста. Метод финализатора теста выполняется после каждого теста в тестовом классе.  Метод финализатора теста не требуется для выполнения тестов, но финализатор может использоваться для удаления всех данных, задействованных при выполнении тестов.</li>
+        </ul>
+        
+        <p>Измените следующее (выделено полужирным шрифтом) в <tt>UtilsJUnit4Test.java</tt>.</p>
+        <pre class="examplecode">@BeforeClass
+public static void setUpClass() throws Exception {
+    <b>System.out.println("* UtilsJUnit4Test: @BeforeClass method");</b>
+}
+
+@AfterClass
+public static void tearDownClass() throws Exception {
+    <b>System.out.println("* UtilsJUnit4Test: @AfterClass method");</b>
+}
+
+@Before
+public void setUp() {
+    <b>System.out.println("* UtilsJUnit4Test: @Before method");</b>
+}
+
+@After
+public void tearDown() {
+    <b>System.out.println("* UtilsJUnit4Test: @After method");</b>
+}</pre>
+
+        <p class="tips">Сравните: <a href="#Exercise_241">Инициализаторы и финализаторы тестов (JUnit 3)</a></p>
+        <p>При выполнении тестового класса добавленный ранее текст <tt>println</tt> отображается в окне вывода &quot;JUnit Test Results&quot;.  Таким образом, информация, указывающая на выполнение методов инициализатора и финализатора, выводится только в том случае, если был добавлен <tt>println</tt>.</p>
+
+        <a name="Exercise_342"></a>
+        <h4>Тестирование с помощью простого подтверждения</h4>
+        <p>Этот простой тест предназначен для тестирования метода <tt>concatWords</tt>.  Вместо использования созданного тестового метода <tt>testConcatWords</tt> будет добавлен новый тестовый метод с именем <tt>helloWorldCheck</tt>, использующий единственное простое утверждение для проверки правильности сцепления строк методом.  Для утверждения <tt>assertEquals</tt> в тесте используется синтаксис <tt>assertEquals(<i>EXPECTED_RESULT, ACTUAL_RESULT</i>)</tt> для проверки соответствия фактического результата ожидаемому результату.  Если входные данные для метода <tt>concatWords</tt> &ndash; &quot;<tt>Hello</tt>&quot;, &quot;<tt>,</tt>&quot;, &quot;<tt>world</tt>&quot; и &quot;<tt>!</tt>&quot;, то ожидаемый результат должен быть равен <tt>&quot;Hello, world!&quot;</tt>.</p>
+        
+        <ol>
+            <li>Удалите созданный тестовый метод <tt>testConcatWords</tt>.</li>
+            <li>Добавьте следующий метод <tt>helloWorldCheck</tt> для тестирования <tt>Utils.concatWords</tt>.
+
+            <pre class="examplecode"><b>@Test
+public void helloWorldCheck() {
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));
+}</b></pre> 
+            </li>
+            <li>Добавьте оператор <tt>println</tt> для вывода на экран текста о тесте в окне &quot;JUnit Test Results&quot;.
+                <pre class="examplecode">@Test
+public void helloWorldCheck() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 1 - helloWorldCheck()");</b>
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));</pre>
+            </li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_242">Тестирование с помощью простого утверждения (JUnit 3)</a></p>
+
+
+        <a name="Exercise_343"></a>
+        <h4>Тестирование с использованием тайм-аута</h4>
+        <p>Этот тест демонстрирует проверку метода на длительность выполнения.  Если метод выполняется слишком долго, поток выполнения теста прерывается, а тест завершается сбоем.  Можно указать предел времени для теста.</p>
+        
+        <p>Тестовый метод вызывает метод <tt>computeFactorial</tt> в <tt>Utils.java</tt>.  Можно предположить, что метод <tt>computeFactorial</tt> правилен, но в этом случае требуется его протестировать на выполнение вычисления за 1000 миллисекунд.  Это выполняется путем прерывания потока выполнения теста через 1000 миллисекунд.  При прерывании потока выполнения тестовый метод выдает <tt>TimeoutException</tt>.</p>
+
+        <ol>
+            <li>Удалите созданный тестовый метод <tt>testComputeFactorial</tt>.</li>
+            <li>Добавьте метод <tt>testWithTimeout</tt>, вычисляющий факториал случайного числа.
+            <pre class="examplecode"><b>@Test
+public void testWithTimeout() {
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</b></pre>
+            </li>
+            <li>Добавьте следующий код (выделен полужирным шрифтом) для определения тайм-аута и прерывания потока выполнения в случае слишком долгого выполнения метода.
+            <pre class="examplecode">@Test<b>(timeout=1000)</b>
+public void testWithTimeout() {
+    final int factorialOf = 1 + (int) (30000 * Math.random());</pre>
+            <p>Как видно в примере, для тайм-аута установлено значение 1000 миллисекунд.</p>
+            </li>
+            <li>Добавьте следующий код <tt>println</tt> (выделен полужирным шрифтом) для отображения текста о тесте в окне &quot;JUnit Test Results&quot;.
+            <pre class="examplecode">@Test(timeout=1000)
+public void testWithTimeout() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 2 - testWithTimeout()");</b>
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+            </pre>
+            </li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_243">Тестирование с использованием тайм-аута (JUnit 3)</a></p>
+
+        <a name="Exercise_344"></a>
+        <h4>Тестирование на ожидаемое исключение</h4>
+        <p>Этот тест предназначен для тестирования на ожидаемое исключение.  Метод завершится сбоем, если не будет выдано ожидаемое исключение.  В этом случае выполняется тестирование метода <tt>computeFactorial</tt> на результат <tt>IllegalArgumentException</tt> с отрицательной входной переменной (-5).</p>
+        <ol>
+            <li>Добавьте следующий метод <tt>testExpectedException</tt> для вызова метода <tt>computeFactorial</tt> со входной переменной -5.
+            <pre class="examplecode"><b>@Test
+public void checkExpectedException() {
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</b></pre>
+            </li>
+            <li>Добавьте следующее свойство (выделено полужирным шрифтом) в аннотацию <tt>@Test</tt> для определения необходимости выдачи <tt>IllegalArgumentException</tt> в результате выполнения теста.
+            <pre class="examplecode">@Test<b>(expected=IllegalArgumentException.class)</b>
+public void checkExpectedException() {
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</pre>
+            
+            </li>
+            <li>Добавьте следующий код <tt>println</tt> (выделен полужирным шрифтом) для отображения текста о тесте в окне &quot;JUnit Test Results&quot;.
+            <pre class="examplecode">@Test (expected=IllegalArgumentException.class)
+public void checkExpectedException() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 3 - checkExpectedException()");</b>
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</pre>
+            </li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_244">Тестирование на ожидаемое исключение (JUnit 3)</a></p>
+
+        <a name="Exercise_345"></a>
+        <h4>Отключение теста</h4>
+        <p>Этот тест включает способы временного отключения тестового метода.  Для отключения теста в JUnit 4 следует добавить аннотацию <tt>@Ignore</tt>.</p>
+
+        <ol>
+            <li>Удалите созданный тестовый метод <tt>testNormalizeWord</tt>.</li>
+            <li>Добавьте следующий тестовый метод к тестовму классу.
+            <pre class="examplecode"><b>@Test
+public void temporarilyDisabledTest() throws Exception {
+    System.out.println("* UtilsJUnit4Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</b></pre>
+            <p>При выполнении тестового класса будет выполнен тестовый метод <tt>temporarilyDisabledTest</tt>.</p>
+            </li>
+            <li>Для отключения теста добавьте аннотацию <tt>@Ignore</tt> (выделена полужирным шрифтом) над <tt>@Test</tt>.
+            <pre class="examplecode"><b>@Ignore</b>
+@Test
+public void temporarilyDisabledTest() throws Exception {
+    System.out.println("* UtilsJUnit4Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</pre>
+            </li>
+            <li>Исправьте операторы импорта для импорта <tt>org.junit.Ignore</tt>.</li>
+        </ol>
+        <p class="tips">Сравните: <a href="#Exercise_245">Отключение теста (JUnit 3)</a></p>
+    </div>
+   
+   <p>Теперь после написания всех тестов можно выполнить тест и просмотреть результат в окне &quot;JUnit Test Results&quot;.</p>
+    
+<!-- ===================================================================================== -->
+    
+    <a name="Exercise_35"></a>
+    <h3>Выполнение тестов</h3>
+    <p>
+    В среде IDE можно выполнять тесты JUnit для всего приложения или для отдельных файлов и просматривать результаты.  Самым простым способом выполнения всех модульных тестов для проекта является выбор в главном меню &quot;Run &gt; Test <i>&lt;ИМЯ_ПРОЕКТА&gt;</i>&quot;.  При выборе этого метода в среде IDE запускаются все тестовые классы в папке с тестами.  Для выполнения отдельного класса тестирования щелкните правой кнопкой мыши класс теста в узле 'Пакеты тестов' и выберите 'Выполнить файл'.</p>
+    
+    <ol>
+        <li>Щелкните правой кнопкой мыши <tt>UtilsJUnit4Test.java</tt> в окне &quot;Projects&quot;.</li>
+        <li>Выберите тестовый файл.</li>
+        <li>Выберите "Окно > Инструменты IDE > Результаты теста", чтобы открыть окно "Результаты теста".</li>
+    </ol>
+    
+    <p>При запуске <tt>UtilsJUnit4Test.java</tt> в среде IDE выполняются только тесты в тестовом классе.  На следующем рисунке представлен пример окна &quot;JUnit Test Results&quot; в случае успешного прохождения классом всех тестов.</p>
+    
+    <a href="../../../images_www/articles/72/java/junit/junit4-utilstest-pass.png"><img alt="Снимок окна &apos;Результаты теста JUnit&apos;" class="box" src="../../../images_www/articles/72/java/junit/junit4-utilstest-pass-sm.png" title="Окно результатов теста JUnit с отображением пройденного теста. Щелкните, чтобы увеличить изображение."></a>
+    <p>В примере на рисунке (для увеличения щелкните изображение) в среде IDE был выполнен тест JUnit для <tt>Utils.java</tt>, при этом класс успешно прошел все тесты.  На левой панели выводятся результаты отдельных тестовых методов, а на правой панели выводится результат теста.  В окне вывода отображается порядок выполнения тестов.  <tt>println</tt>, который был добавлен в тестовые методы, печатает имя теста в окне &quot;Результаты тестирования&quot; и в окне &quot;Вывод&quot;.</p>
+    <p>В рассматриваемом примере в тесте <tt>UtilsJUnit4Test</tt> метод инициализатора тестового класса с аннотацией <tt>@BeforeClass</tt> был выполнен до выполнения всех других методов и только один раз.  Метод финализатора тестового класса с аннотацией <tt>@AfterClass</tt> был выполнен последним, после выполнения всех остальных методов в классе.  Метод инициализатора теста с аннотацией <tt>@Before</tt> выполнялся до выполнения каждого тестового метода.</p>
+    
+    <p>Элементы управления в левой части окна &quot;Результаты тестирования&quot; позволяют легко перезапускать тесты. Чтобы переключаться между всеми результатами тестов и только сбойными тестами, можно использовать фильтр. Для того чтобы пропустить сбой и перейти к следующему, используются стрелки.</p>
+
+    <p class="tips">Если щелкнуть правой кнопкой мыши результат теста в окне 'Результаты теста', во всплывающем меню можно выбрать переход к источнику теста, повторное выполнение теста или отладку теста.</p>
+
+</div>
+    
+<p>Следующее действие после создания классов модульного теста заключается в создании наборов тестов.  Описание способа запуска указанных тестов группой вместо выполнения каждого теста по отдельности приводится в разделе <a href="#Exercise_42">Создание наборов тестов &quot;JUnit 4&quot;</a>.</p>
+    
+            
+<!-- ===================================================================================== -->
+<!-- JUnit 4 Tests -->
+    <a name="Exercise_40"></a>
+    <h2>Создание наборов тестов</h2>
+    <p>При создании тестов для проекта обычно необходимо создать большое количество тестовых классов.  При выполнении тестовых классов по отдельности или запуске всех тестов проекта во многих случаях требуется выполнить определенное количество тестов или тесты в определенном порядке.  Это можно осуществить путем создания одного или более набора тестов.  Например, можно создать наборы тестов для тестирования определенных аспектов кода или конкретных условий.
+    </p>
+    
+    <p>Набор тестов, по сути, является классом, в который включен метод для вызова указанных тестов, например, определенных тестовых классов, тестовых методов в тестовых классах и других наборов тестов.  Набор тестов может быть включен в тестовый класс, однако для набора тестов рекомендуется создать отдельные классы.</p>
+
+    <p>Наборы тестов JUnit 3 и JUnit 4 можно создать для проекта вручную или с использованием возможностей среды IDE.  При использовании среды IDE для создания набора тестов по умолчанию в среде IDE генерируется код, вызывающий все тестовые классы в той же папке, где находится набор тестов.  После создания набора тестов можно изменить класс для определения тестов, которые требуется выполнить в составе этого набора.</p>
+
+<!-- ===================================================================================== -->
+<div class="indent">
+<a name="Exercise_41"></a>
+    <h3>Создание набора тестов JUnit 3</h3>
+    <p>При выборе JUnit 3 в качестве версии тестов в среде IDE могут быть созданы наборы тестов JUnit 3 на основе тестовых классов в папке с тестами.  В JUnit 3 необходимо определить тестовые классы, которые должны быть включены в набор тестов, путем создания экземпляра <tt>TestSuite</tt> и использования метода <tt>addTest</tt> для каждого теста.</p>
+
+    <ol>
+        <li>Щелкните правой кнопкой мыши узел проекта <strong>JUnit-Sample</strong> в окне проектов и выберите &quot;Новый&quot; &gt; &quot;Другие&quot;, чтобы открыть мастер создания файла.</li>
+        <li>В категории "Модульные тесты" выберите "Набор тестов". Нажмите кнопку &quot;Далее&quot;.</li>
+        <li>Введите имя <b>JUnit3TestSuite</b> в качестве имени класса.</li>
+        <li>Выберите папку <tt>sample</tt> для создания набора тестов в типовой папке в папке с тестами.</li>
+        <li>Снимите флажки &quot;Test Initializer&quot; и &quot;Test Finalizer&quot;.  Нажмите кнопку &quot;Завершить&quot;.<br> <img alt="Снимок мастера наборов тестов JUnit" class="margin-around box" src="../../../images_www/articles/72/java/junit/junit-testsuite-wizard.png" title="Мастер наборов тестов JUnit">
+        <p>При нажатии кнопки &quot;Finish&quot; в среде IDE создается класс набора тестов в папке <tt>sample</tt>, который затем открывается в редакторе.  Тестовый набор будет содержать следующий код.</p>
+
+        <pre class="examplecode">public class JUnit3TestSuite extends TestCase {
+    public JUnit3TestSuite(String testName) {
+        super(testName);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new TestSuite("JUnit3TestSuite");
+        return suite;
+    }
+}</pre>
+        </li>
+        <li>Измените метод <tt>suite()</tt>, чтобы добавить тестовые классы, которые будут запускать часть набора тестов.
+        <pre class="examplecode">public JUnit3TestSuite(String testName) {
+    super(testName);
+}
+
+public static Test suite() {
+    TestSuite suite = new TestSuite("JUnit3TestSuite");
+    <strong>suite.addTest(new TestSuite(sample.VectorsJUnit3Test.class));
+    suite.addTest(new TestSuite(sample.UtilsJUnit3Test.class));</strong>
+    return suite;
+}</pre>
+        </li>
+        <li>Сохраните изменения.</li>
+    </ol>
+
+<!-- ===================================================================================== -->
+<a name="Exercise_42"></a>
+    <h3>Создание набора тестов JUnit 4</h3>
+    <p>Если в качестве версии по умолчанию выбрана версия JUnit 4, в среде IDE могут быть созданы наборы тестов JUnit 4.  Версия JUnit 4 совместима с предыдущими версиями, поэтому можно выполнять наборы тестов JUnit 4, содержащие тесты JUnit 4 и JUnit 3.  В наборе тестов JUnit 4 указываются тестовые классы для включения их как значений аннотации <tt>@Suite</tt>.</p>
+    <p class="notes"><strong>Примечание.</strong> Для выполнения набора тестов JUnit 3 в составе набора тестов JUnit 4 требуется JUnit 4.4 или выше.</p>
+
+    <ol>
+        <li>Щелкните правой кнопкой мыши узел проекта в окне &quot;Projects&quot; и выберите &quot;New &gt; Other&quot; для открытия мастера создания файла.</li>
+        <li>В категории "Модульные тесты" выберите "Набор тестов". Нажмите кнопку &quot;Далее&quot;.</li>
+        <li>Введите имя файла <b>JUnit4TestSuite</b>.</li>
+        <li>Выберите папку <tt>sample</tt> для создания набора тестов в типовой папке в папке с тестами.</li>
+        <li>Снимите флажки &quot;Test Initializer&quot; и &quot;Test Finalizer&quot;.  Нажмите кнопку &quot;Завершить&quot;.</li>
+    </ol>
+
+    <p>При нажатии кнопки &quot;Finish&quot; в среде IDE создается класс набора тестов в папке <tt>sample</tt>, который затем открывается в редакторе.  Набор тестов содержит код, похожий на следующий:</p>
+
+    <pre class="examplecode">@RunWith(Suite.class)
+@Suite.SuiteClasses(value={UtilsJUnit4Test.class, VectorsJUnit4Test.class})
+public class JUnit4TestSuite {
+}</pre>
+
+    <p>При запуске набора тестов среда IDE будет запускать тестовые классы в перечисленном порядке.</p>
+
+
+
+<a name="Exercise_43"></a>
+    <h3>Выполнение наборов тестов</h3>
+    <p>Набор тестов выполняется аналогично любому отдельному тестовому классу. </p>
+    <ol>
+        <li>Разверните узел &quot;Test Packages&quot; в окне &quot;Projects&quot;.</li>
+        <li>Щелкните правой кнопкой мыши класс набора тестов и выберите &quot;Тестовый файл&quot;.</li>
+    </ol>
+    <p>При выполнении набора тестов в среде IDE тесты, включенные в набор, выполняются в указанном порядке.  Результаты отображаются в окне &quot;JUnit Test Results&quot;.</p>
+
+
+    <a href="../../../images_www/articles/72/java/junit/junit3-suite-results.png"><img alt="Снимок результатов теста JUnit для набора тестов JUnit 3" class="box" src="../../../images_www/articles/72/java/junit/junit3-suite-results-sm.png" title="Окно результатов теста JUnit с отображением результатов набора тестов JUnit 3. Щелкните, чтобы увеличить изображение."></a>
+    <p>В примере на этом рисунке (для увеличения щелкните изображение) в окне отображаются результаты набора тестов JUnit 3.  В наборе тестов тестовые классы <tt>UtilsJUnit3Test</tt> и <tt>VectorsJUnit3Test</tt> были выполнены как один тест, и результаты выведены на экран в левой панели как результаты одного теста.  Данные в правой панели представляют собой результат выполнения тестов по отдельности.</p>
+
+    <a href="../../../images_www/articles/72/java/junit/junit4-suite-results.png"><img alt="Снимок окна результатов теста JUnit для набора тестов JUnit 4" class="box" src="../../../images_www/articles/72/java/junit/junit4-suite-results-sm.png" title="Окно результатов теста JUnit с отображением результатов набора тестов JUnit 4. Щелкните, чтобы увеличить изображение."></a>
+    <p>В примере на этом рисунке (для увеличения щелкните изображение) в окне отображаются результаты набора тестов JUnit 4.  В наборе тестов тестовые классы <tt>UtilsJUnit4Test</tt> и <tt>VectorsJUnit4Test</tt> были выполнены как один тест, и результаты выведены на экран в левой панели как результаты одного теста.  Данные в правой панели представляют собой результат выполнения тестов по отдельности.</p>
+
+
+    <a href="../../../images_www/articles/72/java/junit/junitmix3and4-suite-results.png"><img alt="Снимок окна результатов теста JUnit для смешанных наборов тестов" class="box" src="../../../images_www/articles/72/java/junit/junitmix3and4-suite-results-sm.png" title="Окно результатов теста JUnit с отображением результатов смешанных наборов тестов. Щелкните, чтобы увеличить изображение."></a>
+    <p>В примере на этом рисунке (для увеличения щелкните изображение) в окне отображаются результаты смешанного набора тестов.  Этот набор тестов включает набор тестов JUnit 4 и один тестовый класс JUnit 3.  В наборе тестов тестовые классы <tt>UtilsJUnit3Test.java</tt> и <tt>JUnit4TestSuite.java</tt> были выполнены как один тест, и результаты выведены на экран в левой панели как результаты одного теста.  Данные в правой панели представляют собой результаты выполнения тестов по отдельности.</p>
+
+    </div>
+    
+
+
+
+<a name="Exercise_50"></a>
+<!-- ===================================================================================== -->
+<h2>Заключение</h2>
+<p>Этот учебный курс представляет собой базовое введение в создание тестов JUnit и наборов тестов в IDE NetBeans. Среда IDE поддерживает  JUnit 3 и JUnit 4, и данный документ продемонстрировал некоторые изменения в JUnit 4, разработанные для упрощения запуска и создания тестов.</p>
+
+<p>Как было показано в данном руководстве, одним из главных усовершенствований JUnit 4 стала поддержка аннотаций. В JUnit 4 теперь можно использовать аннотации для следующего:</p>
+<ul>
+    <li>Определять тест, используя аннотацию <tt>@Test</tt> вместо соглашения о присвоении имен.</li>
+    <li>Определять методы <tt>setUp</tt> и <tt>tearDown</tt> аннотациями <tt>@Before</tt> и <tt>@After</tt>.</li>
+    <li>Определять методы <tt>setUp</tt> и <tt>tearDown</tt>, которые присваиваются всему тестовому классу. Методы, которые аннотированы <tt>@BeforeClass</tt>, запускаются только один раз перед запуском всех тестовых методов класса. Методы, которые аннотированы <tt>@AfterClass</tt>, также запускаются только один раз, после завершения всех тестовых методов класса.</li>
+    <li>Определять ожидаемые исключения</li>
+    <li>Определять тесты, которые следует пропустить, с помощью аннотации <tt>@Ignore</tt>.</li>
+    <li>Указывать тесту параметр &quot;время ожидания&quot;.</li>
+</ul>
+
+<p>Получить более подробную информацию об использовании JUnit и других изменениях в JUnit 4 можно в следующих материалах:</p>
+    <ul>
+        <li><a href="http://tech.groups.yahoo.com/group/junit/">Группа JUnit в группах Yahoo</a></li>
+        <li><a href="http://www.junit.org">www.junit.org</a></li>
+    </ul>
+
+<p>Тестирование кода позволяет убедиться в том, что небольшие изменения, внесенные в код, не вызовут сбой в работе приложения.  Автоматизированные инструментальные средства тестирования, такие как JUnit, рационализируют процесс тестирования, а частое тестирование позволяет выявлять ошибки в коде на ранней стадии.
+</p>
+        
+        
+<!-- End Content Area -->
+        
+    <br>
+    <div class="feedback-box"><a href="https://netbeans.org/about/contact_form.html?to=3&amp;subject=Feedback:%20Writing%20JUnit%20Tests%20in%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a></div>
+    <br style="clear:both;" />
+    <!-- ======================================================================================= -->
+    <h2><a name="nextsteps"></a>Дополнительные сведения</h2>
+
+    <p>Дополнительные сведения об использовании IDE NetBeans для разработки приложений Java см. следующие ресурсы:</p>
+    <ul>
+        <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">Создание проектов Java</a> в документе <em>Разработка приложений в IDE NetBeans</em></li>
+        <li><a href="../../trails/java-se.html">Учебная карта по основам среды IDE и программирования на языке Java</a></li>
+
+    </ul>
+    </body>
+</html>

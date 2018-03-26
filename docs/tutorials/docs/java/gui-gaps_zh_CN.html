@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009 - 2014, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>NetBeans GUI 构建器中的间距编辑支持</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="This tutorial is intended as a guide to show how to utilize gap editing in the NetBeans GUI Builder without concern for the underlying layout manager.">
+   <meta name="KEYWORDS" content="NetBeans, Free Design, Tutorial, Guide, User, Documentation, Basic">
+   <link rel="stylesheet" href="../../../netbeans.css">
+   
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>NetBeans GUI 构建器中的间距编辑支持</h1>
+    <div class="articledate" style="margin-left: 0px;">Jan Stola，Alyona Stashkova</div>
+    <p>自由设计模式下的容器布局由组件以及这些组件之间的间距组成。组件和间距在 GUI 构建器的设计视图中都是可见的。使用 NetBeans IDE 可以直接在 GUI 构建器中编辑间距。 </p>
+	<p>此教程演示了如何利用间距编辑功能在其他组件之间插入新 UI 组件，以及在 NetBeans GUI 构建器中方便地围绕框架居中组件，而无需关注底层布局管理器。该教程可用作一个指南，介绍如何在自由设计模式下对现有窗体执行更改，以实现项目所需的特定目标布局。 </p>
+	
+    
+ 
+    
+    
+       <p><b>目录</b></p>
+    <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+    <ul class="toc">
+        <li><a href="#zip">打开示例项目</a></li>
+		<li><a href="#drag">通过拖放间距的边缘来调整大小</a></li>
+        <li><a href="#wheel">使用鼠标滚轮调整间距大小</a></li>
+		<li><a href="#container">编辑组件周围的间距</a></li>
+        <li><a href="#summary">小结</a></li>
+		<li><a href="#seealso">另请参见</a></li>
+    </ul>
+
+   
+   <p><b>要学习本教程，您需要具备下列软件和资源。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">软件或资源</th>
+                <th class="tblheader" scope="col">要求的版本</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4 或 8.0 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">Java 开发工具包 (JDK)</a></td>
+                <td class="tbltd1">版本 6、7 或 8 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FGapSupport.zip">GapSupport.zip</a></td>
+                <td class="tbltd1">一个带有源文件的档案文件，其中包含初始和目标教程布局。</td>
+            </tr>
+           
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>注：</strong></p>
+    <div class="indent">
+    <ul>
+        <li>您可以按 <tt>.zip</tt> 档案文件的形式下载将用作本教程起点的项目。 </li>
+        <li>本教程仅重点介绍如何设计容器的布局。在 GUI 中添加功能超出了本教程的范围。</li>
+		<li>在 IDE 主菜单中，依次选择<tt>工具</tt> > <tt>选项</tt> > <tt>Java</tt> > <tt>GUI 构建器</tt>，然后使用<tt>可视化其他布局信息</tt>选项以直观显示或隐藏间距。 </li>
+    </ul>
+</div>
+    <!-- ++++++++++++ Using .zip ++++++++++++ -->
+<a name="zip"></a>
+    <h2>打开示例项目</h2>
+	
+	<ol><li>下载 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FGapSupport.zip">GapSupport.zip</a> 档案，并将其解压缩到您的计算机上的任意位置。</li>
+	<li>在 NetBeans IDE 主菜单中，选择 <tt>File</tt>（文件）> <tt>Open Project</tt>（打开项目），导航到包含上一步所提取 <tt>GapSupport</tt> 项目的未解压文件的文件夹。</li>
+	<li>单击 "Open Project"（打开项目）。<br> "Projects"（项目）窗口应如下所示：
+	<p class="align-center"><img alt="&amp;quot;Projects&amp;quot;（项目）窗口" border="1" src="../../../images_www/articles/72/java/gui-gaps/prj.png"></p></li>
+    <li> 双击 <tt>Initial.java</tt> 文件。<br> 此时将在 GUI 构建器的 "Design"（设计）视图中打开样例窗体。 
+	<p class="align-center"><img alt="打开 Initial.java" border="1" src="../../../images_www/articles/72/java/gui-gaps/initialform.png"></p>
+					 <p class="notes"><b>注：</b>在 "Navigator"（导航器）窗口中，从主工具栏选择 "Window"（窗口）> "Navigator"（导航器）可查看窗体的组件层次。</p>
+<p class="align-center"><img alt="&amp;quot;Navigator&amp;quot;（导航器）窗口" border="1" src="../../../images_www/articles/72/java/gui-gaps/navigator.png"></p></li>
+	</ol>
+
+
+<p class="align-center"><a href="#top">返回页首</a></p>
+ <!-- ++++++++++++ DnD an Edge of a Gap ++++++++++++ -->
+    <a name="drag"></a>
+    <h2>通过拖放间距的边缘来调整大小 </h2>
+	<p>现在，我们了解下如何在 IDE 的设计视图中通过拖放间距的边缘来编辑间距。</p>
+	<p> 要在 <tt>First Name</tt>（名字）和 <tt>Last Name</tt>（姓氏）行之间添加 <tt>Middle Name</tt>（中间名）行，需要完成以下步骤：</p>
+	
+    <ol>
+<li>单击 <tt>First Name</tt>（名字）和 <tt>Last Name</tt>（姓氏）标签之间的间距。<br> 间距将以绿色突出显示。
+<p class="align-center"><img alt="突出显示的间距" border="1" src="../../../images_www/articles/72/java/gui-gaps/gap-highlighted.png"></p></li>
+<li>将鼠标指针悬停在突出显示间距的底部。<br> 指针将更改为垂直可调整大小的形状。
+  <p class="align-center"><img alt="更改为可调整大小形状的指针" border="1" src="../../../images_www/articles/72/java/gui-gaps/gap-resizable.png"></p></li>
+<li>通过按鼠标左键向下拖动指针，然后释放鼠标按键，将所选间距扩大到 50。<br> 间距的新大小将显示在工具提示中。
+  <p class="align-center"><img alt="扩大间距" border="1" src="../../../images_www/articles/72/java/gui-gaps/resizing.png"></p></li>
+<li>在创建的间距中添加新标签，方法是从组件面板的 "Swing Controls"（Swing 控件）部分拖放标签，使其左侧边缘与 <tt>First Name</tt>（名字）标签的左侧边缘对齐，其顶部边缘与 <tt>First Name</tt>（名字）行具有建议的首选间距。 
+  <p class="align-center"><img alt="添加标签" border="1" src="../../../images_www/articles/72/java/gui-gaps/jlabel.png"></p></li>
+<li>双击标签并将标签的文本更改为 <tt>Middle Name:</tt>（中间名：）。
+<p class="align-center"><img alt="更改为 &amp;quot;Middle Name:&amp;quot;（中间名）的文本" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-name.png"></p></li>
+<li>通过在组件面板的 "Swing Controls"（Swing 控件）部分拖放新文本字段，将该字段添加到 <tt>Middle Name:</tt>（中间名：）标签的右侧，使其底部与 <tt>Middle Name</tt>（中间名）标签对齐，左侧边缘与其他文本字段对齐。
+<p class="align-center"><img alt="添加文本字段" border="1" src="../../../images_www/articles/72/java/gui-gaps/textfield.png"></p></li>
+<li>拖动文本字段的右侧边缘，使其与其他文本字段的右侧边缘对齐。 
+<p class="align-center"><img alt="调整文本字段的大小" border="1" src="../../../images_www/articles/72/java/gui-gaps/textfield-resized.png"></p></li>
+<li>右键单击文本字段中的文本并从弹出菜单中选择 "Edit Text"（编辑文本）。删除文本。 </li>
+</ol>
+<p><tt>Middle Name</tt>（中间名）行将插入到窗体组件之间。</p>
+<p class="align-center"><img alt="调整文本字段的大小" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-inserted-gap.png"></p>
+<p class="align-center"><a href="#top">返回页首</a></p>
+    
+     
+
+<!-- ++++++++++++ Using Mouse Wheel When Resizing ++++++++++++ -->
+<a name="wheel"></a>
+<h2>使用鼠标滚轮调整间距大小</h2>
+
+<p>使用 IDE，通过单击并滚动鼠标滚轮来微调间距大小，从而调整间距的大小。 </p>
+<p>要删除 <tt>Middle Name</tt>（中间名）与 <tt>Last Name</tt>（姓氏）行之间的剩余空间，请单击下方的间距，然后通过向下滚动鼠标滚轮并将新大小设置为 <tt>default small</tt>（默认小），从而减少间距的高度。</p>
+<p class="notes"><b>注：</b>NetBeans GUI 构建器对于组件放置支持三种首选间距 - <tt>default small</tt>（默认小）、<tt>default medium</tt>（默认中等）和 <tt>default large</tt>（默认大）。 </p>
+<p class="align-center"><img alt="默认小" border="1" src="../../../images_www/articles/72/java/gui-gaps/default-small.png"></p>
+
+
+<p>使用鼠标滚轮并利用首选间距来调整窗体组件之间的间距大小。</p> 
+<p class="align-center"><img alt="插入的 &amp;quot;Middle Name&amp;quot;（中间名）行" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-inserted.png"></p>
+
+<p class="align-center"><a href="#top">返回页首</a></p>
+<!-- ++++++++++++ Resizing a Gap Around a Container ++++++++++++ -->
+<a name="container"></a>
+<h2>编辑组件周围的间距</h2>
+<p>可以通过将组件放在两个预先标记为可调整大小的相同间距之间来居中对齐组件。</p>
+<p class="notes"><b>注：</b>使用容器可以帮助指定应将组件在何处居中对齐。可以将按钮居中而无需将其包含在新面板中，但在 GUI 构建器中完成起来会更加困难并且生成的布局会有些零碎。因此，建议只要可能，请将要居中对齐的组件包含在面板中。</p>
+<p><b>要将按钮和可调整大小间距包含在单独的容器中，请执行以下操作：</b> </p>
+
+<ol>
+<li>选择窗体中的全部四个按钮。 </li>
+<li>右键单击选定内容，然后从弹出菜单中选择 <tt>Enclose In</tt>（包含在）> <tt>Panel</tt>（面板）。
+<p class="align-center"><img alt="在弹出菜单中选择 &amp;quot;Panel&amp;quot;（面板）" border="1" src="../../../images_www/articles/72/java/gui-gaps/enclose-panel.png"></p>
+按钮将包含在容器中。
+<p class="align-center"><img alt="包含在面板中的按钮" border="1" src="../../../images_www/articles/72/java/gui-gaps/buttons-enclosed.png"></p></li>
+</ol>
+
+<p><b>要删除在按钮左右两侧新创建的间距，请完成以下步骤：</b></p>
+<ol>
+<li>右键单击按钮之一，然后从弹出菜单中选择 "Edit Layout Space"（编辑布局空间）。<br> 此时将显示 "Edit Layout Space"（编辑布局空间）对话框。
+<p class="align-center"><img alt="&amp;quot;Edit Layout Space&amp;quot;（编辑布局空间）对话框" border="1" src="../../../images_www/articles/72/java/gui-gaps/edit-layout-space.png"></p></li>
+<li> 将左右两侧间距的大小设置为 0，然后单击 "OK"（确定）。<br> 此时将使用 "Edit Layout Space"（编辑布局空间）对话框删除按钮左右两侧的间距。
+  <p class="align-center"><img alt="左右两侧间距已删除" border="1" src="../../../images_www/articles/72/java/gui-gaps/gaps-removed.png"></p></li>
+</ol>
+<p><b>要使得容器上下的间距成为可调整大小的间距，请执行以下步骤：</b></p>
+
+<ol>
+<li> 双击最后一个按钮底部的间距。<br> 此时将显示 "Edit Layout Space"（编辑布局空间）对话框。</li>
+<li>在 "Edit Layout Space"（编辑布局空间）对话框中，选择 <tt>Resizable</tt>（可调整大小）选项，然后单击 "OK"（确定）。
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-gaps/bottom.png" rel="lytebox" title="正在调整底部间距的大小"> <img alt="正在调整底部间距的大小" border="1" src="../../../images_www/articles/72/java/gui-gaps/bottom-small.png"></a></p></li>
+<li> 对顶部按钮上方的间距重复步骤 1 和 2。<br> 带有按钮的容器上下的间距将成为可调整大小的间距。</li>
+</ol>
+
+<p><b>要将样例窗体的按钮居中，请执行以下操作</b>：</p>
+<p>拖动带有按钮的容器的底部边缘，将其与列表底部边缘对齐，如下所示： </p>
+<p class="align-center"><img alt="将带有按钮的容器居中" border="1" src="../../../images_www/articles/72/java/gui-gaps/align.png"></p>
+<p>容器将进行拉伸，以便与 <tt>Available Topics</tt>（可用主题）和 <tt>Selected Topics</tt>（选定主题）列表的高度相符。按钮将在由所属容器确定的空间内居中，因为周围的间距已标记为可调整大小。  </p>
+<p class="align-center"><img alt="按钮居中" border="1" src="../../../images_www/articles/72/java/gui-gaps/buttons-centered.png"></p>
+
+
+
+<p class="align-center"><a href="#top">返回页首</a></p>
+
+ 
+<!-- ++++++++++++ Summary ++++++++++++ -->
+<a name="summary"></a>
+<h2>小结</h2>
+<p>在本教程中，您改进了一个简单的窗体。在操纵间距时，您学习到了如何在自由设计模式下管理空白空间，以及如何设计有吸引力的 UI，而不需要耗费额外的时间来调整布局实现的每个细节。</p>
+
+
+
+
+
+
+
+
+
+ <p class="align-center"><a href="#top">返回页首</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Gap%20Support">发送有关此教程的反馈意见</a></div>
+      <br style="clear:both;" >  
+<a name="seealso"></a>
+<h2>另请参见</h2>
+<p>现在，您已完成了“NetBeans GUI 构建器中的间距编辑支持”教程。有关向所创建的 GUI 中添加功能的信息，请参见：</p> 
+      <ul>
+	     <li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">实现 Java GUI</a></li>
+         <li><a href="gui-functionality.html">构建 Java GUI 应用程序简介</a></li>
+		 <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUI 构建器常见问题解答</a> </li>
+         <li><a href="../../trails/matisse.html">Java GUI 应用程序学习资源</a> </li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">返回页首</a></p>
+
+   
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>GUIフォームの国際化 - NetBeans IDEチュートリアル</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="Tutorial - Internationalization of GUI Form in NetBeans IDE">
+      <link rel="stylesheet" href="../../../netbeans.css">
+      <meta name="author" content="Jana Maleckova, Marek Grummich">
+      <meta name="description" content="This tutorial shows you how to set up internationalization for a single form and for a whole project." >
+   </head>
+   <body>
+      <h1>GUIフォームの国際化</h1>
+      <p>次のチュートリアルで、NetBeans IDEでの国際化の基本的な手順の一部を紹介します。フォームの1つに国際化を設定し、後でそのフォームをデザインします。その後、いくつかの異なるパッケージに様々なフォームを含んでいるプロジェクト全体を国際化します。アプリケーションは、自動国際化を指定するか、特別なウィザードを使用して国際化できます。</p>
+      <p class="align-center"><b>予想される所要時間: 30分</b></p>
+      
+         <p><strong>目次</strong></p>
+<img alt="このページの内容は、NetBeans IDE 7.0以降に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.0以降に適用されます">
+    <ul class="toc">
+            <li><a href="#about">国際化の原則</a></li>
+            <li><a href="#Exercise_1">デザイン時に自動国際化を設定する方法</a></li>
+            <li><a href="#Exercise_2">プロジェクト全体の国際化</a></li>
+            <li><a href="#Exercise_3">単一フォームの国際化</a></li>
+            <li><a href="#nextsteps">関連項目</a></li>
+   </ul>
+         
+<p><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン7.0以降 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン6、7または8 </td>
+                </tr>
+        </tbody>
+    </table>
+      <h2 class="tutorial"><a name="about"></a>国際化の原則</h2>
+      <p class="tutorial">国際化によって、技術的な変更や再コンパイルを行わずに、様々な言語や地域にアプリケーションを対応させることができます。プログラムを国際化することによって、プログラム内でハードコーディングすることなく、ステータス・メッセージやGUIコンポーネント・ラベルなどのテキスト要素をソース・コードの外部に保存し、動的に読み出すことができます。</p>
+      
+      <p class="tutorial">一般的に、国際化した文字列は、キーと値のペアの形式でプロパティ・ファイルに保存します。キーはプログラムがテキストを読み出すために使用する識別子で、値は実際のテキストです。プログラムを変換する各ロケール(または言語)に対して、プロパティ・ファイルを1つ作成します。キーは各ロケールで同じで、文字列のみが異なります。 </p>
+      <p class="tutorial">IDEには、次の各操作を行うためのツールが用意されています。</p>
+      <ul>
+         <li>GUIフォームまたはJavaプログラムの作成時に国際化文字列を挿入する</li>
+         <li>個別ファイルまたはファイルのグループで、ハードコードされたすべての文字列を国際化された文字列で置換する</li>
+      </ul>
+      <h2><a name="Exercise_1"></a>デザイン時のGUIフォームの国際化 </h2>
+      <p>この課題では、GUIビルダーを使用して作成された、よく知られている検索ダイアログを含む、デモのJavaアプリケーション・プロジェクトを開きます。次に、フォームFindDialog.javaの自動国際化をオンに切り替えます。国際化されたGUIフォームをテストするために、プロパティ・ファイルに新しいロケールを追加し、デフォルト以外のロケールでフォームを実行します。 </p>
+      <div class="indent">
+         <h3 class="tutorial">サンプル・プロジェクトを開く</h3>
+         <ol>
+            <li> コンピュータ上の任意の場所に、<a href="https://netbeans.org/files/documents/4/770/InternationalizeDemo.zip" target="_blank">InternationalizeDemo.zip</a>プロジェクトをダウンロードして解凍します。 </li>
+            <li>「ファイル」>「プロジェクトを開く」を選択し、前のステップで抽出した<tt>InternationalizeDemo</tt>プロジェクトに移動して「開く」をクリックします。プロジェクト・フォルダは、<tt>InternationalizeDemo</tt>という名前の含まれるフォルダ内にある場合もあります。</li>
+            <li>「ソース・パッケージ」>「demo」を展開し、<tt>FindDialog.java</tt>をダブルクリックします。サンプル・フォームがGUIビルダーで開きます。 
+               <p class="align-center"> <img alt="検索ダイアログ" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/finddialog_ai18n.png"> 
+               </p>
+              
+            </li>
+         </ol>
+         <h3 class="tutorial">自動国際化をオンに切替え</h3>
+                  <ol>
+                     <li>「ナビゲータ」ウィンドウでルート・ノード(<tt>Form FindDialog</tt>)を選択します。 
+                       <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/navigator.png" border="1"></p></li>
+                     <li>「プロパティ」ウィンドウで、「自動国際化」プロパティのチェックボックスを選択します。
+					   
+                         <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/properties.png" border="1"></p>
+						 
+                      </li>
+                    <li> 「GUIフォーム形式のアップグレード」ダイアログ・ボックスで「アップグレード」をクリックします。 
+						<p>チェックボックスが選択されると、「<tt>プロパティ・バンドル・ファイル</tt>」プロパティで設定されているとおりに、IDEが<tt>demo</tt>パッケージ内に<tt>Bundle.properties</tt>ファイルを作成します。 
+                        </p>
+                        <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/bundle_new.png"></p>
+						<p><tt>Bundle.properties</tt>ファイルを別の場所に置く必要がある場合は、「プロパティ・バンドル・ファイル」の右側の省略符号ボタン(...)をクリックして場所を選択するか、プロパティのテキスト・フィールドにパスを直接入力できます。</p>
+					 
+                     </li>
+                     <li>「プロジェクト」ウィンドウで、「プロジェクト」ウィンドウの「<tt>Bundle.properties</tt>」ノードをダブルクリックするか、またはノードを右クリックして「編集」を選択します。
+                        <p>プロパティ・ファイルがソース・エディタに表示されます。フォーム<tt>FindDialog.java</tt>に適切なキーと値がすべて生成されていることがわかります。各キーの名前は、フォームのファイル名とコンポーネントの変数名から派生されます。たとえば、キー<tt>FindDialog.jLabel1.text</tt>は、フォーム・ファイル<tt>FindDialog</tt>に配置された<tt>jLabel1</tt>という変数名を持つコンポーネント用に生成されます。値<tt>jLabel1</tt>は、この例ではコンポーネントの「text」プロパティを表しています。</p>
+               </li>
+			   <li><tt>Bundle.properties</tt>ファイルを閉じます。 </li></ol>
+         <h3 class="tutorial">個別のGUIコンポーネントの国際化</h3>
+         <p>GUIビルダーを使用して、フォームのJLabelsおよびJButtonsの国際化文字列を入力します。 </p> 
+         <ol>
+            
+			<li>デザイン領域で、適切なGUIコンポーネント(例: <tt>jLabel1</tt>)を選択します。</li>
+            <li>「プロパティ」ウィンドウで、「text」プロパティの省略符号ボタン(...)をクリックします。
+            <p class="note"><b>注意:</b> Mnemonic、Accessible Name、Accessible Descriptor、ToolTipなどの、文字列値を持つその他のプロパティも国際化できます。</p></li>
+            <li>プロパティ・エディタがリソース・バンドル・モードに切り替わります。「バンドル名」フィールドが<tt>demo.Bundle</tt>に設定され、「キー」フィールドに文字列<tt>FindDialog.jLabel1.text</tt>が含まれていることを確認します。</li>
+            <li>「値」フィールドに「<tt>Find What:</tt>」と入力します。 </li>
+            <li>「OK」をクリックします。</li>
+         </ol>
+         <p>すべてのコンポーネントで前述の手順を繰り返すと、フォームは次の図のようになります。</p>
+        
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_new.png" rel="lytebox" title="国際化されたフォーム"> <img alt="国際化されたフォーム" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_new_small.png"></a></p>
+         
+		  <p class="note"><b>注意:</b> ステップ1から5はより単純で、すばやい方法で実行できます。単にデザイン・ビューで「<tt>jLabel1</tt>」をダブルクリックし、テキストを「<tt>jLabel1</tt>」から「<tt>Find What:</tt>」に変更して、[Enter]を押します。結果は前述の手順と同じです。</p>
+		
+		 <p>コンポーネントを同じ幅にするには、次の手順を実行します。</p>
+		 <ol>
+		   <li>フォーム内の8つのjCheckBoxをすべて[Ctrl]を押しながらクリックして選択します。</li>
+		   <li>jCheckBoxが選択された状態で、いずれか1つを右クリックし、ポップアップ・メニューから「同じサイズ」>「同じ幅」を選択します。</li>
+		   <li>3つのjButtonに対してステップ1から2を適用します。</li>
+		 </ol>
+        
+         <a name="newlocale"></a>
+		 
+		
+
+         <h3 class="tutorial">新規ロケールの追加</h3>
+         <ol>
+            <li>「ナビゲータ」ウィンドウでルート・ノード(<tt>Form FindDialog</tt>ノード)を選択します。</li>
+            <li>「プロパティ」ウィンドウで、「デザイン・ロケール」プロパティの省略符号ボタン(...)をクリックします。</li>
+            <li>「新規ロケール」ダイアログ・ボックスで、<tt>「事前定義ロケール:」</tt>コンボ・ボックスから<tt>「es_ES」</tt>を選択します。</li>
+            <li>「OK」をクリックします。
+            <p>次に示すように、「<tt>Bundle.properties</tt>」ノードの下に新しいロケールが表示されます。</p>
+            <p class="align-center"><img alt="複数のロケールがあるプロパティ・ファイル" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/addlocale_new.png"></p> </li>
+            <li>「プロジェクト」ウィンドウで、<tt>Bundle.properties</tt>を右クリックして「開く」を選択します。</li>
+            <li>次に示すように、表の対応する列の個々のメッセージを、新しい言語(スペイン語など)に変換します。 
+              <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-automatic-i18n/bundles_new.png" rel="lytebox" title="複数のロケールがあるプロパティ・エディタ"> <img alt="複数のロケールがあるプロパティ・エディタ" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/bundles_new_small.png"></a></p>
+           </li>
+			<li>[Ctrl]-[S]を押して編集を保存します。</li>
+			<li>「<tt>FindDialog.java</tt>」タブを選択して、国際化しているフォームを表示します。</li>
+            <li>「ナビゲータ」ウィンドウのルート・ノードを右クリックし、「フォームの再ロード」を選択します(または[Ctrl]+[R]を押します)。</li>
+               <li>表示される「質問」ダイアログ・ボックスで「保存」をクリックします。<br>フォームが再度開き、次に示すように、スペイン語ロケールがデザインにロードされます。 
+            
+			<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_es_new.png" rel="lytebox" title="スペイン語のメッセージが表示されたデザイン領域"> <img alt="スペイン語のメッセージが表示されたデザイン領域" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_es_new_small.png"></a></p>
+            </li>
+        </ol>
+         <h3 class="tutorial">デフォルト以外のロケールのテスト</h3>
+         <ol>
+            <li>「プロジェクト」ウィンドウで、「InternationalizeDemo」プロジェクトを右クリックし、「プロパティ」を選択します。</li>
+            <li>「カテゴリ」ペインで、「実行」ノードを選択します。</li>
+            <li>「VMオプション」フィールドに「<tt>-Duser.language=es -Duser.country=ES</tt>」と入力します。
+              <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/prjproperties.png" rel="lytebox" title="「プロパティ」ダイアログ・ボックス"> <img alt="「プロパティ」ダイアログ・ボックス" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/prjproperties_small.png"></a></p>
+            </li>
+            <li>「OK」をクリックします。</li>
+            <li>「InternationalizeDemo」プロジェクトを右クリックし、「実行」を選択します。
+               <p>次に示すように、IDEによって「<tt>FindDialog</tt>」ダイアログ・ボックスがスペイン語ロケールで実行されます。</p>
+			  
+			   <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-automatic-i18n/run.png" rel="lytebox" title="スペイン語ロケールのダイアログ"> <img alt="スペイン語ロケールのダイアログ" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/run_small.png"></a></p>
+           </li>
+         </ol>
+      </div>
+      <h2><a name="Exercise_2"></a>プロジェクト全体の国際化</h2>
+      <p>通常、デフォルト・ロケールには複数のファイルがあり、他の言語に変換するためにそれらを適用するように求められます。国際化ウィザードは、このタスクに対する完璧なツールで、一度に複数のファイルを国際化できます。この機能について、GUIフォームのサンプル・プロジェクト(<a href="quickstart-gui.html">Swing GUIのデザイン</a>のチュートリアルで作成したフォームが含まれる)で説明します。 </p>
+      <div class="indent">
+         <h3 class="tutorial"> サンプル・プロジェクトの作成 </h3>
+                  <ol>
+                     <li>「ファイル」>「新規プロジェクト」を選択するか、IDEツールバーで「新規プロジェクト」アイコンをクリックします。 </li>
+                     <li>「カテゴリ」ペインで、「サンプル」>「Java」ノードを選択します。「プロジェクト」ペインで、「GUIフォームの例」を選択します。「次」をクリックします。</li>
+                     <li>「プロジェクト名」フィールドに「<tt>GUIFormExamples</tt>」と入力し、プロジェクトの場所を指定します(例: <tt>/space/projects</tt>)。</li>
+                     <li>「終了」をクリックします。</li>
+                  </ol>
+
+<p class="align-center"><img alt="サンプル・フォーム・プロジェクト" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/formexamples.png"></p>
+
+         <h3 class="tutorial"> プロパティ・ファイルの準備 </h3>
+                  <ol>
+                     <li>「ファイル」>「新規ファイル」を選択するか、IDEのツールバーで「新規ファイル」アイコンを選択します。</li>
+                     <li>「カテゴリ」ペインで「その他」ノードを選択し、「ファイル・タイプ」ペインで「プロパティ・ファイル」を選択します。「次」をクリックします。</li>
+                     <li> 「ファイル名」フィールドに「<tt>ContactEditor</tt>」と入力します。</li>
+					 <li>「参照」をクリックし、「フォルダを参照」ダイアログ・ボックスでファイルの場所として<tt>GUIFormExamples/src/examples</tt>フォルダを指定します。</li>
+                     <li>「フォルダを選択」をクリックします。</li>
+					 <li>「終了」をクリックします。
+                        <p>IDEによって<tt>ContactEditor.properties</tt>ファイルが作成され、ソース・エディタに表示されます。 </p>
+                        <p>前述の手順を繰り返し、別の<tt>Antenna.properties</tt>ファイルを作成します。 </p>
+                     </li>
+                  </ol>
+
+<p class="align-center"> <img alt="プロパティ・ファイルを含むプロジェクト" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/ceprjprops.png"> </p>
+
+         <h3 class="tutorial">国際化ウィザードの呼出し</h3>
+         <ol>
+            <li>メイン・メニューで、「ツール」>「国際化」>「国際化ウィザード」を選択します。 </li>
+			<li>ウィザードの最初のページで、「ソースを追加」をクリックします。</li>
+			<li>「ソースを選択」ダイアログ・ボックスで、「<tt>ソース・パッケージ</tt>」>「<tt>examples</tt>」ノードを展開し、[Ctrl]を押しながら<tt>Antenna.java</tt>、<tt>ContactEditor.java</tt>、および<tt>Find.java</tt>ファイルをクリックして選択します。</li>
+			<li>「OK」をクリックします。 
+			<p>次に示すように、ソース・ファイルがウィザードの最初のページに表示されます。</p>
+			<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardone.png" rel="lytebox" title="国際化ウィザード"> <img alt="国際化ウィザード" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardone_small.png"></a></p></li>
+            <li>デモの目的で、「<tt>examples.Find</tt>」を選択し、「ソースを除去」ボタンをクリックします。</li>
+            <li>「次」をクリックします。 </li>
+            <li>国際化ウィザードが正しいプロパティ・ファイル<tt>examples.Antenna</tt>と<tt>examples.ContactEditor</tt>を提示するかどうかを確認します。提示しない場合、「リソースを選択」ボタンを使用して正しいプロパティ・ファイルを選択します。
+              <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardtwo.png" rel="lytebox" title="国際化ウィザードの2ページ目"> <img alt="国際化ウィザードの2ページ目" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardtwo_small.png"></a></p>
+            </li>
+            <li>「次」をクリックします。 </li>
+			<li>フィールドを作成する予定はないため、ウィザードの3ページ目をスキップし、追加の値を変更して「次」をクリックします。</li>
+            <li>ハードコードされた文字列は、国際化ウィザードの最後のステップですべて表示されます。それらのうちどれがプロパティ・ファイルからのものかを判断できます(チェックボックスを使用)。文字列の省略符号ボタン(...)をクリックして、個々のキー、値、コメント、および置換した文字列の書式をさらにカスタマイズできます。 
+               <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardthree.png" rel="lytebox" title="国際化ウィザードの4ページ目"> <img alt="国際化ウィザードの4ページ目" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardthree_small.png"></a></p>
+            </li>
+            <li>「終了」をクリックします。
+               <p>これでソース・コードの国際化は終了し、前述したように、他のロケールも<a href="#newlocale">追加</a>したり<a href="#testlocale">テスト</a>したりできます。 </p>
+            </li>
+         </ol>
+      </div>
+      <h2><a name="Exercise_3"></a>単一フォームの国際化</h2>
+      <p>GUIフォームを国際化するには、自動国際化機能を使用するのが最も簡単な方法です。ただし、更新パックをインストールしていない場合、またはフォーム・エディタによって生成されていないコードも国際化する場合は、国際化ウィンドウを使用することをお薦めします。(この機能は、フォーム・エディタを使用して作成されたファイルのみでなく、任意の<tt>.java</tt>ファイルでも機能します)。次の例では、NetBeans IDEのデフォルト・インストールに含まれている国際化ウィンドウを使用します。</p>
+      <p>この最後の課題では、GUIフォームのサンプル・プロジェクトを再利用して、前の課題で除外したFind.javaフォームを国際化します。「国際化」ダイアログ・ボックスを呼び出して、このファイル内のハードコードされた文字列をすべて置換します。最後に、プログラムの記述時にソース・コードに国際化文字列を挿入する方法の簡単なデモを示します。</p>
+      <div class="indent">
+         <h3 class="tutorial"> 「国際化」ダイアログ・ボックスの使用 </h3>
+         <ol>
+            <li>「プロジェクト」ウィンドウで、「<tt>Find.java</tt>」を選択し、メイン・メニューから「ツール」>「国際化」>「国際化」を選択します。 
+               <p>IDEは、「国際化」ダイアログ・ボックスと、事前入力済の<tt>Find.java</tt>ソース・コードから最初にハードコードされた文字列を表示します。 </p>
+            </li>
+            <li>「選択」をクリックして特定のプロパティ・ファイルを選択するか、または新しいプロパティ・ファイルを作成します。 </li>
+			<li>「リソース・バンドルを選択」ダイアログ・ボックスで、「ファイル名」テキスト・フィールドに「<tt>Find.properties</tt>」と入力し、「新規作成」をクリックしてから「OK」をクリックします。</li>
+            <li>必要に応じて、置換された文字列、キー、値、またはコメントの書式を変更できます。デフォルトの値はそのままにします。</li>
+            <li>「置換」をクリックして変更を確認し、フォーカスを次のハードコードされた文字列に移動します。 
+               <p>ハードコードされた文字列を置換する必要がない場合は、「スキップ」ボタンをクリックします。</p>
+               
+			   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18ndialog.png" rel="lytebox" title="「国際化」ダイアログ・ボックス"> <img alt="「国際化」ダイアログ・ボックス" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18ndialog_small.png"></a></p>
+               
+            </li>
+         </ol>
+         <h3 class="tutorial"> 単一国際化文字列の挿入 </h3>
+         <ol>
+            <li>「プロジェクト」ウィンドウで、<tt>Find.java</tt>を右クリックして「編集」を選択します。
+               <p>IDEは、ソース・エディタで<tt>Find.java</tt>ファイルを開きます。 </p>
+            </li>
+            <li>ソース・コードをスクロールし、mainメソッドを探します。 </li>
+            <li>mainメソッドに、次の太字の行を挿入します。 
+               <pre class="examplecode">    public static void main(String args[]) {
+			   /* Set the Nimbus look and feel */
+			   //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot; Look and feel setting code (optional) &quot;&gt;
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            javax.swing.UIManager.LookAndFeelInfo[] installedLookAndFeels=javax.swing.UIManager.getInstalledLookAndFeels();
+			for (int idx=0; idx&lt;installedLookAndFeels.length; idx++)
+			if (&quot;Nimbus&quot;.equals(installedLookAndFeels[idx].getName())) {
+			    javax.swing.UIManager.setLookAndFeel(installedLookAndFeels[idx].getClassName());
+				break;
+			}
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //&lt;/editor-fold&gt;
+        <b>System.out.println();</b>
+		/* Create and display the form */ 
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Find().setVisible(true);
+            }
+        });
+               }</pre>
+            </li>
+			<li><tt>System.out.println();</tt>の括弧内にカーソルを移動して、国際化文字列をパラメータとして挿入できるようにします。</li>
+            <li>[Ctrl]-[Shift]-[J]を押して「国際化文字列を挿入」ダイアログ・ボックスを起動します(または、メイン・メニューから「ツール」>「国際化」>「国際化文字列を挿入」を選択できます)。</li>
+			
+            <li>「バンドル名」で、「選択」ボタンをクリックし、<tt>「ソース・パッケージ」>「examples」</tt>フォルダを選択して、「ファイル名」テキスト・フィールドにバンドル名として「<tt>Find</tt>」と入力します。「OK」をクリックします。<br>「国際化文字列を挿入」ダイアログ・ボックスの「バンドル名」フィールドに、「<tt>examples.Find</tt>」と表示されます。</li>
+            <li>「キー」ドロップダウン・ボックスに「<tt>Start</tt>」と入力し、「値」フィールドに「<tt>Start Find Dialog</tt>」と入力します。「OK」をクリックします。 
+               <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/insi18nstring.png"></p>
+            </li>
+            <li>次のように、IDEが国際化文字列を挿入します。
+               <pre class="examplecode">    public static void main(String args[]) {
+			   /* Set the Nimbus look and feel */
+			   //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot; Look and feel setting code (optional) &quot;&gt;
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            javax.swing.UIManager.LookAndFeelInfo[] installedLookAndFeels=javax.swing.UIManager.getInstalledLookAndFeels();
+			for (int idx=0; idx&lt;installedLookAndFeels.length; idx++)
+			if (&quot;Nimbus&quot;.equals(installedLookAndFeels[idx].getName())) {
+			    javax.swing.UIManager.setLookAndFeel(installedLookAndFeels[idx].getClassName());
+				break;
+			}
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //&lt;/editor-fold&gt;
+<b>        System.out.println(java.util.ResourceBundle.getBundle(&quot;examples/Find&quot;).getString(&quot;Start&quot;));</b>
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Find().setVisible(true);
+                }
+            });
+               }</pre>
+               
+            </li>
+         </ol>
+      </div>
+	  <br>
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:Internationalizing%20a%20GUI%20Form%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+      <br style="clear:both;" >   
+      <h2><a name="nextsteps"></a>関連項目</h2>
+      <p>詳細は、次のリンクを参照してください。</p>
+      <ul>
+	   <li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Java GUIの実装</a></li>
+         <li><a href="../../trails/matisse.html">Java GUIアプリケーションの学習</a></li>
+         <li><a href="quickstart-gui.html">Swing GUIのデザイン</a></li>
+         <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ" target="_blank">GUIビルダーのFAQ</a> </li>
+      </ul>
+      
+   </body>
+</html>
+

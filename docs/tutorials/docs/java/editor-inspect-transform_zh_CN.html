@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>通过“检查并转换”重构 - NetBeans IDE 教程</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Refactoring with Inspect and Transform functionality in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Java editor, refactoring, inspections, configurations"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body><a name="top"></a>
+
+<h1>在 NetBeans IDE Java 编辑器中通过“检查并转换”重构</h1>
+<p>NetBeans IDE Java 编辑器具备“检查并转换”功能，这是一种重构工具，用于对选定的文件作用域同时运行各种检查和转换操作。它还允许用户定义定制检查。 </p>
+<p>在本教程中，您将学习如何使用包含重构的检查和一组预定义检查来执行代码检查、管理配置并创建定制检查。</p>
+
+<h3>目录</h3>
+<img alt="此页上的内容适用于 NetBeans IDE 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="此页上的内容适用于 NetBeans IDE 8.0" />
+
+        <ul class="toc">
+            <li><a href="#setup">设置教程环境</a></li>
+			<li><a href="#run">运行检查</a></li>			
+            <li><a href="#configuration">使用配置</a>
+			<ul>
+			<li><a href="#migrate5">迁移至 JDK 5</a></li>
+			<li><a href="#convert">迁移至 JDK 7</a></li>
+			<li><a href="#migrate8">迁移至 JDK 8</a></li>
+			<li><a href="#organize">组织导入</a></li></ul></li>
+			<li><a href="#create">管理定制检查</a></li>
+			<li><a href="#summary">小结</a></li>
+            <li><a href="#seealso">另请参见</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>要求</h2>
+        <p><strong>要学完本教程，您需要具备以下软件和资源。</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">版本 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包</a> (JDK)</td>
+                    <td class="tbltd1">版本 7 或 8 </td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        
+<a name="setup"></a>
+<h2>设置教程环境</h2>
+<p>除了上面列出的所需软件，您还应按如下方式将 <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/inspecttransform.zip" target="_blank">InspectTransform.zip</a> 文件解压缩到 NetBeans 项目文件夹并在 NetBeans IDE 中打开：</p>	
+<p class="align-center"><img alt="在 IDE 中打开的项目" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/proj.png"></p>	
+		<a name="run"></a>
+		<h2>运行检查</h2>
+		<p>"Inspect and Transform"（检查并转换）对话框（"Refactor"（重构）> "Inspect and Transform"（检查并转换））中的 "Single Inspection"（单个检查）选项提供了很多与特定重构转换相关的检查。单击 "Single Inspection"（单个检查）选项右侧的 "Browse"（浏览）按钮后，"Manage Inspections"（管理检查）对话框中将提供此类操作的完整列表。 </p>
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections.png" rel="lytebox" title="&amp;quot;Manage Inspections&amp;quot;（管理检查）对话框"> <img alt="&amp;quot;Manage Inspections&amp;quot;（管理检查）对话框" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections-small.png"></a></p>	
+	<p>通过 "Search"（搜索）字段，可以检查是否可以使用关键字查找执行所需的检查。例如，搜索 <tt>operator</tt> 时，可以找到多个检查。</p>	
+	<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/search.png" rel="lytebox" title="搜索关键字"> <img alt="搜索关键字" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/search-small.png"></a></p>	
+     <p>提供的每个检查都在 "Manage Inspection"（管理检查）对话框的 "Description"（描述）字段中具有描述。 </p>
+	 
+	 <p><b>运行检查并应用现有的检查：</b></p>
+	 <ol>
+	 <li>在 "Projects"（项目）窗口中，选择 <tt>InspectTransform.java</tt> 文件。</li>
+	 <li>从 IDE 的菜单中选择 "Refactor"（重构）> "Inspect and Transform"（检查并转换）。</li>
+	 <li>在 "Inspect and Transform"（检查并转换）对话框中，选择 "Single Inspection"（单个检查）选项并单击 "Browse"（浏览）。</li>
+	 <li>在 "Manage Inspections"（管理检查）对话框的 "Assignment Issues"（赋值问题）节点中，选择 <tt>Assignment replaceable with operator-assignment</tt>（赋值可替换为运算符赋值）。</li>
+	 <li>单击 "OK"（确定）可关闭 "Manage Inspections"（管理检查）对话框。</li>
+     <li>在 "Inspect and Transform"（检查并转换）对话框中单击 "Inspect"（检查）。<br />建议的重构更改显示在预览面板中。
+	 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection.png" rel="lytebox" title="单个检查运行"> <img alt="单个检查运行" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection-small.png"></a></p>	</li>
+     <li>单击 "Do Refactoring"（执行重构）以应用所做的更改（如有必要）。</li>
+</ol>
+
+		<p class="align-center"><a href="#top">返回页首</a></p>
+		
+		
+
+		
+		 
+		
+		
+		
+        <a name="configuration"></a>
+		<h2>使用配置</h2>
+		<p>组合在一起的一组重构构成了可以在您感兴趣的作用域（例如一个类或多个类、包或项目）上运行的配置。IDE 提供了下面两种预定义配置： </p>
+		
+        <ul>
+		<li><a href="#migrate5">迁移至 JDK 5</a></li>
+		<li><a href="#convert">迁移至 JDK 7</a></li>
+		<li><a href="#migrate8">迁移至 JDK 8</a></li>
+		<li><a href="#organize">组织导入</a></li>
+		</ul>
+		<a name="migrate5"></a>
+		<h3>迁移至 JDK 5</h3>
+		<p>默认情况下，IDE 中提供的 <tt>Migrate to JDK 5</tt>（迁移至 JDK 5）配置包含静态导入、JDK 5 for 循环用法、不必要的装箱和拆箱以及 switch over 字符串应用等重构操作。 </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf.png" rel="lytebox" title="迁移至 JDK 5 默认配置"> <img alt="迁移至 JDK 5 默认配置" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf-small.png"></a></p>
+					 <p class="notes"><b>注：</b>通过选择和取消选择 <tt>JDK Migration Support</tt>（JDK 迁移支持）节点下方的项，可以在 "Manage Inspections"（管理检查）对话框的 "Inspections"（检查）列表中修改配置中的重构列表。</p>
+                     <a name="convert"></a>
+		<h3>迁移至 JDK 7</h3>
+		<p>默认情况下，IDE 中提供的 <tt>Migrate to JDK 7</tt>（迁移至 JDK 7）配置包含菱形运算符使用、try-with-resources 转换、multicatch 使用、switch over 字符串应用等重构操作。 </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf.png" rel="lytebox" title="转换为 JDK 7 默认配置"> <img alt="转换为 JDK 7 默认配置" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf-small.png"></a></p>
+					 <p class="notes"><b>注：</b>通过选择和取消选择 <tt>JDK Migration Support</tt>（JDK 迁移支持）节点下方的项，可以在 "Manage Inspections"（管理检查）对话框的 "Inspections"（检查）列表中修改配置中的重构列表。</p>
+					 <p><b>运行并应用默认的 <tt>Migrate to JDK 7</tt>（迁移至 JDK 7）配置：</b></p>
+					 <ol>
+					 <li>在 "Projects"（项目）窗口中，选择 <tt>PredefinedSet.java</tt> 文件。</li>
+					 <li>从 IDE 的菜单中选择 "Refactor"（重构）> "Inspect and Transform"（检查并转换）。</li>
+	                 <li>在 "Inspect and Transform"（检查并转换）对话框中，选择 "Configuration"（配置）选项，然后从下拉列表中选择 <tt>Migrate to JDK 7</tt>（迁移至 JDK 7）检查集。</li>
+                     <li>单击 "Inspect"（检查）。<br />将代码转换为 JDK 7 语法的更改将显示在预览面板中。
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref.png" rel="lytebox" title="建议迁移至 JDK 7 重构"> <img alt="建议迁移至 JDK 7 重构" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref-small.png"></a></p></li>
+					 <li>单击 "Do Refactoring"（执行重构）以应用所做的更改（如有必要）。</li></ol>	
+		<a name="migrate8"></a>
+		<h3>迁移至 JDK 8</h3>
+		<p>默认情况下，IDE 中提供的 <tt>Migrate to JDK 8</tt>（迁移至 JDK 8）配置包含 Lambda 或成员引用转换、静态导入、multicatch 使用、switch over 字符串应用等重构操作。 </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf.png" rel="lytebox" title="迁移至 JDK 8 默认配置"> <img alt="迁移至 JDK 8 默认配置" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf-small.png"></a></p>
+					 <p class="notes"><b>注：</b>通过选择和取消选择 <tt>JDK Migration Support</tt>（JDK 迁移支持）节点下方的项，可以在 "Manage Inspections"（管理检查）对话框的 "Inspections"（检查）列表中修改配置中的重构列表。</p>
+                     <a name="organize"></a>
+		<h3>组织导入</h3>
+        <p>通过 <tt>Organize Imports</tt>（组织导入）配置，可以检查 import 语句在代码中的组织方式，并根据需要重构代码。默认情况下，其中包括用于检查 import 语句是否与指定代码样式规则相对应的单个检查。</p>
+		<p class="notes"><b>注：</b>要针对 import 语句配置代码样式规则，请执行以下操作：</p>
+		<ol>
+		<li>  在 IDE 的主工具栏中，选择 "Tools"（工具）> "Options"（选项）> "Editor"（编辑器）> "Formatting"（格式设置）。</li>
+		<li>  在 "Language"（语言）下拉列表中，选择 "Java"。</li> 
+		<li>在 "Category"（类别）下拉列表中，选择 "Imports"（导入）。</li>
+		 <li>根据需要指定可用选项。
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/org-imports.png" rel="lytebox" title="组织导入默认配置"> <img alt="组织导入默认配置" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/org-imports-small.png"></a></p></li>
+		 <li>单击 "OK"（确定）保存所做的编辑。</li>
+</ol> 
+		
+		<p><b>运行并应用默认的 <tt>Organize Imports</tt>（组织导入）配置：</b></p>
+		<ol>
+					 <li>在 "Projects"（项目）窗口中，选择 <tt>Imports.java</tt> 文件。</li>
+					 <li>从 IDE 的菜单中选择 "Refactor"（重构）> "Inspect and Transform"（检查并转换）。</li>
+	                 <li>在 "Inspect and Transform"（检查并转换）对话框中，选择 "Configuration"（配置）选项，然后选择 <tt>Organize Imports</tt>（组织导入）项。</li>
+                     <li>单击 "Inspect"（检查）。<br /> 预览面板将显示一个针对 <tt>Imports.java</tt> 文件的 "Import"（导入）部分建议的实例，以使其与指定的代码样式规则相符。
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref.png" rel="lytebox" title="建议组织导入重构"> <img alt="建议组织导入重构" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref-small.png"></a></p></li>
+					 <li>单击 "Do Refactoring"（执行重构）以应用所做的更改（如有必要）。</li>
+		</ol>
+		
+
+         <p class="align-center"><a href="#top">返回页首</a></p>       
+                
+               
+        <a name="create"></a>
+        <h2>管理定制检查</h2>
+        
+		<p>可以创建定制检查，以指示 IDE 查找哪些代码结构以及如何对其进行转换。 </p>
+        <p class="notes"><b>注：</b>为了避免将重复检查添加到 IDE 中，请从主菜单中选择 "Refactor"（重构）> "Inspect and Transform"（检查并转换），单击 "Manage"（管理）或 "Browse"（浏览），然后在 "Manage Inspections"（管理检查）对话框中使用 "Search"（搜索）字段查找所需的检查，然后再创建新的检查。 </p>
+		<p><b>创建定制检查：</b></p>
+		<ol>
+		<li>从 IDE 的菜单中选择 "Refactor"（重构）> "Inspect and Transform"（检查并转换）。</li>
+		<li>在 "Inspect and Transform"（检查并转换）对话框中，单击 "Manage"（管理）或 "Browse"（浏览）。</li>
+		<li>在 "Manage Inspections"（管理检查）对话框中，单击 "New"（新建）。<br /> 此时，将在 "Inspections"（检查）列表中创建 <tt>"Custom"（定制）> "Inspection"（检查）</tt>节点。
+		
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint.png" rel="lytebox" title="InspectionSample 已创建"> <img alt="InspectionSample 已创建" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint-small.png"></a></p></li>
+					 <li>（可选）右键单击 <tt>Inspection</tt>（检查），从弹出式菜单中选择 "Rename"（重命名），指定定制检查所需的名称（例如 <tt>MyCustomInspection</tt>），然后按 Enter 键。</li>
+					 <li>单击 "Edit Script"（编缉脚本）。显示 "Script"（脚本）文本区域。
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/script.png" rel="lytebox" title="&amp;quot;Script&amp;quot;（脚本）文本区域"> <img alt="&amp;quot;Script&amp;quot;（脚本）文本区域" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/script-small.png"></a></p></li>
+					 <li>在 "Script"（脚本）文本区域中键入检查描述和代码，或者在编辑器中单击 "Open"（打开），并在 <tt>MyCustomInspection.hint</tt> 文件中指定相同的内容。
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/hint-file.png" rel="lytebox" title="MyCustomInspection.hint 文件"> <img alt="MyCustomInspection.hint 文件" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/hint-file-small.png"></a></p></li>
+					 <li>单击 "Script"（脚本）文本区域下方的 "Save"（保存），或在编辑器中按 Ctrl-S 组合键保存所做的编辑。</li>
+					 <li>单击 "OK"（确定）以关闭 "Manage Inspections"（管理检查）对话框，或在编辑器中关闭 <tt>MyCustomInspection.hint</tt> 文件。<br /> 您的定制检查已完成并准备进行应用。</li>
+		</ol>
+		<p><b>运行已创建的定制检查：</b></p>
+		<ol>
+	 
+	 <li>从 IDE 的菜单中选择 "Refactor"（重构）> "Inspect and Transform"（检查并转换）。</li>
+	 <li>在 "Inspect and Transform"（检查并转换）对话框的 "Inspect"（检查）列表中，指定要检查的文件、包或项目。此外，也可以单击右侧的按钮打开 "Custom Scope"（定制作用域）对话框，然后指定要检查的定制代码。</li>
+	 <li>选择 "Single Inspection"（单个检查）选项，然后选择 <tt>MyCustomInspection</tt> 检查。
+	   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint.png" rel="lytebox" title="MyCustomInspection 已选定"> <img alt="MyCustomInspection 已选定" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint-small.png"></a></p></li>
+     <li>单击 "Inspect"（检查）。<br />建议的重构更改显示在预览面板中。
+	 <!--<p class="align-center">
+		<a href="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI.png" rel="lytebox"
+                       title="MyCustomInspection run">
+					   <img src="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI-small.png"
+                     alt="MyCustomInspection run" border=1/></a></p>-->	</li>
+     <li>单击 "Do Refactoring"（执行重构）以应用所做的更改（如有必要）。</li>
+</ol>
+
+
+        <p class="align-center"><a href="#top">返回页首</a></p> 
+		  
+               
+          
+
+                
+               
+
+<a name="summary"></a>
+<h2>小结</h2>
+<p>本教程介绍了“检查并转换”功能最常见的用法。请注意，通过“检查并转换”功能，您还可以对项目作用域执行定制重构，或者对 IDE 中打开的多个项目应用特定的重构配置，等等。 </p>
+
+<p class="align-center"><a href="#top">返回页首</a></p>		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Refactoring%20with%20Inspect%20and%20Transform%20in%20the%20NetBeans%20IDE%20Java%20Editor">发送有关此教程的反馈意见</a></div>
+
+        <br style="clear:both;"/>
+		
+		<a name="seealso"></a>
+        <h2>另请参见</h2>
+        
+        <p>相关资料请参见以下文档：</p>
+        <ul>
+           <li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">在源代码分析和重构中使用提示</a></a></li>
+            <li><a href="http://wiki.netbeans.org/Java_Hints">NetBeans Java 提示的完整列表</a></li>
+			<li><a href="http://wiki.netbeans.org/JavaDeclarativeHintsDescriptionSketch">NetBeans Java 声明提示的说明</a></li>
+			
+			<li><a href="code-inspect.html">NetBeans IDE Java 编辑器中的静态代码分析</a></li>
+			<li><a href="http://wiki.netbeans.org/Refactoring">简化重构</a></li>
+			<li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">NetBeans Java 提示模块教程</a></li>
+			
+          
+			
+        </ul>
+		<p class="align-center"><a href="#top">返回页首</a></p>
+</body>
+</html>

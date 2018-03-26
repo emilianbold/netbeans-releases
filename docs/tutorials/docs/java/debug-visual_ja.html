@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>ビジュアル・デバッガの使用</title>
+<link rel="stylesheet" href="../../../netbeans.css">
+<link rel="stylesheet" type="text/css" href="../../../print.css" media="print">
+<link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+<meta name="description" content="A guide to using the visual debugger in NetBeans IDE to locate source code in GUI applications."/>
+<meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+<body>
+<h1>NetBeans IDEでのビジュアル・デバッガの使用</h1>
+
+<p>このドキュメントでは、ビジュアル・デバッガを使用して、GUIアプリケーション内のビジュアル要素のためのコードを見つけたり、デバッグしたりしやすくする方法について説明します。ビジュアル・デバッガは、JavaおよびJavaFX GUIアプリケーションで使用できます。
+    </p>
+
+<p>このドキュメントでは、ビジュアル・デバッガを使用してAnagram Gameサンプル・プロジェクトを調査します。このドキュメントは、アプリケーションのGUIスナップショットを作成した後、そのスナップショットを操作してソース・コードを見つけたり、イベントにリスナーを追加したり、GUIコンポーネントのイベント・ログを表示したりする方法を示します。
+</p>
+
+    <p><b>目次</b></p>
+    <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+    <ul>
+        <li><a href="#Exercise_10">GUIスナップショットの作成</a></li>
+        <li><a href="#Exercise_20">ビジュアル・デバッガの操作</a>
+        <ul>
+            <li><a href="#Exercise_21">ソースの検索</a></li>
+            <li><a href="#Exercise_22">コンポーネント・イベントの調査</a></li>
+        </ul>
+        </li>
+    </ul>
+
+    <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+    <table>
+    <tr>
+        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+        <th class="tblheader" scope="col">必須バージョン</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+        <td class="tbltd1">バージョン7または8</td>
+    </tr>
+    </table>
+    <p class="notes"><strong>JUnitについての注意。</strong>IDEをインストールした際にJUnitライブラリがインストールされなかった場合、アプリケーションのデバッグ時に、不足するリソースを解決してJUnitをインストールするよう求めるメッセージが表示されます。</p>
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_10"></a>
+    <h2>GUIスナップショットの作成</h2>
+    <p>このチュートリアルでは、新規プロジェクト・ウィザードでサンプルとして使用できる単純なGUIを備えたJavaデスクトップ・アプリケーションであるAnagram Gameサンプル・アプリケーションを使用します。プロジェクトを作成した後に、デバッグ・セッションを開始し、アプリケーションのGUIスナップショットを作成します。
+    </p>
+
+    <ol>
+        <li>メイン・メニューから「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])を選択して、新規プロジェクト・ウィザードを開きます。</li>
+        <li>「サンプル」>「Java」カテゴリで「Anagram Game」を選択します。「次」をクリックします。</li>
+        <li>プロジェクトの場所を指定します。「終了」をクリックします。
+            <p>「終了」をクリックすると、IDEがプロジェクトを作成し、そのプロジェクトが「プロジェクト」ウィンドウで開きます。</p>
+        </li>
+        <li>ツールバーの「デバッグ」ボタン([Ctrl]-[F5]、Macの場合は[⌘]-[F5])をクリックしてデバッグ・セッションを開始します。
+            <p>または、「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「デバッグ」を選択します。</p>
+            <p>セッションを開始すると、IDEによってAnagram Gameアプリケーションが起動され、「デバッグ」ウィンドウが表示されます。</p>
+            <p>デバッガの実行の詳細は、<em>NetBeans IDEによるアプリケーションの開発</em>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG798">Javaアプリケーション・プロジェクトの実行およびデバッグ</a>を参照してください。</p>
+        </li>
+        <li>メイン・メニューから「デバッグ」>「GUIスナップショットを作成」を選択します。
+        <p>「GUIスナップショットを作成」を選択すると、IDEによってGUIのスナップショットが作成され、そのスナップショットがメイン・ウィンドウに表示されます。</p>
+
+        </li>
+    </ol>
+    <a href="../../../images_www/articles/74/java/visualdebug/debug-fullscreen.png" rel="lytebox" title="IDEのメイン・ウィンドウにGUIスナップショットが表示されます"> <img alt="GUIスナップショットのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-fullscreen.png" style="width:600px" title="クリックして拡大"></a>
+
+    <p>ビジュアル・デバッガに関するこのガイドでは、「デバッグ」ウィンドウは使用しません。</p>
+    
+
+
+    <a name="Exercise_20"></a>
+    <h2>ビジュアル・デバッガの操作</h2>
+
+    <p>GUIスナップショットは、GUIコンポーネントのソース・コードを見つけるのに役立つ、ビジュアル・デバッグ用のツールです。GUIコンポーネントのソース・コードは見つけるのが困難な場合がありますが、このスナップショットによって、コード内を検索するのではなく、GUIに基づいてコードを見つけるための方法が提供されます。スナップショット内のコンポーネントを選択し、ポップアップ・メニューからタスクを呼び出すことにより、コンポーネントのソース・コードを表示したり、リスナーを表示したり、コンポーネントにブレークポイントを設定したりすることができます。 
+    </p>
+
+    <div class="indent">
+        <a name="Exercise_21"></a>
+        <h3>コンポーネントのソース・コードの検索</h3>
+        <p>この課題は、GUIスナップショットを使用して、あるコンポーネントが宣言および定義されているソース・コード内の行に移動する方法を示します。GUIスナップショット内のコンポーネントを選択すると、ポップアップ・メニューを使用して、様々なコマンドを呼び出すことができます。 
+            </p>
+            <p class="tips">また、これらのコマンドは、コンポーネントを右クリックし、ポップアップ・メニューでコマンドを選択することによって「ナビゲータ」ウィンドウからも呼び出すことができます。</p>
+        
+        <ol>
+            <li>GUIスナップショットで、「Guess」ボタンを選択します。
+                <p>スナップショット内のコンポーネントを選択すると、IDEによって、選択されたコンポーネントに関する詳細が「プロパティ」ウィンドウに表示されます。「プロパティ」ウィンドウが表示されない場合は、メイン・メニューから「ウィンドウ」>「プロパティ」を選択してウィンドウを開くことができます。</p>
+                <img alt="GUIスナップショットのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-snapshot.png" title="GUIスナップショット">
+                <p>また、IDEでは、コンポーネントの場所が「ナビゲータ」ウィンドウ内に階層形式で表示されます。</p>
+                <img alt="GUIスナップショットのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-navigator.png" title="GUIスナップショット">
+            </li>
+            <li>スナップショット内の「Guess」ボタンを右クリックし、ポップアップ・メニューから「コンポーネント宣言へ移動」を選択します。
+                <p>「コンポーネント宣言へ移動」を選択すると、IDEによってソース・ファイルがエディタに表示され、<tt>guessButton</tt>が宣言されているコード内の行にカーソルが移動されます。</p>
+                <img alt="エディタ内のソース・コードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-gotodeclaration.png" title="コンポーネントが宣言されているコードの行">
+                </li>
+            <li>スナップショット内の「Guess」ボタンをもう一度右クリックし、「コンポーネント・ソースへ移動」を選択します。 
+                <p>「コンポーネント・ソースへ移動」を選択すると、IDEによってソース・ファイルがエディタに表示され、JButtonコンポーネントのソース・コード内の行にカーソルが移動されます。</p>
+                <img alt="エディタ内のソース・コードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-gotosource.png" title="コンポーネントのソース・コードの行" />
+                </li>
+                
+        </ol>
+    
+        <p>
+        GUIスナップショットの「階層の追加へ移動」コマンドを使用して、コンポーネントがそのコンテナに追加されているソース・コード内の行を見つけることができます。「階層の追加へ移動」コマンドはデフォルトで無効になっています。「オプション」ウィンドウでコマンドを有効にできます。
+        </p>
+        
+            <ol>
+                <li>「オプション」ウィンドウを開きます。</li>
+                <li>「オプション」ウィンドウの「Java」カテゴリで、「Javaデバッガ」タブをクリックします。
+                    <p class="notes"><strong>注意:</strong>NetBeans IDE 7.1では、「オプション」ウィンドウの「Javaデバッガ」タブは「その他」カテゴリ内にあります。</p></li>
+                <li>カテゴリ・リストの「ビジュアル・デバッグ」を選択し、「<strong>コンポーネント階層の変更箇所をトラック</strong>」を選択します。「OK」をクリックします。</li>
+                <li>デバッグ・セッション(実行中の場合)を停止します。
+                    <p class="notes"><strong>注意:</strong>「オプション」ウィンドウでコマンドを有効にした後、「階層の追加へ移動」コマンドを使用できるようにするには、デバッグ・セッションを再起動して、新規のGUIスナップショットを取る必要があります。</p>
+                </li>
+                <li>新規デバッグ・セッションを開始し、GUIスナップショットを作成します。</li>
+                <li>GUIスナップショット内のコンポーネントを右クリックし、「階層の追加へ移動」を選択します。
+                    <p>IDEによって、コンポーネントが追加されている行の部分のソース・コードがエディタに表示されます。</p>
+                    <img alt="エディタ内のソース・コードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-hierarchy.png" title="コンポーネントがコンテナに追加されているソース・コードの行" />
+                </li>
+            </ol>
+    
+    <a name="Exercise_22"></a>
+    <h3>コンポーネント・イベントの調査</h3>
+    
+    <p>この課題は、GUIスナップショットと「イベント」ウィンドウを使用してコンポーネント・イベントを調査することによって、コンポーネントのリスナーやそれらのコンポーネントによってトリガーされたイベントを見つけることができる方法を示します。</p>
+    
+    <ol>
+        <li>スナップショット内の「Guess」ボタンを右クリックし、ポップアップ・メニューから「リスナーを表示」を選択します。 
+        <p>「リスナーを表示」を選択すると、IDEによって「イベント」ウィンドウが表示されます。「カスタム・リスナー」ノードが展開されることが確認できます。</p>
+        <img alt="エディタ内のソース・コードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-customlisteners.png" title="コンポーネントがコンテナに追加されているソース・コードの行" />
+        </li>
+        <li>「カスタム・リスナー」ノードの下にある「<strong>com.toy.anagrams.ui.Anagrams$3</strong>」を右クリックし、ポップアップ・メニューで「コンポーネント・ソースへ移動」を選択します。 
+            <p>リスナーが定義されている行の部分のソース・コードがエディタに表示されます。</p>
+        </li>
+        <li>スナップショット内の空のテキスト・フィールドを選択します。
+        <p>または、「ナビゲータ」ウィンドウで「<tt>guessedWord</tt>」テキスト・フィールドを選択できます。</p>
+        <p>このテキスト・フィールドを選択すると、「イベント」ウィンドウ内の項目が自動的に変更され、選択されたコンポーネントのリスナーが表示されます。</p></li>
+        <li>「イベント」ウィンドウで、「イベント・ログ」ノードをダブルクリックして「リスナーを選択」ウィンドウを開きます。
+        <p>または、「イベント・ログ」ノードを右クリックし、ポップアップ・メニューから「ロギング・イベントを設定」を選択できます。</p></li>
+        <li>ダイアログから「<tt>java.awt.event.KeyListener</tt>」リスナーを選択します。「OK」をクリックします。<br /><img alt="エディタ内のソース・コードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-select-listener.png" title="コンポーネントがコンテナに追加されているソース・コードの行" />
+        <p>このリスナーは現在、テキスト・フィールド内のキーボード・イベントを待機しています。</p>
+        </li>
+        <li>Anagram Gameアプリケーションで、テキスト・フィールドに何文字か入力します。
+        <p>テキスト・フィールドに文字を入力すると、そのイベントがイベント・ログに記録されます。「イベント・ログ」ノードを展開すると、各キー・ストロークがログに記録されていることが確認できます。Anagram Gameアプリケーションのテキスト・フィールドに入力するたびに、新しいイベントが表示されます。個々のイベント(たとえば、<tt>keyPressed</tt>)を展開すると、ログ内のそのイベントのプロパティが表示されます。</p>
+        
+        <img alt="エディタ内のソース・コードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/visualdebug/debug-eventlog.png" title="コンポーネントがコンテナに追加されているソース・コードの行" />
+        <p>イベントの「コール元」ノードを展開すると、そのイベントのスタック・トレースが表示されます。</p>
+        </li>
+    </ol>
+
+    </div>
+
+
+
+<!-- ===================================================================================== -->
+<p>このチュートリアルでは、IDEのビジュアル・デバッガの基本について紹介しました。ビジュアル・デバッガを使用すると、GUIコンポーネントのソース・コードの検索やイベントの記録を容易に行うことができます。これは、GUIアプリケーションをデバッグする際に特に便利です。
+</p>
+
+
+<!-- End Content Area -->
+
+    <br>
+    <div class="feedback-box"><a href="https://netbeans.org/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20the%20Visual%20Debugger">このチュートリアルに関するご意見をお寄せください</a></div>
+    <br style="clear:both;" />
+    <!-- ======================================================================================= -->
+    <h2><a name="nextsteps"></a>関連項目</h2>
+    <p>NetBeans IDEでのJavaアプリケーションの開発およびテストの詳細は、次のリソースを参照してください。</p>
+    <ul>
+        <li><a href="gui-functionality.html">Java GUIビルドの概要</a></li>
+        <li>デモ: <a href="debug-visual-screencast.html">ビジュアル・デバッガの使用</a></li>
+        <li>デモ: <a href="debug-multithreaded-screencast.html">マルチスレッド・アプリケーションのデバッグ</a></li>
+        <li>デモ: <a href="debug-stepinto-screencast.html">NetBeansデバッガでの視覚的なステップ・イン・アクション</a></li>
+        <li>デモ: <a href="debug-deadlock-screencast.html">NetBeansデバッガを使用したデッドロックの検出</a></li>
+        <li>デモ: <a href="debug-evaluator-screencast.html">NetBeansデバッガのコード・スニペット評価の使用</a></li>
+        <li><a href="../../trails/java-se.html">基本的なIDEおよびJavaプログラミングの学習</a></li>
+    </ul>
+    
+    </body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><title>Шаблоны кода в IDE NetBeans для PHP - учебный курс</title>
+
+
+
+
+
+        <meta name="KEYWORDS" content="NetBeans, tutorial, configure, PHP, PHP engine, guide, documentation, code template">
+        <meta name="DESCRIPTION" content="This document describes the PHP code templates available in NetBeans IDE, how to use them,
+              and some common use cases.">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script></head><body>
+
+        <!--
+        Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>Шаблоны кода в IDE NetBeans для PHP</h1>
+
+        <p>Шаблона кода представляют собой написанные заранее фрагменты кода, предоставленные IDE NetBeans. Фрагмент можно вставить в код путем дополнения кода или с помощью ввода аббревиатуры шаблона с нажатием клавиши TAB.  Также можно добавить соответствующие фрагменты PHP вокруг кода.  Наконец, можно задать собственные шаблоны кода.  В данном учебном курсе описывается использование шаблонов кода и приводятся варианты определения собственных шаблонов.</p>
+
+        <p><b>Содержание</b></p>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <ul class="toc">
+            <li><a href="#define">Заданные шаблоны кода PHP</a></li>
+            <li><a href="#using-templates">Использование шаблонов кода PHP</a>
+                <ul>
+                    <li><a href="#expand-with-abb">Расширение шаблона кода путем ввода аббревиатуры с нажатием клавиши TAB</a></li>
+
+                    <li><a href="#expand-with-cc">Вставка шаблона кода путем дополнения кода</a></li>
+                    <li><a href="#surround-code">Добавление шаблона вокруг кода</a></li>
+                    <li><a href="#edit-parameters">Изменение параметров в развернутом шаблоне</a></li>
+                </ul>
+            </li>
+            <li><a href="#syntax">Синтаксис шаблона кода PHP</a>
+                <ul>
+                    <li><a href="#placeholder">Имя метки-заполнителя</a></li>
+                    <li><a href="#reserved-name">Зарезервированные имена</a></li>
+                    <li><a href="#complex">Параметр, определенный с помощью подсказок</a></li>
+                    
+                </ul>
+            </li>
+            <li><a href="#create">Создание собственных шаблонов кода</a>
+                <ul>
+                    <li><a href="#uc-html">Вариант использования: вставка PHP в HTML</a> </li>
+                    <li><a href="#joomla">Вариант использования: Joomla</a> </li>
+                    <li><a href="#mysql-conn">Вариант использования: соединение с MySQL</a> </li>
+                    <li><a href="#z-action">Вариант использования: действие в контроллере Zend</a> </li>
+                    <li><a href="#z-form-element">Вариант использования: элемент формы Zend</a> </li>
+                </ul>
+            </li>
+        </ul>
+
+        <p><b>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a> </td>
+                    <td class="tbltd1">Пакет загрузки PHP</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a> </td>
+                    <td class="tbltd1">7 или 8</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>&nbsp;</p>
+
+
+        <h2><a name="define"></a>Заданные шаблоны кода PHP</h2>
+        <p>Для просмотра шаблонов кода, определенных в NetBeans, выберите команду &quot;Средства&quot; &gt; &quot;Параметры&quot; (&quot;NetBeans&quot; &gt; &quot;Параметры&quot; для Mac), выберите функцию редактора и откройте вкладку &quot;Шаблоны кода&quot;.  Для просмотра шаблонов кода PHP выберите в раскрывающемся списке &quot;Языки&quot; пункт &quot;PHP&quot;.  Появится таблица с аббревиатурами шаблонов кода и расширенными текстами.  При выборе шаблона кода в таблице на вкладке &quot;Расширенный текст&quot; отображается расширенный текст. </p>
+        <img alt="Шаблоны кода PHP в окне &apos;Параметры&apos; с выбранным шаблоном cli" class="margin-around" height="613" src="../../../images_www/articles/72/php/code-templates/code-template-options.png" width="597">
+        <p>В примере на рисунке выбран шаблон кода нового класса (<tt>cls)</tt>, а на вкладке &quot;Расширенный текст&quot; отображается развернутый шаблон. В следующем разделе описывается использование клавиши TAB для развертывания шаблона в коде.</p>
+        <p class="notes"><strong>Примечание.</strong> Синтаксис нового шаблона кода класса (<tt>cls</tt>) описывается в разделе <a href="#syntax">Синтаксис шаблона кода PHP</a>.</p>
+        <h2><a name="using-templates"></a>Использование шаблонов кода PHP</h2>
+        <p>Существует три способа вставки шаблонов в код PHP.  Каждый из этих способов предназначен для соответствующих ситуаций.  Существуют следующие способы:</p>
+        <ul>
+            <li><a href="#expand-with-abb">развертывание шаблона</a> с помощью ввода аббревиатуры шаблона с нажатием клавиши TAB (или другой заданной пользователем клавиши или сочетания клавиш);</li>
+            <li><a href="#expand-with-cc">вставка развернутого шаблона</a> путем дополнения кода;</li>
+            <li><a href="#surround-code">добавление шаблона вокруг кода</a> с помощью подсказки в поле или сочетания клавиш ALT+ВВОД.</li>
+        </ul>
+        <p>После вставки шаблона в среде IDE можно <a href="#edit-parameters">отредактировать параметры</a> в развернутом шаблоне кода.</p>
+        <div class="indent">
+            <h3><a name="expand-with-abb"></a>Расширение шаблона кода путем ввода аббревиатуры с нажатием клавиши TAB</h3>
+            <p>Снова откройте вкладку &quot;Шаблоны кода&quot; в диалоговом окне &quot;Параметры&quot;. В нижней части этого окна расположено раскрывающееся поле для выбора сочетания клавиш для развертывания шаблона.  Это сочетание клавиш пользователь нажимает после ввода аббревиатуры шаблона для развертывания шаблона кода.  Клавиша TAB выбрана по умолчанию, но вместо нее можно задать другие сочетания клавиш.</p><img alt="Раскрывающееся поле &apos;Развернуть шаблон в &apos;" class="margin-around" height="94" src="../../../images_www/articles/72/php/code-templates/expand-template-on.png" width="208">
+            <p>Далее в этом разделе предполагается, что в поле &quot;Раскрыть шаблон по&quot; по умолчанию выбрана клавиша TAB.</p>
+            <p class="tips">Если аббревиатура для шаблона также используется в дополнении кода, развернуть ее может быть сложно.  В этом случае для вставки шаблона предпочтительно использовать <a href="#expand-with-cc">дополнение кода</a>.</p>
+            <p><strong>Для развертывания шаблона кода нового класса с помощью ввода аббревиатуры с нажатием клавиши TAB выполните следующее:</strong></p>
+            <ol>
+                <li>Создайте пустой файл PHP.</li>
+                <li>В блоке PHP для этого файла введите текст <tt>cls</tt> и нажмите клавишу TAB.  Будет развернут шаблон кода <tt>cls</tt>.
+                    <p class="alert"><b>Внимание!</b> Аббревиатуру необходимо ввести корректно! В случае ошибок при вводе шаблон не будет развернут. </p><img alt="Развертывание шаблона кода" border="1" class="margin-around" height="166" src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png" width="586"></li>
+                <li>Имя класса метки-заполнителя (<tt><strong>class_name</strong></tt>) выбирается автоматически.  Для перехода от одного заполнителя к другому можно использовать клавишу Tab. Можно сразу указать требуемое имя класса, которое будет перезаписано для метки-заполнителя.  После завершения ввода нажмите ENTER. В среде IDE будет выбрано имя первой функции, которой в данном варианте является конструктор. 
+                  <p class="notes"><strong>Примечание: </strong> Имена заменителей описываются более детально в разделе <a href="#placeholder">Раздел имен заменителей</a>.</p>
+                    <img alt="Имя функции конструктора, выбранное после редактирования имени класса" border="1" class="margin-around" height="120" src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png" width="233"></li>
+              <li>Отредактируйте имя функции или примите значение по умолчанию.  Затем снова нажмите ENTER. Курсор переместится в тело функции.  В реальном сценарии после этого начинается кодирование функции и остального класса. <p class="notes">Итоговое положение курсора определяется параметром <tt>${cursor}</tt>. Этот параметр описывается в разделе <a href="#reserved-name">Зарезервированные имена</a>.
+                    </p></li></ol>
+          <h3><a name="expand-with-cc"></a>Вставка шаблона кода путем дополнения кода</h3>
+
+
+            <p>Для вставки шаблона кода путем дополнения кода введите начало расширенного фрагмента (<em>не</em> сокращение шаблона).  Откроется диалоговое окно дополнения кода, в котором будет отображаться фрагмент.</p>
+            <p><strong>Для вставки шаблона кода нового класса путем дополнения кода выполните следующее:</strong></p>
+            <ol>
+                <li>Введите в блоке PHP файла PHP значение <tt>cla</tt>.</li>
+                <li>Дождитесь открытия диалогового окна дополнения кода.</li>
+                <li>Выполните поиск шаблона нового класса, рядом с которым указана аббревиатура (<tt>cls</tt>).  Развернутый шаблон отображается в рамке PHPDoc.<br> <img alt="Диалоговое окно автозавершения кода, в котором отображается новый шаблон класса" border="1" class="margin-around" height="397" src="../../../images_www/articles/72/php/code-templates/insert-template-with-cc.png" width="483"></li>
+                <li>Выберите шаблон нового класса и нажмите Enter. В среде IDE выполняется его вставка в код.</li>
+                <li>Имя класса метки-заполнителя (<tt><strong>class_name</strong></tt>) выбирается автоматически.  Для перехода от одного заполнителя к другому можно использовать клавишу Tab. Можно сразу указать требуемое имя класса, которое будет перезаписано для метки-заполнителя.  После завершения ввода нажмите ENTER. В среде IDE будет выбрано имя первой функции, которой в данном варианте является конструктор.<br> <img alt="Имя функции конструктора, выбранное после редактирования имени класса" border="1" class="margin-around" height="120" src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png" width="233"></li>
+                <li>Отредактируйте имя функции или примите значение по умолчанию.  Затем снова нажмите ENTER. Курсор переместится в тело функции.  В реальном сценарии после этого начинается кодирование функции и остального класса.</li>
+            </ol>
+            <h3><a name="surround-code"></a>Добавление шаблона вокруг кода</h3>
+            <p>Вокруг кода можно добавить следующие шаблоны PHP:</p>
+            <ul>
+                <li><tt>while</tt></li>
+                <li><tt>do</tt><br>
+                </li>
+                <li><tt>switch</tt></li>
+                <li><tt>if</tt>/<tt>elseif</tt></li>
+                <li><tt>try</tt> и <tt>catch</tt></li>
+                <li><tt>foreach</tt></li>
+                <li><tt>for</tt></li>
+                <li><tt>ob_start</tt> и <tt>ob_end_clean</tt></li>
+            </ul>
+            <p>Кроме того, можно <a href="#create">создать новый шаблон</a>, который будет окружать код, если шаблон включает в себя <a href="#complex">подсказку параметра</a> <code>allowSurround</code>. (Выражаем благодарность за предоставленную информацию авторам блога <a href="http://www.mybelovedphp.com/2012/05/14/tips-for-using-the-netbeans-editor-for-kohana-and-kostache-mustache-templates-using-surround-with/"> My Beloved PHP</a>.)</p>
+            <p>Чтобы добавить шаблон вокруг кода, выберите код и откройте диалоговое окно &quot;Окружение...&quot;. Чтобы открыть диалоговое окно 'Окружить...', нажмите Alt-Enter или щелкните значок 'Подсказка' <img alt="Значок &apos;Подсказка&apos;" height="19" src="../../../images_www/articles/72/php/code-templates/hint-icon.png" width="14">. </p>
+            <p><strong>Для добавления шаблона if(true) вокруг кода выполните следующее:</strong></p>
+            <ol>
+                <li>Создайте блок PHP с переменными <tt>$a = true</tt> и <tt>$b = 10</tt>.
+                    <pre class="examplecode">&lt;?php<br>$a = false;<br>        <br>$b = 10;<br>?&gt;</pre>
+                </li>
+                <li>Выберите строку <tt>$b = 10;</tt><br> <img alt="Выбранная переменная $b = 10" border="1" class="margin-around" height="82" src="../../../images_www/articles/72/php/code-templates/selected-variable.png" width="196">
+                </li>
+                <li>Нажмите на значок 'Подсказка' <img alt="Значок &apos;Подсказка&apos;" height="19" src="../../../images_www/articles/72/php/code-templates/hint-icon.png" width="14"> или нажмите Alt-Enter. Откроется диалоговое окно &quot;Окружение...&quot;.<br> <img alt="Откройте диалоговое окно &apos;Окружить...&apos;" class="margin-around" height="382" src="../../../images_www/articles/72/php/code-templates/surround-hint.png" width="530"></li>
+                <li>Щелкните<tt> Surround with if{<strong>true</strong>){...</tt><br> <img alt="Откройте диалоговое окно &apos;Окружить...&apos;, в котором выделено &apos;Окружить, если (true)&apos;" class="margin-around" height="333" src="../../../images_www/articles/72/php/code-templates/surround-if-true.png" width="480"></li>
+                <li>В среде IDE строка <tt>$b = 10;</tt> будет окружена шаблоном <tt>if(<strong>true</strong>){... </tt>.<br> <img alt="Шаблон &apos;Вставлено, если (true)&apos;" border="1" class="margin-around" height="116" src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png" width="212"></li>
+            </ol>
+            <p>В среде IDE в качестве условия оператора <tt>if</tt> автоматически вставляется ближайшая предшествующая допустимая переменная.  В данном варианте используется переменная <tt>$a</tt>, поскольку <tt>$a</tt> является логическим значением, а условие оператора <tt>if(<strong>true</strong>){} </tt>подразумевает логическую переменную.  Более того, если переменная, вставленная в среде IDE в условие, неправильна, это условие автоматически выделяется для редактирования.  Это означает, что ввод корректной переменной можно начать сразу после вставки шаблона.  В этом случае выбрать переменную можно с помощью дополнения кода.</p>
+            <p class="notes"><strong>Примечание </strong>. Шаблон <tt>if(<strong>true</strong>){}</tt> описывается подробно в разделе <a href="#complex">Параметр, определяемый подсказками</a>.</p>
+            <p><img alt="Выбор переменной для использования как условия из автозавершения кода" border="1" class="margin-around" height="162" src="../../../images_www/articles/72/php/code-templates/change-condition.png" width="438">        </p>
+            <p>Для выхода из условия оператора нажмите ENTER.  Курсор переместится в соответствующее местоположение, в данном случае — в конец строки <tt>$b = 10;</tt>.  Пользователь может отредактировать условие и нажать ENTER или принять автоматически подставляемое условие, после чего нажать ENTER.  В любом случае курсор будет перемещен из условия в соответствующее местоположение.</p>
+            <p><img alt="Курсор после не выполнения редактирования" class="margin-around" height="138" src="../../../images_www/articles/72/php/code-templates/cursor-after-not-editing.png" width="212"><img alt="Курсор после выполнения редактирования" class="margin-around" height="184" src="../../../images_www/articles/72/php/code-templates/cursor-after-editing.png" width="215">        </p>
+            <p>В следующем разделе редактирование параметров в развернутых шаблонах описано более подробно.</p>
+            <h3><a name="edit-parameters"></a>Изменение параметров в развернутых шаблонах</h3>
+            <p>В разделах, посвященных вставке шаблонов в код, в среде IDE автоматически выбиралось имя класса для редактирования после развертывания шаблона нового класса. Также автоматически выбиралось имя условия для редактирования после развертывания шаблона <tt>if(<strong>true</strong>)</tt>.  В данном разделе описаны другие возможности редактирования параметров в среде IDE в развернутых шаблонах.</p>
+            <p><strong>Одновременное редактирование нескольких экземпляров параметра:</strong></p>
+            <ol>
+                <li>В пустом блоке PHP введите <tt>for</tt> и нажмите сочетание клавиш CTRL+ПРОБЕЛ для открытия дополнения кода.  Выберите шаблон итерации (аббревиатура <tt>iter</tt>) и нажмите Enter. В код будет вставлена новая итерация.<br> <img alt="Автозавершения кода, в котором отображается шаблон приращения" class="margin-around" height="335" src="../../../images_www/articles/72/php/code-templates/iter-cc.png" width="600"></li>
+                <li>В итерации в качестве параметров используются две переменных: <tt>$index</tt> и <tt>$array</tt>. Переменная <tt>$index</tt> выбирается для редактирования автоматически. (Для перемещения между параметрами используйте клавишу Tab.)<br> <img alt="Вставленная строка приращения с параметрами, с параметром $index, выделенная для редактирования" class="valign-bottom" height="22" src="../../../images_www/articles/72/php/code-templates/iteration1.png" width="420"> <p>Введите <tt>i</tt>.  Все три экземпляра параметра <tt>$index</tt> изменятся на <tt>$i</tt>. </p><img alt="Вставленная строка приращения с параметром $index, измененным на $i" height="18" src="../../../images_www/articles/72/php/code-templates/iteration2.png" width="322"></li>
+              <li>Нажмите Enter или Tab. Будет выбран параметр <tt>$array</tt>. </li>
+                <li>Нажмите ENTER. Курсор переместится в тело метода итерации. </li>
+            </ol>
+            <p>Функция реорганизации имен переменных в NetBeans позволяет изменить все экземпляры имени переменной путем редактирования только одного экземпляра.  В данном разделе рассматривается ее использование для параметров шаблона.</p>
+            <p>Редактор PHP editor IDE NetBeans также помогает определить правильный метод для переменных.</p>
+            <p><strong>Привязка переменной в шаблоне к корректному методу:</strong></p>
+            <ol>
+                <li>В пустом блоке PHP введите следующий код:
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>?&gt;</pre></li>
+                <li>После строки с объявлением массива <tt>$arr</tt> введите <tt>fore</tt> и с помощью дополнения кода вставьте шаблон <tt> foreach</tt> (аббревиатура: <tt>fore</tt>).<br> <img alt="Автозавершение кода для вставки шаблона foreach" class="margin-around" height="283" src="../../../images_www/articles/72/php/code-templates/cc-foreach.png" width="590"></li>
+                <li>Поместите курсор в тело функции <tt>foreach</tt> (для перемещения курсора можно дважды нажать ENTER) и введите значение <tt>$value</tt> или введите только <tt>$</tt> и выберите <tt>$value</tt> из дополнения кода.
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>foreach ($arr as $value) {<br>    $value<br>}<br><br>?&gt;</pre></li>
+                <li>После <tt>$value</tt> введите <tt>-&gt;</tt>.  Дополнение кода обеспечивает корректные методы для переменной <tt>$value</tt>, значение которой можно получить из массива <tt>$arr</tt>.<br> <img alt="Автозавершение кода для переменной $value, где $value - это метод Array Iterator" border="1" class="margin-around" height="424" src="../../../images_www/articles/72/php/code-templates/value-method-cc.png" width="527"></li>
+            </ol>
+        </div>
+
+        <h2><a name="syntax"></a>Синтаксис шаблона кода PHP</h2>
+        <p>IDE NetBeans обеспечивает шаблоны кодов для всех поддерживаемых языков. Некоторые элементы синтаксиса являются общими для всех языков.  Другие — специфичны для определенных языков.  В данном разделе рассматривается наиболее релевантный общий синтаксис шаблонов, а также специфичный синтаксис шаблонов PHP. </p>
+        <p>Шаблон кода PHP может содержать код PHP и параметры шаблона.  Шаблон PHP может содержать только код PHP, только параметры или код и параметры одновременно. </p>
+        <p>В синтаксисе параметров шаблона кода используется знак доллара <tt>$</tt>, за которым следует определение параметра в фигурных скобках <tt>{...}</tt>.  В рамках этого синтаксиса параметры шаблона могут принимать четыре формы:</p>
+        <ul>
+            <li>произвольное <a href="#placeholder">имя метки-заполнителя</a>, например <tt>${SomeName}</tt>;</li>
+            <li><a href="#reserved-name">зарезервированное имя</a> с указаниями по обработке для среды IDE;</li>
+            <li>имя описательного параметра с набором <a href="#complex">подсказок для определения параметра</a>;</li>
+            <li><a href="#pre-defined">предварительно определенные параметры</a>.
+            </li>
+
+        </ul>
+        <p>В следующих разделах рассматриваются все формы параметров шаблона кода.</p>
+        <p class="notes"><strong>Примечание.</strong> <tt>$$${VARIABLE...} </tt>Иногда отображается шаблон кода PHP во фрагментах, где синтаксис состоит из трех знаков доллара, после которых стоят фигурные скобки <tt>$$${...}</tt>. В этом случае шаблон кода содержит переменную и ее имя.  Здесь знак доллара пропущен, и в синтаксисе присутствует двойной знак доллара <tt>$$</tt>, за которым следует параметр имени переменной <tt>${VARIABLE...}</tt>.  Например, шаблон кода <tt>catch ${Exception} $$${exc}</tt> расширяется как <span class="examplecode"><tt>catch Exception $exc</tt></span>.</p>
+        <div class="indent">
+            <h3><a name="placeholder"></a>Имя метки-заполнителя</h3><br>
+            <p>В самом простом случае параметр шаблона кода является произвольным значением метки-заполнителя.  При развертывании шаблона это имя метки-заполнителя выбирается в среде IDE для редактирования.</p><br>
+            <p>Например, в шаблоне нового класса <tt>(cls)</tt>, который в данном учебном курсе приводится в качестве примера в разделах <a href="#define">Заданные шаблоны кода PHP</a> и <a href="#expand-with-abb">Расширение шаблона кода путем ввода аббревиатуры с нажатием клавиши TAB</a>.  Развернутый текст шаблона нового класса начинается с <tt>class ${className}</tt>.  В данном случае <tt>class</tt> — это код PHP, а <tt>${className}</tt> — параметр.  Этот параметр является произвольным значением метки-заполнителя для имени класса.  При развертывании шаблона в среде IDE <tt>${className}</tt> преобразуется в <tt><strong>class_name</strong></tt>.  Предполагается, что <tt><strong>class_name</strong></tt> является только лишь значением метки-заполнителя, и это значение автоматически предлагается для редактирования.</p>
+
+            <img alt="Развертывание шаблона кода" border="1" class="margin-around" height="166" src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png" width="586">
+            <h3><a name="reserved-name"></a>Зарезервированные имена</h3>
+            <p>В среде IDE резервируются два имени параметра, используемые в качестве указаний по обработке.</p>
+            <ul><li><tt>${cursor}</tt> определяет местоположение курсора после завершения редактирования всех автоматически выбранных значений в развернутом шаблоне.</li>
+                <li><tt>${selection}</tt> определяет положение для вставки содержимого, выбранного редактором.  Этот параметр используется так называемыми &quot;шаблонами выбора&quot;, которые всегда отображаются в качестве подсказок при выборе текста в редакторе. Если шаблон включает параметр <tt>${selection}</tt>, он всегда относится к тому же местоположению, что и <tt>${cursor}</tt>.</li></ul>
+            <p>Например, обратитесь еще раз к шаблону нового класса <tt>(cls)</tt>, который рассматривается в разделах <a href="#define">Заданные шаблоны кода PHP</a> и <a href="#expand-with-abb">Расширение шаблона кода путем использования аббревиатуры с нажатием клавиши Tab</a> данного учебного курса. Он содержит два параметра-заполнителя имени, <tt>${ClassName}</tt> и <tt>$__construct</tt>. В теле функции содержатся параметры <tt>${cursor}</tt> и <tt>${selection}</tt>.</p>
+
+            <pre class="examplecode">class ${ClassName} {<br><br>    function ${__construct} {<br>        ${selection}${cursor}<br><br>    }<br><br>}</pre>
+            <p>После развертывания шаблона параметр метки-заполнителя <tt><strong>class_name</strong></tt> выбирается автоматически (1).  Нажмите Enter, и заполнитель <tt><strong>__construct</strong></tt> будет выбран автоматически (2). Другие значения для редактирования отсутствуют.  Нажмите Enter еще раз, и указатель мыши переместится в положение, заданное параметром <tt>${cursor}</tt> в тексте шаблона (3).</p>
+
+            <p><img alt="Три фрагмента кода, отображающие изменение положения курсора от имени заполнителя к имени заполнителя к положению ${курсор}" class="margin-around" height="104" src="../../../images_www/articles/72/php/code-templates/cursor-position-changes.png" width="600"></p>
+            <h3><a name="complex"></a>Параметр, заданный с помощью подсказок</h3><br>
+            <p>Параметр может содержать произвольное описательное имя В ВЕРХНЕМ РЕГИСТРЕ и одну или несколько подсказок. </p>
+            
+            <pre class="examplecode">${PARAMETER_NAME hint1[=value] [hint2...hint n]}</pre>
+            <p>Имя не отображается в коде.  Однако оно необходимо при многократном использовании параметра в шаблоне кода. В этом случае параметр определяется только один раз, после чего может подставляться по имени.  Например, в следующем шаблоне кода параметр <tt>${CONLINK}</tt> определяется только один раз, а затем два раза подставляется по имени.</p><br>
+            <pre class="examplecode"><a name="complex"></a>$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre><br>
+            <p>Подсказки в среде IDE используются для расчета значения параметра шаблона при развертывании шаблона кода.  Рассмотрим шаблон <tt>if(<strong>true</strong>)</tt>, описанный в данном учебном курсе в разделе, посвященном <a href="#surround-code">добавлению шаблона вокруг кода</a>.  В этом шаблоне развернутый текст выглядит следующим образом:</p>
+            <pre class="examplecode">if (${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}) {<br>    ${selection}${cursor}<br>}</pre>
+            <p>Проверьте параметр <tt>${CONDITION variableFromPreviousAssignment instanceof=&quot;boolean&quot; default=&quot;true&quot;}</tt>.  Этот параметр задает условие оператора <tt>if</tt>.  Поэтому ему присваивается имя CONDITION.  Первой подсказкой будет <tt>variableFromPreviousAssignment</tt>, а второй - <tt>instanceof=&quot;boolean&quot;</tt>.  Сочетание этих двух подсказок в среде IDE говорят о необходимости поиска ближайшей логической переменной, которая присвоена в коде, предшествующем шаблону кода.  Добавьте третью подсказку <tt>default=&quot;true&quot;</tt>, и параметр будет определять условие &quot;если значение ближайшей предшествующей логической переменной верно&quot;. </p>
+
+            <p>Например, если строка <tt>$b = 10</tt> в следующем фрагменте кода окружена шаблоном кода <tt> if(<strong>true</strong>) </tt>:</p>
+            <p><img alt="Фрагмент $a = false $b = 10" border="1" class="margin-around" height="82" src="../../../images_www/articles/72/php/code-templates/selected-variable.png" width="196"></p>
+            <p>в среде IDE выполняется поиск ближайшей логической переменной, присвоенной ранее, результатом которого является <tt>$a</tt>, после чего создается оператор <tt>if</tt> с условием <tt>$a</tt>[=true].  Условие автоматически выбирается для редактирования, и программист PHP может изменить <tt>$a</tt> на другую переменную или на <tt>!$a</tt>.</p>
+
+            <p><img alt="Шаблон развернут, если $a=true, то $b=10, с условием $a=true выбран для редактирования" border="1" class="margin-around" height="116" src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png" width="212"></p>
+            <p>В следующей таблице перечислены подсказки, используемые в шаблонах кода PHP, с описаниями.</p>
+            <table>
+
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Подсказка</th>
+                        <th class="tblheader" scope="col">Описание</th>
+
+                    </tr>
+                    <tr>
+                        <td><tt>newVarName</tt></td>
+                        <td> Значение параметра должно быть новым не использованным ранее именем переменной.  Обычно используется вместе с подсказкой <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+
+                        <td><tt>1521 (по умолчанию)</tt></td>
+                        <td>Значение параметра по умолчанию.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>instanceof=&quot;&quot;</tt></td>
+                        <td>Тип переменной PHP, заданной параметром.</td>
+                    </tr>
+
+                    <tr>
+                        <td><tt>variableFromPreviousAssignment</tt></td>
+                        <td>Значение параметра — ближайшая предшествующая переменная.  Обычно используется вместе с подсказками <tt>instanceof </tt>и <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentName</tt></td>
+
+                        <td>Значение параметра — имя ближайшей переменной, присвоенной после шаблона кода.  Обычно используется вместе с подсказкой <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentType</tt></td>
+                        <td>Значение параметра — тип ближайшей переменной, присвоенной после шаблона кода.  Обычно используется вместе с подсказкой <tt>default</tt>.</td>
+
+                    </tr>
+                    <tr>
+                        <td><tt>editable=false</tt></td>
+                        <td>Значение параметра невозможно отредактировать после развертывания шаблона.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>allowSurround</tt></td>
+                        <td>Позволяет использовать шаблон для <a href="#surround-code">окружения кода</a>.</td>
+                    </tr>
+                </tbody>
+            </table>
+       </div>
+        <h2><a name="create"></a>Создание собственных шаблонов кода</h2>
+        <p>Пользователи могут создать собственные шаблоны кода в IDE NetBeans. В данном разделе описывается создание шаблонов кода и их синтаксис, а также предлагаются некоторые полезные шаблоны.</p>
+        <p><strong>Для создания шаблона кода выполните следующее:</strong></p>
+        <ol>
+            <li>Выберите команды &quot;Средства&quot; &gt; &quot;Параметры&quot; (&quot;NetBeans &gt; Параметры&quot; в системе Mac), перейдите к функциям редактора и откройте вкладку &quot;Шаблоны кода&quot;. <br> <img alt="Шаблоны кода PHP в окне &apos;Параметры&apos; с выбранным шаблоном cli" class="margin-around" height="613" src="../../../images_www/articles/72/php/code-templates/code-template-options.png" width="597"></li>
+            <li>Нажмите 'Создать'. В результате откроется диалоговое окно 'Создание шаблона кода'. Введите аббревиатуру для шаблона и нажмите кнопку &quot;ОК&quot;. <br> <img alt="Диалоговое окно &amp;quot;Новый шаблон кода&amp;quot; с запросом на ввод аббревиатуры шаблона" class="margin-around" height="118" src="../../../images_www/articles/72/php/code-templates/new-abb.png" width="304"></li>
+            <li>В таблицу шаблонов кода будет добавлена новая строка.  Она содержит только введенную аббревиатуру.  Курсор будет автоматически расположен на вкладке &quot;Расширенный текст&quot;.  Код шаблона можно ввести прямо на этой вкладке. <p class="notes"><b>Примечание. </b>Описание синтаксиса расширенного текста шаблона кода см. в разделе <a href="#syntax">Синтаксис шаблона кода PHP.</a></p>
+                <img alt="Ввод развернутого текста нового шаблона abb" class="margin-around" height="609" src="../../../images_www/articles/72/php/code-templates/new-abb-text.png" width="608"></li>
+        </ol>
+        <p>Далее описаны некоторые варианты создания собственных шаблонов кода PHP.  Предложить собственные варианты можно на <a href="http://forums.netbeans.org/php-users.html" target="_blank">форуме пользователей PHP.</a></p>
+        <div class="indent">
+            <h3><a name="uc-html"></a>Вариант использования: вставка PHP в HTML</h3>
+            <p>При необходимости частой вставки фрагментов PHP в блок  HTML можно создать шаблон кода HTML для вставки кода PHP без ввода <tt>&lt;?php ?&gt;</tt>.</p>
+            <p>Следующий шаблон кода используется для вставки в HTML оператора PHP <tt>echo</tt>.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Язык:</th>
+                        <td>HTML</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Аббревиатура:</th>
+                        <td>php</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Развернутый текст:</th>
+                        <td><pre>&lt;?php echo ${cursor}&nbsp;  ?&gt;</pre></td>
+                    </tr>
+
+                </tbody></table>
+            <p><img alt="В окне &apos;Параметры&apos; отображается новый php в шаблоне html" class="margin-around" height="565" src="../../../images_www/articles/72/php/code-templates/uc-php.png" width="600"></p>
+            <h3><a name="joomla"></a>Вариант использования: Joomla</h3>
+            <p>Шаблоны кода можно использовать для платформы  PHP в IDE NetBeans, особенно для платформ, в которых отсутствует встроенная поддержка. Далее приведен шаблон кода, разработанный для Joomla.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Язык:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Аббревиатура:</th>
+                        <td>joomdef</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Развернутый текст:</th>
+                        <td><pre class="examplecode">defined('_JEXEC')<br>   	or die('Restricted access');<br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="Диалоговое окно &apos;Параметры&apos; с новым шаблоном кода joomdef" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-joomdef.png" width="600"></p>
+            <h3><a name="mysql-conn"></a>Вариант использования: соединение с MySQL</h3>
+            <p>Разработчикам PHP часто требуется установить соединение с базой данных MySQL.  Это можно сделать с помощью шаблона кода.  Переменная, присваиваемая соединению с MySQL, содержит имя метки-заполнителя<tt> link</tt>.  Обратите внимание на использование трех знаков доллара <tt>$$$</tt>. На самом деле это двойной знак, который при развертывании преобразуется в один знак с последующим указанием параметра для имени переменной.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Язык:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Аббревиатура:</th>
+                        <td>my_con</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Развернутый текст:</th>
+                        <td><pre class="examplecode">$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="Новый шаблон кода для соединения MySQL" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-mycon.png" width="600"></p>
+            <h3><a name="z-action"></a>Вариант использования: действие в контроллере Zend</h3>
+            <p>Вместо использования мастера NetBeans для создания действия для вставки действия в контроллере Zend Framework, например <tt>indexController{}</tt>, можно использовать шаблон кода.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Язык:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Аббревиатура:</th>
+                        <td>zf_act</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Развернутый текст:</th>
+                        <td><pre class="examplecode">public function ${functionName}Action () {<br>      ${selection}${cursor}  <br>}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="Новый шаблон кода действия Zend" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-zfact.png" width="600"></p>
+            <h3><a name="z-form-element"></a>Вариант использования: элемент формы Zend</h3>
+            <p>Этот шаблон используется для вставки элемента в форму Zend.  Он применяется после создания формы с помощью команды Zend <tt>create form &lt;name&gt;</tt>.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Язык:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Аббревиатура:</th>
+                        <td>zf_element</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Развернутый текст:</th>
+                        <td><pre class="examplecode">$$${ELEMENT newVarName default="element"} = new Zend_Form_Element_Submit('submit', array('label' =&gt; 'Send data to server'));  <br>$$this-&gt;addElement($$${ELEMENT});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <img alt="Новый шаблон кода для элементов платформы Zend для вставки в формы ZF" class="margin-around" height="605" src="../../../images_www/articles/72/php/code-templates/uc-zelement.png" width="597">
+        </div>
+        <p>&nbsp;</p>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Code%20Templates">Отправить отзыв по этому учебному курсу</a></div>
+        <p><br style="clear: both;">
+
+
+        </p>
+        <h2><a name="seeAlso"></a>Дополнительные сведения</h2>
+
+        <p>Для получения дополнительных сведений о технологии PHP на сайте <a href="https://netbeans.org/" target="_blank">netbeans.org</a> можно воспользоваться следующими материалами:</p>
+
+        <ul>
+            <li><a href="../java/editor-codereference.html">Работа с кодом в редакторе Java IDE NetBeans</a>. Справочное руководство по функциям помощника при работе с кодом IDE NetBeans, включая шаблоны кода и запись макросов.</li>
+            <li><a href="http://forums.netbeans.org/php-users.html" target="_blank">Форум пользователей PHP для NetBeans</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/" target="_blank">Сетевой журнал NetBeans для PHP</a>.  Сетевой журнал, который ведут разработчики редактора PHP для NetBeans.  Здесь можно узнать обо всех новых функциях и усовершенствованиях.</li>
+        </ul>
+
+        <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+
+    </body></html>

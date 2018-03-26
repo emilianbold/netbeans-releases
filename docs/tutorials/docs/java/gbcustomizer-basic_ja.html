@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>GridBagカスタマイザを使用した基本的なJavaフォームのデザイン - NetBeans IDEチュートリアル</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="This tutorial guides you through the process of managing an application form layout using the NetBeans IDE GridBag Designer basic features.">
+   <meta name="KEYWORDS" content="NetBeans, GridBag, GridBag Customizer, Layout Manager, Tutorial, Guide, User, Documentation, Basic">
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>GridBagカスタマイザを使用した基本的なJavaフォームのデザイン</h1>
+    <div class="articledate" style="margin-left: 0px;">執筆: Jan Stola、Tomas Pavek、およびAlyona Stashkova</div>
+    <p>このチュートリアルは、NetBeans IDE GridBagカスタマイザの基本的な機能を使用して単純なJavaフォームをデザインする方法を示す2部構成シリーズの第1部です。<br>このシリーズは、レイアウトのコードを手動で記述することなくGUIコンポーネントをレイアウトした後、プロジェクトに必要な特定のターゲット・レイアウトを実装するために既存のフォーム内の追加の変更を実行する方法を示すためのガイドとして作成されています。 </p>
+    <p>このシリーズの各ドキュメントでは、特定の機能セットについて説明します。</p>
+    <ul>
+        <li>第1部: GridBagカスタマイザを使用した基本的なJavaフォームのデザイン</li>
+        <li>第2部: <a href="../java/gbcustomizer-advanced.html">GridBagカスタマイザを使用した高度なJavaフォームのデザイン</a></li>
+    </ul>
+
+   
+ 
+    
+    
+       <p><b>目次</b></p>
+    <img alt="このページの内容は、NetBeans IDE 7.1以降に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.1以降に適用されます">
+    <ul class="toc">
+        <li><a href="#zip">サンプル・プロジェクトを開く</a></li>
+		<li><a href="#01">GridBagカスタマイザの概要</a>
+        <ul>
+            <li><a href="#01a">グリッド領域</a></li>
+			<li><a href="#01b">ツールバー</a></li>
+			<li><a href="#01c">プロパティ・カスタマイザ</a></li>
+			<li><a href="#01d">プロパティ・シート</a></li>
+        </ul>
+		</li>
+        
+        <li><a href="#02">コンポーネントのレイアウト</a>
+		<ul>
+		<li><a href="#02a">移動</a></li>
+		<li><a href="#02b">サイズ変更</a></li>
+		<li><a href="#02c">「フィル」レイアウト制約の指定</a></li>
+		<li><a href="#02d">プレビュー</a></li>
+		<li><a href="#02e">「ウエイトX」および「ウエイトY」制約の指定</a></li>
+		<li><a href="#02f">アンカー設定</a></li>
+		<li><a href="#02g">要素間隔</a></li>
+		</ul></li>
+        <li><a href="#summary">サマリー</a></li>
+		<li><a href="#seealso">関連項目</a></li>
+    </ul>
+
+   
+   <p><b>このチュートリアルに従うには、次に示すソフトウェアとリソースが必要です。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.1以降</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">バージョン6、7または8 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-basic-tutorial.zip">gbcustomizer-basic-tutorial.zip</a></td>
+                <td class="tbltd1">初期およびターゲット・チュートリアルのレイアウトを含むデモ・プロジェクトが含まれているアーカイブ。</td>
+            </tr>
+           
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>注意: </strong></p>
+    <div class="indent">
+    <ul>
+        <li>このシリーズの開始点として使用されるプロジェクトを<tt>.zip</tt>アーカイブとしてダウンロードできます。 </li>
+        <li>このチュートリアルは、コンテナのレイアウトのデザインにのみ焦点を置いています。GUIへの機能の追加は範囲に含まれていません。</li>
+    </ul>
+    </div>
+    <!-- ++++++++++++ Using .zip ++++++++++++ -->
+<a name="zip"></a>
+    <h2>サンプル・プロジェクトを開く</h2>
+	<ol><li><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-basic-tutorial.zip">gbcustomizer-basic-tutorial.zip</a>プロジェクトをコンピュータ上の任意の場所にダウンロードして解凍します。</li>
+	<li>「プロジェクト」タブで、「<tt>ファイル</tt>」>「<tt>プロジェクトを開く</tt>」を選択し、前のステップで抽出した<tt>gbcustomizer-basic-tutorial</tt>プロジェクトに移動して「プロジェクトを開く」をクリックします。このプロジェクト・フォルダは、同じ<tt>gbcustomizer-basic-tutorial</tt>という名前のフォルダに含まれている場合もあります。</li>
+	<li>「参照の問題」ダイアログ・ボックスで、「解決」をクリックします。IDEではJUnitおよびJUnit 4ライブラリが自動的にダウンロードされます。NetBeans IDEインストーラの手順に従って、必要なプラグインをインストールします。インストールが完了したら、「終了」をクリックします。</li>
+    <li> 「<tt>ソース・パッケージ</tt>」>「<tt>Tutorial</tt>」を展開し、<tt>ContactsBasicInitial.java</tt>をダブルクリックします。<br>サンプル・フォームがGUIビルダーの「デザイン」ビューで開きます。 
+	   <p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/sampleform.png" rel="lytebox" title="サンプル・フォームの初期表示"> <img alt="サンプル・フォームの初期表示" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/sampleform-small.png"></a></p></li>
+	</ol>
+    <a name="01"></a>
+    <h2>GridBagカスタマイザの概要</h2>
+    
+     <p>GridBagレイアウト・カスタマイザは、Javaプラットフォームで提供される、最も柔軟かつ複雑なレイアウト・マネージャの1つです。このカスタマイザでは、コンポーネントが行と列のグリッド内に配置されるため、指定したコンポーネントを複数の行または列にまたがって配置できます。必ずしも、すべての行の高さが同じであるとは限りません。同様に、すべての列の幅も同じであるとは限りません。基本的に、GridBagLayoutはコンポーネントをグリッド内の矩形(セル)内に配置した後、それらのコンポーネントの優先サイズを使用してセルの大きさを決定します。  </p>
+	 <p>GridBagカスタマイザを表示するには、次の手順を行います: </p>
+	 <ol>
+	 <li>「デザイン」ビューでJFrameフォームを選択します。</li>
+	 
+	 <li>フォームを右クリックし、コンテキスト・メニューから「<tt>レイアウトをカスタマイズ</tt>」を選択します。<br>次に示すように「レイアウトをカスタマイズ」ダイアログ・ボックスが開きます。
+	  <p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/customizerdialog.png" rel="lytebox" title="GridBagカスタマイザ"> <img alt="GridBagカスタマイザ" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/customizerdialog-small.png"></a></p></li>
+				 
+	 </ol>
+<p class="notes"><b>注意:</b> このチュートリアルでは、GridBagLayoutがすでに設定されています。別のフォームを操作する場合は、上のステップ2で、フォームを右クリックしてコンテキスト・メニューから「<tt>レイアウトを設定</tt>」>「<tt>グリッド・バッグ・レイアウト</tt>」を選択します(これにより、「<tt>レイアウトをカスタマイズ</tt>」メニュー項目が有効になります)。次に、手順を完了します。</p>					 
+
+     <div class="indent">
+        <a name="01a"></a>
+        <h3>グリッド領域</h3>
+        <p>グリッド領域は、「レイアウトをカスタマイズ」ダイアログ・ボックスの右側にあります。ここには、コンポーネントのグリッド・レイアウトが表示されます。<br>このサンプル・フォームのコンポーネントはすでに追加されていますが、正しくレイアウトされていません。 </p>
+        
+        <a name="01b"></a>
+        <h3>ツールバー</h3>
+        <p>グリッド領域の上には、5つのボタンを持つツールバーが配置されています。ここから、元に戻す、やりなおし、均一のギャップの有効化、空の行と列の非表示、レイアウトのテストなどの共通コマンドに便利にアクセスできます。</p>
+		<p class="align-center"><img alt="ツールバー" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/toolbar.png"></p>
+				
+		<a name="01c"></a>
+        <h3>プロパティ・カスタマイザ</h3>
+        <p>プロパティ・カスタマイザは、「レイアウトをカスタマイズ」ダイアログ・ボックスの左上隅に配置されています。これにより、「<tt>アンカー</tt>」と「<tt>インセット</tt>」などの、最も一般的なレイアウト制約を容易に変更できます。 </p>
+		<p class="align-center"><img alt="プロパティ・カスタマイザ" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/propcustomizer.png"></p>
+		
+		<a name="01d"></a>
+        <h3>プロパティ・シート</h3>
+        <p>プロパティ・シートは、プロパティ・カスタマイザの下に配置されています。ここには、選択されたコンポーネントのレイアウト制約が表示されます。 </p>
+		<p class="align-center"><img alt="プロパティ・シート" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/propsheet.png"></p>
+		
+
+    </div>
+
+
+<!-- ++++++++++++ Laying Out Components ++++++++++++ -->
+<a name="02"></a>
+<h2>コンポーネントのレイアウト</h2>
+ <p><tt>ContactsBasicInitial</tt>フォームのコンポーネントは、単一の行に追加および配置されています。レイアウト制約が指定されていない場合、GridBagLayoutはコンポーネントをこのようにレイアウトします。</p>
+
+ <div class="indent">
+<a name="02a"></a>
+<h3>移動</h3>
+<p>必要に応じて、単純なドラッグ・アンド・ドロップを使用してコンポーネントを移動できます。コンポーネントは、選択されると緑色で強調表示されます。コンポーネントをドラッグしている間、その「<tt>グリッドX</tt>」および「<tt>グリッドY</tt>」プロパティは新しい位置を反映するように変更されます。必要に応じて、新しい列と行が自動的に作成されます。</p>
+
+<p> 下の図に示すようなレイアウトを作成するには、次のように、列2から列11のコンポーネントを移動します。</p>
+  <ol>
+	 <li>「<tt>Surname:</tt>」ラベルおよび隣接するテキスト・フィールドを2行目の先頭の2つのセルにドラッグします。</li>
+	 
+     <li>「<tt>Street:</tt>」ラベル、隣接するテキスト・フィールド、および隣接する「<tt>Browse</tt>」ボタンを3行目の先頭の3つのセルにドラッグします。 </li>
+	 <li>「<tt>City:</tt>」ラベル、隣接するテキスト・フィールド、および隣接する「<tt>Browse</tt>」ボタンを4行目の先頭の3つのセルにドラッグします。 </li>
+	 <li>「<tt>State:</tt>」ラベルおよび隣接するコンボ・ボックスを5行目の先頭の2つのセルにドラッグします。 
+	 <p>これで、コンポーネントがターゲット・レイアウトに従って配置されました。</p>
+	 </li>
+	
+  </ol>
+<p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/layout1.png" rel="lytebox" title="余分な列がないレイアウト"> <img alt="余分な列がないレイアウト" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/layout1-small.png"></a></p>
+
+ <p class="note"><b>注意:</b> コンポーネントが移動されると、ターゲット・セルは緑色で強調表示されます。 </p>
+
+<a name="02b"></a>
+    <h3>サイズ変更</h3>
+    <p>コンポーネントを選択したときにその境界の周りに表示される小さい四角形のサイズ変更ハンドルをドラッグすることによって、コンポーネントのサイズを変更できます。</p>
+	<p>「<tt>First name:</tt>」および「<tt>Surname:</tt>」テキスト・フィールドのサイズを変更して、隣接する2つのセルを占有するようにするには、次の手順を行います:</p>
+                  <ol>
+                     <li>[Ctrl]を押しながら2つのJTextFieldコンポーネントをクリックして選択します。  </li>
+                     <li>両方のJTextFieldが選択された状態で、セルの右端の上にカーソルを置いてクリックし、オレンジ色で強調表示されたガイドラインに右側の列2の隣接するセルが含まれるまでドラッグします。</li>
+
+                     <li>カーソルを離すと、コンポーネントのサイズが変更されます。
+                     <p> 次の図に示すように、「<tt>First name:</tt>」および「<tt>Surname:</tt>」テキスト・フィールドが2つのセルにまたがるように拡張されました。占有されているセルが強調表示されます。</p></li>
+                  </ol>
+					 <p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/tfieldsresized.png" rel="lytebox" title="サイズ変更されたテキスト・フィールド"> <img alt="サイズ変更されたテキスト・フィールド" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/tfieldsresized-small.png"></a></p>
+
+    <a name="02c"></a>
+    <h3>「フィル」レイアウト制約の指定</h3>
+    <p>「<tt>First name:</tt>」および「<tt>Surname:</tt>」テキスト・フィールドは2つのセルを占有していますが、優先サイズがあるために表示領域の中央に配置されています。続行する前に、「<tt>フィル</tt>」レイアウト制約を使用して、これらのセルの領域全体を埋める必要があります。 </p>
+	<p>これらのテキスト・フィールドの高さを変更せずに、その幅を水平方向に表示領域いっぱいに広げるには、プロパティ・シート領域にある「<tt>フィル</tt>」コンボ・ボックスで「<tt>水平</tt>」を選択します。 </p>  
+	<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/horizontalset.png" rel="lytebox" title="サイズ変更されたテキスト・フィールド"> <img alt="サイズ変更されたテキスト・フィールド" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/horizontalset-small.png"></a></p>
+
+    <a name="02d"></a>
+    <h3>プレビュー</h3>
+    <p>これで<tt>ContactsBasicInitial</tt>フォームのレイアウトが正常に完了したため、インタフェースで結果を表示してみることができます。カスタマイザのツールバーにある「レイアウトをテスト」ボタン(<img src="../../../images_www/articles/72/java/gbcustomizer-basic/testbutton.png">)をクリックすることによって、作業中のフォームをプレビューできます。専用のウィンドウにフォームが開き、ビルドおよび実行する前にフォームをテストできます。</p>    
+	<p class="align-center"><img alt="デザインのプレビュー" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/designpreview.png">  </p>
+   <p>プレビューは、レイアウトの動的な動作(たとえば、デザインされたコンテナのサイズが変更されたときのレイアウトの動作のようす)をテストする場合に役立ちます。</p>
+    <a name="02e"></a>
+    <h3>「ウエイトX」および「ウエイトY」制約の指定</h3>
+   <p>ウエイトを指定すると、GridBagLayoutコンポーネントの外観に大きな影響を与えます。ウエイトは、列間(「ウエイトX」)および行間(「ウエイトY」)でのスペースの分散方法を決定するために使用されます。これは、サイズ変更の動作を指定するために重要です。<br>ウエイトは一般に、極端な値として0.0と1.0で指定されます。必要に応じて、この範囲内の数値が使用されます。数値が大きいと、そのコンポーネントの行または列により多くのスペースを与えることを示します。 </p>
+   <p>プレビューされたコンテナのサイズを水平方向に変更しようとしても、レイアウト・コンポーネントのサイズが同じまま、コンテナの中央に集まったままの状態になることがわかります。「フィル」制約が「水平」に設定された「<tt>First name:</tt>」や「<tt>Surname:</tt>」のフィールドでさえ、「フィル」制約がセルのサイズではなく、セルの内部領域を示しているため、拡張されません。つまり、「フィル」属性が「<tt>なし</tt>」以外の値に設定されたコンポーネントは、拡張が<b>「可能」</b>なことを示していますが、拡張が<b>「必要」</b>なことを示しているわけではありません。<br>「ウエイトX」および「ウエイトY」レイアウト制約は、コンポーネントの水平および垂直方向への拡張が<b>「必要」</b>かどうかを決定します。<br>行(または列)内にある2つのコンポーネントの「ウエイトX」(または「ウエイトY」)制約の値が0以外である場合、これらの値によって個々のコンポーネントの拡張の量が決定されます。たとえば、これらの値が0.6と0.4である場合、最初のコンポーネントは使用可能な余分なスペースの60%を取得し、2つ目のコンポーネントは40%を取得します。	</p>
+    <p>デザインされたコンテナのサイズを水平方向に正しく変更するには、次を実行します。 </p>
+    <ol>
+	<li>GridBagカスタマイザのグリッド領域で、「<tt>First name:</tt>」ラベルの右にあるテキスト・フィールドを選択します。 </li>
+	<li>「<tt>ウエイトX</tt>」レイアウト制約値フィールドに「<tt>1.0</tt>」と入力し、[Enter]を押します。 </li>
+	<li>GridBagカスタマイザのグリッド領域で、「<tt>Surname:</tt>」ラベルの右にあるテキスト・フィールドを選択します。</li>
+	<li>「<tt>ウエイトX</tt>」レイアウト制約値フィールドに「<tt>1.0</tt>」と入力し、[Enter]を押します。</li>
+	<li>GridBagカスタマイザのグリッド領域で、「<tt>Street</tt>」ラベルの右にあるテキスト・フィールドを選択します。</li>
+	<li>「<tt>フィル</tt>」コンボ・ボックスで「<tt>水平</tt>」を選択し、[Enter]を押します。 </li>
+	<li>「<tt>ウエイトX</tt>」レイアウト制約値フィールドに「<tt>1.0</tt>」と入力し、[Enter]を押します。</li>
+	<li>GridBagカスタマイザのグリッド領域で、「<tt>City:</tt>」ラベルの右にあるテキスト・フィールドを選択します。</li>
+	<li>「<tt>フィル</tt>」コンボ・ボックスで「<tt>水平</tt>」を選択し、[Enter]を押します。 </li>
+	<li>「<tt>ウエイトX</tt>」レイアウト制約値フィールドに「<tt>1.0</tt>」と入力し、[Enter]を押します。</li>
+	</ol>
+	
+    <p>デザインされたコンテナのサイズが水平方向に正しく変更されることを確認するには、カスタマイザのツールバーにある「レイアウトをテスト」ボタン(<img src="../../../images_www/articles/72/java/gbcustomizer-basic/testbutton.png">)をクリックし、<tt>ContactsBasicInitial</tt>フォームの境界線をドラッグします。 </p>
+   <p class="align-center"><img alt="サイズ変更されたContactsBasicInitial" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/resizedpreview.png"> </p>
+    
+    <a name="02f"></a>
+    <h3>アンカー設定</h3>
+    <p>アンカー設定は、コンポーネントがその表示領域より小さいときに、そのコンポーネントを配置する(領域内の)場所を決定するために使用されます。</p>
+	<p>前の項で<tt>ContactsBasicInitial</tt>フォームを水平方向にサイズ変更したとき、「<tt>State</tt>」コンボ・ボックスが「<tt>State</tt>」ラベルから離れることに注意してください。このコンボ・ボックスの優先サイズは対応するセルのサイズより小さいため、GridBagLayoutはデフォルトで、このコンポーネントをセルの中央に配置します。</p>
+        <p>この動作を変更するには、次のように「<tt>アンカー</tt>」レイアウト制約を指定します。</p>
+<ol>
+<li>「<tt>State</tt>」ラベルの右にあるコンボ・ボックスを選択し、カスタマイザの<a href="#01d">プロパティ・シート</a>内の「<tt>アンカー</tt>」コンボ・ボックスの右にある矢印ボタン(<img alt="矢印ボタン" src="../../../images_www/articles/72/java/gbcustomizer-basic/arrowbutton.png">)をクリックします。</li>
+<li>ドロップダウン・リストから「<tt>行の始め</tt>」を選択します。</li>
+</ol>
+<p>フォームのサイズが水平方向に変更されたとき、「<tt>State</tt>」コンボ・ボックスはフォームの左側に固定されるようになりました。</p>
+<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/comboanchored.png" rel="lytebox" title="コンボ・ボックスが固定されています"> <img alt="コンボ・ボックスが固定されています" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/comboanchored-small.png"></a></p>
+<p>ラベルを現在の中央ではなく、左側にそろえるには、次の手順を行います:</p>
+<ol>
+<li>「<tt>First name:</tt>」、「<tt>Surname:</tt>」、「<tt>Street</tt>」、「<tt>City</tt>」、および「<tt>State</tt>」ラベルを選択します。 
+<p class="note"><b>注意:</b> 最初のコンポーネントでマウスの左ボタンを押し、そのまま、すべてのラベルを囲む矩形を描くように最後のコンポーネントまでドラッグすることによって、複数のコンポーネントを選択できます。マウスを離すと、下に示すように、5つのすべてのコンポーネントがオレンジ色の境界線と緑色の背景で強調表示されます。</p>
+	 <p class="align-center"> <img alt="選択されたコンポーネント" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/multiselect.png"> </p></li>
+  
+  <li> これらのラベルの「<tt>アンカー</tt>」レイアウト制約を「<tt>行の始め</tt>」に変更します。<br>これらのラベルが左側に固定されました。
+   <p class="align-center"> <img alt="これらのラベルが左側に固定されました。" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/linestartanchor.png"> </p></li> 
+</ol> 	
+	<a name="02g"></a>
+    <h3>要素間隔</h3>
+    <p>デフォルトでは、各コンポーネントに外側のパディングはありません。「<tt>インセット</tt>」制約は、コンポーネントの外側のパディング、つまり、コンポーネントとその表示領域の端の間の最小のスペースを指定します。</p>
+	<p>現在のレイアウトでは、各コンポーネントが互いに近すぎる位置に配置されています。それらを切り離すには、次を実行します。</p>
+	<ol>
+	<li>[Ctrl]を押しながら、すべてのコンポーネントをクリックして選択します。</li>
+	<li>「インセット」制約テキスト・フィールドの右にあるボタンを押します。 </li>
+	<li>表示されたダイアログ・ボックスで、「<tt>上:</tt>」と「<tt>左:</tt>」の値を<tt>5</tt>に変更し、「OK」をクリックします。
+	<p class="align-center"> <img alt="「インセット」ダイアログ・ボックス" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/insets.png"> </p>
+	作成されたフォームを開くと、<tt>ContactsBasicFinal.java</tt>ファイルのフォームのように表示されます。
+	<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/contactsbasicfinal.png" rel="lytebox" title="ContactsBasicFinal"> <img alt="ContactsBasicFinal" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/contactsbasicfinal-small.png"></a></p>
+	</li>
+	
+	</ol>
+
+	
+	
+
+</div>
+
+<!-- ++++++++++++ Summary ++++++++++++ -->
+<a name="summary"></a>
+<h2>サマリー</h2>
+<p>この短いチュートリアルでは、単純なフォームをデザインしました。レイアウトの編集時に、GridBagカスタマイザの基本的な機能を使用する方法を学習しました。<br>次に、2部構成シリーズのチュートリアルの第2部に進むことができます。そこでは、GridBagカスタマイザの高度な機能に精通するために<tt>ContactsAdvancedInitial</tt>フォームを変更します。</p>
+
+
+<p>「<a href="../java/gbcustomizer-advanced.html">GridBagカスタマイザを使用した高度なJavaフォームのデザイン</a>」に移動</p>
+
+
+
+
+
+
+
+ <p class="align-center"><a href="#top">先頭</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Designing%20a%20Basic%20Java%20Form%20Using%20the%20GridBag%20Customizer">このチュートリアルに関するご意見をお寄せください</a></div>
+      <br style="clear:both;" >  
+<a name="seealso"></a>
+<h2>関連項目</h2>
+<p>これで、GridBagカスタマイザを使用した基本的なJavaフォームのデザインのチュートリアルを完了しました。作成するGUIに機能を追加する方法については、次のドキュメントを参照してください。</p> 
+      <ul>
+         <li><a href="gui-functionality.html">GUIビルドの概要</a> </li>
+		 
+         <li><a href="gui-image-display.html">GUIアプリケーションでのイメージの処理</a></li>
+        
+         <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUIビルダーのFAQ</a> </li>
+         <li><a href="../../trails/matisse.html">Java GUIアプリケーションの学習</a></li>
+		 <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">NetBeans IDEによるアプリケーションの開発</a>の<i>Java GUIの実装</i></a></li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">先頭</a></p>
+
+   
+</body>
+</html>

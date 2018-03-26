@@ -1,0 +1,385 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>PHPを使用するデータベース駆動型アプリケーションの作成PHPコードの最適化。リファクタリング。インクルード・ファイル。MySQLデータベースのアクセス機能</title>
+        <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Optimizing PHP code. Refactoring. Include files. MySQL Database access functions" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+    <body>
+        <h1>PHPを使用するデータベース駆動型アプリケーションの作成 </h1>
+        <h1>レッスン4: クラスとオブジェクトを持つコードの最適化</h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>チュートリアルの目次:</h4>
+<ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">PHPを使用するデータベース駆動型アプリケーションの作成 - メイン・ページ</a></li>
+    <li><p>データベースの作成</p> <ol type="a"><li><a href="wish-list-lesson1.html">MySQLデータベースの作成</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Oracleデータベース表の作成</a></li>
+    </ol></li>
+    <li><a href="wish-list-lesson2.html">アプリケーションの設計。データベースからの読取り</a></li>
+    <li><a href="wish-list-lesson3.html">新規アプリケーション・ユーザーの作成</a></li>
+    <li><p><b>=> コードの最適化</b></p>
+    <ul>
+            <li><a href="#previousLessonSourceCode">前のレッスンからのアプリケーション・ソース・コード</a></li>
+            <li><a href="#createDbPhpFile">db.phpファイルの作成</a></li>
+            <li><a href="#wishDBClass">WishDBクラスの作成</a></li>
+            <li><a href="#instantiate-wishdb">WishDBクラスのインスタンス化</a></li>
+            <li><a href="#wishdb-constructor">WishDBクラスへのコンストラクタの追加</a></li>
+            <li><a href="#includedFunctions">WishDBクラスの関数</a>
+                <ul>
+                    <li><a href="#getIDByName">関数get_wisherID_by_name</a></li>
+                    <li><a href="#getWishesByID">関数get_wishes_by_wisher_id</a></li>
+                    <li><a href="#createWisher">関数create_wisher</a></li>
+                </ul>
+            </li>
+            <li><a href="#refactoring">アプリケーション・コードのリファクタリング</a>
+          <ul>
+                    <li><a href="#refactoringWishlistFile">wishlist.phpファイルのリファクタリング</a></li>
+            <li><a href="#refactoringCreateNewWisher">createNewWisher.phpファイルのリファクタリング</a></li>
+              </ul>
+          </li>
+        <li><a href="#lessonResultSourceCode">現在のレッスン完了後のアプリケーション・ソース・コード</a></li>
+        </ul>
+    </li>
+    <li><a href="wish-list-lesson5.html">セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</a></li>
+    <li><a href="wish-list-lesson6.html">データベースへの新しいウィッシュの追加</a></li>
+    <li><a href="wish-list-lesson7.html">データベース内のエントリの更新および削除</a></li>
+    <li><a href="wish-list-lesson8.html">CSSテクノロジを使用したアプリケーションの外観の改良</a></li>
+    <li><a href="wish-list-lesson9.html">リモートWebサーバーへのアプリケーションのデプロイ</a></li>
+</ol>
+</div>
+</div>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+    <p>このレッスンでは、コードを最適化し、将来のコードの保守を容易にします。これは、<tt>createNewWisher.php</tt>ファイルおよび<tt>wishlist.php</tt>ファイルに影響します。また、<tt>db.php</tt>というファイルが新しく作成されます。</p>
+        <p>アプリケーションのコードには、データベースへの問合せを持つ、類似するブロックがいくつか含まれています。コードを将来読みやすく、保守しやすくするために、これらのブロックを抽出して<tt>WishDB</tt>と呼ばれる個別クラスの関数として実装し、<tt>WishDB</tt>を<tt>db.php</tt>内に置くことができます。後で<tt>db.php</tt>ファイルを任意のPHPファイルに含め、コードの複製を行わずに<a href="#includedFunctions">WishDBから任意の関数</a>を使用できます。このような方法によって、問合せまたは関数への変更を1箇所で行うことができ、アプリケーション・コード全体を解析する必要はありません。 </p>
+        <p>WishDBから関数を使用する場合、WishDBの変数の値は変更しません。かわりに、WishDBのオブジェクト作成用の設計図としてWishDBクラスを使用して、そのオブジェクトの変数の値を変更します。そのオブジェクトの操作が終了すると、そのオブジェクトは破棄されます。WishDBクラス自体の値は変わらないので、クラスを何度も再利用できます。場合によっては、クラスのインスタンスが複数同時に存在したり、同時に存在するインスタンスが1つのみ、つまり「単一」クラスにする場合もあります。このチュートリアルのWishDBは単一クラスです。</p>
+        <p>クラスのオブジェクトの作成を示す用語はクラスの「インスタンス化」で、オブジェクトを別の言葉で言うと、クラスの「インスタンス」です。クラスとオブジェクトを使用するプログラミングを示す一般的な用語は、「オブジェクト指向プログラミング」、またはOOPです。PHP 5では、高度なOOPモデルを使用します。詳細は、<a href="http://us3.php.net/zend-engine-2.php" target="_blank">php.net</a>を参照してください。</p>
+        <p>このチュートリアルでは、データベース・コール機能を個々のPHPファイルからWishDBクラスに移動します。また、MySQLのユーザーは、手続き型の<tt>mysqli</tt>コールをオブジェクト指向のコールに置き換えます。これは、アプリケーションの新しいオブジェクト指向設計に沿っています。</p>
+    <p>現在のドキュメントは、PHP向けのNetBeans IDEでのCRUDアプリケーションの作成というPHPチュートリアルの一部です。 </p>
+        <br style="clear:left">
+    <h2><a name="previousLessonSourceCode"></a>前のレッスンからのアプリケーション・ソース・コード</h2>
+        <p>MySQLユーザー: 前のレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/files/documents/4/1929/lesson3.zip" target="_blank">ここ</a>をクリックします。 </p>
+        <p>Oracleデータベース・ユーザー: 前のレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson3.zip" target="_blank">ここ</a>をクリックします。</p>
+    <h2><a name="createDbPhpFile"></a>db.phpファイルの作成</h2>
+        <p>「ソース・ファイル」フォルダに新しいサブフォルダを作成します。フォルダに「Includes」という名前を付けます。db.phpという名前の新しいファイルを作成し、このファイルを「Includes」に配置します。後で、他のPHPファイルでインクルードされる別のファイルをこのフォルダに追加できます。 </p>
+        <p><b>db.phpを新しいフォルダに作成するには:</b></p>
+        <ol>
+            <li>「ソース・ファイル」ノードでマウスの右ボタンをクリックし、コンテキスト・メニューから「新規」>「フォルダ」を選択します。「新規フォルダ」ダイアログが開きます。 </li>
+            <li>「フォルダ名」フィールドに「Includes」と入力します。次に、「終了」をクリックします。</li>
+
+            <li>「Includes」ノードでマウスの右ボタンをクリックし、コンテキスト・メニューから「新規」>「PHPファイル」を選択します。「新規PHPファイル」ダイアログが開きます。</li>
+            <li>「ファイル名」フィールドに「db」と入力します。次に、「終了」をクリックします。 </li>
+        </ol>
+        <h2><a name="wishDBClass"></a>WishDBクラスの作成</h2>
+        <p>WishDBクラスを作成するには、クラスの変数を初期化し、クラスのコンストラクタを実装する必要があります。MySQLユーザーは、WishDBクラスが<tt>mysqli</tt>を<em>拡張</em>することに注意してください。これは、WishDBがPHP mysqliクラスの関数およびその他の特性を<em>継承</em>することを意味します。<tt>mysqli</tt>関数をクラスに追加するときに、この重要性が理解できます。</p>
+        <p>db.phpファイルを開き、WishDBクラスを作成します。クラス内では、データベースの所有者(ユーザー)の名前とパスワード、データベースの名前、およびデータベース・ホストを格納するためのデータベース構成変数を宣言します。これらの変数の宣言はすべて「private」で、これは、WishDBクラスの外部から宣言の初期値にアクセスできないことを意味します(<a href="http://us3.php.net/manual/en/language.oop5.visibility.php" target="_blank">php.net</a>を参照)。また、WishDBのインスタンスを格納する、private<em> static</em> <tt>$instance</tt>変数も宣言します。「static」キーワードは、クラスのインスタンスが存在しない場合でも、クラス内の関数は変数にアクセスできることを意味します。</p>
+        <p><strong>MySQLデータベースの場合:</strong></p>
+        <pre class="examplecode">class WishDB extends mysqli {
+
+
+    // single instance of self shared among all instances
+    private static $instance = null;
+
+
+    // db connection config vars
+    private $user = "phpuser";
+    private $pass = "phpuserpw";
+    private $dbName = "wishlist";
+    private $dbHost = "localhost";
+}</pre>
+        <p><strong>Oracleデータベースの場合:</strong></p>
+<pre class="examplecode">
+class WishDB {<br><br>
+
+// single instance of self shared among all instances
+private static $instance = null;<br><br>
+
+// db connection config vars
+private $user = "phpuser";
+private $pass = "phpuserpw";
+private $dbName = "wishlist";
+private $dbHost = "localhost/XE";
+private $con = null;<br><br>
+}        </pre>
+        <h2 id="instantiate-wishdb">WishDBクラスのインスタンス化</h2>
+        <p>WishDBクラスの関数を使用するその他のPHPファイルの場合、これらのPHPファイルは、WishDBクラスのオブジェクトを作成(インスタンス化)する関数をコールする必要があります。WishDBは<a href="http://www.phpclasses.org/browse/package/1151.html" target="_blank">単一クラス</a>として設計されており、これは、同時に存在するクラスのインスタンスが1つのみであることを意味します。そのため、重複するインスタンスが作成される可能性のある、外部からのWishDBのインスタンス化を防止することが有効です。</p>
+        <p>WishDBクラスの内部に、次のコードを入力するか、または貼り付けます。</p>
+        <pre class="examplecode"> //This method must be static, and must return an instance of the object if the object
+ //does not already exist.
+ public static function getInstance() {
+   if (!self::$instance instanceof self) {
+     self::$instance = new self;
+   }
+   return self::$instance;
+ }
+
+ // The clone and wakeup methods prevents external instantiation of copies of the Singleton class,
+ // thus eliminating the possibility of duplicate objects.
+ public function __clone() {
+   trigger_error('Clone is not allowed.', E_USER_ERROR);
+ }
+ public function __wakeup() {
+   trigger_error('Deserializing is not allowed.', E_USER_ERROR);
+ }</pre>
+        <p><tt>getInstance</tt>関数は、「public」および「static」です。「public」とは、クラスの外部から自由にアクセスできることを意味します。「static」とは、クラスがインスタンス化されていない場合でも、その関数が使用可能であることを意味します。<tt>getInstance</tt>関数はクラスをインスタンス化するためにコールされるため、staticである必要があります。この関数は静的な<tt>$instance</tt>変数にアクセスし、その値をクラスのインスタンスとして設定します。
+
+    <p>ダブルコロン(::)はスコープ解決演算子と呼ばれ、静的関数にアクセスするために<tt>self</tt>キーワードが使用されます。<tt>self</tt>は、クラス定義の内部からクラス自身を参照するのに使用されます。ダブルコロンがクラス定義の外部で使用された場合、<tt>self</tt>のかわりにクラスの名前が使用されます。<a href="http://us3.php.net/manual/en/language.oop5.paamayim-nekudotayim.php" target="_blank">スコープ解決演算子に関するphp.net</a>を参照してください。
+    <h2 id="wishdb-constructor">WishDBクラスへのコンストラクタの追加</h2>
+        <p>クラスには、クラスのインスタンスが作成されるたびに自動的に処理される、「コンストラクタ」と呼ばれる特別なメソッドを含めることができます。このチュートリアルでは、WishDBがインスタンス化されるたびにデータベースに接続するコンストラクタをWishDBに追加します。</p>
+        <p>WishDBに次のコードを追加します。</p>
+        <p><b>MySQLデータベースの場合:</b></p>
+        <pre class="examplecode">// private constructor<br>private function __construct() {<br>    parent::__construct($this-&gt;dbHost, $this-&gt;user, $this-&gt;pass, $this-&gt;dbName);<br>    if (mysqli_connect_error()) {<br>        exit('Connect Error (' . mysqli_connect_errno() . ') '<br>                . mysqli_connect_error());<br>    }<br>    parent::set_charset('utf-8');<br>}</pre>
+<p><b>Oracleデータベースの場合:</b></p>
+<pre class="examplecode">// private constructor
+private function __construct() {
+    $this->con = oci_connect($this->user, $this->pass, $this->dbHost);
+    if (!$this->con) {
+        $m = oci_error();
+        echo $m['message'], "\n";
+        exit;
+    }
+}</pre>
+        <p>変数<tt>$con</tt>、<tt>$dbHost</tt>、<tt>$user</tt>、または<tt>$pass</tt>のかわりに、疑似変数<tt>$this</tt>を使用しています。メソッドがオブジェクトのコンテキスト内からコールされた場合、疑似変数<tt>$this</tt>が使用されます。これはオブジェクト内の変数の値を参照します。</p>
+        <h2><a id="includedFunctions" name="includedFunctions"></a>WishDBクラスの関数 </h2>
+        <p>このレッスンでは、WishDBクラスの次の関数を実装します。</p>
+        <ul>
+            <li>ウィッシャの名前に基づいてウィッシャのIDを取得する<a href="#getIDByName">get_wisher_id_by_name</a> </li>
+            <li>特定のIDを持つウィッシャのウィッシュのリストを取得する<a href="#getWishesByID">get_wishes_by_wisher_id</a> </li>
+            <li>wishers表に新しいウィッシャのレコードを追加する<a href="#createWisher">create_wisher</a> </li>
+        </ul>
+        <div class="indent"><h3><a id="getIDByName" name="getIDByName"></a>関数get_wisher_id_by_name</h3>
+            この関数は、入力パラメータとしてウィッシャの名前が必要で、ウィッシャのIDを返します。<br>
+            <p>
+            WishDBクラスのWishDB関数の後に、次の関数を入力するか、または貼り付けます。</p>
+            <p><b>MySQLデータベースの場合:</b></p>
+            <pre class="examplecode">public function get_wisher_id_by_name($name) {<br>
+    $name = $this-&gt;real_escape_string($name);<br>
+    $wisher = $this-&gt;query(&quot;SELECT id FROM wishers WHERE name = '&quot;<br>
+            . $name . &quot;'&quot;);
+    if ($wisher-&gt;num_rows &gt; 0){<br>        $row = $wisher-&gt;fetch_row();<br>        return $row[0];<br>    } else<br>        return null;
+}</pre>
+          <p><b>Oracleデータベースの場合:</b></p>
+ <pre class="examplecode">public function get_wisher_id_by_name($name) {
+    $query = "SELECT id FROM wishers WHERE name = :user_bv&quot;;
+    $stid = oci_parse($this->con, $query);
+    oci_bind_by_name($stid, ':user_bv', $name);
+    oci_execute($stid);
+//Because user is a unique value I only expect one row
+    $row = oci_fetch_array($stid, OCI_ASSOC);<br>    if ($row) <br>        return $row[&quot;ID&quot;];<br>    else<br>        return null;
+}</pre>
+            このコード・ブロックは、問合せ<tt>SELECT ID FROM wishers WHERE name=[ウィッシャの名前の変数]</tt>を実行します。問合せの結果は、問合せに一致するレコードのIDの配列です。配列が空でない場合は自動的に要素を1つ含むことを意味し、これは、表の作成時にフィールド名がUNIQUEとして指定されたためです。この場合、関数は<tt>$result</tt>配列の最初の要素(番号が0の要素)を返します。配列が空の場合、関数はnullを返します。
+          <p class="notes"><b>セキュリティ上の注意:</b> MySQLデータベースの場合、<tt>$name</tt>文字列は、SQLインジェクション攻撃を避けるためにエスケープされます。<a href="http://en.wikipedia.org/wiki/SQL_injection" target="_blank">SQLインジェクションに関するWikipedia</a>および<a href="http://us3.php.net/mysql_real_escape_string" target="_blank">mysql_real_escape_stringのドキュメント</a>を参照してください。このチュートリアルのコンテキストでは、有害なSQLインジェクションのリスクはありませんが、そのような攻撃のリスクになるようなMySQL問合せの文字列はエスケープすることをお薦めします。Oracleデータベースでは、バインド変数を使用してこの問題を回避します。</p>
+          <h3><a id="getWishesByID" name="getWishesByID"></a>関数get_wishes_by_wisher_id</h3>
+            <p>この関数は、入力パラメータとしてウィッシャのIDを必要とし、そのウィッシャに対して登録されているウィッシュを返します。       </p>
+            <p>次のコード・ブロックを入力します。</p>
+            <p><b>MySQLデータベースの場合:</b></p>
+            <pre class="examplecode">public function get_wishes_by_wisher_id($wisherID) {<br>    return $this->query(&quot;SELECT id, description, due_date FROM wishes WHERE wisher_id=&quot; . $wisherID);<br>}</pre>
+            <p><b>Oracleデータベースの場合:</b></p>
+            <pre class="examplecode">public function get_wishes_by_wisher_id($wisherID) {
+    $query = "SELECT id, description, due_date FROM wishes WHERE wisher_id = :id_bv";
+    $stid = oci_parse($this->con, $query);
+    oci_bind_by_name($stid, ":id_bv", $wisherID);
+    oci_execute($stid);
+    return $stid;
+}</pre>
+            <p>コード・ブロックは、問合せ<tt>"SELECT id, description, due_date FROM wishes WHERE wisherID=" . $wisherID</tt>を実行し、問合せに一致するレコードの配列である結果セットを返します。(Oracleデータベースでは、データベースのパフォーマンスとセキュリティ上の理由でバインド変数を使用します。)この選択は、<tt>wishes</tt>表の外部キーであるwisherIDによって実行されます。            </p>
+            <p class="notes"><b>注意:</b> <tt>id</tt>値はレッスン7までは不要です。</p>
+          <h3><a id="createWisher" name="createWisher"></a>関数create_wisher</h3>
+            <p>この関数は、wishers表に新しいレコードを作成します。この関数は、入力パラメータとして新しいウィッシャの名前とパスワードを必要とし、何もデータを返しません。</p>
+            次のコード・ブロックを入力します。
+            <p><b>MySQLデータベースの場合:</b></p>
+            <pre class="examplecode">public function create_wisher ($name, $password){
+    $name = $this-&gt;real_escape_string($name);<br>    $password = $this-&gt;real_escape_string($password);<br>    $this-&gt;query(&quot;INSERT INTO wishers (name, password) VALUES ('&quot; . $name . &quot;', '&quot; . $password . &quot;')&quot;);
+}</pre>
+            <p><b>Oracleデータベースの場合:</b></p>
+            <pre class="examplecode">public function create_wisher($name, $password) {
+    $query = "INSERT INTO wishers (name, password) VALUES (:user_bv, :pwd_bv)";
+    $stid = oci_parse($this->con, $query);
+    oci_bind_by_name($stid, ':user_bv', $name);
+    oci_bind_by_name($stid, ':pwd_bv', $password);
+    oci_execute($stid);
+}</pre>
+            このコード・ブロックは、問合せ<tt>"INSERT wishers (Name, Password) VALUES ([新しいウィッシャの名前とパスワードを表す変数])</tt>を実行します。問合せによって、<tt>$name</tt>と<tt>$password</tt>の値がそれぞれ入力された「name」フィールドと「password」フィールドを持つ「wishers」表に、新しいレコードが追加されます。 </div>
+        <h2><a name="refactoring"></a>アプリケーション・コードのリファクタリング</h2>
+    <p>データベースを操作するための別のクラスができたので、重複したブロックを、このクラスからの関連する関数へのコールに置き換えることができます。これは、今後のミススペルと不整合を回避するのに役立ちます。機能に影響しないコードの最適化は、リファクタリングと呼ばれます。</p>
+    <div class="indent">
+      <h3><a name="refactoringWishlistFile"></a>wishlist.phpファイルのリファクタリング </h3>
+          wishlist.phpファイルは短く、具体的に改良できるため、このファイルから開始します。
+            <ol>
+                <li>&lt;?php?>ブロックの先頭に次の行を入力して、<tt>db.php</tt>ファイルを使用できるようにします。
+                    <pre class="examplecode">require_once("Includes/db.php");</pre>
+                </li>
+
+                <li>データベースに接続してウィッシャのIDを取得するコードを、<tt>get_wisher_id_by_name</tt>関数のコールに置き換えます。
+                  <p><b>MySQLデータベース</b>の場合に置き換えるコード:
+                  <pre class="examplecode"><del>$con = mysqli_connect("localhost", "phpuser", "phpuserpw");
+if (!$con) {
+    exit('Connect Error (' . mysqli_connect_errno() . ') '
+            . mysqli_connect_error());
+}
+//set the default client character set 
+mysqli_set_charset($con, 'utf-8');
+
+mysqli_select_db($con, "wishlist");
+$user = mysqli_real_escape_string($con, $_GET['user']);
+$wisher = mysqli_query($con, "SELECT id FROM wishers WHERE name='" . $user . "'");
+if (mysqli_num_rows($wisher) &lt; 1) {
+    exit("The person " . $_GET['user'] . " is not found. Please check the spelling and try again");
+}
+$row = mysqli_fetch_row($wisher);<br>$wisherID = $row[0];
+mysqli_free_result($wisher);</del><br><br>
+<b>$wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_GET[&quot;user&quot;]);
+if (!$wisherID) {
+    exit(&quot;The person &quot; .$_GET[&quot;user&quot;]. &quot; is not found. Please check the spelling and try again&quot; );
+}</b></pre>
+<p><b>Oracleデータベース</b>の場合に置き換えるコード:</p>
+<pre class="examplecode"><del>$con = oci_connect(&quot;phpuser&quot;, &quot;phpuserpw&quot;, &quot;localhost/XE&quot;, &quot;AL32UTF8&quot;);
+if (!$con) {
+   $m = oci_error();
+   echo $m['message'], &quot;\n&quot;;
+   exit;
+}
+$query = &quot;SELECT id FROM wishers WHERE name = :user_bv&quot;;
+$stid = oci_parse($con, $query);
+$user = $_GET[&quot;user&quot;];
+
+oci_bind_by_name($stid, ':user_bv', $user);
+oci_execute($stid);
+
+//Because user is a unique value I only expect one row<br>
+$row = oci_fetch_array($stid, OCI_ASSOC);
+if (!$row) {
+    echo(&quot;The person &quot; . $user . &quot; is not found. Please check the spelling and try again&quot; );<br>    exit;<br>
+}
+$wisherID = $row[&quot;ID&quot;]; </del>
+<br>
+<b>$wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_GET[&quot;user&quot;]);
+if (!$wisherID) {
+    exit(&quot;The person &quot; .$_GET[&quot;user&quot;]. &quot; is not found. Please check the spelling and try again&quot; );
+}</b></pre>
+<p>新しいコードは、最初にWishDBの<tt>getInstance</tt>関数をコールします。<tt>getInstance</tt>関数はWishDBのインスタンスを返し、コードはそのインスタンス内の<tt>get_wisher_id_by_name</tt>関数をコールします。リクエストされたウィッシャがデータベース内で見つからない場合、コードはプロセスを強制終了し、エラー・メッセージを表示します。</p><p>データベースへの接続を開くコードは、ここでは必要ありません。WishDBクラスのコンストラクタによって接続が開かれます。名前またはパスワード(あるいはその両方)を変更した場合は、WishDBクラスの関連する変数のみ更新する必要があります。</p>
+                </li>
+              <li>IDによって識別されるウィッシャのウィッシュを取得するコードを、<tt>get_wishes_by_wisher_id</tt>関数をコールするコードに置き換えます。
+              <p><b>MySQLデータベース</b>の場合に置き換えるコード:
+                <pre class="examplecode"><del>$result = mysqli_query($con, "SELECT description, due_date FROM wishes WHERE wisher_id=". $wisherID);</del>
+                
+<strong>$result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);</strong></pre>
+                <p><b>Oracleデータベース</b>の場合に置き換えるコード: </p>
+                <pre class="examplecode"><del>$query = &quot;select * from wishes where wisher_id = :id_bv&quot;;<br>$stid = oci_parse($con, $query);<br>oci_bind_by_name($stid, &quot;:id_bv&quot;, $wisherID);<br>oci_execute($stid);</del>
+                
+<strong>$stid = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);</strong></pre>
+                </li>
+              <li>データベース接続を切断する行を除去します。
+                    <pre class="examplecode"> <del>mysqli_close($con);</del>
+                    or
+ <del>oci_close($con);</del>                </pre>
+              WishDBオブジェクトが破棄されるとデータベースへの接続が自動的に切断されるため、このコードは必要ありません。ただし、リソースを解放するコードは保持します。<tt>close</tt>関数をコールするか、またはデータベース接続を持つインスタンスを破棄した場合でも、接続を使用するすべてのリソースを解放して、接続が正しく切断されるようにする必要があります。</li>
+            </ol>
+      <h3>&nbsp;</h3>
+          <h3><a name="refactoringCreateNewWisher"></a>createNewWisher.phpファイルのリファクタリング </h3>
+      <p>リファクタリングは、HTML入力フォーム、または関連するエラー・メッセージを表示するためのコードには影響がありません。</p>
+            <ol>
+                <li>&lt;?php?>ブロックの先頭に次のコードを入力して、<tt>db.php</tt>ファイルを使用できるようにします。
+                    <pre class="examplecode">require_once("Includes/db.php");</pre>
+                </li>
+                <li>データベース接続の資格情報(<tt>$dbHost,</tt>など)を削除します。これらは現在<tt>db.php</tt>にあります。</li>
+                <li>データベースに接続してウィッシャのIDを取得するコードを、<tt>get_wisher_id_by_name</tt>関数のコールに置き換えます。
+                  <p><b>MySQLデータベース</b>の場合に置き換えるコード:</p>
+                  <pre class="examplecode"><del>
+$con = mysqli_connect("localhost", "phpuser", "phpuserpw");
+if (!$con) {
+    exit('Connect Error (' . mysqli_connect_errno() . ') '
+            . mysqli_connect_error());
+}
+//set the default client character set 
+mysqli_set_charset($con, 'utf-8');
+
+
+<br>/** Check whether a user whose name matches the "user" field already exists */
+mysqli_select_db($con, "wishlist");
+$user = mysqli_real_escape_string($con, $_POST['user']);
+$wisher = mysqli_query($con, "SELECT id FROM wishers WHERE name='".$user."'");
+$wisherIDnum=mysqli_num_rows($wisher);
+if ($wisherIDnum) {
+   $userNameIsUnique = false;
+}</del>
+<br>
+<strong>$wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_POST[&quot;user&quot;]);<br>if ($wisherID) {<br>   $userNameIsUnique = false;<br>}</strong></pre>
+                  <p><b>Oracleデータベース</b>の場合に置き換えるコード: </p>
+                  <pre class="examplecode"><del>
+$con = oci_connect("phpuser", "phpuserpw", "localhost");
+if (!$con) {
+    $m = oci_error();
+    echo $m['message'], "\n";
+    exit;
+}
+$query = "select ID from wishers where name = :user_bv";
+$stid = oci_parse($con, $query);
+$user = $_POST['user'];
+$wisherID = null;
+oci_bind_by_name($stid, ':user_bv', $user);
+oci_execute($stid);
+
+//Each user name should be unique. Check if the submitted user already exists.
+$row = oci_fetch_array($stid, OCI_ASSOC);<br>if ($row) {<br>    $wisherID = $row[&quot;ID&quot;]; <br>}<br>if ($wisherID != null) {<br>    $userNameIsUnique = false;<br>}</del>
+
+<strong>$wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_POST[&quot;user&quot;]);<br>if ($wisherID) {<br>   $userNameIsUnique = false;<br>}</strong></pre>
+
+                <tt>WishDB</tt>オブジェクトは、現在のページが処理されている間は存在します。これは、処理が完了したり割込みされた後に破棄されます。WishDB関数によってデータベースへの接続が開くため、データベースへの接続を開くコードは必要ありません。<tt>WishDB</tt>オブジェクトが破棄されると同時に接続が切断されるため、接続を切断するためのコードは必要ありません。</li>
+                <li>新しいウィッシャをデータベースに挿入するコードを、<tt>create_wisher</tt>関数をコールするコードに置き換えます。
+                    <p><b>MySQLデータベース</b>の場合に置き換えるコード:</p>
+                    
+                    <pre class="examplecode"><del>if (!$userIsEmpty &amp;&amp; $userNameIsUnique &amp;&amp; !$passwordIsEmpty &amp;&amp; !$password2IsEmpty &amp;&amp; $passwordIsValid) {
+    $password = mysqli_real_escape_string($con, $_POST[&quot;password&quot;]);<br>    mysqli_select_db($con, &quot;wishlist&quot;);<br>    mysqli_query($con, &quot;INSERT wishers (name, password) VALUES ('&quot; . $user . &quot;', '&quot; . $password . &quot;')&quot;);<br>    mysqli_free_result($wisher);<br>    mysqli_close($con);<br>    header('Location: editWishList.php');<br>    exit;<br>}
+                    </del>
+                <strong>if (!$userIsEmpty &amp;&amp; $userNameIsUnique &amp;&amp; !$passwordIsEmpty &amp;&amp; !$password2IsEmpty &amp;&amp; $passwordIsValid) {<br>    WishDB::getInstance()-&gt;create_wisher($_POST[&quot;user&quot;], $_POST[&quot;password&quot;]);<br>    header('Location: editWishList.php' );<br>    exit;<br>}</strong></pre>
+<p><b>Oracleデータベース</b>の場合に置き換えるコード: </p>
+                  <pre class="examplecode"><del>
+if (!$userIsEmpty && $userNameIsUnique && !$passwordIsEmpty && !$password2IsEmpty && $passwordIsValid) {
+    $query = "INSERT INTO wishers (name, password) VALUES (:user_bv, :pwd_bv)";
+    $stid = oci_parse($con, $query);
+    $pwd = $_POST['password'];
+    oci_bind_by_name($stid, ':user_bv', $user);
+    oci_bind_by_name($stid, ':pwd_bv', $pwd);
+    oci_execute($stid);
+    oci_close($con);
+    header('Location: editWishList.php');
+    exit;
+}</del>
+
+
+<strong>if (!$userIsEmpty &amp;&amp; $userNameIsUnique &amp;&amp; !$passwordIsEmpty &amp;&amp; !$password2IsEmpty &amp;&amp; $passwordIsValid) {<br>    WishDB::getInstance()-&gt;create_wisher($_POST[&quot;user&quot;], $_POST[&quot;password&quot;]);<br>    header('Location: editWishList.php' );<br>    exit;<br>}</strong></pre>
+                </li>
+            </ol>
+    </div>
+
+    <h2><a name="lessonResultSourceCode"></a>現在のレッスン完了後のアプリケーション・ソース・コード </h2>
+    <p>MySQLユーザー: このレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/projects/www/downloads/download/php%252Flesson4.zip" target="_blank">ここ</a>をクリックします。</p>
+    <p>Oracleデータベース・ユーザー: このレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson4.zip" target="_blank">ここ</a>をクリックします。</p>
+    <h2><a name="nextSteps"></a>次の手順</h2>
+        <p>
+            <a href="wish-list-lesson3.html">&lt;&lt; 前のレッスン</a><br><br><a href="wish-list-lesson5.html">次のレッスン>></a><br><br><a href="wish-list-tutorial-main-page.html">チュートリアルのメイン・ページに戻る</a><br><br>
+        </p>
+        <h2><a name="usefulLinks"></a>便利なリンク</h2>
+        <p>PHPでのクラスの使用については、次を参照してください。</p>
+        <ul>
+            <li><a href="http://us3.php.net/manual/en/language.oop5.php" target="_blank">Classes and Objects</a> </li>
+        </ul>
+        <p>PHPコードのリファクタリングについては、次を参照してください。 </p>
+        <ul>
+            <li><a href="http://www.slideshare.net/spriebsch/seven-steps-to-better-php-code-presentation/" target="_blank">Seven Steps To Better PHP Code</a></li>
+            <li> <a href="http://www.dokeos.com/wiki/index.php/Refactoring" target="_blank">PHP Refactoring</a></li>
+        </ul>
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%204:%20Optimizing%20Code">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear:both;" >
+        <p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+        <p><a href="../../trails/php.html">PHPの学習に戻る</a><br>
+        </p>
+    </body>
+</html>

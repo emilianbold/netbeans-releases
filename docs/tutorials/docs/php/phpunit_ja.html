@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="description" content="How to integrate PHPUnit and Selenium with NetBeans IDE for writing automated tests. Includes demonstration of Code Coverage and the IDE's test result UI.">
+<meta name="keywords" content="NetBeans, IDE, integrated development environment, tutorial, guide, user, documentation, open source, PHP, testing, automated testing, PHPUnit, Selenium, Code Coverage">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+<title>PHPUnitとSeleniumを使用したテスト -- NetBeans IDEチュートリアル</title></head>
+<body>
+<h1>PHPUnitとSeleniumを使用したテスト</h1>
+<p>PHP向けのNetBeans IDEは、<a href="http://www.phpunit.de" target="_blank">PHPUnit</a>自動化テストをサポートしています。PHPUnitによって、NetBeans IDEでは、IDEがPythonに提供するコード・カバレージと同じように、PHPのコード・カバレージが提供されます。テストの出力は、IDEのJUnitおよびPythonのテスト・ランナーが使用するのと同じ、機能が豊富な出力ウィンドウに表示されます。 </p>
+<p>NetBeans IDEでは、PHPUnitに加えて、Seleniumの移植可能なテスト・フレームワークもサポートされています。Seleniumプラグインは、更新センターから入手できます。このプラグインをインストールすると、SeleniumサーバーがIDEの登録済サーバーに追加され、Seleniumのテスト・オプションがPHPのメニューに追加されます。</p>
+<p><b>目次</b></p>
+ <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+<ul class="toc">
+
+  <li><a href="#installing-phpunit">PHPUnitのインストール</a></li>
+  <li><a href="#create-test">PHPUnitテストの作成と実行</a></li>
+  <li><a href="#test-groups">テスト・グループの使用</a></li>
+  <li><a href="#result-windows">テスト結果とIDE出力</a></li>
+  <li><a href="#code-coverage">コード・カバレージ</a></li>
+  <li><a href="#project-specific-configurations">プロジェクト固有の構成の使用</a></li>
+  <li><a href="#selenium">Seleniumフレームワークでのテストの実行</a></li>
+</ul>
+<p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+      <th class="tblheader" scope="col">必須バージョン</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+      <td class="tbltd1">
+        PHPダウンロード・バンドル</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">PEARを含むPHPエンジン</td>
+      <td class="tbltd1">バージョン5。 </tr>
+    <tr>
+      <td class="tbltd1">Webサーバー</td>
+      <td>Apache HTTP Server 2.2 (推奨)<br></td>
+    </tr>
+
+    
+<tr>
+        <td class="tbltd1"><a href="http://www.phpunit.de" target="_blank">PHPUnit</a></td>
+        <td>バージョン3.4.0以上</td>
+    </tr>
+    <tr>
+    <td class="tbltd1"><a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html" target="_blank">PHPUnitのスケルトン・ジェネレータ</a></td><td>PHPUnitと同じバージョン</td></tr>
+  </tbody>
+</table>
+
+<h2 id="installing-phpunit">PHPUnitのインストール</h2>
+<p>PHPUnitは<a href="http://www.phpunit.de/manual/current/en/installation.html" target="_blank">PHPUnitのドキュメント</a>に従って、PHPUnitのスケルトン・ジェネレータは<a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html">スケルトン・ジェネレータのドキュメント</a>に従って、PEARを使用してインストールします。PHPUnitバージョン3.4.0以上をインストールします。特別な設定は不要です。PHPUnitがインストールされたら、NetBeansで認識されます。PHPエンジンとともにPEARがインストールされている必要があります。また、PHPUnitのドキュメントには、PHPUnitが通常はローカルのPEARディレクトリにインストールされると記載されています。パスは<tt>/usr/lib/php/PHPUnit</tt>と記載されていますが、XAMPP for Windowsでは<tt>XAMPP_HOME\php\PEAR\PHPUnit</tt>になります。 </p>
+<p>NetBeans IDEでPHPUnitのインストールが認識されていることを確認するには、「ツール」>「オプション」(Macの場合は「NetBeans」>「プリファレンス」)を開き、PHPウィンドウを確認します。「単体テスト」タブを開きます。PHPUnitおよびスケルトン・ジェネレータのスクリプトのパスが表示されます。スクリプトが表示されない場合は、空のフィールドの横にある「検索」をクリックします。IDEでは、ローカル・システムでスクリプトを検索します。または、「参照」をクリックして、スクリプトを参照します。</p>
+<img alt="PHPUnitスクリプトのパスを示すオプション・ページ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/unittesting-options.png">
+<h2 id="create-test">PHPUnitテストの作成と実行</h2>
+<p>NetBeans IDEでは、ファイル内のすべてのPHPクラスに対するPHPUnitテストを作成し、実行できます。テスト・ジェネレータが正常に動作するように、PHPファイルは、ファイル内の最初のクラスと同じ名前にします。 </p>
+<p><strong>クラスのPHPUnitテストを作成して実行するには:</strong></p>
+<ol>
+  <li>CalculatorというPHPプロジェクトを作成します。このプロジェクトに<tt>calculator.php</tt>というファイルを作成します。このファイルに、<a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html" target="_blank">PHPUnitのドキュメントのスケルトン・ジェネレータの章</a>にあるCalculatorクラスを入力するか、または貼り付けます。
+  <pre class="examplecode">&lt;?php
+class Calculator
+{
+    public function add($a, $b)
+    {
+        return $a + $b;
+    }
+}
+?&gt;</pre></li>
+<li><a href="http://sebastian-bergmann.de/archives/628-Improved-Skeleton-Generator-in-PHPUnit-3.html" target="_blank">@assert注釈</a>と、入力と出力の例を使用したコメント・ブロックを追加します。この例には間違った表明が1つ含まれています。
+<pre class="examplecode">&lt;?php
+class Calculator
+{
+    /**
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == 1
+     * @assert (1, 0) == 1
+     * @assert (1, 1) == 2
+     * @assert (1, 2) == 4
+     */
+    public function add($a, $b)
+    {
+        return $a + $b;
+    }
+}
+?&gt;</pre>
+<p class="notes"><strong>注意: </strong>注釈のコード補完を使用して、<code>@assert</code>注釈を追加できます。[Tab]キーを使用してパラメータ間を移動するか、またはパラメータ値を入力して[Enter]を押します。</p>
+<img alt="@assert注釈での注釈のコード補完" class="margin-around b-all" src="../../../images_www/articles/72/php/phpunit/assert-cc.png"><img alt="コード補完を使用した、@assert注釈のパラメータの入力" class="margin-around b-all" src="../../../images_www/articles/72/php/phpunit/assert-cc-complete.png"></li>
+<li>「プロジェクト」ウィンドウで「Calculator.php」ノードを右クリックし、「ツール」>「PHPUnitテストを作成」を選択します。「ソース・ファイル」ノードのコンテキスト・メニューで、プロジェクト内のすべてのファイルのテストを作成できます。<br> <img alt="「PHPUnitテストを作成」オプションが表示された、PHPプロジェクトの「ソース・ファイル」ノードのコンテキスト・メニュー" class="margin-around" src="../../../images_www/articles/72/php/phpunit/create-tests.png"></li>
+<li>テストを初めて作成するときは、テスト・ファイルを保存するディレクトリを指定するダイアログが開きます。この例では、参照機能を使用して<tt>tests</tt>ディレクトリを作成しています。<br><img alt="テスト・ファイルのディレクトリのダイアログ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/test-directory.png">
+<p class="notes"><strong>注意:</strong> 1つのプロジェクトに複数のテストを手動で記述できます。複数のテストを記述する場合は、テスト・ファイルのディレクトリのサブディレクトリ(たとえば、"important"、"quick")に、それらのテストをソートできます。次に、サブフォルダを右クリックし、「テストの実行」を選択して、サブフォルダ内のテストを実行できます。</p>
+<img alt="「テストの実行」フォルダ・コンテキスト・アクション" class="margin-around b-all" src="../../../images_www/articles/72/php/phpunit/test-in-folder.png">
+</li>
+<li>IDEによって、CalculatorTest.phpというファイルに、スケルトン・テスト・クラスが生成されます(このファイルは、「プロジェクト」ウィンドウに表示され、エディタで開きます)。<br><img alt="新しいテスト・クラスを示す「プロジェクト」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/test-class-in-project.png">
+<p><tt>@assert</tt>注釈ごとにテストが作成されます。</p>
+<pre class="examplecode">    /**
+     * Generated from @assert (1, 1) == 2.
+     */
+    public function testAdd4()
+    {
+        $this->assertEquals(
+          2,
+          $this->object->add(1, 1)
+        );
+    }</pre></li>
+    <li>1つのファイルまたはプロジェクト全体をテストできます。プロジェクトをテストするには、プロジェクトの親ノードを右クリックして「テスト」を選択するか、または[Alt]-[F6]を押します。Calculator.phpファイルをテストするには、ファイルのノードを右クリックして「テスト」を選択するか、または[Ctrl]-[F6]/[⌘]-[F6]を押します。この例では、1つのファイルに1つのクラスのみがあるため、結果は同じです。IDEによってテストが実行され、「テスト結果」ウィンドウに結果が表示されます。<br><img alt="「テスト結果」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/test-results-narrow.png"> <p>より詳細なテキスト・バージョンの結果が「出力」ウィンドウに表示されます。</p>
+    <img alt="テスト結果を示す「出力」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/test-result-output.png"></li>
+</ol>
+<h2><a name="test-groups"></a>テスト・グループの使用</h2>
+<p>テスト・スイートを実行するとき、実行するテストのグループを選択できます。たとえば、一部のテストは本番環境でのみ実行し、他のテストは本番環境と開発環境の両方で実行する場合があります。前者のテストを<tt>production</tt>グループに配置し、後者のテストを<tt>production</tt>グループと<tt>development</tt>グループの両方に配置します。テスト・スイートを開発環境で実行する場合、<tt>development</tt>テスト・グループのみを選択して実行します。</p>
+<p>PHPプロジェクト内の任意のファイルについてテスト・グループを使用するには、そのプロジェクトでテスト・グループを有効にする必要があります。 </p>
+<p>テスト・グループの一部としてテストをマークするには、テスト・メソッドに<tt>@group [group name]</tt>の注釈を付けます。</p>
+<p><strong>テスト・グループを作成および実行するには、次を実行します。</strong></p>
+<ol>
+  <li>「プロジェクト」ウィンドウで「Calculator」ノードを右クリックし、「プロパティ」を選択します。「プロジェクト・プロパティ」が開きます。</li>
+  <li>「プロジェクト・プロパティ」で「PHPUnit」カテゴリを選択します。「テストの実行前にテスト・グループの入力を求める」を選択します。「OK」をクリックします。<br><img alt="テスト・グループが有効化された、「プロジェクト・プロパティ」の「PHPUnit」カテゴリ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/test-group-properties.png"></li>
+  <li>エディタで<tt>CalculatorTest.php</tt>を開きます。</li>
+  <li>メソッド<tt>testAdd</tt>、<tt>testAdd3</tt>、および<tt>testAdd5</tt>について、注釈<tt>@group production</tt>を追加します。<br><img alt="テスト・グループの注釈を示すコード" class="margin-around b-all" src="../../../images_www/articles/72/php/phpunit/production-group-annotation.png"></li>
+  <li>メソッド<tt>testAdd2</tt>および<tt>testAdd4</tt>について、注釈<tt>@group production</tt>および<tt>@group development</tt>を追加します。<img alt="テスト・グループの注釈を示すコード" class="margin-around b-all" src="../../../images_www/articles/72/php/phpunit/production-development-group-code.png"></li>
+  <li><tt>Calculator.php</tt>ノードを右クリックし、「テスト」を選択します。ダイアログが開き、実行するテスト・グループを指定するように求められます。「development」を選択して「OK」をクリックします。IDEは、<tt>@group development</tt>という注釈が付いたテストのみを実行します。<br><img alt="テスト・グループの選択ダイアログ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/select-test-group.png"></li>
+</ol>
+<p>NetBeans IDEのPHPUnitテスト・グループの詳細は、PHP向けのNetBeans IDEブログ投稿の<a href="http://blogs.oracle.com/netbeansphp/entry/using_phpunit_test_groups" target="_blank">PHPUnitテスト・グループの使用</a>を参照してください。</p>
+<h2 id="result-windows">テスト結果とIDE出力</h2>
+<p>PHPUnitのテスト結果は、IDEの「テスト結果」と「出力」の2つのウィンドウに表示されます。「テスト結果」ウィンドウには、グラフィック・ペインと簡単なテキスト・ペインがあります。「出力」ウィンドウには、より詳細なテキスト・バージョンの出力が表示されます。この項では、「テスト結果」ウィンドウと「出力」ウィンドウについて詳しく説明します。</p>
+<p>「テスト結果」ウィンドウでは、次の場所で、失敗したテストに関する情報を確認できます。</p>
+<ul>
+  <li>UIペイン内で、失敗したテストのツリー・エントリに添付されているメッセージ</li>
+  <li>右側のペイン内のテキスト(失敗したテスト・コード行へのリンクを含む)</li>
+  <li>UIペイン内で、失敗したテストの上にカーソルを置くと表示されるツールチップのテキスト</li>
+</ul>
+<img alt="ツールチップを示す「テスト結果」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/test-results-tooltip.png">
+<p>「テスト結果」ウィンドウの左側には次のボタンがあります。</p>
+<ul>
+    <li> テストを再実行<img alt="再実行ボタン" src="../../../images_www/articles/72/php/phpunit/rerun-button.png"></li>
+  <li>失敗したテストの表示<img alt="失敗したテストの表示ボタン" src="../../../images_www/articles/72/php/phpunit/show-failed.png"></li>
+  <li>成功したテストの表示<img alt="成功したテストの表示ボタン" src="../../../images_www/articles/72/php/phpunit/show-passed.png"></li>
+  <li>成功したがエラーがあるテストの表示<img alt="エラーがあるテストの表示ボタン" src="../../../images_www/articles/72/php/phpunit/show-error.png"></li>
+  <li>次のテスト結果<img alt="次のテスト・ボタン" src="../../../images_www/articles/72/php/phpunit/next-test-button.png">または前のテスト結果<img alt="前のテスト・ボタン" src="../../../images_www/articles/72/php/phpunit/previous-test-button.png">への移動</li>
+</ul>
+<p>「出力」ウィンドウには、PHPUnitスクリプトの完全な出力が表示されます。「テスト結果」ウィンドウ内の情報ではエラーの原因を特定できない場合に便利です。「テスト結果」ウィンドウと同様に、「出力」ウィンドウには、失敗したテスト・クラス行へのリンクが含まれます。また、テストを再実行したり、PHPの「オプション」ウィンドウを開いたりするためのボタンが左側にあります。<img alt="「出力」ウィンドウで「オプション」にリンクされたボタン" src="../../../images_www/articles/72/php/phpunit/options-link-button.png"></p>
+<img alt="PHPUnitテストの完全な結果を示す「出力」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/test-result-output.png">
+<h2 id="code-coverage">コード・カバレージ</h2>
+<p>PHP向けのNetBeans IDEには、PHPUnitのサポートとともにコード・カバレージがあります(IDEには、Pythonのコード・カバレージもあります)。コード・カバレージでは、すべてのメソッドがPHPUnitテストでカバーされるかどうかが確認されます。この項では、既存のCalculatorクラスでコード・カバレージがどのように機能するかについて説明します。</p>
+<p><strong>コード・カバレージを使用するには:</strong></p>
+<ol>
+  <li>Calculator.phpを開き、<tt>add2</tt>という<tt>add</tt>関数の複製を追加します。<tt>Calculator</tt>クラスは次のようになります。
+  <pre class="examplecode">&lt;?php
+class Calculator {
+    /**
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == 1
+     * @assert (1, 0) == 1
+     * @assert (1, 1) == 2
+     * @assert (1, 2) == 4
+     */
+    public function add($a, $b) {
+        return $a + $b;
+    }
+
+    public function add2($a, $b) {
+        return $a + $b;
+    }
+
+}    
+?&gt;
+</pre></li>
+<li>プロジェクト・ノードを右クリックします。コンテキスト・メニューから、「コード・カバレージ」>「コード・カバレージを収集し表示」を選択します。デフォルトでは、「エディタ・バーを表示」も選択されています。<br><img alt="プロジェクト・ノードのコンテキスト・メニューからコード・カバレージをオンにする" border="1" class="margin-around" src="../../../images_www/articles/72/php/phpunit/turn-on-code-coverage.png"></li>
+<li>エディタの最下部に、コード・カバレージのエディタ・バーが表示されます。コード・カバレージはテストされていないので、エディタ・バーには0%のカバレージが表示されます。(「クリア」をクリックしてテスト結果をクリアした後もこのように表示されます。)<br><img alt="テスト実行前のコード・カバレージのエディタ・バー" class="margin-around" src="../../../images_www/articles/72/php/phpunit/editor-bar-before.png"></li>
+<li>「テスト」をクリックして開いているファイルをテストするか、または「すべてのテスト」をクリックしてプロジェクトのすべてのテストを実行します。テスト結果が表示されます。また、コード・カバレージのバーに、テストでカバーされている実行可能コード文の割合(パーセント)が示されます。エディタ・ウィンドウで、カバーされているコードは緑色で強調表示され、カバーされていないコードは赤で強調表示されます。
+    <p class="alert"><b>警告: </b>add2関数を追加した後でテスト・ファイルを再生成した場合、PHPUnitテストは実行されません。これは、PHPUnitが2つの競合するtestAdd2関数を作成するためです。このような複数の関数についてPHPUnitを使用する場合、末尾に数字を付加することによって関数を区別しないでください。<a href="http://www.phpunit.de/ticket/701" target="_blank">PHPUnitのドキュメント</a>を参照してください。 </p>   
+<img alt="テスト実行後のコード・カバレージのエディタ・バー" class="margin-around" src="../../../images_www/articles/72/php/phpunit/editor-bar-after.png"></li>
+<li>エディタ・バーで、「レポート」をクリックします。コード・カバレージのレポートが開き、プロジェクトに対して実行されたすべてのテストの結果が表示されます。レポート内のボタンを使用して、結果をクリアしたり、すべてのテストを再実行したり、コード・カバレージを非アクティブ化(「完了」をクリック)できます。<br><img alt="コード・カバレージのレポート" class="margin-around" src="../../../images_www/articles/72/php/phpunit/code-coverage-report.png"></li>
+<li>プロジェクトに別のクラスを追加し、テスト・ファイルを削除して再作成して、コード・カバレージのレポートをもう一度確認できます。新しいクラスが表示されます。次のレポートでは、<tt>Calculator</tt>クラスに、テストに含まれない関数が再度含まれています。<br><img alt="2回目のクラスを示すコード・カバレージのレポート" class="margin-around" src="../../../images_www/articles/72/php/phpunit/code-coverage-report2.png"></li>
+</ol>
+<h2 id="project-specific-configurations">プロジェクト固有の構成の使用</h2>
+<p>IDEでは、プロジェクトに次のカスタム構成を選択できます。</p>
+<ul>
+  <li>ブートストラップ・ファイル</li>
+  <li>XML構成ファイル</li>
+  <li>テスト・スイート</li>
+  <li>カスタムのPHPUnitスクリプト</li>
+</ul>
+<p><strong>プロジェクト固有の構成を設定するには:</strong></p> 
+<ol>
+<li>プロジェクトのノードまたはプロジェクトの「テスト・ファイル」ノードを右クリックし、「プロパティ」を選択します。「プロパティ」ダイアログが開きます。<br><img alt="「プロパティ」が選択されたプロジェクト・コンテキスト・メニュー" class="margin-around" src="../../../images_www/articles/72/php/phpunit/project-ctxmenu.png"></li> 
+<li>「PHPUnit」カテゴリを選択します。カスタムのブートストラップ、XML構成、PHPUnitスクリプト、またはテスト・スイート・ファイルを選択できるダイアログが開きます。<br><img alt="「プロジェクト・プロパティ」ダイアログの「PHPUnit」カテゴリ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/proj-properties.png"></li> 
+<li>ブートストラップの構造やXML構成ファイルに精通していない場合は、NetBeans IDEを使用してスケルトンを生成できます。また、「ヘルプ」をクリックして、ダイアログを使用する手順を調べることができます。<br><img alt="「プロジェクト・プロパティ」の「PHPUnit」カテゴリの詳細" class="margin-around" src="../../../images_www/articles/72/php/phpunit/proj-properties-selected.png"></li>
+</ol>
+
+<p>カスタム・クラス・ローダーを使用するプロジェクトの場合、<tt>__autoload()</tt>特殊関数の実装などによる、<em>ブートストラップ・オプション</em>が必要です。プロジェクトの複数のクラスで使用するグローバル定数を定義するファイルなど、事前にファイルを含める必要がある場合も、ブートストラップ・オプションを使用します。</p>
+<p><em>XML構成ファイル</em>を使用して、コマンド行のコールに使用するオプションを定義できます。詳細は、<a href="http://www.phpunit.de/manual/3.3/en/appendixes.configuration.html" target="_blank" title="PHPUnitのマニュアル">PHPUnitのマニュアル</a>を参照してください。XML構成ファイルを使用して、テスト・ケースに<tt>php.ini</tt>設定やグローバル変数を定義することもできます。また、XML構成ファイルにブートストラップ・オプションを設定することもできます。</p>
+<p><em>カスタム・テスト・スイート</em>を設定すると、「実行」>「プロジェクトをテスト」を選択するたびに、このスイートが実行されます。これは、テストのサブセットのみを実行する場合や、データ・プロバイダなど、手動で追加する必要があるPHPUnitの最近追加された機能を使用する場合に非常に便利です。テスト・スイートは必要な数だけ定義でき、プロジェクト・エクスプローラでファイルを右クリックして「実行」を選択すると、それらを個別に実行できます。混乱を防ぐため、カスタム・テスト・スイートを使用するときには、NetBeansから通知があります。通知は、「テスト結果」および「出力」ウィンドウで確認できます。</p>
+<p>「ツール」>「オプション」で選択したデフォルトのスクリプトのかわりに、プロジェクトの<em>カスタムPHPUnitスクリプト</em>を使用できます。カスタムPHPUnitスクリプトには、コマンド行のスイッチを含めることができます(<a href="http://www.phpunit.de/manual/3.7/en/textui.html">PHPUnitのマニュアル</a>を参照)。</p>
+<p>&nbsp;</p>
+<h2 id="selenium">Seleniumフレームワークでのテストの実行</h2>
+<p>Seleniumは、Webアプリケーション用の移植可能なソフトウェア・テスト用フレームワークです。テストは、HTMLの表として記述したり、一般的なプログラミング言語でコーディングでき、最新のほとんどのWebブラウザで直接実行できます。Seleniumは、Windows、Linux、およびMacintoshにデプロイできます。詳細は、<a href="http://docs.seleniumhq.org" target="_blank">SeleniumのWebサイト</a>を参照してください。 </p>
+<p>NetBeans IDEには、Seleniumサーバーを含むプラグインがあります。このプラグインを使用して、PHP、Webアプリケーション、またはMavenプロジェクトに対してSeleniumのテストを実行できます。PHPに対してSeleniumのテストを実行するには、Testing SeleniumパッケージをPHPエンジンにインストールする必要があります。</p>
+<p><strong>PHPに対してSeleniumのテストを実行するには:</strong></p>
+<ol>
+  <li>コマンド・プロンプトを開き、コマンド<tt>pear install Testing_Selenium-beta</tt>を実行します。パスに<tt>PHP_HOME/php/PEAR</tt>が含まれている必要があります。コマンドが正常に完了したら、プロンプトに<tt>install ok: channel://pear.php.net/Testing_Selenium-0.4.3</tt>と表示されます。</li>
+  <li>IDEで、「ツール」>「プラグイン」を開き、PHP向けのSeleniumモジュールをインストールします。</li>
+  <li>「プロジェクト」ウィンドウで、Calculatorプロジェクトのプロジェクト・ノードを右クリックします。「新規」>「その他」を選択します。新規ファイル・ウィザードが開きます。「Selenium」を選択し、「次」をクリックします。<br><img alt="Seleniumのファイルが選択された新規ファイル・ウィザード" class="margin-around" src="../../../images_www/articles/72/php/phpunit/new-selenium.png"></li>
+  <li>Seleniumのテストを初めて作成するときは、Seleniumのテスト・ファイル用のディレクトリを設定するダイアログが開きます。これは、PHPUnitのテスト・ファイルとは別のディレクトリにします。そうしないと、単体テストを実行するたびにSeleniumのテストが実行されます。Seleniumのような機能的なテストの実行は、単体テストの実行よりも時間がかかるため、単体テストを実行するたびにこれらのテストが実行されることは避けたい場合があります。</li>
+  <li>名前と場所ページの設定はデフォルトのままにし、「終了」をクリックします。Seleniumの新しいテスト・ファイルがエディタで開き、「プロジェクト」ウィンドウに表示されます。<br><img alt="Seleniumの新しいテストを示す「プロジェクト」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/phpunit/selenium-test-in-project.png"></li>
+  <li>プロジェクトのコンテキスト・メニューに「Run Selenium Tests」という項目が追加されます。この項目をクリックすると、PHPUnitテストと同様に、Seleniumのテスト結果が「テスト結果」ウィンドウに表示されます。</li>
+</ol>
+<h2 id="more-exercises">その他の課題</h2>
+    <p>有益なアイデアをいくつか紹介します。</p>
+    <ul>
+      <li>Calculator.phpに、2番目のクラス($aと$bの積を求める<tt>Calculator2</tt>クラスなど)を追加します。テストを削除して再生成します。</li>
+      <li>複数の部に分かれている<a href="./wish-list-tutorial-main-page.html">CRUDアプリケーションの作成のチュートリアル</a>を試す場合は、最後のプロジェクトのSeleniumテストを作成します。 </li>
+    </ul>
+<div class="feedback-box">
+  <a href="/about/contact_form.html?to=3&amp;subject=Feedback:PHPUnit and Selenium on NB 6.7">このチュートリアルに関するご意見をお寄せください</a>
+</div>
+<br style="clear:both;" >
+<p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。このリストは<a href="http://forums.netbeans.org/" target="_blank">NetBeans IDEフォーラム</a>にミラーがあります。</p>
+<a name="seeAlso"></a>
+        <h2>関連項目</h2>
+
+        <p>NetBeans IDE<a href="https://netbeans.org/" target="_blank"></a>でのPHPのテストの詳細は、次のリソースを参照してください。</p>
+        <ul>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/phpunit_support_added" target="_blank">PHP向けのNetBeansブログ: 追加されたPHPUnitサポート</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/ui_for_phpunit_support" target="_blank">PHP向けのNetBeansブログ: PHPUnitサポートのUI</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/code_coverage_for_php_why" target="_blank">PHP向けのNetBeansブログ: PHPのコード・カバレージ -- 理由</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/recent_improvements_in_phpunit_support" target="_blank">PHP向けのNetBeansブログ: PHPUnitサポートの最新の改善点</a></li>
+            <li><a href="http://wiki.netbeans.org/SeleniumPluginPHP" target="_blank">NetBeans IDE Wiki: PHP用のSeleniumプラグイン</a></li>
+            <li><a href="./debugging.html">NetBeans IDEでのPHPソース・コードのデバッグ</a></li>
+            
+        </ul>
+<p><a href="../../trails/php.html">PHPの学習に戻る</a> </p>
+  
+</body>

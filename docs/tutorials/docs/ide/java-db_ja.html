@@ -1,0 +1,390 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This introductory tutorial demonstrates 
+            how to work with the Java DB (Derby) database in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, 
+            database, derby, Java, relational database management system, RDBMS, Apache,
+            transaction processing, SQL, JDBC">
+        
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+        
+        <title>Java DB (Derby)データベースの操作 - NetBeans IDEチュートリアル</title>
+
+</head>
+    
+    <body>
+        <h1>Java DB (Derby)データベースの操作</h1>
+
+        <p>このドキュメントでは、NetBeans IDEで<a href="http://www.oracle.com/technetwork/java/javadb/overview/index.html">Java DB</a>データベースへの接続を設定する方法を紹介します。いったん接続が作成されると、IDEでデータベースの操作を開始することができ、表の作成、表へのデータの生成、およびSQL文や問合せの実行が可能になります。</p>
+        
+        <p>Java DBデータベースは、Sunがサポートする<a href="http://db.apache.org/derby/">Apache Derby</a>のディストリビューションです。Java DBは、完全なトランザクション型で、規格に準拠し、保護されたデータベース・サーバーです。すべてJavaで記述されており、SQL、JDBC APIおよびJava EEテクノロジを完全にサポートしています。Java DBデータベースは<a href="http://glassfish.dev.java.net/">GlassFish</a>アプリケーション・サーバーとともにパッケージ化されており、<a href="http://download.oracle.com/javase/6/">JDK&nbsp;6</a>にも含まれています。Java&nbsp;DBデータベースの詳細は、<a href="http://www.oracle.com/technetwork/java/javadb/documentation/index.html">公式ドキュメント</a>をお読みください。</p>
+
+            <p><strong>目次</strong></p>
+
+         <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#configuring">データベースの構成</a></li>
+            <li><a href="#registering">NetBeans IDEへのデータベースの登録</a></li>
+            <li><a href="#starting">サーバーの起動とデータベースの作成</a></li>
+            <li><a href="#connecting">データベースへの接続</a></li>
+            <li><a href="#creating">表の作成</a></li>
+            <li><a href="#adding">表へのデータの追加</a></li>
+            <li><a href="#deleting">表の削除</a></li>
+            <li><a href="#using">外部SQLスクリプトの使用</a></li>
+            <li><a href="#recreating">異なるデータベースの表の再作成</a></li>
+            <li><a href="#seeAlso">関連項目</a></li>
+        </ul>            
+        
+        <p><strong>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Java&nbsp;DB</td>
+                    <td class="tbltd1">バージョン10.4.x、10.5.x</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p><strong class="notes">注意:</strong></p>
+        <ul>
+            <li>JDK 7またはJDK 8をインストールすると、Java DBがインストールされます(Mac OS Xの場合を除く)。Mac OS Xを使用する場合、<a href="http://www.oracle.com/technetwork/java/javadb/downloads/index.html">Java DB</a>を手動でダウンロードしてインストールするか、NetBeans IDEインストーラのJava EEバージョンによってインストールされるJava DBを使用できます。</li>
+        </ul>
+
+        <a name="configuring"></a>
+        <h2>データベースの構成</h2>
+        
+        <p>NetBeans IDEのインストールでGlassFish Serverを登録した場合、Java DBはすでに登録されています。このため、<a href="#starting">サーバーの起動とデータベースの作成</a>に進むことができます。 </p>
+        <p>GlassFishサーバーを別途ダウンロードしていて、NetBeans IDEへの登録方法が不明な場合は、IDEのヘルプ目次(F1)にある<strong>GlassFish Serverインスタンスの登録</strong>を参照してください。 </p>
+        <p>Java DBを単独でダウンロードした場合は、次の手順を実行します。</p>
+        <ol>
+            <li>自己抽出型のファイルを実行します。このファイルと同じ場所に「javadb」というフォルダが作成されます。Java DBをダウンロードし、抽出先とは異なる場所にデータベース・サーバーを置く場合は、ここで場所を変更します。</li>
+            <li>システム上で、データベース・サーバーの個々のインスタンスのホーム・ディレクトリとして使用する新しいディレクトリを作成します。たとえば、このフォルダをJava&nbsp;DBルート・ディレクトリ(javadb)などのその他の場所に作成できます。</li>
+        </ol>
+        
+        <p>次に進む前に、Java DBのルート・ディレクトリにあるコンポーネントについて理解しておく必要があります。</p>
+        
+        <ul>
+            <li><tt>demo</tt>サブディレクトリには、すべてのデモ・プログラムが含まれています。</li>
+            <li><tt>bin</tt>サブディレクトリには、ユーティリティの実行や環境設定用のスクリプトが含まれています。</li>
+            <li><tt>javadoc</tt>サブディレクトリには、ソース・コードのコメントから生成されたAPIのドキュメントが含まれています。</li>
+            <li><tt>docs</tt>サブディレクトリには、Java&nbsp;DBのドキュメントが含まれています。</li>
+            <li><tt>lib</tt>サブディレクトリには、Java&nbsp;DB jarファイルが含まれています。</li>
+        </ul>
+        
+        <a name="registering"></a>
+        <h2>NetBeans IDEへのデータベースの登録</h2>
+        
+        <p>データベースが構成されたので、次の手順を実行して、Java DBをIDEに登録します。</p>
+        
+        <ol>
+            <li>「サービス」ウィンドウで、「Java DBデータベース」ノードを右クリックし、「プロパティ」を選択して、Java DB設定ダイアログ・ボックスを開きます。</li>
+            <li>「Java DBインストール」テキスト・フィールドに、前述の手順で指定したJava DBルート・ディレクトリ(javadb)へのパスを入力します。</li>
+            <li>「データベースの場所」で、場所がすでに指定されている場合、デフォルトの場所を使用します。「OK」をクリックします。
+                <p>たとえば、デフォルトの場所は、Windowsマシンでは<tt>C:\Documents and Settings\username\.netbeans-derby</tt>などになります。</p>
+                
+                <img alt="Java DB設定ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/javadb-props.png" title="Java DBサーバーとデータベースのデフォルトの設定の例">
+                <p class="notes"><strong>注意:</strong>「データベースの場所」フィールドが空の場合は、データベースが格納されているディレクトリのパスを設定する必要があります。データベース用のディレクトリが存在しない場合は、作成する必要があります。</p>
+            </li>
+        </ol>
+
+        <a name="starting"></a>
+        <h2>サーバーの起動とデータベースの作成</h2>
+        
+        <p>「サービス」ウィンドウで「Java DB」ノードを右クリックすると、Java DBデータベースのメニュー・オプションが表示されます。このコンテキスト・メニューの項目を使用して、データベース・サーバーの起動や停止、新規データベース・インスタンスの作成、およびIDEへのデータベース・サーバーの登録(前述の手順で紹介)ができます。データベース・サーバーを起動するには:</p>
+        
+        <ol>
+            <li>「サービス」ウィンドウで「Java DB」ノードを右クリックし、「サーバーを起動」を選択します。「出力」ウィンドウの次の出力は、サーバーが起動したことを示しています。<br> <img alt="データベース・サーバーを起動した後に表示される「出力」ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/output-start-db.png">
+            </li>
+            <li>「Java DB」ノードを右クリックし、「データベースを作成」を選択して、「Java DBデータベースを作成」ダイアログを開きます。</li>
+            <li>「データベース名」に「<tt>contact</tt>」と入力します。</li>
+            <li>「ユーザー名」および「パスワード」に「<tt>nbuser</tt>」と入力します。「OK」をクリックします。<br> <img alt="「Java DBデータベースを作成」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/javadb-createdb.png">
+                <p class="notes"><strong>注意:</strong>「データベースの場所」は、GlassFishからのJava DBのインストール中に設定したデフォルトの場所です。Java DBを別途インストールした場合は、この場所が異なることがあります。</p>
+            </li>
+        </ol>
+        <p>データベースの作成後、「サービス」ウィンドウで「データベース」ノードを展開すると、IDEによってデータベース接続が作成されて、そのデータベースが「Java DB」ノードの下に追加されたことを確認できます。</p>
+         
+        <a name="connecting"></a>
+        <h2>データベースへの接続</h2>
+        
+        <p>ここまでで、データベース・サーバーを起動させ、<tt>contact</tt>というデータベース・インスタンスをIDEに作成することに成功しました。IDEの「サービス」ウィンドウで、データベース構造に対して次の一般的なタスクを実行できます。</p>
+            
+            <ul>
+                <li>表の作成、削除、変更</li>
+                <li>表へのデータの生成</li>
+                <li>表形式のデータの表示</li>                                
+                <li>SQL文と問合せの実行</li>
+            </ul>
+            
+        <p><tt>contact</tt>データベースの操作を始めるには、そのデータベースへの接続を作成する必要があります。<tt>contact</tt>データベースに接続するには:</p>
+
+        <ol>
+            <li>「サービス」ウィンドウで「データベース」ノードを展開し、新しいデータベース・ノードとデータベース接続ノードを検索します。
+                <p>データベース接続ノード(<img alt="接続ノード・アイコン" src="../../../images_www/articles/72/ide/java-db/connection-node-icon.png">)は、「データベース」ノードの下に表示されます。データベースの名前は、「Java DB」ノードの下に表示されます。</p>
+               
+                <img alt="「サービス」ウィンドウの連絡先データベース" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/services-window.png"><br>
+                <p class="notes"><strong>注意:</strong>デフォルトのデータベース・スキーマである<code>sample [app on APP]</code>データベース接続を表示することもできます。</p>
+          
+            <li><p> <strong>contact</strong>データベース接続ノード(<tt>jdbc:derby://localhost:1527/contact [nbuser on NBUSER]</tt>)を右クリックし、「接続」を選択します。</p>
+            接続ノード・アイコン全体(<img alt="接続ノード・アイコン" src="../../../images_www/articles/72/ide/java-db/connection-node-icon.png">)が表示され、これは接続が成功したことを示します。                </li>
+            
+          <li>データベース接続ノード(<tt>jdbc:derby://localhost:1527/contact [nbuser on NBUSER]</tt>)を右クリックし、「名前変更」を選択して、データベースのわかりやすい表示名を作成します。テキスト・フィールドに「<tt>Contact DB</tt>」と入力し、「OK」をクリックします。</li>
+        </ol>		
+
+        <a name="creating"></a>
+        <h2>表の作成</h2>        
+        
+        <p>作成した<tt>contact</tt>データベースは現在空です。まだ表やデータは含まれていません。NetBeans IDEでは、「表を作成」ダイアログを使用するか、SQL文を入力してSQLエディタから直接実行することで、データベースに表を追加できます。次の両方の方法について学習できます。</p>
+        
+        <ul>
+            <li><a href="#createTable">「表を作成」ダイアログの使用</a></li>
+            <li><a href="#sqlEditor">SQLエディタの使用</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="createTable"></a>
+            <h3>「表を作成」ダイアログの使用</h3>    
+
+            <ol>
+                <li>
+              <p><tt>Contact DB</tt>接続ノードを展開すると、複数のスキーマ・サブノードがあることがわかります。appスキーマは、このチュートリアルに適用する唯一のスキーマです。「APP」ノードを右クリックし、「デフォルトのスキーマとして設定」を選択します。</li>
+                <li>「APP」ノードを展開します。「表」、「ビュー」、「プロシージャ」の3つのサブフォルダがあります。「表」ノードを右クリックして「表を作成」を選択し、「表を作成」ダイアログ・ボックスを開きます。</li>
+                <li>「表名」テキスト・フィールドに「<tt>FRIENDS</tt>」と入力します。</li>
+                <li>「列を追加」をクリックします。「列を追加」ダイアログ・ボックスが表示されます。 </li>
+                <li>「列名」に「<tt>id</tt>」と入力します。「データ型」のドロップダウン・リストから「<tt>INTEGER</tt>」を選択します。 </li>
+                <li>「制約」で「主キー」チェックボックスを選択して、この列が表の主キーであることを指定します。リレーショナル・データベースにあるすべての表に、主キーを含める必要があります。「主キー」チェックボックスを選択すると、「索引」および「一意」チェックボックスが自動的に選択され、「Null」チェックボックスが選択解除されます。これは、主キーを使用してデータベース内の行を一意に識別するためです。デフォルトでは、主キーは表の索引として使用されます。すべての行が識別される必要があるため、主キーに<tt>Null</tt>値を含むことはできません。<br> <img alt="表への列の追加" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/add-column.png"></li>
+                <li>この手順を繰り返し、次の表に示すようにフィールドを指定します。</li>
+                <li>
+                  <table class="margin-around">
+                    <tr>
+                      <th class="tblheader" scope="col">キー</th>
+                      <th class="tblheader" scope="col">索引</th>
+                      <th class="tblheader" scope="col">Null</th>
+                      <th class="tblheader" scope="col">一意</th>
+                      <th class="tblheader" scope="col">列名</th>
+                      <th class="tblheader" scope="col">データ型</th>
+                      <th class="tblheader" scope="col">サイズ</th>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1">[選択]</td>
+                      <td class="tbltd1">[選択]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[選択]</td>
+                      <td class="tbltd1">id</td>
+                      <td class="tbltd1">INTEGER</td>
+                      <td class="tbltd1">0</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[選択]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">firstName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">20</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[選択]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">lastName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">20</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[選択]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">nickName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">30</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[選択]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">friendSince</td>
+                      <td class="tbltd1">DATE</td>
+                      <td class="tbltd1">0</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[選択]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">email</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">60</td>
+                    </tr>
+                  </table>
+                  <p>作成中の<tt>FRIENDS</tt>という表は、連絡先レコードごとに次のデータを保持します。</p>
+                  <ul>
+                    <li><strong>名</strong></li>
+                    <li><strong>姓</strong></li>
+                    <li><strong>ニックネーム</strong></li>
+                    <li><strong>知り合った日付</strong></li>
+                    <li><strong>電子メール・アドレス</strong></li>
+                  </ul>
+                  <img alt="連絡先表の各フィールドが選択された「表を作成」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/create-table-friends.png"></li>
+                    
+                <li><p>「表を作成」ダイアログが上に示す指定と同じになっていることを確認したら、「OK」をクリックします。IDEによって、データベースに<tt>FRIENDS</tt>表が生成されて、「表」ノードの下に新しい<tt>FRIENDS</tt>表ノード(<img alt="表ノード・アイコン" src="../../../images_www/articles/72/ide/java-db/table-node.png">)の表示を確認できます。表ノードの下に、主キー(<img alt="主キー・ノード・アイコン" src="../../../images_www/articles/72/ide/java-db/primary-key-icon.png">)で開始する各列(各フィールド)が一覧表示されます。</p>
+
+                    
+                    <img alt="「サービス」ウィンドウに表示されたFRIENDS表" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/friends-table.png"></li>
+            </ol>
+
+        <a name="sqlEditor"></a>
+            <h3>SQLエディタの使用</h3>                   
+
+            <ol>
+                <li>「サービス」ウィンドウで「<tt>Contact DB</tt>」接続ノードまたはその下にある「表」ノードを右クリックし、「コマンドの実行」を選択します。メイン・ウィンドウ内にSQLエディタが開き、空白のキャンバスが表示されます。</li>
+                <li>SQLエディタに次の問合せを入力します。これは、作成するCOLLEAGUES表の表定義です。
+
+                <pre class="examplecode">CREATE TABLE &quot;COLLEAGUES&quot; (
+    &quot;ID&quot; INTEGER not null primary key,
+    &quot;FIRSTNAME&quot; VARCHAR(30),
+    &quot;LASTNAME&quot; VARCHAR(30),
+    &quot;TITLE&quot; VARCHAR(10),
+    &quot;DEPARTMENT&quot; VARCHAR(20),
+    &quot;EMAIL&quot; VARCHAR(60)
+);</pre>
+
+                    <p class="notes"><strong>注意: </strong>SQLエディタで作成した文および問合せは、SQL (Structured Query Language)で構文解析されます。SQLは厳密な構文ルールに準拠しています。IDEのエディタで作業をするときは、これらのルールを理解しておいてください。SQL構文はまた、データベース管理システムによって異なることがあります。具体的なガイドラインについては、<a href="http://www.oracle.com/technetwork/java/javadb/documentation/index.html">Java DB Reference Manual</a>を参照してください。
+                    </p></li>
+
+                <li>エディタ([Ctrl]-[Shift]-[E])の上部にあるタスク・バーの「SQLの実行」(<img alt="「SQLの実行」ボタン" src="../../../images_www/articles/72/ide/java-db/run-sql-button.png">)ボタンをクリックし、問合せを実行します。「出力」ウィンドウ([Ctrl]-[4])に、文の実行に成功したことを示すメッセージが表示されます。<br> <img alt="実行の成功を示した「出力」ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/run-query.png"></li>
+
+                <li>変更内容を確認するには、「サービス」ウィンドウで「<tt>Contact DB</tt>」接続ノードを右クリックし、「リフレッシュ」を選択します。これで、指定したデータベースの現在のステータスにあわせて実行時UIコンポーネントが更新されます。NetBeans IDEでSQLエディタから問合せを実行するときは、このステップが必要です。「サービス」ウィンドウの「表」の下に、新しいCOLLEAGUES表ノード(<img alt="表ノード・アイコン" src="../../../images_www/articles/72/ide/java-db/table-node.png">)が表示されていることに注意してください。</li>
+            </ol>
+        </div>
+
+        <a name="adding"></a>
+        <h2>表へのデータの追加</h2>     
+
+        <p><tt>contact</tt>データベースに1つ以上の表を作成したので、表へのデータの生成を開始できます。表にレコードを追加するには、いくつかの方法があります。</p>
+        <ul>
+          <li>SQLエディタに<a href="#sqlstatement">SQL文を書き</a>、表スキーマに存在するすべてのフィールドに値を提供します。 </li>
+          <li><a href="#usesqleditor">SQLエディタを使用して</a>、表にレコードを追加します。</li>
+          <li><a href="#using">外部のSQLスクリプトを使用して</a>、表にレコードをインポートします。 </li>
+        </ul>
+        <p>これらのすべての使用方法を学習し、<tt>FRIENDS</tt>表にデータを生成するには、次の各項を参照してください。  </p>
+        <h3><a name="sqlstatement"></a>SQL文の実行 </h3>
+        <ol>
+            <li>「サービス」ウィンドウの<tt>Contact DB</tt>ノードの下にある「表」を展開し、<tt>FRIENDS</tt>表を右クリックして「コマンドの実行」を選択し、「SQLエディタ」ウィンドウを開きます。</li>
+            <li>SQLエディタに次の文を入力します。
+              <pre class="examplecode">INSERT INTO APP.FRIENDS VALUES (1,'Theodore','Bagwell','T-Bag','2004-12-25','tbag@foxriver.com')</pre>
+              <p class="tips">入力中はSQLエディタのコード補完を使用できます。</p>
+            </li>
+
+            <li>SQLエディタ内を右クリックし、「文を実行」を選択します。「出力」ウィンドウに、文の実行に成功したことを示すメッセージが表示されます。</li>
+
+            <li><tt>FRIENDS</tt>表に新しいレコードが追加されたことを確認するには、「サービス」ウィンドウで「<tt>FRIENDS</tt>」表ノードを右クリックし、「データを表示」を選択します。
+                <p>「データを表示」を選択すると、表からすべてのデータを選択する問合せがSQLエディタの上部ペインに自動的に生成されます。文の結果は、SQLエディタの下部ペインに表示されます。この場合、<tt>FRIENDS</tt>表は下部ペインに表示されます。SQL文から供給されたデータを使用して、新しい行が追加されています。</p>
+
+              
+          <img alt="FRIENDS表に追加された新しいレコード" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/new-record.png"></li>
+        </ol>
+
+        <h3><a name="usesqleditor"></a>SQLエディタの使用 </h3>
+        <ol>
+          <li>「<tt>FRIENDS</tt>」表ノードを右クリックして、「データを表示」を選択します(前の項の最後のステップで実行しなかった場合)。 </li>
+          <li>「レコードを挿入(<tt>Alt+I</tt>)」ボタンをクリックして、行を追加します。<br>「レコードを挿入」ダイアログ・ボックスが表示されます。</li>
+          <li>各セルでクリックして、レコードを入力します。Dateデータ型のセルでは、カレンダから日付を選択できます。完了したら、「OK」をクリックします。<br><img alt="FRIENDS表に追加された新しいレコード" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/insert-records.png"><br> SQLエディタでは、行のヘッダーをクリックして結果をソートしたり、既存のレコードを変更および削除したり、(ポップアップ・メニューの「SQLスクリプトを表示」コマンドで)エディタで実行しているアクションのSQLスクリプトを表示したりできます。 </li>
+        </ol>
+        <h2><a name="deleting"></a>表の削除
+        </h2>
+        <p>次の手順では、外部SQLスクリプトを使用して、新しい<tt>COLLEAGUES</tt>表を作成します。しかし、<tt>COLLEAGUES</tt>表は前述の<a href="#sqlEditor">SQLエディタの使用</a>の項で作成したばかりです。SQLスクリプトによって本当に新しい表が作成されることが明確にわかるように、ここでは、すでに作成した<tt>COLLEAGUES</tt>表を削除します。データベース表を削除するには:</p>
+            
+        <ol>
+            <li>「サービス」ウィンドウのデータベース接続ノードの下にある「表」ノードを展開します。</li>
+            <li>削除する表を右クリックして「削除」を選択します。</li>
+        </ol>
+ 
+        <h2><a name="using"></a>外部SQLスクリプトの使用</h2>
+        <p>外部SQLスクリプトからコマンドを発行するのは、データベースを管理するのに一般的な方法です。他の場所でSQLスクリプトをすでに作成している場合、そのスクリプトをNetBeans IDEにインポートし、指定したデータベースに対して実行します。</p>
+        
+        <p>この課題では、スクリプトで<tt>COLLEAGUES</tt>という名前の新しい表を作成してその表にデータを移入します。<tt>contact</tt>データベースに対してこのスクリプトを実行するには、次の手順を実行します。</p>
+        
+        <ol>
+            <li>ローカル・システムに<a href="https://netbeans.org/project_downloads/usersguide/colleagues.sql" target="_blank">colleagues.sql</a>をダウンロードします。</li>
+            <li>IDEのメイン・メニューから「ファイル」>「ファイルを開く」を選択します。ファイル・ブラウザで<tt>colleagues.sql</tt>ファイルを保存した場所に移動し、「開く」をクリックします。SQLエディタで自動的にスクリプトが開きます。
+                <p class="tips">または、<a href="https://netbeans.org/project_downloads/usersguide/colleagues.sql" target="_blank">colleagues.sql</a>の内容をコピーし、SQLエディタを開いてその中にファイルの内容を貼り付けます。</p>
+            </li>
+            <li>エディタの最上部のツールバーにある「接続」ドロップダウン・ボックスで<tt>Contact DB</tt>への接続が選択されていることを確認します。<br> <img alt="SQLエディタのツールバーの「接続」ドロップダウン・ボックス" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/conn-drop-down.png"></li> 
+            
+            <li>SQLエディタのタスク・バーにある「SQLの実行」(<img alt="「SQLの実行」ボタン" src="../../../images_www/articles/72/ide/java-db/run-sql-button.png">)ボタンをクリックします。選択したデータベースに対してスクリプトが実行され、「出力」ウィンドウにフィード・バックが生成されます。</li>
+            
+            <li>変更内容を確認するには、「サービス」ウィンドウで「<tt>Contact DB</tt>」接続ノードを右クリックし、「リフレッシュ」を選択します。SQLスクリプトからの新しい<tt>COLLEAGUES</tt>表が、「サービス」ウィンドウの「<tt>contact</tt>」の下に表ノードとして表示されます。</li>
+            
+            <li>新しい表に含まれているデータを表示するには、<tt>COLLEAGUES</tt>表を右クリックして「データを表示」を選択します。このように、表形式のデータとSQLスクリプトに含まれるデータとを比較して、一致しているかどうかを確認することもできます。</li>
+        </ol>
+        
+        <h2><a name="recreating"></a>異なるデータベースの表の再作成
+        </h2>
+        <p>異なるデータベースにある表を、NetBeans IDEから操作中のデータベースで再作成したい場合、IDEには便利なツールが用意されています。まず、このチュートリアルの最初に説明したものに似た2つ目のデータベースがIDEに登録されている必要があります。このチュートリアルの目的で、Java DBにパッケージされている<tt>sample</tt>データベースを使用します。このプロセスは基本的に2つの段階に分けて実行されます。まず、選択した表の表定義を「保存」し、その後選択したデータベースに表を再作成できます。</p>
+            
+        <ol>
+            <li>「サービス」ウィンドウの「データベース」ノードの下にある接続ノードを右クリックして、「接続」を選択し(ユーザー名とパスワードは<tt>app</tt>)、<tt>sample</tt>データベースに接続します。</li>           
+            <li>
+                <p><tt>sample</tt>データベース接続の下にある「表」ノードを展開し、<tt>CUSTOMER</tt>表ノードを右クリックして「構造を保存」を選択します。</p>
+            
+                
+                <img alt="「サービス」ウィンドウに表示された「構造を保存」メニュー項目" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/grab-structure.png"></li> 
+ 
+            <li>開いた「表を保存」ダイアログで、作成される保存(grab)ファイルを保存するコンピュータの場所を指定します。「保存」をクリックします。 
+                <p>保存ファイルには、選択した表の表定義が記録されます。</p></li>
+            <li><tt>Contact DB</tt>データベース接続の下にある「APP」スキーマ・ノードを展開し、「表」ノードを右クリックして「表を再作成」を選択し、「表を再作成」ダイアログ・ボックスを開きます。</li>
+            <li><p>「表を再作成」ダイアログ・ボックスで、<tt>CUSTOMER</tt>保存ファイルを保存した場所に移動して「開く」をクリックし、「表に名前を付ける」ダイアログ・ボックスを開きます。</p>
+               
+                    <img alt="CUSTOMERの表定義を含む「表に名前を付ける」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/recreate-table.png"></li> 
+            <li>
+              <p>ここで表の名前を変更したり、表定義を編集したりできます。そうしない場合、「OK」をクリックすると、<tt>contact</tt>データベースにすぐに表が作成されます。「<tt>Contact DB</tt>」接続ノードの下に「<tt>CUSTOMER</tt>」表ノードが新しく表示されます。</p>           
+                
+              
+                <img alt="「サービス」ウィンドウに表示された新規のCUSTOMER表" class="margin-around b-all" src="../../../images_www/articles/72/ide/java-db/new-customer-node.png"></li>
+        </ol>
+        
+        <p>新しい<tt>CUSTOMER</tt>表にデータを表示するとデータベースにレコードが表示されませんが、表の構造は保存した表と同一です。</p>
+          
+    <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20With%20Java%20DB">ご意見をお寄せください</a></div>
+        
+        <br style="clear:both;">
+            
+        <a name="seeAlso"></a>
+        <h2>関連項目</h2>
+        
+        <p>これで、Java&nbsp;DB (Derby)データベースの操作のチュートリアルは終わりです。このチュートリアルでは、NetBeans IDEでJava DBデータベースへの接続を設定する方法を紹介しました。次に、IDEの「サービス」ウィンドウの表を作成、表示、変更および削除する方法を紹介しました。SQLエディタを操作して表にデータを追加する方法や、他のデータベースの定義を使用して表を再作成するIDEの機能の使用方法も示しました。</p>
+            
+        <p>関連するチュートリアルおよびさらに高度なチュートリアルについては、次のリソースを参照してください。</p>
+        
+        <ul>
+            <li><a href="mysql.html">MySQLデータベースへの接続</a>。NetBeans IDEでMySQLデータベースを構成し、接続する方法を示します。</li>
+            <li><a href="../web/mysql-webapp.html">MySQLデータベースを使用した単純なWebアプリケーションの作成</a>。MySQLデータベース・サーバーに接続する単純なWebアプリケーションを作成する方法を示します。</li>
+            <li><a href="http://platform.netbeans.org/tutorials/nbm-crud.html">NetBeansプラットフォームCRUDアプリケーションのチュートリアル</a> Java DBデータベースをNetBeansプラットフォーム・アプリケーションに統合する方法を示します。</li>
+        </ul>
+        
+    </body>
+</html>

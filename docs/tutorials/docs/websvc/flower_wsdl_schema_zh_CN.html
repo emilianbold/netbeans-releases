@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>修改方案文件和 WSDL 文件，通过 Web 服务传递二进制数据，第 5 部分 - NetBeans IDE 教程</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial shows how to replace the default generated Schema and WSDL files
+              with custom files that interpret arrays of bytes as images.">
+    <link rel="stylesheet" href="../../../netbeans.css"></head>
+
+    <body>
+        <h1>通过 Web 服务传递二进制数据，第 4 部分：修改方案文件和 WSDL 文件</h1>
+        <p>在本课中，将向 Web 应用程序中添加 WSDL 文件和方案文件。然后修改方案文件，以将字节数组转换为图像。还将编辑 Web 服务源代码以正确地找到方案和 WSDL 文件。在此过程中，将向您介绍 IDE 中的各种工具，帮助您处理 WSDL 和方案文件。        </p>
+        
+    <p>您可以将此部分介绍的过程应用于任何 JAX-WS Web 服务，以便将任何 MIME 类型作为二进制数据进行传递。您将从传递二进制数据的 Web 服务（已在第 2 和第 3 课中创建）着手，定制该服务的 WSDL 和 XML 方案。在定制的 XML 方案文件中，您将在二进制数据的返回元素中添加 <tt>expectedContentTypes="<em>mime_type</em>"</tt> 属性。此属性通知客户端，它应将二进制数据映射到 Java 类型（按照从 MIME 到 Java 类型的映射），而不是字节数组。在本教程中，您将二进制数据映射到 <tt>java.awt.Image</tt>；不过，您也可以将二进制数据映射到 JAXB 2.0 规范中给定的任何 Java 类型，如 <a href="http://jax-ws.dev.java.net/nonav/2.1.4/docs/mtom-swaref.html">JAX-WS Users Guide</a>（JAX-WS 用户指南）中所述。
+        <p>可以从 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerAlbumService.zip" target="_blank">NetBeans 样例目录</a>中下载 Web 服务的完整样例。
+        
+<p><b>本教程中的课程</b></p>
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+        <ol>
+            <li><a href="./flower_overview.html">概述</a></li>
+            <li><a href="./flower_ws.html">创建 Web 服务</a></li>
+            <li><a href="./flower-code-ws.html">对 Web 服务进行编码和测试</a></li>
+          <li> => 修改方案文件和 WSDL 文件以传递二进制数据</li>
+            <li><a href="./flower_swing.html">创建 Swing 客户端</a></li>
+            <!--         <li><a href="./flower_wsit.html">
+            Logging and Optimizing the Web Service</a></li> -->
+        </ol>
+    <h2 class="tutorial">修改方案文件和 WSDL 文件以传递二进制数据</h2>
+        <p class="tutorial">在以下步骤中，将为您在以前的教程中创建的 Web 服务创建修改过的 WSDL 和 XML 方案文件。修改的 WSDL 和方案文件使 Web 服务以及使用它的客户端能够解析以二进制数据传递的 JPEG 图像数据。 </p>
+        <p><b>修改 WSDL 文件和方案文件：</b></p>
+
+        <ol>
+            <li>在 "Projects"（项目）窗口中，展开 "FlowerService" Web 应用程序节点，直至到达 <tt>WEB-INF</tt> 节点。右键单击 <tt>WEB-INF</tt> 文件夹，然后选择 "New"（新建）> "Folder"（文件夹）。（可能需要选择 "New"（新建）> "Other"（其他），然后选择 "Other"（其他）类别）。 <br> <img alt="带有 WEB-INF 目录的鲜花服务项目节点" class="margin-around" height="452" src="../../../images_www/articles/73/websvc/flower/new-file-wiz-folder.png" width="600"></li>
+
+            <li>单击 "Next"（下一步）。"Name and Location"（名称和位置）页打开。将该文件夹命名为 <tt>wsdl</tt>。<br> <img alt="用于新文件夹的新建文件向导的 &quot;Name and Location&quot;（名称和位置）页，其中显示 web/WEB-INF 中的名称 wsdl 和位置" class="margin-around" height="347" src="../../../images_www/articles/73/websvc/flower/wsdl-folder-name-location.png" width="534"></li>
+            <li>单击 "Finish"（完成）。"Projects"（项目）窗口中将显示文件夹 <tt>wsdl</tt>。<br> <img alt="&quot;Projects&quot;（项目）窗口中的 wsdl 文件夹" class="margin-around" height="353" src="../../../images_www/articles/73/websvc/flower/wsdl-folder.png" width="289"></li>
+          <li>展开 "Web Services"（Web 服务）节点，然后右键单击 "FlowerService" 节点。选择 "Generate and Copy WSDL..."（生成和复制 WSDL...）。 <br>
+          </li>
+          <li>"Generate and Copy WSDL"（生成和复制 WSDL）对话框打开，其中包含一个导航树。导航至您创建的 <tt>wsdl</tt> 文件夹 ("FlowerAlbumService" > "web" > "WEB-INF" > "wsdl")，然后单击 "OK"（确定）。<br>
+                <p>现在，您将在 <tt>wsdl</tt> 节点中看到 <tt>FlowerService.wsdl</tt> 和 <tt>FlowerService_schema1.xsd</tt>。还将看到 "Generated Sources"（生成的源文件）(jax-ws) 的新节点。</p>
+
+            <img alt="显示复制的 wsdl 和方案文件的 &quot;Projects&quot;（项目）窗口" class="margin-around" height="420" src="../../../images_www/articles/73/websvc/flower/generated-wsdl-and-schema.png" width="294"> </li>
+
+
+            <li>明确指定应用服务器使用您自己的 WSDL 文件版本。否则，应用服务器将生成其自身的 WSDL 文件。打开 <tt>FlowerService.java</tt> 并找到 <tt>@WebService</tt> 标注。在此标注中添加参数 <tt>wsdlLocation="WEB-INF/wsdl/FlowerService.wsdl"</tt>，如下所示：
+                <pre class="examplecode">@WebService(serviceName = "FlowerService"<b>, wsdlLocation = "WEB-INF/wsdl/FlowerService.wsdl")</b></pre>
+            </li>
+            <li>修改方案文件 <tt>FlowerService_schema1.xsd</tt>，使其指定返回元素的所需内容类型。要在方案文件中标识返回元素，请打开该方案文件，然后找到复杂类型 <tt>getThumbnailResponse</tt> 和 <tt>getFlowerResponse</tt>：
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getThumbnailsResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;/&gt;<br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre>
+            <pre class="examplecode">&lt;xs:complexType name=&quot;getFlowerResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot;/&gt; <br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre></li>
+            <li>在两个返回元素 (<tt>&lt;xs:element name="return".../&gt;</tt>) 中添加<i></i>以下属性。
+                <pre>xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"</pre>
+                <p>现在，您应该在相同的行中看到以下内容。</p>
+
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getThumbnailsResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;
+                xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"/&gt;<br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre>
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getFlowerResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot;
+            xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"/&gt; <br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre></li>
+
+            <li>现在，向测试器应用程序重新部署 Web 服务并调用其中的一项操作时，您会看到正确返回图像： <br><img alt="使用 ws 的 Java 应用程序" border="1" class="margin-around" height="390" src="../../../images_www/articles/73/websvc/flower/ws-tester-goodschema.png" width="500"> </li>
+        </ol>
+
+    <p>由于 Tester 应用程序已经确保正确返回图像，所以可以创建一个 Swing 客户端来检索和显示图像。
+    <h2>后续步骤：</h2>
+        <p><a href="./flower_swing.html">创建 Swing 客户端</a></p>
+
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20WSDL%20EE6">发送有关此教程的反馈意见</a></div>
+
+
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee@netbeans.org 邮件列表</a>。</p>
+    </body>
+</html>

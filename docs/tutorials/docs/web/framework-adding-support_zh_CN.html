@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">        
+        <meta name="description"  content="A short guide to adding web framework support
+            to NetBeans IDE using the Plugin Manager">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            web applications, open source, frameworks, Spring, Struts, JSF, JavaServer Faces,
+            Wicket, Facelets, RichFaces, ICEfaces, PrimeFaces, components"> 
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+           
+        <title>添加对 Web 框架的支持</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>添加对 Web 框架的支持</h1>
+        
+        <p>本文档提供了有关如何在 NetBeans IDE 中添加 Web 框架支持的一般描述。提供的步骤显示如何使用插件管理器在 IDE 中安装 Web 框架插件，从而添加支持。安装该插件后，创建 Web 项目时将能够在新建项目向导中选择相应的框架。您创建的新 Web 项目将包含特定于所选框架的必需基础结构。</p>
+
+        <p>添加特定 Web 框架支持的最简便方法是使用 IDE 的插件管理器来安装 NetBeans 插件（如果插件可用）。如果您在使用 IDE 时能够访问 Internet，这就非常方便。<a href="http://plugins.netbeans.org/PluginPortal/">NetBeans 插件门户</a>中也提供了多个 Web 框架的插件。如果您不能对 Internet 进行常规访问，则可以在适当时下载插件模块（例如，通过插件门户），然后再将其安装到 IDE 中。</p>
+        
+        <p>在本教程中，您将通过从 NetBeans 插件门户中下载插件并使用插件管理器安装该插件来添加对 Apache Struts 2 框架的支持。</p>
+            
+        <p class="notes"><strong>注：</strong>IDE 包支持 <a href="../../docs/web/jsf20-support.html">JavaServer Faces 2.x</a> 以及 <a href="../../docs/web/quickstart-webapps-struts.html">Struts 1.3.10</a> 和 <a href="../../docs/web/quickstart-webapps-spring.html">Spring 3.x 和 4.x</a> 框架。捆绑框架的具体版本取决于 IDE 的版本。</p>      
+        <a name="table"></a>
+       
+        
+        <p><strong>目录</strong></p>
+
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+   
+        <ul class="toc">
+            <li><a href="#installing">安装框架支持插件</a>
+            
+            <ul>
+                <li><a href="#manually">手动下载和安装</a></li>
+                <li><a href="#updateCenter">通过更新中心安装</a></li>
+                <li><a href="#ppupdateCenter">注册 NetBeans 插件门户更新中心</a></li>
+            </ul></li>
+                
+            <li><a href="#working">在 IDE 中使用框架支持</a>
+            
+                <ul>
+                    <li><a href="#newProject">创建具有框架支持的新项目</a></li>
+                    <li><a href="#existingProject">将框架支持添加到现有项目中</a></li>
+                </ul></li>
+        </ul>
+        
+        <p><strong>要学完本教程，您需要具备以下软件和资源。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE，Java EE 包</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 7 或 8</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注：</strong></p>
+        
+        <ul>                       
+            <li>Web 和 Java EE 安装使您能够有选择地安装 Apache Tomcat 7.x servlet 容器和 GlassFish Server 3.1。您必须安装其中之一才能学完本教程，具体取决于您打算使用的框架。</li>
+            <li>您还必须连接到 Internet，以便下载所需的插件和/或通过 IDE 的插件管理器对其进行访问。</li>
+        </ul>
+        
+        <a name="installing"></a>
+        <h2>安装框架支持插件</h2>
+
+        <p>您可以添加对特定框架的支持，方法是将相应的框架支持插件安装到 IDE 中。为此，您可以从外部站点（如 <a href="http://plugins.netbeans.org/PluginPortal/">NetBeans 插件门户</a>）下载插件模块，然后通过插件管理器安装插件；或者，如果插件是由更新中心维护的，则可以在 IDE 的插件管理器中注册该更新中心，然后直接通过插件管理器下载和安装插件。</p>
+
+        <ul>
+            <li><a href="#manually">手动下载</a></li>
+            <li><a href="#updateCenter">通过更新中心安装</a></li>
+        </ul>
+        
+        
+        <p>有些插件可从 <a href="http://plugins.netbeans.org/PluginPortal/">NetBeans 插件门户</a>之类的站点中下载，或直接从插件开发者的站点中下载。下表提供了位置链接，在这些位置可为框架下载某些插件。</p>
+        
+
+        <table>
+            <tr>
+                <td class="tblheader">框架</td>
+                <td class="tblheader">插件位置</td>
+                <td class="tblheader">下载位置</td>                
+            </tr>
+<!--            <tr>
+                <td class="tbltd1"><a href="http://code.google.com/webtoolkit/">Google Web Toolkit</a></td>
+                <td class="tbltd1"><a href="http://gwt4nb.dev.java.net/">https://gwt4nb.dev.java.net</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=716">
+                    http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=716</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/">jMaki</a></td>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/jmaki-plugin.html">http://ajax.dev.java.net/jmaki-plugin.html</a></td>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/servlets/ProjectDocumentList?folderID=0">
+                    http://ajax.dev.java.net/servlets/ProjectDocumentList?folderID=7943&expandFolder=7943&folderID=0</a>
+                    <br>(Currently not listed on Plugin Portal)</td>
+            </tr>    -->
+            <tr>
+                <td class="tbltd1"><a href="http://struts.apache.org/">Apache Struts 2</a></td>
+                <td class="tbltd1"><a href="http://java.net/projects/nbstruts2support/">http://java.net/projects/nbstruts2support/</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0">http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://wicket.apache.org/">Wicket</a></td>
+                <td class="tbltd1"><a href="http://nbwicketsupport.dev.java.net/">https://nbwicketsupport.dev.java.net</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=3586"> http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=3586</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/home/">ICEfaces 2.0</a></td>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/home/">http://www.icefaces.org/main/home/</a></td>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/downloads/">http://www.icefaces.org/main/downloads/</a></td>
+            </tr>
+                      
+        </table>
+         
+        
+        <div class="indent">
+            <a name="manually"></a>
+            <h3>下载和安装 Apache Struts2 支持插件</h3>
+            
+            <p>为了便于说明，本部分将介绍如何从 NetBeans 插件门户下载和安装<a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0">用于 NB 7.0 的 Apache Struts2 Support Repack</a> 插件。此插件将安装用于 Apache Struts 2 的库和 UI 支持。</p>
+            
+            <p class="notes"><strong>注：</strong>此插件将重新打包 <a href="http://java.net/projects/nbstruts2support/">NetBeans Struts2 支持插件</a>，因为尚未针对 NetBeans IDE 7.0 更新 NetBeans Struts2 支持插件。有关每个插件的其他信息，请参见各自的插件详细信息页。</p>
+            
+            <ol>
+                <li>从 <a href="http://plugins.netbeans.org/PluginPortal/">NetBeans 插件门户</a>上的<a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0">用于 NB 7.0 的 Struts2 Support Repack 页</a>中下载包含所需 Apache Struts 2 插件的 zip 档案文件并将内容解压缩到计算机中。
+                    <p>在解压缩内容时，您将看到该档案文件包含三个文件。</p>
+                    <ul>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2.nbm</tt></li>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2lib218.nbm</tt> </li>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2lib20011.nbm</tt> </li>
+                    </ul>
+                    
+                
+                    <p class="tips">NetBeans 插件可由 <tt>.nbm</tt> 扩展名来标识。</p>
+                </li>
+                <li>从 IDE 的主菜单中，选择 "Tools"（工具）> "Plugins"（插件）以打开插件管理器。</li>
+                <li>选择 "Downloaded"（已下载）标签，然后单击 "Add Plugins"（添加插件）按钮。</li>
+                <li>在 "Add Plugins"（添加插件）对话框中，导航至包含插件的目录并选择 NetBeans 插件。单击 "Open"（打开）。<br> <img alt="&quot;add plugins&quot;（添加插件）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/plugin-archive-contents.png" title="zip 档案文件包含 NetBeans 插件">
+                
+                    <p class="tips">按住 Ctrl 键可选择多个项目。</p>
+                </li>
+                <li>在插件管理器中，选择每个 Struts2 插件。
+                    <p>插件管理器的右窗格中将显示选定插件的描述。</p>
+                    
+                    <a href="../../../images_www/articles/72/web/add-framework/add-plugins.png" rel="lytebox" title="安装前在插件管理器中选择的手动下载的插件"> <img alt="插件管理器中已下载的插件的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/add-plugins-sm.png" title="单击查看大图"></a></li>
+                        
+                <li>单击 "Install"（安装）以打开 "NetBeans IDE Installer"（NetBeans IDE 安装程序），然后单击 "Next"（下一步）并接受许可证协议。
+                    
+                    <p class="notes"><strong>注：</strong>如果您接收到验证警告，请单击“继续”以安装该插件。在尝试安装未签名的插件时，将会出现验证警告。通常情况下，您可以信任所有插件，但是如果安装未签名的插件，则会带来一定的风险。</p>
+                </li>
+                <li>重新启动 IDE 使更改生效。</li>
+            </ol>
+        
+            <p>在安装插件并重新启动 IDE 之后，可以通过打开插件管理器、单击 "Installed"（已安装）标签并在已安装插件的列表中查找插件来确认插件已安装。</p>
+        
+            <a name="updateCenter"></a>
+            <h3>通过更新中心安装</h3>
+            
+            <p>如果框架支持插件是由更新中心维护的，您应该考虑将该更新中心安装到 IDE 中。这样，随后便可以直接通过插件管理器安装该框架支持插件。另外，插件管理器还会记录对更新中心维护的插件进行的所有更新，从而提供简单且有效的方法来使已安装的插件保持最新。</p> 
+                
+            <p>默认情况下，IDE 中已注册了各种更新中心。要查看当前注册的更新中心的列表，请打开插件管理器（"Tools"（工具）> "Plugins"（插件）），然后选择 "Settings"（设置）标签。</p>
+                
+                <a href="../../../images_www/articles/72/web/add-framework/pluginsmanager-settings.png" rel="lytebox" title="注册到插件管理器的 &quot;Settings&quot;（设置）标签和 &quot;Update Centers&quot;（更新中心）列表"> <img alt="注册到插件管理器的 &quot;Settings&quot;（设置）标签和 &quot;Update Centers&quot;（更新中心）列表的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/pluginsmanager-settings-sm.png" title="单击查看大图"></a>
+
+            <p>如果要注册新的更新中心，可单击 "Settings"（设置）标签中的 "Add"（添加）按钮，然后在 "Update Center Customizer"（更新中心定制器）中提供详细信息。</p>
+                <img alt="&quot;Update Center Customizer&quot;（更新中心定制器）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/uc-customizer.png" title="&quot;Update Center Customizer&quot;（更新中心定制器）对话框"> <a name="ppupdateCenter"></a>
+                <h3>注册 NetBeans 插件门户更新中心</h3>
+                <p>向 IDE 注册的插件门户更新中心默认情况下包含由社区贡献并已知与所安装的 IDE 版本兼容的插件的子集。如果要使用插件管理器浏览 <a href="http://plugins.netbeans.org/">NetBeans 插件门户</a>提供的所有插件，可执行以下步骤来安装插件，以便将 NetBeans 插件门户更新中心添加到已注册更新中心的列表中。
+                </p>
+                
+                <ol>
+                    <li>下载 <a href="http://plugins.netbeans.org/plugin/1616/plugin-portal-update-center">NetBeans 插件门户更新中心插件</a>。 </li>
+                    <li>在插件管理器中打开 "Downloaded"（已下载）标签。</li>
+                    <li>单击 "Add Plugins"（添加插件）并查找已下载的 <tt>1252666924798_org-netbeans-pluginportaluc.nbm</tt> 文件。单击 "Install"（安装）。</li>
+                </ol>
+
+                <p>安装插件后，NetBeans 插件门户更新中心将添加到插件管理器 "Settings"（设置）标签的已注册更新中心列表中</p>
+                
+                <p class="notes"><strong>注：</strong>您可以通过在 "Settings"（设置）标签的 "Active"（活动）列中取消选中更新中心对应的复选框，来停用更新中心。</p>
+                <a href="../../../images_www/articles/72/web/add-framework/portal-uc-plugin.png" rel="lytebox" title="插件门户更新中心现已包括在 &quot;Settings&quot;（设置）标签的已注册更新中心列表中"> <img alt="列表中添加了新更新中心的 &quot;Settings&quot;（设置）标签的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/portal-uc-plugin-sm.png" title="单击查看大图"></a>
+                
+                
+                <p>如果单击 "Available Plugins"（可用插件）标签，则可看到，社区向 NetBeans 插件门户贡献的所有插件均已添加到可用插件的列表中。</p>
+                
+                <p class="tips">单击 "Reload Catalog"（重新加载目录）以更新插件列表。</p>
+                
+                <a href="../../../images_www/articles/72/web/add-framework/portal-uc-list.png" rel="lytebox" title="&quot;Available Plugins&quot;（可用插件）标签显示所有已注册更新中心中的所有插件列表"> <img alt="插件管理器中的 &quot;Available Plugins&quot;（可用插件）标签的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/portal-uc-list-sm.png" title="&quot;Available Plugins&quot;（可用插件）标签显示所有已注册更新中心中的所有插件列表"></a>
+                
+                <p>通过单击列标题可对列表进行排序，通过在 "Search"（搜索）字段中输入搜索词可以过滤列表。</p>
+                
+                <p class="alert"><strong>插件门户更新中心列出了 <a href="http://plugins.netbeans.org/">NetBeans 插件门户</a>提供的所有插件。许多插件都将用于 IDE 的早期版本，将与您正在使用的 IDE 版本不兼容。为其他版本的 IDE 安装插件可能会导致 IDE 安装的行为不可靠。</strong>在许多情况下（但并非所有情况下），将会显示一条消息，通知您是否无法安装插件。与所有软件的安装相同，在尝试安装插件之前，应格外谨慎并仔细阅读文档。</p>
+
+        </div>    
+       
+        <a name="working"></a>
+        <h2>在 IDE 中使用框架支持</h2>
+
+        <p>IDE 中的框架支持通常特定于您所使用的框架。例如，Struts2 支持提供的向导使您可在 Struts 配置文件中轻松创建常用的 Struts 类和代码完成。 </p>
+            
+        <p>您可以在创建应用程序时通过新建项目向导将框架支持添加到 Web 应用程序中，也可以将支持集成到现有应用程序中。 </p>
+
+        <ul>
+            <li><a href="#newProject">创建具有框架支持的新项目</a></li>
+            <li><a href="#existingProject">将框架支持添加到现有项目中</a></li>
+        </ul>
+        
+        <div class="indent">
+            <a name="newProject"></a>
+            <h3>创建具有框架支持的新项目</h3>
+    
+            <ol>
+                <li>从主菜单中，选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键）。此时将打开新建项目向导。在 "Categories"（类别）下选择 "Web"，然后在 "Projects"（项目）下选择 "Web Application"（Web 应用程序）。单击 "Next"（下一步）。</li>
+                <li>在 "Project Name"（项目名称）中键入名称，然后指定该项目在计算机上的位置。</li>
+                <li>逐步执行向导，并接受任何默认设置。通过选择已在 IDE 中注册的服务器（即 GlassFish Server 或 Tomcat），指定用于部署应用程序的服务器。</li>
+                <li>在新建项目向导的 "Frameworks"（框架）面板中，选择要添加的框架。单击 "Finish"（完成）。 <br> <img alt="新建项目向导的 &quot;Frameworks&quot;（框架）面板（选中 &quot;Struts 2 Support&quot;（Struts 2 支持））的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/newproject-wizard-frameworks-sm.png" title="新建项目向导的 &quot;Frameworks&quot;（框架）面板中列出的 Struts 2 支持">
+                 
+                    <p>在此示例中，在 "Frameworks"（框架）面板中选择了对 Struts2 框架的支持。您会看到，现在 "Frameworks"（框架）面板提供了选择 Struts 1.3.8（与 IDE 捆绑在一起）或 Struts2（通过安装插件来添加）的选项。Struts 2 支持插件将 "Struts2" 选项添加到新建项目向导中，并显示具有 "Configuration"（配置）和 "Libraries"（库）选项的标签。"Configuration"（配置）标签提供用于在项目中创建示例页的选项。通过 "Libraries"（库）标签可以选择要添加到类路径的 Struts2 库的版本。</p>
+                </li>
+                        
+            </ol>
+
+            <p>单击 "Finish"（完成），此时 IDE 将创建 Web 应用程序。该向导创建的其他文件将因框架而异。在此示例中，向导在 "Source Packages"（源包）文件夹中创建 <tt>struts.xml</tt> XML 配置文件并将所需的 Struts2 库添加到类路径中。向导还自动向该 <tt>web.xml</tt> 中添加一个 Servlet 过滤器类和过滤器映射。</p>
+
+                <img alt="显示 Struts 2 Web 应用程序逻辑结构的 &quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/project-structure-frameworks.png" title="&quot;Projects&quot;（项目）窗口中显示的 Struts Web 应用程序的逻辑结构">
+<!--            
+            <p><strong class="notes">Note: </strong>For more information on the jMaki application structure, 
+                see <a href="http://ajax.dev.java.net/jmaki-app.html">Basic jMaki Application Structure</a>.</p>-->
+
+           <a name="existingProject"></a>
+            <h3>将框架支持添加到现有项目中</h3>
+       
+            <p>如果已有 Web 项目并且要向该项目中添加对框架的支持，则可使用 "Project Properties"（项目属性）对话框添加 IDE 中提供的框架。</p>
+            <ol>
+                <li>在 "Projects"（项目）窗口中，右键单击 Web 应用程序项目的节点，然后选择 "Properties"（属性）打开 "Project Properties"（项目属性）窗口。</li>
+                <li>在类别列表中选择 "Frameworks"（框架）。 
+                    <p>选择 "Frameworks"（框架）时，右面板将显示 "Used Frameworks"（使用的框架）文本区域，如果应用程序未使用框架，则该文本区域为空。</p></li>
+                <li>单击 "Add"（添加）按钮，然后选择要使用的框架并单击 "OK"（确定）。<br> <img alt="&quot;Project Properties&quot;（项目属性）窗口中的 &quot;Add Framework&quot;（添加框架）对话框的屏幕快照" class="b-all margin-around" src="../../../images_www/articles/72/web/add-framework/properties-add-framework.png" title="从 &amp;quot;Project Properties&amp;quot;（项目属性）窗口打开的 &amp;quot;Add Framework&amp;quot;（添加框架）对话框中选择的 JavaServer Faces 框架"></li>
+                        
+                <li>根据所选框架，可以在 "Project Properties"（项目属性）窗口中进一步指定特定于框架的配置设置或组件。<br> <img alt="用于添加组件库的对话框的屏幕快照" class="b-all margin-around" src="../../../images_www/articles/72/web/add-framework/add-icefaces.png" title="将 ICEfaces 组件套件的库添加到项目中">
+                        <p>例如，如果要指定 ICEfaces 组件套件，则可以在 "Project Properties"（项目属性）窗口的 "Components"（组件）标签中选择 "ICEfaces"，然后指定 ICEfaces 库。
+                        </p>
+                        <p class="notes"><strong>注：</strong>IDE 中不包含 JSF 组件的库。要使用组件套件，您需要下载所需的库，然后创建一个 NetBeans 库，您随后可以在 "Project Properties"（项目属性）窗口中将该库添加到项目类路径中。</p>
+                </li>
+                <li>单击 "OK"（确定）以确认您的选择，然后关闭 "Project Properties"（项目属性）窗口。项目中将添加特定于框架的工件和库，您可以在 "Projects"（项目）窗口中对其进行检查。</li>
+            </ol>
+        </div>
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Adding%20Web%20Framework%20Support"> 发送有关此教程的反馈意见</a></div>
+            
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>另请参见</h2>
+
+        <p>本文档描述了如何在 NetBeans IDE 中添加对 Web 框架的支持。它介绍了如何通过手动下载以及通过 IDE 插件管理器中的更新中心来安装框架支持插件。此外，还说明如何将 IDE 支持的框架添加到新的 Web 应用程序项目和现有项目中。</p>
+        
+        <p>本教程重点介绍如何添加 Struts2 框架。如果要了解此框架提供的其他功能，请参见 <a href="../../docs/web/quickstart-webapps-struts.html">Struts Web 框架简介</a>。 
+            <p>
+
+        <p>有关在 NetBeans IDE 中使用其他 Web 框架的更多信息，请参见以下资源：</p>
+
+        <ul>
+            <li><a href="../../docs/web/quickstart-webapps-spring.html">Spring Web 框架简介</a></li>
+            <li><a href="../../docs/web/quickstart-webapps-struts.html">Struts Web 框架简介</a></li>
+            <li><a href="../../docs/web/quickstart-webapps-wicket.html">Wicket Web 框架简介</a></li>
+        </ul>
+
+    </body>
+</html>

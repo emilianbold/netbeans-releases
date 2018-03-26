@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+  <head>
+    <title>Поддержка платформы Zend в IDE NetBeans для PHP</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+    <meta name="description" content="This screencast demonstrates Zend Framework support in NetBeans IDE, starting with version 6.9.">
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css"> 
+  </head>
+  <body>
+
+
+    <h1>Поддержка платформы Zend в IDE NetBeans для PHP</h1>
+
+    <table>
+      <tr>
+        <td class="valign-top">
+          <p>
+            В этой экранной демонстрации описывается разработка приложений PHP с помощью платформы Zend в IDE NetBeans. Поддержка платформы Zend реализована в IDE NetBeans версии 6.9
+          </p>
+          <p>
+            Автор: Джеф Рубинов (Jeff Rubinoff)<br> Продолжительность: 11:52 <br /> <a href="http://bits.netbeans.org/media/zf.flv" target="_blank">Загрузить</a> [30,2 МБ]
+          </p>
+
+          <div class="feedback-box" style="float:left">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: Zend Framework Support Screencast">Отправить отзыв по этому учебному курсу</a>
+          </div>
+          <br style="clear:both;">
+        </td>
+        <td width="640" class="align-center">
+          <div id="player" style="margin-bottom:30px;">
+            <center>
+              <div id="flashContent"></div>
+            </center>
+          </div>
+        </td>
+      </tr>
+    </table>
+    <script src="/images_www/js/mediaplayer-5.2/swfobject.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        showMedia('zf.flv');
+      } );
+
+      function showMedia(file) {
+        var targetFile='http://bits.netbeans.org/media/'+file;
+        var s1 = new SWFObject('/images_www/js/mediaplayer-5.2/player.swf','player','480','376','9');
+        s1.addParam('allowfullscreen','true');
+        s1.addParam('allowscriptaccess','always');
+        s1.addParam('flashvars','file='+targetFile+'&autostart=true');
+        s1.write('flashContent');
+      }
+    </script>
+  </body>
+</html>

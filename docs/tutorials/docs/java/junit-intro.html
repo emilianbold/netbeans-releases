@@ -1,0 +1,1179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Writing JUnit Tests in NetBeans IDE</title>
+        <meta name="description"
+        content="A tutorial on writing JUnit 3 and JUnit 4 tests in NetBeans IDE.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <!-- Begin Content Area -->
+        <h1>Writing JUnit Tests in NetBeans IDE</h1>
+        
+        <p>This tutorial introduces the basics of writing and running JUnit unit tests in NetBeans IDE.
+        Testing an application is an integral part of the development cycle, and writing and maintaining
+        unit tests can help ensure that the individual methods in your source code work correctly.
+        The IDE's integrated support for the JUnit unit testing framework
+        enables you to quickly and easily create JUnit tests and test suites.</p>
+
+        <p>In this tutorial you create simple JUnit 3 and JUnit 4 unit tests and test suites for a Java class library project.
+        The first part of the tutorial shows how to create tests in JUnit 3.
+        The second part shows how to create the same tests in JUnit 4 using JUnit annotations.
+        It is not necessary to complete both parts of the tutorial because the tests are the same, 
+        but seeing how the tests are written in both versions enables you to see 
+        some of the changes introduced in JUnit 4.</p>
+        <p class="tips">For more on using JUnit, see <a href="http://www.junit.org">www.junit.org</a>.</p>
+        
+        
+        <p><b>Contents</b></p>
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+        <ul class="toc">
+            <li><a href="#Exercise_10">Creating the Project</a>
+            <ul class="toc">
+                <li><a href="#Exercise_11">Creating the Java Class Library Project</a>
+                <li><a href="#Exercise_12">Downloading the Solution Project</a>
+                <li><a href="#Exercise_13">Creating the Java Classes</a>
+            </ul>
+            </li>
+            <li><a href="#Exercise_20">Writing JUnit 3 Tests</a>
+                <ul class="toc">
+                    <li><a href="#Exercise_21">Creating a Test Class for <tt>Vectors.java</tt></a></li>
+                    <li><a href="#Exercise_22">Writing Test Methods for <tt>Vectors.java</tt></a></li>
+                    <li><a href="#Exercise_23">Creating a Test Class for <tt>Utils.java</tt></a></li>
+                    <li><a href="#Exercise_24">Writing Test Methods for <tt>Utils.java</tt></a></li>
+                    <li><a href="#Exercise_25">Running the Tests</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_30">Writing JUnit 4 Tests</a>
+                <ul class="toc">
+                    <li><a href="#Exercise_31">Creating a Test Class for <tt>Vectors.java</tt></a></li>
+                    <li><a href="#Exercise_32">Writing Test Methods for <tt>Vectors.java</tt></a></li>
+                    <li><a href="#Exercise_33">Creating a Test Class for <tt>Utils.java</tt></a></li>
+                    <li><a href="#Exercise_34">Writing Test Methods for <tt>Utils.java</tt></a></li>
+                    <li><a href="#Exercise_35">Running the Tests</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_40">Creating JUnit Test Suites</a>
+            <ul class="toc">
+                <li><a href="#Exercise_41">Creating JUnit 3 Test Suites</a></li>
+                <li><a href="#Exercise_42">Creating JUnit 4 Test Suites</a></li>
+                <li><a href="#Exercise_43">Running Test Suites</a></li>
+            </ul>
+            </li>
+            <li><a href="#Exercise_50">Summary</a></li>
+        </ul>
+        
+        <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+        <table>
+        <tr>
+            <th class="tblheader" scope="col">Software or Resource</th>
+            <th class="tblheader" scope="col">Version Required</th>
+        </tr> 
+        <tr>
+            <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+            <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+            <td class="tbltd1">version 7 or 8</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">JUnitSampleSol Project</td>
+            <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/JUnitSampleSol.zip">download</a></td>
+        </tr>
+        </table>
+        <p class="alert">To perform the steps in this tutorial you need to install the JUnit plugin 
+        from the Update Center. 
+        You can install the JUnit plugin in the Plugins manager if you did not install the plugin when you installed the IDE.</p>
+
+
+    <!-- ===================================================================================== -->
+    <a name="Exercise_10"></a>
+    <h2>Creating the Project</h2>
+    <p>To complete this tutorial you first create a Java class library project called JUnit-Sample.
+    After you create the project, you copy two classes from the sample project JUnitSampleSol to your project JUnit-Sample.</p>
+
+    <div class="indent">
+        <a name="Exercise_11"></a>
+        <h3>Creating the Java Class Library Project</h3>
+            <ol>
+                <li>Choose File &gt; New Project from the main menu.</li>
+                <li>Select Java Class Library from the Java category and click Next. </li>
+                <li>Type <b>JUnit-Sample</b> for the project and set the project location.</li>
+                <li>Deselect the Use Dedicated Folder option, if selected.
+                <p>For this tutorial there is little reason to copy project libraries to a dedicated folder because
+                you will not need to share libraries with other users or projects.</p>
+                Click Finish.</li>
+            </ol>
+            <p>
+            The first time that you create a JUnit test the IDE prompts you to select a version and then
+            adds a Test Libraries node and the JUnit library.</p>
+
+        <a name="Exercise_12"></a>
+        <h3>Downloading the Solution Project</h3>
+        <p>You can download the sample project JUnitSampleSol used in this tutorial in the following ways.</p>
+        <ul>
+            <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/JUnitSampleSol.zip">a zip archive of the finished project</a>.</li>
+            <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+                <ol>
+                    <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                    <li>In the Checkout dialog box, enter the following Repository URL:<br/>
+                        <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br/>
+                        Click Next.</li>
+                    <li>In the Folders to Checkout panel, click Browse to open the Browse Repository Folders dialog box.</li>
+                    <li>Expand the root node and select <strong>samples/java/JUnitSampleSol</strong>. Click OK.</li>
+                    <li>Specify the Local Folder for the sources. Click Finish.
+                        <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                        and checks out the project sources.</p>
+                    </li>
+                    <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+                </ol>
+                <p class="tips">For more about installing Subversion,
+                    see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</p>
+            </li>
+        </ul>
+
+        <p class="notes"><strong>Note.</strong> If you did not install the JUnit plugin when you installed the IDE,
+        when you open the NetBeans project you will be prompted to install the JUnit plugin to resolve the reference to the JUnit libraries.</p>
+
+
+        <a name="Exercise_13"></a>
+        <h3>Creating the Java Classes</h3>
+            
+            <p>In this exercise you copy the files <tt>Utils.java</tt> and <tt>Vectors.java</tt> from the sample project
+            JUnitSampleSol into the class library project that you created.</p>
+            <ol>
+                <li>In the Projects window, right-click the Source Packages node of the <strong>JUnit-Sample</strong> project and
+                choose New &gt; Java Package from the popup menu.</li>
+                <li>Type <b>sample</b> as the package name. Click Finish.</li>
+                <li>Open the <strong>JUnitSampleSol</strong> project (if not already open) and expand the Source Packages node in the Projects window.<br>
+                <img src="../../../images_www/articles/72/java/junit/projects-window.png" class="margin-around box" alt="screenshot of Projects window" title="JUnit-Sample and JUnitSampleSol projects in Projects window">
+                </li>
+                <li>Copy the classes <tt>Utils.java</tt> and <tt>Vectors.java</tt> in the JUnitSampleSol project
+                and paste them into the <tt>sample</tt> source package in JUnit-Sample.
+                </li>
+            </ol>
+            <p>If you look at the source code for the classes, you can see that <tt>Utils.java</tt> has three methods
+            (<tt>computeFactorial</tt>, <tt>concatWords</tt>, and <tt>normalizeWord</tt>) and that <tt>Vectors.java</tt>
+            has two methods (<tt>equal</tt> and <tt>scalarMultiplication</tt>).
+            The next step is to create test classes for each class and write some test cases for the methods.</p>
+            <p class="notes"><strong>Note.</strong> You can close the JUnitSampleSol project because you will not need it again.
+            The JUnitSampleSol project contains all the tests described in this document.
+            </p>
+
+    </div>
+
+<!-- ===================================================================================== -->
+<!-- JUnit 3 Tests -->
+    <a name="Exercise_20"></a>
+    <h2>Writing JUnit 3 Unit Tests</h2>
+    <p>In this part of the tutorial you create basic JUnit 3 unit tests for the classes <tt>Vectors.java</tt> and <tt>Utils.java</tt>.
+    You will use the IDE to create skeleton test classes that are based on the classes in your project.
+    You will then modify the generated test methods and add new test methods.</p>
+    <p>The IDE prompts you to choose a JUnit version the first time that you use the IDE to create tests for you in the project.
+    The version that you select becomes the default JUnit version and the IDE will generate all subsequent tests and test suites for that version. </p>
+    
+    <div class="indent">
+<!-- ===================================================================================== -->        
+        <a name="Exercise_21"></a>
+        <h3>Creating a Test Class for <tt>Vectors.java</tt></h3>
+        <p>In this exercise you create a JUnit test skeleton for <tt>Vectors.java</tt>.
+        You will also select JUnit as the test framework and JUnit 3 as the version.
+        </p>
+        <p class="notes"><b>Note.</b> If you are using NetBeans IDE 7.1 or earlier you do
+        not need to specify the test framework because JUnit is specified by default.
+        In NetBeans IDE 7.2 you have the option of specifying JUnit or TestNG as the test framework.</p>
+        <ol>
+            <li>Right-click <tt>Vectors.java</tt> and choose Tools &gt; Create Tests.</li>
+            <li>Modify the name of the test class to <b>VectorsJUnit3Test</b> in the Create Tests dialog.
+            <p>When you change the name of the test class, you will see a warning about changing the name.
+            The default name is based on the name of the class you are testing, with the word Test appended to the name.
+            For example, for the class <tt>MyClass.java</tt>, the default name of the test class is <tt>MyClassTest.java</tt>.
+            Usually it is best to keep the default name, but for this tutorial you will change the name
+            because you will also create JUnit 4 tests in the same package and the names of the test classes must be unique.</p></li>
+            <li>Select JUnit in the Framework dropdown list.</li>
+            <li>Deselect Test Initializer and Test Finalizer. Click OK.<br/>
+            <img src="../../../images_www/articles/72/java/junit/junit3-vectors-createtests.png" class="margin-around box" alt="Select JUnit version dialog" title="Select JUnit version dialog box">
+            </li>
+            <li>Select JUnit 3.x in the Select JUnit Version dialog box.<br/>
+            <img src="../../../images_www/articles/72/java/junit/junit3-select-version.png" class="margin-around box" alt="Select JUnit version dialog" title="Select JUnit version dialog box">
+
+            <p>When you select JUnit 3.x the IDE adds the JUnit 3 library to the project.</p>
+            
+            <p>When you click Select, the IDE creates the <tt>VectorsJUnit3Test.java</tt> test class
+                in the <tt>sample</tt> package under the Test Packages node in the Projects window.</p>
+            <img src="../../../images_www/articles/72/java/junit/projects-window2.png" class="margin-around box" alt="screenshot of Projects window" title="structure of JUnit-Sample project in Projects window">
+            <p>A project requires a directory for test packages to create tests. 
+            The default location for the test packages directory is at the root level of the project, 
+            but depending on the type of project you can specify a different location for the directory in the project's Properties dialog.</p>
+
+            <p>If you look at the generated test class <tt>VectorsJUnit3Test.java</tt> in the editor, 
+            you can see that the IDE generated the following test class with test methods
+            for the methods <tt>equal</tt> and <tt>scalarMultiplication</tt>.</p>
+            <pre class="examplecode">public class VectorsJUnit3Test extends TestCase {
+    /**
+     * Test of equal method, of class Vectors.
+     */
+    public void testEqual() {
+        System.out.println("equal");
+        int[] a = null;
+        int[] b = null;
+        boolean expResult = false;
+        boolean result = Vectors.equal(a, b);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of scalarMultiplication method, of class Vectors.
+     */
+    public void testScalarMultiplication() {
+        System.out.println("scalarMultiplication");
+        int[] a = null;
+        int[] b = null;
+        int expResult = 0;
+        int result = Vectors.scalarMultiplication(a, b);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+}</pre>
+            </li>
+        </ol>
+        <p>The method body of each generated test is provided solely as a guide and 
+        needs to be modified to be an actual test case. 
+        You can deselect Default Method Bodies in the Create Tests dialog if you do not want the code generated for you.</p>
+        
+        <p>When the IDE generates the names for the test methods, each method name is prepended with <tt>test</tt>
+        because JUnit 3 uses naming conventions and reflection to identify tests. 
+        To identify test methods, each test method is required to follow the syntax <tt>test<i>&lt;NAME&gt;</i></tt>.</p>
+        <p class="notes"><b>Note.</b> In JUnit 4 it is no longer necessary to use this test method naming syntax because you can use 
+        annotations to identify test methods and the test class is no longer required to extend <tt>TestCase</tt>.</p>
+
+
+<!-- ===================================================================================== -->            
+        <a name="Exercise_22"></a>
+        <h3>Writing Test Methods for <tt>Vectors.java</tt></h3>
+        <p>In this exercise you modify the generated test methods to make them functioning tests
+        and modify the default output messages.
+        You do not need to modify the output messages to run the tests, 
+        but you may want to modify the output to help identify the results displayed in the 
+        JUnit Test Results output window.</p>
+        <ol>
+            <li>Open <tt>VectorsJUnit3Test.java</tt> in the editor.</li>
+            <li>Modify the test skeleton for <tt>testScalarMultiplication</tt> by changing the value of the 
+                <tt>println</tt> and removing the generated variables. 
+                The test method should now look like the following (changes displayed in bold):
+                <pre class="examplecode">public void testScalarMultiplication() {
+    System.out.println("<b>* VectorsJUnit3Test: testScalarMultiplication()</b>");
+    assertEquals(expResult, result);
+}</pre>
+            </li>
+            <li>Now add some assertions to test the method.
+                <pre class="examplecode">public void testScalarMultiplication() {
+    System.out.println("* VectorsJUnit3Test: testScalarMultiplication()");
+    <b>assertEquals(  0, Vectors.scalarMultiplication(new int[] { 0, 0}, new int[] { 0, 0}));
+    assertEquals( 39, Vectors.scalarMultiplication(new int[] { 3, 4}, new int[] { 5, 6}));
+    assertEquals(-39, Vectors.scalarMultiplication(new int[] {-3, 4}, new int[] { 5,-6}));
+    assertEquals(  0, Vectors.scalarMultiplication(new int[] { 5, 9}, new int[] {-9, 5}));
+    assertEquals(100, Vectors.scalarMultiplication(new int[] { 6, 8}, new int[] { 6, 8}));</b>
+}</pre>
+                <p>This test method uses the JUnit <tt>assertEquals</tt> method.
+                To use the assertion, you supply the input variables and the expected result.
+                To pass the test, the test method must successfully return all the expected results based on the supplied variables when running the tested method. 
+                You should add a sufficient number of assertions to cover the various possible permutations.</p>
+            </li>
+
+            <li>Modify the test skeleton for <tt>testEqual</tt> by deleting the generated method bodies
+            and adding the following <tt>println</tt>.
+                <pre class="examplecode">
+    <b>System.out.println("* VectorsJUnit3Test: testEqual()");</b></pre>
+                <p>The test method should now look like the following:</p>
+                <pre class="examplecode">public void testEqual() {
+    System.out.println("* VectorsJUnit3Test: testEqual()");
+}</pre>
+                
+            <li>Modify the <tt>testEqual</tt> method by adding the following assertions (displayed in bold).
+                <pre class="examplecode">public void testEqual() {
+    System.out.println("* VectorsJUnit3Test: testEqual()");
+    <b>assertTrue(Vectors.equal(new int[] {}, new int[] {}));
+    assertTrue(Vectors.equal(new int[] {0}, new int[] {0}));
+    assertTrue(Vectors.equal(new int[] {0, 0}, new int[] {0, 0}));
+    assertTrue(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 0}));
+    assertTrue(Vectors.equal(new int[] {5, 6, 7}, new int[] {5, 6, 7}));
+
+    assertFalse(Vectors.equal(new int[] {}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {}));
+
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 1}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 1, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {1, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 1}, new int[] {0, 0, 3}));</b>
+}</pre>
+                <p>This test uses the JUnit <tt>assertTrue</tt> and <tt>assertFalse</tt> methods to test a variety of possible results.
+                For the test of this method to pass, the <tt>assertTrue</tt> must all be true and <tt>assertFalse</tt> must all be false.</p>
+                    
+            </li>
+            <li>Save your changes.</li>
+        </ol>
+        
+        <p class="tips">Compare: <a href="#Exercise_32">Writing Test Methods for <tt>Vectors.java</tt> (JUnit 4)</a></p>
+        
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_23"></a>
+    <h3>Creating a Test Class for <tt>Utils.java</tt></h3>
+    <p>You now create the test skeletons for <tt>Utils.java</tt>.
+    When you created the test in the previous exercise, the IDE prompted you for the version of JUnit.
+    You are not prompted to select a version this time.</p>
+    <ol>
+        <li>Right-click <tt>Utils.java</tt> and choose Tools &gt; Create Tests.</li>
+        <li>Select JUnit in the Framework dropdown list if not selected.</li>
+        <li>Select Test Initializer and Test Finalizer in the dialog box, if not selected.</li>
+        <li>Modify the name of the test class to <b>UtilsJUnit3Test</b> in the Create Tests dialog box.
+        Click OK.</li>
+    </ol>
+
+    <p>When you click OK, the IDE creates the test file <tt>UtilsJUnit3Test.java</tt> in the Test Packages &gt; samples directory.
+    You can see that in addition to creating the test skeletons <tt>testComputeFactorial</tt>, <tt>testConcatWords</tt>, and <tt>testNormalizeWord</tt>
+    for the methods in <tt>Utils.java</tt>, the IDE also creates the test initializer method <tt>setUp</tt> and 
+    the test finalizer method <tt>tearDown</tt>.</p>
+               
+<!-- ===================================================================================== -->                
+    <a name="Exercise_24"></a>
+    <h3>Writing Test Methods for <tt>Utils.java</tt></h3>
+    <p>In this exercise you add some test cases that illustrate some common JUnit test elements.
+    You also add a <tt>println</tt> to the methods because some methods do not print any output by default. 
+    By adding a <tt>println</tt> to the methods you can later look in the JUnit test result window to see if the methods were run and the order in which 
+    they were run.</p>
+        
+    <div class="indent">
+        <a name="Exercise_241"></a>
+        <h4>Test Initializers and Finalizers</h4>
+        <p>The <tt>setUp</tt> and <tt>tearDown</tt> methods are used to initialize and finalize test conditions.
+        You do not need the <tt>setUp</tt> and <tt>tearDown</tt> methods to test <tt>Utils.java</tt>, 
+        but they are included here to demonstrate how they work.</p>
+        <p>The <tt>setUp</tt> method is a test initialization method and is run before each test case in the test class.
+        A test initialization method is not required for running tests, but if you need to initialize some variables before you
+        run a test, you use the test initializer method.</p>
+
+        <p>The <tt>tearDown</tt> method is a test finalizer method and is run after each test case in the test class.
+        A test finalizer method is not required for running tests, but you may need a finalizer to clean up any data
+        that was required when running the test cases.</p>
+        <ol>
+            <li>Make the following changes (displayed in bold) to add a <tt>println</tt> to each method.
+            <pre class="examplecode">@Override
+protected void setUp() throws Exception {
+    super.setUp();
+    <b>System.out.println("* UtilsJUnit3Test: setUp() method");</b>
+}
+
+@Override
+protected void tearDown() throws Exception {
+    super.tearDown();
+    <b>System.out.println("* UtilsJUnit3Test: tearDown() method");</b>
+}</pre>
+            <p>When you run the test the <tt>println</tt> text for each methods will appear in the JUnit Test Results output window.
+            If you do not add the <tt>println</tt>, there is no output to show that the methods were run.</p>
+            </li>
+        </ol>
+
+        <a name="Exercise_242"></a>
+        <h4>Testing Using a Simple Assertion</h4>
+        <p>This simple test case tests the <tt>concatWords</tt> method.
+        Instead of using the generated test method <tt>testConcatWords</tt>, you will add a new test method called <tt>testHelloWorld</tt>
+        that uses a single simple assertion to test if the method concatenates the strings correctly.
+        The <tt>assertEquals</tt> in the test case uses the syntax <tt>assertEquals(<i>EXPECTED_RESULT, ACTUAL_RESULT</i>)</tt>
+        to test if the expected result is equal to the actual result.
+        In this case, if the input to the method <tt>concatWords</tt> is "<tt>Hello</tt>", "<tt>, </tt>", "<tt>world</tt>" and "<tt>!</tt>",
+        the expected result should equal <tt>"Hello, world!"</tt>.</p>
+        
+        <ol>
+            <li>Delete the generated test method <tt>testConcatWords</tt> in <tt>UtilsJUnit3Test.java</tt>.</li>
+            <li>Add the following method to test the <tt>concatWords</tt> method.
+
+            <pre class="examplecode"><b>public void testHelloWorld() {
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));
+}</b></pre> 
+            </li>
+            <li>Add a <tt>println</tt> statement to display text about the test in the JUnit Test Results window.
+                <pre class="examplecode">public void testHelloWorld() {
+    <b>System.out.println("* UtilsJUnit3Test: test method 1 - testHelloWorld()");</b>
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));</pre>
+            </li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_342">Testing Using a Simple Assertion (JUnit 4)</a></p>
+
+        <a name="Exercise_243"></a>
+        <h4>Testing Using a Timeout</h4>
+        <p>This test demonstrates how to check if a method is taking too long to complete.
+        If the method is taking too long, the test thread is interrupted and the test fails.
+        You can specify the time limit in the test.</p>
+        
+        <p>The test method invokes the <tt>computeFactorial</tt> method in <tt>Utils.java</tt>. 
+        You can assume that the <tt>computeFactorial</tt> method is correct, 
+        but in this case you want to test if the computation is completed within 1000 milliseconds.
+        The <tt>computeFactorial</tt> thread and a test thread are started at the same time.
+        The test thread will stop after 1000 milliseconds and throw a <tt>TimeoutException</tt>
+        unless the <tt>computeFactorial</tt> thread completes first.
+        You will add a message so that a message is displayed if a <tt>TimeoutException</tt> is thrown.</p>
+
+        <ol>
+            <li>Delete the generated test method <tt>testComputeFactorial</tt>.</li>
+            <li>Add the <tt>testWithTimeout</tt> method that calculates the factorial of a randomly generated number.
+            <pre class="examplecode"><b>public void testWithTimeout() throws InterruptedException, TimeoutException {
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+
+    Thread testThread = new Thread() {
+        public void run() {
+            System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        }
+    };
+}</b></pre>
+            </li>
+            <li>Fix your imports to import <tt>java.util.concurrent.TimeoutException</tt>.</li>
+            <li>Add the following code (displayed in bold) to the method to interrupt the thread and display a message if the test takes too long to execute.
+            <pre class="examplecode">
+    Thread testThread = new Thread() {
+        public void run() {
+            System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        }
+    };
+
+    <b>testThread.start();
+    Thread.sleep(1000);
+    testThread.interrupt();
+
+    if (testThread.isInterrupted()) {
+        throw new TimeoutException("the test took too long to complete");
+    }</b>
+}</pre>
+            <p>You can modify the <tt>Thread.sleep</tt> line to change the number of milliseconds before the timeout is thrown.</p>
+            </li>
+            <li>Add the following <tt>println</tt> (displayed in bold) to print the text about the test in the JUnit Test Results window.
+            <pre class="examplecode">public void testWithTimeout() throws InterruptedException, TimeoutException {
+    <b>System.out.println("* UtilsJUnit3Test: test method 2 - testWithTimeout()");</b>
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+            </pre>
+            </li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_343">Testing Using a Timeout (JUnit 4)</a></p>
+ 
+ 
+        <a name="Exercise_244"></a>
+        <h4>Testing for an Expected Exception</h4>
+        <p>This test demonstrates how to test for an expected exception.
+        The method fails if it does not throw the specified expected exception. 
+        In this case you are testing that the <tt>computeFactorial</tt> method throws an <tt>IllegalArgumentException</tt>
+        if the input variable is a negative number (-5).</p>
+        <ol>
+            <li>Add the following <tt>testExpectedException</tt> method that invokes the <tt>computeFactorial</tt> method
+            with an input of -5.
+            <pre class="examplecode"><b>public void testExpectedException() {
+    try {
+        final int factorialOf = -5;
+        System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+        fail("IllegalArgumentException was expected");
+    } catch (IllegalArgumentException ex) {
+    }
+}</b></pre>
+            </li>
+            <li>Add the following <tt>println</tt> (displayed in bold) to print the text about the test in the JUnit Test Results window.
+            <pre class="examplecode">public void testExpectedException() {
+    <b>System.out.println("* UtilsJUnit3Test: test method 3 - testExpectedException()");</b>
+    try {</pre>
+            </li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_344">Testing for an Expected Exception (JUnit 4)</a></p>
+        
+        
+        <a name="Exercise_245"></a>
+        <h4>Disabling a Test</h4>
+        <p>This test demonstrates how to temporarily disable a test method.
+        In JUnit 3, if a method name does not start with <tt>test</tt> it is not recognized as a test method.
+        In this case you prepend <tt>DISABLED_</tt> to the name of the test method to disable it.</p>
+
+        <ol>
+            <li>Delete the generated test method <tt>testNormalizeWord</tt>.</li>
+            <li>Add the following test method to the test class.
+            <pre class="examplecode"><b>public void testTemporarilyDisabled() throws Exception {
+    System.out.println("* UtilsJUnit3Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</b></pre>
+            <p>The test method <tt>testTemporarilyDisabled</tt> will run if you run the test class.</p>
+            </li>
+            <li>Prepend <tt>DISABLED_</tt> (displayed in bold) to the name of the test method.
+            <pre class="examplecode">public void <b>DISABLED_</b>testTemporarilyDisabled() throws Exception {
+    System.out.println("* UtilsJUnit3Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</pre>
+            </li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_345">Disabling a Test (JUnit 4)</a></p>
+    </div>
+   
+   <p>Now that you have written the tests, you can run the test and see the test output in the JUnit Test Results window.</p>
+    
+<!-- ===================================================================================== -->
+    <a name="Exercise_25"></a>
+    <h3>Running the Tests</h3>
+    <p>When you run a JUnit test the results are displayed in the Test Results window of the IDE.
+    You can run individual JUnit test classes or you can choose Run &gt; Test <i>PROJECT_NAME</i> from the main menu
+    to run all the tests for the project.
+    If you choose Run &gt; Test, the IDE runs all the test classes in the Test Packages folder.
+    To run an individual test class, right-click the test class under the Test Packages node and choose Run File.</p>
+    
+    <ol>
+        <li>Choose Run &gt; Set Main Project in the main menu and select the JUnit-Sample project.</li>
+        <li>Choose Run &gt; Test Project (JUnit-Sample) from the main menu.</li>
+        <li>Choose Window &gt; IDE Tools &gt; Test Results to open the Test Results window.</li>
+    </ol>
+    
+    <p>When you run the test you will see one of the following results in the JUnit Test Results window.</p>
+    
+    <a href="../../../images_www/articles/72/java/junit/junit3-test-pass.png"><img src="../../../images_www/articles/72/java/junit/junit3-test-pass-sm.png" class="box" alt="Screenshot of JUnit Test Results window" title="JUnit Test Results window showing passed test. Click for larger image."></a>
+    <p>In this image (click the image to see a larger image) you can see that the project passed all the tests.
+    The left pane displays the results of the individual test methods and the right pane displays the 
+    test output. If you look at the output you can see the order that the tests were run.
+    The <tt>println</tt> that you added to each of the test methods printed out the name of the test to the output window.
+    You can also see that in <tt>UtilJUnit3Test</tt> the <tt>setUp</tt> method was run before 
+    each test method and the <tt>tearDown</tt> method was run after each method.</p>
+    <a href="../../../images_www/articles/72/java/junit/junit3-test-fail.png"><img src="../../../images_www/articles/72/java/junit/junit3-test-fail-sm.png" class="box" alt="Screenshot of JUnit Test Results window" title="JUnit Test Results window showing failed test. Click for larger image."></a>
+    <p>In this image (click the image to see a larger image) you can see that the project failed one of the tests.
+    The <tt>testTimeout</tt> method took too long to complete and the test thread was interrupted, causing that test to
+    fail. It took longer than 1000 milliseconds to compute the factorial of the randomly generated number (22991).</p>
+
+
+    </div>
+        <p>The next step after you create your unit test classes is to create test suites.
+    See <a href="#Exercise_41">Creating JUnit 3 Test Suites</a> to see how to run specified 
+    tests as a group so you do not have to run each test individually.</p>
+    
+    
+    
+    
+    
+            
+<!-- ===================================================================================== -->
+<!-- JUnit 4 Tests -->  
+<a name="Exercise_30"></a>
+<h2>Writing JUnit 4 Tests</h2>
+    <p>In this exercise you create JUnit 4 unit tests for the classes <tt>Vectors.java</tt> and <tt>Utils.java</tt>.
+    The JUnit 4 test cases are the same as the JUnit 3 test cases, 
+    but you will see that the syntax for writing the tests is simpler. </p>
+    
+    <p>You will use the IDE's wizards to create test skeletons based on the classes in your project.
+    The first time that you use the IDE to create some test skeletons for you, the IDE prompts you to choose
+    the JUnit version. </p>
+        
+    <p class="notes"><b>Note.</b> If you already selected JUnit 3.x as the default version for your tests, 
+    you need to change the default version to JUnit 4.x.
+    To change the default JUnit version, expand the Test Libraries node, right-click the JUnit library and choose Remove. 
+    You can now use the Add Library dialog box to explicitly add the JUnit 4 library
+    or you can select version 4.x when you are prompted to select the JUnit version when you create a new test.
+    You can still run JUnit 3 tests, but any new tests you create will use JUnit 4.</p>
+    
+    
+    <div class="indent">
+<!-- ===================================================================================== -->
+        <a name="Exercise_31"></a>
+        <h3>Creating a Test Class for <tt>Vectors.java</tt></h3>
+        <p>In this exercise you will create the JUnit test skeletons for <tt>Vectors.java</tt>.</p>
+        <p class="notes"><b>Note.</b> If you are using NetBeans IDE 7.1 or earlier you do
+        not need to specify the test framework because JUnit is specified by default.
+        In NetBeans IDE 7.2 you have the option of specifying JUnit or TestNG as the test framework.</p>
+        
+        <ol>
+            <li>Right-click <tt>Vectors.java</tt> and choose Tools &gt; Create Tests.</li>
+            <li>Modify the name of the test class to <b>VectorsJUnit4Test</b> in the Create Tests dialog.
+            <p>When you change the name of the test class, you will see a warning about changing the name.
+            The default name is based on the name of the class you are testing, with the word Test appended to the name.
+            For example, for the class <tt>MyClass.java</tt>, the default name of the test class is <tt>MyClassTest.java</tt>.
+            Unlike JUnit 3, in JUnit 4, test are not required to end with the word Test.
+            Usually it is best to keep the default name, but because you are creating all the JUnit tests 
+            in the same package in this tutorial the names of the test classes have to be unique.</p></li>
+            <li>Select JUnit in the Framework dropdown list.</li>
+            <li>Deselect Test Initializer and Test Finalizer. Click OK.<br/>
+            <img src="../../../images_www/articles/72/java/junit/junit4-vectors-createtests.png" class="margin-around box" alt="screenshot of JUnit 4 Create Tests dialog" title="JUnit 4 Create Tests dialog box">
+            </li>
+            <li>Select JUnit 4.x in the Select JUnit Version dialog box. Click Select.<br/>
+            <img src="../../../images_www/articles/72/java/junit/junit4-select-version.png" class="margin-around box" alt="Select JUnit version dialog" title="Select JUnit version dialog box">
+            </li>
+        </ol>
+        <p>When you click OK, the IDE creates the <tt>VectorsJUnit4Test.java</tt> test class
+        in the <tt>sample</tt> package under the Test Packages node in the Projects window.</p>
+
+        <img src="../../../images_www/articles/72/java/junit/projects-window3.png" class="margin-around box" alt="screenshot of Projects window" title="structure of JUnit-Sample project with JUnit 3 and JUnit 4 test classes">
+        <p class="notes"><strong>Note.</strong> A project requires a directory for test packages to create tests.
+        The default location for the test packages directory is at the root level of the project, 
+        but you can specify a different location for the directory in the project's Properties dialog.</p>
+
+
+        <p>If you look at <tt>VectorsJUnit3Test.java</tt> in the editor, 
+        you can see that the IDE generated the test methods 
+        <tt>testEqual</tt> and <tt>testScalarMultiplication</tt>.
+        In <tt>VectorsJUnit4Test.java</tt>, each test method is annotated with <tt>@Test</tt>.
+        The IDE generated the names for the test methods based on the names of the method in <tt>Vectors.java</tt>
+        but the name of the test method is not required to have <tt>test</tt> prepended.
+        The default body of each generated test method is provided solely as a guide and 
+        needs to be modified to be actual test cases.</p>
+        
+        <p class="tips">You can deselect Default Method Bodies in the Create Tests dialog if you do not
+        want the bodies of the method generated for you.</p>
+        
+        
+        <p>The IDE also generated the following test class initializer and finalizer methods:</p>
+            <pre class="examplecode">@BeforeClass
+public static void setUpClass() throws Exception {
+}
+
+@AfterClass
+public static void tearDownClass() throws Exception {
+}</pre>
+        
+        <p>The IDE generates the class initializer and finalizer methods by default when creating JUnit 4 test classes.
+        The annotations <tt>@BeforeClass</tt> and <tt>@AfterClass</tt> are used to mark
+        methods that should be run before and after running the test class.
+        You can delete the methods because you will not need them to test <tt>Vectors.java</tt>.</p>
+        
+        <p class="tips">You can configure the methods that are generated by default by configuring the 
+        JUnit options in the Options window.</p>
+        
+        <p class="notes"><strong>Note.</strong> For JUnit 4 tests, notice that by default the IDE adds a static 
+            import declaration for <tt>org.junit.Assert.*</tt>.</p>
+        
+        
+
+<!-- ===================================================================================== -->            
+        <a name="Exercise_32"></a>
+        <h3>Writing Test Methods for <tt>Vectors.java</tt></h3>
+        <p>In this exercise you modify each of the generated test methods
+        to test the methods using the JUnit <tt>assert</tt> method and to change the names of the test methods.
+        In JUnit 4 you have greater flexibility when naming test methods because
+        test methods are indicated by the <tt>@Test</tt> annotation and do not
+        require the word <tt>test</tt> prepended to test method names.</p>
+        
+        <ol>
+            <li>Open <tt>VectorsJUnit4Test.java</tt> in the editor.</li>
+            <li>Modify the test method for <tt>testScalarMultiplication</tt> by changing the name of the method, 
+            the value of the <tt>println</tt> and removing the generated variables. 
+            The test method should now look like the following (changes displayed in bold):
+            <pre class="examplecode">@Test
+public void <b>ScalarMultiplicationCheck</b>() {
+    System.out.println("<b>* VectorsJUnit4Test: ScalarMultiplicationCheck()</b>");
+    assertEquals(expResult, result);
+}</pre>
+            <p class="notes"><strong>Note.</strong> When writing tests it is not necessary to change the printed output. 
+            You do this in this exercise so that it is easier to identify the test results in the output window.</p>
+            </li>
+            <li>Now add some assertions to test the method.
+            <pre class="examplecode">@Test
+public void ScalarMultiplicationCheck() {
+    System.out.println("* VectorsJUnit4Test: ScalarMultiplicationCheck()");
+    <b>assertEquals(  0, Vectors.scalarMultiplication(new int[] { 0, 0}, new int[] { 0, 0}));
+    assertEquals( 39, Vectors.scalarMultiplication(new int[] { 3, 4}, new int[] { 5, 6}));
+    assertEquals(-39, Vectors.scalarMultiplication(new int[] {-3, 4}, new int[] { 5,-6}));
+    assertEquals(  0, Vectors.scalarMultiplication(new int[] { 5, 9}, new int[] {-9, 5}));
+    assertEquals(100, Vectors.scalarMultiplication(new int[] { 6, 8}, new int[] { 6, 8}));</b>
+}</pre>
+            <p>In this test method you use the JUnit <tt>assertEquals</tt> method.
+            To use the assertion, you supply the input variables and the expected result.
+            To pass the test, the test method must successfully return all the expected results based on the supplied variables when running the tested method. 
+            You should add a sufficient number of assertions to cover the various possible permutations.</p>
+            </li>
+            <li>Change the name of the <tt>testEqual</tt> test method to <tt>equalsCheck</tt>.</li>
+            <li>Delete the the generated method body of the <tt>equalsCheck</tt> test method.</li>
+            <li>Add the following <tt>println</tt> to the <tt>equalsCheck</tt> test method.
+            <pre class="examplecode"><b>System.out.println("* VectorsJUnit4Test: equalsCheck()");</b></pre>
+            <p>The test method should now look like the following:</p>
+            <pre class="examplecode">@Test
+public void equalsCheck() {
+    System.out.println("* VectorsJUnit4Test: equalsCheck()");
+}</pre>
+            <li>Modify the <tt>equalsCheck</tt> method by adding the following assertions (displayed in bold).
+            <pre class="examplecode">@Test
+public void equalsCheck() {
+    System.out.println("* VectorsJUnit4Test: equalsCheck()");
+    <b>assertTrue(Vectors.equal(new int[] {}, new int[] {}));
+    assertTrue(Vectors.equal(new int[] {0}, new int[] {0}));
+    assertTrue(Vectors.equal(new int[] {0, 0}, new int[] {0, 0}));
+    assertTrue(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 0}));
+    assertTrue(Vectors.equal(new int[] {5, 6, 7}, new int[] {5, 6, 7}));
+
+    assertFalse(Vectors.equal(new int[] {}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0}, new int[] {0}));
+    assertFalse(Vectors.equal(new int[] {0}, new int[] {}));
+
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 0, 1}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {0, 1, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 0}, new int[] {1, 0, 0}));
+    assertFalse(Vectors.equal(new int[] {0, 0, 1}, new int[] {0, 0, 3}));</b>
+}</pre>
+            <p>This test uses the JUnit <tt>assertTrue</tt> and <tt>assertFalse</tt> methods to test a variety of possible results.
+            For the test of this method to pass, the <tt>assertTrue</tt> must all be true and <tt>assertFalse</tt> must all be false.</p>
+            </li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_22">Writing Test Methods for <tt>Vectors.java</tt> (JUnit 3)</a></p>
+
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_33"></a>
+    <h3>Creating a Test Class for <tt>Utils.java</tt></h3>
+    <p>You will now create the JUnit test methods for <tt>Utils.java</tt>.
+    When you created the test class in the previous exercise, the IDE prompted you for the version of JUnit.
+    You are not prompted to select a version this time because you already selected the JUnit version
+    and all subsequent JUnit tests are created in that version.</p>
+    <p class="notes"><strong>Note.</strong> You can still write and run JUnit 3 tests if you select JUnit 4 as the version,
+    but the IDE uses the JUnit 4 template for generating test skeletons.</p>
+    <ol>
+        <li>Right-click <tt>Utils.java</tt> and choose Tools &gt; Create Tests.</li>
+        <li>Select JUnit in the Framework dropdown list if not selected.</li>
+        <li>Select Test Initializer and Test Finalizer in the dialog box if not selected.</li>
+        <li>Modify the name of the test class to <b>UtilsJUnit4Test</b> in the Create Tests dialog box.
+        Click OK.</li>
+    </ol>
+
+    <p>When you click OK, the IDE creates the test file <tt>UtilsJUnit4Test.java</tt> in the Test Packages &gt; sample directory.
+    You can see that the IDE generated the test methods <tt>testComputeFactorial</tt>, <tt>testConcatWords</tt>, and <tt>testNormalizeWord</tt>
+    for the methods in <tt>Utils.java</tt>.
+    The IDE also generated initializer and finalizer methods for the test and the test class. 
+    </p>
+               
+<!-- ===================================================================================== -->                
+    <a name="Exercise_34"></a>
+    <h3>Writing Test Methods for <tt>Utils.java</tt></h3>
+    <p>In this exercise you will add test cases that illustrate some common JUnit test elements.
+    You will also add a <tt>println</tt> to the methods because some methods do not print any output to the 
+    JUnit Test Results window to indicate that they were run, or to indicate that the method passed the test.
+    By adding a <tt>println</tt> to the methods you can see if the methods were run and the order in which 
+    they were run.</p>
+        
+    <div class="indent">
+        <a name="Exercise_341"></a>
+        <h4>Test Initializers and Finalizers</h4>
+        <p>When you created the test class for <tt>Utils.java</tt> the IDE generated annotated initializer and 
+        finalizer methods.
+        You can choose any name for the name of the method because there is no required naming convention.</p>
+        <p class="notes"><strong>Note.</strong> You do not need the initializer and finalizer methods to test <tt>Utils.java</tt>, 
+        but they are included in this tutorial to demonstrate how they work.</p>
+        <p>In JUnit 4 you can use annotations to mark the following types of initializer and finalizer methods.</p>
+        
+        <ul>
+            <li><b>Test Class Initializer.</b> The <tt>@BeforeClass</tt> annotation marks a method as a test class initialization method.
+            A test class initialization method is run only once, and before any of the other methods in the test class.
+            For example, instead of creating a database connection in a test initializer and creating a new connection 
+            before each test method, you may want to use a test class initializer to open a connection before running
+            the tests. You could then close the connection with the test class finalizer.</li>
+
+            <li><b>Test Class Finalizer.</b> The <tt>@AfterClass</tt> annotation marks a method as a test class finalizer method.
+            A test class finalizer method is run only once, and after all of the other methods in the test class
+            are finished.</li>
+            
+            <li><b>Test Initializer.</b> The <tt>@Before</tt> annotation marks a method as a test initialization method.
+            A test initialization method is run before each test case in the test class.
+            A test initialization method is not required to run tests, but if you need to initialize some variables before you
+            run a test, you use a test initializer method.</li>
+
+            <li><b>Test Finalizer.</b> The <tt>@After</tt> annotation marks a method as a test finalizer method.
+            A test finalizer method is run after each test case in the test class.
+            A test finalizer method is not required to run tests, but you may need a finalizer to clean up any data
+            that was required when running the test cases.</li>
+        </ul>
+        
+        <p>Make the following changes (displayed in bold) in <tt>UtilsJUnit4Test.java</tt>.</p>
+        <pre class="examplecode">@BeforeClass
+public static void setUpClass() throws Exception {
+    <b>System.out.println("* UtilsJUnit4Test: @BeforeClass method");</b>
+}
+
+@AfterClass
+public static void tearDownClass() throws Exception {
+    <b>System.out.println("* UtilsJUnit4Test: @AfterClass method");</b>
+}
+
+@Before
+public void setUp() {
+    <b>System.out.println("* UtilsJUnit4Test: @Before method");</b>
+}
+
+@After
+public void tearDown() {
+    <b>System.out.println("* UtilsJUnit4Test: @After method");</b>
+}</pre>
+
+        <p class="tips">Compare: <a href="#Exercise_241">Test initializers and finalizers (JUnit 3)</a></p>
+        <p>When you run the test class the <tt>println</tt> text you added is displayed in the output pane of the JUnit Test Results window.
+        If you do not add the <tt>println</tt>, there is no output to indicate that the initializer and finalizer methods were run.</p>
+
+        <a name="Exercise_342"></a>
+        <h4>Testing Using a Simple Assertion</h4>
+        <p>This simple test case tests the <tt>concatWords</tt> method.
+        Instead of using the generated test method <tt>testConcatWords</tt>, you will add a new test method called <tt>helloWorldCheck</tt>
+        that uses a single simple assertion to test if the method concatenates the strings correctly.
+        The <tt>assertEquals</tt> in the test case uses the syntax <tt>assertEquals(<i>EXPECTED_RESULT, ACTUAL_RESULT</i>)</tt>
+        to test if the expected result is equal to the actual result.
+        In this case, if the input to the method <tt>concatWords</tt> is "<tt>Hello</tt>", "<tt>,</tt>", "<tt>world</tt>" and "<tt>!</tt>",
+        the expected result should equal <tt>"Hello, world!"</tt>.</p>
+        
+        <ol>
+            <li>Delete the generated test method <tt>testConcatWords</tt>.</li>
+            <li>Add the following <tt>helloWorldCheck</tt> method to test <tt>Utils.concatWords</tt>.
+
+            <pre class="examplecode"><b>@Test
+public void helloWorldCheck() {
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));
+}</b></pre> 
+            </li>
+            <li>Add a <tt>println</tt> statement to display text about the test in the JUnit Test Results window.
+                <pre class="examplecode">@Test
+public void helloWorldCheck() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 1 - helloWorldCheck()");</b>
+    assertEquals("Hello, world!", Utils.concatWords("Hello", ", ", "world", "!"));</pre>
+            </li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_242">Testing Using a Simple Assertion (JUnit 3)</a></p>
+
+
+        <a name="Exercise_343"></a>
+        <h4>Testing Using a Timeout</h4>
+        <p>This test demonstrates how to check if a method is taking too long to complete.
+        If the method is taking too long, the test thread is interrupted and the test fails.
+        You can specify the time limit in the test.</p>
+        
+        <p>The test method invokes the <tt>computeFactorial</tt> method in <tt>Utils.java</tt>. 
+        You can assume that the <tt>computeFactorial</tt> method is correct, 
+        but in this case you want to test if the computation is completed within 1000 milliseconds.
+        You do this by interrupting the test thread after 1000 milliseconds.
+        If the thread is interrupted the test method throws a <tt>TimeoutException</tt>.</p>
+
+        <ol>
+            <li>Delete the generated test method <tt>testComputeFactorial</tt>.</li>
+            <li>Add the <tt>testWithTimeout</tt> method that calculates the factorial of a randomly generated number.
+            <pre class="examplecode"><b>@Test
+public void testWithTimeout() {
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</b></pre>
+            </li>
+            <li>Add the following code (displayed in bold) to set the timeout and to interrupt the thread if the method takes too long to execute.
+            <pre class="examplecode">@Test<b>(timeout=1000)</b>
+public void testWithTimeout() {
+    final int factorialOf = 1 + (int) (30000 * Math.random());</pre>
+            <p>You can see that the timeout is set to 1000 milliseconds.</p>
+            </li>
+            <li>Add the following <tt>println</tt> (displayed in bold) to print the text about the test in the JUnit Test Results window.
+            <pre class="examplecode">@Test(timeout=1000)
+public void testWithTimeout() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 2 - testWithTimeout()");</b>
+    final int factorialOf = 1 + (int) (30000 * Math.random());
+    System.out.println("computing " + factorialOf + '!');
+            </pre>
+            </li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_243">Testing Using a Timeout (JUnit 3)</a></p>
+
+        <a name="Exercise_344"></a>
+        <h4>Testing for an Expected Exception</h4>
+        <p>This test demonstrates how to test for an expected exception.
+        The method fails if it does not throw the specified expected exception. 
+        In this case you are testing that the <tt>computeFactorial</tt> method throws an <tt>IllegalArgumentException</tt>
+        if the input variable is a negative number (-5).</p>
+        <ol>
+            <li>Add the following <tt>testExpectedException</tt> method that invokes the <tt>computeFactorial</tt> method
+            with an input of -5.
+            <pre class="examplecode"><b>@Test
+public void checkExpectedException() {
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</b></pre>
+            </li>
+            <li>Add the following property (displayed in bold) to the <tt>@Test</tt> annotation to specify
+            that the test is expected to throw <tt>IllegalArgumentException</tt>.
+            <pre class="examplecode">@Test<b>(expected=IllegalArgumentException.class)</b>
+public void checkExpectedException() {
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</pre>
+            
+            </li>
+            <li>Add the following <tt>println</tt> (displayed in bold) to print the text about the test in the JUnit Test Results window.
+            <pre class="examplecode">@Test (expected=IllegalArgumentException.class)
+public void checkExpectedException() {
+    <b>System.out.println("* UtilsJUnit4Test: test method 3 - checkExpectedException()");</b>
+    final int factorialOf = -5;
+    System.out.println(factorialOf + "! = " + Utils.computeFactorial(factorialOf));
+}</pre>
+            </li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_244">Testing for an Expected Exception (JUnit 3)</a></p>
+
+        <a name="Exercise_345"></a>
+        <h4>Disabling a Test</h4>
+        <p>This test demonstrates how to temporarily disable a test method.
+        In JUnit 4 you simply add the <tt>@Ignore</tt> annotation to disable the test.</p>
+
+        <ol>
+            <li>Delete the generated test method <tt>testNormalizeWord</tt>.</li>
+            <li>Add the following test method to the test class.
+            <pre class="examplecode"><b>@Test
+public void temporarilyDisabledTest() throws Exception {
+    System.out.println("* UtilsJUnit4Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</b></pre>
+            <p>The test method <tt>temporarilyDisabledTest</tt> will run if you run the test class.</p>
+            </li>
+            <li>Add the <tt>@Ignore</tt> annotation (displayed in bold) above <tt>@Test</tt> to disable the test.
+            <pre class="examplecode"><b>@Ignore</b>
+@Test
+public void temporarilyDisabledTest() throws Exception {
+    System.out.println("* UtilsJUnit4Test: test method 4 - checkExpectedException()");
+    assertEquals("Malm\u00f6", Utils.normalizeWord("Malmo\u0308"));
+}</pre>
+            </li>
+            <li>Fix your imports to import <tt>org.junit.Ignore</tt>.</li>
+        </ol>
+        <p class="tips">Compare: <a href="#Exercise_245">Disabling a Test (JUnit 3)</a></p>
+    </div>
+   
+   <p>Now that you have written the tests you can run the test and see the test output in the JUnit Test Results window.</p>
+    
+<!-- ===================================================================================== -->
+    
+    <a name="Exercise_35"></a>
+    <h3>Running the Tests</h3>
+    <p>
+    You can run JUnit tests on the entire application or on individual files and see the results in the IDE.
+    The easiest way to run all the unit tests for the project is to choose Run &gt; Test <i>&lt;PROJECT_NAME&gt;</i> from the main menu.
+    If you choose this method, the IDE runs all the test classes in the Test Packages.
+    To run an individual test class, right-click the test class under the Test Packages node and choose Run File.</p>
+    
+    <ol>
+        <li>Right-click <tt>UtilsJUnit4Test.java</tt> in the Projects window.</li>
+        <li>Choose Test File.</li>
+        <li>Choose Window &gt; IDE Tools &gt; Test Results to open the Test Results window.</li>
+    </ol>
+    
+    <p>When you run <tt>UtilsJUnit4Test.java</tt> the IDE only runs the tests in the test class. 
+    If the class passes all the tests you will see something similar to the following image in the JUnit Test Results window.</p>
+    
+    <a href="../../../images_www/articles/72/java/junit/junit4-utilstest-pass.png"><img src="../../../images_www/articles/72/java/junit/junit4-utilstest-pass-sm.png" class="box" alt="Screenshot of JUnit Test Results window" title="JUnit Test Results window showing passed test. Click for larger image."></a>
+    <p>In this image (click the image to see a larger image) you can see that the IDE ran the JUnit test 
+    on <tt>Utils.java</tt> and that the class passed all the tests.
+    The left pane displays the results of the individual test methods and the right pane displays the 
+    test output. If you look at the output you can see the order that the tests were run.
+    The <tt>println</tt> that you added to each of the test methods printed out the name of the test to Test Results window and the Output window.</p>
+    <p>You can see that in <tt>UtilsJUnit4Test</tt> the test class initializer method annotated with <tt>@BeforeClass</tt> was run before any of the
+    other methods and it was run only once.
+    The test class finalizer method annotated with <tt>@AfterClass</tt> was run last, after all the other methods in the class.
+    The test initializer method annotated with <tt>@Before</tt> was run before each test method.</p>
+    
+    <p>The controls in the left side of the Test Results window enable you to easily run the test again.
+    You can use the filter to toggle between displaying all test results or only the failed tests.
+    The arrows enable you to skip to the next failure or the previous failure.</p>
+
+    <p class="tips">When you right-click a test result in the Test Results window, the popup menu enables you to choose
+    to go to the test's source, run the test again or debug the test.</p>
+
+</div>
+    
+<p>The next step after creating your unit test classes is to create test suites.
+See
+<a href="#Exercise_42">Creating JUnit 4 Test Suites</a> to see how to run specified 
+tests as a group so you do not have to run each test individually.</p>
+    
+            
+<!-- ===================================================================================== -->
+<!-- JUnit 4 Tests -->
+    <a name="Exercise_40"></a>
+    <h2>Creating Test Suites</h2>
+    <p>When creating tests for a project you will generally end up with many test classes.
+    While you can run test classes individually or run all the tests in a project, in many cases
+    you will want to run a subset of the tests or run tests in a specific order.
+    You can do this by creating one or more test suites.
+    For example, you can create test suites that test specific aspects of your code or specific 
+    conditions.
+    </p>
+    
+    <p>A test suite is basically a class with a method that invokes the specified test cases, such as
+    specific test classes, test methods in test classes and other test suites. 
+    A test suite can be included as part of a test class but best practices recommends creating 
+    individual test suite classes.</p>
+
+    <p>You can create JUnit 3 and JUnit 4 test suites for your project manually or the IDE can generate the suites for you.
+    When you use the IDE to generate a test suite, by default the IDE generates code to invoke all the 
+    test classes in the same package as the test suite.
+    After the test suite is created you can modify the class to specify 
+    the tests you want to run as part of that suite.</p>
+
+<!-- ===================================================================================== -->
+<div class="indent">
+<a name="Exercise_41"></a>
+    <h3>Creating JUnit 3 Test Suites</h3>
+    <p>If you selected JUnit 3 as the version for your tests, the IDE can generate JUnit 3 test suites
+    based on the test classes in the test package.
+    In JUnit 3 you specify the test classes to include in the test suite by creating an instance of <tt>TestSuite</tt>
+    and using the <tt>addTest</tt> method for each test.</p>
+
+    <ol>
+        <li>Right-click the <strong>JUnit-Sample</strong> project node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+        <li>Select Test Suite in the Unit Tests category. Click Next.</li>
+        <li>Type <b>JUnit3TestSuite</b> for the Class Name.</li>
+        <li>Select the <tt>sample</tt> package to create the test suite in the sample folder in the test packages folder.</li>
+        <li>Deselect Test Initializer and Test Finalizer.
+        Click Finish.<br>
+        <img src="../../../images_www/articles/72/java/junit/junit-testsuite-wizard.png" class="margin-around box" alt="Screenshot of JUnit Test Suite wizard" title="JUnit Test Suite wizard">
+        <p>When you click Finish, the IDE creates the test suite class in the <tt>sample</tt> package and opens the class
+        in the editor.
+        The test suite will contain the following code.</p>
+
+        <pre class="examplecode">public class JUnit3TestSuite extends TestCase {
+    public JUnit3TestSuite(String testName) {
+        super(testName);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new TestSuite("JUnit3TestSuite");
+        return suite;
+    }
+}</pre>
+        </li>
+        <li>Modify the <tt>suite()</tt> method to add the test classes that will be run as part of the suite.
+        <pre class="examplecode">public JUnit3TestSuite(String testName) {
+    super(testName);
+}
+
+public static Test suite() {
+    TestSuite suite = new TestSuite("JUnit3TestSuite");
+    <strong>suite.addTest(new TestSuite(sample.VectorsJUnit3Test.class));
+    suite.addTest(new TestSuite(sample.UtilsJUnit3Test.class));</strong>
+    return suite;
+}</pre>
+        </li>
+        <li>Save your changes.</li>
+    </ol>
+
+<!-- ===================================================================================== -->
+<a name="Exercise_42"></a>
+    <h3>Creating JUnit 4 Test Suites</h3>
+    <p>If you selected JUnit 4 for the version of your tests, the IDE can generate JUnit 4 test suites.
+    JUnit 4 is back-compatible so you can run JUnit 4 test suites that contain JUnit 4 and JUnit 3 tests.
+    In JUnit 4 test suites you specify the test classes to include as
+    values of the <tt>@Suite</tt> annotation.</p>
+    <p class="notes"><strong>Note.</strong> To run JUnit 3 test suites as part of a JUnit 4 test suite requires JUnit 4.4 or higher.</p>
+
+    <ol>
+        <li>Right-click the project node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+        <li>Select Test Suite in the Unit Tests category. Click Next.</li>
+        <li>Type <b>JUnit4TestSuite</b> for the file name.</li>
+        <li>Select the <tt>sample</tt> package to create the test suite in the sample folder in the test packages folder.</li>
+        <li>Deselect Test Initializer and Test Finalizer.
+        Click Finish.</li>
+    </ol>
+
+    <p>When you click Finish, the IDE creates the test suite class in the <tt>sample</tt> package and opens the class
+    in the editor. The test suite contains code similar to the following.</p>
+
+    <pre class="examplecode">@RunWith(Suite.class)
+@Suite.SuiteClasses(value={UtilsJUnit4Test.class, VectorsJUnit4Test.class})
+public class JUnit4TestSuite {
+}</pre>
+
+    <p>When you run the test suite the IDE will run the test classes in the order that they are listed.</p>
+
+
+
+<a name="Exercise_43"></a>
+    <h3>Running Test Suites</h3>
+    <p>You run a test suite the same way you run any individual test class. </p>
+    <ol>
+        <li>Expand the Test Packages node in the Projects window.</li>
+        <li>Right-click the test suite class and choose Test File.</li>
+    </ol>
+    <p>When you run the test suite the IDE runs the tests included in the suite in the order they are listed.
+    The results are displayed in the JUnit Test Results window.</p>
+
+
+    <a href="../../../images_www/articles/72/java/junit/junit3-suite-results.png"><img src="../../../images_www/articles/72/java/junit/junit3-suite-results-sm.png" class="box" alt="Screenshot of JUnit Test Results for JUnit 3 test suite" title="JUnit Test Results window showing JUnit 3 test suite results. Click for larger image."></a>
+    <p>In this image (click the image to see a larger image) you can see the test results for a JUnit 3 test suite.
+    The test suite ran the <tt>UtilsJUnit3Test</tt> and <tt>VectorsJUnit3Test</tt> test classes as a single test and 
+    displayed the test results in the left pane as the results of a single test. 
+    The output in the right pane is the same as when you run the test individually.</p>
+
+    <a href="../../../images_www/articles/72/java/junit/junit4-suite-results.png"><img src="../../../images_www/articles/72/java/junit/junit4-suite-results-sm.png" class="box" alt="Screenshot of JUnit Test Results window for JUnit 4 test suite" title="JUnit Test Results window showing JUnit 4 test suite results. Click for larger image."></a>
+    <p>In this image (click the image to see a larger image) you can see the test results for a JUnit 4 test suite.
+    The test suite ran the <tt>UtilsJUnit4Test</tt> and <tt>VectorsJUnit4Test</tt> test classes as a single test and 
+    displayed the test results in the left pane as the results of a single test. 
+    The output in the right pane is the same as when you run the test individually.</p>
+
+
+    <a href="../../../images_www/articles/72/java/junit/junitmix3and4-suite-results.png"><img src="../../../images_www/articles/72/java/junit/junitmix3and4-suite-results-sm.png" class="box" alt="Screenshot of JUnit Test Results window for mixed test suite" title="JUnit Test Results window showing results of mixed test suite. Click for larger image."></a>
+    <p>In this image (click the image to see a larger image) you can see the test results for a mixed test suite. 
+    This test suite includes the JUnit 4 test suite and one of the JUnit 3 test classes.
+    The test suite ran the <tt>UtilsJUnit3Test.java</tt> and <tt>JUnit4TestSuite.java</tt> 
+    test classes as a single test and displayed the test results in the left pane as the results of a single test. 
+    The output in the right pane is the same as running the test individually.</p>
+
+    </div>
+    
+
+
+
+<a name="Exercise_50"></a>
+<!-- ===================================================================================== -->
+<h2>Summary</h2>
+<p>This tutorial was a basic introduction to creating JUnit unit tests and test suites in NetBeans IDE.
+The IDE supports JUnit 3 and JUnit 4, and this document demonstrated some of the changes introduced in JUnit 4
+that are designed to make creating and running tests simpler.</p>
+
+<p>As demonstrated in this tutorial, one of the main improvements in JUnit 4 is support for annotations.
+In JUnit 4 you can now use annotations to do the following:</p>
+<ul>
+    <li>Identify a test using the <tt>@Test</tt> annotation instead of naming convention</li>
+    <li>Identify <tt>setUp</tt> and <tt>tearDown</tt> methods with <tt>@Before</tt> and <tt>@After</tt> annotations</li>
+    <li>Identify <tt>setUp</tt> and <tt>tearDown</tt> methods that apply to the entire test class.
+        Methods annotated with <tt>@BeforeClass</tt> are run only once, before any test methods in the class are run.
+        Methods annotated with <tt>@AfterClass</tt> are also run only once, after all the test methods have finished.</li>
+    <li>Identify expected exceptions</li>
+    <li>Identify tests that should be skipped using the <tt>@Ignore</tt> annotation</li>
+    <li>Specify a timeout parameter for a test</li>
+</ul>
+
+<p>For more information about using JUnit and other changes introduced in JUnit 4, see the following resources:</p>
+    <ul>
+        <li><a href="http://tech.groups.yahoo.com/group/junit/">JUnit group at Yahoo groups</a></li>
+        <li><a href="http://www.junit.org">www.junit.org</a></li>
+    </ul>
+
+<p>Testing code often helps ensure that small changes made in the code do not break the application.
+Automated testing tools like JUnit streamline the process of testing and frequent testing can help catch coding errors early.
+</p>
+        
+        
+<!-- End Content Area -->
+        
+    <br>
+    <div class="feedback-box"><a href="https://netbeans.org/about/contact_form.html?to=3&amp;subject=Feedback:%20Writing%20JUnit%20Tests%20in%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+    <br style="clear:both;" />
+    <!-- ======================================================================================= -->
+    <h2><a name="nextsteps"></a>See Also</h2>
+
+    <p>For more information about using NetBeans IDE to develop Java applications, see the following resources:</p>
+    <ul>
+        <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">Creating Java Projects</a> in <em>Developing Applications with NetBeans IDE</em></li>
+        <li><a href="../../trails/java-se.html">Basic IDE and Java Programming Learning Trail</a></li>
+
+    </ul>
+    </body>
+</html>

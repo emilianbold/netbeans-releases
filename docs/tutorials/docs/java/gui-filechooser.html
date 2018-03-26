@@ -1,0 +1,263 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Adding a File Chooser to a Java Application</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen" />
+    <meta name="author" content="Petr Dvorak, Alyona Stashkova" />
+    <meta name="description" content="How to add a file chooser to a Java application using the javax.swing.JFileChooser component and the NetBeans GUI Builder." />
+    <meta name="keywords" content="javax.swing.JFileChooser, java, application, file, chooser, GUI builder" />
+  </head>
+  <body>
+
+    <h1>Adding a File Chooser to a Java Application</h1>
+    <p><em>Contributed by Petr Dvorak <a href="http://blogs.oracle.com/joshis/entry/a_quick_jfilechooser_demo">(Dec 2009)</a>, maintained by Alyona Stashkova</em></p>
+
+    <p>
+      This tutorial shows how to add a file chooser to a Java application
+      using the <tt>javax.swing.JFileChooser</tt> component. You could code it all by hand,
+      but using the NetBeans GUI Builder is a smart way that will save you a bit of work.
+      As part of the exercise, you will create a small Java application 
+      that loads a <tt>.txt</tt> file into a Text Area.    </p>
+
+    <p>You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FJFileChooserDemo.zip" title="ZIP with the demo project (JFileChooserDemo)">the resulting project with a file chooser</a>. <br />
+    </p>
+
+    <p><b>Contents</b></p>
+     <img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp"
+          alt="Content on this page applies to NetBeans IDE 7.0 and more recent"
+          title="Content on this page applies to the NetBeans IDE 7.0 and more recent" />
+    <ul>
+      <li><a href="#app"    title="Creating the Application">Creating the Application</a></li>
+      <li><a href="#menu"   title="Creating the Application Form">Creating the Application Form</a></li>
+      <li><a href="#filechooser"  title="Adding the File Chooser">Adding the File Chooser</a></li>
+      <li><a href="#config" title="Configuring the File Chooser">Configuring the File Chooser</a></li>
+      <li><a href="#run"    title="Running the Application">Running the Application</a></li>
+    </ul>
+<p><b>To complete this tutorial, you need the following software and resources.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://netbeans.org/downloads/">NetBeans IDE</a></td>
+                <td class="tbltd1">Version 7.0 or more recent </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit</a> (JDK)</td>
+                <td class="tbltd1">Version 6,  7, or 8 </td>
+            </tr>
+                      
+        </tbody>
+    </table>
+  
+
+    <h2><a name="app"></a>Creating the Application</h2>
+
+    <p>First you create a new Java Application:</p>
+    <ol>
+      <li>From the main menu, choose File &gt; New Project. Choose the Java category
+        and the Java Application project type. Click Next.</li>
+      <li>For Project Name, type <code>JFileChooserDemo</code> and specify the project location.</li>
+      <li>Deselect the Create Main Class checkbox.    
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/newproj.png" rel="lytebox" title="New Project wizard">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/newproj-small.png" alt="New Project wizard" border=1/></a></p></li>
+	  <li>Click Finish.</li>
+	  
+    </ol>
+    
+    
+    <h2><a name="menu"></a>Creating the Application Form</h2>
+    <p>In this section, you create a <tt>JFrame</tt> container and add a few components to it.</p>
+	
+	<p><b>To create the JFrame form:</b></p>
+        <ol>
+            <li>Right-click the Source Packages node and choose New &gt; Other. Choose the Swing GUI Forms category
+        and the JFrameForm file type. Click Next.</li>
+            <li>For Class Name, type <code>JFileChooserDemo</code>.</li>
+            <li>For Package, type <code>jfilechooserdemo.resources</code>.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/newjframeform.png" rel="lytebox" title="New JFrame container being created">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/newjframeform-small.png" alt="New JFrame container being created" border=1/></a></p></li>
+			
+            <li>Click Finish.</li>
+			<li>In the Properties window, enter <code>Demo application</code> for the Title property and press Enter to confirm.</li>
+        </ol>
+	<p><b>To add components to the JFrame form:</b></p>
+        <ol>
+            <li>In the Palette, open the Swing Menus category, select the Menu Bar component and drag it to the left top corner of the JFrame. 
+			
+			 <p class="notes"><b>Note: </b> If you do not see the Palette, select Window &gt; Palette from the main menu. </p>
+			 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/menubaradded.png" rel="lytebox" title="Menu Bar added to the JFrame form">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/menubaradded-small.png" alt="Menu Bar added to the JFrame form" border=1/></a></p></li>
+
+			<li>Right-click the Edit item of the Menu Bar component and select Delete in the context menu. </li>
+			<li>To add a menu item that allows to open  FileChooser from the running application,  in the Swing Menus category in the Palette, select a new Menu Item (JMenuItem1),  drag it to the Menu Bar, and drop it to the File item of the Menu Bar.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/menuitemadded.png" rel="lytebox" title="Menu Item added to the Menu Bar">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/menuitemadded-small.png" alt="Menu Item added to the Menu Bar" border=1/></a></p>
+			 <p class="notes"><b>Note: </b> Make sure the Menu Bar is selected before dragging another Menu Item there in order to have the latter added to the Menu Bar. </p></li>
+			
+			<li>Right-click the jMenuItem1 in the Design view and choose Change Variable Name from the context menu. Rename the item to <code>Open</code> and click OK.</li>
+			<li>Make sure that the jMenuItem1 is still selected in the Design view. Press the Space bar to edit the text of the component. Change the text to <code>Open</code> and press Enter to confirm.</li>
+			<li>Specify the action handler for the Open menu item. Right-click the menu item and choose Events &gt; Action &gt; action Performed from the context menu. The GUI Builder automatically switches to the Source view and a new event handler method named <tt>OpenActionPerformed()</tt> is generated. The Navigator window should look as follows: 
+			<p class="align-center"><img src="../../../images_www/articles/72/java/gui-filechooser/openactionperformednavigator.png"
+                     alt="Menu Item added to the Menu Bar" border=1/></p></li>
+			<li>To add a menu item to exit FileChooser from the application being created, switch back into the Design mode, in the Swing Menus category in the Palette, select a Menu Item (JMenuItem1) and drag it to the Menu Bar below the Open menu item. Notice orange highlighting that indicates where the <tt>JMenuItem1</tt> is going to be placed. 
+		 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/highlighting.png" rel="lytebox" title="Highlighting">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/highlighting-small.png" alt="Highlighting" border=1/></a></p></li>
+			<li>Right-click <tt>jMenuItem1</tt> in the Design view and choose Change Variable Name from the context menu. Rename the item to <code>Exit</code> and click OK.</li>
+			<li>Make sure that the <tt>jMenuItem1</tt> is still selected in the Design view. Press the Space bar to edit the text of the component. Change the text to <tt>Exit</tt> and press Enter to confirm.</li>
+			<li>Specify the action handler for the Exit menu item. Right-click the menu item and choose Events &gt; Action &gt; action Performed from the context menu. The GUI Builder automatically switches to the Source view and a new event handler method is generated which is named <code>ExitActionPerformed()</code>.The <code>ExitActionPerformed</code> node appears in the Navigator window below the <code>OpenActionPerformed()</code> node. </li>   
+			<li>To make the Exit menu item work, you include the following source into the <code>ExitActionPerformed()</code> method body:  
+			 <pre class="samplecode">
+			 System.exit(0); </pre></li>      
+	  <li>Switch back into Design mode. From the Swing Controls category of the Palette, drag a Text Area (<tt>JTextArea</tt>) into the form like shown in the picture below.
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/textareadded.png" rel="lytebox" title="Text Area added to the JForm">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/textareadded-small.png" alt="Text Area added to the JForm" border=1/></a></p></li>
+	  <li>Resize the added component to make room for the text displayed by the File Chooser later. Rename the variable to <code>textarea</code>. The form should look like the following screenshot:
+		 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/jfilechooserdemoview_final.png" rel="lytebox" title="Java Application - GUI Builder">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/jfilechooserdemoview_final-small.png" alt="Java Application - GUI Builder" border=1/></a></p></li>	               
+        </ol>
+		
+        <p>You have set up a simple Java application as a base for this tutorial. 
+    Next you add the actual File Chooser.</p>
+
+    <h2><a name="filechooser"></a>Adding the File Chooser</h2>
+
+<ol>
+    <li>Choose Window &gt; Navigating &gt; Navigator to open the Navigator window, if it is not open yet.</li>
+	<li>In the Navigator, right-click the <tt>Other Components</tt> node. Choose Add From Palette &gt; Swing Windows &gt; File Chooser from the context menu
+	
+	  <p class=tips>
+        As an alternative to the <tt>Add From Palette</tt> context menu, you can also drag and drop a <tt>JFileChooser</tt> component from the Swing Window category of the Palette to the white area of the GUI builder. It will have the same result, but it is a bit harder, because the preview of the <tt>JFileChooser</tt> is rather big and you might accidentally insert the window into one of the panels, which is not what you want.</p>
+	</li>
+    
+    <li>A look in the Navigator confirms that a <tt>JFileChooser</tt> was added to the form.
+    </li>
+    <li>Right-click the <tt>JFileChooser</tt> node and rename the variable to <code>fileChooser</code>.
+	
+                <p class="align-center"><img src="../../../images_www/articles/72/java/gui-filechooser/navigator_jframe.png"
+                     alt="File Chooser added - Navigator View" border=1/></p></li>
+</ol>
+
+
+
+ <p>You have added a File Chooser. 
+    Next you tune the File Chooser to display the title that you want, add a custom file filter, and integrate the File Chooser into your application.</p>
+
+
+    
+    
+
+    <h2><a name="config"></a>Configuring the File Chooser</h2>
+	
+	<h3>Implementing the Open Action</h3>
+
+<ol>
+    <li>Click to select the <tt>JFileChooser</tt> in the Navigator window,
+      and then edit its properties in the Properties dialog box. 
+      Change the <tt>dialogTitle</tt> property to <code>This is my open dialog</code>, press Enter and close the Properties dialog box.</li>
+    <li>
+      Click the Source button in the GUI Builder to switch to the Source mode. 
+       To integrate the File Chooser into your application, 
+       paste the following code snippet into the existing 
+       <code>OpenActionPerformed()</code> method.   
+
+      <pre class="samplecode">
+private void OpenActionPerformed(java.awt.event.ActionEvent evt) {
+    int returnVal = fileChooser.showOpenDialog(this);
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
+        File file = fileChooser.getSelectedFile();
+        try {
+          // What to do with the file, e.g. display it in a TextArea
+          textarea.read( new FileReader( file.getAbsolutePath() ), null );
+        } catch (IOException ex) {
+          System.out.println(&quot;problem accessing file&quot;+file.getAbsolutePath());
+        }
+    } else {
+        System.out.println(&quot;File access cancelled by user.&quot;);
+    }
+} </pre>
+<p class="notes"><b>Note: </b> Remove the first and last lines of the code snippet that duplicate the existing ones in the source file. </p></li>
+
+   <li>If the editor reports errors in your code,
+      right-click anywhere in the code and select Fix Imports or press Ctrl+Shift+I. In the Fix All Imports dialog box accept the defaults to update the import statements and click OK.</li>
+</ol>
+   <p>
+     As you can see, you call the FileChooser's <tt>getSelectedFile()</tt> method 
+     to determine which file the user clicked, so you can work with it. 
+     This example reads the file contents and displays them in the TextArea. 
+   </p>
+
+    
+   <h3>Implementing a File Filter</h3>
+
+  <p>Now you add a custom file filter that makes the File Chooser display only <tt>*.txt</tt> files.</p>
+  <ol>
+  
+    <li>Switch to the Design mode and select the <tt>fileChooser</tt> in the Navigator window. </li>
+       <li>In the Properties window, click the elipsis (&quot;...&quot;) button 
+       next to the <tt>fileFilter</tt> property.</li>
+       <li>In the File Filter dialog box, select Custom Code from the combobox. 
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/combobox.png" rel="lytebox" title="Combobox open">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/combobox-small.png" alt="Combobox open" border=1/></a></p></li>
+	<li>
+      Type the following in the text field:
+        <pre class="samplecode">new MyCustomFilter()</pre></li>
+            <li>Click OK.	</li>
+    <li>
+      To make the custom code work, you write an inner (or outer) class 
+      <tt>MyCustomFilter</tt> that extends the <tt>FileFilter</tt> class. 
+      Copy and paste the following code snippet into the source
+      of your class below the import statements to create an inner class implementing the filter.
+
+      <pre class="samplecode">
+    class MyCustomFilter extends javax.swing.filechooser.FileFilter {
+        @Override
+        public boolean accept(File file) {
+            // Allow only directories, or files with &quot;.txt&quot; extension
+            return file.isDirectory() || file.getAbsolutePath().endsWith(&quot;.txt&quot;);
+        }
+        @Override
+        public String getDescription() {
+            // This description will be displayed in the dialog,
+            // hard-coded = ugly, should be done via I18N
+            return &quot;Text documents (*.txt)&quot;;
+        }
+    } </pre></li>
+  </ol>
+  <p class=notes><b>Note:</b> To learn how to implement smarter, switchable file filters, have a look at the <a title="JDK API documentation" target="_blank" href="http://java.sun.com/javase/7/docs/api/javax/swing/JFileChooser.html#addChoosableFileFilter%28javax.swing.filechooser.FileFilter%29">addChoosableFileFilter</a> method. 
+  </p>
+
+<h2><a name="run"></a>Running the Application</h2>
+<ol>
+    <li>Right-click the JFileChooserDemo project and select Run to start the sample project. </li>
+	<li>In the Run Project dialog box select the <code>jfilechooserdemo.resources.JFileChooserDemo</code> main class and click OK.
+	<p class="align-center"><img src="../../../images_www/articles/72/java/gui-filechooser/run.png" alt="Run" border=1/></p>
+	</li> 
+	<li>In the running Demo application, choose  Open in the File menu to trigger the action. The result should look like this:
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/result_jfilechooserdemo.png" rel="lytebox" title="JFileChooser demo - result">
+					   <img src="../../../images_www/articles/72/java/gui-filechooser/result_jfilechooserdemo-small.png" alt="JFileChooser demo - result" border=1/></a></p>
+</li>
+    
+	<li>To close the application, select Exit in the File menu. </li>
+  </ol>
+    <p>Have a look at other useful Swing windows and dialogs 
+    like the ColorChooser or the OptionPane in the GUI Palette.</p>
+
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Adding%20a%20FileChooser">Send Feedback on This Tutorial</a></div>
+      <br style="clear:both;" />   
+   
+<h2><a name="next"></a>Next Steps</h2>
+
+  <ul>
+  <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementing Java GUIs</a> in <i>Developing Applications with NetBeans IDE</i>
+    <li><a href="gui-binding.html">Binding Beans and Data in a Java Application with NetBeans IDE</a></li>
+    <li><a href="gui-automatic-i18n.html">Internationalizing a GUI Form with NetBeans IDE</a></li>
+    <li><a title="How to use File Choosers" target="_blank" href="http://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html">Java Tutorial: How to use File Choosers</a> </li>
+  </ul>
+
+  </body>
+</html>

@@ -1,0 +1,653 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief guide to creating a web application
+            using the Struts framework in NetBeans IDE">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Struts, web framework, open source">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Struts Webフレームワーク入門 - NetBeans IDEチュートリアル</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Struts Webフレームワーク入門</h1>
+
+        <p>このドキュメントでは、NetBeans IDEを使用して、Struts Webフレームワークを使用するWebアプリケーションを開発する基本手順を示します。Strutsは、Java Servlet APIを拡張してMVC (Model、View、Controller)アーキテクチャを採用した、オープン・ソースのフレームワークです。JSPページ、JavaBeans、リソース・バンドル、XMLなどの標準テクノロジに基づいた、管理可能で拡張可能な柔軟性のあるWebアプリケーションを作成できます。</p>
+
+        <p>このチュートリアルでは、ログイン・ページを表示し、検証をパスするデータを送信すると成功ページを返す、単純なMVCアプリケーションのビルド方法を学習します。Strutsの提供するいくつかの基本機能と、IDEを使用してそれらの機能を実装する方法を学びます。具体的には、JSPページでStrutsタグを使用し、Strutsの<code>ActionForm</code> Beanを使用してユーザー・データを管理し、Strutsの<code>Action</code>オブジェクトを使用して転送ロジックを実装します。また、ログイン失敗に対する警告メッセージの設定など、アプリケーションに単純な検証を実装する方法も示します。</p>
+
+        <p>Strutsに関するさらに詳しい説明については、公式の<a href="http://struts.apache.org/">Struts</a> Webサイトにある<a href="http://struts.apache.org/struts-action/faqs/works.html">How does Struts work?</a>を参照してください。IDEのJavadoc索引検索(「ヘルプ」>「Javadoc索引検索」)を使用して、Strutsライブラリとともにパッケージ化されている<a href="http://struts.apache.org/release/1.3.x/apidocs/index.html">StrutsフレームワークAPI</a>も参照してください。</p>
+
+        <p><strong>目次</strong></p>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#overview">アプリケーションの概要</a></li>
+            <li><a href="#set">Strutsアプリケーションの設定</a></li>
+            <li><a href="#jsp">JSPページの作成</a>
+                <ul>
+                    <li><a href="#login">ログイン・ページの作成</a></li>
+                    <li><a href="#success">成功ページの作成</a></li>
+                </ul></li>
+            <li><a href="#actionForm"><code>ActionForm</code> Beanの作成</a></li>
+            <li><a href="#actionClass"><code>Action</code>クラスの作成</a></li>
+            <li><a href="#validate">検証の実装</a>
+                <ul>
+                    <li><a href="#beanData">Beanデータへのアクセスと転送条件の準備</a></li>
+                    <li><a href="#errorMsg">エラー・メッセージの設定</a></li>
+                </ul></li>
+            <li><a href="#forward"><code>struts-config.xml</code>への<code>forward</code>エントリの追加</a></li>
+            <li><a href="#configure">アプリケーションの構成と実行</a>
+                <ul>
+                    <li><a href="#welcome">開始ページの設定</a></li>
+                    <li><a href="#style">スタイル・シートの添付</a></li>
+                    <li><a href="#run">アプリケーションの実行</a></li>
+                </ul></li>
+            <li><a href="#seeAlso">関連項目</a></li>
+        </ul>
+
+        <p><strong>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFishサーバー<br><em class="indent margin-around">または</em><br>Tomcatサーブレット・コンテナ</td>
+                    <td class="tbltd1">Open Source Edition 3.xまたは4.0<br><em class="margin-around indent"> </em><br>バージョン7.xまたは8.x</td>
+                </tr> 
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注意: </strong></p>
+
+        <ul>
+            <li>Javaインストール版では、GlassFishサーバーとApache Tomcatサーブレット・コンテナをオプションでインストールできます。このチュートリアルの手順に従うには、これらのいずれかをインストール(または別のサーバーをIDEに登録)する必要があります。</li>
+            <li>プロジェクトを、正常に機能するソリューションと比較する必要がある場合は、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252FMyStrutsApp.zip">サンプル・アプリケーションをダウンロード</a>できます。</li>
+        </ul>
+
+        <a name="overview"></a>
+        <h2>アプリケーションの概要</h2>
+
+        <p>Strutsを使用すると、フレームワークによってコントローラ・サーブレット<code>ActionServlet</code>が提供されます。このサーブレットは、IDEに含まれているStrutsライブラリで定義されて、<a href="#controllerServlet">次に示す</a>ように、<code>web.xml</code>デプロイメント・ディスクリプタに自動的に登録されます。このコントローラ・サーブレットは<code>struts-config.xml</code>ファイルを使用して、受信リクエストをStrutsの<code>Action</code>オブジェクトにマップし、アクションに関連付けられた<code>ActionForm</code>オブジェクトがある場合は、そのオブジェクトをインスタンス化して、フォーム・データを一時的に保存します。<code>Action</code>オブジェクトは、フォームBeanに保存された任意のデータを使用しながら、<code>execute</code>メソッドを使用してリクエストを処理します。リクエストを処理すると、<code>Action</code>オブジェクトは新しいデータを(同じフォームBeanまたは別の結果Beanに)保存し、その結果を適切なビューに転送します。</p>
+
+        <div class="indent">
+            <img alt="Strutsワークフロー" class="margin-around" src="../../../images_www/articles/72/web/struts/workflow.png" title="Strutsワークフロー">
+        </div>
+
+        <p>Strutsアプリケーションの開発は、NetBeans IDEで他の種類のWebアプリケーションを開発するのと似ています。ただし、IDEが提供するStrutsサポートを利用することによって、使用するWeb開発ツールキットを補完できます。たとえば、IDEのテンプレートを使用して、Strutsの<code>Action</code>オブジェクトや<code>ActionForm</code> Beanを作成します。作成すると、IDEによって、これらのクラスは自動的に<code>struts-config.xml</code>ファイルに登録され、ソース・エディタの右クリック・メニューのメニュー項目を使用してこのファイルを簡単に拡張できます。多くのWebアプリケーションがビューにJSPページを使用するため、StrutsにもHTMLフォームとの対話を容易にするカスタム・タグ・ライブラリが用意されています。IDEのソース・エディタ内でコード補完およびJavadocサポートを呼び出して、そのライブラリの効率的な操作に役立てることができます。</p>
+
+        <p>次の手順では、ユーザー・データの収集、単純な検証の実行、および成功ページへのデータの出力を行う、単純なフォームを作成する方法を示します。</p>
+
+        <a name="set"></a>
+        <h2>Strutsアプリケーションの設定</h2>
+
+        <p>IDEでは、Strutsアプリケーションは、StrutsライブラリとStruts構成ファイルを伴った通常のWebアプリケーションにすぎません。Strutsアプリケーションを作成する方法は、IDEで他のWebアプリケーションを作成する方法と同様に、新規Webアプリケーション・ウィザードを使用して、追加ステップでStrutsライブラリとStruts構成ファイルをアプリケーションに含めるように指示します。</p>
+
+        <ol>
+            <li>メイン・メニューから「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[&#8984]-[Shift]-[N])を選択します。「カテゴリ」のリストで「Java Web」を選択し、「プロジェクト」のリストで「Webアプリケーション」を選択します。「次」をクリックします。</li>
+            <li>「名前と場所」パネルで「プロジェクト名」に「<code>MyStrutsApp</code>」と入力し、「次」をクリックします。</li>
+            <li>「サーバーと設定」パネルで、アプリケーションのデプロイ先のサーバーを選択します。表示されるのは、IDEに登録されているサーバーのみです。サーバーを登録するには、「サーバー」ドロップダウン・リスト横の「追加」をクリックします。デプロイしたアプリケーションのコンテキスト・パスは<code>/MyStrutsApp</code>になります。「次」をクリックします。</li>
+            <li>「フレームワーク」パネルで「Struts」を選択します。<br> <img alt="新規Webアプリケーション・ウィザードの「フレームワーク」パネルに表示された「Struts」オプション" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/new-project-wizard.png" title="新規Webアプリケーション・ウィザードの「フレームワーク」パネルに表示された「Struts」オプション">
+
+                <p>このチュートリアルの目的のためには、このパネルの下部領域にある構成値を変更しないでください。ウィザードには、次の構成オプションが表示されます。</p>
+
+                <ul>
+                    <li><strong>アクションのサーブレット名</strong>: アプリケーションで使用するStrutsアクション・サーブレットの名前。<code>web.xml</code>デプロイメント・ディスクリプタにはアクション・サーブレットのエントリが格納され、Strutsライブラリ内のサーブレット・クラスやアプリケーション内の<code>struts-config.xml</code>構成ファイルのパスなど、Struts固有の適切なパラメータを指示します。</li>
+                    <li><strong>アクションのURLパターン</strong>: Strutsアクション・コントローラにマップされる、受信リクエストのパターンを指定します。この指定によって、デプロイメント・ディスクリプタにマッピング・エントリが生成されます。デフォルトでは、<code>*.do</code>パターンのみマップされます。</li>
+                    <li><strong>アプリケーション・リソース</strong>: メッセージのローカライズのために<code>struts-config.xml</code>ファイルで使用されるリソース・バンドルを指定できます。デフォルトでは、<code>com.myapp.struts.ApplicationResource</code>です。</li>
+                    <li><strong>Struts TLDを追加</strong>: Strutsタグ・ライブラリ用のタグ・ライブラリ・ディスクリプタを生成できます。タグ・ライブラリ・ディスクリプタは、タグ・ライブラリ全体のみでなく、各個別タグに関する追加情報も格納されるXMLドキュメントです。一般に、ローカルTLDファイルではなく、オンラインのURIを参照できるため、これは必要ありません。</li>
+                </ul></li>
+
+            <li>「終了」をクリックします。IDEによって、ファイル・システムにプロジェクト・フォルダが作成されます。IDEのWebアプリケーションでは、プロジェクト・フォルダに、すべてのソースとIDEのプロジェクト・メタデータ(Antビルド・スクリプトがなど)が含まれます。ただし、使用するWebアプリケーションには、そのクラスパス上にすべてのStrutsライブラリがさらに含まれます。これらはアプリケーションのクラスパス上に存在するのみでなく、プロジェクトに含まれるため、後でプロジェクトをビルドしたときに一緒にパッケージ化されます。</li>
+        </ol>
+
+        <p>IDEでプロジェクトが開きます。「プロジェクト」ウィンドウは、プロジェクト・ソースへのメインのエントリ・ポイントです。ここには重要なプロジェクト内容の論理ビューが表示されます。たとえば、新しいプロジェクト内のいくつかのノードを展開すると、次のようになります。</p>
+
+        <div class="indent">
+            <img alt="新規作成されたプロジェクトが表示された「プロジェクト」ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/proj-window-init.png" title="MyStrutsAppプロジェクトが表示された「プロジェクト」ウィンドウ">
+        </div>
+
+        <p><strong class="notes">注意: </strong>プロジェクトのすべての内容をディレクトリ・ベースで表示するには、「ファイル」ウィンドウ(「ウィンドウ」>「ファイル」)を使用します。</p>
+
+        <p><a name="controllerServlet"></a>Struts固有の構成ファイルとアプリケーションのデプロイメント・ディスクリプタは、「構成ファイル」フォルダ内に使いやすく配置されます。デプロイメント・ディスクリプタを開きます(ソース・エディタで表示するには<code>web.xml</code>をダブルクリック)。Struts処理に対応するため、Strutsコントローラ・サーブレットにマッピングが提供されます。</p>
+
+<pre class="examplecode">
+&lt;servlet&gt;
+    &lt;servlet-name&gt;action&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.apache.struts.action.ActionServlet&lt;/servlet-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;config&lt;/param-name&gt;
+        &lt;param-value&gt;/WEB-INF/struts-config.xml&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;debug&lt;/param-name&gt;
+        &lt;param-value&gt;2&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+       &lt;param-name&gt;detail&lt;/param-name&gt;
+       &lt;param-value&gt;2&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;load-on-startup&gt;2&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;action&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;</pre>
+
+        <p>ここでは、Strutsコントローラ・サーブレットの名前は<code>action</code>で、Strutsライブラリで定義されています(<code>org.apache.struts.action.ActionServlet</code>)。このサーブレットは、<code>*.do</code>マッピングを満たすリクエストをすべて処理するように設定されています。また、サーブレットの初期化パラメータは<code>struts-config.xml</code>ファイルによって指定されます。このファイルもまた、<code>WEB-INF</code>フォルダに含まれています。</p>
+
+        <a name="jsp"></a>
+        <h2>JSPページの作成</h2>
+
+        <p>最初に、アプリケーション用のJSPページを2つ作成します。1つ目はフォームを表示します。2つ目はログインが成功したときに返されるビューです。</p>
+
+        <ul>
+            <li><a href="#login">ログイン・ページの作成</a></li>
+            <li><a href="#success">成功ページの作成</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="login"></a>
+            <h3>ログイン・ページの作成</h3>
+
+            <ol>
+                <li>「<code>MyStrutsApp</code>」プロジェクト・ノードを右クリックし、「新規」>「JSP」を選択して、新規ファイル名として「<code>login</code>」を入力します。「終了」をクリックします。ソース・エディタに<code>login.jsp</code>ファイルが表示されます。</li>
+                <li>ソース・エディタで<code>&lt;title></code>と<code>&lt;h1></code>タグ(または使用中のIDEバージョンによっては<code>&lt;h2></code>タグ)の内容を<code>Login Form</code>に変更します。</li>
+                <li>ファイルの先頭に、次の2つのtaglibディレクティブを追加します。
+
+<pre class="examplecode">
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-bean&quot; prefix=&quot;bean&quot; %&gt;
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-html&quot; prefix=&quot;html&quot; %&gt;</pre>
+
+                    <p>多くのWebアプリケーションは、MVCパラダイム内のビューにJSPページを使用するため、Strutsには、HTMLフォームとの対話を容易にするカスタム・タグ・ライブラリが用意されています。これらのタグはIDEのコード補完サポートを使用して、簡単にJSPファイルに適用できます。ソース・エディタに入力すると、IDEによってStrutsタグに対するコード補完とStruts Javadocが提供されます。[Ctrl]-[Space]を押して手動でコード補完を起動することもできます。</p>
+
+                    <img alt="ソース・エディタで提供される、Strutsタグに対するコード補完とJavadoc" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/code-completion.png" title="Strutsタグに対して提供されたコード補完とJavadoc">
+
+                    <p><a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_bean.html">Bean taglib</a>は、フォームから収集されたデータにフォームBean (<code>ActionForm</code> Bean)を関連付ける際に役立つ、多数のタグを提供します。<a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_html.html">html taglib</a>は、ビューと、Webアプリケーションに必要な他のコンポーネントとの間のインタフェースを提供します。たとえば、次では一般的なhtml<code>form</code>タグをStrutsの<code>&lt;html:form></code>タグに置き換えます。この利点の1つは、こうすることで、<code>html:form</code>の<code>action</code>要素に提供される値に対応するBeanオブジェクトを、サーバーが検索または作成することです。</p></li>
+
+                <li><code>&lt;h1></code> (または<code>&lt;h2></code>)タグの下に、次を追加します。
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+
+   &lt;html:submit value=&quot;Login&quot; /&gt;
+
+&lt;/html:form&gt;</pre>
+
+                    <p class="tips">ソース・エディタでの入力が終了するたびに、右クリックして「フォーマット」を選択([Alt]-[Shift]-[F])することにより、コードを整えることができます。</p></li>
+
+                <li>IDEの右側にあるパレット(「ウィンドウ」>「パレット」)で、「表」項目を「HTML」カテゴリから<code>&lt;html:submit value="Login" /></code>行の直前の位置にドラッグします。「挿入表」ダイアログ・ボックスが表示されます。行を<code>3</code>、列を<code>2</code>に設定し、その他の設定はすべて<code>0</code>のままにします。このチュートリアルの後の方で、表の表示に影響する<a href="#style">スタイル・シートを添付</a>します。<br><img alt="ソース・エディタに表示された「表を作成」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/insert-table.png" title="パレットによって提供される、コード・テンプレート用の簡単に使用できるダイアログ"><br>「OK」をクリックし、必要に応じてコードの書式を再設定します([Alt]-[Shift]-[F])。これで、<code>login.jsp</code>のフォームは次のようになります。
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;&lt;/th&gt;
+                &lt;th&gt;&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+
+    &lt;html:submit value=&quot;Login&quot; /&gt;
+
+&lt;/html:form&gt;</pre>
+
+                    <p><strong class="notes">注意: </strong>このチュートリアルでは使用されないため、表の<code>&lt;thead></code>行は安全に削除できます。</p></li>
+
+                <li>表の最初の行に、次の<strong>太字</strong>で示した部分を入力します。
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;<strong>Enter your name:</strong>&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:text property=&quot;name&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre></li>
+
+                <li>表の2行目に、次の<strong>太字</strong>で示した部分を入力します。
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;<strong>Enter your email:</strong>&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:text property=&quot;email&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre>
+
+                    <code>html:text</code>要素によって、フォームからの入力フィールドを、次のステップで作成されるフォームBeanのプロパティと一致させることができます。たとえば、<code>property</code>の値は、このフォームに関連付けられたフォームBeanで宣言されているフィールドと一致します。</li>
+
+                <li>表の3行目の2列目に&lt;html:submit value="Login" /> 要素を移動し、表の3行目が次の<strong>太字</strong>で示した部分になるようにします。
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:submit value=&quot;Login&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre>
+                </li>
+            </ol>
+
+            <p>この段階で、ログイン・フォームは次のようになるはずです。</p>
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Enter your name:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;name&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Enter your email:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;email&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;html:submit value=&quot;Login&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+&lt;/html:form&gt;</pre>
+
+            <a name="success"></a>
+            <h3>成功ページの作成</h3>
+
+            <ol>
+                <li>「<code>MyStrutsApp</code>」プロジェクト・ノードを右クリックし、「新規」>「JSP」を選択して、新規ファイル名として「<code>success</code>」を入力します。「フォルダ」フィールドで、横の「参照」ボタンをクリックし、表示されるダイアログから「<code>WEB-INF</code>」を選択します。「フォルダを選択」をクリックし、「フォルダ」フィールドに「WEB-INF」と入力します。WEB-INFフォルダに含まれるどのファイルにも、クライアント・リクエストから直接アクセスすることはできません。<code>success.jsp</code>を正しく表示するために、処理済のデータを含める必要があります。「終了」をクリックします。</li>
+                <li>ソース・エディタで新しく作成されたページの内容を次のように変更します。
+
+<pre class="examplecode">
+&lt;head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    &lt;title&gt;Login Success&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Congratulations!&lt;/h1&gt;
+
+    &lt;p&gt;You have successfully logged in.&lt;/p&gt;
+
+    &lt;p&gt;Your name is: .&lt;/p&gt;
+
+    &lt;p&gt;Your email address is: .&lt;/p&gt;
+&lt;/body&gt;</pre></li>
+
+                <li>ファイルの先頭に<a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_bean.html">Bean taglib</a>ディレクティブを追加します。
+
+<pre class="examplecode">
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-bean&quot; prefix=&quot;bean&quot; %&gt;
+</pre></li>
+                <li>次の<strong>太字</strong>で示した<code>&lt;bean:write></code>タグを追加します。
+
+<pre class="examplecode">
+&lt;p&gt;Your name is: <strong>&lt;bean:write name=&quot;LoginForm&quot; property=&quot;name&quot; /&gt;</strong>.&lt;/p&gt;
+
+&lt;p&gt;Your email address is: <strong>&lt;bean:write name=&quot;LoginForm&quot; property=&quot;email&quot; /&gt;</strong>.&lt;/p&gt;
+</pre>
+
+                    <code>&lt;bean:write></code>タグを使用することによって、Bean taglibを利用し、これから作成する<code>ActionForm</code> Beanを検索して、<code>name</code>および<code>email</code>に保存されたユーザー・データを表示します。</li>
+            </ol>
+        </div>
+
+        <a name="actionForm"></a>
+        <h2><code>ActionForm</code> Beanの作成</h2>
+
+        <p>Strutsの<code>ActionForm</code> Beanは、リクエスト間でデータを保持するために使用されます。たとえば、ユーザーがフォームを送信した場合、フォーム・ページに再表示(データが無効な形式か、ログインに失敗した場合)するか、ログイン成功ページに表示(データが検証をパスした場合)できるように、そのデータは一時的にフォームBeanに格納されます。</p>
+
+        <ol>
+            <li>「<code>MyStrutsApp</code>」プロジェクト・ノードを右クリックし、「新規」>「その他」を選択します。「カテゴリ」で「Struts」を選択し、「ファイル・タイプ」で「Struts ActionForm Bean」を選択します。「次」をクリックします。</li>
+            <li>「クラス名」に「<code>LoginForm</code>」と入力します。続いて、「パッケージ」ドロップダウン・リストから「<code>com.myapp.struts</code>」を選択し、「終了」をクリックします。
+
+                <p>
+                IDEによって<code>LoginForm</code> Beanが生成され、ソース・エディタで開きます。デフォルトでは、IDEには<code>name</code>という<code>String</code>と、<code>number</code>という<code>int</code>が用意されています。両方のフィールドに、それらに定義されたアクセッサ・メソッドがあります。また、IDEにより<code>struts-config.xml</code>ファイルにBean宣言が追加されます。ソース・エディタで<code>struts-config.xml</code>ファイルを開くと、ウィザードによって追加された次の宣言を確認できます。</p>
+
+<pre class="examplecode">
+&lt;form-beans&gt;
+    <strong>&lt;form-bean name=&quot;LoginForm&quot; type=&quot;com.myapp.struts.LoginForm&quot; /&gt;</strong>
+&lt;/form-beans&gt;
+</pre>
+
+                <p><code>struts-config.xml</code>ファイルには、IDEのナビゲーション・サポートが用意されています。[Ctrl]キーを押したまま、<code>LoginForm</code> Beanの完全修飾クラス名の上にマウスを動かします。名前がリンクになり、ソース・エディタ内のそのクラスに直接移動できます。</p>
+
+                <img alt="Struts configファイルに表示されたナビゲーション・サポート" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/navigation-support.png" title="struts-config.xmlに提供されたナビゲーション・サポート"></li>
+
+            <li>ソース・エディタの<code>LoginForm</code> Beanで、<code>login.jsp</code>内に作成した<code>name</code>および<code>email</code>テキスト入力フィールドに対応するフィールドと付随するアクセッサ・メソッドを作成します。<code>name</code>は<code>LoginForm</code>スケルトンですでに作成されているため、実装する必要があるのは<code>email</code>のみです。
+
+                <p>
+                <code>name</code>の下に、次の<strong>太字</strong>で示した宣言を追加します。</p>
+
+<pre class="examplecode">
+private String name;
+<strong>private String email;</strong></pre>
+
+                <a name="accessors"></a>
+                <p>アクセッサ・メソッドを作成するには、<code>email</code>上にカーソルを置き、[Alt]-[Insert]を押します。</p>
+
+                <img alt="ソース・エディタに表示された「コードを挿入」メニュー" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/create-accessors.png" title="ソース・エディタで[Ctrl]-[I]を押して表示された「コードを挿入」メニュー">
+
+                <p>
+                「取得メソッドおよび設定メソッド」を選択し、表示されるダイアログで「<code>email: String</code>」を選択して、「生成」をクリックします。「<code>email</code>」フィールドに対するアクセッサ・メソッドが生成されます。</p>
+
+                <p class="notes"><strong>注意: </strong>このチュートリアルでは使用されないため、<code>number</code>用の宣言およびアクセッサ・メソッドは削除してかまいません。</p></li>
+        </ol>
+
+        <a name="actionClass"></a>
+        <h2><code>Action</code>クラスの作成</h2>
+
+        <p><code>Action</code>クラスには、アプリケーションのビジネス・ロジックが含まれます。フォーム・データを受信したときに、そのデータを処理し、処理したデータの転送先ビューを特定するのは<code>Action</code>オブジェクトの<code>execute</code>メソッドです。<code>Action</code>クラスはStrutsフレームワークに不可欠なため、NetBeans IDEにはウィザードが用意されています。</p>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウで「<code>MyStrutsApp</code>」プロジェクト・ノードを右クリックし、「新規」>「その他」を選択します。「Struts」カテゴリで「Strutsアクション」を選択し、「次」をクリックします。</li>
+            <li>「名前と場所」パネルで名前を<code>LoginAction</code>に変更します。</li>
+            <li>「パッケージ」ドロップダウン・リストから「<code>com.myapp.struts</code>」を選択します。</li>
+            <li>「アクションのパス」に「<code>/login</code>」と入力します。この値は、<code>login.jsp</code>で<code>&lt;html:form></code>タグの<code>action</code>属性に設定したのと同じです。設定が、次に示すスクリーンショットの表示のようになっていることを確認し、「次」をクリックします。<br> <img alt="新規Strutsアクション・ウィザード" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/new-struts-action.png" title="新規Strutsアクション・ウィザード"></li>
+
+            <li>ウィザードの3番目のステップで、<code>Action</code>クラスをフォームBeanと関連付けられます。ActionForm Bean名のオプションとして、前に作成した<code>LoginForm</code> Beanが表示されています。パネルに対して次の調整を適用します。
+
+                <ul>
+                    <li>「入力リソース」フィールドのスラッシュを削除します。</li>
+                    <li>「スコープ」を「リクエスト」に設定します(Strutsでは、「セッション」がデフォルトのスコープ設定します。)</li>
+                    <li>「ActionForm Beanを検証」オプションを選択解除します。</li>
+                </ul>
+
+                「終了」をクリックします。<code>LoginAction</code>クラスが生成され、ソース・エディタでそのファイルが開きます。<code>struts-config.xml</code>ファイルに次の<code>action</code>エントリが追加されています。
+
+<pre class="examplecode">
+&lt;action-mappings&gt;
+    <strong>&lt;action name=&quot;LoginForm&quot; path=&quot;/login&quot; scope=&quot;request&quot; type=&quot;com.myapp.struts.LoginAction&quot; validate=&quot;false&quot;/&gt;</strong>
+    &lt;action path=&quot;/Welcome&quot; forward=&quot;/welcomeStruts.jsp&quot;/&gt;
+&lt;/action-mappings&gt;</pre>
+
+                <code>name</code>属性と<code>scope</code>属性は、このアクションに関連付けられているフォームBeanに適用されます。具体的には、受信リクエストが<code>/login</code>に一致すると、Strutsフレームワークは自動的に<code>LoginForm</code>オブジェクトをインスタンス化し、リクエストで送信されたフォーム・データとともに取り込みます。<code>validate</code>のデフォルト値は<code>true</code>に設定されます。これは、フォームBeanの<code>validate</code>メソッドへのコールをフレームワークに指示します。ただし、次のステップで<code>validate</code>メソッドを必要としない単純な検証を手動でコーディングするため、このウィザードでは、このオプションを選択解除しました。</li>
+        </ol>
+
+        <a name="validate"></a>
+        <h2>検証の実装</h2>
+
+        <p>ソース・エディタで<code>LoginAction</code>クラスを参照し、<code>execute</code>メソッドを検査します。</p>
+
+<pre class="examplecode">
+public ActionForward execute(ActionMapping mapping, ActionForm form,
+    HttpServletRequest request, HttpServletResponse response)
+    throws Exception {
+
+    return mapping.findForward(SUCCESS);
+}</pre>
+
+        <p><code>LoginAction</code>クラス宣言の下に、<code>SUCCESS</code>の定義が表示されています。</p>
+
+<pre class="examplecode">private final static String SUCCESS = &quot;success&quot;;</pre>
+
+        <p>現在、<code>mapping.findForward</code>メソッドは、任意のリクエストを無条件で<code>success</code>という出力ビューに転送するように設定されています。これは実際には望ましいことではありません。受信データに対して、まずなんらかの検証を実行してから、<code>success</code>ビューまたは別のビューに送信するかどうかを決定します。</p>
+
+        <ul>
+            <li><a href="#beanData">Beanデータへのアクセスと転送条件の準備</a></li>
+            <li><a href="#errorMsg">エラー・メッセージの設定</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="beanData"></a>
+            <h3>Beanデータへのアクセスと転送条件の準備</h3>
+
+            <ol>
+                <li><code>execute</code>メソッドの本体に次のコードを入力します。
+
+<pre class="examplecode">
+// extract user data
+LoginForm formBean = (LoginForm)form;
+String name = formBean.getName();
+String email = formBean.getEmail();</pre>
+
+                    受信フォーム・データを使用するには、<code>execute</code>の<code>ActionForm</code>引数を受け取り、<code>LoginForm</code>としてキャストして、前に作成した取得メソッドを適用します。</li>
+
+                <li>受信データに検証を実行するため、次の条件節を入力します。
+
+<pre class="examplecode">
+// perform validation
+if ((name == null) ||             // name parameter does not exist
+    email == null  ||             // email parameter does not exist
+    name.equals(&quot;&quot;) ||            // name parameter is empty
+    email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+    return mapping.findForward(FAILURE);
+}</pre>
+
+                    この段階で、<code>execute</code>メソッドは次のようになるはずです。
+
+<pre class="examplecode">public ActionForward execute(ActionMapping mapping, ActionForm form,
+        HttpServletRequest request, HttpServletResponse response)
+        throws Exception {
+
+    // extract user data
+    LoginForm formBean = (LoginForm) form;
+    String name = formBean.getName();
+    String email = formBean.getEmail();
+
+    // perform validation
+    if ((name == null) || // name parameter does not exist
+            email == null || // email parameter does not exist
+            name.equals(&quot;&quot;) || // name parameter is empty
+            email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+        return mapping.findForward(FAILURE);
+    }
+
+    return mapping.findForward(SUCCESS);
+}</pre></li>
+
+                <li><code>FAILURE</code>の宣言を<code>LoginAction</code>クラスに追加します(変更箇所は<strong>太字</strong>で表示)。
+
+<pre class="examplecode">
+private final static String SUCCESS = &quot;success&quot;;
+<strong>private final static String FAILURE = &quot;failure&quot;;</strong>
+</pre>
+                </li>
+            </ol>
+
+            <p>上記のロジックを使用して、<code>execute</code>メソッドは、ユーザーが<code>name</code>および<code>email</code>フィールドの両方に入力を行い、入力されたemailに「@」記号が含まれている場合、リクエストを<code>success</code>ビューに転送します。そうでない場合、<code>failure</code>ビューに転送されます。この後の<a href="#forward"><code>struts-config.xml</code>への<code>forward</code>エントリの追加</a>で示すように、ユーザーがもう一度正しい形式でデータを入力できるよう、フォーム・ページに戻るための<code>failure</code>ビューを設定できます。</p>
+
+            <a name="errorMsg"></a>
+            <h3>エラー・メッセージの設定</h3>
+
+            <p>ログイン・フォームが返された場合、検証に失敗したことをユーザーに通知することをお薦めします。このためには、フォームBeanに<code>error</code>フィールドを追加し、適切な<code>&lt;bean:write></code>タグを<code>login.jsp</code>内のフォームに追加します。最後に<code>Action</code>オブジェクトで、<code>failure</code>ビューが選択された場合にエラー・メッセージが表示されるように設定します。</p>
+
+            <ol>
+                <li><code>LoginForm</code>を開き、クラスに<code>error</code>フィールドを追加します。
+
+<pre class="examplecode">
+// error message
+private String error;</pre></li>
+
+                <li><a href="#accessors">前に示した</a>ように、<code>error</code>用の取得メソッドと設定メソッドを追加します。</li>
+                <li>設定メソッドを次のように変更します。
+
+<pre class="examplecode">
+public void setError() {
+    this.error =
+        &quot;&lt;span style='color:red'&gt;Please provide valid entries for both fields&lt;/span&gt;&quot;;
+}
+</pre></li>
+                <li><code>login.jsp</code>を開き、次の変更を行います。
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;tbody&gt;
+            <strong>&lt;tr&gt;
+                &lt;td colspan=&quot;2&quot;&gt;
+                    &lt;bean:write name=&quot;LoginForm&quot; property=&quot;error&quot; filter=&quot;false&quot;/&gt;
+                    &amp;nbsp;&lt;/td&gt;
+            &lt;/tr&gt;</strong>
+            &lt;tr&gt;
+                &lt;td&gt;Enter your name:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;name&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+</pre></li>
+
+                <li><code>LoginAction</code>の<code>if</code>条件節内に、<code>failure</code>条件を転送する前にエラー・メッセージを設定する文を追加します(<strong>太字</strong>部分)。
+
+<pre class="examplecode">
+if ((name == null) ||             // name parameter does not exist
+    email == null  ||             // email parameter does not exist
+    name.equals(&quot;&quot;) ||            // name parameter is empty
+    email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+    <strong>formBean.setError();</strong>
+    return mapping.findForward(FAILURE);
+}
+</pre></li>
+            </ol>
+
+            <p>完成した<code>LoginAction</code>クラスは、次のようになるはずです。</p>
+
+<pre class="examplecode">
+public class LoginAction extends org.apache.struts.action.Action {
+
+    private final static String SUCCESS = &quot;success&quot;;
+    private final static String FAILURE = &quot;failure&quot;;
+
+    public ActionForward execute(ActionMapping mapping, ActionForm form,
+            HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+
+        // extract user data
+        LoginForm formBean = (LoginForm)form;
+        String name = formBean.getName();
+        String email = formBean.getEmail();
+
+        // perform validation
+        if ((name == null) ||             // name parameter does not exist
+            email == null  ||             // email parameter does not exist
+            name.equals(&quot;&quot;) ||            // name parameter is empty
+            email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+            formBean.setError();
+            return mapping.findForward(FAILURE);
+        }
+
+        return mapping.findForward(SUCCESS);
+
+    }
+}
+</pre>
+        </div>
+
+        <a name="forward"></a>
+        <h2><code>struts-config.xml</code>への<code>forward</code>エントリの追加</h2>
+
+        <p>アプリケーションが、JSPページと<code>LoginAction</code>の<code>execute</code>メソッドによって返された転送条件を一致させるようにするには、<code>struts-config.xml</code>ファイルに<code>forward</code>エントリを追加する必要があります。</p>
+
+        <ol>
+            <li>ソース・エディタで<code>struts-config.xml</code>を開き、<code>LoginForm</code>の<code>action</code>エントリ内を右クリックし、「Struts」>「転送を追加」を選択します。<br> <img alt="struts-config.xmlの右クリック・メニューに表示された「Struts」のオプション" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/add-forward.png" title="右クリックして「Struts」&gt;「転送の追加」を選択"></li>
+
+            <li>「転送を追加」ダイアログ・ボックスで、「転送名」に「<code>success</code>」と入力します。「リソース・ファイル」フィールドに<code>success.jsp</code>のパス(<code>/WEB-INF/success.jsp</code>)を入力します。ダイアログ・ボックスは次のようになるはずです。<br><img alt="「転送の追加」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/add-forward-dialog.png" title="「転送の追加」ダイアログでのstruts-config.xmlへのforwardエントリの作成"><br>「Add」をクリックします。次の<strong>太字</strong>で示した<code>forward</code>エントリが、<code>struts-config.xml</code>に追加されます。
+
+<pre class="examplecode">
+&lt;action name=&quot;LoginForm&quot; path=&quot;/login&quot; scope=&quot;request&quot; type=&quot;com.myapp.struts.LoginAction&quot; validate=&quot;false&quot;&gt;
+    <strong>&lt;forward name=&quot;success&quot; path=&quot;/WEB-INF/success.jsp&quot;/&gt;</strong>
+&lt;/action&gt;
+</pre></li>
+
+            <li>同じ処理を行い、<code>failure</code>のforwardエントリを追加します。「リソース・ファイル」のパスを「<code>/login.jsp</code>」に設定します。次の<strong>太字</strong>で示した<code>forward</code>エントリが、<code>struts-config.xml</code>に追加されます。
+
+<pre class="examplecode">
+&lt;forward name=&quot;success&quot; path=&quot;/WEB-INF/success.jsp&quot;/&gt;
+<strong>&lt;forward name=&quot;failure&quot; path=&quot;/login.jsp&quot;/&gt;</strong>
+</pre>
+            </li>
+        </ol>
+
+        <a name="configure"></a>
+        <h2>アプリケーションの構成と実行</h2>
+
+        <p>IDEでは、Antビルド・スクリプトを使用し、Webアプリケーションをビルドおよび実行します。ビルド・スクリプトは、プロジェクトの作成時に、新規プロジェクト・ウィザードで入力したオプションに基づいて生成されます。アプリケーションをビルドおよび実行する前に、アプリケーションのデフォルトのエントリ・ポイントを<code>login.jsp</code>に設定する必要があります。(オプション)単純なスタイル・シートをプロジェクトに追加することもできます。</p>
+
+        <ul>
+            <li><a href="#welcome">開始ページの設定</a></li>
+            <li><a href="#style">スタイル・シートの添付</a></li>
+            <li><a href="#run">アプリケーションの実行</a></li>
+        </ul>
+
+        <a name="welcome"></a>
+        <h3>開始ページの設定</h3>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウで<code>web.xml</code>デプロイメント・ディスクリプタをダブルクリックします。ソース・エディタ最上部に、<code>web.xml</code>ファイルへのインタフェースを提供するタブが表示されます。「ページ」タブをクリックします。「開始ファイル」フィールドに「<code>login.jsp</code>」と入力します。<br> <img alt="デプロイメント・ディスクリプタ・インタフェース" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/welcome-files.png" title="アプリケーションのデプロイメント・ディスクリプタのグラフィカル・エディタ"> <br>ここで、「ソース」タブをクリックしてファイルを表示します。<code>welcome-file</code>エントリ内に<code>login.jsp</code>が示されます。
+
+<pre class="examplecode">
+&lt;welcome-file&gt;login.jsp&lt;/welcome-file&gt;
+</pre></li>
+        </ol>
+
+
+        <a name="style"></a>
+        <h3>スタイル・シートの添付</h3>
+
+        <ol>
+            <li>プロジェクトに単純なスタイル・シートを追加します。これを行うための簡単な方法の1つは、使用するコンピュータに<a href="https://netbeans.org/files/documents/4/2228/stylesheet.css">このサンプル・スタイル・シート</a>を保存することです。ファイルをコピーし([Ctrl]-[C])、IDEの「プロジェクト」ウィンドウで「Webページ」ノードを選択して、[Ctrl]-[V]を押します。ファイルがプロジェクトに追加されます。</li>
+            <li><code>login.jsp</code>と<code>success.jsp</code>の両方の<code>&lt;head></code>タグ間に参照を追加して、JSPページにスタイル・シートを関連付けます。
+
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;
+</pre></li>
+        </ol>
+
+        <a name="run"></a>
+        <h3>アプリケーションの実行</h3>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「実行」を選択します。Webアプリケーションがビルドされ、プロジェクトを作成するときに指定したサーバーを使用してデプロイされます。ブラウザが開き、<code>login.jsp</code>ページが表示されます。検証に失敗するデータを入力します(つまり、いずれかのフィールドを空のままにするか、「@」符号が含まれていない電子メール・アドレスを入力)。<br><img alt="ブラウザに表示されたlogin.jspとサンプル・データ" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/login-form.png" title="検証に失敗するデータを含むフォーム"><br><br>「Login」をクリックすると、エラー・メッセージを含むログイン・フォームが再表示されます。<br><img alt="エラー・メッセージが表示されたlogin.jsp" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/login-form-error.png" title="エラー・メッセージ付きで再表示されたフォーム"><br><br>検証をパスするデータを入力してみます。「Login」をクリックすると、成功ページが表示されます。<br><img alt="入力データが表示されたsuccess.jsp" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/success-page.png" title="入力データが表示された成功ページ">
+            </li>
+        </ol>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Struts">ご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>関連項目</h2>
+
+        <p>これで、NetBeans IDEでのStrutsフレームワーク入門は終わりです。このドキュメントでは、Strutsフレームワークを使用してNetBeans IDEで単純なWeb MVCアプリケーションを構築する方法を示し、Webアプリケーション開発用のIDEのインタフェースを紹介しました。JSPページ内でStrutsタグを使用する方法、Struts<code>ActionForm</code> Beanに一時的にデータを保持する方法、およびStruts<code>Action</code>オブジェクトを使用して転送ロジックを実装する方法も示しました。また、ログイン失敗に対する警告メッセージの設定など、アプリケーションに単純な検証を実装する方法も示します。</p>
+
+        <p>関連するチュートリアルについては、次のリソースを参照してください。</p>
+
+        <ul>
+            <li><a href="framework-adding-support.html">Webフレームワークのためのサポートの追加</a>。プラグイン・マネージャを使用してNetBeans IDEにWebフレームワークのサポートを追加する方法を概説したガイドです。</li>
+            <li><a href="quickstart-webapps-spring.html">Spring Webフレームワーク入門</a>。NetBeans IDEを使用して、Springフレームワークを使用するWebアプリケーションを開発する基本的な手順を示します。</li>
+            <li><a href="jsf20-intro.html">JavaServer Faces 2.0入門</a>。管理対象BeanをWebページに接続する方法、およびFaceletsテンプレートを利用する方法を説明するドキュメントです。</li>
+        </ul>
+
+    </body>
+</html>

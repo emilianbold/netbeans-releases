@@ -1,0 +1,845 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to implement shopping cart functionality into the application.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>NetBeans Eコマースのチュートリアル - セッションの管理</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans Eコマースのチュートリアル - セッションの管理</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>チュートリアルの目次</h4>
+
+                <ol>
+                    <li><a href="intro.html">概要</a></li>
+                    <li><a href="design.html">アプリケーションの設計</a></li>
+                    <li><a href="setup-dev-environ.html">開発環境の設定</a></li>
+                    <li><a href="data-model.html">データ・モデルの設計</a></li>
+                    <li><a href="page-views-controller.html">ページ・ビューおよびコントローラ・サーブレットの準備</a></li>
+                    <li><a href="connect-db.html">データベースへのアプリケーションの接続</a></li>
+                    <li><a href="entity-session.html">エンティティ・クラスおよびセッションBeanの追加</a></li>
+                    <li><strong>セッションの管理</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#session-data">セッション・データの処理</a></li>
+                            <li><a href="#debug">Javaデバッガによるセッション・データの確認</a></li>
+                            <li><a href="#session-track">セッショントラック・オプションの確認</a></li>
+                            <li><a href="#time-out">セッション・タイム・アウトの処理</a></li>
+                            <li><a href="#seeAlso">関連項目</a></li>
+                        </ul></li>
+
+                    <li><a href="transaction.html">トランザクション・ビジネス・ロジックの統合</a></li>
+                    <li><a href="language.html">言語サポートの追加</a></li>
+                    <li><a href="security.html">アプリケーションの保護</a></li>
+                    <li><a href="test-profile.html">テストとプロファイリング</a></li>
+                    <li><a href="conclusion.html">まとめ</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="このページの内容は、NetBeans IDEバージョン6.8および6.9に適用されます" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="このページの内容は、NetBeans IDEバージョン6.8および6.9に適用されます"></p>
+
+        <p>なんらかのショッピング・カート機能を提供するすべてのEコマース・アプリケーションでは、ユーザーがWebサイトの中でクリックしたときにユーザー固有のデータを覚える必要があります。開発者にとって残念ですが、インターネットの通信で使用されるHTTPプロトコルは<em>ステートレス</em>なプロトコルです。サーバーが受け取る各リクエストは、以前に受け取ったリクエストとは無関係の独立した情報です。このため、顧客がボタンをクリックして自分のショッピング・カートに項目を追加したら、アプリケーションはこのユーザーのカートの状態を更新するのみでなく、このアクションが、同時にサイトをブラウズしているユーザーのカートに影響しないようにする必要があります。</p>
+
+        <p>上記のシナリオを適切に処理するには、ユーザーがサイトにアクセスしている間、<em>セッション</em>を作成し、セッションを維持できるようにする機能を実装する必要があります。このために、すべてのJavaベースのWebアプリケーションの基盤であるサーブレット・テクノロジには<a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpSession.html" target="_blank"><code>HttpSession</code></a>インタフェースが用意されています。また、セッションが維持されている間、アプリケーションが一時的にユーザー・データを格納できるようにする<code>ShoppingCart</code>および<code>ShoppingCartItem</code>というクラスを定義する必要があります。</p>
+
+        <p>このチュートリアル・ユニットでは、他のNetBeans Eコマースのチュートリアルとは異なる方法を取ります。プロジェクト・ファイルを作成してそのプロジェクトにコピーして貼付けできるコード・スニペットを提供するという手順に従うのではなく、このユニットの完成したプロジェクトのスナップショットを開き、IDEデバッガやその他のツールを使用してコードを調べます。このプロセスの中で、<code>HttpSession</code>オブジェクトをコードに適用して、Webサイトへのアクセスごとに専用のセッションを作成する方法を学習します。また、<em>スコープ指定された変数</em>について、およびそれをJavaクラスやJSPページで使用する方法についても学習します。このユニットでは、セッションを維持するための<code>HttpSession</code>のデフォルト機構(Cookie)についても説明し、ユーザーのブラウザでCookieが非アクティブ化されている場合に必要となる手順を示します。ユニットの最後ではセッション・タイム・アウトについても触れ、リクエストをインターセプトしてセッションが存在するかどうかを確認する単純なフィルタを作成して、セッション・タイム・アウトを処理する方法を示します。</p>
+
+        <p>このチュートリアルでビルドするアプリケーションのライブ・デモを、<a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">NetBeans Eコマースのチュートリアルのデモ・アプリケーション</a>で表示できます。</p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Javaバンドル版、6.8または6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFishサーバー</a></td>
+                    <td class="tbltd1">v3またはOpen Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQLデータベース・サーバー</a></td>
+                    <td class="tbltd1">バージョン5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot5.zip">AffableBeanプロジェクト</a></td>
+                    <td class="tbltd1">スナップショット5</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注意: </strong></p>
+
+        <ul>
+            <li>NetBeans IDEが正常に動作するには、JDK (Java Development Kit)が必要です。上記に一覧表示されているいずれのリソースもインストールされていない場合は、最初にJDKをダウンロードしてインストールするようにしてください。</li>
+
+            <li>NetBeans IDEのJavaバンドル版には、このチュートリアルでビルドするアプリケーションに必要なJava WebおよびEEテクノロジが含まれています。</li>
+
+            <li id="glassFish">NetBeans IDEのJavaバンドル版には、このチュートリアルに必要なGlassFishサーバーも含まれています。<a href="https://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">GlassFishサーバーを別個にダウンロードする</a>こともできますが、NetBeansダウンロードに付属するバージョンを使用すると、IDEに自動的に登録されるので便利です。</li>
+
+            <li>このチュートリアル・ユニットは、以前のユニットを完了させていなくても進めることができます。そのために、データベースの準備や、IDE、GlassFishおよびMySQL間の接続の確立について説明した<a href="setup.html">設定手順</a>を参照してください。</li>
+        </ul>
+
+
+        <br>
+        <h2 id="session-data">セッション・データの処理</h2>
+
+        <p>アプリケーションは、<code>HttpSession</code>オブジェクトを使用してユーザー・セッションを管理できます。ユーザー固有のデータを<code>HttpSession</code>オブジェクトにバインドして、後でこのデータにアクセスできます。バインドとアクセスの両方のアクションは、Javaクラスから行うことも、EL式のセッション・スコープ指定された変数から行うことも可能です。</p>
+
+        <ul>
+            <li><a href="#httpSession">HttpSessionオブジェクトの操作</a></li>
+            <li><a href="#scopedVariables">Webアプリケーションでのスコープ指定された変数の操作</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="httpSession">HttpSessionオブジェクトの操作</h3>
+
+            <p><code>AffableBean</code>アプリケーションは<code>HttpSession</code>オブジェクトを使用して、複数のリクエストにわたってユーザーを識別します。<code>HttpSession</code>オブジェクトを取得するには、特定のリクエストで次のように<code>getSession()</code>を使用します。</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+HttpSession session = request.getSession();</pre>
+
+            <p>そのリクエストのセッション・オブジェクトがまだ存在しない場合、このメソッドは新しいセッションを作成して返します。</p>
+
+            <p>セッション・オブジェクトは、リクエスト間でデータを渡すための輸送手段として使用できます。オブジェクトをセッションにバインドするには、<code>setAttribute</code>メソッドを使用します。同様に、オブジェクトをセッションから取得するには、<code>getAttribute</code>を使用します。たとえば<code>AffableBean</code>アプリケーションでは、次の方法でユーザーのショッピング・カートが作成され、ユーザー・セッションにバインドされます。</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+ShoppingCart cart = new ShoppingCart();
+session.setAttribute(&quot;cart&quot;, cart);</pre>
+
+            <p>セッションからカートを取得するために、次のように<code>getAttribute</code>メソッドが適用されます。</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+cart = (ShoppingCart) session.getAttribute(&quot;cart&quot;);</pre>
+
+            <p>JSPページでは、セッションにバインドされているオブジェクトにEL式を使用してアクセスできます。上記の例を続けて使用します。「<code>cart</code>」という名前の<code>ShoppingCart</code>オブジェクトがセッションにバインドされている場合、次のEL式を使用することでこのオブジェクトにアクセスできます。
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">${cart}</pre>
+
+            <p>しかし、<code>ShoppingCart</code>オブジェクト自体にアクセスしてもほとんど意味がありません。本当に必要なのは、オブジェクトに格納されている値にアクセスするための方法です。プロジェクトのスナップショットで新しい<code>ShoppingCart</code>クラスを調べると、次のプロパティが含まれていることがわかります。</p>
+
+            <ul>
+                <li><code>double total</code></li>
+                <li><code>int numberOfItems</code></li>
+                <li><code>List&lt;String, ShoppingCartItem> items</code></li>
+            </ul>
+
+            <p>プロパティに対応する取得メソッドがあれば、EL式で単純なドット表記法を使用して個々のプロパティの値にアクセスできます。<code>cart.jsp</code>ページを調べると、次のように、ちょうどこの方法で<code>numberOfItems</code>の値にアクセスしているのが確認できます。</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+&lt;p&gt;Your shopping cart contains ${cart.numberOfItems} items.&lt;/p&gt;</pre>
+
+            <p>上記の<code>items</code>リストのような複数の値を含むプロパティからデータを抽出するために、<code>cart.jsp</code>ページでは次のように<code>&lt;c:forEach></code>ループを使用しています。</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+&lt;c:forEach var=&quot;cartItem&quot; items=&quot;${cart.items}&quot; varStatus=&quot;iter&quot;&gt;
+
+  &lt;c:set var=&quot;product&quot; value=&quot;${cartItem.product}&quot;/&gt;
+
+    &lt;tr class=&quot;${((iter.index % 2) == 0) ? 'lightBlue' : 'white'}&quot;&gt;
+        &lt;td&gt;
+            &lt;img src=&quot;${initParam.productImagePath}${product.name}.png&quot;
+                 alt=&quot;${product.name}&quot;&gt;
+        &lt;/td&gt;
+
+        &lt;td&gt;${product.name}&lt;/td&gt;
+
+        &lt;td&gt;
+            &amp;euro; ${cartItem.total}
+            &lt;br&gt;
+            &lt;span class=&quot;smallText&quot;&gt;( &amp;euro; ${product.price} / unit )&lt;/span&gt;
+        &lt;/td&gt;
+        ...
+    &lt;/tr&gt;
+
+&lt;/c:forEach&gt;</pre>
+
+            <p><code>ShoppingCartItem</code>の<code>product</code>プロパティは、カート項目の製品タイプを識別します。上記のループでは、最初に<code>product</code>変数を<code>${cartItem.product}</code>の式に設定することで、これを利用しています。その後、この変数を使用して、名前や価格などの製品に関する情報を取得しています。</p>
+
+
+            <h3 id="scopedVariables">Webアプリケーションでのスコープ指定された変数の操作</h3>
+
+            <p>JSP/サーブレット・テクノロジを扱う場合、アプリケーションのレルム内で使用できる4つのスコープ・オブジェクトがあります。JSPテクノロジには、サーブレットAPIによって定義されるクラスにアクセスできる<em>暗黙オブジェクト</em>が実装されています。</p>
+
+            <div class="margin-around">
+                <table width="688px">
+                    <tr>
+                        <th class="tblheader" scope="col">スコープ</th>
+                        <th class="tblheader" scope="col">定義</th>
+                        <th class="tblheader" scope="col">サーブレット・クラス</th>
+                        <th class="tblheader" scope="col">JSP暗黙オブジェクト</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>アプリケーション</strong></td>
+                        <td class="tbltd1">Webアプリケーションのグローバル・メモリー</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/ServletContext.html" target="_blank">javax.servlet.ServletContext</a></code></td>
+                        <td class="tbltd1"><code>applicationScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>セッション</strong></td>
+                        <td class="tbltd1">ユーザー・セッションに固有のデータ</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpSession.html" target="_blank">javax.servlet.http.HttpSession</a></code></td>
+                        <td class="tbltd1"><code>sessionScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>リクエスト</strong></td>
+                        <td class="tbltd1">個々のサーバー・リクエストに固有のデータ</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpServletRequest.html" target="_blank">javax.servlet.HttpServletRequest</a></code></td>
+                        <td class="tbltd1"><code>requestScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>ページ</strong></td>
+                        <td class="tbltd1">単一のページ(JSPのみ)のコンテキストのみで有効なデータ</td>
+                        <td class="tbltd1"><code>[n/a]</code></td>
+                        <td class="tbltd1"><code>pageScope</code></td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>エディタでプロジェクトの<code>category.jsp</code>ファイルを開くと、EL式に<code>${categories}</code>、<code>${selectedCategory}</code>および<code>${categoryProducts}</code>などの様々なスコープ指定された変数が含まれているのが確認できます。<code>${categories}</code>変数はアプリケーション・スコープ指定されており、次のように<code>ControllerServlet</code>の<code>init</code>メソッドで設定されています。</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+// store category list in servlet context
+getServletContext().setAttribute(&quot;categories&quot;, categoryFacade.findAll());</pre>
+
+            <p>他の<code>${selectedCategory}</code>と<code>${categoryProducts}</code>の2つは、<code>ControllerServlet</code>からアプリケーションのセッション・スコープに置かれています。例:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+// place selected category in session scope
+session.setAttribute(&quot;selectedCategory&quot;, selectedCategory);</pre>
+
+            <p class="notes"><strong>注意: </strong>前のチュートリアル・ユニットから続けている場合、<code>${selectedCategory}</code>と<code>${categoryProducts}</code>はもともとリクエスト・スコープ内に置かれていたことに気付くかもしれません。前のユニットではこれで問題ありませんでしたが、ここではユーザーがカテゴリ・ページで「add to cart」ボタンをクリックしたらどうなるかを考えてください。サーバーは、現在表示されているカテゴリ・ページを返すことによって、<code>addToCart</code>リクエストに応答します。したがって、選択されたカテゴリに関係する<code>selectedCategory</code>と<code>categoryProducts</code>を知る必要があります。この情報は、リクエストごとに確立するのではなく、複数のリクエストにまたがって保持し、必要なときにアクセスできるように、<code>category</code>リクエストからセッション・スコープに置きます。また、カート・ページによって提供される機能を調べます。(機能については<a href="#cartPage">後で</a>説明します。)「continue shopping」ボタンを押すと、ユーザーは前に表示されていたカテゴリに戻ります。再度<code>selectedCategory</code>変数と<code>categoryProducts</code>変数が必要です。</p>
+
+            <p>EL式でスコープ指定された変数を参照する場合、(異なるスコープに同じ名前の2つの変数がないと仮定して)変数のスコープを指定する必要はありません。JSPエンジンは4つすべてのスコープをチェックして、最初に一致した変数を返します。たとえば、<code>category.jsp</code>にある次の式を見てください。</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+${categoryProducts}</pre>
+
+            <p>これは、次の式の短縮形です。</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+${sessionScope.categoryProducts}</pre>
+
+            <span class="tips">詳細は、次のリソースを参照してください。</span>
+
+            <ul style="margin: 5px 0 0 1em">
+                <li><a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier5.html#1079198" target="_blank">J2EEプラットフォームでのエンタープライズ・アプリケーションの設計: 状態スコープ</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnafo.html" target="_blank">情報の共有 > スコープ指定されたオブジェクトの使用</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnahq.html#bnaij" target="_blank">統一された式言語 > 暗黙的なオブジェクト</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="debug">Javaデバッガによるセッション・データの確認</h2>
+
+        <p>アプリケーションが実行時にどのように動作するかを調べます。IDEのデバッガを使用してコードをステップ実行し、<code>HttpSession</code>がどのように作成されるのか、また、後で取得できるように他のオブジェクトをセッション・スコープに置く方法を調べます。</p>
+
+        <ol>
+            <li>このチュートリアル・ユニットの<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot5.zip">プロジェクト・スナップショット</a>をIDEで開きます。「プロジェクトを開く」(<img alt="「プロジェクトを開く」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/common/open-project-btn.png">)ボタンをクリックし、ウィザードを使用して、このプロジェクトをダウンロードしたコンピュータ上の場所に移動します。<a href="entity-session.html">前のチュートリアル・ユニット</a>から続けている場合は、このプロジェクト・スナップショットに<code>ShoppingCart</code>クラスと<code>ShoppingCartItem</code>クラスを含む新しい<code>cart</code>パッケージが含まれています。また、次のファイルも変更されています。
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li><code>WEB-INF/web.xml</code></li>
+                    <li><code>css/affablebean.css</code></li>
+                    <li><code>WEB-INF/jspf/header.jspf</code></li>
+                    <li><code>WEB-INF/jspf/footer.jspf</code></li>
+                    <li><code>WEB-INF/view/cart.jsp</code></li>
+                    <li><code>WEB-INF/view/category.jsp</code></li>
+                    <li><code>WEB-INF/view/checkout.jsp</code></li>
+                    <li><code>controller/ControllerServlet</code></li>
+                </ul></li>
+
+            <li>プロジェクトを実行(<img alt="「プロジェクトの実行」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png">)して、使用しているデータベースとアプリケーション・サーバーで適切に構成されていることを確認します。<br><br>
+                <p class="alert">プロジェクトの実行時にエラーが発生した場合は、データベースの準備や、IDE、GlassFishおよびMySQL間の接続の確立について説明した<a href="setup.html">設定手順</a>をもう一度確認してください。</p></li>
+
+            <li>ブラウザでアプリケーションの機能をテストします。<a href="entity-session.html">前のチュートリアル・ユニット</a>から直接継続している場合は、次のような機能拡張に気付くでしょう。
+
+                <h4>カテゴリ・ページ</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>初めて「add to cart」をクリックするとショッピング・カートが有効になり、「proceed to checkout」ウィジェットがヘッダーに表示されます。</li>
+                    <li>「add to cart」をクリックすると、ヘッダーにあるショッピング・カート・ウィジェットのカート項目の数が更新されます。</li>
+                    <li>「view cart」をクリックすると、カート・ページが表示されます。</li>
+                    <li>「proceed to checkout」をクリックすると、チェックアウト・ページが表示されます。</li>
+                </ul>
+
+                <img alt="カテゴリ・ページのブラウザのイメージ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/category-page.png" style="width:688px" title="ショッピング・カート機能があるカテゴリ・ページ">
+
+                <h4 id="cartPage">カート・ページ</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>「clear cart」をクリックすると、ショッピング・カートの項目が空になります。</li>
+                    <li>「continue shopping」をクリックすると、前に表示されていたカテゴリ・ページに戻ります。</li>
+                    <li>「proceed to checkout」をクリックすると、チェックアウト・ページが表示されます。</li>
+                    <li>項目の「quantity」フィールドに1から99までの数字を入力してから「update」をクリックすると、項目の合計と小計が再計算されます。</li>
+                    <li>項目の「quantity」フィールドに0を入力してから「update」をクリックすると、表示された表からその項目が除去されます。</li>
+                </ul>
+
+                <img alt="カート・ページのブラウザのイメージ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-page.png" style="width:688px" title="ショッピング・カート機能があるカート・ページ">
+
+                <h4>チェックアウト・ページ</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>「view cart」をクリックすると、カート・ページが表示されます。</li>
+                    <li>「submit purchase」をクリックすると、(ユーザー固有のデータなしで)確認ページが表示されます。</li>
+                </ul>
+
+                <img alt="チェックアウト・ページのブラウザのイメージ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/checkout-page.png" style="width:688px" title="ショッピング・カート機能があるチェックアウト・ページ"></li>
+
+            <li>「ファイルに移動」ダイアログを使用して、エディタで<code>ControllerServlet</code>を開きます。[Alt]-[Shift]-[O] (Macの場合は[Ctrl]-[Shift]-[O])を押してから、ダイアログで「<code>Controller</code>」と入力して「OK」をクリックします。<br><img alt="「ファイルに移動」ダイアログ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/go-to-file-dialog.png" title="「ファイルに移動」ダイアログを使用した、エディタへのプロジェクト・リソースの速やかな表示"></li>
+
+            <li><code>HttpSession</code>オブジェクトを作成する行(150行目)の<code>doPost</code>メソッドにブレークポイントを設定します。ブレークポイントを設定するには、エディタの左マージンをクリックします。<br><img alt="エディタで設定されたブレークポイント" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint.png" title="エディタの左マージンのクリックによるブレークポイントの設定">
+
+                <p class="tips">エディタの行番号表示を切り替えるには、左マージンを右クリックして「行番号を表示」を選択します。</p></li>
+
+            <li>デバッガを実行します。IDEのメイン・ツールバーにある「プロジェクトをデバッグ」(<img alt="「プロジェクトをデバッグ」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png">)ボタンをクリックします。GlassFishサーバーが起動(すでに実行中の場合は再起動)し、そのデバッグ・ポート番号でソケットを開きます。アプリケーションの開始ページがブラウザで開きます。<br><br>
+                <p class="tips">デバッグ・ポート番号は、「サーバー」ウィンドウ(「ツール」>「サーバー」)から表示および変更できます。使用しているサーバーの「Java」タブを選択します。「デバッグ設定」の下の「使用するアドレス」フィールドにポート番号を指定します。</p></li>
+
+            <li>アプリケーションの開始ページがブラウザに表示されたら、いずれかのカテゴリ・イメージをクリックしてカテゴリ・ページに移動します。「add to cart」ボタンをクリックすると、次のようにサーバーに<code>addToCart</code>リクエストが送信されることを思い出してください。
+
+                <pre class="examplecode">&lt;form action=&quot;addToCart&quot; method=&quot;post&quot;&gt;</pre>
+
+                <a href="page-views-controller.html#controller">ページ・ビューおよびコントローラ・サーブレットの準備</a>で説明したように、<code>ControllerServlet</code>の<code>doPost</code>メソッドは、<code>/addToCart</code>のURLパターンのリクエストを処理します。このため、ユーザーが「add to cart」ボタンをクリックすると<code>doPost</code>メソッドがコールされることを想定できます。</li>
+
+            <li>カテゴリ・ページで、いずれかのカテゴリの「add to cart」をクリックします。IDEに戻ると、デバッガがブレークポイントで一時停止されていることがわかります。<br><img alt="エディタのブレークポイントで一時停止されたデバッガ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint-suspended.png" title="エディタのブレークポイントで一時停止されたデバッガ"></li>
+
+            <li><code>getSession()</code>へのコールにカーソルを置き、[Ctrl]-[Space]を押してJavadocドキュメントを呼び出します。<br><img alt="エディタに表示されたJavadocドキュメント" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/javadoc-getsession.png" style="width:688px" title="[Ctrl]-[Space]の押下によるJavadocドキュメントの呼出し"><br>ドキュメントによると、<code>getSession()</code>は現時点でリクエストに関連付けられている<code>HttpSession</code>を返し、セッションが存在しない場合、このメソッドは新しいセッション・オブジェクトを作成します。<br><br>
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>IDEのJavadocサポートの利用</h3>
+
+                    <p>IDEには、Java EE開発向けのJavadocが組み込まれています。IDEにはJava EE 6 API仕様がバンドルされており、「ヘルプ」>「Javadoc参照」>「Java EE 6」を選択して外部ブラウザで開けます。</p>
+
+                    <p>IDEにはこの他にも、APIドキュメントに簡単にアクセスできる、次のような様々な機能が含まれています。</p>
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>Javadocウィンドウ:</strong> 「ウィンドウ」>「その他」>「Javadoc」を選択します。JavadocウィンドウはIDEの下部領域で開き、エディタのカーソル位置に関連するAPIドキュメントを表示します。</li>
+
+                        <li><strong>Javadoc索引検索:</strong> 「ヘルプ」>「Javadoc索引検索」([Shift]-[F1]、Macの場合は[fn]-[Shift]-[F1])を選択します。探しているクラス名を入力してから、一覧表示された結果からクラスを選択します。ウィンドウの下部のペインに、API仕様からクラスの完全な説明が表示されます。</li>
+
+                        <li><strong>エディタのドキュメント・ポップアップ:</strong> エディタの特定の要素で[Ctrl]-[Space]を押すと、Javadocドキュメントがポップアップ・ウィンドウに表示されます。「外部ブラウザ」(<img alt="「外部ブラウザ」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/external-browser-btn.png">)ボタンをクリックすると、ブラウザでドキュメントが開きます。[Ctrl]-[Space]をコード補完のためにのみ使用する場合は、「ツール」>「オプション」(Macの場合は「NetBeans」>「プリファレンス」)で「オプション」ウィンドウを開いてから「エディタ」>「コード補完」を選択して、ドキュメント・ポップアップを非アクティブ化できます。「ドキュメント・ウィンドウを自動ポップアップ」オプションを選択解除します。</li>
+                    </ul>
+
+                    <p>独自の作業をドキュメント化する場合、作成したクラスおよびメソッドにJavadocコメントを追加することを検討してください。<code>ShoppingCart</code>クラスを開き、クラス・メソッドに追加されているJavadocコメントを確認します。Javadocコメントは、<code>/** ... */</code>区切り文字でマークされています。たとえば、<code>addItem</code>メソッドには、メソッドの署名の前に次のようなコメントが入っています。</p>
+
+                    <div class="margin-around">
+                        <pre class="examplecode" style="width:643px">
+/**
+ * Adds a &lt;code&gt;ShoppingCartItem&lt;/code&gt; to the &lt;code&gt;ShoppingCart&lt;/code&gt;'s
+ * &lt;code&gt;items&lt;/code&gt; list. If item of the specified &lt;code&gt;product&lt;/code&gt;
+ * already exists in shopping cart list, the quantity of that item is
+ * incremented.
+ *
+ * @param product the &lt;code&gt;Product&lt;/code&gt; that defines the type of shopping cart item
+ * @see ShoppingCartItem
+ */
+public synchronized void addItem(Product product) {</pre>
+                    </div>
+
+                    <p>これによって開発者(およびプロジェクトにかかわる他の人)が、メソッドについてのJavadocドキュメントを表示できるようになります。これを示すために、[Ctrl]-[7] (Macの場合は[⌘]-[7])で「ナビゲータ」を開き、カーソルを<code>addItem</code>メソッドの上に移動します。</p>
+
+                    <img alt="Javadocポップアップ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/javadoc-additem.png" title="ナビゲータでのメソッド上へのカーソルの移動によるJavadocドキュメントの表示">
+
+                    <p>IDEを使用して、一連のJavadoc HTMLページを生成することもできます。「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「Javadocを生成」を選択します。IDEによって、プロジェクトのディレクトリの<code>dist/javadoc</code>フォルダにJavadocが生成され、ブラウザにインデックス・ページが表示されます。</p>
+
+                    <br>
+                    <p>Javadocの詳細は、次のリソースを参照してください。</p>
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><a href="http://java.sun.com/j2se/javadoc/" target="_blank">Javadocツールの公式ホーム・ページ</a></li>
+                        <li><a href="http://java.sun.com/j2se/javadoc/writingdoccomments/index.html" target="_blank">Javadocツールのドキュメント・コメントを書く方法</a></li>
+                    </ul>
+                </div>
+
+                <div style="clear:left"></div>
+            </li>
+
+            <li><code>session</code>変数の上にカーソルを移動します。デバッガは、<em>それが実行しようとしている</em>行で一時停止されています。<code>getSession()</code>によって返される値は、この時点では<code>session</code>変数に保存されておらず、ポップアップには「"<code>session</code>"は、現在のコンテキスト内で既知の変数ではありません。」と表示されます。<br><img alt="エディタに表示されたデバッガのポップアップ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable.png" title="変数および式へのカーソルの移動による現在の値の判定"></li>
+
+            <li>エディタの上にあるデバッガ・ツールバーの「ステップ・オーバー」(<img alt="ステップ・オーバー・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">)ボタンをクリックします。この行が実行され、デバッガはファイルの次の行に進みます。</li>
+
+            <li>再度<code>session</code>変数の上にカーソルを移動します。今度は、<code>session</code>変数に現在設定されている値を確認します。<br><a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable-set.png" rel="lytebox" title="変数および式へのカーソルの移動による現在の値の判定"><img alt="エディタに表示されたデバッガのポップアップ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable-set.png" title="クリックして拡大" width="688px"></a>
+
+                <p class="tips">NetBeans 6.9では、ポップアップでグレーのポインタ(<img alt="ステップ・オーバー・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/grey-pointer.png">)をクリックすると、強調表示された要素に含まれている変数の値の一覧を展開できます。</p></li>
+
+            <li>「ステップ・オーバー」(<img alt="ステップ・オーバー・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">)ボタン([F8]、Macの場合は[fn]-[F8])をクリックして<code>if</code>文(154行目)に入ります。ブラウザで「add to cart」ボタンをクリックしたばかりなので、<code>userPath.equals("/addToCart")</code>の式は<code>true</code>として評価されるはずです。</li>
+
+            <li>[Ctrl]を押しながらマウスでクリックして<code>userPath.equals("/addToCart")</code>の式を強調表示します。今度は、強調表示した式の値を示すポップアップが表示されます。<br><img alt="ポップアップに表示された評価済の式" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/expression.png" title="式の強調表示による現在の値の判定"></li>
+
+            <li>[F8] (Macの場合は[fn]-[F8])を押して次の行(158行目)に進みます。このアプリケーションは、ユーザーが初めてカートに項目を追加するときにのみユーザー・セッションの<code>ShoppingCart</code>オブジェクトを作成するように設計されています。このデバッグ・セッションで<code>addToCart</code>リクエストが受け取られたのはこれが最初であるため、<code>cart</code>オブジェクトは<code>null</code>と等しいと想定できます。<br><img alt="ポップアップに表示された評価済の式" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-null.png" title="Cartオブジェクトはユーザーがショッピング・カートに項目を追加するまで存在しない"></li>
+
+            <li>[F8] (Macの場合は[fn]-[F8])を押して次の行(160行目)に進みます。次に、<code>ShoppingCart</code>オブジェクトが作成される160行目で、「ステップ・イン」(<img alt="ステップ・イン・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-into-btn.png">)ボタンをクリックします。コールされるメソッドにデバッガがステップ・インします。この場合、直接<code>ShoppingCart</code>のコンストラクタに移動します。<br><img alt="ポップアップに表示された評価済の式" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-constructor.png" title="メソッドにステップ・インして実行時に他のクラスでの実行を追跡する"></li>
+
+            <li>[Ctrl]-[Tab]を押して<code>ControllerServlet</code>に戻ります。「コール・スタック」(<img alt="「コール・スタック」バッジ" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/call-stack-badge.png">)バッジが160行目に表示されます(現在、デバッガがコール・スタックの上位にあるいずれかのメソッドで一時停止されていることが表示されています)。<br><br>
+                <p class="tips">[Alt]-[Shift]-[3] (Macの場合は[Ctrl]-[Shift]-[3])を押すとIDEの「コール・スタック」ウィンドウが開きます。</p></li>
+
+            <li>[F8] (Macの場合は[fn]-[F8])を押して、コードの実行を進めます。デバッガが<code>ShoppingCart</code>コンストラクタを完了すると、<code>ControllerServlet</code>に戻ります。<br><br><code>ControllerServlet</code>の161行目では、新しく作成された<code>cart</code>オブジェクトをセッションにバインドします。
+
+                <pre class="examplecode">session.setAttribute(&quot;cart&quot;, cart);</pre>
+
+                これを確認するには、デバッガの「変数」ウィンドウを開きます。「ウィンドウ」>「デバッグ」>「変数」を選択するか、[Alt]-[Shift]-[1] (Macの場合は[Ctrl]-[Shift]-[1])を押します。<br><a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session.png" rel="lytebox" title="デバッガの「変数」ウィンドウを開いてコードをステップ実行しながら変数の値を点検する"><img alt="「変数」ウィンドウ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session.png" title="クリックして拡大" width="688px"></a><br>「session」>「session」>「attributes」ノードを展開すると、セッションにバインドされているオブジェクトを表示できます。上記のイメージでは、現時点でセッションにバインドされている(強調表示された) 2つの項目があります。これらは、それぞれ<code>ControllerServlet</code>の83行目と89行目でインスタンス化された<code>selectedCategory</code>と<code>categoryProducts</code>です。これらの項目は両方とも、以前カテゴリ・イメージをクリックして<code>ControllerServlet</code>がカテゴリ・ページのリクエストを処理したときにバインドされました。</li>
+
+            <li>[F8] (Macの場合は[fn]-[F8])を押して161行目を実行します。<code>cart</code>オブジェクトはセッションにバインドされており、「変数」ウィンドウは変更を反映して更新されます。「変数」ウィンドウでは、現在、セッションに3つの属性が含まれていることを確認できます。3つ目の変数は、新しく初期化された<code>ShoppingCart</code>オブジェクト(次で強調表示)です。<br><a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session-cart.png" rel="lytebox" title="ShoppingCartオブジェクトはsetAttributeメソッドでセッションにバインドされる"><img alt="「変数」ウィンドウ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session-cart.png" title="クリックして拡大" width="688px"></a><br>
+                <p class="tips">これまでは、「変数」ウィンドウに一覧表示されたセッションが<code>HttpSession</code>セッションを示していることを「証明」しませんでした。前述のように、<code>HttpSession</code>は実際にはインタフェースであるため、<code>HttpSession</code>オブジェクト(セッション・オブジェクト)について説明する場合、実際には<code>HttpSession</code>インタフェースを実装するオブジェクトを指しています。「変数」ウィンドウで「<code>session</code>」の上にカーソルを移動すると、この変数が<code>HttpSession</code>オブジェクトを表していることを示すポップアップが表示されます。表示されているように、<code>StandardSessionFacade</code>型は、GlassFishが<code>HttpSession</code>インタフェースを実装するために使用する内部クラスです。Tomcatに詳しいユーザーが「値」列に表示された「<code>org.apache.catalina</code>」のパスに戸惑うのは、GlassFish Web/サーブレット・コンテナが実はApache Tomcatコンテナの派生クラスであるためです。</p>
+
+                新しい<code>ShoppingCart</code>がセッションに追加され、リクエストの処理が続行されます。「add to cart」機能の実装を完成させるために、次のアクションが取られます。
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>選択された製品のIDがリクエストから取得される(165行目)</li>
+                    <li>IDを使用して<code>Product</code>オブジェクトが作成される(169行目)</li>
+                    <li><code>product</code>を使用して新しい<code>ShoppingCartItem</code>が作成される(170行目)</li>
+                    <li><code>ShoppingCartItem</code>が<code>ShoppingCart</code>の<code>items</code>リストに追加される(170行目)</li>
+                </ul></li>
+
+           <li>上記で一覧表示された4つのアクションを意識しながら、[F8] (Macの場合は[fn]-[F8])を押して、コードの実行を進めます。デバッガが170行目で一時停止したら一時休止します。</li>
+
+           <li id="step21">セッションにウォッチを作成します。これによって、次の手順で<code>addItem</code>メソッドにステップ・インするときに、セッションに含まれている値を表示できるようになります。「変数」ウィンドウでセッションを右クリックして、「固定ウォッチを作成」を選択します。<br><img alt="「変数」ウィンドウに表示された右クリック・メニュー" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/create-watch.png" title="デバッグ・セッションでのコードのステップ実行による変数のウォッチの作成">
+
+                <p class="tips">または、エディタ内の<code>session</code>変数にカーソルを置いてから、右クリックして「新規ウォッチ」を選択します。「新規ウォッチ」ダイアログでは、アプリケーションのデバッグ時に継続的に監視する変数または式を指定できます。(式の場合は、最初に式を強調表示してから、右クリックして「新規ウォッチ」を選択します。) <br><img alt="「新規ウォッチ」ダイアログ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/new-watch-dialog.png" title="エディタ内で変数や式を右クリックして「新規ウォッチ」を選択する"></p>
+
+                <code>session</code>変数とそれに含まれるすべての変数の新しいウォッチが作成されます。ウォッチは、「ウォッチ」ウィンドウ(「ウィンドウ」>「デバッグ」>「ウォッチ」)から表示するか、「変数」ウィンドウの左マージンにある「ウォッチ」(<img alt="「ウォッチ」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/watch-btn.png">)ボタンを切り替えて「変数」ウィンドウの最初の行に表示可能です。<br><br>コードをステップ実行しながら、デバッガで変数を監視できるようになります。これは、たとえば特定の変数の値をたどる場合(そして各手順で「変数」ウィンドウに示される全リストから選択しなくても済むようにする場合)や、調べる必要のある変数が含まれていないクラスに一時的にステップ・インする場合に役立ちます。</li>
+
+           <li>「ステップ・イン」(<img alt="ステップ・イン・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-into-btn.png">)ボタンをクリックして、<code>ShoppingCart</code>の<code>addItem</code>メソッドにステップ・インします。</li>
+
+           <li>53行目まで<code>addItem</code>メソッドをステップ実行します。Javadocに記述されているとおり、<code>addItem</code>は<em>「<code>ShoppingCart</code>の<code>items</code>リストに<code>ShoppingCartItem</code>を追加します。指定された<code>product</code>の項目がすでにショッピング・カート・リストに存在する場合、その項目の数量が増加します。」</em></li>
+
+           <li>(上記の<a href="#step21">ステップ21</a>で)ウォッチを作成した<code>session</code>変数を調べます。51行目の<code>items.add(scItem)</code>文によって、<code>ShoppingCart</code>の<code>items</code>リストに新しい<code>ShoppingCartItem</code>が追加されました。これは、セッションに含まれている3つ目の属性(<code>cart</code>変数)を調べるとわかります。<br><a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-add-item.png" rel="lytebox" title="ShoppingCartの「items」リストに一覧表示された新しいShoppingCartItem"><img alt="「変数」ウィンドウ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-add-item.png" title="クリックして拡大" width="688px"></a><br>この段階で、リクエストのために<code>HttpSession</code>が作成される方法、<code>ShoppingCart</code>オブジェクトが作成されてセッションにアタッチされる方法、および<code>ShoppingCartItem</code>がユーザーの製品選択に基づいて作成され、<code>ShoppingCart</code>の<code>items</code>のリストに追加される方法を確認できます。残っているアクションは、<code>category.jsp</code>ビューへのリクエストの転送のみです。</li>
+
+            <li>エディタでJSPフラグメント(<code>header.jspf</code>)を開き、86行目にブレークポイントを設定します。この行には、カート項目の数を表示する、ショッピング・カート・ウィジェット内のEL文が含まれています。<br><img alt="JSPページに設定されたブレークポイント" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint-jsp.png" title="JSPページでデバッガを一時停止できる" width="688px"></li>
+
+            <li>デバッガ・ツールバーの「続行」(<img alt="「続行」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/continue-btn.png">)ボタンをクリックします。デバッガは実行が完了するか、別のブレークポイントに達するまで続行されます。この場合、デバッガはヘッダーのJSPフラグメントの86行目で一時停止されます。<br><br>
+                <p class="notes"><strong>注意:</strong> JSPページでデバッガを一時停止させるには、ブレークポイントを設定する必要があります。たとえば、<code>ControllerServlet</code>がリクエストを適切なビューに転送したとき、デバッガはJSPページ内で自動的に一時停止されません。</p></li>
+
+            <li>まだ開いていない場合は「変数」ウィンドウを開きます([Alt]-[Shift]-[1]、Macの場合は[Ctrl]-[Shift]-[1])。Javaクラスとは異なり、JSPページではデバッガで変数や式の上にカーソルを移動してもツールチップは表示<em>されません</em>。ただし、コードをステップ実行しながら、「変数」ウィンドウで変数の値を判定できます。では、<code>${cart.numberOfItems}</code>の値はどこにあるでしょうか。</li>
+
+            <li>「変数」ウィンドウで、「暗黙的なオブジェクト」>「pageContext」>「session」>「session」>「attributes」ノードを展開します。これによって、前に<code>ControllerServlet</code>をデバッグしていたときのように、セッション・オブジェクトにアクセスできるようになります。上記のステップ21でウォッチを作成したセッションは、実は同じオブジェクトを指しています。ここで、<code>${cart.numberOfItems}</code>の値が「<code>1</code>」と等しいことを確認できます。<br><a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-number-of-items.png" rel="lytebox" title="JSPページでのpageContext暗黙オブジェクト内のセッション属性の表示"><img alt="「変数」ウィンドウ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-number-of-items.png" title="クリックして拡大" width="688px"></a>
+
+                <p class="tips">「変数」ウィンドウなどのIDEのウィンドウは、いずれもウィンドウのヘッダーを右クリックしてから「ウィンドウを最大化」([Shift]-[Esc])を選択することで最大化できます。</p>
+
+                デバッガで、<code>pageContext</code>の暗黙オブジェクトにアクセスできるようになります。<code>pageContext</code>はJSPページのコンテキストを示しており、<code>HttpServletRequest</code>、<code>HttpSession</code>、<code>ServletContext</code>オブジェクトなどの様々なオブジェクトへの直接的なアクセスを提供します。詳細は、<a href="http://java.sun.com/javaee/5/docs/tutorial/doc/bnahq.html#bnaij" target="_blank">Java EE 5チュートリアル: 暗黙オブジェクト</a>を参照してください。</li>
+
+            <li>セッションの終了(<img alt="セッションの終了ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png">)ボタンをクリックします。ランタイムが実行を完了し、デバッグ・セッションが終了します。ブラウザにカテゴリ・ページが完全にレンダリングされ、ページ・ヘッダーにあるショッピング・カート・ウィジェットに1つの項目が含まれているのが確認できます。</li>
+        </ol>
+
+        <p>IDEデバッガは、プロジェクトが想定どおりに動作しない場合の検査用としてのみでなく、コードに詳しくなるためのツールとしても便利であることがわかるでしょう。他にも、デバッガ・ツールバーには次のような便利なボタンがあります。</p>
+
+        <ul>
+            <li>(<img alt="ステップ・アウト・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-out.png">)<strong>ステップ・アウト:</strong> 現在のメソッド・コールをステップ・アウトします。呼出しスタックの最上位のメソッド・コールを実行して除去します。</li>
+
+            <li>(<img alt="カーソルまで実行ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/run-to-cursor.png">)<strong>カーソルまで実行:</strong> カーソルが置かれている行まで実行します。</li>
+
+            <li>(<img alt="「コードの変更を適用」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/apply-code-changes.png">)<strong>コードの変更を適用:</strong> ファイルを編集してからこのボタンを押すと、ファイルが再コンパイルされ、変更がデバッグ・セッションに反映されます。</li>
+
+            <li>(<img alt="「式をステップ・オーバー」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-expression.png">)<strong>式をステップ・オーバー:</strong> 式のメソッド・コールごとの入力パラメータおよび結果の出力値を表示できるようにします。「ローカル変数」ウィンドウで、前のメソッドの出力値と次のメソッドの入力パラメータを検査できます。次のメソッド・コールがない場合、「式をステップ・オーバー」は「ステップ・オーバー」(<img alt="ステップ・オーバー・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">)コマンドと同様に機能します。</li>
+        </ul>
+
+
+        <br>
+        <h2 id="session-track">セッション・トラック・オプションの確認</h2>
+
+        <p>クライアントとサーバー間のセッションをトラックするための慣習的な方法が3つあります。圧倒的に多く使用されているのはCookieです。URL書換えは、Cookieがサポートされていないか無効になっている場合に適用できます。隠しフォーム・フィールドも、複数のリクエストにわたって「状態を維持する」ための手段として使用できますが、これらはフォーム内での使用に制限されます。</p>
+
+        <p><code>AffableBean</code>プロジェクトでは、カテゴリとカートの両方のページに隠しフィールド・メソッドの例が含まれています。製品項目用に表示する「add to cart」および「update」ボタンには、ボタンがクリックされると製品IDをサーバーに渡す隠しフィールドが含まれています。エディタで<code>cart.jsp</code>ページを開くと、<code>&lt;form></code>タグに隠しフィールドが含まれているのが確認できます。</p>
+
+        <pre class="examplecode" style="width:730px; margin-left:10px; margin-top:-2px">
+&lt;form action=&quot;updateCart&quot; method=&quot;post&quot;&gt;
+    <strong>&lt;input type=&quot;hidden&quot;
+           name=&quot;productId&quot;
+           value=&quot;${product.id}&quot;&gt;</strong>
+    ...
+&lt;/form&gt;</pre>
+
+        <p>このように、製品IDはリクエスト・パラメータとして送信されます。この製品IDは、ユーザーのカート内の項目の数量を変更する必要があるときに、項目を識別するためにサーバーによって使用されます。</p>
+
+        <p>サーブレットAPIは、セッションを管理するための高水準な機構を提供します。基本的にこの機構では、リクエストとレスポンスのサイクルごとにクライアントとサーバー間でCookieを作成して渡します。クライアントのブラウザでCookieが使用できない場合、サーブレット・エンジンは自動的にURL書換えに戻ります。次の2つの課題でこの機能を示します。</p>
+
+        <ul>
+            <li><a href="#http-monitor">HTTPモニターによるクライアントとサーバー間の通信の確認</a></li>
+            <li><a href="#url-rewrite">URL書換えによるセッションの維持</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="http-monitor">HTTPモニターによるクライアントとサーバー間の通信の確認</h3>
+
+            <p>デフォルトでは、サーブレット・エンジンは、Cookieを使用してリクエスト間のセッションを維持および識別します。セッション・オブジェクトごとにランダムな英数字が生成され、一意の識別子として使用されます。この識別子は、「<code>JSESSIONID</code>」Cookieとしてクライアントに渡されます。クライアントがリクエストを作成すると、サーブレット・エンジンは<code>JSESSIONID</code> Cookieの値を読み取り、そのリクエストが属しているセッションを判定します。</p>
+
+            <p>これを示すために、IDEのHTTPモニターと連携してデバッガを使用します。</p>
+
+            <ol>
+                <li>まず、使用しているサーバーのHTTPモニターをアクティブ化します。「ツール」>「サーバー」を選択します。「サーバー」ウィンドウの左の列で、使用しているサーバー(GlassFish)を選択します。次にメインの列で、「HTTPモニターを有効化」オプションを選択します。<br><img alt="「サーバー」ウィンドウ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/servers-win-http-monitor.png" title="「HTTPモニターを有効化」オプションの選択によるHTTPモニターのアクティブ化" width="688px"></li>
+
+                <li>サーバーがすでに実行されている場合は再起動する必要があります。しかし、ここではデバッガを使用する予定であり、デバッガを実行すると異なるポートで通信するためにサーバーが再起動されるため、単にIDEのメイン・ツールバーにある「プロジェクトをデバッグ」(<img alt="「プロジェクトをデバッグ」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png">)ボタンをクリックします。サーバーが再起動し、デバッグ・セッションが開始して、アプリケーションの開始ページがブラウザで開きます。HTTPモニターがIDEの最下部の領域に表示されます。<br><img alt="HTTPモニター" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor.png" title="HTTPモニターがデフォルトでIDEの最下部の領域に表示される" width="688px"></li>
+
+                <li>上記のイメージで示したように、左の列のAffableBeanレコードをクリックします。左の列でレコードを選択すると、右の(メインの)列がリフレッシュされ、対応するデータが表示されます。上記のイメージの「リクエスト」タブには、リクエストされたURI (<code>/AffableBean/</code>)およびHTTPメソッド(<code>GET</code>)が表示され、さらにリクエストと一緒に送信された問合せ文字列はなかったことが示されています。</li>
+
+                <li>「セッション」タブを選択します。「このリクエストの結果、セッションが作成されました」という文が表示されています。これは、サーバーがレスポンスとして<code>JSESSIONID</code> Cookieの<code>Set-Cookie</code>ヘッダーを送信したためです。また、新しいセッションIDが「セッション・プロパティ」の下に表示されています。後で示すように、セッションIDは<code>JSESSIONID</code> Cookieの値です。<br><img alt="HTTPモニター - 「セッション」タブ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-tab.png" title="セッションの詳細がHTTPモニターの「セッション」タブの下に表示される"><br>サイトの開始ページのリクエストからセッション・オブジェクトが作成された方法について疑問に思うかもしれません。結局、<code>ControllerServlet</code>は<code>/AffableBean/</code>の最初のリクエストを処理しておらず、このリクエストが<code>getSession()</code>の影響を受ける機会はどこにもありません。それとも、これが行われたのでしょうか。JSPページは、デプロイメント時にサーブレットにコンパイルされることを思い出してください。サーバーにプロジェクトをデプロイすれば、実際にIDEを使用して、サーバー上のJSPのコンパイルされたサーブレットを表示できます。</li>
+
+                <li>「プロジェクト」ウィンドウで<code>index.jsp</code>ファイルを右クリックし、「サーブレットを表示」を選択します。エディタで<code>index_jsp.java</code>ファイルが開きます。これは、<code>index.jsp</code>ページから自動的にコンパイルされたサーブレットです。</li>
+
+                <li>このファイルで<code>getSession</code>を検索します。[Ctrl]-[F] (Macの場合は[⌘]-[F])を押し、検索バーで「<code>getSession</code>」と入力してから[Enter]を押します。<br><br>
+                    <p class="tips"> [Ctrl]-[F] (Macの場合は[⌘]-[F])は、「編集」>「検索」のキーボード・ショートカットです。</p>
+
+                    <img alt="getSessionメソッドが表示されたエディタ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/get-session.png" title="JSPページのコンパイルされたサーブレットに存在するgetSessionメソッド"><br>実は、<code>getSession</code>メソッドはコールされます。これが起こる理由は、JSPページにはデフォルトで<code>pageContext.session</code>の暗黙オブジェクトが含まれるためです。この動作を非アクティブ化するには、JSPファイルの最初に次のディレクティブを追加します。
+
+                    <pre class="examplecode">&lt;%@page session=&quot;false&quot; %&gt;</pre>
+
+                    このようにすると、コンパイルされたサーブレットの<code>getSession</code>メソッドが除去されます。<br><br>
+                    <p class="tips">サーバー上のコンパイルされたサーブレットの場所を見つけるには、エディタの上にあるサーブレット名のタブ上にカーソルを移動します。ポップアップに、コンピュータ上のファイルへのパスが表示されます。</p></li>
+
+                <li>ブラウザで、カテゴリを選択してからカートに項目を追加します。IDEに戻ります。以前に設定した<code>ControllerServlet</code>のブレークポイント(150行目)でデバッガは一時停止されます。すべてのブレークポイントは、セッション間で記憶されます。ブレークポイントを除去するには、エディタの左マージンにある「ブレークポイント」(<img alt="ブレークポイント・バッジ" src="../../../../images_www/articles/73/javaee/ecommerce/common/breakpoint-badge.png">)バッジをクリックします。しかし、このプロジェクトにはすでに複数のブレークポイントが設定されているため、「ウィンドウ」>「デバッグ」>「ブレークポイント」でデバッガの「ブレークポイント」ウィンドウを開きます。<br><img alt="「ブレークポイント」ウィンドウ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoints-window.png" title="「ブレークポイント」ウィンドウでのプロジェクトのすべてのブレークポイントの表示"><br>「ブレークポイント」ウィンドウから、IDEで開いているプロジェクトで設定されたすべてのブレークポイントを表示してアクションをコールできます。</li>
+
+                <li><code>header.jspf</code>に設定されたブレークポイントを右クリックして、「削除」を選択します。その後、<code>ControllerServlet</code>に設定されたブレークポイントを右クリックして、「無効」を選択します。(この課題の後半で再度有効にします。)</li>
+
+                <li>「続行」(<img alt="「続行」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/continue-btn.png">)ボタンをクリックします。リクエストの実行が終了し、カートに項目が1つ追加されたカテゴリ・ページがブラウザに表示されます。</li>
+
+                <li>HTTPモニターの左の列で<code>addToCart</code>リクエストを検索して選択すると、メインの列に詳細が表示されます。<br><br>
+                    <p class="tips">昇順ソート(<img alt="昇順ソート・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/ascending-sort-btn.png">)ボタンをクリックすると、最新のレコードが最上部に表示されます。</p>
+
+                    <br>「リクエスト」タブの下で、リクエストされたURI (<code>/AffableBean/addToCart</code>)、HTTPメソッド(<code>POST</code>)、およびリクエストされたパラメータ(<code>productId</code>および<code>submit</code>)を確認してください。<br><a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor-add-to-cart.png" rel="lytebox" title="HTTPモニターの「リクエスト」タブでのリクエスト・データ(リクエスト・パラメータなど)の表示"><img alt="HTTPモニター - 「リクエスト」タブ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor-add-to-cart.png" style="width:688px" title="クリックして拡大"></a></li>
+
+                <li>「Cookie」タブを選択します。ここでは、<code>JSESSIONID</code>という名前のCookieが存在し、クライアントからサーバーに送信されたことを確認できます。Cookieの値は、「セッション」タブの下に表示されたセッションIDと同じです。<br><img alt="HTTPモニター - 「Cookie」タブ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cookies-tab.png" title="HTTPモニターの「Cookie」タブに表示されたCookie"><br>同様に、「ヘッダー」タブをクリックするとCookieが表示されます。これは、「<code>Cookie</code>」がクライアントによって送信されたリクエスト・ヘッダーであるためです。<br><img alt="HTTPモニター - 「Cookie」タブ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/headers-tab.png" title="HTTPモニターの「Cookie」タブに表示されたCookie">
+
+                    <p class="tips">リクエストおよびレスポンス・ヘッダーの詳細は、ウィキペディアの<a href="http://en.wikipedia.org/wiki/List_of_HTTP_headers" target="_blank">HTTPヘッダーの一覧</a>を参照してください。</p></li>
+
+                <li>「セッション」タブを選択します。「このリクエストの前にセッションが存在しました」という文が表示されています。また、<code>cart</code>属性が「リクエスト後のセッション属性」の下に表示されています。<code>addToCart</code>リクエストが初めて処理されるときに<code>cart</code>オブジェクトがセッションにバインドされるため、これは理にかなっています。<br><img alt="HTTPモニター - 「セッション」タブ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-tab-add-to-cart.png" title="HTTPモニターの「セッション」タブの下に表示されたセッション属性"><br><br>以降のいくつかの手順では、「変数」ウィンドウでセッションIDおよび<code>JSESSIONID</code> Cookieを確認します。</li>
+
+                <li>以前に<code>ControllerServlet</code>に設定したブレークポイントを再度有効にします。[Alt]-[Shift]-[5] (Macの場合は[Ctrl]-[Shift]-[5])を押して「ブレークポイント」ウィンドウを開き、ブレークポイント・エントリの横にあるチェックボックスをクリックして、再度有効にします。</li>
+
+                <li>ブラウザで、一覧表示された製品のうちの1つで「add to cart」ボタンをクリックします。</li>
+
+                <li>IDEに切り替えると、デバッガが<code>ControllerServlet</code>に設定されたブレークポイントで一時停止されています。「ステップ・オーバー」(<img alt="ステップ・オーバー・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">)ボタンをクリックして、<code>session</code>変数をセッション・オブジェクトに割り当てます。</li>
+
+                <li>「変数」ウィンドウを開き([Alt]-[Shift]-[1]、Macの場合は[Ctrl]-[Shift]-[1])、「session」>「session」を展開します。セッションIDが「<code>id</code>」変数の値として表示されます。</li>
+
+                <li><code>JSESSIONID</code> Cookieを見つけるために、通常は<code>HttpServletRequest</code>で<a href="http://java.sun.com/webservices/docs/1.6/api/javax/servlet/http/HttpServletRequest.html#getCookies%28%29" target="_blank"><code>getCookies</code></a>メソッドをコールすることで、サーブレットからCookieにアクセスできることを思い出してください。したがってrequestオブジェクトを、「request」>「継承」>「request」>「request」>「継承」>「cookies」と展開します。これで<code>cookies</code> ArrayListが表示されます。リストを展開すると<code>JSESSIONID</code> Cookieがあり、この値がセッションIDになります。</li>
+
+                <li>セッションの終了(<img alt="セッションの終了ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png">)ボタンをクリックして、デバッグ・セッションを終了します。</li>
+            </ol>
+
+
+            <h3 id="url-rewrite">URL書換えによるセッションの維持</h3>
+
+            <p>前述のように、サーブレット・エンジンはクライアント・ブラウザでCookieがサポートされているかどうかを検出し、サポートされていない場合は、セッションを維持する手段をURL書換えに切り替えます。これはすべて、クライアントにとって透過的に行われます。開発者にとっては、このプロセスは完全に透過的なわけではありません。</p>
+
+            <p>Cookieが無効になっている場合に必ずURL書換えができるようにアプリケーションを実装する必要があります。このために、アプリケーション内でサーブレットが返すURLのすべてに対して、レスポンスの<code>encodeURL</code>メソッドをコールします。このようにすると、Cookieが使用できない場合にはセッションIDがURLに付加されるようになります。これを行わないと、URLを変更せずに返すことになります。</p>
+
+            <p>たとえば、ブラウザが次のような<code>AffableBean</code>の3つ目のカテゴリ(bakery)のリクエストを送信します: <code>category?3</code>。サーバーは次のように、セッションIDをURLに含めて応答します。</p>
+
+            <pre class="examplecode">/AffableBean/category<strong>;jsessionid=364b636d75d90a6e4d0085119990</strong>?3</pre>
+
+            <p>前述のように、<em>アプリケーションのサーブレットによって返されるすべてのURLをエンコードする必要があります</em>。JSPページはサーブレットにコンパイルされることを思い出してください。JSPページでどのようにURLをエンコードするのでしょうか。JSTLの<a href="http://java.sun.com/products/jsp/jstl/1.1/docs/tlddocs/c/url.html" target="_blank"><code>&lt;c:url></code></a>タグがこの機能を果たします。以下の課題で、問題と解決法を示します。</p>
+
+            <ol>
+                <li>ブラウザのCookieを一時的に無効にします。Firefoxを使用している場合、「ツール」>「オプション」(Macの場合は「Firefox」>「プリファレンス」)を選択します。表示されたウィンドウで「プライバシー」タブを選択してから、表示されたドロップダウンで「記憶させる履歴を詳細設定する」を選択します。「サイトから送られてきたCookieを保存する」オプションを選択解除します。<br><img alt="Firefoxの「環境設定」ウィンドウ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/firefox.png" title="ブラウザでの一時的なCookieの無効化"></li>
+
+                <li><code>AffableBean</code>プロジェクトを実行します。開始ページが表示されたら、カテゴリをクリックしてからカートに項目を追加してみてください。現状ではアプリケーションがまったく機能しません。<br><img alt="壊れたカテゴリ・ページ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/compromised.png" title="クライアントがCookieを受け入れない場合、アプリケーションは機能しない" width="688px"><br>以前と同様に、サーバーはセッションを生成して、そのセッションにオブジェクトをバインドします。このようにして、選択されたカテゴリおよび製品をカテゴリ・ページに表示できます。しかし、サーバーは<code>JSESSIONID</code> Cookieの設定に失敗しました。したがって、クライアントが2つ目のリクエストを作成したとき(ユーザーが「add to cart」をクリックしたとき)、サーバーにはリクエストが属しているセッションを識別する方法がありません。このため、以前にセッションで設定された<code>selectedCategory</code>や<code>categoryProducts</code>などの属性をいずれも見つけることができません。このような理由により、レスポンスのレンダリングにはこれらの属性によって指定される情報が欠如しています。</li>
+
+                <li>エディタでプロジェクトの<code>category.jsp</code>ページを開きます。「add to cart」ボタンを実装する行(58行目)を見つけます。<code>&lt;form></code>要素の<code>action</code>属性によって、サーバーに送信されるリクエストが決まります。
+
+                    <pre class="examplecode">&lt;form action=&quot;addToCart&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>リクエストを変更して、<code>&lt;c:url></code>タグを通して渡されるようにします。
+
+                    <pre class="examplecode">&lt;form action=&quot;<strong>&lt;c:url value='addToCart'/&gt;</strong>&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>[Ctrl]-[S] (Macの場合は[⌘]-[S])を押して、ファイルへの変更を保存します。IDEは、デフォルトで有効な「保存時にデプロイ」機能が備わっていることを思い出してください。これによって、保存された変更はすべて自動的にサーバーにデプロイされます。</li>
+
+                <li>ブラウザで異なるカテゴリを選択して、新しく変更されたカテゴリ・ページをアプリケーションにレンダリングさせます。</li>
+
+                <li>このページのソース・コードを調べます。Firefoxでは[Ctrl]-[U] (Macの場合は[⌘]-[U])を押します。各製品の「add to cart」ボタンに、URLに付加されたセッションIDが一緒に表示されています。
+
+                    <pre class="examplecode">
+&lt;form action=&quot;addToCart<strong>;jsessionid=4188657e21d72f364e0782136dde</strong>&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>いずれかの項目で「add to cart」ボタンをクリックします。サーバーが、リクエストが属しているセッションを判定して、適切にレスポンスをレンダリングできるようになっていることを確認できます。</li>
+
+                <li>次に進む前に、ブラウザでCookieを再度有効にしてください。</li>
+            </ol>
+
+            <p id="encodeUrl">前述のように、アプリケーション内でユーザーがクリックできるすべてのリンクは、そのレスポンスがなんらかの形式のセッション関連のデータを必要とする場合、適切にエンコードされる必要があります。上記の例ほど実装が単純ではない場合もあります。たとえば、<code>cart.jsp</code>で使用されている「clear cart」ウィジェットは、現時点ではリンクがクリックされると<code>clear</code>パラメータを<code>true</code>に設定します。</p>
+
+            <div class="indent">
+            <pre class="examplecode" style="width:700px">
+&lt;%-- clear cart widget --%&gt;
+&lt;c:if test=&quot;${!empty cart && cart.numberOfItems != 0}&quot;&gt;
+    &lt;a href=&quot;viewCart<strong>?clear=true</strong>&quot; class=&quot;bubble hMargin&quot;&gt;clear cart&lt;/a&gt;
+&lt;/c:if&gt;</pre></div>
+
+            <p><code>&lt;c:url></code>タグは、次の方法でURLに適用できます。</p>
+
+            <div class="indent">
+            <pre class="examplecode" style="width:700px">
+&lt;%-- clear cart widget --%&gt;
+&lt;c:if test=&quot;${!empty cart && cart.numberOfItems != 0}&quot;&gt;
+
+    <strong>&lt;c:url var=&quot;url&quot; value=&quot;viewCart&quot;&gt;
+        &lt;c:param name=&quot;clear&quot; value=&quot;true&quot;/&gt;
+    &lt;/c:url&gt;</strong>
+
+    &lt;a href=&quot;<strong>${url}</strong>&quot; class=&quot;bubble hMargin&quot;&gt;clear cart&lt;/a&gt;
+&lt;/c:if&gt;</pre></div>
+
+            <p><code>clear=true</code>パラメータは、<code>&lt;c:url></code>タグ間に<code>&lt;c:param></code>タグを追加することで設定されます。「<code>url</code>」という名前の変数が&lt;c:url> の<code>var</code>属性を使用して設定された後、<code>var</code>が<code>${url}</code>式を使用してHTMLアンカー・タグでアクセスされます。</p>
+
+            <p><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot6.zip">スナップショット6</a>をダウンロードして調べれば、プロジェクトのすべてのリンクがどのようにエンコードされているかを確認できます。</p>
+
+            <p class="alert">URL書換えは、トラック・メソッドとしてCookieが使用できない場合にのみ使用する必要があります。セッションIDがブラウザのアドレス・バーのみでなく、ログ、ブックマーク、リファラ・ヘッダーおよびキャッシュされたHTMLに表示されるため、通常はURL書換えは次善手段と見なされています。また、受信リクエストごとにURLからセッションIDを抽出して、既存のセッションと組み合せるためのサーバーの追加手順が必要なため、サーバー側リソースも多く必要になります。</p>
+        </div>
+
+
+        <br>
+        <h2 id="time-out">セッション・タイム・アウトの処理</h2>
+
+        <ul>
+            <li><a href="#time-interval">セッションの時間間隔の設定</a></li>
+            <li><a href="#programmatically">プログラムによるセッション・タイム・アウトの処理</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="time-interval">セッションの時間間隔の設定</h3>
+
+            <p>サーバーがセッションを維持する時間間隔の最大値について考慮する必要があります。Webサイトのトラフィックが多くなると、多数のセッションによってサーバーのメモリー・キャパシティが使い果たされる可能性があります。このため、使用されていないセッションを除去できるように、時間間隔を短くできます。一方で、セッションが短すぎると使い勝手が悪くなり、Webサイトの背後にあるビジネスに悪影響を与える可能性があります。これは避ける必要があります。<code>AffableBean</code>アプリケーションの例で考えると、ユーザーがショッピング・カートに多くの項目を入れてからチェックアウトに進むとします。その後、クレジット・カードの詳細を入力する必要があることがわかり、財布を探しにいきます。クレジット・カードを持ってコンピュータに戻ってから、チェックアウト・フォームに入力して「submit」をクリックします。しかしこの間に、このユーザーのセッションはサーバーで有効期限切れになっていました。ショッピング・カートは空になり、ユーザーはホーム・ページにリダイレクトされます。このユーザーは、再度時間をかけて同じプロセスを実行するでしょうか。</p>
+
+            <p>次の手順では、<code>AffableBean</code>プロジェクトのセッション・タイム・アウトの間隔を10分に設定する方法を示します。言うまでもなく実際の間隔は最終的に、サーバー・リソース、業務におけるアプリケーションの目標、およびWebサイトの需要によって決まります。</p>
+
+            <ol>
+                <li>エディタでアプリケーションのデプロイメント・ディスクリプタを開きます。[Alt]-[Shift]-[O] (Macの場合は[Ctrl]-[Shift]-[O])を押して、IDEの「ファイルに移動」ダイアログを使用します。「<code>web</code>」と入力してから「OK」をクリックします。<br><img alt="「ファイルに移動」ダイアログ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/go-to-file.png" title="「ファイルに移動」ダイアログを使用した、プロジェクト・ファイルへの速やかな移動"><br>エディタの「XML」ビューに<code>web.xml</code>ファイルが表示されます。NetBeansが<code>web.xml</code>ファイルに提供しているテンプレートでは、デフォルトとして30分が設定されています。
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;
+        30
+    &lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre></li>
+
+                <li>「一般」タブをクリックして、「セッション・タイム・アウト」フィールドに「<code>10</code>」と入力します。<br><img alt="web.xmlファイルの「一般」タブ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-timeout.png" style="width:688px" title="web.xmlの「一般」タブでの、アプリケーションのセッション・タイムアウトの指定"></li>
+
+                <li>ファイルを保存します([Ctrl]-[S]、Macの場合は[⌘]-[S])。<br><br>「XML」ビューに戻ると、<code>&lt;session-timeout></code>要素が更新されていることを確認できます。
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;10&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre>
+                </li>
+            </ol>
+
+            <p class="notes"><strong>注意: </strong>かわりに、<code>&lt;session-timeout></code>要素をすべて除去し、GlassFish固有のデプロイメント・ディスクリプタ(<code>sun-web.xml</code>)で<code>session-properties</code>要素を編集することもできます。これを行うと、サーバーのWebモジュールにあるすべてのアプリケーションのグローバル・タイム・アウトが設定されます。詳細は、<a href="http://docs.sun.com/app/docs/doc/821-1752/beaha" target="_blank">Oracle GlassFish Server 3.0.1アプリケーション開発ガイド: セッションの作成および管理</a>を参照してください。</p>
+
+
+            <h3 id="programmatically">プログラムによるセッション・タイム・アウトの処理</h3>
+
+            <p>アプリケーションがセッションに依存している場合、タイム・アウトしたセッションや識別できないセッションに対するリクエストを受け取ったときにも正常に処理できるようにする必要があります。<code>AffableBean</code>アプリケーションでこれを実現するには、<code>ControllerServlet</code>に送信されたリクエストをインターセプトする単純なフィルタを作成します。このフィルタはセッションが存在するかどうかをチェックして、存在しなければリクエストをサイトの開始ページに転送します。</p>
+
+            <ol>
+                <li>まず、ユーザーがサイトにアクセスしている途中でセッションがタイム・アウトする場合に起こる問題を調べます。一時的に、セッション・タイム・アウトの間隔を1分にリセットします。Webデプロイメント・ディスクリプタ(<code>web.xml</code>)を開き、<code>&lt;session-timeout></code>タグの間に「<code>1</code>」を入力します。
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;<strong>1</strong>&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre></li>
+
+                <li><code>AffableBean</code>プロジェクトを実行します。ブラウザでカテゴリ・ページをクリックして、項目をいくつかカートに追加してから「view cart」をクリックします。<br><img alt="ショッピング・カートの項目が表示されたカート・ページ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-page-session-intact.png" style="width:688px" title="カート・ページにはセッション・オブジェクトに応じてショッピング・カートの項目が表示される"></li>
+
+                <li>少なくとも1分間待ちます。</li>
+
+                <li>カート・ページに表示された項目のうち、1つの項目の数量を更新します。(1から99までのいずれかの数字を入力できます。)「update」をクリックします。サーバーからHTTPステータス500のメッセージが返されます。<br><img alt="ブラウザに表示されたGlassFishエラー・レポート" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/glassfish-error-report.png" style="width:688px" title="有効期限切れセッションに対するリクエストを受信するとNullPointerExceptionが発生する"></li>
+
+                <li>IDEでGlassFishサーバー・ログを調べます。「出力」ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])を開き、「GlassFish Server」タブを選択します。ログの最下部までスクロールして、エラーのスタック・トレースを調べます。<br><a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/gf-server-output.png" rel="lytebox" title="有効期限切れセッションに属するリクエストを受信するとNullPointerExceptionが発生する"><img alt="ブラウザに表示されたGlassFishエラー・レポート" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/gf-server-output.png" style="width:688px" title="クリックして拡大"></a><br>サーバー・ログに、<code>ControllerServlet</code>の184行目で<code>NullPointerException</code>が発生したことが示されています。「出力」ウィンドウには、例外が発生した行へのリンクが表示されます。</li>
+
+                <li>リンクをクリックします。<code>ControllerServlet</code>の184行目に直接移動します。エディタの左マージンにあるエラー・バッジの上にカーソルを置くと、例外を説明するツールチップが表示されます。<br><img alt="エディタに表示されたエラー・バッジおよびツールチップ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/nullpointer-exception.png" title="エラー・バッジとツールチップによる問題の場所および原因の提示"><br>リクエストを受け取る前にセッションがすでに有効期限切れになっていたため、サーブレット・エンジンは、対応するセッションにリクエストを関連付けることができませんでした。このため、<code>cart</code>オブジェクトを見つけられませんでした(151行目)。最終的に184行目で、<code>null</code>と等しい変数のメソッドをエンジンがコールしようとしたときに例外が発生しました。<br><br>これで問題を特定できたので、フィルタを実装して修正しましょう。</li>
+
+                <li>IDEのメイン・ツールバーにある「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png">)ボタンをクリックします。または、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押します。</li>
+
+                <li>「<strong>Web</strong>」カテゴリから「<strong>フィルタ</strong>」を選択し、「次」をクリックします。</li>
+
+                <li>フィルタに「<code>SessionTimeoutFilter</code>」という名前を付けます。「パッケージ」フィールドに「<code>filter</code>」と入力して、フィルタ・クラスが作成時に新しいパッケージに配置されるようにします。</li>
+
+                <li>「次」をクリックします。デフォルトの設定を受け入れ、「終了」をクリックします。<code>SessionTimeoutFilter</code>のテンプレートが生成され、エディタで開きます。<br><br>
+                    <p class="notes"><strong>注意:</strong> NetBeans 6.9の時点では、ウィザードを使用してWebデプロイメント・ディスクリプタに登録されていないサーブレットへのマッピングを設定できません。(<code>ControllerServlet</code>は<code>@WebServlet</code>注釈を使用して登録されています。)このため、生成されたコードを次の手順で変更します。</p></li>
+
+                <li><code>@WebFilter</code>注釈署名を次のように変更します。
+
+
+                    <pre class="examplecode">@WebFilter(<strong>servletNames = {&quot;Controller&quot;}</strong>)
+public class SessionTimeoutFilter implements Filter {</pre>
+
+                    これによって、<code>ControllerServlet</code>が処理するすべてのリクエストをインターセプトするようにフィルタが設定されます。(または、<code>urlPatterns</code>属性を保持して、<code>ControllerServlet</code>が処理するすべてのパターンをリストすることもできます。)<br><br>サーブレットの<code>@WebServlet</code>注釈署名に指定されているように、「<code>Controller</code>」は<code>ControllerServlet</code>の名前です。また、フィルタ・クラスの名前がデフォルトで使用されているため、<code>filterName</code>属性は除去しています。<br><br> IDEのフィルタ・テンプレート自体に、調べる価値のある有用なコードが多く含まれています。ただし、そのほとんどはここでの目的には不要なものです。どのフィルタ・クラスも、次の3つのメソッドを定義する<code>Filter</code>インタフェースを実装する必要があります。
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong><code>init</code>:</strong> フィルタが初期化されてから使用が開始されるまでの間に、任意のアクションを実行します。</li>
+                        <li><strong><code>destroy</code>:</strong> 使用を停止してフィルタを除去します。このメソッドは、任意のクリーン・アップ操作を実行するためにも使用できます。</li>
+                        <li><strong><code>doFilter</code>:</strong> フィルタがインターセプトするリクエストごとの操作の実行に使用されます。</li>
+                    </ul>
+
+                    <p class="tips"><code>Filter</code>インタフェースに関するドキュメントを参照するには、「Javadoc索引検索」を使用します。[Shift]-[F1] (Macの場合は[fn]-[Shift]-[F1])を押してから、検索フィールドに「<code>Filter</code>」と入力して[Enter]を押します。「Interface in javax.servlet」エントリを選択します。索引検索ツールの下部のペインに、Javadocドキュメントが表示されます。</p></li>
+
+                <li><code>SessionTimeoutFilter</code>の本文を、次の内容に置き換えます。
+
+                    <pre class="examplecode">
+@WebFilter(servletNames = {&quot;Controller&quot;})
+public class SessionTimeoutFilter implements Filter {
+
+    <strong>public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+
+        HttpSession session = req.getSession(false);
+
+        // if session doesn't exist, forward user to welcome page
+        if (session == null) {
+            try {
+                req.getRequestDispatcher(&quot;/index.jsp&quot;).forward(request, response);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    public void init(FilterConfig filterConfig) throws ServletException {}
+
+    public void destroy() {}</strong>
+
+}</pre></li>
+
+                <li>[Ctrl]-[Shift]-[I] (Macの場合は[⌘]-[Shift]-[I])を押してインポート文を修正します。(<code>HttpServletRequest</code>および<code>HttpSession</code>のためのインポートの追加が必要。)また、エディタのヒントを使用して<code>init</code>、<code>destroy</code>および<code>doFilter</code>メソッドに<code>@Override</code>注釈を追加します。<br><br>以降の手順では、プロジェクトでデバッガを実行して<code>doFilter</code>メソッドをステップ実行し、リクエストが既存のセッションにバインドされているかどうかをこのメソッドが判定する方法を確認します。</li>
+
+                <li>「ブレークポイント」ウィンドウを開き([Alt]-[Shift]-[5]、Macの場合は[Ctrl]-[Shift]-[5])、既存のブレークポイントが設定されていないことを確認します。ブレークポイントを削除するには、ブレークポイントを右クリックして「削除」を選択します。(前述の課題である<a href="#http-monitor">HTTPモニターによるクライアントとサーバー間の通信の確認</a>を完了した場合は、<code>ControllerServlet</code>に未処理のブレークポイントが設定されている可能性があります。)</li>
+
+                <li>デバッガを実行します。IDEのメイン・ツールバーにある「プロジェクトをデバッグ」(<img alt="「プロジェクトをデバッグ」ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png">)ボタンをクリックします。</li>
+
+                <li>ブラウザに開始ページが表示されたら、カテゴリを選択してからショッピング・カートにいくつか項目を追加します。</li>
+
+                <li><code>SessionTimeoutFilter</code>の<code>doFilter</code>メソッドで、セッションへのアクセスを試行する行(32行目)にブレークポイントを設定します。<br><img alt="エディタで設定されたブレークポイント" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/filter-breakpoint.png" title="getSessionメソッドへのブレークポイントの設定"></li>
+
+                <li>ブラウザで「view cart」ボタンをクリックします。IDEに切り替えると、デバッガがブレークポイントで一時停止されていることがわかります。<br><br>その時点でセッション・オブジェクトが存在しない場合、<code>getSession()</code>は新しいセッション・オブジェクトを作成することを思い出してください。ここでは、オブジェクトが見つからなくても新規作成を行わない<code>getSession(false)</code>を使用します。つまり、セッションが存在しない場合、メソッドは<code>null</code>を返します。</li>
+
+                <li>「ステップ・オーバー」(<img alt="ステップ・オーバー・ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">)ボタンをクリックしてから、<code>session</code>変数の上にカーソルを移動します。前回のリクエストが送信されてから1分が経過していなければ、変数が<code>StandardSessionFacade</code>に割り当てられていることを確認できます。これは、リクエストのセッション・オブジェクトを表します。<br><img alt="セッション・オブジェクトに割り当られたsession変数を表示するポップアップ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-exists.png" title="変数へのカーソルの移動によるその現在値の判定"></li>
+
+                <li>リクエストが処理されるまで、メソッドをステップ実行し続けます。<code>session</code>は<code>null</code>と等しくないため、<code>if</code>文をスキップすると、<code>chain.doFilter</code>はリクエストを<code>ControllerServlet</code>に転送します(44行目)。</li>
+
+                <li>ブラウザで、1分間が過ぎたことを確認してから、カートの製品項目のうちの1つの数量を更新します。この手順は、この課題の最初の方で実行してステータス500のメッセージが返されたときと同じ手順です。ここでは、<code>ControllerServlet</code>に送信されたリクエストをフィルタがインターセプトするようになったので、セッション・タイム・アウトが起きるとどうなるかを確認しましょう。</li>
+
+                <li>「update」をクリックしてからIDEに切り替えると、フィルタに設定されたブレークポイントでデバッガが再度一時停止されています。</li>
+
+                <li><code>req.getSession(false)</code>の式を強調表示してから、この上にカーソルを移動します。ここでは、セッションがすでに有効期限切れになっているため、式が<code>null</code>と等しいことが確認できます。<br><img alt="nullと等しいsession変数を表示するポップアップ" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-null.png" title="強調表示した式へのカーソルの移動によるその現在値の判定"></li>
+
+                <li>続けてコードをステップ実行します。ここでは、<code>session</code>変数が<code>null</code>と等しくなっているため、35行目の<code>if</code>文が処理され、リクエストが<code>/index.jsp</code>に転送されます。デバッガが実行を終了すると、ブラウザにサイトの開始ページが表示されます。</li>
+
+                <li>セッションの終了(<img alt="セッションの終了ボタン" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png">)ボタンをクリックして、デバッグ・セッションを終了します。</li>
+
+                <li>プロジェクトの<code>web.xml</code>ファイルを開き、セッション・タイム・アウトの間隔を10分に戻します。
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;<strong>10</strong>&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre>
+                </li>
+
+                <li>ファイルを保存([Ctrl]-[S]、Macの場合は[⌘]-[S])します。</li>
+            </ol>
+        </div>
+
+        <p><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot6.zip">スナップショット6</a>は、このチュートリアル・ユニットのプロジェクトの完成版を示しています。最後に、セッション管理に関する1つのトピックについて説明します。セッション・オブジェクトで<code>invalidate</code>メソッドをコールすることで、セッションを明示的に終了させることができます。セッションが不要になったら、サーバーが使用するメモリーを節約するために、そのセッションは除去するようにしてください。次のユニットである<a href="transaction.html">ビジネス・ロジックの取引の統合</a>を完了すると、顧客の注文を正常に処理したときに<code>ControllerServlet</code>が<code>invalidate</code>メソッドを使用してどのようにユーザーの<code>cart</code>オブジェクトを破棄し、セッションを終了するかがわかります。</p>
+
+        <div class="indent">
+            <pre class="examplecode" style="width:710px; margin-left:10px; margin-top:-2px">
+// if order processed successfully send user to confirmation page
+if (orderId != 0) {
+
+    // dissociate shopping cart from session
+    cart = null;
+
+    // end session
+    session.invalidate();
+
+    ...
+}</pre></div>
+
+        <p>これは、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">プロジェクト・スナップショット8</a> (およびそれ以降のスナップショット)に示されています。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Managing Sessions">ご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">関連項目</h2>
+
+        <div class="indent">
+            <h3>NetBeansリソース</h3>
+
+            <ul>
+                <li><a href="../../../../features/java/debugger.html" target="_blank">NetBeans IDEの機能: デバッガ</a></li>
+                <li><a href="../../java/debug-multithreaded.html" target="_blank">マルチスレッド・アプリケーションのデバッグ</a></li>
+                <li><a href="../../java/debug-multithreaded-screencast.html" target="_blank">NetBeans IDEを使用したマルチスレッド・デバッグのビデオ</a></li>
+                <li><a href="../../java/debug-evaluator-screencast.html" target="_blank">NetBeansデバッガのコード・スニペット評価の使用のビデオ</a></li>
+                <li><a href="../../screencasts.html" target="_blank">NetBeans IDE 6.xのビデオ・チュートリアルとデモ</a></li>
+                <li><a href="https://netbeans.org/projects/www/downloads/download/shortcuts.pdf">キーボード・ショートカットおよびコード・テンプレートのカード</a></li>
+                <li><a href="../javaee-gettingstarted.html" target="_blank">Java EE 6アプリケーションの開始</a></li>
+                <li><a href="../javaee-intro.html" target="_blank">Java EEテクノロジ入門</a></li>
+                <li><a href="../../../trails/java-ee.html" target="_blank">Java EEおよびJava Webの学習</a></li>
+            </ul>
+
+            <h3>GlassFishリソース</h3>
+
+            <ul>
+                <li><a href="http://wiki.glassfish.java.net/Wiki.jsp?page=Screencasts" target="_blank">GlassFishスクリーンキャスト</a></li>
+                <li><a href="https://glassfish.dev.java.net/docs/index.html" target="_blank">GlassFish v3ドキュメント</a></li>
+                <li><a href="http://www.sun.com/offers/details/GlassFish_Tomcat.html" target="_blank">Tomcatユーザー向けGlassFishの学習</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1751" target="_blank">Oracle GlassFish Server 3.0.1管理ガイド</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1750" target="_blank">Oracle GlassFish Server 3.0.1アプリケーション・デプロイメント・ガイド</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1752" target="_blank">Oracle GlassFish Server 3.0.1アプリケーション開発ガイド</a></li>
+            </ul>
+
+            <h3>技術記事およびその他のリソース</h3>
+
+            <ul>
+                <li><a href="http://java.sun.com/javaee/reference/code/" target="_blank">Java EEコード・サンプルおよびアプリケーション</a></li>
+                <li><a href="http://java.sun.com/j2se/javadoc/" target="_blank">Javadocツール</a> (製品ホーム・ページ)</li>
+                <li><a href="http://java.sun.com/j2se/javadoc/writingdoccomments/index.html" target="_blank">Javadocツールのドキュメント・コメントを書く方法</a></li>
+                <li><a href="http://java.sun.com/products/servlet/Filters.html" target="_blank">フィルタの基本</a></li>
+                <li><a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/InterceptingFilter.html" target="_blank">コアJ2EEパターン - フィルタのインターセプト</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/csajsp2.html" target="_blank">サーブレット、JSPおよびJDBCの初級・中級レベル・チュートリアル</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/msajsp.html" target="_blank">サーブレットおよびJSPの上級チュートリアル</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/java5.html" target="_blank">Java 5およびJava 6チュートリアル</a></li>
+                <li><a href="http://www.ibm.com/developerworks/java/library/j-jstl0211.html" target="_blank">JSTL入門、パート1: 式言語</a></li>
+                <li><a href="http://www.ibm.com/developerworks/java/library/j-jstl0318/index.html" target="_blank">JSTL入門、パート2: coreライブラリについて</a></li>
+            </ul>
+        </div>
+
+    </body>
+</html>

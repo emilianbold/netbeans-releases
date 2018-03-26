@@ -1,0 +1,688 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<!--
+Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>NetBeans E コマースのチュートリアル - アプリケーションの設計</title>
+<meta name="author" content="&#116;&#114;&#111;&#121;&#46;&#103;&#105;&#117;&#110;&#105;&#112;&#101;&#114;&#111; &#x40; &#115;&#117;&#110;&#46;&#99;&#111;&#109; ">
+<meta name="description" content="This tutorial unit introduces a scenario, lists requirements, and discusses the procedure involved in designing the application. A description of the MVC pattern is provided.">
+<meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+<link rel="SHORTCUT ICON" href="/images_www/favicon.ico">
+<link rel="stylesheet" type="text/css" href="/netbeans.css" media="screen">
+<script type="text/javascript" src="/images_www/js/jquery-1.3.2.min.js"></script>
+<script src="/images_www/js/lang-pulldown.js" type="text/javascript"></script>
+<script src="/images_www/js/switcher.js" type="text/javascript"></script>
+<script src="/images_www/js/companion-projects.js" type="text/javascript"></script>
+<script language="JavaScript" type="text/javascript">
+ <!--
+ var username="guest";
+ //-->
+ </script>
+<script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+<script src="../../../../images_www/js/listCollapse.js" type="text/javascript"></script><link rel="stylesheet" type="text/css" href="../../../../netbeans.css"><link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+<link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+</head>
+	<body class="blue-bg"><div style="background-color:white;"><div class="f-page-auto-cell" id="doc" >
+
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans E-commerce チュートリアル－アプリケーションの設計</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>内容</h4>
+
+                <ol>
+                    <li><a href="intro_ja.html">はじめに</a></li>
+                    <li><strong>アプリケーションの設計</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#scenario">シナリオ</a></li>
+                            <li><a href="#requirements">お客様の要件を収集する</a></li>
+                            <li><a href="#mockups">モックアップを準備する</a></li>
+                            <li><a href="#architecture">アーキテクチャを決定する</a></li>
+                            <li><a href="#planning">プロジェクトを計画する</a></li>
+                            <li><a href="#seeAlso">関連参照</a></li>
+                        </ul></li>
+
+                    <li><a href="setup-dev-environ_ja.html">開発環境の設定</a></li>
+                    <li><a href="data-model_ja.html">データモデルの設計</a></li>
+                    <li><a href="page-views-controller_ja.html">ページビューとコントローラサーブレットの準備</a></li>
+                    <li><a href="connect-db_ja.html">データベースへのアプリケーションの接続</a></li>
+                    <li><a href="entity-session_ja.html">エンティティクラスとセッション Bean の追加</a>
+                    <li><a href="manage-sessions_ja.html">セッションの管理</a></li>
+                    <li><a href="transaction_ja.html">トランザクションビジネスロジックの統合</a></li>
+                    <li><a href="language_ja.html">言語サポートの追加</a></li>
+                    <li><a href="security.html">アプリケーションの保護</a></li>
+                    <li><a href="test-profile.html">アプリケーションの負荷テスト</a></li>
+                    <li><a href="conclusion_ja.html">まとめ</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>このチュートリアルであなたが設計するアプリケーションは、実世界のシナリオに基づいています。チュートリアルのシナリオを紹介した後で、顧客の要件の高レベルのリストを整備します。その後、アプリケーションのビジネスプロセスのフロー図を準備します。あなたとあなたの顧客の両方に役立つ一連の<em>モックアップ</em>　　を準備します。モックアップは最終的なアプリケーションがエンドユーザーにどう見えるかを画像にして明確にします。最後に、顧客の要件をブレークダウンして、一連の実装タスクのセットに落とし込み、アプリケーションを構造化して、機能コンポーネント間の職責と相互関係を明確に定義します。
+        </p>
+
+        <p>この単元では、MVC （モデル- ビュー - コントローラ）デザインパターンについて説明します。このパターンが提供している利点を調査した後、あなたは JSP マッピング、サーブレットについて設定し、および他の技術を MVC アーキテクチャに設定します。そして、 アプリケーションのコンポーネントをＭＶＣの観点から見た図を作成します。
+        </p>
+
+        <p>この単元は、 <a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/">J2EE プラットフォームを使った エンタープライズアプリケーションの設計。第2版</a>から様々な参照をしています。この本には、<a href="http://java.sun.com/reference/blueprints/index.jsp">Java
+            BluePrints</a>（Java 設計図）で勧めているガイドラインが入っています。
+            </p>
+
+        <p>このチュートリアルの単元は、NetBeans IDE の使用を必要としませんが、IDE はこれ以降の単元でカバーするタスクの基盤となるため不可欠です。
+        </p>
+
+        <p>あなたはこのチュートリアルで構築するアプリケーションのライブデモを見ることができます： <a href="http://services.netbeans.org/AffableBean/">NetBeans E コマースのチュートリアル デモ アプリケーション</a>。
+        </p>
+
+        <br style="clear:left">
+
+
+        <br>
+        <h2 id="scenario">シナリオ</h2>
+
+        <p>このチュートリアルは、次のシナリオに基づいています。これは架空のシナリオですが、あなたがまさに開発しようとしているソフトウエアを実際のビジネスニーズに適用する方法を示しています。また同時に顧客の要件を引き出すことができるプラットフォームとして役に立ちます。お客様の要件は可能な限り明確にされるべきです。またすべての設計や実装を始める前に確立される必要があります。
+        </p>
+
+        <div class="indent">
+            <div class="feedback-box margin-around float-left" style="width:700px">
+
+                <h4>シナリオ</h4>
+
+                <p>小さな食料品店、Affable Bean（気さくな豆）は、いくつかの地元の農場と提携して、有機農産物、食品を地域社会に提供しています。長年の顧客基盤により、地域に対して豊かさ（地域での売り上げ）が増加しています。食料品店は顧客にオンライン配達サービスを提供する可能性を検討することにしました。最近の調査では、常連の 90％ は継続的なインターネットアクセスを持っており、65％ がこのサービスを利用することに興味があることがわかりました。
+                </p>
+
+                <p>食料品店のスタッフは、Java Web 開発者に、顧客がオンラインショッピングできるウェブサイトを作成するよう求めています。また、食料品店のスタッフは、管理スタッフが注文を追跡できるようにウェブサイトに管理コンソールも一緒に作成するよう求めています。
+                </p>
+
+                <p>ストアの場所は、プラハ、チェコ共和国です。常連客はチェコ語と英語の両方を話すので、ウェブサイトは両方の言語をサポートするようにスタッフは要求しています。
+                </p>
+
+                <p>食料品店はすでにドメインを購入しており、ウェブ指向のスタッフの一人は、アプリケーションの準備ができしだい、ドメインにアプリケーションをデプロイ(配置）することができると言っています。
+                </p>
+            </div>
+        </div>
+
+        <br style="clear:both">
+
+
+        <br>
+        <h2 id="requirements">お客様の要件を収集する</h2>
+
+        <p>すべてのプロジェクトの初期段階には、デザインや実装を決める前の情報収集があります。その最も一般的な形は、顧客と直接、頻繁にコミュニケーションを行うことです。提供されたシナリオに基づいて、Affable Bean (気さくな豆)のスタッフがあなたに、作成しようとしているアプリケーションは、次の要件を満たす必要があると伝えています：
+        </p>
+
+        <ol>
+            <li>実際の店舗で販売されている製品のオンラインでの表現。 ４つのカテゴリ（乳製品、肉、パン、フルーツ＆ベジタブル）があります。各カテゴリーには4つの製品があり、オンライン買い物客はそれを閲覧できます。各製品の詳細（すなわち、名前、画像、説明、価格）を提供します。 
+            </li><p>
+
+            <li>ショッピングカート機能は、以下のことができること： 
+            <br><br>
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>仮想ショッピングカートにアイテムを追加する。</li><p>
+                    <li>ショッピングカートからアイテムを削除する。</li><p>
+                    <li>ショッピングカートの数量を更新する。 </li><p>
+                    <li>ショッピングカート内の全ての商品の全体と数量が見える。</li><p>
+                    <li>安全な決済処理を通して、注文と支払いをする。</li><p>
+                </ul></li><p>
+
+            <li>管理コンソール、スタッフが顧客の注文を表示することができる。</li><p>
+
+            <li>セキュリティ。インターネット上で転送される重要な顧客データを保護でき、管理コンソールへの不正アクセスを防止する。 </li><p>
+
+            <li>英語とチェコ言のサポート。（ウェブサイトのみ）</li><p>
+        </ol>
+
+        <p>会社のスタッフは、製品とカテゴリの画像、説明と価格の詳細を提供することができるだけでなく、使用される任意のWebサイトのグラフィックも提供することができる。スタッフはまたウェブサイトのすべてのテキストと、言語の翻訳を提供することができる。
+        </p>
+
+        <p class="tips">ソフトウェアの開発管理に専念した多くの実践や方法があります。 <a href="http://en.wikipedia.org/wiki/Agile_software_development">アジャイルソフトウェア開発</a>もその一つで、開発サイクルの中で、頻繁な顧客の検査とそれへの適合を重要なものとして位置付けています。もちろんアジャイル開発はこのチュートリアルの範囲外ですが、チュートリアルの各単元は、ソフトウエアの機能部品単位で完結しています。ソフトウェアの機能部品はさらなるコミュニケーションとフィードバックのために顧客に提示される可能性があります。
+        </p>
+
+
+        <br>
+        <h2 id="mockups">モックアップを準備する</h2>
+
+        <p>お客様のご要望を収集したら、あなたは、「それらがウェブサイトでどうように見えどのように動作するか」の鮮明なイメージを得るために Affable Bean スタッフと一緒に働きます。あなたはユースケースを作成して、どのようにアプリケーションが使用され、どのようにその動作をカプセル化するかについて説明します：
+        </p>
+
+        <div class="indent">
+            <div class="feedback-box margin-around float-left" style="width:700px">
+
+                <h3 id="useCase">ユースケース(Use-Case)</h3>
+
+                <p>お客様は、ウェルカムページを訪問し、製品カテゴリを選択します。選択したカテゴリのページでお客様は製品をブラウズし、次に彼または彼女のショッピングカートに製品を追加します。お客様は、買い物を続け別のカテゴリを選択します。お客様がこのカテゴリからショッピングカートにいくつかの製品を追加します。お客様は、「 view cart (カートを見る)」オプションを選択し、カートのページでカートの製品の数量を更新します。お客様は、カートの内容を確認しチェックアウトに進みます。チェックアウトのページで、顧客は注文金額やその他の情報を見て、個人データを記入し、彼または彼女の詳細を送信します。注文が処理され、顧客は確認ページを受け取ります。確認ページでは、注文の概要と一緒に、顧客の注文を追跡するため独自の参照番号を提供します。
+                </p>
+            </div>
+        </div>
+
+        <br style="clear:both">
+        <br>
+
+        <p>また、モックアップの作成を開始します。このタスクを実現するのに多くの方法があります。たとえば、ストーリーボードのソフトウェアを使う、またはページ間の関係を中継するように線でつないだセットを作成する方法もあります。もう1つの一般的な方法として知られている <a href="http://en.wikipedia.org/wiki/Paper_prototyping">paper prototyping (紙プロトタイピング)</a>（顧客と協力しながら紙の上でアイデアをスケッチする方法）があります。
+        </p>
+
+        <p>このシナリオでは、ユーザーがウェブサイトを移動して参照する主なページの<em>モックアップ</em>　　を作成します。後で、我々が MVC デザインパターンを議論するときには、これらのページが、アリケーションで使われる <em>views</em>　　 にマッピングされることに注意してください。
+        </p>
+
+        <table>
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-index.png"
+                       rel="lytebox" title="Mockup of welcome page" id="index">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-index-small.png"
+                             style="width:400px" alt="Mockup of welcome page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>welcom ページ</h4>
+
+                    <p>welcome ページは、 Web サイトのホームページであり、またアプリケーションの入口です。このページは、ユーザーにビジネスとサービスを紹介し、ユーザが任意の4つの製品カテゴリに移動できるようにします。
+                    </p>
+                </td>
+            </tr>
+
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-category.png"
+                       rel="lytebox" title="Mockup of category page" id="category">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-category-small.png"
+                             alt="Mockup of category page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>カテゴリページ</h4>
+
+                    <p>カテゴリページには、選択したカテゴリ内のすべての製品の一覧を提供しています。このページから、ユーザーはすべての製品情報を表示することができ、彼または彼女のショッピングカートに表示された商品を追加します。また、ユーザーは提供されている任意のカテゴリに移動することができます。
+                    </p>
+                </td>
+            </tr>
+
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-cart.png"
+                       rel="lytebox" title="Mockup of cart page" id="cart">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-cart-small.png"
+                             alt="Mockup of cart page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>カートのページ</h4>
+
+                    <p>カートのページは、ユーザーのショッピングカートに入っているすべての項目を一覧表示します。ここには、各項目の製品の詳細を表示し、カート内の項目の小計を集計。このページで、ユーザーは次のことができます：
+                    </p>
+
+                    <ul>
+                        <li>彼または彼女のカートの全商品のクリア
+                        <br>
+（「clear cart (カート空にする]」をクリックすると「proceed to checkout (チェックアウトに進む)」ボタンが現れ、ショッピングカートのテーブルを消去します。 ） 
+                        </li><p>
+
+                        <li>リストされたすべての項目の数量の更新
+                        <br>
+（価格と数量が更新されます。小計が再計算されます。ユーザーがに数量を「 0 」を設定した場合、製品テーブルの行が削除されます。 ） 
+                        </li><p>
+
+                        <li>「continue shopping (買い物を続ける)」をクリックすると前のカテゴリに戻る。 
+                        </li><p>
+
+                        <li>「 Proceed to checkout (レジに進む)」</li><p>
+                    </ul>
+                </td>
+            </tr>
+
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-checkout.png"
+                       rel="lytebox" title="Mockup of checkout page" id="checkout">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-checkout-small.png"
+                             alt="Mockup of checkout page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>チェックアウトのページ</h4>
+
+                    <p>チェックアウトのページで、フォームを使用してお客様の情報を収集します。このページでは、購入条件を表示し、合計の計算をして注文を合計します。
+                    </p>
+
+                    <p>お客様はセキュアなチャネルを介して個人情報を送信することができます。
+                    </p>
+                </td>
+            </tr>
+
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-confirmation.png"
+                       rel="lytebox" title="Mockup of confirmation page" id="confirmation">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-confirmation-small.png"
+                             alt="Mockup of confirmation page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>確認ページ (confirmation page)</h4>
+
+                    <p>確認ページは、注文が正常に登録されたことをお客様が確認するためのメッセージを返します。注文参照番号と同じく、注文の詳細情報の要約リストがお客様に提供されます。
+                    </p>
+
+                    <p>注文の要約と、お客様の個人情報は保護されたチャネル上で返送されます。</p>
+                </td>
+            </tr>
+        </table>
+
+        <p>また、お客様は複数のページに適用される以下のルールについてスタッフと同意します：</p>
+
+        <ul>
+            <li>お客様は任意のページからチェックアウトに進めます。その条件は：
+            <br><br>
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>ショッピングカートが空ではない</li><p>
+                    <li>ユーザーはまだチェックアウトのページにいない</li><p>
+                    <li>ユーザーはまだチェックアウトしていない（すなわち、確認ページにいる）</li><p>
+                </ul></li><p>
+
+            <li>すべてのページで、ユーザーは以下のことができます：<p>
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>言語を選択（英語又はチェコ語）し、その言語でページを表示する</li><p>
+                    <li>彼または彼女のショッピングカートの状態が見える（もしカートが空でない場合） </li><p>
+                    <li>ロゴ画像をクリックして welcome ページに戻る</li><p>
+                </ul></li><p>
+        </ul>
+
+        <p class="notes"><strong>注：</strong> 　ここに示されていない事例は、同様にクライアントと一緒にユースケースとモックアップを作る必要があるでしょう。そして管理コンソールのルールを決めます。NetBeans E コマースのチュートリアルは、店頭（つまり、ウェブサイト）の開発に焦点を当てています。しかし、単元11 、<a href="#">アプリケーションの保護</a> では、管理コンソールにアクセスするログインメカニズムを作成する方法を示します。また、管理コンソールの実装をしたものを次の方法で調べることができます。 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_complete.zip">完成したアプリケーションをダウンロードする</a>。
+        </p>
+
+        <div class="indent">
+            <h3 id="business">ビジネスプロセスフロー</h3>
+
+
+
+            <p>提案したモックアップ間の関係を確立するのを補助するために、各ページが提供すべき機能をうまく図解し、アプリケーションのプロセスフローをデモする図を準備します。
+            </p>
+
+            <p>図は、各ページの視覚的な機能のコンポーネントを表示し、ユーザーが購入手続きの完了に至るまでの道筋の主要なアクションをハイライト表示します。
+            </p>
+
+            <div class="indent">
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/design/process-flow.png"
+                     class="margin-around" alt="Process-flow diagram of the AffableBean application"
+                     title="The process flow of the AffableBean application"
+                     id="processFlowDiagram">
+            </div>
+        </div>
+
+
+        <br>
+        <h2 id="architecture">アーキテクチャを決定する</h2>
+
+        <p>あなたがコーディングを開始する前に、プロジェクトを設計する方法を調べてみましょう。具体的には、機能コンポーネント間の責任の大枠を決めて、お互いの相互作用を決定する必要があります。
+        </p>
+
+        <p>JSP 技術を使う場合は、 スクリプトを使用して JSP ページにすべてのビジネスロジックを書くことができます。スクリプトは、 <code>&lt;% %&gt;</code> タグで囲まれた Java コードのスニペット（切れ端）です。あなたは既に気づいているかもしれませんが、JSP ページは実行される前にサーブレットにコンパイルされます。そして、Java のコードは完全に JSP ページでのみ有効です。しかし、このような作業はさけるべきであるといういくつかの理由があります。特に大規模なプロジェクトでの作業は避けてください。いくつかの理由は、<a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/">J2EE プラットフォームでのエンタープライズアプリケーション設計  第二版</a> に次のように記載されています：<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>
+        </p>
+
+        <ul>
+            <li><strong>スクリプトレットコードは再利用できません： </strong>　スクリプトレットコードはまさに一つの場所だけに現れます：それが定義されている JSP ページです。もし同じロジックが他に必要な場合は、それを内に含むか（読みやすさが減少）、またはコピーして新しいコンテキストに貼り付ける必要があります
+            </li><p>
+
+            <li><strong>スクリプトレットは表示と共にロジックを中に混ぜ込んでいます：</strong>　 スクリプトレットは、表示コードの海に浮かぶプログラムコードの島です。変更をするには、2つの関係を破壊しないように他が何を行っているかを少しは理解する必要があります。
+             スクリプトレットでは、プレゼンテーション内にプログラムロジックが入り込んでいるために、JSP ページで何をしているかが、あっけなくわからなくなります。
+             </li><p>
+
+            <li><strong>スクリプトレットは開発者の役割の分離を妨げる：</strong>　 スクリプトレットはプログラムと Web ページの内容の両方が入り混じるため、web ページのデザイナーはプログラミングとページのどの部分を修正してはいけないかの両方を理解する必要にせまられます。
+</li><p>
+
+            <li><strong>スクリプトレットは、JSP ページを読み維持することを困難にする： </strong>　スクリプトレットのある JSP ページは、JSP ページ区切りタグと Java 言語コードのタグが混在した構成になっています。
+            </li><p>
+
+            <li><strong>スクリプトレット コードをテストすることは困難です： </strong>　スクリプトレットコードのユニットテストは事実上不可能です。スクリプトレットが JSP ページに埋め込まれているので、それらを実行する唯一の方法は、ページを実行し結果をテストすることだけです。 
+            </li><p>
+        </ul>
+
+        <p>適用するに値する様々なデザインパターンがすでにあります。そのようなパターンの一つに MVC（モデル、ビュー、コントローラ）パラダイムがあります。MVC は、アプリケーションを３つの相互運用できるコンポーネントに分割します：<sup><a href="#footnote2" id="2" style="text-decoration:none">[2]</a></sup>
+        </p>
+
+        <ul>
+            <li><strong>Model モデル： </strong>　ビジネスデータとビジネスロジックを表現します。ビジネスロジックはデータの修正と変更へのアクセスを管理します。それに変更があるとモデルはビューに通知します。そしてビューにその状態についてモデルに問い合わせをさせます。また、コントローラへのアクセスアプリケーションの機能をモデルによってカプセル化することができます。 
+            </li><p>
+
+            <li><strong>View ビュー： </strong>　ビューはモデルの内容をレンダリングします。これは、モデルからデータを取得し、どのようにデータが表示されるかを指定します。モデルが変更したとき、データ表示を更新します。ビューはまた、ユーザ入力をコントローラへ転送します。
+            </li><p>
+
+            <li><strong>Controller コントローラ：</strong>　コントローラは、アプリケーションの動作を定義します。これは、ユーザの要求を送出し、プレゼンテーションのビューを選択します。これは、ユーザの入力を解釈して、モデルによって実行されるアクションの中にそれらをマッピングします。Web アプリケーションでは、ユーザ入力は HTTP GET と POST です。コントローラは、ユーザーとの対話に基づいて表示する次のビューを選択し、モデル操作の結果を表示します。 
+            </li><p>
+        </ul>
+
+        <div class="indent">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mvc-model.png"
+                 class="margin-around" alt="Diagram of the MVC pattern"
+                 title="The Model View Controller pattern"
+                 id="mvcModel">
+        </div>
+        <br>
+
+        <p>MVC デザインパターンを遵守すると多くの利点があります：</p>
+
+        <ul>
+            <li><strong>設計問題を分離する：</strong>  プレゼンテーションとコントロールの分離、データの永続性と振る舞いの分離により、アプリケーションがより柔軟になります。 1つのコンポーネントへの変更があっても、他のコンポーネントへの影響を最小化します。たとえば、モデルを書き換えることなく、新しいビューを作成することができます。 
+            </li><p>
+
+            <li><strong>保守や拡張をもっと簡単にします：</strong>　良い構造は、コードの複雑さを減らすことができます。このように、コードの重複は最小化されます。 
+            </li><p>
+
+            <li><strong>仕事の分離を促進する： </strong>　異なるスキルセットを持つ開発者たちは、自分のコアスキルに焦点を当てるとともに、はっきりと定義されたインタフェースを通じてお互いに協力することができます。 
+            </li><p>
+        </ul>
+
+        <p class="notes"><strong>注：</strong> JSP テクノロジーは 1999年に初めて導入されました。初期の仕様では、 2つのモデルのアーキテクチャが説明されています：モデル1とモデル2です。モデル１は JSP ページ内に直接ビジネスロジックを実装するのに対し、モデル２は MVC パターンを適用しています。モデル１とモデル２のアーキテクチャの詳細については、<a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier5.html#1078527">J2EE プラットフォームを使ったエンタープライズアプリケーションの設計、4.4.1章：構造化 Web 層</a>を参照してください。
+        </p>
+
+        <p>あなたがアプリケーションで MVC パターンを適用することができます。そして Affable Bean のクライアントの開発をすることができます。入ってくるリクエストを処理する <em>controller</em>　　 としてサーブレットを使用することができます  。 <a href="#processFlowDiagram">ビジネスプロセスフロー図</a>のページに<em>views</em>　　 をマッピングすることができます。最後に、データベースに保持されるビジネスデータは、アプリケーションからアクセスしたり、修正することができますし、アクセスや修正は、 <a href="http://java.sun.com/products/ejb/">EJB</a> のセッション Bean を <a href="http://java.sun.com/javaee/technologies/persistence.jsp">JPA</a> のエンティティクラスと共に使用します。これらのコンポーネントは <em>model</em>　　 として表現されます。
+        </p>
+
+        <div class="indent" id="mvcDiagram">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mvc-diagram.png"
+                 class="margin-around" alt="MVC diagram of the AffableBean application"
+                 title="MVC diagram of the AffableBean application">
+        </div>
+        <br>
+
+        <br>
+        <h2 id="planning">プロジェクトの計画</h2>
+
+        <p>プロジェクトを計画するには、お客様のご要望から機能のタスクを推定する必要があります。我々が作るタスクは、プロジェクトの実装計画にスケジュール化します。そして以下のチュートリアルの単元の骨子をつくります。実際に、より有能なあなたは、彼らが行う作業タスクを識別し、その結果に従って仕事をします。より上手に、あなたは、あなたと顧客が合意したスケジュールを守ることができるでしょう。したがって、高レベルのタスクリストからはじめます。そして、これらのタスクをドリルダウンして、各タスクを複数のサブタスクに分割してみます。可能ならば、各リストの項目が単一の作業単位になるまでサブタスクをさらに分割します。
+        </p>
+
+        <ul id="collapsableList">
+            <li>開発環境をセットアップする<p>
+
+                <ul>
+                    <li>IDE に開発サーバーを登録する</li><p>
+                    <li>IDE に web プロジェクトを作る</li><p>
+                    <li>IDE から web プロジェクトを実行する（テストコンパイル、配置、機能の実行、IDE・サーバー・ブラウザ間の相互運用性の確立）</li><p>
+                    <li>IDE にデータベースサーバーを登録する</li><p>
+                    <li>IDE からデータベースサーバーへの接続を確立する</li><p>
+                    <li>データベースサーバーにデータベースインスタンスを生成する</li><p>
+                </ul>
+            </li><p>
+
+            <li>アプリケーションのデータモデルを準備する<p>
+
+                <ul>
+                    <li>ER 図を作成する（ビジュアルなデータベース設計ツールを使って）
+                    <p>
+                        <ul>
+                            <li>オブジェクトを識別する</li><p>
+                            <li>スキーマを生成する</li><p>
+                            <li>エンティティを生成する</li><p>
+                            <li>エンティティのプロパティを追加する</li><p>
+                            <li>エンティティ間の関係を特定する</li><p>
+
+                                <ul>
+                                    <li>一対多　の関係</li><p>
+                                    <li>多対多　の関係</li><p>
+                                </ul>
+                            </li><p>
+                        </ul></li><p>
+
+                    <li>ER 図を Forward-engineer して SQL スクリプトを生成する</li><p>
+
+                    <li>データベース上でスクリプトを実行し、スキーマ（データベース構造）を生成する</li><p>
+                </ul>
+            </li><p>
+
+            <li>フロントエンドのプロジェクトファイルを作る
+            <p>
+
+                <ul>
+                    <li>Stylesheet(スタイルシート)</li><p>
+                    <li>JSP ページ用のプレースホルダー（モックアップのようにページを表示する HTMLと CSS コンテキストの実装を必要とする)
+
+                        <ul>
+                            <li>welcome page</li><p>
+                            <li>category page</li><p>
+                            <li>cart page</li><p>
+                            <li>checkout page</li><p>
+                            <li>confirmation page</li><p>
+                        </ul>
+                    </li><p>
+                </ul></li><p>
+
+            <li>アプリケーションのフロントエンドを準備する<p>
+
+                <ul>
+                    <li>アプリケーションの <code>WEB-INF</code> ディレクトリーに JSP ページを配置する</li><p>
+                    <li>ページのヘッダ、フッターを作る</li><p>
+                    <li>重複したコードのインスタンスの削除( JSP ページのヘーダー、フッターのコード）</li><p>
+                    <li>web 配置記述子の入ったヘッダー、フッターを登録する</li><p>
+                </ul></li><p>
+
+            <li>コントローラサーブレットを作成する<p>
+
+                <ul>
+                    <li>配置記述子にビューのマッピングを作る</li><p>
+                    <li>サーブレットにスケルトンコードを作り、クライアントのリクエストを処理する</li><p>
+                </ul></li><p>
+
+            <li>アプリケーションをデータベースに接続する<p>
+
+                <ul>
+                    <li>データベースにサンプルデータを追加する</li><p>
+                    <li>サーバーにデータソースとコネクションプールを作る</li><p>
+                    <li>データソースのテスト（コネクションプールに ping する）</li><p>
+                    <li>ビューがデータベースのデータをアクセスできることを確認する
+                        <ul>
+                            <li>データベースドライバー JAR をサーバーに追加する</li><p>
+                            <li>アプリケーションにデータソースへのリソース参照を作る</li><p>
+                            <li>JSP ページからデータベースに query を発行する</li><p>
+                        </ul></li><p>
+
+                    <li>他に必要なアプリケーション全体のパラメータを設定する</li><p>
+                    <li>データベースアクセスおよびユーザセッションを必要としないビューに条件付きロジックのコードを書く(welcome, category)
+                    </li><p>
+
+                </ul></li><p>
+
+
+            <li>ビジネスロジックを開発する<p>
+
+                <ul>
+                    <li>モデルをセットアップする<p>
+                        <ul>
+                            <li>データベーステーブルから JPA エンティティクラスを作る</li><p>
+                            <li>永続化ユニットを生成し設定する</li><p>
+                            <li>エンティティクラス用の EJB ステートレス Bean facades を作る</li><p>
+                        </ul></li><p>
+
+                    <li>ビューに EJB モデルを統合する<p>
+
+                        <ul>
+                            <li>コントローラサーブレットに EJB facades を統合する</li><p>
+                            <li>ビューを修正してスコープ変数からデータを使えるようにする(全ての JSTL <code>&lt;sql&gt;</code> クエリーの代替）　
+                           </li><p>
+                        </ul></li><p>
+
+                    <li>ショッピングカートの機能を作る<p>
+
+                        <ul>
+                            <li>一時データを保存する Java クラスを作る（<code>ShoppingCart</code>, <code>ShoppingCartItem</code>）</li><p>
+                            <li><code>HttpSession</code> 用のコードをコントローラサーブレットの中に統合する</li><p>
+                            
+                            <li>コントローラサーブレットへセッション関係アクションを追加する</li><p>
+                            <li>ページヘッダーにショッピングカートのウイジェットを作る</li><p>
+                            <li>セッション関係のデータをビュー（カート、チェックアウト）の中に統合する</li><p>
+                            <li>、ユーザがクッキーを無効にしているイベントの中で URL の再書き込みができるようにする JSTL <code>&lt;c:url&gt;</code> タグを適用する</li><p>
+                            <li>we b配置記述子にセッションのタイムアウトを設定する</li><p>
+                            <li>セッションのタイムアウトのイベントでリクエストを扱うコントローラサーブレットのロジックを追加する</li><p>
+                        </ul></li><p>
+
+                    <li>トランザクションロジックを統合する
+                    <p>
+
+                        <ul>
+                            <li>チェックアウトのフォームからユーザデータを展開し確認するためのコードを作る</li><p>
+                            <li>EJB ステートレスセッション bean を作り、データベースに注文と顧客の挿入処理をする</li><p>
+                            <li>新規に生成されたオーダーをデータベースに問い合わせするロジックを実装する　</li><p>
+                            <li>確認ページで注文と顧客の詳細表示を実装する</li><p>
+                        </ul>
+                    </li><p>
+                </ul></li><p>
+
+            <li>言語サポートを追加する<p>
+
+                <ul>
+                    <li>アプリケーションのすべてのテキストメッセージを含むプロパティファイルを作成する
+                    <ul>
+                            <li>デフォルト言語 (English（英語）)</li><p>
+                            <li>English（英語）</li><p>
+                            <li>Czech（チェコ語）</li><p>
+                        </ul></li><p>
+
+                    <li>登録デプロイメント記述子にローカライズ コンテキストパラメータを登録する</li><p>
+
+                    <li>ユーザセッションに保存された言語の値に基づきページの言語を表示するロジックを追加する</li><p>
+
+                    <li>ビューに含まれるすべてのテキストに <code>&lt;fmt:message&gt;</code> タグを適用する</li><p>
+
+                    <li>データベースから英語の記述を取り除き、その代わりにプロパティを使用する</li><p>
+                </ul></li><p>
+
+            <li>管理コンソールを作成する<p>
+
+                <ul>
+                    <li>新しい人工物 (artifacts) を作る<p>
+
+                        <ul>
+                            <li>ビュー
+
+                                <ul>
+                                    <li>ログイン　login</li><p>
+                                    <li>ウエルカム　welcome</li><p>
+                                    <li>エラー　error</li><p>
+                                </ul></li><p>
+
+                            <li>コントローラサーブレット</li><p>
+                        </ul></li><p>
+
+                    <li>ログイン機能を作る<p>
+
+                        <ul>
+                            <li>インターフェースを作る</li><p>
+                            <li>コントローラサーブレットへアクションを追加する</li><p>
+                            <li>配置記述子にログイン機能を設定する</li><p>
+                        </ul></li><p>
+
+                    <li>管理者機能を実装する（welcome ページに）<p>
+
+                        <ul>
+                            <li>注文の詳細を表示するために</li><p>
+                            <li>顧客の詳細を表示するために</li><p>
+                        </ul>
+                    </li><p>
+                </ul></li><p>
+
+            <li>アプリケーションをセキュアにする<p>
+
+                <ul>
+                    <li>チェックアウト用の SSL 接続、確認ビュー、そして管理コンソールを設定する<p>
+                        <ul>
+                            <li>サーバーで SSL を有効にする</li><p>
+                            <li>配置記述子にセキュリティ設定を登録する</li><p>
+                        </ul></li><p>
+
+                    <li>サーバーにユーザーロールと管理コンソール用のアクセス許可を作成する<p>
+                        <ul>
+                            <li>サーバーでセキュリティロールを作成する</li><p>
+                            <li>配置記述子へセキュリティロールと制限を宣言する</li><p>
+                        </ul>
+                    </li><p>
+                </ul>
+            </li><p>
+        </ul>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Designing the Application">ご意見をお寄せ下さい</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">関連参照</h2>
+
+        <div class="indent">
+            <h3>オンラインリソース</h3>
+
+            <ul>
+                <li><a href="http://java.sun.com/reference/blueprints/index.jsp">Java BluePrints</a></li><p>
+                <li><a href="http://java.sun.com/blueprints/patterns/catalog.html">J2EE パターンカタログ</a></li><p>
+                <li><a href="http://java.net/projects/bpcatalog/">Java 設計図ソリューションカタログ</a></li><p>
+                <li><a href="http://java.sun.com/blueprints/patterns/MVC-detailed.html">Java 設計図：モデル－ビュー－コントローラ</a></li><p>
+                <li><a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier5.html">Web ベース層アプリケーションフレームワークの設計</a></li><p>
+                <li><a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnadr.html">Java EE 5 チュートリアル-第3章： Web アプリケーション入門</a></li><p>
+            </ul>
+
+            <h3>技術関連記事</h3>
+
+            <ul>
+                <li><a href="http://java.sun.com/developer/technicalArticles/javaserverpages/servlets_jsp/">サーブレットと JSP ページのベストプラクティス</a></li><p>
+                <li><a href="http://java.sun.com/developer/technicalArticles/J2EE/despat/">J2EE アプリケーション柔軟性と保守構築のためのデザインパターン
+                </a></li><p>
+            </ul>
+
+            <h3>図書</h3>
+
+            <ul>
+                <li><a href="http://volume1.coreservlets.com/">コアサーブレットおよび JavaServer Pages 第1巻：コア技術、第2版</a></li><p>
+                <li><a href="http://volume2.coreservlets.com/">コアサーブレットおよび JavaServer Pages 第2巻：先端技術、第2版
+                </a></li><p>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>参照</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> より広範な一覧についてはこれを参照してください。<br>  <a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier3.html#1097966">J2EE プラットフォームでのエンタープライズアプリケーションの設計
+            　4.2.6.8章 ：スクリプトレットを避けるためのカスタムタグの使い方</a>。
+            　</li><p>
+
+            <li id="footnote2"><a href="#2" style="text-decoration:none">^</a> MVC パターンについてのより詳細な情報についてはこれを参照してください。<br>                <a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/app-arch/app-arch2.html#1105854">J2EE プラットフォームでのエンタープライズアプリケーションの設計　11.1.1章：モデル－ビュー－コントローラのアーキテクチャ</a>。
+            </li><p>
+        </ol>
+
+        <script type="text/javascript">
+            <!--
+            compactMenu('collapsableList', true, '&plusmn; ');
+            -->
+        </script>
+
+    
+</div>
+
+	</div>
+	</body>
+</html>

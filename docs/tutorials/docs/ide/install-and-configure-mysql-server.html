@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Setting Up the MySQL Database Server in the Windows Operating System</title>
+     <meta name="KEYWORDS" content="NETBEANS, CONFIGURE, PHP, Apache, MySQL server, windows">
+      <meta name="DESCRIPTION" content="NETBEANS, CONFIGURE, PHP, Apache, MySQL server, under Windows" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">  
+   </head>
+   <body>
+    <a name="top"></a>
+<h1>Setting Up  the MySQL Database Server in the Windows Operating System </h1>
+<p>The MySQL database server is one of the most popular open-source database servers commonly used in web application development. </p>
+<p>This document recommends a sequence of steps to set up the MySQL database server 5.6 versions in the Windows operating system. It does not cover MySQL configuration details, it  describes a sequence of required steps.</p>
+<p>For information about installing and configuring MySQL database server for other operating systems, refer to the <a href="http://dev.mysql.com/doc/refman/5.6/en/installing.html" target="_blank">Installing and Upgrading MySQL</a> documentation. </p>
+<p class="notes"><b>Note:</b> The <a href="../../72/ide/install-and-configure-mysql-server.html">Setting Up the MySQL Database Server 5.1 versions in the Windows Operating System</a> document provides the instructions on setting up the 5.1 versions of MySQL Server on Windows.</p>
+
+<h2>Contents</h2>
+<ul class="toc">
+<li><a href="#download">Starting the Download</a></li>
+<li><a href="#startingInstallation">Starting the Installation</a></li>
+<li><a href="#seeAlso">See Also</a></li>
+</ul>
+
+<h2><a name="download"></a>Starting the Download</h2>
+<ol>
+<li>Go to <a href="http://dev.mysql.com/downloads/installer/" target="_blank">http://dev.mysql.com/downloads/installer/</a>.</li>
+<li>Click the Download button.</li>
+<li>Save the installer file to your system.</li>
+</ol>
+<p class="align-center"><a href="#top">top</a></p>
+<h2><a name="startingInstallation"></a>Starting the Installation </h2>
+<p>After the download completes, run the installer as follows:</p>
+<ol>
+  <li>Right-click  the downloaded installation file (for example, <tt>mysql-installer-community-5.6.14.0.msi</tt>) and click Run.<br> 
+  The MySQL Installer starts.</li>
+  <li>On the Welcome panel, select Install MySQL Products. </li>
+  <li>On the License Information panel, review the license agreement, click the acceptance checkbox, and click Next.</li>
+  <li>On the Find latest products panel, click Execute. <br>When the operation is complete, click Next.</li>
+  <li>On the Setup Type panel, choose the Custom option and click Next.</li>
+  <li>On the Feature Selection panel, ensure MySQL Server 5.6.x is selected, and click Next. </li>
+  <li>On the Check Requirements panel, click Next.</li>
+  <li>On the Installation panel, click Execute.<br>
+  When the server installation is completed successfully, the information message appears on the Installation panel. Click Next.</li>
+  <li>On the Configuration panel, click Next.</li>
+  <li>At the first MySQL Server Configuration page (1/3), set the following options:
+    <ul>
+  <li><b>Server Configuration Type</b>. Select the Development Machine option.</li>
+  <li><b>Enable TCP/IP Networking</b>. Ensure the checkbox is selected and specify the options below: 
+  <ul>
+    <li><b>Port Number</b>. Specify the connection port. The default setting is 3306 - leave it unchanged if there is not special reason to change it.</li>
+    <li><b>Open Firewall port for network access</b>. Select to add firewall exception for the specified port.</li></ul></li>
+  <li><b>Advanced Configuration.</b> Select the Show Advanced Options checkbox to display an additional configuration page for setting advanced options for the server instance if required.
+    <p class="notes"><strong>Note:</strong> Choosing this option is necessary to get to the panel for setting the network options where you will turn off the firewall for the port used by the MySQL server.</p></li>
+    </ul>
+  Click Next.</li>
+  <li>At the second MySQL Server Configuration page (2/3), set the following options:
+    <ul><li><b>Root Account Password</b>.
+  <ul><li><b>MySQL Root Password</b>. Enter the root user's password.</li>
+  <li><b>Repeat Password</b>. Retype the root user's password.</li></ul>
+  <p class="notes"><strong>Note:</strong> The root user is a user who has full access to the MySQL database server - creating, updating, and removing users, and so on. Remember the root password - you will need it later when creating a sample database.  </p></li>
+  <li><b>MySQL User Accounts</b>. Click Add User to create a user account. In the MySQL User Details dialog box, enter a user name, a database role, and a password (for example, <tt>!phpuser</tt>). Click OK.</li>
+  </ul>Click Next.</li>
+  <li>At the third MySQL Server Configuration page (3/3), set the following options:
+    <ul>
+      <li><b>Windows Service Name</b>. Specify a Windows Service Name to be used for the MySQL server instance. </li>
+      <li><b>Start the MySQL Server at System Startup</b>. Leave the checkbox selected if the MySQL server is required to automatically start at system startup time. </li>
+      <li><b>Run Windows Service as</b>. Choose either:
+  <ul>
+    <li><b>Standard System Account</b>. Recommended for most scenarios. </li>
+    <li><b>Custom User</b>. An existing user account recommended for advanced scenarios.</li></ul></li></ul>
+  Click Next.</li>
+  <li>At the Configuration Overview page, click Next.</li>
+  <li>When the configuration is completed successfully, the information message appears on the Complete panel. Click Finish.
+    <p class="notes"><strong>Note</strong>: To check that the installation has completed successfully, run the Task Manager. If the <tt>MySQLd-nt.exe</tt> is on the Processes list - the database server is running.</p></li>
+</ol>
+<p class="align-center"><a href="#top">top</a></p>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Setting%20Up%20the%20MySQL%20Database%20Server%20in%20the%20Windows%20Operating%20System">Send Feedback on This Tutorial</a></div>
+      <br style="clear:both;" > 
+<h2><a name="seeAlso"></a>See Also</h2>
+<ul>
+<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1790">Working and Connecting with Databases</a> in <i>Developing Applications with NetBeans IDE</i></li>
+<li><a href="../../trails/php.html">PHP Learning Trail</a></li>
+<li><a href="mysql.html">Connecting to a MySQL Database</a></li>
+<li><a href="http://www.mysql.com/why-mysql/java/" target="_blank">MySQL and Java - Resources</a> </li>
+<li><a href="http://dev.mysql.com/doc/refman/5.6/en/index.html" target="_blank">MySQL 5.6 Reference Manual</a></li>
+</ul>
+<p class="align-center"><a href="#top">top</a></p>
+</body>
+</html>

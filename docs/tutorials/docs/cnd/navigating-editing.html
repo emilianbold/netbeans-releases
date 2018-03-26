@@ -1,0 +1,603 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>Editing and Navigating C/C++ Source Files Tutorial</TITLE>
+   <meta name="DESCRIPTION" content="Short tutorial that demonstrates editing
+   and navigating C and C++ source files in NetBeans IDE">
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Editing and Navigating C/C++ Source Files - NetBeans IDE Tutorial</h1>
+<!-- START INTRO  -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+   <p><em>Contributed by <i>Ann
+      Rice</i> and maintained by <i>Susan Morgan</i><br>
+March 2014</em> [Revision number: V8.0]
+</div>
+
+<p>The following short tutorial takes you through some of the features for navigating
+and editing the source files in a C or C++ project in NetBeans IDE.</p>
+<!-- END INTRO -->
+<h3>Contents</h3>
+<img  src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.4 and 8.0" />
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#requirements" title="Requirements">Requirements</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#project" title="Creating the Sample Project">Creating the
+      Sample Project</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#editing" title="Editing C and C++ Source Files">Editing C and C++ Source Files</a></td>
+   </tr>
+ <!-- <table cellspacing="0" cellpadding="0">
+  <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#formatting" title="Setting the Formatting Style">Setting
+      the Formatting Style</a></td>
+      </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#folding" title="Folding Blocks of Code in C and C++ Files">
+      Folding Blocks of Code in C and C++ Files</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href=#markoccurrences" title="Using Semantic Highlighting">Using
+      Semantic Highlighting</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#completion" title="Using Code Completion">Using Code
+      Completion</a></td>
+   </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#templates" title="Using Code Templates">Using Code Templates</a></td>
+   </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#pairs" title="Using Pair Completion">Using Pair
+      Completion</a></td>
+   </tr> 
+   </table>
+   -->
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#navigating" title="Navigating C and C++ Source Files">Navigating 
+      C and C++ Source Files</a></td>
+   </tr>
+   <!-- <table cellspacing="0" cellpadding"0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#classes" title="Using the Classes Window">Using the
+      Classes Window</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#navigator" title="Using the Navigator Window">Using the Navigator 
+      Window</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#findusages" title="Finding Class, Method, and Field
+      Usages">Finding Class, Method, and Field Usages</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#callgraph" title="Using the Call Graph">Using the Call
+      Graph</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#classes" title="Using Hyperlinks">Using Hyperlinks</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#include" title="Using the Include Hierarchy">Using the
+      Include Hierarchy</a></td>
+   </tr> 
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#type" title="Using the Type Hierarchy">Using the
+      Type Hierarchy</a></td>
+   </tr>
+    </table>
+    -->
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#nextsteps" title="Next Steps">Next Steps</a></td>
+   </tr>
+  
+   
+</table>
+
+<h2><A NAME="requirements"></a>Requirements</h2>
+<p><b>To follow this tutorial, you need the following software and resources.</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Software or Resource</th>
+<th class="tblheader" scope="col">Version Required</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a
+href="https://netbeans.org/downloads/index.html"> version 7.4 or 8.0
+with NetBeans C/C++ plugin</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java Developer Kit (JDK)</td>
+<td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">version 7 or 8</a></td>
+</tr>
+
+</tbody>
+</table>
+<br>
+<p>See the <a href="../../../community/releases/80/install.html">NetBeans IDE
+      8.0 Installation
+   Instructions</a> and <a
+      HREF="../../../community/releases/80/cpp-setup-instructions.html">
+      Configuring the NetBeans IDE for C/C++/Fortran</a><br> for
+information about downloading and installing the required software.</p>
+
+<p><b>Sample Projects</b> 
+</p>
+<p>Just want to play with some projects? In the IDE, choose
+   File&nbsp;&gt;&nbsp;New Project, then open the Samples category
+   and the C/C++ subcategory. The IDE
+   provides several sample C and C++ projects to help you familiarize
+   yourself with the IDE. 
+</p>
+<h2><a name="project"></a>Creating the Sample Project</h2>
+      <p>The NetBeans IDE with the C/C++ plugin provides advanced editing features for modifying your source code. To explore these features, we'll use
+         the <tt>Quote</tt> project. If you have not already created this
+         project, do the following:</p>
+         <ol>
+            <li>Choose File &gt; New Project.</li>            
+            <li>In the project wizard, expand the Samples category and select the C/C++ subcategory.</li>            
+            <li>Select the <tt>Quote</tt> 
+               project. Click Next, then click Finish.
+            </li>
+         </ol>
+      <h2><a name="editing"></a>Editing C and C++ Source Files</h2>
+
+     
+      <h3><a name="formatting"></a>Setting the Formatting Style</h3>
+      You can use the Options window to configure default formatting style for 
+      your C and C++ projects.
+<ol>
+<li>Choose Tools &gt; Options.</li>
+<li>Click Editor in the top pane of the window.</li>
+<li>Click the Formatting tab.</li>
+
+<li>Select the C++ language from the Language drop-down list because the Quote project uses
+    C++.
+</li>
+<li>Select the style you want to set from the Style drop-down list.<br>
+<img src="../../../images_www/articles/74/cnd/navigating-editing/formatting_style.png" alt="Screenshot of the Formatting Styles tab">
+</li>
+<li>Modify the style properties as desired.</li>
+</ol>
+      <h3><a name="folding"></a>Folding Blocks of Code in C and C++ Files</h3>
+      <p>
+         For some types of files, you can use the code folding feature to collapse 
+         blocks of code so that only the first line of the block appears in the Source 
+         Editor.
+      </p>
+      <ol>
+         <li>In the <tt>Quote_1</tt> application project, open the Source Files folder,
+            then double-click the <tt>cpu.cc</tt> file to open it in the Source Editor.
+         </li>
+         <li>Click the collapse icon (small box with minus sign) in the left margin to fold the code of one of the
+         methods.</li>
+         <li>Mouse over the <tt>{...}</tt> symbol to the right of the folded block to
+         display the code in the block.
+         <br>
+         <img src="../../../images_www/articles/72/cnd/navigating-editing/code_folding.png" alt="Screenshot of folded code in the Source
+              Editor" class="b-all margin-around">
+         </li>
+      </ol>
+      <h3><a name="markoccurrences"></a>Using Semantic Highlighting</h3>
+      <p>You can set an option so that when you click on a class, function, variable, 
+      or macro, all occurrences of that class, function, variable, or macro in the 
+      current file are highlighted.
+      </p>
+      <ol>
+            <li>Choose Tools &gt; Options.</li>
+            <li>Click Editor in the top pane of the window.</li>
+            <li>Click the Highlighting tab.</li>
+            <li>Make sure that all of the check boxes contain checkmarks.</li>
+            <li>Click OK.</li>
+            <li>In the <tt>customer.cc</tt> file of the <tt>Quote_1</tt> project,
+            notice that the method names are highlighted in bold.</li>
+            <li>Click on an occurrence of the <tt>Customer</tt> class.
+            </li>
+            <li>All of the occurrences of the <tt>Customer</tt> class in the file are
+            highlighted with a yellow background.  The right margin also shows markings
+            that indicate points where an occurrence is located in the file. The markings
+            let you see how many occurrences there are without scrolling through the file.
+            You can click the markings to jump to the occurrences that they represent.<br>
+            <img src="../../../images_www/articles/74/cnd/navigating-editing/highlighting1.png" alt="Screenshot of highlighted code in the Source
+            Editor" class="b-all margin-around">
+            </li>
+            <li>To easily navigate between the occurrences, press Alt+Down to go to the next occurrence,
+            and press Alt+Up to go to the previous occurrence.</li>
+            <li>Open the <tt>customer.h</tt> file, located in the Headers folder, and notice that 
+            class names are again highlighted in bold.<br>
+            <img class="b-all margin-around"
+            src="../../../images_www/articles/74/cnd/navigating-editing/highlighting2.png" alt="Screenshot of
+            file with highlighted methods in the Source Editor">
+            </li>
+    </ol>
+      
+    <h3><a name="completion"></a>Using Code Completion and Documentation</h3>
+      <p>
+      The IDE has a dynamic C and C++ code completion feature 
+      that enables you to type one or more characters and then see a 
+      list of possible classes, methods, variables, and so on that can be used 
+      to complete the expression.</p>
+      <p>The IDE also dynamically searches for documentation for the classes, functions,
+      methods and so on, and displays the documentation in a popup window.</p>
+      <ol>
+         <li>Open the <tt>quote.cc</tt> file in the <tt>Quote_1</tt> project.</li>
+       
+         <li>On the first blank line of the <tt>quote.cc</tt>,
+            type a capital C and press Ctrl-Space. The code completion box 
+            displays a short list that includes the <tt>Cpu</tt> and
+            <tt>Customer</tt> classes. A documentation window also opens but displays
+            "No documentation found" because the project source does not
+            include documentation for its code.</li>
+         <li>Expand the list of items by pressing
+            Ctrl-Space again. <br>
+         <img class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_completion1.png" alt="Screenshot of code completion box">
+         
+         </li>
+         <li>Use your arrow keys or mouse to highlight a standard library function
+            such as <tt>calloc</tt> from the list, and the documentation window displays the man page for that function
+            if the man page is accessible to the IDE.
+          <br>
+         <img class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code-completion-documentation.png" alt="Screenshot of code completion documentation">
+         </li>
+         <li>Select the <tt>Customer</tt> class and press Enter.
+         </li>
+         <li>Complete the new instance of the <tt>Customer</tt> class by typing "
+            <tt>andrew;</tt>". On the next line, type the letter <tt>a</tt> and press
+            Ctrl-Space twice. The code completion box displays a list of choices starting with
+            the letter <tt>a</tt>, such as method
+            arguments, class fields, and global names, that are accessible from the
+            current context.<br>
+         <img class="b-all margin-around"
+              src="../../../images_www/articles/74/cnd/navigating-editing/code_completion2.png" alt="Screenshot of code completion box">
+         </li>
+         <li>Double-click the <tt>andrew</tt> option to accept it and type a period after it.
+            Press Ctrl-Space and you are provided with a list of the public methods and fields
+            of the <tt>Customer</tt> class.<br>
+         <img class="b-all margin-around"
+              src="../../../images_www/articles/74/cnd/navigating-editing/code_completion3.png" alt="Screenshot of code completion box">
+         </li>
+         <li>Delete the code you have added.</li>
+      </ol>
+
+      <h3><a name="documentation"></a>Adding Source Code Documentation</h3>
+      <p>You can add comments to your code to automatically generate documentation
+      for your functions, classes, and methods. The IDE recognizes comments that use Doxygen
+      syntax and automatically generates documentation. The IDE can also automatically
+      generate a comment block to document the function below the comment.</p>
+    
+      <ol>
+          <li>In the <tt>quote.cc</tt> file, place your cursor on line 75, or the line above the line <br>
+              <tt>int readNumberOf(const char* item, int min, int max) {</tt>
+          </li>
+           <li>Type a slash and two asterisks and press Enter. The editor inserts a Doxygen-formatted
+               comment for the <tt>readNumberOf</tt> class.
+                <br>
+                <img class="b-all margin-around"
+              src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_comment.png" alt="Screenshot of
+              automatically generated Doxygen comments">
+           </li>
+            <li>Add some descriptive text to each of the @param lines and save the file.
+             <br>
+            <img class="b-all margin-around"
+              src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_comment_edited.png" alt="Screenshot of
+              edited Doxygen comments">
+            </li>
+            <li>Click the <tt>readNumberOf</tt> class to highlight it in yellow, and click one of the
+                occurrences marks on the right to jump to a location where the class is used.
+            </li>
+            <li>Click the <tt>readNumberOf</tt> class in the line you jumped to, and press Ctrl-Shift-Space
+            to show the documentation that you just added for the parameters.<br>
+             <img class="b-all margin-around"
+              src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_displayed.png" alt="Screenshot of
+              displayed Doxygen documentation">
+            </li>
+             <li>Click anywhere else in the file to close the documentation window, and click on the
+             <tt>readNumberOf</tt> class again.</li>
+             <li>Choose Source &gt; Show Documentation to open the documentation window
+                 for the class again.</li>
+
+      </ol>
+      <h3><a name="templates"></a>Using Code Templates</h3>
+      <p>The Source Editor has a set of customizable code templates for common snippets 
+         of C and C++ code. You can generate the full code snippet by typing its 
+         abbreviation and pressing the Tab key. For example, in the
+         <tt>quote.cc</tt> file of the <tt>Quote</tt> project:
+      </p>
+      <ol>
+         <li>Type <tt>uns</tt> followed by a tab and <tt>uns</tt> expands to <tt>unsigned</tt>.</li>
+         <li>Type <tt>iff</tt> followed by a tab and <tt>iff</tt> expands to <tt>if (exp) {}</tt>.</li>
+         <li>Type <tt>ife</tt> followed by a tab and <tt>ife</tt> expands to <tt>if (exp) {} else {}</tt>.
+         </li>
+         <li>Type <tt>fori</tt> followed by a tab and <tt>fori</tt> expands to <tt>for (int i = 0; i < size; i++) {
+        Object elem = array[i];</tt>.</li>
+
+      </ol>
+      <p class="tips">To see all the available code templates, modify the code templates, create
+          your own code templates, or select a different key to expand the code templates:</p>
+      <ol>
+            <li>
+                      Choose Tools &gt; Options.
+            </li>
+            <li>In the Options dialog box, select Editor, and click the Code Templates tab.
+            </li>
+            <li>Select the appropriate language from the Language drop-down list.<br>
+            <img class="b-all margin-around"
+              src="../../../images_www/articles/74/cnd/navigating-editing/code_templates.png" alt="Screenshot of
+              Options dialog box"></li>
+</ol>
+      
+      <h3><a name="pairs"></a>Using Pair Completion</h3>
+      <p>When you edit your C and C++ source files, the Source Editor does "smart" 
+         matching of pair characters such as brackets, parentheses, and quotation marks.
+         When you type one of these characters, the Source Editor automatically inserts the closing character.
+      </p>
+      <ol>
+         <li>In the <tt>Quote_1</tt> project, place the cursor on the blank line 115  
+            of the <tt>module.cc</tt> file and press
+            Return to open a new line.
+         </li>
+         <li>Type <tt>enum state {</tt> and press Return. The closing curly bracket and
+            semi-colon are added automatically and the cursor is placed on the line
+            between the brackets.
+         </li>
+         <li>Type <tt>invalid=0, success=1</tt> on the line between the brackets to 
+            complete the enumeration.
+         </li>
+         <li>On the line after the closing <tt>};</tt> of the enumeration, type <tt>if
+            (</tt> and you should see that a closing parenthesis is added automatically and the cursor is
+         placed between the parentheses.</li>
+         <li>Type <tt>v==null</tt> between the parentheses. Then type <tt> {</tt> and newline after the right
+            parenthesis. The closing bracket is added automatically. </li>
+         <li>Delete the code you have added.</li>
+      </ol>
+    <h3><a name="finding"></a>Finding Text in Project Files</h3>
+    <p>You can use the Find In Projects dialog box to search projects for instances of specified text or a regular expression.</p>
+    <ol>
+        <li>Open the Find In Projects dialog box by doing one of the following:
+            <ul>
+            <li>Choose Edit &gt;  Find In Projects.</li>
+            <li>Right-click a project in the Projects window and choose Find.</li>
+            <li>Press Ctrl+Shift+F.</li>
+            </ul>
+        </li>
+        <li>In the Find In Projects dialog box, select the Default Search tab or the Grep tab. 
+            The Grep tab uses the <tt>grep</tt> utility, which provides a faster search, 
+            especially for remote projects.
+        <br>
+        <img class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/find_in_projects.png" alt="Screenshot of
+        Find in Projects dialog box"></li>
+        <li>In the Grep tab, type the text or regular expression for which you want to 
+            search, specify the search scope and file name pattern, and 
+            select the check box Open in New Tab so you can save multiple searches in separate tabs.
+        </li>
+        <li>Click Find.<br>
+        The Search Results tab lists the files in which the text or regular expression is found.
+        
+        <p>Buttons in the left margin enable you to change your view of the search results. </p>
+        <img class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/find_in_projects2.png" alt="Screenshot of
+          Search Results tab"></li>
+        <li>Click the Expand/Collapse button to collapse the list of files so only the filenames are shown. 
+        Click the other buttons to show the search results as a directory tree or as a list of files. These options
+        are useful when you perform a search across multiple projects.</li>
+        <li>Double-click one of the items in the list and the IDE takes you to the corresponding location in the
+        source editor.</li>
+    </ol>
+      
+      <h2><a name="navigating"></a>Navigating C and C++ Source Files</h2>
+      <p>The NetBeans IDE with the C/C++ plugin provides advanced navigation features for
+      viewing your source code. To explore these features, continue
+      using the <tt>Quote_1</tt> project.
+           
+      <h3><a name="classes"></a>Using the Classes Window</h3>
+      <p>
+         The Classes window lets you see all of the classes in your project, and the 
+      members and fields for each class.</p>
+      <ol>
+          <li>Click the Classes tab to display the Classes window.
+              If the Classes tab is not displayed, choose Window &gt; Classes</li>
+         <li>Expand the <tt>Quote_1</tt> node in the Classes window. All
+            classes in the project are listed.
+         </li>
+         <li>Expand the <tt>Customer</tt> class.
+<br>
+         <img class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/classes_window.png" alt="Screenshot of the Class View tab">
+         </li>
+         <li>Double-click the
+            <tt>name</tt> variable to open the 
+         <tt>customer.h</tt> header file.</li>
+      </ol>
+      <h3><a name="navigator"></a>Using the Navigator Window</h3>
+      <p>The Navigator window provides a compact view of the file that is currently 
+         selected, and simplifies navigation between different 
+         parts of the file. If the Navigator window is not displayed, choose 
+         Window &gt; Navigating &gt; Navigator to open it.
+      </p>
+      <ol>
+      <li>Click anywhere in the <tt>quote.cc</tt> file in the Editor window.</li>
+      <li>A compact view of the file is displayed in the Navigator
+      window.<br>
+      <img class="b-all margin-around"
+      src="../../../images_www/articles/74/cnd/navigating-editing/navigator_window.png" alt="Screenshot of the Navigator window">
+      </li> 
+      <li>To navigate to an element of the file, double-click the element in the Navigator window and the cursor in 
+            the Editor window moves to that element.
+        </li>
+         <li>Right-click in the Navigator to choose a different way to sort the elements, or group the items, or filter them.</li> 
+      </ol>
+         <p class="tips">To find out what the icons in the Navigator represent, open the IDE online help
+             by choosing Help &gt; Help Contents, and search for "navigator icons" in the help window. </p>
+          
+     
+      <h3><a name="findusages"></a>Finding Class, Method, and Field
+      Usages</h3>
+      <p>You can use the Usages window to show you everywhere a class (structure), function, variable, macro, or 
+      file is used in your project's source code.</p>
+      <ol>
+      <li>In the <tt>customer.cc</tt> file, right-click the <tt>Customer</tt>
+      class on line 42, and choose Find Usages.
+      </li>
+      <li>In the Find Usages dialog box, click Find.
+      </li>
+      <li>The Usages window opens and displays all of the usages of the
+      <tt>Customer</tt> class in the source files of the project.<br>
+         <img class="b-all margin-around"
+         src="../../../images_www/articles/74/cnd/navigating-editing/usages_window.png" alt="Screenshot of the Usages window">
+        </li>
+         <li>Click the arrow buttons in the left margin to step through the occurrences
+             and show them in the Editor, or change between logical and physical view.
+             You can also filter the information using a second column of buttons in the left margin.</li>
+</ol>
+      <h3><a name="callgraph"></a>Using the Call Graph</h3>
+      <p>The Call Graph window displays two views of the calling
+          relationships between functions in the project.  A tree view
+          shows the functions called from a selected function, or the functions that
+      call the selected function. A graphical view shows the calling
+      relationships using arrows between the called and calling functions.
+      </p>
+      <ol>
+      <li>In the <tt>quote.cc</tt> file, right-click on the <tt>main</tt>
+      function and
+      choose Show Call Graph.</li>
+      <li>The Call Graph window opens and displays a tree and graphical view of all
+      functions called from the <tt>main</tt> function.<br>
+      <img class="b-all margin-around"
+         src="../../../images_www/articles/74/cnd/navigating-editing/call_graph1.png" alt="Screenshot of the
+         Call Graph window">
+      <p class="tips">If you do not see all the functions as shown here, click the third button
+          on the left side of the Call Graph window to show "who is called from this function."</p>
+        </li>
+         <li>Expand the <tt>endl</tt> node to display the functions called
+         by that function. Notice the graph is updated to show the functions called by <tt>endl</tt> as well.</li>
+      <li>Click the second button, called Bring Into Focus, on the left side of the window to focus on 
+      the <tt>endl</tt> function, then click the fourth button Who Calls this Function to view all the 
+      functions that call the <tt>endl</tt> function.
+<br>
+<img class="b-all margin-around"
+         src="../../../images_www/articles/74/cnd/navigating-editing/call_graph2.png" alt="Screenshot of the
+         Call Graph window">
+      </li>
+      <li>Expand some of the nodes in the tree to see more functions.<br>
+         <img class="b-all margin-around"
+         src="../../../images_www/articles/74/cnd/navigating-editing/call_graph3.png" alt="Screenshot of the
+         Call Graph window">
+      </li>
+     </ol>
+         
+      <h3><a name="hyperlinks"></a>Using Hyperlinks</h3>
+      <p>Hyperlink navigation lets you jump from the invocation of a class, method, variable, 
+         or constant to its declaration, and from its declaration to its definition.  Hyperlinks also
+         let you jump from a method that is overridden to the method that overrides it, and vice
+         versa.
+      </p>
+      <ol>
+         <li>In the <tt>cpu.cc</tt> file of the <tt>Quote_1</tt> project, mouse over line 37 while pressing Ctrl. The
+            <tt>ComputeSupportMetric</tt>function is highlighted and an annotation displays information about the
+            function.<br>
+         <img class="b-all margin-around"
+              src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks1.png" alt="Screenshot of the invocation of the function with annotation">
+         </li>
+         <li> 
+            Click the hyperlink and the
+         editor jumps to the definition of the function.<br>
+         <img  class="b-all margin-around"
+               src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks2.png" alt="Screenshot of the definition of the function">
+         </li>
+         <li>Mouse over the definition while pressing Ctrl, and click the hyperlink.
+            The editor jumps to the declaration of the function in the <tt>cpu.h</tt>
+            header file.<br>
+         <img  class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks3.png" alt="Screenshot of the declaration of the function">
+         </li>
+         <li>Click the left arrow in the editor toolbar (second button from the left) and the editor jumps back to
+             the definition in <tt>cpu.cc</tt>.
+         </li>
+         <li>Hover the mouse cursor over the green circle  in the left margin and see the annotation that
+         indicates that this method overrides another method.<br>
+         <img  class="b-all margin-around"
+               src="../../../images_www/articles/72/cnd/navigating-editing/overide_annotation.png" alt="Screenshot of override annotation">
+         </li>
+         <li>Click the green circle to go to the overridden method and you jump to the <tt>module.h</tt> header file,
+             which shows a gray circle in the margin to indicate the method is overridden.</li>
+         <li>Click the gray circle and the editor displays a list of methods that override this method.<br>
+         <img  class="b-all margin-around"
+               src="../../../images_www/articles/72/cnd/navigating-editing/overridden_by_list.png" alt="Screenshot of overriding methods">
+         </li>
+         <li>Click the <tt>Cpu::ComputeSupportMetric</tt> item and you jump back to the declaration
+             of the method in the <tt>cpu.h</tt>
+            header file.</li>
+      </ol>
+      <h3><a name="include"></a>Using the Includes Hierarchy</h3>
+      <p>The Includes Hierarchy window lets you inspect all header and source files 
+         that are directly or indirectly included in a source file, or all source and 
+         header files that directly or indirectly include a header file.
+      </p>
+      <ol>
+         <li>In the <tt>Quote_1</tt> project, open the <tt>module.cc</tt> file in the
+         Source Editor.</li>
+         <li>Right-click on the <tt>#include "module.h"</tt> line in the file and choose
+         Navigate &gt; View Includes Hierarchy.
+         </li>
+         <li>By default, the Hierarchy window displays a plain list of files that directly 
+            include the header file. Click the right-most button at the bottom of the
+            window to change the display to a tree view. Click the second
+            button from the right to change the display to all files that
+            include or are included. Expand the nodes in the tree view
+            to see all of the source files that include the header file.<br>
+         <img  class="b-all margin-around"
+         src="../../../images_www/articles/74/cnd/navigating-editing/includes_hierarchy.png"
+              alt="Screenshot of the Includes hierarchy">
+         </li>
+      </ol>
+      <h3><a name="type"></a>Using the Type Hierarchy</h3>
+      <p>The Type Hierarchy window lets you inspect all subtypes or supertypes 
+         of a class. 
+      </p>
+      <ol>
+      <li>In the <tt>Quote_1</tt> project, open the <tt>module.h</tt>
+      file.</li>
+      <li>Right-click on the declaration of the <tt>Module</tt> class and
+      choose Navigate &gt; View Type Hierarchy.
+      </li>
+      <li>The Hierarchy window displays all of the subtypes of the Module class.<br>
+      <img  class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/type_hierarchy.png"
+           alt="Screenshot of the Type hierarchy">
+      </li>
+      </ol>
+       <h3><a name="nextsteps">Next Steps</a></h3>
+      <p>See <a href="debugging.html">Debugging C/C++
+      Projects</a> for a tutorial on using some of the features for
+debugging a C or C++ project in NetBeans IDE.
+      </p>
+  
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Editing%20and%20Navigating%20C/C++%20Source%20Files%20-%20NetBeans%20IDE%207.3%20Tutorial">Send Feedback on This Tutorial</a></div>
+
+</body>
+</html>

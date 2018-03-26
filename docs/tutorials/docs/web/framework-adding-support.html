@@ -1,0 +1,426 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>       
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">        
+        <meta name="description"  content="A short guide to adding web framework support
+            to NetBeans IDE using the Plugin Manager">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            web applications, open source, frameworks, Spring, Struts, JSF, JavaServer Faces,
+            Wicket, Facelets, RichFaces, ICEfaces, PrimeFaces, components"> 
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+           
+        <title>Adding Support For A Web Framework</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Adding Support For A Web Framework</h1>
+        
+        <p>This document provides a general description of how to add support for a web framework in 
+            NetBeans IDE. The steps provided show how you can add support by installing a web framework 
+            plugin into the IDE using the Plugins manager. After you install the plugin you will be able 
+            to select the framework in the New Project wizard when you create a web project. The new 
+            web project that you create will contain the necessary infrastructure specific to the chosen 
+            framework.</p>
+
+        <p>The easiest way to add support for a particular web framework is by installing a NetBeans 
+            plugin using the IDE's Plugins manager if the plugin is available. 
+            This is convenient if you have Internet access while 
+            working in the IDE. Plugins for many web frameworks are also available via the <a href="http://plugins.netbeans.org/PluginPortal/">NetBeans 
+            Plugin Portal</a>. If you do not have regular Internet access, you can download the plugin 
+            modules (e.g., from the Plugin Portal) when you have the opportunity, then install them into 
+            the IDE at a later time.</p>
+        
+        <p>In this tutorial you will add support for the Apache Struts 2 framework by downloading 
+            a plugin from the NetBeans Plugin Portal and installing the plugin using the Plugins manager.</p>
+            
+        <p class="notes"><strong>Note: </strong>The IDE bundles support for the <a href="../../docs/web/jsf20-support.html">JavaServer
+            Faces 2.x</a> and <a href="../../docs/web/quickstart-webapps-struts.html">Struts 1.3.10</a> and <a href="../../docs/web/quickstart-webapps-spring.html">Spring 3.x and 4.x</a>
+            frameworks. The specific version of the bundled framework depends upon the version of the IDE.</p>      
+        <a name="table"></a>
+       
+        
+        <p><strong>Contents</strong></p>
+
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+   
+        <ul class="toc">
+            <li><a href="#installing">Installing Framework Support Plugins</a>
+            
+            <ul>
+                <li><a href="#manually">Downloading and Installing Manually</a></li>
+                <li><a href="#updateCenter">Installing from an Update Center</a></li>
+                <li><a href="#ppupdateCenter">Registering the NetBeans Plugin Portal Update Center</a></li>
+            </ul></li>
+                
+            <li><a href="#working">Working with Framework Support in the IDE</a>
+            
+                <ul>
+                    <li><a href="#newProject">Creating a New Project with Framework Support</a></li>
+                    <li><a href="#existingProject">Adding Framework Support to an Existing Project</a></li>
+                </ul></li>
+        </ul>
+        
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE, Java EE bundle</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or 8</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+        
+        <ul>                       
+            <li>The Web and Java EE installation enables you to optionally install the Apache Tomcat 
+                7.x servlet container, and the GlassFish server 3.1. Depending on the
+                framework you plan to use, you must install one of these to work through this tutorial.</li>
+            <li>You must also have an Internet connection to download necessary plugins and/or access 
+                them via the IDE's Plugins Manager.</li>
+        </ul>
+        
+        <a name="installing"></a>
+        <h2>Installing Framework Support Plugins</h2>
+
+        <p>You can add support for a specific framework by installing the appropriate framework support 
+            plugin into the IDE. To do so, you can either download the plugin modules from an external 
+            site such as the <a href="http://plugins.netbeans.org/PluginPortal/">NetBeans 
+            Plugin Portal</a> then install the plugin via the Plugins Manager, or, if the plugin 
+            is maintained by an update center, you can register the update center with the IDE's Plugins 
+            Manager and then download and install the plugin directly through the Plugins Manager.</p>
+
+        <ul>
+            <li><a href="#manually">Downloading Manually</a></li>
+            <li><a href="#updateCenter">Installing from an Update Center</a></li>
+        </ul>
+        
+        
+        <p>Some plugins are available for download from sites such as the <a href="http://plugins.netbeans.org/PluginPortal/">NetBeans 
+        Plugin Portal</a> or directly from the site of the plugin developer.
+        The following table provides links to locations where you can download some plugins for frameworks.</p>
+        
+
+        <table>
+            <tr>
+                <td class="tblheader">Framework</td>
+                <td class="tblheader">Plugin Location</td>
+                <td class="tblheader">Download Location</td>                
+            </tr>
+<!--            <tr>
+                <td class="tbltd1"><a href="http://code.google.com/webtoolkit/">Google Web Toolkit</a></td>
+                <td class="tbltd1"><a href="http://gwt4nb.dev.java.net/">https://gwt4nb.dev.java.net</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=716">
+                    http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=716</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/">jMaki</a></td>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/jmaki-plugin.html">http://ajax.dev.java.net/jmaki-plugin.html</a></td>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/servlets/ProjectDocumentList?folderID=0">
+                    http://ajax.dev.java.net/servlets/ProjectDocumentList?folderID=7943&expandFolder=7943&folderID=0</a>
+                    <br>(Currently not listed on Plugin Portal)</td>
+            </tr>    -->
+            <tr>
+                <td class="tbltd1"><a href="http://struts.apache.org/">Apache Struts 2</a></td>
+                <td class="tbltd1"><a href="http://java.net/projects/nbstruts2support/">http://java.net/projects/nbstruts2support/</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0">
+                    http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://wicket.apache.org/">Wicket</a></td>
+                <td class="tbltd1"><a href="http://nbwicketsupport.dev.java.net/">https://nbwicketsupport.dev.java.net</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=3586">
+                    http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=3586</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/home/">ICEfaces 2.0</a></td>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/home/">http://www.icefaces.org/main/home/</a></td>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/downloads/">
+                    http://www.icefaces.org/main/downloads/</a></td>
+            </tr>
+                      
+        </table>
+         
+        
+        <div class="indent">
+            <a name="manually"></a>
+            <h3>Downloading and Installing the Apache Struts2 Support Plugin</h3>
+            
+            <p>For the purpose of demonstration, this section will describe how to download and install the 
+            <a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0">Apache
+            Struts2 Support Repack for NB 7.0</a> plugin from the NetBeans Plugin Portal.
+            This plugin installs the libraries and UI support for Apache Struts 2.</p>
+            
+            <p class="notes"><strong>Note.</strong> The plugin repackages the <a href="http://java.net/projects/nbstruts2support/">NetBeans Struts2 Support plugin</a>
+            because the NetBeans Struts2 Support plugin has not been updated for NetBeans IDE 7.0.
+            For additional information about each of the plugins, see the respective plugin details pages.</p>
+            
+            <ol>
+                <li>Download the zip archive that contains the required Apache Struts 2 plugins from the
+                    <a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0">
+                    Struts2 Support Repack for NB 7.0 page</a> on the <a href="http://plugins.netbeans.org/PluginPortal/">NetBeans Plugin Portal</a> and
+                    extract the contents to your computer.
+                    <p>When you extract the contents, you will see that the archive contains three files.</p>
+                    <ul>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2.nbm</tt></li>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2lib218.nbm</tt> </li>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2lib20011.nbm</tt> </li>
+                    </ul>
+                    
+                
+                    <p class="tips">NetBeans plugins can be identified by the <tt>.nbm</tt> extension.</p>
+                </li>
+                <li>From the IDE's main menu, choose Tools &gt; Plugins to open the Plugin Manager.</li>
+                <li>Select the Downloaded tab, then click the Add Plugins button.</li>
+                <li>In the Add Plugins dialog, navigate to the directory that contains the plugins and select the
+                    NetBeans plugins. Click Open.<br>
+                        <img src="../../../images_www/articles/72/web/add-framework/plugin-archive-contents.png" class="margin-around b-all"
+                        alt="screenshot of add plugins dialog" title="The zip archive contains the NetBeans plugins">
+                
+                    <p class="tips">Hold down the Ctrl key to select multiple items.</p>
+                </li>
+                <li>In the Plugins manager, select each of the Struts2 plugins.
+                    <p>A description of the selected plugin is displayed in the right pane of the Plugins manager.</p>
+                    
+                    <a href="../../../images_www/articles/72/web/add-framework/add-plugins.png" rel="lytebox"
+                        title="Manually downloaded plugins that are selected in the Plugin Manager prior to installation">
+                        <img src="../../../images_www/articles/72/web/add-framework/add-plugins-sm.png" class="margin-around b-all"
+                        title="Click to enlarge" alt="screenshot of downloaded plugins in Plugins manager"></a></li>
+                        
+                <li>Click Install to open the NetBeans IDE Installer, then click Next and accept the 
+                    license agreement.
+                    
+                    <p class="notes"><strong>Note.</strong> If you receive a validation warning, click Continue to install 
+                    the plugin. A validation warning occurs if you attempt to install a plugin that has 
+                    not been signed. While you can generally
+                    trust all plugins, when you install a plugin that has not been signed, 
+                    you are doing so at your own risk.</p>
+                </li>
+                <li>Restart the IDE to allow changes to take effect.</li>
+            </ol>
+        
+            <p>After you install the plugin and restart the IDE, you can confirm that the plugin was installed by
+            opening the Plugins manager, clicking the Installed tab and locating the plugin in the list of installed plugins.</p>
+        
+            <a name="updateCenter"></a>
+            <h3>Installing from an Update Center</h3>
+            
+            <p>If the framework support plugin is maintained by an update center, you should consider 
+                installing the update center into the IDE. This enables you to then install the framework
+                support plugin directly through the Plugins manager. The Plugins manager also logs any
+                updates made to plugins maintained by update centers, providing you with a simple and 
+                effective means of keeping installed plugins up-to-date.</p> 
+                
+            <p>Various update centers are already registered with the IDE by default. 
+                To see a list of the update centers that are currently registered, open the Plugins manager (Tools &gt; Plugins) 
+                and choose the Settings tab.</p>
+                
+                <a href="../../../images_www/articles/72/web/add-framework/pluginsmanager-settings.png"
+                title="Settings tab and list of Update Centers that are registered with the Plugins manager" rel="lytebox">
+                <img src="../../../images_www/articles/72/web/add-framework/pluginsmanager-settings-sm.png"
+                class="margin-around b-all" 
+                alt="screenshot of Settings tab and list of Update Centers that are registered with the Plugins manager" title="Click to enlarge"></a>
+
+            <p>If you want to register a new update center, click the Add button in the Settings tab and supply the details
+                in the Update Center Customizer.</p>
+                <img src="../../../images_www/articles/72/web/add-framework/uc-customizer.png"
+                class="margin-around b-all" alt="screenshot of Update Center Customizer dialog box" title="Update Center Customizer dialog box">
+
+                
+                <a name="ppupdateCenter"></a>
+                <h3>Registering the NetBeans Plugin Portal Update Center</h3>
+                <p>The Plugin Portal update center that is registered with the IDE by default contains a subset of the plugins 
+                that are contributed by the community and that are known to be compatible with the version of the IDE that you installed.
+                If you want to use the Plugins manager to browse all the plugins that are available from the 
+                <a href="http://plugins.netbeans.org/">NetBeans Plugin Portal</a>, you can perform the following steps to install a
+                plugin to add the NetBeans Plugin Portal Update Center to the list of registered updated centers.
+                </p>
+                
+                <ol>
+                    <li>Download the <a href="http://plugins.netbeans.org/plugin/1616/plugin-portal-update-center">NetBeans Plugin Portal Update Center plugin</a>. </li>
+                    <li>Open the Downloaded tab in the Plugins manager.</li>
+                    <li>Click Add Plugins and locate the <tt>1252666924798_org-netbeans-pluginportaluc.nbm</tt> file that you downloaded. Click Install.</li>
+                </ol>
+
+                <p>After you install the plugin, the NetBeans Plugin Portal Update Center is added to the list 
+                    of registered update centers in the Settings tab of the Plugins manager</p>
+                
+                <p class="notes"><strong>Note.</strong> You can deactivate an update center by deselecting the checkbox for the 
+                    update center in the Active column of the Settings tab.</p>
+                <a href="../../../images_www/articles/72/web/add-framework/portal-uc-plugin.png"
+                title="Plugins Portal Update Center is now included in list of registered update centers in Settings tab" rel="lytebox">
+                <img src="../../../images_www/articles/72/web/add-framework/portal-uc-plugin-sm.png"
+                class="margin-around b-all" alt="screenshot of Settings tab with new update center added to list"
+                title="Click to enlarge"></a>
+                
+                
+                <p>If you click the Available Plugins tab you can see that all the plugins that have been contributed by the
+                community to the NetBeans Plugin Portal have been added to the list of available plugins.</p>
+                
+                <p class="tips">Click Reload Catalog to update the list of plugins.</p>
+                
+                <a href="../../../images_www/articles/72/web/add-framework/portal-uc-list.png"
+                title="The Available Plugins tab displays a list of all the plugins from all the registered update centers" rel="lytebox">
+                <img src="../../../images_www/articles/72/web/add-framework/portal-uc-list-sm.png"
+                class="margin-around b-all" alt="screenshot of Available Plugins tab in the Plugins manager"
+                title="The Available Plugins tab displays a list of all the plugins from all the registered update centers"></a>
+                
+                <p>You can sort the list by clicking on a column heading and you can filter the list by
+                entering terms in the Search field.</p>
+                
+                <p class="alert"><strong>
+                The Plugin Portal Update Center lists all the plugins that are available from the 
+                <a href="http://plugins.netbeans.org/">NetBeans Plugin Portal</a>.
+                Many of the plugins will be for older versions of the IDE and will be incompatible with the version of the IDE that you are using.
+                Installing plugins for other versions of the IDE might cause your IDE installation to behave unreliably.</strong>
+                In many cases, but not all, there will be a message that informs you if a plugin cannot be installed.
+                As with the installation of all software, you should exercise caution and carefully read the documentation 
+                before attempting to install a plugin.</p>
+
+        </div>    
+       
+        <a name="working"></a>
+        <h2>Working with Framework Support in the IDE</h2>
+
+        <p>Framework support in the IDE is generally specific to the framework you are working with. 
+            For example, the Struts2 support provides wizards that enable you to easily
+            create commonly-used Struts classes, as well as code completion in Struts configuration files. </p>
+            
+        <p>You can add framework support to a web application either through the New Project wizard at 
+            the time that you create the application, or you can integrate support into an existing application. </p>
+
+        <ul>
+            <li><a href="#newProject">Creating a New Project with Framework Support</a></li>
+            <li><a href="#existingProject">Adding Framework Support to an Existing Project</a></li>
+        </ul>
+        
+        <div class="indent">
+            <a name="newProject"></a>
+            <h3>Creating a New Project with Framework Support</h3>
+    
+            <ol>
+                <li>Choose File &gt; New Project (Ctrl-Shift-N; &#8984-Shift-N on Mac) from the main menu. The New Project wizard 
+                    opens. Select Web under Categories, then under Projects, select Web Application. 
+                    Click Next.</li>
+                <li>Type a name for the Project Name and specify a location for the project
+                    on your computer.</li>
+                <li>Step through the wizard and accept any default settings. Specify a server to deploy the
+                    application to by choosing one that is already registered with the IDE (i.e., the GlassFish server
+                    or Tomcat).</li>
+                <li>In the Frameworks panel of the New Project wizard, choose the framework that you want to add. Click Finish.
+                    <br>
+
+                    
+                        <img src="../../../images_www/articles/72/web/add-framework/newproject-wizard-frameworks-sm.png" class="margin-around b-all"
+                        alt="screenshot of Frameworks panel of the New Project wizard with Struts 2 Support selected" 
+                        title="Struts 2 Support listed in Frameworks panel of the New Project wizard">
+                 
+                    <p>In this example, support for the Struts2 framework is selected in the Frameworks panel.
+                    You can see that the Frameworks panel now offers the option to choose either Struts 1.3.8
+                    (bundled with the IDE) or Struts2 (added by installing a plugin).
+                    The Struts 2 support plugin adds the Struts2 option to the New Projects wizard and displays tabs with options
+                    for Configuration and Libraries.
+                    The Configuration tab provides the option to create an example page in the project.
+                    The Libraries tab enables you to select the version of the Struts2 libraries that you want to add to 
+                    the classpath.</p>
+                </li>
+                        
+            </ol>
+
+            <p>When you click Finish, the IDE creates the web application. The additional files that the
+                wizard creates will vary according to the framework.
+                In this example, the wizard created the <tt>struts.xml</tt> XML configuration file
+                in the Source Packages folder and added the required Struts2 libraries to the classpath.
+                The wizard also automatically added a Servlet filter class and a filter mapping to <tt>web.xml</tt>.</p>
+
+                <img src="../../../images_www/articles/72/web/add-framework/project-structure-frameworks.png"
+                    alt="screenshot of Projects window showing logical structure of Struts 2 web application" class="margin-around b-all"
+                    title="Logical structure of Struts web application displayed in Projects window">
+<!--            
+            <p><strong class="notes">Note: </strong>For more information on the jMaki application structure, 
+                see <a href="http://ajax.dev.java.net/jmaki-app.html">Basic jMaki Application Structure</a>.</p>-->
+
+           <a name="existingProject"></a>
+            <h3>Adding Framework Support to an Existing Project</h3>
+       
+            <p>If you have an existing web project and you would like to add support for a framework to the project,
+            you can use the Project Properties dialog box to add frameworks that are available in the IDE.</p>
+            <ol>
+                <li>In the Projects window, right-click the web application project's node and choose 
+                    Properties to open the Project Properties window.</li>
+                <li>Select Frameworks in the list of Categories. 
+                    <p>When you select Frameworks, the right panel displays a Used Frameworks text 
+                    area, which is empty if the application does not use a framework.</p></li>
+                <li>Click the Add button, then select the framework you want to use and click OK.
+
+                    <br>
+                        <img src="../../../images_www/articles/72/web/add-framework/properties-add-framework.png" class="b-all margin-around"
+                        alt="screenshot of Add Framework dialog in the Project Properties window"
+                        title="JavaServer Faces framework selected in the Add Framework dialog opened from the Project Properties window"></li>
+                        
+                <li>Depending on the chosen framework, you can specify further framework-specific configuration 
+                    settings or components in the Project Properties window. 
+                <br>
+                        <img src="../../../images_www/articles/72/web/add-framework/add-icefaces.png" class="b-all margin-around"
+                        alt="screenshot of dialog for adding component library"
+                        title="Adding a library for the ICEfaces component suite to the project">
+                        <p>For example, if you want to specify the ICEfaces component suite you
+                        can select ICEfaces in the Components tab of the Project Properties window
+                        and specify the ICEfaces library.
+                        </p>
+                        <p class="notes"><strong>Notes.</strong> The libraries for JSF components
+                        are not included with the IDE. To use a component suite you need to
+                        download the required libraries and then create a NetBeans library that
+                        you can then add to the project classpath in the Project Properties window.</p>
+                </li>
+                <li>Click OK to confirm your selection and close the Project Properties window. 
+                    The framework-specific artifacts and libraries are added to your project, 
+                    which you can examine in the Projects window.</li>
+            </ol>
+        </div>
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Adding%20Web%20Framework%20Support">
+            Send Feedback on This Tutorial</a></div>
+            
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>See Also</h2>
+
+        <p>This document described how to add support for a web framework in NetBeans IDE. It demonstrated 
+            how to install framework support plugins by downloading manually as well as via an update 
+            center in the IDE's Plugin Manager. It also showed how to add an IDE-supported framework 
+            to both a new web application project and an existing project.</p>
+        
+        <p>This tutorial focused on adding the Struts2 framework. If you would like to explore the 
+            other features offered by this framework, 
+            see <a href="../../docs/web/quickstart-webapps-struts.html">Introduction to the Struts Web Framework</a>. 
+            <p>
+
+        <p>For more information about using other web frameworks in NetBeans IDE, see the following resources:</p>
+
+        <ul>
+            <li><a href="../../docs/web/quickstart-webapps-spring.html">Introduction to the Spring Web Framework</a></li>
+            <li><a href="../../docs/web/quickstart-webapps-struts.html">Introduction to the Struts Web Framework</a></li>
+            <li><a href="../../docs/web/quickstart-webapps-wicket.html">Introduction to the Wicket Web Framework</a></li>
+        </ul>
+
+    </body>
+</html>

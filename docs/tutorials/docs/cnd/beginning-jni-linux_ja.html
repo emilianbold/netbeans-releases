@@ -1,0 +1,306 @@
+<html>
+<head>
+   <title>LinuxでのNetBeans IDEとC/C++プラグインを使用したJNIの開始</title>
+   <meta name="DESCRIPTION" content="A tutorial describing how to compile
+and run JNI powered Java applications using NetBeans IDE or Oracle Solaris Studio IDE.">
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  </head>
+<body>
+<a name="top"></a>
+
+<h1>LinuxでのNetBeans IDEとC/C++プラグインを使用したJNIの開始</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+ <!--  <p><em>Contributed by <i>Susan Morgan</i> <br> -->
+ <em>2014年3月</em> [リビジョン番号: V8.0-1]</div>
+
+<p>このチュートリアルでは、Cプログラミング言語で記述されたJava<sup><small>TM</small></sup> Native Interface (JNI)コードを使用する、単純なアプリケーションの作成について説明します。
+<p class="notes">このチュートリアルはLinuxに固有です。</p>
+<!-- END INTRO -->
+
+<h3>内容</h3>
+<img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます">
+
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#requirements" title="要件">要件</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#modules" title="環境をチュートリアル用に設定"> 環境をチュートリアル用に設定</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#javaproject" title="Javaアプリケーション・プロジェクトの設定">Javaアプリケーション・プロジェクトの設定</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#c-library" title="新規C/C++動的ライブラリ・プロジェクトの設定"> 新規C/C++動的ライブラリ・プロジェクトの設定</a>
+</td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#running" title="アプリケーションのビルドと実行">アプリケーションのビルドと実行</a></td>
+      </tr>
+       <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#next" title="次の手順">次の手順</a></td>
+      </tr>
+</table>
+
+<h2><a NAME="requirements"></a>要件</h2>
+<p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+<th class="tblheader" scope="col">必須バージョン</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">バージョン7.4または8.0とNetBeans C/C++プラグイン</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java Developer Kit (JDK)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">バージョン7または8</a></td>
+</tr>
+<tr>
+<td class="tbltd1">
+C/C++コンパイラ、<tt>make</tt>、<tt>gdb</tt></td>
+   <td class="tbltd1">
+   <a HREF="../../../community/releases/80/cpp-setup-instructions.html"> C/C++/Fortran向けのNetBeans IDEの構成</a></td>
+</tr>
+</table>
+<p>必要なソフトウェアのダウンロードとインストールについては、<a href="../../../community/releases/80/install.html">NetBeans IDE 8.0のインストール</a>および<a HREF="../../../community/releases/80/cpp-setup-instructions.html">C/C++/Fortran向けのNetBeans IDEの構成</a>を参照してください。 
+</p>
+
+<h2><a name="modules"></a>環境をチュートリアル用に設定</h2>
+<p>このチュートリアルにはJavaモジュールとC/C++モジュールの両方が必要です。NetBeans IDE C/C++バンドルをすでにダウンロードしている場合、追加のJavaモジュールを個別にダウンロードできます。</p>
+<p>JavaおよびC/C++モジュールがあるかどうか判別するには、「ファイル」>「新規プロジェクト」を選択します。プロジェクト・カテゴリにJavaとC/C++の両方が含まれています。
+<p><b>存在しないJavaおよびC/C++モジュールをダウンロードするには:</b></p>
+<ol><li>NetBeans IDEで、「ツール」>「プラグイン」を選択します。</li>
+<li>「使用可能なプラグイン」タブで、どちらがIDEに存在しないかに応じて、JavaまたはC/C++のチェックボックスを選択します。プラグインがすでに存在する場合、プラグインは「インストール済」タブに表示されます。
+</li>
+<li>「インストール」をクリックします。</li>
+<li>「NetBeans IDEのインストーラ」ダイアログ・ボックスで「次」をクリックし、ライセンス条項のチェックボックスに同意し、「インストール」をクリックします。</li>
+<li>インストールが完了したら「終了」をクリックします。</li></ol>
+
+<h2><a name="javaproject"></a>Javaアプリケーション・プロジェクトの設定</h2>
+<p>
+このプログラムには、JavaプロジェクトおよびCプロジェクトが必要です。この項では、開発するJNIアプリケーション用のJavaプロジェクトを作成および構成します。新規Javaアプリケーション・プロジェクトを作成し、そのメイン・クラスを初期化し、ネイティブ・メソッドをこのクラスに追加します。
+</p>
+<ol>
+<li>「ファイル」>「新規プロジェクト」を選択します。「Java」カテゴリおよび「Javaアプリケーション」プロジェクト・タイプを選択します。「次」をクリックします。<br> <img alt="新規プロジェクト・ウィザードのスクリーンショット" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-project-java.png"></li>
+<li>「プロジェクト名」フィールドに「<tt>JNIDemoJava</tt>」と入力します。</li>
+<li>「プロジェクトの場所」はコンピュータ上の任意のディレクトリに変更できますが、ここではユーザー・ディレクトリ内のデフォルトのNetBeansProjectsを使用します。
+</li>
+<li>「メイン・クラスの作成」チェックボックスは選択したままにし、メイン・クラス名を<tt>jnidemojava.Main</tt>に変更します。<br> <br> <img alt="新規 - Javaアプリケーション・ウィザードの「名前と場所」ページのスクリーンショット" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-java-app.png">
+</li>
+<li>「終了」をクリックします。 <br> <br>
+<p>
+IDEによって、<tt>NetBeansProjects/JNIDemoJava</tt>プロジェクト・フォルダが作成されます。
+</p>
+</li>
+</ol>
+
+<h3>メイン・クラスのソースの編集</h3>
+<ol>
+<li>メイン・クラスのソースをエディタで開くには、<tt>Main.java</tt>クラス・ノードを右クリックして「開く」を選択します。</li>
+<li><tt>main</tt>メソッドの<tt>//TODO code application logic here</tt>行を次の行で置き換えます。
+<pre class="examplecode">new Main().nativePrint();</pre>
+</li>
+<li>エラーおよび電球を表示するインジケータが左マージンに示されるのがわかります。インジケータをクリックすると、メソッド<tt>nativePrint</tt>を作成することを求めるショートカットが表示されます。  </li>
+<li>このショートカットをクリックすると、IDEは次のコードを挿入します。
+<pre class="examplecode">private void nativePrint() {
+      throw new UnsupportedOperationException("Not supported yet");
+   }</pre>
+   
+</li>
+<li>次の行を削除します。
+    <pre class="examplecode">throw new UnsupportedOperationException("Not supported yet");</pre>
+ </li>
+<li><tt>native</tt>キーワードをメソッド署名に挿入して<tt>nativePrint()</tt>メソッドを変更し、次のようになるようにします。
+<pre class="examplecode">private native void nativePrint();</pre>
+<p>
+<tt>native</tt>キーワードは、メソッドが、外部ネイティブ・ライブラリにある実装を持つことを示します。ただし、実行時は、ライブラリの場所は明確ではありません。
+</p>
+
+<p>新しいmainメソッドは次のようになります。</p>
+<pre class="examplecode">public static void main(String[] args) {
+       new Main().nativePrint();
+   }
+
+   private native void nativePrint();
+}</pre>
+
+</li>
+
+<li>プロジェクト名を右クリックし、「消去してビルド」を選択します。プロジェクトは正常にビルドされます。
+</li>
+</ol>
+<h3><a name="header"></a>ネイティブ・ライブラリ・ヘッダー・ファイルの作成</h3>
+この項では、JavaクラスからCヘッダーを作成するJavaツールである<tt>javah</tt>を使用します。
+<ol>
+<li>ターミナル・ウィンドウで、<tt>NetBeansProjects</tt>ディレクトリに移動します。
+</li>
+<li>次を入力します。
+<pre class="examplecode">
+javah -o JNIDemoJava.h -classpath JNIDemoJava/build/classes jnidemojava.Main
+</pre>
+<p>
+<tt>JNIDemoJava.h</tt> Cヘッダー・ファイルがNetBeansProjectsディレクトリに生成されます。このファイルは<tt>nativePrint()</tt>メソッドのネイティブ実装のための正しい関数宣言を提供するために必要です。後でこのアプリケーションのC部分を作成するとき、これが必要になります。</p>
+</li>
+<li>NetBeans IDEウィンドウに戻ります。
+</li>
+</ol>
+<p><b>サマリー</b>
+<p>この課題では、新規Javaアプリケーション・プロジェクトを作成し、その場所を指定し、プロジェクトのメイン・クラスのパッケージおよび名前を定義しました。また、メイン・クラスに新規メソッドを追加し、ネイティブ実装を持つメソッドとして新規メソッドをマークしました。最後のステップとして、後でネイティブ・ライブラリのコンパイルで必要になるCヘッダー・ファイルを作成しました。</p>
+
+<h2><a name="c-library"></a>新規C/C++動的ライブラリ・プロジェクトの設定</h2>
+<p>この項では、アプリケーションのネイティブ部分を作成する方法を示します。C++動的ライブラリ・プロジェクトを作成し、JNIコードをビルドできるようこれを構成します。
+</p>
+<p>プロジェクトを設定した後、アプリケーションのJava部分で以前宣言したネイティブ・メソッドのための実装を作成します。
+
+<ol>
+<li>
+「ファイル」>「新規プロジェクト」を選択します。「カテゴリ」から「C/C++」を選択します。「プロジェクト」から「C/C++動的ライブラリ」を選択します。「次」をクリックします。<br> <img alt="新規プロジェクト・ウィザードの「プロジェクトを選択」ページのスクリーンショット" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-project-c.png">
+</li>
+<li>「プロジェクト名」フィールドに「<tt>JNIDemoCdl</tt>」と入力します。
+</li>
+<li>「プロジェクトの場所」フィールドには、Javaアプリケーション・プロジェクトに使用したのと同じ場所である<tt>NetBeansProjects</tt>を使用します。この場所はデフォルト値として表示されます。
+</li>
+<li>他のすべてのフィールドはデフォルトを受け入れて、「終了」をクリックします。
+
+<p>IDEは<tt>NetBeansProjects/JNIDemoCdl</tt>プロジェクト・フォルダを作成します。
+</p>
+</li>
+</ol>
+<h3>プロジェクト・プロパティの設定</h3>
+<ol>
+<li>「JNIDemoCdl」プロジェクト・ノードを右クリックし、「プロパティ」を選択します。</li>
+<li>「プロパティ」ダイアログ・ボックスで、「ビルド」プロパティの下にある「Cコンパイラ」ノードを選択します。</li>
+<li>「ディレクトリとヘッダーを含める」ボタンをクリックし、「ディレクトリとヘッダーを含める」ダイアログ・ボックスで「追加」をクリックします。
+<li>JDKディレクトリを参照し、<tt>include</tt>サブディレクトリを選択します。 </li>
+<li>「絶対としてパスを保存」オプションを選択した後、「選択」をクリックして、このディレクトリをプロジェクトの「インクルード・ディレクトリ」に追加します。</li>
+<li>JDKの<tt>include/linux</tt>ディレクトリを同じ方法で追加し、「OK」をクリックします。 <br> <img alt="「プロジェクト・プロパティ」ダイアログ・ボックスと「デバッグ-インクルード・ディレクトリ」ダイアログ・ボックスのスクリーンショット" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-include-directories.png">
+
+<p>これらの設定は、CコードからJava <tt>jni.h</tt>ライブラリへの参照を有効にするために必要です。
+</p>
+</li>
+<li>
+「Cコンパイラ」オプションの「コンパイル行」領域を見つけます。「追加のオプション」プロパティのテキスト・フィールド内をクリックし、<tt>-shared -m32</tt>と入力します。<img alt="編集するデバッグの「追加のオプション」テキスト・フィールドのスクリーンショット" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-project-properties-cmd-options.png">
+
+<p>
+<tt>-shared</tt>オプションは、動的ライブラリを生成することをコンパイラに指定します。<br><tt>-m32</tt>オプションは、32ビット・バイナリを作成することをコンパイラに指定します。64ビット・システムのデフォルトでは、コンパイルされたバイナリは64ビットで、このことは32ビットJDKで多くの問題を引き起こします。
+</p>
+</li>
+<li>
+左パネルの「リンカー」カテゴリをクリックします。</li>
+<li>「出力」テキスト・フィールドをクリックして置換します。次の文字列を:
+ <pre class="examplecode">${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libJNIDemoCdl.so</pre>
+
+ 次の文字列へ:
+ <pre class="examplecode">dist/libJNIDemoCdl.so</pre>
+ 結果の共有オブジェクト・ファイルのパスが簡素化されます。これで、Javaからファイルを参照しやすくなります。<br> <img alt="「リンカー」プロパティが表示された「プロジェクト・プロパティ」ダイアログ・ボックスのスクリーンショット" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-project-properties-linker.png">
+
+
+
+</li>
+<li>「OK」をクリックします。定義された設定が保存されます。
+</li>
+</ol>
+
+<h3>ヘッダー・ファイルの追加</h3>
+<ol>
+<li>ターミナル・ウィンドウに移動し、以前生成した<tt>JNIDemoJava.h</tt>ヘッダー・ファイルを<tt>NetBeansProjects</tt>ディレクトリからC/C++ライブラリのプロジェクト・ディレクトリである<tt>NetBeansProjects/JNIDemoCdl</tt>に移動します。
+</li>
+<li>
+<p>「プロジェクト」ウィンドウで、<tt>JNIDemoCdl</tt>プロジェクトの「ヘッダー・ファイル」ノードを右クリックし、「既存の項目の追加」を選択します。<tt>NetBeansProjects/JNIDemoCdl</tt>ディレクトリにナビゲートして<tt>JNIDemoJava.h</tt>ファイルを選択し、「選択」をクリックします。
+</p>
+<p><tt>JNIDemoJava.h</tt>ファイルが「ヘッダー・ファイル」の下に表示されます。
+</p>
+
+<img alt="「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-source-files-include-file.png">
+</li>
+</ol>
+<h3>メソッドの実装</h3>
+
+<ol>
+<li>「<tt>JNIDemoCdl</tt>」プロジェクトの「ソース・ファイル」ノードを右クリックし、「新規」>「Cソース・ファイル」を選択します。「ファイル名」フィールドに「<tt>JNIDemo</tt>」と入力し、「終了」をクリックします。エディタは<tt>JNIDemo.c</tt>ファイルを開きます。
+</li>
+<li>次のコードを入力して、<tt>JNIDemo.c</tt>ファイルを編集します。
+<pre class="examplecode">
+#include &lt;jni.h&gt;
+#include &lt;stdio.h&gt;
+#include "JNIDemoJava.h"
+
+JNIEXPORT void JNICALL Java_jnidemojava_Main_nativePrint
+        (JNIEnv *env, jobject obj)
+{
+
+    printf("\nHello World from C\n");
+
+}
+</pre>
+</li>
+<li><tt>JNIDemo.c</tt>ファイルを保存します。</li>
+<li>
+「<tt>JNIDemoCdl</tt>」プロジェクト・ノードを右クリックし、「ビルド」を選択します。「出力」ウィンドウに<tt>BUILD SUCCESSFUL (total time 171ms)</tt> (または類似する文)が表示されます。
+</li>
+</ol>
+<p><b>サマリー</b></p>
+
+<p>この課題では、新規C/C++動的ライブラリを作成し、その場所を指定し、JavaメソッドのJNI実装をビルドできるようにこれを構成しました。Javaアプリケーション内で宣言したネイティブ・メソッド用の生成済ヘッダー・ファイルを追加し、これを実装しました。
+</p>
+
+<h2><a name="running"></a>アプリケーションのビルドと実行</h2>
+<p>
+この課題では、アプリケーションのJava部分に対して、いくつかの最終的な変更を実行します。これらの変更は、前の課題でコンパイルしたネイティブ・ライブラリをJava部分が正しくロードするために必要です。この後、結果のアプリケーションをコンパイルおよび実行します。
+</p>
+<div class="indent">
+<h3>Javaプロジェクトの構成</h3>
+<ol>
+<li>エディタで<tt>Main.java</tt>ファイルを開きます。
+<li>前の課題で短縮した出力ファイルのパスを使用して、<tt>public class Main</tt>行の後にC++動的ライブラリの次の初期化コードを追加します。
+<pre class="examplecode">
+static {
+        System.load("<i>full-path-to-NetBeansProjects-dir</i>/JNIDemoCdl/dist/libJNIDemoCdl.so");
+       }
+</pre>
+<i>full-path-to-NetBeansProjects-dir</i>を、NetBeansProjectsディレクトリへのパス(<tt>/home/<i>username</i>/NetBeansProjects</tt>に類似したもの)に置き換えます。
+
+</li>
+<li><tt>Main.java</tt>ファイルを保存します。</li>
+
+</ol>
+<h3>JNIDemoJavaアプリケーションの実行</h3>
+<ol><li>「プロジェクト」ウィンドウでJNIDemoJavaアプリケーションを選択します。</li>
+<li>F6を押すか、ツールバーの「実行」ボタンをクリックして、アプリケーションを実行します。プログラムが正しく実行され、「出力」ウィンドウに次のものと類似した出力が表示されます。<br> <img alt="「出力」ウィンドウのスクリーンショット" class="margin-around" src="../../../images_www/articles/72/cnd/beginning-jni-linux/jni-build-success.png">
+</li>
+</ol>
+<h3>サマリー</h3>
+<p>この課題では、いくつかの最終的な構成手順を実行し、アプリケーションを実行して、ネイティブ・メソッドの実装が、ネイティブCライブラリからのものであることを確認しました。
+</p>
+</div>
+<h2><a name="next"></a>次の手順</h2>
+<p>作業を実際の例に対して確認する場合、netbeans.orgから<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FCPlusPlus%252FJNIDemo.zip" target="_blank">ソース・コードを含むzipファイルをダウンロード</a>できます。
+</p>
+   
+
+<p>
+次のドキュメントを使用して詳細情報を入手できます。
+<ul>
+<li><a href="quickstart.html">C/C++プロジェクトのクイック・スタート・チュートリアル</a>
+<li><a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jni/" target="_blank">JNI仕様</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Java_Native_Interface" target="_blank">Java Native Interface</a>
+
+</ul>
+  <DIV CLASS="feedback-box">
+   <a HREF="https://netbeans.org/about/contact_form.html?to=7&amp;subject=Feedback:%20Beginning%20JNI%20with%20NetBeans%20IDE%20and%20C/C++%20Plugin%20on%20Linux">このチュートリアルに関するご意見をお寄せください</a>
+</DIV>
+</body>
+</html>

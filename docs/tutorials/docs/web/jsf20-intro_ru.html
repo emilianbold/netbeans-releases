@@ -1,0 +1,896 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Введение в JavaServer Faces 2.x - учебный курс по IDE NetBeans</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="description" content="A tutorial demonstrating how to create a web
+              application with JSF 2.x support in NetBeans">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              JavaServer Faces, JavaServer Faces 2.0, JSF, JSF 2.1, web application">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+    </head>
+    
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Введение в JavaServer Faces 2.x</h1>
+
+        <p>JavaServer Faces (JSF) - это платформа разработки интерфейса пользователя для веб-приложений Java.  Она призвана значительно упростить процесс создания и поддержки приложений, работающих на сервере приложений Java и визуализирующих свои пользовательские интерфейсы на целевом клиенте.  JSF обеспечивает простоту использования благодаря целому ряду факторов:</p>
+
+        <ul class="toc">
+            <li>упрощает формирование пользовательского интерфейса из набора повторно используемых компонентов пользовательского интерфейса;</li>
+            <li>упрощает перенос данных приложения в пользовательский интерфейс и из него;</li>
+            <li>помогает управлять состоянием пользовательского интерфейса при запросах к серверу;</li>
+            <li>предоставляет простую модель установления связи между созданными клиентом событиями и кодом приложения на стороне сервера;</li>
+            <li>упрощает сборку и повторное использование компонентов пользовательского интерфейса.</li>
+        </ul>
+
+        <p>Подробное описание платформы JSF приведено в <a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop.htm">учебном курсе по Java EE 7, Глава 12. Разработка по технологии JavaServer Faces</a>.</p>
+
+        <p>В этом учебном курсе описывается применение поддержки JSF 2.x к веб-приложениям с помощью IDE NetBeans. Сначала необходимо добавить поддержку платформы JSF 2.x к базовому веб-приложению, а затем приступить к выполнения следующих задач:</p>
+
+        <ul class="toc">
+            <li>создать управляемый компонент JSF для обработки данных запроса,</li>
+            <li>подключить управляемый компонент к веб-страницам приложения и</li>
+            <li>преобразовать веб-страницы в файлы шаблонов Facelets.</li>
+        </ul>
+
+        <p>IDE NetBeans обеспечивает долгосрочную поддержку для JavaServer Faces. Начиная с редакции JSF 2.0 и Java EE 6, IDE NetBeans обеспечивает поддержку для JSF 2.0 и JSF 2.1. Подробнее см. в разделе <a href="jsf20-support.html">Поддержка JSF 2.x в IDE NetBeans</a>.</p>
+
+
+        <h3>Содержание</h3>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <ul id="collapsableList">
+            <li><a href="#support">Добавление поддержки JSF 2.x к веб-приложениям</a></li>
+            <li><a href="#managedBean">Создание управляемого компонента</a>
+
+                <ul>
+                    <li><a href="#usingManagedBean">Использование мастера создания управляемого компонента</a></li>
+                    <li><a href="#creatingConstructor">Создание конструктора</a></li>
+                    <li><a href="#addingProperties">Добавление свойств</a></li>
+                </ul></li>
+
+            <li><a href="#wire">Установление связи между управляемым компонентом и страницами</a>
+
+                <ul>
+                    <li><a href="#index">index.xhtml</a></li>
+                    <li><a href="#response">response.xhtml</a></li>
+                </ul></li>
+
+            <li><a href="#template">Применение шаблона Facelets</a>
+
+                <ul>
+                    <li><a href="#templateFile">Создание файла шаблона Facelets</a></li>
+                    <li><a href="#templateClient">Создание файлов клиента шаблона</a></li>
+                </ul></li>
+            <li><a href="#seealso">Дополнительные сведения</a></li>
+        </ul>
+
+        <p id="requiredSoftware">Для работы с этим учебным курсом требуются программное обеспечение и материалы, перечисленные ниже.</p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, пакет Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://glassfish.dev.java.net/">Сервер GlassFish</a></td>
+                    <td class="tbltd1">Open Source Edition 3.x или 4</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FjsfDemo.zip">Проект веб-приложения <code>jsfDemo</code></a></td>
+                    <td class="tbltd1">неприменимо</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>Примечания</strong></p>
+
+        <div class="indent">
+            <ul>
+                <li>В комплект Java в среде IDE NetBeans также входит сервер GlassFish - сервер, совместимый с Java EE, который требуется для этого учебного курса.</li>
+
+                <li>Для сравнения проекта с рабочим решением загрузите <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FjsfDemoCompleted.zip">выполненный демонстрационный проект</a>.</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="support">Добавление поддержки JSF 2.x к веб-приложениям</h2>
+
+        <p>Начните работу с открытия <a href="#requiredSoftware">проекта веб-приложения <code>jsfDemo</code></a> в среде IDE.  После открытия проекта в среде IDE в него можно добавить поддержку платформы с помощью окна &quot;Свойства&quot; в проекте.</p>
+
+        <p class="tips">IDE также позволяет создавать новые проекты с поддержкой JSF 2.x. Подробнее см. раздел <a href="jsf20-support.html#creatingSupport">Создание нового проекта с поддержкой JSF 2.x</a>.</p>
+
+        <ol>
+            <li>Нажмите кнопку 'Открыть проект' ( <img alt="Кнопка &apos;Открыть проект&apos;" src="../../../images_www/articles/72/web/jsf20-intro/open-project-btn.png"> ) на главной панели инструментов IDE или нажмите Ctrl-Shift-O (&#8984-Shift-O в Mac).</li>
+
+            <li>В диалоговом окне &quot;Открытие проекта&quot; перейдите к папке на компьютере, в которой хранится разархивированный файл учебного проекта.  Выберите его, а затем для открытия проекта в среде IDE нажмите кнопку &quot;Открыть проект&quot;.
+                <p class="notes"><strong>Примечание.</strong> При открытии проекта NetBeans может быть отображен запрос на разрешение ссылки на библиотеки JUnit, если при установке IDE не был установлен подключаемый модуль JUnit.</p>
+            </li>
+
+            <li>Выполните проект и посмотрите, как он выглядит в браузере.  Либо щелкните правой кнопкой мыши узел проекта <code>jsfDemo</code> в окне 'Проекты' и выберите 'Запустить' или нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) на главной панели инструментов. Проект запакован и разворачивается на сервере GlassFish, а в браузере открывается страница приветствия(<code>index.xhtml</code>). <br> <img alt="Снимок страницы приветствия в браузере" class="margin-around b-all" id="staticPage" src="../../../images_www/articles/72/web/jsf20-intro/run-project.png" title="Запустите проект, чтобы просмотреть его в браузере."></li>
+
+            <li>Нажмите кнопку &quot;Отправить&quot;.  Страница ответа (<code>response.xhtml</code>) отображается следующим образом: <br> <img alt="Снимок страницы отклика в браузере" class="margin-around b-all" id="originalVersion" src="../../../images_www/articles/72/web/jsf20-intro/response.png" title="Страницы приветствия и отклика в настоящее время являются статическими страницами">
+
+                <p>
+                В настоящее время страницы приветствия и отклика являются статическими, и совместно с файлом <code>stylesheet.css</code> и изображением <code>duke.png</code> они являются единственными файлами приложений, доступными из браузера.</p></li>
+
+            <li>В окне 'Проекты' (Ctrl-1; ⌘ -1 в Mac) щелкните правой кнопкой мыши узел проекта и выберите 'Свойства', чтобы открыть окно 'Свойства проекта'.</li>
+
+            <li>Выберите категорию 'Платформы', а затем нажмите кнопку 'Добавить'. </li>
+            <li>Выберите 'JavaServer Faces' в диалоговом окне 'Добавление платформы'. Нажмите кнопку 'ОК'. <br> <img alt="Окно &apos;Свойства проекта&apos;: диалоговок окно &apos;Добавить платформу&apos;" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-intro/add-framework.png" title="Добавление поддержки JSF к существующему проекту">
+
+                <p>
+                После выбора &quot;JavaServer Faces&quot; станут доступными различные параметры настройки. На вкладке 'Библиотеки' вы можете указать, как проект обращается к библиотекам JSF 2.x. Доступная версия JSF будет зависеть от версии IDE и сервера GlassFish. По умолчанию используются библиотеки, поставляемые с сервером (сервером GlassFish). Тем не менее, в IDE также входят библиотеки JSF 2.x. (Можно выбрать параметр &quot;Зарегистрированные библиотеки&quot;, если их необходимо использовать в проекте).</p>
+
+                <img alt="Настройки конфигурации JSF: вкладка &apos;Библиотеки&apos;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/libraries-tab.png" title="Укажите доступ к библиотекам JSF 2.x"></li>
+
+            <li>Выберите вкладку &quot;Настройка&quot;.  Можно указать способ регистрации сервлета Faces в дескрипторе развертывания проекта.  Также можно указать, нужно ли в проекте использовать страницы Facelets или JSP. <br> <img alt="Настройки конфигурации JSF: вкладка &apos;Конфигурация&apos;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/jsf-configuration.png" title="Укажите параметры сервлета Faces и предпочитаемый язык">
+                
+                <p>Вы также можете легко настроить проект для использования различных наборов компонентов JSF на вкладке 'Компоненты'. Чтобы использовать набор компонентов, нужно загрузить необходимые библиотеки и использовать диспетчер Ant Library для создания новой библиотеки с библиотеками наборов компонентов.</p>
+                
+                <img alt="Настройки конфигурации JSF: вкладка &apos;Конфигурация&apos;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/jsf-components.png" title="Укажите параметры сервлета Faces и предпочитаемый язык">
+            </li>
+
+            <li>Нажмите кнопку &quot;ОК&quot; для подтверждения изменений и закройте окно &quot;Свойства проекта&quot;.</li>
+        </ol>
+
+        <p>После добавления поддержки JSF к проекту дескриптор развертывания <code>web.xml</code> изменяется и выглядит следующим образом.  (Изменения <strong>выделены полужирным шрифтом</strong>.)</p>
+
+        <div class="indent">
+        <pre class="examplecode">
+&lt;web-app version=&quot;3.0&quot; xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;&gt;
+    <strong>&lt;context-param&gt;
+        &lt;param-name&gt;javax.faces.PROJECT_STAGE&lt;/param-name&gt;
+        &lt;param-value&gt;Development&lt;/param-value&gt;
+    &lt;/context-param&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;javax.faces.webapp.FacesServlet&lt;/servlet-class&gt;
+        &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+    &lt;/servlet&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/faces/*&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;</strong>
+    &lt;welcome-file-list&gt;
+        &lt;welcome-file&gt;<strong>faces/</strong>index.xhtml&lt;/welcome-file&gt;
+    &lt;/welcome-file-list&gt;
+&lt;/web-app&gt;</pre></div>
+
+        <p class="alert"><strong>Важно!</strong> Убедитесь, что файл <code>web.xml</code> содержит только одну запись <code>&lt;welcome-file></code> с компонентом '<code>faces/</code>', как показано в примере.  Это обеспечивает передачу страницы приветствия проекта (<code>index.xhtml</code>) через сервлет Faces перед ее отображением в браузере.  Это необходимо для верного отображения компонентов библиотек тегов Facelets.  </p>
+
+        <p>Сервлет Faces регистрируется в проекте, и теперь страница приветствия <code>index.xhtml</code> при запросе передается через сервлет Faces.  Кроме того, обратите внимание, что добавлена запись для параметра контекста <code>PROJECT_STAGE</code>.  При установке значения этого параметра на &quot;<code>Development</code>&quot; предоставляется полезная информация во время отладки приложения.  См.
+            <!--<a href="http://java.sun.com/javaee/6/docs/tutorial/doc/giqxl.html">http://java.sun.com/javaee/6/docs/tutorial/doc/giqxl.html</a>
+            and-->
+            <a href="http://blogs.oracle.com/rlubke/entry/jsf_2_0_new_feature2">http://blogs.oracle.com/rlubke/entry/jsf_2_0_new_feature2</a> для получения дополнительной информации.</p>
+
+        <p>Для просмотра библиотек JSF разверните узел &quot;Библиотеки&quot; проекта в окне &quot;Проекты&quot;.  Если используются библиотеки по умолчанию, включенные в GlassFish Server 3.1.2 или GlassFish Server 4, под узлом сервера GlassFish отображается <code>javax.faces.jar</code>. (Если вы используете старую версию GlassFish, вы увидите библиотеки <code>jsf-api.jar</code> и <code>jsf-impl.jar</code>, а не <code>javax.faces.jar</code>.)</p>
+
+        <p>Поддержка JSF в среде IDE 2.x включает в себя в первую очередь большое количество мастеров для JSF, а также специальные функциональные возможности, предоставляемые редактором Facelets. Эти функциональные возможности описаны ниже.  Подробнее см. в разделе <a href="jsf20-support.html">Поддержка JSF 2.x в IDE NetBeans</a>.</p>
+
+
+        <h2 id="managedBean">Создание управляемого компонента</h2>
+
+        <p>Управляемые компоненты JSF для обработки данных пользователя и сохранения их между запросами.  Управляемый компонент &ndash; это <a href="http://en.wikipedia.org/wiki/Plain_Old_Java_Object">POJO</a> (простой объект Java), который используется для сохранения данных и управляется контейнером (например, сервером GlassFish) с помощью платформы JSF.</p>
+
+        <p id="pojo" class="tips">Компонент POJO по существу является классом Java, который содержит публичный безаргументный конструктор и соответствует правилам присвоения имен <a href="http://download.oracle.com/javase/tutorial/javabeans/">JavaBeans</a> для свойств.</p>
+
+        <p>При просмотре <a href="#staticPage">статической страницы</a>, полученной в результате выполнения проекта, пользователю необходим механизм, который проверяет введенное пользователем число на соответствие текущему выбранному числу и возвращает представление, соответствующее полученному результату.  Чтобы создать управляемый компонент для этих целей, используйте <a href="jsf20-support.html#managedBean">Мастер создания управляемого компонента</a> среды IDE.  Страницы Facelets, создаваемые в следующем разделе, должны иметь доступ к числу, вводимому пользователем, и к сгенерированному ответу.  Для упрощения добавьте свойства <code>userNumber</code> и <code>response</code> к управляемому компоненту.</p>
+
+        <ul>
+            <li><a href="#usingManagedBean">Использование мастера создания управляемого компонента</a></li>
+            <li><a href="#creatingConstructor">Создание конструктора</a></li>
+            <li><a href="#addingProperties">Добавление свойств</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="usingManagedBean">Использование мастера создания управляемого компонента</h3>
+
+            <ol>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта <code>jsfDemo</code> и выберите 'Создать' > 'Управляемый компонент JSF'. (Если &quot;Управляемый компонент&quot; отсутствует, выберите &quot;Другие&quot;.  Затем выберите параметр &quot;Управляемый компонент JSF&quot; в категории &quot;JavaServer Faces&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+                <li>В мастере введите следующее:
+
+                    <ul class="toc">
+                        <li><strong>Имя класса:</strong> UserNumberBean;</li>
+                        <li><strong>Пакет:</strong> guessNumber;</li>
+                        <li><strong>Имя:</strong> UserNumberBean</li>
+                        <li><strong>Контекст:</strong> сеанс</li>
+                    </ul>
+
+                    <img alt="Мастер создания управляемого компонента JSF" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/managed-bean.png" title="Используйте мастер управляемых компонентов JSF для создания нового управляемого компонента"></li>
+
+                <li>Нажмите кнопку &quot;Завершить&quot;. Класс <code>UserNumberBean</code> будет создан и открыт в редакторе.  Обратите внимание на следующие аннотации (<strong>выделено полужирным шрифтом</strong>):
+
+                    <pre class="examplecode">
+package guessNumber;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
+/**
+ *
+ * @author nbuser
+ */
+<strong>@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped</strong>
+public class UserNumberBean {
+
+    /** Creates a new instance of UserNumberBean */
+    public UserNumberBean() {
+    }
+
+}</pre>
+                    <p>Поскольку вы используете JSF 2.x, можно объявить все относящиеся к JSF компоненты с помощью аннотаций. В предыдущих версиях их необходимо было объявлять в файле настройки Faces (<code>faces-config.xml</code>).</p>
+
+                    <span class="tips">Для просмотра документации Javadoc по всем аннотациям JSF 2.1 обратитесь к <a href="http://javaserverfaces.java.net/nonav/docs/2.1/managed-bean-javadocs/index.html">Спецификации аннотации управляемого компонента Faces</a>.</span></li>
+            </ol>
+
+
+            <h3 id="creatingConstructor">Создание конструктора</h3>
+
+            <p>Конструктор <code>UserNumberBean</code> должен создавать случайное число от 0 до 10 и сохранять его в переменной экземпляра.  Таким образом частично формируется бизнес-логика для приложения.</p>
+
+            <ol>
+                <li>Определите конструктор для класса <code>UserNumberBean</code>.  Введите следующий код (изменения выделены <strong>полужирным шрифтом</strong>).
+
+                    <pre class="examplecode">
+public class UserNumberBean {
+
+    <strong>Integer randomInt;</strong>
+
+    /** Creates a new instance of UserNumberBean */
+    public UserNumberBean() {
+        <strong><a href="http://docs.oracle.com/javase/7/docs/api/java/util/Random.html">Random</a> randomGR = new Random();
+        randomInt = new Integer(randomGR.<a href="http://docs.oracle.com/javase/7/docs/api/java/util/Random.html#nextInt%28int%29">nextInt</a>(10));
+        System.out.println(&quot;Duke's number: &quot; + randomInt);</strong>
+    }
+
+}</pre>
+
+                    <p>Вышеуказанный код создает случайное число от 0 до 10 и записывает это число в протокол сервера.</p></li>
+
+                <li>Исправьте операторы импорта.  Для этого щелкните метку4 подсказки ( <img alt="метка подсказки" src="../../../images_www/articles/72/web/jsf20-intro/hint-icon.png"> ), которая отображается на левой границе редактора, затем выберите параметр для импорта <code>java.util.Random</code> в класс.</li>
+
+                <li>Повторно запустите проект (нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) или нажмите F6; fn-F6 в Mac). При выполнении проекта файл протокола сервера автоматически открывается в окне вывода. <br> <img alt="Журнал сервера в окне вывода" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/output1.png" title="Файл журнала сервера автоматически открывается в окне вывода.">
+
+                <p>Обратите внимание на то, что в окне вывода не отображается &quot;<code>Номер Дюка: </code>&quot; (как указывалось в конструкторе).  Объект <code>UserNumberBean</code> не создан, так как по умолчанию в JSF используется <em>&quot;ленивое&quot; создание экземпляра</em>.  Таким образом, компоненты в определенных контекстах создаются и инициализируются, только если они необходимы в приложении.</p>
+
+                    <p>
+                    Состояния <a href="http://javaserverfaces.java.net/nonav/docs/2.1/managed-bean-javadocs/index.html">Документации Javadoc по аннотации <code>@ManagedBean</code></a>:</p>
+
+                    <div class="indent">
+                        <em>Если атрибут <code>eager()</code> имеет значение <code>true</code>, а значением <code>managed-bean-scope</code> является &quot;application&quot;, то в среде выполнения при запуске приложения должен быть создан экземпляр этого класса.  Создание и сохранение экземпляра должно осуществляться до обслуживания запросов. Если атрибут <em>eager</em> не указан либо имеет значение <code>false</code> или элементу <code>managed-bean-scope</code> не присвоено значение &quot;приложение&quot;, по умолчанию происходит &quot;ленивое&quot; создание экземпляра и контекстное сохранение управляемого компонента.</em>
+                    </div></li>
+
+
+                <li>Поскольку класс <code>UserNumberBean</code> входит в контекст сеанса, реализуется интерфейс <code>Serializable</code>.
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean <strong>implements Serializable</strong> {</pre>
+
+                    Используйте метку подсказки ( <img alt="метка подсказки" src="../../../images_www/articles/72/web/jsf20-intro/hint-icon.png"> ) для импорта <code>java.io.Serializable</code> в класс.</li>
+            </ol>
+
+            <h3 id="addingProperties">Добавление свойств</h3>
+
+            <p>Страницы Facelets, создаваемые в следующем разделе, должны иметь доступ к числу, вводимому пользователем, и к сгенерированному ответу.  Для упрощения этого добавьте свойства <code>userNumber</code> и <code>response</code> к классу.</p>
+
+            <ol>
+                <li>Начните с объявления <code>Integer</code> с именем <code>userNumber</code>.
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean implements Serializable {
+
+    Integer randomInt;
+    <strong>Integer userNumber;</strong></pre></li>
+
+                <li>Щелкните правой кнопкой мыши в редакторе и выберите команду &quot;Вставить код&quot; (ALT+INS; CTRL+I на компьютере Mac).  Выберите методы получения и установки. <br> <img alt="Создайте всплывающее окно &apos;Код&apos;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/getter-setter.png" title="Используйте IDE для создания методов доступа для свойств"></li>
+
+                <li>Выберите параметр <code>userNumber</code>: <code>Integer</code>. Нажмите кнопку "Создать". <br> <img alt="Диалоговое окно &apos;Создание методов получения и установки&apos;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/generate-getters-setters.png" title="Используйте IDE для создания методов доступа для свойств">
+
+                    <p>Обратите внимание на то, что методы <code>getUserNumber()</code> и <code>setUserNumber(Integer userNumber)</code> добавлены в класс.</p></li>
+
+                <li>Создайте свойство <code>response</code>.  Объявите <code>String</code> с именем <code>response</code>.
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean implements Serializable {
+
+    Integer randomInt;
+    Integer userNumber;
+    <strong>String response;</strong></pre></li>
+
+                <li id="getResponse">Создайте метод получения для <code>response</code>.  (Для этого приложения не требуется метод установки). Для создания кода шаблона в среде IDE можно использовать всплывающее окно &quot;Создание кода&quot;, упомянутое выше в действии 2.  Однако в целях изучения данного руководства просто вставьте нижеуказанный метод в класс.
+
+                    <pre class="examplecode">
+public String getResponse() {
+    if ((userNumber != null) && (userNumber.<a href="http://download.oracle.com/javase/6/docs/api/java/lang/Integer.html#compareTo(java.lang.Integer)">compareTo</a>(randomInt) == 0)) {
+
+        //invalidate user session
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpSession session = (HttpSession) context.getExternalContext().getSession(false);
+        session.invalidate();
+
+        return &quot;Yay! You got it!&quot;;
+    } else {
+
+        return &quot;&lt;p&gt;Sorry, &quot; + userNumber + &quot; isn't it.&lt;/p&gt;&quot;
+                + &quot;&lt;p&gt;Guess again...&lt;/p&gt;&quot;;
+    }
+}</pre>
+
+                    Вышеуказанный метод выполняет две функции.
+
+                    <ol>
+                        <li>Тестирует введенное пользователем число (<code>userNumber</code>) на равенство случайному числу, сгенерированному для сеанса (<code>randomInt</code>), и возвращает соответствующий ответ <code>String</code>.</li>
+
+                        <li>Определяет пользовательский сеанс как недействительный, если пользователь ввел правильное число (т.е., если <code>userNumber</code> равно <code>randomInt</code>).  Это необходимо для того, чтобы новое сгенерированное число побудило пользователя сыграть еще раз.</li>
+                    </ol></li>
+
+                <li>Щелкните правой кнопкой мыши в области редактора и выберите команду &quot;Исправить операторы импорта&quot; (ALT+SHIFT+I; &amp;#8984+SHIFT+I на компьютере Mac).  Параметры импорта автоматически создаются для:
+
+                    <ul>
+                        <li><code>javax.servlet.http.HttpSession</code></li>
+                        <li><code>javax.faces.context.FacesContext</code></li>
+                    </ul>
+
+                    <p class="tips">Можно нажать сочетание клавиш CTRL+ПРОБЕЛ на элементах в редакторе для вызова предложений автозавершения кода и поддержки документации.  Нажмите сочетание клавиш CTRL+ПРОБЕЛ, установив курсор на <code>FacesContext</code>, для просмотра описания класса из документации Javadoc.</p>
+
+                    <br> <img alt="Всплывающее окно документации" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/documentation-support.png" title="Для вызова поддержки автозавершения кода и документации нажмите сочетание клавиш CTRL+ПРОБЕЛ."> <br> Щелкните значок веб-браузера ( <img alt="Значок веб-браузера " src="../../../images_www/articles/72/web/jsf20-crud/web-browser-icon.png"> ) в окне документации, чтобы открыть Javadoc во внешнем веб-браузере.
+                </li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="wire">Установление связи между управляемым компонентом и страницами</h2>
+
+        <p>Одной из первичных целей JSF является отмена необходимости записывать шаблонный код для управления объектами <a href="#pojo">POJO</a> и их взаимодействием с видами приложений.  Пример этого был приведен в предыдущем разделе, в котором JSF создал объект <code>UserNumberBean</code> при выполнении приложения.  Это представление называется <a href="http://martinfowler.com/articles/injection.html">Инверсия управления</a> (IoC). Оно позволяет контейнеру принимать на себя ответственность за управление частями приложения, иначе разработчику потребовалось бы написать код с повторениями.</p>
+
+        <p>В предыдущем разделе был создан управляемый компонент, генерирующий случайное число от 0 до 10.  Также было создано два свойства <code>userNumber</code> и <code>response</code>, представляющие соответственно пользовательский ввод числа и ответ на вопрос пользователя.</p>
+
+        <p>В этом разделе показаны способы использования <code>UserNumberBean</code> и его свойств на веб-страницах.  JSF позволяет это сделать с помощью языка выражения.  Язык выражения используется для привязки значений свойств к компонентам пользовательского интерфейса JSF, содержащихся на веб-страницах приложений.  В этом разделе также показано, как можно воспользоваться внутренними функциями навигации JSF 2.x для перемещения между индексом и страницами ответов.</p>
+
+        <p>Эта поддержка в среде IDE обеспечивается с помощью функции автозавершения кода и средств документации, которые вызываются нажатием сочетания клавиш CTRL+ПРОБЕЛ, когда курсор установлен на каком-либо элементе в редакторе.</p>
+
+        <p>Начните с внесения изменений в <code>index.xhtml</code>, затем измените <code>response.xhtml</code>.  На обеих страницах замените элементы формы HTML их эквивалентами JSF, поскольку они определены в <a href="http://javaserverfaces.java.net/nonav/docs/2.1/vdldocs/facelets/index.html">библиотеке тегов HTML для JSF</a>.  Затем используйте язык выражений JSF для привязки значений свойств к выбранным компонентам пользовательского интерфейса.</p>
+
+        <ul>
+            <li><a href="#index">index.xhtml</a></li>
+            <li><a href="#response">response.xhtml</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="index">index.xhtml</h3>
+
+            <ol>
+                <li>Откройте страницу <code>index.xhtml</code> в редакторе.  Дважды щелкните узел <code>index.xhtml</code> в окне &quot;Проекты&quot; или нажмите сочетание клавиш ALT+SHIFT+O для открытия диалогового окна &quot;Переход к файлу&quot;. <br><br> Как индекс, так и страницы ответов уже содержат компоненты пользовательского интерфейса JSF, необходимые для этого упражнения.  Просто раскомментируйте их и закомментируйте элементы HTML, используемые в настоящий момент.</li>
+
+                <li>Закомментируйте элемент формы HTML.  Для этого выделите элемент формы HTML, как показано на изображении ниже, затем нажмите CTRL+/ (&amp;#8984+/ на компьютере Mac). <br><br> <strong class="notes">Примечание. </strong>Для выделения воспользуйтесь функцией перетаскивания в редакторе с помощью мыши или с помощью клавиатуры удерживайте клавишу Shift и используйте клавиши со стрелками. <br> <img alt="Выделенный код в редакторе" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/comment-out.png" title="Выделите код, затем нажмите Ctrl-/ для закомментирования кода">
+
+                    <p class="tips">Для переключения комментариев нажмите сочетание клавиш CTRL+/ (&amp;#8984+/ на компьютере Mac).  Эту комбинацию клавиш также можно использовать для других типов файлов, например, Java и CSS.</p></li>
+
+                <li>Раскомментируйте компонент формы HTML для JSF.  Выделите этот компонент, как показано на рисунке ниже, затем нажмите CTRL+/ (&amp;#8984+/ на компьютере Mac).
+                    <p class="notes"><strong>Примечание.</strong> Возможно, вам придется нажать Ctrl-/ дважды, чтобы раскомментировать код.</p>
+
+                    <br> <img alt="Выделенный код в редакторе" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/comment.png" title="Выделите закомментированный код, затем нажмите Ctrl-/ для удаления комментария">
+
+                    <p>
+                    После того как компонент формы HTML для JSF раскомментирован, в редакторе будет указано, что теги <code>&lt;h:form&gt;</code>, <code>&lt;h:inputText&gt;</code> и <code>&lt;h:commandButton&gt;</code> не объявлены.</p>
+
+                    <img alt="Сообщение об ошибке в редакторе" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/undeclared-component.png" title="Редактор обеспечивает сообщения об ошибках для необъявленных компонентов"></li>
+
+                <li>Для объявления этих компонентов используйте автозавершение кода IDE, чтобы добавить пространство имен библиотеки тегов в тег <code>&lt;html&gt;</code> страницы.  Наведите курсор на любой из необъявленных тегов, нажмите Alt-Enter и нажмите Enter, чтобы добавить предложенные библиотеки тегов. (При наличии нескольких параметров перед нажатием клавиши ВВОД убедитесь, что выбран тег, отображаемый в редакторе.)  Пространство имен библиотеки тегов HTML для JSF добавляется к тегу <code>&lt;html&gt;</code> (<strong>выделено ниже полужирным шрифтом</strong>), и указания на ошибки исчезают.
+                    <p class="notes"><strong>Примечание.</strong> Если в IDE нет возможности добавить библиотеку тегов, потребуется вручную изменить элемент <tt>&lt;html></tt>. </p>
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre></li>
+
+                <li>Используйте язык выражения JSF для привязки свойства <code>userNumber</code> для <code>UserNumberBean</code> к компоненту <code>inputText</code>.  Атрибут <code>value</code> используется для указания текущего значения визуализируемого компонента.  Введите в код, отображаемый ниже <strong>полужирным шрифтом</strong>.
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+    &lt;h:inputText id=&quot;userNumber&quot; size=&quot;2&quot; maxlength=&quot;2&quot; <strong>value=&quot;#{UserNumberBean.userNumber}&quot;</strong> /&gt;</pre>
+
+                    <p>В языке выражения JSF используется синтаксис <code>#{}</code>.  Внутри этих парных символов указывается имя требуемого управляемого компонента и его свойство, разделенные точкой (<code>.</code>).  Теперь при отправке данных формы на сервер значение автоматически сохраняется в свойстве <code>userNumber</code> с помощью метода установки свойств (<code>setUserNumber()</code>).  Кроме того, если страница запрошена и значение для <code>userNumber</code> уже установлено, значение автоматически отображается в визуализированном компоненте <code>inputText</code>.  Дополнительные сведения приведены в <a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop001.htm#BNAQP">Руководстве по Java EE 7. Глава 12.1.2 Использование языка выражений для создания ссылок на управляемые сеансные объекты</a>.</p></li>
+
+                <li>Укажите адресата для запроса, который вызывается при нажатии кнопки формы.  В HTML-версии формы это возможно выполнить с помощью атрибута <code>action</code> тега <code>&lt;form&gt;</code>.  С помощью JSF можно использовать атрибут <code>action</code> для <code>commandButton</code>.  Кроме того, благодаря внутренней функции навигации JSF 2.x вам нужно только указать имя конечного файла без расширения.
+
+                    <p>Введите код, отображаемый ниже <strong>полужирным шрифтом</strong>.</p>
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+    &lt;h:inputText id=&quot;userNumber&quot; size=&quot;2&quot; maxlength=&quot;2&quot; value=&quot;#{UserNumberBean.userNumber}&quot; /&gt;
+    &lt;h:commandButton id=&quot;submit&quot; value=&quot;submit&quot; <strong>action=&quot;response&quot;</strong> /&gt;
+&lt;/h:form&gt;</pre>
+
+                    <p>В среде выполнения JSF осуществляется поиск файла с именем <code>response</code>.  Предполагается, что расширение файла такое же, как у файла, из которого произошел запрос (<code>index<strong>.xhtml</strong></code>), и поиск файла <code>response.xhtml</code> выполняется в папке исходного файла (т.е. в корневом веб-узле).</p>
+
+                    <p class="notes"><strong>Примечание. </strong>JSF 2.x позволяет упростить разработку. При использовании JSF 1.2 для этого проекта необходимо объявить правило перехода в файле настройки Faces. Объявление правила может выглядеть следующим образом:</p>
+
+                    <pre class="examplecode">
+&lt;navigation-rule&gt;
+    &lt;from-view-id&gt;/index.xhtml&lt;/from-view-id&gt;
+
+    &lt;navigation-case&gt;
+        &lt;from-outcome&gt;response&lt;/from-outcome&gt;
+        &lt;to-view-id&gt;/response.xhtml&lt;/to-view-id&gt;
+    &lt;/navigation-case&gt;
+&lt;/navigation-rule&gt;</pre>
+
+                    <p>Нижеприведенные действия с 7 по 12 являются дополнительными.  Если необходимо выполнить быструю сборку проекта, сразу перейдите к <a href="#response"><code>response.xhtml</code></a>.</p></li>
+
+                <li>Протестируйте, выполняется ли вызов метода <code>setUserNumber()</code> вышеуказанным выражением на языке выражения при обработке запроса.  Для выполнения этого используйте отладчик Java среды IDE.
+
+                    <p>Переключите на класс <code>UserNumberBean</code> (нажмите сочетание клавиш CTRL+TAB и выберите из списка файл).  Установите точку останова в сигнатуре метода <code>setUserNumber()</code>.  Это можно сделать, щелкнув мышкой в области левого поля.  Появится красный значок, указывающий, что точка останова метода установлена.</p>
+
+                    <img alt="Точка останова в левой границе редактора" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/set-breakpoint.png" title="Щелкните левую границу редактора для задания точек останова"></li>
+
+                <li>Нажмите кнопку 'Отладка проекта' (<img alt="Кнопка &apos;Отладка проекта&apos;" src="../../../images_www/articles/72/web/jsf20-intro/breakpoint-btn.png">) на главной панели инструментов IDE. Начинается сеанс отладки, и в браузере открывается страница приветствия проекта.
+
+                    <p class="notes"><strong>Примечания.</strong></p>
+                    <ul>
+                        <li>Вам может быть предложено подтвердить порт сервера для отладки приложений.</li>
+                        <li>Если появится диалоговое окно 'Отладить проект', выберите опцию по умолчанию 'Java на стороне сервера' и нажмите кнопку 'Отладка'.</li>
+                    </ul></li>
+                <li>В браузере введите номер в форму и нажмите кнопку &quot;Отправить&quot;.</li>
+
+                <li>Вернитесь в среду IDE и проверьте класс <code>UserNumberBean</code>.  Отладчик приостановлен в методе <code>setUserNumber()</code>. <br> <img alt="В редакторе отображается приостановленный редактор" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/debugger-suspended.png" title="Выполняется приостановка отладчика в соответствии с точками останова"></li>
+
+                <li>Откройте окно &quot;Переменные отладчика&quot; (выберите &quot;Окно&quot; &gt; &quot;Отладка &gt; &quot;Переменные&quot; или нажмите сочетание клавиш CTRL+SHIFT+1).  На экран будут выведены значения переменных для точки, в которой приостановлен отладчик. <br> <img alt="Окно &amp;quot;Переменные&amp;quot;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/variables-window.png" title="Отслеживание значений переменных с помощью окна &apos;Переменные отладчика&apos;">
+
+                    <p>
+                    На приведенном выше изображении значение &quot;<code>4</code>&quot; предоставлено для переменной <code>userNumber</code> в сигнатуре <code>setUserNumber()</code>.  (Число 4 введено в форму.) &quot;<code>this</code>&quot; относится к объекту <code>UserNumberBean</code>, созданному для пользовательского сеанса.  Далее можно отметить, что значение свойства <code>userNumber</code> в настоящий момент равно <code>null</code>.</p></li>
+
+                <li>На панели отладчика нажмите кнопку 'Вход в' ( <img alt="Кнопка &apos;Вход в&apos;" src="../../../images_www/articles/72/web/jsf20-intro/step-into-btn.png"> ). Отладчик выполняет обработку строки, на которой он в настоящий момент приостановлен.  Происходит обновление окна &quot;Переменные&quot; с указанием выполненных изменений. <br> <img alt="Окно &amp;quot;Переменные&amp;quot;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/variables-window2.png" title="Окно переменных обновляется при переходе по коду"> <br>
+                    <p>Теперь свойству <code>userNumber</code> присвоено значение, введенное в форме.</p></li>
+                <li>Выберите Отладка> Завершить сеанс отладки (Shift-F5; Shift-Fn-F5 на Mac) из главного меню, чтобы остановить отладчик.</li>
+            </ol>
+
+
+            <h3 id="response">response.xhtml</h3>
+
+            <ol>
+                <li>Откройте страницу <code>response.xhtml</code> в редакторе.  В окне &quot;Проекты&quot; дважды щелкните узел <code>response.xhtml</code> или нажмите сочетание клавиш ALT+SHIFT+O для открытия диалогового окна &quot;Переход к файлу&quot;.</li>
+
+                <li>Закомментируйте элемент формы HTML.  Выделите открывающий и закрывающий теги HTML <code>&lt;form&gt;</code> и код между ними, затем нажмите CTRL+/ (&amp;#8984+/ на компьютере Mac).
+
+                    <p class="notes"><strong>Примечание: </strong> Для выделения воспользуйтесь функцией перетаскивания в редакторе с помощью мыши или с помощью клавиатуры удерживайте клавишу Shift и используйте клавиши со стрелками.</p></li>
+
+                <li>Раскомментируйте компонент формы HTML для JSF.  Выделите открывающий и закрывающий теги <code>&lt;h:form&gt;</code> и код между ними, затем нажмите CTRL+/ (&amp;#8984+/ на компьютере Mac).
+
+                    <p>На данном этапе, код между тегами <code>&lt;body&gt;</code> выглядит следующим образом:</p>
+
+                    <pre class="examplecode">
+&lt;body&gt;
+    &lt;div id=&quot;mainContainer&quot;&gt;
+
+        &lt;div id=&quot;left&quot; class=&quot;subContainer greyBox&quot;&gt;
+
+            &lt;h4&gt;[ response here ]&lt;/h4&gt;
+
+            &lt;!--&lt;form action=&quot;index.xhtml&quot;&gt;
+
+                &lt;input type=&quot;submit&quot; id=&quot;backButton&quot; value=&quot;Back&quot;/&gt;
+
+            &lt;/form&gt;--&gt;
+
+            &lt;h:form&gt;
+
+                &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; /&gt;
+
+            &lt;/h:form&gt;
+
+        &lt;/div&gt;
+
+        &lt;div id=&quot;right&quot; class=&quot;subContainer&quot;&gt;
+
+            &lt;img src=&quot;duke.png&quot; alt=&quot;Duke waving&quot; /&gt;
+             &lt;!--&lt;h:graphicImage url=&quot;/duke.png&quot; alt=&quot;Duke waving&quot; /&gt;--&gt;
+
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;</pre>
+
+                    <p>После того как компонент формы HTML для JSF раскомментирован, в редакторе будет указано, что теги <code>&lt;h:form&gt;</code> и <code>&lt;h:commandButton&gt;</code> не объявлены.</p></li>
+
+                <li>Для объявления этих компонентов используйте автозавершение кода IDE, чтобы добавить пространство имен библиотеки тегов в тег <code>&lt;html&gt;</code> страницы. 
+
+                    <p class="tips">Используйте поддержку автозавершения кода в редакторе для добавления необходимых пространств имен JSF к файлу.  При выборе тега JSF или Facelets через автозавершение кода происходит автоматическое добавление требуемого пространства имен к корневому элементу документа.  Подробнее см. в разделе <a href="jsf20-support.html#facelets">Поддержка JSF 2.x в IDE NetBeans</a>.</p>
+
+                    <p>Установите курсор на один из необъявленных тегов и нажмите сочетание клавиш CTRL+ПРОБЕЛ.  Предложения автозавершения кода и отображения поддержки документации.</p>
+
+                    <img alt="Рекомендации по автозавершению кода и всплывающее окно документации" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/code-completion2.png" title="Для вызова рекомендаций по автозавершению кода и всплывающего окна документации">
+
+                    <p>Нажмите ENTER.  (При наличии нескольких параметров перед нажатием клавиши ВВОД убедитесь, что выбран тег, отображаемый в редакторе.)  Пространство имен библиотеки тегов HTML для JSF добавляется к тегу <code>&lt;html&gt;</code> (<strong>выделено ниже полужирным шрифтом</strong>), и указания на ошибки исчезают.</p>
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre></li>
+
+                <li>Укажите адресата для запроса, который вызывается при нажатии пользователем кнопки формы. Кнопку необходимо установить так, чтобы при ее нажатии пользователь возвращался на страницу-указатель.  Для этого следует использовать атрибут <code>action</code> для <code>commandButton</code>.  Введите в код, отображаемый <strong>полужирным шрифтом</strong>.
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+
+    &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; <strong>action=&quot;index&quot;</strong> /&gt;
+
+&lt;/h:form&gt;</pre>
+
+                    <p class="notes"><strong>Примечание. </strong> При вводе <code>action="index"</code> пользователи в работе зависят от функции явной навигации в JSF. При нажатии кнопки формы в среде выполнения JSF осуществляется поиск файла с именем <code>index</code>.  Предполагается, что расширение файла такое же, как у файла, от которого был направлен запрос (<code>response<strong>.xhtml</strong></code>), и поиск файла <code>index.xhtml</code> выполняется в папке исходного файла (т.е. в корневом веб-узле).</p></li>
+
+                <li>Замените статический текст &quot;[здесь ответ]&quot; значением свойства <code>response</code> для <code>UserNumberBean</code>.  Для этого используйте язык выражения JSF.  Введите следующее (<strong>выделено полужирным шрифтом</strong>).
+
+                    <pre class="examplecode">
+&lt;div id=&quot;left&quot; class=&quot;subContainer greyBox&quot;&gt;
+
+    &lt;h4&gt;<strong>&lt;h:outputText value=&quot;#{UserNumberBean.response}&quot;/&gt;</strong>&lt;/h4&gt;</pre></li>
+
+                <li>Запустите проект (нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) или нажмите F6; fn-F6 в Mac). При появлении в браузере страницы приветствия введите номер и нажмите <code>submit</code>.  Страница ответа будет отображаться следующим образом (выводится на экран, если введен неправильный номер). <br> <img alt="страница отклика отображается в браузере" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/response2.png" title="Просмотрит текущее состояния проекта в браузере">
+
+                    <p>Две ошибки в текущем состоянии страницы ответа:</p>
+
+                    <ol>
+                        <li>Теги HTML <code>&lt;p&gt;</code> отображаются в ответном сообщении.</li>
+                        <li>Кнопка &quot;Назад&quot; не отображается в правильном местоположении.  (Сравните с <a href="#originalVersion">исходной версией</a>.)</li>
+                    </ol>
+
+                    <p>При выполнении следующих двух шагов эти ошибки устраняются.</p></li>
+
+                <li>Установите атрибут <code>escape</code> тега <code>&lt;h:outputText&gt;</code> на <code>false</code>.  Установите курсор между <code>outputText</code> и <code>value</code>, вставьте пробел и нажмите сочетание клавиш CTRL+ПРОБЕЛ для вызова автозавершения кода.  Прокрутите вниз для выбора атрибута <code>escape</code> и проверки документации. <br> <img alt="Рекомендации по автозавершению кода и документация отображаются в редакторе" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/escape-false.png" title="Нажмите Ctrl-Пробел для просмотра возможных значений атрибутов и документации">
+
+                    <p>Как указано в документации, значение <code>escape</code> установлено по умолчанию на <code>true</code>.  Это означает, что символы, которые стандартно анализируются как html, включены в строку, как указано выше.  Установка значения на <code>false</code> означает, что символы, анализируемые как HTML, можно визуализировать как HTML.</p>
+
+                    <p>Нажмите ENTER, затем в качестве значения введите <code>false</code>.</p>
+
+                    <pre class="examplecode">
+&lt;h4&gt;&lt;h:outputText <strong>escape=&quot;false&quot;</strong> value=&quot;#{UserNumberBean.response}&quot;/&gt;&lt;/h4&gt;</pre></li>
+
+                <li>Установите атрибут <code>prependId</code> тега <code>&lt;h:form&gt;</code> на <code>false</code>.  Установите курсор сразу после &quot;<code>m</code>&quot; в <code>&lt;h:form&gt;</code> и вставьте пробел, затем нажмите сочетание клавиш CTRL+ПРОБЕЛ для вызова автозавершения кода.  Прокрутите вниз для выбора атрибута <code>prependId</code> и проверки документации.  Затем нажмите ENTER и в качестве значения введите <code>false</code>.
+
+                    <pre class="examplecode">&lt;h:form <strong>prependId=&quot;false&quot;</strong>&gt;</pre>
+
+                    <p>В JSF применяются внутренние идентификаторы для отслеживания компонентов пользовательского интерфейса.  В текущем примере при проверке исходного кода визуализируемой страницы отображается следующее:</p>
+
+                    <pre class="examplecode">
+&lt;form id=&quot;j_idt5&quot; name=&quot;j_idt5&quot; method=&quot;post&quot; action=&quot;/jsfDemo/faces/response.xhtml&quot; enctype=&quot;application/x-www-form-urlencoded&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;j_idt5&quot; value=&quot;j_idt5&quot; /&gt;
+    &lt;input <strong>id=&quot;j_idt5:backButton&quot;</strong> type=&quot;submit&quot; name=&quot;j_idt5:backButton&quot; value=&quot;Back&quot; /&gt;
+    &lt;input type=&quot;hidden&quot; name=&quot;javax.faces.ViewState&quot; id=&quot;javax.faces.ViewState&quot; value=&quot;7464469350430442643:-8628336969383888926&quot; autocomplete=&quot;off&quot; /&gt;
+&lt;/form&gt;</pre>
+
+                    <p>Идентификатором элемента формы является <code>j_idt5</code>, и этот идентификатор <em>предшествует</em> идентификатору кнопки &quot;Назад&quot;, включенной в форму (<strong>выделено полужирным шрифтом</strong> в приведенном выше примере).  Поскольку кнопка &quot;Назад&quot; зависит от правила стиля <code>#backButton</code> (определенного в <code>stylesheet.css</code>), это правило становится блокированным, если идентификатор JSF предшествует идентификатору кнопки.  Этого можно избежать, если для <code>prependId</code> установить значение <code>false</code>.</p></li>
+
+                <li>Повторно запустите проект (нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) или нажмите F6; fn-F6 в Mac). Введите число на странице приветствия, затем нажмите кнопку &quot;Отправить&quot;.  Теперь на странице ответа отображается ответное сообщение без тегов <code>&lt;p&gt;</code>, и кнопка &quot;Назад&quot; размещена правильно. <br> <img alt="страница отклика отображается в браузере" class="b-all margin-around" id="responsePage" src="../../../images_www/articles/72/web/jsf20-intro/response3.png" title="Просмотрит текущее состояния проекта в браузере"></li>
+
+                <li>Нажмите кнопку &quot;Назад&quot;.  Поскольку текущее значение свойства <code>userNumber</code> для <code>UserNumberBean</code> привязано к компоненту <code>inputText</code> JSF, ранее введенное число теперь отображается в текстовом поле.</li>
+
+                <li>Проверьте протокол сервера в окне вывода среды IDE (CTRL+4; &amp;#8984+4 на компьютере Mac) для определения правильного загаданного числа.
+
+                    <p class="tips">Если по каким-то причинам просмотреть протокол сервера невозможно, откройте его посредством переключения на окно &quot;Службы&quot; (CTRL+5; &amp;#8984+5 на компьютере Mac) и развертывания узла &quot;Серверы&quot;.  Затем щелкните правой кнопкой мыши сервер GlassFish, на котором развернут проект и выберите 'Просмотреть журнал сервера'. Если номер не отображается в журнале сервера, попробуйте повторно выполнить сборку приложения, щелкнув правой кнопкой мыши узел проекта и выбрав 'Очистка и сборка'.</p></li>
+
+                <li>Введите правильное число и нажмите кнопку &quot;Отправить&quot;.  В приложении происходит сравнение введенного числа с текущим сохраненным числом и выводится соответствующее сообщение. <br> <img alt="страница отклика отображается в браузере" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/yay.png" title="При вводе соответствующего числа отображается правильный отклик"></li>
+
+                <li>Нажмите еще раз кнопку &quot;Назад&quot;.  Обратите внимание на то, что ранее введенное число более не отображается в текстовом поле.  Следует помнить о том, что метод <code>getResponse()</code> для <code>UserNumberBean</code> <a href="#getResponse">определяет текущий пользовательский сеанс как недействительный</a> при угадывании правильного числа.</li>
+            </ol>
+        </div>
+        <br>
+        <h2 id="template">Применение шаблона Facelets</h2>
+
+        <p>Facelets сегодня является стандартной технологией отображения для JSF 2.x. Facelets - это облегченная платформа шаблонов, которая поддерживает все компоненты JSF пользовательского интерфейса и используется для построения и визуализации дерева компонентов JSF для просмотра приложений. Кроме того, эта технология обеспечивает поддержку разработки при возникновении ошибок языка выражений за счет возможности проверять трассировку стека, дерево компонентов и контекстные переменные.</p>
+
+        <p>Хотя, возможно, вы об этом не задумывались, файлы <code>index.xhtml</code> и <code>response.xhtml</code>, с которыми вы работаете в этом руководстве, являются страницами Facelets.  Страницы Facelets имеют расширение <code>.xhtml</code> и, поскольку вы работаете в проекте JSF 2.x (библиотеки JSF 2.x включают в себя файлы JAR Facelets), эти представления способны надлежащим образом визуализировать дерево компонентов JSF.</p>
+
+        <p>Целью этого раздела является знакомство с созданием шаблона Facelets.  Для проектов с несколькими представлениями зачастую полезно применять файл шаблона, определяющего структуру и внешний вид для нескольких представлений.  При обслуживании запросов приложение вставляет динамически подготовленное содержимое во временный файл и отправляет результат обратно клиенту.  Хотя данный проект имеет только два представления (страницу приветствия и страницу ответа), можно легко отметить, что большая часть содержимого в них дублируется.  Это дублированное содержимое можно перенести в шаблон Facelets и создать файлы клиента шаблона для обработки содержимого, которое является специфичным для страницы приветствия и страницы ответа.</p>
+
+        <p>В среде IDE существует <a href="jsf20-support.html#faceletsTemplate">мастер создания шаблона Facelets</a> для создания шаблонов Facelets и мастер создания клиента шаблона Facelets для создания файлов, зависящих от шаблона.  В этом разделе описано использование этих мастеров.</p>
+
+        <p><strong class="notes">Примечание.</strong> IDE также предоставляет мастер страниц JSF, что позволяет создавать индивидуальные страницы Facelets для проекта. Подробнее см. в разделе <a href="jsf20-support.html#jsfPage">Поддержка JSF 2.x в IDE NetBeans</a>.</p>
+
+        <ul>
+            <li><a href="#templateFile">Создание файла шаблона Facelets</a></li>
+            <li><a href="#templateClient">Создание файлов клиента шаблона</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="templateFile">Создание файла шаблона Facelets</h3>
+
+            <ol>
+                <li>Создайте файл шаблона Facelets.  Нажмите сочетание клавиш CTRL+N (&amp;#8984+N на компьютере Mac) для открытия мастера создания файлов.  Выберите категорию &quot;JavaServer Faces&quot;, затем &quot;Шаблон Facelets&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+                <li>В поле &quot;Имя файла&quot; введите <code>template</code>.</li>
+
+                <li>Выберите один из восьми стилей размещения и нажмите кнопку &quot;Готово&quot;.  (Вы будете использовать существующую таблицу стилей, так что не имеет значения, какой стиль вы выберете.) <br> <img alt="Стили компоновки представлены в мастере шаблонов Facelets" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/layout-style.png" title="Мастер шаблонов Facelets позволяет сделать выбор из распространенных стилей компоновки"> <br> Мастером будут созданы файл <code>template.xhtml</code> и сопутствующие таблицы стилей на основе выбора, которые будут помещены в папку <code>resources</code> &gt; <code>css</code> в корневом веб-узле проекта.
+
+                    <p class="tips">После завершения выполнения мастера в редакторе открывается файл шаблона.  Для просмотра шаблона в браузере, щелкните правой кнопкой мыши в редакторе и выберите 'Просмотр'.</p></li>
+
+                <li>Проверьте разметку файла шаблона. Обратите внимание на следующие моменты.
+
+                    <ul>
+                        <li>Библиотека тегов <code>facelets</code> объявлена в теге <code>&lt;html&gt;</code> страницы.  Библиотека тегов имеет префикс <code>ui</code>.
+
+                            <pre class="examplecode" style="width:639px">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;</strong>
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;</pre></li>
+
+                        <li>На странице Facelets используются теги <code>&lt;h:head&gt;</code> и <code>&lt;h:body&gt;</code> вместо тегов HTML <code>&lt;head&gt;</code> и <code>&lt;body&gt;</code>.  При использовании этих тегов у Facelets появляется возможность создания дерева компонентов, которое включает в себя всю страницу.</li>
+
+                        <li>Страница ссылается на таблицы стилей, которые также создаются при завершении выполнения мастера.
+
+                            <pre class="examplecode" style="width:639px">
+&lt;h:head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    <strong>&lt;link href=&quot;./resources/css/default.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;</strong>
+    <strong>&lt;link href=&quot;./resources/css/cssLayout.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;</strong>
+    &lt;title&gt;Facelets Template&lt;/title&gt;
+&lt;/h:head&gt;</pre></li>
+
+                        <li>Теги <code>&lt;ui:insert&gt;</code> используются в теле страницы для каждого раздела, связанного с выбранным стилем размещения.  Каждый тег <code>&lt;ui:insert&gt;</code> имеет атрибут <code>name</code>, определяющий раздел.  Например:
+
+                            <pre class="examplecode" style="width:639px">
+&lt;div id=&quot;top&quot;&gt;
+    <strong>&lt;ui:insert name=&quot;top&quot;&gt;Top&lt;/ui:insert&gt;</strong>
+&lt;/div&gt;</pre></li>
+                    </ul>
+                </li>
+
+                <li>Повторно проверьте страницу <a href="#staticPage">приветствия</a> и страницу <a href="#responsePage">ответа</a>.  Содержимым, которое изменяется на этих страницах, является только заголовок и текст в сером квадрате.  Следовательно, шаблон может включать в себя все остальное содержимое.</li>
+
+                <li>Замените все содержимое файла шаблона содержимым, приведенным ниже.
+
+                    <pre class="examplecode">
+&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;
+
+    &lt;h:head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+        &lt;link href=&quot;css/stylesheet.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+        &lt;title&gt;&lt;ui:insert name=&quot;title&quot;&gt;Facelets Template&lt;/ui:insert&gt;&lt;/title&gt;
+    &lt;/h:head&gt;
+
+    &lt;h:body&gt;
+
+        &lt;div id=&quot;left&quot;&gt;
+            &lt;ui:insert name=&quot;box&quot;&gt;Box Content Here&lt;/ui:insert&gt;
+        &lt;/div&gt;
+
+    &lt;/h:body&gt;
+
+&lt;/html&gt;</pre>
+
+                    Приведенный выше код реализует следующие изменения.
+
+                    <ul>
+                        <li>Файл <code>stylesheet.css</code> проекта заменяет ссылки на таблицу стилей шаблона, созданные в мастере.</li>
+
+                        <li>Все теги <code>&lt;ui:insert&gt;</code> (вместе с тегами <code>&lt;div&gt;</code>) удаляются за исключением одного с именем <code>box</code>.</li>
+
+                        <li>В теги <code>&lt;ui:insert&gt;</code> вставляется заголовок страницы с именем <code>title</code>.</li>
+                    </ul></li>
+
+                <li>Скопируйте в шаблон соответствующий код из файла <code>index.xhtml</code> или файла <code>response.xhtml</code>.  Добавьте содержимое, отображаемое ниже <strong>полужирным шрифтом</strong>, в теги <code>&lt;h:body&gt;</code> файла шаблона.
+
+                    <pre class="examplecode">
+&lt;h:body&gt;
+    <strong>&lt;div id=&quot;mainContainer&quot;&gt;</strong>
+        &lt;div id=&quot;left&quot; <strong>class=&quot;subContainer greyBox&quot;</strong>&gt;
+            &lt;ui:insert name=&quot;box&quot;&gt;Box Content Here&lt;/ui:insert&gt;
+        &lt;/div&gt;
+        <strong>&lt;div id=&quot;right&quot; class=&quot;subContainer&quot;&gt;
+            &lt;img src=&quot;duke.png&quot; alt=&quot;Duke waving&quot; /&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;</strong>
+&lt;/h:body&gt;</pre></li>
+
+                <li>Выполните проект.  При открытии страницы приветствия в браузере измените URL-адрес на следующий:
+
+                    <pre class="examplecode">http://localhost:8080/jsfDemo/faces/template.xhtml</pre>
+
+                    Файл шаблона отображается следующим образом: <br> <img alt="Шаблон Facelets отображается в браузере" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/facelets-template.png" title="Просмотрите шаблон Facelets в браузере">
+                </li>
+            </ol>
+
+            <p>Теперь проект включает в себя файл шаблона, предоставляющий внешний вид и структуру всех представлений.  Теперь можно создавать файлы клиента для вызова шаблона.</p>
+
+
+            <h3 id="templateClient">Создание файлов клиента шаблона</h3>
+
+            <p>Создайте файлы клиента шаблона для страниц приветствия и ответа.  Укажите имя файла клиента шаблона для страницы приветствия <code>greeting.xhtml</code>.  Для страницы ответа &ndash; файл <code>response.xhtml</code>.</p>
+
+            <h4>greeting.xhtml</h4>
+
+            <ol>
+                <li>Нажмите сочетание клавиш CTRL+N (⌘-N на компьютере Mac) для открытия мастера создания файлов. Выберите категорию &quot;JavaServer Faces&quot;, затем &quot;Клиент шаблона Facelets&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+                <li>В поле &quot;Имя файла&quot; введите <code>greeting</code>.</li>
+
+                <li>Нажмите кнопку &quot;Обзор&quot; рядом с полем &quot;Шаблон&quot;, затем в открывшемся диалоговом окне перейдите к файлу <code>template.xhtml</code>, созданному в предыдущем разделе. <br> <img alt="Мастер создания клиентов шаблона Facelets" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/template-client.png" title="Мастер создания клиентов шаблона Facelets"></li>
+
+                <li>Нажмите кнопку &quot;Завершить&quot;. Будет создан новый файл клиента шаблона <code>greeting.xhtml</code>, который откроется в редакторе.</li>
+
+                <li>Проверьте разметку.  Обратите внимание на содержимое, выделенное <strong>полужирным шрифтом</strong>.
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;&gt;
+
+    &lt;body&gt;
+
+        &lt;ui:composition <strong>template=&quot;./template.xhtml&quot;</strong>&gt;
+
+            &lt;ui:define <strong>name=&quot;title&quot;</strong>&gt;
+                title
+            &lt;/ui:define&gt;
+
+            &lt;ui:define <strong>name=&quot;box&quot;</strong>&gt;
+                box
+            &lt;/ui:define&gt;
+
+        &lt;/ui:composition&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+                    Файл клиента шаблона ссылается на шаблон с помощью атрибута <code>template</code> тега <code>&lt;ui:composition&gt;</code>.  Поскольку шаблон содержит теги <code>&lt;ui:insert&gt;</code> для <code>title</code> и <code>box</code>, клиент шаблона содержит теги <code>&lt;ui:define&gt;</code> для этих двух имен.  Содержимое, указываемое в тегах <code>&lt;ui:define&gt;</code>, - это содержимое, вставляемое в шаблон в тегах <code>&lt;ui:insert&gt;</code> соответствующего имени.</li>
+
+                <li>Укажите <code>greeting</code> в качестве заголовка файла.  Внесите следующее изменение, выделенное <strong>полужирным шрифтом</strong>.
+
+                    <pre class="examplecode">
+&lt;ui:define name=&quot;title&quot;&gt;
+    <strong>Greeting</strong>
+&lt;/ui:define&gt;</pre></li>
+
+                <li>Перейдите к файлу <code>index.xhtml</code> (нажмите CTRL+TAB) и скопируйте содержимое, которое обычно появляется в сером квадрате, выведенном на визуализируемой странице.  Затем обратно переключитесь на файл <code>greeting.xhtml</code> и вставьте его в файл клиента шаблона.  (Изменения <strong>выделены полужирным шрифтом</strong>.)
+
+                    <pre class="examplecode">
+&lt;ui:define name=&quot;box&quot;&gt;
+    <strong>&lt;h4&gt;Hi, my name is Duke!&lt;/h4&gt;
+
+    &lt;h5&gt;I'm thinking of a number
+
+        &lt;br/&gt;
+        between
+        &lt;span class=&quot;highlight&quot;&gt;0&lt;/span&gt; and
+        &lt;span class=&quot;highlight&quot;&gt;10&lt;/span&gt;.&lt;/h5&gt;
+
+    &lt;h5&gt;Can you guess it?&lt;/h5&gt;
+
+    &lt;h:form&gt;
+        &lt;h:inputText size=&quot;2&quot; maxlength=&quot;2&quot; value=&quot;#{UserNumberBean.userNumber}&quot; /&gt;
+        &lt;h:commandButton id=&quot;submit&quot; value=&quot;submit&quot; action=&quot;response&quot; /&gt;
+    &lt;/h:form&gt;</strong>
+&lt;/ui:define&gt;</pre></li>
+
+                <li>Объявите библиотеку тегов HTML JSF для файла.  Установите курсор на один из тегов, помеченных флагом ошибки (любой тег с префиксом &quot;<code>h</code>&quot;), и нажмите сочетание клавиш CTRL+ПРОБЕЛ.  Затем выберите тег из списка предложений автозавершения кодов.  Пространство имен библиотеки тегов добавляется к тегу <code>&lt;html&gt;</code> файла (выделено ниже <strong>полужирным шрифтом</strong>), и указания на ошибки исчезают.
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre>
+
+                    <p class="tips">При установке курсора после &quot;<code>m</code>&quot; в <code>&lt;h:form&gt;</code> и нажатии сочетания клавиш CTRL+ПРОБЕЛ к файлу автоматически добавляется пространство имен.  Если при нажатии сочетания клавиш CTRL+ПРОБЕЛ доступен только один логический параметр, он немедленно применяется к файлу.  Библиотека тегов JSF автоматически объявляется при вызове автозавершения кода в тегах.</p>
+                </li>
+            </ol>
+
+            <h4>response.xhtml</h4>
+
+            <p>Поскольку проект уже содержит файл с именем <code>response.xhtml</code> и известно, как теперь должен выглядеть файл клиента шаблона, измените существующий файл <code>response.xhtml</code>, чтобы получить соответствующий файл клиента шаблона.  (В целях данного руководства просто скопируйте и вставьте предоставленный код.)</p>
+
+            <ol>
+                <li>Откройте файл <code>response.xhtml</code> в редакторе.  (Если он уже открыт, нажмите CTRL+TAB и выберите его). Замените содержимое всего файла нижеприведенным кодом.
+
+                    <pre class="examplecode">
+&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;
+
+    &lt;body&gt;
+
+        &lt;ui:composition template=&quot;./template.xhtml&quot;&gt;
+
+            &lt;ui:define name=&quot;title&quot;&gt;
+                Response
+            &lt;/ui:define&gt;
+
+            &lt;ui:define name=&quot;box&quot;&gt;
+                &lt;h4&gt;&lt;h:outputText escape=&quot;false&quot; value=&quot;#{UserNumberBean.response}&quot;/&gt;&lt;/h4&gt;
+
+                &lt;h:form prependId=&quot;false&quot;&gt;
+
+                    &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; action=&quot;greeting&quot; /&gt;
+
+                &lt;/h:form&gt;
+            &lt;/ui:define&gt;
+
+        &lt;/ui:composition&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+                    Обратите внимание на то, что файл идентичен файлу <code>greeting.xhtml</code>, за исключением содержимого, указанного в тегах <code>&lt;ui:define&gt;</code> для <code>title</code> и <code>box</code>.</li>
+
+                <li>В дескрипторе развертывания <code>web.xml</code> проекта измените запись файла приветствия таким образом, чтобы при запуске приложения открывалась страница, представленная файлом <code>greeting.xhtml</code>. <br><br> В окне 'Проекты' дважды щелкните 'Файлы конфигурации' > <code>web.xml</code>, чтобы открыть его в редакторе. На вкладке &quot;Страницы&quot; измените поле &quot;Файлы приветствия&quot; на <code>faces/greeting.xhtml</code>. <br> <img alt="Интерфейс дескриптора развертывания" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/welcome-files.png" title="Измените запись &apos;Файлы приветствия&apos; в дескрипторе развертывания"></li>
+
+                <li>Выполните проект и посмотрите, как он выглядит в браузере.  Нажмите F6 (fn-F6 в Mac) или нажмите кнопку 'Запустить проект'( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) на главной панели инструментов. Проект будет развернут на сервере GlassFish и открыт в браузере.</li>
+            </ol>
+
+            <p>При использовании шаблона Facelets и файлов клиента шаблона поведение приложения не меняется.  Выделив повторяющийся код на страницах приветствия и ответа приложения, можно уменьшить размер приложения и устранить возможность написания повторяющегося кода, если впоследствии будут добавляться другие страницы.  Это позволяет сделать разработку более эффективной и упростить управление при работе с большими проектами.</p>
+        </div>
+
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20JSF%202.0">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Дополнительные сведения</h2>
+
+        <p>Подробнее о JSF 2.x см. в следующих ресурсах.</p>
+
+        <div class="indent">
+            <h3>Статьи и учебные курсы по NetBeans</h3>
+
+            <ul>
+                <li><a href="jsf20-support.html">Поддержка JSF 2.x в IDE NetBeans</a></li>
+                <li><a href="jsf20-crud.html">Создание приложения JavaServer Faces 2.x CRUD на основе базы данных</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum Toys &ndash; полный пример приложения JSF 2.0</a></li>
+                <li><a href="../javaee/javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+                <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+
+            <h3>Внешние ресурсы</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">Технология JavaServer Faces</a> (официальная домашняя страница)</li>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr314/index.html">Спецификация JSR 314 для JavaServer Faces 2.0</a></li>
+                <li><a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop.htm">Учебный курс по Java EE 7. Глава 12. Разработка по технологии JavaServer Faces</a></li>
+                <li><a href="http://javaserverfaces.dev.java.net/">GlassFish Project Mojarra</a> (официальный пример реализации JSF 2.х)</li>
+                <li><a href="http://forums.oracle.com/forums/forum.jspa?forumID=982">Интернет-форум OTN: JavaServer Faces</a></li>
+                <li><a href="http://www.jsfcentral.com/">JSF Central</a></li>
+            </ul>
+
+            <h3>Блоги</h3>
+
+            <ul>
+                <li><a href="http://www.java.net/blogs/edburns/">Эд Бернс (Ed Burns)</a></li>
+                <li><a href="http://www.java.net/blogs/driscoll/">Джим Дрисколл (Jim Driscoll)</a></li>
+            </ul>
+        </div>
+    </body>
+</html>

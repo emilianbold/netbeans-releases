@@ -1,0 +1,318 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Статический анализ кода в редакторе Java IDE NetBeans </title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of static analysis of the java code functionality in the NetBeans IDE."></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Java editor, code analysis, inspections, configurations"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body><a name="top"></a>
+
+<h1>Статический анализ кода в редакторе Java IDE NetBeans </h1>
+ <div class="articledate" style="margin-left: 0px;">Ян Лагода (Jan Lahoda), Алена Сташкова (Alyona Stashkova)</div>
+<p>В редакторе Java IDE NetBeans реализована новая функция статического анализа кода, которая является инструментом для поиска возможных ошибок и обнаружения несогласованностей в исходном коде. </p>
+<p>В данном учебном курсе описано выполнение статического анализа кода Java с помощью FindBugs и подсказок Java NetBeans без непосредственного запуска приложений.</p>
+
+<h3>Содержание</h3>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="Содержимое этой страницы применимо к IDE NetBeans 8.0" />
+
+        <ul class="toc">
+            <li><a href="#setup">Установка среды учебного курса</a></li>
+			
+			<li><a href="#config">Использование настроек</a>
+			<ul>
+			<li><a href="#all">Выполнение всех средств анализа</a></li>
+			<li><a href="#hints">Проверка кода Java по подсказкам Java NetBeans</a></li>
+			<li><a href="#fb">Поиск возможных проблем в коде Java с помощью Findbugs</a></li>
+			<li><a href="#default">Настройка конфигурации по умолчанию</a></li>
+			</ul>
+			</li>
+			<li><a href="#create">Создание и удаление конфигурации</a></li>
+			<li><a href="#inspect">Выполнение отдельных проверок</a></li>
+			
+			<li><a href="#summary">Заключение</a></li>
+            <li><a href="#seealso">Дополнительные сведения</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Требования</h2>
+        <p><strong>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработки приложений на языке Java</a> (JDK)</td>
+                    <td class="tbltd1">Версия 7 и более поздние версии</td>
+                </tr>
+				<tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/library.zip" target="_blank">library.zip</a></td>
+                    <td class="tbltd1">проект NetBeans</td>
+                </tr>
+				<tr>
+                    <td class="tbltd1"><a href="http://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.0/jsr305-2.0.0.jar">jsr305-2.0.0.jar</a></td>
+                    <td class="tbltd1">Запрос спецификации Java предназначен для улучшения эффективности инструментов статического анализа</td>
+                </tr>
+                
+            </tbody>
+        </table>
+<p class="notes"><b>Примечание.</b> Файл <tt>jsr305-2.0.0.jar</tt> включен в архив <tt>library.zip</tt> только для выполнения заданий данного практического руководства. </p>
+<p>При работе с другими проектами NetBeans файл <a href="http://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.0/jsr305-2.0.0.jar">jsr305-2.0.0.jar</a> необходимо загрузить отдельно и добавить в папку 'Библиотеки' проекта в IDE следующим образом:</p>
+  <ol>
+<li>Щелкните правой кнопкой мыши папку 'Библиотеки' и выберите 'Добавить файл JAR/папку' во всплывающем меню. </li>
+<li>В диалоговом окне 'Добавить файл JAR/папку' укажите путь к загруженному файлу <tt>jsr305-2.0.0.jar</tt> и щелкните 'Открыть'. 
+  <p class="align-center"><img alt="добавлен файл jsr305-2.0.0.jar" border="1/" src="../../../images_www/articles/80/java/code-inspect/jar.png"></p></li>
+</ol>
+        
+<a name="setup"></a>
+<h2>Установка среды учебного курса</h2>
+<p>Кроме требуемого программного обеспечения, перечисленного выше, необходимо установить на компьютер нижеперечисленные программы.</p>
+<ul>
+<li>Файл <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/library.zip" target="_blank">library.zip</a> необходимо разархивировать в папку проекта NetBeans и открыт в IDE NetBeans.</li>	
+
+<li><a name="plugin"></a>Подключаемый модуль FindBugs необходимо загрузить и установить в IDE NetBeans следующим образом:
+  <ol>
+<li>Выберите 'Источник' > 'Проверка' в главном меню IDE.</li>
+<li>В диалоговом окне &quot;Проверка&quot; щелкните &quot;Установить&quot;. 
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/inspect.png" rel="lytebox" title="Диалоговое окно &apos;Проверка&apos; - щелкните, чтобы увеличить"> <img alt="Диалоговое окно &apos;Проверка&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/inspect-small.png"></a></p></li>
+<li>В диалоговом окне 'Программа установки' щелкните 'Далее', чтобы продолжить установку.
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/plugin.png" rel="lytebox" title="Усатановка подключаемого модуля - щелкните, чтобы увеличить"> <img alt="Установка подключаемого модуля" border="1/" src="../../../images_www/articles/80/java/code-inspect/plugin-small.png"></a></p></li>
+<li>Прочтите лицензионное соглашение, выберите положение лицензионного соглашения и щелкните 'Установить'.</li> 
+<li>По завершении установки нажмите кнопку &quot;Готово&quot;.</li>
+</ol></li>
+</ul>
+<a name="config"></a>
+<h2>Использование заранее определенных настроек</h2>
+<p>При проверке кода в IDE NetBeans можно использовать заранее определенные конфигурации:</p>
+<ul>
+			<li><a href="#all">Все средства анализа</a></li>
+			<li><a href="#hints">Подсказки Java NetBeans</a></li>
+			<li><a href="#fb">FindBugs</a></li>
+			<li><a href="#default">По умолчанию</a></li>
+			
+</ul>
+
+        <a name="all"></a>
+        <h3>Выполнение всех средств анализа</h3> 
+        <p>Конфигурация <tt>Все средства анализа</tt> развертывает все инструменты статического анализа кода, доступные в IDE.</p>
+		<p><b>Для запуска конфигурации <tt>Все анализаторы</tt> выполните следующие шаги:</b></p>
+		<ol>
+           <li>Выберите 'Источник' > 'Проверка' на главной панели инструментов IDE.</li>
+           <li>В раскрывающемся списке 'Область' диалогового окна 'Проверка' выберите <tt>Текущий проект (библиотека)</tt>.</li>
+           <li>В раскрывающемся списке 'Конфигурация' выберите конфигурацию <tt>Все средства анализа</tt>.
+             <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/allconfig.png" rel="lytebox" title="Выбрана конфигурация &apos;Все средства анализа&apos; - нажмите, чтобы увеличить"> <img alt="Выбрана конфигурация &apos;Все средства анализа&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/allconfig-small.png"></a></p>
+		  <p class="notes"><b>Примечание.</b> Необходимо установить подключаемый модуль <a href="#plugin">FindBugs</a> для запуска этой конфигурации в первый раз.</p></li>
+           <li>Нажмите кнопку &quot;Проверить&quot;.<br /> Результаты анализа отображаются в окне 'Инспектор' в представлении дерева слева.
+		     <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/all.png" rel="lytebox" title="Запущена конфигурация &apos;Все средства анализа&apos; - нажмите, чтобы увеличить"> <img alt="Запущена конфигурация &apos;Все средства анализа&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/all-small.png"></a></p>
+		   Описание текущего выбранного результата в представлении дерева отображается справа. 
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/alldescription.png" rel="lytebox" title="Описание - Щелкните для увеличения"> <img alt="Описание" border="1/" src="../../../images_www/articles/80/java/code-inspect/alldescription-small.png"></a></p>
+		   
+		   <p class="notes"><b>Примечание.</b> Если вы хотите оставить некоторую часть кода, которая описана в отчете как содержащая ошибки без изменений, IDE позволяет подавить предупреждения для этого кода, чтобы оставить его без изменений. Можно дважды щелкнуть предупреждение в представлении дереве в окне 'Инспектор', чтобы перейти в редактор исходного кода. Нажмите Alt-Enter, нажмите на черную стрелку, указывающую вправо в конце отображаемой подсказки и выберите <tt>SuppressWarning - <i>(имя предупреждения)</i></tt>.</p>
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/suppress.png" rel="lytebox" title="Подавление предупреждения - щелкните, чтобы увеличить"> <img alt="Подавление предупреждения" border="1/" src="../../../images_www/articles/80/java/code-inspect/suppress-small.png"></a></p>
+           </li>
+       
+	   </ol>
+	   
+	   
+         <a name="hints"></a>
+		<h3>Проверка кода Java по подсказкам Java NetBeans</h3>
+		<p>Конфигурация <tt>Подсказки Java NetBeans</tt>, доступная в IDE, позволяет проверить, удовлетворены ли заранее определенные правила стандартов написания кода рассматриваемым исходным кодом. Другими словами, он применяет набор подсказок Java NetBeans (также называется проверками кода) к исходным файлам Java.</p>
+		<p><b>Для запуска конфигурации <tt>Подсказки Java NetBeans</tt> выполните следующие шаги:</b></p>
+		<ol>
+		<li>Выберите 'Источник' > 'Проверка' на главной панели инструментов IDE.</li>
+		<li>В раскрывающемся списке 'Область' диалогового окна 'Проверка' выберите <tt>Открыть проект</tt> (если имеется только одна <tt>библиотека</tt> проект будет открыт в среде IDE) or <tt>Текущий проект (библиотека)</tt>.
+		<p class="notes"><b>Примечание.</b> Можно определить область (файлы. пакеты или проекты) для конфигурации <tt>Подсказки Java NetBeans</tt>.</p>
+		</li>
+		<li>Выберите переключатель 'Конфигурация' и выберите <tt>Подсказки Java NetBeans</tt> в раскрывающемся списке.
+		 <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/hints.png" rel="lytebox" title="Выбор подсказок Java NetBeans - щелкните, чтобы увеличить"> <img alt="Выбор подсказок Java NetBeans" border="1/" src="../../../images_www/articles/80/java/code-inspect/hints-small.png"></a></p> </li>
+		<li>Нажмите кнопку &quot;Проверить&quot;.<br /> В среде IDE отображается представление дерева с результатами анализа с конфигурацией <tt>Подсказки Java NetBeans</tt> в окне 'Инспектор'.
+		<p class="align-center"><img alt="Запущена конфигурация &apos;Подсказки Java NetBeans&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/hintsconfig.png"></p></li>
+		<li>В окне 'Инспектор' нажмите кнопку <a href="#categorize">Категоризировать</a> на панели инструментов слева для просмотра проблем, сгруппированных в категории. 
+		<p class="align-center"><img alt="Найденные проблемы, сгруппированные в категории" border="1/" src="../../../images_www/articles/80/java/code-inspect/catview.png"></p>		
+		В следующей таблице перечислены команды, доступные в окне 'Инспектор'.  
+		    <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col">Значок</th>
+                        <th class="tblheader" scope="col" style="width:110px">Имя</th>
+                        <th class="tblheader" scope="col">Функция</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="Значок &apos;Обновить&apos;" src="../../../images_www/articles/80/java/code-inspect/refreshbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>Обновить</strong></td>
+                        <td class="tbltd1">Отображается обновленный список результатов статического анализа. </td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="Значок &apos;Предыдущий&apos;" src="../../../images_www/articles/80/java/code-inspect/upbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>Предыдущая проблема</strong></td>
+                        <td class="tbltd1">Отображается предыдущая проблема в списке результатов статического анализа.</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="Значок &apos;Далее&apos;" src="../../../images_www/articles/80/java/code-inspect/downbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>Следующая проблема</strong></td>
+                        <td class="tbltd1">Отображается следующая проблема в списке результатов статического анализа.</td>
+                    </tr>					
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="Значок &apos;Категоризировать&apos;" src="../../../images_www/articles/80/java/code-inspect/categorizebutton.png" /></td>
+                        <td class="tbltd1 align-center"><a name="categorize"></a><strong>Категоризировать</strong></td>
+                        <td class="tbltd1">Переключение свернутого представления проблем, обнаруженных в файле, проекте или пакета или категоризированного представления всех обнаруженных проблем. </td>
+                    </tr>
+          </table>
+</li>
+		</ol>
+		
+        <a name="fb"></a>
+		<h3>Поиск возможных проблем в коде Java с помощью Findbugs</h3>		
+		<p>Конфигурация <tt>FindBugs</tt>, доступная в IDE, позволяет найти широкий диапазон возможных проблем в коде. Он вызывает популярный инструмент FindBugs для работы с открытым исходным кодом для анализа кода Java. Создается отчет об ошибках, и он отображается в окне реорганизации в IDE NetBeans, в котором разделяются по категориям все обнаруженные проблемы, и обеспечивается возможность навигации напрямую от ошибок в отчете к подозрительному коду. Также можно прочитать описание ошибок в смежном окне или просмотреть его на странице <a href="http://findbugs.sourceforge.net/bugDescriptions.html">Описание ошибок FindBugs</a>  спомощью указателя в верхней части левого фрейма. </p>
+		<p class="notes"><b>Примечание.</b> Необходимо установить подключаемый модуль <a href="#plugin">FindBugs</a> для запуска этой конфигурации в первый раз.</p>
+		<p><b>Для определения возможных ошибок в коде Java с помощью конфигурации <tt>FindBugs</tt> выполните следующие шаги:</b></p>
+		<ol>
+		<li>Откройте проект <tt>library</tt> в IDE NetBeans и выберите 'Исходный код' > 'Проверка' в главном меню.</li>
+		<li>В раскрывающемся списке 'Область' диалогового окна 'Проверка' выберите <tt>Текущий проект (библиотека)</tt>.
+		<p class="notes"><b>Примечание.</b> Можно проверить файлы, пакеты или проекты с помощью конфигурации <tt>FindBugs</tt>.</p></li>
+		<li>В диалоговом окне 'Проверка' выберите конфигурацию <tt>FindBugs</tt>.
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fb.png" rel="lytebox" title="Выбрана конфигурация &apos;FindBugs&apos; - щелкните, чтобы увеличить"> <img alt="Выбрана конфигурация &apos;FindBugs&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/fb-small.png"></a></p></li>
+		<li>Щелкните кнопку 'Инспектор' для запуска статического анализа кода.<br /> Результат статического анализа кода отображается в окне 'Инспектор' ниже редактора исходного кода.<br> Описание выбранной проблемы отображается в фрейме справа.
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/inspector.png" rel="lytebox" title="Окно &apos;Инспектор&apos; - нажмите, чтобы увеличить"> <img alt="Окно реорганизации" border="1/" src="../../../images_www/articles/80/java/code-inspect/inspector-small.png"></a></p></li>
+		<li>В качестве альтернативы нажмите кнопку <a href="#categorize">Категоризировать</a> на панели инструментов слева для просмотра проблем, сгруппированных в категории. 
+		  <p class="align-center"><img alt="Найденные проблемы, сгруппированные в категории" border="1/" src="../../../images_www/articles/80/java/code-inspect/fbcat.png"></p></li>
+		
+		</ol>
+		<p class="notes"><b>Примечания</b></p>
+		<ul>
+		<li>Если дважды щелкнуть проблему в развернутом списке, в IDE отображается указанная в отчете проблема в редакторе исходного кода. <br /> Нажмите Alt-Enter для просмотра описания проблемы в исходном коде.
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/source-editor.png" rel="lytebox" title="Описанная в отчете проблема в редакторе исходного кода - щелкните, чтобы увеличить"> <img alt="Описанная в отчете проблема в редакторе исходного кода" border="1/" src="../../../images_www/articles/80/java/code-inspect/source-editor-small.png"></a></p></li>
+		<li>Возможные проблемы выделены в коде значком восклицательного знака (<img alt="значок восклицательного знака" src="../../../images_www/articles/80/java/code-inspect/exclamation.png" />) на левой границе редактора исходного кода.</li>
+		</ul>
+		
+		<p><b>Для включения FindBugs в редакторе Java выполните следующие шаги:</b></p>
+		<ol>
+		<li>Выберите 'Сервис' > 'Параметры' на главной панели инструментов IDE.</li>
+		<li>Перейдите на вкладку 'Редактор' и выберите 'Подсказки'. </li>
+		<li>Выберите <tt>FindBugs</tt> в раскрывающемся списке 'Язык'. 
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fb-editor.png" rel="lytebox" title="Включение FindBugs в редакторе исходного кода - щелкните, чтобы увеличить"> <img alt="Включение FindBugs в редакторе исходного кода" border="1/" src="../../../images_www/articles/80/java/code-inspect/fb-editor-small.png"></a></p></li>
+		<li>Выберите 'Выполнить FindBugs' в параметре 'Редактор'.</li>
+		<li>Нажмите кнопку &quot;ОК&quot;.<br /> Если сейчас нажать Alt-Enter в исходном коде, где сообщается о проблеме, и щелкнуть черную стрелку в конце отображаемой подсказки, в IDE показываются некоторые варианты исправления возможных проблем.
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fbenabled.png" rel="lytebox" title="Включение FindBugs в редакторе исходного кода - щелкните, чтобы увеличить"> <img alt="FindBugs включен в редакторе исходного кода" border="1/" src="../../../images_www/articles/80/java/code-inspect/fbenabled-small.png"></a></p></li>
+		</ol>
+		 <a name="default"></a>
+        <h3>Настройка конфигурации по умолчанию</h3>
+        <p>Во время работы над кодом может потребоваться настроить заранее определенную конфигурацию, которая включает в себя собственные подсказки Java NetBeans или ошибки FindBugs.</p>		
+<p><b>Для персонализации заранее настроенной конфигурации <tt>По умолчанию</tt> в соответствии с требованиями, выполните следующие шаги:</b></p>
+<ol>
+<li>Выберите 'Источник' > 'Проверка' на главной панели инструментов IDE.</li>
+<li>В диалоговом окне 'Проверка' выберите переключатель 'Конфигурация' и выберите конфигурация <tt>по умолчанию</tt>.
+<li> Нажмите Управлять.<br /> IDE отображает диалоговое окно 'Конфигурации'.
+<p class="align-center">
+	      <img alt="Диалоговое окно &apos;Конфигурация&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/configurations-db.png"></p></li>
+<li>Убедитесь, что в раскрывающемся списке 'Конфигурация' выбрано <tt>По умолчанию</tt> . </li>
+<li>В раскрывающемся списке 'Средство анализа' выберите средство анализа <tt>Соответствие профилей JRE 8</tt>, <tt>Подсказки Netbeans Java</tt> или <tt>FindBugs</tt>.</li>
+<li>В зависимости от выбранного средства анализа в предыдущем шаге выберите профиль, проверки или ошибки, которые необходимо включить в конфигурацию <tt>по умолчанию</tt>. 
+  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/select-inspections.png" rel="lytebox" title="Выбор проверок - Щелкните для увеличения"> <img alt="Выбор проверок" border="1/" src="../../../images_www/articles/80/java/code-inspect/select-inspections-small.png"></a></p></li>
+<li>Нажмите ОК, чтобы сохранить конфигурацию <tt>По умолчанию</tt>.</li>
+</ol>	
+
+		<a name="create"></a>
+<h2>Создание и удаление конфигурации</h2>
+<p>Пользователи могут создавать и удалять свои собственные конфигурации, которые будут использоваться в статическом анализе кода Java.</p>	
+<p><b>Для создания конфигурации выполните следующие шаги:</b> </p>
+<ol>
+		<li>Выберите 'Источник' > 'Проверка' на главной панели инструментов IDE.</li>
+		<li>В диалоговом окне 'Проверка' выберите переключатель 'Конфигурация' и выберите конфигурация <tt>по умолчанию</tt>.
+        <li> Нажмите Управлять.</li>
+		<li>В диалоговом окне 'Конфигурация' щелкните черную стрелку в конце раскрывающегося списка 'Конфигурация' и выберите 'Создать'. 
+		<p class="align-center">
+  <img alt="Создание конфигурации" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig.png"></p>
+         Создается конфигурация <tt>newConfig</tt> и добавляется в раскрывающийся список 'Конфигурации'. 
+		 <p class="align-center">
+  <img alt="newConfig в списке &apos;Конфигурация&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig-created.png"></p></li>
+		<li>В раскрывающемся списке 'Средство анализа' выберите <tt>Соответствие профилей JRE 8</tt>, <tt>Подсказки Netbeans Java</tt> или <tt>FindBugs</tt>.</li>
+		<li>Укажите профиль, проверки или ошибки для включения в вашу конфигурацию. </li>
+		<li>Нажмите ОК, чтобы сохранить правки и закрыть диалоговое окно 'Конфигурацию'.<br /> Созданная конфигурация <tt>newConfig</tt> доступна в раскрывающемся списке 'Конфигурация' в диалоговом окне 'Инспектор'.
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/newconfig-inspect.png" rel="lytebox" title="Создана новая конфигурация - щелкните, чтобы увеличить"> <img alt="Создана новая конфигурация" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig-inspect-small.png"></a></p></li>
+</ol>
+<p class="notes"><b>Примечание.</b> Чтобы переименовать конфигурацию, выберите конфигурацию <tt>newConfig</tt> в раскрывающемся списке 'Конфигурация', щелкните черную стрелку в конце раскрывающегося списка 'Конфигурация' и выберите 'Переименовать'. Введите новое имя (например, <tt>renamedConfig</tt>) и нажмите клавишу Enter, чтобы сохранить правки.</p>
+<p class="align-center">
+  <img alt="newConfig переименован" border="1/" src="../../../images_www/articles/80/java/code-inspect/renamedconfig.png"></p>
+  <p><b>Для удаления конфигурации выполните следующие шаги:</b> </p>
+<ol>
+		<li>Выберите 'Источник' > 'Проверка' на главной панели инструментов IDE.</li>
+		<li>В диалоговом окне 'Проверка' нажмите переключатель 'Конфигурация' и выберите конфигурацию для удаления (в этом примере <tt>renamedConfig</tt>).
+        <li> Нажмите Управлять.</li>
+		<li>В диалоговом окне 'Конфигурации' щелкните черную стрелку в конце раскрывающегося списка 'Конфигурация' и выберите 'Удалить'.
+		<p class="align-center">
+  <img alt="Удаление renamedConfig" border="1/" src="../../../images_www/articles/80/java/code-inspect/delete.png"></p></li>
+  <li>В диалоговом окне 'Удалить конфигурацию' щелкните 'Да', чтобы подствердить удаление конфигурации.
+  <p class="align-center"><img alt="Подтверждение удаления renamedConfig" border="1/" src="../../../images_www/articles/80/java/code-inspect/delete-confirm.png"></p>
+  Конфигурация <tt>renamedConfig</tt> удалена из списка 'Конфигурации'.
+  <!--<p class="align-center"><a href="../../../images_www/articles/72/java/code-inspect/norenamedconfig.png" rel="lytebox" title="No renamedConfig in the Configurations list- Click to enlarge">
+  <img src="../../../images_www/articles/72/java/code-inspect/norenamedconfig-small.png" alt="No renamedConfig in the Configurations list" border=1/></a></p>--></li>
+</ol>
+
+<p class="notes"><b>Примечание.</b> Lля получения информации о том, как создать модуль NetBeans, который предоставляет одну или несколько подсказок Java NetBeans см. <a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">Учебный курс по модулю подсказок Java NetBeans</a>.
+</p>
+
+		<a name="inspect"></a>
+<h2>Выполнение отдельных проверок</h2>
+<p>Исходный код можно проверить на наличие определенной проблемы в с помощью функции статического анализа в IDE NetBeans. </p>
+<p><b>Для выявления конкретного несоответствия или проблемы в исходном коде Java при выполнении одной проверки, выполните следующие шаги:</b></p>
+<ol>
+<li>Выберите 'Источник' > 'Проверка' в главном меню IDE.</li>
+<li>В раскрывающемся списке 'Область' диалогового окна 'Проверка' укажите файл, пакет или проект(-ы), которые требуется проверить. </li>
+<li>Выберите 'Отдельная проверка' и выполните одно из следующих действий:
+  <ul>
+<li>В раскрывающемся списке 'Отдельная проверка' с помощью прокрутки перейдите и выделите <i>одну</i> подсказку Java NetBeans или проблему FindBugs, которые будут использоваться при анализе исходного кода. 
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/single-inspection.png" rel="lytebox" title="Раскрывающийся список &apos;Отдельная проверка&apos; - щелкните, чтобы увеличить"> <img alt="Раскрывающийся список &apos;Отдельная проверка&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/single-inspection-small.png"></a></p></li>
+<li>Щелкните 'Обзор', чтобы открыть диалоговое окно 'Конфигурации', и в раскрывающемся списке 'Средство анализа' укажите средство анализа, выберите профиль (для средства анализа Соответствие профиля JRE 8), <i>одну</i> проверку (для средства анализа NetBeans Java Hints) и <i>одну</i> ошибку (для средства анализа NetBeans Java Hints), которая будет использоваться в анализе исходного кода. Нажмите кнопку 'ОК', чтобы закрыть диалоговое окно 'Конфигурации'.
+  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/hint-inspection.png" rel="lytebox" title="Диалоговое окно &apos;Обзор проверок&apos; - щелкните, чтобы увеличить"> <img alt="Диалоговое окно &apos;Обзор проверок&apos;" border="1/" src="../../../images_www/articles/80/java/code-inspect/hint-inspection-small.png"></a></p></li>
+</ul>
+</li>
+<li>В диалоговом окне 'Проверка' щелкните 'Проверка', чтобы выполнить анализ исходного кода. <br /> После завершения операции 'Проверка', подсказки, которые могут быть применены к коду или проблемам, которые были найдены, отображаются в окне 'Инспектор' ниже редактора исходного кода. </li>
+</ol>
+        <a name="summary"></a>
+<h2>Заключение</h2>
+<p>В этом учебном курсе описываются наиболее распространенные варианты использования функции статического анализа кода в IDE NetBeans. Обратите внимание, что с помощью функции статического анализа кода можно также выполнять пользовательскую реорганизацию в контексте проекта или применять специальные настройки реорганизации к нескольким проектам, открытым в IDE, и т. п. </p>
+
+<p class="align-center"><a href="#top">В начало</a></p>		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Static%20Code%20Analysis%20in%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a></div>
+
+        <br style="clear:both;"/>
+		
+		<a name="seealso"></a>
+        <h2>Дополнительные сведения</h2>
+        
+        <p>Связанные материалы можно найти в следующих документах:</p>
+        <ul>     
+            	
+			<li><a href="code-inspect-screencast.html">Видеообзор функции статического анализа кода в IDE NetBeans</a></li>
+			<li><a href="http://wiki.netbeans.org/Java_Hints">Полный список подсказок Java NetBeans</a></li>
+			<li><a href="http://wiki.netbeans.org/JavaDeclarativeHintsDescriptionSketch">Описание декларативных подсказок Java NetBeans</a></li>
+			<li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">Учебный курс по модулям подсказок Java NetBeans</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">Использование подсказок при анализе и рефакторинге исходного кода</a> в разделе <i>Разработка приложений с помощью NetBeans IDE</i></li>
+			
+			
+			
+          
+			
+        </ul>
+		<p class="align-center"><a href="#top">В начало</a></p>
+</body>
+</html>

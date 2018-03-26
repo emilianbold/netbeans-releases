@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!--
+        
+        Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+        
+        -->
+        <title>ビデオ: NetBeans IDE 8.0の概要</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+        <h1>NetBeans IDE 8.0の概要</h1>
+
+        <p>このビデオでは、NetBeans IDE 8.0で提供される機能の概要が示されます。</p>
+        <p><a href="https://netbeans.org/community/releases/80/">NetBeans IDE 8.0</a>は、最新のJava 8テクノロジ(Java SE 8、Java SE Embedded 8およびJava ME Embedded 8)を完全にサポートしています。また、IDEでは、PrimeFacesを使用したMavenおよびJava EEの新しい機能強化、HTML5(特に、AngularJS)に関する新規ツール、PHPおよびC/C++に対するサポートの向上など様々なことに対応しています。
+        </p>
+        <p><a href="http://bits.netbeans.org/media/nb80_overview_video.mp4">このビデオをダウンロードする</a> [サイズ: 28.7MB]
+        </p>
+
+        <br style="clear: both;">
+
+        <script src="/images_www/js/mediaplayer-5.9/jwplayer.js" type="text/javascript"></script>
+        <div id="player" >
+            <center>
+                <div id="flashContent"></div>
+            </center>
+        </div>
+        <script type="text/javascript">
+            $(function() {
+                var targetFile = 'http://bits.netbeans.org/media/nb80_overview_video.mp4';
+                jwplayer('flashContent').setup({
+                    'id': 'flashContentId',
+                    'width': '960',
+                    'height': '540',
+                    'autostart': 'true',
+                    'file': targetFile,
+                    'controlbar': {position: 'bottom'},
+                    'modes': [
+                        {type: 'html5'},
+                        {type: 'flash', src: '/images_www/js/mediaplayer-5.9/player.swf'},
+                        {type: 'download'}
+                    ]
+                });
+            });
+        </script>
+        <br/>
+
+        <h2>関連リンク</h2>
+        <ul>
+            <li><a href="../../../kb/index.html">NetBeans IDEのチュートリアル</a> </li>
+            <li><a href="../intro-screencasts.html">NetBeans IDEのスクリーンキャスト</a> </li>
+            <li><a href="../../../community/index.html">NetBeansコミュニティ</a> </li>
+        </ul>
+        <div class="feedback-box" style="float: left;"> <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20NetBeans%207.4%20overview%20screencast">ご意見をお寄せください</a> </div>
+        <br class="cear" style="clear:both"/>
+    </body>
+</html>

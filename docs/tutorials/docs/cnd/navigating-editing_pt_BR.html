@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>Tutorial Editando e Navegando em Arquivos de Código-fonte C/C++</TITLE>
+   <meta name="DESCRIPTION" content="Short tutorial that demonstrates editing
+   and navigating C and C++ source files in NetBeans IDE">
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Editando e Navegando em Arquivos de Código-fonte C/C++ - Tutorial do NetBeans IDE</h1>
+<!-- START INTRO  -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+   <p><em>Colaboração de <i>Ann Rice</i> e mantida por <i>Susan Morgan</i><br> Março de 2014</em> [Número da revisão: V8.0]
+</div>
+
+<p>Este tutorial resumido orienta você em algumas funcionalidades de navegação e edição dos arquivos de código-fonte em um projeto C ou C++ no NetBeans IDE.</p>
+<!-- END INTRO -->
+<h3>Conteúdo</h3>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 6.8, 6.9, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.4 e 8.0" />
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#requirements" title="Requisitos">Requisitos</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#project" title="Criando o Projeto de Amostra">Criando o Projeto de Amostra</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#editing" title="Editando Arquivos de Código-fonte C e C++">Editando Arquivos de Código-fonte C e C++</a></td>
+   </tr>
+ <!-- <table cellspacing="0" cellpadding="0">
+  <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#formatting" title="Setting the Formatting Style">Setting
+      the Formatting Style</a></td>
+      </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#folding" title="Folding Blocks of Code in C and C++ Files">
+      Folding Blocks of Code in C and C++ Files</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href=#markoccurrences" title="Using Semantic Highlighting">Using
+      Semantic Highlighting</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#completion" title="Using Code Completion">Using Code
+      Completion</a></td>
+   </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#templates" title="Using Code Templates">Using Code Templates</a></td>
+   </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#pairs" title="Using Pair Completion">Using Pair
+      Completion</a></td>
+   </tr> 
+   </table>
+   -->
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#navigating" title="Navegando em Arquivos de Código-fonte C e C++">Navegando em Arquivos de Código-fonte C e C++</a></td>
+   </tr>
+   <!-- <table cellspacing="0" cellpadding"0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#classes" title="Using the Classes Window">Using the
+      Classes Window</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#navigator" title="Using the Navigator Window">Using the Navigator 
+      Window</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#findusages" title="Finding Class, Method, and Field
+      Usages">Finding Class, Method, and Field Usages</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#callgraph" title="Using the Call Graph">Using the Call
+      Graph</a></td>
+      </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#classes" title="Using Hyperlinks">Using Hyperlinks</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#include" title="Using the Include Hierarchy">Using the
+      Include Hierarchy</a></td>
+   </tr> 
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#type" title="Using the Type Hierarchy">Using the
+      Type Hierarchy</a></td>
+   </tr>
+    </table>
+    -->
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#nextsteps" title="Próximas Etapas">Próximas Etapas</a></td>
+   </tr>
+  
+   
+</table>
+
+<h2><a NAME="requirements"></a>Requisitos</h2>
+<p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Software ou Recurso</th>
+<th class="tblheader" scope="col">Versão Necessária</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html"> versão 7.4 ou 8.0 do NetBeans com o plug-in C/C++</a></td>
+</tr>
+<tr>
+<td class="tbltd1">JDK (Java Developer Kit)</td>
+<td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">versão 7 ou 8</a></td>
+</tr>
+
+</tbody>
+</table>
+<br>
+<p>Consulte as <a href="../../../community/releases/80/install.html">Instruções de Instalação do NetBeans IDE 8.0</a> e a <a HREF="../../../community/releases/80/cpp-setup-instructions.html"> Configuração do NetBeans IDE para o C/C++/Fortran</a><br> para obter informações sobre o download e a instalação do software necessário.</p>
+
+<p><b>Projetos de Amostra</b> 
+</p>
+<p>Apenas deseja brincar com alguns projetos? No IDE, escolha Arquivo > Projeto Novo e, em seguida, abra a categoria Amostras e a subcategoria C/C++. O IDE fornece vários projetos C e C++ de amostra para ajudá-lo a se familiarizar com o IDE. 
+</p>
+<h2><a name="project"></a>Criando o Projeto de Amostra</h2>
+      <p>O NetBeans IDE com o plug-in C/C++ fornece funcionalidades avançadas de edição para modificar o código-fonte. Para explorar essas funcionalidades, usaremos o projeto <tt>Quote</tt>. Caso você ainda não tenha criado esse projeto, faça o seguinte:</p>
+         <ol>
+            <li>Escolha Arquivo > Novo Projeto.</li>            
+            <li>No assistente do projeto, expanda a categoria Amostras e selecione a subcategoria C/C++.</li>            
+            <li>Selecione o projeto <tt>Quote</tt>. Clique em Próximo e, em seguida, Finalizar.
+            </li>
+         </ol>
+      <h2><a name="editing"></a>Editando Arquivos de Código-fonte C e C++</h2>
+
+     
+      <h3><a name="formatting"></a>Definindo o Estilo de Formatação</h3>
+      Você pode utilizar a janela Opções para configurar o estilo de formatação default dos seus projetos C e C++.
+<ol>
+<li>Escolha Ferramentas > Opções.</li>
+<li>Clique em Editor no painel superior da janela.</li>
+<li>Clique na guia Formatação.</li>
+
+<li>Selecione a linguagem C++ da lista drop-down Linguagem, pois o projeto Quote utiliza C++.
+</li>
+<li>Selecione o estilo que deseja definir na lista drop-down Estilo.<br> <img alt="Tela da guia Estilos de Formatação" src="../../../images_www/articles/74/cnd/navigating-editing/formatting_style.png">
+</li>
+<li>Modifique as propriedades de estilo, conforme desejado.</li>
+</ol>
+      <h3><a name="folding"></a>Dobrando Blocos de Código em Arquivos C e C++</h3>
+      <p>
+         Para alguns tipos de arquivos, você pode utilizar a funcionalidade de dobramento de código para contrair blocos de código, de forma que somente a primeira linha do bloco apareça no Editor de Código-fonte.
+      </p>
+      <ol>
+         <li>No projeto da aplicação <tt>Quote_1</tt>, abra a pasta Arquivos do código-fonte e clique duas vezes no arquivo <tt>cpu.cc</tt> para abri-lo no Editor de Código.
+         </li>
+         <li>Clique no ícone para contrair (caixa pequena com sinal de menos) na margem esquerda para dobrar o código de um dos métodos.</li>
+         <li>Passe o mouse sobre o símbolo <tt>{...}</tt> à direita do bloco dobrado para exibir o código no bloco. <br> <img alt="Tela de código dobrado no Editor de Código-fonte" class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/code_folding.png">
+         </li>
+      </ol>
+      <h3><a name="markoccurrences"></a>Utilizando Realce de Semântica</h3>
+      <p>Se essa opção estiver selecionada, quando você clicar em uma classe, função, variável ou macro, todas as ocorrências dessa classe, função, variável ou macro no arquivo atual são realçadas.
+      </p>
+      <ol>
+            <li>Escolha Ferramentas > Opções.</li>
+            <li>Clique em Editor no painel superior da janela.</li>
+            <li>Clique na guia Realce.</li>
+            <li>Certifique-se de que todas as caixas de seleção estejam marcadas.</li>
+            <li>Clique em OK.</li>
+            <li>No arquivo <tt>customer.cc</tt> do projeto <tt>Quote_1</tt>, observe que esses nomes de métodos estão realçados com negrito.</li>
+            <li>Clique em uma ocorrência da classe <tt>Cliente</tt>.
+            </li>
+            <li>Toas as ocorrências da classe <tt>Cliente</tt> no arquivo estão realçadas com um fundo amarelo. A margem da direita também mostra marcações que indicam pontos onde uma ocorrência está localizada no arquivo. As marcações permitem a visualização de quantas ocorrências existem sem rolar o arquivo. É possível clicar nas marcações para saltar às ocorrências que elas representam.<br> <img alt="Tela de código realçado no Editor de Código-fonte" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/highlighting1.png">
+            </li>
+            <li>Para navegar facilmente entre as ocorrências, pressione as teclas Alt+Seta para baixo para ir para a próxima ocorrência e Alt+Seta para cima para ir para a ocorrência anterior.</li>
+            <li>Abra o arquivo <tt>customer.h</tt>, localizado na pasta Cabeçalho e observe que nomes de método estão novamente realçados em negrito.<br> <img alt="Tela do arquivo com métodos realçados no Editor de Código-fonte" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/highlighting2.png">
+            </li>
+    </ol>
+      
+    <h3><a name="completion"></a>Utilizando Autocompletar Código e Documentação</h3>
+      <p>
+      O IDE tem uma funcionalidade dinâmica de autocompletar código C e C++ que permite que você digite um ou mais caracteres e, em seguida, exiba uma lista de possíveis classes, métodos, variáveis, e assim por diante, que podem ser usados para concluir a expressão automaticamente.</p>
+      <p>O IDE também localiza dinamicamente documentações para as classes, funções, métodos e etc. e exibe a documentação em uma janela pop up.</p>
+      <ol>
+         <li>Abra o arquivo <tt>quote.cc</tt> no projeto <tt>Quote_1</tt></li>
+       
+         <li>Na primeira linha em branco do <tt>quote.cc</tt>, digite a letra C em maiúsculo e pressione Ctrl-Espaço. A caixa de autocompletar código exibe uma pequena lista que inclui as classes <tt>Cpu</tt> e <tt>Cliente</tt>. Uma janela de documentação também aparece, mas exibe "Nenhuma documentação encontrada" porque a fonte do projeto não inclui documentação para esse código.</li>
+         <li>Expanda a lista de itens pressionando Ctrl-Espaço novamente. <br> <img alt="Tela da caixa autocompletar código" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_completion1.png">
+         
+         </li>
+         <li>Utilize as teclas de seta ou o mouse para realçar uma função de biblioteca padrão como <tt>calloc</tt> e a janela da documentação exibe a página do manual para essa função se a página do manual está acessível para o IDE.<br> <img alt="Tela da documentação de autocompletar código" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code-completion-documentation.png">
+         </li>
+         <li>Selecione a classe <tt>Cliente</tt> e pressione Enter.
+         </li>
+         <li>Complete a nova instância da classe <tt>Cliente</tt> digitando " <tt>andrew;</tt>". Na próxima linha, digite a letra <tt>a</tt> e pressione Ctrl-Espaço. A caixa de autocompletar código exibe uma lista de opções começando com a letra <tt>a</tt>, tais como argumentos de método, campos de classe e nomes globais, que podem ser acessados no menu de contexto.<br> <img alt="Tela da caixa autocompletar código" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_completion2.png">
+         </li>
+         <li>Clique duas vezes na opção <tt>andrew</tt> para aceitá-la e digite um ponto depois dela. Pressione Ctrl + Espaço e você receberá automaticamente uma lista dos métodos e campos públicos da classe <tt>Cliente</tt>.<br> <img alt="Tela da caixa autocompletar código" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_completion3.png">
+         </li>
+         <li>Delete o código que você adicionou.</li>
+      </ol>
+
+      <h3><a name="documentation"></a>Adicionando Documentação de Códigos-fonte</h3>
+      <p>É possível adicionar comentários ao código para gerar automaticamente documentação para as funções, classes e métodos. O IDE reconhece comentários que utilizam sintaxe Doxygen e gera documentação automaticamente. O IDE também pode gerar automaticamente um bloqueio aos comentários para documentar a função abaixo do comentário.</p>
+    
+      <ol>
+          <li>No arquivo <tt>quote.cc</tt>, coloque o cursor na linha 75 ou na linha abaixo da linha <br> <tt>int readNumberOf(const char* item, int mín, int máx) {</tt>
+          </li>
+           <li>Digite uma barra e dois asteriscos e pressione Enter. O editor insere um comentário doxygen-formatado para a classe <tt>readnumberof</tt>. <br> <img alt="Tela de comentários de Doxygen gerados automaticamente" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_comment.png">
+           </li>
+            <li>Adicione algum texto descritivo para cada uma das linhas @param e salve o arquivo. <br> <img alt="Tela de comentários de Doxygen editados" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_comment_edited.png">
+            </li>
+            <li>Enquanto a classe <tt>readNumberOf</tt> ainda está realçada em amarelo, clique em um dos marcadores de ocorrência na direita para saltar para o local onde a classe é utilizada.
+            </li>
+            <li>Clique na classe <tt>readNumberOf</tt> na linha para qual você saltou e pressione Ctrl-Shift-Espaço para mostrar a documentação recentemente adicionada aos parâmetros.<br> <img alt="Tela da documentação Doxygen exibida" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/doxygen_displayed.png">
+            </li>
+             <li>Clique em qualquer lugar no arquivo para finalizar a janela de documentação, e clique na classe <tt>readNumberOf</tt>.</li>
+             <li>Escolha Código-fonte > Mostrar Documentação para abrir novamente a janela de documentação da classe.</li>
+
+      </ol>
+      <h3><a name="templates"></a>Usando Modelos de Código</h3>
+      <p>O Editor de Código-fonte tem um conjunto de modelos de código personalizáveis para snippets de código C e C++. É possível gerar o snippet de código completo digitando a abreviação e pressionando a tecla Tab. Por exemplo, no arquivo <tt>quote.cc</tt> do projeto <tt>Quote</tt>:
+      </p>
+      <ol>
+         <li>Digite <tt>uns</tt> seguido por uma guia e <tt>uns</tt> expande para <tt>não assinado</tt>.</li>
+         <li>Digite <tt>iff</tt> seguido por uma guia e <tt>iff</tt> expande para <tt>if(exp) {}</tt>.</li>
+         <li>Digite <tt>ife</tt> seguido por uma guia e <tt>ife</tt> expande para <tt>if(exp) {} else {}</tt>.
+         </li>
+         <li>Digite <tt>fori</tt> seguido por uma guia e <tt>fori</tt> expande para <tt>para (int i = 0; i &lt; size; i++) { Object elem = array[i];</tt>.</li>
+
+      </ol>
+      <p class="tips">Para ver todos os modelos do código disponíveis, modifique o código modelos, criar seus próprios modelos de código, ou selecione uma chave diferente para expandir a modelos de código:</p>
+      <ol>
+            <li>
+                      Escolha Ferramentas > Opções.
+            </li>
+            <li>Na caixa de diálogo Opções, selecione Editor e clique na guia Modelos de Código.
+            </li>
+            <li>Selecione o idioma apropriado na lista drop-down de Idiomas.<br> <img alt="Tela da caixa de diálogo Opções" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/code_templates.png"></li>
+</ol>
+      
+      <h3><a name="pairs"></a>Usando Conclusão de Par</h3>
+      <p>Quando você edita os arquivos-fonte C e C++, o Editor de Código-fonte efetua a correspondência "inteligente" de pares de caracteres, como colchetes, parênteses e aspas. Quando você digita um desses caracteres, o Editor de Código-fonte insere automaticamente o caractere de fechamento.
+      </p>
+      <ol>
+         <li>No projeto <tt>Quote_1</tt>, coloque o cursor na linha 115 do arquivo <tt>module.cc</tt> e pressione Retornar para abrir uma linha nova.
+         </li>
+         <li>Digite <tt>enum state {</tt> e pressione Retornar. O colchete de fechamento e o ponto-e-vírgula são adicionados automaticamente e o cursor é colocado na linha entre os colchetes.
+         </li>
+         <li>Digite <tt>inválido=0, com sucesso=1</tt> na linha entre os colchetes para concluir a enumeração.
+         </li>
+         <li>Na linha após o <tt>};</tt> de fechamento da enumeração, digite <tt>if (</tt> e você deverá ver se um parênteses de fechamento foi adicionado automaticamente e o cursor foi colocado entre os parênteses.</li>
+         <li>Digite <tt>v==null</tt> entre os parênteses. Em seguida, digite <tt> {</tt> e a nova linha depois do parêntese à direita. O colchete de fechamento é adicionado automaticamente. </li>
+         <li>Delete o código que você adicionou.</li>
+      </ol>
+    <h3><a name="finding"></a>Localizando Texto em Arquivos do Projeto</h3>
+    <p>Você pode usar a caixa de diálogo Localizar nos Projetos para pesquisar projetos para instâncias de texto especificado ou uma expressão regular.</p>
+    <ol>
+        <li>Abrir a caixa de diálogo Localizar nos Projetos por meio de um dos seguintes procedimentos:
+            <ul>
+            <li>Escolha Editar >Localizar nos Projetos.</li>
+            <li>Clique com o botão direito do mouse no projeto na janela Projetos e escolha Localizar.</li>
+            <li>Pressione Ctrl+Shift+F.</li>
+            </ul>
+        </li>
+        <li>Na caixa de diálogo Localizar nos Projetos, selecione a guia de Pesquisa Default ou a guia Grep. A guia Grep usa o utilitário <tt>grep</tt>, que fornece uma pesquisa mais rápida, principalmente para projetos remoto. <br> <img alt="Tela da caixa de diálogo Localizar nos Projetos" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/find_in_projects.png"></li>
+        <li>Na guia Grep, digite o texto ou expressão regular que você deseja pesquisar, especifique o escopo da pesquisa e o padrão de nome do arquivo e marque a caixa de seleção Abrir em Nova Guia, de forma que você possa salvar várias pesquisas em guias separadas.
+        </li>
+        <li>Clique em Localizar.<br> A guia Resultados da Pesquisa lista os arquivos em que o texto ou expressão regular é encontrado.
+        
+        <p>Os botões da margem esquerda permitem que você altere sua view dos resultados da pesquisa. </p>
+        <img alt="Tela da guia Resultados da Pesquisa" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/find_in_projects2.png"></li>
+        <li>Clique no botão Expandir/Contrair para contrair a lista de arquivos, de forma que só os nomes de arquivo sejam mostrados. Clique nos outros botões para mostrar os resultados da pesquisa, como uma árvore de diretório ou uma lista de arquivos. Estas opções são úteis quando você executa uma pesquisa em vários projetos.</li>
+        <li>Clique duas vezes em um dos itens da lista e o IDE o conduzirá para o local correspondente no editor de código-fonte.</li>
+    </ol>
+      
+      <h2><a name="navigating"></a>Navegando em Arquivos de Código-fonte C e C++</h2>
+      <p>O NetBeans IDE com o plug-in C/C++ fornece funcionalidades avançadas de edição para modificar o código-fonte. Para explorar essas funcionalidades, continue usando o projeto <tt>Quote_1</tt>.
+           
+      <h3><a name="classes"></a>Utilizando a Janela Classes</h3>
+      <p>
+         A janela Classes permite exibir todas as classes do projeto ++ e os membros e campos de cada classe.</p>
+      <ol>
+          <li>Clique na guia Classes para exibir a janela Classes. Se a guia Classes não for exibida, escolha Janela > Classes</li>
+         <li>Expanda o nó <tt>Quote_1</tt> na janela Classes. São listadas todas as classes do projeto.
+         </li>
+         <li>Expanda a classe <tt>Cliente</tt>. <br> <img alt="Tela da guia View da Classe" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/classes_window.png">
+         </li>
+         <li>Clique duas vezes na variável <tt>name</tt> para abrir o arquivo de cabeçalho <tt>customer.h</tt>.</li>
+      </ol>
+      <h3><a name="navigator"></a>Usando a Janela Navegador</h3>
+      <p>A janela Navegador oferece uma view compacta do arquivo selecionado atualmente e simplifica a navegação entre diferentes partes do arquivo. Se a janela do Navegador não for exibida, escolha a janela Navegador > Navegando >para abri-la.
+      </p>
+      <ol>
+      <li>Clique em qualquer parte do arquivo <tt>quote.cc</tt> na janela Editor.</li>
+      <li>Uma view compacta do arquivo é exibida na janela Navegador.<br> <img alt="Tela da janela Navegador" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/navigator_window.png">
+      </li> 
+      <li>Para navegar para um elemento do arquivo, clique duas vezes no elemento na janela Navegador e o cursor na janela Editor se move para esse elemento.
+        </li>
+         <li>Clique com o botão direito no Navegador para escolher uma maneira diferente para classificar os elementos, agrupar os itens ou filtrá-los.</li> 
+      </ol>
+         <p class="tips">Para descobrir o que os ícones no Navegador representam, abra a ajuda on-line do IDE escolhendo Ajuda > Conteúdo de Ajuda e busque por "ícones de navegação" na janela de ajuda. </p>
+          
+     
+      <h3><a name="findusages"></a>Localizando Classe, Método e Usos de Campo</h3>
+      <p>Você pode utilizar a janela Usos para mostrar todo lugar em que uma classe (estrutura), função, variável, macro ou arquivo é usado no código-fonte do projeto.</p>
+      <ol>
+      <li>No arquivo <tt>customer.cc</tt>, clique com o botão direito do mouse na classe <tt>Cliente</tt>, linha 42 e escolha Localizar Usos.
+      </li>
+      <li>Na caixa de diálogo Localizar Usos, clique em Localizar.
+      </li>
+      <li>A janela Usos se abre e exibe todos os usos da classe <tt>Cliente</tt> nos arquivos de código-fonte do projeto.<br> <img alt="Tela da janela Usos" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/usages_window.png">
+        </li>
+         <li>Clique nos botões de seta na margem esquerda para percorrer as ocorrências e mostrá-las no Editor, ou altere entre view lógica e física. Você também pode filtrar as informações usando uma segunda coluna dos botões na margem esquerda.</li>
+</ol>
+      <h3><a name="callgraph"></a>Usando o Gráfico de Chamada</h3>
+      <p>A janela Gráfico de Chamada exibe duas views das relações de chamadas entre as funções no projeto. Uma view em árvore mostra as funções chamadas de uma função selecionada ou as funções que chamam a função selecionada. Uma view gráfica mostra a relação chamada utilizando setas entre as funções chamadas e de chamada.
+      </p>
+      <ol>
+      <li>No arquivo <tt>quote.cc</tt>, clique com o botão direito do mouse na função <tt>main</tt> e escolha Mostrar Gráfico de Chamada.</li>
+      <li>A janela Gráfico de Chamada abre e exibe uma view em árvore e gráfica de todas as funções chamadas da função <tt>principal</tt>.<br> <img alt="Tela da janela Gráfico de Chamada" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/call_graph1.png">
+      <p class="tips">Se não for possível visualizar todas as funções mostradas aqui, clique no terceiro botão no lado esquerdo da janela Gráfico de Chamada para mostrar "quem é chamado para essa função."</p>
+        </li>
+         <li>Expanda o nó <tt>endl</tt> para exibir as funções chamadas por tal função. Observe que o gráfico é atualizado para mostrar as funções chamadas por <tt>endl</tt> também.</li>
+      <li>Clique no segundo botão, chamado Trazer para o Foco no lado esquerdo da janela para focar na função <tt>endl</tt> e, em seguida, clique no quarto botão Quem Chama esta Função para exibir todas as funções que chamam a função <tt>endl</tt>. <br> <img alt="Tela da janela Gráfico de Chamada" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/call_graph2.png">
+      </li>
+      <li>Expanda alguns nós da árvore para ver mais funções.<br> <img alt="Tela da janela Gráfico de Chamada" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/call_graph3.png">
+      </li>
+     </ol>
+         
+      <h3><a name="hyperlinks"></a>Usando Hiperlinks</h3>
+      <p>A navegação de hiperlink permite que você salte da chamada de uma classe, método, variável ou constante para a sua declaração, e da sua declaração para sua definição. Os hiperlinks também permitem que você salte de um método que é substituído para o método que o substitui e vice-versa.
+      </p>
+      <ol>
+         <li>No arquivo <tt>cpu.cc</tt> do projeto <tt>Quote_1</tt>, mova o mouse sobre a linha 37 enquanto o Ctrl estiver pressionado. A função <tt>ComputeSupportMetric</tt> está realçada e uma anotação exibe informações sobre a função.<br> <img alt="Tela da chamada da função com anotação" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks1.png">
+         </li>
+         <li> 
+            Clique no hiperlink e o editor saltará para a definição da função.<br> <img alt="Tela de definição da função" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks2.png">
+         </li>
+         <li>Mova o mouse sobre a definição quanto o Ctrl estiver pressionado e clique no hiperlink. O editor salta para a declaração da função no arquivo de cabeçalho <tt>cpu.h</tt>.<br> <img alt="Tela da declaração da função" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/hyperlinks3.png">
+         </li>
+         <li>Clique na seta da esquerda na barra de ferramentas do editor (segundo botão da esquerda) e o editor salta de volta para a definição no <tt>cpu.cc</tt>.
+         </li>
+         <li>Passe o cursor do mouse sobre o círculo verde na margem esquerda e veja a anotação que indica que este método substitui qualquer outro método.<br> <img alt="Tela de anotação de substituição" class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/overide_annotation.png">
+         </li>
+         <li>Ao clicar no círculo verde para ir para o método substituído, você salta para o arquivo de cabeçalho <tt>module.h</tt>, que mostra um círculo cinza na margem para indicar que o método está substituído.</li>
+         <li>Um clique no círculo cinza e o editor exibe uma lista de métodos que substituíram esse método.<br> <img alt="Tela dos métodos de substituição" class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/overridden_by_list.png">
+         </li>
+         <li>Ao clicar no item <tt>Cpu::ComputeSupportMetric</tt>, você salta de volta para a declaração do método no arquivo de cabeçalho <tt>cpu.h</tt>.</li>
+      </ol>
+      <h3><a name="include"></a>Utilizando a Hierarquia de Inclusão</h3>
+      <p>A janela Hierarquia de Inclusão permite que você inspecione todos os arquivos-fonte e de cabeçalho que são direta ou indiretamente incluídos em um arquivo-fonte ou todos os arquivos de cabeçalho que direta ou indiretamente incluem um arquivo de cabeçalho.
+      </p>
+      <ol>
+         <li>No projeto <tt>Quote_1</tt>, abra o arquivo <tt>module.cc</tt> no Editor de Código-fonte.</li>
+         <li>Clique com o botão direito do mouse na linha <tt>#include "module.h"</tt> no arquivo e escolha Navegar > Exibir Hierarquia de Inclusões.
+         </li>
+         <li>Como default, a janela Hierarquia exibe uma lista sem formatação de arquivos que incluem diretamente o arquivo de cabeçalho. Clique no botão mais à direita na parte inferior da janela para alterar a view em árvore. Clique no segundo botão da direita para alterar a exibição para todos os arquivos que incluem ou são incluídos. Expanda os nós na view em árvore para ver todos os arquivos de código-fonte que incluem o arquivo de cabeçalho.<br> <img alt="Tela da hierarquia de Inclusões" class="b-all margin-around" src="../../../images_www/articles/74/cnd/navigating-editing/includes_hierarchy.png">
+         </li>
+      </ol>
+      <h3><a name="type"></a>Utilizando a Hierarquia de Tipo</h3>
+      <p>A janela Hierarquia de Tipo permite que você inspecione todos os subtipos ou supertipos de uma classe. 
+      </p>
+      <ol>
+      <li>No projeto <tt>Quote_1</tt>, abra o arquivo <tt>module.h</tt>.</li>
+      <li>Clique com o botão direito do mouse na declaração da classe <tt>Módulo</tt> e escolha Navegar > Exibir Hierarquia de Tipo.
+      </li>
+      <li>A janela Hierarquia exibe todos os subtipos da classe Módulo.<br> <img alt="Tela da hierarquia de Tipo" class="b-all margin-around" src="../../../images_www/articles/72/cnd/navigating-editing/type_hierarchy.png">
+      </li>
+      </ol>
+       <h3><a name="nextsteps">Próximas Etapas</a></h3>
+      <p>Consulte <a href="debugging.html">Depurando Projetos C/C++</a> para um tutorial sobre a utilização de algumas das funcionalidades para depurar um projeto C ou C++ no NetBeans IDE.
+      </p>
+  
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Editing%20and%20Navigating%20C/C++%20Source%20Files%20-%20NetBeans%20IDE%207.3%20Tutorial">Enviar Feedback neste Tutorial</a></div>
+
+</body>
+</html>

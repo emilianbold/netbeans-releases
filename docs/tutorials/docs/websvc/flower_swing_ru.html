@@ -1,0 +1,448 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>Создание клиента Swing, веб-служба двоичных данных, часть 6 – учебный курс по IDE NetBeans</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial shows how to create a client for the web service that
+              displays the result in a GUI designed with Swing components.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    <body>
+        <h1>Передача двоичных данных с помощью приложения веб-службы, часть 5: создание клиента Swing</h1>
+        
+        
+        <p>Целью этого упражнения является создание клиента для веб-службы, которая была создана и развернута ранее, с последующим добавлением графического интерфейса пользователя в этот клиент.  Интерфейс служит для вывода на экран изображений, переданных веб-службой в качестве двоичных данных.</p>
+        <p>Полную версию клиента можно загрузить из <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerClient.zip" target="_blank">каталога примеров NetBeans</a>.</p>
+    <p><b>Уроки, представленные в этом учебном курсе</b></p>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3 и 7.4" class="stamp" src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3 и 7.4">
+        <ol>
+            <li><a href="./flower_overview.html">Обзор</a></li>
+            <li><a href="./flower_ws.html">Создание веб-службы</a></li>
+        <li><a href="./flower-code-ws.html">Написание кода веб-службы и ее тестирование</a></li>
+          <li><a href="./flower_wsdl_schema.html">Изменение схемы и файлов WSDL для передачи двоичных данных</a></li>
+          <li> =&gt; Создание клиента Swing</li>
+        </ol>
+    <p><b>Содержание урока</b></p>
+        <ol>
+          <li>
+            <p><a href="#create-client-app">Создание приложения клиента</a></p>
+          </li>
+          <li><a href="#design-jframe">Проектирование JFrame</a></li>
+          <li><p><a href="#bind-jframe">Привязка компонентов JFrame</a></p>
+          <ul>
+          <li><a href="#initialize-components">Инициализация компонентов</a></li>
+          <li><a href="#show-flowers">Изображения цветов</a></li>
+          </ul></li>
+          <li><a href="#code-main-class">Написание кода главного класса</a></li>
+        </ol>
+        
+    <h2><a name="create-client-app"></a> Создание клиента приложения</h2>
+        <p>В этом разделе рассматривается создание веб-приложения.  В рамках приложения выполняется создание клиента, потребляющего веб-службу, которая была создана и изменена в предыдущих учебных курсах. </p>
+    <p><strong>Создание приложения</strong></p>
+        <ol>
+            <li>Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N в Windows и Linux, ⌘-Shift-N в ОС Mac). Откроется мастер создания проекта. </li>
+            <li>Выберите &quot;Приложение Java&quot; в категории &quot;Java&quot;. Нажмите кнопку &quot;Далее&quot;. Появится мастер создания приложения Java.  Введите текст <tt>FlowerClient</tt> в поле &quot;Имя проекта&quot;.  Выберите папку проекта и нажмите кнопку &quot;Готово&quot;.  В среде IDE будет создан новый проект приложения на Java.</li>
+            <li>Щелкните правой кнопкой мыши узел проекта <tt>FlowerClient</tt> и последовательно выберите в контекстном меню команды &quot;Создать&quot; &gt; &quot;Клиент веб-службы&quot;.  Появится мастер создания клиента веб-службы.  </li>           
+          <li>Выберите переключатель &quot;URL-адрес WSDL&quot; и вставьте в соответствующее поле URL-адрес файла WSDL.  По умолчанию URL-адресом является <tt>http://localhost:8080/FlowerAlbumService/FlowerServiceService?wsdl</tt>.  URL-адрес можно найти в браузере, выполнив тестирование веб-службы и заменив текст <tt>?Tester</tt> на <tt>?wsdl</tt> в конце URL-адреса.  Примите все прочие значения по умолчанию, включая пустое имя пакета. <br><img alt="Мастер &amp;quot;Клиента веб-службы&amp;quot;, в котором отображается URL-адрес WSDL" class="margin-around" height="440" src="../../../images_www/articles/73/websvc/flower/ws-client-wiz.png" width="588"></li>
+            <li>Нажмите кнопку &quot;Завершить&quot;. В среде IDE выполняется загрузка файла WSDL, добавление заглушек клиента для взаимодействия с веб-службой, а также добавление узлов в проект приложения на Java в окне &quot;Проекты&quot;. <br><img alt="Представление проекта, в котором отображается новый клиент веб-службы" class="margin-around" height="474" src="../../../images_www/articles/73/websvc/flower/client-generated-sources.png" title="Представление проекта, в котором отображается новый клиент веб-службы" width="360"></li></ol>
+    <h2 id="design-jframe">Разработка формы JFrame</h2>
+                <p>В этом разделе рассматривается добавление формы <tt>JFrame</tt> в веб-приложение и проектирование в рамках этого приложения графического интерфейса пользователя с использованием компонентов Swing.  В заключение описывается привязка компонентов Swing к коду клиента веб-службы.</p>
+                <p class="tips">При отсутствии необходимости самостоятельного проектирования формы JFrame можно загрузить готовый файл JFrame Java <a href="https://netbeans.org/projects/www/downloads/download/webservices%252FFlowerFrame.java" target="_blank">здесь</a>.</p>
+<ol>
+            <li>Щелкните правой кнопкой мыши узел <tt>FlowerClient</tt> и выберите пункт &quot;Создать&quot;, а затем &ndash; &quot;Форма JFrame&quot;.  Присвойте фрейму имя <tt>FlowerFrame</tt>.  Разместите его в пакете <tt>flowerclient</tt>.</li>
+          <li>Фрейм <tt>FlowerFrame</tt> будет открыт в редакторе.  Откройте палитру (если она еще не открыта).  Растяните нижнюю границу фрейма приблизительно на одну треть.<br><img alt="Форма цветов в редакторе в представлении проектирования с открытой палитрой" class="margin-around" height="437" src="../../../images_www/articles/73/websvc/flower/opened-flowerform.png" width="600"></li>
+          <li>Перетащите панель JPanel из раздела &quot;Контейнеры Swing&quot; на палитре в фрейм <tt>FlowerFrame</tt>.  Разверните панель, чтобы она заполнила все пространство фрейма <tt>FlowerFrame</tt>. <br> <img alt="Добавление и расширение JPanel в FlowerFrame" class="margin-around" height="408" src="../../../images_www/articles/73/websvc/flower/add-panel.png" width="587"></li>
+            <li>Щелкните правой кнопкой мыши панель в представлении &quot;Проектирование&quot;.  Выберите в контекстном меню пункт &quot;Изменить имя переменной...&quot;.  Присвойте панели имя <tt>gardenFlowersPanel</tt>.</li>
+            <li>Перетащите метку JLabel из палитры в верхнюю область панели <tt> gardenFlowersPanel</tt>.  Щелкните метку правой кнопкой мыши и измените имя переменной метки на <tt>titleLabel</tt>.  Снова щелкните правой кнопкой мыши метку <tt>titleLabel</tt> и выберите пункт &quot;Изменить текст&quot;.  Измените текст на &quot;Garden Flowers&quot;.  Можно также изучить свойства <tt>titleLabel</tt> и увеличить шрифт.</li>
+            <li>Перетащите группу кнопок в представление &quot;Проектирование&quot;.  Примите имя группы кнопок <tt>buttonGroup1</tt>, заданное по умолчанию.</li>
+            <li>Перетащите четыре переключателя в горизонтальный ряд под меткой <tt>titleLabel</tt>.  В свойствах каждого переключателя укажите, что он является компонентом группы кнопок <tt>buttonGroup1</tt>.  Для других свойств переключателей действительны следующие свойства:
+              <table>
+                  <caption>Переключатели в группе кнопок buttonGroup1</caption>
+                <tbody>
+                  <tr>
+                    <th class="tblheader">Имя переменной</th>
+                    <th class="tblheader">Выбрано</th>
+                    <th class="tblheader">Текст</th>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">asterRadioButton</td>
+                    <td class="tbltd1">true</td>
+                    <td class="tbltd1">Aster</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">honeysuckleRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Honeysuckle</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">roseRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Rose</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">sunflowerRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Sunflower</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+            <li>Перетащите панель с прокруткой в область под переключателями.  Разверните панель, чтобы она заполнила всю область по горизонтали и приблизительно две трети свободной области по вертикали.  Измените имя переменной панели с прокруткой на <tt>mainScrollPane</tt>.</li>
+            <li>Перетащите панели на панель <tt>mainScrollPane</tt>.  Измените имя переменной панели на <tt>mainPanel</tt>. </li>
+            <li>В представление 'Конструирование' щелкните правой кнопкой мыши <tt>mainPanel</tt> и выберите 'Настроить макет' > 'Макет границ'. </li>
+            <li>Перетащите кнопку на панель <tt>mainPanel</tt>.  Поскольку панель <tt>mainPanel</tt> имеет границы, кнопка автоматически заполняет все пространство панели.  Измените имя переменной кнопки на <tt>mainPictureButton</tt>, и введите для кнопки текст &quot;Waiting for picture...&quot;</li>
+            <li>Перетащите еще одну панель с прокруткой в область под панелью <tt>mainScrollPane</tt>.  Разверните новую панель с прокруткой, чтобы она заполнила все свободное пространство.  Измените имя переменной новой панели с прокруткой на <tt>thumbnailScrollPane</tt>.</li>
+            <li>Перетащите панель из палитры на панель <tt>thumbnailScrollPane</tt>.  Измените имя переменной панели на <tt>thumbnailPanel</tt>.  Установите в качестве формата панели <tt>thumbnailPanel</tt> формат сетки.</li>
+            <li>Перетащите четыре кнопки на панель <tt>thumbnailPanel</tt>.  Поскольку панель <tt>thumbnailPanel</tt> имеет формат сетки, кнопки автоматически становятся одинакового размера и полностью заполняют панель.  Свойства кнопок
+              <table>
+                <title>Кнопки на панели thumbnailPanel</title>
+                <tbody>
+                  <tr>
+                    <th class="tblheader">Имя переменной</th>
+                    <th class="tblheader">Текст</th>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">asterButton</td>
+                    <td class="tbltd1">Ожидание...</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">honeysuckleButton</td>
+                    <td class="tbltd1">Ожидание...</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">roseButton</td>
+                    <td class="tbltd1">Ожидание</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">sunflowerButton</td>
+                    <td class="tbltd1">Ожидание</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+            </ol>
+              <p>Форма JFrame готова.  На данный момент файл <tt>FlowerFrame</tt> выглядит следующим образом. <br> <img alt="Завершенный фрейм Flower, в которой отображается текст кнопок вместо изображений" border="1" class="margin-around" height="412" src="../../../images_www/articles/73/websvc/flower/designed-form.png" title="Завершенный фрейм Flower, в которой отображается текст кнопок вместо изображений" width="500"></p>
+              <a name="bind-jframe"></a>
+            <h2>Привязка компонентов JFrame</h2>
+            <p>В этом разделе рассматривается инициализация компонентов в конструкторе и привязка компонентов к прослушивателям.  Прослушиватели используются для вызова кода, который отвечает за отображение цветов.</p>
+<div class="indent">
+            <h3><a name="initialize-components">Инициализация компонентов</h3>
+            <p>В этом разделе описывается заполнение конструктора <tt>FlowerFrame</tt></p>
+<ol>
+            <li>Перейдите в представление &quot;Исходный код&quot; в редакторе.  Найдите начало тела класса <tt>FlowerFrame</tt> и конструктор <tt>FlowerFrame</tt>.<br> <img alt="Исходное представление редактора, в котором отображается пустой конструктор FlowerForm" border="1" class="margin-around" height="197" src="../../../images_www/articles/73/websvc/flower/ff-empty-constructor.png" width="492"></li>
+          
+            <li>В верхней части тела класса фрейма <tt>FlowerFrame</tt> создайте над строкой конструктора массив строк с названиями всех цветов.
+              <pre class="examplecode">protected static final String[] FLOWERS = {"aster", "honeysuckle", "rose", "sunflower"};</pre>
+    </li>            
+            <li>Добавьте между массивом строк FLOWERS и конструктором строку, инициализирующую элемент <tt><a href="http://download.oracle.com/javase/6/docs/api/java/util/Map.html" target="_blank">java.util.Map</a></tt> с именем<tt>flowers</tt>.  Карта ссылок принимает объект <tt>String</tt> и устанавливает его соответствие с объектом <tt>Image</tt>. 
+              <pre class="examplecode">private Map&lt;String, Image&gt; flowers;</pre>   </li>         
+            <li>Добавьте операторы импорта для <tt>java.util.Map</tt> и <tt>java.awt.Image</tt>.        </li>    
+            <li>Добавьте код в конструктор <tt>FlowerFrame</tt>, чтобы связать определенный объект <tt>Image</tt> с определенным объектом <tt>String</tt> для определенного экземпляра карты ссылок <tt>flowers</tt>.
+              <pre>
+public FlowerFrame(Map&lt;String, Image&gt; flowers) {
+
+    this.flowers = flowers;
+    for (String flower:FLOWERS) {
+        flowers.put(flower,null);
+    }
+
+    initComponents();    
+} </pre></li>
+            <li>Инициализируйте прослушиватели <tt>ItemListener</tt> для переключателей, а также прослушиватели <tt>ActionListener</tt> для четырех кнопок цветов и установите заголовок по умолчанию. 
+              <pre class="examplecode">
+public FlowerFrame(Map&lt;String, Image&gt; flowers) {
+
+    this.flowers = flowers;
+    for (String flower:FLOWERS) {
+        flowers.put(flower,null);
+    }
+
+    initComponents(); 
+    
+    setTitle("Garden Flowers [waiting for picture]");
+    
+    ItemListener rbListener = new RBListener();
+    asterRadioButton.addItemListener(rbListener);
+    honeysuckleRadioButton.addItemListener(rbListener);
+    roseRadioButton.addItemListener(rbListener);
+    sunflowerRadioButton.addItemListener(rbListener);
+    
+    ActionListener bListener = new ButtonListener();
+    asterButton.addActionListener(bListener);
+    honeysuckleButton.addActionListener(bListener);
+    roseButton.addActionListener(bListener);
+    sunflowerButton.addActionListener(bListener);
+}</pre>
+            </li>      
+            <li>Добавьте операторы импорта для <tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ItemListener.html" target="_blank">java.awt.event.ItemListener</a></tt> и <tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ActionListener.html" target="_blank">java.awt.event.ActionListener</a></tt>.</li>
+            </ol>
+ <p>Конструктор готов. В коде выводятся сообщения об ошибках, поскольку код не содержит классы <tt>RBListener</tt> и <tt>ButtonListener</tt>.  Эти два класса представляют собой реализации прослушивателей <tt>ItemListener</tt> и <tt>ActionListener</tt>, соответственно.  Запись этих классов в код рассматривается в следующем разделе.</p> 
+ <h3><a name="show-flowers">Изображения с цветами</h3>
+ <p>В этом разделе рассматривается написание пользовательских прослушивателей для переключателей и кнопок цветов.  Также рассматривается написание метода, который определяет цветок, выбираемый при нажатии кнопки, и получает объект <tt>Image</tt> цветка на карте ссылок <tt>flowers</tt>.  В завершение описывается создание метода, который вызывается посредством класса <tt>Main</tt> и получает объект <tt>Image</tt> для каждого эскиза.</p>
+ <ol>
+   <li>Найдите метод <tt>public static void main(String args[])</tt> в теле класса <tt>FlowerFrame</tt>.  Удалите этот метод и его документацию.  (Вместо него в приложении будет использован класс <tt>Main</tt>.)</li>
+    <li>Напишите вместо метода <tt>main</tt> пользовательский прослушиватель <tt>ItemListener</tt> для переключателей.  Этот прослушиватель служит для отображения нового изображения цветка при выборе переключателя.
+              <pre class="examplecode">private class RBListener implements ItemListener {
+    public void itemStateChanged(ItemEvent e) {
+        showFlower();
+    }
+}</pre></li>
+<li>Добавьте оператор импорта для <tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ItemEvent.html" target="_blank">java.awt.event.ItemEvent</a></tt>.</li>
+            <li>Запишите под пользовательским прослушивателем <tt>ItemListener</tt> пользовательский прослушиватель <tt>ActionListener</tt> для четырех кнопок цветов.  При нажатии кнопки прослушиватель выбирает соответствующий переключатель:
+              <pre class="examplecode">private class ButtonListener implements ActionListener {
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == asterButton) asterRadioButton.setSelected(true);
+        else if (e.getSource() == honeysuckleButton) honeysuckleRadioButton.setSelected(true);
+        else if (e.getSource() == roseButton) roseRadioButton.setSelected(true);
+        else if (e.getSource() == sunflowerButton) sunflowerRadioButton.setSelected(true);
+    }
+}</pre>
+            </li>
+            <li>Добавьте оператор импорта для <tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ActionEvent.html" target="_blank">java.awt.event.ActionEvent</a></tt>.</li>
+            <li>Напишите под пользовательским прослушивателем <tt>ActionListener</tt> метод <tt>showFlower</tt>.  Этот метод определяет выбранный переключатель и получает объект <tt>Image</tt> для соответствующего цветка из карты ссылок <tt>flowers</tt>.
+              <pre class="examplecode">
+void showFlower() {
+    Image img = null;
+    if (asterRadioButton.isSelected()) {
+        img = flowers.get("aster");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Aster]");
+        }
+    } else if (honeysuckleRadioButton.isSelected()) {
+        img = flowers.get("honeysuckle");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Honeysuckle]");
+        }
+
+    } else if (roseRadioButton.isSelected()) {
+        img = flowers.get("rose");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Rose]");
+        }
+    } else if (sunflowerRadioButton.isSelected()) {
+        img = flowers.get("sunflower");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Sunflower]");
+        }
+    }
+    if (img == null) {
+        mainPictureButton.setIcon(null);
+        setTitle("Garden Flowers [waiting for picture]");            
+    } else mainPictureButton.setText("");
+}</pre>
+            </li>
+            <li>Добавьте оператор импорта для <tt><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/ImageIcon.html" target="_blank">javax.swing.ImageIcon</a></tt>.</li>
+            <li>Напишите метод <tt>setThumbnails</tt>.  Этот метод получает изображение для каждого эскиза из карты ссылок <tt>flowers</tt>.  Метод вызывается посредством класса <tt>Main</tt>.
+              <pre class="examplecode">void setThumbnails(Map&lt;String, Image&gt; thumbs) {
+    Image img = thumbs.get("aster");
+    if (img != null) {
+        asterButton.setIcon(new ImageIcon(img));
+        asterButton.setText("");
+    }
+    img = thumbs.get("honeysuckle");
+    if (img != null) {
+        honeysuckleButton.setIcon(new ImageIcon(img));
+        honeysuckleButton.setText("");
+    }
+    img = thumbs.get("rose");
+    if (img != null) {
+        roseButton.setIcon(new ImageIcon(img));
+        roseButton.setText("");
+    }
+    img = thumbs.get("sunflower");
+    if (img != null) {
+        sunflowerButton.setIcon(new ImageIcon(img));
+        sunflowerButton.setText("");
+    }
+}</pre></li>
+            <li>Исправьте операторы импорта <tt>FlowerFrame</tt>, если они не были исправлены ранее при вставке в код.  Можно исправить все ошибки одновременно, щелкнув правой кнопкой мыши в редакторе и выберите 'Исправить выражения импорта' в контекстном меню. Ниже представлен полный список операторов импорта:
+            <pre class="examplecode">import java.awt.Image;<br>import java.awt.event.ActionEvent;<br>import java.awt.event.ActionListener;<br>import java.awt.event.ItemEvent;<br>import java.awt.event.ItemListener;<br>import java.util.Map;<br>import javax.swing.ImageIcon;</pre> </li>  </ol>
+            <p>Конструктор <tt>FlowerFrame</tt> готов.</p>
+    </div>
+            
+            <h2><a name="code-main-class">Создание кода класса Main</h2>
+            <p>В этом разделе описывается завершение кода класса <tt>Main</tt> для отображения <tt>FlowerFrame</tt>, подключения к веб-службе и вызова операций веб-службы.</p>
+            <ol>
+              <li>Откройте класс <tt>Main.java</tt> в редакторе.<br> <img alt="Пустой главный класс" border="1" class="margin-around" height="303" src="../../../images_www/articles/73/websvc/flower/main-empty.png" width="425">            </li>
+              <li>В теле класса инициализируйте переменную <tt>int</tt> перед методом <tt>main</tt> для числа загруженных изображений.
+                <pre class="examplecode"> private static int downloadedPictures;</pre></li>
+              </li>
+          
+              <li>Создайте в теле метода <tt>main</tt> хранилище <tt>HashMap</tt> для четырех изображений цветов и второе хранилище <tt>HashMap</tt> для четырех эскизов.<pre class="examplecode">final Map&lt;String,Image&gt; flowers = new HashMap&lt;String,Image&gt;(4);
+final Map&lt;String,Image&gt; thumbs = new HashMap&lt;String,Image&gt;(4);</pre>
+              </li>
+              <li>Добавьте операторы импорта <tt>java.awt.Image</tt>, <tt>java.util.Map</tt> и <tt>java.util.HashMap</tt>.</li>
+              <li>Добавьте в тело метода <tt>main</tt> код для отображения <tt>FlowerFrame</tt>.<pre class="examplecode"><b>// Show the FlowerFrame.</b>
+final FlowerFrame frame = new FlowerFrame(flowers);
+frame.setVisible(true);  </pre>  
+              </li>
+              <li>Добавьте в тело метода <tt>main</tt> код для подключения клиента к веб-службе.<pre class="examplecode"><b>// The client connects to the service with this code.</b>
+FlowerServiceService service = new FlowerServiceService();
+final FlowerService port = service.getFlowerServicePort();</pre>  
+              </li>            
+              <li>Добавьте операторы импорта для <tt>org.flower.service.FlowerService</tt> и <tt>org.flower.service.FlowerServiceService</tt>.</li>
+              <li>Добавьте в тело метода <tt>main</tt> код для создания массива четырех потоков <tt>Runnable</tt> и вызова операции <tt>getFlower</tt> веб-службы в каждом потоке.<pre class="examplecode"><b>// The web service getFlower operation
+// is called 4 times, each in a separate thread.
+// When the operation finishes the picture is shown in
+// a specific button.</b>
+Runnable[] tasks = new Runnable[4];
+
+for (int i=0; i&lt;4;i++) {
+    final int index = i;
+    tasks[i] = new Runnable() {
+        public void run() {
+            try {
+            
+                <b>// Call the getFlower operation
+                // on the web service:</b>
+                Image img = port.getFlower(FlowerFrame.FLOWERS[index]);
+                System.out.println("picture downloaded: "+FlowerFrame.FLOWERS[index]);
+                     
+                <b>// Add strings to the hashmap:</b>
+                flowers.put(FlowerFrame.FLOWERS[index],img);
+                        
+                <b>// Call the showFlower operation
+                // on the FlowerFrame:</b>
+                frame.showFlower();
+                        
+            } catch (IOException_Exception ex) {
+                ex.printStackTrace();
+            }
+            downloadedPictures++;
+        }
+    };
+    new Thread(tasks[i]).start();
+}</pre>
+           </li>
+              <li>Добавьте оператор импорта для <tt>org.flower.service.IOException_Exception</tt>.      </li>       
+              <li>Добавьте в тело метода <tt>main</tt> код для вызова операции <tt>getThumbnails</tt> веб-службы в отдельном потоке.
+              <pre class="examplecode"><b>// The web service getThumbnails operation is called
+// in a separate thread, just after the previous four threads finish.
+// When the images are downloaded, the thumbnails are shown at 
+// the bottom of the frame.</b>
+Runnable thumbsTask = new Runnable() {
+    public void run() {
+        try {
+            while (downloadedPictures &lt; 4) {                        
+                try {Thread.sleep(100);} catch (InterruptedException ex) {}
+            }
+                 
+            <b>// Call the getThumbnails operation
+            // on the web service:</b>
+            List&lt;Image&gt; images = port.getThumbnails();
+            System.out.println("thumbs downloaded");
+                    
+            if (images != null && images.size() == 4) {
+                for (int i=0;i&lt;4;i++) {
+                    thumbs.put(FlowerFrame.FLOWERS[i],images.get(i));
+                }
+                frame.setThumbnails(thumbs);
+            }
+        } catch (IOException_Exception ex) {
+            ex.printStackTrace();
+        }
+    }            
+};
+new Thread(thumbsTask).start();
+</pre>
+              </li>
+              <li>Исправьте операторы импорта в <tt>Main.java</tt>, если они не были исправлены при вставке в код.  Можно исправить все ошибки одновременно, щелкнув правой кнопкой мыши в редакторе и выберите 'Исправить выражения импорта' в контекстном меню. Будет предоставлен список классов List для импорта; выберите <tt>java.util.List</tt>.  Ниже представлен полный список операторов импорта:
+                <pre class="examplecode">import flower.album.FlowerService;<br>import flower.album.FlowerService_Service;<br>import flower.album.IOException_Exception;<br>import java.awt.Image;<br>import java.util.HashMap;<br>import java.util.List;<br>import java.util.Map;</pre>
+              </li>
+            </ol>
+    <p>Класс <tt>Main</tt> готов.</p>
+                <pre class="examplecode">public class Main {
+
+     private static int downloadedPictures;
+    
+     public static void main(String[] args) {
+    
+        final Map&lt;String,Image&gt; flowers = new HashMap&lt;String,Image&gt;(4);
+        final Map&lt;String,Image&gt; thumbs = new HashMap&lt;String,Image&gt;(4);
+        
+        <b>// Show the FlowerFrame.</b>
+        final FlowerFrame frame = new FlowerFrame(flowers);
+        frame.setVisible(true);
+        <br><b>        // The client connects to the service with this code.</b>
+        FlowerService_Service service = new FlowerService_Service();
+        final FlowerService port = service.getFlowerServicePort();
+        
+        Runnable[] tasks = new Runnable[4];
+        
+        <b>// The web service getFlower operation
+        // is called 4 times, each in a separate thread.
+        // When the operation finishes the picture is shown in
+        // a specific button.</b>
+        for (int i=0; i&lt;4;i++) {
+            final int index = i;
+            tasks[i] = new Runnable() {
+                public void run() {
+                    try {
+                    
+                        <b>// Call the getFlower operation
+                        // on the web service:</b>
+                        Image img = port.getFlower(FlowerFrame.FLOWERS[index]);
+                        System.out.println("picture downloaded: "+FlowerFrame.FLOWERS[index]);
+                        
+                        <b>// Add strings to the hashmap:</b>
+                        flowers.put(FlowerFrame.FLOWERS[index],img);
+                        
+                        <b>// Call the showFlower operation
+                        // on the FlowerFrame:</b>
+                        frame.showFlower();
+                        
+                    } catch (IOException_Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    downloadedPictures++;
+                }
+            };
+            new Thread(tasks[i]).start();
+        }
+        <b>// The web service getThumbnails operation is called
+        // in a separate thread, just after the previous four threads finish.
+        // When the images are downloaded, the thumbnails are shown at 
+        // the bottom of the frame.</b>
+        Runnable thumbsTask = new Runnable() {
+            public void run() {
+                try {
+                    while (downloadedPictures &lt; 4) {                        
+                        try {Thread.sleep(100);} catch (InterruptedException ex) {}
+                    }
+                    
+                    <b>// Call the getThumbnails operation
+                    // on the web service:</b>
+                    List&lt;Image&gt; images = port.getThumbnails();
+                    System.out.println("thumbs downloaded");
+                    
+                    if (images != null && images.size() == 4) {
+                        for (int i=0;i&lt;4;i++) {
+                            thumbs.put(FlowerFrame.FLOWERS[i],images.get(i));
+                        }
+                        frame.setThumbnails(thumbs);
+                    }
+                } catch (IOException_Exception ex) {
+                    ex.printStackTrace();
+                }
+            }            
+        };
+        new Thread(thumbsTask).start();
+    }
+
+}</pre>
+                         
+            
+                
+    <p>Приложение клиента готово. Код приложения взаимодействует с веб-службой, делегируемой в модуль EJB для вывода соответствующих изображений.  Щелкните приложение правой кнопкой и выберите команду &quot;Выполнить&quot;.  Приложение Swing откроется, и через некоторое время диалоговое окно приложения заполнится изображениями, полученными из веб-службы.  Если появляются не все изображения, необходимо очистить и построить проект FlowerService, а затем снова запустить его .  Обратите внимание, что изображение в основном фрейме можно заменить, выбрав переключатель или нажав на эскиз.<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Swing%20Client%20EE6">Отправить отзыв по этому учебному курсу</a></div>
+        <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с Java EE IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки nbj2ee@netbeans.org</a>.</p>
+    </body>
+</html>

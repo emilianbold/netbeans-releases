@@ -1,0 +1,869 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>WebアプリケーションでのHibernateの使用 - NetBeans IDEチュートリアル</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <meta name="description" content="Demonstrates how to add support for Hibernate to the IDE and use Hibernate with JSF components in a Web application.">
+   <meta name="KEYWORDS" content="NetBeans, Hibernate, JSF, Tutorial, Database">
+   <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>WebアプリケーションでのHibernateの使用</h1>
+<!-- Currently this tutorial does not work -- #243018 -->
+    <p>このチュートリアルでは、NetBeans IDEを使用してデータをデータベースから表示するWebアプリケーションを作成してデプロイします。このWebアプリケーションでは、プレーン・オールドJavaオブジェクト(POJO)を取得してリレーショナル・データベースに保存するための持続性レイヤーとして、Hibernateフレームワークを使用します。</p>
+    
+    <p>Hibernateは、ORM (object relational mapping)のためのツールを提供するフレームワークです。このチュートリアルでは、IDEにHibernateフレームワークのサポートを追加し、必要なHibernateファイルを作成する方法を示します。Javaオブジェクトを作成し、Hibernateを使用するようにアプリケーションを構成した後、JSF管理対象Beanとデータを表示するJSF 2.0ページを作成します。</p>
+    
+    <p>このチュートリアルを開始する前に、必要に応じて次のドキュメントをお読みください。</p>
+    <ul>
+        <li><a href="http://www.hibernate.org/" target="_blank">hibernate.org</a>のHibernateドキュメント</li>
+        <li><a href="quickstart-webapps.html">Webアプリケーション開発入門</a></li>
+        <li><a href="jsf20-intro.html">JavaServer Faces 2.x入門</a></li>
+    </ul>
+
+    <p><b>目次</b></p>
+    <img alt="このページの内容は、NetBeans IDE 7.2、7.3および7.4に適用されます" class="stamp" src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" title="このページの内容は、NetBeans IDE 7.2、7.3および7.4に適用されます">
+    <ul>
+        <li><a href="#01">データベースの作成</a></li>
+        <li><a href="#02">Webアプリケーション・プロジェクトの作成</a></li>
+        <li><a href="#03">Hibernate構成ファイルの変更</a></li>
+        <li><a href="#04"><tt>HibernateUtil.java</tt>ヘルパー・ファイルの作成</a></li>
+        <li><a href="#05">Hibernateのマッピング・ファイルおよびJavaクラスの生成</a></li>
+        <li><a href="#06"><tt>FilmHelper.java</tt>ヘルパー・クラスの作成</a></li>
+        <li><a href="#07">JSF管理対象Beanの作成</a>
+        <li><a href="#08">Webページの作成</a></li>
+        <li><a href="#09">プロジェクトの実行</a></li>
+        <li><a href="#10">ソリューション・プロジェクトのダウンロード</a></li>
+        <li><a href="#11">トラブルシューティング</a></li>
+    </ul>
+
+   
+   <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.1、7.2、7.3、7.4、Java EEバージョン</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">バージョン6または7</td>
+            </tr>
+             <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                <td class="tbltd1">3.xまたは4.x</td>
+            </tr>   
+            <tr>
+                <td class="tbltd1"><a href="http://www.mysql.com/">MySQLデータベース・サーバー</a></td>
+                <td class="tbltd1">バージョン5.x</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Sakilaデータベース</td>
+                <td class="tbltd1">更新センターから入手できるプラグイン</td>
+            </tr>
+        </tbody>
+</table>
+
+
+<p class="tips"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/DVDStoreEE6.zip">終了したプロジェクトのZIPアーカイブ</a>はダウンロードできます。</p>
+
+<a name="01"></a>
+<h2>データベースの作成</h2>
+    <p>このチュートリアルでは、MySQLのサイトで無償提供されているMySQLサンプル・データベースの<tt>sakila</tt>を使用します。IDEのインストールにはsakilaデータベースが含まれないため、チュートリアルを開始する前にデータベースを作成する必要があります。</p>
+
+    <p>sakilaデータベースを作成するには、プラグイン・マネージャを使用してSakilaサンプル・データベース・プラグインをダウンロードしてインストールできます。このプラグインをインストールすると、「MySQLデータベースの作成」ダイアログ・ボックスのデータベース・リストにsakilaデータベースが追加されます。</p>
+    <p>MySQLを操作するためのIDEの構成については、<a href="../ide/mysql.html">MySQLデータベースへの接続</a>のチュートリアルを参照してください。</p>
+
+    <ol>
+        <li>プラグイン・マネージャを開き、Sakilaサンプル・データベース・プラグインをインストールします。</li>
+        <li>プラグインをインストールした後、「サービス」ウィンドウで「データベース」ノードを展開し、「MySQLサーバー」ノードを右クリックして「起動」を選択して、MySQLデータベースを起動します。</li>
+        <li>「MySQLサーバー」ノードを右クリックし、「データベースを作成」を選択します。</li>
+        <li>「MySQLデータベースの作成」ダイアログ・ボックスで「新規データベース名」ドロップダウン・リストから「Sakilaデータベース」を選択します。「OK」をクリックします。<br /><img alt="「MySQLデータベースの作成」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/create-sakila-mysql.png" title="「MySQLデータベースの作成」ダイアログのスクリーンショット">
+
+        <p>「OK」をクリックすると、「MySQLサーバー」ノードの下に「Sakila」ノードが表示されます。</p>
+        <li>「Sakila」ノードを右クリックし、「接続」を選択します。</li>
+    </ol>
+    <p>「接続」をクリックすると、「Sakila」データベースのデータベース接続のノード(<tt>jdbc:mysql://localhost:3306/sakila [デフォルトの<i>ユーザー名</i>]</tt>)が「データベース」ノードに一覧表示されます。接続が開いたら、接続ノードを展開してデータベースのデータを表示できます。</p>
+
+
+    
+<a name="02"></a>
+<h2>Webアプリケーション・プロジェクトの作成</h2>
+    <p>この課題では、Webアプリケーション・プロジェクトを作成し、Hibernateライブラリをそのプロジェクトに追加します。プロジェクトを作成する場合は、新規プロジェクト・ウィザードの「フレームワーク」パネルで「Hibernate」を選択してデータベースを指定します。</p>
+    <ol>
+        <li>メイン・メニューから「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[&#8984]-[Shift]-[N])を選択します。「Java Web」カテゴリから「Webアプリケーション」を選択し、「次」をクリックします。 </li>
+        <li>プロジェクト名として「<strong>DVDStore</strong>」と入力し、プロジェクトの場所を設定します。</li>
+        <li>専用フォルダを使用するオプションが選択されている場合は選択を解除します。「次」をクリックします。
+            <p>このチュートリアルでは、ライブラリを他のユーザーと共有する必要がないため、プロジェクト・ライブラリを専用のフォルダにコピーする理由はほとんどありません。</p>
+            </li>
+        <li>サーバーを「GlassFish Server」に設定し、「Java EEバージョン」を「Java EE 6 Web」または「Java EE 7 Web」に設定します。「次」をクリックします。</li>
+        <li>「JavaServer Faces」チェックボックスを選択し、デフォルトのJSF 2.xライブラリを使用します。</li>
+        <li>フレームワークの選択リストで「Hibernate」チェックボックスを選択します。</li>
+        <li>「データベース接続」ドロップダウン・リストから「Sakilaデータベース」を選択します。「終了」をクリックします。</li>
+    </ol>
+    <p class="notes"> <b>注意:</b> Sakilaデータベースがウィザードの「フレームワーク」パネルのオプションとして使用できない場合、この接続が「サービス」ウィンドウの「データベース」ノードに一覧表示されているかどうかを確認します。ここに接続がない場合、データベース接続を作成する必要があります。</p>
+    <img alt="新規プロジェクト・ウィザードの「フレームワーク」パネル" class="margin-around b-all" src="../../../images_www/articles/74/web/hibernate-webapp/hib-newwebapp.png" title="プロジェクトへのHibernateサポートの追加を示す新規プロジェクト・ウィザードの「フレームワーク」パネル">
+
+    
+    <p>「終了」をクリックすると、Webアプリケーション・プロジェクトが作成され、<tt>hibernate.cfg.xml</tt>ファイルと<tt>index.xhtml</tt>がエディタに表示されます。</p>
+    <p>「プロジェクト」ウィンドウの「ライブラリ」ノードを展開すると、IDEによってHibernateライブラリがそのプロジェクトに追加されたことを確認できます。</p>
+    <img alt="Hibernateライブラリが表示された「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-libraries.png" title="Hibernateライブラリが表示された「プロジェクト」ウィンドウのスクリーンショット"> <a name="03"></a>
+<h2>Hibernate構成ファイルの変更</h2>
+    <p>Hibernateフレームワークを使用する新規プロジェクトを作成する場合、IDEでは<tt>hibernate.cfg.xml</tt>構成ファイルがアプリケーションのコンテキスト・クラスパスのルート(「ファイル」ウィンドウの<tt>src/java</tt>)に自動的に作成されます。ファイルは、「プロジェクト」ウィンドウの「ソース・パッケージ」の下の<tt>&lt;デフォルト・パッケージ></tt>にあります。構成ファイルには、データベース接続、リソース・マッピング、およびその他の接続プロパティに関する情報が格納されます。このファイルは、マルチビュー・エディタを使用して編集、または直接XMLエディタでXMLを編集できます。</p>
+
+    <p>この課題では、<tt>hibernate.cfg.xml</tt>に指定されたデフォルトのプロパティを編集し、SQL文のデバッグ・ロギングを有効にし、Hibernateのセッション・コンテキスト管理を有効にします。</p>
+    <ol>
+        <li>「デザイン」タブで<tt>hibernate.cfg.xml</tt>を開きます。このファイルは、「プロジェクト」ウィンドウで「ソース・パッケージ」の下の<tt>&lt;デフォルト・パッケージ></tt>ノードを展開し、<tt>hibernate.cfg.xml</tt>をダブルクリックすることで開きます。</li>
+        <li>マルチビューXMLエディタで、「オプションのプロパティ」の下の「構成プロパティ」ノードを展開します。</li>
+        <li>「追加」をクリックして「Hibernateのプロパティの追加」ダイアログ・ボックスを開きます。</li>
+        <li>このダイアログ・ボックスで、「<tt>hibernate.show_sql</tt>」プロパティを選択し、値を「<tt>true</tt>」に設定します。これにより、SQL文のデバッグ・ロギングが有効になります。<br /><img alt="hibernate.show_sqlプロパティが表示された「Hibernateのプロパティの追加」ダイアログ・ボックス" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-showsql.png" title="hibernate.show_sqlプロパティの設定値が表示された「Hibernateのプロパティの追加」ダイアログ・ボックス">
+        </li>
+        <li>「Miscellaneous Properties」ノードを展開し、「追加」をクリックします。</li>
+        <li>このダイアログ・ボックスで「<tt>hibernate.current_session_context_class</tt>」プロパティを選択し、値を「<tt>thread</tt>」に設定すると、Hibernateの自動セッション・コンテキスト管理が有効になります。<br/><img alt="hibernate.current_session_context_classプロパティの「Hibernateのプロパティの追加」ダイアログ・ボックス" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-sessioncontext.png" title="hibernate.current_session_context_classプロパティの設定値が表示された「Hibernateのプロパティの追加」ダイアログ・ボックス"></li>
+        <li>「その他のプロパティ」ノードの下の「追加」を再度クリックし、「プロパティ名」ドロップダウン・リストで<tt>hibernate.query.factory_class</tt>を選択します。</li>
+        <li>「プロパティ値」として「<strong>org.hibernate.hql.classic.ClassicQueryTranslatorFactory</strong>」を選択します。「OK」をクリックします。<br /><img alt="hibernate.query.factory_classプロパティが表示された「Hibernateのプロパティの追加」ダイアログ・ボックス" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-factoryclass.png" title="hibernate.query.factory_classプロパティの設定値が表示された「Hibernateのプロパティの追加」ダイアログ・ボックス">
+        <p>エディタの「XML」タブをクリックすると、ファイルがXMLビューに表示されます。ファイルの内容は次のようになります(3つの新しいプロパティは太字)。</p>
+        <pre class="examplecode">&lt;hibernate-configuration&gt;
+    &lt;session-factory name="session1"&gt;
+        &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+        &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+        &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+        &lt;property name="hibernate.connection.username"&gt;root&lt;/property&gt;
+        &lt;property name="hibernate.connection.password"&gt;######&lt;/property&gt;
+        <strong>&lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+        &lt;property name="hibernate.current_session_context_class"&gt;thread&lt;/property&gt;
+        &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.classic.ClassicQueryTranslatorFactory&lt;/property&gt;</strong>
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+        </li>
+        <li>変更内容をファイルに保存します。</li>
+    </ol>
+    <p>このファイルは、再度編集する必要がないため閉じてかまいません。</p>
+
+
+
+<a name="04"></a>
+<h2><tt>HibernateUtil.java</tt>ヘルパー・ファイルの作成</h2>
+<p>Hibernateを使用するには、起動を処理し、Hibernateの<tt>SessionFactory</tt>にアクセスしてセッション・オブジェクトを取得するヘルパー・クラスを作成する必要があります。このクラスは、<tt>configure()</tt>をコールし、<tt>hibernate.cfg.xml</tt>構成ファイルをロードし、次に<tt>SessionFactory</tt>をビルドしてセッション・オブジェクトを取得します。
+</p>
+
+<p>この項では、新規ファイル・ウィザードを使用してヘルパー・クラスである<tt>HibernateUtil.java</tt>を作成します。</p>
+<ol>
+    <li>「ソース・パッケージ」ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+    <li>「カテゴリ」の一覧から「Hibernate」を選択し、「ファイル・タイプ」の一覧から「HibernateUtil.java」を選択します。「次」をクリックします。</li>
+    <li>クラス名に「<strong>HibernateUtil</strong>」、パッケージに「<strong>dvdrental</strong>」と入力します。「終了」をクリックします。</li>
+
+</ol>
+<img alt="HibernateUtilウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-util-wizard.png" title="HibernateUtilウィザードのスクリーンショット">
+<p>「終了」をクリックすると、<tt>HibernateUtil.java</tt>がエディタに表示されます。このファイルは、編集する必要がないため閉じてかまいません。</p>
+
+
+<a name="05"></a>
+<h2>Hibernateのマッピング・ファイルおよびJavaクラスの生成</h2>
+
+<p>このチュートリアルでは、POJO (プレーン・オールドJavaオブジェクト)を使用して、これから使用するデータベース内の各表内のデータを表します。Javaクラスが、表内の列のフィールドを指定し、データの取得と書込みに単純な取得メソッドおよび設定メソッドを使用します。POJOを表にマップするには、Hibernateマッピング・ファイルを使用するか、クラス内で注釈を使用します。</p>
+
+<p>データベースからのHibernateのマッピング・ファイルとPOJOウィザードを使用して、データベース表に基づいて複数のPOJOとマッピング・ファイルを作成できます。ウィザードを使用し、目的のPOJOとマッピング・ファイルのためのすべての表を選択すると、IDEでデータベース表に基づいてファイルが生成され、<tt>hibernate.cfg.xml</tt>にマッピング・エントリが追加されます。ウィザードを使用する場合、たとえばPOJOのみにするなど、IDEで生成するファイルを選択でき、また、たとえばEJB 3注釈を使用するコードの生成するなど、コード生成オプションを選択できます。</p>
+
+<p class="notes"><strong>注意:</strong>IDEには、個別のPOJOとマッピング・ファイルを最初から作成するウィザードもあります。</p>
+
+<div class="indent">
+<a name="05a"></a>
+<h3>Hibernateリバース・エンジニアリング・ファイルの作成</h3>
+<p>データベースからのHibernateのマッピング・ファイルとPOJOウィザードを使用する場合、最初に<tt>hibernate.reveng.xml</tt>リバース・エンジニアリング・ファイルを作成する必要があります。データベースからのHibernateのマッピング・ファイルとPOJOウィザードには、<tt>hibernate.reveng.xml</tt>および<tt>hibernate.cfg.xml</tt>が必要です。</p>
+<p>リバース・エンジニアリング・ファイルを使用すると、データベース・マッピング戦略をより詳細に制御できます。Hibernateリバース・エンジニアリング・ウィザードでは、XMLエディタで編集できるデフォルト構成を持つリバース・エンジニアリング・ファイルが作成されます。</p>
+<p>Hibernateリバース・エンジニアリング・ファイルを作成するには、次の手順を実行します。</p>
+
+<ol>
+    <li>「プロジェクト」ウィンドウで「ソース・パッケージ」ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+    <li>「Hibernate」カテゴリで「Hibernateリバース・エンジニアリング・ウィザード」を選択します。「次」をクリックします。</li>
+    <li>ファイル名に<tt>hibernate.reveng</tt>を指定し、フォルダに<tt>src/java</tt>を指定します。「次」をクリックします。</li>
+    <li>選択されていない場合、<tt>hibernate.cfg.xml</tt>を「構成ファイル」ドロップダウン・リストから選択します。</li>
+    <li>「使用可能な表」から次の表を選択し、「追加」をクリックして「選択した表」に追加します。
+    <ul>
+        <li>actor</li>
+        <li>category</li>
+        <li>film</li>
+        <li>film_actor</li>
+        <li>film_category</li>
+        <li>language</li>
+    </ul>
+    <p>「終了」をクリックします。</p>
+    <img alt="新規Hibernateリバース・エンジニアリング・ウィザード" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-reveng-wizard.png" title="新規Hibernateリバース・エンジニアリング・ウィザード">
+    </li>
+</ol>
+<p>このウィザードでは、<tt>hibernate.reveng.xml</tt>リバース・エンジニアリング・ファイルが生成され、ファイルはエディタに表示されます。リバース・エンジニアリング・ファイルは、編集する必要がないため閉じてかまいません。</p>
+
+<p class="tips"><tt>hibernate.reveng.xml</tt>ファイルの操作の詳細は、<a href="http://docs.jboss.org/tools/2.1.0.Beta1/hibernatetools/html/reverseengineering.html" target="_blank">第5章: リバース・エンジニアリングの制御</a>(<a href="http://docs.jboss.org/tools/2.1.0.Beta1/hibernatetools/html/" target="_blank">Hibernate Toolsリファレンス・ガイド</a>)を参照してください。</p>
+
+<h3>Hibernateマッピング・ファイルとPOJOの作成</h3>
+<p>データベースからのHibernateのマッピング・ファイルとPOJOウィザードを使用して、ファイルを生成できます。このウィザードでは、ウィザードで選択した表ごとに、POJOおよび対応するマッピング・ファイルを生成できます。マッピング・ファイルはXMLファイルで、表の列をPOJOのフィールドにマップする方法に関するデータが含まれています。ウィザードを使用するには、<tt>hibernate.reveng.xml</tt>ファイルと<tt>hibernate.cfg.xml</tt>ファイルが必要です。</p>
+
+<p>ウィザードを使用してPOJOとマッピング・ファイルを作成するには、次の手順を実行します。</p>
+<ol>
+    <li>「プロジェクト」ウィンドウで「ソース・パッケージ」ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+    <li>「データベースからのHibernateのマッピング・ファイルとPOJO」を「Hibernate」カテゴリから選択します。「次」をクリックします。</li>
+    <li>ドロップダウン・リストで、<tt>hibernate.cfg.xml</tt>ファイルと<tt>hibernate.reveng.xml</tt>ファイルが選択されていることを確認します。</li>
+    <li>「一般的な設定」で「<strong>JDK 5言語機能</strong>」を選択します。</li>
+    <li>「<strong>ドメイン・コード</strong>」および「<strong>Hibernate XMLのマッピング</strong>」オプションが選択されていることを確認します。</li>
+    <li>パッケージ名に「<strong>dvdrental</strong>」を選択します。「終了」をクリックします。<br /><img alt="「Hibernateのマッピング・ファイルとPOJOの生成」ウィザード" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-pojo-wizard2.png" title="「Hibernateのマッピング・ファイルとPOJOの生成」ウィザード">
+    </li>
+</ol>
+<p>「終了」をクリックすると、POJOとHibernateのマッピング・ファイルが生成され、<tt>hibernate.reveng.xml</tt>で指定した列にフィールドがマップされます。また、<tt>hibernate.cfg.xml</tt>にマッピング・エントリが追加されます。</p>
+
+<pre class="examplecode">&lt;hibernate-configuration&gt;
+  &lt;session-factory&gt;
+    &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+    &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+    &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+    &lt;property name="hibernate.connection.username"&gt;myusername&lt;/property&gt;
+    &lt;property name="hibernate.connection.password"&gt;mypassword&lt;/property&gt;
+    &lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+    &lt;property name="hibernate.current_session_context_class"&gt;thread&lt;/property&gt;
+    &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.classic.ClassicQueryTranslatorFactory&lt;/property&gt;
+    &lt;mapping resource="dvdrental/FilmActor.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Language.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Film.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Category.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Actor.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/FilmCategory.hbm.xml"/&gt;
+  &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+
+<p class="notes"><strong>注意:</strong><tt>hibernate.cfg.xml</tt>ファイルで、<tt>mapping</tt>要素が<tt>property</tt>要素の後に表示されていることを確認してください。</p>
+
+<p><tt>dvdrental</tt>パッケージを展開すると、ウィザードによって生成されたファイルを確認できます。</p>
+
+<img alt="生成されたPOJOを示す「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-projectswindow.png" title="生成されたPOJOを示す「プロジェクト」ウィンドウ">
+
+<p class="tips">特定の表を特定のクラスにマップするHibernateマッピング・ファイルを作成する場合、Hibernateマッピング・ウィザードを使用できます。</p>
+
+<p class="tips"><tt>hibernate.reveng.xml</tt>ファイルの操作の詳細は、<a href="http://docs.jboss.org/hibernate/core/3.3/reference/en/html/mapping.html" target="_blank">第5章: 基本的なO/Rマッピング</a>(<a href="http://docs.jboss.org/hibernate/stable/core/reference/en/html/" target="_blank">Hibernate Reference Documentation</a>)を参照してください。</p>
+
+
+</div>
+
+<a name="06"></a>
+<h2><tt>FilmHelper.java</tt>ヘルパー・クラスの作成</h2>
+
+<p>データベースに対するHibernate問合せの実行に使用するヘルパー・クラスを<tt>dvdrental</tt>パッケージ内に作成します。Hibernate問合せ言語(HQL)エディタを使用して、データを取り出す問合せを構築し、テストします。問合せをテストしたら、問合せを構築および実行するメソッドをヘルパー・クラス内に作成します。次に、ヘルパー・クラス内のメソッドをJSF管理対象Beanから呼び出します。</p>
+
+<a name="06a"></a>
+<div class="indent">
+    <h3>クラスの作成</h3>
+    <p>この項では、新規ファイル・ウィザードを使用して、ヘルパー・クラス<tt>FilmHelper.java</tt>を<tt>dvdrental</tt>パッケージ内に作成します。<tt>HibernateUtil.java</tt>内の<tt>getSessionFactory</tt>をコールしてHibernateセッションを作成し、データベースからデータを取り出す問合せを作成するヘルパー・メソッドをいくつか作成します。ヘルパー・メソッドはJSPページから呼び出します。</p>
+    <ol>
+        <li>「<tt>dvdrental</tt>」ソース・パッケージ・ノードを右クリックし、「新規」>「Javaクラス」を選択して、新規ファイル・ウィザードを開きます。</li>
+        <li>クラス名に「<strong>FilmHelper</strong>」と入力します。 </li>
+        <li>「パッケージ」として<strong>dvdrental</strong>が選択されていることを確認します。「終了」をクリックします。</li>
+        <li>次のコード(太字部分)を追加して、Hibernateセッションを作成します。
+        <pre class="examplecode">public class FilmHelper {
+
+    <strong>Session session = null;
+
+    public FilmHelper() {
+        this.session = HibernateUtil.getSessionFactory().getCurrentSession();
+    }</strong>
+
+}</pre>
+        </li>
+        <li>エディタ上で右クリックし、「インポートを修正」([Alt]-[Shift]-[I]、Macの場合は[&#8984]-[Shift]-[I])を選択して必要なインポート文(<tt>org.hibernate.Session</tt>)を追加し、変更を保存します。</li>
+    </ol>
+
+    <p>ここで<tt>FilmHelper.java</tt>を変更して、データベースに対して問合せを実行するメソッドを追加します。</p>
+
+<a name="06b"></a>
+    <h3>HQL問合せを使用した映画タイトルの列挙と俳優の取得</h3>
+    <p>この課題では、データベースを問合せしてFilm表から映画のタイトルのリストを取り出す、Hibernate問合せ言語(HQL)問合せ作成します。次に、特定の映画に含まれる俳優をフェッチするため、Actor表およびFilm_actor表の両方に問合せを実行するメソッドを追加します。</p>
+
+    <p>Film表には1000件のレコードがあるため、映画のリストを取得するメソッドは、<tt>filmId</tt>主キーに基づいてレコードを取得できる必要があります。HQL問合せの構成とテストには、HQLエディタを使用します。正しい問合せを作成した後、適切な問合せを生成できるクラスにメソッドを追加します。
+    </p>
+    <ol>
+        <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「消去してビルド」を選択します。</li>
+        <li>「プロジェクト」ウィンドウで「<tt>hibernate.cfg.xml</tt>」を右クリックし、「HQL問合せの実行」を選択して、HQL問合せエディタを開きます。</li>
+        <li>ツールバーのドロップダウン・リストから「hibernate.cfg」を選択します。</li>
+        <li>接続をテストするには、エディタで次のように入力し、ツールバーの「HQL問合せの実行」ボタン(<img alt="「HQL問合せの実行」ボタン" src="../../../images_www/articles/72/web/hibernate-webapp/run_hql_query_16.png" title="「HQL問合せの実行」ボタン" />)をクリックします。
+        <pre class="examplecode">from Film</pre>
+        <p>「HQL問合せの実行」をクリックすると、HQL問合せエディタの下部ウィンドウで問合せの結果を確認できます。</p>
+        <img alt="「Hibernateのマッピング・ファイルとPOJOの生成」ウィザード" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-hqleditor1.png" title="「Hibernateのマッピング・ファイルとPOJOの生成」ウィザード">
+        <p>「SQL」ボタンをクリックすると、対応するSQL問合せを確認できます。</p>
+        <pre class="examplecode">select film0_.film_id as col_0_0_ from sakila.film film0_</pre>
+        </li>
+        <li>次の問合せを入力して、filmIdが100から200の間に含まれるレコードをFilm表から取り出します。
+        <pre class="examplecode">from Film as film where film.filmId between 100 and 200</pre>
+        <p>結果ウィンドウにレコードのリストが表示されます。問合せが適切な結果を返すことをテストできたので、この問合せをヘルパー・クラスで使用できます。</p>
+        </li>
+        <li><tt>FilmHelper.java</tt>に次のメソッド<tt>getFilmTitles</tt>を追加して、filmIdが、変数<tt>startID</tt>と<tt>endID</tt>で指定する範囲内にある映画を取り出します。
+        <pre class="examplecode">public List getFilmTitles(int startID, int endID) {
+    List&lt;Film&gt; filmList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery ("from Film as film where film.filmId between '"+startID+"' and '"+endID+"'");
+        filmList = (List&lt;Film&gt;) q.list();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return filmList;
+}</pre>
+        </li>
+        <li>特定の映画から俳優を取得する次のメソッド<tt>getActorsByID</tt>を追加します。メソッドは、入力変数として<tt>filmId</tt>を使用し、問合せを構成します。
+        <pre class="examplecode">public List getActorsByID(int filmId){
+    List&lt;Actor&gt; actorList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery ("from Actor as actor where actor.actorId in (select filmActor.actor.actorId from FilmActor as filmActor where filmActor.film.filmId='" + filmId + "')");
+        actorList = (List&lt;Actor&gt;) q.list();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return actorList;
+}</pre>
+        </li>
+
+        <li>インポートを修正して変更内容を保存します。
+        <p>インポートを修正するときは、<tt>java.util.List</tt>と<tt>org.hibernate.Query</tt>を選択します。</p>
+        </li>
+    </ol>
+
+<a name="06d"></a>
+    <h3>ヘルパー・メソッドの追加</h3>
+    <p>ここでは、入力変数に基づいて問合せを作成するヘルパー・メソッドを追加します。問合せはHQL問合せエディタで確認できます。</p>
+
+
+
+    <ol>
+        <li><tt>filmId</tt>に基づいてカテゴリのリストを取り出す次のメソッドを追加します。
+<pre class="examplecode">public Category getCategoryByID(int filmId){
+    List&lt;Category&gt; categoryList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Category as category where category.categoryId in (select filmCat.category.categoryId from FilmCategory as filmCat where filmCat.film.filmId='" + filmId + "')");
+        categoryList = (List&lt;Category&gt;) q.list();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return categoryList.get(0);
+}</pre>
+        </li>
+        <li><tt>filmId</tt>に基づいて1つの映画を取り出す次のメソッドを追加します。
+        <pre class="examplecode">public Film getFilmByID(int filmId){
+
+    Film film = null;
+
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Film as film where film.filmId=" + filmId);
+        film = (Film) q.uniqueResult();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return film;
+}</pre>
+        </li>
+        <li><tt>langId</tt>に基づいて映画の言語を取り出す次のメソッドを追加します。
+        <pre class="examplecode">public String getLangByID(int langId){
+
+    Language language = null;
+
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Language as lang where lang.languageId=" + langId);
+        language = (Language) q.uniqueResult();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return language.getName();
+}</pre>
+        </li>
+        <li>変更を保存します。</li>
+    </ol>
+</div>
+
+
+
+        <a name="07"></a>
+        <h2>JSF管理対象Beanの作成</h2>
+        <p>この課題では、JSF管理対象Beanを作成します。管理対象Beanのメソッドは、JSFページにデータを表示したり、ヘルパー・クラスのメソッドにアクセスしてレコードを取り出すために使用されます。JSF 2.0仕様によって、スコープを指定したりBeanに名前を指定するためのJSF管理対象Beanとしてクラスを識別するため、Beanクラスに注釈を使用できます。</p>
+
+        <p>管理対象Beanを作成するには、次の手順を実行します。</p>
+        <ol>
+            <li><tt>dvdrental</tt>ソース・パッケージ・ノードを右クリックして「新規」>「その他」を選択します。</li>
+           <li>「JavaServer Faces」カテゴリからJSF管理対象Beanを選択します。「次」をクリックします。</li>
+           <li>「クラス名」に「<strong>FilmController</strong>」と入力します。
+                <p>Beanでメソッドをコールするときに、管理対象Bean名<tt>filmController</tt>を、JSFページ<tt>index.xhtml</tt>の<tt>inputText</tt>および<tt>commandButton</tt>の値として使用します。</p>
+           </li>
+           <li>パッケージに「<strong>dvdrental</strong>」を選択します。</li>
+           <li>管理対象Beanに使用する名前に「<strong>filmController</strong>」と入力します。</li>
+           <li>スコープを「セッション」に設定します。「終了」をクリックします。</li>
+        </ol>
+        <img alt="新規JSF管理対象Beanウィザード" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-newmanagedbean.png" title="新規JSF管理対象Beanウィザード">
+
+        <p>「終了」をクリックすると、IDEはBeanクラスを作成し、そのクラスがエディタに表示されます。IDEによって、<tt>@ManagedBean</tt>注釈と<tt>@SessionScoped</tt>注釈が追加されています。</p>
+<pre class="examplecode">
+@ManagedBean
+@SessionScoped
+public class FilmController {
+
+    /** Creates a new instance of FilmController */
+    public FilmController() {
+    }
+
+}
+</pre>
+
+        <p class="notes"><strong>注意:</strong>管理対象Beanの名前は明示的に指定されていません。デフォルトでは、Beanの名前はクラス名と同じになり、小文字で始まります。Beanの名前をクラス名とは異なるものにするには、<tt>@ManagedBean</tt>注釈のパラメータとして明示的に名前を指定します(たとえば、<tt>@ManagedBean(name="myBeanName")</tt>)。</p>
+        
+        <ol>
+            <li>このクラスに、次のフィールド(太字部分)を追加します。
+                <pre class="examplecode">
+@ManagedBean
+@SessionScoped
+public class FilmController {
+    <strong>int startId;
+    int endId;
+    DataModel filmTitles;
+    FilmHelper helper;
+    private int recordCount = 1000;
+    private int pageSize = 10;
+
+    private Film current;
+    private int selectedItemIndex;</strong>
+}</pre>
+            </li>
+            <li>次の太字部分のコードを追加してFilmControllerインスタンスを作成し、映画を取り出します。
+                <pre class="examplecode">
+    /** Creates a new instance of FilmController */
+    public FilmController() {
+        <strong>helper = new FilmHelper();
+        startId = 1;
+        endId = 10;
+    }
+
+    public FilmController(int startId, int endId) {
+        helper = new FilmHelper();
+        this.startId = startId;
+        this.endId = endId;
+    }
+
+    public Film getSelected() {
+        if (current == null) {
+            current = new Film();
+            selectedItemIndex = -1;
+        }
+        return current;
+    }
+
+
+    public DataModel getFilmTitles() {
+        if (filmTitles == null) {
+            filmTitles = new ListDataModel(helper.getFilmTitles(startId, endId));
+        }
+        return filmTitles;
+    }
+
+    void recreateModel() {
+        filmTitles = null;
+    }</strong></pre>
+        </li>
+        <li>表の表示とページへのナビゲートに使用される、次のメソッドを追加します。
+
+<pre class="examplecode"><strong>    public boolean isHasNextPage() {
+        if (endId + pageSize <= recordCount) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isHasPreviousPage() {
+        if (startId-pageSize > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public String next() {
+        startId = endId+1;
+        endId = endId + pageSize;
+        recreateModel();
+        return "index";
+    }
+
+    public String previous() {
+        startId = startId - pageSize;
+        endId = endId - pageSize;
+        recreateModel();
+        return "index";
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public String prepareView(){
+        current = (Film) getFilmTitles().getRowData();
+        return "browse";
+    }
+    public String prepareList(){
+        recreateModel();
+        return "index";
+    }
+</strong></pre>
+        <p>「index」または「browse」を返すメソッドによって、JSFナビゲーション・ハンドラは<tt>index.xhtml</tt>または<tt>browse.xhtml</tt>という名前のページを開くように求められます。JSF 2.0仕様では、Faceletsテクノロジを使用するアプリケーションで暗黙ナビゲーション・ルールを使用できます。このアプリケーションは、<tt>faces-config.xml</tt>にナビゲーション・ルールが構成されていません。かわりに、ナビゲーション・ハンドラが、アプリケーション内で適切なページを検索しようとします。</p>
+    </li>
+    <li>追加の映画の詳細を取り出すヘルパー・クラスにアクセスする、次のメソッドを追加します。
+<pre class="examplecode"><strong>    public String getLanguage() {
+        int langID = current.getLanguageByLanguageId().getLanguageId().intValue();
+        String language = helper.getLangByID(langID);
+        return language;
+    }
+
+    public String getActors() {
+        List actors = helper.getActorsByID(current.getFilmId());
+        StringBuffer totalCast = new StringBuffer();
+        for (int i = 0; i < actors.size(); i++) {
+            Actor actor = (Actor) actors.get(i);
+            totalCast.append(actor.getFirstName());
+            totalCast.append(" ");
+            totalCast.append(actor.getLastName());
+            totalCast.append("  ");
+        }
+        return totalCast.toString();
+    }
+
+    public String getCategory() {
+        Category category = helper.getCategoryByID(current.getFilmId());
+        return  category.getName();
+    }</strong>
+</pre>
+            </li>
+            <li>インポートを修正([Ctrl]-[Shift]-[I])して変更内容を保存します。</li>
+        </ol>
+        <p class="tips">エディタでコード補完を使用すると、コードの入力に役立ちます。</p>
+
+
+<!-- **************** Creating the Web Pages **************** -->
+
+<a name="08"></a>
+<h2>Webページの作成</h2>
+<p>この課題では、データを表示するWebページを2つ作成します。IDEが生成した<tt>index.xhtml</tt>を変更して、データベース内の映画を表示する表を追加します。次に、表の「View」リンクをクリックしたときに映画の詳細を表示する<tt>browse.xhtml</tt>を作成します。また、<tt>index.xhtml</tt>と<tt>browse.xhtml</tt>で使用するJSFテンプレート・ページも作成します。</p>
+
+<p class="tips">JSF 2.0およびFaceletsテンプレートの使用については、<a href="jsf20-intro.html">JavaServer Faces 2.0入門</a>を参照してください。</p>
+
+<div class="indent">
+    <a name="07a"></a>
+    <h3><tt>template.xhtml</tt>の作成</h3>
+    <p>最初に、<tt>index.xhtml</tt>ページと<tt>browse.xhtml</tt>ページの構成に使用する、JSF Faceletsテンプレート<tt>template.xhtml</tt>を作成します。</p>
+    <ol>
+        <li>「プロジェクト」ウィンドウで「DVDStore」プロジェクト・ノードを右クリックし、「新規」>「その他」を選択します。</li>
+        <li>「JavaServer Faces」カテゴリで「Faceletsテンプレート」を選択します。「次」をクリックします。</li>
+        <li>「ファイル名」に「<strong>template</strong>」と入力し、1つ目のCSSレイアウト・スタイルを選択します。</li>
+        <li>「終了」をクリックします。
+        <p>「終了」をクリックすると、エディタで<tt>template.xhtml</tt>ファイルが開きます。テンプレートには次のデフォルト・コードが含まれています。</p>
+            <pre class="examplecode">&lt;h:body&gt;
+
+    &lt;div id="top" class="top"&gt;
+        &lt;ui:insert name="top"&gt;Top&lt;/ui:insert&gt;
+    &lt;/div&gt;
+
+    &lt;div id="content" class="center_content"&gt;
+        &lt;ui:insert name="content"&gt;Content&lt;/ui:insert&gt;
+    &lt;/div&gt;
+
+&lt;/h:body&gt;</pre></li>
+    <li><tt>&lt;ui:insert></tt>要素を変更して、デフォルトで生成される名前を「body」に変えます。
+<pre class="examplecode">&lt;div id="content" class="center_content"&gt;
+        &lt;ui:insert name="<strong>body</strong>"&gt;Content&lt;/ui:insert&gt;
+&lt;/div&gt;</pre>
+    </li>
+    <li>変更を保存します。</li>
+    </ol>
+
+    <p><tt>index.xhtml</tt>および<tt>browse.xhtml</tt>の<tt>&lt;ui:define name="body"></tt>要素内の内容は、テンプレートの<tt>&lt;ui:insert name="body">Content&lt;/ui:insert></tt>で指定された場所に挿入されます。</p>
+
+
+
+
+    <h3><tt>index.xhtml</tt>の変更</h3>
+    <p>Webアプリケーションを作成すると、IDEが自動的にページの<tt>index.xhtml</tt>を生成します。この課題では、ページを変更して映画のタイトルのリストを表示するようにします。JSFページはJSF管理対象BeanのFilmControllerのメソッドをコールし、映画のリストを取り出して、映画のタイトルと説明の表を表示します。</p>
+    <ol>
+        <li>「プロジェクト」ウィンドウで「Webページ」フォルダを展開し、<tt>index.xhtml</tt>をエディタで開きます。
+        <p>新規プロジェクト・ウィザードで、次に示すデフォルトの<tt>index.xhtml</tt>を生成します。</p>
+<pre class="examplecode">&lt;html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"&gt;
+&lt;h:head&gt;
+        &lt;title&gt;Facelet Title&lt;/title&gt;
+    &lt;/h:head&gt;
+    &lt;h:body&gt;
+        Hello from Facelets
+    &lt;/h:body&gt;
+&lt;/html&gt;</pre></li>
+
+<li>ページを変更し、JSF<tt>&lt;ui:composition></tt>要素および<tt>&lt;ui:define></tt>要素を使用するようにして、<tt>&lt;h:form></tt>要素を追加します。
+    <pre class="examplecode">&lt;html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://java.sun.com/jsf/html"
+  <strong>xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+    &lt;ui:composition template="./template.xhtml"&gt;
+        &lt;ui:define name="body"&gt;
+            &lt;h:form&gt;
+
+            &lt;/h:form&gt;
+        &lt;/ui:define&gt;
+    &lt;/ui:composition&gt;</strong>
+&lt;/html&gt;</pre>
+    <p>タグの入力を開始すると、IDEは<tt>xmlns:ui="http://java.sun.com/jsf/facelets"</tt>タグ・ライブラリ宣言を追加します。</p>
+    <p><tt>&lt;ui:composition></tt>要素と<tt>&lt;ui:define></tt>要素は、作成するページ・テンプレートと組み合せて使用されます。<tt>&lt;ui:composition></tt>要素は、このページによって使用されるテンプレートの場所を参照します。<tt>&lt;ui:define></tt>要素は、含まれているコードが占有するテンプレート内での位置を参照します。</p>
+</li>
+<li>JSF管理対象Beanで<tt>previous</tt>メソッドおよび<tt>next</tt>メソッドをコールする、次のナビゲーション・リンクを追加します。
+    <pre class="examplecode">
+    &lt;ui:define name="body"&gt;
+            &lt;h:form&gt;
+                <strong>&lt;h:commandLink action="#{filmController.previous}" value="Previous #{filmController.pageSize}" rendered="#{filmController.hasPreviousPage}"/&gt;&nbsp;
+                &lt;h:commandLink action="#{filmController.next}" value="Next #{filmController.pageSize}" rendered="#{filmController.hasNextPage}"/&gt;&nbsp;</strong>
+            &lt;/h:form&gt;
+    &lt;/ui:define&gt;</pre>
+</li>
+
+<li>取り出された項目を表示する表を生成する次の<tt>dataTable</tt>要素(太字部分)を追加します。
+<pre class="examplecode">
+            &lt;h:form styleClass="jsfcrud_list_form"&gt;
+                &lt;h:commandLink action="#{filmController.previous}" value="Previous #{filmController.pageSize}" rendered="#{filmController.hasPreviousPage}"/&gt;&nbsp;
+                &lt;h:commandLink action="#{filmController.next}" value="Next #{filmController.pageSize}" rendered="#{filmController.hasNextPage}"/&gt;&nbsp;
+                <strong>&lt;h:dataTable value="#{filmController.filmTitles}" var="item" border="0" cellpadding="2" cellspacing="0" rowClasses="jsfcrud_odd_row,jsfcrud_even_row" rules="all" style="border:solid 1px"&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="Title"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:outputText value="#{item.title}"/&gt;
+                    &lt;/h:column&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="Description"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:outputText value="#{item.description}"/&gt;
+                    &lt;/h:column&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="&nbsp;"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:commandLink action="#{filmController.prepareView}" value="View"/&gt;
+                    &lt;/h:column&gt;
+                &lt;/h:dataTable&gt;
+                &lt;br/&gt;</strong>
+            &lt;/h:form&gt;
+</pre>
+        
+        <li>変更を保存します。</li>
+    </ol>
+    <p>これで、indexページにデータベース内の映画のタイトル・リストが表示されます。表の各行に、管理対象Beanの<tt>prepareView</tt>メソッドを呼び出す「View」リンクがあります。<tt>prepareView</tt>メソッドは「browse」を返し、<tt>browse.xhtml</tt>を開きます。</p>
+
+    <p class="notes"><strong>注意:</strong><tt>&lt;f:facet></tt>タグを入力すると、IDEは<tt>xmlns:f="http://java.sun.com/jsf/core</tt>タグ・ライブラリ宣言を追加します。<strong>ファイルにタグ・ライブラリが宣言されていることを確認してください。</strong></p>
+
+    
+    <!-- +++++++++++++++ Create browse.xhtml +++++++++++++++  -->
+    <a name="07b"></a>
+    <h3><tt>browse.xhtml</tt>の作成</h3>
+    <p>ここでは、選択した映画の詳細を表示する<tt>browse.xhtml</tt>ページを作成します。Faceletsテンプレート・クライアント・ウィザードを使用すると、作成したJSF Faceletsテンプレート<tt>template.xhtml</tt>に基づいて、ページを作成できます。</p>
+    <ol>
+        <li>「プロジェクト」ウィンドウで「DVDStore」プロジェクト・ノードを右クリックし、「新規」>「その他」を選択します。</li>
+        <li>「JavaServer Faces」カテゴリで「Faceletsテンプレート・クライアント」を選択します。「次」をクリックします。<br/><img alt="新規ファイル・ウィザードの「Faceletsテンプレート・クライアント」のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-faceletsclient.png" title="新規ファイル・ウィザードの「Faceletsテンプレート・クライアント」ファイル・タイプ"></li>
+        <li>「ファイル名」に「<strong>browse</strong>」と入力します。</li>
+        <li>「参照」をクリックして「ファイルを参照」ダイアログ・ボックスを開き、ページのテンプレートを特定します。</li>
+        <li>「Webページ」フォルダを展開し、「<tt>template.xhtml</tt>」を選択します。「ファイルを選択」をクリックします。<br/><img alt="「ファイルを参照」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-browsetemplate.png" title="「ファイルを参照」ダイアログでのテンプレートの選択"></li>
+        <li>「生成されたルート・タグ」に<strong>&lt;ui:composition></strong>を選択します。「終了」をクリックします。
+        <p>「終了」をクリックすると、<tt>browse.xhtml</tt>ファイルがエディタで開き、次のコードが表示されます。</p>
+        <pre class="examplecode">&lt;ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="./template.xhtml"&gt;
+
+    &lt;ui:define name="top"&gt;
+        top
+    &lt;/ui:define&gt;
+
+    &lt;ui:define name="body"&gt;
+        body
+    &lt;/ui:define&gt;
+
+&lt;/ui:composition&gt;</pre>
+        <p>新しいファイルが<tt>template.xhtml</tt>ファイルを指定し、<tt>&lt;ui:define></tt>タグに<tt>name="body"</tt>プロパティがあることを確認できます。 </p>
+        </li>
+        <li><tt>&lt;ui:define></tt>タグの間に次の太字のコードを追加してフォームを作成し、管理対象BeanのFilmControllerでメソッドをコールして、データを取り出し、フォームを生成します。
+            <pre class="examplecode">&lt;ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="./template.xhtml"
+    <strong>xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"</strong>&gt;
+
+        &lt;ui:define name="top"&gt;
+            top
+        &lt;/ui:define&gt;
+
+        &lt;ui:define name="body"&gt;
+        <strong>
+            &lt;h:form&gt;
+                &lt;h:panelGrid columns="2"&gt;
+                    &lt;h:outputText value="Title:"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.title}" title="Title"/&gt;
+                    &lt;h:outputText value="Description"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.description}" title="Description"/&gt;
+                    &lt;h:outputText value="Genre"/&gt;
+                    &lt;h:outputText value="#{filmController.category}"/&gt;
+
+                    &lt;h:outputText value="Cast"/&gt;
+                    &lt;h:outputText value="#{filmController.actors}"/&gt;
+
+
+                    &lt;h:outputText value="Film Length"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.length} min" title="Film Length"/&gt;
+
+                    &lt;h:outputText value="Language"/&gt;
+                    &lt;h:outputText value="#{filmController.language}" title="Film Length"/&gt;
+
+                    &lt;h:outputText value="Release Year"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.releaseYear}" title="Release Year"&gt;
+                        &lt;f:convertDateTime pattern="MM/dd/yyyy" /&gt;
+                    &lt;/h:outputText&gt;
+                    &lt;h:outputText value="Rental Duration"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rentalDuration}" title="Rental DUration"/&gt;
+                    &lt;h:outputText value="Rental Rate"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rentalRate}" title="Rental Rate"/&gt;
+                    &lt;h:outputText value="Replacement Cost"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.replacementCost}" title="Replacement Cost"/&gt;
+                    &lt;h:outputText value="Rating"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rating}" title="Rating"/&gt;
+                    &lt;h:outputText value="Special Features"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.specialFeatures}" title="Special Features"/&gt;
+                    &lt;h:outputText value="Last Update"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.lastUpdate}" title="Last Update"&gt;
+                        &lt;f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" /&gt;
+                    &lt;/h:outputText&gt;
+                &lt;/h:panelGrid&gt;
+                &lt;br/&gt;
+                &lt;br/&gt;
+                &lt;h:commandLink action="#{filmController.prepareList}" value="View All List"/&gt;
+                &lt;br/&gt;
+            &lt;/h:form&gt;
+</strong>
+        &lt;/ui:define&gt;
+    &lt;/ui:composition&gt;
+&lt;/html&gt;</pre>
+        <p><tt>browse.xhtml</tt>と<tt>index.xhtml</tt>が同じページ・テンプレートを使用していることが確認できます。</p>
+        </li>
+        <li>変更を保存します。</li>
+    </ol>
+
+
+     <a name="07b"></a>
+    
+</div>
+
+<a name="09"></a>
+<h2>プロジェクトの実行</h2>
+<p>アプリケーションの基本はこれで完了です。ここでアプリケーションを実行し、すべてが正常に動作するかを確認します。</p>
+<ol>
+    <li>メイン・ツールバーの「メイン・プロジェクトの実行」をクリックするか、「プロジェクト」ウィンドウでDVDStoreアプリケーション・ノードを右クリックして「実行」を選択します。
+    <p>変更したファイルがすべて保存され、アプリケーションがビルドされて、サーバーにデプロイされます。IDEは、映画のリストを表示するURL<tt>http://localhost:8080/DVDStore/</tt>で、ブラウザ・ウィンドウを開きます。</p>
+
+    <img alt="indexページに映画のリストが表示されたスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-browser1.png" title="indexページに映画のリストが表示されたスクリーンショット">
+    </li>
+    <li>ブラウザで、「View」をクリックして<tt>browse.xhtml</tt>をロードし、映画の詳細を表示します。<br/>
+    </li>
+</ol>
+
+
+
+    <a name="10"></a>
+    <h3>ソリューション・プロジェクトのダウンロード</h3>
+    <p>次の方法で、このチュートリアルにソリューションをプロジェクトとしてダウンロードできます。</p>
+    <ul>
+        <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/DVDStoreEE6.zip">終了したプロジェクトのZIPアーカイブ</a>をダウンロードします。</li>
+        <li>次の手順を実行して、プロジェクト・ソースをNetBeansのサンプルからチェックアウトします。
+            <ol>
+                <li>メイン・メニューから「チーム」>「Subversion」>「チェックアウト」を選択します。</li>
+                <li>「チェックアウト」ダイアログ・ボックスで次のリポジトリURLを入力します。<br /><tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br />「次」をクリックします。</li>
+                <li>「参照」をクリックして「リポジトリ・フォルダを参照」ダイアログ・ボックスを開きます。</li>
+                <li>ルート・ノードを展開し、<strong>samples/javaee/DVDStoreEE6</strong>を選択します。「OK」をクリックします。</li>
+                <li>ソースのローカル・フォルダを指定します。</li>
+                <li>「終了」をクリックします。
+                    <p>「終了」をクリックすると、IDEではローカル・フォルダがSubversionリポジトリとして初期化され、プロジェクト・ソースがチェックアウトされます。</p>
+                </li>
+                <li>チェックアウトが完了するときに表示されるダイアログで、「プロジェクトを開く」をクリックします。</li>
+            </ol>
+            <p class="notes"><strong>注意:</strong>Subversionのインストールの詳細は、<a href="../ide/subversion.html">NetBeans IDEでのSubversionガイド</a>の<a href="../ide/subversion.html#settingUp">Subversionの設定</a>の項を参照してください。</p>
+        </li>
+    </ul>
+
+
+    <a name="11"></a>
+    <h3>トラブルシューティング</h3>
+    <p>チュートリアルのアプリケーションで発生する問題の多くは、GlassFish Server Open Source EditionとMySQLデータベース・サーバーとの間の接続に原因があります。アプリケーションが正しく表示されない場合、またはサーバー・エラーが表示される場合、<a href="mysql-webapp.html">MySQLデータベースを使用した単純なWebアプリケーションの作成</a>のチュートリアルの<a href="mysql-webapp.html#troubleshoot">トラブルシューティング</a>または<a href="../ide/mysql.html">MySQLデータベースへの接続</a>のチュートリアルを参照してください。</p>
+    
+    <p>MySQLデータベースを使用するアプリケーションを初めてデプロイした場合、ソリューション・プロジェクトをダウンロードして実行すると、「出力」ウィンドウに次のエラーが表示される場合があります。</p>
+    
+    <pre class="examplecode">
+    SEVERE: JDBC Driver class not found: com.mysql.jdbc.Driver
+    java.lang.ClassNotFoundException: com.mysql.jdbc.Driver
+	at org.glassfish.web.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1509)
+
+        [...]
+
+	at java.lang.Thread.run(Thread.java:680)
+
+    SEVERE: Initial SessionFactory creation failed.org.hibernate.HibernateException: JDBC Driver class not found: com.mysql.jdbc.Driver
+    INFO: cleaning up connection pool: null
+    INFO: Domain Pinged: stable.glassfish.org</pre>
+    
+    <p>ブラウザ・ウィンドウに<tt>java.lang.ExceptionInInitializerError</tt>および次のスタック・トレースが表示される場合があります。</p>
+    <pre class="examplecode">
+    java.lang.ExceptionInInitializerError
+	at dvdrental.HibernateUtil.&lt;clinit&gt;(HibernateUtil.java:28)
+	...
+    Caused by: org.hibernate.HibernateException: JDBC Driver class not found: com.mysql.jdbc.Driver
+	
+	... 
+    Caused by: java.lang.ClassNotFoundException: com.mysql.jdbc.Driver
+	... </pre>
+    
+    <p>出力メッセージには、MySQLデータベースのJDBCドライバが見つからなかったことが示されます。最も可能性の高い原因は、MySQL JDBCドライバ・ファイルをGlassFishサーバー・インストールに追加する必要があるということです。ドライバがないことを確認し、ローカル・システムの<tt><em>GLASSFISH-INSTALL</em>/glassfish/domains/domain1/lib</tt>ディレクトリに移動します(ここで、<em>GLASSFISH-INSTALL</em>はGlassFishのインストール・ディレクトリです)。<tt>domain1/lib</tt>ディレクトリにJDBCドライバ・ファイル(たとえば、<code>mysql-connector-java-5.1.13-bin.jar</code>など)が含まれていない場合、JDBCドライバをディレクトリにコピーする必要があります。サーバーのインストール時、MySQL JDBCドライバはGlassFishインストールに追加されません。
+    </p>
+        
+    <p>次の手順を実行して、GlassFishインストールに、MySQL JDBCドライバのコピーを追加できます。
+    <ol>
+        <li><a href="http://dev.mysql.com/downloads/connector/j/">MySQL Connector/J JDBCドライバ</a>をダウンロードします。</li>
+        <li>ドライバを抽出し、GlassFishインストールの<tt>domain1/lib</tt>ディレクトリに、ドライバのファイル(たとえば、<code>mysql-connector-java-5.1.13-bin.jar</code>)をコピーします。</li>
+    </ol>
+        
+    <p>または、IDEを使用してMySQLデータベースを使用するアプリケーションを作成する場合、プロジェクトをデプロイすると、必要に応じてバンドルされているMySQL JDBCドライバがGlassFishサーバーに自動的にコピーされます。必要なJDBCドライバがIDEによってコピーされることを確認するには、メイン・メニューから「ツール」>「サーバー」を選択し、サーバー・マネージャを開いて、GlassFishサーバーに対して「JDBCドライバのデプロイメントを有効化」オプションが選択されていることを確認します。</p>
+    <p>MySQLデータベースを使用するWebアプリケーションを作成してデプロイした後、ローカルのGlassFishインストールの<code>domain1/lib</code>ディレクトリに移動すると、ディレクトリにJDBCドライバ・ファイルが含まれていることが確認できます。</p>
+
+    
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Hibernate%20in%20a%20Web%20Application">このチュートリアルに関するご意見をお寄せください</a></div>
+<br style="clear:both;" />
+
+<h2>関連項目</h2>
+    <ul>
+        <li><a href="jsf20-support.html">NetBeans IDEでのJSF 2.xのサポート</a></li>
+        <li><a href="jsf20-intro.html">JavaServer Faces 2.x入門</a></li>
+        <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+    </ul>
+
+   
+</body>
+</html>

@@ -1,0 +1,773 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Usando o CDI para Injetar Pacotes OSGi como Serviços no NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE and Maven to create an OSGi bundle that is accessed from a web application using CDI.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Usando o CDI para Injetar Pacotes OSGi como Serviços no NetBeans IDE</h1>
+
+
+        <p>Este documento demonstra como o suporte integrado para o framework <a href="http://www.osgi.org/Main/HomePage">Open Services Gateway Initiative</a> (OSGi) no NetBeans IDE simplifica o processo de criação de pacotes OSGi e o uso dos pacotes em seus projetos. Neste tutorial, você criará dois pacotes OSGi simples a partir do arquétipo de pacote Maven OSGi e, em seguida, implantará os pacotes no GlassFish Server Open Source Edition 3.1.
+        </p>
+
+        <p>Depois de criar os pacotes OSGi básicos, você criará uma aplicação cliente Web e usará o CDI para injetar os pacotes como um serviço. A seguir, você implantará a aplicação Web como um pacote no servidor. O tutorial, em seguida, demonstrará como usar a Console de Admin OSGi para trabalhar com pacotes OSGi.</p>
+        
+        <p>Utilizar um pacote OSGi em uma Aplicação Corporativa pode fornecer maior modularidade e flexibilidade em relação à atualização de pacotes individuais. O suporte predefinido para OSGi que acompanha o GlassFish Server torna a incorporação de pacotes na sua aplicação muito fácil.</p>
+
+        <p class="notes">Este tutorial tem base na publicação do blog <a href="http://blogs.oracle.com/arungupta/entry/totd_154_dynamic_osgi_services" target="_blank"> TOTD #154: Dynamic OSGi services in GlassFish 3.1 - Using CDI and @OSGiService </a> e outras entradas do blog que podem ser encontradas no <a href="http://blog.arungupta.me/" target="_blank">blog de Arun Gupta</a>. Certifique-se de visitar o blog e ver muitas outras entradas excelentes relacionadas ao trabalho com o OSGi.</p>
+        
+        <p>Além disso, os recursos a seguir contêm uma variedade de informações sobre o uso do OSGi e CDI em aplicações híbridas.</p>
+
+        <ul>        
+            <li><a href="http://weblogs.java.net/blog/2009/06/14/developing-hybrid-osgi-java-ee-applications-glassfish"> Desenvolvendo aplicações Híbridas (OSGi + Java EE) no GlassFish</a></li>
+            <li><a href="http://blogs.oracle.com/sivakumart/entry/typesafe_injection_of_dynamic_osgi"> Injeção segura de serviços OSGi dinâmicos em aplicações Java EE híbridas</a>
+            <li><a href="http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish"> Aplicações Web compatíveis com OSGi no GlassFish</a></li>
+            <li><a href="http://www.youtube.com/watch?v=vaOpJJ-Xm70"> Vídeo do YouTube: injeção segura de serviços OSGI dinâmicos com o GlassFish 3.1 e CDI </a></li>
+            <li><a href="http://glassfish.java.net/public/GF-OSGi-Features.pdf"> Desenvolvimento de Aplicações OSGi usando o GlassFish Server"</a> [PDF]</li>
+        </ul>
+        
+        <p><b>Exercícios do Tutorial</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+        <ul>
+            <li><a href="#Exercise_1">Criando o Projeto POM pai</a></li>
+            <li><a href="#Exercise_2">Criando os Projetos de Pacotes OSGi</a>
+                <ul>
+                    <li><a href="#Exercise_2a">Criando o Pacote da Interface MavenHelloServiceApi</a></li>
+                    <li><a href="#Exercise_2b">Criando o Pacote de Implementação MavenHelloServiceImpl</a></li>
+                    <li><a href="#Exercise_2c">Construindo e Implantando os Pacotes OSGi</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_3">Criando a Aplicação Cliente Web</a>
+                <ul>
+                    <li><a href="#Exercise_3a">Configurando as Dependências no Projeto POM</a></li>
+                    <li><a href="#Exercise_3b">Criando a Aplicação Web MavenHelloWebClient</a></li>
+                    <li><a href="#Exercise_3c">Construindo a Aplicação Web como um Pacote</a></li>
+                    <li><a href="#Exercise_3d">Implantando o Pacote de Aplicações Web</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_4">Instalando e Usando a Console de Admin OSGi</a></li>
+            <li><a href="#Exercise_5">Referências e Leitura Adicional</a></li>
+        </ul>
+
+          
+
+        <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+        <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software ou Recurso</th>
+                <th class="tblheader" scope="col">Versão Necessária</th>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://download.netbeans.org/netbeans/7.1/beta/">NetBeans IDE</a></td>
+                <td class="tbltd1">Versão Java EE 7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                <td class="tbltd1">versão 7 ou 8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                <td class="tbltd1">3.1.x ou 4.x</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><b>Pré-requisitos</b></p>
+    <p>Este tutorial pressupõe que você tenha algum conhecimento básico das tecnologias a seguir, ou alguma experiência de programação com elas:</p>
+    <ul>
+        <li>Programação em Java</li>
+        <li>NetBeans IDE</li>
+        <li>Framework Maven</li>
+    </ul>
+
+    <p>Antes de começar este tutorial, talvez você queira se familiarizar com a documentação a seguir.</p>
+    <ul>
+        <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Melhores Práticas para o Apache Maven no NetBeans IDE</a></li>
+        <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Capítulo 1. Introdução ao Apache Maven</a> (do <a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: A Referência Completa </a>)</li>
+        <li><a href="http://www.osgi.org/javadoc/r4v42/" target="_blank">Framework OSGi </a></li>
+    </ul>
+
+
+    <a name="intro"></a>
+    <!-- ===================================================================================== -->
+
+
+
+
+
+
+
+    <!-- ===================================================================================== -->
+    <!--                                Creating the POM Project                               -->
+    <!-- ===================================================================================== -->
+<a name="Exercise_1"></a>
+<h2>Criando o Projeto POM Pai</h2>
+<p>Nesta seção você criará o projeto POM pai para os pacotes OSGi que serão criados neste tutorial. Você editará o projeto POM (<tt>pom.xml</tt>) para adicionar elementos de Gerenciamento de Dependências que serão herdados como dependências por projetos filho.</p>
+<!--    In this exercise you will modify the project POM to specify the repository that contains
+    some of the artifacts that you will use later.-->
+    <ol>
+        <li>Selecione Novo Projeto (Ctrl-Shift-N; ⌘-Shift-N no Mac) no menu principal.</li>
+        <li>Selecione o Projeto POM na categoria Maven.<br> <img alt="tela do assistente Novo Projeto" class="margin-around b-all" src="../../../images_www/articles/72/javaee/osgi-cdi/cdi-newpomproject.png" title="Arquétipo do Projeto POM Maven no Assistente de Novo Projeto"></li>
+        
+        <li>Digite <strong>MavenOSGiCDIProject</strong> como nome do Projeto. Clique em Finalizar.
+        <p>Quando você clica em Finalizar, o IDE cria o projeto POM e abre o projeto na janela Projetos.</p>
+        </li>
+
+        <li>Expanda o nó dos Arquivos do Projeto na janela Projetos e clique duas vezes em <tt>pom.xml</tt> para abrir o arquivo no editor. 
+        <p>O POM básico do projeto deverá ser similar ao seguinte.</p>
+        <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+&lt;/project&gt;
+        </pre>
+        </li>
+        <li>Modifique o <tt>pom.xml</tt> pai para adicionar os elementos a seguir. Salve as alterações.
+        <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    <strong>&lt;dependencyManagement&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+                &lt;version&gt;4.2.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+        &lt;/dependencies&gt;
+    &lt;/dependencyManagement&gt;</strong>
+&lt;/project&gt;
+        </pre>
+        </li>
+    </ol>
+  
+    <p>Neste exercício, você especificou explicitamente um artefato e a versão do artefato que serão usados no projeto. Ao usar o Gerenciamento de Dependências e especificar os artefatos no POM pai, é possível tornar os POMs nos projetos filho mais simples e garantir que as versões das dependências estejam consistentes no projeto.</p>
+    
+    <p>Para saber mais sobre o uso do Gerenciamento de Dependências, consulte <a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">Introdução ao Mecanismo de Dependências</a>.</p>
+
+
+
+
+
+    <!-- ===================================================================================== -->
+    <!--                                Creating the OSGi Bundles                              -->
+    <!-- ===================================================================================== -->
+    <a name="Exercise_2"></a>
+    <h2>Criando os Projetos de Pacotes OSGi</h2>
+    <p>A categoria Maven no assistente Novos Projetos inclui um arquétipo do Pacote OSGi para a criação de projetos de pacotes OSGi. Quando você cria um projeto de pacote OSGi, o POM gerado declara o JAR <tt>org.osgi.core</tt> como uma dependência e especifica o <tt>plug-in-do-pacote-maven</tt> para a construção do projeto.</p>
+
+    
+    
+    
+
+    <div class="indent">
+    
+    <!-- ===================================================================================== -->
+    <!--                                Creating the API bundle                                -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2a"></a>
+        <h3>Criando o Pacote da Interface MavenHelloServiceApi</h3>
+        <p>Neste exercício, você utilizará o assistente Novo Projeto para criar um projeto de pacote OSGi que fornecerá uma interface simples que será implementada por outros pacotes. Depois de criar o pacote e a interface, você modificará o POM para atualizar a dependência no artefato <tt>org.osgi.core</tt> que foi especificado no projeto POM pai.
+        </p>
+    
+        <ol>
+            <li>Selecione Arquivo > Novo Projeto para abrir o assistente de Novo Projeto.</li>
+            <li>Selecione Pacote OSGi na categoria Maven. Clique em Próximo.<br> <img alt="tela do assistente Novo Projeto" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-new-osgiproject.png" title="Arquétipo do Pacote OSGI Maven no assistente de Novo Projeto"></li>
+            <li>Digite <strong>MavenHelloServiceApi</strong> como Nome do Projeto.</li>
+            <li>Clique em Procurar e selecione o projeto POM <strong>MavenOSGiCDIProject</strong> como o Local. Clique em Finalizar.
+            <p>Quando você clica em Finalizar, o IDE cria o projeto do pacote e abre o projeto na janela Projetos. Se você abrir <tt>pom.xml</tt> para o projeto MavenHelloServiceApi no editor, verá que o elemento <tt>encapsulamento</tt> especifica o <tt>pacote</tt> e que o <tt>plug-in-do-pacote-maven</tt> será usado ao construir o pacote.</p>
+<pre class="examplecode">&lt;project&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;parent&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;/parent&gt;
+
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenHelloServiceApi&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    <strong>&lt;packaging&gt;bundle&lt;/packaging&gt;</strong>
+    &lt;name&gt;MavenHelloServiceApi OSGi Bundle&lt;/name&gt;
+
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+            &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+            &lt;version&gt;4.3.0&lt;/version&gt;
+            &lt;scope&gt;provided&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    &lt;build&gt;
+        &lt;plugins&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+                <strong>&lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;</strong>
+                &lt;version&gt;2.3.7&lt;/version&gt;
+                &lt;extensions&gt;true&lt;/extensions&gt;
+                &lt;configuration&gt;
+                    &lt;instructions&gt;
+                        &lt;Bundle-Activator&gt;com.mycompany.mavenhelloserviceimpl.Activator&lt;/Bundle-Activator&gt;
+                        &lt;Export-Package /&gt;
+                    &lt;/instructions&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+
+            ...
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+
+    ...
+&lt;project&gt;</pre>
+            <p>Você também poderá ver que, ao criar um projeto de pacote OSGi utilizando o arquétipo do Pacote OSGi Maven, o IDE adicionou o artefato <tt>org.osgi.core</tt> como uma dependência por padrão.</p>
+            </li>
+            <li>Clique com o botão direito do mouse no nó do projeto MavenHelloServiceApi na janela Projetos e selecione Propriedades.</li>
+            <li>Selecione a categoria Códigos-fonte na caixa de diálogo Propriedades do Projeto.</li>
+            <li>Defina <strong>Source/Binary Format</strong> como 1.6 e confirme se a <strong>Codificação</strong> é UTF-8. Clique em OK.</li>
+            <li>Clique com o botão direito do mouse no nó Pacotes de Código-fonte e selecione Novo > Interface Java.</li>
+            <li>Digite <strong>Hello</strong> como Nome da Classe.</li>
+            <li>Selecione <strong>com.mycompany.mavenhelloserviceapi</strong> como o Pacote. Clique em Finalizar.</li>
+            <li>Adicione o método <tt>sayHello</tt> a seguir à interface (em negrito) e salve as alterações. 
+        <pre class="examplecode">
+public interface Hello {
+    <strong>String sayHello(String name);</strong>
+}</pre>
+            </li>
+
+            <li>Clique com o botão direito do mouse no nó do projeto na janela Projetos e selecione Construir.        
+            <p>Depois de construir o projeto, se você abrir a janela Arquivos e expandir o nó do projeto, verá que <tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt> foi criado na pasta de <tt>destino</tt>.</p>
+
+            <img alt="Tela do projeto na janela de Arquivos" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-manifest.png" title="Exibir o conteúdo do JAR compilado na janela Arquivos" />
+
+
+
+        <p>O <tt>plug-in-do-pacote-maven</tt> trata da geração do arquivo <tt>MANIFEST.MF</tt> ao construir o projeto. Se abrir o arquivo <tt>MANIFEST.MF</tt> no JAR compilado, você verá que o plug-in gerou um cabeçalho de manifesto que declara os pacotes exportados. Para OSGi, todos os pacotes que você deseja que sejam expostos e estejam disponíveis para outros pacotes devem ser listados no elemento <tt>Exportar-Pacote</tt> no <tt>MANIFEST.MF</tt>.</p></li>
+            <li>Confirme se o <tt>MANIFEST.MF</tt> contém o elemento <tt>Export-Package</tt> (o elemento mostrado em <strong>negrito</strong> no exemplo abaixo).
+        
+        <pre class="examplecode">
+Manifest-Version: 1.0
+Bnd-LastModified: 1395049732676
+Build-Jdk: 1.7.0_45
+Built-By: nb
+Bundle-Activator: com.mycompany.mavenhelloserviceapi.Activator
+Bundle-ManifestVersion: 2
+Bundle-Name: MavenHelloServiceApi OSGi Bundle
+Bundle-SymbolicName: com.mycompany.MavenHelloServiceApi
+Bundle-Version: 1.0.0.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+<strong>Export-Package: com.mycompany.mavenhelloserviceapi;uses:="org.osgi.frame
+ work";version="1.0.0.SNAPSHOT"</strong>
+Import-Package: org.osgi.framework;version="[1.6,2)"
+Tool: Bnd-1.50.0</pre>
+        
+        <p>O contêiner OSGi lerá o cabeçalho do manifesto <tt>Exportar-Pacote</tt> para determinar as classes no pacote que podem ser acessadas de fora do pacote. Nesse exemplo, as classes no pacote <tt>com.mycompany.mavenhelloserviceapi</tt> estão expostas.</p>
+
+        <p class="notes"><strong>Observação.</strong> Se o <tt> MANIFEST.MF</tt> não contiver o elemento <tt> Export-Package</tt>, você precisará ativar o procedimento do plug-in default para o plug-in na janela Propriedades do Projeto e reconstruir o projeto. Na janela Propriedades do Projeto, selecione a categoria Exportar Pacotes e selecione a opção <strong>Default maven-bundle-plugin behavior</strong>. Você pode usar o painel Exportar Pacotes da janela Propriedades do Projeto para especificar explicitamente os pacotes que deverão ser expostos ou especificar os pacotes diretamente em <tt>pom.xml.</tt>.</p>
+        </li>
+        </ol>
+    <!-- ===================================================================================== -->
+    <!--                                Creating the Impl bundle                               -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2b"></a>
+        <h3>Criando o Pacote de Implementação MavenHelloServiceImpl</h3>
+        <p>Neste exercício, você criará o MavenHelloServiceImpl no projeto POM.</p>
+        <ol>
+            <li>Selecione Arquivo > Novo Projeto para abrir o assistente de Novo Projeto.</li>
+            <li>Selecione o Pacote OSGi na categoria Maven. Clique em Próximo.</li>
+            <li>Digite <strong>MavenHelloServiceImpl</strong> como Nome do Projeto.</li>
+            <li>Clique em Procurar e selecione o projeto POM <strong>MavenOSGiCDIProject</strong> como o Local (caso não esteja selecionado). Clique em Finalizar.</li>
+            <li>Clique com o botão direito do mouse no nó do projeto na janela Projetos e escolha Propriedades.</li>
+            <li>Selecione a categoria Códigos-fonte na caixa de diálogo Propriedades do Projeto.</li>
+            <li>Defina <strong>Source/Binary Format</strong> como 1.6 e confirme se a <strong>Codificação</strong> é UTF-8. Clique em OK.</li>
+            <li>Clique com o botão direito do mouse no nó Pacotes de Código-fonte na janela Projetos e selecione Novo > Classe Java.</li>
+            <li>Digite <strong>HelloImpl</strong> para o Nome da Classe.</li>
+            <li>Selecione <strong>com.mycompany.mavenhelloserviceimpl</strong> como o Pacote. Clique em Finalizar.</li>
+            <li>Digite o seguinte (em negrito) e salve as alterações. 
+        <pre class="examplecode">
+public class HelloImpl <strong>implements Hello {
+    
+    public String sayHello(String name) {
+        return "Hello " + name;</strong>
+    }
+}</pre>
+    
+            <p>Quando você implementar <tt>Hello</tt>, o IDE exibirá um erro que deverá ser resolvido adicionando o projeto MavenHelloServiceApi como uma dependência.</p>
+            </li>
+            <li>Clique com o botão direito do mouse no nó Dependências do <strong>MavenHelloServiceImpl</strong> na janela Projetos e selecione Adicionar Dependência.</li>
+            <li>Clique na guia Abrir Projetos na caixa de diálogo Adicionar Biblioteca.</li>
+            <li>Selecione o Pacote OSGi MavenHelloServiceApi. Clique em Add.<br> <img alt="Tela da caixa de diálogo Adicionar Biblioteca" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-add-dependency.png" title="Clique na guia Abrir Projetos na caixa de diálogo Adicionar Biblioteca.">
+            </li>
+            <li>Clique com o botão direito do mouse na classe <tt>HelloImpl.java</tt> que está aberta no editor e selecione Corrigir Importações (Alt-Shift-I; ⌘-Shift-I no Mac) para adicionar uma instrução de importação para <tt>com.mycompany.mavenhelloserviceapi.Hello</tt>. Salve as alterações.</li>
+            <li>Expanda o pacote <tt>com.mycompany.mavenhelloserviceimpl</tt> e clique duas vezes em <tt>Activator.java</tt> para abrir o arquivo no editor.<br> <img alt="tela da janela Projetos" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-activator.png" title="Classe do ativador na janela Projetos">
+            <p>O IDE criou automaticamente a classe ativadora do pacote <tt>Activator.java</tt> em seu projeto. Um ativador de pacote é utilizado para gerenciar o ciclo de vida de um pacote. A classe do ativador de pacote é declarada no <tt>MANIFEST.MF</tt> do pacote e é instanciada quando o pacote é iniciado pelo contêiner.</p>
+
+            <p>Um pacote OSGi não requer uma classe de ativador de pacote, mas é possível utilizar o método <tt>start()</tt> na classe do ativador, por exemplo, para inicializar serviços ou outros recursos necessários para o pacote. Neste exercício, você adicionará algumas linhas de código à classe que imprimirá mensagens na janela de Saída. Isso facilitará a identificação de quando um pacote é iniciado e parado.</p>
+            </li>
+            <li>Modifique os métodos <tt>start()</tt> e <tt>stop()</tt> na classe do ativador do pacote para adicionar as linhas a seguir (em negrito).
+            <pre class="examplecode">
+public class Activator implements BundleActivator {
+
+    public void start(BundleContext context) throws Exception {
+        <strong>System.out.println("HelloActivator::start");
+        context.registerService(Hello.class.getName(), new HelloImpl(), null);
+        System.out.println("HelloActivator::registration of Hello service successful");</strong>
+    }
+
+    public void stop(BundleContext context) throws Exception {
+        <strong>context.ungetService(context.getServiceReference(Hello.class.getName()));
+        System.out.println("HelloActivator stopped");</strong>
+    }
+}</pre>
+    
+            <p>Você pode ver que a classe do ativador de pacotes importa <tt>org.osgi.framework.BundleActivator</tt> e <tt>org.osgi.framework.BundleContext</tt>. Por default, a classe gerada contém dois métodos: <tt>start()</tt> e <tt>stop()</tt>. O framework do OSGi invoca os métodos <tt>start()</tt> e <tt>stop()</tt> para iniciar e parar a funcionalidade fornecida pelo pacote. Quando o pacote é iniciado, o componente de serviço fornecido pelo pacote é registrado no registro de serviço do OSGi. Depois que um pacote é registrado, outros pacotes poderão utilizar o registro para pesquisa e, em seguida, utilizar os serviços ativos por meio do contexto do pacote.</p>
+        
+            <p>Ao olhar o POM do projeto, você verá o elemento <tt>&lt;Bundle-Activator></tt> que especifica o ativador do pacote sob o elemento de configuração do <tt>plug-in-do-pacote-maven</tt>.</p>
+            <pre class="examplecode">
+&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;
+    &lt;version&gt;2.3.7&lt;/version&gt;
+    &lt;extensions&gt;true&lt;/extensions&gt;
+      &lt;configuration&gt;
+            &lt;instructions&gt;
+                  <strong>&lt;Bundle-Activator&gt;com.mycompany.mavenhelloserviceimpl.Activator&lt;/Bundle-Activator&gt;</strong>
+            &lt;/instructions&gt;
+      &lt;/configuration&gt;
+&lt;/plugin&gt;</pre>
+            <p>Quando você construir o pacote, o plug-in gerará um Cabeçalho de Manifesto no arquivo de manifesto do pacote no JAR e especificará a classe do Ativador do Pacote. O runtime do OSGi procura pelo cabeçalho <tt>Bundle-Activator</tt> no arquivo do manifesto quando um pacote é implantado.</p>
+            </li>
+            <li>Corrija as instruções de importação em <tt>Activator.java</tt> para importar <tt>com.mycompany.mavenhelloserviceapi.Hello</tt>. Salve as alterações.</li>
+            <li>Expanda o nó Dependências e confirme se o artefato <tt>org.osgi.core</tt> é listado como uma dependência.
+                <p class="notes"><strong>Observação.</strong> Remova todas as versões mais antigas do artefato que são listadas no nó Dependências, clicando com o botão direito do mouse no artefato e escolhendo Remover Dependência. As únicas dependências devem ser o projeto MavenHelloServiceApi e o artefato <tt>org.osgi.core</tt>.</p>
+        <img alt="tela da janela Projetos" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-implproject.png" title="Classe do ativador na janela Projetos" />
+        </li>
+        </ol>
+        
+        
+        
+    <!-- ===================================================================================== -->
+    <!--                               Building and Deploying Bundles                          -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2c"></a>
+        <h3>Construindo e Implantando os Pacotes OSGi</h3>
+        <p>Neste exercício, você construirá os pacotes OSGi e implantará os pacotes no GlassFish.</p>
+
+        <ol>
+            <li>Clique com o botão direito do mouse no nó MavenOSGiCDIProject na janela Projetos e selecione Limpar e Construir. 
+                <p>Quando você construir o projeto, o IDE criará os arquivos JAR na pasta de <tt>destino</tt> de cada um dos projetos e também instalará o JAR de snapshot no repositório local. Na janela Arquivos, você pode expandir a pasta de <tt>destino</tt> para cada um dos dois projetos de pacotes e ver os dois arquivos compactados JAR (<tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt> e <tt>MavenHelloServiceImpl-1.0-SNAPSHOT.jar</tt>).</p>
+            </li>
+            <li>Inicie o GlassFish Server, se ainda não o tiver feito.</li>
+            <li>Copie o <tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt> para o diretório <tt>glassfish/domains/domain1/autodeploy/bundles/</tt> da instalação do GlassFish. 
+
+                <p>No log do GlassFish Server, na janela de Saída, você deverá ver uma saída semelhante à mostrada a seguir.</p>
+                <pre class="examplecode">
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceApi-1.0-SNAPSHOT.jar
+</pre>
+            <p class="tips">Clique com o botão direito do mouse no nó do GlassFish Server na janela Serviços e selecione Exibir Log do Servidor de Domínio, se o log do servidor não estiver visível na janela de Saída.</p>
+            </li>
+            <li>Repita as etapas para copiar o <tt>MavenHelloServiceImpl-1.0-SNAPSHOT.jar</tt> no diretório <tt>autodeploy/bundles</tt>. </li>
+        </ol>
+        
+        <p>No log do GlassFish Server, você agora deverá ver uma saída semelhante à mostrada a seguir.</p>
+        <pre class="examplecode">
+INFO: HelloActivator::start
+INFO: HelloActivator::registration of Hello service successful
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceImpl-1.0-SNAPSHOT.jar
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceImpl-1.0-SNAPSHOT.jar
+        </pre>
+        
+        
+        
+        <p class="tips">Ou então, é possível instalar os pacotes a partir da Console de Admin OSGi do GlassFish. Para obter mais informações, consulte a seção <a href="#Exercise_4">Instalando e Usando a Console de Admin OSGi</a>.</p>
+    </div>
+
+
+    <!-- ===================================================================================== -->
+    <!--                           Creating the web client application                         -->
+    <!-- ===================================================================================== -->
+    <a name="Exercise_3"></a>
+    <h2>Criando uma Aplicação Cliente Web</h2>
+    <p>Esta seção demonstra como criar um cliente Web Java EE que acessa o serviço fornecido pelo pacote OSGi. Você criará um servlet simples em uma aplicação Web e, em seguida, injetará os serviços declarados. Antes de criar o projeto, você adicionará alguns elementos de gerenciamento de dependências ao projeto POM pai.</p> 
+
+    
+    <div class="indent">
+            
+        <a name="Exercise_3a"></a>
+        <h3>Configurando dependências no Projeto POM Pai</h3>
+        <p>Neste exercício, você especificará elementos de dependência no projeto POM pai. Você também adicionará um repositório para artefatos que serão utilizados no projeto.</p>
+            
+        <ol>
+            <li>Expanda o nó Arquivos do Projeto do projeto <strong>MavenOSGiCDIProject</strong> na janela Projetos e clique duas vezes em <tt>pom.xml</tt> para abrir o arquivo no editor.</li>
+            <li>Modifique o <tt>pom.xml</tt> pai para adicionar os seguintes elementos de Gerenciamento de Dependências (em negrito). Salve as alterações.
+            <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    ...    
+            
+    &lt;dependencyManagement&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+                &lt;version&gt;4.3.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+            <strong>&lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.compendium&lt;/artifactId&gt;
+                &lt;version&gt;4.2.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.glassfish&lt;/groupId&gt;
+                &lt;artifactId&gt;osgi-cdi-api&lt;/artifactId&gt;
+                &lt;version&gt;3.1-b41&lt;/version&gt;
+                &lt;type&gt;jar&lt;/type&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;</strong>
+          
+        &lt;/dependencies&gt;
+    &lt;/dependencyManagement&gt;
+
+    ...
+&lt;/project&gt;
+</pre>
+            </li>
+            <li>Adicione os elementos a seguir para adicionar o repositório do GlassFish ao POM. Salve as alterações.
+            <pre class="examplecode">
+&lt;project&gt;
+
+    ...
+
+    &lt;/dependencyManagement&gt;
+
+    <strong>&lt;repositories&gt;
+        &lt;!-- glassfish nexus repo for glassfish dependencies --&gt;
+        &lt;repository&gt;
+            &lt;id&gt;glassfish-repo-archive&lt;/id&gt;
+            &lt;name&gt;Nexus repository collection for Glassfish&lt;/name&gt;
+            &lt;url&gt;http://maven.glassfish.org/content/groups/glassfish&lt;/url&gt;
+            &lt;snapshots&gt;
+                &lt;updatePolicy&gt;never&lt;/updatePolicy&gt;
+            &lt;/snapshots&gt;
+        &lt;/repository&gt;
+    &lt;/repositories&gt;</strong>
+    &lt;modules&gt;
+        &lt;module&gt;MavenHelloServiceApi&lt;/module&gt;
+        &lt;module&gt;MavenHelloServiceImpl&lt;/module&gt;
+    &lt;/modules&gt;
+&lt;/project&gt;
+            </pre>
+            </li>
+        </ol>
+
+        <p>Depois de adicionar o repositório do GlassFish ao POM, se você exibir a lista de repositórios no nó Repositórios Maven na janela Serviços, verá que o IDE adicionou automaticamente um nó para o repositório do GlassFish. Por default, o IDE exibe um nó para o repositório Maven Local. Quando um projeto aberto especifica um repositório, o IDE automaticamente adiciona um nó ao repositório no nó Repositórios Maven. 
+        </p>
+        <img alt="Tela da janela Repositórios Maven" class="margin-around b-all" src="../../../images_www/articles/72/javaee/osgi-cdi/cdi-maven-repositories.png" title="Repositório do GlassFish na janela Repositórios Maven" />
+        
+        <p>Neste exercício, você adicionou artefatos extras e versões de artefatos que serão utilizados no projeto. Você também adicionou o repositório do GlassFish que contém os artefatos <tt>osgi-cdi-api</tt>.</p>
+            
+            
+        
+        <a name="Exercise_3b"></a>
+        <h3>Criando a Aplicação Web MavenHelloWebClient</h3>
+        <p>Primeiro, você criará uma aplicação Web regular e, em seguida, modificará o projeto para torná-lo um pacote OSGi (Pacote de Aplicação Web (WAB)).</p>
+        <ol>
+            <li>Escolha Arquivo > Novo Projeto no menu principal.</li>
+            <li>Selecione Aplicação Web na categoria Maven. Clique em Próximo.</li>
+            <li>Digite <strong>MavenHelloWebClient</strong> como nome do Projeto.</li>
+            <li>Clique em Procurar e selecione o projeto POM <strong>MavenOSGiCDIProject</strong> como o Local (caso não esteja selecionado). Clique em Próximo.</li>
+            <li>Selecione o GlassFish Server como servidor e o Java EE 6 ou Java EE 7 como a versão do Java EE. Clique em Finalizar.</li>
+            <li>Clique com o botão direito do mouse no nó do projeto e selecione Novo > Servlet.</li>
+            <li>Digite <strong>HelloServlet</strong> no Nome da Classe.</li>
+            <li>Selecione <tt>com.mycompany.mavenhellowebclient</tt> como o Pacote. Clique em Finalizar.</li>
+            <li>Delete os métodos default no servlet que foram gerados pelo IDE (<tt>processRequest</tt>, <tt>doGet</tt>, <tt>doPost</tt>, <tt>getServletInfo</tt>).
+                <p class="notes"><strong>Observação.</strong> Você precisará expandir a pasta do editor para deletar os métodos do HttpServlet.</p></li>
+            <li>Digite o código a seguir (em negrito) para injetar o serviço.
+            <pre class="examplecode">
+@WebServlet(name = "HelloServlet", urlPatterns = {"/HelloServlet"})
+public class HelloServlet extends HttpServlet {
+
+    <strong>@Inject
+    @OSGiService(dynamic=true)
+    Hello hello;</strong>
+}</pre>
+            </li>
+            <li>Adicione o método <tt>doGet</tt> a seguir. 
+            <pre class="examplecode">
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        PrintWriter out = response.getWriter();
+        out.println(hello.sayHello("Duke"));
+    }</pre>
+            </li>
+            <li>Clique com o botão direito do mouse no nó do projeto e selecione Novo > Outro.</li>
+            <li>Selecione <strong>beans.xml</strong> na categoria Contextos e Injeção de Dependências. Clique em Próximo.</li>
+            <li>Use o nome de arquivo default (<tt>beans</tt>). Clique em Finalizar.
+                <p>Quando você clicar em Finalizar, o assistente criará o arquivo <tt>beans.xml</tt> na aplicação Web. O CDI será automaticamente ativado se o <tt>beans.xml</tt> for parte da aplicação.</li>
+            <li>Modifique o arquivo <tt>beans.xml</tt> para alterar o valor padrão de <tt>bean-discovery-mode</tt> para <tt>all</tt>.
+                <pre class="examplecode">bean-discovery-mode="<strong>all</strong>"</pre>
+                <p>Salve suas alterações e feche o arquivo.</p>
+                <p>Para obter mais informações sobre as diferenças entre os valores <tt>bean-discovery-mode</tt>, consulte as seguintes páginas:</p>
+                <ul>
+                    <li><a href="http://docs.oracle.com/javaee/7/tutorial/doc/cdi-adv001.htm">25.1 Encapsulando Aplicações CDI</a> no Tutorial do Java EE 7</li>
+                    <li><a href="http://stackoverflow.com/questions/18107858/cdi-inject-fails-on-maven-embedded-glassfish-plugin-org-jboss-weld-exceptions">http://stackoverflow.com/questions/18107858/cdi-inject-fails-on-maven-embedded-glassfish-plugin-org-jboss-weld-exceptions</a></li>
+                </ul>
+            </li>
+            <li>Clique com o botão direito do mouse no nó Dependências do MavenHelloWebClient na janela Projetos e selecione Adicionar Dependência.</li>
+            <li>Selecione <strong>Provided</strong> como o Escopo.</li>
+            <li>Clique na guia Abrir Projetos na caixa de diálogo Adicionar Biblioteca e selecione <strong>Pacote OSGi MavenHelloServiceApi</strong>. Clique em Add.</li>
+            <li>Clique novamente com o botão direito do mouse no nó Dependências e selecione Adicionar Dependência.</li>
+            <li>Clique na guia Gerenciamento de Dependências na caixa de diálogo Adicionar Biblioteca e selecione o artefato <tt>osgi-cdi-api</tt> que você especificou no projeto POM pai. Clique em Add.<br /> <img alt="Tela da caixa de diálogo Adicionar Biblioteca" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-add-dependency3.png" title="Guia de Gerenciamento de Dependências na caixa de diálogo Adicionar Biblioteca" />
+            </li>
+            <li>Clique com o botão direito do mouse em <tt>HelloServlet.java</tt> no editor e selecione Corrigir Importações (Alt-Shift-I; ⌘-Shift-I no Mac) para adicionar <tt>com.mycompany.mavenhelloserviceapi.Hello</tt>, <tt>javax.inject.Inject</tt> e <tt>org.glassfish.osgicdi.OSGiService</tt>. Salve as alterações.
+                
+                <p class="notes"><strong>Observação.</strong> Pode ser preciso adicionar manualmente uma instrução de importação para o <tt>com.mycompany.mavenhelloserviceapi.hello</tt> se o IDE não adicionar automaticamente para você.</p>
+            </li>
+            <li>Clique com o botão direito do mouse em MavenOSGiCDIProject e selecione Limpar e Construir.</li>
+
+        </ol>
+        <p>Ao construir o projeto, na janela de Saída, você deverá ver uma saída semelhante à seguinte.</p>
+        <pre class="examplecode">
+Reactor Summary:
+
+MavenOSGiCDIProject ............................... SUCCESS [0.798s]
+MavenHelloServiceApi OSGi Bundle .................. SUCCESS [7.580s]
+MavenHelloServiceImpl OSGi Bundle ................. SUCCESS [1.142s]
+MavenHelloWebClient ............................... SUCCESS [8.072s]
+------------------------------------------------------------------------
+BUILD SUCCESS</pre>
+        <p class="notes"><strong>Observação.</strong> Crie a aplicação web manualmente se ela não for criada automaticamente quando você criar o projeto MavenOSGiCDIProject.</p>
+        <p>Na janela Arquivos, expanda o nó do projeto para a aplicação Web e confirme se o arquivo compactado <tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt> foi criado no diretório de destino. Se você expandir o arquivo compactado WAR do cliente Web e examinar o <tt>MANIFEST.MF</tt>, verá que o manifesto contém linhas similares às seguintes.</p>
+        <pre class="examplecode">
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: nb
+Build-Jdk: 1.7.0_45</pre>
+
+        
+        
+
+        <a name="Exercise_3c"></a>
+        <h3>Construindo a aplicação Web como um Pacote OSGi</h3>
+        <p>Para usar o <tt>@OSGiService</tt> e recuperar pacotes OSGi registrados, é preciso tornar a aplicação Web um pacote que possa acessar o <tt>BundleContext</tt>. Para tornar o WAR um pacote OSGi (Pacote de Aplicação Web), adicione os metadados <tt>Web-ContextPath</tt> ao <tt>MANIFEST.MF</tt> no WAR. 
+<!--        To do this, you create a properties file that contains the meta-data, 
+        and then modify the POM so that the meta-data is included in the <tt>MANIFEST.MF</tt> when you build the WAR.-->
+        Para tanto, especifique o elemento <tt>&lt;Web-ContextPath></tt> nas instruções do <tt>maven-bundle-plugin</tt> e o manifesto gerado pelo plug-in conterá o elemento. Em seguida, você modificará a configuração do <tt>maven-war-plugin</tt> para instruir o plug-in a adicionar o manifesto que foi gerado pelo <tt>plug-in-do-pacote-maven</tt> ao arquivo compactado WAR.
+        </p>
+
+
+        <ol>
+            
+            <li>Na janela Projetos, expanda o nó dos Arquivos de Projeto sob o MavenHelloWebCliente clique duas vezes em <tt>pom.xml</tt> para abrir o arquivo no editor.</li>
+            <li>Adicione a seguinte entrada para adicionar o <tt>plug-in-do-pacote-maven</tt> ao POM. 
+                <pre class="examplecode">
+&lt;build&gt; 
+    &lt;plugins&gt;
+        <strong>&lt;plugin&gt;
+             &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+             &lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;
+             &lt;version&gt;2.2.0&lt;/version&gt;
+             &lt;extensions&gt;true&lt;/extensions&gt;
+             &lt;configuration&gt;
+                 &lt;supportedProjectTypes&gt;
+                     &lt;supportedProjectType&gt;ejb&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;war&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;bundle&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;jar&lt;/supportedProjectType&gt;
+                 &lt;/supportedProjectTypes&gt;
+                 &lt;instructions&gt;<!-- &lt;!-- Read all OSGi configuration info from this optional file --&gt;
+                     &lt;_include&gt;-osgi.properties&lt;/_include&gt;-->
+                     &lt;!-- Specify elements to add to MANIFEST.MF --&gt;
+                     &lt;Web-ContextPath&gt;/mavenhellowebclient&lt;/Web-ContextPath&gt;
+                     &lt;!-- By default, nothing is exported --&gt;
+                     &lt;Export-Package&gt;!*.impl.*, *&lt;/Export-Package&gt;
+                 &lt;/instructions&gt;
+             &lt;/configuration&gt;
+             &lt;executions&gt;
+                 &lt;execution&gt;
+                     &lt;id&gt;bundle-manifest&lt;/id&gt;
+                     &lt;phase&gt;process-classes&lt;/phase&gt;
+                     &lt;goals&gt;
+                         &lt;goal&gt;manifest&lt;/goal&gt;
+                     &lt;/goals&gt;
+                 &lt;/execution&gt;
+                 &lt;execution&gt;
+                     &lt;id&gt;bundle-install&lt;/id&gt;
+                     &lt;phase&gt;install&lt;/phase&gt;
+                     &lt;goals&gt;
+                         &lt;goal&gt;install&lt;/goal&gt;
+                     &lt;/goals&gt;
+                 &lt;/execution&gt;
+             &lt;/executions&gt;
+         &lt;/plugin&gt;</strong>
+            </pre>
+            </li>
+            <li>Modifique os elementos de configuração do <tt>maven-war-plugin</tt> para adicionar informações do pacote ao <tt>MANIFEST.MF</tt>. Salve as alterações.
+            <pre class="examplecode">
+ &lt;plugin>
+     &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+     &lt;artifactId&gt;maven-war-plugin&lt;/artifactId&gt;
+     &lt;version&gt;2.3&lt;/version&gt;
+     &lt;configuration&gt;
+         <strong>&lt;archive&gt;
+             &lt;!-- add bundle plugin generated manifest to the war --&gt;
+             &lt;manifestFile&gt;
+                 ${project.build.outputDirectory}/META-INF/MANIFEST.MF
+             &lt;/manifestFile&gt;
+             &lt;!-- For some reason, adding Bundle-ClassPath in maven-bundle-plugin
+             confuses that plugin and it generates wrong Import-Package, etc.
+             So, we generate it here.--&gt;
+             &lt;manifestEntries&gt;
+                 &lt;Bundle-ClassPath&gt;WEB-INF/classes/&lt;/Bundle-ClassPath&gt;
+             &lt;/manifestEntries&gt;
+         &lt;/archive&gt;</strong>
+         &lt;failOnMissingWebXml&gt;false&lt;/failOnMissingWebXml&gt;
+     &lt;/configuration&gt;
+ &lt;/plugin&gt;</pre>
+            </li>
+            <li>Clique com o botão direito do mouse no nó do projeto MavenHelloWebClient na janela Projetos e selecione Limpar e Construir. </li>
+
+        </ol>
+        <p>Ao expandir o arquivo compactado WAR e abrir o <tt>MANIFEST.MF</tt> no editor, você verá que o <tt>MANIFEST.MF</tt> contém informações adicionais, incluindo a entrada <tt>Web-ContextPath: /mavenhellowebclient</tt> especificada na configuração <tt>maven-bundle-plugin</tt> e entradas de nome de pacote.</p>
+        
+<pre class="examplecode">
+Manifest-Version: 1.0
+Export-Package: com.mycompany.mavenhellowebclient;uses:="com.mycompany
+ .mavenhelloserviceapi,javax.servlet,org.glassfish.osgicdi,javax.injec
+ t,javax.servlet.annotation,javax.servlet.http";version="1.0.0.SNAPSHO
+ T"
+Bundle-ClassPath: WEB-INF/classes/
+Built-By: nb
+Tool: Bnd-1.50.0
+Bundle-Name: MavenHelloWebClient
+Created-By: Apache Maven Bundle Plugin
+<strong>Web-ContextPath: /mavenhellowebclient</strong>
+Build-Jdk: 1.7.0_45
+Bundle-Version: 1.0.0.SNAPSHOT
+Bnd-LastModified: 1395053424008
+Bundle-ManifestVersion: 2
+Import-Package: com.mycompany.mavenhelloserviceapi;version="[1.0,2)",j
+ avax.inject,javax.servlet,javax.servlet.annotation,javax.servlet.http
+ ,org.glassfish.osgicdi;version="[1.0,2)"
+Bundle-SymbolicName: com.mycompany.MavenHelloWebClient
+Archiver-Version: Plexus Archiver</pre>
+
+        <p class="tips">Para obter mais informações sobre como construir aplicações Web como pacotes OSGi, consulte as páginas seguintes.</p>
+        <ul>
+            <li><a href="http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish"> http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish</a></li>
+            <li><a href="http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html"> http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html</a></li>
+        </ul>
+
+        
+        
+        
+        
+        <a name="Exercise_3d"></a>
+        <h3>Implantando o Pacote de Aplicação Web</h3>
+        <p>Neste exercício, você copiará o pacote da aplicação Web para a pasta <tt>implantação automática/pacotes</tt> na instalação do GlassFish.</p>
+        <ol>
+            <li>Navegue até o diretório de <tt>destino</tt> que contém o <tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt>.</li>
+            <li>Copie o <tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt> na pasta<tt>implantação automática/pacotes</tt> da instalação do GlassFish.</li>
+        </ol>
+
+        <p>Quando você copiar o arquivo compactado WAR para o diretório, um resultado semelhante ao mostrado a seguir será exibido no log do GlassFish Server.</p>
+        <pre class="examplecode">
+INFO: Started bundle: file:/glassfish-3.1.1/glassfish/domains/domain1/autodeploy/bundles/MavenHelloWebClient-1.0-SNAPSHOT.war
+...
+INFO: ---- Injection requested for framework service type interface com.mycompany.mavenhelloserviceapi.Hello and annotated with dynamic=true, serviceCriteria=
+INFO: WEB0671: Loading application [com.mycompany.MavenHelloWebClient_1.0.0.SNAPSHOT] at [/mavenhellowebclient]
+INFO: Registered ServletContext as a service with properties: {osgi.web.symbolicname=com.mycompany.MavenHelloWebClient, osgi.web.version=1.0.0.SNAPSHOT, osgi.web.contextpath=/mavenhellowebclient} 
+        </pre>
+        
+        <p>É possível exibir o servlet no browser clicando no link a seguir <a href="http://localhost:8080/mavenhellowebclient/HelloServlet">http://localhost:8080/mavenhellowebclient/HelloServlet</a>.</p>
+    
+    </div>    
+    
+    
+    <a name="Exercise_4"></a>
+    <h2>Instalando e Usando a Console de Admnin do OSGI</h2>
+
+    <p>Você pode usar a Console de Admin do OSGi GlassFish para instalar, iniciar e parar os pacotes do OSGi implantados no servidor. Neste exercício, você ativará a Console de Admin do OSGi GlassFish e, em seguida, exibirá a lista de pacotes OSGi registrados.</p>
+    <p>Realize as etapas a seguir para instalar os add-ons do GlassFish necessários para a ativação da Console do OSGi e para exibir os pacotes na Console de Admin do Domínio do GlassFish.</p>
+    <ol>
+        <li>Abra a Console de Admin do Domínio do GlassFish no browser.
+            <p class="tips">Clique com o botão direito do mouse no nó do GlassFish server na janela Serviços e selecione Exibir Console de Admin de Domínio.</p></li>
+        <li>Clique na Ferramenta de Atualização na coluna de navegação esquerda.</li>
+        <li>Selecione <tt>glassfish-osgi-gui</tt> na lista de add-ons disponíveis.
+            <p>Clique em Instalar e aceite a licença.</p>
+        <img alt="Tela da Ferramenta de Atualização na Console de Admin do GlassFish" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-glassfish-addons.png" title="Ferramenta de Atualização da Console de Admin do GlassFish" />
+        </li>
+        <li>Reinicie o GlassFish Server.
+        <p class="alert"><strong>Importante:</strong> se você estiver executando GlassFish Server 3.1.2.2 você precisará modificar o arquivo <tt>osgi.properties</tt> localizado no diretório <tt><em>GLASSFISH-INSTALL</em>/glassfish/config/</tt> e definir o valor da propriedade <tt>org.osgi.framework.startlevel.beginning</tt> como "2" (<tt>org.osgi.framework.startlevel.beginning=2</tt>).<br> Consulte o seguinte fórum para obter mais detalhes: <br><a href="http://www.java.net/forum/topic/glassfish/glassfish/cannot-start-web-console-glassfish-version-3122">Não é possível iniciar a console Web no Glassfish versão 3.1.2.2</a>.</p>
+        </li>
+        <li>Abra a Console de Admin novamente e clique em <strong>servidor (Servidor de Admin)</strong> na coluna de navegação esquerda.</li>
+        <li>Clique na guia da Console do OSGi para exibir uma lista de pacotes OSGi implantados. <br /> <img alt="Tela da caixa de diálogo Adicionar Biblioteca" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-glassfish-console.png" title="Guia de Gerenciamento de Dependências na caixa de diálogo Adicionar Biblioteca" />
+        <p class="notes"><strong>Observação.</strong> Você poderá ser solicitado a informar o nome de usuário e a senha para exibir a lista de pacotes OSGi. Confirme se a caixa de diálogo de autorização não está oculta se você não vir uma lista de pacotes na guia Console do OSGi. O nome de usuário padrão do servidor GlassFish 4 é <tt>admin</tt> se você instalou o servidor quando instalou o IDE. A senha fica vazia por padrão.</p>
+        
+        </li>
+    </ol>
+    
+    <p>É possível rolar a lista para baixo para exibir os status dos pacotes OSGi registrados, além de iniciar e parar os pacotes individuais. Se a lista for ordenada por Id (maior para menor), você verá que os três pacotes que foram implantados serão exibidos perto do topo da lista.</p>
+
+ 
+
+
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20CDI%20to%20Inject%20OSGi%20Bundles%20as%20Services">Enviar Feedback neste Tutorial</a></div>
+            <br style="clear:both;" />
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>Consulte Também</h2>
+            <p>Para obter mais informações sobre o uso do NetBeans IDE e Maven para desenvolver pacotes OSGi, consulte os seguintes recursos:
+            </p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/OSGiAndNetBeans">OSGi And NetBeans at wiki.netbeans.org</a></li>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Melhores Práticas para o Apache Maven no NetBeans IDE</a></li>
+                <li><a href="https://blogs.oracle.com/arungupta/entry/totd_125_creating_an_osgi" target="_blank">TOTD #125: Criando um pacote OSGi utilizando o NetBeans e implantando no GlassFish</a></li>
+                <li><a href="../../trails/java-ee.html">Trilha de Aprendizado do Java EE e Java Web</a></li>
+            </ul>
+            
+            <p>Para enviar comentários e sugestões, obter suporte e se manter informado sobre os mais recentes desenvolvimentos das funcionalidades de desenvolvimento do Java EE do NetBeans IDE, <a href="../../../community/lists/top.html">inscreva-se na lista de correspondência de nbj2ee</a>.</p>
+    </body>
+</html>

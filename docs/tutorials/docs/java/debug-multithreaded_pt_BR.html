@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Depurando Aplicações Multithread no NetBeans IDE</title>
+<link rel="stylesheet" href="../../../netbeans.css">
+<meta name="description" content="An guide to using the debugger in NetBeans IDE to debug a multi-threaded application."/>
+<meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+<body>
+<h1>Depurando Aplicações Multithread no NetBeans IDE</h1>
+
+<p>Este documento descreve como usar a janela Depuração no NetBeans IDE para depurar aplicações multithread. O tutorial também demonstra como usar o IDE para detectar deadlocks em uma aplicação.</p>
+<p>A janela Depuração simplifica o processo de depuração integrando em uma janela as informações sobre sessões de depuração, threads de aplicações e pilhas de chamadas de threads. A janela Depuração permite que você exiba facilmente o status dos threads de aplicações para suspender e retomar qualquer um dos threads na sessão.
+</p>
+
+<p>Este tutorial usa dois projetos de amostra para demonstrar como trabalhar com a janela Depuração. Para concluir este tutorial, primeiro faça o download e abra os projetos Gallery e Deadlock.
+</p>
+<p class="tips">Assista ao <a href="debug-multithreaded-screencast.html">Vídeo de Depuração de uma Aplicação Multithread no NetBeans IDE</a>.</p>
+
+    <p><b>Conteúdo</b></p>
+    <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+    <ul>
+        <li><a href="#Exercise_00">Fazendo Download de Projetos de Amostra</a>
+        <li><a href="#Exercise_10">Abrindo os Projetos de Amostra</a>
+        <ul>
+            <li><a href="#Exercise_11">Executando o Projeto Gallery</a></li>
+            <li><a href="#Exercise_12">Executando o Projeto Deadlock</a></li>
+        </ul>
+        </li>
+        <li><a href="#Exercise_20">Depurando os Projetos de Amostra</a>
+        <ul>
+            <li><a href="#Exercise_21">Suspendendo Threads</a></li>
+            <li><a href="#Exercise_22">Alternando Threads</a></li>
+            <li><a href="#Exercise_23">Detectando Deadlocks</a></li>
+        </ul>
+
+
+        </li>
+        
+    </ul>
+
+    <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+    <table>
+    <tr>
+        <th class="tblheader" scope="col">Software ou Recurso</th>
+        <th class="tblheader" scope="col">Versão Necessária</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+        <td class="tbltd1">versão 7 ou 8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/debugging-samples.zip">Projeto Gallery e Projeto Deadlock</a></td>
+        <td class="tbltd1">&nbsp;</td>
+    </tr>
+    </table>
+
+    
+<a name="Exercise_00"></a>
+    <h2>Fazendo Download de Projetos de Amostra</h2>
+    <p>Você pode fazer o download dos projetos de amostra usados neste tutorial das seguintes formas:</p>
+    <ul>
+        <li>Faça download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/debugging-samples.zip">de um arquivo compactado zip do projeto finalizado</a>.</li>
+        <li>Faça o check-out do código-fonte do projeto das Amostras do NetBeans ao executar as etapas a seguir:
+            <ol>
+                <li>Escolha Equipe > Subversion > Efetuar check-out no menu principal.</li>
+                <li>Na caixa de diálogo Efetuar Check-out, insira o Repositório URL a seguir:<br /> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br /> Clique em Próximo.</li>
+                <li>Clique em Procurar para abrir a caixa de diálogo Procurar Pastas do Repositório.</li>
+                <li>Expanda o nó raiz e selecione <strong>samples/java/debugging-samples</strong>. Clique em OK.</li>
+                <li>Especifique a Pasta Local para o códigos-fonte (a pasta local precisa estar vazia).</li>
+                <li>Clique em Finalizar.
+                    <p>Quando você clica em Finalizar, o IDE inicializa a pasta local como um repositório Subversion e verifica os códigos-fonte do projeto.</p>
+                </li>
+                <li>Clique em Abrir Projeto na caixa de diálogo exibida quando o check-out for concluído.</li>
+            </ol>
+
+            <p class="notes"><strong>Observação.</strong> Para saber mais sobre como efetuar check-out do Subversion, consulte a seção <a href="../ide/subversion.html#settingUp">Configurando o Subversion</a> no <a href="../ide/subversion.html">Guia do Subversion no NetBeans IDE</a>.</p>
+        </li>
+    </ul>
+
+
+
+<!-- ===================================================================================== -->
+<a name="Exercise_10"></a>
+<h2>Abrindo os Projetos</h2>
+<p>Neste tutorial, você usará duas aplicações para demonstrar o suporte do IDE para a depuração de aplicações multithread. Neste exercício, você abrirá e executará os dois projetos no IDE. Depois de executar os projetos, será necessário depurar cada um deles.</p>
+
+<div class="indent">
+    
+<a name="Exercise_11"></a>
+    <h3>Executando o Projeto Gallery</h3>
+    <p>A aplicação Gallery é uma aplicação Java Swing simples que reproduz imagens animadas. A aplicação tem dois botões que permitem adicionar e remover imagens animadas. Neste exercício, você executará a aplicação Gallery.</p>
+    <ol>
+        <li>Faça download e expanda o arquivo compactado <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/debugging-samples.zip"><tt>debugging-samples.zip</tt></a> no seu sistema local.</li>
+        <li>Escolha Arquivo > Abrir no menu principal.</li>
+        <li>Localize e selecione o projeto Gallery no diretório de depuração de amostras. Clique em Abrir.
+        <p>Quando você clicar em Abrir, o IDE abrirá e exibirá o projeto na janela Projetos. Se você expandir o nó do projeto na janela Projetos, poderá observar que o projeto é uma aplicação Java Swing simples.</p></li>
+        <li>Clique com o botão direito do mouse no nó do projeto e escolha Executar para iniciar a aplicação Gallery.</li>
+        <li>Na aplicação Gallery, clique em 'Mais' para adicionar imagens e clique em 'Menos' para remover as imagens.<br /> <img alt="Tela da aplicação Gallery" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-gallery-app.png" title="Aplicação Gallery" />
+        </li>
+        <li>Feche a janela da aplicação Gallery.</li>
+    </ol>
+<p>O projeto Gallery é uma aplicação multithread simples que você irá depurar neste tutorial.</p>
+<a name="Exercise_12"></a>
+    <h3>Executando o Projeto Deadlock</h3>
+    <p>A aplicação Deadlock contém um método <tt>main</tt> que inicia um thread, executado durante 500000 milissegundos. O método <tt>main</tt> inicia dois threads que são impressos na janela de Saída quando finalizados.</p>
+
+    <ol>
+        <li>Escolha Arquivo > Abrir no menu principal.</li>
+        <li>Localize e selecione o projeto Deadlock no diretório de amostras de depuração. Clique em Abrir.
+        <p>Quando você clicar em Abrir, o IDE abrirá e exibirá o projeto na janela Projetos. Se você expandir o nó do projeto na janela Projetos, observará que o projeto é uma aplicação Java simples.</p></li>
+        <li>Clique com o botão direito do mouse no nó do projeto e escolha Executar para iniciar a aplicação Deadlock.
+        <p>Quando você clica em Executar, a janela de Saída abre e exibe a saída a seguir.</p>
+        <pre class="examplecode">run:
+Application started
+MyThread2 successfully finished.
+MyThread1 successfully finished</pre></li>
+        <li>Permite que a aplicação seja finalizada normalmente (cinco minutos).
+        <p>Quando a aplicação Deadlock for finalizada, será exibido o seguinte na janela de Saída.</p>
+        <pre class="examplecode">Main thread finished</pre>
+        </li>
+    </ol>
+    <p>O projeto Deadlock é uma aplicação Java simples com dois threads. Quando você depurar a aplicação, criará um deadlock para ilustrar como o IDE pode ajudá-lo a detectar deadlock.</p>
+
+</div>
+
+<!-- ===================================================================================== -->
+<a name="Exercise_20"></a>
+<h2>Depurando os Projetos de Amostra</h2>
+<p>O projeto Gallery é uma aplicação Java Swing simples que exibe imagens animadas. Você adiciona e remove as imagens clicando nos botões da aplicação. Clicar no botão "Mais" inicia um novo thread que exibe e anima uma imagem. Clicar no botão "Menos" interrompe o thread mais recente, interrompendo a animação e removendo a imagem.
+</p>
+
+<div class="indent">
+<a name="Exercise_21"></a>
+    <h3>Suspendendo Threads</h3>
+    <p>Neste exercício, você começa a depuração da aplicação Gallery e adiciona imagens para iniciar alguns threads da aplicação. Quando você inicia uma sessão de depuração, o IDE abre a janela Depuração no painel esquerdo do IDE. A janela Depuração exibe uma lista dos threads na sessão.</p>
+    
+    <ol>
+        <li>Clique com o botão direito do mouse no projeto Gallery na janela Projetos e escolha Depurar.
+        <p>Quando você clica em Depurar, o IDE inicia a aplicação Gallery e abre as janelas de depuração default. O IDE abre automaticamente a janela Depuração no lado esquerdo da janela principal e abre a Console do Depurador na janela de Saída.</p></li>
+        <li>Clique três vezes em "Mais" na aplicação Gallery para iniciar três threads que exibem imagens animadas.
+        <p>Se você observar a janela Depuração, poderá verificar que um novo thread foi iniciado para cada animação.</p>
+        <img alt="Tela da janela de Depuração" class="margin-around b-all" height="151" src="../../../images_www/articles/72/java/debug-multithread/debugging-start.png" title="Janela de Depuração" width="375" />
+        </li>
+        <li>Suspenda dois threads clicando no botão "Suspender thread" à direita do thread, na janela Depuração.
+        <p>
+        Quando um thread é suspenso, o ícone do thread é alterado para indicar o novo estado. Você pode expandir o nó thread para exibir a pilha de chamadas do thread. Você pode clicar com o botão direito do mouse nos itens na janela Depuração para abrir um menu pop-up com os comandos de depuração.</p>
+        <img alt="Tela da janela Depuração com dois threads suspensos" class="margin-around b-all" height="151" src="../../../images_www/articles/72/java/debug-multithread/debugging-start-suspend.png" title="Depurando janela com dois threads suspensos" width="375" />
+        <p>Se você observar a aplicação Gallery, poderá verificar que, quando você suspendeu os threads, a animação desses threads foi interrompida. </p></li>
+    </ol>
+
+    <p>A janela Depuração permite que você exiba rapidamente e altere o status dos threads na sessão. Por default, a janela Depuração exibe os botões Retomar e Suspender no lado direito da janela. É possível ocultar os botões e personalizar ainda mais a exibição da janela Depuração usando a barra de ferramentas na parte inferior da janela Depuração. Se você estiver executando várias sessões de depuração, poderá usar a lista drop-down na parte superior da janela Depuração para escolher qual sessão será exibida na janela.</p>
+    <img alt="Tela da barra de ferramentas da janela de Depuração" class="margin-around b-all" height="60" src="../../../images_www/articles/72/java/debug-multithread/debugging-window-toolbar.png" title="Barra de ferramentas de depuração" width="378" /> <a name="Exercise_22"></a>
+    <h3>Alternando Threads</h3>
+    <p>Este exercício demonstra o que acontece quando você está avançando passo a passo na aplicação e um thread diferente da aplicação atinge um ponto de interrupção. Neste exercício você definirá um ponto de interrupção do método e avançará o passo a passo pela aplicação. Enquanto estiver avançando passo a passo pela aplicação, você iniciará um novo thread que também atingirá o ponto de interrupção. O IDE informa quando isso ocorre, exibindo uma notificação na janela Depuração. Em seguida, você irá alternar entre os threads.</p>
+
+    <ol>
+        <li>Na janela da aplicação Galeria, clique em 'Menos' ou 'Mais' até que apenas duas ou três animações sejam exibidas na janela.</li>
+        <li>Na janela Projetos do IDE, expanda o pacote <tt>gallery</tt> e clique duas vezes em <tt>Gallery.java</tt> para abrir o arquivo no editor.</li>
+        <li>Insira um ponto de interrupção do método em <tt>Gallery.java</tt> no início do método <tt>run</tt> clicando na margem esquerda, na linha 175.</li>
+        <li>Clique em "Mais" na aplicação Gallery para iniciar um novo thread que atingirá o ponto de interrupção do método.</li>
+        <li>Clique em Fazer Step Over (F8) e comece a avançar passo a passo pelo método até que o Contador do Programa alcance a linha 191.
+        <p>Você observará que o Contador do Programa na margem do editor indica sua posição à medida que você avança passo a passo pelo método.</p></li>
+        <li>Clique em "Mais" na aplicação Gallery para iniciar um novo thread que atingirá o ponto de interrupção do método.
+        <p>Quando o novo thread atingir o ponto de interrupção do método, uma notificação de Nova Ocorrência de Ponto de Interrupção atingida será exibida na janela Depuração, informando que outro thread atingiu um ponto de interrupção enquanto você avançava passo a passo pelo método.</p>
+        <img alt="Tela de notificação de Nova Ocorrência de Ponto de Interrupção" class="margin-around b-all" height="90" src="../../../images_www/articles/72/java/debug-multithread/debugging-newbreakpointhit.png" title="Notificação de Nova Ocorrência de Ponto de Interrupção" width="585" />
+        <p>Quando você estiver avançando passo a passo por um thread, e um ponto de interrupção for atingido em outro thread, o IDE oferecerá a opção de alternar para o outro thread ou continuar a avançar passo a passo pelo thread atual. Você pode clicar no botão de seta na notificação de Nova Ocorrência de Ponto de Interrupção para alternar para o thread que encontrou o ponto de interrupção. Você pode alternar para o novo thread a qualquer momento selecionando o thread na janela de notificação. Avançar passo a passo pelo thread do ponto de interrupção atual retoma o thread atual, porém o status de outros threads da aplicação permanecem inalterados.</p>
+
+        <p class="notes"><strong>Observação.</strong> Se você verificar a janela Depuração você poderá ver que o thread atual (thread_jirka) é indicado por uma barra verde na margem. O thread que chamou a notificação atingindo o ponto de interrupção (Thread_Roman) é indicado por uma barra amarela e o ícone do thread indica que o thread está suspenso por um ponto de interrupção.</p>
+        <img alt="Tela de notificação de Nova Ocorrência de Ponto de Interrupção" class="margin-around b-all" height="200" src="../../../images_www/articles/72/java/debug-multithread/debugging-current-suspended.png" title="Notificação de Nova Ocorrência de Ponto de Interrupção" width="375" />
+        </li>
+        <li>Clique na seta, na notificação na notificação de Nova Ocorrência de Ponto de Interrupção atingida, para alternar o thread atual para o novo thread (Thread_Roman).
+        <p>Quando alternar para o novo thread, você observará o seguinte:</p>
+        <ul>
+            <li>O contador do programa se move para a posição na linha 175 no novo thread atual (Thread_Roman).</li>
+            <li>Uma anotação "thread suspenso" ficará visível na margem, na linha 191, indicando que um thread (Thread_Jirka) está suspenso nessa linha.</li>
+        </ul>
+        <img alt="Tela do editor que mostra as anotações da depuração" class="margin-around b-all" height="402" src="../../../images_www/articles/72/java/debug-multithread/debugging-editor-suspendedannot.png" title="Editor que mostra as anotações de depuração" width="436" />
+        </li>
+        <li>Clique em Fazer Step Over algumas vezes para avançar passo a passo pelo novo thread atual (Thread_Roman).</li>
+        <li>Clique com o botão direito do mouse na anotação "thread suspenso" na margem do editor e escolha Definir como Thread Atual > Thread_Jirka para voltar ao thread suspenso.<br /> <img alt="Tela do editor mostrando a pop-up Definir como Thread Atual" class="margin-around b-all" height="291" src="../../../images_www/articles/72/java/debug-multithread/debugging-editor-setcurrent.png" title="Editor mostrando a pop-up Definir como Thread Atual" width="436" />
+        <p class="tips">Se preferir, você pode chamar o Seletor de Thread Atual (Alt+Shift+T; Ctrl+Shift+T no Mac) e alternar para qualquer um dos threads da aplicação.</p>
+        <img alt="Tela da aplicação Gallery" class="margin-around b-all" height="122" src="../../../images_www/articles/72/java/debug-multithread/debugging-thread-chooser.png" title="Aplicação Gallery" width="355" /></li>
+    </ol>
+    <p>Quando você voltar para o Thread_Jirka, a anotação do thread suspenso será exibida ao lado da linha onde o Thread_Roman foi suspenso. Você pode retomar o Thread_Roman clicando em Retomar, na janela Depuração.</p>
+    <img alt="Tela do editor que mostra as anotações da depuração" class="margin-around b-all" height="300" src="../../../images_www/articles/72/java/debug-multithread/debugging-editor-suspendedannot2.png" title="Editor que mostra as anotações de depuração" width="436" />
+
+    <p>A janela Depuração permite que você exiba e controle com muita precisão os estados dos threads. O depurador gerencia os threads da aplicação para simplificar o fluxo de trabalho de depuração e para evitar que o processo de depuração crie deadlocks. Neste exercício, você observou o seguinte comportamento durante a depuração de uma aplicação no IDE.</p>
+    <ul>
+        <li>Quando um thread atinge um ponto de interrupção, somente o thread do ponto de interrupção é suspenso.</li>
+        <li>Ao avançar passo a passo pela aplicação, o thread atual não é afetado quando outros threads atingem os pontos de interrupção.</li>
+        <li>O passo a passo retoma somente o thread atual. Quando a etapa é concluída, somente o thread atual é suspenso.</li>
+    </ul>
+    <p>Você pode sair da aplicação Gallery. No próximo exercício, você irá depurar a aplicação Deadlock e usará o IDE para ajudar a detectar um deadlock.</p>
+    
+<a name="Exercise_23"></a>
+    <h3>Detectando Deadlocks</h3>
+    <p>O IDE pode ajudar a identificar possíveis situações de deadlock pesquisando automaticamente em todos os threads suspensos. Quando um deadlock é detectado, o IDE exibe uma notificação na janela Depuração e identifica os threads envolvidos.</p>
+
+    <p>Para demonstrar a detecção de deadlocks do IDE, você executará o projeto de amostra Deadlock no depurador e criará uma situação de deadlock.</p>
+
+    <ol>
+        <li>Expanda o pacote <tt>myapplication</tt> e abra o <tt>Thread1.java</tt> e <tt>Thread2.java</tt> no editor de código-fonte.</li>
+        <li>Defina um ponto de interrupção em <tt>Thread1.java</tt>, na linha 20, e em <tt>Thread2.java</tt>, na linha 20
+        <p>Para definir o ponto de interrupção, clique na margem do editor de código-fonte, próximo à linha onde você deseja definir o ponto de interrupção. A anotação do ponto de interrupção é exibida na margem esquerda, perto da linha. Se você abrir a janela Pontos de Interrupção (Alt-Shift-5; Ctrl+Shift+5 no Mac), poderá verificar que os dois pontos de interrupção estão definidos e ativados.</p>
+        <img alt="Tela do editor que mostra o ponto de interrupção definido na linha 20" class="margin-around b-all" height="373" src="../../../images_www/articles/72/java/debug-multithread/debug-deadlock-setbkpt.png" title="Editor que mostra o ponto de interrupção definido na linha 20" width="589" />
+        </li>
+        <li>Clique com o botão direito do mouse no projeto Deadlock, na janela Projetos, e escolha Depurar.
+        <p>O método <tt>main</tt> executará os dois threads e ambos serão suspensos em um dos pontos de interrupção. Você pode visualizar os threads suspensos pelos pontos de interrupção na janela Depuração.</p></li>
+        <li>Na janela Depuração, retome os threads suspensos (<tt>MyThread1</tt> e <tt>MyThread2</tt>) clicando nos botões Retomar à direita dos threads suspensos na janela Depuração.<br /> <img alt="Tela de retomada de threads suspensos na janela Depuração" class="margin-around b-all" height="283" src="../../../images_www/articles/72/java/debug-multithread/debug-deadlock-resume.png" title="Retomando threads suspensos na janela Depuração" width="585" />
+        <p>A retomada dos threads <tt>MyThread1</tt> e <tt>MyThread2</tt> criará o estado de deadlock.</p>
+        <li>Escolha Depurar\Verificar Deadlock no menu principal para verificar se há deadlock nos threads suspensos.<br /> <img alt="Tela de retomada de threads suspensos na janela Depuração" class="margin-around b-all" height="308" src="../../../images_www/articles/72/java/debug-multithread/debug-deadlock-detected.png" title="Retomando threads suspensos na janela Depuração" width="372" />
+        <p>Se você verificar a aplicação e detectar um deadlock, uma mensagem será exibida na janela Depuração que o informará sobre o deadlock. Você pode observar que os threads no deadlock são indicados com uma barra vermelha na margem esquerda da janela Depuração.</p>
+        </li>
+    </ol>
+
+
+</div>
+
+
+<!-- ===================================================================================== -->
+<p>Este tutorial foi uma introdução básica a algumas funcionalidades de depuração do IDE. A janela Depuração permite que você suspenda e retome facilmente os threads ao depurar uma aplicação. Isso pode ser extremamente útil quando você estiver depurando aplicações multithread.
+</p>
+
+
+<!-- End Content Area -->
+
+    <br>
+    <div class="feedback-box"><a href="https://netbeans.org/about/contact_form.html?to=3&amp;subject=Feedback:%20Debugging%20Multithreaded%20Applications">Enviar Feedback neste Tutorial</a></div>
+    <br style="clear:both;" />
+    <!-- ======================================================================================= -->
+    <h2><a name="nextsteps"></a>Consulte Também</h2>
+    <p>Para obter mais informações sobre o desenvolvimento e teste de aplicações Java no NetBeans IDE, veja os recursos a seguir:</p>
+    <ul>
+        <li>Demonstração: <a href="debug-multithreaded-screencast.html">Depurando uma Aplicação Multithread no NetBeans IDE</a></li>
+        <li>Demonstração: <a href="debug-stepinto-screencast.html">Ação Visual Step Into no Depurador do NetBeans</a></li>
+        <li>Demonstração: <a href="debug-deadlock-screencast.html">Detecção de Bloqueio usando o Depurador do NetBeans</a></li>
+        <li>Demonstração: <a href="debug-evaluator-screencast.html">Usando o Avaliador de Snippet do Código no Depurador do NetBeans</a></li>
+        <li><a href="../../trails/java-se.html">Trilha de Aprendizado da Programação Java e IDE Básica</a></li>
+        <li><a href="junit-intro.html">Escrevendo Testes JUnit</a></li>
+        <li><a href="profiler-intro.html">Introdução à Criação de Perfil de Aplicações Java</a></li>
+    </ul>
+    </body>
+</html>

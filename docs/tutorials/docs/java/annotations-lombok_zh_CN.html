@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>在 NetBeans IDE 中使用标注处理程序支持</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+</head>
+
+    <body>
+
+        <h1>NetBeans IDE 中的标注处理程序支持 - 第一部分：使用 Project Lombok </h1>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+	    <p><b>目录</b></p>
+  
+        <ul class="toc">
+            <li><a href="annotations.html">简介</a></li>
+            <li><a href="annotations.html#map">javac 选项和 IDE 命令的映射</a> </li>
+          <li><strong>使用支持定制标注的 Project Lombok</strong>
+            <ul>
+              <li><a href="#create">创建新的 Java 项目</a></li>
+              <li><a href="#enableann">为项目启用定制标注</a> </li>
+              <li><a href="#writeapp">编写使用 Lombok 定制标注的应用程序</a></li>
+            </ul>
+          </li>
+            <li><a href="annotations-custom.html">在 IDE 中使用自己的定制标注处理程序</a></li>
+            <li><a href="annotations-custom.html#seealso" title="编译并运行程序">另请参见</a></li>
+        </ul>
+        </div>
+	</div>
+	   
+	   <p>为了演示定制标注如何在 NetBeans IDE 内正常工作，我们将使用 Project Lombok，它提供了自动生成多个 Java 代码元素（如 getter、setter 以及构造函数等）的便捷方式。有关其功能的详细信息，请访问 <a href="http://projectlombok.org/" target="_blank">Project Lombok 网站</a>。但是，请记住，Project Lombok 包含一些可能无法在所有开发环境中正常工作的功能。</p>
+
+           <p style="clear:both"><b>要学完本教程，您需要具备以下软件和资源。</b></p>
+        <table>
+          <tbody>
+            <tr>
+              <th class="tblheader" scope="col">软件或资源</th>
+              <th class="tblheader" scope="col">要求的版本</th>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+              <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+              <td class="tbltd1">版本 7 或 8</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://code.google.com/p/projectlombok/downloads/list">lombok.jar</a></td>
+              <td class="tbltd1">v1.12.4 或更新版本</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2><a name="create"></a>创建新的 Java 项目 </h2>
+        <p>在本练习中，将创建一个简单的 Java 项目，以及名为 <tt>MyBooks.java</tt> 的类，用于在操作中演示标注。</p>
+        <ol>
+            <li>从主菜单中选择 <strong>File > New Project</strong>（文件 > 新建项目）以打开新建项目向导。</li>
+            <li>在 "Java" 类别中选择 "Java Application"（Java 应用程序）项目类型。单击 "Next"（下一步）。</li>
+            <li>在向导的 "Name and Location"（名称和位置）页中，键入 <strong><tt>TestAnn</tt></strong> 作为项目名称。</li>
+            <li>在 "Create Main Class"（创建主类）字段中键入 <strong><tt>testann.TestBooks</tt></strong>，以替换默认的类名。单击 "Finish"（完成）。<br> <img alt="新建项目向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/newproj.png" title="在 NetBeans IDE 中创建新 Java 项目">
+            <p>单击 "Finish"（完成），此时 IDE 将创建 Java 应用程序项目，并在编辑器中打开 <tt>TestBooks.java</tt> 类。您可以看到，新项目现在显示在 "Projects"（项目）窗口中，并且 <tt>TestBooks.java</tt> 类位于 "Source Packages"（源包）节点下的 <tt>testann</tt> 包中。</p></li>
+            <li>在 "Projects"（项目）窗口中，右键单击 <tt>testann</tt> 包节点，然后选择 "New"（新建）> "Java Class"（Java 类）。</li>
+            <li>键入 <strong><tt>MyBooks</tt></strong> 作为类名，并确认将在 <tt>testann</tt> 包中创建类。单击 "Finish"（完成）。
+            <p>单击 "Finish"（完成）后，IDE 将在编辑器中打开新类。</p></li>
+            <li>在源代码编辑器中，将以下三个字段添加到 <tt>MyBooks.java</tt> 中。
+           <pre class="examplecode">package testann;
+
+public class MyBooks {   
+    <strong>private int year; //fields
+    private String title;
+    private String author;</strong>
+
+}</pre></li>
+            <li>将插入光标放在类声明中，然后按 Ctrl-空格组合键，以调用编辑器的代码完成支持。</li> 
+            <li>在代码完成列表中选择 <tt>MyBooks (int year, String title, String author) - generate</tt>（MyBooks (int year, String title, String author) - 生成），以生成 <tt>MyBooks.java</tt> 的构造函数。<br> <img alt="编辑器中代码完成的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/generate-constructor.png" title="用于生成构造函数的代码完成功能">
+            </li>
+            <li>保存所做的更改。</li>
+    </ol>
+
+        
+    <h2><a name="enableann"></a>为项目启用定制标注 (lombok.jar) </h2>
+    <p>在本练习中，将修改项目的 "Properties"（属性）窗口，以便将库添加到项目的类路径中，并在编辑器中启用标注处理功能。</p>
+    <ol>
+        <li>下载 <a href="http://code.google.com/p/projectlombok/downloads/list" target="_blank">lombok.jar</a> 文件并将其保存在系统上。 </li>
+        <li>右键单击 <tt>TestAnn</tt> 项目节点，然后选择 "Properties"（属性）。 </li>
+        <li>在 "Project Properties"（项目属性）对话框中，选择 "Libraries"（库）类别。</li>
+        <li>单击 "Compile"（编译）标签中的 "Add JAR/Folder"（添加 JAR/文件夹），找到您已下载的 <tt>lombok.jar</tt> 文件。<br> <img alt="&quot;Properties&quot;（属性）窗口中的 &quot;Libraries&quot;（库）类别的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/properties1.png" title="&quot;Properties&quot;（属性）窗口中的 &quot;Libraries&quot;（库）类别">
+
+        <p>在 "Compile"（编译）标签上添加的资源对应于 <a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html#options" target="_blank">Java 编译器</a>的 <tt>-classpath</tt> 选项。鉴于 <tt>lombok.jar</tt> 是一个同时包含标注定义和标注处理程序的单一 JAR 文件，您应该在 "Compile"（编译）标签中将其添加到项目的类路径中。 </p>
+        </li>
+        <li>在 "Project Properties"（项目属性）窗口中，选择 "Compiling"（编译）类别。</li>
+        <li>确认选中了 "Enable Annotation Processing"（启用标注处理）复选框（默认为启用），然后选择 "Enable Annotation Processing in Editor"（在编辑器中启用标注处理）复选框。<br> <img alt="&quot;Properties&quot;（属性）窗口中 &quot;Compiling&quot;（编译）类别的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/properties2.png" title="&quot;Properties&quot;（属性）窗口中的 &quot;Compiling&quot;（编译）类别">
+
+        <p>"Enable Annotation Processing"（启用标注处理）复选框使构建和编译项目期间可以进行标注处理。如果未选中该复选框，则会将 <tt>-proc:none</tt> 选项传递给 Java 编译器，因此，编译时不进行任何标注处理。因此，如果要处理代码中的标注，则必须选中 "Enable Annotation Processing"（启用标注处理）复选框。</p>
+        <p>通过选中 "Enable Annotation Processing in Editor"（在编辑器中启用标注处理）复选框，可在编辑器中查看标注处理结果。标注处理程序生成的其他任何工件（类、方法、字段等）均会显示在 IDE 编辑器中，并且可用于代码完成、导航器、跳转类型、查找使用实例等。</p>
+        </li>
+        <li>在 "Project Properties"（项目属性）窗口单击 "OK"（确定），返回到 <tt>MyBooks.java</tt> 文件。 </li>
+    </ol>
+
+    <p>如果在 "Projects"（项目）窗口中展开 "Libraries"（库）节点，则可以看到 <tt>lombok.jar</tt> 现在被列为项目库。</p>
+<img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/projects-window.png" title="&quot;Projects&quot;（项目）窗口中的 &quot;Libraries&quot;（库）节点">
+
+    <h2><a name="writeapp"></a>编写使用 Lombok 定制标注的应用程序 </h2>
+    <ol>
+        <li>在 <tt>MyBooks.java</tt> 文件的 <tt>MyBooks</tt> 类声明前键入 <tt>@Data</tt>。<tt>@Data</tt> 是一个为以下 Java 类生成样板代码的标注：所有字段的 getter、非最终字段的 setter 以及与调用该类字段相应的 <tt>toString</tt>、<tt>equals</tt> 和 <tt>hashCode</tt> 实现。
+        <p class="tips">要了解有关 Project Lombok 支持的标注的详细信息，请参见 Lombok 的<a href="http://projectlombok.org/features/index.html">功能概述</a>。</p></li>
+        <li>单击编辑器左旁注中的提示，然后为 <tt>lombok.Data</tt> 添加 import。<br> <img alt="编辑器中提示的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/import-lombok.png" title="编辑器中导入 lombok 的提示">
+
+            <p>编辑器中的生成代码应该类似于下面的示例。</p>
+                <pre class="examplecode">package testann;
+
+import lombok.Data;
+
+
+@Data
+public class MyBooks {
+
+    private int year; //fields
+    private String title;
+    private String author;
+
+    public MyBooks(int year, String title, String author) {
+        this.year = year;
+        this.title = title;
+        this.author = author;
+    }
+}</pre>
+            <p>注：已生成所需的代码工件（如 getter、setter、toString 等），并且可以在 "Navigator"（导航器）窗口中看到它们。<tt>@Data</tt> 标注生成了典型类所需的所有样板代码。</p>
+            <img alt="&quot;Navigator&quot;（导航器）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/nav.png" title="显示项目成员的 &quot;Navigator&quot;（导航器）窗口">
+            <p>还可以调用代码完成窗口（Ctrl-空格键），然后查看生成的工件是否可供选择。现在，我们看到项目已编译，生成的工件可以通过程序的其他部分调用。</p>
+            </li>
+            <li>打开包含 <em>main</em> 方法的 <tt>TestBooks.java</tt> 文件，并添加下面的代码（粗体）以创建 <tt>MyBooks</tt> 类的新对象。
+                <pre class="examplecode">package testann;
+
+public class TestBooks {
+
+    public static void main(String[] args) {
+        <strong>MyBooks books = new MyBooks(2009, "My Beautiful Dream", "John Smith");</strong>
+    }
+}</pre>
+            </li>
+            <li>添加以下代码，以输出 <tt>books</tt> 变量的值。
+                <p>要返回值，我们调用 <tt>lombok.jar</tt> 自动生成的 getter 方法。键入时，请注意代码完成窗口是否提供了自动生成的工件。</p>
+                <pre class="examplecode">package testann;
+
+public class TestBooks {
+
+    public static void main(String[] args) {
+        MyBooks books = new MyBooks(2009, "My Beautiful Dream", "John Smith");
+        <strong>System.out.println("Year: " + books.getYear() + ", Title: " + books.getTitle() +  ", Author: " + books.getAuthor());</strong>
+    }
+}</pre>
+            </li>
+            <li>保存所做的更改。</li>
+            <li>在 "Projects"（项目）窗口中，右键单击项目节点，然后选择 "Run"（运行）（F6 键）。
+                <p>运行应用程序时，应会显示以下输出，说明应用程序编译成功。</p>
+                <img alt="&quot;Output&quot;（输出）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/output.png" title="运行应用程序之后的 &quot;Output&quot;（输出）窗口"></li>
+        </ol>
+        <p>您可以看到，Lombok 标注处理程序生成的工件可以从程序的其他部分访问。</p>
+
+
+        <h2><a name="nextsteps"></a>后续步骤 </h2>
+          <ul>
+              <li>Java SE 文档 - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">标注</a></li>
+              <li>Java SE 教程 - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">标注</a> </li>
+            <!--<li><a href="annotations-custom.html">Part II: Using Own Custom Annotation Processor in the IDE</a></li>-->
+          </ul>
+          <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20NetBeans%20IDE">发送有关此教程的反馈意见</a><br style="clear:both;" />
+        </div>
+</body>
+</html>

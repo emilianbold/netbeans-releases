@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>NetBeans IDEでのJDK 7サポートの概要</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+       
+        <meta name="description" content="A short guide to using JDK 7 features in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>NetBeans IDEでのJDK 7サポートの概要</h1>
+        <p>NetBeans IDEでは、ダイヤモンド演算子、switch内の文字列、マルチ・キャッチなどの、Java 7言語機能がサポートされています。これらの構造をコード内で使用すると、IDEはそれを認識してコード補完で正しいクラスを提供し、エラーを正しく強調表示して、構文を自動的に修正できるようにします。このように、NetBeans IDEは、ユーザーが<a href="http://docs.oracle.com/javase/specs/jls/se7/html/index.html">Java言語仕様、Java SE 7 Edition</a>と互換性のあるコードを記述するのに役立ちます。 </p>
+        <p>このチュートリアルでは、Java 7言語構造がIDEでどのように処理されるかについて学習します。 </p>
+        <p><b>目次</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます">
+        <ul class="toc">
+		    <li><a href="#platform">NetBeans IDEでのJDK 7の登録の確認</a></li>
+			<li><a href="#project">プロジェクト構成の確認</a></li>
+            <li><a href="#switch">新しいJDK 7言語構造の使用: switch文</a></li>
+            <li><a href="#more">JDK 7サポート: その他の例</a></li>
+            <li><a href="#see" title="次の手順">次の手順</a></li>
+        </ul>
+
+        <p><b>このチュートリアルを完了するには、次の表に示すソフトウェアとリソースが必要です。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン7.4または8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">バージョン7または8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>NetBeans IDEでのJDK 7の登録の確認</h2>
+        
+        <p>NetBeans IDEでJDK 7が登録されていることを確認するには:</p>
+        <ol>
+          <li>IDEで、メイン・メニューから「ツール」>「Javaプラットフォーム」を選択します。</li>
+          <li>「Javaプラットフォーム・マネージャ」ダイアログ・ボックスの「プラットフォーム」リストで、JDK 1.7が選択されていることを確認します。
+		  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/platform.png" rel="lytebox" title="登録されているJavaプラットフォーム"> <img alt="登録されているJavaプラットフォーム" border="1" src="../../../images_www/articles/74/java/javase-jdk7/platform-small.png"></a></p>
+		  </li>
+		  <li>「閉じる」をクリックします。</li>
+        </ol>
+    <h2><a name="project"></a>プロジェクト構成の確認</h2>
+    <p>登録されたJDKをコンパイル、実行およびデバッグに使用するようにプロジェクトが構成されているか確認するには:</p>
+    <ol>
+      <li>「ファイル」>「新規プロジェクト」を選択し、プロジェクト・タイプとして「Javaアプリケーション」を選択することでJavaプロジェクトを作成します。</li>
+	  <li>「次」をクリックします。</li>
+      <li>プロジェクト名として「<tt>SwitchTest</tt>」と入力し、その場所を指定します。  </li>
+	  <li>「終了」をクリックします。</li>
+      <li>「プロジェクト」ウィンドウで、「<tt>SwitchTest</tt>」プロジェクトのノードを右クリックし、「プロパティ」>「ライブラリ」を選択します。このタブで、「Javaプラットフォーム」リストで「JDK 1.7」が選択されていることを確認します。
+	  			  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/props-libs.png" rel="lytebox" title="ターゲット形式として選択されているJDK 7"> <img alt="ターゲット形式として選択されているJDK 7" border="1" src="../../../images_www/articles/74/java/javase-jdk7/props-libs-small.png"></a></p></li>
+      <li>「プロジェクト・プロパティ」ウィンドウの「ソース」タブに切り替え、「ソース/バイナリ形式」として「JDK 7」が選択されていることを確認します。 
+	  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/props-sources.png" rel="lytebox" title="ソース形式として選択されているJDK 7"> <img alt="ソース形式として選択されているJDK 7" border="1" src="../../../images_www/articles/74/java/javase-jdk7/props-sources-small.png"></a></p>
+     </li>
+      <li>「OK」をクリックして、「プロジェクト・プロパティ」ダイアログ・ボックスを閉じます。プロジェクトが、Java 7言語機能を認識するように構成されています。<br>
+      </li>
+    </ol>
+	
+    <h2><a name="switch"></a>新しいJDK 7言語構造の使用: switch文</h2>
+    <p>JDK 7では、国際化、I/Oやネットワーキング、セキュリティなどを含む様々な領域で、多くの<a href="http://openjdk.java.net/projects/jdk7/features/" target="_blank">新機能および拡張機能</a>が導入されています。IDEのJavaエディタによるJDK 7サポートを示すための最善の方法は、Project Coinによって導入されたいくつかの言語変更を示すことです。 </p>
+        <p>これらの変更の1つが「switch内のString」です。以前のバージョンのJavaでは、<tt>switch</tt>の引数は、基本データ型である<tt>byte</tt>、<tt>short</tt>、<tt>char</tt>、<tt>int</tt>、<tt>enum</tt>のいずれかのみが許可されていました。JDK 7からは、<tt>switch</tt>文の式に型<tt>String</tt>の引数を使用できます。 </p>
+        <ol>
+          <li><tt>SwitchTest.java</tt>を開き、次のコードを追加します。この小さなサンプルは、いくつかの色のRGBコードを表示します。<br> JDK 7では、<tt>color</tt>変数を<tt>String</tt>にすることができます。 
+            <pre class="examplecode">package switchtest;
+
+    public class SwitchTest {
+
+    public static void main(String[] args) {
+
+        String color = &quot;red&quot;;
+        String colorRGB;
+        switch (color.toLowerCase()) {
+            case &quot;black&quot;: colorRGB = &quot;000000&quot;; break;
+            case &quot;red&quot;: colorRGB = &quot;ff0000&quot;; break;
+            case &quot;green&quot;: colorRGB = &quot;008000&quot;; break;
+            case &quot;blue&quot;: colorRGB = &quot;0000ff&quot;; break;
+            default: colorRGB = &quot;Invalid color&quot;; break;
+        }
+        System.out.println(colorRGB);
+        }
+    }
+</pre>
+            
+          <p class="tips">貼り付けたコードがエディタで誤ってフォーマットされている場合は、[Alt]-[Shift]-[F]を押して再フォーマットします。</p>
+          </li>
+          <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「ファイルの実行」を選択します。アプリケーションの出力(赤色のRGBコード)が表示されます。<br> ターゲット・プラットフォームとソース形式がJDK 7である場合は、ビルドが成功し、アプリケーションが正常に動作することがわかります。 
+			 <p class="align-center">
+          <img alt="プロジェクト実行の出力" border="1" src="../../../images_www/articles/74/java/javase-jdk7/output.png"></p></li>
+          <li>前に戻ってJDK 6を使用し、このアプリケーションがJDK 6コンパイラでどのようにコンパイルされるかをテストしてみます。<br>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「プロパティ」を選択します。「ソース」カテゴリで、「ソース/バイナリ形式」を<tt>JDK 6</tt>に設定して「OK」をクリックします。<br> JDK6パーサーでこの構文が認識されないことがただちにわかります。互換性のない変数型のためにコンパイルが失敗します。
+          <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/error.png" rel="lytebox" title="エラー"> <img alt="エラー" border="1" src="../../../images_www/articles/74/java/javase-jdk7/error-small.png"></a></p>
+			 </li>
+          <li>ここで、次のように、<tt>switch</tt>のかわりに<tt>if-then-else</tt>文を使用してコードを書き換えてみます。 
+		  <pre class="examplecode">package switchtest;
+
+    public class SwitchTest {
+
+    public static void main(String[] args) {
+
+        String color = &quot;red&quot;;
+        String colorRGB;
+        if (color.equals(&quot;black&quot;)) {
+            colorRGB = &quot;000000&quot;;
+        } else if (color.equals(&quot;red&quot;)) {
+            colorRGB = &quot;ff0000&quot;;
+        } else if (color.equals(&quot;green&quot;)) {
+            colorRGB = &quot;008000&quot;;
+        } else if (color.equals(&quot;blue&quot;)) { 
+            colorRGB = &quot;0000ff&quot;;
+        } else {
+            colorRGB = &quot;Invalid color&quot;;
+        }
+        System.out.println(colorRGB);
+        }
+    }
+</pre>
+		 
+          JDK 7がソース/バイナリ形式であるため、次の図に示すように、IDEはこのようなケースを認識し、この文を<tt>switch</tt>文に変換するよう提案します。 
+		  <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/convert.png" rel="lytebox" title="switchへの変換のヒント"> <img alt="switchへの変換のヒント" border="1" src="../../../images_www/articles/74/java/javase-jdk7/convert-small.png"></a></p>
+          このヒントをクリックすると、<tt>if-then-else</tt>構造が、先のコードとまったく同じ<tt>switch</tt>に自動的に変換されます。</li>
+         </ol>
+		<h2><a id="more" name="more"></a>JDK 7サポート: その他の例</h2>
+        <p>IDEのJavaエディタがコードをどのように認識し、JDK 7言語仕様に準拠するようにどのように自動的に修正するかを示すために、ここでは、言語の主な機能強化がすべて含まれたダミーのコード・スニペットを使用します。 </p>
+        <p>このダミーのコード・スニペットを調べ、エディタのヒントを適用すると、次を行う方法の例がわかります。 </p>
+        <ul>
+          <li>型を明示的に指定しなくてもJavaコンパイラが汎用インスタンスの型を推論できる場合は、自動的な型推論を利用します。型推論のケースにフラグを付けるために、いわゆる<em>ダイヤモンド演算子</em>が使用されます。 </li>
+          <li>複数の種類の例外に対して1つの<tt>catch</tt>ブロックを使用できる場合は、機能強化された例外処理、つまり<em>マルチ・キャッチ</em>を使用します。<br>
+          </li>
+          <li>自動リソース管理機能によって導入された、リソース・クロージャ文の新しい構文を使用します。 </li>
+        </ul>
+        <ol>
+          <li>同じ<tt>SwitchTest.java</tt>ファイル内の前のアプリケーション・コードを次のコードに置き換えます。<br>
+		  <pre class="examplecode">
+package switchtest;
+
+
+import java.io.FileInputStream;
+import java.lang.reflect.Method;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+public class SwitchTest {
+
+    public void test() throws IOException {
+        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+        HashMap&lt;String, Integer&gt; map = new HashMap&lt;String, Integer&gt;();
+        HashMap&lt;String, Integer&gt; map2 = new HashMap&lt;String, Integer&gt;();
+        String a = &quot;ehlo&quot;;
+
+        try {
+            Method m = Object.class.getMethod(&quot;toString&quot;);
+            m.invoke(this);
+        } catch(NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch(InvocationTargetException e) {
+            e.printStackTrace();
+        } catch(IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(&quot;foo.txt&quot;);
+
+            int k;
+            while ((k = in.read()) != -1) {
+                System.out.write(k);
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+}
+ </pre>
+          </li>
+          <li>このチュートリアルの上に示すように、コードをJDK 7仕様向けに最適化する方法を示す複数のヒントがIDEに表示されます。単純に各ヒントをクリックし、提案されたアクションを選択します。<br>
+</li>
+          <li>最終的に、すべての提案を受け入れると、次に示すJDK 7と互換性のあるコードが得られるはずです。
+		  <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/converted.png" rel="lytebox" title="変換されたコード・スニペット"> <img alt="変換されたコード・スニペット" border="1" src="../../../images_www/articles/74/java/javase-jdk7/converted-small.png"></a></p>
+            
+          </li>
+        </ol>
+       
+        <div class="indent"></div>
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback: Overview of JDK 7 Support in NetBeans IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>関連項目</h2>
+        <p>JDK 7とNetBeans IDEの詳細は、次のドキュメントを参照してください。 </p>
+        <ul>
+            <li><i>NetBeans IDEによるアプリケーションの開発</i></a>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG465" target="_blank">ターゲットJDKの設定</a></li>
+            <li><a href="http://download.oracle.com/javase/tutorial/essential/io/fileio.html" target="_blank">Javaチュートリアル: ファイル入出力</a> - 入出力におけるJDK 7の変更の多数の例を含む、Javaチュートリアル内の項。</li>
+            <li><a href="http://download.oracle.com/javase/tutorial/essential/concurrency/forkjoin.html" target="_blank">Javaチュートリアル: forkとjoin</a> - JDK7での新しいfork/joinフレームワークの説明。 </li>
+        </ul>
+
+        <p>NetBeans IDEでのJavaアプリケーションの開発の詳細は、次を参照してください。 </p>
+        <ul>
+          <li><a href="javase-intro.html">一般的なJavaアプリケーション開発</a></li>
+          <li><a href="../../trails/java-se.html">一般的なJava開発の学習</a></li>
+		   <li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366" target="_blank">Javaプロジェクトの作成</a></a></li>
+        </ul>
+</body>
+</html>

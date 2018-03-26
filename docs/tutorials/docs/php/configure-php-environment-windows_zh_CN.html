@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>安装和配置 PHP、Apache 和 MySQL 以在 Windows 中进行 PHP 开发</title>
+     <meta name="KEYWORDS" content="NETBEANS, PHP, GUIDE, USER, DOCUMENTATION, XAMPP, MYSQL, APACHE">
+      <meta name="DESCRIPTION" content="This document describes how to install and configure PHP, Apache, and MySQL for PHP development in the NetBeans IDE under Windows" >
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+<h1>在 Windows 中配置 PHP 开发环境</h1>
+<p>本教程介绍了在 Windows 操作系统上配置 PHP 开发环境的两种方法。第一种方法是安装和配置 AMP (<strong>A</strong>pache、<strong>M</strong>ySQL、<strong>P</strong>HP) 包，这种方法最为简便。本教程介绍了如何安装 XAMPP 包。第二种方法是单独安装和配置每个组件。</p>
+<!--
+<div>
+  <p>  -->
+<!--    <!-- #BeginDate format:Am1-->
+<!-- July 29, 2008 #EndDate -->
+<!-- </p>
+</div> -->
+<p><strong>目录</strong></p>
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<ul>
+<!--<li><a href="#requiredSoftware">Required Software</a></li> -->
+<li><a href="#XAMPP">使用 AMP 包</a>
+  <ul>
+<li><a href="#installConfigureXAMPP">安装和配置 XAMPP 包</a></li>
+<li><a href="#checkXAMPPInstallation">检查 XAMPP 安装</a></li>
+<li><a href="#installAndEnableXDebug">安装和启用 XDebug 调试器</a></li>
+</ul>
+</li>
+<li><a href="#installComponentsSeparately">单独安装组件</a>
+  <ul>
+<li><a href="#installApacheComponent">Apache HTTP 服务器</a></li>
+<li><a href="#installPHPEngine">PHP 引擎</a></li> 
+<li><a href="#installMySQL">MySQL 数据库服务器</a></li>
+<li><a href="#installXDebug">XDebug</a></li>
+<li><a href="#settingUpEnvironment">设置环境</a></li> 
+</ul></li></ul>
+<p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+
+  <table>
+    <tbody>
+      <tr>
+        <th class="tblheader" scope="col">软件或资源</th>
+        <th class="tblheader" scope="col">要求的版本</th>
+      </tr>
+      <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+        <td class="tbltd1">PHP 下载包</td>
+      </tr>
+      <tr>
+        <td class="tbltd1">PHP 引擎</td>
+        <td class="tbltd1">版本 5。包含在 <a href="http://www.apachefriends.org/en/xampp-windows.html" target="_blank">XAMPP-Windows</a> 中。 
+        </tr>
+      <tr>
+        <td class="tbltd1">Web 服务器</td>
+        <td>推荐使用 <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP Server 2.2</a>。<br> 包含在 XAMPP Windows 中。</td>
+      </tr>
+      <tr>
+        <td class="tbltd1">数据库服务器</td>
+        <td>推荐使用 <a href="http://dev.mysql.com/downloads/mysql/5.1.html" target="_blank">MySQL Server 5.0</a>。<br> 包含在 XAMPP Windows 中。</td>
+      </tr>
+      <tr>
+        <td class="tbltd1">PHP 调试器（可选）</td>
+        <td><a href="http://www.xdebug.org" target="_blank">XDebug 2.0 或更高版本</a>。<br /></td>
+      </tr>
+    </tbody>
+  </table>
+<p class="notes">通常，开发和调试都是在本地 Web 服务器上执行，而生产环境位于远程 Web 服务器上。<a href="./remote-hosting-and-ftp-account.html">使用 NetBeans IDE 在远程 Web 服务器上部署 PHP 应用程序</a>中介绍了如何设置远程 Web 服务器。本教程会引导您设置本地 Web 服务器。PHP 支持可以添加到许多本地 Web 服务器（IIS、Xitami 等）上，但最常用的是 <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP 服务器</a>。Apache HTTP 服务器包含在本教程中使用的 XAMPP AMP 包中。有关单独安装和配置 Apache HTTP 服务器的信息，请单击<a href="http://httpd.apache.org/docs/2.2/install.html" target="_blank">此处</a>。 </p>
+<h2><a name="requiredSoftware"></a>所需的软件</h2>
+<p>要创建、运行和调试 PHP 项目，需要以下软件：</p>
+<ul>
+  <li>用于 PHP 的 NetBeans IDE。可以从<a href="https://netbeans.org/downloads/index.html" target="_blank">此处</a>进行下载。 </li>
+  <li>Web 服务器。通常，开发和调试都是在本地 Web 服务器上执行，而生产环境位于远程 Web 服务器上。当前版本允许使用本地服务器。未来版本将支持通过 FTP 访问使用远程服务器。PHP 支持可以添加到许多 Web 服务器（IIS、Xitami 等）上，但最常用的是 <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP 服务器</a>。有关如何安装和配置 Apache 2.2 的信息，请单击<a href="http://httpd.apache.org/docs/2.2/install.html" target="_blank">此处</a>。<a href="http://httpd.apache.org/docs/2.2/install.html" target="_blank"></a></li>
+</ul>
+<ul>
+  <li>PHP 引擎。支持的版本是 PHP5。可以从<a href="http://www.php.net/downloads.php" target="_blank">此处</a>进行下载。 </li>
+  <li>PHP 调试器。用于 PHP 的 NetBeans IDE 使您能够使用 <a href="http://www.xdebug.org" target="_blank">XDebug</a>，但使用调试器是可选的。推荐版本为 XDebug 2.0 或更高版本，因为它与 PHP5 兼容。 </li>
+  <li>数据库服务器。您可以使用多种数据库服务器，而最受欢迎的一种是 MySQL 服务器。可以从<a href="http://dev.mysql.com/downloads/mysql/5.1.html" target="_blank">此处</a>进行下载。<br> <strong>注：</strong>该产品的推荐版本为 MySQL Server 5.0。提供的文档描述如何使用此版本。</li>
+</ul>
+<p>安装之后，需要设置环境，使所有软件组件可以彼此之间正常配合工作。 </p>
+<p>您可以使用其中包含所需软件的<a href="#XAMPP">包</a>或<a href="#installComponentsSeparately">单独安装每个组件</a>。 </p>
+<h2><a id="XAMPP" name="XAMPP"></a>使用 AMP 包</h2>
+<p>要自动指定 PHP 引擎、Apache HTTP 服务器和 MySQL 数据库服务器的所有配置设置，请使用 AMP 包。本教程仅提供 <a href="http://www.apachefriends.org/en/xampp-windows.html" target="_blank">XAMPP-Windows</a> 包的说明。有关 WAMP 包的帮助，请参见 <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">NetBeans XDebug Wiki</a>。</p>
+<h3><a name="installConfigureXAMPP"></a>安装和配置 XAMPP 包</h3>
+<p>此部分将介绍如何下载、安装和配置 XAMPP 包。 </p>
+<p class="alert"><strong>警告：</strong>不要使用 XAMPP 1.7.0。此版本中的 XDebug 出现重大问题。可以使用版本 1.7.1 或更高版本，其中已修复这些问题。</p>
+<p class="notes"><strong>注：</strong>从 XAMPP 1.7.2 开始，XAMPP 附带提供 PHP 5.3 而不是 PHP 5.2.x。适用于 PHP 的 NetBeans IDE 版本 6.7.x 不支持新的 PHP 5.3 功能。适用于 PHP 6.8 的 NetBeans IDE 目前提供开发版本，完全支持 PHP 5.3。另请注意，PHP 5.2.x 和 PHP 5.3 之间的 Xdebug 安装不同。</p>
+<ol>
+  <li>下载 <a href="http://www.apachefriends.org/en/xampp-windows.html" target="_blank">XAMPP</a> 安装包。（XAMPP Lite 不包括 XDebug。）</li>
+  <li>下载完成后，运行 <tt>.exe</tt> 文件。 
+    <p class="alert">在 Microsoft Vista 上，“用户访问控制”功能会阻止 PHP 安装程序更新 Apache httpd 配置。在安装 XAMPP 时请禁用 UAC。有关详细信息，请参见 <a href="http://support.microsoft.com/kb/922708" target="_blank">Microsoft 支持</a>。<br>
+    </p>
+  </li>
+  <li>您可以选择作为服务安装 Apache 服务器和 MySQL 数据库服务器。如果将 Apache 服务器和 MySQL 作为服务进行安装，则您将不必通过 XAMPP 控制面板来手动启动它们。请注意，您可以在 <a href="#xamppConstolPanel">XAMPP 控制面板</a>中选择安装或卸载这些服务。</li>
+  <li>如果您使用的是自解压档案文件，请在解压缩该档案文件之后，运行 <tt>setup-xampp.bat</tt> 文件以配置该包的组件。（XAMPP 安装程序会自动运行此文件。）</li>
+  <li><a id="xamppConstolPanel" name="xamppConstolPanel"></a>配置之后，打开 XAMPP 控制面板。（您可以通过运行 <tt>XAMPP_HOME/xampp-control.exe</tt> 文件或通过自动置于桌面上的 XAMPP 控制面板图标手动打开该控制面板。）在打开 XAMPP 控制面板时，请注意作为服务安装的模块是否已在运行。
+    <p class="alert"><b>警告：</b>在 Windows Vista 上，有时 <tt>xampp-control.exe</tt> 不会运行。这时您可以运行 <tt>xampp-start.exe</tt>。</p>
+    <p class="alert"><b>警告：</b>如果通过 MySQL 的“管理”按钮启动 <tt>winmysqladmin.exe</tt> 文件，则该文件将无法正常运行。出现层叠错误消息时，只能通过手动终止 <tt>winmysqladmin</tt> 进程来阻止这些消息。您也无法从命令行启动 <tt>winmysqladmin.exe</tt>。请参见 <a href="http://bugs.xampp.org/view.php?id=71" target="_blank">http://bugs.xampp.org/view.php?id=71</a>。</p>
+  <img alt="XAMPP 控制面板" class="margin-around" height="361" src="../../../images_www/articles/72/php/configure-php-environment-windows/xampp-control-panel.png" width="454"> </li>
+  <li>"Svc" 复选框指示模块是作为 Windows 服务安装的，并且将在系统启动时自动启动。您可以通过选中或取消选中 "Svc" 复选框来安装或卸载 Windows 服务。卸载 Windows 服务不会卸载模块，但之后您需要手动启动该模块。XAMPP 控制面板包括用于停止和启动模块以及打开这些模块的管理控制台的按钮。<br>
+  </li>
+  </ol>
+<h3><a name="checkXAMPPInstallation"></a>检查 XAMPP 安装 </h3>
+<ol>
+<li>运行浏览器，然后输入以下 URL：<tt>http://localhost</tt>。XAMPP 欢迎页面打开：<br> <img alt="XAMPP 欢迎页指示 Apache 正在运行" border="1" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-windows/xampp-welcome-page.png">
+</li>
+<li>要确保 Apache 和 MySQL 服务器已作为系统服务安装，请重新启动您的操作系统，再运行浏览器，然后再次输入 <tt>http://localhost</tt> URL。XAMPP 欢迎页面打开。请注意，XAMPP 欢迎页面在左旁注中包含一个菜单，您可以通过此菜单检查 XAMPP 组件的状态，运行 <tt>phpinfo()</tt>，以及实现其他有用的功能。<tt>phpinfo()</tt> 会返回一个屏幕，其中显示关于 XAMPP 组件的配置信息。 <br><img alt="由 phpinfo() 返回的配置信息表" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-windows/xampp-phpinfo.png" /></li>
+</ol>
+<h3><a name="installAndEnableXDebug"></a>安装和启用 XDebug 调试器</h3>
+<p>您需要配置 PHP 堆栈才能使用 XDebug。如果使用的是 <a href="#xdebug-xampp-171">XAMPP 1.7.1</a>（捆绑了 PHP 5.2.6）或 <a href="#xdebug-xampp-172">XAMPP 1.7.2</a>（捆绑了 PHP 5.3），该过程会有所不同。</p>
+<p class="alert">许多用户在其系统上运行 XDebug 时都遇到了一些问题。有关帮助信息，请参见<a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">我们的 wiki</a> 和 <a href="http://forums.netbeans.org/viewforum.php?f=13&sid=5b63e6774fe7859b5edd35b1192d8efd" target="_blank">NetBeans PHP 编辑器用户论坛</a>。</p>
+
+<div class="indent">
+    <h4 id="xdebug-xampp-171">XAMPP 1.7.1 (PHP 5.2) 上的 XDebug</h4>
+<p>您必须下载 XDebug，将 .dll 文件放在 php 扩展目录中，然后配置 php.ini 以查找并使用该文件。</p>
+<ol>
+<li>下载与您的 PHP 版本兼容且<em>线程安全</em>的最新 <a href="http://www.xdebug.org/download.php" target="_blank">XDebug</a>。下载链接列在 "Releases" 下。将 <tt>.dll</tt> 文件复制到 <tt>XAMP_HOME/php/ext</tt> 目录中。（<tt>XAMPP_HOME</tt> 是指 XAMPP 或 XAMPP Lite 安装目录，如 <tt>C:\Program Files\xampp</tt> 或 <tt>C:\xampplite</tt>。）</li>
+<li>找到 XAMPP 的活动 <tt>php.ini</tt> 文件并将其打开。默认情况下，此文件位于 <tt>XAMPP_HOME/apache/bin</tt> 目录中。通过运行 <tt>phpinfo()</tt> 并搜索 "Loaded Configuration File" 来确认活动的 <tt>php.ini</tt> 文件。</li>
+<li>由于 Zend 优化器会阻止 XDebug，因此您需要禁用 Zend 优化器。在活动的 <tt>php.ini</tt> 文件中找到以下行，然后将其删除或标记为注释（为了安全起见，请搜索与 Zend 相关的所有属性并将其注释掉）：
+  <pre class="examplecode">
+[Zend]
+;zend_extension_ts = "C:\Program Files\xampp\php\zendOptimizer\lib\ZendExtensionManager.dll"
+;zend_extension_manager.optimizer_ts = "C:\Program Files\xampplite\php\zendOptimizer\lib\Optimizer"
+;zend_optimizer.enable_loader = 0
+;zend_optimizer.optimization_level=15
+;zend_optimizer.license_path =
+</pre>
+</li>
+<li>要将<a id="attachXDebug" name="attachXDebug"></a> XDebug 附加到 PHP 引擎，请在 <tt>php.ini</tt> 文件中取消对以下行（恰好位于 [Zend] 部分下面；如果没有，请添加它们）的注释。已另外添加一些注释。
+  <pre class="examplecode">[XDebug]<br>; Only Zend OR (!) XDebug
+zend_extension_ts = &quot;./php/ext/php_xdebug&lt;-version-number&gt;.dll&quot;
+; XAMPP and XAMPP Lite 1.7.0 and later come with a bundled xdebug at &lt;XAMPP_HOME&gt;/php/ext/php_xdebug.dll, without a version number.<br>xdebug.remote_enable=1<br>xdebug.remote_host=127.0.0.1<br>xdebug.remote_port=9000
+; Port number must match debugger port number in NetBeans IDE Tools &gt; Options &gt; PHP<br>xdebug.remote_handler=dbgp<br>xdebug.profiler_enable=1<br>xdebug.profiler_output_dir=&quot;&lt;XAMPP_HOME&gt;\tmp&quot;<br>
+  </pre>
+  <p>将 <tt>xdebug.remote_enable</tt> 属性设置为 1，而不是 "true" 或任何其他值。</p>
+<p class="notes"><strong>注：</strong>请确保您指定的路径与安装过程中所确定的相应文件的位置匹配。</p></li>
+<li>保存 <tt>php.ini</tt>。</li>
+<li>运行 <a href="#xamppConstolPanel">XAMPP Control Panel Application（XAMPP 控制面板应用程序）</a>并重新启动 Apache 服务器。 </li>
+</ol>
+有关如何配置 XDebug 的详细信息，请参见<a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">我们的 wiki</a> 和 <a href="http://www.xdebug.org/docs/install" target="_blank">XDebug 文档</a>。<br>
+<h4 id="xdebug-xampp-172">XAMPP 1.7.2 (PHP 5.3) 上的 XDebug</h4>
+<p>XAMPP 1.7.2 捆绑了相应的 Xdebug .dll 文件。只需配置 <tt>php.ini</tt> 即可使用该文件。请注意，所有 Xdebug 设置都具有说明文本。</p>
+<ol>
+  <li>找到并打开 <tt>XAMPP_HOME\php\php.ini</tt> 以进行编辑。这是 XAMPP 1.7.2 中的唯一 <tt>php.ini</tt> 文件。</li>
+  <li>查找并取消注释以下行：<tt>zend_extension = "XAMPP_HOME\php\ext\php_xdebug.dll"</tt>。</li>
+  <li>查找并取消注释以下行：<tt>xdebug.remote_host=localhost</tt>。将设置值从 <tt>localhost</tt> 更改为 <tt>127.0.0.1</tt>。</li>
+  <li>查找并取消注释以下行：<tt>xdebug.remote_enable = 0</tt>。将 0 更改为 1。</li>
+  <li>查找并取消注释以下行：<tt>xdebug.remote_handler = "dbgp"</tt>。</li>
+  <li>查找并取消注释以下行：<tt>xdebug.remote_port = 9000</tt>。</li>
+  <li>保存 <tt>php.ini</tt>。</li>
+  <li>运行 <a href="#xamppConstolPanel">XAMPP Control Panel Application（XAMPP 控制面板应用程序）</a>并重新启动 Apache 服务器。 </li>
+  </ol>
+<p>有关如何配置 XDebug 的详细信息，请参见<a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">我们的 wiki</a> 和 <a href="http://www.xdebug.org/docs/install" target="_blank">XDebug 文档</a>。<br>
+</p>
+</div>
+<h2><a id="installComponentsSeparately" name="installComponentsSeparately"></a>单独安装组件 </h2>
+<div class="indent">
+<h3><a name="installApacheComponent"></a>Apache HTTP 服务器</h3>
+<ol>
+  <li>下载 <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache2 HTTP 服务器</a>。</li>
+  <li>运行安装文件 <tt>.msi</tt>。此时将启动安装向导。按照说明操作。
+  <p class="alert">在 Microsoft Vista 上，不要将 Apache 服务器安装到 Program Files 中的默认位置。Program Files 中的所有文件均具有写保护。</p></li>
+  <li>安装完成后，重新启动 Apache 服务器。 </li>
+  <li>要检查安装是否成功，请运行浏览器，然后输入以下 URL：
+    <pre class="examplecode">
+  http://localhost/</pre> 
+  Apache 欢迎测试页面打开： <br> <img alt="Apache Web 服务器测试页指示 Apache 正在运行" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-windows/install-apache-it-works-port80.png"> </li>
+</ol>
+<h4>疑难解答</h4>
+默认情况下，Apache 服务器监听端口 80。此端口可能已被其他服务所使用，如 Skype。要解决此问题，请更改服务器监听的端口： 
+  <ol>
+    <li>打开 Apache Web 服务器配置文件 <tt>httpd.conf</tt>。默认情况下，此文件位于 <tt>C:\Program Files\Apache Software Foundation\Apache&lt;version&gt;\conf\</tt> 中</li>
+	<li>找到 <tt>Listen 80</tt> 行，并更改端口号，如 <tt>8080</tt>。保存该文件。</li>
+	<li>重新启动 Apache Web 服务器。</li>
+	<li>要检查 Web 服务器是否工作，请运行浏览器并输入 URL，然后明确指定端口号：<tt>http://localhost:8080</tt></li>
+</ol>
+  <p>您还可以停止可能监听端口 80 的进程。在任务管理器中，选择相关文件名称，并单击“结束进程”。  </p>
+  <p>有关安装和配置服务器的详细信息，请查看<a href="http://httpd.apache.org/docs/2.2/install.html" target="_blank">此处</a>。 </p>
+  <h3><a name="installPHPEngine"></a>PHP 引擎</h3>
+<ol>
+  <li>下载适用于您所选 PHP5 版本的 <a href="http://windows.php.net/download/" target="_blank">Windows 二进制文件安装程序</a>。
+      <p class="alert"><strong>重要信息：</strong>如果没有安装程序适用于您要安装的 PHP 版本，则必须手动从 .zip 文件中安装它。请参见 php.net 文档中的<a href="http://php.net/manual/en/install.windows.manual.php" target="_blank">手动指令步骤</a>。</p></li>
+  <li>下载完成后，运行 <tt>.msi</tt> 安装文件。此时将启动安装向导。 </li>
+  <li>在“Apache 配置目录”面板上，指定 <tt>httpd.conf</tt> 文件所在的目录，默认设置是 <tt>C:\Program Files\Apache Software Foundation\Apache&lt;version&gt;\conf\</tt>。PHP 处理将自动启用。</li>
+  <li>如果您要使用 MySQL 数据库服务器，请选择“完全”安装选项，或在“扩展”列表中选择 "MySQL" 和 "MySQLi" 项。 </li>
+  <li>安装完成后，请重新启动 Apache 服务器。 </li>
+  <li>要检查 PHP 引擎是否已成功安装，以及是否在 Apache 配置中启用了 PHP 处理，请执行以下操作：
+    <ul>
+  <li>打开记事本或其他文本编辑器。创建一个文件并键入以下文本：
+  <pre class="examplecode">&lt;?php 
+     echo &quot;PHP has been installed successfully!&quot;;
+?&gt;</pre>  </li>
+  <li>在 htdocs 文件夹中将此文件另存为 <code>test.php</code>。默认路径为 <tt>C:\Program Files\Apache Software Foundation\Apache&lt;version>\htdocs\test.php</tt></li>
+  <li>运行浏览器，然后输入以下 URL：<tt>http://localhost:&lt;port&gt;/test.php</tt>。以下页面打开：<br> <img alt="PHP 测试页指示 PHP 引擎已启用" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-windows/install-php-test.png">
+   </li>
+  </ul>
+  </li>
+</ol>
+<h4>疑难解答</h4>
+如果页面未打开：
+<ol>
+  <li>重新启动 Apache 服务器。</li>
+  <li>检查 Apache 服务器配置文件 httpd.conf 是否包含以下几行：
+     <pre class="examplecode">
+  AddType Application/x-httpd-php .php 
+  LoadModule php5_module &quot;c:/php/sapi/php5apache2_2.dll&quot;</pre>
+  </li>
+  <li>如果缺少以上几行，请添加它们，并保存 <tt>httpd.conf</tt>，然后重新启动 Apache。</li>
+  <li>刷新 http://localhost:&lt;port&gt;/test.php 页面。   </li>
+</ol>
+<h3><a name="installMySQL"></a>MySQL 数据库服务器</h3>
+<p>查找有关<a href="../ide/install-and-configure-mysql-server.html">安装和配置 MySQL</a> 数据库服务器的详细信息。 </p>
+<h3><a name="installXDebug"></a>XDebug  </h3>
+<ol>
+<li>下载 <a href="http://www.xdebug.org" target="_blank">XDebug</a>。</li>
+<li>将 XDebug 安装到 <tt>php/</tt> 文件夹中。您将需要指向 XDebug 的路径来<a href="#settingUpEnvironment">配置环境</a>。</li>
+</ol>
+
+<h3><a name="settingUpEnvironment"></a>设置环境  </h3>
+<ol>
+  <li>如果按照默认设置安装，则系统会自动启用 PHP 处理。 </li>
+  <li>要将<a id="attachXDebug" name="attachXDebug"></a> XDebug 附加到 PHP 引擎，请找到 <tt>php.ini</tt> 文件，并在其中添加以下几行：
+  <p>适用于<strong>线程安全</strong>的 PHP 5.2 引擎：  
+  <pre class="examplecode">zend_extension_ts=&quot;&lt;path to the php folder&gt;/php_xdebug-&lt;version-number&gt;.dll&quot;
+xdebug.remote_enable=1</pre>
+<p>适用于<strong>非线程安全</strong>的 PHP 5.2 引擎： </p>
+<pre class="examplecode">zend_extension_nts="&lt;path to the php folder&gt;/php_xdebug-&lt;version-number&gt;.dll"
+xdebug.remote_enable=1</pre>
+<p>适用于<b>任何</b> PHP 5.3 引擎：</p>
+<pre class="examplecode">zend_extension="&lt;path to the php folder&gt;/php_xdebug-&lt;version-number&gt;.dll"
+xdebug.remote_enable=1</pre>
+
+  <p>一些用户还发现需要包括以下行（但有些用户不需要）：</p>
+<pre>xdebug.remote_host=127.0.0.1<br>xdebug.remote_port=9000
+; Port number must match debugger port number in NetBeans IDE Tools &gt; Options &gt; PHP<br>xdebug.remote_handler=dbgp<br></pre>
+  <p>有关如何配置 XDebug 的详细信息，请单击<a href="http://www.xdebug.org/docs/install" target="_blank">此处</a>。</p>
+  <p class="notes"><strong>注：</strong>请确保您指定的路径与安装过程中所确定的相应文件的名称和位置匹配。</p></li>
+  <li>要确保先前安装的 PHP 引擎支持使用 MySQL 数据库服务器，请执行以下操作：
+    <ol type="a">
+      <li type="a">单击“开始”>“控制面板”。</li>
+      <li type="a">在控制面板上，选择“添加或删除程序”。 </li>
+      <li type="a">在“添加或删除程序”面板上，选择“PHP &lt;版本号&gt;”区域并单击“更改”。此时将启动 PHP 设置向导。单击 "Next"（下一步）。</li>
+      <li type="a">在“更改、修复或删除”安装面板上，选择“更改”，然后单击“下一步”。 </li>
+      <li>在“Web 服务器设置”面板上，选择 Apache 服务器的版本（在我们的示例中是 Apache 2.2.x 模块）。单击 "Next"（下一步）。</li>
+      <li>在“Apache 配置目录”面板上，指定 Apache 配置文件 <tt>httpd.conf</tt> 所在的目录。单击 "Next"（下一步）。</li>
+      <li>在“选择要安装的项”面板上，展开“扩展”节点，然后选择 "MySQL" 和 "MySQLi" 项。单击 "Next"（下一步）。</li>
+      <li>在“准备更改 PHP &lt;版本号&gt;”面板上，单击“更改”。</li>
+      <li>在“已完成 PHP &lt;版本号&gt; 设置向导”面板上，单击“完成”。</li>
+    </ol>
+    <br></li>
+  </ol>
+  </div>
+  <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Configuring%20PHP%20on%20Windows">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" />
+
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+<a href="../../trails/php.html">返回至 PHP 学习资源</a>
+</body>
+</html>

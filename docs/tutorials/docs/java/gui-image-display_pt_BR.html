@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Tutorial that shows how to handle images and
+              other resources when creating Swing applications in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment tutorial, guide, user, documentation, open source">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Tratando Imagens em uma Aplicação Java GUI - Tutorial do NetBeans IDE</title>
+    </head>
+    <body>
+        <h1>Tratando Imagens em uma Aplicação Java GUI</h1>
+
+
+        <p><b>Conteúdo</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 6.8, 6.9, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.4 e 8.0">
+        <ul class="toc">
+            <li><a href="#intro">Introdução</a></li>
+            <li><a href="#form">Criando o Form da Aplicação</a></li>
+            <li><a href="#package">Adicionando um Pacote na Imagem</a></li>
+            <li><a href="#displaying">Exibindo a Imagem no Label</a></li>
+            <li><a href="#building">Construindo e Executando a Aplicação</a></li>
+			<li><a href="#background">Exibindo a Imagem como Plano de Fundo no Quadro</a></li>
+            <li><a href="#custom">Criando Código Personalizado</a></li>
+            <li><a href="#summary">Resumo</a></li>
+            <li><a href="#seealso">Consulte Também</a></li>
+        </ul>
+
+
+        <p>
+            <b>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</b>
+        </p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/">NetBeans IDE</a></td>
+                    <td class="tbltd1">Versão 7.4 ou 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">Versão 6, 7 ou 8 </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <a name="intro"></a><h2>Introdução</h2>
+        <p>O tratamento de imagens em uma aplicação é um problema comum para muitos programadores iniciantes em Java. A forma padrão de acessar as imagens em uma aplicação Java é por meio do método <code><a href="http://download.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#getResource(java.lang.String)" target="_blank">getResource()</a></code>. Este tutorial mostra como usar o GUI Builder do IDE para gerar o código a fim de que inclua imagens (e outros recursos) em sua aplicação. Além disso, você aprenderá como personalizar a forma na qual o IDE gera o código de tratamento de imagens.</p>
+        <p>A aplicação resultante deste tutorial será um JFrame simples que contém um JLabel que exibe uma única imagem.</p>
+        <h2>Criando a Aplicação</h2>
+        <ol>
+            <li>Escolha Arquivo > Novo Projeto.</li>
+            <li>No assistente Novo Projeto, selecione Java > Aplicação Java e clique em Próximo.</li>
+            <li>Em Nome do Projeto, digite <code>ImageDisplayApp</code>.</li>
+            <li>Desmarque a caixa de seleção Criar Classe Principal.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/newproj.png" rel="lytebox" title="Assistente Novo Projeto - Clique para Aumentar"> <img alt="Assistente Novo Projeto" border="1" src="../../../images_www/articles/72/java/gui-image-display/newproj-small.png"></a></p></li>
+            <li>Clique em Finalizar.</li>
+        </ol>
+
+        <a name="form"></a><h2>Criando o Form da Aplicação</h2>
+
+        <p>Nesta seção, você cria o form JFrame e adiciona um JLabel ao form.</p>
+        <p><b>Para criar o form JFrame:</b></p>
+        <ol>
+            <li>Na janela Projetos, expanda o nó <tt>ImageDisplayApp</tt>.</li>
+            <li>Clique com o botão direito do mouse no nó Pacotes de Código-fonte e escolha Novo > Form JFrame.</li>
+            <li>Em Nome da Classe, digite <code>ImageDisplay</code>.</li>
+            <li>Em Nome do Pacote, digite <code>org.me.myimageapp</code>.</li>
+            <li>Clique em Finalizar.</li>
+        </ol>
+
+        <p><b>Para adicionar o JLabel:</b></p>
+        <ul>
+            <li>Na Paleta, selecione o componente Label e arraste-o para o JFrame.</li>
+        </ul>
+        <p>Até este momento, o form deve ser semelhante à seguinte imagem:</p>
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/form.png" rel="lytebox" title="Form gerado com o label adicionado - Clique para Ampliar"> <img alt="Gerado form com o label adicionado" border="1" src="../../../images_www/articles/72/java/gui-image-display/form-small.png"></a></p>
+                <a name="package"></a><h2>Adicionando um Pacote na Imagem</h2>
+        <p>Ao usar imagens ou outros recursos em uma aplicação, normalmente você cria um pacote Java separado para os recursos. No seu sistema de arquivos local, um pacote corresponde a uma pasta.</p>
+
+        <p><b>Para criar um pacote para a imagem:</b></p>
+        <ol>
+            <li>Na janela Projetos, clique com o botão direito do mouse no nó <code>org.me.myimageapp</code> e escolha Novo > Pacote Java.<br>
+            
+				 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/package.png" rel="lytebox" title="Adicionando um novo pacote Java - Clique para Ampliar"> <img alt="Adicionando um novo pacote Java" border="1" src="../../../images_www/articles/72/java/gui-image-display/package-small.png"></a></p></li>
+
+            <li>Clique em Finalizar.</li>
+        </ol>
+        <p>Na janela Projetos, você deve ver um novo pacote que aparece na pasta <code>Pacotes do Código-fonte</code>.</p>
+     <p class="align-center"><img alt="Janela Projetos" border="1" src="../../../images_www/articles/72/java/gui-image-display/project-with-imagepack.png"></p>
+
+
+        <a name="displaying"></a><h2>Exibindo a Imagem no Label</h2>
+
+        <p>Nesta aplicação, a imagem será incorporada em um componente JLabel.</p>
+
+        <p><b>Para adicionar a imagem ao label:</b></p>
+        <ol>
+            <li>No Designer de GUI, selecione o label que adicionou ao seu form.</li>
+            <li>Na janela Propriedades, clique na categoria Propriedades e role até a propriedade do ícone.</li>
+            <li>Clique no botão de reticências (...).<br> O editor de propriedades do ícone é exibido.
+			  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/importimage.png" rel="lytebox" title="Editor de Propriedades do Ícone - Clique para Ampliar"> <img alt="Editor de Propriedades do Ícone" border="1" src="../../../images_www/articles/72/java/gui-image-display/importimage-small.png"></a></p></li>
+            <li>Na caixa de diálogo da propriedade do ícone, clique em Importar para o Projeto.</li>
+            <li>Na seletor de arquivos, vá até qualquer imagem que esteja em seu sistema que você queira usar. Em seguida, clique em Próximo.</li>
+            <li>Na página Selecionar pasta de destino do assistente, selecione a pasta <code>newpackage</code> e clique em Finalizar.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/targetfolder.png" rel="lytebox" title="Selecione Pasta de Destino página do assistente Importar Imagens para Projeto"> <img alt="Selecione Pasta de Destino página do assistente Importar Imagens para Projeto" border="1" src="../../../images_www/articles/72/java/gui-image-display/targetfolder-small.png"></a></p>
+            </li>
+			<li>Clique em OK para fechar a caixa de diálogo de propriedade do ícone.</li>
+        </ol>
+
+        <p>Após clicar em OK, o IDE faz o seguinte:</p>
+        <ul>
+            <li>Copia a imagem para seu projeto. Portanto, quando você constrói e distribui a aplicação, a imagem é incluída no arquivo JAR distribuível.</li>
+            <li>Gera o código na classe ImageDisplay para acessar a imagem.</li>
+            <li>Exibe a sua imagem no label na view Design do seu form.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/label-added.png" rel="lytebox" title="Imagem adicionada ao label"> <img alt="Imagem adicionada ao label" border="1" src="../../../images_www/articles/72/java/gui-image-display/label-added-small.png"></a></p></li>
+        </ul>
+
+        <p>Neste momento, você pode realizar alguns procedimentos simples para melhorar a aparência do form, como:</p>
+        <ul>
+            <li>Na janela Propriedades, selecione a propriedade <code>text</code> e delete <code>jLabel1</code>. Tal valor foi gerado pelo GUI Builder para exibir o texto do label. No entanto, você está usando o label para exibir uma imagem em vez do texto, de modo que o texto não seja necessário.</li>
+            <li>Arraste o <code>jLabel1</code> para o centro do form.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/centered.png" rel="lytebox" title="A view Design da classe ImageDisplay com a imagem centralizada"> <img alt="A view Design da classe ImageDisplay com a imagem centralizada" border="1" src="../../../images_www/articles/72/java/gui-image-display/centered-small.png"></a></p></li>
+        </ul>
+        
+       
+
+        
+		<p><b>Para exibir o código gerado:</b></p>
+        <ol>
+            <li>No Designer do GUI, clique no botão Código-fonte. (Selecione Exibir > Barra de Ferramentas Editor de Código-fonte do menu principal se o botão Código-fonte estiver oculto.)</li>
+            <li>Role até linha que diz Código Gerado.</li>
+            <li>Clique no sinal de mais (+) à esquerda da linha Código Gerado para exibir o código que o Designer de GUI gerou.</li>
+        </ol>
+        <p>A linha-chave é a seguinte:</p>
+
+        <pre class="examplecode">jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource(&quot;/org/me/myimageapp/newpackage/image.png&quot;))); // NOI18N</pre>
+
+        <p>Visto que você usou o editor de propriedades da propriedade do <code>Ícone</code> do <code>jLabel1</code>, o IDE gerou o método <code>setIcon</code>. O parâmetro de tal método contém uma chamada ao método <code><a href="http://download.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#getResource(java.lang.String)" target="_blank">getResource()</a></code> em uma classe anônima interna de <code>ImageIcon</code>. Observe que o caminho gerado da imagem correspondente à sua localização na estrutura de pacote da aplicação.</p>
+
+        <p class="notes"><b>Observações:</b></p>
+        <ul>
+            <li>Se você usar a opção Imagem Externa no editor de propriedades do ícone, o IDE gerará um caminho absoluto para a imagem em vez de copiar a imagem no seu projeto. Portanto, a imagem seria exibida ao executar a aplicação no sistema, mas possivelmente não seria exibida ao executar a aplicação em outro sistema.</li>
+            <li>O método <code>getResource</code> também é útil para acessar outros tipos de recursos, como arquivos de texto que contêm dados que a aplicação talvez precise usar.</li>
+        </ul>
+		<p><b>Para registrar handlers de evento para eventos do mouse no JLabel:</b></p>
+        <p>
+		Na View Design, clique com o botão direito do mouse em JLabel e escolha Eventos > Mouse > mouseClicked/mousePressed/mouseReleased no menu pop-up.<br> Um handler de evento é gerado para o evento correspondente.</p>
+		<p class="notes"><b>Observação:</b> você pode obter coordenadas do mouse (por exemplo, a localização de um clique do mouse) no handler de evento usando os métodos <code>event.getPoint()</code>, <code>event.getX()</code> ou <code>event.getY()</code>. Consulte <a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/awt/event/MouseEvent.html">Classe MouseEvent</a> para obter detalhes.</p>
+
+        <a name="background"></a>
+        <h2>Exibindo a imagem como Plano de Fundo no Quadro</h2>
+
+        <p> Não há nenhum suporte direto para uma imagem de segundo plano do JFrame no GUI Builder, já que não há nenhum suporte direto para uma imagem de segundo plano do JFrame no Swing.<br> De qualquer forma, há diversas formas indiretas de atingir tal objetivo. Nesta aplicação, o JLabel com a imagem será embutido dentro do componente JFrame, enquanto que um JPanel transparente será colocado sobre o JLabel e usado como o principal de todos os componentes.</p>
+
+        <p><b>Para adicionar um JPanel transparente na JFrame com a imagem:</b></p>
+        <ol>
+		<li>Escolha Arquivo > Novo Projeto.</li>
+        <li>No assistente Novo Projeto, selecione Java > Aplicação Java e clique em Próximo.</li>
+        <li>Em Nome do Projeto, digite <code>BackgroundImageApp</code>.</li>
+		<li>Desmarque a caixa de seleção Criar Classe Principal.
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/prj.png" rel="lytebox" title="Criando um novo projeto - Clique para aumentar"> <img alt="Criando um novo projeto" border="1" src="../../../images_www/articles/72/java/gui-image-display/prj-small.png"></a></p></li>
+		<li>Clique em Finalizar.</li>
+		<li>Na janela Projetos, expanda o nó <code>BackgroundImageApp</code>.</li>
+        <li>Clique com o botão direito do mouse no nó Pacotes de Código-fonte e escolha Novo > Form JFrame.</li>
+        <li>Em Nome da Classe, digite <code>ImageDisplay</code>.</li>
+        <li>Em Nome do Pacote, digite <code>org.me.mybackgroundapp</code>.
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/newjframe.png" rel="lytebox" title="Adicionando um novo form - Clique para ampliar"> <img alt="Adicionando um novo form" border="1" src="../../../images_www/articles/72/java/gui-image-display/newjframe-small.png"></a></p></li>
+        <li>Clique em Finalizar.</li>
+		<li>Na view Design, clique com o botão direito do mouse em JFrame e selecione Definir Layout > Layout do Conjunto de Grades no menu pop-up. </li>
+		<li>Clique com o botão direito do mouse em JFrame e selecione Adicionar da Paleta > Contêineres Swing > Painel no menu pop-up. </li>
+		<li>Na janela Propriedades, desmarque a propriedade <code>opaque</code> do jPanel.</li>
+		<li>Clique com o botão direito do mouse em JFrame e selecione Adicionar da Paleta > Controles do Swing > Label no menu pop-up.</li>
+		<li>Na janela Projetos, clique com o botão direito do mouse no nó <code>org.me.mybackgroundapp</code> e escolha Novo > Pacote Java.</li>
+            <li>Clique em Finalizar. Um novo pacote é adicionado.
+			</li>
+		    <li>No Designer de GUI, selecione o label que adicionou ao seu form.</li>
+		    <li>Na janela Propriedades, clique na categoria Propriedades e role até a propriedade do ícone.</li>
+		    <li>Clique no botão de reticências (...). </li>
+			<li>Na caixa de diálogo da propriedade do ícone, clique em Importar para o Projeto.</li>
+			<li>Na seletor de arquivos, vá até qualquer imagem que esteja em seu sistema que você queira usar. Em seguida, clique em Próximo.</li>
+			<li>Na página Selecionar Pasta de Destino do assistente, selecione a pasta de recursos <code>newpackage</code> e clique em Finalizar.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/targetfolder.png" rel="lytebox" title="Selecione a página Pasta de Destino do assistente de Importação de Imagens para Projeto. Clique para ampliar"> <img alt="Selecione Pasta de Destino página do assistente Importar Imagens para Projeto" border="1" src="../../../images_www/articles/72/java/gui-image-display/targetfolder-small.png"></a></p></li>
+			<li>Clique em OK para fechar a caixa de diálogo de propriedade do ícone.</li>
+			<li>No navegador, clique com o botão direito do mouse em jPanel e escolha Propriedades no menu pop-up. </li>
+			<li>Na caixa de dialogo Propriedades, defina as propriedades <code>Grid X</code>, <code>Grid Y</code>, <code>Weight X</code> e <code>Weight Y</code> como <code>1</code> e a propriedade <code>Fill</code> como <code>Both</code>. 
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/panelprops.png" rel="lytebox" title="Propriedades do painel - Clique para ampliar"> <img alt="Propriedades do painel" border="1" src="../../../images_www/articles/72/java/gui-image-display/panelprops-small.png"></a></p></li>
+			<li>Clique em Fechar. </li>
+			<li>Repita as etapas 24 e 25 para o jLabel.</li>
+			<li>Na caixa de diálogo Propriedades, selecione a propriedade <code>text</code> e delete <code>jLabel1</code>.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/labelprops.png" rel="lytebox" title="Propriedades do label - Clique para ampliar"> <img alt="Propriedades do label" border="1" src="../../../images_www/articles/72/java/gui-image-display/labelprops-small.png"></a></p>
+			  O segundo plano está pronto. Agora você pode arrastar um jLabel e um jTextField ao jPanel a partir da Paleta, por exemplo. Ambos serão exibidos sobre a imagem de segundo plano.
+		  <p class="align-center"><img alt="Tela mostrando a view Design da classe Segundo Plano." class="margin-around" src="../../../images_www/articles/72/java/gui-image-display/background.png"></p></li>
+        </ol>
+		<p class="notes"><b>Observação:</b> a vantagem da solução descrita é que a imagem de segundo plano é mostrada no período do projeto e no runtime.</p>
+		
+        <a name="building"></a><h2>Construindo e Executando a Aplicação</h2>
+        <p>Agora que gerou o código para acessar e exibir a imagem, você pode construir e executar a aplicação para certificar-se de que a imagem está sendo acessada.</p>
+        <p>Você precisa, primeiro, definir a classe principal do projeto. Quando você define a classe principal, o IDE sabe quais classes executar quando o projeto é executado. Além disso, isso garante que o elemento <code>Main-Class</code> no arquivo JAR do projeto seja gerado quando você construir a aplicação.</p>
+        <p><b>Para definir a classe principal do projeto:</b></p>
+        <ol>
+            <li>Clique com o botão direito do mouse no nó do projeto ImageDisplayApp e escolha Propriedades.</li>
+            <li>Na caixa de diálogo Propriedades do projeto, selecione a categoria Executar.</li>
+            <li>Clique no botão Procurar ao lado do campo Classe Principal. Depois selecione a classe <code>org.me.myimageapp.ImageDisplay</code>.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/mainclass.png" rel="lytebox" title="Selecionando a classe principal - Clique em ampliar"> <img alt="Selecionando a classe principal" border="1" src="../../../images_www/articles/72/java/gui-image-display/mainclass-small.png"></a></p></li>
+			<li>Clique no botão Selecionar Classe Principal.</li>
+			<li>Clique em OK para fechar a caixa de diálogo Propriedades do Projeto. </li>
+        </ol>
+        <p><b>Para construir o projeto:</b></p>
+        <ul>
+            <li>Escolha Executar > Limpar &amp; Criar Projeto (<i>project_name</i>) na barra de ferramentas principal.</li>
+        </ul>
+        <p>Você pode exibir os produtos construídos da aplicação na janela Arquivos. A pasta <code>build</code> contém a classe compilada. A pasta <code>dist</code> contém um arquivo JAR executável que contém a classe compilada e a imagem.</p>
+
+        <p class="align-center"><img alt="A janela Arquivos com as pastas construir e distribuir é expandida" border="1" src="../../../images_www/articles/72/java/gui-image-display/files.png"></p>
+
+        <p><b>Para executar o projeto:</b></p>
+        <ul>
+            <li>Escolha Executar > Executar Projeto (<i>project_name</i>) na barra de ferramentas principal.</li>
+        </ul>
+
+        <a name="custom"></a><h2>Criando Código Personalizado</h2>
+
+        <p>Em muitas aplicações, a imagem exibida não é determinada estaticamente como neste exemplo. Por exemplo, a imagem a ser exibida pode ser determinada por algo no qual o usuário clica. </p>
+        <p>Se precisar escolher a imagem a ser exibida programaticamente, você pode escrever seu próprio código personalizado para acessar e exibir recursos. O IDE impede que você escreva o código diretamente nos "blocos protegidos" da view Código-fonte que contém o código gerado pelo GUI Builder. No entanto, você pode inserir o código nos blocos protegidos usando os editores de propriedades que podem ser acessados na janela Propriedades. Ao usar os editores de propriedades desta forma, você garante que o código personalizado não se perda ao fazer alterações de design no GUI Builder.</p>
+        <p><b>Por exemplo, para escrever o código personalizado de uma propriedade <code>icon</code> do JLabel:</b></p>
+        <ol>
+            <li>Selecione JLabel na View Design ou na janela Navegador.</li>
+            <li>Na janela Propriedades, clique no botão de reticências (...) ao lado da propriedade <code>icon</code>.</li>
+            <li>Na lista drop-down da parte superior da caixa de diálogo, selecione a opção Código Personalizado.</li>
+        </ol>
+
+        <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/custom-code.png" rel="lytebox" title="O editor de propriedades do Ícone com a opção Código Personalizado selecionado - Clique para ampliar"><img alt="O editor de propriedades do Ícone com a opção Código Personalizado selecionado" border="1" src="../../../images_www/articles/72/java/gui-image-display/custom-code-small.png"></a></p>
+        <p>A opção Código Personalizado deste editor de propriedades permite que você mesmo preencha o parâmetro do método <code>setIcon</code>. Você pode preencher este parâmetro com a lógica necessária ou com uma chamada a um método diferente que você escreveu em outro lugar na classe.</p>
+        <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/custom-view.png" rel="lytebox" title="A área de texto na qual você pode inserir o parâmetro setIcon - Clique para ampliar"> <img alt="A área de texto na qual você pode inserir o parâmetro setIcon" border="1" src="../../../images_www/articles/72/java/gui-image-display/custom-view-small.png"></a></p>
+        <a name="summary"></a><h2>Resumo</h2>
+        <p>Este tutorial mostrou como acessar imagens de uma aplicação que você criou no NetBeans IDE. O tratamento de imagens é abordado posteriormente no Tutorial do Java. </p>
+        <p class="notes"><b>Observação: </b>o exemplo oferecido neste tutorial é muito semelhante ao primeiro exemplo na <a href="http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html" target="_blank">seção Como Usar Ícones</a> do Tutorial do Java. A diferença é que o código gerado neste tutorial usa o método <code><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html#setIcon(javax.swing.Icon)" target="_blank">setIcon</a></code> do <code><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html" target="_blank">JLabel</a></code> para aplicar o ícone no label. No exemplo do Tutorial do Java, o ícone é aplicado no label ao ser passado pelo seu construtor.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Handling%20Images%20in%20a%20GUI%20Application">Enviar Feedback neste Tutorial</a>
+        </div>
+        <br style="clear:both;" >
+
+
+        <a name="seealso"></a><h2>Consulte Também</h2>
+        <ul>
+            <li><a href="gui-functionality.html">Introdução à Construção de GUIs</a></li>
+            <li><a href="quickstart-gui.html">Projetando uma GUI Swing no NetBeans IDE</a></li>
+            <li><a href="../../trails/matisse.html">Trilha de Aprendizado das Aplicações de GUI do Java</a></li>
+            <li><a href="../../trails/java-se.html">Trilha de Aprendizado do Desenvolvimento Geral em Java</a></li>
+            <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUI Builder - Perguntas Frequentes</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&amp;id=NBDAG920">Implementando GUIs de Java</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></li>
+        </ul>
+
+    </body>
+</html>

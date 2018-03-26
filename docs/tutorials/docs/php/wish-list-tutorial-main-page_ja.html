@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>NetBeans IDE PHPエディタを使用したデータベース駆動型アプリケーションの作成</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, PHP, MYSQL, CRUD">
+        <meta name="DESCRIPTION" content="This 9-part tutorial describes how to create a CRUD (Create, Read, Update, Delete) PHP application accessing a MySQL database, using the NetBeans IDE PHP editor." >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+    <body>
+        <h1>NetBeans IDE PHPエディタを使用したデータベース駆動型アプリケーションの作成</h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+                <h4>チュートリアルの目次:</h4>
+                <ol start="0">
+                    <li>
+                        <p><b>=> PHPを使用するデータベース駆動型アプリケーションの作成 - メイン・ページ</b></p>
+                    </li>
+                    <li><p>データベースの作成</p> <ol type="a"><li><a href="wish-list-lesson1.html">MySQLデータベースの作成</a></li>
+                            <li><a href="wish-list-oracle-lesson1.html">Oracleデータベース表の作成</a></li>
+                        </ol></li>
+                    <li>
+                        <p><a href="wish-list-lesson2.html">アプリケーションの設計。データベースからの読取り</a></p>
+                    </li>
+                    <li><a href="wish-list-lesson3.html">新規アプリケーション・ユーザーの作成</a></li>
+                    <li><a href="wish-list-lesson4.html">コードの最適化</a></li>
+                    <li><a href="wish-list-lesson5.html">セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</a></li>
+                    <li><a href="wish-list-lesson6.html">データベースへの新しいウィッシュの追加</a></li>
+                    <li><a href="wish-list-lesson7.html">データベース内のエントリの更新および削除</a></li>
+                    <li><a href="wish-list-lesson8.html">CSSテクノロジを使用したアプリケーションの外観の改良</a></li>
+                    <li><a href="wish-list-lesson9.html">リモートWebサーバーへのアプリケーションのデプロイ</a></li>
+                </ol>
+            </div>
+        </div>
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        <p>このチュートリアルでは、NetBeans IDEでのPHPのサポートを使用して、単純なWebアプリケーションを作成し、実行します。ウィッシュ・リストの作成方法を例で示します。アプリケーションを作成してデプロイすると、ウェディング、バースデー、ホリデー用のギフトなど、ウィッシュ・リストに関する情報を友人と共有できます。レッスン1で、情報を格納するデータベースを作成します。</p>
+        <p> レッスン2で、登録済のユーザーであれば、他のユーザーのウィッシュ・リストを表示できる機能を開発します。</p>
+        <p> レッスン3で、アプリケーションがサポートする新規ユーザーの登録機能を開発します。 </p>
+        <p>レッスン4では、コードを保守しやすくするためのヒントが得られます。 </p>
+        <p>レッスン5では、セキュリティ上の問題について、考えられる解決方法が提供されています。 </p>
+        <p>レッスン6と7で、登録済の各ユーザーが独自のウィッシュ・リストを編集できる機能を開発します。</p>   
+        <p>レッスン8で、CSSスタイル・シートを適用してアプリケーションの外観を改良するスタイルを追加します。最後に、レッスン9で説明されているヒントを使用して、アプリケーションをリモートWebサーバー上にデプロイします。 </p>
+        <p>MySQLデータベースとOracleデータベースの両方のユーザー向けにコードが用意されています。チュートリアルでは<tt>mysqli</tt>およびOCI8 APIを使用します。PDOに興味があるユーザー向けに、PDOバージョンの完全なチュートリアルが<a href="https://netbeans.org/projects/www/downloads/download/php/wishlist-pdo.zip" target="_blank">ダウンロード</a>できます。PDO_OCI APIは試験段階であることに注意してください。</p>
+        <br style="clear:left">
+
+        <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">PHPダウンロード・バンドル</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">PHPエンジン</td>
+                    <td class="tbltd1">バージョン5
+                </tr>
+                <tr>
+                    <td class="tbltd1">Webサーバー</td>
+                    <td><a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP Server 2.2</a> (推奨)<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">データベース・サーバー</td>
+                    <td>MySQL、OracleXE、またはOracle11g</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>必須ソフトウェアのインストールおよび構成の詳細は、使用しているオペレーティング・システムで<a href="../../trails/php.html#configuration">PHP開発用の環境の準備</a>について説明しているドキュメントを参照してください。 </p>
+        <h2>次の手順:</h2>
+        <p><a href="wish-list-lesson1.html">MySQLデータベースの作成</a></p>
+        <p>または</p>
+        <p><a href="wish-list-oracle-lesson1.html">Oracleデータベース表の作成</a></p>
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%20Main">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear:both;" >
+        <p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+
+
+        <p><a href="../../trails/php.html">PHPの学習に戻る</a></p>
+    </body>
+</html>

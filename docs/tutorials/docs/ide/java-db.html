@@ -1,0 +1,563 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This introductory tutorial demonstrates 
+            how to work with the Java DB (Derby) database in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, 
+            database, derby, Java, relational database management system, RDBMS, Apache,
+            transaction processing, SQL, JDBC">
+        
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+        
+        <title>Working with the Java DB (Derby) Database - NetBeans IDE Tutorial</title>
+
+</head>
+    
+    <body>
+        <h1>Working with the Java DB (Derby) Database</h1>
+
+        <p>This document demonstrates how to set up a connection to  
+            <a href="http://www.oracle.com/technetwork/java/javadb/overview/index.html">Java&nbsp;DB</a>
+            database in NetBeans IDE. Once a connection is made, you can begin working 
+            with the database in the IDE, allowing you to create tables, populate them 
+            with data, run SQL statements and queries, and more.</p>
+        
+        <p>The Java&nbsp;DB database is Sun's supported distribution of 
+            <a href="http://db.apache.org/derby/">Apache Derby</a>. 
+            Java&nbsp;DB is a fully transactional, secure, standards-based database 
+            server, written entirely in Java, and fully supports SQL, JDBC API, and 
+            Java EE technology. The Java&nbsp;DB database is packaged with the 
+            <a href="http://glassfish.dev.java.net/">GlassFish</a> application server,
+            and is included in <a href="http://download.oracle.com/javase/6/">JDK&nbsp;6</a> 
+            as well. For more information on Java&nbsp;DB database, consult the 
+            <a href="http://www.oracle.com/technetwork/java/javadb/documentation/index.html">official
+            documentation</a>.</p>
+
+            <p><strong>Contents</strong></p>
+
+         <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+        <ul class="toc">
+            <li><a href="#configuring">Configuring the Database</a></li>
+            <li><a href="#registering">Registering the Database in NetBeans IDE</a></li>
+            <li><a href="#starting">Starting the Server and Creating a Database</a></li>
+            <li><a href="#connecting">Connecting to the Database</a></li>
+            <li><a href="#creating">Creating Tables</a></li>
+            <li><a href="#adding">Adding Table Data</a></li>
+            <li><a href="#deleting">Deleting Tables</a></li>
+            <li><a href="#using">Using an External SQL Script</a></li>
+            <li><a href="#recreating">Recreating Tables from a Different Database</a></li>
+            <li><a href="#seeAlso">See Also</a></li>
+        </ul>            
+        
+        <p><strong>To follow this tutorial, you need the following software and resources.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">Version 7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Java&nbsp;DB</td>
+                    <td class="tbltd1">version 10.4.x, 10.5.x</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p><strong class="notes">Note.</strong></p>
+        <ul>
+            <li>Java DB is installed when you install JDK 7 or JDK 8 (except on Mac OS X).
+                If you are using Mac OS X you can download and install 
+                <a href="http://www.oracle.com/technetwork/java/javadb/downloads/index.html">Java&nbsp;DB</a> manually
+                or use the Java DB that is installed by Java EE version of the NetBeans IDE installer.</li>
+        </ul>
+
+        <a name="configuring"></a>
+        <h2>Configuring the Database</h2>
+        
+        <p>If you have the GlassFish Server registered in your NetBeans IDE installation, 
+            Java&nbsp;DB will already be registered for you. Therefore, you can skip ahead to 
+            <a href="#starting">Starting the Server and Creating a Database</a>. </p>
+        <p>If you downloaded the GlassFish server separately and need help registering it in NetBeans IDE,
+            see <strong>Registering a GlassFish Server Instance</strong> in the IDE's Help Contents (F1). </p>
+        <p>If you just downloaded Java&nbsp;DB on its own, perform the following steps.</p>
+        <ol>
+            <li>Run the self-extracting file. A folder named 'javadb' will be created in 
+                the same location as the file. If you just downloaded Java&nbsp;DB and 
+                want to have the database server reside in a different location than 
+                where it was extracted to, you should relocate it now.</li>
+            <li>On your system, create a new directory to be used as a home directory for the individual instances of the database server.
+                For example, you can create this folder in the Java&nbsp;DB root directory (javadb) or in any other location.</li>
+        </ol>
+        
+        <p>Before continuing further, it is important to understand the components found 
+            in Java&nbsp;DB's root directory:</p>
+        
+        <ul>
+            <li>The <tt>demo</tt> subdirectory contains the demonstration programs.</li>
+            <li>The <tt>bin</tt> subdirectory contains the scripts for executing utilities 
+                and setting up the environment.</li>
+            <li>The <tt>javadoc</tt> subdirectory contains the API documentation that was 
+                generated from source code comments.</li>
+            <li>The <tt>docs</tt> subdirectory contains the Java&nbsp;DB documentation.</li>
+            <li>The <tt>lib</tt> subdirectory contains the Java&nbsp;DB jar files.</li>
+        </ul>
+        
+        <a name="registering"></a>
+        <h2>Registering the Database in NetBeans IDE</h2>
+        
+        <p>Now that the database is configured, perform the following steps to register Java DB in the IDE.</p>
+        
+        <ol>
+            <li>In the Services window, right-click the Java DB Database node and choose Properties
+            to open the Java&nbsp;DB Settings dialog box.</li>
+            <li>For the Java&nbsp;DB Installation text field, enter the path to the 
+                Java&nbsp;DB root directory (javadb) that you specified in the previous step.</li>
+            <li>For Database Location, use the default location if a location is already provided. Click OK
+                <p>For example, the default location might look like <tt>C:\Documents and Settings\username\.netbeans-derby</tt> on a Windows machine.</p>
+                
+                <img src="../../../images_www/articles/72/ide/java-db/javadb-props.png" alt="Java DB settings dialog" title="example of default settings of Java DB server and database" class="margin-around b-all">
+                <p class="notes"><strong>Note.</strong> If the Database Location field is empty 
+                    you will need to set the path to the directory that contains your databases.
+                    You will need to create a directory for the databases if no directory exists.</p>
+            </li>
+        </ol>
+
+        <a name="starting"></a>
+        <h2>Starting the Server and Creating a Database</h2>
+        
+        <p>The Java&nbsp;DB Database menu options are displayed when you right-click the Java DB node in the Services window.  This 
+            contextual menu items allow you to start and stop the database server,  create a new database 
+            instance, as well as register database servers in the IDE (as demonstrated in the 
+            previous step). To start the database server:</p>
+        
+        <ol>
+            <li>In the Services window, right-click the Java&nbsp;DB node and choose Start Server. Note 
+                the following output in the Output window, indicating that the server has started:<br>
+              <img src="../../../images_www/articles/72/ide/java-db/output-start-db.png" class="margin-around b-all"  
+                    alt="Output window display after starting the database server">
+            </li>
+            <li>Right-click the Java&nbsp;DB node and choose Create Database to open the Create Java&nbsp;DB Database dialog.</li>
+            <li>Type <tt>contact</tt> for the Database Name.</li>
+            <li>Type <tt>nbuser</tt> for the User Name and Password. Click OK.<br>
+                <img src="../../../images_www/articles/72/ide/java-db/javadb-createdb.png" class="margin-around b-all" alt="Create Java DB Database dialog" >
+                <p class="notes"><strong>Note.</strong> The Database Location is the default location set during installation of Java DB from GlassFish. 
+                    If you installed Java DB separately, this location might be different.</p>
+            </li>
+        </ol>
+        <p>After you create the database, if you expand the Databases node in the Services window
+        you can see that the IDE created a database connection and that the database was added to 
+        the list under the Java DB node.</p>
+         
+        <a name="connecting"></a>
+        <h2>Connecting to the Database</h2>
+        
+        <p>So far, you have successfully started the the database server and created a 
+            database instance named <tt>contact</tt> in the IDE. 
+            In the Services window of the IDE you can perform 
+            the following common tasks on database structures.</p>
+            
+            <ul>
+                <li>creating, deleting, modifying tables</li>
+                <li>populating tables with data</li>
+                <li>viewing tabular data</li>                                
+                <li>executing SQL statements and queries</li>
+            </ul>
+            
+        <p>In order to begin working with the <tt>contact</tt> database, you need to 
+            create a connection to it. 
+            To connect to the <tt>contact</tt> database perform the following steps.</p>
+
+        <ol>
+            <li>Expand the Databases node in the Services window and locate the new database and the database connection nodes.
+                <p>The database connection node(
+            <img src="../../../images_www/articles/72/ide/java-db/connection-node-icon.png" 
+                alt="connection node icon">) is displayed under the Databases node. 
+                    The name of the database is displayed under the Java DB node.</p>
+               
+                <img src="../../../images_www/articles/72/ide/java-db/services-window.png" class="margin-around b-all" 
+                    alt="contact database in Services window" ><br>
+                <p class="notes"><strong>Note.</strong> You will also see the <code>sample [app on APP]</code> database
+                    connection that is the default database schema.</p>
+          
+            <li><p> Right-click the <strong>contact</strong> database connection node 
+                (<tt>jdbc:derby://localhost:1527/contact [nbuser on NBUSER]</tt>) 
+                and choose Connect.</p>
+            The connection node icon appears whole (
+            <img src="../../../images_www/articles/72/ide/java-db/connection-node-icon.png" 
+                alt="connection node icon">), signifying that the connection was successful.                </li>
+            
+          <li>Create a convenient display name for the database by right-clicking the database connection 
+              node (<tt>jdbc:derby://localhost:1527/contact [nbuser on NBUSER]</tt>) and choosing Rename. 
+              Type <tt>Contact DB</tt> in the text field and click OK.</li>
+        </ol>		
+
+        <a name="creating"></a>
+        <h2>Creating Tables</h2>        
+        
+        <p>The <tt>contact</tt> database that you just created is currently empty. It does
+            not yet contain any tables or data. In NetBeans IDE you can add a database table 
+            by either using the Create Table dialog, or by inputting an SQL statement and 
+            running it directly from the SQL Editor. You can explore both methods:</p>
+        
+        <ul>
+            <li><a href="#createTable">Using the Create Table Dialog</a></li>
+            <li><a href="#sqlEditor">Using the SQL Editor</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="createTable"></a>
+            <h3>Using the Create Table Dialog</h3>    
+
+            <ol>
+                <li>
+              <p>Expand the <tt>Contact DB</tt> connection node and note that there are several schema subnodes. The app schema is the only schema that applies to this tutorial. Right-click the APP node and choose Set as Default Schema.</li>
+                <li>Expand the APP node and note that there are three
+                    subfolders: Tables, Views and Procedures. 
+                    Right-click the Tables node and choose Create Table to open the Create Table dialog box.</li>
+                <li>In the Table Name text field, type <tt>FRIENDS</tt>.</li>
+                <li>Click Add Column. The Add Column dialog box appears. </li>
+                <li>For Column Name, enter <tt>id</tt>. For Data Type, select <tt>INTEGER</tt> from the drop-down list. </li>
+                <li>Under Constraints, select the Primary Key checkbox to specify that this column is the primary key for your table. All tables found in relational databases 
+                  must contain a primary key. Note that when you select the Primary Key check box, 
+                  the Index and Unique check boxes are also automatically selected and the 
+                  Null check box is deselected. This is because primary keys are used to 
+                  identify a unique row in the database, and by default are used as the 
+                  table index. Because all rows must be identified, primary keys cannot 
+                  contain a <tt>Null</tt> value.<br>
+			  <img src="../../../images_www/articles/72/ide/java-db/add-column.png" class="margin-around b-all" 
+                    alt="Adding columns to the table" ></li>
+                <li>Repeat this procedure now by specifying fields as shown in the table below:</li>
+                <li>
+                  <table class="margin-around">
+                    <tr>
+                      <th class="tblheader" scope="col">Key</th>
+                      <th class="tblheader" scope="col">Index</th>
+                      <th class="tblheader" scope="col">Null</th>
+                      <th class="tblheader" scope="col">Unique</th>
+                      <th class="tblheader" scope="col">Column name</th>
+                      <th class="tblheader" scope="col">Data type</th>
+                      <th class="tblheader" scope="col">Size</th>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1">[checked]</td>
+                      <td class="tbltd1">[checked]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[checked]</td>
+                      <td class="tbltd1">id</td>
+                      <td class="tbltd1">INTEGER</td>
+                      <td class="tbltd1">0</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[checked]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">firstName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">20</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[checked]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">lastName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">20</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[checked]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">nickName</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">30</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[checked]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">friendSince</td>
+                      <td class="tbltd1">DATE</td>
+                      <td class="tbltd1">0</td>
+                    </tr>
+                    <tr>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">[checked]</td>
+                      <td class="tbltd1"></td>
+                      <td class="tbltd1">email</td>
+                      <td class="tbltd1">VARCHAR</td>
+                      <td class="tbltd1">60</td>
+                    </tr>
+                  </table>
+                  <p>You are creating a table named <tt>FRIENDS</tt> that holds the following 
+                  data for each contact record:</p>
+                  <ul>
+                    <li><strong>First Name</strong></li>
+                    <li><strong>Last Name</strong></li>
+                    <li><strong>Nick Name</strong></li>
+                    <li><strong>Friend Since Date</strong></li>
+                    <li><strong>Email Address</strong></li>
+                  </ul>
+                  <img src="../../../images_www/articles/72/ide/java-db/create-table-friends.png" class="margin-around b-all"
+                    alt="Create Table dialog with selected fields for contacts table" ></li>
+                    
+                <li><p>When you are sure that your Create Table dialog contains the same specifications 
+                    as those shown above, click OK. The IDE generates the <tt>FRIENDS</tt> table in the 
+                    database, and you can see a new <tt>FRIENDS</tt> table node 
+                    (<img src="../../../images_www/articles/72/ide/java-db/table-node.png" 
+                    alt="table node icon">) display under the Tables node. Beneath 
+                    the table node the columns (fields) are listed, starting with the primary 
+                    key (<img src="../../../images_www/articles/72/ide/java-db/primary-key-icon.png" 
+                    alt="primary key node icon">).</p>
+
+                    
+                    <img src="../../../images_www/articles/72/ide/java-db/friends-table.png" class="margin-around b-all" 
+                        alt="FRIENDS table displayed in Services window"></li>
+            </ol>
+
+        <a name="sqlEditor"></a>
+            <h3>Using the SQL Editor:</h3>                   
+
+            <ol>
+                <li>In the Service window, either right-click the <tt>Contact DB</tt> connection node or the Tables node beneath it and choose Execute Command. 
+                    A blank canvas opens in the SQL Editor in the main window.</li>
+                <li>Enter the following query in the SQL Editor. This is a table definition for 
+                    the COLLEAGUES table you are about to create:
+
+                <pre class="examplecode">CREATE TABLE &quot;COLLEAGUES&quot; (
+    &quot;ID&quot; INTEGER not null primary key,
+    &quot;FIRSTNAME&quot; VARCHAR(30),
+    &quot;LASTNAME&quot; VARCHAR(30),
+    &quot;TITLE&quot; VARCHAR(10),
+    &quot;DEPARTMENT&quot; VARCHAR(20),
+    &quot;EMAIL&quot; VARCHAR(60)
+);</pre>
+
+                    <p class="notes"><strong>Note: </strong>Statements and queries formed in the SQL 
+                    Editor are parsed in Structured Query Language. SQL adheres to strict 
+                    syntax rules which you should be familiar with when working in the 
+                    IDE's editor. SQL syntax can also differ depending on the database 
+                    management system. See the 
+                    <a href="http://www.oracle.com/technetwork/java/javadb/documentation/index.html">JavaDB
+                    Reference Manual</a> for specific guidelines.
+                    </p></li>
+
+                <li>Click the Run SQL (<img src="../../../images_www/articles/72/ide/java-db/run-sql-button.png" 
+                    alt="run SQL button">) button in the task bar at the top of the editor 
+                    (Ctrl-Shift-E) to execute the query. In the Output window (Ctrl-4), a 
+                    message displays indicating that the statement was successfully executed.<br>
+
+                   
+                    <img src="../../../images_www/articles/72/ide/java-db/run-query.png" 
+                        alt="Output window indicates successful execution" class="margin-around b-all"></li>
+
+                <li>To verify changes, right-click the <tt>Contact DB</tt> connection node 
+                    in the Services window and choose Refresh. This updates the Runtime UI 
+                    component to the current status of the specified database. This step is 
+                    necessary when running queries from the SQL Editor in NetBeans IDE. Note 
+                    that the new COLLEAGUES table node (<img alt="table node icon" 
+                    src="../../../images_www/articles/72/ide/java-db/table-node.png">) now 
+                    displays under Tables in the Services window.</li>
+            </ol>
+        </div>
+
+        <a name="adding"></a>
+        <h2>Adding Table Data</h2>     
+
+        <p>Now that you have created one or more tables in the <tt>contact</tt> database, 
+            you can start populating it with data. 
+            There are several ways that you can add records to your table.</p>
+        <ul>
+          <li><a href="#sqlstatement">Write an SQL statement</a> in the SQL Editor that supplies a value 
+            for every field present in the table schema. </li>
+          <li><a href="#usesqleditor">Use the SQL Editor</a> to add records to the table.</li>
+          <li><a href="#using">Use an external SQL script</a> to import records to the table. </li>
+        </ul>
+        <p>Read the sections below to learn how to use all these methods of populating the<tt> FRIENDS</tt> table with data.  </p>
+        <h3><a name="sqlstatement"></a>Running an SQL Statement </h3>
+        <ol>
+            <li>Expand the Tables under the <tt>Contact DB</tt> node in the Services window, right-click the <tt>FRIENDS</tt> table and choose Execute
+                Command to open the SQL Editor window.</li>
+            <li>In the SQL Editor, enter the following statement.
+              <pre class="examplecode">INSERT INTO APP.FRIENDS VALUES (1,'Theodore','Bagwell','T-Bag','2004-12-25','tbag@foxriver.com')</pre>
+              <p class="tips">While you are typing, you can use the SQL Editor code completion.</p>
+            </li>
+
+            <li>Right-click inside the SQL Editor and choose Run Statement. The Output 
+                window displays a message indicating that the statement was successfully 
+                executed.</li>
+
+            <li>To verify that the new record has been added to the <tt>FRIENDS</tt> table, 
+                right-click the <tt>FRIENDS</tt> table node in the Services window and choose View Data.
+                <p>When you 
+            choose View Data, a query to select all the data from the table is 
+            automatically generated in the upper pane of the SQL Editor. The 
+            results of the statement are displayed in the lower pane of the SQL 
+            Editor. In this case, the <tt>FRIENDS</tt> table displays in the lower pane. 
+                Note that a new row has been added with the data you just supplied 
+                from the SQL statement.</p>
+
+              
+          <img src="../../../images_www/articles/72/ide/java-db/new-record.png" 
+                    class="margin-around b-all" alt="new record added to FRIENDS table"></li>
+        </ol>
+
+        <h3><a name="usesqleditor"></a>Using the SQL Editor </h3>
+        <ol>
+          <li>Right-click the <tt>FRIENDS</tt> table node and choose View Data (if you have not done this at the last step of the previous section). </li>
+          <li>Click the Insert Record(s) (<tt>Alt-I</tt>) button to add a row.<br>
+          The Insert Records dialog box appears.</li>
+          <li>Click in each cell and enter records. Note that for the cells with Date data type, you can choose a date from the calendar. Click OK when you  are done. <br>
+		  <img src="../../../images_www/articles/72/ide/java-db/insert-records.png" 
+                    class="margin-around b-all" alt="new records added to FRIENDS table"><br>
+          In the SQL Editor, you can sort the results by clicking on a row header, modify and delete existing records, and see the SQL script for the actions you are doing in the editor (the Show SQL Script command from the pop-up menu). </li>
+        </ol>
+        <h2><a name="deleting"></a>
+        Deleting Tables
+        </h2>
+        <p>In the following step, you use an external SQL script to create a new 
+            <tt>COLLEAGUES</tt> table. However, you just created a <tt>COLLEAGUES</tt> 
+            table in the <a href="#sqlEditor">Using the SQL Editor</a> section above. In order
+            to make it clear that the SQL script indeed creates a new table, you can
+            delete the already created <tt>COLLEAGUES</tt> table now. To delete a 
+            database table perform the following steps.</p>
+            
+        <ol>
+            <li>Expand the Tables node under the database connection node in the Services window.</li>
+            <li>Right-click the table that you want to delete and choose Delete.</li>
+        </ol>
+ 
+        <h2><a name="using"></a>Using an External SQL Script</h2>
+        <p>Issuing commands from an external SQL script is a popular way to manage your 
+            database. You may have already created an SQL script elsewhere, and want to
+            import it into NetBeans IDE to run it on a specified database.</p>
+        
+        <p>In this exercise the script will create a new table named <tt>COLLEAGUES</tt> and populate it with data. 
+            Perform the following steps to run the script on the <tt>contact</tt> database.</p>
+        
+        <ol>
+            <li>Download <a href="https://netbeans.org/project_downloads/usersguide/colleagues.sql" target="_blank">colleagues.sql</a>
+            to your local system</li>
+            <li>Choose File &gt; Open File from the IDE's main menu. In the file 
+                browser navigate to the location of the saved <tt>colleagues.sql</tt> 
+                file and click Open. The script automatically opens in the SQL Editor.
+                <p class="tips">Alternatively, you can copy the contents of <a href="https://netbeans.org/project_downloads/usersguide/colleagues.sql" target="_blank">colleagues.sql</a>
+                and then open the SQL editor and paste the contents of the file into the SQL editor.</p>
+            </li>
+            <li>Make sure your connection to <tt>Contact DB </tt> is selected from the 
+                Connection drop-down box in the tool bar at the top of the editor.<br>
+                
+           
+                <img src="../../../images_www/articles/72/ide/java-db/conn-drop-down.png" 
+                    class="margin-around b-all" alt="Connection drop-down box in the SQL Editor tool bar"></li> 
+            
+            <li>Click the Run SQL (<img src="../../../images_www/articles/72/ide/java-db/run-sql-button.png" alt="run SQL button">) 
+                button in the SQL Editor's task bar. The script is executed against the 
+                selected database, and any feedback is generated in the Output window.</li>
+            
+            <li>To verify changes, right-click the <tt>Contact DB </tt> connection node in the 
+                Services window and choose Refresh. Note that the new 
+                <tt>COLLEAGUES</tt> table from the SQL script now displays as a table node 
+                under <tt>contact</tt> in the Services window.</li>
+            
+            <li>To view the data contained in the new tables, right-click the <tt>COLLEAGUES</tt> table and choose View Data. In 
+                this manner, you can also compare the tabular data with the data contained 
+                in the SQL script to see that they match.</li>
+        </ol>
+        
+        <h2><a name="recreating"></a>
+        Recreating Tables from a Different Database
+        </h2>
+        <p>If you have a table from another database which you would like to recreate in 
+            the database you are working in from NetBeans IDE, the IDE offers a handy tool 
+            for this. You first need to have the second database registered in the IDE, similar 
+            to what was described at the beginning of this tutorial. For the purposes of this
+            tutorial, use the <tt>sample</tt> database that comes packaged with Java&nbsp;DB. 
+            This process is essentially carried out in two parts: You first 
+            'grab' the table definition of the selected table, then you can recreate the 
+            table in your chosen database:</p>
+            
+        <ol>
+            <li>Connect to the <tt>sample</tt> database by right-clicking the connection node 
+                under the Databases node in the Services window and choosing Connect (username and password is <tt>app</tt>).</li>           
+            <li>
+                <p>Expand the Tables node under the <tt>sample</tt> database connection, right-click the <tt>CUSTOMER</tt> table node and 
+                choose Grab Structure.</p>
+            
+                
+                <img src="../../../images_www/articles/72/ide/java-db/grab-structure.png" 
+                    alt="Grab Structure menu item displayed in the Services window"
+                    class="margin-around b-all"></li> 
+ 
+            <li>In the Grab Table dialog that opens, specify a location on your computer to save 
+                the grab file that will be created. Click Save. 
+                <p>The grab file records the table definition of the selected table.</p></li>
+            <li>Expand the APP schema node under the <tt>Contact DB</tt> database connection, right-click the Tables node
+                and choose Recreate Table to open the Recreate Table dialog box.</li>
+            <li><p>In the Recreate Table dialog box, navigate to the location where you saved 
+                the <tt>CUSTOMER</tt> grab file and click Open to open the Name the Table dialog box.</p>
+               
+                    <img src="../../../images_www/articles/72/ide/java-db/recreate-table.png" class="margin-around b-all" 
+                    alt="Name the Table dialog containing table definition for CUSTOMER"></li> 
+            <li>
+              <p>At this point you can change the table name or edit the table definition. Otherwise, 
+                click OK to immediately create the table in the <tt>contact</tt> database. A new 
+                <tt>CUSTOMER</tt> table node appears beneath the <tt>Contact</tt> DB connection node.</p>           
+                
+              
+                <img src="../../../images_www/articles/72/ide/java-db/new-customer-node.png" 
+                class="margin-around b-all" alt="new CUSTOMER table node displayed in Services window"></li>
+        </ol>
+        
+        <p>If you view the data in the new <tt>CUSTOMER</tt> table you will see that there
+        are no records in the database, but that the structure of the table is identical to the
+        table that you grabbed.</p>
+          
+    <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20With%20Java%20DB">Send Us Your Feedback</a></div>
+        
+        <br style="clear:both;">
+            
+        <a name="seeAlso"></a>
+        <h2>See Also</h2>
+        
+        <p>This concludes the Working with the Java&nbsp;DB (Derby) Database tutorial. This 
+            tutorial demonstrated how to set up a connection to the Java&nbsp;DB database 
+            in NetBeans IDE. It then demonstrated how to create, view, modify and delete tables
+            in the IDE's Services window. It also showed how 
+            work with the SQL Editor to add data to tables, and use the IDE's functionality
+            allowing you to recreate tables using definitions from other databases.</p>
+            
+        <p>For related and more advanced tutorials, see the following resources:</p>
+        
+        <ul>
+            <li><a href="mysql.html">Connecting to a MySQL Database</a>. Demonstrates how to
+            configure and connect to a MySQL database in NetBeans IDE.</li>
+            <li><a href="../web/mysql-webapp.html">Creating a Simple Web Application Using a MySQL Database</a>.
+            Demonstrates how to create a simple web application that connects to a MySQL database server.</li>
+            <li><a href="http://platform.netbeans.org/tutorials/nbm-crud.html">NetBeans Platform CRUD Application Tutorial.</a>
+            Demonstrates how to integrate a Java DB database into a NetBeans Platform application.</li>
+        </ul>
+        
+    </body>
+</html>

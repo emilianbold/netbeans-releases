@@ -1,0 +1,527 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    <title>C/C++ Remote Development Tutorial</title>
+    <meta name="DESCRIPTION" content="A short guide to using C/C++ remote development in NetBeans IDE
+          and Oracle Solaris Studio IDE.">
+    <meta name="keywords" content="NetBeans, Oracle Solaris Studio, IDE, integrated development environment,
+          tutorial, guide, user, documentation, open source, remote development, C, C++">
+   
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+<link rel="stylesheet" type="text/css" href="../../../print.css" media="print">
+<link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+</head>
+<body>
+<h1>C/C++ Remote Development - NetBeans IDE Tutorial</h1>
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+    March 2014 [Revision number: V8.0-1]
+</div>
+<!-- maintained by susanm -->
+<p>This document describes how to use remote development features of the 
+    NetBeans IDE with C/C++/Fortran projects.</p>
+<h3>Contents</h3>
+<img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp"
+alt="Content on this page applies to NetBeans IDE 7.3 and 7.4 and 8.0" 
+title="Content on this page applies to the NetBeans IDE 7.3 and 7.4 and 8.0">
+ 
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+    <tr>
+        <td class="hyphen">-&nbsp;</td>
+        <td><a href="#intro">Introduction</a></td>
+    </tr>
+     <tr>
+        <td class="hyphen">-&nbsp;</td>
+        <td><a href="#concepts">Remote Development Concepts</a></td>
+    </tr>
+    <tr>
+        <td class="hyphen">-&nbsp;</td>
+        <td><a href="#system">Setting Up the System</a></td>
+    </tr>
+    <tr>
+        <td class="hyphen">-&nbsp;</td>
+        <td><a href="#setup">Setting Up the IDE</a></td>
+    </tr>
+    <tr>
+        <td class="hyphen">-&nbsp;</td>
+        <td><a href="#workflow">Building a Local Project on a Remote Host</a></td>
+    </tr>
+        <tr>
+        <td class="hyphen">-&nbsp;</td>
+        <td><a href="#terminal">Starting a Terminal Session on the Remote Host</a></td>
+    </tr>
+        <tr>
+        <td class="hyphen">-&nbsp;</td>
+        <td><a href="#tips">Remote Development Tips</a></td>
+    </tr>
+</table>
+
+<h2><A NAME="requirements"></a>Requirements</h2>
+<p><b>To follow this tutorial, you need the following software.</b></p>
+
+<table>
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">Software</th>
+    <th class="tblheader" scope="col">Version Required</th>
+</tr>
+
+<tr>
+<td class="tbltd1">NetBeans IDE (including C/C++ support)</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">version 7.3, 7.4, or 8.0 with NetBeans C/C++ plugin</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Java Development Kit (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Version 7 or 8</a></td>
+</tr>
+
+</tbody>
+</table>
+      <br>
+<p>See the <a href="../../../community/releases/80/install.html">NetBeans IDE
+      Installation
+   Instructions</a> and <a
+      href="../../../community/releases/80/cpp-setup-instructions.html">
+      Configuring the NetBeans IDE for C/C++/Fortran</a><br> for
+information about downloading and installing the required software.</p>
+
+
+<a id="intro"></a>
+<h2>Introduction</h2>    
+<p>This tutorial demonstrates how to use remote development of C/C++ projects. </p>
+<p>Have you ever wanted to
+    develop a Solaris or Linux application from your laptop running Windows 7 or Mac OS X?
+    To test your application on different operating systems without even leaving the
+    IDE? Or just to compile your large applications on a fast multicore
+    server rather than on your regular workstation. The answer to all
+    these needs is the remote development feature in NetBeans IDE.</p>
+    
+<h2><a id="concepts"></a>Remote Development Concepts</h2>
+
+<p>
+    When you do remote development, you run the NetBeans IDE on your client system and you can create projects,
+    edit files, and use code assistance features the same way as you do for
+    local projects. But when you build, run, or debug your project, the process runs on the
+    remote Solaris or Linux server with output and input transferred to the client system. 
+    Ideally, you shouldn't see any difference in workflow between doing
+    local and remote development once you've set up the remote build host.
+</p>
+<p>The IDE supports different modes of remote development, which are described in
+    <a href="./remote-modes.html">C/C++ Remote Development Modes</a>. You can determine
+how you want to develop on the remote host.</p>
+<h3>Requirements for Remote Development</h3>
+<p>The elements that must be in place to enable the use of a remote host for running
+your tools are:
+<ul>
+    <li>The local client system where the IDE is installed must be running Windows, Mac OS, Oracle Solaris 10, Oracle Solaris 11,
+    or Linux.</li>
+    <li>The remote host must be running Oracle Solaris 10, Oracle Solaris 11, or Linux.</li>
+    <li>
+        The local client system and remote system must have access to the project files, either 
+        through shared resources, or through use of Secure Shell protocol (SSH).</li>
+    <li>The client must be able to connect to the remote system through a secure shell (ssh) even
+        if the project files are on shared folders.</li>
+    <li>The remote system must have access to a supported tool collection.</li>
+    <li>The remote system must have the supporting system libraries that your project needs
+        to enable code assistance. </li>
+</ul>
+
+<h3>Sharing sources</h3>
+
+<p>Both your client system and your remote server have to know about your source
+files. The source files can reside on a shared network path, or can be copied securely
+by the IDE from the local system to the remote system. See 
+<a href="#system">Setting Up the System</a> for more details about how to set
+up shared folders for different systems. 
+
+<h3>Connectivity</h3>    
+
+<p>All data transfer between client and server is done
+through the Secure Shell (SSH) protocol. SSH is a common protocol for secure
+    communications between two networked devices.
+    Your server must have the SSH server installed, and SSH connection
+between the client system and the server must be allowed.</p>    
+<h3>Tool Collections</h3>
+<p>The IDE must be able to find a supported tool collection on the remote host: GNU Compiler Collection
+or Sun Studio or Oracle Solaris Studio. The tools executables should be on the path of the user
+account used to connect to the remote host, so the IDE can easily locate the tools. This is
+especially true if the tools are installed in a non-default location.</p>
+
+<h3>Code Assistance</h3>    
+
+<p>For correct operation of editor features like code completion and
+    semantic highlighting, the Classes window, and others, your project has to be
+    used in the correct environment, which means system includes, macro
+    definitions, platform, etc. All of this information is gathered from the
+    remote server and stored locally on your client system, so that when you
+    edit locally the code assistance will work even when the project is set up to
+    use a remote build host. </p>
+
+<a id="system"></a>
+<h2>Setting Up the System</h2>
+Your remote Linux or Solaris server must allow communication through the SSH protocol from the client
+where you are running the IDE. If you want to use file sharing instead of allowing
+the IDE to copy files to the remote server, the file sharing must be set up in
+the network for both systems.
+
+<h3>SSH protocol</h3>    
+
+<p>The SSH server is usually included in Linux and Solaris
+    operating systems, and is run by default in most cases. If not, you
+can find information about installing and managing SSH at <a href="http://en.wikipedia.org/wiki/Secure_Shell" target="_blank">http://en.wikipedia.org/wiki/Secure_Shell</a></p>
+<p>The IDE provides its own ssh client, so you do not need to install
+    the ssh client on your local machine.</p>
+<p>An SSH connection must be allowed between your client and server
+    systems, which usually means port 22 must be open on the server. You
+    may need root access or the help of your system administrator if port 22
+is disabled. </p>
+<p class="notes">SSH must be enabled between the systems even if you are not using
+    the Automatic Copying or SFTP option to transfer the projects files to the
+    remote server.</p>
+
+<h3>Sharing sources</h3>
+<p>If you do not already have file sharing set up between your Windows system and a Unix remote
+    host for other uses, it is much simpler to use Automatic Copying or SFTP instead of file sharing for small to medium
+    projects.  If you are working on a large project with thousands of files that participate in the build, sharing
+makes more sense because copying would take a long time.</p>   
+<p>For Windows to UNIX&reg; configuration there are two major ways of sharing sources: </p>
+<ul>
+    <li>Samba server on UNIX system </li>
+    <li>Windows Services for UNIX (SFU) package installed on Windows system </li>
+</ul>
+
+
+<h4>Organizing Sources Using Samba or SMB</h4>
+<p>A Samba server (open source version of SMB) allows a Windows user to map shared NFS folders as
+    Windows network drives. The Samba package, or its equivalent SMB or CIFS, is included in most distributions of Linux and Solaris operating systems. If Samba is not included in your distribution,
+you can download it from <a href="http://www.samba.org/" target="_blank">www.samba.org</a>.</p>
+
+<p>If you have privileged access on your server, you can set up Samba yourself
+    following the instructions at the following links. Otherwise you have to contact your
+system administrator.</p>
+<ul>
+    <li>Oracle Solaris 11: <a href="https://blogs.oracle.com/paulie/entry/cifs_sharing_on_solaris_11">https://blogs.oracle.com/paulie/entry/cifs_sharing_on_solaris_11</a> for brief information. See <a href="http://docs.oracle.com/cd/E26502_01/html/E29004/smboverview.html">Managing SMB File Sharing and Windows Interoperability in Oracle Solaris 11.1</a> for full information.</li>
+        
+    <li>Oracle Solaris 10: <a href="http://blogs.oracle.com/timthomas/entry/enabling_and_configuring_samba_as" target="_blank">http://blogs.oracle.com/timthomas/entry/enabling_and_configuring_samba_as</a></li>
+    <li>Linux: <a href="http://www.linux.com/articles/58593" target="_blank">http://www.linux.com/articles/58593</a></li>
+</ul>
+<p>After starting Samba you can map your UNIX server's folders the same way as Windows
+folders. </p>
+
+
+<h4>Windows Services For UNIX (SFU)</h4>
+<p>Another option is Windows Services For UNIX, a set of utilities provided by Microsoft to
+    access NFS filesystems from Windows.
+<br>You can download them from <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=896c9688-601b-44f1-81a4-02878ff11778&displaylang=en" target="_blank">Microsoft Download Center</a> and
+read documentation at <a href="http://technet.microsoft.com/en-us/library/bb496506.aspx">Windows Services for Unix page</a>.</p>
+<p>The SFU package is not available for Windows Vista or Windows 7 users. Windows Vista and Windows 7 Enterprise and Ultimate Editions include the Services for Unix components,
+    renamed to the Subsystem for UNIX-based applications (SUA), and Client for NFS v3.
+    For more information, see
+    <a href="http://en.wikipedia.org/wiki/Microsoft_Windows_Services_for_UNIX#Subsystem_for_UNIX-based_Applications_.28SUA.29" target="_blank">http://en.wikipedia.org/wiki/Microsoft_Windows_Services_for_UNIX</a>
+</p>
+<h4>Mac OS X configuration</h4>
+<p>Mac OS X includes support for connecting to Samba servers. Mac OS X can also mount NFS shares from a server.
+</p>
+<p>
+You can use Finder &gt; Go &gt; Connect to Server and enter a server address.</p>
+<p>
+To connect to SMB/CIFS (Windows) servers and shared folders, enter the server address in
+one of these forms:</p>
+<blockquote>
+<code>smb://<i>DNSname/sharename</i><br>
+    smb://<i>IPaddress/sharename</i></code>
+</blockquote>
+
+<p>You are prompted to enter the username and password for the shared folder. See
+    <a href="http://support.apple.com/kb/ht1568" target="_blank">How to Connect to Windows File Sharing (SMB)</a> in the
+    Apple knowledge base for more information.</p>
+<p>
+To connect to an NFS server, type the server name and path to the NFS shared
+folder in one of these forms:</p>
+<blockquote>
+<code>nfs://<i>servername/path/to/share/</i><br>
+    nfs://<i>IPaddress/path/to/share</i></code>
+</blockquote>
+<p>For more information, see
+    <a href="http://support.apple.com/kb/TA22243" target="_blank">Using the Finder to Mount NFS Exports</a> in
+the Apple knowledge base.</p>
+<p class="tips">You are not prompted for your username and password, but authorization
+    is checked against your Mac UID. The UID is a unique integer assigned to your
+    username in Unix-like operating systems such as Mac OS X, Solaris, and Linux.
+    To use NFS, the Mac UID must be the same as the UID of your account on
+    the server.
+</p>
+
+
+<h4>UNIX-UNIX configuration</h4>
+<p>For file sharing between Solaris or Linux systems, you do not need any
+    special setup. You just need to share a folder from one of the systems
+or you can use your home directory if it is mounted on a network file server
+and accessible from both systems.</p>
+
+
+<h3>Path Mapping</h3>
+<p>When using the shared sources model, you may need to map the location of the sources on the local
+    host, to the path used on the remote host to get to the sources.<br>
+</p>
+<p>For example, consider this configuration:</p>
+<ul>
+    <li>Solaris server <tt>solserver</tt> with shared folder <tt>/export/pub</tt></li>
+    <li>Workstation running Windows XP with installed SFU and path
+    <tt>\\solserver\export\pub</tt> is mounted as drive <tt>P:</tt></li>
+    <li>Project source files located on <tt>solserver</tt> in the folder
+    <tt>/export/pub/myproject</tt></li>
+</ul>
+<p>In this case from the server point of view your source files are located in
+    the <tt>/export/pub/myproject</tt>. But from the client point of view the location
+    of the source files is <tt>P:\myproject</tt>.
+    You need to let the IDE know that these paths are mapped:
+    <br>
+    <tt>/export/pub -&gt; P:\</tt></p>
+<p>You can edit the properties of the build host to set path mappings.</p>
+<p class="tips">If you set up shared resources for source files before configuring
+    the remote host in NetBeans IDE, the IDE will automatically find out the required path
+mappings for you in most cases.</p>
+
+
+<a id="setup"></a>
+<h2>Setting Up the IDE</h2>
+<p>In the following example, the client host is
+a workstation running Windows Vista. The remote host named <tt>edgard</tt> is a
+server running the Oracle Solaris operating system.</p>
+<!--
+<p>
+For source sharing, the Samba server is
+running on the remote host, which allows the <tt>/export/pub</tt> folder to
+be accessed as <tt>pub</tt>.
+</p>
+<p>
+On the Windows client, drive <tt>P:</tt> is mapped to
+        <tt>\\b20\pub</tt> using the following command
+        <pre>net use P: \\b20\pub /persistent:no /USER:tester</pre>
+        Such mappings are not required and are done for more convenience.
+ </p>
+<ol>
+    
+    <li>Start the IDE and choose Tools &gt; Options.</li>
+    <li>Click C/C++ in the top pane of the window.</li>
+    <li>Click the Build Tools tab.</li>
+    <li>By default, the Development Host drop-down list
+        includes only <tt>localhost</tt>, which represents your
+        current workstation. To add a new host for remote
+        development, click Edit.
+    </li>
+    <li>In the Development Hosts Manager dialog box, click Add. -->
+<ol>
+    <li>Open the Services window by choosing Window &gt; Services.</li>
+    <li>Right-click the C/C++ Build Hosts node and select Add New Host.<br>
+        <div class="indent">
+    <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-add-host.png"
+         class="margin-around b-all" alt="Image showing the Process of Adding New Host for Remote Development." ></div>
+
+        In the New Remote Host Setup dialog box, the IDE discovers your
+        local network's hosts. The host names are added to a table in the dialog box,
+    and a green indicator tells you if they are running the SSH server.</li>
+
+    <li>Double-click the name of the server you want, or type the server name directly
+        in the Hostname field. Click Next.<br>
+        <div class="indent">
+    <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-setup-host.png"
+         class="margin-around b-all" alt="Image showing the Setup Host dialog box for Remote Development." ></div>
+    </li>
+    <li>
+        On the Setup Host screen, type the username that you use to log in to the remote host, and select
+        an authentication method.  For this tutorial, select Password and click Next.
+        <div class="indent">
+         <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-setup-host-auth.png"
+         class="margin-around b-all" alt="Image showing the authorization options for connecting to the Remote Build  Host." ></div>
+    <p class="tips">If you want to use ssh keys, you must set them up outside the IDE first. Then you can
+        specify the location to the ssh keys in the IDE, and the IDE can use the keys to make the ssh connection
+        to the remote build host.</p>
+    </li>
+    <li>After a connection is made to the server, enter your password in the Authentication dialog box.</li>
+    <li>Optionally, click Remember Password to have the IDE encrypt and store the password on your local disk so you
+    do not have to enter it each time the IDE connects to the remote host.
+    <p>The IDE configures the remote host and looks for tool collections on the remote host.</p>
+    </li>
+    <li>
+        When the host is successfully configured, a summary page shows information about the
+        remote host: the platform, hostname, user name to log in, and the tool collections that were found.<br>
+        <div class="indent">
+            <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-setup-host-summary.png"
+             class="margin-around b-all" alt="Image showing the Completion of Adding a New Host for Remote Development." >
+      </div>
+        
+    </li>
+    <li>At the bottom of the summary page, two more options are displayed.
+        If more than one tool collection was found, you can select one of the collections
+        to be the Default Tool Collection.</li>
+    <li>For the Access project files via option:
+        <ul>
+            <li>Select Automatic Copying if your client system and the remote
+        build host do not have shared access to the project files.  When you select Automatic Copying, the project files will be copied to your home directory on the server using the sftp command. This is known as simple remote development.</li>
+            <li>Select System level file sharing if the client and server have access to the same
+            folder. This is known as shared or mixed remote development.</li>
+            <li>Select SFTP (on NetBeans 7.4 and 8.0 only) to use secure file transfer protocol to copy the project
+            files to the remote host.  Similar to Automatic Copying.</li>
+        </ul>
+    </li>
+
+
+    <li>Click Finish to complete the wizard.</li>
+   <!-- <li>Optionally, if you are using File System Sharing, you can click Path Mapper... in the Development Hosts Manager
+        dialog box to
+        view and if necessary correct mappings for the shared source location on the local and remote hosts.
+        Note that each path is the path to the shared source as seen from the respective hosts. If you need to edit
+        either the local or remote path, double-click the path you want to change and type the new path.
+    </li>
+
+
+    <div class="indent">
+    <img src="../../../images_www/articles/69/cnd/remote-dev/remotedev-path-mappings.png"
+         class="margin-around b-all" alt="Image showing the Path Mapping window." >
+    </div> -->
+   <li>In the Services window, the new remote host is shown under the C/C++ Build Hosts node. Expand
+   the node for the new host and you should have one or more tool collections in the Tool
+        Collections list.<br>
+ 
+           
+       <div class="indent">
+        <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-remote-toolchain.png"
+             class="margin-around b-all" alt="Image showing Remote Tool Collections." ></div>
+   </li></ol>
+       <h3>If no tool collection is listed</h3>
+       <p>Try the following tasks if you do not see any tool collections under the remote host node.</p>
+        <ul>
+           <li>On the remote host, add the tool collection's bin directory to your user path on the host.
+               If no tool collections are available on the remote host, you must install the GNU compiler collection
+               or the Sun Studio or Oracle Solaris Studio software on the remote host.
+        </li>
+           <li>When the path to the tool executables is on your remote host user path, you can try
+               to set up the tool collection on the local system again. Right-click the host in the Services
+               window and select Restore Default Tool Collections to have the IDE try to find
+            tool collections on the remote host again.</li>
+           <li>Alternatively, right-click the host in the Services window and select Add Tool Collection to specify
+            or browse to the path to a tool collection on the remote host.</li>
+        </ul>
+       
+   
+    <p>
+        When you have a tool collection listed, you are done with
+        creating your new remote build host. </p>
+    <p>In the next section, you can try simple remote development.</p>
+
+
+<a id="workflow"></a>
+<h2>Building a Local Project on a Remote Host</h2>
+<ol>
+<li>Create a new sample project by choosing File &gt; New Project. </li>
+<li>Expand Samples &gt; C/C++ and select Welcome. Click Next.
+<p>This example does not use shared folders, so you can keep the suggested location
+for the project in the NetBeansProjects folder in the Windows user directory, which is not shared.</p>
+<p class="tips">If you want to use shared source files, make sure that the Project Location you specify 
+    is a path shared with the remote server.</p>
+</li>
+
+<li>Select the new remote host for the Build Host. The Tool Collection list is updated
+to show the available tools on the remote host.<br>
+<div class="indent">
+    <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-new-project.png"
+         class="margin-around b-all" alt="Image showing New Project wizard with remote build host selected." ></div>
+</li>
+
+<li>Click Finish to create the project. <br>
+    <p>The Welcome_1 project opens in the Projects window.</p>
+<li>Place your mouse cursor over the name
+of the project in the Projects window to see that a tooltip shows the project location and the remote host that
+it is configured to build on.</li>
+
+<li>Click the Build button on the toolbar or right-click the Welcome_1 project node and choose
+    Build. The sample project will be built remotely on the selected build host.</li>
+<li>Open the source file <tt>welcome.cc</tt>.
+<p>
+    In the following screenshot you can see that code assistance is working when
+    you press Ctrl-Space with the cursor on the <tt>argc</tt> symbol to see. </p>
+<p>
+    The Output window displays the name of the host where the
+    application was built and the remote compilers and make utility that were used for building.
+The project files are in the user's <tt>.netbeans/remote/</tt> directory on the remote host.</p>
+     <div class="indent">
+    <img style="border-top: 1px dotted black; border-right: 1px dotted black;"
+         src="../../../images_www/articles/73/cnd/remote-dev/remotedev-built-small.png"
+         class="margin-around b-all" alt="Image showing Output of Build." ></div>
+</li>
+</ol>
+<p>There is almost no difference in workflow once you set up a remote
+    host. You can use all editor features, build, run, test, and debug as you are
+used to doing locally.</p>
+
+<h2><a id="terminal"></a>Starting a Terminal Session on the Remote Host</h2>
+<p>You can start a secure shell terminal session from within the IDE to connect to the remote
+system or the local system. This feature is especially convenient on Windows platforms,
+which do not support SSH natively.</p>
+<ol>
+<li>On the left margin of the Output window, click the terminal icon. <br>
+     <div class="indent">
+    <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-terminal-icon.png"
+         class="margin-around b-all" alt="Image showing terminal icon in Output window." ></div><br>
+         <p>The IDE opens a Terminal tab in the working directory of the current project, whether it is local or
+    remote. If the project is using a remote build host and you are already connected through the IDE, you do not need to login again. </p>      
+    
+ <div class="indent">
+    <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-terminal.png"
+         class="margin-around b-all" alt="Image showing SSH Terminal dialog box." ></div>
+
+
+<p>You can use the IDE internal terminal to do anything you might usually do in an SSH
+session to a remote host.</p>
+<p>You can create new local or remote terminal sessions using the icons in the left margin of the Terminal tab, or using the menu option Window &gt; Output &gt; Terminal.</p></li>
+</ol>
+<h2><a name="tips"></a>Remote Development Tips</h2>
+<ul>
+    <li>You can switch the build host for a project by right-clicking the project node
+        and selecting Set Build Host.<br>
+     <div class="indent">
+    <img src="../../../images_www/articles/73/cnd/remote-dev/remotedev-set-remote-host-menu.png"
+         class="margin-around b-all" alt="Image showing Set Remote Hosts Menu." ></div>
+    </li>
+    <li>You can change the properties of a remote build host after initial setup, by right-clicking
+        the host in the Services window and selecting Properties.</li>
+    <li>If you are using a remote host to build and run an application with a graphical UI, you can select
+        Enable X11 Forwarding in the hosts properties to that the UI can be seen on your local system while it runs on the
+        remote host.</li>   
+    <li>If building your project remotely compiles libraries or generates other files in addition to the main build product,
+    the IDE prompts you to download the files to the local system. You can select which changed files
+    to download.</li>
+    <li>You can work on projects in full remote mode where the project and the tools are on the remote host. See
+    the IDE's integrated help or the article <a href="./remote-modes.html">C/C++ Remote Development Modes</a> for more information. </li>
+    <li>You can access the remote host and tools information from the IDE's Tools menu as well as the
+    Services window.  Select Tools &gt; Options &gt; C/C++ &gt; Build Tools and click the Edit
+    button next to the Build Host list.</li>
+    <li>When using file sharing for project files, you can map the local and remote paths to the shared folder through
+    the Path Mapping feature. You can set the mapping by doing one of the following:
+    <ul>
+        <li>In the Services window, open C/C++ Build Hosts, right-click the hostname and select Path Mapper.
+</li>
+<li>From IDE's Tools menu, choose Options &gt; C/C++ &gt; Build Tools, click Edit button, select the remote host and click the Path Mapping button.
+</li>
+    </ul>
+     </li>
+</ul>
+
+<h2>For More Information</h2>
+<p>See the following locations for more information:</p>
+
+
+<ul><li><p>The Help menu in the IDE provides access to extensive information about using the IDE.</p>
+
+</li>
+<li><p>The <a href="./remote-modes.html">C/C++ Remote Development Modes article</a> describes different ways to use remote development</p></li>
+<li><p>The <a href="https://netbeans.org/kb/trails/cnd.html">C/C++ Learning Trail</a> provides several articles and tutorials for developing in C/C++ in the IDE.</p>
+
+</li></ul>
+
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20C/C++%20Remote%20Development%20-%20NetBeans%20IDE%208.0%20Tutorial">Send Feedback on This Tutorial</a></div>
+<br style="clear: both;">
+</body></html>

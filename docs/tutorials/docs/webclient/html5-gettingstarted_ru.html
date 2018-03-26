@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Начало работы с приложениями HTML5 - учебный курс по NetBeans</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that introduces the support for developing HTML5 applications in NetBeans IDE 
+              and uses the jQuery JavaScript library.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Начало работы с приложениями HTML5</h1>
+
+        <p>
+        В этом документе описывается создание проекта HTML5 в IDE и некоторые функции в IDE, которые поддерживают использование JavaScript и CSS в используемом проекте. В этом документе будет создано простое приложение HTML5, в котором будет использоваться библиотека JQuery JavaScript для изменения списка на веб-странице.</p>
+        
+        <p>В настоящем документе также демонстрируется способ установки расширения NetBeans Connector для браузера Chrome из веб-магазина Chrome.</p>
+
+        <p class="tips">Для просмотра экранного рпредставления этого учебного курса см. <a href="../web/html5-gettingstarted-screencast.html">Видео по началу работы с приложениями HTML5</a>.</p>
+        
+        <p class="tips">Подробнее о том, как использовать JQuery в веб-приложениях Java NetBeans, см. учебный курс <a href="../web/js-toolkits-jquery.html">Использование jQuery для усовершенствования внешнего вида и удобства веб-страницы</a>.</p>
+
+
+
+        <h3>Содержание</h3>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.4 и 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.4 и 8.0">
+
+        <ul class="toc">
+            <li><a href="#installchrome">Использование IDE с браузером Chrome</a>
+                <ul>
+                    <li><a href="#installchrome1">Установка расширения из веб-магазина Chrome</a></li>
+                    <li><a href="#installchrome2">Автономная установка расширения</a></li>
+                </ul></li>
+            <li><a href="#webkit">Использование встроенного браузера на базе WebKit</a></li>
+            <li><a href="#createproject">Создание проекта HTML5 NetBeans</a></li>
+            <li><a href="#editingpage">Редактирование файла HTML</a></li>
+            <li><a href="#saving">Сохранение проекта как шаблона сайта</a></li>
+            <li><a href="#summary">Заключение</a></li>
+            <li><a href="#seealso">См. также</a></li>
+        </ul>
+
+        <h4>Для выполнения этого учебного курса потребуются следующие материалы.</h4>
+
+        <table id="requiredSoftware">
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или ресурс</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans, Java</a></td>
+                    <td class="tbltd1">7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Браузер Chrome</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">Расширение NetBeans Connector для Chrome</a></td>
+                    <td class="tbltd1">1.0.0 или более поздняя версия</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">Демонстрационная версия ресурсов проекта HTML5</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip"> Шаблон сайта завершенного проекта</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Примечания.</strong></p>
+
+        <ul>
+            <li>Файл <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">ресурсов проекта в формате zip</a> содержит изображения в формате JPG и файл CSS, который необходимо добавить к проекту в этом учебном курсе.</li>
+
+            <li>При сравнении проекта с работающим решением можно загрузить <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip"> шаблон сайта</a> завершенного проекта.</li>
+
+            <li>Предполагается, что читатель обладает базовыми знаниями или опытом программирования на HTML, CSS и JavaScript.</li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Installing the Extension ++++++++++++++++ -->
+        <a name="installchrome"></a>
+        <h2>Использование IDE с браузером Chrome</h2>
+        <p>Чтобы воспользоваться некоторыми инструментами, доступными в IDE с поддержкой разработки приложений HTML5, рекомендуется использовать браузер Chrome и установить расширение NetBeans Connector <a href="https://chrome.google.com/webstore/">веб-магазина Chrome</a>. Расширение нужно устанавливать только один раз.
+        </p>
+        
+        <p>После установки расширение NetBeans Connector добавляет в меню 'Действия NetBeans', которые доступны из адресной строки URL при запуске проекта NetBeans HTML5 в браузере Chrome. В меню 'Действия NetBeans' можно включить проверку в режиме NetBeans и быстро изменить размер окна браузера в соответствии с размерами распространенных устройств отображения. Отладчик JavaScript также включается автоматически при запуске приложения HTML5. 
+        </p>
+        
+        
+        
+        <a name="installchrome1"></a>
+        <div class="indent">
+        <h3>Установка расширения из веб-магазина Chrome</h3>
+        <p>Будет автоматически отображен запрос на установку расширения NetBeans Connector при запуске проекта приложения NetBeans HTML5 из IDE и выборе Chrome с NetBeans Integration в качестве целевого браузера. Это упражнение демонстрирует, как установить расширение путем создания и запуска фиктивного проекта HTML5. Это упражнение можно пропустить и установить расширение при появлении запроса в IDE или установить расширение NetBeans Connector напрямую из веб-магазина Chrome.
+        </p>
+        
+        
+        <p class="notes"><strong>Примечание.</strong> IDE откроет веб-магазин Chrome в браузере, заданном по умолчанию. Если Chrome не установлен в качестве браузера по умолчанию для IDE, необходимо открыть окно настроек и выбрать Chrome в раскрывающемся списке 'Веб-браузер' в категории 'Общее', прежде чем выполнить следующие действия.
+        </p>
+        <ol>
+            <li>Выберите в меню &quot;Файл&quot; пункт &quot;Новый проект&quot;, чтобы открыть мастер создания проекта.</li>
+            <li>Выберите 'Приложение HTML5' в категории HTML/JavaScript. Нажмите кнопку 'Далее'.</li>
+            <li>Задайте имя и местоположение для проекта. Нажмите кнопку 'Далее'.
+                <p>Для этого упражнения имя не имеет значения.</p></li>
+            <li>Выберите 'Без шаблона сайта'. Нажмите кнопку 'Готово'.
+                <p>Когда вы нажмете кнопку 'Готово', IDE создаст новый проект HTML5 и откроет файл <tt>index.html</tt> в редакторе.</p></li>
+            <li>Убедитесь, что на панели инструментов в раскрывающимся списке выбран Chrome с NetBeans Integration.</li>
+            <li>Нажмите кнопку 'Выполнить' на панели инструментов.</li>
+            <li>Щелкните 'Перейти к веб-магазину Chrome' в диалоговом окне 'Установить расширение Chrome'.<br> <img alt="снимок экрана диалогового окна &apos;Установить расширение Chrome&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension1.png" title="Диалоговое окно &apos;Установить расширение Chrome&apos;">
+                <p>При нажатии кнопки 'Перейти к веб-магазину Chrome' страница NetBeans Connector в веб-магазине Chrome откроется в браузере Chrome. </p>
+                <p class="notes"><strong>Примечание.</strong> В окне 'Установить расширение Chrome' отображается кнопка, после щелчка на которой выполняется установка расширения.</p>
+            <img alt="снимок экрана диалогового окна &apos;Установить расширение Chrome&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-rerun-dialog.png" title="Диалоговое окно &apos;Установить расширение Chrome&apos;"></li>
+            <li>Перейдите к браузеру Chrome и нажмите кнопку 'Добавить в Chrome' на странице NetBeans Connector. Нажмите кнопку 'Добавить' при отображении запроса на подтверждение добавления расширения.<br> <img alt="снимок экрана страницы NetBeans Connector page в веб-магазине Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-chrome-netbeanshome.png" title="Страница NetBeans Connector в веб-магазине Chrome">
+                <p>Когда расширение установлено, вы увидите уведомление о том, что расширение добавлено, а значок NetBeans Connector будет отображаться в адресной строке URL при запуске проекта NetBeans HTML5 в браузере Chrome.</p>
+                <img alt="снимок экрана подтверждения того, что расширение было установлено" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension2.png" title="Подтверждение того, что расширение было установлено">
+            </li>
+            <li>В IDE нажмите 'Повторно запустить проект' в диалоговом окне 'Установить расширение Chrome'.
+                <p>После нажатия 'Повторно запустить проект' в браузере Chrome откроется новая вкладка и отобразится страница индексов приложений HTML5.</p>
+                <p>После установки расширения вы увидите, что значок NetBeans Connector будет отображаться в адресной строке URL при запуске проекта NetBeans HTML5 в браузере Chrome.</p> 
+            </li>
+            
+            </ol>
+            <p>При открытии страницы расширений Chrome (<tt>chrome://extensions/</tt>) для браузера Chrome вы увидите, что расширение в настоящее время включено.</p>
+            <img alt="снимок экрана расширений Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension3.png" title="Расширение NetBeans Connector включено в расширениях Chrome">
+
+        <p class="notes"><strong>Примечание.</strong> Кроме того, можно установить расширение NetBeans Connector непосредственно из веб-магазина Chrome, выполнив следующие шаги.</p>
+            <ol>
+            <li>Запустите браузер Chrome и перейдите в <a href="https://chrome.google.com/webstore/">веб-магазин Chrome</a>.</li>
+            <li>Выполните поиск расширения Netbeans Connector в веб-магазине Chrome.</li>
+            <li>Нажмите кнопку 'Добавить к Chrome' на странице результатов поиска и нажмите кнопку 'Добавить' при отображении запроса на добавление расширения. <br> <img alt="снимок экрана расширения NetBeans Connector в веб-магазине Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension1.png" title="Расширение NetBeans Connector в веб-магазине Chrome"></li>
+        </ol>
+              
+        
+        <a name="installchrome2"></a>
+        <h3>Автономная установка расширения</h3>
+        <p>Если не удается подключиться к веб-магазину Chrome, можно установить расширение NetBeans Connector, который входит в комплект с IDE. Если при запуске проекта NetBeans HTML5 будет предложено установить расширение NetBeans Connector, вы можете выполнить следующие действия, чтобы установить расширение при отсутствии доступа к веб-магазину Chrome.</p>
+        <ol>
+            <li>Щелкните 'Отсутствует подключение' в диалоговом окне 'Установить расширение Chrome'.<br> <img alt="снимок экрана диалогового окна &apos;Установить расширение Chrome&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension1.png" title="Диалоговое окно &apos;Установить расширение Chrome&apos;">
+            </li>
+            <li>Щелкните <strong>найти</strong> в диалоговом окне, чтобы открыть папку установки IDE NetBeans в локальной системе, содержащей расширение <strong><tt>netbeans-chrome-connector.crx</tt></strong>.<br> <img alt="снимок экрана расширений Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension2.png" title="Расширение NetBeans Connector включено в расширениях Chrome">
+            </li>
+            <li>Откройте страницу расширений Chrome (<tt>chrome://extensions/</tt>) в браузере Chrome.<br> <img alt="снимок экрана расширений Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension3.png" title="Расширение NetBeans Connector включено в расширениях Chrome">
+            </li>
+            <li>Перетащите расширение <tt>netbeans-chrome-connector.crx</tt> на страницу 'Расширения' в браузере и нажмите кнопку 'Добавить', чтобы подтвердить добавление расширения.
+                <p>После добавления расширения вы увидите, что расширение NetBeans Connector добавлено в список установленных расширений.</p></li>
+            <li>Щелкните <strong>Да, подключаемый модуль сейчас установлен</strong> в диалоговом окне 'Установить расширение Chrome', чтобы открыть проект NetBeans HTML5 в браузере Chrome. Вы увидите значок NetBeans Connector в адресной строке вкладки браузера.
+            </li>
+        </ol>
+        </div>
+
+        
+<!-- ++++++++++++++++ Using the WebKit Browser ++++++++++++++++ -->
+        <a name="webkit"></a>
+        <h2>Использование встроенного браузера на базе WebKit</h2>
+        <p>Рекомендуется запускать приложения HTML5 в браузере Chrome с установленным расширением NetBeans Connector при разработке приложений. Параметр <strong>Chrome с интеграцией NetBeans</strong> выделяется по умолчанию при запуске целевого элемента при создании в приложении HTML5. Тем не менее, также возможен запуск приложений HTML5 во встроенном браузере на базе WebKit, который входит в комплект с IDE.</p>
+        
+        <p>При запуске приложения HTML5 во встроенном браузере на базе WebKit в IDE открывается окно веб-браузера. Встроенный браузер на базе WebKit поддерживает многие функции, которые включены в браузере Chrome, при условии установки расширения NetBeans Connector, в том числе режим проверки, выбор различных вариантов размера экрана и отладка JavaScript.
+        </p>
+        <p class="notes"><strong>Примечание.</strong> При выборе 'Окно' > 'Интернет' > 'Веб-браузер' в главном меню IDE открывает браузер, который указан в качестве веб-браузера в окне 'Параметры'. </p>
+        <p>Выполните следующие действия, чтобы запустить приложение HTML5 application во встроенном браузере на базе WebKit.</p>
+        <ol>
+            <li>Выберите встроенный браузер на базе WebKit в раскрывающемся списке на панели инструментов.<br> <img alt="снимок экрана раскрывающегося списка целевых браузеров на панели инструментов" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-embedded1.png" title="Список целевых браузеров для приложений HTML5 в раскрывающемся списке на панели инструментов">
+            </li>
+            <li>Нажмите 'Выполнить' на панели инструментов или щелкните правой кнопкой мыши узел проекта в окне 'Проекты' и выберите 'Выполнить'.
+                <p>При запуске приложения окно веб-браузера открывается в IDE.</p>
+                <img alt="снимок экрана окна встроенного браузера на базе WebKit" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-embedded2.png" title="Окно встроенного браузера на базе WebKit">
+                <p>Можно щелкнуть значки на панели инструментов вкладки веб-браузера, чтобы включить режим проверки и быстро переключаться между различными размерами экрана.</p></li>
+        </ol>
+        
+        
+<!-- ++++++++++++++++ Creating the Project ++++++++++++++++ -->
+        <a name="createproject"></a>
+        <h2>Создание проекта HTML5 NetBeans</h2>
+        <p>В этом упражнении мы используем мастер создания проектов в IDE, чтобы создать новый проект HTML5. В этом учебном курсе создается очень простой проект HTML5, который имеет только файл <tt>index.html</tt>. В мастере также будут выбраны некоторые библиотеки JQuery JavaScript, которые будут использоваться в проекте.
+        </p>
+        <ol>
+            <li>Выберите 'Файл' > 'Новый проект' (Ctrl-Shift-N; ⌘-Shift-N в Mac) в главном меню, чтобы открыть мастер создания проектов.</li>
+            <li>Выберите категорию <strong>HTML5</strong>, затем выберите <strong>Приложение HTML5</strong>. Нажмите кнопку 'Далее'.<br> <img alt="снимок экрана шаблона приложения HTML5 в мастере создания проектов" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-newproject1.png" title="Шаблон приложения HTML5 в мастере создания проектов">
+            </li>
+
+            <li>Введите <strong>HTML5Demo</strong> в качестве имени проекта и укажите каталог на компьютере, где следует сохранить проект. Нажмите кнопку 'Далее'.</li>
+
+            <li>В шаге 3. Шаблон сайта, выберите 'Без шаблона сайта'. Нажмите кнопку 'Далее'.<br> <img alt="снимок экрана панели шаблонов сайта в мастере создания приложений HTML5" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-newproject2.png" title="Панель шаблонов сайта в мастере создания приложений HTML5">
+                <p>При выборе 'Без шаблона сайта' мастер создает базовый пустой проект NetBeans HTML5. Если нажать кнопку 'Готово', проект будет содержать только папку корня сайта и файл <tt>index.html</tt> в папке корня сайта.</p>
+                
+                <p>Страница шаблона сайта мастера позволяет выбрать необходимое из списка популярных интерактивных шаблонов для проектов HTML5 или указать местоположение архива <tt>.zip</tt> шаблона сайта. Можно ввести адрес URL архива <tt>.zip</tt> или щелкнуть 'Обзор', чтобы указать местоположение в локальной системе. Когда вы создаете проект на основе шаблона сайта, файлы, библиотеки и структура проекта определяется шаблоном.</p>
+                <p><strong class="notes">Примечание.</strong> Вы должны быть подключены к сети, чтобы создать проект, который основан на одном из интернет-шаблонов в списке.</p></li>
+            
+            <li>В шаге 4. Файлы JavaScript - выберите библиотеки JavaScript <tt>jquery</tt> и <tt>jquerygui</tt> на панели 'Доступные' и щелкните значок со стрелкой вправо (&nbsp;>&nbsp;), чтобы переместить выбранные библиотеки на панель мастера 'Выбранное'. По умолчанию библиотеки создаются в папке проекта <tt>js/libraries</tt>. В этом учебном курсе будут использоваться "уменьшенные" версии библиотек JavaScript.
+                
+                <p class="tips">Можно использовать текстовое поле на панели, чтобы отфильтровать список библиотек JavaScript. Например, введите <strong>jq</strong> в поле, чтобы найти библиотеки <tt>jquery</tt>. Вы можете удерживать нажатой клавишу Ctrl и щелкнуть левой кнопкой мыши имена библиотек для выбора нескольких библиотек.</p>
+                
+            <img alt="снимок экрана панели &apos;Библиотеки JavaScript&apos; в мастере создания приложений HTML5" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-newproject3.png" title="Панель &apos;Библиотеки JavaScript&apos; в мастере создания приложений HTML5">
+            
+            <p class="notes"><strong>Примечания.</strong></p>
+            <ul>
+                <li>Можно нажать номер версии библиотеки в столбце 'Версия', чтобы открыть всплывающее окно, в котором можно выбрать предыдущие версии библиотек. По умолчанию в мастере отображается самая последняя версия.</li>
+                <li>Минимизированные версии библиотек JavaScript - это сжатые версии, и при просмотре в редакторе код не является доступным для понимания.</li>
+            </ul>
+            <li>Для завершения мастера нажмите кнопку <strong>Готово</strong>.
+            
+            <p>После нажатия кнопки 'Готово' в IDE создается проект, отображается узел проекта в окне 'Проекты' и открывается файл <tt>index.html</tt> в редакторе.</p>
+
+            <img alt="снимок экрана панели &apos;Библиотеки JavaScript&apos; в мастере создания приложений HTML5" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-projectswindow1.png" title="Панель &apos;Библиотеки JavaScript&apos; в мастере создания приложений HTML5">
+
+            <p>Если развернуть папку <tt>js/libs</tt> в окне 'Проекты', будет видно, что библиотеки JavaScript, которые были указаны в мастере создания проектов, были автоматически добавлены к проекту. Можно удалить библиотеку JavaScript из проекта, щелкнув правой кнопкой мыши файл JavaScript и выбрав 'Удалить' во всплывающем меню.</p>
+
+            <p class="tips">Чтобы добавить библиотеку JavaScript к проекту, щелкните правой кнопкой мыши узел проекта и выберите 'Свойства', чтобы открыть окно 'Свойства проекта'. Можно добавлять библиотеки к панели 'Библиотеки JavaScript' в окне 'Cвойства проекта'. Кроме того, можно скопировать файл JavaScript, который находится в локальной системе, напрямую в папку <tt>js</tt>.</p>
+            
+            <p>Теперь можно проверить, правильно ли отображается данный проект в браузере Chrome.</p>
+            </li>
+            <li>Убедитесь, что на панели инструментов браузера в раскрывающимся списке выбран Chrome с NetBeans Integration.<br> <img alt="снимок экрана раскрывающегося списка на панели инструментов" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-js/html5-js-selectbrowser.png" title="Браузер, выбранный в раскрывающемся списке на панели инструментов."></li>
+            <li>Щелкните правой кнопкой мыши узел проекта в окне &quot;Проекты&quot; и выберите &quot;Выполнить&quot;.</li>
+        </ol>
+        
+        <p>При выборе 'Выполнить в IDE' открывается вкладка в браузере Chrome и отображается страница <tt>index.html</tt> по умолчанию для приложения. В среде IDE открывается окно 'Обзор DOM', в котором отображается дерево DOM открытой в браузере страницы.</p>
+
+        <img alt="снимок экрана приложения на вкладке браузера Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject.png" title="Приложение на вкладке браузера Chrome">
+
+        <p>Обратите внимание, что на вкладке браузера имеется желтая полоса, которая является уведомлением о том, NetBeans Connector выполняет отладку вкладки. IDE и браузер связаны и имеют возможность взаимодействовать друг с другом в тех случаях, когда желтая полоса видна. При запуске приложения HTML5 из IDE отладчик JavaScript включается автоматически. После сохранения изменений в файле или внесении изменений в таблицу стилей CSS не нужно перезагружать страницу, потому что окно браузера автоматически обновляется с учетом изменений.</p>
+
+        <p class="alert">При закрытии желтой полосы или щелчка 'Отмена' разрывается соединение между IDE и браузером. В случае разрыва соединения необходимо запустить приложение HTML5 из IDE повторно.</p>
+
+        <p>Также следует отметить, что значок NetBeans отображается в местоположении адреса URL поля браузера. Вы можете щелкнуть значок, чтобы открыть меню, которое предоставляет различные варианты для изменения размера изображения в браузере и для включения режима проверки в режиме NetBeans.</p>
+
+        <img alt="снимок экрана меню NetBeans на вкладке браузера Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject2.png" title="Меню NetBeans на вкладке браузера Chrome">
+        
+        <p>Если выбрать одно из заданных по умолчанию устройств в меню, размер окна браузера будет изменяться в соответствии с размерами выбранного устройства. Это позволит увидеть, как приложение будет выглядеть на выбранном устройстве. Приложения HTML5 обычно реагируют на размер экрана устройства, на котором они просматриваются. Можно использовать правила JavaScript и CSS, которые реагируют на размер экрана, а также изменить способ отображения приложения таким образом, чтобы его макет был оптимизирован для устройства. </p>
+
+        
+<!-- ++++++++++++++++ Editing the HTML File ++++++++++++++++ -->
+
+        <a name="editingpage"></a>
+        <h2>Редактирование файла HTML</h2>
+        <p>В этом упражнении будут добавлены ресурсы проекта к проекту и будет выполнено редактирование файла <tt>index.html</tt> для добавления ссылок на ресурсы и некоторых правил CSS. Вы увидите, как несколько простых средств выбора CSS в сочетании с JavaScript могут значительно изменить то, как страница отображается в браузере.</p>    
+        
+        <ol>
+            <li>Загрузите архив <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">ресурсы проекта</a> и извлеките содержимое.
+            <p>ZIP-архив содержит две папки с файлами, которые нужно добавить к проекту: <tt>pix</tt> и <tt>css</tt>.</p></li>
+            <li>Скопируйте папки <tt>pix</tt> и <tt>css</tt> в корневую папку сайта.
+            <p class="notes"><strong>Примечание.</strong> Если проанализировать структуру каталогов проекта, необходимо скопировать папки в папку <tt>public_html</tt>.</p>
+            <img alt="снимок экрана меню NetBeans на вкладке браузера Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-fileswindow.png" title="Меню NetBeans на вкладке браузера Chrome">
+            </li>
+            <li>Откройте в редакторе <code>index.html</code> (если он еще не открыт).</li>
+            <li>В редакторе добавьте ссылки на библиотеки JavaScript, которые были добавлены при создании проекта, добавив следующий код (выделен полужирным шрифтом) между открывающим и закрывающим тегами <tt>&lt;head></tt>.
+            <pre class="examplecode">
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;&lt;/title&gt;
+    &lt;meta charset=UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+    <strong>&lt;script type="text/javascript" src="js/libs/jquery/jquery.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="js/libs/jqueryui/jquery-ui.js"&gt;&lt;/script&gt;</strong>
+  &lt;/head&gt;
+  &lt;body&gt;
+    TODO write content
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+                    
+                <p class="tips">Для решения задач можно использовать функцию автозавершения кода в редакторе.</p>
+                <img alt="снимок экрана автозавершения кода в редакторе" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-editor1.png" title="Автозавершение кода в редакторе">
+            </li>
+            <li>Удалите заданный по умолчанию комментарий '<code>TODO write content</code>' и введите следующий код между тегами <tt>body</tt>.
+    <pre class="examplecode">
+    &lt;body&gt;
+        &lt;div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Mary Adams&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/maryadams.jpg" alt="Mary Adams"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Vice President&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x8234&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 102 Bldg 1&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; m.adams@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;John Matthews&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/johnmatthews.jpg" alt="John Matthews"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Middle Manager&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x3082&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 307 Bldg 1&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; j.matthews@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Sam Jackson&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/samjackson.jpg" alt="Sam Jackson"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Deputy Assistant&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x3494&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 457 Bldg 2&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; s.jackson@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Jennifer Brooks&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/jeniferapplethwaite.jpg" alt="Jenifer Applethwaite"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Senior Technician&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x9430&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 327 Bldg 2&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; j.brooks@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;</pre>
+            </li>
+            <li>Сохраните изменения.
+            <p>При сохранении изменений страница автоматически перезагружается в браузере и должна выглядеть примерно так, как показано ниже.</p>
+            <img alt="снимок экрана перезагруженной страницы на вкладке браузера Chrome" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject3.png" title="Перезагруженная страница на вкладке браузера Chrome">
+            </li>
+            <li>Введите следующие встроенные правила CSS между тегами <tt>&lt;head></tt> в файле. 
+            <pre class="examplecode">&lt;style type=&quot;text/css&quot;&gt;
+    ul {list-style-type: none}
+    img {
+        margin-right: 20px; 
+        float:left; 
+        border: 1px solid;
+    }
+&lt;/style&gt;</pre>
+
+            <p class="tips">Нажмите сочетание клавиш Ctrl-Space, чтобы использовать функцию автозавершения кода в редакторе при добавлении правил CSS.</p>
+
+            <img alt="снимок экрана автозавершения кода правил CSS в редакторе" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-editor2.png" title="Автозавершение кода правил CSS в редакторе">
+                
+            <p>Если открыть окно 'Обзор DOM', отображается текущая структура страницы.</p>
+            <img alt="снимок окна &apos;Обзор DOM&apos; с деревом DOM" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/dom-browser.png" title="Окно &apos;Обзор DOM&apos; с деревом DOM">
+            </li>
+            <li>Добавьте следующую ссылку к странице стилей (выделена <strong>полужирным</strong> шрифтом) между тегами <code>&lt;head></code>. 
+            <pre class="examplecode">&lt;head&gt;
+...
+    &lt;script type="text/javascript" src="js/libs/jqueryui/jquery-ui.js"&gt;&lt;/script&gt;
+    <strong>&lt;link type="text/css" rel="stylesheet" href="css/basecss.css"&gt;</strong>
+...
+&lt;/head&gt;</pre>
+            
+            <p>Страница стилей <tt>basecss.css</tt> основана на определенных правилах CSS, определенных на страницах стилей CSS, в теме "UI lightness" jQuery.</p>
+            
+            <p class="tips">Можно открыть страницу стилей <tt>basecss.css</tt> в редакторе и изменить страницу стилей для добавления правил CSS, добавленных в предыдущем шаге, или создать новую страницу стиля для правил CSS.</p>
+            </li>
+            
+            <li>Добавьте следующий код между тегами <tt>&lt;head></tt> для запуска сценария jQuery при загрузке элементов страницы.
+<pre class="examplecode">
+    <strong>&lt;script type=&quot;text/javascript&quot;&gt;
+        $(document).ready(function() {
+
+        });
+    &lt;/script&gt;</strong>
+&lt;/head&gt;</pre>
+    
+            <p>jQuery работает путем подключения динамически примененных атрибутов и поведений JavaScript к элементам модели DOM (объектной модели документа). Команды jQuery, которые будет использоваться в этом примере, должны быть выполнены только после загрузки браузером всех элементов модели DOM.  Это важно, потому что поведения jQuery подключаются к элементам модели DOM, и эти элементы должны быть доступны для jQuery для получения ожидаемых результатов. jQuery выполняет это за нас с помощью встроенной функции <code>(document).ready</code>, которая следует за объектом jQuery, представленным <code>$</code>.</p>
+
+            <p class="tips">Также можно использовать следующую сокращенную версию этой функции.</p>
+            <pre class="examplecode">$(function(){
+
+});</pre>
+
+            <p>Команды для jQuery принимают форму метода JavaScript с дополнительным объектным литералом, предоставляющим массив параметров, который должен быть помещен между фигурными скобками <code>{}</code> в функции <code>(document).ready</code> для выполнения только в допустимый момент, то есть после полной загрузки модели DOM.</p>
+            </li>
+
+            <li>Введите следующий код (выделен полужирным шрифтом) внутри функции <code>(document).ready</code>, между скобок <code>{}</code>.
+<pre class="examplecode">
+    &lt;script type=&quot;text/javascript&quot;&gt;
+        $(document).ready(function() {
+            <strong>$("#infolist").accordion({
+                autoHeight: false
+            });</strong>
+        });
+    &lt;/script&gt;
+&lt;/head&gt;</pre>
+                
+            <p>Этот код вызовет сценарий <a href="http://jqueryui.com/demos/accordion/">jQuery accordion widget</a>, включенный в <a href="http://jqueryui.com/">библиотеку пользовательского интерфейса jQuery</a>. Сценарий accordion изменит элементы в объекте DOM, идентифицированном как <tt>infolist</tt>. В этом коде <code>#infolist</code> — это селектор CSS, подключенный к уникальному элементу DOM, имеющему атрибут <code>id</code> со значением <code>infolist</code>. С помощью обычной точечной нотации JavaScript ('<code>.</code>') он подключается к инструкции jQuery, использующей метод <code>accordion()</code> для отображения этого элемента.</p>
+            
+            <p>В следующем шаге будет выполнена идентификация элемента на странице как <tt>infolist</tt>.</p>
+
+            <p class="notes"><strong>Примечание.</strong> В приведенном выше фрагменте кода также было указано '<code>autoHeight: false</code>'.  Это препятствует установке элементом оформления accordion высоты каждой панели на основе самой высокой части содержимого в разметке.  Дополнительные сведения см. в <a href="http://docs.jquery.com/UI/Accordion">документации accordion API</a>.</p>
+            
+            <p>Раздел <tt>&lt;head></tt> файла <code>index.html</code> должен выглядеть следующим образом.
+ <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;&lt;/title&gt;
+        &lt;meta charset=&quot;UTF-8&quot;&gt;        
+        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery/jquery.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jqueryui/jquery-ui.js&quot;&gt;&lt;/script&gt;
+        &lt;link type="text/css" rel="stylesheet" href="css/basecss.css"&gt;
+
+        &lt;style type=&quot;text/css&quot;&gt;
+            ul {list-style-type: none}
+            img {
+                margin-right: 20px; 
+                float:left; 
+                border: 1px solid;
+            }
+        &lt;/style&gt;
+        &lt;script type=&quot;text/javascript&quot;&gt;
+            $(document).ready(function() {
+                $("#infolist").accordion({
+                    autoHeight: false
+                });
+            });
+        &lt;/script&gt;
+    &lt;/head&gt;</pre>
+
+            <p class="tips">Код можно упорядочить, щелкнув правой кнопкой мыши в редакторе и выбрав 'Формат'.</p>
+            </li>
+
+            <li>Измените элемент <tt>&lt;div></tt>, заключающий содержимое страницы. путем добавления следующего средства выбора и значения <code>id</code> (выделено полужирным шрифтом).
+            <pre class="examplecode">&lt;body&gt;
+    &lt;div <strong>id="infolist"</strong>&gt;
+            </pre>
+            <p>Этот элемент <code>&lt;div></code> заключает содержимое страницы (четыре набора тегов <code>&lt;h3></code> и тегов <code>&lt;div></code>, добавленных ранее в этом учебном курсе).</p>
+            
+            <p class="tips">Можно добавить средство выбора к элементу в диалоговом окне 'Изменить правила CSS'. Чтобы открыть диалоговое окно "Изменить правила CSS", щелкните правой кнопкой мыши тег <tt>&lt;div></tt> в редакторе и выберите пункт меню "Изменить правила CSS". Также можно поместить курсор вставки в тег <tt>&lt;div></tt> в редакторе и нажать кнопку "Изменить правила CSS" (<img alt="снимок экрана автозавершения кода в редакторе" src="../../../images_www/articles/73/web/html5-gettingstarted/newcssrule.png" title="Автозавершение кода в редакторе">) в окне "Cтили CSS" (Окно > Веб > Стили CSS).</p>
+            <div class="indent">
+            
+                    <img alt="снимок окна &apos;Стили CSS&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-cssstyles.png" title="Окно &apos;Стили CSS&apos;">
+                <p>В диалоговом окне 'Правила CSS' выберите <tt>id</tt> как 'Тип средства выбора' и введите <strong>infolist</strong> как 'Средство выбора'. Убедитесь, что установлен флажок 'Применить изменения к элементу'.
+                </p>
+                <img alt="снимок экрана диалогового окна &apos;Изменить правила CSS&apos;" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-cssrules.png" title="Диалоговое окно &apos;Изменение правил CSS&apos;">
+                <p>При нажатии кнопки ОК в диалоговом окне правило CSS для средства выбора <tt>infolist</tt> автоматически добавляется к таблице стилей <tt>basecss.css</tt>.</p>
+            </div>
+ 
+            </li>
+            <li>Сохраните внесенные изменения в <tt>index.html</tt> (Ctrl-S; ⌘-S в Mac). 
+            <p>При сохранении изменений страница автоматически перезагружается в веб-браузере. Отображается, что макет страницы был изменен и что на странице теперь используются правила стилей CSS, которые определены в таблице стилей <tt>basecss.css</tt>. Один из снимков ниже <tt>&lt;h3></tt> открыт, но другие свернуты. Чтобы развернуть список, можно щелкнуть элемент <tt>&lt;h3></tt>.</p>
+            
+            <img alt="снимок экрана проекта, загруженного в браузер" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject5.png" title="Окончательный проект будет загружен в браузер">
+
+            
+            <p>Функция jQuery Accordion теперь изменяет все элементы страницы, которые содержатся в объекте DOM <tt>infolist</tt>. В окне "Навигатор" видна структура файла HTML с элементом <tt>div</tt>, определенным как <tt>id=infolist</tt>.</p>
+            
+            <img alt="снимок окна &apos;Навигатор&apos;" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/navigator3.png" title="Окно &apos;Обзор DOM&apos;">
+            <p class="tips">Можно щелкнуть правой кнопкой мыши элемент в окне 'Навигатор' и выбрать 'Перейти к источнику' для быстрого перехода к местоположению этого элемента в файле исходного кода.</p>
+            <p>В окне "Обозреватель DOM" видны элементы DOM страницы, открытой в браузере, и стили JQuery, примененные к этим элементам.
+            </p>
+            <img alt="снимок окна &apos;Обзор DOM&apos;" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/dom-browser3.png" title="Окно &apos;Обзор DOM&apos;">
+            <p class="tips">Если в браузере включен параметр "Проверка в режиме NetBeans", элементы, выбранные в окне браузера, подсвечиваются в окне "Обозреватель DOM".</p>
+            </li>
+        </ol>
+
+        
+<!-- ++++++++++++++++ Saving the Project  ++++++++++++++++ -->
+        <a name="saving"></a>
+        <h2 id="template">Сохранение проекта как шаблона сайта</h2>
+        <p>Можно сохранить проект в виде шаблона сайта, который можно использовать в качестве шаблона для создания других сайтов HTML5, которые основаны на проекте. Шаблон сайта может включать в себя библиотеки JavaScript, файлы CSS, изображения и шаблоны для HTML файлов. IDE предоставляет мастеру вспомогательные средства, позволяющие выбрать файлы, которые необходимо включить в шаблон сайта.</p>
+            
+        <ol>
+            <li>Правой кнопкой мыши щелкните проект в окне 'Проекты' и выберите 'Сохранить как шаблон' во всплывающем меню.</li>
+            <li>Введите <strong>HTML5DemoSiteTemplate</strong> в поле 'Имя' и укажите местоположение сохранения шаблона.</li>
+            <li>Убедитесь, что выбраны все файлы. Нажмите кнопку 'Готово'.
+                <p>Если развернуть узлы дерева в диалоговом окне, можно просмотреть файлы, которые будут включены в шаблон сайта.</p>
+                <img alt="снимок экрана диалогового окна создания шаблона сайта" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-sitetemplate.png" title="Диалоговое окно &apos;Создать шаблон сайта&apos;">
+                <p>Отображается, что шаблон сайта будет включать файл <tt>index.html</tt>, таблицу стилей CSS и изображения, используемые в проекте, а также наличие библиотек JavaScript. Шаблон сайта может также включать любые файлы конфигурации и тесты.</p>
+                <p>При нажатии на кнопку "Готово" IDE создает шаблон сайта в виде архива <tt>.zip</tt>.</p>
+            </li>
+        </ol>
+        
+        <p>
+        Если необходимо создать проект, основанный на шаблоне сайта, укажите местоположение архива <tt>.zip</tt> на панели 'Шаблон сайта' мастера создания проектов.</p>
+        
+        <h2 id="summary">Заключение</h2>
+
+        <p>В этом учебном курсе вы узнали, как создавать пустой проект HTML5, в котором используется пара библиотек jQuery JavaScript. Вы также узнали, как создавать расширение NetBeans Connector для браузера Chrome и запускать проект HTML5 в браузере. При изменении файла <tt>index.html</tt> отображается, что IDE предоставляет определенные средства, которые можно использовать для редактирования файлов HTML и CSS.
+            </p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20HTML5%20Applications">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        
+        <h2 id="seealso">См. также</h2>
+
+        <p>Подробнее о поддержке приложений HTML5 в IDE см. в следующих материалах на сайте <a href="https://netbeans.org/">www.netbeans.org</a>:</p>
+
+        <ul>
+            <li><a href="html5-editing-css.html">Работа со страницами стилей CSS в приложениях HTML5</a> Документ, который продолжает работу с приложением, которое было создано в этом учебном курсе. Он показывает, как использовать некоторые из мастеров CSS и окон в IDE и как использовать режим проверки в браузере Chrome для визуального определения элементов в источниках проекта.</li>
+            <li><a href="html5-js-support.html">Отладка и тестирование JavaScript в приложениях HTML5</a> Документ, который демонстрирует, как IDE предоставляет инструменты, которые могут использоваться в отладке и тестировании файлов сценариев JAVA в IDE.</li>
+        </ul>
+        
+        <p>Дополнительные сведения о jQuery доступны в официальной документации:</p>
+
+        <ul>
+            <li>Официальная домашняя страница: <a href="http://jquery.com">http://jquery.com</a></li>
+            <li>Домашняя страница UI: <a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>Учебные курсы: <a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>Главная страница документации: <a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>Демонстрации интерфейса пользователя и документация: <a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+    </body>
+</html>

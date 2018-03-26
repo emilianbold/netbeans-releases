@@ -1,0 +1,792 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>NetBeans IDEでのGitサポートの使用</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of GIT Features in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, GIT,
+              versioning software, open source, developers, collaborate"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body>
+<h1>NetBeans IDEでのGitサポートの使用</h1>
+<p>NetBeans IDEはGitバージョン管理クライアントをサポートしています。IDEのGitサポートにより、IDE内のプロジェクトから直接バージョン管理タスクを実行できます。このドキュメントでは、バージョン管理ソフトウェアを使用する場合の標準的なワークフローを説明することによって、IDEの基本的なバージョン管理タスクの実行方法を示します。</p>
+<p>Gitは、小さなプロジェクトから非常に大きなプロジェクトまであらゆるものを高速かつ効率的に処理するように設計された、無料かつオープン・ソースの分散バージョン管理システムです。すべてのGitクローンは、ネットワーク・アクセスや中央のサーバーに依存せずに、完全な履歴およびリビジョン・トラック機能を備え、すべてを完備したリポジトリです。分岐やマージの実行は高速で簡単です。Gitはファイルのバージョン管理に使用され、Mercurial、Subversion、CVS、Perforceなどのツールによく似ています。</p>
+
+<h3>内容</h3>
+<img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" />
+
+        <ul class="toc">
+           
+			<li><a href="#initialize">Gitリポジトリの初期化</a></li>
+			<li><a href="#clone">Gitリポジトリのクローン</a>
+			<ul><li><a href="#github">SSHプロトコルによるGitHubからのリポジトリのクローン</a></li></ul></li>
+			<li><a href="#add">Gitリポジトリへのファイルの追加</a></li>
+			<li><a href="#editing">ファイルの編集</a>
+			<ul>
+			<li><a href="#viewChanges">ソース・エディタでの変更の表示</a> </li>
+			<li><a href="#viewFileStatus">ファイルのステータス情報の表示</a></li>
+			<li><a href="#diff">ファイル・リビジョンの比較</a></li>
+			<li><a href="#revert">変更を元に戻す</a></li>
+            </ul> </li>  
+            <li><a href="#committing">リポジトリへのソースのコミット</a></li>
+			<li><a href="#branch">分岐の操作</a>
+			<ul>
+			<li><a href="#branchCreate">分岐の作成</a></li>
+			<li><a href="#branchCheckOut">分岐のチェックアウト</a></li>
+			<li><a href="#branchMerge">マージ</a></li>
+			<li><a href="#branchDelete">分岐の削除</a></li>
+			</ul></li>
+			<li><a href="#remote">リモート・リポジトリの操作</a>
+			<ul>
+			<li><a href="#fetch">フェッチ</a></li>
+			<li><a href="#pull">プル</a></li>
+			<li><a href="#push">プッシュ</a></li>
+			</ul></li>
+            <li><a href="#summary">サマリー</a></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>要件</h2>
+        <p><strong>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン7.4または8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">バージョン7または8</td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        
+
+		<div>
+		<a name="initialize"></a>
+		<h2>Gitリポジトリの初期化</h2>
+		<p>まだソース管理されていない既存のファイルからGitリポジトリを初期化するには、次の手順を完了する必要があります。</p>
+		<ol>
+		<li>「プロジェクト」ウィンドウで、バージョン管理されていないプロジェクトを選択し、プロジェクト名を右クリックします。</li>
+		<li>コンテキスト・メニューで「<tt>バージョン管理</tt>」>「<tt>Gitリポジトリの初期化</tt>」(または、メイン・メニューの「<tt>チーム</tt>」>「<tt>Git</tt>」>「<tt>初期化</tt>」)を選択します。
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/initialize-git-repo.png" rel="lytebox" title="「プラグイン」ダイアログ・ボックス"> <img alt="「プラグイン」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/74/ide/git/initialize-git-repo-small.png"></a></p>
+					 </li>
+		<li>「<tt>Gitリポジトリの初期化</tt>」ダイアログ・ボックスで、バージョン管理されるファイルの保存先リポジトリへのパスを指定するか、「参照」をクリックして、必要なディレクトリを参照します。 </li>
+		<li>「OK」をクリックします。
+		<p><tt>.git</tt>サブフォルダは、上のステップ3で指定したフォルダ(デフォルトでNetBeansプロジェクト・フォルダ)に作成され、プロジェクト・スナップショットのすべてのデータが格納されるGitリポジトリです。Gitは指定されたフォルダ内のすべてのファイルのバージョン管理を開始します。<br />「<tt>ウィンドウ</tt>」>「<tt>出力</tt>」>「<tt>出力</tt>」を開いて、ローカル作業ディレクトリ下のリポジトリの作成の進捗に関するIDEのレポートを表示できます。</p>
+		<p class="align-center"><img alt="出力ウィンドウ" border="1/" src="../../../images_www/articles/74/ide/git/output-init.png"></p>
+		
+		</li>
+		</ol>
+		
+		<p>すべてのプロジェクト・ファイルが作業ツリーで「<tt>追加済み</tt>」とマークされます。ファイル・<a href="#viewFileStatus">ステータス</a>を表示するには、「プロジェクト」ウィンドウ内のファイル名の上にカーソルを置きます。次の図に示すように、作業ツリーのファイルのステータスが、斜線の右側に緑で表示されます。</p>
+		<p class="align-center"><img alt="作業ツリーで新規" border="1/" src="../../../images_www/articles/74/ide/git/new-locally.png"></p>
+					 <p>Gitリポジトリの初期化後、Gitリポジトリにファイルを<a href="#add">追加</a>するか、または直接それらを<a href="#committing">コミット</a>します。</p>
+		
+</div>
+<div>
+<a name="clone"></a>
+<h2>Gitリポジトリのクローン</h2>
+<p>既存のGitリポジトリのコピーを取得するには、それをクローンする必要があります。IDEでリポジトリをクローン・ウィザードを起動する前に、GitリポジトリのURLがわかっていることを確認します。 </p>
+<ol>
+<li>メイン・メニューから「<tt>チーム</tt>」>「<tt>Git</tt>」>「<tt>クローン</tt>」を選択します。リポジトリをクローン・ウィザードが表示されます。
+<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/clone-wizard.png" rel="lytebox" title="「リポジトリをクローン」ウィザード"> <img alt="「リポジトリをクローン」ウィザード" border="1/" src="../../../images_www/articles/74/ide/git/clone-wizard-small.png"></a></p></li>
+<li>リポジトリ・ページで、Gitリポジトリの場所へのパス、ユーザー名、およびパスワードを指定します(必要に応じて、今後のためにそれらを保存できます)。</li>
+<li>(オプション)「プロキシ構成」をクリックし、「オプション」ダイアログ・ボックスを表示して、プロキシ・サーバー設定を設定します。終了したら「OK」をクリックします。 </li>
+<li>「次」をクリックして、ウィザードの次のステップに切り替えます。</li>
+<li>リモート分岐ページで、ローカル・リポジトリにフェッチ(ダウンロード)するリポジトリ分岐を選択します。「次」をクリックします。</li>
+<li>出力先ディレクトリ・ページで、次を指定します。
+  <ul>
+<li>「親ディレクトリ」フィールドでは、ハード・ドライブ上にクローンされるリポジトリ用のディレクトリへのパス(または、「参照」ボタンをクリックし、ディレクトリに移動する)。<br />「親ディレクトリ」フィールドには、すべてのNetBeansプロジェクトが格納されるデフォルトの<tt>NetBeansProjects</tt>ディレクトリへのパスが事前入力されています。</li>
+<li>「クローン名」フィールドの、元のプロジェクトをクローンするローカル・フォルダの名前。<br />デフォルトで、「クローン名」には実際のGitリポジトリ名が入力されています。 </li>
+<li>「分岐のチェックアウト」フィールドで、作業ツリーにチェックアウトする分岐を選択します。</li>
+<li>「リモート名」フィールドの、クローンする元のリポジトリを表す名前。<br /><tt>origin</tt>はクローンするリポジトリのデフォルトのエイリアスです。これは推奨される値です。</li>
+<li>「クローン後にNetBeansプロジェクトをスキャン」チェックボックスを選択されたままにして、クローンの終了直後に、事後スキャンをアクティブ化します。(プラグインはクローンされたリソースでNetBeansプロジェクトを検索し、見つかったプロジェクトを開くように提案します。)
+</li>
+</ul> </li>
+<li>「終了」をクリックします。<br />Gitリポジトリのクローン後、ウィザードで選択したフォルダ内にメタデータ<tt>.git</tt>フォルダが作成されます。</li>
+</ol>
+<a name="github"></a>
+<h3>SSHプロトコルによるGitHubからのリポジトリのクローン</h3>
+<p>SSHプロトコルによってGitHubからリポジトリをクローンするには、次のように進みます。</p>
+<p class="notes"><b>注意:</b> SSHによってクローンするには、GitHubアカウントを持っており、プロジェクト・メンバーである必要があります。</p>
+<ol>
+<li>メイン・メニューから「<tt>チーム</tt>」>「<tt>Git</tt>」>「<tt>クローン</tt>」を選択します。リポジトリをクローン・ウィザードが表示されます。</li>
+<li>リポジトリをクローン・ウィザードのリモート・リポジトリ・ページで、「リポジトリURL」フィールドに、必要なリポジトリへのパス、たとえば<tt>git@github.com:tstupka/koliba.git</tt>などを指定します。</li>
+<li>「ユーザー名」テキスト・フィールドに<tt>git</tt>が指定されていることを確認します。</li>
+<li>「秘密/公開鍵」オプションを選択します。</li>
+<li>(<b>Gitサーバーへの自動化されたSSHアクセスにSSHエージェントまたはPageantを使用中の場合はスキップします。</b>)SSH秘密鍵およびパス・フレーズを使用してGitサーバーにアクセスするには次の手順を実行します。
+<ol type="a">
+<li>鍵ファイルへのパス、たとえば<tt>C:\Users\key</tt>などを指定します。
+<p class="notes"><b>注意:</b> OpenSSH秘密鍵形式が必要です。Microsoft Windowsに対応のPuTTYgenで生成された鍵は、IDEを使用する前に、OpenSSH形式に変換する必要があります。</p></li>
+<li>鍵ファイルのパス・フレーズ、たとえば<tt>abcd</tt>などを入力します。</li>
+
+<li>(オプション)必要に応じて、「パス・フレーズを保存」オプションを選択します。</li>
+</ol>
+</li>
+<li> (<b>Gitサーバーへの自動化されたSSHアクセスにSSHエージェントまたはPageantを使用中の場合に適用されます。</b>)正しく構成されたSSHエージェントまたはPageant経由でIDEからGitサーバーへの認証されたアクセスを得るには、「秘密鍵ファイル」および「パス・フレーズ」フィールドを空のままにします。 </li>
+<li>(オプション)「プロキシ構成」をクリックし、「オプション」ダイアログ・ボックスを表示して、プロキシ・サーバー設定を設定します。終了したら「OK」をクリックします。 
+<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/github-repo.png" rel="lytebox" title="「リポジトリをクローン」ウィザードの「リモート・リポジトリ」ページ"> <img alt="「リポジトリをクローン」ウィザードの「リモート・リポジトリ」ページ" border="1/" src="../../../images_www/articles/74/ide/git/github-repo-small.png"></a></p></li></li>
+<li>「次」をクリックします。</li>
+
+<li>リモート分岐ページで、ローカル・リポジトリにフェッチ(ダウンロード)するリポジトリ分岐、たとえば<tt>master</tt>などを選択します。 
+  <p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/github-branches.png" rel="lytebox" title="「リポジトリをクローン」ウィザードの「リモート分岐」ページ"> <img alt="「リポジトリをクローン」ウィザードの「リモート分岐」ページ" border="1/" src="../../../images_www/articles/74/ide/git/github-branches-small.png"></a></p></li>
+<li>「次」をクリックします。</li>
+<li>出力先ディレクトリ・ページで、次を指定します。
+  <ul>
+<li>「親ディレクトリ」フィールドでは、ハード・ドライブ上にクローンされるリポジトリ用のディレクトリへのパス(または、「参照」ボタンをクリックし、ディレクトリに移動する)。<br />「親ディレクトリ」フィールドには、すべてのNetBeansプロジェクトが格納されるデフォルトの<tt>NetBeansProjects</tt>ディレクトリへのパスが事前入力されています。</li>
+<li>「クローン名」フィールドの、元のプロジェクトをクローンするローカル・フォルダの名前。<br />デフォルトで、「クローン名」には実際のGitリポジトリ名が入力されています。 </li>
+<li>「分岐のチェックアウト」フィールドで、作業ツリーにチェックアウトする分岐を選択します。</li>
+<li>「リモート名」フィールドの、クローンする元のリポジトリを表す名前。<br /><tt>origin</tt>はクローンするリポジトリのデフォルトのエイリアスです。これは推奨される値です。</li>
+<li>「クローン後にNetBeansプロジェクトをスキャン」チェックボックスを選択されたままにして、クローンの終了直後に、事後スキャンをアクティブ化します。(プラグインはクローンされたリソースでNetBeansプロジェクトを検索し、見つかったプロジェクトを開くように提案します。)
+<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/github-destination.png" rel="lytebox" title="「リポジトリをクローン」ウィザードの出力先ディレクトリ"> <img alt="「リポジトリをクローン」ウィザードの出力先ディレクトリ" border="1/" src="../../../images_www/articles/74/ide/git/github-destination-small.png"></a></p></li>
+</ul> </li>
+<li>「終了」をクリックします。<br />リポジトリがクローンされると、「クローン完了」メッセージが表示されます。
+<p class="align-center"><img alt="「クローン完了」メッセージ" class="b-all" src="../../../images_www/articles/74/ide/git/clone-completed.png" /></p></li>
+<li>目的のオプションを選択します。</li>
+</ol>
+</div>
+
+		<div><a name="add"></a>
+		<h2>Gitリポジトリへのファイルの追加</h2>
+		
+		<a name="ide"></a>新しいファイルのトラックを開始し、さらに、Gitリポジトリ内のすでにトラックされているファイルへの変更をステージングするには、それをリポジトリに追加する必要があります。 </p>
+		<p>Gitリポジトリにファイルが追加されると、IDEはプロジェクトのスナップショットを作成し、最初に索引に保存します。コミットが実行されると、IDEはそれらのスナップショットをHEADに保存します。IDEでは、次の表に説明する2つのワークフローから選択できます。 </p>
+		 <table width="800px">
+		 <tr>
+                        <th class="tblheader" scope="col" style="width:100px">ワークフローの説明</th>
+						<td class="tbltd1">
+                            
+                                新規または変更済のファイルを索引に明示的に追加し、索引でステージングされているファイルのみをHEADにコミットします。
+                      </td>
+                        <td class="tbltd1">新規または変更済のファイルの索引への追加をスキップし、必要なファイルを直接HEADにコミットします。 
+                     </td>
+						
+           </tr>
+                    <tr>
+					 <th class="tblheader" scope="col">ワークフローに従う手順 </th>
+					<td class="tbltd1">
+                          <ol>
+						  <li>「プロジェクト」ウィンドウで、追加するファイルを右クリックします。</li> 
+		  <li>コンテキスト・メニューで「<tt>Git</tt>」>「<tt>追加</tt>」を選択します。<br />これにより、コミットする前に、ファイルの内容が索引に追加されます。 </li>
+		  <li>「プロジェクト」ウィンドウで、コミットするファイルを右クリックします。</li>
+		  <li>「コミット」ダイアログ・ボックスで、「HEADと索引間の変更」(<img alt="「HEADと索引間の変更」アイコン" src="../../../images_www/articles/74/ide/git/changes-head-index.png" />)トグル・ボタンを選択します。<br />これにより、すでにステージングされているファイルの一覧が表示されます。 </li> 
+		<li>下の<a href="#committing">リポジトリへソースのコミット</a>の項で説明するように、ファイルをコミットします。</li>
+                          </ol>  </td>
+                        <td class="tbltd1">
+						<ol>
+						<li>「プロジェクト」ウィンドウで、コミットするファイルを右クリックします。</li> 
+		                <li>コンテキスト・メニューで、「<tt>Git</tt>」>「<tt>コミット</tt>」を選択します。		   </li>
+		 			  <li>「コミット」ダイアログ・ボックスで、「索引と作業ツリー間の変更」(<img alt="「HEADと作業ツリー間の変更」アイコン" src="../../../images_www/articles/74/ide/git/changes-head-wt.png" />)トグル・ボタンを選択します。<br />これにより、ステージングされていないファイルの一覧が表示されます。  </li>
+						<li>下の<a href="#committing">リポジトリへソースのコミット</a>の項で説明するように、ファイルをコミットします。</li>
+						</ol>
+                      </td>
+                      </tr>                            
+</table>
+		  <p class="notes"><b>注意:</b> 次の図に示すように、HEAD内のファイルの<a href="#viewFileStatus">ステータス</a>が、斜線の左側に緑で表示されます。 </p>
+		  <p class="align-center"><img alt="ステージング領域での新規" border="1/" src="../../../images_www/articles/74/ide/git/new.png"></p>
+		<p>アクションは、フォルダに対して起動した場合に、NetBeans IDEフラット・フォルダ内容構造を順守しながら、再帰的に動作します。  </p>
+		
+
+
+		
+        
+		</div>
+		
+		<div>
+		<a name="editing"></a>
+        <h2>ファイルの編集</h2>
+        
+        <p>Gitバージョン管理プロジェクトをIDEで開くと、ソースの変更を開始できます。NetBeans IDEで開く任意のプロジェクトと同様に、(「プロジェクト」(Ctrl-1)、「ファイル」(Ctrl-2)、「お気に入り」(Ctrl-3)ウィンドウなどの) IDEのウィンドウで表示されているファイルのノードをダブルクリックすると、ファイルをソース・エディタで開くことができます。</p>
+		<p>IDEでソース・ファイルを操作する場合、自由に使用できる様々なUIコンポーネントがあります。これらは、表示およびバージョン管理コマンドの操作で役立ちます。</p>
+        <ul>
+		<li><a href="#viewChanges">ソース・エディタでの変更の表示</a></li>
+		<li><a href="#viewFileStatus">ファイルのステータス情報の表示</a></li>
+		<li><a href="#revert">変更を元に戻す</a></li>
+		</ul>
+        <a name="viewChanges"></a>
+		<h3>ソース・エディタでの変更の表示</h3>
+		<p>IDEのソース・エディタでバージョン管理されたファイルを開くと、Gitリポジトリからの基本バージョンに照らしあわせながら、そのファイルに行われた変更がリアル・タイムで表示されます。作業に伴って、IDEはソース・エディタのマージンに色分けを使用し、次の情報を伝えます。</p>
+		<table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>青</strong> (<span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で変更された行を示します。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>緑</strong> (<span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で追加された行を示します。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>赤</strong> (<span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で除去された行を示します。</td>
+                </tr>
+</table>
+
+
+            <p>ソース・エディタの左側のマージンには、行ごとに発生した変更が表示されています。行を変更すると、その変更がすぐに左側のマージンに表示されます。</p>
+			<p class="align-center"><img alt="左マージン" border="1/" src="../../../images_www/articles/74/ide/git/left-margin.png"></p>	
+
+            <p class="notes"><b>注意:</b> マージンの色グループをクリックして、バージョン管理コマンドをコールできます。たとえば、下の図は、赤いアイコンをクリックすると使用可能なウィジェットを示しており、ローカル・コピーから行が除去されたことを示します。</p>
+				<p class="align-center"><img alt="使用可能なウィジェット" border="1/" src="../../../images_www/articles/74/ide/git/left-widgets.png"></p>	
+
+            <p>ソース・エディタの右側のマージンには、上から下に向かって、ファイル全体に行われた変更の概要が表示されます。ファイルに変更を行うと、すぐに色分けが生成されます。</p>
+				<p class="align-center"><img alt="右マージン" border="1/" src="../../../images_www/articles/74/ide/git/right-margin.png"></p>	
+
+
+            <p class="notes"><b>注意</b>: マージンの特定の場所をクリックすると、インライン・カーソルがファイルのその場所にすぐに移動します。影響を受ける行数を表示するには、右側のマージンの色つきアイコンの上にマウスを動かします。</p>
+				<p class="align-center"><img alt="使用可能なウィジェット" border="1/" src="../../../images_www/articles/74/ide/git/right-lines-number.png"></p>	
+		
+        <a name="viewFileStatus"></a>
+		<h3>ファイルのステータス情報の表示</h3>
+        <p>「プロジェクト」(Ctrl-1)、「ファイル」(Ctrl-2)、「お気に入り」(Ctrl-3)または「バージョン管理」ビューで作業する場合、IDEには、ファイルのステータス情報を表示するのに役立つ視覚機能がいくつかあります。次の例では、バッジ(例: <img alt="青のバッジ" src="../../../images_www/articles/74/ide/git/blue-badge.png" />)、ファイル名の色、および隣接するステータス・ラベルすべての相互の対応方法を確認し、ファイルに対するバージョン管理情報をトラックする単純だが効果的な方法について説明します。
+
+</p>
+                <p class="align-center"><img alt="ファイルのステータス情報" class="b-all" src="../../../images_www/articles/74/ide/git/file-status.png" /></p>
+
+                <p>バッジ、色分け、ファイル・ステータス・ラベル、およびおそらく最も重要なGit差分ビューアはすべて、IDEでのバージョン管理情報を効率的に表示し、管理する能力に貢献します。</p>
+
+                <ul>
+                <li><a href="#badges">バッジと色分け</a></li>
+                <li><a href="#fileStatus">ファイル・ステータス・ラベル</a></li>
+               	<li><a href="#versioningView">Gitバージョン管理ビュー</a></li>
+            </ul>
+
+
+                <a name="badges"></a>
+                <h4>バッジと色分け</h4>
+
+                <p>バッジはプロジェクト、フォルダおよびパッケージ・ノードに適用され、そのノードに含まれているファイルのステータスを示します。</p>
+
+                <p>バッジに使用される色のスキームを次の表に示します。</p>
+				<a name="badges-color-scheme"></a>
+
+                <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col" style="width:110px">UIコンポーネント</th>
+                        <th class="tblheader" scope="col">説明</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>青のバッジ</strong>(<img alt="青のバッジ" src="../../../images_www/articles/74/ide/git/blue-badge.png" />)</td>
+                        <td class="tbltd1">作業ツリー内の変更、追加、または削除されたファイルの存在を示します。パッケージの場合、このバッジは、パッケージ自体にのみ適用され、そのサブパッケージには適用されません。プロジェクトまたはフォルダの場合、このバッジはその項目または含まれるサブフォルダ内の内容の変更を示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>赤のバッジ</strong>(<img alt="赤のバッジ" src="../../../images_www/articles/74/ide/git/red-badge.png" />)</td>
+                        <td class="tbltd1"><em>競合する</em>ファイルを含むプロジェクト、フォルダまたはパッケージをマークします。パッケージの場合、このバッジは、パッケージ自体にのみ適用され、そのサブパッケージには適用されません。プロジェクトまたはフォルダの場合、このバッジはその項目または含まれるサブフォルダ内の競合を示しています。</td>
+                    </tr>
+                </table>
+
+                <a name="color-coding-table"></a>
+                <p>色分けは、リポジトリに照らして、現在のステータスを示す目的でファイル名に適用されます。</p>
+
+                <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col" style="width:40px">色</th>
+                        <th class="tblheader" scope="col">例</th>
+                        <th class="tblheader" scope="col">説明</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><strong>特定の色なし(黒)</strong></td>
+                        <td class="tbltd1"><img alt="黒のテキスト" src="../../../images_www/articles/74/ide/git/black-text.png" /></td>
+                        <td class="tbltd1">ファイルに変更がないことを示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>青</strong></td>
+                        <td class="tbltd1"><img alt="青のテキスト" src="../../../images_www/articles/74/ide/git/blue-text.png" /></td>
+                        <td class="tbltd1">ファイルがローカルに変更されたことを示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>緑</strong></td>
+                        <td class="tbltd1"><img alt="緑のテキスト" src="../../../images_www/articles/74/ide/git/green-text.png" /></td>
+                        <td class="tbltd1">ファイルがローカルに追加されたことを示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>赤</strong></td>
+                        <td class="tbltd1"><img alt="赤のテキスト" src="../../../images_www/articles/74/ide/git/red-text.png" /></td>
+                        <td class="tbltd1">ファイルにマージの競合があることを示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>グレー</strong></td>
+                        <td class="tbltd1"><img alt="グレーのテキスト" src="../../../images_www/articles/74/ide/git/gray-text.png" /></td>
+                        <td class="tbltd1">ファイルがGitによって無視され、バージョン管理コマンド(更新やコミットなど)に含まれないことを示します。ファイルはバージョン管理されている場合、無視できません。</td>
+                    </tr>
+                    
+                </table>
+
+                <a name="fileStatus"></a>
+                <h4>ファイル・ステータス・ラベル</h4>
+				<p>IDEはファイルの2つのステータス値を表示します。</p>
+<ul>
+    <li>ファイルの作業ツリーと索引状態の相違を示すステータス。</li>
+    <li>ファイルの索引状態と現在のHEADコミットの相違を示すステータス。</li> 
+  </ul>
+
+     <p>ファイル・ステータス・ラベルは、バージョン管理ファイルのステータスを、IDEのウィンドウにテキストで示します。</p>
+					 <table width="300px">
+                    <tr>
+                        <th class="tblheader" scope="col" style="width:90px">ステータス・ラベル</th>
+                        
+                        <th class="tblheader" scope="col">意味</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><strong>-</strong></td>
+                       
+                        <td class="tbltd1 align-center">変更なし</td>
+                    </tr>
+					<tr>
+                        <td class="tbltd1 align-center"><strong>A</strong></td>
+                       
+                        <td class="tbltd1 align-center">追加済</td>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><strong>U</strong></td>
+                       
+                        <td class="tbltd1 align-center">更新済であるが未マージ</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>M</strong></td>
+                      
+                        <td class="tbltd1 align-center">変更</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>D</strong></td>
+                       
+                        <td class="tbltd1 align-center">削除済</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>I</strong></td>
+                        
+                        <td class="tbltd1 align-center">無視</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>R</strong></td>
+                       
+                        <td class="tbltd1 align-center">名前変更済</td>
+                    </tr>
+  </table>
+
+					
+	<p>デフォルトで、IDEは、ファイルをウィンドウに一覧表示するときに、そのファイルの右側にステータス情報(新規、変更済、無視など)およびフォルダ情報をグレー・テキストで表示します。 </p>
+
+                       <p class="align-center"> <img alt="ファイル名の横に表示されたファイル・ラベル" class="b-all margin-around" src="../../../images_www/articles/74/ide/git/file-labels.png" /></p>
+      <p>マージの競合があるファイルは未マージステータスを示し、一般にユーザーの明示的なアクションによって解決されるまで、赤い色で注釈が付けられます。マージされていないファイルのステータス・ラベルは、シナリオによって異なります(たとえば、<tt>A/A</tt> - 未マージ、両方追加済)。</p>         
+
+               
+              
+              
+                <p class="tips">ファイル・ステータス・ラベルは、メイン・メニューから「<tt>表示</tt>」>「<tt>バージョン・ラベルを表示</tt>」を選択して、オンとオフを切り替えできます。</p>
+
+ <a name="versioningView"></a>
+                <h4>Gitバージョン管理ビュー</h4>
+<p>Gitバージョン管理ビューは、ローカルの作業ツリーの選択されたフォルダ内でファイルに行われた変更のすべてを、リアル・タイムで一覧表示します。これはIDEの下のパネルにデフォルトで開き、追加、削除または変更されたファイルを一覧表示します。</p>
+
+                <p>バージョン管理ビューを開くには、(「プロジェクト」ウィンドウ、「ファイル」ウィンドウまたは「お気に入り」ウィンドウなどから)バージョン管理ファイルまたはフォルダを選択し、右クリック・メニューから「<tt>Git</tt>」>「<tt>変更を表示</tt>」を選択するか、またはメイン・メニューから「<tt>チーム</tt>」>「<tt>変更を表示</tt>」を選択します。IDEの最下部に次のウィンドウが表示されます。</p>
+                    <p class="align-center"> 
+						 <a href="../../../images_www/articles/74/ide/git/versioning-view.png" rel="lytebox" title="HEADと作業ツリー間の変更を表示する「バージョン管理」ビュー"> <img alt="HEADと作業ツリー間の変更を表示する「バージョン管理」ビュー" border="1/" src="../../../images_www/articles/74/ide/git/versioning-view-small.png"></a></p>
+
+                <p>デフォルトでは、バージョン管理ビューは、作業ツリー内の選択されたパッケージまたはフォルダ内の変更されたすべてのファイルを一覧表示します。ツールバーのボタンを使用して、索引とHEAD、作業ツリーと索引、または作業ツリーとHEAD間で相違があるファイルの一覧を表示するように選択できます。一覧表示されたファイルの上にある列の見出しをクリックして、名前、ステータス、または場所でファイルをソートすることもできます。</p>
+
+                <p>「バージョン管理」ビューのツールバーには、一覧に表示されているすべてのファイルに対して一般的なGitタスクを呼び出すことができるボタンも用意されています。次の表は、「バージョン管理」ビューのツールバーにあるGitコマンドをまとめています。</p>
+
+                <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col">アイコン</th>
+                        <th class="tblheader" scope="col" style="width:110px">名前</th>
+                        <th class="tblheader" scope="col">機能</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「HEADと作業ツリー間の変更」アイコン" src="../../../images_www/articles/74/ide/git/changes-head-wt.png" /></td>
+                        <td class="tbltd1 align-center"><strong>HEADと作業ツリー間の変更</strong></td>
+                        <td class="tbltd1">すでにステージングされているか、変更または作成のみされていて、まだステージングされていないファイルの一覧を表示します。</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「HEADと索引間の変更」アイコン" src="../../../images_www/articles/74/ide/git/changes-head-index.png" /></td>
+                        <td class="tbltd1 align-center"><strong>HEADと索引間の変更</strong></td>
+                        <td class="tbltd1">ステージングされているファイルの一覧を表示します。</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「索引と作業ツリー間の変更」アイコン" src="../../../images_www/articles/74/ide/git/changes-index-wt.png" /></td>
+                        <td class="tbltd1 align-center"><strong>索引と作業ツリー間の変更</strong></td>
+                        <td class="tbltd1">ステージング済の状態と作業ツリーの状態に相違があるファイルを表示します。</td>
+                    </tr>
+					
+					
+					
+					
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「ステータスのリフレッシュ」アイコン" src="../../../images_www/articles/74/ide/git/refresh.png" /></td>
+                        <td class="tbltd1 align-center"><strong>ステータスのリフレッシュ</strong></td>
+                        <td class="tbltd1">選択したファイルとフォルダのステータスをリフレッシュします。「バージョン管理」ビューに表示されたファイルは、外部で行われた可能性のある任意の変更を反映してリフレッシュできます。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「差分を開く」アイコン" src="../../../images_www/articles/74/ide/git/open-diff.png" /></td>
+                        <td class="tbltd1 align-center"><strong>差分を開く</strong></td>
+                        <td class="tbltd1">差分ビューアを開くと、ローカルのコピーとリポジトリで保持されているバージョンを並べた比較が表示されます。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「チェックアウト・パス」アイコン" src="../../../images_www/articles/74/ide/git/update.png" /></td>
+                        <td class="tbltd1 align-center"><strong>変更内容を元に戻す</strong></td>
+                        <td class="tbltd1">「<a href="#revertdialog">変更内容を元に戻す</a>」ダイアログ・ボックスを表示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「変更をコミット」アイコン" src="../../../images_www/articles/74/ide/git/commit-button.png" /></td>
+                        <td class="tbltd1 align-center"><strong>変更をコミット</strong></td>
+                        <td class="tbltd1">「<a href="#commitdialog">コミット</a>」ダイアログ・ボックスを表示します。</td>
+                    </tr>
+                </table>
+
+
+                <p>「バージョン管理」ビューで、変更したファイルに対応する表の行を選択し、右クリック・メニューからコマンドを選択すると、他のGitコマンドにアクセスできます。</p>
+
+
+                     <p class="align-center">
+					 <a href="../../../images_www/articles/74/ide/git/versioning-right-click.png" rel="lytebox" title="「バージョン管理」ウィンドウの選択したファイルに対して表示された右クリック・メニュー"> <img alt="「バージョン管理」ウィンドウの選択したファイルに対して表示された右クリック・メニュー" border="1/" src="../../../images_www/articles/74/ide/git/versioning-right-click-small.png"></a></p>
+
+
+               
+
+
+
+           
+                <a name="diff"></a>
+                <h3>ファイル・リビジョンの比較</h3>  				
+
+                <p>ファイル・バージョンの比較は、バージョン管理されているプロジェクトでの作業で共通のタスクです。IDEでは、「差分」コマンドを使用して、リビジョンを比較できます。</p>
+				<p class="notes"><b>注意:</b> 複数の比較モード(「HEADとの差分」、「トラック済との差分」、「差分の対象」)がIDEで使用可能です。 </p>
+				<ol>
+				<li>バージョン管理されたファイルまたはフォルダを選択します(「<tt>プロジェクト</tt>」、「<tt>ファイル</tt>」、「<tt>お気に入り</tt>」ウィンドウなどから)。</li>
+				<li>メイン・メニューから「<tt>チーム</tt>」>「<tt>差分</tt>」>「<tt>HEADとの差分</tt>」を選択します。<br />選択したファイルとリビジョンについてグラフィカルな差分ビューアがIDEのメイン・ウィンドウで開きます。差分ビューアには2つのコピーが並んだパネルに表示されます。右側により現在に近いコピーが表示されるため、作業ツリーに対してリポジトリ・リビジョンを比較すると、右パネルに作業ツリーが表示されます。
+                <p class="align-center"><a href="../../../images_www/articles/74/ide/git/diff-viewer.png" rel="lytebox" title="差分ビューア"> <img alt="差分ビューア" border="1/" src="../../../images_www/articles/74/ide/git/diff-viewer-small.png"></a></p>
+						
+						 <p>差分ビューアは、バージョン管理の変更を表示する場所に使用されているのと同じ<a href="#color-coding-table">色分け</a>を利用します。前に表示したスクリーン・ショットの緑色のブロックは、より現在に近いリビジョンに追加された内容を示します。赤いブロックは、前のリビジョンの内容が、より最近のリビジョンから除去されたことを示します。青は、強調表示された行で変更が発生したことを示します。</p>
+						  <p class="notes"><b>注意:</b> 他のリビジョンは、差分ビューア・ツールバーの下の「<tt>差分</tt>」および「<tt>送信先</tt>」ドロップダウン・リストから選択できます。</p></li>
+                </ol>
+                  
+                
+
+    <p>差分ビューアのツールバーには、一覧に表示されているすべてのファイルに対して一般的なGitタスクを呼び出すことができるボタンも用意されています。次の表は、差分ビューアのツールバーにあるGitコマンドをまとめています。</p>
+
+                <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col">アイコン</th>
+                        <th class="tblheader" scope="col" style="width:130px">名前</th>
+                        <th class="tblheader" scope="col">機能</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「HEADと作業ツリー間の変更」アイコン" src="../../../images_www/articles/74/ide/git/changes-head-wt.png" /></td>
+                        <td class="tbltd1 align-center"><strong>HEADと作業ツリー間の変更</strong></td>
+                        <td class="tbltd1">すでにステージングされているか、変更または作成のみされていて、まだステージングされていないファイルの一覧を表示します。</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「HEADと索引間の変更」アイコン" src="../../../images_www/articles/74/ide/git/changes-head-index.png" /></td>
+                        <td class="tbltd1 align-center"><strong>HEADと索引間の変更</strong></td>
+                        <td class="tbltd1">ステージングされているファイルの一覧を表示します。</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「索引と作業ツリー間の変更」アイコン" src="../../../images_www/articles/74/ide/git/changes-index-wt.png" /></td>
+                        <td class="tbltd1 align-center"><strong>索引と作業ツリー間の変更</strong></td>
+                        <td class="tbltd1">ステージング済の状態と作業ツリーの状態に相違があるファイルを表示します。 </td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「次の差分へ」アイコン" src="../../../images_www/articles/74/ide/git/nextdiff.png" /></td>
+                        <td class="tbltd1 align-center"><strong>次の差分へ</strong></td>
+                        <td class="tbltd1">ファイル内の次の差分を表示します。</td>
+                    </tr>
+					
+					<tr>
+                        <td class="tbltd1 align-center"><img alt="「前の差分へ」アイコン" src="../../../images_www/articles/74/ide/git/prevdiff.png" /></td>
+                        <td class="tbltd1 align-center"><strong>前の差分へ</strong></td>
+                        <td class="tbltd1">ファイル内の前の差分を表示します。</td>
+                    </tr>
+					
+					
+					
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「ステータスのリフレッシュ」アイコン" src="../../../images_www/articles/74/ide/git/refresh.png" /></td>
+                        <td class="tbltd1 align-center"><strong>ステータスのリフレッシュ</strong></td>
+                        <td class="tbltd1">選択したファイルとフォルダのステータスをリフレッシュします。「バージョン管理」ウィンドウに表示されたファイルは、外部で行われた可能性のある任意の変更を反映してリフレッシュできます。</td>
+                    </tr>
+                   
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「チェックアウト・パス」アイコン" src="../../../images_www/articles/74/ide/git/update.png" /></td>
+                        <td class="tbltd1 align-center"><strong>変更内容を元に戻す</strong></td>
+                        <td class="tbltd1">「<a href="#revertdialog">変更内容を元に戻す</a>」ダイアログ・ボックスを表示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「変更をコミット」アイコン" src="../../../images_www/articles/74/ide/git/commit-button.png" /></td>
+                        <td class="tbltd1 align-center"><strong>変更をコミット</strong></td>
+                        <td class="tbltd1">「<a href="#commitdialog">コミット</a>」ダイアログ・ボックスを表示します。</td>
+                    </tr>
+                </table>
+
+
+   
+
+           <p>作業ツリー内のローカル・コピーで差分の取得を実行する場合、IDEの差分ビューア内から直接変更を行うことができます。これを行うには、カーソルを差分ビューアの右ペインに置き、それに従ってファイルを変更するか、または強調表示された各変更の前後で表示されるインライン・アイコンを使用します。</p>
+
+                <table width="600px">
+				 <tr>
+                        <th class="tblheader" scope="col">アイコン</th>
+                        <th class="tblheader" scope="col" style="width:60px">名前</th>
+                        <th class="tblheader" scope="col">機能</th>
+                  </tr>
+                    <tr>
+					 <td class="tbltd1 align-center"><img alt="「置換」アイコン" src="../../../images_www/articles/74/ide/git/insert.png" /></td>
+                        <td class="tbltd1 align-center" style="width:80px"><strong>置換</strong></td>
+                        <td class="tbltd1">強調表示されたテキストを作業ツリー・コピーに挿入します。</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="「すべて移動」アイコン" src="../../../images_www/articles/74/ide/git/arrow.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>すべて移動</strong> </td>
+                        <td class="tbltd1">ローカル作業ツリー・コピー全体を元に戻します。</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="「除去」アイコン" src="../../../images_www/articles/74/ide/git/remove.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>除去</strong></td>
+                        <td class="tbltd1">ローカル作業ツリー・コピーから強調表示されたテキストを除去します。</td>
+                    </tr>
+                </table>
+				 
+               
+          
+
+                <a name="revert"></a>
+                <h3>変更を元に戻す</h3>
+				<p>作業ツリー内の選択したファイルに行ったローカルの変更をスローし、それらのファイルを索引またはHEAD内のファイルで置き換えるには、次を実行します。</p> 
+				<ol>
+				<li>バージョン管理されたファイルまたはフォルダを選択します(「<tt>プロジェクト</tt>」、「<tt>ファイル</tt>」、「<tt>お気に入り</tt>」ウィンドウなどから)。</li>
+				<li>メイン・メニューから「<tt>チーム</tt>」>「<tt>変更内容を元に戻す</tt>」を選択します。<br /><a name="revertdialog"></a>「<tt>変更内容を元に戻す</tt>」ダイアログ・ボックスが表示されます。
+				
+				<p class="align-center"><img alt="「変更内容を元に戻す」ダイアログ・ボックス" class="b-none margin-around" src="../../../images_www/articles/74/ide/git/revert.png" /></p></li> 
+				<li><a name="three"></a>追加のオプション(「<tt>索引のコミットされていない変更のみをHEADに戻す</tt>」など)を指定します。 </li>
+				<li>「元に戻す」をクリックします。</li>
+				</ol>
+				<p>IDEによって、選択したファイルが上の<a href="#three">ステップ3</a>で指定したファイルで置き換えられます。</p>
+</div>    
+       
+<div>
+                <a name="committing"></a>
+<h2>リポジトリへのソースのコミット</h2>
+<p>ファイルをGitリポジトリにコミットするには、次を実行します。</p>
+<ol>
+<li>「<tt>プロジェクト</tt>」ウィンドウで、コミットするファイルを右クリックします。</li> 
+<li>コンテキスト・メニューで、「<tt>Git</tt>」>「<tt>コミット</tt>」を選択します。 
+		 <p><a name="commitdialog"></a>「<tt>コミット</tt>」ダイアログ・ボックスが表示されます。</p>
+		<p class="align-center">
+		 <a href="../../../images_www/articles/74/ide/git/commit.png" rel="lytebox" title="「コミット」ダイアログ・ボックス"> <img alt="「コミット」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/74/ide/git/commit-small.png"></a>
+		</p>
+					  <p>「<tt>コミット</tt>」ダイアログ・ボックスには次のコンポーネントが含まれます。</p>
+
+                      <ul>
+			<li>コミットされる変更を説明するための「<tt>コミット・メッセージ</tt>」テキスト領域</li>
+			<li>必要に応じて、変更を行ったユーザーと物理的にファイルをコミットしたユーザーを区別できる「<tt>作成者</tt>」および「<tt>コミッタ</tt>」ドロップダウン・リスト。</li>
+			<li>「<tt>コミットするファイル</tt>」セクションには、次が表示されます。
+                <ul>
+                <li>変更されたすべてのファイル </li>
+                <li>作業ツリーで(ローカルで)削除されたすべてのファイル </li>
+                <li>すべての新規ファイル(Gitリポジトリにまだ存在しないファイル)</li>
+                <li>名前を変更したすべてのファイル。
+				<p>実際のコミットが実行されるモードを切り替える2つのトグル・ボタンがここで利用できます。 </p> 
+				 <table width="700px">
+                    <tr>
+                        <th class="tblheader" scope="col" >UIコンポーネント</th>
+						<th class="tblheader" scope="col" style="width:300px">名前</th>
+                        <th class="tblheader" scope="col">説明</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="HEADと索引間の変更" src="../../../images_www/articles/74/ide/git/changes-head-index.png" /></td>
+                        <td class="tbltd1 align-center"><strong>HEADと索引間の変更</strong></td>
+						<td class="tbltd1">ステージングされているファイルの一覧を表示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="HEADと作業ツリー間の変更" src="../../../images_www/articles/74/ide/git/changes-head-wt.png" />                            </td>
+                        <td class="tbltd1 align-center"><strong>HEADと作業ツリー間の変更</strong></td>
+							<td class="tbltd1">すでにステージングされているか、変更または作成のみされていて、まだステージングされていないファイルの一覧を表示します。</td>
+                    </tr>
+                </table></li>
+                </ul>
+				<p class="notes"><b>注意</b>: ここで、コミットから個々のファイルを除外するかどうかを指定するには、「<tt>コミット</tt>」という最初の列のチェックボックスを選択解除するか、「<tt>コミット・アクション</tt>」列のファイル行を右クリックし、ポップアップ・メニューから「<tt>コミットから除外</tt>」を選択します。ここで差分ビューアを表示するには、「<tt>コミット・アクション</tt>」列のファイル行を右クリックし、ポップアップ・メニューから「<tt>差分</tt>」を選択します。</p></li>
+			    <li>コミットされる変更に関する問題をトラックするための「<tt>問題を更新</tt>」セクション。
+			 <p class="notes"><b>注意</b>: IDEで問題のトラックを開始するには、JIRAまたはSubversionプラグインをインストールする必要があります。</p></li>
+            </ul></li>
+
+           
+
+                      <li>「<tt>コミット・メッセージ</tt>」テキスト領域にコミット・メッセージを入力します。または、次のいずれかを実行できます。
+                    <ul><li>右上隅にある「<tt>最近のメッセージ</tt>」(<img alt="「最近のメッセージ」アイコン" src="../../../images_www/articles/74/ide/git/recent-msgs.png" />)アイコンをクリックして、以前使用したメッセージのリストを表示して選択します。</li>
+					<li>右上隅にある「<tt>テンプレートをロード</tt>」(<img alt="「テンプレートを選択」アイコン" src="../../../images_www/articles/74/ide/git/msg-template.png" />)アイコンをクリックして、メッセージ・テンプレートを選択します。</li>
+					</ul>
+  </li>
+                <li>個々のファイルのアクションを指定して「<tt>コミット</tt>」をクリックします。<br />IDEによってコミットが実行され、スナップショットがリポジトリに保存されます。コミット・アクションが実行されると、インタフェースの右下にあるIDEのステータス・バーが表示されます。コミットに成功すると、「<tt>プロジェクト</tt>」、「<tt>ファイル</tt>」および「<tt>お気に入り</tt>」ウィンドウのバージョン管理バッジが消え、コミットされたファイルの色分けが黒に戻ります。</li>		 
+</ol>
+</div>
+<div>
+		<a name="branch"></a>
+		<h2>分岐の操作</h2>
+		<p>IDEのGitサポートでは、分岐を使用して、コード・ベース全体の様々なバージョンを管理できます。</p>
+		<p>IDEで分岐を操作する場合、次のアクションがサポートされます。</p>
+        <ul>
+		<li><a href="#branchCreate">作成</a></li>
+		<li><a href="#branchCheckOut">チェックアウト</a></li>
+		<li><a href="#branchMerge">マージ</a></li>
+		<li><a href="#branchDelete">削除</a></li>
+		</ul>
+        <a name="branchCreate"></a>
+		<h3>分岐の作成</h3>
+		<p>メイン・トランクを妨げずに、安定化や実験の目的で、別個のバージョンのファイル・システムを操作する場合に、ローカル分岐を作成するには、次の完了を実行します。</p>
+		<ol>
+		<li>「プロジェクト」または「ファイル」ウィンドウで、分岐を作成するリポジトリからプロジェクトまたはフォルダを選択します。</li>
+		<li>メイン・メニューで「チーム」>「分岐/タグ」>「分岐の作成」を選択します。
+		 <p class="notes"><b>注意:</b> または、バージョン管理されたプロジェクトまたはフォルダを右クリックし、ポップアップ・メニューから「Git」>「分岐/タグ」>「分岐の作成」を選択します。</p>
+		「分岐の作成」ダイアログ・ボックスが表示されます。
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/create-branch.png" rel="lytebox" title="「分岐の作成」ダイアログ・ボックス"> <img alt="「分岐の作成」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/74/ide/git/create-branch-small.png"></a></p>
+		 </li>
+		<li>「分岐名」フィールドで、作成する分岐の名前を入力します。</li>
+		<li>コミットID、既存の分岐、またはタグ名を「リビジョン」フィールドに入力して、選択した項目の特定のリビジョンを入力するか、「選択」を押して、リポジトリで管理されているリビジョンの一覧を表示します。</li>
+		<li>(オプション)「リビジョンを選択」ダイアログ・ボックスで、「分岐」を展開し、必要な分岐を選択して、隣接する一覧のコミットIDを指定し、「選択」を押します。</li>
+		<li>分岐させるリビジョンに固有の「コミットID」、「作成者」、「メッセージ」フィールドの情報を確認して、「作成」をクリックします。<br />分岐がGitリポジトリの<tt>「分岐」/「ローカル」</tt>フォルダに追加されます。
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/branch-added.png" rel="lytebox" title="Gitリポジトリ: 作成された新しい分岐"> <img alt="追加された分岐" border="1/" src="../../../images_www/articles/74/ide/git/branch-added-small.png"></a></p></li>
+		</ol>
+		 <a name="branchCheckOut"></a>
+		<h3>チェックアウト</h3>
+		<p>すでに存在する分岐上のファイルを編集する必要がある場合は、分岐をチェックアウトすることによって、ファイルを作業ツリーにコピーできます。</p>
+		
+		<p>リビジョンをチェックアウトするには、次を実行します。 </p>
+		<ol>
+		<li>メイン・メニューから「チーム」>「チェックアウト」>「リビジョンのチェックアウト」を選択します。<br />「選択されたリビジョンをチェックアウト」ダイアログ・ボックスが表示されます。
+				<p class="align-center"><a href="../../../images_www/articles/74/ide/git/chkout-rev.png" rel="lytebox" title="選択されたリビジョンをチェックアウト"> <img alt="選択されたリビジョンをチェックアウト" border="1/" src="../../../images_www/articles/74/ide/git/chkout-rev-small.png"></a></p></li>
+					 <li>コミットID、既存の分岐またはタグ名を「リビジョン」フィールドに入力して、必要なリビジョンを指定するか、「選択」を押して、リポジトリで管理されているリビジョンの一覧を表示します。</li>
+					 <li>前のステップで「選択」を押さなかった場合、スキップします。「リビジョンを選択」ダイアログ・ボックスで、「分岐」を展開し、必要な分岐を選択して、必要に応じて、隣接する一覧のコミットIDを指定し、「選択」を押します。
+					 <p class = "notes"><b>注意:</b> 指定したリビジョンが分岐名でマークされていない有効なコミットを表している場合、HEADがデタッチされ、分岐上にいなくなります。</p></li>
+					 <li>チェックアウトされるリビジョンに固有の「コミットID」、「作成者」、「メッセージ」フィールド情報を確認します。</li>
+					 <li>チェックアウトしたリビジョンから新しい分岐を作成するには、「新しい分岐としてチェックアウト」オプションを選択し、「分岐名」フィールドに名前を入力します。</li>
+					 <li>「チェックアウト」を押して、リビジョンをチェックアウトします。<br />作業ツリーおよび索引内のファイルが、指定したリビジョンのバージョンに一致するように更新されます。</li>
+		</ol>
+		<p class="notes"><b>注意:</b> すでに存在する分岐(いずれかの分岐の一番上にないコミットなど)にファイルを切り替える場合、「チーム」>「Git」>「分岐」>「分岐に切替え」コマンドを使用し、「選択された分岐に切替え」ダイアログ・ボックスで分岐を指定して、(オプションで)新しい分岐としてチェックアウトし、「切替え」を押します。</p>
+		<p>IDEは、IDEで現在選択されているファイル、フォルダまたはプロジェクトの状況に応じたチェックアウトをサポートしています。索引から、一部のファイル(分岐ではなく)をチェックアウトするには、次の手順を完了します。 </p>
+		<ol>
+		<li>メイン・メニューから「チーム」>「チェックアウト」>「ファイルのチェックアウト」を選択します。<br />「選択されたパスをチェックアウト」ダイアログ・ボックスが表示されます。
+				<p class="align-center"><a href="../../../images_www/articles/74/ide/git/chkout-path.png" rel="lytebox" title="選択されたパスをチェックアウト"> <img alt="選択されたパスをチェックアウト" border="1/" src="../../../images_www/articles/74/ide/git/chkout-path-small.png"></a></p></li>
+		  <li>「選択されたリビジョンからのエントリで索引を更新」オプションを選択します。<br />選択した場合、チェックアウト前に選択したリビジョンの状態で索引が更新されます(作業ツリーと索引の両方の選択したファイルが更新されます)。 </li>
+					 <li>コミットID、既存の分岐またはタグ名を「リビジョン」フィールドに入力して、必要なリビジョンを指定するか、「選択」を押して、リポジトリで管理されているリビジョンの一覧を表示します。</li>
+					 <li>前のステップで「選択」を押さなかった場合、スキップします。「リビジョンを選択」ダイアログ・ボックスで、「分岐」を展開し、必要な分岐を選択して、必要に応じて、隣接する一覧のリビジョン番号を指定し、「選択」を押します。</li>
+					 <li>「チェックアウト」を押して、チェックアウトを完了します。</li>
+		</ol>
+		
+		 <a name="branchMerge"></a>
+		<h3>マージ</h3>
+		<p><span title="Monday, September 5, 2011 7:59:41 AM PDT">リポジトリ・リビジョンから変更を作業ツリーに移行するには</span>、次のように実行します。</p>
+		<ol>
+		<li>メイン・メニューから「チーム」>「分岐/タグ」>「リビジョンをマージ」を選択します。<br />「リビジョンをマージ」ダイアログ・ボックスが表示されます。
+		<p class="align-center"><a href="../../../images_www/articles/74/ide/git/merge.png" rel="lytebox" title="リビジョンをマージ"> <img alt="リビジョンをマージ" border="1/" src="../../../images_www/articles/74/ide/git/merge-small.png"></a></p></li>
+		<li>コミットID、既存の分岐またはタグ名を「リビジョン」フィールドに入力して、必要なリビジョンを指定するか、「選択」を押して、リポジトリで管理されているリビジョンの一覧を表示します。</li>
+		<li>前のステップで「選択」を押さなかった場合、スキップします。「リビジョンを選択」ダイアログ・ボックスで、「分岐」を展開し、必要な分岐を選択して、必要に応じて、隣接する一覧のコミットIDを指定し、「選択」を押します。</li>
+		<li>「マージ」を押します。<br />現在の分岐、作業ツリーの内容、指定した分岐間の3方向のマージが実行されます。
+		<p class="notes"><b>注意:</b> マージの競合が発生した場合、競合するファイルが<a href="#badges">赤のバッジ</a>でマークされ、競合が示されます。</p>
+		<p class="notes"><b>注意:</b> マージ後、変更をHEADに追加するために、変更を<a href="#committing">コミット</a>する必要があります。</p>
+		</li>
+		</ol>
+		
+		 <a name="branchDelete"></a>
+		<h3>分岐の削除</h3>
+		<p>不要なローカル分岐を削除するには、次の手順を完了します。 </p>
+		<ol>
+		<li>メイン・メニューから「チーム」>「リポジトリ・ブラウザ」を選択します。</li>
+		<li>Gitリポジトリ・ブラウザで、削除する分岐を選択します。<p class="notes"><b>注意:</b> 分岐は非アクティブである、つまり現在作業ツリーにチェックアウトされていない必要があります。</p></li>
+		<li>選択した分岐を右クリックし、ポップアップ・メニューから「分岐を削除」を選択します。</li>
+		<li>「分岐を削除」ダイアログ・ボックスで、「OK」を押して、分岐の削除を確認します。<br />分岐がローカル・リポジトリとGitリポジトリ・ブラウザから除去されます。</li>
+		</ol></div>
+		<div>
+		<a name="remote"></a>
+		<h2>リモート・リポジトリの操作</h2>
+		<p>他の開発者と協力する場合、作業を共有する必要があり、これには、インターネットまたはネットワーク上でホストされるリモート・リポジトリとのデータのフェッチ、プッシュ、プルが含まれます。</p>
+		<ul>
+		<li><a href="#fetch">フェッチ</a></li>
+		<li><a href="#pull">プル</a></li>
+		<li><a href="#push">プッシュ</a></li>
+		</ul>
+		<a name="fetch"></a>
+		<h3>フェッチ</h3>
+		<p>フェッチは、元のリモート・リポジトリからまだ持っていない変更を取得します。これは、ローカル分岐を変更しません。フェッチはリモート・リポジトリからすべての分岐を取得し、いつでも分岐にマージしたり、単に検査したりすることができます。</p>
+		<p>更新をフェッチするには、次のように実行します。</p>
+		<ol>
+		<li>「チーム」>「リモート」>「フェッチ」を選択します。<br />「リモート・リポジトリからフェッチ」ウィザードが表示されます。
+		   <p class="align-center"><a href="../../../images_www/articles/74/ide/git/fetch.png" rel="lytebox" title="「リモート・リポジトリからフェッチ」ウィザード"> <img alt="「リモート・リポジトリからフェッチ」ウィザード" border="1/" src="../../../images_www/articles/74/ide/git/fetch-small.png"></a></p></li>
+					 <li>ウィザードのリモート・リポジトリ・ページで、構成済のリポジトリ(以前に構成されたリポジトリへのパスを使用する)または「Gitリポジトリの場所を指定」オプション(必要に応じて、まだアクセスされていないリモート・リポジトリへのパス、その名前、ログイン、パスワード、およびプロキシ構成を定義する)を選択し、「次」をクリックします。</li>
+					 <li>ウィザードのリモート分岐ページで、変更をフェッチする分岐を選択し、「終了」をクリックします。<br />リモート分岐のローカル・コピーが作成されます。Gitリポジトリ・ブラウザの「<tt>分岐</tt>」>「<tt>リモート</tt>」ディレクトリで、選択した分岐が更新されます。<br />次に、フェッチした更新をローカル分岐にマージできます。 </li>
+		</ol>
+		
+		<a name="pull"></a>
+		<h3>プル</h3>
+		<p>リモートGitリポジトリから更新をプルすると、リポジトリから変更がフェッチされ、ローカル・リポジトリの現在のHEADにマージされます。<br />プルを実行するには、次の手順を完了します。 </p>
+		<ol>
+		<li>「チーム」>「リモート」>「プル」を選択します。<br />リモート・リポジトリからプル・ウィザードが表示されます。
+		<p class="align-center"><a href="../../../images_www/articles/74/ide/git/pull.png" rel="lytebox" title="「リモート・リポジトリからプル」ウィザード"> <img alt="「リモート・リポジトリからプル」ウィザード" border="1/" src="../../../images_www/articles/74/ide/git/pull-small.png"></a></p></li>
+		<li>ウィザードのリモート・リポジトリ・ページで、構成済のリポジトリ(以前に構成されたリポジトリへのパスを使用する)または「Gitリポジトリの場所を指定」オプション(必要に応じて、まだアクセスされていないリモート・リポジトリへのパス、その名前、ログインとパスワードを定義する)を選択し、「次」をクリックします。 </li>
+		<li>ウィザードのリモート分岐ページで、変更がプルされる分岐を選択し、「終了」をクリックします。<br />ローカル・リポジトリが元のリポジトリと同期されます。</li>
+		</ol>
+		<a name="push"></a>
+		<h3>プッシュ</h3>
+		<p>ローカルGitリポジトリの変更を公開Gitリポジトリに貢献するには、次の手順を実行します。</p>
+		<ol>
+		<li>「チーム」>「リモート」>「プッシュ」を選択します。<br />リモート・リポジトリへプッシュ・ウィザードが表示されます。
+		  <p class="align-center"><a href="../../../images_www/articles/74/ide/git/push.png" rel="lytebox" title="リモート・リポジトリへプッシュ・ウィザード"> <img alt="「リモート・リポジトリへプッシュ」ウィザード" border="1/" src="../../../images_www/articles/74/ide/git/push-small.png"></a></p></li>
+		<li>ウィザードのリモート・リポジトリ・ページで、構成済のリポジトリ(以前に構成されたリポジトリへのパスを使用する)または「Gitリポジトリの場所を指定」オプション(必要に応じて、まだアクセスされていないリモート・リポジトリへのパス、その名前、ログインとパスワードを定義する)を選択し、「次」をクリックします。 </li>
+		<li>ローカル分岐を選択ページで、編集をプッシュする分岐を選択し、「次」をクリックします。</li>
+		<li>ローカル参照を更新ページで、ローカル・リポジトリの「リモート」ディレクトリ内の更新する分岐を選択し、「終了」をクリックします。<br />指定したリモート・リポジトリの分岐がローカル分岐の最新の状態で更新されます。</li>
+		</ol>
+		
+		</div>
+
+
+<a name="summary"></a>
+<h2>サマリー</h2>
+<p>このチュートリアルでは、IDEのGitサポートを使用する場合の標準的なワークフローを説明することによって、IDEの基本的なバージョン管理タスクの実行方法を示しました。IDEに含まれるGit固有の機能の一部を紹介しながら、バージョン管理されたプロジェクトの設定とバージョン管理されたファイルの基本タスクの実行方法を示しました。</p>
+		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Git%20Support%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+
+        <br style="clear:both;"/>
+		<a name="seealso"></a>
+        <h2>関連項目</h2>
+        
+        <p>関連する資料については、次のドキュメントを参照してください。</p>
+        <ul>
+           
+            <li><a href="clearcase.html">NetBeans IDEでのClearCaseサポートの使用</a></li>
+            <li><a href="subversion.html">NetBeans IDEでのSubversionサポートの使用</a></li>
+			<li><a href="mercurial.html">NetBeans IDEでのMercurialサポートの使用</a></li>
+			<li><a href="cvs.html">NetBeans IDEでのCVSサポートの使用</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">NetBeans IDEによるアプリケーションの開発</a>の<i>バージョン管理によるアプリケーションのバージョニング</i></a></li>
+        </ul>
+</body>
+</html>

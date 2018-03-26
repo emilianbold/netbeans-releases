@@ -1,0 +1,869 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Использование Hibernate в веб-приложении – учебное руководство по IDE NetBeans</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <meta name="description" content="Demonstrates how to add support for Hibernate to the IDE and use Hibernate with JSF components in a Web application.">
+   <meta name="KEYWORDS" content="NetBeans, Hibernate, JSF, Tutorial, Database">
+   <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Использование библиотеки Hibernate в веб-приложении</h1>
+<!-- Currently this tutorial does not work -- #243018 -->
+    <p>В этом учебном руководстве IDE NetBeans используется для создания и развертывания веб-приложения, в котором отображаются данные из базы данных. В этом приложении используется платформа Hibernate в качестве уровня сохранения состояния для извлечения и хранения POJO (простых объектов Java) из реляционной базы данных.</p>
+    
+    <p>Библиотека Hibernate предоставляет средства для объектно-реляционного сопоставления (ORM).  В учебном курсе демонстрируется добавление поддержки платформы Hibernate к среде IDE и создание необходимых файлов Hibernate. После создания объектов Java и настройки приложения для использования Hibernate необходимо создать управляемый компонент JSF и страницы JSF 2.0 для отображения данных.</p>
+    
+    <p>Перед началом этого учебного курса рекомендуется ознакомиться со следующей документацией:</p>
+    <ul>
+        <li>Документация по Hibernate на сайте <a href="http://www.hibernate.org/" target="_blank">hibernate.org</a>;</li>
+        <li><a href="quickstart-webapps.html">Введение в разработку веб-приложений</a></li>
+        <li><a href="jsf20-intro.html">Введение в JavaServer Faces 2.x</a></li>
+    </ul>
+
+    <p><b>Содержание</b></p>
+    <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3 и 7.4" class="stamp" src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3 и 7.4">
+    <ul>
+        <li><a href="#01">Создание базы данных</a></li>
+        <li><a href="#02">Создание проекта веб-приложения</a></li>
+        <li><a href="#03">Изменение файла настройки библиотеки Hibernate</a></li>
+        <li><a href="#04">Создание служебного файла <tt>HibernateUtil.java</tt></a></li>
+        <li><a href="#05">Создание файлов отображения библиотеки Hibernate и классов Java</a></li>
+        <li><a href="#06">Создание служебного класса <tt>FilmHelper.java</tt></a></li>
+        <li><a href="#07">Создание управляемого компонента JSF</a>
+        <li><a href="#08">Создание веб-страниц</a></li>
+        <li><a href="#09">Выполнение проекта</a></li>
+        <li><a href="#10">Загрузка проекта решения</a></li>
+        <li><a href="#11">Устранение проблем</a></li>
+    </ul>
+
+   
+   <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                <th class="tblheader" scope="col">Требуемая версия</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                <td class="tbltd1">Версия 7.1, 7.2, 7.3, 7.4, Java EE</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                <td class="tbltd1">Версия 6 или 7</td>
+            </tr>
+             <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition 3.1.2.2</td>
+                <td class="tbltd1">3.x или 4.x</td>
+            </tr>   
+            <tr>
+                <td class="tbltd1"><a href="http://www.mysql.com/">Сервер базы данных MySQL</a></td>
+                <td class="tbltd1">Версия 5.x</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">База данных &quot;Sakila&quot;</td>
+                <td class="tbltd1">Подключаемый модуль, который можно получить с помощью центра обновления</td>
+            </tr>
+        </tbody>
+</table>
+
+
+<p class="tips">Можно загрузить <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/DVDStoreEE6.zip">готовый проект в виде архива ZIP</a>.</p>
+
+<a name="01"></a>
+<h2>Создание базы данных</h2>
+    <p>В этом учебном курсе используется база данных MySQL <tt>sakila</tt>, бесплатная типовая база данных MySQL, которую можно загрузить с сайта MySQL. База данных sakila не входит в установочный набор среды IDE, поэтому перед изучением этого учебного курса необходимо создать базу данных.</p>
+
+    <p>Для создания базы данных &quot;Sakila&quot; можно загрузить и установить подключаемый модуль &quot;Sakila Sample Database&quot; с использованием диспетчера подключаемых модулей.  После установки подключаемого модуля база данных &quot;sakila&quot; будет добавлена к списку баз данных в диалоговом окне &quot;Создание базы данных MySQL&quot;.</p>
+    <p>Для получения дополнительной информации о настройке среды IDE для работы с MySQL см. учебный курс <a href="../ide/mysql.html">Подключение к базе данных MySQL</a>.</p>
+
+    <ol>
+        <li>Откройте диспетчер подключаемых модулей и установите подключаемый модуль &quot;Sakila Sample Database&quot;.</li>
+        <li>После установки подключаемого модуля, запустите базу данных MySQL, развернув узел 'Базы данных' в окне 'Службы', щелкните правой кнопкой мыши узел MySQL Server и выберите 'Пуск'.</li>
+        <li>Щелкните правой кнопкой мыши узел &quot;MySQL Server&quot; и выберите &quot;Create Database&quot;.</li>
+        <li>Выберите базу данных &quot;Sakila&quot;из раскрывающегося списка &quot;New Database Name&quot; в диалоговом окне &quot;Create MySQL Database&quot;.  Нажмите кнопку &quot;ОК&quot;.<br /> <img alt="Снимок диалогового окна создания базы данных MySQL" class="margin-around b-all" height="176" src="../../../images_www/articles/72/web/hibernate-webapp/create-sakila-mysql.png" title="Снимок диалогового окна создания базы данных MySQL" width="393">
+
+        <p>При нажатии кнопки &quot;OK&quot; узел &quot;Sakila&quot; появится под узлом &quot;MySQL Server&quot;.</p>
+        <li>Щелкните правой кнопкой мыши узел &quot;Sakila&quot; и выберите &quot;Connect&quot;.</li>
+    </ol>
+    <p>После нажатия кнопки &quot;Connect a database&quot; под узлом &quot;Databases&quot; отобразится узел подключения к базе данных &quot;Sakila&quot; (<tt>jdbc:mysql://localhost:3306/sakila [<i>username</i> on Default]</tt>).  При открытом подключении для просмотра данных в базе данных разверните этот узел подключения.</p>
+
+
+    
+<a name="02"></a>
+<h2>Создание проекта веб-приложения</h2>
+    <p>В этом упражнении будет создан проект веб-приложения, к которому будут добавлены библиотеки Hibernate. При создании проекта выберите &quot;Hibernate&quot; на экране &quot;Платформы&quot; в мастере создания проекта и укажите базу данных.</p>
+    <ol>
+        <li>Выберите &quot;Файл &gt; Новый проект&quot; (CTRL+SHIFT+N; &amp;#8984+SHIFT+N в Mac ОС) в главном меню. Выберите &quot;Веб-приложение&quot; из категории &quot;Java Web&quot; и нажмите кнопку &quot;Далее&quot;. </li>
+        <li>Введите <strong>DVDStore</strong> в качестве имени проекта и укажите местоположение проекта.</li>
+        <li>Снимите флажок &quot;Использовать отдельную папку&quot;, если он установлен. Нажмите кнопку &quot;Далее&quot;.
+            <p>В рамках этого руководства копирование библиотек проекта в выделенную папку лишено смысла, поскольку совместное использование библиотек с другими пользователями не потребуется.</p>
+            </li>
+        <li>В качестве сервера выберите 'GlassFish Server', а в качестве версии Java EE -'Java EE 6 Web' или 'Java EE 7 Web'. Нажмите кнопку &quot;Далее&quot;.</li>
+        <li>Установите флажок 'JavaServer Faces' и используйте стандартные библиотеки JSF 2.x.</li>
+        <li>В списке платформ установите флажок 'Гибернация'.</li>
+        <li>Выберите базу данных &quot;sakila&quot; из раскрывающегося списка &quot;Соединение с базой данных&quot;.  Нажмите кнопку 'Готово'.</li>
+    </ol>
+    <p class="notes"> <b>Примечание.</b> Если база данных Sakila не доступна в качестве параметра на панели Frameworks мастера, убедитесь, что соединение указано в списке узлов баз данных в окне 'Службы'. При отсутствии подключения следует создать подключение к базе данных.</p>
+    <img alt="Панель &apos;Платформы&apos; мастера создания проектов" class="margin-around b-all" src="../../../images_www/articles/74/web/hibernate-webapp/hib-newwebapp.png" title="Панель &apos;Платформы&apos; мастера создания проектов, на которой отображается добавление поддержки Hibernate к проекту">
+
+    
+    <p>При нажатии кнопки &quot;Готово&quot; в среде IDE создается проект веб-приложения и открывается файл <tt>hibernate.cfg.xml</tt> и <tt>index.xhtml</tt> в редакторе.</p>
+    <p>После разворачивания узла &quot;Библиотеки&quot; в окне &quot;Проекты&quot; видно, что к проекту добавлены библиотеки Hibernate.</p>
+    <img alt="Снимок окна &apos;Проекты&apos;, в котором отображаются библиотеки Hibernate" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-libraries.png" title="Снимок окна &apos;Проекты&apos;, в котором отображаются библиотеки Hibernate"> <a name="03"></a>
+<h2>Изменение файла настройки библиотеки Hibernate</h2>
+    <p>При создании нового проекта, использующего платформу Hibernate, в среде IDE автоматически создается файл настройки <tt>hibernate.cfg.xml</tt> в корне контекстного пути к классам приложения (в окне &quot;Файлы&quot;, <tt>src/java</tt>). Файл располагается в узле <tt>&lt;пакет по умолчанию&gt;</tt> в окне &quot;Проекты&quot; в узле &quot;Исходные файлы&quot;. Файл настройки содержит информацию о подключении к базе данных, отображении ресурсов и других свойствах подключения.  Этот файл можно изменить с использованием редактора с несколькими представлениями или внести изменения в код XML непосредственно в редакторе XML.</p>
+
+    <p>В этом упражнении будут изменены свойства по умолчанию, указанные в <tt>hibernate.cfg.xml</tt> для включения функции протоколирования отладки операторов SQL и для включения управления контекстами сеанса платформы Hibernate.</p>
+    <ol>
+        <li>Откройте <tt>hibernate.cfg.xml</tt> на вкладке &quot;Проект&quot;.  Можно открыть файл, развернув узел <tt>&lt;пакет по умолчанию&gt;</tt> в области &quot;Пакеты исходных файлов&quot; в окне &quot;Проекты&quot; и дважды щелкнув <tt>hibernate.cfg.xml</tt>.</li>
+        <li>В редакторе XML с несколькими представлениями разверните узел &quot;Свойства настройки&quot; в области &quot;Необязательные свойства&quot;.</li>
+        <li>Нажмите кнопку &quot;Add&quot; для открытия диалогового окна &quot;Add Hibernate Property&quot;.</li>
+        <li>В диалоговом окне выберите свойство <tt>hibernate.show_sql</tt> и установите значение <tt>true</tt>.  Это приведет ко включению протоколирования отладки операторов SQL.<br /> <img alt="Диалоговое окно &apos;Добавить свойство Hibernate&apos; для свойства hibernate.show_sql" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-showsql.png" title="Диалоговое окно &apos;Добавить свойство Hibernate&apos;, в котором отображаются значения настроек для свойства hibernate.show_sql">
+        </li>
+        <li>Разверните узел &quot;Прочие свойства&quot; и нажмите кнопку &quot;Добавить&quot;.</li>
+        <li>В диалоговом окне выберите <tt>properties hibernate.current_session_context_class</tt> и установите значение <tt>thread</tt> для включения автоматического управления контекстами сеанса платформы Hibernate.<br /> <img alt="Диалоговое окно &apos;Добавить свойство Hibernate&apos; для свойств hibernate.current_session_context_class" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-sessioncontext.png" title="Диалоговое окно &apos;Добавить свойство Hibernate&apos;, в котором отображаются значения настроек для свойства hibernate.current_session_context_class"></li>
+        <li>Нажмите кнопку &quot;Добавить&quot; еще раз в узле &quot;Разные свойства&quot; и выберите <tt>hibernate.query.factory_class</tt> в раскрывающемся списке &quot;Имя свойства&quot;.</li>
+        <li>Выберите <strong>org.hibernate.hql.classic.ClassicQueryTranslatorFactory</strong> как &quot;Значение свойства&quot;.  Нажмите кнопку &quot;ОК&quot;.<br /> <img alt="Диалоговое окно &apos;Добавить свойство Hibernate&apos; для свойств hibernate.query.factory_class" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-factoryclass.png" title="Диалоговое окно &apos;Добавить свойство Hibernate&apos;, в котором отображаются значения настроек для свойства hibernate.query.factory_class property">
+        <p>При выборе вкладки &quot;XML&quot; в редакторе можно просмотреть файл в режиме XML.  Ваш файл должен выглядеть следующим образом (три новые свойства выделены жирным шрифтом):</p>
+        <pre class="examplecode">&lt;hibernate-configuration&gt;
+    &lt;session-factory name="session1"&gt;
+        &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+        &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+        &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+        &lt;property name="hibernate.connection.username"&gt;root&lt;/property&gt;
+        &lt;property name="hibernate.connection.password"&gt;######&lt;/property&gt;
+        <strong>&lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+        &lt;property name="hibernate.current_session_context_class"&gt;thread&lt;/property&gt;
+        &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.classic.ClassicQueryTranslatorFactory&lt;/property&gt;</strong>
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+        </li>
+        <li>Сохраните измененный файл.</li>
+    </ol>
+    <p>Файл можно закрыть, т.к. необходимость в его изменении отсутствует.</p>
+
+
+
+<a name="04"></a>
+<h2>Создание вспомогательного файла <tt>HibernateUtil.java</tt></h2>
+<p>Для использования библиотеки Hibernate необходимо создать вспомогательный класс для обработки запуска и обращения к <tt>SessionFactory</tt> библиотеки Hibernate для получения объекта &quot;Session&quot;.  Класс обеспечивает вызов <tt>configure()</tt>, загрузку файла настройки <tt>hibernate.cfg.xml</tt> и последующую сборку <tt>SessionFactory</tt> для получения объекта &quot;Сеанс&quot;.
+</p>
+
+<p>В этом разделе для создания вспомогательного класса <tt>HibernateUtil.java</tt> используется мастер создания файла.</p>
+<ol>
+    <li>Щелкните правой кнопкой мыши узел &quot;Source Packages&quot; и выберите &quot;New &gt; Other&quot; для открытия мастера &quot;New File&quot;.</li>
+    <li>Выберите &quot;Hibernate&quot; из списка &quot;Categories&quot; и &quot;HibernateUtil.java&quot; из списка &quot;File Types&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+    <li>Введите <strong>HibernateUtil</strong> в качестве имени класса и <strong>dvdrental</strong> в качестве имени пакета.  Нажмите кнопку 'Готово'.</li>
+
+</ol>
+<img alt="моментальный снимок мастера создания HibernateUtil" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-util-wizard.png" title="моментальный снимок мастера создания HibernateUtil" width="600">
+<p>После нажатия кнопки &quot;Finish&quot; в редакторе откроется класс <tt>HibernateUtil.java</tt>.  Файл можно закрыть, т.к. необходимость в его изменении отсутствует.</p>
+
+
+<a name="05"></a>
+<h2>Создание файлов сопоставления библиотеки Hibernate и классов Java</h2>
+
+<p>В этом учебном курсе используется POJO (простой старый объект Java) для представления данных в каждой из таблиц используемой базы данных. Класс Java указывает поля для столбцов в таблицах и использует простые методы установки и получения значений для извлечения и записи данных.  Для отображения объектов POJO в таблицах можно использовать файл отображения платформы Hibernate или аннотации в классе.</p>
+
+<p>Можно использовать файлы отображения платформы Hibernate и объекты POJO в мастере &quot;Базы данных&quot; для создания нескольких объектов POJO и файлов отображения на основе таблиц базы данных.  При использовании мастера необходимо выбрать все таблицы, для которых требуются объекты POJO и файлы отображения, после чего в среде IDE создаются файлы на основе таблиц базы данных и добавляются записи отображения в файл <tt>hibernate.cfg.xml</tt>.  При применении мастера можно выбрать файлы, которые должны быть созданы в среде IDE (например, только объекты POJO), и установить свойства создания кода (например, создание кода, использующего аннотации EJB 3).</p>
+
+<p class="notes"><strong>Примечание.</strong> Кроме того, в среде IDE также имеется мастер для создания отдельных объектов POJO и файлов сопоставления &quot;с нуля&quot;.</p>
+
+<div class="indent">
+<a name="05a"></a>
+<h3>Создание файла обратного проектирования платформы Hibernate</h3>
+<p>При необходимости использования файлов отображения платформы Hibernate и объектов POJO в мастере &quot;Базы данных&quot; необходимо сначала создать файл обратного проектирования <tt>hibernate.reveng.xml</tt>. Для файлов отображения платформы Hibernate и объектов POJO в мастере &quot;Базы данных&quot; требуются файлы <tt>hibernate.reveng.xml</tt> и <tt>hibernate.cfg.xml</tt>.</p>
+<p>Файл обратного проектирования помогает лучше управлять стратегиями сопоставления баз данных.  Мастер &quot;Обратное проектирование Hibernate&quot; создает файл обратного проектирования с параметрами настройки по умолчанию, которые можно изменить в редакторе XML.</p>
+<p>Для создания файла обратного проектирования платформы Hibernate выполните следующие действия.</p>
+
+<ol>
+    <li>Щелкните правой кнопкой мыши узел &quot;Source Packages&quot; в окне &quot;Projects&quot; и выберите &quot;New &gt; Other&quot; для открытия мастера &quot;New File&quot;.</li>
+    <li>Выберите &quot;Мастер обратного проектирования Hibernate&quot; в категории &quot;Hibernate&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+    <li>Укажите <tt>hibernate.reveng</tt> в качестве имени файла и <tt>src/java</tt> в качестве имени папки. Нажмите кнопку &quot;Далее&quot;.</li>
+    <li>Выберите <tt>hibernate.cfg.xml</tt> из раскрывающегося списка &quot;Файл конфигурации&quot;, если это значение не было выбрано ранее.</li>
+    <li>Выберите следующие таблицы в поле &quot;Доступные таблицы&quot; и нажмите &quot;Добавить&quot; для добавления этих таблиц в область &quot;Выбранные таблицы&quot;.
+    <ul>
+        <li>исполнитель</li>
+        <li>категория</li>
+        <li>фильм</li>
+        <li>film_actor</li>
+        <li>film_category</li>
+        <li>язык</li>
+    </ul>
+    <p>Нажмите кнопку 'Готово'.</p>
+    <img alt="Мастер создания файла обратного проектирования платформы Hibernate" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-reveng-wizard.png" title="Мастер создания файла обратного проектирования платформы Hibernate" width="600">
+    </li>
+</ol>
+<p>Мастер создает файл обратного проектирования <tt>hibernate.reveng.xml</tt> и открывает файл в редакторе. Файл обратного проектирования можно закрыть, поскольку его изменение не требуется.</p>
+
+<p class="tips">Дополнительные сведения о работе с файлом <tt>hibernate.reveng.xml</tt> можно найти в <a href="http://docs.jboss.org/tools/2.1.0.Beta1/hibernatetools/html/reverseengineering.html" target="_blank"> главе 5. Управление обратным проектированием </a> документа <a href="http://docs.jboss.org/tools/2.1.0.Beta1/hibernatetools/html/" target="_blank">Справочник по средствам Hibernate</a></p>
+
+<h3>Создание файлов отображения платформы Hibernate и объектов POJO</h3>
+<p>Для создания файлов можно использовать файлы отображения платформы Hibernate и объекты POJO в мастере &quot;Базы данных&quot;. Мастер может создать объект POJO и соответствующий файл отображения для каждой таблицы, выбранной в мастере. Файлы отображения являются файлами XML, содержащими данные об отображении столбцов таблиц в полях в объектах POJO. Для использования мастера необходимы файлы <tt>hibernate.reveng.xml</tt> и <tt>hibernate.cfg.xml</tt>.</p>
+
+<p>Для создания объектов POJO и файлов отображения с помощью мастера выполните следующие шаги.</p>
+<ol>
+    <li>Щелкните правой кнопкой мыши узел &quot;Source Packages&quot; в окне &quot;Projects&quot; и выберите &quot;New &gt; Other&quot; для открытия мастера &quot;New File&quot;.</li>
+    <li>Выберите &quot;Hibernate Mapping Files and POJOs from a Database&quot; в категории &quot;Hibernate&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+    <li>Убедитесь, что в раскрывающихся списках выбраны файлы <tt>hibernate.cfg.xml</tt> и <tt>hibernate.reveng.xml</tt>.</li>
+    <li>Выберите <strong>Функции языка JDK 5</strong> в параметрах &quot;Обычные параметры&quot;.</li>
+    <li>Убедитесь в том, что выбраны пункты <strong>Domain Code</strong> и <strong>Hibernate XML Mappings</strong>.</li>
+    <li>Выберите <strong>dvdrental</strong> в качестве имени пакета. Нажмите кнопку 'Готово'.<br /> <img alt="Мастер создания файлов сопоставления Hibernate и POJO" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-pojo-wizard2.png" title="Мастер создания файлов сопоставления Hibernate и POJO" width="600">
+    </li>
+</ol>
+<p>При нажатии кнопки &quot;Готово&quot; в среде IDE создаются объекты POJO и файлы отображения платформы Hibernate где поля отображаются на столбцы, указанные в <tt>hibernate.reveng.xml</tt>. Среда IDE добавляет записи отображения в файл <tt>hibernate.cfg.xml</tt>.</p>
+
+<pre class="examplecode">&lt;hibernate-configuration&gt;
+  &lt;session-factory&gt;
+    &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+    &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+    &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+    &lt;property name="hibernate.connection.username"&gt;myusername&lt;/property&gt;
+    &lt;property name="hibernate.connection.password"&gt;mypassword&lt;/property&gt;
+    &lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+    &lt;property name="hibernate.current_session_context_class"&gt;thread&lt;/property&gt;
+    &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.classic.ClassicQueryTranslatorFactory&lt;/property&gt;
+    &lt;mapping resource="dvdrental/FilmActor.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Language.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Film.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Category.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Actor.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/FilmCategory.hbm.xml"/&gt;
+  &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+
+<p class="notes"><strong>Примечание.</strong> Убедитесь, что элементы <tt>сопоставления</tt> указаны после элементов <tt>свойств</tt> в файле <tt>hibernate.cfg.xml</tt>.</p>
+
+<p>Можно развернуть пакет <tt>dvdrental</tt> для просмотра файлов, созданных с помощью мастера.</p>
+
+<img alt="Снимок окна &apos;Проекты&apos;, в котором отображаются созданные POJO" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-projectswindow.png" title="В окне &apos;Проекты&apos; отображаются созданные POJO">
+
+<p class="tips">Можно использовать мастер &quot;Отображение Hibernate&quot; для создания файла отображения платформы Hibernate, отображающего определенную таблицу на определенный класс.</p>
+
+<p class="tips">Дополнительные сведения о работе с файлом <tt>hibernate.reveng.xml</tt> можно найти в <a href="http://docs.jboss.org/hibernate/core/3.3/reference/en/html/mapping.html" target="_blank"> главе 5. Отображение O/R </a> в <a href="http://docs.jboss.org/hibernate/stable/core/reference/en/html/" target="_blank">Справочной документации по Hibernate</a>.</p>
+
+
+</div>
+
+<a name="06"></a>
+<h2>Создание служебного класса <tt>FilmHelper.java</tt></h2>
+
+<p>Теперь перейдем к созданию в пакете <tt>dvdrental</tt> служебного класса, используемого для выполнения запросов Hibernate в базу данных. Можно использовать редактор языка запросов Hibernate (Hibernate Query Language; HQL) для создания и тестирования запросов на извлечение данных. После тестирования запросов необходимо создать методы в служебном классе, создающем и выполняющем запросы. Затем вызовите методы в служебном классе из управляемого компонента JSF.</p>
+
+<a name="06a"></a>
+<div class="indent">
+    <h3>Создание класса </h3>
+    <p>В этом разделе будет использован мастер создания файла для создания служебного класса <tt>FilmHelper.java</tt> в пакете <tt>dvdrental</tt>. Будут созданы сеансы Hibernate с помощью вызова <tt>getSessionFactory</tt> в <tt>HibernateUtil.java</tt> и некоторые служебные методы создания запросов для извлечения данных из базы данных. Также будут вызваны служебные методы из страниц JSP.</p>
+    <ol>
+        <li>Щелкните правой кнопкой мыши узел исходных файлов <tt>dvdrental</tt> и выберите &quot;Создать &gt; Класс Java&quot; для открытия мастера создания файла.</li>
+        <li>Введите <strong>FilmHelper</strong> в качестве имени класса. </li>
+        <li>Убедитесь в том, что в качестве пакета выбран <strong>dvdrental</strong>.  Нажмите кнопку 'Готово'.</li>
+        <li>Добавьте следующий код (выделенный полужирным шрифтом) для создания сеанса Hibernate.
+        <pre class="examplecode">public class FilmHelper {
+
+    <strong>Session session = null;
+
+    public FilmHelper() {
+        this.session = HibernateUtil.getSessionFactory().getCurrentSession();
+    }</strong>
+
+}</pre>
+        </li>
+        <li>Щелкните правой кнопкой мыши в редакторе и выберите команду &quot;Исправить операторы импорта&quot; (ALT+SHIFT+I; &amp;#8984+SHIFT+I на компьютере Mac) для добавления любого необходимого оператора импорта (<tt>org.hibernate.Session</tt>) и сохраните изменения.</li>
+    </ol>
+
+    <p>Теперь можно изменить класс <tt>FilmHelper.java</tt> для добавления методов, выполняющих запрос данных в БД.</p>
+
+<a name="06b"></a>
+    <h3>Перечисление названий фильмов и извлечение актеров с помощью запроса HQL.</h3>
+    <p>В этом упражнении будет показано, как создать запрос на языке запросов Hibernate (HQL), обеспечивающий извлечение из базы данных списка названий фильмов из таблицы &quot;Film&quot;. Затем добавляется метод, запрашивающий одновременно таблицы &quot;Actor&quot; и &quot;Film_actor&quot; для выбора актеров, снимавшихся в определенном фильме.</p>
+
+    <p>Таблица &quot;Film&quot; содержит 1000 записей, в связи с чем метод извлечения списка фильмов должен извлекать записи, основываясь на первичном ключе <tt>filmId</tt>. Для создания и тестирования запроса HQL необходимо использовать редактор HQL. После создания корректного запроса нужно добавить метод к классу, способному создать соответствующий запрос.
+    </p>
+    <ol>
+        <li>В окне &quot;Проекты&quot; щелкните правой кнопкой мыши и выберите команду &quot;Очистка и сборка&quot;.</li>
+        <li>Щелкните правой кнопкой мыши <tt>hibernate.cfg.xml</tt> в окне &quot;Проекты&quot; и выберите &quot;Выполнить запрос HQL&quot; для открытия редактора запросов HQL.</li>
+        <li>Выберите &quot;hibernate.cfg&quot; из раскрывающегося списка на панели инструментов.</li>
+        <li>Проверьте соединение, введя следующее в редакторе и нажав кнопку 'Выполнить запрос HQL' (&nbsp;<img alt="Кнопка &apos;Выполнить запрос HQL&apos;" height="16" src="../../../images_www/articles/72/web/hibernate-webapp/run_hql_query_16.png" title="Кнопка &apos;Выполнить запрос HQL&apos;" width="16" />&nbsp;) на панели инструментов.
+        <pre class="examplecode">from Film</pre>
+        <p>После нажатия кнопки &quot;Выполнить запрос HQL&quot; результаты выполнения запроса отображаются в нижней части редактора запросов HQL.</p>
+        <img alt="Мастер создания файлов сопоставления Hibernate и POJO" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-hqleditor1.png" title="Мастер создания файлов сопоставления Hibernate и POJO">
+        <p>При нажатии кнопки &quot;SQL&quot; на экране должен отобразиться эквивалентный запрос SQL.</p>
+        <pre class="examplecode">select film0_.film_id as col_0_0_ from sakila.film film0_</pre>
+        </li>
+        <li>Введите следующий запрос на извлечение из таблицы &quot;Film&quot; записей, в которых идентификатор фильма находится между 100 и 200.
+        <pre class="examplecode">from Film as film where film.filmId between 100 and 200</pre>
+        <p>В окне результата отобразится список записей. Теперь, после подтверждения правильности получаемых после выполнения запроса результатов, можно использовать запрос в служебном классе.</p>
+        </li>
+        <li>Добавьте следующий метод <tt>getFilmTitles</tt> к <tt>FilmHelper.java</tt> для извлечения фильмов с идентификатором, находящимся в определенном диапазоне, ограниченном переменными <tt>startID</tt> и <tt>endID</tt>.
+        <pre class="examplecode">public List getFilmTitles(int startID, int endID) {
+    List&lt;Film&gt; filmList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery ("from Film as film where film.filmId between '"+startID+"' and '"+endID+"'");
+        filmList = (List&lt;Film&gt;) q.list();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return filmList;
+}</pre>
+        </li>
+        <li>Добавьте следующий метод <tt>getActorsByID</tt> для извлечения актеров, задействованных в определенном фильме. Для создания запроса в этом методе в качестве входной переменной используется <tt>filmId</tt>.
+        <pre class="examplecode">public List getActorsByID(int filmId){
+    List&lt;Actor&gt; actorList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery ("from Actor as actor where actor.actorId in (select filmActor.actor.actorId from FilmActor as filmActor where filmActor.film.filmId='" + filmId + "')");
+        actorList = (List&lt;Actor&gt;) q.list();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return actorList;
+}</pre>
+        </li>
+
+        <li>Исправьте операторы импорта и сохраните измененные данные.
+        <p>После исправления параметров импорта выберите <tt>java.util.List</tt> и <tt>org.hibernate.Query</tt>.</p>
+        </li>
+    </ol>
+
+<a name="06d"></a>
+    <h3>Добавление вспомогательных служебных методов.</h3>
+    <p>Теперь перейдем к добавлению вспомогательных служебных методов, создающих запросы на основе входной переменной. Запросы можно проверить в редакторе запросов HQL.</p>
+
+
+
+    <ol>
+        <li>Добавьте следующий метод для извлечения списка категорий согласно <tt>filmId</tt>.
+<pre class="examplecode">public Category getCategoryByID(int filmId){
+    List&lt;Category&gt; categoryList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Category as category where category.categoryId in (select filmCat.category.categoryId from FilmCategory as filmCat where filmCat.film.filmId='" + filmId + "')");
+        categoryList = (List&lt;Category&gt;) q.list();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return categoryList.get(0);
+}</pre>
+        </li>
+        <li>Добавьте следующий метод для извлечения отдельного фильма согласно <tt>filmId</tt>.
+        <pre class="examplecode">public Film getFilmByID(int filmId){
+
+    Film film = null;
+
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Film as film where film.filmId=" + filmId);
+        film = (Film) q.uniqueResult();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return film;
+}</pre>
+        </li>
+        <li>Добавьте следующий метод для извлечения языка фильма согласно <tt>langId</tt>.
+        <pre class="examplecode">public String getLangByID(int langId){
+
+    Language language = null;
+
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Language as lang where lang.languageId=" + langId);
+        language = (Language) q.uniqueResult();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return language.getName();
+}</pre>
+        </li>
+        <li>Сохраните изменения.</li>
+    </ol>
+</div>
+
+
+
+        <a name="07"></a>
+        <h2>Создание управляемого компонента JSF</h2>
+        <p>В этом упражнении описано создание управляемого компонента JSF. Методы в управляемом компоненте используются для отображения данных на страницах JSF и для доступа к методам в служебном классе для извлечения записей. Спецификация JSF 2.0 позволяет использовать аннотации в классе компонента для определения класса как управляемого компонента JSF, указания объема и имени компонента.</p>
+
+        <p>Для создания управляемого компонента выполните следующие шаги.</p>
+        <ol>
+            <li>Щелкните правой кнопкой мыши исходный узел пакета <tt>dvdrental</tt> и выберите команду &quot;Создать &gt; Прочее&quot;.</li>
+           <li>Выберите &quot;Управляемый компонент JSF&quot; из категории &quot;JavaServer Faces&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+           <li>Введите <strong>FilmController</strong> в качестве имени класса.
+                <p>Имя управляемого компонента <tt>filmController</tt> используется в качестве значения для <tt>inputText</tt> и <tt>commandButton</tt> на странице JSF <tt>index.xhtml</tt> во время вызова методов в компоненте.</p>
+           </li>
+           <li>Выберите <strong>dvdrental</strong> в качестве пакета.</li>
+           <li>Введите <strong>filmController</strong> в качестве имени, используемого для управляемого компонента.</li>
+           <li>Установите для параметра &quot;Контекст&quot; значение &quot;Сеанс&quot;. Нажмите кнопку 'Готово'.</li>
+        </ol>
+        <img alt="Мастер создания новых управляемых компонентов JSF" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-newmanagedbean.png" title="Мастер создания новых управляемых компонентов JSF">
+
+        <p>При нажатии кнопки &quot;Готово&quot; в среде IDE создается класс компонента, который затем открывается в редакторе.  Среда IDE добавила аннотации <tt>@ManagedBean</tt> и <tt>@SessionScoped</tt>.</p>
+<pre class="examplecode">
+@ManagedBean
+@SessionScoped
+public class FilmController {
+
+    /** Creates a new instance of FilmController */
+    public FilmController() {
+    }
+
+}
+</pre>
+
+        <p class="notes"><strong>Примечание.</strong> Обратите внимание, что имя управляемого компонента не указано явно. По умолчанию имя компонента совпадает с именем класса и начинается со строчной буквы. Если необходимо указать имя компонента, отличное от имени класса, можно указать это имя в качестве параметра примечаний <tt>@ManagedBean</tt> (например <tt>@ManagedBean(name=&quot;myBeanName&quot;)</tt>.</p>
+        
+        <ol>
+            <li>Добавьте к классу следующие поля (выделенные полужирным шрифтом).
+                <pre class="examplecode">
+@ManagedBean
+@SessionScoped
+public class FilmController {
+    <strong>int startId;
+    int endId;
+    DataModel filmTitles;
+    FilmHelper helper;
+    private int recordCount = 1000;
+    private int pageSize = 10;
+
+    private Film current;
+    private int selectedItemIndex;</strong>
+}</pre>
+            </li>
+            <li>Добавьте следующий код (выделенный полужирным шрифтом) для создания экземпляра FilmController и извлечения фильмов.
+                <pre class="examplecode">
+    /** Creates a new instance of FilmController */
+    public FilmController() {
+        <strong>helper = new FilmHelper();
+        startId = 1;
+        endId = 10;
+    }
+
+    public FilmController(int startId, int endId) {
+        helper = new FilmHelper();
+        this.startId = startId;
+        this.endId = endId;
+    }
+
+    public Film getSelected() {
+        if (current == null) {
+            current = new Film();
+            selectedItemIndex = -1;
+        }
+        return current;
+    }
+
+
+    public DataModel getFilmTitles() {
+        if (filmTitles == null) {
+            filmTitles = new ListDataModel(helper.getFilmTitles(startId, endId));
+        }
+        return filmTitles;
+    }
+
+    void recreateModel() {
+        filmTitles = null;
+    }</strong></pre>
+        </li>
+        <li>Добавьте следующие методы, используемые для отображения таблицы и перехода к страницам.
+
+<pre class="examplecode"><strong>    public boolean isHasNextPage() {
+        if (endId + pageSize <= recordCount) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isHasPreviousPage() {
+        if (startId-pageSize > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public String next() {
+        startId = endId+1;
+        endId = endId + pageSize;
+        recreateModel();
+        return "index";
+    }
+
+    public String previous() {
+        startId = startId - pageSize;
+        endId = endId - pageSize;
+        recreateModel();
+        return "index";
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public String prepareView(){
+        current = (Film) getFilmTitles().getRowData();
+        return "browse";
+    }
+    public String prepareList(){
+        recreateModel();
+        return "index";
+    }
+</strong></pre>
+        <p>Методы, возвращающие &quot;index&quot; или &quot;browse&quot;, запрашивают обработчик переходов JSF для попытки открытия страницы под именем <tt>index.xhtml</tt> или <tt>browse.xhtml</tt>. Спецификация JSF 2.0 допускает использование правила неявных переходов в приложениях, использующих технологию Facelets. В таком приложении правила переходов не настраиваются в <tt>faces-config.xml</tt>. Вместо этого обработчик переходов пытается найти подходящую страницу в приложении.</p>
+    </li>
+    <li>Добавьте следующие методы для обращения к служебному классу в целях извлечения дополнительных данных о фильме.
+<pre class="examplecode"><strong>    public String getLanguage() {
+        int langID = current.getLanguageByLanguageId().getLanguageId().intValue();
+        String language = helper.getLangByID(langID);
+        return language;
+    }
+
+    public String getActors() {
+        List actors = helper.getActorsByID(current.getFilmId());
+        StringBuffer totalCast = new StringBuffer();
+        for (int i = 0; i < actors.size(); i++) {
+            Actor actor = (Actor) actors.get(i);
+            totalCast.append(actor.getFirstName());
+            totalCast.append(" ");
+            totalCast.append(actor.getLastName());
+            totalCast.append("  ");
+        }
+        return totalCast.toString();
+    }
+
+    public String getCategory() {
+        Category category = helper.getCategoryByID(current.getFilmId());
+        return  category.getName();
+    }</strong>
+</pre>
+            </li>
+            <li>Исправьте операторы импорта (CTRL+SHIFT+I) и сохраните измененные данные.</li>
+        </ol>
+        <p class="tips">Можно использовать автозавершение кода в редакторе, упрощающее ввод кода.</p>
+
+
+<!-- **************** Creating the Web Pages **************** -->
+
+<a name="08"></a>
+<h2>Создание веб-страниц</h2>
+<p>В этом упражнении будут созданы две веб-страницы для вывода данных. Необходимо изменить созданный средой IDE файл <tt>index.xhtml</tt> и добавить в него таблицу, выводящую фильмы из базы данных. Затем перейдем к созданию файла <tt>browse.xhtml</tt> для отображения подробных сведений о фильме при нажатии ссылки &quot;Просмотр&quot; в таблице. Также будет создан шаблон страницы JSF, используемый файлами <tt>index.xhtml</tt> и <tt>browse.xhtml</tt>.</p>
+
+<p class="tips">Дополнительные сведения об использовании JSF 2.0 и шаблонов Facelets приведены в разделе <a href="jsf20-intro.html">Введение в JavaServer Faces 2.0</a></p>
+
+<div class="indent">
+    <a name="07a"></a>
+    <h3>Создание <tt>template.xhtml</tt></h3>
+    <p>Сначала необходимо создать шаблон JSF Facelets <tt>template.xhtml</tt>, используемый в страницах <tt>index.xhtml</tt> и <tt>browse.xhtml</tt>.</p>
+    <ol>
+        <li>Щелкните узел проекта DVDStore правой кнопкой мыши в окне &quot;Проекты&quot; и выберите команду &quot;Создать&quot; &gt; &quot;Другое&quot;.</li>
+        <li>Выберите &quot;Шаблон Facelets&quot; в категории &quot;JavaServer Faces&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+        <li>Введите <strong>template</strong> в качестве имени файла и выберите первый стиль формата CSS. </li>
+        <li>Нажмите кнопку 'Готово'.
+        <p>При нажатии кнопки &quot;Готово&quot; файл <tt>template.xhtml</tt> открывается в редакторе. Шаблон содержит следующий код по умолчанию.</p>
+            <pre class="examplecode">&lt;h:body&gt;
+
+    &lt;div id="top" class="top"&gt;
+        &lt;ui:insert name="top"&gt;Top&lt;/ui:insert&gt;
+    &lt;/div&gt;
+
+    &lt;div id="content" class="center_content"&gt;
+        &lt;ui:insert name="content"&gt;Content&lt;/ui:insert&gt;
+    &lt;/div&gt;
+
+&lt;/h:body&gt;</pre></li>
+    <li>Измените элемент <tt>&lt;ui:insert&gt;</tt> для изменения созданного по умолчанию имени на &quot;body&quot;.
+<pre class="examplecode">&lt;div id="content" class="center_content"&gt;
+        &lt;ui:insert name="<strong>body</strong>"&gt;Content&lt;/ui:insert&gt;
+&lt;/div&gt;</pre>
+    </li>
+    <li>Сохраните изменения.</li>
+    </ol>
+
+    <p>Содержимое, заключенное в элементе <tt>&lt;ui:define name=&quot;body&quot;&gt;</tt> в файлах <tt>index.xhtml</tt> и <tt>browse.xhtml</tt>, будет вставлено в местоположение, определенное в шаблоне с помощью <tt> &lt;ui:insert name=&quot;body&quot;&gt;Content&lt;/ui:insert&gt;</tt>.</p>
+
+
+
+
+    <h3>Изменение <tt>index.xhtml</tt></h3>
+    <p>При создании веб-приложения автоматически создается страница <tt>index.xhtml</tt>. В этом упражнении страница будет изменена для отображения списка названий фильмов. Страница JSF вызывает методы в управляемом компоненте JSF &quot;FilmController&quot; для извлечения списка фильмов, а затем выводит таблицу с названиями и описаниями фильмов.</p>
+    <ol>
+        <li>Разверните папку &quot;Веб-страницы&quot; в окне &quot;Проекты&quot; и откройте файл <tt>index.xhtml</tt> в редакторе.
+        <p>Мастер создания нового проекта создает следующую страницу по умолчанию <tt>index.xhtml</tt>.</p>
+<pre class="examplecode">&lt;html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"&gt;
+&lt;h:head&gt;
+        &lt;title&gt;Facelet Title&lt;/title&gt;
+    &lt;/h:head&gt;
+    &lt;h:body&gt;
+        Hello from Facelets
+    &lt;/h:body&gt;
+&lt;/html&gt;</pre></li>
+
+<li>Измените страницу для использования элементов JSF <tt>&lt;ui:composition&gt;</tt> и <tt>&lt;ui:define&gt;</tt> и добавьте элемент <tt>&lt;h:form&gt;</tt>.
+    <pre class="examplecode">&lt;html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://java.sun.com/jsf/html"
+  <strong>xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+    &lt;ui:composition template="./template.xhtml"&gt;
+        &lt;ui:define name="body"&gt;
+            &lt;h:form&gt;
+
+            &lt;/h:form&gt;
+        &lt;/ui:define&gt;
+    &lt;/ui:composition&gt;</strong>
+&lt;/html&gt;</pre>
+    <p>При вводе тегов среда IDE добавляет объявление библиотеки тегов <tt>xmlns:ui=&quot;http://java.sun.com/jsf/facelets&quot;</tt>.</p>
+    <p>Элементы <tt>&lt;ui:composition&gt;</tt> и <tt>&lt;ui:define&gt;</tt> используются в сочетании с созданным шаблоном страницы. Элемент <tt>&lt;ui:composition&gt;</tt> ссылается на местоположение шаблона, используемого этой страницей. Элемент <tt>&lt;ui:define&gt;</tt> ссылается на позицию в шаблоне, занятую вложенным кодом.</p>
+</li>
+<li>Добавьте следующие ссылки перехода, вызывающие методы <tt>next</tt> и <tt>previous</tt> в управляемом компоненте JSF.
+    <pre class="examplecode">
+    &lt;ui:define name="body"&gt;
+            &lt;h:form&gt;
+                <strong>&lt;h:commandLink action="#{filmController.previous}" value="Previous #{filmController.pageSize}" rendered="#{filmController.hasPreviousPage}"/&gt;&nbsp;
+                &lt;h:commandLink action="#{filmController.next}" value="Next #{filmController.pageSize}" rendered="#{filmController.hasNextPage}"/&gt;&nbsp;</strong>
+            &lt;/h:form&gt;
+    &lt;/ui:define&gt;</pre>
+</li>
+
+<li>Добавьте следующий элемент (выделенный полужирным шрифтом) <tt>dataTable</tt> для создания таблицы, в которой будут отображены извлеченные элементы.
+<pre class="examplecode">
+            &lt;h:form styleClass="jsfcrud_list_form"&gt;
+                &lt;h:commandLink action="#{filmController.previous}" value="Previous #{filmController.pageSize}" rendered="#{filmController.hasPreviousPage}"/&gt;&nbsp;
+                &lt;h:commandLink action="#{filmController.next}" value="Next #{filmController.pageSize}" rendered="#{filmController.hasNextPage}"/&gt;&nbsp;
+                <strong>&lt;h:dataTable value="#{filmController.filmTitles}" var="item" border="0" cellpadding="2" cellspacing="0" rowClasses="jsfcrud_odd_row,jsfcrud_even_row" rules="all" style="border:solid 1px"&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="Title"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:outputText value="#{item.title}"/&gt;
+                    &lt;/h:column&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="Description"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:outputText value="#{item.description}"/&gt;
+                    &lt;/h:column&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="&nbsp;"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:commandLink action="#{filmController.prepareView}" value="View"/&gt;
+                    &lt;/h:column&gt;
+                &lt;/h:dataTable&gt;
+                &lt;br/&gt;</strong>
+            &lt;/h:form&gt;
+</pre>
+        
+        <li>Сохраните изменения.</li>
+    </ol>
+    <p>Теперь на начальной странице отображается список названий фильмов из базы данных. Каждая строка в таблице содержит ссылку &quot;Просмотр&quot;, вызывающую метод <tt>prepareView</tt> в управляемом компоненте. Метод <tt>prepareView</tt> возвращает &quot;browse&quot; и открывает файл <tt>browse.xhtml</tt>.</p>
+
+    <p class="notes"><strong>Примечание.</strong> При вводе тега <tt>&lt;f:facet&gt;</tt> добавляется объявление библиотеки тегов <tt>xmlns:f=&quot;http://java.sun.com/jsf/core</tt>. <strong>Убедитесь в том, что в файле объявлена библиотека тегов.</strong></p>
+
+    
+    <!-- +++++++++++++++ Create browse.xhtml +++++++++++++++  -->
+    <a name="07b"></a>
+    <h3>Создание <tt>browse.xhtml</tt></h3>
+    <p>Создадим страницу <tt>browse.xhtml</tt> для отображения дополнительных сведений о выбранном фильме. Для создания страницы на основе созданного шаблона JSF Facelets <tt>template.xhtml</tt> можно использовать мастер создания клиента шаблона Facelets .</p>
+    <ol>
+        <li>Щелкните узел проекта DVDStore правой кнопкой мыши в окне &quot;Проекты&quot; и выберите команду &quot;Создать&quot; &gt; &quot;Другое&quot;.</li>
+        <li>Выберите &quot;Клиент шаблона Facelets&quot; в категории &quot;JavaServer Faces&quot;. Нажмите кнопку &quot;Далее&quot;.<br /> <img alt="снимок создания клиента шаблонов Facelets в мастере создания файлов" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-faceletsclient.png" title="Тип файла клиента шаблона Facelets в мастере создания файлов"></li>
+        <li>Введите <strong>browse</strong> в качестве имени файла.</li>
+        <li>Чтобы найти шаблон для страницы, нажмите кнопку 'Обзор'. В результате откроется диалоговое окно 'Обзор файлов'.</li>
+        <li>Разверните папку &quot;Веб-страницы&quot; и выберите <tt>template.xhtml</tt>. Нажмите &quot;Выбрать файл&quot;.<br /> <img alt="снимок диалогового окна &apos;Обзор файлов&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-browsetemplate.png" title="Выберите шаблон в диалоговом окне &apos;Обзор файлов&apos;"></li>
+        <li>Выберите<strong>&lt;ui:composition&gt;</strong> в качестве созданного тега корня. Нажмите кнопку 'Готово'.
+        <p>При нажатии кнопки &quot;Готово&quot; файл <tt>browse.xhtml</tt> открывается в редакторе со следующим кодом.</p>
+        <pre class="examplecode">&lt;ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="./template.xhtml"&gt;
+
+    &lt;ui:define name="top"&gt;
+        top
+    &lt;/ui:define&gt;
+
+    &lt;ui:define name="body"&gt;
+        body
+    &lt;/ui:define&gt;
+
+&lt;/ui:composition&gt;</pre>
+        <p>В новом файле указан файл <tt>template.xhtml</tt>, а тег <tt>&lt;ui:define&gt;</tt> обладает свойством <tt>name=&quot;body&quot;</tt> </p>
+        </li>
+        <li>Добавьте следующий код (выделенный полужирным шрифтом) между тегами <tt>&lt;ui:define&gt;</tt> для создания формы и вызовите методы в управляемом компоненте &quot;FilmController&quot; для извлечения данных и заполнения формы.
+            <pre class="examplecode">&lt;ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="./template.xhtml"
+    <strong>xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"</strong>&gt;
+
+        &lt;ui:define name="top"&gt;
+            top
+        &lt;/ui:define&gt;
+
+        &lt;ui:define name="body"&gt;
+        <strong>
+            &lt;h:form&gt;
+                &lt;h:panelGrid columns="2"&gt;
+                    &lt;h:outputText value="Title:"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.title}" title="Title"/&gt;
+                    &lt;h:outputText value="Description"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.description}" title="Description"/&gt;
+                    &lt;h:outputText value="Genre"/&gt;
+                    &lt;h:outputText value="#{filmController.category}"/&gt;
+
+                    &lt;h:outputText value="Cast"/&gt;
+                    &lt;h:outputText value="#{filmController.actors}"/&gt;
+
+
+                    &lt;h:outputText value="Film Length"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.length} min" title="Film Length"/&gt;
+
+                    &lt;h:outputText value="Language"/&gt;
+                    &lt;h:outputText value="#{filmController.language}" title="Film Length"/&gt;
+
+                    &lt;h:outputText value="Release Year"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.releaseYear}" title="Release Year"&gt;
+                        &lt;f:convertDateTime pattern="MM/dd/yyyy" /&gt;
+                    &lt;/h:outputText&gt;
+                    &lt;h:outputText value="Rental Duration"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rentalDuration}" title="Rental DUration"/&gt;
+                    &lt;h:outputText value="Rental Rate"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rentalRate}" title="Rental Rate"/&gt;
+                    &lt;h:outputText value="Replacement Cost"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.replacementCost}" title="Replacement Cost"/&gt;
+                    &lt;h:outputText value="Rating"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rating}" title="Rating"/&gt;
+                    &lt;h:outputText value="Special Features"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.specialFeatures}" title="Special Features"/&gt;
+                    &lt;h:outputText value="Last Update"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.lastUpdate}" title="Last Update"&gt;
+                        &lt;f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" /&gt;
+                    &lt;/h:outputText&gt;
+                &lt;/h:panelGrid&gt;
+                &lt;br/&gt;
+                &lt;br/&gt;
+                &lt;h:commandLink action="#{filmController.prepareList}" value="View All List"/&gt;
+                &lt;br/&gt;
+            &lt;/h:form&gt;
+</strong>
+        &lt;/ui:define&gt;
+    &lt;/ui:composition&gt;
+&lt;/html&gt;</pre>
+        <p>Файлы <tt>browse.xhtml</tt> и <tt>index.xhtml</tt> используют один и тот же шаблон страницы.</p>
+        </li>
+        <li>Сохраните изменения.</li>
+    </ol>
+
+
+     <a name="07b"></a>
+    
+</div>
+
+<a name="09"></a>
+<h2>Выполнение проекта</h2>
+<p>Создание базовых компонентов приложения завершено. Теперь можно запустить приложение для проверки правильности его работы.</p>
+<ol>
+    <li>Щелкните 'Запустить основной проект' на главной панели инструментов или щелкните правой кнопкой мыши узел приложения DVDStore в окне 'Проекты' и выберите 'Выполнить'.
+    <p>Все измененные файлы сохраняются, приложение собирается и развертывается на сервере приложений. Открывается окно браузера, в котором открывается URL-адрес <tt>http://localhost:8080/DVDStore/</tt>, где отображается список фильмов.</p>
+
+    <img alt="Снимок браузера, в котором отображается список фильмов на странице индекса" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-browser1.png" title="Снимок браузера, в котором отображается список фильмов на странице индекса">
+    </li>
+    <li>В браузере нажмите &quot;Просмотр&quot; для загрузки файла <tt>browse.xhtml</tt> для просмотра дополнительных сведений о фильме. <br />
+    </li>
+</ol>
+
+
+
+    <a name="10"></a>
+    <h3>Загрузка проекта решения</h3>
+    <p>Решение для данного учебного курса в виде проекта можно загрузить несколькими способами.</p>
+    <ul>
+        <li>Загрузите <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/DVDStoreEE6.zip">архив завершенного проекта в формате zip</a>.</li>
+        <li>Выполните проверку исходных файлов проекта на выходе из примеров NetBeans, выполнив перечисленные ниже действия.
+            <ol>
+                <li>Выберите в главном меню &quot;Группа &gt; Subversion &gt; Проверить&quot;.</li>
+                <li>В диалоговом окне &quot;Проверка&quot; введите следующий URL-адрес репозитория:<br /> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br /> Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Нажмите кнопку &quot;Обзор&quot; для открытия диалогового окна &quot;Обзор папок репозитория&quot;.</li>
+                <li>Разверните корневой узел и выберите <strong>samples/javaee/DVDStoreEE6</strong>.  Нажмите кнопку &quot;ОК&quot;.</li>
+                <li>Укажите локальную папку для исходных файлов.</li>
+                <li>Нажмите кнопку 'Готово'.
+                    <p>После нажатия кнопки &quot;Готово&quot; среда IDE инициализирует локальную папку в качестве репозитория Subversion и выполняет проверку исходных файлов проекта на выходе.</p>
+                </li>
+                <li>Щелкните команду &quot;Открыть проект&quot; в диалоговом окне, которое появится после завершения проверки.</li>
+            </ol>
+            <p class="notes"><strong>Примечания.</strong> Дополнительные сведения об установке Subversion см. в разделе <a href="../ide/subversion.html#settingUp">Настройка Subversion</a> в <a href="../ide/subversion.html">Руководстве по Subversion в IDE NetBeans</a>.</p>
+        </li>
+    </ul>
+
+
+    <a name="11"></a>
+    <h3>Устранение проблем</h3>
+    <p>Большинство проблем в приложении из учебного курса возникают по причине сложностей процесса обмена данными между сервером GlassFish Server Open Source Edition и сервером базы данных MySQL.  Если приложение отображается некорректно или появляется сообщение об ошибке сервера, обратитесь к разделу <a href="mysql-webapp.html#troubleshoot">Устранение неполадок</a> руководства <a href="mysql-webapp.html">Создание простого веб-приложения с использованием базы данных MySQL</a> или к руководству <a href="../ide/mysql.html">Подключение к базе данных MySQL</a>.</p>
+    
+    <p>Если загрузить и запустить проект решения, в окне 'Результаты' может отобразиться следующее сообщение об ошибке. Это может произойти при первом развертывании приложения, которое использует базу данных MySQL.</p>
+    
+    <pre class="examplecode">
+    SEVERE: JDBC Driver class not found: com.mysql.jdbc.Driver
+    java.lang.ClassNotFoundException: com.mysql.jdbc.Driver
+	at org.glassfish.web.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1509)
+
+        [...]
+
+	at java.lang.Thread.run(Thread.java:680)
+
+    SEVERE: Initial SessionFactory creation failed.org.hibernate.HibernateException: JDBC Driver class not found: com.mysql.jdbc.Driver
+    INFO: cleaning up connection pool: null
+    INFO: Domain Pinged: stable.glassfish.org</pre>
+    
+    <p>В окне браузера может отображаться ошибка <tt>java.lang.ExceptionInInitializerError</tt> и следующая трассировка стека.</p>
+    <pre class="examplecode">
+    java.lang.ExceptionInInitializerError
+	at dvdrental.HibernateUtil.&lt;clinit&gt;(HibernateUtil.java:28)
+	...
+    Caused by: org.hibernate.HibernateException: JDBC Driver class not found: com.mysql.jdbc.Driver
+	
+	... 
+    Caused by: java.lang.ClassNotFoundException: com.mysql.jdbc.Driver
+	... </pre>
+    
+    <p>В сообщении о результате указано, что не обнаружен драйвер JDBC для базы данных MySQL. Скорее всего, потребуется добавить файл драйвера MySQL JDBC в каталог установки сервера GlassFish. Чтобы убедиться, что драйвер действительно отсутствует, перейдите в каталог <tt><em>GLASSFISH-INSTALL</em>/glassfish/domains/domain1/lib</tt> на локальном компьютере (где <em>GLASSFISH-INSTALL</em> - каталог установки GlassFish). Если в каталоге <tt>domain1/lib</tt> отсутствует файл драйвера JDBC (например, <code>mysql-connector-java-5.1.13-bin.jar</code>), необходимо скопировать драйвер JDBC в этот каталог. Драйвер MySQL JDBC не добавляется в каталог установки GlassFish при установке сервера.
+    </p>
+        
+    <p>Чтобы добавить копию драйвера MySQL JDBC в каталог установки GlassFish, выполните следующие действия.
+    <ol>
+        <li>Загрузите драйвер <a href="http://dev.mysql.com/downloads/connector/j/">MySQL Connector/J JDBC</a>.</li>
+        <li>Распакуйте архив и скопируйте файл драйвера (например, <code>mysql-connector-java-5.1.13-bin.jar</code>) в подкаталог <tt>domain1/lib</tt> в каталоге установки GlassFish.</li>
+    </ol>
+        
+    <p>Либо, если вы создаете приложение, использующее базу данных MySQL, в среде IDE, среда IDE при необходимости может автоматически скопировать включенный в комплект драйвер MySQL JDBC на сервер GlassFish во время развертывания проекта. Чтобы убедиться, что среда IDE скопирует необходимые драйверы JDBC, выберите Сервис > Серверы в главном меню. В результате откроется диспетчер серверов. Проверьте, что для сервера GlassFish выбран параметр 'Разрешить развертывание драйверов JDBC'.</p>
+    <p>После создания и развертывания веб-приложения, использующего базу данных MySQL, перейдите в подкаталог <code>domain1/lib</code> в каталоге установки GlassFish. Этот каталог будет содержать файл драйвера JDBC.</p>
+
+    
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Hibernate%20in%20a%20Web%20Application">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear:both;" />
+
+<h2>Дополнительные сведения</h2>
+    <ul>
+        <li><a href="jsf20-support.html">Поддержка JSF 2.x в IDE NetBeans</a></li>
+        <li><a href="jsf20-intro.html">Введение в JavaServer Faces 2.x</a></li>
+        <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+    </ul>
+
+   
+</body>
+</html>

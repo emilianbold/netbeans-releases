@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+  <title>Java Management Extensions (JMX)マネージャの開発およびリモートJMXエージェントへの接続</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  <meta name="description" content="Remote manager tutorial for NetBeans JMX Wizard module">
+  <link rel="stylesheet" href="../../../netbeans.css">
+  <meta name="TOPIC" content="ADVANCED">
+  <meta name="TYPE" content="ARTICLE">
+  <meta name="AUDIENCE" content="NBUSER">
+  <meta name="author" content="Jean-Francois DENISE">
+  <meta name="author" content="Joel FERAUD">
+  <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JMX">
+  <meta name="description" content="A tutorial on how to implement and use a JMX manager and JMX agent in NetBeans IDE"/>
+  <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+</head>
+<body>
+<h1>Java Management Extensions (JMX)マネージャの開発およびリモートJMXエージェントへの接続</h1>
+
+
+<p class="align-center"><b>予想される所要時間: 30分</b></p>
+
+<p>NetBeans JMXウィザード・モジュールは、NetBeans IDEでJMXテクノロジとワークフローを統合します。このモジュールを使用すると、管理アプリケーションの迅速な開発、既存アプリケーションへの管理の追加、マネージャ・アプリケーションの開発、仮想マシンの状態のモニターが可能になります。 
+  </p>
+
+<p>このチュートリアルでは、次の処理を行う方法を示します。</p>
+<ol>
+  <li>JMXエージェントを起動し、リモートのJMXマネージャからアクセスできるようにします。</li>
+  <li>JMXマネージャを作成します。</li>
+  <li>マネージャを実行します。</li>
+  <li>マネージャを更新し、独自の管理ロジックを追加します。 </li>
+</ol>
+
+
+<h3>チュートリアルの課題</h3>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+<ul>
+  <li><a href="#Exercise_1">管理サンプルAnagramプロジェクトの作成</a></li>
+  <li><a href="#Exercise_2">エージェントの実行</a></li>
+  <li><a href="#Exercise_3">マネージャ・プロジェクトの作成</a>
+      <ul>
+          <li><a href="#Exercise_3">プロジェクトの作成</a></li>
+          <li><a href="#Exercise_4">実行可能マネージャ・クラスの作成</a></li>
+      </ul>
+  </li>
+  <li><a href="#Exercise_5">マネージャの実行</a></li>
+</ul>
+
+
+<h3>前提条件</h3>
+<p>このチュートリアルは、次のテクノロジについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。 </p>
+    <ul>
+        <li>JMXテクノロジ: <a href="http://download.oracle.com/javase/6/docs/technotes/guides/jmx/index.html">JMXオンライン・ドキュメント</a>
+            </li>
+        <li>Javaテクノロジ: <a href="http://www.oracle.com/technetwork/java/javase/tech/index.html">Java SEテクノロジ早見表</a>
+            </li>
+        <li>NetBeans IDE</li>
+    </ul>
+<p><a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/index.html">Javaプラットフォームのモニタリングおよび管理</a>の内容が参考になる場合もあります。</p>
+
+<h3>チュートリアルに必要なソフトウェア</h3>
+<p>このチュートリアルでは、コンピュータに次のソフトウェアをインストールしておく必要があります。</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+        <th class="tblheader" scope="col">必須バージョン</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2、7.3、7.4、8.0、Javaバージョン</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+        <td class="tbltd1">バージョン7または8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JMXプラグイン</td>
+        <td class="tbltd1">NetBeans更新センターから入手可能</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JConsoleプラグイン</td>
+        <td class="tbltd1">NetBeans更新センターから入手可能</td>
+    </tr>
+    </tbody>
+</table>
+
+<p><strong>JMX</strong>および<strong>JConsole</strong>のプラグインをインストールするには、「ツール」>「プラグイン」を選択し、NetBeansアップデート・センターからモジュールをダウンロードします。</p>
+
+
+<h3>リソース</h3>
+<ul>
+  <li>Netbeansヘルプ・コンテンツ(「ヘルプ」>「ヘルプの目次」>「JMX」)。このヘルプはウィザードからも利用できます。</li>
+</ul>
+
+<a name="Exercise_1"></a>
+<h2>管理サンプルAnagramプロジェクトの作成</h2>
+<p>この課題の目標は、マネージャ・アプリケーションが接続できるJMXエージェントを作成することです。JMXプラグインには、JMXエージェント・サンプルJavaプロジェクトが含まれています。この課題では、JMXエージェントを一から記述するのではなく、このサンプル・プロジェクトを作成します。 
+</p>
+
+<ol>
+  <li>「ファイル」>「新規プロジェクト」を選択します。</li>
+  <li>「サンプル」でJMXカテゴリを選択します。</li>
+  <li>JMXで管理されたアナグラム・ゲーム・プロジェクトを選択します。<br /> <img alt="新規プロジェクト・ウィザードのJMXで管理されたアナグラム・ゲーム・プロジェクトのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newproject.png" title="新規プロジェクト・ウィザードのJMXで管理されたアナグラム・ゲーム" /></li>
+ 
+  <li>「次」をクリックします。既存のデフォルトのプロジェクト名と場所の値を変更する必要はありません。「メイン・プロジェクトとして設定」が選択されていることを確認し、「終了」をクリックします。</li>
+</ol>
+
+<a name="Exercise_2"></a>
+<h2>エージェントの実行</h2>
+<p>この課題の目標は、JMXリモート管理を有効にしてJavaアプリケーションを起動することです。リモート管理では、クライアント・アプリケーション(JMXマネージャ)からアプリケーション(JMXエージェント)に接続し、管理およびモニタリング情報を視覚化できます。</p>
+<p class="notes"><strong>注意:</strong>JDK 1.5、JDK 1.6またはJDK 1.7に基づいて実行されているアプリケーションは、リモート管理を有効にできるJMXエージェントです。</p>
+
+<ol>
+  <li>JMXAnagramGameプロジェクトが選択され、メイン・プロジェクトとして設定されていることを確認します。 </li>
+  <li>JMXAnagramGameプロジェクトを右クリックし、「プロパティ」を選択します。</li>
+  <li>プロジェクトの「プロパティ」ダイアログで<strong>モニタリングおよび管理</strong>カテゴリを選択します。</li>
+  <li><strong>「JConsoleをプロジェクトにアタッチ」</strong>を選択解除します。</li>
+  <li><strong>「RMIリモート・アクセスの有効化」</strong>を選択します。「OK」をクリックします。<br> <img alt="エージェントの構成" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-properties1.png" title="「プロジェクト・プロパティ」ダイアログの「モニタリングおよび管理」カテゴリ">
+      <p>エージェントが受信JMXリクエストを待機するポートを指定できます。このチュートリアルでは、デフォルト・ポート(1099)のままにします。別のポート番号を指定する場合は、このチュートリアルの各部分で適切な変更を行う必要があります。また、このチュートリアルでは、プロパティ・ファイルも指定しません。(独自のアプリケーションの場合、管理プロパティ・ファイルの作成に役立つウィザードが提供されます。)</p>
+  </li>
+
+
+<li>メイン・メニューから「デバッグ」>「モニタリングと管理付きでメイン・プロジェクトを実行」を選択し、Anagram Gameアプリケーションを起動します。 
+    <p>あるいは、ツールバーの「モニタリングと管理付きでメイン・プロジェクトを実行」ボタン(<img alt="ツールバー内の、モニタリングおよび管理によるメイン・プロジェクトの実行のボタン" src="../../../images_www/articles/74/java/jmx/run-project24.png" title="モニタリングおよび管理によるメイン・プロジェクトの実行のボタン" />)をクリックします。</p>
+
+<p>アプリケーションを実行すると、「Anagram Game」ウィンドウが開きます。JVMは、ローカル・ホスト・ポート1099でRMIアクセスをリスニングしています。JMXエージェントが実行され、マネージャから管理リクエストが送信されるのを待機しています。</p>
+  <img alt="アナグラム・ゲーム" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-anagram.png" title="アナグラム・ゲーム">
+  <p>「Anagrams」ウィンドウを最小化できますが、アプリケーションを終了しないでください。</p>
+  </li>
+</ol>
+
+
+<a name="Exercise_3"></a>
+<h2>マネージャ・プロジェクトの作成</h2>
+<p>この課題では、<tt>JMXAnagramManager</tt>という名前のJavaアプリケーション・プロジェクトを作成し、ウィザードを使用して実行可能なマネージャ・クラスを作成します。</p>
+
+<div class="indent">
+<h3>プロジェクトの作成</h3>
+<ol>
+  <li>「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N])を選択します。</li>
+  <li>「Java」カテゴリで「Javaアプリケーション」を選択します。「次」をクリックします。<br> <img alt="新規Javaプロジェクト・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newjavaproject.png" title="新規Javaプロジェクト・ウィザード"></li>
+  <li>プロジェクト名として<strong>「JMXAnagramManager」</strong>と入力します。</li>
+  <li>「メイン・プロジェクトとして設定」を選択し(選択されていない場合)、「メイン・クラスの作成」を選択解除します。「終了」をクリックします。
+    <p class="notes"><strong>注意:</strong>次の課題で、JMXマネージャ・ウィザードを使用してメインの実行可能クラスを生成します。 </p>
+    </li>
+</ol>
+  <p>「終了」をクリックすると、新しいプロジェクトが「プロジェクト」ツリーに追加されます。JMXマネージャ・プロジェクトは他のJavaアプリケーション・プロジェクトと変わらないことに注意してください。 </p>
+
+
+<a name="Exercise_4"></a>
+<h3>実行可能マネージャ・クラスの作成</h3>
+<p>この課題では、JMXマネージャ・ウィザードを使用して実行可能マネージャ・クラスを作成する方法を学習します。</p>
+
+<ol>
+  <li>JMXAnagramManagerプロジェクトがメイン・プロジェクトとして設定されていることを確認します。 </li>
+  <li>「ファイル」>「新規ファイル」([Ctrl]-[N]、Macの場合は[⌘]-N)を選択し、「JMX」カテゴリで「JMXマネージャ」を選択します。「次」をクリックします。<br/><img alt="新規ファイル・ウィザードのJMXマネージャ・テンプレートのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newjmxmanager.png" title="新規ファイル・ウィザードのJMXマネージャ・テンプレート" /></li>
+  <li>クラス名として<strong>「AnagramsManager」</strong>と入力します。</li>
+  <li>パッケージ名として<strong>「com.toys.anagrams.manager」</strong>と入力します。</li>
+  <li>「mainメソッドを生成」、「プロジェクトのメイン・クラスとして設定」および「サンプルMBean検出コードの生成」が選択されていることを確認します。「次」をクリックします。</li>
+  <li>「編集」をクリックして、接続するJMXエージェントURLを入力します。</li> 
+  <li>RMI JMXエージェントURLダイアログ・ボックスでデフォルト値を受け入れます。「OK」をクリックします。 
+      <p>RMI JMXエージェントURLダイアログ・ボックスは、プロトコル、ホスト、ポートおよびURLパスで構成される有効なJMX URLの入力に有用です。</p>
+  <img alt="RMI JMXエージェントURLダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jmxagenturl.png" title="RMI JMXエージェントURLダイアログ・ボックスでのデフォルト値" />
+          
+  <p>「プロトコル」ドロップダウン・リストには1つの要素が表示されています。「プロトコル」フィールドは書込み可能で、独自のプロトコルを入力できます。デフォルト・プロトコルであるRMI JVMエージェントは、JDK JMXエージェントへの接続に使用されるRMIプロトコルです。このチュートリアルでこれより前に起動したエージェントは、この種のエージェントです。 </p>
+  <p>エージェントは<tt>localhost:1099</tt>でリスニングしているため、デフォルトのホストとポートの値を使用します。URLパス・フィールドは読取り専用で、RMI JVMエージェントのパスの構成が表示されます。URLパスは、ホストとポートの値で自動的に更新されます。</p>
+  <p>「OK」をクリックすると、RMI JMXエージェントURLダイアログ・ボックスで指定された詳細に基づいた完全なURLでJMXエージェントURLフィールドが更新されます。</p>
+  
+  </li>
+  <li>「認証された接続」および「認証された接続に対するサンプル・コードの生成」が選択されていることを確認します。「終了」をクリックします。<br> <a href="../../../images_www/articles/74/java/jmx/jmx-jmxagenturl2.png" id="jmxagent" rel="lytebox" title="JMXエージェントURLを表示した新規JMXマネージャ・ウィザード"> <img alt="JMXエージェントURLパネルを表示した新規JMXマネージャ・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jmxagenturl2-sm.png" title="クリックして拡大"></a>
+    
+  <p>エージェントの起動時に認証構成を指定しなかったため、エージェントへの接続は認証されません。</p>
+  </li>
+</ol>
+<p>「終了」をクリックすると、IDEでマネージャ・クラスが作成され、エディタでファイルが開きます。認証された接続を生成できるようにするサンプル・コードが生成されたことを確認できます。</p> 
+
+</div>
+
+<a name="Exercise_5"></a>
+<h2>マネージャの実行</h2>
+<p>この課題では、マネージャを実行し、MBeanを検出する方法を学習します。 </p>
+<ol>
+  <li>AnagramsManager.javaファイルで、メイン・メソッドにあるMBean検出コードのコメントを解除します。次のようなコードになります。
+      <pre>
+    public static void main(String[] args) throws Exception {
+        
+        //Manager instantiation and connection to the remote agent
+        AnagramsManager manager = AnagramsManager.getDefault();
+
+        // SAMPLE MBEAN NAME DISCOVERY. Uncomment following code:
+          Set resultSet =
+          manager.getMBeanServerConnection().queryNames(null, null);
+          for(Iterator i = resultSet.iterator(); i.hasNext();) {
+          System.out.println("MBean name: " + i.next());
+          } 
+
+        // Close connection
+        manager.close();
+        System.out.println("Connection closed.");
+    }
+      </pre>
+  </li>
+<li>エディタで右クリックして「インポートを修正」([Alt]-[Shift]-[I]、Macの場合は[⌘]-[Shift]-[I])を選択し、必要なインポート文(<tt>java.util.Set</tt>および<tt>java.util.Iterator</tt>)を生成します。変更を保存します。</li>
+  <li>メイン・メニューから「実行」>「メイン・プロジェクトの実行」を選択します。
+      <p>または、「プロジェクト」ウィンドウでJMXAnagramManagerプロジェクト・ノードを右クリックし、「実行」を選択します。</p>
+      <p>「実行」を選択すると、JMXAnagramManagerアプリケーションが起動してリモート・エージェントに接続します。「出力」ウィンドウに検出されたMBean名を表示して、接続を閉じます。 </p>
+  <p>プロジェクトがコンパイルされ、マネージャが起動されます。検出された<tt>ObejctNames</tt>が「出力」ウィンドウに表示されます。<tt>AnagramsStats</tt> MBeanとJava VM MBeanが認められます。すべてのJava VM標準MBeanは、<tt>java.lang</tt> JMXドメイン下にあります。</p>
+<p>JMXAnagramManagerの実行のNetBeansの「出力」ウィンドウは次のような表示になります。</p>
+<pre>
+init:
+deps-jar:
+compile:
+run:
+MBean name: java.lang:type=MemoryManager,name=CodeCacheManager
+MBean name: java.lang:type=Compilation
+MBean name: java.lang:type=MemoryPool,name=PS Perm Gen
+MBean name: com.sun.management:type=HotSpotDiagnostic
+MBean name: java.lang:type=Runtime
+MBean name: com.toy.anagrams.mbeans:type=AnagramsStats
+MBean name: java.lang:type=ClassLoading
+MBean name: java.lang:type=Threading
+MBean name: java.lang:type=MemoryPool,name=PS Survivor Space
+MBean name: java.util.logging:type=Logging
+MBean name: java.lang:type=OperatingSystem
+MBean name: java.lang:type=Memory
+MBean name: java.lang:type=MemoryPool,name=Code Cache
+MBean name: java.lang:type=GarbageCollector,name=PS Scavenge
+MBean name: java.lang:type=MemoryPool,name=PS Eden Space
+MBean name: JMImplementation:type=MBeanServerDelegate
+MBean name: java.lang:type=GarbageCollector,name=PS MarkSweep
+MBean name: java.lang:type=MemoryPool,name=PS Old Gen
+Connection closed.
+BUILD SUCCESSFUL (total time: 1 second)
+</pre></li>
+</ol>
+
+<!--
+<a name="Exercise_6"></a>
+<h2>Exercise 6: Updating the Manager Class with Management Logic</h2>
+<p>In this exercise you will learn how to make a simple JMX request to access 
+  an MBean attribute. We will update the manager class main method in order to 
+  access the <tt>NumResolvedAnagrams</tt> attribute. This attribute represents 
+  the number of anagrams solved. </p>
+<h3>Steps to Follow</h3>
+<ol>
+  <li>In the main method, before closing the connection we are going to perform 
+    the following actions: 
+    <ul>
+      <li>Access the <tt>MBeanServerConnection</tt>.&nbsp; The <tt>MBeanServerConnection</tt> 
+        class allows you to make requests to the remote server.</li>
+
+      <li>Create the Anagrams statistics MBean <tt>ObjectName</tt>. The name is 
+        copied/pasted from the output. An object name is needed when a request 
+        is sent to a remote agent in order to specify the MBean from which to 
+        get the atribute.</li>
+
+      <li>Get the attribute <tt>NumResolvedAttribute</tt>.</li>
+
+      <li>Print the attribute value to the output.</li>
+    </ul>
+    To do so, copy and paste the four lines of code below at the end of the 
+    AnagramsManager.java main method, right before the close conection lines:
+    <pre>
+        MBeanServerConnection connection = manager.getMBeanServerConnection();
+        ObjectName name = new ObjectName("com.toy.anagrams.mbeans:type=AnagramsStats");
+        Integer num = (Integer) connection.getAttribute(name, "NumSolvedAnagrams");
+        System.out.println("NumSolvedAnagrams : " + num);
+    </pre>
+    You may need to add an import clause for <tt>javax.management.ObjectName</tt>
+  </li>
+  <li>Once you have updated the source code, you can play with the Anagrams game 
+    then run the project again in order to see the updated values. 
+    In the NetBeans Output Window of the JMXAnagramManager run you should now see
+    at the end, before the connection closed, the added line:
+<pre>
+NumSolvedAnagrams : 0
+</pre></li>
+</ol>
+-->
+<p><b>これで終了です。よくできました。</b><br />このチュートリアルが、JMXによってエクスポートされた情報にアクセスするためのマネージャ・アプリケーションの開発方法の理解に役立っていれば幸いです。 </p>
+
+<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Developing%20a%20Java%20Management%20Extensions%20Manager">このチュートリアルに関するご意見をお寄せください</a></div>
+        
+        <br style="clear:both;">
+            
+<h2>関連項目</h2>
+<p>詳細は、次を参照してください:</p>
+<ul>
+    <li><a href="jmx-getstart.html">NetBeans IDEでのJMXモニタリングの開始</a></li>
+    <li><a href="jmx-tutorial.html">JavaアプリケーションへのJava Management Extensions (JMX)インストゥルメントの追加</a></li>
+    
+</ul>
+
+
+</body>
+</html>

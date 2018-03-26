@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Javaアプリケーションへのファイル・チューザの追加</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen" />
+    <meta name="author" content="Petr Dvorak, Alyona Stashkova" />
+    <meta name="description" content="How to add a file chooser to a Java application using the javax.swing.JFileChooser component and the NetBeans GUI Builder." />
+    <meta name="keywords" content="javax.swing.JFileChooser, java, application, file, chooser, GUI builder" />
+  </head>
+  <body>
+
+    <h1>Javaアプリケーションへのファイル・チューザの追加</h1>
+    <p><em>執筆: Petr Dvorak<a href="http://blogs.oracle.com/joshis/entry/a_quick_jfilechooser_demo">(2009年12月)</a>、管理: Alyona Stashkova</em></p>
+
+    <p>
+      このチュートリアルでは、<tt>javax.swing.JFileChooser</tt>コンポーネントを使用してJavaアプリケーションにファイル・チューザを追加する方法を示します。すべてを手書きでコーディングすることもできますが、一部の作業を省略できるNetBeans GUIビルダーを使用する方法をお薦めします。課題の一環として、<tt>.txt</tt>ファイルをテキスト領域にロードする、小さなJavaアプリケーションを作成します。    </p>
+
+    <p><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FJFileChooserDemo.zip" title="デモ・プロジェクトのZIP (JFileChooserDemo)">ファイル・チューザを使用した完成版プロジェクト</a>をダウンロードできます。<br />
+    </p>
+
+    <p><b>目次</b></p>
+     <img alt="このページの内容は、NetBeans IDE 7.0以降に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.0以降に適用されます" />
+    <ul>
+      <li><a href="#app" title="アプリケーションの作成">アプリケーションの作成</a></li>
+      <li><a href="#menu" title="アプリケーション・フォームの作成">アプリケーション・フォームの作成</a></li>
+      <li><a href="#filechooser" title="ファイル・チューザの追加">ファイル・チューザの追加</a></li>
+      <li><a href="#config" title="ファイル・チューザの構成">ファイル・チューザの構成</a></li>
+      <li><a href="#run" title="アプリケーションの実行">アプリケーションの実行</a></li>
+    </ul>
+<p><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://netbeans.org/downloads/">NetBeans IDE</a></td>
+                <td class="tbltd1">バージョン7.0またはそれ以降 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit</a> (JDK)</td>
+                <td class="tbltd1">バージョン6、7または8 </td>
+            </tr>
+                      
+        </tbody>
+    </table>
+  
+
+    <h2><a name="app"></a>アプリケーションの作成</h2>
+
+    <p>まず、新しいJavaアプリケーションを作成します。</p>
+    <ol>
+      <li>メイン・メニューから「ファイル」>「新規プロジェクト」を選択します。「Java」カテゴリおよび「Javaアプリケーション」のプロジェクト・タイプを選択します。「次」をクリックします。</li>
+      <li>「プロジェクト名」に「<code>JFileChooserDemo</code>」と入力し、プロジェクトの場所を指定します。</li>
+      <li>「メイン・クラスの作成」チェックボックスを選択解除します。    
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/newproj.png" rel="lytebox" title="新規プロジェクト・ウィザード"> <img alt="新規プロジェクト・ウィザード" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/newproj-small.png"></a></p></li>
+	  <li>「終了」をクリックします。</li>
+	  
+    </ol>
+    
+    
+    <h2><a name="menu"></a>アプリケーション・フォームの作成</h2>
+    <p>この項では、<tt>JFrame</tt>コンテナを作成し、そこにいくつかのコンポーネントを追加します。</p>
+	
+	<p><b>JFrameフォームを作成するには:</b></p>
+        <ol>
+            <li>「ソース・パッケージ」ノードを右クリックし、「新規」>「その他」を選択します。「Swing GUIフォーム」カテゴリおよび「JFrameフォーム」ファイル・タイプを選択します。「次」をクリックします。</li>
+            <li>「クラス名」に「<code>JFileChooserDemo</code>」と入力します。</li>
+            <li>「パッケージ」に「<code>jfilechooserdemo.resources</code>」と入力します。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/newjframeform.png" rel="lytebox" title="作成中の新しいJFrameコンテナ"> <img alt="作成中の新しいJFrameコンテナ" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/newjframeform-small.png"></a></p></li>
+			
+            <li>「終了」をクリックします。</li>
+			<li>「プロパティ」ウィンドウで、「タイトル」プロパティに「<code>デモ・アプリケーション</code>」と入力し、[Enter]を押して確認します。</li>
+        </ol>
+	<p><b>JFrameフォームにコンポーネントを追加するには:</b></p>
+        <ol>
+            <li>パレットで「Swingメニュー」カテゴリを開き、「メニュー・バー」コンポーネントを選択して、それをJFrameの左上隅にドラッグします。 
+			
+			 <p class="notes"><b>注意:</b> パレットが表示されない場合は、メイン・メニューから「ウィンドウ」>「パレット」を選択します。 </p>
+			 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/menubaradded.png" rel="lytebox" title="JFrameフォームに追加されているメニュー・バー"> <img alt="JFrameフォームに追加されているメニュー・バー" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/menubaradded-small.png"></a></p></li>
+
+			<li>「メニュー・バー」コンポーネントの「編集」項目を右クリックし、コンテキスト・メニューの「削除」を選択します。 </li>
+			<li>実行中のアプリケーションからFileChooserを開くことができるメニュー項目を追加するには、パレットの「Swingメニュー」カテゴリで新しい「メニュー項目」(JMenuItem1)を選択し、それを「メニュー・バー」にドラッグして「メニュー・バー」の「ファイル」項目にドロップします。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/menuitemadded.png" rel="lytebox" title="メニュー・バーに追加されているメニュー項目"> <img alt="メニュー・バーに追加されているメニュー項目" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/menuitemadded-small.png"></a></p>
+			 <p class="notes"><b>注意:</b> 別の「メニュー項目」をドラッグする場合は、それが「メニュー・バー」に追加されるように、その前に「メニュー・バー」が選択されていることを確認してください。 </p></li>
+			
+			<li>「デザイン」ビューで「jMenuItem1」を右クリックし、コンテキスト・メニューから「変数名を変更」を選択します。項目の名前を「<code>Open</code>」に変更し、「OK」をクリックします。</li>
+			<li>「デザイン」ビューで「jMenuItem1」が引続き選択されていることを確認します。[Space]バーを押して、コンポーネントのテキストを編集します。テキストを「<code>開く</code>」に変更し、[Enter]を押して確認します。</li>
+			<li>「開く」メニュー項目のアクション・ハンドラを指定します。メニュー項目を右クリックし、コンテキスト・メニューから「イベント」>「アクション」>「actionPerformed」を選択します。GUIビルダーによって自動的に「ソース」ビューに切り替えられ、<tt>OpenActionPerformed()</tt>という名前の新しいイベント・ハンドラ・メソッドが生成されます。「ナビゲータ」ウィンドウは次のようになります。 
+			<p class="align-center"><img alt="メニュー・バーに追加されているメニュー項目" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/openactionperformednavigator.png"></p></li>
+			<li>作成されているアプリケーションからFileChooserを終了するためのメニュー項目を追加するには、「デザイン」モードに戻ってパレットの「Swingメニュー」カテゴリで「メニュー項目」(JMenuItem1)を選択し、それを「開く」メニュー項目の下にある「メニュー・バー」にドラッグします。オレンジ色の強調表示は<tt>JMenuItem1</tt>が配置される場所を示しています。 
+		 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/highlighting.png" rel="lytebox" title="強調表示"> <img alt="強調表示" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/highlighting-small.png"></a></p></li>
+			<li>「デザイン」ビューで「<tt>jMenuItem1</tt>」を右クリックし、コンテキスト・メニューから「変数名を変更」を選択します。項目の名前を「<code>Exit</code>」に変更し、「OK」をクリックします。</li>
+			<li>「デザイン」ビューで「<tt>jMenuItem1</tt>」が引続き選択されていることを確認します。[Space]バーを押して、コンポーネントのテキストを編集します。テキストを「<tt>終了</tt>」に変更し、[Enter]を押して確認します。</li>
+			<li>「終了」メニュー項目のアクション・ハンドラを指定します。メニュー項目を右クリックし、コンテキスト・メニューから「イベント」>「アクション」>「actionPerformed」を選択します。GUIビルダーによって自動的に「ソース」ビューに切り替えられ、<code>ExitActionPerformed()</code>という名前の新しいイベント・ハンドラ・メソッドが生成されます。「ナビゲータ」ウィンドウの「<code>OpenActionPerformed()</code>」ノードの下に「<code>ExitActionPerformed</code>」ノードが表示されます。 </li>   
+			<li>「終了」メニュー項目を機能させるには、<code>ExitActionPerformed()</code>メソッドの本文に次のソースを追加します。  
+			 <pre class="samplecode">
+			 System.exit(0); </pre></li>      
+	  <li>「デザイン」モードに戻ります。次の図に示すように、パレットの「Swingコントロール」カテゴリから「テキスト領域」(<tt>JTextArea</tt>)をフォームにドラッグします。
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/textareadded.png" rel="lytebox" title="JFormに追加されているテキスト領域"> <img alt="JFormに追加されているテキスト領域" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/textareadded-small.png"></a></p></li>
+	  <li>追加されたコンポーネントのサイズを変更して、後でファイル・チューザによって表示されるテキストの領域を確保します。変数の名前を「<code>textarea</code>」に変更します。フォームは次のスクリーンショットのようにします。
+		 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/jfilechooserdemoview_final.png" rel="lytebox" title="Javaアプリケーション - GUIビルダー"> <img alt="Javaアプリケーション - GUIビルダー" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/jfilechooserdemoview_final-small.png"></a></p></li>	               
+        </ol>
+		
+        <p>これで、このチュートリアルのベースとなる単純なJavaアプリケーションが設定されました。次に、実際のファイル・チューザを追加します。</p>
+
+    <h2><a name="filechooser"></a>ファイル・チューザの追加</h2>
+
+<ol>
+    <li>まだ開いていない場合は、「ウィンドウ」>「ナビゲート」>「ナビゲータ」を選択して「ナビゲータ」ウィンドウを開きます。</li>
+	<li>ナビゲータで、<tt>Other Components</tt>ノードを右クリックします。コンテキスト・メニューから、「パレットから追加」>「Swingウィンドウ」>「ファイル・チューザ」を選択します。
+	
+	  <p class=tips>
+        「<tt>パレットから追加</tt>」コンテキスト・メニューのかわりに、パレットの「Swingウィンドウ」カテゴリから、<tt>JFileChooser</tt>コンポーネントをGUIビルダーの白い領域にドラッグ・アンド・ドロップすることもできます。それでも同じ結果になりますが操作が難しくなり、<tt>JFileChooser</tt>のプレビューが非常に大きいため、ウィンドウを誤ってパネルに挿入して望まない結果になる可能性があります。</p>
+	</li>
+    
+    <li>ナビゲータを見ると、<tt>JFileChooser</tt>がフォームに追加されたことを確認できます。
+    </li>
+    <li>「<tt>JFileChooser</tt>」ノードを右クリックし、変数の名前を「<code>fileChooser</code>」に変更します。
+	
+                <p class="align-center"><img alt="追加されたファイル・チューザ - ナビゲータ・ビュー" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/navigator_jframe.png"></p></li>
+</ol>
+
+
+
+ <p>これで、ファイル・チューザが追加されました。次に、目的のタイトルが表示されるようにファイル・チューザを調整し、カスタム・ファイル・フィルタを追加し、さらにファイル・チューザをアプリケーションに統合します。</p>
+
+
+    
+    
+
+    <h2><a name="config"></a>ファイル・チューザの構成</h2>
+	
+	<h3>「開く」アクションの実装</h3>
+
+<ol>
+    <li>「ナビゲータ」ウィンドウでクリックして「<tt>JFileChooser</tt>」を選択してから、そのプロパティを「プロパティ」ダイアログ・ボックスで編集します。「<tt>dialogTitle</tt>」プロパティを「<code>This is my open dialog</code>」に変更し、[Enter]を押して「プロパティ」ダイアログ・ボックスを閉じます。</li>
+    <li>
+      GUIビルダーで「ソース」ボタンをクリックして「ソース」モードに切り替えます。ファイル・チューザをアプリケーションに統合するには、次のコード・スニペットを既存の<code>OpenActionPerformed()</code>メソッドに貼り付けます。   
+
+      <pre class="samplecode">
+private void OpenActionPerformed(java.awt.event.ActionEvent evt) {
+    int returnVal = fileChooser.showOpenDialog(this);
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
+        File file = fileChooser.getSelectedFile();
+        try {
+          // What to do with the file, e.g. display it in a TextArea
+          textarea.read( new FileReader( file.getAbsolutePath() ), null );
+        } catch (IOException ex) {
+          System.out.println(&quot;problem accessing file&quot;+file.getAbsolutePath());
+        }
+    } else {
+        System.out.println(&quot;File access cancelled by user.&quot;);
+    }
+} </pre>
+<p class="notes"><b>注意:</b> このコード・スニペットの最初と最後の行は、ソース・ファイル内の既存の行と重複するため、除去してください。 </p></li>
+
+   <li>エディタによってコード内のエラーが報告された場合は、コード内の任意の場所を右クリックして「インポートを修正」を選択するか、または[Ctrl]+[Shift]+[I]を押します。「すべてのインポートを修正」ダイアログ・ボックスで、デフォルトを受け入れてインポート文を更新し、「OK」をクリックします。</li>
+</ol>
+   <p>
+     このように、FileChooserの<tt>getSelectedFile()</tt>メソッドをコールしてユーザーがクリックしたファイルを判定し、それを処理できます。この例では、ファイルの内容を読み取ってテキスト領域に表示します。 
+   </p>
+
+    
+   <h3>ファイル・フィルタの実装</h3>
+
+  <p>次に、ファイル・チューザに<tt>*.txt</tt>ファイルのみが表示されるようにする、カスタム・ファイル・フィルタを追加します。</p>
+  <ol>
+  
+    <li>「デザイン」モードに切り替えて、「ナビゲータ」ウィンドウで「<tt>fileChooser</tt>」を選択します。 </li>
+       <li>「プロパティ」ウィンドウで、「<tt>fileFilter</tt>」プロパティの横にある省略符号(...)ボタンをクリックします。</li>
+       <li>「fileFilter」ダイアログ・ボックスで、コンボ・ボックスから「カスタム・コード」を選択します。 
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/combobox.png" rel="lytebox" title="開かれたコンボ・ボックス"> <img alt="開かれたコンボ・ボックス" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/combobox-small.png"></a></p></li>
+	<li>
+      テキスト・フィールドに「<tt>new MyCustomFilter()</tt>」と入力します。「OK」をクリックします。
+    </li>
+    <li>
+      このカスタム・コードを機能させるには、<tt>FileFilter</tt>クラスを拡張する内部(または外部)クラス<tt>MyCustomFilter</tt>を記述します。次のコード・スニペットをクラスのソースのインポート文の下にコピーして貼り付け、このフィルタを実装する内部クラスを作成します。
+
+      <pre class="samplecode">
+    class MyCustomFilter extends javax.swing.filechooser.FileFilter {
+        @Override
+        public boolean accept(File file) {
+            // Allow only directories, or files with &quot;.txt&quot; extension
+            return file.isDirectory() || file.getAbsolutePath().endsWith(&quot;.txt&quot;);
+        }
+        @Override
+        public String getDescription() {
+            // This description will be displayed in the dialog,
+            // hard-coded = ugly, should be done via I18N
+            return &quot;Text documents (*.txt)&quot;;
+        }
+    } </pre></li>
+  </ol>
+  <p class=notes><b>注意:</b> より高性能で切替え可能なファイル・フィルタを実装する方法を学習するには、<a href="http://java.sun.com/javase/7/docs/api/javax/swing/JFileChooser.html#addChoosableFileFilter%28javax.swing.filechooser.FileFilter%29" target="_blank" title="JDK APIドキュメント">addChoosableFileFilter</a>メソッドを参照してください。 
+  </p>
+
+<h2><a name="run"></a>アプリケーションの実行</h2>
+<ol>
+    <li>「JFileChooserDemo」プロジェクトを右クリックし、「実行」を選択してサンプル・プロジェクトを開始します。 </li>
+	<li>「プロジェクトの実行」ダイアログ・ボックスで「<code>jfilechooserdemo.resources.JFileChooserDemo</code>」メイン・クラスを選択し、「OK」をクリックします。
+	<p class="align-center"><img alt="実行" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/run.png"></p>
+	</li> 
+	<li>実行中のデモ・アプリケーションで、「ファイル」メニューの「開く」を選択してアクションをトリガーします。結果は次のようになります。
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/result_jfilechooserdemo.png" rel="lytebox" title="JFileChooserデモ - 結果"> <img alt="JFileChooserデモ - 結果" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/result_jfilechooserdemo-small.png"></a></p>
+</li>
+    
+	<li>アプリケーションを終了するには、「ファイル」メニューの「終了」を選択します。 </li>
+  </ol>
+    <p>他にも、GUIパレットのColorChooserやOptionPaneなどの便利なSwingウィンドウやダイアログを試してみてください。</p>
+
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Adding%20a%20FileChooser">このチュートリアルに関するご意見をお寄せください</a></div>
+      <br style="clear:both;" />   
+   
+<h2><a name="next"></a>次の手順</h2>
+
+  <ul>
+  <li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Java GUIの実装</a>
+    <li><a href="gui-binding.html">NetBeans IDEを使用したJavaアプリケーションでのBeansとデータのバインディング</a></li>
+    <li><a href="gui-automatic-i18n.html">NetBeans IDEを使用したGUIフォームの国際化</a></li>
+    <li><a href="http://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html" target="_blank" title="ファイル・チューザの使用方法">Javaチュートリアル: ファイル・チューザの使用方法</a> </li>
+  </ul>
+
+  </body>
+</html>

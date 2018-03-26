@@ -1,0 +1,773 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>NetBeans IDEでのCDIを使用したOSGiバンドルのサービスとしての注入</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE and Maven to create an OSGi bundle that is accessed from a web application using CDI.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>NetBeans IDEでのCDIを使用したOSGiバンドルのサービスとしての注入</h1>
+
+
+        <p>このドキュメントでは、NetBeans IDEでの<a href="http://www.osgi.org/Main/HomePage">Open Services Gateway Initiative</a> (OSGi)フレームワークの統合サポートによって、OSGiバンドルを作成するプロセスおよびプロジェクトでそのバンドルを使用するプロセスがどのように簡素化されているかについて説明します。このチュートリアルでは、Maven OSGiバンドル原型から2つの単純なOSGiバンドルを作成し、次にそれらのバンドルをGlassFish Server Open Source Edition 3.1にデプロイします。
+        </p>
+
+        <p>基本的なOSGiバンドルの作成後、Webクライアント・アプリケーションを作成し、CDIを使用してそれらのバンドルをサービスとして注入します。次に、Webアプリケーションをバンドルとしてサーバーにデプロイします。このチュートリアルでは、次にOSGi管理コンソールを使用してOSGiバンドルを操作する方法について説明します。</p>
+        
+        <p>エンタープライズ・アプリケーションでOSGiバンドルを使用すると、個別のバンドルを更新する際のモジュール性および柔軟性を高めることができます。GlassFishサーバーがデフォルトでOSGiをサポートすることによって、アプリケーションにバンドルを組み込む作業は非常に簡単になります。</p>
+
+        <p class="notes">このチュートリアルは、<a href="http://blog.arungupta.me/" target="_blank">Arun Gupta氏のブログ</a>で見ることができるブログ投稿<a href="http://blogs.oracle.com/arungupta/entry/totd_154_dynamic_osgi_services" target="_blank">TOTD#154: Dynamic OSGi services in GlassFish 3.1 - Using CDI and@OSGiService</a>およびその他のブログ・エントリに基づいています。OSGiの操作に関するその他の役立つ情報については、このブログを参照してください。</p>
+        
+        <p>また、次のリソースには、ハイブリッド・アプリケーションでのOSGiとCDIの使用に関する情報が豊富に含まれています。</p>
+
+        <ul>        
+            <li><a href="http://weblogs.java.net/blog/2009/06/14/developing-hybrid-osgi-java-ee-applications-glassfish">GlassFishでのハイブリッド(OSGi+Java EE)アプリケーションの開発</a></li>
+            <li><a href="http://blogs.oracle.com/sivakumart/entry/typesafe_injection_of_dynamic_osgi">ハイブリッドJava EEアプリケーションでの動的なOSGiサービスの型安全のインジェクション</a>
+            <li><a href="http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish">OSGiを有効にしたGlassFishのWebアプリケーション</a></li>
+            <li><a href="http://www.youtube.com/watch?v=vaOpJJ-Xm70"> YouTube動画: GlassFish 3.1およびCDIを使用した動的なOSGiサービスの型安全のインジェクション </a></li>
+            <li><a href="http://glassfish.java.net/public/GF-OSGi-Features.pdf">GlassFish Serverを使用したOSGiアプリケーションの開発</a>[PDF]</li>
+        </ul>
+        
+        <p><b>チュートリアルの課題</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <ul>
+            <li><a href="#Exercise_1">親POMプロジェクトの作成</a></li>
+            <li><a href="#Exercise_2">OSGiバンドル・プロジェクトの作成</a>
+                <ul>
+                    <li><a href="#Exercise_2a">MavenHelloServiceApiインタフェース・バンドルの作成</a></li>
+                    <li><a href="#Exercise_2b">MavenHelloServiceImpl実装バンドルの作成</a></li>
+                    <li><a href="#Exercise_2c">OSGiバンドルのビルドとデプロイ</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_3">Webクライアント・アプリケーションの作成</a>
+                <ul>
+                    <li><a href="#Exercise_3a">POMプロジェクトでの依存性の構成</a></li>
+                    <li><a href="#Exercise_3b">MavenHelloWebClient Webアプリケーションの作成</a></li>
+                    <li><a href="#Exercise_3c">バンドルとしてのWebアプリケーションのビルド</a></li>
+                    <li><a href="#Exercise_3d">Webアプリケーション・バンドルのデプロイ</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_4">OSGi管理コンソールのインストールと使用</a></li>
+            <li><a href="#Exercise_5">リファレンスおよび参考情報</a></li>
+        </ul>
+
+          
+
+        <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+        <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://download.netbeans.org/netbeans/7.1/beta/">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバージョン</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">バージョン7または8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                <td class="tbltd1">3.1.xまたは4.x</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><b>前提条件</b></p>
+    <p>このドキュメントは、次のテクノロジについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。</p>
+    <ul>
+        <li>Javaプログラミング</li>
+        <li>NetBeans IDE</li>
+        <li>Mavenフレームワーク</li>
+    </ul>
+
+    <p>このチュートリアルを開始する前に、必要に応じて次のドキュメントをお読みください。</p>
+    <ul>
+        <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">NetBeans IDEでのApache Mavenのベスト・プラクティス</a></li>
+        <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Chapter 1. Introducing Apache Maven</a> (<a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: The Complete Reference </a>)</li>
+        <li><a href="http://www.osgi.org/javadoc/r4v42/" target="_blank">OSGiフレームワーク</a></li>
+    </ul>
+
+
+    <a name="intro"></a>
+    <!-- ===================================================================================== -->
+
+
+
+
+
+
+
+    <!-- ===================================================================================== -->
+    <!--                                Creating the POM Project                               -->
+    <!-- ===================================================================================== -->
+<a name="Exercise_1"></a>
+<h2>親POMプロジェクトの作成</h2>
+<p>この項では、このチュートリアルで作成するOSGiバンドル用の親POMプロジェクトを作成します。プロジェクトのPOM (<tt>pom.xml</tt>)を編集して、子プロジェクトによって依存性として継承される依存性管理要素を追加します。</p>
+<!--    In this exercise you will modify the project POM to specify the repository that contains
+    some of the artifacts that you will use later.-->
+    <ol>
+        <li>メイン・メニューから「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])を選択します。</li>
+        <li>「Maven」カテゴリから「POMプロジェクト」を選択します。<br> <img alt="新規プロジェクト・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/osgi-cdi/cdi-newpomproject.png" title="新規プロジェクト・ウィザードのMaven POMプロジェクト原型"></li>
+        
+        <li>「プロジェクト名」に「<strong>MavenOSGiCDIProject</strong>」と入力します。「終了」をクリックします。
+        <p>「終了」をクリックすると、IDEがPOMプロジェクトを作成し、そのプロジェクトが「プロジェクト」ウィンドウで開きます。</p>
+        </li>
+
+        <li>「プロジェクト」ウィンドウで「プロジェクト・ファイル」ノードを展開して「<tt>pom.xml</tt>」をダブルクリックし、エディタでそのファイルを開きます。 
+        <p>プロジェクトの基本的なPOMは、次のようになっているはずです。</p>
+        <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+&lt;/project&gt;
+        </pre>
+        </li>
+        <li>親の<tt>pom.xml</tt>を変更して、次の要素を追加します。変更を保存します。
+        <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    <strong>&lt;dependencyManagement&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+                &lt;version&gt;4.2.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+        &lt;/dependencies&gt;
+    &lt;/dependencyManagement&gt;</strong>
+&lt;/project&gt;
+        </pre>
+        </li>
+    </ol>
+  
+    <p>この課題では、プロジェクトで使用するアーティファクトとアーティファクト・バージョンを明示的に指定しました。依存性管理を使用し、親POMにアーティファクトを指定することで、子プロジェクト内のPOMがより単純化され、プロジェクト内で依存性のバージョンの一貫性を確保できます。</p>
+    
+    <p>依存性管理の使用の詳細は、<a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">依存性メカニズム入門</a>を参照してください。</p>
+
+
+
+
+
+    <!-- ===================================================================================== -->
+    <!--                                Creating the OSGi Bundles                              -->
+    <!-- ===================================================================================== -->
+    <a name="Exercise_2"></a>
+    <h2>OSGiバンドル・プロジェクトの作成</h2>
+    <p>新規プロジェクト・ウィザードの「Maven」カテゴリには、OSGiバンドル・プロジェクトを作成するためのOSGiバンドルの原型が用意されています。OSGiバンドル・プロジェクトを作成すると、生成されたPOMは、<tt>org.osgi.core</tt> JARを依存性として宣言し、プロジェクト・ビルド用に<tt>maven-bundle-plugin</tt>を指定します。</p>
+
+    
+    
+    
+
+    <div class="indent">
+    
+    <!-- ===================================================================================== -->
+    <!--                                Creating the API bundle                                -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2a"></a>
+        <h3>MavenHelloServiceApiインタフェース・バンドルの作成</h3>
+        <p>この課題では、新規プロジェクト・ウィザードを使用して、他のバンドルによって実装される単純なインタフェースを提供するOSGiバンドル・プロジェクトを作成します。バンドルとインタフェースを作成したら、POMを変更して、親POMプロジェクトで指定した<tt>org.osgi.core</tt>アーティファクトに対する依存性を更新します。
+        </p>
+    
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択し、新規プロジェクト・ウィザードを開きます。</li>
+            <li>「Maven」カテゴリから「OSGiバンドル」を選択します。「次」をクリックします。<br> <img alt="新規プロジェクト・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-new-osgiproject.png" title="新規プロジェクト・ウィザードのMaven OSGiバンドル原型"></li>
+            <li>「プロジェクト名」に「<strong>MavenHelloServiceApi</strong>」と入力します。</li>
+            <li>「参照」をクリックし、「場所」として「<strong>MavenOSGiCDIProject</strong>」POMプロジェクトを選択します。「終了」をクリックします。
+            <p>「終了」をクリックすると、IDEがバンドル・プロジェクトを作成し、そのプロジェクトが「プロジェクト」ウィンドウで開きます。エディタでMavenHelloServiceApiプロジェクトの<tt>pom.xml</tt>を開くと、<tt>packaging</tt>要素に<tt>bundle</tt>が指定されていること、およびバンドルのビルド時に<tt>maven-bundle-plugin</tt>が使用されることがわかります。</p>
+<pre class="examplecode">&lt;project&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;parent&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;/parent&gt;
+
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenHelloServiceApi&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    <strong>&lt;packaging&gt;bundle&lt;/packaging&gt;</strong>
+    &lt;name&gt;MavenHelloServiceApi OSGi Bundle&lt;/name&gt;
+
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+            &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+            &lt;version&gt;4.3.0&lt;/version&gt;
+            &lt;scope&gt;provided&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    &lt;build&gt;
+        &lt;plugins&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+                <strong>&lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;</strong>
+                &lt;version&gt;2.3.7&lt;/version&gt;
+                &lt;extensions&gt;true&lt;/extensions&gt;
+                &lt;configuration&gt;
+                    &lt;instructions&gt;
+                        &lt;Bundle-Activator&gt;com.mycompany.mavenhelloserviceimpl.Activator&lt;/Bundle-Activator&gt;
+                        &lt;Export-Package /&gt;
+                    &lt;/instructions&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+
+            ...
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+
+    ...
+&lt;project&gt;</pre>
+            <p>また、Maven OSGiバンドル原型を使用してOSGiバンドル・プロジェクトを作成したときに、IDEによって<tt>org.osgi.core</tt>アーティファクトがデフォルトで依存性として追加されたこともわかります。</p>
+            </li>
+            <li>「プロジェクト」ウィンドウでMavenHelloServiceApiプロジェクト・ノードを右クリックし、「プロパティ」を選択します。</li>
+            <li>「プロジェクト・プロパティ」ダイアログ・ボックスで「ソース」カテゴリを選択します。</li>
+            <li>「<strong>ソース/バイナリ形式</strong>」を1.6に設定し、「<strong>エンコーディング</strong>」がUTF-8であることを確認します。「OK」をクリックします。</li>
+            <li>「プロジェクト」ウィンドウで「ソース・パッケージ」ノードを右クリックし、「新規」>「Javaインタフェース」を選択します。</li>
+            <li>「クラス名」に「<strong>Hello</strong>」と入力します。</li>
+            <li>「パッケージ」として「<strong>com.mycompany.mavenhelloserviceapi</strong>」を選択します。「終了」をクリックします。</li>
+            <li>インタフェースに次の<tt>sayHello</tt>メソッド(太字部分)を追加し、変更内容を保存します。 
+        <pre class="examplecode">
+public interface Hello {
+    <strong>String sayHello(String name);</strong>
+}</pre>
+            </li>
+
+            <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「ビルド」を選択します。        
+            <p>プロジェクトをビルドした後、「ファイル」ウィンドウを開いてプロジェクト・ノードを展開すると、<tt>target</tt>フォルダに<tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt>が作成されていることがわかります。</p>
+
+            <img alt="「ファイル」ウィンドウのプロジェクトのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-manifest.png" title="「ファイル」ウィンドウにコンパイルされたJARの内容が表示される" />
+
+
+
+        <p>プロジェクトをビルドすると、<tt>maven-bundle-plugin</tt>が<tt>MANIFEST.MF</tt>ファイルの生成を処理します。コンパイルされたJARの<tt>MANIFEST.MF</tt>ファイルを開くと、プラグインによって、エクスポート・パッケージを宣言するマニフェスト・ヘッダーが生成されたことがわかります。OSGiでは、公開して他のバンドルで使用できるようにするすべてのバンドルを<tt>MANIFEST.MF</tt>の<tt>Export-Package</tt>要素内に列挙する必要があります。</p></li>
+            <li><tt>MANIFEST.MF</tt>に<tt>Export-Package</tt>要素(次の例で<strong>太字</strong>で示された要素)が含まれていることを確認します。
+        
+        <pre class="examplecode">
+Manifest-Version: 1.0
+Bnd-LastModified: 1395049732676
+Build-Jdk: 1.7.0_45
+Built-By: nb
+Bundle-Activator: com.mycompany.mavenhelloserviceapi.Activator
+Bundle-ManifestVersion: 2
+Bundle-Name: MavenHelloServiceApi OSGi Bundle
+Bundle-SymbolicName: com.mycompany.MavenHelloServiceApi
+Bundle-Version: 1.0.0.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+<strong>Export-Package: com.mycompany.mavenhelloserviceapi;uses:="org.osgi.frame
+ work";version="1.0.0.SNAPSHOT"</strong>
+Import-Package: org.osgi.framework;version="[1.6,2)"
+Tool: Bnd-1.50.0</pre>
+        
+        <p>OSGiコンテナは<tt>Export-Package</tt>マニフェスト・ヘッダーを読み取り、バンドル外からアクセスできる、バンドル内のクラスを判断します。この例では、<tt>com.mycompany.mavenhelloserviceapi</tt>パッケージ内のクラスが公開されています。</p>
+
+        <p class="notes"><strong>注意:</strong><tt>MANIFEST.MF</tt>に<tt>Export-Package</tt>要素が含まれていない場合、「プロジェクト・プロパティ」ウィンドウでプラグインのデフォルト・プラグイン動作を有効にし、プロジェクトを再ビルドする必要があります。「プロジェクト・プロパティ」ウィンドウで「パッケージをエクスポート」カテゴリを選択し、<strong>デフォルトmaven-bundle-plugin動作</strong>オプションを選択します。「プロジェクト・プロパティ」ウィンドウの「パッケージをエクスポート」パネルを使用して、公開するパッケージを明示的に指定するか、<tt>pom.xml</tt>に直接パッケージを指定します。</p>
+        </li>
+        </ol>
+    <!-- ===================================================================================== -->
+    <!--                                Creating the Impl bundle                               -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2b"></a>
+        <h3>MavenHelloServiceImpl実装バンドルの作成</h3>
+        <p>この課題では、POMプロジェクト内にMavenHelloServiceImplを作成します。</p>
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択し、新規プロジェクト・ウィザードを開きます。</li>
+            <li>「Maven」カテゴリから「OSGiバンドル」を選択します。「次」をクリックします。</li>
+            <li>「プロジェクト名」に「<strong>MavenHelloServiceImpl</strong>」と入力します。</li>
+            <li>「参照」をクリックし、「場所」として「<strong>MavenOSGiCDIProject</strong>」POMプロジェクトを選択します(選択されていない場合)。「終了」をクリックします。</li>
+            <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「プロパティ」を選択します。</li>
+            <li>「プロジェクト・プロパティ」ダイアログ・ボックスで「ソース」カテゴリを選択します。</li>
+            <li>「<strong>ソース/バイナリ形式</strong>」を1.6に設定し、「<strong>エンコーディング</strong>」がUTF-8であることを確認します。「OK」をクリックします。</li>
+            <li>「プロジェクト」ウィンドウで「ソース・パッケージ」ノードを右クリックし、「新規」>「Javaクラス」を選択します。</li>
+            <li>「クラス名」に「<strong>HelloImpl</strong>」と入力します。</li>
+            <li>「パッケージ」として「<strong>com.mycompany.mavenhelloserviceimpl</strong>」を選択します。「終了」をクリックします。</li>
+            <li>次(太字部分)を入力し、変更内容を保存します。 
+        <pre class="examplecode">
+public class HelloImpl <strong>implements Hello {
+    
+    public String sayHello(String name) {
+        return "Hello " + name;</strong>
+    }
+}</pre>
+    
+            <p><tt>Hello</tt>を実装すると、MavenHelloServiceApiプロジェクトを依存性として追加することによって解決する必要があるエラーがIDEに表示されます。</p>
+            </li>
+            <li>「プロジェクト」ウィンドウの<strong>MavenHelloServiceImpl</strong>の「依存性」ノードを右クリックし、「依存性の追加」を選択します。</li>
+            <li>「ライブラリの追加」ダイアログで、「開いているプロジェクト」タブをクリックします。</li>
+            <li>「MavenHelloServiceApi OSGiバンドル」を選択します。「追加」をクリックします。<br> <img alt="「ライブラリの追加」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-add-dependency.png" title="「ライブラリの追加」ダイアログの「開いているプロジェクト」タブ">
+            </li>
+            <li>エディタで開いている<tt>HelloImpl.java</tt>クラス内を右クリックして「インポートを修正」([Alt]-[Shift]-[I]、Macの場合は[⌘]-[Shift]-[I])を選択し、<tt>com.mycompany.mavenhelloserviceapi.Hello</tt>のインポート文を追加します。変更を保存します。</li>
+            <li>「<tt>com.mycompany.mavenhelloserviceimpl</tt>」パッケージを展開し、「<tt>Activator.java</tt>」をダブルクリックしてこのファイルをエディタで開きます。<br> <img alt="「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-activator.png" title="「プロジェクト」ウィンドウのActivatorクラス">
+            <p>IDEによってプロジェクト内に<tt>Activator.java</tt>バンドル・アクティベータ・クラスが自動的に作成されます。バンドル・アクティベータは、バンドルのライフサイクルを管理するために使用されます。バンドル・アクティベータ・クラスは、バンドルの<tt>MANIFEST.MF</tt>で宣言され、バンドルがコンテナによって開始されるときにインスタンス化されます。</p>
+
+            <p>OSGiバンドルにはバンドル・アクティベータ・クラスは必要ありませんが、アクティベータ・クラスで<tt>start()</tt>メソッドを使用して、たとえば、バンドルが必要とするサービスまたはその他のリソースを初期化できます。この課題では、「出力」ウィンドウにメッセージを出力するクラスに、少量のコード行を追加します。これにより、バンドルが開始および停止するタイミングを簡単に識別できます。</p>
+            </li>
+            <li>バンドル・アクティベータ・クラスの<tt>start()</tt>および<tt>stop()</tt>メソッドを変更して、次の行(太字部分)を追加します。
+            <pre class="examplecode">
+public class Activator implements BundleActivator {
+
+    public void start(BundleContext context) throws Exception {
+        <strong>System.out.println("HelloActivator::start");
+        context.registerService(Hello.class.getName(), new HelloImpl(), null);
+        System.out.println("HelloActivator::registration of Hello service successful");</strong>
+    }
+
+    public void stop(BundleContext context) throws Exception {
+        <strong>context.ungetService(context.getServiceReference(Hello.class.getName()));
+        System.out.println("HelloActivator stopped");</strong>
+    }
+}</pre>
+    
+            <p>バンドル・アクティベータ・クラスが<tt>org.osgi.framework.BundleActivator</tt>および<tt>org.osgi.framework.BundleContext</tt>をインポートしていることが確認できます。デフォルトでは、生成されたクラスには<tt>start()</tt>および<tt>stop()</tt>の2つのメソッドが含まれています。OSGiフレームワークは、<tt>start()</tt>メソッドおよび<tt>stop()</tt>メソッドを呼び出して、バンドルの提供する機能を開始および停止します。バンドルが開始されると、そのバンドルの提供するサービス・コンポーネントが、OSGiサービス・レジストリに登録されます。あるバンドルが登録されると、他のバンドルは、そのレジストリを使用してアクティブなサービスを検索し、バンドル・コンテキストを経由してそのサービスを使用できます。</p>
+        
+            <p>プロジェクトのPOMを見ると、<tt>maven-bundle-plugin</tt>のconfiguration要素の下にバンドル・アクティベータを指定する<tt>&lt;Bundle-Activator></tt>要素を確認できます。</p>
+            <pre class="examplecode">
+&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;
+    &lt;version&gt;2.3.7&lt;/version&gt;
+    &lt;extensions&gt;true&lt;/extensions&gt;
+      &lt;configuration&gt;
+            &lt;instructions&gt;
+                  <strong>&lt;Bundle-Activator&gt;com.mycompany.mavenhelloserviceimpl.Activator&lt;/Bundle-Activator&gt;</strong>
+            &lt;/instructions&gt;
+      &lt;/configuration&gt;
+&lt;/plugin&gt;</pre>
+            <p>バンドルをビルドすると、プラグインは、マニフェスト・ヘッダーをJAR内にあるバンドルのマニフェスト・ファイルに生成し、バンドル・アクティベータ・クラスを指定します。バンドルがデプロイされると、OSGiランタイムがマニフェスト・ファイル内の<tt>Bundle-Activator</tt>ヘッダーを検索します。</p>
+            </li>
+            <li><tt>Activator.java</tt>のインポート文を修正して、<tt>com.mycompany.mavenhelloserviceapi.Hello</tt>をインポートします。変更を保存します。</li>
+            <li>「依存性」ノードを展開し、<tt>org.osgi.core</tt>アーティファクトが依存性として表示されたことを確認します。
+                <p class="notes"><strong>注意:</strong>「依存性」ノードに古いバージョンのアーティファクトがリストされている場合、アーティファクトを右クリックして「依存性を削除」を選択し、削除します。依存性は、MavenHelloServiceApiプロジェクトおよび<tt>org.osgi.core</tt>アーティファクトのみである必要があります。</p>
+        <img alt="「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-implproject.png" title="「プロジェクト」ウィンドウのActivatorクラス" />
+        </li>
+        </ol>
+        
+        
+        
+    <!-- ===================================================================================== -->
+    <!--                               Building and Deploying Bundles                          -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2c"></a>
+        <h3>OSGiバンドルのビルドとデプロイ</h3>
+        <p>この課題では、OSGiバンドルをビルドし、バンドルをGlassFishにデプロイします。</p>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウでMavenOSGiCDIProjectノードを右クリックし、「消去してビルド」を選択します。 
+                <p>プロジェクトをビルドすると、IDEによって各プロジェクトの<tt>target</tt>フォルダ内にJARファイルが作成され、ローカル・リポジトリにもスナップショットJARがインストールされます。「ファイル」ウィンドウで、2つのバンドル・プロジェクトの<tt>target</tt>フォルダをそれぞれ展開すると、2つのJARアーカイブ(<tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt>および<tt>MavenHelloServiceImpl-1.0-SNAPSHOT.jar</tt>)が表示されます。</p>
+            </li>
+            <li>GlassFishサーバーを起動します(まだ起動していない場合)。</li>
+            <li><tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt>をGlassFishインストールの<tt>glassfish/domains/domain1/autodeploy/bundles/</tt>ディレクトリにコピーします。 
+
+                <p>「出力」ウィンドウ内のGlassFishのサーバー・ログに、次のような出力が表示されるはずです。</p>
+                <pre class="examplecode">
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceApi-1.0-SNAPSHOT.jar
+</pre>
+            <p class="tips">「出力」ウィンドウにサーバー・ログが表示されない場合は、「サービス」ウィンドウのGlassFishサーバー・ノードを右クリックして、「ドメイン・サーバー・ログを表示」を選択します。</p>
+            </li>
+            <li>これらの手順を繰り返して、<tt>MavenHelloServiceImpl-1.0-SNAPSHOT.jar</tt>を<tt>autodeploy/bundles</tt>ディレクトリにコピーします。 </li>
+        </ol>
+        
+        <p>これで、GlassFishのサーバー・ログに次のような出力が表示されるはずです。</p>
+        <pre class="examplecode">
+INFO: HelloActivator::start
+INFO: HelloActivator::registration of Hello service successful
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceImpl-1.0-SNAPSHOT.jar
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceImpl-1.0-SNAPSHOT.jar
+        </pre>
+        
+        
+        
+        <p class="tips">または、GlassFish OSGi管理コンソールからバンドルをインストールすることもできます。詳細は、<a href="#Exercise_4">OSGi管理コンソールのインストールと使用</a>の項を参照してください。</p>
+    </div>
+
+
+    <!-- ===================================================================================== -->
+    <!--                           Creating the web client application                         -->
+    <!-- ===================================================================================== -->
+    <a name="Exercise_3"></a>
+    <h2>Webクライアント・アプリケーションの作成</h2>
+    <p>この項では、OSGiバンドルの提供するサービスにアクセスするJava EE Webクライアントの作成方法について説明します。単純なサーブレットをWebアプリケーションで作成し、宣言されたサービスを注入します。プロジェクトを作成する前に、親POMプロジェクトに依存性管理要素をいくつか追加します。</p> 
+
+    
+    <div class="indent">
+            
+        <a name="Exercise_3a"></a>
+        <h3>親POMプロジェクトでの依存性の構成</h3>
+        <p>この課題では、親POMプロジェクトに依存性要素を指定します。また、プロジェクトによって使用されるアーティファクトのリポジトリも追加します。</p>
+            
+        <ol>
+            <li>「プロジェクト」ウィンドウで<strong>MavenOSGiCDIProject</strong>プロジェクトの「プロジェクト・ファイル」ノードを展開し、<tt>pom.xml</tt>をダブルクリックしてエディタでこのファイルを開きます。</li>
+            <li>親の<tt>pom.xml</tt>を変更して、次の依存性管理要素(太字部分)を追加します。変更を保存します。
+            <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    ...    
+            
+    &lt;dependencyManagement&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+                &lt;version&gt;4.3.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+            <strong>&lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.compendium&lt;/artifactId&gt;
+                &lt;version&gt;4.2.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.glassfish&lt;/groupId&gt;
+                &lt;artifactId&gt;osgi-cdi-api&lt;/artifactId&gt;
+                &lt;version&gt;3.1-b41&lt;/version&gt;
+                &lt;type&gt;jar&lt;/type&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;</strong>
+          
+        &lt;/dependencies&gt;
+    &lt;/dependencyManagement&gt;
+
+    ...
+&lt;/project&gt;
+</pre>
+            </li>
+            <li>次の要素を追加して、POMにGlassFishリポジトリを追加します。変更を保存します。
+            <pre class="examplecode">
+&lt;project&gt;
+
+    ...
+
+    &lt;/dependencyManagement&gt;
+
+    <strong>&lt;repositories&gt;
+        &lt;!-- glassfish nexus repo for glassfish dependencies --&gt;
+        &lt;repository&gt;
+            &lt;id&gt;glassfish-repo-archive&lt;/id&gt;
+            &lt;name&gt;Nexus repository collection for Glassfish&lt;/name&gt;
+            &lt;url&gt;http://maven.glassfish.org/content/groups/glassfish&lt;/url&gt;
+            &lt;snapshots&gt;
+                &lt;updatePolicy&gt;never&lt;/updatePolicy&gt;
+            &lt;/snapshots&gt;
+        &lt;/repository&gt;
+    &lt;/repositories&gt;</strong>
+    &lt;modules&gt;
+        &lt;module&gt;MavenHelloServiceApi&lt;/module&gt;
+        &lt;module&gt;MavenHelloServiceImpl&lt;/module&gt;
+    &lt;/modules&gt;
+&lt;/project&gt;
+            </pre>
+            </li>
+        </ol>
+
+        <p>POMにGlassFishリポジトリを追加した後、「サービス」ウィンドウで「Mavenリポジトリ」ノードの下のリポジトリのリストを表示すると、IDEによってGlassFishリポジトリのノードが自動的に追加されたことがわかります。デフォルトでは、ローカルMavenリポジトリのノードがIDEに表示されます。開いているプロジェクトにリポジトリを指定すると、IDEによって「Mavenリポジトリ」ノードの下にリポジトリのノードが自動的に追加されます。 
+        </p>
+        <img alt="「Mavenリポジトリ」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/osgi-cdi/cdi-maven-repositories.png" title="「Mavenリポジトリ」ウィンドウのGlassFishリポジトリ" />
+        
+        <p>この課題では、プロジェクトで使用される追加のアーティファクトとアーティファクト・バージョンを追加しました。また、<tt>osgi-cdi-api</tt>アーティファクトを含むGlassFishリポジトリも追加しました。</p>
+            
+            
+        
+        <a name="Exercise_3b"></a>
+        <h3>MavenHelloWebClient Webアプリケーションの作成</h3>
+        <p>最初に通常のWebアプリケーションを作成し、次にプロジェクトを変更してOSGiバンドル(Webアプリケーション・バンドル(WAB))にします。</p>
+        <ol>
+            <li>メイン・メニューから「ファイル」>「新規プロジェクト」を選択します。</li>
+            <li>「Maven」カテゴリから「Webアプリケーション」を選択します。「次」をクリックします。</li>
+            <li>「プロジェクト名」に「<strong>MavenHelloWebClient</strong>」と入力します。</li>
+            <li>「参照」をクリックし、「場所」として「<strong>MavenOSGiCDIProject</strong>」POMプロジェクトを指定します(まだ選択されていない場合)。「次」をクリックします。</li>
+            <li>サーバーとして「GlassFish Server」を選択し、Java EEバージョンとして「Java EE 6 Web」または「Java EE 7 Web」を選択します。「終了」をクリックします。</li>
+            <li>プロジェクト・ノードを右クリックし、「新規」>「サーブレット」を選択します。</li>
+            <li>「クラス名」に「<strong>HelloServlet</strong>」と入力します。</li>
+            <li>パッケージとして<tt>com.mycompany.mavenhellowebclient</tt>を選択します。「終了」をクリックします。</li>
+            <li>IDEによって生成されたサーブレット内のデフォルトのメソッド(<tt>processRequest</tt>、<tt>doGet</tt>、<tt>doPost</tt>、<tt>getServletInfo</tt>)を削除します。
+                <p class="notes"><strong>注意:</strong>HttpServletメソッドを削除するには、エディタの折りたたみを展開する必要があります。</p></li>
+            <li>次のコード(太字部分)を入力してサービスを注入します。
+            <pre class="examplecode">
+@WebServlet(name = "HelloServlet", urlPatterns = {"/HelloServlet"})
+public class HelloServlet extends HttpServlet {
+
+    <strong>@Inject
+    @OSGiService(dynamic=true)
+    Hello hello;</strong>
+}</pre>
+            </li>
+            <li>次の<tt>doGet</tt>メソッドを追加します。 
+            <pre class="examplecode">
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        PrintWriter out = response.getWriter();
+        out.println(hello.sayHello("Duke"));
+    }</pre>
+            </li>
+            <li>プロジェクト・ノードを右クリックし、「新規」>「その他」を選択します。</li>
+            <li>「コンテキストと依存性の注入」カテゴリで<strong>beans.xml</strong>を選択します。「次」をクリックします。</li>
+            <li>デフォルトのファイル名(<tt>beans</tt>)を使用します。「終了」をクリックします。
+                <p>「終了」をクリックすると、ウィザードによってWebアプリケーション内に<tt>beans.xml</tt>ファイルが作成されます。<tt>beans.xml</tt>がアプリケーションの一部である場合は、CDIが自動的に有効になります。</li>
+            <li><tt>beans.xml</tt>ファイルを変更して、<tt>bean-discovery-mode</tt>のデフォルト値を<tt>all</tt>に変更します。
+                <pre class="examplecode">bean-discovery-mode="<strong>all</strong>"</pre>
+                <p>変更内容を保存し、ファイルを閉じます。</p>
+                <p><tt>bean-discovery-mode</tt>値の間の違いについては、次のページを参照してください。</p>
+                <ul>
+                    <li>Java EE 7チュートリアルの<a href="http://docs.oracle.com/javaee/7/tutorial/doc/cdi-adv001.htm">25.1 CDIアプリケーションのパッケージ</a></li>
+                    <li><a href="http://stackoverflow.com/questions/18107858/cdi-inject-fails-on-maven-embedded-glassfish-plugin-org-jboss-weld-exceptions">http://stackoverflow.com/questions/18107858/cdi-inject-fails-on-maven-embedded-glassfish-plugin-org-jboss-weld-exceptions</a></li>
+                </ul>
+            </li>
+            <li>「プロジェクト」ウィンドウのMavenHelloWebClientの「依存性」ノードを右クリックし、「依存性の追加」を選択します。</li>
+            <li>「スコープ」として「<strong>Provided</strong>」を選択します。</li>
+            <li>「ライブラリの追加」ダイアログで、「開いているプロジェクト」タブをクリックし、「<strong>MavenHelloServiceApi OSGiバンドル</strong>」を選択します。「追加」をクリックします。</li>
+            <li>もう一度「依存性」ノードを右クリックし、「依存性の追加」を選択します。</li>
+            <li>「ライブラリの追加」ダイアログで「依存性管理」タブをクリックし、親POMプロジェクトで指定した<tt>osgi-cdi-api</tt>アーティファクトを選択します。「追加」をクリックします。<br/><img alt="「ライブラリの追加」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-add-dependency3.png" title="「ライブラリの追加」ダイアログの「依存性管理」タブ" />
+            </li>
+            <li>エディタで<tt>HelloServlet.java</tt>内を右クリックし、「インポートを修正」([Alt]-[Shift]-[I]、Macの場合は[⌘]-[Shift]-[I])を選択して<tt>com.mycompany.mavenhelloserviceapi.Hello</tt>、<tt>javax.inject.Inject</tt>および<tt>org.glassfish.osgicdi.OSGiService</tt>を追加します。変更を保存します。
+                
+                <p class="notes"><strong>注意:</strong><tt>com.mycompany.mavenhelloserviceapi.Hello</tt>のインポート文がIDEによって自動的に追加されない場合は、手動で追加する必要があります。</p>
+            </li>
+            <li>MavenOSGiCDIProjectを右クリックし、「消去してビルド」を選択します。</li>
+
+        </ol>
+        <p>プロジェクトをビルドすると、「出力」ウィンドウに次のような出力が表示されるはずです。</p>
+        <pre class="examplecode">
+Reactor Summary:
+
+MavenOSGiCDIProject ............................... SUCCESS [0.798s]
+MavenHelloServiceApi OSGi Bundle .................. SUCCESS [7.580s]
+MavenHelloServiceImpl OSGi Bundle ................. SUCCESS [1.142s]
+MavenHelloWebClient ............................... SUCCESS [8.072s]
+------------------------------------------------------------------------
+BUILD SUCCESS</pre>
+        <p class="notes"><strong>注意:</strong>MavenOSGiCDIProjectプロジェクトをビルドするときに、Webアプリケーションが自動的にビルドされない場合は、Webアプリケーションを手動でビルドする必要があります。</p>
+        <p>「ファイル」ウィンドウで、Webアプリケーションのプロジェクト・ノードを展開して、アーカイブ<tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt>がターゲット・ディレクトリに作成されたことを確認します。WebクライアントのWARアーカイブを展開して<tt>MANIFEST.MF</tt>を調べると、マニフェストに次のような行が含まれていることがわかります。</p>
+        <pre class="examplecode">
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: nb
+Build-Jdk: 1.7.0_45</pre>
+
+        
+        
+
+        <a name="Exercise_3c"></a>
+        <h3>OSGiバンドルとしてのWebアプリケーションのビルド</h3>
+        <p><tt>@OSGiService</tt>を使用して登録済のOSGiバンドルを取得するには、Webアプリケーションを<tt>BundleContext</tt>にアクセスできるバンドルにする必要があります。WARをOSGiバンドル(Webアプリケーション・バンドル)にするには、WAR内の<tt>MANIFEST.MF</tt>に<tt>Web-ContextPath</tt>メタデータを追加します。 
+<!--        To do this, you create a properties file that contains the meta-data, 
+        and then modify the POM so that the meta-data is included in the <tt>MANIFEST.MF</tt> when you build the WAR.-->
+        これを行うには、<tt>maven-bundle-plugin</tt>への指示の中に<tt>&lt;Web-ContextPath></tt>要素を指定し、このプラグインによって生成されるマニフェストにこの要素を含めます。次に、<tt>maven-war-plugin</tt>の構成を変更して、<tt>maven-bundle-plugin</tt>によって生成されたマニフェストをWARアーカイブに追加するようにプラグインに指示します。
+        </p>
+
+
+        <ol>
+            
+            <li>「プロジェクト」ウィンドウで、MavenHelloWebClientの下の「プロジェクト・ファイル」ノードを展開し、<tt>pom.xml</tt>をダブルクリックしてエディタでこのファイルを開きます。</li>
+            <li>次のエントリを追加して、POMに<tt>maven-bundle-plugin</tt>を追加します。 
+                <pre class="examplecode">
+&lt;build&gt; 
+    &lt;plugins&gt;
+        <strong>&lt;plugin&gt;
+             &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+             &lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;
+             &lt;version&gt;2.2.0&lt;/version&gt;
+             &lt;extensions&gt;true&lt;/extensions&gt;
+             &lt;configuration&gt;
+                 &lt;supportedProjectTypes&gt;
+                     &lt;supportedProjectType&gt;ejb&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;war&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;bundle&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;jar&lt;/supportedProjectType&gt;
+                 &lt;/supportedProjectTypes&gt;
+                 &lt;instructions&gt;<!-- &lt;!-- Read all OSGi configuration info from this optional file --&gt;
+                     &lt;_include&gt;-osgi.properties&lt;/_include&gt;-->
+                     &lt;!-- Specify elements to add to MANIFEST.MF --&gt;
+                     &lt;Web-ContextPath&gt;/mavenhellowebclient&lt;/Web-ContextPath&gt;
+                     &lt;!-- By default, nothing is exported --&gt;
+                     &lt;Export-Package&gt;!*.impl.*, *&lt;/Export-Package&gt;
+                 &lt;/instructions&gt;
+             &lt;/configuration&gt;
+             &lt;executions&gt;
+                 &lt;execution&gt;
+                     &lt;id&gt;bundle-manifest&lt;/id&gt;
+                     &lt;phase&gt;process-classes&lt;/phase&gt;
+                     &lt;goals&gt;
+                         &lt;goal&gt;manifest&lt;/goal&gt;
+                     &lt;/goals&gt;
+                 &lt;/execution&gt;
+                 &lt;execution&gt;
+                     &lt;id&gt;bundle-install&lt;/id&gt;
+                     &lt;phase&gt;install&lt;/phase&gt;
+                     &lt;goals&gt;
+                         &lt;goal&gt;install&lt;/goal&gt;
+                     &lt;/goals&gt;
+                 &lt;/execution&gt;
+             &lt;/executions&gt;
+         &lt;/plugin&gt;</strong>
+            </pre>
+            </li>
+            <li><tt>maven-war-plugin</tt>の構成要素を変更して、<tt>MANIFEST.MF</tt>にバンドル情報を追加します。変更を保存します。
+            <pre class="examplecode">
+ &lt;plugin>
+     &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+     &lt;artifactId&gt;maven-war-plugin&lt;/artifactId&gt;
+     &lt;version&gt;2.3&lt;/version&gt;
+     &lt;configuration&gt;
+         <strong>&lt;archive&gt;
+             &lt;!-- add bundle plugin generated manifest to the war --&gt;
+             &lt;manifestFile&gt;
+                 ${project.build.outputDirectory}/META-INF/MANIFEST.MF
+             &lt;/manifestFile&gt;
+             &lt;!-- For some reason, adding Bundle-ClassPath in maven-bundle-plugin
+             confuses that plugin and it generates wrong Import-Package, etc.
+             So, we generate it here.--&gt;
+             &lt;manifestEntries&gt;
+                 &lt;Bundle-ClassPath&gt;WEB-INF/classes/&lt;/Bundle-ClassPath&gt;
+             &lt;/manifestEntries&gt;
+         &lt;/archive&gt;</strong>
+         &lt;failOnMissingWebXml&gt;false&lt;/failOnMissingWebXml&gt;
+     &lt;/configuration&gt;
+ &lt;/plugin&gt;</pre>
+            </li>
+            <li>「プロジェクト」ウィンドウでMavenHelloWebClientプロジェクト・ノードを右クリックし、「消去してビルド」を選択します。 </li>
+
+        </ol>
+        <p>これで、WARアーカイブを展開して<tt>MANIFEST.MF</tt>をエディタで開くと、<tt>maven-bundle-plugin</tt>の構成で指定した<tt>Web-ContextPath: /mavenhellowebclient</tt>エントリやバンドル名エントリを含む追加情報が<tt>MANIFEST.MF</tt>に含まれていることがわかります。</p>
+        
+<pre class="examplecode">
+Manifest-Version: 1.0
+Export-Package: com.mycompany.mavenhellowebclient;uses:="com.mycompany
+ .mavenhelloserviceapi,javax.servlet,org.glassfish.osgicdi,javax.injec
+ t,javax.servlet.annotation,javax.servlet.http";version="1.0.0.SNAPSHO
+ T"
+Bundle-ClassPath: WEB-INF/classes/
+Built-By: nb
+Tool: Bnd-1.50.0
+Bundle-Name: MavenHelloWebClient
+Created-By: Apache Maven Bundle Plugin
+<strong>Web-ContextPath: /mavenhellowebclient</strong>
+Build-Jdk: 1.7.0_45
+Bundle-Version: 1.0.0.SNAPSHOT
+Bnd-LastModified: 1395053424008
+Bundle-ManifestVersion: 2
+Import-Package: com.mycompany.mavenhelloserviceapi;version="[1.0,2)",j
+ avax.inject,javax.servlet,javax.servlet.annotation,javax.servlet.http
+ ,org.glassfish.osgicdi;version="[1.0,2)"
+Bundle-SymbolicName: com.mycompany.MavenHelloWebClient
+Archiver-Version: Plexus Archiver</pre>
+
+        <p class="tips">WebアプリケーションをOSGiバンドルとしてビルドする方法の詳細は、次のページを参照してください。</p>
+        <ul>
+            <li><a href="http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish">http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish</a></li>
+            <li><a href="http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html">http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html</a></li>
+        </ul>
+
+        
+        
+        
+        
+        <a name="Exercise_3d"></a>
+        <h3>Webアプリケーション・バンドルのデプロイ</h3>
+        <p>この課題では、Webアプリケーション・バンドルをGlassFishインストールの<tt>autodeploy/bundles</tt>フォルダにコピーします。</p>
+        <ol>
+            <li><tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt>を含む<tt>target</tt>ディレクトリに移動します。</li>
+            <li><tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt>をGlassFishインストールの<tt>autodeploy/bundles</tt>フォルダにコピーします。</li>
+        </ol>
+
+        <p>WARアーカイブをこのディレクトリにコピーすると、GlassFishのサーバー・ログに次のような出力が表示されます。</p>
+        <pre class="examplecode">
+INFO: Started bundle: file:/glassfish-3.1.1/glassfish/domains/domain1/autodeploy/bundles/MavenHelloWebClient-1.0-SNAPSHOT.war
+...
+INFO: ---- Injection requested for framework service type interface com.mycompany.mavenhelloserviceapi.Hello and annotated with dynamic=true, serviceCriteria=
+INFO: WEB0671: Loading application [com.mycompany.MavenHelloWebClient_1.0.0.SNAPSHOT] at [/mavenhellowebclient]
+INFO: Registered ServletContext as a service with properties: {osgi.web.symbolicname=com.mycompany.MavenHelloWebClient, osgi.web.version=1.0.0.SNAPSHOT, osgi.web.contextpath=/mavenhellowebclient} 
+        </pre>
+        
+        <p>これで、次のリンクをクリックすることで、ブラウザにサーブレットを表示できます。<a href="http://localhost:8080/mavenhellowebclient/HelloServlet">http://localhost:8080/mavenhellowebclient/HelloServlet</a></p>
+    
+    </div>    
+    
+    
+    <a name="Exercise_4"></a>
+    <h2>OSGi管理コンソールのインストールと使用</h2>
+
+    <p>GlassFish OSGi管理コンソールを使用して、サーバーにデプロイされているOSGiバンドルをインストール、起動および停止できます。この課題では、GlassFish OSGi管理コンソールを有効にしてから、登録済のOSGiバンドルのリストを表示します。</p>
+    <p>OSGiコンソールを有効にし、デプロイされたバンドルをGlassFishドメイン管理コンソールに表示するには、次の手順を実行して必要なGlassFishアドオンをインストールします。</p>
+    <ol>
+        <li>ブラウザでGlassFishドメイン管理コンソールを開きます。
+            <p class="tips">「サービス」ウィンドウのGlassFishサーバー・ノードを右クリックし、「ドメイン管理コンソールを表示」を選択します。</p></li>
+        <li>左側のナビゲーション列で「更新ツール」をクリックします。</li>
+        <li>利用可能なアドオンの一覧から<tt>glassfish-osgi-gui</tt>を選択します。
+            <p>「インストール」をクリックしてライセンスに同意します。</p>
+        <img alt="GlassFish管理コンソールの更新ツールのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-glassfish-addons.png" title="更新ツールGlassFish管理コンソール" />
+        </li>
+        <li>GlassFishサーバーを再起動します。
+        <p class="alert"><strong>重要: </strong>GlassFish Server 3.1.2.2を使用している場合、<tt><em>GLASSFISH-INSTALL</em>/glassfish/config/</tt>ディレクトリにある<tt>osgi.properties</tt>ファイルを変更し、<tt>org.osgi.framework.startlevel.beginning</tt>プロパティの値を"2"に設定する(<tt>org.osgi.framework.startlevel.beginning=2</tt>)必要があります。<br>詳細は、次のフォーラムの投稿を参照してください。<br><a href="http://www.java.net/forum/topic/glassfish/glassfish/cannot-start-web-console-glassfish-version-3122"> Cannot start web console in Glassfish version 3.1.2.2</a>. </p>
+        </li>
+        <li>管理コンソールを再度開き、左側のナビゲーション列で「<strong>サーバー(管理サーバー)</strong>」をクリックします。</li>
+        <li>「OSGiコンソール」タブをクリックして、デプロイされているOSGiバンドルの一覧を表示します。<br/><img alt="「ライブラリの追加」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-glassfish-console.png" title="「ライブラリの追加」ダイアログの「依存性管理」タブ" />
+        <p class="notes"><strong>注意:</strong>OSGiバンドルのリストを表示する際に、ユーザー名とパスワードの入力を求められることがあります。OSGiコンソール・タブにバンドルのリストが表示されない場合は、承認ダイアログが非表示になっていないことを確認します。IDEのインストール時にGlassFish 4サーバーをインストールした場合、サーバーのデフォルトのユーザー名は<tt>admin</tt>です。デフォルトでは、パスワードは空白です。</p>
+        
+        </li>
+    </ol>
+    
+    <p>一覧を下にスクロールして登録済のOSGiバンドルのステータスを表示したり、個々のバンドルを起動および停止したりできます。一覧をIDで(最大から最小へ)ソートすると、デプロイした3つのバンドルが一覧の最上位付近に表示されることがわかります。</p>
+
+ 
+
+
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20CDI%20to%20Inject%20OSGi%20Bundles%20as%20Services">このチュートリアルに関するご意見をお寄せください</a></div>
+            <br style="clear:both;" />
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>関連項目</h2>
+            <p>NetBeans IDEおよびMavenを使用してOSGiバンドルを開発する方法の詳細は、次のリソースを参照してください。
+            </p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/OSGiAndNetBeans">wiki.netbeans.orgのOSGiおよびNetBeans</a></li>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">NetBeans IDEでのApache Mavenのベスト・プラクティス</a></li>
+                <li><a href="https://blogs.oracle.com/arungupta/entry/totd_125_creating_an_osgi" target="_blank">今日のヒント第125回: NetBeansを使用したOSGiバンドルの作成およびGlassFishでのデプロイ</a></li>
+                <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+            </ul>
+            
+            <p><a href="../../../community/lists/top.html">nbj2eeメーリング・リストに登録する</a>ことによって、NetBeans IDE Java EE開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+    </body>
+</html>

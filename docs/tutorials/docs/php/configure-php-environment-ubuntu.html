@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Configuring the PHP Development Environment in Linux Ubuntu</title>
+     <meta name="KEYWORDS" content="NETBEANS, CONFIGURE, PHP, Apache, MySQL, Linux, Ubuntu">
+      <meta name="DESCRIPTION" content="Install, configure, and enable PHP, Apache, MySQL, XDebug for PHP development in the NetBeans IDE under Linux Ubuntu. Virtual host" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
+   <body>
+
+<h1>Configuring the PHP Development Environment in Linux Ubuntu</h1>
+<p>This tutorial shows how to configure the PHP development environment in the Ubuntu operating system (7.10 and later). This involves installing and configuring the PHP engine, a MySQL database, an Apache web server, and the XDebug debugger.</p>
+
+<p><b>Contents</b></p>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<ul>
+<!--<li><a href="#requiredSoftware">Required Software</a></li> -->
+
+<li><a href="#installingSoftware">Installing the PHP Web Stack</a>
+  <ul>
+<li><a href="#lamp">Installing the Software Packages Together</a></li>
+<li><a href="#separate-packages">Installing the Software Packages Separately</a></li>
+<li><a href="#checkInstallation">Checking the Installation</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+  </ul>
+</li>
+<li><a href="#specifyDocumentRoot">Specifying the Document Root for the Apache2 HTTP Server</a>
+  <ul>
+<li><a href="#createDocumentRootLocation">Creating the Document Root Location</a></li>
+<li><a href="#createNewVirtualHost">Creating a New Virtual Host</a></li>
+<li><a href="#activateNewVirtualHost">Activating the New Virtual Host</a></li>
+</ul>
+</li>
+<li><a href="#configureMySQL">Configuring the MySQL Database Server</a></li>
+<li><a href="#installAndConfigureXDebug">Installing and Enabling the XDebug Debugger</a><a href="#installXDebug"></a>
+  <ul>
+<li><a href="#xdebug-package">Installing the XDebug Package (Ubuntu 8.05 and later)</a></li>
+<li><a href="#InstallingPHP5andPEARModules">Building XDebug from Sources (Ubuntu 7.10)</a></li>
+<li><a href="#enableXDebug">Enabling XDebug</a></li>
+</ul>
+</li>
+</ul>
+<p><b>To follow this tutorial, you need the following software and resources.</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">Software or Resource</th>
+      <th class="tblheader" scope="col">Version Required</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a target="_blank" href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+      <td class="tbltd1">
+        PHP download bundle</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">A PHP engine</td>
+      <td class="tbltd1">Version 5. </tr>
+    <tr>
+      <td class="tbltd1">A web server</td>
+      <td>Apache HTTP Server 2.2 is recommended.<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">A database server</td>
+      <td>MySQL Server 5.0 is recommended.<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">A PHP debugger (optional)</td>
+      <td>XDebug 2.0 or later</td>
+    </tr>
+  </tbody>
+</table>
+<p class="notes">Typically, development and debugging is performed on a local
+  web server, while the production environment is located on a remote web server.
+  Setting up a remote web server is described in <a href="./remote-hosting-and-ftp-account.html"> Deploying a PHP Application on a Remote Web Server Using the NetBeans 
+  IDE</a>. This tutorial has you set up a local web server. PHP support
+  can be added to
+  a number of local web servers (IIS, Xitami, and so on), but most commonly <a target="_blank" href="http://httpd.apache.org/download.cgi">Apache HTTP Server</a> is used.   </p>
+
+<h2><a name="installingSoftware" id="installingSoftware"></a>Installing the Software</h2>
+<p>This tutorial shows how to configure the PHP development environment in Ubuntu 7.04 and later. You need to: </p>
+<ol>
+  <li>Install the Apache2 HTTP server, the PHP5 engine, the MySQL 5.0 database server, and the PHP5-MySQL module. These packages can be <a href="#lamp">installed together as the LAMP stack</a>, or they can be <a href="#separate-packages">installed separately</a>.</li>
+  <li><a href="#specifyDocumentRoot">Specify the Document Root for the Apache2 HTTP server</a></li>
+  <li><a href="#configureMySQL">Configure the MySQL database server</a></li>
+  <li><a href="#installXDebug">Install and enable the XDebug 2.0 debugger</a></li>
+</ol>
+See the <a href="https://help.ubuntu.com/community/ApacheMySQLPHP">Ubuntu community</a> for more information on installing Apache, MySQL, and PHP.
+<div class="indent"><h3 id="lamp">Installing the Software Packages Together</h3>
+<p>Ubuntu provides a Linux AMP (LAMP) package that contains all the necessary packages for your PHP environment. You can install the software by executing the following command at the command prompt in the Terminal window:
+</p>
+<pre class="examplecode">sudo tasksel install lamp-server</pre>
+<p>The <tt>lamp-server</tt> package includes the most suitable version of PHP, Apache 2, MySQL, and PHP5-MySQL.</p>
+<h3 id="separate-packages">Installing the Software Packages Separately</h3>
+<p>Instead of installing the entire set of LAMP packages, you can also install the packages individually. This is useful if you already have installed one of the components, such as the Apache server or MySQL database server. You can use command-line tools or the Synaptic Package Manager GUI.</p>
+<p>The individual packages to install are the following:</p>
+<ul>
+      <li>apache2</li>
+      <li>php5</li>
+      <li>mysql-server</li>
+      <li>php5-mysql</li>
+  </ul>
+<h3>&nbsp;</h3>
+<h3><a name="checkInstallation" id="checkInstallation"></a>Checking the Installation</h3>
+<p>After you set up your PHP web stack, check that it is installed correctly and that your Apache server recognizes your PHP engine.</p>
+<p>To check that Apache and PHP are installed and running, open NetBeans IDE and <a href="./project-setup.html">create a PHP project</a>. In the <tt>index.php</tt> file, enter the PHP method <tt>phpinfo()</tt>. Run the file. The standard PHP information page should display.
+  <br/>
+  <img src="../../../images_www/articles/72/php/configure-php-environment-ubuntu/ubuntu-phpinfo.png" alt="phpinfo test page in browser on Ubuntu" height="478" width="639" class="margin-around"/></p>
+<h3 id="troubleshooting">Troubleshooting</h3>
+<p>The following are some frequently encountered problems when checking the installation of your PHP stack in Ubuntu:</p>
+<ul>
+  <li><strong>The browser window displays a Not Found error for <tt>~USER/PROJECT/index.php</tt></strong>. Remove the <tt>~USER</tt> string from the URL. For example, if this error appears for the URL <tt>~ubuntu/test1/index.php</tt>, change the URL to <tt>test1/index.php</tt>. Note that you can set the URL for a PHP project in NetBeans IDE either when you create the project, or by right-clicking the project node and going to Properties &gt; Run Configuration.</li>
+  <li><strong>The browser shows you a popup asking you to open the file, as if the PHP engine is not recognized.</strong> There's a problem with your <tt>php5-common</tt> package. Replace it with <tt>php5</tt> and <tt>phpmyadmin</tt>. To replace <tt>php5-common</tt>, run the following two commands:
+    <pre class="examplecode">apt-get --purge remove php5-common<br/>
+apt-get install php5 phpmyadmin</pre></li>
+</ul>
+</div>
+<h2><a name="specifyDocumentRoot" id="specifyDocumentRoot"></a>Specifying the Document Root for the Apache2 HTTP Server</h2>
+The Document Root is the directory where the Apache HTTP server takes files for displaying 
+  in the browser. The Document Root is specified in the file that defines your virtual host.
+  The default virtual host configuration file is
+<pre class="examplecode">/etc/apache2/sites-available/default</pre>
+with the document root
+<pre class="examplecode">/var/www/</pre>
+We recommend that you create your own virtual host and enable it instead of editing the default one.
+<ul>
+  <li><a href="#createDocumentRootLocation">Create the Document Root Location</a></li>
+  <li><a href="#createNewVirtualHost">Specify the new document root in a new virtual host</a></li>
+  <li><a href="#activateNewVirtualHost">Activating the new virtual host</a></li>
+</ul>
+<div class="indent">
+<h3><a name="createDocumentRootLocation" id="createDocumentRootLocation"></a>Creating the Document Root Location</h3>
+<ol>
+  <li>Choose Places &gt; Home Folder.</li>
+  <li>From the context menu, choose Create Folder.</li>
+  <li>Enter the name of the folder, for example, public_html.</li>
+</ol>
+<h3><a name="createNewVirtualHost" id="createNewVirtualHost"></a>Creating a New Virtual Host</h3>
+<ol>
+  <li>To <a name="launchTerminal" id="launchTerminal"></a>launch the Terminal, choose Applications&gt;Accessories&gt;Terminal.
+  The Terminal window opens.</li>
+  <li>To copy the configuration file of the default virtual host to a new file (<tt>mysite</tt>), type the following command at the command prompt:
+    <pre class="examplecode">sudo cp /etc/apache2/sites-available/default /etc/apache2/sites-available/mysite</pre>
+  </li>
+  <li>Run the <tt><a name="gedit" id="gedit"></a>gedit</tt> application and edit the new configuration file (<tt>mysite</tt>) in it:
+    <pre class="examplecode">gksudo gedit /etc/apache2/sites-available/mysite </pre>
+    If asked, enter the password that you specified for the root user during the installation 
+  of your operating system.</li>
+  <li>Change the Document Root to point to the new location:
+    <pre class="examplecode">/home/&lt;user&gt;/public_html/</pre>
+  </li>
+  <li>Change the Directory directive, replace
+    <pre class="examplecode">&lt;Directory /var/www/&gt;</pre>
+    with
+    <pre class="examplecode">&lt;Directory /home/user/public_html/&gt;</pre>
+  <img src="../../../images_www/articles/72/php/configure-php-environment-ubuntu/ubuntu-change-directory-root.png" alt="Change Directory Root in Ubuntu" class="margin-around">  </li>
+  <li>Save the file <tt>mysite</tt></li>
+</ol>
+<h3><a name="activateNewVirtualHost" id="activateNewVirtualHost"></a>Activating the New Virtual Host</h3>
+<ol>
+  <li>To deactivate the default host and activate the new host, <a href="#launchTerminal">launch the Terminal </a>and run the following two utilities in the Terminal window:
+    <pre class="examplecode">sudo a2dissite default &amp;&amp; sudo a2ensite mysite</pre>
+  </li>
+  <li>Restart the Apache HTTP server:
+    <pre class="examplecode">sudo /etc/init.d/apache2 reload</pre>
+</li>
+</ol></div>
+<h2><a name="configureMySQL" id="configureMySQL"></a>Configuring the MySQL Database Server</h2>
+During the installation of the MySQL database server, a root user is created. 
+  A dialog opens during installation in which you set a root user password. If
+  this dialog did not open, or you did not set a password in this dialog, you need
+  to create a MySQL root user password now.
+  You will need the password for creating other MySQL server users.
+<ol>
+  <li>To connect to the MySQL server,<a href="#launchTerminal"> launch the Terminal</a> and in the Terminal window enter the following command:
+    <pre class="examplecode">mysql -u root -p</pre>
+  The MySQL command prompt appears.</li>
+  <li>At the command prompt enter the following command and press Enter:
+    <pre class="examplecode">SET PASSWORD FOR 'root'@'localhost' = PASSWORD('&lt;yourpassword&gt;');</pre>
+    If the command is executed successfully, the following message is displayed:
+    <pre class="examplecode">Query OK, 0 rows affected (0.00 sec)</pre>
+  </li>
+</ol>
+<h2><a name="installAndConfigureXDebug" id="installAndConfigureXDebug"></a>Installing and Enabling the XDebug Debugger</h2>
+<p>The following  steps are required only if you want to use XDebug, which is optional for PHP development. XDebug is an extension to PHP. NetBeans IDE uses it automatically when it is configured correctly for your PHP web stack. For more information on XDebug and NetBeans IDE, see <a href="./debugging.html">Debugging PHP Source Code in the NetBeans IDE</a>. Also see the <a target="_blank" href="http://wiki.netbeans.org/HowToConfigureXDebug">NetBeans wiki page on XDebug</a>.</p>
+<div class="indent">
+    <h3 id="xdebug-package">Installing the XDebug Package (Ubuntu 8.05 and later)</h3>
+<p>Starting in Ubuntu 8.05, an XDebug package is available, named <tt>php5-xdebug</tt>. The supported version of XDebug is 2.0.3-1. You can install it with command-line tools or through the Synaptic Package Manager UI. After you install XDebug, you have to modify <tt>php.ini</tt> as described in <a href="#enableXDebug">Enabling XDebug</a>.</p>
+<h3><a name="InstallingPHP5andPEARModules"></a>Building XDebug from Sources (Ubuntu 7.10) </h3>
+<p>To build XDebug from sources you need two additional modules: PHP5 Development and PEAR. </p>
+<ol>
+  <li>Start the <a href="#startSynapticPackageManager">Synaptic Package Manager</a>.</li>
+  <li>Switch to the Installed panel to check that the make module is already installed.</li>
+  <li>Switch to the All tab and click the check boxes next to the following packages:
+    <ul>
+        <li>php5-dev</li>
+      <li>php-pear</li>
+    </ul>
+    For each item, from the context menu choose Mark for installation.</li>
+  <li>The Mark additional required changes dialog box opens with a list of dependent packages that 
+    should be also installed to enable the work of the software. Click Mark.</li>
+  <li>The system returns to the Synaptic Package Manager panel where the selected packages are marked 
+    for installation.</li>
+  <li>Choose Apply on the toolbar. The Apply the following changes summary panel opens with a list of 
+    packages selected for installation. Click Apply.</li>
+  <li>When the download and installation are completed successfully, the Changes applied panel opens. 
+    Click Close.<p class="notes"><strong>Note:</strong> You can also install the modules by running the following command in the Terminal window: <tt class="examplecode">aptitude install php5-dev php-pear</tt></p>
+</li>
+    <li>You can now download and install XDebug. Enter the following command in the Terminal window:
+<pre class="examplecode">sudo pecl install xdebug</pre></li>
+</ol>
+<h3><a name="enableXDebug"></a>Enabling XDebug</h3>
+To enable XDebug, you need to edit the php.ini file in the <a href="#gedit"><tt>gedit</tt></a> text processor.
+<ol>
+  <li>To start the <tt>gedit</tt> text processor, launch the <a href="#launchTerminal">Terminal</a> and type the following command at the command prompt:
+    <pre class="examplecode">gksudo gedit</pre>
+    If asked, enter the password 
+    specified for the root user during the installation of your operating system.</li>
+  <li>Open the file <tt>/etc/php5/apache2/php.ini</tt>
+  .</li>
+  <li>Add the following lines to the file:
+    <pre class="examplecode">zend_extension=/usr/lib/php5/&lt;DATE+lfs&gt;/xdebug.so
+xdebug.remote_enable=on
+</pre>  
+  </li>
+</ol>
+<p>Check <a target="_blank" href="http://2bits.com/articles/setting-up-xdebug-dbgp-for-php-on-debian-ubuntu.html"> here</a> for more details on configuring XDebug.</p></div>
+<br style="clear:both;" />
+
+   <p>To send comments and suggestions, get support, and keep informed on the latest
+  developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+  the users@php.netbeans.org mailing list</a>.</p>
+<a href="../../trails/php.html">Back to the PHP Learning Trail</a>
+   </body>
+</html>

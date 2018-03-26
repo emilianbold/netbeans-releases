@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Utilizando Suporte aos Processadores de Anotação no NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+</head>
+
+    <body>
+
+        <h1>Suporte aos Processadores de Anotação no NetBeans IDE, Parte I: Utilizando o Projeto Lombok </h1>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+	    <p><b>Conteúdo</b></p>
+  
+        <ul class="toc">
+            <li><a href="annotations.html">Introdução</a></li>
+            <li><a href="annotations.html#map">Mapa das Opções javac e Comandos IDE</a> </li>
+          <li><strong>Utilizando Projeto Lombok para Anotações Personalizadas</strong>
+            <ul>
+              <li><a href="#create">Criando um Novo Projeto Java</a></li>
+              <li><a href="#enableann">Ativando Anotações Personalizadas para o Projeto</a> </li>
+              <li><a href="#writeapp">Escrevendo uma Aplicação com a Utilização de Anotações Personalizadas Lombok</a></li>
+            </ul>
+          </li>
+            <li><a href="annotations-custom.html">Utilizando Processadores Próprios de Anotação Personalizada no IDE</a></li>
+            <li><a href="annotations-custom.html#seealso" title="Compilando e Executando o Programa">Consulte Também </a></li>
+        </ul>
+        </div>
+	</div>
+	   
+	   <p>Para demonstrar como as anotações personalizadas funcionam dentro do NetBeans IDE, vamos usar o Projeto Lombok, que fornece uma forma conveniente de gerar automaticamente diversos elementos de código Java, tais como getters, setters, construtores e outros. Para maiores informações sobre suas funcionalidades, visite o <a href="http://projectlombok.org/" target="_blank">site do projeto Lombok</a>. Entretanto, tenha em mente que o Projeto Lombok inclui algumas funcionalidades que podem não funcionar em todos os ambientes de desenvolvimento.</p>
+
+           <p style="clear:both"><b>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</b></p>
+        <table>
+          <tbody>
+            <tr>
+              <th class="tblheader" scope="col">Software ou Recurso</th>
+              <th class="tblheader" scope="col">Versão Necessária</th>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+              <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+              <td class="tbltd1">versão 7 ou 8</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://code.google.com/p/projectlombok/downloads/list">lombok.jar</a></td>
+              <td class="tbltd1">v1.12.4 ou mais recente</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2><a name="create"></a>Criando um Novo projeto Java </h2>
+        <p>Neste exercício, você cria um projeto Java simples e uma classe chamada <tt>MyBooks.java</tt> que demonstrará as anotações em ação.</p>
+        <ol>
+            <li>Escolha <strong>Arquivo > Novo Projeto</strong> no menu principal para abrir o assistente de Novo Projeto.</li>
+            <li>Selecione o tipo de projeto Aplicação Java na categoria Java. Clique em Próximo.</li>
+            <li>Na página Nome e Localização do assistente, digite <strong><tt>TestAnn</tt></strong> como nome do projeto.</li>
+            <li>Digite <strong><tt>testann.TestBooks</tt></strong> no campo Criar Classe Principal para substituir o nome default da classe. Clique em Finalizar.<br> <img alt="tela do assistente Novo Projeto" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/newproj.png" title="Criando um novo projeto Java no NetBeans IDE">
+            <p>Quando você clica em Finalizar, o IDE cria a aplicação Java e abre a classe <tt>TestBooks.java</tt> no editor. Você pode ver que o novo projeto está agora visível na janela Projetos e que a classe <tt>TestBooks.java</tt> está no pacote <tt>testann</tt> sob o nó Pacotes de Código-fonte.</p></li>
+            <li>Clique com o botão direito do mouse no nó do pacote <tt>testann</tt> na janela Projetos e escolha Novo > Classe Java.</li>
+            <li>Digite <strong><tt>MyBooks</tt></strong> para o Nome da Classe e confirme que a classe será criada no pacote <tt>testann</tt>. Clique em Finalizar.
+            <p>Quando você clicar em Finalizar, o IDE abre a nova classe no editor.</p></li>
+            <li>No editor de código-fonte, adicione os seguintes três campos em <tt>MyBooks.java</tt>.
+           <pre class="examplecode">package testann;
+
+public class MyBooks {   
+    <strong>private int year; //fields
+    private String title;
+    private String author;</strong>
+
+}</pre></li>
+            <li>Coloque o ponteiro do mouse na declaração da classe e pressione Ctrl-Espaço para chamar o suporte de autocompletar código do editor.</li> 
+            <li>Selecione <tt>MyBooks (int year, String title, String author) - generate</tt> na lista autocompletar código para gerar um construtor para <tt>MyBooks.java</tt>.<br> <img alt="tela do recurso autocompletar código no editor" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/generate-constructor.png" title="Recurso autocompletar código para gerar o construtor">
+            </li>
+            <li>Salve as alterações.</li>
+    </ol>
+
+        
+    <h2><a name="enableann"></a>Ativando Anotações Personalizadas (lombok.jar) para o Projeto </h2>
+    <p>Neste exercício, você irá modificar a janela de propriedades do projeto para adicionar uma biblioteca à classpath do projeto e ativar o processamento de anotações no editor.</p>
+    <ol>
+        <li>Faça download do arquivo <a href="http://code.google.com/p/projectlombok/downloads/list" target="_blank">lombok.jar</a> e salve no sistema. </li>
+        <li>Clique com o botão direito no nó do projeto <tt>TestAnn</tt> e escolha Propriedades. </li>
+        <li>Selecione a categoria Bibliotecas na caixa de diálogo Propriedades do Projeto.</li>
+        <li>Clique em Adicionar JAR/Pasta na guia Compilar e localize o arquivo <tt>lombok.jar</tt> submetido a download.<br> <img alt="tela de categoria das Bibliotecas na janela Propriedades" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/properties1.png" title="Categoria das bibliotecas na janela Propriedades">
+
+        <p>Os recursos adicionados à guia Compilar correspondem à opção <tt>-classpath</tt> do <a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html#options" target="_blank">compilador Java</a>. Como <tt>lombok.jar</tt> é um arquivo JAR único que contém definições de anotação e processadores de anotações, é recomendado adicioná-lo ao classpath do projeto, que é a guia Compilação. </p>
+        </li>
+        <li>Escolha a categoria Compilação na janela Propriedades do Projeto.</li>
+        <li>Confirme se a caixa de seleção Ativar o Processamento de Anotações está selecionada (ela é ativada por default) e selecione a caixa de seleção Ativar o Processamento de Anotações no Editor.<br> <img alt="tela de categoria de Compilação na janela Propriedades" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/properties2.png" title="Categoria de compilação na janela Propriedades">
+
+        <p>A caixa de seleção Ativar Processamento de Anotações ativa o processamento de anotação ao construir e compilar o projeto. Se a caixa de seleção não estiver selecionada, a opção <tt>-proc:none</tt> é passada para o compilador Java e a compilação ocorre sem qualquer processamento de anotações. Então, se deseja processar anotações no código, a caixa de seleção Ativar Processamento de Anotações deve estar selecionada.</p>
+        <p>Ao selecionar a caixa de seleção, Ativar Processamento de Anotações no Editor, você faz com que o processamento de anotações fique visível no editor. Quaisquer artefatos adicionais que forem gerados por processadores de anotações (classes, métodos, campos, etc.) ficam visíveis no editor IDE e disponíveis para a conclusão de código, no Navegador, Ir para Tipo, Localizar usos e outros.</p>
+        </li>
+        <li>Clique em OK na janela Propriedades do Projeto e retorne para o arquivo <tt>MyBooks.java</tt>. </li>
+    </ol>
+
+    <p>Caso você expanda o nó Bibliotecas na janela Projetos, verá que a <tt>lombok.jar</tt> está agora listada como uma biblioteca do projeto.</p>
+<img alt="tela da janela Projetos" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/projects-window.png" title="Nó das bibliotecas na janela Projetos">
+
+    <h2><a name="writeapp"></a>Escrevendo uma Aplicação com a Utilização de Anotações Personalizadas Lombok </h2>
+    <ol>
+        <li>No arquivo <tt>MyBooks.java</tt>, digite <tt>@Data</tt> antes da declaração de classe <tt>MyBooks</tt>. <tt>@Data</tt> é uma anotação que gera o código padronizado para classes Java: getters para todos os campos, setters para todos os campos não-finais e o <tt>toString</tt> apropriado, <tt>equals</tt> e implementações <tt>hashCode</tt> que envolvem os campos da classe.
+        <p class="tips">Para aprender mais sobre quais anotações são suportadas pelo Projeto Lombok, consulte a <a href="http://projectlombok.org/features/index.html">Visão Geral das Funcionalidades</a> do Lombok.</p></li>
+        <li>Clique na dica na margem direita do editor e adicione importar para <tt>lombok.Data</tt>.<br> <img alt="tela de dicas no editor" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/import-lombok.png" title="Dica no editor para importar lombok">
+
+            <p>O código resultante no Editor deve ser parecido com o exemplo abaixo.</p>
+                <pre class="examplecode">package testann;
+
+import lombok.Data;
+
+
+@Data
+public class MyBooks {
+
+    private int year; //fields
+    private String title;
+    private String author;
+
+    public MyBooks(int year, String title, String author) {
+        this.year = year;
+        this.title = title;
+        this.author = author;
+    }
+}</pre>
+            <p>Observe que artefatos de código necessários, como getters, setters, toString, etc., têm sido gerados e é possível visualizá-los na janela do Navegador. A anotação <tt>@Data</tt> gera todos os códigos padronizados que são necessários para uma classe típica.</p>
+            <img alt="tela da janela Navegador" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/nav.png" title="Janela do Navegador mostrando os membros do projeto">
+            <p>É possível também chamar a janela autocompletar código (Ctrl-Espaço) e ver que os artefatos gerados estão disponíveis para pegá-los. Agora, veremos que o projeto compila e os artefatos gerados podem ser chamados de outras partes do programa.</p>
+            </li>
+            <li>Abra o arquivo <tt>TestBooks.java</tt> com o método <em>main</em> e adicione o código a seguir (em negrito) para criar um novo objeto da classe <tt>MyBooks</tt>.
+                <pre class="examplecode">package testann;
+
+public class TestBooks {
+
+    public static void main(String[] args) {
+        <strong>MyBooks books = new MyBooks(2009, "My Beautiful Dream", "John Smith");</strong>
+    }
+}</pre>
+            </li>
+            <li>Adicione o seguinte código para imprimir os valores da variável <tt>books</tt>.
+                <p>Para voltar os valores, chamamos os métodos getter que são autogerados por <tt>lombok.jar</tt>. Enquanto estiver digitando, observe que os artefatos autogerados estão disponíveis da janela autocompletar código.</p>
+                <pre class="examplecode">package testann;
+
+public class TestBooks {
+
+    public static void main(String[] args) {
+        MyBooks books = new MyBooks(2009, "My Beautiful Dream", "John Smith");
+        <strong>System.out.println("Year: " + books.getYear() + ", Title: " + books.getTitle() +  ", Author: " + books.getAuthor());</strong>
+    }
+}</pre>
+            </li>
+            <li>Salve as alterações.</li>
+            <li>Clique com o botão direito do mouse no nó na janela Projetos e selecione Executar (F6).
+                <p>Ao executar a aplicação, você deverá ver a seguinte saída que mostra que a aplicação foi compilada com êxito.</p>
+                <img alt="tela da janela de Saída" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/output.png" title="Janela de saída após a execução da aplicação"></li>
+        </ol>
+        <p>Você pode ver que os artefatos gerados pelo processador de anotação Lombok estão acessíveis de outras partes do programa.</p>
+
+
+        <h2><a name="nextsteps"></a>Próxima Etapa </h2>
+          <ul>
+              <li>Documentação Java SE - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">Anotações</a></li>
+              <li>Tutorial Java SE - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">Anotações</a> </li>
+            <!--<li><a href="annotations-custom.html">Part II: Using Own Custom Annotation Processor in the IDE</a></li>-->
+          </ul>
+          <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20NetBeans%20IDE">Enviar Feedback neste Tutorial</a><br style="clear:both;" />
+        </div>
+</body>
+</html>

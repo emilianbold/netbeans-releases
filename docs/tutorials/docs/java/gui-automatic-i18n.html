@@ -1,0 +1,417 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Internationalizing a GUI Form - NetBeans IDE Tutorial</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="Tutorial - Internationalization of GUI Form in NetBeans IDE">
+      <link rel="stylesheet" href="../../../netbeans.css">
+      <meta name="author" content="Jana Maleckova, Marek Grummich">
+      <meta name="description" content="This tutorial shows you how to set up internationalization for a single form and for a whole project." >
+   </head>
+   <body>
+      <h1>Internationalizing a GUI Form</h1>
+      <p>The following tutorial takes you through some of the basic steps of internationalization in the NetBeans IDE. 
+         We will set up internationalization for one form and later on design that form. 
+         Then we internationalize the whole project, which contains several forms in a few 
+         different packages. You can internationalize applications either by specifying 
+      automatic internationalization or by using a special wizard.</p>
+      <p class="align-center"><b>Expected duration: 30 minutes</b></p>
+      
+         <p><strong>Contents</strong></p>
+<img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.0 and later" title="Content on this page applies to the NetBeans IDE 7.0 and later">
+    <ul class="toc">
+            <li><a href="#about">Principle of Internationalization</a></li>
+            <li><a href="#Exercise_1">How to setup Automatic Internationalization at Design Time </a></li>
+            <li><a href="#Exercise_2">Internationalizing an Entire Project</a></li>
+            <li><a href="#Exercise_3">Internationalizing a Single Form</a></li>
+            <li><a href="#nextsteps">See Also</a></li>
+   </ul>
+         
+<p><b>To complete this tutorial, you need the following software and resources.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">version 7.0 or later </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6, 7, or 8 </td>
+                </tr>
+        </tbody>
+    </table>
+      <h2 class="tutorial"><a name="about"></a>Principle of Internationalization</h2>
+      <p class="tutorial">Internationalization permits applications to be adapted to 
+         various languages and regions without requiring engineering changes or recompilation. 
+         Internationalized programs enable textual elements, such as status messages 
+         and GUI component labels, to be stored outside the source code and retrieved 
+      dynamically rather than hard-coded in the program.</p>
+      
+      <p class="tutorial">You typically store your internationalized strings in properties 
+         files, in the form of key/value pairs. The key is the identifier used by the 
+         program to retrieve the text, and the value is the actual text. You create one 
+         properties file for each locale (or language) in which you translate the program. 
+      The keys are the same in each locale - only the strings are different. </p>
+      <p class="tutorial">The IDE provides tools for doing each of the following:</p>
+      <ul>
+         <li>Inserting internationalized strings as you create a GUI form or Java program</li>
+         <li>Replacing all hard-coded strings in an individual file or group of files 
+         with internationalized strings</li>
+      </ul>
+      <h2><a name="Exercise_1"></a>Internationalizing a GUI Form at Design Time </h2>
+      <p>In this exercise we will open the demo Java application project, which contains 
+         a well-known find dialog created using the GUI Builder. Next, we will 
+         switch on automatic internationalization for Form FindDialog.java. In  
+         order to test our internationalized GUI form, 
+         we will add a new locale to the properties file and run the form 
+      in the non-default locale. </p>
+      <div class="indent">
+         <h3 class="tutorial">Opening the Example Project</h3>
+         <ol>
+            <li> Download and unzip the <a href="https://netbeans.org/files/documents/4/770/InternationalizeDemo.zip" target="_blank">InternationalizeDemo.zip</a> 
+            project to any location on your computer. </li>
+            <li>Choose File &gt; Open Project, navigate to the <tt>InternationalizeDemo</tt> 
+               project that you extracted in the last step, and click Open. The project folder might 
+            be in a containing folder that is also called <tt>InternationalizeDemo</tt>.</li>
+            <li>Expand Source Packages &gt; Demo and double-click <tt>FindDialog.java</tt>. 
+               The sample form opens in the GUI Builder. 
+               <p class="align-center"> <img src="../../../images_www/articles/72/java/gui-automatic-i18n/finddialog_ai18n.png" alt="Find Dialog" border="1"> 
+               </p>
+              
+            </li>
+         </ol>
+         <h3 class="tutorial">Switch Automatic Internationalization On</h3>
+                  <ol>
+                     <li>Select the root node in the Navigator Window (named <tt>Form FindDialog</tt>). 
+                       <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/navigator.png" border="1"></p></li>
+                     <li>In the Properties window, select the checkbox in the Automatic Internationalization property.
+					   
+                         <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/properties.png" border="1"></p>
+						 
+                      </li>
+                    <li> Click Upgrade in the GUI Form Format Upgrade dialog box. 
+						<p>If the checkbox is selected, the IDE creates the <tt>Bundle.properties</tt> file 
+                        in the <tt>demo</tt> package as it is set in the <tt>Properties Bundle File</tt> property. 
+                        </p>
+                        <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/bundle_new.png"></p>
+						<p>If you need to have the <tt>Bundle.properties</tt> file in a different location, 
+                        you can click the ellipsis (...) button to the right of the Properties Bundle File and  choose 
+                    a location or directly type the path in the property's text field.</p>
+					 
+                     </li>
+                     <li>In the Projects window, double-click the <tt>Bundle.properties</tt> node 
+                        in the Projects Window or right-click the node and choose Edit.
+                        <p>The properties file is opened in the Source Editor. As you can see, 
+                           all appropriate Keys and Values for Form <tt>FindDialog.java</tt>
+                           are generated. (The name of each key is derived from the form file name
+                           and the component Variable name. For example, the
+                           key <tt>FindDialog.jLabel1.text</tt> is generated
+                           for a component with the variable name <tt>jLabel1</tt> placed 
+                           in form file <tt>FindDialog</tt>. The value <tt>jLabel1</tt> represents component's
+                        Text property in this example.</p>
+               </li>
+			   <li>Close the <tt>Bundle.properties</tt> file. </li></ol>
+         <h3 class="tutorial">Internationalizing Individual GUI Components</h3>
+         <p>We will now use the GUI builder to enter internationalized 
+         strings for the JLabels and JButtons in the form. </p> 
+         <ol>
+            
+			<li>Select the appropriate GUI component 
+            (e.g. <tt>jLabel1</tt>) in the Design Area.</li>
+            <li>In the Properties window, click the ellipsis (...) button for the Text property.
+            <p class="note"><b>Note:</b> You can also internationalize other properties that have String 
+            values, such as Mnemonic, Accessible Name, Accessible Descriptor, and ToolTip.</p></li>
+            <li>The property editor is switched to resource bundle mode. 
+               Check that the Bundle Name field is set to <tt>demo.Bundle</tt> 
+            and the Key field contains the string <tt>FindDialog.jLabel1.text</tt></li>
+            <li>Type <tt>Find What:</tt> in the Value field. </li>
+            <li>Click OK.</li>
+         </ol>
+         <p>Repeat the previous steps for all the  components so that the form looks like 
+         the following picture:</p>
+        
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_new.png" rel="lytebox" title="internationalized form">
+					   <img src="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_new_small.png" alt="internationalized form" border=1></a></p>
+         
+		  <p class="note"><b>Note:</b> Steps 1-5 can be done in a simpler and faster way: just double click <tt>jLabel1</tt> in the design view, 
+            change the text from <tt>jLabel1</tt> to
+         <tt>Find What:</tt>, and press Enter. The result is the same as from the steps given above.</p>
+		
+		 <p>To make the components the same width, complete the steps below:</p>
+		 <ol>
+		   <li>Control-click all eight of the jCheckBoxes in the form to select them.</li>
+		   <li>With the jCheckBoxes selected, right-click any one of them and choose  Same Size &gt; Same Width from the pop-up menu.</li>
+		   <li>Apply Steps 1-2 to the three jButtons.</li>
+		 </ol>
+        
+         <a name="newlocale"></a>
+		 
+		
+
+         <h3 class="tutorial">Adding a New Locale</h3>
+         <ol>
+            <li>Select the root node in the Navigator Window (the <tt>Form FindDialog</tt> node).</li>
+            <li>In the Properties window, click the ellipsis (...) button 
+            for the Design Locale property.</li>
+            <li>In the New Locale dialog box, choose <tt>es_ES</tt> from the <tt>Predefined Locales:</tt> combobox.</li>
+            <li>Click OK.
+            <p>The new locale appears below the <tt>Bundle.properties</tt> node, as shown below:</p>
+            <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/addlocale_new.png" alt="Properties file with multiple locales" border="1"></p> </li>
+            <li>In the Projects window, right-click <tt>Bundle.properties</tt> 
+            and choose Open.</li>
+            <li>Translate individual messages in the correspondent column of the table to a 
+               new language (for example, Spanish), as shown below: 
+              <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-automatic-i18n/bundles_new.png" rel="lytebox" title="Properties editor with multiple locales">
+					   <img src="../../../images_www/articles/72/java/gui-automatic-i18n/bundles_new_small.png" alt="Properties editor with multiple locales" border=1></a></p>
+           </li>
+			<li>Press Ctrl-S to save your edits.</li>
+			<li>Select the <tt>FindDialog.java</tt> tab to display the form you are internationalizing.</li>
+            <li>Right-click the root node in the Navigator window and choose Reload Form (alternatively, press Ctrl-R).</li>
+               <li>Click Save in the Question dialog box that displays. <br>The form is reopened and the Spanish locale is loaded in in the design, as shown below: 
+            
+			<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_es_new.png" rel="lytebox" title="Design area showing Spanish messages">
+					   <img src="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_es_new_small.png" alt="Design area showing Spanish messages" border=1></a></p>
+            </li>
+        </ol>
+         <h3 class="tutorial">Testing a Non-Default Locale</h3>
+         <ol>
+            <li>In the Projects window, right-click the 
+            InternationalizeDemo project and choose Properties.</li>
+            <li>In the Categories pane, select the Run node.</li>
+            <li>Enter <tt>-Duser.language=es -Duser.country=ES</tt> in the VM Options field.
+              <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/prjproperties.png" rel="lytebox" title="Properties dialog box">
+					   <img src="../../../images_www/articles/80/java/gui-automatic-i18n/prjproperties_small.png" alt="Properties dialog box" border=1></a></p>
+            </li>
+            <li>Click OK.</li>
+            <li>Right-click the InternationalizeDemo project and choose Run.
+               <p>The IDE runs the <tt>FindDialog</tt> dialog box in the Spanish locale like shown below.</p>
+			  
+			   <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-automatic-i18n/run.png" rel="lytebox" title="Dialog in the Spanish locale">
+					   <img src="../../../images_www/articles/72/java/gui-automatic-i18n/run_small.png" alt="Dialog in the Spanish locale" border=1></a></p>
+           </li>
+         </ol>
+      </div>
+      <h2><a name="Exercise_2"></a>Internationalizing an Entire Project</h2>
+      <p>Generally, we have several files in the default locale and we are asked to 
+         adapt them in order to be translated to other languages. The Internationalization 
+         Wizard is the perfect tool for this task, as it can internationalize multiple 
+         files at once. We will show this feature on the GUI Form examples project, 
+         which contains the form created in the 
+      <a href="quickstart-gui.html">Designing a Swing GUI</a> tutorial. </p>
+      <div class="indent">
+         <h3 class="tutorial"> Creating a Sample Project </h3>
+                  <ol>
+                     <li>Choose File &gt; New Project or click on the New Project icon in the
+                     IDE toolbar. </li>
+                     <li>In the Categories pane, select the Samples &gt; Java node. In 
+                     the Projects pane, select GUI Form Examples. Click Next.</li>
+                     <li>Enter <tt>GUIFormExamples</tt> in the Project Name field and specify
+                     the project location (e.g. <tt>/space/projects</tt>).</li>
+                     <li>Click Finish.</li>
+                  </ol>
+
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-automatic-i18n/formexamples.png" alt="Sample Form Project" border="1"></p>
+
+         <h3 class="tutorial"> Preparing a Properties File </h3>
+                  <ol>
+                     <li>Choose File &gt; New File or click the New File icon in the IDE toolbar.</li>
+                     <li>In the Categories pane, select the Other node and in the File Types                                 
+                     pane, choose Properties File. Click Next.</li>
+                     <li> Enter <tt>ContactEditor</tt> in the File Name field.</li>
+					 <li>Click Browse and specify the <tt>GUIFormExamples/src/examples</tt> folder as the file location in the Browse Folders dialog box.</li>
+                     <li>Click Select Folder.</li>
+					 <li>Click Finish.
+                        <p>The IDE creates the <tt>ContactEditor.properties</tt> file and opens 
+                        it in the Source Editor. </p>
+                        <p>Repeat previous steps to create another <tt>Antenna.properties</tt> file. </p>
+                     </li>
+                  </ol>
+
+<p class="align-center"> <img src="../../../images_www/articles/80/java/gui-automatic-i18n/ceprjprops.png" alt="project with properties files" border="1"> </p>
+
+         <h3 class="tutorial">Invoking The Internationalization Wizard</h3>
+         <ol>
+            <li>In the Main menu, choose Tools &gt; Internationalization &gt; Internationalization Wizard. </li>
+			<li>On the first page of the Wizard, click Add Source(s).</li>
+			<li>In the Select Sources dialog box, expand the <tt>Source Packages</tt> &gt; <tt>examples</tt> nodes and control-click the <tt>Antenna.java</tt>, <tt>ContactEditor.java</tt>, and <tt>Find.java</tt> files to select them.</li>
+			<li>Click OK. 
+			<p>The sources files appear in the first page of the Wizard as shown below:</p>
+			<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardone.png" rel="lytebox" title="Internationalization wizard">
+					   <img src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardone_small.png" alt="Internationalization wizard" border=1></a></p></li>
+            <li>For demonstration purposes, select <tt>examples.Find</tt> and click the Remove Source(s) 
+               button.</li>
+            <li>Click Next. </li>
+            <li>Check if the Internationalization Wizard offers the correct properties files 
+               <tt>examples.Antenna</tt> and <tt>examples.ContactEditor</tt>. If it does 
+               not, use the Select Resource button to choose the correct properties file.
+              <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardtwo.png" rel="lytebox" title="Page 2 of Internationalization wizard">
+					   <img src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardtwo_small.png" alt="Page 2 of Internationalization wizard" border=1></a></p>
+            </li>
+            <li>Click Next. </li>
+			<li>Skip page 3 of the Wizard since you are not going to create any fields and modify additional values and click Next.</li>
+            <li>All hard-coded strings are displayed in the last step of Internationalization
+               wizard and it is possible to decide which of them will come from the properties
+               file (use checkbox). You can further customize individual keys, values, comments,
+               and format of replaced strings by clicking on the ellipsis (...) button for  a string. 
+               <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardthree.png" rel="lytebox" title="Page 4 of Internationalization wizard">
+					   <img src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardthree_small.png" alt="Page 4 of Internationalization wizard" border=1></a></p>
+            </li>
+            <li>Click Finish.
+               <p>Now, the internationalization of source code is finished, other locale 
+                  can be <a href="#newlocale">added</a> and <a href="#testlocale">tested</a> 
+               as it was shown previously. </p>
+            </li>
+         </ol>
+      </div>
+      <h2><a name="Exercise_3"></a>Internationalizing a Single Form</h2>
+      <p>Using automatic I18n features is the easiest way to internationalize a GUI form. But if you don't 
+         have the update pack installed, or you also want to internationalize code not generated 
+         by the Form Editor, then using the Internationalize window is the way to go. (This feature works 
+         with any <tt>.java</tt> file, not just files created with the Form Editor). 
+         The next example uses the Internationalization window, which is a part of default
+      Netbeans IDE installation.</p>
+      <p>In this last exercise we will reuse the GUI Form Examples project and 
+         internationalize the Find.java form, which we excluded in the previous exercise.
+         We will invoke the Internationalize dialog box to replace all hard-coded strings 
+         in this file. Finally, we will go through a short demonstration of how to insert
+      an internationalized string in the source code when you are writing a program.</p>
+      <div class="indent">
+         <h3 class="tutorial"> Using the Internationalize Dialog Box </h3>
+         <ol>
+            <li>In the Projects window, select <tt>Find.java</tt> and choose Tools 
+               &gt; Internationalization &gt; Internationalize from the main menu. 
+               <p>The IDE shows Internationalization dialog box and pre-fills the first hard-coded 
+               string from the <tt>Find.java</tt> source code . </p>
+            </li>
+            <li>Click Select to select a particular properties file or create a new one. </li>
+			<li>In the Select Resource Bundle dialog box, enter <tt>Find.properties</tt> in the File Name text field, click Create New and then OK.</li>
+            <li>You can modify format of replaced string, key, value or comment if it is 
+            necessary. We'll just leave the default values.</li>
+            <li>Click Replace to confirm the change and move a focus on the next hard-coded string. 
+               <p>If a hard-coded string does not need to be replaced, click the Skip button.</p>
+               
+			   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18ndialog.png" rel="lytebox" title="Internationalize dialog box">
+					   <img src="../../../images_www/articles/80/java/gui-automatic-i18n/i18ndialog_small.png" alt="Internationalize dialog box" border=1></a></p>
+               
+            </li>
+         </ol>
+         <h3 class="tutorial"> Inserting a Single Internationalized String </h3>
+         <ol>
+            <li>In the Projects window, right-click <tt>Find.java</tt> and choose Edit.
+               <p>The IDE opens the <tt>Find.java</tt> file in the Source Editor. </p>
+            </li>
+            <li>Scroll through the source code and find the main method. </li>
+            <li>Insert the following line in bold in the main method: 
+               <pre class="examplecode">    public static void main(String args[]) {
+			   /* Set the Nimbus look and feel */
+			   //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot; Look and feel setting code (optional) &quot;&gt;
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            javax.swing.UIManager.LookAndFeelInfo[] installedLookAndFeels=javax.swing.UIManager.getInstalledLookAndFeels();
+			for (int idx=0; idx&lt;installedLookAndFeels.length; idx++)
+			if (&quot;Nimbus&quot;.equals(installedLookAndFeels[idx].getName())) {
+			    javax.swing.UIManager.setLookAndFeel(installedLookAndFeels[idx].getClassName());
+				break;
+			}
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //&lt;/editor-fold&gt;
+        <b>System.out.println();</b>
+		/* Create and display the form */ 
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Find().setVisible(true);
+            }
+        });
+               }</pre>
+            </li>
+			<li>Place the mouse cursor within the parentheses of the <tt>System.out.println();</tt> so that an internationalized string is inserted as a parameter.</li>
+            <li>Press Ctrl-Shift-J to invoke Insert Internationalized String dialog box (alternatively, you can choose Tools &gt; Internationalization &gt; Insert Internationalized String from the main menu).</li>
+			
+            <li>For Bundle Name, click the Select button, select the <tt>Source Packages &gt; examples</tt> 
+               folder, and enter <tt>Find</tt> as the Bundle name in the File Name text field. Then click OK. <br>The Bundle 
+            Name field of the Insert Internationalized String dialog box shows <tt>examples.Find</tt>.</li>
+            <li>Type <tt>Start</tt> in the Key drop-down box and <tt>Start Find Dialog</tt>
+               in the Value field. Then click OK. 
+               <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/insi18nstring.png"></p>
+            </li>
+            <li>The IDE inserts an internationalized string:
+               <pre class="examplecode">    public static void main(String args[]) {
+			   /* Set the Nimbus look and feel */
+			   //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot; Look and feel setting code (optional) &quot;&gt;
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            javax.swing.UIManager.LookAndFeelInfo[] installedLookAndFeels=javax.swing.UIManager.getInstalledLookAndFeels();
+			for (int idx=0; idx&lt;installedLookAndFeels.length; idx++)
+			if (&quot;Nimbus&quot;.equals(installedLookAndFeels[idx].getName())) {
+			    javax.swing.UIManager.setLookAndFeel(installedLookAndFeels[idx].getClassName());
+				break;
+			}
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //&lt;/editor-fold&gt;
+<b>        System.out.println(java.util.ResourceBundle.getBundle(&quot;examples/Find&quot;).getString(&quot;Start&quot;));</b>
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Find().setVisible(true);
+                }
+            });
+               }</pre>
+               
+            </li>
+         </ol>
+      </div>
+	  <br>
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:Internationalizing%20a%20GUI%20Form%20in%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+      <br style="clear:both;" >   
+      <h2><a name="nextsteps"></a>See Also</h2>
+      <p>For more information see the following links:</p>
+      <ul>
+	   <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementing Java GUIs</a> in <i>Developing Applications with NetBeans IDE</i></li>
+         <li><a href="../../trails/matisse.html">Java GUI Applications Learning Trail</a></li>
+         <li><a href="quickstart-gui.html">Designing a Swing GUI</a></li>
+         <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ" target="_blank">GUI Builder FAQ</a> </li>
+      </ul>
+      
+   </body>
+</html>
+

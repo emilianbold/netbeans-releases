@@ -1,0 +1,968 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011, 2014 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Using the WebSocket API in a Web Application</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE to use the WebSocket API in a Java EE 7 web application.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Using the WebSocket API in a Web Application</h1>
+        
+            <p>This tutorial demonstrates how to create a simple web application that enables
+            collaboration between client browsers that are connected to a single server application.
+            When a user draws a graphic element on a canvas in the client browser the element appears 
+            on the canvas of all connected clients.
+            How does it work?
+            When the browser loads the web page a client-side script sends a WebSocket handshake
+            request to the application server.
+            The application can accept JSON and binary messages from the clients connected in the session and
+            broadcast the messages to all the connected clients.</p>
+            
+            <p>In this tutorial you will create a web application that uses the Java API for WebSocket 
+            (<a href="http://www.jcp.org/en/jsr/detail?id=356">JSR 356</a>) to enable
+            bi-directional communication between browser clients and the application server.
+            The Java API for WebSocket provides support for creating 
+            WebSocket Java components, initiating and intercepting WebSocket events and creating 
+            and consuming WebSocket text and binary messages.
+            The tutorial will also demonstrate how you can use the Java API for JSON Processing 
+            (<a href="http://jcp.org/en/jsr/detail?id=353">JSR 353</a>) to produce and consume JSON.
+            The Java API for WebSocket and the Java API for JSON Processing are part of the Java EE 7 platform 
+            (<a href="http://jcp.org/en/jsr/detail?id=342">JSR 342</a>).</p>
+            
+            <p>The application contains a WebSocket endpoint and decoder and encoder interfaces,
+            a web page and some JavaScript files that are run in the client browser
+            when the page is loaded or when invoked from a form in the web page.
+            You will deploy the application to GlassFish Server Open Source Edition 4, 
+            the reference implementation of Java EE 7 technology.</p>
+        
+            <p class="notes"><strong>Note.</strong> This tutorial is based on the <a href="https://blogs.oracle.com/arungupta/entry/collaborative_whiteboard_using_websocket_in" target="_blank">
+            Collaborative Whiteboard using WebSocket in GlassFish 4 - Text/JSON and Binary/ArrayBuffer Data Transfer (TOTD #189) </a> blog post and 
+            other blog entries which can be found on <a href="http://blog.arungupta.me/" target="_blank">Arun Gupta's blog</a>.
+            Be sure to visit the blog and see many other excellent entries on working with the WebSocket API and GlassFish 4.</p>
+        
+            <p class="tips">You can also watch the <a href="maven-websocketapi-screencast.html">Video of Using the WebSocket API in a Web Application</a>.</p>
+        
+
+                       
+           <p><b>Tutorial Exercises</b></p>
+           <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.3, 7.4 and 8.0" >
+
+            <ul>
+                <li><a href="#Exercise_1">Creating the Web Application Project</a></li>
+                <li><a href="#createendpoint">Creating the WebSocket Endpoint</a>
+                    <ul>
+                        <li><a href="#createendpoint1">Create the Endpoint</a></li>
+                        <li><a href="#createendpoint2">Initiate the WebSocket Session</a></li>
+                        <li><a href="#createendpoint3">Test the Endpoint</a></li>
+                    </ul>
+                </li>
+                <li><a href="#createwhiteboard">Creating the Whiteboard</a>
+                    <ul>
+                        <li><a href="#createwhiteboard1">Add the Canvas</a></li>
+                        <li><a href="#createwhiteboard2">Create the POJO</a></li>
+                        <li><a href="#createwhiteboard3">Create a Coordinates Class</a></li>
+                        <li><a href="#createwhiteboard6">Generate the JSON String</a></li>
+                        <li><a href="#createwhiteboard4">Implement the Encoder and Decoder Interfaces</a></li>
+                        <li><a href="#createwhiteboard5">Run the Application</a></li>
+                    </ul>
+                </li>
+                <li><a href="#sendbinary">Sending Binary Data to the Endpoint</a></li>
+                <!--<li><a href="#Exercise_7">Downloading the Solution Project</a></li>-->
+            </ul>
+           
+            <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.3.1, 7.4, 8.0, Java EE version</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://glassfish.java.net/">GlassFish Server Open Source Edition</a></td>
+                    <td class="tbltd1">4</td>
+            </tr>
+            </tbody>
+        </table>
+            <p class="notes"><strong>Note.</strong> GlassFish 4 is bundled with the Java EE download bundle of NetBeans IDE.</p>
+            
+            <p><b>Prerequisites</b></p>
+            <p>This document assumes you have some basic knowledge of, or programming experience with, the following technologies:</p>
+            <ul>
+                <li>Java Programming</li>
+                <li>JavaScript/HTML Programming</li>
+                <li>NetBeans IDE</li>
+            </ul>
+
+            <p>Before starting this tutorial you may want to familiarize yourself with
+            the following documentation.</p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Best Practices for Apache Maven in NetBeans IDE</a></li>
+                <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Chapter 1. Introducing Apache Maven</a>
+         (from <a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: The Complete Reference </a>)</li>
+            </ul>
+            <p class="tips">You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/WhiteboardApp.zip">a zip archive of the finished project</a>.</p>
+
+        <!-- ===================================================================================== -->
+        <a name="Exercise_1"></a> 
+            <!--Exercise 1: -->
+        <h2>Creating the Web Application Project</h2>
+
+        <p>The goal of this exercise is to create a web application project
+        using the New Project wizard in the IDE.
+        When you create the project you will select Java EE 7 as the Java EE version and 
+        GlassFish 4 as the application server. 
+        GlassFish 4 is the reference implementation of the Java EE 7 platform.
+        You must have an application server that supports Java EE 7 registered with the IDE 
+        to create the application in this tutorial.</p>
+
+        
+        <ol>
+            <li>Choose File &gt; New Project (Ctrl-Shift-N on Windows; &#8984;-Shift-N on Mac) from the main menu.</li>
+            <li>Select Web Application from the Maven category. Click Next.</li>
+            <li>Type <strong>WhiteboardApp</strong> for the the Project Name and set the Project Location.</li>
+            <li>Type <strong>org.sample</strong> for the Group Id. Click Next.</li>
+            <li>Select <strong>GlassFish Server 4.0</strong> for the Server. </li>
+            <li>Set the Java EE Version to <strong>Java EE 7 Web</strong>. Click Finish.<br>
+            <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-newproject.png" class="margin-around b-all" alt="Project details in the New Project wizard" title="Server and Java EE versions in the New Project wizard" >
+            </li>
+        </ol>
+
+
+        <p>When you click Finish, the IDE creates the project and opens the project in the Projects window.</p>
+        
+        <!-- ===================================================================================== -->
+        <a name="createendpoint"></a>
+        <h2>Creating the WebSocket Endpoint</h2>
+        <p>In this section you will create a WebSocket endpoint class and a JavaScript file.
+        The WebSocket endpoint class contains some basic methods that are run when the session is opened.
+        You will then create a JavaScript file that will initiate the handshake with the server when the page is loaded.
+        You will then run the application to test that the connection is successful.</p>
+        
+        <p class="tips">For more about using WebSocket APIs and annotations, see the summary of the 
+            <a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/package-summary.html" target="_blank">
+                javax.websocket</a> package.</p>
+        
+        <div class="indent">
+            <a name="createendpoint1"></a>
+            <h3>Creating the Endpoint</h3>
+            <p>In this exercise you will use a wizard in the IDE to help you create the WebSocket endpoint class.</p>
+        <ol>
+            <li>Right-click the Source Packages node in the Projects window and choose New &gt; Other.</li>
+            <li>Select WebSocket Endpoint in the Web category. Click Next.</li>
+            <li>Type <strong>MyWhiteboard</strong> as the Class Name.</li>
+            <li>Select <tt>org.sample.whiteboardapp</tt> in the Package dropdown list.</li>
+            <li>Type <strong>/whiteboardendpoint</strong> as the WebSocket URI. Click Finish.<br>
+                <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-newendpoint.png" class="margin-around b-all" alt="WebSocket Endpoint in the New File wizard" title="WebSocket Endpoint in the New File wizard" >
+        
+                <p>When you click Finish the IDE generates the WebSocket Endpoint class and opens the file in the source editor.
+            In the editor you can see that the IDE generated some annotations that are part of the WebSocket API. 
+            The class is annotated with 
+            <tt><a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/server/ServerEndpoint.html" target="_blank">@ServerEndpoint</a></tt> 
+            to identify the class as an endpoint and the WebSocket URI is specified as a parameter of the annotation.
+            The IDE also generated a default <tt>onMessage</tt> method that is annotated with 
+            <tt><a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/OnMessage.html" target="_blank">@OnMessage</a></tt>.
+                A method annotated with <tt>@OnMessage</tt> is invoked each time that the client receives a WebSocket message.</p>
+        
+            <pre class="examplecode">
+@ServerEndpoint("/whiteboardendpoint")
+public class MyWhiteboard {
+
+    @OnMessage
+    public String onMessage(String message) {
+        return null;
+    }
+    
+}</pre>
+            </li>
+            <li>Add the following field (in <strong>bold</strong>) to the class.
+                <pre class="examplecode">
+@ServerEndpoint("/whiteboardendpoint")
+public class MyWhiteboard {
+    <strong>private static Set&lt;Session&gt; peers = Collections.synchronizedSet(new HashSet&lt;Session&gt;());</strong>
+
+    @OnMessage
+    public String onMessage(String message) {
+        return null;
+    }
+}</pre>
+            </li>
+            <li>Add the following <tt>onOpen</tt> and <tt>onClose</tt> methods.
+                <pre class="examplecode">
+    @OnOpen
+    public void onOpen (Session peer) {
+        peers.add(peer);
+    }
+
+    @OnClose
+    public void onClose (Session peer) {
+        peers.remove(peer);
+    }</pre>
+                <p>You can see that the <tt>onOpen</tt> and <tt>onClose</tt> methods are annotated with 
+                    <tt><a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/OnOpen.html" target="_blank">@OnOpen</a></tt> 
+                    and 
+                    <tt><a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/OnClose.html" target="_blank">@OnClose</a></tt>
+                    WebSocket API annotations.
+                A method annotated with <tt>@OnOpen</tt> is called when the web socket session is opened. 
+                In this example the annotated <tt>onOpen</tt> method adds the browser client to the group of peers in
+                the current session and the <tt>onClose</tt> method removes the browser from the group.</p>
+                
+                <p class="tips">Use the hints and code completion in the source editor to help you generate the methods. 
+                    Click the hint glyph in the left margin next to the class declaration 
+                    (or place the insert cursor in the class declaration and type Alt-Enter)
+                    and select the method in the popup menu. 
+                    The code completion can help you code the method.</p>
+                <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-endpoint-hint.png" class="margin-around b-all" alt="screenshot of Code Hint in the Source Editor" title="Code Hint in the Source Editor" >
+                
+            </li>
+            <li>Right-click in the editor and choose Fix Imports (Alt-Shift-I; &#8984;-Shift-I on Mac). Save your changes.
+                <p>You will see that import statements for classes in <tt>javax.websocket</tt> are added to the file.</p></li>
+        </ol>
+        <p>The endpoint is now created. You now need to create a JavaScript file to initiate the WebSocket session.
+        </p>
+        
+        <!-- ===================================================================================== -->
+        <a name="createendpoint2"></a>
+        <h3>Initiate the WebSocket Session</h3>
+        <p>In this exercise you will create a JavaScript file that will initiate a WebSocket session.
+        The browser client joins a session via an HTTP 'handshake' with the server over TCP.
+        In the JavaScript file you will specify the name of the <tt>wsURI</tt> of the endpoint and declare the WebSocket.
+        The <tt>wsURI</tt> URI scheme is part of the WebSocket protocol and
+        specifies the path to the endpoint for the application.</p>
+        
+        <ol>
+            <li>Right-click the project node in the Projects window and choose New &gt; Other.</li>
+            <li>Select JavaScript File in the Web category of the New File wizard. Click Next.</li>
+            <li>Type <strong>websocket</strong> for the JavaScript File Name. Click Finish.</li>
+            <li>Add the following to the JavaScript file.
+                <pre class="examplecode">
+var wsUri = "ws://" + document.location.host + document.location.pathname + "whiteboardendpoint";
+var websocket = new WebSocket(wsUri);
+
+websocket.onerror = function(evt) { onError(evt) };
+
+function onError(evt) {
+    writeToScreen('&lt;span style="color: red;"&gt;ERROR:&lt;/span&gt; ' + evt.data);
+}</pre>
+                <p>This script will initiate the session handshake with the server when <tt>websocket.js</tt> is loaded by the browser.</p> 
+            </li>
+            <li>Open <tt>index.html</tt> and add the following code (in <strong>bold</strong>) to the bottom of the file to load <tt>websocket.js</tt> when the page is finished loading.
+                <pre class="examplecode">&lt;body&gt;
+    <strong>&lt;h1&gt;Collaborative Whiteboard App&lt;/h1&gt;
+        
+    &lt;script type="text/javascript" src="websocket.js"&gt;&lt;/script&gt;</strong>
+&lt;/body&gt;</pre>
+            </li>
+        </ol>
+        <p>You can now test that the WebSocket endpoint is working and that the session is started and the client is added to the session.</p>
+        
+        <!-- ===================================================================================== -->
+        <a name="createendpoint3"></a>
+        <h3>Testing the Endpoint</h3>
+        <p>In this exercise you will add some some simple methods to the JavaScript file to print
+        the <tt>wsURI</tt> to the browser window when the browser is connected to the endpoint.</p>
+        
+        <ol>
+            <li>Add the following <tt>&lt;div&gt;</tt> tag (in <strong>bold</strong>) to <tt>index.html</tt>
+            <pre class="examplecode">&lt;h1&gt;Collaborative Whiteboard App&lt;/h1&gt;
+        
+<strong>&lt;div id="output"&gt;&lt;/div&gt;</strong>
+&lt;script type="text/javascript" src="websocket.js"&gt;&lt;/script&gt;</pre>
+            </li>
+            <li>Add the following declaration and methods to <tt>websocket.js</tt>. Save your changes.
+                <pre class="examplecode">// For testing purposes
+var output = document.getElementById("output");
+websocket.onopen = function(evt) { onOpen(evt) };
+
+function writeToScreen(message) {
+    output.innerHTML += message + "&lt;br&gt;";
+}
+
+function onOpen() {
+    writeToScreen("Connected to " + wsUri);
+}
+// End test functions</pre>
+            <p>When the page loads the JavaScript functions will print the message that the 
+            browser is connected to the endpoint.
+            You can delete the functions after you confirm that the endpoint is performing correctly. </p>       
+            </li>
+            <li>Right-click the project in the Projects window and choose Run.</li>
+        </ol>
+        <p>When you run the application the IDE will start the GlassFish server and build and deploy the application. 
+        The index page will open in your browser and you will see the following message in the browser window.</p>
+        <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-browser1.png" class="margin-around b-all" alt="Connected to endpoint message in browser window" title="Connected to endpoint message in browser window" >
+        <p>In the browser window you can see the following endpoint where messages are accepted:
+            <tt>http://localhost:8080/WhiteboardApp/whiteboardendpoint</tt></p>
+       </div>
+        
+        
+        
+        <!-- ===================================================================================== -->
+        <a name="createwhiteboard"></a>
+        <h2>Creating the Whiteboard</h2>
+        <p>In this section you will create the classes and JavaScript files to send and receive JSON text messages.
+        You will also add an
+        <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html">HTML5 Canvas</a> 
+        element for painting and displaying some content and an HTML <tt>&lt;form&gt;</tt> 
+        with radio buttons that enable you to specify the shape and color of the paintbrush.</p>
+
+        <!-- ===================================================================================== -->
+        <div class="indent">
+        <a name="createwhiteboard1"></a>
+        <h3>Add the Canvas to the Web Page</h3>
+        <p>In this exercise you add a <tt>canvas</tt> element and a <tt>form</tt> element to the default index page.
+        The checkboxes in the form determine the properties of the paintbrush for the canvas.</p>
+        <ol>
+            <li>Open <tt>index.html</tt> in the source editor.</li>
+            <li>Delete the <tt>&lt;div&gt;</tt> tag that you added to test the endpoint and add the following 
+            <tt>&lt;table&gt;</tt> and <tt>&lt;form&gt;</tt> elements (in <strong>bold</strong>) after the opening body tag.
+            <pre class="examplecode">&lt;h1&gt;Collaborative Whiteboard App&lt;/h1&gt;
+        
+    <strong>&lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+            &lt;/td&gt;
+            &lt;td&gt;
+                &lt;form name="inputForm"&gt;
+                    
+
+                &lt;/form&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;</strong>
+    &lt;script type="text/javascript" src="websocket.js"&gt;&lt;/script&gt;
+    &lt;/body&gt;</pre>
+            </li>
+            <li>Add the following code (in <strong>bold</strong>) for the canvas element.
+        <pre class="examplecode">
+        &lt;table&gt;
+            &lt;tr&gt;
+                &lt;td&gt;
+                    <strong>&lt;canvas id="myCanvas" width="150" height="150" style="border:1px solid #000000;"&gt;&lt;/canvas&gt;</strong>
+                &lt;/td&gt;</pre>
+    </li>
+    <li>Add the following <tt>&lt;table&gt;</tt> to add radio buttons to select the color and shape. Save your changes. 
+        
+         <pre class="examplecode">
+        &lt;table&gt;
+            &lt;tr&gt;
+                &lt;td&gt;
+                    &lt;canvas id="myCanvas" width="150" height="150" style="border:1px solid #000000;"&gt;&lt;/canvas&gt;
+                &lt;/td&gt;
+                &lt;td&gt;
+                    &lt;form name="inputForm"&gt;
+                        <strong>&lt;table&gt;
+
+                            &lt;tr&gt;
+                                &lt;th&gt;Color&lt;/th&gt;
+                                &lt;td&gt;&lt;input type="radio" name="color" value="#FF0000" checked="true"&gt;Red&lt;/td&gt;
+                                &lt;td&gt;&lt;input type="radio" name="color" value="#0000FF"&gt;Blue&lt;/td&gt;
+                                &lt;td&gt;&lt;input type="radio" name="color" value="#FF9900"&gt;Orange&lt;/td&gt;
+                                &lt;td&gt;&lt;input type="radio" name="color" value="#33CC33"&gt;Green&lt;/td&gt;
+                            &lt;/tr&gt;
+
+                            &lt;tr&gt;
+                                &lt;th&gt;Shape&lt;/th&gt;
+                                &lt;td&gt;&lt;input type="radio" name="shape" value="square" checked="true"&gt;Square&lt;/td&gt;
+                                &lt;td&gt;&lt;input type="radio" name="shape" value="circle"&gt;Circle&lt;/td&gt;
+                                &lt;td&gt;&nbsp;&lt;/td&gt;
+                                &lt;td&gt;&nbsp;&lt;/td&gt;
+                            &lt;/tr&gt;
+
+                        &lt;/table&gt;</strong>
+                    &lt;/form&gt;</pre>
+        
+        <p>The shape, color, and coordinates of any figure drawn on the canvas 
+            will be converted to a string in a JSON structure and sent as a message 
+            to the WebSocket endpoint.</p> 
+    </li>
+</ol>
+        
+        <!-- ===================================================================================== -->
+        <a name="createwhiteboard2"></a>
+        <h3>Creating the POJO</h3>
+        <p>In this exercise you will create a simple POJO.</p>
+        
+        <ol>
+            <li>Right-click the project node and choose New &gt; Java Class.</li>
+            <li>Type <strong>Figure</strong> as the Class Name and choose <tt>org.sample.whiteboardapp</tt>
+            in the Package dropdown list. Click Finish.</li>
+            <li>In the source editor, add the following (in <strong>bold</strong>):
+                <pre class="examplecode">public class Figure {
+    <strong>private JsonObject json;</strong>
+}</pre>
+                <p>When you add the code you will be prompted to add an import statement for <tt>javax.json.JsonObject</tt>.
+                If you are not prompted, type Alt-Enter.</p>
+                <p class="tips">For more about <tt>javax.json.JsonObject</tt>, see the Java API for JSON Processing 
+                (<a href="http://jcp.org/en/jsr/detail?id=353">JSR 353</a>),
+                which is part of the Java EE 7 Specification.</p>
+            </li>
+            <li>Create a getter and setter for <tt>json</tt>.
+                <p class="tips">You can select getter and setter in the Insert Code popup menu (Alt-Ins on Windows; Ctrl-I on Mac)
+                    to open the Generate Getters and Setter dialog box.
+                Alternatively, you can choose Source &gt; Insert Code from the main menu.</p>
+            <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-generategetter.png" class="margin-around b-all" alt="Generate Getter and Setter dialog box" title="Generate Getter and Setter dialog box" >
+            </li>
+            <li>Add a constructor for <tt>json</tt>.
+                <pre class="examplecode">
+    public Figure(JsonObject json) {
+        this.json = json;
+    }</pre>
+                <p class="tips">You can choose Constructor in the Insert Code popup menu (Ctrl-I).</p>
+            <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-generateconstructor.png" class="margin-around b-all" alt="Generate Constructor popup menu" title="Generate Constructor popup menu" >
+            </li>
+            <li>Add the following <tt>toString</tt> method:
+        <pre class="examplecode">
+    @Override
+    public String toString() {
+        StringWriter writer = new StringWriter();
+        Json.createWriter(writer).write(json);
+        return writer.toString();
+    }</pre>
+            </li>
+            <li>Right-click in the editor and choose Fix Imports (Alt-Shift-I; &#8984;-Shift-I on Mac). Save your changes.</li>
+        </ol>
+        
+        <!-- ===================================================================================== -->
+        <a name="createwhiteboard3"></a>
+        <h3>Create a Coordinates Class</h3>
+        <p>You now create a class for the coordinates of the figures that are painted on the canvas.</p>
+        
+        <ol>
+            <li>Right-click the project node and choose New &gt; Java Class.</li>
+            <li>In the New Java Class wizard, type <strong>Coordinates</strong>
+                as the Class Name and select <tt>org.sample.whiteboardapp</tt>
+            in the Package dropdown list. Click Finish.</li>
+            <li>In the source editor, add the following code. Save your changes.
+                <pre class="examplecode">
+    private float x;
+    private float y;
+
+    public Coordinates() {
+    }
+
+    public Coordinates(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+                </pre>
+            </li>
+        </ol>
+        <p>The class only contains a fields for the <tt>x</tt> and <tt>y</tt> coordinates and
+        some getters and setters.</p>
+        
+        
+        <!-- ===================================================================================== -->
+        <a name="createwhiteboard6"></a>
+        <h3>Generate the JSON String</h3>
+        <p>In this exercise you will create a JavaScript file that puts the details of the figure
+            that is drawn on the <tt>canvas</tt> element into a JSON structure that is sent to the websocket endpoint.</p>
+        <ol>
+            <li>Right-click the project node and choose New &gt; JavaScript File to open the New JavaScript File wizard.</li>
+            <li>Type <strong>whiteboard</strong> for the File Name.
+                Click Finish.
+                <p>When you click Finish the IDE creates the empty JavaScript file
+                and opens the file in the editor.
+                You can see the new file under the Web Pages node in the Projects window.</p></li>
+            <li>Add the following code to initialize the canvas and to add an event listener.
+                <pre class="examplecode">
+var canvas = document.getElementById("myCanvas");
+var context = canvas.getContext("2d");
+canvas.addEventListener("click", defineImage, false);</pre>
+                <p>You can see that the <tt>defineImage</tt> method is invoked
+                    when the user clicks in the <tt>canvas</tt> element.</p>
+            </li>
+            <li>Add the following <tt>getCurrentPos</tt>, <tt>defineImage</tt> and <tt>drawImageText</tt> methods 
+                to construct the JSON structure and send it to the endpoint (<tt>sendText(json)</tt>).
+
+<pre class="examplecode">
+function getCurrentPos(evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+            
+function defineImage(evt) {
+    var currentPos = getCurrentPos(evt);
+    
+    for (i = 0; i &lt; document.inputForm.color.length; i++) {
+        if (document.inputForm.color[i].checked) {
+            var color = document.inputForm.color[i];
+            break;
+        }
+    }
+            
+    for (i = 0; i &lt; document.inputForm.shape.length; i++) {
+        if (document.inputForm.shape[i].checked) {
+            var shape = document.inputForm.shape[i];
+            break;
+        }
+    }
+    
+    var json = JSON.stringify({
+        "shape": shape.value,
+        "color": color.value,
+        "coords": {
+            "x": currentPos.x,
+            "y": currentPos.y
+        }
+    });
+    drawImageText(json);
+        sendText(json);
+}
+
+function drawImageText(image) {
+    console.log("drawImageText");
+    var json = JSON.parse(image);
+    context.fillStyle = json.color;
+    switch (json.shape) {
+    case "circle":
+        context.beginPath();
+        context.arc(json.coords.x, json.coords.y, 5, 0, 2 * Math.PI, false);
+        context.fill();
+        break;
+    case "square":
+    default:
+        context.fillRect(json.coords.x, json.coords.y, 10, 10);
+        break;
+    }
+}</pre>
+              <p>The JSON structure that is sent will be similar to the following:</p>
+
+                <pre class="examplecode">{
+ "shape": "square",
+ "color": "#FF0000",
+ "coords": {
+ "x": 31.59999942779541,
+ "y": 49.91999053955078
+ }
+} </pre>
+                
+              <p>You now need to add a <tt>sendText(json)</tt> method
+              to send the JSON string using <tt>websocket.send()</tt>.</p>           
+            </li>
+            <li>Open <tt>websocket.js</tt> in the editor and add the following methods for sending JSON to the endpoint
+                and for drawing the image when a message is received from the endpoint.
+                <pre class="examplecode">
+websocket.onmessage = function(evt) { onMessage(evt) };
+
+function sendText(json) {
+    console.log("sending text: " + json);
+    websocket.send(json);
+}
+                
+function onMessage(evt) {
+    console.log("received: " + evt.data);
+    drawImageText(evt.data);
+}</pre>
+                <p class="notes"><strong>Note.</strong>
+                    You can delete the code that you added to <tt>websocket.js</tt> for testing the endpoint.</p>
+            </li>
+            <li>Add the following line (in <strong>bold</strong>) to the bottom of <tt>index.html</tt> to load <tt>whiteboard.js</tt>.
+                <pre class="examplecode">
+        &lt;/table&gt;
+    &lt;script type="text/javascript" src="websocket.js"&gt;&lt;/script&gt;
+    <strong>&lt;script type="text/javascript" src="whiteboard.js"&gt;&lt;/script&gt;</strong>
+&lt;body&gt;
+                </pre>
+            </li>
+        </ol>
+        
+        
+        
+<!-- +++++++++++++++  Creating Implementations of Encoder and Decoder Interfaces +++++++++++++++ -->        
+        <a name="createwhiteboard4"></a>
+        <h3>Implement the Encoder and Decoder Interfaces</h3>
+        <p>In this exercise you create classes to implement decoder and encoder interfaces
+            to decode web socket messages (JSON) to the POJO class <tt>Figure</tt>
+            and to encode <tt>Figure</tt> as a JSON string for sending to the endpoint.</p>
+        <p class="tips">For more details, see the section about message types and encoders and decoders in the technical article
+            <a href="http://www.oracle.com/technetwork/articles/java/jsr356-1937161.html">JSR 356, Java API for WebSocket</a>.</p>
+        
+        <ol>
+            <li>Right-click the project node and choose New &gt; Java Class.</li>
+            <li>Type <strong>FigureEncoder</strong> as the Class Name and choose <tt>org.sample.whiteboardapp</tt>
+            in the Package dropdown list. Click Finish.</li>
+            <li>In the source editor, implement the WebSocket Encoder interface by
+                adding the following code (in <strong>bold</strong>):
+                <pre class="examplecode">            
+public class FigureEncoder <strong>implements Encoder.Text&lt;Figure&gt;</strong> {
+    
+}</pre>
+            </li>
+            <li>Add an import statement for <tt>javax.websocket.Encoder</tt> and implement the abstract methods.
+                <p class="tips">Place your cursor in the class declaration and type Alt-Enter and choose <strong>Implement all abstract methods</strong> from the popup menu.</p></li>
+            <li>Modify the generated abstract methods by making the following changes (in <strong>bold</strong>). Save your changes.
+                <pre class="examplecode">
+    @Override
+    public String encode(Figure <strong>figure</strong>) throws EncodeException {
+        <strong>return figure.getJson().toString();</strong>
+    }
+
+    @Override
+    public void init(EndpointConfig ec) {
+        <strong>System.out.println("init");</strong>
+    }
+
+    @Override
+    public void destroy() {
+        <strong>System.out.println("destroy");</strong>
+    }</pre>
+                
+            </li>
+            <li>Right-click the project node and choose New &gt; Java Class.</li>
+            <li>Type <strong>FigureDecoder</strong> as the Class Name and choose <tt>org.sample.whiteboardapp</tt>
+            in the Package dropdown list. Click Finish.</li>
+            <li>In the source editor, implement the WebSocket Decoder interface by
+                adding the following code (in <strong>bold</strong>):
+                <pre class="examplecode">            
+public class FigureDecoder <strong>implements Decoder.Text&lt;Figure&gt;</strong> {
+    
+}</pre>
+            </li>
+            <li>Add an import statement for <tt>javax.websocket.Decoder</tt> and implement  abstract methods.</li>
+            <li>Make the following changes (in <strong>bold</strong>) to the generated abstract methods. 
+                <pre class="examplecode">
+    @Override
+    public Figure decode(String <strong>string</strong>) throws DecodeException {
+        <strong>JsonObject jsonObject = Json.createReader(new StringReader(string)).readObject();
+        return  new Figure(jsonObject);</strong>
+    }
+
+    @Override
+    public boolean willDecode(String <strong>string</strong>) {
+        <strong>try {
+            Json.createReader(new StringReader(string)).readObject();
+            return true;
+        } catch (JsonException ex) {
+            ex.printStackTrace();
+            return false;
+        }</strong>
+    
+    }
+
+    @Override
+    public void init(EndpointConfig ec) {
+        <strong>System.out.println("init");</strong>
+    }
+
+    @Override
+    public void destroy() {
+        <strong>System.out.println("destroy");</strong>
+    }</pre>
+            </li>
+            <li>Fix the imports and save your changes.</li>
+        </ol>
+        <p>You now need to modify <tt>MyWhiteboard.java</tt> to specify the encoder and decoder.</p>
+
+<!-- +++++++++++++++  Running the Application +++++++++++++++ -->
+        <a name="createwhiteboard5"></a>
+        <h3>Running the Application</h3>
+        <p>You are now almost ready to run the application.
+        In this exercise you modify the WebSocket endpoint class to specify the encoder and decoder for the JSON string and
+        to add a method to send the JSON string to connected clients when a message is received.</p>
+        <ol>
+            <li>Open <tt>MyWhiteboard.java</tt> in the editor.</li>
+            <li>Modify the <tt>@ServerEndpoint</tt> annotation to specify the
+        encoder and decoder for the endopoint. 
+        Note that you need to explicitly specify the <tt>value</tt> parameter for the name of the endpoint.    
+        <pre class="examplecode">
+@ServerEndpoint(<strong>value=</strong>"/whiteboardendpoint"<strong>, encoders = {FigureEncoder.class}, decoders = {FigureDecoder.class}</strong>)
+        </pre>
+            </li>
+            <li>Delete the <tt>onMessage</tt> method that was generated by default.</li>
+            <li>Add the following <tt>broadcastFigure</tt> method and annotate the method with <tt>@OnMessage</tt>.
+            
+                <pre class="examplecode">
+    @OnMessage
+    public void broadcastFigure(Figure figure, Session session) throws IOException, EncodeException {
+        System.out.println("broadcastFigure: " + figure);
+        for (Session peer : peers) {
+            if (!peer.equals(session)) {
+                peer.getBasicRemote().sendObject(figure);
+            }
+        }
+    }</pre>
+            </li>
+            
+            <li>Right-click in the editor and choose Fix Imports (Alt-Shift-I; &#8984;-Shift-I on Mac). Save your changes.</li>
+            <li>Right-click the project in the Projects window and choose Run.</li>
+        </ol>
+        <p>When you click Run the IDE opens a browser window to <a href="http://localhost:8080/WhiteboardApp/">http://localhost:8080/WhiteboardApp/</a>.</p>
+        <p class="notes"><strong>Note.</strong>
+            You might need to undeploy the previous application from the application server or
+            force reload the page in the browser.
+        </p>
+        <p>If you view the browser messages you can see that a string is sent via JSON to the endpoint
+            each time you click in the canvas.</p>
+        <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-onebrowser.png" class="margin-around b-all" alt="screenshot of application in browser" title="Canvas with figures in browser and JSON displayed in web console" >
+        <p>If you open another browser to <tt>http://localhost:8080/WhiteboardApp/</tt> you can see that each time you click in the canvas in one
+            browser the new circle or square is reproduced in the canvas of the other browser.</p>
+        <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-twobrowsers.png" class="margin-around b-all" alt="screenshot of application in two browsers" title="Two browsers sending JSON via the endpoint" >
+        </div>
+        
+        
+        <!-- ===================================================================================== -->        
+        <a name="sendbinary"></a>
+        <h2>Sending Binary Data to the Endpoint</h2>
+        <p>The application can now process and send a string via JSON to the endpoint and the string is then
+        sent to the connected clients.
+        In this section you will modify the JavaScript files to send and receive binary data.</p>
+        
+        <p>To send binary data to the endpoint you need to set the <tt>binaryType</tt> property of WebSocket to <tt>arraybuffer</tt>. 
+        This ensures that any binary transfers using WebSocket are done using <tt>ArrayBuffer</tt>. 
+        The binary data conversion is performed by the <tt>defineImageBinary</tt> method in <tt>whiteboard.js</tt>.</p>
+        
+            <ol>
+                <li>Open <tt>websocket.js</tt> and add the following code to set the <tt>binaryType</tt>
+                    property of WebSocket to <tt>arraybuffer</tt>.
+                    <pre class="examplecode">
+websocket.binaryType = "arraybuffer";</pre>
+                </li>
+                <li>Add the following method to send binary data to the endpoint.
+                    <pre class="examplecode">
+function sendBinary(bytes) {
+    console.log("sending binary: " + Object.prototype.toString.call(bytes));
+    websocket.send(bytes);
+}</pre>
+                </li>
+                <li>Modify the <tt>onMessage</tt> method to add the following code (in <strong>bold</strong>) to 
+                    select the method for updating the canvas according to the type of data in the incoming message.
+                    <pre class="examplecode">
+function onMessage(evt) {
+    console.log("received: " + evt.data);
+    <strong>if (typeof evt.data == "string") {</strong>
+        drawImageText(evt.data);
+    <strong>} else {
+        drawImageBinary(evt.data);
+    }</strong>
+}</pre>
+                    <p>The <tt>drawImageBinary</tt> method is invoked if
+                    a message with binary data is received.</p>
+                </li>
+                <li>Open <tt>whiteboard.js</tt> and add the following methods.
+                    The <tt>drawImageBinary</tt> method is invoked to update the canvas after parsing the
+                    incoming binary data. 
+                    The <tt>defineImageBinary</tt> method is used to prepare a snapshot of the canvas
+                    as binary data.
+                    <pre class="examplecode">
+function drawImageBinary(blob) {
+    var bytes = new Uint8Array(blob);
+//    console.log('drawImageBinary (bytes.length): ' + bytes.length);
+    
+    var imageData = context.createImageData(canvas.width, canvas.height);
+    
+    for (var i=8; i&lt;imageData.data.length; i++) {
+        imageData.data[i] = bytes[i];
+    }
+    context.putImageData(imageData, 0, 0);
+    
+    var img = document.createElement('img');
+    img.height = canvas.height;
+    img.width = canvas.width;
+    img.src = canvas.toDataURL();
+}
+                    
+function defineImageBinary() {
+    var image = context.getImageData(0, 0, canvas.width, canvas.height);
+    var buffer = new ArrayBuffer(image.data.length);
+    var bytes = new Uint8Array(buffer);
+    for (var i=0; i&lt;bytes.length; i++) {
+        bytes[i] = image.data[i];
+    }
+    sendBinary(buffer);
+}</pre>
+                    <p>You now need to add a way to invoke <tt>defineImageBinary</tt> when you want to generate
+                        the binary data as the type <tt>ArrayBuffer</tt> and send it to the endpoint.</p>
+                </li>
+                <li>Open <tt>index.html</tt> and modify the <tt>&lt;table&gt;</tt> element to add the following row to the table
+                    in the form.
+                <pre class="examplecode">
+&lt;tr&gt;
+    &lt;th&gt;&nbsp;&lt;/th&gt;
+    &lt;td&gt;&lt;input type="submit" value="Send Snapshot" onclick="defineImageBinary(); return false;"&gt;&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+&lt;/tr&gt;
+                </pre>
+                <p>The new row contains a Send Snapshot button to send a binary snapshot of the canvas to the connected peers. 
+                    The <tt>defineImageBinary</tt> method in <tt>whiteboard.js</tt> is invoked when the button is clicked.</p>
+                </li>
+                <li>Open <tt>MyWhiteboard.java</tt> and add the following method that will send the binary
+                    data to peers when the endpoint receives a message with binary data.
+                    <pre class="examplecode">
+@OnMessage
+public void broadcastSnapshot(ByteBuffer data, Session session) throws IOException {
+    System.out.println("broadcastBinary: " + data);
+    for (Session peer : peers) {
+        if (!peer.equals(session)) {
+            peer.getBasicRemote().sendBinary(data);
+        }
+    }
+}</pre>
+                    <p class="notes"><strong>Note.</strong>
+                        You will need to add an import statement for <tt>java.nio.ByteBuffer</tt>.
+                    </p>
+                </li>
+            </ol>
+        
+        <p class="tips">
+        You can modify the application to enable the user to stop sending data to the endpoint.
+        By default all peers are connected as soon as they open the page and data is sent from the browser
+        to all connected peers.
+        You can add a simple conditional so that data is not sent to the endpoint unless the option is selected. 
+        This does not affect receiving data. Data is still received from the endpoint.</p>
+        <div class="indent">
+            <ol>
+                <li>Modify the <tt>defineImage</tt> method in <tt>whiteboard.js</tt> to add the following code (in <strong>bold</strong>).
+            <pre class="examplecode">
+        drawImageText(json);
+<strong>    if (document.getElementById("instant").checked) {</strong>
+        sendText(json);
+<strong>    }</strong>
+}</pre>
+                <p>The conditional code that you checks that if the element with the id <tt>checked</tt></p>
+                </li>
+                <li>Open <tt>index.html</tt> and modify the <tt>&lt;table&gt;</tt> element to add a checkbox to the form.
+                <pre class="examplecode">
+&lt;tr&gt;
+    &lt;th&gt;&nbsp;&lt;/th&gt;
+    &lt;td&gt;&lt;input type="submit" value="Send Snapshot" onclick="defineImageBinary(); return false;"&gt;&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;input type="checkbox" id="instant" value="Online" checked="true"&gt;Online</strong>&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+&lt;/tr&gt;
+                </pre>
+                    <p>No data is sent when the Online checkbox is deselected, but the client will still receive data from the endpoint.</p>
+                
+            </ol>
+            <p>If you add the Send Snapshot button and the Online checkbox and
+                run the application again you will see the new elements in the index page.
+                If you open another browser and deselect the Online button you can see that the JSON 
+                message is not sent to the endpoint when you click in the canvas.</p>
+            <img  src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-onebrowser-binary.png" class="margin-around b-all" alt="screenshot of application in browser" title="Web console in browser displaying message that binary data was sent" >
+            <p>If you click Send Snapshot the binary data is sent to the endpoint and broadcast to the
+                connected clients.</p>
+        </div>
+
+            <!--
+                <a name="Exercise_7"></a>
+                <h2>Downloading the Solution Project</h2>
+                <p>You can download the solution to this tutorial as a project in the following ways.</p>
+                <ul>
+                    <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FMavenEnterpriseApp.zip">a zip archive of the finished project</a>.</li>
+                    <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+                    <ol>
+                        <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                        <li>In the Checkout dialog box, enter the following Repository URL:<br>
+                            <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br>
+                            Click Next.</li>
+                        <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                        <li>Expand the root node and select <strong>samples/javaee/MavenEnterpriseApp</strong>. Click OK.</li>
+                        <li>Specify the Local Folder for the sources (the local folder must be empty).</li>
+                        <li>Click Finish.
+                            <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                            and checks out the project sources.</p>
+                        </li>
+                        <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+                    </ol>
+                        <p class="notes"><strong>Notes.</strong> For more about installing Subversion,
+                        see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</p>
+                    </li>
+                </ul>
+                -->
+
+
+            <!--
+            <a name="Exercise_5"></a>
+                
+            <h2>Troubleshooting</h2>
+            <p>The following are some of the problems you may encounter when creating your project.</p>
+            <div class="indent">
+                <h3 class="tutorial">Problem with JMS Resources</h3>
+                <p>When using the wizard to create JMS resources, 
+                you may see the following server error message in the output window:</p>
+                <pre>[com.sun.enterprise.connectors.ConnectorRuntimeException:
+                    JMS resource not created : jms/Queue]
+                </pre>
+                <p>This message could indicate that the JMS resource was not created or was not registered with the application server.
+                You can use the Admin Console of the application server to check, create and edit JMS resources.</p>
+                <p>To open the Admin Console, do the following:</p>
+                <ol>
+                    <li>Confirm that the application server is running by expanding the Servers node in the Services window of the IDE.
+                    A small green arrow next to the application server node indicates the server is running.</li>
+                    <li>Right-click the application server node and choose View Admin Console to open the login window in your browser.</li>
+                    <li>Log in to the server. The default user name and password are <tt>admin</tt> and <tt>adminadmin</tt>.</li>
+                    <li>In the Admin Console in your browser, expand the Resources node and JMS Resources node in the left frame.</li>
+                    <li>Click on the Connection Factories and Destination Resources links in the left frame to check if the resources are
+                        registered with the server and if necessary modify the resources. If the resources do not exist, you can create them
+                    in the Admin Console.</li>
+                </ol>
+                <p>You need to make sure that the JMS connection factory resource
+                   in the PostMessage servlet is mapped to the correct JNDI name of the JMS connection factory resource
+                   registered with the Sun Java System Application Server.</p>
+                <p>The following resources should be registered with the Sun Java System Application Server:</p>
+                <ul>
+                    <li>a Destination resource with the JNDI name <tt>jms/NewMessage</tt> and type <tt>javax.jms.Queue</tt></li>
+                    <li>a Connection Factory resource with the JNDI name <tt>jms/NewMessageFactory</tt> and type <tt>	
+                    javax.jms.QueueConnectionFactory</tt></li>
+                </ul>
+
+                <p>make sure that the import in PostMessage is not <tt>javax.resource.cci.ConnectionFactory</tt></p>
+
+                <h3 class="tutorial">Problem with the Datasource</h3>
+
+            </div>-->
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20the%20WebSocket%20API%20in%20a%20Web%20Application">Send Feedback on This Tutorial</a></div>
+            <br style="clear:both;" >
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>See Also</h2>
+            <p>For more information about using NetBeans IDE to develop Java EE applications, see the following resources:
+            </p>
+            <ul>
+            <li>Demo: <a href="maven-websocketapi-screencast.html">Using the WebSocket API in a Web Application</a></li>
+            <li><a href="javaee-intro.html">Introduction to Java EE Technology</a></li>
+            <li><a href="javaee-gettingstarted.html">Getting Started with Java EE Applications</a></li>
+            <li><a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a></li>
+            </ul>
+            <p>You can find more information about using Java EE in the
+            <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Java EE Tutorial</a>.</p>
+            <p>To send comments and suggestions, get support, and keep informed on the latest
+              developments on the NetBeans IDE Java EE development features, <a href="../../../community/lists/top.html">join
+              the nbj2ee mailing list</a>.</p>
+    </body>
+</html>

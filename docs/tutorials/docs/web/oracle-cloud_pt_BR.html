@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>       
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A short guide to deploying web applications to an Oracle WebLogic instance on the Oracle Cloud, using NetBeans IDE">
+
+        <meta name="keywords" content="NetBeans, IDE, WebLogic, Cloud, Cloud computing, Oracle Cloud">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+        <title>Executando Aplicações Web no Oracle Cloud - Tutorial do NetBeans IDE</title>
+</head>
+
+    <body>
+        <h1>Executando Aplicações Web no Oracle Cloud</h1>
+        <p>O Oracle Cloud é uma nuvem corporativa para empresas. O Oracle Cloud oferece aplicações de negócios de autosserviço entregues em um desenvolvimento integrado e plataforma de implantação com ferramentas para estender e criar rapidamente novos serviços. Para obter mais informações sobre o Oracle Cloud, consulte a <a href="https://cloud.oracle.com" target="_blank">página inicial do Oracle Cloud</a>.</p>
+        <p>Este documento mostra como registrar o Oracle Cloud com o NetBeans IDE e algumas funcionalidades do Oracle Cloud suportadas no IDE. Este documento discute algumas das vantagens e desvantagens de trabalhar completamente na Nuvem em comparação ao trabalho em um servidor local para depois fazer implantações na Nuvem. No final, você criará uma aplicação Web simples, seguindo as instruções de <a href="quickstart-webapps.html">Introdução a Aplicações Web</a> e a executará no Oracle Cloud.</p>
+
+        <p class="tips">Você também pode consultar a série de tutoriais do <a href="https://blogs.oracle.com/javatraining/entry/oracle_cloud_development_with_netbeans">Oracle Cloud Development with NetBeans and Eclipse (OEPE)</a> no blog do Java Training Beat.</p>
+        
+    <p><strong>Conteúdo</strong></p>
+
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+        <ul class="toc">
+            <li><a href="#sdk-download">Fazendo Download do Oracle Java Cloud Service SDK</a></li>
+            <li><a href="#install-plugin">Instalar o Plug-in do Oracle Cloud</a></li>
+            <li><a href="#register-cloud"> Registrando o Oracle Cloud no IDE</a></li>
+            <li><a href="#jobs-n-logs">Exibindo Jobs e Logs</a></li>
+            <li><a href="#remote-server">Servidor Oracle Cloud Remote</a></li>
+            <li><a href="#cloud-vs-local">Desenvolvendo Aplicações em uma Máquina Local</a></li>
+            <li><a href="#create-webapp">Criando uma Aplicação Web</a></li>
+            <li><a href="#crud">Criando uma Aplicação CRUD com JSF</a></li>
+            <li><a href="#test-whitelist">Testando Suporte à Lista de Permissão</a></li>
+            <li><a href="#seeAlso">Consulte Também</a></li>
+        </ul>
+
+    <p><strong>Para seguir este tutorial, os recursos e softwares a seguir são necessários.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Versão 7.3, 7.4, 8.0 do Java EE</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1">Plug-in do Oracle Cloud</td>
+                    <td class="tbltd1">disponível no Centro de Atualização NetBeans via Gerenciador de Plug-ins do NetBeans</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">versão 7 ou versão 8</td>
+              </tr>
+              <tr>
+                  <td class="tbltd1">Oracle Java Cloud Service</td>
+                  <td class="tbltd1">Inscreva-se na <a href="http://cloudcentral.c9dev.oraclecorp.com/mycloud/f?p=SERVICE:free_trial:0" target="_blank">página inicial de Disponibilidade Pública do Oracle Cloud</a></td>
+              </tr>
+              <tr>
+                  <td class="tbltd1">Oracle Java Cloud Service SDK</td>
+                  <td class="tbltd1">Faça download da <a href="http://cloud.oracle.com">página inicial do Oracle Cloud</a>.</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1"><p>
+                        <a href="http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html" target="_blank">Servidor Oracle WebLogic</a> <br> (para desenvolvimento e teste de aplicações localmente)</p>
+                  </td>
+      <td class="tbltd1" valign="top"><br> Versão indicada no Oracle Java Cloud Service Users Guide<br> Este documento está disponível na guia Recursos > Documentação <a href="https://cloudeap.oracle.com/mycloud/f?p=service:home:0" target="_blank">no serviço Java Cloud ativado</a>.</td>
+              </tr>
+              <tr>
+                  <td class="tbltd1" valign="top"><a href="http://www.oracle.com/technetwork/products/express-edition/downloads/index.html" target="_blank">Servidor de banco de dados OracleXE</a> <br> (para desenvolvimento e teste de aplicações localmente)</td>
+                  <td class="tbltd1" valign="top">11g</td>
+              </tr>
+            </tbody>
+        </table>
+
+    
+
+
+<h2 id="sdk-download">Fazendo Download do Oracle Java Cloud Service SDK</h2>
+<p>Você precisa de uma cópia local do Oracle Java Cloud Service SDK para desenvolver aplicações Web no Oracle Cloud. Você pode fazer download do Oracle Java Cloud Service SDK na <a href="http://cloud.oracle.com">página inicial do Oracle Cloud</a>.
+</p>
+<p><strong>Para fazer download do Oracle Java Cloud Service SDK:</strong></p>
+
+<ol>
+    <li>Aponte uma janela do browser para a <a href="http://cloud.oracle.com">página inicial do Oracle Cloud</a>.</li>
+    <li>Expanda a lista drop-down <strong>Recursos</strong> no menu principal e clique em <strong>Downloads</strong>.</li>
+    <li>Clique em <strong>Fazer download do Oracle Cloud Java Service SDK</strong> na seção Oracle Java Cloud Service SDK.</li>
+    <li>Na página de download do Oracle Java Cloud Service SDK, leia e aceite o Contrato de Licença do OTN para ativar o link de download.</li>
+    <li>Faça download e extraia o SDK no seu sistema local.</li>
+</ol>
+
+<h2 id="install-plugin">Instalar o Plug-in do Oracle Cloud</h2>
+<p>Para ativar o suporte para o Oracle Java Cloud Service no IDE, você precisa instalar o plug-in do Oracle Cloud do Centro de Atualizações NetBeans. É possível usar o gerenciador de Plug-ins do NetBeans para instalar o plug-in do Oracle Cloud.
+</p>
+<p>Execute as etapas a seguir para instalar o plug-in do Oracle Cloud.</p>
+
+<ol>
+    <li>Escolha Ferramentas > Plug-ins no menu principal para abrir o gerenciador de Plug-ins.</li>
+    <li>Selecione a guia Plug-ins Disponíveis no gerenciador de Plug-ins</li>
+    <li>Localize e marque a caixa de seleção do plug-in Oracle Cloud. Clique em Instalar.
+        <p>Quando você clicar em Instalar, o IDE abrirá o Instalador do NetBeans IDE. Você deve concluir as etapas do assistente do instalador para instalar o plug-in.</p></li>
+</ol>
+<p>Depois que você instalar o plug-in do Oracle Cloud, o assistente Adicionar Provedor de Nuvem exibirá o Oracle Cloud na lista de provedores de nuvem suportados.</p>
+
+    
+<a name="register-cloud"></a>
+        <h2>Registrando o Oracle Cloud no IDE</h2>
+
+        <p>É necessário registrar o Oracle Cloud na janela Serviços do IDE antes de usá-lo. Observe que você precisa de uma instalação separada do Oracle Java Cloud Service SDK.</p>
+                
+        <p class="notes"><strong>Observação.</strong> Para trabalhar com o Oracle Cloud no NetBeans IDE, você precisa ter uma conta no Oracle Cloud. </p>
+        
+        <p><strong>Para registrar o Oracle Cloud no IDE, execute as etapas a seguir.</strong></p>
+        <ol>
+          <li>Abra a janela Serviços no IDE (Janela > Serviços ou Ctrl-5).</li>
+          <li>Clique com o botão direito do mouse no nó Nuvem e selecione Adicionar Nuvem para abrir o assistente Adicionar Provedor de Nuvem<br> <img alt="O item de contexto Adicionar Nuvem do nó Nuvem na janela Serviços." class="margin-around b-bottom b-right" height="136" src="../../../images_www/articles/74/web/oracle-cloud/add-cloud.png" width="175"></li>
+          <li>No campo Escolher Nuvem, selecione Oracle Cloud e clique em Próximo para abrir o painel Oracle Cloud. <br> <img alt="O painel Oracle Cloud do assistente Adicionar Provedor de Nuvem, com opções default" class="margin-around" src="../../../images_www/articles/72/web/oracle-cloud/oracle-cloud1.png"></li>
+          <li>Preencha todos os campos. Procure a pasta contendo o Oracle Java Cloud Service SDK JAR. Clique em Próximo.
+              <p>Quando você clica em Próximo, o IDE testa a conexão com a nuvem. Uma lista de serviços de Nuvem é exibida caso a conexão seja bem-sucedida. Só o servidor Oracle Cloud Remote (Oracle WebLogic) está disponível no momento.</p>
+              <p class="notes"><b>Observação:</b> depois de registrar um provedor Oracle Cloud, você pode alterar os detalhes da Nuvem nas respectivas Propriedades. Abra a caixa de diálogo Propriedades clicando com o botão direito do mouse em Oracle Cloud e selecionando Propriedades.</p></li>
+          <li>Confirme se o provedor Oracle Cloud é exibido na lista de recursos de Nuvem. Clique em Finalizar. 
+              <p>O Oracle Cloud agora está listado no nó Nuvem da janela Serviços. Você pode clicar com o botão direito do mouse no nó Oracle Cloud para abrir um menu de contexto que oferece comandos para atualizar a lista de serviços, abrindo uma lista de jobs e logs, removendo a instância da nuvem ou exibindo as propriedades da nuvem.</p>
+              <img alt="Menu de contexto do nó Oracle Cloud" class="margin-around b-top b-bottom" height="135" src="../../../images_www/articles/74/web/oracle-cloud/cloud-contextmenu.png" width="215">
+              <p>Quando você registrar o Oracle Cloud no IDE, uma instância do servidor Oracle Cloud Remote também será exibido no nó Servidores. (Se ele não aparecer, clique com o botão direito do mouse no nó Oracle Cloud e selecione Atualizar).</p>
+              <img alt="Nós Servidor e Nuvem na janela Serviços, mostrando o Oracle Cloud e o Servidor Oracle Cloud Remote" class="margin-around b-bottom" height="188" src="../../../images_www/articles/74/web/oracle-cloud/registered-cloud-and-server.png" width="170">
+              <p>Você pode expandir o nó Oracle Cloud Remoto para exibir uma lista de aplicações implantadas no servidor remoto.</p>
+          </li>          
+    </ol>
+    <h2><a name="jobs-n-logs"></a>Exibindo Jobs e Logs</h2>
+        <p>Todas as solicitações que o NetBeans IDE envia ao Oracle Cloud resultam em um job. Todos os jobs têm um status (enviado, em execução, falha, concluído) e podem ter um ou mais arquivos de log (log de verificação da lista de permissões, log de verificação do antivírus, log de implantação). Você pode exibir jobs recentes e seus logs com a ação Exibir Jobs e Logs.</p>
+        <p>Clique com o botão direito do mouse no nó Oracle Cloud e selecione Exibir Jobs e Logs. Na janela do editor, é exibida uma lista dos últimos 50 jobs e logs. Leva um momento para carregar. A lista de jobs não é atualizada automaticamente. Clique em Atualizar para atualizar a lista. </p>
+    <p><img alt="Exibição de Jobs e Logs" class="margin-around" height="338" src="../../../images_www/articles/74/web/oracle-cloud/jobs-n-logs.png" width="516"></p>
+        <h2><a name="remote-server"></a>Servidor Oracle Cloud Remote</h2>
+        <p>O servidor Oracle Cloud Remote é uma instância do Oracle WebLogic em execução no Oracle Cloud. Expanda o nó Oracle Cloud Remote e consulte uma lista de aplicações em execução nesse servidor. É possível clicar com o botão direito do mouse em uma aplicação para abrir o menu pop-up que contém comandos para iniciar, interromper e anular a implantação da aplicação. Você pode clicar em Exibir no menu para abrir as página inicial da aplicação em um browser.</p>
+        <p><img alt="Nó do servidor Oracle Cloud Remote expandido mostrando aplicações implantadas e o menu de contexto de uma aplicação" class="margin-around b-bottom" height="229" src="../../../images_www/articles/74/web/oracle-cloud/webapp-contextmenu.png" width="266"></p>
+        <p>Para atualizar a lista de aplicações implantadas, clique com o botão direito do mouse no nó Oracle Cloud Remote e selecione Atualizar. </p>
+    <p><img alt="Menu de contexto do nó do servidor Oracle Cloud Remote na janela Serviços" class="margin-around b-bottom" height="221" src="../../../images_www/articles/74/web/oracle-cloud/server-contextmenu.png" width="267"></p>
+        <p>&nbsp;</p>
+    <h2><a name="cloud-vs-local"></a>Desenvolvendo Aplicações em uma Máquina Local</h2>
+    <p>Recomendamos o desenvolvimento da aplicação em uma máquina local e sua reimplantação na Nuvem periodicamente. Embora seja possível desenvolver uma aplicação Web inteiramente no Oracle Cloud, o desenvolvimento local é preferível pelos seguintes motivos:</p>
+<ul>
+          <li>A implantação local leva segundos em um servidor em execução. A implantação na Nuvem pode levar minutos.</li>
+          <li>A implantação incremental só fica disponível localmente.</li>
+          <li>A depuração só fica disponível localmente.</li>
+    </ul>
+    <p>No entanto, também há riscos no desenvolvimento local e na implantação no Oracle Cloud. As aplicações desenvolvidas localmente podem não ser executadas no servidor Oracle Cloud Remote. Por motivos de segurança, desenvolva localmente em um servidor Oracle WebLogic 11g, que tem o mesmo servidor que o Oracle Cloud Remote. </p>
+    <p>É necessário alterar manualmente o servidor da aplicação Web entre o servidor local e o servidor do Oracle Cloud. Não existe forma automática de desenvolver localmente e implantar na Nuvem periodicamente. </p>
+    <p><strong>Para alterar um servidor de aplicação Web entre local e o Oracle Cloud:</strong></p>
+        <ol>
+          <li>Na janela Projetos, clique com o botão direito do mouse no nó da aplicação e selecione Propriedades.<br> <img alt="Menu de contexto de um projeto da aplicação Web na janela Projetos." class="margin-around b-bottom" height="556" src="../../../images_www/articles/74/web/oracle-cloud/project-contextmenu.png" width="267"></li>
+          <li>Nas Propriedades do Projeto, selecione a categoria Executar.<br> <img alt="Executar propriedades de uma aplicação Web" class="margin-around" height="459" src="../../../images_www/articles/74/web/oracle-cloud/run-properties.png" width="600"></li>
+          <li>Na lista drop-down Servidor, selecione o servidor que você deseja (o Oracle Cloud Remote ou Oracle WebLogic local). O servidor deve estar registrado no IDE. É possível adicionar um servidor clicando com o botão direito do mouse na janela Serviços.</li>
+        </ol>
+        <h2><a name="create-webapp"></a>Criando uma Aplicação Web</h2>
+        <p>Vá para <a href="quickstart-webapps.html" target="_blank">Introdução ao Desenvolvimento de Aplicações Web</a> e conclua este tutorial. Desenvolva a aplicação Web em um servidor Oracle WebLogic local. Depois que a aplicação for concluída, altere o servidor para o Oracle Cloud Remote e execute a aplicação.</p>
+        <p class="notes"><strong>Observação.</strong> Você deve instalar o Oracle WebLogic Server localmente e registrar o servidor com o IDE. Consulte <a href="https://netbeans.org/kb/docs/javaee/weblogic-javaee-m1-screencast.html">Vídeo de Implantação de uma Aplicação Web no Oracle WebLogicServer</a> para obter mais informações.</p>
+        <p>Antes de implantar a aplicação no servidor Oracle Cloud Remote, abra a janela de Saída (Janela > Saída > Saída ou Ctrl-4). Observe a guia Implantação do Oracle Cloud Remote na janela de saída. Esta guia mostra o andamento da implantação.</p> 
+        <img alt="Janela de Saída mostrando a guia Implantação do Oracle Cloud Remote." class="margin-around" height="289" src="../../../images_www/articles/74/web/oracle-cloud/output-cloud-tab.png" width="575">
+        
+        <h2 id="crud">Criando uma Aplicação CRUD com JSF</h2>   
+        <p>O NetBeans IDE e o Oracle Cloud podem ser usados em casos em que você tem um back-end de banco de dados Oracle gerenciado por uma aplicação Web hospedada pelo servidor Oracle WebLogic. O NetBeans IDE permite criar classes de entidade para um banco de dados Oracle existente e criar páginas do JSF (JavaServer Faces) para as classes de entidade resultantes. Este cenário exige instalações no local do servidor de banco de dados OracleXE e servidor de aplicação Oracle WebLogic.</p>
+        <p class="alert"><strong>Importante: </strong>O servidor Oracle Cloud Remote WebLogic não suporta PA 2.0. Se seus servidores WebLogic do local estiverem ativados para JPA 2.0, desative o JPA 2.0 ou use um provedor de persistência do JPA 1.0 para aplicações CRUD. </p>
+        <p class="notes"><strong>Observação: </strong>Este documento fornece apenas direções rápidas para a criação de classes de entidade e páginas de JSF. Para obter um tratamento detalhado, consulte <a href="jsf20crud.html">Gerando uma Aplicação JavaServer Faces 2.0 CRUD de um Banco de Dados</a>.</p>
+        <p><strong>Para criar uma Aplicação CRUD com JSF:</strong></p>
+        <ol>
+            <li>Ative o esquema de RH de amostra no servidor do banco de dados Oracle XE e registre o esquema no NetBeans IDE. Para obter detalhes, consulte <a href="../ide/oracle-db.html">Conectando um Oracle Database do NetBeans IDE</a>.
+                <p class="alert">Use o nome de usuário e a senha de RH quando você se registrar no esquema RH com o NetBeans IDE.</p></li>
+            <li>Crie uma Aplicação Web Java usando o Java EE5 e sua instalação do servidor WebLogic local. Ative o framework JSF para a aplicação.<br> <img alt="Página Servidor e Configurações, assistente de Nova Aplicação Web" class="margin-around" height="407" src="../../../images_www/articles/72/web/oracle-cloud/crudapp-eevers.png" width="583"><br> <img alt="Página Framework, assistente de Nova Aplicação Web" src="../../../images_www/articles/72/web/oracle-cloud/crudapp-jsf.png"></li>
+            <li>Na janela Projetos, clique com o botão direito do mouse no nó de root do projeto e selecione Novo > Classes de Entidade do Banco de Dados. As Classes de Entidade do assistente do Banco de Dados são abertas.</li> 
+            <li>Em Classes de Entidade do assistente do Banco de Dados, selecione Nova Fonte de Dados na caixa drop-down Fonte de Dados. A caixa de diálogo Criar Fonte de Dados é aberta.<br> <img alt="Caixa drop-down Origem de Dados" class="margin-around" height="149" src="../../../images_www/articles/72/web/oracle-cloud/crudapp-newdatasource.png" width="552"></li>
+            <li>Nomeie essa origem de dados para corresponder ao nome do serviço de banco de dados na sua conta Oracle Cloud registrada..<br> <img alt="Caixa de diálogo Propriedades da Nuvem com o nome do banco de dados realçado" class="margin-around" src="../../../images_www/articles/72/web/oracle-cloud/cloud-db-name.png"></li>
+            <li>Selecione a conexão do banco de dados do OracleXE HR criada na Etapa 1. Clique em OK. A caixa de diálogo Criar Fonte de Dados é fechada.<br> <img alt="Caixa de diálogo Criar Fonte de Dados mostrando nomes do banco de dados e da conexão" class="margin-around" src="../../../images_www/articles/72/web/oracle-cloud/create-datasource.png"></li>
+            <li>Em Classes da Entidade do assistente de Banco de Dados, o campo Tabelas Disponíveis é preenchido com os nomes de tabela do esquema de RH. Selecione uma ou mais tabelas, como EMPLOYEES, e clique em Adicionar. Clique no restante do assistente, dando um nome arbitrário ao pacote contendo as classes da entidade e aceitando todos os valores default em outros campos.</li>
+            
+            <li>Na janela Projetos, clique com o botão direito do mouse no nó de root do projeto e selecione Novo > Páginas JSF das Classes de Entidade. O Assistente de Novas Páginas JSF de Classes de Entidade é aberto.</li>
+            <li>No painel Classes de Entidade, clique em Selecionar Tudo e clique em Próximo.</li>
+            <li>No painel Gerar Páginas e Classes JSF, dê os nomes apropriados aos pacotes e à pasta de arquivos JSF e clique em Finalizar.</li>
+            <li>Na janela Projetos, clique com o botão direito do mouse no nó root do projeto e selecione Executar. O IDE cria o projeto e o implanta no local, no servidor WebLogic. Um browser é aberto na página inicial do projeto.</li>
+        </ol>
+        <p>Agora, você tem uma versão local de uma aplicação Web Java usando CRUD e JSF. É possível testar e ajustar a aplicação localmente. Quando a aplicação estiver em estado final, implante-a no Oracle Cloud.</p>
+        <p><strong>Implantando a Aplicação CRUD/JSF no Oracle Cloud</strong></p>
+        <ol>
+            <li>Na janela Projetos, clique com o botão direito do mouse no nó root do projeto e selecione Propriedades.</li>
+            <li>Selecione a categoria Executar na janela Propriedades. Nessa categoria, expanda a lista drop-down Servidor e selecione Oracle Cloud Remote. Clique em OK.<br> <img alt="Propriedades de Projeto da Aplicação" class="margin-around" height="468" src="../../../images_www/articles/72/web/oracle-cloud/crudapp-properties.png" width="586"></li>
+            <li>Na janela Projetos, expanda o nó Arquivos de Configuração do projeto e clique duas vezes em <code> persistence.xml</code>. O arquivo é aberto na view Design do Editor XML.</li>
+            <li>Em Estratégia de Geração de Tabela, selecione Criar <br> <img alt="View Design de persistence.xml" class="margin-around b-bottom b-right" src="../../../images_www/articles/72/web/oracle-cloud/crudapp-persistence.png"></li>
+            <li>Se seu servidor WebLogic local tiver o JPA 2.0 ativado, você deverá alterar o provedor de persistência do EclipseLink default, que usa JPA 2.0, para um provedor JPA 1.0, como OpenJPA.
+            <p class="notes"><strong>Observação: </strong>Se o seu servidor WebLogic local não estiver ativado para JPA 2.0, o EclipseLink fará o fallback para o JPA 1.0. Nesse caso, não é necessário para alterar provedores de persistência.</p></li>
+            <li>Na janela Projetos, clique com o botão direito do mouse no nó root do projeto e selecione Executar. O IDE compila o projeto e o implanta no servidor Oracle Cloud Remote. Você pode seguir o andamento da implantação na janela de Saída do IDE, na guia Implantação do Oracle Cloud Remote.</li>             
+        </ol>
+        <p class="alert"><strong>Cuidado: </strong>O Oracle Cloud ainda não suporta o upload de tabelas no banco de dados. Portanto, nenhum dado está disponível para sua aplicação quando ela estiver no Oracle Cloud.</p>
+    <h2><a name="test-whitelist"></a>Testando Suporte à Lista de Permissão</h2>
+        <p>O Oracle Cloud não suporta métodos de API de Java padrão, como <tt>System.exit()</tt>. A <em>lista de permissão</em> do Oracle Cloud define todos os métodos permitidos. Durante a implantação de uma aplicação no Oracle Cloud, o servidor Cloud testa a conformidade da lista de permissão. Se a lista de permissões for violada, o servidor Nuvem recusará a implantação da aplicação.</p>
+        <p>O NetBeans IDE ajuda a impedir erros relacionados a listas de permissão, notificando as violações de lista de permissões durante a codificação. O recurso autocompletar código é limitado pela lista de permissão, e as violações de lista de permissão são realçadas no código. Execute a ação Verificar em uma aplicação Web implantada no servidor Oracle Cloud Remote e a janela de Saída mostrará as violações de lista de permissão.</p>
+    <p><strong>Para testar a lista de permissão:</strong></p>
+        <ol>
+          <li>Na janela Projetos, clique com o botão direito do mouse na<a href="#create-webapp">aplicação web criada</a> e selecione Novo > Servlet. O assistente Novo Servlet será aberto.<br> <img alt="Novo assistente de Servlet mostrando nome e pacote arbitrários criados anteriormente" class="margin-around" height="322" src="../../../images_www/articles/74/web/oracle-cloud/new-servlet.png" width="503"></li>
+          <li>Dê um nome arbitrário ao servlet, selecione um pacote existente para ele e clique em Concluir. A classe do servlet será aberta no editor.</li>
+          <li>Localize o método <tt>processRequest</tt>, digite <tt>System.ex</tt> no corpo do método e pressione Ctrl+Space para abrir o recurso autocompletar código. O recurso autocompletar código não oferece a possibilidade de completar o <tt>System.exit</tt> , pois o <tt>System.exit</tt> não está permitido na lista de permissões do Oracle Cloud. O IDE mostra <tt>exit</tt> com uma linha.<br> <img alt="Recurso autocompletar código não oferecendo System.exit" class="margin-around b-bottom b-right" height="160" src="../../../images_www/articles/74/web/oracle-cloud/cc-failure.png" width="345"></li>
+          <li>Finalize digitando <tt>System.exit(1);</tt>. Uma advertência será exibida. Role o cursor pelo ícone de advertência e uma dica de ferramenta será exibida, informando que o  <tt>java.lang.System.exit</tt> não é permitido<br> <img alt="Advertência de que a lista de permissão não permite o método." class="margin-around b-bottom b-right" height="155" src="../../../images_www/articles/74/web/oracle-cloud/whitelist-warning.png" width="316"></li>
+          <li>Na janela Projetos, clique com o botão direito do mouse no nó da aplicação e selecione Verificar. Abra a janela de Saída (Janela > Saída > Saída ou Ctrl-4). A janela de Saída inclui uma guia Lista de Permissões que mostra erros devido a restrições da lista de restrições.<br> <img alt="Saída para ação Verificação, guia Lista de Permissões mostrando erros" class="margin-around b-right" height="198" src="../../../images_www/articles/74/web/oracle-cloud/whitelist-output.png" width="536"></li>
+          <li>Abra a janela Itens de Ação (Janela > Itens de Ação ou Ctrl-6). As violações de lista de permissão aparecem como um grupo separado de itens de ação.
+          <p class="tips"><strong>Dica:</strong> Ative os Itens de Ação de Grupo por Categoria (botão inferior à esquerda) para ver as violações de lista de permissão mais facilmente.</p>
+          <img alt="Janela Tarefas mostrando as violações da lista de permissões" class="margin-around" height="163" src="../../../images_www/articles/74/web/oracle-cloud/whitelist-tasks.png" width="600"></li>
+          <li>Tente implantar o projeto. Uma caixa de diálogo de advertência é exibida, informando que foram detectadas violações da lista de permissões e perguntando se você quer continuar com a implantação. Clique em Não. A caixa de diálogo desaparecerá.</li>
+          <li>
+            <p>Na janela Projetos, clique com o botão direito do mouse no nó da aplicação e selecione Propriedades. As Propriedades do Projeto da aplicação serão abertas. Selecione a categoria das Listas de Permissão. Uma lista ativa de listas de permissão é exibida. Nessa caixa de diálogo, é possível desativar a lista de permissões.            </p>
+          <p>Quando um servidor da aplicação da Web é definido como Oracle Cloud Remote, a lista de permissões do Oracle Cloud se aplica ao projeto e a qualquer subprojeto desse projeto. Por exemplo, uma aplicação Corporativa definida para execução no Oracle Cloud Remote tem a lista de permissões do Oracle Cloud aplicada à aplicação Corporativa e a quaisquer módulos EJB ou aplicações Web que sejam parte da aplicação Corporativa. Tanto o projeto quanto seus subprojetos têm uma categoria Lista de Permissão em suas Propriedades do Projeto. É possível usar a caixa de diálogo Propriedades do Projeto pra definir listas de permissões para o projeto e seus subprojetos específicos.</p>
+          <img alt="Propriedades do Projeto mostrando a categoria Lista de Permissões" class="margin-around" height="319" src="../../../images_www/articles/74/web/oracle-cloud/whitelist-properties.png" width="469">          </li>
+        </ol>
+  <div class="feedback-box">
+        <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Running%20Web%20Apps%20on%20Oracle%20Cloud">Envie-nos Seu Feedback</a></div>
+
+    <p>&nbsp;</p>
+        <p><br style="clear:both;">
+          
+            <a name="seeAlso"></a>
+        </p>
+    <h2>Consulte Também</h2>
+
+        <p>Para obter informações sobre os serviços do Oracle Cloud, consulte os recursos a seguir:</p>
+        <ul>
+            <li><a href="https://blogs.oracle.com/javatraining/entry/oracle_cloud_development_with_netbeans">Oracle Cloud Development with NetBeans and Eclipse (OEPE)</a> (blog do Java Training Beat)</li>
+            <li><a href="https://cloud.oracle.com/mycloud/f?p=service:home:0" target="_blank">Página Inicial do Oracle Cloud</a></li>
+        </ul>
+
+    <p>Para obter informações relacionadas sobre o desenvolvimento de aplicações Web no NetBeans IDE, consulte os seguintes recursos:</p>
+
+        <ul><li><a href="../../trails/java-ee.html">Trilha de Aprendizado do Java EE e Java Web</a></li>
+        </ul>
+
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>Introdução aos Web Services RESTful - Tutorial do NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, WEB SERVICES, REST, RESTFUL">
+        <meta name="description"
+              content="This tutorial shows how to use NetBeans IDE 
+              to work with RESTful web services.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    <body>
+        <h1>Introdução aos Web Services RESTful</h1>
+
+        <p>REST (REpresentational State Transfer) é um estilo de arquitetura para sistemas de hipermídia distribuídos, como a World Wide Web. O conceito dos recursos identificados por identificadores de recursos universais (URIs) é central para a arquitetura RESTful. Esses recursos podem ser manipulados usando uma interface padrão, como HTTP, e as informações são trocadas usando representações desses recursos. Neste tutorial, você primeiro aprende um pouco sobre REST e depois vê como o NetBeans IDE dá suporte a esse estilo de arquitetura.</p>
+
+
+        <p><b>Conteúdo</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+        <ul>
+            <!--    <li><a href="#introduction">Exercise 0: Install and configure the tutorial environment</a></li>-->
+            <li><a href="#introduction"> Introdução</a></li>
+            <li><a href="#entity-classes">Web Services RESTful, persistência e Classes de Entidade</a></li>
+
+            <li><a href="#create-services-from-db">Criando Web Services RESTful de um Banco de dados</a>
+                <ul>
+                    <li><a href="#create-project">Criando o Projeto</a></li>
+                    <li><a href="#entities-and-services">Gerando Classes de Entidade e Serviços RESTful</a></li>
+
+                </ul></li>
+
+            <li><a href="#test-rest">Testando os Web Services RESTful</a></li>
+<!--            <li><a href="#add-google-map"> 
+                    Adding a Google Map Feature</a></li>-->
+<!--            <li><a href="#rest-spring">RESTful Web Services in the Spring Framework</a>
+                <ul>
+                    <li><a href="#create-spring-webapp">Creating a Java Web Application 
+                            With the Spring Framework</a></li>
+                    <li><a href="#add-aopalliance">Adding aopalliance.jar to the Project</a></li>
+                    <li><a href="#create-spring-restful-services">Creating RESTful Services in 
+                            the Spring-enabled Project</a></li>
+                    <li><a href="#spring-errors">Compilation Errors</a></li>
+                </ul>
+            </li>-->
+
+        </ul>
+
+
+
+        <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote de download do Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">versão 7 ou 8</td>
+                </tr>               
+                <tr>
+                    <td class="tbltd1">Servidor de aplicações em conformidade com Java EE</td>
+                  <td class="tbltd1"><p><a href="http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html" target="_blank">Oracle WebLogic Server 11g-12c</a>, <br> ou GlassFish Server Open Source Edition 3.x ou 4.x.<br> (Não funciona no Tomcat, a menos que o plug-in de suporte do EJB esteja instalado no Tomcat)</p>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><p>O banco de dados jdbc/amostra no <br> servidor de banco de dados JAVA DB (Derby) ou <br>servidor de banco de dados MySQL </p></td>
+                    <td class="tbltd1"><p>No Java DB (Derby), o banco de dados jdbc/amostra é gerado pelo NetBeans IDE <br> ao instalar o IDE com o servidor de aplicações GlassFish.</p>
+                        <p>No MySQL, o IDE preenche o banco de dados de amostra após você tê-lo criado no servidor MySQL de dentro do IDE. </p></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="notes">O GlassFish Server pode ser instalado com a distribuição Web e Java EE do NetBeans IDE. Como alternativa, você pode visitar <a href="https://glassfish.java.net/download.html">a página de downloads do GlassFish Server</a>.</p>
+        <p class="alert"><strong>Importante: </strong>os projetos Java EE 6 e Java EE 7 requerem GlassFish Server ou Oracle WebLogic Server 12c.</p>
+        
+<!-- =========================================== -->
+
+        <h2><a name="introduction"></a> Introdução</h2>
+        <p>Os Web services RESTful são serviços construídos com o estilo de arquitetura RESTful. A construção de Web services com a abordagem RESTful está surgindo como uma alternativa popular ao uso de tecnologias baseadas em SOAP para implantação de serviços na Internet, por ser mais leve e ter a capacidade de transmitir dados diretamente via HTTP.</p>
+
+        <p>O IDE oferece suporte ao rápido desenvolvimento de Web services RESTful usando a JSR 311 - API Java para Web services RESTful (JAX-RS) e Jersey, a implementação de referência para JAX-RS.</p>
+
+        <p>Para obter informações detalhadas, consulte:</p>
+
+        <ul>
+            <li><a href="http://jcp.org/en/jsr/detail?id=311" target="_blank">JSR 311: JAX-RS: A API Java dos Web Services RESTful</a>
+            <li><a href="http://jersey.dev.java.net/">Jersey, a Implementação de Referência JAX-RS (JSR 311) de código-fonte aberto para construir Web services RESTful</a>    
+        </ul>    
+
+        <p>Além de construir Web services RESTful, o IDE também oferece suporte ao teste e à construção de aplicações clientes que acessem Web services RESTful e à geração de código para chamar Web services (baseados em RESTful e em SOAP.)</p>
+
+        <p>Veja uma lista das funcionalidades RESTful fornecidas pelo IDE:</p>
+
+        <ol>
+            <li>Criação rápida de Web services RESTful com base em padrões e classes de entidade JPA.</li>
+            <li>Geração rápida de código para chamar Web services como Google Maps, Yahoo News Search e o StrikeIron arrastando e soltando componentes do gerenciador de Web Services na janela Serviços.</li>
+            <li>Geração de Clientes Java RESTful para serviços registrados no gerenciador de Web Services.</li>
+            <li>Geração de cliente de teste para testar Web services RESTful.</li>
+            <li>View lógica para navegação fácil de classes de implementação do Web service RESTful no seu projeto.</li>
+            <!--<li> Fully integrated Spring framework, providing Spring transaction handling.</li>-->
+        </ol>
+
+        <p>Neste tutorial, você aprenderá como o IDE o ajuda na geração, implementação e teste de Web services RESTful.</p>
+
+
+
+<!-- =========================================== -->
+        <h2><a name="entity-classes"></a>Web Services RESTful, Persistência e Classes de Entidade </h2>
+        <p>Os Web services RESTful no Java dependem da <a href="http://en.wikipedia.org/wiki/Java_Persistence_API" target="_blank">Java Persistence API</a> para se comunicarem com um banco de dados. Especificamente, os Web services RESTful dependem de <em>classes de entidade</em> e uma <em>unidade de persistência</em>, como definido na API de Persistência. As classes de entidade são classes Java que mapeiam para objetos em um banco de dados relacional. Conforme o <a href="http://download.oracle.com/javaee/5/tutorial/doc/bnbqa.html" target="_blank">Tutorial Java EE5</a>, “Uma entidade é um objeto de domínio de persistência leve. Normalmente, uma entidade representa uma tabela em um banco de dados relacional, e cada instância da entidade corresponde a uma linha nessa tabela". Uma unidade de persistência consiste no conjunto de classes de entidades, na fonte de dados, no provedor da persistência e no próprio nome da unidade de persistência, como definido em um arquivo <tt>persistence.xml</tt>. </p>
+        <p>Você pode usar o NetBeans IDE para criar classes de entidade e Web services RESTful no mesmo processo, ou você pode usar o IDE para criar Web services RESTful de classes de entidade existentes. Neste tutorial, use o assistente Serviços RESTful a partir do Banco de Dados para gerar classes de entidade e Web services RESTful no mesmo processo. O assistente gera automaticamente a unidade de persistência.</p>
+        <!-- =========================================== -->
+
+        
+        <h2><a name="mysql"></a>Usando um Servidor de Banco de Dados MySQL  </h2>
+        <p>Se Você usar o servidor de bando de dados MySQL em vez de um JavaDB (Derby), você deverá registrar o servidor do banco de dados no IDE e adicionar o banco de dados de <tt>amostra</tt> ao servidor.</p>
+        <p><strong>Para usar um servidor de banco de dados MySQL com este tutorial:</strong></p>
+        <ol>
+            <li>Registre o servidor MySQL no IDE, se o servidor ainda não estiver registrado. Para registrar um servidor MySQL, vá à janela Serviços do IDE, clique com o botão direito do mouse no nó Banco de dados e selecione Registrar servidor MySQL. <br> <img alt="Opção Registrar Servidor MySQL na janela Serviços" class="margin-around b-bottom" height="164" src="../../../images_www/articles/72/websvc/rest/register-mysql-server.png" width="248"></li>
+            <li>
+                <p>Uma caixa de diálogo será aberta, na qual você digitará os detalhes de configuração do seu servidor MySQL, incluindo o nome de usuário e senha de administrador. Consulte “Configurando as Propriedades do Servidor MySQL” em <a href="../ide/install-and-configure-mysql-server.html">Conectando-se a um Banco de dados MySQL</a>.</p>
+                <img alt="Propriedades básicas do servidor MySQL que você está registrando no IDE" class="margin-around" height="264" src="../../../images_www/articles/72/websvc/rest/basic-mysql-properties.png" width="402"></li>
+            <li>Inicie o servidor MySQL e conecte-se a ele. Consulte “Iniciando o Servidor MySQL” em <a href="../ide/install-and-configure-mysql-server.html">Conectando-se a um Banco de Dados MySQL</a>. </li>
+            <li>Clique com o botão direito do mouse no nó do servidor MySQL e selecione Criar Banco de Dados. A caixa de diálogo Criar Banco de Dados MySQL será aberta. <br> <img alt="Opção do menu de contexto Criar Banco de Dados" class="margin-around b-bottom" height="229" src="../../../images_www/articles/72/websvc/rest/create-database.png" width="261"> </li>
+            <li>Digite <tt>sample</tt> como o novo nome do banco de dados. Conceda acesso total ao usuário raiz, ou ao usuário que você desejar.<br> <img alt="Caixa de diálogo Nome do Novo Banco de Dados preenchida" class="margin-around" height="136" src="../../../images_www/articles/72/websvc/rest/new-database-name.png" width="404">  </li>
+            <li>Clique em OK. Uma caixa de diálogo é aberta, informando que <tt>sample</tt> é o nome de um banco de dados de amostra e perguntando se você deseja criar tabelas, objetos e dados para esse banco de dados.<br><img alt="Solicitação para preencher o banco de dados com dados de amostra" class="margin-around" height="139" src="../../../images_www/articles/72/websvc/rest/create-sample-contents.png" width="543"> </li>
+            <li>Clique em Sim. O IDE cria e preenche o banco de dados, e adiciona uma conexão ao banco de dados.<br><img alt="Banco de dados de amostra gerado e conexão com o banco de dados na janela Serviços" class="margin-around b-bottom" height="130" src="../../../images_www/articles/72/websvc/rest/generated-db.png" width="383"> </li>
+        </ol>
+        <h2><a name="create-services-from-db"></a>Criando Web Services RESTful de um Banco de dados </h2>
+        <p>O objetivo deste exercício é criar um projeto e gerar classes de entidade e Web services RESTful com base em um banco de dados.</p>
+        <p>Esta seção usa o banco de dados JavaDB (Derby) e a fonte de dados jdbc/de amostra O JavaDB está incluído no SDK. A fonte de dados jdbc/amostra é gerada pelo NetBeans IDE automaticamente quando o IDE é instalado junto com o GlassFish.</p>
+        <div class="indent">
+            
+            <!-- =========================================== -->
+
+            <h3><a name="create-project"></a>Criando o Projeto</h3>
+            <p>Para criar Web services RESTful, é necessário um projeto de aplicação Java Web. </p>
+            <p><strong>Para criar o projeto:</strong></p>
+            <ol>
+
+                <li><p>Selecione Arquivo > Novo Projeto (Ctrl-Shift-N no Linux e no Windows, ⌘-Shift-N no MacOS). Em Categorias, selecione Java Web. Em Projetos, selecione Aplicação Web. Clique em Próximo. O assistente Nova Aplicação Web será aberto.</p>
+                    <p>Como alternativa, você pode criar uma aplicação Web Maven. Selecione Arquivo > Novo Projeto (Ctrl-Shift-N no Linux e no Windows, ⌘-Shift-N no MacOS). Em Categorias, selecione Maven. Em Projetos, selecione Aplicação Web Maven e clique em Próximo.  </p>      
+                </li>
+                <li>Em Nome do Projeto, digite <tt>CustomerDB</tt>. Clique em Próximo.</li>
+                <li>Selecione Java EE 6 Web ou Java EE 7 Web. Em Servidor, selecione o servidor que você deseja usar, mas observe que os projetos do Java EE exibe GlassFish server 3.x ou 4.x. Clique nas opções remanescentes e clique em Finalizar.
+                    <p class="alert"><b>Importante para Projetos Maven:</b> no NetBeans IDE 7.2 você não pode definir o servidor ao criar uma aplicação web Maven. Entretanto, você tem que definir o servidor antes de poder criar uma unidade de persistência. Portanto, após criar a aplicação web Maven, abra as Propriedades do projeto e defina o servidor nas propriedades de Execução. Para abrir as Propriedades do projeto, clique com o botão direito do mouse no nó Projeto e selecione Propriedades no menu de contexto.</p>
+                    </li>	
+            </ol>
+            
+            <!-- =========================================== -->
+
+            <h3><a name="entities-and-services"></a>Gerando Classes de Entidade e Serviços RESTful</h3>
+            <p>Quando você tiver uma aplicação Java Web, adicione classes de entidade e Web services RESTful ao projeto.</p>
+            <p><strong>Para gerar classes de entidade e Web services RESTful: </strong></p>
+            <ol>
+                <li>Clique com o botão direito do mouse no nó <tt>CustomerDB</tt> e selecione Novo > Outro > Web Services > Web Services RESTful do Banco de dados. O assistente Novo Web Service RESTful é aberto, no painel Tabelas de Bancos de dados.<br> <img alt="Web Services RESTful na opção Banco de dados no menu" class="margin-around" height="396" src="../../../images_www/articles/72/websvc/rest/open-wizard.png" width="600"> </li>
+
+
+                <li>No painel Tabelas do Banco de dados, se estiver utilizando o GlassFish Server, selecione a fonte de dados <tt>jdbc/sample</tt> no campo drop-down Fonte de Dados.
+                    <p>Se estiver utilizando o Tomcat, selecione jdbc:derby://localhost:1527/sample. Se o servidor de banco de dados Derby não iniciar automaticamente, será necessário iniciá-lo a partir da guia Bancos de dados na janela Serviços.</p>
+                    <p class="notes"><b>Observação para usuários do MySQL:</b> É necessário criar uma nova fonte de dados. Selecione Nova Fonte de Dados, dê a ela um nome descritivo arbitrário e selecione a conexão de banco de dados <tt>jdbc:mysql://localhost:3306/sample</tt>. Essa conexão foi estabelecida ao criar o banco de dados de amostra no MySQL. <br><img alt="Nova fonte de dados utilizando conexão mysql" class="margin-around" height="402" src="../../../images_www/articles/72/websvc/rest/new-mysql-datasource.png" width="594"></p> 
+                </li>
+
+
+                <li> Em Tabelas Disponíveis, selecione CUSTOMER e, em seguida, clique em Adicionar. A tabela DISCOUNT_CODE, que tem um relacionamento com a tabela CUSTOMER, também é adicionada automaticamente à lista Tabelas Selecionadas. Se você estiver usando um banco de dados MySQL ou algumas versões do Derby, a tabela MICRO_MARKET também será adicionada. Você agora verá o seguinte (versão do Derby): <br> <br> <img alt="Painel Tabelas de Bancos de Dados do assistente Novas Classes de Entidade do Banco de Dados que mostra as tabelas CUSTOMER e DISCOUNT_CODE selecionadas" border="1" class="margin-around" height="381" src="../../../images_www/articles/72/websvc/rest/select-tables.png" title="Painel Tabelas de Bancos de Dados do assistente Novas Classes de Entidade do Banco de Dados que mostra as tabelas CUSTOMER e DISCOUNT_CODE selecionadas" width="556"></li>
+                <li>Clique em Próximo. A Página Classes de Entidade será aberta. Digite <tt>entities</tt> como o nome do Pacote. Você agora verá o seguinte (versão do Derby).
+                    <p class="notes"><b>Observação:</b> O assistente Web Services RESTful do Banco de Dados gera automaticamente anotações JAXB. Se você gerar classes de entidade para uma aplicação Java EE com o assistente Classes de Entidade do Banco de dados e mais tarde quiser criar Web services RESTful com base nessas classes de entidade, certifique-se de que a caixa Gerar Anotações JAXB esteja marcada. Você também pode adicionar anotações JAXB manualmente às classes de entidade antes de executar o assistente Web Services RESTful de Classes de Entidade. Para obter mais informações, consulte <a href="http://netbeans.dzone.com/nb-generate-simpler-rest" target="_blank">NetBeans para Gerar Web Services RESTful Mais Simples</a>. </p>
+                    <img alt="Painel Classes de Entidade do assistente Web Services RESTful do Banco de Dados que mostra o nome do pacote" class="margin-around" src="../../../images_www/articles/71/websvc/rest/entity-classes.png"></li>
+                <li>Clique em Próximo. Um painel será aberto no qual você poderá definir o nome e a localização das classes e pacotes de serviços gerados. Para projetos do Java EE, você tem a opção de alterar o nome e a localização da classe de configuração da aplicação REST. 
+
+<!--                    <p class="alert"><strong>Spring framework applications:</strong> Register the RESTful resources in the <tt>web.xml</tt> deployment descriptor. 
+                        Do NOT use <tt>javax.ws.rs.core.Application</tt>.</p>-->
+
+                    
+                    <p>Para este tutorial, aceite os defaults e clique em Finalizar. Quando você clica em Finalizar o IDE gera classes de entidade e serviço. Em um projeto Java EE, o IDE também gera uma classe de configuração de aplicação, que é uma subclasse de Application.</p>
+                    <img alt="Serviço gerado e classes de configuração e pacotes de serviços" class="margin-around" src="../../../images_www/articles/72/websvc/rest/class-name-location.png">
+                    </li>
+            </ol>
+        </div>
+        <p>Agora, o IDE gera Web services RESTful. Quando o IDE tiver finalizado, observe a janela Projetos. As classes da entidade geradas estão no pacote <tt>entities</tt> e os serviços estão no pacote <tt>service</tt>. Os web services do Java EE RESTful EE6 de um banco de dados instanciam o <tt>EntityManager</tt> em cada classe de serviço. Isso elimina a necessidade de classes do controlador JPA e gera códigos mais simples.</p>
+
+        <!-- ===================================================================================== -->
+        <h2><a name="test-rest"></a>Testando os Web Services RESTful</h2>
+
+        <p>O objetivo deste exercício é testar sua aplicação. Você criará uma nova aplicação web para os testes e, em seguida, usará um assistente no IDE para gerar os testes no novo projeto.</p>
+
+
+
+        <ol>
+            <li>Escolha Arquivo > Novo Projeto no menu principal.</li>
+            <li>Selecione o tipo de projeto Aplicação Web na categoria Java Web. Clique em Próximo.</li>
+            <li>Digite <strong>WebServicesTest</strong> para o nome do projeto. Clique em Próximo.</li>
+            <li>Selecione o GlassFish Server como servidor de destino e o Java EE 6 ou Java EE 7 como a versão do Java EE. Clique em Finalizar.</li>
+            <li>Clique com o botão direito do mouse no nó do projeto <tt>CustomerDB</tt> e selecione Testar Web Services RESTful. Uma caixa de diálogo será aberta perguntando se você deseja gerar o cliente de teste dentro do projeto do serviço ou em um outro projeto Java Web. Essa opção permite a você driblar as restrições de segurança em alguns browsers. Você pode usar um projeto Web, contanto que ele esteja configurado para ser implantado no mesmo domínio de servidor que o projeto CustomerDB. <br><img alt="Caixa de diálogo para selecionar se um cliente de teste deverá ser gerado localmente ou em outro projeto Java Web implantado no mesmo domínio" class="margin-around" height="293" src="../../../images_www/articles/71/websvc/rest/configure-test-client.png" width="565"></li>
+            <li>Selecione <strong>Cliente de Teste da Web no Projeto</strong> e clique em Procurar.</li>
+            <li>Selecione o projeto WebServiceTest na caixa de diálogo Selecionar Projeto. Clique em OK.
+
+                <p>O IDE gera o arquivo <tt>test-resbeans.html</tt> no projeto WebServiceTest. O IDE também inicia automaticamente o servidor e implanta a aplicação CustomerDB. </p>
+                <p class="notes">Se a janela de saída mostrar uma mensagem de erro dizendo que uma ou mais classes não existe e que o projeto não pode ser construído, adicione as bibliotecas Jersey às bibliotecas de tempo de compilação. Clique com o botão direito do mouse no nó do projeto e selecione Propriedades. No menu em árvore Propriedades, selecione Bibliotecas. Clique em Adicionar Biblioteca e procure as bibliotecas Jersey.</p>
+            </li>
+            <li>Clique com o botão direito do mouse em WebServiceTest e escolha Executar.</li>
+            <li>Abra seu browser em <a href="http://localhost:8080/WebServicesTest/test-resbeans.html">http://localhost:8080/WebServicesTest/test-resbeans.html</a> <br> <img alt="Página inicial de testes do Web service RESTful no browser" border="1" class="margin-around" src="../../../images_www/articles/71/websvc/rest/test-rest1.png" title="Página inicial de testes do Web service RESTful no browser"> 
+
+
+                <p>À esquerda está o conjunto de recursos raiz. Aqui eles são nomeados <tt>entities.customer</tt> e <tt>entities.discountCodes</tt> e <tt>entities.microMarket</tt>.</p>
+            </li>
+            <li>Clique no nó <tt>entities.customer</tt>. No campo "Escolher método para testar", selecione GET (application/json) ou GET (application/xml). Clique em Testar. O cliente de teste enviará uma solicitação e exibirá o resultado na seção Saída do Teste. O cliente de teste exibirá a View Bruta por default. A imagem a seguir mostra a resposta a uma solicitação aplicação/xml.<br> <img alt="Janela View bruta no testador do Web service RESTful" class="margin-around" src="../../../images_www/articles/72/websvc/rest/test-rest-raw.png"></li>
+</ol>
+    <p>Existem 5 guias na seção Saída do Teste.   </p>           
+          <ul>
+            <li>A View Tabular é uma view nivelada que exibe todas as URI no documento resultante. Atualmente, essa view exibe apenas uma advertência de que relações conteúdo-continente não são permitidas.</li>
+              <li>A View Bruta exibe os dados reais retornados. Dependendo do tipo de mime selecionado (<tt>application/xml</tt> ou <tt>application/json</tt>), os dados exibidos estarão no formato XML ou JSON, respectivamente.        </li>
+              <li>A guia Sub-Recurso mostra os URLs do recurso raiz e dos sub-recursos. Quando o Web service RESTful tem como base classes de entidade de banco de dados, o recurso raiz representa a tabela do banco de dados e os sub-recursos representam as colunas.</li>
+              <li>A guia Cabeçalhos exibe as informações do cabeçalho HTTP. </li>
+              <li>A guia Monitor HTTP exibe as solicitações HTTP reais e as respostas enviadas e recebidas. </li>
+    </ul>
+            <p>Saia do browser e retorne ao IDE.</p>
+              
+              <!-- ===================================================================================== -->
+ 
+<!--
+<h2><a name="add-google-map"></a> 
+            Adding a Google Map Feature</h2>
+
+        <p>The goal of this exercise is to add Google map
+            functionality to our RESTful web services.</p>
+
+        <ol>
+            <li>Open the <tt>CustomerRESTFacade</tt> class (EE 5) or <tt>CustomerFacadeREST</tt> class (EE 6) 
+                in the editor.      </li> 
+
+
+            <li><a name="add_method_step"></a>Add the following method to the class:
+                <pre>@GET
+@Produces("text/html")
+public String getGoogleMap() {
+// Drag and drop the getGoogleMap operation here
+
+   return "";
+}</pre>
+            </li>
+            <li><a name="get_google_map_key"></a>Sign up for a Google map key at <a target="_blank" href="http://www.google.com/apis/maps/signup.html">http://www.google.com/apis/maps/signup.html</a>. The Google map key request dialog has a field for your website's URL. Type <tt>http://localhost:8080</tt> in that field.</li>   
+
+            <li>In the IDE, open the Services tab and expand the Web Services node. Under Web Services, expand Google. Under Google, expand Map Service.<br>
+                <br><img class="margin-around" alt="services view showing google map service" title="Services view showing Google map service" src="../../../images_www/articles/71/websvc/rest/google-saas.png"></li> 
+
+            <li>Drag the getGoogleMap item and drop it into the body of the <tt>getGoogleMap</tt> method you created in <a href="#add_method_step">Step 2</a>, just before the <tt>return = &quot;&quot;;</tt> line. The Customize getGoogleMap SAAS dialog opens. Accept the defaults and click OK.
+                <p>The IDE adds the following <tt>try</tt> block to the <tt>getGoogleMap</tt> method.
+                <pre>@GET
+@Produces("text/html")
+public String getGoogleMap() {
+// Drag and drop the getGoogleMap operation here
+        
+    try {
+             
+         String address = "16 Network Circle, Menlo Park";
+         java.lang.Integer zoom = 15;
+         String iframe = "false";
+         RestResponse result = GoogleMapService.getGoogleMap(address, zoom, iframe);
+         //TODO - Uncomment the print Statement below to print result.
+         //System.out.println("The SaasService returned: "+result.getDataAsString());
+    } catch (Exception ex) {
+         ex.printStackTrace();
+    }
+
+    return "";
+
+}
+                </pre>   
+                <p>The IDE also creates the packages org.netbeans.saas and org.netbeans.saas.google, which contain the following classes and resources:  </p>
+
+                <ul>
+                    <li><tt>RestConnection</tt> - A wrapper around HttpUrlConnection </li>
+                    <li><tt>RestResponse</tt> - A wrapper for the HTTP response</li>
+                    <li><tt>googlemapservice.properties</tt> - A properties file that stores the API key </li>
+                    <li><tt>GoogleMapService</tt> - A service wrapper containing the wrapper methods that uses RestConnection to make calls to the Google Map service.</li>
+                </ul>
+
+
+                <img src="../../../images_www/articles/71/websvc/rest/project-w-google-ee6.png" alt="Projects window showing packages added after get Google Map method is dropped into Customer Resource" class="margin-around">    
+            <li>In the try block of getGoogleMap(), replace the commented-out print statement with the line <span class="examplecode"><tt>return result.getDataAsString();</tt></span>. The method now looks like this: 
+                <pre>@GET
+@Produces("text/html")
+public String getGoogleMap() {
+// Drag and drop the getGoogleMap operation here
+        
+    try {
+             
+         String address = "16 Network Circle, Menlo Park";
+         java.lang.Integer zoom = 15;
+         String iframe = "false";
+         RestResponse result = GoogleMapService.getGoogleMap(address, zoom, iframe);
+         return result.getDataAsString();
+    } catch (Exception ex) {
+         ex.printStackTrace();
+    }
+
+    return "";
+}</pre>
+            </li>
+            <li>Open <tt>googlemapservice.properties</tt>. Paste in the API key you got from Google in <a href="#get_google_map_key">Step 3</a>.
+            Save your changes. The IDE automatically redeploys your project.
+            <li>Refresh your  browser window with the test client. </li>
+            <li>Click <tt>entities.customer</tt> in the left sidebar. The <code>GET (text/html)</code> method appears in the &quot;Choose method to test&quot; field.  Click Test. The GoogleMap of 16 Network Circle, Menlo Park opens in the Raw View.
+                <br>
+            <img src="../../../images_www/articles/71/websvc/rest/menlo-park-map.png" alt="RESTful services test page showing Google map of Menlo Park" border="1" class="margin-around">      </li>
+            <li>
+                <p>The  Google map of the Menlo Park address  appears for  all customers in the database. To display the Google maps of the actual addresses of the customers, create an instance of Customer  and set the address equal to a concatenation of address variables for that instance of Customer.  </p>
+                <p>Find an instance of Customer by calling the entity manager's <tt>find()</tt> method. In an EE5 service, the customer facade uses its own <code>find</code> method to call <code>CustomerJpaController</code>, which instantiates the entity manager. In an EE6 service, the customer facade uses the abstract facade to access the entity manager. The generic <tt>find()</tt> method requires   explicit argument type casting to      Object and an explicit entity id. The following code displays the map location of the customer with id number 1 (changes in bold):</p>
+              <p><b>EE5 service:</b></p>
+                <pre>@GET
+@Produces("text/html")
+public String getGoogleMap() {
+    try {
+         <b>Customer c = find(1);
+         String address = c.getAddressline1() + " " + c.getAddressline2() + " " +
+                 c.getCity() + " " + c.getState() + " " + c.getZip();</b>
+         java.lang.Integer zoom = 15;
+         String iframe = "false";
+ 
+         RestResponse result = GoogleMapService.getGoogleMap(address, zoom, iframe);
+         return result.getDataAsString();
+     
+     } catch (Exception ex) {
+         ex.printStackTrace();
+     } 
+
+     <b></b>
+     return &quot;&quot;;
+ }</pre>
+                <p><b>EE6 service:</b></p>
+                <pre>@GET
+@Produces("text/html")
+public String getGoogleMap() {
+    try {
+         <b>Customer c = getEntityManager().find(Customer.class, 1);
+         String address = c.getAddressline1() + " " + c.getAddressline2() + " " +
+                 c.getCity() + " " + c.getState() + " " + c.getZip();</b>
+         java.lang.Integer zoom = 15;
+         String iframe = "false";
+ 
+         RestResponse result = GoogleMapService.getGoogleMap(address, zoom, iframe);
+         return result.getDataAsString();
+     
+     } catch (Exception ex) {
+         ex.printStackTrace();
+     } 
+
+     <b></b>
+     return &quot;&quot;;
+ }</pre>
+            </li>
+
+            <li>Test the RESTful web services again. The customer id is specified as an argument for the <tt>find()</tt> method and the tester displays the raw view by default. For customer 1, the following map displays:
+              <p class="tips"><strong>Tip: </strong>Try to change the id number passed as an argument to <code>getEntityManager().find(Customer.class, id)</code>. A real world client would get the value of this argument from a UI form.</p>
+
+                <br><img border="1" src="../../../images_www/articles/70/websvc/rest/google-map-4.png" class="margin-around" alt="Google Map showing address of customer in database" title="Google Map showing address of customer in database">
+                <p class="notes"><b>Note: </b>If GoogleMaps cannot find an address, it shows a zoomed in view of the ocean.</p></li>            
+        </ol>
+
+-->
+
+<!-- Spring Framework -->
+<!--        <h2><a name="rest-spring"></a>RESTful Web Services in the Spring Framework</h2>
+        <p>Jersey is integrated into the Spring Framework. When you create a Java Web application with the Spring framework, a REST-aware servlet is automatically created. However, Spring 3 doesn't contain aopalliance.jar, which the RESTful web service requires to inject an EntityManager object.</p>
+        <div class="indent">
+            <h3><a name="create-spring-webapp"></a>Creating a Java Web Application With the Spring Framework</h3>
+            <p>When you create the Java Web application in the New Project wizard as described in <a href="#Exercise_1">Generating Entity Classes from a Database</a>, after you select the server, click Next instead of Finish 
+                to open the Frameworks panel of the wizard. Select Spring Web MVC, then click Finish. </p>
+            <p class="notes"><strong>Note.</strong> If you already created your project you can add support for the
+            Spring Web MVC framework by right-clicking the project node in the Projects
+            window and choosing Properties in the popup menu.
+            In the Project Properties window, select the Frameworks category and then click Add and select
+            Spring Web MVC.</p>
+            <h3><a name="add-aopalliance"></a>Adding aopalliance.jar to the Project</h3>
+            <p>Spring 3 does not contain <tt>aopalliance.jar</tt>. The application requires this library to inject   EntityManager. To fix the problem you need to   download this jar  and add it to your classpath. See <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=193626" title="https://netbeans.org/bugzilla/show_bug.cgi?id=193626">Issue 193626</a> and the <a target="_blank" href="http://forum.springsource.org/showthread.php?t=10511" title="http://forum.springsource.org/showthread.php?t=10511">Spring forums</a>. </p>
+            <p><strong>To add aopalliance.jar:</strong></p>
+            <ol>
+                <li>Download a zip archive of <tt>aopalliance.jar</tt> from <a target="_blank" href="http://sourceforge.net/projects/aopalliance/files/aopalliance/1.0/" title="http://sourceforge.net/projects/aopalliance/files/aopalliance/1.0/" rel="nofollow">http://sourceforge.net/projects/aopalliance/files/aopalliance/1.0/</a>.</li>
+                <li>Unzip the archive to the location of your choice.</li>
+                <li>Right-click your Spring RESTful Web Service project node in the Projects window and
+                    choose Properties in the popup men and then select the Libraries category in the Project Properties window.<br>
+                    <img src="../../../images_www/articles/72/websvc/rest/properties-node.png" height="537" width="340" alt="Context menu showing properties node" class="margin-around">
+                    <p>Alternatively, you can right-click the Libraries node of the project in the 
+                    Projects window and choose Add JAR/Folder.</p></li>
+                <li>Click Add JAR/Folder and locate the <tt>aopalliance.jar</tt> in the file system browser. Click Open.
+                    <p>You will want to use the absolute path reference.</p>
+                    <img src="../../../images_www/articles/72/websvc/rest/browse-for-aopalliance.png" alt="Browsing for aopalliance.jar" height="404" width="586" class="margin-around"></li>
+                <li>The <tt>aopalliance.jar</tt> file is now included in your libraries. Click OK. <br>
+                    <img src="../../../images_www/articles/72/websvc/rest/libraries.png" alt="Library properties showing added aopalliance.jar" height="461" width="600" class="margin-around">         </li>
+
+            </ol>
+            <h3><a name="create-spring-restful-services"></a>Creating RESTful Services in the Spring-enabled Project</h3>
+            <p>After you create a Java web application with the Spring framework and add <tt>aopalliance.jar</tt>
+                to the project's classpath, run the RESTful Web Service from Database wizard as described in <a href="#entities-and-services">Generating Entities and Services</a>. However, do NOT register RESTful resources with a subclass of <tt>javax.ws.rs.core.Application</tt>. Instead use the <tt>web.xml</tt> deployment descriptor. The Spring framework generates a <tt>web.xml</tt> deployment descriptor in all cases.</p>
+            <img src="../../../images_www/articles/72/websvc/rest/ee6-rest-configuration.png" alt="Options for registering RESTful resources, web.xml chosen" height="319" width="486" class="margin-around">
+
+            <p>For more about the features of Spring framework projects in NetBeans IDE, see <a href="../../docs/web/quickstart-webapps-spring.html">Introduction to the Spring Framework</a>.</p>
+            <h3><a name="spring-errors"></a>Compilation Errors</h3>
+            <p>You might have compilation errors in the generated service classes. You see these errors if you create the RESTful services before you add <tt>aopalliance.jar</tt> to the classpath. </p>
+            <p><strong>To fix compilation errors in service classes:</strong></p>
+            <ol>
+                <li>Make certain that you add <tt>aopalliance.jar</tt> to the classpath, as described in <a href="#add-aopalliance">Adding aopalliance.jar to the Project</a>.</li>
+                <li>In the IDE's top menu bar, click  Edit and select Find in Projects...</li>
+                <li>Search for all occurrences of the <tt>@Error</tt> annotation in the project.<br>
+                    <img src="../../../images_www/articles/72/websvc/rest/find-error.png" alt="Find in Projects dialog showing search for the @Error annotation" height="307" width="431" class="margin-around"></li>
+                <li>Delete every <tt>@Error</tt> line from the code.<br>
+                    <img src="../../../images_www/articles/72/websvc/rest/error-lines.png" alt="Search results for @Error, with one line highlighted and about to be deleted" height="558" width="590" class="margin-around"></li>
+            </ol>
+
+        </div>-->
+
+
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20REST%20Services%20in%20NetBeans%20IDE%20">Enviar Feedback neste Tutorial</a></div>
+        <br style="clear:both;">
+        <h2><a name="seealso"></a>Consulte Também</h2>
+
+        <p>Para obter mais informações sobre o uso do NetBeans IDE para desenvolver aplicações Java EE, consulte os seguintes recursos:
+        </p>
+
+        <ul>
+            <li><a href="http://netbeans.dzone.com/nb-generate-simpler-rest" target="_blank">NetBeans para Gerar Web Services RESTful Mais Simples</a></li>
+
+            <li><a href="../../trails/web.html">Trilha do Aprendizado de Web services</a></li>
+            <li>YouTube: <a href="http://www.youtube.com/watch?v=cDdfVMro99s" target="_blank" title="RESTful Web Services, Building and Deploying (Part 1)">RESTful Web Services, Building and Deploying (Part 1)</a></li>
+            <li>YouTube: <a href="http://www.youtube.com/watch?v=_c-CCVy4_Eo" target="_blank" title="NetBeans RESTful Testing and Invoking RESTful Resources (Part 2)">NetBeans RESTful Testing and Invoking RESTful Resources (Part 2)</a></li>
+        </ul>
+        <p>Para enviar comentários e sugestões, obter suporte e se manter informado sobre os mais recentes desenvolvimentos das funcionalidades de desenvolvimento Java EE do NetBeans IDE, <a href="../../../community/lists/top.html">inscreva-se na lista de notícias nbj2ee@netbeans.org</a>.</p>
+    </body>

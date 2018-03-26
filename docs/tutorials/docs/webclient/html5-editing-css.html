@@ -1,0 +1,536 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Working with CSS Style Sheets in an HTML5 Application - NetBeans Tutorial</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that demonstrates how the IDE provides tools that can help you work with CSS rules to modify the layout of
+        an application.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Working with CSS Style Sheets in an HTML5 Application</h1>
+
+        <p>HTML5 applications typically combine HTML, CSS and JavaScript to create applications 
+        that are run in a browser and that are displayed on a variety of devices, including smartphones, tablets and laptops.
+        This document demonstrates how the IDE provides tools that can help you work with CSS rules to modify the layout of
+        an application.
+        The IDE also provides support for creating and using Sass and LESS CSS preprocessors
+        in your application.</p>
+        
+        <p>The NetBeans Connector extension for the Chrome browser can help you view applications as they would
+        appear on various devices. 
+        The extension enables the Chrome browser and the IDE to communicate with each other.
+        The Inspect in NetBeans mode can help you locate elements in your source code by selecting them in the browser.
+        After you select an element in the browser you can use the IDE to view the CSS rules and properties 
+        that are applied to that element.
+        </p>
+        
+        <p>For details on how to install the NetBeans Connector extension for the Chrome browser,
+            see the tutorial <a href="html5-gettingstarted.html">Getting Started with HTML5 Applications</a>.</p>
+        
+        <p class="tips">To watch a screencast of this tutorial, see <a href="../web/html5-css-screencast.html">Video of Working with CSS Style Sheets in HTML5 Applications</a>.</p>
+
+        <h3>Contents</h3>
+        <img src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.4 and 8.0" >
+
+        <ul class="toc">
+            <li><a href="#create">Creating the NetBeans HTML5 Application</a></li>
+            <li><a href="#viewing">Viewing the Application on Different Devices</a></li>
+            <li><a href="#layout">Modifying the Layout</a>
+                <ul>
+                    <li><a href="#newstylesheet">Create a Media Style Sheet</a>
+                    <li><a href="#addrules">Add CSS Rules</a>
+                </ul>
+            </li>
+            <li><a href="#preprocessors">Using CSS Preprocessors</a></li>
+            <li><a href="#summary">Summary</a></li>
+            <li><a href="#seealso">See Also</a></li>
+        </ul>
+
+        <h4>To complete this tutorial, you will need the following resources.</h4>
+
+        <table id="requiredSoftware">
+
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE, Java</a></td>
+                    <td class="tbltd1">7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chrome Browser</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">NetBeans Connector Extension for Chrome</a></td>
+                    <td class="tbltd1">1.1 or newer</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">HTML5DemoSiteTemplate.zip</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">CSS preprocessor</td>
+                    <td class="tbltd1"><a href="http://sass-lang.com/install" target="_blank">Sass</a> or<br>
+                        <a href="http://lesscss.org/">LESS</a></td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">HTML5DemoSiteTemplate.zip</a> 
+                is a site template that you will use when you create the project.</li>
+
+            <li>If you would like to compare your project with a working solution, you can download the
+                <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoCssSiteTemplate.zip">site template</a>
+                of the finished project.</li>
+
+            <li>This document assumes you have some basic knowledge of, or programming experience with
+                HTML, CSS, and JavaScript.</li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Creating the Application ++++++++++++++++ -->
+        <a name="create"></a>
+        <h2>Creating the HTML5 Application</h2>
+        <p>In this tutorial you use a site template to create the HTML5 project.
+            The site template that you use in this tutorial is the same template that was saved as a site template in the
+            <a href="html5-gettingstarted.html">Getting Started with HTML5 Applications</a> tutorial.
+            If you performed the steps in the Getting Started tutorial you can use the site template that you saved 
+            in the last section. Alternatively, you can download the HTML5DemoSiteTemplate.zip site template.</p>
+        
+        <p>Perform the following steps to create the application from a site template.</p>
+        <ol>
+            <li>Download the HTML5 site template (<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">HTML5DemoSiteTemplate</a>)</li>
+            <li>Choose File &gt; New Project (Ctrl-Shift-N; &#8984;-Shift-N on Mac) in the main menu to open the New Project wizard.</li>
+            <li>Select the <strong>HTML5</strong> category and
+                then select <strong>HTML5 Application</strong>. Click Next.</li>
+            <li>Type <strong>HTML5DemoCss</strong> for the project name and specify a location. Click Next.</li>
+            <li>Select the <strong>Select Template</strong> option and click Browse to locate the site template (<tt>HTML5DemoSiteTemplate.zip</tt>). Click Finish. <br>
+            <img src="../../../images_www/articles/73/web/html5-css/html5-css-newproject.png"
+                    class="margin-around b-all" alt="screenshot of New HTML5 Application wizard"
+                    title="Specify the site templat in the New HTML5 Application wizard">
+            </li>
+        </ol>
+        
+        <p>When you click Finish the IDE creates the project and opens the <tt>index.html</tt> file in the editor.
+        In the Projects window you can see that the project contains <tt>index.html</tt>, a CSS style sheet, 
+        some JavaScript libraries and some images. 
+        The CSS Rules and Navigator windows also open in the IDE.</p>
+
+        
+<!-- ++++++++++++++++ Viewing the Application ++++++++++++++++ -->
+        <a name="viewing"></a>
+        <h2>Viewing the Application on Different Devices</h2>
+        <p>In this tutorial you will run the application in the Chrome browser with the NetBeans Connector extension installed. 
+            When the extension is installed you can use the NetBeans menu in the browser to easily resize the browser 
+            window to view the application as it would appear on some common devices. 
+            </p>
+            
+            <p class="notes"><strong>Notes.</strong>
+                For this tutorial it is recommended that you use the Chrome browser and install the NetBeans extension for Chrome.
+                See the tutorial <a href="html5-gettingstarted.html">Getting Started with HTML5 Applications</a>
+                for details on how to install the NetBeans Connector extension.</p>
+        
+            <p>Perform the following steps to run the application in the Chrome browser.</p>
+        <ol>
+            <li>Confirm that Chrome with NetBeans Integration is selected in the dropdown list in the Toolbar.
+                </li>
+            <li>Click the Run button in the toolbar to run the project in the Chrome browser. 
+                
+                <p>In the browser you can see a simple expandable menu.</p>
+                <p>You will notice that there is a yellow bar in the browser tab that notifies
+                you that the NetBeans Connector is debugging the tab.
+                The IDE and the browser are connected and are able to communicate with each other when the yellow bar is visible.
+                When you launch an HTML5 application from the IDE the JavaScript debugger is automatically enabled.
+                When you save changes to a file or make changes to a CSS style sheet you do not need to reload the page 
+                because the browser window is automatically updated to display the changes.</p>
+
+                <p class="alert">If you close the yellow bar or click Cancel you will break the connection
+                between the IDE and the browser. 
+                If you break the connection you will need to launch the HTML5 application from the IDE.</p>
+                
+                <p>You will also notice that the NetBeans icon is visible in the URL location field of the browser.
+                You can click the icon to open a menu that provides various options for changing the display size of the browser
+                and for enabling the Inspect in NetBeans mode.</p>
+            </li>
+            <li>Click the Open NetBeans Action icon in the URL field of the browser to open the NetBeans menu 
+                and select Tablet Portrait in the menu. 
+                <p>The window resizes to the size of a tablet browser in portrait mode.
+                The menu stretches to fill the right side and the entire menu is visible.</p>
+            <img src="../../../images_www/articles/73/web/html5-css/html5-css-tabletbrowser1.png"
+                    class="margin-around b-all" alt="screenshot of browser in Tablet Portrait view"
+                    title="Tablet Portrait display size in the browser">
+            <p>If you select one of the default devices in the menu the browser window will 
+            resize to the dimensions of the device. This enables you to see how the 
+            application will look on the selected device.
+            HTML5 applications are usually designed to respond to the size of the screen
+            of the device on which they are viewed. 
+            You can use JavaScript and CSS rules that respond to the screen size and
+            modify how the application is displayed so that the layout is optimized for the
+            device. </p></li>
+            
+            <li>Click the NetBeans icon again and select Smartphone Landscape
+                in the NetBeans menu. <br>
+                <img src="../../../images_www/articles/73/web/html5-css/html5-css-tabletbrowser2.png"
+                    class="margin-around b-all" alt="screenshot of NetBeans menu in browser"
+                    title="Select Smartphone Landscape in the NetBeans menu in the browser">
+                <p>The window resizes to the size of a smartphone in landscape orientation and you
+                    can see that the bottom part of the menu is not visible without scrolling.</p>
+            <img src="../../../images_www/articles/73/web/html5-css/html5-css-smartphonebrowser1.png"
+                    class="margin-around b-all" alt="screenshot of browser window resized to Smartphone Landscape"
+                    title="Browser window resized to Smartphone Landscape"></li>
+        </ol>
+        
+        <p>In the next section you will modify the style sheet so that it is possible to view the entire menu
+        without scrolling on a smartphone in landscape view.</p>
+            
+            
+            
+<!-- ++++++++++++++++ Modifying the Application Layout ++++++++++++++++ -->
+        <a name="layout"></a>
+        <h2>Modifying the Layout</h2>
+            
+        <p>It should be possible to make some minor changes to the elements of the page
+        so that no scrolling is required. These changes should be applied only when
+        the size of the browser is the size of a smartphone or smaller. 
+        When oriented in landscape view, the browser window of a smartphone is 480 pixels wide and 320 pixels high.</p>
+        
+        <div class="indent">
+<!-- ++++++++++++++++ Media Style Sheet ++++++++++++++++ -->
+        <a name="newstylesheet"></a>
+        <h3>Create a Media Style Sheet</h3>
+        <p>In this exercise you will create a new style sheet and add a media rule for devices that
+            have smartphone displays.
+        You will then add some CSS Rules to the media rule.</p>
+        <ol>
+            <li>Right-click the <tt>css</tt> folder node in the Projects window and choose New &gt; Cascading Style Sheet in the popup menu.</li>
+            <li>Type <strong>mycss</strong> as the File Name. Click Finish.
+                <p>When you click Finish the new style sheet opens in the editor.</p></li>
+            <li>Add the following media rule to the style sheet.
+                <pre class="examplecode">/*My rule for smartphone*/
+@media (max-width: 480px) {
+
+}</pre>
+                <p>Any CSS rules that you add between the brackets for this rule will only be
+                applied when the dimension of the browser is 480 pixels wide or less.</p>
+                <p class="tips">Create code templates for code snippets that you might use frequently.
+                You can create CSS code templates in the Code Templates tab in the Editor category
+                of the Options window.</p>
+            </li>
+            <li>Save your changes.</li>
+            <li>Open <tt>index.html</tt> in the editor.</li>
+            <li>Add the following link to the style sheet between the <tt>&lt;head&gt;</tt> tags in <tt>index.html</tt>. Save your changes.
+                <pre class="examplecode">&lt;link type="text/css" rel="stylesheet" href="css/mycss.css"&gt;</pre>
+                <p class="tips">You can use code completion in the editor to help you add the link to the style sheet.</p>
+            </li>
+        </ol>
+        
+<!-- ++++++++++++++++ Add CSS Rules ++++++++++++++++ -->
+        <a name="addrules"></a>
+        <h3>Adding CSS Rules</h3>
+        <ol>
+            <li>In the Chrome browser, click the NetBeans icon and select Inspect in NetBeans Mode in the menu.</li>
+            <li>Click the image in the browser.
+                <p>An element is highlighted when it is selected in Inspect mode.
+                In this screenshot you can see that the image is highlighted in blue.</p>
+            <img src="../../../images_www/articles/73/web/html5-css/html5-css-selectimage.png"
+                    class="margin-around b-all" alt="screenshot of image selected in the browser"
+                    title="Image selected in Chrome browser">
+            <p>In the IDE you can see that the CSS rules and properties 
+                that apply to <tt>img</tt> are listed in the CSS Styles window.
+            The Selection tab of the CSS Styles window has three panes that provide details about the
+            selected element.</p>
+            <img src="../../../images_www/articles/73/web/html5-css/html5-css-styleswindow1.png"
+                    class="margin-around b-all" alt="screenshot of CSS Styles window when image is selected"
+                    title="CSS Styles window when image is selected" style="float:left;">
+            <h4>Upper Pane</h4>
+            <p>
+            In the upper Properties pane of the window you can see that 
+            six property-value pairs are applied to the <tt>img</tt> element.
+            Three of the pairs (<tt>border</tt>, <tt>float</tt> and <tt>margin</tt>) are applied via
+            a CSS rule for the <tt>img</tt> element. 
+            The remaining three pairs are applied because the <tt>img</tt> element inherits
+            the properties of class selectors that are applied to objects that contain the <tt>img</tt> element.
+            You can clearly see the structure of the DOM in the Navigator window.
+            The <tt>border</tt> property is currently selected in the Properties pane.
+                of the CSS Styles window. 
+            </p>
+            <h4>Middle Pane</h4>
+            <p>In the middle Applied Styles pane you can see that
+                the <tt>border</tt> property and value is specified in a CSS rule that defines the <tt>img</tt> element.
+                The rule is located on line 12 in the <tt>basecss.css</tt> file. 
+                You can click the location in the pane to open the style sheet in the editor.</p>
+            
+            <h4>Lower Pane</h4>
+            <p>The lower pane displays all the properties that are defined
+                in the CSS rule for the rule that is selected in the middle pane. 
+                In this case you can see that the rule for <tt>img</tt> defines the <tt>border</tt>, <tt>float</tt>
+                and <tt>margin-right</tt> properties.</p>
+            
+
+            <br clear="all">
+            </li>
+            <li>Click the Document tab in the CSS Styles window.</li>
+            
+            <li>Select the <tt>css/mycss.css</tt> node and click the Edit CSS Rules button (<img src="../../../images_www/articles/73/web/html5-gettingstarted/newcssrule.png"
+                     alt="Edit CSS Rules button" title="Edit CSS Rules button">)
+                window to open the Edit CSS Rules dialog box.<br>
+            <img src="../../../images_www/articles/74/web/html5-css/html5-css-styleswindow2.png"
+                    class="margin-around b-all" alt="screenshot of Edit CSS Rules dialog box"
+                    title="Edit CSS Rules dialog box">
+            </li>
+            <li>Select Element as the Selector Type and type <strong>img</strong> as the Selector.</li>
+            <li>Select <tt>css/mycss.css</tt> as the Style Sheet and <strong>(max-width:480px)</strong> as the At-Rule.
+                Click OK.<br>
+            <img src="../../../images_www/articles/74/web/html5-css/html5-css-editcssrules.png"
+                    class="margin-around b-all" alt="screenshot of Edit CSS Rules dialog box"
+                    title="Edit CSS Rules dialog box">
+            <p>When you click OK the IDE creates a CSS rule for <tt>img</tt> in the
+            <tt>css/mycss.css</tt> style sheet between the brackets of the media rule.
+            The new rule is now listed in the Applied Styles pane.</li>
+            <li>Click the Selection tab in the CSS Styles window.
+            <p>You can see that there are two CSS rules for <tt>img</tt>.
+            One of the rules is located in <tt>mycss.css</tt> and one is located
+            in <tt>basecss.css</tt>.</p></li>
+            <li>Select the new <tt>img</tt> rule (defined in <tt>mycss.css</tt>) in the Applied Styles pane of the CSS Styles window.
+                <br>
+                <img src="../../../images_www/articles/73/web/html5-css/html5-css-styleswindow2.png"
+                    class="margin-around b-all" alt="screenshot of styles for the selected element in the CSS Styles window"
+                    title="Styles for the selected element in the CSS Styles window">
+                <p>In the lower pane of the window you can see that the rule has no properties.</p>
+            </li>
+            <li>Click Add Property in the left column in the lower pane of the CSS Styles window and
+                type <strong>width</strong>.</li>
+            <li>Type <strong>90px</strong> in the right column next to the 
+                <tt>width</tt> property and hit Return on your keyboard. <br>
+                
+            <img src="../../../images_www/articles/74/web/html5-css/html5-css-styleswindow3.png"
+                    class="margin-around b-all" alt="screenshot of Image Properties pane of the CSS Styles window"
+                    title="Image Properties pane of the CSS Styles window">
+            <p>When you start typing in the value column you can see that a drop-down
+                    list displays common values for the <tt>width</tt> property.</p>
+            <p>When you hit the Return key the image in the browser is automatically resized to be 90 pixels wide.
+            The IDE added the property to the CSS rule in the <tt>mycss.css</tt> style sheet.
+            In the editor the style sheet should now contain the following rule.</p>
+            
+            <pre class="examplecode">/*My rule for smartphone*/
+@media (max-width: 480px) {
+
+    img {
+        width: 90px;
+    }
+
+}</pre>
+            <p>Some additional changes need to be made to the style sheet because
+                the menu still does not fit within the window. </p>
+            </li>
+            <li>Select the unordered list (<tt>&lt;ul&gt;</tt>) element in the browser window.<br>
+                <img src="../../../images_www/articles/73/web/html5-css/html5-css-smartphonebrowser2.png"
+                    class="margin-around b-all" alt="screenshot of list element selected in browser"
+                    title="List element selected in browser">
+                <p>When you select the element you can see that <tt>&lt;ul&gt;</tt> is selected in the Browser DOM window
+                and you can see the styles that are applied to that element in the CSS Styles window.</p>
+                <img src="../../../images_www/articles/74/web/html5-css/html5-css-browserdom.png"
+                    class="margin-around b-all" alt="screenshot of Browser DOM window"
+                    title="List element selected in Browser DOM window">
+                <p>If you select <tt>font-family</tt> in the CSS Styles window you can see that the <tt>font-family</tt>
+                    property and value are defined in the <tt>.ui-widget</tt> class selector.</p>
+            </li>
+            <li>Click in the <tt>index.html</tt> file in the editor and then click the Document tab in the CSS Styles window.</li>
+            <li>Expand the <tt>css/mycss.css</tt> node in the CSS Styles window.<br>
+                <img src="../../../images_www/articles/74/web/html5-css/html5-css-styleswindow4.png"
+                    class="margin-around b-all" alt="screenshot of Document tab of CSS Styles window"
+                    title="Style sheet selected in Document tab of CSS Styles window">
+            </li>
+            <li>Click the Edit CSS Rules button (<img src="../../../images_www/articles/73/web/html5-gettingstarted/newcssrule.png"
+                     alt="Edit CSS Rules button" title="Edit CSS Rules button">) in the CSS Styles window to open the
+            Edit CSS Rules dialog box.</li>
+            <li>Select Class as the Selector Type and type <strong>ui-widget</strong> as the Selector.</li>
+            <li>Select <strong><tt>css/mycss.css</tt></strong> as the Style Sheet and <strong>(max-width:480px)</strong> as the At-Rule. Click OK.
+                <p>When you click OK the IDE adds the new rule to the <tt>mycss.css</tt> style sheet and opens the file in the editor.
+                If the file does not open in the editor you can double-click the <tt>ui-widget</tt> rule under the <tt>css/mycss.css</tt> node in the 
+                CSS Styles window to open the style sheet. 
+                The cursor is placed in the line containing the rule in the style sheet.</p></li>
+            <li>Add the following property and value (in bold) to the rule for <tt>ui-widget</tt>.
+                <pre class="examplecode">.ui-widget {
+    <strong>font-size: 0.9em;</strong>
+}</pre>
+                <p>When you change the value in the style sheet the
+                page automatically updates in the browser window.</p>
+                <p class="tips">You can type the property and value in the editor and use
+                the code completion to help you.
+                Alternatively, you can select the <tt>.ui-widget</tt> rule in the upper pane
+                and click the Add Property button in the lower pane to open the Add Property dialog box.</p>
+                <img src="../../../images_www/articles/73/web/html5-css/html5-css-csseditor1.png"
+                    class="margin-around b-all" alt="screenshot of CSS code completion in the editor"
+                    title="CSS code completion in the editor">
+                <p>After you add the rule you can see that the menu now fits in the page.</p>
+                <img src="../../../images_www/articles/73/web/html5-css/html5-css-smartphonebrowser3.png"
+                    class="margin-around b-all" alt="screenshot of page in browser after CSS rules are applied"
+                    title="Page viewed in browser with new CSS rules applied">
+            </li>
+            <li>Click the NetBeans icon in the browser and select Tablet Portrait in the menu.
+                <p>When the browser window resizes you can see that the changes
+                to the style sheet do not affect the display when the screen size is larger than
+                480 pixels wide.</p></li>
+            
+        </ol>
+    </div>
+        
+        <a name="preprocessors"></a>
+        <h2>Using CSS Preprocessors</h2>
+        <p>In addition to tools for editing standard CSS files,
+        the IDE also supports using Sass and LESS CSS preprocessors to
+        generate stylesheets for your applications.
+        The IDE provides wizards for generating CSS preprocessor files
+        and for specifying watched directories. 
+        If you specify a watched directory the CSS files will be generated
+        automatically each time you modify the CSS preprocessor files in the directory.</p>
+        
+        
+        <p class="notes"><strong>Note.</strong> To use a CSS preprocessor you need to install the preprocessor software
+            and specify the location of the executable. 
+            You can specify the location of the executable in the Options window.
+        </p>
+        <ol>
+            <li>Install the CSS preprocessor software on your local system.
+                <p>The IDE supports the <a href="http://sass-lang.com/" target="_blank">Sass</a> and
+                        <a href="http://lesscss.org/">LESS</a> preprocessors.
+                This tutorial demonstrates how to use Sass to generate the CSS files, but the configuration
+                for LESS is similar.</p>
+                <p class="notes"><strong>Note.</strong> If you are installing LESS on OS X you might need to 
+                    confirm that Node.js can be found in the <tt>usr/bin</tt> directory. For details, see the following 
+                    <a href="http://stackoverflow.com/questions/8638808/problems-with-less-sublime-text-build-system">note</a>.</p></li>
+            <li>Expand the HTML5Demo project in the Files window.</li>
+            <li>Right-click the <tt>public_html</tt> folder in the Files window and choose
+            New &gt; Folder in the popup menu.
+            <p>If Folder is not an option in the popup menu, choose Other and then select
+            the Folder file type in the Other category of the New File wizard.</p>
+            </li>
+            <li>Type <strong>scss</strong> for the File Name. Click Finish.
+                <p>When you click Finish the IDE generates the new folder in the <tt>public_html</tt> folder.</p></li>
+            <li>Right-click the <tt>scss</tt> folder node in the Projects window and choose New &gt; Sass File in the popup menu.</li>
+            <li>Type <strong>mysass</strong> as the File Name.</li>
+            <li>Click Configure to open the CSS Preprocessor tab in the Options window.</li>
+            <li>Type the path to the Sass executable or click Browse to locate the executable
+                on your local system. Click OK to close the Options window.<br>
+            <img src="../../../images_www/articles/74/web/html5-css/html5-css-cssoptions.png"
+                    class="margin-around b-all" alt="screenshot of page in browser after CSS rules are applied"
+                    title="Page viewed in browser with new CSS rules applied">
+            </li>
+            <li>Select Compile Sass Files on Save in the New File wizard. Click OK.<br>
+            <img src="../../../images_www/articles/74/web/html5-css/html5-css-newsass.png"
+                    class="margin-around b-all" alt="screenshot of page in browser after CSS rules are applied"
+                    title="Page viewed in browser with new CSS rules applied">
+                
+                <p>When you click OK the new Sass file <tt>mysass.scss</tt> opens in the editor.</p></li>
+            <li>Add the following to <tt>mysass.scss</tt> and save your changes.
+                    
+                <pre class="examplecode">img {
+    margin-right: 20px; 
+    float:left; 
+    border: 1px solid;
+
+    @media (max-width: 480px) {
+        width: 90px;
+    }
+}
+
+
+.ui-widget {
+    @media (max-width: 480px) {
+        font-size: 0.9em;
+        li {
+            color: red; 
+        }
+    }
+}</pre>
+                
+                <p>When you save the file the Sass preprocessor generates a new CSS file 
+                    <tt>mysass.css</tt> in the <tt>css</tt> folder. 
+                If you open <tt>mysass.css</tt> in the editor you can see the rules that are
+                generated from the <tt>scss</tt> file.
+                By default, CSS debug information is generated in <tt>mysass.css</tt>.
+                When you no longer want the debug information generated you can disable generation
+                in the CSS Preprocessors tab in the Options window.</p>
+                <p class="notes"><strong>Notes.</strong> 
+                <div class="indent">
+                    <ul>
+                        <li>When you want to modify the CSS rules you should edit the Sass preprocessor file 
+                        <tt>mysass.scss</tt> file and not the <tt>mysass.css</tt> style sheet because the
+                        style sheet is regenerated each time the preprocessor file is modified and saved.</li>
+                        <li>For documentation about Sass syntax and other Sass features, see the
+                        <a href="http://sass-lang.com/documentation/file.SASS_REFERENCE.html#">Sass reference</a>.</li>
+                </ul></div>
+            </li>
+            <li>Open <tt>index.html</tt> and make the following changes to 
+                change the link to the style sheet from <tt>mycss.css</tt> to <tt>mysass.css</tt>. Save your changes.
+                <pre class="examplecode">&lt;link type="text/css" rel="stylesheet" href="css/<strong>mysass.css</strong>"&gt;</pre>
+                <p>When you save the file the page in the browser is automatically updated. 
+                You can see that the list item elements are now red.</p>
+            </li>
+        </ol>
+
+
+        <h2 id="summary">Summary</h2>
+
+        <p>In this tutorial, you learned how to add and modify the CSS rules of an HTML5 application
+        to improve how the application is displayed on a device with a smaller screen size.
+        You viewed the application in a browser that was resized to that of a standard smartphone.
+        You used the Inspect in NetBeans Mode in the Chrome browser to help you locate
+        CSS style rules and then modified the rules to optimize the layout for a smaller screen size.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20With%20CSS%20Style%20Sheets%20in%20an%20HTML5%20Application">Send Feedback on This Tutorial</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        <h2 id="seealso">See Also</h2>
+
+
+        <p>For more information about support for HTML5 applications in the IDE on
+            <a href="https://netbeans.org/">netbeans.org</a>, see the following resources:</p>
+
+        <ul>
+            <li><a href="html5-gettingstarted.html">Getting Started with HTML5 Applications</a>.
+            A document that demonstrates how to install the NetBeans Connector extension for Chrome
+            and creating and running a simple HTML5 application.</li>
+            <li><a href="html5-js-support.html">Debugging and Testing JavaScript in HTML5 Applications</a>.
+            A document that demonstrates how the IDE provides tools that can help you debug and test
+            JavaScript files in the IDE.</li>
+            <li><a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/dev_html_apps.htm">Developing HTML5 Applications</a> chapter
+                in the <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG">Developing Applications with NetBeans IDE User's Guide</a> </li>
+        </ul>
+        
+        <p>For more information about jQuery, refer to the official documentation:</p>
+        <ul>
+            <li>Official Home Page: <a href="http://jquery.com">http://jquery.com</a></li>
+            <li>UI Home Page: <a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>Tutorials: <a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>Documentation Main Page: <a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>UI Demos and Documentation: <a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+
+    </body>
+</html>

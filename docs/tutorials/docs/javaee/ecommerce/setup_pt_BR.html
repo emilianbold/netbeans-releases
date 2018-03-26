@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This document provides basic setup instructions necessary to configuring your development environment for use with the NetBeans E-commerce Tutorial.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+
+        <title>O Tutorial do NetBeans E-commerce: Instruções de Configuração</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>O Tutorial do NetBeans E-commerce: Instruções de Configuração</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Conteúdo do Tutorial</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introdução</a></li>
+                    <li><a href="design.html">Criando a Aplicação</a></li>
+                    <li><a href="setup-dev-environ.html">Configurando o Ambiente de Desenvolvimento</a></li>
+                    <li><a href="data-model.html">Criando o Modelo de Dados</a></li>
+                    <li><a href="page-views-controller.html">Preparando as Views de Página e o Servlet do Controlador</a></li>
+                    <li><a href="connect-db.html">Conectando a Aplicação ao Banco de Dados</a></li>
+                    <li><a href="entity-session.html">Adicionando Classes de Entidades e Beans de Sessão</a></li>
+                    <li><a href="manage-sessions.html">Gerenciando Sessões</a></li>
+                    <li><a href="transaction.html">Integrando a Lógica de Negócios Transacional</a></li>
+                    <li><a href="language.html">Adicionando o Suporte a Idioma</a></li>
+                    <li><a href="security.html">Protegendo a Aplicação</a></li>
+                    <li><a href="test-profile.html">Testando e Criando Perfis</a></li>
+                    <li><a href="conclusion.html">Conclusão</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="O conteúdo desta página se aplica ao NetBeans IDE, versões e 6.8 e 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="O conteúdo desta página se aplica ao NetBeans IDE, versões e 6.8 e 6.9"></p>
+
+        <p>Se desejar seguir uma unidade do tutorial sem ter concluído as unidades anteriores, você precisará executar algumas etapas preliminares para configurar o ambiente de desenvolvimento.</p>
+
+         <ol style="margin:5px 0 0 320px">
+            <li><strong>Configure seu servidor de banco de dados MySQL.</strong> Siga as etapas descritas em: <a href="setup-dev-environ.html#communicate">Comunicando-se com o Servidor do Banco de Dados</a>.</li>
+
+            <li><strong>Crie o esquema <code>affablebean</code> no servidor do banco de dados e preencha o banco de dados com dados de amostra:</strong>
+
+                <ol style="margin: 5px 0 0 -1.5em">
+                    <li>Clique em <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Faffablebean.sql">affablebean.sql</a> e copie (Ctrl-C; ⌘-C no Mac) todo o conteúdo do arquivo.</li>
+
+                    <li>Abra o editor SQL do IDE. Na janela Serviços (Ctrl-5; ⌘-5 no Mac), clique com o botão direito do mouse no nó de conexão do banco de dados <code>affablebean</code> (<img alt="Nó de conexão do banco de dados" src="../../../../images_www/articles/73/javaee/ecommerce/common/db-connection-node.png">) e selecione Executar Comando. <br> <img alt="Janela Serviços: opção de menu Executar comando" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/execute-command.png" title="Selecione Executar Comando em um nó de conexão para abrir o editor SQL do IDE"> <br> O editor SQL do IDE será aberto.</li>
+
+                    <li>Cole (Ctrl-V; ⌘-V no Mac) todo o conteúdo do arquivo <code>affablebean.sql</code> no editor.</li>
+
+                    <li>Clique no botão Executar SQL (<img alt="Botão Executar SQL" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-sql-btn.png">) na barra de ferramentas do editor. O script será executado no servidor MySQL. As tabelas serão geradas para o banco de dados e os dados de amostra serão adicionadas às tabelas <code>product</code> e <code>category</code>.</li>
+                </ol></li>
+
+            <li><strong>Crie um pool de conexões e recursos JDBC no GlassFish</strong>
+
+                <ol style="margin: 5px 0 0 -1.5em">
+                    <li>Na janela Serviços (Ctrl-5; ⌘-5 no Mac), expanda o nó Servidores > GlassFish Server 3 e selecione Propriedades. Na janela Servidores exibida, certifique-se de que a opção "Ativar Implantação do driver JDBC" esteja selecionada. Se o seu projeto exigir o driver <a href="http://www.mysql.com/downloads/connector/j/" target="_blank">Conector/J</a> do MySQL, esta opção irá garantir que o driver seja implantado no GlassFish quando o projeto for implantado. (Se o servidor já estiver sendo executado, ele deverá ser reiniciado.)</li>
+
+                    <li>Na janela Serviços, clique com o botão direito do mouse no nó GLassFish Server 3 e selecione Iniciar.</li>
+
+                    <li>Quando o servidor estiver sendo executado, clique com o botão direito do mouse no nó GlassFish Server 3 e selecione Exibir Console Admin.</li>
+
+                    <li>Efetue log-in na console (o nome do usuário/senha default é:<code>admin/adminadmin</code>).</li>
+
+                    <li>Na Console Admin, na Árvore à esquerda, expanda o nó Recursos > JDBC e, em seguida, clique no nó Pools de Conexões.</li>
+
+                    <li>Na interface Pools de Conexões, clique no botão Novo e insira os detalhes a seguir:
+
+                        <ul style="margin: 5px 0 0 -1em">
+                            <li><strong>Nome:</strong><code>AffableBeanPool</code></li>
+                            <li><strong>Tipo de Recurso:</strong><code>javax.sql.ConnectionPoolDataSource</code></li>
+                            <li><strong>Fornecedor do Banco de Dados</strong> <code>MySql</code></li>
+                        </ul>
+
+                        <img alt="Console Admin do GlassFish: Interface de Pools de Conexões" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/connection-pool.png" title="Especificar definições para criar um pool de conexões que estabelece conexão com um banco de dados MySQL"></li>
+
+                    <li>Clique em Próximo. Aceite todos os defaults e clique em Finalizar.</li>
+
+                    <li>Na interface Pools de Conexões, clique no recém-criado <code>AffableBeanConnectionPool</code> para fazer as seguintes alterações na guia Geral:
+
+                        <ul style="margin: 5px 0 0 -1em">
+                            <li><strong>Nome da Classe da Fonte de Dados:</strong> <code>com.mysql.jdbc.jdbc2.optional.MysqlDataSource</code></li>
+                        </ul>
+
+                        <img alt="Console Admin do GlassFish: Interface de Pools de Conexões" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/datasource-classname.png" style="width:638px" title="Defina o nome da classe da fonte de dados para o pool de conexões"></li>
+
+                    <li>Clique em Salvar.</li>
+
+                    <li>Clique na guia Propriedades Adicionais e verifique se as três propriedades a seguir foram definidas. (Talvez existam outras propriedades listadas: estas são as definições default, no entanto as três seguintes devem ser configuradas manualmente.)
+
+                        <ul style="margin: 5px 0 0 -1em">
+                            <li><strong>Usuário:</strong><code>root</code></li>
+                            <li><strong>Senha:</strong><code>nbuser</code></li>
+                            <li><strong>URL:</strong><code>jdbc:mysql://localhost:3306/affablebean</code></li>
+                        </ul>
+
+                        <img alt="Console Admin do GlassFish: Interface de Pools de Conexões" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/additional-properties.png" style="width:638px" title="Defina o nome de usuário, a senha e o url do banco de dados"></li>
+
+                    <li>Clique em Salvar.</li>
+
+                    <li>Clique na guia Geral e, em seguida, clique em Ping. Você deverá receber uma mensagem indicando que o ping foi bem-sucedido. O pool de conexões <code>AffableBeanPool</code> pode agora conectar-se com o servidor de banco de dados MySQL. <br> <img alt="Console Admin do GlassFish: Interface de Pools de Conexões" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/ping-succeeded.png" style="width:638px" title="Pingue o servidor MySQL para determinar se o pool de conexões pode se conectar"></li>
+
+                    <li>Na Árvore da Console Admin na coluna esquerda, clique no nó Recursos > JDBC > Recursos do JDBC. A interface Recursos do JDBC será aberta na janela principal.</li>
+                    
+                    <li>Clique no botão Novo para criar um novo recurso JDBC e, em seguida, informe os seguintes detalhes:
+                    
+                        <ul style="margin: 5px 0 0 -1em">
+                            <li><strong>Nome JNDI:</strong><code>jdbc/affablebean</code></li>
+                            <li><strong>Pool de Conexões:</strong><code>AffableBeanPool</code></li>
+                        </ul>
+
+                        <img alt="Console Admin do GlassFish: interface Recurso JDBC" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/jdbc-resource.png" title="Especifique o nome JNDI e o pool de conexões para criar o recurso JDBC"></li>
+
+                    <li>Clique em OK.</li>
+                </ol>
+            </li>
+        </ol>
+
+        <p style="margin-left:27em">Você configurou o servidor MySQL e pode conectar-se a ele na janela Serviços do IDE. Um banco de dados chamado <code>affablebean</code> foi criado e as tabelas <code>product</code> e <code>category</code> do banco de dados foram preenchidas com dados de amostra. Em seguida, você iniciou o GlassFish Server e criou um pool de conexões que permite ao servidor estabelecer conexão com o banco de dados <code>affablebean</code>. Finalmente, você criou um recurso JDBC que sua aplicação pode utilizar para fazer referência ao pool de conexões do servidor.</p>
+
+        <p style="margin-left:27em">Você agora pode abrir e executar qualquer um dos snapshots do projeto fornecidos nas unidades do tutorial.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Setup Instructions">Envie-nos Seu Feedback</a></div>
+
+        <br style="clear:both;">
+
+    </body>
+</html>

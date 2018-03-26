@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+  <title>Getting Started with JMX Monitoring in NetBeans IDE</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  <meta name="description" content="Getting Started with JMX module">
+  <link rel="stylesheet" href="../../../netbeans.css">
+  <meta name="author" content="Jean-Francois Denise">
+  <meta name="author" content="Joel FERAUD">
+  <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JMX">
+  <meta name="description" content="An introductory guide to using JMX technology in NetBeans IDE"/>
+
+</head>
+
+<body>
+    
+<h1>Getting Started with JMX Monitoring in NetBeans IDE</h1>
+
+
+
+<p>The NetBeans JMX Module integrates JMX technology right into your workflow 
+  in the NetBeans IDE. This module allows you to quickly develop management applications, 
+  add management to existing applications, develop manager applications, and 
+monitor the state of the Virtual Machine. </p>
+  
+  <p>This document has been updated for the JMX Wizard module version 3.0, 
+   for NetBeans IDE 6.5 and newer, and running on top of
+JDK 6 or JDK 7. You can download the JMX module from the Update Center.</p>
+  
+
+<p class="note"> <b>Note:</b>
+ This document is a short and quick introduction to the JMX module for NetBeans IDE.
+   For more detailed information, complete the JMX Module Tutorial
+<a href="jmx-tutorial.html">Adding JMX Instrumentation to a Java Application</a>.</p> 
+
+
+<p>This getting started document gives you an overview of the JMX module features:</p>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<ul>
+  <li>Wizards to create JMX MBeans and Managers.</li>
+  <li>Actions to update exisiting MBeans by adding attributes and operations, 
+    implementing the <tt>MBeanRegistration</tt> interface, or implementing 
+the <tt>NotificationEmitter</tt> interface.</li>
+  <li>MBean generation from an existing Java Class.</li>
+  <li>Action to register MBeans into the Java Platform MBean Server.</li>
+  <li>Ability to launch the Java Platform management console (JConsole).</li>
+  <li>Ability to  Run and Debug your application using 
+    JConsole.</li>
+  <li>Sample application based on the Anagram game that shows you how to
+     add JMX power to your application.</li>
+  <li>Wizard to generate a management properties file, that
+allows you to launch a secure manageable JVM.</li>
+  <li>Online help.
+  <li>Tutorials accessible from the <a href="../../index.html">netbeans.org</a> site.</li>
+</ul>
+
+
+<h3>Prerequisites</h3>
+<p>This tutorial assumes you have some basic knowledge of, or programming experience 
+  with, the following technologies. </p>
+    <ul>
+        <li>JMX technology: 
+        <a href="http://download.oracle.com/javase/6/docs/technotes/guides/jmx/index.html">
+            JMX online documentation</a>
+            </li>
+        <li>Java technology: 
+        <a href="http://www.oracle.com/technetwork/java/javase/tech/index.html">
+            Java SE Technologies at a Glance</a>
+            </li>
+        <li>NetBeans IDE</li>
+    </ul>
+<p>You will also benefit from having some knowledge on 
+<a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/index.html">
+Monitoring and Management for the Java Platform</a></p>
+
+<h3>Software Needed for the Tutorial</h3>
+<p>For this tutorial you need to have the following software installed on your computer:</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">Software or Resource</th>
+        <th class="tblheader" scope="col">Version Required</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java bundle</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+        <td class="tbltd1">version 7 or 8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JMX plugin</td>
+        <td class="tbltd1">Available from NetBeans Update Center</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JConsole plugin</td>
+        <td class="tbltd1">Available from NetBeans Update Center</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>To install the <strong>JMX</strong> and <strong>JConsole</strong> plugins, choose Tools &gt; Plugins and download the modules from the NetBeans Update Center.</p>
+
+<h2>Accessing the JMX Wizards</h2>
+<p>After you have installed the JMX plugin and your project is open, you can access the JMX wizard by choose File &gt; New File (Ctrl-N) and selecting the JMX category.
+You can then choose among the following:</p>
+<ul>
+  <li><b>Management Configuration File.</b> A standard Java properties file to 
+    store your configuration for your JMX management, in particular for remote
+    connection and security.</li>
+    
+  <li><b>Several types of JMX MBeans.</b> An MBean can represent a device, an application, or any 
+    resource that needs to be managed. MBeans expose a management interface: a 
+    set of readable and/or writable attributes and a set of invokable operations, 
+    along with a self-description. The management interface does not change throughout 
+    the life of an MBean instance. MBeans can also emit notifications when certain 
+    defined events occur. JMX MBeans need to be registered into an MBean Server.</li>
+
+  <li><b>JMX Manager.</b> A JMX Manager is any application that connects to a 
+    remote JMX MBean Server.<br/>
+
+<img src="../../../images_www/articles/74/java/jmx/jmx-newfile.png"
+ alt="screenshot of JMX New File Wizards" title="New File Wizards in JMX category"
+class="margin-around b-all" /></li>
+</ul>
+
+
+<h2>Updating MBeans</h2>
+<p>You can add attributes and operations to your MBeans with the JMX contextual
+menu actions, which will popup a dialog box.
+You can also have your MBeans implement the <tt>NotificationEmitter</tt> interface.</p>
+
+<p>To update an MBean, either select the MBean class Java file in the Project tree and access 
+  the JMX popup menu by right-clicking on the node,
+  or simply right-click in the editor's window where your MBean class Java file 
+is opened and access the JMX popup menu.</p>
+  
+  <p>These actions are demonstrated in  
+  Exercise 3 of the <a href="jmx-tutorial.html#Exercise_3">
+  Adding JMX Instrumentation to a Java Application</a> tutorial.</p>
+  
+<h2>Registering MBeans</h2>
+
+<p>To remotely connect to your MBeans and manage your application, your MBeans
+need to be registered into an MBean Server.</p>
+<p>An MBean Server is the main central piece of the JMX technology. It keeps reference
+of all MBean registered into it, can send notifications of new MBean registration or 
+deletion, and can accept remote connections to expose attributes and operations
+of its registered MBeans. If you are not familiar with MBean Server role, 
+read the <tt>
+<a href="http://download.oracle.com/javase/6/docs/api/javax/management/MBeanServer.html">
+javax.management.MBeanServer</a></tt> API documentation.</p>
+
+<p>Starting with JDK 5, the Java Platform provides a default
+MBean Server, called the Platform MBean Server.
+It enables you to monitor the JVM, but you can also use it to register your own MBeans into it.
+For details on the Java Platform MBean Server, read the <tt>
+<a href="http://download.oracle.com/javase/6/docs/api/java/lang/management/ManagementFactory.html">
+    java.lang.management.ManagementFactory
+</a></tt> API documentation.</p>
+
+<p>Depending on its logic, determine where in your application code you want
+your MBeans to be registered, typically in the initialization phase of your Main
+class. Right-Click in your editor's window at the location where you want the 
+MBean's registration code to be generated,
+select the JMX submenu and then the 
+&quot;Generate MBean Registration...&quot; action.</p>
+  
+    <p>This action is demonstrated in  
+  Exercise 5 of the <a href="jmx-tutorial.html#Exercise_5">
+  Adding JMX Instrumentation to a Java Application</a> tutorial.</p>
+
+    
+    
+<h2>Implementing and Executing Manageable Applications</h2>
+
+<p>JConsole is a JMX-compliant graphical tool for monitoring a Java virtual machine. 
+JConsole can monitor both local and remote JVMs and can be used to monitor and 
+manage JMX applications.</p>
+
+<p>Typically, the work flow of implementing and executing manageable applications 
+is as follows:</p>
+<ol>
+  <li>Generate your MBeans. </li>
+  <li>Add implementation to your MBeans </li>
+  <li>Generate MBean's registration code.</li>
+  <li>Run or debug your project with JConsole.</li>
+</ol> 
+
+<p>After you install the JMX and JConsole plugins you will see that the following buttons are added to the toolbar. 
+    The actions are also accessible under the Debug menu item in the main menu.</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">Button</th>
+        <th class="tblheader" scope="col">Description</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="Run Main Project with Monitoring and Management button in the toolbar"
+ title="Run Main Project with Monitoring and Management button"
+ src="../../../images_www/articles/74/java/jmx/run-project24.png" class="margin-around" /></td>
+        <td class="tbltd1">Run Main Project with Monitoring and Management</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="Debug Main Project with Monitoring and Management button in the toolbar"
+ title="Debug Main Project with Monitoring and Management button"
+ src="../../../images_www/articles/74/java/jmx/debug-project24.png" class="margin-around" /></td>
+        <td class="tbltd1">Debug Main Project with Monitoring and Management</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="Start JConsole Management Console button in the toolbar"
+ title="Start JConsole Management Console button"
+ src="../../../images_www/articles/74/java/jmx/console24.png" class="margin-around" /></td>
+        <td class="tbltd1">Start JConsole Management Console</td>
+    </tr>
+    </tbody>
+</table>
+
+<p class="notes"><strong>Note.</strong> JConsole is part of the Java Platform and can be used independently from the IDE. 
+    For details, refer to the following resources.</p>
+<ul>
+    <li><a href="http://download.oracle.com/javase/6/docs/technotes/tools/share/jconsole.html"><tt>jconsole</tt> man page</a></li> 
+    <li><a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">Using JConsole document</a></li>
+</ul>
+
+<h2>Running the Sample Application</h2>
+
+<p>The JMX module includes a sample application with JMX monitoring built into it.</p>
+<ol>
+  <li>Choose File &gt; New Project.</li>
+  <li>In Samples, select the JMX category.</li>
+  <li>Select the Anagram Game Managed with JMX project. <br/>
+  <img
+ alt="screenshot of Anagram Game Managed with JMX project in New Project wizard" title="Anagram Game Managed with JMX in New Project wizard"
+ src="../../../images_www/articles/74/java/jmx/jmx-newproject.png"
+class="margin-around b-all" width="600" />
+ </li>
+ 
+  <li>Click Next. There is no need to change the supplied default project name or
+  location values. Confirm that the Set as Main Project checkbox is selected. Click Finish.
+  <p class="notes"><strong>Notes.</strong> The IDE might prompt you to install the JUnit libraries if you did not install
+  the JUnit plugin previously. You can click Resolve in the Resolve Resource Problems dialog box to 
+  launch the Installer to install the JUnit plugin. Alternatively, you can install the JUnit plugin
+  in the Plugins manager.</p>
+  </li>
+  <li>Once your project is created, and set as the Main Project, 
+  Run it with JConsole by clicking the 
+  &quot;Run Main Project with Monitoring and Management&quot; JConsole button.
+  <p class="notes"><strong>Notes.</strong> You might see a Connection Failed warning in the 
+      Java Monitoring &amp; Management Console when the console attempts to connect to the Anagram Game process. 
+  For this tutorial you can click Insecure when you are prompted to authorize the connection.</p>
+  
+  <p>Clicking this button launches and displays the Anagram Game:</p>
+  <img alt="Anagram Game" title="Anagram Game"
+ src="../../../images_www/articles/74/java/jmx/jmx-anagram.png"
+ class="margin-around b-all" />
+  
+  <p>The JConsole window is also displayed.</p>
+  </li>
+  <li>In the JConsole window, select the MBeans tab and in the tree layout 
+  on the left open down all nodes under <tt>anagrams.toy.com</tt> 
+  as shown below.<br/>
+<img
+ alt="screenshot of JConsole window" title="JConsole window"
+ src="../../../images_www/articles/74/java/jmx/jmx-jconsole1.png"
+class="margin-around b-all" />
+  </li>
+  <li>Select the Notifications node and click on the Subscribe button at the 
+  bottom so that JConsole will receive a new notification each time an anagram is solved.</li>
+  <li>Now go to the Anagrams Game window, and solve the first three or four anagrams 
+  (The answers are in the WordLibrary class, but here they are:
+  abstraction, ambiguous, arithmetic, backslash, ...)</li>
+  <li>Go back to JConsole, and notice that it received the four notifications.</li>
+  <li>Click on the Attributes node and notice the attributes values are updated: <br/>
+      <img
+ alt="screenshot of JConsole window showing updated values" title="JConsole window showing updated values"
+ src="../../../images_www/articles/74/java/jmx/jmx-jconsole2.png"
+class="margin-around b-all" width="600" /></li>
+</ol>
+
+<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20JMX%20Monitoring">Send Feedback on This Tutorial</a></div>
+        
+        <br style="clear:both;">
+            
+<h2>See Also</h2>
+<p>This document was a short and quick introduction to the JMX module for NetBeans IDE.
+For more detailed information, see the following JMX module tutorial:</p>
+<ul>
+    <li><a href="jmx-tutorial.html">Adding JMX Instrumentation to a Java Application</a></li>
+</ul>
+</body>
+</html>

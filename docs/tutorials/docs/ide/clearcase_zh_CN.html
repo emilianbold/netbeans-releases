@@ -1,0 +1,524 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">        
+        <meta name="author" content="troy.giunipero@sun.com">    
+        <meta name="description" content="A preview of ClearCase Features in NetBeans IDE 6.9 and more recent">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, 
+            ClearCase, IBM, versioning, open source, developers, collaborate"> 
+            
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>在 NetBeans IDE 中使用 ClearCase 支持</title>
+    </head>
+    
+    <body>
+
+<!--
+Copyright (c) 2009 - 2014 Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>在 NetBeans IDE 中使用 ClearCase 支持</h1>
+
+        <p>IDE 中的 ClearCase 支持设计用于在 IDE 中工作时直接对项目执行版本控制任务。</p>
+
+        <p>此文档介绍了在 NetBeans IDE 中使用 ClearCase 的基本步骤。</p>
+            
+        <p>Rational ClearCase 是 IBM 开发的一种版本控制软件工具。ClearCase 是许多大中型企业项目的版本控制基础。</p>
+        
+        <p><strong>目录</strong></p>
+    <img alt="此页上的内容适用于 NetBeans IDE 6.9 及更高版本" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 6.9 及更高版本">
+
+        <ul class="toc">
+            <li><a href="#settingUp">安装 ClearCase</a>
+                <ul>
+                    <li><a href="#specifying">指定 <tt>cleartool</tt> 可执行文件的路径</a></li>
+                </ul></li>
+            <li><a href="#starting">开始使用版本化文件</a>
+                <ul>
+                    <li><a href="#opening">在 IDE 中打开现有项目</a></li>
+                    <li><a href="#addingSourceControl">创建新项目并将其置于源代码控制下</a></li>                
+                </ul></li>
+            <li><a href="#editing">编辑源</a>
+                <ul>
+                    <li><a href="#viewingChanges">在源代码编辑器中查看更改</a></li>
+                    <li><a href="#viewingFileStatus">查看文件状态信息</a></li>
+                    <li><a href="#comparing">比较文件版本</a></li>
+                </ul></li>
+            <li><a href="#checkingin">检入源</a></li>
+            <li><a href="#seeAlso">另请参见</a></li>
+        </ul>
+    
+        <p><strong>要学完本教程，您需要具备以下软件和资源。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">版本 6.9 及更高版本</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 6、7 或 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">ClearCase 客户端软件</td>
+                    <td class="tbltd1"> 版本 7.0 或更高版本</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">NetBeans ClearCase 插件</td>
+                    <td class="tbltd1">版本 0.9.x 或更高版本</td>
+                </tr>                
+            </tbody>
+        </table>  
+        
+        <p><strong class="notes">注：</strong>要获得 ClearCase 插件，请进入 IDE 中的 "Plugin Manager"（插件管理器）（从主菜单中选择 "Tools"（工具）> "Plugins"（插件）），并按下述方法安装插件：</p>
+                
+        <p class="align-center">
+            <a href="../../../images_www/articles/74/ide/clearcase/cc-plugin.png" rel="lytebox" title="通过插件管理器可以访问 NetBeans ClearCase 插件"> <img alt="显示在插件管理器中的 NetBeans ClearCase 插件" class="margin-around" src="../../../images_www/articles/74/ide/clearcase/cc-plugin-small.png"></a>
+        </p>
+    
+        <a name="settingUp"></a>    
+        <h2>安装 ClearCase</h2>
+        
+        <p>在使用 IDE 中的 ClearCase 支持之前，需要安装运行 ClearCase 客户端软件。</p>
+
+        <p>NetBeans ClearCase 支持使用<em>快照</em>和<em>动态</em>视图。<strong>必须从 IDE 外部配置视图，并且必须正确建立视图与 ClearCase 服务器的连接。</strong>无需额外的工作就可以在快照视图中访问文件。但是，如果想从动态视图访问文件，首先必须使用计算机中安装的本机 ClearCase 工具对其进行初始化。</p>
+
+        <p><strong class="notes">注：</strong></p>   
+         
+        <ul>
+            <li>目前还不能连接到 ClearCase Web Interface (CCWeb)。</li>
+            <li>*nix-like 系统的一个局限性就是必须从动态视图环境中打开 IDE 才能访问文件。</li>
+        </ul>
+            
+        <p>IDE 的 ClearCase 支持通过与 <tt>cleartool</tt> 客户端交互来执行版本控制命令。根据所用的系统，以及是否将 <tt>cleartool</tt> 客户端安装到非默认位置，您可能还需要在 IDE 中注册 <tt>cleartool</tt> 可执行文件的路径。</p>           
+
+        <div class="indent">
+            <a name="specifying"></a>
+            <h3>指定 <tt>cleartool</tt> 可执行文件的路径</h3>
+
+            <p>NetBeans IDE 尝试使用计算机中的 <tt>$PATH</tt> 系统变量自动标识 <tt>cleartool</tt> 可执行文件的位置。不过，根据您使用的平台或者是否将 ClearCase 客户端安装到了不同位置，可能需要明确指定可执行文件的路径。要在 IDE 中设置 ClearCase 可执行文件的路径，请执行以下操作：</p>
+
+            <ol>
+                <li>从主菜单中选择 "Tools"（工具）> "Options"（选项）；在 Mac 上为 "NetBeans" > "Preferences"（首选项）。"Options"（选项）对话框打开。</li>
+                <li>选择对话框顶部的 "Miscellaneous"（其他）图标，然后单击 "Versioning"（版本控制）标签。在 "Versioning Systems"（版本控制系统）下面的左侧窗格中，选择 ClearCase。对话框主窗口中将会显示 ClearCase 的用户定义选项：
+
+                    <p class="align-center"><a name="ccOptions"></a> <a href="../../../images_www/articles/74/ide/clearcase/cc-options.jpg" rel="lytebox" title="具有用户定义选项的 ClearCase &quot;Options&quot;（选项）对话框"> <img alt="具有用户定义选项的 ClearCase &quot;Options&quot;（选项）对话框" class="margin-around" src="../../../images_www/articles/74/ide/clearcase/cc-options-small.jpg"></a></p></li>
+
+                <li>在 "Specify the <tt>cleartool</tt> Executable Path"（指定 cleartool 可执行文件路径）文本字段中，输入可执行文件的路径或者单击 "Browse"（浏览）在系统中找到它。</li>
+                <li>单击 "OK"（确定），然后重新启动 IDE，使更改生效。</li>
+            </ol>
+        
+            <p><strong class="notes">注：</strong>更多信息请参见 <a href="http://versioncontrol.netbeans.org/clearcase/install.html">NetBeans ClearCase 集成设置和发行说明</a>。</p>
+        </div>
+
+        <a name="starting"></a>
+        <h2>开始使用版本化文件</h2>
+
+        <p>首次在 IDE 中使用 ClearCase 时，需要先打开现有的版本控制项目，或者在计算机上的 <strong>ClearCase 视图中</strong>创建新项目。</p>
+
+        <ul>
+            <li><a href="#opening">在 IDE 中打开现有项目</a> </li>   
+            <li><a href="#addingSourceControl">创建新项目并将其置于源代码控制下</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="opening"></a>
+            <h3>在 IDE 中打开现有项目</h3>
+
+            <p>如果您已经有一个 ClearCase 版本化项目，那么可以在 IDE 中打开它，版本控制功能将自动变为可用。IDE 扫描打开的项目，如果它们位于 ClearCase 视图目录中，那么文件状态和上下文相关支持会自动激活。</p>
+
+            <p>打开一个 ClearCase 版本化项目：</p>
+
+            <ol>
+                <li>在主菜单中选择 "File"（文件）> "Open Project"（打开项目），并按照打开项目向导中的流程操作。指定项目位置时，导航至计算机上 <strong>ClearCase 视图</strong>目录中的该位置。完成向导之后，该项目就会在 "Projects"（项目）窗口中显示（Ctrl-1 组合键），版本控制支持也将激活。</li>
+            </ol>
+            
+            <p><strong class="notes">注：</strong>您也可以在 "Favorites"（收藏夹）窗口中打开一个项目或目录。如果 ClearCase 目录不是 NetBeans 项目，可能就需要使用这种方法。为此，在 "Favorites"（收藏夹）窗口（Ctrl-3 组合键）中右键单击，选择 "Add to Favorites"（添加到收藏夹）。在显示的 "Add to Favorites"（添加到收藏夹）对话框中，导航至您计算机上的顶层 ClearCase 视图目录，然后单击 "Add"（添加）。此时会将该目录的树视图添加到 "Favorites"（收藏夹）窗口中。</p>
+
+            <a name="addingSourceControl"></a>
+            <h3>创建新项目并将其置于源代码控制下</h3>
+
+            <p>也可以创建一个新项目，并将其置于源控制下，然后继续在 IDE 中使用它。创建新项目时，需要在 <strong>ClearCase 视图中</strong>指定其位置。这会让 IDE 意识到需要版本控制支持。创建项目之后，所有文件起初都将视为<em>视图私有</em>的文件。然后使用 IDE 的 "Add to Source Control"（添加到源代码控制中）命令将项目添加到 ClearCase 服务器。</p>
+
+            <p>创建新项目：</p>
+
+            <ol>
+                <li>在主菜单中选择 "File"（文件）> "New Project"（新建项目），并按照新建项目向导中的流程操作。</li> 
+                 <li>第二步是名称和位置，选择 ClearCase 视图中的一个目录。</li> 
+				 <li>单击 "Finish"（完成），此时将创建项目，并且其目录的树视图将添加到 "Projects"（项目）窗口（Ctrl-1 组合键）。<br> 创建后，IDE 会自动意识到该项目位于视图中，并且所有相关的 ClearCase 操作和文件状态信息都变为可用。</li>
+            </ol>
+
+            <p>在 IDE 中打开一个版本化项目时，所有文件和文件夹名称都呈现为绿色，指示它们处于“新”状态。（显示为灰色的任何文件都处于“忽略”状态。更多信息请参见下面的<a href="#badges">标记和颜色编码</a>。）IDE 自动决定每个版本化项目文件是否可用于版本控制。（即，包中的源文件通常会视为版本化的，而项目私有文件通常会予以忽略）。</p>
+
+           <!-- <p><span class="tips"></span>It is possible to to modify the way IDE handles private file views using the 
+                following options:</p>
+
+            <ul>
+                <li>Schedule View Private Files For checkin option in the <a href="#ccOptions">ClearCase Options dialog</a></li>
+                <li>Ignored Files setting available under Tools &gt; Options (NetBeans &gt; Preferences on Mac) &gt;
+                    Advanced Options &gt; IDE Configuration &gt; System &gt; System Settings &gt; Ignored Files</li>
+            </ul>    -->                     
+
+            <p>既然您的项目已经创建完成，那么您可以使用 IDE 的 "Add to Source Control"（添加到源代码控制中）命令使其与 ClearCase 服务器同步：</p>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口中右键单击项目节点，选择 "Add to source control"（添加到源代码控制中）。此时将打开 "Add"（添加）对话框，其中列出 IDE 自动忽略的所有新建的视图私有文件：
+
+                    <p class="align-center"><a name="addDialog"></a> <a href="../../../images_www/articles/74/ide/clearcase/add-dialog.jpg" rel="lytebox" title="ClearCase &quot;Add&quot;（添加）对话框列出了要添加到源代码控制中的所有文件"> <img alt="ClearCase &quot;Add&quot;（添加）对话框" class="margin-around" src="../../../images_www/articles/74/ide/clearcase/add-dialog-small.jpg"></a></p></li>
+
+                <li>在 "Describing Message"（描述消息）文本区输入消息。或者，单击右上角的 "Recent Messages"（近期的消息）(<img alt="&quot;Recent Messages&quot;（近期的消息）图标" src="../../../images_www/articles/74/ide/clearcase/recent-msgs.png">) 图标，以便在以前使用过的消息列表中进行查看和选择。</li>
+                <li>指定各个文件的操作后，单击 "Add"（添加）。执行添加操作时，将在界面右下方显示 IDE 的状态栏。成功添加后，版本控制标记就会从 "Projects"（项目）、"Files"（文件）和 "Favorites"（收藏夹）窗口中消失，并且检入文件的颜色编码会变成黑色。</li>                    
+            </ol>
+
+            <p><strong class="notes">注：</strong>可以在 "Add"（添加）对话框中指定是否把某些文件排除在 "Add"（添加）操作之外。为此，单击选定文件的 "Action"（操作）列，从下拉列表中选择 "Do not Add"（不添加）。</p>
+        </div>
+
+        <a name="checkingout"></a>
+        <h2>检出源</h2>
+
+        <p>在 IDE 中打开一个 ClearCase 版本化项目之后，可以对源进行更改。修改 ClearCase 版本化文件首先要求将它们检出或<em>劫持</em>。NetBeans ClearCase 支持提供了两种方法用来实现它：</p>
+
+        <ul> 
+            <li><strong>手动</strong>：右键单击文件节点，选择 "ClearCase" > "Checkout"（检出）或 "ClearCase" > "Hijack"（劫持）。</li>
+            <li><strong>使用“根据需求检出”功能</strong>：只要发生需要可写入文件的操作，IDE 就会自动运行相关的 ClearCase 命令。（例如，第一次在编辑器中更改文件内容或者运行一个重构操作）。</li>
+        </ul>
+
+        <p><span class="tips"></span>“根据需求检出”功能可以使用 <a href="#ccOptions">ClearCase "Options"（选项）对话框</a>中的“根据需求检出”选项进行优化。</p>
+
+        <a name="editing"></a>
+        <h2>编辑源</h2>
+
+        <p>与 NetBeans IDE 中打开的任何项目一样，在 IDE 窗口（例如 "Projects"（项目）（Ctrl-1 组合键）、"Files"（文件）（Ctrl-2 组合键）或 "Favorites"（收藏夹）（Ctrl-3 组合键）窗口）中显示文件时，您可以双击文件节点，在源代码编辑器中打开文件。</p>
+
+        <p>在 IDE 中的处理源时，您需要处理各种 UI 组件，这有助于查看和操作版本控制命令：</p>
+
+        <ul>
+            <li><a href="#viewingChanges">在源代码编辑器中查看更改</a></li>
+            <li><a href="#viewingFileStatus">查看文件状态信息</a></li>
+            <li><a href="#comparing">比较文件版本</a></li>        
+        </ul>
+
+        <div class="indent">
+            <a name="viewingChanges"></a>
+            <h3>在源代码编辑器中查看更改</h3>
+
+            <p>当在 IDE 的源代码编辑器中打开一个版本化文件时，针对资源库中以前的检出版本对文件进行修改时，可以查看该文件上发生的实时更改。您在操作时，IDE 通过源代码编辑器旁注中的颜色编码传递了以下信息：</p>
+
+            <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>蓝色</strong> (<span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>指示自早期版本之后发生更改的行。</td>
+
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>绿色</strong> (<span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>指示自早期版本之后添加的行。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>红色</strong> (<span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+
+                    <td>指示自早期版本之后移除的行。</td>
+                </tr>
+            </table>
+
+            <p>源代码编辑器左旁注逐行显示发生的更改。当修改给定行时，所做更改会立即在左旁注中显示出来。</p>
+
+            <p>单击旁注的颜色分组可以恢复新更改。例如，当单击红色图标时，左下方的屏幕快照显示可用的窗口部件，指从检出文件中移除的行。</p>
+
+            <p>源代码编辑器右旁注提供了对文件所做的更改的整体视图，从上到下显示。更改文件之后，将会立即生成颜色编码。</p>
+
+            <p>注：单击旁注的特定点可以让内联光标立即转到文件中的该位置。想要查看受影响行的行号，可以将鼠标放在右旁注中的彩色图标上：</p>
+
+            <table class="cell" style="width:500px">
+                <tr>
+                    <td><a href="../../../images_www/articles/74/ide/clearcase/left-ui.png" rel="lytebox" title="版本控制颜色编码显示在编辑器的左旁注中"> <img alt="显示在编辑器左旁注中的版本控制颜色编码" class="b-all" src="../../../images_www/articles/74/ide/clearcase/left-ui-small.png"></a> <br><strong>左旁注</strong></td>
+                    <td><img alt="显示在编辑器右旁注中的版本控制颜色编码" class="b-all" src="../../../images_www/articles/74/ide/clearcase/right-ui.png" title="版本控制颜色编码显示在编辑器的右旁注中"> <br><strong>右旁注</strong></td>
+                </tr>
+            </table>
+
+            <a name="viewingFileStatus"></a>
+            <h3>查看文件状态信息</h3>
+
+            <p>使用 "Projects"（项目）（Ctrl-1 组合键）、"Files"（文件）（Ctrl-2 组合键）、"Favorites"（收藏夹）（Ctrl-3 组合键）或 "Versioning"（版本控制）窗口时，IDE 提供了一些可视化功能，有助于查看文件状态信息。在下面的示例中，请注意标记（例如，<img alt="蓝色标记" src="../../../images_www/articles/74/ide/clearcase/blue-badge.png">）、文件名颜色和相邻状态标签如何全都彼此一致，以向您提供一种简单而有效的方法来跟踪文件的版本控制信息：</p>
+
+                    <p class="align-center">
+                    <img alt="显示在 &quot;Favorites&quot;（收藏夹）窗口中的蓝色版本控制标记" class="b-all margin-around" src="../../../images_www/articles/74/ide/clearcase/badge-example.jpg" title="蓝色版本控制标记显示在 &quot;Favorites&quot;（收藏夹）窗口中"></p>
+
+            <p>标记、颜色编码、文件状态标签和最重要的 "Versioning"（版本控制）窗口都有助于在 IDE 中有效地查看和管理版本控制信息。</p>
+
+            <ul>
+                <li><a href="#badges">标记和颜色编码</a></li>
+                <li><a href="#fileStatus">文件状态标签</a></li>
+                <li><a href="#versioning">"Versioning"（版本控制）窗口</a></li>
+            </ul>
+
+            <div class="indent">
+                <a name="badges"></a>
+                <h4>标记和颜色编码</h4>
+
+                <p>标记应用于项目、文件夹、包节点，通知您包含在该节点中的文件状态：</p>
+
+                <p>下表显示了用于标记的颜色方案：</p>
+
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:120px">UI 组件</th>
+                        <th class="tblheader" scope="col">描述</th>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>蓝色标记</strong> (<img alt="蓝色标记" src="../../../images_www/articles/74/ide/clearcase/blue-badge.png">)</td>
+                        <td class="tbltd1">指示当前检出、劫持或添加的文件或文件夹。对于包，此标记仅应用于包本身，而不应用于它的子包。对于项目或文件夹，此标记指示其中的更改，或指示其所包含子文件夹中的任何更改。</td>
+                    </tr>
+                </table>
+
+                <br><a name="color-coding-table"></a>
+                <p>颜色编码应用于文件名，以指示它们的当前状态：</p>
+
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:40px">颜色</th>
+                        <th class="tblheader" scope="col">示例</th>
+                        <th class="tblheader" scope="col">描述</th>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>蓝色</strong></td>
+                        <td class="tbltd1"><img alt="蓝色文本" src="../../../images_www/articles/74/ide/clearcase/blue-text.png"></td>
+                        <td class="tbltd1">指示文件已检出。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>绿色</strong></td>
+                        <td class="tbltd1"><img alt="绿色文本" src="../../../images_www/articles/74/ide/clearcase/green-text.png"></td>
+                        <td class="tbltd1">指示文件是新建的，并且未添加到源控制。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>灰色</strong></td>
+                        <td class="tbltd1"><img alt="灰色文本" src="../../../images_www/articles/74/ide/clearcase/gray-text.png"></td>
+                        <td class="tbltd1">指示文件被 ClearCase 忽略，并且不会包含在版本控制命令中，例如，"Add to Source Control"（添加到源代码控制中）或者 "Checkin"（检入）。如果文件没有进行版本化，那么它们只能被忽略。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center" style="width:120px"><strong>删除线</strong></td>
+                        <td class="tbltd1 align-center"><img alt="删除文本" src="../../../images_www/articles/74/ide/clearcase/strike-through-text.png"></td>
+                        <td class="tbltd1">指示文件已从检入操作或者 "Add to Source Control"（添加到源代码控制中）操作中排除。当选择从一个操作中排除单独的文件时，只能在特定位置删除文本，例如 "Versioning"（版本控制）窗口，"checkin"（检入）对话框和 "Add to Source Control"（添加到源代码控制中）对话框。其他 ClearCase 命令（例如 "Update"（更新）命令）仍然会影响到此类文件。</td>
+                    </tr>  
+                </table>
+
+                <br><a name="fileStatus"></a>
+                <h4>文件状态标签</h4>
+
+                <p>文件状态标签以文本的形式指示 IDE 窗口中的版本控制文件的状态。默认情况下，IDE 在窗口中列出的文件右侧以灰色文本显示它们的状态（新的、保留的、不保留的、忽略的等）信息。然而，您可以根据需要修改此格式。例如，如果您想将版本选择器添加至状态标签，请进行以下操作：</p>
+
+                <ol>
+                    <li>从主菜单中选择 "Tools"（工具）> "Options"（选项）；在 Mac 上为 "NetBeans" > "Preferences"（首选项）。此时将打开 "Options"（选项）窗口。</li>
+                    <li>选择窗口顶部的 "Miscellaneous"（其他）图标，然后单击下面的 "Versioning"（版本控制）标签。确保版本控制系统下的左侧面板中的 ClearCase 已选中。（请参考上面的<a href="#ccOptions">屏幕快照</a>）。</li>
+                    <li>单击 "Status Label Format"（状态标签格式）文本字段右侧的 "Add Variable"（添加变量）按钮。在显示的 "Add Variable"（添加变量）对话框中，选择 <tt>{version}</tt> 变量，然后单击 "OK"（确定）。版本变量将添加到 "Status Label Format"（状态标签格式）文本字段。</li>
+                    <li>要重新设置状态标签的格式，以在文件右侧仅显示状态和版本选择器，可以按照下列顺序重新排列 "Status Label Format"（状态标签格式）文本字段的内容：<br>
+
+                        <pre class="examplecode">[{status}; {version}]</pre>
+
+                        单击 "OK"（确定）。状态标签现在列出文件状态和版本选择器（可用时）：
+
+                        <p class="align-center">
+                        <img alt="显示在文件名旁边的文件标签" class="b-all margin-around" src="../../../images_www/articles/74/ide/clearcase/file-labels.jpg" title="文件标签显示在文件名旁边"></p>
+                    </li>
+                </ol>
+
+                <p><span class="tips"></span>从主菜单中选择 "View"（视图）> "Show Versioning Labels"（显示版本控制标签），可打开和关闭文件状态标签。</p>
+
+                <a name="versioning"></a>
+                <h4>"Versioning"（版本控制）窗口</h4>
+
+                <p>ClearCase "Versioning"（版本控制）窗口为您提供了一个实时列表，其中包括对本地工作副本的选定文件夹中的文件所的所有更改。默认情况下，它会在 IDE 的底部面板中打开，列出新建的、检出的或者劫持的文件。</p>
+
+                <p>要打开 "Versioning"（版本控制）窗口，选择一个版本化文件或文件夹（例如，从 "Projects"（项目）、"Files"（文件）或 "Favorites"（收藏夹）窗口中选择），然后从右键菜单中选择 "ClearCase" > "Show Changes"（显示更改）或者从主菜单中选择 "Versioning"（版本控制）> "Show Changes"（显示更改）。下面的窗口出现在 IDE 底部：</p>
+
+                    <p class="align-center">
+                    <a href="../../../images_www/articles/74/ide/clearcase/versioning-window.jpg" rel="lytebox" title="版本控制窗口显示本地修改的文件"> <img alt="显示本地修改的文件的版本控制窗口" class="b-all margin-around" src="../../../images_www/articles/74/ide/clearcase/versioning-window-small.jpg"></a></p>
+
+                <p>默认情况下，"Versioning"（版本控制）窗口显示一个列表此列表中包括选定的包或文件夹中的所有文件显示值得注意的状态（即新的、保留的、不保留的等）。您可以单击列出文件之上的列标题，按照名称、状态、位置或者规则对文件排序。</p>
+
+                <p>"Versioning"（版本控制）窗口工具栏还包含一些按钮，可用于调用列表中显示的所有文件上的最常见的 ClearCase 任务。下表列出了 "Versioning"（版本控制）窗口工具栏中可用的 ClearCase 命令：</p>
+
+                <table>
+                    <tr>
+                        <th class="tblheader" scope="col">图标</th>
+                        <th class="tblheader" scope="col" style="width:110px">名称</th>
+                        <th class="tblheader" scope="col">功能</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="&quot;refresh status&quot;（刷新状态）图标" src="../../../images_www/articles/74/ide/clearcase/refresh.png"></td>
+                        <td class="tbltd1 align-center"><strong>刷新状态</strong></td>
+                        <td class="tbltd1">刷新选定文件和文件夹的状态。可以刷新 "Versioning"（版本控制）窗口中显示的文件，以反映可能已在外部执行的任何更改。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="&quot;diff all&quot;（全部比较）图标" src="../../../images_www/articles/74/ide/clearcase/diff.png"></td>
+                        <td class="tbltd1 align-center"><strong>全部比较</strong></td>
+                        <td class="tbltd1">打开比较查看器，其中提供了本地更改与资源库保存的版本的逐项比较。</td>
+                    </tr>     
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="&quot;update all&quot;（全部更新）图标" src="../../../images_www/articles/74/ide/clearcase/update.png"></td>
+                        <td class="tbltd1 align-center"><strong>全部更新</strong></td>
+                        <td class="tbltd1">更新所有选定文件。（仅适用于快照视图。）</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="&quot;commit all&quot;（全部提交）图标" src="../../../images_www/articles/74/ide/clearcase/commit.png"></td>
+                        <td class="tbltd1 align-center"><strong>全部检入</strong></td>
+                        <td class="tbltd1">用于检入本地更改。</td>
+                    </tr>            
+                </table>
+
+                <br>
+                <p>选择与一个文件对应的表行并从右键菜单中选择一个命令，这样可以访问 "Versioning"（版本控制）窗口中的其他 ClearCase 命令：</p>
+
+                 <p class="align-center">
+                    <img alt="显示在 &quot;Versioning&quot;（版本控制）窗口中的所选文件上的右键单击菜单" class="margin-around" src="../../../images_www/articles/74/ide/clearcase/versioning-right-click.jpg" title="右键单击菜单显示在 &quot;Versioning&quot;（版本控制）窗口中的所选文件上"></p>
+
+                <br>
+                <p>例如，您可以在文件上执行以下操作：</p>
+
+                <table>
+                    <tr>
+                        <td style="width:200px">
+                            <ul>
+                                <li><strong>显示标注</strong>： <br><br> 在源代码编辑器中打开的文件的左旁注中显示作者和修订版本号信息。</li></ul></td>
+                        <td class="f-page-cell">
+                            <a href="../../../images_www/articles/74/ide/clearcase/annotations.jpg" rel="lytebox" title="标注显示在源代码编辑器的左旁注中"> <img alt="显示在源代码编辑器左旁注中的标注" class="b-all" src="../../../images_www/articles/74/ide/clearcase/annotations-small.jpg"></a></td>
+                    </tr>               
+                    <tr>
+                        <td style="width:200px">
+                            <ul>
+                                <li><strong>从检入中排除</strong>： <br><br> 用于标记在执行检入时要排除的文件。</li></ul></td>
+                        <td class="f-page-cell">
+                                <img alt="&quot;Checkin&quot;（检入）对话框中标记为已排除的文件" class="b-all" src="../../../images_www/articles/74/ide/clearcase/exclude-from-checkin.jpg" title="在 &quot;Checkin&quot;（检入）对话框中，文件标记为已排除"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <a name="comparing"></a>
+        <h3>比较文件版本</h3>
+
+        <p>使用版本化项目时，比较文件版本是一种常见任务。IDE 能够使用 "Diff"（比较）命令比较版本，可以从选定项的右键菜单获得（"ClearCase" > "Diff"（比较）），也可以从 "Versioning"（版本控制）窗口获得。在 "Versioning"（版本控制）窗口中，可通过双击列出的文件来执行比较；否则，可单击顶部工具栏中的 "Diff All"（全部比较）图标 (<img alt="&quot;diff all&quot;（全部比较）图标" src="../../../images_www/articles/74/ide/clearcase/diff.png">)。</p>
+
+        <p>当执行比较时，将会为 IDE 的主窗口中选定的文件打开一个图形化的比较查看器。比较查看器在两个并行面板中显示两个副本：</p>
+
+           <p class="align-center">
+            <a href="../../../images_www/articles/74/ide/clearcase/diff-viewer.jpg" rel="lytebox" title="ClearCase 比较查看器"> <img alt="ClearCase 比较查看器" class="b-all margin-around" src="../../../images_www/articles/74/ide/clearcase/diff-viewer-small.jpg"></a></p>
+
+        <p>比较查看器使用<a href="#viewingChanges">颜色编码</a>来显示版本控制更改，该颜色编码与其他地方使用的颜色编码相同。在上面显示的屏幕快照中，绿色块指示添加到更新版本的内容。红色块指示从新版本中移除的早期版本中的内容。蓝色指示在突出显示的行中发的更改。</p>
+
+        <p>此外，当对一组文件（例如，项目、包或文件夹）执行比较时，或者当单击 "Diff All"（全部比较）(<img alt="&quot;diff all&quot;（全部比较）图标" src="../../../images_www/articles/74/ide/clearcase/diff.png">) 时，可在各比较之间进行切换，只需单击比较查看器上方区域中列出的文件即可。</p>
+
+        <p>比较查看器还为您提供了以下功能：</p>
+
+        <ul>
+            <li><a href="#makeChanges">更改检出文件</a></li>
+            <li><a href="#navigateDifferences">在差异之间导航</a></li>            
+        </ul>
+
+        <div class="indent">
+            <a name="makeChanges"></a>
+            <h4>更改检出文件</h4>
+
+            <p>如果您在检出文件上执行比较，那么可以在比较查看器中直接更改。为此，可以将光标放在比较查看器的右侧窗格中，并且相应地修改文件，也可以每个突出显示的更改旁边的内联图标：</p>
+
+            <table>
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Replace</strong>（替换）(<img alt="&quot;replace&quot;（替换）图标" src="../../../images_www/articles/74/ide/clearcase/insert.png">)：</td>
+                    <td>把早期版本中突出显示的文本插入到检出版本中。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Move All</strong>（全部移动）(<img alt="&quot;move all&quot;（全部移动）图标" src="../../../images_www/articles/74/ide/clearcase/arrow.png">)：</td>
+                    <td>把文件的检出版本恢复为选定的先前版本的状态</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Remove</strong>（删除）(<img alt="&quot;remove&quot;（删除）图标" src="../../../images_www/articles/74/ide/clearcase/remove.png">)：</td>
+                    <td>从检出版本中删除突出显示的文本，使之与先前版本完全匹配。</td>
+                </tr>
+            </table>
+
+            <a name="navigateDifferences"></a>
+            <h4>在比较文件之间的差异中导航</h4>
+
+            <p>如果您的比较中包含多个差异，则可以使用工具栏中的箭头图标在它们之间导航。箭头图标可用于查看从上到下列出的差异：</p>
+
+            <table>
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Previous</strong>（上一个）(<img alt="&quot;previous difference&quot;（上一个差异）按钮" src="../../../images_www/articles/74/ide/clearcase/diff-prev.png">)：</td>
+                    <td>转至比较中显示的上一个差异</td>
+                </tr>
+
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Next</strong>（下一个）(<img alt="&quot;next difference&quot;（下一个差异）按钮" src="../../../images_www/articles/74/ide/clearcase/diff-next.png">)：</td>
+                    <td>转至比较中显示的下一个差异</td>
+                </tr>
+            </table>
+        </div>
+
+        <a name="checkingin"></a>
+        <h2>检入源</h2>
+
+        <p>对源进行更改后，可以将它们检入到资源库。IDE 允许通过以下方法调用检入命令：</p>
+
+        <ul>
+            <li>在 "Projects"（项目）、"Files"（文件）或 "Favorites"（收藏夹）窗口中，右键单击新建或检出项目，然后选择 "ClearCase" > "Checkin"（检入）。</li>
+
+            <li>从 "Versioning"（版本控制）窗口或比较查看器中，单击位于工具栏中的 "Checkin All"（全部检入）(<img alt="&quot;Checkin All&quot;（全部检入）图标" src="../../../images_www/articles/74/ide/clearcase/commit.png">) 按钮。</li>
+        </ul>
+
+        <p>此时将打开 "Checkin"（检入）对话框，其中列出了：</p>
+
+        <ul>
+            <li>所有检出文件</li>
+            <li>所有新文件，这些文件将首先自动添加到源控制（即，未版本化和未被 IDE 忽略的视图私有文件）。</li>
+        </ul>        
+
+        <p class="align-center">
+            <a href="../../../images_www/articles/74/ide/clearcase/checkin-dialog.png" rel="lytebox" title="&quot;Checkin&quot;（检入）对话框显示将要检入的文件"> <img alt="显示将要检入的文件的 &quot;Checkin&quot;（检入）对话框" class="margin-around" src="../../../images_www/articles/74/ide/clearcase/checkin-dialog-small.png"></a>
+        </p>
+
+        <p>可以从 "Checkin"（检入）对话框中指定是否从检入操作中排除单独的文件。为此，可以单击选定文件的 "Checkin Action"（检入操作）列，从下拉列表中选择 "Exclude from Checkin"（从检入中排除）。</p>
+
+        <p>要执行检入：</p>
+
+        <ol>
+            <li>在 "Checkin Message"（检入消息）文本区输入检入消息。或者，单击右上角的 "Recent Messages"（近期的消息）(<img alt="&quot;Recent Messages&quot;（近期的消息）图标" src="../../../images_www/articles/74/ide/clearcase/recent-msgs.png">) 图标，以便在以前使用过的消息列表中进行查看和选择。</li>
+
+            <li>指定各个文件的操作后，单击 "Checkin"（检入）。IDE 执行检入。当检入操作发生时，位于界面右下角的 IDE 状态栏会显示出来。成功检入后，版本控制标记就会在 "Projects"（项目）、"Files"（文件）或 "Favorites"（收藏夹）窗口中消失，并且检入文件中的颜色编码变成黑色。</li>
+        </ol>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20ClearCase%20Support%20in%20NetBeans%20IDE">发送有关此教程的反馈意见</a></div>
+        
+        <br style="clear:both;">
+        
+        <a name="seeAlso"></a>
+        <h2>另请参见</h2>
+        
+        <p>NetBeans IDE 的 ClearCase 指导教程到此就结束了。此文档通过介绍使用 IDE 的 ClearCase 支持时的标准工作流，演示了在 IDE 中如何执行基本的版本控制任务。</p>
+          
+        <p>有关相关文档，请参见以下参考资料：</p>
+        
+        <ul>
+            <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#ClearCase">NetBeans IDE 的 ClearCase 支持常见问题解答</a></li>
+			<li><a href="git.html">在 NetBeans IDE 中使用 Git 支持</a></li>
+			<li><a href="mercurial.html">在 NetBeans IDE 中使用 Mercurial 支持</a></li>
+            <li><a href="subversion.html">在 NetBeans IDE 中使用 Subversion 支持</a></li>
+            <li><a href="cvs.html">在 NetBeans IDE 中使用 CVS 支持</a></li>
+			<li><a href="mercurial-queues.html">在 NetBeans IDE 中使用 Mercurial 队列支持</a></li>
+			<li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">使用版本控制对应用程序进行版本控制</a></li></a>
+			
+
+        </ul>
+
+    </body>
+</html>

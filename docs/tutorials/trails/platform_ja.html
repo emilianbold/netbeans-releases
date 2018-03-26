@@ -1,0 +1,403 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <!--
+    Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+    -->
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <title>NetBeansプラットフォームの学習</title>
+        <meta content="Collection of resources for NetBeans Platform" name="description">
+        <link rel="stylesheet" href="../../netbeans.css">
+    </head>
+    <body>
+
+        <h1>NetBeansプラットフォームの学習</h1>
+        <h4>NetBeansプラットフォームとは</h4>
+
+        <p>NetBeansプラットフォームは、大規模なデスクトップ・アプリケーションの基礎にすることができる、広範なJavaフレームワークです。NetBeans IDE自体は、NetBeansプラットフォームに基づいた<a href="http://platform.netbeans.org/screenshots.html">数百のアプリケーションの1つ</a>です。NetBeansプラットフォームは、ウィンドウ、アクション、ファイル、およびアプリケーションに一般的なその他の多くの処理を容易にするAPIを含んでいます。
+        </p>
+
+        <p>NetBeansプラットフォーム・アプリケーションのそれぞれの機能は、プラグインに似た個別のNetBeansモジュールによって提供されます。NetBeansモジュールは、特定の機能を持つアプリケーションを提供する、Javaクラスのグループです。 </p>
+
+        <p>NetBeans IDE自体に新しいモジュールを作成することもできます。たとえば、好みの最先端技術をNetBeans IDEのユーザーが使用できるようにするモジュールを作成できます。または、追加のエディタ機能を提供するモジュールを作成することもできます。</p>
+
+
+        <table class="full-width">
+            <tbody>
+                <tr>
+                    <td class="valign-top half-width">
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>開始</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <ul>
+                                    <li><a href="http://bits.netbeans.org/dev/javadoc/" title="NetBeans API Javadoc">NetBeans API Javadoc</a> (<a href="https://netbeans.org/downloads/zip.html">オフライン表示用にjavadoc.zipをダウンロード</a>) </li>
+                                    <li><a href="https://netbeans.org/projects/platform/lists/dev/archive" title="NetBeans開発者のメーリング・リスト">NetBeans開発者のメーリング・リスト</a> </li>
+                                    <li><a href="http://wiki.netbeans.org/NetBeansDeveloperFAQ" title="NetBeans開発者のFAQ">NetBeans開発者のFAQ</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-google.html" title="NetBeansプラグイン・クイック・スタート">NetBeansプラグイン・クイック・スタート</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-quick-start.html" title="NetBeansプラットフォーム・クイック・スタート">NetBeansプラットフォームのクイック・スタート</a> </li>
+                                    <li>NetBeansプラットフォーム<a href="http://platform.netbeans.org/whatsnew/65.html">6.5</a>、<a href="http://platform.netbeans.org/whatsnew/67.html">6.7</a>、<a href="http://platform.netbeans.org/whatsnew/68.html">6.8</a>、<a href="http://platform.netbeans.org/whatsnew/69.html">6.9</a>、<a href="http://platform.netbeans.org/whatsnew/70.html">7.0</a>、<a href="http://platform.netbeans.org/whatsnew/71.html">7.1</a>、<a href="http://platform.netbeans.org/whatsnew/72.html">7.2</a>、<a href="http://bits.netbeans.org/7.2.1/javadoc/apichanges.html">7.2.1</a>、<a href="http://bits.netbeans.org/7.3/javadoc/apichanges.html">7.3</a><a href="http://bits.netbeans.org/7.3.1/javadoc/apichanges.html">7.3.1</a>、<a href="http://bits.netbeans.org/7.4/javadoc/apichanges.html">7.4</a>の新機能</li>
+                                </ul>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>移植</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <ul>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-porting-basic.html" title="Swingアプリケーションの移植">Swingコンポーネントの移植</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-javafx.html" title="JavaFXアプリケーションの移植">JavaFXコンポーネントの移植</a> </li>
+                                </ul>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>NetBeans APIの使用</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <p><b>NetBeansプラットフォームの基礎</b></p>
+                                <p>NetBeansプラットフォームの初心者ですか。初心者の場合は、前述の開始の項にあるドキュメントに従った後に、次のドキュメントを読んで学習パスを続行してください。特に、次にリストされている4つの「セレクション管理シリーズ」では、NetBeansプラットフォームの様々な部分を統合する方法が示されます。</p>
+                                <ul class="b-bottom-dashed">
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-runtime-container.html">実行時コンテナのチュートリアル</a>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-10-top-apis.html">NetBeans APIのトップ10 (ビデオ)</a>
+                                    <li><a href="http://wiki.netbeans.org/NbmIdioms">NutshellでのNetBeans API</a>
+                                    <li>重要なNetBeansプラットフォーム・リファレンス・カード
+                                        <p><p><a href="http://refcardz.dzone.com/refcardz/netbeans-platform-70"><img alt="" src="../../images_www/screenshots/platform/refcard70.png"></a>
+                                    <li>クイック概要
+                                        <ul>
+                                            <li><a href="http://netbeans.dzone.com/articles/netbeans-lookups-explained">NetBeansルックアップの説明</a>
+                                            <li><a href="http://netbeans.dzone.com/news/netbeans-extension-points">NetBeans拡張点の機能</a>
+                                        </ul>
+                                    </li>
+                                    <li>セレクション管理シリーズ
+                                        <ul>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-selection-1.html" title="パート1: セレクション管理のチュートリアル">パート1: セレクション管理のチュートリアル</a> </li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-selection-2.html" title="パート2: セレクション管理のチュートリアルII—ノードを使用する方法">パート2: セレクション管理のチュートリアルII—ノードを使用する方法</a> </li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-nodesapi2.html" title="パート3: ノードAPIのチュートリアル">パート3: ノードAPIのチュートリアル</a> </li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-property-editors.html" title="パート4: プロパティ・エディタAPIのチュートリアル">パート4: プロパティ・エディタAPIのチュートリアル</a> </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+
+
+                                <p><b>NetBeansプラットフォーム上でビルドされたアプリケーション</b></p>
+                                <ul class="b-bottom-dashed">
+                                    <li>アプリケーション
+                                        <ul>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-paintapp.html" title="ペイント・アプリケーションのチュートリアル">ペイント・アプリケーションのチュートリアル</a></li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-feedreader.html" title="フィード・リーダーのチュートリアル">フィード・リーダーのチュートリアル</a> </li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-htmleditor.html" title="HTMLエディタのチュートリアル">HTMLエディタのチュートリアル</a> </li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-povray-1.html" title="POV-Rayレンダラのチュートリアル">POV-Rayレンダラのチュートリアル</a> </li>
+                                        </ul>
+                                    </li>
+                                    <li>一般的なシナリオ
+                                        <ul>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-crud.html" title="CRUD">作成/読取り/更新/削除(CRUD)</a></li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-geospatial.html" title="地理空間">地理空間</a> </li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-workflow.html" title="ワークフロー">ワークフロー</a> </li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-3d.html" title="モデリング">3Dモデリング</a> </li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-ide.html" title="開発">開発環境</a> </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+
+                                <p><b>コード・エディタを開発するためのNetBeans API</b></p>
+                                <ul class="b-bottom-dashed">
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-filetype.html" title="ファイル・タイプ統合のチュートリアル">ファイル・タイプ統合のチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-javacc-lexer.html" title="JavaCCレクサー・ジェネレータの統合のチュートリアル">JavaCCレクサー・ジェネレータの統合のチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-javacc-parser.html" title="JavaCCパーサー・ジェネレータの統合のチュートリアル">JavaCCパーサー・ジェネレータの統合のチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-copyfqn.html" title="Java言語インフラストラクチャのチュートリアル">Java言語インフラストラクチャのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-code-generator.html" title="コード・ジェネレータの統合のチュートリアル">コード・ジェネレータの統合のチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-code-completion.html" title="コード補完の統合のチュートリアル">コード補完の統合のチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-mark-occurrences.html" title="出現箇所のマーク・モジュールのチュートリアル">出現箇所のマーク・モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-palette-api1.html" title="コード・スニペットのチュートリアル">コード・スニペットのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-palette-api2.html" title="エディタ・コンポーネント・パレット・モジュールのチュートリアル">エディタ・コンポーネント・パレット・モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-xmleditor.html" title="XMLエディタ拡張モジュールのチュートリアル">XMLエディタ拡張モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-hyperlink.html" title="ハイパーリンクのチュートリアル">ハイパーリンク・ナビゲーションのチュートリアル</a></li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html" title="Javaヒントのチュートリアル">Javaヒントのチュートリアル</a></li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-code-template.html" title="コード・テンプレートのチュートリアル">コード・テンプレートのチュートリアル</a></li>
+                                </ul>
+
+                                <p><b>データの視覚化のためのNetBeans API</b></p>
+                                <ul class="b-bottom-dashed">
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-visual_library.html" title="ビジュアル・ライブラリのチュートリアル">ビジュアル・ライブラリのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-quick-start-visual.html" title="JavaアプリケーションのNetBeansビジュアル・ライブラリのチュートリアル">Javaアプリケーションのビジュアル・ライブラリのチュートリアル</a> </li>
+                                    <li><a href="http://tdamir.blogspot.com/2007/12/ddl-visualizer-visualize-sql-script.html" title="NetBeansプラットフォームでのSQLスクリプトの視覚化">NetBeansプラットフォームでのSQLスクリプトの視覚化</a> </li>
+                                    <li><a href="http://wiki.netbeans.org/VisualDatabaseExplorer" title="NetBeans用のビジュアル・データベース・エクスプローラ">NetBeans用のビジュアル・データベース・エクスプローラ</a> </li>
+                                    <li><a href="http://java.dzone.com/news/how-create-visual-applications">Javaでのビジュアル・アプリケーションの作成方法</a></li>
+                                    <li><a href="http://java.dzone.com/news/how-add-resize-functionality-v">Javaでのビジュアル・アプリケーションへのサイズ変更機能の追加方法</a></li>
+                                    <li><a href="https://netbeans.org/community/magazine/html/04/visuallibrary.html">ビジュアル・ライブラリの独創的な使用</a></li>
+                                </ul>
+
+                                <p><b>NetBeansプラットフォームのその他のチュートリアル</b></p>
+                                <p><i>(アルファベット順)</i></p>
+                                <ul class="b-bottom-dashed">
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-filetemplates.html" title="ファイル・テンプレート・モジュールのチュートリアル">ファイル・テンプレート・モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-nbi.html" title="インストーラ統合のチュートリアル">インストーラ統合のチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-options.html" title="オプション・ウィンドウ・モジュールのチュートリアル">オプション・ウィンドウ・モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-projectsamples.html" title="プロジェクト・サンプル・モジュールのチュートリアル">プロジェクト・サンプル・モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-projectextension.html" title="プロジェクト・タイプ拡張モジュールのチュートリアル">プロジェクト・タイプ拡張モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-projecttype.html" title="プロジェクト・タイプ・モジュールのチュートリアル">プロジェクト・タイプ・モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-propertyeditors-integration.html" title="NetBeansの統合されたプロパティ・エディタ">プロパティ・エディタ統合のチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-quick-search.html" title="クイック検索の統合のチュートリアル">クイック検索の統合のチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-ribbonbar.html" title="リボン・バーのチュートリアル">リボン・バーのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-nodesapi.html" title="システム・プロパティ・モジュールのチュートリアル">システム・プロパティ・モジュールのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-wizard.html" title="NetBeansウィザード・モジュールのチュートリアル">ウィザード・モジュールのチュートリアル</a> </li>
+                                </ul>
+
+                                <p><b>コマンドライン</b></p>
+                                <ul>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-ant.html" title="Ant">Ant</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-maven-commandline.html" title="Maven">Maven</a> </li>
+                                </ul>
+
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                    </td>
+
+                    <td class="valign-top half-width">
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>YouTube: NetBeans IDEを拡張する5つの簡単な方法</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <a href="http://www.youtube.com/watch?v=h4k5JpluJM8"><img alt="" src="../../images_www/screenshots/platform/five-easy-extend.png"></a>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>MavenとNetBeansプラットフォームの使用</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <ul>
+                                    <li>一般的な紹介
+                                        <ul>
+                                            <li><a href="http://wiki.netbeans.org/MavenBestPractices">NetBeans IDEでのMavenのベスト・プラクティス</a></li>
+                                            <li><a href="http://mojo.codehaus.org/nbm-maven-plugin/">NetBeansモジュールのMavenプラグインについて</a></li>
+                                        </ul>
+                                    </li>
+                                    <li>NetBeansプラットフォームのチュートリアル
+                                        <ul>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-maven-commandline.html">NetBeansプラットフォームのMavenコマンドラインのチュートリアル</a></li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-maven-quickstart.html">Mavenを使用したNetBeansプラットフォームのクイック・スタート</a></li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-maven-modulesingle.html">Mavenを使用したNetBeansプラットフォームのファイル・タイプのチュートリアル</a></li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-maven-modulesuite.html">Mavenを使用したNetBeansプラットフォームの選択のチュートリアル</a></li>
+                                            <li><a href="http://platform.netbeans.org/tutorials/nbm-maven-crud.html">Mavenを使用したNetBeansプラットフォームのCRUDのチュートリアル</a></li>
+                                        </ul>
+                                    </li>
+                                    <li>その他
+                                        <ul>
+                                            <li><a href="http://blogs.oracle.com/geertjan/entry/mavenized_netbeans_platform_runtime_container">Mavenized NetBeansプラットフォーム実行時コンテナ</a></li>
+                                            <li><a href="http://netbeans.dzone.com/how-create-maven-nb-project-type">MavenおよびNetBeansプラットフォームを使用したカスタム・プロジェクト・タイプの作成</a></li>
+                                            <li><a href="http://netbeans.dzone.com/nb-how-create-javahelp-mavenized">MavenおよびNetBeansプラットフォームを使用したJavaHelpの作成</a></li>
+                                            <li><a href="http://netbeans.dzone.com/videos/screencast-maven-and-netbeans">スクリーンキャスト: MavenおよびNetBeansプラットフォーム</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>診断</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <ul>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-test.html" title="NetBeansプラットフォームのテスト・インフラストラクチャのチュートリアル">NetBeansプラットフォームのテスト・インフラストラクチャのチュートリアル</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-gesture.html" title="NetBeansプラットフォームのジェスチャー収集インフラストラクチャのチュートリアル">NetBeansプラットフォームのジェスチャー収集インフラストラクチャのチュートリアル</a> </li>
+                                </ul>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>OSGiとNetBeansプラットフォームの使用</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <ul>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-osgi-quickstart.html" title="OSGiを使用したNetBeansプラットフォーム・クイック・スタート">OSGiを使用したNetBeansプラットフォーム・クイック・スタート</a> </li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-emf.html" title="NetBeansプラットフォームEMF統合のチュートリアル">NetBeansプラットフォームEMF統合のチュートリアル</a> </li>
+                                </ul>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>スクリーンキャスト</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <ul>
+                                    <li><a href="http://netbeans.dzone.com/videos/free-netbeans-platform-crash">ビデオ: NetBeansプラットフォームの速習講座(無料)</a></li>
+                                    <li><a href="http://platform.netbeans.org/tutorials/nbm-10-top-apis.html">ビデオ: NetBeans APIのトップ10</a></li>
+                                </ul>
+
+                                <div class="b-top-dashed align-right"><br><p>
+                                        <a href="https://netbeans.org/kb/docs/screencasts.html"><img alt="" src="https://netbeans.org/images_www/v6/arrow-button1.gif" />すべてのスクリーンキャスト</a></p>
+                                </div>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>サンプル・アプリケーション</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <ul>
+                                    <li><a href="http://apress.com/book/downloadfile/4393">書籍『The Definitive Guide to NetBeans Platform』のサンプル</a></li>
+                                    <li><a href="https://netbeans.org/kb/samples/feedreader.html?me=6&su=1">RSSフィード・リーダー</a></li>
+                                    <li><a href="https://netbeans.org/kb/samples/paint-application.html?me=6&su=2">ペイント</a></li>
+                                </ul>
+
+                                <div class="b-top-dashed align-right"><br><p>
+                                        <a href="https://netbeans.org/kb/samples/index.html"><img alt="" src="https://netbeans.org/images_www/v6/arrow-button1.gif" />すべてのサンプル・アプリケーション</a></p>
+                                </div>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>コミュニティの寄稿ドキュメント</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <ul>
+                                    <li><a href="http://wiki.netbeans.org/wiki/view/VisualDatabaseExplorer">NetBeansのビジュアル・データベース・エクスプローラ</a>、Toni Epple著</li>
+                                    <li><a href="http://tdamir.blogspot.com/2007/12/ddl-visualizer-visualize-sql-script.html">DDL表示機能: NetBeansを使用したSQLスクリプトの視覚化</a>、Damir Tesanovic著</li>
+                                    <li><a href="http://blogs.kiyut.com/tonny/2007/10/18/customize-netbeans-platform-splash-screen-and-about-dialog/">スプラッシュ画面と「製品について」ダイアログのカスタマイズ</a>、Tonny Kohar著</li>
+                                    <li><a href="http://wiki.netbeans.org/wiki/view/AddingMRUList">「最近使用したファイル」リストの作成</a>、Tonny Kohar著</li>
+                                    <li><a href="http://wiki.netbeans.org/wiki/view/TranslateNetbeansModule">NetBeansモジュールの翻訳</a>、Michel Graciano著</li>
+                                    <li><a href="http://netbeans.dzone.com/tips/quickstart-guide-language-supp">クイック・スタート: NetBeans IDEでの言語ツールの作成</a>、Jordi R. Cardona著</li>
+                                </ul>
+
+                                <div class="b-top-dashed align-right"><br><p>
+                                        <a href="http://wiki.netbeans.org/CommunityDocs_Contributions" target="_blank"><img alt="" src="https://netbeans.org/images_www/v6/arrow-button1.gif" />コミュニティのすべての寄稿ドキュメント</a></p>
+                                </div>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>参考資料</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <p><b>NetBeansプラットフォームの公式参考資料<a id="comrec" name="comrec"></a></b></p>
+                                <ul>
+                                    <li><a href="http://bits.netbeans.org/dev/javadoc/index.html">NetBeans API Javadoc</a>
+                                        <ul>
+                                            <li><a href="http://bits.netbeans.org/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/api.html">モジュール・システムAPI</a>
+                                                <p><li><a href="http://bits.netbeans.org/dev/javadoc/org-openide-windows/org/openide/windows/doc-files/api.html">ウィンドウ・システムAPI</a>
+                                                <p><li><a href="http://bits.netbeans.org/dev/javadoc/org-openide-filesystems/org/openide/filesystems/doc-files/api.html">ファイル・システムAPI</a>
+                                                <p><li><a href="http://bits.netbeans.org/dev/javadoc/org-openide-loaders/org/openide/loaders/doc-files/api.html">データ・システムAPI</a>
+                                                <p><li><a href="http://bits.netbeans.org/dev/javadoc/org-openide-nodes/org/openide/nodes/doc-files/api.html">ノードAPI</a>
+                                                <p><li><a href="http://bits.netbeans.org/dev/javadoc/org-openide-explorer/org/openide/explorer/doc-files/api.html">エクスプローラAPI</a>
+                                                <p><li><a href="http://bits.netbeans.org/dev/javadoc/org-openide-explorer/org/openide/explorer/doc-files/propertyViewCustomization.html">プロパティ・シートのカスタマイズ</a>
+                                                <p><li><a href="http://bits.netbeans.org/dev/javadoc/org-netbeans-api-visual/org/netbeans/api/visual/widget/doc-files/documentation.html">ビジュアル・ライブラリAPI</a>
+                                                <p><li><a href="http://bits.netbeans.org/netbeans/trunk/javadoc/org-openide-util/org/openide/util/doc-files/api.html">ユーティリティAPI</a>
+                                                <p><li><a href="http://bits.netbeans.org/dev/javadoc/layers.html">NetBeans APIでのレイヤー登録の説明</a>
+
+                                        </ul>
+                                    </li>
+                                    <li><a href="http://bits.netbeans.org/dev/javadoc/apichanges.html">NetBeans APIの最新の変更</a></li>
+                                </ul>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                        <div class="trail-box">
+                            <div class="trail-box-header">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-tr.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-tl.png">
+                                <!-- here is the box header -->
+                                <h1>その他のリソース</h1>
+                            </div>
+                            <div class="trail-box-content">
+                                <p><b>オンライン・マガジンの記事<a id="comrec" name="comrec"></a></b></p>
+                                <ul class="b-bottom-dashed">
+                                    <li><a href="http://java.sun.com/developer/technicalArticles/javase/extensible/index.html">Javaプラットフォームを使用した拡張可能アプリケーションの作成</a></li>
+                                    <li><a href="http://java.dzone.com/news/how-create-pluggable-photo-alb">Javaでのプラガブルなフォト・アルバムの作成</a></li>
+                                    <li><a href="https://netbeans.org/community/magazine/html/04/maven.html">MavenとMevenideを使用したNetBeansプラットフォーム開発</a></li>
+                                </ul>
+                                <p><b>NetBeansプラットフォームに関するブログ<a id="blogs" name="blogs"></a></b></p>
+                                <ul class="b-bottom-dashed">
+                                    <li><a href="http://blogs.oracle.com/geertjan">Geertjan Wielenga</a>、<a href="http://eppleton.com/blog/">Toni Epple</a>、<a href="http://www.aljoscha-rittner.de/blog/">Aljoscha Rittner (ドイツ)</a>、<a href="http://blogs.oracle.com/scblog">Sandip Chitale</a>、<a href="http://blogs.oracle.com/jglick">Jesse Glick</a>、<a href="http://weblogs.java.net/blog/timboudreau/">Tim Boudreau</a>、<a href="http://blogs.kiyut.com/tonny/">Tonny Kohar</a>。</li>
+                                </ul>
+                                <p><b>NetBeansプラットフォームに関する書籍<a id="blogs" name="blogs"></a></b></p>
+                                <ul>
+                                    <li><a href="http://www.apress.com/9781430241010">The Definitive Guide to NetBeans Platform 7</a></li>
+                                    <li><a href="https://www.packtpub.com/netbeans-platform-6-9-developers-guide/book">NetBeans Platform 6.9 Developer's Guide</a></li>
+                                    <li><a href="http://www.apress.com/9781430224174">The Definitive Guide to NetBeans Platform 6.5</a></li>
+                                    <li><a href="http://www.amazon.com/Rich-Client-Programming-Plugging-NetBeans/dp/0132354802">Rich Client Programming: Plugging into the NetBeans Platform</a></li>
+                                </ul>
+                            </div>
+                            <div class="trail-box-bottom">
+                                <img alt="" class="right" src="https://netbeans.org/images_www/v6/trails/trails-box-br.png"> <img alt="" class="left" src="https://netbeans.org/images_www/v6/trails/trails-box-bl.png">
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </body>
+</html>

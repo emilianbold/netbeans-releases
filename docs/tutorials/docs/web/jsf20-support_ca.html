@@ -1,0 +1,636 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Suport de JSF 2.0 en l'IDE NetBeans 7.2</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="An article outlining JSF 2.0 support in NetBeans 7.2.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              JavaServer Faces, JavaServer Faces 2.0, JSF, JSF 2.0">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Suport de JSF 2.0 en l'IDE NetBeans</h1>
+
+        <p><img src="../../../images_www/articles/72/netbeans-stamp-72-73.png" class="stamp"
+            title="El contingut d'aquesta p&agrave;gina s'aplica al IDE NetBeans 7.2"
+            alt="El contingut d'aquesta p&agrave;gina s'aplica al IDE NetBeans 7.2" /></p>
+
+        <p>Al coincidir amb el llan&ccedil;ament de Java EE 6, l'IDE NetBeans 6.8 proporciona moltes caracter&iacute;stiques que permeten el suport incrustat per a JavaServer Faces 2.0. El nou IDE JSF 2.0 es basa en el seu anterior suport per JavaServer Faces, i inclou millores a l'editor vers&agrave;tils per a p&agrave;gines Facelets, diverses facilitats per treballar amb classes d'entitat, i un conjunt d'assistents JSF per ales tasques comuns de desenvolupament, com la creaci&oacute; de beans JSF gestionats, plantilles Facelets i elements composats.</p>
+
+        <p>Els seg&uuml;ents temes demostren les caracter&iacute;stiques JSF 2.0 que estan a la vostra disposici&oacute; quant treballeu en l'IDE NetBeans 6.8. Per provar les noves caracter&iacute;stiques JSF, <a href="https://netbeans.org/downloads/index.html">descarregueu el paquet Java de l'IDE NetBeans</a>, el qual inclou tecnologies Java Web i EE.</p>
+
+
+        <h3>Continguts</h3>
+
+        <ul id="collapsableList">
+            <li><a href="#support">Suport JSF 2.0 per a projectes</a>
+
+                <ul>
+                    <li><a href="#creatingSupport">Creant un projecte nou amb suport JSF 2.0</a></li>
+                    <li><a href="#addingSupport">Afegint suport JSF 2.0 per a un projecte existent</a></li>
+                </ul></li>
+
+            <li><a href="#editor">Utilitzant l'editor</a>
+
+                <ul>
+                    <!-- <li><a href="#java">Java Editor</a></li> -->
+                    <li><a href="#facelets">Editor de Facelets</a></li>
+                    <li><a href="#xml">Editor de configuraci&oacute; Faces XML</a></li>
+                </ul></li>
+
+            <li><a href="#wizard">Assistents JSF</a>
+
+                <ul>
+                    <li><a href="#jsfPage">Assistent de p&agrave;gina JSF</a></li>
+                    <li><a href="#managedBean">Assistent Bean gestionat per JSF</a></li>
+                    <li><a href="#facesConfig">Assistent de configuraci&oacute; de Faces</a></li>
+                    <li><a href="#composite">Assistent de configuraci&oacute; de composici&oacute;</a></li>
+                    <li><a href="#jsfPagesEntity">P&agrave;gines JSF des de l'assistent de classes d'entitat</a></li>
+                    <li><a href="#faceletsTemplate">Assistent de plantilla Facelets</a></li>
+                </ul></li>
+
+            <li><a href="#entity">Suport per classes d'entitat</a>
+
+                <ul>
+                    <li><a href="#jsfPages">Creant p&agrave;gines JSF des de classes d'entitat</a></li>
+                    <li><a href="#form">Di&agrave;leg de formulari des d'entitat</a></li>
+                    <li><a href="#dataTable">Di&agrave;leg de taula des de dades d'entitat</a></li>
+                </ul></li>
+
+            <li><a href="#palette">Components de la paleta JSF</a></li>
+
+            <li><a href="#seealso">Vegeu tamb&eacute;</a></li>
+        </ul>
+
+
+        <br>
+        <h2 id="support">Suport JSF 2.0 per a projectes</h2>
+
+        <p>El suport JSF per a projectes es pot categoritzar com s'exposa.</p>
+
+        <ul>
+            <li>Els fitxers de plantilla Facelets estan inclosos en el projecte</li>
+            <li>Les biblioteques JSF 2.0 estan afegides al classpath del projecte</li>
+            <li>Faces servlet i servlet mapping estan afegits al descriptor de desplegament del projecte</li>
+        </ul>
+
+        <p>Utilitzant the GlassFish server, o qualsevol altre servidor compatible amb Java EE 6, you podeu crear projectes amb suport JSF 2.0, o b&eacute; afegir suport JSF 2.0 a un projecte existent.</p>
+
+        <ul>
+            <li><a href="#creatingSupport">Creant un projecte nou amb suport JSF 2.0</a></li>
+            <li><a href="#addingSupport">Afegint suport JSF 2.0 per a un projecte existent</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="creatingSupport">Creant un projecte nou amb suport JSF 2.0</h3>
+
+            <p>Utilitzeu l'assistent de projecte de l'IDE per a crear una nova aplicaci&oacute; web Java. Per a fer-ho, Cliqueu al bot&oacute; Nou projecte ( <img src="../../../images_www/articles/72/web/jsf20-support/new-project-btn.png"
+                alt="bot&oacute; Nou projecte"> ) de la barra d'eines principal de l'IDE, o premeu Ctrl-Maj-N (⌘-Mai-N a Mac). Quant arribeu al Pas 4: Frameworks, seleccioneu JavaServer Faces.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/new-proj-wizard-framework.png"
+                    alt="Nou assistent de projecte: Frameworks" class="b-all margin-around"
+                    title="Afegir el suport del Framework JSF quant creeu un projecte">
+            </div>
+
+            <p>Despr&eacute;s de seleccionar JavaServer Faces, es posen a la vostra disposici&oacute; diverses opcions de configuraci&oacute;, com es mostra en la seg&uuml;ent imatge. Podeu determinar com els vostre projecte accedeix a les biblioteques JSF 2.0. Cliqueu a la pestanya de configuraci&oacute; per especificar com Faces servlet ser&agrave; registrat al descriptor de desplegament del projecte.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/jsf-configuration.png"
+                    alt="Pestanya de configuraci&oacute;" class="b-all margin-around"
+                    title="Especifica les prefer&egrave;ncies de Faces servlet sota la pestanya de configuraci&oacute;">
+            </div>
+
+
+            <h3 id="addingSupport">Afegint suport JSF 2.0 per a un projecte existent</h3>
+
+            <p>Si voleu afegir suport JSF 2.0 a una aplicaci&oacute; web Java existent, podeu fer-fo des de la finestra de propietats del projecte.</p>
+
+            <ol>
+                <li>En la finestra de projectes (Ctrl-1; &amp;#8984-1 a Mac), cliqueu amb el bot&oacute; dret al node del vostre projecte i seleccioneu Propietats. Es mostra la finestra de propietats del projecte.</li>
+
+                <li>Seleccioneu la categoria Frameworks, despr&eacute;s cliqueu al bot&oacute; Afegir. En el di&agrave;leg que es mostra, seleccioneu JavaServer Faces.
+
+                    <br>
+                    Despr&eacute;s de seleccionar JavaServer Faces, es posen a la vostra disposici&oacute; diverses opcions de configuraci&oacute;, com especificar la ruta a les biblioteques JSF 2.0, i el registrament de Faces servlet al descriptor de desplegament del projecte.</li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="editor">Utilitzant l'editor</h2>
+
+        <p>L'editor de l'IDE &eacute;s especific al llenguatge, i proporciona suport depenent amb el tipus de fitxer amb el qual esteu treballant. Parlant de forma general, podeu pr&eacute;mer Ctrl-Espai en un element del vostre fitxer per invocar l'aito-completat de codi i la documentaci&oacute; de l'API. Podeu prendre tamb&eacute; les avantatges de les dreceres de teclat i de les plantilles de codi.</p>
+
+        <p class="tips">Seleccioneu Ajuda &gt; Targeta de dreceres de teclat, des del men&uacute; principal de l'IDE, per visualitzar les dreceres de teclat i plantilles de codi. Pel llistat complet, vegeu l'<a href="http://wiki.netbeans.org/KeymapProfileFor60">Especificaci&oacute; de les dreceres de teclat de l'IDE NetBeans 6.x</a>.</p>
+
+        <p>El IDE proporciona suport integrat per a Javadoc de l'<a href="http://javaserverfaces.dev.java.net/nonav/docs/2.0/javadocs/index.html">API JSF 2.0</a>, com per exemple la <a href="http://javaserverfaces.dev.java.net/nonav/docs/2.0/pdldocs/facelets/index.html">Documentaci&oacute; de la biblioteca d'etiquetes</a> de JSF. Per agafa l'avantatge d'aquests recursos en el vostre treball, simplement premeu Ctrl-Espai en un element determinat de l'editor.</p>
+
+        <p class="tips">Si preferiu accedir de forma cont&iacute;nua a la documentaci&oacute; Javadoc, podeu obrir la finestra Javadoc de l'IDE (Finestra &gt; Altres &gt; Javadoc). La finestra Javadoc es refresca autom&agrave;ticament depenent de la localitzaci&oacute; en la que es trobi el cursor en l'editor.</p>
+
+        <p>Quant treballeu en un projecte JSF, els vostres esfor&ccedil;os d'edici&oacute; principalment es centraran als fitxers Facelets, beans gestionats per JSF, i el fitxer de configuraci&oacute; de Faces (<code>faces-config.xml</code>). To seguit mostrarem breument els siport d'edici&oacute; que est&agrave; a la vostra disposici&oacute;.</p>
+
+        <ul>
+            <!-- <li><a href="#java">Java editor</a></li> -->
+            <li><a href="#facelets">Editor de Facelets</a></li>
+            <li><a href="#xml">Editor de configuraci&oacute; Faces XML</a></li>
+        </ul>
+
+        <div class="indent">
+            <!-- <h3 id="java">Java editor</h3>
+
+            <p>[ Show image of API documentation for annotations used in managed beans, e.g.,
+                <code>ManagedBean</code>, <code>SessionScoped</code>, <code>ManagedProperty</code>. ]</p> -->
+
+
+            <h3 id="facelets">Editor de Facelets</h3>
+
+            <p>L'editor de Facelets de l'IDE proporciona nombroses caracter&iacute;stiques que faciliten el desenvolupament de JSF, incloent el ressaltament de la sintaxis i la comprovaci&oacute; d'errors per a etiquetes JSF, suport de documentaci&oacute;, i auto-completat d'expressions EL, biblioteques i espais de noms del nucli Facelets.</p>
+
+            <p>Podeu pr&eacute;mer Ctrl-Espai per invocar l'auto-completat de codi i suport de documentaci&oacute;, all&iacute; on sigui aplicable.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/doc-support.png" class="b-all margin-around"
+                    alt="Mostrant l'auto-completat de codi i el suport de documentaci&oacute; al IDE"
+                    title="Premeu Ctrl-Espai per invocar l'auto-completat de codi i el suport de documentaci&oacute;">
+            </div>
+
+            <p id="popup">Quant el vostre cursor no est&agrave; posicionat en una etiqueta, premeu Ctrl-Espai per invocar un llistat de tots els elements. Igualment podeu accedir a aquests elements des de la <a href="#palette">Paleta</a> de l'IDE (Ctrl-Maj-8; ⌘-Maj-8 a Mac).</p>
+
+            <p class="tips">Tamb&eacute; podeu escriure un prefix abans de pr&eacute;mer Ctrl-Espai, pex., <code>jsf</code>, per a filtrar elements.</p>
+            
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/code-completion.png"
+                    alt="Llistat emergent d'auto-completat de l'editor de l'IDE" class="b-all margin-around"
+                    title="Premeu Ctrl-Espai en l'editor per invocar el llistat d'elements">
+            </div>
+
+            <p>Podeu pr&eacute;mer Ctrl-Espai per a invocar l'auto-completat de codi pels espais de noms dels Facelets.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/namespace.png"
+                    alt="Llistat emergent d'auto-completat de l'editor de l'IDE" class="b-all margin-around"
+                    title="Premeu Ctrl-Espai per completar els espais de noms dels Facelets">
+            </div>
+
+            <p>De forma similar, si escriviu una etiqueta JSF de la qual els espais de noms no han estat declarats en la p&agrave;gina, autom&agrave;ticament l'IDE els afegeix a les p&agrave;gines d'etiquetes <code>&lt;html&gt;</code>.</p>
+
+            <p>L'editor proporciona suport d'auto-completat per a la sintaxis del llenguatge d'expressions (EL, de l'angl&egrave;s Expression Language). Premeu Ctrl-Espai al codi EL per a invocar suggeriments per a objectes impl&iacute;cits, beans gestionats per JSF, i les seves propietats.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/el-code-completion.png"
+                    alt="Llistat emergent d'auto-completat per expressions EL" class="b-all margin-around"
+                    title="Premeu Ctrl-Espai en les expressions EL per a invocar el suport d'auto-completat per a objectes impl&iacute;cits, beans gestionats per JSF, i propietats bean">
+            </div>
+            
+            <p>Tamb&eacute; podeu ressaltar talls de codi en l'editor, i seleccionar Convertir a un component composat, en ordre de crear components compostos JSF. Per a m&eacute;s detalls vegeu l'<a href="#composite">Assistent de configuraci&oacute; de composici&oacute;</a>.</p>
+
+            <p>L'editor proporciona les capacitats comprovaci&oacute; d'errors b&agrave;sics. Un error es mostra amb un subratllat vermell i el seu corresponent distintiu al marge esquerra. Les advert&egrave;ncies estan subratllades amb groc i denotades amb un distintiu groc al marge esquerra. Podeu despla&ccedil;ar el ratol&iacute; pel text distintiu o subratllat per visualitzar la descripci&oacute; de l'error.</p>
+                                
+            <p>Quant introdu&iuml;u les etiquetes JSF, es realitzen diverses comprovacions: Aquest inclou tant:</p>
+
+            <ul>
+                <li>l'exist&egrave;ncia la biblioteca declarada</li>
+                <li>si la biblioteca correspon amb el prefix de l'etiqueta que cont&eacute; tal component o etiqueta</li>
+                <li>si l'etiqueta cont&eacute; tots els atributs necessaris</li>
+                <li>si tots els atributs introdu&iuml;ts estan definits en la interf&iacute;cie del components</li>
+            </ul>
+
+            <p>L'editor tamb&eacute; comprova:</p>
+
+            <ul>
+                <li>l'exist&egrave;ncia de components sense declarar</li>
+                <li>la pres&egrave;ncia de declaracions taglib sense usos</li>
+            </ul>
+
+
+            <h3 id="xml">Editor de configuraci&oacute; Faces XML</h3>
+
+            <p>Si incloeu un fitxer <code>faces-config.xml</code> al vostre projecte JSF, podeu pr&eacute;mer Ctrl-Espai quant definiu les regles de navegaci&oacute; o quant declareu beans gestionats en ordre d'apropar el suport d'auto-completat i documentaci&oacute;.</p>
+
+            <p>Si preferiu introduir regles de navegaci&oacute; i beans gestionats mitjan&ccedil;ant di&agrave;legs en lloc de fer-ho codificant, l'IDE proporciona diversos di&agrave;legs JSF espec&iacute;fics per aquest prop&ograve;sit. Aquests s&oacute;n accessibles des del men&uacute; de l'editor amb el bot&oacute; dret.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/faces-config-menu.png"
+                    alt="fitxer faces-config.xml - clic dret al men&uacute;" class="b-all margin-around"
+                    title="Els di&agrave;legs JSF espec&iacute;fics proporcionats en el men&uacute; de faces-config.xml amb el bot&oacute; dret">
+            </div>
+
+            <p>El IDE proporciona dos <em>visualitzacions</em> diferents pel fitxer <code>faces-config.xml</code>: la visualitzaci&oacute; XML, la qual mostra el codi font XM, i la visualitzaci&oacute; PageFlow, la qual &eacute;s una interf&iacute;cie gr&agrave;fica que representa les regles de navegaci&oacute; JSF definides en el fitxer <code>faces-config.xml</code>.</p>
+
+            <p>Per exenmple si el vostre fitxer cont&eacute; la seg&uuml;ent regla de navegaci&oacute;:</p>
+
+            <div class="indent">
+                <pre class="examplecode">&lt;navigation-rule&gt;
+    &lt;from-view-id&gt;/greeting.xhtml&lt;/from-view-id&gt;
+    &lt;navigation-case&gt;
+        &lt;from-outcome&gt;resposta&lt;/from-outcome&gt;
+        &lt;to-view-id&gt;/success.xhtml&lt;/to-view-id&gt;
+    &lt;/navigation-case&gt;
+&lt;/navigation-rule&gt;</pre>
+            </div>
+
+            <p>La visualitzaci&oacute; PageFlow mostra les seg&uuml;ents relacions, indicant que una navegaci&oacute; <code>greeting.xhtml</code> a <code>success.xhtml</code> es produeix quant &quot;<code>resposta</code>&quot; es passada al <code>NavigationHandler</code> del JSF.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/page-flow.png"
+                    alt="fitxer faces-config.xml: la visualitzaci&oacute; PageFlow" class="b-all margin-around"
+                    title="la visualitzaci&oacute; PageFlow mostra les relacions de navegaci&oacute;">
+            </div>
+
+            <p>Clicar dues vegades a la visualitzaci&oacute; PageFlow us permet navegar directament al fitxer font. Per exemple, quant cliqueu dues vegades al component <code>greeting.xhtml</code>, el fitxer <code>greeting.xhtml</code> s'obre en l'editor. De la mateixa manera, si cliqueu dues vegades a la fletxa entre els dos components, l'editor focalitzar&agrave; la regla de navegaci&oacute; definida en la visualitzaci&oacute; XML de <code>faces-config.xml</code>.</p>
+        </div>
+
+
+        <br>
+        <h2 id="wizard">Assistents JSF</h2>
+
+        <p>L'IDE NetBeans proporciona nombrosos assistents que faciliten el desenvolupament amb JSF 2.0. Podeu crear noves p&agrave;gines Facelets, plantilles Facelets, beans gestionats amb JSF, components compostos, fitxers de configuraci&oacute; Faces, i m&eacute;s.</p>
+
+        <p id="fileWizard">Tots els assistents s&oacute;n accessibles mitjan&ccedil;ant l'assistent de fitxer gen&egrave;ric de l'IDE. Per accedir a l'assistent de fitxer, pitgeu el bot&oacute; de Nou fitxer ( <img src="../../../images_www/articles/72/web/jsf20-support/new-file-btn.png"
+            alt="bot&oacute; de Nou fitxer"> ), o seleccioneu Fitxer &amp;gt Nou fitxer, des del men&uacute; principal (o premeu Ctrl-N; &amp;#8984-N a Mac). Els assistent espec&iacute;fics de JSF s&oacute;n llistats dins de la categoria JavaServer Faces.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/file-wizard.png"
+                    alt="Assistent de fitxer: categoria JavaServer Faces seleccionada" class="b-all margin-around"
+                    title="Els assistents orientats a JSF s&oacute;n accessibles des de l'assistent de fitxer">
+            </div>
+
+        <p>Els seg&uuml;ents assistents estan a la vostra disposici&oacute; quant treballeu amb projectes Java web amb suport JSF.</p>
+
+        <ul>
+            <li><a href="#jsfPage">Assistent de p&agrave;gina JSF</a></li>
+            <li><a href="#managedBean">Assistent Bean gestionat per JSF</a></li>
+            <li><a href="#facesConfig">Assistent de configuraci&oacute; de Faces</a></li>
+            <li><a href="#composite">Assistent de configuraci&oacute; de composici&oacute;</a></li>
+            <li><a href="#jsfPagesEntity">P&agrave;gines JSF des de l'assistent de classes d'entitat</a></li>
+            <li><a href="#faceletsTemplate">Assistent de plantilla Facelets</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsfPage">Assistent de p&agrave;gina JSF</h3>
+
+            <p>Utilitzeu l'assistent de p&agrave;gines JSF per a crear p&agrave;gines Facelets i JSP pages pel vostre projecte. En l'assistent de fitxer de l'IDE, seleccioneu la categoria JavaServer Face, despr&eacute;s seleccioneu P&agrave;gina JSF. En JSF 2.0, Facelets &eacute;s la forma id&ograve;nia de declarar p&agrave;gines JSF. L'opci&oacute; Facelets en l'assistent est&agrave; seleccionada per defecte. Seleccioneu l'opci&oacute; de fitxer JSP si voleu crear noves p&agrave;gines JSP, o fragments de fitxers JSP (<code>.jspf</code>).</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/jsf-file-wizard.png"
+                    alt="Assistent de fitxer JSF" class="b-all margin-around"
+                    title="Creeu p&agrave;gines Facelets utilitzant l'assistent de fitxer JSF de l'IDE">
+            </div>
+
+
+            <h3 id="managedBean">Assistent Bean gestionat</h3>
+
+            <p>Podeu crear beans gestionats JSF per a la vostra aplicaci&oacute; utilitzant l'assistent de Bean gestionat. Des de la categoria JavaServer Faces en l'<a href="#fileWizard">assistent de fitxer</a> de l'IDE, seleccioneu Bean gestionat JSF.</p>
+
+            <p>Per defecte, qualsevol metadada que especifiqueu en l'assistent &eacute;s tradu&iuml;da a anotacions al bean gestionat un cop &eacute;s generat. Per exemple, el la seg&uuml;ent imatge, podeu crear una nova classe d'&agrave;mbit de sessi&oacute; anomenada <code>NewJSFManagedBean</code> i anomenar-la <code>myManagedBean</code>.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/managed-bean.png"
+                    alt="Assistent Bean gestionat" class="b-all margin-around"
+                    title="Creeu beans gestionats mitjan&ccedil;ant l'assistent bean gestionat de l'IDE">
+            </div>
+
+            Quant el bean gestionat &eacute;s generat, apareix amb les anotacions apropiades com es mostra.
+
+            <pre class="examplecode">package my.org;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
+<strong>@ManagedBean(name=&quot;myManagedBean&quot;)</strong>
+<strong>@SessionScoped</strong>
+public class NewJSFManagedBean {
+
+    /** Crea una nova inst&agrave;ncia de NewJSFManagedBean */
+    public NewJSFManagedBean() {
+    }
+
+}</pre>
+
+            <p>Tamb&eacute;, si el vostre projecte ja cont&eacute; un fitxer <code>faces-config.xml</code>, l'opci&oacute; de l'assistent 'Afegeix dades al fitxer de configuraci&oacute;' es torna activa, permetent-vos tant declarar el bean gestionat el el fitxer de configuraci&oacute; de Faces, o tenir especificada qualsevol metadada per mitj&agrave; d'anotacions en el bean gestionat.</p>
+
+
+            <h3 id="facesConfig">Assistent de configuraci&oacute; de Faces</h3>
+
+            <p>JSF 2.0 introdueix anotacions com a alternativa del fitxer de configuraci&oacute; est&agrave;ndard de Faces (<code>faces-config.xml</code>) per configurar la vostra aplicaci&oacute;. Tanmateix, quant afegiu suport JSF 2.0 al projecte, l'IDE <em>NOt</em> genera un fitxer predeterminat <code>faces-config.xml</code> (com era el cas de JSF 1.2). Naturalment, potser voleu afegir un fitxer <code>faces-config.xml</code> al vostre projecte en ordre de definir prefer&egrave;ncies de configuraci&oacute; concretes. Per a fer-ho, utilitzeu l'assistent de configuraci&oacute; de Faces de l'IDE.</p>
+
+            <p>Des de la categoria JavaServer Faces de l'<a href="#fileWizard">Assistent de fitxer</a> de l'IDE, seleccioneu Configuraci&oacute; JSF Faces. Aquest us permet crear un nou fitxer <code>faces-config.xml</code>, el qual es fica a la carpeta del vostre projecte <code>WEB-INF</code> per defecte.</p>
+
+            <p class="tips">Vegeu l'<a href="#xml">Editor de configuraci&oacute; XML de Faces</a> per a una descripci&oacute; del suport de l'IDE per a <code>faces-config.xml</code>.</p>
+
+
+            <h3 id="composite">Assistent de configuraci&oacute; de composici&oacute;</h3>
+
+            <p>JSF 2.0 ha simplificat el proc&eacute;s de creaci&oacute; de components compostos d'interf&iacute;cies d'usuari (UI), els quals poden ser re-utilitzats en p&agrave;gines web. Podeu utilitzar l'assistent de components compostos per generar una plantilla Facelets per a un component composat JSF.</p>
+
+            <p>Com tots els assistent relacionats amb JSF, podeu accedir a l'assistent de components composats des de la categoria JavaServer de l'<a href="#fileWizard">Assistent e fitxer</a> de l'IDE. Tanmateix, una manera m&eacute;s intu&iuml;tiva per a indicar l'assistent &eacute;s mitjan&ccedil;ant el ressaltament de talls de codi des dela p&agrave;gina de Facelets en l'editor, despr&eacute;s seleccionat Convertir a un component compost des del men&uacute; del bot&oacute; dret.</p>
+
+            <p>El seg&uuml;ent exemple mostra les accions que es produeixen, ficades a la vostra disposici&oacute;, quant invoqueu l'assistent de component compost en el tall, '<code>&lt;p&gt;Aquest &eacute;s l'element compost.&lt;/p&gt;</code>'.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/convert-comp-component.png"
+                    alt="Editor Facelets - Convertiu a l'opci&oacute; del men&uacute; Element compost" class="b-all margin-around"
+                    title="Ressalteu un tros, i seleccioneu Convertir a element compost des del men&uacute; del bot&oacute; dret">
+            </div>
+
+            <p>S'obre l'assistent d'element compost, contenint el tall seleccionat en la seca secci&oacute; d'Implementaci&oacute;.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/comp-component.png"
+                    alt="Assistent d'element compost" class="b-all margin-around"
+                    title="l'assistent d'element compost conte el tal de codi seleccionat">
+            </div>
+
+            <p>Per defecte, l'assistent crea una carpeta <code>ezcomp</code> per contenir els elements compostos. Per exemple, si esteu creant un nou component anomenat <code>myComponent</code>, l'assistent genera una p&agrave;gina Facelets <code>myComponent.xhtml</code>, que resideix en la carpeta <code>resources/ezcomp</code> de la vostra arrel d'aplicaci&oacute; web.</p>
+
+            <p>Quant completeu l'assistent, el fitxer font de l'element compost &eacute;s generat amb el tall de codi donat. La plantilla inclou una refer&egrave;ncia a la biblioteca d'etiquetes <code>composite</code> de JSF 2.0.</p>
+
+            <pre class="examplecode">&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+    xmlns:h=&quot;http://java.sun.com/jsf/html&quot;
+    xmlns:f=&quot;http://java.sun.com/jsf/core&quot;
+    xmlns:ui=&quot;http://java.sun.com/jsf/facelets&quot;
+    <strong>xmlns:composite=&quot;http://java.sun.com/jsf/composite&quot;</strong>&gt;
+
+  &lt;!-- INTERF&Iacute;CIE --&gt;
+  &lt;composite:interface&gt;
+  &lt;/composite:interface&gt;
+
+  &lt;!-- IMPLEMENTACI&Oacute; --&gt;
+  &lt;composite:implementation&gt;
+    <strong>&lt;p&gt;Aquest &eacute;s l'element compost.&lt;/p&gt;</strong>
+  &lt;/composite:implementation&gt;
+&lt;/html&gt;</pre>                
+              
+            <p>tamb&eacute;, una nova etiqueta de component &eacute;s afegida a la localitzaci&oacute; de l'editor quant ressalteu un tall. En aquest cas, l'etiqueta generada &eacute;s: <code>&lt;ez:myComponent/&gt;</code>. Denoteu que l'IDE afegeix autom&agrave;ticament l'espai de noms on resideix l'element compost a l'etiqueta de la p&agrave;gina <code>&lt;html&gt;</code>.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/comp-component-editor.png"
+                    alt="Assistent d'element compost" class="b-all margin-around"
+                    title="L'etiqueta del component &eacute;s autom&agrave;ticament afegida a la vostra p&agrave;gina web">
+            </div>
+
+            <h3 id="jsfPagesEntity">P&agrave;gines JSF des de l'assistent de classes d'entitat</h3>
+
+            <p>Vegeu el tema <a href="#jsfPages">Creant p&agrave;gines JSF des de classes d'entitat</a> sota <a href="#entity">Suport per a classes d'entitat</a>.</p>
+
+
+            <h3 id="faceletsTemplate">Assistent de plantilla Facelets</h3>
+
+            <p>Utilitzeu l'assistent de plantilla Facelets per generar una plantilla Facelets. Des de la categoria JavaServer Facesde l'<a href="#fileWizard">Assistent de fitxer</a> de l'IDE, seleccioneu la plantilla Facelets. Podeu seleccionat 8 estils de disseny &uacute;nics, i especificar si el disseny est&agrave; implementat amb etiquetes CSS o HTML <code>&lt;table&gt;</code>.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/template-wizard.png"
+                    alt="Assistent d'element compost" class="b-all margin-around"
+                    title="Creeu una plantilla Facelets mitjan&ccedil;ant l'assistent de plantilles Facelets">
+            </div>
+
+            <p>L'assistent crea un fitxer de plantilla XHTML mitjan&ccedil;ant les etiquetes <code>&lt;h:head&gt;</code> i <code>&lt;h:body&gt;</code>, i situa les seves fulles d'estil en la carpeta <code>resources/css</code> de l'arrel de l'aplicaci&oacute; web. L'assistent genera un fitxer <code>default.css</code>, i un fitxer <code>cssLayout.css</code> o <code>tableLayout.css</code>, depenent de disseny que heu seleccionat.</p>
+
+            <p class="tips">Per a visualitzar la plantilla al navegador, cliqueu amb el bot&oacute; dret a l'editor i seleccionau Visualitzar. S'obre una finestra del navegador mostrant la plantilla.</p>
+        </div>
+
+
+        <br>
+        <h2 id="entity">Suport per classes d'entitat</h2>
+
+        <p>Si esteu utilitzant Persist&egrave;ncia de Java en la vostra aplicaci&oacute; i teniu classes d'entitat basades amb l'esquema de la vostra base de dades, l'IDE proporciona un funcionalitat que us permet treballa de forma eficient amb les dades de la classe d'entitat.</p>
+
+        <p><strong class="notes">Nota: </strong>Per crear classes d'entitat des d'una taula de la base de dades, utilitzeu les classes d'entitat de l'IDE des de l'assistent de bases de dades, accessible des de la categoria Persist&egrave;ncia en l'<a href="#fileWizard">Assistent de fitxer</a> de l'IDE.</p>
+
+        <ul>
+            <li><a href="#jsfPages">Creant p&agrave;gines JSF des de classes d'entitat</a></li>
+            <li><a href="#form">Creant un formulari JSF per a dades d'entitat</a></li>
+            <li><a href="#dataTable">Creant una taula de dades JSF Pera dades d'entitat</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsfPages">Creant p&agrave;gines JSF des de classes d'entitat</h3>
+
+            <p>Un cop tingueu les classes d'entitat en la vostra aplicaci&oacute;, podeu utilitzar les p&agrave;gines JSF de IDE des de l'assistent de classes d'entitat, per a crear interf&iacute;cies web per a mostrar i editar les dades de la classe d'entitat. El codi generat per l'assistent est&agrave; basat amb les anotacions de Persist&egrave;ncia contingudes en la classe d'entitat.</p>
+
+            <p>Per a cada classe d'entitat, l'assistent genera el seg&uuml;ent:</p>
+
+            <ul>
+                <li>Un bean de sessi&oacute; sense-estat per a la creaci&oacute;, recuperaci&oacute;, modificaci&oacute; i eliminaci&oacute; d'inst&agrave;ncies d'entitat</li>
+
+                <li>un &agrave;mbit de sessi&oacute; JSF, bean gestionat</li>
+
+                <li>un directori que cont&eacute; quatre fitxers Facelets files per a capacitats CRUD c(<code>Create.xhtml</code>, <code>Edit.xhtml</code>, <code>List.xhtml</code>, i <code>View.xhtml</code>)</li>
+
+                <li>classes d'utilitat utilitzades pels beans gestionats JSF (<code>JsfUtil</code>, <code>PaginationHelper</code>)</li>
+
+                <li>un paquet de propietats per als missatges localitzats, i una entrada corresponent en el fitxer de configuraci&oacute; Faces (Un fitxer <code>faces-config.xml</code> &eacute;s creat si no n'hi existia cap.)</li>
+
+                <li>fitxers web auxiliars, incloent una fulla d'estil pels components renderitzats, i un fitxer de plantilla Facelets</li>
+            </ul>
+
+            <p>Per utilitzar p&agrave;gines JSF des de l'assistent de classes d'entitat, <a href="#fileWizard">accediu a l'assistent de fitxer de l'IDE</a>. Seleccioneu la categoria JavaServer Faces, despr&eacute;s seleccioneu P&agrave;gines JSF des de classes d'entitat.</p>
+
+            <p>Quant hageu arribat a l'envergadura del Pas 3: Generar p&agrave;gines i classes JSF, podeu especificar les localitzacions dels fitxers que seran generats.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/jsf-entity-wizard.png"
+                    alt="Pas 3: Generar p&agrave;gines i classes JSF" class="b-all margin-around"
+                    title="Especifiqueu les localitzacions dels fitxers que seran generats">
+            </div>
+
+            <p>Per exemple, si esteu aplicant l'assistent al fitxer de la classe d'entitat <code>Customer</code>, les prefer&egrave;ncies de la seg&uuml;ent imatge generaran els seg&uuml;ents fitxers:</p>
+
+            <table class="indent">
+                <tr>
+                    <td>
+                        <img src="../../../images_www/articles/72/web/jsf20-support/projects-win-generated-files.png"
+                            alt="Finestra projectes - fitxers generats des de l'assistent" class="b-all margin-around"
+                            title="La finestra de projectes mostra novament els fitxers generats">
+                    </td>
+                    <td class="valign-top">
+                        <ul style="margin-top:3em">
+                            <li>Un fitxer <code>faces-config.xml</code> per registra la localitzaci&oacute; de les propietats del paquet que contenen el missatges localitzats per a les vistes JSF. Per exemple, especificant <code>/my/org/Bundle</code> pels noms dels paquets de localitzaci&oacute; en l'assistent genera la seg&uuml;ent entrada:
+
+                                <pre class="examplecode" style="width:500px">
+&lt;application&gt;
+    &lt;resource-bundle&gt;
+        &lt;base-name&gt;/my/org/Bundle&lt;/base-name&gt;
+        &lt;var&gt;bundle&lt;/var&gt;
+    &lt;/resource-bundle&gt;
+&lt;/application&gt;</pre></li>
+
+                            <li>Una carpeta <code>customer</code> en l'arrel de la vostra web, que cont&eacute; quatre fitxers Facelets per a les capacitats CRUD:
+
+                                <ul>
+                                    <li><code>Create.xhtml</code>: Un formulari JSF per crear un nou comprador.</li>
+                                    <li><code>Edit.xhtml</code>: Un formulari JSF per editar un comprador.</li>
+                                    <li><code>List.xhtml</code>: Una taula de dades JSF per a despla&ccedil;ar-se a trav&eacute;s dels compradors.</li>
+                                    <li><code>View.xhtml</code>: Un formulari JSF per a visualitzar els detalls dels compradors.</li>
+                                </ul></li>
+
+                            <li><code>jsfcrud.css</code>: Una fulla d'estil utilitzada per a renderitzar els formularis i les taules de dades JSF.</li>
+
+                            <li><code>template.xhtml</code>: Una p&agrave;gina de plantilla Facelets opcional, la qual inclou una refer&egrave;ncia a la fulla d'estil <code>jsfcrud.css</code> generada.</li>
+
+                            <li>Una sessi&oacute; bean sense-estat (empresarial) anomenada <code>CustomerFacade</code>, que resideix en el paquet <code>my.org.data</code>. Aquesta classe pot ser igualment accedida des del node Beans empresarial del projecte.</li>
+
+                            <li><code>Bundle.properties</code>: Un paquet de propietats que contenen els missatges localitzats per a les vistes JSF.</li>
+
+                            <li>Un &agrave;mbit de sessi&oacute; JSF, bean gestionat anomenat <code>CustomerController</code>, que resideix en el paquet <code>my.org.ui</code>.</li>
+
+                            <li>Dos classes d'utilitat (<code>JsfUtil</code> i <code>PaginationHelper</code>) que resideixen en el paquet <code>my.org.ui.util</code>. Aquestes son utilitzades pel bean gestionat <code>CustomerController</code>.</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+
+            <h3 id="form">Creant un formulari JSF per a dades d'entitat</h3>
+
+            <p>Podeu utilitzar el di&agrave;leg de formulari des d'entitat per generar un formulari JSF que contingui tots els camps continguts en una classe d'entitat. Heureu de tindre ja creat un bean gestionat JSF per a tractar qualsevol dada d'usuari associada amb el formulari.</p>
+
+            <p><strong class="notes">Nota: </strong>Si utilitzeu aquest formulari sense tindre associat un bean gestionat, podeu introduir un nom pel bean gestionat en el di&agrave;leg, i aquest nom ser&agrave; utilitzat en de la p&agrave;gina independent de si &eacute;s v&agrave;lid o no. Despr&eacute;s podeu crear un bean gestionat mitjan&ccedil;ant l'<a href="#managedBean">assistent de bean gestionat</a> de l'IDE, o b&eacute; si utilitzeu l'<a href="#jsfPages">assistent de p&agrave;gines JSF des de classes d'entitat</a>, els beans gestionats s&oacute;n generats per a totes les classes d'entitat seleccionades.</p>
+
+            <p>Podeu accedir al di&agrave;leg formulari des d'entitat o b&eacute; <a href="#popup">prement Ctrl-Espai en l'editor de la p&agrave;gina Facelets</a> despr&eacute;s seleccionant Formulari JSF des d'entitat, o b&eacute; mitjan&ccedil;ant doble clic a l'element del formulari d'entitat des del llistat de la <a href="#palette">Paleta</a> de l'IDE (Ctrl-Maj-8; ⌘-Maj-8 a Mac).</p>
+
+            <p>Per exemple, en la seg&uuml;ent imatge, una classe d'entitat <code>Customer</code> eja existeix en el paquet <code>my.org</code> del projecte donat. Un bean gestionat <code>customerController</code> tem&eacute; ja existeix en el projecte donat, i el bean gestionat cint&eacute; una propietat anomenada <code>selected</code> la qual retorna un objecte <code>Customer</code>.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/jsf-form-from-entity.png"
+                    alt="Di&agrave;leg de formulari JSF des d'entitat" class="b-all margin-around"
+                    title="Utilitzeu el di&agrave;leg de formulari des d'entitat per a generar un formulari JSF utilitzant dades d'entitat">
+            </div>
+
+            <p><strong class="notes">Nota: </strong>Seleccioneu l'opci&oacute; 'Generar una vista de nom&eacute;s lectura' per a crear un formulari que contingui camps de nom&eacute;s lectura. Quan aquesta opci&oacute; est&agrave; seleccionada, l'IDE aplica les etiquetes <code>&lt;h:outputText&gt;</code> per als camps del formulari, mentre que les etiquetes <code>&lt;h:inputText&gt;</code> s&oacute;n aplicades on l'opci&oacute; no est&agrave; seleccionada.</p>
+
+            <p>Quan completeu el di&agrave;leg, l'IDE genera el codi per a la vostra p&agrave;gina Facelets. Per exemple, una classe d'entitat <code>Customer</code> que contingui una propietat <code>customerId</code> es mostra amb el seg&uuml;ent format:</p>
+
+            <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;Create/Edit&quot;/&gt;&lt;/h1&gt;
+        &lt;h:panelGrid columns=&quot;2&quot;&gt;
+            &lt;h:outputLabel value=&quot;CustomerId:&quot; for=&quot;customerId&quot; /&gt;
+            &lt;h:inputText id=&quot;customerId&quot; value=&quot;#{customerController.selected.customerId}&quot; title=&quot;CustomerId&quot; required=&quot;true&quot; requiredMessage=&quot;The CustomerId field is required.&quot;/&gt;
+            ...
+            <em>[ Altres camps per ser afegits aqu&iacute; ]</em>
+            ...
+        &lt;/h:panelGrid&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+
+            <p class="tips">Per a modificar la plantilla que ha generat el codi, cliqueu a l'enlla&ccedil; Personalitzar la plantilla, dins del di&agrave;leg de formulari des d'entitat.</p>
+
+
+            <h3 id="dataTable">Creat una taula de dades JSF per a dades d'entitat</h3>
+
+            <p>Podeu utilitzar el di&agrave;leg de taula de dades des d'entitat per a generar una taula de dades JSF que contingui columnes per a totes les propietats contingudes en la classe d'entitat. En ordre d'utilitzar aquesta facilitat, heu de tenir ja creat un a bean gestions JSF per manipular les dades de rerefons assocades amb la classe d'entitat.</p>
+
+            <p><strong class="notes">Nota: </strong>Si utilitzeu aquest di&agrave;leg sense tindre creat un bean gestionat associat, podeu introduir un nom pel bean gestionat en el di&agrave;leg, i aquest nom ser&agrave; utilitzat en de la p&agrave;gina independent de si &eacute;s v&agrave;lid o no. Despr&eacute;s podeu crear un bean gestionat mitjan&ccedil;ant l'<a href="#managedBean">assistent de bean gestionat</a> de l'IDE, o b&eacute; si utilitzeu l'<a href="#jsfPages">assistent de p&agrave;gines JSF des de classes d'entitat</a>, els beans gestionats s&oacute;n generats per a totes les classes d'entitat seleccionades.</p>
+
+            <p>Podeu accedir al Di&agrave;leg taula de dades des d'entitat tant <a href="#popup">prement Ctrl-Espai en una p&agrave;gina Facelets de l'editor</a> despr&eacute;s seleccionant Taula de dades JSF des d'entitat, o mitjan&ccedil;ant doble clic a l'element Taula de dades des d'una entitat, llistat en la <a href="#palette">Paleta</a> de l'IDE (Ctrl-Maj-8; ⌘-Maj-8 a Mac).</p>
+
+            <p>Per exemple, en la seg&uuml;ent imatge, una classe d'entitat <code>Product</code> ja existeix en el paquet <code>my.org.entity</code> del projecte donat. Un bean gestionat <code>productController</code> tamb&eacute; existeix en el projecte, i el bean gestionat cont&eacute; un m&egrave;tode anomenat <code>getProductItems()</code> el qual retorna un <code>Llistat</code> d'objectes <code>Product</code>.</p>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/72/web/jsf20-support/jsf-data-table-from-entity.png"
+                    alt="Di&agrave;leg taula de dades JSF des d'una entitat" class="b-all margin-around"
+                    title="Utilitzeu el di&agrave;leg de taula de dades des d'entitat per a generar una taula de dades JSF des de les dades d'una entitat">
+            </div>
+
+            <p>Quan completeu el di&agrave;leg, l'IDE genera codi per a la vostra p&agrave;gina Facelets. Per exemple, una classe d'entitat <code>Product</code> que contingui una propietat <code>productId</code> &eacute;s mostrada amb el seg&uuml;ent format:</p>
+
+            <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;List&quot;/&gt;&lt;/h1&gt;
+        &lt;h:dataTable value=&quot;#{productController.productItems}&quot; var=&quot;item&quot;&gt;
+            &lt;h:column&gt;
+                &lt;f:facet name=&quot;header&quot;&gt;
+                    &lt;h:outputText value=&quot;ProductId&quot;/&gt;
+                &lt;/f:facet&gt;
+                &lt;h:outputText value=&quot;#{item.productId}&quot;/&gt;
+            &lt;/h:column&gt;
+            ...
+            <em>[ Altres columnes afegides aqu&iacute;. ]</em>
+            ...
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+
+            <p class="tips">Per modificar la plantilla utilitzada per generar el codi, cliqueu a l'enlla&ccedil; Personalitzar la plantilla dins del di&agrave;leg formulari des de taula de dades.</p>
+        </div>
+
+
+        <br>
+        <h2 id="palette">Components de la paleta JSF</h2>
+
+        <p>Quant treballeu amb p&agrave;gines Facelets, podeu prendre les avantatges de la Paleta de l'IDE per arrossegar i soltar etiquetes JSF dins de la p&agrave;gina. Podeu accedir a la Paleta tant seleccionant Finestra &gt; Paleta, des del men&uacute; principal, o pr&eacute;mer Ctrl-Maj-8 (&amp;#8984-Maj-8 a Mac).</p>
+
+        <div class="indent">
+            <img src="../../../images_www/articles/72/web/jsf20-support/palette.png"
+                alt="Paleta, amb la categoria JSF expandida" class="b-all margin-around"
+                title="Utilitzeu la paleta de l'IDE per arrossegar i soltar els components JSF comuns damunt de la p&agrave;gina Facelets">
+        </div>
+
+        <p class="tips">Tamb&eacute; podeu seleccionar Codi &gt; Inserir codi (Alt-Ins; Ctrl-I a Mac) des del men&uacute; principal de l'IDE per invocar el llistat emergent que cont&eacute; els components JSF espec&iacute;fics continguts en la paleta.</p>
+
+        <div class="indent">
+            <img src="../../../images_www/articles/72/web/jsf20-support/insert-code.png"
+                alt="Llistat d'auto-completat de codi en l'editor de l'IDE" class="b-all margin-around"
+                title="En l'editor, premeu Alt-Ins (Ctrl-I a Mac) per a invocar el llistat de components JSF espec&iacute;fics">
+        </div>
+
+        <p>La Paleta us proporciona cinc components JSF relacionats:</p>
+
+        <ul>
+            <li><strong>Metadades: </strong> Invoca un di&agrave;leg per afegir la parella nom-valor dins de les etiquetes de meetadades JSF. Per exemple, si especifiqueu '<code>myId</code>' i '<code>myValue</code>' com a parella nom-valor, es produeix el seg&uuml;ent tros de codi:
+
+                <pre class="examplecode">&lt;f:metadata&gt;
+    &lt;f:viewParam id='myId' value='myValue'/&gt;
+&lt;/f:metadata&gt;</pre></li>
+
+            <li><strong>Formulari JSF: </strong> Afegeix el seg&uuml;ent tros de codi a la p&agrave;gina.
+
+                <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li><strong>Formulari JSF des d'entitat: </strong>Invoca un di&agrave;leg que us permet associar dades des d'una classe d'entitat als camps continguts en un formulari JSF. Vegeu <a href="#form">Creant un formulari JSF per a dades d'entitat</a>.</li>
+
+            <li><strong>Taula de dades JSF: </strong>Afegeix el seg&uuml;ent tros de codi a la p&agrave;gina.
+
+                <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h:dataTable value=&quot;#{}&quot; var=&quot;item&quot;&gt;
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li><strong>Taula de dades JSF des d'entitat: </strong>Invoca un di&agrave;leg que us permet associar dades des d'una classe d'entitat als camps continguts en una taula de dades JSF. Vegeu <a href="#dataTable">Creant una taula de dades JSF per a dades d'entitat</a>.</li>
+        </ul>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: JSF 2.0 Support in NetBeans IDE 6.8">Envia'ns la vostra opini&oacute;</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        
+
+        
+
+        <script type="text/javascript">
+            <!--
+            compactMenu('collapsableList', true, '&plusmn; ');
+            -->
+        </script>
+    </body>
+</html>

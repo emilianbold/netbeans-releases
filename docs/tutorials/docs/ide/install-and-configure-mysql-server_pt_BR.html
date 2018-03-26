@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Configurando o Servidor de Banco de Dados MySQL no Sistema Operacional Windows</title>
+     <meta name="KEYWORDS" content="NETBEANS, CONFIGURE, PHP, Apache, MySQL server, windows">
+      <meta name="DESCRIPTION" content="NETBEANS, CONFIGURE, PHP, Apache, MySQL server, under Windows" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">  
+   <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+   <body>
+    <a name="top"></a>
+<h1>Configurando o Servidor de Banco de Dados MySQL no Sistema Operacional Windows </h1>
+<p>O servidor de banco de dados MySQL é um dos mais populares servidores de banco de dados de código-fonte aberto geralmente utilizado no desenvolvimento de aplicações Web. </p>
+<p>Este documento recomenda uma sequência de etapas para configurar o servidor de banco de dados MySQL versões 5.6 no sistema operacional Windows. Ele não aborda os detalhes da configuração do MySQL, descreve a sequência de etapas necessária.</p>
+<p>Para obter mais informações sobre instalação e configuração do servidor de banco de dados MySQL em outros sistemas operacionais, consulte a documentação <a href="http://dev.mysql.com/doc/refman/5.6/en/installing.html" target="_blank">Instalando e Atualizando o MySQL</a>. </p>
+<p class="notes"><b>Observação:</b> o documento <a href="../../72/ide/install-and-configure-mysql-server.html">Configurando as versões do MySQL Database Server 5.1 no Sistema Operacional Windows</a> oferece as instruções sobre configuração das versões 5.1 do MySQL Server no Windows.</p>
+
+<h2>Conteúdo</h2>
+<ul class="toc">
+<li><a href="#download">Iniciando o Download</a></li>
+<li><a href="#startingInstallation">Iniciando a Instalação</a></li>
+<li><a href="#seeAlso">Consulte Também</a></li>
+</ul>
+
+<h2><a name="download"></a>Iniciando o Download</h2>
+<ol>
+<li>Vá para <a href="http://dev.mysql.com/downloads/installer/" target="_blank">http://dev.mysql.com/downloads/installer/</a>.</li>
+<li>Clique no botão Fazer download.</li>
+<li>Salve o arquivo do instalador no sistema.</li>
+</ol>
+<p class="align-center"><a href="#top">início</a></p>
+<h2><a name="startingInstallation"></a>Iniciando a Instalação </h2>
+<p>Após concluir o download, execute o instalador, como a seguir:</p>
+<ol>
+  <li>Clique com o botão direito do mouse no arquivo de instalação transferido por download (por exemplo, <tt>mysql-installer-community-5.6.10.0.msi</tt>) e clique em Executar.<br>O Instalador do MySQL é iniciado.</li>
+  <li>No painel de Boas-Vindas, selecione Instalar Produtos MySQL. </li>
+  <li>No painel Informações da Licença, examine o contrato de licença, clique na caixa de seleção de aceitação e clique em Próximo.</li>
+  <li>No painel Localizar produtos mais recentes, clique em Executar. <br>Quando a operação for concluída, clique em Próximo.</li>
+  <li>No painel Tipo de Configuração, escolha a opção Personalizada e clique em Próximo.</li>
+  <li>No painel Seleção de Funcionalidade, verifique se MySQL Server 5.6.x foi selecionado e clique em Próximo. </li>
+  <li>No painel Verificar Requisitos, clique em Próximo.</li>
+  <li>No painel Instalação, clique em Executar.<br> Quando a instalação do servidor é concluída com sucesso, a mensagem de informações é exibida no painel Instalação. Clique em Próximo.</li>
+  <li>No painel Configuração, clique em Próximo.</li>
+  <li>Na primeira página Configuração do Servidor MySQL (1/3), consulte as opções a seguir:
+    <ul>
+  <li><b>Tipo de Configuração do Servidor</b>. Selecione a opção Máquina de Desenvolvimento.</li>
+  <li><b>Ativar Rede de TCP/IP</b>. Verifique se a caixa de seleção foi selecionada e especifique as opções abaixo: 
+  <ul>
+    <li><b>Número da Porta</b>. Especifique a porta de conexão. A definição default é 3306 - não altere-a se não houver um motivo especial para isso.</li>
+    <li><b>Abra a porta do Firewall para obter acesso à rede</b>. Opte por adicionar a exceção de firewall para a porta especificada.</li></ul></li>
+  <li><b>Configuração Avançada.</b> Marque a caixa de seleção Mostrar Opções Avançadas para exibir uma página adicional de configuração para definir opções avançadas para a instância do servidor, se necessário.
+    <p class="notes"><strong>Observação:</strong> a escolha desta opção é necessária para se chegar ao painel para definir as opções de rede onde você desativará o firewall da porta usada pelo servidor MySQL.</p></li>
+    </ul>
+  Clique em Próximo.</li>
+  <li>Na segunda página Configuração do Servidor MySQL (2/3), consulte as opções a seguir:
+    <ul><li><b>Senha da Conta Root</b>.
+  <ul><li><b>Senha Root de MySQL</b>. Informe senha para o usuário root.</li>
+  <li><b>Repita a Senha</b>. Digite novamente a senha root do usuário.</li></ul>
+  <p class="notes"><strong>Observação:</strong> o usuário-raiz é um usuário que possui acesso total ao servidor de banco de dados MySQL - criação, atualização e remoção de usuários e assim por diante. Guarde a senha-raiz - você precisará dela posteriormente ao criar um banco de dados de amostra.  </p></li>
+  <li><b>Contas do Usuário MySQL</b>. Clique em Adicionar Usuário para criar uma conta do usuário. Na caixa de diálogo Detalhes de Usuário do MySQL, insira um nome de usuário, uma função do banco de dados e uma senha (por exemplo, <tt>!phpuser</tt>). Clique em OK.</li>
+  </ul>Clique em Próximo.</li>
+  <li>Na terceira página Configuração do Servidor MySQL (3/3), consulte as opções a seguir:
+    <ul>
+      <li><b>Nome do Serviço Windows</b>. Especifique um Nome do Serviço Windows para ser usado para a instância do servidor do MySQL. </li>
+      <li><b>Inicie o MySQL na Inicialização do Sistema</b>. Deixe a caixa de seleção marcada se for necessário iniciar o servidor MySQL automaticamente no tempo de inicialização do sistema. </li>
+      <li><b>Executar Serviço do Windows como</b>. Escolha:
+  <ul>
+    <li><b>Conta Padrão do Sistema</b>. Recomendada para a maioria dos cenários. </li>
+    <li><b>Usuário Personalizado</b>. Uma conta de usuário existente recomendada para cenários avançados.</li></ul></li></ul>
+  Clique em Próximo.</li>
+  <li>Na página Visão Geral da Configuração, clique em Próximo.</li>
+  <li>Quando a configuração do servidor for concluída com sucesso, a mensagem de informações será exibida no painel Concluir. Clique em Finalizar.
+    <p class="notes"><strong>Observação:</strong> para verificar se a instalação foi concluída com êxito, execute o Gerenciador de Tarefas. Se o <tt>MySQLd-nt.exe</tt> estiver na lista de Processos, o servidor de banco de dados está sendo executado.</p></li>
+</ol>
+<p class="align-center"><a href="#top">início</a></p>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Setting%20Up%20the%20MySQL%20Database%20Server%20in%20the%20Windows%20Operating%20System">Enviar Feedback neste Tutorial</a></div>
+      <br style="clear:both;" > 
+<h2><a name="seeAlso"></a>Consulte Também</h2>
+<ul>
+<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1790">Trabalhando e Conectando-se aos Bancos de Dados</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></li>
+<li><a href="../../trails/php.html">Trilha de Aprendizado do PHP</a></li>
+<li><a href="mysql.html">Conectando a um Banco de Dados MySQL</a></li>
+<li><a href="http://www.mysql.com/why-mysql/java/" target="_blank">MySQL e Java - Recursos</a> </li>
+<li><a href="http://dev.mysql.com/doc/refman/5.6/en/index.html" target="_blank">Manual de Referência do MySQL 5.6</a></li>
+</ul>
+<p class="align-center"><a href="#top">início</a></p>
+</body>
+</html>

@@ -1,0 +1,653 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief guide to creating a web application
+            using the Struts framework in NetBeans IDE">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Struts, web framework, open source">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Введение в веб-платформу Struts - учебный курс по IDE NetBeans</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Введение в веб-платформу Struts</h1>
+
+        <p>Этот документ содержит пошаговое описание основ использования IDE NetBeans для разработки веб-приложений с помощью веб-платформы Struts. Struts — это платформа с открытым исходным кодом, которая расширяет интерфейс API сервлетов Java и использует архитектуру &quot;Модель-представление-контроллер&quot; (MVC). Она позволяет создавать поддерживаемые, расширяемые и гибкие веб-приложения, основанные на стандартных технологиях, таких как страницы JSP, компоненты JavaBeans, пакеты ресурсов и XML.</p>
+
+        <p>Данный курс призван научить сборке простого приложения MVC, которое отображает страницу ввода имени пользователя и возвращает страницу успешного входа после проверки правильности введенных данных.  Вы изучите несколько основных функций, которые предлагает платформа Struts, а также способы внедрения этих функций с помощью среды IDE.  В частности, будут использованы теги Struts на страницах JSP, данные пользователей будут поддерживаться компонентом Struts <code>ActionForm</code>, а логика пересылки будет реализована с помощью объекта Struts <code>Action</code>.  Кроме того, будет показано, как внедрять в приложение простую проверку правильности, в том числе вывод предупреждения при неудачной попытке входа в систему.</p>
+
+        <p>Более подробное введение в платформу Struts приведено в статье <a href="http://struts.apache.org/struts-action/faqs/works.html">Как работает Struts?</a> на официальном веб-сайте <a href="http://struts.apache.org/">Struts</a>.  Также можно воспользоваться поиском по указателю документации Javadoc среды IDE (Справка &gt; Поиск в документации Javadoc по указателю) для просмотра <a href="http://struts.apache.org/release/1.3.x/apidocs/index.html">интерфейса API платформы Struts</a>, который поставляется вместе с библиотеками Struts.</p>
+
+        <p><strong>Содержание</strong></p>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <ul class="toc">
+            <li><a href="#overview">Обзор приложения</a></li>
+            <li><a href="#set">Настройка приложения Struts</a></li>
+            <li><a href="#jsp">Создание страниц JSP</a>
+                <ul>
+                    <li><a href="#login">Создание страницы входа</a></li>
+                    <li><a href="#success">Создание страницы успешного входа</a></li>
+                </ul></li>
+            <li><a href="#actionForm">Создание компонента <code>ActionForm</code></a></li>
+            <li><a href="#actionClass">Создание класса<code>Action</code></a></li>
+            <li><a href="#validate">Внедрение проверки правильности</a>
+                <ul>
+                    <li><a href="#beanData">Доступ к данным компонента и подготовка условий пересылки</a></li>
+                    <li><a href="#errorMsg">Настройка сообщения об ошибке</a></li>
+                </ul></li>
+            <li><a href="#forward">Добавление записей <code>forward</code> к файлу <code>struts-config.xml</code></a></li>
+            <li><a href="#configure">Настройка и выполнение приложения</a>
+                <ul>
+                    <li><a href="#welcome">Настройка страницы приветствия</a></li>
+                    <li><a href="#style">Присоединение таблицы стилей</a></li>
+                    <li><a href="#run">Выполнение приложения</a></li>
+                </ul></li>
+            <li><a href="#seeAlso">Дополнительные сведения</a></li>
+        </ul>
+
+        <p><strong>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Сервер GlassFish <br><em class="indent margin-around">или</em> <br>Контейнер сервлетов Tomcat</td>
+                    <td class="tbltd1">Open Source Edition 3.x или 4.0 <br><em class="margin-around indent"> </em> <br>версия 7.x или 8.x</td>
+                </tr> 
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Примечания:</strong></p>
+
+        <ul>
+            <li>Установка среды IDE для  Java позволяет при желании установить сервер GlassFish и контейнер сервлетов Apache Tomcat.  Необходимо установить один из них (или зарегистрировать другой сервер в среде IDE), чтобы работать далее с этим учебным курсом.</li>
+            <li>Если необходимо сравнить проект с работающим решением, можно <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252FMyStrutsApp.zip">загрузить демонстрационное приложение</a>.</li>
+        </ul>
+
+        <a name="overview"></a>
+        <h2>Обзор приложения</h2>
+
+        <p>При использовании Struts платформа предоставляет сервлет контроллера <code>ActionServlet</code>, который определяется в библиотеках Struts, входящих в среду IDE, и который автоматически регистрируется в дескрипторе развертывания <code>web.xml</code>, как <a href="#controllerServlet">указано ниже</a>.  Сервлет контроллера использует файл <code>struts-config.xml</code> для сопоставления входящих запросов с объектами Struts <code>Action</code> и использования любых объектов <code>ActionForm</code>, связанных с действием для временного хранения данных формы.  Объект действия <code>Action</code> обрабатывает запросы с помощью метода <code>execute</code>, используя данные, хранящиеся в компоненте формы.  После обработки запроса объектом действия <code>Action</code> объект обрабатывает запрос, сохраняет любые новые данные (например, в форме компонента или в отдельном компоненте результата) и пересылает результат в соответствующее представление.</p>
+
+        <div class="indent">
+            <img alt="Последовательность действий Struts" class="margin-around" src="../../../images_www/articles/72/web/struts/workflow.png" title="Последовательность действий Struts">
+        </div>
+
+        <p>Разработка приложения Struts схожа с разработкой любого другого типа веб-приложений в IDE NetBeans. Однако можно дополнить набор инструментов веб-разработки, воспользовавшись поддержкой платформы Struts в среде IDE. Например, можно использовать шаблоны в среде IDE для создания объектов действия <code>Action</code> Struts и компонентов <code>ActionForm</code>.  При создании среда IDE автоматически регистрирует эти классы в файле <code>struts-config.xml</code> и позволяет пользователю расширить этот файл без особых усилий с помощью элементов контекстного меню редактора исходного кода. Поскольку многие веб-приложения используют для представления страницы JSP, платформа Struts также предоставляет пользовательские библиотеки тегов, которые облегчают взаимодействие с формами HTML.  В редакторе исходного кода среды IDE можно вызывать автозавершение кода и поддержку Javadoc, что помогает эффективно работать с такими библиотеками.</p>
+
+        <p>В следующих действиях показано, как создать простую форму, собирающую данные пользователя, выполняющую простую проверку правильности и выводящую данные на страницу успешного входа.</p>
+
+        <a name="set"></a>
+        <h2>Настройка приложения Struts</h2>
+
+        <p>В среде IDE приложение Struts является всего лишь обычным веб-приложением, которое сопровождается библиотеками Struts и файлами настройки. Приложение Struts создается точно так же, как и любые другие веб-приложения в среде IDE — с помощью мастера &quot;Создать веб-приложение&quot; с указанием в дополнительном действии, что в приложение нужно включить библиотеки Struts и файлы настройки.</p>
+
+        <ol>
+            <li>Выберите &quot;Файл &gt; Новый проект&quot; (CTRL+SHIFT+N; &amp;#8984+SHIFT+N в Mac ОС) в главном меню. В списке 'Категории' выберите Java Web, затем выберите 'Веб-приложение' в списке проектов. Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>На панели выбора имени и расположения в поле &quot;Имя проекта&quot; введите <code>MyStrutsApp</code> и нажмите кнопку &quot;Далее&quot;.</li>
+            <li>На панели &quot;Сервер и параметры&quot; выберите сервер, на котором нужно развернуть приложение. В списке представлены только те серверы, которые зарегистрированы в среде IDE. (Чтобы зарегистрировать сервер, нажмите кнопку &quot;Добавить&quot; рядом с  раскрывающимся списком серверов.)  Кроме того, обратите внимание, что контекстный путь к вашему развернутому приложению становится вида <code>/MyStrutsApp</code>.  Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>На панели 'Платформы' выберите 'Struts'. <br> <img alt="Параметр Struts отображается на панели &apos;Платформы&apos; мастера создания веб-приложений" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/new-project-wizard.png" title="Параметр Struts отображается на панели &apos;Платформы&apos; мастера создания веб-приложений">
+
+                <p>Поскольку это учебный проект, не меняйте никакие значения в нижней части панели. В мастере отображаются следующие параметры конфигурации.</p>
+
+                <ul>
+                    <li><strong>Имя сервлета действия</strong>: Имя сервлета действия Struts, который используется в приложении.  Дескриптор развертывания <code>web.xml</code> содержит запись для сервлета действия и указывает соответствующие параметры Struts, например, путь к классу сервлетов в библиотеке Struts и к файлу настройки <code>struts-config.xml</code> в приложении.</li>
+                    <li><strong>Шаблон URL-адреса действия </strong>: Указывает шаблоны входящих запросов, которые сопоставляются с контроллером действий Struts.  Так создается запись сопоставления в дескрипторе развертывания. По умолчанию сопоставляется только шаблон <code>*.do</code>.</li>
+                    <li><strong>Ресурс приложения</strong>: Позволяет указать набор ресурсов, который будет использоваться в файле <code>struts-config.xml</code> для локализации сообщений.  По умолчанию это <code>com.myapp.struts.ApplicationResource</code>.</li>
+                    <li><strong>Добавить файлы TLD Struts </strong>: Позволяет создавать дескрипторы библиотеки тегов для библиотек тегов Struts.  Дескриптор библиотеки тегов -- это документ XML, содержащий дополнительные сведения обо всей библиотеке тегов, а также о каждом отдельном теге.  В целом это не является необходимым, поскольку можно сослаться на оперативные идентификаторы URI, а не на локальные файлы TLD.</li>
+                </ul></li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Среда IDE создает папку проекта в вашей файловой системе.  Как и в случае любого веб-приложения в среде IDE, папка проекта содержит все исходные коды и метаданные проекта среды IDE, например сценарий сборки Ant.  Однако у веб-приложения, кроме того, в пути к классам есть все библиотеки Struts.  Они не только есть в пути к классам приложения, но они также входят в проект и будут пакетированы с ним позднее при сборке проекта.</li>
+        </ol>
+
+        <p>Проект откроется в среде IDE. Окно &quot;Проекты&quot; является основной точкой входа исходных файлов проекта. Показано логическое представление важного содержимого проекта.  Например, если раскрыть несколько узлов в новом проекте, они могут выглядеть следующим образом:</p>
+
+        <div class="indent">
+            <img alt="В окне &apos;Проекты&apos; содержится новый созданный проект" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/proj-window-init.png" title="В окне &apos;Проекты&apos; отображается проект MyStrutsApp">
+        </div>
+
+        <p><strong class="notes">Примечание. </strong>Используйте окно 'Файлы' (Window> 'Файлы'), чтобы просмотреть все содержимое проекта в представлении на основе каталогов.</p>
+
+        <p><a name="controllerServlet"></a>Файлы настройки Struts, а также дескриптор развертывания приложения удобно расположены в папке файлов настройки.  Откройте дескриптор развертывания (двойным щелчком узла файла <code>web.xml</code>, чтобы отобразить его в редакторе исходного кода).  Для выполнения обработки в среде Struts для сервлета контроллера Struts предусмотрено сопоставление.</p>
+
+<pre class="examplecode">
+&lt;servlet&gt;
+    &lt;servlet-name&gt;action&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.apache.struts.action.ActionServlet&lt;/servlet-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;config&lt;/param-name&gt;
+        &lt;param-value&gt;/WEB-INF/struts-config.xml&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;debug&lt;/param-name&gt;
+        &lt;param-value&gt;2&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+       &lt;param-name&gt;detail&lt;/param-name&gt;
+       &lt;param-value&gt;2&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;load-on-startup&gt;2&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;action&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;</pre>
+
+        <p>В приведенном выше примере контроллер Struts называется <code>action</code> и определяется в библиотеке Struts (<code>org.apache.struts.action.ActionServlet</code>).  Он настроен на обработку всех запросов, которые удовлетворяют сопоставлению <code>*.do</code>.  Кроме того, параметры инициализации сервлета указаны с помощью файла <code>struts-config.xml</code>, который также содержится в папке <code>WEB-INF</code>.</p>
+
+        <a name="jsp"></a>
+        <h2>Создание страниц JSP</h2>
+
+        <p>Для начала создайте две страницы JSP  для приложения.  Первая отображает форму. Вторая — это представление, которое возвращается при успешном входе в систему.</p>
+
+        <ul>
+            <li><a href="#login">Создание страницы входа</a></li>
+            <li><a href="#success">Создание страницы успешного входа</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="login"></a>
+            <h3>Создание страницы входа в систему</h3>
+
+            <ol>
+                <li>Щелкните правой кнопкой мыши узел проекта <code>MyStrutsApp</code>, выберите пункт &quot;Создать&quot; &gt; &quot;JSP&quot; и назовите новый файл <code>login</code> Нажмите кнопку &quot;Завершить&quot;. Файл <code>login.jsp</code> откроется в редакторе исходного кода.</li>
+                <li>В редакторе исходного кода измените содержимое тегов  <code>&lt;title&gt;</code> и <code>&lt;h1&gt;</code> (или <code>&lt;h2&gt;</code>, в зависимости от используемой версии среды IDE) на <code>Форма входа в систему</code>.</li>
+                <li>Добавьте следующие две директивы библиотеки тегов к началу файла:
+
+<pre class="examplecode">
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-bean&quot; prefix=&quot;bean&quot; %&gt;
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-html&quot; prefix=&quot;html&quot; %&gt;</pre>
+
+                    <p>Многие веб-приложения используют страницы JSP для представлений в парадигме MVC, поэтому платформа Struts предоставляет пользовательские библиотеки тегов, которые помогают взаимодействовать с формами  HTML.  Их можно легко применить к файлу JSP при помощи поддержки автозавершения кода в среде IDE. При вводе текста в редактор исходного кода среда IDE предлагает автозавершение кода для тегов Struts, а также документацию Javadoc по Struts.  Автозавершение кода можно также инициировать вручную с помощью сочетания клавиш Ctrl-Space:</p>
+
+                    <img alt="Автозавершение кода и Javadoc для тегов Struts предоставлены в редакторе исходного кода" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/code-completion.png" title="Функция автозавершения кода и Javadoc предоставлены для тегов Struts">
+
+                    <p>Библиотека тегов компонента <a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_bean.html">bean taglib</a> содержит различные теги, которые можно использовать при ассоциировании компонента формы (например, компонента <code>ActionForm</code>) с данными, получаемыми с формы. <a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_html.html">Библиотека тегов html</a> предлагает интерфейс между представлением и другими компонентами, необходимыми в веб-приложении.  Например, ниже можно заменить обычные теги HTML <code>form</code> тегами Struts <code>&lt;html:form&gt;</code>.  Благодаря этому, например, сервер ищет или создает объект компонента, соответствующий значению, указанному для элемента <code>action</code> в <code>html:form</code>.</p></li>
+
+                <li>Ниже тегов <code>&lt;h1&gt;</code> или <code>&lt;h2&gt;</code> добавьте следующее:
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+
+   &lt;html:submit value=&quot;Login&quot; /&gt;
+
+&lt;/html:form&gt;</pre>
+
+                    <p class="tips">При завершении ввода текста в редакторе исходного кода можно дополнительно упорядочить код, щелкнув правой кнопкой мыши и выбрав 'Формат' (Alt-Shift-F).</p></li>
+
+                <li>В окне &quot;Палитра&quot; (&quot;Окно&quot; &gt; &quot;Палитра&quot;) в правой области среды IDE перетащите элемент &quot;Таблица&quot; из раздела HTML в точку чуть выше строки <code>&lt;html:submit value=&quot;Login&quot; /&gt;</code>.  Отобразится диалоговое окно вставки таблицы.  Укажите число строк — <code>3</code>, столбцов — <code>2</code> и оставьте все остальные значения — <code>0</code>.  Позднее в этом учебном курсе вы сможете добавить <a href="#style">таблицу стилей</a> для изменения отображения таблицы. <br> <img alt="Диалоговое окно &apos;Создать таблицу&apos; отображается в редакторе исходного кода" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/insert-table.png" title="На палитре предоставлено диалоговое окно для простых в использовании шаблонов кода"> <br> Нажмите кнопку &quot;ОК&quot;, а затем при желании переформатируйте код (Alt-Shift-F).  Форма в файле <code>login.jsp</code> теперь выглядит таким образом:
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;&lt;/th&gt;
+                &lt;th&gt;&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+
+    &lt;html:submit value=&quot;Login&quot; /&gt;
+
+&lt;/html:form&gt;</pre>
+
+                    <p><strong class="notes">Примечание. </strong>Строку таблицы <code>&lt;thead></code> можно безопасно удалить, поскольку она не используется в этом учебном курсе.</p></li>
+
+                <li>В первой строке таблицы введите следующее (изменения указаны <strong>жирным шрифтом</strong>):
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;<strong>Enter your name:</strong>&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:text property=&quot;name&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre></li>
+
+                <li>Во второй строке таблицы введите следующее (изменения указаны <strong>жирным шрифтом</strong>):
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;<strong>Enter your email:</strong>&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:text property=&quot;email&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre>
+
+                    Элемент <code>html:text</code> позволяет соотносить поля ввода из формы со свойствами в компоненте формы, который будет создан на следующем шаге.  Так, например, значение элемента <code>property</code> должно соответствовать полю, объявленному в компоненте формы, связанном с этой формой.</li>
+
+                <li>Переместите элемент &lt;html:submit value=&quot;Login&quot; /&gt; во второй столбец третьей строки таблицы, чтобы третья строка таблицы выглядела следующим образом (изменения выделены <strong>жирным шрифтом</strong>):
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:submit value=&quot;Login&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre>
+                </li>
+            </ol>
+
+            <p>На этом этапе форма входа в систему должна выглядеть следующим образом:</p>
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Enter your name:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;name&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Enter your email:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;email&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;html:submit value=&quot;Login&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+&lt;/html:form&gt;</pre>
+
+            <a name="success"></a>
+            <h3>Создание страницы успешного входа</h3>
+
+            <ol>
+                <li>Щелкните правой кнопкой мыши узел проекта <code>MyStrutsApp</code>, выберите пункт &quot;Создать&quot; &gt; &quot;JSP&quot; и назовите новый файл <code>success</code>.  В поле &quot;Папка&quot; щелкните соответствующую кнопку &quot;Обзор&quot; и выберите в диалоговом окне пункт <code>WEB-INF</code>.  Нажмите кнопку &quot;Выбрать папку&quot;, чтобы в поле &quot;Папка&quot; появилось значение WEB-INF.  Любые файлы, содержащиеся в папке WEB-INF, не доступны напрямую для клиентских запросов.  Чтобы файл <code>success.jsp</code> отображался надлежащим образом, он должен содержать обработанные данные.  Нажмите кнопку &quot;Завершить&quot;.</li>
+                <li>В редакторе исходного кода измените содержание вновь созданной страницы на следующее:
+
+<pre class="examplecode">
+&lt;head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    &lt;title&gt;Login Success&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Congratulations!&lt;/h1&gt;
+
+    &lt;p&gt;You have successfully logged in.&lt;/p&gt;
+
+    &lt;p&gt;Your name is: .&lt;/p&gt;
+
+    &lt;p&gt;Your email address is: .&lt;/p&gt;
+&lt;/body&gt;</pre></li>
+
+                <li>Добавьте директиву <a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_bean.html">bean taglib</a> к верхней части файла:
+
+<pre class="examplecode">
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-bean&quot; prefix=&quot;bean&quot; %&gt;
+</pre></li>
+                <li>Добавьте следующие теги <code>&lt;bean:write&gt;</code>  (изменения выделены <strong>жирным шрифтом</strong>):
+
+<pre class="examplecode">
+&lt;p&gt;Your name is: <strong>&lt;bean:write name=&quot;LoginForm&quot; property=&quot;name&quot; /&gt;</strong>.&lt;/p&gt;
+
+&lt;p&gt;Your email address is: <strong>&lt;bean:write name=&quot;LoginForm&quot; property=&quot;email&quot; /&gt;</strong>.&lt;/p&gt;
+</pre>
+
+                    Задействовав теги <code>&lt;bean:write&gt;</code>, вы используете библиотеку тегов компонента для поиска компонента <code>ActionForm</code>, который нужно создать, и для отображения данных пользователя, сохраненных в <code>name</code> и <code>email</code>.</li>
+            </ol>
+        </div>
+
+        <a name="actionForm"></a>
+        <h2>Создание компонента <code>ActionForm</code></h2>
+
+        <p>Компонент Struts <code>ActionForm</code> используется для сохранения данных между запросами.  Например, если пользователь отправляет форму, то данные временно сохраняются в компоненте формы, чтобы они могли быть либо заново отображены в странице формы (если данные введены в неправильном формате или если вход в систему выполнен неуспешно) или отображаются на странице успешного входа в систему (если данные проходят проверку правильности).</p>
+
+        <ol>
+            <li>Щелкните правой кнопкой мыши проект <code>MyStrutsApp</code> и выберите пункт &quot;Создать&quot; &gt; &quot;Другое&quot;.  В разделе &quot;Категории&quot; выберите пункт Struts, а затем в поле &quot;Типы файлов&quot; выберите &quot;Компонент Struts ActionForm&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>Введите <code>LoginForm</code> в поле имени класса.  Затем выберите <code>com.myapp.struts</code> в раскрывающемся списке &quot;Пакет&quot; и нажмите кнопку &quot;Готово&quot;.
+
+                <p>
+                Среда IDE создает компонент <code>LoginForm</code> и открывает его в редакторе исходного кода. По умолчанию среда IDE создает его со строкой <code>String</code> с именем <code>name</code> и целым числом <code>int</code> с именем <code>number</code>.  Для обоих полей есть определенные методы доступа.  Также среда IDE добавляет объявление компонента к файлу <code>struts-config.xml</code>.  Если открыть файл <code>struts-config.xml</code> в редакторе исходного кода, то можно увидеть следующее объявление, добавленное мастером:</p>
+
+<pre class="examplecode">
+&lt;form-beans&gt;
+    <strong>&lt;form-bean name=&quot;LoginForm&quot; type=&quot;com.myapp.struts.LoginForm&quot; /&gt;</strong>
+&lt;/form-beans&gt;
+</pre>
+
+                <p>Среда IDE обеспечивает поддержку переходов в файле <code>struts-config.xml</code>.  Удерживая клавишу Ctrl, наведите указатель мыши на полное имя класса компонента <code>LoginForm</code>. Имя становится ссылкой, что позволяет перейти прямо к классу в редакторе исходного кода.</p>
+
+                <img alt="Поддержка переходов отображается в файле конфигурации Struts" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/navigation-support.png" title="Поддержка переходов предоставлена в struts-config.xml"></li>
+
+            <li>В компоненте <code>LoginForm</code> в редакторе исходного кода создайте поля и сопутствующие методы доступа, соответствующие полям текстового ввода <code>name</code> и <code>email</code>, созданным в файле <code>login.jsp</code>. Поскольку поле <code>name</code> уже создано в скелете <code>LoginForm</code>, нужно реализовать только поле <code>email</code>.
+
+                <p>
+                Добавьте следующее объявление ниже поля <code>name</code> (изменения выделены <strong>жирным шрифтом</strong>):</p>
+
+<pre class="examplecode">
+private String name;
+<strong>private String email;</strong></pre>
+
+                <a name="accessors"></a>
+                <p>Чтобы создать методы доступа, наведите курсор на  <code>email</code> и нажмите сочетание клавиш Alt-Insert.</p>
+
+                <img alt="Меню &apos;Вставить код&apos; отображается в редакторе исходного кода" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/create-accessors.png" title="Меню &apos;Вставить код&apos; отображается при нажатии Ctrl-I в редакторе исходного кода">
+
+                <p>
+                Выберите пункт &quot;Методы получения и установки&quot;, а затем в появившемся диалоговом окне выберите <code>email : String</code> и нажмите кнопку &quot;Создать&quot;.  Для поля <code>email</code> создаются методы доступа.</p>
+
+                <p class="notes"><strong>Примечание </strong>. Можно удалить методы declaration и accessor для <code>number</code>, поскольку они не используются в этом учебном курсе.</p></li>
+        </ol>
+
+        <a name="actionClass"></a>
+        <h2>Создание класса действия <code>Action</code></h2>
+
+        <p>Класс действия <code>Action</code> содержит бизнес-логику в приложении.  При получении данных из формы именно метод <code>execute</code> в объекте <code>Action</code> обрабатывает данные и определяет, в какое представление переслать обработанные данные.  Поскольку класс <code>Action</code> входит в состав платформы Struts, IDE NetBeans содержит мастер.</p>
+
+        <ol>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта <code>MyStrutsApp</code> и выберите 'Создать' > 'Другие'. Из категории Struts выберите пункт Struts Action и нажмите кнопку &quot;Далее&quot;.</li>
+            <li>На панели &quot;Имя и расположение&quot; измените имя на <code>LoginAction</code>.</li>
+            <li>Выберите <code>com.myapp.struts</code> в раскрывающемся списке &quot;Пакет&quot;.</li>
+            <li>Введите <code>/login</code> в пути действия.  Значение должно соответствовать значению, указанному для атрибута <code>action</code> в тегах <code>&lt;html:form&gt;</code> в файле <code>login.jsp</code>.  Выставьте параметры, как указано на снимке экрана ниже, а затем нажмите кнопку &quot;Далее&quot;. <br> <img alt="Мастер создания действий Struts" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/new-struts-action.png" title="Мастер создания действий Struts"></li>
+
+            <li>В третьем действии этого мастера предоставляется возможность ассоциировать класс <code>Action</code> с компонентом формы.  Обратите внимание, что ранее созданный компонент <code>LoginForm</code> указан как вариант для пункта &quot;Имя компонента ActionForm&quot;.  Внесите на панель следующие изменения:
+
+                <ul>
+                    <li>Удалите прямую косую черту из поля &quot;Входной ресурс&quot;</li>
+                    <li>Укажите область запроса (Сеанс — это область запроса по умолчанию в платформе Struts.)</li>
+                    <li>Снимите флажок &quot;Проверить компонент ActionForm&quot;</li>
+                </ul>
+
+                Нажмите кнопку &quot;Завершить&quot;. Создается класс <code>LoginAction</code>, и файл открывается в редакторе исходного кода.  Также обратите внимание, что следующая запись <code>action</code> добавляется к файлу <code>struts-config.xml</code>:
+
+<pre class="examplecode">
+&lt;action-mappings&gt;
+    <strong>&lt;action name=&quot;LoginForm&quot; path=&quot;/login&quot; scope=&quot;request&quot; type=&quot;com.myapp.struts.LoginAction&quot; validate=&quot;false&quot;/&gt;</strong>
+    &lt;action path=&quot;/Welcome&quot; forward=&quot;/welcomeStruts.jsp&quot;/&gt;
+&lt;/action-mappings&gt;</pre>
+
+                Атрибуты <code>name</code> и <code>scope</code> относятся к компоненту формы, связанному с действием.  В частности, когда входящий запрос соответствует выражению <code>/login</code>, платформа Struts автоматически создает объект  <code>LoginForm</code> и населяет его данными формы, которые были отправлены в запросе.  Для <code>validate</code> устанавливается по умолчанию значение <code>true</code>.  Благодаря этому платформа вызывает метод <code>validate</code> из компонента формы.  Но соответствующий флажок в мастере снят, поскольку в следующем действии будет вручную написан код простой проверки, для которого не требуется метод <code>validate</code>.</li>
+        </ol>
+
+        <a name="validate"></a>
+        <h2>Реализация проверки правильности</h2>
+
+        <p>В редакторе исходного кода пройдите по классу <code>LoginAction</code> и посмотрите на метод выполнения <code>execute</code>:</p>
+
+<pre class="examplecode">
+public ActionForward execute(ActionMapping mapping, ActionForm form,
+    HttpServletRequest request, HttpServletResponse response)
+    throws Exception {
+
+    return mapping.findForward(SUCCESS);
+}</pre>
+
+        <p>Обратите внимание на определение <code>SUCCESS</code>, указанное под объявлением класса <code>LoginAction</code>:</p>
+
+<pre class="examplecode">private final static String SUCCESS = &quot;success&quot;;</pre>
+
+        <p>Сейчас метод <code>mapping.findForward</code> настроен на безусловную пересылку любого запроса в представление вывода под названием <code>success</code>.  Это не очень желательно, ведь лучше сперва провести некоторую проверку входящих данных, чтобы определить, отправлять ли представление <code>success</code> или какое-то другое представление.</p>
+
+        <ul>
+            <li><a href="#beanData">Доступ к данным компонента и подготовка условий пересылки</a></li>
+            <li><a href="#errorMsg">Настройка сообщения об ошибке</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="beanData"></a>
+            <h3>Доступ к данным компонента и подготовка условия пересылки</h3>
+
+            <ol>
+                <li>Введите следующий код в тело метода <code>execute</code>:
+
+<pre class="examplecode">
+// extract user data
+LoginForm formBean = (LoginForm)form;
+String name = formBean.getName();
+String email = formBean.getEmail();</pre>
+
+                    Чтобы использовать входящие данные формы, необходимо взять аргумент  <code>ActionForm</code> из <code>execute</code>и привести его к <code>LoginForm</code>, затем применить методы получения, которые уже созданы ранее.</li>
+
+                <li>Введите следующее условие для выполнения проверки входящих данных:
+
+<pre class="examplecode">
+// perform validation
+if ((name == null) ||             // name parameter does not exist
+    email == null  ||             // email parameter does not exist
+    name.equals(&quot;&quot;) ||            // name parameter is empty
+    email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+    return mapping.findForward(FAILURE);
+}</pre>
+
+                    На этом этапе метод <code>execute</code> должен выглядеть так:
+
+<pre class="examplecode">public ActionForward execute(ActionMapping mapping, ActionForm form,
+        HttpServletRequest request, HttpServletResponse response)
+        throws Exception {
+
+    // extract user data
+    LoginForm formBean = (LoginForm) form;
+    String name = formBean.getName();
+    String email = formBean.getEmail();
+
+    // perform validation
+    if ((name == null) || // name parameter does not exist
+            email == null || // email parameter does not exist
+            name.equals(&quot;&quot;) || // name parameter is empty
+            email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+        return mapping.findForward(FAILURE);
+    }
+
+    return mapping.findForward(SUCCESS);
+}</pre></li>
+
+                <li>Добавьте объявление <code>FAILURE</code> к классу <code>LoginAction</code>  (изменения выделены <strong>жирным шрифтом</strong>):
+
+<pre class="examplecode">
+private final static String SUCCESS = &quot;success&quot;;
+<strong>private final static String FAILURE = &quot;failure&quot;;</strong>
+</pre>
+                </li>
+            </ol>
+
+            <p>Используя вышеуказанную логику, метод <code>execute</code> пересылает запрос в представление <code>success</code>, если пользователь предоставляет данные для полей <code>name</code> и <code>email</code>, а поле электронной почты содержит знак &quot;@&quot;.  В противном случае пересылается представление <code>failure</code>.  Как будет указано ниже в разделе <a href="#forward">Добавление записей <code>forward</code> к <code>struts-config.xml</code></a>, можно указать представление <code>failure</code>, которое будет указывать на страницу формы, чтобы пользователь мог снова ввести данные в правильном формате.</p>
+
+            <a name="errorMsg"></a>
+            <h3>Настройка сообщения об ошибке</h3>
+
+            <p>Если возвращается форма входа, то будет полезно сообщить пользователю, что проверка не пройдена.  Это можно сделать, добавив поле <code>error</code> к компоненту формы и соответствующий тег <code>&lt;bean:write&gt;</code> к форме в <code>login.jsp</code>.  Наконец, в объекте <code>Action</code> укажите отображение сообщения об ошибке в случае выбора представления <code>failure</code>.</p>
+
+            <ol>
+                <li>Откройте <code>LoginForm</code> и добавьте к классу поле <code>error</code>:
+
+<pre class="examplecode">
+// error message
+private String error;</pre></li>
+
+                <li>Добавьте методы получения и установки для <code>error</code>, как <a href="#accessors">указано выше</a>.</li>
+                <li>Измените метод установки, чтобы он выглядел следующим образом:
+
+<pre class="examplecode">
+public void setError() {
+    this.error =
+        &quot;&lt;span style='color:red'&gt;Please provide valid entries for both fields&lt;/span&gt;&quot;;
+}
+</pre></li>
+                <li>Откройте <code>login.jsp</code> и внесите следующие изменения:
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;tbody&gt;
+            <strong>&lt;tr&gt;
+                &lt;td colspan=&quot;2&quot;&gt;
+                    &lt;bean:write name=&quot;LoginForm&quot; property=&quot;error&quot; filter=&quot;false&quot;/&gt;
+                    &amp;nbsp;&lt;/td&gt;
+            &lt;/tr&gt;</strong>
+            &lt;tr&gt;
+                &lt;td&gt;Enter your name:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;name&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+</pre></li>
+
+                <li>В <code>LoginAction</code> в рамках блока <code>if</code> добавьте оператор, устанавливающий сообщение об ошибке, перед пересылкой условия <code>failure</code> (изменения выделены <strong>жирным шрифтом</strong>):
+
+<pre class="examplecode">
+if ((name == null) ||             // name parameter does not exist
+    email == null  ||             // email parameter does not exist
+    name.equals(&quot;&quot;) ||            // name parameter is empty
+    email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+    <strong>formBean.setError();</strong>
+    return mapping.findForward(FAILURE);
+}
+</pre></li>
+            </ol>
+
+            <p>Завершенный класс <code>LoginAction</code> должен теперь выглядеть следующим образом:</p>
+
+<pre class="examplecode">
+public class LoginAction extends org.apache.struts.action.Action {
+
+    private final static String SUCCESS = &quot;success&quot;;
+    private final static String FAILURE = &quot;failure&quot;;
+
+    public ActionForward execute(ActionMapping mapping, ActionForm form,
+            HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+
+        // extract user data
+        LoginForm formBean = (LoginForm)form;
+        String name = formBean.getName();
+        String email = formBean.getEmail();
+
+        // perform validation
+        if ((name == null) ||             // name parameter does not exist
+            email == null  ||             // email parameter does not exist
+            name.equals(&quot;&quot;) ||            // name parameter is empty
+            email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+            formBean.setError();
+            return mapping.findForward(FAILURE);
+        }
+
+        return mapping.findForward(SUCCESS);
+
+    }
+}
+</pre>
+        </div>
+
+        <a name="forward"></a>
+        <h2>Добавление записей <code>forward</code> к <code>struts-config.xml</code></h2>
+
+        <p>Чтобы приложение соответствовало страницам JSP с условиями пересылки, возвращенными методом исполнения <code>LoginAction</code> <code>execute</code>, необходимо добавить записи <code>forward</code> к файлу <code>struts-config.xml</code>.</p>
+
+        <ol>
+            <li>Откройте <code>struts-config.xml</code> в редакторе исходного кода, щелкните правой кнопкой мыши в любом местоположении в записи <code>action</code> для <code>LoginForm</code> и выберите Struts > 'Добавить Forward'. <br> <img alt="Параметры Struts отображаются в контекстном меню struts-config.xml" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/add-forward.png" title="Щелкните правой кнопкой мыши и выберите Struts &gt; &apos;Добавить Forward&apos;"></li>
+
+            <li>В диалоговом окне &quot;Добавить Forward&quot; введите  <code>success</code> в поле &quot;Имя пересылку&quot;.  Укажите путь к файлу <code>success.jsp</code> в поле файла ресурсов (напр., <code>/WEB-INF/success.jsp</code>).  Диалоговое окно должно теперь выглядеть следующим образом: <br> <img alt="Диалоговое окно &amp;quot;Добавление Forward&amp;quot;." class="margin-around b-all" src="../../../images_www/articles/72/web/struts/add-forward-dialog.png" title="В диалоговом окне &apos;Добавить Forward&apos; создается запись Forward в struts-config.xml"> <br> Нажмите кнопку &quot;Add&quot;. Обратите внимание, что следующая запись <code>forward</code> была добавлена к файлу <code>struts-config.xml</code> (изменения выделены <strong>жирным шрифтом</strong>):
+
+<pre class="examplecode">
+&lt;action name=&quot;LoginForm&quot; path=&quot;/login&quot; scope=&quot;request&quot; type=&quot;com.myapp.struts.LoginAction&quot; validate=&quot;false&quot;&gt;
+    <strong>&lt;forward name=&quot;success&quot; path=&quot;/WEB-INF/success.jsp&quot;/&gt;</strong>
+&lt;/action&gt;
+</pre></li>
+
+            <li>Выполните такое же действие, чтобы добавить запись пересылки для <code>failure</code>.  Укажите в пути к файлу ресурсов <code>/login.jsp</code>.  Следующая запись <code>forward</code> добавляется к файлу <code>struts-config.xml</code> (изменения выделены  <strong>жирным шрифтом</strong>):
+
+<pre class="examplecode">
+&lt;forward name=&quot;success&quot; path=&quot;/WEB-INF/success.jsp&quot;/&gt;
+<strong>&lt;forward name=&quot;failure&quot; path=&quot;/login.jsp&quot;/&gt;</strong>
+</pre>
+            </li>
+        </ol>
+
+        <a name="configure"></a>
+        <h2>Настройка и выполнение приложения</h2>
+
+        <p>Среда IDE использует сценарий сборки Ant для сборки и выполнения вашего веб-приложения.  Среда IDE создала сценарий сборки при создании проекта на основании параметров, указанных в мастере создания проекта.  Перед сборкой и выполнением приложения необходимо указать для приложения точкой входа по умолчанию <code>login.jsp</code>.  Можно дополнительно добавить к проекту простую таблицу стилей.</p>
+
+        <ul>
+            <li><a href="#welcome">Настройка страницы приветствия</a></li>
+            <li><a href="#style">Присоединение таблицы стилей</a></li>
+            <li><a href="#run">Выполнение приложения</a></li>
+        </ul>
+
+        <a name="welcome"></a>
+        <h3>Настройка страницы приветствия</h3>
+
+        <ol>
+            <li>В окне 'Проекты' дважды щелкните дескриптор развертывания <code>web.xml</code>. Перечисленные наверху редактора исходного кода вкладки предоставляют интерфейс к файлу <code>web.xml</code>.  Щелкните вкладку &quot;Страницы&quot;. В поле &quot;Файлы приветствия&quot; введите <code>login.jsp</code>. <br> <img alt="интерфейс дескриптора развертывания" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/welcome-files.png" title="Графический редактор для дескриптора развертывания приложения"> <br> Теперь перейдите на вкладку 'Исходный код' для просмотра файла. Обратите внимание, что <code>login.jsp</code> теперь указан в записи <code>welcome-file</code>:
+
+<pre class="examplecode">
+&lt;welcome-file&gt;login.jsp&lt;/welcome-file&gt;
+</pre></li>
+        </ol>
+
+
+        <a name="style"></a>
+        <h3>Присоединение таблицы стилей</h3>
+
+        <ol>
+            <li>Добавьте к проекту простую таблицу стилей. Это можно легко сделать, сохранив <a href="https://netbeans.org/files/documents/4/2228/stylesheet.css">этот пример таблицы стилей</a> на компьютер.  Скопируйте файл (Ctrl-C), а затем в среде IDE выберите узел веб-страницы в окне &quot;Проекты&quot; и нажмите Ctrl-V).  Файл добавляется к вашему проекту.</li>
+            <li>Свяжите таблицу стилей со страницами JSP, добавив ссылку между тегами <code>&lt;head&gt;</code> как в <code>login.jsp</code>, так и в  <code>success.jsp</code>:
+
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;
+</pre></li>
+        </ol>
+
+        <a name="run"></a>
+        <h3>Запуск приложения</h3>
+
+        <ol>
+            <li>В окне &quot;Проекты&quot; щелкните правой кнопкой мыши узел проекта и выберите команду &quot;Выполнить&quot;. Среда IDE собирает веб-приложение и развертывает его, используя сервер, указанный при создании проекта Страница <code>login.jsp</code> будет открыта и отображена в браузере.  Введите какие-то данные, которые должны не пройти проверку, например, оставьте одно поле пустым или введите адрес электронной почты без знака &quot;@&quot;: <br> <img alt="login.jsp отображается в браузере с образцами данных" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/login-form.png" title="Форма содержит данные, которые не пройдут проверку правильности"> <br><br> При нажатии кнопки &quot;Вход&quot; страница формы входа отображается заново и содержит сообщение об ошибке: <br> <img alt="login.jsp отображается с сообщением об ошибке" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/login-form-error.png" title="Форма повторно отображается с сообщением об ошибке"> <br><br> Попробуйте ввести данные, которые должны пройти проверку.  После нажатия кнопки &quot;Вход&quot; вы видите страницу успешного входа: <br> <img alt="Отображается success.jsp, на которой отображаются входные данные" class="margin-around b-all" src="../../../images_www/articles/72/web/struts/success-page.png" title="Отображается страница успешного завершения, на которой отображаются входные данные">
+            </li>
+        </ol>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Struts">Мы ждем ваших отзывов</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>Дополнительные сведения</h2>
+
+        <p>На этом завершается введение в платформу Struts в IDE NetBeans. В этом документе описывается создание простого веб-приложения MVC в IDE NetBeans с помощью платформы Struts и описывается интерфейс IDE для разработки веб-приложений. Было показано, как использовать теги Struts на страницах JSP, временно хранить данные пользователя в компоненте Struts <code>ActionForm</code> и внедрять логику пересылки с помощью объекта действия Struts <code>Action</code>.  Кроме того, будет показано, как внедрять в приложение простую проверку правильности, в том числе вывод предупреждения при неудачной попытке входа в систему.</p>
+
+        <p>Учебные курсы на смежные темы приведены в следующих материалах: </p>
+
+        <ul>
+            <li><a href="framework-adding-support.html">Добавление поддержки веб-платформы</a>.  В общем руководстве описывается добавления поддержки веб-платформ к IDE NetBeans с помощью диспетчера подключаемых модулей.</li>
+            <li><a href="quickstart-webapps-spring.html">Введение в веб-платформу Spring</a>.  Описываются основы использования IDE NetBeans для разработки веб-приложений с помощью платформы Spring.</li>
+            <li><a href="jsf20-intro.html">Введение в JavaServer Faces 2.0</a>.  Документ с описанием способов присоединения управляемого компонента к веб-страницам и использования преимуществ шаблонов Facelets.</li>
+        </ul>
+
+    </body>
+</html>

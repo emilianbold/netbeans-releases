@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>概述，通过 Web 服务传递二进制数据，第 1 部分 - NetBeans IDE 教程</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, web service, soap, ejb, binary attachment, jax-ws">
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial provides an overview and specifies requirements.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    
+    
+    <body>
+        <h1>通过 Web 服务传递二进制数据，第 1 部分：概述</h1>
+        
+        
+
+        
+        <p>在本教程中，将创建一个包含 Web 服务的 Java EE Web 应用程序，该应用程序将作为无状态会话 Bean 来实现。同时还会向该 Web 应用程序添加包含四个 JPEG 文件的包。Web 服务有两种操作可供客户端访问，一是获取单个图像，二是以缩略图形式获取一组所有 4 个图像。将添加一些私有方法，用于将 JPEG 文件转换为字节数组，然后将这些字节数组转换为 <tt>Image</tt> 对象。在 Java EE 中，将这些私有方法直接放在 Web 服务中，因为 Web 服务还是一个 EJB。 </p>
+        <p>在创建 Web 服务后，将其部署到 GlassFish Server 3.1 或更高版本的实例中。使用 NetBeans IDE 的内置 Web 服务测试器可查看样例 SOAP 请求和响应消息。</p>
+        <p>默认的 JAX-WS 服务基础结构无法通知客户端需要将二进制数据解释为 JPEG 文件。因此，将生成一个 XML 方案的副本以及 WSDL 文件，然后编辑 XML 方案以告知任何客户端期望的返回元素是 <tt>image/jpeg</tt> 内容类型。还将更改服务代码以使用定制的 WSDL 和方案。</p>
+        <p>最后，将创建一个 Java 客户端应用程序，用于在相册中显示通过 Swing 组件创建的图像。 </p>
+        <p>可以从 <a href="https://netbeans.org/projects/samples/downloads/directory/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6" target="_blank">NetBeans 样例目录</a>中下载完整版本的服务和客户端应用程序。</p>
+    <p><b>本教程中的课程</b></p>
+            <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+            <ol>
+                <li> =&gt; 概述</li>
+              <li><a href="./flower_ws.html">创建 Web 服务</a></li>
+                <li><a href="./flower-code-ws.html">对 Web 服务进行编码和测试</a></li>
+                <li><a href="./flower_wsdl_schema.html">修改方案文件和 WSDL 文件以传递二进制数据</a></li>
+                <li><a href="./flower_swing.html">创建 Swing 客户端</a></li>
+            </ol>  
+            
+    <h3>本教程所需要的软件</h3>
+            
+            
+            <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+            
+            <table>
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">软件或资源</th>
+                        <th class="tblheader" scope="col">要求的版本</th>
+                    </tr> 
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                        <td class="tbltd1">Java EE 下载包</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+                        <td class="tbltd1">版本 7 或 8</td>
+                  </tr>
+                    
+                    
+                    <tr>
+                        <td class="tbltd1">符合 Java EE 规范的 Web 服务器或应用服务器</td>
+                        <td class="tbltd1"><a href="http://glassfish.java.net/" target="_blank">GlassFish Server Open Source Edition 3.1 或更高版本</a><br />
+						
+                    </td>
+                    </tr>
+                    <tr><td class="tbltd1">本教程中使用的图片</td>
+                        <td class="tbltd1"><a href="../../../images_www/articles/73/websvc/flower/rose.jpg">rose.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/sunflower.jpg">sunflower.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/aster.jpg">aster.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/honeysuckle.jpg">honeysuckle.jpg</a></td></tr>
+                    
+                </tbody>
+            </table>
+			<p class="alert"><b>注：</b>GlassFish Server 可以随同 NetBeans IDE 的 Java EE 下载包一起安装。或者，还可以访问 <a href="https://glassfish.java.net/download.html">GlassFish Server 下载页</a>。</p>
+			<p class="tips"><b>提示：</b>（可选）要解决疑难问题，可以<a href="https://netbeans.org/files/documents/4/2343/SoapWithAttachments.zip" target="_blank">下载完整的样例</a>并查看其源代码。</p>
+	<p>执行完本教程中的操作后，将具有一个可运行的 Java Swing 应用程序，它通过 Web 服务使用 JPEG 图像，具体结果显示如下。</p>
+        
+        <img alt="显示从 Web 服务传递的所有鲜花图像的 JFrame" class="margin-around" height="507" src="../../../images_www/articles/73/websvc/flower/running-client.png" title="显示从 Web 服务传递的所有鲜花图像的 JFrame" width="600">
+        <h2>后续步骤：</h2>
+        <p><a href="./flower_ws.html">创建 Web 服务</a></p>
+        
+        
+    <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Overview%20EE6">发送有关此教程的反馈意见</a></div>
+        
+        <!-- ======================================================================================= -->
+        <br>
+		<h2><a name="seealso"></a>另请参见</h2>
+        <p>有关使用本教程前的背景信息，请参见以下资源：
+        </p>
+        <ul>
+            <li><a href="./jax-ws.html">JAX-WS Web 服务入门指南</a></li>
+            <li><a href="../../docs/websvc/client.html">开发 Web 服务客户端</a></li>
+            <li><a href="../javaee/javaee-gettingstarted.html">Java EE 应用程序入门指南</a></li>
+            <li><a href="./wsit.html">Advanced Web Service Interoperability</a>（高级 Web 服务互操作性）</li>
+            
+        </ul>
+        
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee@netbeans.org 邮件列表</a>。</p>
+    </body>
+</html>

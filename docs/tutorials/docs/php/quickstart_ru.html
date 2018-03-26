@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Быстрое учебное руководство по PHP IDE NetBeans</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a 
+         simple Hello World PHP application." >
+   </head>
+   
+   <body>
+      
+      <h1>Быстрое учебное руководство по PHP IDE NetBeans</h1>
+
+   <p>В этом документе приведены общие рекомендации по подготовке среды для разработки PHP, настройки проекта PHP и разработки и запуска первого приложения PHP в IDE NetBeans для PHP. </p>
+<p><b>Содержание</b></p>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+<ul><li><a href="#componentInstallation">Установка компонентов</a></li>
+      
+              
+  <li><a href="#setUpProject">Настройка проекта PHP в IDE NetBeans для PHP</a>  </li>
+            <li><a href="#yurFirstPhpProject">Запуск первого проекта на PHP</a></li>
+            <li><a href="#usingDBServers">Использование серверов баз данных с IDE NetBeans для PHP</a></li>
+            <li><a href="#nextSteps">Следующие действия</a></li>
+   </ul>
+<p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+      <th class="tblheader" scope="col">Требуемая версия</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+      <td class="tbltd1">Пакет загрузки PHP</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">Механизм PHP</td>
+      <td class="tbltd1">Версия 5
+    </tr>
+    <tr>
+      <td class="tbltd1">Веб-сервер</td>
+      <td>Рекомендуется использовать <a href="http://httpd.apache.org/download.cgi" target="_blank">сервер HTTP Apache версии 2.2</a>.<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">Отладчик PHP</td>
+      <td><a href="http://www.xdebug.org" target="_blank">Версия XDebug 2.0 или выше</a></td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  <!--
+<h2><a name="configuringSoftware"></a>Required Software</h2>
+<p>To create, run, and debug PHP projects you need the following software:</p>
+<ul>
+  <li>The NetBeans IDE for PHP.  Downloads are available <a href="
+http://bits.netbeans.org/download/trunk/nightly/latest/">here</a>. </li>
+  <li>A web server. Typically development and debugging is performed on a local web server, while the production environment is located on a remote web server. The current version enables using a local server. Using a remote server with FTP access will be supported in future versions. PHP support can be added to a number of web servers (IIS, Xitami, and so on), but most commonly <a target="_blank" href="http://httpd.apache.org/download.cgi">Apache HTTP Server</a> is used. Click <a target="_blank" href="http://httpd.apache.org/docs/2.2/install.html">here</a> for information on how to install and configure Apache 2.2. <a target="_blank" href="http://httpd.apache.org/docs/2.2/install.html"></a></li>
+</ul>
+<ul>
+  <li>The PHP engine. The supported version is PHP5. Downloads are available <a target="_blank" href="http://www.php.net/downloads.php">here</a>. </li>
+  <li>The PHP debugger. The NetBeans IDE for PHP allows you to use <a target="_blank" href="http://www.xdebug.org">XDebug</a>, but using a debugger is optional. The recommended version is XDebug 2.0 as it is compatible with PHP5. </li>
+   </ul>
+ -->
+</p>
+<p class="tips">Систему PHP, веб-сервер и базу данных можно установить отдельно или использовать пакеты AMP (<strong>A</strong>pache, <strong>M</strong>ySQL, <strong>P</strong>HP). </p>
+<h2><a name="componentInstallation"></a>Установка и настройка</h2>
+<p>Следующие документы содержат описание одного или двух способов установки веб-стека PHP в операционной системе.  Эти указания не являются исчерпывающими. Веб-стек состоит из программного обеспечения других производителей, среда может различаться, а разработчик может предпочесть другой пакет AMP или другой способ установки PHP.  Приведенные указания следует дополнить собственными наблюдениями.</p>
+<ul>
+  <li><a href="configure-php-environment-windows.html">Настройка среды разработки PHP в Windows</a></li>
+  <li><a href="configure-php-environment-ubuntu.html">Настройка среды разработки PHP в дистрибутиве Ubuntu Linux</a> </li>
+  <li><a href="configure-php-environment-mac-os.html">Настройка среды разработки PHP в операционной системе Mac OS X</a></li>
+</ul>
+
+ <h2><a name="setUpProject"></a>Настройка проекта PHP в IDE NetBeans для PHP </h2>
+  <p>Дополнительные свдения по установке и запуске IDE NetBeans см. в <a href="https://netbeans.org/community/releases/73/install.html" target="_blank">документации по установке</a>.</p>
+  <p>Для начала разработки PHP в IDE NetBeans для PHP сначала необходимо создать проект. Проект содержит информацию о размещении файлов проекта и способе запуска и отладки приложения (конфигурация запуска ).<br>
+  
+   </p>
+<ol>
+      <li>Запустите среду IDE, перейдите в окно &quot;Проекты&quot; и выберите команду &quot;Файл &gt; Создать проект&quot;.  Откроется панель &quot;Выберите проект&quot;. </li>
+      <li>В списке категорий выберите PHP. </li>
+      <li>В области &quot;Проекты&quot; выберите &quot;Приложение PHP&quot; и нажмите кнопку &quot;Далее&quot;. Откроется панель &quot;Новый проект PHP &gt; Имя и местоположение&quot;. <br><img alt="Панель &apos;Имя и местоположение&apos; мастера создания проектов PHP с местоположением исходной папки как корня документации XAmpp." class="margin-around" src="../../../images_www/articles/72/php/quickstart/new-project-name-location.png" title="Панель &apos;Имя и местоположение&apos; мастера создания проектов PHP с местоположением исходной папки как корня документации XAmpp."></li>
+      <li>В текстовом поле наименования проекта введите <tt>NewPHPProject</tt>.<br>
+     </li>
+     <li>В поле исходной папки перейдите к корню документов PHP и создайте подпапку <tt>NewPHPProject</tt>. Корень документов &ndash; это папка, в которой веб-сервер ищет файлы для открытия в браузере. Корневой узел документов указан в <a href="../../trails/php.html#configuration">файле настройки</a> веб-сервера. Например, в Xampp корнем документов является папка XAMPP_HOME/htdocs.
+	  
+     </li>
+      
+ 
+      <li>В остальных полях оставьте значения по умолчанию. Нажмите кнопку &quot;Далее&quot;. Откроется окно &quot;Настройки выполнения&quot;. <br><img alt="Панель &apos;Конфигурация выполнения&apos; мастера создания проектов PHP  выбранными значениями по умолчанию" class="margin-around" src="../../../images_www/articles/72/php/quickstart/new-project-run-config.png"></li>     
+      <li>В раскрывающемся списке &quot;Выполнить как&quot; выберите &quot;Локальный веб-сайт&quot;.  Начнется выполнение проекта на локальном сервере Apache.  Проект можно также выполнить удаленно через FTP или запустить его из командной строки.</li>
+      <li>Оставьте поле &quot;URL-адрес проекта&quot; без изменений.  </li>
+      
+      <li> Нажмите кнопку &quot;Завершить&quot;. Средой IDE будет создан проект. </li>
+   </ol>
+
+  Дополнительные сведения о <a href="project-setup.html">настройке проекта PHP в NetBeans</a>.
+ 
+   <h2><a name="yurFirstPhpProject"></a>Выполнение своего первого проекта PHP</h2>
+   <ol>
+     <li>Запустите среду IDE, выберите команду &quot;Файл &gt; Открыть проект&quot;. Откроется диалоговое окно &quot;Открыть проект&quot;.</li>
+     <li>Выберите <tt>NewPHPProject</tt> и нажмите кнопку &quot;Открыть проект&quot;.  В окне проекта появится дерево проекта NewPHPProject, а в редакторе и в окне навигатора откроется файл <tt>index.php</tt>. <br> <img alt="NewPHPProject открыт IDE с отображением index.php в редакторе" border="1" class="margin-around" src="../../../images_www/articles/72/php/quickstart/getting-started-open-new-project.png"></li>
+
+     <li>Введите следующий код в блок <tt>&lt;?php ?&gt;</tt>: 
+       <pre class="examplecode"> echo "Hello, world! This is my first PHP project!";</pre>
+     </li>
+     <li>Для выполнения этого проекта поместите курсор на узел NewPHPProject и в контекстном меню выберите команду &quot;Выполнить&quot;.  На рисунке ниже показано, что должно отобразиться в окне браузера.<br> <img alt="Панель создания проектов PHP с заполненными полями" border="1" class="margin-around" src="../../../images_www/articles/72/php/quickstart/getting-started-browser-hello-world.png"><br> Поздравляем!  Программа работает!</li>
+   </ol>
+   <h2><a name="usingDBServers"></a>Использование серверов баз данных с IDE NetBeans для PHP</h2>
+   Можно использовать различные серверы баз данных с IDE NetBeans для PHP, хотя наиболее популярным является сервер MySQL. Загрузку можно осуществить <a href="http://dev.mysql.com/downloads/mysql/5.1.html" target="_blank">отсюда</a>. <br> <strong>Примечание.</strong> Рекомендуемая версия продукта: MySQL Server 5.0.<br> Дополнительные материалы:
+   <ul>
+     <li> <a href="../ide/install-and-configure-mysql-server.html">Настройка сервера баз данных MySQL в операционной системе Windows</a> </li>
+   <li><a href="wish-list-lesson1.html">Создание базы данных с примерами</a> </li>
+   <li><a href="../../articles/mysql.html">MySQL и IDE NetBeans</a> </li>
+   <li><a href="../ide/mysql.html">Подключение к базе данных MySQL</a> <br>
+   </li>
+  </ul>
+<h2><a name="nextSteps"></a>Что дальше? </h2>     
+     <p>В это же время для поиска информации, связанной с типом разрабатываемых приложений, используйте учебные карты IDE NetBeans для этого типа приложения. Каждая учебная карта содержит ряд учебных курсов и руководств различных уровней сложности.  Доступны следующие учебные карты:</p>
+      <table width="100%">
+         <tr> 
+            <td> 
+               <ul>
+                  <li><a href="../../trails/php.html">Программирование на PHP</a></li>
+                  <li><a href="../../trails/java-se.html">Базовое программирование на Java</a></li>
+                  <li><a href="../../trails/matisse.html">Приложения на Java с графическим интерфейсом</a></li>
+                  <li><a href="../../trails/web.html">Приложения веб-служб</a></li>
+                  <li><a href="../../trails/java-ee.html">Приложения Java EE и веб-приложения Java</a></li>
+               </ul>
+            </td>
+            <td> 
+               <ul>
+                  <li><a href="../../trails/mobility.html">Мобильные приложения</a></li>
+                  <li><a href="../../trails/platform.html">Подключаемые модули NetBeans и функционально насыщенные клиентские приложения</a></li>
+                  <li><a href="../../trails/cnd.html">Приложения на C/C++</a></li>
+               </ul>
+            </td>
+         </tr>
+      </table>
+      <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Quickstart">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear:both;" >
+<p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+   </body>
+</html>

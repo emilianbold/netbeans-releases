@@ -1,0 +1,838 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Getting Started with HTML5 Applications - NetBeans Tutorial</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that introduces the support for developing HTML5 applications in NetBeans IDE 
+              and uses the jQuery JavaScript library.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Getting Started with HTML5 Applications</h1>
+
+        <p>
+        This document demonstrates how to create an HTML5 project in the IDE and some of the features
+        in the IDE that support the use of JavaScript and CSS in your project.
+        In this document you will create a simple HTML5 application that uses a jQuery JavaScript
+        library to modify a list in a web page.</p>
+        
+        <p>This document also demonstrates how to install the NetBeans Connector extension
+            for the Chrome browser from the Chrome Web Store.</p>
+
+        <p class="tips">For a tutorial on how to use jQuery in a NetBeans Java web application, see the tutorial 
+            <a href="../web/js-toolkits-jquery.html">Using jQuery to Enhance the Appearance and Usability of a Web Page</a>.</p>
+
+
+
+        <h3>Contents</h3>
+        <img src="../../../images_www/articles/81/netbeans-stamp.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.4 and 8.0" >
+
+        <ul class="toc">
+            <li><a href="#installchrome">Using the IDE with the Chrome Browser</a>
+                <ul>
+                    <li><a href="#installchrome1">Installing the Extension from the Chrome Web Store</a></li>
+                    <li><a href="#installchrome2">Offline Installation of the Extension</a></li>
+                </ul></li>
+            <li><a href="#webkit">Using the Embedded WebKit Browser</a></li>
+            <li><a href="#createproject">Creating a NetBeans HTML5 Project</a></li>
+            <li><a href="#usingbower">Installing and Using Bower</a></li>
+            <li><a href="#editingpage">Editing the HTML File</a></li>
+            <li><a href="#saving">Saving the Project as a Site Template</a></li>
+            <li><a href="#summary">Summary</a></li>
+            <li><a href="#seealso">See Also</a></li>
+        </ul>
+
+        <h4>To complete this tutorial, you will need the following resources.</h4>
+
+        <table id="requiredSoftware">
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE, Java</a></td>
+                    <td class="tbltd1">8.1 or above</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chrome Browser</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">NetBeans Connector Extension for Chrome</a></td>
+                    <td class="tbltd1">1.0.0 or greater</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">HTML5 Demo project resources</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">
+                    Site template of finished project</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">project
+                resources zip file</a> contains the JPG images and the CSS file that you need to add to the project
+                in this tutorial.</li>
+
+            <li>If you would like to compare your project with a working solution, you can download the
+                <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">
+                site template</a> of the finished project.</li>
+
+            <li>This document assumes you have some basic knowledge of, or programming experience with
+                HTML, CSS, and JavaScript.</li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Installing the Extension ++++++++++++++++ -->
+        <a name="installchrome"></a>
+        <h2>Using the IDE with the Chrome Browser</h2>
+        <p>To take full advantage of some of the tools available in the IDE that support HTML5 application development
+        it is recommended that you use the Chrome browser and
+        install the NetBeans Connector extension from the 
+        <a href="https://chrome.google.com/webstore/">Chrome Web Store</a>.
+        You only need to install the extension once.
+        </p>
+        
+        <p>When installed, the NetBeans Connector extension adds a NetBeans Actions menu that is accessible from the URL
+        location bar when you run a NetBeans HTML5 project in the Chrome browser.
+        The NetBeans Actions menu enables you to enable Inspect in NetBeans Mode and to quickly resize
+        the browser window to the dimensions of common display devices.
+        The JavaScript debugger is also automatically enabled when you run an HTML5 application. 
+        </p>
+        
+        
+        
+        <a name="installchrome1"></a>
+        <div class="indent">
+        <h3>Installing the Extension from the Chrome Web Store</h3>
+        <p>You will automatically be prompted to install the NetBeans Connector extension 
+        if you run a NetBeans HTML5 application project from the IDE and select 
+        Chrome with NetBeans Integration as the target browser.
+        This exercise demonstrates how to install the extension by creating and running a dummy HTML5 project.
+        You can skip this exercise and install the extension when you are prompted by the IDE or
+        install the NetBeans Connector extension directly from the Chrome Web Store.
+        </p>
+        
+        
+        <p class="notes"><strong>Note.</strong> The IDE will open the Chrome Web Store in the default browser.
+        If Chrome is not set as the default browser for the IDE you need to open the Options window and 
+        select Chrome in the Web Browser dropdown list in the General category before you perform the following steps.
+        </p>
+        <ol>
+            <li>Choose File &gt; New Project to open the New Project wizard.</li>
+            <li>Select <strong>HTML5/JS Application</strong> in 
+                the <strong>HTML/JavaScript</strong> category. Click Next.<br/>
+            <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-newproject1.png"
+                    class="margin-around b-all" alt="screenshot of HTML5 Application template in the New Project wizard"
+                    title="HTML5 Application template in the New Project wizard">
+            </li>
+            <li>Specify a Name and Location for the project. Click Next.
+                <p>For this exercise the name is not important.</p></li>
+            <li>Select No Site Template. Click Finish.
+                <p>When you click Finish the IDE creates a new HTML5 project and opens <tt>index.html</tt> in the editor.</p></li>
+            <li>Confirm that Chrome with NetBeans Integration is selected in the dropdown list in the toolbar.</li>
+            <li>Click Run in the toolbar.</li>
+            <li>Click Go to Chrome Web Store in the Install Chrome Extension dialog box.<br>
+                <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension1.png"
+                    class="margin-around b-all" alt="screenshot of Install Chrome Extension dialog box"
+                    title="Install Chrome Extension dialog box">
+                <p>When you click Go to Chrome Web Store the NetBeans Connector page in the Chrome Web Store
+                opens in the Chrome browser. </p>
+                <p class="notes"><strong>Note.</strong> The Install Chrome Extension displays a button that you will click after the extension is installed.</p>
+            <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-rerun-dialog.png"
+                    class="margin-around b-all" alt="screenshot of Install Chrome Extension dialog box"
+                    title="Install Chrome Extension dialog box"></li>
+            <li>Go to the Chrome browser and click Add to Chrome in the NetBeans Connector page. Click Add when
+                you are prompted to confirm that you want to add the extension.<br>
+                <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-chrome-netbeanshome.png"
+                    class="margin-around b-all" alt="screenshot of NetBeans Connector page in the Chrome Web Store"
+                    title="NetBeans Connector page in the Chrome Web Store">
+                <p>When the extension is installed you will see a notification that the extension was added and that the NetBeans Connector icon
+                will be visible in the URL location bar when you run a NetBeans HTML5 project in the Chrome browser.</p>
+                <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension2.png"
+                    class="margin-around b-all" alt="screenshot of confirmation that extension was installed"
+                    title="Confirmation in that extension was installed">
+            </li>
+            <li>In the IDE, Click Re-Run Project in the Install Chrome Extension dialog box.
+                <p>When you click Re-Run Project a new tab will open in the Chrome browser and you will
+                see the index page of the HTML5 application.</p>
+                <p>After the extension is installed you will see the NetBeans Connector icon in the URL location bar when
+                you run a NetBeans HTML5 project in the Chrome browser.</p> 
+            </li>
+            
+            </ol>
+            <p>If you open the Chrome Extensions page (<tt>chrome://extensions/</tt>) for the 
+            Chrome browser you will see that the extension is now enabled.</p>
+            <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension3.png"
+                class="margin-around b-all" alt="screenshot of Chrome Extensions"
+                title="NetBeans Connector extension is enabled in Chrome Extensions">
+
+        <p class="notes"><strong>Note.</strong>
+        Alternatively, you can install the NetBeans Connector extension directly from the Chrome Web Store by
+        performing the following steps.</p>
+            <ol>
+            <li>Start the Chrome browser and go to the <a href="https://chrome.google.com/webstore/">Chrome Web Store</a>.</li>
+            <li>Search the Chrome Web Store for the Netbeans Connector extension.</li>
+            <li>Click Add To Chrome in the search results page and click Add when
+                you are prompted to add the extension.
+                <br>
+            <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension1.png"
+                    class="margin-around b-all" alt="screenshot of NetBeans Connector extension in Chrome Web Store"
+                    title="NetBeans Connector extension in Chrome Web Store"></li>
+        </ol>
+              
+        
+        <a name="installchrome2"></a>
+        <h3>Offline Installation of the Extension</h3>
+        <p>If you are unable to connect to the Chrome Web Store you can install the
+        NetBeans Connector extension that is bundled with the IDE.
+        If you run a NetBeans HTML5 project and you are prompted to install the NetBeans Connector extension,
+        you can perform the following steps to install the extension if you are not able to access the Chrome Web Store.</p>
+        <ol>
+            <li>Click Not Connected in the Install Chrome Extension dialog box.<br>
+                <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension1.png"
+                    class="margin-around b-all" alt="screenshot of Install Chrome extension dialog box"
+                    title="Install Chrome extension dialog box">
+            </li>
+            <li>Click <strong>locate</strong> in the dialog box to open the NetBeans IDE installation 
+                folder on your local system that contains the <strong><tt>netbeans-chrome-connector.crx</tt></strong> extension.<br> 
+                <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension2.png"
+                    class="margin-around b-all" alt="screenshot of Chrome Extensions"
+                    title="NetBeans Connector extension is enabled in Chrome Extensions">
+            </li>
+            <li>Open the Chrome extensions page (<tt>chrome://extensions/</tt>) in your Chrome browser.<br>
+            <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension3.png"
+                    class="margin-around b-all" alt="screenshot of Chrome Extensions"
+                    title="NetBeans Connector extension is enabled in Chrome Extensions">
+            </li>
+            <li>Drag the <tt>netbeans-chrome-connector.crx</tt> extension into the Extensions page in the browser
+                and click Add to confirm that you want to add the extension.
+                <p>After the extension is added you will see that the NetBeans Connector extension is 
+                added to the list of installed extensions.</p></li>
+            <li>Click <strong>Yes, the plugin is installed now</strong> in the Install Chrome Extension dialog box
+                to open the NetBeans HTML5 project in the Chrome browser.
+                You will see the NetBeans Connector icon in the location bar of the browser tab.
+            </li>
+        </ol>
+        </div>
+
+        
+<!-- ++++++++++++++++ Using the WebKit Browser ++++++++++++++++ -->
+        <a name="webkit"></a>
+        <h2>Using the Embedded WebKit Browser</h2>
+        <p>It is recommended that you run your HTML5 applications in the Chrome browser with the NetBeans Connector extension
+            installed when you are developing the application.
+            The <strong>Chrome with NetBeans Integration</strong> option is selected by default
+            as the run target when you create an HTML5 application.
+            However, it is also possible to run your HTML5 application in the Embedded WebKit Browser
+        that is bundled with the IDE.</p>
+        
+        <p>When you run the HTML5 application in the Embedded WebKit Browser the IDE opens 
+        the Web Browser window in the IDE.
+        The Embedded WebKit Browser supports many of the features that are enabled in the Chrome browser when
+        the NetBeans Connector extension is installed, including Inspect mode, various screen size options
+        and JavaScript debugging.
+        </p>
+        <p class="notes"><strong>Note.</strong> When you choose Window &gt; Web &gt; Web Browser
+            in the main menu the IDE opens the browser that is specified as the Web Browser
+            in the Options window. </p>
+        <p>Perform the following steps to run an HTML5 application in the Embedded WebKit Browser.</p>
+        <ol>
+            <li>Select Embedded WebKit Browser in the dropdown list in the toolbar.<br>
+                <img src="../../../images_www/articles/74/web/html5-gettingstarted/html5-embedded1.png"
+                    class="margin-around b-all" alt="screenshot of target browser dropdown list in toolbar"
+                    title="List of target browsers for HTML5 applications in the dropdown list in the toolbar">
+            </li>
+            <li>Click Run in the toolbar or right-click the project node in the Projects window and choose Run.
+                <p>When you run application the Web Browser window opens in the IDE.</p>
+                <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-embedded2.png"
+                    class="margin-around b-all" alt="screenshot of Embedded WebKit Browser window"
+                    title="Embedded WebKit Browser window">
+                <p>You can click the icons in the toolbar of the Web Browser tab to enable Inspect mode and to 
+                    quickly switch between different display sizes.</p></li>
+        </ol>
+        
+        
+<!-- ++++++++++++++++ Creating the Project ++++++++++++++++ -->
+        <a name="createproject"></a>
+        <h2>Creating a NetBeans HTML5 Project</h2>
+        <p>In this exercise you will use the New Project wizard in the IDE to create a new HTML5 project.
+        For this tutorial you will create a very basic HTML5 project that only has an <tt>index.html</tt> file.
+        In the wizard you will also select some jQuery JavaScript libraries that you want to use in the project.
+        </p>
+        <ol>
+            <li>Select File &gt; New Project (Ctrl-Shift-N; &#8984;-Shift-N on Mac) in the main menu to open the New Project wizard.</li>
+            <li>Select the <strong>HTML5/JavaScript</strong> category and
+                then select <strong>HTML5/JS Application</strong>. Click Next.<br>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-newproject1.png"
+                    class="margin-around b-all" alt="screenshot of HTML5 Application template in the New Project wizard"
+                    title="HTML5 Application template in the New Project wizard">
+            </li>
+
+            <li>Type <strong>HTML5Demo</strong> for the Project Name and specify the
+                directory on your computer where you want save the project. Click Next.</li>
+
+            <li>In Step 3. Site Template, select No Site Template. Click Next.<br>
+            <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-newproject2.png"
+                    class="margin-around b-all" alt="screenshot of Site Templates panel in the New HTML5 Application wizard"
+                    title="Site Templates panel in the New HTML5 Application wizard">
+                <p>When you select the No Site Template option the wizard generates a basic empty 
+                    NetBeans HTML5 project. 
+                If you click Finish now the project will only contain a Site Root folder and an
+                <tt>index.html</tt> file in the Site Root folder.</p>
+                
+                <p>The Site Template page of the wizard enables you to select from a list of popular 
+                    online templates for HTML5 projects or to specify the location of a <tt>.zip</tt> 
+                    archive of a site template. 
+                    You can type the URL of the <tt>.zip</tt> archive or click Browse to specify a location
+                    on your local system.
+                    When you create a project based on a site template the files, libraries and the structure of the 
+                    project are determined by the template.</p>
+                <p><strong class="notes">Note:</strong> You must be online to create a project that 
+                    is based on one of the online templates in the list.</p></li>
+            <li>In Step 4. Tools, select only "Bower", which is the standard HTML5 dependency management tool that you
+                 can use via the IDE.<br>
+            <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-newproject3.png"
+                    class="margin-around b-all" alt="screenshot of Tools panel in the New HTML5 Application wizard"
+                    title="Tools panel in the New HTML5 Application wizard">
+            </li>
+<!--            <li>In Step 4. JavaScript Files, select the <tt>jquery</tt> and <tt>jqueryui</tt> JavaScript libraries
+                in the Available pane and click the right-arrow icon (&nbsp;&gt;&nbsp;) to move the selected libraries
+                to the Selected pane of the wizard.
+                By default the libraries are created in the <tt>js/libraries</tt> folder of the project.
+                For this tutorial you will use the "minified" versions of the JavaScript libraries.
+                
+                <p class="tips">You can use the text field in the panel to filter the list of JavaScript libraries.
+                For example, type <strong>jq</strong> in the field to help you find the <tt>jquery</tt> libraries.
+                You can Ctrl-click the names of the libraries to select multiple libraries.</p>
+                
+            <img src="../../../images_www/articles/74/web/html5-gettingstarted/html5-newproject3.png"
+            class="margin-around b-all" alt="screenshot of JavaScript Libraries panel in the New HTML5 Application wizard"
+            title="JavaScript Libraries panel in the New HTML5 Application wizard">
+            
+            <p class="notes"><strong>Notes.</strong></p>
+            <ul>
+                <li>You can click on the library version number in the Version column
+                to open a popup window that enables you to select older versions of the library. 
+                By default the wizard displays the most recent version.</li>
+                <li>The minimized versions of the JavaScript libraries are compressed versions and the code is not
+                comprehensible when viewed in an editor.</li>
+            </ul></li>-->
+            <li>Click <strong>Finish</strong> to complete the wizard.
+            
+            <p>When you click Finish the IDE creates the project and displays a node for the project in the Projects window
+            and opens the <tt>index.html</tt> file in the editor.</p>
+
+            <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-projectswindow1.png"
+            class="margin-around b-all" alt="screenshot of JavaScript Libraries panel in the New HTML5 Application wizard"
+            title="JavaScript Libraries panel in the New HTML5 Application wizard">
+
+<!--            <p>If you expand the <tt>js/libs</tt> folder in the Projects window you can see that the JavaScript libraries
+            that you specified in the New Project wizard were automatically added to the project.
+            You can remove a JavaScript library from a project by right-clicking the JavaScript file and choosing Delete 
+            in the popup menu.</p>
+
+            <p class="tips">To add a JavaScript library to a project, right-click the project node and choose Properties to
+            open the Project Properties window. 
+            You can add libraries in the JavaScript Libraries panel of the Project Properties window.
+            Alternatively, you can copy a JavaScript file that is on your local system directly into the <tt>js</tt> folder.</p>
+            -->
+            <p>You can now test that your project displays correctly in the Chrome browser.</p>
+            </li>
+            <li>Confirm that Chrome with NetBeans Connector integration is selected in the browser dropdown table in the toolbar.
+                <br>
+            <img src="../../../images_www/articles/74/web/html5-js/html5-js-selectbrowser.png"
+        class="margin-around b-all" alt="screenshot of dropdown list in toolbar"
+        title="Browser selected in dropdown list in toolbar"></li>
+            <li>Right-click the project node in the Projects window and choose Run.</li>
+        </ol>
+        
+        <p>When you choose Run the IDE opens a tab in the Chrome browser and displays
+        the default <tt>index.html</tt> page of the application.
+        The Browser DOM window opens in the IDE and displays the DOM tree of the page that is open in the browser.</p>
+
+        <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject.png"
+                class="margin-around b-all" alt="screenshot of application in the Chrome browser tab"
+                title="Application in the Chrome browser tab">
+
+        <p>You will notice that there is a yellow bar in the browser tab that notifies
+        you that the NetBeans Connector is debugging the tab.
+        The IDE and the browser are connected and are able to communicate with each other when the yellow bar is visible.
+
+        When you launch an HTML5 application from the IDE the JavaScript debugger is automatically enabled.
+        When you save changes to a file or make changes to a CSS style sheet you do not need to reload the page 
+        because the browser window is automatically updated to display the changes.</p>
+
+        <p class="alert">If you close the yellow bar or click Cancel you will break the connection
+        between the IDE and the browser. 
+        If you break the connection you will need to run the HTML5 application from the IDE again.</p>
+
+        <p>You will also notice that the NetBeans icon is visible in the URL location field of the browser.
+        You can click the icon to open a menu that provides various options for changing the display size of the browser
+        and for enabling the Inspect in NetBeans mode.</p>
+
+        <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject2.png"
+        class="margin-around b-all" alt="screenshot of NetBeans menu in the Chrome browser tab"
+        title="NetBeans menu in the Chrome browser tab">
+        
+        <p>If you select one of the default devices in the menu the browser window will 
+        resize to the dimensions of the device. This enables you to see how the 
+        application will look on the selected device.
+        HTML5 applications are usually designed to respond to the size of the screen
+        of the device on which they are viewed. 
+        You can use JavaScript and CSS rules that respond to the screen size and
+        modify how the application is displayed so that the layout is optimized for the
+        device. </p>
+
+<!-- ++++++++++++++++ Installing and Using Bower ++++++++++++++++ -->
+
+<a name="usingbower"></a>
+        <h2>Installing and Using Bower</h2>
+        <p>In this exercise you will set up Bower (<a href="http://bower.io">bower.io</a>) and use it to download the
+             JavaScript libraries that you'll use in the sections that follow.</p>    
+        <ol>
+            <li>Right-click the project and choose Properties.<br/>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-bower-1.png"
+                     class="margin-around b-all" alt="bower1"
+                     title="bower1">
+            </li>
+            <li>If Bower has not been installed, you will see the tab below. Click Configure Bower. If Bower
+                 has been installed, skip to step 5 below.<br/>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-bower-2.png"
+                     class="margin-around b-all" alt="bower2"
+                     title="bower2">
+            </li>
+            <li>Click the Install Bower link and go through the steps required for setting up Bower. To use
+                Bower, you
+                 will also need Node, NPM, and Git. All these are standard tools used in the JavaScript
+                 ecosystem. Familiarize yourself with them if needed before continuining.<br/>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-bower-3.png"
+                     class="margin-around b-all" alt="bower3"
+                     title="bower3">
+            </li>
+            <li>Specify the location of the Bower installation. Click Apply.<br/>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-bower-4.png"
+                     class="margin-around b-all" alt="bower4"
+                     title="bower4">
+            </li>
+            <li>Back in the Bower tab, search for the <tt>jquery</tt> and <tt>jqueryui</tt> JavaScript libraries.
+                By default the libraries are created in the <tt>public_html/bower_components</tt> 
+                folder of the project. Change the <tt>.bowerrc</tt> file in your project, if you
+                want the libraries to be installed in a different folder.
+                
+                <p class="tips">You can use the text field in the panel to filter the list of JavaScript libraries.
+                For example, type <strong>jq</strong> in the field to help you find the <tt>jquery</tt> libraries.
+                You can Ctrl-click the names of the libraries to select multiple libraries.</p>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-bower-5.png"
+                     class="margin-around b-all" alt="bower5"
+                     title="bower5">
+                
+            
+            <p class="notes"><strong>Notes.</strong></p>
+            <ul>
+                <li>You can click on the library version number in the Version column
+                to open a popup window that enables you to select older versions of the library. 
+                By default the wizard displays the most recent version.</li>
+                <li>For this tutorial, choose the latest version of the libraries.</li>
+            </ul><br/>
+            <p>When you have completed this step, you should see the below.</p>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-bower-6.png"
+                     class="margin-around b-all" alt="bower6"
+                     title="bower6">
+            </li>
+            <li>Click OK and Bower will download the JavaScript libraries and, once the process is complete,
+                you should see them in the Projects window.<br/>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-bower-7.png"
+                     class="margin-around b-all" alt="bower7"
+                     title="bower7">
+            </li>
+        </ol>
+        
+<!-- ++++++++++++++++ Editing the HTML File ++++++++++++++++ -->
+
+        <a name="editingpage"></a>
+        <h2>Editing the HTML File</h2>
+        <p>In this exercise you will add the project resources to the project and 
+        edit the <tt>index.html</tt> file to add links to the resources and add 
+        some CSS rules. You will see how a few simple CSS selectors when combined 
+        with JavaScript can significantly change how a page is displayed in a browser.</p>    
+        
+        <ol>
+            <li>Download the 
+            <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">project resources</a> archive and extract the contents.
+            <p>The ZIP archive contains two folders with files that you need to add to the project: <tt>pix</tt> and <tt>css</tt>.</p></li>
+            <li>Copy the <tt>pix</tt> and <tt>css</tt> folders into the Site Root folder.
+            <p class="notes"><strong>Note.</strong> If you are looking at the directory structure
+            of the project, you need to copy the folders into the <tt>public_html</tt> folder.</p>
+            <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-fileswindow.png"
+            class="margin-around b-all" alt="screenshot of NetBeans menu in the Chrome browser tab"
+            title="NetBeans menu in the Chrome browser tab">
+            </li>
+            <li>Open <code>index.html</code> in the editor (if it is not already open).</li>
+            <li>In the editor, add references to the JavaScript libraries that you added when you created the project 
+            by adding the following code (in bold) between the opening and closing <tt>&lt;head&gt;</tt> tags.
+            <pre class="examplecode">
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;&lt;/title&gt;
+    &lt;meta charset=UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+    <strong>&lt;script type="text/javascript" src="bower_components/jquery/dist/jquery.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="bower_components/jquery-ui/jquery-ui.js"&gt;&lt;/script&gt;</strong>
+  &lt;/head&gt;
+  &lt;body&gt;
+    TODO write content
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+                    
+                <p class="tips">You can use the code completion in the editor to help you.</p>
+                <img src="../../../images_www/articles/74/web/html5-gettingstarted/html5-editor1.png"
+                class="margin-around b-all" alt="screenshot of code completion in the editor"
+                title="Code completion in the editor">
+            </li>
+            <li>Remove the default '<code>TODO write content</code>' comment and type the following code between the <tt>body</tt> tags.
+    <pre class="examplecode">
+    &lt;body&gt;
+        &lt;div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Mary Adams&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/maryadams.jpg" alt="Mary Adams"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Vice President&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x8234&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 102 Bldg 1&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; m.adams@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;John Matthews&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/johnmatthews.jpg" alt="John Matthews"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Middle Manager&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x3082&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 307 Bldg 1&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; j.matthews@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Sam Jackson&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/samjackson.jpg" alt="Sam Jackson"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Deputy Assistant&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x3494&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 457 Bldg 2&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; s.jackson@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Jennifer Brooks&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/jeniferapplethwaite.jpg" alt="Jenifer Applethwaite"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Senior Technician&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x9430&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 327 Bldg 2&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; j.brooks@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;</pre>
+            </li>
+            <li>Save your changes.
+            <p>When you save your changes the page automatically reloads in the browser
+            and the page should look similar to the following image.</p>
+            <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject3.png"
+            class="margin-around b-all" alt="screenshot of reloaded page in the Chrome browser tab"
+            title="Reloaded page in in the Chrome browser tab">
+            </li>
+            <li>Type the following inline CSS rules between the <tt>&lt;head&gt;</tt> tags in the file. 
+            <pre class="examplecode">&lt;style type=&quot;text/css&quot;&gt;
+    ul {list-style-type: none}
+    img {
+        margin-right: 20px; 
+        float:left; 
+        border: 1px solid;
+    }
+&lt;/style&gt;</pre>
+
+            <p class="tips">Press Ctrl-Space to use the code completion in the editor when you add the CSS rules.</p>
+
+            <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-editor2.png"
+            class="margin-around b-all" alt="screenshot of code completion of CSS rules in the editor"
+            title="Code completion of CSS rules in the editor">
+                
+            <p>If you open the Browser DOM window you can see the current structure of the page.</p>
+            <img src="../../../images_www/articles/74/web/html5-gettingstarted/dom-browser.png"
+            class="margin-around b-all" alt="screenshot of Browser DOM window showing DOM tree"
+            title="Browser DOM window showing DOM tree">
+            </li>
+            <li>Add the following link to the style sheet (in <strong>bold</strong>) between the <code>&lt;head&gt;</code> tags. 
+            <pre class="examplecode">&lt;head&gt;
+...
+    &lt;script type="text/javascript" src="bower_components/jquery-ui/jquery-ui.js"&gt;&lt;/script&gt;
+    <strong>&lt;link type="text/css" rel="stylesheet" href="css/basecss.css"&gt;</strong>
+...
+&lt;/head&gt;</pre>
+            
+            <p>The <tt>basecss.css</tt> style sheet is based on some of the CSS rules that are defined in the custom CSS
+            style sheet in the jQuery "UI lightness" theme.</p>
+            
+            <p class="tips">You can open the <tt>basecss.css</tt> style sheet
+            in the editor and modify the style sheet to add the CSS rules that you
+            added in the previous step or create a new style sheet for the CSS rules.</p>
+            </li>
+            
+            <li>Add the following code between the <tt>&lt;head&gt;</tt> tags to run a jQuery script when the elements in the page are loaded.
+<pre class="examplecode">
+    <strong>&lt;script type=&quot;text/javascript&quot;&gt;
+        $(document).ready(function() {
+
+        });
+    &lt;/script&gt;</strong>
+&lt;/head&gt;</pre>
+    
+            <p>jQuery works by connecting dynamically-applied JavaScript attributes and behaviors
+            to elements of the DOM (Document Object Model).
+            The jQuery instructions that are used in this example must be executed only after all of
+            the elements of the DOM have been loaded by the browser. This is important
+            because jQuery behaviors connect to elements of the DOM, and these elements
+            must be available to jQuery in order to get the results we expect. jQuery takes
+            care of this for us through its built-in <code>(document).ready</code>
+            function, which follows the jQuery object, represented by <code>$</code>.</p>
+
+            <p class="tips">You can also use the following abbreviated version of this function.</p>
+            <pre class="examplecode">$(function(){
+
+});</pre>
+
+            <p>The instructions for jQuery take the form of a JavaScript method, with an
+            optional object literal representing an array of parameters, and must be
+            placed between the curly braces <code>{}</code> inside the <code>(document).ready</code>
+            function in order to execute only at the proper time, which is after the
+            DOM has completely loaded.</p>
+            </li>
+
+            <li>Add the following code (in bold) inside the <code>(document).ready</code> function,
+            between the braces <code>{}</code>.
+<pre class="examplecode">
+    &lt;script type=&quot;text/javascript&quot;&gt;
+        $(document).ready(function() {
+            <strong>$("#infolist").accordion({
+                autoHeight: false
+            });</strong>
+        });
+    &lt;/script&gt;
+&lt;/head&gt;</pre>
+                
+            <p>This code will invoke the <a href="http://jqueryui.com/demos/accordion/">jQuery accordion widget</a> script
+            that is included in the <a href="http://jqueryui.com/">jQuery UI library</a>.
+            The accordion script will modify the elements within the DOM object that is identified as <tt>infolist</tt>.
+            In this code, <code>#infolist</code> is a CSS selector connected to
+            a unique DOM element that has an <code>id</code> attribute with the value <code>infolist</code>. 
+            It is connected using typical JavaScript dot notation ('<code>.</code>') to the jQuery
+            instruction that uses the <code>accordion()</code> method to display this element.</p>
+            
+            <p>In the next step you will identify an element in the page as <tt>infolist</tt>.</p>
+
+            <p class="notes"><strong>Note.</strong> You also specified '<code>autoHeight: false</code>' in
+            the above snippet. This prevents the accordion widget from setting the
+            height of each panel based on the highest content part contained within
+            the markup. For more information, consult the
+            <a href="http://docs.jquery.com/UI/Accordion">accordion API documentation</a>.</p>
+            
+            <p>The <tt>&lt;head&gt;</tt> section of the <code>index.html</code> file should look as follows.
+ <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;&lt;/title&gt;
+        &lt;meta charset=&quot;UTF-8&quot;&gt;        
+        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;bower_components/jquery/dist/jquery.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;bower_components/jquery-ui/jquery-ui.js&quot;&gt;&lt;/script&gt;
+        &lt;link type="text/css" rel="stylesheet" href="css/basecss.css"&gt;
+
+        &lt;style type=&quot;text/css&quot;&gt;
+            ul {list-style-type: none}
+            img {
+                margin-right: 20px; 
+                float:left; 
+                border: 1px solid;
+            }
+        &lt;/style&gt;
+        &lt;script type=&quot;text/javascript&quot;&gt;
+            $(document).ready(function() {
+                $("#infolist").accordion({
+                    autoHeight: false
+                });
+            });
+        &lt;/script&gt;
+    &lt;/head&gt;</pre>
+
+            <p class="tips">You can tidy up your code by right-clicking in the editor and choosing Format.</p>
+            </li>
+
+            <li>Modify the <tt>&lt;div&gt;</tt> element that encloses the page contents 
+            by adding the following <code>id</code> selector and value (in bold).
+            <pre class="examplecode">&lt;body&gt;
+    &lt;div <strong>id="infolist"</strong>&gt;
+            </pre>
+            <p>This <code>&lt;div&gt;</code> element encloses the contents of the page 
+            (the four sets of <code>&lt;h3&gt;</code> tags and <code>&lt;div&gt;</code> tags 
+            that you added earlier in the tutorial).</p>
+            
+            <p class="tips">You can add the selector to the element in the Edit CSS Rules dialog box.
+            To open the Edit CSS Rules dialog box, right-click in the <tt>&lt;div&gt;</tt> tag
+            in the editor and choose Edit CSS Rules in the popup menu.
+            Alternatively, if the insert cursor is in the <tt>&lt;div&gt;</tt> tag
+            in the editor you can click the Edit CSS Rules button (<img src="../../../images_www/articles/73/web/html5-gettingstarted/newcssrule.png"
+             alt="screenshot of code completion in the editor"
+            title="Code completion in the editor">) in the CSS Styles window (Window &gt; Web &gt; CSS Styles).</p>
+            <div class="indent">
+            
+                    <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-cssstyles.png"
+                    class="margin-around b-all" alt="screenshot of CSS Styles window"
+                    title="CSS Styles window">
+                <p>In the CSS Rules dialog box, select <tt>id</tt> as the Selector Type
+                and type <strong>infolist</strong> as the Selector. 
+                Confirm that Apply Changes to the Element is selected.
+                </p>
+                <img src="../../../images_www/articles/74/web/html5-gettingstarted/html5-cssrules.png"
+                class="margin-around b-all" alt="screenshot of Edit CSS Rules dialog box"
+                title="Edit CSS Rules dialog box">
+                <p>When you click OK in the dialog box a CSS rule for
+                    the <tt>infolist</tt> selector is automatically added to the 
+                    <tt>basecss.css</tt> style sheet.</p>
+            </div>
+ 
+            </li>
+            <li>Save your changes to <tt>index.html</tt> (Ctrl-S; &#8984;-S on Mac). 
+            <p>When you save your changes the page in the web browser reloads automatically.
+            You can see that the layout of the page has changed and that the page now 
+            uses the CSS style rules that are defined in the <tt>basecss.css</tt> style sheet.
+            One of the lists below the <tt>&lt;h3&gt;</tt> is open but the others are now collapsed. 
+            You can click an <tt>&lt;h3&gt;</tt> element to expand the list.</p>
+            
+            <img src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject5.png"
+            class="margin-around b-all" alt="screenshot of project loaded in browser"
+            title="The final project loaded in the browser">
+
+            
+            <p>The jQuery accordion function now modifies all the page elements that
+            are contained in the <tt>infolist</tt> DOM object.
+            In the Navigator window you can see the structure of the HTML file and that the
+            <tt>div</tt> element that is identified by <tt>id=infolist</tt>.</p>
+            
+            <img src="../../../images_www/articles/74/web/html5-gettingstarted/navigator3.png"
+            class="margin-around b-all" alt="screenshot of Navigator window"
+            title="Browser DOM window">
+            <p class="tips">You can right-click on an element in the Navigator window and choose Go To Source to quickly navigate
+            to the location of that element in the source file.</p>
+            <p>In the Browser DOM window you can see the DOM elements in the page that is rendered in the browser
+                and the JQuery styles that are applied to the elements.
+            </p>
+            <img src="../../../images_www/articles/74/web/html5-gettingstarted/dom-browser3.png"
+            class="margin-around b-all" alt="screenshot of Browser DOM window"
+            title="Browser DOM window">
+            <p class="tips">When Inspect in NetBeans Mode is enabled in the browser, when you select an element in the 
+                browser window the element is highlighted in the Browser DOM window.</p>
+            </li>
+        </ol>
+
+        
+<!-- ++++++++++++++++ Saving the Project  ++++++++++++++++ -->
+        <a name="saving"></a>
+        <h2 id="template">Saving the Project as a Site Template</h2>
+        <p>You can save your project as a site template that you can use as a template to create other HTML5 sites
+            that are based on the project.
+            The site template can include JavaScript libraries, CSS files, images and templates for HTML files.
+            The IDE provides a wizard to help you select the files that you want to include in the site template.</p>
+            
+        <ol>
+            <li>Right-click the project in the Projects window and choose Save as Template in the popup menu.</li>
+            <li>Type <strong>HTML5DemoSiteTemplate</strong> in the Name field and specify the location where you 
+                want to save the template.</li>
+            <li>Confirm that all the files are selected. Click Finish.
+                <p>If you expand the nodes in the tree in the dialog box you can see the 
+                files that will be included in the site template.</p>
+                <img src="../../../images_www/articles/82/web/html5-gettingstarted/html5-sitetemplate.png"
+            class="margin-around b-all" alt="screenshot of Create Site Template dialog box"
+            title="Create Site Template dialog box">
+                <p>You can see that the site template will include the <tt>index.html</tt> file, the CSS style sheet,
+                    the images used in the project, though not the JavaScript libraries since
+                    Bower can be used by anyone using the template to manage the libraries. 
+                The site template can also include any configuration files and tests.</p>
+                <p>When you click Finish the IDE will generate the site template as a <tt>.zip</tt> archive.</p>
+            </li>
+        </ol>
+        
+        <p>
+        When you want to create a project that is based on the site template you specify the location of
+        the <tt>.zip</tt> archive in the Site Template panel of the New Project wizard.</p>
+        
+        <h2 id="summary">Summary</h2>
+
+        <p>In this tutorial you have learned how to create an empty HTML5 project that uses a couple 
+            jQuery JavaScript libraries. You also learned how to install the NetBeans Connector extension
+            for the Chrome browser and run the HTML5 project in the browser.
+            When you edited the <tt>index.html</tt> file you saw that the IDE provides some tools that
+            can help you to edit HTML and CSS files.
+            </p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20HTML5%20Applications">Send Feedback on This Tutorial</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        
+        <h2 id="seealso">See Also</h2>
+
+        <p>For more information about support for HTML5 applications in the IDE on
+            <a href="https://netbeans.org/">netbeans.org</a>, see the following resources:</p>
+
+        <ul>
+            <li><a href="html5-editing-css.html">Working with CSS Style Sheets in HTML5 Applications</a>.
+            A document that continues with the application that you created in this tutorial that demonstrates
+            how to use some of the CSS wizards and windows in the IDE and how to use the Inspect mode in the
+            Chrome browser to visually locate elements in your project sources.</li>
+            <li><a href="html5-js-support.html">Debugging and Testing JavaScript in HTML5 Applications</a>.
+            A document that demonstrates how the IDE provides tools that can help you debug and test
+            JavaScript files in the IDE.</li>
+        </ul>
+        
+        <p>For more information about jQuery, refer to the official documentation:</p>
+
+        <ul>
+            <li>Official Home Page: <a href="http://jquery.com">http://jquery.com</a></li>
+            <li>UI Home Page: <a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>Tutorials: <a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>Documentation Main Page: <a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>UI Demos and Documentation: <a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+    </body>
+</html>

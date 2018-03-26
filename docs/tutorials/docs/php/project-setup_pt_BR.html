@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>NetBeans IDE para PHP: Configuração do Projeto </title>
+        <meta name="KEYWORDS" content="NETBEANS, start, PHP development, create project">
+        <meta name="DESCRIPTION" content="Start PHP development in NetBeans IDE, create project" >
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+    <body>
+        <h1>Configurando um Projeto PHP</h1>
+        <p>Este tutorial mostra como configurar um projeto PHP no NetBeans IDE. </p>
+        <p><b>Conteúdo</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+        <ul class="toc">
+            <li><a href="#gettingReady">Preparando-se</a></li>
+            <li><a href="#location">Especificando o Nome e a Localização do Novo Projeto.</a>
+                <ul>
+                    <li><a href="#projectNoExistingSources">Projeto sem Códigos-Fonte Desenvolvidos Anteriormente</a></li>
+                    <li><a href="#importSources">Importando Arquivos Locais de Código-Fonte Existentes para um Projeto</a></li>
+                    <li><a href="#remote-sources">Importando Arquivos Remotos de Código-Fonte Existentes para um Projeto</a></li>
+                </ul>
+            </li>
+            <li><a href="#runConfiguration">Especificando a Configuração de Execução do Novo Projeto</a>
+                <ul>
+                    <li><a href="#localServer">Web Site Local</a></li>
+                    <li><a href="#remiteWebSite">Web Site Remoto</a></li>
+                    <li><a href="#scriptCommandLine">Script</a></li>
+                </ul>
+            </li>
+            <li><a href="#managingProjectSetup">Personalizando a Configuração do Projeto</a>
+                <ul>
+                    <li><a href="#sources">Códigos-fonte</a></li>
+                    <li><a href="#run-configuration-panel">Configuração de Execução</a></li>
+                    <li><a href="#phpIncludePath">Caminho de Inclusão do PHP</a></li>
+                    <li><a href="#formatting">Formatação</a></li>
+                    <li><a href="#add-js-libraries">Adicionando Bibliotecas JavaScript</a></li>
+                </ul>
+            </li>
+
+        </ul>
+        <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote de download do PHP</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Um mecanismo PHP</td>
+                    <td class="tbltd1">Versão 5
+                </tr>
+                <tr>
+                    <td class="tbltd1">Um servidor web</td>
+                    <td>É recomendado o <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP Server 2.2</a>.<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Um depurador PHP</td>
+                    <td><a href="http://www.xdebug.org" target="_blank">XDebug 2.0 ou superior</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="gettingReady"></a>Preparando-se</h2>
+        <p>Antes de criar um projeto PHP, você precisa fazer download e instalar o <a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE para PHP</a> e <a href="../../trails/php.html#configuration">preparar o seu ambiente</a> para desenvolvimento de PHP. 
+        </p>
+
+        <p>Para configurar um projeto PHP:   </p>
+        <ul>
+            <li><a href="#location">Especifique o nome do projeto e a localização dos arquivos de código-fonte do projeto</a></li>
+            <li><a href="#runConfiguration">Especifique como o projeto será implantado</a></li>
+        </ul>
+        Para alterar as definições de um projeto existente, posicione o cursor no nó do projeto e selecione Propriedades no menu pop-up. Prossiga como descrito na seção<a href="#managingProjectSetup">Personalizando a Configuração do Projeto</a>.
+        <h2><a name="location"></a>Especificando o Nome do Projeto e a Localização dos Arquivos de Código-Fonte   </h2>
+        <ol>
+            <li>Inicie o IDE e alterne para a janela Projetos. </li>
+            <li>Escolha Arquivo > Novo Projeto. O painel Escolher Projeto será aberto </li>
+            <li>Na lista Categorias, selecione PHP. </li></ol>
+        <p>Dependendo das suas necessidades, você pode criar um projeto PHP totalmente novo <a href="#projectNoExistingSources">sem nenhum arquivo de código-fonte desenvolvido anteriormente</a> ou <a href="#importSources">importar uma splicação PHP local ou remota existente</a> para um novo projeto. </p>
+        <div class="indent">
+            <h3><a name="projectNoExistingSources"></a>Projeto sem Arquivos de Código-Fonte Desenvolvidos Anteriormente</h3>
+            <ol>
+                <li>Na área Projetos, selecione Aplicação PHP e clique em Próximo. O painel Novo Projeto PHP > Nome e Localização será aberto. </li>
+                <li>No campo de texto Nome do Projeto, digite o nome do projeto. </li>
+                <li><a name="sources-folder"></a>No campo Pasta de Códigos-Fonte, especifique a subpasta da raiz do documento em que você deseja armazenar os arquivos de código-fonte. 
+                    <p>A raiz do documento é a pasta em que o servidor Web local procura pelos arquivos a serem abertos no browser. A raiz do documento é especificada no <a href="../../trails/php.html#configuration">arquivo de configuração</a> do servidor Web. Depois da instalação, o assistente Novo Projeto localiza a raiz do documento e por default especifica o seguinte caminho: <tt>&lt;Raiz do Documento>\&lt;Novo Projeto PHP></tt>.</p>
+                    <p class="notes">Uma cópia dos arquivos de código-fonte deve ser mantida em uma subpasta da raiz do documento. Entretanto, você pode ter uma Pasta de Códigos-Fonte em um local diferente da raiz do documento e copiar os arquivos de código-fonte desse local para a raiz do documento. Consulte <a href="#copy-sources">Especificando a Configuração de Execução</a>.</p>
+                </li>
+                <li>Na lista drop-down Codificação Default, selecione a codificação default do seu projeto.  </li>
+                <li>Se você desejar armazenar metadados do NetBeans em um local diferente dos seus arquivos de código-fonte, selecione "Colocar metadados do NetBeans em um diretório separado". Por exemplo, você pode querer armazenar seus códigos-fonte na raiz do documento, mas os metadados do NetBeans no diretório Projetos do NetBeans. <br> <img alt="Painel Novo Projeto PHP com os campos preenchidos" class="margin-around" src="../../../images_www/articles/72/php/project-setup/new-php-project-m1.png"></li>
+                <li> Clique em Próximo. O painel Configuração de Execução será aberto. </li>
+            </ol>
+            <h3><a name="importSources"></a>Importando Arquivos Locais de Código-Fonte Existentes para um Projeto</h3>
+            <ol>
+                <li>Na área Projetos, selecione Aplicação PHP com Códigos-Fonte Existentes e clique em Próximo. O painel Novo Projeto PHP > Nome e Localização será aberto. </li>
+                <li>No campo de texto Nome do Projeto, digite o nome do projeto. </li>
+                <li>No campo Pasta de Códigos-Fonte, especifique a pasta da qual você deseja importar os arquivos de código-fonte.<br> <strong>Observação:</strong><a href="#localServer"> se você for executar o projeto em um servidor Web local, não se esqueça de especificar a </a><a href="#copyFilesFromSourcesFolder">cópia dos arquivos de código-fonte</a> para ele.</li>
+                <li>Na lista drop-down Codificação Default, selecione a codificação default do seu projeto. </li>
+                <li>Se você desejar armazenar metadados do NetBeans em um local diferente dos seus arquivos de código-fonte, selecione "Colocar metadados do NetBeans em um diretório separado". Por exemplo, você pode querer armazenar seus códigos-fonte na raiz do documento, mas os metadados do NetBeans no diretório Projetos do NetBeans. <br> <img alt="Painel Novo Projeto PHP com os campos de códigos-fontes existentes preenchidos" class="margin-around" src="../../../images_www/articles/72/php/project-setup/new-php-project-with-ssources.png"></li>
+                <li> Clique em Próximo. O painel Configuração de Execução será aberto. </li>
+            </ol>
+
+            <h3><a name="remote-sources"></a>Importando Arquivos Remotos de Código-Fonte Existentes para um Projeto</h3>
+            <ol>
+                <li>Na área Projetos, selecione Aplicação PHP do Servidor Remoto e clique em Próximo. O painel Novo Projeto PHP > Nome e Localização será aberto. </li>
+                <li>No campo de texto Nome do Projeto, digite o nome do projeto. </li>
+                <li>No campo Pasta de Códigos-Fonte, especifique a subpasta raiz <em>local</em> de documentos na qual deseja armazenar os arquivos de código-fonte.
+                    <p>A raiz do documento é a pasta em que o servidor Web local procura pelos arquivos a serem abertos no browser. A raiz do documento é especificada no <a href="../../trails/php.html#configuration">arquivo de configuração</a> do servidor Web. Depois da instalação, o assistente Novo Projeto localiza a raiz do documento e por default especifica o seguinte caminho: <tt>&lt;Raiz do Documento>\&lt;Novo Projeto PHP></tt>. Observe que é útil poder testar o projeto em um servidor local.</p>
+                </li>
+                <li>Se você desejar armazenar metadados do NetBeans em um local diferente dos seus arquivos de código-fonte, selecione "Colocar metadados do NetBeans em um diretório separado". Por exemplo, você pode querer armazenar seus códigos-fonte na raiz do documento, mas os metadados do NetBeans no diretório Projetos do NetBeans. </li>
+                <li> Clique em Próximo. O painel Conexão Remota será aberto. O tutorial <a href="remote-hosting-and-ftp-account.html" target="_blank">Implantando uma Aplicação PHP em um Servidor Web Remoto</a> descreve como configurar conexões remotas.</li>
+            </ol>
+        </div>
+        <h2><a id="runConfiguration" name="runConfiguration"></a>Especificando a Configuração de Execução Default do Novo Projeto    </h2>
+        <p>Uma configuração de execução é uma definição armazenada para executar um projeto PHP. Você pode definir várias configurações para um projeto e alternar entre elas para frente e para trás. Por exemplo, se uma aplicação tiver sido desenvolvida localmente e for necessário fazer upload em um servidor de produção remoto, você só precisará escolher outra configuração de execução. As configurações de execução se aplicam a execução e depuração. As configurações de execução acomodam os seguintes casos de uso mais comuns: </p>
+        <ul>
+            <li>Desenvolvimento de páginas Web do PHP em uma máquina local com um servidor Web local. </li>
+            <li>Execução de scripts PHP usando um mecanismo PHP local. Essa abordagem é aplicada a arquivos PHP não direcionados a saída em HTML. Portanto, esses scripts podem ser executados sem um browser.</li>
+            <li>Desenvolvimento Remoto. O código-fonte do PHP e outros arquivos da aplicação têm upload em um servidor Web remoto por meio de FTP. Esse caso de uso é comum quando o desenvolvimento é compartilhado entre várias pessoas.</li>
+            <li>Uma combinação dos casos de uso acima: uma aplicação é desenvolvida localmente e implantada em um servidor de produção remoto após a conclusão. Durante o desenvolvimento, os scripts do PHP serão executados, se necessário.</li>
+        </ul>
+        <p>Ao criar um novo projeto PHP, você cria uma configuração de execução default do projeto. Para definir a configuração de execução default para o projeto, escolha a opção relevante na lista drop-down Executar Como no painel Configuração de Execução. As seguintes opções estão disponíveis:<ul>
+            <li><a href="#localServer">Web Site Local</a>. Para usar essa configuração de execução, você precisa ter <a href="../../trails/php.html#configuration">o servidor http Apache instalado</a> e em execução. </li>
+            <li><a href="remote-hosting-and-ftp-account.html" target="_blank">Web Site Remoto (FTP/SFTP) (Tutorial separado)</a>. Para usar esta configuração, você precisa de uma <a href="remote-hosting-and-ftp-account.html#registerHostingAccount">conta de hospedagem</a> em um servidor remoto e uma <a href="remote-hosting-and-ftp-account.html#createFTPAccount">conta FTP</a> nesse servidor. </li>
+            <li><a href="#scriptCommandLine">Script</a>. Essa configuração de execução não requer que um servidor Web esteja instalado e em execução. Você precisa somente de um <a href="../../trails/php.html#configuration">mecanismo PHP</a>.</li>
+        </ul>
+        <p>O procedimento para a criação de configurações de execução adicionais ou de edição da configuração de execução default é descrito em <a href="#runConfiguration">Personalizando a Configuração do Projeto: Configuração de Execução</a>. É muito semelhante ao processo da criação de configuração de execução default, a não ser pela caixa de diálogo Propriedades do projeto existente que é usada, em vez do assistente novo projeto.</p>
+        <div class="indent">
+            <h3><a name="localServer"></a>Web Site Local</h3>
+            <p>Uma configuração de web site que envolve uma cópia das suas pastas de código-fonte PHP na pasta Web do servidor Web Apache instalado na máquina. É comum a prática para que um projeto tenha uma configuração de web site local e outra remota. Observe que o procedimento para definição da configuração de execução do web site local é diferente, dependendo da criação do projeto com ou sem códigos-fonte existentes.</p>
+            <p><strong>Para configurar um Web site local:</strong></p>
+            <ol>
+                <li>Na lista drop-down Executar Como, selecione Web Site Local.</li>
+                <li>No campo URL do Projeto, verifique o endereço do URL gerado automaticamente. Verifique se o servidor HTTP do Apache ouve a porta default 80. Caso contrário, especifique explicitamente o número da porta no formato <tt>localhost:&lt;número da porta></tt>.<br> <img alt="Configuração de Execução do Projeto: Servidor Web Local" class="margin-around" src="../../../images_www/articles/72/php/project-setup/run-configuration-local-server-project-with-existing-sources.png"></li>
+
+                <li>Se você estiver criando um projeto a partir de códigos-fonte existentes, poderá selecionar qual arquivo de código-fonte usar como o arquivo de índice.</li>
+                <li>Para armazenar os arquivos de código-fonte do projeto em um diretório diferente do diretório do projeto NetBeans IDE, selecione “Copiar arquivos da Pasta de Códigos-Fonte para outro local”. <em>Se você estiver criando um projeto a partir de códigos-fonte existentes, essa é uma etapa necessária, a não ser que os códigos-fonte existentes já estejam na pasta Web do servidor Apache.</em><br> O campo, por default, especifica o seguinte caminho: <tt>&lt;Raiz do Documento>\&lt;Novo Projeto PHP></tt>. Se necessário, use o botão Procurar para especificar um caminho diferente.<br> A raiz do documento é a pasta em que o servidor Web procura por arquivos a serem abertos no browser. A raiz do documento é especificada no <a href="../../trails/php.html#configuration">arquivo de configuração</a> do servidor Web. <br> O assistente detecta o tipo de instalação do Apache, um componente ou dentro de um pacote, e fornece o caminho para a localização default da pasta <tt>htdocs</tt> do tipo de instalação atual. Portanto, se você tiver aceitado as definições default durante a instalação do servidor Apache ou do pacote AMP, selecione o caminho na lista drop-down. </li>
+                <li>Clique em Finalizar. O IDE criará o projeto PHP.</li>
+            </ol>
+
+            <h3><a name="remiteWebSite"></a>Web Site Remoto</h3>
+            <p>Cosulte o tutorial <a href="remote-hosting-and-ftp-account.html">Implantando uma Aplicação PHP a um Servidor Web Remoto</a>.</p>
+            <h3><a name="scriptCommandLine"></a>Script</h3>
+            <ol>
+                <li>Na lista drop-down Executar Como, selecione Script.<br> <img alt="Caixa de diálogo Propriedades do Projeto que mostra as propriedades de Configuração de Execução, com Executar Como...Script selecionado" class="margin-around" height="467" src="../../../images_www/articles/72/php/project-setup/project-properties-script.png" width="600"></li>
+                <li>Para especificar a localização do mecanismo PHP, clique no botão Configurar ao lado da caixa Usar Interpretador PHP Default. A caixa de diálogo Opções do PHP será aberta na guia Geral.<br><img alt="Configuração de Execução do Projeto: Script. Especificando o caminho para o mecanismo PHP e a localização de saída" class="margin-around" height="199" src="../../../images_www/articles/72/php/project-setup/run-config-script-options-m1.png" width="565"> </li> 
+                <li>No campo Interpretador do PHP 5, especifique o caminho para o arquivo <tt>php.exe</tt>. Use o botão Procurar ou Pesquisar..., se necessário.
+                </li>
+                <li>Para especificar como os resultados da execução do script serão mostrados, marque a caixa de seleção relevante na área Abrir Resultado Em. As seguintes opções estão disponíveis:<br> <br>
+                    <ul>
+                        <li>Janela de Saída. Os resultados da execução de um script aparecerão na janela de saída na parte inferior da janela do NetBeans IDE. </li>
+                        <li>Web Browser. A janela do browser default se abrirá com os resultados da execução de um script no formato de um arquivo HTML.  </li>
+                        <li>Editor. Os resultados da execução de um script se abrirão como um arquivo HTML na janela do editor do IDE. </li>
+                    </ul>
+                </li>
+                <li>Clique em OK. A caixa de diálogo Opções se fechará e o sistema retornará para o painel Configuração de Execução. <br>
+                </li>
+                <li>Adicionar qualquer argumento, como <tt>debug=true</tt> e qualquer <a href="http://www.php.net/manual/en/features.commandline.options.php" target="_blank">opção de linha de comandos PHP</a>.</li>
+            </ol>
+        </div>
+        <h2><a name="managingProjectSetup"></a>Personalizando a Configuração do Projeto</h2>
+        <p>Durante a criação do projeto, as seguintes definições básicas do projeto são especificadas: o tipo do projeto, a localização dos arquivos de código-fonte do projeto e a configuração de execução default. Para expandir a configuração do projeto com novas definições, personalize o projeto. Posicione o cursor no nó do projeto e selecione Propriedades no menu pop-up. O painel Propriedades do Projeto será aberto com uma lista de categorias de definições.
+        <div class="indent">
+            <h3><a name="sources"></a>Códigos-fonte</h3>
+            <br>No painel Códigos-fonte:
+            <ol>
+                <li>O campo Raiz da Web mostra a pasta raiz do site da sua aplicação. Por default, o campo mostra a pasta Códigos-fonte. Para alterar a raiz da Web, clique em Procurar e selecione outra pasta. </li>
+                <li>Selecione <a href="#location">Copiar arquivos da pasta de Códigos-Fonte</a> para outra localização, se necessário, e especifique o caminho para a pasta de armazenamento. </li>
+                <li>Altere a codificação, se necessário <br> <img alt="Gerencuiando a configuração do projeto: caixa de diálogo Propriedades do Projeto" class="margin-around" src="../../../images_www/articles/72/php/project-setup/pprop-sources.png"></li>	 
+                <li>Para concluir a personalização do projeto, clique em OK.</li>
+            </ol>
+            <h3><a name="run-configuration-panel"></a>Configuração de Execução</h3>
+            <br> No painel Configuração de Execução, modifique a configuração de execução default e/ou defina novas configurações de execução, se necessário. <br>
+            <ol>
+                <li>Para modificar as definições default, <a href="#runConfiguration">atualize os campos como durante a criação do projeto</a>. </li>
+                <li>Para definir uma nova configuração de execução, clique em Novo, ao lado da lista drop-down Configuração. A caixa de diálogo Criar Nova Configuração será aberta.</li>
+                <li>No campo Nome da Configuração, digite o nome da nova configuração de execução e clique em OK. Você retornará para o painel Configuração de Execução.</li>
+                <li>Especifique as definições da configuração de execução da mesma forma que a <a href="#runConfiguration">configuração de execução default</a> foi definida durante a criação do projeto e clique em OK. A nova configuração será adicionada à lista drop-down Configuração.</li>
+                <li>Para remover uma configuração, selecione-a na lista drop-down Configuração e clique em Deletar. <br> <img alt="Gerenciando a configuração do projeto: Configuração de execução" class="margin-around" src="../../../images_www/articles/72/php/project-setup/pprop-runconfig.png">	</li>
+                <li>Para concluir a personalização do projeto, clique em OK.</li> 
+            </ol>
+            <h3><a name="phpIncludePath"></a>Incluir Caminho do PHP</h3>
+            <br> No painel Incluir Caminho, especifique a localização dos arquivos que você precisa usar no projeto, mas não precisa colocar junto com os arquivos de código-fonte.
+            <ol>
+                <li>Para adicionar uma pasta, clique em Adicionar Pasta. A caixa de diálogo Selecionar Pasta será aberta.</li>
+                <li>Selecione as pastas relevantes e clique em Abrir. Você retornará para o painel Incluir Caminho do PHP. A nova pasta será adicionada à lista. </li>
+                <li>Para navegar pela lista, use os botões Mover para Cima e Mover para Baixo.  </li>
+                <li>Para remover uma pasta da lista de pastas incluída, selecione a pasta e clique em Remover.<br> <img alt="Gerenciando a configuração do projeto: Incluir Caminho do PHP" class="margin-around" src="../../../images_www/articles/72/php/project-setup/pprop-include-path.png">	 </li>
+                <li>Para concluir a personalização do projeto, clique em OK.</li>
+            </ol>
+
+            <h3><a name="formatting"></a>Formatando</h3>  
+            <p>No painel Formatação, defina o estilo de formatação que deseja aplicar aos arquivos de código-fonte no editor. Você poderá definir se a formatação será global ou específica de projeto.</p>
+            <p><b>Para definir a formatação global do IDE:</b></p>
+            <ol>
+                <li>Selecione "Usar opções globais".</li>
+                <li>Clique em Editar Opções Globais. A caixa de diálogo de opções do IDE abre na guia Editor > Formatação. <br> <img alt="Caixa de diálogo Formatação global" class="margin-around" src="../../../images_www/articles/72/php/project-setup/global-formatting.png"></li>
+                <li>Da lista drop-down Linguagem, selecione a linguagem na qual as definições deverão ser aplicadas.</li>
+                <li>Na lista drop-down Categorias, selecione os itens de formato nos quais a definição será aplicada.</li>
+                <li>Defina sua formatação desejada e clique em OK.</li>
+                <li class="tips"> Clique no botão Ajuda para obter informações detalhadas.</li>
+            </ol>
+            <p><b>Para definir a formatação específica do projeto:</b></p>
+            <ol>
+                <li>Selecione “Usar opções específicas do projeto". A área oculta será exibida. <img alt="Gerenciando a configuração do projeto: Formatação" class="margin-around" src="../../../images_www/articles/72/php/project-setup/pprop-formatting.png"></li>
+                <li>Na lista drop-down Linguagem, selecione Todas as Linguagens ou PHP. Nesse caso, Todas as Linguagens é o PHP e todas as outras linguagens você tem no seu projeto PHP.</li>
+                <li>Na lista drop-down Categorias, selecione os itens de formato nos quais a definição será aplicada.</li>
+                <li>Defina sua formatação desejada e clique em OK.</li>
+                <li class="tips"> Clique no botão Ajuda para obter informações detalhadas.</li>
+                
+            </ol>
+            <h3><a name="add-js-libraries"></a>Adicionando Bibliotecas JavaScript</h3>
+            <p>As bibliotecas de JavaScript incorporadas foram removidas no NetBeans IDE 6.7 porque eram muito grandes e de desempenho lento e porque é fácil adicionar bibliotecas manualmente. A adição manual de bibliotecas JavaScript ao projeto ativa Autocompletar Código e todas as outras funcionalidades relacionadas ao JavaScript no IDE para o seu projeto.</p>
+            <p><strong>Para adicionar Bibliotecas JavaScript ao seu projeto:</strong></p>
+            <ol>
+                <li>Faça download das bibliotecas de JavaScript necessárias ou localize-as se já as tiver.</li>
+                <li>Copie as bibliotecas JavaScript para a sua pasta do projeto PHP usando o IDE ou um explorador de arquivo.</li>
+            </ol>
+            <p>Se as propriedades do projeto estiverem definidas para que os códigos-fonte do projeto sejam copiados para outro local (consulte <a href="#sources">Códigos-Fonte</a>), as bibliotecas JavaScript também serão copiadas para esse local. Se o seu projeto for implantado em um servidor remoto, as bibliotecas JavaScript terão upload nesse servidor na próxima vez que o upload dos códigos-fonte do projeto for feito no servidor.</p>
+        </div>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Project%20Setup">Enviar Feedback neste Tutorial</a></div>
+        <br style="clear:both;">
+        <p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>.</p>
+        <p><a href="../../trails/php.html">Voltar à Trilha do Aprendizado PHP</a></p>
+    </body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>使用 PHP 创建数据库驱动的应用程序。实现安全功能。登录</title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Implementing Security. Logon" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+       <h1>使用 PHP 创建数据库驱动的应用程序 </h1>
+       <h1>第 5 课：添加安全功能。实现应用程序用户登录</h1>
+       <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>教程目录：</h4>
+<ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">使用 PHP 创建数据库驱动的应用程序 - 主页</a></li>
+    <li><p>创建数据库</p> <ol type="a"><li><a href="wish-list-lesson1.html">创建 MySQL 数据库</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">创建 Oracle 数据库表</a></li>
+    </ol></li>
+    <li><a href="wish-list-lesson2.html">设计应用程序。从数据库读取数据</a></li>
+    <li><a href="wish-list-lesson3.html">创建新的应用程序用户</a></li>
+    <li><a href="wish-list-lesson4.html">优化代码</a></li>
+    <li>
+      <p><b>=&gt; 添加安全功能。实现应用程序用户登录</b></p>
+      <ul>
+		<li><a href="#previousLessonSourceCode">来自上一课的应用程序源代码</a></li>
+		<li><a href="#savingWisherIDInSessionUponCreation">创建后在会话中保存许愿者 ID</a></li>
+		<li><a href="#validateWisherLogon">验证用户登录</a>
+		  <ul>
+		<li><a href="#retrievingUserNameFromSession">从会话中检索许愿者的名字</a></li>
+		<li><a href="#redirectingNotLoggedInUserToIndexPage">重定向未登录的用户</a></li>
+		</ul>
+		</li>
+		<li><a href="#logonFromIndexPage">从 index.php 页中登录</a>
+		  <ul>
+		<li><a href="#logonForm">用于在 index.php 上登录的 HTML 窗体</a></li>
+		<li><a href="#logonValidation">登录验证</a></li>
+		<li><a href="#verifyWisherCredentials">verify_wisher_credentials 函数</a></li>
+		
+		 <li><a href="#displayErrorMessage">显示错误消息</a></li>
+		</ul>
+		</li>
+		<li><a href="#testingLogonFromIndexPage">测试从 index.php 页中登录</a></li>
+		<li><a href="#lessonResultSourceCode">完成当前课程后的应用程序源代码</a></li>
+   </ul></li>
+    <li><a href="wish-list-lesson6.html">在数据库中添加新的愿望</a></li>
+    <li><a href="wish-list-lesson7.html">更新和删除数据库中的条目</a></li>
+    <li><a href="wish-list-lesson8.html">使用 CSS 技术改进应用程序的外观</a></li>
+    <li><a href="wish-list-lesson9.html">将应用程序部署到远程 Web 服务器</a></li>
+</ol>
+</div>
+</div>
+       <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+   <p>在本课中，将为许愿者实现登录功能。这会影响以下文件： </p>
+       <ul>
+         <li style="margin-left:40em"><tt>index.php</tt></li>
+         <li style="margin-left:40em"><tt>createNewWisher.php</tt></li>
+         <li style="margin-left:40em"><tt>editWishlist.php</tt></li>
+         <li style="margin-left:40em"><tt>db.php</tt></li>
+       </ul>
+       实现登录功能包括以下步骤：
+       <ol>
+         <li style="margin-left:40em"><a href="#savingWisherIDInSessionUponCreation">在创建许愿者后，在会话中保存许愿者 ID</a></li>
+         <li style="margin-left:40em"><a href="#validateWisherLogon">验证尝试编辑愿望列表的用户是否登录</a></li>
+         <li style="margin-left:40em"><a href="#logonFromIndexPage">许愿者从 index.php 页中登录</a></li>
+       </ol>
+   <p>当前文档是“在适用于 PHP 的 NetBeans IDE 中创建 CRUD 应用程序”教程的一部分。 </p>
+       <br style="clear:left">
+
+   <h2><a name="previousLessonSourceCode"></a>来自上一课的应用程序源代码</h2>
+<p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1930/lesson4.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。 </p>
+<p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson4.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。</p>
+<h2><a id="savingWisherIDInSessionUponCreation" name="savingWisherIDInSessionUponCreation"></a>创建后在会话中保存许愿者 ID</h2>
+        <p><a href="http://us2.php.net/manual/en/ref.session.php" target="_blank">会话</a>是持久性存储，可用于将信息从一个页面传输到另一个页面，而无需使用 <a href="wish-list-lesson5.html#htmlForm">HTML 输入窗体</a>。可通过预定义的 PHP 数组 <tt>$_SESSION</tt> 支持该功能。 </p>
+   <p>为安全起见，在创建新的许愿者后，该许愿者将自动登录而无需填写窗体。因此，您需要修改 <tt>createNewWisher.php</tt> 文件以实现以下功能：</p>
+<ul>
+          <li>将新许愿者添加到数据库中。</li>
+  <li>打开会话。  </li>
+  <li>在会话中存储许愿者的名字。</li>
+		  <li>在将许愿者重定向到 <tt>editWishList.php</tt> 页时，传输会话中的许愿者名字。 </li>
+   </ul>
+       在 <tt>createNewWisher.php</tt> 文件中，找到以下行：
+<pre class="examplecode">WishDB::getInstance()-&gt;create_wisher($_POST[&quot;user&quot;], $_POST[&quot;password&quot;]);</pre> 
+	   然后，在其下输入以下代码块： 
+<pre class="examplecode">session_start();
+$_SESSION['user'] = $_POST['user'];</pre>
+		该代码块启动一个会话，这意味着打开 <tt>$_SESSION</tt> 数组以输入或检索数据。然后，该代码在 <tt>$_SESSION</tt> 数组中添加一个元素。添加的元素包含一个值和标识符（键）。该值是新创建的许愿者名字，标识符是 "user"。然后，程序将许愿者重定向到 <tt>editWishList.php</tt> 页。
+        <h2><a id="validateWisherLogon" name="validateWisherLogon"></a>验证用户登录 </h2>
+        <p>当用户访问 <tt>editWishList.php</tt> 页时，应用程序应确认刚才在 <tt>createNewWisher.php</tt> 页上注册的同一个人访问了该页。 </p>
+   <p>实现该功能包括两个步骤：
+        </p>
+        <ul>
+            <li><a href="#retrievingUserNameFromSession">从会话中检索许愿者的名字</a></li>
+            <li><a href="#redirectingNotLoggedInUserToIndexPage">如果从会话中检索许愿者名字失败，将用户重定向到 index.php</a></li>
+        </ul>
+        <div class="indent">
+        <h3><a id="retrievingUserNameFromSession" name="retrievingUserNameFromSession"></a>从会话中检索许愿者的名字</h3>
+        将 <tt>editWishList.php</tt> 的 PHP 块中的默认代码替换为以下内容：
+        <pre class="examplecode">session_start();
+if (array_key_exists("user", $_SESSION)) {
+    echo "Hello " . $_SESSION['user'];
+}</pre>
+	    <p>该代码块打开 <tt>$_SESSION</tt> 数组以检索数据，并验证 <tt>$_SESSION</tt> 是否包含具有 "user" 标识符的元素。如果检查成功，该代码将输出欢迎消息。  </p>
+	    检查是否正确实现会话：
+	    <ol>
+	      <li>	      运行 <tt>createNewWisher.php</tt> 文件，然后创建一个新的许愿者，例如，Jack。<br> <tt>editWishList.php</tt> 打开，并显示 Hello Jack。 </li>
+          <li>在浏览器中清除会话 Cookie，或者结束会话并从 IDE 中运行 <tt>editWishList.php</tt>。<br> <tt>editWishList.php</tt> 文件打开并显示 Hello，因为没有通过会话传输任何用户。这是不正确的，因为它允许未登录和未注册的人创建或编辑愿望列表。为了避免出现该问题，需要将用户重定向到 <tt>index.php</tt> 页。</li>
+	    </ol>
+	    <h3><a id="redirectingNotLoggedInUserToIndexPage" name="redirectingNotLoggedInUserToIndexPage"></a>重定向未登录的用户 </h3>
+        将以下代码块添加到 <tt>editWishList.php</tt> 中的 <tt>if</tt> 子句之下：
+        <pre class="examplecode">else {
+   header('Location: index.php');
+   exit;
+}</pre>
+        
+		<p>该代码将用户重定向到 index.php 页并取消 PHP 代码执行。 </p>
+		要检查是否正确实现了该功能，请运行 <tt>editWishList.php</tt> 文件。预期的结果是打开 <tt>index.php</tt> 页。</div>
+		<h2><a id="logonFromIndexPage" name="logonFromIndexPage"></a>从 index.php 页中登录</h2>
+		<p>从 index.php 页中登录包括两个步骤：</p>
+		<ul>
+		  <li><a href="#logonForm">在 HTML 输入窗体中输入用户的名字和口令，并将用于验证的数据提交到 index.php 页。</a></li>
+          <li><a href="#logonValidation">验证登录</a></li>
+	</ul>
+		<div class="indent"><h3><a id="logonForm" name="logonForm"></a>用于在 index.php 上登录的 HTML 窗体</h3>
+        在 <tt>index.php</tt> 文件中，在结束 <tt>&lt;/body&gt;</tt> 标记前输入以下代码：
+        <pre class="examplecode">&lt;form name="logon" action="index.php" method="POST" >
+    Username: &lt;input type="text" name="user">
+    Password  &lt;input type="password" name="userpassword">
+    &lt;input type="submit" value="Edit My Wish List">
+&lt;/form></pre>
+                <p class="notes"><b>注：</b>您可以忽略来自 HTML 验证器的警告。</p>
+
+该代码显示一个 <a href="wish-list-lesson3.html#htmlForm">HTML 窗体</a>，用于在文本字段中输入用户的名字和口令。当用户单击 "Edit My Wish List" 时，数据将传输到同一页，即 index.php。  
+<h3><a id="logonValidation" name="logonValidation"></a>登录验证</h3>
+<p>登录验证包括： </p>
+<ul>
+            <li><a href="#checkWhereUserCameFrom">检查从中重定向用户的位置</a>。 </li>
+            <li><a href="#verifyCredentials">验证用户的名字和口令</a>。 </li>
+            <li>将用户名保存到会话中并将用户重定向到 editWishList.php 页或<a href="#displayErrorMessage">显示一条错误消息。</a> </li>
+   </ul>
+       
+        <p> 用户可以在启动应用程序时访问 <tt>index.php</tt> 页，从 <a href="#validateWisherLogon">editWishList.php</a> 页中进行访问，或者在输入名字和口令后从 <tt>index.php</tt> 页中重定向时访问该页。</p>
+        <p>由于仅在最后一种情况下使用 <a href="http://www.htmlcodetutorial.com/forms/_FORM_METHOD.html" target="_blank">HTML 请求方法</a> POST，因此，您始终可以了解用户访问 <tt>index.php</tt> 时所在的位置。</p>
+        在 index.php 文件中，使用以下代码在 HTML 块上面创建一个 &lt;?php ?&gt; 块： 
+        <pre class="examplecode">&lt;?php
+
+require_once("Includes/db.php");
+$logonSuccess = false;<br><br>
+// verify user's credentials
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    $logonSuccess = (WishDB::getInstance()->verify_wisher_credentials($_POST['user'], $_POST['userpassword']));
+    if ($logonSuccess == true) {
+        session_start();
+        $_SESSION['user'] = $_POST['user'];
+        header('Location: editWishList.php');
+        exit;
+    }
+}
+?&gt;
+</pre>
+        <p>代码块顶部允许使用 <tt>db.php</tt> 文件，并使用 <tt>false</tt> 值初始化 <tt>$logonSuccess</tt> 变量。如果验证成功，该值将变为 <tt>true</tt>。  </p>
+     
+       
+        <p>验证用户凭证的代码先检查请求方法是否为 POST。如果请求方法是 POST，则在提交<a href="#logonForm">登录窗体</a>后重定向用户。在这种情况下，代码块使用在登录窗体中输入的名字和口令调用 <tt>verify_wisher_credentials</tt> 函数。 </p>
+        <p><tt>verify_wisher_credentials</tt> 函数（在<a href="#verifyWisherCredentials">下一节</a>中编写）检查 <tt>wishers</tt> 表中是否存在用户和口令与<a href="#logonForm">登录窗体</a>中提交的值相匹配的记录。如果 <tt>verify_wisher_credentials</tt> 函数返回 <tt>true</tt>，则在数据库中注册一个具有指定名字和口令组合的许愿者。这表示验证成功，并且 <tt>$logonSuccess</tt> 将值更改为 <tt>true</tt>。在这种情况下，将启动一个会话并打开 <tt>$_SESSION</tt> 数组。该代码在 <tt>$_SESSION</tt> 数组中添加一个新元素。该元素包含一个值和标识符（键）。该值是许愿者的名字，标识符是 "user"。然后，该代码将用户重定向到 <tt>editWishList.php</tt> 页以编辑愿望列表。		</p>
+		<p>如果 <tt>verify_wisher_credentials</tt> 函数返回 <tt>false</tt>，则 <tt>$logonSuccess</tt> 变量值保持为 false。将使用该变量值<a href="#displayErrorMessage">显示错误消息</a>。 </p>
+		<h3><a id="verifyWisherCredentials" name="verifyWisherCredentials"></a>verify_wisher_credentials 函数</h3>
+        <p>要实现验证许愿者凭证的功能，您需要在 <tt>db.php</tt> 文件的 <tt>WishDB</tt> 类中添加一个新函数。该函数要求将名字和口令作为输入参数，并返回 0 或 1。</p>
+       <strong>对于 MySQL 数据库</strong>，请输入以下代码块：
+        <pre class="examplecode">public function verify_wisher_credentials ($name, $password){<br>   $name = $this-&gt;real_escape_string($name);<br>
+   $password = $this-&gt;real_escape_string($password);<br>   $result = $this-&gt;query(&quot;SELECT 1 FROM wishers
+ 	           WHERE name = '&quot; . $name . &quot;' AND password = '&quot; . $password . &quot;'&quot;);
+   return $result-&gt;data_seek(0);
+}</pre>
+<p><b>对于 Oracle 数据库</b>，请输入以下代码块（由于 OCI8 没有等效的 <tt>mysql_num_rows</tt>，该代码是 <tt>get_wisher_id_by_name</tt> 的修改形式）：</p>
+<pre class="examplecode">public function verify_wisher_credentials($name, $password) {
+    $query = "SELECT 1 FROM wishers WHERE name = :name_bv AND password = :pwd_bv";
+    $stid = oci_parse($this->con, $query);
+    oci_bind_by_name($stid, ':name_bv', $name);
+    oci_bind_by_name($stid, ':pwd_bv', $password);
+    oci_execute($stid);
+//Because name is a unique value I only expect one row
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    if ($row) 
+        return true;
+    else
+        return false;
+}</pre>
+<p>该代码块执行查询 <tt>"SELECT 1 FROM wishers WHERE Name = '" . $name . "'AND Password = '" . $password . "'"</tt> 并返回满足指定查询的记录数。如果找到此类记录，该函数将返回 <tt>true</tt>。如果在数据库中找不到此类记录，该函数将返回 <tt>false</tt>。 
+          <h3><a id="displayErrorMessage" name="displayErrorMessage"></a>显示错误消息</h3>
+    
+要允许应用程序显示错误消息，请输入以下 &lt;? php ?&gt; 代码块（在 <tt>index.php</tt> 的登录窗体中的输入字段之下、按钮之上）：
+         <pre class="examplecode">&lt;?php
+  if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) { 
+      if (!$logonSuccess)
+          echo "Invalid name and/or password";
+  }
+?></pre>
+   该代码块检查 $logonSuccess 变量值；如果该值为 false，则显示一条错误消息。</div>
+         <h2><a name="testingLogonFromIndexPage"></a>测试从 index.php 页中登录 </h2>
+         检查登录功能在主页 <tt>index.php</tt> 上是否正常工作：
+<ol>
+           <li>运行应用程序。</li>
+           <li>在 <tt>index.php</tt> 页上，在 "Username" 编辑框中输入 Tom，在 "Password" 编辑框中输入 Tim。 </li>
+           <li>按 "Edit My Wish List"。将显示一条错误消息（请注意，下面的浏览器窗口宽度减小为 600px，其中添加了一些换行符）： <br><img alt="index.php 页显示错误消息：名称和/或口令不正确" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson5/incorrectNamePasswordIndex.png"></li>
+           <li>在 "Username" 编辑框中输入 Tom，在 "Password" 编辑框中输入 tomcat。</li>
+           <li>按 "Edit My Wish list"。将显示 editWishList.php 页： <br><img alt="index.php：成功登录" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson5/SuccessfulLogonOnIndexRedirectToEditWishList.png"></li>
+         </ol>
+		 <h2><a name="lessonResultSourceCode"></a>完成当前课程后的应用程序源代码 </h2>
+<p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1931/lesson5.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成课程后的项目状态。</p>
+<p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson5.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成课程后的项目状态。</p>
+<h2><a name="nextSteps"></a>后续步骤</h2>
+		 <p><a href="wish-list-lesson4.html">&lt;&lt; 上一课</a></p>
+		 <p><a href="wish-list-lesson6.html">下一课 &gt;&gt;</a></p>
+		 <p><a href="wish-list-tutorial-main-page.html">返回到教程主页</a></p><br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%205:%20Implementing%20Security">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" >
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。
+   <p><a href="wish-list-tutorial-main-page.html"></a>
+   <p><a href="../../trails/php.html">返回至 PHP 学习资源</a></p>
+</body>
+</html>

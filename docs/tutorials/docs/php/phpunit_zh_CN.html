@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="description" content="How to integrate PHPUnit and Selenium with NetBeans IDE for writing automated tests. Includes demonstration of Code Coverage and the IDE's test result UI.">
+<meta name="keywords" content="NetBeans, IDE, integrated development environment, tutorial, guide, user, documentation, open source, PHP, testing, automated testing, PHPUnit, Selenium, Code Coverage">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+<title>使用 PHPUnit 和 Selenium 进行测试 - NetBeans IDE 教程</title></head>
+<body>
+<h1>使用 PHPUnit 和 Selenium 进行测试</h1>
+<p>适用于 PHP 的 NetBeans IDE 支持 <a href="http://www.phpunit.de" target="_blank">PHPUnit</a> 自动测试。通过 PHPUnit，NetBeans IDE 可为 PHP 提供代码覆盖率，这与 IDE 为 Python 提供的代码覆盖率类似。测试输出将显示在功能丰富的输出窗口中，该窗口与 IDE 的 JUnit 和 Python 测试运行器所使用的输出窗口相同。 </p>
+<p>NetBeans IDE 还支持将 Selenium 可移植测试框架与 PHPUnit 结合使用。Selenium 插件可以从更新中心获取。安装此插件会将 Selenium 服务器添加到 IDE 的已注册服务器中，并将 Selenium 测试选项添加到 PHP 菜单。</p>
+<p><b>目录</b></p>
+ <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<ul class="toc">
+
+  <li><a href="#installing-phpunit">安装 PHPUnit</a></li>
+  <li><a href="#create-test">创建并运行 PHPUnit 测试</a></li>
+  <li><a href="#test-groups">使用测试组</a></li>
+  <li><a href="#result-windows">测试结果和 IDE 输出</a></li>
+  <li><a href="#code-coverage">代码覆盖率</a></li>
+  <li><a href="#project-specific-configurations">使用项目特定的配置</a></li>
+  <li><a href="#selenium">在 Selenium 框架上运行测试</a></li>
+</ul>
+<p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">软件或资源</th>
+      <th class="tblheader" scope="col">要求的版本</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+      <td class="tbltd1">
+        PHP 下载包</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">PHP 引擎，包括 PEAR</td>
+      <td class="tbltd1">版本 5。 </tr>
+    <tr>
+      <td class="tbltd1">Web 服务器</td>
+      <td>推荐使用 Apache HTTP Server 2.2。<br></td>
+    </tr>
+
+    
+<tr>
+        <td class="tbltd1"><a href="http://www.phpunit.de" target="_blank">PHPUnit</a></td>
+        <td>版本 3.4.0 或更高版本。</td>
+    </tr>
+    <tr>
+    <td class="tbltd1"><a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html" target="_blank">PHPUnit 的框架生成器</a></td><td>作为 PHPUnit 的版本。</td></tr>
+  </tbody>
+</table>
+
+<h2 id="installing-phpunit">安装 PHPUnit</h2>
+<p>使用 PEAR 安装 PHPUnit（如 <a href="http://www.phpunit.de/manual/current/en/installation.html" target="_blank">PHPUnit 文档</a>中所述）和 PHPUnit 的框架生成器（如<a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html">框架生成器文档</a>中所述）。应安装 PHPUnit 版本 3.4.0 或更高版本。无需任何特殊设置。安装 PHPUnit 之后，NetBeans 便可识别它。请注意，您需要将 PEAR 随 PHP 引擎一起安装。另请注意，PHPUnit 文档中指出 PHPUnit 通常会安装到本地 PEAR 目录。该文档还给出了具体的路径：<tt>/usr/lib/php/PHPUnit</tt>；但在适用于 Windows 的 XAMPP 上，此路径为 <tt>XAMPP_HOME\php\PEAR\PHPUnit</tt>。 </p>
+<p>要检查 NetBeans IDE 是否可以识别您的 PHPUnit 安装，请打开 "Tools"（工具）> "Options"（选项）（在 Mac 上，请打开 "NetBeans Preferences"（NetBeans 首选项））并查看 "PHP" 窗口。打开 "Unit Testing"（单元测试）标签。此时应显示您的 PHPUnit 和框架生成器脚本的路径。如果没有显示脚本，请单击空字段旁边的 "Search"（搜索）。IDE 将在您的本地系统中搜索该脚本。或者，单击 "Browse"（浏览）浏览查找脚本。</p>
+<img alt="显示 PHPUnit 脚本的路径的 &quot;Options&quot;（选项）页" class="margin-around" height="477" src="../../../images_www/articles/72/php/phpunit/unittesting-options.png" width="600">
+<h2 id="create-test">创建并运行 PHPUnit 测试</h2>
+<p>NetBeans IDE 可以对某个文件中的所有 PHP 类创建并运行 PHPUnit 测试。为确保测试生成器可以正常运行，请为 PHP 文件指定与该文件中的第一类相同的名称。 </p>
+<p><strong>为某个类创建并运行 PHPUnit 测试：</strong></p>
+<ol>
+  <li>创建一个名为 Calculator 的 PHP 项目。在此项目中，创建一个名为 <tt>Calculator.php</tt> 的文件。在此文件中，键入或粘贴 <a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html" target="_blank">PHPUnit 文档的 "Skeleton Generator"（框架生成器）一章</a>中所提供的 Calculator 类。
+  <pre class="examplecode">&lt;?php
+class Calculator
+{
+    public function add($a, $b)
+    {
+        return $a + $b;
+    }
+}
+?&gt;</pre></li>
+<li>添加一个包含 <a href="http://sebastian-bergmann.de/archives/628-Improved-Skeleton-Generator-in-PHPUnit-3.html" target="_blank">@assert 标注</a>以及一些样例输入和输出的注释块。请注意，本示例中包括一个错误的断言。
+<pre class="examplecode">&lt;?php
+class Calculator
+{
+    /**
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == 1
+     * @assert (1, 0) == 1
+     * @assert (1, 1) == 2
+     * @assert (1, 2) == 4
+     */
+    public function add($a, $b)
+    {
+        return $a + $b;
+    }
+}
+?&gt;</pre>
+<p class="notes"><strong>注：</strong>您可以使用标注代码完成来添加 <code>@assert</code> 标注。使用 Tab 键在参数之间导航，或者在填写参数值后单击 Enter。</p>
+<img alt="带 @assert 标注的标注代码完成" class="margin-around b-all" height="410" src="../../../images_www/articles/72/php/phpunit/assert-cc.png" width="501"><img alt="使用代码完成填写 @assert 标注的参数" class="margin-around b-all" height="230" src="../../../images_www/articles/72/php/phpunit/assert-cc-complete.png" width="374"></li>
+<li>在 "Projects"（项目）窗口中，右键单击 "Calculator.php" 节点，然后选择 "Tools"（工具）> "Create PHPUnit Tests"（创建 PHPUnit 测试）。请注意，您可以在 "Source Files"（源文件）节点的上下文菜单中为项目中的所有文件创建测试。<br> <img alt="PHP 项目的 &quot;Source Files&quot;（源文件）节点的上下文菜单，显示 &quot;Create PHPUnit Tests&quot;（创建 PHPUnit 测试）选项" class="margin-around" height="647" src="../../../images_www/articles/72/php/phpunit/create-tests.png" width="453"></li>
+<li>第一次创建测试时，将会打开一个对话框，询问您要存储测试文件的目录。在本示例中，使用“浏览”功能创建了 <tt>tests</tt> 目录。 <br><img alt="&quot;Test file directory&quot;（测试文件目录）对话框" class="margin-around" height="177" src="../../../images_www/articles/72/php/phpunit/test-directory.png" width="364">
+<p class="notes"><strong>注：</strong>您可以手动为一个项目编写多个测试。如果编写多个测试，可以将它们分类到测试文件目录的子文件夹中，例如 "important" 或 "quick"。然后，可以通过右键单击某个子文件夹并选择 "Run Tests"（运行测试），来运行该文件夹中的测试。</p>
+<img alt="&quot;Run Test&quot;（运行测试）文件夹上下文操作" class="margin-around b-all" height="265" src="../../../images_www/articles/72/php/phpunit/test-in-folder.png" width="279">
+</li>
+<li>IDE 在一个名为 CalculatorTest.php 的文件中生成框架测试类，在 "Projects"（项目）窗口中会显示该文件，并在编辑器中将其打开。 <br><img alt="显示新测试类的 &quot;Projects&quot;（项目）窗口" class="margin-around" height="245" src="../../../images_www/articles/72/php/phpunit/test-class-in-project.png" width="204">
+<p>请注意，将为每个 <tt>@assert</tt> 标注创建一个测试。</p>
+<pre class="examplecode">    /**
+     * Generated from @assert (1, 1) == 2.
+     */
+    public function testAdd4()
+    {
+        $this->assertEquals(
+          2,
+          $this->object->add(1, 1)
+        );
+    }</pre></li>
+    <li>您既可以测试单个文件，也可以测试整个项目。要测试项目，请右键单击项目的父节点，然后选择 "Test"（测试）或按 Alt-F6 组合键。要测试 Calculator.php 文件，请右键单击该文件的节点，然后选择 "Test"（测试），或者按 Ctrl-F6/⌘-F6 组合键。本示例只有一个文件，且该文件中只有一个类，因此两种测试结果相同。IDE 会运行测试并在 "Test Results"（测试结果）窗口中显示结果。 <br><img alt="&quot;Test Results&quot;（测试结果）窗口" class="margin-around" height="254" src="../../../images_www/articles/72/php/phpunit/test-results-narrow.png" width="600"> <p>测试结果的更详细文本版本会显示在 "Output"（输出）窗口中。</p>
+    <img alt="显示测试结果的 &quot;Output&quot;（输出）窗口" class="margin-around" height="269" src="../../../images_www/articles/72/php/phpunit/test-result-output.png" width="535"></li>
+</ol>
+<h2><a name="test-groups"></a>使用测试组</h2>
+<p>您可以选择要在测试套件运行期间执行的测试组。例如，可能有一些测试您希望只在生产环境中运行，而另一些测试在生产和开发环境中同时运行。您可以将前一种测试放在 <tt>production</tt> 组中，而将后一种测试同时放在 <tt>production</tt> 和 <tt>development</tt> 组中。在开发环境中运行测试套件时，可以选择只执行 <tt>development</tt> 测试组。</p>
+<p>必须首先对 PHP 项目启用测试组，然后才能对该项目中的所有文件使用测试组。 </p>
+<p>要将测试标记为测试组的一部分，请使用 <tt>@group [group name]</tt> 来标注测试方法。</p>
+<p><strong>创建和运行测试组：</strong></p>
+<ol>
+  <li>在 "Projects"（项目）窗口中，右键单击 "Calculator" 节点，然后选择 "Properties"（属性）。"Project Properties"（项目属性）打开。</li>
+  <li>在 "Project Properties"（项目属性）中，选择 "PhpUnit" 类别。选择 "Ask for Test Groups Before Running Tests"（在运行测试之前询问测试组）。单击 "OK"（确定）。<br><img alt="&quot;Project properties&quot;（项目属性）的 &quot;PhpUnit&quot; 类别，显示启用的测试组" class="margin-around" height="429" src="../../../images_www/articles/72/php/phpunit/test-group-properties.png" width="600"></li>
+  <li>在编辑器中打开 <tt>CalculatorTest.php</tt>。</li>
+  <li>为 <tt>testAdd</tt>、<tt>testAdd3</tt> 和 <tt>testAdd5</tt> 方法添加标注 <tt>@group production</tt>。<br><img alt="显示测试组标注的代码" class="margin-around b-all" height="155" src="../../../images_www/articles/72/php/phpunit/production-group-annotation.png" width="391"></li>
+  <li>对于方法 <tt>testAdd2</tt> 和 <tt>testAdd4</tt>，添加标注 <tt>@group production</tt> 和 <tt>@group development</tt>。<img alt="显示测试组标注的代码" class="margin-around b-all" height="172" src="../../../images_www/articles/72/php/phpunit/production-development-group-code.png" width="388"></li>
+  <li>右键单击 <tt>Calculator.php</tt> 节点，然后选择 "Test"（测试）。此时将会打开一个对话框，询问您要运行哪些测试组。选择 "development"，然后单击 "OK"（确定）。IDE 只运行使用 <tt>@group development</tt> 标注的测试。<br><img alt="&quot;Select test group&quot;（选择测试组）对话框" class="margin-around" height="260" src="../../../images_www/articles/72/php/phpunit/select-test-group.png" width="374"></li>
+</ol>
+<p>有关 NetBeans IDE 中 PhpUnit 测试组的详细信息，请参见 "NetBeans IDE for PHP" 博客帖子：<a href="http://blogs.oracle.com/netbeansphp/entry/using_phpunit_test_groups" target="_blank">Using PHP Unit Test Groups</a>（使用 PHP 单元测试组）。</p>
+<h2 id="result-windows">测试结果和 IDE 输出</h2>
+<p>PHPUnit 测试的结果会显示在 IDE 的 "Test Results"（测试结果）和 "Output"（输出）两个窗口中。"Test Results"（测试结果）窗口包含一个图形窗格和一个简短文本窗格。“"Output"（输出）窗口提供了输出的更详细文本版本。在此部分，您将详细了解 "Test Results"（测试结果）窗口和 "Output"（输出）窗口。</p>
+<p>在 "Test Results"（测试结果）窗口中，您可以从下列位置获取有关失败的测试的信息：</p>
+<ul>
+  <li>UI 窗格中失败测试的树条目所附带的消息</li>
+  <li>右侧窗格中的文本，其中包括指向失败的测试代码行的链接</li>
+  <li>将光标悬停在 UI 窗格中失败的测试上时显示的工具提示文本</li>
+</ul>
+<img alt="显示工具提示的 &quot;Test results&quot;（测试结果）窗口" class="margin-around" height="267" src="../../../images_www/articles/72/php/phpunit/test-results-tooltip.png" width="596">
+<p>"Test Results"（测试结果）窗口在左侧包括以下按钮：</p>
+<ul>
+    <li> 重新运行测试按钮 <img alt="&quot;rerun&quot;（重新运行）按钮" src="../../../images_www/articles/72/php/phpunit/rerun-button.png"></li>
+  <li>显示失败的测试 <img alt="&quot;Show failed tests&quot;（显示失败的测试）按钮" src="../../../images_www/articles/72/php/phpunit/show-failed.png"></li>
+  <li>显示通过的测试 <img alt="&quot;Show passed tests&quot;（显示通过的测试）按钮" src="../../../images_www/articles/72/php/phpunit/show-passed.png"></li>
+  <li>显示通过但出错的测试 <img alt="&quot;Show tests with errors&quot;（显示出错的测试）按钮" src="../../../images_www/articles/72/php/phpunit/show-error.png"></li>
+  <li>导航至下一个测试结果的按钮 <img alt="&quot;next test&quot;（下一个测试）按钮" src="../../../images_www/articles/72/php/phpunit/next-test-button.png">，以及导航至上一个测试结果的按钮 <img alt="&quot;previous test&quot;（上一个测试）按钮" src="../../../images_www/articles/72/php/phpunit/previous-test-button.png"></li>
+</ul>
+<p>"Output"（输出）窗口显示 PHPUnit 脚本的完整输出。当您无法通过 "Test Results"（测试结果）窗口中的信息找出错误原因时，该窗口会非常有用。与 "Test Results"（测试结果）窗口类似，"Output"（输出）窗口包括指向失败的测试类行的链接。它还在左侧包括用于重新运行测试和用于打开 "PHP Options"（PHP 选项）窗口的按钮。<img alt="&quot;Output&quot;（输出）窗口中链接到 &quot;Options&quot;（选项）的按钮" src="../../../images_www/articles/72/php/phpunit/options-link-button.png"></p>
+<img alt="显示完整 PHPUnit 测试结果的 &quot;Output&quot;（输出）窗口" class="margin-around" height="269" src="../../../images_www/articles/72/php/phpunit/test-result-output.png" width="535">
+<h2 id="code-coverage">代码覆盖率</h2>
+<p>适用于 PHP 的 NetBeans IDE 提供了代码覆盖率以及 PHPUnit 支持。（IDE 也为 Python 提供了代码覆盖率）。代码覆盖率检查 PHPUnit 测试是否覆盖了所有方法。在此部分，您将了解如何通过现有 Calculator 类来使用代码覆盖率。</p>
+<p><strong>使用代码覆盖率：</strong></p>
+<ol>
+  <li>打开 Calculator.php，然后添加内容与 <tt>add</tt> 函数相同的 <tt>add2</tt> 函数。现在，<tt>Calculator</tt> 类将如下所示：
+  <pre class="examplecode">&lt;?php
+class Calculator {
+    /**
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == 1
+     * @assert (1, 0) == 1
+     * @assert (1, 1) == 2
+     * @assert (1, 2) == 4
+     */
+    public function add($a, $b) {
+        return $a + $b;
+    }
+
+    public function add2($a, $b) {
+        return $a + $b;
+    }
+
+}    
+?&gt;
+</pre></li>
+<li>右键单击项目节点。从上下文菜单中，选择 "Code Coverage"（代码覆盖率）> "Collect and Display Code Coverage"（收集并显示代码覆盖率）。默认情况下，"Show Editor Bar"（显示编辑器栏）也会处于选定状态。 <br><img alt="从项目节点上下文菜单中启用代码覆盖率" border="1" class="margin-around" height="251" src="../../../images_www/articles/72/php/phpunit/turn-on-code-coverage.png" width="503"></li>
+<li>现在，编辑器会在底部显示代码覆盖率编辑器栏。由于尚未测试代码覆盖率，因此编辑器栏报告覆盖率为 0%。（在单击 "Clear"（清除）以清除测试结果后，编辑器栏也会显示覆盖率为 0%。） <br><img alt="运行测试前代码覆盖率的编辑器栏" class="margin-around" height="428" src="../../../images_www/articles/72/php/phpunit/editor-bar-before.png" width="592"></li>
+<li>单击 "Test"（测试）以测试打开的文件，或单击 "All Tests"（所有测试）以运行项目的所有测试。此时显示 "Test Results"（测试结果）。此外，"Code Coverage"（代码覆盖率）栏会告知您测试所覆盖的可执行代码语句百分比。在编辑器窗口中，覆盖的代码将以绿色突出显示，未覆盖的代码将以红色突出显示。
+    <p class="alert"><b>警告：</b>如果在添加 add2 函数之后重新生成测试文件，则不会运行 PHPUnit 测试。这是因为 PHPUnit 创建了两个冲突的 testAdd2 函数。如果您计划对多个此类函数使用 PHPUnit，则不要通过在末尾附加数字的方式来区分函数。请参见 <a href="http://www.phpunit.de/ticket/701" target="_blank">PHPUnit 文档</a>。 </p>   
+<img alt="运行测试后代码覆盖率的编辑器栏" class="margin-around" src="../../../images_www/articles/72/php/phpunit/editor-bar-after.png"></li>
+<li>在编辑器栏中，单击 "Report..."（报告...）。代码覆盖率报告打开，其中显示了对项目运行的所有测试的结果。使用报告中的按钮，您可以清除结果，再次运行所有测试或取消激活代码覆盖率（单击 "Done"（完成））。 <br><img alt="代码覆盖率报告" class="margin-around" height="185" src="../../../images_www/articles/72/php/phpunit/code-coverage-report.png" width="405"></li>
+<li>您可以在项目中添加其他类；删除测试文件，然后重新创建测试文件；接下来，再次查看代码覆盖率报告。此时将会列出新类。在下面的报告中，<tt>Calculator</tt> 类又有一个函数未包括在测试中。 <br><img alt="显示第二个类的代码覆盖率报告" class="margin-around" height="226" src="../../../images_www/articles/72/php/phpunit/code-coverage-report2.png" width="451"></li>
+</ol>
+<h2 id="project-specific-configurations">使用项目特定的配置</h2>
+<p>在 IDE 中，可以为项目选择以下定制配置：</p>
+<ul>
+  <li>引导文件</li>
+  <li>XML 配置文件</li>
+  <li>测试套件</li>
+  <li>定制 PHPUnit 脚本</li>
+</ul>
+<p><strong>要设置项目特定的配置，请执行以下操作：</strong></p> 
+<ol>
+<li>右键单击项目节点或项目的 "Test Files"（测试文件）节点，然后选择 "Properties"（属性）。这会打开 "Properties"（属性）对话框。<br><img alt="选中了 &quot;Properties&quot;（属性）的项目上下文菜单" class="margin-around" height="427" src="../../../images_www/articles/72/php/phpunit/project-ctxmenu.png" width="330"></li> 
+<li>选择 PHPUnit 类别。此时将打开一个对话框，可以在其中选择定制引导、XML 配置、PHPUnit 脚本或测试套件文件。<br><img alt="&quot;Project properties&quot;（项目属性）对话框的 &quot;PHPUnit&quot; 类别" class="margin-around" height="456" src="../../../images_www/articles/72/php/phpunit/proj-properties.png" width="600"></li> 
+<li>如果您不熟悉引导或 XML 配置文件的结构，可以使用 NetBeans IDE 生成框架。您还可以通过单击 "Help"（帮助）查找有关使用该对话框的说明。<br><img alt="&quot;Project properties&quot;（项目属性）的 &quot;PHPUnit&quot; 类别的详细信息" class="margin-around" height="423" src="../../../images_www/articles/72/php/phpunit/proj-properties-selected.png" width="379"></li>
+</ol>
+
+<p>使用定制类加载器的项目需要<em>引导选项</em>，例如，通过实现 Magic 函数 <tt>__autoload()</tt>。如果需要预先包含一个文件（如定义项目中的多个类所使用的全局常量的文件），则也需要使用引导选项。</p>
+<p>可通过 <em>XML 配置文件</em>定义命令行调用中使用的选项。<a href="http://www.phpunit.de/manual/3.3/en/appendixes.configuration.html" target="_blank" title="PHPUnit 手册">PHPUnit 手册</a>中进行了完整介绍。还可以使用 XML 配置文件为测试用例定义 <tt>php.ini</tt> 设置和全局变量。也可以在 XML 配置文件中设置引导选项。</p>
+<p>如果设置<em>定制测试套件</em>，每次选择 "Run"（运行）> "Test Project"（测试项目）时，都会运行该套件。如果要仅运行一部分测试，或者要使用最近添加（必须手动添加）的 PHPUnit 功能（如数据提供器），该功能特别有用。请注意，您可以根据需要定义多个测试套件，并通过在项目资源管理器中右键单击文件并选择 "run"（运行）来分别运行这些套件。为防止造成混乱，NetBeans 会通知您是否使用定制测试套件。可以在 "Test Results"（测试结果）和 "Output"（输出）窗口中找到通知。</p>
+<p>可以将<em>定制 PHPUnit 脚本</em>（而非 "Tools"（工具）> "Options"（选项）中所选的默认脚本）用于项目。定制 PHPUnit 脚本可以包含 <a href="http://www.phpunit.de/manual/3.7/en/textui.html">PHPUnit 手册</a>中描述的任何命令行开关。</p>
+<p>&nbsp;</p>
+<h2 id="selenium">在 Selenium 框架上运行测试</h2>
+<p>Selenium 是一种测试 Web 应用程序框架的可移植软件。这些测试可以编写为 HTML 表，或以各种常用的编程语言进行编码，并且可以直接在目前的多数 Web 浏览器中运行。Selenium 可以部署在 Windows、Linux 和 Macintosh 上。有关更多详细信息，请参见 <a href="http://docs.seleniumhq.org" target="_blank">Selenium Web 站点</a>。 </p>
+<p>NetBeans IDE 具有包含 Selenium 服务器的插件。通过此插件，您可以对 PHP、Web 应用程序或 Maven 项目运行 Selenium 测试。要对 PHP 运行 Selenium 测试，需要将 Testing Selenium 软件包安装到 PHP 引擎。</p>
+<p><strong>对 PHP 运行 Selenium 测试：</strong></p>
+<ol>
+  <li>打开命令提示符，然后运行 <tt>pear install Testing_Selenium-beta</tt> 命令。您需要在 Path 变量中包含 <tt>PHP_HOME/php/PEAR</tt>。如果成功运行该命令，则将显示以下提示：<tt>install ok: channel://pear.php.net/Testing_Selenium-0.4.3</tt>。</li>
+  <li>在 IDE 中，打开 "Tools"（工具）> "Plugins"（插件），然后安装 "Selenium Module for PHP"。</li>
+  <li>在 "Projects"（项目）窗口中，右键单击 Calculator 项目的节点。选择 "New"（新建）> "Other"（其他）。此时将打开新建文件向导。选择 "Selenium"，然后单击 "Next"（下一步）。 <br><img alt="选定了 Selenium 文件的新建文件向导" class="margin-around" height="413" src="../../../images_www/articles/72/php/phpunit/new-selenium.png" width="543"></li>
+  <li>第一次创建 Selenium 测试时，将会打开一个对话框，要求您设置 Selenium 测试文件的目录。此目录应不同于 PHPUnit 测试文件的目录。否则，每次运行单元测试时，Selenium 测试都会运行。运行 Selenium 之类的功能测试通常比运行单元测试所花费的时间长，因此在每次运行单元测试时，您可能不会希望运行这些测试。</li>
+  <li>接受 "Name and Location"（名称和位置）页中的默认设置，然后单击 "Finish"（完成）。新 Selenium 测试文件在编辑器中打开，并在 "Projects"（项目）窗口中显示。 <br><img alt="显示新 Selenium 测试的 &quot;Projects&quot;（项目）窗口" class="margin-around" height="187" src="../../../images_www/articles/72/php/phpunit/selenium-test-in-project.png" width="279"></li>
+  <li>现在，"Run Selenium Tests"（运行 Selenium 测试）项已添加到项目的上下文菜单中。单击此项，Selenium 测试结果随即显示在与 PHPUnit 测试相同的 "Test Results"（测试结果）窗口中。</li>
+</ol>
+<h2 id="more-exercises">更多练习</h2>
+    <p>下面是供您探讨的更多思路：</p>
+    <ul>
+      <li>向 Calculator.php 中添加第二个类，例如将 $a 和 $b 相乘的 <tt>Calculator2</tt> 类。删除并重新生成测试。</li>
+      <li>如果尝试学习包含多个部分的<a href="./wish-list-tutorial-main-page.html">创建 CRUD 应用程序教程</a>，请为最终项目创建 Selenium 测试。 </li>
+    </ul>
+<div class="feedback-box">
+  <a href="/about/contact_form.html?to=3&amp;subject=Feedback:PHPUnit and Selenium on NB 6.7">发送有关此教程的反馈意见</a>
+</div>
+<br style="clear:both;" >
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。<a href="http://forums.netbeans.org/" target="_blank">NetBeans IDE 论坛</a>上提供了此列表的镜像。</p>
+<a name="seeAlso"></a>
+        <h2>另请参见</h2>
+
+        <p>有关在 NetBeans IDE 中测试 PHP 的更多信息<a href="https://netbeans.org/" target="_blank"></a>，请参见下面的资源：</p>
+        <ul>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/phpunit_support_added" target="_blank">"NetBeans for PHP" 博客：添加的 PHPUnit 支持</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/ui_for_phpunit_support" target="_blank">"NetBeans for PHP" 博客：PHPUnit 支持的 UI</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/code_coverage_for_php_why" target="_blank">"NetBeans for PHP" 博客：PHP 的代码覆盖率 - 为何不使用？</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/recent_improvements_in_phpunit_support" target="_blank">"NetBeans for PHP" 博客：最近在 PHPUnit 支持方面所做的改进</a></li>
+            <li><a href="http://wiki.netbeans.org/SeleniumPluginPHP" target="_blank">NetBeans IDE Wiki：适用于 PHP 的 Selenium 插件</a></li>
+            <li><a href="./debugging.html">在 NetBeans IDE 中调试 PHP 源代码</a></li>
+            
+        </ul>
+<p><a href="../../trails/php.html">返回至 PHP 学习资源</a> </p>
+  
+</body>

@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Creating a Database Driven Application With PHP. Deploying the Application on a Remote Web Server </title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Deploying the Application on a Remote Server" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">  
+   </head>
+   <body>
+<h1>Creating a Database Driven Application With PHP</h1>
+<h1>Lesson 9: Deploying the Application on a Remote Web Server </h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Tutorial contents:</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Creating a Database Driven Application With PHP - Main page</a></li>
+    <li><p>Creating the Database</p> <ol type="a"><li><a href="wish-list-lesson1.html">Creating a MySQL Database</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Creating Oracle Database Tables</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">Designing the Application. Reading from the Database</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">Creating a New Application User
+    
+    </a></li>
+    <li><a href="wish-list-lesson4.html">Optimizing the Code</a></li>
+    <li><a href="wish-list-lesson5.html">Adding Security. Implementing Application User Logon</a></li>
+    <li><a href="wish-list-lesson6.html">      Adding a New Wish to the Database</a></li>
+    <li>      <a href="wish-list-lesson7.html">Updating and Deleting Entries in the Database</a></li>
+    <li><a href="wish-list-lesson8.html">      Making the Application Look Better Using the CSS Technology</a></li>
+    <li>
+      <p><b>=&gt;Deploying the Application on a Remote Web Server</b></p>
+    <ul>
+    <li><a href="#previousLessonSourceCode">Application Source Code from the Previous Lesson</a></li>
+    <li><a href="#registerEmailAccount">Registering an Email Account</a></li>
+    <li><a href="#registerHostingAccount">Registering a Hosting Account</a></li>
+    <li><a href="#registeringFTPAccount">Registering an FTP Account</a></li>
+    <li><a href="#creatingRemoteDatabase">Creating a Remote Database</a></li>
+    <li><a href="#settingUpPHPProjectWithSources">Setting Up a PHP Project with Existing Sources</a></li>
+    <li><a href="#updatingClassWishDB">Updating the Class WishDB</a></li>
+    <li><a href="#nextSteps">Next Steps</a></li></ul></li>
+        </ol>
+</div>
+</div>
+
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<p>Normally, a real-life PHP application is run on a remote server and is accessed through a File Transfer Protocol (FTP). To deploy your CRUD application on a remote server, you will need to register an account on a hosting provider, register an FTP account, and create a remote database.</p>
+<p>You can use any hosting you like. The current document describes the deployment procedure on the X10HOSTING free hosting. This hosting includes a MySQL but not an Oracle database server.</p>
+<p class="notes"> All the user names, passwords, and email addresses are fake and used as examples only.  The administration of the hosting blocks an account if the user does not show up on the forum fore more than a week. So you may fail to apply exactly the same user names, passwords, email addresses, and other credentials from the tutorial.</p>
+<p>In this lesson you learn how to do the following:</p>
+<ul>
+  <li style="margin-left:40em"><a href="#registerHostingAccount">Register a hosting account </a></li>
+  <li style="margin-left:40em"><a href="#improveTableEmptyCells">Register an FTP account </a> </li>
+  <li style="margin-left:40em"><a href="#designStyles">Create a remote MySQL database </a></li>
+  <li style="margin-left:40em"><a href="#divs">Set up your project to use the registered remote web hosting </a></li>
+  <li style="margin-left:40em">Change your database connection settings to use the remote database </li>
+</ul>
+<p>The current document is a part of the Creating a CRUD Application in the NetBeans IDE for PHP tutorial. </p>
+<br style="clear:left">
+<h2><a name="previousLessonSourceCode"></a>Application Source Code from the Previous Lesson</h2>
+<p>MySQL users: Click <a target="_blank" href="https://netbeans.org/files/documents/4/1934/lesson8.zip"> here</a> to download the source code that reflects the project state after the previous lesson is completed.</p>
+<h2><a name="registerEmailAccount"></a>Registering an Email Account</h2>
+<p>Create an email account, if you have not created it before. In this example the email address is phpuser65@googlemail.com. </p>
+<h2><a name="registerHostingAccount"></a>Registering a Hosting Account </h2>
+<p>To create a hosting account   on the <a target="_blank" href="http://x10hosting.com/">X10HOSTING</a> free hosting, follow the steps in their wizard, entering the following settings. You will enter similar information on any other hosting site.</p>
+<table>
+     <tbody>
+	   <tr>
+         <th class="tblheader" scope="col">Account Setting </th>
+         <th class="tblheader" scope="col">Value</th>
+       </tr>
+	   <tr>
+	   <td>Email Address</td>
+	   <td>phpuser65@gmail.com</td>
+	   </tr>
+       <tr>
+         <td>Domain name </td>
+         <td><a target="_blank" href="http://x10hosting.com/">x10Hosting.com</a></td>
+       </tr>
+       <tr>
+         <td>Subdomain</td>
+         <td>phpuser
+       </tr>
+       <tr>
+         <td>Hosting Account Username (also for login to cPanel) </td>
+         <td>phpuser</td>
+       </tr>
+       <tr>
+         <td>Hosting Account Password (also for login to cPanel) </td>
+         <td>qwerty1234</td>
+       </tr>
+	   <tr>
+         <td>Forum  Username </td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+         <td>Forum Password </td>
+         <td>qwerty</td>
+       </tr>
+	   <tr>
+         <td>FTP Account name </td>
+         <td>uploader</td>
+       </tr>
+	   <tr>
+         <td>FTP User Name </td>
+         <td>uploader@phpuser.x10hosting.com</td>
+       </tr>
+	   <tr>
+         <td>FTP Server </td>
+         <td>ftp.phpuser.x10hosting.com</td>
+       </tr>
+       <tr>
+         <td>Remote Database Host Name</td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+	   <td>Remote Database</td>
+	   <td>wishlist</td>
+	   </tr>
+	   <tr>
+	   <td>Remote Database Username</td>
+	   <td>phpuser</td>
+	   </tr>
+	   <tr>
+	   <td>Remote Database User Password</td>
+	   <td>phpuserpw</td>
+	   </tr>
+     </tbody>
+   </table>
+<h2><a name="registeringFTPAccount"></a>Registering an FTP Account</h2>
+<p>Now that you have a hosting account, you need an FTP account where you will transfer your PHP source and other related files for executing them on the server. For x10Hosting, you opent the cPanel and select New FTP Account, then follow their wizard.</p>
+<h2><a name="creatingRemoteDatabase"></a>Creating a Remote Database</h2>
+<p>Because the CRUD application uses a database you will also need to deploy the <tt>wishlist</tt> MySQL database on the remote server where you have a <a href="#registerHostingAccount">hosting account.</a></p>
+
+<h2><a name="settingUpPHPProjectWithSources"></a>Setting Up a PHP Project with Existing Sources and Remote Web Site Run Configuration </h2>
+<ol>
+<li><a href="#previousLessonSourceCode">Download the source files</a> that correspond to the state of the application after the previous lesson is completed. Extract the files. </li>
+<li>Save the source files in the <tt>htdocs</tt> folder.</li>
+<li>Create a <a href="project-setup.html#importSources">PHP project with existing sources</a>:
+  <ul>
+<li>Specify the location of the downloaded sources in the Source folder</li>
+<li>Choose the <a href="project-setup.html#remiteWebSite">Remote Web Site</a> run configuration and configure the FTP connection </li>
+</ul>
+</li>
+<li>Complete the project creation.</li>
+</ol>
+<h2><a name="updatingClassWishDB"></a>Updating the Class WishDB</h2>
+<p>So far you have developed and run the Wish List application on the local web server and used a local MySQL or Oracle database server. To make your application work with the remote MySQL database, you need to update the connection settings specified through the variables of the class <tt>WishDB</tt>.</p>
+<ol>
+<li>Open the file <tt>db.php</tt>.</li>
+<li>Change the variables of the class <tt>WishDB</tt>:
+  <pre class="examplecode">
+    var $user = "&lt;the name of the remote database user&gt;";        
+    var $pass = "&lt;the password of the remote database user&gt;";
+    var $dbName = "&lt;the name of the remote database&gt;";
+    var $dbHost = "&lt;the account username specified during the hosting account creation&gt;";
+</pre>
+
+In this example the variables will be updated as follows:
+<pre class="examplecode">
+    var $user = "phpuser";        
+    var $pass = "phpuserpw";
+    var $dbName = "wishlist";
+    var $dbHost = "phpuser";
+</pre>
+</li>
+</ol>
+<h2><a name="nextSteps"></a>Next Steps</h2>
+  <p><a href="wish-list-lesson8.html">&lt;&lt; Previous lesson</a></p>
+  <p>
+  <a href="wish-list-tutorial-main-page.html">Back to the Tutorial main page</a></p>
+  
+  <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;" >
+<p>To send comments and suggestions, get support, and keep informed on the latest
+  developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+  the users@php.netbeans.org mailing list</a>.
+   <p><a href="../../trails/php.html">Back to the PHP Learning Trail</a></p>
+
+</body>
+</html>

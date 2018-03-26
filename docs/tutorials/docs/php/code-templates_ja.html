@@ -1,0 +1,384 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><title>PHP向けのNetBeans IDEのコード・テンプレート - チュートリアル</title>
+
+
+
+
+
+        <meta name="KEYWORDS" content="NetBeans, tutorial, configure, PHP, PHP engine, guide, documentation, code template">
+        <meta name="DESCRIPTION" content="This document describes the PHP code templates available in NetBeans IDE, how to use them,
+              and some common use cases.">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script></head><body>
+
+        <!--
+        Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>PHP向けのNetBeans IDEのコード・テンプレート</h1>
+
+        <p>コード・テンプレートは、NetBeans IDEによって提供される記述済のコード・スニペットです。コード補完を使用するか、またはテンプレートの省略名に続けて[Tab]キーを押すことによって、スニペットを自分のコードに貼り付けることができます。適切なPHPスニペットでコードを囲むこともできます。さらに、独自のコード・テンプレートも定義できます。このチュートリアルでは、コード・テンプレートの使用方法を解説し、独自のコード・スニペットを定義するために役立つケースを紹介します。</p>
+
+        <p><b>目次</b></p>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#define">定義済のPHPコード・テンプレート</a></li>
+            <li><a href="#using-templates">PHPコード・テンプレートの使用方法</a>
+                <ul>
+                    <li><a href="#expand-with-abb">省略名と[Tab]を使用したコード・テンプレートの展開</a></li>
+
+                    <li><a href="#expand-with-cc">コード補完によるコード・テンプレートの挿入</a></li>
+                    <li><a href="#surround-code">テンプレートでコードを囲む</a></li>
+                    <li><a href="#edit-parameters">展開されたテンプレートのパラメータの編集</a></li>
+                </ul>
+            </li>
+            <li><a href="#syntax">PHPコード・テンプレートの構文</a>
+                <ul>
+                    <li><a href="#placeholder">プレースホルダ名</a></li>
+                    <li><a href="#reserved-name">予約名</a></li>
+                    <li><a href="#complex">ヒントによって定義されるパラメータ</a></li>
+                    
+                </ul>
+            </li>
+            <li><a href="#create">独自のコード・テンプレートの作成</a>
+                <ul>
+                    <li><a href="#uc-html">ユース・ケース: HTMLへのPHPの挿入</a> </li>
+                    <li><a href="#joomla">ユース・ケース: Joomla</a> </li>
+                    <li><a href="#mysql-conn">ユース・ケース: MySQL接続</a> </li>
+                    <li><a href="#z-action">ユース・ケース: Zendコントローラでのアクション</a> </li>
+                    <li><a href="#z-form-element">ユース・ケース: Zendフォーム要素</a> </li>
+                </ul>
+            </li>
+        </ul>
+
+        <p><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a> </td>
+                    <td class="tbltd1">PHPダウンロード・バンドル</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a> </td>
+                    <td class="tbltd1">7または8</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>&nbsp;</p>
+
+
+        <h2><a name="define"></a>定義済のPHPコード・テンプレート</h2>
+        <p>NetBeansで定義されているコード・テンプレートを表示するには、「ツール」>「オプション」(Macの場合は「NetBeans」>「プリファレンス」)を開き、「エディタ」機能を選択し、「コード・テンプレート」タブを選択します。PHPのコード・テンプレートを表示するには、「言語」ドロップダウン・リストで「PHP」を選択します。コード・テンプレートの省略名と展開されるテキストの表が表示されます。表でコード・テンプレートを選択すると、その展開されるテキストが「展開されるテキスト」タブに表示されます。 </p>
+        <img alt="cliテンプレートが選択された「オプション」内のPHPコード・テンプレート" class="margin-around" src="../../../images_www/articles/72/php/code-templates/code-template-options.png">
+        <p>このイメージでは、新規クラス(<tt>cls</tt>)コード・テンプレートが選択され、「展開されるテキスト」タブにはテンプレートが展開されたときの内容が表示されています。次の項では、Tab機能を使用してコード内でこのテンプレートを展開します。</p>
+        <p class="notes"><strong>注意:</strong> 新規クラス(<tt>cls</tt>)コード・テンプレートの構文については、<a href="#syntax">PHPコード・テンプレートの構文</a>の項で説明します。</p>
+        <h2><a name="using-templates"></a>PHPコード・テンプレートの使用方法</h2>
+        <p>PHPコードにコード・テンプレートを挿入する方法は3つあります。どの方法でコード・テンプレートを挿入するが適切かは、状況によって異なります。コード・テンプレートの挿入方法は次の3つです。</p>
+        <ul>
+            <li>テンプレートの省略名と[Tab]キー(または、独自に定義する別のキーまたはキーの組合せ)を使用して<a href="#expand-with-abb">テンプレートを展開</a>する。</li>
+            <li>コード補完を使用して<a href="#expand-with-cc">展開されたテンプレートを挿入</a>する。</li>
+            <li>マージン・ヒントまたは[Alt]-[Enter]を使用して、テンプレートで<a href="#surround-code">コードを囲む</a>。</li>
+        </ul>
+        <p>テンプレートを挿入した後に、IDEでは、展開されたテンプレート・コード内の<a href="#edit-parameters">パラメータを編集</a>できます。</p>
+        <div class="indent">
+            <h3><a name="expand-with-abb"></a>省略名と[Tab]を使用したコード・テンプレートの展開</h3>
+            <p>「オプション」ダイアログの「コード・テンプレート」タブをもう一度見てみます。最下部に、キーの組合せを選択するための「テンプレートを展開」ドロップダウン・フィールドがあります。これは、コード・テンプレートを展開するために、コード・テンプレートの省略名を入力した後に押すキーの組合せです。デフォルトでは[Tab]キーが選択されていますが、かわりに他の組合せも選択できます。</p><img alt="「テンプレートを展開」ドロップダウン・ボックス" class="margin-around" src="../../../images_www/articles/72/php/code-templates/expand-template-on.png">
+            <p>この項ではこれ以降、「テンプレートを展開」フィールドでデフォルトの「[Tab]」キーが選択されていると仮定します。</p>
+            <p class="tips">テンプレートの省略名がコード補完のキーワードの一部でもあるときに、省略名を展開することが難しい場合があります。このような場合、<a href="#expand-with-cc">コード補完</a>を使用してテンプレートを挿入するほうが簡単です。</p>
+            <p><strong>省略名と[Tab]を使用して新規クラス・コード・テンプレートを展開する</strong></p>
+            <ol>
+                <li>空のPHPファイルを作成します。</li>
+                <li>そのファイルのPHPブロックで、「<tt>cls</tt>」と入力して[Tab]を押します。<tt>cls</tt>コード・テンプレートが展開されます。
+                    <p class="alert"><b>注意:</b> 省略名のスペルを間違えないようにしてください。省略名のスペルが間違っていると展開は機能しません。 </p><img alt="コード・テンプレートの展開" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png"></li>
+                <li>プレースホルダのクラス名(<tt><strong>class_name</strong></tt>)が自動的に選択されます。[Tab]を押して、プレースホルダ間を移動できます。クラスに付ける名前をここで入力でき、入力した名前によってプレースホルダが上書きされます。終了して[Enter]を押すと、最初の関数(この場合はコンストラクタ)の名前がIDEで選択されます。 
+                  <p class="notes"><strong>注意:</strong> プレースホルダ名については<a href="#placeholder">プレースホルダ名</a>の項で詳しく説明します。</p>
+                    <img alt="クラス名の編集後に選択されたコンストラクタ関数名" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png"></li>
+              <li>関数名を編集するか、またはデフォルトの名前をそのまま使用します。もう一度[Enter]を押すと、カーソルが関数本体の内部に移動します。実際には、ここで関数およびクラスの残り部分のコーディングを開始します。 <p class="notes">カーソルの最終位置は<tt>${cursor}</tt>パラメータによって決定されます。このパラメータについては<a href="#reserved-name">予約名</a>の項で説明します。
+                    </p></li></ol>
+          <h3><a name="expand-with-cc"></a>コード補完によるコード・テンプレートの挿入</h3>
+
+
+            <p>コード補完を使用してコード・テンプレートを挿入するには、テンプレートの省略名<em>ではなく</em>、展開されるスニペットの先頭部分を入力します。コード補完ダイアログが開き、スニペットが表示されます。</p>
+            <p><strong>コード補完を使用して新規クラス・コード・テンプレートを挿入する</strong></p>
+            <ol>
+                <li>PHPファイルのPHPブロックで、「<tt>cla</tt>」と入力します。</li>
+                <li>コード補完ダイアログが表示されるまで待ちます。</li>
+                <li>省略名(<tt>cls</tt>)とともに一覧表示される新規クラス・テンプレートを探します。PHPDocフレームには展開されたテンプレートが表示されます。<br> <img alt="新規クラス・テンプレートが表示されたコード補完ダイアログ" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/insert-template-with-cc.png"></li>
+                <li>新規クラス・テンプレートを選択し、[Enter]キーを押します。IDEによって、コードに挿入されます。</li>
+                <li>プレースホルダのクラス名(<tt><strong>class_name</strong></tt>)が自動的に選択されます。[Tab]を押して、プレースホルダ間を移動できます。クラスに付ける名前をここで入力でき、入力した名前によってプレースホルダが上書きされます。終了して[Enter]を押すと、最初の関数(この場合はコンストラクタ)の名前がIDEで選択されます。<br> <img alt="クラス名の編集後に選択されたコンストラクタ関数名" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png"></li>
+                <li>関数名を編集するか、またはデフォルトの名前をそのまま使用します。もう一度[Enter]を押すと、カーソルが関数本体の内部に移動します。実際には、ここで関数およびクラスの残り部分のコーディングを開始します。</li>
+            </ol>
+            <h3><a name="surround-code"></a>テンプレートでコードを囲む</h3>
+            <p>次のPHPテンプレートでコードを囲むことができます。</p>
+            <ul>
+                <li><tt>while</tt></li>
+                <li><tt>do</tt><br>
+                </li>
+                <li><tt>switch</tt></li>
+                <li><tt>if</tt> / <tt>elseif</tt></li>
+                <li><tt>try</tt>と<tt>catch</tt></li>
+                <li><tt>foreach</tt></li>
+                <li><tt>for</tt></li>
+                <li><tt>ob_start</tt>と<tt>ob_end_clean</tt></li>
+            </ul>
+            <p>また、テンプレートに<code>allowSurround</code><a href="#complex">パラメータ・ヒント</a>が含まれている場合にコードを囲む<a href="#create">新しいテンプレートを作成</a>できます。(<a href="http://www.mybelovedphp.com/2012/05/14/tips-for-using-the-netbeans-editor-for-kohana-and-kostache-mustache-templates-using-surround-with/">My Beloved PHPブログ</a>に感謝します。)</p>
+            <p>テンプレートでコードを囲むには、コードを選択して「囲む」ダイアログを開きます。「囲む」ダイアログを開くには、[Alt]-[Enter]を押すか、またはヒント<img alt="ヒント・アイコン" src="../../../images_www/articles/72/php/code-templates/hint-icon.png">・アイコンをクリックします。 </p>
+            <p><strong>if(true)テンプレートでコードを囲む</strong></p>
+            <ol>
+                <li>変数<tt>$a=true</tt>および<tt>$b=10</tt>を含むPHPブロックを作成します。
+                    <pre class="examplecode">&lt;?php<br>$a = false;<br>        <br>$b = 10;<br>?&gt;</pre>
+                </li>
+                <li>「<tt>$b = 10;</tt>」行を選択します。<br> <img alt="選択された変数「$b = 10」" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/selected-variable.png">
+                </li>
+                <li>ヒント<img alt="ヒント・アイコン" src="../../../images_www/articles/72/php/code-templates/hint-icon.png">・アイコンをクリックするか、[Alt]-[Enter]を押します。「囲む」ダイアログが開きます。<br><img alt="開いた「囲む」ダイアログ" class="margin-around" src="../../../images_www/articles/72/php/code-templates/surround-hint.png"></li>
+                <li>「<tt>Surround with if{<strong>true</strong>){...</tt>」をクリックします。<br> <img alt="「Surround with if(true)」が選択された「囲む」ダイアログ" class="margin-around" src="../../../images_www/articles/72/php/code-templates/surround-if-true.png"></li>
+                <li>IDEで、「<tt>$b=10;</tt>」行が「<tt>if(<strong>true</strong>){...</tt>」テンプレートで囲まれます。<br> <img alt="挿入されたif (true)テンプレート" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png"></li>
+            </ol>
+            <p>IDEでは自動的に、出現済で最も近い位置にある適切な変数が<tt>if</tt>文の条件として挿入されます。<tt>$a</tt>はブール型であり、<tt>if(<strong>true</strong>){}</tt>文はその条件としてブール型の変数を取るため、この場合の該当する変数は<tt>$a</tt>です。また、IDEで条件に挿入された変数が正しい変数でない場合、その条件が自動的に編集のために選択されます。つまり、テンプレートが挿入された後、すぐに正しい変数の入力を開始できます。この場合、コード補完が正しい変数の選択に役立つことがあります。</p>
+            <p class="notes"><strong>注意:</strong> <tt>if(<strong>true</strong>){}</tt>テンプレートについては、<a href="#complex">ヒントによって定義されるパラメータ</a>の項で詳しく説明します。</p>
+            <p><img alt="コード補完から条件として使用する変数を選択" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/change-condition.png">        </p>
+            <p>[Enter]を押して文の条件を終了します。カーソルが適切な位置(この場合は「<tt>$b=10;</tt>」行の末尾)に移動します。条件を編集して[Enter]を押すか、または自動挿入された条件を受け入れて[Enter]を押すことができます。どちらの場合でも、カーソルは条件から適切な位置に移動します。</p>
+            <p><img alt="編集しなかった場合のカーソル" class="margin-around" src="../../../images_www/articles/72/php/code-templates/cursor-after-not-editing.png"><img alt="編集後のカーソル" class="margin-around" src="../../../images_www/articles/72/php/code-templates/cursor-after-editing.png">        </p>
+            <p>次の項では、展開されたテンプレート内のパラメータの編集について詳しく説明します。</p>
+            <h3><a name="edit-parameters"></a>展開されたテンプレート内のパラメータの編集</h3>
+            <p>コードへのテンプレートの挿入に関する項では、新規クラス・テンプレートの展開時にIDEでクラス名が編集のために自動選択されることと、<tt>if(<strong>true</strong>)</tt>テンプレートの展開時にIDEで条件名が編集のために自動選択されることを示しました。ここでは、展開されたテンプレート内のパラメータの編集を補助するIDEの機能について説明します。</p>
+            <p><strong>パラメータの複数のインスタンスを同時に編集する</strong></p>
+            <ol>
+                <li>空のPHPブロックで「<tt>for</tt>」と入力し、[Ctrl]-[Space]を押してコード補完を開きます。繰返し処理テンプレート(省略名<tt>iter</tt>)を選択して[Enter]を押します。新しい繰返し処理がコードに挿入されます。<br> <img alt="繰返し処理テンプレートが選択されたコード補完" class="margin-around" src="../../../images_www/articles/72/php/code-templates/iter-cc.png"></li>
+                <li>繰返し処理には、パラメータとして<tt>$index</tt>および<tt>$array</tt>の2つの変数があります。<tt>$index</tt>が編集のために自動的に選択されます。([Tab]を押すと、パラメータ間を移動します。)<br> <img alt="挿入された繰返し処理行とパラメータ($indexパラメータが編集のために選択)" class="valign-bottom" src="../../../images_www/articles/72/php/code-templates/iteration1.png"> <p>「<tt>i</tt>」と入力します。<tt>$index</tt>の3つのインスタンスがすべて<tt>$i</tt>に変更されます。 </p><img alt="挿入された繰返し処理行(パラメータ$indexが$iに変更)" src="../../../images_www/articles/72/php/code-templates/iteration2.png"></li>
+              <li>[Enter]または[Tab]を押します。パラメータ<tt>$array</tt>が選択されます。 </li>
+                <li>[Enter]を押します。カーソルが繰返し処理のメソッド本体に移動します。 </li>
+            </ol>
+            <p>NetBeansの変数名リファクタリング機能では、変数の1つのインスタンスを編集することにより、その変数のすべてのインスタンスを変更できます。これがテンプレートのパラメータに適用されると役に立つことがわかります。</p>
+            <p>NetBeans IDEのPHPエディタは、変数に対する正しいメソッドを識別するのにも役立ちます。</p>
+            <p><strong>テンプレート内の変数を正しいメソッドと関連付ける</strong></p>
+            <ol>
+                <li>空のPHPブロックで、次のコードを入力します。
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>?&gt;</pre></li>
+                <li><tt>$arr</tt>配列を宣言する行の後に「<tt>fore</tt>」と入力し、コード補完を使用して<tt>foreach</tt>テンプレート(省略名<tt>fore</tt>)を挿入します。<br> <img alt="foreachテンプレートを挿入するためのコード補完" class="margin-around" src="../../../images_www/articles/72/php/code-templates/cc-foreach.png"></li>
+                <li>([Enter]を2回押すか、またはカーソルを移動して)<tt>foreach</tt>関数の本体にカーソルを置き、「<tt>$value</tt>」と入力するか、または「<tt>$</tt>」とのみ入力してコード補完から「<tt>$value</tt>」を選択します。
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>foreach ($arr as $value) {<br>    $value<br>}<br><br>?&gt;</pre></li>
+                <li>「<tt>$value</tt>」に続けて「<tt>-></tt>」と入力します。コード補完により、配列<tt>$arr</tt>から派生した<tt>$value</tt>変数に対する適切なメソッドが提示されます。<br> <img alt="$value変数に対するコード補完($valueはArray Iteratorメソッド)" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/value-method-cc.png"></li>
+            </ol>
+        </div>
+
+        <h2><a name="syntax"></a>PHPコード・テンプレートの構文</h2>
+        <p>NetBeans IDEは、IDEがサポートするすべての言語のコード・テンプレートを提供します。一部の構文はすべての言語に共通です。その他の構文は言語ごとに固有です。この項では、最もよく使用される一般的なテンプレート構文と、PHPテンプレートに固有の構文について説明します。</p>
+        <p>PHPコード・テンプレートには、PHPコードとテンプレート・パラメータを含めることができます。PHPテンプレートは、PHPコードのみ、パラメータのみ、またはコードとパラメータの両方で構成できます。 </p>
+        <p>コード・テンプレート・パラメータの構文では、ドル記号<tt>$</tt>に続けてパラメータの定義を中括弧<tt>{...}</tt>で囲みます。この構文の内部で、テンプレート・パラメータの形式は次の4つのいずれかです。</p>
+        <ul>
+            <li><tt>${SomeName}</tt>などの任意の<a href="#placeholder">プレースホルダ名</a></li>
+            <li>IDEに処理指示を与える<a href="#reserved-name">予約名</a></li>
+            <li>パラメータの記述名と、一連の<a href="#complex">パラメータを定義するヒント</a></li>
+            <li><a href="#pre-defined">事前定義済パラメータ</a>
+            </li>
+
+        </ul>
+        <p>後続の各項では、コード・テンプレート・パラメータの各形式について説明します。</p>
+        <p class="notes"><strong>注意:</strong> <tt>$$${VARIABLE...}</tt> PHPコード・テンプレートの構文が、<tt>$$${...}</tt>のように3つのドル記号に中括弧が続く形式になっている場合があります。この場合、コード・テンプレートには変数とその名前が含まれています。ここで示す構文では、エスケープされたドル記号(二重のドル記号<tt>$$</tt>として記述される)に、変数名に対応するパラメータ<tt>${VARIABLE...}</tt>を続いています。たとえば、コード・テンプレート「<tt>catch${Exception}$$${exc}</tt>」は「<span class="examplecode"><tt>catch Exception$exc</tt></span>」に展開されます。</p>
+        <div class="indent">
+            <h3><a name="placeholder"></a>プレースホルダ名</h3><br>
+            <p>最も単純なケースでは、コード・テンプレート・パラメータは任意のプレースホルダ値です。テンプレートが展開されると、IDEでこのプレースホルダ名が編集のために選択されます。</p><br>
+            <p>たとえば、このチュートリアルの<a href="#define">定義済PHPテンプレート</a>および<a href="#expand-with-abb">省略名と[Tab]を使用したコード・テンプレートの展開</a>の各項で示した新規クラス・テンプレート(<tt>cls</tt>)を考えます。新規クラス・テンプレートの展開されたテキストは「<tt>class${className}</tt>」で始まります。ここで、単語<tt>class</tt>はPHPコードであり、<tt>${className}</tt>はパラメータです。このパラメータは単に、クラスの名前の任意のプレースホルダ値です。IDEでテンプレートが展開されると、<tt>${className}</tt>は<tt><strong>class_name</strong></tt>になります。IDEは<tt><strong>class_name</strong></tt>を単なるプレースホルダ値と認識し、編集のためにこの値を自動的に選択します。</p>
+
+            <img alt="コード・テンプレートの展開" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png">
+            <h3><a name="reserved-name"></a>予約名</h3>
+            <p>IDEでは、処理指示として使用される2つのパラメータ名が予約されています。</p>
+            <ul><li><tt>${cursor}</tt>は、展開されたテンプレート内で自動選択されたすべての値の編集を終了した後のカーソルの位置を定義します。</li>
+                <li><tt>${selection}</tt>は、エディタの選択内容を貼り付ける位置を定義します。これは、ユーザーがエディタでテキストを選択するたびにヒントとして表示される「選択テンプレート」によって使用されます。テンプレートに<tt>${selection}</tt>が含まれる場合、これは通常、<tt>${cursor}</tt>と同じ位置を参照します。</li></ul>
+            <p>たとえば、このチュートリアルの<a href="#define">定義済PHPテンプレート</a>および<a href="#expand-with-abb">省略名と[Tab]を使用したコード・テンプレートの展開</a>の各項で示した新規クラス・テンプレート(<tt>cls</tt>)について再度考えてみます。<tt>${ClassName}</tt>および<tt>$__construct</tt>という2つのプレースホルダ名パラメータが含まれています。関数本体には、<tt>${cursor}</tt>および<tt>${selection}</tt>というパラメータが含まれています。</p>
+
+            <pre class="examplecode">class ${ClassName} {<br><br>    function ${__construct} {<br>        ${selection}${cursor}<br><br>    }<br><br>}</pre>
+            <p>テンプレートが展開された後に、プレースホルダ<tt><strong>class_name</strong></tt>が自動的に選択されます(1)。[Enter]を押すと、プレースホルダ<tt><strong>__construct</strong></tt>が自動的に選択されます(2)。他に編集する値はありません。もう一度[Enter]を押すと、テンプレートのテキストで<tt>${cursor}</tt>によって指示される位置にカーソルが移動します(3)。</p>
+
+            <p><img alt="カーソルの位置がプレースホルダ名、プレースホルダ名、${cursor}の位置の順に変わることを示す3つのコード・スニペット" class="margin-around" src="../../../images_www/articles/72/php/code-templates/cursor-position-changes.png"></p>
+            <h3><a name="complex"></a>ヒントによって定義されるパラメータ</h3><br>
+            <p>パラメータは、すべて大文字の任意の記述名と1つ以上のヒントで構成できます。 </p>
+            
+            <pre class="examplecode">${PARAMETER_NAME hint1[=value] [hint2...hint n]}</pre>
+            <p>名前はコード内のどこにも出現しません。ただし、これは、コード・テンプレート内でパラメータを2回以上使用する場合に役立ちます。パラメータは初回のみ定義する必要があり、それ以降は名前によってそのパラメータを参照できます。たとえば次のコード・テンプレートで、パラメータ<tt>${CONLINK}</tt>は最初に一度のみ定義され、以後の2回はその名前によって参照されます。</p><br>
+            <pre class="examplecode"><a name="complex"></a>$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre><br>
+            <p>ヒントは、IDEでコード・テンプレートが展開されるときにテンプレート・パラメータの値を計算するために参照されます。たとえば、このチュートリアルの<a href="#surround-code">テンプレートでコードを囲む</a>の項で使用される<tt>if(<strong>true</strong>)</tt>テンプレートを見てみます。このテンプレートの展開されたテキストは次のとおりです。</p>
+            <pre class="examplecode">if (${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}) {<br>    ${selection}${cursor}<br>}</pre>
+            <p>パラメータ<tt>${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}</tt>に注目してください。このパラメータは<tt>if</tt>文の条件を設定します。したがって、パラメータの名前はCONDITIONです。最初のヒントは<tt>variableFromPreviousAssignment</tt>で、2番目のヒントは<tt>instanceof="boolean"</tt>です。これら2つのヒントを組み合せて、コード・テンプレートよりも前のコード内で最も近い位置に割り当てられたブール型変数を検出するようにIDEに指示します。3番目のヒント<tt>default="true"</tt>を追加して、「先に出現する最も近いブール型変数の値がtrueの場合」という条件をパラメータで設定します。 </p>
+
+            <p>たとえば、次のコード・スニペットの「<tt>$b=10</tt>」の行を<tt>if(<strong>true</strong>)</tt>コード・テンプレートで囲みます。</p>
+            <p><img alt="スニペット「$a = false $b = 10」" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/selected-variable.png"></p>
+            <p>IDEでは、これよりも前の最も近い位置で割り当てられたブール型変数として<tt>$a</tt>が検出され、<tt>$a</tt>[=true]という条件で<tt>if</tt>文が生成されます。条件が編集のために自動的に選択されるので、PHPプログラマは<tt>$a</tt>を別の変数または<tt>!$a</tt>に変更できます。</p>
+
+            <p><img alt="条件$a=trueが編集のために選択された、展開されたテンプレートif $a=true then $b=10" border="1" class="margin-around" src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png"></p>
+            <p>次の表は、PHPコード・テンプレートで使用されるヒントの一覧と各ヒントの説明です。</p>
+            <table>
+
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">ヒント</th>
+                        <th class="tblheader" scope="col">説明</th>
+
+                    </tr>
+                    <tr>
+                        <td><tt>newVarName</tt></td>
+                        <td> パラメータ値は未使用の変数名である必要があります。通常は<tt>default</tt>とともに使用します。</td>
+                    </tr>
+                    <tr>
+
+                        <td><tt>default=""</tt></td>
+                        <td>パラメータのデフォルト値。</td>
+                    </tr>
+                    <tr>
+                        <td><tt>instanceof=""</tt></td>
+                        <td>パラメータで定義されるPHP変数の型。</td>
+                    </tr>
+
+                    <tr>
+                        <td><tt>variableFromPreviousAssignment</tt></td>
+                        <td>パラメータ値は先に割り当てられた最も近い変数です。通常は<tt>instanceof</tt>および<tt>default</tt>とともに使用します。</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentName</tt></td>
+
+                        <td>パラメータ値はコード・テンプレートよりも後に割り当てられた最も近い変数の名前です。通常は<tt>default</tt>とともに使用します。</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentType</tt></td>
+                        <td>パラメータ値はコード・テンプレートよりも後に割り当てられた最も近い変数の型です。通常は<tt>default</tt>とともに使用します。</td>
+
+                    </tr>
+                    <tr>
+                        <td><tt>editable=false</tt></td>
+                        <td>テンプレートの展開後にパラメータ値を編集できません。</td>
+                    </tr>
+                    <tr>
+                        <td><tt>allowSurround</tt></td>
+                        <td>テンプレートを使用して<a href="#surround-code">コードを囲む</a>ことができます。</td>
+                    </tr>
+                </tbody>
+            </table>
+       </div>
+        <h2><a name="create"></a>独自のコード・テンプレートの作成</h2>
+        <p>NetBeans IDEで独自のコード・テンプレートを作成できます。この項では、コード・テンプレートの作成方法を説明し、その構文を解説し、作成すると役立ついくつかのテンプレートを提案します。</p>
+        <p><strong>コード・テンプレートを作成する</strong></p>
+        <ol>
+            <li>「ツール」>「オプション」(Macでは「NetBeans」>「プリファレンス」)を開き、「エディタ」機能を選択し、「コード・テンプレート」タブを選択します。<br> <img alt="cliテンプレートが選択された「オプション」内のPHPコード・テンプレート" class="margin-around" src="../../../images_www/articles/72/php/code-templates/code-template-options.png"></li>
+            <li>「新規」をクリックして、「新規コード・テンプレート」ダイアログ・ボックスを開きます。テンプレートの省略名を入力して「OK」をクリックします。<br> <img alt="テンプレートの省略名の入力を求める「新規コード・テンプレート」ダイアログ" class="margin-around" src="../../../images_www/articles/72/php/code-templates/new-abb.png"></li>
+            <li>コード・テンプレートの表に新しい行が追加されます。この行の内容は、指定した省略名のみです。IDEで「展開されるテキスト」タブにカーソルが自動的に移動します。テンプレートのコードの入力をすぐに開始できます。 <p class="notes"><b>注意:</b> コード・テンプレートの展開されるテキストの構文については、<a href="#syntax">PHPコード・テンプレートの構文</a>の項を参照してください。</p>
+                <img alt="新しいabbテンプレートの展開されたテキストの入力" class="margin-around" src="../../../images_www/articles/72/php/code-templates/new-abb-text.png"></li>
+        </ol>
+        <p>後続の各項では、独自のPHPコード・テンプレートを作成するためのユース・ケースをいくつか紹介します。新しく提案するユース・ケースがあれば、<a href="http://forums.netbeans.org/php-users.html" target="_blank">PHPユーザー・フォーラム</a>のコミュニティにぜひ投稿してください。</p>
+        <div class="indent">
+            <h3><a name="uc-html"></a>ユース・ケース: HTMLへのPHPの挿入</h3>
+            <p>PHPスニペットを頻繁にHTMLブロックに挿入する場合、<tt>&lt;?php?></tt>を何度も入力せずにPHPを挿入するHTMLコード・テンプレートを作成できます。</p>
+            <p>次のコード・テンプレートは、PHPの<tt>echo</tt>文をHTMLに挿入します。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">言語:</th>
+                        <td>HTML</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">省略名:</th>
+                        <td>php</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展開されるテキスト:</th>
+                        <td><pre>&lt;?php echo ${cursor}&nbsp;  ?&gt;</pre></td>
+                    </tr>
+
+                </tbody></table>
+            <p><img alt="htmlテンプレートに新しいphpが表示された「オプション」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/code-templates/uc-php.png"></p>
+            <h3><a name="joomla"></a>ユース・ケース: Joomla</h3>
+            <p>コード・テンプレートは、NetBeans IDEでPHPフレームワーク(特に、サポートが組み込まれていないフレームワーク)を使用する場合に役立ちます。次に示すのは、あるユーザーがJoomlaとともに使用するために開発したコード・テンプレートです。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">言語:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">省略名:</th>
+                        <td>joomdef</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展開されるテキスト:</th>
+                        <td><pre class="examplecode">defined('_JEXEC')<br>   	or die('Restricted access');<br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="新しいjoomdefコード・テンプレートが表示された「オプション」ダイアログ" class="margin-around" src="../../../images_www/articles/72/php/code-templates/uc-joomdef.png"></p>
+            <h3><a name="mysql-conn"></a>ユース・ケース: MySQL接続</h3>
+            <p>PHP開発者はしばしば、MySQLデータベースへの接続を作成する必要があります。このコード・テンプレートによって作成します。MySQL接続に割り当てられる変数のプレースホルダ名は<tt>link</tt>です。「三重の」ドル記号<tt>$$$</tt>の使用方法に注意してください。これは、展開すると1つのドル記号になる二重のドル記号に変数名のパラメータを続いています。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">言語:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">省略名:</th>
+                        <td>my_con</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展開されるテキスト:</th>
+                        <td><pre class="examplecode">$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="MySQL接続用の新しいコード・テンプレート" class="margin-around" src="../../../images_www/articles/72/php/code-templates/uc-mycon.png"></p>
+            <h3><a name="z-action"></a>ユース・ケース: Zendコントローラでのアクション</h3>
+            <p>NetBeansのウィザードを使用してアクションを作成するかわりに、コード・テンプレートを使用して、<tt>indexController{}</tt>などのZendフレームワーク・コントローラのアクションを挿入することができます。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">言語:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">省略名:</th>
+                        <td>zf_act</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展開されるテキスト:</th>
+                        <td><pre class="examplecode">public function ${functionName}Action () {<br>      ${selection}${cursor}  <br>}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="Zendアクションの新しいコード・テンプレート" class="margin-around" src="../../../images_www/articles/72/php/code-templates/uc-zfact.png"></p>
+            <h3><a name="z-form-element"></a>ユース・ケース: Zendフォーム要素</h3>
+            <p>このテンプレートはZendフォームに要素を挿入します。これは、Zendの<tt>create form &lt;name></tt>コマンドをコールしてフォームを生成した後に使用します。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">言語:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">省略名:</th>
+                        <td>zf_element</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展開されるテキスト:</th>
+                        <td><pre class="examplecode">$$${ELEMENT newVarName default="element"} = new Zend_Form_Element_Submit('submit', array('label' =&gt; 'Send data to server'));  <br>$$this-&gt;addElement($$${ELEMENT});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <img alt="Zendフレームワーク要素をZFフォームに挿入するための新しいコード・テンプレート" class="margin-around" src="../../../images_www/articles/72/php/code-templates/uc-zelement.png">
+        </div>
+        <p>&nbsp;</p>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Code%20Templates">このチュートリアルに関するご意見をお寄せください</a></div>
+        <p><br style="clear: both;">
+
+
+        </p>
+        <h2><a name="seeAlso"></a>関連項目</h2>
+
+        <p><a href="https://netbeans.org/" target="_blank">netbeans.org</a>でのPHPテクノロジの詳細は、次のリソースを参照してください。</p>
+
+        <ul>
+            <li><a href="../java/editor-codereference.html">NetBeans IDE Javaエディタでのコード支援</a>。コード・テンプレートやマクロ記録などのNetBeans IDEのコード支援に関するリファレンス・ガイドです。</li>
+            <li><a href="http://forums.netbeans.org/php-users.html" target="_blank">NetBeans PHPユーザー・フォーラム</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/" target="_blank">PHP向けのNetBeansブログ</a>。NetBeans PHPエディタの開発者によるブログです。最新の機能や改良点についての情報をいち早く入手できます。</li>
+        </ul>
+
+        <p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+
+    </body></html>

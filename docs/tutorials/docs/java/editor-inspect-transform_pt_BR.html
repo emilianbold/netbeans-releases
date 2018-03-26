@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Refatoração com o Inspecionar e Transformar - Tutorial do NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Refactoring with Inspect and Transform functionality in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Java editor, refactoring, inspections, configurations"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body><a name="top"></a>
+
+<h1>Refatoração com Inspecionar e Transformar no Editor Java do NetBeans IDE</h1>
+<p>O Editor Java do NetBeans IDE 7.1 apresenta uma funcionalidade de Inspecionar e Transformar, que é a ferramenta de refatoração para executar diversas inspeções e transformações de uma só vez em todos os escopos de arquivos selecionados. Ele também permite que um usuário defina uma inspeção personalizada. </p>
+<p>Neste tutorial, você aprenderá a executar uma revisão de código usando inspeções com refatoração e um conjunto predefinido de inspeções, gerenciar configurações e criar inspeções personalizadas.</p>
+
+<h3>Conteúdo</h3>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="O conteúdo desta página se aplica ao NetBeans IDE 8.0" />
+
+        <ul class="toc">
+            <li><a href="#setup">Configurando o Ambiente do Tutorial</a></li>
+			<li><a href="#run">Executando Inspeções</a></li>			
+            <li><a href="#configuration">Usando Configurações</a>
+			<ul>
+			<li><a href="#migrate5">Migrar para JDK 5</a></li>
+			<li><a href="#convert">Migrar para JDK 7</a></li>
+			<li><a href="#migrate8">Migrar para JDK 8</a></li>
+			<li><a href="#organize">Organizar Importações</a></li></ul></li>
+			<li><a href="#create">Gerenciando Inspeções Personalizadas</a></li>
+			<li><a href="#summary">Resumo</a></li>
+            <li><a href="#seealso">Consulte Também</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Requisitos</h2>
+        <p><strong>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Versão 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">Versão 7 ou 8 </td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        
+<a name="setup"></a>
+<h2>Configurando o Ambiente do Tutorial</h2>
+<p>Além do software necessário acima listado, você precisa descompactar o arquivo <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/inspecttransform.zip" target="_blank">InspectTransform.zip</a> na sua pasta de projeto do NetBeans e abri-lo no NetBeans IDE como segue:</p>	
+<p class="align-center"><img alt="O projeto é aberto no IDE" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/proj.png"></p>	
+		<a name="run"></a>
+		<h2>Executando Inspeções</h2>
+		<p>A opção Inspeção Única na caixa de diálogo Inspecionar e Transformar (Refatorar > Inspecionar e Transformar) oferece uma ampla variedade de inspeções relativas a determinadas transformações de refatoração. A lista completa de tais operações está disponível na caixa de diálogo Gerenciar Inspeções após clicar no botão Procurar à direita da Inspeção Única. </p>
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections.png" rel="lytebox" title="Caixa de diálogo Gerenciar Inspeções"> <img alt="Caixa de diálogo Gerenciar Inspeções" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections-small.png"></a></p>	
+	<p>O campo Pesquisar permite verificar se uma inspeção necessária está disponível usando uma pesquisa por palavra-chave. Por exemplo, há diversas inspeções encontradas quando <tt>operator</tt> é pesquisado.</p>	
+	<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/search.png" rel="lytebox" title="Pesquisar por palavra-chave"> <img alt="Pesquisar por palavra-chave" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/search-small.png"></a></p>	
+     <p>Cada inspeção tem uma descrição disponível no campo Descrição, na caixa de diálogo Gerenciar Inspeção. </p>
+	 
+	 <p><b>Para executar uma inspeção a aplicar uma inspeção existente:</b></p>
+	 <ol>
+	 <li>Na janela Projetos, selecione o arquivo <tt>InspectTransform.java</tt>.</li>
+	 <li>Escolha Refatorar > Inspecionar e Transformar no menu do IDE.</li>
+	 <li>Na caixa de diálogo Inspecionar e Transformar, selecione a opção de Inspeção Simples e clique em Procurar.</li>
+	 <li>Na caixa de diálogo Gerenciar Inspeções, escolha a <tt>Designação substituível por designação de operador</tt> no nó Problemas de Designação.</li>
+	 <li>Clique em OK para fechar a caixa de diálogo Gerenciar Inspeções.</li>
+     <li>Clique em Inspecionar na caixa de diálogo Inspecionar e Transformar.<br />As alterações de refatoração sugeridas são exibidas no painel de visualização.
+	 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection.png" rel="lytebox" title="Execução de inspeção única"> <img alt="Execução de inspeção única" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection-small.png"></a></p>	</li>
+     <li>Clique em Efetuar a Refatoração para aplicar as alterações, se necessário.</li>
+</ol>
+
+		<p class="align-center"><a href="#top">início</a></p>
+		
+		
+
+		
+		 
+		
+		
+		
+        <a name="configuration"></a>
+		<h2>Usando Configurações</h2>
+		<p>Um conjunto de refatorações agrupadas constituem a configuração que pode ser executada em seu escopo de interesse, por exemplo, uma classe ou diversas classes, pacotes ou projetos. O IDE oferece as seguintes duas configurações predefinidas: </p>
+		
+        <ul>
+		<li><a href="#migrate5">Migrar para JDK 5</a></li>
+		<li><a href="#convert">Migrar para JDK 7</a></li>
+		<li><a href="#migrate8">Migrar para JDK 8</a></li>
+		<li><a href="#organize">Organizar Importações</a></li>
+		</ul>
+		<a name="migrate5"></a>
+		<h3>Migrar para JDK 5</h3>
+		<p>A configuração <tt>Migrar para JDK 5</tt> disponível no IDE por padrão incorpora essas operações de refatoração como importações estáticas, uso do loop for do JDK 5, demarcação e cancelamento de demarcação desnecessários e troca da aplicação Strings. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf.png" rel="lytebox" title="Migrar para configuração padrão JDK 5"> <img alt="Migrar para configuração padrão JDK 5" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf-small.png"></a></p>
+					 <p class="notes"><b>Observação:</b> A lista de refatorações na configuração pode ser modificada na lista Inspeções da caixa de diálogo Gerenciar Inspeções, ao selecionar e cancelar a seleção de itens sob o nó <tt>Suporte à Migração do JDK</tt>.</p>
+                     <a name="convert"></a>
+		<h3>Migrar para JDK 7</h3>
+		<p>A configuração <tt>Migrar para JDK 7</tt> disponível no IDE por padrão incorpora essas operações de refatoramento como uso do operador diamante, tentar com conversão de recursos, uso de multicatch, trocar para aplicações String etc. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf.png" rel="lytebox" title="Converter para configuração default de JDK 7"> <img alt="Converter para configuração default de JDK 7" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf-small.png"></a></p>
+					 <p class="notes"><b>Observação:</b> A lista de refatorações na configuração pode ser modificada na lista Inspeções da caixa de diálogo Gerenciar Inspeções, ao selecionar e cancelar a seleção de itens sob o nó <tt>Suporte à Migração do JDK</tt>.</p>
+					 <p><b>Para executar e aplicar a configuração padrão <tt>Migrar para JDK 7</tt>:</b></p>
+					 <ol>
+					 <li>Na janela Projetos, selecione o arquivo <tt>PredefinedSet.java</tt>.</li>
+					 <li>Escolha Refatorar > Inspecionar e Transformar no menu do IDE.</li>
+	                 <li>Na caixa de diálogo Inspecionar e Transformar, selecione a opção Configuração e escolha o conjunto de inspeções <tt>Migrar para JDK 7</tt> na lista drop-down.</li>
+                     <li>Clique em Inspecionar.<br />As alterações que convertem o código para a sintaxe do JDK 7 são exibidas no painel Visualizar.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref.png" rel="lytebox" title="Migrar para a refatoração de JDK 7 sugerida"> <img alt="Migrar para a refatoração de JDK 7 sugerida" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref-small.png"></a></p></li>
+					 <li>Clique em Efetuar a Refatoração para aplicar as alterações, se necessário.</li></ol>	
+		<a name="migrate8"></a>
+		<h3>Migrar para JDK 8</h3>
+		<p>A configuração <tt>Migrar para JDK 8</tt> disponível no IDE por padrão incorpora essas operações de refatoramento como conversão Lambda ou Referência de Membro, importações estáticas, uso de multicatch, troca da aplicação Strings etc. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf.png" rel="lytebox" title="Migrar para configuração padrão JDK 8"> <img alt="Migrar para configuração padrão JDK 8" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf-small.png"></a></p>
+					 <p class="notes"><b>Observação:</b> A lista de refatorações na configuração pode ser modificada na lista Inspeções da caixa de diálogo Gerenciar Inspeções, ao selecionar e cancelar a seleção de itens sob o nó <tt>Suporte à Migração do JDK</tt>.</p>
+                     <a name="organize"></a>
+		<h3>Organizar Importações</h3>
+        <p>A configuração <tt>Organizar Importações</tt> permite inspecionar a forma como estão organizadas as instruções de importação e refatorar o código, caso desejado. Por default, ela inclui uma inspeção única que verifica se as instruções de importação correspondem as regras de estilo do código especificado.</p>
+		<p class="notes"><b>Observação:</b> Para configurar as regras de estilo do código para instruções de importação:</p>
+		<ol>
+		<li>  Escolha Ferramentas > Opções  > Editor > Formatando, na barra de ferramentas principal do IDE.</li>
+		<li>  Selecione Java na lista drop-down Linguagem.</li> 
+		<li>Selecione Importações na lista drop-down Categoria.</li>
+		 <li>Especifique as opções disponíveis, conforme necessário.
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/org-imports.png" rel="lytebox" title="Configuração default de Organizar Importações"> <img alt="Configuração default de Organizar Importações" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/org-imports-small.png"></a></p></li>
+		 <li>Clique em OK para salvar suas edições.</li>
+</ol> 
+		
+		<p><b>Para executar e aplicar a configuração default <tt>Organizar Importações</tt>:</b></p>
+		<ol>
+					 <li>Na janela Projetos, selecione o arquivo <tt>Import.java</tt>.</li>
+					 <li>Escolha Refatorar > Inspecionar e Transformar no menu do IDE.</li>
+	                 <li>Na caixa de diálogo Inspecionar e Transformar, selecione a opção Configuração e escolha o item <tt>Organizar Importações</tt>.</li>
+                     <li>Clique em Inspecionar.<br /> O painel de visualização exibe uma ocorrência proposta para a seção Importar do arquivo <tt>Imports.java</tt> para alinhá-la com as regras de estilo de código especificadas.
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref.png" rel="lytebox" title="Refatoração Organizar Importações sugerida"> <img alt="Refatoração Organizar Importações sugerida" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref-small.png"></a></p></li>
+					 <li>Clique em Efetuar a Refatoração para aplicar as alterações, se necessário.</li>
+		</ol>
+		
+
+         <p class="align-center"><a href="#top">início</a></p>       
+                
+               
+        <a name="create"></a>
+        <h2>Gerenciando Inspeções Personalizadas</h2>
+        
+		<p>Uma inspeção personalizada pode ser criada para instruir o IDE sobre quais estruturas de código devem ser encontradas e como transformá-las. </p>
+        <p class="notes"><b>Observação:</b> Para evitar a adição de uma inspeção duplicada no IDE, escolha Refatorar > Inspecionar e Transformar no menu principal, clique em Gerenciar ou Procurar e, na caixa de diálogo Gerenciar Inspeções, use o campo Pesquisar para procurar pela inspeção necessária, antes de criar uma nova inspeção. </p>
+		<p><b>Para criar uma inspeção personalizada:</b></p>
+		<ol>
+		<li>Escolha Refatorar > Inspecionar e Transformar no menu do IDE.</li>
+		<li>Na caixa de diálogo Inspecionar e Transformar, clique em Gerenciar ou Procurar.</li>
+		<li>Na caixa de diálogo Gerenciar Inspeções, clique em Nova.<br /> Um nó <tt>Personalizar > Inspeção</tt> é criado na lista Inspeções.
+		
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint.png" rel="lytebox" title="InspectionSample criado"> <img alt="InspectionSample criado" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint-small.png"></a></p></li>
+					 <li>(Opcional) Clique com o botão direito do mouse em <tt>Inspecionar</tt>, escolha Renomear no menu pop-up, especifique o nome necessário para sua inspeção personalizada (por exemplo, <tt>MyCustomInspection</tt>) e pressione Enter.</li>
+					 <li>Clique em Editar Script. A área de texto Script é exibida.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/script.png" rel="lytebox" title="Área de texto Script"> <img alt="Área de texto Script" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/script-small.png"></a></p></li>
+					 <li>Digite a descrição e o código da inspeção na área de texto Script ou clique em Abrir no Editor e especifique o mesmo no arquivo <tt>MyCustomInspection.hint</tt>.
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/hint-file.png" rel="lytebox" title="Arquivo MyCustomInspection.hint"> <img alt="Arquivo MyCustomInspection.hint" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/hint-file-small.png"></a></p></li>
+					 <li>Clique em Salvar abaixo da área de texto Script ou pressione Ctrl-S no Editor para salvar suas edições.</li>
+					 <li>Clique em OK para fechar a caixa de diálogo Gerenciar Inspeções ou feche o arquivo <tt>MyCustomInspection.hint</tt> no Editor.<br /> Sua inspeção personalizada está feita e pronta para ser aplicada.</li>
+		</ol>
+		<p><b>Para executar a inspeção personalizada que você criou:</b></p>
+		<ol>
+	 
+	 <li>Escolha Refatorar > Inspecionar e Transformar no menu do IDE.</li>
+	 <li>Na lista Inspecionar da caixa de diálogo Inspecionar e Transformar, especifique um arquivo, pacote ou projetos a serem inspecionados. Alternativamente, clique no botão na direita para abrir a caixa de diálogo Escopo Personalizado, para especificar o código personalizado a ser inspecionado.</li>
+	 <li>Selecione a opção Inspeção Única e escolha a inspeção <tt>MyCustomInspection</tt>.
+	   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint.png" rel="lytebox" title="Mycustominspection selecionado"> <img alt="Mycustominspection selecionado" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint-small.png"></a></p></li>
+     <li>Clique em Inspecionar.<br />As alterações de refatoração sugeridas são exibidas no painel de exibição.
+	 <!--<p class="align-center">
+		<a href="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI.png" rel="lytebox"
+                       title="MyCustomInspection run">
+					   <img src="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI-small.png"
+                     alt="MyCustomInspection run" border=1/></a></p>-->	</li>
+     <li>Clique em Efetuar a Refatoração para aplicar as alterações, se necessário.</li>
+</ol>
+
+
+        <p class="align-center"><a href="#top">início</a></p> 
+		  
+               
+          
+
+                
+               
+
+<a name="summary"></a>
+<h2>Resumo</h2>
+<p>Este tutorial cobre os usos mais frequentes da funcionalidade Inspecionar e Transformar. Observe que com a funcionalidade Inspecionar e Transformar, você também pode executar a refatoração personalizada no escopo do projeto, ou aplicar determinadas configurações de refatoração à diversos projetos abertos no IDE, etc.. </p>
+
+<p class="align-center"><a href="#top">início</a></p>		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Refactoring%20with%20Inspect%20and%20Transform%20in%20the%20NetBeans%20IDE%20Java%20Editor">Enviar Feedback neste Tutorial</a></div>
+
+        <br style="clear:both;"/>
+		
+		<a name="seealso"></a>
+        <h2>Consulte Também</h2>
+        
+        <p>Para ver o material relacionado, consulte os seguintes documentos:</p>
+        <ul>
+           <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">Usando Dicas de Análise de Código-fonte e Refatoração</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></a></li>
+            <li><a href="http://wiki.netbeans.org/Java_Hints">Lista Completa de Dicas Java NetBeans</a></li>
+			<li><a href="http://wiki.netbeans.org/JavaDeclarativeHintsDescriptionSketch">Descrição de Dicas Declarativas do Java NetBeans</a></li>
+			
+			<li><a href="code-inspect.html">Análise de Código Estático no Editor de Java do NetBeans IDE</a></li>
+			<li><a href="http://wiki.netbeans.org/Refactoring">Refatoração Simplificada</a></li>
+			<li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">Tutorial do Módulo de Dicas Java NetBeans</a></li>
+			
+          
+			
+        </ul>
+		<p class="align-center"><a href="#top">início</a></p>
+</body>
+</html>

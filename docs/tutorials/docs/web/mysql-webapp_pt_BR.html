@@ -1,0 +1,956 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial describing how to create a simple,
+              two-tiered web application that connects to a MySQL database in NetBeans IDE">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              MySQL, SQL, structured query language, multithreaded, multi-user database
+              management system, DBMS, open source, JDBC, JSP, JavaServer Pages">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+
+        <title>Criando um aplicação Web Simples Usando um Banco de Dados MySQL - Tutorial do NetBeans IDE</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Criando uma aplicação Web Simples Usando um Banco de Dados MySQL</h1>
+
+        <div class="articledate">Escrito por Troy Giunipero</div>
+
+        <p>Este documento descreve como criar uma aplicação Web simples que se conecta ao servidor de banco de dados MySQL. Também aborda algumas ideias e tecnologias básicas em desenvolvimento da Web, como <a href="http://www.oracle.com/technetwork/java/overview-138580.html">JavaServer Pages</a> (JSP), <a href="http://www.oracle.com/technetwork/java/index-jsp-135995.html">JavaServer Pages Standard Tag Library</a> (JSTL), a API <a href="http://docs.oracle.com/javase/tutorial/jdbc/overview/index.html">JDBC</a> (Java Database Connectivity) e duas camadas, arquitetura de servidor do cliente. Este tutorial está destinado a iniciantes com conhecimento básico em desenvolvimento Web e que gostariam de utilizar seu conhecimento com o banco de dados MySQL.</p>
+
+        <p>O <a href="http://www.mysql.com">MySQL</a> é um sistema de gerenciamento de banco de dados de código-fonte aberto popular geralmente utilizado em aplicações Web devido à sua velocidade, flexibilidade e confiabilidade. O MySQL emprega a linguagem SQL, ou <em>Structured Query Language</em>, para acessar e processar os dados contidos em bancos de dados.</p>
+
+        <p>Este tutorial é a continuação do tutorial <a href="../ide/mysql.html">Conectando a um Banco de Dados MySQL</a> e pressupõe que um banco de dados MySQL denominado <code>MyNewDatabase</code> já tenha sido criado, para o qual você registrou uma conexão no NetBeans IDE. Os dados de tabela usados nesse tutorial estão em <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252Fifpwafcad.sql">ifpwafcad.sql</a> e também são necessários para este tutorial. Este arquivo SQL cria duas tabelas, <code>Subject</code> e <code>Counselor</code>, a seguir, preenche-as com os dados de amostra. Se necessário, salve este arquivo no seu computador, a seguir, abra-o no NetBeans IDE e execute-o no banco de dados MySQL com o nome <code>MyNewDatabase</code>.</p>
+
+        <p><strong>Conteúdo</strong></p>
+
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+        <ul id="collapsableList">
+            <li><a href="#planStructure">Planejando a Estrutura</a></li>
+            <li><a href="#createProject">Criando um Novo Projeto</a></li>
+            <li><a href="#prepareInterface">Preparando a Interface da Web</a>
+
+                <ul>
+                    <li><a href="#welcomePage">Configurando a Página de Boas-Vindas</a></li>
+                    <li><a href="#responsePage">Criando a página de resposta</a></li>
+                    <li><a href="#stylesheet">Criando uma folha de estilo</a></li>
+                </ul></li>
+
+            <li><a href="#prepareCommunication">Preparando a Comunicação entre a Aplicação e o Banco de Dados</a>
+                <ul>
+                    <li><a href="#setUpJDBC">Configurando uma fonte de dados JDBC e um pool de conexões</a></li>
+                    <li><a href="#referenceDataSource">Fazendo referência à fonte de dados da aplicação</a></li>
+                    <li><a href="#addJar">Adicionando o arquivo JAR do driver do banco de dados ao servidor</a></li>
+                </ul></li>
+            <li><a href="#addLogic">Adicionando Lógica Dinâmica</a>
+                <ul>
+                    <li><a href="#addJSTL">Adicionando a biblioteca JSTL ao classpath do projeto</a></li>
+                    <li><a href="#addCode">Implementando o código JSTL</a></li>
+                </ul></li>
+            <li><a href="#run">Executando a Aplicação Pronta</a></li>
+            <li><a href="#troubleshoot">Solução de Problemas</a>
+
+                <ul>
+                    <li><a href="#access">Existem recursos do banco de dados?</a></li>
+                    <li><a href="#datasource">O pool de conexões e a fonte de dados existem no servidor?</a></li>
+                    <li><a href="#driver">O driver MySQL Connector/J está acessível ao GlassFish Server?</a></li>
+                    <li><a href="#password">O banco de dados é protegido por senha?</a></li>
+                    <li><a href="#ping">As propriedades do pool de conexões estão definidas corretamente?</a></li>
+                </ul></li>
+
+            <li><a href="#seeAlso">Consulte Também</a></li>
+        </ul>
+
+        <p><strong>Para seguir este tutorial, os recursos e softwares a seguir são necessários.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote Java EE 7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">versão 7 ou 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/">Servidor de banco de dados MySQL</a></td>
+                    <td class="tbltd1">5.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Driver MySQL Connector/J JDBC</td>
+                    <td class="tbltd1">versão 5.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                    <td class="tbltd1">3.x ou 4.x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Observações:</strong></p>
+
+        <ul>
+            <li>O pacote de download Java do NetBeans IDE permite instalar o GlassFish Server. É necessário ter o GlassFish Server para trabalhar neste tutorial.</li>
+
+            <li>O <a href="http://dev.mysql.com/downloads/connector/j/">Driver MySQL Connector/J JDBC</a>, necessário para a comunicação entre as plataformas Java e o protocolo do banco de dados MySQL, está incluído no NetBeans IDE.</li>
+
+            <li>Se você precisar comparar seu projeto com uma solução que funciona, <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252FIFPWAFCAD.zip">faça download da aplicação de amostra</a>.</li>
+        </ul>
+
+        <br>
+        <h2 id="planStructure">Planejando a Estrutura</h2>
+
+        <p>Aplicações Web simples podem ser projetadas utilizando uma <em>arquitetura de duas camadas</em>, na qual um cliente se comunica diretamente com um servidor. Neste tutorial, uma aplicação Java Web se comunica diretamente com um banco de dados MySQL utilizando a API de Conectividade do Banco de Dados Java. Em essência, é o <a href="http://dev.mysql.com/downloads/connector/j/">Driver MySQL Connector/J JDBC</a> que permite a comunicação entre o código Java entendido pelo servidor de aplicações (o GlassFish Server) e qualquer conteúdo da SQL, a linguagem entendida pelo servidor do banco de dados (MySQL).</p>
+
+        <p>A aplicação construída neste tutorial envolve a criação de duas páginas JSP. Em cada uma dessas páginas, você utiliza HTML e CSS para implementar uma interface simples e aplica a tecnologia JSTL para executar a lógica que consulta diretamente o banco de dados e insere os dados recuperados nas duas páginas. As duas tabelas do banco de dados, <code>Subject</code> e <code>Counselor</code>, estão contidas no banco de dados MySQL, <code>MyNewDatabase</code>, criado com a conclusão do tutorial <a href="../ide/mysql.html">Conectando ao Banco de Dados MySQL</a>. Considere o cenário de duas camadas a seguir.</p>
+
+        <div class="indent">
+            <a name="appStructure"></a> <img alt="Diagrama representando a estrutura de uma aplicação Web de duas camadas" class="margin-around" src="../../../images_www/articles/72/web/mysql-webapp/ifpwafcad-structure.png" title="Estrutura de exemplo de uma aplicação Web de duas camadas">
+        </div>
+
+        <p>A página de boas-vindas (<code>index.jsp</code>) apresenta ao usuário um form HTML simples. Quando um browser requer <code>index.jsp</code>, o código JSTL da página inicia uma consulta em <code>MyNewDatabase</code>. Ele recupera dados da tabela do banco de dados <code>Subject</code> e os insere na página, antes de eles serem enviados ao browser. Quando o usuário submete sua seleção no form HTML da página de boas-vindas, a submissão inicia uma solicitação para a página de resposta (<code>response.jsp</code>). Novamente, o código JSTL da página inicia uma consulta em <code>MyNewDatabase</code>. Neste momento, ele recupera dados das tabelas <code>Subject</code> e <code>Counselor</code> e os insere na página, permitindo que o usuário exiba os dados com base na sua seleção quando a página é retornada para o browser.</p>
+
+        <p>Para implementar o cenário descrito acima, desenvolva uma aplicação simples para uma organização fictícia com o nome IFPWAFCAD, Associação Internacional de Ex-Lutadores Profissionais para Aconselhamento e Desenvolvimento.</p>
+
+        <div class="indent">
+            <h4 class="cell">index.jsp</h4>
+
+            <img alt="index.jsp exibido em um browser" class="b-all margin-around" src="../../../images_www/articles/72/web/mysql-webapp/index-page.png" title="index.jsp exibido em um browser"> <br><br>
+            <h4 class="cell">response.jsp</h4>
+
+            <img alt="response.jsp exibido em um browser" class="b-all margin-around" src="../../../images_www/articles/72/web/mysql-webapp/response-page.png" title="response.jsp exibido em um browser">
+        </div>
+
+
+        <br>
+        <h2 id="createProject">Criando um Novo Projeto</h2>
+
+        <p>Comece criando um novo projeto Java Web no IDE:</p>
+
+        <ol>
+            <li>Escolha Arquivo > Novo Projeto (Ctrl-Shift-N; &amp;#8984-Shift-N no Mac) no menu principal. Selecione a categoria Java Web e aplicação Web. Clique em Próximo. <br> <img alt="Assistente Novo Projeto" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/new-project.png" title="Utilize o assistente de Novo Projeto do IDE para criar um novo projeto">
+
+                <p>O assistente de Novo Projeto permite criar uma aplicação Web vazia em um projeto IDE padrão. O projeto padrão utiliza um script de construção Ant gerado pelo IDE para compilar, implantar e executar a aplicação.</p></li>
+
+            <li>Em Nome do Projeto, digite <strong>IFPWAFCAD</strong>. Além disso, especifique o local para o projeto no computador. (Por default, o IDE coloca projetos em uma pasta<code>NetBeansProjects</code> localizada no diretório home). Clique em Próximo.</li>
+
+            <li>No painel Servidor e Configurações, especifique o GlassFish Server como o servidor que será utilizado para executar a aplicação.
+
+                <p class="notes"><strong>Observação.</strong>O GlassFish Server será exibido no campo drop-down Servidor se você tiver instalado a versão Java do <a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a>. Como o GlassFish Server está incluído no download, ele é automaticamente registrado no IDE. Se você quiser utilizar um servidor diferente para esse projeto, clique no botão Adicionar localizado ao lado do campo drop-down Servidor e registre um servidor diferente no IDE. No entanto, trabalhar com servidores que não o GlassFish Server está além do escopo deste tutorial.</p></li>
+
+            <li>No campo Versão do Java EE, selecione <strong>Java EE 5</strong>.<br><img alt="Assistente de Nova Aplicação Web - Servidor e Configurações" class="margin-around b-all" src="../../../images_www/articles/74/web/mysql-webapp/server-settings.png" title="Especificar configurações de servidor no assistente de Nova Aplicação Web">
+
+                <p>
+                Os projetos da Web Java EE 6 e Java EE 7 não exigem o uso do descritor de implantação <code>web.xml</code> e o modelo de projeto do NetBeans não inclui o arquivo <code>web.xml</code> em projetos Java EE 6 e Java EE 7. No entanto, este tutorial demonstra como declarar uma fonte de dados no descritor de implantação e não conta com nenhuma funcionalidade específico do Java EE 6 ou Java EE 7, portanto, é possível definir a versão do projeto como Java EE 5.</p>
+
+                
+                <p class="notes"><strong>Observação.</strong> Você pode igualmente definir a versão do projeto como Java EE 6 ou Java EE 7 e, em seguida, criar um descritor de implantação <code>web.xml</code>. (No assistente de Novo Arquivo, selecione a categoria Web e, em seguida, Descritor de Implantação Padrão).</p></li>
+
+            <li>Clique em Finalizar. O IDE cria um modelo de projeto para toda a aplicação e abre uma página JSP vazia (<code>index.jsp</code>) no editor. O arquivo <code>index.jsp</code> serve como página de boas-vindas da aplicação.</li>
+        </ol>
+
+
+        <h2 id="prepareInterface">Preparando a Interface da Web</h2>
+
+        <p>Comece preparando as páginas de boas-vindas (<code>index.jsp</code>) e de resposta (<code>response.jsp</code>). A página de boas-vindas implementa um form HTML que é utilizado para capturar dados do usuário. As duas páginas implementam uma tabela HTML para exibir os dados de forma estruturada. Nesta seção, você também criará uma folha de estilo que irá melhorar a aparência das duas páginas.</p>
+
+        <ul>
+            <li><a href="#welcomePage">Configurando a Página de Boas-Vindas</a></li>
+            <li><a href="#responsePage">Criando a página de resposta</a></li>
+            <li><a href="#stylesheet">Criando uma folha de estilo</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="welcomePage">Configurando a página de boas-vindas</h3>
+
+            <p>Confirme se <code>index.jsp</code> está aberto no editor. Se o arquivo ainda não estiver aberto, clique duas vezes no <code>index.jsp</code> no nó das Páginas Web no projeto IFPWAFCAD na janela Projetos.</p>
+
+            <ol>
+                <li>No editor, altere o texto entre as tags <code>&lt;title></code> para <code>Homepage da IFPWAFCAD</code>.</li>
+
+                <li>Altere o texto entre as tags <code>&lt;h1></code> para: <code>Bem-vindo à IFPWAFCAD, a Associação internacional de Ex-Lutadores Profissionais para Aconselhamento e Desenvolvimento!</code>.</li>
+
+                <li>Abra a Paleta do IDE selecionando Janela > Paleta (Ctrl-Shift-8; &amp;#8984-Shift-8 no Mac) no menu principal. Coloque o ponteiro do mouse sobre o ícone Tabela na categoria HTML e observe que o snippet de código default do item é exibido. <br> <img alt="Paleta exibindo o snippet de código ao passar o mouse sobre um item" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/palette.png" title="A Paleta exibe o snippet de código ao passar o mouse sobre um item"> <br> <span class="tips">Você pode configurar a Paleta conforme desejar: clique com o botão direito do mouse na Paleta e selecione Mostrar Ícones Grandes e Ocultar Nomes dos Itens para que ela seja exibida como na imagem acima.</span></li>
+
+                <li>Coloque o cursor em um ponto logo depois das tags <code>&lt;h1></code>. (É aí que você deseja implementar a nova tabela HTML.) Em seguida, na Paleta, clique duas vezes no ícone Tabela.</li>
+
+                <li>Na caixa de diálogo Inserir Tabela exibida, especifique os seguintes valores e clique em OK:<br><br>
+                    <ul>
+                        <li><strong>Linhas</strong>: 2</li>
+                        <li><strong>Colunas</strong>: 1</li>
+                        <li><strong>Tamanho da Borda</strong>: 0</li>
+                    </ul>
+
+                    O código da tabela HTML é gerado e adicionado a sua página.</li>
+
+                <li>Adicione o conteúdo a seguir ao cabeçalho da tabela e à célula da primeira linha da tabela (novo conteúdo mostrado em <strong>negrito</strong>):
+
+                    <pre class="examplecode">
+&lt;table border=&quot;0&quot;&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;<strong>IFPWAFCAD offers expert counseling in a wide range of fields.</strong>&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;<strong>To view the contact details of an IFPWAFCAD certified former
+                professional wrestler in your area, select a subject below:</strong>&lt;/td&gt;
+        &lt;/tr&gt;</pre></li>
+
+                <li>Na linha inferior da tabela, insira um form HTML. Para isso, coloque o cursor entre o segundo par de tags <code>&lt;td></code>, em seguida, clique duas vezes no ícone do form HTML ( <img alt="Ícone form HTML" src="../../../images_www/articles/72/web/mysql-webapp/html-form-icon.png"> ) na Paleta. Na caixa de diálogo Inserir Form, digite <code>response.jsp</code> no campo Texto da Ação e, em seguida, clique em OK.<br><img alt="Caixa de diálogo Inserir Form" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/insert-form.png" title="Especificar as configurações do form na caixa de diálogo Inserir Form"></li>
+
+                <li>Digite o conteúdo a seguir entre as tags <code>&lt;form></code> (novo conteúdo mostrado em <strong>negrito</strong>):
+
+                    <pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;
+        &lt;form action=&quot;response.jsp&quot;&gt;
+            <strong>&lt;strong&gt;Select a subject:&lt;/strong&gt;</strong>
+        &lt;/form&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+
+                    </li>
+
+                
+                <li>Pressione Enter para adicionar uma linha vazia após o conteúdo que você acabou de adicionar e, em seguida, clique duas vezes na Lista Drop-down na Paleta para abrir a caixa de diálogo Inserir Lista Drop-down.</li>
+
+                <li>Digite <code>subject_id</code> para o campo de texto Nome na caixa de diálogo Inserir Lista Drop-down e clique em OK. Observe que o snippet de código da lista drop-down será adicionado ao form.
+
+                    <p>
+                    O número de opções da lista drop-down não é importante no momento. Mais adiante neste tutorial, você adicionará tags JSTL que irão gerar dinamicamente as opções com base nos dados coletados da tabela do banco de dados Subject.</p></li>
+
+                <li>Adicione um item de botão Submeter ( <img alt="Ícone do botão Submeter" src="../../../images_www/articles/72/web/mysql-webapp/submit-button.png"> ) ao ponto bem ao lado da lista drop-down adicionada. É possível utilizar a Paleta para fazer isso ou chamar a funcionalidade autocompletar código do editor, conforme ilustrado na etapa anterior. Na caixa de diálogo Inserir Botão, digite <code>submit</code> nos campos de texto Nome e Label e clique em OK.</li>
+
+                <li>Para formatar seu código, clique com o botão direito do mouse no editor e selecione Formatar (Alt-Shift-F; Ctrl-Shift-F no Mac). Seu código será formatado automaticamente e deverá ter a aparência semelhante ao seguinte código:
+
+                    <pre class="examplecode">
+&lt;body&gt;
+    &lt;h2&gt;Welcome to &lt;strong&gt;IFPWAFCAD&lt;/strong&gt;, the International Former
+        Professional Wrestlers' Association for Counseling and Development!
+    &lt;/h2&gt;
+
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;IFPWAFCAD offers expert counseling in a wide range of fields.&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;To view the contact details of an IFPWAFCAD certified former
+                    professional wrestler in your area, select a subject below:&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;
+                    &lt;form action=&quot;response.jsp&quot;&gt;
+                        &lt;strong&gt;Select a subject:&lt;/strong&gt;
+                        &lt;select name=&quot;subject_id&quot;&gt;
+                            &lt;option&gt;&lt;/option&gt;
+                        &lt;/select&gt;
+                        &lt;input type=&quot;submit&quot; value=&quot;submit&quot; name=&quot;submit&quot; /&gt;
+                    &lt;/form&gt;
+                &lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+&lt;/body&gt;</pre>
+
+                    <p>Para exibir essa página em um browser, clique com o botão direito do mouse no editor e selecione Executar Arquivo (Shift-F6; Fn-Shift-F6 no Mac). Quando você fizer isso, a página JSP será automaticamente compilada e implantada no servidor. O IDE será aberto no browser default para exibir a página do seu local de implantação.</p>
+
+                    <img alt="index.jsp exibido em um browser" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/browser-output.png" title="index.jsp exibido em um browser"></li>
+            </ol>
+
+
+            <h3 id="responsePage">Criando a página de resposta</h3>
+
+            <p>Para preparar a interface de <code>response.jsp</code> é necessário primeiro criar o arquivo no projeto. Observe que a maioria do conteúdo exibido nesta página é gerado dinamicamente com a tecnologia JSP. Portanto, nas etapas a seguir você adicionará <em>espaços reservados</em> que posteriormente serão substituídos pelo código JSP.</p>
+
+            <ol>
+                <li>Clique com o botão direito do mouse no nó do projeto IFPWAFCAD na janela Projetos e selecione Novo > JSP. A caixa de diálogo Novo Arquivo JSF será aberta.</li>
+
+                <li>No campo Nome do Arquivo JSP, digite <code>response</code>. Observe que a opção Páginas Web está atualmente selecionada no campo Localização, o que significa que o arquivo será criado no diretório <code>web</code> do projeto. Trata-se do mesmo local em que se encontra a página de boas-vindas <code>index.jsp</code>.</li>
+
+                <li>Aceite as outras configurações default e clique em Finalizar. Um modelo, aberto no editor, será gerado para a nova página <code>response.jsp</code>. O novo nó JSP também será exibido abaixo de Páginas Web na janela Projetos.<br><img alt="o nó response.jsp é exibido na janela Projetos" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/response-jsp-node.png" title="o nó response.jsp é exibido na janela Projetos"></li>
+
+                <li>No editor, altere o título <code>IFPWAFCAD: {placeholder}</code>.</li>
+
+                <li>Remova a linha <code>&lt;h1>Hello World!&lt;/h1></code> alinhe entre as tags <code>&lt;body></code> e copie e cole a tabela HTML a seguir no corpo da página:
+
+                    <pre class="examplecode">
+&lt;table border=&quot;0&quot;&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th colspan=&quot;2&quot;&gt;{placeholder}&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Description: &lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span style=&quot;font-size:smaller; font-style:italic;&quot;&gt;{placeholder}&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Counselor: &lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;{placeholder}
+                &lt;br&gt;
+                &lt;span style=&quot;font-size:smaller; font-style:italic;&quot;&gt;
+                member since: {placeholder}&lt;/span&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Contact Details: &lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;email: &lt;/strong&gt;
+                &lt;a href=&quot;mailto:{placeholder}&quot;&gt;{placeholder}&lt;/a&gt;
+                &lt;br&gt;&lt;strong&gt;phone: &lt;/strong&gt;{placeholder}
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;</pre>
+
+                    <p>Para exibir essa página em um browser, clique com o botão direito do mouse no editor e selecione Executar Arquivo (Shift-F6; Fn-Shift-F6 no Mac). A página será compilada, implantada no GlassFish Server e aberta no browser default.</p>
+
+                    <img alt="response.jsp exibido em um browser" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/browser-response.png" title="response.jsp exibido em um browser"></li>
+            </ol>
+
+
+            <h3 id="stylesheet">Criando uma folha de estilo</h3>
+
+            <p>Crie uma folha de estilo simples para melhorar a view da interface da Web. Este tutorial pressupõe que você sabe como funciona as regras de estilo e como elas afetam os elementos HTML correspondentes encontrados em <code>index.jsp</code> e <code>response.jsp</code>.</p>
+
+            <ol>
+                <li>Abra o assistente de Novo Projeto pressionando o botão ( <img alt="Botão Novo Arquivo" src="../../../images_www/articles/72/web/mysql-webapp/new-file-btn.png"> ) Novo Arquivo na barra de ferramentas principal do IDE. Selecione a categoria Web, em seguida, Folha de Estilo em Cascata e clique em Próximo.</li>
+
+                <li>Digite <code>style</code> em Nome do Arquivo CSS e clique em Finalizar. O IDE cria um arquivo CSS vazio e o coloca no mesmo local do projeto onde estão <code>index.jsp</code> e <code>response.jsp</code>. Observe que agora será exibido um nó de <code>style.css</code> no projeto, na janela Projetos, e o arquivo será aberto no editor.</li>
+
+                <li>No editor, adicione o conteúdo a seguir ao arquivo <code>style.css</code>:
+
+                    <pre class="examplecode">
+body {
+    font-family: Verdana, Arial, sans-serif;
+    font-size: smaller;
+    padding: 50px;
+    color: #555;
+}
+
+h1 {
+    text-align: left;
+    letter-spacing: 6px;
+    font-size: 1.4em;
+    color: #be7429;
+    font-weight: normal;
+    width: 450px;
+}
+
+table {
+    width: 580px;
+    padding: 10px;
+    background-color: #c5e7e0;
+}
+
+th {
+    text-align: left;
+    border-bottom: 1px solid;
+}
+
+td {
+    padding: 10px;
+}
+
+a:link {
+   color: #be7429;
+   font-weight: normal;
+   text-decoration: none;
+}
+
+a:link:hover {
+   color: #be7429;
+   font-weight: normal;
+   text-decoration: underline;
+}</pre></li>
+
+                <li>Vincule a folha de estilo a <code>index.jsp</code> e <code>response.jsp</code>. Nas duas páginas, adicione a linha a seguir entre as tags <code>&lt;head></code>:
+
+                    <pre class="examplecode">&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;style.css&quot;&gt;</pre>
+
+                    <span class="tips">Para navegar rapidamente entre arquivos que estão abertos no editor, pressione Ctrl-Tab e, em seguida, selecione o arquivo que deseja.</span></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="prepareCommunication">Preparando a Comunicação entre a Aplicação e o Banco de Dados</h2>
+
+        <p>A maneira mais eficiente de implementar comunicação entre o servidor e o banco de dados é configurar um <em>pool de conexões</em> de banco de dados. A criação de uma nova conexão para cada solicitação do cliente pode ser muito demorada, especialmente em aplicações que recebem continuamente um grande número de solicitações. Para remediar isso, são criadas várias conexões que são mantidas em um pool de conexões. Todas as solicitações de entrada que requerem acesso à camada de dados da aplicação usam uma conexão já criada do pool. Igualmente, quando uma solicitação é concluída, a conexão é fechada, mas volta ao pool.</p>
+
+        <p>Depois de preparar a fonte de dados e o pool de conexões do servidor, é necessário instruir a aplicação a utilizar a fonte de dados. Isso normalmente é feito criando uma entrada no descritor de implantação <code>web.xml</code> da aplicação. Finalmente, você precisa garantir que o driver do banco de dados (Driver MySQL Connector/J JDBC) esteja acessível ao servidor.</p>
+
+        <div class="indent">
+            <div class="feedback-box float-left" style="width: 723px;">
+                <p><strong class="notes">Importante: </strong> Deste ponto em diante, você precisa assegurar-se de ter um banco de dados MySQL denominado <code>MyNewDatabase</code> configurado e com dados de amostra no <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252Fifpwafcad.sql">ifpwafcad.sql</a>. Este arquivo SQL cria duas tabelas, <code>Subject</code> e <code>Counselor</code>, a seguir, preenche-as com os dados de amostra. Se você ainda não tiver feito isso ou se precisar de ajuda, consulte <a href="../../docs/ide/mysql.html">Conectando a um Banco de Dados MySQL</a> antes de prosseguir com este tutorial.</p>
+
+                <p>Além disso, seu banco de dados precisa ser protegido por senha para criar uma fonte de dados e trabalhar com o GlassFish Server neste tutorial. Se você estiver utilizando a conta MySQL <code>root</code> sem senha, você poderá definir a senha usando um prompt de linha de comandos. <br><br> Este tutorial utiliza <code>nbuser</code> como senha de exemplo. Para definir sua senha como <code><em>nbuser</em></code>, navegue para o diretório <code>bin</code> de instalação do MySQL no prompt de linha de comandos e insira o seguinte:</p>
+
+                <pre class="examplecode" style="width: 703px;">
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('<em>nbuser</em>')
+    ->     WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+
+                <p>Para mais informações, consulte o Manual de Referência MySQL oficial: <a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html">Proteção das Contas MySQL Iniciais</a>.</p>
+            </div>
+        </div>
+        <br style="clear: both;"/>
+
+        <ol>
+            <li><a href="#setUpJDBC">Configurando uma fonte de dados JDBC e um pool de conexões</a></li>
+            <li><a href="#referenceDataSource">Fazendo referência à fonte de dados da aplicação</a></li>
+            <li><a href="#addJar">Adicionando o arquivo JAR do driver do banco de dados ao servidor</a></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="setUpJDBC">Configurando uma fonte de dados JDBC e o pool de conexões</h3>
+
+            <p>O GlassFish Server Open Source Edition contém bibliotecas de DBCP (Database Connection Pooling - Pool de Conexões do Banco de Dados) que oferecem a funcionalidade de pool de conexões de forma transparente a você como desenvolvedor. Para aproveitar esse recurso, é necessário configurar uma <em>fonte de dados</em> <a href="http://docs.oracle.com/javase/tutorial/jdbc/overview/index.html">JDBC</a> (Java Database Connectivity) para o servidor que a sua aplicação pode utilizar para o pool de conexões.</p>
+
+            <p class="tips">Para obter mais informações sobre a tecnologia JDBC, consulte <a href="http://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">Tutoriais Java: Conceitos Básicos do JDBC</a>.</p>
+
+            <p>É possível configurar a fonte de dados diretamente na Console de Administração do GlassFish Server ou, conforme descrito a seguir, você pode declarar os recursos de que a aplicação precisa em um arquivo <code>glassfish-resources.xml</code>. Quando a aplicação é implantada, o servidor lê as declarações de recursos e cria os recursos necessários.</p>
+
+            <p>As etapas a seguir demonstram como declarar um pool de conexões e uma fonte de dados com base no pool de conexões. O assistente de Recursos JDBC do NetBeans permite executar as duas ações.</p>
+
+            <ol>
+                <li>Abra o assistente de Novo Projeto pressionando o botão ( <img alt="Botão Novo Arquivo" src="../../../images_www/articles/72/web/mysql-webapp/new-file-btn.png"> ) Novo Arquivo na barra de ferramentas principal do IDE. Selecione a categoria do GlassFish Server e, em seguida, Recurso JDBC e clique em Próximo.</li>
+
+                <li>Na Etapa 2, Atributos Gerais, selecione a opção Criar Novo Pool de Conexões JDBC e, em seguida, no campo de texto Nome JNDI, digite <strong>jdbc/IFPWAFCAD</strong>. <br> <img alt="Assistente de Recurso JDBC, etapa 2: Atributos Gerais" class="b-all margin-around" src="../../../images_www/articles/72/web/mysql-webapp/jdbc-resource-wizard.png" title="Especificar definições da fonte de dados no assistente de Recurso JDBC"> <br> <span class="tips">A fonte de dados JDBC conta com a <a href="http://www.oracle.com/technetwork/java/jndi/index.html">JNDI</a>, a Interface de Nomenclatura e Diretório Java. A API JNDI fornece uma maneira uniforme de as aplicações encontrarem e acessarem as fontes de dados. Para obter mais informações, consulte <a href="http://docs.oracle.com/javase/jndi/tutorial/">Tutorial do JNDI</a>.</span></li>
+
+                <li>Como opção, adicione uma descrição para a fonte de dados. Por exemplo, digite: <code>Accesses the database that provides data for the IFPWAFCAD application</code>.</li>
+
+                <li>Clique em Próximo e em Próximo novamente para ignorar a etapa 3, Propriedades Adicionais.</li>
+
+                <li>Na Etapa 4, digite <strong>IfpwafcadPool</strong> para Nome do Pool de Conexões JDBC. Certifique-se de que a opção Extrair da Conexão Existente esteja selecionada e escolha <code>jdbc:mysql://localhost:3306/MyNewDatabase</code> na lista drop-down. Clique em Próximo. <br> <img alt="Assistente de Recurso JDBC, etapa 4: Selecionar Conexão de Banco de Dados" class="b-all margin-around" src="../../../images_www/articles/74/web/mysql-webapp/jdbc-resource-wizard2.png" title="Especificar definições do pool de conexões no assistente de Recurso JDBC"> <br><br> <strong class="notes">Observação: </strong>O assistente detecta as conexões de banco de dados que tenham sido configuradas no IDE. Portanto, neste ponto, é necessário que você já tenha criado uma conexão ao banco de dados <code>MyNewDatabase</code>. Você pode verificar as conexões que foram criadas ao abrir a janela Serviços (Ctrl-5; &8984-5 no Mac) e procurar nós de conexão (<img alt="ícone do nó de conexão de banco de dados" src="../../../images_www/articles/72/web/mysql-webapp/connection-node-icon.png">) na categoria Bancos de Dados.</li>
+
+                <li>Na Etapa 5, selecione <code>javax.sql.ConnectionPoolDataSource</code> na lista drop-down Tipo de Recurso.
+                    <p>Observe que o IDE extrai informações da conexão de banco de dados especificada na etapa anterior e define as propriedades de nome e valor para o novo pool de conexões.</p>
+
+                    <img alt="Assistente de Recurso JDBC, etapa 5: Adicionar Propriedades do Pool de Conexões" class="b-all margin-around" src="../../../images_www/articles/74/web/mysql-webapp/jdbc-resource-wizard3.png" title="Os valores default são baseados nas informações extraídas da conexão de banco de dados selecionada"></li>
+
+                <li>Clique em Finalizar. O assistente gera um arquivo <code>glassfish-resources.xml</code> que contém entradas para a fonte de dados e o pool de conexões especificados.</li>
+            </ol>
+
+            <p>Na janela Projetos, você pode abrir o arquivo <code>glassfish-resources.xml</code> recém-criado em Recursos do Servidor e observar que, nas tags <code>&lt;resources></code>, foram declarados uma fonte de dados e um pool de conexões com os valores previamente especificados.</p>
+
+            <p class="tips">Para confirmar se uma nova fonte de dados e um pool de conexões estão realmente registrados no GlassFish Server, você pode implantar o projeto no servidor e, em seguida, localizar os recursos na janela Serviços do IDE:</p>
+
+            <ol>
+                <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto IFPWAFCAD e selecione Implantar. O servidor será iniciado caso não esteja em execução e o projeto será compilado e implantado nele.</li>
+
+                <li id="view-connection-pool">Abra a janela Serviços (Ctrl-5; &amp;#8984-5 no Mac) e expanda os nós Servidores > GlassFish > Recursos > JDBC > Recursos JDBC e Pools de Conexões. Observe que a nova fonte de dados e o pool de conexões agora são exibidos:<br><img alt="Nova fonte de dados e novo pool de conexões exibidos na janela Serviços" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/services-window-glassfish.png" title="Nova fonte de dados e novo pool de conexões exibidos na janela Serviços">
+                </li>
+            </ol>
+
+
+            <h3 id="referenceDataSource">Fazendo referência à fonte de dados da aplicação</h3>
+
+            <p>É necessário fazer referência ao recurso JDBC que acabou de configurar na aplicação Web. Para isso, você pode criar uma entrada no descritor de implantação <code>web.xml</code> da aplicação.</p>
+
+            <p>Os descritores de implantação são arquivos de texto com base em XML que contêm informações que descrevem como uma aplicação deve ser implantada em um ambiente específico. São usados normalmente, por exemplo, para especificar os parâmetros de contexto da aplicação, os padrões de comportamento e as configurações de segurança, bem como mapeamentos para servlets, filtros e listeners.</p>
+            
+            <p class="notes"><strong>Observação.</strong> Se você tiver especificado o Java EE 6 ou Java EE 7 como a versão Java ao criar o projeto, será necessário criar o arquivo descritor de implantação selecionando Web > Descritor de Implantação Padrão, no assistente de Novo Arquivo.</p>
+
+            <p>Execute as etapas a seguir para fazer referência à fonte de dados no descritor de implantação da aplicação.</p>
+
+            <ol>
+                <li>Na janela Projetos, expanda a pasta Arquivos de Configuração e clique duas vezes em <code>web.xml</code> para abrir o arquivo no editor.</li>
+
+                <li>Clique na guia Referências localizada na parte superior do editor. </li>
+                <li>Expanda o cabeçalho Referências de Recurso e clique em Adicionar para abrir a caixa de diálogo Adicionar Referência do Recurso.</li>
+
+                <li>Em Nome do Recurso, insira o nome do recurso que você forneceu ao configurar a fonte de dados no servidor acima (<code>jdbc/IFPWAFCAD</code>). </li>
+                <li>Digite <strong><code>javax.sql.ConnectionPoolDataSource</code></strong> no campo Tipo de Recurso. Clique em OK.
+                    
+                    <p>O campo Descrição é opcional, mas você pode inserir uma descrição do recurso que seja legível pelo usuário, por exemplo, <code>Banco de Dados da aplicação IFPWAFCAD</code>. </p>
+
+                    <img alt="Adicionar Referência de Recurso" class="margin-around b-all" src="../../../images_www/articles/74/web/mysql-webapp/add-resource-reference.png" title="Especificar as propriedades do recurso na caixa de diálogo Adicionar Referência de Recurso">
+
+                <p>O novo recurso agora será listado abaixo do cabeçalho Referências de Recursos.</p>
+                    </li>
+
+                    <li>Para verificar se o recurso foi adicionado ao arquivo <code>web.xml</code>, clique na guia Código-fonte localizada na parte superior do editor. Observe que as tags &lt;<code>resource-ref</code>> a seguir agora estão incluídas.
+
+                    <pre class="examplecode">
+&lt;resource-ref&gt;
+    &lt;description&gt;Database for IFPWAFCAD application&lt;/description&gt;
+    &lt;res-ref-name&gt;jdbc/IFPWAFCAD&lt;/res-ref-name&gt;
+    &lt;res-type&gt;javax.sql.ConnectionPoolDataSource&lt;/res-type&gt;
+    &lt;res-auth&gt;Container&lt;/res-auth&gt;
+    &lt;res-sharing-scope&gt;Shareable&lt;/res-sharing-scope&gt;
+&lt;/resource-ref&gt;</pre>
+                </li>
+            </ol>
+
+            <h3 id="addJar">Adicionando o arquivo JAR do driver do banco de dados ao servidor</h3>
+
+            <p>A adição do arquivo JAR do driver do banco de dados é outra etapa vital para permitir que o servidor se comunique com o banco de dados. Normalmente, seria necessário localizar o diretório de instalação do driver do banco de dados e copiar o arquivo <code>mysql-connector-java-5.1.6-bin.jar</code> do diretório raiz do driver na pasta da biblioteca do servidor que estiver utilizando. Felizmente, o gerenciamento de servidor do IDE é capaz de detectar na implantação se o arquivo JAR foi adicionado e, caso não tenha sido, ele o adiciona automaticamente.</p>
+
+            <p>Para demonstrá-lo, abra o gerenciador Servidores (Selecione Ferramentas > Servidores). O IDE fornece uma opção de implantação do driver JDBC. Se a opção estiver ativada, ela iniciará uma verificação para determinar se serão necessários drivers para as aplicações implantadas do servidor. No caso do MySQL, se o driver for necessário e não for encontrado, o driver incorporado do IDE será implantado no local adequado do servidor.</p>
+
+            <ol>
+                <li>Selecione Ferramentas > Servidores para abrir o gerenciador Servidores. Selecione o servidores do GlassFish Server no painel esquerdo.</li>
+
+                <li>No painel principal, selecione a opção Ativar Implantação do Driver JDBC.<br><img alt="Janela Servidores - GlassFish Server 3.0.1" class="margin-around b-all" src="../../../images_www/articles/74/web/mysql-webapp/servers-window.png" title="Opção Implantação de Driver JDBC ativa a implantação de driver automática"></li>
+
+                <li>Antes de fechar o gerenciador de Servidores, anote o caminho indicado no campo de texto da pasta Domínios. Ao se conectar ao GlassFish Server no IDE, você está se conectando, na realidade, a uma <em>instância</em> do servidor de aplicações. Cada instância executa aplicações em um domínio exclusivo e o campo Nome do Domínio indica o nome do domínio que o servidor está utilizando. Conforme mostrado na imagem acima, o arquivo JAR do driver deverá estar localizado em <code>domain1</code>, que é o domínio default criado na instalação do GlassFish Server.</li>
+
+                <li>Clique em Fechar para sair do gerenciador Servidores.</li>
+
+                <li>No computador, vá até o diretório de instalação do GlassFish Server e entre na subpasta <code>domínios</code> > <code>domain1</code> > <code>lib. </code>. Como você já deve ter implantando o projeto IFPWAFCAD no servidor, você verá o arquivo <code>mysql-connector-java-5.1.6-bin.jar</code>. Se você não vir o arquivo JAR do driver, execute a etapa a seguir.</li>
+
+                <li>Implante seu projeto no servidor. Na janela Projetos do IDE, selecione Implantar no menu de contexto do nó do projeto. Você pode ver o progresso na janela de Saída do IDE (Ctrl-4; &amp;#8984-4 no Mac). A saída indica que o driver MySQL está implantado no GlassFish Server. <br> <img alt="Janela de Saída indicando que o driver MySQL foi implantado" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/output-window.png" title="A janela de Saída indica que o driver MySQL foi implantado"> <br> Agora, se você voltar à subpasta <code>domain1/lib</code> no computador, você verá que o arquivo <code>mysql-connector-java-5.1.6.x-bin.jar</code> foi adicionado automaticamente.</li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="addLogic">Adicionando Lógica Dinâmica</h2>
+
+        <p>Retornando aos espaços reservados <code>index.jsp</code> e <code>response.jsp</code> que você criou anteriormente no tutorial, você pode implementar o código JSTL que permite às páginas gerar conteúdo <em>dinamicamente</em>, ou seja, com base na entrada do usuário. Para isso, execute as três tarefas a seguir.</p>
+
+        <ol>
+            <li><a href="#addJSTL">Adicione a biblioteca JSTL ao classpath do projeto</a></li>
+            <li><a href="#implementCode">Implemente código JSTL</a></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="addJSTL">Adicionando a biblioteca JSTL ao classpath do projeto</h3>
+
+            <p>É possível aplicar a <a href="http://www.oracle.com/technetwork/java/index-jsp-135995.html">JavaServer Pages Standard Tag Library</a> (JSTL) para acessar e exibir dados obtidos do banco de dados. O GlassFish Server inclui a biblioteca JSTL por default. Você pode verificar isso expandindo o nó do GlassFish Server no nó de Bibliotecas, na janela Projetos e procurando a biblioteca <code>javax.servlet.jsp.jstl.jar</code>. (As versões mais antigas do GlassFish server usam a biblioteca <code>jstl-impl.jar</code>.) Como as bibliotecas do GlassFish Server são, por default, adicionadas ao classpath do projeto, não é necessário executar nenhuma etapa dessa tarefa.</p>
+
+            <p>A JSTL fornece as seguintes quatro áreas básicas de funcionalidade.</p>
+
+            <ul>
+                <li><code>core</code>: tarefas comuns e estruturais, como iteradores e condicionais para manipular controle de fluxo</li>
+                <li><code>fmt</code>: formatação da mensagem de internacionalização e localização</li>
+                <li><code>sql</code>:acesso a banco de dados simples</li>
+                <li><code>xml</code>: manipulação de conteúdo XML</li>
+            </ul>
+
+            <p>Este tutorial foca no uso das bibliotecas de tags <code>core</code> e <code>sql</code>.</p>
+
+            <h3 id="implementCode">Implementando o código JSTL</h3>
+
+            <p>Agora você pode implementar o código que recupera, de maneira dinâmica, os dados, exibindo-os para cada página. As duas páginas requerem que você implemente uma consulta SQL que utilize a fonte de dados criada anteriormente no tutorial.</p>
+
+            <p>O IDE fornece vários snippets de JSTL específicos do banco de dados que podem ser selecionados na Paleta (Ctrl-Shift-8; &amp;#8984-Shift-8 no Mac).</p>
+
+            <img alt="Snippets do banco de dados disponíveis na Paleta" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/palette-db.png" title="Selecione os snippets JSTL específicos do banco de dados na Paleta">
+
+            
+            <h4>index.jsp</h4>
+
+            <p>Para exibir dinamicamente o conteúdo do form no <code>index.jsp</code>, você precisa acessar os <code>name</code>s da tabela de banco de dados Subject.<code></code></p>
+
+            <ol>
+                <li>Coloque o mouse sobre o item Relatório do BD na Paleta. <br> <img alt="Snippets do banco de dados disponíveis na Paleta" class="margin-around" src="../../../images_www/articles/72/web/mysql-webapp/db-report.png" title="Digite &apos;db&apos; e pressione Ctrl-Espaço para acessar os snippets JSTL específicos do banco de dados">
+
+                    <p>O item Relatório do BD utiliza a tag <code>&lt;sql:query></code> para criar uma consulta SQL e, em seguida, utiliza a tag <code>&lt;c:forEach></code> para passar pelo <code>resultset</code>da consulta e obter os dados recuperados.</p></li>
+
+                <li>Coloque o cursor acima da declaração <code>&lt;%@page ... %></code> (linha 7) e, em seguida, clique duas vezes no item Relatório do BD na Paleta. Na caixa de diálogo que é exibida, insira os seguintes detalhes:
+
+                    <ul>
+                        <li><strong>Nome da Variável:</strong> <code>subjects</code></li>
+                        <li><strong>Escopo:</strong> <code>page</code></li>
+                        <li><strong>Fonte de Dados:</strong> <code>jdbc/IFPWAFCAD</code></li>
+                        <li><strong>Instrução da Consulta:</strong> <code>SELECT subject_id, name FROM Subject</code></li>
+                    </ul>
+
+                    <img alt="Caixa de diálogo Inserir Relatório do BD" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/insert-db-report.png" title="Use a caixa de diálogo Inserir Relatório do BD para especificar detalhes específicos da consulta"></li>
+
+                <li>Clique em OK. O conteúdo a seguir é gerado no arquivo <code>index.jsp</code>. (Novo conteúdo mostrado em <strong>negrito</strong>.)
+
+                    <pre class="examplecode">
+<strong>&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</strong>
+&lt;%--
+    Document   : index
+    Author     : nbuser
+--%&gt;
+
+<strong>&lt;sql:query var=&quot;subjects&quot; dataSource=&quot;jdbc/IFPWAFCAD&quot;&gt;
+    SELECT subject_id, name FROM Subject
+&lt;/sql:query&gt;
+
+&lt;table border=&quot;1&quot;&gt;
+    &lt;!-- column headers --&gt;
+    &lt;tr&gt;
+    &lt;c:forEach var=&quot;columnName&quot; items=&quot;${subjects.columnNames}&quot;&gt;
+        &lt;th&gt;&lt;c:out value=&quot;${columnName}&quot;/&gt;&lt;/th&gt;
+    &lt;/c:forEach&gt;
+&lt;/tr&gt;
+&lt;!-- column data --&gt;
+&lt;c:forEach var=&quot;row&quot; items=&quot;${subjects.rowsByIndex}&quot;&gt;
+    &lt;tr&gt;
+    &lt;c:forEach var=&quot;column&quot; items=&quot;${row}&quot;&gt;
+        &lt;td&gt;&lt;c:out value=&quot;${column}&quot;/&gt;&lt;/td&gt;
+    &lt;/c:forEach&gt;
+    &lt;/tr&gt;
+&lt;/c:forEach&gt;
+&lt;/table&gt;</strong>
+
+&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</pre>
+
+                    Observe que o IDE adicionou automaticamente as diretivas <code>taglib</code> necessárias para as tags JSTL utilizadas no conteúdo gerado <code>&lt;sql:query></code> e <code>&lt;c:forEach></code>). Uma diretiva <code>taglib</code> declara que a página do JSP utiliza tags personalizadas (por exemplo, JSTL), nomeia a biblioteca de tags que as define e especifica seu prefixo de tag.</li>
+
+                <li>Execute o projeto para ver como ele é exibido no browser. Clique com o botão direito do mouse no nó na janela Projetos e selecione Executar.
+
+                    <p>Quando você seleciona Executar, o IDE implanta o projeto no GlassFish Server, a página de índice é compilada em um servlet e a página de boas-vindas é aberta no browser default. O código gerado do item Relatório de BD cria a tabela a seguir na página de boas-vindas.</p>
+
+                    <img alt="Browser exibindo a tabela que contém dados de tabela de banco de dados Subject" class="margin-around" src="../../../images_www/articles/72/web/mysql-webapp/db-report-table.png" title="Utilize o Relatório de BD para criar protótipos dos dados da tabela do banco de dados">
+
+                    <p>
+                    Como podemos ver, o item Relatório de BD permite testar rapidamente a conexão do banco de dados e permite, também, exibir os dados da tabela do banco de dados no browser. Isso pode ser particularmente útil ao se fazer protótipos.</p>
+
+                    <p>
+                    As etapas a seguir demonstram como integrar o código gerado à lista drop-down HTML criada anteriormente no tutorial.</p></li>
+
+                <li>Examine os dados da coluna no código gerado. Duas tags <code>&lt;c:forEach></code> são utilizadas, uma está aninhada dentro da outra. Isso faz com que o contêiner JSP (por exemplo, o GlassFish Server) execute um loop em todas as linhas da tabela e, para cada linha, ele executa um loop em todas as colunas. Dessa maneira, os dados da tabela inteira são exibidos.</li>
+
+                <li>Integre as tags <code>&lt;c:forEach></code> no form HTML, conforme a seguir. O valor de cada item se torna <code>subject_id</code> e o texto de saída se torna o <code>name</code>, conforme registrado no banco de dados. (As alterações são exibidas em <strong>negrito</strong>).
+
+                    <pre class="examplecode">
+&lt;form action=&quot;response.jsp&quot;&gt;
+    &lt;strong&gt;Select a subject:&lt;/strong&gt;
+    &lt;select name=&quot;subject_id&quot;&gt;
+        <strong>&lt;c:forEach var=&quot;row&quot; items=&quot;${subjects.rowsByIndex}&quot;&gt;
+            &lt;c:forEach var=&quot;column&quot; items=&quot;${row}&quot;&gt;</strong>
+                &lt;option <strong>value=&quot;&lt;c:out value=&quot;${column}&quot;/&gt;&quot;</strong>&gt;<strong>&lt;c:out value=&quot;${column}&quot;/&gt;</strong>&lt;/option&gt;
+            <strong>&lt;/c:forEach&gt;
+        &lt;/c:forEach&gt;</strong>
+    &lt;/select&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;submit&quot; name=&quot;submit&quot; /&gt;
+&lt;/form&gt;</pre>
+
+                    <span class="tips">Uma maneira alternativa e mais simples de integrar as tags <code>&lt;c:forEach></code> ao form HTML seria a seguinte:</span>
+
+                    <pre class="examplecode">
+&lt;form action=&quot;response.jsp&quot;&gt;
+    &lt;strong&gt;Select a subject:&lt;/strong&gt;
+    &lt;select name=&quot;subject_id&quot;&gt;
+        <strong>&lt;c:forEach var=&quot;row&quot; items=&quot;${subjects.rows}&quot;&gt;</strong>
+            &lt;option <strong>value=&quot;${row.subject_id}&quot;</strong>&gt;<strong>${row.name}</strong>&lt;/option&gt;
+        <strong>&lt;/c:forEach&gt;</strong>
+    &lt;/select&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;submit&quot; name=&quot;submit&quot; /&gt;
+&lt;/form&gt;</pre>
+
+                    <p>Em qualquer um dos casos, as tags <code>&lt;c:forEach></code> executam loop em todos os valores de <code>subject_id</code> e <code>name</code> da consulta SQL e inserem cada par nas tags <code>&lt;option></code> HTML. Dessa maneira, a lista drop-down do form é preenchida com dados.</p></li>
+
+                <li>Delete a tabela que foi gerada a partir do item Relatório de BD. (A exclusão é mostrada a seguir como <strong><strike>texto tachado</strike></strong>.)
+
+                    <pre class="examplecode">
+&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;
+&lt;%--
+    Document   : index
+    Created on : Dec 22, 2009, 7:39:49 PM
+    Author     : nbuser
+--%&gt;
+
+&lt;sql:query var=&quot;subjects&quot; dataSource=&quot;jdbc/IFPWAFCAD&quot;&gt;
+    SELECT subject_id, name FROM Subject
+&lt;/sql:query&gt;
+
+<strong><strike>&lt;table border=&quot;1&quot;&gt;
+    &lt;!-- column headers --&gt;
+    &lt;tr&gt;
+    &lt;c:forEach var=&quot;columnName&quot; items=&quot;${subjects.columnNames}&quot;&gt;
+        &lt;th&gt;&lt;c:out value=&quot;${columnName}&quot;/&gt;&lt;/th&gt;
+    &lt;/c:forEach&gt;
+&lt;/tr&gt;
+&lt;!-- column data --&gt;
+&lt;c:forEach var=&quot;row&quot; items=&quot;${subjects.rowsByIndex}&quot;&gt;
+    &lt;tr&gt;
+    &lt;c:forEach var=&quot;column&quot; items=&quot;${row}&quot;&gt;
+        &lt;td&gt;&lt;c:out value=&quot;${column}&quot;/&gt;&lt;/td&gt;
+    &lt;/c:forEach&gt;
+    &lt;/tr&gt;
+&lt;/c:forEach&gt;
+&lt;/table&gt;</strike></strong>
+
+&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</pre></li>
+
+                <li>Salve as alterações (Ctrl-S; &amp;#8984-S no Mac).
+                <li>Atualize a página de boas-vindas do projeto no browser.
+                    <p>Note que a lista drop-down do browser contém, agora, nomes de assuntos que foram recuperados do banco de dados.</p>
+                    
+
+                
+                    <p class="tips">Você não precisa reimplantar seu projeto porque a opção de compilação ao salvar está ativada para seu projeto, por default. Isso significa que, quando você modifica e salva um arquivo, ele é automaticamente compilado e implantado, e não é necessário recompilar o projeto inteiro. É possível ativar e desativar compilar ao salvar para seu projeto na categoria Compilar da janela Propriedades do projeto.</p>
+                </li>
+            </ol>
+
+            <h4>response.jsp</h4>
+
+            <p>A página de resposta fornece detalhes para o conselheiro que corresponde ao assunto escolhido na página de boas-vindas. A consulta criada deverá selecionar o registro do conselheiro cujo <code>counselor_id</code> corresponda ao <code>counselor_idfk</code> do registro do assunto selecionado.</p>
+
+            <ol>
+                <li>Coloque seu cursor acima da declaração <code>&lt;%@page ... %></code> (linha 7) e clique duas vezes na Consulta do DB na Paleta para abrir a caixa de diálogo Inserir Consulta do BD.</li>
+
+                <li>Informe os seguintes detalhes na caixa de diálogo Inserir Consulta DB.
+
+                    <ul>
+                        <li><strong>Nome da Variável:</strong> <code>counselorQuery</code></li>
+                        <li><strong>Escopo:</strong> <code>page</code></li>
+                        <li><strong>Fonte de Dados:</strong> <code>jdbc/IFPWAFCAD</code></li>
+                        <li><strong>Instrução de Consulta:</strong> <code>SELECT * FROM Subject, Counselor WHERE Counselor.counselor_id = Subject.counselor_idfk AND Subject.subject_id = ? &lt;sql:param value="${param.subject_id}"/></code></li>
+                    </ul>
+
+                    <img alt="Caixa de diálogo Inserir Consultar de BD" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/insert-db-query2.png" title="Use a caixa de diálogo Inserir Consulta do BD para especificar detalhes específicos da consulta"></li>
+
+                <li>Clique em OK. O conteúdo a seguir é gerado no arquivo <code>response.jsp</code>. (Novo conteúdo mostrado em <strong>negrito</strong>.)
+
+                    <pre class="examplecode">
+<strong>&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</strong>
+&lt;%--
+    Document   : response
+    Created on : Dec 22, 2009, 8:52:57 PM
+    Author     : nbuser
+--%&gt;
+
+<strong>&lt;sql:query var=&quot;counselorQuery&quot; dataSource=&quot;jdbc/IFPWAFCAD&quot;&gt;
+    SELECT * FROM Subject, Counselor
+    WHERE Counselor.counselor_id = Subject.counselor_idfk
+    AND Subject.subject_id = ? &lt;sql:param value=&quot;${param.subject_id}&quot;/&gt;
+&lt;/sql:query&gt;</strong>
+
+&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</pre>
+
+                    Observe que o IDE adicionou automaticamente a diretiva <code>taglib</code> necessária para a tag <code>&lt;sql:query></code>. Além disso, observe que você utilizou uma tag <code>&lt;sql:param></code> diretamente na consulta. Como essa consulta conta com o valor <code>subject_id</code> que foi submetido de <code>index.jsp</code>, é possível extrair o valor utilizando uma instrução EL (Linguagem de Expressão) na forma de <code>${param.subject_id}</code> e, em seguida, passá-lo para a tag <code>&lt;sql:param></code>, para que ele possa ser utilizado no local do ponto de interrogação da SQL (<code>?</code>) durante o runtime.</li>
+
+                <li>Utilize uma tag <code>&lt;c:set></code> para definir uma variável que corresponda ao primeiro registro (ou seja, linha) do <code>resultset</code> retornado da consulta. (Novo conteúdo mostrado em <strong>negrito</strong>.)
+
+                    <pre class="examplecode">
+&lt;sql:query var=&quot;counselorQuery&quot; dataSource=&quot;jdbc/IFPWAFCAD&quot;&gt;
+    SELECT * FROM Subject, Counselor
+    WHERE Counselor.counselor_id = Subject.counselor_idfk
+    AND Subject.subject_id = ? &lt;sql:param value=&quot;${param.subject_id}&quot;/&gt;
+&lt;/sql:query&gt;
+
+<strong>&lt;c:set var=&quot;counselorDetails&quot; value=&quot;${counselorQuery.rows[0]}&quot;/&gt;</strong></pre>
+
+                    Embora o <code>resultset</code> retornado da consulta deva conter apenas um único registro, está é uma etapa necessária, pois a página precisa acessar valores do registro utilizando instruções EL (Linguagem de Expressão). Lembre-se que no <code>index.jsp</code> você podia acessar valores do <code>resultset</code> simplesmente utilizando uma tag <code>&lt;c:forEach></code>. No entanto, a tag <code>&lt;c:forEach></code> opera definindo uma variável para linhas contidas na consulta, permitindo, assim, extrair valores incluindo a variável da linha nas instruções EL.</li>
+
+                <li>Adicione a diretiva <code>taglib</code> para a biblioteca <code>core</code> do JSTL na parte superior do arquivo, para que a tag <code>&lt;c:set></code> seja entendida. (Novo conteúdo mostrado em <strong>negrito</strong>.)
+
+                    <pre class="examplecode">
+<strong>&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;</strong>
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</pre></li>
+
+                <li>Na marcação HTML, substitua todos os espaços reservados por código de instruções EL que exibem os dados contidos na variável <code>counselorDetails</code>. (Alterações mostradas a seguir em <strong>negrito</strong>):
+
+                    <pre class="examplecode">
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;/&gt;
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;style.css&quot;&gt;
+        &lt;title&gt;<strong>${counselorDetails.name}</strong>&lt;/title&gt;
+    &lt;/head&gt;
+
+    &lt;body&gt;
+        &lt;table&gt;
+            &lt;tr&gt;
+                &lt;th colspan=&quot;2&quot;&gt;<strong>${counselorDetails.name}</strong>&lt;/th&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;strong&gt;Description: &lt;/strong&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;span style=&quot;font-size:smaller; font-style:italic;&quot;&gt;<strong>${counselorDetails.description}</strong>&lt;/span&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;strong&gt;Counselor: &lt;/strong&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;strong&gt;<strong>${counselorDetails.first_name} ${counselorDetails.nick_name} ${counselorDetails.last_name}</strong>&lt;/strong&gt;
+                    &lt;br&gt;&lt;span style=&quot;font-size:smaller; font-style:italic;&quot;&gt;
+                    &lt;em&gt;member since: <strong>${counselorDetails.member_since}</strong>&lt;/em&gt;&lt;/span&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;strong&gt;Contact Details: &lt;/strong&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;strong&gt;email: &lt;/strong&gt;
+                    &lt;a href=&quot;mailto:<strong>${counselorDetails.email}</strong>&quot;&gt;<strong>${counselorDetails.email}</strong>&lt;/a&gt;
+                    &lt;br&gt;&lt;strong&gt;phone: &lt;/strong&gt;<strong>${counselorDetails.telephone}</strong>&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="run">Executando a Aplicação Pronta</h2>
+
+
+        <p>Você, agora, concluiu a aplicação. Tente executá-lo novamente para ver como ele é exibido no browser. Observe que, graças à funcionalidade Compilar ao Salvar do NetBeans, você não precisa se preocupar com a compilação ou reimplantação da aplicação. Assim, ao executar um projeto, você terá certeza de que a implantação contém as alterações mais recentes.</p>
+
+        <p>Clique no botão ( <img alt="Botão Executar Projeto" src="../../../images_www/articles/72/web/mysql-webapp/run-project-btn.png"> ) Executar Projeto na barra de ferramentas principal. A página <code>index.jsp</code> será aberta no browser default do IDE.</p>
+
+        <p>Quando <code>index.jsp</code> for exibido no browser, selecione um assunto na lista drop-down e clique em <code>submit</code>. Você será direcionado à página <code>response.jsp</code>, mostrando os detalhes correspondentes à sua seleção.</p>
+
+        <div class="indent">
+            <img alt="response.jsp exibido em um browser, mostrando os dados recuperados do banco de dados" class="margin-around" src="../../../images_www/articles/72/web/mysql-webapp/response-display.png" title="response.jsp exibido em um browser, mostrando os dados recuperados do banco de dados">
+        </div>
+
+        <p>Isso conclui o tutorial Criando uma Aplicação Web Simples Usando um Banco de Dados MySQL Este documento demonstra como criar uma aplicação Web simples que se conecta a um banco de dados MySQL. Este tutorial também demonstrou como construir uma aplicação utilizando uma arquitetura básica de duas camadas e utilizou várias tecnologias, incluindo JSP, JSTL, JDBC e JNDI, como uma forma de acessar e exibir dinamicamente os dados.</p>
+
+
+        <br>
+        <h2 id="troubleshoot">Solução de Problemas</h2>
+
+        <p>A maioria dos problemas que ocorrem com a aplicação do tutorial são devidos a dificuldades de comunicação entre o GlassFish Server Open Source Edition e o servidor de banco de dados MySQL. Se a sua aplicação não for exibida corretamente, ou se você estiver recebendo um erro de servidor, os testes a seguir poderão ser úteis.</p>
+
+        <ul>
+            <li><a href="#access?">Existem recursos do banco de dados?</a></li>
+            <li><a href="#datasource?">O pool de conexões e a fonte de dados existem no servidor?</a></li>
+            <li><a href="#driver?">O driver MySQL Connector/J está acessível ao GlassFish Server?</a></li>
+            <li><a href="#password?">O banco de dados é protegido por senha?</a></li>
+            <li><a href="#ping?">As propriedades do pool de conexões estão definidas corretamente?</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="access">Existem recursos do banco de dados?</h3>
+
+            <p>Utilize a janela Serviços do IDE (Ctrl-5; &amp;#8984-5 no Mac) para garantir que o servidor MySQL esteja em execução e que o <code>MyNewDatabase</code> esteja acessível e contenha os dados da tabela adequados.</p>
+
+            <ul>
+                <li>Para conectar-se ao servidor de banco de dados MySQL, clique com o botão direito do mouse no nó Servidor MySQL e selecione Conectar.</li>
+
+                <li>Se um nó de conexão ( <img alt="Nó de conexão do banco de dados" src="../../../images_www/articles/72/web/mysql-webapp/db-connection-node.png"> ) para o <code>MyNewDatabase</code> não for exibido na janela Serviços, você poderá criar uma conexão clicando com o botão direito do mouse no nó do driver MySQL ( <img alt="Nó do driver de banco de dados" src="../../../images_www/articles/72/web/mysql-webapp/driver-node.png"> ) e selecionando a opção Conectar Usando. Insira os detalhes necessários na caixa de diálogo exibida. <br> <img alt="Caixa de diálogo Nova Conexão de Banco de Dados" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/new-db-connection-dialog.png" title="Estabeleça uma conexão de banco de dados no IDE utilizando a caixa de diálogo Nova Conexão de Banco de Dados"> <br> <span class="tips">Os campos fornecidos na caixa de diálogo Nova Conexão de Banco de Dados espelham a string de URL inserida na opção Mostrar URL do JDBC. Portanto, se você souber o URL (por exemplo, <code>jdbc:mysql://localhost:3306/MyNewDatabase</code>) você poderá colá-lo no campo Mostrar URL do JDBC e os campos remanescentes da caixa de diálogo serão automaticamente preenchidos.</span></li>
+
+                <li>Para garantir que as tabelas <code>Subject</code> e <code>Counselor</code> existam e que contenham dados de amostra, expanda o nó de conexão <code>MyNewDatabase</code> ( <img alt="Nó de conexão do banco de dados" src="../../../images_www/articles/72/web/mysql-webapp/db-connection-node.png"> ) e localize o nó do catálogo <code>MyNewDatabase</code> ( <img alt="Nó de catálogo de banco de dados" src="../../../images_www/articles/72/web/mysql-webapp/db-catalog-node.png"> ). Expanda o nó de catálogo para exibir as tabelas existentes. Você pode exibir os dados da tabela clicando com o botão direito do mouse em um nó da tabela e selecionando Exibir Dados.<br><img alt="Janela Serviços - clique com o botão direito do mouse no menu do nó da tabela do banco de dados" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/services-window-view-data.png" title="Exibir dados da tabela selecionando a opção Exibir Dados no menu contextual de um nó da tabela de banco de dados"></li>
+            </ul>
+
+
+            <h3 id="datasource">O pool de conexões e a fonte de dados existem no servidor?</h3>
+
+            <p>Após a implantação da aplicação no GlassFish Server, <code>sun-resources.xml</code> contido no projeto deverá instruir o servidor a criar um recurso e um pool de conexões JDBC. É possível determinar se eles existem no nó Servidores na janela Serviços.</p>
+
+            <ul>
+                <li>Expanda o nó Servidores > GlassFish Server > Recursos. Expanda Recursos JDBC para exibir a fonte de dados <code>jdbc/IFPWAFCAD</code> criada de <code>glassfish-resources.xml</code>. Expanda o nó Pools de Conexões para exibir o pool de conexões <code>IfpwafcadPool</code> criado a partir de <code>glassfish-resources.xml</code>. (Isso está <a href="#view-connection-pool">demonstrado acima</a>.)</li>
+            </ul>
+
+
+            <h3 id="driver">O driver MySQL Connector/J está acessível para o GlassFish Server?</h3>
+
+            <p>Certifique-se de que o driver MySQLConnector/J foi implantado no GlassFish Server. (Isso é discutido em <a href="#addJar">Adicionando o arquivo JAR do driver do banco de dados ao servidor</a>.)</p>
+
+            <ul>
+                <li>Localize a pasta de instalação do GlassFish Server no computador e faça uma análise detalhada da subpasta <code>GlassFish domains/domain1/lib</code>. Aqui você encontrará o arquivo <code>mysql-connector-java-5.1.6-bin.jar</code>.</li>
+            </ul>
+
+
+            <h3 id="password">O banco de dados é protegido por senha?</h3>
+
+            <p>O banco de dados precisa ser protegido por senha para que a fonte de dados do GlassFish Server funcione adequadamente neste tutorial. Se você estiver utilizando a conta MySQL <code>root</code> sem senha, você poderá definir a senha usando um prompt de linha de comandos.</p>
+
+            <ul>
+                <li>Para definir sua senha como <code><em>nbuser</em></code>, navegue para o diretório <code>bin</code> de instalação do MySQL no prompt de linha de comandos e insira o seguinte:
+
+        <pre class="examplecode" style="width: 703px;">
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('<em>nbuser</em>')
+    ->     WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+
+                    Para mais informações, consulte o Manual de Referência MySQL oficial: <a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html">Proteção das Contas MySQL Iniciais</a>.</li>
+            </ul>
+
+
+            <h3 id="ping">As propriedades do pool de conexões estão definidas corretamente?</h3>
+
+           <p>Certifique-se de que o pool de conexões esteja funcionando corretamente para o servidor.</p>
+
+            <ol>
+                <li>Abra a janela Serviços (Ctrl-5; &amp;#8984-5 no Mac) e expanda o nó Servidores.</li>
+                <li>Clique com o botão direito do mouse no nó do GlassFish Server e selecione Exibir Console de Administração</li>
+                <li>Informe o nome do usuário e a senha se for solicitado. Você pode exibir o nome de usuário e senha no gerenciador de Servidores.</li>
+                <li>Na árvore à esquerda da console, expanda o nó Recursos > JDBC > Pools de Conexões de JDBC > <code>IfpwafcadPool</code>. OS detalhes do pool de conexões <code>IfpwafcadPool</code> são exibidos na janela principal.</li>
+                <li>Clique no botão Ping. Se o pool de conexões estiver configurado adequadamente, você verá uma mensagem "<code>Ping Bem-sucedido</code>".<br><img alt="Console de Administração do GlassFish Server - exibição do Pool de Conexões" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/ping-succeeded.png" title="Teste o seu pool de conexões clicando em Ping na Console de Administração do GlassFish Server"></li>
+
+                <li>Se o ping falhar, clique na guia Propriedades Adicionais e verifique se os valores da propriedade listados estão corretamente definidos.</li>
+
+            </ol>
+        </div>
+
+        <br>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20Web%20App%20MySQL">Envie-nos Seu Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Consulte Também</h2>
+
+        <p>Para obter mais informações sobre o desenvolvimento Java Web, consulte os recursos a seguir.</p>
+
+        <ul id="collapsableList2">
+            <li><strong>Artigos e Tutoriais do NetBeans</strong>
+
+                <ul>
+                    <li><a href="../ide/mysql.html">Conectando-se a um Banco de Dados MySQL no NetBeans IDE</a> Aborda os conceitos básicos sobre como trabalhar com um banco de dados MySQL no IDE.</li>
+
+                    <li><a href="jsf20-intro.html">Introdução ao JavaServer Faces 2.x</a>. Um tutorial introdutório descrevendo como utilizar o framework JSF em um projeto Java Web.</li>
+
+                    <li><a href="quickstart-webapps-spring.html">Introdução à Framework do Spring</a>. Um tutorial introdutório que descreve como criar uma aplicação Web MVC utilizando o Framework do Spring.</li>
+                </ul></li>
+
+            <li><strong>Java Database Connectivity (JDBC)</strong>
+
+                <ul>
+                    <li><a href="http://docs.oracle.com/javase/tutorial/jdbc/overview/index.html">Visão Geral do JDBC</a></li>
+                    <li><a href="http://download.oracle.com/javase/6/docs/technotes/guides/jdbc/getstart/GettingStartedTOC.fm.html">Introdução à API JDBC</a></li>
+                    <li><a href="http://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">Tutoriais do Java: Conceitos Básicos do JDBC</a></li>
+                </ul></li>
+
+            <li><strong>JavaServer Pages Standard Tag Library (JSTL)</strong>
+
+                <ul>
+                    <li><a href="http://www.oracle.com/technetwork/java/index-jsp-135995.html">JavaServer Pages Standard Tag Library</a> (página oficial do produto)</li>
+                </ul></li>
+
+            <li><strong>Java Naming and Directory Interface (JNDI)</strong>
+
+                <ul>
+                    <li><a href="http://www.oracle.com/technetwork/java/jndi-136720.html">Tecnologias Java SE Core - Java Naming and Directory Interface</a></li>
+                    <li><a href="http://docs.oracle.com/javase/jndi/tutorial/">Tutorial do JNDI</a></li>
+                    <li><a href="http://docs.oracle.com/javase/tutorial/jndi/index.html">Tutoriais do Java: Java Naming and Directory Interface</a></li>
+                </ul></li>
+
+        </ul>
+
+        <script type="text/javascript">
+            <!--
+            compactMenu('collapsableList', true, '&plusmn; ');
+            compactMenu('collapsableList2', true, '&plusmn; ');
+            -->
+        </script>
+    </body>
+</html>

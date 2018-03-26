@@ -1,0 +1,410 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Applying @Alternative Beans and Lifecycle Annotations - IDE NetBeans Tutorial</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial explores CDI's injection facilities to perform custom validation using NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Contexts and Dependency Injection, CDI, Web Beans, injection, qualifier">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Применение аннотации @Alternative и аннотаций жизненного цикла</h1>
+
+        <p><em>Предоставлено Энди Гибсоном (Andy Gibson)</em></p>
+
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h3>Внедрение контекстов и зависимостей</h3>
+
+                <ol>
+                    <li><a href="cdi-intro.html">Введение в CDI и JSF 2.0</a></li>
+                    <li><a href="cdi-inject.html">Работа с внедрением и квалификаторами в CDI</a></li>
+                    <li><strong>Применение аннотации @Alternative и аннотаций жизненного цикла</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#alternative">Обработка нескольких развертываний</a></li>
+                            <li><a href="#lifecycle">Применение аннотаций жизненного цикла к управляемым компонентам</a></li>
+                            <li><a href="#seealso">Дополнительные сведения</a></li>
+                        </ul></li>
+
+                    <li><a href="cdi-events.html">Обработка событий в CDI</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <p>Внедрение контекстов и зависимостей (CDI), определяемое документом <a href="http://jcp.org/en/jsr/detail?id=299">JSR-299</a>, является неотъемлемой частью Java EE 6 и обеспечивает архитектуру, позволяющую компонентам Java EE (например, сервлетам, компонентам EJB и JavaBeans) существовать в жизненном цикле приложения с четко определенными контекстами. Кроме того, службы CDI позволяют компонентам Java EE (например, компонентам сеансов EJB и управляемым компонентам JavaServer Faces) внедряться и свободно взаимодействовать путем запуска и обработки событий.</p>
+
+        <p>Этот учебный курс основан на записи блога Энди Гибсона (Andy Gibson) <a href="http://www.andygibson.net/blog/index.php/2009/12/22/getting-started-with-cdi-part-2-injection/">Начало работы с CDI. Часть 2. Внедрение</a>. В нем рассматривается использование аннотации <code>@Alternative</code> для настройки приложения для различных развертываний, а также показано, как использовать аннотации жизненного цикла управляемых компонентов, например, <code>@PostConstruct</code> и <code>@PreDestroy</code> для совмещения внедрения CDI с функциональными возможностями <a href="http://jcp.org/en/jsr/detail?id=316">спецификации управляемых компонентов Java EE 6</a></p>
+
+        <p>В NetBeans IDE обеспечена встроенная поддержка для внедрения контекстов и зависимостей, включая поддержку создания файла конфигурации CDI <code>beans.xml</code> при создании проекта, поддержку редактора и навигации для аннотаций, а также различных мастеров для создания часто используемых артефактов CD.</p>
+
+        <br style="clear:left;">
+
+        <div class="indent">
+            <p>Для работы с этим учебным курсом требуется программное обеспечение и материалы, перечисленные ниже.</p>
+
+            <table id="requiredSoftware">
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                        <th class="tblheader" scope="col">Требуемая версия</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                        <td class="tbltd1">Версия 7.2, 7.3, 7.4, 8.0, Java EE</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                        <td class="tbltd1">версия 7 или 8</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://glassfish.dev.java.net/">Сервер GlassFish</a></td>
+                        <td class="tbltd1">Open Source Edition 3.x или 4.x</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo2.zip">cdiDemo2.zip</a></td>
+                        <td class="tbltd1">неприменимо</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="notes"><strong>Примечания</strong></p>
+        </div>
+
+        <ul>
+            <li>В комплект Java для IDE NetBeans также входит компонент GlassFish Server Open Source Edition, являющийся контейнером, совместимым с Java EE.</li>
+
+            <li>Пример проекта к этому учебному курсу можно загрузить здесь: <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo3.zip">cdiDemo3.zip</a></li>
+        </ul>
+
+
+        <br>
+        <h2 id="alternative">Обработка нескольких развертываний</h2>
+
+        <p>CDI предлагает использовать аннотацию <code>@Alternative</code>, которая позволяет пакетировать несколько компонентов, соответствующих одной точке внедрения, без неоднозначностей.  Другими словами, аннотация <code>@Alternative</code> может применяться к двум или нескольким компонентам, а затем, в зависимости от развертывания, в файле настройки CDI <code>beans.xml</code> указывается компонент для использования.</p>
+
+        <p>Для наглядности рассмотрим следующий случай. <code>ItemValidator</code> добавляется в главный класс <code>ItemProcessor</code>. <code>ItemValidator</code> имеет две реализации: <code>DefaultItemValidator</code> и <code>RelaxedItemValidator</code>. В соответствие с требованиями к развертыванию в большинстве случаев требуется использовать <code>DefaultItemValidator</code>, а <code>RelaxedItemValidator</code> — в одном конкретном развертывании.  Для этого создаются аннотации к каждому компоненту, а затем указывается компонент, который используется для данного развертывания путем добавления записей в файл приложения <code>beans.xml</code> .</p>
+
+        <div class="indent">
+            <img alt="На диаграмме CDI отображаются объекты, созданные в этом упражнении" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-validate/cdi-diagram-alternative.png" title="Используйте внедрение CDI для свободного взаимодействия классов в используемом приложении">
+        </div>
+
+        <ol>
+            <li>Начните работу с извлечения начального проекта из файла <code>cdiDemo2.zip</code> (см. выше <a href="#requiredSoftware">таблицу необходимых ресурсов</a>). Выберите File (&quot;Файл&quot;) &gt; Open Project (&quot;Открыть проект&quot;) (Ctrl-Shift-O), затем выберите проект в его местоположении на компьютере.</li>
+            <li>Щелкните правой кнопкой мыши узел проекта в окне &quot;Проекты&quot; и выберите команду &quot;Свойства&quot;.</li>
+            <li>Выберите категорию "Запуск" и убедитесь, что в списке "Сервер" выбран экземпляр GlassFish. </li>
+
+            <li>Создайте интерфейс <code>ItemValidator</code>. <br><br> Щелкните 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png"> ) или нажмите сочетание клавиш CTRL+N (⌘-N on Mac) для открытия мастера создания файлов. </li>
+
+            <li>Выберите категорию Java, а затем команду &quot;Интерфейс Java&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите имя класса в <strong>ItemValidator</strong> и пакет <strong>exercise3</strong>.</li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Интерфейс будет создан и открыт в редакторе.</li>
+
+            <li>Добавьте метод <code>isValid()</code>, который принимает в качестве параметра объект <code>Item</code> и возвращает логическое значение <code>boolean</code>.
+
+                <pre class="examplecode">
+public interface ItemValidator {
+    <strong>boolean isValid(Item item);</strong>
+}</pre>
+                С помощью подсказки редактора добавьте оператор импорта для <code>exercise2.Item</code>.</li>
+
+            <li>Расширьте класс <code>ItemProcessor</code> для добавления новой возможности. Откройте в редакторе <code>ItemProcessor</code> и внесите следующие изменения.
+
+
+            <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    @Inject @Demo
+    private ItemDao itemDao;
+
+    <strong>@Inject
+    private ItemValidator itemValidator;</strong>
+
+    public void execute() {
+      List&lt;Item&gt;  items = itemDao.fetchItems();
+      for (Item item : items) {
+          System.out.println(<strong>&quot;Item = &quot; + item + &quot; valid = &quot; + itemValidator.isValid(item)</strong>);
+      }
+    }
+}</pre>
+                <p class="tips">С помощью подсказки редактора добавьте оператор импорта для <code>exercise3.ItemValidator</code>.</p></li>
+
+            <li>Создайте реализацию <code>ItemValidator</code> под названием <code>DefaultItemValidator</code>, которая просто сравнивает значение с предельным.
+
+                <p>
+                В окне &quot;Проекты&quot; щелкните правой кнопкой пакет <code>exercise3</code> и выберите команду &quot;Создать&quot; &gt; &quot;Класс Java&quot;. Дайте классу имя <strong>DefaultItemValidator</strong> и нажмите кнопку &quot;Готово&quot;.</p></li>
+
+            <li>В элементе <code>DefaultItemValidator</code> реализуйте <code>ItemValidator</code> и переопределите метод <code>isValid()</code> следующим образом.
+
+        <pre class="examplecode">
+public class DefaultItemValidator <strong>implements ItemValidator</strong> {
+
+    <strong>@Override
+    public boolean isValid(Item item) {
+        return item.getValue() &lt; item.getLimit();
+    }</strong>
+}</pre>
+
+                <p>С помощью подсказки редактора добавьте оператор импорта для <code>exercise2.Item</code>.</p></li>
+
+
+            <li>Нажмите кнопку 'Запустить проект' (<img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">) на главной панели инструментов IDE. Файл скомпилирован и развернут в GlassFish, и страница приветствия приложения (<code>process.xhtml</code>) отображается в веб-браузере.</li>
+
+            <li>Нажмите кнопку <code>Выполнить</code> на странице. Вернитесь в среду IDE и проверьте протокол сервера GlassFish. Журнал сервера отображается в окне вывода (Ctrl-4; ⌘-4 в Mac) на вкладке 'GlassFish'. В нем видно, что элементы проверяются и перечисляются только допустимые элементы, значение которых меньше предельного.
+
+                <pre class="examplecode">
+INFO: Item = exercise2.Item@e857ac [Value=34, Limit=7] valid = false
+INFO: Item = exercise2.Item@63124f52 [Value=4, Limit=37] valid = true
+INFO: Item = exercise2.Item@4715c34e [Value=24, Limit=19] valid = false
+INFO: Item = exercise2.Item@65c95a57 [Value=89, Limit=32] valid = false</pre>
+
+                <img alt="Окно вывода - журнал сервера GlassFish" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-validate/output-window.png" title="Просмотрите журнал сервера в окне вывода"></li>
+
+            <li>Теперь рассмотрим случай, в котором вам необходимо выполнить развертывание в другом месте, менее жестком, считающим компонент недопустимым только в том случае, если его значение более чем в два раза превышает ограничение. Может потребоваться другой компонент для реализации интерфейса <code>ItemValidator</code> для данной логики.
+
+                <p>
+                Создайте новую реализацию <code>ItemValidator</code> с именем <code>RelaxedItemValidator</code>. В окне &quot;Проекты&quot; щелкните правой кнопкой пакет <code>exercise3</code> и выберите команду &quot;Создать&quot; &gt; &quot;Класс Java&quot;. Дайте классу имя <strong>RelaxedItemValidator</strong> и нажмите кнопку &quot;Готово&quot;.</p></li>
+
+            <li>Сделайте <code>RelaxedItemValidator</code> реализацией <code>ItemValidator</code> и переопределите метод <code>isValid()</code> следующим образом.
+
+        <pre class="examplecode">
+public class RelaxedItemValidator <strong>implements ItemValidator</strong> {
+
+    <strong>@Override
+    public boolean isValid(Item item) {
+        return item.getValue() &lt; (item.getLimit() * 2);
+    }</strong>
+}</pre>
+
+                <p>С помощью подсказки редактора добавьте оператор импорта для <code>exercise2.Item</code>.</p></li>
+
+
+            <li>Для запуска проекта нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png"> ). Обратите внимание, что теперь развертывание проекта завершается сбоем.</li>
+
+            <li>Проверьте журнал сервера в окне вывода (Ctrl-4; ⌘-4 в Mac). В протоколе отображается сообщение об ошибке неоднозначной зависимости.  Это происходит по причине того, что имеются два класса, реализующих один и тот же интерфейс.
+
+                <pre class="examplecode">
+org.glassfish.deployment.common.DeploymentException: Injection point has ambiguous dependencies.
+Injection point: field exercise2.ItemProcessor.itemValidator;
+Qualifiers: [@javax.enterprise.inject.Default()];
+Possible dependencies: [exercise3.RelaxedItemValidator, exercise3.DefaultItemValidator]</pre>
+
+                <p>Реализация Weld CDI не способна определить элемент, используемый для данной точки внедрения (<code>RelaxedItemValidator</code> или <code>DefaultItemValidator</code>).</p>
+
+                <p>
+                Как указано выше, единственное отличие связано с развертыванием. Для большинства развертываний можно использовать средство проверки по умолчанию, однако для одного развертывания может потребоваться использование &quot;нежесткой&quot; реализации. В CDI существует аннотация <code>@Alternative</code>, которая позволяет пакетировать несколько компонентов, соответствующих одной точке внедрения, без проблем неоднозначности, поскольку при этом используется компонент, указанный в файле <code>beans.xml</code> .  Это позволяет развертывать в одном модуле обе реализации. При этом отличается только определение в файле <code>beans.xml</code> , которое уникально для каждой реализации.</p></li>
+
+            <li>Добавьте аннотацию <code>@Alternative</code> и соответствующий оператор импорта в <code>RelaxedItemValidator</code> и <code>DefaultItemValidator</code>. <br><br> Откройте в редакторе <code>RelaxedItemValidator</code> и внесите следующие изменения.
+
+        <pre class="examplecode">
+<strong>import javax.enterprise.inject.Alternative;</strong>
+...
+
+<strong>@Alternative</strong>
+public class RelaxedItemValidator implements ItemValidator {
+
+    public boolean isValid(Item item) {
+        return item.getValue() &lt; (item.getLimit() * 2);
+    }
+}</pre>
+                <p class="tips">Введите '<code>@Al</code>', затем нажмите CTRL+ПРОБЕЛ для вызова автозавершения кода. Поскольку возможен только один вариант, аннотация <code>@Alternative</code> завершается, а в начале файла автоматически добавляется соответствующий оператор импорта для <code>javax.enterprise.inject.Alternative</code>. Как правило, при нажатии CTRL+ПРОБЕЛ в аннотациях также вызывается всплывающая документация Javadoc.</p>
+
+                
+                <img alt="Всплывающее окно документации Javadoc в редакторе" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-validate/code-completion-alternative.png" title="Нажмите Ctrl-Space в аннотациях для вызова документации Javadoc">
+
+                <p>
+                Переключитесь к <code>DefaultItemValidator</code> (нажмите сочетание клавиш CTRL+TAB) и внесите следующее изменение.</p>
+
+        <pre class="examplecode">
+<strong>import javax.enterprise.inject.Alternative;</strong>
+...
+
+<strong>@Alternative</strong>
+public class DefaultItemValidator implements ItemValidator {
+
+    public boolean isValid(Item item) {
+        return item.getValue() &lt; item.getLimit();
+    }
+}</pre>
+
+                <p>Выполняя развертывание приложения сейчас, вы получите ошибку &quot;неудовлетворенная зависимость&quot;, так как два подходящих компонента были определены как альтернативные, но ни один из них не был активирован в файле <code>beans.xml</code> .</p></li>
+
+            <li>С помощью диалогового окна &quot;Переход к файлу&quot; в среде IDE откройте файл <code>beans.xml</code> . Выберите пункт &quot;Переход&quot; &gt; &quot;Переход к файлу&quot; в главном меню среды IDE (сочетание клавиш ALT+SHIFT+O; CTRL+SHIFT+O в Mac OS), затем введите <code>beans</code>. Нажмите кнопку &quot;ОК&quot;. <img alt="Диалоговое окно &apos;Перейти к файлу&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-validate/go-to-file.png" title="С помощью диалогового окна &amp;quot;Переход к файлу&amp;quot; быстро найдите файл проекта."></li>
+
+            <li>Внесите следующие изменения в файл <code>beans.xml</code> 
+
+<pre class="examplecode">
+&lt;beans xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot;
+    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+    xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd&quot;&gt;
+
+    <strong>&lt;alternatives&gt;
+        &lt;class&gt;exercise3.RelaxedItemValidator&lt;/class&gt;
+    &lt;/alternatives&gt;</strong>
+
+&lt;/beans&gt;</pre>
+
+                <p>Данная команда указывает CDI использовать <code>RelaxedItemValidator</code> для данного развертывания. Аннотация <code>@Alternative</code> может рассматриваться как способ отключения компонента, запрещения его внедрения и разрешения пакетирования реализации с другими компонентами. Добавление компонента в качестве альтернативы в файл <code>beans.xml</code>  фактически снова разрешает компонент, делая его доступным для внедрения.  Перемещение этого вида метаданных в файл <code>beans.xml</code>  позволяет связать различные версии файла с различными развертываниями.</p></li>
+
+            <li>Для запуска проекта нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png"> ). (В качестве альтернативы нажмите F6; fn-F6 в Mac) В браузере нажмите кнопку '<code>Выполнить</code>' на отображаемой странице. Переключите обратно в IDE и проверьте журнал сервера GlassFish, который отображается в окне вывода (Ctrl-4; ⌘-4 в Mac).
+
+                <pre class="examplecode">
+INFO: Item = exercise2.Item@672f0924 [Value=34, Limit=7] valid = false
+INFO: Item = exercise2.Item@41014f68 [Value=4, Limit=37] valid = true
+INFO: Item = exercise2.Item@3d04562f [Value=24, Limit=19] valid = true
+INFO: Item = exercise2.Item@67b646f4 [Value=89, Limit=32] valid = false</pre>
+
+                <p>Используется реализация <code>RelaxedItemValidator</code>, а третий элемент отображается как верный, хотя значение (<code>24</code>) больше заданного предела (<code>19</code>).</p></li>
+        </ol>
+
+        <br>
+        <h2 id="lifecycle">Применение аннотаций жизненного цикла к управляемым компонентам</h2>
+
+        <p>В этом упражнении <code>ItemErrorHandler</code> будет добавлен в главный класс <code>ItemProcessor</code>. Для добавления выбран <code>FileErrorReporter</code>, поскольку он является единственной реализацией интерфейса  <code>ItemErrorHandler</code>.  Для настройки зависящих от жизненного цикла действий класса следует использовать аннотации <code>@PostConstruct</code> и <code>@PreDestroy</code> из спецификации управляемых компонентов (включенной в <a href="http://jcp.org/en/jsr/detail?id=316">JSR 316: спецификация платформы Java, Enterprise Edition 6</a>).</p>
+
+        <div class="indent">
+            <img alt="На диаграмме CDI отображаются объекты, созданные в этом упражнении" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-validate/cdi-diagram-lifecycle.png" title="Используйте внедрение CDI для свободного взаимодействия классов в используемом приложении">
+        </div>
+
+        <p>После этого необходимо создать интерфейс <code>ItemErrorHandler</code> для обработки обнаруженных недопустимых элементов.</p>
+
+        <ol>
+            <li>В окне &quot;Проекты&quot; щелкните правой кнопкой пакет <code>exercise3</code> и выберите команду &quot;Создать&quot; &gt; &quot;Интерфейс Java&quot;.</li>
+
+            <li>В мастере интерфейсов Java введите имя класса <strong>ItemErrorHandler</strong> и имя пакета <strong>exercise3</strong>. Нажмите кнопку &quot;Завершить&quot;.
+
+            <p>Интерфейс будет создан и открыт в редакторе.</p></li>
+
+            <li>Добавьте метод <code>handleItem()</code>, принимающий параметр типа <code>Item</code>.
+
+                <pre class="examplecode">
+public interface ItemErrorHandler {
+    <strong>void handleItem(Item item);</strong>
+}</pre>
+                <p>С помощью подсказки редактора добавьте оператор импорта для <code>exercise2.Item</code>.</p></li>
+
+            <li>Выполните реализацию <code>ItemErrorHandler</code> с фиктивным обработчиком <code>FileErrorReporter</code>, сохраняющим данные элемента в файл.
+
+                <p>
+                В окне &quot;Проекты&quot; щелкните правой кнопкой пакет <code>exercise3</code> и выберите команду &quot;Создать&quot; &gt; &quot;Класс Java&quot;. Присвойте классу имя <strong>FileErrorReporter</strong> и нажмите кнопку &quot;Готово&quot;.</p></li>
+
+            <li>Сделайте <code>FileErrorReporter</code> реализацией <code>ItemErrorHandler</code> и переопределите метод <code>handleItem()</code> следующим образом.
+
+        <pre class="examplecode">
+public class FileErrorReporter <strong>implements ItemErrorHandler</strong> {
+
+    <strong>@Override
+    public void handleItem(Item item) {
+        System.out.println(&quot;Saving &quot; + item + &quot; to file&quot;);
+    }</strong>
+}</pre>
+
+                <p>С помощью подсказки редактора добавьте оператор импорта для <code>exercise2.Item</code>.</p>
+
+                <p>
+                Вам нужно открыть файл до начала обработки элементов, оставить его открытым в течение процесса добавления содержимого в данный файл, а затем закрыть его по завершении процесса. Можно вручную добавить методы <code>initProcess()</code> и <code>finishProcess()</code> к компоненту средства сообщения об ошибке, но в этом случае вы не сможете выполнить кодирование интерфейса, так как вызывающей стороне будет необходимо знать данные специфичные для класса методы. Можно добавить те же методы к интерфейсу <code>ItemErrorReporter</code>, но в этом случае потребуется выполнить ненужное внедрение данных методов в каждый класс, реализующий данный интерфейс. Вместо этого можно использовать несколько аннотаций жизненного цикла из спецификации управляемых компонентов (входящей в <a href="http://jcp.org/en/jsr/detail?id=316">JSR 316: спецификация платформы Java, Enterprise Edition 6</a>) для вызова методов в компоненте в конкретных точках жизненного цикла компонента. Метод с аннотацией <code>@PostConstruct</code> вызывается после создания компонента и учета всех его зависимостей.  Метод с аннотацией <code>@PreDestroy</code> аналогичным образом вызывается непосредственно перед удалением компонента контейнером.</p></li>
+
+            <li>Добавьте следующие методы <code>init()</code> и <code>release()</code> с аннотациями <code>@PostConstruct</code> и <code>@PreDestroy</code>.
+
+                <pre class="examplecode">
+public class FileErrorReporter implements ItemErrorHandler {
+
+    <strong>@PostConstruct
+    public void init() {
+        System.out.println(&quot;Creating file error reporter&quot;);
+    }
+
+    @PreDestroy
+    public void release() {
+        System.out.println(&quot;Closing file error reporter&quot;);
+    }</strong>
+
+    @Override
+    public void handleItem(Item item) {
+        System.out.println(&quot;Saving &quot; + item + &quot; to file&quot;);
+    }
+}</pre></li>
+
+            <li>Исправьте операторы импорта.  Либо щелкните правой кнопкой мыши в редакторе и выберите 'Исправить выражения импорта' или нажмите Ctrl-Shift-I (⌘-Shift-I в Mac). В начало файла добавляются операторы импорта для <code>javax.annotation.PostConstruct</code> и <code>javax.annotation.PreDestroy</code>.</li>
+
+            <li>После этого добавьте новый компонент <code>ItemErrorHandler</code> к <code>ItemProcessor</code>.
+
+                <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    @Inject @Demo
+    private ItemDao itemDao;
+
+    @Inject
+    private ItemValidator itemValidator;
+
+    <strong>@Inject
+    private ItemErrorHandler itemErrorHandler;</strong>
+
+    public void execute() {
+        List&lt;Item&gt;  items = itemDao.fetchItems();
+        for (Item item : items) {
+            <strong>if (!itemValidator.isValid(item)) {
+                itemErrorHandler.handleItem(item);
+            }</strong>
+        }
+    }
+}</pre>
+                <p>С помощью подсказки редактора добавьте оператор импорта для <code>exercise3.ItemErrorHandler</code>.</p>
+            </li>
+
+            <li>Для запуска проекта нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png"> ). (В качестве альтернативы нажмите F6; fn-F6 в Mac) В браузере нажмите кнопку '<code>Выполнить</code>' на отображаемой странице. Переключите обратно в IDE и проверьте журнал сервера GlassFish, который отображается в окне вывода (Ctrl-4; ⌘-4 в Mac).
+
+                <pre class="examplecode">
+INFO: Creating file error reporter
+INFO: Saving exercise2.Item@6257d812 [Value=34, Limit=7] to file
+INFO: Saving exercise2.Item@752ab82e [Value=89, Limit=32] to file
+INFO: Closing file error reporter</pre>
+            </li>
+        </ol>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20CDI%20Injection%20to%20Perform%20Custom%20Validation">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Дополнительные сведения</h2>
+
+        <p>Различные развертывания приложений могут использовать различные правила обработки недопустимых элементов: отклонение элементов, отправку уведомлений, выделение элементов или перечисление их в выходном файле. Кроме того, может потребоваться комбинация этих действий (например, отклонить заказ, отправить письмо менеджеру и записать заказ в файл). Оптимальным способом обработки такой многогранной проблемы является использование <em>событий</em>. События CDI рассматриваются в последнем примере этой серии.</p>
+
+        <ul>
+            <li><a href="cdi-events.html">Обработка событий в CDI</a></li>
+        </ul>
+
+        <p>Дополнительные сведения о CDI и Java EE приведены в следующих материалах.</p>
+
+        <ul>
+            <li><a href="cdi-intro.html">Начало работы со внедрением контекстов и зависимостей и JSF 2.0</a></li>
+            <li><a href="cdi-inject.html">Работа с внедрением и квалификаторами в CDI</a></li>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+            <li><a href="http://blogs.oracle.com/enterprisetechtips/entry/using_cdi_and_dependency_injection">Технические рекомендации по Java EE: использование CDI и внедрения зависимостей для Java в приложении JSF 2.0</a></li>
+            <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/gjbnr.html">Учебный курс по Java EE 6, часть V: внедрение контекстов и зависимостей для платформы Java EE</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=299">JSR 299: спецификация внедрения контекстов и зависимостей</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=316">JSR 316. Платформа Java, спецификация Enterprise Edition 6</a></li>
+        </ul>
+
+    </body>
+</html>

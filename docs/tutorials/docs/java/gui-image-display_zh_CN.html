@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Tutorial that shows how to handle images and
+              other resources when creating Swing applications in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment tutorial, guide, user, documentation, open source">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>在 Java GUI 应用程序中处理图像 - NetBeans IDE 教程</title>
+    </head>
+    <body>
+        <h1>在 Java GUI 应用程序中处理图像</h1>
+
+
+        <p><b>目录</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.4 和 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="此页上的内容适用于 NetBeans IDE 7.4 和 8.0">
+        <ul class="toc">
+            <li><a href="#intro">简介</a></li>
+            <li><a href="#form">创建应用程序窗体</a></li>
+            <li><a href="#package">为图像添加包</a></li>
+            <li><a href="#displaying">在标签上显示图像</a></li>
+            <li><a href="#building">构建和运行应用程序</a></li>
+			<li><a href="#background">将图像显示为框架上的背景</a></li>
+            <li><a href="#custom">创建定制代码</a></li>
+            <li><a href="#summary">小结</a></li>
+            <li><a href="#seealso">另请参见</a></li>
+        </ul>
+
+
+        <p>
+            <b>要学完本教程，您需要具备以下软件和资源。</b>
+        </p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/">NetBeans IDE</a></td>
+                    <td class="tbltd1">版本 7.4 或 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 6、7 或 8 </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <a name="intro"></a><h2>简介</h2>
+        <p>在应用程序中处理图像是很多 Java 编程初学者遇到的一个常见问题。要访问 Java 应用程序中的图像，标准作法是使用 <code><a href="http://download.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#getResource(java.lang.String)" target="_blank">getResource()</a></code> 方法。本教程介绍了如何使用 IDE 的 GUI 构建器构建代码，以便在应用程序中包含图像（和其他资源）。此外，您还将了解如何定制 IDE 生成图像处理代码的方式。</p>
+        <p>本教程生成的应用程序是一个简单的 JFrame，其中包含一个显示单个图像的 JLabel。</p>
+        <h2>创建应用程序</h2>
+        <ol>
+            <li>选择 "File"（文件）> "New Project"（新建项目）。</li>
+            <li>在新建项目向导中，选择 "Java" > "Java Application"（Java 应用程序），然后单击 "Next"（下一步）。</li>
+            <li>键入 <code>ImageDisplayApp</code> 作为项目名称。</li>
+            <li>清除 "Create Main Class"（创建主类）复选框。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/newproj.png" rel="lytebox" title="新建项目向导 - 单击查看大图"> <img alt="新建项目向导" border="1" src="../../../images_www/articles/72/java/gui-image-display/newproj-small.png"></a></p></li>
+            <li>单击 "Finish"（完成）。</li>
+        </ol>
+
+        <a name="form"></a><h2>创建应用程序窗体</h2>
+
+        <p>在本节中，将创建 JFrame 窗体并在窗体中添加 JLabel。</p>
+        <p><b>要创建 JFrame 窗体，请执行以下操作：</b></p>
+        <ol>
+            <li>在 "Projects"（项目）窗口中，展开 <tt>ImageDisplayApp</tt> 节点。</li>
+            <li>右键单击 "Source Packages"（源包）节点，然后选择 "New"（新建）> "JFrame Form"（JFrame 窗体）。</li>
+            <li>键入 <code>ImageDisplay</code> 作为类名。</li>
+            <li>键入 <code>org.me.myimageapp</code> 作为包名。</li>
+            <li>单击 "Finish"（完成）。</li>
+        </ol>
+
+        <p><b>要添加 JLabel，请执行以下操作：</b></p>
+        <ul>
+            <li>在组件面板中，选择 "Label"（标签）组件并将其拖至 JFrame 上。</li>
+        </ul>
+        <p>此时，该窗体类似于下图：</p>
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/form.png" rel="lytebox" title="生成的窗体，已添加标签 - 单击查看大图"> <img alt="生成的窗体，已添加标签" border="1" src="../../../images_www/articles/72/java/gui-image-display/form-small.png"></a></p>
+                <a name="package"></a><h2>为图像添加包</h2>
+        <p>在应用程序中使用图像或其他资源时，通常应为资源创建单独的 Java 包。在本地文件系统上，包对应于一个文件夹。</p>
+
+        <p><b>要为图像创建包，请执行以下操作：</b></p>
+        <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击 <code>org.me.myimageapp</code> 节点，然后选择 "New"（新建）> "Java Package"（Java 包）。<br>
+            
+				 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/package.png" rel="lytebox" title="添加新 Java 包 - 单击查看大图"> <img alt="添加新 Java 包" border="1" src="../../../images_www/articles/72/java/gui-image-display/package-small.png"></a></p></li>
+
+            <li>单击 "Finish"（完成）。</li>
+        </ol>
+        <p>在 "Projects"（项目）窗口中，您应该会看到新包出现在 <code>Source Packages</code>（源包）文件夹内。</p>
+     <p class="align-center"><img alt="&quot;Projects&quot;（项目）窗口" border="1" src="../../../images_www/articles/72/java/gui-image-display/project-with-imagepack.png"></p>
+
+
+        <a name="displaying"></a><h2>在标签上显示图像</h2>
+
+        <p>在此应用程序中，图像将嵌入到 JLabel 组件中。</p>
+
+        <p><b>要将图像添加到标签上，请执行以下操作：</b></p>
+        <ol>
+            <li>在 GUI 设计器中，选择已添加到窗体上的标签。</li>
+            <li>在 "Properties"（属性）窗口中，单击 "Properties"（属性）类别，然后滚动到 icon 属性。</li>
+            <li>单击省略号 (...) 按钮。<br> 显示图标属性编辑器。
+			  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/importimage.png" rel="lytebox" title="图标属性编辑器 - 单击查看大图"> <img alt="图标属性编辑器" border="1" src="../../../images_www/articles/72/java/gui-image-display/importimage-small.png"></a></p></li>
+            <li>在 icon 属性对话框中，单击 "Import to Project"（导入到项目）。</li>
+            <li>在文件选择器中，导航到系统上要使用的任何图像。然后，单击 "Next"（下一步）。</li>
+            <li>在向导的 "Select target folder"（选择目标文件夹）页中，选择 <code>newpackage</code> 文件夹，然后单击 "Finish"（完成）。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/targetfolder.png" rel="lytebox" title="选择 &quot;Import Images to Project&quot;（将图像导入到项目）向导的 &quot;Target Folder&quot;（目标文件夹）页"> <img alt="选择 &quot;Import Images to Project&quot;（将图像导入到项目）向导的 &quot;Target Folder&quot;（目标文件夹）页" border="1" src="../../../images_www/articles/72/java/gui-image-display/targetfolder-small.png"></a></p>
+            </li>
+			<li>单击 "OK"（确定）以关闭 "icon property"（图标属性）对话框。</li>
+        </ol>
+
+        <p>单击 "OK"（确定）后，IDE 将执行以下任务：</p>
+        <ul>
+            <li>将图像复制到项目中。因此，在构建和分发应用程序时，图像将包含在可分发的 JAR 文件中。</li>
+            <li>在 ImageDisplay 类中生成代码以访问图像。</li>
+            <li>在窗体的 "Design"（设计）视图中显示标签上的图像。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/label-added.png" rel="lytebox" title="添加到标签中的图像"> <img alt="添加到标签中的图像" border="1" src="../../../images_www/articles/72/java/gui-image-display/label-added-small.png"></a></p></li>
+        </ul>
+
+        <p>此时，可以执行一些简单操作以改进窗体外观，例如：</p>
+        <ul>
+            <li>在 "Properties"（属性）窗口中，选择 <code>text</code> 属性，然后删除 <code>jLabel1</code>。该值是由 GUI 构建器构建的，以作为标签的显示文本。不过，将使用标签显示图像而不是文本，因此不需要使用该文本。</li>
+            <li>将 <code>jLabel1</code> 拖动到窗体中心。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/centered.png" rel="lytebox" title="图像居中的 ImageDisplay 类的 &amp;quot;Design&amp;quot;（设计）视图"> <img alt="图像居中的 ImageDisplay 类的 &amp;quot;Design&amp;quot;（设计）视图" border="1" src="../../../images_www/articles/72/java/gui-image-display/centered-small.png"></a></p></li>
+        </ul>
+        
+       
+
+        
+		<p><b>要查看生成的代码，请执行以下操作：</b></p>
+        <ol>
+            <li>在 GUI 设计器中，单击 "Source"（源）按钮。（如果 "Source"（源）按钮处于隐藏状态，则从主菜单中选择 "View"（视图）> "Source Editor Toolbar"（源代码编辑器工具栏）。）</li>
+            <li>向下滚动到显示 "Generated Code" 的行。</li>
+            <li>单击 "Generated Code" 行左侧的加号 (+)，以显示 GUI 设计器生成的代码。</li>
+        </ol>
+        <p>关键的一行如下所示：</p>
+
+        <pre class="examplecode">jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource(&quot;/org/me/myimageapp/newpackage/image.png&quot;))); // NOI18N</pre>
+
+        <p>由于使用了 <code>jLabel1</code> 的 <code>icon</code> 属性的属性编辑器，因此，IDE 生成 <code>setIcon</code> 方法。该方法的参数包含针对 <code>ImageIcon</code> 匿名内部类的 <code><a href="http://download.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#getResource(java.lang.String)" target="_blank">getResource()</a></code> 方法调用。请注意，为图像生成的路径与它在应用程序的包结构中的位置相对应。</p>
+
+        <p class="notes"><b>注：</b></p>
+        <ul>
+            <li>如果在 icon 属性编辑器中使用 " External Image"（外部图像）选项，IDE 将生成图像的绝对路径，而无需将图像复制到项目中。因此，在您的系统上运行应用程序时，将显示该图像；而在其他系统上运行应用程序时，可能不会显示该图像。</li>
+            <li>还可以使用 <code>getResource</code> 方法访问其他类型的资源，例如，包含应用程序可能需要使用的数据的文本文件。</li>
+        </ul>
+		<p><b>在 Jlabel 上注册鼠标事件的事件处理程序：</b></p>
+        <p>
+		在 "Design View"（设计视图）中，右键单击 "JLabel"，然后从弹出菜单中选择 "Events"（事件）> "Mouse"（鼠标）> "mouseClicked/mousePressed/mouseReleased"。<br> 将为相应事件生成一个事件处理程序。</p>
+		<p class="notes"><b>注：</b>在事件处理程序中，可以使用 <code>event.getPoint()</code>、<code>event.getX()</code> 或 <code>event.getY()</code> 方法获得鼠标坐标（例如鼠标单击的位置）。有关详细信息，请参见 <a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/awt/event/MouseEvent.html">MouseEvent 类</a>。</p>
+
+        <a name="background"></a>
+        <h2>将图像显示为框架上的背景</h2>
+
+        <p> GUI 构建器不直接支持 JFrame 的背景图像，因为 Swing 不直接支持 JFrame 的背景图像。<br> 不过，可以通过各种间接的方法实现这一目标。在该应用程序中，包含图像的 JLabel 将嵌入 JFrame 组件中，而透明的 JPanel 将放置在 JLabel 之上，用作所有组件的父项。</p>
+
+        <p><b>将透明的 JPanel 添加到包含图像的 JFrame 中：</b></p>
+        <ol>
+		<li>选择 "File"（文件）> "New Project"（新建项目）。</li>
+        <li>在新建项目向导中，选择 "Java" > "Java Application"（Java 应用程序），然后单击 "Next"（下一步）。</li>
+        <li>键入 <code>BackgroundImageApp</code> 作为项目名称。</li>
+		<li>清除 "Create Main Class"（创建主类）复选框。
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/prj.png" rel="lytebox" title="创建新项目 - 单击查看大图"> <img alt="创建新项目" border="1" src="../../../images_www/articles/72/java/gui-image-display/prj-small.png"></a></p></li>
+		<li>单击 "Finish"（完成）。</li>
+		<li>在 "Projects"（项目）窗口中，展开 <code>BackgroundImageApp</code> 节点。</li>
+        <li>右键单击 "Source Packages"（源包）节点，然后选择 "New"（新建）> "JFrame Form"（JFrame 窗体）。</li>
+        <li>键入 <code>ImageDisplay</code> 作为类名。</li>
+        <li>键入 <code>org.me.mybackgroundapp</code> 作为包名。
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/newjframe.png" rel="lytebox" title="添加新窗体 - 单击查看大图"> <img alt="添加新窗体" border="1" src="../../../images_www/articles/72/java/gui-image-display/newjframe-small.png"></a></p></li>
+        <li>单击 "Finish"（完成）。</li>
+		<li>在 "Design"（设计）视图中，右键单击 "JFrame"，然后从弹出式菜单中选择 "Set Layout"（设置布局）> "Grid Bag Layout"（网格包布局）。 </li>
+		<li>右键单击 "JFrame"，然后从弹出式菜单中选择 "Add From Palette"（从组件面板上添加）> "Swing Containers"（Swing 容器）> "Panel"（面板）。 </li>
+		<li>在 "Properties"（属性）窗口中，取消选择 jPanel 的 <code>opaque</code> 属性。</li>
+		<li>右键单击 "JFrame"，然后从弹出式菜单中选择 "Add From Palette"（从组件面板上添加）> "Swing Controls"（Swing 控件）> "Label"（标签）。</li>
+		<li>在 "Projects"（项目）窗口中，右键单击 <code>org.me.mybackgroundapp</code> 节点，然后选择 "New"（新建）> "Java Package"（Java 包）。</li>
+            <li>单击 "Finish"（完成）。添加新包。
+			</li>
+		    <li>在 GUI 设计器中，选择已添加到窗体上的标签。</li>
+		    <li>在 "Properties"（属性）窗口中，单击 "Properties"（属性）类别，然后滚动到 icon 属性。</li>
+		    <li>单击省略号 (...) 按钮。 </li>
+			<li>在 icon 属性对话框中，单击 "Import to Project"（导入到项目）。</li>
+			<li>在文件选择器中，导航到系统上要使用的任何图像。然后，单击 "Next"（下一步）。</li>
+			<li>在向导的 "Select Target Folder"（选择目标文件夹）页中，选择 <code>newpackage</code> 资源文件夹，然后单击 "Finish"（完成）。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/targetfolder.png" rel="lytebox" title="选择 &amp;quot;Import Images to Project&amp;quot;（将图像导入到项目）向导的 &amp;quot;Target Folder&amp;quot;（目标文件夹）页 - 单击查看大图"> <img alt="选择 &quot;Import Images to Project&quot;（将图像导入到项目）向导的 &quot;Target Folder&quot;（目标文件夹）页" border="1" src="../../../images_www/articles/72/java/gui-image-display/targetfolder-small.png"></a></p></li>
+			<li>单击 "OK"（确定）以关闭 "icon property"（图标属性）对话框。</li>
+			<li>在 "Navigator"（导航器）窗口中，右键单击 "jPanel"，然后从弹出式菜单中选择 "Properties"（属性）。 </li>
+			<li>在 "Properties"（属性）对话框中，将 <code>Grid X</code>、<code>Grid Y</code>、<code>Weight X</code> 和 <code>Weight Y</code> 属性设置为 <code>1</code>，并将 <code>Fill</code> 属性设置为 <code>Both</code>。 
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/panelprops.png" rel="lytebox" title="面板属性 - 单击查看大图"> <img alt="面板属性" border="1" src="../../../images_www/articles/72/java/gui-image-display/panelprops-small.png"></a></p></li>
+			<li>单击 "Close"（关闭）。 </li>
+			<li>针对 jLabel 重复步骤 24 和 25。</li>
+			<li>在 "Properties"（属性）对话框中，选择 <code>text</code> 属性，然后删除 <code>jLabel1</code>。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/labelprops.png" rel="lytebox" title="标签属性 - 单击查看大图"> <img alt="标签属性" border="1" src="../../../images_www/articles/72/java/gui-image-display/labelprops-small.png"></a></p>
+			  背景完成。现在，您可以执行拖动操作了，例如可将 jLabel 和 jTextField 拖至 "Palette"（组件面板）中的 jPanel。二者都将显示在背景图像之上。
+		  <p class="align-center"><img alt="显示背景类的设计视图的屏幕快照。" class="margin-around" src="../../../images_www/articles/72/java/gui-image-display/background.png"></p></li>
+        </ol>
+		<p class="notes"><b>注：</b>上述解决方案的优点在于，无论是在设计时还是运行时，背景图像都会显示出来。</p>
+		
+        <a name="building"></a><h2>构建和运行应用程序</h2>
+        <p>现在，已构建了用于访问和显示图像的代码，您可以构建和运行应用程序以确保能够访问该图像。</p>
+        <p>首先，您需要设置项目的主类。在设置主类后，IDE 便会知道在运行项目时运行哪个类。此外，这还会确保在构建应用程序时构建应用程序 JAR 文件中的 <code>Main-Class</code> 元素。</p>
+        <p><b>要设置项目的主类，请执行以下操作：</b></p>
+        <ol>
+            <li>右键单击 "ImageDisplayApp" 项目节点，然后选择 "Properties"（属性）。</li>
+            <li>在 "Project Properties"（项目属性）对话框中，选择 "Run"（运行）类别。</li>
+            <li>单击 "Main Class"（主类）字段旁边的 "Browse"（浏览）按钮。然后选择 <code>org.me.myimageapp.ImageDisplay</code> 类。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/mainclass.png" rel="lytebox" title="选择主类 - 单击查看大图"> <img alt="选择主类" border="1" src="../../../images_www/articles/72/java/gui-image-display/mainclass-small.png"></a></p></li>
+			<li>单击 "Select Main Class"（选择主类）按钮。</li>
+			<li>单击“确定”。关闭“项目属性”对话框。 </li>
+        </ol>
+        <p><b>要构建项目，请执行以下操作：</b></p>
+        <ul>
+            <li>从主工具栏中选择 "Run"（运行）> "Clean &amp; Build Project (<i>project_name</i>)"（清理并构建项目 (project_name)）。</li>
+        </ul>
+        <p>可以在 "Files"（文件）窗口中查看应用程序的构建产品。<code>build</code> 文件夹包含编译的类。<code>dist</code> 文件夹包含可运行的 JAR 文件，其中包含编译的类和图像。</p>
+
+        <p class="align-center"><img alt="展开 build 和 dist 文件夹的 &amp;quot;Files&amp;quot;（文件）窗口" border="1" src="../../../images_www/articles/72/java/gui-image-display/files.png"></p>
+
+        <p><b>运行项目：</b></p>
+        <ul>
+            <li>从主工具栏中选择 "Run"（运行）> "Run Project (<i>project_name</i>)"（运行项目 (project_name)）。</li>
+        </ul>
+
+        <a name="custom"></a><h2>创建定制代码</h2>
+
+        <p>在很多应用程序中，无法像此示例一样以静态方式确定显示的图像。例如，用户可通过单击等操作来确定要显示的图像。 </p>
+        <p>如果需要以编程方式选择要显示的图像，您可以编写自己的定制代码以访问和显示资源。IDE 禁止在 "Source"（源）视图的受保护块（包含 GUI 构建器构建的代码）中直接编写代码。不过，您可以通过属性编辑器（从 "Properties"（属性）窗口中访问）在受保护块中插入代码。通过以这种方式使用属性编辑器，可以确保在 GUI 构建器中进行设计更改时不会丢失定制代码。</p>
+        <p><b>例如，要为 JLabel 的 <code>icon</code> 属性编写定制代码，请执行以下操作：</b></p>
+        <ol>
+            <li>在 "Design View"（设计视图）或 "Navigator"（导航器）窗口中选择 JLabel。</li>
+            <li>在 "Properties"（属性）窗口中，单击 <code>icon</code> 属性旁边的省略号 (...) 按钮。</li>
+            <li>从对话框顶部的下拉列表中选择 "Custom Code"（定制代码）选项。</li>
+        </ol>
+
+        <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/custom-code.png" rel="lytebox" title="选定 &amp;quot;Custom Code&amp;quot;（定制代码）选项的 Icon 属性编辑器 - 单击查看大图"><img alt="选定 &amp;quot;Custom Code&amp;quot;（定制代码）选项的 Icon 属性编辑器" border="1" src="../../../images_www/articles/72/java/gui-image-display/custom-code-small.png"></a></p>
+        <p>通过使用此属性编辑器中的 "Custom Code"（定制代码）选项，您可以自行填充 <code>setIcon</code> 方法的参数。可以使用所需的逻辑填充此参数，也可以调用在该类中的其他位置手动编写的不同方法以填充此参数。</p>
+        <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/custom-view.png" rel="lytebox" title="可输入 setIcon 参数的文本区域 - 单击查看大图"> <img alt="可输入 setIcon 参数的文本区域" border="1" src="../../../images_www/articles/72/java/gui-image-display/custom-view-small.png"></a></p>
+        <a name="summary"></a><h2>小结</h2>
+        <p>本教程说明了如何从使用 NetBeans IDE 创建的应用程序中访问图像。Java 教程进一步讨论了图像处理问题。 </p>
+        <p class="notes"><b>注：</b>本教程中提供的示例与 Java 教程的<a href="http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html" target="_blank">如何使用图标</a>部分中的第一个示例非常相似。一个不同之处是，执行本教程时生成的代码使用 <code><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html" target="_blank">JLabel</a></code> 的 <code><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html#setIcon(javax.swing.Icon)" target="_blank">setIcon</a></code> 方法将图标应用于标签。在 Java 教程示例中，应用于标签的图标是通过其构造函数传递的。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Handling%20Images%20in%20a%20GUI%20Application">发送有关此教程的反馈意见</a>
+        </div>
+        <br style="clear:both;" >
+
+
+        <a name="seealso"></a><h2>另请参见</h2>
+        <ul>
+            <li><a href="gui-functionality.html">构建 GUI 应用程序简介</a></li>
+            <li><a href="quickstart-gui.html">在 NetBeans IDE 中设计 Swing GUI</a></li>
+            <li><a href="../../trails/matisse.html">Java GUI 应用程序学习资源</a></li>
+            <li><a href="../../trails/java-se.html">常规 Java 开发学习资源</a></li>
+            <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUI 构建器 - 常见问题解答</a></li>
+			<li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&amp;id=NBDAG920">实现 Java GUI</a></li>
+        </ul>
+
+    </body>
+</html>

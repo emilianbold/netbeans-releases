@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Использование поддержки JPA с EclipseLink - экранная демонстрация IDE NetBeans 6.x</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A video tutorial on how to handle Java Persistence
+              API support using EclipseLink in the NetBeans IDE.">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+        <h1>Использование поддержки JPA Support с EclipseLink</h1>
+
+        <table>
+            <tr>
+                <td class="valign-top">
+
+                    <p>A video tutorial on how to handle Java Persistence API support using EclipseLink in the IDE NetBeans. Демо-ролик разделен на две части; в первой демонстрируются способы использования поддержки EclipseLink с использованием подсказок редактора и реорганизации кода.  Во второй части описывается способ создания классов сущностей из базы данных.</p>
+
+                    <p>Автор: Трой Гюниперо (Troy Giunipero)<br> Продолжительность: 12:23</p>
+
+                    <p><a href="http://bits.netbeans.org/media/eclipselink-demo.flv">Загрузить</a> [44,3 МБ]</p>
+
+                    <div class="feedback-box">
+                        <a href="/about/contact_form.html?to=3&amp;subject=Feedback: JPA EclipseLink Screencast">Отправить отзыв по этому учебному курсу</a>
+                    </div>
+                    <br style="clear:both;">
+                </td>
+
+                <td>
+                  <div id="player">
+                      <div id="flashContent"></div>
+                  </div>
+                </td>
+            </tr>
+        </table>
+
+        <script src="/images_www/js/mediaplayer-5.2/swfobject.js" type="text/javascript"></script>
+        <script type="text/javascript">
+          $(document).ready(function() {
+            showMedia('eclipselink-demo.flv');
+          } );
+
+          function showMedia(file) {
+            var targetFile='http://bits.netbeans.org/media/'+file;
+            var s1 = new SWFObject('/images_www/js/mediaplayer-5.2/player.swf','player','470','376','9');
+            s1.addParam('allowfullscreen','true');
+            s1.addParam('allowscriptaccess','always');
+            s1.addParam('flashvars','file='+targetFile+'&autostart=true');
+            s1.write('flashContent');
+          }
+        </script>
+    </body>
+</html>

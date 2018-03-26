@@ -1,0 +1,626 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Поддержка JSF 2.x в IDE NetBeans</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="description" content="An article outlining JSF 2.x support in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              JavaServer Faces, JavaServer Faces 2.0, JSF, JSF 2.1">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+    </head>
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Поддержка JSF 2.x в IDE NetBeans</h1>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <p>IDE NetBeans предоставляет различные функции, обеспечивающие встроенную поддержку для JavaServer Faces (JSF) 2.0 и 2.1. Поддержка JSF 2.x в среде IDE реализована на основе имеющейся поддержки для JavaServer Faces и включает в себя разнообразные усовершенствования редактора для страниц Facelet, различные средства для работы с классами сущностей и набор мастеров JSF для распространенных задач разработки, таких как создание управляемых компонентов JSF, шаблонов Facelet и составных компонентов.</p>
+
+        <p>В следующих разделах описываются функции JSF 2.x, доступные для пользователей при работе в IDE NetBeans. Чтобы опробовать в работе новые функции JSF, <a href="https://netbeans.org/downloads/index.html">загрузите комплект Java среды IDE NetBeans</a>, включающий технологии Java Web и EE. Пакет загрузки также содержит GlassFish Server Open Source Edition, пример реализации спецификации платформы Java EE 6 (JSR 316).</p>
+
+
+        <h3>Содержание</h3>
+
+        <ul id="collapsableList">
+            <li><a href="#support">Поддержка JSF 2.x для проектов</a>
+
+                <ul>
+                    <li><a href="#creatingSupport">Создание нового проекта с поддержкой JSF 2.x</a></li>
+                    <li><a href="#addingSupport">Добавление поддержки JSF 2.x в существующий проект</a></li>
+                </ul></li>
+
+            <li><a href="#editor">Использование редактора</a>
+
+                <ul>
+                    <li><a href="#facelets">Редактор Facelets</a></li>
+                    <li><a href="#xml">Редактор конфигурации XML Faces</a></li>
+                </ul></li>
+
+            <li><a href="#wizard">Мастеры JSF</a>
+
+                <ul>
+                    <li><a href="#jsfPage">Мастер создания страницы JSF</a></li>
+                    <li><a href="#managedBean">Мастер создания управляемого компонента JSF</a></li>
+                    <li><a href="#facesConfig">Мастер настройки Faces</a></li>
+                    <li><a href="#composite">Мастер создания составного компонента</a></li>
+                    <li><a href="#jsfPagesEntity">Мастер создания страниц JSF из классов сущностей</a></li>
+                    <li><a href="#faceletsTemplate">Мастер создания шаблона Facelets</a></li>
+                </ul></li>
+
+            <li><a href="#entity">Поддержка классов сущностей</a>
+
+                <ul>
+                    <li><a href="#jsfPages">Создание страниц JSF из классов сущностей</a></li>
+                    <li><a href="#form">Диалоговое окно &quot;Форма из сущности&quot;</a></li>
+                    <li><a href="#dataTable">Диалоговое окно &quot;Таблица данных из сущности&quot;</a></li>
+                </ul></li>
+
+            <li><a href="#palette">Элементы палитры JSF</a></li>
+
+            <li><a href="#seealso">Дополнительные сведения</a></li>
+        </ul>
+
+
+        <h2 id="support">Поддержка JSF 2.x для проектов</h2>
+
+        <p>Поддержка JSF для проектов разделена на категории следующим образом.</p>
+
+        <ul>
+            <li>Файлы шаблонов Facelets включены в проект.</li>
+            <li>Библиотеки JSF 2 добавлены в путь к классам проекта.</li>
+            <li>Сервлет Faces и отображение сервлета добавлены в дескриптор развертывания проекта.</li>
+        </ul>
+
+        <p>С помощью сервера GlassFish или любого другого сервера, совместимого с Java EE, можно создавать проекты с поддержкой JSF 2.x или добавлять поддержку JSF 2.x в существующие проекты.</p>
+
+        <ul>
+            <li><a href="#creatingSupport">Создание нового проекта с поддержкой JSF 2.x</a></li>
+            <li><a href="#addingSupport">Добавление поддержки JSF 2.x в существующий проект</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="creatingSupport">Создание нового проекта с поддержкой JSF 2.x</h3>
+
+            <p>Используйте мастер создания проекта в среде IDE для создания нового веб-приложения Java.  Для этого нажмите кнопку 'Создать проект' ( <img alt="Кнопка &apos;Создать проект&apos;" src="../../../images_www/articles/72/web/jsf20-support/new-project-btn.png"> ) на главной панели инструментов IDE или нажмите Ctrl-Shift-N (&#8984-Shift-N в Mac). В 4 действии (&quot;Платформы&quot;) выберите категорию &quot;JavaServer Faces&quot;.</p>
+
+            <div class="indent">
+                <img alt="Мастер создания проектов: платформы" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/new-proj-wizard-framework.png" title="Добавление поддержки платформы при создании проекта">
+            </div>
+
+            <p>После выбора категории &quot;JavaServer Faces&quot; становятся доступными различные параметры настройки, как показано на изображении выше.  Можно определить способ доступа проекта к библиотекам JSF 2.x. Выберите вкладку &quot;Настройка&quot; для указания способа регистрации сервлета Faces в дескрипторе развертывания проекта.</p>
+
+            <div class="indent">
+                <img alt="Вкладка &apos;Конфигурация&apos;" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/jsf-configuration.png" title="Укажите настройки сервлета Faces на вкеладке &apos;Конфигурация&apos;">
+            </div>
+
+
+            <h3 id="addingSupport">Добавление поддержки JSF 2.x в существующий проект</h3>
+
+            <p>Если необходимо добавить поддержку JSF 2.x в существующее веб-приложение Java, это можно сделать в окне 'Свойства' проекта.</p>
+
+            <ol>
+                <li>В окне 'Проекты' (Ctrl-1; &#8984-1 в Mac) щелкните правой кнопкой мыши узел проекта и выберите 'Свойства'. Открывается окно &quot;Свойства проекта&quot;.</li>
+
+                <li>Выберите категорию 'Платформы', а затем нажмите кнопку 'Добавить'. </li>
+                <li>Выберите 'JavaServer Faces' в диалоговом окне 'Добавление платформы'. Нажмите ОК. <br> <img alt="Окно &apos;Свойства проекта&apos;: диалоговок окно &apos;Добавить платформу&apos;" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-intro/add-framework.png" title="Добавление поддержки JSF к существующему проекту">
+
+                    <p>
+                    После выбора категории 'JavaServer Faces' становятся доступными различные параметры конфигурации, например указание пути к библиотекам JSF 2.x и регистрация сервлета Faces в дескрипторе развертывания проекта.</p></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="editor">Использование редактора</h2>
+
+        <p>Редактор среды IDE ориентирован на конкретный язык и обеспечивает поддержку в зависимости от типа файла, с которым работают.  Как правило, можно нажать сочетание клавиш CTRL+ПРОБЕЛ на элементе в файле для вызова функции автозавершения кода и документации интерфейса API.  Также можно использовать сочетания клавиш и шаблоны кодов.</p>
+
+        <p class="tips">Для просмотра общих сочетаний клавиш и шаблонов кодов выберите в основном меню среды IDE &quot;Справка&quot; &gt; &quot;Таблица сочетаний клавиш&quot;.  Полный список см. в разделе <a href="http://wiki.netbeans.org/KeymapProfileFor60">Спецификация сочетаний клавиш IDE NetBeans 6.x</a>.</p>
+
+        <p>Среда IDE включает в себя встроенную поддержку генератора документации Javadoc для <a href="http://javaserverfaces.java.net/nonav/docs/2.0/javadocs/index.html">JSF 2.0 API</a> и <a href="http://javaserverfaces.java.net/nonav/docs/2.1/javadocs/index.html">JSF 2.1 API</a>, а также <a href="http://javaserverfaces.java.net/nonav/docs/2.1/vdldocs/facelets/index.html">Документацию по библиотеке тегов</a>. Для использования этих ресурсов в работе просто выделите указанный элемент в редакторе и нажмите сочетание клавиш CTRL+ПРОБЕЛ.</p>
+
+        <p class="tips">Если необходим постоянный доступ к документации Javadoc, откройте окно &quot;Javadoc&quot; в среде IDE (&quot;Окно&quot; &gt; &quot;Другие &gt; &quot;Javadoc&quot;).  Окно &quot;Javadoc&quot; автоматически обновляется в зависимости от местонахождения курсора в редакторе.</p>
+
+        <p>При работе над проектом JSF усилия по правке тратятся прежде всего на файлы Facelets, управляемые компоненты JSF и файл настройки Faces (<code>faces-config.xml</code>).  В следующих разделах дано краткое описание предоставленной поддержки редактора.</p>
+
+        <ul>
+            <li><a href="#facelets">Редактор Facelets</a></li>
+            <li><a href="#xml">Редактор настройки XML Faces</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="facelets">Редактор Facelets</h3>
+
+            <p>Редактор Facelets среды IDE снабжен большим количеством функций, упрощающих разработку JSF, включая выделение синтаксиса и проверку тегов JSF на ошибки, поддержку документации и автозавершение кода для выражений на языке выражений, корневые библиотеки Facelets и пространства имен.</p>
+
+            <p>Для вызова поддержки автозавершения кода и документации нажмите сочетание клавиш CTRL+ПРОБЕЛ (где применимо).</p>
+
+            <div class="indent">
+                <img alt="В редакторе IDE отображается поддержка автозавершения кода и документации" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/doc-support.png" title="Для вызова поддержки автозавершения кода и документации нажмите сочетание клавиш CTRL+ПРОБЕЛ.">
+            </div>
+
+            <p id="popup">Если курсор не установлен на тег, нажатие сочетания клавиш CTRL+ПРОБЕЛ вызывает всплывающий список элементов.  Аналогичный доступ к этим элементам можно получить из <a href="#palette">палитры</a> среды IDE (CTRL+SHIFT+8; &amp;#8984+SHIFT+8 на компьютере Mac).</p>
+
+            <p class="tips">Кроме того, прежде чем нажать CTRL+ПРОБЕЛ, можно ввести префикс, например, <code>jsf</code> для фильтрации элементов.</p>
+            
+            <div class="indent">
+                <img alt="Список всплывающих окон автозавершения кода в редакторе IDE" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/code-completion.png" title="Нажмите Ctrl-Пробел в редакторе для вызова списка элементов">
+            </div>
+
+            <p>Чтобы вызвать автозавершение кода для пространства имен Facelets, нажмите сочетание клавиш CTRL+ПРОБЕЛ.</p>
+
+            <div class="indent">
+                <img alt="Список всплывающих окон автозавершения кода в редакторе IDE" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/namespace.png" title="Нажмите Ctrl-Пробел для завершения пространства имен Facelets">
+            </div>
+
+            <p>Аналогичным образом, при вводе тега JSF, пространство имен которого не объявлено на странице, он автоматически добавляется в среде IDE к тегу <code>&lt;html&gt;</code> страницы.</p>
+
+            <p>В редакторе обеспечивается поддержка автозавершения кода для синтаксиса языка выражений.  Нажмите сочетание клавиш CTRL+ПРОБЕЛ на коде языка выражений для вызова предложений скрытых объектов, управляемых компонентов JSF и их свойств.</p>
+
+            <div class="indent">
+                <img alt="Список всплывающих окон автозавершения кода для выражения EL" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/el-code-completion.png" title="Нажмите Ctrl-Пробел в выражениях EL для вызова поддержки автозавершения для неявных объектов, управляемых компонентов JSF и свойств компонентов">
+            </div>
+            
+            <p>Кроме того, в редакторе можно выделить фрагменты кода и выбрать &quot;Преобразовать в составной компонент&quot; для создания составных компонентов JSF.  Подробные сведения приведены в разделе <a href="#composite">Мастер создания составного компонента</a>.</p>
+
+            <p>Редактор включает в себя возможности проверки базовых ошибок.  Ошибка подчеркивается красной линией и в левом поле помечается соответствующим значком.  Предупреждения подчеркиваются желтой линией и помечаются в левом поле желтым значком.  Для просмотра описания ошибки наведите указатель мыши на значок или подчеркнутый текст.</p>
+                                
+            <p>При вводе тегов JSF выполняются различные проверки.  Среди них выполняются следующие проверки:</p>
+
+            <ul>
+                <li>на наличие объявленной библиотеки;</li>
+                <li>на наличие у библиотеки, согласованной по префиксу тега, например компонента или тега;</li>
+                <li>на наличие у тега всех требуемых атрибутов;</li>
+                <li>на наличие всех введенных атрибутов в интерфейс компонента.</li>
+            </ul>
+
+            <p>Редактором также выполняются следующие проверки:</p>
+
+            <ul>
+                <li>на наличие необъявленных компонентов;</li>
+                <li>на наличие объявлений библиотеки тегов без использований.</li>
+            </ul>
+
+
+            <h3 id="xml">Редактор конфигурации XML Faces</h3>
+
+            <p>Если в проект JSF включен файл <code>faces-config.xml</code>, можно нажать сочетание клавиш CTRL+ПРОБЕЛ при определении правил перехода или объявлении управляемых компонентов для вызова поддержки автозавершения кода и документации.</p>
+
+            <p>Если вы предпочитаете вводить правила перехода и управляемые компоненты с помощью диалоговых окон вместо написания их кода вручную, в среде IDE предусмотрено для этой цели несколько диалоговых окон, специально предназначенных для JSF.  Они доступны из контекстного меню редактора.</p>
+
+            <div class="indent">
+                <img alt="файл faces-config.xml - контекстное меню" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/faces-config-menu.png" title="Диалоговые окна, связанные с JSF, предоставлены в контекстном меню faces-config.xml ">
+            </div>
+
+            <p>В среде IDE имеются два отдельных <em>представления</em> для файла <code>faces-config.xml</code>: представление 'Исходный код', в котором отображается исходный код XML, и представление PageFlow, которое является графическим интерфейсом и отображает правила навигации JSF, заданные в файле <code>faces-config.xml</code>.</p>
+
+            <p>Например, если файл содержит следующее правило перехода:</p>
+
+            <div class="indent">
+                <pre class="examplecode">&lt;navigation-rule&gt;
+    &lt;from-view-id&gt;/greeting.xhtml&lt;/from-view-id&gt;
+    &lt;navigation-case&gt;
+        &lt;from-outcome&gt;response&lt;/from-outcome&gt;
+        &lt;to-view-id&gt;/success.xhtml&lt;/to-view-id&gt;
+    &lt;/navigation-case&gt;
+&lt;/navigation-rule&gt;</pre>
+            </div>
+
+            <p>В представлении PageFlow отображается приведенное ниже отношение, которое указывает на то, что переход со страницы <code>greeting.xhtml</code> на страницу <code>success.xhtml</code> выполняется в том случае, если в <code>NavigationHandler</code> JSF передан &quot;<code>response</code>&quot;.</p>
+
+            <div class="indent">
+                <img alt="файл faces-config.xml - представление PageFlow" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/page-flow.png" title="В представлении PageFlow отображаются связи переходов">
+            </div>
+
+            <p>Двойной щелчок в области компонентов в представлении PageFlow позволяет переходить непосредственно к исходному файлу.  Например, при двойном щелчке в области компонента <code>greeting.xhtml</code> в редакторе открывается файл <code>greeting.xhtml</code>.  Аналогичным образом, при двойном щелчке стрелки между двумя компонентами в редакторе произойдет фокусировка на правиле перехода, определенном в представлении XML <code>faces-config.xml</code>.</p>
+        </div>
+
+
+        <br>
+        <h2 id="wizard">Мастеры JSF</h2>
+
+        <p>IDE NetBeans включает в себя множество мастеров, упрощающих разработку с использованием JSF2.x. С помощью этих мастеров можно создавать новые страницы Facelets, шаблоны Facelet, управляемые компоненты JSF, составные компоненты, файлы конфигурации Faces и многое другое.</p>
+
+        <p id="fileWizard">Все мастеры доступны через общий мастер создания файла в среде IDE.  Для доступа к мастеру создания файлов нажмите кнопку 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/72/web/jsf20-support/new-file-btn.png"> ) или выберите 'Файл' &gt 'Создать файл' в главном меню (или нажмите Ctrl-N; &#8984-N в Mac). Список специфичных для JSF мастеров представлен в категории &quot;JavaServer Faces&quot;.</p>
+
+            <div class="indent">
+                <img alt="Мастер создания файлов: выбрана категория JavaServer Faces" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/file-wizard.png" title="Мастер, ориентированные на работу с JSF, доступны из мастера создания файлов">
+            </div>
+
+        <p>При работе в веб-проекте Java с поддержкой JSF доступны следующие мастеры.</p>
+
+        <ul>
+            <li><a href="#jsfPage">Мастер создания страницы JSF</a></li>
+            <li><a href="#managedBean">Мастер создания управляемого компонента JSF</a></li>
+            <li><a href="#facesConfig">Мастер настройки Faces</a></li>
+            <li><a href="#composite">Мастер создания составного компонента</a></li>
+            <li><a href="#jsfPagesEntity">Мастер создания страниц JSF из классов сущностей</a></li>
+            <li><a href="#faceletsTemplate">Мастер создания шаблона Facelets</a></li>
+            <li><a href="#faceletsTemplateClient">Мастер создания клиентов шаблона Facelets</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsfPage">Мастер создания страницы JSF</h3>
+
+            <p>Используйте мастер создания страницы JSF для создания страниц Facelets и JSP в проекте.  В мастер создания файла в среде IDE выберите категорию &quot;JavaServer Faces&quot;, затем выберите &quot;Страница JSF&quot;.  В JSF 2.x Facelet является предпочтительным способом объявления страниц JSF. Параметр &quot;Facelets&quot; в мастере выбран по умолчанию.  Выберите параметр &quot;Файл JSP&quot;, если необходимо создать новые страницы JSP или фрагменты JSP (файлы <code>.jspf</code>).</p>
+
+            <div class="indent">
+                <img alt="Мастер создания файлов JSF" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-file-wizard.png" title="Создавайте страницы Facelets с помощью мастера файлов JSF среды IDE">
+            </div>
+
+
+            <h3 id="managedBean">Мастер создания управляемого компонента</h3>
+
+            <p>С помощью мастера создания управляемого компонента в среде IDE можно создавать управляемые компоненты JSF.  В категории &quot;JavaServer Faces&quot; в <a href="#fileWizard">мастере создания файла</a> в среде IDE выберите &quot;Управляемый компонент JSF&quot;.</p>
+
+            <p>По умолчанию любые метаданные, указанные в мастере, преобразуются в аннотации, применяемые к управляемому компоненту, как только от будет создан.  Например, как показано ниже, можно создать новый класс в контексте сеанса с именем <code>NewJSFManagedBean</code> и присвоить ему имя <code>myManagedBean</code>.</p>
+
+            <div class="indent">
+                <img alt="Мастер создания управляемого компонента" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/managed-bean.png" title="Создайте управляемые компоненты JSF с помощью мастера управляемых компонентов IDE">
+            </div>
+
+            <p>Если управляемый компонент создан, он появляется с соответствующими аннотациями.</p>
+
+            <pre class="examplecode">package my.org;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
+<strong>@ManagedBean(name=&quot;myManagedBean&quot;)</strong>
+<strong>@SessionScoped</strong>
+public class NewJSFManagedBean {
+
+    /** Creates a new instance of NewJSFManagedBean */
+    public NewJSFManagedBean() {
+    }
+
+}</pre>
+
+            <p>Если в проекте уже существует файл <code>faces-config.xml</code>, в мастере становится доступен параметр 'Добавить данные в файл конфигурации', что позволяет либо объявить управляемый компонент в файле конфигурации Faces, либо указать любые метаданные посредством аннотаций в управляемом компоненте.</p>
+
+
+            <h3 id="facesConfig">Мастер настройки Faces</h3>
+
+            <p>В JSF 2.x аннотации впервые используются в качестве альтернативы стандартному файлу конфигурации Faces (<code>faces-config.xml</code>) для создания конфигурации приложения. Следовательно, при добавлении поддержки JSF 2.x в проект IDE <em>не</em> создает стандартный файл <code>faces-config.xml</code> (в отличие от версии JSF 1.2). Естественно, при желании можно добавить файл <code>faces-config.xml</code> в проект для определения некоторых параметров настройки.  Для этого используйте мастер настройки Faces в среде IDE.</p>
+
+            <p>В категории &quot;JavaServer Faces&quot; в <a href="#fileWizard">мастере создания файла</a> в среде IDE выберите &quot;Настройка Faces JSF&quot;.  Это позволит создать новый файл <code>faces-config.xml</code>, сохраняемый в папке <code>WEB-INF</code> проекта по умолчанию.</p>
+
+            <p class="tips">Описание поддержки редактора для <code>faces-config.xml</code> в среде IDE приведены в разделе <a href="#xml">Редактор настроек XML Faces</a>.</p>
+
+
+            <h3 id="composite">Мастер создания составного компонента</h3>
+
+            <p>Благодаря JSF 2.x упростился процесс создания составных компонентов пользовательского интерфейса, которые могут повторно использоваться на веб-страницах. Для создания шаблона Facelets составного компонента JSF используйте мастер создания составного компонента в среде IDE.</p>
+
+            <p>Аналогично всем мастерам, относящимся к JSF, мастер создания составного компонента можно открыть в категории &quot;JavaServer Faces&quot; в <a href="#fileWizard">мастере создания файла</a> в среде IDE.  Однако более интуитивным способом запроса мастера является выделение фрагмента кода на странице Facelets в редакторе и выбор Refactor (&quot;Реорганизовать&quot;) &gt; Convert to Composite Component (&quot;Преобразовать в составной компонент&quot;) из всплывающего меню.</p>
+
+            <p>В следующем примере описываются выполняемые операции и имеющиеся ресурсы при работе с мастером создания составного компонента во фрагменте &quot;<code>&lt;p&gt;This is the composite component.&lt;/p&gt;</code>&quot;.</p>
+
+            <div class="indent">
+                <img alt="Редактор Facelets - параметр меню &apos;Преобразовать составной компонент&apos;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/convert-comp-component.png" title="Выделите фрагмент и выберите &apos;Преобразовать в составной компонент&apos; в контекстном меню">
+            </div>
+
+            <p>Открывается мастер создания составного компонента, содержащий выбранный фрагмент на панели &quot;Раздел реализации&quot;.</p>
+
+            <div class="indent">
+                <img alt="Мастер создания составного компонента" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/comp-component.png" title="Открывается мастер создания составных компонентов, содержащий выбранный фрагмент кода">
+            </div>
+
+            <p>По умолчанию мастером создается папка <code>ezcomp</code> для сохранения составных компонентов.  Например, при создании нового компонента с именем <code>myComponent</code> мастер создает страницу Facelets <code>myComponent.xhtml</code>, сохраняемую в папке <code>resources/ezcomp</code> корневого веб-узла приложения.</p>
+
+            <p>При завершении выполнения мастера исходный файл составного компонента создается для указанного фрагмента кода.  Шаблон включает в себя ссылку на библиотеку тегов <code>composite</code> для JSF 2.x.</p>
+
+            <pre class="examplecode">&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+    <strong>xmlns:cc=&quot;http://xmlns.jcp.org/jsf/composite&quot;</strong>&gt;
+
+  &lt;!-- INTERFACE --&gt;
+  &lt;cc:interface&gt;
+  &lt;/cc:interface&gt;
+
+  &lt;!-- IMPLEMENTATION --&gt;
+  &lt;cc:implementation&gt;
+    <strong>&lt;p&gt;This is the composite component.&lt;/p&gt;</strong>
+  &lt;/cc:implementation&gt;
+&lt;/html&gt;</pre>                
+              
+            <p>Кроме того, новый тег компонента вставляется в позицию в редакторе при выделении фрагмента.  В этом случае созданный тег &ndash; <code>&lt;ez:myComponent/&gt;</code>.  Обратите внимание, что в среде IDE автоматически добавляется пространство имен, в котором находится составной компонент для тега <code>&lt;html&gt;</code> страницы.</p>
+
+            <div class="indent">
+                <img alt="Мастер создания составного компонента" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/comp-component-editor.png" title="Компоненты автоматически вставляются на используемую страницу">
+            </div>
+
+            <p class="tips">В среде IDE поддерживаются гиперссылки на исходные файлы составных компонентов.  К составному компоненту можно перейти со страницы Facelets, для этого наведите курсор мыши на тег компонента и нажмите клавишу CTRL (&amp;#8984 на компьютере Mac).  При нажатии гиперссылки в редакторе открывается исходный файл составного компонента.</p>
+
+            
+
+            <p class="tips">Дополнительные сведения о составных компонентах в JSF 2.x приведены в разделе <a href="http://blogs.oracle.com/enterprisetechtips/entry/true_abstraction_composite_ui_components">Истинная абстракция. Составные компоненты пользовательского интерфейса в JSF 2.0</a>.</p>
+
+
+            <h3 id="jsfPagesEntity">Мастер создания страниц JSF из классов сущностей</h3>
+
+            <p>Обратитесь к разделу <a href="#jsfPages">Создание страниц JSF из классов сущностей</a> в <a href="#entity">Поддержке классов сущностей</a>.</p>
+
+
+            <h3 id="faceletsTemplate">Мастер создания шаблона Facelets</h3>
+
+            <p>Для создания шаблона Facelets используйте мастер создания шаблона Facelets.  В категории &quot;JavaServer Faces&quot; <a href="#fileWizard">мастера создания файла</a> в среде IDE выберите &quot;Шаблон Facelets&quot;.  Можно выбрать один из восьми уникальных стилей размещения и указать тег CSS или HTML <code>&lt;table&gt;</code> для реализации размещения.</p>
+
+            <div class="indent">
+                <img alt="Мастер создания шаблона Facelets" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/template-wizard.png" title="Создайте шаблон Facelets с помощью мастера шаблонов Facelets">
+            </div>
+
+            <p>Мастер создает файл шаблона XHTML с помощью тегов <code>&lt;h:head&gt;</code> и <code>&lt;h:body&gt;</code> и сохраняет соответствующие таблицы стилей в папке <code>resources/css</code> корневого веб-узла приложения.  Мастер создает файл <code>default.css</code> и <code>cssLayout.css</code> или файл <code>tableLayout.css</code>, зависящий от выбора размещения.</p>
+
+            <p class="tips">Для просмотра шаблона в браузере, щелкните правой кнопкой мыши в редакторе и выберите 'Просмотр'. Откроется окно браузера с отображением шаблона.</p>
+
+            <h3 id="faceletsTemplate">Мастер создания шаблонов Facelets</h3>
+
+            <p>Используйте мастер создания клиентов шаблона Facelets для создания страницы в проекте, ссылающейся на шаблон Facelets. В категории &quot;JavaServer Faces&quot; <a href="#fileWizard">мастера создания файлов</a> в среде IDE выберите Facelets Template Client (&quot;Клиент шаблона Facelets&quot;).  Можно указать местоположение шаблона Facelets, используемого клиентом. Также можно указать, является ли тегом корня <tt>&lt;html&gt;</tt> или <tt>&lt;ui:composition&gt;</tt></p>
+
+            <div class="indent">
+                <img alt="Мастер создания клиентов шаблона Facelets" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/new-template-client.png" title="Создайте клиента для шаблона Facelets с помощью мастера клиента шаблонов Facelets">
+            </div>
+            <p>Дополнительные сведения об использовании шаблонов и клиентов Facelets см. в разделе <a href="jsf20-intro.html#template">Применение шаблонов Facelets</a> главы <a href="jsf20-intro.html">Введение в JavaServer Faces 2.x в IDE NetBeans</a>.</p>
+
+        </div>
+
+
+        <br>
+        <h2 id="entity">Поддержка классов сущностей</h2>
+
+        <p>В случае использования технологии сохранения состояния объектов Java в приложении и при наличии классов сущностей на основе схемы базы данных в среде IDE предусмотрены функциональные возможности, позволяющие эффективно работать с данными класса сущностей.</p>
+
+        <p><strong class="notes">Примечание. </strong>Для создания классов логических объектов с помощью таблицы баз данных используйте классы логических объектов IDE из мастера баз данных, доступные из категории 'Сохранение' в <a href="#fileWizard">Мастере файлов</a> в IDE.</p>
+
+        <ul>
+            <li><a href="#jsfPages">Создание страниц JSF из классов сущностей</a></li>
+            <li><a href="#form">Создание формы JSF для данных сущностей</a></li>
+            <li><a href="#dataTable">Создание таблицы данных JSF для данных сущностей</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsfPages">Создание страниц JSF из классов сущностей</h3>
+
+            <p>После создания классов сущностей в приложении можно использовать мастер создания страниц JSF из классов сущностей в среде IDE, чтобы создать веб-интерфейс для отображения и изменения данных классов сущностей.  Код, созданный мастером, основан на аннотациях сохранения состояния, содержащихся в классах сущностей.</p>
+
+            <p>Для каждого класса сущностей мастером создается следующее:</p>
+
+            <ul>
+                <li>сеансный компонент без сохранения состояния для создания, извлечения, изменения и удаления экземпляров сущностей;</li>
+
+                <li>управляемый компонент JSF в контексте сеанса;</li>
+
+                <li>каталог, содержащий четыре файла Facelets возможностей CRUD (<code>Create.xhtml</code>, <code>Edit.xhtml</code>, <code>List.xhtml</code> и <code>View.xhtml</code>);</li>
+
+                <li>служебные классы, используемые управляемыми компонентами JSF (<code>JsfUtil</code>, <code>PaginationHelper</code>);</li>
+
+                <li>набор свойств для локализованных сообщений и соответствующая запись в файле настройки Faces проекта (создается файл <code>faces-config.xml</code>, если он на данный момент отсутствует);</li>
+
+                <li>вспомогательные веб-файлы, включая стандартную таблицу стилей для визуализированных компонентов и файл шаблона Facelets.</li>
+            </ul>
+
+            <p>Для использования мастера создания страниц JSF из классов сущностей <a href="#fileWizard">откройте мастер создания файла в среде IDE</a>.  Выберите категорию &quot;JavaServer Faces&quot;, затем &quot;Страницы JSF из классов сущностей&quot;.</p>
+
+            <p>В действии 3 &quot;Создать страницы и классы JSF&quot; можно указать папки для создаваемых файлов.</p>
+
+            <div class="indent">
+                <img alt="Шаг 3. Создание страниц и классов JSF" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-entity-wizard.png" title="Укажите местоположения создаваемых файлов">
+            </div>
+
+            <p>Например, при использовании мастера для класса сущностей <code>Customer</code> параметры настройки, отображаемые на вышеприведенном изображении, вызывают создание следующих файлов:</p>
+
+            <table class="indent">
+                <tr>
+                    <td>
+                        <img alt="Окно &apos;Проекты&apos; - файлы, созданные с помощью мастера" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/projects-win-generated-files.png" title="В окне &apos;Проекты&apos; отображается новые созданные файлы">
+                    </td>
+                    <td class="valign-top">
+                        <ul style="margin-top:3em">
+                            <li>Файл <code>faces-config.xml</code> для регистрации местонахождения набора свойств, который содержит локализованные сообщения для представлений JSF.  Например, при указании <code>/my/org/Bundle</code> в поле &quot;Имя набора локализаций&quot; в мастере создается следующая запись:
+
+                                <pre class="examplecode" style="width:500px">
+&lt;application&gt;
+    &lt;resource-bundle&gt;
+        &lt;base-name&gt;/my/org/Bundle&lt;/base-name&gt;
+        &lt;var&gt;bundle&lt;/var&gt;
+    &lt;/resource-bundle&gt;
+&lt;/application&gt;</pre></li>
+
+                            <li>Папка <code>customer</code> в корневом веб-узле, содержащая четыре файла Facelets для возможности CRUD:
+
+                                <ul>
+                                    <li><code>Create.xhtml</code>: форма JSF для создания нового клиента.</li>
+                                    <li><code>Edit.xhtml</code>: форма JSF для правки заказчика.</li>
+                                    <li><code>List.xhtml</code>: таблица данных JSF для прокрутки клиентов.</li>
+                                    <li><code>View.xhtml</code>: форма JSF для просмотра подробных сведений клиентов.</li>
+                                </ul></li>
+
+                            <li><code>jsfcrud.css</code>: таблица стилей, используемая для визуализации форм JSF и таблицы данных.</li>
+
+                            <li><code>template.xhtml</code>: дополнительная страница шаблона Facelets, которая содержит ссылку на созданную таблицу стилей <code>jsfcrud.css</code>.</li>
+
+                            <li>Сеансный компонент (EJB) без сохранения состояния с именем <code>CustomerFacade</code>, который находится в пакете <code>my.org.data</code>.  Доступ к классу также осуществляется из узла &quot;Компоненты EJB&quot; проекта.</li>
+
+                            <li><code>Bundle.properties</code>: набор свойств, содержащий стандартные локализованные сообщения для представлений JSF.</li>
+
+                            <li>Управляемый компонент JSF в контексте сеанса с именем <code>CustomerController</code>, который находится в пакете <code>my.org.ui</code>.</li>
+
+                            <li>Два служебных класса (<code>JsfUtil</code> и <code>PaginationHelper</code>), находящиеся в пакете <code>my.org.ui.util</code>.  Эти классы используются в управляемом компоненте <code>CustomerController</code>.</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+
+            <h3 id="form">Создание формы JSF для данных сущностей</h3>
+
+            <p>Можно использовать диалоговое окно &quot;Форма из сущности&quot; для создания формы JSF, содержащей поля для всех свойств, имеющихся в классе сущностей.  Необходимо уже иметь управляемый компонент JSF, созданный для обработки пользовательских данных, связанных с формой.</p>
+
+            <p><strong class="notes">Примечание. </strong>При использовании этого диалогового окна без связанного управляемого компонента Bean, можно ввести имя для управляемого компонента Bean в диалоговом окне и это имя будет использоваться на странице независимо от того, является ли оно допустимым или нет. Затем можно создать управляемый компонент с помощью <a href="#managedBean">мастера создания управляемых компонентов</a>, или при использовании <a href="#jsfPages">мастера создания страниц JSF из классов сущностей</a> управляемые компоненты будут созданы для выбранных классов сущностей.</p>
+
+            <p>Для открытия диалогового окна &quot;Форма из сущности&quot; <a href="#popup">нажмите сочетание клавиш CTRL+ПРОБЕЛ в редакторе страницы Facelets</a>, затем выберите &quot;Форма JSF из сущности&quot;, либо дважды щелкните позицию &quot;Форма из сущности&quot;, выведенную на <a href="#palette">палитре</a> в среде IDE (CTRL+SHIFT+8; &amp;#8984+SHIFT+8 на компьютере Mac).</p>
+
+            <p>Например, на следующем изображении класс сущностей <code>Customer</code> уже существует в пакете <code>my.org</code> указанного проекта.  Управляемый компонент <code>customerController</code> также уже существует в указанном проекте, и управляемый компонент содержит свойство с именем <code>selected</code>, которое возвращает объект <code>Customer</code>.</p>
+
+            <div class="indent">
+                <img alt="Диалоговое окно &apos;Форма JSF из сущности&apos; " class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-form-from-entity.png" title="Используйте диалоговое окно &apos;Форма из сущности&apos; для создания формы JSF с помощью данных сущности">
+            </div>
+
+            <p><strong class="notes">Примечание. </strong>Выберите параметр 'Создать представление, доступное только для чтения' для создания формы, содержащей поля, доступные только для чтения. При выборе этого параметра в среде IDE для полей формы применяются теги <code>&lt;h:outputText&gt;</code>, в то время как, если этот параметр не выбран, применяются теги <code>&lt;h:inputText&gt;</code>.</p>
+
+            <p>При завершении работы с диалоговым окном в среде IDE создается код для страницы Facelets.  Например, класс сущностей <code>Customer</code> со свойством <code>customerId</code> отображается в следующем формате:</p>
+
+            <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;Create/Edit&quot;/&gt;&lt;/h1&gt;
+        &lt;h:panelGrid columns=&quot;2&quot;&gt;
+            &lt;h:outputLabel value=&quot;CustomerId:&quot; for=&quot;customerId&quot; /&gt;
+            &lt;h:inputText id=&quot;customerId&quot; value=&quot;#{customerController.selected.customerId}&quot; title=&quot;CustomerId&quot; required=&quot;true&quot; requiredMessage=&quot;The CustomerId field is required.&quot;/&gt;
+            ...
+            <em>[ Other fields added here. ]</em>
+            ...
+        &lt;/h:panelGrid&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+
+            <p class="tips">Чтобы изменить шаблон, используемый для созданного кода, щелкните ссылку &quot;Настройка шаблона&quot; в диалоговом окне &quot;Форма из сущности&quot;.</p>
+
+
+            <h3 id="dataTable">Создание таблицы данных JSF для данных сущностей</h3>
+
+            <p>Можно использовать диалоговое окно &quot;Таблица данных из сущности&quot; для создания таблицы данных JSF, которая содержит столбцы для всех свойств, имеющихся в классе сущностей.  Для использования этого средства необходимо уже иметь управляемый компонент JSF, созданный для обработки серверных данных, связанных с классом сущностей.</p>
+
+            <p><strong class="notes">Примечание. </strong>При использовании этого диалогового окна без связанного управляемого компонента Bean, можно ввести имя для управляемого компонента Bean в диалоговом окне и это имя будет использоваться на странице независимо от того, является ли оно допустимым или нет. Затем можно создать управляемый компонент с помощью <a href="#managedBean">мастера создания управляемых компонентов</a>, или при использовании <a href="#jsfPages">мастера создания страниц JSF из классов сущностей</a> управляемые компоненты будут созданы для выбранных классов сущностей.</p>
+
+            <p>Для открытия диалогового окна &quot;Таблица данных из сущности&quot; <a href="#popup">нажмите сочетание клавиш CTRL+ПРОБЕЛ в редакторе страницы Facelets</a>, затем выберите &quot;Таблица данных JSF из сущности&quot;, либо дважды щелкните позицию &quot;Таблица данных из сущности&quot;, выведенную на <a href="#palette">палитре</a> в среде IDE (CTRL+SHIFT+8; &amp;#8984+SHIFT+8 на компьютере Mac).</p>
+
+            <p>Например, на следующем изображении класс сущностей <code>Product</code> уже существует в пакете <code>my.org.entity</code> указанного проекта.  Управляемый компонент <code>productController</code> также существует в проекте и содержит метод с именем <code>getProductItems()</code>, который возвращает <code>List</code> объектов <code>Product</code>.</p>
+
+            <div class="indent">
+                <img alt="Диалоговое окно &apos;Таблица данных JSF из сущности&apos;" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-data-table-from-entity.png" title="Используйте диалоговое окно &apos;Таблица данных из сущности&apos; для создания таблицы данных JSF с помощью данных сущности">
+            </div>
+
+            <p>При завершении работы с диалоговым окном в среде IDE создается код для страницы Facelets.  Например, класс сущностей <code>Product</code> со свойством <code>productId</code> отображается в следующем формате:</p>
+
+            <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;List&quot;/&gt;&lt;/h1&gt;
+        &lt;h:dataTable value=&quot;#{productController.productItems}&quot; var=&quot;item&quot;&gt;
+            &lt;h:column&gt;
+                &lt;f:facet name=&quot;header&quot;&gt;
+                    &lt;h:outputText value=&quot;ProductId&quot;/&gt;
+                &lt;/f:facet&gt;
+                &lt;h:outputText value=&quot;#{item.productId}&quot;/&gt;
+            &lt;/h:column&gt;
+            ...
+            <em>[ Other columns added here. ]</em>
+            ...
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+
+            <p class="tips">Чтобы изменить шаблон, используемый для созданного кода, щелкните ссылку &quot;Настройка шаблона&quot; в диалоговом окне &quot;Форма из таблицы данных&quot;.</p>
+        </div>
+
+
+        <br>
+        <h2 id="palette">Элементы палитры JSF</h2>
+
+        <p>При работе со страницами Facelets можно использовать палитру среды IDE для перетаскивания тегов JSF на страницу.  Для открытия палитры выберите в основном меню &quot;Окно&quot; &gt; &quot;Палитра&quot; или нажмите сочетание клавиш CTRL+SHIFT+8 (&amp;#8984+SHIFT+8 на компьютере Mac).</p>
+
+        <div class="indent">
+            <img alt="Палитра с расширенной категорией JSF" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/palette.png" title="Используйте палитру IDE для перетаскивания общих компонентов JSF на страницу Facelets">
+        </div>
+
+        <p class="tips">Также в основном меню среды IDE можно выбрать &quot;Исходный код&quot; &gt; &quot;Вставить код&quot; (ALT+INS; CTRL+I на компьютере Mac) для вызова всплывающего списка, который содержит специфичные для JSF компоненты, имеющиеся в палитре.</p>
+
+        <div class="indent">
+            <img alt="Список всплывающих окон автозавершения кода в редакторе IDE" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/insert-code.png" title="В редакторе нажмите Alt-Insert (Ctrl-I в Mac) для вызова списка компонентов, связанных с JSF">
+        </div>
+
+        <p>На палитре предоставлено пять компонентов, связанных с JSF:</p>
+
+        <ul>
+            <li><strong>Метаданные: </strong> вызов диалогового окна для добавления пары &quot;имя-значение&quot; с тегами метаданных JSF.  Например, при указании &quot;<code>myId</code>&quot; и &quot;<code>myValue</code>&quot; в качестве пары &quot;имя-значение&quot; создается следующий фрагмент кода:
+
+                <pre class="examplecode">&lt;f:metadata&gt;
+    &lt;f:viewParam id='myId' value='myValue'/&gt;
+&lt;/f:metadata&gt;</pre></li>
+
+            <li><strong>Форма JSF: </strong> добавление следующего фрагмента кода на страницу.
+
+                <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li><strong>Форма JSF из сущности: </strong>вызов диалогового окна для связи данных из класса сущностей с полями, имеющимися в форме JSF.  Обратитесь к разделу <a href="#form">Создание формы JSF из данных сущностей</a>.</li>
+
+            <li><strong>Таблица данных JSF: </strong>добавление следующего фрагмента кода на страницу.
+
+                <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h:dataTable value=&quot;#{}&quot; var=&quot;item&quot;&gt;
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li><strong>Таблица данных JSF из сущности: </strong>вызов диалогового окна для связи данных из класса сущностей с полями, имеющимися в таблице данных JSF.  Обратитесь к разделу <a href="#dataTable">Создание таблицы данных JSF для данных сущностей</a>.</li>
+        </ul>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20JSF%202.x%20Support%20in%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Дополнительные сведения</h2>
+
+        <p>Подробнее о JSF 2.x см. в следующих ресурсах.</p>
+
+        <div class="indent">
+            <h3>Статьи и учебные курсы по NetBeans</h3>
+
+            <ul>
+                <li><a href="jsf20-intro.html">Введение в JavaServer Faces 2. x в IDE NetBeans</a></li>
+                <li><a href="jsf20-crud.html">Создание приложения JavaServer Faces 2.x CRUD на основе базы данных</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum Toys &ndash; полный пример приложения JSF 2.0</a></li>
+                <li><a href="../javaee/javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+                <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+
+            <h3>Внешние ресурсы</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">Технология JavaServer Faces</a> (официальная домашняя страница)</li>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr314/index.html">Спецификация JSR 314 для JavaServer Faces 2.0</a></li>
+                <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/bnaph.html">Учебный курс по Java EE 6. Глава 5. Технология JavaServer Faces</a></li>
+                <li><a href="http://javaserverfaces.java.net/">Сервер GlassFish Project Mojarra</a> (официальная эталонная реализация JSF 2.x)</li>
+                <li><a href="http://forums.oracle.com/forums/forum.jspa?forumID=982">Интернет-форум OTN: JavaServer Faces</a></li>
+                <li><a href="http://www.jsfcentral.com/">JSF Central</a></li>
+            </ul>
+
+            <h3>Блоги</h3>
+
+            <ul>
+                <li><a href="http://www.java.net/blogs/edburns/">Эд Бернс (Ed Burns)</a></li>
+                <li><a href="http://www.java.net/blogs/driscoll/">Джим Дрисколл (Jim Driscoll)</a></li>
+            </ul>
+        </div>
+
+        <script type="text/javascript">
+            <!--
+            compactMenu('collapsableList', true, '&plusmn; ');
+            -->
+        </script>
+    </body>
+</html>

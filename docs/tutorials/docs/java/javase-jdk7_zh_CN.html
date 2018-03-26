@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>NetBeans IDE 中的 JDK 7 支持概述</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+       
+        <meta name="description" content="A short guide to using JDK 7 features in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>NetBeans IDE 中的 JDK 7 支持概述</h1>
+        <p>NetBeans IDE 支持 Java 7 语言功能，例如菱形运算符、switch 中的 String、multicatch 等。在代码中使用这些结构时，IDE 会识别它们，在代码完成中提供正确的类，正确突出显示错误并使您能够自动修复语法。因此，NetBeans IDE 可帮助您编写与 <a href="http://docs.oracle.com/javase/specs/jls/se7/html/index.html">Java 语言规范 Java SE 7 Edition</a> 兼容的代码。 </p>
+        <p>在本教程中，您将了解 IDE 如何处理 Java 7 语言结构。 </p>
+        <p><b>目录</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.4 和 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="此页上的内容适用于 NetBeans IDE 7.4 和 8.0">
+        <ul class="toc">
+		    <li><a href="#platform">确保在 IDE 中注册 JDK 7</a></li>
+			<li><a href="#project">检查项目配置</a></li>
+            <li><a href="#switch">使用新的 JDK 7 语言结构：Switch 语句</a></li>
+            <li><a href="#more">JDK 7 支持：更多示例</a></li>
+            <li><a href="#see" title="后续步骤">后续步骤</a></li>
+        </ul>
+
+        <p><b>要学完本教程，您需要具备下表所列的软件和资源。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">版本 7.4 或 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+                  <td class="tbltd1">版本 7 或 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>确保在 NetBeans IDE 中注册 JDK 7</h2>
+        
+        <p>要检查是否在 NetBeans IDE 中注册了 JDK 7，请执行以下操作：</p>
+        <ol>
+          <li>在 IDE 中，从主菜单中选择 "Tools"（工具）> "Java Platforms"（Java 平台）。</li>
+          <li>确保在 "Java Platforms Manager"（Java 平台管理器）对话框的 "Platforms"（平台）列表中选定 "JDK 1.7"。
+		  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/platform.png" rel="lytebox" title="注册的 Java 平台"> <img alt="注册的 Java 平台" border="1" src="../../../images_www/articles/74/java/javase-jdk7/platform-small.png"></a></p>
+		  </li>
+		  <li>单击 "Close"（关闭）。</li>
+        </ol>
+    <h2><a name="project"></a>检查项目配置</h2>
+    <p>要检查您的项目是否配置为使用注册的 JDK 进行编译、运行和调试，请执行以下操作：</p>
+    <ol>
+      <li>通过选择 "File"（文件）> "New Project"（新建项目），然后选择 "Java Application"（Java 应用程序）作为项目类型，来创建 Java 项目。</li>
+	  <li>单击 "Next"（下一步）。</li>
+      <li>键入 <tt>SwitchTest</tt> 作为项目名称并指定其位置。  </li>
+	  <li>单击 "Finish"（完成）。</li>
+      <li>在 "Projects"（项目）窗口中，右键单击 <tt>SwitchTest</tt> 项目节点，然后选择 "Properties"（属性）> "Libraries"（库）。在此标签上，确保在 "Java Platforms"（Java 平台）列表中选定 "JDK 1.7"。
+	  			  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/props-libs.png" rel="lytebox" title="选择为目标格式的 JDK 7"> <img alt="选择为目标格式的 JDK 7" border="1" src="../../../images_www/articles/74/java/javase-jdk7/props-libs-small.png"></a></p></li>
+      <li>切换到 "Project Properties"（项目属性）窗口的 "Sources"（源）标签，并确保选择 "JDK 7" 作为源代码/二进制格式。 
+	  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/props-sources.png" rel="lytebox" title="选择为源格式的 JDK 7"> <img alt="选择为源格式的 JDK 7" border="1" src="../../../images_www/articles/74/java/javase-jdk7/props-sources-small.png"></a></p>
+     </li>
+      <li>单击“确定”。关闭“项目属性”对话框。您的项目配置为识别 Java 7 语言功能。<br>
+      </li>
+    </ol>
+	
+    <h2><a name="switch"></a>使用新的 JDK 7 语言结构：Switch 语句</h2>
+    <p>JDK 7 在不同领域提供了一些<a href="http://openjdk.java.net/projects/jdk7/features/" target="_blank">新增功能和改进功能</a>，其中包括国际化、I/O 和网络、安全等。要说明 IDE 的 Java 编辑器提供的 JDK 7 支持，最好的方法是演示 Project Coin 引入的一些语言变化。 </p>
+        <p>其中一个变化是“switch 中的 String”。在早期版本的 Java 中，<tt>switch</tt> 的参数只能属于以下基本数据类型：<tt>byte</tt>、<tt>short</tt>、<tt>char</tt>、<tt>int</tt> 或 <tt>enum</tt>。从 JDK 7 开始，您可以在 <tt>switch</tt> 语句的表达式中使用 <tt>String</tt> 类型的参数。 </p>
+        <ol>
+          <li>打开 <tt>SwitchTest.java</tt>，并添加以下代码。该小样例显示几种颜色的 RGB 代码。<br> 对于 JDK 7，<tt>color</tt> 变量可以为 <tt>String</tt>。 
+            <pre class="examplecode">package switchtest;
+
+    public class SwitchTest {
+
+    public static void main(String[] args) {
+
+        String color = &quot;red&quot;;
+        String colorRGB;
+        switch (color.toLowerCase()) {
+            case &quot;black&quot;: colorRGB = &quot;000000&quot;; break;
+            case &quot;red&quot;: colorRGB = &quot;ff0000&quot;; break;
+            case &quot;green&quot;: colorRGB = &quot;008000&quot;; break;
+            case &quot;blue&quot;: colorRGB = &quot;0000ff&quot;; break;
+            default: colorRGB = &quot;Invalid color&quot;; break;
+        }
+        System.out.println(colorRGB);
+        }
+    }
+</pre>
+            
+          <p class="tips">如果在编辑器中错误地设置了粘贴的代码格式，请按 Alt-Shift-F 组合键以重新设置格式。</p>
+          </li>
+          <li>在 "Projects"（项目）窗口中，右键单击该项目节点并选择 "Run File"（运行文件）。此时将会看到应用程序输出，这是红色的 RGB 代码。<br> 如果目标平台和源格式为 JDK 7，您可以看到构建成功，并且应用程序正常工作。 
+			 <p class="align-center">
+          <img alt="运行项目的输出" border="1" src="../../../images_www/articles/74/java/javase-jdk7/output.png"></p></li>
+          <li>让我们改用以前的 JDK 6，并测试如何使用 JDK 6 编译器编译应用程序。<br> 在 "Projects"（项目）窗口中，右键单击该项目节点并选择 "Properties"（属性）。在 "Sources"（源）类别中，将源代码/二进制格式设置为 <tt>JDK 6</tt>，然后单击 "OK"（确定）。<br> 您可以立即看到 JDK6 解析器无法识别语法。编译将失败，因为变量类型不兼容。
+          <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/error.png" rel="lytebox" title="错误"> <img alt="错误" border="1" src="../../../images_www/articles/74/java/javase-jdk7/error-small.png"></a></p>
+			 </li>
+          <li>现在，让我们使用 <tt>if-then-else</tt> 语句而非 <tt>switch</tt> 重新编写代码，如下所示： 
+		  <pre class="examplecode">package switchtest;
+
+    public class SwitchTest {
+
+    public static void main(String[] args) {
+
+        String color = &quot;red&quot;;
+        String colorRGB;
+        if (color.equals(&quot;black&quot;)) {
+            colorRGB = &quot;000000&quot;;
+        } else if (color.equals(&quot;red&quot;)) {
+            colorRGB = &quot;ff0000&quot;;
+        } else if (color.equals(&quot;green&quot;)) {
+            colorRGB = &quot;008000&quot;;
+        } else if (color.equals(&quot;blue&quot;)) { 
+            colorRGB = &quot;0000ff&quot;;
+        } else {
+            colorRGB = &quot;Invalid color&quot;;
+        }
+        System.out.println(colorRGB);
+        }
+    }
+</pre>
+		 
+          在将 JDK 7 作为源代码/二进制格式的情况下，IDE 将识别这种情况，并允许您将其转换为 <tt>switch</tt>，如下图中所示。 
+		  <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/convert.png" rel="lytebox" title="转换为 switch 提示"> <img alt="转换为 switch 提示" border="1" src="../../../images_www/articles/74/java/javase-jdk7/convert-small.png"></a></p>
+          单击该提示，<tt>if-then-else</tt> 结构将自动转换为 <tt>switch</tt>，这与我们以前使用的 switch 完全相同。</li>
+         </ol>
+		<h2><a id="more" name="more"></a>JDK 7 支持：更多示例</h2>
+        <p>要演示 IDE 的 Java 编辑器如何识别和自动修复代码，以便与 JDK 7 语言规范兼容，让我们使用一个虚拟代码片段，该代码片段本身没有什么意义，但它包含所有主要的语言改进功能。 </p>
+        <p>在逐步完成该虚拟代码片段并应用编辑器提示后，您将看到以下功能的操作方法示例： </p>
+        <ul>
+          <li>在 Java 编译器可以推断通用实例类型而无需明确指定该类型时，利用自动类型推断。使用所谓的<em>菱形运算符</em>来标记类型推断情况。 </li>
+          <li>在可以使用一个 <tt>catch</tt> 块处理几种类型的异常错误时，使用改进的异常错误处理或 <em>multi-catch</em>。 <br>
+          </li>
+          <li>使用自动资源管理功能引入的资源关闭语句的新语法。 </li>
+        </ul>
+        <ol>
+          <li>将同一 <tt>SwitchTest.java</tt> 文件中的旧应用程序代码替换为以下代码：<br>
+		  <pre class="examplecode">
+package switchtest;
+
+
+import java.io.FileInputStream;
+import java.lang.reflect.Method;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+public class SwitchTest {
+
+    public void test() throws IOException {
+        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+        HashMap&lt;String, Integer&gt; map = new HashMap&lt;String, Integer&gt;();
+        HashMap&lt;String, Integer&gt; map2 = new HashMap&lt;String, Integer&gt;();
+        String a = &quot;ehlo&quot;;
+
+        try {
+            Method m = Object.class.getMethod(&quot;toString&quot;);
+            m.invoke(this);
+        } catch(NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch(InvocationTargetException e) {
+            e.printStackTrace();
+        } catch(IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(&quot;foo.txt&quot;);
+
+            int k;
+            while ((k = in.read()) != -1) {
+                System.out.write(k);
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+}
+ </pre>
+          </li>
+          <li>请注意，IDE 将显示一些说明如何优化代码以符合 JDK 7 规范的提示，如本教程中上面所述。只需单击每个提示并选择建议的操作即可。 <br>
+</li>
+          <li>最后，接受了所有建议后，您就应该具有与 JDK 7 兼容的代码，如下所示。
+		  <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/converted.png" rel="lytebox" title="已转换代码片段"> <img alt="已转换代码片段" border="1" src="../../../images_www/articles/74/java/javase-jdk7/converted-small.png"></a></p>
+            
+          </li>
+        </ol>
+       
+        <div class="indent"></div>
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback: Overview of JDK 7 Support in NetBeans IDE">发送有关此教程的反馈意见</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>另请参见</h2>
+        <p>有关 JDK 7 和 NetBeans IDE 的详细信息，请参见： </p>
+        <ul>
+            <li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG465" target="_blank">设置目标 JDK</a></a></li>
+            <li><a href="http://download.oracle.com/javase/tutorial/essential/io/fileio.html" target="_blank">Java 教程：文件 I/O</a> - Java 教程中的一个部分，其中包含 JDK 7 中的一些 I/O 变化示例。</li>
+            <li><a href="http://download.oracle.com/javase/tutorial/essential/concurrency/forkjoin.html" target="_blank">Java 教程：分支和结合</a> - 说明了 JDK7 中的新分支/结合框架。 </li>
+        </ul>
+
+        <p>有关在 NetBeans IDE 中开发 Java 应用程序的详细信息，请参见： </p>
+        <ul>
+          <li><a href="javase-intro.html">开发常规 Java 应用程序</a></li>
+          <li><a href="../../trails/java-se.html">常规 Java 开发学习资源</a></li>
+		   <li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366" target="_blank">创建 Java 项目</a></a></li>
+        </ul>
+</body>
+</html>

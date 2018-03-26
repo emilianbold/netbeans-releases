@@ -1,0 +1,633 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Getting Started with Cordova Applications</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that describes how to configure the IDE to create a mobile application using Cordova.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Getting Started with Cordova Applications</h1>
+
+        <p>
+        This document demonstrates how to create an HTML5 project in the IDE that is packaged as a mobile application
+        and run in a mobile device simulator.
+        When you create an HTML5 application you have the option to create the application using an Apache Cordova site template.
+        Apache Cordova provides a group of APIs that enable you to develop 
+        an application with HTML, CSS and JavaScript that is packaged as a native
+        mobile application. 
+        The application runs on the mobile device and can access
+        the native functions of the device such as the GPS or camera.
+        By using the Cordova APIs a developer can build a mobile application without writing any native code. 
+        </p>
+        
+        <p>This document demonstrates how to install the software that is necessary to install and 
+            develop an application with Cordova.
+            After you install Cordova you will 
+            use the Cordova template in the New Project wizard to create a Cordova application.
+            You will then add some code and run the application in the mobile device simulator.
+            This tutorial will use the iOS simulator, but the steps are similar if you want to use an 
+            Android device emulator.</p>
+        
+        <p class="tips">To watch a screencast that demonstrates deploying a Cordova application to the Android emulator,
+            see <a href="../web/html5-cordova-screencast.html">Video of Getting Started with Cordova Development</a>.</p>
+        
+<!--        <p class="tips">For a tutorial on how to use jQuery in a NetBeans Java web application, see the tutorial 
+            <a href="../web/js-toolkits-jquery.html">Using jQuery to Enhance the Appearance and Usability of a Web Page</a>.</p>-->
+
+
+
+        <h3>Contents</h3>
+        <img src="../../../images_www/articles/80/netbeans-stamp.png" class="stamp" alt="Content on this page applies to NetBeans IDE 8.0" title="Content on this page applies to the NetBeans IDE 7.3" >
+
+        <ul class="toc">
+            <li><a href="#installcordova">Installing Cordova</a></li>
+            <li><a href="#createproject">Creating a Cordova HTML5 Project</a></li>
+            <li><a href="#editapp">Modifying the Source Code</a>
+                <ul>
+                    <li><a href="#edithtml">Editing the HTML File</a></li>
+                    <li><a href="#editconfig">Modifying the Cordova Configuration</a></li>
+                    <li><a href="#editjs">Editing the JavaScript File</a></li>
+                </ul>
+            </li>
+            <li><a href="#debug">Debugging the Application</a></li>
+            <li><a href="#summary">Summary</a></li>
+            <li><a href="#seealso">See Also</a></li>
+        </ul>
+
+        <h4>To complete this tutorial, you will need the following resources.</h4>
+
+        <table id="requiredSoftware">
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE, Java</a></td>
+                    <td class="tbltd1">8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7</td>
+                </tr>
+<!--                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chrome Browser</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>-->
+<!--                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">NetBeans Connector Extension for Chrome</a></td>
+                    <td class="tbltd1">1.0.0</td>
+                </tr>-->
+                <tr>
+                    <td class="tbltd1"><a href="http://cordova.apache.org/">Apache Cordova</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://nodejs.com/">NodeJS</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://git-scm.com/">Git</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Mobile Platform SDK<br/></td>
+                    <td class="tbltd1">Android or<br/>iOS</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>This document assumes that a compatible target mobile platform SDK and device emulator is already installed.</li>
+
+            <li>This document assumes that you have some basic knowledge of, or programming experience with
+                HTML, CSS, and JavaScript.
+                For more details on HTML5 support in NetBeans IDE, see <a href="html5-gettingstarted.html">Getting Started with HTML5 Applications</a></li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Installing Cordova ++++++++++++++++ -->
+        <a name="installcordova"></a>
+        <h2>Installing Cordova</h2>
+        <p>You need to install Cordova on your local system to package an HTML5 application as 
+            a native mobile application with NetBeans IDE.
+            You will use <strong>npm</strong>, the NodeJS package manager, to install and to update Cordova.
+            You will also need to confirm that Git is installed on your local system and configured properly.
+            Cordova uses Git to retrieve any required Cordova source files from a repository when you
+            package the application as a native mobile application.</p>
+
+        <p>You will perform most of the following steps in this exercise in your terminal window.</p>
+        <ol>
+            <li>Download and install Node.js, if not already installed.
+                <p>You can download the installer from the <a href="http://nodejs.org">Node.js site</a>.</p></li>
+            <li>Open a terminal window.</li>
+            <li>Run the following command to confirm that Node.js is installed.
+                <pre class="examplecode">$ node -v</pre>
+                <p>If node.js is installed you will see a version printed in the terminal window.</p>
+                <p class="notes"><strong>Notes.</strong></p>
+                <div class="indent">
+                    <ul>
+                        <li>If you are behind a proxy you will need to configure
+                        node.js to use the proxy to access the network. 
+                        You can run the following commands to set the proxy, 
+                        replacing <tt>http://proxy:8080</tt> with your proxy.
+                        
+                        <pre class="examplecode">$ sudo npm config set proxy http://proxy:8080
+$ sudo npm config set https-proxy http://proxy:8080</pre>
+                        <p>You can run the following command to view the current configuration settings. </p>
+                        <pre class="examplecode">$ npm config list</pre>
+                        </li>
+                        <li>For additional information about configuring node.js, 
+                        see <a href="https://npmjs.org/doc/config.html">https://npmjs.org/doc/config.html</a>.</li>
+                    </ul>
+                </div>
+            </li>
+            <li>Run the following command to install Cordova.
+            <pre class="examplecode">$ npm install -g cordova</pre>
+            <p class="notes"><strong>Notes.</strong></p>
+            <div class="indent">
+                <ul>
+                    <li>Confirm that your proxy configuration is correct if you see an error message in the terminal window
+                        when you run the install command.</li>
+                    <li>You can run the following command to update Cordova to the most recent version.
+                    <pre class="examplecode">$ npm update -g cordova</pre>
+                    </li>
+                </ul>
+            </div>
+            </li>
+            <li>Run the following command to confirm that Cordova is installed and to view the version.
+            <pre class="examplecode">$ cordova --version</pre>
+            <p>If Cordova is installed you will see a version printed in the terminal window.</p>
+            </li>
+            <li>Download and install the Git version control system, if not already installed.
+                <p>You can download the installer from the <a href="http://git-scm.com/">Git site</a>.</p>
+                <p class="notes"><strong>Note.</strong> You need to add Git to your Path environment.</p></li>
+            <li>Run the following command to confirm that Git is installed.
+                <pre class="examplecode">$ git --version</pre>
+                <p>If Git is installed you will see a version printed in the terminal window.</p>
+                <p class="notes"><strong>Notes.</strong></p>
+                <div class="indent">
+                    <ul>
+                        <li>If you are behind a proxy you will need to configure
+                        Git to use the proxy to access the network. 
+                        You can run the following commands to set the proxy, 
+                        replacing <tt>http://proxy:8080</tt> with your proxy.
+                        <pre class="examplecode">$ git config --global http.proxy http://proxy:8080
+$ git config --global https.proxy http://proxy:8080</pre>
+                        <p>You can run the following command to view the current configuration settings. </p>
+                        <pre class="examplecode">$ git config --list</pre>
+                        </li>
+                        <li>For additional information about configuring Git, see the setup instructions at 
+                        <a href="http://git-scm.com/book/en/Getting-Started-First-Time-Git-Setup">http://git-scm.com/book/en/Getting-Started-First-Time-Git-Setup</a>.</li>
+                    </ul>
+                </div>
+            </li>
+        </ol>
+        <p>You now have all the tools that you need to develop and package a native mobile application in the IDE.
+        In the next exercise you will use the New Project wizard to create the application.</p>
+        
+        
+        
+<!-- ++++++++++++++++ Creating the Project ++++++++++++++++ -->
+        <a name="createproject"></a>
+        <h2>Creating a Cordova Application</h2>
+        <p>In this exercise you will use the New Project wizard in the IDE to create a new Cordova application.
+        You create a Cordova application by selecting the Cordova Hello World template as the site
+        template in the New Project wizard.
+        A Cordova application is an HTML5 application with some additional libraries and configuration files.
+        If you have an existing HTML5 application you can use the Project Properties window in the IDE to add
+        the Cordova sources and other files required to package the application as a Cordova application.</p>
+        
+        <p>For this tutorial you will create a very basic HTML5 project that has an <tt>index.html</tt> file and some
+        some JavaScript and CSS files.
+        You will select some jQuery JavaScript libraries when you create the project in the wizard.</p>
+        
+        <ol>
+            <li>Select File &gt; New Project (Ctrl-Shift-N; &#8984;-Shift-N on Mac) in the main menu to open the New Project wizard.</li>
+            <li>Select the <strong>HTML5</strong> category and
+                then select <strong>Cordova Application</strong>. Click Next.<br>
+                <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard1.png"
+                    class="margin-around b-all" alt="screenshot of Cordova Application template in the New Project wizard"
+                    title="Cordova Application template in the New Project wizard">
+            </li>
+
+            <li>Type <strong>CordovaMapApp</strong> for the Project Name and specify the
+                directory on your computer where you want to save the project. Click Next.</li>
+
+            <li>In Step 3. Site Template, confirm that Download Online Template is selected and that the 
+                Cordova Hello World template is selected in the list. Click Next.<br>
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard2.png"
+                    class="margin-around b-all" alt="screenshot of Site Templates panel in the New HTML5 Application wizard"
+                    title="Site Templates panel in the New HTML5 Application wizard">
+                
+                <p><strong class="notes">Note:</strong> You must be online to create a project that 
+                    is based on one of the online templates in the list.</p></li>
+            
+            <li>In Step 4. JavaScript Files, select the <tt>jquery</tt> and <tt>jquery-mobile</tt> JavaScript libraries
+                in the Available pane and click the right-arrow button (&nbsp;&gt;&nbsp;) to move the selected libraries
+                to the Selected pane of the wizard.
+                By default the libraries are created in the <tt>js/libraries</tt> folder of the project.
+                For this tutorial you will use the "minified" versions of the JavaScript libraries.
+                
+                <p class="tips">You can use the text field in the panel to filter the list of JavaScript libraries.
+                For example, type <strong>jq</strong> in the field to help you find the <tt>jquery</tt> libraries.
+                You can Ctrl-click the names of the libraries to select multiple libraries.</p>
+                
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard3.png"
+            class="margin-around b-all" alt="screenshot of JavaScript Libraries panel in the New HTML5 Application wizard"
+            title="JavaScript Libraries panel in the New HTML5 Application wizard">
+            
+            <p class="notes"><strong>Notes.</strong></p>
+            <ul>
+                <li>You can click on the library version number in the Version column
+                to open a popup window that enables you to select older versions of the library. 
+                By default the wizard displays the most recent version.</li>
+                <li>The minimized versions of the JavaScript libraries are compressed versions and the code is not
+                comprehensible when viewed in an editor.</li>
+            </ul>
+            </li>
+            <li>In Step 5. Cordova Support, use the default values.
+            Click <strong>Finish</strong> to complete the wizard.
+            
+            <p>When you click Finish the IDE creates the project and displays a node for the project in the Projects window
+            and opens the <tt>index.html</tt> file in the editor.</p>
+
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-projects-window1.png"
+            class="margin-around b-all" alt="screenshot of Projects window"
+            title="Projects window">
+
+            <p>If you expand the <tt>js/libs</tt> folder in the Projects window you can see that the JavaScript libraries
+            that you specified in the New Project wizard were automatically added to the project.
+            You can remove a JavaScript library from a project by right-clicking the JavaScript file and choosing Delete 
+            in the popup menu.</p>
+
+            <p class="tips">To add a JavaScript library to a project, right-click the project node and choose Properties to
+            open the Project Properties window. 
+            You can add libraries in the JavaScript Libraries panel of the Project Properties window.
+            Alternatively, you can copy a JavaScript file that is on your local system directly into the <tt>js</tt> folder.</p>
+            
+            <p>You can now test that your project runs and is deployed to the emulator for your target mobile device.</p>
+            </li>
+            
+            <li>Click the browser select icon in the toolbar and confirm that your target mobile device emulator is selected in the Cordova column in the table.
+                In the Cordova column you can select the Android Emulator or iOS Simulator (requires OS X and XCode).
+                <br>
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-select-browser.png"
+        class="margin-around b-all" alt="screenshot of dropdown list in toolbar"
+        title="Browser selected in dropdown list in toolbar"></li>
+            <li>Click the Run icon in the toolbar.</li>
+        </ol>
+        
+        <p>When you choose Run the IDE deploys the Cordova application to the emulator.</p>
+        
+
+        <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run.png"
+                class="margin-around " alt="screenshot of application in the iOS Simulator"
+                title="Application in the iOS Simulator">
+        <p class="notes"><strong>Note.</strong> If you are deploying to the iOS Simulator the simulator should open automatically.
+        If you are deploying the application to an Android emulator you will need to configure and start the 
+        emulator before you run the application. To watch a screencast that demonstrates deploying a Cordova application to the Android emulator,
+            see <a href="../web/html5-cordova-screencast.html">Video of Getting Started with Cordova Development</a>.</p>
+
+        
+<!-- ++++++++++++++++ Editing the HTML File ++++++++++++++++ -->
+
+        <h2><a name="editapp"></a>Modifying the Application</h2>
+        
+        <p>In this exercise you will edit the <tt>index.html</tt> and <tt>index.js</tt> files. 
+            You will replace the code generated by the Cordova Hello World template with
+            code to display a map of your current location in the application.
+            You will also modify the default Cordova configuration to remove the
+            Cordova plugins that are not necessary in the application. 
+        </p>
+        
+        <div class="indent">
+        <h3><a name="edithtml"></a>Editing the HTML File</h3>
+        <p>In this exercise you edit the HTML file in the source editor to add references to the
+            libraries and CSS files and to add the page elements.</p>
+        <ol>
+            <li>Open <code>index.html</code> in the editor (if it is not already open).
+                <p>In the editor you can see that the IDE generated some code based on the Cordova Hello World template.</p>
+            </li>
+            <li>In the editor, add references to the jQuery JavaScript libraries and CSS files that you added when you created the project. 
+                Add the following code (in <strong>bold</strong>) between the opening and closing <tt>&lt;head&gt;</tt> tags.
+            <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta charset=UTF-8&quot;&gt;
+        &lt;meta name=&quot;format-detection&quot; content=&quot;telephone=no&quot; /&gt;
+        &lt;meta name=&quot;viewport&quot; content=&quot;user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi&quot;&gt;
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;css/index.css&quot; /&gt;
+        
+        <strong>&lt;link rel=&quot;stylesheet&quot; href=&quot;js/libs/jquery-mobile/jquery.mobile.min.css&quot;/&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery/jquery.min.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery-mobile/jquery.mobile.min.js&quot;&gt;&lt;/script&gt;</strong>
+        &lt;title&gt;Hello World&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    ...
+&lt;/html&gt;</pre>
+                    
+                <p class="tips">You can see the path to the files in the Projects window and 
+                    you can use the code completion in the editor to help you.</p>
+                <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-code-completion.png"
+                class="margin-around b-all" alt="screenshot of code completion in the editor"
+                title="Code completion in the editor">
+            </li>
+            <li>Add the following link to the Google Maps JavaScript API between the <code>&lt;head&gt;</code> tags.
+                <pre class="examplecode">&lt;script type="text/javascript" src="http://www.google.com/jsapi"&gt;&lt;/script&gt;</pre>
+                <p class="notes"><strong>Note.</strong> This is a link to the deprecated v2 of the JavaScript API. 
+                    This JavaScript will work for the purpose of demonstration in this tutorial but you should use 
+                    the newer version in a real application.</p>
+            </li>
+            <li>Remove all the code between the <code>&lt;body&gt;</code> tags except for the following links to the <code>index.js</code>
+                and <code>cordova.js</code> JavaScript files.
+                <pre class="examplecode">   &lt;body&gt;
+        
+        <strong>&lt;script type=&quot;text/javascript&quot; src=&quot;cordova.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/index.js&quot;&gt;&lt;/script&gt;</strong>
+        
+    &lt;/body&gt; 
+&lt;/html&gt;</pre>       
+                <p>The <code>index.js</code> file was generated automatically when you created the project. 
+                    You can see the file under the <code>js</code> node in the Projects window.
+                You will modify the code in <code>index.js</code> later in the tutorial.</p>
+                <p>The <code>cordova.js</code> is not visible in the Projects window because it is generated when
+                you build the Cordova application.</p>
+            </li>
+            <li>Add the following code (in <strong>bold</strong>) between the <tt>body</tt> tags.
+            <pre class="examplecode">   &lt;body&gt;
+        <strong>&lt;div data-dom-cache=&quot;false&quot; data-role=&quot;page&quot; id=&quot;mylocation&quot;>
+            &lt;div data-role=&quot;header&quot; data-theme=&quot;b&quot;>
+                &lt;h1 id=&quot;header&quot;&gt;Searching for GPS&lt;/h1&gt;
+                &lt;a data-role=&quot;button&quot; class=&quot;ui-btn-right&quot; onclick=&quot;showAbout()&quot;&gt;About&lt;/a&gt;
+            &lt;/div&gt;
+            
+            &lt;div data-role=&quot;content&quot; style=&quot;padding:0;&quot;&gt;
+                &lt;div id=&quot;map&quot; style=&quot;width:100%;height:100%; z-index:50&quot;&gt;
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+            &lt;div data-role=&quot;footer&quot; data-theme=&quot;b&quot; data-position=&quot;fixed&quot; &gt;
+                &lt;h4&gt;Google Maps&lt;/h4&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div data-dom-cache=&quot;false&quot; data-role=&quot;page&quot; id=&quot;about&quot;&gt;
+            &lt;div data-role=&quot;header&quot; data-theme=&quot;b&quot;&gt;
+                &lt;a data-role=&quot;button&quot; data-rel=&quot;back&quot; href=&quot;#mylocation&quot; data-icon=&quot;arrow-l&quot; data-iconpos=&quot;left&quot; class=&quot;ui-btn-left&quot;&gt;Back&lt;/a&gt;
+                &lt;h1&gt;About&lt;/h1&gt;&lt;/div&gt;
+            &lt;div data-role=&quot;content&quot; id=&quot;aboutContent&quot;&gt;
+            &lt;/div&gt; 
+            &lt;div data-role=&quot;footer&quot; data-theme=&quot;b&quot; data-position=&quot;fixed&quot; &gt;
+                &lt;h4&gt;Created with NetBeans IDE&lt;/h4&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        </strong>
+        &lt;script type="text/javascript" src="cordova.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/index.js"&gt;&lt;/script&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+            </li>
+        </ol>
+        
+        <h3><a name="editconfig"></a>Modifying the Cordova Configuration</h3>
+        <p>In this exercise you will modify the list of Cordova plugins that are installed in the application.</p>
+        <ol>
+            <li>Right-click the project node in the Projects window and choose Properties in the popup menu.</li>
+            <li>Select <strong>Cordova</strong> in the list of categories.
+            <br>
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-properties-application.png"
+            class="margin-around b-all" alt="screenshot of Cordova Plugins tab in the Project Properties window"
+            title="Cordova Plugins tab in the Project Properties window">
+            <p>You can use the Application tab to view and edit the Cordova configuration details about the application
+            that are specified in <code>config.xml</code>.</p></li>
+            <li>Click the Plugins tab in the Cordova panel.
+            <p>The Plugins tab contains two panes. The Available pane displays a list of the 
+            Cordova plugins that are currently available.</p>
+    
+            <p>The Selected pane displays a list of the plugins that are installed in the application.
+            All plugins are installed by default when you use the Cordova Hello World template to create the application.
+            Most applications do not require all the plugins.
+            You can use the Plugins tab in the Project Properties window to remove the plugins that are not required by your application.
+            </p>
+            <p class="notes"><strong>Note.</strong> You can also edit the plugins that are installed by editing the 
+            <code>nbproject/plugins.properties</code> file in the editor.</p></li>
+            <li>Remove all plugins except Device API, Dialogs (Notifications) and Geolocation. Click OK.
+            <br>
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-properties-plugins.png"
+            class="margin-around b-all" alt="screenshot of Cordova Plugins tab in the Project Properties window"
+            title="Cordova Plugins tab in the Project Properties window">
+            </li>
+        </ol>
+            
+        <h3><a name="editjs"></a>Editing the JavaScript File</h3>
+        <p>In this exercise you will remove the JavaScript code generated by the template
+        and add some simple methods to display the map of your current location.</p>
+        <ol>
+            <li>Open <code>index.js</code> in the editor.
+            <p>The IDE generated some boilerplate code in <code>index.js</code> when you created the project.
+            For this application you can remove all the generated code.</p>
+            </li>
+            <li>Replace the generated code with the following code. Save your changes.
+            <pre class="examplecode">var map;
+var marker;
+var watchID;
+
+$(document).ready(function() {
+    document.addEventListener("deviceready", onDeviceReady, false);
+    //uncomment for testing in Chrome browser
+//    onDeviceReady();
+});
+
+function onDeviceReady() {
+    $(window).unbind();
+    $(window).bind('pageshow resize orientationchange', function(e) {
+        max_height();
+    });
+    max_height();
+    google.load("maps", "3.8", {"callback": map, other_params: "sensor=true&language=en"});
+}
+
+function max_height() {
+    var h = $('div[data-role="header"]').outerHeight(true);
+    var f = $('div[data-role="footer"]').outerHeight(true);
+    var w = $(window).height();
+    var c = $('div[data-role="content"]');
+    var c_h = c.height();
+    var c_oh = c.outerHeight(true);
+    var c_new = w - h - f - c_oh + c_h;
+    var total = h + f + c_oh;
+    if (c_h < c.get(0).scrollHeight) {
+        c.height(c.get(0).scrollHeight);
+    } else {
+        c.height(c_new);
+    }
+}
+
+function map() {
+    var latlng = new google.maps.LatLng(50.08, 14.42);
+    var myOptions = {
+        zoom: 15,
+        center: latlng,
+        streetViewControl: true,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        zoomControl: true
+    };
+    map = new google.maps.Map(document.getElementById("map"), myOptions);
+
+    google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+        watchID = navigator.geolocation.watchPosition(gotPosition, null, {maximumAge: 5000, timeout: 60000, enableHighAccuracy: true});
+    });
+}
+
+// Method to open the About dialog
+function showAbout() {
+    showAlert("Google Maps", "Created with NetBeans 7.4");
+}
+;
+
+function showAlert(message, title) {
+    if (window.navigator.notification) {
+        window.navigator.notification.alert(message, null, title, 'OK');
+    } else {
+        alert(title ? (title + ": " + message) : message);
+    }
+}
+
+function gotPosition(position) {
+    map.setCenter(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+
+    var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+    if (!marker) {
+        //create marker
+        marker = new google.maps.Marker({
+            position: point,
+            map: map
+        });
+    } else {
+        //move marker to new position
+        marker.setPosition(point);
+    }
+}</pre>
+
+            <p class="notes"><strong>Note.</strong> For this tutorial the call to the <code>onDeviceReady</code> method is commented out because the 
+            method is not necessary when you are deploying the application to a mobile device emulator. 
+            If you want to run the application in a web browser you should uncomment the call to the <code>onDeviceReady</code> method.</p>
+            </li>
+            <li>Reset your emulator by either restarting the emulator or resetting the settings.</li>
+            <li>Click Run in the toolbar to deploy the application to the emulator.
+                <br>
+
+            <p>On the iOS Simulator you are prompted to allow the application to use your current location. </p>
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run1.png"
+                class="margin-around " alt="screenshot of dialog box requesting your current location"
+                title="Prompt for location in the application">
+            <p>You can test a simulated location in the iOS Simulator by selecting Debug &gt; Location &gt; Custom Location from the main
+            menu of the iOS Simulator to open the Custom Location dialog box.</p>
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios-customlocation.png"
+                class="margin-around b-all" alt="screenshot of Custom Location dialog box in iOS Simulator"
+                title="Custom Location dialog box in iOS Simulator">
+            <p>If you enter 48.8582 in the Latitude field and 2.2945 in the Longitude field for your current location the 
+            application will display your location as the Eiffel Tower on the map.</p>
+            <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run3.png"
+                class="margin-around " alt="screenshot of application when using a custom location in the iOS Simulator"
+                title="Application when using a custom location in the iOS Simulator">
+            </li>
+        </ol>
+        </div>
+        
+        
+        <h2>Debugging the Application</h2>
+        <p>In this exercise you will set a breakpoint in the JavaScript file and run the
+        application again.</p>
+        <ol>
+            <li>Reset or relaunch the emulator.</li>
+            <li>Open <code>index.js</code> in the editor.</li>
+            <li>Place a breakpoint by clicking in the left margin in the following line in the <code>gotPosition</code> method.
+        <pre class="examplecode">var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);</pre>
+            </li>
+            <li>Click Run in the toolbar to run the application again.
+                <p>When you run the application the debugger will hit the breakpoint when
+                    the application tries to determine your current location.</p>
+                <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-breakpoint1.png"
+                class="margin-around b-all" alt="screenshot of debugger stopped on breakpoint"
+                title="Debugger stopped on breakpoint">
+                <p>If you hover your cursor over the variables you can see a tooltip that displays
+                    details about the variable. If your cursor is over the <code>latitude</code> variable the value of the variable is 
+                displayed in the tooltip.</p>
+                <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables1b.png"
+                class="margin-around b-all" alt="screenshot of tooltip that displays variables"
+                title="Tooltip showing variables">
+                <p>If your cursor is over <code>position</code> or <code>coords</code> the tooltip contains an
+                    arrow that you can click to expand the tooltip.</p>
+                <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables1a.png"
+                class="margin-around b-all" alt="screenshot of tooltip that displays variables"
+                title="Tooltip showing variables">
+                <p>The expanded tooltip enables you to see the values in greater detail.</p>
+                <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables2.png"
+                class="margin-around b-all" alt="screenshot of tooltip that displays variables"
+                title="Tooltip showing variables">
+                <p>In this case it is easier to view the values in the Variables window.
+                In the Variables window you can see the latitude and longitude of your current location.</p>
+                <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables.png"
+                class="margin-around b-all" alt="screenshot of Variables window"
+                title="Variables window">
+                <p>In the Network Monitor window you can see a list of the application requests. </p>
+                <img src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-network-monitor.png"
+                class="margin-around b-all" alt="screenshot of Variables window"
+                title="Variables window">
+                
+            </li>
+        </ol>
+        
+        <h2 id="summary">Summary</h2>
+
+        <p>In this tutorial you have learned how to install and setup the required software to create a Cordova application
+            in the IDE. You also learned how to create a Cordova application and modify some of the Cordova configuration settings.
+            </p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20Creating%20a%20Cordova%20Applications">Send Feedback on This Tutorial</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        
+        <h2 id="seealso">See Also</h2>
+
+        <p>For more information about support for HTML5 applications in the IDE on
+            <a href="https://netbeans.org/">netbeans.org</a>, see the following resources:</p>
+
+        <ul>
+            <li>[Video] <a href="../web/html5-cordova-screencast.html">Getting Started with Cordova Development</a></li>
+            <li><a href="html5-editing-css.html">Working with CSS Style Sheets in HTML5 Applications</a>.
+            A document that continues with the application that you created in this tutorial that demonstrates
+            how to use some of the CSS wizards and windows in the IDE and how to use the Inspect mode in the
+            Chrome browser to visually locate elements in your project sources.</li>
+            <li><a href="html5-js-support.html">Debugging and Testing JavaScript in HTML5 Applications</a>.
+            A document that demonstrates how the IDE provides tools that can help you debug and test
+            JavaScript files in the IDE.</li>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2272">Creating JavaScript Files</a> in <i>Developing Applications with NetBeans IDE</i>.</li>
+        </ul>
+        
+        <p>For more information about jQuery, refer to the official documentation:</p>
+
+        <ul>
+            <li>Official Home Page: <a href="http://jquery.com">http://jquery.com</a></li>
+            <li>UI Home Page: <a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>Tutorials: <a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>Documentation Main Page: <a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>UI Demos and Documentation: <a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+    </body>
+</html>

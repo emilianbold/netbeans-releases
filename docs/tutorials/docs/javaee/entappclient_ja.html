@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>GlassFish Server上でのアプリケーション・クライアントの作成と実行</title>
+        <meta name="description"
+        content="A tutorial on how to use NetBeans IDE to develop and deploy an enterprise application client to GlassFish Server 3.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+    <body>
+        <!-- Begin Content Area -->
+        <h1>GlassFish Server上でのアプリケーション・クライアントの作成と実行</h1>
+        
+        <p>このチュートリアルでは、単純なアプリケーション・クライアントを作成し、GlassFishサーバー3にデプロイされたEnterprise JavaBeans (EJB)にアクセスする方法を示します。このチュートリアルでは、最初に単純なセッションBeanを含むエンタープライズ・アプリケーションと、セッションBean用のリモート・インタフェースを含むJavaクラス・ライブラリ・プロジェクトを作成します。次に、クラス・ライブラリ内のリモート・インタフェースを介してセッションBeanにアクセスするアプリケーション・クライアントを作成します。リモート・インタフェースを含むクラス・ライブラリJARは、エンタープライズ・アプリケーションとアプリケーション・クライアントのクラスパスに追加されます。</p>
+
+        
+              
+        
+        <p><b>チュートリアルの課題</b></p>
+           <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+            <ul>
+                <li><a href="#Exercise_10">Javaクラス・ライブラリの作成</a></li>
+                <li><a href="#Exercise_20">EJBモジュールの作成</a>
+                    <ul>
+                        <li><a href="#Exercise_22">セッションBeanの作成</a></li>
+                        <li><a href="#Exercise_23">ビジネス・メソッドの追加</a></li>
+                        <li><a href="#Exercise_24">エンタープライズ・アプリケーションのデプロイ</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_30">アプリケーション・クライアントの作成</a>
+                    <ul>
+                        <li><a href="#Exercise_32">クラス・ライブラリの追加</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_30">アプリケーション・クライアントの実行</a></li>
+                <!--<li><a href="#Exercise_40">Downloading the Solution Project</a></li>-->
+            </ul>
+        
+        
+           
+            <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバージョン</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                    <td class="tbltd1">3.x、4.x</td>
+                </tr>
+                </tbody>
+            </table>
+            
+            
+            <p><b>前提条件</b></p>
+            <p>このドキュメントは、次のテクノロジについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。</p>
+            <ul>
+                <li>Javaプログラミング</li>
+                <li>NetBeans IDE</li>
+            </ul>
+            <p class="tips"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/EntAppClientEE6.zip">終了したプロジェクトのZIPアーカイブ</a>はダウンロードできます。GlassFish 3.0を使用する場合は、<a href="https://netbeans.org/projects/samples/downloads/download/NetBeans%20IDE%206.8/JavaEE/entappclient.zip">NetBeans IDE 6.8プロジェクト用のZIPアーカイブ</a>を使用してください。</p>
+            
+            
+        
+        <!-- ===================================================================================== -->
+
+
+        <a name="Exercise_10"></a>
+        <h2>Javaクラス・ライブラリの作成</h2>
+        <p>この項では、EJB用のリモート・インタフェースを含むJavaクラス・ライブラリ・プロジェクトを作成します。このリモート・インタフェースは、クライアントがEJBとやり取りするために使用するEJB用のAPIとして動作します。</p>
+
+        <p>ライブラリJARは、EJBをコールする必要があるクライアントに簡単に配布できます。EJBにアクセスする必要があるクライアントは、プロジェクトのクラスパスにライブラリJARを追加するのみで済みます。EJBの実装では、同じJARを使用してインタフェースを実装します。</p>
+
+        
+
+        <!--appclient runs locally on client and if it needs to communicate with an EJB on server then
+        EJB must have Remote interface which appclient will use.
+        .... something like that followed by
+        "so let's start with creating class lib project"-->
+
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])を選択し、「Java」カテゴリの「Javaクラス・ライブラリ」を選択します。「次」をクリックします。</li>
+            <li>「プロジェクト名」に「<strong>EJBRemoteInterface</strong>」と入力します。「終了」をクリックします。 </li>
+        </ol>
+        <img alt="新規クラス・ライブラリ・プロジェクト・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-newclasslibrary.png" title="新規クラス・ライブラリ・プロジェクト・ウィザード" />
+
+        <p>「終了」をクリックすると、IDEによってJavaクラス・ライブラリ・プロジェクトが作成されます。次の項では、Java EEエンタープライズ・アプリケーションとEJBモジュールを作成します。次に、ウィザードを使用してセッションBeanとクラス・ライブラリ・プロジェクト内のセッションBean用のリモート・インタフェースを作成します。アプリケーション・クライアントはクラス・ライブラリ内のインタフェースを経由してセッションBeanにアクセスします。</p>
+
+
+
+        <a name="Exercise_20"></a>
+        <h2>EJBモジュールの作成</h2>
+        <p>この項では、エンタープライズ・アプリケーションとEJBモジュールを作成します。EJBを作成するときは、EJBをエンタープライズ・アプリケーションの一部として作成し、EARアーカイブとしてパッケージ化してサーバーにデプロイするようにしてください。</p>
+
+        <div class="indent">
+            <a name="Exercise_21"></a>
+            <h3>エンタープライズ・アプリケーションの作成</h3>
+            <p>この項では、新規プロジェクト・ウィザードを使用してEJBモジュールを含むエンタープライズ・アプリケーションを作成します。このウィザードには、アプリケーションの作成時にEJBモジュールを作成するオプションが用意されています。
+            </p>
+
+            <ol>
+                <li>「ファイル」>「新規プロジェクト」を選択し、「Java EE」カテゴリの「エンタープライズ・アプリケーション」を選択します。「次」をクリックします。</li>
+                <li>「プロジェクト名」に「<strong>EntAppEJB</strong>」と入力します。「次」をクリックします。</li>
+                <li>サーバーとして「GlassFish Server」を選択します。</li>
+                <li>「EJBモジュールを作成」が選択され、「Webアプリケーション・モジュールを作成」が選択されていないことを確認します。「終了」をクリックします。 </li>
+            </ol>
+            <img alt="新規エンタープライズ・アプリケーション・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-newentappejb.png" title="新規エンタープライズ・アプリケーション・ウィザードで「EJBモジュールの作成」が選択されている" />
+
+            <p>「終了」をクリックすると、IDEによってエンタープライズ・アプリケーションとEJBモジュールが作成されます。「プロジェクト」ウィンドウで、エンタープライズ・アプリケーション・プロジェクトの「Java EEモジュール」ノードの下にEJBモジュール・プロジェクトが一覧表示されていることがわかります。</p>
+            <img alt="開いているプロジェクトを示す「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-projects-entappejb1.png" title="開いているプロジェクトを示す「プロジェクト」ウィンドウ" />
+
+            <p>クラス・ライブラリ、エンタープライズ・アプリケーション、EJBモジュールの3タイプのプロジェクトが一覧表示されていることがわかります。</p>
+
+
+            <a name="Exercise_22"></a>
+            <h3>セッションBeanの作成</h3>
+            <p>この課題では、ウィザードを使用してEJBモジュール・プロジェクト内にセッションBeanを作成します。このウィザードでは、クラス・ライブラリ・プロジェクト内にセッションBean用のリモート・インタフェースも作成します。
+            </p>
+            <ol>
+                <li>EJBモジュール・プロジェクトを右クリックし、「新規」>「セッションBean」を選択します。</li>
+                <li>「EJB名」に「<strong>MySession</strong>」と入力します。</li>
+                <li>「パッケージ」に「<strong>ejb</strong>」と入力します。</li>
+                <li>「セッションのタイプ」として「ステートレス」を選択します。</li>
+                <li>「インタフェースを作成」で「リモート」オプションを選択します。</li>
+                <li>ドロップダウン・リストから<strong>EJBRemoteInterface</strong>プロジェクトを選択します。「終了」をクリックします。 </li>
+            </ol>
+
+            <img alt="新規セッションBeanウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-wizard-newsessionbean.png" title="新規セッションBeanウィザード" />
+
+            <p>「終了」をクリックすると、IDEによってEJBモジュールの<tt>ejb</tt>パッケージ内にセッションBeanが作成され、エディタでそのクラスが開きます。<tt>MySession</tt>に<tt>MySessionRemote</tt>インタフェースが実装され、EJBRemoteInterface JARがEJBモジュールのライブラリとして追加されたことがわかります。</p>
+
+            <p>このウィザードによって、EJBRemoteInterfaceプロジェクトの<tt>ejb</tt>パッケージ内に<tt>MySessionRemote</tt>という名前のリモート・インタフェースも作成されます。EJBインタフェースに必要なJava EE 6 APIライブラリがIDEによって自動的に追加されます。</p>
+
+            <img alt="セッションBeanとリモート・インタフェースを示す「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-projects-entappejb2.png" title="セッションBeanとリモート・インタフェースを示す「プロジェクト」ウィンドウ" /> <a name="Exercise_23"></a>
+            <h3>ビジネス・メソッドの追加</h3>
+            <p>この課題では、文字列を返す単純なビジネス・メソッドをセッションBean内に作成します。
+            </p>
+            <ol>
+                <li>MySessionのエディタ内を右クリックして「コードを挿入」([Alt]-[Insert]、Macの場合は[Ctrl]-[I])を選択し、「ビジネス・メソッドを追加」を選択します。</li>
+                <li>「メソッド名」に「<strong>getResult</strong>」と入力し、「戻り型」として「文字列」を選択します。「OK」をクリックします。
+
+                </li>
+                <li>以下の変更を加えて、文字列を返すように<tt>getResult</tt>メソッドを変更します。
+                <p>クラスは次のようになるはずです。</p>
+                <pre class="examplecode">@Stateless
+public class MySession implements MySessionRemote {
+
+    public String getResult() {
+        return <strong>"This is My Session Bean"</strong>;
+    }
+}</pre>
+                </li>
+                <li>変更を保存します。</li>
+            </ol>
+
+            <p>これで、リモート・インタフェースを介して公開される単純なEJBを含むエンタープライズ・アプリケーションができました。また、他の開発者に配布できるEJBインタフェースを含む独立したクラス・ライブラリもできました。開発者は、リモート・インタフェースによって公開されるEJBとやり取りする場合にはこのライブラリを自分のプロジェクトに追加でき、EJBのソースを持つ必要はありません。EJBのコードを変更したときは、インタフェースのいずれかを変更した場合に更新されたクラス・ライブラリのJARを配布するのみで済みます。</p>
+
+            <p class="tips"> 「ビジネス・メソッドを追加」ダイアログを使用すると、IDEによってリモート・インタフェースにメソッドが自動的に実装されます。</p>
+
+            <a name="Exercise_24"></a>
+            <h3>エンタープライズ・アプリケーションのデプロイ</h3>
+            <p>これで、エンタープライズ・アプリケーションをビルドし、実行できるようになりました。アプリケーションを実行すると、IDEによってEARアーカイブがサーバーにデプロイされます。</p>
+            <ol>
+                <li>EntAppEJBエンタープライズ・アプリケーションを右クリックし、「デプロイ」を選択します。</li>
+            </ol>
+
+            <p>「デプロイ」をクリックすると、IDEによってエンタープライズ・アプリケーションがビルドされ、EARアーカイブがサーバーにデプロイされます。「ファイル」ウィンドウを見ると、EJBRemoteInterface JARがアプリケーションとともにデプロイされていることがわかります。</p>
+
+            <p>「サービス」ウィンドウで、「GlassFish Server」の「アプリケーション」ノードを展開すると、EntAppEJBがデプロイされたことがわかります。</p>
+        </div>
+
+
+        <a name="Exercise_30"></a>
+        <h2>アプリケーション・クライアントの作成</h2>
+
+        <p>この項では、エンタープライズ・アプリケーション・クライアントを作成します。アプリケーション・クライアントを作成するときは、EJBを参照するためのライブラリとしてEJBRemoteInterface Javaクラス・ライブラリがプロジェクトに必要です。</p>
+
+        <p>エンタープライズ・アプリケーションを実行すると、IDEによってアプリケーション・クライアントとJavaクラス・ライブラリJARがEARアーカイブにパッケージ化されます。アプリケーション・クライアントからJARにアクセスする場合は、ライブラリJARをアプリケーション・クライアントと一緒にEARにパッケージ化する必要があります。
+        </p>
+
+        <div class="indent">
+            <a name="Exercise_31"></a>
+            <h3>エンタープライズ・アプリケーションの作成</h3>
+            <p>この課題では、新規プロジェクト・ウィザードを使用してアプリケーション・クライアント・プロジェクトを作成します。GlassFish 3.1または4.xへデプロイすると、アプリケーション・クライアントをスタンドアロン・プロジェクトとして作成し、実行できます。アプリケーション・クライアントをエンタープライズ・アプリケーションの一部としてデプロイし、実行する必要はなくなりました。</p>
+
+            <p class="notes"><strong>注意:</strong>GlassFish 3.0.1にデプロイする場合は、アプリケーション・クライアントをエンタープライズ・アプリケーション・プロジェクト内のモジュールとして作成し、エンタープライズ・アプリケーションを実行する必要があります。</p>
+            <ol>
+                <li>「ファイル」>「新規プロジェクト」を選択し、「Java EE」カテゴリの「エンタープライズ・アプリケーション・クライアント」を選択します。「次」をクリックします。</li>
+                <li>「プロジェクト名」に「<strong>EntAppClient</strong>」と入力します。「次」をクリックします。</li>
+                <li>サーバーとして「GlassFish Server」を選択します。「終了」をクリックします。
+                    <p>プロジェクトをエンタープライズ・アプリケーションに追加する必要はありません。</p>
+                </li>
+            </ol>
+            <img alt="「新規プロジェクト」で選択したアプリケーション・クライアントの作成のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-wizard-newentappclient.png" title="「新規プロジェクト」で選択したアプリケーション・クライアントの作成" />
+
+            <p>「終了」をクリックすると、IDEによってアプリケーション・クライアント・プロジェクトが作成され、エディタで<tt>Main.java</tt>が開きます。</p>
+
+            <a name="Exercise_31"></a>
+            <h3>クラス・ライブラリの追加</h3>
+            <p>次に、リモート・インタフェースを含むクラス・ライブラリをプロジェクトのクラスパスに追加して、アプリケーション・クライアントがEJBを参照できるようにする必要があります。クラス・ライブラリ・プロジェクトが開いているので、「エンタープライズBeanをコール」ダイアログを使用してEJBをコールするコードを生成できます。
+            </p>
+            <p class="tips">クラス・ライブラリ・プロジェクトが開いていない場合は、「ライブラリ」ノードを右クリックし、EJBRemoteInterfaceプロジェクトのJARを見つけることにより、「プロジェクト」ウィンドウでプロジェクトにクラス・ライブラリを追加できます。</p>
+
+            <ol>
+                <li>EntAppClientプロジェクトの「ソース・パッケージ」ノードを展開し、エディタで<tt>Main.java</tt>を開きます。</li>
+                <li>ソース・コード内を右クリックして「コードを挿入」([Alt]-[Insert]、Macの場合は[Ctrl]-[I])を選択し、「エンタープライズBeanをコール」を選択して「エンタープライズBeanをコール」ダイアログを開きます。</li>
+                <li>EntAppEJBプロジェクト・ノードを展開してMySessionを選択します。「OK」をクリックします。<br /><img alt="「エンタープライズBeanをコール」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-callenterprise.png" title="「エンタープライズBeanをコール」ダイアログ" />
+
+                <p>このダイアログでは、インタフェース・タイプとして「リモート」が自動的に選択されています。「OK」をクリックすると、IDEによって<tt>Main.java</tt>に以下の注釈が追加されます。
+                <pre class="examplecode">@EJB
+private static MySessionRemote mySession;</pre>
+
+                <p>また、IDEによってEJBRemoteInterfaceがプロジェクト・ライブラリとして自動的に追加されます。</p>
+                </li>
+                <li>MySessionRemoteインタフェースを経由して<tt>getResult</tt>メソッドの文字列を取得するように<tt>main</tt>メソッドを変更します。変更を保存します。
+                <pre class="examplecode">
+public static void main(String[] args) {
+        <strong>System.err.println("result = " + mySession.getResult());</strong>
+    }</pre>
+                </li>
+            </ol>
+        </div>
+
+
+        <a name="Exercise_40"></a>
+        <h2>アプリケーション・クライアントの実行</h2>
+
+        <p>これで、EntAppClientプロジェクトをビルドしてデプロイすることにより、アプリケーションを実行できます。</p>
+        <ol>
+            <li>「プロジェクト」ウィンドウ内のEntAppClientプロジェクトを右クリックし、「実行」を選択します。
+            <p>または、ソース・パッケージ展開し、<tt>Main.java</tt>クラスを右クリックして「ファイルを実行」を選択することもできます。</p></li>
+        </ol>
+
+        <p>「実行」をクリックすると、IDEによってアプリケーション・クライアント・プロジェクトがビルドされ、JARアーカイブがサーバーにデプロイされます。「出力」ウィンドウにアプリケーション・クライアントからのメッセージが表示されます。</p>
+        <img alt="結果を示す「出力」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-buildoutput.png" title="「出力」ウィンドウの結果" />
+
+        <p>追加のEJBを作成する場合は、EJBの新しいリモート・インタフェースをEJBRemoteInterfaceクラス・ライブラリ・プロジェクトに追加するのみで済みます。</p>
+
+<!--
+
+        <a name="Exercise_50"></a>
+        <h2>Downloading the Solution Project</h2>
+        <p>You can download the solution to this tutorial as a project in the following ways.</p>
+        <ul>
+            <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fentappclient.zip">a zip archive of the finished project</a>.</li>
+            <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+                    <ol>
+                        <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                        <li>In the Checkout dialog box, enter the following Repository URL:<br/>
+                            <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br/>
+                            Click Next.</li>
+                        <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                        <li>Expand the root node and select <strong>samples/javaee/entappclient</strong>. Click OK.</li>
+                        <li>Specify the Local Folder for the sources (the local folder must be empty).</li>
+                        <li>Click Finish.
+                            <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                            and checks out the project sources.</p>
+                        </li>
+                        <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+                    </ol>
+                <p class="notes"><strong>Notes.</strong></p>
+                <ul>
+                    <li>Steps for checking out sources from Kenai only apply to NetBeans IDE 6.7 and 6.8.</li>
+                    <li>You need a Subversion client to checkout the sources from Kenai.
+                    For more about installing Subversion, see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</li>
+                </ul>
+            </li>
+        </ul>-->
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Application%20Client">ご意見をお寄せください</a></div>
+        <br style="clear: both;">
+        <!-- ======================================================================================= -->
+        <h2><a name="nextsteps"></a>次の手順</h2>
+        <!--<p>For more, see the following tutorial </p>
+        <ul>
+            <li><a href="http://wiki.netbeans.org/wiki/view/RemoteApplicationClientInNetBeans">RemoteApplicationClientInNetBeans</a></li>
+        </ul>-->
+        
+        
+        <p>NetBeans IDEを使用したJava EEアプリケーションの開発方法の詳細は、次のリソースを参照してください。 </p>
+        <ul>
+            <li><a href="javaee-intro.html">Java EEテクノロジ入門</a></li>
+            <li><a href="javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+            <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+        </ul>
+        <p>EJBエンタープライズBeanの使用方法については、<a href="http://download.oracle.com/javaee/6/tutorial/doc/">Java EE 6チュートリアル</a>を参照してください。</p>
+        <p><a href="../../../community/lists/top.html">nbj2eeメーリング・リストに登録する</a>ことによって、NetBeans IDE Java EE開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+        <!-- End Content Area -->
+    </body>
+</html>

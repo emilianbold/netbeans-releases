@@ -1,0 +1,966 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<!--
+Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>NetBeans E コマースのチュートリアル - データモデルの設計</title>
+<meta name="author" content="&#116;&#114;&#111;&#121;&#46;&#103;&#105;&#117;&#110;&#105;&#112;&#101;&#114;&#111; &#x40; &#115;&#117;&#110;&#46;&#99;&#111;&#109; ">
+<meta name="description" content="In this tutorial unit, you use MySQL Workbench to create an entity-relationship diagram that represents the data model for the application. You then generate a schema from the ER diagram, run it on the MySQL server, and connect to it from the IDE.">
+<meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+<link rel="SHORTCUT ICON" href="/images_www/favicon.ico">
+<link rel="stylesheet" type="text/css" href="/netbeans.css" media="screen">
+<script type="text/javascript" src="/images_www/js/jquery-1.3.2.min.js"></script>
+<script src="/images_www/js/lang-pulldown.js" type="text/javascript"></script>
+<script src="/images_www/js/switcher.js" type="text/javascript"></script>
+<script src="/images_www/js/companion-projects.js" type="text/javascript"></script>
+<script language="JavaScript" type="text/javascript">
+ <!--
+ var username="guest";
+ //-->
+ </script>
+<script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script><link rel="stylesheet" type="text/css" href="../../../../netbeans.css"><link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+<link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+</head>
+	<body class="blue-bg"><div style="background-color:white;"><div class="f-page-auto-cell" id="doc" >
+
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans　Ｅコマースのチュートリアル－データモデルの設計</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>チュートリアルの内容</h4>
+
+                <ol>
+                    <li><a href="intro_ja.html">はじめに</a></li>
+                    <li><a href="design_ja.html">アプリケーションの設計</a></li>
+                    <li><a href="setup-dev-environ_ja.html">開発環境の設定</a></li>
+                    <li><strong>データモデルの設計</strong>
+                    <br><br>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#idEntities">データモデルのエンティティを識別する</a></li>
+                            <li><a href="#createERDiagram">ER（エンティティ関係）図を作成する</a></li>
+                            <li><a href="#forwardEngineer">データベースの Forward-Engineering</a></li>
+                            <li><a href="#connectDB">IDE からデータベースへ接続する</a></li>
+                            <li><a href="#seeAlso">参照</a></li>
+                        </ul></li>
+
+                    <li><a href="page-views-controller_ja.html">ページ ビュー と コントローラサーブレットの準備</a></li>
+                    <li><a href="connect-db_ja.html">データベースへのアプリケーションの接続</a></li>
+                    <li><a href="entity-session_ja.html">エンティティクラスとセッションBeans の追加</a></li>
+                    <li><a href="manage-sessions_ja.html">セッションの管理</a></li>
+                    <li><a href="transaction_ja.html">トランザクション ビジネスロジックの統合</a></li>
+                    <li><a href="language_ja.html">言語サポートの追加</a></li>
+                    <li><a href="security.html">アプリケーションの保護</a></li>
+                    <li><a href="test-profile.html">アプリケーションの負荷テスト</a></li>
+                    <li><a href="conclusion_ja.html">まとめ</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>この単元では、データモデリング、またはストレージシステムの概念モデルを作成する手順に焦点を当てています。そして、システムが必要とするエンティティとお互いの関係も識別し定義します。
+        データモデルには、すべての論理的および物理的な設計パラメータが含まれています。設計パラメータは、データ定義言語(ＤＤＬ)がデータベースを作成するためのスクリプトを生成するのに必要とされます。<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>
+        </p>
+
+        <p>この単元では、主に <a href="http://wb.mysql.com/">MySQL Workbench</a> で仕事をします。ワークベンチは、データモデル、リバースエンジニア SQL スクリプトなどをビジュアルに作成するためのグラフィカルツールです。データモデルをforward-engineer（前方エンジニア）してデータベース構造の中に取り込み、動作中のMySQLデータベースサーバーとモデルとを同期します。
+        </p>
+
+        <p><code>AffableBean</code> アプリケーションのデータモデルを表現するためのER図（エンティティ関係図）の作成をはじめましょう。すべてのエンティティとリレーションシップを識別し、それらを結びつける関係の定義を完了している場合は、Workbench のforward-engineering 前方エンジニアリングを使用して、DDL スクリプトを実行し、データモデルをデータベース構造に変換します。最後に、NetBeans IDE から新しい構造（スキーマ）に接続します。
+        </p>
+
+        <p>このチュートリアルで構築するアプリケーションのライブデモを見ることができます： <a href="http://services.netbeans.org/AffableBean/">NetBeansのEコマースのチュートリアルデモアプリケーション</a>。
+        </p>
+
+        <br style="clear:both;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウエアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans
+                        IDE</a></td>
+                    <td class="tbltd1">Java バンドル版, 6.8 または 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/">MySQL データベースサーバー</a></td>
+                    <td class="tbltd1">バージョン 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/workbench/">MySQL Workbench</a></td>
+                    <td class="tbltd1">バージョン 5.1 または 5.2</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注:</strong></p>
+
+        <ul>
+            <li>NetBeans IDE を正常に実行するには Java開発キット( JDK )が必要です。上記の他のリソースがない場合は、最初に JDK をダウンロードしインストールする必要があります。
+            </li><p>
+
+            <li>NetBeans IDE Java バンドル版には、Java Web と JAVA EE 技術が入っており、このチュートリアルでアプリケーションを構築するのに必要です。
+            </li><p>
+
+            <li>あなたは、このチュートリアルで作成したＥＲ図からMySQL Workbench が生成した完全な DDL スクリプトを以下からダウンロードすることができます： <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Faffablebean_schema_creation.sql">affablebean_schema_creation.sql</a>。
+            </li><p>
+        </ul>
+
+
+        <br>
+        <h2 id="idEntities">データモデルのエンティティを識別する</h2>
+
+        <p>現実の世界でアプリケーションのデータモデルが貧弱な場合があります。たとえば、既存のデータベースの上にアプリケーションを開発するタスクがあったとします。アプリケーションの元となるデータモデルがないと仮定すると、開発に着手する前に最初から設計ステップを一つ一つしなければなりません。データモデルを作成するには、オブジェクトを識別するか、またはシステムが必要とする<em>entities エンティティ</em>を識別し、それらの間の関係を定義する必要があります。
+         </p>
+
+        <p id="nounList">我々は、データモデルに必要なエンティティを識別することから始めます。<a href="design.html#mockups">アプリケーションの設計</a>に示されたユースケースを再度調べる必要があります。よく出てくる名詞を調べます。たとえば：
+        </p>
+
+        <div class="indent">
+            <div class="feedback-box margin-around float-left" style="width:723px">
+
+                <h3>ユースケース</h3>
+
+                <p>
+<strong>Customer顧客</strong> はウェルカムページを訪問し製品<strong>category カテゴリ</strong>を選択する。 <strong>Customer</strong>は選択した製品カテゴリのページをブラウズし、彼または彼女のショッピングカートへ <strong>products製品</strong>を追加します。 <strong>Customer</strong> は、ショッピングを続け、別の <strong>category</strong>を選択します。 <strong>Customer</strong>はこのカテゴリーからいくつかの<strong>products</strong>を<strong>shopping cartショッピングカート</strong>へ追加します。<strong>Customer</strong>は、「カートを見る」オプションへ進み、「カート」のページでカートの<strong>products</strong>の数量を修正します。<strong>Customer</strong>はショッピングカートの内容を確認し、チェックアウトに進みます。チェックアウトのページで、<strong>Customer</strong>は<strong>order注文</strong>金額と他の情報を見ます。個人データを記入し、彼または彼女の詳細を送信します。 <strong>order</strong>は処理され、 <strong>customer</strong>は確認ページへ行きます。確認ページは顧客を追跡するための一意の参照番号を持っています。<strong>order</strong>の要約も同様です。
+　　　　　　</p>
+            </div>
+        </div>
+
+        <br style="clear:both">
+        <br>
+
+        <p>上記の<strong>強調表示</strong>されたテキストは、データモデルとして捉えることができる候補を示しています。より詳細に調べると、あなたがショッピングカートをデータモデルに含む必要がないと推測できるかもしれません。それゆえ、提供されるデータ（すなわち、製品とその数量）は、処理されるときには、顧客の注文と同じになります。実際に、第８単元、<a href="manage-sessions.html">セッション管理</a>でデモします。ショッピングカートは、単に一時的にユーザのセッションを保持するメカニズムとして機能します（顧客がオンラインでショッピングをしている間）。その結果、我々は次のリストを決めることができます。
+        </p>
+
+        <ul class="toc">
+            <li><strong>customer 顧客</strong></li><p>
+            <li><strong>category カテゴリ</strong></li><p>
+            <li><strong>product 製品 </strong></li><p>
+            <li><strong>order 注文</strong></li><p>
+        </ul>
+
+        <p>これら４つのエンティティから、エンティティ関係図（ＥＲ図、以下 ERD）の構築を始められます。
+        </p>
+
+        <p class="notes"><strong>注：</strong> このチュートリアルでは、ERD からデータベーススキーマを作成します。そして、IDE の EclipseLink サポートを使い既存のデータベースから JPA エンティティクラスを生成します（ EclipseLinkとJava Persistence API(JPA)は、第７章で<a href="entity-session.html">エンティティクラスとセッションBeanを追加する</a>)で説明します）。この手法を<em>ボトムアップ</em>開発といいます。同様にこれと反対の実行可能な手法は<em>トップダウン</em>開発です。
+        </p>
+<small>
+訳者注。スキーマ（schema）とは、データベースの構造であり、データベース管理システム (DBMS) でサポートされている形式言語で記述される。関係データベースでは、スキーマは関係 (表) と関係内の属性 (フィールド) 、属性や関係の関連の定義である。
+<br>スキーマは一般にデータ辞書に格納される。スキーマはテキストによるデータベース言語のデータ定義言語 (DDL) で定義されるが、グラフィカルにデータベース構造を表したものをスキーマと呼ぶことも多い[ウィキペディア]
+
+</small><p>
+
+        <ul>
+            <li><strong>トップダウン：</strong> <em>トップダウン</em>で開発する場合は、既存のドメインモデルの Java 実装から始めます。ドメインモデルではデータベーススキーマ設計を全く考慮する必要はありません。あなたはマッピングメタデータ（すなわち、JPA エンティティクラスで使われるアノテーション）を作成する必要があります。そして任意で、永続化ツールを使いスキーマを自動生成することもできます。 
+            </li><p>
+
+            <li><strong>ボトムアップ： </strong><em>ボトムアップ</em>開発は既存のデータベーススキーマから始めます。ボトムアップを最も簡単に行う方法は、forward-engineering ツールを使って、スキーマからメタデータを抽出し、アノテートした Java のソースコード（ JPA エンティティクラス）を生成します。
+            <br><br> 
+            <small>
+            訳者注。フォワードエンジニアリング(forward engineering)とは，リバースエンジニアリングによって既存のシステムから解析された仕様をもとに，新規のシステムを開発すること。つまり、モデルからソースに変換する手法。
+            </small>
+            <br><br>
+            </li><p>
+        </ul>
+
+        <p>トップダウンとボトムアップ設計戦略の詳細については以下を参照してください。<a href="http://en.wikipedia.org/wiki/Data_modeling#Modeling_methodologies">データモデリング：モデリング方法論</a> [ウィキペディア]。
+        </p>
+
+
+        <br>
+        <h2 id="createERDiagram">エンティティ関係図(ER図、ERD）の作成</h2>
+
+        <p>MySQL Workbench(ワークベンチ)を実行してはじめます。この演習ではワークベンチを使い、<code>AffableBean</code>  アプリケーションの ER 図を設計します。
+        </p>
+
+        <p class="notes"><strong>注： </strong>以下の手順は MySQL Workbench バージョン<em>5.1 と 5.2</em> で作業します。このチュートリアルの画面はバージョン5.2 のものです。
+       バージョン間でグラフィカルなインターフェイスにわずかな違いがあります。しかし、機能は一貫性を保っています。バージョン5.2 にはクエリエディタが組み込まれているため（以前のMySQL Query Browser）、同様にサーバー管理インターフェイス（以前の MySQL Administrator）も組み込まれているため、workbench を開くとホーム画面が表示されます（下図参照）。
+       </p>
+
+        <div class="indent">
+            <a href="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench-home.png"
+                rel="lytebox" title="In Workbench 5.2, the Home screen serves as a central interface to
+                the data modeling tool, an SQL editor, and an administration tool">
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench-home.png"
+                class="margin-around b-all" style="width: 728px" alt="MySQL Workbench 5.2 - Home screen"
+                title="Click to enlarge"></a>
+        </div>
+
+        <p>Workbench 5.2で作業する場合、 ホーム画面のデータモデリング見出しの下にある「<strong>Create New EER Model</strong> (EERモデル新規作成)」をクリック。
+        </p>
+
+        <ul>
+            <li><a href="#createSchema"><code>affablebean</code> スキーマの作成</a></li><p>
+            <li><a href="#createEntities">エンティティの作成</a></li><p>
+            <li><a href="#addProperties">エンティティのプロパティを追加する</a></li><p>
+            <li><a href="#identifyRelationships">関係を識別する</a></li><p>
+        </ul>
+
+        <div class="indent">
+            <h3 id="createSchema"> <code>affablebean</code> スキーマの作成</h3>
+
+            <ol>
+                <li>デフォルトのインターフェイスで、 AffableBean アプリケーションで使われる新しいスキーマの作成を始めます。見出しの <strong>Physical Schemata</strong> 見出しの右側にあるプラスアイコン(                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/plus-icon.png"
+                    class="b-all" alt="Plus icon">）をクリック。
+                    <br><br>
+                    新しいパネルが画面の底部に開き、新しいスキーマの設定を指示できます。
+
+                    <p>
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench.png"
+                        rel="lytebox" title="Use Workbench to create a new database schema">
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench.png"
+                        class="margin-around b-all" style="width: 688px" alt="New schema panel displays in bottom region of interface"
+                        title="Click to enlarge"></a></li><p>
+
+                <li>新しいスキーマ用に次の設定を入力します： 
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>scheme: </strong> <code>affablebean</code></li><p>
+                        <li><strong>Default Collation:</strong> <code>utf8 - utf8_unicode_ci</code></li><p>
+                        <li><strong>Comments:</strong> <code>Schema used with the AffableBean application</code></li><p>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/affablebean-schema.png"
+                        class="margin-around b-all" style="width: 688px" alt="Settings for 'affablebean' schema"
+                        title="Enter settings for 'affablebean' schema">
+
+                    <p>
+                    新しいスキーマが作成され、ワークベンチ画面の右側のCatalogタブの下に一覧表示されます。 
+                    <br><br>
+                    <p class="tips">文字セットと照合順序についての説明は、MySQLサーバマニュアルを参照してください：  <a href="http://dev.mysql.com/doc/refman/5.1/en/charset-general.html">9.1.1.
+                        一般的なキャラクタセットおよび照合順序</a>。
+                        </p></li><p>
+            </ol>
+
+
+            <h3 id="createEntities">エンティティの作成</h3>
+
+            <p>MySQL Workbench で新しいエンティティ関係図の作成を始めます。キャンバス上で、エンティティテーブルをドラッグアンドドロップすることができます。
+            </p>
+
+            <ol>
+                <li>Workbench で EER 図見出しの下で、「 Add Diagram (図を追加)」(<img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/add-diagram-btn.png"
+                    alt="Add Diagram icon">)アイコンをダブルクリックします。新しい EER 図が空のキャンバスに表示されます。
+
+                    <br><br>
+                    <span class="tips">' EER 'は Enhanced Entity-Relationship（拡張されたER(実体関連)）の略語です）。
+                    <br>
+                    </span>
+
+                    <br>
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench-empty-canvas.png"
+                        rel="lytebox" title="Use Workbench to create a new database schema">
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench-empty-canvas.png"
+                        class="margin-around b-all" style="width: 688px" alt="New EER Diagram displayed an empty canvas"
+                        title="Click Add Diagram to create a new, empty canvas"></a></li><p>
+
+                <li>左余白にある New Table(新しいテーブル)（<img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-new-table-icon.png"
+                    alt="New Table icon">   ）アイコンをクリック。キャンバス上にマウスを移動し再度クリックします。キャンバス上に新しいテーブルが表示されます。
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-new-entity-table.png"
+                        class="margin-around b-all" alt="New entity table displayed on canvas"
+                        title="Click the New Table icon to drag empty tables (entities) onto the canvas"></li><p>
+
+                <li>テーブルをダブルクリック。テーブルエディタが画面の下の方に開き、テーブルの設定を作成することができます。
+                    <br><br>
+                    <p class="notes"><strong>注：</strong>「テーブル」と「エンティティ」という用語は、この単元ではほぼ同義語です。データベーススキーマの観点からすると、「テーブルを作成している」となります。データモデリングの観点からすると、「エンティティを作成している」ということなります。同様に、後の節で、エンティティ<em>プロパティ</em>に相当する各テーブルを作成します。
+                    </p></li><p>
+
+                <li>テーブルエディタで、テーブルをユースケースから識別した一つ一つの名詞にリネームします。必要に応じてテーブルの目的をコメントに記載します。例： 
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>Name:</strong> <code>customer</code></li><p>
+                        <li><strong>Engine:</strong> <code>InnoDB</code></li><p>
+                        <li><strong>Comments:</strong> <code>maintains customer details(顧客の詳細を保持する)</code></li><p>
+                    </ul>
+
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-customer-table.png" rel="lytebox"
+                        title="Changes made in the Table editor are immediately updated elsewhere in the Workbench interface">
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-customer-table.png"
+                            class="margin-around b-all" alt="Customer table displayed on canvas" style="width:688px"
+                            title="Click to enlarge"></a>
+
+                    <p class="tips"> <a href="http://www.innodb.com/">InnoDB</a> エンジンは、このチュートリアルで利用する外部キーをサポートしています。後の節で、<a href="#forwardEngineer">データベースのフォワードエンジニアリング</a>を使うので、デフォルトのストレージエンジンをInnoDBに設定します（Workbenchを使って）。
+                    </p></li><p>
+
+                <li>ワークベンチの左側にある<strong>Catalog</strong> タブの下（バージョン5.1の場合は右側）で、<code>affablebean</code> &gt; <code>Tables</code> と展開します。<strong>customer</strong> テーブルが現れます。
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-catalog-tab.png"
+                        class="margin-around b-all" alt="Catalog tab displaying new customer table"
+                        title="Catalog tab automatically refreshes to display any changes to the schema">
+
+                    <p>さらに重要なことに注意して下さい。新しい  <code>customer</code> テーブルには、今、 <code>affablebean</code> スキーマが含まれています。新しく EER 図を作成した時に <code>affablebean</code> スキーマを選択したので、EER 図を変更したときはいつでも自動的にスキーマがバインドされます。
+                    </p></li><p>
+
+                <li> <a href="#nounList">上記のユースケースで識別した名詞</a>の残り毎に、手順２から４を繰り返しキャンバスにテーブルを追加してください。しかしながら、テーブルに名前を付ける前に、考慮すべき重要な事があります。特定のキーワードは、MySQL サーバで使われる SQL 方言にとって特別な意味を持つことがあります。残念ながら、「<code>order</code>」はそのうちの1つです。 （「<code>order</code>」は、MySQL で「 <code>ORDER BY</code> 」ステートメントで使用されます）。したがって、「 <code>order</code> 」の代わりに「<code>customer_order</code>」という名前を付けます。この段階では、キャンバス上へのテーブル配置の順番はありません。
+                    <br><br>
+                    <p class="tips">MySQLサーバーで使用される予約語のリストについては、公式マニュアルを参照してください： <a href="http://dev.mysql.com/doc/mysqld-version-reference/en/mysqld-version-reference-reservedwords-5-1.html">2.2.
+                      MySQL 5.1 での予約語</a>
+                      </p>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-entity-tables.png"
+                        class="margin-around b-all" alt="All tables displayed on canvas"
+                        title="Create all tables for affablebean schema"></li><p>
+            </ol>
+
+
+            <h3 id="addProperties">エンティティのプロパティを追加する</h3>
+
+            <p>これでキャンバスにエンティティを追加しました、次にそのプロパティを指定する必要があります。エンティティのプロパティは、データベーステーブルの列の定義に相当します。たとえば、  <code>customer</code> エンティティを検討します。 <code>AffableBean</code> アプリケーションに関していえば、「顧客の側面の何をデータベースに永続化するのか？」。  <a href="design.html#checkout">チェックアウトページ</a>の顧客の詳細フォームに集まった情報のすべてがそれなのか、同様に処理済みの注文に関していくつかのものがあるのではないか。などを検討する必要があります。
+            </p>
+
+            <p>プロパティを追加するときは、各プロパティに最も適切なデータ型を決定する必要があります。MySQL はいくつかのカテゴリのデータ型をいくつかサポートしています：数値型、日付と時刻型、および文字列は（文字）型。各カテゴリ別のデータ型の概要は公式マニュアルを参照してください。： <a href="http://dev.mysql.com/doc/refman/5.1/en/data-type-overview.html">10.1.データ型の概要</a>。
+            このチュートリアルでは、データ型はすでに決まっています。適切なデータ型を選択することは、データベースサーバーのストレージ最適化に重要な役割を果たしています。詳細については次を参照してください：
+            </p>
+
+            <ul style="margin: 0 0 0 -.7em">
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/storage-requirements.html">10.5. データ型とストレージ要件 10.5. Data Type Storage Requirements</a></li><p>
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/choosing-types.html">10.6 。列のために正しい型を選択する
+10.6. Choosing the Right Type for a Column</a></li><p>
+            </ul>
+
+            <p>ERD に存在するエンティティへプロパティを追加するためのMySQL Workbenchの使い方、を以下の手順に説明します。初期設計段階のほとんどは、エンティティのプロパティを決定することに費やされます。決定するには、解決する必要があるビジネス上の問題を慎重に検討する必要がありますし、解析にも時間を必要としますし、同様にクライアントとの数多くの協議を必要とするでしょう。
+            </p>
+
+            <ol>
+                <li><code>customer</code> テーブル見出しをダブルクリックします。Workbench のテーブルエディターが立ち上がります。
+                </li><p>
+
+                <li>テーブルエディタで、Columnsタブをクリックします。表示されたテーブル内をクリックして、最初の列を編集します。以下を入力してください：
+                <p>
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">PK (Primary Key)</th>
+                                <th class="tblheader" scope="col">NN (Not Null)</th>
+                                <th class="tblheader" scope="col">UN (Unsigned)</th>
+                                <th class="tblheader" scope="col">AI (Autoincrement)</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>id</code></td>
+                                <td class="tbltd1"><code>INT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/customer-id-column.png"
+                        class="margin-around b-all" style="width:688px" alt="Customer entity's id column specified"
+                        title="Click to edit table columns in the Table editor"></li><p>
+
+                <li>引き続き、<code>customer</code> テーブルで作業し、以下の <code>VARCHAR</code> 列を追加します。これらの列は見ればすぐわかるようにしておくべきです。
+                Affable Bean ビジネスが顧客の注文を処理し、お客様のアドレスに食料品の出荷を送信するためにキャプチャされる必要があるデータを表しています。 
+                    <br><br>
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">NN (Not Null)</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>name</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>email</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>phone</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>address</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>city_region</code></td>
+                                <td class="tbltd1"><code>VARCHAR(2)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>cc_number</code></td>
+                                <td class="tbltd1"><code>VARCHAR(19)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <br>
+                    <span class="tips"><code>VARCHAR</code> データ型の説明については、MySQL リファレンスマニュアルを参照してください： <a href="http://dev.mysql.com/doc/refman/5.1/en/char.html">10.4.1.  CHARとVARCHAR型</a>。
+                    </span>
+
+                    <br><br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/customer-varchar-columns.png"
+                        class="margin-around b-all" alt="Customer entity's varchar columns specified"
+                        title="Edit inline to add columns to customer table"></li><p>
+
+                <li>キャンバス上で選択した <code>customer</code> テーブルで、「Arrange」>「Reset Object Size」を選び、テーブルのサイズを変更します。そうすれば、キャンバス上ですべての列が見えるようなります。インデックス行をクリックして、任意のテーブルのインデックスも表示されるようにします。（これには主キーと外部キーも含まれます。テーブル間のリレーションシップの作成をする場合に便利です。後の方で演習します）。 
+                
+                    <br><br>
+                    終了時に、<code>customer</code> エンティティ(実態)は次のように見えます。
+                    <br><br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/customer-table.png"
+                        class="margin-around" alt="'customer' table displayed on EER canvas with columns"
+                        title="'customer' table on EER canvas displays columns"></li><p>
+
+                <li>上記の手順に従って、残りのテーブル列を作成します。
+                <p>
+
+                    <h4>categoryカテゴリ</h4>
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">PK</th>
+                                <th class="tblheader" scope="col">NN</th>
+                                <th class="tblheader" scope="col">UN</th>
+                                <th class="tblheader" scope="col">AI</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>id</code></td>
+                                <td class="tbltd1"><code>TINYINT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>name</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>customer_order</h4>
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">PK</th>
+                                <th class="tblheader" scope="col">NN</th>
+                                <th class="tblheader" scope="col">UN</th>
+                                <th class="tblheader" scope="col">AI</th>
+                                <th class="tblheader" scope="col">Default</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>id</code></td>
+                                <td class="tbltd1"><code>INT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>amount</code></td>
+                                <td class="tbltd1"><code>DECIMAL(6,2)</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>date_created</code></td>
+                                <td class="tbltd1"><code>TIMESTAMP</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1"><code>CURRENT_TIMESTAMP</code></td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>confirmation_number</code></td>
+                                <td class="tbltd1"><code>INT</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1"><code>&nbsp;</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                    <h4>product製品</h4>
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">PK</th>
+                                <th class="tblheader" scope="col">NN</th>
+                                <th class="tblheader" scope="col">UN</th>
+                                <th class="tblheader" scope="col">AI</th>
+                                <th class="tblheader" scope="col">Default</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>id</code></td>
+                                <td class="tbltd1"><code>INT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>name</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>price</code></td>
+                                <td class="tbltd1"><code>DECIMAL(5,2)</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>description</code></td>
+                                <td class="tbltd1"><code>TINYTEXT</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>last_update</code></td>
+                                <td class="tbltd1"><code>TIMESTAMP</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1"><code>CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <p class="tips"> <code>TIMESTAMP</code> データ型の詳細については、MySQL リファレンスマニュアルを参照してください： <a href="http://dev.mysql.com/doc/refman/5.1/en/timestamp.html">10.3.1.1. TIMESTAMP型のプロパティ</a>
+                    </p>
+
+                    <br>
+                   完了したら、キャンバスは次のようになります。 
+                    <br><br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/affablebean-tables.png"
+                        class="margin-around b-all" alt="'customer', 'category', 'product', and 'order' tables displayed on EER canvas"
+                        title="Use the Table editor to add columns to all tables on canvas"></li><p>
+            </ol>
+
+
+            <h3 id="identifyRelationships">関係の識別</h3>
+
+            <p>ここまでで、エンティティ関係図にはいくつかのエンティティがありますが、それらの間の関係が欠けています。我々が作成しているデータモデルでは、オブジェクトが他のオブジェクトを認識（すなわち他への参照）しているかどうかを示す必要があります。1つのオブジェクトが別のオブジェクトを参照している場合は、<em>unidirectional 一方向</em>の関係として知られています 。同様に、両方のオブジェクトがお互いを参照する場合は、<em>bidirectional双方向</em> な関係と呼ばれています。
+            </p>
+
+            <p>データベーススキーマでは外部キーに関連づけて参照します。テーブルをお互いにリンクさせることを始めるときには、テーブルがリンクされていることを示すために、外部キーが新しい列として追加されることに注意しましょう。
+            </p>
+
+            <p>
+           一般に、ERDは情報の２つの他の要素を中継します： <em>cardinality 濃度</em>(つまり、multiplicity多重度）と<em>ordinality</em>  （つまり、optionality 随意選択性）。
+            このことについてはあとで、キャンバス上でエンティティ間の関係の追加を始めるときに説明します。ERDを完了するためには、基本的に２つ関係を作成する必要があります。一つは、<em>one-to-many 一対多</em>　の関係、もう一つは  <em>many-to-many 多対多</em>の関係を作成します。詳細は以下を参照してください。
+            </p>
+
+            <ul>
+                <li><a href="#oneToMany">１対多の関係を作成する</a></li><p>
+                <li><a href="#manyToMany">多対多の関係を作成する</a></li><p>
+            </ul>
+
+            <h4 id="oneToMany">1対多の関係を作成する</h4>
+
+            <p>ビジネス上の問題を考慮しながら、キャンバス上の4つのオブジェクトを調べます。次の２つの　<em>one-to-many　１対多</em> の関係があることに気づきます：
+            </p>
+
+            <ul>
+                <li>カテゴリには1つまたは複数の製品を含める必要がある</li><p>
+                <li>顧客が1つ以上の注文をすることがある</li><p>
+            </ul>
+
+            <p>これら２つの関係をER図で組み込みます。以下のステップで必要となる4つのエンティティが入っている MySQL Workbench プロジェクトのコピーをダウンロードすることができます： <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Faffablebean.mwb">affablebean.mwb</a>。
+            </p>
+
+            <ol>
+                <li>左余白で、「1:n Non-Identifying Relationship（1：n 非依存関係）」(
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/one-many-btn.png"
+                    class="b-all" alt="1:n Non-Identifying Relationship button"> )ボタンをクリックします。これにより、 <em>one-to-many １対多</em>の関係を作成することができます。 
+                    </li><p>
+
+                <li><code>product</code> テーブルをクリックし、<code>category</code> テーブルをクリックします。最初にクリックしたテーブルに２番目のテーブルを参照するための外部キーが入ります。ここでは、categoryを参照することができる(<code>category</code> への参照が入った）<code>product</code> テーブルが欲しいのです。下の画像を参照してください。新しい列 <code>category_id</code> が <code>product</code> テーブルに追加されています。外部キーのインデックスつまり  <code>fk_product_category</code> がテーブルのインデックスに追加されています。 
+                    <br><br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/product-category-relationship.png"
+                        class="margin-around b-all" alt="'Product-category relationship displayed on EER canvas"
+                        title="A one-to-many relationship is defined between the category and product objects">
+
+                    <br><br>
+                    外部キーは、外部キーが参照する列と同じデータ型がである必要があります。
+                    注。<code>category</code>  テーブルの主キーと合わせるので、 <code>category_id</code> は <code>TINYINT</code> 型となります。
+                    
+                    <br><br>
+                    <span class="tips">このチュートリアルのエンティティ関係図では、<a href="http://en.wikipedia.org/wiki/Entity-relationship_model#Crow.27s_Foot_Notation">Crow's
+                        Foot クローの足</a> 表記を使用しています。Workbenchで、「モデル」＞「関係表記」を選択すれば表記法を変更することができます。
+                        </span></li><p>
+
+                <li>relationship 関係をダブルクリック（すなわち、２つのエンティティ間の破線クリックします）。 Relationship editor関係エディタが、画面の下部領域に表示されます。
+                </li><p>
+
+                <li>既定の見出しを<code>belongs to</code>に変更します 。言い換えれば、 「製品ｘは、カテゴリーyに属している」ということです。
+                注意してください。これは<em>unidirectional</em> 一方向関係です。： <code>product</code> 製品オブジェクトは自分が属するカテゴリへの参照を持っているが、関連づけられた<code>category</code> カテゴリーオブジェクトは自分のカテゴリに入っている製品への参照を全く持っていないのです。
+                </li><p>
+
+                <li>リレーションシップエディタで外部キータブをクリックします。次の表示を見てください。
+                <p>
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/foreign-key-tab.png"
+                         class="margin-around b-all" alt="'Relationship editor - Foreign Key tab"
+                         title="Use the Foreign Key tab to modify a relationship's ordinality and cardinality">
+
+                    <br><br>
+                    Foreign key(外部キー)タブで、関係を変更できます：
+                    <p>
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>cardinality カーディナリティ： </strong>2つのオブジェクト間の関係は <em>one-to-one 1対1</em>か <em>one-to-many 一対多</em>か
+                        </li><p>
+                            <small>
+                            訳者注：cardinality:カーディナリティとは値に対する種類の数のことです。濃度などと訳されます。例えば人の性別のカーディナリティは男女の2種類です。データベースの世界でのディナリティとは、エンティティ間の対応関係（「1対1」、「1対多」、「多対多」）のことを言います。
+                            </small><p>
+
+                        <li> <strong>ordinality（序数）： </strong>エンティティ間の参照があろうとなかろうと、モデルの整合性を維持するために必ず ordinarity が必要となります。（「Toggle the Mandatoryトグル必須」チェックボックスでいずれかの側にします）。 
+                        </li><p>
+
+                        <li><strong>タイプ： </strong>（つまり、<em>identifying特定</em>) か <em>non-identifying(非特定)</em>）。このような非特定関係は、以下の事実からきています。子オブジェクト（<code>product</code>製品）は、親（<code>category</code>カテゴリ） から個々に特定することができるという事実です。関係を特定するということは、子供が親なしでは一意に特定できないということを意味します。この例は後で、あなたが <code>product</code> と <code>order</code> テーブルの間に多対多の関係を作成するときにデモします。
+                        </li><p>
+                            
+                            <small>
+                            訳者注。1:n の Identifying Relationship（特定関係） とは、1つのビルと複数の部屋の関係。部屋はビルの中にあるので、ビルなしには部屋は成り立たない。依存しているといってもいいかも。<br>
+                            1:n の Non-Identifying Relationship（非特定関係） とは、1つのレンタルDVDと複数のレンタルユーザーの関係。ユーザーは別にDVDに依存しているわけではないが、1:nの関係は成り立つ。
+                            </small>
+                            <p>
+                            
+                    </ul></li><p>
+
+                <li>1:n Non-Identifying Relationship（1：n の非識別関係） (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/one-many-btn.png"
+                    class="b-all" alt="1:n Non-Identifying Relationship button"> )ボタンをクリックします。次の手順で、 <code>customer</code> と <code>customer_order</code> オブジェクトの間に<em>one-to-many</em> 1対多 の関係を作成します。 
+                    </li><p>
+
+                <li>最初に <code>order</code> テーブル（このテーブルには外部キーが入っています）をクリックします。次に <code>customer</code> テーブルをクリックします。これで、この２つの間に関係が作られます。
+                </li><p>
+
+                <li>2つのテーブル間のリンクをクリックすると、関係エディタで表示されるが、既定のキャプションを「<code>is placed by</code>配置される」に変更する 。関係は、今、「顧客注文×は　顧客yに配置される」と読めます。
+                    <br><br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/order-customer-relationship.png"
+                        class="margin-around b-all" alt="'Order-customer relationship displayed on EER canvas"
+                        title="A one-to-many relationship is defined between the customer and order objects">
+
+                    <br><br>
+                    <p class="tips">キャンバス上にテーブルをドラッグアンドドロップして、モデルのための最も理にかなっ所に置くことができます。上の画像では、 <code>order</code> テーブルを <code>customer</code> の左に移動しています。
+                    </p>
+                </li><p>
+            </ol>
+
+
+            <h4 id="manyToMany">多対多の関係を作成する</h4>
+
+            <p> <em>Many-to-many</em>多対多 の関係は、関係する双方が、関連するオブジェクトに対して多くの参照を持つことができます。たとえば、Affable Bean（愛想のいいビーン）事業は、桜のアイスクリーム、ソーセージロール、またはアボカドスフレなど、複数のカテゴリの中に表示される可能性がある製品を提供している場合を想像してください。<code>product</code> 製品 と <code>category</code> カテゴリ間の <em>many-to-many</em> 多対多の 関係を含めて、データモデルを説明する必要があります。また、カテゴリは複数の製品を含んでおり、製品は複数のカテゴリに属することができます。
+            </p>
+
+            <p>データベース内で <em>many-to-many</em>多対多 の関係を実装するためには、その関係を２つの関係を <em>one-to-many</em> 一対多 の関係にブレークダウンする必要があります 。そうするには、２つの元のテーブルの主キーが入った３番目のテーブルを作成します。先に述べた <code>product</code> - <code>category</code> の関係は以下のデータモデルのように見えるかもしれません。
+            </p>
+
+            <div class="indent">
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/many-to-many.png"
+                    class="margin-around b-all" alt="'Product-category many-to-many relationship displayed on EER canvas"
+                    title="A many-to-many relationship is depicted as two one-to-many relationships">
+            </div>
+
+            <p>今、どのようにアプリケーションが顧客の注文を保持するかを検討します。 <code>customer_order</code> エンティティはすでに必要なプロパティが含まれています。プロパティには、作成された日付、確認番号、金額、注文を発行した顧客への参照があります。
+            しかし、現在の所、注文にある製品の指示またその数量が全くありません。<code>customer_order</code> と <code>product</code> の間に 多対多 の関係を作成することによってこの問題を解決することができます。この方法では、どの製品が与えられた注文にあるのかを決めるために、アプリケーションのビジネスロジックは、<em>many-to-many</em> 多対多の関係から生じる新しいテーブルに問い合わせることができますし、 <code>order_id</code> に一致するすべてのレコードを検索することができます。顧客はショッピングカートに製品の数量を指定できるので、我々は<code>quantity</code> 数量の列をテーブルに追加することもできます 。
+            </p>
+
+            <ol>
+                <li>左余白で、[n:m Identifying Relationship（ n：m 関係の特定）]（<img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/many-many-btn.png"
+                    class="b-all" alt="n:m Identifying Relationship button"> ）ボタンを押します。これにより、あなたは  <em>many-to-many</em> 多対多 の関係を作成することができます 。 
+                    </li><p>
+
+                <li><code>customer_order</code> テーブルをクリックし、 <code>product</code> テーブルをクリック。新しいテーブルが現れるので、<code>customer_order_has_product</code> と名前をつけます。 
+                    <br><br>
+                    <p class="tips">「 <em>identifying relationship</em>（関係を特定する） 」を思い出して下さい、つまり、子供は親なしに一意に識別することはできないということです。特定関係の場合は、Workbench キャンバス上の2つのテーブル間のリンクが実線で表示されます。ここでは、  <code>customer_order_has_product</code> テーブルは、２つの親テーブル（<code>customer_order</code> と <code>product</code>）と特定の関係を作ります。<code>customer_order_has_product</code> テーブルに含まれているレコードは 、それが存在するために、両方のテーブルからの参照を必要とします。
+                    </p></li><p>
+
+                <li>下図にしたがってテーブルをアレンジします。 <em>many-to-many</em> 多対多 の関係は以下で強調表示されています。 
+                    <p>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/many-to-many-order-product.png"
+                        class="margin-around b-all" alt="ERD containing a many-to-many relationship"
+                        title="The 'customer_order_has_product' table contains two foreign keys to the order and product tables">
+
+                    <br>
+                    新しい <code>customer_order_has_product</code> テーブルには、２つの外部キーが含まれています。 <code>fk_customer_order_has_product_customer_order</code> と <code>fk_customer_order_has_product_product</code> です。それぞれ <code>customer_order</code> と <code>product</code> テーブルの主キーを参照しています。これら2つの外部キーは、<code>customer_order_has_product</code> テーブルの複合主キーを形成します。
+                    </li><p>
+
+                <li>新しい <code>customer_order_has_product</code> テーブルの名前を、'<code>ordered_product</code>' に変更します。<code>customer_order_has_product</code> テーブルをダブルクリックし、テーブルエディタを開きます。[名前]フィールドに <code>ordered_product</code> と入力してください。 
+                </li><p>
+
+                <li>外部キーのインデックスを新しいテーブル名に対応した名前に変更します。「 <code>ordered_product</code>」テーブルエディターで、「Foreign Keys 外部キー」タブをクリックします。次に、両方の外部キーのエントリをクリックして、「<code>customer_order_has_product</code>」を「<code>ordered_product</code>」に変更します。完了したとき、２つのエントリを読んでください： 
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><code>fk_<strong>ordered_product</strong>_customer_order</code></li><p>
+                        <li><code>fk_<strong>ordered_product</strong>_product</code></li><p>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/ordered-product-foreign-key.png"
+                        title="Rename the foreign key indexes under the Foreign Keys tab in the Table editor"
+                        class="margin-around b-all" alt="Foreign Keys tab in Table editor"></li><p>
+
+                <li>2つのオブジェクトの関の行をダブルクリックします。Relationship editor(関係エディタ)で既定のcaptions(見出し)を削除します。
+                </li><p>
+
+                <li><code>ordered_product</code> テーブルに、<code>quantity</code> 列を作成します。これを行うには、「<code>ordered_product</code>」 テーブルエディタの [Columns] タブをクリックし、以下の情報を入力します。
+                <p>
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">NN (Not Null)</th>
+                                <th class="tblheader" scope="col">UN (Unsigned)</th>
+                                <th class="tblheader" scope="col">Default</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>quantity</code></td>
+                                <td class="tbltd1"><code>SMALLINT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1"><code>1</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/quantity-column.png"
+                         class="margin-around b-all" alt="Table editor - 'order_has_product' table"
+                         title="Add a 'quantity' column to the 'order_has_product' table">
+                </li><p>
+            </ol>
+
+            <p>現在、 ERD（エンティティ関係図）を完了したところです。この図は <code>AffableBean</code> アプリケーションのデータモデルを表しています。後で説明しますが、あなたが作成した JPA エンティティクラスは、データモデルにあるエンティティから派生されたものです。
+            </p>
+
+            <div class="indent">
+              <div class="indent">
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/affablebean-erd.png"
+                     class="margin-around b-all" alt="Complete AffableBean ERD"
+                     title="ERD for the AffableBean application">
+              </div>
+            </div>
+
+            <p class="tips">View &gt; Toggle Grid を選び、キャンバスのグリッドを無効にします。また、左の余白にあるNew Text Object(新しいテキストオブジェクト)ボタン（<img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/text-object-btn.png"
+                alt="New Text Object button"> ）を使用して、図の注釈も作成することができます。
+                </p>
+        </div>
+
+
+        <br>
+        <h2 id="forwardEngineer">データベースのフォワードエンジニアリング(Forward-Engineering)</h2>
+
+        <p>MySQLデータベースにあなたが作成したデータモデルを組み込むには、Workbench で図を forward-engineering して、SQL スクリプト（より正確にいえば、DDL スクリプト）に落とし込んでスキーマを生成することができます。あなたが使用しているウィザードから、すぐにデータベースサーバー上でスクリプト(定型手続)を実行することができます。
+        </p>
+
+        <p><strong>重要： </strong>MySQL データベースサーバが動作していることを確認してください。データベースのセットアップおよび実行手順はここにあります。<a href="setup-dev-environ.html#communicate">開発環境の設定：データベースサーバーとの接続</a>。
+        </p>
+
+        <ol>
+            <li>Workbench で使うデフォルトのストレージエンジンにはInnoDBを設定します。  Tools &gt;
+                Options （ Mac 上で、MySQLWorkbench &gt; Preferences ）で Workbench の環境設定ウィンドウを開きます。MySQL タブをクリックし、デフォルトのストレージエンジンとして InnoDB を選択します。 
+                <p>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/inno-db.png"
+                     class="margin-around b-all" alt="Workbench Preferences window - MySQL tab"
+                     title="Set the default storage engine to InnoDB" style="width:688px">
+
+                <br><br>
+                <a href="http://www.innodb.com/">InnoDB</a> エンジンは、このチュートリアルで利用されている foreign key (外部キー) をサポートしています。 
+                </li><p>
+
+            <li>「OK」をクリックしてPreferences (設定)ウィンドウを終了します。</li><p>
+
+            <li>メインメニューから、Database &gt; Forward Engineer　を選択します。 
+            </li><p>
+
+            <li>[Forward Engineer to Database」ウィザードの最初のパネルで、「<code>DROP Objects Before Each CREATE Object</code>」と「 <code>Generate
+                DROP SCHEMA</code> 」を選択します。
+                <p>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/forward-engineer-wzd.png"
+                     class="margin-around b-all" style="width:688px" alt="Forward Engineer wizard"
+                     title="Enable DROP options to be generated in the SQL script">
+
+                <br><br>
+                これらの <code>DROP</code> オプションは、プロトタイプには便利なものです。もしあなたが、スキーマまたはスキーマテーブルを変更したい場合には、スクリプトは、それらを再作成する前に、最初にこれらの item を削除します（つまり、<em>drop</em>）。 （もし、既にMySQLサーバーにある item を作成しようとすると、サーバーはエラーフラグを立てます。
+                </li><p>
+
+            <li>「Continue 次へ」をクリックします。Forward Engineer パネルの「 Select Objects」で「Export MySQL Table Objects」オプションがデフォルトで設定されていることに注意します。「 Show Filter 」ボタンをクリックします。 <code>affablebean</code>スキーマの中に５つのテーブル全てが含まれていることに注意してください。
+            </li><p>
+
+            <li>「Continue 次へ」 をクリックします。「 Review SQL Script 」パネルで、データモデルに基づいて生成された SQL スクリプトを調べることができます。必要に応じて、「 Save to File 」をクリックして、コンピュータにスクリプトを保存します。
+                <br><br>
+                <p class="notes"><strong>注：</strong>　スクリプトを調べるには、ファイルの先頭に次の変数を設定する必要があります：
+                </p>
+
+                <div class="indent">
+                    <pre class="examplecode" style="width:660px">
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';</pre>
+
+
+                    <p>「これらの変数は何？」そして「スクリプトの中での目的は何か？」の説明については、公式の Workbench マニュアルを参照してください：   <a href="http://dev.mysql.com/doc/workbench/en/workbench-faq.html">第11章。 MySQL Workbench FAQ</a>。
+                    </p></div></li><p>
+
+            <li>「 Continue 」をクリックします。「 Connection Options 」パネルで、実行中のMySQLサーバに接続するためのパラメータを設定します。 
+            <p>
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li><strong>Hostname:</strong> <code>127.0.0.1</code> (<em>or <code>localhost</code></em>)</li><p>
+                    <li><strong>Port:</strong> <code>3306</code></li><p>
+                    <li><strong>Username:</strong> <code>root</code></li><p>
+                    <li><strong>Password:</strong> <code>nbuser</code></li><p>
+                </ul>
+
+                （これから設定するパラメータは、以下の形式に対応しています。 <a href="setup-dev-environ.html#communicate">開発環境の設定：データベースサーバーとの接続</a>）。 
+                </li><p>
+
+            <li>「 Execute 」をクリック。ウィザードの最後のパネルで、「the wizard was able to connect to and execute the script successfully　ウィザードは正常にスクリプトを実行し、接続することができた。」という確認を受けとります。
+            </li><p>
+
+            <li>「 Close　閉じる」をクリックして、ウィザードを終了します。 
+            </li><p>
+        </ol>
+
+        <p>今、<code>affablebean</code> スキーマが作成され、スキーマはMySQLサーバ上にあります。次のステップでは、 IDEから、スキーマに接続、または<em> データベース</em>へ接続します。この段階で、「スキーマとデータベースの違いは何？」と疑問を抱くかもしれません。実際に、 MySQLコマンド「 <code>CREATE SCHEMA</code> 」と「<code>CREATE
+            DATABASE</code>」は同義語です。（<a href="http://dev.mysql.com/doc/refman/5.1/en/create-database.html">12.1.10.
+            CREATE DATABASE 構文</a>を参照してください ）。
+            <br>
+            スキーマをデータベースの内容を定義する設計図だと考えてください。データベースの内容には、テーブル、リレーションシップ、ビューなどがあります。データベースはスキーマ構造に合わせた方法でデータを格納します。これは、Javaクラスやオブジェクトのオブジェクト指向の世界に似ています。クラスはオブジェクトを定義します。しかしプログラムが走るとオブジェクト（つまり、クラスのインスタンス）が作成され、管理され、最後には、プログラムが破棄を実行してオブジェクトは破棄されます。
+            </p>
+        <br>
+        <h2 id="connectDB">IDE からデータベースへの接続</h2>
+
+        <p>今、<code>affablebean</code> スキーマが MySQL サーバ にあります。IDE の「 ServicesServices 」ウィンドウから ERD で作成したテーブルが表示できることを確認します。
+        </p>
+
+        <p><strong>重要： </strong> <a href="setup-dev-environ.html#communicate">開発環境：データベースサーバーとの通信設定</a>、に概説されている手順を理解しておいてください。ここの見出しには、MySQL データベースサーバの実行方法、IDE への登録方法、データベースインスタンスの作成方法が説明してあります。そして、 IDE  からインスタンスへの接続を作成する方法が説明してあります。
+        </p>
+
+        <ol>
+            <li>IDE で、「 Services サービス」ウィンドウを開き（ Ctrl-5 。&#8984;-5  Macの場合）、データベース接続ノード（<img src="../../../../images_www/articles/73/javaee/ecommerce/common/db-connection-node.png"
+                alt="Database connection node"> ）へマウスを置きます。<a href="setup-dev-environ.html#communicate">前の単元</a>で作成した <code>affablebean</code> データベースインスタンスの場所です。 
+                </li><p>
+
+            <li> <code>affablebean</code>  データベースへの接続をリフレッシュします。そのために、接続ノードを右クリックし Refresh リフレッシュを選択します。 
+            </li><p>
+
+            <li>任意のテーブルノードを展開します。現在、スキーマで定義済みの５つのテーブルを見ることができます。
+            </li><p>
+
+            <li>任意のテーブルノードを展開します。各テーブルには MySQL ワークベンチの作業で作成した列とインデックスがそこに含まれています。 
+            <p>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/services-window-schema.png"
+                     class="margin-around b-all" alt="Forward Engineer wizard"
+                     title="Update the database connection to view schema tables"></li><p>
+        </ol>
+
+        <p>IDE は今  <code>AffableBean</code> アプリケーション用に作成したスキーマを使用して、データベースに接続されています。 IDE から、今あなたがデータベースに作成したテーブルのデータをどれでも見ることができます。同様に、直接、データの変更、追加、削除ができます。データベースにサンプルデータを追加した後で、 <a href="connect-db.html">アプリケーションをデータベースに接続する</a>の中でこれらのオプションのいくつかを探索します。
+        </p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Designing the Data Model">ご意見をお寄せ下さい</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">参照</h2>
+
+        <div class="indent">
+            <h3>NetBeans リソース</h3>
+
+            <ul>
+                <li><a href="../../../articles/mysql.html">MySQL と NetBeans IDE</a></li><p>
+                <li><a href="../../ide/mysql_ja.html">MySQL データベースへの接続 </a></li><p>
+                <li><a href="../../web/mysql-webapp_ja.html">MySQL データベースを使用した単純な Web アプリケーションの作成</a></li><p>
+                <li><a href="../../ide/database-improvements-screencast.html">スクリーンキャスト：NetBeans 6.5 でのデータベースサポートの改善</a></li><p>
+            </ul>
+
+            <h3>MySQL とデータモデリング リソース</h3>
+
+            <ul>
+                <li><a href="http://wb.mysql.com/">MySQL Workbench ブログ</a></li><p>
+                <li><a href="http://forums.mysql.com/index.php?151">MySQL Workbench フォーラム</a></li><p>
+                <li><a href="http://dev.mysql.com/librarian/">MySQL コミュニティ ライブラリー</a></li><p>
+                <li><a href="http://dev.mysql.com/doc/workbench/en/index.html">MySQL Workbench リファレンスマニュアル</a></li><p>
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/">MySQL 5.1 リファレンスマニュアル</a></li><p>
+                <li><a href="http://en.wikipedia.org/wiki/Innodb">InnoDB</a> [Wikipedia]</li><p>
+                <li><a href="http://en.wikipedia.org/wiki/Database_model">データベースモデル</a> [Wikipedia]</li><p>
+                <li><a href="http://en.wikipedia.org/wiki/Data_modeling">データモデリング</a> [Wikipedia]</li><p>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>引用文献</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> データ定義言語（DDL）は、SQL 言語のサブセットであり、 <code>CREATE TABLE</code>、 <code>DROP</code>、および <code>ALTER</code> のようなステートメントを含んでいます。その他のサブセットには、データ操作言語（DML） 、およびデータ制御言語（DCL）も含まれています。詳細については、以下を参照してください。<a href="http://en.wikipedia.org/wiki/Data_Definition_Language">Data
+                Definition Language データ定義言語</a> [Wikipedia]。
+                </li><p>
+        </ol>
+
+    
+</div>
+
+	</div>
+	</body>
+</html>

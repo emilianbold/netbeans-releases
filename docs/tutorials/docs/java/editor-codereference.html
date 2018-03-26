@@ -1,0 +1,972 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Code Assistance in the NetBeans IDE Java Editor: A Reference Guide to NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+        <meta content="?and? 0.5.5" name="GENERATOR">
+        <style type="text/css">
+            .floatright {
+                float: right;
+                margin: 0 0 10px 10px;
+                border: 1px solid #666;
+                padding: 2px;
+            }
+            .repo {
+                padding-top: .7em;
+                line-height: 1.2em;
+            }
+
+            .style1 {font-style: italic}
+        </style>
+    </head>
+
+    <body>      
+
+        <h1>
+            <!-- Begin Content Area -->
+            <a name="top"></a>
+            Code Assistance in the NetBeans IDE Java Editor: A Reference Guide
+        </h1>
+        <p>The  purpose of any integrated development environment (IDE) is to maximize productivity and support seamless development from a single tool. This reference document describes useful code assistance features, customization options, and navigation capabilities of the NetBeans IDE's Java Editor.</p>
+        <p><span class="tips">Together with this document, you
+                are advised to read <a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/working_nbeans.htm#A1151635">2.6 Understanding the Source Editor Features</a> 
+                in the free Oracle book <a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/toc.htm">"Developing Applications with NetBeans IDE 8.0"</a>. </span></p>
+
+        <h3>Contents</h3>
+        <img src="../../../images_www/articles/80/netbeans-stamp.png" class="stamp" alt="Content on this page applies to NetBeans IDE 8.0" title="Content on this page applies to NetBeans IDE 8.0">
+        <ul id="collapsableList">
+            <li><a href="#codecompletion">Smart Code Completion</a>
+                <ul>
+                    <li><a href="#invoke">Invoking Code Completion</a></li>
+                    <li><a href="#smart">Smart Suggestions at the Top</a></li>
+                    <li><a href="#camelcase">Camel Case Completion</a></li>
+                    <li><a href="#keywords">Completing Keywords</a></li>
+                    <li><a href="#names">Suggesting Names for Variables and Fields</a> </li>
+                    <li><a href="#parameters">Suggesting Parameters    </a></li>
+                    <li><a href="#prefix">Common Prefix Completion</a></li>
+                    <li><a href="#subword">Subword Completion</a></li>
+                    <li><a href="#chain">Chain Completion</a></li>
+                    <li><a href="#exclude">Excluding Items from Completion</a></li>
+                    <li><a href="#static">Completion of Static Imports</a></li>
+                    <li><a href="#jpa">JPA Completion</a></li>
+                </ul>
+            </li>
+            <li><a href="#imports">Managing Imports</a></li>
+            <li><a href="#generatecode">Generating Code</a></li>
+            <li><a href="#codetemplates">Using Code Templates </a></li>
+            <li><a href="#javadoc">Working with Javadoc</a>
+                <ul>
+                    <li><a href="#display">Displaying Javadoc</a> </li>
+                    <li> <a href="#create">Creating Javadoc Stubs</a></li>
+                    <li> <a href="#hints">Using Javadoc Hints</a></li>
+                    <li><a href="#usecc"> Using Code Completion for Javadoc Tags </a></li>
+                    <li><a href="#generate-javadoc">Generating Javadoc</a></li>
+                    <li><a href="#analyze-javadoc">Analyzing Javadoc</a>  </li>
+                </ul>
+            </li>
+            <li><a href="#hints">Using Hints</a>
+                <ul>
+                    <li><a href="#hints-tofix">Using Hints to Fix Code</a></li>
+                    <li><a href="#hints-customize">Customizing Hints</a></li>
+                    <li><a href="#surround">Surround With...</a> </li>
+                </ul>
+            </li>
+
+            <li><a href="#editor-features">General Editor Features</a>
+                <ul>
+                    <li><a href="#formatting">Code Formatting </a></li>
+                    <li><a href="#braces">Inserting and Highlighting Braces, Brackets, and Quotes</a></li>
+                    <li><a href="#codefolding">Code Folding</a> </li>
+                    <li><a href="#customizeshortcuts">Customizing Keyboard Shortcuts</a>  </li>
+                </ul>
+            </li>
+            <li><a href="#coloring">Semantic Coloring and Highlights</a>
+                <ul>
+                    <li><a href="#customizecolors">Customizing Colors </a></li>
+                    <li><a href="#example">Coloring Example</a></li>
+                    <li><a href="#highlights">Using Highlights</a> </li>
+                </ul>
+            </li>
+            <li><a href="#navigation">Navigation</a> 
+                <ul>
+                    <li><a href="#stripes">Error Stripes </a></li>
+                    <li><a href="#goto">Navigating From the Editor: Go To...</a></li>
+                    <li><a href="#lastedit">Jumping to Last Edit</a></li>
+                    <li><a href="#switchfiles">Switching Between Files</a></li>
+                    <li><a href="#bookmarks">Using Bookmarks</a></li>
+                    <li><a href="#navigator">Using the Navigator</a> </li>
+                </ul>
+            </li>
+            <li><a href="#appendixa">Appendix A: Icons in the Code Completion Window</a></li>
+        </ul>
+
+        <p><b>To complete this tutorial, you need the software and resources listed in the following
+                table.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">version 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or above </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><a name="codecompletion"></a>Smart Code Completion</h2>
+        <p>The NetBeans IDE's Java Editor  helps you quickly complete and generate code through the &quot;smart&quot; code completion feature. In a general sense, code completion is very useful when you want to fill in the missing code, look at the options available in the context of your application, and generate blocks of code when needed. See below for examples of how to use code completion. </p>
+        <h3><a name="invoke"></a>Invoking Code Completion</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="43%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/codecompletion3.png" alt="Code completion box" >  </td>
+                <td width="57%" class="valign-top"><p>Press <tt>Ctrl-Space</tt> (or choose Source &gt; Complete Code from the main menu) to open the code completion box. While you are typing, the list of suggestions shortens. The suggestions  listed include those imported in your source file and symbols from the <tt>java.lang</tt> package. </p>
+                    <p>To customize  the code completion settings, select Tools &gt; Options &gt; Editor &gt; Code Completion. </p>
+                    <p>For example, you can set the code completion window to pop up either automatically or only on an as-needed basis. On the Code Completion tab, select the Auto Popup Completion Window checkbox to invoke the code completion window automatically when you are typing certain characters. The default character is &quot;<tt>.</tt>&quot;, but you can add your own characters. </p>
+                    <p>To add characters that  invoke the code completion window, select Java from the Language drop-down list and type your characters in the Auto Popup Triggers for Java field. The code completion window will pop up every time you  type the specified characters.</p>
+                    <p>When the Auto Popup Completion Window checkbox is disabled, you need to press <tt>Ctrl-Space</tt> each time you want to use code completion. </p>
+                    <p>Instead of using <tt>Ctrl-Space</tt> for code completion, you can use "hippie completion" instead. Hippie completion
+                     analyzes text in the visible scope and suggests to complete a word with a keyword, class name, method, or variable.
+                     Press <tt>Ctrl-K</tt> and the editor automatically completes the word you're typing for you, 
+                     using hippie completion, by searching in your current document (and if not found) in other documents.</p>
+                </td>
+            </tr>
+            <tr>
+                <td width="43%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/codecompletion4.png" alt="Code completion box" >  </td>
+                <td width="57%" class="valign-top"><p>The first time <tt>Ctrl-Space</tt> is pressed, only items matching
+                        the type, in this example an <tt>int</tt>, are shown. Press <tt>Ctrl-Space</tt> a second time, 
+                        that is, press <tt>Ctrl-Space</tt> twice, and <i>all</i> the available items are shown, regardless
+                        of whether they match the provided type, as shown in the example on the left.</p>
+                </td>
+            </tr>
+        </table>
+
+
+        <h3><a name="smart"></a>Smart Suggestions at the Top </h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="45%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/smartcompletion1.png" alt="Code completion box with smart suggestions" >  </td>
+                <td width="55%" class="valign-top"><p>In NetBeans IDE, Java code completion is &quot;smart,&quot; which means that the suggestions that are the most relevant for the context of your code are displayed at the top, above the black line in the code completion window. </p>
+                    <p>In the example on the left, the editor  suggests inserting the <tt>LinkedHashMap</tt> constructor from the <tt>java.util</tt> package. </p>
+                    <p>If the &quot;smart&quot; suggestions are not the ones you want to use, 
+                        press <tt>Ctrl-Space</tt> again to see the complete list, as shown above. </p></td>
+            </tr>
+        </table>
+        <h3><a name="camelcase"></a>Camel Case Completion</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="45%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/camelcase.png" alt="Completion via camel case" class="img-left">  </td>
+                <td width="55%" class="valign-top"><p>Instead of typing consecutive characters, and then calling code completion, you
+                    can type the initial capital letters of the word you're interested in. </p>
+                    <p>For example, type <tt>IE</tt>, press <tt>Ctrl-Space</tt>, and you will see a list of suggestions that match
+                        via camel case completion using the letter <tt>I</tt> and then the letter <tt>E</tt>.</p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="keywords"></a>Completing Keywords</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="45%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/keywords.png" alt="Completion of keywords" class="img-left">  </td>
+                <td width="55%" class="valign-top"><p>Use code completion (<tt>Ctrl-Space)</tt> to complete keywords in your code. The editor analyzes the context and suggests the most relevant keywords. </p>
+                    <p>In the example on the left, the <tt>ColorChooser</tt> class needs to extend the <tt>JPanel</tt> class. You can quickly add the keyword <tt>extends</tt> from the suggested items.</p>
+                </td>
+            </tr>
+        </table>
+
+        <h3><a name="names"></a>Suggesting Names for Variable and Fields </h3>
+        <table width="1216" class="full-width colapse">
+            <tr>
+                <td width="45%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/names.png" alt="Completion of names and fields"> </td>
+                <td width="55%" class="valign-top"><p>When you are adding a new field or a variable, use code completion (<tt>Ctrl-Space)</tt> to choose a name that matches its type. </p>
+                    <p>Type a prefix for the new name, press <tt>Ctrl-Space</tt> and select the name you want to use from the list of suggestions. </p></td>
+            </tr>
+        </table>
+
+
+        <h3><a name="parameters"></a>Suggesting Parameters</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="45%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/parameter.png" alt="Suggestions for parameter formats" > </td>
+                <td width="55%" class="valign-top"><p>The editor guesses on the parameters for variables, methods, or fields and displays the suggestions in a pop-up box. </p>
+                    <p>For example, when you select a method from the code completion window which has one or more arguments, the Editor highlights the first argument and displays a tooltip suggesting the format for this argument. To move to the next argument, press the <tt>Tab</tt> or <tt>Enter</tt> keys. </p>
+                    <p>You can invoke the tooltips with method parameters by pressing <tt>Ctrl-P</tt> (or Source &gt; Show Method Parameters) at any time. </p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="prefix"></a>Common Prefix Completion</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/prefixcompletion.png" alt="Completion of prefixes" > </td>
+                <td width="56%" class="valign-top"><p>You can use the <tt>Tab</tt> key to quickly fill in the most commonly used prefixes and single suggestions. </p>
+                    <p>To check out how this feature works, try typing the following:</p>
+                    <ol>
+                        <li>Type <tt>System.out.p</tt> and wait for code completion to show all fields and methods that start with &quot;p.&quot; All the suggestions will be related to &quot;print.&quot; </li>
+                        <li>Press the <tt>Tab</tt> key and the editor automatically fills in the &quot;print&quot;. You can continue and type &quot;l&quot; and, after pressing Tab, the &quot;println&quot; will be added. </li>
+                    </ol>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="subword"></a>Subword Completion</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/subcompletion.png" alt="Completion of prefixes" ></td>
+                <td width="56%" class="valign-top"><p>Sometimes you may not remember how an items starts, making
+                        it difficult to use code completion. Instead, to see all items that relate to
+                        listening to property changes, you can specify that subword completion should be enabled, so that
+                        you can use <tt>prop</tt> in code completion, to see all method calls that relate to property
+                        change listening.</p>
+                    <ol>
+                        <li>Select Tools &gt; Options &gt; Editor &gt; Code Completion.</li>
+                        <li>Check the Subword completion checkbox in the Editor | Code Completion tab in the Options window.</li>
+                        <li>Type part of the method you want to call, <tt>prop</tt> as shown here, and then call
+                            up code completion. Relevant subwords, all applicable to properties on the object, in this
+                            example, are displayed.</li>
+                    </ol>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="chain"></a>Chain Completion</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/chain.png" alt="Completion of prefixes" ></td>
+                <td width="56%" class="valign-top"><p>When you need to type a chain of commands, use smart code completion, that is,
+                        press <tt>Ctrl-Space</tt> twice, and available chains will be shown. The editor
+                        scans variables, fields, and methods, that are visible from the context, and it will then
+                        suggest a chain that satisfies the expected type.</p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="static"></a>Completion of Static Imports</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/static.png" alt="Completion of static imports" ></td>
+                <td width="56%" class="valign-top"><p>When you need to complete a statement while
+                        needing to make use of a static import statement, use smart code completion, that is,
+                        press <tt>Ctrl-Space</tt> twice, and available static import statements will be shown.</p>
+                    <p>If you would like static import statements to be added automatically when you complete static statements as described above,
+                        go to Tools &gt; Options &gt; Editor &gt; Formatting, select
+                    Java from the Language drop-down and Imports from the Category drop-down. Check the Prefer Static Imports checkbox.</p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="exclude"></a>Excluding Items from Completion</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/exclude2-small.png" alt="Completion of prefixes" ></td>
+                <td width="56%" class="valign-top"><p>Time is wasted when code completion returns classes that you seldom
+                        or never use. When you use smart code completion, that is, when you press <tt>Ctrl-Space</tt> twice,
+                        a lightbulb within the returned items lets you exclude items from code completion.</p>
+                </td>
+            </tr>
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/exclude.png" alt="Completion of prefixes" ></td>
+                <td width="56%" class="valign-top"><p>Either when "Configure excludes" is selected in code completion or 
+                        when you go to Tools &gt; Options &gt; Editor &gt; Code Completion, you can modify the exclusion rules
+                        you have defined.</p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="jpa"></a>JPA Completion</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/jpacompletion.png" alt="Completion of prefixes" ></td>
+                <td width="56%" class="valign-top"><p>When you are using the Java Persistence Annotation specification (JPA),
+                        you can complete SQL expressions in <tt>@NamedQuery</tt> statements via code completion.</p>
+                </td>
+            </tr>
+        </table>
+        <p>In the code completion window, icons are used to distinguish different members of the Java language. See <a href="#appendixa">Appendix A</a> at the end of this document to see the meanings of these icons. </p>
+        <a href="#top">top</a>
+        <h2><a name="imports"></a>Managing Imports</h2>
+        <p>There are several ways of how you can work with import statements. The IDE's Java Editor constantly checks your code for the correct use of import statements and immediately warns you when non-imported classes or unused import statements are detected.			</p>
+        <table class="full-width colapse">
+            <tr>
+                <td width="45%">
+                    <p><img src="../../../images_www/articles/80/java/editor-codereference/imports3.png" alt="Suggestions for an import statement" > </p>
+                    <p>&nbsp;</p></td>
+                <td width="55%" class="valign-top"><p>When a non-imported class is found, the <img src="../../../images_www/articles/80/java/editor-codereference/bulberror1.png" alt="Bulb error icon"> error mark appears in the IDE's lefthand margin (this margin is  also called the <em>glyph margin</em>). Click the error mark and choose whether to add the missing import or create this class in the current package. </p>
+                    <p>While you are typing, press <tt>Ctrl-Shift-I</tt> (or choose Source &gt; Fix Imports from the menu) to add all missing import statements at once.</p>
+                    <p>Press <tt>Alt-Shift-I</tt> to add an import only for the type at which the cursor is located.  </p>
+                    <p>&nbsp;</p>              </td>
+            </tr>
+            <tr>
+                <td width="45%">
+                    <img src="../../../images_www/articles/80/java/editor-codereference/imports2.png" alt="Automatic addition of import statements"> </td>
+                <td width="55%" class="valign-top"><p>When you select a class from the code completion window, the Editor automatically adds an import statement for it, so you do not need to worry about this. </p>
+                </td>
+            </tr>
+            <tr>
+                <td width="45%"><img src="../../../images_www/articles/80/java/editor-codereference/imports.png" alt="Automatic removal of unused imports"></td>
+                <td width="55%" class="valign-top"><p>If there are unused import statements in your code, press the  <img src="../../../images_www/articles/80/java/editor-codereference/bulberror.png" alt="Bulb warning icon">  warning mark in the Editor lefthand margin and choose either to remove one unused import or all unused imports.  In the Editor, unused imports are underlined (see the <a href="#coloring">Semantic Coloring</a> section for details).</p>
+                    <p>To quickly see if your code contains unused or missing imports, watch the error stripes in the righthand margin: orange stripes mark missing or unused imports.  </p></td>
+            </tr>
+            <tr>
+                <td width="45%"><a href="../../../images_www/articles/80/java/editor-codereference/onsave.png"><img src="../../../images_www/articles/80/java/editor-codereference/onsave-small.png" alt="Automatic removal of unused imports"></a></td>
+                <td width="55%" class="valign-top"><p>You can specify that whenever you save a file, all the
+                        unused imports should automatically be removed.</p>
+                    <p>Select Tools &gt; Options &gt; Editor &gt; On Save.</p>
+                    <p>Select Java from the Language drop-down.</p>
+                    <p>Check the Remove Unused Imports checkbox.</p>
+            </tr>
+        </table>
+        <p class="align-center"><a href="#top">top</a></p>
+        <h2><a name="generatecode"></a>Generating Code</h2>
+        <p>When working in the Java Editor, you can generate pieces of code in one of the two ways: by using code completion or from the  Code Generation dialog box. Let's take a closer look at simple examples of automatic code generation. </p>
+        <h3>Using the Code Generation Dialog Box </h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/codegeneration1.png" alt="Code generation from the Code Generation dialog box"></p>
+                    <p>&nbsp; </p></td>
+                <td width="56%" class="valign-top"><p>Press <tt>Alt-Insert</tt> (or choose Source &gt; Insert Code) anywhere in the Editor to insert a construct from the Code Generation box. The suggested list is adjusted to the current context.</p>
+                    <p>In the example on the left, we are going to generate a constructor for the <tt>ColorChooser</tt> class. Press <tt>Alt-Insert</tt>, select Constructor from the Code Generation box, and specify the fields that will be initialized by the constructor. The Editor will generate the constructor with the specified parameters.</p>
+                    <p>In the IDE's Java Editor, you can automatically generate various constructs and whole methods, override and delegate methods, add properties and more. </p>
+                </td>
+            </tr>
+        </table>
+        <h3>Using Code Completion </h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/codegeneration2.png" alt="Code generation from the Code Completion window"> </td>
+                <td width="56%" class="valign-top"><p>You can also generate code from the code completion window. In this example, we use the same piece of code as above to show how you can generate code from the code completion window.</p>
+                    <p>Press Ctrl-Space to open the code completion window and choose the following item: <tt>ColorChooser(String name, int number) - generate</tt>. The Editor generates a constructor with the specified parameters.</p>
+                    <p>In the code completion window, the constructors that can be automatically generated are marked with the <img src="../../../images_www/articles/80/java/editor-codereference/newconstructor.png" alt="Generate icon"> icon and the &quot;<tt>generate</tt>&quot; note. For more explanations of the icons and their meanings, see <a href="#appendixa">Appendix A</a>.</p></td>
+            </tr>
+        </table>
+        <p class="align-center"><a href="#top">top</a></p>
+        <h2><a name="codetemplates" id="codetemplates"></a>Code Templates</h2>
+        <p>A Code Template is a predefined piece of code that has an abbreviation associated with it. See the examples below that show how you can use code templates.</p>
+        <h3>Using  Code Templates</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/livetemplate.png" alt="Insertion of a template from the Code Completion window" ></p>
+                </td>
+                <td width="56%" class="valign-top"><p>Code templates are marked with the <img src="../../../images_www/articles/80/java/editor-codereference/codetemplateicon.png" alt="Live template icon" width="16" height="16"> icon in the code completion window. </p>
+                    <p>You can do one of the following:</p>
+                    <ul>
+                        <li>Select a template from the code completion window and press Enter or </li>
+                        <li>Type the abbreviation for this template and press the key that expands this template (by default, <tt>Tab</tt>). </li>
+                    </ul>
+                    <p>In the expanded template, editable parts are displayed as blue boxes. Use the <tt>Tab</tt> key to go through the parts that you need to edit. </p>                </td>
+            </tr>
+        </table>
+        <h3>Adding or Editing   Code Templates </h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="44%">
+                    <p class="align-center">
+                        <a href="../../../images_www/articles/80/java/editor-codereference/templateoptions.png" rel="lytebox"
+                           title="Customizing live templates">
+                            <img src="../../../images_www/articles/80/java/editor-codereference/templateoptions-small.png"
+                                 alt="Customizing live templates" border=1></a></p>
+                </td>
+                <td width="56%" class="valign-top"><p>To customize Code Templates:</p>
+                    <ol>
+                        <li>Choose Tools &gt; Options &gt; Editor &gt; Code Templates. </li>
+                        <li>From the Language drop down list, select Java (or whichever language you want to create a code template for). The list of abbreviations and associated templates is displayed. </li>
+                        <li>Use the New and Remove buttons to add or remove templates in the list. To edit an existing template, select the template and edit the code in the Expanded Text field below the list.</li>
+                        <li>Choose the key which will be used to expand the templates. The default key is <tt>Tab</tt>. </li>
+                    </ol>                  
+                    <p>See <a href="http://wiki.netbeans.org/Java_EditorUsersGuide#How_to_use_Code_Templates" target="_blank">this document</a> to know more about the syntax for writing new Code Templates. </p>
+                    <p>See also <a href="../php/code-templates.html">Code Templates in NetBeans IDE for PHP</a>.</p></td>
+            </tr>
+        </table>
+        <p><a href="#top">top</a>    </p>
+        <h2><a name="javadoc"></a>Working with Javadoc</h2>
+        <p>Use the following features that facilitate working with Javadoc  for your code. </p>
+        <h3><a name="display"></a>Displaying Javadoc </h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="45%"><img src="../../../images_www/articles/80/java/editor-codereference/javadoc.png" alt="Javadoc window."> </td>
+                <td width="55%" class="valign-top"><p>Place the cursor on an element and press <tt>Ctrl-Shift-Space (or choose Source &gt; Show Documentation)</tt>. The Javadoc for this element is displayed in a popup window. </p>
+                    <p>In the IDE's main menu, click Window &gt; IDE Tools &gt; Javadoc Documentation to open the Javadoc window, in which the documentation is refreshed automatically for the location of your cursor.  </p>
+                    <p>&nbsp;</p>
+                    <p>&nbsp; </p>
+                    <p class="style1">&nbsp;</p></td>
+            </tr>
+        </table>
+        <h3><a name="create"></a>Creating Javadoc Stubs </h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="45%"><img src="../../../images_www/articles/80/java/editor-codereference/javadoc1.png" alt="Creation of Javadoc stubs"  ></td>
+                <td width="55%" class="valign-top"><p>Place the cursor above a method or a class that has no Javadoc, type <tt>&quot;/**</tt>&quot;, and press <tt>Enter</tt>. </p>
+                    <p>The IDE creates a skeletal structure for a Javadoc comment filled with some content. If you have a Javadoc window open, you will see the changes immediately while you are typing. </p>
+                    <p class="style1">&nbsp;</p></td>
+            </tr>
+        </table>
+        <h3><a name="hints"></a>Using Javadoc Hints</h3>
+        <table class="full-width colapse">
+            <tr>
+                <td width="45%"><img src="../../../images_www/articles/80/java/editor-codereference/javadoc2.png" alt="Use of Javadoc hints" ></td>
+                <td width="55%" class="valign-top"><p>The IDE displays hints when Javadoc is missing or Javadoc tags are needed. </p>
+                    <p>Click the bulb icon on the lefthand margin of the editor to fix Javadoc errors. </p>
+                    <p>If you do not want to see the hints related to Javadoc,  choose Tools &gt; Options &gt; Editor &gt; Hints, and clear the Javadoc checkbox in the list of hints that are displayed. </p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="usecc"></a>Using Code Completion for Javadoc Tags </h3>
+        <table width="100%" class="full-width colapse">
+            <tr>
+                <td width="45%"><img src="../../../images_www/articles/80/java/editor-codereference/javadoc3.png" alt="Code completion for Javadoc" ></td>
+                <td width="55%" class="valign-top"><p>Code completion is available for Javadoc tags. </p>
+                    <p>Type the &quot;@&quot; symbol and wait until the code completion window opens (depending on your settings, you may need to press <tt>Ctrl-Space</tt>). </p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="generate-javadoc" id="generate-javadoc"></a>Generating Javadoc </h3>
+        <table width="100%" class="full-width colapse">
+            <tr>
+                <td width="45%"><img src="../../../images_www/articles/80/java/editor-codereference/generate.png" alt="Generated Javadoc output" ></td>
+                <td width="55%" class="valign-top"><p>To generate Javadoc for a project, choose Run &gt; Generate Javadoc menu item (or right-click the project in the Projects window and choose Generate Javadoc). The IDE will generate the Javadoc and open it in a separate browser window.</p>
+                    <p>In the example on the left, you can see a sample output of the Generate Javadoc command. If there are some warnings or errors, they are also displayed in this window.</p>
+                    <p>To customize  Javadoc formatting options, right-click the project, choose Properties and open the Documenting panel under the Build category (available on Java projects only). For information about the options on this panel, click the Help button in this window. </p></td>
+            </tr>
+        </table>
+        <h3><a name="analyze-javadoc" id="analyze-javadoc"></a>Analyzing Javadoc </h3>
+        <table width="100%" class="full-width colapse">
+            <tr>
+                <td width="46%"><img src="../../../images_www/articles/80/java/editor-codereference/analyze-javadoc.png" alt="Javadoc Analyzer window" ></td>
+                <td width="54%" class="valign-top"><p>To  identify the places in your code that need Javadoc comments and quickly insert these comments, you can use the Javadoc Analyzer tool available in the Java Editor.</p>
+                    <p>To analyze and fix Javadoc comments:</p>
+                    <ol>
+                        <li>Select a project, a package, or an individual file and choose Tools &gt; Analyze Javadoc from the main menu. <br>
+                            The Analyzer window displays suggestions for adding or fixing Javadoc comments, depending on the scope of your selection.  </li>
+                        <li>Select one or several checkboxes where you would like to fix Javadoc and click the Fix Selected button. <br>
+                        </li>
+                        <li>Click Go Over Fixed Problems and use the Up and Down arrows to actually add your comments. This might be helpful if you selected to fix several instances at once and now want to revisit the stubs.  </li>
+                    </ol>                </td>
+            </tr>
+        </table>
+        <p class="align-center"><a href="#top">top</a></p>
+        <h2 class="align-center"><a name="hints" id="hints"></a>Using Hints</h2>
+        <p>While you are typing, the Java Editor checks your code and provides suggestions of how you can  fix errors and navigate through code. The examples below show the types of hints that are available in the Editor and how to customize them.</p>
+        <h3><a name="hints-tofix" id="hints-tofix"></a>Using Hints to Fix Code</h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/quickfixes.png" alt="Using hints for fixing code" ></td>
+                <td width="56%" class="valign-top"><p>For the most common coding mistakes, you can see hints in the lefthand margin of the Editor. The hints are shown for many types of errors, such as missing field and variable definitions, problems with imports, braces, and other. Click the hint icon and select the fix to add. </p>
+                    <p>Hints are displayed automatically by default. However, if you want to view all hints, choose Source &gt; Fix Code (or press Alt-Enter).</p>
+                    <p>For example, try typing &quot;myBoolean=true&quot;. The editor detects that this variable is not defined. Click the hint icon and see that the Editor suggests that you create a field, a method parameter, or a local variable. Select </p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="hints-customize" id="hints-customize"></a>Customizing Hints </h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%">
+                    <p class="align-center">
+                        <a href="../../../images_www/articles/80/java/editor-codereference/customizehints.png" rel="lytebox"
+                           title="Customizing options for hints">
+                            <img src="../../../images_www/articles/80/java/editor-codereference/customizehints-small.png"
+                                 alt="Customizing options for hints" border=1></a></p></td>
+                <td width="56%" class="valign-top"><p>You might want to limit the number of categories for which hints are displayed. To do this: </p>
+                    <ol>
+                        <li>Choose Tools &gt; Options &gt; Editor &gt; Hints. </li>
+                        <li>From the Language drop-down list, select Java and view a list of elements for which hints are  displayed (their checkboxes are selected). </li>
+                        <li>To disable hints for some categories, clear the appropriate checkboxes. </li>
+                    </ol>
+                    <p class="notes">Note: On the Hints tab, you can also disable or limit the scope of dependency scans (Dependency Scanning option). These steps can significantly improve the performance of the IDE.  </p>
+                    <p>The IDE detects compilation errors in your Java sources by locating and recompiling classes that depend on the file that you are  modifying (even if these dependencies are in the files that are not  opened in the editor). When a compilation error is found, red badges are added to source file, package, or project nodes. Dependency scanning within projects can be resource consuming and degrade performance, especially if you are working with large projects.  </p>
+                    <p>To improve  IDE's performance, you can do one of the following:</p>
+                    <ul>
+                        <li>Limit the scope of dependency scans to the Source Root (search for dependencies only in the source root where the modified class is located) or current Project. </li>
+                        <li>Disable dependency scanning (choose Project Properties &gt; Build &gt; Compiling and deselect the Track Java Dependencies option). In this case, the IDE does not scan for dependencies or updates the error 
+                            badges when you modify a file. </li>
+                    </ul>                  
+                </td>
+            </tr>
+        </table>
+        <h3><a name="surround" id="surround"></a>Surround With... </h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><img src="../../../images_www/articles/80/java/editor-codereference/surroundwith.png" alt="Surround with options" ></td>
+                <td width="56%" class="valign-top"><p>You can easily surround  pieces of your code with various statements, such as <tt>for</tt>, <tt>while</tt>, <tt>if</tt>, <tt>try/catch</tt>, and other.</p>
+                    <p>Select a block in your code that you want to surround with a statement and click the bulb icon in the lefthand margin (or press Alt-Enter). The editor displays a list of suggestions from which you select the statement you need.</p></td>
+            </tr>
+        </table>
+        <h2 class="align-center"><a name="editor-features" id="editor-features"></a>General Editor Features </h2>
+        <h3><a name="formatting" id="formatting"></a>Code Formatting </h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="46%">
+                    <p class="align-center">
+                        <a href="../../../images_www/articles/80/java/editor-codereference/formatting.png" rel="lytebox"
+                           title="Formatting customization options">
+                            <img src="../../../images_www/articles/80/java/editor-codereference/formatting-small.png"
+                                 alt="Formatting customization options" border=1></a></p>
+
+                </td>
+                <td width="54%" class="valign-top"><p>Choose Source &gt; Format or press <tt>Alt-Shift-F</tt> to format the entire file or a selection of code. The IDE  formats the code in accordance with the specified formatting settings.</p>
+                    <p>To customize the formatting settings for Java code:</p>
+                    <ol>
+                        <li>Choose Tools &gt; Options &gt; Editor &gt; Formatting.</li>
+                        <li>From the Language drop-down list, select Java. </li>
+                        <li>From the Category drop-down list, select the category that you would like to customize. For example, you can customize the number of blank lines, the size of tabs and indentation, wrapping style, etc.</li>
+                        <li>Modify the rules for the selected  category and preview the result. </li>
+                    </ol></td>
+            </tr>
+        </table>
+        <h3><a name="braces" id="braces"></a>Inserting and Highlighting Braces, Brackets, and Quotes </h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="46%"><p><img src="../../../images_www/articles/80/java/editor-codereference/braces.png" alt="Customization options for brackets" ></p>
+                </td>
+                <td width="54%" class="valign-top"><p>By default, the IDE automatically inserts matching pairs of braces, brackets, and quotes. When you type an opening curly brace and then  press <tt>Enter</tt>, the closing brace is added automatically. For <tt>(</tt>, <tt>[</tt>, <tt>&quot;</tt>, and <tt>'</tt>, the editor inserts a matching pair right away.</p>
+                    <p>If, for some reason, this feature is disabled, enable it as follows: </p>
+                    <ol>
+                        <li>Choose Tools &gt; Options &gt; Editor &gt; Code Completion.</li>
+                        <li>Select the Insert Closing Brackets Automatically checkbox. </li>
+                    </ol>
+                    <p>The editor also highlights matching pairs of braces, brackets and quotes. For example, place the cursor before any brace or bracket and, if it has a matching pair, both will be highlighted in yellow. Single brackets of any type are highlighted in red and the error mark is displayed in the lefthand margin. </p>
+                    <p>To customize the highlight colors, choose Tools &gt; Options &gt; Editor &gt; Highlighting. </p></td>
+            </tr>
+        </table>
+        <h3><a name="codefolding" id="codefolding"></a>Code Folding</h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="46%"><p><img src="../../../images_www/articles/80/java/editor-codereference/code-folded2.png" alt="Code folding example" ></p></td>
+                <td width="54%" class="valign-top"><p>In the Java Editor, you can quickly collapse and expand blocks of code, such as method declaration, Javadoc comments, import statements, etc. Collapsible blocks are shown with gray lines and plus/minus signs near the lefthand margin of the editor. </p>
+                    <ul>
+                        <li>The easiest way to collapse a block of code is to click the gray lines with a minus character in the lefthand margin. </li>
+                        <li>The number of lines within the collapsed block are shown, as well as the first line of a collapsed block of Javadoc comments. </li>
+                        <li>To fold all collapsible blocks in a file, right-click in the editor and choose Code Folds &gt; Collapse All from the pop-up menu.</li>
+                        <li>From the Code Folds &gt; Collapse All pop-up menu, you can choose to collapse all Javadoc comments or all Java code in a file.</li>
+                        <li>You can mouse over the folded elements to quickly review the hidden parts. </li>
+                    </ul>
+                    <p>To customize the code folding options:</p>
+                    <ol>
+                        <li>Choose Tools &gt; Options &gt; Editor &gt; Folding.</li>
+                        <li>To disable code folding, clear Enable Code Folding. 
+                            Note that code folding is enabled by default.</li>
+                        <li>Select the blocks of code to be collapsed by default when you open a file.</li>
+                    </ol></td>
+            </tr>
+        </table>
+        <h3><a name="customizeshortcuts" id="customizeshortcuts"></a>Customizing Keyboard Shortcuts</h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%">
+                    <p class="align-center">
+                        <a href="../../../images_www/articles/80/java/editor-codereference/keyboard.png" rel="lytebox"
+                           title="Formatting customization options">
+                            <img src="../../../images_www/articles/80/java/editor-codereference/keyboard-small.png"
+                                 alt="Keyboard customization options" border=1></a></p></td>
+                <td width="56%" class="valign-top"><p>In the NetBeans IDE, choose Tools &gt; Options &gt; Keymap to customize keyboard shortcuts. You can do this in several ways:</p>
+                    <ul>
+                        <li>Select  a predefined set of keyboard shortcuts, which is called Profile.</li>
+                        <li>Edit particular keyboard shortcuts. </li>
+                    </ul>
+                    <p>You can save customized sets of your shortcuts as profiles. Then, you can switch from one profile to another to quickly change multiple settings. For example, to create a custom profile of keyboard shortcuts: </p>
+                    <ol>
+                        <li>In the  Options &gt; Keymap window, click Manage profiles. </li>
+                        <li>Select the profile you want to use as a base for your new profile and click Duplicate.  </li>
+                        <li>Enter the new profile name and click OK. </li>
+                        <li>Ensure that the new profile is  selected and modify the shortcuts you need.<br>
+                            To edit a shortcut, double-click  in the Shortcut field or click the ellipsis button (...). As you press the sequence of keys, the syntax for them is added. <br>
+                            If you want to add special characters, such as <tt>Tab</tt>, <tt>Escape</tt>, or <tt>Enter</tt>, click the ellipsis button (...) again and select the key from the pop-up window.</li>
+                        <li>When finished editing, click OK in the Options window. </li>
+                    </ol>
+                    <p>To find a shortcut for a specific command, type the command name in the Search field. To find a command by a combination, insert the cursor in the Search in Shortcuts field and press the shortcut key combination. </p>                  
+                    <p>&nbsp;</p></td>
+            </tr>
+        </table>
+        <h2><a name="coloring"></a>Semantic Coloring and Highlighting </h2>
+        <p>The IDE's Java Editor shows code elements in distinct colors, based on the semantics of your code. With semantic coloring, it becomes easier for you to identify various elements in your code. In addition to coloring, the Java Editor highlights similar elements with a particular background color. Thus, you can think of the highlighting feature as an alternative to the Search command, because in combination with error stripes, it gives you a quick overview of where the highlighted places are located within a file. </p>
+        <h3><a name="customizecolors"></a>Customizing Colors </h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%">
+                    <p class="align-center">
+                        <a href="../../../images_www/articles/80/java/editor-codereference/coloringoptions.png" rel="lytebox"
+                           title="Customization options for coloring">
+                            <img src="../../../images_www/articles/80/java/editor-codereference/coloringoptions-small.png"
+                                 alt="Customization options for coloring" border=1></a></p></td>
+                <td width="56%" class="valign-top"><p>To customize semantic coloring settings for the Java Editor, choose Tools &gt; Options &gt; Fonts &amp; Colors.</p>
+                    <p>The IDE provides several preset coloring schemes, which are called profiles. You can create new profiles with custom colors and quickly switch between them. </p>
+                    <p>It is very convenient to save custom colors in new profiles. For example, do the following: </p>
+                    <ol>
+                        <li>In the  Options &gt; Fonts &amp; Colors window, click Duplicate next to the Profile drop-down list. </li>
+                        <li>Enter the new profile name and click OK. </li>
+                        <li>Ensure that the new profile is currently selected and choose Java from the Language drop-down list. </li>
+                        <li>Select a category and change the font, font color (Foreground), background color, and effects for this category. <br>
+                            Use the Preview window to view the results.</li>
+                        <li>Click OK.  </li>
+                    </ol>
+                    <p class="notes">Note: All NetBeans IDE settings and profiles are stored in the <em>NetBeans userdir</em> (refer to the <a href="http://wiki.netbeans.org/FaqWhatIsUserdir" target="_blank">FAQ</a> on how to locate the <em>userdir</em> for your operating system). When upgrading to newer versions of NetBeans, you can export old settings and import them to the newer version.</p>
+                    <p class="notes">To export the IDE settings: </p>
+                    <ol>
+                        <li>In the Options window (Tools &gt; Options), click Export.</li>
+                        <li>Specify the location and name of the ZIP file that will be created. </li>
+                        <li>Select the settings that you want to export and click OK. </li>
+                    </ol>
+                    <p class="notes">To import the IDE settings: </p>
+                    <ol>
+                        <li>In the Options window (Tools &gt; Options), click Import.</li>
+                        <li>Specify the ZIP file with IDE settings or path to the <em>userdir</em> from a previous version. </li>
+                        <li>Select the settings that you want to import and click OK. </li>
+                    </ol>                  <p>&nbsp;</p></td>
+            </tr>
+        </table>
+        <h3><a name="example" id="example"></a>Coloring Example</h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/coloring.png" alt="Image showing a coloring example" ></p></td>
+                <td width="56%" class="valign-top"><p>In the left, you can see an  example of a coloring scheme. Depending on your custom settings, your colors might look differently than those shown in the screenshot. </p>
+                    <p>Distinct colors are used for keywords (blue), variables and fields (green), and parameters (orange). </p>
+                    <p>References to deprecated methods or classes are shown as strikethrough. This warns you when you are going to write  code that relies on deprecated members. </p>
+                    <p>Unused members are underlined with a gray wavy line. Comments are displayed in gray.</p>
+                    <p>&nbsp;</p></td>
+            </tr>
+        </table>
+        <h3><a name="highlights" id="highlights"></a>Using Highlights</h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/highlightelement.png" alt="Image showing the use of highlights"></p></td>
+                <td width="56%" class="valign-top"><p>The IDE highlights usages of the same element, matching braces, method exit points, and  exception throwing points. </p>
+                    <p>If you place the cursor in an element, such as a field or a variable, all usages of this element are highlighted. Note that error stripes in the Editor's righthand margin indicate the usages of this element in the entire source file (see <a href="#stripes">Error Stripes</a>). Click the error stripe to quickly navigate to the desired usage location.</p>
+                    <p>If you decide to rename all the highlighted instances, use the Instant Rename command (Ctrl-R or choose Refactor &gt; Rename). </p>
+                    <p>&nbsp;</p>
+                </td>
+            </tr>
+        </table>
+        <h2><a name="navigation"></a>Navigation</h2>
+        <p>The Java Editor provides  numerous ways of how you can navigate through code. See below for several examples that show the navigation features of the Java Editor. </p>
+        <h3><a name="stripes"></a>Error Stripes</h3>
+        <p>Error stripes in the righthand margin of the editor provide a quick overview of all marked places in the current file: errors, warnings, hints, highlighted occurrences, and annotations. Note that the error stripe margin represents an entire file, not just the part that is currently displayed in the editor. By using error stripes, you can immediately identify whether your file has any errors or warnings, without scrolling through the file.  </p>
+        <p>Click an error stripe to jump to the line that the mark refers to. </p>
+        <h3><a name="goto"></a>Navigating From the Editor: Go To...  </h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/gotodeclaration.png" alt="Image showing the Go To command"></p></td>
+                <td width="56%" class="valign-top"><p>Use the following the &quot;Go To..&quot; commands located under the Navigate menu item to quickly jump to target locations:</p>
+                    <ul>
+                        <li><strong>Go To Declaration (Ctrl-B, by default)</strong>. Hold down the Ctrl key and click the usage of a class, method, or field to jump to its declaration. You can also place the cursor on the member (a class, method, or field) and choose Navigate &gt; Go To Declaration or right-click and choose Navigate &gt; Go To Declaration from the pop-up menu. </li>
+                        <li><strong>Go To Source (Ctrl-Shift-B, by default)</strong>. Hold down the Ctrl key and click a class, method, or  field to jump to the source code, if the source is available. You can also place the cursor on the member (a class, method, or field) and either press Ctrl-Shift-B or choose Navigate &gt; Go To Source in the main menu.</li>
+                    </ul></td>
+            </tr>
+        </table>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/gototype.png" alt="Image showing the Go To Type dialog box"></p></td>
+                <td width="56%" class="valign-top"><ul>
+                        <li><strong>Go To Type (Ctrl-O)</strong>, <strong>Go To File (Alt-Shift-O),</strong> and <strong>Go To Symbol (Ctrl-Alt-Shift-O)</strong>. If you know the name of the type (class, interface, annotation or enum), file, or symbol to where you want to jump, use these commands and type the name in the new window. Notice that you can use prefixes, camel case, and wildcards.  </li>
+                    </ul></td>
+            </tr>
+        </table>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/gotoline.png" alt="Image showing the Go To Line dialog box" ></p></td>
+                <td width="56%" class="valign-top"><ul>
+                        <li><strong>Go To Line (Ctrl-G)</strong>. Enter the line number to which you want to jump. </li>
+                        <li><strong>Go To Bookmark (Ctrl-G Ctrl-G)</strong>. Enables you to jump to a bookmark based on a key assigned to it in
+                             the Bookmarks window. (See the <a href="#bookmarks">Bookmarks</a> section for details.)</li>
+                    </ul></td>
+            </tr>
+        </table>
+        <h3><a name="lastedit"></a>Jumping to Last  Edit</h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/jumplastedit.png" alt="Image showing the Jumping to Last Edit button" ></p></td>
+                <td width="56%" class="valign-top"><p>To quickly return to your last edit, even if it is in another file or project, press Ctrl-Q or use the button in the top left corner of the Java Editor toolbar. The last edited document opens, and the cursor is at the position, which you edited last.</p></td>
+            </tr>
+        </table>
+        <h3><a name="lastedit"></a>Using Breadcrumbs</h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/breadcrumbs.png" alt="Image showing the Jumping to Last Edit button" ></p></td>
+                <td width="56%" class="valign-top"><p>Breadcrumbs are shown along the bottom of the editor.</p>
+                    <p>The place where the cursor is found in the document determines the breadcrumbs displayed.</p>
+                    <p>Show/hide breadcrumbs from View | Show Breadcrumbs.</p>
+                    <p>Click on an arrow associated with a breadcrumb to see all available class members and select to jump to them.</p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="switchfiles" id="switchfiles"></a>Switching Between Files </h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td><p><img src="../../../images_www/articles/80/java/editor-codereference/jumprecentfile.png" alt="Image showing the buttons used to switch between open files" ></p>
+                    <p>&nbsp;</p></td>
+                <td class="valign-top"><p>There are two very handy features that allow you to switch between open files: </p>
+                    <ul>
+                        <li><strong>Go Back (Alt-Left)</strong> and <strong>Go Forward (Alt-Right).</strong> To go to the previously edited file or move forward, choose Navigate &lt; Back or Navigate &lt; Forward or press the corresponding buttons on the editor toolbar (shown in the figure). The file opens and the cursor is placed at the location of your last edit. When you click one of these buttons, you can expand the list of the recent files and click to navigate to any of them. </li>
+                    </ul></td>
+            </tr>
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/togglefile.png" alt="Image showing a pop-up menu for toggling between files"></p></td>
+                <td width="56%" class="valign-top"><ul>
+                        <li><strong>Toggle Between Files (Ctrl-Tab)</strong>. After you press Ctrl-Tab, all open files are shown in a pop-up window. Hold down the Ctrl key and press several times the Tab key to choose the file you would like to open.</li>
+                    </ul></td>
+            </tr>
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/shift-f4.png" alt="Image showing a pop-up menu for toggling between files"></p></td>
+                <td width="56%" class="valign-top"><ul>
+                        <li><strong>Show Open Documents (Shift-F4)</strong>. After you press Shift-F4, all open files are
+                            shown in the Documents window. Order the files based on your needs and choose the file you would like to open.</li>
+                    </ul></td>
+            </tr>
+        </table>
+        <h3><a name="bookmarks"></a>Using Bookmarks</h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/bookmark.png" alt="Image showing an example of a bookmark"></p></td>
+                <td width="56%" class="valign-top"><p>You can use bookmarks to quickly navigate through certain places in your code. </p>
+                    <p>Press Ctrl-Shift-M (or right-click the left margin and choose Bookmark &gt; Toggle Bookmark) to bookmark the current line. The bookmarked line is shown with a small blue icon in the left margin (see the figure).</p>
+                    <p>To remove the bookmark, press Ctrl-Shift-M again.</p>
+                </td>
+            </tr>
+        </table>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/bookmark2.png" alt="Image showing an example of a bookmark"></p></td>
+                <td width="56%" class="valign-top">
+                    <p>To go to the next bookmark, press Ctrl-Shift-Period, to go to the previous bookmark, press Ctrl-Shift-Comma. </p>
+                    <p>Automatically a popup appears, letting you move forward and backward via Ctrl-Shift-Period and Ctrl-Shift-Comma.</p>
+                    <p>Release the keyboard to select the current item in the list, which will cause the editor to open the file
+                    at the line where the bookmark is found.</p>
+                </td>
+            </tr>
+        </table>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><a href="../../../images_www/articles/80/java/editor-codereference/bookmark3.png"><img src="../../../images_www/articles/80/java/editor-codereference/bookmark3-small.png" alt="Image showing an example of a bookmark"></a></p></td>
+                <td width="56%" class="valign-top"><p>You can view all bookmarks throughout all your projects and manage them.</p>
+                    <p>When the &lt;Bookmarks&gt; item is selected in the popup shown above or when Window | IDE Tools | Bookmarks
+                    is selected, the Bookmarks window opens.</p>
+                    <p>Two views are provided for viewing bookmarks and you can view the related code in a preview window. </p>
+                    <p>In the Table view, you can assign keys to bookmarks so that when <tt>Ctrl-G</tt> is pressed twice, you can
+                        quickly jump to a bookmark in your code. </p>
+                </td>
+            </tr>
+        </table>
+        <h3><a name="navigator"></a>Using the Navigator  </h3>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/navigatorwindow.png" alt="Example of the Navigator window"></p></td>
+                <td width="56%" class="valign-top"><p>The Navigator window provides structured views of the file you are working with and lets you quickly navigate between different parts of the file. </p>
+                    <p>To open the Navigator window, choose Window &gt; Navigator or press Ctrl-7.</p>
+                    <p>In the Navigator window, you can do the following:</p>
+                    <ul>
+                        <li>Choose between different views: Members, Bean Patterns, Trees, Elements, etc.</li>
+                        <li>Double-click an element to jump to the line where it is defined.</li>
+                        <li>Right-click an element and apply commands, such as Go to Source, Find Usages, and Refactor.</li>
+                        <li>Apply filters to the elements displayed in the Navigator (use the buttons at the bottom).</li>
+                        <li>Type the name of the element that you want to find (the Navigator window must be active).</li>
+                    </ul>
+                    <p>&nbsp;</p>
+                </td>
+            </tr>
+        </table>
+        <table width="98%" class="full-width colapse">
+            <tr>
+                <td width="44%"><p><img src="../../../images_www/articles/80/java/editor-codereference/navigatorwindow2.png" alt="Example of the Navigator window"></p></td>
+                <td width="56%" class="valign-top"><p>When the Navigator is active, type the name of the element that you want to find.</p>
+                    <p>Matching items are highlighted.</p>
+                    <p>You can move to matching items by pressing the Up and Down arrow keys.</p>
+                </td>
+            </tr>
+        </table>
+
+        <p><br>
+        </p>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Code%20Assistance%20in%20the%20NetBeans%20IDE%20Java%20Editor%20for%208.0">Send Feedback on This Tutorial</a><br style="clear:both;" >         
+            <a name="next_steps"></a></div>
+        <p></p>
+        <p></p>
+        <p></p>
+        <h2>See Also</h2>
+        <ul>
+            <li><a href="https://netbeans.org/features/java/editor.html">Editing and Refactoring Features in NetBeans IDE</a> </li>     
+            <li><a href="https://netbeans.org/kb/trails/java-se.html">General Java Development Learning Trail</a> </li>     
+            <li><a href="https://netbeans.org/projects/usersguide/downloads/download/shortcuts-80.pdf" target="_blank">Highlights of NetBeans IDE Keyboard Shortcuts &amp; Code Templates</a> </li>           
+
+        </ul>
+
+        <p class="align-center"><a href="#top">top</a></p>
+        <a name="appendixa"></a><h2 class="align-center">Appendix A: Icons in the Code Completion Window</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <td class="tblheader">Icon</td>
+                    <td class="tblheader">Meaning</td>
+                    <td class="tblheader">Variants (if any)</td>
+                    <td class="tblheader"><p>Meaning </p>   </td>
+                </tr>
+                <tr>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/annotation_type.png" alt="Annotation type icon"></td>
+                    <td class="tbltd0">Annotation type</td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/class_16.png" alt="Class icon" ></td>
+                    <td class="tbltd1">Class</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/package.png" alt="Package icon" width="16" height="16"></td>
+                    <td class="tbltd0">Package</td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/enum.png" alt="Enum type icon" width="16" height="16"></td>
+                    <td class="tbltd1">Enum type </td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/code_template.png" alt="Code Template icon" width="16" height="16"></td>
+                    <td class="tbltd0">Code Template </td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/constructor_16.png" alt="Constructor icon" width="16" height="16"></td>
+                    <td class="tbltd1">Constructor</td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/new_constructor_16.png" alt="New constructor icon" width="16" height="16"></td>
+                    <td class="tbltd1"> New constructor (generate)</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/constructor_protected_16.png" alt="Protected constructor icon" width="16" height="16"></td>
+                    <td class="tbltd1">Protected constructor </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/constructor_private_16.png" alt="Private constructor icon" width="16" height="16"></td>
+                    <td class="tbltd1">Private constructor </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/constructor_package_private_16.png" alt="Package private constructor icon" width="16" height="16"></td>
+                    <td class="tbltd1">Package private constructor </td>
+                </tr>
+                <tr>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/field_16.png" alt="Field icon" width="16" height="16"></td>
+                    <td class="tbltd0">Field</td>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/field_protected_16.png" alt="Protected field icon" width="16" height="16"></td>
+                    <td class="tbltd0">Protected field </td>
+                </tr>
+                <tr>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/field_private_16.png" alt="Private field icon" width="16" height="16"></td>
+                    <td class="tbltd0">Private field </td>
+                </tr>
+                <tr>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/field_package_private_16.png" alt="Icon for package private field" width="16" height="16"></td>
+                    <td class="tbltd0">Package private field </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/field_static_16.png" alt="Icon for static fields" width="16" height="16"></td>
+                    <td class="tbltd1">Static field </td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/field_static_protected_16.png" alt="Icon for protected static fields" width="16" height="16"></td>
+                    <td class="tbltd1">Protected static field </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/field_static_private_16.png" alt="Icon for private static fields" width="16" height="16"></td>
+                    <td class="tbltd1">Private static field </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/field_static_package_private_16.png" alt="Icon for package private static fields" width="16" height="16"></td>
+                    <td class="tbltd1">Package private static field </td>
+                </tr>
+                <tr>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/interface.png" alt="Interface icon" width="16" height="16"></td>
+                    <td class="tbltd0">Interface</td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/javakw_16.png" alt="Java keyword icon" width="16" height="16"></td>
+                    <td class="tbltd1">Java keyword </td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/method_16.png" alt="Method icon" width="16" height="16"></td>
+                    <td class="tbltd0">Method</td>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/method_protected_16.png" alt="Icon for protected methods" width="16" height="16"></td>
+                    <td class="tbltd0">Protected method </td>
+                </tr>
+                <tr>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/method_private_16.png" alt="Icon for private methods" width="16" height="16"></td>
+                    <td class="tbltd0">Private method </td>
+                </tr>
+                <tr>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/method_package_private_16.png" alt="Icon for package private methods" width="16" height="16"></td>
+                    <td class="tbltd0">Package private method </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/method_static_16.png" alt="Icon for static methods" width="16" height="16"></td>
+                    <td class="tbltd1">Static method </td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/method_static_protected_16.png" alt="Icon for protected static methods" width="16" height="16"></td>
+                    <td class="tbltd1">Protected static method </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/method_static_private_16.png" alt="Icon for private static methods" width="16" height="16"></td>
+                    <td class="tbltd1">Private static method </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/method_static_package_private_16.png" alt="Icon for package private static methods" width="16" height="16"></td>
+                    <td class="tbltd1">Package private static method </td>
+                </tr>
+                <tr>
+                    <td class="tbltd0"><img src="../../../images_www/articles/80/java/editor-codereference/localVariable.png" alt="Local variable icon" width="16" height="16"></td>
+                    <td class="tbltd0">Local variable </td>
+                    <td class="tbltd0">&nbsp;</td>
+                    <td class="tbltd0">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><img src="../../../images_www/articles/80/java/editor-codereference/attribute_16.png" alt="Attribute icon" ></td>
+                    <td class="tbltd1">Attribute</td>
+                    <td class="tbltd1">&nbsp;</td>
+                    <td class="tbltd1">&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+        <script type="text/javascript">
+            <!--
+          compactMenu('collapsableList', true, '&plusmn; ');
+-->
+        </script>
+    </body>
+</html>

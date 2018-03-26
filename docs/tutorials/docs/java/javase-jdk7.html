@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Overview of JDK 7 Support in NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+       
+        <meta name="description" content="A short guide to using JDK 7 features in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>Overview of JDK 7 Support in NetBeans IDE</h1>
+        <p>The NetBeans IDE  supports  Java 7 language features, such as the diamond operator, strings in switch, multicatch, etc. When you use these constructs in your code, the IDE recognizes them, offers correct classes in code completion, correctly highlights errors, and lets you automatically fix syntax. Thus, the NetBeans IDE  helps you write code that is compatible with <a href="http://docs.oracle.com/javase/specs/jls/se7/html/index.html">the Java Language Specification, Java SE 7 Edition</a>. </p>
+        <p>In this tutorial, you learn how the IDE handles Java 7 language constructs. </p>
+        <p><b>Contents</b></p>
+        <img src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.4 and 8.0" title="Content on this page applies to NetBeans IDE 7.4 and 8.0">
+        <ul class="toc">
+		    <li><a href="#platform">Ensuring JDK 7 is Registered in the IDE</a></li>
+			<li><a href="#project">Checking the Project Configuration</a></li>
+            <li><a href="#switch">Using New JDK 7 Language Constructs: Switch Statement</a></li>
+            <li><a href="#more">JDK 7 Support: More Examples</a></li>
+            <li><a href="#see" title="Next Steps">Next Steps</a></li>
+        </ul>
+
+        <p><b>To complete this tutorial, you need the software and resources listed in the following
+        table.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">version 7.4 or 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">version 7 or 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>Ensuring JDK 7 is Registered in the NetBeans IDE</h2>
+        
+        <p>To check JDK 7 is registered in the NetBeans IDE:</p>
+        <ol>
+          <li>In the IDE, choose Tools &gt; Java Platforms  from the main menu.</li>
+          <li>Ensure JDK 1.7 is chosen in the Platforms list of the Java Platforms Manager dialog box.
+		  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/platform.png" rel="lytebox"
+                       title="Registered Java Platform">
+					   <img src="../../../images_www/articles/74/java/javase-jdk7/platform-small.png"
+                     alt="Registered Java Platform" border=1></a></p>
+		  </li>
+		  <li>Click Close.</li>
+        </ol>
+    <h2><a name="project"></a>Checking the Project Configuration</h2>
+    <p>To check your project is configured to use the registered JDK for compilation, running, and debugging:</p>
+    <ol>
+      <li>Create a  Java project by choosing File &gt; New Project and selecting Java Application as the project type.</li>
+	  <li>Click Next.</li>
+      <li>Type <tt>SwitchTest</tt> as the project name and specify its location.  </li>
+	  <li>Click Finish.</li>
+      <li>In the Projects window, right-click the <tt>SwitchTest</tt> project's node and choose Properties &gt; Libraries. On this tab, ensure JDK 1.7 is selected in the list of Java Platforms.
+	  			  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/props-libs.png" rel="lytebox"
+                       title="JDK 7 selected as the target format">
+					   <img src="../../../images_www/articles/74/java/javase-jdk7/props-libs-small.png"
+                     alt="JDK 7 selected as the target format" border=1></a></p></li>
+      <li>Switch to the Sources tab of the Project Properties window and ensure  JDK 7 is chosen as the Source/Binary Format. 
+	  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/props-sources.png" rel="lytebox"
+                       title="JDK 7 selected as the source format">
+					   <img src="../../../images_www/articles/74/java/javase-jdk7/props-sources-small.png"
+                     alt="JDK 7 selected as the source format" border=1></a></p>
+     </li>
+      <li>Click OK to close the Project Properties dialog box. Your project is configured to recognize  Java 7 language features.<br>
+      </li>
+    </ol>
+	
+    <h2><a name="switch"></a>Using New JDK 7 Language Constructs: Switch Statement</h2>
+    <p>JDK 7  brings a number of <a href="http://openjdk.java.net/projects/jdk7/features/" target="_blank">new features and enhancements</a> in different areas, including internationalization, I/O and networking, security, etc. The best way to illustrate the JDK 7 support by the IDE's Java Editor is to demonstrate a few language changes introduced by Project Coin. </p>
+        <p>One of these changes is a &quot;String in a switch&quot;. In the previous versions of Java, the argument of <tt>switch</tt> had to be only of the following primitive data types: <tt>byte</tt>, <tt>short</tt>, <tt>char</tt>, <tt>int</tt>, or <tt>enum</tt>. Starting from JDK 7, you can use arguments of type <tt>String</tt> in the expression of a <tt>switch</tt> statement. </p>
+        <ol>
+          <li>Open <tt>SwitchTest.java</tt> and add the following code. This small sample  displays RGB codes for several colors. <br>
+            With JDK 7, the <tt>color</tt> variable can be a <tt>String</tt>. 
+            <pre class="examplecode">package switchtest;
+
+    public class SwitchTest {
+
+    public static void main(String[] args) {
+
+        String color = &quot;red&quot;;
+        String colorRGB;
+        switch (color.toLowerCase()) {
+            case &quot;black&quot;: colorRGB = &quot;000000&quot;; break;
+            case &quot;red&quot;: colorRGB = &quot;ff0000&quot;; break;
+            case &quot;green&quot;: colorRGB = &quot;008000&quot;; break;
+            case &quot;blue&quot;: colorRGB = &quot;0000ff&quot;; break;
+            default: colorRGB = &quot;Invalid color&quot;; break;
+        }
+        System.out.println(colorRGB);
+        }
+    }
+</pre>
+            
+          <p class="tips">If the pasted code is formatted incorrectly in the editor, press Alt-Shift-F
+            to reformat.</p>
+          </li>
+          <li>In the Projects window, right-click the project's node and choose Run File. You will see the output of the application, which is the RGB code for the red color. <br>
+            You can see that the build is successful and 
+            the application works when the target platform and source format is JDK 7. 
+			 <p class="align-center">
+          <img src="../../../images_www/articles/74/java/javase-jdk7/output.png"
+                                  alt="Output of running the project" border=1></p></li>
+          <li>Let's rollback to using JDK 6 and test how the application is complied with the JDK 6 compiler. <br>
+          In the Projects window, right-click the project's node and choose Properties. In the Sources category, set the Source/Binary Format to <tt>JDK 6</tt> and click OK.<br>
+		  You can immediately see that the JDK6 parser does not recognize the syntax. The compilation fails because of the incompatible variable type.
+          <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/error.png" rel="lytebox"
+                       title="Error">
+					   <img src="../../../images_www/articles/74/java/javase-jdk7/error-small.png"
+                     alt="Error" border=1></a></p>
+			 </li>
+          <li>Now, let's rewrite the code using the <tt>if-then-else</tt> statement instead of <tt>switch</tt> as follows: 
+		  <pre class="examplecode">package switchtest;
+
+    public class SwitchTest {
+
+    public static void main(String[] args) {
+
+        String color = &quot;red&quot;;
+        String colorRGB;
+        if (color.equals(&quot;black&quot;)) {
+            colorRGB = &quot;000000&quot;;
+        } else if (color.equals(&quot;red&quot;)) {
+            colorRGB = &quot;ff0000&quot;;
+        } else if (color.equals(&quot;green&quot;)) {
+            colorRGB = &quot;008000&quot;;
+        } else if (color.equals(&quot;blue&quot;)) { 
+            colorRGB = &quot;0000ff&quot;;
+        } else {
+            colorRGB = &quot;Invalid color&quot;;
+        }
+        System.out.println(colorRGB);
+        }
+    }
+</pre>
+		 
+          With JDK 7 being the Source/Binary Format, the IDE recognizes such cases and offers you to convert them to <tt>switch</tt> as shown in the picture below. 
+		  <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/convert.png" rel="lytebox"
+                       title="Convert to switch hint">
+					   <img src="../../../images_www/articles/74/java/javase-jdk7/convert-small.png"
+                     alt="Convert to switch hint" border=1></a></p>
+          Click the hint and the <tt>if-then-else</tt> construct will be automatically converted to exactly the same <tt>switch</tt> that we had before.</li>
+         </ol>
+		<h2><a name="more" id="more"></a>JDK 7 Support: More Examples</h2>
+        <p>To demonstrate how the IDE's Java Editor recognizes and automatically fixes code to be compliant with the JDK 7 language spec, let's use a dummy code snippet, which is meaningless but contains all the major language improvements. </p>
+        <p>When walking through this dummy code snippet and applying editor hints, you will see the following examples of how to: </p>
+        <ul>
+          <li>Take advantage of automatic type inference, when the Java compiler is able to infer the type of a generic instance without the need to explicitly specify it. The so-called <em>diamond operator</em> is used to flag the type inference case. </li>
+          <li>Use improved exception handling or <em>multi-catch</em>, when  one <tt>catch</tt> block can be used for several types of exceptions. <br>
+          </li>
+          <li>Use the new syntax of resource closure statements introduced by the Automatic Resource Management feature. </li>
+        </ul>
+        <ol>
+          <li>Replace the previous application code in the same <tt>SwitchTest.java</tt> file with the following code:<br>
+		  <pre class="examplecode">
+package switchtest;
+
+
+import java.io.FileInputStream;
+import java.lang.reflect.Method;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+public class SwitchTest {
+
+    public void test() throws IOException {
+        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+        HashMap&lt;String, Integer&gt; map = new HashMap&lt;String, Integer&gt;();
+        HashMap&lt;String, Integer&gt; map2 = new HashMap&lt;String, Integer&gt;();
+        String a = &quot;ehlo&quot;;
+
+        try {
+            Method m = Object.class.getMethod(&quot;toString&quot;);
+            m.invoke(this);
+        } catch(NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch(InvocationTargetException e) {
+            e.printStackTrace();
+        } catch(IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(&quot;foo.txt&quot;);
+
+            int k;
+            while ((k = in.read()) != -1) {
+                System.out.write(k);
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+}
+ </pre>
+          </li>
+          <li>Note that the IDE displays several hints, as shown above in this tutorial,
+              of how you can optimize your code for the JDK 7 spec. Simply click on each hint and select the suggested action. <br>
+</li>
+          <li>Finally, after you accept all the suggestions, you should have the JDK 7 compatible code shown below.
+		  <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/converted.png" rel="lytebox"
+                       title="Converted code snippet">
+					   <img src="../../../images_www/articles/74/java/javase-jdk7/converted-small.png"
+                     alt="Converted code snippet" border=1></a></p>
+            
+          </li>
+        </ol>
+       
+        <div class="indent"></div>
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback: Overview of JDK 7 Support in NetBeans IDE">Send Feedback on This Tutorial</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>See Also</h2>
+        <p>For more information about  JDK 7 and the NetBeans IDE, see: </p>
+        <ul>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG465" target="_blank">Setting the Target JDK</a> in <i>Developing Applications with NetBeans IDE</i></a></li>
+            <li><a href="http://download.oracle.com/javase/tutorial/essential/io/fileio.html" target="_blank">The Java Tutorials: File I/O</a> - a section in the Java Tutorials that contains numerous examples of JDK 7 changes in I/O.</li>
+            <li><a href="http://download.oracle.com/javase/tutorial/essential/concurrency/forkjoin.html" target="_blank">The Java Tutorials: Fork and Join</a> - explanation of the new fork/join framework in JDK7. </li>
+        </ul>
+
+        <p>For more information about developing Java applications in the NetBeans IDE, see: </p>
+        <ul>
+          <li><a href="javase-intro.html">Developing General Java Applications</a></li>
+          <li><a href="../../trails/java-se.html">General Java Development Learning Trail</a></li>
+		   <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366" target="_blank">Creating Java Projects</a> in <i>Developing Applications with NetBeans IDE</i></a></li>
+        </ul>
+</body>
+</html>

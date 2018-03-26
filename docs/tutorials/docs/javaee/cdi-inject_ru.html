@@ -1,0 +1,535 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Working with Injection and Qualifiers in CDI - IDE NetBeans Tutorial</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A demonstration of how to use CDI injection and apply qualifiers to Java EE projects using NetBeans IDE 7.0">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Contexts and Dependency Injection, CDI, Web Beans, injection, qualifier">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Работа с внедрением и квалификаторами в CDI</h1>
+
+        <p><em>Предоставлено Энди Гибсоном (Andy Gibson)</em></p>
+
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h3>Внедрение контекстов и зависимостей</h3>
+
+                <ol>
+                    <li><a href="cdi-intro.html">Введение в CDI и JSF 2.0</a></li>
+                    <li><strong>Работа с внедрением и квалификаторами в CDI</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#inject">Внедрение: основной этап CDI</a></li>
+                            <li><a href="#qualifier">Работа с квалификаторами</a></li>
+                            <li><a href="#alternative">Альтернативные методы внедрения</a></li>
+                            <li><a href="#seealso">Дополнительные сведения</a></li>
+                        </ul></li>
+
+                    <li><a href="cdi-validate.html">Применение аннотации @Alternative и аннотаций жизненного цикла</a></li>
+                    <li><a href="cdi-events.html">Обработка событий в CDI</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <p>Внедрение контекстов и зависимостей (CDI), определяемое документом <a href="http://jcp.org/en/jsr/detail?id=299">JSR-299</a>, является неотъемлемой частью Java EE 6 и обеспечивает архитектуру, позволяющую компонентам Java EE (например, сервлетам, компонентам EJB и JavaBeans) существовать в жизненном цикле приложения с четко определенными контекстами. Кроме того, службы CDI позволяют компонентам Java EE (например, компонентам сеансов EJB и управляемым компонентам JavaServer Faces) внедряться и свободно взаимодействовать путем запуска и обработки событий.</p>
+
+        <p>Этот учебный курс основан на записи блога Энди Гибсона (Andy Gibson) <a href="http://www.andygibson.net/blog/index.php/2009/12/22/getting-started-with-cdi-part-2-injection/">Начало работы с CDI. Часть 2. Внедрение</a>. Здесь рассматриваются способы использования внедрения CDI для <em>ввода</em> классов или интерфейсов в другие классы.  Кроме того, здесь показаны способы применения <em>квалификаторов</em> CDI для кода, которые позволяют определить тип класса, который необходимо внедрить в указанной точке внедрения.</p>
+
+        <p>В NetBeans IDE обеспечена встроенная поддержка для внедрения контекстов и зависимостей, включая поддержку создания файла конфигурации CDI <code>beans.xml</code> при создании проекта, поддержку редактора и навигации для аннотаций, а также различных мастеров для создания часто используемых артефактов CD.</p>
+
+        <br style="clear:left;">
+
+        <div class="indent">
+            <p>Для работы с этим учебным курсом требуется программное обеспечение и материалы, перечисленные ниже.</p>
+
+            <table id="requiredSoftware">
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                        <th class="tblheader" scope="col">Требуемая версия</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                        <td class="tbltd1">Версия 7.2, 7.3, 7.4, 8.0, Java EE</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                        <td class="tbltd1">версия 7 или 8</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://glassfish.dev.java.net/">Сервер GlassFish</a></td>
+                        <td class="tbltd1">Open Source Edition 3.x или 4.x</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo.zip">cdiDemo.zip</a></td>
+                        <td class="tbltd1">неприменимо</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="notes"><strong>Примечания.</strong></p>
+        </div>
+
+        <ul>
+            <li>В комплект Java для IDE NetBeans также входит компонент GlassFish Server Open Source Edition, являющийся контейнером, совместимым с Java EE.</li>
+
+            <li>Пример решения для этого учебного курса можно загрузить здесь: <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo2.zip">cdiDemo2.zip</a></li>
+        </ul>
+
+
+        <br>
+        <h2 id="inject">Внедрение: основной этап CDI</h2>
+
+        <p>CDI является интерфейсом API для внедрения контекстов и зависимостей.  В платформах приложений Seam и Spring зависимости обычно основаны на принципе присвоения имен компонентам, а также на привязке компонентов к точкам внедрения по именам.  При переходе к этому учебному курсу по завершении <a href="cdi-intro.html">Начало работы с внедрением контекстов и зависимостей и JSF 2.0</a> код пока содержит только ссылку на управляемый компонент по имени со страницы JSF, которая была создана после того, как мы определили имя компонента с помощью аннотации <code>@Named</code>.  Основная роль аннотации <code>@Named</code> заключается в определении компонента для разрешения операторов языка выражений в приложении (обычно с помощью средств разрешения языка выражений JSF).  Внедрение <em>можно было бы</em> реализовать посредством использования имен, но внедрение в CDI обычно выполняется иначе, так как CDI предлагает лучшее решение для выражения точек внедрения и компонентов, которые необходимо внедрить в эти точки.</p>
+
+        <p>В следующем примере создается класс <code>ItemProcessor</code>, который принимает список элементов из класса, реализующего интерфейс <code>ItemDao</code>.  Аннотация <code>@Inject</code> CDI используется для демонстрации возможности <em>внедрения</em> компонента в другой класс.  На диаграмме ниже показан сценарий, создаваемый в этом упражнении.</p>
+
+        <div class="indent">
+            <img alt="На диаграмме CDI отображаются объекты, созданные в этом упражнении" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-inject/cdi-diagram-inject.png" title="Используйте внедрение CDI для свободного взаимодействия классов в используемом приложении">
+        </div>
+
+        <p class="tips">DAO - это <em>объект доступа к данным</em>.</p>
+
+        <ol>
+            <li>Сначала необходимо извлечь пример начального проекта из файла <code>cdiDemo.zip</code> (см. выше <a href="#requiredSoftware">таблицу с перечислением требуемых ресурсов</a>).  Выберите File (&quot;Файл&quot;) &gt; Open Project (&quot;Открыть проект&quot;) (Ctrl-Shift-O; ⌘-Shift-O on Mac) и выберите проект в его местоположении на компьютере.</li>
+            <li>Щелкните правой кнопкой мыши узел проекта в окне &quot;Проекты&quot; и выберите команду &quot;Свойства&quot;.</li>
+            <li>Выберите категорию "Запуск" и убедитесь, что в списке "Сервер" выбран экземпляр GlassFish. </li>
+            
+            <li>Создайте новый класс <code>Item</code> и сохраните его в новом пакете с именем <code>exercise2</code>.  Щелкните 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png"> ) или нажмите сочетание клавиш CTRL+N (⌘-N on Mac) для открытия мастера создания файлов. </li>
+
+            <li>Выберите категорию Java, а затем выберите класс Java.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <strong>Item</strong> в качестве имени класса, затем укажите <strong>exercise2</strong> в качестве пакета.  Новый пакет будет создан после завершения работы мастера. <br> <img alt="Мастер классов Java" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/java-class-wizard.png" title="Среда IDE может помочь в этом, предоставляя мастер библиотеки классов Java."></li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Выполняется создание нового класса и пакета, и класс <code>Item</code> открывается в редакторе.</li>
+
+            <li>Создайте свойства <code>value</code> и <code>limit</code> для POJO <code>Item</code> и реализуйте метод <code>toString()</code>.  Добавьте следующее содержимое к классу.
+
+                <pre class="examplecode">
+public class Item {
+
+    <strong>private int value;
+    private int limit;
+
+    @Override
+    public String toString() {
+        return super.toString() + String.format(&quot; [Value=%d, Limit=%d]&quot;, value,limit);
+    }</strong>
+}</pre></li>
+
+            <li>Добавьте методы получения и установки к классу.  Для этого убедитесь, что курсор размещен в определении класса (т.е. между фигурными скобками класса), затем щелкните в редакторе правой кнопкой мыши и выберите пункт &quot;Вставить код&quot; (ALT+INSERT; CTRL+I на компьютерах Mac).  Выберите методы получения и установки. <br> <img alt="Всплывающее окно &apos;Вставить код&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/insert-code.png" title="Создайте методы получения и установки с помощью всплывающего окна &apos;Вставить код&apos;"></li>
+
+            <li>Установите флажок <code>Item</code> (при этом выбираются все свойства, содержащиеся в классе). <br> <img alt="Диалоговое окно &apos;Создание методов получения и установки&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/generate-getters-setters.png" title="Установите флажок для класса для выбора всех свойств, содержащихся в классе"></li>
+
+            <li>Нажмите кнопку &quot;Создать&quot;. Для класса создаются методы получения и установки.
+
+                <pre class="examplecode">
+public class Item {
+
+    private int value;
+    private int limit;
+
+    <strong>public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }</strong>
+
+    @Override
+    public String toString() {
+        return super.toString() + String.format(&quot; [Value=%d, Limit=%d]&quot;, value, limit);
+    }
+}</pre></li>
+
+            <li>Создайте конструктор, который принимает оба аргумента <code>value</code> и <code>limit</code>.  Кроме того, для этого можно использовать IDE.  Нажмите сочетание клавиш CTRL+ПРОБЕЛ в определении класса и выберите параметр &quot;<code>Item(int value, int limit) - generate</code>&quot;. <br> <img alt="Список завершения кода, отображенный в редакторе" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/generate-constructor.png" title="Нажмите сочетание клавиш CTRL+ПРОБЕЛ, чтобы использовать функцию автозавершения кода в редакторе."> <br> К классу добавляется следующий конструктор.
+
+                <pre class="examplecode">
+public class Item {
+
+    <strong>public Item(int value, int limit) {
+        this.value = value;
+        this.limit = limit;
+    }</strong>
+
+    private int value;
+    private int limit;
+
+    ...</pre></li>
+
+            <li>Создайте интерфейс <code>ItemDao</code> для определения способа получения списка объектов <code>Item</code>.  В этом тестовом приложении мы допускаем использование нескольких реализаций, следовательно, создаем код для интерфейсов.
+
+                <p>
+                Щелкните 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png"> ) или нажмите сочетание клавиш CTRL+N (⌘-N on Mac) для открытия мастера создания файлов. </p></li>
+
+            <li>Выберите категорию Java, а затем команду &quot;Интерфейс Java&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <strong>ItemDao</strong> в качестве имени класса, затем укажите <strong>exercise2</strong> в качестве пакета.</li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Интерфейс будет создан и открыт в редакторе.</li>
+
+            <li>Добавьте метод с именем <code>fetchItems()</code>, который возвращает элемент <code>List</code> объектов <code>Item</code>.
+
+                <pre class="examplecode">
+public interface ItemDao {
+
+    <strong>List&lt;Item&gt; fetchItems();</strong>
+
+}</pre>
+                Используйте подсказку редактора, чтобы добавить оператор импорта для <code>java.util.List</code>.</li>
+
+            <li>Создайте класс <code>ItemProcessor</code>.  Это главный класс для внедрения базовых элементов и выполнения процесса.  базовый элемент.
+
+                <p>
+                Щелкните 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png"> ) или нажмите сочетание клавиш CTRL+N (⌘-N on Mac) для открытия мастера создания файлов. </p></li>
+
+            <li>Выберите категорию Java, а затем выберите класс Java.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <strong>ItemProcessor</strong> в качестве имени класса, затем укажите <strong>exercise2</strong> в качестве пакета. Нажмите кнопку &quot;Завершить&quot;.
+                <p>В редакторе будет создан и открыт новый класс.</p></li>
+
+            <li>Измените класс следующим образом:
+
+<pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    private ItemDao itemDao;
+
+    public void execute() {
+        List&lt;Item&gt; items = itemDao.fetchItems();
+        for (Item item : items) {
+            System.out.println(&quot;Found item &quot; + item);
+        }
+    }
+}</pre></li>
+
+            <li>Исправьте операторы импорта.  Либо щелкните правой кнопкой мыши в редакторе и выберите 'Исправить выражения импорта' или нажмите Ctrl-Shift-I (⌘-Shift-I в Mac). <br> <img alt="Диалоговое окно &apos;Исправить выражения импорта&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/fix-imports.png" title="Щелкните в редакторе правой кнопкой мыши и выберите &apos;Исправить операторы импорта&apos; для добавления операторов импорта к классу"></li>
+
+            <li>Нажмите кнопку &quot;ОК&quot;. Операторы импорта требуются для следующих классов:
+
+                <ul>
+                    <li><code>java.util.List</code></li>
+                    <li><code>javax.inject.Named</code></li>
+                    <li><code>javax.enterprise.context.RequestScoped</code></li>
+                </ul></li>
+
+            <li>Начните с простого DAO, который только создает список элементов и возвращает фиксированный список элементов. <br><br> В окне &quot;Проекты&quot; щелкните правой кнопкой мыши узел пакета <code>exercise2</code> и выберите &quot;Создать &gt; Класс Java&quot;.  В мастере создания класса Java присвойте классу имя <code>DefaultItemDao</code>. Нажмите кнопку &quot;Завершить&quot;. <img alt="Мастер классов Java" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/java-class-wizard2.png" title="Создайте новый класс Java с помощью мастера классов Java"></li>
+
+            <li>Необходимо, чтобы в редакторе элемент <code>DefaultItemDao</code> реализовывал интерфейс <code>ItemDao</code> и обеспечивал реализацию <code>fetchItems()</code>.
+
+<pre class="examplecode">
+public class DefaultItemDao <strong>implements ItemDao</strong> {
+
+    <strong>@Override
+    public List&lt;Item&gt; fetchItems() {
+        List&lt;Item&gt; results = new ArrayList&lt;Item&gt;();
+        results.add(new Item(34, 7));
+        results.add(new Item(4, 37));
+        results.add(new Item(24, 19));
+        results.add(new Item(89, 32));
+        return results;
+    }</strong>
+}</pre>
+                Нажмите сочетание клавиш Ctrl-Shift-I (⌘-Shift-I on Mac) для добавления операторов импорта для <code>java.util.List</code> and <code>java.util.ArrayList</code>.</li>
+
+            <li>Перейдите к классу <code>ItemProcessor</code> (нажмите сочетание клавиш CTRL+TAB).  Чтобы внедрить <code>DefaultItemDao</code> в <code>ItemProcessor</code> добавляется аннотация <code>javax.inject.Inject</code> к полю <code>ItemDao</code> для указания того, что это поле является точкой внедрения.
+
+<pre class="examplecode">
+<strong>import javax.inject.Inject;</strong>
+...
+
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    <strong>@Inject</strong>
+    private ItemDao itemDao;
+
+    ...
+}</pre>
+                <span class="tips">Используйте поддержку автозавершения кода редактора для добавления аннотации <code>@Inject</code> и оператора импорта к классу.  Например, введите <code>@Inj</code>, а затем нажмите CTRL+ПРОБЕЛ.</span></li>
+
+            <li>Наконец, необходим способ для вызова метода <code>execute()</code> в <code>ItemProcessor</code>.  Это можно выполнить в среде SE, но сейчас мы сделаем это на странице JSF.  Создайте новую страницу с именем <code>process.xhtml</code>, которая содержит кнопку для вызова метода <code>execute()</code>. <br><br> Щелкните 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png"> ) или нажмите сочетание клавиш CTRL+N (⌘-N on Mac) для открытия мастера создания файлов. </li>
+
+            <li>Выберите категорию JavaServer Faces, затем выберите страницу JSF.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <strong>process</strong> в качестве имени файла, затем нажмите кнопку &quot;Готово&quot;. <br> <img alt="Мастер создания страниц JSF" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/new-jsf-page.png" title="Создайте новую страницу Facelets с помощью мастера файлов JSF"></li>
+
+            <li>В новом файле <code>process.xhtml</code> добавьте кнопку, которая привязана к методу <code>ItemProcessor.execute()</code>.  При использовании языка выражений имя по умолчанию для управляемого компонента является таким же, как имя класса, но первая буква в нижнем регистре (т.е. <code>itemProcessor</code>).
+
+<pre class="examplecode">
+&lt;h:body&gt;
+    <strong>&lt;h:form&gt;
+        &lt;h:commandButton action=&quot;#{itemProcessor.execute}&quot; value=&quot;Execute&quot;/&gt;
+    &lt;/h:form&gt;</strong>
+&lt;/h:body&gt;</pre></li>
+
+            <li>Перед выполнением проекта установите файл <code>process.xhtml</code> в качестве новой страницы приветствия в дескрипторе развертывания веб-приложения. <br><br> Используйте диалоговое окно среды IDE &quot;Переход к файлу&quot; для быстрого открытия файла <code>web.xml</code>.  В основном меню среды IDE выберите &quot;Переход &gt; Перейти к файлу&quot; (ALT+SHIFT+O; CTRL+SHIFT+O на компьютерах Mac), а затем введите <code>web</code>. <br> <img alt="Диалоговое окно &apos;Перейти к файлу&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/go-to-file.png" title="С помощью диалогового окна &amp;quot;Переход к файлу&amp;quot; быстро найдите файл проекта"></li>
+
+            <li>Нажмите кнопку &quot;ОК&quot;. В представлении XML для файла <code>web.xml</code> выполните следующие изменения.
+
+                <pre class="examplecode">
+&lt;welcome-file-list&gt;
+    &lt;welcome-file&gt;faces/<strong>process.xhtml</strong>&lt;/welcome-file&gt;
+&lt;/welcome-file-list&gt;</pre></li>
+
+            <li>Нажмите кнопку 'Запустить проект' (<img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">) на главной панели инструментов IDE. Проект компилируется и развертывается на GlassFish, и файл <code>process.xhtml</code> открывается в браузере.</li>
+
+            <li>Нажмите кнопку <code>Выполнить</code> на странице. Вернитесь в среду IDE и проверьте протокол сервера GlassFish. Журнал сервера отображается в окне вывода (Ctrl-4; ⌘-4 в Mac) на вкладке 'Сервер GlassFish'. При нажатии кнопки журнал выводит список элементов из реализации DAO по умолчанию. <br> <img alt="Журнал сервера GlassFish в окне вывода" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/output-window.png" title="Проверьте журнал сервера в окне вывода IDE"> <br> <span class="tips">Щелкните правой кнопкой мыши окно вывода и выберите 'Очистить' (Ctrl-L; ⌘-L в Mac) для очистки журнала. На изображении выше протокол очищен перед нажатием кнопки <code>Выполнить</code>.</span></li>
+        </ol>
+
+        <p>Мы создали класс, который реализует интерфейс <code>ItemDao</code>, а при развертывании приложения наши управляемые компоненты в модуле обрабатывались посредством реализации CDI (на основании файла <code>beans.xml</code>  в модуле).  Наша аннотация <code>@Inject</code> указывает на то, что управляемый компонент необходимо внедрить в это поле, и единственная вещь, которую мы знаем о внедряемом компоненте заключается в том, что он должен реализовывать <code>ItemDao</code> или какой-либо подтип этого интерфейса.  В этом случае класс <code>DefaultItemDao</code> полностью отвечает требованиям.</p>
+
+        <p>Что может произойти при наличии нескольких реализаций внедряемого интерфейса <code>ItemDao</code>?  CDI не сможет определить, какую реализацию необходимо выбрать, и выдаст ошибку во время развертывания.  Для устранения этого необходимо использовать квалификатор CDI. Квалификаторы рассматриваются в следующем разделе.</p>
+
+        <br>
+        <h2 id="qualifier">Работа с квалификаторами</h2>
+
+        <p>Квалификатором CDI является аннотация, которую можно применить на уровне класса, для указания, какой компонент является классом, а также на уровне поля (среди других расположений) для указания, какой компонент требуется для внедрения в этой точке.</p>
+
+        <p>Чтобы продемонстрировать необходимость квалификатора в создаваемом приложении, добавим в это приложение другой класс DAO, который также реализует интерфейс <code>ItemDao</code>.  На следующей диаграмме показан сценарий, создаваемый в этом упражнении.  CDI должен уметь определять, какую реализацию компонента необходимо использовать в точке внедрения.  Поскольку существует две реализации интерфейса <code>ItemDao</code>, эта задача решается посредством создания квалификатора с именем <code>Demo</code>.  Затем мы &quot;помечаем&quot; используемый компонент, а также точку внедрения в <code>ItemProcessor</code> аннотаций <code>@Demo</code>.</p>
+
+        <div class="indent">
+            <img alt="На диаграмме CDI отображаются объекты, созданные в этом учебном курсе" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-inject/cdi-diagram-qualify.png" title="Используйте внедрение и квалификаторы CDI для свободного взаимодействия классов в используемом приложении">
+        </div>
+
+        <p>Выполните следующие шаги.</p>
+
+        <ol>
+            <li>В окне &quot;Проекты&quot; щелкните правой кнопкой мыши пакет <code>exercise2</code> и выберите &quot;Создать &gt; Класс Java&quot;.</li>
+
+            <li>В мастере нового класса Java присвойте новому классу имя <strong>AnotherItemDao</strong>, а затем нажмите «Закончить». В редакторе будет создан и открыт новый класс.</li>
+
+            <li>Измените класс, как указано ниже, чтобы он реализовывал интерфейс <code>ItemDao</code> и определял метод <code>fetchItems()</code> интерфейса.
+
+<pre class="examplecode">
+public class AnotherItemDao <strong>implements ItemDao</strong> {
+
+    <strong>@Override
+    public List&lt;Item&gt; fetchItems() {
+        List&lt;Item&gt; results = new ArrayList&lt;Item&gt;();
+        results.add(new Item(99, 9));
+        return results;
+    }</strong>
+}</pre>
+                <p>Убедитесь, что добавлены операторы импорта для <code>java.util.List</code> и <code>java.util.ArrayList</code>.  Для этого щелкните правой кнопкой мыши в редакторе и выберите 'Исправить выражения импорта' или нажмите Ctrl-Shift-I (⌘-Shift-I в Mac).</p>
+
+                <p>
+                Теперь, при наличии двух классов, которые внедряют<code>ItemDao</code>, не так ясно, какой базовый элемент необходимо внедрить.</p></li>
+
+            <li>Для запуска проекта нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png"> ). Обратите внимание, что теперь развертывание проекта завершается сбоем.
+                <p class="tips">Возможно, вам просто необходимо сохранить файл - IDE будет автоматически запускать проект, т.к. запуск при сохранении активирован по умолчанию.</p></li>
+
+            <li>Проверьте журнал сервера в окне вывода (Ctrl-4; ⌘-4 в Mac). Отобразится сообщение об ошибке, аналогичное следующему.
+
+                <pre class="examplecode">Caused by: org.jboss.weld.DeploymentException: Injection point has ambiguous dependencies.
+Injection point: field exercise2.ItemProcessor.itemDao;
+Qualifiers: [@javax.enterprise.inject.Default()];
+Possible dependencies: [exercise2.DefaultItemDao, exercise2.AnotherItemDao]</pre>
+
+                <p class="tips">Для переноса текста по словам в окне вывода щелкните правой кнопкой мыши и выберите команду &quot;Перенос по словам&quot;. При этом не требуется горизонтальная прокрутка.</p>
+
+                <p>
+                Weld (реализация для CDI) выдает ошибку неоднозначной зависимости, означающую, что невозможно определить компонент, который необходимо использовать для указанной точки внедрения.  Большинство ошибок, возникающих при внедрении CDI в Weld, регистрируются во время развертывания, даже если у компонентов в пассивном режиме отсутствует реализация <code>Serializable</code>.</p>
+
+                <p>
+                Полю <code>itemDao</code> в <code>ItemProcessor</code> можно присвоить определенный тип, который соответствует одному из типов реализации (<code>AnotherItemDao</code> или <code>DefaultItemDao</code>). В этом случае этот тип будет соответствовать только одному типу класса.  Однако тогда мы потеряем преимущества кодирования интерфейса, а процедура изменения реализаций без изменения типа поля существенно усложнится. Лучшим решением являются квалификаторы CDI.</p>
+
+                <p>
+                Если CDI проверяет точку внедрения для поиска соответствующего внедряемого компонента, то учитывается не только тип класса, но и квалификаторы.  Мы уже использовали квалификатор по умолчанию с именем <code>@Any</code>.  Теперь создадим квалификатор <code>@Demo</code>, который можно применить для реализации <code>DefaultItemDao</code>, а также для точки внедрения в <code>ItemProcessor</code>.</p>
+
+                <p>
+                IDE предоставляет мастер, позволяющий создавать квалификаторы CDI.</p></li>
+
+            <li>Щелкните 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png"> ) или нажмите сочетание клавиш CTRL+N (⌘-N on Mac) для открытия мастера создания файлов. </li>
+
+            <li>Выберите категорию &quot;Внедрение контекстов и зависимостей&quot;, затем выберите &quot;Тип &quot;квалификатора&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <strong>Demo</strong> в качестве имени класса, затем укажите <strong>exercise2</strong> в качестве пакета.</li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Новый квалификатор <code>Demo</code> открывается в редакторе.
+
+<pre class="examplecode">
+package exercise2;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
+
+/**
+*
+* @author nbuser
+*/
+@Qualifier
+@Retention(RUNTIME)
+@Target({METHOD, FIELD, PARAMETER, TYPE})
+public @interface Demo {
+}</pre>
+
+                <p>Затем этот квалификатор будет добавлен к реализатору DAO на уровне класса.</p>
+                </li>
+                <li>Перейдите в редакторе к <code>DefaultItemDao</code> (нажмите CTRL+TAB), а затем введите &quot;<code>@Demo</code>&quot; над определением класса.
+
+                <pre class="examplecode">
+<strong>@Demo</strong>
+public class DefaultItemDao implements ItemDao {
+
+@Override
+public List&lt;Item&gt; fetchItems() {
+    List&lt;Item&gt; results = new ArrayList&lt;Item&gt;();
+    results.add(new Item(34, 7));
+    results.add(new Item(4, 37));
+    results.add(new Item(24, 19));
+    results.add(new Item(89, 32));
+    return results;
+}
+}</pre>
+
+                <span class="tips">После ввода <code>@</code> нажмите CTRL+ПРОБЕЛ для вызова предложений автозавершения кода.  Редактор распознает квалификатор <code>Demo</code> и выводит <code>@Demo</code> в качестве параметра списка для автозавершения кода.</span></li>
+
+            <li>Для запуска проекта нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png"> ). Сборка и развертывание проекта выполняются без ошибок.
+                <p class="notes"><strong>Примечание.</strong> Для этого изменения может потребоваться явно запустить проект для повторного развертывания приложения вместо развертывания изменений с приращением.</p></li>
+
+            <li>В браузере нажмите кнопку <code>Выполнить</code>, затем вернитесь в среду IDE и проверьте протокол сервера в окне вывода.  На экран будет выведено следующее.
+
+                <pre class="examplecode">INFO: Found item exercise2.Item@1ef62a93 [Value=99, Limit=9]</pre>
+
+                <p>Выводится позиция из класса <code>AnotherItemDao</code>.  Следует помнить о том, что аннотирована реализация <code>DefaultItemDao</code>, но не точка внедрения в <code>ItemProcessor</code>.  За счет добавления квалификатора <code>@Demo</code> к реализации DAO по умолчанию другая реализация стала более походящей для точки внедрения, поскольку она соответствует типу и квалификатору.  <code>DefaultItemDao</code> имеет в настоящий момент квалификатор <code>Demo</code>, который расположен не в точке внедрения, что делает его менее подходящим.</p>
+
+            <p>Затем вы добавите аннотацию <code>@Demo</code> к точке внедрения в<code>ItemProcessor</code>.</p></li>
+            <li>Перейдите в редакторе к <code>ItemProcessor</code> (нажмите CTRL+TAB), а затем выполните следующее изменение.
+
+                <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+@Inject <strong>@Demo</strong>
+private ItemDao itemDao;
+
+public void execute() {
+    List&lt;Item&gt; items = itemDao.fetchItems();
+    for (Item item : items) {
+        System.out.println("Found item " + item);
+    }
+}
+}</pre></li>
+
+            <li>В браузере нажмите кнопку <code>Выполнить</code>, затем вернитесь в среду IDE и проверьте протокол сервера в окне вывода.  На экран снова выводятся данные реализации по умолчанию (<code>DefaultItemDao</code>).
+
+                <pre class="examplecode">
+INFO: Found item exercise2.Item@7b3640f1 [Value=34, Limit=7]
+INFO: Found item exercise2.Item@26e1cd69 [Value=4, Limit=37]
+INFO: Found item exercise2.Item@3274bc70 [Value=24, Limit=19]
+INFO: Found item exercise2.Item@dff76f1 [Value=89, Limit=32]</pre>
+
+                <p>Это произошло из-за сопоставления на основе типа<em>и</em>квалификаторов, а<code>DefaultItemDao</code>является единственным базовым элементом правильного типа и с аннотацией<code>@Demo</code>.</p></li>
+        </ol>
+
+
+        <br>
+        <h2 id="alternative">Альтернативные методы внедрения</h2>
+
+        <p>Существует несколько методов для определения точки внедрения во внедряемом классе.  Пока вы проставили аннотации к полям, которые ссылаются на внедренный объект. Для внедрения поля не требуется методы получения и установки.  Если вы хотите создать неизменяемые управляемые базовые элементы с окончательными полями, то можете использовать внедрение в конструкторе с помощью применения к конструктору аннотации <code>@Inject</code>. Затем вы можете применять любые аннотации к параметрам конструктора с целью квалификации базовых элементов для внедрения. (Разумеется, каждый параметр имеет тип, который может помочь квалифицировать компоненты для внедрения.)  Компонент может иметь только один конструктор с определенными точками внедрения, но он может реализовать более одного конструктора.</p>
+
+        <div class="indent">
+            <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    private final ItemDao itemDao;
+
+    @Inject
+    public ItemProcessor(@Demo ItemDao itemDao) {
+        this.itemDao = itemDao;
+    }
+}</pre>
+        </div>
+
+        <p>Вы также можете вызвать метод инициализации, который может быть передан базовому элементу для внедрения.</p>
+
+        <div class="indent">
+            <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    private ItemDao itemDao;
+
+    @Inject
+    public void setItemDao(@Demo ItemDao itemDao) {
+        this.itemDao = itemDao;
+    }
+}</pre>
+        </div>
+
+        <p>Хотя в вышеприведенном случае для инициализации используется метод установки, вы можете создать любой метод и использовать его для инициализации любого количества базовых элементов при вызове метода. Вы также можете использовать несколько методов инициализации для одного базового элемента.</p>
+
+        <div class="indent">
+            <pre class="examplecode">
+@Inject
+public void initBeans(@Demo ItemDao itemDao, @SomeQualifier SomeType someBean) {
+    this.itemDao = itemDao;
+    this.bean = someBean;
+}</pre>
+        </div>
+
+        <p>Аналогичные правила применяются для сопоставления компонентов независимо от способа определения точки внедрения.  CDI пытается найти лучшее соответствие на основе типа и квалификаторов и выдает сбой развертывания при наличии нескольких соответствующих компонентов или при отсутствии соответствующих компонентов для точки внедрения.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20with%20Injection%20and%20Qualifiers%20in%20CDI">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Дополнительные сведения</h2>
+
+        <p>Перейдите к следующему разделу этой серии для внедрения контекстов и зависимостей:</p>
+
+        <ul>
+            <li><a href="cdi-validate.html">Применение аннотации @Alternative и аннотаций жизненного цикла</a></li>
+        </ul>
+
+        <p>Дополнительные сведения о CDI и Java EE приведены в следующих материалах.</p>
+
+        <ul>
+            <li><a href="cdi-intro.html">Начало работы со внедрением контекстов и зависимостей и JSF 2.0</a></li>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+            <li><a href="http://blogs.oracle.com/enterprisetechtips/entry/using_cdi_and_dependency_injection">Технические рекомендации по Java EE: использование CDI и внедрения зависимостей для Java в приложении JSF 2.0</a></li>
+            <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/gjbnr.html">Учебный курс по Java EE 6, часть V: внедрение контекстов и зависимостей для платформы Java EE</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=299">JSR 299: спецификация внедрения контекстов и зависимостей</a></li>
+        </ul>
+
+    </body>
+</html>

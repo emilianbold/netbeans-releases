@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>NetBeans IDEでのJDK 8サポートの概要</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+       
+        <meta name="description" content="A short guide to using JDK 7 features in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>NetBeans IDEでのJDK 8サポートの概要</h1>
+		<div class="articledate" style="margin-left: 0px;">執筆: Tomas Zezula、Alyona Stashkova</div>
+        <p>NetBeans IDEでは、ラムダ式、繰返し可能な注釈、コンパクト・プロファイルなどの<a href="http://openjdk.java.net/projects/jdk8/features/" target="_blank">JDK 8機能</a>がサポートされています。これらの構造をコード内で使用すると、IDEはそれを認識してエラーを正しく強調表示して、構文を自動的に修正できるようにします。このように、NetBeans IDEは、ユーザーが<a href="http://download.oracle.com/otndocs/jcp/java_se-8-edr-spec/index.html">Java SE 8リリース・コンテンツ初期ドラフト・レビュー仕様</a>と互換性のあるコードを記述するのに役立ちます。 </p>
+		
+        <p>このチュートリアルでは、NetBeans IDEでのJDK 8の起動方法と、コンパクト・プロファイル、ラムダ式、繰返し注釈などのJava SE 8機能に対するIDEサポートの使用方法について学習します。 </p>
+        <p><b>目次</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.4および8.0 Betaに適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0 Betaに適用されます">
+        <ul class="toc">
+		    <li><a href="#platform" title="NetBeans IDEでのJDK 8サポートの有効化">NetBeans IDEでのJDK 8サポートの有効化</a></li>
+			<li><a href="#project" title="JDK 8を使用するためのプロジェクトの構成">JDK 8を使用するためのプロジェクトの構成</a></li>
+			<li><a href="#compact" title="コンパクト・プロファイル・サポートの使用">コンパクト・プロファイル・サポートの使用</a></li>
+            <li><a href="#lambda" title="ラムダ式サポートの使用">ラムダ式サポートの使用</a></li>
+            <li><a href="#annot" title="繰返し注釈サポートの使用">繰返し注釈サポートの使用</a></li>
+			
+            <li><a href="#see" title="関連項目">関連項目</a></li>
+        </ul>
+
+        <p><b>このチュートリアルを完了するには、次の表に示すソフトウェアとリソースが必要です。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン7.4および8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">バージョン8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>NetBeans IDEでのJDK 8サポートの有効化</h2>
+        <p>JDK 8をシステムにダウンロードしてインストールした後、IDEに次のように登録する必要があります。</p>
+		
+        <ol>
+          <li>IDEで、メイン・メニューから「ツール」>「Javaプラットフォーム」を選択します。</li>
+		  <li>「Javaプラットフォーム・マネージャ」ダイアログ・ボックスで「プラットフォームの追加」をクリックします。 </li>
+		  <li>「Javaプラットフォームの追加」ダイアログ・ボックスでJava Standard Editionを選択して、「次」をクリックします。 </li>
+		  <li>JDKが含まれているディレクトリを指定して、「次」をクリックします。 
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/jdk8.png" rel="lytebox" title="選択されたJDK 8"> <img alt="選択されたJDK 8" border="1" src="../../../images_www/articles/80/java/javase-jdk8/jdk8_small.png"></a> </p></li>
+		  <li>「プラットフォームのソース」のzipファイルとAPIドキュメントのデフォルトの場所が有効であることを確認します。「終了」をクリックして「Javaプラットフォームの追加」ダイアログ・ボックスを閉じます。<br>JDK 8がIDEでプラットフォームとして登録されます。 
+		    <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/jdk8registered.png" rel="lytebox" title="登録されているJavaプラットフォーム"> <img alt="登録されているJavaプラットフォーム" border="1" src="../../../images_www/articles/80/java/javase-jdk8/jdk8registered_small.png"></a> </p></li>
+		<li>「プラットフォーム」リストで「JDK 1.8」が選択されていることを確認し、「閉じる」をクリックします。</li>
+    </ol>
+	<h2><a name="project"></a>JDK 8を使用するためのプロジェクトの構成</h2>
+	<p>IDEでJDK 8を登録した後は、JDK 8をコンパイル、実行、およびデバッグに使用するようにプロジェクトを構成する必要があります。 </p>
+	<p>NetBeans IDEに付属するアナグラム・ゲームで新規Java SEプロジェクトを作成する例によって開始します。</p>
+	<ol>
+	<li>IDEで、「ファイル」>「新規プロジェクト」を選択します。</li>
+	<li>新規プロジェクト・ウィザードで、「サンプル」カテゴリを展開して「Java」を選択します。</li>
+	<li>「プロジェクト」リストで「アナグラム・ゲーム」を選択します。「次」をクリックします。</li>
+	<li>「名前と場所」パネルで、「プロジェクト名」および「プロジェクトの場所」フィールドのデフォルト値をそのままにします。</li>
+	<li>「終了」をクリックします。<br>Java SEプロジェクトがIDEで作成され、「プロジェクト」ウィンドウで開かれます。</li>
+	</ol>
+	<p><b>JDK 8を使用するようにプロジェクトを構成するには:</b></p>
+	<ol>
+	<li>「プロジェクト」ウィンドウでAnagramGameプロジェクトを右クリックし、コンテキスト・メニューから「プロパティ」を選択します。 </li>
+	<li>「プロジェクト・プロパティ」ダイアログ・ボックスで、「ライブラリ」カテゴリを選択し、JDK 1.8をJavaプラットフォームとして設定します。 
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_jdk8.png" rel="lytebox" title="Javaプラットフォームとして設定されているJDK 8"> <img alt="Javaプラットフォームとして設定されているJDK 8" border="1" src="../../../images_www/articles/80/java/javase-jdk8/prj_jdk8_small.png"></a> </p></li>
+	 <li>「ソース」カテゴリを選択して、「ソース/バイナリ形式」をJDK 8に設定します。
+		
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_source_jdk8.png" rel="lytebox" title="ソース/バイナリ形式のJDK 8への設定"> <img alt="ソース/バイナリ形式のJDK 8への設定" border="1" src="../../../images_www/articles/80/java/javase-jdk8/prj_source_jdk8_small.png"></a> </p> </li>
+	<li>「OK」をクリックして変更を保存します。<br>プロジェクトが、新しいJDK 8言語機能を認識するように設定されています。</li>
+	</ol>
+	<h2><a name="compact"></a>コンパクト・プロファイル・サポートの使用</h2>
+		 <p>Java SE 8では、プラットフォーム全体を必要としないアプリケーションのデプロイおよび実行に使用できる、<a href="http://openjdk.java.net/jeps/161">Java SEプラットフォーム仕様のサブセット・プロパティ</a>が導入されます。  </p>
+		 <p>これまでに定義されている3つのプロファイルの名前は<i>compact1</i>、<i>compact2</i>および<i>compact3</i>です。各プロファイルはJava APIパッケージの特定のセットを指定し、そのプロファイルよりも小さいプロファイルのすべてのAPIが含まれます。つまり、<i>compact1</i>は<i>compact2</i>のサブセットで、compact2は<i>compact3</i>のサブセット、compact3は<i>JRE全体</i>のサブセットとなります。各プロファイルに含まれるパッケージの一覧を次の表に示します。 </p>
+		 
+		 <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Compact1</th>
+                    <th class="tblheader" scope="col">Compact2</th>
+					<th class="tblheader" scope="col">Compact3</th>
+					<th class="tblheader" scope="col">JRE全体</th>
+                </tr>
+                <tr>
+                    <td>
+					<ul>
+					<li>java.lang</li>
+					<li>java.io</li>
+                    <li>java.nio</li>
+                    <li>java.text</li>
+                    <li>java.math</li>
+                    <li>java.net</li>
+                    <li>javax.net</li>
+<li>java.util</li>
+<li>java.util.logging</li>
+<li>java.security</li>
+<li>javax.crypto</li>
+<li>javax.security</li>
+					</ul></td>
+                    <td><i>compact1</i>および次のパッケージ:
+					<ul>
+<li>java.sql</li>
+<li>javax.sql</li>
+<li>javax.xml</li>
+<li>org.w3c.dom</li>
+<li>org.xml.sax</li>
+<li>java.rmi</li>
+<li>javax.rmi</li>
+<li>javax.transaction</li></ul></td>
+					<td><i>compact2</i>および次のパッケージ:
+					<ul>
+<li>java.lang.management</li>
+<li>javax.management</li>
+<li>javax.naming</li>
+<li>javax.sql.rowset</li>
+<li>javax.security.auth.kerberos</li>
+<li>org.ietf.jgss</li>
+<li>javax.script</li>
+<li>javax.xml.crypto</li>
+<li>java.util.prefs</li>
+<li>javax.security.sasl</li>
+<li>javax.security.acl</li>
+<li>java.lang.instrument</li>
+<li>javax.annotation.processing</li>
+<li>javax.lang.model</li>
+<li>javax.lang.model.element</li>
+<li>javax.lang.model.type</li>
+<li>javax.lang.model.util</li>
+<li>javax.tools</li>
+</ul></td>
+					<td ><i>compact3</i>および次のパッケージ:
+					<ul>
+					<li>corba</li>
+					<li> awt</li> 
+					<li>swing</li></ul></td>
+                </tr>
+				<tr>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td></tr>
+		   </tbody>
+	</table>
+	<p>IDEでは必要に応じて、各プロファイルとJRE全体間を切り替えられます。 </p>
+		 <p><b>Java SEプロジェクトのプロジェクト・プロファイルを設定するには:</b></p>
+		 <ol>
+		 <li>プロジェクトを右クリックし、コンテキスト・メニューから「プロパティ」を選択します。 </li>
+		 <li>「プロジェクト・プロパティ」ダイアログ・ボックスで、「ソース」カテゴリを選択します。 </li>
+		 <li>「プロファイル」ドロップダウン・リストを使用して、アプリケーションでサポートされるJDK 8プロファイルを指定します。
+		 
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_src_profile.png" rel="lytebox" title="プロファイルのリスト"> <img alt="プロファイルのリスト" border="1" src="../../../images_www/articles/80/java/javase-jdk8/prj_src_profile_small.png"></a> </p> 
+		   </li>
+		<li>「OK」をクリックします。</li>
+		 </ol>
+		<p>プロジェクトで使用されるクラスが指定されたプロファイルに属すかどうかを、IDEでどのように確認するか参照するには、「Compact1」をAnagramGameプロジェクトのプロファイルとして選択して、「OK」をクリックします。<br>IDEには、AnagramGameプロジェクトが<i>compact1</i>プロファイルと互換性がないことを通知するエラーが表示されます。</p>
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/profile.png" rel="lytebox" title="プロファイル"> <img alt="プロファイル" border="1" src="../../../images_www/articles/80/java/javase-jdk8/profile_small.png"></a> </p> 
+		 <p>戻ってAnagramGameプロジェクトのプロファイルを、Anagramsアプリケーションによってサポートされている「JRE全体」に設定できます。 </p>
+		 
+		 
+
+	 
+         <h2><a name="lambda"></a>ラムダ式サポートの使用</h2>
+    
+	<p><a href="http://openjdk.java.net/projects/lambda/">ラムダ式</a>は、匿名内部クラスの構造をよりコンパクトに表すことで、匿名内部クラスの重厚性に対応します。</p>
+	<p>ラムダ式の一般的な構文は、一連のパラメータ、矢印トークン、および関数本体(単一の式または文のブロック)で構成されます。</p>
+	<pre>(int a, int b) -&gt; a * a + b * b;</pre>
+	<p>NetBeans IDEでは、ラムダ前の式が検出され、その構造をラムダ式に変換することを提案するヒントがエディタで表示されます。</p>
+	<p>たとえば次のスクリーンショットに示すように、AnagramGameプロジェクトでは、<tt>Anagrams.java</tt>ファイルのラムダ前の構造があります。</p>
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda.png" rel="lytebox" title="ラムダ"> <img alt="クリックされたラムダ" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_small.png"></a> </p> 
+					 <p>マージンの電球をクリックすると、または[Alt]+[Enter]を押すと、IDEでは一連の使用可能なオプションとともに「ラムダを使用」ヒントが表示されます。 </p>
+					  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_clicked.png" rel="lytebox" title="クリックされたラムダ"> <img alt="クリックされたラムダ" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_clicked_small.png"></a> </p> 
+					 <p>「ラムダを使用」ヒントが選択された場合、IDEでは匿名内部クラスがラムダ式に変換されます。 </p>
+                     <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_converted.png" rel="lytebox" title="変換されたラムダ"> <img alt="変換されたラムダ" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_converted_small.png"></a> </p> 
+					 <p>「検査の実行」オプションを選択した場合、IDEでは「検査」ダイアログ・ボックスが表示され、ここでは指定されたファイルで単一の「ラムダに変換」検査を実行できます。</p>
+					 <p class="notes"><b>注意:</b> IDEでの検査操作の開始の詳細は、<i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&amp;id=NBDAG613">ソース・コード分析およびリファクタリングでのヒントの使用</a>を参照してください。</p>
+					 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/inspect.png" rel="lytebox" title="検査の実行"> <img alt="検査の実行" border="1" src="../../../images_www/articles/80/java/javase-jdk8/inspect_small.png"></a> </p> 
+					 
+					 <p>「検査」ボタンを押して検査を開始すると、IDEではファイル内のすべてのラムダ前の構造が識別され、「検査」ウィンドウに表示されます。 </p>
+					 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_inspection.png" rel="lytebox" title="ラムダの検査"> <img alt="ラムダの検査" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_inspection_small.png"></a> </p> 
+					 <p>「検査と変換の実行」オプションを選択した場合、IDEでは「検査と変換」ダイアログ・ボックスが表示され、ここでは指定されたコードで単一の「ラムダに変換」検査(または選択した構成)を実行し、必要に応じてリファクタリングできます。</p>
+					 <p class="notes"><b>注意:</b> IDEでの検査と変換操作の開始の詳細は、<i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&amp;id=NBDAG613">ソース・コード分析およびリファクタリングでのヒントの使用</a>を参照してください。</p>
+					  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_transform.png" rel="lytebox" title="ラムダのリファクタリング"> <img alt="ラムダのリファクタリング" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_transform_small.png"></a> </p>
+		             <h2><a name="annot"></a>繰返し注釈サポートの使用</h2>
+        <p>Java SE 8の機能には、次のコード例に示すように、単一のプログラム要素に同じタイプの注釈を適用することを可能にする、<a href="http://openjdk.java.net/jeps/120">繰返し注釈</a>が含まれます。</p>
+        
+		  <pre class="examplecode">
+@ProjectServiceProvider(service=Foo.class,&quot;org-nebeans-modules-j2seproject&quot;)
+@ProjectServiceProvider(service=Foo.class,&quot;org-nebeans-modules-j2eeproject&quot;)
+public class MyService extends Foo {}
+ </pre>
+ <p>繰返し注釈に対するNetBeans IDEサポートを使用すると、繰返し可能な注釈タイプ、および含まれる注釈タイプが宣言されていれば、同じ注釈を使用してコードを書込みできます。 </p>
+ <ul>
+ <li>繰返し可能な注釈タイプは<tt>@Repeatable ()</tt>でマーキングする必要があり、マーキングしないとコンパイル時にエラーが発生します
+ </li>
+ <li>含まれる注釈タイプには配列タイプによる<tt>value</tt>要素があることが必要であり、配列タイプのコンポーネント・タイプは繰返し可能な注釈タイプである必要があります</li>
+ </ul>
+        
+        
+
+         <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Overview%20of%20JDK%208%20Support%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>関連項目</h2>
+        <p>JDK 8の詳細は、次のドキュメントを参照してください。 </p>
+        <ul>
+            
+			
+			<li><a href="http://jdk8.java.net/">JDK 8プロジェクト</a></li>
+			<li><a href="http://download.java.net/jdk8/docs/">Java Platform Standard Edition 8初期アクセス・ドキュメント</a></li>
+			<li><a href="http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/Lambda-QuickStart/index.html" target="_blank">Java SE 8: ラムダ・クイック・スタート</a> </li>
+            <li><a href="http://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html" target="_blank">Javaチュートリアル: ラムダ式</a></li>
+			<li><a href="http://docs.oracle.com/javase/tutorial/java/annotations/repeating.html">Javaチュートリアル: 繰返し注釈</a></li>
+    </ul>
+
+        <p>NetBeans IDEでのJavaアプリケーションの開発の詳細は、次を参照してください。 </p>
+        <ul>
+		<li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&amp;id=NBDAG366">Javaプロジェクトの作成</a></li>
+          <li><a href="javase-intro.html">一般的なJavaアプリケーション開発</a></li>
+          
+          <li><a href="../../trails/java-se.html">一般的なJava開発の学習</a></li>
+        </ul>
+</body>
+</html>

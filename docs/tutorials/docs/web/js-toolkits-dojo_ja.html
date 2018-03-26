@@ -1,0 +1,456 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial demonstrating how to connect a
+              Dojo Tree widget to an ArrayList using JSON">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, 
+            JavaScript, JavaScript Toolkit, Dojo, JavaScript Editor, web 2.0, Ajax, open
+            source, web technology">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>JSONを使用したDojoツリーのArrayListへの接続 - NetBeansチュートリアル</title>
+    </head>
+
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>JSONを使用したDojoツリーのArrayListへの接続</h1>
+
+        <p>Webアプリケーションでは、Web 2.0機能の重要性が増しつつあります。多くのWebアプリケーションは<a href="http://www.dojotoolkit.org/">Dojo</a>などのJavaScriptツールキットを使用しており、これにより、Webページの動作をデスクトップ・インタフェースに近づけることができる一方、ブラウザの非互換性に対処し、標準に準拠した使いやすく保守可能なコードを利用できます。</p>
+
+        <p>このチュートリアルは、「<a href="http://developers.sun.com/learning/javaoneonline/j1lab.jsp?lab=LAB-5573&yr=2009&track=1">Java Oneハンズオン・ラボ: Leveraging JavaScript Toolkits for End-to-End Connectivity in Web Applications</a>」を基にしており、<a href="http://dojocampus.org/explorer/#Dijit_Tree_Basic">Dojoツリー・ウィジェット</a>をWebページに追加して構成する方法と、サーバー側からJSON形式でツリー・リクエストに応答できるようにする方法について説明しています。このとき、<a href="http://json.org">http://json.org</a>から無料で利用できる一連のJavaクラスを使用して、ArrayListのデータを処理してJSON形式にします。</p>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        
+        <p><strong>目次</strong></p>
+
+        <ul class="toc">
+            <li><a href="#addLib">サンプル・プロジェクトを開く</a></li>
+            <li><a href="#linkFromFile">プロジェクト・ファイルからツールキット・リソースへのリンク</a></li>
+            <li><a href="#addWidget">Dojoツリー・ウィジェットの追加と構成</a></li>
+            <li><a href="#addJSON">サードパーティJSON変換ソースをJARファイルとしてプロジェクトに追加</a></li>
+            <li><a href="#prepareServlet">JSONレスポンスを開始するサーブレットの準備</a></li>
+            <li><a href="#seeAlso">関連項目</a></li>
+        </ul>
+
+        <a name="requiredSoftware"></a>
+        <p><strong>このドキュメントを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFishサーバー<br><em class="indent margin-around">または</em><br>Tomcatサーブレット・コンテナ</td>
+                    <td class="tbltd1">Open Source Edition 3.1.xまたは4.x<br><em class="margin-around indent"> </em><br>7.xまたは8.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.dojotoolkit.org/download">Dojoツールキット</a></td>
+                    <td class="tbltd1">バージョン1.8.x以降</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/DojoTreeSample.zip">Dojoサンプル・プロジェクト</a></td>
+                    <td class="tbltd1">n/a</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <br>
+        <p><strong class="notes">注意: </strong></p>
+
+        <ul>
+            <li>このチュートリアルを完了するには、いくつかの手順でインターネット接続が必要になります。</li>
+
+            <li>NetBeans IDE Java EEのJavaダウンロード・バンドルでは、IDEとともにGlassFish Server Open Source Editionをインストールして登録することもできます。このチュートリアルでは、クライアント・サーバー通信のシミュレーションを行うために、サーバーが必要です。</li>
+
+            <li><a name="final"></a>完成したプロジェクトは次のようになります。<br> <img alt="ブラウザに表示された完成した課題" class="b-all margin-around" src="../../../images_www/articles/73/web/js-toolkits-dojo/dojo-tree-complete.png" title="ブラウザに表示された完成した課題">
+            </li>
+        </ul>
+
+        <br><a name="addLib"></a>
+        <h2>サンプル・プロジェクトを開く</h2>
+
+        <p>最初に、IDEでサンプル・プロジェクトを開きます。プロジェクトが開いたら、「プロジェクト」ウィンドウでプロジェクト・ノードを展開し、プロジェクトで使用されるDojoリソースおよびライブラリを調査します。</p>
+
+        <ol>
+            <li>チュートリアルの<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaScript%252FDojoTreeSample.zip">Dojoサンプル・プロジェクト</a>をコンピュータ上の場所にダウンロードします。</li>
+
+            <li>IDEツールバーの「プロジェクトを開く」ボタン(<img alt="「プロジェクトを開く」ボタン" src="../../../images_www/articles/73/web/js-toolkits-dojo/open-project-btn.png">)をクリックして、「プロジェクトを開く」ダイアログ・ボックスを開きます。</li>
+
+            <li>「プロジェクトを開く」ダイアログで、コンピュータ上のDojoサンプル・プロジェクトを特定し、「プロジェクトを開く」をクリックします。
+                
+                <p>IDEで<code>DojoTreeSample</code>プロジェクトを開くと、参照の問題が存在することを示すエラー・バッジがプロジェクトに付きます。</p>
+                
+                <img alt="DojoTreeSampleプロジェクトが赤いテキストとエラー・バッジで表示された「プロジェクト」ウィンドウ" class="b-all margin-around" src="../../../images_www/articles/80/web/js-toolkits-dojo/proj-win-ref-problems.png" title="プロジェクトの参照の問題を示す赤いテキストとエラー・バッジ">
+
+                <p>
+                プロジェクトで使用されているJavaクラス(<code>Tribe</code>および<code>TribeDataManager</code>)はJSON JARファイルに見つかったクラスを参照していますが、これは後で<a href="#addJSON">「サードパーティJSON変換ソースをJARファイルとしてプロジェクトに追加」</a>の項で追加するため、参照の問題が存在します。</p>
+                
+                <p class="notes"><strong>注意: </strong>「プロジェクト」ウィンドウ([Ctrl]-[1]、Macの場合は[⌘]-[1])は、プロジェクト内の重要な項目の<em>論理ビュー</em>を示す、プロジェクト・ソースへのメイン・エントリ・ポイントです。「ファイル」ウィンドウ([Ctrl]-[2]、Macの場合は[⌘]-[2])には、プロジェクトの<em>ディレクトリ・ベースのビュー</em>が表示され、「プロジェクト」ウィンドウでは表示されないすべてのファイルやフォルダが含まれます。 </p>
+            </li>
+
+            <li>「プロジェクト」ウィンドウで<code>Web Pages</code>ノードを展開します。
+                <p>「プロジェクト」ウィンドウの<code>Web Pages</code>ノードの下に<tt>resources</tt>フォルダが表示されます。<tt>resources</tt>フォルダには、<a href="http://www.dojotoolkit.org/download">Dojo toolkit</a>からのDojoコアとDijitライブラリが含まれます。Dojoのツリー・ウィジェットを実装するには、コア・ライブラリの<code>ItemFileReadStore</code>モジュールと、Dijitライブラリに含まれている<code>Tree</code>ウィジェット自体の、2つのコンポーネントが基本的に必要です。</p>
+                <ul>
+                    <li><code><a href="http://docs.dojocampus.org/dojo/data/ItemFileReadStore">dojo.data.ItemFileReadStore</a></code>: JSON構造化コンテンツをHTTPエンドポイント(このチュートリアルではサーブレット)から読み取り、すべての項目をメモリー内に保存して単純にすばやくアクセスできるようにします。</li>
+
+                    <li><code><a href="http://docs.dojocampus.org/dijit/Tree">dijit.Tree</a></code>: <code>ItemFileReadStore</code>から取得されたJSONデータを表示するツリー・ウィジェットです。</li>
+                </ul>
+                <p class="notes"><strong>注意:</strong>このプロジェクトでは、<code>DojoX</code>ライブラリは不要です。</p>
+                </li>
+                <li>「プロジェクト」ウィンドウで<code>Libraries</code>ノードを展開し、必要なすべてのライブラリがクラスパスにあることを確認します。
+                    <p class="notes"><strong>注意:</strong>構成によっては、不足しているサーバーの問題を解決しなければならないことがあります。<code>Libraries</code>ノードの下に<tt>&lt;Missing Java EE Server></tt>ノードが表示される場合は、プロジェクト・ノードを右クリックし、ポップアップ・メニューで「不足しているサーバーの問題を解決」を選択します。</p>
+                    <div class="indent">
+                    <img alt="Dojoリソースが表示された「プロジェクト」ウィンドウ" class="b-all margin-around" src="../../../images_www/articles/80/web/js-toolkits-dojo/proj-win-dojo-resources.png" title="プロジェクトの「resources」フォルダに追加されたDojoライブラリとDijitライブラリ">
+                <p>「参照の解決」ダイアログ・ボックスで「GlassFish Server」を選択します。「OK」をクリックします。</p>
+                    <img alt="Dojoリソースが表示された「プロジェクト」ウィンドウ" class="b-all margin-around" src="../../../images_www/articles/80/web/js-toolkits-dojo/dojo-add-server.png" title="プロジェクトの「resources」フォルダに追加されたDojoライブラリとDijitライブラリ">
+                </div>
+            </li>
+        </ol>
+
+        <p>このステージで、IDEで<code>DojoTreeSample</code>プロジェクトが正常に開かれ、Dojoライブラリがアプリケーションに含められたことが確認されました。次のステップでは、Treeウィジェットをエンド・ユーザーに表示するHTMLファイルの作業を始めます。</p>
+
+        <a name="linkFromFile"></a>
+        <h2>プロジェクト・ファイルからツールキット・リソースへのリンク</h2>
+
+        <p>ツールキットのリソースを使用するには、コア・ライブラリに含まれている<code>dojo.js</code>ファイルにリンクする必要があります。<code>dojo.js</code>ファイルは、Dojoの<em>ソース・ローダー</em>であり、使用すべき正しいホスト環境を判定します。その間に、<code>parseOnLoad</code>パラメータを追加して<code>djConfig</code>の構成も行うことができます。</p>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウで、<code>dojoDemo.html</code>ファイルをダブルクリックしてエディタで開きます。</li>
+
+            <li><code>dojoDemo.html</code>ファイルで、次の<code>&lt;script></code>タグ(太字)を<code>&lt;head></code>タグの間に追加します。
+
+<pre class="examplecode">&lt;!-- TODO: link to Dojo resources here --&gt;
+
+<strong>&lt;script type="text/javascript"&gt;
+    var djConfig = {parseOnLoad: true,
+        isDebug: true};
+&lt;/script&gt; 
+&lt;script
+    type="text/javascript"
+    src="resources/dojo/dojo.js"&gt;
+&lt;/script&gt;</strong>
+    
+&lt;/head&gt;</pre>
+                <ul>
+                    <li><code><a href="http://dojotoolkit.org/reference-guide/1.6/djConfig.html">djConfig</a></code>を使用すると、Dojoの動作を制御するグローバル設定をオーバーライドできます(たとえば、<code>parseOnLoad</code>プロパティを使用して)。</li>
+
+                    <li><code>parseOnLoad</code>を<code>true</code>に設定すると、ページがロードされるときに必ずウィジェットとページ・マークアップが解析されます。</li>
+                </ul></li>
+
+            <li><a name="themes"></a>次の<code>@import</code>文(太字)を<code>&lt;head></code>タグの間と追加する<code>&lt;script></code>タグの下に追加して、ツールキットに含まれる<code>nihilo</code><a href="http://docs.dojocampus.org/dijit/themes">サンプル・テーマ</a>へのリンクを追加します。 
+                
+<pre class="examplecode">&lt;script type="text/javascript"&gt;
+    var djConfig = {parseOnLoad: true,
+        isDebug: true};
+&lt;/script&gt; 
+&lt;script
+    type="text/javascript"
+    src="resources/dojo/dojo.js"&gt;
+&lt;/script&gt;
+
+<strong>&lt;style type=&quot;text/css&quot;&gt;
+    @import &quot;resources/dijit/themes/nihilo/nihilo.css&quot;;
+&lt;/style&gt;</strong></pre>
+                
+                <p><code>nihilo</code>テーマはツールキットにデフォルトで含まれています。「プロジェクト」ウィンドウで<code>dijit/themes</code>フォルダを展開して、デフォルトで提供されている他のサンプル・テーマを表示できます。</p>
+            </li>
+
+            <li>次のクラス・セレクタをページの<code>&lt;body></code>タグに追加して、使用しているテーマの名前を指定します。これを実行すると、ページにロードされているすべてのDojoウィジェットが、テーマに関連付けられたスタイルを使用してレンダリングされます。
+
+                <pre class="examplecode">&lt;body <strong>class=&quot;nihilo&quot;</strong>&gt;</pre>
+            </li>
+        </ol>
+
+        <p>この段階で、<code>dojoDemo.html</code>ファイルは、Dojoコア・ライブラリとDijitライブラリを参照する任意のコードを受け入れる準備ができ、すべてのウィジェットをDojoの<code>nihilo</code>テーマを使用してレンダリングするようになりました。</p>
+
+        <a name="addWidget"></a>
+        <h2>Dojoツリー・ウィジェットの追加と構成</h2>
+
+        <p><code>dojo.js</code>にリンクした後は、Dojoのモジュールとウィジェットを使用するコードを追加し始めることができます。まず、<code><a href="http://docs.dojocampus.org/dojo/require">dojo.require</a></code>文を使用して、<code>dijit.Tree</code>ウィジェットと<code>dojo.data.ItemFileReadStore</code>をロードするコードを追加します。次に、ウィジェットとモジュール自体をページに追加します。</p>
+
+        <ol>
+            <li>次の<code>dojo.require</code>文(太字)をファイルの<tt>&lt;body&lt;</tt>タグの間に追加します。
+
+<pre class="examplecode">&lt;script type="text/javascript"&gt;
+
+    // TODO: add dojo.require statements here
+    <strong>dojo.require(&quot;dojo.data.ItemFileReadStore&quot;);
+    dojo.require(&quot;dijit.Tree&quot;);</strong>
+
+&lt;/script&gt;</pre>
+
+                <ul>
+                    <li><code><a href="http://docs.dojocampus.org/dojo/data/ItemFileReadStore">dojo.data.ItemFileReadStore</a></code>: JSON構造化コンテンツをHTTPエンドポイントから読み取り(<a href="#prepareServlet">JSONレスポンスを開始するサーブレットの準備</a>で、この目的に使用するサーブレットを実装します)、すべての項目をメモリー内に保存して単純にすばやくアクセスできるようにします。</li>
+
+                    <li><code><a href="http://docs.dojocampus.org/dijit/Tree">dijit.Tree</a></code>: <code>ItemFileReadStore</code>から取得されたJSONデータを表示するツリー・ウィジェットです。</li>
+                </ul></li>
+
+            <li><a name="TribeServlet"></a>次のコード(太字)を追加して、<code>ItemFileReadStore</code>および<code>Tree</code>ウィジェットを追加します。
+
+<pre class="examplecode">
+&lt;!-- TODO: specify AJAX retrieval --&gt;
+
+&lt;!-- TODO: add Tree widget and configure attributes --&gt;
+<strong>&lt;div dojoType=&quot;dojo.data.ItemFileReadStore&quot;
+     url=&quot;TribeServlet&quot;
+     jsId=&quot;indianStore&quot;&gt;
+&lt;/div&gt;
+
+&lt;div dojoType=&quot;dijit.Tree&quot;
+     store=&quot;indianStore&quot;
+     query=&quot;{type:'region'}&quot;
+     label=&quot;North American Indians&quot;&gt;
+&lt;/div&gt;</strong></pre>
+
+                <ul>
+                    <li><code>ItemFileReadStore</code>では、JSONデータを返すサーバー側リソースを指すように<code>url</code>プロパティを指定する必要があります。後で説明するとおり、これは<code>TribeServlet</code>です。<code>jsId</code>プロパティを使用すると、取得されたJSONデータにIDを付けることができ、ウィジェットはそれを使用してデータ・ストアを参照できます。</li>
+
+                    <li><code>ツリー</code>では、<code>store</code>プロパティを使用して、JSONデータを提供する<code>ItemFileReadStore</code>を指します。<code>query</code>プロパティを使用すると、JSONファイルで使用されているキーワードに基づいて、データの表示を調整できます。</li>
+                </ul>
+                <p class="notes"><strong>注意:</strong>このコードを追加した後でエディタに表示される警告は無視できます。</p>
+            </li>
+        </ol>
+
+        <p>この段階で、<code>dojoDemo.html</code>ファイルは完成し、プロジェクトに対する<em>クライアント側の</em>変更はすべて適用されました。次の2つの手順では、ツリー・リクエストが行われたときのプロジェクトの<em>サーバー側の</em>動作に影響を与える変更を加えます。</p>
+
+        <br><a name="addJSON"></a>
+        <h2>サードパーティJSON変換ソースをJARファイルとしてプロジェクトに追加</h2>
+
+        <p>このチュートリアルでは、ArrayListサンプル・データを抽出するロジックが、<code>Tribe</code>クラスと<code>TribeDataManager</code>クラスに準備されています。基本的に、JSON変換を処理するサードパーティJavaクラスをプロジェクトに含め、これらのクラスの<code>import</code>文を<code>Tribe</code>クラスと<code>TribeDataManager</code>クラスに追加するのみで済みます。ただし、これを実行するには、まずサードパーティJavaクラスをコンパイルし、Java Archive (JARファイル)を作成する必要があります。これには、IDEのJavaクラス・ライブラリ・ウィザードを使用できます。</p>
+
+        <ol>
+            <li><a href="http://json.org/java">http://json.org/java</a>にアクセスすると、JSON変換用のJavaクラスは無料で利用できます。「Free source code is available」というリンクをクリックし、ソースが入っている<code>JSON-java-master.zip</code>ファイルをダウンロードします。</li>
+
+            <li><code>JSON-java-master.zip</code>ファイルを解凍すると、抽出されたフォルダには、<a href="http://json.org/java">http://json.org/java</a>に一覧表示されているソースが入っています。
+
+                <p>この時点で、これらのソースをコンパイルして、<code>DojoTreeSample</code>プロジェクトに追加するJava Archive (JARファイル)を作成します。</p></li>
+
+            <li>ツールバーの「新規プロジェクト」ボタン(<img alt="「新規プロジェクト」ボタン" src="../../../images_www/articles/73/web/js-toolkits-dojo/new-project-btn.png">)をクリックして新規プロジェクト・ウィザードを開きます。</li>
+
+            <li>新規プロジェクト・ウィザードで、「Java」カテゴリの「Javaクラス・ライブラリ」プロジェクト・テンプレートを選択します。「次」をクリックします。</li>
+
+            <li>Javaクラス・ライブラリ・ウィザードの「名前と場所」パネルで、「プロジェクト名」として「<strong><code>json</code></strong>」を入力します。「終了」をクリックします。 
+                <p>「終了」をクリックすると新しいプロジェクトが作成され、「プロジェクト」ウィンドウで開きます。</p>
+                
+                <p>Dojoツールキット・リソースを<tt>DojoTreeSample</tt>プロジェクトにコピーしたのと同じ方法で、<tt>json</tt>プロジェクトにダウンロードするJSONソースをコピーする必要があります。</p>
+            </li>
+
+            <li><code>JSON-java-master.zip</code>アーカイブを抽出し、ルート・フォルダにあるJavaソース・ファイルをコピーします([Ctrl]-[C]、Macの場合は⌘-C)。
+                <p class="notes"><strong>注意:</strong>抽出したアーカイブのルート・フォルダにある<code>zip</code>フォルダとその内容をコピーする必要はありません。</p></li>
+
+            <li>IDEの「プロジェクト」ウィンドウで「ソース・パッケージ」ノードを右クリックし、ポップアップ・メニューで「新規」>「Javaパッケージ」を選択します。</li>
+            <li>パッケージ名として<strong>json</strong>と入力します。「終了」をクリックします。</li>
+            <li><code>json</code>ソース・パッケージを右クリックし、ポップアップ・メニューで「貼付け」を選択します。
+
+                <p>パッケージを展開すると、<tt>json</tt>ソースが表示されます。</p>
+
+                <img alt="「プロジェクト」ウィンドウ - 「json」プロジェクトに含まれているソース" class="b-all margin-around" src="../../../images_www/articles/73/web/js-toolkits-dojo/proj-win-json-sources.png" title="新しい「json」プロジェクトに含まれるようになったソース"></li>
+
+            <li>「プロジェクト」ウィンドウで「<code>json</code>」プロジェクト・ノードを右クリックし、「消去してビルド」を選択してプロジェクトをビルドします。
+
+                <p>プロジェクトをビルドすると、すべてのJavaクラスが<code>.class</code>ファイルにコンパイルされます。IDEは、コンパイル済クラスを格納するための<code>build</code>フォルダと、プロジェクトのJARファイルを格納する<code>dist</code>フォルダを作成します。これらのフォルダはIDEの「ファイル」ウィンドウから表示できます。</p>
+
+                <p><code>json</code>プロジェクトをビルドした後、「ファイル」ウィンドウを開き([Ctrl]-[2]、Macの場合は[⌘]-[2])、<code>json</code>フォルダを展開します。<code>build</code>フォルダには<code>JSON-java-master.zip</code>ファイルのソースがコンパイルされたもの、<code>dist</code>フォルダには<code>DojoTreeSample</code>プロジェクトで参照する必要のあるJARファイルが入っています。</p>
+
+                <img alt="「ファイル」ウィンドウ - 「build」フォルダに表示されたコンパイル済ソース" class="b-all margin-around" src="../../../images_www/articles/73/web/js-toolkits-dojo/files-win-compiled-classes.png" title="プロジェクトの「build」フォルダに表示されたコンパイル済ソース">
+
+                <p><code>json.jar</code>ファイルができたので、<code>DojoTreeSample</code>プロジェクトを開いたときから発生している参照の問題を解決できます。</p></li>
+
+            <li>「プロジェクト」ウィンドウで<code>DojoTreeSample</code>の「ライブラリ」ノードを右クリックし、「JAR/フォルダの追加」を選択します。次に、ダイアログで<code>json</code>プロジェクトの<code>dist</code>フォルダの場所に移動し、<code>json.jar</code>ファイルを選択します。
+                <p>「ライブラリ」ノードを右クリックしてポップアップ・メニューで「プロジェクトの追加」を選択し、「プロジェクトの追加」ダイアログ・ボックスで<code>json</code>プロジェクトを探すこともできます。</p>
+                <p>ダイアログを終了すると、<code>json.jar</code>ファイルがプロジェクトの「<code>ライブラリ</code>」ノードの下に表示されます。</p>
+
+                <img alt="「プロジェクト」ウィンドウ - 「ライブラリ」ノードに追加されたJARファイル" class="b-all margin-around" src="../../../images_www/articles/73/web/js-toolkits-dojo/libraries-json-jar.png" title="プロジェクトにより参照されるJARファイル">
+
+                <p><strong class="notes">注意: </strong><code>json.jar</code>ファイルはプロジェクトの「<code>ライブラリ</code>」ノードの下に表示されますが、元の場所から参照されます。コピーされてプロジェクトに追加されるのではありません(たとえば、「ファイル」ウィンドウで<code>DojoTreeSample</code>プロジェクトの下には見つかりません)。したがって、JARファイルの場所を変更すると、参照が壊れます。</p></li>
+
+            <li>「<code>ソース・パッケージ</code>」> <code>dojo.indians</code>パッケージを展開し、<code>Tribe</code>クラスと<code>TribeDataManager</code>クラスをダブルクリックしてエディタで開きます。</li>
+
+            <li>必要なインポート文を両方のクラスに追加します。各クラスで、エディタ上で右クリックし、「インポートを修正」を選択します。<br><br><code>Tribe</code>クラスには次のインポートが必要です。
+
+<pre class="examplecode">import dojo.org.json.JSONException;
+import dojo.org.json.JSONObject;</pre>
+
+                <code>TribeDataManager</code>クラスには次のインポートが必要です。
+
+<pre class="examplecode">import dojo.org.json.JSONArray;
+import dojo.org.json.JSONException;
+import dojo.org.json.JSONObject;</pre>
+
+                <p class="tips">JSONクラスのAPIも<a href="http://json.org/java">http://json.org/java</a>で提供されています。後で<code>Tribe</code>と<code>TribeDataManager</code>のコードを調べるので、このページを開いておいてください。</p></li>
+
+            <li><code>TribeDataManager</code>のArrayListを調べます。ArrayListは<code>Tribe</code>オブジェクトのコレクションです。ArrayListの最初の要素を調べると、新しい<code>Tribe</code>オブジェクトが作成されてリストに追加されていることがわかります。
+
+<pre class="examplecode">indians.add(new Tribe(&quot;Eskimo-Aleut&quot;, &quot;Arctic&quot;, &quot;Alaska Natives&quot;));</pre>
+
+                各<code>Tribe</code>オブジェクトは、「<em>部族</em>」、「<em>カテゴリ</em>」および「<em>地域</em>」という3つの情報を収集します。この課題用のデータは、Wikipediaの「<a href="http://en.wikipedia.org/wiki/Native_Americans_in_the_United_States#Ethno-linguistic_classification">Native Americans in the United States</a>」のエントリから取得されています。ご存知のとおり、複数の「<em>部族</em>」が1つの「<em>カテゴリ</em>」に分類され、多数のカテゴリがより大きな1つの「<em>地域</em>」に含まれる場合があります。</li>
+
+            <li><code>Tribe</code>クラスをエディタで開くと、これは基本的に<a href="http://java.sun.com/docs/books/tutorial/javabeans/index.html">JavaBean</a>であり、<code>toJSONObject()</code>メソッドのみが異なることがわかります。
+
+<pre class="examplecode">public JSONObject toJSONObject() throws JSONException {
+    JSONObject jo = new JSONObject();
+    jo.put(&quot;name&quot;, this.name);
+    jo.put(&quot;type&quot;, &quot;tribe&quot;);
+
+    return jo;
+}</pre></li>
+
+            <li>再度<code>TribeDataManager</code>に切り替え([Ctrl]-[Tab])、クラスに含まれているメソッドを調べます。ナビゲータを開いて([Ctrl]-[7]、Macの場合は[⌘]-[7])、クラスに含まれているフィールドとプロパティのリストを表示します。<br><img alt="ナビゲータに表示されたTribeDataManagerクラス" class="margin-around" src="../../../images_www/articles/73/web/js-toolkits-dojo/dojo-navigator.png" title="ナビゲータを使用した、クラスのフィールドおよびプロパティの表示"><br>その中で最も重要なメソッドは<code>getIndiansAsJSONObject()</code>です。このメソッドはArrayListをスキャンし、データを処理して<code>JSONObject</code>の形式で返します。Dojoの<code>ItemFileReadStore</code>に必要なのは、<code>文字列</code>形式のJSONObjectです。
+
+<pre class="examplecode">public static JSONObject getIndiansAsJSONObject() throws JSONException {
+
+    JSONObject jo = new JSONObject();
+    JSONArray itemsArray = new JSONArray();
+
+    jo.put(&quot;identifier&quot;, &quot;name&quot;);
+    jo.put(&quot;label&quot;, &quot;name&quot;);
+
+    // add regions
+    addRegionsToJSONArray(itemsArray);
+
+    // add categories
+    addCategoriesToJSONArray(itemsArray);
+
+    // add tribes
+    addTribesToJSONArray(itemsArray);
+
+    jo.put(&quot;items&quot;, itemsArray);
+    return jo;
+}</pre></li>
+
+            <li><code>getIndiansAsJSONObject()</code>メソッドに関するJavadocを開きます。これは、ナビゲータに戻り([Ctrl]-[7]、Macの場合は[⌘]-[7])、メソッドの上にカーソルを置くことで行うことができます。または、メイン・メニューから「ウィンドウ」>「その他」>「Javadoc」を選択し、エディタでメソッド署名をクリックします。<br><a name="javadoc"></a><img alt="TribeDataManagerクラスについて開いたJavadocウィンドウ" class="margin-around" src="../../../images_www/articles/73/web/js-toolkits-dojo/javadoc-window.png" title="JSONデータの例を示すTribeDataManagerのJavadoc"></li>
+
+            <li>Javadocに示されているJSONデータの例を調べます。データの形式は、<a href="http://o.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/what-dojo-data/available-stores/dojo-data-item">Dojoのドキュメント</a>に示されている例に準拠しています。</li>
+        </ol>
+
+        <div class="indent">
+            <div class="feedback-box float-left" style="width:700px">
+                <h3>NetBeans IDEのJavaデバッガ</h3>
+
+                <p>次のステップでは、<code>getIndiansAsJSONObject()</code>メソッドをコールするサーブレットを実装します。これを行った後、次の手順を実行して、IDEのJavaデバッガを使用してメソッドをステップ実行し、<code>JSONObject</code>がどのように構成されているかを検証できます。</p>
+
+                <ol>
+                    <li>メソッドにブレークポイントを設定します(エディタの左マージンで行番号(行99)をクリックします)。<br> <img alt="エディタで設定されたメソッドのブレークポイント" class="margin-around b-all" src="../../../images_www/articles/73/web/js-toolkits-dojo/debugger-breakpoint.png" title="Javaデバッガを使用したコードのステップ実行"></li>
+
+                    <li>「プロジェクト」ウィンドウで「<tt>DojoTreeSample</tt>」プロジェクトを選択します。</li>
+                    <li>デバッガを実行します(ツールバーで「プロジェクトをデバッグ」(<img alt="「プロジェクトをデバッグ」ボタン" src="../../../images_www/articles/73/web/js-toolkits-dojo/debug-btn.png">)ボタンをクリックします)。</li>
+
+                    <li>ツールバーの「ステップ・イン」(<img alt="ステップ・イン・ボタン" src="../../../images_www/articles/73/web/js-toolkits-dojo/step-into-btn.png">)ボタンと「ステップ・オーバー」(<img alt="ステップ・オーバー・ボタン" src="../../../images_www/articles/73/web/js-toolkits-dojo/step-over-btn.png">)ボタンを使用します。</li>
+
+                    <li>変数と式の値を「ローカル変数」ウィンドウ(「ウィンドウ」→「デバッグ」→「変数」)で調べます。</li>
+                </ol>
+
+                <p>Javaデバッガの詳細は、次のスクリーンキャストを参照してください。</p>
+
+                <ul>
+                    <li><a href="../java/debug-stepinto-screencast.html">NetBeansデバッガでの視覚的なステップ・イン・アクション</a></li>
+                    <li><a href="../java/debug-deadlock-screencast.html">NetBeansデバッガを使用したデッドロックの検出</a></li>
+                    <li><a href="../java/debug-evaluator-screencast.html">NetBeansデバッガのコード・スニペット評価の使用</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <br style="clear:both;">
+
+        <p>このステップの中で、<a href="http://json.org">http://json.org</a>からのサードパーティ・ソースをコンパイルし、それらをJARファイルとして<code>DojoTreeSample</code>プロジェクトに追加しました。次に、JARファイルのクラス、<code>Tribe</code>クラスと<code>TribeDataManager</code>クラスに、インポート文を追加しました。最後に、<code>TribeDataManager</code>に含まれているメソッドのうち、ArrayListのデータをJSON文字列に変換するために使用されるいくつかのメソッドを調べました。</p>
+
+        <p>次のステップでは、受信するリクエストを<code>TribeDataManager</code>の<code>getIndiansAsJSONObject()</code>メソッドをコールして処理し、結果となるJSON文字列をクライアントにレスポンスとして送信するサーブレットを作成します。</p>
+
+        <br><a name="prepareServlet"></a>
+        <h2>JSONレスポンスを開始するサーブレットの準備</h2>
+
+        <p>Webページに<code>ItemFileReadStore</code>を追加したとき、<a href="#TribeServlet"><code>url</code>プロパティの値として「<code>TribeServlet</code>」を指定</a>しました。クライアントに対してJSONデータを準備して返す作業を担当するサーバー側では、これは送信先です。このサーブレットを作成しましょう。</p>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウで<code>dojo.indians</code>ソース・パッケージを右クリックし、「新規」>「サーブレット」を選択します。</li>
+
+            <li>新規サーブレット・ウィザードで、クラス名に「<strong><code>TribeServlet</code></strong>」と入力します。<code>dojo.indians</code>がパッケージとして指定されていることを確認します。「次」をクリックします。<br> <img alt="新規サーブレット・ウィザード" class="margin-around b-all" src="../../../images_www/articles/73/web/js-toolkits-dojo/new-servlet-wizard.png" title="新規サーブレット・ウィザードを使用したサーブレットの作成">
+            </li>
+
+            <li>デフォルトのサーブレット名とURLパターン値が正しいことを確認します。「終了」をクリックすると、サーブレットのスケルトン・クラスが生成されます。
+                <p>サーブレットの機能は、<code>getIndiansAsJSONObject()</code>メソッドをコールし、このメソッドからのデータを使用してクライアント・リクエストに応答することです。JSON形式のレスポンスを準備するには、最初にレスポンスのMIMEタイプをJSON形式に設定する必要があります。</p>
+               
+                <p class="notes"><strong>注意:</strong>ウィザードにより、サーブレット名とURLパターンが自動的に<code>web.xml</code>に追加されます。その結果、<code>TribeServlet</code>のホスト・ドメイン(<code>http://localhost:8080/DojoTreeSample/</code>)に対するすべてのリクエストが、<code>dojo.indians.TribeServlet</code>クラスによって処理されます。エディタで<code>web.xml</code>を開くと、ファイルに<code>&lt;servlet></code>および<code>&lt;servlet-mapping></code>要素が含まれているのがわかります。</p></li>
+
+            <li><a name="contentType"></a>次の変更(太字)を行って、<code>processRequest()</code>メソッドを変更します。
+
+                <pre class="examplecode">response.setContentType(&quot;<strong>application/json</strong>&quot;);</pre>
+
+                <p>この変更により、HTTPレスポンスの<code>Content-Type</code>ヘッダーが、返される内容がすべてJSON形式であることを示すように設定されます。</p></li>
+
+            <li><code>processRequest()</code>メソッドの<code>try</code>ブロック内のコメントアウトされているコードを、次のように置き換えます(<strong>太字</strong>部分が変更箇所)。
+
+<pre class="examplecode">try {
+
+    <strong>JSONObject jo = null;
+    try {
+        jo = TribeDataManager.getIndiansAsJSONObject();
+    } catch (JSONException ex) {
+        System.out.println(&quot;Unable to get JSONObject: &quot; + ex.getMessage());
+    }
+
+    out.println(jo);</strong>
+
+} finally {
+    out.close();
+}</pre>
+
+                <p class="tips">コードを再フォーマットするには、エディタ内で右クリックし、「フォーマット」を選択します。</p></li>
+
+            <li>IDEのヒントを使用して、次のインポート文を追加します。
+
+<pre class="examplecode">import dojo.org.json.JSONException;
+import dojo.org.json.JSONObject;</pre></li>
+
+            <li>プロジェクトを実行するには、「プロジェクト」ウィンドウで<code>DojoTreeSample</code>プロジェクト・ノードを選択し、IDEのツールバーの「プロジェクトの実行」(<img alt="「メイン・プロジェクトの実行」ボタン" src="../../../images_www/articles/73/web/js-toolkits-dojo/run-project-btn.png">)ボタンをクリックします。<br><br>ブラウザが開いて開始画面(<code>dojoDemo.html</code>)が表示され、<a href="#final">上のスクリーンショット</a>のように、Dojo TreeウィジェットでArrayListのデータが正しく表示されます。</li>
+        </ol>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Connecting%20a%20Dojo%20Tree%20to%20an%20ArrayList">ご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>関連項目</h2>
+
+        <p>Dojoの詳細は、公式ドキュメントを参照してください。</p>
+
+        <ul>
+            <li>Dojoツールキットのリファレンス・ガイド: <a href="http://dojotoolkit.org/reference-guide/">Reference Guide</a></li>
+            <li>オンラインAPIリファレンス: <a href="http://api.dojotoolkit.org/">http://api.dojotoolkit.org/</a></li>
+            <li>Dojoデモ: <a href="http://demos.dojotoolkit.org/demos/">http://demos.dojotoolkit.org/demos/</a></li>
+        </ul>
+
+        <p>JavaScriptとJavaScriptツールキットの機能の詳細は、<a href="https://netbeans.org/">netbeans.org</a>の次のリソースを参照してください。</p>
+
+        <ul>
+            <li><a href="js-toolkits-jquery.html">jQueryを使用した、Webページの見た目と使いやすさの向上</a>。jQueryの概要を説明し、WebページでHTMLマークアップにjQueryのアコーディオン・ウィジェットを適用する手順を示します。</li>
+
+            <li><a href="ajax-quickstart.html">Ajax入門(Java)</a>。サーブレット・テクノロジを使用した単純なアプリケーションのビルド方法を示すと同時に、Ajaxリクエストの基盤となるプロセス・フローについて解説します。</li>
+
+            <li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2272">JavaScriptファイルの作成</a></li>
+            
+        </ul>
+
+    </body>
+</html>

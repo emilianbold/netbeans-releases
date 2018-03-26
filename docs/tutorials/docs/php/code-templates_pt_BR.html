@@ -1,0 +1,384 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><title>Modelos de Código no NetBeans IDE para PHP - Tutorial</title>
+
+
+
+
+
+        <meta name="KEYWORDS" content="NetBeans, tutorial, configure, PHP, PHP engine, guide, documentation, code template">
+        <meta name="DESCRIPTION" content="This document describes the PHP code templates available in NetBeans IDE, how to use them,
+              and some common use cases.">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script></head><body>
+
+        <!--
+        Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>Modelos de Código no NetBeans IDE para PHP</h1>
+
+        <p>Os modelos de código são snippets pré-escritos de código fornecidos pelo NetBeans IDE. Você pode colar um snippet no código utilizando a funcionalidade autocompletar código ou a abreviação do modelo seguida da tecla Tab. Você também pode incluir o código entre snippets apropriados de PHP. Finalmente, você pode definir seus próprios modelos de código. Este tutorial mostra como utilizar os modelos de código e sugere casos úteis para definição de seus próprios modelos de código.</p>
+
+        <p><b>Conteúdo</b></p>
+
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+        <ul class="toc">
+            <li><a href="#define">Modelos de Código PHP Definidos</a></li>
+            <li><a href="#using-templates">Usando Modelos de Código PHP</a>
+                <ul>
+                    <li><a href="#expand-with-abb">Expandindo o modelo de código usando a abreviação + Tab</a></li>
+
+                    <li><a href="#expand-with-cc">Inserindo o modelo de código com a função autocompletar código</a></li>
+                    <li><a href="#surround-code">Incluindo o código em um modelo</a></li>
+                    <li><a href="#edit-parameters">Editando parâmetros em modelos expandidos</a></li>
+                </ul>
+            </li>
+            <li><a href="#syntax">Sintaxe de Modelo de Código PHP</a>
+                <ul>
+                    <li><a href="#placeholder">Nome do placeholder</a></li>
+                    <li><a href="#reserved-name">Nomes reservados</a></li>
+                    <li><a href="#complex">Parâmetros definidos por dicas</a></li>
+                    
+                </ul>
+            </li>
+            <li><a href="#create">Criando Seus Próprios Modelos de Código</a>
+                <ul>
+                    <li><a href="#uc-html">Caso de uso: inserindo PHP no HTML</a> </li>
+                    <li><a href="#joomla">Caso de uso: Joomla</a> </li>
+                    <li><a href="#mysql-conn">Caso de uso: conexão MySQL</a> </li>
+                    <li><a href="#z-action">Caso de uso: ação no controlador Zend</a> </li>
+                    <li><a href="#z-form-element">Caso de uso: elemento de form Zend</a> </li>
+                </ul>
+            </li>
+        </ul>
+
+        <p><b>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a> </td>
+                    <td class="tbltd1">Pacote de download do PHP</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">JDK (Java Development Kit)</a> </td>
+                    <td class="tbltd1">7 ou 8</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>&nbsp;</p>
+
+
+        <h2><a name="define"></a>Modelos de Código PHP Definidos</h2>
+        <p>Para exibir os modelos de código definidos no NetBeans, abra Ferramentas > Opções (NetBeans > Preferências no Mac), selecione as funcionalidades do Editor e selecione a guia Modelos de Código. Para ver os modelos de código PHP, selecione PHP na lista drop-down Linguagens. Uma tabela de abreviações e textos expandidos de modelos de códigos será exibida. Se selecionar um modelo de código na tabela, o seu texto expandido será exibido na guia Texto Expandido. </p>
+        <img alt="Modelos de código PHP na janela Opções, com o modelo cli selecionado" class="margin-around" height="613" src="../../../images_www/articles/72/php/code-templates/code-template-options.png" width="597">
+        <p>Nesta imagem, o novo modelo de código classe (<tt>cls)</tt> está selecionado e na guia Texto Expandido você vê como fica o modelo quando está expandido. Na próxima seção, você usa a função Tab para expandir este modelo no código.</p>
+        <p class="notes"><strong>Observação:</strong> a sintaxe do novo modelo de código classe (<tt>cls</tt>) é explorada na seção <a href="#syntax">Sintaxe do Modelo de Código PHP</a>.</p>
+        <h2><a name="using-templates"></a>Usando Modelos de Código PHP</h2>
+        <p>Há três formas de inserir modelos de código no código PHP. Cada forma de inserção de modelos de código tem sua utilidade, dependendo do caso. As três formas de inserir modelos de código são:</p>
+        <ul>
+            <li><a href="#expand-with-abb">Expanda o modelo</a> utilizando a abreviação do modelo seguida da tecla Tab (ou de outra tecla ou de uma combinação de teclas definida por você).</li>
+            <li><a href="#expand-with-cc">Insira o modelo expandido</a> utilizando a função autocompletar código.</li>
+            <li><a href="#surround-code">Inclua o código</a> no modelo utilizando dicas da margem ou Alt-Enter.</li>
+        </ul>
+        <p>Após a inserção do modelo, o IDE ajuda você a <a href="#edit-parameters">editar os parâmetros</a> do código de modelo expandido.</p>
+        <div class="indent">
+            <h3><a name="expand-with-abb"></a>Expandindo o modelo de código usando abreviação + Tab</h3>
+            <p>Examine novamente a guia Modelos de Código da caixa de diálogo Opções. Na parte inferior há um campo drop-down para selecionar a combinação de teclas Expandir Modelo Em. Esta será a combinação de teclas que você pressionará depois de digitar a abreviação do modelo de código para expandir o modelo de código. A tecla Tab está selecionada por default, mas você pode selecionar outras combinações.</p><img alt="Caixa drop-down Expandir Modelo Em" class="margin-around" height="94" src="../../../images_www/articles/72/php/code-templates/expand-template-on.png" width="208">
+            <p>O restante desta seção pressupõe que a tecla Tab esteja selecionada por default no campo Expandir Modelo em:.</p>
+            <p class="tips">Quando a abreviatura de um modelo também fizer parte de uma palavra-chave da funcionalidade autocompletar código, pode ser difícil expandir a abreviação. Neste caso, será mais fácil utilizar <a href="#expand-with-cc">autocompletar código</a> para  inserir o modelo.</p>
+            <p><strong>Para expandir o novo modelo de código de classe utilizando sua abreviação + Tab:</strong></p>
+            <ol>
+                <li>Crie um arquivo PHP vazio.</li>
+                <li>No bloco PHP desse arquivo, digite <tt>cls</tt> e pressione Tab. O modelo de código <tt>cls</tt> se expandirá.
+                    <p class="alert"><b>Advertência:</b> digite corretamente a abreviação! A expansão não funcionará, caso a abreviação esteja mal escrita. </p><img alt="Expandindo um modelo de código" border="1" class="margin-around" height="166" src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png" width="586"></li>
+                <li>O nome de classe do placeholder (<tt><strong>class_name</strong></tt>) é selecionado automaticamente. Você pode mover-se entre os placeholders pressionando Tab. Você pode digitar imediatamente o nome desejado para a classe e este nome substitui o placeholder. Pressione Enter quando tiver terminado e o IDE selecionará o nome da primeira função, que neste caso é o construtor. 
+                  <p class="notes"><strong>Observação: </strong>os nomes do placeholder são abordados com mais detalhes na <a href="#placeholder">seção Nome do Placeholder</a>.</p>
+                    <img alt="Nome da função do construtor selecionado depois do nome da classe editado" border="1" class="margin-around" height="120" src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png" width="233"></li>
+              <li>Edite o nome da função ou aceite o default. Pressione Enter novamente e o cursor irá para dentro do corpo da função. Em uma situação real, você poderia agora começar a codificar a função e o resto da classe. <p class="notes">A posição final do cursor é determinada pelo parâmetro <tt>${cursor}</tt>. Este parâmetro será descrito na seção <a href="#reserved-name">Nomes Reservados</a>.
+                    </p></li></ol>
+          <h3><a name="expand-with-cc"></a>Inserindo o modelo de código com a função autocompletar código</h3>
+
+
+            <p>Para inserir um modelo de código utilizando a função autocompletar código, digite o início do snippet expandido (e <em>não</em> a abreviação do modelo). A caixa de diálogo da função autocompletar código será aberta para mostrar o snippet.</p>
+            <p><strong>Para inserir o novo modelo de código de classe utilizando a função autocompletar código:</strong></p>
+            <ol>
+                <li>Digite <tt>cla</tt> no bloco PHP de um arquivo PHP.</li>
+                <li>Espere que a caixa de diálogo da função autocompletar código seja aberta.</li>
+                <li>Localize o novo modelo de classe, que está listado com a abreviação (<tt>cls</tt>). O quadro do PHPDoc mostra o modelo expandido.<br> <img alt="Caixa de diálogo da funcionalidade autocompletar mostrando novo modelo de classe" border="1" class="margin-around" height="397" src="../../../images_www/articles/72/php/code-templates/insert-template-with-cc.png" width="483"></li>
+                <li>Selecione o novo modelo de classe e pressione Enter. O IDE o insere no código.</li>
+                <li>O nome de classe do placeholder (<tt><strong>class_name</strong></tt>) é selecionado automaticamente. Você pode mover-se entre os placeholders pressionando Tab. Você pode digitar imediatamente o nome desejado para a classe e este nome substitui o placeholder. Pressione Enter quando tiver terminado e o IDE selecionará o nome da primeira função, que neste caso é o construtor.<br> <img alt="Nome da função do construtor selecionado depois do nome da classe editado" border="1" class="margin-around" height="120" src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png" width="233"></li>
+                <li>Edite o nome da função ou aceite o default. Pressione Enter novamente e o cursor irá para dentro do corpo da função. Em uma situação real, você poderia agora começar a codificar a função e o resto da classe.</li>
+            </ol>
+            <h3><a name="surround-code"></a>Incluindo o código em um modelo</h3>
+            <p>Você pode incluir o código nos seguintes modelos de PHP:</p>
+            <ul>
+                <li><tt>while</tt></li>
+                <li><tt>do</tt><br>
+                </li>
+                <li><tt>switch</tt></li>
+                <li><tt>if</tt> / <tt>elseif</tt></li>
+                <li><tt>try</tt> e <tt>catch</tt></li>
+                <li><tt>foreach</tt></li>
+                <li><tt>for</tt></li>
+                <li><tt>ob_start</tt> e <tt>ob_end_clean</tt></li>
+            </ul>
+            <p>Além disso, você pode <a href="#create">criar um novo modelo</a> que pode circundar o código, se o modelo incluir <code>allowSurround</code> <a href="#complex">parameter hint</a>. (Dica para o <a href="http://www.mybelovedphp.com/2012/05/14/tips-for-using-the-netbeans-editor-for-kohana-and-kostache-mustache-templates-using-surround-with/"> Blog My Beloved PHP</a>.)</p>
+            <p>Para circundar o código com um modelo, selecione o código e abra a caixa de diálogo Circundar com... Para abrir a caixa de diálogo Circundar com..., pressione Alt-Enter ou clique no ícone Dica <img alt="Ícone Dica" height="19" src="../../../images_www/articles/72/php/code-templates/hint-icon.png" width="14">. </p>
+            <p><strong>Para circundar o código em um modelo if(true):</strong></p>
+            <ol>
+                <li>Crie um bloco PHP com as variáveis <tt>$a = true</tt> e <tt>$b = 10</tt>.
+                    <pre class="examplecode">&lt;?php<br>$a = false;<br>        <br>$b = 10;<br>?&gt;</pre>
+                </li>
+                <li>Selecione a linha <tt>$b = 10;</tt><br> <img alt="Variável selecionada $b = 10" border="1" class="margin-around" height="82" src="../../../images_www/articles/72/php/code-templates/selected-variable.png" width="196">
+                </li>
+                <li>Clique no ícone Dica <img alt="Ícone Dica" height="19" src="../../../images_www/articles/72/php/code-templates/hint-icon.png" width="14"> ou pressione Alt-Enter. A caixa de diálogo Circundar com... será aberta.<br> <img alt="Abrir a caixa de diálogo circundar com" class="margin-around" height="382" src="../../../images_www/articles/72/php/code-templates/surround-hint.png" width="530"></li>
+                <li>Clique em <tt>Circundar com if{<strong>true</strong>){...</tt><br> <img alt="Caixa de diálogo Circundar com if(true) selecionado" class="margin-around" height="333" src="../../../images_www/articles/72/php/code-templates/surround-if-true.png" width="480"></li>
+                <li>O IDE circunda a linha <tt>$b = 10;</tt> com um modelo <tt>if(<strong>true</strong>){...</tt>.<br> <img alt="Modelo if (true) inserido" border="1" class="margin-around" height="116" src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png" width="212"></li>
+            </ol>
+            <p>O IDE insere automaticamente a variável apropriada precedente mais próxima como a condição da instrução <tt>if</tt>. Neste caso, essa variável é <tt>$a</tt>, porque <tt>$a</tt> é um booliana e a instrução <tt>if(<strong>true</strong>){}</tt>toma uma variável booliana como sua condição. Além disso, a condição é selecionada automaticamente para edição caso a variável que o IDE insira na condição não seja a variável correta. Isso significa que você pode começar a digitar a variável correta imediatamente depois que o modelo tiver sido inserido. A funcionalidade autocompletar código pode ajudar você a selecionar a variável correta neste caso.</p>
+            <p class="notes"><strong>Observação: </strong>o modelo <tt>if(<strong>true</strong>){}</tt> é descrito com detalhes na seção <a href="#complex">Parâmetro definido por dicas</a>.</p>
+            <p><img alt="Selecionando a variável para usar como uma condição, a partir da funcionalidade autocompletar código" border="1" class="margin-around" height="162" src="../../../images_www/articles/72/php/code-templates/change-condition.png" width="438">        </p>
+            <p>Pressione Enter para sair da condição de instrução. O cursor se desloca para o local apropriado, que neste caso é o fim da linha <tt>$b = 10;</tt>. Você pode editar a condição e pressionar Enter ou aceitar a condição inserida automaticamente e pressionar Enter. Em qualquer um dos casos, o cursor sai da condição e se desloca para o local apropriado.</p>
+            <p><img alt="Cursor depois da não edição" class="margin-around" height="138" src="../../../images_www/articles/72/php/code-templates/cursor-after-not-editing.png" width="212"><img alt="Cursor depois da edição" class="margin-around" height="184" src="../../../images_www/articles/72/php/code-templates/cursor-after-editing.png" width="215">        </p>
+            <p>A próxima seção contém mais detalhes sobre a edição de parâmetros nos modelos expandidos.</p>
+            <h3><a name="edit-parameters"></a>Editando parâmetros em modelos expandidos</h3>
+            <p>Nas seções sobre inserção de modelos no código, você viu como o IDE selecionou automaticamente o nome da classe para edição quando o novo modelo de classe foi expandido, e como o IDE selecionou automaticamente o nome da condição para edição quando o modelo <tt>if(<strong>true</strong>)</tt> foi expandido. Agora veremos mais algumas formas de como o IDE ajuda a editar os parâmetros nos modelos expandidos.</p>
+            <p><strong>Para editar simultaneamente várias instâncias de um parâmetro:</strong></p>
+            <ol>
+                <li>Em um bloco PHP vazio, digite <tt>for</tt> e pressione Ctrl-Espaço para abrir a funcionalidade autocompletar código. Selecione o modelo de iteração (abreviação <tt>iter</tt>) e pressione Enter. Uma nova iteração será inserida no seu código.<br> <img alt="Função autocompletar código que mostra o modelo de iteração selecionado" class="margin-around" height="335" src="../../../images_www/articles/72/php/code-templates/iter-cc.png" width="600"></li>
+                <li>A iteração tem duas variáveis como parâmetros, <tt>$index</tt> e <tt>$array</tt>. <tt>$index</tt> é selecionada automaticamente para edição. (Pressionando Tab elas são movidas entre os parâmetros.)<br> <img alt="Linha de iteração com parâmetros inserida, como parâmetro $index selecionado para edição" class="valign-bottom" height="22" src="../../../images_www/articles/72/php/code-templates/iteration1.png" width="420"> <p>Digite <tt>i</tt>. Todas as três instâncias de <tt>$index</tt> mudam para <tt>$i</tt>. </p><img alt="Linha de iteração inserida com o parâmetro $index alterado para $i" height="18" src="../../../images_www/articles/72/php/code-templates/iteration2.png" width="322"></li>
+              <li>Pressione Enter ou Tab. O parâmetro <tt>$array</tt> é selecionado. </li>
+                <li>Pressione Enter. O cursor insere o corpo do método da iteração. </li>
+            </ol>
+            <p>A funcionalidade de refatoração do nome da variável no NetBeans permite alterar todas as instâncias de nome da variável editando somente uma instância. Aqui você pode ver como essa funcionalidade é útil quando aplicada nos parâmetros do modelo.</p>
+            <p>O editor PHP do NetBeans IDE também ajuda a identificar o método correto para as variáveis.</p>
+            <p><strong>Para associar uma variável de um modelo ao método correto:</strong></p>
+            <ol>
+                <li>Em um bloco PHP vazio, digite o seguinte código:
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>?&gt;</pre></li>
+                <li>Depois da linha que declara o array <tt>$arr</tt>, digite <tt>fore</tt> e use a funcionalidade de autocompletar código para inserir o modelo <tt>foreach</tt> (abreviação: <tt>fore</tt>).<br> <img alt="Funcionalidade autocompletar código para inserção do modelo foreach" class="margin-around" height="283" src="../../../images_www/articles/72/php/code-templates/cc-foreach.png" width="590"></li>
+                <li>Coloque o cursor no corpo da função <tt>foreach</tt> (você pode pressionar Enter duas vezes para tirar o cursor de lá) e digite <tt>$value</tt>, ou digite somente <tt>$</tt> e selecione <tt>$value</tt> na funcionalidade autocompletar código.
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>foreach ($arr as $value) {<br>    $value<br>}<br><br>?&gt;</pre></li>
+                <li>Depois de <tt>$value</tt>, digite <tt>-></tt>. A funcionalidade autocompletar código oferece os métodos corretos para a variável <tt>$value</tt>, que se deriva do array <tt>$arr</tt>.<br> <img alt="Funcionalidade autocompletar código para a variável $value, onde $value é um método Array Iterator" border="1" class="margin-around" height="424" src="../../../images_www/articles/72/php/code-templates/value-method-cc.png" width="527"></li>
+            </ol>
+        </div>
+
+        <h2><a name="syntax"></a>Sintaxe de Modelo de Código PHP</h2>
+        <p>O NetBeans IDE oferece modelos de código a todas as linguagens que suporta. Algumas das sintaxes são comuns para todas as linguagens. Outra sintaxe é específica para uma linguagem. Nesta seção, você vê a sintaxe de modelo geral mais relevante e a sintaxe específica para modelos PHP.</p>
+        <p>Um modelo de código PHP pode conter código PHP e parâmetros de modelo. Um modelo PHP pode consistir em somente código PHP, somente parâmetros ou código e parâmetros. </p>
+        <p>A sintaxe de um parâmetro de modelo de código é um cifrão, <tt>$</tt>, seguido de uma definição do parâmetro entre chaves <tt>{...}</tt>. Dentro desta sintaxe, os parâmetros do modelo têm uma destas quatro formas:</p>
+        <ul>
+            <li>Um <a href="#placeholder">nome de placeholder</a> arbitrário, como <tt>${SomeName}</tt></li>
+            <li>Um <a href="#reserved-name">nome reservado</a> que fornece as instruções de processamento ao IDE</li>
+            <li>Um nome de parâmetro descritivo e um conjunto de <a href="#complex">dicas que definem o parâmetro</a></li>
+            <li><a href="#pre-defined">Parâmetros predefinidos</a>.
+            </li>
+
+        </ul>
+        <p>As seções a seguir abordam cada uma das formas de um parâmetro de modelo de código.</p>
+        <p class="notes"><strong>Observação:</strong> <tt>$$${VARIABLE...} </tt>às vezes, é exibido um modelo de código PHP no qual a sintaxe parece ser três cifrões seguidos das chaves <tt>$$${...}</tt>. Neste caso, o modelo de código inclui uma variável e seu nome. A sintaxe aqui é um cifrão com escape, escrito como dois cifrões <tt>$$</tt>, seguido de um parâmetro do nome da variável, <tt>${VARIABLE...}</tt>. Por exemplo, o modelo de código <tt>catch ${Exception} $$${exc}</tt> é expandido como <span class="examplecode"><tt>catch Exception $exc</tt></span>.</p>
+        <div class="indent">
+            <h3><a name="placeholder"></a>Nome do placeholder</h3><br>
+            <p>Nos casos mais simples, o parâmetro de modelo de código é um valor arbitrário de placeholder. Quando o modelo é expandido, o IDE seleciona o nome desse placeholder para edição.</p><br>
+            <p>Por exemplo, examine o novo modelo de classe <tt>(cls)</tt> que este tutorial mostra nas seções <a href="#define">Modelos de PHP Definidos </a> e <a href="#expand-with-abb">Expandindo o modelo de código usando abreviação + Tab</a>. O texto expandido do novo modelo classe começa com <tt>class ${className}</tt>. Aqui, a palavra <tt>class</tt> é o código PHP e <tt>${className}</tt> é um parâmetro. Este parâmetro é apenas um valor arbitrário de placeholder para o nome da classe. Quando o IDE expande o modelo, <tt>${className}</tt> se transforma em <tt><strong>class_name</strong></tt>. O IDE espera que <tt><strong>class_name</strong></tt> seja somente um valor de placeholder e seleciona automaticamente este valor para que seja editado.</p>
+
+            <img alt="Expandindo um modelo de código" border="1" class="margin-around" height="166" src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png" width="586">
+            <h3><a name="reserved-name"></a>Nomes reservados</h3>
+            <p>O IDE reserva dois nomes de parâmetros para serem utilizados como instruções de operação.</p>
+            <ul><li><tt>${cursor}</tt> define o local do cursor depois que você finaliza a edição de todos os valores selecionados automaticamente no modelo expandido.</li>
+                <li><tt>${selection}</tt> define a posição para colar o conteúdo da seleção do editor. É usado pelos chamados "modelos de seleção" que aparecem como dicas sempre que o usuário seleciona texto no editor. Se um modelo incluir <tt>${selection}</tt>, ele geralmente fará referência ao mesmo local que <tt>${cursor}</tt>.</li></ul>
+            <p>Por exemplo, novamente examine o novo modelo de classe <tt>(cls)</tt> que este tutorial mostra nas seções <a href="#define">Modelos de PHP Definidos </a> e <a href="#expand-with-abb">Expandindo o modelo de código usando abreviação + Tab</a>. Ele contém dois parâmetros de nome do placeholder <tt>${ClassName}</tt> e <tt>$__construct</tt>. No corpo da função, há os parâmetros <tt>${cursor}</tt> e <tt>${selection}</tt>.</p>
+
+            <pre class="examplecode">class ${ClassName} {<br><br>    function ${__construct} {<br>        ${selection}${cursor}<br><br>    }<br><br>}</pre>
+            <p>Depois que o modelo se expandir, o placeholder <tt><strong>class_name</strong></tt> será automaticamente selecionado (1). Pressione Enter e o placeholder <tt><strong>__construct</strong></tt> será automaticamente selecionado (2). Não há outros valores a serem editados. Pressione Enter novamente, e o cursor se deslocará para o local indicado pelo <tt>${cursor}</tt> no texto do modelo (3).</p>
+
+            <p><img alt="Três snippets de código que mostram que a posição do cursor muda do nome do placeholder para nome do placeholder para a posição ${cursor}" class="margin-around" height="104" src="../../../images_www/articles/72/php/code-templates/cursor-position-changes.png" width="600"></p>
+            <h3><a name="complex"></a>Parâmetros definidos por dicas</h3><br>
+            <p>Os parâmetros podem ter um nome arbitrário e descritivo em MAIÚSCULAS e uma ou mais dicas. </p>
+            
+            <pre class="examplecode">${PARAMETER_NAME hint1[=value] [hint2...hint n]}</pre>
+            <p>O nome não aparece em nenhum lugar do código. No entanto, é útil se você quiser utilizar o parâmetro mais de uma vez em um modelo de código. Você só precisa definir o parâmetro na primeira vez e pode fazer referência a ele usando o nome todas as vezes seguintes. Por exemplo, no modelo de código a seguir, o parâmetro <tt>${CONLINK}</tt> é definido somente na primeira vez, mas é mencionado pelo seu nome duas vezes mais.</p><br>
+            <pre class="examplecode"><a name="complex"></a>$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre><br>
+            <p>As dicas ajudam o IDE a calcular o valor do parâmetro do modelo quando o IDE expande o modelo de código. Veja, por exemplo, o modelo <tt>if(<strong>true</strong>)</tt>, utilizado neste tutorial na seção <a href="#surround-code">circundando o código com um modelo</a>. O texto expandido deste modelo é</p>
+            <pre class="examplecode">if (${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}) {<br>    ${selection}${cursor}<br>}</pre>
+            <p>Examine o parâmetro <tt>${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}</tt>. Este parâmetro define a condição da instrução <tt>if</tt>. Portanto, o parâmetro é denominado CONDITION. A primeira dica é <tt>variableFromPreviousAssignment</tt> e a segunda dica é <tt>instanceof="boolean"</tt>. Juntas, estas duas dicas dizem ao IDE para procurar a variável booliana mais próxima que está designada no código anterior ao modelo de código. Adicione a terceira dica, <tt>default="true"</tt>, e o parâmetro define a condição como "se o valor da variável booliana anterior mais próxima for verdadeiro". </p>
+
+            <p>Por exemplo, quando a linha <tt>$b = 10</tt> do snippet de código a seguir estiver circundada por um modelo de código<tt> if(<strong>true</strong>) </tt>...</p>
+            <p><img alt="Snippet $a = false $b = 10" border="1" class="margin-around" height="82" src="../../../images_www/articles/72/php/code-templates/selected-variable.png" width="196"></p>
+            <p>...o IDE procura a variável booliana mais próxima designada anteriormente, localiza <tt>$a</tt> e gera uma instrução <tt>if</tt> com a condição <tt>$a</tt>[=true]. A condição é automaticamente selecionada para edição, de modo que o programador de PHP pode alterar <tt>$a</tt> para outra variável ou para <tt>!$a</tt>.</p>
+
+            <p><img alt="Modelo expandido se $a=true then $b=10, com a condição $a=true selecionada para edição" border="1" class="margin-around" height="116" src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png" width="212"></p>
+            <p>A tabela a seguir lista as dicas utilizadas nos modelos de código PHP e as descrições das dicas.</p>
+            <table>
+
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Dica</th>
+                        <th class="tblheader" scope="col">Descrição</th>
+
+                    </tr>
+                    <tr>
+                        <td><tt>newVarName</tt></td>
+                        <td> O valor do parâmetro deve ser um nome de variável "fresco", não utilizado. Geralmente utilizado com <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+
+                        <td><tt>default=""</tt></td>
+                        <td>O valor default do parâmetro.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>instanceof=""</tt></td>
+                        <td>Tipo de variável PHP definida no parâmetro.</td>
+                    </tr>
+
+                    <tr>
+                        <td><tt>variableFromPreviousAssignment</tt></td>
+                        <td>O valor do parâmetro a variável mais próxima designada anteriormente. Geralmente utilizada com <tt>instanceof</tt> e <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentName</tt></td>
+
+                        <td>O valor do parâmetro é o nome da variável mais próxima designada depois do modelo de código. Geralmente utilizado com <tt>default</tt>.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentType</tt></td>
+                        <td>O valor do parâmetro é o tipo da variável mais próxima designada depois do modelo de código. Geralmente utilizado com <tt>default</tt>.</td>
+
+                    </tr>
+                    <tr>
+                        <td><tt>editable=false</tt></td>
+                        <td>O valor do parâmetro não pode ser editado depois que o modelo for expandido.</td>
+                    </tr>
+                    <tr>
+                        <td><tt>allowSurround</tt></td>
+                        <td>Permite que o modelo seja usado para <a href="#surround-code">circundar o código</a>.</td>
+                    </tr>
+                </tbody>
+            </table>
+       </div>
+        <h2><a name="create"></a>Criando Seus Próprios Modelos de Código</h2>
+        <p>Você também pode criar seus próprios modelos de código no NetBeans IDE. Esta seção explica como criar modelos de código, explora sua sintaxe e sugere alguns modelos úteis para criar.</p>
+        <p><strong>Para criar um modelo de código:</strong></p>
+        <ol>
+            <li>Abra Ferramentas > Opções (NetBeans > Preferências no Mac), selecione as funcionalidades do Editor e selecione a guia Modelos de Código. <br> <img alt="Modelos de código PHP na janela Opções, com o modelo cli selecionado" class="margin-around" height="613" src="../../../images_www/articles/72/php/code-templates/code-template-options.png" width="597"></li>
+            <li>Clique em Novo para abrir a caixa de diálogo Novo Modelo de Código. Digite a abreviação que deseja para o modelo e clique em OK. <br> <img alt="Caixa de diálogo Novo Modelo de Código que pede a abreviação do modelo" class="margin-around" height="118" src="../../../images_www/articles/72/php/code-templates/new-abb.png" width="304"></li>
+            <li>É adicionada uma nova linha à tabela de modelos de código. Esta linha contém somente a abreviação fornecida. O cursor está na guia Texto Expandido, onde o IDE colocou o cursor automaticamente. Você pode começar a digitar imediatamente o código do modelo. <p class="notes"><b>Observação: </b>para saber mais sobre a sintaxe do texto expandido do modelo de código, consulte a seção <a href="#syntax">Sintaxe do Modelo de Código PHP.</a></p>
+                <img alt="Digitando o texto expandido do novo modelo abb" class="margin-around" height="609" src="../../../images_www/articles/72/php/code-templates/new-abb-text.png" width="608"></li>
+        </ol>
+        <p>As seções a seguir descrevem alguns casos de uso para a criação dos seus próprios modelos de código PHP. Se tiver algum outro caso de uso para sugerir, compartilhe-o com a comunidade no <a href="http://forums.netbeans.org/php-users.html" target="_blank">Fórum dos Usuários de PHP.</a></p>
+        <div class="indent">
+            <h3><a name="uc-html"></a>Caso de uso: inserindo PHP no HTML</h3>
+            <p>Se inserir frequentemente snippets de PHP em um bloco de HTML, você poderá criar um modelo de código HTML que insere o PHP sem que seja necessário digitar <tt>&lt;?php ?></tt> repetidamente.</p>
+            <p>O modelo de código a seguir insere uma instrução <tt>echo</tt> do PHP no HTML.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Linguagem:</th>
+                        <td>HTML</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abreviação:</th>
+                        <td>php</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Texto expandido:</th>
+                        <td><pre>&lt;?php echo ${cursor}&nbsp;  ?&gt;</pre></td>
+                    </tr>
+
+                </tbody></table>
+            <p><img alt="Janela Opções que mostra novo modelo php em html" class="margin-around" height="565" src="../../../images_www/articles/72/php/code-templates/uc-php.png" width="600"></p>
+            <h3><a name="joomla"></a>Caso de uso: Joomla</h3>
+            <p>Os modelos de código podem ajudá-lo a utilizar os frameworks PHP no NetBeans IDE, especialmente frameworks que não apresentam suporte incorporado. Este é o modelo de código que um usuário desenvolveu para ser utilizado com Joomla.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Linguagem:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abreviação:</th>
+                        <td>joomdef</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Texto expandido:</th>
+                        <td><pre class="examplecode">defined('_JEXEC')<br>   	or die('Restricted access');<br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="Caixa de diálogo Opções com novo modelo de código joomdef" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-joomdef.png" width="600"></p>
+            <h3><a name="mysql-conn"></a>Caso de uso: conexão MySQL</h3>
+            <p>Os desenvolvedores de PHP precisam geralmente criar uma conexão com um banco de dados MySQL. Este modelo de código cria uma conexão para você. A variável designada para a conexão MySQL tem o nome do placeholder<tt> link</tt>. Observe o uso do cifrão "triplo" <tt>$$$</tt>, na realidade um cifrão duplo, que produz um único cifrão quando expandido, seguido pelo parâmetro do nome da variável.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Linguagem:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abreviação:</th>
+                        <td>my_con</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Texto expandido:</th>
+                        <td><pre class="examplecode">$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="Novo modelo de código para conexão MySQL" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-mycon.png" width="600"></p>
+            <h3><a name="z-action"></a>Caso de uso: ação no controlador Zend</h3>
+            <p>Em vez de utilizar o assistente do NetBeans para criar uma ação, você pode utilizar um modelo de código para inserir uma ação em um controlador Zend Framework, como <tt>indexController{}</tt>.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Linguagem:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abreviação:</th>
+                        <td>zf_act</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Texto expandido:</th>
+                        <td><pre class="examplecode">public function ${functionName}Action () {<br>      ${selection}${cursor}  <br>}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="Novo modelo de código de ação Zend" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-zfact.png" width="600"></p>
+            <h3><a name="z-form-element"></a>Caso de uso: elemento de form Zend</h3>
+            <p>Este modelo insere um elemento em um form Zend. Use-o depois de gerar um form chamando o comando Zend <tt>create form &lt;name></tt>.</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">Linguagem:</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Abreviação:</th>
+                        <td>zf_element</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">Texto expandido:</th>
+                        <td><pre class="examplecode">$$${ELEMENT newVarName default="element"} = new Zend_Form_Element_Submit('submit', array('label' =&gt; 'Send data to server'));  <br>$$this-&gt;addElement($$${ELEMENT});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <img alt="Novo modelo de código para elementos do Zend Framework para inserir em forms ZF" class="margin-around" height="605" src="../../../images_www/articles/72/php/code-templates/uc-zelement.png" width="597">
+        </div>
+        <p>&nbsp;</p>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Code%20Templates">Enviar Feedback neste Tutorial</a></div>
+        <p><br style="clear: both;">
+
+
+        </p>
+        <h2><a name="seeAlso"></a>Consulte Também</h2>
+
+        <p>Para obter mais informações sobre a tecnologia PHP no <a href="https://netbeans.org/" target="_blank">netbeans.org</a>, consulte os seguintes recursos:</p>
+
+        <ul>
+            <li><a href="../java/editor-codereference.html">Ajuda para Codificação no Editor Java do NetBeans IDE</a>. Guia de referência de assistência a código do NetBeans IDE, incluindo modelos de código e gravação de macro.</li>
+            <li><a href="http://forums.netbeans.org/php-users.html" target="_blank">Fórum dos Usuários de PHP do NetBeans</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/" target="_blank">Blog sobre NetBeans para PHP</a>. Blog escrito por desenvolvedores do editor PHP do NetBeans. O melhor lugar para saber mais sobre as últimas funcionalidades e aprimoramentos.</li>
+        </ul>
+
+        <p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento em PHP no NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência de users@php.netbeans.org.</a></p>
+
+    </body></html>

@@ -1,0 +1,1023 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Using Hibernate in a Web Application - NetBeans IDE Tutorial</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <meta name="description" content="Demonstrates how to add support for Hibernate to the IDE and use Hibernate with JSF components in a Web application.">
+   <meta name="KEYWORDS" content="NetBeans, Hibernate, JSF, Tutorial, Database">
+   <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Using Hibernate in a Web Application</h1>
+<!-- Currently this tutorial does not work -- #243018 -->
+    <p>In this tutorial, you use the NetBeans IDE to create and deploy a web application that displays 
+    data from a database. The web application uses the Hibernate framework as the persistence layer for 
+    retrieving and storing plain old Java objects (POJOs) to a relational database.</p>
+    
+    <p>Hibernate is framework that provides tools for object relational mapping (ORM). 
+    The tutorial demonstrates how to add support for the Hibernate framework to the IDE and 
+    create the necessary Hibernate files.
+    After creating the Java objects and configuring the application to use Hibernate,
+    you create a JSF managed bean and JSF 2.0 pages to display the data.</p>
+    
+    <p>Before starting this tutorial you may want to familiarize yourself with
+    the following documents.</p>
+    <ul>
+        <li>Hibernate documentation at <a href="http://www.hibernate.org/" target="_blank">hibernate.org</a></li>
+        <li><a href="quickstart-webapps.html">Introduction to Developing Web Applications</a></li>
+        <li><a href="jsf20-intro.html">Introduction to JavaServer Faces 2.x</a></li>
+    </ul>
+
+    <p><b>Contents</b></p>
+    <img  src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3 and 7.4" title="Content on this page applies to the NetBeans IDE 7.2, 7.3 and 7.4" >
+    <ul>
+        <li><a href="#01">Creating the Database</a></li>
+        <li><a href="#02">Creating the Web Application Project</a></li>
+        <li><a href="#03">Modifying the Hibernate Configuration File</a></li>
+        <li><a href="#04">Creating the <tt>HibernateUtil.java</tt> Helper File</a></li>
+        <li><a href="#05">Generating Hibernate Mapping Files and Java Classes</a></li>
+        <li><a href="#06">Creating the <tt>FilmHelper.java</tt> Helper Class</a></li>
+        <li><a href="#07">Creating the JSF Managed Bean</a>
+        <li><a href="#08">Creating the Web Pages</a></li>
+        <li><a href="#09">Running the Project</a></li>
+        <li><a href="#10">Downloading the Solution Project</a></li>
+        <li><a href="#11">Troubleshooting</a></li>
+    </ul>
+
+   
+   <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.1, 7.2, 7.3, 7.4, Java EE version</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">Version 6 or 7</td>
+            </tr>
+             <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                <td class="tbltd1">3.x or 4.x</td>
+            </tr>   
+            <tr>
+                <td class="tbltd1"><a href="http://www.mysql.com/">MySQL database server</a></td>
+                <td class="tbltd1">Version 5.x</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Sakila Database</td>
+                <td class="tbltd1">Plugin available from update center</td>
+            </tr>
+        </tbody>
+</table>
+
+
+<p class="tips">You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/DVDStoreEE6.zip">a zip archive of the finished project</a>.</p>
+
+<a name="01"></a>
+<h2>Creating the Database</h2>
+    <p>This tutorial uses a MySQL database called <tt>sakila</tt>,
+    a free sample MySQL database that is available from the MySQL site.
+    The sakila database is not included when you install the IDE so you need to
+    first create the database to follow this tutorial.</p>
+
+    <p>To create the sakila database you can download and install the Sakila Sample Database plugin
+    using the Plugins manager.
+    After you install the plugin the sakila database is added to the list of databases
+    in the Create MySQL database dialog box.</p>
+    <p>For more information on configuring the IDE to work with MySQL, see the
+    <a href="../ide/mysql.html">Connecting to a MySQL Database</a> tutorial.</p>
+
+    <ol>
+        <li>Open the Plugins manager and install the Sakila Sample Database plugin.</li>
+        <li>After installing the plugin, start the MySQL database by expanding the Databases node in the Services window,
+        right-clicking the MySQL Server node and choosing Start.</li>
+        <li>Right-click the MySQL Server node and choose Create Database.</li>
+        <li>Select the Sakila database from the New Database Name drop down list in the Create MySQL Database dialog box. Click OK.<br/>
+        <img src="../../../images_www/articles/72/web/hibernate-webapp/create-sakila-mysql.png" width="393" height="176" alt="Screenshot of Create MySQL Database dialog" title="Screenshot of Create MySQL Database dialog" class="margin-around b-all">
+
+        <p>When you click OK a Sakila node appears under the MySQL Server node.</p>
+        <li>Right-click the Sakila node and choose Connect.</li>
+    </ol>
+    <p>When you click Connect a database connection node for the Sakila database
+    (<tt>jdbc:mysql://localhost:3306/sakila [<i>username</i> on Default]</tt>)
+    is listed under the Databases node.
+    When a connection is open you can view the data in the database by expanding the connection node.</p>
+
+
+    
+<a name="02"></a>
+<h2>Creating the Web Application Project</h2>
+    <p>In this exercise you will create a web application project and add the Hibernate libraries to the project.
+    When you create the project, you will select Hibernate in the Frameworks panel of the New Project wizard
+    and specify the database.</p>
+    <ol>
+        <li>Choose File &gt; New Project (Ctrl-Shift-N; &#8984-Shift-N on Mac) from the main menu.
+        Select Web Application from the Java Web category and click Next. </li>
+        <li>Type <strong>DVDStore</strong> for the project name and set the project location.</li>
+        <li>Deselect the Use Dedicated Folder option, if selected. Click Next.
+            <p>For this tutorial there is little reason to copy project libraries to a dedicated folder because
+            you will not need to share libraries with other users.</p>
+            </li>
+        <li>Set the server to the GlassFish Server and set the Java EE Version to Java EE 6 Web or Java EE 7 Web. Click Next.</li>
+        <li>Select the JavaServer Faces checkbox and use the default JSF 2.x libraries.</li>
+        <li>Select the Hibernate checkbox in the list of frameworks.</li>
+        <li>Select the sakila database from the Database Connection drop down list. Click Finish.</li>
+    </ol>
+    <p class="notes"> <b>Note:</b> 
+    If the sakila database is not available as an option in the Frameworks panel in the wizard,
+    check to see if the connection is listed under the Databases node in the Services window.
+    If the connection is not there, you need to create the database connection.</p>
+    <img src="../../../images_www/articles/74/web/hibernate-webapp/hib-newwebapp.png" alt="Frameworks panel of New Project wizard" title="Frameworks panel of New Project wizard showing adding Hibernate support to project" class="margin-around b-all">
+
+    
+    <p>When you click Finish, the IDE creates the web application project and opens the <tt>hibernate.cfg.xml</tt> file
+    and <tt>index.xhtml</tt> in the editor.</p>
+    <p>If you expand the Libraries node in the Projects window, you can see that the IDE added the Hibernate libraries to the project.</p>
+    <img src="../../../images_www/articles/72/web/hibernate-webapp/hib-libraries.png" alt="Screenshot of Projects window showing Hibernate libraries" title="Screenshot of Projects window showing Hibernate libraries" class="margin-around b-all">
+
+
+<a name="03"></a>
+<h2>Modifying the Hibernate Configuration File</h2>
+    <p>When you create a new project that uses the Hibernate framework, the IDE automatically creates the <tt>hibernate.cfg.xml</tt>
+    configuration file at the root of the context classpath of the application (in the Files window, <tt>src/java</tt>).
+    The file is located in the <tt>&lt;default package&gt;</tt> under the Source Packages node in the Projects window.
+    The configuration file contains information about the database connection, resource mappings, and other connection properties. 
+    You can edit the file using the multi-view editor, or edit the XML directly in the XML editor.</p>
+
+    <p>In this exercise you will edit the default properties specified in <tt>hibernate.cfg.xml</tt> to enable debug logging for SQL statements
+    and to enable Hibernate's session context management.</p>
+    <ol>
+        <li>Open <tt>hibernate.cfg.xml</tt> in the Design tab.
+        You can open the file by expanding the <tt>&lt;default package&gt;</tt> node under Source Packages in the Projects window and double-clicking <tt>hibernate.cfg.xml</tt>.</li>
+        <li>In the multi-view XML editor, expand the Configuration Properties node under Optional Properties.</li>
+        <li>Click Add to open the Add Hibernate Property dialog box.</li>
+        <li>In the dialog box, select the <tt>hibernate.show_sql</tt> property and set the value to <tt>true</tt>. 
+        This enables the debug logging of the SQL statements.<br/>
+        <img src="../../../images_www/articles/72/web/hibernate-webapp/add-property-showsql.png" alt="Add Hibernate Property dialog box the hibernate.show_sql property" title="Add Hibernate Property dialog box showing setting value for the hibernate.show_sql property" class="margin-around b-all">
+        </li>
+        <li>Expand the Miscellaneous Properties node and click Add.</li>
+        <li>In the dialog box, select the <tt>properties hibernate.current_session_context_class</tt> and set the value to <tt>thread</tt> 
+        to enable Hibernate's automatic session context management.<br/>
+        <img src="../../../images_www/articles/72/web/hibernate-webapp/add-property-sessioncontext.png" alt="Add Hibernate Property dialog box for properties hibernate.current_session_context_class" title="Add Hibernate Property dialog box showing setting value for the hibernate.current_session_context_class property" class="margin-around b-all"></li>
+        <li>Click Add again under the Miscellaneous Properties node and select <tt>hibernate.query.factory_class</tt> in the Property Name dropdown list.</li>
+        <li>Select <strong>org.hibernate.hql.classic.ClassicQueryTranslatorFactory</strong> as the Property Value. Click OK.<br/>
+        <img src="../../../images_www/articles/72/web/hibernate-webapp/add-property-factoryclass.png" alt="Add Hibernate Property dialog box for properties hibernate.query.factory_class" title="Add Hibernate Property dialog box showing setting value for the hibernate.query.factory_class property" class="margin-around b-all">
+        <p>If you click the XML tab in the editor you can see the file in XML view. Your file should look similar to the following (the three new properties are bold):</p>
+        <pre class="examplecode">&lt;hibernate-configuration&gt;
+    &lt;session-factory name="session1"&gt;
+        &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+        &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+        &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+        &lt;property name="hibernate.connection.username"&gt;root&lt;/property&gt;
+        &lt;property name="hibernate.connection.password"&gt;######&lt;/property&gt;
+        <strong>&lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+        &lt;property name="hibernate.current_session_context_class"&gt;thread&lt;/property&gt;
+        &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.classic.ClassicQueryTranslatorFactory&lt;/property&gt;</strong>
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+        </li>
+        <li>Save your changes to the file.</li>
+    </ol>
+    <p>You can close the file because you do not need to edit the file again.</p>
+
+
+
+<a name="04"></a>
+<h2>Creating the <tt>HibernateUtil.java</tt> Helper File</h2>
+<p>To use Hibernate you need to create a helper class that handles startup
+and that accesses Hibernate's <tt>SessionFactory</tt> to obtain a Session object.
+The class calls <tt>configure()</tt> and loads the <tt>hibernate.cfg.xml</tt> configuration file
+and then builds the <tt>SessionFactory</tt> to obtain the Session object.
+</p>
+
+<p>In this section you use the New File wizard to create the helper class <tt>HibernateUtil.java</tt>.</p>
+<ol>
+    <li>Right-click the Source Packages node and select New &gt; Other to open the New File wizard.</li>
+    <li>Select Hibernate from the Categories list and HibernateUtil.java from the File Types list. Click Next.</li>
+    <li>Type <strong>HibernateUtil</strong> for the class name and <strong>dvdrental</strong> for the package. Click Finish.</li>
+
+</ol>
+<img src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-util-wizard.png" width="600" alt="Screenshot of HibernateUtil wizard" title="Screenshot of HibernateUtil wizard" class="margin-around b-all">
+<p>When you click Finish, <tt>HibernateUtil.java</tt> opens in the editor.
+You can close the file because you do not need to edit the file.</p>
+
+
+<a name="05"></a>
+<h2>Generating Hibernate Mapping Files and Java Classes</h2>
+
+<p>In this tutorial you use a POJO (plain old Java object)
+to represent the data in each of the tables in the database that you will use.
+The Java class specifies the fields for the columns in the tables and uses simple setters and getters to retrieve and
+write the data.
+To map the POJOs to the tables you can use a Hibernate mapping file or use annotations in the class.</p>
+
+<p>You can use the Hibernate Mapping Files and POJOs from a Database wizard to create multiple POJOs and mapping files based on database tables.
+When you use the wizard you select all the tables for which you want
+POJOs and mapping files and the IDE then generates the files for you based on the database tables and adds the mapping entries to <tt>hibernate.cfg.xml</tt>.
+When you use the wizard you can choose the files that you want the IDE to generate (only the POJOs, for example)
+and select code generation options (generate code that uses EJB 3 annotations, for example).</p>
+
+<p class="notes"><strong>Note.</strong> The IDE also has wizards to help you create individual POJOs and mapping files
+from scratch.</p>
+
+<div class="indent">
+<a name="05a"></a>
+<h3>Creating the Hibernate Reverse Engineering File</h3>
+<p>If you want to use the Hibernate Mapping Files and POJOs from a Database wizard, you first need to create
+a <tt>hibernate.reveng.xml</tt> reverse engineering file.
+The Hibernate Mapping Files and POJOs from a Database wizard requires <tt>hibernate.reveng.xml</tt> and <tt>hibernate.cfg.xml</tt>.</p>
+<p>The reverse engineering file enables you to have greater control over the database mapping strategy.
+The Hibernate Reverse Engineering Wizard creates a reverse engineering file with a default
+configuration that you can edit in the XML editor.</p>
+<p>To create the Hibernate reverse engineering file, perform the following steps.</p>
+
+<ol>
+    <li>Right-click the Source Packages node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+    <li>Select Hibernate Reverse Engineering Wizard in the Hibernate category. Click Next.</li>
+    <li>Specify <tt>hibernate.reveng</tt> as the File Name and <tt>src/java</tt> for the Folder. Click Next.</li>
+    <li>Select <tt>hibernate.cfg.xml</tt> from the Configuration File drop down list, if not selected.</li>
+    <li>Select the following tables from Available Tables and click Add to add the tables to Selected Tables.
+    <ul>
+        <li>actor</li>
+        <li>category</li>
+        <li>film</li>
+        <li>film_actor</li>
+        <li>film_category</li>
+        <li>language</li>
+    </ul>
+    <p>Click Finish.</p>
+    <img src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-reveng-wizard.png" width="600" alt="New Hibernate Reverse Engineering wizard" title="New Hibernate Reverse Engineering wizard" class="margin-around b-all">
+    </li>
+</ol>
+<p>The wizard generates a <tt>hibernate.reveng.xml</tt> reverse engineering file and opens the file in the editor.
+You can close the reverse engineering file because you will not need to edit the file.</p>
+
+<p class="tips">For more details about working with the <tt>hibernate.reveng.xml</tt> file, see
+    <a href="http://docs.jboss.org/tools/2.1.0.Beta1/hibernatetools/html/reverseengineering.html" target="_blank">Chapter 5. Controlling reverse engineering</a>
+in the <a href="http://docs.jboss.org/tools/2.1.0.Beta1/hibernatetools/html/" target="_blank">Hibernate Tools Reference Guide</a>.</p>
+
+<h3>Creating the Hibernate Mapping Files and POJOs</h3>
+<p>You can use the Hibernate Mapping Files and POJOs from a Database wizard to generate files for you.
+    The wizard can generate a POJO and a corresponding mapping file for each table that you select in the wizard.
+    The mapping files are XML files that contain data about how the columns in the tables are mapped to the fields in the POJOs.
+You need to have the <tt>hibernate.reveng.xml</tt> and <tt>hibernate.cfg.xml</tt> files to use the wizard.</p>
+
+<p>To create the POJOS and mapping files using a wizard, perform the following steps.</p>
+<ol>
+    <li>Right-click the Source Packages node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+    <li>Select Hibernate Mapping Files and POJOs from a Database in the Hibernate category. Click Next.</li>
+    <li>Ensure that the <tt>hibernate.cfg.xml</tt> and <tt>hibernate.reveng.xml</tt>
+        files are selected in the drop down lists.</li>
+    <li>Select <strong>JDK 5 Language Features</strong> under the General Settings options.</li>
+    <li>Ensure that the <strong>Domain Code</strong> and <strong>Hibernate XML Mappings</strong> options are selected.</li>
+    <li>Select <strong>dvdrental</strong> for the Package name. Click Finish.<br />
+    <img src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-pojo-wizard2.png" width="600" alt="Generate Hibernate Mapping Files and POJOs wizard" title="Generate Hibernate Mapping Files and POJOs wizard" class="margin-around b-all">
+    </li>
+</ol>
+<p>When you click Finish the IDE generates POJOs and Hibernate mapping files with the fields mapped to the columns
+    specified in <tt>hibernate.reveng.xml</tt>.
+    The IDE also adds mapping entries to <tt>hibernate.cfg.xml</tt>.</p>
+
+<pre class="examplecode">&lt;hibernate-configuration&gt;
+  &lt;session-factory&gt;
+    &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+    &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+    &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+    &lt;property name="hibernate.connection.username"&gt;myusername&lt;/property&gt;
+    &lt;property name="hibernate.connection.password"&gt;mypassword&lt;/property&gt;
+    &lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+    &lt;property name="hibernate.current_session_context_class"&gt;thread&lt;/property&gt;
+    &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.classic.ClassicQueryTranslatorFactory&lt;/property&gt;
+    &lt;mapping resource="dvdrental/FilmActor.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Language.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Film.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Category.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Actor.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/FilmCategory.hbm.xml"/&gt;
+  &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+
+<p class="notes"><strong>Note.</strong> Confirm that the <tt>mapping</tt> elements are listed after
+    the <tt>property</tt> elements in the <tt>hibernate.cfg.xml</tt> file.</p>
+
+<p>You can expand the <tt>dvdrental</tt> package to see the files generated by the wizard.</p>
+
+<img src="../../../images_www/articles/72/web/hibernate-webapp/hib-projectswindow.png" alt="Screenshot of Projects window showing generated POJOs" title="Projects window showing generated POJOs" class="margin-around b-all">
+
+<p class="tips">You can use the Hibernate Mapping wizard if you want to create a Hibernate mapping file that maps a specific table
+    to a specific class.</p>
+
+<p class="tips">For more details about working with the <tt>hibernate.reveng.xml</tt> file, see
+    <a href="http://docs.jboss.org/hibernate/core/3.3/reference/en/html/mapping.html" target="_blank">Chapter 5. Basic O/R Mapping</a>
+in the <a href="http://docs.jboss.org/hibernate/stable/core/reference/en/html/" target="_blank">Hibernate Reference Documentation</a>.</p>
+
+
+</div>
+
+<a name="06"></a>
+<h2>Creating the <tt>FilmHelper.java</tt> Helper Class</h2>
+
+<p>You will now create a helper class in the <tt>dvdrental</tt> package that will be used to perform Hibernate queries on the database.
+You will use the Hibernate Query Language (HQL) editor to construct and test the queries for retrieving data.
+After you test the queries you will create methods in the helper class that construct and run the queries.
+You will then invoke the methods in the helper class from a JSF managed bean.</p>
+
+<a name="06a"></a>
+<div class="indent">
+    <h3>Creating the Class</h3>
+    <p>In this section you use the New File wizard to create the helper class <tt>FilmHelper.java</tt> in the <tt>dvdrental</tt> package.
+    You will create a Hibernate session by calling <tt>getSessionFactory</tt> in <tt>HibernateUtil.java</tt> and create
+    some helper methods to create queries to retrieve data from the database.
+    You will invoke the helper methods from the JSP pages.</p>
+    <ol>
+        <li>Right-click the <tt>dvdrental</tt> source package node and select New &gt; Java Class to open the New File wizard.</li>
+        <li>Type <strong>FilmHelper</strong> for the class name. </li>
+        <li>Confirm that <strong>dvdrental</strong> is selected as the Package. Click Finish.</li>
+        <li>Adding the following code (in bold) to create a Hibernate session.
+        <pre class="examplecode">public class FilmHelper {
+
+    <strong>Session session = null;
+
+    public FilmHelper() {
+        this.session = HibernateUtil.getSessionFactory().getCurrentSession();
+    }</strong>
+
+}</pre>
+        </li>
+        <li>Right-click in the editor and choose Fix Imports (Alt-Shift-I; &#8984-Shift-I on Mac) to add any required import statements (<tt>org.hibernate.Session</tt>) and save your changes.</li>
+    </ol>
+
+    <p>You will now modify <tt>FilmHelper.java</tt> to add methods that query the DB.</p>
+
+<a name="06b"></a>
+    <h3>Enumerating Film Titles and Retrieving Actors Using an HQL Query</h3>
+    <p>In this exercise you will create a Hibernate Query Language (HQL) query that queries the 
+    database to retrieve a list of film titles from the Film table.
+    You will then add a method that queries both the Actor and Film_actor tables
+    to fetch the actors involved in a particular film.</p>
+
+    <p>The Film table has 1000 records so the method to retrieve the list of films should be able to
+    retrieve records based on the <tt>filmId</tt> primary key.
+    You will use the HQL editor to construct and test the HQL query.
+    After you have created the correct query you will add a method to the class that can generate the proper query.
+    </p>
+    <ol>
+        <li>Right-click the project node in the Projects window and choose Clean and Build.</li>
+        <li>Right-click <tt>hibernate.cfg.xml</tt> in the Projects window and choose Run HQL Query to open the HQL query editor.</li>
+        <li>Select hibernate.cfg from the drop down list in the toolbar.</li>
+        <li>Test the connection by typing the following in the editor and clicking the Run HQL Query button (&nbsp;<img src="../../../images_www/articles/72/web/hibernate-webapp/run_hql_query_16.png" width="16" height="16" alt="Run HQL Query button" title="Run HQL Query button" />&nbsp;) in the toolbar.
+        <pre class="examplecode">from Film</pre>
+        <p>When you click Run HQL Query you can see the results of the query in the bottom window of the HQL query editor.</p>
+        <img src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-hqleditor1.png" alt="Generate Hibernate Mapping Files and POJOs wizard" title="Generate Hibernate Mapping Files and POJOs wizard" class="margin-around b-all">
+        <p>If you click the SQL button you can see the equivalent SQL query.</p>
+        <pre class="examplecode">select film0_.film_id as col_0_0_ from sakila.film film0_</pre>
+        </li>
+        <li>Type the following query to retrieve the records in the Film table where the film id is between 100 and 200.
+        <pre class="examplecode">from Film as film where film.filmId between 100 and 200</pre>
+        <p>The result window displays a list of records.
+        Now that you have tested that the query returns the desired results, you can use the query in the helper class.</p>
+        </li>
+        <li>Add the following method <tt>getFilmTitles</tt> to <tt>FilmHelper.java</tt> to retrieve the films where the film id is between a certain range
+        specified by the variables <tt>startID</tt> and <tt>endID</tt>.
+        <pre class="examplecode">public List getFilmTitles(int startID, int endID) {
+    List&lt;Film&gt; filmList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery ("from Film as film where film.filmId between '"+startID+"' and '"+endID+"'");
+        filmList = (List&lt;Film&gt;) q.list();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return filmList;
+}</pre>
+        </li>
+        <li>Add the following method <tt>getActorsByID</tt> that retrieves the actors in a particular
+        film. The method constructs the query using <tt>filmId</tt> as the input variable.
+        <pre class="examplecode">public List getActorsByID(int filmId){
+    List&lt;Actor&gt; actorList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery ("from Actor as actor where actor.actorId in (select filmActor.actor.actorId from FilmActor as filmActor where filmActor.film.filmId='" + filmId + "')");
+        actorList = (List&lt;Actor&gt;) q.list();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return actorList;
+}</pre>
+        </li>
+
+        <li>Fix your imports and save your changes.
+        <p>When you fix your imports you want to choose <tt>java.util.List</tt> and <tt>org.hibernate.Query</tt>.</p>
+        </li>
+    </ol>
+
+<a name="06d"></a>
+    <h3>Adding Additional Helper Methods</h3>
+    <p>You will now add additional helper methods that create queries based on an input variable.
+    You can check the queries in the HQL query editor.</p>
+
+
+
+    <ol>
+        <li>Add the following method to retrieve a list of categories according to <tt>filmId</tt>.
+<pre class="examplecode">public Category getCategoryByID(int filmId){
+    List&lt;Category&gt; categoryList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Category as category where category.categoryId in (select filmCat.category.categoryId from FilmCategory as filmCat where filmCat.film.filmId='" + filmId + "')");
+        categoryList = (List&lt;Category&gt;) q.list();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return categoryList.get(0);
+}</pre>
+        </li>
+        <li>Add the following method to retrieve a single film according to <tt>filmId</tt>.
+        <pre class="examplecode">public Film getFilmByID(int filmId){
+
+    Film film = null;
+
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Film as film where film.filmId=" + filmId);
+        film = (Film) q.uniqueResult();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return film;
+}</pre>
+        </li>
+        <li>Add the following method to retrieve the film language according to <tt>langId</tt>.
+        <pre class="examplecode">public String getLangByID(int langId){
+
+    Language language = null;
+
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Language as lang where lang.languageId=" + langId);
+        language = (Language) q.uniqueResult();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return language.getName();
+}</pre>
+        </li>
+        <li>Save your changes.</li>
+    </ol>
+</div>
+
+
+
+        <a name="07"></a>
+        <h2>Creating the JSF Managed Bean</h2>
+        <p>In this exercise you will create a JSF managed bean.
+            The methods in the managed bean are used for displaying data in the JSF pages
+            and for accessing methods in the helper class to retrieve records.
+        The JSF 2.0 specification enables you to use annotations in a bean class
+        to identify the class as a JSF managed bean, to specify the scope and
+        to specify a name for the bean.</p>
+
+        <p>To create the managed bean, perform the following steps.</p>
+        <ol>
+            <li>Right-click the <tt>dvdrental</tt> source package node and choose New &gt; Other.</li>
+           <li>Select JSF Managed Bean from the JavaServer Faces category. Click Next.</li>
+           <li>Type <strong>FilmController</strong> for the Class Name.
+                <p>You will use the Managed Bean name <tt>filmController</tt> as the value for the <tt>inputText</tt> and
+                <tt>commandButton</tt> in the JSF page <tt>index.xhtml</tt> when calling methods in the bean.</p>
+           </li>
+           <li>Select <strong>dvdrental</strong> for the Package.</li>
+           <li>Type <strong>filmController</strong> for the Name that will be used for the managed bean.</li>
+           <li>Set Scope to Session. Click Finish.</li>
+        </ol>
+        <img src="../../../images_www/articles/72/web/hibernate-webapp/hib-newmanagedbean.png" alt="New JSF Managed Bean wizard" title="New JSF Managed Bean wizard" class="margin-around b-all">
+
+        <p>When you click Finish, the IDE creates the bean class and opens the class in the editor.
+        The IDE added the <tt>@ManagedBean</tt> and <tt>@SessionScoped</tt> annotations.</p>
+<pre class="examplecode">
+@ManagedBean
+@SessionScoped
+public class FilmController {
+
+    /** Creates a new instance of FilmController */
+    public FilmController() {
+    }
+
+}
+</pre>
+
+        <p class="notes"><strong>Note.</strong> Note that the name of the managed bean is not explicitly specified.
+            By default, the name of the bean is the same as the class name and begins with a lower-case letter.
+            If you want the name of the bean to be different from the class name, you
+            can explicitly specify the name as a parameter of the <tt>@ManagedBean</tt> annotations 
+            (for example, <tt>@ManagedBean(name="myBeanName")</tt>.</p>
+        
+        <ol>
+            <li>Add the following fields (in bold) to the class.
+                <pre class="examplecode">
+@ManagedBean
+@SessionScoped
+public class FilmController {
+    <strong>int startId;
+    int endId;
+    DataModel filmTitles;
+    FilmHelper helper;
+    private int recordCount = 1000;
+    private int pageSize = 10;
+
+    private Film current;
+    private int selectedItemIndex;</strong>
+}</pre>
+            </li>
+            <li>Add the following code (in bold) to create the FilmController instance and retrieve the films.
+                <pre class="examplecode">
+    /** Creates a new instance of FilmController */
+    public FilmController() {
+        <strong>helper = new FilmHelper();
+        startId = 1;
+        endId = 10;
+    }
+
+    public FilmController(int startId, int endId) {
+        helper = new FilmHelper();
+        this.startId = startId;
+        this.endId = endId;
+    }
+
+    public Film getSelected() {
+        if (current == null) {
+            current = new Film();
+            selectedItemIndex = -1;
+        }
+        return current;
+    }
+
+
+    public DataModel getFilmTitles() {
+        if (filmTitles == null) {
+            filmTitles = new ListDataModel(helper.getFilmTitles(startId, endId));
+        }
+        return filmTitles;
+    }
+
+    void recreateModel() {
+        filmTitles = null;
+    }</strong></pre>
+        </li>
+        <li>Add the following methods that are used to display the table and navigate the pages.
+
+<pre class="examplecode"><strong>    public boolean isHasNextPage() {
+        if (endId + pageSize <= recordCount) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isHasPreviousPage() {
+        if (startId-pageSize > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public String next() {
+        startId = endId+1;
+        endId = endId + pageSize;
+        recreateModel();
+        return "index";
+    }
+
+    public String previous() {
+        startId = startId - pageSize;
+        endId = endId - pageSize;
+        recreateModel();
+        return "index";
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public String prepareView(){
+        current = (Film) getFilmTitles().getRowData();
+        return "browse";
+    }
+    public String prepareList(){
+        recreateModel();
+        return "index";
+    }
+</strong></pre>
+        <p>The methods that return "index" or "browse" will prompt the
+        JSF navigation handler to try to open a page named <tt>index.xhtml</tt> or <tt>browse.xhtml</tt>.
+        The JSF 2.0 specification enables the use of implicit navigation rules in applications that use Facelets technology.
+        In this application, no navigation rules are configured in <tt>faces-config.xml</tt>.
+        Instead, the navigation handler will try to locate a suitable page in the application.</p>
+    </li>
+    <li>Add the following methods that access the helper class to retrieve additional film details.
+<pre class="examplecode"><strong>    public String getLanguage() {
+        int langID = current.getLanguageByLanguageId().getLanguageId().intValue();
+        String language = helper.getLangByID(langID);
+        return language;
+    }
+
+    public String getActors() {
+        List actors = helper.getActorsByID(current.getFilmId());
+        StringBuffer totalCast = new StringBuffer();
+        for (int i = 0; i < actors.size(); i++) {
+            Actor actor = (Actor) actors.get(i);
+            totalCast.append(actor.getFirstName());
+            totalCast.append(" ");
+            totalCast.append(actor.getLastName());
+            totalCast.append("  ");
+        }
+        return totalCast.toString();
+    }
+
+    public String getCategory() {
+        Category category = helper.getCategoryByID(current.getFilmId());
+        return  category.getName();
+    }</strong>
+</pre>
+            </li>
+            <li>Fix your imports (Ctrl-Shift-I) and save your changes.</li>
+        </ol>
+        <p class="tips">You can use the code completion in the editor to help you type your code.</p>
+
+
+<!-- **************** Creating the Web Pages **************** -->
+
+<a name="08"></a>
+<h2>Creating the Web Pages</h2>
+<p>In this exercise you will create two web pages for displaying the data.
+You will modify the <tt>index.xhtml</tt> generated by the IDE to add a table that displays the films in the database.
+You will then create <tt>browse.xhtml</tt> to display a film's details when you click the "View" link in the table.
+You will also create a JSF template page that is used by <tt>index.xhtml</tt> and <tt>browse.xhtml</tt>.</p>
+
+<p class="tips">For more about using JSF 2.0 and Facelets templates, see
+    <a href="jsf20-intro.html">Introduction to JavaServer Faces 2.0</a></p>
+
+<div class="indent">
+    <a name="07a"></a>
+    <h3>Creating <tt>template.xhtml</tt></h3>
+    <p>You will first create the JSF Facelets template <tt>template.xhtml</tt> that is used in the composition of the <tt>index.xhtml</tt> and <tt>browse.xhtml</tt> pages.</p>
+    <ol>
+        <li>Right-click the DVDStore project node in the Projects window and choose New &gt; Other.</li>
+        <li>Select Facelets Template in the JavaServer Faces category. Click Next.</li>
+        <li>Type <strong>template</strong> for the File Name and choose the first CSS layout style.</li>
+        <li>Click Finish.
+        <p>When you click Finish, the file <tt>template.xhtml</tt> opens in the editor.
+        The template contains the following default code.</p>
+            <pre class="examplecode">&lt;h:body&gt;
+
+    &lt;div id="top" class="top"&gt;
+        &lt;ui:insert name="top"&gt;Top&lt;/ui:insert&gt;
+    &lt;/div&gt;
+
+    &lt;div id="content" class="center_content"&gt;
+        &lt;ui:insert name="content"&gt;Content&lt;/ui:insert&gt;
+    &lt;/div&gt;
+
+&lt;/h:body&gt;</pre></li>
+    <li>Modify the <tt>&lt;ui:insert&gt;</tt> element to change the default generated name to "body".
+<pre class="examplecode">&lt;div id="content" class="center_content"&gt;
+        &lt;ui:insert name="<strong>body</strong>"&gt;Content&lt;/ui:insert&gt;
+&lt;/div&gt;</pre>
+    </li>
+    <li>Save your changes.</li>
+    </ol>
+
+    <p>The content enclosed within the <tt>&lt;ui:define name="body"&gt;</tt> element in <tt>index.xhtml</tt> and <tt>browse.xhtml</tt>
+        will be inserted into the location identified with <tt> &lt;ui:insert name="body"&gt;Content&lt;/ui:insert&gt;</tt> in the template.</p>
+
+
+
+
+    <h3>Modifying <tt>index.xhtml</tt></h3>
+    <p>When you created the web application, the IDE automatically generated the page <tt>index.xhtml</tt>.
+    In this exercise you modify the page to display a list of film titles.
+    The JSF page calls the methods in the JSF Managed Bean FilmController to retrieve
+    the list of films and then displays a table with the film titles and descriptions.</p>
+    <ol>
+        <li>Expand the Web Pages folder in the Projects window and open <tt>index.xhtml</tt> in the editor.
+        <p>The New Project wizard generated the following default <tt>index.xhtml</tt> page.</p>
+<pre class="examplecode">&lt;html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"&gt;
+&lt;h:head&gt;
+        &lt;title&gt;Facelet Title&lt;/title&gt;
+    &lt;/h:head&gt;
+    &lt;h:body&gt;
+        Hello from Facelets
+    &lt;/h:body&gt;
+&lt;/html&gt;</pre></li>
+
+<li>Modify the page to use the JSF <tt>&lt;ui:composition&gt;</tt> and <tt>&lt;ui:define&gt;</tt> elements and add a <tt>&lt;h:form&gt;</tt> element.
+    <pre class="examplecode">&lt;html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://java.sun.com/jsf/html"
+  <strong>xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+    &lt;ui:composition template="./template.xhtml"&gt;
+        &lt;ui:define name="body"&gt;
+            &lt;h:form&gt;
+
+            &lt;/h:form&gt;
+        &lt;/ui:define&gt;
+    &lt;/ui:composition&gt;</strong>
+&lt;/html&gt;</pre>
+    <p>When you start typing the tags, the IDE adds <tt>xmlns:ui="http://java.sun.com/jsf/facelets"</tt> tag library declaration.</p>
+    <p>The <tt>&lt;ui:composition&gt;</tt> and <tt>&lt;ui:define&gt;</tt> elements are used in combination with the page
+    template that you will create.
+    The <tt>&lt;ui:composition&gt;</tt> element references the location of the template that will be used by this page.
+    The <tt>&lt;ui:define&gt;</tt> element references the position in the template that the enclosed code will occupy.</p>
+</li>
+<li>Add the following navigation links that call the <tt>previous</tt> and <tt>next</tt> methods in the JSF managed bean.
+    <pre class="examplecode">
+    &lt;ui:define name="body"&gt;
+            &lt;h:form&gt;
+                <strong>&lt;h:commandLink action="#{filmController.previous}" value="Previous #{filmController.pageSize}" rendered="#{filmController.hasPreviousPage}"/&gt;&nbsp;
+                &lt;h:commandLink action="#{filmController.next}" value="Next #{filmController.pageSize}" rendered="#{filmController.hasNextPage}"/&gt;&nbsp;</strong>
+            &lt;/h:form&gt;
+    &lt;/ui:define&gt;</pre>
+</li>
+
+<li>Add the following <tt>dataTable</tt> element (in bold) to generate the table to display the retrieved items.
+<pre class="examplecode">
+            &lt;h:form styleClass="jsfcrud_list_form"&gt;
+                &lt;h:commandLink action="#{filmController.previous}" value="Previous #{filmController.pageSize}" rendered="#{filmController.hasPreviousPage}"/&gt;&nbsp;
+                &lt;h:commandLink action="#{filmController.next}" value="Next #{filmController.pageSize}" rendered="#{filmController.hasNextPage}"/&gt;&nbsp;
+                <strong>&lt;h:dataTable value="#{filmController.filmTitles}" var="item" border="0" cellpadding="2" cellspacing="0" rowClasses="jsfcrud_odd_row,jsfcrud_even_row" rules="all" style="border:solid 1px"&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="Title"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:outputText value="#{item.title}"/&gt;
+                    &lt;/h:column&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="Description"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:outputText value="#{item.description}"/&gt;
+                    &lt;/h:column&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="&nbsp;"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:commandLink action="#{filmController.prepareView}" value="View"/&gt;
+                    &lt;/h:column&gt;
+                &lt;/h:dataTable&gt;
+                &lt;br/&gt;</strong>
+            &lt;/h:form&gt;
+</pre>
+        
+        <li>Save your changes.</li>
+    </ol>
+    <p>The index page will now display a list of film titles in the database.
+        Each row in the table includes a "View" link that invokes the <tt>prepareView</tt> method in the managed bean.
+        The <tt>prepareView</tt> method returns "browse" and will open <tt>browse.xhtml</tt>.</p>
+
+    <p class="notes"><strong>Note.</strong> When you type the <tt>&lt;f:facet&gt;</tt> tag, the IDE will add <tt>xmlns:f="http://java.sun.com/jsf/core</tt>
+        tag library declaration.
+        <strong>Confirm that the tag library is declared in the file.</strong></p>
+
+    
+    <!-- +++++++++++++++ Create browse.xhtml +++++++++++++++  -->
+    <a name="07b"></a>
+    <h3>Creating <tt>browse.xhtml</tt></h3>
+    <p>You will now create the <tt>browse.xhtml</tt> page for displaying details of the selected film.
+    You can use the Facelets Template Client wizard to create the page based on the JSF Facelets template <tt>template.xhtml</tt>
+    that you created.</p>
+    <ol>
+        <li>Right-click DVDStore project node in the Projects window and choose New &gt; Other.</li>
+        <li>Select Facelets Template Client in the JavaServer Faces category. Click Next.<br/>
+        <img src="../../../images_www/articles/72/web/hibernate-webapp/hib-faceletsclient.png" alt="screenshot of Facelets Template Client in New File wizard" title="Facelets Template Client file type in New File wizard" class="margin-around b-all"></li>
+        <li>Type <strong>browse</strong> for the File Name.</li>
+        <li>Locate the Template for the page by clicking Browse to open the Browse Files dialog box.</li>
+        <li>Expand the Web Pages folder and select <tt>template.xhtml</tt>. Click Select File.<br/>
+        <img src="../../../images_www/articles/72/web/hibernate-webapp/hib-browsetemplate.png" alt="screenshot of Browse Files dialog" title="Select the template in the Browse Files dialog" class="margin-around b-all"></li>
+        <li>Select <strong>&lt;ui:composition&gt;</strong> for the Generated Root Tag. Click Finish.
+        <p>When you click Finish, the file <tt>browse.xhtml</tt> opens in the editor with the following code.</p>
+        <pre class="examplecode">&lt;ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="./template.xhtml"&gt;
+
+    &lt;ui:define name="top"&gt;
+        top
+    &lt;/ui:define&gt;
+
+    &lt;ui:define name="body"&gt;
+        body
+    &lt;/ui:define&gt;
+
+&lt;/ui:composition&gt;</pre>
+        <p>You can see that the new file specifies the <tt>template.xhtml</tt> file and that the <tt>&lt;ui:define&gt;</tt> tag has the property <tt>name="body"</tt> </p>
+        </li>
+        <li>Add the following code (in bold) between the <tt>&lt;ui:define&gt;</tt> tags to create the form and
+        call the methods in the managed bean FilmController to retrieve the data and populate the form.
+            <pre class="examplecode">&lt;ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="./template.xhtml"
+    <strong>xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"</strong>&gt;
+
+        &lt;ui:define name="top"&gt;
+            top
+        &lt;/ui:define&gt;
+
+        &lt;ui:define name="body"&gt;
+        <strong>
+            &lt;h:form&gt;
+                &lt;h:panelGrid columns="2"&gt;
+                    &lt;h:outputText value="Title:"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.title}" title="Title"/&gt;
+                    &lt;h:outputText value="Description"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.description}" title="Description"/&gt;
+                    &lt;h:outputText value="Genre"/&gt;
+                    &lt;h:outputText value="#{filmController.category}"/&gt;
+
+                    &lt;h:outputText value="Cast"/&gt;
+                    &lt;h:outputText value="#{filmController.actors}"/&gt;
+
+
+                    &lt;h:outputText value="Film Length"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.length} min" title="Film Length"/&gt;
+
+                    &lt;h:outputText value="Language"/&gt;
+                    &lt;h:outputText value="#{filmController.language}" title="Film Length"/&gt;
+
+                    &lt;h:outputText value="Release Year"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.releaseYear}" title="Release Year"&gt;
+                        &lt;f:convertDateTime pattern="MM/dd/yyyy" /&gt;
+                    &lt;/h:outputText&gt;
+                    &lt;h:outputText value="Rental Duration"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rentalDuration}" title="Rental DUration"/&gt;
+                    &lt;h:outputText value="Rental Rate"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rentalRate}" title="Rental Rate"/&gt;
+                    &lt;h:outputText value="Replacement Cost"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.replacementCost}" title="Replacement Cost"/&gt;
+                    &lt;h:outputText value="Rating"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rating}" title="Rating"/&gt;
+                    &lt;h:outputText value="Special Features"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.specialFeatures}" title="Special Features"/&gt;
+                    &lt;h:outputText value="Last Update"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.lastUpdate}" title="Last Update"&gt;
+                        &lt;f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" /&gt;
+                    &lt;/h:outputText&gt;
+                &lt;/h:panelGrid&gt;
+                &lt;br/&gt;
+                &lt;br/&gt;
+                &lt;h:commandLink action="#{filmController.prepareList}" value="View All List"/&gt;
+                &lt;br/&gt;
+            &lt;/h:form&gt;
+</strong>
+        &lt;/ui:define&gt;
+    &lt;/ui:composition&gt;
+&lt;/html&gt;</pre>
+        <p>You can see that <tt>browse.xhtml</tt> and <tt>index.xhtml</tt> will use the same page template.</p>
+        </li>
+        <li>Save your changes.</li>
+    </ol>
+
+
+     <a name="07b"></a>
+    
+</div>
+
+<a name="09"></a>
+<h2>Running the Project</h2>
+<p>The basics of the application are now complete. You can now run the application to check if everything is working correctly.</p>
+<ol>
+    <li>Click Run Main Project in the main toolbar or right-click the DVDStore application node in the Projects window and choose Run.
+    <p>The IDE saves all changed files, builds the application, and deploys the application to the server.
+    The IDE opens a browser window to the URL <tt>http://localhost:8080/DVDStore/</tt> that displays the list of films.</p>
+
+    <img src="../../../images_www/articles/72/web/hibernate-webapp/hib-browser1.png"  alt="Screenshot of browser displaying film list on index page" title="Screenshot of browser displaying film list on index page" class="margin-around b-all">
+    </li>
+    <li>In your browser, click "View" to load <tt>browse.xhtml</tt> to view the film details.<br/>
+    </li>
+</ol>
+
+
+
+    <a name="10"></a>
+    <h3>Downloading the Solution Project</h3>
+    <p>You can download the solution to this tutorial as a project in the following ways.</p>
+    <ul>
+        <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/DVDStoreEE6.zip">a zip archive of the finished project</a>.</li>
+        <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+            <ol>
+                <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                <li>In the Checkout dialog box, enter the following Repository URL:<br/>
+                    <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br/>
+                    Click Next.</li>
+                <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                <li>Expand the root node and select <strong>samples/javaee/DVDStoreEE6</strong>. Click OK.</li>
+                <li>Specify the Local Folder for the sources.</li>
+                <li>Click Finish.
+                    <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                    and checks out the project sources.</p>
+                </li>
+                <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+            </ol>
+            <p class="notes"><strong>Notes.</strong>
+            For more about installing Subversion, see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</p>
+        </li>
+    </ul>
+
+
+    <a name="11"></a>
+    <h3>Troubleshooting</h3>
+    <p>Most of the problems that occur with the tutorial application are due to communication
+    difficulties between the GlassFish Server Open Source Edition and the MySQL database server.
+    If your application does not display correctly, or if you are receiving a server error,
+    you might want to look at the <a href="mysql-webapp.html#troubleshoot">Troubleshooting</a> section of the 
+    <a href="mysql-webapp.html">Creating a Simple Web Application Using a MySQL Database</a> tutorial or the
+    <a href="../ide/mysql.html">Connecting to a MySQL Database</a> tutorial.</p>
+    
+    <p>If you download and run the solution project you might see the following
+    error in the Output window if it is the first time that you have deployed an application that uses
+    the MySQL database.</p>
+    
+    <pre class="examplecode">
+    SEVERE: JDBC Driver class not found: com.mysql.jdbc.Driver
+    java.lang.ClassNotFoundException: com.mysql.jdbc.Driver
+	at org.glassfish.web.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1509)
+
+        [...]
+
+	at java.lang.Thread.run(Thread.java:680)
+
+    SEVERE: Initial SessionFactory creation failed.org.hibernate.HibernateException: JDBC Driver class not found: com.mysql.jdbc.Driver
+    INFO: cleaning up connection pool: null
+    INFO: Domain Pinged: stable.glassfish.org</pre>
+    
+    <p>In your browser window you might see a <tt>java.lang.ExceptionInInitializerError</tt>
+    and the following stack trace.</p>
+    <pre class="examplecode">
+    java.lang.ExceptionInInitializerError
+	at dvdrental.HibernateUtil.&lt;clinit&gt;(HibernateUtil.java:28)
+	...
+    Caused by: org.hibernate.HibernateException: JDBC Driver class not found: com.mysql.jdbc.Driver
+	
+	... 
+    Caused by: java.lang.ClassNotFoundException: com.mysql.jdbc.Driver
+	... </pre>
+    
+    <p>The output message states that the JDBC driver for the MySQL database was not found.
+    The most probable reason is that you need to add the MySQL JDBC driver file to your GlassFish server installation. 
+    To confirm that the driver is missing, navigate to the <tt><em>GLASSFISH-INSTALL</em>/glassfish/domains/domain1/lib</tt>
+    directory on your local system (where <em>GLASSFISH-INSTALL</em> is your GlassFish installation directory).
+    If the <tt>domain1/lib</tt> directory does not contain the JDBC driver file 
+    (for example, <code>mysql-connector-java-5.1.13-bin.jar</code>) you need to copy the
+    JDBC driver to the directory.
+    The MySQL JDBC driver is not added to your GlassFish installation when you install the server.
+    </p>
+        
+    <p>You can add a copy of the MySQL JDBC driver to your GlassFish installation by performing the 
+        following steps.
+    <ol>
+        <li>Download the <a href="http://dev.mysql.com/downloads/connector/j/">MySQL Connector/J JDBC driver</a>.</li>
+        <li>Extract the driver and copy the driver file (for example, <code>mysql-connector-java-5.1.13-bin.jar</code>)
+            to the <tt>domain1/lib</tt> directory of your GlassFish installation.</li>
+    </ol>
+        
+    <p>Alternatively, when you use the IDE to create an application that uses the MySQL database, 
+    the IDE can automatically copy the bundled MySQL JDBC driver
+    to the GlassFish server when you deploy the project, if required.
+    To confirm that the IDE will copy the necessary JDBC drivers,
+    choose Tools &gt; Servers from the main menu to open the Servers manager
+    and confirm that the Enable JDBC Driver Deployment option is selected 
+    for your GlassFish server.</p>
+    <p>After you create and deploy a web application that uses the MySQL database,
+    if you navigate to the <code>domain1/lib</code> directory of your local GlassFish
+    installation you will see that directory contains the JDBC driver file.</p>
+
+    
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Hibernate%20in%20a%20Web%20Application">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;" />
+
+<h2>See Also</h2>
+    <ul>
+        <li><a href="jsf20-support.html">JSF 2.x Support in NetBeans IDE</a></li>
+        <li><a href="jsf20-intro.html">Introduction to JavaServer Faces 2.x</a></li>
+        <li><a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a></li>
+    </ul>
+
+   
+</body>
+</html>

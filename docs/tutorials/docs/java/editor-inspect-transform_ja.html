@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>「検査と変換」を使用したリファクタリング - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Refactoring with Inspect and Transform functionality in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Java editor, refactoring, inspections, configurations"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body><a name="top"></a>
+
+<h1>NetBeans IDE Javaエディタでの「検査と変換」を使用したリファクタリング</h1>
+<p>NetBeans IDE Javaエディタは、選択された範囲のファイルに対して一度に様々な検査や変換を実行するためのリファクタリング・ツールである「検査と変換」機能を備えています。また、これを使用すると、ユーザーがカスタム検査を定義することもできます。 </p>
+<p>このチュートリアルでは、リファクタリングを含む検査や事前定義された一連の検査を使用してコードのレビューを実行したり、構成を管理したり、カスタム検査を作成したりする方法について学習します。</p>
+
+<h3>内容</h3>
+<img alt="このページの内容は、NetBeans IDE 8.0に適用されます" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="このページの内容は、NetBeans IDE 8.0に適用されます" />
+
+        <ul class="toc">
+            <li><a href="#setup">チュートリアルの環境の設定</a></li>
+			<li><a href="#run">検査の実行</a></li>			
+            <li><a href="#configuration">構成の使用</a>
+			<ul>
+			<li><a href="#migrate5">JDK 5に移行</a></li>
+			<li><a href="#convert">JDK 7に移行</a></li>
+			<li><a href="#migrate8">JDK 8に移行</a></li>
+			<li><a href="#organize">インポートの編成</a></li></ul></li>
+			<li><a href="#create">カスタム検査の管理</a></li>
+			<li><a href="#summary">サマリー</a></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>要件</h2>
+        <p><strong>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">バージョン7または8 </td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        
+<a name="setup"></a>
+<h2>チュートリアルの環境の設定</h2>
+<p>上に一覧表示されている必要なソフトウェアに加えて、<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/inspecttransform.zip" target="_blank">InspectTransform.zip</a>ファイルをNetBeansプロジェクト・フォルダに解凍し、次のようにNetBeans IDEで開くようにしてください。</p>	
+<p class="align-center"><img alt="IDEで開いているプロジェクト" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/proj.png"></p>	
+		<a name="run"></a>
+		<h2>検査の実行</h2>
+		<p>「検査と変換」ダイアログ・ボックス(「リファクタリング」>「検査と変換」)にある「単一の検査」オプションは、特定のリファクタリング変換に関連した様々な検査を提供します。このような操作の完全なリストは、「単一の検査」オプションの右にある「参照」ボタンをクリックすると、「検査の管理」ダイアログ・ボックスで表示されます。 </p>
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections.png" rel="lytebox" title="「検査の管理」ダイアログ・ボックス"> <img alt="「検査の管理」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections-small.png"></a></p>	
+	<p>「検索」フィールドを使用すると、キーワード検索を使用して、必要な検査が使用できるかどうかを確認できます。たとえば、<tt>演算子</tt>を検索すると、いくつかの検査が見つかります。</p>	
+	<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/search.png" rel="lytebox" title="キーワードの検索"> <img alt="キーワードの検索" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/search-small.png"></a></p>	
+     <p>検査はすべて、「検査の管理」ダイアログ・ボックスの「説明」フィールドに説明が示されています。 </p>
+	 
+	 <p><b>検査を実行し、既存の検査を適用するには:</b></p>
+	 <ol>
+	 <li>「プロジェクト」ウィンドウで、<tt>InspectTransform.java</tt>ファイルを選択します。</li>
+	 <li>IDEのメニューから「リファクタリング」>「検査と変換」を選択します。</li>
+	 <li>「検査と変換」ダイアログ・ボックスで、「単一の検査」オプションを選択し、「参照」をクリックします。</li>
+	 <li>「検査の管理」ダイアログ・ボックスで、「代入の問題」ノードの「<tt>代入演算子で置換できる代入</tt>」検査を選択します。</li>
+	 <li>「OK」をクリックして、「検査の管理」ダイアログ・ボックスを閉じます。</li>
+     <li>「検査と変換」ダイアログ・ボックスで「検査」をクリックします。<br />提案されたリファクタリングの変更がプレビュー・パネルに表示されます。
+	 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection.png" rel="lytebox" title="単一の検査の実行"> <img alt="単一の検査の実行" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection-small.png"></a></p>	</li>
+     <li>必要に応じて、「リファクタリングを実行」をクリックして変更を適用します。</li>
+</ol>
+
+		<p class="align-center"><a href="#top">先頭</a></p>
+		
+		
+
+		
+		 
+		
+		
+		
+        <a name="configuration"></a>
+		<h2>構成の使用</h2>
+		<p>まとめてグループ化された一連のリファクタリングによって、対象範囲(たとえば、1つのクラスまたは複数のクラス、パッケージ、プロジェクト)に対して実行できる構成が形成されます。IDEでは、次の2つの構成が事前に定義されています。 </p>
+		
+        <ul>
+		<li><a href="#migrate5">JDK 5に移行</a></li>
+		<li><a href="#convert">JDK 7に移行</a></li>
+		<li><a href="#migrate8">JDK 8に移行</a></li>
+		<li><a href="#organize">インポートの編成</a></li>
+		</ul>
+		<a name="migrate5"></a>
+		<h3>JDK 5への移行</h3>
+		<p>IDEでデフォルトで使用できる<tt>「JDK 5に移行」</tt>構成には、静的インポート、JDK 5 forループの使用、不要なボックス化およびボックス化解除、文字列のswitchアプリケーションなどのリファクタリング操作が組み込まれています。 </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf.png" rel="lytebox" title="「JDK 5に移行」デフォルト構成"> <img alt="「JDK 5に移行」デフォルト構成" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf-small.png"></a></p>
+					 <p class="notes"><b>注意:</b> 構成内のリファクタリングのリストは、「検査の管理」ダイアログ・ボックスの「検査」リストで、<tt>「JDK移行サポート」</tt>ノードの下にある項目を選択および選択解除することによって変更できます。</p>
+                     <a name="convert"></a>
+		<h3>JDK 7に移行</h3>
+		<p>IDEでデフォルトで使用できる<tt>「JDK 7に移行」</tt>構成には、ダイヤモンド演算子の使用方法、try-with-resourcesへの変換、マルチ・キャッチの使用方法、文字列のswitchアプリケーションなどのリファクタリング操作が組み込まれています。 </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf.png" rel="lytebox" title="「JDK 7に変換」デフォルト構成"> <img alt="「JDK 7に変換」デフォルト構成" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf-small.png"></a></p>
+					 <p class="notes"><b>注意:</b> 構成内のリファクタリングのリストは、「検査の管理」ダイアログ・ボックスの「検査」リストで、<tt>「JDK移行サポート」</tt>ノードの下にある項目を選択および選択解除することによって変更できます。</p>
+					 <p><b>デフォルトの<tt>「JDK 7に移行」</tt>構成を実行して適用するには:</b></p>
+					 <ol>
+					 <li>「プロジェクト」ウィンドウで、<tt>PredefinedSet.java</tt>ファイルを選択します。</li>
+					 <li>IDEのメニューから「リファクタリング」>「検査と変換」を選択します。</li>
+	                 <li>「検査と変換」ダイアログ・ボックスで、「構成」オプションを選択し、ドロップダウン・リストから<tt>「JDK 7に移行」</tt>の一連の検査を選択します。</li>
+                     <li>「検査」をクリックします。<br />そのコードをJDK 7構文に変換する変更がプレビュー・パネルに表示されます。
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref.png" rel="lytebox" title="提案された「JDK 7に移行」リファクタリング"> <img alt="提案された「JDK 7に移行」リファクタリング" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref-small.png"></a></p></li>
+					 <li>必要に応じて、「リファクタリングを実行」をクリックして変更を適用します。</li></ol>	
+		<a name="migrate8"></a>
+		<h3>JDK 8に移行</h3>
+		<p>IDEでデフォルトで使用できる<tt>「JDK 8に移行」</tt>構成には、ラムダまたはメンバー参照変換、静的インポート、マルチ・キャッチの使用方法、文字列のswitchアプリケーションなどのリファクタリング操作が組み込まれています。 </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf.png" rel="lytebox" title="「JDK 8に移行」デフォルト構成"> <img alt="「JDK 8に移行」デフォルト構成" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf-small.png"></a></p>
+					 <p class="notes"><b>注意:</b> 構成内のリファクタリングのリストは、「検査の管理」ダイアログ・ボックスの「検査」リストで、<tt>「JDK移行サポート」</tt>ノードの下にある項目を選択および選択解除することによって変更できます。</p>
+                     <a name="organize"></a>
+		<h3>インポートの編成</h3>
+        <p>「<tt>インポートの編成</tt>」構成を使用すると、インポート文がコードに編成されている方法を検査し、必要に応じてそのコードをリファクタリングできます。デフォルトでは、インポート文が指定されたコード・スタイル・ルールに対応しているかどうかをチェックする単一の検査が含まれています。</p>
+		<p class="notes"><b>注意:</b> インポート文のコード・スタイル・ルールを構成するには:</p>
+		<ol>
+		<li>  IDEのメイン・ツールバーから「ツール」>「オプション」>「エディタ」>「フォーマット」を選択します。</li>
+		<li>  「言語」ドロップダウン・リストで「Java」を選択します。</li> 
+		<li>「カテゴリ」ドロップダウン・リストで「インポート」を選択します。</li>
+		 <li>必要に応じて、使用可能なオプションを指定します。
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/org-imports.png" rel="lytebox" title="「インポートの編成」デフォルト構成"> <img alt="「インポートの編成」デフォルト構成" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/org-imports-small.png"></a></p></li>
+		 <li>「OK」をクリックして編集を保存します。</li>
+</ol> 
+		
+		<p><b>デフォルトの「<tt>インポートの編成</tt>」構成を実行して適用するには:</b></p>
+		<ol>
+					 <li>「プロジェクト」ウィンドウで、<tt>Imports.java</tt>ファイルを選択します。</li>
+					 <li>IDEのメニューから「リファクタリング」>「検査と変換」を選択します。</li>
+	                 <li>「検査と変換」ダイアログ・ボックスで、「構成」オプションを選択し、「<tt>インポートの編成</tt>」項目を選択します。</li>
+                     <li>「検査」をクリックします。<br />プレビュー・パネルに、<tt>Imports.java</tt>ファイルの「インポート」セクションを指定のコード・スタイル・ルールにあわせるために、そのセクションに対して提案された1つの出現箇所が表示されます。
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref.png" rel="lytebox" title="提案された「インポートの編成」リファクタリング"> <img alt="提案された「インポートの編成」リファクタリング" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref-small.png"></a></p></li>
+					 <li>必要に応じて、「リファクタリングを実行」をクリックして変更を適用します。</li>
+		</ol>
+		
+
+         <p class="align-center"><a href="#top">先頭</a></p>       
+                
+               
+        <a name="create"></a>
+        <h2>カスタム検査の管理</h2>
+        
+		<p>カスタム検査を作成すると、どのようなコード構造を見つけ、それをどのように変換するかをIDEに指示できます。 </p>
+        <p class="notes"><b>注意:</b> IDEに重複した検査が追加されないようにするために、新しい検査を作成する前に、メイン・メニューから「リファクタリング」>「検査と変換」を選択し、「管理」または「参照」のどちらかをクリックして、「検査の管理」ダイアログ・ボックスで「検索」フィールドを使用して必要な検査を検索してください。 </p>
+		<p><b>カスタム検査を作成するには:</b></p>
+		<ol>
+		<li>IDEのメニューから「リファクタリング」>「検査と変換」を選択します。</li>
+		<li>「検査と変換」ダイアログ・ボックスで、「管理」または「参照」のどちらかをクリックします。</li>
+		<li>「検査の管理」ダイアログ・ボックスで、「新規」をクリックします。<br />「検査」リスト内に<tt>「カスタム」>「検査」</tt>ノードが作成されます。
+		
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint.png" rel="lytebox" title="作成されたInspectionSample"> <img alt="作成されたInspectionSample" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint-small.png"></a></p></li>
+					 <li>(オプション)「<tt>検査</tt>」を右クリックしてポップアップ・メニューから「名前変更」を選択し、カスタム検査に必要な名前(たとえば、<tt>MyCustomInspection</tt>)を指定して、[Enter]を押します。</li>
+					 <li>「スクリプトの編集」をクリックします。「スクリプト」テキスト領域が表示されます。
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/script.png" rel="lytebox" title="「スクリプト」テキスト領域"> <img alt="「スクリプト」テキスト領域" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/script-small.png"></a></p></li>
+					 <li>「スクリプト」テキスト領域に検査の説明とコードを入力するか、または「エディタで開く」をクリックし、<tt>MyCustomInspection.hint</tt>ファイルで同じ内容を指定します。
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/hint-file.png" rel="lytebox" title="MyCustomInspection.hintファイル"> <img alt="MyCustomInspection.hintファイル" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/hint-file-small.png"></a></p></li>
+					 <li>「スクリプト」テキスト領域の下にある「保存」をクリックするか、またはエディタで[Ctrl]-[S]を押して編集を保存します。</li>
+					 <li>「OK」をクリックして「検査の管理」ダイアログ・ボックスを閉じるか、またはエディタで<tt>MyCustomInspection.hint</tt>ファイルを閉じます。<br />カスタム検査が完成し、適用する準備ができました。</li>
+		</ol>
+		<p><b>作成したカスタム検査を実行するには:</b></p>
+		<ol>
+	 
+	 <li>IDEのメニューから「リファクタリング」>「検査と変換」を選択します。</li>
+	 <li>「検査と変換」ダイアログ・ボックスの「検査」リストで、検査対象のファイル、パッケージ、またはプロジェクトを指定します。または、右のボタンをクリックして「カスタム・スコープ」ダイアログ・ボックスを開き、検査対象のカスタム・コードを指定します。</li>
+	 <li>「単一の検査」オプションを選択し、「<tt>MyCustomInspection</tt>」検査を選択します。
+	   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint.png" rel="lytebox" title="選択されたMyCustomInspection"> <img alt="選択されたMyCustomInspection" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint-small.png"></a></p></li>
+     <li>「検査」をクリックします。<br />提案されたリファクタリングの変更がプレビュー・パネルに表示されます。
+	 <!--<p class="align-center">
+		<a href="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI.png" rel="lytebox"
+                       title="MyCustomInspection run">
+					   <img src="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI-small.png"
+                     alt="MyCustomInspection run" border=1/></a></p>-->	</li>
+     <li>必要に応じて、「リファクタリングを実行」をクリックして変更を適用します。</li>
+</ol>
+
+
+        <p class="align-center"><a href="#top">先頭</a></p> 
+		  
+               
+          
+
+                
+               
+
+<a name="summary"></a>
+<h2>サマリー</h2>
+<p>このチュートリアルでは、「検査と変換」機能の最も頻繁に使用される方法を説明しています。この「検査と変換」機能では、プロジェクト・スコープでカスタム・リファクタリングを実行したり、IDEで開かれている複数のプロジェクトに特定のリファクタリング構成を適用したりすることもできます。 </p>
+
+<p class="align-center"><a href="#top">先頭</a></p>		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Refactoring%20with%20Inspect%20and%20Transform%20in%20the%20NetBeans%20IDE%20Java%20Editor">このチュートリアルに関するご意見をお寄せください</a></div>
+
+        <br style="clear:both;"/>
+		
+		<a name="seealso"></a>
+        <h2>関連項目</h2>
+        
+        <p>関連する資料については、次のドキュメントを参照してください。</p>
+        <ul>
+           <li><i>NetBeans IDEによるアプリケーションの開発</i></a>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">ソース・コード分析およびリファクタリングでのヒントの使用</a></li>
+            <li><a href="http://wiki.netbeans.org/Java_Hints">NetBeans Javaヒントの完全リスト</a></li>
+			<li><a href="http://wiki.netbeans.org/JavaDeclarativeHintsDescriptionSketch">NetBeansのJava宣言型のヒントの説明</a></li>
+			
+			<li><a href="code-inspect.html">NetBeans IDE Javaエディタでの静的コード分析</a></li>
+			<li><a href="http://wiki.netbeans.org/Refactoring">リファクタリングの単純化</a></li>
+			<li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">NetBeans Javaヒント・モジュールのチュートリアル</a></li>
+			
+          
+			
+        </ul>
+		<p class="align-center"><a href="#top">先頭</a></p>
+</body>
+</html>

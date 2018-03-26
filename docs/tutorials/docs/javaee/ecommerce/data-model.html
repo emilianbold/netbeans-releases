@@ -1,0 +1,1139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="In this tutorial unit, you use MySQL Workbench to create an entity-relationship diagram that represents the data model for the application. You then generate a schema from the ER diagram, run it on the MySQL server, and connect to it from the IDE.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>The NetBeans E-commerce Tutorial - Designing the Data Model</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>The NetBeans E-commerce Tutorial - Designing the Data Model</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Tutorial Contents</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introduction</a></li>
+                    <li><a href="design.html">Designing the Application</a></li>
+                    <li><a href="setup-dev-environ.html">Setting up the Development Environment</a></li>
+                    <li><strong>Designing the Data Model</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#idEntities">Identifying Entities for the Data Model</a></li>
+                            <li><a href="#createERDiagram">Creating an Entity-Relationship Diagram</a></li>
+                            <li><a href="#forwardEngineer">Forward-Engineering to the Database</a></li>
+                            <li><a href="#connectDB">Connecting to the Database from the IDE</a></li>
+                            <li><a href="#seeAlso">See Also</a></li>
+                        </ul></li>
+
+                    <li><a href="page-views-controller.html">Preparing the Page Views and Controller Servlet</a></li>
+                    <li><a href="connect-db.html">Connecting the Application to the Database</a></li>
+                    <li><a href="entity-session.html">Adding Entity Classes and Session Beans</a></li>
+                    <li><a href="manage-sessions.html">Managing Sessions</a></li>
+                    <li><a href="transaction.html">Integrating Transactional Business Logic</a></li>
+                    <li><a href="language.html">Adding Language Support</a></li>
+                    <li><a href="security.html">Securing the Application</a></li>
+                    <li><a href="test-profile.html">Testing and Profiling</a></li>
+                    <li><a href="conclusion.html">Conclusion</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>This tutorial unit focuses on data modeling, or the process of creating a conceptual
+            model of your storage system by identifying and defining the entities that your system
+            requires, and their relationships to one another. The data model should contain all
+            the logical and physical design parameters required to generate a script using the Data
+            Definition Language (DDL), which can then be used to create a database.<sup><a href="#footnote1"
+            id="fn1" style="text-decoration:none">[1]</a></sup></p>
+
+        <p>In this unit, you work primarily with <a href="http://wb.mysql.com/" target="_blank">MySQL
+            Workbench</a>, a graphical tool that enables you to create data models, reverse-engineer
+            SQL scripts into visual representations, forward-engineer data models into database
+            schemata, and synchronize models with a running MySQL database server.</p>
+
+        <p>You begin by creating an entity-relationship diagram to represent the data model for
+            the <code>AffableBean</code> application. When you have completed identifying and
+            defining all entities and the relationships that bind them, you use Workbench to
+            forward-engineer and run a DDL script that converts the data model into a database
+            schema. Finally, you connect to the new schema from the NetBeans IDE.</p>
+
+        <p>You can view a live demo of the application that you build in this tutorial:
+            <a href="http://services.netbeans.org/AffableBean/" target="_blank">NetBeans E-commerce
+            Tutorial Demo Application</a>.</p>
+
+        <br style="clear:both;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans
+                        IDE</a></td>
+                    <td class="tbltd1">Java bundle, 6.8 or 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQL database server</a></td>
+                    <td class="tbltd1">version 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/workbench/" target="_blank">MySQL Workbench</a></td>
+                    <td class="tbltd1">version 5.1 or 5.2</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The NetBeans IDE requires the Java Development Kit (JDK) to run properly.
+                If you do not have any of the resources listed above, the JDK should be
+                the first item that you download and install.</li>
+
+            <li>The NetBeans IDE Java Bundle includes Java Web and EE technologies, which are
+                required for the application you build in this tutorial.</li>
+
+            <li>You can download the complete DDL script that MySQL Workbench generates from
+                the entity-relationship diagram you create in this tutorial:
+                <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Faffablebean_schema_creation.sql">affablebean_schema_creation.sql</a>.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="idEntities">Identifying Entities for the Data Model</h2>
+
+        <p>In the real world, you may not have the luxury of designing the data model for your
+            application. For example, your task may be to develop an application on top of an
+            existing database system. Provided you do not have a data model to base your application
+            on, creating one should be one of the first design steps you take before embarking on
+            development. Creating a data model involves identifying the objects, or <em>entities</em>,
+            required by your system and defining the relationships between them.</p>
+
+        <p id="nounList">To begin identifying the entities we need for the data model,
+            re-examine the use-case presented in <a href="design.html#mockups">Designing
+            the Application</a>. Search for commonly-occurring nouns. For example:</p>
+
+        <div class="indent">
+            <div class="feedback-box margin-around float-left" style="width:723px">
+
+                <h3>Use-Case</h3>
+
+                <p><strong>Customer</strong> visits the welcome page and selects a product
+                    <strong>category</strong>. <strong>Customer</strong> browses <strong>products</strong>
+                    within the selected category page, then adds a <strong>product</strong> to
+                    his or her <strong>shopping cart</strong>. <strong>Customer</strong> continues
+                    shopping and selects a different <strong>category</strong>. <strong>Customer</strong>
+                    adds several <strong>products</strong> from this <strong>category</strong> to
+                    <strong>shopping cart</strong>. <strong>Customer</strong> selects 'view cart'
+                    option and updates quantities for cart <strong>products</strong> in the cart
+                    page. <strong>Customer</strong> verifies shopping cart contents and proceeds
+                    to checkout. In the checkout page, <strong>customer</strong> views the cost of
+                    the <strong>order</strong> and other information, fills in personal data, then
+                    submits his or her details. The <strong>order</strong> is processed and
+                    <strong>customer</strong> is taken to a confirmation page. The confirmation
+                    page provides a unique reference number for tracking the customer <strong>order</strong>,
+                    as well as a summary of the <strong>order</strong>.</p>
+            </div>
+        </div>
+
+        <br style="clear:both">
+        <br>
+
+        <p>The text highlighted above in <strong>bold</strong> indicates the candidates that we
+            can consider for the data model. Upon closer inspection, you may deduce that the
+            shopping cart does not need to be included, since the data it provides (i.e., products
+            and their quantities) is equally offered by a customer order once it is processed. In
+            fact, as will be demonstrated in Unit 8, <a href="manage-sessions.html">Managing Sessions</a>,
+            the shopping cart merely serves as a mechanism that retains a user session temporarily
+            while the customer shops online. We can therefore settle on the following list:</p>
+
+        <ul class="toc">
+            <li><strong>customer</strong></li>
+            <li><strong>category</strong></li>
+            <li><strong>product</strong></li>
+            <li><strong>order</strong></li>
+        </ul>
+
+        <p>With these four entities, we can begin constructing an entity-relationship diagram (ERD).</p>
+
+        <p class="notes"><strong>Note:</strong> In this tutorial, we create a database schema from
+            the ERD, then use the IDE's EclipseLink support to generate JPA entity classes from the
+            existing database. (EclipseLink and the Java Persistence  API (JPA) are covered in Unit
+            7, <a href="entity-session.html">Adding Entity Classes and Session Beans</a>.) This
+            approach is described as <em>bottom up</em> development. An equally viable alternative
+            is the <em>top down</em> approach.</p>
+
+        <ul>
+            <li><strong>Top down:</strong> In <em>top down</em> development, you start with
+                an existing Java implementation of the domain model, and have complete freedom
+                with respect to the design of the database schema. You must create mapping
+                metadata (i.e., annotations used in JPA entity classes), and can optionally
+                use a persistence tool to automatically generate the schema.</li>
+
+            <li><strong>Bottom up:</strong> <em>Bottom up</em> development begins with an
+                existing database schema. In this case, the easiest way to proceed is to use
+                forward-engineering tools to extract metadata from the schema and generate
+                annotated Java source code (JPA entity classes).</li>
+        </ul>
+
+        <p>For more information on top down and bottom up design strategies, see
+            <a href="http://en.wikipedia.org/wiki/Data_modeling#Modeling_methodologies" target="_blank">Data
+            modeling: Modeling methodologies</a> [Wikipedia].</p>
+
+
+        <br>
+        <h2 id="createERDiagram">Creating an Entity-Relationship Diagram</h2>
+
+        <p>Start by running MySQL Workbench. In this exercise, you use Workbench to design an
+            entity-relationship diagram for the <code>AffableBean</code> application.</p>
+
+        <p class="notes"><strong>Note:</strong> The following instructions work for MySQL Workbench
+            versions 5.1 <em>and</em> 5.2. The images used in this tutorial are taken from version 5.2.
+            There are slight differences in the graphical interface between versions, however the
+            functionality remains consistent. Because version 5.2 incorporates a query editor (previously
+            MySQL Query Browser), as well as a server administration interface (previously MySQL
+            Administrator), you are presented with the Home screen when opening the application
+            (shown below).</p>
+
+        <div class="indent">
+            <a href="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench-home.png"
+                rel="lytebox" title="In Workbench 5.2, the Home screen serves as a central interface to
+                the data modeling tool, an SQL editor, and an administration tool">
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench-home.png"
+                class="margin-around b-all" style="width: 728px" alt="MySQL Workbench 5.2 - Home screen"
+                title="Click to enlarge"></a>
+        </div>
+
+        <p>If you are working in Workbench 5.2, click <strong>Create New EER Model</strong> beneath
+            the Data Modeling heading in the Home screen.</p>
+
+        <ul>
+            <li><a href="#createSchema">Creating the <code>affablebean</code> Schema</a></li>
+            <li><a href="#createEntities">Creating Entities</a></li>
+            <li><a href="#addProperties">Adding Entity Properties</a></li>
+            <li><a href="#identifyRelationships">Identifying Relationships</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="createSchema">Creating the <code>affablebean</code> Schema</h3>
+
+            <ol>
+                <li>In the default interface, begin by creating a new schema which will be used with
+                    the <code>AffableBean</code> application. Click the plus (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/plus-icon.png"
+                    class="b-all" alt="Plus icon"> ) icon located to the right of the <strong>Physical
+                    Schemata</strong> heading.
+
+                    <br><br>
+                    A new panel opens in the bottom region of the interface, enabling you
+                    to specify settings for the new schema.
+
+                    <br>
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench.png"
+                        rel="lytebox" title="Use Workbench to create a new database schema">
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench.png"
+                        class="margin-around b-all" style="width: 688px" alt="New schema panel displays in bottom region of interface"
+                        title="Click to enlarge"></a></li>
+
+                <li>Enter the following settings for the new schema:
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>Schema Name:</strong> <code>affablebean</code></li>
+                        <li><strong>Default Collation:</strong> <code>utf8 - utf8_unicode_ci</code></li>
+                        <li><strong>Comments:</strong> <code>Schema used with the AffableBean application</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/affablebean-schema.png"
+                        class="margin-around b-all" style="width: 688px" alt="Settings for 'affablebean' schema"
+                        title="Enter settings for 'affablebean' schema">
+
+                    <br>
+                    The new schema is created, and becomes listed under the Catalog tab in the right region
+                    of the Workbench interface.
+
+                    <br><br>
+                    <p class="tips">For an explanation of character sets and collations, see the MySQL
+                        Server Manual: <a href="http://dev.mysql.com/doc/refman/5.1/en/charset-general.html" target="_blank">9.1.1.
+                        Character Sets and Collations in General</a>.</p></li>
+            </ol>
+
+
+            <h3 id="createEntities">Creating Entities</h3>
+
+            <p>Start by creating a new entity-relationship diagram in MySQL Workbench. You can
+                drag-and-drop entity tables onto the canvas.</p>
+
+            <ol>
+                <li>Under the EER Diagrams heading in WorkBench, double-click the Add
+                    Diagram ( <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/add-diagram-btn.png"
+                    alt="Add Diagram icon"> ) icon. A new EER Diagram opens displaying an empty canvas.
+
+                    <br><br>
+                    <span class="tips">'EER' stands for Enhanced Entity-Relationship.</span>
+
+                    <br>
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench-empty-canvas.png"
+                        rel="lytebox" title="Use Workbench to create a new database schema">
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/workbench-empty-canvas.png"
+                        class="margin-around b-all" style="width: 688px" alt="New EER Diagram displayed an empty canvas"
+                        title="Click Add Diagram to create a new, empty canvas"></a></li>
+
+                <li>Click the New Table ( <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-new-table-icon.png"
+                    alt="New Table icon"> ) icon located in the left margin, then hover your mouse onto the canvas
+                    and click again. A new table displays on the canvas.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-new-entity-table.png"
+                        class="margin-around b-all" alt="New entity table displayed on canvas"
+                        title="Click the New Table icon to drag empty tables (entities) onto the canvas"></li>
+
+                <li>Double-click the table. The Table editor opens in the bottom region of the interface, allowing
+                    you to configure settings for the table.
+
+                    <br><br>
+                    <p class="notes"><strong>Note:</strong> The terms 'table' and 'entity' are nearly synonymous in this tutorial
+                    unit. From the point of view of a database schema, you are creating tables. From a data modeling
+                    perspective, you are creating entities. Likewise, the columns that you later create for each
+                    table correspond to entity <em>properties</em>.</p></li>
+
+                <li>In the Table editor, rename the table to one of the nouns you identified from the use-case above.
+                    Optionally add a comment describing the purpose of the table. For example:
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>Name:</strong> <code>customer</code></li>
+                        <li><strong>Engine:</strong> <code>InnoDB</code></li>
+                        <li><strong>Comments:</strong> <code>maintains customer details</code></li>
+                    </ul>
+
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-customer-table.png" rel="lytebox"
+                        title="Changes made in the Table editor are immediately updated elsewhere in the Workbench interface">
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-customer-table.png"
+                            class="margin-around b-all" alt="Customer table displayed on canvas" style="width:688px"
+                            title="Click to enlarge"></a>
+
+                    <p class="tips">The <a href="http://www.innodb.com/" target="_blank">InnoDB</a> engine
+                        provides foreign key support, which is utilized in this tutorial. Later, under
+                        <a href="#forwardEngineer">Forward-Engineering to the Database</a>, you set the
+                        default storage engine used in Workbench to InnoDB.</p></li>
+
+                <li>Under the <strong>Catalog</strong> tab in the left region of WorkBench (right region for
+                    version 5.1), expand the <code>affablebean</code> &gt; <code>Tables</code> node. The
+                    <strong>customer</strong> table now displays.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-catalog-tab.png"
+                        class="margin-around b-all" alt="Catalog tab displaying new customer table"
+                        title="Catalog tab automatically refreshes to display any changes to the schema">
+
+                    <p>More importantly, note that the new <code>customer</code> table is now included in the
+                        <code>affablebean</code> schema. Because the <code>affablebean</code> schema was selected
+                        when you created the new EER diagram, any changes you make to the diagram are automatically
+                        bound to the schema.</p></li>
+
+                <li>Repeat steps 2 - 4 above to add tables to the canvas for the remaining <a href="#nounList">nouns
+                    you identified in the use-case above</a>. Before naming your tables however, there is one important
+                    consideration which you should take into account. Certain keywords hold special meaning for the
+                    SQL dialect used by the MySQL server. Unfortunately, '<code>order</code>' is one of them. (For
+                    example, '<code>order</code>' can be used in an <code>ORDER BY</code> statement.) Therefore,
+                    instead of naming your table '<code>order</code>', name it '<code>customer_order</code>' instead.
+                    At this stage, don't worry about arranging the tables on the canvas in any special order.
+
+                    <br><br>
+                    <p class="tips">For a list of reserved words used by the MySQL server, refer to the official manual:
+                        <a href="http://dev.mysql.com/doc/mysqld-version-reference/en/mysqld-version-reference-reservedwords-5-1.html" target="_blank">2.2.
+                        Reserved Words in MySQL 5.1</a>.</p>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/wb-entity-tables.png"
+                        class="margin-around b-all" alt="All tables displayed on canvas"
+                        title="Create all tables for affablebean schema"></li>
+            </ol>
+
+
+            <h3 id="addProperties">Adding Entity Properties</h3>
+
+            <p>Now that you've added entities to the canvas, you need to specify their properties.
+                Entity properties correspond to the columns defined in a database table. For example,
+                consider the <code>customer</code> entity. In regard to the <code>AffableBean</code>
+                application, what aspects of a customer would need to be persisted to the database?
+                These would likely be all of the information gathered in the <a href="design.html#checkout">checkout
+                page</a>'s customer details form, as well as some association to the processed order.</p>
+
+            <p>When adding properties, you need to determine the most appropriate data type for each
+                property. MySQL supports a number of data types in several categories: numeric types,
+                date and time types, and string (character) types. Refer to the official manual for
+                a summary of data types within each category:
+                <a href="http://dev.mysql.com/doc/refman/5.1/en/data-type-overview.html" target="_blank">10.1.
+                Data Type Overview</a>. In this tutorial, the data types have been chosen for you.
+                Choosing the appropriate data type plays a significant role in optimizing storage
+                on your database server. For more information see:</p>
+
+            <ul style="margin: 0 0 0 -.7em">
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/storage-requirements.html" target="_blank">10.5. Data Type Storage Requirements</a></li>
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/choosing-types.html" target="_blank">10.6. Choosing the Right Type for a Column</a></li>
+            </ul>
+
+            <p>The following steps describe how you can use MySQL Workbench to add properties to an
+                existing entity in your ERD. As with most of the initial design steps, determining
+                the entity properties would call for careful consideration of the business problem
+                that needs to be solved, and could require hours of analysis as well as numerous
+                consultations with the client.</p>
+
+            <ol>
+                <li>Double-click the <code>customer</code> table heading to bring up the Table editor
+                    in WorkBench.</li>
+
+                <li>In the Table editor click the Columns tab, then click inside the displayed table
+                    to edit the first column. Enter the following details:
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">PK (Primary Key)</th>
+                                <th class="tblheader" scope="col">NN (Not Null)</th>
+                                <th class="tblheader" scope="col">UN (Unsigned)</th>
+                                <th class="tblheader" scope="col">AI (Autoincrement)</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>id</code></td>
+                                <td class="tbltd1"><code>INT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/customer-id-column.png"
+                        class="margin-around b-all" style="width:688px" alt="Customer entity's id column specified"
+                        title="Click to edit table columns in the Table editor"></li>
+
+                <li>Continue working in the <code>customer</code> table by adding the following
+                    <code>VARCHAR</code> columns. These columns should be self-explanatory, and
+                    represent data that would need to be captured for the Affable Bean business
+                    to process a customer order and send a shipment of groceries to the customer
+                    address.
+
+                    <br>
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">NN (Not Null)</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>name</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>email</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>phone</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>address</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>city_region</code></td>
+                                <td class="tbltd1"><code>VARCHAR(2)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>cc_number</code></td>
+                                <td class="tbltd1"><code>VARCHAR(19)</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <br>
+                    <span class="tips">For an explanation of the <code>VARCHAR</code>
+                        data type, see the MySQL Reference Manual:
+                        <a href="http://dev.mysql.com/doc/refman/5.1/en/char.html" target="_blank">10.4.1.
+                        The CHAR and VARCHAR Types</a>.</span>
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/customer-varchar-columns.png"
+                        class="margin-around b-all" alt="Customer entity's varchar columns specified"
+                        title="Edit inline to add columns to customer table"></li>
+
+                <li>With the <code>customer</code> table selected on the canvas, choose
+                    Arrange &gt; Reset Object Size to resize the table so that all columns
+                    are visible on the canvas. Also click the Indexes row so that any table
+                    indexes are also visible. (This includes primary and foreign keys, which
+                    becomes useful when you begin creating relationships between tables later
+                    in the exercise.)
+
+                    <br><br>
+                    When you finish, the <code>customer</code> entity looks as follows.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/customer-table.png"
+                        class="margin-around" alt="'customer' table displayed on EER canvas with columns"
+                        title="'customer' table on EER canvas displays columns"></li>
+
+                <li>Follow the steps outlined above to create columns for the remaining
+                    tables.
+
+                    <h4>category</h4>
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">PK</th>
+                                <th class="tblheader" scope="col">NN</th>
+                                <th class="tblheader" scope="col">UN</th>
+                                <th class="tblheader" scope="col">AI</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>id</code></td>
+                                <td class="tbltd1"><code>TINYINT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>name</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>customer_order</h4>
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">PK</th>
+                                <th class="tblheader" scope="col">NN</th>
+                                <th class="tblheader" scope="col">UN</th>
+                                <th class="tblheader" scope="col">AI</th>
+                                <th class="tblheader" scope="col">Default</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>id</code></td>
+                                <td class="tbltd1"><code>INT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>amount</code></td>
+                                <td class="tbltd1"><code>DECIMAL(6,2)</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>date_created</code></td>
+                                <td class="tbltd1"><code>TIMESTAMP</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1"><code>CURRENT_TIMESTAMP</code></td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>confirmation_number</code></td>
+                                <td class="tbltd1"><code>INT</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1"><code>&nbsp;</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                    <h4>product</h4>
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">PK</th>
+                                <th class="tblheader" scope="col">NN</th>
+                                <th class="tblheader" scope="col">UN</th>
+                                <th class="tblheader" scope="col">AI</th>
+                                <th class="tblheader" scope="col">Default</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>id</code></td>
+                                <td class="tbltd1"><code>INT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>name</code></td>
+                                <td class="tbltd1"><code>VARCHAR(45)</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>price</code></td>
+                                <td class="tbltd1"><code>DECIMAL(5,2)</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>description</code></td>
+                                <td class="tbltd1"><code>TINYTEXT</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>last_update</code></td>
+                                <td class="tbltd1"><code>TIMESTAMP</code></td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1">&nbsp;</td>
+                                <td class="tbltd1"><code>CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <p class="tips">For details on the <code>TIMESTAMP</code> data type, see the MySQL Reference Manual:
+                        <a href="http://dev.mysql.com/doc/refman/5.1/en/timestamp.html" target="_blank">10.3.1.1. TIMESTAMP Properties</a>.</p>
+
+                    <br>
+                    When you finish, your canvas will look similar to the following.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/affablebean-tables.png"
+                        class="margin-around b-all" alt="'customer', 'category', 'product', and 'order' tables displayed on EER canvas"
+                        title="Use the Table editor to add columns to all tables on canvas"></li>
+            </ol>
+
+
+            <h3 id="identifyRelationships">Identifying Relationships</h3>
+
+            <p>So far, the entity-relationship diagram contains several entities, but lacks
+                any relationships between them. The data model that we are creating must
+                also indicate whether objects are aware of (i.e., contain references to) one
+                another. If one object contains a reference to another object, this is known
+                as a <em>unidirectional</em> relationship. Likewise, if both objects refer to
+                each other, this is called a <em>bidirectional</em> relationship.</p>
+
+            <p>References correlate to foreign keys in the database schema. You will note
+                that, as you begin linking tables together, foreign keys are added as new
+                columns in the tables being linked.</p>
+
+            <p>Two other pieces of information are also commonly relayed in an ERD:
+                <em>cardinality</em> (i.e., multiplicity) and <em>ordinality</em> (i.e.,
+                optionality). These are discussed below, as you begin adding relationships
+                to entities on the canvas. In order to complete the ERD, you essentially
+                need to create two <em>one-to-many</em> relationships, and one
+                <em>many-to-many</em> relationship. Details follow.</p>
+
+            <ul>
+                <li><a href="#oneToMany">Creating One-To-Many Relationships</a></li>
+                <li><a href="#manyToMany">Creating Many-To-Many Relationships</a></li>
+            </ul>
+
+            <h4 id="oneToMany">Creating One-To-Many Relationships</h4>
+
+            <p>Examine the four objects currently on the canvas while considering the
+                business problem. You can deduce the following two <em>one-to-many</em>
+                relationships:</p>
+
+            <ul>
+                <li>A category must contain one or more products</li>
+                <li>A customer must have placed one or more orders</li>
+            </ul>
+
+            <p>Incorporate these two relationships into the ERD. You can download a copy
+                of the MySQL Workbench project that contains the four entities required
+                for the following steps:
+                <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Faffablebean.mwb">affablebean.mwb</a>.</p>
+
+            <ol>
+                <li>In the left margin, click the 1:n Non-Identifying Relationship (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/one-many-btn.png"
+                    class="b-all" alt="1:n Non-Identifying Relationship button"> ) button.
+                    This enables you to create a <em>one-to-many</em> relationship.</li>
+
+                <li>Click the <code>product</code> table, then click the <code>category</code>
+                    table. The first table you click will contain the foreign key reference
+                    to the second table. Here, we want the <code>product</code> table to
+                    contain a reference to <code>category</code>. In the image below, you
+                    see that a new column, <code>category_id</code>, has been added to the
+                    <code>product</code> table, and that a foreign key index,
+                    <code>fk_product_category</code> has been added to the table's indexes.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/product-category-relationship.png"
+                        class="margin-around b-all" alt="'Product-category relationship displayed on EER canvas"
+                        title="A one-to-many relationship is defined between the category and product objects">
+
+                    <br><br>
+                    Since foreign keys must be of the same data type as the columns they reference,
+                    notice that <code>category_id</code> is of type <code>TINYINT</code>, similar to
+                    the <code>category</code> table's primary key.
+
+                    <br><br>
+                    <span class="tips">The entity-relationship diagram in this tutorial uses
+                        <a href="http://en.wikipedia.org/wiki/Entity-relationship_model#Crow.27s_Foot_Notation" target="_blank">Crow's
+                        Foot</a> notation. You can alter the relationship notation in WorkBench by
+                        choosing Model &gt; Relationship Notation.</span></li>
+
+                <li>Double-click the relationship (i.e., click the dashed line between the two
+                    entities). The Relationship editor opens in the bottom region of the interface.</li>
+
+                <li>Change the default caption to '<code>belongs to</code>'. In other words,
+                    &quot;product x belongs to category y.&quot; Note that this is a <em>unidirectional</em>
+                    relationship: A <code>product</code> object contains a reference to the
+                    category it belongs to, but the related <code>category</code> object does
+                    not contain any references to the products it contains.</li>
+
+                <li>Click the Foreign Key tab in the Relationship editor. You see the following display.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/foreign-key-tab.png"
+                         class="margin-around b-all" alt="'Relationship editor - Foreign Key tab"
+                         title="Use the Foreign Key tab to modify a relationship's ordinality and cardinality">
+
+                    <br>
+                    Under the Foreign key tab, you can modify a relationship's:
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>cardinality:</strong> whether the relationship between two objects
+                            is <em>one-to-one</em> or <em>one-to-many</em>.</li>
+
+                        <li><strong>ordinality:</strong> whether a reference between entities must
+                            exist in order to maintain the integrity of the model. (Toggle the Mandatory
+                            checkbox for either side.)</li>
+
+                        <li><strong>type:</strong> (i.e., <em>identifying</em> or <em>non-identifying</em>).
+                            A non-identifying relationship, such as this one, refers to the fact
+                            that the child object (<code>product</code>) can be identified independently
+                            of the parent (<code>category</code>). An identifying relationship
+                            means that the child cannot be uniquely identified without the parent.
+                            An example of this is demonstrated later, when you create a many-to-many
+                            relationship between the <code>product</code> and <code>order</code> tables.</li>
+                    </ul></li>
+
+                <li>Click the 1:n Non-Identifying Relationship (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/one-many-btn.png"
+                    class="b-all" alt="1:n Non-Identifying Relationship button"> ) button. In the following
+                    steps, you create a <em>one-to-many</em> relationship between the <code>customer</code>
+                    and <code>customer_order</code> objects.</li>
+
+                <li>Click the <code>order</code> table first (this table will contain the foreign key),
+                    then click the <code>customer</code> table. A relationship is formed between the two
+                    tables.</li>
+
+                <li>Click the link between the two tables, and in the Relationship editor that displays,
+                    change the default caption to '<code>is placed by</code>'. The relationship now
+                    reads, &quot;customer order x is placed by customer y.&quot;
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/order-customer-relationship.png"
+                        class="margin-around b-all" alt="'Order-customer relationship displayed on EER canvas"
+                        title="A one-to-many relationship is defined between the customer and order objects">
+
+                    <br><br>
+                    <p class="tips">You can click and drag tables on the canvas into whatever position
+                        makes the most sense for your model. In the image above, the <code>order</code>
+                        table has been moved to the left of <code>customer</code>.</p>
+                </li>
+            </ol>
+
+
+            <h4 id="manyToMany">Creating Many-To-Many Relationships</h4>
+
+            <p><em>Many-to-many</em> relationships occur when both sides of a relationship can have
+                numerous references to related objects. For example, imagine the Affable Bean business
+                offered products that could be listed under multiple categories, such as cherry ice
+                cream, sausage rolls, or avocado souffl&eacute;. The data model would have to account
+                for this by including a <em>many-to-many</em> relationship between <code>product</code>
+                and <code>category</code>, since a category contains multiple products, and a product
+                can belong to multiple categories.</p>
+
+            <p>In order to implement a <em>many-to-many</em> relationship in a database, it is necessary
+                to break the relationship down into two <em>one-to-many</em> relationships. In doing so,
+                a third table is created containing the primary keys of the two original tables. The
+                <code>product</code> - <code>category</code> relationship described above might look as
+                follows in the data model.</p>
+
+            <div class="indent">
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/many-to-many.png"
+                    class="margin-around b-all" alt="'Product-category many-to-many relationship displayed on EER canvas"
+                    title="A many-to-many relationship is depicted as two one-to-many relationships">
+            </div>
+
+            <p>Now, consider how the application will persist customer orders. The <code>customer_order</code>
+                entity already contains necessary properties, such as the date it is created, its confirmation
+                number, amount, and a reference to the customer who placed it. However, there currently is no
+                indication of the products contained in the order, nor their quantities. You can resolve this
+                by creating a <em>many-to-many</em> relationship between <code>customer_order</code> and
+                <code>product</code>. This way, to determine which products are contained in a given order,
+                the application's business logic can query the new table that arises from the many-to-many
+                relationship, and search for all records that match an <code>order_id</code>. Because customers
+                can specify quantities for products in their shopping carts, we can also add a <code>quantity</code>
+                column to the table.</p>
+
+            <ol>
+                <li>In the left margin, click the n:m Identifying Relationship (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/many-many-btn.png"
+                    class="b-all" alt="n:m Identifying Relationship button"> ) button.
+                    This enables you to create a <em>many-to-many</em> relationship.</li>
+
+                <li>Click the <code>customer_order</code> table, then click the <code>product</code>
+                    table. A new table appears, named <code>customer_order_has_product</code>.
+
+                    <br><br>
+                    <p class="tips">Recall that an <em>identifying relationship</em> means that
+                        the child cannot be uniquely identified without the parent. Identifying
+                        relationships are indicated on the Workbench canvas by a solid line linking
+                        two tables. Here, the <code>customer_order_has_product</code> table forms
+                        an identifying relationship with its two parent tables, <code>customer_order</code>
+                        and <code>product</code>. A record contained in the <code>customer_order_has_product</code>
+                        table requires references from both tables in order to exist.</p></li>
+
+                <li>Arrange the tables according to the following image. The <em>many-to-many</em>
+                    relationship is highlighted below.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/many-to-many-order-product.png"
+                        class="margin-around b-all" alt="ERD containing a many-to-many relationship"
+                        title="The 'customer_order_has_product' table contains two foreign keys to the order and product tables">
+
+                    <br>
+                    The new <code>customer_order_has_product</code> table contains two foreign
+                    keys, <code>fk_customer_order_has_product_customer_order</code> and
+                    <code>fk_customer_order_has_product_product</code>, which reference the
+                    primary keys of the <code>customer_order</code> and <code>product</code>
+                    tables, respectively. These two foreign keys form a composite primary key
+                    for the <code>customer_order_has_product</code> table.</li>
+
+                <li>Change the name of the new <code>customer_order_has_product</code> table to
+                    '<code>ordered_product</code>'. Double-click the <code>customer_order_has_product</code>
+                    table to open the Table editor. Enter <code>ordered_product</code> into the Name
+                    field.</li>
+
+                <li>Rename the foreign key indexes to correspond to the new table name. In the
+                    <code>ordered_product</code>'s Table editor, click the Foreign Keys tab. Then,
+                    click into both foreign key entries and replace '<code>customer_order_has_product</code>'
+                    with '<code>ordered_product</code>'. When you finish, the two entries should read:
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><code>fk_<strong>ordered_product</strong>_customer_order</code></li>
+                        <li><code>fk_<strong>ordered_product</strong>_product</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/ordered-product-foreign-key.png"
+                        title="Rename the foreign key indexes under the Foreign Keys tab in the Table editor"
+                        class="margin-around b-all" alt="Foreign Keys tab in Table editor"></li>
+
+                <li>Double-click the lines between the two objects and delete the default captions
+                    in the Relationship editor.</li>
+
+                <li>Create a <code>quantity</code> column in the <code>ordered_product</code>
+                    table. To do so, click the Columns tab in the <code>ordered_product</code>'s
+                    Table editor. Enter the following details.
+
+                    <table class="margin-around">
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Column</th>
+                                <th class="tblheader" scope="col">Datatype</th>
+                                <th class="tblheader" scope="col">NN (Not Null)</th>
+                                <th class="tblheader" scope="col">UN (Unsigned)</th>
+                                <th class="tblheader" scope="col">Default</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1"><code>quantity</code></td>
+                                <td class="tbltd1"><code>SMALLINT</code></td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1">&#10003;</td>
+                                <td class="tbltd1"><code>1</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/quantity-column.png"
+                         class="margin-around b-all" alt="Table editor - 'order_has_product' table"
+                         title="Add a 'quantity' column to the 'order_has_product' table">
+                </li>
+            </ol>
+
+            <p>You have now completed the ERD (entity-relationship diagram). This diagram
+                represents the data model for the <code>AffableBean</code> application.
+                As will later be demonstrated, the JPA entity classes that you create will
+                be derived from the entities existing in the data model.</p>
+
+            <div class="indent">
+              <div class="indent">
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/affablebean-erd.png"
+                     class="margin-around b-all" alt="Complete AffableBean ERD"
+                     title="ERD for the AffableBean application">
+              </div>
+            </div>
+
+            <p class="tips">Choose View &gt; Toggle Grid to disable the canvas grid.
+                You can also create notes for your diagram using the New Text Object (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/text-object-btn.png"
+                alt="New Text Object button"> ) button in the left margin.</p>
+        </div>
+
+
+        <br>
+        <h2 id="forwardEngineer">Forward-Engineering to the Database</h2>
+
+        <p>To incorporate the data model you created into the MySQL database, you can employ
+            WorkBench to forward-engineer the diagram into an SQL script (more precisely,
+            a DDL script) to generate the schema. The wizard that you use also enables you
+            to immediately run the script on your database server.</p>
+
+        <p><strong>Important:</strong> Make sure your MySQL database server is running.
+            Steps describing how to setup and run the database are provided in
+            <a href="setup-dev-environ.html#communicate">Setting up the Development
+            Environment: Communicating with the Database Server</a>.</p>
+
+        <ol>
+            <li>Set the default storage engine used in Workbench to InnoDB. Choose Tools &gt;
+                Options (MySQLWorkbench &gt; Preferences on Mac) to open the Workbench
+                Preferences window. Click the MySQL tab, then select InnoDB as the default
+                storage engine.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/inno-db.png"
+                     class="margin-around b-all" alt="Workbench Preferences window - MySQL tab"
+                     title="Set the default storage engine to InnoDB" style="width:688px">
+
+                <br>
+                The <a href="http://www.innodb.com/" target="_blank">InnoDB</a> engine provides
+                foreign key support, which is utilized in this tutorial.</li>
+
+            <li>Click OK to exit the Preferences window.</li>
+
+            <li>Choose Database &gt; Forward Engineer from the main menu.</li>
+
+            <li>In the first panel of the Forward Engineer to Database wizard, select
+                '<code>DROP Objects Before Each CREATE Object</code>', and '<code>Generate
+                DROP SCHEMA</code>'.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/forward-engineer-wzd.png"
+                     class="margin-around b-all" style="width:688px" alt="Forward Engineer wizard"
+                     title="Enable DROP options to be generated in the SQL script">
+
+                <br>
+                These <code>DROP</code> options are convenient for prototyping - if you need
+                to make changes to the schema or schema tables, the script will first delete
+                (i.e., <em>drop</em>) these items before recreating them. (If you attempt to
+                create items on the MySQL server that already exist, the server will flag an
+                error.)</li>
+
+            <li>Click Continue. In Select Objects to Forward Engineer panel, note that the
+                Export MySQL Table Objects option is selected by default. Click the Show
+                Filter button and note that all five tables in the <code>affablebean</code>
+                schema are included.</li>
+
+            <li>Click Continue. In the Review SQL Script panel, you can examine the SQL script
+                that has been generated based on the data model. Optionally, click Save to
+                File to save the script to a location on your computer.
+
+                <br><br>
+                <p class="notes"><strong>Note:</strong> In examining the script, you may notice
+                    that the following variables are set at the top of the file:</p>
+
+                <div class="indent">
+                    <pre class="examplecode" style="width:660px">
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';</pre>
+
+
+                    <p>For an explanation of what these variables are, and their purpose in the script,
+                    see the official Workbench manual:
+                    <a href="http://dev.mysql.com/doc/workbench/en/workbench-faq.html" target="_blank">Chapter
+                    11. MySQL Workbench FAQ</a>.</p></div></li>
+
+            <li>Click Continue. In the Connection Options panel, set the parameters for
+                connecting to the running MySQL server.
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li><strong>Hostname:</strong> <code>127.0.0.1</code> (<em>or <code>localhost</code></em>)</li>
+                    <li><strong>Port:</strong> <code>3306</code></li>
+                    <li><strong>Username:</strong> <code>root</code></li>
+                    <li><strong>Password:</strong> <code>nbuser</code></li>
+                </ul>
+
+                (The parameters you set should correspond to those from <a href="setup-dev-environ.html#communicate">Setting up the Development Environment:
+                Communicating with the Database Server</a>.)</li>
+
+            <li>Click Execute. In the final panel of the wizard, you receive confirmation
+                that the wizard was able to connect to and execute the script successfully.</li>
+
+            <li>Click Close to exit the wizard.</li>
+        </ol>
+
+        <p>The <code>affablebean</code> schema is now created and exists on your MySQL server.
+            In the next step, you connect to the schema, or <em>database</em>, from the IDE. At
+            this stage you may ask, &quot;What's the difference between a schema and a database?&quot;
+            In fact, the MySQL command <code>CREATE SCHEMA</code> is a synonym for <code>CREATE
+            DATABASE</code>. (See <a href="http://dev.mysql.com/doc/refman/5.1/en/create-database.html" target="_blank">12.1.10.
+            CREATE DATABASE Syntax</a>.) Think of a schema as a blueprint that defines the contents
+            of the database, including tables, relationships, views, etc. A database implements the
+            schema by containing data in a way that adheres to the structure of the schema. This is
+            similar to the object-oriented world of Java classes and objects. A class defines an object.
+            When a program runs however, objects (i.e., class instances) are created, managed, and
+            eventually destroyed as the program runs its course.</p>
+
+
+        <br>
+        <h2 id="connectDB">Connecting to the Database from the IDE</h2>
+
+        <p>Now that the <code>affablebean</code> schema exists on your MySQL server, ensure
+            that you can view the tables you created in the ERD from the IDE's Services window.</p>
+
+        <p><strong>Important:</strong> Make sure that you have followed the steps outlined in
+            <a href="setup-dev-environ.html#communicate">Setting up the Development Environment:
+            Communicating with the Database Server</a>. This heading describes how to run the
+            MySQL database server, register it with the IDE, create a database instance, and
+            form a connection to the instance from the IDE.</p>
+
+        <ol>
+            <li>In the IDE, open the Services window (Ctrl-5; &#8984;-5 on Mac) and locate
+                the database connection node (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/db-connection-node.png"
+                alt="Database connection node"> ) for the <code>affablebean</code> database
+                instance you created in the <a href="setup-dev-environ.html#communicate">previous
+                tutorial unit</a>.</li>
+
+            <li>Refresh the connection to the <code>affablebean</code> database. To do so,
+                right-click the connection node and choose Refresh.</li>
+
+            <li>Expand the Tables node. You can now see the five tables defined by the schema.</li>
+
+            <li>Expand any of the table nodes. Each table contains the columns and indexes
+                that you created when working in MySQL Workbench.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/data-model/services-window-schema.png"
+                     class="margin-around b-all" alt="Forward Engineer wizard"
+                     title="Update the database connection to view schema tables"></li>
+        </ol>
+
+        <p>The IDE is now connected to a database that uses the schema you created for the
+            <code>AffableBean</code> application. From the IDE, you can now view any table
+            data you create in the database, as well as directly modify, add and delete data.
+            You will explore some of these options later, in <a href="connect-db.html">Connecting
+            the Application to the Database</a>, after you've added sample data to the database.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20NetBeans%20E-commerce%20Tutorial%20-%20Designing%20the%20Data%20Model">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">See Also</h2>
+
+        <div class="indent">
+            <h3>NetBeans Resources</h3>
+
+            <ul>
+                <li><a href="../../../articles/mysql.html" target="_blank">MySQL and NetBeans IDE</a></li>
+                <li><a href="../../ide/mysql.html" target="_blank">Connecting to a MySQL Database</a></li>
+                <li><a href="../../web/mysql-webapp.html" target="_blank">Creating a Simple Web Application Using a MySQL Database</a></li>
+                <li><a href="../../ide/database-improvements-screencast.html" target="_blank">Screencast: Database Support in NetBeans IDE</a></li>
+            </ul>
+
+            <h3>MySQL & Data Modeling Resources</h3>
+
+            <ul>
+                <li><a href="http://wb.mysql.com/" target="_blank">MySQL Workbench Blog</a></li>
+                <li><a href="http://forums.mysql.com/index.php?151" target="_blank">MySQL Workbench Forum</a></li>
+                <li><a href="http://dev.mysql.com/librarian/" target="_blank">The MySQL Community Librarian</a></li>
+                <li><a href="http://dev.mysql.com/doc/workbench/en/index.html" target="_blank">MySQL Workbench Reference Manual</a></li>
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/" target="_blank">MySQL 5.1 Reference Manual</a></li>
+                <li><a href="http://en.wikipedia.org/wiki/Innodb" target="_blank">InnoDB</a> [Wikipedia]</li>
+                <li><a href="http://en.wikipedia.org/wiki/Database_model" target="_blank">Database Model</a> [Wikipedia]</li>
+                <li><a href="http://en.wikipedia.org/wiki/Data_modeling" target="_blank">Data Modeling</a> [Wikipedia]</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>References</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#fn1" style="text-decoration:none">^</a> Data Definition
+                Language (DDL) is a subset of the SQL language and includes statements such as
+                <code>CREATE TABLE</code>, <code>DROP</code>, and <code>ALTER</code>. Other subsets
+                include Data Manipulation Language (DML), and Data Control Language (DCL). For
+                more information, see <a href="http://en.wikipedia.org/wiki/Data_Definition_Language" target="_blank">Data
+                Definition Language</a> [Wikipedia].</li>
+        </ol>
+
+    </body>
+</html>

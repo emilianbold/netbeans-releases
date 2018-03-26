@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Setting Up an Oracle JET Application</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that introduces the support for developing HTML5 applications in NetBeans IDE
+              and uses the jQuery JavaScript library.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+        <h1>Setting Up an Oracle JET Application</h1>
+
+        <p>
+            This document provides a step-by-step set of instructions guiding
+            you through the process of setting up an application based on
+            <a href="http://oraclejet.org">Oracle JavaScript Extension Toolkit (JET)</a>. 
+            JET empowers web and mobile developers
+            by providing a modular toolkit based on modern JavaScript, CSS3,
+            and HTML5 design and development principles.</p>
+
+        <!-- ++++++++++++++++ Setting Up ++++++++++++++++ -->
+        <h2 id="seealso">Setting Up</h2>
+
+        <p>In this exercise you learn how to set up an Oracle JET application
+             via the <tt>ojet-cli</tt> tool.</p>
+        <p class='notes'><b>Note:</b> If you have been using the Yeoman-based generator,
+            that is, <tt>generator-oraclejet</tt>, you must install it
+            before continuing with the steps below, via <tt>npm -g uninstall generator-oraclejet</tt>.</p>
+
+        <ol>
+            <li>
+                <p>On the command prompt in a terminal window, type the following:</p>
+                <pre>node -v</pre>
+                <p>If the terminal window shows that Node is not installed or at a 
+                    lower version than 5, <a href="https://nodejs.org/en/">go to the Node site</a> and 
+                    install the Long Term Support (LTS) release of Node. Currently, at the time of writing,
+                    the LTS release is v6.11.2, and is listed as being "recommended
+                    for most users".</p>  
+                <p class="notes"><b>Note:</b> Do not use the Latest release of Node, i.e., v8.x.  
+                    The Node Package Manager (NPM) version 5 that comes with Node v8.x 
+                    has bugs that cause nested dev-dependencies 
+                    to not be installed properly. This is listed in our <a href="http://www.oracle.com/webfolder/technetwork/jet/globalSupport-releaseNotes.html">Release Notes for JET 3.2.0</a> and 
+                    we are watching the npm bugs to see when they are going to fix them.
+                </p>
+            </li>
+            <li>
+                <p>After completing the above step, install the Oracle JET Command Line (<tt><a href="https://github.com/oracle/ojet-cli">ojet-cli</a></tt>) tool as follows:</p> 
+                <p><pre>npm -g install ojet-cli</pre></p>
+                <p class="notes"><b>Note:</b> You may need to be in admin mode, such as via <tt>sudo -s</tt> on
+                 Mac OS X, to be able to call the above command.</p>
+                <p class="tips">Under the covers, the <tt>ojet-cli</tt> tool installs and uses
+                 popular JavaScript tools, such as Yeoman and Grunt, as can 
+                 <a href="https://github.com/oracle/ojet-cli/blob/master/package.json">be seen here</a>. Where
+                 previously, you'd have to use commands such as <tt>yo</tt> and <tt>grunt</tt>, these
+                 are now hidden within the <tt>ojet-cli</tt> tool and do not need to be installed
+                 separately anymore.</p>
+            </li>
+            <li>The <tt>-g</tt> argument in the previous step should have installed
+                the <tt>ojet</tt> command globally, so that you should be able
+                to run <tt>ojet</tt> anywhere, i.e., not in any specific folder
+                or location since the <tt>ojet</tt> command should now be
+                globally available. To try it out, run the following:
+                <pre>ojet help</pre>
+                <p>The terminal window should now show all the commands available
+                   to be used with <tt>ojet</tt>. If not, you can manually configure the
+                   PATH of your system to include <tt>ojet-cli</tt>.
+                </p>    
+            </li>
+            <li>
+                <p>Once you have successfully run <tt>ojet help</tt>, use <tt>ojet</tt> to create a new Oracle JET application, as follows:</p> 
+                <p><pre>ojet create MyApp --template=navdrawer</pre></p>
+                <p class="tips">'navdrawer', in the command line above, is one of the starter templates made available by Oracle JET,
+                 as outlined below:</p>
+                <ul>
+                    <li><a href="http://www.oracle.com/webfolder/technetwork/jet/globalExamples-Starter-Drawer.html">Nav Drawer Starter</a></li>
+                    <li><a href="http://www.oracle.com/webfolder/technetwork/jet/globalExamples-Starter-NavBar.html">Nav Bar Starter</a></li>
+                    <li><a href="http://www.oracle.com/webfolder/technetwork/jet/globalExamples-Starter-Basic.html">Basic Starter</a></li>
+                </ul>
+                <p>After the process completes, you should have an application structured as follows:</p>
+                <p><img src="../../../images_www/articles/82/web/oraclejet-gettingstarted/navdrawer.png"/></p>
+                <p class="tips">Open the application into an editor or IDE of your
+                     choice, such as NetBeans IDE, which displays the
+                     application as shown in the screenshot above.</p>
+            </li>
+            <li>
+                <p>Once the application is created, use the terminal window to navigate into the root folder,
+                    i.e., the top folder, which is named <tt>MyApp</tt>, 
+                    and build and serve the application, as follows:</p> 
+                <p><pre>ojet serve</pre></p>
+                <p>After the build completes, the browser opens and displays the application:</p>
+                <p><img style="border:1px solid black" src="../../../images_www/articles/82/web/oraclejet-gettingstarted/newhtml5project-9.png"/></p>
+            </li>
+        </ol>
+        <p>Congratulations, you have successfully set up an Oracle JET application. Repeat
+         the steps above whenever you need to set up a new Oracle JET
+         application.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Setting%20Up%20Oracle%20JET%20Applications">Send Feedback on This Tutorial</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+
+        <h2 id="seealso">See Also</h2>
+
+        <p>For more information about support for Oracle JET and a variety of HTML5 applications in the IDE on
+            <a href="https://netbeans.org/">netbeans.org</a>, see the following resources:</p>
+
+        <ul>
+            <li><a href="http://www.oracle.com/webfolder/technetwork/jet/globalExamples.html">"Learn" section
+                    on the Oracle JET site</a>. A set of official Oracle JET learning resources.</li>
+            <li><a href="html5-editing-css.html">Working with CSS Style Sheets in HTML5 Applications</a>.
+                A document that continues with the application that you created in this tutorial that demonstrates
+                how to use some of the CSS wizards and windows in the IDE and how to use the Inspect mode in the
+                Chrome browser to visually locate elements in your project sources.</li>
+            <li><a href="html5-js-support.html">Debugging and Testing JavaScript in HTML5 Applications</a>.
+                A document that demonstrates how the IDE provides tools that can help you debug and test
+                JavaScript files in the IDE.</li>
+        </ul>
+
+    </body>
+</html>

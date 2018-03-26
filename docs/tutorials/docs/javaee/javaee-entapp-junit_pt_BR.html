@@ -1,0 +1,596 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Usando o Container EJB Incorporado para Testar Aplicações Corporativas</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use the embedded EJB container to test a session bean and entity class.">
+        <meta name="KEYWORDS" content="NetBeans, embedded, EJB, container, GlassFish, JUnit, Tutorial">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Usando o Container EJB Incorporado para Testar Aplicações Corporativas</h1>
+        
+        <p>Esse tutorial demonstra como criar e executar testes JUnit para uma aplicação enterprise Java EE. Neste tutorial, você criará uma aplicação web com uma classe de entidade e um bean de sessão. Primeiro, você criará uma classe de teste JUnit para o bean de sessão e executará o teste no contêiner EJB incorporado. Em seguida, você adicionará uma classe de entidade ao projeto e modificará a classe de teste para adicionar um método de teste para a classe de entidade.</p>
+
+           <p><b>Exercícios do Tutorial</b></p>
+           <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+            <ul>
+                <li><a href="#Exercise_1">Testando um Bean de Sessão</a>
+                    <ul>
+                        <li><a href="#Exercise_1a">Criando o Projeto</a></li>
+                        <li><a href="#Exercise_1b">Criando o Bean de Sessão</a></li>
+                        <li><a href="#Exercise_1c">Testando o Bean de Sessão</a></li>
+                        <li><a href="#Exercise_1d">Modificando o Teste para Especificar Propriedades do Container</a></li>
+                        <li><a href="#Exercise_1e">Usando Anotações @BeforeClass e @AfterClass</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_2">Testando uma Classe de Entidade</a>
+                    <ul>
+                        <li><a href="#Exercise_2a">Criando a Classe de Entidade</a></li>
+                        <li><a href="#Exercise_2b">Modificando o Bean de Sessão</a></li>
+                        <li><a href="#Exercise_2c">Testando a Classe de Entidade</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_3">Fazendo Download do Projeto da Solução</a></li>
+<!--                <li><a href="#Exercise_4">Troubleshooting</a></li>-->
+            </ul>
+            <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="/downloads/">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote Java EE 7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">versão 7 ou 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                    <td class="tbltd1">3.1.x ou 4.x</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="notes"><strong>Observações.</strong></p>
+        <ul>
+            <li>Este tutorial requer o plug-in JUnit. Se você não tiver instalado o plug-in JUnit quando instalou o IDE, abra o Gerenciador de Plug-ins, selecione a guia plug-ins Disponíveis e instale o plug-in JUnit.</li>
+            
+        </ul>
+            <p><b>Pré-requisitos</b></p>
+            <p>Este tutorial pressupõe que você tenha algum conhecimento básico das tecnologias a seguir, ou alguma experiência de programação com elas:</p>
+            <ul>
+                <li>Programação em Java</li>
+                <li>NetBeans IDE</li>
+            </ul>
+            
+            <p>Antes de começar este tutorial, você pode se familiarizar com os seguintes documentos.</p>
+            <ul>
+                <li><a href="javaee-gettingstarted.html">Conceitos Básicos sobre Aplicações do Java EE</a></li>
+                <li><a href="../java/junit-intro.html">Escrevendo Testes JUnit no NetBeans IDE</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E19798-01/821-1754/gjlde/index.html">Usando a API integrada do EJB 3.1 com o GlassFish Server Incorporado</a></li>
+            </ul>
+            <p class="tips">Você pode fazer download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FWebAppJUnit.zip">de um arquivo compactado zip do projeto finalizado</a>.</p>
+    
+        <!-- ===================================================================================== -->
+        <a name="Exercise_1"></a>
+        <!--Exercise 1: -->
+
+        <h2>Testando um Bean de Sessão</h2>
+        <p>Nesta sessão, você criará uma aplicação web Java EE simples que conterá uma classe de entidade e um bean de sessão.</p>
+
+        <div class="indent">
+        <a name="Exercise_1a"></a>
+        <h3>Criando o Projeto</h3>
+
+        <ol>
+            <li>Selecione Arquivo > Novo Projeto (Ctrl-Shift-N; ⌘-Shift-N no Mac) no menu principal.</li>
+            <li>Na categoria Java Web, selecione Aplicação Web. Clique em Próximo. </li>
+            <li>Chame o projeto de <strong>WebAppJUnit</strong> e defina a localização do projeto.</li>
+            <li>Desmarque a opção Usar Pasta Dedicada, se ela estiver selecionada.<br> Clique em Próximo.</li>
+            <li>Defina o servidor como <strong>GlassFish Server</strong> e defina a versão do Java EE para <strong>Java EE 6 Web</strong> ou <strong>Java EE 7 Web</strong>. <br>Clique em Finalizar.</li>
+        </ol>
+
+        
+        
+
+        <a name="Exercise_1b"></a>
+        <h3>Criando o Bean de Sessão</h3>
+        <p>Neste exercício, você criará um bean de sessão muito simples que contém um método que adiciona dois números.</p>
+        <ol>
+            <li>Clique com o botão direito do mouse no projeto WebAppJUnit na janela Projetos e selecione Novo > Outro.</li>
+            <li>Selecione o Bean de Sessão na categoria Enterprise JavaBeans. Clique em Próximo.</li>
+            <li>Digite <strong>MyBean</strong> como o Nome EJB.</li>
+            <li>Insira <strong>bean</strong> como o Nome do Pacote.</li>
+            <li>Selecione Sem Estado para o Tipo de Sessão. Clique em Finalizar.
+                <p>Quando você clica em Finalizar, a nova classe é aberta no editor.</p></li>
+            <li>No editor, adicione o seguinte método <tt>addNumbers</tt> à classe.
+            <pre class="examplecode">
+@Stateless
+public class MyBean {
+    <strong>public int addNumbers(int numberA, int numberB) {
+        return numberA + numberB;
+    }</strong>
+}</pre>
+                <p class="notes"><strong>Observação.</strong> Ele não é necessário para adicionar uma anotação <tt>@LocalBean</tt> ou implementar uma interface neste tutorial. Por default, o bean expõe uma view sem interface quando nenhuma view é especificada explicitamente.</p>
+            </li>
+            <li>Salve as alterações.</li>
+        </ol>
+
+      
+
+        <a name="Exercise_1c"></a>
+        <h3>Testando o Bean de Sessão</h3>
+        <p>Neste exercício, você criará uma classe de teste para o bean de sessão que testará o método <tt>addNumbers</tt>. O IDE pode gerar os novos métodos de classe de teste e de teste esqueleto com base nos métodos da classe de destino.</p>
+        <ol>
+            <li>Clique com o botão direito do mouse na classe <tt>MyBean</tt> na janela Projetos e selecione Ferramentas > Criar Testes.</li>
+            <li>Selecione JUnit na lista drop-down Frameworks.</li>
+            <li>Use os valores default na caixa de diálogo Criar Testes. Clique em OK.<br> <img alt="Caixa de diálogo Criar Testes" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/create-tests-dialog.png" title="Caixa de diálogo Criar Testes">
+            <p class="notes"><strong>Observação.</strong> Na primeira vez que você criar um teste da unidade JUnit, deverá especificar a versão de JUnit. Selecione a JUnit 4.x na caixa de diálogo Selecionar Versão do JUnit e clique em Selecionar.</p>
+                <p>Quando você clica em OK, o IDE gera o arquivo <tt>MyBeanTest.java</tt> e abre a classe no editor.</p>
+
+            <p>Na janela Projetos, você pode ver que o IDE gerou a classe de teste no nó Testar Pacotes. Por default, o IDE gera um método de teste esqueleto na classe de teste que chama <tt>javax.ejb.embeddable.EJBContainer.createEJBContainer()</tt> para criar uma instância do contêiner EJB. O método <tt>createEJBContainer()</tt> é um dos métodos na classe <a href="http://download.oracle.com/javaee/6/api/javax/ejb/embeddable/EJBContainer.html"> <tt>EJBContainer</tt></a> que faz parte da API integrada do EJB 3.1.</p>
+                 
+            <p>Se você expandir o nó Bibliotecas de Teste na janela Projetos, poderá ver que o IDE adicionou automaticamente o GlassFish Server (contêiner incorporado) e o JUnit 4.x como bibliotecas de teste. Se você expandir a biblioteca do GlassFish Server, verá que a biblioteca contém o <tt>glassfish-embedded-static-shell.jar</tt>. </p>
+            <img alt="tela da janela Projetos" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/embedded-static-shell-jar.png" title="Estrutura do projeto na janela Projetos">
+
+
+            <p class="notes"><strong>Observação.</strong> O JAR <tt>glassfish-embedded-static-shell.jar</tt> não contém os códigos-fonte do contêiner EJB incorporado. O JAR <tt>glassfish-embedded-static-shell.jar</tt> requer uma instalação local do GlassFish. O classpath para a instalação local do GlassFish é determinado pelo servidor de destino do projeto. Você pode alterar o servidor de destino na caixa de diálogo Propriedades do projeto.</p>
+            </li>
+            <li>Modifique o método de teste esqueleto gerado para especificar valores para <tt>numberA</tt>, <tt>numberB</tt> e <tt>expResult</tt> e remova a chamada default para falha.
+            <pre class="examplecode">@Test
+public void testAddNumbers() throws Exception {
+    System.out.println("addNumbers");
+    <strong>int numberA = 1;
+    int numberB = 2;</strong>
+    EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer();
+    MyBean instance = (MyBean)container.getContext().lookup("java:global/classes/MyBean");
+    <strong>int expResult = 3;</strong>
+    int result = instance.addNumbers(numberA, numberB);
+    assertEquals(expResult, result);
+    container.close();
+}</pre>
+            </li>
+            <li>Clique com o botão direito do mouse no projeto na janela Projetos e selecione Testar.</li>
+        </ol>
+        <p>Quando você executa o teste, a janela Resultados do Teste é aberta no IDE e exibe o andamento e os resultados do teste.</p>
+        <img alt="Janela Resultados do Teste" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/test-results1.png" title="Janela Resultados do Teste">
+        <p>Você verá uma saída semelhante à seguinte na janela de Saída:</p>
+        <pre class="examplecode">Testsuite: bean.MyBeanTest
+addNumbers
+...
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 31.272 sec
+
+------------- Standard Output ---------------
+addNumbers
+...
+------------- ---------------- ---------------
+test-report:
+test:
+BUILD SUCCESSFUL (total time: 35 seconds)</pre>
+
+
+        <a name="Exercise_1d"></a>
+        <h3>Modificando o Teste para Especificar Propriedades do Container</h3>
+        <p>Quando você usou o assistente Criar Testes, o IDE gerou uma classe de teste esqueleto default que continha código para iniciar o contêiner EJB. Neste exercício, você modificará o código gerado que inicia o contêiner para permitir a especificação de propriedades adicionais para a instância do contêiner incorporado.</p>
+
+        <ol>
+            <li>Adicione o seguinte código (em negrito) à classe de teste.
+
+
+        <pre class="examplecode">@Test
+public void testAddNumbers() throws Exception {
+    System.out.println("addNumbers");
+    int numberA = 1;
+    int numberB = 2;
+
+    // Create a properties map to pass to the embeddable container:
+    <strong>Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();</strong>
+    // Use the MODULES property to specify the set of modules to be initialized,
+    // in this case a java.io.File <!--representing an ejb-jar or exploded ejb-jar directory-->
+    <strong>properties.put(EJBContainer.MODULES, new File("build/jar"));</strong>
+
+    // Create the container instance, passing it the properties map:
+    EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer(<strong>properties</strong>);
+
+    // Create the instance using the container context to look up the bean 
+    // in the directory that contains the built classes
+    MyBean instance = (MyBean) container.getContext().lookup("java:global/classes/MyBean");
+
+    int expResult = 3;
+
+    // Invoke the addNumbers method on the bean instance:
+    int result = instance.addNumbers(numberA, numberB);
+
+    assertEquals(expResult, result);
+
+    // Close the embeddable container:
+    container.close();
+}</pre></li>
+            <li>Clique com o botão direito do mouse no editor e selecione Corrigir Importações (Alt-Shift-I; ⌘-Shift-I no Mac) para adicionar instruções de importação para <tt>java.util.HashMap</tt> e <tt>java.util.Map</tt>.</li>
+            <li>Execute novamente o teste para confirmar se o teste modificado funciona e se o contêiner foi criado corretamente.
+            <p class="tips"> Você pode clicar no botão Reexecutar na janela Resultados do Teste.</p>
+            </li>
+        </ol>
+<!-- TODO: need to check this
+        <p> If I do for example</p>
+
+        <pre class="examplecode">properties.put(EJBContainer.MODULES, new File("build/some-folder-with-classes"));</pre>
+
+        <p>then embeddable EJB container will use the folder
+            <tt>build/some-folder-with-classes</tt> to load EJBs from and the JNDI name to such
+        EJBs would be <tt>"java:global/some-folder-with-classes/&lt;my ejb name&gt;"</tt>. </p>
+        
+        <p>Or I could set it to the following.</p>
+
+        <pre class="examplecode">properties.put(EJBContainer.MODULES, new File("build/my-archive.jar"));</pre>
+
+        <p>and lookup would be <tt>"java:global/my-archive/&lt;my ejb name&gt;"</tt> and only EJBs from
+        my-archive.jar would be loaded.</p>
+
+        <p>Just for the sake of example, if I wanted to use a single JNDI name regardless
+        of my EJB being in archive or a classes folder then I would have to create
+        ejb-jar.xml and set the module name to "my-module-name" and in unit test I could do</p>
+
+        <pre class="examplecode">properties.put(EJBContainer.MODULES, new File("build/some-folder-with-classes"));</pre>
+        <p>or</p>
+        <pre class="examplecode">properties.put(EJBContainer.MODULES, new File("build/my-archive.jar"));</pre>
+        
+        <p>The JNDI name would be the same in both of the cases:<br>
+        <tt>"java:global/my-module-name/&lt;my ejb name&gt;"</tt></p>
+
+        <p>In the last example you could put this dir/jar in the classpath, skip the
+        property, and get the same result.
+        </p>
+-->
+        
+        <a name="Exercise_1e"></a>
+        <h3>Usando Anotações <tt>@BeforeClass</tt> e <tt>@AfterClass</tt></h3>
+        
+        <p>Neste exercício, você modificará a classe de teste para criar métodos individuais para criar e encerrar a instância do contêiner. Isso pode ser útil quando você desejar executar vários testes que podem usar a mesma instância do contêiner. Dessa forma, não é necessário abrir e fechar uma instância do contêiner para cada teste e criar, em vez disso, uma instância que é criada de os testes serem executados e fechada depois de todos os testes terem sido concluídos.</p>  
+        
+        <p>Neste exercício, você moverá o código que cria o contêiner EJB para o método <tt>setUpClass</tt>. O método <tt>setUpClass</tt> é anotado com <tt>@BeforeClass</tt> que é usado para indicar um método que será executado primeiro, antes dos outros métodos na classe de teste. Neste exemplo, a instância do contêiner será criada antes do método de teste <tt>testAddNumbers</tt> e o contêiner existirá até que seja encerrado.</p>
+        
+        <p>De forma semelhante, você moverá o código que encerra o contêiner para o método <tt>tearDownClass</tt> que é anotado com <tt>@AfterClass</tt>.</p>
+        
+        <ol>
+            <li>Adicione o campo a seguir à classe de teste.
+            <pre class="examplecode">private static EJBContainer container;</pre></li>
+            <li>Copie o código que cria o contêiner do método de teste <tt>testAddNumbers</tt> para o método <tt>setUpClass</tt> e 
+            <pre class=examplecode>@BeforeClass
+public static void setUpClass() <strong>throws Exception</strong> {
+    <strong>Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();
+    properties.put(EJBContainer.MODULES, new File("build/jar"));
+    container = EJBContainer.createEJBContainer(properties);
+    System.out.println("Opening the container");</strong>
+}</pre>
+            </li>
+            <li>Copie o código que fecha o contêiner do método de teste <tt>testAddNumbers</tt> para o método <tt>tearDownClass</tt>.
+            <pre class=examplecode>@AfterClass
+public static void tearDownClass() <strong>throws Exception</strong> {
+    <strong>container.close();
+    System.out.println("Closing the container");</strong>
+}</pre>
+            </li>
+            <li>Remova o código redundante do método <tt>testAddNumbers</tt>. Salve as alterações.</li>
+        </ol>
+
+        <p>A classe de teste deve se parecer com o seguinte.</p>
+        <pre class=examplecode>public class MyBeanTest {
+    private static EJBContainer container;
+
+    public MyBeanTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();
+        properties.put(EJBContainer.MODULES, new File("build/jar"));
+        container = EJBContainer.createEJBContainer(properties);
+        System.out.println("Opening the container");
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        container.close();
+        System.out.println("Closing the container");
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of addNumbers method, of class MyBean.
+     */ 
+    @Test
+    public void testAddNumbers() throws Exception {
+        System.out.println("addNumbers");
+        int numberA = 1;
+        int numberB = 2;
+
+        // Create the instance using the container context to look up the bean 
+        // in the directory that contains the built classes
+        MyBean instance = (MyBean) container.getContext().lookup("java:global/classes/MyBean");
+
+        int expResult = 3;
+
+        // Invoke the addNumbers method on the bean instance:
+        int result = instance.addNumbers(numberA, numberB);
+
+        assertEquals(expResult, result);
+    }
+}</pre>
+
+        <p>Caso você execute novamente o teste para confirmar se o contêiner é criado e fechado corretamente, verá uma saída semelhante à seguinte na janela Resultados do Teste.</p>
+        <img alt="Janela Resultados do Teste" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/test-results2a.png" title="Janela Resultados do Teste">
+        <p>Você pode ver que o método <tt>setUpClass</tt> foi executado antes do teste <tt>addNumbers</tt> e imprimiu "Abrindo o contêiner".</p>
+    </div>
+
+
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_2"></a>
+    <h2>Testando uma Classe de Entidade</h2>
+    <p>Nesta sessão, você criará uma classe de entidade e unidade de persistência, e modificará o bean de sessão para injetar o gerenciador de entidades e acessar as entidades. Você adicionará um método simples à nova classe de entidade que imprime o número de id da entrada na saída. Em seguida, você adicionará alguns métodos simples ao bean de sessão para criar e verificar entradas no banco de dados.
+    </p>
+
+    <div class="indent">
+        <a name="Exercise_2a"></a>
+        <h3>Criando a Classe de Entidade</h3>
+        <p>Nesta seção, você usará o assistente Nova Classe de Entidade para criar uma classe de entidade e uma unidade de persistência com os detalhes de conexão do banco de dados.
+        <ol>
+            <li>Clique com o botão direito do mouse no projeto WebAppJUnit na janela Projetos e selecione Novo > Outro.</li>
+            <li>Selecione a Classe de Entidade na categoria Persistência. Clique em Próximo.</li>
+            <li>Digite <strong>SimpleEntity</strong> como o Nome da Classe.</li>
+            <li>Selecione bean na lista drop-down Pacote.</li>
+            <li>Digite <strong>int</strong> como o Tipo de Chave Primária. Clique em Próximo.</li>
+            <li>Use o Nome e o Provedor da Unidade de Persistência Default.</li>
+            <li>Selecione <tt>jdbc/sample</tt> como a fonte de dados e Soltar e Criar como a estratégia. Clique em Finalizar.<br> <img alt="Caixa de diálogo Criar Classe de Entidade" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/create-entity-wizard.png" title="Caixa de diálogo Criar Classe de Entidade">
+                <p>Quando você clica em Finalizar, a nova classe de entidade é aberta no editor. Se você expandir o nó Arquivos de Configuração na janela Projetos, verá que o IDE gerou automaticamente o arquivo <tt>persistence.xml</tt> que define as propriedades da unidade de persistência <tt>WebAppJUnitPU</tt>.</p></li>
+            <li>No editor, adicione o campo privado a seguir à classe de entidade.
+            <pre class="examplecode">private String name;</pre>
+            </li>
+            <li>Clique com o botão direito do mouse no Editor de Código-Fonte e selecione Inserir Código (Alt-Insert; Ctrl-I no Mac) e selecione Getter e Setter para abrir a caixa de diálogo Gerar Getters e Setters.</li>
+            <li>Selecione o campo <tt>name</tt> na caixa de diálogo. Clique em Gerar.<br />
+            <li>Adicione o seguinte método à classe.
+            <pre class="examplecode">
+public SimpleEntity(int id) {
+    this.id = id;
+    name = "Entity number " + id + " created at " + new Date();
+}</pre>
+            </li>
+            <li>Use as anotações <tt>@NamedQueries</tt> e <tt>@NamedQuery</tt> para criar uma consulta SQL nomeada.
+            <pre class="examplecode">@Entity
+<strong>@NamedQueries({@NamedQuery(name = "SimpleEntity.findAll", query = "select e from SimpleEntity e")})</strong>
+public class SimpleEntity implements Serializable {</pre>
+            </li>
+            <li>Crie um construtor default.
+                <p class="tips">Você pode clicar no ícone de sugestão exibido na medianiz, próximo à declaração de classe, se quiser que o IDE gere o construtor para você.</p>
+            </li>
+            <li>Corrija suas importações para adicionar instruções de importação para <tt>javax.persistence.NamedQueries</tt>, <tt>javax.persistence.NamedQuery</tt> e <tt>java.util.Date</tt>. Salve as alterações.</li>
+        </ol>
+
+        <p>Além do código default gerado, a classe de entidade agora deve ser semelhante a:</p>
+
+        <pre class="examplecode">package bean;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+
+
+@Entity
+@NamedQueries({@NamedQuery(name = "SimpleEntity.findAll", query = "select e from SimpleEntity e")})
+public class SimpleEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    private String name;
+
+    public SimpleEntity() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public SimpleEntity(int id) {
+        this.id = id;
+        name = "Entity number " + id + " created at " + new Date();
+    }
+
+    
+
+    ...
+
+}</pre>
+
+
+        <a name="Exercise_2b"></a>
+        <h3>Modificando o Bean de Sessão</h3>
+        <p>Neste exercício, você editará o bean de sessão <tt>MyBean</tt> para adicionar métodos para inserir e recuperar dados para a tabela do banco de dados.</p>
+        <ol>
+            <li>Abra <tt>MyBean.java</tt> no editor.</li>
+            <li>Clique com o botão direito do mouse no editor, selecione Inserir Código (Alt-Insert; Ctrl-I no Mac) e selecione Usar Gerenciador de Entidades no menu pop-up.
+            <p>Quando você tiver selecionado Usar Gerenciador de Entidades, o IDE terá adicionado o código a seguir à classe para injetar o gerenciador de entidades. Você pode ver que o nome da unidade de persistência foi gerado automaticamente.</p>
+            <pre class="examplecode">@PersistenceContext(unitName="WebAppJUnitPU")
+private EntityManager em;</pre>
+            </li>
+            <li>Adicione os seguintes métodos <tt>verify</tt> e <tt>insert</tt>.
+            <pre class="examplecode">@PermitAll
+public int verify() {
+    String result = null;
+    Query q = em.createNamedQuery("SimpleEntity.findAll");
+    Collection entities = q.getResultList();
+    int s = entities.size();
+    for (Object o : entities) {
+        SimpleEntity se = (SimpleEntity)o;
+        System.out.println("Found: " + se.getName());
+    }
+
+    return s;
+}
+
+@PermitAll
+public void insert(int num) {
+    for (int i = 1; i &lt;= num; i++) {
+        System.out.println("Inserting # " + i);
+        SimpleEntity e = new SimpleEntity(i);
+        em.persist(e);
+    }
+}</pre></li>
+            <li>Corrija suas importações para importar o <tt>javax.persistence.Query</tt> e salve as alterações.</li>
+        </ol>
+        
+
+
+        <a name="Exercise_2c"></a>
+        <h3>Testando a Classe de Entidade</h3>
+        <p>Neste exercício, você editará a classe de teste para adicionar um método para testar se a aplicação pode procurar o EJB e se os métodos <tt>insert</tt> e <tt>verify</tt> estão se comportando corretamente.</p>
+        <ol>
+            <li>Inicie o banco de dados JavaDB.</li>
+            <li>Abra a classe de teste <tt>MyBeanTest.java</tt> no editor.</li>
+            <li>Edite a classe de teste para adicionar o seguinte método de teste <tt>testInsert</tt>.
+            <pre class="examplecode">@Test
+public void testInsert() throws Exception {
+
+    // Lookup the EJB
+    System.out.println("Looking up EJB...");
+    MyBean instance = (MyBean) container.getContext().lookup("java:global/classes/MyBean");
+
+    System.out.println("Inserting entities...");
+    instance.insert(5);
+    int res = instance.verify();
+    System.out.println("JPA call returned: " + res);
+    System.out.println("Done calling EJB");
+
+    Assert.assertTrue("Unexpected number of entities", (res == 5));
+    System.out.println("..........SUCCESSFULLY finished embedded test");
+}</pre>
+            </li>
+<!--            <li>Fix your imports to import <tt>javax.naming.Context</tt> and <tt>junit.framework.Assert</tt>.</li>-->
+            <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto e escolha Testar no menu pop-up.</li>
+        </ol>
+
+        <p>A janela Resultados do teste será aberta e exibirá uma saída semelhante à seguinte.</p>
+        
+        <img alt="Janela Resultados do Teste" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/test-results2b.png" title="A janela Resultados do Teste depois da adição do teste testInsert">
+        
+        <p>Você pode ver o andamento dos testes e a ordem na qual eles foram executados nas mensagens impressas que foram adicionadas à classe de teste.
+        </p>
+
+    </div>
+        
+    Agora que você tem um teste para seu bean de sessão e sabe que a conexão de sua classe de entidade funciona, pode começar a codificar uma interface web para a aplicação.
+       
+        
+        <!-- ===================================================================================== -->
+        <a name="Exercise_3"></a>
+       
+            <h2>Fazendo Download do Projeto da Solução</h2>
+            <p>Você pode fazer o download da solução para este projeto como um projeto das seguintes formas.</p>
+            <ul>
+                <li>Faça download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FWebAppJUnit.zip">de um arquivo compactado zip do projeto finalizado</a>.</li>
+                <li>Faça o check-out do código-fonte do projeto das Amostras do NetBeans ao executar as etapas a seguir:
+                    <ol>
+                        <li>Escolha Equipe > Subversion > Efetuar check-out no menu principal.</li>
+                        <li>Na caixa de diálogo Check-out, insira o URL de Repositório a seguir:<br> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br> Clique em Próximo.</li>
+                        <li>Clique em Procurar para abrir a caixa de diálogo Procurar Pastas do Repositório.</li>
+                        <li>Expanda o nó raiz e selecione <strong>samples/javaee/WebAppJUnit</strong>. Clique em OK.</li>
+                        <li>Especifique a Pasta Local para o códigos-fonte (a pasta local precisa estar vazia).</li>
+                        <li>Clique em Finalizar.
+                            <p>Quando você clica em Finalizar, o IDE inicializa a pasta local como um repositório Subversion e verifica os códigos-fonte do projeto.</p>
+                        </li>
+                        <li>Clique em Abrir Projeto na caixa de diálogo exibida quando o check-out for concluído.</li>
+                    </ol>
+                    <p class="notes"><strong>Observações.</strong></p>
+                    <ul>
+                        <li>É necessário um cliente Subversion para verificar os códigos-fonte. Para saber mais sobre a instalação do Subversion, consulte a seção <a href="../ide/subversion.html#settingUp">Configurando o Subversion</a> no <a href="../ide/subversion.html">Guia do Subversion no NetBeans IDE</a>.</li>
+                    </ul>
+                </li>
+            </ul>
+
+                
+
+
+            <!--<a name="Exercise_4"></a>
+                
+            <h2>Troubleshooting</h2>
+            <p></p>-->
+            
+            <!--<p>If you are using this tutorial on OS X, you may encounter the following problem when testing the project.</p>
+            <div class="indent">
+                <h3>OutOfMemory Exception</h3>
+                
+                <p>To prevent an OutOfMemory (OOM) exception, you need to modify the build script.</p>
+                <ol>
+                    <li>Expand the project in the Files window.</li>
+                    <li>Expand the nbproject node and double-click <tt>build-impl.xml</tt> to open the file in the editor.</li>
+                    <li>Search for macrodef-junit in the file.</li>
+                    <li>Locate the classpath elements.
+                    <pre class="examplecode">
+    &lt;macrodef name="junit" uri="https://netbeans.org/ns/web-project/2"&gt;
+        ...
+        &lt;sequential&gt;
+            ...
+            <strong>&lt;classpath&gt;
+                &lt;path path="${run.test.classpath}"/&gt;
+                &lt;path path="${j2ee.platform.classpath}"/&gt;
+                &lt;path path="${j2ee.platform.embeddableejb.classpath}"/&gt;
+            &lt;/classpath&gt;</strong>
+            ...
+        &lt;sequential&gt;
+        ...
+    &lt;macrodef name="junit" uri="https://netbeans.org/ns/web-project/2"&gt;
+                    </pre></li>
+                    <li>Comment out the following classpath element.
+                        <pre class="examplecode">&lt;path path="${j2ee.platform.classpath}"/&gt;</pre>
+                    </li>
+                    <li>Save your changes.</li>
+                    
+                </ol>-->
+                
+                
+                
+
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20the%20Embedded%20EJB%20Container">Enviar Feedback neste Tutorial</a></div>
+            <br style="clear:both;">
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>Consulte Também</h2>
+            <p>Para obter mais informações sobre o uso do NetBeans IDE para desenvolver aplicações Java EE, consulte os seguintes recursos:
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Introdução à Tecnologia Java EE</a></li>
+            <li><a href="javaee-gettingstarted.html">Conceitos Básicos sobre Aplicações do Java EE</a></li>
+            <li><a href="../web/quickstart-webapps.html">Introdução ao Desenvolvimento de Aplicações Web</a></li>
+            <li><a href="../../trails/java-ee.html">Trilha de Aprendizado do Java EE e Java Web</a></li>
+            </ul>
+            <p>Você pode encontrar mais informações sobre o uso do Enterprise Beans EJB 3.1 no <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Tutorial do Java EE 6</a>.</p>
+            <p>Para enviar comentários e sugestões, obter suporte e se manter informado sobre os mais recentes desenvolvimentos das funcionalidades de desenvolvimento do Java EE do NetBeans IDE, <a href="../../../community/lists/top.html">inscreva-se na lista de correspondência de nbj2ee</a>.</p>
+    </body>
+</html>

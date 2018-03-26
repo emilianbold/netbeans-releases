@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Introduction to the NetBeans E-commerce Tutorial.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+
+        <title>Tutorial de E-commerce do NetBeans: Introdução</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Tutorial de E-commerce do NetBeans: Introdução</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Conteúdo do Tutorial</h4>
+
+                <ol>
+                    <li><strong>Introdução</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#about">Sobre Este Tutorial</a></li>
+                            <li><a href="#whatEcommerce">O que é una Aplicação de E-commerce?</a></li>
+                            <li><a href="#whatJava">O que é Java?</a></li>
+                            <li><a href="#jcp">O que é o Processo da Comunidade Java?</a></li>
+                            <li><a href="#ide">Por que usar um IDE?</a></li>
+                            <li><a href="#netBeans">Por que usar o NetBeans?</a></li>
+                            <li><a href="#seeAlso">Consulte Também</a></li>
+                        </ul></li>
+
+                    <li><a href="design.html">Criando a Aplicação</a></li>
+                    <li><a href="setup-dev-environ.html">Configurando o Ambiente de Desenvolvimento</a></li>
+                    <li><a href="data-model.html">Criando o Modelo de Dados</a></li>
+                    <li><a href="page-views-controller.html">Preparando as Views de Página e o Servlet do Controlador</a></li>
+                    <li><a href="connect-db.html">Conectando a Aplicação ao Banco de Dados</a></li>
+                    <li><a href="entity-session.html">Adicionando Classes de Entidades e Beans de Sessão</a></li>
+                    <li><a href="manage-sessions.html">Gerenciando Sessões</a></li>
+                    <li><a href="transaction.html">Integrando a Lógica de Negócios Transacional</a></li>
+                    <li><a href="language.html">Adicionando o Suporte a Idioma</a></li>
+                    <li><a href="security.html">Protegendo a Aplicação</a></li>
+                    <li><a href="test-profile.html">Testando e Criando Perfis</a></li>
+                    <li><a href="conclusion.html">Conclusão</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="O conteúdo desta página se aplica ao NetBeans IDE, versões e 6.8 e 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="O conteúdo desta página se aplica ao NetBeans IDE, versões e 6.8 e 6.9"></p>
+
+        <p>Bem-Vindo ao Tutorial do NetBeans E-commerce. Neste tutorial de várias partes, você aprenderá a criar uma simples, porém eficaz, aplicação de e-commerce que demonstrará várias funcionalidades importantes do desenvolvimento Java Web e EE. Ao fazer isso, você se familiarizará com o NetBeans IDE e poderá aplicá-lo em seus próprios projetos de desenvolvimento.</p>
+
+        <p>Ao se dedicar a aprender o IDE, você se tornará mais eficiente e versátil como desenvolvedor. Enquanto avança pelas unidades do tutorial, você aprenderá a usar da melhor forma o recursos e ferramentas do IDE. Entre eles se incluem:</p>
+
+        <ul style="margin-left: 320px" class="toc">
+            <li><strong>Suporte do editor a diferentes idiomas:</strong> destaque de sintaxe, funcionalidade autocompletar código, suporte à documentação de API, atalhos de teclado, recursos de refatoração e modelos de códigos</li>
+
+            <li><strong>Sistema Windows:</strong> janelas de Projetos, Arquivos e Serviços, janela de Tarefas, janela de Javadoc, monitor HTTP, Navegador e Paleta.</li>
+
+            <li><strong>Integração com outros serviços: </strong>implantação automática em um servidor registrado, conectividade com banco de dados, interoperabilidade do browser</li>
+
+            <li><strong>Ferramentas de desenvolvimento:</strong> Depurador, Profiler, Monitor do Servidor HTTP, suporte ao Histórico Local e um Visualizador Gráfico de Diferenciação.</li>
+        </ul>
+
+        <p>O tutorial é apresentado em módulos, com cada unidade priorizando conceitos, tecnologias e funcionalidades específicos do IDE. Você pode acompanhar, com sucesso, uma unidade do tutorial sozinha, usando as instruções de configuração e os snapshots da aplicação fornecidos (da Unidade 5 em diante). Entretanto, você aproveitará mais se seguir todas as unidades consecutivamente, do início ao fim. Isso também ajudará a ilustrar o processo de desenvolvimento.</p>
+
+        <p>A unidade 3, <a href="setup-dev-environ.html">Configurando o Ambiente de Desenvolvimento</a>, apresentará o NetBeans IDE. Lá, você criará um projeto Java Web que será a base para o trabalho realizado nas unidades posteriores do tutorial. Na unidade 4, <a href="data-model.html">Criando o Modelo de Dados</a>, você trabalhará principalmente com o <a href="http://wb.mysql.com/" target="_blank">MySQL WorkBench</a>, uma ferramenta de design visual de banco de dados, para criar um modelo de dados para a aplicação. Cada unidade seguinte do tutorial fornecerá um <em>snapshot do projeto</em> que corresponderá ao estado inicial do projeto naquela unidade específica. Isso permite que você trabalhe em uma única unidade do tutorial, fora do contexto geral do Tutorial de E-commerce. Para usar esses snapshots, faça dowload deles para o computador e abra-os no IDE usando o assistente Abrir Projeto (Ctrl-Shift-O; ⌘-Shift-O no Mac).</p>
+
+        <p>Você pode exibir uma demonstração ao vivo da aplicação construída neste tutorial: <a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">Aplicação de Demonstração do Tutorial do NetBeans E-commerce</a></p>
+
+        <p>O restante desta unidade aborda algumas informações relevantes ao tutorial, bem como os conceitos básicos necessários para o desenvolvimento Java EE. Certifique-se de entender os conceitos explicados abaixo, antes de prosseguir com o desenvolvimento.</p>
+
+        <br clear="left">
+
+
+        <br>
+        <h2 id="about">Sobre este Tutorial</h2>
+
+        <div class="indent">
+            <h3>Para Quem é este Tutorial</h3>
+
+            <p>O conteúdo deste tutorial se destina a quatro tipos de pessoas:</p>
+
+            <ul>
+                <li>Os desenvolvedores Java interessados em ampliar seu conjunto de habilidades para incluir tecnologias Java EE.</li>
+
+                <li>Novatos em NetBeans IDE que buscam experimentar o ambiente de desenvolvimento.</li>
+
+                <li>Desenvolvedores Web que queiram ver como o Java se compara a outras tecnologias baseadas na Web.</li>
+
+                <li>Estudantes que querem aprender o básico sobre uma aplicação simples de e-commerce, e como seu desenvolvimento pode ser aplicado a um caso da vida real.</li>
+            </ul>
+
+            <p>Caso você se encaixe em uma dessas categorias, este tutorial será útil para você. Dependendo do que você já conhece e sabe, talvez ache certas unidades deste tutorial mais difíceis do que outras. Entender como as tecnologias funcionam é a chave para aproveitar o IDE para seus objetivos. Sendo assim, caso esteja realmente interessado em aprender as tecnologias envolvidas, você poderá descobrir que este tutorial funciona melhor quando em conjunto com o <a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/" target="_blank">Tutorial Java EE</a>. Em cada unidade do tutorial, use, da melhor maneira possível, os links fornecidos em áreas relevantes no Tutorial Java EE, bem como em outros recursos úteis.</p>
+
+
+            <h3>O que este Tutorial Abrange?</h3>
+
+            <p>A aplicação que você desenvolverá neste tutorial envolve vários conceitos, tecnologias e componentes de ferramentas:</p>
+
+            <ul class="toc">
+                <li><strong>Conceitos</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>Desenvolvimento de front-end</li>
+                        <li>Estrutura do projeto de aplicação Web</li>
+                        <li>Modelagem de dados</li>
+                        <li>Conectividade de banco de dados</li>
+                        <li>Mapeamento relacional de objeto</li>
+                        <li>Gerenciamento de sessão</li>
+                        <li>Lógica de negócio transacional</li>
+                        <li>Validação do lado do servidor e do cliente</li>
+                        <li>Localização</li>
+                        <li>Segurança da aplicação Web</li>
+                        <li>Padrões de design, incluindo <a href="http://java.sun.com/blueprints/patterns/MVC.html" target="_blank">Controlador de View de Modelo</a> (MVC) e <a href="http://java.sun.com/blueprints/patterns/SessionFacade.html" target="_blank">Fachada de Sessão</a></li>
+                    </ul></li>
+
+                <li><strong>Tecnologias</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>HTML, CSS, e tecnologias JavaScript</li>
+                        <li>Tecnologias Servlet e Páginas JavaServer (JSP)</li>
+                        <li>Tecnologia Enteprise JavaBeans (EJB)</li>
+                        <li>Java Persistence API (JPA)</li>
+                        <li>Biblioteca de Tags JavaServer Pages Standard (JSTL)</li>
+                        <li>Java Database Connectivity (JDBC)</li>
+                    </ul></li>
+
+                <li><strong>Ferramentas de Desenvolvimento</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>NetBeans IDE</li>
+                        <li>GlassFish, um servidor de aplicações Java EE</li>
+                        <li>MySQL, um servidor de gerenciamento de banco de dados relacional (RDBMS)</li>
+                        <li>MySQL WorkBench, uma ferramenta de design de banco de dados visual</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="whatEcommerce">O que é uma Aplicação de E-commerce?</h2>
+
+        <p>O termo <em>e-commerce</em>, como conhecido hoje, se refere à compra e venda de produtos ou serviços pela Internet. Um exemplo é a <a href="http://www.amazon.com/" target="_blank">Amazon</a>, que fornece serviços de venda on-line em várias categorias de produtos, como livros, música e eletrônicos. Essa forma de e-commerce é conhecida como varejo eletrônico, ou <em>e-tailing</em> e costuma envolver o transporte dos itens físicos. Também é conhecido como <em>empresa-a-cliente</em>, ou B2C. Outras formas bem conhecidas incluem:</p>
+
+        <ul>
+            <li><strong>Cliente-a-cliente (C2C): </strong>Transações que acontecem entre indivíduos, normalmente em um site terceirizado, como um leilão on-line. Um exemplo típico de comércio C2C é o <a href="http://www.ebay.com/" target="_blank">eBay</a>.</li>
+
+            <li><strong>Empresa-a-empresa (B2B): </strong>Comércio entre empresas, por exemplo, entre varejista e atacadista, ou entre atacadista e fabricante.</li>
+
+            <li><strong>Empresa-a-governo (B2G): </strong>Comércio entre empresas e agências governamentais.</li>
+        </ul>
+
+        <p>Esse tutorial prioriza o e-commerce empresa-a-cliente (B2C), e utiliza o cenário típico de uma pequena loja de varejo para criar um site que permita aos clientes comprar on-line. O software apropriado para o cenário B2C costuma ser composto por dois componentes:</p>
+
+        <ol>
+            <li><strong>Frente de Loja:</strong> O site que é acessado pelos clientes, permitindo que comprem produtos pela Internet. Os dados do catálogo da loja costumam ser mantidos em um banco de dados e as páginas que precisam desses dados são geradas dinamicamente.</li>
+
+            <li><strong>Console de Administração:</strong> Uma área protegida por senha que é acessada por meio de uma conexão segura pelos funcionários da loja para fins de gerenciamento on-line. Isso costuma envolver acesso CRUD (criar, ler, atualizar, deletar) ao catálogo da loja, gerenciamento de descontos, opções de envio e de pagamento, além da análise dos pedidos dos clientes.</li>
+        </ol>
+
+
+        <br>
+        <h2 id="whatJava">O que é Java?</h2>
+
+        <p>Na indústria de software para computadores, o termo “Java” se refere à <em>Plataforma Java</em> e à <em>Linguagem de Programação em Java</em>.</p>
+
+        <div class="feedback-box margin-around">
+            <img alt="Imagem de Duke" class="margin-around" src="../../../../images_www/articles/73/javaee/ecommerce/intro/duke.png" title="Duke, a mascote Java">
+
+            <p>Duke, a mascote Java</p>
+        </div>
+
+        <div class="indent">
+            <h3>Java Como Linguagem de Programação</h3>
+
+            <p>A linguagem Java foi conceitualizada por <a href="http://en.wikipedia.org/wiki/James_Gosling" target="_blank">James Gosling</a>, que começou a trabalhar no projeto em 1991. A linguagem foi criada com 5 princípios de design<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup> em mente:</p>
+
+            <ol>
+                <li><strong>Simples, Orientada a Objetos e Familiar:</strong> A linguagem Java contém um pequeno, porém consistente, núcleo de conceitos fundamentais que podem ser aprendidos rapidamente. Ela foi modelada originalmente seguindo a então popular linguagem C++ para que os programadores pudessem migrar sem problemas para o Java. Além disso, ela adere a um paradigma <em>orientado a objeto</em>; os sistemas são compostos de objetos encapsulados que se comunicam por meio do envio de mensagens de um para o outro.</li>
+
+                <li><strong>Robusta e Segura:</strong> A linguagem inclui verificação de runtime e de tempo de compilação para garantir que os erros sejam identificados rapidamente. Ela também contém funcionalidades de segurança de acesso a arquivos e à rede para que as aplicações distribuídas não sejam comprometidas por invasões ou por terem sido corrompidas.</li>
+
+                <li><strong>Arquitetura Neutra e Portátil:</strong> Uma das principais vantagens do Java é sua <em>portabilidade</em>. As aplicações podem ser facilmente transferidas de uma plataforma para outra com pouquíssimas ou nenhuma modificação. O slogan “Escreva uma vez, execute em qualquer lugar” acompanhou a release Java 1.0 em 1995, e se refere aos benefícios entre plataformas da linguagem.</li>
+
+                <li><strong>Alto Desempenho:</strong> As aplicações são executadas de maneira rápida e eficiente, devido Business-to-businessas várias funcionalidades de baixo nível, como permitir que o interpretador Java seja executado independentemente do ambiente de execução e aplicar um coletor automático de lixo para liberar a memória não usada.</li>
+
+                <li><strong>Interpretada, Segmentada e Dinâmica:</strong> Com Java, o código fonte de um desenvolvedor é compilado em uma forma interpretada e intermediária, conhecida como <em>código de bytes</em>. O conjunto instrucional do código de bytes se refere à linguagem de máquina usada pela Máquina Virtual Java (JVM). Usando um interpretador adequado, essa linguagem pode ser convertida em <em>código nativo</em> para a plataforma em que será executada. O suporte aos recursos de multithreading é oferecido principalmente pela classe <code>Thread</code>, permitindo a execução de várias tarefas simultaneamente. A linguagem e o sistema de execução são dinâmicos, de forma que as aplicações possam se adaptar às mudanças do ambiente durante a execução.</li>
+            </ol>
+
+            <p>Caso deseje saber mais sobre a linguagem Java, consulte <a href="http://java.sun.com/docs/books/tutorial/" target="_blank">Tutoriais Java</a>.</p>
+
+
+            <h3 id="platform">Java como uma Plataforma</h3>
+
+            <p>A Plataforma Java significa uma plataforma baseada em software que é composta de duas partes:</p>
+
+            <ul>
+                <li><strong>A Máquina Virtual Java (JVM)</strong>: A JVM é um mecanismo que executa instruções geradas pelo compilador Java. A JVM pode ser considerada uma instância do Java Runtime Environment, ou JRE, e é incorporada a diversos produtos, como browsers, servidores e sistemas operacionais.</li>
+
+                <li><strong>A Java Application Programming Interface (API)</strong>: código pré-escrito, organizado em pacotes de tópicos semelhantes. Por exemplo: os pacotes AWT e Applet incluem classes para criação de fontes, menus e botões.</li>
+            </ul>
+
+            <p>O Java Development Kit, ou JDK, se refere ao Java SE Edition, enquanto que os outros kits são chamados de “SDK”, um termo genérico para “kits de desenvolvimento de software”. Por exemplo, o <a href="http://java.sun.com/javaee/sdk/" target="_blank">Java EE SDK</a>.<sup><a href="#footnote2" id="2" style="text-decoration:none">[2]</a></sup></p>
+
+            <p>Você pode ver uma representação da plataforma Java ao observar o diagrama conceitual das tecnologias de componentes fornecido na <a href="http://download.oracle.com/javase/6/docs/index.html" target="_blank">Documentação do JDK</a>. Como mostrado abaixo, o diagrama é interativo, permitindo que você clique em componentes para saber mais sobre cada uma das tecnologias. <br> <img alt="Diagrama de JDK 6" class="margin-around" src="../../../../images_www/articles/73/javaee/ecommerce/intro/jdk-diagram.png" title="A plataforma Java representada pelo JDK"></p>
+
+            <p>Como indicado pelo diagrama, o JDK inclui o Java Runtime Environment (JRE). Você solicita ao JRE a execução do software, e solicita ao JDK o desenvolvimento do software. Os dois podem ser adquiridos em <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Downloads do Java SE</a>.</p>
+
+            <p>A plataforma Java é oferecida em diversas <em>edições</em>, como <a href="http://java.sun.com/javase/" target="_blank">Java SE</a> (Standard Edition), <a href="http://java.sun.com/javame/index.jsp" target="_blank">Java ME</a> (Micro Edition) e <a href="http://java.sun.com/javaee/" target="_blank">Java EE</a> (Enterprise Edition).</p>
+
+
+            <h3>Java EE</h3>
+
+            <p>A Plataforma Java, Enterprise Edition (Java EE) se baseia na plataforma Java SE e fornece um conjunto de tecnologias para o desenvolvimento e a execução de aplicações portáteis, robustas, escalonáveis, confiáveis e seguras do lado do servidor.</p>
+
+            <p>As tecnologias EE são divididas, de forma geral, em duas categorias:</p>
+
+            <ul>
+                <li><a href="http://java.sun.com/javaee/technologies/webapps/" target="_blank">Tecnologias de aplicações Web</a></li>
+                <li><a href="http://java.sun.com/javaee/technologies/entapps/" target="_blank">Tecnologias de aplicações do Enterprise</a></li>
+            </ul>
+
+            <p>Dependendo das suas necessidades, você pode usar certas tecnologias de cada uma das categorias. Por exemplo, este tutorial usa as tecnologias “web” <a href="http://java.sun.com/products/servlet/index.jsp" target="_blank">Servlet</a>, <a href="http://java.sun.com/products/jsp/" target="_blank">JSP/EL</a> e <a href="http://java.sun.com/products/jsp/jstl/" target="_blank">JSTL</a>, além das tecnologias “enterprise” <a href="http://java.sun.com/products/ejb/" target="_blank">EJB</a> e <a href="http://java.sun.com/javaee/technologies/persistence.jsp" target="_blank">JPA</a>.</p>
+
+            <p>O Java EE domina atualmente o mercado, especialmente no setor financeiro. O diagrama a seguir foi tirado de uma
+                <!-- <a href="http://www.sun.com/aboutsun/media/analyst/european_fsa.pdf"> -->
+                <a href="http://docs.google.com/viewer?a=v&q=cache:2NNYG8LtVFIJ:www.sun.com/aboutsun/media/analyst/european_fsa.pdf+european_fsa.pdf&hl=en&pid=bl&srcid=ADGEESi3vpbc32J7GzXFiqk__DvMp7_3deYe9td-HP3_QEXh77yBABi35uvL1z7ytj6o17io7_YFPnRFmhju5PQgrpgjVxt-2qXQSUh8xGUbeNP0k00dDsiq1Tl0DWJLOEH3SNubhit5&sig=AHIEtbTKL5tks3AlgEt57h4Aku_H55OXag" target="_blank">pesquisa independente dos mercados europeus</a>, realizada em 2007.</p>
+
+                <div class="indent">
+                    <img alt="Pesquisa Java EE vs .Net" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/intro/java-ee-vs-net.png" title="O Java EE domina o mercado financeiro">
+                </div>
+
+            <p class="tips">Para obter uma comparação informal e recente entre o Java EE e o .NET, consulte a publicação do blog <a href="http://www.adam-bien.com/roller/abien/entry/java_ee_or_net_an" target="_blank">Java EE ou .NET-Uma opinião quase imparcial</a> escrita por um ilustre membro da comunidade Java EE.</p>
+
+
+            <h3>Qual a Diferença Entre...?</h3>
+
+            <p>Há muitas abreviações e siglas para fazer parsing. Caso você seja novo em tudo isto e ache a explicação acima um tanto confusa, os recursos a seguir poderão ajudá-lo a entender as diferenças entre algumas das terminologias mais usadas.</p>
+
+            <ul>
+                <li><a href="http://www.java.com/en/download/faq/jre_jdk.xml" target="_blank">Qual a Diferença entre o JRE e o JDK?</a></li>
+                <li><a href="http://www.java.com/en/download/faq/java_diff.xml" target="_blank">Qual a Diferença entre a plataforma Java SE e JRE?</a></li>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaee-faq-jsp-135209.html#diff" target="_blank">Qual a Diferença entre Java EE e J2EE?</a></li>
+                <li><a href="http://java.sun.com/new2java/programming/learn/unravelingjava.html" target="_blank">Destrinchando a Terminologia Java</a></li>
+            </ul>
+
+        </div>
+
+
+        <br>
+        <h2 id="jcp">O que é o Processo da Comunidade Java?</h2>
+
+        <p>O <a href="http://jcp.org/" target="_blank">Processo de Comunidade Java</a> (JCP) é um programa que gerencia o desenvolvimento de especificações técnicas padrão para a tecnologia Java. O JCP cataloga Solicitações de Especificação Java (JCP), que são propostas formais que documentam as tecnologias que serão adicionadas à plataforma Java. Os JSRs são executados por um <em>Grupo de Especialistas</em>, que é formado normalmente por representantes de empresas que possuem interesse no setor. O JCP permite o crescimento da tecnologia Java, bem como sua adaptação às necessidades e tendências da comunidade.</p>
+
+        <p>Os JSRs das tecnologias usadas e referenciadas neste tutorial incluem o seguinte:</p>
+
+        <ul>
+            <li><a href="http://jcp.org/en/jsr/summary?id=52" target="_blank">JSR 52: Uma Biblioteca de Tags Padrão para JavaServer Pages</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=245" target="_blank">JSR 245: JavaServer Pages 2.1</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=315" target="_blank">JSR 315: Java Servlet 3.0</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=316" target="_blank">JSR 316: Plataforma Java, Enterprise Edition 6</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=317" target="_blank">JSR 317: Java Persistence 2.0</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=318" target="_blank">JSR 318: Enterprise JavaBeans 3.1</a></li>
+        </ul>
+
+        <p>Você pode usar o <a href="http://jcp.org/" target="_blank">website do JCP</a> para procurar JSRs individuais. Você também pode exibir todas as tecnologias EE atuais (Java EE 6) em:</p>
+
+        <ul>
+            <li><a href="http://java.sun.com/javaee/technologies/index.jsp" target="_blank">http://java.sun.com/javaee/technologies/index.jsp</a></li>
+        </ul>
+
+        <p>As tecnologias Java EE 5 estão listadas em:</p>
+
+        <ul>
+            <li><a href="http://java.sun.com/javaee/technologies/javaee5.jsp" target="_blank">http://java.sun.com/javaee/technologies/javaee5.jsp</a></li>
+        </ul>
+
+        <p>Uma release final do JSR fornece uma <em>implementação de referência</em>, que é uma implementação grátis da tecnologia. Neste tutorial, você utilizará essas implementações para desenvolver a aplicação de e-commerce de amostra. Por exemplo, o servidor de aplicações GlassFish v3, que é fornecido com o pacote de download Java padrão para <a href="https://netbeans.org/downloads/6.8/index.html" target="_blank">NetBeans 6.8</a>, é a implementação de referência da especificação da plataforma Java EE 6 (<a href="http://jcp.org/en/jsr/summary?id=316" target="_blank">JSR 316</a>). Como uma implementação de referência para a plataforma Java EE, ele inclui implementações de referência para as tecnologias incluídas na plataforma, como Servlet, EJB e JPA.</p>
+
+
+        <br>
+        <h2 id="ide">Por que usar um IDE?</h2>
+
+        <p>Em primeiro lugar, o termo <em>IDE</em> significa <em>ambiente de desenvolvimento integrado</em>. O propósito de um IDE sempre foi maximizar a produtividade do desenvolvedor ao fornecer ferramentas e suporte como:</p>
+
+        <ul class="toc">
+            <li>um editor de código fonte</li>
+            <li>ferramentas de automação de compilação e um compilador</li>
+            <li>um sistema de janelas para exibição de projetos e seus artefatos</li>
+            <li>integração a outros serviços comumente usados</li>
+            <li>suporte à depuração</li>
+            <li>suporte à criação de perfis</li>
+        </ul>
+
+        <p>Considere o que seria necessário, caso desejasse criar manualmente uma aplicação web baseada em Java. Após instalar o <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a>, você precisaria configurar seu ambiente de desenvolvimento executando as seguintes etapas.<sup><a href="#footnote3" id="3" style="text-decoration:none">[3]</a></sup></p>
+
+        <ol>
+            <li>Configure a variável de ambiente <code>PATH</code> para apontar para a instalação do JDK.</li>
+
+            <li>Faça download e configure um servidor que implemente as tecnologias que planeja usar.</li>
+
+            <li>Crie um diretório de desenvolvimento onde você planeja criar e trabalhar na aplicação web. Além disso, você é o responsável por configurar a estrutura de diretórios da aplicação para que ela possa ser entendida pelo servidor. (Por exemplo, consulte <a href="http://java.sun.com/blueprints/code/projectconventions.html#99632" target="_blank">Java BluePrints: Estratégias para Aplicações Web</a> para obter uma estrutura recomendada.)</li>
+
+            <li>Defina a variável de ambiente <code>CLASSPATH</code> para incluir o diretório de desenvolvimento, além de todos os arquivos JAR necessários.</li>
+
+            <li>Estabeleça um método de implantação, ou seja, uma forma de copiar recursos do diretório de desenvolvimento para a área de implantação do servidor.</li>
+
+            <li>Marque ou instale a documentação da API relevante.</li>
+        </ol>
+
+        <p>Para fins educativos, vale a pena criar e executar manualmente um projeto Java Web para que você aprenda todas as etapas necessárias envolvidas. Chegará uma hora, no entanto, em que você precisará considerar o uso de ferramentas que reduzam ou eliminem a necessidade da realização de tarefas repetitivas e entediantes, permitindo, assim, que você se concentre no desenvolvimento do código que resolverá necessidades de negócios específicas. Um IDE simplifica o processo descrito acima. Como demonstrado na Unidade 3, <a href="setup-dev-environ.html">Configurando o Ambiente de Desenvolvimento</a>, você instalará o NetBeans IDE com o servidor de aplicações GlassFish, e poderá configurar um projeto de aplicação web com uma estrutura de diretórios convencional usando um assistente simples de 3 etapas. Além do mais, o IDE fornece a documentação da API incorporada, que você pode chamar conforme codifica no editor ou manter aberta em uma janela externa.</p>
+
+        <p>Um IDE também costuma tratar a implantação e compilação do projeto de uma forma transparente a você como um desenvolvedor. Por exemplo, o projeto Web que você cria no NetBeans inclui um script de construção Ant que é usado para compilar, limpar, encapsular e implantar o projeto. Isso significa que você pode executar seu projeto a partir do IDE e ele será automaticamente compilado e implantado e, depois, será aberto no browser default. Indo um pouco mais além, muitos IDEs oferecem suporte à funcionalidade Implantar ao salvar. Em outras palavras, sempre que alterações forem salvas em seu projeto, a versão implantada no servidor será atualizada automaticamente. Basta mudar para o browser e atualizar a página para que as alterações sejam exibidas.</p>
+
+        <p>Os IDEs também fornecem modelos de vários tipos de arquivos e costumam permitir que eles sejam adicionados ao projeto, sugerindo os locais mais comuns e incluindo informações de configuração default onde for necessário.</p>
+
+        <p>Além do “suporte básico” descrito acima, os IDEs costumam fornecer interfaces a serviços e ferramentas externos (ex.: servidores de banco de dados e de aplicações, Web services, recursos de criação de perfis e depuração, e ferramentas de colaboração), que são indispensáveis ao seu trabalho, caso desenvolvimento em Java seja sua profissão.</p>
+
+        <p>Por fim, os IDEs geralmente fornecem suporte a editor aprimorado. O editor é onde você provavelmente gastará a maior parte do tempo trabalhando. Os editores IDE costumam incluir destaque de sintaxe, recursos de refatoração, atalhos de teclado, autocompletar código, dicas e mensagens de erro, tudo para ajudá-lo a trabalhar de forma mais eficiente e inteligente.</p>
+
+
+        <br>
+        <h2 id="netBeans">Por que usar o NetBeans?</h2>
+
+        <p>O NetBeans IDE é um ambiente de desenvolvimento integrado e gratuito de código aberto escrito totalmente em Java. Ele oferece uma variedade de ferramentas para criar aplicações profissionais de área de trabalho, empresariais, Web e móveis com a linguagem Java, C/C++ e, até mesmo linguagens de script como PHP, JavaScript, Groovy e Ruby.</p>
+
+        <p>Muitas pessoas estão elogiando o NetBeans. Para obter uma lista de opiniões, consulte <a href="../../../../features/ide/testimonials.html" target="_blank">Testemunhos sobre o NetBeans IDE</a>. Muitos desenvolvedores estão migrando suas aplicações de outros IDEs para o NetBeans. Para saber as razões, leia <a href="../../../../switch/realstories.html" target="_blank">Histórias Reais de Pessoas que Migraram para o NetBeans IDE</a>.</p>
+
+        <p>O IDE tem muitas <a href="../../../../features/web/index.html" target="_blank">funcionalidades para desenvolvimento na web</a>, e várias vantagens em relação aos outros IDEs. Eis alguns pontos que merecem destaque:</p>
+
+        <ul>
+            <li><strong>Pronto para Ser Usado:</strong> Basta fazer download, instalar e executar o IDE. Graças ao seu tamanho reduzido, a instalação é simples e rápida. O IDE pode ser executado em muitas plataformas, incluindo Windows, Linux, Mac OS X e Solaris. Todas as ferramentas e funcionalidades do IDE são completamente integradas, não há necessidade de caçar plug-ins e elas trabalham juntas quando o IDE é inicializado.</li>
+
+            <li><strong>Grátis e Código-Fonte Aberto:</strong> Ao usar o NetBeans IDE, você estará entrando em uma <a href="../../../../community/index.html" target="_blank">comunidade de código fonte aberto</a>, com milhares de usuários prontos para ajudar e contribuir. Há discussões nas <a href="../../../../community/lists/index.html" target="_blank">listas de correspondência do projeto NetBeans</a>, blogs no <a href="http://www.planetnetbeans.org/" target="_blank">Planet NetBeans</a>, além de tutoriais FAQs úteis no <a href="http://wiki.netbeans.org/" target="_blank">wiki da comunidade</a>.</li>
+
+            <li><strong>Ferramentas de Depuração e Criação de Perfis:</strong> com o <a href="../../../../features/java/profiler.html">criador de perfis</a> do NetBeans IDE, você tem uma ideia, em tempo real, de uso de memória e possíveis gargalos de desempenho. Além disso, você pode instrumentar partes específicas do código para evitar a degradação do desempenho durante a criação de perfis. A ferramenta <a href="http://profiler.netbeans.org/docs/help/6.0/heapwalker.html" target="_blank">HeapWalker</a> ajuda a avaliar o conteúdo da pilha Java e a encontrar vazamentos de memória.</li>
+
+            <li><strong>Projetos Personalizáveis:</strong> por meio do processo de compilação do NetBeans IDE, que se baseia nos padrões da indústria, como <a href="http://ant.apache.org/" target="_blank">Apache Ant</a>, <a href="http://www.gnu.org/software/make/" target="_blank">make</a>, <a href="http://maven.apache.org/" target="_blank">Maven</a> e <a href="http://rake.rubyforge.org/" target="_blank">rake</a>, em vez de um processo de compilação proprietário, você pode personalizar facilmente projetos e funcionalidades. Você pode compilar, executar e implantar projetos em servidores fora do IDE.</li>
+
+            <li><strong>Ferramentas de Colaboração:</strong> o IDE fornece suporte incorporado aos sistemas de controle de versão, como CVS, Subversion e Mercurial.</li>
+
+            <li><strong>Documentação Extensa:</strong> Existe uma grande quantidade de dicas e instruções no conjunto de ajuda incorporada do IDE. Basta pressionar F1 (fn-F1 no Mac) em um componente do IDE para chamar o conjunto de ajuda. Além disso, a <a href="../../../index.html" target="_blank">base de conhecimento oficial</a> do IDE fornece centenas de tutoriais on-line, artigos e <a href="../../intro-screencasts.html" target="_blank">screencasts</a> que são frequentemente atualizados.</li>
+        </ul>
+
+        <p>Para obter uma lista mais extensa das razões pelas quais você deve escolher o NetBeans, consulte <a href="../../../../switch/why.html" target="_blank">NetBeans IDE Conecta Desenvolvedores</a>.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Introduction">Envie-nos Seu Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">Consulte Também</h2>
+
+        <div class="indent">
+            <h3>Recursos On-line</h3>
+
+                <ul>
+                    <li><a href="http://java.sun.com/docs/books/tutorial/" target="_blank">Os Tutoriais Java</a></li>
+                    <li><a href="http://www.oracle.com/technetwork/java/javaee/javaee-faq-jsp-135209.html" target="_blank">Perguntas Frequentes sobre o Java EE</a></li>
+                    <li><a href="http://java.sun.com/javaee/reference/apis/" target="_blank">APIs e Documentos do Java EE</a></li>
+                    <li><a href="http://java.sun.com/new2java/programming/learn/unravelingjava.html" target="_blank">Destrinchando a Terminologia Java</a></li>
+                    <li><a href="http://www.java.com/en/javahistory/index.jsp" target="_blank">A História da Tecnologia Java</a></li>
+                    <li><a href="http://java.sun.com/new2java/gettingstarted.jsp" target="_blank">Novo no Centro de Programação Java</a></li>
+                </ul>
+
+            <h3>Livros</h3>
+
+            <ul>
+                <li><a href="http://www.apress.com/book/view/1590598954" target="_blank">Pro NetBeans IDE 6 Rich Client Platform Edition</a></li>
+
+                <li><a href="http://www.informit.com/store/product.aspx?isbn=0130092290" target="_blank">Core Servlets and JavaServer Pages, Volume 1: Core Technologies, 2nd Edition</a></li>
+
+                <li><a href="http://www.informit.com/store/product.aspx?isbn=0131482602" target="_blank">Core Servlets and JavaServer Pages, Volume 2: Advanced Technologies, 2nd Edition</a></li>
+
+                <li><a href="http://java.sun.com/docs/books/faq/" target="_blank">As Perguntas Frequentes sobre Java</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>Referências</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> A ficha técnica, <a href="http://java.sun.com/docs/white/langenv/Intro.doc2.html" target="_blank">O Ambiente da Linguagem Java</a>, descreve os 5 princípios de um design.</li>
+
+            <li id="footnote2"><a href="#2" style="text-decoration:none">^</a> Os números e nomes da versão atual estão definidos em <a href="http://download.oracle.com/javase/6/webnotes/version-6.html" target="_blank">Java SE 6, Nome e Números de Versão da Plataforma</a>.</li>
+
+            <li id="footnote3"><a href="#3" style="text-decoration:none">^</a> Essas etapas se baseiam, em grande parte, nas etapas descritas no Capítulo 2: Instalação e Configuração do Servidor, de <a href="http://pdf.coreservlets.com/" target="_blank">Core Servlets e JavaServer Pages</a>, de Marty Hall e Larry Brown. Este livro está disponível gratuitamente no formato PDF em: <a href="http://pdf.coreservlets.com/" target="_blank">http://pdf.coreservlets.com/</a></li>
+        </ol>
+
+    </body>
+</html>

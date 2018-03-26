@@ -1,0 +1,717 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>       
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">        
+        <meta name="description" content="A short introduction to the Wicket web framework
+              in NetBeans IDE">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Wicket, wereplacedb frameworks, open source">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+        <title>Wicket Webフレームワーク入門 - NetBeans IDEチュートリアル</title>
+    </head>
+
+    <body>
+        <h1>Wicket Webフレームワーク入門</h1>
+
+        <p>このドキュメントは、再利用可能なコンポーネントを作成し、それらを組み合せてWebアプリケーションを作成する場合の基本事項について説明します。各コンポーネントは、JavaクラスとHTMLファイルで構成されます。この方法によるアプリケーションの開発を可能にするフレームワークはWicketと呼ばれます。コンポーネント・ベースのアプローチ以外のWicketの際立った特徴は、XML構成ファイルを使用しないことです。XML構成ファイルのかわりに、ホーム・ページのIDなどのアプリケーション全体に関係する設定にはJavaクラスを使用します。 <p>Webアプリケーション内の各ウィジェットは、Javaクラスで作成され、HTMLページにレンダリングされます。JavaクラスおよびHTMLページは、同じ名前を持ち、同じソース構造に存在する必要があります。Wicket識別子によって相互にリンクされます。少ない労力でWebアプリケーションに一貫性のあるルック・アンド・フィールをもたらす再利用可能なコンポーネントを迅速かつ効率的に作成できるように、IDEでのWicketアプリケーションの開発のサポートについて説明します。</p>
+
+        <p><strong>目次</strong></p>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#setup">環境の設定</a>
+                <ul>
+                    <li><a href="#creating">Wicketアプリケーションのソース構造の作成</a>
+                        <ul>
+                            <li><a href="#create-1">シナリオ1: AntベースのWicketアプリケーションの一からの作成</a></li>
+                            <li><a href="#create-2">シナリオ2: MavenベースのWicketアプリケーションの一からの作成</a></li>
+                            <li><a href="#create-3">シナリオ3: MavenベースのWicketアプリケーションの原型からの作成</a></li>
+                            <li><a href="#create-4">シナリオ4: 既存のアプリケーションへのWicketサポートの追加</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#libraries">Wicketの代替バージョンのサポートの提供</a></li>
+                    <li><a href="#examining">生成されたWicketアプリケーションのソース構造の確認</a></li>
+                </ul>
+            </li>
+            <li><a href="#features">Wicketの機能の使用</a>
+                <ul>
+                    <li><a href="#widget">ウィジェットの追加</a>
+                    <li><a href="#component">再利用可能なコンポーネントの追加</a></li>
+                    <li><a href="#ajax">AJAX機能の追加</a></li>                      
+                </ul>
+            </li>  
+            <li><a href="#next">次の手順</a></li>
+            <li><a href="#seeAlso">関連項目</a></li>
+        </ul>
+
+        <p><strong>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE</td>
+                </tr>                
+                <tr>
+                    <td class="tbltd1">Java Development Kit (JDK)</td>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">バージョン7</a>以降</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">NetBeans IDE用Wicketプラグイン</td>
+                    <td class="tbltd1"><a href="http://plugins.netbeans.org/plugin/3586/wicket-support">NetBeans Wicketプラグイン・ページ</a></td>
+                </tr>               
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition<br><em class="indent margin-around">または</em><br>Tomcatサーブレット・コンテナ</td>
+                    <td class="tbltd1">3.1.x以降<br><em class="margin-around indent">&nbsp;</em> <br>バージョン7.x以降</td>
+                </tr>                                 
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注意: </strong></p>
+
+        <ul>
+            <li>NetBeans用Wicketサポート・プラグインは、次のモジュールで構成されます。
+
+                <ul>
+                    <li><b>org-netbeans-modules-web-wicket.nbm。</b>このチュートリアルで使用されるWicket固有の機能を提供します。</li>
+                    <li><b>org-netbeans-modules-wicket-templates.nbm。</b>ページやパネルなどの一般的なWicketアーティファクトを作成するためのWicketファイルレベル・テンプレートを提供します。</li>
+                    <li><b>org-netbeans-modules-wicket-library.nbm。</b>Wicket JARを提供します。IDEのライブラリ・マネージャにインストールします。したがって、必要なものがすべてプラグインに含まれているため、WicketサイトからWicketディストリビューションをダウンロードする必要はありません。</li>
+                </ul></li>
+
+            <li>Wicketサポート・プラグインをIDEにインストールするには、プラグイン・マネージャ(メイン・メニューから「ツール」>「プラグイン」)に移動し、「ダウンロード済」タブのプラグインをインストールします。IDEへのフレームワーク・プラグインのインストール方法の詳細は、<a href="framework-adding-support.html">「Webフレームワークのサポートの追加」</a>を参照してください。</li>
+
+
+            <li>      
+                Wicketの詳細は、<a href="http://wicket.sourceforge.net/">http://wicket.sourceforge.net/</a>を参照してください。NetBeans IDEでのWicketのサポートの開発ページは、<a href="http://java.net/projects/NbWicketSupport">http://java.net/projects/NbWicketSupport</a>を参照してください。Wicketに精通している場合は、NetBeans IDE用Wicketプラグインにコードを提供してください。</li>            
+
+        </ul>   
+
+        <a name="setup"></a>
+        <h2>環境の設定</h2>
+
+        <p>Wicketアプリケーションの作成を開始する前に、必要なソフトウェアがすべてあること、およびプロジェクトが正しく設定されていることを確認する必要があります。前述のとおり、NetBeans IDE用Wicketサポート・プラグインをインストールすると、Wicketアプリケーションに必要なすべての基本的なファイルを設定するウィザードが使用可能になります。</p>
+
+        <div class="indent">
+
+            <a name="creating"></a>
+            <h3>Wicketアプリケーションのソース構造の作成</h3>
+
+            <p>アプリケーションのソース構造には、Wicket JARファイル、<tt>web.xml</tt>ファイルでのWicketサーブレットの登録、およびアプリケーション・クラスやホーム・ページなどの標準的なアーティファクトが含まれている必要があります。IDEを使用しているため、これらすべてのファイルを手動で作成する必要はありません。かわりに、この処理を行うウィザードがあります。</p>
+
+            <p>ニーズに応じて、次のシナリオのうち適切ななものを1つ選択します。</p>
+
+            <ul>
+                <li><a href="#create-1">シナリオ1: AntベースのWicketアプリケーションの一からの作成</a></li>
+                <li><a href="#create-2">シナリオ2: MavenベースのWicketアプリケーションの一からの作成</a></li>
+                <li><a href="#create-3">シナリオ3: MavenベースのWicketアプリケーションの原型からの作成</a></li>
+                <li><a href="#create-4">シナリオ4: 既存のアプリケーションへのWicketサポートの追加</a></li>
+            </ul>
+
+            <div class="indent">
+
+                <h4><a name="create-1"></a>シナリオ1: AntベースのWicketアプリケーションの一からの作成</h4>
+
+                <p>IDEで新しいWebアプリケーションを作成する場合、Webアプリケーション・ウィザードの最後のパネルがWicketアプリケーションのコンテキストで非常に役立ちます。</p>
+
+                <ol>
+                    <li>「ファイル」>「新規プロジェクト」を選択します。「カテゴリ」から「Web」を選択します。「プロジェクト」で「Webアプリケーション」を選択します。「次」をクリックします。</li>
+                    <li>「名前と場所」パネルで、「プロジェクト名」に「<tt>MyFirstWicketApp</tt>」と入力します。「プロジェクトの場所」を使用コンピュータ上の任意のフォルダに変更します。「次」をクリックします。
+                    <li>すべての設定を未変更のままにします。あるいは、必要に応じて変更することもできます。Wicketは、Java EEのどのバージョンでもサポートします。Wicketアプリケーションは任意のサーバーにデプロイできます。「次」をクリックします。
+                    <li><p>「フレームワーク」パネルで、次に示すように、「Wicket」を選択します。</p>
+
+                        <p><p class="align-left"><img alt="フレームワーク1" src="https://blogs.oracle.com/geertjan_images/resource/wicket-160-nb.png">
+
+                        <p class="notes"><b>注意: </b>IDEにインストールされているモジュールに応じて、上のスクリーンショットに示された「フレームワーク」リストに表示される項目は異なります。
+
+                        <p>前述のパネルで、すべてのデフォルトを未変更のままにします。前述のパネルのフィールドは、次のとおりです。
+
+                        <p><ul>
+                            <li><b>Wicketフィルタ名。</b><tt>web.xml</tt>ファイルで定義されるフィルタの名前を示します。
+                            <li><b>Wicket URLパターン。</b><tt>web.xml</tt>ファイルに相対URLパターンを追加します。
+                            <li><b>Wicketアプリケーション・クラス。</b>ホーム・ページなどのアプリケーション全体に関係する設定を設定するクラスの名前を指定します。
+                            <li><b>Wicketホーム・ページ。</b><tt>xxx.java</tt>および<tt>xxx.html</tt>という名前のファイルで構成されるホーム・ページの名前を指定します。
+                            <li><b>メイン・パッケージ。</b>生成されたすべてのアーティファクトがIDEによって格納されるJavaパッケージ。
+                            <li><b>バージョン。</b>Wicketのバージョン。名前が"Wicket"で始まるライブラリ・マネージャ内のライブラリが前述の「バージョン」ドロップダウンにリストされます。プラグインに含まれているバージョンは1.6.0のため、デフォルトでリストされるバージョンは1.6.0のみです。
+                        </ul>
+                    <li>「終了」をクリックします。
+
+                </ol>
+
+                <p>IDEによって<tt>MyFirstWicketApp</tt>プロジェクトが作成されます。プロジェクトには、すべてのソースおよびプロジェクト・メタデータ(プロジェクトのAntビルド・スクリプトなど)が含まれます。IDEでプロジェクトが開きます。「プロジェクト」ウィンドウ([Ctrl]-[1])で、論理構造を表示できます。
+
+                <p><p class="align-left"><img alt="初期「プロジェクト」ウィンドウ。" src="https://blogs.oracle.com/geertjan_images/resource/wicket-160-nb-2.png">
+
+                <h4><a name="create-2"></a>シナリオ2: MavenベースのWicketアプリケーションの一からの作成</h4>
+
+                <p>すでにAntベースのアプリケーションがある場合、IDEを使用してWicketサポートを追加できます。</p>
+
+                <ol>
+                    <li>「ファイル」>「新規プロジェクト」を選択します。「カテゴリ」から「Maven」を選択します。「プロジェクト」で「Webアプリケーション」を選択します。
+                        <p><p class="align-left"><img alt="ハイパーリンクのHTML側。" src="../../../images_www/articles/74/web/wicket/maven-1.png">
+                        <p>「次」をクリックします。</p>    
+                    </li>
+                    <li>「名前と場所」パネルで、「プロジェクト名」に「<tt>MyFirstWicketApp</tt>」と入力します。必要に応じてプロジェクトの場所とデフォルトのMaven設定を変更します。
+                        <p><p class="align-left"><img alt="ハイパーリンクのHTML側。" src="../../../images_www/articles/74/web/wicket/maven-3.png">
+                        <p>「次」をクリックします。</p>    
+                    </li>
+                    <li>ニーズに合う適切なサーバーを選択し、「Java EEバージョン」設定に「Java EE 6 Web」を選択します。
+                        <p><p class="align-left"><img alt="ハイパーリンクのHTML側。" src="../../../images_www/articles/74/web/wicket/maven-4.png">
+                        <p>「終了」をクリックします。IDEは、次に示すようなソース構造を作成します。</p>    
+                        <p><p class="align-left"><img alt="ハイパーリンクのHTML側。" src="../../../images_www/articles/74/web/wicket/maven-5.png">
+                    </li>
+                    <li><p>Java EE 6のサポートを追加したため、前述の手順で<tt>web.xml</tt>ファイルは作成されていません。しかし、WicketではWicketアプリケーション・フィルタを<tt>web.xml</tt>ファイルに登録する必要があります。したがって、先に進む前に<tt>web.xml</tt>ファイルをアプリケーションに追加します。</p>
+                        <p>アプリケーションを右クリックし、「新規」>「その他」を選択し、続けて「Web」>「標準のデプロイメント・ディスクリプタ(web.xml)」を選択します。「次」をクリックし、「終了」をクリックします。</p>
+                    </li>
+                    <li><p>これで、アプリケーションにWicketサポートを追加する準備ができました。プロジェクト・ノードを右クリックし、「プロパティ」を選択します。「プロジェクト・プロパティ」ダイアログで、「フレームワーク」を選択し、「Wicket」をクリックします。前の項の説明を使用して、ダイアログのWicket構成部分の詳細を指定します。「OK」をクリックします。</p>
+                        <p>IDEによって、必要なWicketファイルがすべて作成されます。</p>
+                        <p><p class="align-left"><img alt="ハイパーリンクのHTML側。" src="../../../images_www/articles/74/web/wicket/maven-6.png">
+                    </li>
+                </ol>
+
+                <h4><a name="create-3"></a>シナリオ3: MavenベースのWicketアプリケーションの原型からの作成</h4>
+
+                <p>原型は、Wicketアプリケーションを設定するためのMavenリポジトリにあります。</p>
+
+                <ol>
+                    <li><p>「ファイル」>「新規プロジェクト」を選択します。「カテゴリ」から「Maven」を選択します。「プロジェクト」で、「原型からのプロジェクト」を選択します。</p>
+                        <p><p class="align-left"><img alt="ハイパーリンクのHTML側。" src="../../../images_www/articles/74/web/wicket/maven-7.png">
+                        <p>「次」をクリックします。</p>
+                    </li>
+                    <li><p>「検索」フィールドに"wicket"と入力し、使用する原型を選択します。</p>
+                        <p><p class="align-left"><img alt="ハイパーリンクのHTML側。" src="../../../images_www/articles/74/web/wicket/maven-8.png">
+                        <p>ニーズに合った値を使用してウィザードを完了します。「終了」をクリックします。</p>
+                    </li>
+                </ol>
+
+                <p>IDEによって、原型から作成されたアプリケーションにWicketサポートが追加されます。</p>
+
+                <h4><a name="create-4"></a>シナリオ4: 既存のアプリケーションへのWicketサポートの追加</h4>
+
+                <p>すでにアプリケーションがある場合、Antで作成されたか、Mavenで作成されたかに関係なく、IDEを使用してWicketサポートを追加できます。</p>
+
+                <ol>
+                    <li>アプリケーションを右クリックし、「プロパティ」を選択します。</li>
+                    <li>「プロジェクト・プロパティ」ダイアログで、「フレームワーク」パネルを選択し、「追加」を選択します。「Wicket」を選択します。「OK」をクリックします。</li>
+                    <li>前の項の説明を使用して、「フレームワーク」パネルでWicket構成を指定します。</li>
+                    <li>「OK」をクリックして続行します。</li>
+                </ol>
+
+                <p>IDEによって、既存のアプリケーションにWicketサポートが追加されます。</p>
+
+            </div>
+
+            <p>次の項で、生成された各ファイルについて詳細に説明します。
+
+            <h3><a name="libraries"></a>Wicketの代替バージョンのサポートの提供</h3>
+
+            <p>NetBeansプラグインに含まれているWicketのバージョンが、必要なバージョンでない場合があります。次の手順を実行し、Wicketの代替バージョンを登録して使用します。</p>
+
+            <ol>
+                <li><p>「ツール」|「Antライブラリ」に移動します。NetBeans Wicketプラグインで登録されたWicket JARが使用可能であることに注意してください。</p>
+                    <p><p class="align-left"><img alt="Antライブラリ" src="../../../images_www/articles/74/web/wicket/maven-9.png">
+                </li>
+                <li>前述のダイアログで「新規ライブラリ」をクリックして、"Wicket"で始まる名前の新しいライブラリを作成します。JARをライブラリに追加します。つまり、希望のバージョンのWicketのJARを、作成したライブラリに登録します。</li>
+                <li><p>次に新規のWebアプリケーションを作成する際、あるいは既存のアプリケーションにWicketサポートを追加する際、新たに登録したライブラリが("Wicket"で始まる名前であれば)「フレームワーク」パネルに表示されます。</p>
+                    <p><p class="align-left"><img alt="Antライブラリ" src="../../../images_www/articles/74/web/wicket/maven-91.png">
+                    <p>ウィザードを完了すると、選択したライブラリに登録されたJARが、アプリケーションのクラスパスに追加されます。</p>
+                </li>
+            </ol>
+
+            <p class="notes"><b>注意: </b>前述の方法は、AntベースのWicketアプリケーションに適用されます。MavenベースのアプリケーションでWicketの代替バージョンを使用する場合は、関連するPOMファイルを変更します。</p>
+            <h3><a name="examining"></a>生成されたWicketアプリケーションのソース構造の確認</h3>
+
+            <p>IDEのWeb アプリケーション・ウィザードによって多数のファイルが作成されました。ここでは、各ファイルを確認し、各ファイルがWicket開発のコンテキスト内で互いにどのように関連しているかについて説明します。</p>
+
+            <ol>    
+                <li>生成されたファイルのツアーを開始しましょう。<p></p><p></p><p></p>
+                    <ul>
+                        <li><b>Webディスクリプタ。</b><tt>web.xml</tt>ファイルの確認から始めます。これは、サーブレットの仕様に準拠した、すべてのWebアプリケーションに共通の一般的なデプロイメント・ディスクリプタです。「<tt>WEB-INF</tt>」フォルダまたは「構成ファイル」フォルダを展開し、ファイルをraw XMLビューで開きます。Wicketフィルタの定義に注意してください。
+
+                            <p><pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"&gt;
+    &lt;filter&gt;
+        &lt;filter-name&gt;WicketApplication&lt;/filter-name&gt;
+        &lt;filter-class&gt;org.apache.wicket.protocol.http.WicketFilter&lt;/filter-class&gt;
+        &lt;init-param&gt;
+            &lt;param-name&gt;applicationClassName&lt;/param-name&gt;
+            &lt;param-value&gt;com.myapp.wicket.Application&lt;/param-value&gt;
+        &lt;/init-param&gt;
+    &lt;/filter&gt;
+    &lt;filter-mapping&gt;
+        &lt;filter-name&gt;WicketApplication&lt;/filter-name&gt;
+        &lt;url-pattern&gt;/wicket/*&lt;/url-pattern&gt;
+    &lt;/filter-mapping&gt;
+    &lt;session-config&gt;
+        &lt;session-timeout&gt;
+            30
+        &lt;/session-timeout&gt;
+    &lt;/session-config&gt;
+    &lt;welcome-file-list&gt;
+        &lt;welcome-file/&gt;
+    &lt;/welcome-file-list&gt;
+&lt;/web-app&gt;</pre>        
+
+                            <p class="notes"><b>注意: </b>アプリケーション・クラス名の値は<tt>com.myapp.wicket.Application</tt>に設定されています。次のステップで、アプリケーション・クラス・ファイルを開き、その内容を確認します。
+
+                        <li><b>Wicketアプリケーション・クラス。</b>「ソース・パッケージ」フォルダの<tt>com.myapp.wicket</tt>パッケージを開き、 <tt>Application.java</tt>ファイルを開きます。次のようになっています。
+
+                            <p><pre class="examplecode">package com.myapp.wicket;           
+
+import org.apache.wicket.protocol.http.WebApplication;
+
+public class Application extends WebApplication {
+
+    public Application() {
+    }
+
+    @Override
+    public Class getHomePage() {
+        return HomePage.class;
+    }
+
+}</pre>
+
+                            <p>これは、Strutsフレームワークの<tt>struts-config.xml</tt>およびJSFフレームワークの<tt>faces-config.xml</tt>に相当する、アプリケーション全体に関係する設定を含むJavaファイルです。<tt>getHomePage()</tt>メソッドの定義に注意してください。このメソッドは、アプリケーション全体に関係するクラスの最小要件です。アプリケーションをデプロイすると表示される最初のページ(ホーム・ページ)を指定します。<tt>HomePage.class</tt>が返されることに注意してください。次のステップで、<tt>HomePage.java</tt>ファイルを開き、その内容を確認します。
+
+                        <li><b>Wicketホーム・ページ。</b><tt>HomePage.java</tt>を開きます。次のようになっています。
+
+                            <p><pre class="examplecode">package com.myapp.wicket;           
+
+public class HomePage extends BasePage {
+
+    public HomePage() {
+        add(new Label("message", "Hello, World!"));
+    }
+
+}</pre>
+
+                            <p>このファイルによってホーム・ページにラベルが追加されます。このファイルで作成されたWicketウィジェットのレンダリングは、同じソース構造内の同じ名前のファイルで行われます。このファイルは<tt>HomePage.html</tt>で、次のような内容です。
+
+                            <p><pre class="examplecode">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en"&gt; 
+    &lt;head&gt; 
+        &lt;wicket:head&gt; 
+            &lt;title&gt;Wicket Example&lt;/title&gt; 
+        &lt;/wicket:head&gt; 
+    &lt;/head&gt; 
+    &lt;body&gt; 
+        &lt;wicket:extend&gt; 
+            &lt;h1 wicket:id="message"&gt;This gets replaced&lt;/h1&gt;
+        &lt;/wicket:extend&gt; 
+    &lt;/body&gt; 
+&lt;/html&gt;</pre>    
+
+                            <p><tt>HomePage.java</tt>で<tt>BasePage</tt>を拡張していることに注意してください。<tt>HomePage.html</tt>には<tt>wicket:id</tt>属性があり、これは、Javaファイルによってどこかで作成される何かのプレースホルダであることを示します。また、IDEで生成されるCSSスタイルシートへの参照もあります。これは、「プロジェクト」ウィンドウの「Webページ」フォルダで確認できます。次のステップで、<tt>BasePage</tt>を開き、その内容を確認します。</p></li>
+
+                        <li><b>ベース・ページ。</b><tt>BasePage.java</tt>を開きます。これは、次のような内容です。
+
+                            <p><pre class="examplecode">package com.myapp.wicket;           
+
+import org.apache.wicket.markup.html.WebPage;
+
+public abstract class BasePage extends WebPage {
+
+    public BasePage() { 
+        super(); 
+        add(new HeaderPanel("headerpanel", "Welcome To Wicket")); 
+        add(new FooterPanel("footerpanel", "Powered by Wicket and the NetBeans Wicket Plugin"));
+    } 
+
+}</pre>
+
+                            <p>これは、すべてのWebページで拡張するクラスです。<tt>BasePage</tt>を拡張する各クラスは、<tt>HeaderPanel</tt>および<tt>FooterPanel</tt>のインスタンスを継承します。これによって、すべてのWebページに同じヘッダーとフッターが含まれます。ベース・ページのHTML側は次のとおりです。</p>
+
+                            <p><pre class="examplecode">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en"&gt; 
+    &lt;head&gt; 
+        &lt;wicket:head&gt; 
+            &lt;wicket:link&gt; 
+                &lt;link rel="stylesheet" type="text/css" href="style.css"/&gt; 
+            &lt;/wicket:link&gt; 
+        &lt;/wicket:head&gt; 
+    &lt;/head&gt; 
+    &lt;body&gt; 
+        &lt;header wicket:id="headerpanel" /&gt;
+        &lt;section class="content_container"&gt; 
+            &lt;wicket:child/&gt; 
+        &lt;/section&gt; 
+        &lt;footer wicket:id="footerpanel" /&gt; 
+    &lt;/body&gt; 
+&lt;/html&gt;</pre>
+
+
+                            <p>次のステップで、<tt>HeaderPanel.java</tt>を開き、その内容を確認します。
+
+
+                        <li><b>ヘッダー・パネル。</b><tt>HeaderPanel.java</tt>を開きます。これは、次のような内容です。    
+
+                            <p><pre class="examplecode">package com.myapp.wicket;           
+
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
+
+public class HeaderPanel extends Panel {
+
+    public HeaderPanel(String componentName, String exampleTitle)
+    {
+        super(componentName);
+        <b>add(new Label("exampleTitle", exampleTitle));</b>
+    }
+
+}</pre>
+
+
+                            <p>太字の行に注意してください。ここでは、Wicket Labelウィジェットを作成しています。HeaderPanelは、再利用可能なコンポーネントです。これはJava側で、ウィジェットが作成されます。次にHTML側を見てみます。ここで、Wicket Labelウィジェットがレンダリングされます。次のステップで、<tt>HeaderPanel.html</tt>ファイルを開き、その内容を確認します。
+
+                            <p>ここで、2つ目の引数を"My Very First Component Based Application"に変更します。Labelの定義は次のようになります。
+
+
+                            <p><pre class="examplecode">add(new Label("exampleTitle", "My Very First Component Based Application"));</pre>
+
+                            <p><tt>HeaderPanel.html</tt>を開きます。先ほど確認したJavaファイルと同じ名前であることに注意してください。同じパッケージ構造内にあります。これは、次のような内容です。
+
+                            <p><pre class="examplecode">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en"&gt; 
+    &lt;head&gt;&lt;title&gt;Wicket Example&lt;/title&gt;&lt;/head&gt;
+    &lt;body&gt;
+        &lt;wicket:panel&gt;
+            &lt;h1&gt;Wicket Example&lt;/h1&gt;
+            &lt;p id="titleblock"&gt;
+                &lt;b&gt;&lt;font size="+1"&gt;Start of &lt;span wicket:id="exampleTitle"&gt;Example Title Goes Here&lt;/span&gt;&lt;/font&gt;&lt;/b&gt;
+            &lt;/p&gt;
+        &lt;/wicket:panel&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+                            <p>太字の行に注意してください。これがWebページのHTML側でウィジェットのレンダリング場所を指定する方法です。[Ctrl]キーを押したまま、<tt>span</tt>タグ内の<tt>wicket:id</tt>属性の値の上にマウスを移動します。値がハイパーリンクに変わることに注意してください。
+
+                            <p><p class="align-left"><img alt="ハイパーリンクのHTML側。" src="../../../images_www/articles/74/web/wicket/hyperlink-1.png">
+
+                            <p>ハイパーリンクをクリックすると、WebページのJava側が開くことに注意してください。
+
+                            <p>ソース・エディタの上部にある左矢印をクリックしてHTMLページに戻ります。
+
+                            <p><p class="align-left"><img alt="ハイパーリンクのJava側。" border="1" src="../../../images_www/articles/74/web/wicket/hyperlink-2.png">
+
+
+                            <p>このようにして、Wicketコンポーネントの2つの側の間を迅速かつ効率的に移動できます。
+                        <li><b>フッター・パネル。</b>フッター・パネルの構造は、前述のヘッダー・パネルと同じです。</li>
+                    </ul></li>
+                <li><p>プロジェクトを右クリックし、実行します。IDEでアプリケーションがコンパイルされ、WARファイルが作成されてデプロイメント・サーバーに送信されます。IDEのデフォルト・ブラウザが開き、アプリケーションが表示されます。</p>
+
+
+                    <p><p class="align-left"><img alt="初めてのデプロイメント。" border="1" src="../../../images_www/articles/74/web/wicket/deploy-1.png">
+                    <p class="notes"><b>注意: </b>上に示されているようにURLに"/wicket"が追加されていることに注意してください。これによって、<tt>web.xml</tt>ファイル内に登録されているWicketフィルタにURLがマップされます。</p>
+
+            </ol>
+
+
+        </div>
+        <br />
+        <!-- ===================================================================================== -->
+
+        <h2><a name="features"></a>Wicketの機能の使用</h2>
+
+        <p>以降の項では、Wicketの3つの主な機能およびNetBeans Wicketプラグインを介したNetBeans IDEによるそのサポートについて学習します。</p>
+
+        <ul>
+            <li><a href="#widget">ウィジェット</a></li>
+            <li><a href="#component">再利用可能なコンポーネント</a></li>
+            <li><a href="#ajax">AJAXサポート</a></li>
+        </ul>
+
+        <p>以降の項では、NetBeans Wicketプラグインによって使用可能になる様々なサポート機能も紹介します。</p>
+
+        <div class="indent">
+
+
+            <h3><a name="widget"></a>ウィジェットの追加</h3>
+
+
+            <p>この項では、Wicketで最初のウィジェットを作成します。他のアーティファクト同様、ウィジェットにはJava側とHTML側があります。Java側でウィジェットが作成されます。HTML側でレンダリングされます。前述のとおり、2つの側の間の移動はハイパーリンクを介して行われます。
+            <ol>
+
+                <li><p><tt>HomePage.html</tt>を開きます。パレットが自動的に開かない場合、「ウィンドウ」>「パレット」([Ctrl]-[Shift]-[8])で開きます。</p>
+                    <p><p class="align-left"><img alt="ハイパーリンクのJava側。" border="1" src="../../../images_www/articles/74/web/wicket/widget-2.png">
+                </li>
+                <li><p>HTMLファイルのH1要素の下に1行追加した後、パレットから「ラベル」アイテムをドラッグし、H1要素の下にドロップします。次のダイアログが表示されます。</p>
+                    <p><p class="align-left"><img alt="ハイパーリンクのJava側。" src="../../../images_www/articles/74/web/wicket/widget-3.png">
+                    <p><p>ダイアログ内の値を次のように変更します。</p>
+                    <p><p class="align-left"><img alt="ハイパーリンクのJava側。" src="../../../images_www/articles/74/web/wicket/widget-4.png">
+                    <p><p>「OK」をクリックします。次の太字のタグがファイルに追加されていることに注意してください。</p>
+
+                    <p><pre class="examplecode">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en"&gt; 
+    &lt;head&gt; 
+        &lt;wicket:head&gt; 
+            &lt;title&gt;Wicket Example&lt;/title&gt; 
+        &lt;/wicket:head&gt; 
+    &lt;/head&gt; 
+    &lt;body&gt; 
+        &lt;wicket:extend&gt; 
+            &lt;h1 wicket:id="message"&gt;This gets replaced&lt;/h1&gt;
+            <b>&lt;span wicket:id="message1"&gt;This gets replaced&lt;/span&gt;</b>
+        &lt;/wicket:extend&gt; 
+    &lt;/body&gt; 
+&lt;/html&gt;</pre> 
+                    <p>新たに追加したウィジェットにスタイルを設定できます。たとえば、H3タグを使用します。</p>
+                    
+<pre class="examplecode">&lt;h3 wicket:id="message1">This gets replaced&lt;/h3&gt;</pre> 
+
+                    <p>次に、<tt>HomePage.java</tt>を開きます。HTMLファイル内の識別子と同じ識別子のラベルが追加されていることに注意してください(<strong>太字</strong>部分の変更箇所)。
+
+                    <pre class="examplecode">public class HomePage extends BasePage {
+
+    public HomePage() {
+        add(new Label("message", "Hello, World!"));
+        <b>add(new Label("message1", "Hello again, World!"));</b>
+    }
+
+}</pre>
+                </li>
+
+
+                <li><p>ファイルを保存します。ブラウザをリフレッシュすると、<tt>HomePage.html</tt>でレンダリングされるWicket Labelを確認できます。</p>
+
+                    <p><p><img alt="パレット。" border="1" src="../../../images_www/articles/74/web/wicket/deploy-2.png">
+
+            </ol>
+
+            <p><tt>HomePage.html</tt>ファイルでタグを作成したようにプレースホルダを作成し、HTMLファイルをWebデザイナに渡すことができます。WebデザイナはWebページを設計しますが、それとは独立してJava側の作業をし、ウィジェットを作成することができます。HTMLタグはJavaファイルに埋め込まれないため、Webデザイナとの間でWicketの特色である「関心の分離」を最大限に活用することができます。</p>
+
+            <p class="tips">前述のHTMLファイルをエディタで選択したままナビゲータを開くと(「ウィンドウ」>「ナビゲート」>「ナビゲータ」)、ナビゲータの"Wicket Tags"リストにタグの概要が表示されます。</p>
+
+            <p><img alt="wicketナビゲータ" border="1" src="../../../images_www/articles/74/web/wicket/wicket-navigator.png">
+
+            <p class="tips">対応するHTMLページに対応するタグがない場合、Javaファイルにエラー・メッセージが表示されます。
+
+            <p><img alt="左マージンの電球アイコンをクリックすると表示されるラベルのインポート文" src="../../../images_www/articles/74/web/wicket/widget-1.png" style="border:1px solid">
+            </p>
+
+            <!-- ===================================================================================== -->
+
+            <h3><a name="component"></a>再利用可能なコンポーネントの追加</h3>
+
+            <p>Wicketの長所の1つが、再利用可能なコンポーネントの概念です。この項では、ウィザードを使用してパネルを生成します。繰り返しになりますが、パネルには、Java側とHTML側があります。パネルを作成して、Webページで再利用するバナーを含めます。これによってWebサイトでバナーが異なることがなくなります。Webページへのパネルの追加が簡単がことがわかります。
+
+            <ol>
+                <li><p><tt>com.myapp.wicket</tt>パッケージ・ノードを右クリックし、「新規」>「その他」を選択します。「カテゴリ」で「Web」を選択します。「ファイル・タイプ」で、次のテンプレートに注意してください。</p>
+
+                    <p><p><img alt="ファイル・テンプレート" src="../../../images_www/articles/74/web/wicket/panel-1.png"></p>
+
+                    <p>「Wicketパネル」を選択し、「次」をクリックします。</p>
+
+
+                <li>「ファイル名」に「<tt>BannerPanel</tt>」と入力します。次のようになります。
+
+                    <p><p><img alt="ファイル・テンプレート" src="../../../images_www/articles/74/web/wicket/panel-2.png">
+
+                    <p>「終了」をクリックします。</p>
+
+                    <p>パッケージに<tt>BannerPanel.html</tt>および<tt>BannerPanel.java</tt>という2つの新しいファイルがあることに注意してください。
+
+
+                <li><tt>BannerPanel.html</tt>を開き、ファイルの内容が次のようになっていることを確認します。
+
+                    <p><pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns:wicket&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/&gt;
+        &lt;title&gt;BannerPanel&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;wicket:panel&gt;
+            &lt;!-- TODO - add components here, ala
+            
+            &lt;span wicket:id="title"&gt;title here&lt;/span&gt;
+            
+            --&gt;
+        &lt;/wicket:panel&gt;
+    &lt;/body&gt;
+&lt;/html</pre>    
+
+                    <p><tt>wicket:panel</tt>タグの間にWicketプレースホルダがあります。Spanタグの上および下の行を削除します。この結果、SPANタグの行がコメントアウトされなくなります。[Ctrl]キーを押したまま、Wicket IDの値の上にマウスを移動し、表示されたハイパーリンクをクリックします。<tt>BannerPanel.java</tt>ファイルが開きます。
+
+                    <p><pre class="examplecode">package com.myapp.wicket;
+
+import org.apache.wicket.markup.html.panel.Panel;
+
+public final class BannerPanel extends Panel {
+    BannerPanel(String id) {
+        super (id);
+    }
+}</pre>
+
+                    <p>先ほど<tt>HomePage.java</tt>ファイルに行ったように、次に太字で示したラベルを追加します。
+
+                    <p><pre class="examplecode">package com.myapp.wicket;
+
+<b>import org.apache.wicket.markup.html.basic.Label;</b>
+import org.apache.wicket.markup.html.panel.Panel;
+
+public final class BannerPanel extends Panel {
+    BannerPanel(String id) {
+        super (id);
+        <b>add(new Label("title","I am a reusable component!"));</b>
+    }
+}</pre>
+
+                <li>単純ですが、これでパネルは完成です。ホーム・ページに追加しましょう。<tt>HomePage.java</tt>を開き、次の行をコンストラクタの最後に追加して、BannerPanelの新しいインスタンスを作成します。
+
+                    <p><pre class="examplecode">add(new BannerPanel("bannerPanel"));</pre>
+
+                <li>次に、パネルをレンダリングする必要があります。<tt>HomePage.html</tt>を開き、終了のBODYタグの直前にプレースホルダ・タグを追加します。Javaファイルで使用されているのと同じWicket識別子を必ず使用してください。
+
+                    <p><pre class="examplecode">&lt;span wicket:id='bannerPanel'/&gt;</pre>  
+
+                <li><p>プロジェクトを再実行します。HTMLファイルで指定された場所にパネルが表示されていることに注意してください。</p>
+
+                    <p class="align-left"><p><img alt="新しいデプロイ" border="1" src="../../../images_www/articles/74/web/wicket/result-3.png">
+
+            </ol>
+
+
+            <p>Wicketでは、パネルは再利用可能なコンポーネントです。この項で示したように、パネルは何度でも、どのWebページにも再利用できます。
+
+                <!-- ===================================================================================== -->
+
+            <h3><a name="ajax"></a>AJAX機能の追加</h3>
+
+            <p>JavaScriptを使用して(<a href="http://en.wikipedia.org/wiki/Ajax_(programming)">AJAXテクノロジ</a>を介した)非同期のWeb機能をWicketアプリケーションに追加するかわりに、Wicketで、AJAX機能をカプセル化するJavaコンポーネント・モデルを使用可能にします。次に、これより前に作成したラベル・ウィジェットのかわりに、AJAXのオートコンプリート・ウィジェットを含むようBannerPanelを変更する方法を示します。</p>
+
+            <ol>         
+
+
+                <li><p><tt>BannerPanel</tt>クラスのHTML側で、次に示すように、パレットからAJAXテキスト入力アイテム([Ctrl]-[Shift]-[8])をドラッグします。</p>
+
+                    <p><p><img alt="ファイル・テンプレート" src="../../../images_www/articles/74/web/wicket/drag-1.png"></p>
+                    <p>次に示すように、既存のWicketプレースホルダの下にアイテムをドロップします。</p>
+
+                    <p><pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns:wicket&gt;
+
+    &lt;head&gt;
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/&gt;
+        &lt;title&gt;BannerPanel&lt;/title&gt;
+    &lt;/head&gt;
+
+    &lt;body&gt;
+        
+        &lt;wicket:panel&gt;
+
+            &lt;span wicket:id="title"&gt;title here&lt;/span&gt;
+
+            <b>&lt;input type="text" wicket:id="countries" size="50"/&gt;</b>
+
+        &lt;/wicket:panel&gt;
+
+    &lt;/body&gt;
+    
+&lt;/html&gt;</pre>
+
+                </li>
+
+
+                <li>対応するJava側で、次のコードが自動的に追加されていることに注意してください。
+
+                    <p><pre class="examplecode">final AutoCompleteTextField field = new AutoCompleteTextField("countries", new Model("")) {
+    @Override
+    protected Iterator getChoices(String input) {
+        if (Strings.isEmpty(input)) {
+            return Collections.EMPTY_LIST.iterator();
+        }
+        List choices = new ArrayList(10);
+        Locale[] locales = Locale.getAvailableLocales();
+        for (int i = 0; i < locales.length; i++) {
+            final Locale locale = locales[i];
+            final String country = locale.getDisplayCountry();
+            if (country.toUpperCase().startsWith(input.toUpperCase())) {
+                choices.add(country);
+                if (choices.size() == 10) {
+                    break;
+                }
+            }
+        }
+        return choices.iterator();
+    }
+};</pre>
+                </li>
+
+                <li>[Ctrl]-[Shift]-[I]を押します。正しいインポート文を必ず選択します。
+                    <p><p><img alt="ファイル・テンプレート" src="../../../images_www/articles/74/web/wicket/imports-1.png"></p>
+                    <p>「OK」をクリックし、<tt> BannerPanel</tt>クラスで次のインポート文を使用していることを確認してください。
+
+                    <pre>import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.Model;
+import org.apache.wicket.util.string.Strings;</pre>
+                </li>
+                <li><p>ブラウザを再度リフレッシュすると、AJAXのオートコンプリート・フィールドが表示されます。入力すると、このフィールドに、入力したテキストに一致する国が表示されます。</p>
+                    <p><p><img alt="ファイル・テンプレート" border="1" src="../../../images_www/articles/74/web/wicket/result-4.png"></p>
+
+            </ol>
+
+        </div>
+
+        <!-- ===================================================================================== -->
+
+        <h2><a name="next"></a>次の手順</h2>
+
+
+        <p>これで、NetBeans IDEでのWicketの開発の概要を終了します。David R. Heffelfinger氏による<a href="http://www.ensode.net/wicket_first_look.html">A First Look at the Wicket Framework</a>で説明されているPizzaアプリケーション・サンプルを利用して、Wicketフレームワークの理解を深めてください。ここで示したように、チュートリアルの結果が、他のサンプル同様、新規プロジェクト・ウィザードで使用可能であることに注意してください。
+
+        <p><img alt="ファイル・テンプレート" src="../../../images_www/articles/74/web/wicket/samples.png"> <br>
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: Introduction to the Wicket Framework in 7.2">ご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>関連項目</h2>
+
+        <p>関連するチュートリアルまたはより高度なチュートリアルとしては、次のリソースを参照してください。</p>
+
+        <ul>
+            <li><a href="../../docs/web/quickstart-webapps.html">Webアプリケーション開発入門</a></li>
+            <li><a href="../../docs/web/quickstart-webapps-struts.html">Struts Webフレームワーク入門</a></li>
+            <li><a href="quickstart-webapps-spring.html">Spring Webフレームワーク入門</a></li>
+        </ul>
+
+    </body>
+</html>

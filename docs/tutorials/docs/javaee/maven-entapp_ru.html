@@ -1,0 +1,698 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Создание приложения уровня предприятия с помощью Maven</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE to develop an enterprise application using Maven.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Создание приложения уровня предприятия с помощью Maven</h1>
+        
+        <p>This tutorial demonstrates how to create a simple enterprise application using IDE NetBeans and Maven archetypes. Также приводится ряд пояснений и советов по созданию и сборке  приложений Maven в среде IDE.</p>
+
+        <p>В этом учебном курсе описывается создание приложения уровня предприятия, которое пакетируется в архивный файл EAR и развертывается на сервере приложений GlassFish Server Open Source Edition 3.  Приложение создается с использованием архетипа приложения Maven Enterprise в мастере создания проекта. В приложение входит проект EJB, содержащий класс сущностей с сохранением состояния, компонент, управляемый сообщениями, и фасад сеансного компонента для сущности. В приложение также входит веб-проект, содержащий два сервлета.</p>
+
+                       
+           <p><b>Упражнения по темам руководства</b></p>
+           <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+            <ul>
+                <li><a href="#intro">Использование Maven в среде IDE</a></li>
+                <li><a href="#Exercise_1">Создание проекта приложения уровня предприятия Maven</a></li>
+                <li><a href="#Exercise_2">Написание кода модуля EJB</a>
+                    <ul>
+                        <li><a href="#Exercise_2a">Создание блока сохранения состояния</a></li>
+                        <li><a href="#Exercise_2b">Создание класса сущностей</a></li>
+                        <li><a href="#Exercise_2c">Создание управляемого сообщениями компонента</a></li>
+                        <li><a href="#Exercise_2d">Создание фасада сеанса</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_3">Написание кода веб-модуля</a>
+                    <ul>
+                        <li><a href="#Exercise_3a">Создание сервлета ListNews</a></li>
+                        <li><a href="#Exercise_3b">Создание сервлета PostMessage</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_4">Сборка приложения с помощью Maven</a>
+                    <ul>
+                        <li><a href="#Exercise_4a">Работа с зависимостями проекта</a></li>
+                        <li><a href="#Exercise_4b">Сборка проекта с зависимостями</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_5">Развертывание и выполнение приложения</a>
+                    <ul>
+                        <li><a href="#Exercise_5a">Развертывание из среды IDE</a></li>
+                        <li><a href="#Exercise_5b">Развертывание из консоли администратора GlassFish</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_7">Загрузка проекта решения</a></li>
+            </ul>
+           
+            <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия 7.2, 7.3, 7.4, 8.0, Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition 3.1.2.2</td>
+                    <td class="tbltd1">4.x</td>
+            </tr>
+            </tbody>
+        </table>
+            <p><b>Предпосылки</b></p>
+            <p>Предполагается, что читатель обладает базовыми знаниями по следующим технологиям или опытом программирования с их использованием:</p>
+            <ul>
+                <li>Программирование на Java</li>
+                <li>IDE NetBeans</li>
+            </ul>
+
+            <p>Перед изучением этого учебного курса можно ознакомиться со следующей документацией:</p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Испытанные приемы для Apache Maven в IDE NetBeans</a></li>
+                <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Глава 1. Введение в Apache Maven</a> (фрагмент из книги <a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: The Complete Reference</a>)</li>
+            </ul>
+            <p class="tips">Можно загрузить <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FMavenEnterpriseApp.zip">готовый проект в виде архива ZIP</a>.</p>
+
+        <a name="intro"></a>
+        <!-- ===================================================================================== -->
+        <h2>Использование Maven в среде IDE</h2>
+        <p>Support for Maven is fully integrated in IDE NetBeans. Разработка проекта, в котором используется платформа Maven, практически идентична случаю разработки с использованием Ant. Однако в случае Maven имеются некоторые отличия, касающиеся способа сборки проектов и работы с зависимостями. Советы, приведенные ниже, могут помочь избегнуть ряда проблем при первом создании приложения Maven.</p>
+
+
+        <p class="tips"><strong>Проверка параметров Maven</strong></p>
+        <div class="indent">
+        <p>Если это ваш первый проект Maven, проверьте параметры настройки Maven в окне &quot;Параметры&quot;.  Maven включен в комплект IDE и устанавливается при установке среды IDE.</p>
+
+        <ol>
+            <li>Откройте окно 'Настройки' в IDE (Сервис > Параметры; NetBeans> Предпочтения на Mac).</li>
+            <li>Выберите в окне &quot;Параметры&quot; категорию &quot;Java&quot; и перейдите на вкладку &quot;Maven&quot;.</li>
+            <li>Подтвердите указание домашней страницы Maven.
+                <p>Можно использовать версию Maven, входящую в комплект среды IDE, либо указать местоположение локальной установки Maven (требуется версия 2.0.9 или более поздняя).</p></li>
+            <li>Для закрытия окна &quot;Параметры&quot; нажмите кнопку &quot;ОК&quot;.</li>
+        </ol>
+
+        <p class="notes"><strong>Примечания.</strong></p>
+        <ul>
+            <li>Поддержка Maven автоматически включается при включении Java в среде IDE. Если нет, необходимо включить подключаемый модуль Java EE.</li>
+        </ul>
+        </div>
+
+        <p class="tips"><strong>Обновите репозитории Maven</strong></p>
+        <div class="indent">
+        <p>Локальные и удаленные репозитории Maven используются для автозавершения кода, а также при построении проектов. Обновление индексов удаленных репозиториев Maven требуется для обеспечения немедленной доступности всех артефактов, которые могут потребоваться при разработке проекта. Частоту проверки наличия обновлений можно настроить на вкладке &quot;Maven&quot; в окне &quot;Параметры&quot; среды IDE. Вы можете выполнить немедленную проверку обновлений и проверку локальных и удаленных репозиториев Maven в окне 'Службы'.</p>
+
+        <ol>
+            <li>Выберите меню &quot;Окно&quot; &gt; &quot;Службы&quot;. Откроется окно &quot;Службы&quot;.</li>
+            <li>Разверните узел 'Репозитории Maven' в окне 'Службы'.</li>
+            <li>Разверните узел репозитория для просмотра артефактов.</li>
+            <li>Щелкните правой кнопкой мыши узел репозитория и выберите во всплывающем меню 'Обновить индекс'.</li>
+        </ol>
+
+        <p>При нажатии кнопки &quot;Обновить индексы&quot; в среде IDE выполняется проверка и загрузка самого свежего индекса для каждого из настроенных удаленных репозиториев Maven. Индекс представляет текущее состояние артефактов, расположенных в репозитории, и используется для предоставления ссылок на артефакты, доступных для использования в приложении. По умолчанию артефакты не загружаются из репозитория автоматически без явно обозначенной необходимости в них.</p>
+
+        <p class="tips">Для поиска артефактов, щелкните правой кнопкой узел мыши узел 'Репозитории Maven' в окне 'Службы' и выберите 'Найти'.</p>
+        <p class="notes"><strong>Примечания.</strong></p>
+        <ul>
+            <li>Размер индексов довольно велик и обновление всех индексов может занять значительное время.</li>
+            <li>Если используется IDE NetBeans 7.1 или более ранняя версия, выберите "Окно > Другие > Обозреватель репозитория Maven" и нажмите "Обновление индексов" (&nbsp;<img alt="Кнопка &apos;Обновить индексы&apos;" src="../../../images_www/articles/74/javaee/maven-testing//maven-refreshrepo.png" title="Кнопка &apos;Обновить индексы&apos;"> &nbsp;) в верхней части окна "Обзор репозитория Maven".</li>
+        </ul>
+        </div>
+
+
+        <p class="tip">Дополнительные сведения об использовании Maven в IDE NetBeans см. в разделе <a href="https://netbeans.org/kb/docs/java/maven-hib-java-se.html#02">Настройка Maven</a> в учебном курсе <a href="https://netbeans.org/kb/docs/java/maven-hib-java-se.html">Создание приложения Swing Maven с помощью Hibernate</a>, а также в <a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Испытанные приемы для Apache Maven в IDE NetBeans</a>.</p>
+
+
+        <a name="Exercise_1"></a> 
+            <!--Exercise 1: -->
+        <h2>Создание проекта приложения уровня предприятия Maven</h2>
+
+        <p>Цель данного упражнения заключается в создании проекта приложения уровня предприятия с использованием архетипа приложения Maven Enterprise, входящего в комплект поставки среды IDE. Архетип приложения уровня предприятия также создает проект EJB и проект webapp.</p>
+
+        <p>IDE включает в себя несколько архетипов Maven в мастере создания проектов, которые позволяют быстро создать типы общих проектов NetBeans, такие как проекты корпоративных приложений (EAR), проектов веб-приложений (WAR) и проектов модулей EJB (JAR). Мастер также позволяет создавать проекты из архетипов, полученных из зарегистрированных удаленных репозиториев.
+        </p>
+
+        <ol>
+            <li>Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N; ⌘-Shift-N в Mac) в главном меню.</li>
+            <li>В категории Maven выберите &quot;Приложение Enterprise.  Нажмите кнопку &quot;Далее&quot;.<br> <img alt="Тип проекта корпоративного приложения Maven в мастере создания проектов" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-newproject1.png" title="Тип проекта корпоративного приложения Maven в мастере создания проектов">
+            </li>
+            <li>Введите <strong>MavenEnterpriseApp</strong> в качестве имени проекта и укажите местоположение проекта.</li>
+            <li>(Необязательно) Измените подробные данные артефакта. Нажмите кнопку &quot;Далее&quot;. <br> <img alt="Сведения о проекте в мастере создания проектов" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-newproject2.png" title="Сведения о проекте Maven в мастере создания проектов">
+            </li>
+            <li>В качестве сервера выберите сервер GlassFish. </li>
+            <li>В качестве версии Java EE выберите Java EE 6 или Java EE 7.</li>
+            <li>Установите флажки &quot;Создать модуль EJB&quot; и &quot;Создать модуль веб-приложения&quot;. Нажмите кнопку &quot;Завершить&quot;.</li>
+        </ol>
+
+
+        <p>При нажатии кнопки &quot;Готово&quot; из архетипа приложения Maven Enterprise создаются следующие проекты:</p>
+        <ul>
+            <li><strong>EJB.</strong> (MavenEnterpriseApp-ejb) Проект EJB обычно содержит исходный код с бизнес-логикой приложения. Проект EJB пакетируется в архив JAR EJB.</li>
+            <li><strong>Webapp.</strong> (MavenEnterpriseApp-web) Проект Webapp обычно содержит уровень представления приложения, такого как страницы JSF и JSP и сервлеты. В проект веб-приложения может также входить исходный код с бизнес-логикой. Проект веб-приложения пакетируется в архив WAR.</li>
+            <li><strong>Сборка.</strong> (MavenEnterpriseApp) Проект Assembly используется для сборки архива EAR из архивов EJB и WAR. Проект сборки не содержит исходных кодов.</li>
+            <li><strong>Enterprise Application.</strong> (MavenEnterpriseApp-ear) Проект Enterprise Application не содержит источников. В проекте приложения уровня предприятия содержится только файл POM (<tt>pom.xml</tt>) с подробными данными о модулях, входящих в приложение уровня предприятия.</li>
+        </ul>
+
+        <img alt="В окне &apos;Проекты&apos; отображаются созданные проекты" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-projectswindow2.png" title="В окне &apos;Проекты&apos; отображаются созданные проекты">
+        <p>Если в созданном проекте корпоративного приложения недоступны какие-либо зависимости, этот проект будет помечен значком. Если развернуть узел "Зависимости" для проекта MavenEnterpriseApp-ear, можно проверить, все ли необходимые библиотеки присутствуют в проекте и находятся на пути класса. Проект приложения J2EE имеет зависимости от JAR и WAR, которые будут пакетированы и доступны после сборки проектов EJB и веб-приложения.  <tt>MavenEnterpriseApp-ejb</tt> и <tt>MavenEnterpriseApp-web</tt> находятся в списке зависимостей.</p>
+        <p class="tips">В ряде случаев в строке статуса будет отображаться значок Maven. Щелкните этот значок, чтобы запустить подготовительную сборку или исправить отсутствующие зависимости.</p>
+        <img alt="снимок IDE, в которой отображается значок Maven на панели состояния для запуска подготовительной сборки" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/priming-build.png" title="Значок Maven на панели состояния  позволяет запустить подготовительную сборку.">
+
+
+<!--        <p class="tips"><strong>Specify the target server (NetBeans IDE 7.0)</strong></p>
+            <div class="indent">
+            <p>In NetBeans IDE 7.0 you need to set the target server in the project's Properties window.</p>
+
+            <p>When developing Maven applications you typically do not need to specify an application server until you build the application.
+            However, to take advantage of some of the code generation features in the IDE,
+            it is recommended that you set the target server before you start writing your code.
+            By setting the deployment server, the IDE is able to recognize the technologies supported by the server and enable
+            various options in some wizards to generate code that is optimized for that server.</p>
+
+            <ol>
+                <li>Start the GlassFish Server.</li>
+                <li>Right-click the EJB project node in the Projects window and choose Properties.</li>
+                <li>Select the Run category and select the GlassFish Server. Click OK.</li>
+            </ol>
+
+            <p>By specifying GlassFish as the deployment server before coding,
+            the IDE will enable the option of selecting JTA in the wizard for creating the persistence unit.
+            You can also select to use any of the datasources registered with the server.</p>
+            </div>
+            <p class="notes"><strong>Note.</strong> If you do not specify GlassFish Server 3, the default transaction type when you create the persistence unit
+            will be <tt>RESOURCE-LOCAL</tt>.
+            You will need to edit the <tt>persistence.xml</tt> file manually to specify <tt>JTA</tt> if you want the container to manage the transactions.
+            You will also need to specify a database connection instead of a registered data source in the New Persistence Unit wizard.</p>
+      -->
+            
+            
+            
+        <a name="Exercise_2"></a>
+        <h2>Написание кода проекта EJB</h2>
+
+        <p>Проект EJB содержит бизнес-логику приложения. Для управление транзакциями в этом проекте используется контейнер GlassFish, использующий интерфейс Java Transaction API (JTA). В этом руководстве для класса сущности в модуле EJB будет создан класс сущностей, управляемый сообщениями компонент и фасад сеанса.</p>
+            
+            
+            <div class="indent">
+            <a name="Exercise_2a"></a>
+            <h3>Создание блока сохранения состояния</h3>
+
+            <p>В этом упражнении в проекте EJB будет создан блок сохранения состояния.  В блоке сохранения состояния указываются подробные данные подключения к базе данных и указывается способ управления транзакциями. Для этого приложения в мастере создания блока сохранения состояния указывается JTA, поскольку управление транзакциями должно осуществляться сервером GlassFish.</p>
+
+            <p>Для создания блока сохранения состояния выполните следующие действия.</p>
+            <ol>
+                <li>Для открытия мастера создания файла щелкните правой кнопкой мыши узел проекта EJB и выберите пункт раскрывающегося меню &quot;Создать &gt; Прочее&quot;.</li>
+                <li>Выберите &quot;Блок сохранения состояния&quot; в категории &quot;Сохранение состояния&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Выберите &quot;EclipseLink&quot; в качестве поставщика сохранения состояния в диалоговом окне мастера создания блока сохранения состояния.</li>
+                <li>Выберите источник данных (например, выберите <tt>jdbc/sample</tt>, если необходимо использовать JavaDB).
+                   <p>Источник данных для <tt>jdbc/sample</tt> находится в составе пакета среды IDE при установке среды IDE и сервера приложений GlassFish. Однако можно указать другой источник данных, если это необходимо.</p>
+                   <p>Можно сохранить другие параметры по умолчанию (имя блока сохранения состояния, поставщик сохранения состояния EclipseLink). </p></li>
+                <li>Убедитесь в том, что установлен флажок &quot;Использовать интерфейсы API Java Translaction&quot;, и что для стратегии создания таблиц установлено значение &quot;Создать&quot;, т.е. таблицы на основе классов сущностей создаются при развертывании приложения.  Нажмите кнопку &quot;Завершить&quot;.</li>
+            </ol>
+            <img alt="Мастер создания блоков сохранения состояния" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-persistenceunit.png" title="Мастер создания блоков сохранения состояния">
+            <p>При нажатии кнопки &quot;Готово&quot; в среде IDE создается файл XML <tt>persistence.xml</tt>, который открывается в редакторе.  В окне 'Проекты' видно, что файл был создан в каталоге <tt>Другие источники > src/main/resources > META-INF</tt>. В этом файле содержатся подробные данные о подключении к базе данных и об управлении транзакциями. При переходе на вкладку &quot;Исходный код&quot; в редакторе отобразятся следующие данные блока сохранения состояния.</p>
+            <pre class="examplecode">...
+&lt;persistence-unit name="com.mycompany_MavenEnterpriseApp-ejb_ejb_1.0-SNAPSHOTPU" transaction-type="JTA"&gt;
+    &lt;provider&gt;org.eclipse.persistence.jpa.PersistenceProvider&lt;/provider&gt;
+    &lt;jta-data-source&gt;jdbc/sample&lt;/jta-data-source&gt;
+    &lt;exclude-unlisted-classes&gt;false&lt;/exclude-unlisted-classes&gt;
+    &lt;properties&gt;
+      &lt;property name="eclipselink.ddl-generation" value="create-tables"/&gt;
+    &lt;/properties&gt;
+&lt;/persistence-unit&gt;
+            </pre>
+
+            <p>Нетрудно заметить, что в качестве типа транзакции указано значение <tt>JTA</tt>, и что приложением будет использоваться зарегистрированный источник данных <tt>jdbc/sample</tt>.</p>
+
+
+            <a name="Exercise_2b"></a>
+            <h3>Создание класса сущности</h3>
+            <p>Это упражнение посвящено созданию класса сущности в проекте EJB для представления объектов, состояние которых сохраняется в базе данных. Для создания класса сущности NewsEntity выполните следующие действия.</p>
+
+            <ol>
+               <li>Щелкните правой кнопкой мыши модуль EJB в окне &quot;Проекты&quot; и выберите &quot;Создать &gt; Прочее&quot; для открытия мастера создания файла.</li>
+               <li>Выберите &quot;Класс сущностей&quot; в категории &quot;Сохранение состояния&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+               <li>В поле &quot;Имя класса&quot; введите <strong>NewsEntity</strong>.</li>
+               <li>Введите <strong>ejb</strong> в качестве имени пакета и оставьте для параметра &quot;Тип первичного ключа&quot; значение по умолчанию &quot;Long&quot;.  Нажмите кнопку &quot;Завершить&quot;.</li>
+            </ol>
+            
+            <p>При нажатии кнопки &quot;Готово&quot; класс сущности <tt>NewsEntity.java</tt> будет открыт в редакторе исходного кода.  В редакторе исходного кода добавьте несколько полей путем выполнения следующих действий.</p>
+            <ol>
+                <li>Добавьте к классу следующие объявления полей.
+                    <pre class="examplecode">
+private String title;
+private String body;</pre>
+                </li>
+               <li>В редакторе исходного кода щелкните правой кнопкой мыши внутри определения класса и выберите &quot;Вставка кода&quot; (ALT+ISERT; CTRL+I на компьютере Mac) &gt; &quot;Методы получения и установки&quot;.</li>
+               <li>В диалоговом окне &quot;Создание методов получения и установки&quot; выберите поля <tt>body</tt> и <tt>title</tt>. Нажмите кнопку &quot;Создать&quot;.</li>
+               <li><!--Right-click in the editor and choose Fix Imports (Alt-Shift-I; &#8984;-Shift-I on Mac).--> Сохраните изменения, внесенные в класс.</li>
+            </ol>
+
+            <a name="Exercise_2c"></a>
+            <h3>Создание управляемого сообщениями компонента</h3>
+            <p>В этом упражнении в проекте EJB будет создан компонент, управляемый сообщениями.  Компонент, управляемый сообщениями, &ndash; это компонент EJB, реализующий асинхронный обмен сообщениями. Управляемый сообщениями компонент используется в приложении NewsApp для получения и обработки сообщений, передаваемых в очередь сервлетом в веб-модуле.</p>
+            
+            <p>Для использования компонента, управляемого сообщениями, в приложении необходимо зарегистрировать на сервере ресурсы подключения, используемые компонентом. При развертывании на сервере GlassFish можно создавать ресурсы непосредственно на сервере с помощью консоли администратора или создавать их во время развертывания, указав подробные данные в файле дескриптора <tt>glassfish-resources.xml</tt>.  При развертывании приложения на сервере сервер регистрируют ресурсы на основе файла дескриптора.  При использовании мастера создания файлов в среде IDE для создания управляемого сообщениями компонента среда IDE сформирует элементы в файле дескриптора.</p>
+
+            <p class="tips">В проекте Maven файл <tt>glassfish-resources.xml</tt> расположен в каталоге <tt>src/main/setup</tt> в узле проекта в окне &quot;Файлы&quot;.</p>
+            <ol>
+                <li>Щелкните правой кнопкой мыши модуль EJB в окне &quot;Проекты&quot; и выберите &quot;Создать &gt; Прочее&quot; для открытия мастера создания файла.</li>
+                <li>Из категории Enterprise JavaBeans выберите &quot;Управляемый сообщениями компонент&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>В поле &quot;Имя EJB&quot; введите <strong>NewMessage</strong>.</li>
+                <li>В раскрывающемся списке &quot;Пакет&quot; выберите <strong>ejb</strong>.</li>
+                <li>Для открытия диалогового окна &quot;Добавление адресата сообщения&quot; нажмите кнопку &quot;Добавить&quot; рядом с полем &quot;Адресат проекта&quot;.</li>
+                <li>В диалоговом окне &quot;Добавление адресата сообщения&quot; введите <strong>jms/NewMessage</strong> и выберите &quot;Очередь&quot; для типа адресата.  Нажмите кнопку &quot;ОК&quot;.<br> <img alt="снимок диалогового окна &amp;quot;Добавление назначения сообщения&amp;quot;." class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-messagedestination.png" title="Диалоговое окно &amp;quot;Добавление назначения сообщения&amp;quot;.">
+                </li>
+                <li>Подтвердите, что адресат проекта выбран правильно.  Нажмите кнопку &quot;Далее&quot;.<br> <img alt="снимок мастера создания компонентов, управляемых сообщениями" class="margin-around b-all" src="../../../images_www/articles/80/javaee/mavenentapp/maven-newmdb.png" title="Мастер создания компонентов, управляемых сообщениями"></li>
+                <li>В диалоговом окне "Свойства конфигурации активации" оставьте настройки по умолчанию без изменений. Нажмите кнопку &quot;Завершить&quot;.
+                    <p>При нажатии кнопки &quot;Готово&quot; автоматически создается класс компонента, к которому добавляются следующие аннотации, идентифицирующие класс как компонент, управляемый сообщениями, а также свойства настройки.</p>
+                    <pre class="examplecode">
+@MessageDriven(mappedName = "jms/NewMessage", activationConfig =  {
+        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
+    })
+public class NewMessage implements MessageListener {
+
+    public NewMessage() {
+    }
+
+    @Override
+    public void onMessage(Message message) {
+    }
+}</pre>
+                </li>
+
+                <li>Введите в класс ресурс <tt>MessageDrivenContext</tt> посредством добавления к классу следующего аннотированного поля:
+
+                    <pre class="examplecode">public class NewMessage implements MessageListener {
+
+<strong>@Resource
+private MessageDrivenContext mdc;</strong>
+</pre>
+                </li>
+               <li>Введите в класс диспетчер объектов посредством добавления к классу следующего аннотированного поля (выделено полужирным шрифтом):
+                   <pre class="examplecode">
+public class NewMessage implements MessageListener {
+
+@Resource
+private MessageDrivenContext mdc;
+<strong>@PersistenceContext(unitName="com.mycompany_MavenEnterpriseApp-ejb_ejb_1.0-SNAPSHOTPU")
+private EntityManager em;</strong>
+                   </pre>
+                   <p>Аннотация <tt>@PersistenceContext</tt> указывает контекст путем объявления блока сохранения состояния.  Значение <tt>unitName</tt> представляет собой имя блока сохранения состояния.</p>
+               <li>Добавьте следующий метод <tt>save</tt> (выделен полужирным шрифтом). 
+
+<pre class="examplecode">public NewMessage() {
+}
+
+@Override
+public void onMessage(Message message) {
+}
+
+<strong>private void save(Object object) {
+    em.persist(object);
+}</strong></pre>
+               </li>
+                <li>Измените метод <tt>onMessage</tt> путем добавления следующих строк кода (выделены полужирным шрифтом) в тело метода:
+                <pre class="examplecode">
+public void onMessage(Message message) {
+     <strong>ObjectMessage msg = null;
+     try {
+          if (message instanceof ObjectMessage) {
+          msg = (ObjectMessage) message;
+              NewsEntity e = (NewsEntity) msg.getObject();
+              save(e);
+          }
+     } catch (JMSException e) {
+          e.printStackTrace();
+          mdc.setRollbackOnly();
+     } catch (Throwable te) {
+          te.printStackTrace();
+     }</strong>
+}</pre>
+                </li>
+                <li>Исправьте операторы импорта (Ctrl-Shift-I; ⌘-Shift-I в Mac) и сохраните изменения.
+                <p class="notes"><strong>Примечание.</strong> При создании операторов импорта необходимо убедиться, что импортируются библиотеки <strong><tt>jms</tt></strong> и <strong><tt>javax.annotation.Resource</tt></strong>.</li>
+        </ol>
+
+             <p class="tips">Подробные сведения об управляемых сообщениями компонентах приведены в главе <a href="http://download.oracle.com/javaee/6/tutorial/doc/gipko.html">Что такое управляемый сообщениями компонент?</a> в <a href="http://download.oracle.com/javaee/6/tutorial/doc/index.html">руководстве по Java EE 6. Часть I</a>.</p>
+
+
+        <a name="Exercise_2d"></a>
+        <h3>Создание компонента сеанса</h3>
+        <p>В этом упражнении будет использоваться мастер создания фасада сеанса для класса сущности NewsEntity.  Мастер создаст методы <tt>create</tt>, <tt>edit</tt> и <tt>find</tt>, которые будут вызываться из сервлетов в проекте веб-приложения.</p>
+        <ol>
+            <li>Щелкните модуль EJB правой кнопкой мыши и выберите команду &quot;Создать&quot; &gt; &quot;Другие&quot;.</li>
+            <li>Из категории &quot;Сохранение состояния&quot; выберите &quot;Сеансные компоненты для классов сущностей&quot; и нажмите кнопку &quot;Далее&quot;.</li>
+            <li>Из списка доступных классов сущностей выберите <strong>ejb.NewsEntity</strong> и нажмите кнопку &quot;Добавить&quot;, чтобы переместить класс на панель &quot;Выбранные классы сущностей&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>В качестве пакета выберите <strong>ejb</strong>. Нажмите кнопку &quot;Завершить&quot;.</li>
+        </ol>
+        
+        <p>При нажатии кнопки &quot;Готово&quot; среда IDE создает два класса фасада сеанса: <tt>AbstractFacade.java</tt> и <tt>NewsEntityFacade.java</tt>, последний расширяет класс абстрактного фасада.  Класс абстрактного фасада определяет несколько методов, которые обычно используются с классами сущностей.</p>
+        <img alt="снимок компонентов Bean сеанса для мастера классов сущностей" class="margin-around b-all" src="../../../images_www/articles/80/javaee/mavenentapp/maven-sessionwizard.png" title="Компоненты Bean сеанса для мастера классов сущностей">
+<!--        <p>Interfaces are optional in Java EE 6 and Java EE 7.
+        The local interface is optional and the servlet
+        in the web module can access the session bean directly via a no-interface facade.</p>-->
+
+            </div>
+
+    <a name="Exercise_3"></a>
+    <h2>Написание кода веб-приложения</h2>
+    <p>В примере в этом разделе будет создано два сервлета в проекте веб-приложения.</p>
+        
+    <div class="indent">
+        <a name="Exercise_3a"></a>
+        <h3>Создание сервлета ListNews</h3>
+        <p>В этом упражнении будет создан сервлет ListNews, используемый для вывода списка отправленных сообщений.  Для ввода в фасад сеанса и доступа к методу <tt>findAll</tt> и получения отправленных сообщений используются аннотации.</p>
+        
+        <ol>
+            <li>Щелкните проект веб-модуля правой кнопкой мыши и выберите &quot;Создать&quot; &gt; &quot;Сервлет&quot;.</li>
+            <li>В поле &quot;Имя класса&quot; введите <strong>ListNews</strong>.</li>
+            <li>В качестве имени пакета введите <strong>web</strong>. Нажмите кнопку &quot;Завершить&quot;. 
+            <p>При нажатии кнопки &quot;Готово&quot; класс <tt>ListNews.java</tt> будет открыт в редакторе исходного кода.</p></li>
+            <li>Щелкните правой кнопкой мыши в редакторе исходного кода в определении класса и выберите команду &quot;Вставка кода&quot; (ALT+ISERT; CTRL+I на компьютере Mac) &gt; &quot;Вызов компонента EJB&quot;.</li>
+            <li>В диалоговом окне &quot;Вызов компонента EJB&quot; разверните узел MavenEnterpriseApp-ejb и выберите NewsEntityFacade.  Нажмите кнопку &quot;ОК&quot;.<br> <img alt="Диалоговое окно &apos;Вызвать компонент корпоративного уровня&apos;" class="margin-around b-all" src="../../../images_www/articles/80/javaee/mavenentapp/maven-callbean.png" title="Диалоговое окно &apos;Вызвать компонент корпоративного уровня&apos;">
+            <p>При нажатии кнопки ОК выполняется ввод ресурса EJB в сервлет с использованием аннотации <tt>@EJB</tt>.</p>
+<pre class="examplecode">@WebServlet(name = "ListNews", urlPatterns = {"/ListNews"})
+public class ListNews extends HttpServlet {
+    @EJB
+    private NewsEntityFacade newsEntityFacade;</pre>
+            </li>
+            <li>В методе <tt>processRequest</tt> внесите изменения, добавив следующие строки (выделены полужирным шрифтом) в тело метода:
+                <pre class="examplecode">
+out.println("&lt;h1&gt;Servlet ListNews at " + request.getContextPath () + "&lt;/h1&gt;");
+<strong>
+List news = newsEntityFacade.findAll();
+for (Iterator it = news.iterator(); it.hasNext();) {
+  NewsEntity elem = (NewsEntity) it.next();
+  out.println(" &lt;b&gt;"+elem.getTitle()+" &lt;/b&gt;&lt;br /&gt;");
+  out.println(elem.getBody()+"&lt;br /&gt; ");
+}
+out.println("&lt;a href='PostMessage'&gt;Add new message&lt;/a&gt;");
+</strong>
+out.println("&lt;/body&gt;");
+   </pre>
+                <p class="notes"><strong>Примечание.</strong> Если используется более ранняя версия IDE необходимо удалить комментарии кода.</p>
+            </li>
+            <li>Исправьте выражения импорта (Ctrl-Shift-I; ⌘-Shift-I в Mac) и сохраните изменения.
+                <p>При создании операторов импорта может потребоваться импортировать библиотеки <tt>java.util</tt>.</p></li>
+        </ol>
+
+        <a name="Exercise_3b"></a>
+        <h3>Создание сервлета PostMessage</h3>
+
+        <p>В этом упражнении будет создан сервлет PostMessage, используемый для отправки сообщений.  Для добавления созданных ресурсов JMS непосредственно в сервлет используются аннотации с указанием имени переменной и имени, на которое она отображается.  Затем необходимо написать код для отправки сообщения JMS и код для формы HTML, предназначенной для добавления сообщения.</p>
+        <ol>
+            <li>Щелкните проект веб-модуля правой кнопкой мыши и выберите &quot;Создать&quot; &gt; &quot;Сервлет&quot;.</li>
+            <li>В поле &quot;Имя класса&quot; введите <strong>PostMessage</strong>.</li>
+            <li>В качестве имени пакета выберите <strong>web</strong>. Нажмите кнопку &quot;Завершить&quot;.
+            <p>При нажатии кнопки &quot;Готово&quot; в редакторе исходного кода будет открыт класс <tt>PostMessage.java</tt>.</p>
+            </li>
+
+
+            <li>Используйте аннотации в редакторе исходного кода для ввода ресурсов <tt>ConnectionFactory</tt> и <tt>Queue</tt> путем добавления следующих объявлений полей.
+                <pre class="examplecode">
+@WebServlet(name="PostMessage", urlPatterns={"/PostMessage"})
+public class PostMessage extends HttpServlet {
+   <strong>@Resource(mappedName="jms/NewMessageFactory")
+   private  ConnectionFactory connectionFactory;
+
+   @Resource(mappedName="jms/NewMessage")
+   private  Queue queue;</strong></pre>
+
+                </li>
+                <li>Для импорта библиотек <strong><tt>javax.jms</tt></strong> исправьте параметры импорта.<br> <img alt="снимок диалогового окна &apos;Исправить все выражения импорта&apos;" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-searchdepend1.png" title="Диалоговое окно &apos;Исправить все выражения импорта&apos;">
+                <p class="notes"><strong>Примечание.</strong> Если IDE не поддерживает <tt>javax.jms</tt> как параметр, можно выполнить поиск в репозиториях правильного артефакта, щелкнув значок рекомендации на поле рядом с <tt>private ConnectionFactory connectionFactory;</tt> и выбрав 'Поиск зависимостей' в репозиториях Maven.</p>
+                <img alt="снимок подсказки в редакторе для поиска в репозиториях" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-searchdependencies.png" title="Подсказки в редакторе для поиска в репозиториях зависимостей">
+                <p>Для поиска артефакта <tt>javaee-api-6.0</tt>, содержащего <tt>ConnectionFactory</tt> можно воспользоваться диалоговым окном &quot;Поиск в репозиториях Maven&quot;.</p>
+                <img alt="снимок диалогового окна &apos;Поиск в репозиториях Maven&apos;" class="margin-around b-all" src="../../../images_www/articles/80/javaee/mavenentapp/maven-searchdepend2.png" title="Диалоговое окно &apos;Поиск в репозиториях Maven&apos;">
+            </li>
+            <li>Добавьте следующие строки, используемые для отправки сообщений JMS, к методу <tt>processRequest</tt>.
+      
+        <pre class="examplecode">
+response.setContentType("text/html;charset=UTF-8");
+
+<strong>// Add the following code to send the JMS message
+String title=request.getParameter("title");
+String body=request.getParameter("body");
+if ((title!=null) && (body!=null)) {
+    try {
+        Connection connection = connectionFactory.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        MessageProducer messageProducer = session.createProducer(queue);
+
+        ObjectMessage message = session.createObjectMessage();
+        // here we create NewsEntity, that will be sent in JMS message
+        NewsEntity e = new NewsEntity();
+        e.setTitle(title);
+        e.setBody(body);
+
+        message.setObject(e);
+        messageProducer.send(message);
+        messageProducer.close();
+        connection.close();
+        response.sendRedirect("ListNews");
+
+    } catch (JMSException ex) {
+        ex.printStackTrace();
+    }
+}</strong></pre>
+            </li>
+            <li>Добавьте следующие строки, используемые для отправки сообщений (выделены жирным шрифтом) к веб-форме.
+            <pre class="examplecode">
+out.println("Servlet PostMessage at " + request.getContextPath() + "&lt;/h1&gt;");
+
+<strong>// The following code adds the form to the web page
+out.println("&lt;form&gt;");
+out.println("Title: &lt;input type='text' name='title'&gt;&lt;br/&gt;");
+out.println("Message: &lt;textarea name='body'&gt;&lt;/textarea&gt;&lt;br/&gt;");
+out.println("&lt;input type='submit'&gt;&lt;br/&gt;");
+out.println("&lt;/form&gt;");
+</strong>
+out.println("&lt;/body&gt;");
+    </pre>
+                <p class="notes"><strong>Примечание.</strong> Если используется более ранняя версия IDE необходимо удалить комментарии кода.</p>
+            </li>
+            <li>Исправьте операторы импорта и сохраните измененные данные.<br /> <img alt="снимок диалогового окна &apos;Исправить все выражения импорта&apos;" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-jms-imports.png" title="Диалоговое окно &apos;Исправить все выражения импорта&apos;">
+            <p class="notes"><strong>Примечание.</strong> Необходимо выполнить импорт библиотек <strong><tt>javax.jms</tt></strong> для <tt>Connection</tt>, <tt>ConnectionFactory</tt>, <tt>Session</tt> и <tt>Queue</tt>.</p>
+            </li>
+        </ol>
+    </div>
+
+            
+    <a name="Exercise_4"></a>
+    <h2>Сборка приложения с помощью Maven</h2>
+    <p>Написание кода завершено, и можно выполнить сборку приложения уровня предприятия с помощью Maven. Этот раздел посвящен сборке и пакетированию проектов в архив EAR. В архив EAR входят архив EJB JAR и архив WAR. После создания архива EAR его можно развернуть на целевом сервере.</p>
+
+            
+        <div class="indent">
+        <a name="Exercise_4a"></a>
+        <h3>Работа с зависимостями проекта</h3>
+        <p>В этом упражнении вы исследуете POM (<tt>pom.xml</tt>) веб-проекта и измените POM, чтобы избежать включения ненужных артефактов в WAR при пакетировании.
+<!--        This will prevent the EAR archive from containing two copies of the EJB archive.-->
+
+        В каждый проект Maven входит файл <tt>pom.xml</tt>, содержащий подробные данные о содержимом архивов.  Все внешние библиотеки, запрашиваемые проектом, внесены в качестве зависимостей в файл POM.  Файл POM можно изменить, указав зависимости, которые необходимо включить или исключить при пакетировании архива.</p>
+
+        <p>В этом приложении в архив EAR пакетируются архивы JAR EJB и WAR.  Обратите внимание на файл <tt>pom.xml</tt> в проекте MavenEnterpriseApp-ear: архивы EJB и WAR объявлены как зависимости.</p>
+
+        <img alt="pom.xml проекта EAR" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-earpom.png" title="pom.xml проекта EAR">
+
+        <p>Обратите внимание на файл <tt>pom.xml</tt> в проекте веб-приложения: архив EJB объявлен как зависимость, и для области выбрано значение <tt>указана</tt>.  В случае когда значение элемента области артефакта <tt>указано</tt>, артефакт не будет включен при пакетировании.  Архив·EJB·требуется·проектом·веб-приложения·как·зависимость,·однако·для·этого·приложения·не·требуется·включать·архив·EJB·в·WAR·при·пакетировании,·так·как·архив EJB предоставляется для использования в веб-приложении в составе архива EAR.</p>
+        <img alt="pom.xml проекта веб-приложения" class="margin-around b-all" src="../../../images_www/articles/80/javaee/mavenentapp/maven-webpom.png" title="pom.xml проекта веб-приложения">
+
+        <p class="tips">Можно открыть файл <tt>pom.xml</tt> в редакторе и просмотреть визуальное представление зависимостей проекта на вкладке "График". Если используется более ранняя версия IDE, можно щелкнуть открытый в редакторе файл <tt>pom.xml</tt> правой кнопкой мыши и выбрать "Показать график зависимостей". Наведите указатель мыши на артефакт для отображения всплывающей подсказки с подробными данными артефакта.</p>
+        <img alt="снимок графика зависимостей." class="margin-around b-all" src="../../../images_www/articles/80/javaee/mavenentapp/maven-webpomgraph.png" title="График зависимостей.">
+
+        <p>Выполните следующие действия для изменения файла POM проекта веб-приложения и добавьте элемент <tt>scope</tt> scope к зависимости в артефакте <tt>javaee-api</tt>.</p>
+        <ol>
+            <li>Разверните узел &quot;Файлы проекта&quot; для проекта веб-приложения.</li>
+            <li>Дважды щелкните <tt>pom.xml</tt> для открытия файла в редакторе.</li>
+            <li>Убедитесь, что в артефакте <tt>javaee-api</tt> для параметра <tt>&lt;scope></tt> задано значение <tt>provided</tt>.
+                <p>Если задано любое другое значение, кроме <tt>provided</tt>, необходимо внести следующие изменения в POM:</p>
+            <pre class="examplecode">
+&lt;dependency&gt;
+    &lt;groupId&gt;javax&lt;/groupId&gt;
+    &lt;artifactId&gt;javaee-api&lt;/artifactId&gt;
+    &lt;version&gt;7.0&lt;/version&gt;
+    &lt;type&gt;jar&lt;/type&gt;
+    <strong>&lt;scope&gt;provided&lt;/scope&gt;</strong>
+&lt;/dependency&gt;</pre>
+            <p class="tips">Можно использовать автозавершение кода в редакторе POM, упрощающее правку файла.</p>
+            <img alt="снимок автозавершения кода в POM" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-addscope-javaee.png" title="автозавершение кода для элемента области в POM">
+            <p>Если в файле POM содержится объявление предоставленной зависимости, этот артефакт не пакетируется Maven при сборке архива WAR.</p></li>
+            <li>Сохраните изменения.</li>
+        </ol>
+        
+            <a name="Exercise_4b"></a>
+            <h3>Сборка проекта с зависимостями</h3>
+            <p>Платформа сборки Maven проходит через определенную последовательность этапов, и каждый этап подразумевает выполнение одной или нескольких задач, причем можно настроить использование различных подключаемых модулей Maven. Пункт меню &quot;Сборка вместе с зависимостями&quot; соответствует этапу <tt>install</tt> жизненного цикла сборки Maven, и для него настроено использование подключаемого модуля Reactor.  При выборе пункта раскрывающегося меню &quot;Сборка вместе с зависимостями&quot; Maven выполняет сборку приложения и всех необходимых зависимостей, после чего артефакты сборки копируются в локальный репозиторий.</p>
+
+            <p class="tips">Можно настроить привязку целей к операциям в меню &quot;Действия&quot; в диалоговом окне &quot;Свойства&quot; проекта.</p>
+
+            <p>Для сборки архива EAR выполните следующее действие.</p>
+            <ul>
+                <li>Щелкните правой кнопкой мыши узел проекта MavenEnterpriseApp-ear и выберите команду &quot;Сборка вместе с зависимостями&quot;.</li>
+            </ul>
+            
+            <p>При сборке проекта EAR с использование подключаемого модуля Reactor сборка зависимостей подпроектов выполняется перед сборкой проекта EAR.  В окне &quot;Вывод&quot; отображается порядок сборки.</p>
+
+            <img alt="В окне &amp;quot;Вывод&amp;quot; отображается порядок сборки Reactor." class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-reactor1.png" title="В окне &amp;quot;Вывод&amp;quot; отображается порядок сборки Reactor.">
+
+            <p>Результаты сборки также отображаются в окне &quot;Вывод&quot;.</p>
+            <img alt="В окне &amp;quot;Вывод&amp;quot; отображается состояние сборки Reactor" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-reactor2.png" title="В окне &amp;quot;Вывод&amp;quot; отображается состояние сборки Reactor">
+            <p>После сборки проекта EAR итоговый архив EAR отображается в каталоге <tt>target</tt> в узле проекта EAR в окне &quot;Файлы&quot;.</p>
+            <img alt="Окно &apos;Файлы&apos;, в котором отображается архив EAR" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-earfileswindow1.png" title="Окно &apos;Файлы&apos;, в котором отображается архив EAR">
+
+            
+            <p>Если использовано имя артефакта по умолчанию <tt>com.mycompany</tt>, для просмотра артефактов сборки в браузере репозиториев Maven можно развернуть узел <tt>com.mycompany</tt> в локальном репозитории.</p>
+
+            <p class="tips">Подробные сведения о сборке проектов Maven приведены в документе <a href="http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html">Maven - Введение в жизненный цикл сборки</a> по адресу <a href="http://maven.apache.org">maven.apache.org</a>.</p>
+        </div>
+
+        <a name="Exercise_5"></a>
+        <h2>Развертывание и выполнение приложения</h2>
+        <p>В этом разделе описываются два метода развертывания архива EAR на сервере. Приложение можно развернуть на сервере GlassFish с помощью действия меню в среде IDE или с помощью средства развертывания в консоли администратора GlassFish.</p>
+
+        <div class="indent">
+            <a name="Exercise_5a"></a>
+            <h3>Развертывание и выполнение приложения из среды IDE</h3>
+            <p>В этом упражнении мы используем действие &quot;Выполнить&quot; для развертывания архива EAR на сервере GlassFish. После развертывания будет необходимо открыть страницу ListNews приложения в браузере и добавить сообщение.</p>
+            
+            <ol>
+                <li>Щелкните правой кнопкой мыши узел проекта EAR в окне &quot;Проекты&quot; и выберите &quot;Выполнение&quot;.
+                    <p>При нажатии команды &quot;Выполнение&quot; среда IDE разворачивает архив EAR и создает ресурсы JMS на сервере.  Среда IDE откроет установленную по умолчанию начальную страницу приложения (<a href="http://localhost:8080/MavenEnterpriseApp-web/">http://localhost:8080/MavenEnterpriseApp-web/</a>) в браузере.</p></li>
+                <li>Для вывода страницы ListNews откройте в браузере следующий адрес URL.
+                <p><a href="http://localhost:8080/MavenEnterpriseApp-web/ListNews">http://localhost:8080/MavenEnterpriseApp-web/ListNews</a>.</p>
+                <p>При первом выполнении проекта база данных пуста, и сообщения для вывода отсутствуют.</p>
+                <img alt="Страница ListNews открыта в браузере" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-browser1.png" title="Страница ListNews открыта в браузере"></li>
+                <li>Нажмите кнопку &quot;Добавить сообщение&quot;.</li>
+                <li>Введите сообщение в форму в сервлете PostMessage.  Нажмите кнопку &quot;Отправить запрос&quot;.<br> <img alt="Страница PostMessage открыта в браузере" class="margin-around b-all" src="../../../images_www/articles/72/javaee/mavenentapp/maven-browser2.png" title="Страница PostMessage открыта в браузере">
+                </li>
+            </ol>
+
+            <p>При добавлении сообщения с помощью сервлета PostMessage оно передается на постоянное хранение в управляемый сообщениями компонент. Для просмотра сообщений в базе данных вызывается сервлет ListNews.  Список сообщений в базе данных, извлеченных сервлетом ListNews, часто выводится без нового сообщения, поскольку служба передачи сообщений работает асинхронно.
+            </p>
+            
+            <p class="tips">В проектах Maven, использующих сервер GlassFish в качестве целевого сервера, функции &quot;Компиляция при сохранении&quot; и &quot;Развертывание при сохранении&quot; включены по умолчанию. Например, при изменении и сохранении сервлета можно перезагрузить сервлет в браузере и просмотреть изменения без повторного развертывания приложения.</p>
+            
+            
+
+                
+<!--                <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-selectserver.png" class="margin-around b-all" alt="Select Deployment Server dialog" title="Select Deployment Server dialog" >-->
+            </div>
+
+            <a name="Exercise_5b"></a>
+            <h3>Развертывание из консоли администратора GlassFish</h3>
+            <p>В этом упражнении выполняется развертывание архива EAR с помощью средства &quot;Развернуть&quot; в консоли администратора Glassfish.</p>
+            <ol>
+                <li>Разверните узел &quot;Серверы&quot; в окне &quot;Службы&quot;.</li>
+                <li>Запустите сервер приложений GlassFish.</li>
+                <li>Щелкните правой кнопкой мыши узел сервера приложений GlassFish и выберите &quot;Просмотр консоли администратора&quot; для открытия в браузере консоли администратора GlassFish.</li>
+                <li>Щелкните узел &quot;Приложения&quot; на левой панели консоли администратора.</li>
+                <li>Нажмите кнопку &quot;Развернуть&quot; на главной панели консоли администратора.</li>
+                <li>Нажмите кнопку &quot;Обзор&quot; для поиска архива EAR приложения уровня предприятия.
+                    <p>Архив EAR расположен в каталоге <tt>target</tt> внутри каталога приложения уровня предприятия в локальной системе.</p></li>
+                <li>Нажмите кнопку &quot;ОК&quot;.</li>
+            </ol>
+            <p>При нажатии кнопки &quot;ОК&quot; выполняется развертывание приложения с помощью средства развертывания GlassFish.</p>
+
+            <p class="notes"><strong>Примечание.</strong> При развертывании приложения с помощью средства развертывания на консоли администрирования GlassFish, также необходимо вручную создать ресурсы, необходимые для приложения, если они не существуют.</p>
+        </div>
+
+        
+            
+                <a name="Exercise_7"></a>
+                <h2>Загрузка проекта решения</h2>
+                <p>Решение для данного учебного курса в виде проекта можно загрузить несколькими способами.</p>
+                <ul>
+                    <li>Загрузите <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FMavenEnterpriseApp.zip">архив завершенного проекта в формате zip</a>.</li>
+                    <li>Выполните проверку исходных файлов проекта на выходе из примеров NetBeans, выполнив перечисленные ниже действия.
+                    <ol>
+                        <li>Выберите в главном меню &quot;Группа &gt; Subversion &gt; Проверить&quot;.</li>
+                        <li>В диалоговом окне &quot;Проверка&quot; введите следующий URL-адрес репозитория:<br> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br> Нажмите кнопку &quot;Далее&quot;.</li>
+                        <li>Нажмите кнопку &quot;Обзор&quot; для открытия диалогового окна &quot;Обзор папок репозитория&quot;.</li>
+                        <li>Разверните корневой узел и выберите <strong>samples/javaee/MavenEnterpriseApp</strong>.  Нажмите кнопку &quot;ОК&quot;.</li>
+                        <li>Укажите локальную папку для исходных файлов (папка должна быть пустой).</li>
+                        <li>Нажмите кнопку &quot;Завершить&quot;.
+                            <p>После нажатия кнопки &quot;Готово&quot; среда IDE инициализирует локальную папку в качестве репозитория Subversion и выполняет проверку исходных файлов проекта на выходе.</p>
+                        </li>
+                        <li>Щелкните команду &quot;Открыть проект&quot; в диалоговом окне, которое появится после завершения проверки.</li>
+                    </ol>
+                        <p class="notes"><strong>Примечания.</strong> For more about installing Subversion, see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in IDE NetBeans</a>.</p>
+                    </li>
+                </ul>
+                
+
+
+            <!--
+            <a name="Exercise_5"></a>
+                
+            <h2>Troubleshooting</h2>
+            <p>The following are some of the problems you may encounter when creating your project.</p>
+            <div class="indent">
+                <h3 class="tutorial">Problem with JMS Resources</h3>
+                <p>When using the wizard to create JMS resources, 
+                you may see the following server error message in the output window:</p>
+                <pre>[com.sun.enterprise.connectors.ConnectorRuntimeException:
+                    JMS resource not created : jms/Queue]
+                </pre>
+                <p>This message could indicate that the JMS resource was not created or was not registered with the application server.
+                You can use the Admin Console of the application server to check, create and edit JMS resources.</p>
+                <p>To open the Admin Console, do the following:</p>
+                <ol>
+                    <li>Confirm that the application server is running by expanding the Servers node in the Services window of the IDE.
+                    A small green arrow next to the application server node indicates the server is running.</li>
+                    <li>Right-click the application server node and choose View Admin Console to open the login window in your browser.</li>
+                    <li>Log in to the server. The default user name and password are <tt>admin</tt> and <tt>adminadmin</tt>.</li>
+                    <li>In the Admin Console in your browser, expand the Resources node and JMS Resources node in the left frame.</li>
+                    <li>Click on the Connection Factories and Destination Resources links in the left frame to check if the resources are
+                        registered with the server and if necessary modify the resources. If the resources do not exist, you can create them
+                    in the Admin Console.</li>
+                </ol>
+                <p>You need to make sure that the JMS connection factory resource
+                   in the PostMessage servlet is mapped to the correct JNDI name of the JMS connection factory resource
+                   registered with the Sun Java System Application Server.</p>
+                <p>The following resources should be registered with the Sun Java System Application Server:</p>
+                <ul>
+                    <li>a Destination resource with the JNDI name <tt>jms/NewMessage</tt> and type <tt>javax.jms.Queue</tt></li>
+                    <li>a Connection Factory resource with the JNDI name <tt>jms/NewMessageFactory</tt> and type <tt>	
+                    javax.jms.QueueConnectionFactory</tt></li>
+                </ul>
+
+                <p>make sure that the import in PostMessage is not <tt>javax.resource.cci.ConnectionFactory</tt></p>
+
+                <h3 class="tutorial">Problem with the Datasource</h3>
+
+            </div>-->
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Enterprise%20Application%20Using%20Maven">Отправить отзыв по этому учебному курсу</a></div>
+            <br style="clear:both;" >
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>Дополнительные сведения</h2>
+            <p>For more information about using IDE NetBeans to develop Java EE applications, see the following resources:
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Введение в технологию Java EE </a></li>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+            <li><a href="maven-entapp-testing.html">Тестирование приложения Maven уровня предприятия</a></li>
+            <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+            <p>Дополнительные сведения по использованию компонентов уровня предприятия приведены в <a href="http://download.oracle.com/javaee/7/tutorial/doc/">учебном курсе по Java EE 7</a>.</p>
+            <p>To send comments and suggestions, get support, and keep informed on the latest developments on the IDE NetBeans Java EE development features, <a href="../../../community/lists/top.html">join the nbj2ee mailing list</a>.</p>
+    </body>
+</html>

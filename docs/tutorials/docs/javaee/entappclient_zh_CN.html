@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>在 GlassFish Server 上创建和运行应用程序客户端</title>
+        <meta name="description"
+        content="A tutorial on how to use NetBeans IDE to develop and deploy an enterprise application client to GlassFish Server 3.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+    <body>
+        <!-- Begin Content Area -->
+        <h1>在 GlassFish Server 上创建和运行应用程序客户端</h1>
+        
+        <p>本教程介绍了如何创建简单的应用程序客户端，以及如何访问部署到 GlassFish Server 3 的 Enterprise JavaBean (EJB)。在本教程中，将首先创建一个包含简单会话 Bean 的企业应用程序以及一个包含该会话 Bean 远程接口的 Java 类库项目。然后，将创建一个应用程序客户端，以通过类库中的远程接口访问会话 Bean。包含远程接口的类库 JAR 将添加到企业应用程序和应用程序客户端的类路径中。</p>
+
+        
+              
+        
+        <p><b>教程练习</b></p>
+           <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+            <ul>
+                <li><a href="#Exercise_10">创建 Java 类库</a></li>
+                <li><a href="#Exercise_20">创建 EJB 模块</a>
+                    <ul>
+                        <li><a href="#Exercise_22">创建会话 Bean</a></li>
+                        <li><a href="#Exercise_23">添加业务方法</a></li>
+                        <li><a href="#Exercise_24">部署企业应用程序</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_30">创建应用程序客户端</a>
+                    <ul>
+                        <li><a href="#Exercise_32">添加类库</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_30">运行应用程序客户端</a></li>
+                <!--<li><a href="#Exercise_40">Downloading the Solution Project</a></li>-->
+            </ul>
+        
+        
+           
+            <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE 版本</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 7 或 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                    <td class="tbltd1">3.x、4.x</td>
+                </tr>
+                </tbody>
+            </table>
+            
+            
+            <p><b>先决条件</b></p>
+            <p>本文档假定您具备以下技术的一些基本知识或编程经验：</p>
+            <ul>
+                <li>Java 编程</li>
+                <li>NetBeans IDE</li>
+            </ul>
+            <p class="tips">您可以下载<a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/EntAppClientEE6.zip">已完成项目的 zip 档案文件</a>。如果使用的是 GlassFish 3.0，请使用 <a href="https://netbeans.org/projects/samples/downloads/download/NetBeans%20IDE%206.8/JavaEE/entappclient.zip">NetBeans IDE 6.8 项目的 zip 档案</a>。</p>
+            
+            
+        
+        <!-- ===================================================================================== -->
+
+
+        <a name="Exercise_10"></a>
+        <h2>创建 Java 类库</h2>
+        <p>在本部分中，将创建一个要包含 EJB 远程接口的 Java 类库项目。该远程接口充当 EJB 的 API，供客户端用来与 EJB 通信。</p>
+
+        <p>库 JAR 可方便地分发到可能需要调用 EJB 的任何客户端。客户端在需要访问 EJB 时，只需将库 JAR 添加到项目类路径中即可。EJB 实现使用相同的 JAR 来实现该接口。</p>
+
+        
+
+        <!--appclient runs locally on client and if it needs to communicate with an EJB on server then
+        EJB must have Remote interface which appclient will use.
+        .... something like that followed by
+        "so let's start with creating class lib project"-->
+
+        <ol>
+            <li>选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键），然后在 "Java" 类别中选择 "Java Class Library"（Java 类库）。单击 "Next"（下一步）。</li>
+            <li>键入 <strong>EJBRemoteInterface</strong> 作为项目名称。单击 "Finish"（完成）。 </li>
+        </ol>
+        <img alt="新建类库项目向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-newclasslibrary.png" title="新建类库项目向导" />
+
+        <p>单击 "Finish"（完成），此时 IDE 将创建一个 Java 类库项目。在下一部分中，将创建一个 Java EE 企业应用程序和 EJB 模块。然后，将使用向导在类库项目中创建一个会话 Bean 以及会话 Bean 的远程接口。应用程序客户端将通过类库中的接口访问该会话 Bean。</p>
+
+
+
+        <a name="Exercise_20"></a>
+        <h2>创建 EJB 模块</h2>
+        <p>在本部分中，将创建一个企业应用程序和 EJB 模块。在创建 EJB 时，应将 EJB 作为企业应用程序的一部分进行创建，然后将其作为 EAR 档案打包并部署到服务器中。</p>
+
+        <div class="indent">
+            <a name="Exercise_21"></a>
+            <h3>创建企业应用程序</h3>
+            <p>在本部分中，将使用新建项目向导创建一个包含 EJB 模块的企业应用程序。该向导提供了一个在创建应用程序时创建 EJB 模块的选项。
+            </p>
+
+            <ol>
+                <li>选择 "File"（文件）> "New Project"（新建项目），然后在 "Java EE" 类别中选择 "Enterprise Application"（企业应用程序）。单击 "Next"（下一步）。</li>
+                <li>键入 <strong>EntAppEJB</strong> 作为项目名称。单击 "Next"（下一步）。</li>
+                <li>选择 GlassFish Server 作为服务器。</li>
+                <li>确认选择了 "Create EJB Module"（创建 EJB 模块）并取消选择 "Create Web Application Module"（创建 Web 应用程序模块）。单击 "Finish"（完成）。 </li>
+            </ol>
+            <img alt="新建企业应用程序向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-newentappejb.png" title="在新建企业应用程序向导中选中了 &quot;Create EJB Module&quot;（创建 EJB 模块）" />
+
+            <p>单击 "Finish"（完成），此时 IDE 将创建一个企业应用程序和 EJB 模块。在 "Projects"（项目）窗口中，您可以看到在企业应用程序项目的 "Java EE Modules"（Java EE 模块）节点下面列出了 EJB 模块项目。</p>
+            <img alt="显示已打开项目的 &quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-projects-entappejb1.png" title="显示已打开项目的 &quot;Projects&quot;（项目）窗口" />
+
+            <p>您可以看到，现在 "Projects"（项目）窗口中列出了三种类型的项目：类库、企业应用程序和 EJB 模块。</p>
+
+
+            <a name="Exercise_22"></a>
+            <h3>创建会话 Bean</h3>
+            <p>在本练习中，将使用向导在 EJB 模块项目中创建一个会话 Bean。在该向导中，还将在类库项目中创建会话 Bean 的远程接口。
+            </p>
+            <ol>
+                <li>右键单击 EJB 模块项目，然后选择 "New"（新建）> "Session Bean"（会话 Bean）。</li>
+                <li>键入 <strong>MySession</strong> 作为 EJB 名称。</li>
+                <li>键入 <strong>ejb</strong> 作为包名。</li>
+                <li>选择 "Stateless"（无状态）作为会话类型。</li>
+                <li>选择 "Create Interface"（创建接口）的 "Remote"（远程）选项。</li>
+                <li>从下拉列表中选择 <strong>EJBRemoteInterface</strong> 项目。单击 "Finish"（完成）。 </li>
+            </ol>
+
+            <img alt="新建会话 Bean 向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-wizard-newsessionbean.png" title="新建会话 Bean 向导" />
+
+            <p>单击 "Finish"（完成），此时 IDE 将在 EJB 模块的 <tt>ejb</tt> 包中创建会话 Bean，然后在编辑器中打开该类。您可以看到 <tt>MySession</tt> 实现了 <tt>MySessionRemote</tt> 接口，并将 EJBRemoteInterface JAR 添加为 EJB 模块的库。</p>
+
+            <p>该向导还会在 EJBRemoteInterface 项目的 <tt>ejb</tt> 包中创建一个名为 <tt>MySessionRemote</tt> 的远程接口。IDE 自动添加 EJB 接口所需的 Java EE 6 API 库。</p>
+
+            <img alt="显示会话 Bean 和远程接口的 &quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-projects-entappejb2.png" title="显示会话 Bean 和远程接口的 &quot;Projects&quot;（项目）窗口" /> <a name="Exercise_23"></a>
+            <h3>添加业务方法</h3>
+            <p>在本练习中，将在会话 Bean 中创建一个简单的业务方法以返回字符串。
+            </p>
+            <ol>
+                <li>在 MySession 的编辑器中右键单击，选择 "Insert Code"（插入代码）（Alt-Insert 组合键；在 Mac 上为 Ctrl-I 组合键），然后选择 "Add Business Method"（添加 Business 方法）。</li>
+                <li>键入 <strong>getResult</strong> 作为方法名，键入 "String"（字符串）作为返回类型。单击 "OK"（确定）。
+
+                </li>
+                <li>进行以下更改，以修改 <tt>getResult</tt> 方法来返回字符串。
+                <p>该类应如下所示。</p>
+                <pre class="examplecode">@Stateless
+public class MySession implements MySessionRemote {
+
+    public String getResult() {
+        return <strong>"This is My Session Bean"</strong>;
+    }
+}</pre>
+                </li>
+                <li>保存所做的更改。</li>
+            </ol>
+
+            <p>现在，您已创建了一个企业应用程序，其中包含通过远程接口公开的简单 EJB。您还创建了一个独立类库，其中包含可分发给其他开发者的 EJB 接口。如果开发者要与远程接口公开的 EJB 进行通信，并且不需要具有 EJB 源代码，则可以在项目中添加该库。在修改 EJB 的代码时，如果任何接口发生变化，您只需要分发更新的类库的 JAR。</p>
+
+            <p class="tips"> 在使用 "Add Business Method"（添加 Business 方法）对话框时，IDE 自动在远程接口中实现该方法。</p>
+
+            <a name="Exercise_24"></a>
+            <h3>部署企业应用程序</h3>
+            <p>现在，您可以构建并运行企业应用程序。在运行应用程序时，IDE 会将 EAR 档案部署到服务器中。</p>
+            <ol>
+                <li>右键单击 EntAppEJB 企业应用程序，然后选择 "Deploy"（部署）。</li>
+            </ol>
+
+            <p>在单击 "Deploy"（部署）后，IDE 将构建企业应用程序，并将 EAR 档案部署到服务器中。如果在 "Files"（文件）窗口中查看，则可以看到 EJBRemoteInterface JAR 是与应用程序一起部署的。</p>
+
+            <p>如果在 "Services"（服务）窗口中展开 GlassFish Server 的 "Applications"（应用程序）节点，则可以看到部署了 EntAppEJB。</p>
+        </div>
+
+
+        <a name="Exercise_30"></a>
+        <h2>创建应用程序客户端</h2>
+
+        <p>在本部分中，将创建一个企业应用程序客户端。在创建应用程序客户端时，项目需要将 EJBRemoteInterface Java 类库作为库来引用 EJB。</p>
+
+        <p>在运行企业应用程序时，IDE 会在 EAR 档案中将应用程序客户端和 Java 类库 JAR 打包。如果要从应用程序客户端中访问 JAR，则必须在 EAR 中将库 JAR 与应用程序客户端一起打包。
+        </p>
+
+        <div class="indent">
+            <a name="Exercise_31"></a>
+            <h3>创建企业应用程序</h3>
+            <p>在本练习中，将使用新建项目向导创建应用程序客户端项目。如果要部署到 GlassFish 3.1 或 4.x，则可以将应用程序客户端作为独立项目进行创建和运行。应用程序客户端再也不需要作为企业应用程序的一部分进行部署和运行。</p>
+
+            <p class="notes"><strong>注：</strong>如果要部署到 GlassFish 3.0.1，则需要在企业应用程序项目中将应用程序客户端创建为一个模块并运行企业应用程序。</p>
+            <ol>
+                <li>选择 "File"（文件）> "New Project"（新建项目），然后在 "Java EE" 类别中选择 "Enterprise Application Client"（企业应用程序客户端）。单击 "Next"（下一步）。</li>
+                <li>键入 <strong>EntAppClient</strong> 作为项目名称。单击 "Next"（下一步）。</li>
+                <li>选择 GlassFish Server 作为服务器。单击 "Finish"（完成）。
+                    <p>请注意，您不需要将项目添加到企业应用程序中。</p>
+                </li>
+            </ol>
+            <img alt="新建项目向导中的 &quot;Create Application Client&quot;（创建应用程序客户端）的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-wizard-newentappclient.png" title="在新建项目向导中选中了 &quot;Create Application Client&quot;（创建应用程序客户端）" />
+
+            <p>单击 "Finish"（完成），此时 IDE 将创建应用程序客户端项目，并在编辑器中打开 <tt>Main.java</tt>。</p>
+
+            <a name="Exercise_31"></a>
+            <h3>添加类库</h3>
+            <p>现在，需要将包含远程接口的类库添加到项目类路径中，使得应用程序客户端能够引用 EJB。现已打开类库项目，因此，您可以使用 "Call Enterprise Bean"（调用企业 Bean）对话框，以便生成调用 EJB 的代码。
+            </p>
+            <p class="tips">如果类库项目未打开，则可以在 "Projects"（项目）窗口中将类库添加到项目中，方法是：右键单击 "Libraries"（库）节点，然后找到 EJBRemoteInterface 项目的 JAR。</p>
+
+            <ol>
+                <li>展开 EntAppClient 项目的 "Source Packages"（源包）节点，然后在编辑器中打开 <tt>Main.java</tt>。</li>
+                <li>在源代码中右键单击，选择 "Insert Code"（插入代码）（Alt-Insert 组合键；在 Mac 上为 Ctrl-I 组合键），然后选择 "Call Enterprise Bean"（调用企业 Bean），以打开 "Call Enterprise Bean"（调用企业 Bean）对话框。</li>
+                <li>展开 EntAppEJB 项目节点，然后选择 "MySession"。单击 "OK"（确定）。<br /> <img alt="&quot;Call Enterprise Bean&quot;（调用企业 Bean）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-callenterprise.png" title="&quot;Call Enterprise Bean&quot;（调用企业 Bean）对话框" />
+
+                <p>该对话框自动选择 "Remote"（远程）作为接口类型。在单击 "OK"（确定）后，IDE 将在 <tt>Main.java</tt> 中添加以下标注。
+                <pre class="examplecode">@EJB
+private static MySessionRemote mySession;</pre>
+
+                <p>IDE 还将自动添加 EJBRemoteInterface 作为项目库。</p>
+                </li>
+                <li>修改 <tt>main</tt> 方法，以便通过 MySessionRemote 接口检索 <tt>getResult</tt> 方法的字符串。保存所做的更改。
+                <pre class="examplecode">
+public static void main(String[] args) {
+        <strong>System.err.println("result = " + mySession.getResult());</strong>
+    }</pre>
+                </li>
+            </ol>
+        </div>
+
+
+        <a name="Exercise_40"></a>
+        <h2>运行应用程序客户端</h2>
+
+        <p>现在，您可以通过构建并部署 EntAppClient 项目来运行应用程序客户端。</p>
+        <ol>
+            <li>在 "Projects"（项目）窗口中右键单击 EntAppClient 项目，然后选择 "Run"（运行）。
+            <p>此外，也可以展开源包并右键单击 <tt>Main.java</tt> 类，然后选择 "Run File"（运行文件）。</p></li>
+        </ol>
+
+        <p>在单击 "Run"（运行）后，IDE 将构建应用程序客户端项目，并将 JAR 档案部署到服务器中。您可以在 "Output"（输出）窗口中看到来自应用程序客户端的消息。</p>
+        <img alt="显示结果的 &quot;Output&quot;（输出）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-buildoutput.png" title="&quot;Output&quot;（输出）窗口中的结果" />
+
+        <p>如果要创建其他 EJB，则只需将新的 EJB 远程接口添加到 EJBRemoteInterface 类库项目中即可。</p>
+
+<!--
+
+        <a name="Exercise_50"></a>
+        <h2>Downloading the Solution Project</h2>
+        <p>You can download the solution to this tutorial as a project in the following ways.</p>
+        <ul>
+            <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fentappclient.zip">a zip archive of the finished project</a>.</li>
+            <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+                    <ol>
+                        <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                        <li>In the Checkout dialog box, enter the following Repository URL:<br/>
+                            <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br/>
+                            Click Next.</li>
+                        <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                        <li>Expand the root node and select <strong>samples/javaee/entappclient</strong>. Click OK.</li>
+                        <li>Specify the Local Folder for the sources (the local folder must be empty).</li>
+                        <li>Click Finish.
+                            <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                            and checks out the project sources.</p>
+                        </li>
+                        <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+                    </ol>
+                <p class="notes"><strong>Notes.</strong></p>
+                <ul>
+                    <li>Steps for checking out sources from Kenai only apply to NetBeans IDE 6.7 and 6.8.</li>
+                    <li>You need a Subversion client to checkout the sources from Kenai.
+                    For more about installing Subversion, see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</li>
+                </ul>
+            </li>
+        </ul>-->
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Application%20Client">请将您的反馈意见发送给我们</a></div>
+        <br style="clear: both;">
+        <!-- ======================================================================================= -->
+        <h2><a name="nextsteps"></a>后续步骤</h2>
+        <!--<p>For more, see the following tutorial </p>
+        <ul>
+            <li><a href="http://wiki.netbeans.org/wiki/view/RemoteApplicationClientInNetBeans">RemoteApplicationClientInNetBeans</a></li>
+        </ul>-->
+        
+        
+        <p>有关使用 NetBeans IDE 开发 Java EE 应用程序的更多信息，请参见以下资源： </p>
+        <ul>
+            <li><a href="javaee-intro.html">Java EE 技术简介</a></li>
+            <li><a href="javaee-gettingstarted.html">Java EE 应用程序入门指南</a></li>
+            <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+        </ul>
+        <p>您可以在 <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Java EE 6 教程</a>中找到有关使用 EJB 企业 Bean 的详细信息。</p>
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee 邮件列表</a>。</p>
+        <!-- End Content Area -->
+    </body>
+</html>

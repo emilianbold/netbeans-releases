@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Creating and Running an Application Client on the GlassFish Server</title>
+        <meta name="description"
+        content="A tutorial on how to use NetBeans IDE to develop and deploy an enterprise application client to GlassFish Server 3.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <!-- Begin Content Area -->
+        <h1>Creating and Running an Application Client on the GlassFish Server</h1>
+        
+        <p>This tutorial shows how to create a simple application client and access an Enterprise JavaBean (EJB)
+        deployed to GlassFish server 3.
+        In this tutorial you will first create an enterprise applications that contains a simple session bean and
+        a Java class library project that contains a remote interface for the session bean.
+        You will then create an application client that accesses the session bean through the remote interface in the class library.
+        The class library JAR that contains the remote interface is
+        added to the classpath of the enterprise application and the application client.</p>
+
+        
+              
+        
+        <p><b>Tutorial Exercises</b></p>
+           <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+            <ul>
+                <li><a href="#Exercise_10">Creating the Java Class Library</a></li>
+                <li><a href="#Exercise_20">Creating an EJB Module</a>
+                    <ul>
+                        <li><a href="#Exercise_22">Creating the Session Bean</a></li>
+                        <li><a href="#Exercise_23">Adding a Business Method</a></li>
+                        <li><a href="#Exercise_24">Deploying the Enterprise Application</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_30">Creating the Application Client</a>
+                    <ul>
+                        <li><a href="#Exercise_32">Adding the Class Library</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_30">Running the Application Client</a></li>
+                <!--<li><a href="#Exercise_40">Downloading the Solution Project</a></li>-->
+            </ul>
+        
+        
+           
+            <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java EE version</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                    <td class="tbltd1">3.x, 4.x</td>
+                </tr>
+                </tbody>
+            </table>
+            
+            
+            <p><b>Prerequisites</b></p>
+            <p>This document assumes you have some basic knowledge of, or programming experience with, the following technologies:</p>
+            <ul>
+                <li>Java Programming</li>
+                <li>NetBeans IDE</li>
+            </ul>
+            <p class="tips">You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/EntAppClientEE6.zip">a zip archive of the finished project</a>.
+                If you are using GlassFish 3.0 use <a href="https://netbeans.org/projects/samples/downloads/download/NetBeans%20IDE%206.8/JavaEE/entappclient.zip">the zip archive for the NetBeans IDE 6.8 project.</a></p>
+            
+            
+        
+        <!-- ===================================================================================== -->
+
+
+        <a name="Exercise_10"></a>
+        <h2>Creating the Java Class Library</h2>
+        <p>In this section you will create a Java Class Library project that
+        will contain the remote interface for the EJB.
+        The remote interface behaves as an API for the EJB that is used by clients
+        to communicate with the EJB.</p>
+
+        <p>The library JAR is easy to distribute to any clients that may need to call the EJB.
+        Clients that want to access the EJB only need to add the library JAR to the project classpath.
+        The EJB implementation uses the same JAR to implement the interface.</p>
+
+        
+
+        <!--appclient runs locally on client and if it needs to communicate with an EJB on server then
+        EJB must have Remote interface which appclient will use.
+        .... something like that followed by
+        "so let's start with creating class lib project"-->
+
+        <ol>
+            <li>Choose File &gt; New Project (Ctrl-Shift-N; &#8984;-Shift-N on Mac) and select Java Class Library in the Java category. Click Next.</li>
+            <li>Type <strong>EJBRemoteInterface</strong> for the Project Name. Click Finish. </li>
+        </ol>
+        <img  src="../../../images_www/articles/72/javaee/entappclient/appclient-newclasslibrary.png" alt="screenshot of New Class Library project wizard" title="New Class Library project wizard" class="margin-around b-all"/>
+
+        <p>When you click Finish, the IDE creates a Java Class Library project.
+            In the next section you will create a Java EE enterprise application and an EJB module.
+            You will then use a wizard to create a session bean and the remote interface for your session bean in
+            the Class Library project.
+            The application client will access the session bean via the interface in the class library.</p>
+
+
+
+        <a name="Exercise_20"></a>
+        <h2>Creating an EJB Module</h2>
+        <p>In this section you will create an enterprise application and an EJB module.
+        When you create an EJB, the EJB should be created as part of an enterprise application and packaged as an EAR archive
+        and deployed in to the server.</p>
+
+        <div class="indent">
+            <a name="Exercise_21"></a>
+            <h3>Creating the Enterprise Application</h3>
+            <p>In this section you will use the New Project wizard to create an enterprise application containing an EJB module.
+            The wizard provides an option to create an EJB module when you create the application.
+            </p>
+
+            <ol>
+                <li>Choose File &gt; New Project and select Enterprise Application in the Java EE category. Click Next.</li>
+                <li>Type <strong>EntAppEJB</strong> for the Project Name. Click Next.</li>
+                <li>Select GlassFish Server for the Server.</li>
+                <li>Confirm that Create EJB Module is selected and deselect Create Web Application Module. Click Finish. </li>
+            </ol>
+            <img  src="../../../images_www/articles/72/javaee/entappclient/appclient-newentappejb.png" alt="screenshot of New Enterprise Application wizard" title="Create EJB Module is selected in the New Enterprise Application wizard" class="margin-around b-all"/>
+
+            <p>When you click Finish, the IDE creates an enterprise application and an EJB module.
+            In the Projects window, you can see that
+            the EJB Module project is listed under the Java EE Modules node of the enterprise application project.</p>
+            <img  src="../../../images_www/articles/72/javaee/entappclient/appclient-projects-entappejb1.png" alt="screenshot of Projects window showing open projects" title="Projects window showing open projects" class="margin-around b-all"/>
+
+            <p>You can see that three types of projects are now listed in the Projects window: class library, enterprise application and EJB module.</p>
+
+
+            <a name="Exercise_22"></a>
+            <h3>Creating the Session Bean</h3>
+            <p>In this exercise you will use a wizard to create a session bean in the EJB module project.
+            In the wizard you will also create a remote interface for the session bean in the Class Library project.
+            </p>
+            <ol>
+                <li>Right-click the EJB module project and choose New &gt; Session Bean.</li>
+                <li>Type <strong>MySession</strong> for the EJB Name.</li>
+                <li>Type <strong>ejb</strong> for the Package.</li>
+                <li>Select Stateless for the Session Type.</li>
+                <li>Select the Remote option for Create Interface.</li>
+                <li>Select the <strong>EJBRemoteInterface</strong> project from the dropdown list. Click Finish. </li>
+            </ol>
+
+            <img  src="../../../images_www/articles/72/javaee/entappclient/appclient-wizard-newsessionbean.png" alt="screenshot of New Session Bean wizard" title="New Session Bean wizard" class="margin-around b-all"/>
+
+            <p>When you click Finish, the IDE creates the session bean in the <tt>ejb</tt> package in the EJB module and opens the class in the editor.
+            You can see that <tt>MySession</tt> implements the <tt>MySessionRemote</tt> interface and that
+            the EJBRemoteInterface JAR was added as a library of the EJB module.</p>
+
+            <p>The wizard also creates a remote interface named <tt>MySessionRemote</tt> in the <tt>ejb</tt> package of the EJBRemoteInterface project.
+            The IDE automatically adds the Java EE 6 API Library that is required for the EJB interface.</p>
+
+            <img  src="../../../images_www/articles/72/javaee/entappclient/appclient-projects-entappejb2.png" alt="screenshot of Projects window showing session bean and remote interface" title="Projects window showing the session bean and remote interface" class="margin-around b-all"/>
+
+
+            <a name="Exercise_23"></a>
+            <h3>Adding a Business Method</h3>
+            <p>In this exercise you will create a simple business method in the session bean that returns a string.
+            </p>
+            <ol>
+                <li>Right-click in the editor of MySession and choose Insert Code (Alt-Insert; Ctrl-I on Mac) and select Add Business Method.</li>
+                <li>Type <strong>getResult</strong> for the Method Name and String for the Return Type. Click OK.
+
+                </li>
+                <li>Make the following changes to modify the <tt>getResult</tt> method to return a String.
+                <p>The class should look like the following.</p>
+                <pre class="examplecode">@Stateless
+public class MySession implements MySessionRemote {
+
+    public String getResult() {
+        return <strong>"This is My Session Bean"</strong>;
+    }
+}</pre>
+                </li>
+                <li>Save your changes.</li>
+            </ol>
+
+            <p>You now have an enterprise application with a simple EJB that is exposed through a remote interface.
+            You also have an independent class library that contains the EJB interface that can be distributed
+            to other developers.
+            Developers can add the library to their projects if they want to communicate with the EJB that is
+            exposed by the remote interface and do not need to have the sources for the EJB.
+            When you modify the code for the EJB, you only need to distribute a JAR of the updated class library
+            if any of the interfaces change.</p>
+
+            <p class="tips"> When you use the Add Business Method dialog, the IDE automatically
+            implements the method in the remote interface.</p>
+
+            <a name="Exercise_24"></a>
+            <h3>Deploying the Enterprise Application</h3>
+            <p>You can now build and run the enterprise application.
+            When you run the application, the IDE will deploy the EAR archive to the server.</p>
+            <ol>
+                <li>Right-click the EntAppEJB enterprise application and choose Deploy.</li>
+            </ol>
+
+            <p>When you click Deploy, the IDE builds the enterprise application and deploys the EAR archive to the server.
+            If you look in the Files window you can see that the EJBRemoteInterface JAR is deployed with the application.</p>
+
+            <p>In the Services window, if you expand the Applications node of GlassFish Server you can see that
+            EntAppEJB was deployed.</p>
+        </div>
+
+
+        <a name="Exercise_30"></a>
+        <h2>Creating the Application Client</h2>
+
+        <p>In this section you will create an enterprise application client.
+        When creating the application client, the project needs the EJBRemoteInterface Java class library as a library
+        in order to reference the EJB.</p>
+
+        <p>When you run the enterprise application, the IDE will package the application client and the Java class library JAR in the EAR archive.
+        Library JARs must be packaged in an EAR with the application client if you want to access the JARs from the application client.
+        </p>
+
+        <div class="indent">
+            <a name="Exercise_31"></a>
+            <h3>Creating the Enterprise Application</h3>
+            <p>In this exercise you will use the New Project wizard to create an application client project.
+            If you are deploying to GlassFish 3.1 or 4.x you can create and run an application client as a standalone project.
+            The application client no longer needs to be deployed and run as part of an enterprise application.</p>
+
+            <p class="notes"><strong>Note.</strong> If you are deploying to GlassFish 3.0.1, you need to create
+            the application client as a module in an enterprise application project and run the enterprise application.</p>
+            <ol>
+                <li>Choose File &gt; New Project and select Enterprise Application Client in the Java EE category. Click Next.</li>
+                <li>Type <strong>EntAppClient</strong> for the Project Name. Click Next.</li>
+                <li>Select GlassFish Server for the Server. Click Finish.
+                    <p>Note that you do not need to add the project to an enterprise application.</p>
+                </li>
+            </ol>
+            <img  src="../../../images_www/articles/72/javaee/entappclient/appclient-wizard-newentappclient.png" alt="screenshot of Create Application Client in the New Project wizard" title="Create Application Client selected in the New Project wizard" class="margin-around b-all"/>
+
+            <p>When you click Finish, the IDE creates the application client project and opens <tt>Main.java</tt> in the editor.</p>
+
+            <a name="Exercise_31"></a>
+            <h3>Adding the Class Library</h3>
+            <p>The class library that contains the remote interface now needs to be added to the classpath of the project
+                to enable the application client to reference the EJB.
+                The class library project is open, so you can use the Call Enterprise Bean dialog to help you
+                generate the code to call the EJB.
+            </p>
+            <p class="tips">If the class library project is not open, you can add the class library to the project in the Projects window by right-clicking the Libraries node and locating the JAR of the EJBRemoteInterface project.</p>
+
+            <ol>
+                <li>Expand the Source Packages node of the EntAppClient project and open <tt>Main.java</tt> in the editor.</li>
+                <li>Right-click in the source code and choose Insert Code (Alt-Insert; Ctrl-I on Mac) and select Call Enterprise Bean to open the Call Enterprise Bean dialog.</li>
+                <li>Expand the EntAppEJB project node and select MySession. Click OK.<br/>
+                    <img  src="../../../images_www/articles/72/javaee/entappclient/appclient-callenterprise.png" alt="screenshot of Call Enterprise Bean dialog" title="Call Enterprise Bean dialog" class="margin-around b-all"/>
+
+                <p>The dialog automatically selects Remote as the interface type.
+                When you click OK, the IDE adds the following annotation to <tt>Main.java</tt>.
+                <pre class="examplecode">@EJB
+private static MySessionRemote mySession;</pre>
+
+                <p>The IDE also automatically adds EJBRemoteInterface as a project Library.</p>
+                </li>
+                <li>Modify the <tt>main</tt> method to retrieve the String of the <tt>getResult</tt> method
+                via the MySessionRemote interface. Save your changes.
+                <pre class="examplecode">
+public static void main(String[] args) {
+        <strong>System.err.println("result = " + mySession.getResult());</strong>
+    }</pre>
+                </li>
+            </ol>
+        </div>
+
+
+        <a name="Exercise_40"></a>
+        <h2>Running the Application Client</h2>
+
+        <p>You can now run the application client by building and deploying the EntAppClient project.</p>
+        <ol>
+            <li>Right-click the EntAppClient project in the Projects window and choose Run.
+            <p>Alternatively, you can expand source package and right-click the <tt>Main.java</tt> class and choose Run File.</p></li>
+        </ol>
+
+        <p>When you click Run, the IDE builds the application client project and deploys the JAR archive to the server.
+        You can see the message from the application client in the Output window.</p>
+        <img  src="../../../images_www/articles/72/javaee/entappclient/appclient-buildoutput.png" alt="screenshot of the Output window showing the result" title="The result in the Output window" class="margin-around b-all"/>
+
+        <p>If you want to create additional EJBs, you can simply add the new remote interfaces of the EJBs to the EJBRemoteInterface
+            class library project.</p>
+
+<!--
+
+        <a name="Exercise_50"></a>
+        <h2>Downloading the Solution Project</h2>
+        <p>You can download the solution to this tutorial as a project in the following ways.</p>
+        <ul>
+            <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fentappclient.zip">a zip archive of the finished project</a>.</li>
+            <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+                    <ol>
+                        <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                        <li>In the Checkout dialog box, enter the following Repository URL:<br/>
+                            <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br/>
+                            Click Next.</li>
+                        <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                        <li>Expand the root node and select <strong>samples/javaee/entappclient</strong>. Click OK.</li>
+                        <li>Specify the Local Folder for the sources (the local folder must be empty).</li>
+                        <li>Click Finish.
+                            <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                            and checks out the project sources.</p>
+                        </li>
+                        <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+                    </ol>
+                <p class="notes"><strong>Notes.</strong></p>
+                <ul>
+                    <li>Steps for checking out sources from Kenai only apply to NetBeans IDE 6.7 and 6.8.</li>
+                    <li>You need a Subversion client to checkout the sources from Kenai.
+                    For more about installing Subversion, see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</li>
+                </ul>
+            </li>
+        </ul>-->
+        
+        <div class="feedback-box"><a
+                href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Application%20Client">Send
+        Us Your Feedback</a></div>
+        <br style="clear: both;">
+        <!-- ======================================================================================= -->
+        <h2><a name="nextsteps"></a>Next Steps</h2>
+        <!--<p>For more, see the following tutorial </p>
+        <ul>
+            <li><a href="http://wiki.netbeans.org/wiki/view/RemoteApplicationClientInNetBeans">RemoteApplicationClientInNetBeans</a></li>
+        </ul>-->
+        
+        
+        <p>For more information about using NetBeans IDE to
+        develop Java EE applications, see the following resources: </p>
+        <ul>
+            <li><a href="javaee-intro.html">Introduction to Java EE Technology</a></li>
+            <li><a href="javaee-gettingstarted.html">Getting Started with Java EE Applications</a></li>
+            <li><a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a></li>
+        </ul>
+        <p>You can find more information about using EJB Enterprise Beans in the <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Java EE 6 Tutorial</a>.</p>
+        <p>To send comments and suggestions, get support, and keep
+            informed on the latest developments on the NetBeans IDE Java EE
+            development features, <a href="../../../community/lists/top.html">join the nbj2ee mailing list</a>.</p>
+        <!-- End Content Area -->
+    </body>
+</html>

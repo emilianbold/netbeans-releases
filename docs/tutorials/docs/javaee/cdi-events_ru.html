@@ -1,0 +1,278 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Working with Events in CDI - IDE NetBeans Tutorial</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial demonstrates how to integrate Java EE events into an application with CDI using NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Contexts and Dependency Injection, CDI, Web Beans, injection, qualifier">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Работа с событиями в CDI</h1>
+
+        <p><em>Предоставлено Энди Гибсоном (Andy Gibson)</em></p>
+
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h3>Внедрение контекстов и зависимостей</h3>
+
+                <ol>
+                    <li><a href="cdi-intro.html">Введение в CDI и JSF 2.0</a></li>
+                    <li><a href="cdi-inject.html">Работа с внедрением и квалификаторами в CDI</a></li>
+                    <li><a href="cdi-validate.html">Применение аннотации @Alternative и аннотаций жизненного цикла</a>
+
+                    <li><strong>Обработка событий в CDI</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#event">Использование событий</a></li>
+                            <li><a href="#scopes">Обработка областей действий</a></li>
+                            <li><a href="#seealso">Дополнительные сведения</a></li>
+                        </ul></li>
+                </ol>
+            </div>
+        </div>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <p>Внедрение контекстов и зависимостей (CDI), определяемое документом <a href="http://jcp.org/en/jsr/detail?id=299">JSR-299</a>, является неотъемлемой частью Java EE 6 и обеспечивает архитектуру, позволяющую компонентам Java EE (например, сервлетам, компонентам EJB и JavaBeans) существовать в жизненном цикле приложения с четко определенными контекстами. Кроме того, службы CDI позволяют компонентам Java EE (например, компонентам сеансов EJB и управляемым компонентам JavaServer Faces) внедряться и свободно взаимодействовать путем запуска и обработки событий.</p>
+
+        <p>Этот учебный курс основан на записи блога Энди Гибсона (Andy Gibson) <a href="http://www.andygibson.net/blog/index.php/2010/01/11/getting-started-with-jsf-2-0-and-cdi-part-3/">Начало работы с CDI. Часть 3. События</a>. Здесь рассмотрены способы использования концепции <em>событий</em> в Java EE, с помощью которой производят возникающие в приложении события и подписываются на них (т.е. <em>наблюдают</em>) таким образом, что это позволяет управлять несвязанным кодом между производителями и наблюдателями.  Класс <code>javax.enterprise.event.Event</code> применяют для создания событий, а аннотацию <code>@Observes</code> CDI — для подписки на события.</p>
+
+        <p>В NetBeans IDE обеспечена встроенная поддержка для внедрения контекстов и зависимостей, включая поддержку создания файла конфигурации CDI <code>beans.xml</code> при создании проекта, поддержку редактора и навигации для аннотаций, а также различных мастеров для создания часто используемых артефактов CD.</p>
+
+        <br style="clear:left;">
+
+        <div class="indent">
+            <p>Для работы с этим учебным курсом требуется программное обеспечение и материалы, перечисленные ниже.</p>
+
+            <table id="requiredSoftware">
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                        <th class="tblheader" scope="col">Требуемая версия</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                        <td class="tbltd1">Версия 7.2, 7.3, 7.4, 8.0, Java EE</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                        <td class="tbltd1">версия 7 или 8</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://glassfish.dev.java.net/">Сервер GlassFish</a></td>
+                        <td class="tbltd1">Open Source Edition 3.x или 4.x</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo3.zip">cdiDemo3.zip</a></td>
+                        <td class="tbltd1">неприменимо</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="notes"><strong>Примечания</strong></p>
+        </div>
+
+        <ul>
+            <li>В комплект Java EE для IDE NetBeans также входит компонент GlassFish Server Open Source Edition 3.x, являющийся контейнером, совместимым с Java EE.</li>
+
+            <li>Демонстрационный проект решения для этого учебного курса можно загрузить здесь: <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemoComplete.zip">cdiDemoComplete.zip</a></li>
+        </ul>
+
+
+        <br>
+        <h2 id="event">Использование событий</h2>
+
+        <p>В предыдущем учебном курсе <a href="cdi-validate.html">Применение компонентов @Alternative и аннотаций жизненного цикла</a> у нас было приложение, в котором был получен список элементов, они проверялись, и было выполнено соответствующее действие при обнаружении недопустимого элемента.  Предположим, в будущем нам потребуется расширить систему для обработки всевозможных ситуаций, которые происходят при обнаружении недопустимого элемента.  Такими ситуациями могут быть отправка электронной почты, изменения других данных, например, отмена заказа, сохранение списка отклонений в файле или таблице базы данных.  Для полного развязывания реализации можно использовать <em>события</em> в Java EE.  События создаются <em>производителем</em>, а подписка на них выполняется <em>наблюдателем</em> событий.  Как и практически всё в CDI, производство событий и подписка на них являются корректными по отношению к типам и позволяют квалификаторам определять, за какими событиями будут наблюдать наблюдатели.</p>
+
+        <p>Для реализации этих функций не потребуется значительных изменений при использовании приложения, которое было создано в ходе предыдущих учебных курсов.  Мы как раз можем предоставить другую реализацию <code>ItemErrorHandler</code> (созданную в <a href="cdi-validate.html">предыдущем учебном курсе</a>), которая создает событие при каждой обработке элемента.  Присваиваем этому классу имя <code>EventItemHandler</code>, внедряем его в <code>ItemProcessor</code> и используем квалификатор <code>Notify</code>, чтобы выбрать его для внедрения.</p>
+
+        <div class="indent">
+            <img alt="На диаграмме CDI отображаются объекты, созданные в этом упражнении" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-events/cdi-diagram-events.png" title="Используйте внедрение CDI для свободного взаимодействия классов в используемом приложении">
+        </div>
+
+        <ol>
+            <li>Сначала необходимо извлечь пример начального проекта из файла <code>cdiDemo3.zip</code> (см. выше <a href="#requiredSoftware">таблицу с перечислением требуемых ресурсов</a>).  Выберите File (&quot;Файл&quot;) &gt; Open Project (&quot;Открыть проект&quot;) (Ctrl-Shift-O; ⌘-Shift-O on Mac) и выберите проект в его местоположении на компьютере.</li>
+
+            <li>Создайте класс с именем <code>EventItemHandler</code>.  Щелкните 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png"> ) или нажмите сочетание клавиш CTRL+N (⌘-N on Mac) для открытия мастера создания файлов. </li>
+
+            <li>Выберите категорию Java, а затем выберите класс Java.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <strong>EventItemHandler</strong> в качестве имени класса, затем укажите <strong>exercise4</strong> в качестве пакета.</li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Выполняется создание нового класса и пакета, и новый класс открывается в редакторе.</li>
+
+            <li>Реализуйте <strong>EventItemHandler</strong> следующим образом.
+
+                <pre class="examplecode">
+public class EventItemHandler <strong>implements ItemErrorHandler</strong> {
+
+    <strong>@Inject
+    private Event&lt;Item&gt; itemEvent;
+
+    @Override
+    public void handleItem(Item item) {
+        System.out.println("Firing Event");
+        itemEvent.fire(item);
+    }</strong>
+}</pre>
+
+                Мы внедряем экземпляр <code>Event</code>, где информационным наполнением события будет <code>Item</code>.  Информационным наполнением события являются данные состояния, передаваемые от производителя событий в наблюдатель событий, который в данном случае передает отклоненный элемент.  При обработке недопустимого элемента мы инициируем событие и передаем полученный недопустимый элемент.  Обработчик элементов на базе событий внедряется таким же образом, как любой другой обработчик элементов, поэтому его можно загружать и выгружать по мере необходимости, а также заменять во время тестирования.</li>
+
+            <li>Исправление всех операторов импорта.  Либо щелкните правой кнопкой мыши в редакторе и выберите 'Исправить выражения импорта' или нажмите Ctrl-Shift-I (⌘-Shift-I в Mac). Убедитесь в том, что <code>javax.enterprise.event.Event</code> выбрано в качестве полного имени для класса <code>Event</code>. <br> <img alt="Диалоговое окно &apos;Исправить выражения импорта&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/fix-all-imports.png" title="Щелкните в редакторе правой кнопкой мыши и выберите &amp;quot;Исправить операторы импорта&amp;quot;. "> <br><br> <span class="tips">Нажмите сочетание клавиш CTRL+ПРОБЕЛ на элементе <code>Event</code> для просмотра определения документации Javadoc для класса.  Тут же определяется используемый выше метод <code>fire()</code>.</span> <br> <img alt="Всплывающее окно Javadoc в редакторе" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/event-javadoc.png" title="Нажмите Ctrl-Space для просмотра документации Javadoc по классам в API"></li>
+
+            <li>Создайте квалификатор с именем <code>Notify</code>.  (Квалификаторы были рассмотрены в разделе <a href="cdi-inject.html">Работа со внедрением и квалификаторами в CDI</a>.)</li>
+
+            <li>Щелкните 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png"> ) или нажмите сочетание клавиш CTRL+N (⌘-N on Mac) для открытия мастера создания файлов. </li>
+
+            <li>Выберите категорию &quot;Внедрение контекстов и зависимостей&quot;, затем выберите &quot;Тип &quot;квалификатора&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <strong>Notify</strong> в качестве имени класса, затем укажите <strong>exercise4</strong> в качестве пакета.</li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Новый квалификатор <code>Notify</code> открывается в редакторе.
+
+<pre class="examplecode">
+@Qualifier
+@Retention(RUNTIME)
+@Target({METHOD, FIELD, PARAMETER, TYPE})
+public @interface Notify {
+}</pre></li>
+
+            <li>Добавьте аннотацию <code>@Notify</code> к <code>EventItemHandler</code>.
+
+                <pre class="examplecode">
+<strong>@Notify</strong>
+public class EventItemHandler implements ItemErrorHandler {
+
+    ...
+}</pre>
+
+                Мы создали аннотацию квалификатора <code>@Notify</code>, чтобы определить обработчик ошибок для внедрения, и можем ее использовать в <code>ItemProcessor</code> путем добавления к точке внедрения.</li>
+
+            <li>Добавьте аннотацию <code>@Notify</code> к точке внедрения<code>EventItemHandler</code> в <code>exercise2.ItemProcessor</code>.
+
+                <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    @Inject @Demo
+    private ItemDao itemDao;
+
+    @Inject
+    private ItemValidator itemValidator;
+
+    @Inject <strong>@Notify</strong>
+    private ItemErrorHandler itemErrorHandler;
+
+    public void execute() {
+        List&lt;Item&gt; items = itemDao.fetchItems();
+        for (Item item : items) {
+            if (!itemValidator.isValid(item)) {
+                itemErrorHandler.handleItem(item);
+            }
+        }
+    }
+}</pre>
+                Используйте подсказку редактора, чтобы добавить оператор импорта для <code>exercise4.Notify</code>.</li>
+
+            <li>Для запуска проекта нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png"> ).</li>
+
+            <li>В браузере нажмите кнопку <code>Выполнить</code>, затем вернитесь в среду IDE и проверьте протокол сервера в окне вывода (Ctrl-4; ⌘-4 в Mac). Поскольку в создаваемом приложении в настоящий момент используется <code>DefaultItemDao</code> для настройки четырех элементов <code>Item</code>, затем применяется <code>RelaxedItemValidator</code> в элементах <code>Item</code>, ожидается, что инициирование<code>itemErrorHandler</code> произойдет дважды. <br> <img alt="Окно вывода - журнал сервера GlassFish" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/output-window.png" title="Просмотрите журнал сервера GlassFish, отображенный в окне вывода"> <br> Однако в настоящее время отсутствует наблюдение за событием.  Это можно исправить путем создания метода <em>наблюдателя</em> с помощью аннотации <code>@Observes</code>.  Это единственное, что нужно для наблюдения за событием.  Для демонстрации можно изменить класс <code>FileErrorReporter</code> (созданный в <a href="cdi-validate.html">предыдущем учебном курсе</a>), реагирующий на инициированные события, путем добавления метода наблюдателя, который вызывает метод <code>handleItem()</code>.</li>
+
+            <li>Для создания ответа <code>FileErrorReporter</code> на событие добавьте следующий метод к классу.
+
+                <pre class="examplecode">
+public class FileErrorReporter implements ItemErrorHandler {
+
+    <strong>public void eventFired(@Observes Item item) {
+        handleItem(item);
+    }</strong>
+
+    ...
+}</pre>
+
+                Используйте подсказку редактора, чтобы добавить оператор импорта для <code>javax.enterprise.event.Observes</code>.</li>
+
+            <li>Запустите проект еще раз (нажмите клавишу F6; fn+F6 на компьютерах Mac), нажмите кнопку <code>Выполнить</code>, затем вернитесь в среду IDE и проверьте протокол сервера в окне вывода. <br> <img alt="Окно вывода - журнал сервера GlassFish" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/output-window2.png" title="Просмотрите журнал сервера GlassFish, отображенный в окне вывода"> <br> Вы увидите, что события инициируются для недопустимых объектов, так же как и раньше, но теперь информация об элементе сохраняется при инициировании каждого события.  Также можно отметить, что выполняется наблюдение за событиями жизненного цикла, поскольку компонент <code>FileErrorReporter</code> создаётся и закрывается для каждого инициированного события.  (Для обсуждения аннотаций жизненного цикла, например <code>@PostConstruct</code> и <code>@PreDestroy</code> ознакомьтесь с разделом <a href="cdi-validate.html">Применение компонентов @Alternative и аннотаций жизненного цикла</a>.)</li>
+        </ol>
+
+        <p>Как показано выше аннотация <code>@Observes</code> упрощает процесс наблюдения за событиями.</p>
+
+        <p class="tips">События и наблюдатели также можно аннотировать с помощью квалификаторов, чтобы наблюдатели могли наблюдать только за определенными событиями для элемента.  <a href="http://www.andygibson.net/blog/index.php/2010/01/11/getting-started-with-jsf-2-0-and-cdi-part-3/">Введение в CDI и JSF 2.0</a></p>
+
+
+        <br>
+        <h2 id="scopes">Обработка областей действия</h2>
+
+        <p>В настоящем состоянии приложения компонент <code>FileErrorReporter</code> создается при каждом возникновении события.  В этом случае не требуется создавать каждый раз новый компонент, поскольку отсутствует необходимость открывать и закрывать файл для каждого элемента.  Однако всё ещё требуется открывать файл при запуске процесса и затем закрывать его после завершения процесса.  Следовательно, необходимо учитывать <em>область действия</em> компонента <code>FileErrorReporter</code>.</p>
+
+        <p>В настоящее время компонент <code>FileErrorReporter</code> не имеет определенной области действия.  Если область действия не определена, CDI использует псевдозависимую область действия по умолчанию.  На практике это означает, что компонент создается и уничтожается за очень короткий промежуток времени, как правило, за время вызова метода.  В нашей ситуации компонент создается и уничтожается за время инициирования события.  Чтобы это исправить, можно увеличить область действия компонента вручную путем добавления аннотации области действия. Компонент <code>@RequestScoped</code> будет настроен таким образом, что когда он будет создан при инициировании первого события, он будет продолжать существовать на всем протяжении действия запроса.  Это также означает, что для любых точек внедрения, в которых этот компонент определен для внедрения, будет внедрён тот же экземпляр компонента.</p>
+
+        <ol>
+            <li>Добавьте аннотацию <code>@RequestScope</code> и соответствующий оператор импорта для <code>javax.enterprise.context.RequestScoped</code> к классу <code>FileErrorReporter</code>.
+
+                <pre class="examplecode">
+<strong>import javax.enterprise.context.RequestScoped;</strong>
+...
+
+<strong>@RequestScoped</strong>
+public class FileErrorReporter implements ItemErrorHandler { ... }</pre>
+
+                <span class="tips">Нажмите сочетание клавиш CTRL+ПРОБЕЛ при вводе, чтобы вызвать поддержку автозавершения кода в редакторе.  При выборе элемента через автозавершение кода некоторые операторы импорта автоматически добавляются к этому классу.</span> <br> <img alt="Всплывающее окно завершения кода в редакторе" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/code-completion.png" title="Нажмите сочетание клавиш CTRL+ПРОБЕЛ при вводе, чтобы вызвать поддержку автозавершения кода в редакторе. "></li>
+
+            <li>Запустите проект еще раз (нажмите клавишу F6; fn+F6 на компьютерах Mac), нажмите кнопку <code>Выполнить</code>, затем вернитесь в среду IDE и проверьте протокол сервера в окне вывода. <br> <img alt="Окно вывода - журнал сервера GlassFish" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/output-window3.png" title="Просмотрите журнал сервера GlassFish, отображенный в окне вывода"> <br> Обратите внимание, что компонент <code>FileErrorReporter</code> создается только при инициировании первого события и закрывается после инициирования конечного события.
+
+                <pre class="examplecode">
+INFO: Firing Event
+<strong>INFO: Creating file error reporter</strong>
+INFO: Saving exercise2.Item@48ce88f6 [Value=34, Limit=7] to file
+INFO: Firing Event
+INFO: Saving exercise2.Item@3cae5788 [Value=89, Limit=32] to file
+<strong>INFO: Closing file error reporter</strong>
+</pre></li>
+        </ol>
+
+        <p>События являются лучшим способом для разделения частей системы на модули, так как наблюдатели и производители событий не имеют информации друг о друге, и для этого их не требуется особым образом настраивать.  Можно добавлять фрагменты кода, выполняющие подписку на события, при этом производитель событий не будет иметь информации о наблюдателе.  (Если события не используются, то необходимо настроить производитель событий на вызов наблюдателя вручную.)  Например, если кто-нибудь обновляет состояние заказа, можно добавить события для отправки письма торговому представителю или для уведомления менеджера по работе с клиентами, если вопрос, заданный в техническую поддержку, не закрыт по истечении одной недели.  Такого рода правила можно внедрять без событий, но события упрощают процесс отвязывания бизнес-логики.  Кроме того, отсутствует зависимость от времени компиляции или сборки.  Можно просто добавить модули в приложение, и они автоматически запустят наблюдение за событиями и их производство.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20with%20Events%20in%20CDI">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Дополнительные сведения</h2>
+
+        <p>Дополнительные сведения о CDI и Java EE приведены в следующих материалах.</p>
+
+        <h3>Материалы по NetBeans</h3>
+
+        <ul>
+            <li><a href="cdi-intro.html">Начало работы со внедрением контекстов и зависимостей и JSF 2.0</a></li>
+            <li><a href="cdi-inject.html">Работа с внедрением и квалификаторами в CDI</a></li>
+            <li><a href="cdi-validate.html">Применение аннотации @Alternative и аннотаций жизненного цикла</a></li>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+            <li><a href="../web/jsf20-intro.html">Введение в JavaServer Faces 2.0</a></li>
+        </ul>
+
+        <h3>Внешние ресурсы</h3>
+
+        <ul>
+            <li><a href="http://blogs.oracle.com/enterprisetechtips/entry/using_cdi_and_dependency_injection">Технические рекомендации по Java EE: использование CDI и внедрения зависимостей для Java в приложении JSF 2.0</a></li>
+            <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/gjbnr.html">Учебный курс по Java EE 6, часть V: внедрение контекстов и зависимостей для платформы Java EE</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=299">JSR 299: спецификация внедрения контекстов и зависимостей</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=316">JSR 316. Платформа Java, спецификация Enterprise Edition 6</a></li>
+        </ul>
+
+    </body>
+</html>

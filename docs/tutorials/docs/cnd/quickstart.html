@@ -1,0 +1,494 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>NetBeans IDE C/C++ Projects Quick Start Tutorial</title>
+   <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, C/C++, PROJECTS">
+   <meta name="DESCRIPTION" content="Short tutorial that demonstrates working with C/C++
+   projects in NetBeans IDE">
+
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>C/C++ Projects Quick Start Tutorial</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+<p>Contributed by <i>Ann
+      Rice</i> and maintained by <i>Susan Morgan</i> <br>
+      <em>March 2014</em> [Revision number: V8.0-1]</div>
+
+<p>The following short tutorial takes you through the basic
+   steps of creating and configuring a C or C++ project in NetBeans IDE.
+</p>
+<!-- END INTRO -->
+<p><b>Contents</b></p>
+<img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp"
+alt="Content on this page applies to NetBeans IDE 7.2 and more recent" title="Content on this page applies to the NetBeans IDE
+ 7.2 and more recent">
+<ul class="toc">
+    <li><a href="#requirements" title="Requirements">Requirements</a></li>
+<li><a href="#projects" title="Creating C and C++ Projects">Creating C 
+      and C++ Projects</a></li>
+    <li><a href="#running" title="Running a Project">Running a Project</a></li>
+    <li><a href="#existingsourcesprojects" title="Creating a C/C++ Project From
+        Existing Code">Creating a C/C++ Project With Existing Sources</a></li>
+    <li><a href="#frombinaryprojects" title="Creating a C/C++ Project From a Binary File">Creating a C/C++ Project From a Binary File</a></li>
+    <li><a href="#nextsteps" title="Next Steps">Next Steps</a></li>
+</ul>
+
+<h2><a NAME="requirements"></a>Requirements</h2>
+<p><b>To follow this tutorial, you need the following software and resources.</b> </p>
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Software or Resource</th>
+<th class="tblheader" scope="col">Version Required</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a
+href="https://netbeans.org/downloads/index.html"> version 7.2 or more recent
+with NetBeans C/C++ plugin</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java Developer Kit (JDK)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">version 6, 7, or 8</a> </td>
+</tr>
+
+<tr>
+    <td class="tbltd1">
+    C and C++ compilers, <tt>make</tt>, <tt>gdb</tt>
+    </td>
+    <td class="tbltd1">
+    
+   <a href="../../../community/releases/80/cpp-setup-instructions.html">Configuring the NetBeans IDE for C/C++/Fortran</a>
+</tr>
+</tbody>
+</table>
+<br>
+<p>See the <a href="../../../community/releases/80/install.html">NetBeans IDE
+      Installation
+   Instructions</a> and <a
+      HREF="../../../community/releases/80/cpp-setup-instructions.html">
+      Configuring the NetBeans IDE for C/C++/Fortran</a><br> for
+information about downloading and installing the required software.</p>
+
+<p><b>Sample Projects</b> 
+</p>
+<p>If you want to just play with some sample projects provided in the IDE, choose
+   File&nbsp;&gt;&nbsp;New Project, then open the Samples category and the C/C++ subcategory. The IDE
+   provides several sample C and C++ projects to help you familiarize
+   yourself with the IDE. 
+</p>
+<h2><a name="projects"></a>Creating C and C++ Projects</h2>
+<p>NetBeans C/C++ support lets you create C and C++ Application
+   and Library projects with generated makefiles, as well as C and C++ projects 
+   with existing sources.
+</p>
+<p>You can build, run, and debug your project on the local host (the system
+from which you started the IDE) or on a remote host running a UNIX&reg;
+operating system. For information on specifying the tool collection for your
+project and on defining and using remote hosts, see <a
+href="development-environment.html">Defining Your C/C++ Project's Development Environment</a>.
+</p>
+<p>
+   With a C/C++ Application, Dynamic Library, or Static Library project, the 
+   IDE controls all aspects 
+   of how your application is built, run, and debugged. You specify project settings  
+   when creating the project and in the Project Properties dialog box. The IDE 
+   generates a makefile in which all of your settings are stored.
+</p>
+<div class="indent">
+
+   <h3><a name="CreatingApp"></a>Creating a C/C++ Application Project</h3>
+   <ol>
+      <li>Open the New Project wizard by choosing File &gt; New Project.</li>
+      <li>In the wizard, select the C/C++ category.</li>
+      <li>
+         The wizard gives you a choice of several types of new projects.
+         Select C/C++ Application and click Next.
+      <br>
+      <img src="../../../images_www/articles/72/cnd/quickstart/creating_application.png" alt="Screenshot of the New Project
+           Wizard" class="margin-around">
+      </li>
+      <li>
+         Create a new C/C++ Application project from the wizard using the defaults. 
+         You can choose the name of the project and the location of the project.
+      </li>
+      <li>Click Finish to exit the wizard.</li>
+   </ol>
+   <p>
+      A project is created with logical folders. 
+      A logical folder is not a directory. It is a way for you to organize your
+      files and does not 
+      reflect where the files are physically stored on disk. Files added to logical 
+      folders are automatically part of the project and are compiled when you build 
+      the project.
+   </p>
+   <p>
+      Files added to the Important Files folder are not part of the project and are 
+      not compiled when you build the project. These files are just for reference 
+      and are convenient when you have a project with an existing makefile. 
+   </p>
+      <h3><a name="SwitchingViews"></a>Switching Between the Logical View and the Physical View of the Project</h3>
+      <p>A project has both a logical and a physical view.
+         You can switch between the logical view and the physical view of your
+         project.
+      </p>
+      <ol>
+         <li>
+            Select the Files tab. This window shows the physical view of your
+            project. It displays files and folders as they are stored on disk.
+         <br>
+         <img class="b-all margin-around" src="../../../images_www/articles/72/cnd/quickstart/files_tab.png" alt="Screenshot of the Files tab">
+         </li>
+         <li>
+            Select the Projects tab. This window shows the logical view of 
+            your project.
+         <br>
+         <img class="b-all margin-around" src="../../../images_www/articles/72/cnd/quickstart/projects_tab.png" alt="Screenshot of the Projects tab">
+
+         <p class="tips">Most commands that you run on a project are available in the Projects
+             tab, not the Files tab.</p>
+         </li>
+      </ol>
+      
+      <h3><a name="AddingFilesandFolders"></a>Adding Files and Folders to Your Project</h3>
+      <p>You can add logical folders to your project.
+      </p>
+      <ol>
+         <li>
+            Right-click the project node of your Application project 
+            and choose New Logical Folder. A new logical folder is added to the project.
+         </li>
+         <li>
+            Right-click the new logical folder and select Rename. Type the name
+            you would like to give the new folder.
+         </li>
+         
+      </ol>
+      <p>You can add both
+         files and folders to an existing folder. Logical folders can be nested.
+      </p>
+      <h3><a name="AddingNewFiles"></a>Adding New Files to Your Project</h3>
+      <p>You can add new files to your project.
+      </p>
+      <ol>
+         <li>Right-click the Source Files folder and choose New
+         &gt; C++ Source File.</li>
+         <li>On the Name and Location page of the New File dialog box, type <tt>newfile</tt> in the File Name field.
+           <br><br>
+            <img src="../../../images_www/articles/72/cnd/quickstart/adding_files.png" alt="Screenshot of the New File dialog
+              box">
+              <br><br>
+              </li>
+         <li>Click Finish.</li>
+      </ol>
+      <p>
+         The <tt>newfile.cpp</tt> file is created on disk in the
+         directory specified in the wizard and added to the Source Files folder. You
+         can add any kind of file to this folder, not only source files. 
+      </p>
+      <h3><a name="MoreNewFiles"></a>Adding More New Files to Your Project</h3>
+      <ol>
+         <li>Right-click the Header Files folder and choose New &gt; C++ Header 
+         File.
+         </li>
+         <li>On the Name and Location page of the New File dialog box, type <tt>newfile</tt> in the File Name field.</li>
+         
+         <li>Click Finish.</li>
+      </ol>
+      <p>
+         The <tt>newfile.h</tt> file is created on disk in the directory specified in the wizard
+         and added to the Header Files folder.
+      </p> 
+      <h3><a name="AddingExistingFiles"></a>Adding Existing Files to Your Project</h3>
+      <p>
+         You can add existing files to your project in two ways:
+      </p>
+      <ul>
+         <li>
+            Right-click the Source Files folder and choose Add Existing Item. 
+            You can point to an existing file on disk using the Select Item
+            dialog box and add the file to the project.
+         </li>
+         <li>Right-click the Source Files folder and choose Add Existing Items from
+         Folders. Use the Add Files dialog box to add folders that contain existing
+         files.
+      </ul>
+      
+      <p class="tips">
+         Do not use New menu item to add existing items. The Name and Location panel
+         will tell you the file already exists.
+      </p>
+      <h3><a name="ProjectProperties"></a>Setting Project Properties</h3>
+      <p>
+      <p>When the project is created, it has two configurations: Debug and Release. 
+         A configuration is a collection of settings used for the project, which allows you
+         to easily switch many settings at once when you select a configuration.
+         The Debug configuration builds a version of your application that includes
+         debug information.
+         The Release configuration builds an optimized version.
+      </p>
+      <p>The Project Properties dialog box contains build and configuration information
+         for your project. To open the Project Properties dialog box:
+      </p>
+      <ul>
+         <li>
+            Right-click the project node of the 
+            <tt>CppApplication_1</tt> project and choose Properties.
+         <br>
+         <img
+         src="../../../images_www/articles/72/cnd/quickstart/project_properties.png" alt="Screenshot of the Project
+              Properties dialog box" class="margin-around">
+         </li>
+      </ul>
+      <p>
+      You can modify the build tool defaults, compiler settings, and other configuration settings in the
+      Project Properties dialog box by selecting a node in the left panel and modifying 
+      the properties in the right panel. Select some of the nodes and property 
+      values and notice the properties you can set. When you set General
+      properties, you are setting them in all configurations of the project.
+      When you set Build, Run, or Debug properties, you are setting properties
+      in the currently selected configuration.
+      <h3><a name="Configurations"></a>Managing Configurations</h3>
+      <p>Properties changed in the Project Properties window are stored in the
+         makefile for the current configuration. You can edit the default configurations 
+         or create new ones. To create a new configuration:
+      </p>
+      <ol>
+         <li>
+            Click the Manage Configurations button in the Project Properties
+            dialog box.
+         </li>
+         <li> 
+            In the Configurations dialog box, select the configuration that most
+            closely matches your desired configuration. In this case, select the
+            Release configuration and click the Duplicate button. Then click Rename.
+         </li>
+         <li>
+            In the Rename dialog box, rename the 
+            configuration to PerformanceRelease. Click OK. 
+         </li>
+         <li>Click OK in the Configurations dialog box.</li>
+         <li>
+            In the left panel, select the C Compiler node. 
+         </li>
+         <li>
+            In the Project Properties dialog box, note that the PerformanceRelease
+            configuration is selected in the Configuration drop-down list.
+         </li>
+         <li>
+            In the property sheet in the right panel, change the Development
+            Mode from Release to PerformanceRelease. Click OK.
+         </li>
+      </ol>
+      <p>
+         You have created a new configuration that will compile the application with a 
+         different set of options.
+      </p>
+      
+      <h3><a name="FileProperties"></a>Setting Source File Properties</h3>
+      <p>
+      <p>When you set the project properties for your C or C++ project, the relevant 
+         properties apply to all files in the project. You can also set some
+         properties on individual files.
+      </p>
+      <ol>
+         <li>
+            Right-click the <tt>newfile.cpp</tt> source file in the Projects tab and choose Properties.
+         </li>
+         <li>Click the General category and see that you can specify a different compiler
+             or other tool to build this file.  You can also use a checkbox to exclude the file
+            from the build of the currently selected project configuration.
+
+         <li>Click the C++ Compiler category and see that you can override the project compiler settings
+            and other properties for this file.</li>
+         
+         <li>Cancel the File Properties dialog box.</li>
+      </ol>
+      
+      
+         
+      <h3><a name="BuildingProject"></a>Building and Rebuilding Your Project</h3>
+      <p>To build your project:
+      <ol>
+         <li>
+            Right-click the project node and choose Build, and the project  
+            builds. The build output is shown in the Output window.
+         </li>
+         <li>
+            Switch the configuration from Debug to PerformanceRelease in the configuration 
+            drop-down list in the main toolbar. Now the project will be built using the
+            PerformanceRelease configuration.
+         </li>
+         
+         <li>
+            Right-click the project node and choose Build, and the project 
+            builds. The build output is shown in the Output window.
+         </li>
+      </ol>
+<p>To rebuild your project:</p>
+      <ul><li>Right-click the project node and choose Clean and Build to do 
+              a complete rebuild after removing previous build products.</li>
+          <li>Right-click the project node and choose Build to do an incremental build. 
+              Previous build products are retained if their source files have not changed.</li></ul>
+      <p>
+         You can build, clean, or both clean and build the project 
+         by choosing actions from the Run menu or using tool bar buttons. 
+         The project also keeps object
+         files and executables from different configurations separate, so
+         you do not have to worry about mixing files from multiple configurations.
+      </p>
+      <h3><a name="CompilingFile"></a>Compiling a Single File</h3>
+      <p>
+         To compile a single source file:
+      </p>
+      <ul>
+         <li>
+            
+            Right-click on the <tt>main.cpp</tt> file and choose 
+            Compile File. Only this file is compiled.
+         </li>
+      </ul>
+      <p class="notes">
+         Single file compilation is not supported for the project type
+         C/C++ Project With Existing Sources.
+      </p>
+ 
+      
+      </div>
+   <h2><a name="running"></a>Running a Project</h2>
+   <p>
+      To see how to run a project, you will use the IDE's sample <tt>Arguments</tt> project.
+      The <tt>Arguments</tt> program prints command-line arguments. Before running the
+      program, you will set some arguments in the current configuration. Then you will run
+      the program.
+   </p>
+   <p>
+      To create the <tt>Arguments</tt> project, set some arguments, and run the project:
+   </p>
+   <ol>
+      <li>Choose File &gt; New Project.</li>
+      <li>In the project wizard, expand the Samples category.</li>
+      <li>Select the C/C++ subcategory, then select the <tt>Arguments</tt> project. Click
+         Next, then click Finish.
+      </li>
+      <li>Right-click the <tt>Arguments_1</tt> project node and choose Build. The
+      project builds.</li>
+      <li>Right-click the <tt>Arguments_1</tt> project node and choose Properties.</li>
+      <li>In the Project Properties dialog box, select the Run node.</li>
+      <li>
+         In the Run Command text field, type 1111 2222 3333. Click OK.
+      <br>
+      <img src="../../../images_www/articles/72/cnd/quickstart/setting_arguments.png" alt="Screenshot of the Project Properties
+           dialog box" class="margin-around">
+      </li>
+      <li>Right-click the project node and choose Run.The application runs.
+         Your arguments are displayed in the Output window.</li>
+   </ol>
+
+   
+<h2><a name="existingsourcesprojects"></a>Creating a C/C++ Project With Existing Sources</h2>
+<p>When creating a C/C++ Project With Existing Sources, the IDE relies on your
+   existing makefile for instructions on how to compile and run your application. </p>
+<p>In this exercise, you download and install the sources for the open source Loki C++ library. Loki
+   requires the Pthreads library to build, which is available by default on Linux, Solaris, and Mac OS X. If you
+   are using Windows, you must download the Pthreads library before you can create a project
+   using the Loki source files.</p>
+
+<div class="indent">
+   <h3><a name="CreateExistingSourcesProject"></a>Creating a Project
+   With Existing Sources</h3>
+   <ol>
+       <li>If you are running the IDE on Windows, install the
+          Pthreads library from  <a href="http://sourceware.org/pthreads-win32" target="_blank">
+         <tt>http://sourceware.org/pthreads-win32</tt></a>.
+         <p>For convenience, you can use this
+         <a href="ftp://sourceware.org/pub/pthreads-win32/pthreads-2005-03-08.exe">direct link</a>
+         to the pthreads-2005-03-08.exe installer.</p>
+         <p>
+         Extract the pthreads library in your Windows user directory.</p>
+       </li>
+      <li>Download the <tt>loki-0.1.7</tt> library from
+         <a href="http://sourceforge.net/projects/loki-lib" target="_blank">
+         <tt>http://sourceforge.net/projects/loki-lib</tt></a>.
+      </li>     
+      <li>Uncompress <tt>loki-0.1.7</tt> in a directory of your choice.
+      </li>
+      <li>Open the New Project wizard by choosing File &gt; New Project.
+      </li>      
+      <li>Select the C/C++ category.</li>      
+      <li>Select C/C++ Project With Existing Sources and click Next.</li>
+      <li>On the Select Mode page, click the Browse button. In the Select Project Folder
+      dialog box, navigate to the
+            directory where you saved 
+            <tt>loki-0.1.7</tt>. Select the <tt>loki-0.1.7</tt> directory.
+            Click Select.        
+      
+      <br><br>
+      <img src="../../../images_www/articles/72/cnd/quickstart/existing_sources_project1.png" alt="Screen shot of 
+           Select Mode page of Project Wizard" class="margin-around b-all">
+           <br><br>
+      </li>
+      <li>Use the default Configuration Mode, Automatic.  Click Finish.
+      <p>
+      The project is created and opened in the Projects tab, and the IDE
+      automatically runs the Clean and Build actions specified in the existing Makefile. The project
+      is also automatically configured for code assistance.</p>     
+    
+      <img src="../../../images_www/articles/72/cnd/quickstart/existing_sources_project2.png" alt="Screen shot of successful
+           make of Project with Existing Sources" class="margin-around">
+    
+      </li>
+   </ol>
+
+   <h3><a name="frombinaryprojects"></a>Creating a C/C++ Project from a Binary File</h3>
+    <p>You can create a C/C++ project from an existing binary file.</p>
+    <ol>
+    <li>Choose File > New Project.</li>
+    <li>Select the C/C++ category.</li>
+    <li>Select C/C++ Project from Binary File and click Next.
+    </li>
+    <li><p>On the Select Binary File page of the New Project wizard,
+    click the Browse button. In the Select Binary File dialog box, navigate to
+    the binary file from which you want to create a project. </p>
+    <p>The
+    root directory for the source files from which the binary was built is filled
+    in automatically. By default, only the source files from which the binary
+    was built are included in the project. By default, dependencies are included
+    in the project. The shared libraries required by the project are automatically
+    listed.</p>
+    <img src="../../../images_www/articles/72/cnd/quickstart/binary_project.png" alt="Screeb shot of Select Binary File page in New Project Wizard" class="margin-around">
+    </li>
+    <li>Click Next.</li>
+    <li>On the Project Name and Location page, you can choose the
+    name and location of the project. Click Finish.</li>
+    </ol>
+  
+   <h3><a name="BuildingRebuilding"></a>Building and Rebuilding Your Project</h3>
+   <p>To build the project:
+      <ul>
+         <li>Right-click the project node of the project and choose Build.</li>
+      </ul>
+      <p>To rebuild the project:
+      <ul>
+         <li>Right-click the project node of the project and choose Clean and Build.</li>
+      </ul>
+      
+      </div>
+      <h2><a name="nextsteps">Next Steps</a></h2>
+      <p>See <a href="navigating-editing.html">Editing and Navigating C/C++
+      Source Files</a> for a tutorial on using the advanced navigation and 
+      editing features in NetBeans IDE to view and modify your source code.
+      </p>   
+ <p>See the 
+       <a href="https://netbeans.org/kb/trails/cnd.html">C/C++ Learning Trail</a> for
+       more articles about developing with C/C++/Fortran in NetBeans IDE.</p>
+
+  <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20C/C++%20Projects%20Quick%20Start%20-%20NetBeans%20IDE%207.4%20Tutorial">Send Feedback on This Tutorial</a></div>
+
+</body>
+</html>

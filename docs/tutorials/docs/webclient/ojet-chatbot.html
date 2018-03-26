@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Chatbot Integration with Oracle JET</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that introduces the support for developing HTML5 applications in NetBeans IDE
+              and uses the jQuery JavaScript library.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+        <!--
+        Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>Chatbot Integration with Oracle JET</h1>
+
+        <p>
+            This document provides a step-by-step set of instructions guiding
+            you through the process of integrating <a href="https://www.oracle.com/solutions/mobile/bots.html">IBCS chatbots</a> with the
+            <a href="http://oraclejet.org">Oracle JavaScript Extension Toolkit (JET)</a>. JET empowers web
+            and mobile developers
+            by providing a modular toolkit based on modern JavaScript, CSS3,
+            and HTML5 design and development principles.</p>
+
+        <!-- ++++++++++++++++ Setting Up ++++++++++++++++ -->
+        <a name="settingUp"></a>
+        <h2>Setting Up an Oracle JET Application</h2>
+        <p>In this exercise you set up an Oracle JET application and explore its default content.</p>
+        <ol>
+            <li>
+                <p>Follow the steps described in <a href="ojet-settingup.html">Setting Up an Oracle JET Application</a>.</p>
+            <li><p>Open the project into an editor or IDE of your choice, such as NetBeans IDE, which
+                    displays the application as follows:</p>
+                <p><img src="../../../images_www/articles/82/web/oraclejet-gettingstarted/navdrawer.png"/></p>
+            </li>
+        </ol>    
+        <p>Spend some time browsing through the application structure.
+            In the next section, you'll be introduced to the main concepts
+            of the application structure.</p>
+
+        <!-- ++++++++++++++++ Understanding ++++++++++++++++ -->
+        <a name="understanding"></a>
+        <h2>Setup your ChatBot to expose it via a Websocket</h2>
+        <p>In this step, now configure the Intelligent Bot Webhook channel. Then try out the ChatBot from your Oracle JET application.</p>
+        <ol>
+            <li>
+                <p>Return to the Intelligent Bot user interface in a new browser tab, select the <strong>Settings</strong> button on the left menu, then the <strong>Channels</strong> tab and finally click the <strong>Add Channel</strong> button.</p>
+                <p><img style="border:1px solid black" src="../../../images_www/articles/82/web/oraclejet-gettingstarted/ccm029.png"/></p>
+        </li>
+<!--        <li>
+            <p>In the <strong>Create Channel </strong>dialog give the channel
+                a name and description, select <strong>Webhook</strong> 
+                from the <strong>Channel Type</strong>. 
+                Finally, set the <strong>Channel Enabled</strong> toggle to 
+                on and click the <strong>Create</strong> button.</p>
+        </li>  
+        <li>
+            <p>Use the following as your <strong>Outgoing Webhook URI</strong>:</p>
+            <pre>&lt;bot server&gt; => check with the instructor</pre>
+        </li>
+        <li>  <p>In the resulting Channel definition screen, 
+                copy down the <strong>Secret Key</strong> and the <strong>Webhook URL</strong>. 
+                You'll use these to create a websocket and on the Oracle JET side to hook 
+                your ChatBot into your app.</p>
+        </li> 
+        <li>  <p>Obtain a Websocket URL via your chat server, 
+                using the information provided above. For purposes
+                of the workshop, the Admin UI of the chat server 
+                is located here: &lt;bot server&gt; => check with the instructor.</p>
+        </li>-->
+        <li>
+            <p>Follow the instructions from the Configuration section of:</p>
+            <ul>
+            <li><tt>http://&lt;bot server&gt;:3000/samples/chat</tt> if you’re using a Docker Image before 0.6 <b>OR</b></li>
+            <li><tt>http://&lt;botserver&gt;:8888/source/apps/chat/overview</tt> if you’re using a Docker image from 0.6</li>
+            </ul>
+        </li>
+    </ol>
+    <!-- ++++++++++++++++ Understanding ++++++++++++++++ -->
+    <a name="understanding"></a>
+    <h2>Integrate the ChatBot in the Application</h2>
+    <ol>
+        <li>
+            <p>In the application, in the <tt>src/js</tt> folder, create a folder named <tt>jet-composites</tt>. 
+                Unzip the content of the ZIP file into it, in a folder named <tt>bot-client</tt>:</p>
+            <p><img src="../../../images_www/articles/82/web/oraclejet-gettingstarted/t060001.png"/></p>
+
+        </li>
+            <li> <p>In <tt>js/viewModels/Dashboard.js</tt>, add a reference to
+                    <tt>jet-composites/bot-client/loader</tt> and <tt>ojs/ojcomposite</tt>
+                    in the <tt>define</tt> block, to load the <tt>bot-client</tt> component.</p>
+               </li> 
+               <li><p>In <tt>js/views/Dashboard.html</tt>, set the following properties, below <tt>var self = this,</tt>:</p>
+                <pre>self.websocketConnectionUrl = 'ws://' &lt;bot websocket&gt; => check with the instructor;
+self.userId = 'your userId used to send message to the bot';
+self.channel = 'channelId, copy from your webhook definition';</pre>
+                   <p class="tips">Can't get yours to work? Try <tt>71DB044C-0624-4533-9C98-B8E76BAF919D</tt> as the channel ID.</p>
+               </li>    
+            <li><p>In <tt>js/views/Dashboard.html</tt>, define the view as follows:</p> 
+                <pre>&lt;bot-client id="bot-client"
+      channel="[[channel]]" 
+      websocket-connection-url="[[websocketConnectionUrl]]" 
+      user-id="[[userId]]"&gt;
+&lt;/bot-client&gt;</pre></li>
+                <li><p>Run the application and interact with the ChatBot.</p>
+                        <p><img style="border:1px solid black" src="../../../images_www/articles/82/web/oraclejet-gettingstarted/t060004.png"/></p>
+
+                </li>
+                </ol>
+                <p>You have now hooked your ChatBot into an Oracle JET application.</p>
+
+                <!-- ++++++++++++++++ Understanding ++++++++++++++++ -->
+                <a name="understanding"></a>
+                <h2>Next Steps</h2>
+
+                <p>Read <a href="http://www.oracle.com/webfolder/technetwork/jet/jetCookbook.html?component=composite&demo=basic">the related Oracle JET Cookbook section</a> in detail and
+                    include another CCA component from there.
+                </p>
+
+                <p>Also read <a href="http://docs.oracle.com/middleware/jet320/jet/developer/GUID-18F9F429-1A80-4A9F-9B78-09428EFD2530.htm#BEGIN">Creating Composite Components</a> in the Oracle JET Developer Guide.</p>
+
+                <p>Congratulations! You have now learned how to create
+                    and load CCA components in your Oracle JET applications.</p>
+
+                <div class="feedback-box">
+                    <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20CCA">Send Feedback on This Tutorial</a>
+                </div>
+
+                <br style="clear:both;">
+
+                <br>
+
+                <h2 id="seealso">See Also</h2>
+
+                <p>For more information about support for Oracle JET and a variety of HTML5 applications in the IDE on
+                    <a href="https://netbeans.org/">netbeans.org</a>, see the following resources:</p>
+
+                <ul>
+                    <li><a href="http://www.oracle.com/webfolder/technetwork/jet/globalExamples.html">"Learn" section
+                            on the Oracle JET site</a>. A set of official Oracle JET learning resources.</li>
+                    <li><a href="html5-editing-css.html">Working with CSS Style Sheets in HTML5 Applications</a>.
+                        A document that continues with the application that you created in this tutorial that demonstrates
+                        how to use some of the CSS wizards and windows in the IDE and how to use the Inspect mode in the
+                        Chrome browser to visually locate elements in your project sources.</li>
+                    <li><a href="html5-js-support.html">Debugging and Testing JavaScript in HTML5 Applications</a>.
+                        A document that demonstrates how the IDE provides tools that can help you debug and test
+                        JavaScript files in the IDE.</li>
+                </ul>
+
+                </body>
+                </html>

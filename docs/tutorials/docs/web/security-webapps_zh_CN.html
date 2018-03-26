@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>在 NetBeans IDE 中保护 Web 应用程序的安全</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Style-Type" content="text/css">
+        <meta name="keywords"
+              content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, IDE, Platform, free, open source, developer">
+        <meta name="description"
+              content="This document takes you through the basics of adding security to a web application that is deployed to either the Tomcat server or the Oracle GlassFish Open Source server.">
+        <meta name="author" content="Dan Kolar">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+        <h1>在 NetBeans IDE 中保护 Web 应用程序的安全</h1>
+        <div class="articledate" style="margin-left: 0px;">由 Dan Kolar 撰稿，James Branam 和 Jeff Rubinoff 维护 </div>
+        <p>本文档介绍在部署到 Oracle GlassFish Open Source Edition、Oracle WebLogic 或 Apache Tomcat 服务器的 Web 应用程序中添加安全功能的基础知识。</p>
+        <p>本文档介绍了如何使用基本登录窗口以及 Web 页中的登录窗体配置安全验证。本文档还将指导您完成在 Tomcat 和 GlassFish Server 上创建用户的步骤。创建用户之后，然后可以通过在部署描述符中设置安全属性创建安全角色。本文档还介绍了在将应用程序部署到 GlassFish Server 时，如何使用 JDBC 验证来保护应用程序的安全。</p>
+        <!-- END VCD1 OVERVIEW COMPONENT  -->
+        <p class="align-center"><b>预计时间：<i>40</i> 分钟</b></p>
+        <!-- BEGIN VCD5 ANCHOR LINKS COMPONENT  -->
+        <p><b>目录</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+        <ul class="toc">
+
+            <li><a href="#Exercise_0">安装和配置工作环境</a></li>
+            <li><a href="#Creating_Web_App">创建 Web 应用程序</a>
+                <ul>
+                    <li><a href="#createdir">创建安全目录</a></li>
+                    <li><a href="#indexpage">创建 JSP 索引页</a></li>
+                    <li><a href="#loginform">创建“登录窗体”（对 Tomcat 为必选，对 GlassFish 或 WebLogic Server 为可选）</a></li>
+                </ul>
+            </li>
+            <li><a href="#Creating_users_roles">在目标服务器上创建用户和角色</a>
+                <ul>
+                    <li><a href="#SJSAS">在 GlassFish Server 上定义角色</a></li>
+                    <li><a href="#Tomcat">在 Tomcat Web 服务器上定义角色</a></li>
+                    <li><a href="#wl">在 WebLogic Server 上定义角色和组</a></li>
+
+                </ul>
+            </li>
+            <li><a href="#Basic_login_config">配置登录方法</a>
+
+                <ul>
+
+                    <li><a href="#Basic">基本登录</a></li>
+                    <li><a href="#Form">窗体登录</a></li>
+                </ul></li>
+
+            <li><a href="#sec-dd">配置服务器部署描述符</a>
+                <ul>
+                    <li><a href="#gf-dd">配置 GlassFish Server 部署描述符</a></li>
+                    <li><a href="#wl-dd">配置 WebLogic Server 部署描述符</a> </li>
+                </ul>
+            </li>
+            <li><a href="#Deploy_run">部署并运行应用程序</a></li>
+
+        </ul>
+        <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java EE 版本</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发者工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 7 或 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Java EE 平台</td>
+                    <td class="tbltd1">Java EE 6 或 7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Travel 数据库</td>
+                    <td class="tbltd1">无版本要求</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">符合 Java EE 规范的 Web 服务器或应用服务器</td>
+                    <td class="tbltd1">Tomcat Web 服务器 7.x 或 8.x、Oracle WebLogic 11g 或<br /> GlassFish Server Open Source Edition 4.x
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <!-- ===================================================================================== -->
+        <h2><a name="Exercise_0"></a>安装和配置工作环境</h2>
+        <p>安装并启动 NetBeans IDE。可以使用捆绑的 Tomcat 服务器或 GlassFish Server 完成本教程。</p>
+        <p>确保已安装服务器，并已在 IDE 中注册服务器实例。可以使用服务器管理器来注册已安装的服务器实例。（选择 "Tools"（工具）> "Servers"（服务器）> "Add Server"（添加服务器）。选择 "GlassFish Server &lt;version number&gt;"（GlassFish Server &lt;版本号&gt;）或 "Tomcat &lt;version number&gt;"（Tomcat &lt;版本号&gt;），然后单击 "Next"（下一步）。单击 "Browse"（浏览）并找到该应用服务器的安装目录。单击 "Finish"（完成）。</p>
+        <!-- ===================================================================================== -->
+
+        <h2 class="tutorial"><a name="Creating_Web_App"></a><!--Exercise 1: -->
+            创建 Web 应用程序</h2>
+        <p>在本练习中，您首先将创建 Web 应用程序项目和目录结构。然后在每个安全目录中创建一些简单的 <tt>html</tt> 文件。Web 应用程序使用基本登录验证来访问安全目录。如果希望使用登录窗体进行验证，则可以向窗体添加 <tt>jsp</tt> 页。</p>
+        <div class="indent">
+            <a name="createdir"></a>
+            <h3 class="tutorial">创建安全目录</h3>
+
+            <ol>
+                <li>选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键），从 Java Web 类别中选择 "Web Application"（Web 应用程序），然后单击 "Next"（下一步）。</li>
+                <li>将项目命名为 <tt>WebApplicationSecurity</tt>。接受默认设置。</li>
+                <li>（可选）选中“使用专用文件夹存储库”复选框，并指定库文件夹的位置。有关此选项的详细信息，请参见<em>使用 NetBeans IDE 开发应用程序</em>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">与其他用户共享库</a>。</li>
+                <li>单击 "Next"（下一步）。</li><li>选择要在其中部署应用程序的服务器。这里仅列出了已在 IDE 中注册的服务器。单击 "Next"（下一步）。</li>
+                <li>不需要添加框架，因此请单击 "Finish"（完成）。</li>
+                <li>如果创建了一个 EE 6 应用程序，请转到 IDE 的 "Projects"（项目）窗口，右键单击该项目的节点，然后选择 "New"（新建）> "Other"（其他）> "Web" > "Standard Deployment Descriptor (web.xml)"（标准部署描述符 (web.xml)）。接受所有默认值，然后单击相应的按钮以完成向导。
+                    <p class="notes" ><b>注：</b>本教程介绍了如何在部署描述符中配置安全功能，但 EE 6 和 EE 7 应用程序默认使用标注，而不是部署描述符。</p></li>
+                <li>如果使用 GlassFish 或 WebLogic Server 以及 NetBeans IDE 7.0.1 或更高版本，则需生成特定于服务器的描述符。右键单击项目的节点并选择 "New"（新建）> "Other"（其他）> "GlassFish" > "GlassFish Descriptor"（GlassFish 描述符），或选择 "New"（新建）> "Other"（其他）> "WebLogic" > "WebLogic Descriptor"（WebLogic 描述符）。"Create Server-Specific Descriptor"（创建特定于服务器的描述符）对话框将会打开。接受所有默认值，然后单击 "Finish"（完成）。特定于服务器的描述符（名为 <tt>glassfish-web.xml</tt> 或 <tt>weblogic.xml</tt>）将出现在项目中的 "Configuration Files"（配置文件）文件夹中。</li>
+                <li>在 IDE 的 "Projects"（项目）窗口中，右键单击 "Web Pages"（Web 页），然后选择 "New"（新建）> "Other"（其他）。</li>
+                <li>在新建文件向导中，选择 "Other"（其他）作为类别，选择 "Folder"（文件夹）作为文件类型。单击 "Next"（下一步）。</li>
+                <li>
+                    <p>在新建文件夹向导中，将文件夹命名为 "secureAdmin"，然后单击 "Finish"（完成）。</p>
+                    secureAdmin 文件夹将显示在 "Projects"（项目）窗口的 "Web Pages"（Web 页）文件夹中。
+                </li>
+                <li>重复前面的 3 个步骤，以创建另一个名为 secureUser 的文件夹。</li>
+                <li>在 secureUser 文件夹中创建一个新的 <tt>html</tt> 文件，方法是在 "Projects"（项目）窗口中右键单击 secureUser 文件夹，然后选择 "New"（新建）> "Other"（其他）。</li>
+                <li>在 "Other"（其他）类别中选择 "HTML" 文件类型。单击 "Next"（下一步）。</li>
+                <li>将新文件命名为 "pageU"，然后单击 "Finish"（完成）。
+                    <p>单击 "Finish"（完成），此时将在源代码编辑器中打开 <tt>pageU.html</tt> 文件。</p></li>
+                <li>在源代码编辑器中，将 <tt>pageU.html</tt> 中的现有代码替换为以下代码。
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+   &lt;head&gt;
+      &lt;title&gt;</span>User secure area<span class="html-tag">&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h1&gt;</span>User Secure Area<span class="html-tag">&lt;/h1&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+                <li>右键单击 secureAdmin 文件夹并创建一个新的名为 pageA 的 <tt>html</tt> 文件。</li>
+                <li>在源代码编辑器中，将 <tt>pageA.html</tt> 中的现有代码替换为以下代码。
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+   &lt;head&gt;
+      &lt;title&gt;</span>Admin secure area<span class="html-tag">&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h1&gt;</span>Admin secure area<span class="html-tag">&lt;/h1&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+            </ol>
+
+            <a name="indexpage"></a>
+            <h3 class="tutorial">创建 JSP 索引页</h3>
+            <p>现在可以创建包含指向安全区域的链接的 JSP 索引页。当用户单击链接时，系统将提示他们输入用户名和口令。如果使用的是基本登录，将使用默认浏览器登录窗口进行提示。如果使用的是登录窗体页，则用户将在一个窗体中输入用户名和口令。</p>
+            <ol>
+                <li>在源代码编辑器中打开 <tt>index.jsp</tt>，并将以下链接添加到 <tt>pageA.html</tt> 和 <tt>pageU.html</tt>：
+                    <pre class="examplecode"><span class="jsp-html-tag">&lt;p&gt;</span>Request a secure Admin page <span
+ class="jsp-html-tag">&lt;a</span> <span
+ class="jsp-html-argument">href=</span><span class="jsp-xml-value">"secureAdmin/pageA.html"</span><span
+ class="jsp-html-tag">&gt;</span>here!<span class="jsp-html-tag">&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;</span>Request a secure User page <span
+ class="jsp-html-tag">&lt;a</span> <span
+ class="jsp-html-argument">href=</span><span
+ class="jsp-xml-value">"secureUser/pageU.html"</span> <span
+                class="jsp-html-tag">&gt;</span>here!<span class="jsp-html-tag">&lt;/a&gt;&lt;/p&gt;</span></pre>
+                </li>
+                <li>保存所做的更改。</li>
+            </ol>
+
+
+            <a name="loginform"></a>
+            <h3 class="tutorial">创建“登录窗体”（对 Tomcat 为必选，对 GlassFish 或 WebLogic Server 为可选）</h3>
+            <p>如果希望使用登录窗体而不使用基本登录，则可以创建一个包含窗体的 <tt>jsp</tt> 页。然后在<a href="#Basic_login_config">配置登录方法</a>时指定登录页和错误页。</p>
+            <p class="alert"><strong>重要说明：</strong>Tomcat 用户必须创建一个登录窗体。</p>
+            <ol>
+                <li>在 "Projects"（项目）窗口中，右键单击 "Web Pages"（Web 页）文件夹并选择 "New"（新建）> "JSP"。</li>
+                <li>将文件命名为 <tt>login</tt>，保留其他字段的默认值，然后单击 "Finish"（完成）。</li>
+                <li>在源代码编辑器中，将以下代码插入到 <tt>login.jsp</tt> 的 <tt>&lt;body&gt;</tt> 标记之间。<br>
+                    <pre class="examplecode">&lt;<span class="jsp-html-tag">form</span> <span
+              class="jsp-html-argument">action=</span><span
+              class="jsp-xml-value">"j_security_check"</span> <span
+              class="jsp-html-argument">method=</span><span
+              class="jsp-xml-value">"POST"</span><span class="jsp-html-tag">&gt;</span>
+   Username:<span class="jsp-html-tag">&lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"text"</span> <span class="jsp-html-argument">name=</span><span class="jsp-xml-value">"j_username"</span><span
+              class="jsp-html-tag">&gt;&lt;br&gt;</span>
+   Password:<span class="jsp-html-tag">&lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"password"</span> <span class="jsp-html-argument">name=</span><span class="jsp-xml-value">"j_password"</span><span
+                  class="jsp-html-tag">&gt;
+   &lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"submit"</span> <span class="jsp-html-argument">value=</span><span class="jsp-xml-value">"Login"</span><span class="jsp-html-tag">&gt;
+&lt;/form&gt;</span></pre>
+                </li>
+                <li>在 "Web Pages"（Web 页）文件夹中创建一个新的名为 <tt>loginError.html</tt> 的 <tt>html</tt> 文件。这是一个简单的错误页。</li>
+                <li>在源代码编辑器中，将 <tt>loginError.html</tt> 中的现有代码替换为以下代码。
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;</span>Login Test: Error logging in<span class="html-tag">&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;</span>Error Logging In<span class="html-tag">&lt;/h1&gt;
+        &lt;br/&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+            </ol>
+
+
+        </div>
+        <!-- ======================================================================================== -->
+        <h2 class="tutorial"><a name="Creating_users_roles"></a>在目标服务器上创建用户</h2>
+        <p class="tutorial">要能够在 Web 应用程序中使用用户/口令验证（基本登录或基于窗体的登录）安全功能，必须为目标服务器定义用户及其相应角色。要登录到服务器，该服务器上必须存在用户帐户。</p>
+        <p>定义用户和角色的方式因指定的目标服务器而异。在本教程中，用户 <tt>admin</tt> 和 <tt>user</tt> 用于测试安全设置。您需要确认在相应的服务器上存在这些用户，并为这些用户指定了相应的角色。</p>
+
+        <div class="indent">
+            <h3 class="tutorial"><a name="SJSAS"></a>在 GlassFish Server 上定义用户 </h3>
+            <p>对于本方案，需要使用 GlassFish Server 的管理控制台创建两个分别名为 <tt>user</tt> 和 <tt>admin</tt> 的新用户。名为 <tt>user</tt> 的用户对应用程序具有有限的访问权限，名为 <tt>admin</tt> 的用户具有管理权限。 
+            <ol>
+                <li>
+                    <p>通过转至 IDE 的 "Services"（服务）窗口并右键单击 "Servers"（服务器）> "GlassFish Server" > "View Domain Admin Console"（查看域管理控制台）打开 "Admin Console"（管理控制台）。GlassFish Server 的登录页将在浏览器窗口中打开。您需要使用管理员用户名和口令进行登录才能访问管理控制台。</p>
+                    <p class="notes"><b>注：</b>必须运行应用服务器才能访问管理控制台。要启动服务器，请右键单击 GlassFish Server 节点并选择 "Start"（启动）。</p>
+                </li>
+                <li>在 "Admin Console"（管理控制台）中，导航至 "Configurations"（配置）> "server-config" > "Security"（安全性）> "Realms"（领域）> "File"（文件）。"Edit Realm"（编辑领域）面板将会打开。<br> <img alt="GlassFish 3.1 管理控制台中服务器配置的文件领域" class="margin-around" src="../../../images_www/articles/72/web/security/edit-realm.png"></li>
+
+                <li>单击 "Edit Realm"（编辑领域）面板顶部的 "Manage Users"（管理用户）按钮。将打开 "File Users"（文件用户）面板。<br> <img alt="突出显示 &quot;New user&quot;（新建用户）按钮的 &quot;File Users&quot;（文件用户）面板" class="margin-around" src="../../../images_www/articles/72/web/security/file-users.png">
+                </li>
+                <li>单击 "New"（新建）。将打开 "New File Realm User"（新建文件领域用户）面板。键入 <tt>user</tt> 作为用户 ID，键入 <tt>userpw01</tt> 作为口令。单击 "OK"（确定）。          </li>
+                <li>按照前面的步骤在 <tt>file</tt> 领域中创建名为 <tt>admin</tt>、口令为 <tt>adminpw1</tt> 的用户。</li>
+            </ol>
+            <h3 class="tutorial"><a name="Tomcat"></a>在 Tomcat Web 服务器上定义角色和用户</h3>
+            <p>对于 Tomcat 7，在 NetBeans IDE 中注册服务器时，将创建一个角色为 manager-script 的用户，并为该用户创建一个口令。</p>
+            <p>Tomcat 服务器的基本用户和角色在 <tt>tomcat-users.xml</tt> 中。可以在 <tt><i>&lt;CATALINA_BASE&gt;</i>\conf</tt> 目录中找到 <tt>tomcat-users.xml</tt>。</p>
+            <p class="notes"><b>注：</b>通过在 "Services"（服务）窗口中右键单击 Tomcat 服务器节点并选择 "Properties"（属性）可以查找 CATALINA_BASE 位置。"Server Properties"（服务器属性）将打开。CATALINA_BASE 的位置在 "Connection"（连接）标签中。</p>
+            <img alt="显示用于打开 Tomcat 7.0 属性的上下文菜单的 &quot;Services&quot;（服务）窗口" class="margin-around" src="../../../images_www/articles/72/web/security/tomcat-properties.png"> <img alt="显示 CATALINA_BASE 位置的 Tomcat 7 &quot;server properties&quot;（服务器属性）对话框" class="margin-around" src="../../../images_www/articles/72/web/security/catalina-base.png">
+
+
+            <p class="notes"><b>注：</b>如果使用早期版本的 IDE 捆绑的 Tomcat 6，该服务器将定义具有口令以及 administrator 和 manager 角色的 <tt>ide</tt> 用户。用户 <tt>ide</tt> 的口令是在安装 Tomcat 6 时生成的。可以更改用户 <tt>ide</tt> 的口令，或者将该口令复制到 <tt>tomcat-users.xml</tt> 中。</p>
+            <p><b>将用户添加到 Tomcat 中：</b></p>
+            <ol>
+                <li>在编辑器中打开 <tt><i>&lt;CATALINA_BASE&gt;</i>/conf/tomcat-users.xml</tt>。 
+                </li>
+                <li>添加一个名为 <tt>AdminRole</tt> 的角色。 <pre class="examplecode">&lt;role rolename="AdminRole"/&gt;</pre></li>
+                <li>添加一个名为 <tt>UserRole</tt> 的角色。<pre class="examplecode">&lt;role rolename="UserRole"/&gt;</pre></li>
+                <li>添加一个名为 <tt>admin</tt> 并具有 <tt>adminpw1</tt> 口令和 <tt>AdminRole</tt> 角色的用户。
+                    <pre class="examplecode">&lt;user username="admin" password="adminpw1" roles="AdminRole"/&gt;</pre></li>
+                <li>添加一个名为 <tt>user</tt> 并具有 <tt>userpw01</tt> 口令和 <tt>UserRole</tt> 角色的用户。
+                    <pre class="examplecode">&lt;user username="user" password="userpw01" roles="UserRole"/&gt;</pre></li>
+
+
+            </ol>
+            <p>现在，<tt>tomcat-users.xml</tt> 文件显示如下：</p>
+            <pre class="examplecode">&lt;tomcat-users&gt;
+&lt;!--
+  &lt;role rolename="tomcat"/&gt;
+  &lt;role rolename="role1"/&gt;
+  &lt;user username="tomcat" password="tomcat" roles="tomcat"/&gt;
+  &lt;user username="both" password="tomcat" roles="tomcat,role1"/&gt;
+  &lt;user username="role1" password="tomcat" roles="role1"/&gt;
+--&gt;
+...
+&lt;role rolename="AdminRole"/&gt;
+&lt;role rolename="UserRole"/&gt;
+&lt;user username="user" password="userpw01" roles="UserRole"/&gt;
+&lt;user username="admin" password="adminpw1" roles="AdminRole"/&gt;
+[User with manager-script role, defined when Tomcat 7 was registered with the IDE]
+...
+&lt;/tomcat-users&gt;</pre>
+            <h3><a name="wl"></a>在 WebLogic Server 上定义用户和组</h3>
+            <p>对于本方案，首先需要使用 WebLogic Server 的管理控制台创建两个分别名为 <tt>user</tt> 和 <tt>admin</tt> 的新用户。将这些用户分别添加到 <tt>userGroup</tt> 和 <tt>adminGroup</tt> 组中。稍后，将要为这些组指定安全角色。<tt>userGroup</tt> 将对应用程序具有有限的访问权限，而 <tt>adminGroup</tt> 将具有管理权限。</p>
+            <p>WebLogic <a href="http://download.oracle.com/docs/cd/E21764_01/apirefs.1111/e13952/taskhelp/security/ManageUsersAndGroups.html">管理控制台联机帮助</a>中提供了有关向 Web Logic 服务器添加用户和组的一般说明。 </p>
+            <p><b>将 "user" 和 "admin" 用户和组添加到 WebLogic 中：</b></p>
+            <ol>
+                <li>
+                    <p>通过转至 IDE 的 "Services"（服务）窗口并右键单击 "Servers"（服务器）> "WebLogic Server" > "View Admin Console"（查看管理控制台）打开 "Admin Console"（管理控制台）。GlassFish Server 的登录页将在浏览器窗口中打开。您需要使用管理员用户名和口令进行登录才能访问管理控制台。</p>
+                    <p class="notes"><b>注：</b>必须运行应用服务器才能访问管理控制台。要启动服务器，请右键单击 WebLogic Server 节点并选择 "Start"（启动）。</p>
+                </li>
+                <li>在左面板中，选择 "Security Realms"（安全领域）。"Summary of Security Realms"（安全领域概要）页将会打开。</li>
+                <li>在 "Summary of Security Realms"（安全领域概要）页中，选择领域的名称（默认领域为 "myrealm"）。"Settings for Realm Name"（领域名称设置）页将会打开。</li>
+                <li>在 "Settings for Realm Name"（领域名称设置）页中，选择 "Users and Groups"（用户和组）> "Users"（用户）。将显示 "Users"（用户）表。
+                </li>
+                <li>在 "Users"（用户）表中，单击 "New"（新建）。"Create New User"（创建新用户）页将会打开。</li>
+                <li>键入名称 "user" 和口令 "userpw01"。还可以键入说明。接受默认的 "Authentication Provider"（验证提供器）。 <br><img alt="显示 &quot;new user&quot;（新建用户）对话框的 WebLogic 管理控制台" class="margin-around" src="../../../images_www/articles/72/web/security/wl-admin-newuser.png"></li>
+                <li>单击 "OK"（确定）。您将返回到 "Users"（用户）表。</li>
+                <li>单击 "New"（新建）并添加一个具有名称 "admin" 和口令 "admin1" 的用户。</li>
+                <li>打开 "Groups"（组）标签。将显示 "Groups"（组）表。 </li>
+                <li>单击 "New"（新建）。"Create a New Group"（创建新组）窗口将会打开。</li>
+                <li>将组命名为 userGroup。接受默认提供器并单击 "OK"（确定）。您将返回到 "Groups"（组）表。</li>
+                <li>单击 "New"（新建）并创建组 adminGroup。</li>
+                <li>为下一过程打开 "Users"（用户）标签。</li>
+
+            </ol>
+            <p>现在，将 <tt>admin</tt> 用户添加至 <tt>adminGroup</tt>，并将 <tt>user</tt> 用户添加至 <tt>userGroup</tt>。</p>
+            <p><b>将用户添加到组中：</b></p>
+            <ol>
+                <li>在 "Users"（用户）标签中，单击 <tt>admin</tt> 用户。用户的 "Settings"（设置）页将会打开。</li>
+                <li>在 "Settings"（设置）页中，打开 "Groups"（组）标签。</li>
+                <li>在 "Parent Groups: Available:"（父组：可用：）表中，选择 <tt>adminGroup</tt>。</li>
+                <li>单击向右箭头 &gt;。<tt>adminGroup</tt> 将出现在 "Parent Groups: Chosen:"（父组: 选定:）表中。 <br><img alt="显示管理员用户设置的 WebLogic 管理控制台" class="margin-around" src="../../../images_www/articles/72/web/security/wl-admin-usersettings.png"></li>
+                <li>单击 "Save"（保存）。</li>
+                <li>返回到 "Users"（用户）标签。</li>
+                <li>单击 <tt>user</tt> 用户并将其添加至 <tt>userGroup</tt>。</li>
+
+            </ol>
+        </div>
+
+        <a name="Basic_login_config"></a>
+        <h2 class="tutorial">配置登录方法</h2>
+        <p>在为应用程序配置登录方法时，可以使用浏览器提供的登录窗口进行基本登录验证。另外，还可以创建具有登录窗体的 Web 页。这两种登录配置都是基于用户/口令验证的。</p>
+        <p>要配置登录，需创建<em>安全约束</em>并为这些安全约束指定角色。安全约束定义一组文件。将角色指定给约束时，拥有该角色的用户可以访问约束定义的文件集。例如，在本教程中，您将 AdminRole 指定给 AdminConstraint，将 UserRole 和 AdminRole 指定给 UserConstraint。这意味着，具有 AdminRole 角色的用户有权访问 Admin 文件和 User 文件，但具有 UserRole 角色的用户只有权访问 User 文件。</p>
+        <p class="notes"><b>注：</b>向单独的管理员角色提供对用户文件的访问权限不是常规用例。替代方法是只将 UserRole 指定给 UserConstraint，并且在服务器端将 AdminRole 赋予也是管理员的特定 *用户*。您应决定如何按用例授予访问权限。 </p>
+    <p>通过配置 <tt>web.xml</tt>，可以为应用程序配置登录方法。可以在 "Projects"（项目）窗口的 "Configuration Files"（配置文件）目录中找到 <tt>web.xml</tt> 文件。</p>
+
+        <div class="indent">
+            <a name="Basic"></a>
+            <h3 class="tutorial">基本登录</h3>
+            <p>在使用基本登录配置时，登录窗口由浏览器提供。访问安全内容需要有效的用户名和口令。</p>
+
+            <p>以下步骤介绍了如何为 GlassFish 和 WebLogic Server 配置基本登录。Tomcat 用户需要使用<a href="#form-login">窗体登录</a>。</p>
+            <p><b>配置基本登录：</b></p>
+            <ol>
+                <li>在 "Projects"（项目）窗口中，展开项目的 "Configuration Files"（配置文件）节点，然后双击 <tt>web.xml</tt>。将在可视编辑器中打开 <tt>web.xml</tt> 文件。</li>
+                <li>单击工具栏中的 "Security"（安全），在 "Security"（安全）视图中打开该文件。</li>
+                <li>展开 "Login Configuration"（登录配置）节点，然后将 "Login Configuration"（登录配置）设置为 "Basic"（基本）。
+                    <p class="notes"><b>注：</b>如果希望使用窗体，请选择 "Form"（窗体）而不是 "basic"（基本），并指定登录页和登录错误页。          </li>
+                <li>根据服务器输入领域名称。
+                    <ul>
+                        <li><b>GlassFish：</b>输入 <tt>file</tt> 作为领域名称。这是在 GlassFish Server 上创建用户所在的默认领域名称。</li>
+                        <li><b>Tomcat：</b>请勿输入领域名称。</li>
+                        <li><b>WebLogic：</b>输入您的领域名称。默认领域是 <tt>myrealm</tt>。</li>
+                    </ul>
+
+                    <img alt="将基本登录和角色添加到 web.xml 中" class="margin-around" src="../../../images_www/articles/72/web/security/security-roles.png"></li>
+                <li>展开 "Security Roles "（安全角色）节点，然后单击 "Add"（添加）可添加角色名称。</li>
+                <li>添加以下安全角色：
+                    <ul>
+                        <li><tt>AdminRole</tt>。添加到此角色的用户将有权访问服务器的 <tt>secureAdmin</tt> 目录。</li>
+                        <li><tt>UserRole</tt>。添加到此角色的用户将有权访问服务器的 <tt>secureUser</tt> 目录。</li>
+                    </ul>
+                    <p class="alert"><b>注：</b>GlassFish 角色名称必须以大写字母开头。</p>
+                </li>
+                <li>通过执行以下操作，创建和配置名为 <tt>AdminConstraint</tt> 的安全约束：
+                    <ol>
+                        <li>单击 "Add Security Constraint"（添加安全约束）。将显示新安全约束部分。</li>
+                        <li>输入 <tt>AdminConstraint</tt> 作为新安全约束的显示名称。<br> <img alt="添加 AdminConstraint" class="margin-around" src="../../../images_www/articles/72/web/security/admin-constraint.png"></li>
+                        <li>单击 "ADD"（添加）。将打开 "Add Web Resource"（增加 Web 资源）对话框。</li>
+                        <li><p>在 "Add Web Resource"（增加 Web 资源）对话框中，将 "Resource Name"（资源名称）设置为 <tt>Admin</tt>，将 "URL Pattern"（URL 模式）设置为 <tt>/secureAdmin/*</tt>，然后单击 "OK"（确定）。对话框将关闭。</p>
+                            <p class="notes"><b>注：</b>如果使用星号 (*)，则会授予用户访问该文件夹中所有文件的权限。</p><img alt="&quot;Add Web Resource&quot;（增加 Web 资源）对话框" class="margin-around" height="370" src="../../../images_www/articles/72/web/security/addwebresource.png" width="455"></li>
+                        <li>选中 "Enable Authentication Constraint"（启用验证约束），然后单击 "Edit"（编辑）。"Edit Role Names"（编辑角色名称）对话框将会打开。</li>
+                        <li>在 "Edit Role Names"（编辑角色名称）对话框中，在左窗格中选择 AdminRole，单击 "Add"（添加），然后单击 "OK"（确定）。
+                            <p>在完成上述步骤之后，结果应如下图所示：</p>
+                            <img alt="管理员和用户约束" border="1" class="margin-around" src="../../../images_www/articles/72/web/security/constraints.png" width="600"></li>
+                    </ol>
+                </li>
+                <li>通过执行以下操作，创建和配置名为 <tt>UserConstraint</tt> 的安全约束：
+                    <ol>
+                        <li>单击 "Add Security Constraint"（添加安全约束），创建新的安全约束。</li>
+                        <li>输入 <tt>UserConstraint</tt> 作为新安全约束的显示名称。</li>
+                        <li>单击 "Add"（添加），添加 "Web Resource Collection"（Web 资源集合）。</li>
+                        <li>在 "Add Web Resource"（增加 Web 资源）对话框中，将 "Resource Name"（资源名称）设置为 <tt>User</tt>，将 URL 模式设置为 <tt>/secureUser/*</tt>，然后单击 "OK"（确定）。</li>
+                        <li>选中 "Enable Authentication Constraint"（启用验证约束），然后单击 "Edit"（编辑）以编辑 "Role Name"（角色名称）字段。</li>
+                        <li>在 "Edit Role Names"（编辑角色名称）对话框中，在左窗格中选择 AdminRole 和 UserRole，单击 "Add"（添加），然后单击 "OK"（确定）。 </li>
+                    </ol>
+                    注：还可以在 web.xml 中设置会话的超时时间。要设置超时，请单击可视编辑器的 "General"（常规）标签，然后指定希望会话持续的时间。默认值为 30 分钟。 <a name="Form"></a> <a name="form-login" /></a>
+                    <h3 class="tutorial">窗体登录</h3>
+                    <p>使用窗体进行登录可以定制登录页和错误页的内容。使用窗体配置验证的步骤与基本登录配置相同，但需要指定您创建的<a href="#loginform">登录页和错误页</a>。</p>
+                    <p>以下步骤演示如何配置登录窗体</p>
+                    <ol>
+                        <li>在 "Projects"（项目）窗口中，双击位于 <tt>Web 页/WEB-INF</tt> 目录中的 <tt>web.xml</tt>，在可视编辑器中打开该文件。</li>
+
+                        <li>单击工具栏中的 "Security"（安全），在 "Security"（安全）视图中打开该文件，并展开 "Login Configuration"（登录配置）节点。</li>
+                        <li>将 "Login Configuration"（登录配置）设置为 "Form"（窗体）。</li>
+                        <li>通过单击 "Browse"（浏览）并找到 <tt>login.jsp</tt> 设置“窗体登录页”。</li>
+                        <li>
+                            <p>通过单击 "Browse"（浏览）并找到 <tt>loginError.html</tt> 设置“窗体错误页”。</p><img alt="在 web.xml 中设置登录窗体" class="margin-around" src="../../../images_www/articles/72/web/security/login-forms.png">  </li>
+                        <li>根据服务器输入领域名称。
+                            <ul>
+                                <li><b>GlassFish：</b>输入 <tt>file</tt> 作为领域名称。这是在 GlassFish Server 上创建用户所在的默认领域名称。</li>
+                                <li><b>Tomcat：</b>请勿输入领域名称。</li>
+                                <li><b>WebLogic：</b>输入您的领域名称。默认领域是 <tt>myrealm</tt>。</li>
+                            </ul>
+                        </li>
+                        <li>展开 "Security Roles "（安全角色）节点，然后单击 "Add"（添加）可添加角色名称。</li>
+                        <li>添加以下安全角色：
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <th class="tblheader" scope="col">服务器角色</th>
+
+                                        <th class="tblheader" scope="col">描述</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1">AdminRole</td>
+
+                                        <td class="tbltd1">添加到此角色的用户将有权访问服务器的 <tt>secureAdmin</tt> 目录。</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1">UserRole</td>
+
+                                        <td class="tbltd1">添加到此角色的用户将有权访问服务器的 <tt>secureUser</tt> 目录。</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </li>
+                        <li>通过执行以下操作，创建和配置名为 <tt>AdminConstraint</tt> 的安全约束：
+                            <ol>
+                                <li>单击 "Add Security Constraint"（添加安全约束），创建新的安全约束。</li>
+                                <li>输入 <tt>AdminConstraint</tt> 作为新安全约束的显示名称。</li>
+                                <li>单击 "Add"（添加），添加 "Web Resource Collection"（Web 资源集合）。</li>
+                                <li>
+                                    <p>在 "Add Web Resource"（增加 Web 资源）对话框中，将 "Resource Name"（资源名称）设置为 <tt>Admin</tt>，将“URL 模式”设置为 <tt>/secureAdmin/*</tt>，然后单击 "OK"（确定）。</p>
+                                    <p class="notes"><b>注：</b>如果使用星号 (*)，则会授予用户访问该文件夹中所有文件的权限。</p>
+                                    <img alt="&quot;Add Web Resource&quot;（增加 Web 资源）对话框" class="margin-around" height="370" src="../../../images_www/articles/72/web/security/addwebresource.png" width="455"></li>
+                                <li>选中 "Enable Authentication Constraint"（启用验证约束），然后单击 "Edit"（编辑）。"Edit Role Names"（编辑角色名称）对话框将会打开。</li>
+                                <li>在 "Edit Role Names"（编辑角色名称）对话框中，在左窗格中选择 AdminRole，单击 "Add"（添加），然后单击 "OK"（确定）。
+                                    <p>在完成上述步骤之后，结果应如下图所示：</p>
+                                    <img alt="管理员和用户约束" border="1" class="margin-around" src="../../../images_www/articles/72/web/security/constraints.png" width="600"></li>
+                            </ol>
+                        </li>
+                        <li>通过执行以下操作，创建和配置名为 <tt>UserConstraint</tt> 的安全约束：
+                            <ol>
+                                <li>单击 "Add Security Constraint"（添加安全约束），创建新的安全约束。</li>
+                                <li>输入 <tt>UserConstraint</tt> 作为新安全约束的显示名称。</li>
+                                <li>单击 "Add"（添加），添加 "Web Resource Collection"（Web 资源集合）。</li>
+                                <li>在 "Add Web Resource"（增加 Web 资源）对话框中，将 "Resource Name"（资源名称）设置为 <tt>User</tt>，将 URL 模式设置为 <tt>/secureUser/*</tt>，然后单击 "OK"（确定）。</li>
+                                <li>选中 "Enable Authentication Constraint"（启用验证约束），然后单击 "Edit"（编辑）以编辑 "Role Name"（角色名称）字段。</li>
+                                <li>在 "Edit Role Names"（编辑角色名称）对话框中，在左窗格中选择 AdminRole 和 UserRole，单击 "Add"（添加），然后单击 "OK"（确定）。 </li>
+                            </ol>
+                            注：还可以在 web.xml 中设置会话的超时时间。要设置超时，请单击可视编辑器的 "General"（常规）标签，然后指定希望会话持续的时间。默认值为 30 分钟。<a name="Form"></a>            
+                    </ol>
+
+                    <!--<li>Add Admin and Tomcat (<span style="color: rgb(204, 51, 204);">User</span>) role</li>-->
+            </ol>
+
+        </div>
+        <h2><a name="sec-dd"></a>配置服务器部署描述符</h2>
+        <p>如果要将应用程序部署到 GlassFish 或 WebLogic Server，则需配置服务器部署描述符，以映射在 <tt>web.xml</tt> 中定义的安全角色。服务器部署描述符列在 "Projects"（项目）窗口中项目的 "Configuration Files"（配置文件）节点下。 </p>
+        <div class="indent">
+            <h3><a name="gf-dd"></a>配置 GlassFish Server 部署描述符</h3>
+            <p>GlassFish Server 部署描述符名为 <tt>glassfish-web.xml</tt>。服务器部署描述符在 "Configuration Files"（配置文件）文件夹中。如果它不在此处，可通过右键单击项目的节点并转至 "New"（新建）> "Other"（其他）> "GlassFish" > "GlassFish Deployment Descriptor"（GlassFish 部署描述符）来创建。接受所有默认设置。</p>
+            <p>请注意，在 <tt>web.xml</tt> 中输入的值将显示在 <tt>glassfish-web.xml</tt> 中。IDE 会从 <tt>web.xml</tt> 中提取这些值。</p>
+            <p><b>配置 GlassFish 部署描述符：</b></p>
+            <ol>
+                <li>在 "Projects"（项目）窗口中，展开项目的 "Configuration Files"（配置文件）节点，然后双击 <tt>glassfish-web.xml</tt>。<tt>glassfish-web.xml</tt> 部署描述符将在 GlassFish 部署描述符的特殊标签化编辑器中打开。
+                    <p class="notes"><b>注：</b>对于早于 3.1 的 GlassFish Server 版本，此文件名为 <tt>sun-web.xml</tt>。</p></li>
+                <li>选择 "Security"（安全）标签以显示安全角色。</li>
+                <li>选择 AdminRole 安全角色节点以打开 "Security Role Mapping"（安全角色映射）窗格。</li>
+                <li><p>单击 "Add Principal"（添加主用户），并为主用户名称输入 <tt>admin</tt>。单击 "OK"（确定）。</p>
+                    <img alt="&quot;Add Principal&quot;（添加主用户）对话框" class="marin-around" height="335" src="../../../images_www/articles/72/web/security/add-principal.png" width="454"></li>
+                <li>选择 UserRole 安全角色节点以打开 "Security Role Mapping"（安全角色映射）窗格。</li>
+                <li>单击 "Add Principal"（添加主用户），并为主用户名称输入 <tt>user</tt>。单击 "OK"（确定）。</li>
+                <li>将更改保存到 <tt>glassfish-web.xml</tt>。</li>
+            </ol>
+            <p>此外，也可以通过单击 "XML" 标签，在 XML 编辑器中查看和编辑 <tt>glassfish-web.xml</tt>。如果在 XML 编辑器中打开 <tt>glassfish-web.xml</tt>，则可以看到 <tt>glassfish-web.xml</tt> 具有以下安全角色映射信息：</p>
+            <pre class="examplecode"><span class="xml-tag">&lt;security-role-mapping&gt;
+    &lt;role-name&gt;</span>AdminRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>admin<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-mapping&gt;
+&lt;security-role-mapping&gt;
+    &lt;role-name&gt;</span>UserRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>user<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-mapping&gt;</span></pre>
+
+            <!--<a name="jdbc"></a>
+            <h2 class="tutorial">Using JDBC Authorization</h2>
+            <p>If you are deploying your application to the Sun Java System Application Server, you can also configure your application to retrieve the authorization information from a JDBC database table. 
+            Using this method, managing user accounts is much easier than managing user accounts directly on the server.</p>
+            <p>The JDBC authorization method is already supported in <a href="http://glassfish.dev.java.net/downloads/31May06.html">the GlassFish server
+            2.1</a>, but if you are using Sun Java System Application Server 9.0 you need to use a <a
+             href="http://glassfish.dev.java.net/nonav/issues/showattachment.cgi/65/JDBCRealm.jar">precompiled jar</a>.
+            To enable the realm <tt>jdbc-realm</tt> on the Sun Java System Application Server you need to do the following steps. 
+            (The steps are based on <a href="http://glassfish.dev.java.net/issues/show_bug.cgi?id=171">JDBCRealm for the GlassFish server.</a>)</p>
+            <ol>
+              <li>Download <a href="http://glassfish.dev.java.net/nonav/issues/showattachment.cgi/65/JDBCRealm.jar">JDBCRealm.jar</a>.</li>
+              <li>Copy the <tt>jar</tt> to the <tt>lib</tt> directory located in the Sun Java System Application Server installation directory.</li>
+              <li>Add the following to the <tt>login.conf</tt> file located in the <tt><i>&lt;APPSERVER_HOME&gt;</i>/domains/domain1/config/</tt><br>
+            <pre class="examplecode">jdbcRealm {
+            net.java.the GlassFish server.security.auth.realm.jdbc.JDBCLoginModule required;
+            };
+            </pre></li>
+              <li>Start the server and open the Admin Console.</li>
+              <li>In Configuration &gt; Security &gt; Realms, create a new Realm named
+            "jdbc-realm" and enter the following classname:
+            <pre>net.java.the GlassFish server.security.auth.realm.jdbc.JDBCRealm</pre></li>
+             <li>Add the following properties and values to the realm:
+              <ul>
+                <li>jaas-context : jdbcRealm</li>
+                <li>datasource : jdbc/__default</li>
+                <li>user : APP</li>
+                <li>password : APP</li>
+                <li>find user query : A SQL query that return the user's identifier
+            when injected two parameters (username/password), like<br>
+            "SELECT IDENTIFIER FROM PERSON WHERE USERID = ? AND PASSWORD = ?" </li>
+                <li>find-groups-query : A SQL query that return group name(s) when
+            injected the user name, like<br>
+            "SELECT GROUP_NAME FROM PERSON P, GROUP G WHERE P.GROUP_ID = G.ID AND
+            USERID = ?"</li>
+              </ul>
+              <p><b>Note:</b> The user and password are for the Java DB database server bundled with the Sun Java System Application Server.</p>
+              </li>
+              <li>In the Admin Console, locate Application Server/JVM Settings/Path Settings/Classpath suffix and
+            add the following line:<pre> ${com.sun.aas.installRoot}/lib/JDBCRealm.jar</pre></li>
+              <li>Create the appropriate tables in <tt>jdbc/__default</tt> and add the proper data to the table.</li>
+            </ol>
+            -->
+            <h3><a name="wl-dd"></a>配置 WebLogic Server 部署描述符</h3>
+            <p>WebLogic 部署描述符名为 <tt>weblogic.xml</tt>。目前，IDE <a href="#gf-dd">对 GlassFish 部署描述符的支持</a>未扩展至 WebLogic 部署描述符。因此，您需要手动对 <tt>weblogic.xml</tt> 进行所有更改。</p>
+            <p>WebLogic Server 部署描述符在 "Configuration Files"（配置文件）文件夹中。如果它不在此处，可通过右键单击项目的节点并转至 "New"（新建）> "Other"（其他）> "WebLogic" > "WebLogic Deployment Descriptor"（WebLogic 部署描述符）来创建。接受所有默认设置。</p></p>
+            <p class="notes" ><b>注：</b>有关确保 WebLogic 中 web 应用程序安全（包括声明和编程安全）的详细信息，请参见<a href="http://download.oracle.com/docs/cd/E21764_01/web.1111/e13711/thin_client.htm" target="_blank">针对 Oracle WebLogic Server 的 Oracle Fusion Middleware 编程安全</a>。 </p>
+            <p><b>配置 WebLogic 部署描述符：</b></p>
+            <ol>
+                <li>在 "Projects"（项目）窗口中，展开项目的 "Configuration Files"（配置文件）节点，然后双击 <tt>weblogic.xml</tt>。<tt>weblogic.xml</tt> 部署描述符在编辑器中打开。</li>
+                <li>在 <tt>&lt;weblogic-web-app&gt;</tt> 元素内，键入或粘贴以下安全角色指定元素：
+                    <pre class="examplecode"><span class="xml-tag">&lt;security-role-assignment&gt;
+    &lt;role-name&gt;</span>AdminRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>adminGroup<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-assignment&gt;
+&lt;security-role-assignment&gt;
+    &lt;role-name&gt;</span>UserRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>userGroup<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-assignment&gt;</span></pre>
+                </li>
+                <li>将更改保存到 <tt>weblogic.xml</tt>。</li>
+            </ol>
+        </div>
+        <a name="Deploy_run"></a>
+        <h2 class="tutorial">部署并运行应用程序</h2>
+        <p>在 "Projects"（项目）窗口中，右键单击该项目节点并选择 "Run"（运行）。</p>
+        <p class="notes"><b>注：</b>默认情况下，将在启用“在保存时编译”功能的情况下创建项目，因此无需先编译代码即可在 IDE 中运行应用程序。有关“在保存时编译”功能的详细信息，请参见 <em>Developing Applications with NetBeans IDE User's Guide</em> 中的 <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG510">Building Java Projects</a>。</p>
+        <p>在构建应用程序并将其部署到服务器之后，将在 Web 浏览器中打开起始页。通过单击 <b>admin</b> 或 <b>user</b> 选择您要访问的安全区域。</p>
+        <img alt="部署的应用程序 1" border="0" class="margin-around" height="385" src="../../../images_www/articles/72/web/security/deploy1.png" width="459">
+        <p>在提供用户和口令之后，共有三个可能的结果：
+        <ul>
+            <li><p>此用户的口令正确并且用户具有访问安全内容的权限 -&gt; 显示安全内容页</p><img alt="用户安全区域" border="0" class="margin-around" height="385" src="../../../images_www/articles/72/web/security/deploy2.png" width="459"></li>
+            <li><p>此用户的口令不正确 -&gt; 显示错误页</p><img alt="登录错误页" border="0" class="margin-around" height="398" src="../../../images_www/articles/72/web/security/deploy3.png" width="484"></li>
+            <li><p>此用户的口令正确，但用户没有访问安全内容的权限 -&gt; 浏览器显示 "Error 403 Access to the requested resource has been denied"</p><img alt="拒绝访问" border="0" class="margin-around" height="438" src="../../../images_www/articles/72/web/security/deploy4.png" width="510"></li>
+        </ul>
+        <h2><a name="06"></a>小结</h2>
+        <p>在本教程中，您创建了一个安全 Web 应用程序。您已经通过使用 web.xml 和 glassfish-web.xml 描述符编辑器，以及创建具有安全登录和多个身份标识的 Web 页，编辑了安全设置。</p>
+
+        <br>
+        <h2>另请参见</h2>
+        <ul>
+
+            <li><a href="quickstart-webapps.html">Web 应用程序开发简介</a></li>
+            <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+        </ul>
+        <hr class="light">
+        <br>
+        
+        <table class="b-none" cellpadding="10" cellspacing="0" width="100%">
+            <!-- BEGIN SPACER ROW -->
+            <tr>
+                <td><br>
+                    <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback: Securing a Web Application">发送有关此教程的反馈意见</a></div>
+                    <br style="clear:both;" />
+
+
+                    <br style="clear:both;" />
+                </td>
+            </tr>
+            <!-- END SPACER ROW -->
+        </table>
+        <!-- END WRAPPER TABLE, 2 COLUMN, MAIN/RIGHT -->
+    </body>
+</html>
+
+</body>
+</html>

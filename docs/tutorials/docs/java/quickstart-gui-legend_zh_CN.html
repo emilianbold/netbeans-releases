@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>GUI 构建器可视反馈图例 - NetBeans IDE 教程</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <meta name="KEYWORDS" content="NETBEANS, GUI BUILDER, GUIDE, USER, DOCUMENTATION">
+        <meta content="?and? 0.5.5" name="GENERATOR">
+
+    </head>
+    
+    <body>    
+    <a name="top"></a>    
+        <h1>GUI 构建器可视反馈图例</h1>
+<p>本文档介绍 IDE 的 GUI 构建器在处理 Java GUI 的创建期间提供的可视反馈（以前的代码名称为 Matisse）。 </p>
+ <h3>目录</h3>
+<img alt="此页上的内容适用于 NetBeans IDE 6.9 及更高版本" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 6.9 及更高版本">
+
+        <ul class="toc">
+           
+			<li><a href="#alignment">对齐基准线</a></li>
+			<li><a href="#anchor">锚点指示符</a></li>
+			<li><a href="#size">大小调整指示符</a></li>
+			<li><a href="#highlight">突出显示和控柄</a></li>
+			<li><a href="#seealso">另请参见</a></li>
+		</ul>       
+        <blockquote>
+            <a name="alignment"></a>
+			<h2>对齐基准线</h2>
+            <p>只有当添加或移动组件时，才会出现对齐基准线，此基准线指示当松开鼠标按钮时组件将对齐的首选位置。定位后，对齐基准线将被实线和锚点指示符所取代，实线阐明组件之间共享的公共对齐位置。</p>
+            <br>
+            <table>
+            <tr>
+                <td class="tbltd1 align-center"><b>插入量</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend5.png" border=1>
+                    
+                </td>
+                <td class="tbltd1">插入量是组件以及组件所在的容器之间的首选间距。插入量是通过水平和垂直基准虚线来指示的。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>偏移</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend30.png" border=1></td>
+                <td class="tbltd1">偏移是相邻组件之间的首选间距。偏移是通过水平和垂直基准虚线来指示的。</td>
+            </tr>
+
+            <tr>
+                <td class="tbltd1 align-center"><b>基线</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend13.png" border=1></td>
+                <td class="tbltd1">基线对齐是包含显示文本的相邻组件之间的首选关系。基线对齐是通过水平基准虚线来指示的。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><p class="align-right"><b>边</b></p></td>
+                <td class="tbltd1 align-center">
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend12.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend14.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend32.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend33.png" border=1></p>                    
+                </td>
+                <td class="tbltd1"><br>边对齐（上、下、左、右）是相邻组件之间的可能的对齐关系。边对齐是通过水平和垂直基准虚线来指示的。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>缩进</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend31b.png" border=1>
+                </td>
+                <td class="tbltd1">缩进对齐是一种特殊的对齐关系，其中一个组件位于另一个组件的下方并稍稍向右偏移。缩进对齐是通过两条垂直的基准虚线来指示的。</td>
+            </tr>
+			<tr>
+			<td class="tbltd1 align-center"><b>首选间距</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend34.png" border=1>
+                </td>
+                <td class="tbltd1">首选间距（小、中、大）是相邻组件之间的间隙大小。首选间距是通过水平或垂直基准虚线来指示的。 </td>
+			</tr>
+            </table>
+            <p class="align-center"><a href="#top">返回页首</a></p>
+            <a name="anchor"></a>
+            <h2>锚点指示符</h2>
+            <p>在组件对齐到位后，会出现实心锚点指示符，阐明组件之间共享的公共对齐位置。</p>
+            <br>
+            <table>
+            <tr>
+                <td class="tbltd1 align-center"><b>容器</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend50.png" border=1></td>
+                <td class="tbltd1">将各个组件连接到它们所在的容器的锚点由小的半圆指示符表示，这些指示符具有从容器边缘延伸到组件本身的虚线。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>组件</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend51.png" border=1></td>
+                <td class="tbltd1">将各个组件连接到相邻组件的锚点由小的半圆指示符表示，这些指示符具有从一个组件延伸到另一个组件的虚线。 </td>
+            </tr>
+            </table>
+            <p class="align-center"><a href="#top">返回页首</a></p>
+            <a name="size"></a>
+            <h2>大小调整指示符</h2>
+            <br>
+            <table>
+           
+            <tr>
+                <td class="tbltd1 align-center"><b>相同大小</b></td>
+                <td class="tbltd1 align-center">
+				<p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend28.png" border=1></p>
+				<p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend29.png" border=1></p></td>
+                <td class="tbltd1">“相同大小”是一组组件（相邻或不相邻）均设置为具有相同宽度或高度的状态。“相同大小”由小的矩形指示符阐明，这些指示符显示在设置了该属性的每个组件的上边缘。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>自动调整大小</b></td>
+                <td class="tbltd1 align-center">
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend42.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend41.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend43.png" border=1></p>
+                </td>
+                <td class="tbltd1"><br> “自动调整大小”是组件的宽度或高度设置为在运行时动态调整的状态。“自动调整大小”由 GUI 构建器工具栏中的水平调整大小按钮和垂直调整大小按钮（分别称为“更改水平大小可调性”和“更改垂直大小可调性”）的状态来指示。通过选择“属性”窗口的“其他属性”列表中的<tt>可调整大小</tt>，可以启用自动调整大小。</td>
+            </tr>
+            </table>
+ <p class="align-center"><a href="#top">返回页首</a></p>
+ <a name="highlight"></a>
+            <h2>突出显示和控柄</h2>
+			 <table>           
+            <tr>
+                <td class="tbltd1 align-center"><b>突出显示</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend10.png" border=1></td>
+                <td class="tbltd1">橙色突出显示指明了选定组件将要放置的位置。</td>
+            </tr>
+			<tr>
+                <td class="tbltd1 align-center"><b>控柄</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend11.png" border=1></td>
+                <td class="tbltd1"> 选择了组件时，该组件周围会显示小方形大小调整控柄。单击、按住并拖动组件边缘的控柄可以调整该组件的大小。 </td>
+            </tr>
+			</table>
+			<p class="align-center"><a href="#top">返回页首</a></p>
+        </blockquote>
+
+          
+       
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20GUI%20Builder%20Visual%20Feedback%20Legend,%20NetBeans%20IDE">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;"> 
+<h2><a name="seealso"></a>另请参见</h2>
+        <ul>
+            <li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">实现 Java GUI</a></li>
+			<li><a href="../../trails/matisse.html">Java GUI 应用程序学习资源</a></li>
+			<li><a href="../../trails/java-se.html">常规 Java 开发学习资源</a></li></ul>
+    </body>
+</html>

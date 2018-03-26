@@ -1,0 +1,956 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial describing how to create a simple,
+              two-tiered web application that connects to a MySQL database in NetBeans IDE">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              MySQL, SQL, structured query language, multithreaded, multi-user database
+              management system, DBMS, open source, JDBC, JSP, JavaServer Pages">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+
+        <title>Создание простого веб-приложения, использующего базу данных MySQL - учебный курс по IDE NetBeans</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Создание простого веб-приложения с использованием базы данных MySQL</h1>
+
+        <div class="articledate">Автор: Трой Джуниперо (Troy Giunipero)</div>
+
+        <p>В этом документе описана процедура создания простого веб-приложения, которое подключается к серверу базы данных MySQL. Здесь также рассмотрены основные идеи и технологии веб-разработки, такие как<a href="http://www.oracle.com/technetwork/java/overview-138580.html">JavaServer Pages</a> (JSP), <a href="http://www.oracle.com/technetwork/java/index-jsp-135995.html">библиотека стандартных тегов JavaServer Pages</a> (JSTL), интерфейс API связи с базами данных Java (JDBC) и двухуровневая архитектура между клиентом и сервером.<a href="http://docs.oracle.com/javase/tutorial/jdbc/overview/index.html"></a> Этот учебный курс разработан для начинающих разработчиков, обладающих базовыми знаниями в области веб-разработок и желающих применить свои знания к базе данных MySQL. </p>
+
+        <p><a href="http://www.mysql.com">MySQL</a> является популярной системой управления базами данных с открытым кодом, которая обычно используется в веб-приложениях благодаря своей скорости, гибкости и надежности. MySQL использует SQL (<em>язык структурированных запросов</em>) для доступа к данным в базе данных и их обработки.</p>
+
+        <p>Этот учебный курс является продолжением учебного курса <a href="../ide/mysql.html">Подключение к базе данных MySQL</a> и в нем предполагается, что уже создана база данных MySQL с именем <code>MyNewDatabase</code>, для которой зарегистрировано подключение в IDE NetBeans. Табличные данные, используемые в этом учебном курсе, содержатся в <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252Fifpwafcad.sql">ifpwafcad.sql</a> и также необходимы для работы с этим учебным курсом. Этот файл SQL создает две таблицы <code>Subject</code> и <code>Counselor</code> и затем заполняет их данными для примера. При необходимости сохраните этот файл на компьютер, затем откройте его в IDE NetBeans и запустите его в базе данных MySQL с именем <code>MyNewDatabase</code>.</p>
+
+        <p><strong>Содержание</strong></p>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <ul id="collapsableList">
+            <li><a href="#planStructure">Планирование структуры</a></li>
+            <li><a href="#createProject">Создание проекта</a></li>
+            <li><a href="#prepareInterface">Подготовка веб-интерфейса</a>
+
+                <ul>
+                    <li><a href="#welcomePage">Настройка страницы приветствия</a></li>
+                    <li><a href="#responsePage">Создание страницы ответов</a></li>
+                    <li><a href="#stylesheet">Создание таблицы стилей</a></li>
+                </ul></li>
+
+            <li><a href="#prepareCommunication">Подготовка к взаимодействию между приложением и базой данных</a>
+                <ul>
+                    <li><a href="#setUpJDBC">Настройка источника данных JDBC и пула подключений</a></li>
+                    <li><a href="#referenceDataSource">Обращение к источнику данных из приложения</a></li>
+                    <li><a href="#addJar">Добавление файла JAR драйвера базы данных к серверу</a></li>
+                </ul></li>
+            <li><a href="#addLogic">Добавление динамической логики</a>
+                <ul>
+                    <li><a href="#addJSTL">Добавление библиотеки JSTL к пути класса проекта</a></li>
+                    <li><a href="#addCode">Реализация кода JSTL</a></li>
+                </ul></li>
+            <li><a href="#run">Запуск готового приложения</a></li>
+            <li><a href="#troubleshoot">Устранение проблем</a>
+
+                <ul>
+                    <li><a href="#access">Существуют ли ресурсы базы данных?</a></li>
+                    <li><a href="#datasource">Существуют ли на сервере пул подключений и источник данных?</a></li>
+                    <li><a href="#driver">Доступен ли MySQL Connector/драйвер J для сервера GlassFish?</a></li>
+                    <li><a href="#password">Защищена ли база данных паролем?</a></li>
+                    <li><a href="#ping">Корректно ли установлены значения свойств пула подключений?</a></li>
+                </ul></li>
+
+            <li><a href="#seeAlso">Дополнительные сведения</a></li>
+        </ul>
+
+        <p><strong>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, пакет Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/">Сервер базы данных MySQL</a></td>
+                    <td class="tbltd1">5.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Драйвер JDBC MySQL Connector/J </td>
+                    <td class="tbltd1">версия 5.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition 3.1.2.2</td>
+                    <td class="tbltd1">3.x или 4.x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Примечания:</strong></p>
+
+        <ul>
+            <li>Комплект загрузки Java среды IDE NetBeans позволяет пользователям установить сервер GlassFish. Для работы с данным учебным курсом требуется сервер GlassFish.</li>
+
+            <li><a href="http://dev.mysql.com/downloads/connector/j/">MySQL Connector/J JDBC Driver</a>, необходимый для взаимодействия между платформами и протоколом баз данных MySQL, включен в IDE NetBeans.</li>
+
+            <li>Если необходимо сравнить проект с работающим решением, можно <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252FIFPWAFCAD.zip">загрузить демонстрационное приложение</a>.</li>
+        </ul>
+
+        <br>
+        <h2 id="planStructure">Планирование структуры</h2>
+
+        <p>С помощью <em>двухуровневой архитектуры</em>, в которой клиент взаимодействует с сервером напрямую, можно создать простое веб-приложение.  В рамках данного учебного курса веб-приложение Java взаимодействует напрямую с базой данных MySQL с использованием API связи с базами данных Java.  В сущности, именно <a href="http://dev.mysql.com/downloads/connector/j/">драйвер MySQL Connector/J JDBC</a> обеспечивает обмен данными между кодом Java, распознанным сервером приложения (GlassFish), и любым содержимым на SQL, языке, понятном для сервера базы данных (MySQL).</p>
+
+        <p>Приложение, создаваемое в этом учебном курсе, предполагает создание двух страниц JSP. На каждой такой странице с помощью HTML и CSS реализован простой интерфейс, и применяется технология JSTL для выполнения логики, напрямую запрашивающей базу данных с вставкой извлеченных данных на двух страницах.  В базе данных MySQL <code>MyNewDatabase</code> содержатся две таблицы базы данных <code>Subject</code> и <code>Counselor</code>, которые были созданы при работе с учебным курсом <a href="../ide/mysql.html">Подключение базы данных MySQL</a>.  Рассмотрим следующий двухуровневый сценарий.</p>
+
+        <div class="indent">
+            <a name="appStructure"></a> <img alt="Диаграмма, изображающая структуру двухуровневого веб-приложения" class="margin-around" src="../../../images_www/articles/72/web/mysql-webapp/ifpwafcad-structure.png" title="Образец структуры двухуровневого веб-приложения">
+        </div>
+
+        <p>Страница приветствия <code>index.jsp</code> представляется пользователю с помощью простой формы HTML. При запросе браузером<code>index.jsp</code> код JSTL на странице инициирует запрос в <code>MyNewDatabase</code>.  Выполняется извлечение данных из таблицы <code>Subject</code> со вставкой их на страницу перед ее передачей в браузер.  При передаче данных о выборе пользователя в форме HTML на странице приветствия инициируется запрос страницы ответов (<code>response.jsp</code>).  И снова код JSTL на странице инициирует запрос в <code>MyNewDatabase</code>.  На этот раз данные извлекаются из обеих таблиц - <code>Subject</code> и <code>Counselor</code>. После чего выполняется их вставка на страницу, что позволяет пользователю просматривать данные в зависимости от вариантов выбора при возврате страницы в браузер.</p>
+
+        <p>Для реализации описанного выше сценария необходимо разработать простое приложение для организации IFPWAFCAD Международной ассоциации по консультированию и развитию для бывших профессиональных борцов.</p>
+
+        <div class="indent">
+            <h4 class="cell">index.jsp</h4>
+
+            <img alt="Файл index.jsp отображается в браузере" class="b-all margin-around" src="../../../images_www/articles/72/web/mysql-webapp/index-page.png" title="Файл index.jsp отображается в браузере"> <br><br>
+            <h4 class="cell">response.jsp</h4>
+
+            <img alt="Файл response.jsp отображается в браузере" class="b-all margin-around" src="../../../images_www/articles/72/web/mysql-webapp/response-page.png" title="Файл response.jsp отображается в браузере">
+        </div>
+
+
+        <br>
+        <h2 id="createProject">Создание нового проекта</h2>
+
+        <p>Сначала необходимо создать новый веб-проект в среде IDE:</p>
+
+        <ol>
+            <li>Выберите &quot;Файл &gt; Новый проект&quot; (CTRL+SHIFT+N; &amp;#8984+SHIFT+N в Mac ОС) в главном меню. Выберите категорию &quot;Java Web&quot;, а затем выберите &quot;Веб-приложение&quot;. Нажмите кнопку &quot;Далее&quot;. <br> <img alt="Мастер создания проектов" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/new-project.png" title="Используйте мастер создания проекта для создания нового проекта ">
+
+                <p>С помощью этого мастера можно создать пустое веб-приложение в стандартном проекте IDE.  В стандартном проекте для компиляции, развертывания и выполнения приложения используется созданный в среде IDE сценарий сборки проекта Ant.</p></li>
+
+            <li><strong>В поле &quot;Имя проекта&quot; введите &quot;IFPWAFCAD&quot;.</strong> Также укажите местоположение проекта на компьютере.  По умолчанию проекты в среде IDE помещаются в папку <code>NetBeansProjects</code> в домашнем каталоге. Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>В панели &quot;Сервер и параметры&quot; укажите сервер GlassFish в качестве сервера, на котором будет запускаться приложение.
+
+                <p class="notes"><strong>Примечание.</strong>Сервер GlassFish отображается в раскрывающемся списке 'Сервер', если установлена версия Java <a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a>. Поскольку сервер GlassFish включен в загрузку, он регистрируется в среде IDE автоматически.  Для использования в проекте другого сервера нажмите кнопку &quot;Добавить&quot; рядом с полем с раскрывающимся списком &quot;Сервер&quot; и зарегистрируйте другой сервер в среде IDE.  Работа с другими серверами, помимо GlassFish в рамках данного учебного курса не рассматривается.</p></li>
+
+            <li>В поле &quot;Версия Java EE&quot; выберите <strong>Java EE 5</strong>. <br> <img alt="Мастер создания веб-приложений - сервер и настройки" class="margin-around b-all" src="../../../images_www/articles/74/web/mysql-webapp/server-settings.png" title="Укажите настройки сервера в мастере создания веб-приложений">
+
+                <p>
+                Для веб-проектов Java EE 6 и Java EE 7 использование дескриптора развертывания <code>web.xml</code> не требуется. Шаблон проекта NetBeans не содержит файл <code>web.xml</code> в проектах Java EE 6 и Java EE 7. Однако в данном учебном курсе рассматривается процесс объявления источника данных в дескрипторе развертывания. Функции, характерные только для Java EE 6 или Java EE 7, не требуются, поэтому в качестве версии проекта можно указать Java EE 5.</p>
+
+                
+                <p class="notes"><strong>Примечание.</strong> Точно так же можно указать в качестве версии проекта Java EE 6 или  Java EE 7, а затем создать дескриптор развертывания <code>web.xml</code>. В мастере создания файла выберите категорию &quot;Web&quot;, а затем выберите &quot;Стандартный дескриптор развертывания&quot;.</p></li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Создается шаблон проекта для всего приложения и в редакторе открывается пустая страница JSP (<code>index.jsp</code>). Файл <code>index.jsp</code>служит в приложении страницей приветствия.</li>
+        </ol>
+
+
+        <h2 id="prepareInterface">Подготовка веб-интерфейса</h2>
+
+        <p>Начните с подготовки страницы приветствия (<code>index.jsp</code>) и страницы ответов (<code>response.jsp</code>).  На странице приветствия реализована форма HTML для сбора пользовательских данных.  На обеих страницах для просмотра структурированных данных используется таблица HTML.  В этом разделе также рассматривается процесс создания таблицы стилей, которая расширяет внешний вид обеих страниц.</p>
+
+        <ul>
+            <li><a href="#welcomePage">Настройка страницы приветствия</a></li>
+            <li><a href="#responsePage">Создание страницы ответов</a></li>
+            <li><a href="#stylesheet">Создание таблицы стилей</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="welcomePage">Настройка страницы приветствия</h3>
+
+            <p>Убедитесь, что страница <code>index.jsp</code> открыта в редакторе. Если файл еще не открыт, дважды щелкните <code>index.jsp</code> под узлом "Веб-страницы" проекта IFPWAFCAD в окне "Проекты".</p>
+
+            <ol>
+                <li>В редакторе измените текст между тегами <code>&lt;title&gt;</code> на <code>Домашняя страница IFPWAFCAD</code>.</li>
+
+                <li>Измените текст между тегами <code>&lt;h1></code> на <code>Добро пожаловать в IFPWAFCAD, Международную ассоциацию по консультированию и развитию для бывших профессиональных борцов!</code></li>
+
+                <li>Откройте палитру среды IDE, выбрав в главном меню &quot;Окно&quot; &gt; &quot;Палитра&quot; (CTRL+SHIFT+8; &amp;#8984+SHIFT+8 в ОС Mac). Наведите курсор на значок &quot;Таблица&quot; в категории &quot;HTML&quot; и обратите внимание на то, что отображается фрагмент кода для элемента по умолчанию. <br> <img alt="На палитре отображается фрагмент кода при подведении курсора к элементу" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/palette.png" title="На палитре отображается фрагмент кода при подведении курсора к элементу"> <br> <span class="tips">Палитру можно настроить в соответствии с существующими требованиями - щелкните правой кнопкой мыши палитру и выберите 'Показать крупные значки' и 'Скрыть имена элементов', чтобы палитра выглядела как на рисунке выше.</span></li>
+
+                <li>Установите курсор сразу же после тегов <code>&lt;h1&gt;</code>.  (Именно в этом месте будет внедрена новая таблица HTML). Далее в окне &quot;Палитра&quot; дважды щелкните значок &quot;Таблица&quot;.</li>
+
+                <li>В появившемся диалоговом окне &quot;Вставка таблицы&quot; укажите следующие значения и затем нажмите кнопку &quot;ОК&quot;: <br><br>
+                    <ul>
+                        <li><strong>Рядов</strong>: 2</li>
+                        <li><strong>Столбцов</strong>: 1</li>
+                        <li><strong>Размер границы</strong>: 0</li>
+                    </ul>
+
+                    Код таблицы HTML создан и добавлен на страницу.</li>
+
+                <li>Добавьте следующее содержимое в заголовок таблицы и ячейку первой строки таблицы (новое содержимое выделено <strong>полужирным шрифтом</strong>):
+
+                    <pre class="examplecode">
+&lt;table border=&quot;0&quot;&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;<strong>IFPWAFCAD offers expert counseling in a wide range of fields.</strong>&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;<strong>To view the contact details of an IFPWAFCAD certified former
+                professional wrestler in your area, select a subject below:</strong>&lt;/td&gt;
+        &lt;/tr&gt;</pre></li>
+
+                <li>Для нижней строки таблицы вставьте форму HTML.  Для этого поместите курсор между второй парой тегов <code>&lt;td></code> и дважды щелкните значок формы HTML ( <img alt="Значок формы HTML" src="../../../images_www/articles/72/web/mysql-webapp/html-form-icon.png"> ) на палитре. В диалоговом окне &quot;Вставка формы&quot; введите <code>response.jsp</code> в текстовом поле &quot;Действие&quot; и нажмите кнопку &quot;ОК&quot;. <br> <img alt="Диалоговое окно &apos;Вставить форму&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/insert-form.png" title="Укажите настройки формы в диалоговом окне &apos;Вставить форму&apos;"></li>
+
+                <li>Между тегами <code>&lt;form&gt;</code> введите следующее содержимое (новое содержимое выделено <strong>полужирным шрифтом</strong>):
+
+                    <pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;
+        &lt;form action=&quot;response.jsp&quot;&gt;
+            <strong>&lt;strong&gt;Select a subject:&lt;/strong&gt;</strong>
+        &lt;/form&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+
+                    </li>
+
+                
+                <li>Нажмите клавишу Enter, чтобы добавить пустую строку после добавленного содержимого, затем дважды щелкните "Список" в палитре, чтобы открыть диалоговое окно "Вставить список".</li>
+
+                <li>В диалоговом окне "Вставить список" ведите <code>subject_id</code> для текстового поля "Имя" и нажмите "OK". Обратите внимание на то, что к форме добавляется фрагмент кода для раскрывающегося списка.
+
+                    <p>
+                    Количество параметров для раскрывающегося списка не имеет значения. Позже в этом учебном курсе будет показано добавление тегов JSTL для динамического создания на основе данных, полученных из таблицы базы данных &quot;Subject&quot;.</p></li>
+
+                <li>Добавьте элемент кнопки 'Отправить' ( <img alt="Значок кнопки &apos;Отправить&apos;" src="../../../images_www/articles/72/web/mysql-webapp/submit-button.png"> ) в точку, расположенную непосредственно после только что добавленного раскрывающегося списка. Для этого можно использовать окно &quot;Палитра&quot; или вызвать дополнение кода в редакторе, как показано в предыдущем шаге.  В диалоговом окне &quot;Вставка кнопки&quot; в текстовых полях &quot;Подпись&quot; и &quot;Имя&quot; введите <code>Отправить</code> и нажмите кнопку ОК.</li>
+
+                <li>Для форматирования кода щелкните правой кнопкой мыши в редакторе и выберите 'Формат' (Alt-Shift-F; Ctrl-Shift-F в Mac). Код автоматически форматируется и должен теперь выглядеть следующим образом:
+
+                    <pre class="examplecode">
+&lt;body&gt;
+    &lt;h2&gt;Welcome to &lt;strong&gt;IFPWAFCAD&lt;/strong&gt;, the International Former
+        Professional Wrestlers' Association for Counseling and Development!
+    &lt;/h2&gt;
+
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;IFPWAFCAD offers expert counseling in a wide range of fields.&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;To view the contact details of an IFPWAFCAD certified former
+                    professional wrestler in your area, select a subject below:&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;
+                    &lt;form action=&quot;response.jsp&quot;&gt;
+                        &lt;strong&gt;Select a subject:&lt;/strong&gt;
+                        &lt;select name=&quot;subject_id&quot;&gt;
+                            &lt;option&gt;&lt;/option&gt;
+                        &lt;/select&gt;
+                        &lt;input type=&quot;submit&quot; value=&quot;submit&quot; name=&quot;submit&quot; /&gt;
+                    &lt;/form&gt;
+                &lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+&lt;/body&gt;</pre>
+
+                    <p>Для просмотра этой страницы в браузере щелкните правой кнопкой мыши в редакторе и выберите 'Запустить файл' (Shift-F6; Fn-Shift-F6 в Mac). После этого страница JSP будет автоматически скомпилирована и развернута на сервере. Открывается браузер по умолчанию, и в нем выводится страница из местоположения, где она развернута.</p>
+
+                    <img alt="Файл index.jsp отображается в браузере" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/browser-output.png" title="Файл index.jsp отображается в браузере"></li>
+            </ol>
+
+
+            <h3 id="responsePage">Создание страницы ответов</h3>
+
+            <p>Для подготовки интерфейса для страницы <code>response.jsp</code> сначала необходимо создать файл в проекте. Обратите внимание на то, что большая часть содержимого, отображаемого на странице, создана динамически с помощью технологии JSP. Поэтому в следующих шагах будет необходимо добавить <em>метки-заполнители</em>, которые позже будут заменены кодом JSP.</p>
+
+            <ol>
+                <li>Щелкните правой кнопкой мыши узел проекта &quot;IFPWAFCAD&quot; в окне &quot;Проекты&quot; и выберите &quot;Создать &gt; JSP&quot;.  Откроется диалоговое окно &quot;Новый файл JSP&quot;.</li>
+
+                <li>В поле &quot;Имя файла JSP&quot; введите <code>response</code>. Обратите внимание на то, что в настоящий момент для поля &quot;Расположение&quot; выбран каталог &quot;Веб-страницы&quot;, это означает, что файл будет создан в каталоге проекта <code>web</code>. Это то же местоположение, что и для страницы приветствия <code>index.jsp</code>.</li>
+
+                <li>Примите остальные значения по умолчанию и нажмите кнопку &quot;Готово&quot;.  В редакторе выполняется создание и открытие шаблона новой страницы <code>response.jsp</code>. Новый узел JSP также отображается в каталоге &quot;Веб-страницы&quot; в окне &quot;Проекты&quot;. <br> <img alt="Узел response.jsp отображается в окне &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/response-jsp-node.png" title="Узел response.jsp отображается в окне &apos;Проекты&apos;"></li>
+
+                <li>В редакторе измените заголовок на <code>IFPWAFCAD - {местозаполнитель}</code></li>
+
+                <li>Удалите строку <code>&lt;h1&gt;Hello World!&lt;/h1&gt;</code> строка между тегами <code>&lt;body&gt;</code>. Скопируйте и вставьте в тело страницы следующую таблицу HTML:
+
+                    <pre class="examplecode">
+&lt;table border=&quot;0&quot;&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th colspan=&quot;2&quot;&gt;{placeholder}&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Description: &lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span style=&quot;font-size:smaller; font-style:italic;&quot;&gt;{placeholder}&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Counselor: &lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;{placeholder}
+                &lt;br&gt;
+                &lt;span style=&quot;font-size:smaller; font-style:italic;&quot;&gt;
+                member since: {placeholder}&lt;/span&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Contact Details: &lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;email: &lt;/strong&gt;
+                &lt;a href=&quot;mailto:{placeholder}&quot;&gt;{placeholder}&lt;/a&gt;
+                &lt;br&gt;&lt;strong&gt;phone: &lt;/strong&gt;{placeholder}
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;</pre>
+
+                    <p>Для просмотра этой страницы в браузере щелкните правой кнопкой мыши в редакторе и выберите 'Запустить файл' (Shift-F6; Fn-Shift-F6 в Mac). Выполняется компиляция и развертывание страницы на сервере GlassFish с последующим открытием в браузере по умолчанию.</p>
+
+                    <img alt="Файл response.jsp отображается в браузере" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/browser-response.png" title="Файл response.jsp отображается в браузере"></li>
+            </ol>
+
+
+            <h3 id="stylesheet">Создание таблицы стилей</h3>
+
+            <p>Создайте простую таблицу стилей для расширения просмотра в веб-интерфейсе.  При работе с данным учебным курсом предполагается, что пользователь обладает знаниями о правилах стилей и их влиянии на соответствующие элементы HTML на страницах <code>index.jsp</code> и <code>response.jsp</code>.</p>
+
+            <ol>
+                <li>Откройте мастер создания файлов, нажав кнопку 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/72/web/mysql-webapp/new-file-btn.png"> ) на главной панели инструментов IDE. Выберите категорию &quot;Web&quot;, а затем выберите &quot;Каскадная таблица стилей&quot; и нажмите кнопку &quot;Далее&quot;.</li>
+
+                <li>Введите <code>style</code> в поле &quot;Имя файла CSS&quot; и нажмите кнопку &quot;Готово&quot;. Среда IDE создает пустой файл CSS и располагает его в том же местоположении проекта, что и <code>index.jsp</code> и <code>response.jsp</code>.  Обратите внимание на то, что узел для <code>style.css</code> отображается теперь внутри проекта в окне &quot;Проекты&quot;, а файл открывается в редакторе.</li>
+
+                <li>В редакторе добавьте следующее содержимое к файлу <code>style.css</code>:
+
+                    <pre class="examplecode">
+body {
+    font-family: Verdana, Arial, sans-serif;
+    font-size: smaller;
+    padding: 50px;
+    color: #555;
+}
+
+h1 {
+    text-align: left;
+    letter-spacing: 6px;
+    font-size: 1.4em;
+    color: #be7429;
+    font-weight: normal;
+    width: 450px;
+}
+
+table {
+    width: 580px;
+    padding: 10px;
+    background-color: #c5e7e0;
+}
+
+th {
+    text-align: left;
+    border-bottom: 1px solid;
+}
+
+td {
+    padding: 10px;
+}
+
+a:link {
+   color: #be7429;
+   font-weight: normal;
+   text-decoration: none;
+}
+
+a:link:hover {
+   color: #be7429;
+   font-weight: normal;
+   text-decoration: underline;
+}</pre></li>
+
+                <li>Подключите таблицу стилей к <code>index.jsp</code> и <code>response.jsp</code>.  На обеих страницах добавьте следующую строку между тегами <code>&lt;head&gt;</code>:
+
+                    <pre class="examplecode">&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;style.css&quot;&gt;</pre>
+
+                    <span class="tips">Для быстрого перехода между открытыми в редакторе файлами нажмите CTRL+TAB, а затем выберите требуемый файл.</span></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="prepareCommunication">Подготовка средств обмена данными между приложениями и базой данных </h2>
+
+        <p>Наиболее эффективным способом реализации соединения между сервером и базой данных является настройка <em>пула подключений</em> базы данных. Создание нового подключения для каждого запроса клиента может занимать много времени, особенно для приложений, постоянно получающих огромное количество запросов. Во избежание этого создается и поддерживается множество подключений, организованных в виде пула подключений. Входящие запросы, требующие доступа к данным приложения, используют уже созданное подключение из пула. Аналогичным образом, когда запрос завершен, подключение не закрывается, а возвращается в пул.</p>
+
+        <p>После подготовки источника данных и пула подключений для сервера необходимо определить в приложении необходимость использования источника данных.  Как правило, для этого создается запись в дескрипторе развертывания приложения <code>web.xml</code>.  Наконец, необходимо проверить доступность для сервера драйвера базы данных (JDBC MySQL Connector/J).</p>
+
+        <div class="indent">
+            <div class="feedback-box float-left" style="width: 723px;">
+                <p><strong class="notes">Примечание. </strong>Для дальнейшей работы необходимо убедиться в том, что база данных MySQL с именем <code>MyNewDatabase</code> настроена корректно и содержит данные примера из <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252Fifpwafcad.sql">ifpwafcad.sql</a>. Этот файл SQL создает две таблицы <code>Subject</code> и <code>Counselor</code> и затем заполняет их данными для примера. Если это не было выполнено ранее, или с этим заданием возникли сложности, то прежде чем продолжить учебный курс, обратитесь к разделу <a href="../../docs/ide/mysql.html">Подключение к базе данных MySQL</a>.</p>
+
+                <p>Помимо этого для создания источника данных и работы с сервером GlassFish в рамках данного учебного курса необходимо защитить базу данных паролем.  При использовании учетной записи MySQL <code>root</code> по умолчанию с пустым паролем с помощью командной строки можно установить другой пароль. <br><br> В качестве пароля в этом учебном курсе используется <code>nbuser</code>.  Для установки пароля <code><em>nbuser</em></code> в командной строке откройте в системе MySQL каталог <code>bin</code> и введите следующие данные:</p>
+
+                <pre class="examplecode" style="width: 703px;">
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('<em>nbuser</em>')
+    ->     WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+
+                <p>Дополнительные сведения приведены в официальном справочном руководстве по работе с MySQL: <a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html">Защита исходных учетных записей MySQL</a>.</p>
+            </div>
+        </div>
+        <br style="clear: both;"/>
+
+        <ol>
+            <li><a href="#setUpJDBC">Настройка источника данных JDBC и пула подключений</a></li>
+            <li><a href="#referenceDataSource">Обращение к источнику данных из приложения</a></li>
+            <li><a href="#addJar">Добавление файла JAR драйвера базы данных к серверу</a></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="setUpJDBC">Настройка источника данных JDBC и пула подключений</h3>
+
+            <p>Сервер GlassFish Server Open Source Edition содержит библиотеку формирования пула подключений к базе данных (DBCP) с функцией формирования пула подключений в прозрачном для разработчика режиме. Для этого необходимо настроить для сервера <em>источник данных</em> <a href="http://docs.oracle.com/javase/tutorial/jdbc/overview/index.html">JDBC</a> (связь с базами данных Java) для использования в приложении при формировании пула подключений.</p>
+
+            <p class="tips">Дополнительные сведения о технологии JDBC приведены в документе <a href="http://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">Учебные курсы Java: основы JDBC</a>.</p>
+
+            <p>Источник данных можно настроить непосредственно в консоли администратора сервера GlassFish или объявить необходимые для приложения ресурсы в файле <code>glassfish-resources.xml</code>, как описано ниже. При развертывании приложения сервер считывает объявления ресурсов и создает требуемые ресурсы.</p>
+
+            <p>Далее рассматривается процесс объявления пула подключений и источника данных, использующего этот пул.  Оба действия можно выполнить с помощью мастера ресурсов JDBC NetBeans.</p>
+
+            <ol>
+                <li>Откройте мастер создания файлов, нажав кнопку 'Создать файл' ( <img alt="Кнопка &apos;Создать файл&apos;" src="../../../images_www/articles/72/web/mysql-webapp/new-file-btn.png"> ) на главной панели инструментов IDE. Выберите категорию сервера GlassFish, затем выберите &quot;Ресурс JDBC&quot; и нажмите кнопку &quot;Далее&quot;.</li>
+
+                <li>В шаге 2, в области &quot;Общие атрибуты&quot; выберите параметр &quot;Создать новый пул соединений JDBC&quot;, а затем в текстовом поле &quot;Имя JNDI&quot; введите <strong>jdbc/IFPWAFCAD</strong>. <br> <img alt="Мастер ресурсов JDBC. Шаг 2. Общие атрибуты" class="b-all margin-around" src="../../../images_www/articles/72/web/mysql-webapp/jdbc-resource-wizard.png" title="Укажите настройки источника данных в мастере ресурсов JDBC"> <br> <span class="tips">Источник данных JDBC использует <a href="http://www.oracle.com/technetwork/java/jndi/index.html">JNDI</a>.  В интерфейсе API JNDI предоставляется единый для всех приложений способ поиска источников данных и получения доступа к ним.  Дополнительные сведения приведены в <a href="http://docs.oracle.com/javase/jndi/tutorial/">Учебном курсе по JND</a>.</span></li>
+
+                <li>Дополнительно можно добавить описание источника данных. Например, укажите <code>Обеспечивает доступ к базам данных, поставляющим данные для приложения IFPWAFCAD</code>.</li>
+
+                <li>Нажмите кнопку &quot;Далее&quot;. После этого еще раз нажмите кнопку &quot;Далее&quot; и пропустите шаг 3, &quot;Дополнительные свойства&quot;.</li>
+
+                <li>В шаге 4 укажите имя пула подключений JDBC <strong>IfpwafcadPool</strong>.  Убедитесь, что выбран параметр &quot;Извлечь из существующего соединения&quot; и выберите <code>jdbc:mysql://localhost:3306/MyNewDatabase</code> из раскрывающегося списка. Нажмите кнопку &quot;Далее&quot;. <br> <img alt="Мастер ресурсов JDBC. Шаг 4. Выбор подключения к базе данных" class="b-all margin-around" src="../../../images_www/articles/74/web/mysql-webapp/jdbc-resource-wizard2.png" title="Укажите настройки пула подключений в мастере ресурсов JDBC"> <br><br> <strong class="notes">Примечание. </strong>Мастер обнаруживает все соединения с базой данных, настроенные в IDE. Поэтому на этот момент должно существовать созданное подключение к базе данных <code>MyNewDatabase</code>. Можно проверить, какие подключения были созданы, открыв окно 'Службы' (Ctrl-5; &#8984-5 в Mac) и выполнив поиск узлов подключения ( <img alt="Значок узла подключения к базе данных" src="../../../images_www/articles/72/web/mysql-webapp/connection-node-icon.png"> ) в категории 'Базы данных'.</li>
+
+                <li>На этапе 5 выберите файл <code>javax.sql.ConnectionPoolDataSource</code> в списке "Тип ресурса".
+                    <p>Обратите внимание на то, что среда IDE извлекает информацию из подключенной базы данных, указанной на предыдущем этапе, и задает свойства "имя-значение" для нового пула подключений.</p>
+
+                    <img alt="Мастер ресурсов JDBC. Шаг 5. Добавление свойств пула подключений" class="b-all margin-around" src="../../../images_www/articles/74/web/mysql-webapp/jdbc-resource-wizard3.png" title="Значения по умолчанию основаны на данных, извлеченных из выбранного подключения к базе данных"></li>
+
+                <li>Нажмите кнопку &quot;Завершить&quot;. Мастер ресурсов создает файл <code>glassfish-resources.xml</code>, который содержит записи для источника данных и указанный пул подключения.</li>
+            </ol>
+
+            <p>В окне "Проекты" можно открыть <code>glassfish-resources.xml</code>, созданный в дереве узла "Серверные ресурсы". Обратите внимание, что в тегах <code>&lt;resources></code> источник данных и пул соединений объявлены как содержащие ранее указанные значения.</p>
+
+            <p class="tips">Для подтверждения регистрации нового источника данных и пула подключения на сервере GlassFish, можно развернуть проект на сервере, затем расположить ресурсы в окне &quot;Службы&quot; среды IDE.</p>
+
+            <ol>
+                <li>В окне 'Проекты', щелкните правой кнопкой мыши узел проекта IFPWAFCAD и выберите 'Развернуть'. Запустится сервер, если это не было выполнено ранее, и проект будет скомпилирован и развернут на этом сервере.</li>
+
+                <li id="view-connection-pool">Откройте окно &quot;Службы&quot; (CTRL+5; &amp;#8984+5 в системе Mac OS) и разверните узлы &quot;Серверы&quot; &gt; &quot;GlassFish&quot; &gt; &quot;Ресурсы&quot; &gt; &quot;JDBC&quot; &gt; &quot;Ресурсы и пулы подключения JDBC&quot;. Проверьте, что теперь отображаются новый источник данных и пул подключений: <br> <img alt="Новый источник данных и пул подключений отображаются в окне &apos;Службы&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/services-window-glassfish.png" title="Новый источник данных и пул подключений отображаются в окне &apos;Службы&apos;">
+                </li>
+            </ol>
+
+
+            <h3 id="referenceDataSource">Обращение к источнику данных из приложения</h3>
+
+            <p>Необходимо создать ссылку на только что созданный в веб-приложении ресурс JDBC. Для этого можно создать запись в дескрипторе развертывания приложения <code>web.xml</code>.</p>
+
+            <p>Дескрипторы развертывания являются текстовыми файлами на основе XML, содержащими информацию о развертывании приложения в определенной среде. Например, они обычно используются для указания параметров контекста приложения и поведенческих шаблонов, настроек безопасности, а также отображений для сервлетов, фильтров и прослушивающих процессов.</p>
+            
+            <p class="notes"><strong>Примечание.</strong> Если в качестве версии Java при создании проекта указана Java EE 6 или Java EE 7, необходимо создать файл дескриптора развертывания. Для этого выберите "Веб > Стандартный дескриптор развертывания" в мастере создания файлов.</p>
+
+            <p>Произведите следующие действия, чтобы поместить ссылку на источник данных в дескрипторе развертывания приложения.</p>
+
+            <ol>
+                <li>В окне "Проекты" разверните структуру папки "Файлы конфигурации" и дважды щелкните <code>web.xml</code>, чтобы открыть файл в редакторе.</li>
+
+                <li>Откройте вкладку &quot;Ссылки&quot; в верхней области экрана редактора. </li>
+                <li>Разверните заголовок &quot;Ссылки на ресурсы&quot; и нажмите кнопку &quot;Добавить&quot;, чтобы открыть диалог &quot;Добавление ссылки на ресурс&quot;.</li>
+
+                <li>В поле &quot;Имя ресурса&quot; введите имя ресурса, указанное выше при настройке источника данных для сервера (<code>jdbc/IFPWAFCAD</code>). </li>
+                <li>Укажите <strong><code>javax.sql.ConnectionPoolDataSource</code></strong> в поле "Тип ресурса". Нажмите кнопку &quot;ОК&quot;.
+                    
+                    <p>Поле &quot;Описание&quot; является необязательным, но можно добавить удобочитаемое описание ресурса, например, <code>База данных для приложения &quot;IFPWAFCAD&quot;</code>. </p>
+
+                    <img alt="Диалоговое окно &apos;Добавление ссылок на ресурсы&apos;" class="margin-around b-all" src="../../../images_www/articles/74/web/mysql-webapp/add-resource-reference.png" title="Укажите свойсва ресурсов в диалоговом окне &apos;Добавление ссылок на ресурсы&apos;">
+
+                <p>Новый ресурс теперь перечислен в списке под заголовком 'Ссылки на ресурсы'.</p>
+                    </li>
+
+                    <li>Чтобы убедиться, что ресурс добавлен в файл <code>web.xml</code>, перейдите на вкладку "Исходный код" в верхней части экрана редактора. Заметим, что теперь в код включены следующие теги &lt;<code>resource-ref</code>&gt;.
+
+                    <pre class="examplecode">
+&lt;resource-ref&gt;
+    &lt;description&gt;Database for IFPWAFCAD application&lt;/description&gt;
+    &lt;res-ref-name&gt;jdbc/IFPWAFCAD&lt;/res-ref-name&gt;
+    &lt;res-type&gt;javax.sql.ConnectionPoolDataSource&lt;/res-type&gt;
+    &lt;res-auth&gt;Container&lt;/res-auth&gt;
+    &lt;res-sharing-scope&gt;Shareable&lt;/res-sharing-scope&gt;
+&lt;/resource-ref&gt;</pre>
+                </li>
+            </ol>
+
+            <h3 id="addJar">Добавление файла JAR драйвера базы данных к серверу</h3>
+
+            <p>Добавление файла JAR драйвера базы данных является следующим шагом, необходимым для обеспечения взаимодействия сервера с базой данных. Необходимо поместить каталог установки драйвера базы данных и скопировать файл <code>mysql-connector-java-5.1.6.x-bin.jar</code> из корневого каталога драйвера в папку библиотеки на используемом сервере. Управление сервером в среде IDE при развертывании может обнаружить, добавлен ли файл JAR, и если нет, выполняет это автоматически.</p>
+
+            <p>Чтобы продемонстрировать это, откройте Диспетчер серверов (выберите "Сервис > Серверы"). В среде IDE предоставляется параметр &quot;Развертывание драйвера JDBC&quot;.  Если параметр включен, он запускает проверку для определения, требуются ли драйверы для развернутых на сервере приложений. В случае MySQL, если драйвер требуется, но он отсутствует, включенный драйвер среды IDE развертывается в соответствующем месте на сервере.</p>
+
+            <ol>
+                <li>Выберите "Сервис > Серверы", чтобы открыть Диспетчер серверов. На левой панели выберите &quot;GlassFish&quot;.</li>
+
+                <li>В главном окне выберите параметр &quot;Включить развертывание драйвера JDBC&quot;. <br> <img alt="Окно &apos;Серверы&apos; - сервер GlassFish 3.0.1" class="margin-around b-all" src="../../../images_www/articles/74/web/mysql-webapp/servers-window.png" title="Параметр развертывания драйвера JDBC обеспечивает поддержку автоматического развертывания драйверов"></li>
+
+                <li>Прежде чем закрыть Диспетчер серверов, запишите путь, указанный в текстовом поле "Папка доменов". При подключении к серверу GlassFish в среде IDE фактически подключение выполняется к <em>экземпляру</em> сервера приложений. Каждый экземпляр запускает приложения в уникальном домене, а в поле &quot;Имя домена&quot; указано имя используемого сервером домена.  Как видно на рисунке выше, файл JAR драйвера должен находиться в <code>domain1</code>. Это домен по умолчанию, созданный при установке сервера GlassFish.</li>
+
+                <li>Нажмите кнопку "Закрыть", чтобы выйти из Диспетчера серверов.</li>
+
+                <li>На компьютере перейдите к каталогу установки GlassFish и войдите в подпапку <code>domains</code> &gt; <code>domain1</code> &gt; <code>lib</code>. Поскольку проект IFPWAFCAD уже должен быть развернут на сервере, должен отображаться файл <code>mysql-connector-java-5.1.6-bin.jar</code>.  Если файл JAR драйвера не отображается, выполните следующий шаг.</li>
+
+                <li>Разверните проект на сервере. В окне 'Проекты' среды IDE выберите 'Развернуть' в контекстном меню узла проекта. Ход выполнения можно видеть в окне &quot;Вывод&quot; среды IDE (CTRL+4; &amp;#8984+4 для Mac).  В окне &quot;Вывод&quot; указывается, что драйвер MySQL развернут в местоположении на сервере GlassFish. <br> <img alt="Окно вывода, в котором указывается, что драйвер MySQL был развернут" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/output-window.png" title="В окне вывода указывается, что драйвер MySQL был развернут"> <br> При возврате в подпапку <code>domain1/lib</code> на компьютере видно, что файл <code>mysql-connector-java-5.1.6.x-bin.jar</code> добавлен автоматически.</li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="addLogic">Добавление динамической логики</h2>
+
+        <p>Вернемся к местозаполнителям <code>index.jsp</code> и <code>response.jsp</code>, созданным выше при работе с учебным курсом. Теперь можно реализовать код JSTL для <em>динамического</em> (т. е. на основе пользовательского ввода) создания содержимого на страницах.  Для этого выполните следующие три задания.</p>
+
+        <ol>
+            <li><a href="#addJSTL">Добавление библиотеки JSTL к пути к классам проекта</a></li>
+            <li><a href="#implementCode">Реализация кода JSTL</a></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="addJSTL">Добавление библиотеки JSTL к пути к классам проекта</h3>
+
+            <p>Для доступа к данным из базы данных и их просмотра используйте <a href="http://www.oracle.com/technetwork/java/index-jsp-135995.html">Библиотеку стандартных тегов JavaServer Pages</a> (JSTL).  Сервер GlassFish по умолчанию содержит библиотеку JSTL. Для проверки разверните узел сервера GlassFish под узлом "Библиотеки" в окне "Проекты" и найдите библиотеку <code>javax.servlet.jsp.jstl.jar</code>. (В более ранних версиях сервера GlassFish используется библиотека <code>jstl-impl.jar</code>.) Поскольку библиотеки сервера GlassFish по умолчанию добавляются в путь классов проекта, на данном этапе никаких действий не требуется.</p>
+
+            <p>JSTL имеет четыре основных раздела функциональности. </p>
+
+            <ul>
+                <li><code>core</code>: базовые, структурные задачи, такие как итерации и условные выражения для контроля потока операций</li>
+                <li><code>fmt</code>: форматирование сообщений интернационализации и локализации</li>
+                <li><code>sql</code>: простой доступ к базе данных</li>
+                <li><code>xml</code>: обработка содержимого XML</li>
+            </ul>
+
+            <p>Основное внимание в данном учебном курсе уделяется библиотекам тегов <code>core</code> и <code>sql</code>.</p>
+
+            <h3 id="implementCode">Реализация кода JSTL</h3>
+
+            <p>Теперь можно реализовать код для динамического извлечения и просмотра данных на каждой странице.  Для обеих страниц требуется реализация запроса SQL с использованием источника данных, созданного выше в рамках данного учебного курса.</p>
+
+            <p>В среде IDE предоставляется несколько специфичных для базы данных фрагментов JSTL, доступных для выбора в окне &quot;Палитра&quot; (CTRL+SHIFT+8; &amp;#8984+SHIFT+8 для Mac).</p>
+
+            <img alt="Фрагменты баз данных. доступные из палитры" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/palette-db.png" title="В палитре выберите фрагменты JSTL, связанные с базой данных">
+
+            
+            <h4>index.jsp</h4>
+
+            <p>Для динамического отображения содержимого формы на странице <code>index.jsp</code> необходимо получить доступ ко всем <code>именам</code> из таблицы базы данных &quot;Subject&quot;:<code></code></p>
+
+            <ol>
+                <li>Наведите курсор мыши на элемент &quot;Отчет БД&quot; в окне &quot;Палитра&quot;. <br> <img alt="Фрагменты баз данных. доступные из палитры" class="margin-around" src="../../../images_www/articles/72/web/mysql-webapp/db-report.png" title="Введите &apos;db&apos; и нажмите Ctrl-Пробел для доступа к фрагментам JSTL, связанных с базами данных">
+
+                    <p>Для элемента &quot;Отчет БД&quot; при создании запроса SQL используется тег <code>&lt;sql:query&gt;</code>, после чего с помощью тега <code>&lt;c:forEach&gt;</code> обрабатывается <code>resultset</code> запроса, а затем выполняется вывод извлеченных данных.</p></li>
+
+                <li>Установите курсор над объявлением <code>&lt;%@page ... %&gt;</code> (строка 7) и дважды щелкните элемент &quot;Отчет БД&quot; в окне &quot;Палитра&quot;.  В открывшемся диалоговом окне введите следующие подробные сведения:
+
+                    <ul>
+                        <li><strong>Имя переменной:</strong> <code>subjects</code></li>
+                        <li><strong>Контекст:</strong> <code>страница</code></li>
+                        <li><strong>Источник данных:</strong> <code>jdbc/IFPWAFCAD</code></li>
+                        <li><strong>Оператор запроса:</strong> <code>SELECT subject_id, name FROM Subject</code></li>
+                    </ul>
+
+                    <img alt="Диалоговое окно &apos;Вставить отчет базы данных&apos; " class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/insert-db-report.png" title="Используйте диалоговое окно &apos;Вставить отчет базы данных&apos; для указания сведения, связанных с запросом"></li>
+
+                <li>Нажмите кнопку &quot;ОК&quot;. В файле <code>index.jsp</code> создается следующее содержимое.  Новое содержимое выделено <strong>полужирным шрифтом</strong>.
+
+                    <pre class="examplecode">
+<strong>&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</strong>
+&lt;%--
+    Document   : index
+    Author     : nbuser
+--%&gt;
+
+<strong>&lt;sql:query var=&quot;subjects&quot; dataSource=&quot;jdbc/IFPWAFCAD&quot;&gt;
+    SELECT subject_id, name FROM Subject
+&lt;/sql:query&gt;
+
+&lt;table border=&quot;1&quot;&gt;
+    &lt;!-- column headers --&gt;
+    &lt;tr&gt;
+    &lt;c:forEach var=&quot;columnName&quot; items=&quot;${subjects.columnNames}&quot;&gt;
+        &lt;th&gt;&lt;c:out value=&quot;${columnName}&quot;/&gt;&lt;/th&gt;
+    &lt;/c:forEach&gt;
+&lt;/tr&gt;
+&lt;!-- column data --&gt;
+&lt;c:forEach var=&quot;row&quot; items=&quot;${subjects.rowsByIndex}&quot;&gt;
+    &lt;tr&gt;
+    &lt;c:forEach var=&quot;column&quot; items=&quot;${row}&quot;&gt;
+        &lt;td&gt;&lt;c:out value=&quot;${column}&quot;/&gt;&lt;/td&gt;
+    &lt;/c:forEach&gt;
+    &lt;/tr&gt;
+&lt;/c:forEach&gt;
+&lt;/table&gt;</strong>
+
+&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</pre>
+
+                    Обратите внимание на то, что в среде IDE автоматически добавлены директивы <code>taglib</code>, необходимые для тегов JSTL, используемых в созданном содержимом, (<code>&lt;sql:query&gt;</code> и <code>&lt;c:forEach&gt;</code>).  Директива <code>taglib</code> объявляет, что на странице JSP используются пользовательские теги (JSTL), указывает библиотеку тегов, которая их определяет, а также префикс тега.</li>
+
+                <li>Запустите проект, чтобы проверить его отображение в браузере. Щелкните правой кнопкой мыши узел проекта в окне &quot;Проекты&quot; и выберите &quot;Выполнить&quot;.
+
+                    <p>При выборе &quot;Выполнить&quot;, IDE развертывает проект на сервере GlassFish, страница индексов компилируется в сервлет, а страница приветствия открывается в браузере по умолчанию. Код, созданный на основе элемента &quot;Отчет БД&quot;, определяет следующую таблицу на странице приветствия.</p>
+
+                    <img alt="В браузере отображается таблица, содержащая данные из таблицы баз данных &apos;Subject&apos;" class="margin-around" src="../../../images_www/articles/72/web/mysql-webapp/db-report-table.png" title="Используйте отчет базы данных для быстрого создания прототипов данных таблицы базы данных">
+
+                    <p>
+                    Как видно, с помощью элемента &quot;Отчет БД&quot; можно быстро протестировать подключение к базе данных и просмотреть табличные данные из базы данных в браузере.  Это особенно рекомендуется при создании прототипов.</p>
+
+                    <p>
+                    В следующих шагах рассматривается интеграция созданного кода в раскрывающийся список HTML, созданный выше при работе с данным учебным курсом.</p></li>
+
+                <li>Проверьте данные столбцов в созданном коде.  Используется два тега <code>&lt;c:forEach&gt;</code>, причем один из них вставляется в другой.  В результате контейнер JSP (сервер GlassFish) выполняет цикл по всем строкам таблицы с циклическим прохождением всех столбцов.  Аналогично отображаются данные для всей таблицы.</li>
+
+                <li>Интегрируйте теги <code>&lt;c:forEach&gt;</code> в форму HTML следующим образом.  Значение каждого элемента изменяется на <code>subject_id</code>, а текст вывода - на <code>name</code>, как записано в базе данных.  (Изменения выделяются <strong>полужирным шрифтом</strong>).
+
+                    <pre class="examplecode">
+&lt;form action=&quot;response.jsp&quot;&gt;
+    &lt;strong&gt;Select a subject:&lt;/strong&gt;
+    &lt;select name=&quot;subject_id&quot;&gt;
+        <strong>&lt;c:forEach var=&quot;row&quot; items=&quot;${subjects.rowsByIndex}&quot;&gt;
+            &lt;c:forEach var=&quot;column&quot; items=&quot;${row}&quot;&gt;</strong>
+                &lt;option <strong>value=&quot;&lt;c:out value=&quot;${column}&quot;/&gt;&quot;</strong>&gt;<strong>&lt;c:out value=&quot;${column}&quot;/&gt;</strong>&lt;/option&gt;
+            <strong>&lt;/c:forEach&gt;
+        &lt;/c:forEach&gt;</strong>
+    &lt;/select&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;submit&quot; name=&quot;submit&quot; /&gt;
+&lt;/form&gt;</pre>
+
+                    <span class="tips">Ниже показан более простой способ интеграции тегов <code>&lt;c:forEach&gt;</code> в форму HTML.</span>
+
+                    <pre class="examplecode">
+&lt;form action=&quot;response.jsp&quot;&gt;
+    &lt;strong&gt;Select a subject:&lt;/strong&gt;
+    &lt;select name=&quot;subject_id&quot;&gt;
+        <strong>&lt;c:forEach var=&quot;row&quot; items=&quot;${subjects.rows}&quot;&gt;</strong>
+            &lt;option <strong>value=&quot;${row.subject_id}&quot;</strong>&gt;<strong>${row.name}</strong>&lt;/option&gt;
+        <strong>&lt;/c:forEach&gt;</strong>
+    &lt;/select&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;submit&quot; name=&quot;submit&quot; /&gt;
+&lt;/form&gt;</pre>
+
+                    <p>Во всех случаях теги <code>&lt;c:forEach&gt;</code> циклически обрабатывает значения <code>subject_id</code> и <code>name</code> из запроса SQL со вставкой каждой пары в теги HTML <code>&lt;option&gt;</code>.  Таким образом раскрывающийся список формы заполняется данными.</p></li>
+
+                <li>Удалите таблицу, созданную из элемента &quot;Отчет БД&quot;.  (Удаление показано ниже <strong><strike>перечеркнутым текстом</strike></strong>.)
+
+                    <pre class="examplecode">
+&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;
+&lt;%--
+    Document   : index
+    Created on : Dec 22, 2009, 7:39:49 PM
+    Author     : nbuser
+--%&gt;
+
+&lt;sql:query var=&quot;subjects&quot; dataSource=&quot;jdbc/IFPWAFCAD&quot;&gt;
+    SELECT subject_id, name FROM Subject
+&lt;/sql:query&gt;
+
+<strong><strike>&lt;table border=&quot;1&quot;&gt;
+    &lt;!-- column headers --&gt;
+    &lt;tr&gt;
+    &lt;c:forEach var=&quot;columnName&quot; items=&quot;${subjects.columnNames}&quot;&gt;
+        &lt;th&gt;&lt;c:out value=&quot;${columnName}&quot;/&gt;&lt;/th&gt;
+    &lt;/c:forEach&gt;
+&lt;/tr&gt;
+&lt;!-- column data --&gt;
+&lt;c:forEach var=&quot;row&quot; items=&quot;${subjects.rowsByIndex}&quot;&gt;
+    &lt;tr&gt;
+    &lt;c:forEach var=&quot;column&quot; items=&quot;${row}&quot;&gt;
+        &lt;td&gt;&lt;c:out value=&quot;${column}&quot;/&gt;&lt;/td&gt;
+    &lt;/c:forEach&gt;
+    &lt;/tr&gt;
+&lt;/c:forEach&gt;
+&lt;/table&gt;</strike></strong>
+
+&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</pre></li>
+
+                <li>Сохраните изменения (CTRK+S; &amp;#8984+S в Mac OS).
+                <li>Обновите страницу приветствия проекта в браузере.
+                    <p>Заметим, что раскрывающийся список в браузере теперь содержит названия тем, полученные из базы данных.</p>
+                    
+
+                
+                    <p class="tips">Повторно развертывать проект не нужно, так как функция "Компилировать при сохранении" (compile-on-save) включена для вашего проекта по умолчанию. Это означает, что при изменении и сохранении файла он автоматически компилируется и развёртывается, и нет необходимости перекомпилировать весь проект. Функцию компиляции при сохранении можно отключать в категории &quot;Компиляция&quot; в окне проекта &quot;Свойства&quot;.</p>
+                </li>
+            </ol>
+
+            <h4>response.jsp</h4>
+
+            <p>На странице ответов предоставляются подробные сведения о консультанте по теме, выбранной на странице приветствия.  Созданный запрос должен содержать запись консультанта, идентификатор которого <code>counselor_id</code> соответствует значению <code>counselor_idfk</code> из выбранной записи темы.</p>
+
+            <ol>
+                <li>Наведите указатель мыши на объявление <code>&lt;%@page ... %></code> (строка 7) и дважды щелкните "Запрос к БД" в палитре, чтобы открыть диалоговое окно "Вставить запрос к БД".</li>
+
+                <li>В диалоговом окне "Вставить запрос к БД" введите следующие данные.
+
+                    <ul>
+                        <li><strong>Имя переменной:</strong> <code>counselorQuery</code></li>
+                        <li><strong>Контекст:</strong> <code>страница</code></li>
+                        <li><strong>Источник данных:</strong> <code>jdbc/IFPWAFCAD</code></li>
+                        <li><strong>Оператор запроса:</strong> <code>SELECT * FROM Subject, Counselor WHERE Counselor.counselor_id = Subject.counselor_idfk AND Subject.subject_id = ? &lt;sql:param value=&quot;${param.subject_id}&quot;/&gt;</code></li>
+                    </ul>
+
+                    <img alt="Диалоговое окно &apos;Вставить запрос базы данных&apos; " class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/insert-db-query2.png" title="Используйте диалоговое окно &apos;Вставить запрос базы данных&apos; для указания сведения, связанных с запросом"></li>
+
+                <li>Нажмите кнопку &quot;ОК&quot;. В файле <code>response.jsp</code> создается следующее содержимое.  Новое содержимое выделено <strong>полужирным шрифтом</strong>.
+
+                    <pre class="examplecode">
+<strong>&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</strong>
+&lt;%--
+    Document   : response
+    Created on : Dec 22, 2009, 8:52:57 PM
+    Author     : nbuser
+--%&gt;
+
+<strong>&lt;sql:query var=&quot;counselorQuery&quot; dataSource=&quot;jdbc/IFPWAFCAD&quot;&gt;
+    SELECT * FROM Subject, Counselor
+    WHERE Counselor.counselor_id = Subject.counselor_idfk
+    AND Subject.subject_id = ? &lt;sql:param value=&quot;${param.subject_id}&quot;/&gt;
+&lt;/sql:query&gt;</strong>
+
+&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</pre>
+
+                    Обратите внимание на то, что в среде IDE автоматически добавлена директива <code>taglib</code> для тега <code>&lt;sql:query&gt;</code>.  Также отметьте, что непосредственно в запросе использовался тег <code>&lt;sql:param&gt;</code>.  Поскольку для этого запроса используется значение <code>subject_id</code>, отправленное с <code>index.jsp</code>, извлечь это значение можно с помощью оператора EL (язык выражений) в форме <code>${param.subject_id}</code>, а затем передать его для тега <code>&lt;sql:param&gt;</code>. В этом случае его можно использовать вместо вопросительного знака SQL (<code>?</code>) во время выполнения.</li>
+
+                <li>Используйте тег <code>&lt;c:set&gt;</code> для установки переменной, соответствующей первой записи (строке) <code>resultset</code>, возвращенного из запроса.  Новое содержимое выделено <strong>полужирным шрифтом</strong>.
+
+                    <pre class="examplecode">
+&lt;sql:query var=&quot;counselorQuery&quot; dataSource=&quot;jdbc/IFPWAFCAD&quot;&gt;
+    SELECT * FROM Subject, Counselor
+    WHERE Counselor.counselor_id = Subject.counselor_idfk
+    AND Subject.subject_id = ? &lt;sql:param value=&quot;${param.subject_id}&quot;/&gt;
+&lt;/sql:query&gt;
+
+<strong>&lt;c:set var=&quot;counselorDetails&quot; value=&quot;${counselorQuery.rows[0]}&quot;/&gt;</strong></pre>
+
+                    Несмотря на то, что возвращенный из запроса <code>resultset</code> должен содержать только одну запись, этот шаг является обязательным, поскольку для страницы необходимо обеспечить доступ к значениям в записи с помощью операторов EL (язык выражений).  Вспомните, что на странице <code>index.jsp</code> можно было получить доступ к значениям из <code>resultset</code> просто посредством тега <code>&lt;c:forEach&gt;</code>.  Однако тег <code>&lt;c:forEach&gt;</code> функционирует путем настройки переменной для строк из запроса, что позволяет извлекать значения путем включения переменной строки в операторы EL.</li>
+
+                <li>Добавьте директиву <code>taglib</code> для <code>базовой</code> библиотеки JSTL файла. Это обеспечит распознавание тега <code>&lt;c:set&gt;</code>.  Новое содержимое выделено <strong>полужирным шрифтом</strong>.
+
+                    <pre class="examplecode">
+<strong>&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;</strong>
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</pre></li>
+
+                <li>В разметке HTML замените все местозаполнители кодом операторов EL с отображением данных из переменной <code>counselorDetails</code>.  (Изменения выделены ниже <strong>полужирным шрифтом</strong>):
+
+                    <pre class="examplecode">
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;/&gt;
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;style.css&quot;&gt;
+        &lt;title&gt;<strong>${counselorDetails.name}</strong>&lt;/title&gt;
+    &lt;/head&gt;
+
+    &lt;body&gt;
+        &lt;table&gt;
+            &lt;tr&gt;
+                &lt;th colspan=&quot;2&quot;&gt;<strong>${counselorDetails.name}</strong>&lt;/th&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;strong&gt;Description: &lt;/strong&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;span style=&quot;font-size:smaller; font-style:italic;&quot;&gt;<strong>${counselorDetails.description}</strong>&lt;/span&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;strong&gt;Counselor: &lt;/strong&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;strong&gt;<strong>${counselorDetails.first_name} ${counselorDetails.nick_name} ${counselorDetails.last_name}</strong>&lt;/strong&gt;
+                    &lt;br&gt;&lt;span style=&quot;font-size:smaller; font-style:italic;&quot;&gt;
+                    &lt;em&gt;member since: <strong>${counselorDetails.member_since}</strong>&lt;/em&gt;&lt;/span&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;strong&gt;Contact Details: &lt;/strong&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;strong&gt;email: &lt;/strong&gt;
+                    &lt;a href=&quot;mailto:<strong>${counselorDetails.email}</strong>&quot;&gt;<strong>${counselorDetails.email}</strong>&lt;/a&gt;
+                    &lt;br&gt;&lt;strong&gt;phone: &lt;/strong&gt;<strong>${counselorDetails.telephone}</strong>&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="run">Запуск готового приложения</h2>
+
+
+        <p>Процесс создания приложения завершен.  Попробуйте снова запустить его для просмотра результата в браузере.  Обратите внимание на то, что благодаря функции NetBeans &quot;Компиляция при сохранении&quot; специально выполнять компиляцию или повторное развертывание приложения не требуется.  При выполнении проекта развертывание гарантированно содержит самые последние изменения.</p>
+
+        <p>Нажмите кнопку 'Запустить проект' (<img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/72/web/mysql-webapp/run-project-btn.png">) на главной панели инструментов. В браузере по умолчанию среды IDE открывается страница <code>index.jsp.</code>.</p>
+
+        <p>Когда в браузере отображена страница <code>index.jsp</code>, выберите тему из раскрывающегося списка и нажмите кнопку <code>submit</code>. Выполняется переадресация на страницу <code>response.jsp</code>, отображающую подробные сведения в соответствии с выбором.</p>
+
+        <div class="indent">
+            <img alt="response.jsp отображается в браузере, в котором отображаются данные, извлеченные из базы данных" class="margin-around" src="../../../images_www/articles/72/web/mysql-webapp/response-display.png" title="response.jsp отображается в браузере, в котором отображаются данные, извлеченные из базы данных">
+        </div>
+
+        <p>Это заключительный раздел учебного курса &quot;Создание простого веб-приложения, использующего базу данных MySQL&quot; В этом документе описана процедура создания простого веб-приложения с подключением к базе данных MySQL. Здесь также рассматривается процесс создания приложения с помощью базовой двухуровневой архитектуры при использовании технологий JSTL и JSP для доступа к данным с динамическим просмотром.</p>
+
+
+        <br>
+        <h2 id="troubleshoot">Устранение проблем</h2>
+
+        <p>Большинство проблем в приложении из учебного курса возникают по причине сложностей процесса обмена данными между сервером GlassFish Server Open Source Edition и сервером базы данных MySQL.  В случае некорректного отображения приложения или генерации ошибки сервера рекомендуется выполнить следующие проверки.</p>
+
+        <ul>
+            <li><a href="#access?">Существуют ли ресурсы базы данных?</a></li>
+            <li><a href="#datasource?">Существуют ли на сервере пул подключений и источник данных?</a></li>
+            <li><a href="#driver?">Доступен ли MySQL Connector/драйвер J для сервера GlassFish?</a></li>
+            <li><a href="#password?">Защищена ли база данных паролем?</a></li>
+            <li><a href="#ping?">Корректно ли установлены значения свойств пула подключений?</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="access">Существуют ли ресурсы базы данных?</h3>
+
+            <p>В среде IDE в окне &quot;Службы&quot; (CTRL+5; &amp;#8984+5 для Mac) проверьте функционирование сервера MySQL, а также доступность <code>MyNewDatabase</code> и наличие в ней соответствующих табличных данных.</p>
+
+            <ul>
+                <li>Для подключения к серверу баз данных MySQL щелкните правой кнопкой мыши узел сервера MySQL и выберите 'Подключение'.</li>
+
+                <li>Если узел подключения ( <img alt="Узел подключения к базе данных" src="../../../images_www/articles/72/web/mysql-webapp/db-connection-node.png"> ) для <code>MyNewDatabase</code> не отображается в окне 'Службы' можно создать подключение, щелкнув правой кнопкой мыши узел драйвера MySQL ( <img alt="Узел драйвера базы данных" src="../../../images_www/articles/72/web/mysql-webapp/driver-node.png"> ) и выбрав 'Подключение с помощью'. В появившемся диалоговом окне укажите требуемые подробные сведения. <br> <img alt="Диалоговое окно &apos;Подключение к базе данных&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/new-db-connection-dialog.png" title="Установите подключение к базе данных в среде IDE с помощью диалогового окна &apos;Создать подключение к базе данных&apos;"> <br> <span class="tips">Поля в диалоговом окне &quot;Новое подключение к базе данных&quot; зеркально отражают строку URL в параметре &quot;Показать URL JDBC&quot;.  Таким образом, если известен URL (например, <code>jdbc:mysql://localhost:3306/MyNewDatabase</code>), можно вставить его в поле &quot;Показать URL JDBC&quot;. При этом остальные поля заполняются автоматически.</span></li>
+
+                <li>Чтобы убедиться, что таблицы <code>Subject</code> и <code>Counselor</code> существуют и содержат образцы данных, разверните узел подключения <code>MyNewDatabase</code>( <img alt="Узел подключения к базе данных" src="../../../images_www/articles/72/web/mysql-webapp/db-connection-node.png"> ) и найдите узел каталога <code>MyNewDatabase</code> ( <img alt="Узел каталога баз данных" src="../../../images_www/articles/72/web/mysql-webapp/db-catalog-node.png"> ). Для просмотра существующих таблиц разверните узел каталога.  Табличные данные можно просмотреть, щелкнув правой кнопкой мыши узел таблицы и выбрав 'Просмотреть данные'. <br> <img alt="Окно &apos;Службы&apos; - щелкните правой кнопкой мыши меню узла таблицы баз данных" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/services-window-view-data.png" title="Просмотрите данные таблицы, выбрав &apos;Просмотреть данные&apos; в контекстном меню узла таблицы баз данных"></li>
+            </ul>
+
+
+            <h3 id="datasource">Существуют ли на сервере пул подключений и источник данных?</h3>
+
+            <p>После развертывания приложения на сервере GlassFish файл проекта <code>glassfish-resources.xml</code> должен содержать инструкции для сервера по созданию ресурсов и пула подключения JDBC. Их наличие можно проверить в узле &quot;Серверы&quot; в окне &quot;Службы&quot;.</p>
+
+            <ul>
+                <li>Разверните узел &quot;Серверы&quot; &gt; &quot;Сервер GlassFish&quot; &gt; &quot;Ресурсы&quot;. Разверните узел &quot;JDBC Resources&quot; (Ресурсы JDBC), чтобы увидеть источник данных <code>jdbc/IFPWAFCAD</code>, созданный из файла <code>glassfish-resources.xml</code>. Разверните узел &quot;Пул подключения&quot;, чтобы увидеть пул подключения <code>IfpwafcadPool</code>, созданный из файла <code>glassfish-resources.xml</code>. Подробное описание <a href="#view-connection-pool">приведено выше</a>.</li>
+            </ul>
+
+
+            <h3 id="driver">Доступен ли MySQL Connector/драйвер J для сервера GlassFish?</h3>
+
+            <p>Проверьте, что на сервере GlassFish выполнено развертывание драйвера MySQL Connector/J.  Соответствующее описание приведено в разделе <a href="#addJar">Добавление файла JAR драйвера базы данных на сервер</a>.</p>
+
+            <ul>
+                <li>Найдите на компьютере папку установки сервера GlassFish и откройте подпапку <code>GlassFish domains/domain1/lib</code>.  В ней должен находиться файл <code>mysql-connector-java-5.1.6-bin.jar</code>.</li>
+            </ul>
+
+
+            <h3 id="password">Защищена ли база данных паролем?</h3>
+
+            <p>Необходимо защитить базу данных паролем, чтобы при выполнении упражнений данного учебного курса источник данных сервера GlassFish работал корректно. При использовании учетной записи MySQL <code>root</code> по умолчанию с пустым паролем с помощью командной строки можно установить другой пароль.</p>
+
+            <ul>
+                <li>Для установки пароля <code><em>nbuser</em></code> в командной строке откройте в системе MySQL каталог <code>bin</code> и введите следующие данные:
+
+        <pre class="examplecode" style="width: 703px;">
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('<em>nbuser</em>')
+    ->     WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+
+                    Дополнительные сведения приведены в официальном справочном руководстве по работе с MySQL: <a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html">Защита исходных учетных записей MySQL</a>.</li>
+            </ul>
+
+
+            <h3 id="ping">Корректно ли установлены значения свойств пула подключений?</h3>
+
+           <p>Проверьте правильность работы пула подключений для сервера.</p>
+
+            <ol>
+                <li>Откройте окно &quot;Службы&quot; (CTRL+5; &amp;#8984+5 для Mac) и разверните узел &quot;Серверы.</li>
+                <li>В контекстном меню узла &quot;Сервер GlassFish&quot; выберите &quot;Просмотр консоли администратора&quot;.</li>
+                <li>При отображении соответствующего запроса введите имя пользователя и пароль. Имя пользователя и пароль можно посмотреть в Диспетчере серверов.</li>
+                <li>В дереве в левой части консоли разверните узел "Ресурсы > JDBC > Пулы подключений > <code>IfpwafcadPool</code>". В главном окне отображаются подробные сведения о пуле подключений <code>IfpwafcadPool</code>.</li>
+                <li>Нажмите кнопку &quot;Ping&quot;.  Если пул подключений настроен правильно, отображается сообщение <code>Ping Succeeded</code>. <br> <img alt="консоль администрирования сервера GlassFish - отображение пула подключений" class="margin-around b-all" src="../../../images_www/articles/72/web/mysql-webapp/ping-succeeded.png" title="Проверьте пул подключений, щелкнув &apos;Ping&apos; на консоли администрирования сервера GlassFish"></li>
+
+                <li>Если выполнение ping-тестирования завершается неуспешно, откройте вкладку &quot;Дополнительные свойства&quot; для проверки правильности настройки указанных значений свойств.</li>
+
+            </ol>
+        </div>
+
+        <br>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20Web%20App%20MySQL">Мы ждем ваших отзывов</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Дополнительные сведения</h2>
+
+        <p>Дополнительные сведения о развертывании веб-приложений Java приведены в следующих материалах.</p>
+
+        <ul id="collapsableList2">
+            <li><strong>Статьи и руководства по NetBeans</strong>
+
+                <ul>
+                    <li><a href="../ide/mysql.html">Соединение с базой данных MySQL в IDE NetBeans</a>. Описывает основы работы с базой данных MySQL в среде IDE.</li>
+
+                    <li><a href="jsf20-intro.html">Введение в JavaServer Faces 2.x</a>. Вводный учебный курс по работе с архитектурой JSF в веб-проекте Java.</li>
+
+                    <li><a href="quickstart-webapps-spring.html">Введение в инфраструктуру Spring</a> В рамках вводного учебного курса рассматривается процедура создания веб-приложения MVC с использованием инфраструктуры Spring.</li>
+                </ul></li>
+
+            <li><strong>Связь с базами данных Java (JDBC)</strong>
+
+                <ul>
+                    <li><a href="http://docs.oracle.com/javase/tutorial/jdbc/overview/index.html">Обзор JDBC</a></li>
+                    <li><a href="http://download.oracle.com/javase/6/docs/technotes/guides/jdbc/getstart/GettingStartedTOC.fm.html">Начало работы с API JDBC</a></li>
+                    <li><a href="http://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">Учебные курсы Java: основы JDBC</a></li>
+                </ul></li>
+
+            <li><strong>Библиотека стандартных тегов JavaServer Pages (JSTL)</strong>
+
+                <ul>
+                    <li><a href="http://www.oracle.com/technetwork/java/index-jsp-135995.html">Библиотека стандартных тегов JavaServer Pages</a> (официальная страница продукта)</li>
+                </ul></li>
+
+            <li><strong>Имена Java и интерфейс каталогов (JNDI)</strong>
+
+                <ul>
+                    <li><a href="http://www.oracle.com/technetwork/java/jndi-136720.html">Базовые технологии Java SE - Имена Java и интерфейс каталогов</a></li>
+                    <li><a href="http://docs.oracle.com/javase/jndi/tutorial/">Учебный курс по JNDI</a></li>
+                    <li><a href="http://docs.oracle.com/javase/tutorial/jndi/index.html">Учебные курсы Java: Имена Java и интерфейс каталогов</a></li>
+                </ul></li>
+
+        </ul>
+
+        <script type="text/javascript">
+            <!--
+            compactMenu('collapsableList', true, '&plusmn; ');
+            compactMenu('collapsableList2', true, '&plusmn; ');
+            -->
+        </script>
+    </body>
+</html>

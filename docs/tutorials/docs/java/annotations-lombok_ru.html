@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Использование поддержки обработчиков аннотаций в IDE NetBeans</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+</head>
+
+    <body>
+
+        <h1>Поддержка обработчиков аннотаций в IDE NetBeans. Часть I. Использование проекта Lombok </h1>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+	    <p><b>Содержание</b></p>
+  
+        <ul class="toc">
+            <li><a href="annotations.html">Введение</a></li>
+            <li><a href="annotations.html#map">Отображение параметров javac и команд среды IDE</a> </li>
+          <li><strong>Использование проекта Lombok для пользовательских аннотаций</strong>
+            <ul>
+              <li><a href="#create">Создание проекта Java</a></li>
+              <li><a href="#enableann">Активация пользовательских аннотаций для проекта</a> </li>
+              <li><a href="#writeapp">Создание приложения при помощи пользовательских аннотаций Lombok</a></li>
+            </ul>
+          </li>
+            <li><a href="annotations-custom.html">Использование собственных обработчиков пользовательских аннотаций в среде IDE</a></li>
+            <li><a href="annotations-custom.html#seealso" title="Компиляция и выполнение проекта">Дополнительные сведения</a></li>
+        </ul>
+        </div>
+	</div>
+	   
+	   <p>Для демонстрации принципов работы нестандартных аннотаций в IDE NetBeans используется проект Lombok, обеспечивающий удобный способ автоматического создания нескольких элементов кода Java, таких как методы получения, методы установки, конструкторы и другие. Дополнительные сведения о функциях проекта приведены на <a href="http://projectlombok.org/" target="_blank">странице проекта Lombok</a>. Следует, однако, помнить, что проект Lombok включает в себя ряд функций, которые могут работать не во всех средах разработки.</p>
+
+           <p style="clear:both"><b>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</b></p>
+        <table>
+          <tbody>
+            <tr>
+              <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+              <th class="tblheader" scope="col">Требуемая версия</th>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+              <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+              <td class="tbltd1">версия 7 или 8</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://code.google.com/p/projectlombok/downloads/list">lombok.jar</a></td>
+              <td class="tbltd1">версия 1.12.4 и более поздние</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2><a name="create"></a>Создание проекта Java </h2>
+        <p>В этом упражнении необходимо создать простой проект Java и класс с именем <tt>MyBooks.java</tt> для демонстрации аннотаций в действии.</p>
+        <ol>
+            <li>Выберите <strong>Файл > Новый проект</strong> в главном меню, чтобы открыть мастер создания проектов.</li>
+            <li>В списке 'Тип проекта' в категории 'Java' выберите 'Приложение Java'. Нажмите 'Далее'.</li>
+            <li>Введите на странице &quot;Имя и местоположение&quot; мастера текст <strong><tt>TestAnn</tt></strong> в качестве имени проекта.</li>
+            <li>Введите <strong><tt>testann.TestBooks</tt></strong> в поле &quot;Создать главный класс&quot;, чтобы заменить имя класса по умолчанию.  Нажмите кнопку &quot;Завершить&quot;.<br> <img alt="моментальный снимок мастера создания проектов" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/newproj.png" title="Создание нового проекта Java в IDE NetBeans">
+            <p>После нажатия кнопки &quot;Готово&quot; среда IDE создаст проект приложения Java и откроет класс<tt>TestBooks.java</tt> в редакторе.  Как вы можете видеть, теперь новый проект отображается в окне &quot;Проекты&quot;, а класс <tt>TestBooks.java</tt> находится в пакете <tt>testann</tt> в узле &quot;Исходные файлы&quot;.</p></li>
+            <li>Правой кнопкой мыши щелкните узел с пакетом <tt>testann</tt> в окне &quot;Проекты&quot;, затем выберите &quot;Создать&quot; &gt; &quot;Класс Java&quot;.</li>
+            <li>Введите <strong><tt>MyBooks</tt></strong> в поле &quot;Имя класса&quot; и подтвердите создание класса в пакете <tt>testann</tt>.  Нажмите кнопку &quot;Завершить&quot;.
+            <p>После нажатия кнопки &quot;Готово&quot; среда IDE откроет новый класс в редакторе.</p></li>
+            <li>В редакторе исходного кода добавьте три следующих поля в <tt>MyBooks.java</tt>.
+           <pre class="examplecode">package testann;
+
+public class MyBooks {   
+    <strong>private int year; //fields
+    private String title;
+    private String author;</strong>
+
+}</pre></li>
+            <li>Поместите курсор в объявление класса и нажмите сочетание клавиш CTRL+ПРОБЕЛ для вызова функции автозавершения кода редактора.</li> 
+            <li>Выберите <tt>MyBooks (int year, String title, String author) - generate</tt> в списке автозавершения кода, чтобы создать конструктор для <tt>MyBooks.java</tt>.<br> <img alt="снимок автозавершения кода в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/generate-constructor.png" title="Автозавершение кода для создания конструктора">
+            </li>
+            <li>Сохраните изменения.</li>
+    </ol>
+
+        
+    <h2><a name="enableann"></a>Активация пользовательских аннотаций (lombok.jar) для проекта </h2>
+    <p>В этом упражнении необходимо изменить окно свойств проекта, чтобы добавить библиотеку в путь к классу проекта и включить обработку аннотаций в редакторе.</p>
+    <ol>
+        <li>Загрузите файл <a href="http://code.google.com/p/projectlombok/downloads/list" target="_blank">lombok.jar</a> и сохраните его в системе. </li>
+        <li>Щелкните правой кнопкой мыши узел проекта <tt>TestAnn</tt> и выберите команду &quot;Свойства&quot;.  </li>
+        <li>Выберите категорию &quot;Библиотеки&quot; в диалоговом окне &quot;Свойства проекта&quot;.</li>
+        <li>Нажмите кнопку &quot;Добавить JAR/папку&quot; во вкладке &quot;Компиляция&quot; и перейдите к загруженному файлу <tt>lombok.jar</tt>.<br> <img alt="снимок категории &apos;Библиотеки&apos; в окне &apos;Свойства&apos;" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/properties1.png" title="Категория &apos;Библиотеки&apos; в окне &apos;Свойства&apos;">
+
+        <p>Ресурсы, добавленные на вкладке &quot;Компиляция&quot;, соответствуют параметру <tt>-classpath</tt> <a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html#options" target="_blank">компилятора Java</a>.  Поскольку файл <tt>lombok.jar</tt>является отдельным файлом JAR, содержащим определения аннотаций и процессоры аннотаций, его необходимо добавить в путь к классам проекта, соответствующий вкладке &quot;Компиляция&quot;. 
+ </p>
+        </li>
+        <li>Выберите в окне &quot;Свойства проекта&quot; категорию &quot;Компиляция&quot;.</li>
+        <li>Убедитесь, что флажок &quot;Включить обработку аннотаций&quot; установлен (параметр активирован по умолчанию). Также установите флажок &quot;Включить обработку аннотаций в редакторе&quot;. 
+<br> <img alt="снимок категории &apos;Компиляция&apos; в окне &apos;Свойства&apos;" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/properties2.png" title="Выберите в окне &amp;quot;Свойства проекта&amp;quot; категорию &amp;quot;Компиляция&amp;quot;.">
+
+        <p>Параметр &quot;Включить обработку аннотаций&quot; активирует обработку аннотаций при построении и компиляции проекта.  Если флажок не установлен, параметр <tt>-proc:none</tt> передается в компилятор Java, и компиляция выполняется без обработки аннотаций. Таким образом, при необходимости обработки аннотаций необходимо установить флажок &quot;Включить обработку аннотаций&quot;.</p>
+        <p>При установке флажка &quot;Включить обработку аннотаций в редакторе&quot; результаты обработки аннотаций становятся видимыми в редакторе. Дополнительные артефакты, созданные процессорами аннотаций (классы, методы, поля и др.), становятся видимыми в редакторе среды IDE и доступными для функции автозавершения кода, навигатора, перехода к типу, поиска случаев использования и пр.</p>
+        </li>
+        <li>В окне &quot;Свойства проекта&quot; нажмите кнопку &quot;ОК&quot; и вернитесь в файл <tt>MyBooks.java</tt>. </li>
+    </ol>
+
+    <p>Развернув узел &quot;Библиотеки&quot; в окне &quot;Проекты&quot;, вы увидите, что теперь файл <tt>lombok.jar</tt> находится в списке библиотек проекта.</p>
+<img alt="снимок окна &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/projects-window.png" title="узел &apos;Библиотеки&apos; в окне &apos;Проекты&apos;">
+
+    <h2><a name="writeapp"></a>Создание приложения при помощи пользовательских аннотаций Lombok </h2>
+    <ol>
+        <li>Введите в файле <tt>MyBooks.java</tt> текст <tt>@Data</tt> перед объявлением класса <tt>MyBooks</tt>. <tt>@Data</tt> представляет собой аннотацию, создающую шаблонный код для классов Java: методы получения для всех полей, методы установки для всех неполных полей и соответствующие реализации <tt>toString</tt>, <tt>equals</tt> и <tt>hashCode</tt>, включающие в себя поля класса.
+        <p class="tips">Дополнительные сведения об аннотациях, поддерживаемых в проекте Lombok, приведены в разделе <a href="http://projectlombok.org/features/index.html">Обзор функций</a> Lombok.</p></li>
+        <li>Щелкните всплывающую подсказку в левом поле редактора и добавьте импорт для <tt>lombok.Data</tt>.<br> <img alt="снимок подсказки в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/import-lombok.png" title="Подсказка в редакаторе для импорта lombok">
+
+            <p>Итоговый код в редакторе должен выглядеть следующим образом:</p>
+                <pre class="examplecode">package testann;
+
+import lombok.Data;
+
+
+@Data
+public class MyBooks {
+
+    private int year; //fields
+    private String title;
+    private String author;
+
+    public MyBooks(int year, String title, String author) {
+        this.year = year;
+        this.title = title;
+        this.author = author;
+    }
+}</pre>
+            <p>Обратите внимание, что необходимые артефакты кода, например методы получения, методы установки, toString и другие созданы и отображаются в окне навигатора. Аннотация <tt>@Data</tt> создала весь шаблонный код, необходимый для типичного класса.</p>
+            <img alt="снимок окна &apos;Навигатор&apos;" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/nav.png" title="Окно &apos;Навигатор&apos;, в котором отображаются участники проекта">
+            <p>Можно также вызвать окно автозавершения кода (CTRL+ПРОБЕЛ) и проверить доступность созданных артефактов для выбора. Теперь необходимо убедиться, что проект выполняет компиляцию, а созданные артефакты можно вызвать из других компонентов программы.</p>
+            </li>
+            <li>Откройте файл <tt>TestBooks.java</tt> с методом <em>main</em> и добавьте следующий код (выделен полужирным шрифтом), чтобы создать новый объект класса <tt>MyBooks</tt>.
+                <pre class="examplecode">package testann;
+
+public class TestBooks {
+
+    public static void main(String[] args) {
+        <strong>MyBooks books = new MyBooks(2009, "My Beautiful Dream", "John Smith");</strong>
+    }
+}</pre>
+            </li>
+            <li>Добавьте следующий код, который выводит на экран значения переменной <tt>books</tt>.
+                <p>Для возврата значений следует вызвать методы получения, автоматически созданные в файле <tt>lombok.jar</tt>.  Обратите внимание, что при вводе автоматически созданные артефакты доступны в окне автозавершения кода.</p>
+                <pre class="examplecode">package testann;
+
+public class TestBooks {
+
+    public static void main(String[] args) {
+        MyBooks books = new MyBooks(2009, "My Beautiful Dream", "John Smith");
+        <strong>System.out.println("Year: " + books.getYear() + ", Title: " + books.getTitle() +  ", Author: " + books.getAuthor());</strong>
+    }
+}</pre>
+            </li>
+            <li>Сохраните изменения.</li>
+            <li>Щелкните правой кнопкой мыши узел проекта в окне &quot;Проекты&quot; и выберите команду &quot;Выполнить&quot; (F6). 
+                <p>После запуска приложения на экране должны отобразиться следующие выходные данные, демонстрирующие успешность компиляции. </p>
+                <img alt="снимок окна вывода" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/output.png" title="Окно вывода после запуска приложения"></li>
+        </ol>
+        <p>Таким образом, артефакты, созданные при помощи обработчика аннотаций Lombok, доступны из других компонентов программы. </p>
+
+
+        <h2><a name="nextsteps"></a>Что дальше? </h2>
+          <ul>
+              <li>Документация Java SE - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">Аннотации</a></li>
+              <li>Учебный курс Java SE - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">Аннотации</a> </li>
+            <!--<li><a href="annotations-custom.html">Part II: Using Own Custom Annotation Processor in the IDE</a></li>-->
+          </ul>
+          <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a><br style="clear:both;" />
+        </div>
+</body>
+</html>

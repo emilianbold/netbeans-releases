@@ -1,0 +1,308 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Suporte aos Processadores de Anotação no NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+</head>
+
+    <body>
+<!-- TODO: this tutorial apparently not working: see https://netbeans.org/bugzilla/show_bug.cgi?id=241476 -->
+        <h1>Suporte aos Processadores de Anotação no NetBeans IDE, Parte II: Utilizando Processadores Próprios de Anotação Personalizada no IDE </h1>
+        <p><em>Contribuição de Jesse Glick, redigido e mantido por Irina Filippova </em></p>
+        <div class="margin-around">
+        <div class="feedback-box margin-around float-left" style="margin-right:15px">
+        <p><b>Conteúdo</b></p>
+  
+        <ul class="toc">
+            <li><a href="annotations.html">Introdução</a></li>
+            <li><a href="annotations.html#map">Mapa das Opções javac e Comandos IDE</a> </li>
+          <li><a href="annotations-lombok.html">Utilizando Projeto Lombok para Anotações Personalizadas</a></li>
+            <li><strong>Utilizando Processadores Próprios de Anotação Personalizada no IDE</strong>
+              <ul>
+                <li><a href="#defineann">Definindo uma Anotação e Criando um Processador de Anotação</a></li>
+                <li><a href="#useprocessor">Usando o Processador de Anotação</a> </li>
+              </ul>
+            </li>
+            <li><a href="#seealso" title="Consulte Também"><strong>Consulte Também </strong></a></li>
+        </ul>
+		</div>
+	</div>
+	<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.0, 7.1, 7.2 e 7.3" class="stamp" src="../../../images_www/articles/71/netbeans-stamp-71-72-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.0, 7.1, 7.2 e 7.3" />
+        <p>Nesta seção do tutorial, você aprenderá a adicionar um processador de anotação personalizado de redação própria a um projeto no IDE. Este tutorial não ensina como criar um processador de anotação. Ele explica como adicioná-lo a um projeto NetBeans IDE. </p>
+        <p>A aplicação de amostra usada nesta seção foi criada por Jesse Glick e publicada como uma <a href="http://wiki.netbeans.org/FaqApt" target="_blank">entrada de FAQ</a> das releases anteriores do IDE.  </p>
+        <p>O processador de anotação usado como exemplo gera uma classe principal da classe anotada. A classe principal gerada também contém um método chamado usando a classe anotada. Siga as instruções abaixo sobre como criar e adicionar um processador personalizado de anotação em um projeto do IDE. </p>
+        <p style="clear:both"><b>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                  <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                  <td class="tbltd1">7.0, 7.1, 7.2, 7.3</td>
+                </tr>
+                <tr>
+                  <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                  <td class="tbltd1">versão 6 ou 7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://code.google.com/p/projectlombok/downloads/list">lombok.jar</a></td>
+                    <td class="tbltd1">v1.12.4 ou mais recente</td>
+                </tr>
+            </tbody>
+        </table>
+        
+    <h2><a name="defineann"></a>Definindo uma Anotação e Criando um Processador de Anotação</h2>
+    <p>Neste exercício, você criará um projeto de biblioteca de classes.</p>
+    <ol>
+        <li>Escolha Arquivo > Novo Projeto e selecione o tipo de projeto de Bibliotecas de Classes Java na categoria Java. Clique em Próximo.</li>
+        <li>Digite <strong><tt>AnnProcessor</tt></strong> como Nome do Projeto e especifique um local para o projeto. Clique em Finalizar.
+        <p>Quando você clica em Finalizar, o IDE cria o projeto de biblioteca de classes e lista o projeto na janela Projetos.</p>
+        </li>
+        <li>Clique com o botão direito do mouse no nó do projeto AnnProcessor na janela Projetos e escolha Propriedades.</li>
+        <li>Na categoria Códigos-fonte, confirme se JDK 6 ou JDK 7 está especificado como o formato de código-fonte/binário.</li>
+        <li>Selecione a guia Bibliotecas e confirme se a plataforma Java está definida como JDK 1.6 ou JDK 1.7. Clique em OK para fechar a janela Propriedades do Projeto.</li>
+    </ol>
+    
+    <p>Neste exercício, você criará dois pacotes Java e uma classe Java em cada um destes pacotes.</p>
+    <ol>
+        <li>Clique com o botão direito do mouse no nó Pacotes de Código-fonte sob o nó do projeto AnnProcessor e escolha Novo > Pacote Java.</li>
+        <li>Digite <strong><tt>ann</tt></strong> como Nome do Pacote e clique em Finalizar para criar o novo pacote Java.</li>
+        <li>Repita as duas etapas anteriores para criar um pacote Java chamado <strong><tt>proc</tt></strong>.
+            <p>Após ter criado os dois pacotes Java, a estrutura do projeto deverá ser similar à seguinte imagem.</p>
+            <img alt="tela da janela Projetos mostrando pacotes Java" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/packages.png" title="A estrutura do projeto para o processador de anotação."></li>
+        <li>Clique com o botão direito do mouse no pacote Java <tt>ann</tt> e selecione Nova > Classe Java.</li>
+        <li>Digite <strong><tt>Handleable</tt></strong> para o nome da classe. Clique em Finalizar.</li>
+        <li>Modifique o novo arquivo <tt>Handleable.java</tt> para fazer as alterações a seguir. Salve o arquivo.
+            <pre>package ann;
+
+public <strong>@interface</strong> Handleable {
+
+}</pre>
+
+            <p>É assim que as anotações são declaradas, de forma muito similar a uma declaração de interface. A diferença é que a palavra-chave <tt>interface</tt> precisa ser precedida por um sinal <tt>at</tt> (@). Essa anotação é denominada <tt>Handleable</tt>.</p>
+
+            <p class="notes"><strong>Informações Adicionais.</strong> Nas declarações de anotação, você também pode especificar parâmetros adicionais, por exemplo, quais tipos de elementos podem ser anotados, por exemplo, classes ou métodos. Você fazer isso adicionando <tt>@Target(value = {ElementType.TYPE})</tt> para classes e <tt>@Target(value = {ElementType.METHOD}).</tt> Isso, a declaração de anotação torna-se anotada com <em>meta-anotações</em>. </p>
+
+            <p>Agora precisamos adicionar um código para que o processador de anotação processe a anotação <tt>Handleable</tt>.<p>
+        </li>
+        <li>Clique com o botão direito do mouse no pacote <strong><tt>proc</tt></strong> e selecione Nova > Classe Java.</li>
+        <li>Digite <strong><tt>HandleableProcessor</tt></strong> para o Nome da Classe. Clique em Finalizar.</li>
+        <li>Modifique a classe <tt>HandleableProcessor.java</tt> para adicionar o código a seguir. Salve as alterações.
+            <p class="notes"><strong>Observação.</strong> O valor de <tt>@SupportedSourceVersion</tt> (em <strong>negrito</strong>) dependerá da versão do JDK que você está usando e será <tt>(SourceVersion.RELEASE_7)</tt> ou <tt>(SourceVersion.RELEASE_6)</tt>.</p>
+            <pre class="examplecode">package proc;
+
+import ann.Handleable;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Set;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+
+@SupportedAnnotationTypes("ann.Handleable")
+@SupportedSourceVersion(<strong>SourceVersion.RELEASE_7</strong>)
+public class HandleableProcessor extends AbstractProcessor {
+
+    /** public for ServiceLoader */
+    public HandleableProcessor() {
+    }
+
+    public boolean process(Set&lt;? extends TypeElement&gt; annotations,
+            RoundEnvironment roundEnv) {
+        for (Element e : roundEnv.getElementsAnnotatedWith(Handleable.class)) {
+            if (e.getKind() != ElementKind.FIELD) {
+                processingEnv.getMessager().printMessage(
+                        Diagnostic.Kind.WARNING,
+                        "Not a field", e);
+                continue;
+            }
+            String name = capitalize(e.getSimpleName().toString());
+            TypeElement clazz = (TypeElement) e.getEnclosingElement();
+            try {
+                JavaFileObject f = processingEnv.getFiler().
+                        createSourceFile(clazz.getQualifiedName() + "Extras");
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
+                        "Creating " + f.toUri());
+                Writer w = f.openWriter();
+                try {
+                    PrintWriter pw = new PrintWriter(w);
+                    pw.println("package "
+                            + clazz.getEnclosingElement().getSimpleName() + ";");
+                    pw.println("public abstract class "
+                            + clazz.getSimpleName() + "Extras {");
+                    pw.println("    protected " + clazz.getSimpleName()
+                            + "Extras() {}");
+                    TypeMirror type = e.asType();
+                    pw.println("    /** Handle something. */");
+                    pw.println("    protected final void handle" + name
+                            + "(" + type + " value) {");
+                    pw.println("        System.out.println(value);");
+                    pw.println("    }");
+                    pw.println("}");
+                    pw.flush();
+                } finally {
+                    w.close();
+                }
+            } catch (IOException x) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        x.toString());
+            }
+        }
+        return true;
+    }
+
+    private static String capitalize(String name) {
+        char[] c = name.toCharArray();
+        c[0] = Character.toUpperCase(c[0]);
+        return new String(c);
+    }
+}</pre>
+                <p>Vamos examinar mais de perto as partes principais que compõem o código para o processador de anotações (observe que, por conveniência, somente partes do código são fornecidas). </p>
+                <p>Primeiro, você especifica os tipos de anotações que o processador de anotações suporta (usando <tt>@SupportedAnnotationTypes</tt>) e a versão dos arquivos de código-fonte que são suportados (usando <tt>@SupportedSourceVersion</tt>); nesse caso, a versão é JDK 6: <br>
+                <pre class="examplecode">
+@SupportedAnnotationTypes("ann.Handleable")
+@SupportedSourceVersion(SourceVersion.RELEASE_6)</pre>
+                 <p>A seguir, declare uma classe pública para o processador que estenda a classe <tt>AbstractProcessor</tt> do pacote <tt>javax.annotation.processing</tt>. <tt>AbstractProcessor</tt> é a superclasse padrão para processadores de anotação concretos, que contém os métodos necessários para processar anotações.</p>
+                 <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {
+...
+}</pre>
+                 <p>Você agora precisa fornecer um construtor público para a classe.</p>
+                 <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {
+<strong>    public HandleableProcessor() {
+    }</strong>
+...
+
+}</pre>
+                 <p>A seguir, chame o método de <tt>process</tt>() da classe <tt>AbstractProcessor</tt> principal. Por meio deste método, as anotações disponíveis para processamento são fornecidas. Além disso, este método contém informações sobre o ciclo de processamento.</p>
+                
+            <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {<strong>
+   </strong>...
+<strong>     public boolean process(Set&lt;? extends TypeElement&gt; annotations,
+            RoundEnvironment roundEnv) {
+     ...
+     }
+</strong>
+}</pre>
+                 <p>A lógica do processador de anotação está contida dentro do método <tt>process()</tt> da classe <tt>AbstractProcessor</tt>. Observe que, por meio de <tt>AbstractProcessor</tt>, você também acessa a interface <tt>ProcessingEnvironment</tt>, que permite que os processadores de anotação usem diversos recursos úteis, como um Filer (um handler de arquivamento que permite que os processadores de anotação criem novos arquivos) e um Messager (um meio pelo qual os processadores de anotação reportam erros).</p>
+                 <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {<strong>
+   </strong>...
+     public boolean process(Set&lt;? extends TypeElement&gt; annotations,
+            RoundEnvironment roundEnv) {<br>
+            //For each element annotated with the Handleable annotation
+            <strong>for (Element e : roundEnv.getElementsAnnotatedWith(Handleable.class)) {
+<br>            </strong>//Check if the type of the annotated element is not a field. If yes, return a warning<strong>.<br>            if (e.getKind() != ElementKind.FIELD) {<br>                processingEnv.getMessager().printMessage(<br>                        Diagnostic.Kind.WARNING,<br>                        &quot;Not a field&quot;, e);<br>                continue;<br>            }
+            </strong>//Define the following variables: name and clazz<strong>.</strong><strong><br>            String name = capitalize(e.getSimpleName().toString());<br>            TypeElement clazz = (TypeElement) e.getEnclosingElement();<br>            </strong>//Generate a source file with a specified class name. <strong>
+            try {<br>                JavaFileObject f = processingEnv.getFiler().<br>                        createSourceFile(clazz.getQualifiedName() + &quot;Extras&quot;);<br>                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,<br>                        &quot;Creating &quot; + f.toUri());<br>                Writer w = f.openWriter();<br>                    </strong>//Add the content to the newly generated file<strong>.
+                    try {<br>                    PrintWriter pw = new PrintWriter(w);<br>                    pw.println(&quot;package &quot;<br>                            + clazz.getEnclosingElement().getSimpleName() + &quot;;&quot;);<br>                    pw.println(&quot;public abstract class &quot;<br>                            + clazz.getSimpleName() + &quot;Extras {&quot;);<br>                    pw.println(&quot;    protected &quot; + clazz.getSimpleName()<br>                            + &quot;Extras() {}&quot;);<br>                    TypeMirror type = e.asType();<br>                    pw.println(&quot;    /** Handle something. */&quot;);<br>                    pw.println(&quot;    protected final void handle&quot; + name<br>                            + &quot;(&quot; + type + &quot; value) {&quot;);<br>                    pw.println(&quot;        System.out.println(value);&quot;);<br>                    pw.println(&quot;    }&quot;);<br>                    pw.println(&quot;}&quot;);<br>                    pw.flush();<br>                } finally {<br>                    w.close();<br>                }<br>            } catch (IOException x) {<br>                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,<br>                        x.toString());<br>            }<br>        }</strong><br>        return true;
+    <strong> }</strong>
+...
+}</pre>
+                 <p>O último bloco neste código declara o método <tt>capitalize</tt> que é usado para colocar em maiúscula o nome do elemento anotado.</p>
+             <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {<strong>
+   </strong>...<strong>
+
+  private static String capitalize(String name) {<br>        char[] c = name.toCharArray();<br>        c[0] = Character.toUpperCase(c[0]);<br>        return new String(c);<br>    }
+</strong>}</pre>
+            </li>
+            <li>Compile o projeto clicando com o botão direito do mouse no projeto <tt>AnnProcessor</tt> e escolhendo Compilar.</li>
+        </ol>
+
+    
+        <h2><a name="useprocessor"></a>Usando o processador de anotação no IDE</h2>
+        <p>Nesta seção, você criará um projeto da Aplicação Java no qual o processador de anotações será usado.</p>
+        <ol>
+            <li>Escolha Arquivo > Novo Projeto e selecione o tipo de projeto da Aplicação Java na categoria Java. Clique em Próximo.</li>
+            <li>Na página Nome e Localização, digite <strong><tt>Demo</tt></strong> como Nome do Projeto e especifique o local do projeto.</li>
+            <li>Digite <strong><tt>demo.Main</tt></strong> no campo Criar Classe Principal. Clique em Finalizar.<br> <img alt="tela do assistente Novo Projeto" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-project-wizard.png" title="Criando projeto de Demonstração no assistente de Novo Projeto."></li>
+
+            <li>Abra a janela Propriedades do Projeto e confirme se JDK 6 ou JDK 7 está selecionado como o formato de código-fonte/binário no painel Códigos-fonte e se a plataforma Java está definida como JDK 1.6 ou JDK 1.7 no painel Bibliotecas.</li>
+            <li>Modifique a classe <tt>Main.java</tt> para adicionar o código a seguir. Salve as alterações.
+                <pre class="examplecode">package demo;
+
+<strong>import ann.Handleable;</strong>
+
+public class Main <strong>extends MainExtras</strong> {
+
+    <strong>@Handleable
+    private String stuff;</strong>
+
+    <strong>public static void main(String[] args) {
+        new Main().handleStuff("hello");
+    }</strong>
+}</pre>
+                <p>O código contém os seguintes elementos:</p>
+                <ul>
+                    <li>instrução de importação para o processador personalizado de anotação <tt>ann.Handleable</tt></li>
+                    <li>a classe pública <tt>Main</tt> que estende a classe <tt>MainExtras</tt> (<tt>MainExtras</tt> deve ser gerada por seu processador de anotação durante a compilação)</li>
+                    <li>um campo privado denominado <tt>stuff</tt> que é anotado com a anotação <tt>@Handleable</tt> </li>
+                    <li>o método <tt>main</tt> que chama o método <tt>handleStuff</tt>, declarado na classe <tt>MainExtras</tt> automaticamente gerada
+                        
+                        <p>Em nosso exemplo simples, o método <tt>handleStuff</tt> somente imprime o valor atual. Você pode modificar este método para executar outras tarefas.</p></li>
+                </ul>
+                <p>Após salvar o código <tt>Main.java</tt>, você verá que o IDE relata diversos erros de compilação. Isso acontece porque o processador de anotação ainda não foi adicionado no projeto.</p>
+            </li>
+            <li>Clique com o botão direito do mouse no nó do projeto <tt>Demo</tt>, na janela Projetos, escolha Propriedades e, em seguida, selecione a categoria Bibliotecas na janela Propriedades do Projeto.</li>
+            <li>Na guia Compilar, clique em Adicionar Projeto e localize o projeto <tt>AnnProcessor</tt>.<br> <img alt="tela da guia Compilar na categoria Bibliotecas da janela Propriedades do projeto" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-properties-compile.png" title="Guia Compilar na categoria Bibliotecas da janela Propriedades do projeto">
+                
+                <p>A guia Compilar corresponde a opção <tt>-classpath</tt> do <a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html#options" target="_blank">compilador Java</a>. Como o processador de anotação é um arquivo JAR único que contém a definição da anotação e o processador de anotação, ele deve ser adicionado na classpath do projeto, que é a guia Compilar.</p>
+            </li>
+            <li>Selecione a categoria Compilação na janela Propriedades do Projeto e marque as caixas de seleção Ativar Processamento de Anotações e Ativar Processamento de Anotações no Editor.</li>
+            <li>Especifique o processador de anotações a ser executado clicando no botão Adicionar ao lado da área de texto Processadores de Anotações e digitando <strong><tt>proc.HandleableProcessor</tt></strong> no campo FQN do Processador de Anotações. <br> <img alt="tela da caixa de diálogo FQN do Processador de Anotações" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-processor-fqn.png" title="Caixa de diálogo FQN do Processador de Anotação">
+                
+                <p>A categoria Compilação na janela Propriedades do Projeto deve ser semelhante à imagem a seguir.</p>
+                <img alt="tela da categoria Compilação na janela Propriedades do projeto" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-properties-compiling.png" title="Categoria compilação na janela Propriedades do projeto">
+                
+            </li>
+            <li>Clique em OK na janela Propriedades.
+        
+                <p class="notes"><strong>Observação.</strong> No arquivo <tt>Main.java</tt> talvez você ainda veja os erros de compilação. Isso é porque o IDE ainda não pode localizar o arquivo <tt>MainExtras.java</tt> que declara o método <tt>handleStuff</tt>. O arquivo <tt>MainExtras.java</tt> será gerado após você desenvolver o projeto Demo pela primeira vez. Se Compilar ao Salvar estiver ativado para seu projeto, o IDE compilou o projeto quando você salvou o <tt>Main.java</tt>.</p>
+            </li>
+            <li>Clique com o botão direito do mouse no projeto Demo e escolha Construir.
+            <p>Após construir o projeto, se você examinar os projetos na janela Projetos, poderá agora ver um novo nó <tt>Códigos-fonte Gerados</tt> com o arquivo <tt>demo/MainExtras.java</tt>.</p>
+            <img alt="tela da janela Projetos com Origens Geradas" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-generated-sources.png" title="Janela Projetos com Origens Geradas">
+
+            <p>Caso você revise o conteúdo do arquivo <tt>MainExtras.java</tt> gerado, verá que o processador de anotações gerou a classe <tt>MainExtras</tt> com o método <tt>handleStuff</tt>. O método <tt>handleStuff</tt> é aquele chamado a partir do arquivo <tt>Main.java</tt> anotado. </p>
+                <pre class="examplecode">package demo;
+public abstract class MainExtras {
+    protected MainExtras() {}
+    /** Handle something. */
+    protected final void handleStuff(java.lang.String value) {
+        System.out.println(value);
+    }
+}</pre>
+            </li>
+            <li>Clique com o botão direito do mouse no projeto Demonstração e escolha Executar.
+                <p>Quando você clicar em Executar, deverá ver o seguinte na janela Saída. O projeto Demonstração é compilado e imprime a mensagem.</p>
+            <img alt="tela da janela Projetos com Origens Geradas" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-run.png" title="Janela Projetos com Origens Geradas">
+          </ol>
+          <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20NetBeans%20IDE">Enviar Feedback neste Tutorial</a><br style="clear:both;" />
+        </div>
+        <h2><a id="seealso" name="seealso"></a>Consulte Também</h2>
+        <p>Consulte os seguintes recursos para obter mais informações sobre anotações em aplicações Java:</p>
+        <ul>
+          <li>Documentação Java SE - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">Anotações</a></li>
+          <li>Tutorial Java SE - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">Anotações</a> </li>
+          <li><a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html#processing" target="_blank">Compilador do Java: Opções de Processamento de Anotação</a> </li>
+          <li><a href="http://blogs.oracle.com/darcy/">Weblog de Joseph D. Darcy's Weblog</a> - dicas úteis sobre a especificação JSR-269 </li>
+    </ul>
+</body>
+</html>

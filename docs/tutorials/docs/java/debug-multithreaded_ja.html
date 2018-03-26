@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>NetBeans IDEでのマルチスレッド・アプリケーションのデバッグ</title>
+<link rel="stylesheet" href="../../../netbeans.css">
+<meta name="description" content="An guide to using the debugger in NetBeans IDE to debug a multi-threaded application."/>
+<meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+<body>
+<h1>NetBeans IDEでのマルチスレッド・アプリケーションのデバッグ</h1>
+
+<p>このドキュメントでは、NetBeans IDEの「デバッグ」ウィンドウを使用してマルチスレッド・アプリケーションをデバッグする方法を説明します。このチュートリアルでは、IDEを使用してアプリケーションのデッドロックを検出する方法も示します。</p>
+<p>「デバッグ」ウィンドウは、デバッグ・セッション、アプリケーション・スレッド、およびスレッド・コール・スタックに関する情報を1つのウィンドウにまとめることにより、デバッグ処理を簡素化します。「デバッグ」ウィンドウを使用すると、アプリケーション・スレッドの状態を簡単に確認したり、セッション内の任意のスレッドを一時停止および再開できます。
+</p>
+
+<p>このチュートリアルでは2つのサンプル・プロジェクトを使用し、「デバッグ」ウィンドウの操作方法を示します。このチュートリアルを完了するには、まずGalleryプロジェクトおよびDeadlockプロジェクトをダウンロードして開きます。
+</p>
+<p class="tips"><a href="debug-multithreaded-screencast.html">NetBeans IDEでのマルチスレッド・アプリケーションのデバッグのビデオ</a>をご覧ください。</p>
+
+    <p><b>目次</b></p>
+    <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+    <ul>
+        <li><a href="#Exercise_00">サンプル・プロジェクトのダウンロード</a>
+        <li><a href="#Exercise_10">サンプル・プロジェクトを開く</a>
+        <ul>
+            <li><a href="#Exercise_11">Galleryプロジェクトの実行</a></li>
+            <li><a href="#Exercise_12">Deadlockプロジェクトの実行</a></li>
+        </ul>
+        </li>
+        <li><a href="#Exercise_20">サンプル・プロジェクトのデバッグ</a>
+        <ul>
+            <li><a href="#Exercise_21">スレッドの一時停止</a></li>
+            <li><a href="#Exercise_22">スレッドの切替え</a></li>
+            <li><a href="#Exercise_23">デッドロックの検出</a></li>
+        </ul>
+
+
+        </li>
+        
+    </ul>
+
+    <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+    <table>
+    <tr>
+        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+        <th class="tblheader" scope="col">必須バージョン</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+        <td class="tbltd1">バージョン7または8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/debugging-samples.zip">GalleryプロジェクトおよびDeadlockプロジェクト</a></td>
+        <td class="tbltd1">&nbsp;</td>
+    </tr>
+    </table>
+
+    
+<a name="Exercise_00"></a>
+    <h2>サンプル・プロジェクトのダウンロード</h2>
+    <p>このチュートリアルで使用するサンプル・プロジェクトは、次の方法でダウンロードできます。</p>
+    <ul>
+        <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/debugging-samples.zip">終了したプロジェクトのZIPアーカイブ</a>をダウンロードします。</li>
+        <li>次の手順を実行して、プロジェクト・ソースをNetBeansのサンプルからチェックアウトします。
+            <ol>
+                <li>メイン・メニューから「チーム」>「Subversion」>「チェックアウト」を選択します。</li>
+                <li>「チェックアウト」ダイアログ・ボックスで次のリポジトリURLを入力します。<br /><tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br />「次」をクリックします。</li>
+                <li>「参照」をクリックして「リポジトリ・フォルダを参照」ダイアログ・ボックスを開きます。</li>
+                <li>ルート・ノードを展開し、<strong>samples/java/debugging-samples</strong>を選択します。「OK」をクリックします。</li>
+                <li>ソースのローカル・フォルダを指定します(ローカル・フォルダは空である必要があります)。</li>
+                <li>「終了」をクリックします。
+                    <p>「終了」をクリックすると、IDEではローカル・フォルダがSubversionリポジトリとして初期化され、プロジェクト・ソースがチェックアウトされます。</p>
+                </li>
+                <li>チェックアウトが完了するときに表示されるダイアログで、「プロジェクトを開く」をクリックします。</li>
+            </ol>
+
+            <p class="notes"><strong>注意:</strong>Subversionを使用したソースのチェックアウトの詳細は、<a href="../ide/subversion.html">NetBeans IDEでのSubversionガイド</a>の<a href="../ide/subversion.html#settingUp">Subversionの設定</a>の項を参照してください。</p>
+        </li>
+    </ul>
+
+
+
+<!-- ===================================================================================== -->
+<a name="Exercise_10"></a>
+<h2>プロジェクトを開く</h2>
+<p>このチュートリアルでは、2つのアプリケーションを使用して、マルチスレッド・アプリケーションのデバッグがIDEでどのようにサポートされているかを示します。この課題では、2つのプロジェクトをIDEで開いて、実行します。プロジェクトを実行したら、各プロジェクトのデバッグに進みます。</p>
+
+<div class="indent">
+    
+<a name="Exercise_11"></a>
+    <h3>Galleryプロジェクトの実行</h3>
+    <p>Galleryアプリケーションは、アニメーション・イメージを再生する単純なJava Swingアプリケーションです。このアプリケーションには、アニメーション・イメージを追加および除去するための2つのボタンがあります。この課題では、Galleryアプリケーションを実行します。</p>
+    <ol>
+        <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/debugging-samples.zip"><tt>debugging-samples.zip</tt></a>アーカイブをローカル・システムにダウンロードし、展開します。</li>
+        <li>メイン・メニューから「ファイル」>「開く」を選択します。</li>
+        <li>debugging-samplesディレクトリにあるGalleryプロジェクトを検索し、選択します。「開く」をクリックします。
+        <p>「開く」をクリックすると、IDEによりプロジェクトが「プロジェクト」ウィンドウで開かれ、表示されます。「プロジェクト」ウィンドウでプロジェクト・ノードを展開すると、このプロジェクトが単純なJava Swingアプリケーションであることがわかります。</p></li>
+        <li>プロジェクト・ノードを右クリックし、「実行」を選択してGalleryアプリケーションを起動します。</li>
+        <li>Galleryアプリケーションで、「詳細表示」をクリックしてイメージを追加したり、「簡易表示」をクリックしてイメージを除去したりします。<br /><img alt="Galleryアプリケーションのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-gallery-app.png" title="Galleryアプリケーション" />
+        </li>
+        <li>Galleryアプリケーションのウィンドウを閉じます。</li>
+    </ol>
+<p>Galleryプロジェクトは、このチュートリアルでデバッグする単純なマルチスレッド・アプリケーションです。</p>
+<a name="Exercise_12"></a>
+    <h3>Deadlockプロジェクトの実行</h3>
+    <p>Deadlockアプリケーションには、500000ミリ秒間実行されるスレッドを開始する<tt>main</tt>メソッドが含まれています。<tt>main</tt>メソッドは、2つのスレッドを開始し、これらが終了すると「出力」ウィンドウに出力します。</p>
+
+    <ol>
+        <li>メイン・メニューから「ファイル」>「開く」を選択します。</li>
+        <li>debugging-samplesディレクトリにあるDeadlockプロジェクトを検索し、選択します。「開く」をクリックします。
+        <p>「開く」をクリックすると、IDEによりプロジェクトが「プロジェクト」ウィンドウで開かれ、表示されます。「プロジェクト」ウィンドウでプロジェクト・ノードを展開すると、このプロジェクトが単純なJavaアプリケーションであることがわかります。</p></li>
+        <li>プロジェクト・ノードを右クリックし、「実行」を選択してDeadlockアプリケーションを起動します。
+        <p>「実行」をクリックすると、「出力」ウィンドウが開き、次の出力が表示されます。</p>
+        <pre class="examplecode">run:
+Application started
+MyThread2 successfully finished.
+MyThread1 successfully finished</pre></li>
+        <li>アプリケーションが通常どおり終了するのを待ちます(5分)。
+        <p>Deadlockアプリケーションが終了したら、次の内容が「出力」ウィンドウに表示されます。</p>
+        <pre class="examplecode">Main thread finished</pre>
+        </li>
+    </ol>
+    <p>Deadlockプロジェクトは、2つのスレッドを持つ単純なJavaアプリケーションです。アプリケーションをデバッグするとき、IDEがデッドロックの検出にどのように役立つかを示すため、デッドロックを作成します。</p>
+
+</div>
+
+<!-- ===================================================================================== -->
+<a name="Exercise_20"></a>
+<h2>サンプル・プロジェクトのデバッグ</h2>
+<p>Galleryプロジェクトは、アニメーション・イメージを表示する単純なJava Swingアプリケーションです。アプリケーションのボタンをクリックしてイメージを追加および除去します。「詳細表示」ボタンをクリックすると、イメージを表示してアニメーション化する新しいスレッドが開始されます。「簡易表示」ボタンをクリックすると、直近のスレッドが停止し、アニメーションが停止してイメージが除去されます。
+</p>
+
+<div class="indent">
+<a name="Exercise_21"></a>
+    <h3>スレッドの一時停止</h3>
+    <p>この課題では、Galleryアプリケーションのデバッグを開始してイメージをいくつか追加し、一部のアプリケーション・スレッドを開始します。デバッグ・セッションを開始すると、IDEの左ペインに「デバッグ」ウィンドウが表示されます。「デバッグ」ウィンドウには、セッション内のスレッドが一覧表示されます。</p>
+    
+    <ol>
+        <li>「プロジェクト」ウィンドウでGalleryプロジェクトを右クリックし、「デバッグ」を選択します。
+        <p>「デバッグ」をクリックすると、IDEでGalleryアプリケーションが起動し、デフォルトのデバッグ用ウィンドウが表示されます。IDEによって、メイン・ウィンドウの左側に「デバッグ」ウィンドウが自動的に表示され、「出力」ウィンドウに「デバッガ・コンソール」が表示されます。</p></li>
+        <li>Galleryアプリケーションで「詳細表示」を3回クリックし、アニメーション・イメージを表示する3つのスレッドを開始します。
+        <p>「デバッグ」ウィンドウでは、各アニメーションに対して新しいスレッドが開始されたことがわかります。</p>
+        <img alt="「デバッグ」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-start.png" title="「デバッグ」ウィンドウ" />
+        </li>
+        <li>「デバッグ」ウィンドウのスレッドの右にある「スレッドを一時停止」ボタンをクリックして、スレッドのうち2つを一時停止します。
+        <p>
+        スレッドが一時停止されると、スレッドのアイコンが新しい状態に変わります。スレッド・ノードを展開してスレッドのコール・スタックを表示できます。デバッグ・コマンドを使用してポップアップ・メニューを開くには、「デバッグ」ウィンドウの項目を右クリックします。</p>
+        <img alt="一時停止した2つのスレッドが表示された「デバッグ」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-start-suspend.png" title="一時停止した2つのスレッドが表示された「デバッグ」ウィンドウ" />
+        <p>Galleryアプリケーションでは、スレッドを一時停止すると、これらのスレッドのアニメーションが停止することがわかります。 </p></li>
+    </ol>
+
+    <p>「デバッグ」ウィンドウを使用すると、セッション内のスレッドの状態をすばやく表示および変更できます。デフォルトでは、「デバッグ」ウィンドウの右側に「再開」ボタンと「一時停止」ボタンが表示されます。「デバッグ」ウィンドウの下部にあるツールバーを使用すると、これらのボタンを非表示にし、「デバッグ」ウィンドウの表示をさらにカスタマイズすることができます。複数のデバッグ・セッションを実行している場合、「デバッグ」ウィンドウの上部にあるドロップダウン・リストを使用して、ウィンドウに表示するセッションを選択できます。</p>
+    <img alt="「デバッグ」ウィンドウのツールバーのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-window-toolbar.png" title="「デバッグ」ウィンドウのツールバー" /> <a name="Exercise_22"></a>
+    <h3>スレッドの切替え</h3>
+    <p>この課題では、アプリケーションをステップ実行した場合、および別のアプリケーション・スレッドがブレークポイントをヒットした場合の動作を説明します。この課題では、メソッド・ブレークポイントを設定し、アプリケーションのステップ実行を開始します。アプリケーションのステップ実行中に、ブレークポイントをヒットする新しいスレッドを開始します。これが発生すると、IDEでは「デバッグ」ウィンドウに通知が表示されます。次にスレッド間を切り替えます。</p>
+
+    <ol>
+        <li>Galleryアプリケーションのウィンドウで、ウィンドウに2つまたは3つのアニメーションしか表示されなくなるまで、「簡易表示」または「詳細表示」をクリックします。</li>
+        <li>IDEの「プロジェクト」ウィンドウで<tt>gallery</tt>パッケージを展開し、<tt>Gallery.java</tt>をダブルクリックして、ファイルをエディタで開きます。</li>
+        <li>「<tt>Gallery.java</tt>」で、175行目の左マージンをクリックすることで、<tt>run</tt>メソッドの最初にメソッド・ブレークポイントを挿入します。</li>
+        <li>Galleryアプリケーションで「詳細表示」をクリックして、メソッド・ブレークポイントをヒットする新しいスレッドを開始します。</li>
+        <li>「ステップ・オーバー」([F8])をクリックし、「プログラム・カウンタ」が行191に達するまでメソッドをステップ実行します。
+        <p>エディタのマージンにある「プログラム・カウンタ」に、メソッドのステップ実行での位置が示されます。</p></li>
+        <li>Galleryアプリケーションで「詳細表示」をクリックして、メソッド・ブレークポイントをヒットする新しいスレッドを開始します。
+        <p>新しいスレッドがメソッド・ブレークポイントをヒットすると、メソッドのステップ実行中に別のスレッドがブレークポイントをヒットしたことを通知する「新しいブレークポイントのヒット」通知が「デバッグ」ウィンドウに表示されます。</p>
+        <img alt="「新しいブレークポイントのヒット」通知のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-newbreakpointhit.png" title="「新しいブレークポイントのヒット」通知" />
+        <p>スレッドをステップ実行しているときに別のスレッドでブレークポイントがヒットされると、IDEでは、他のスレッドに切り替えるか、または現在のスレッドのステップ実行を続けるかを決めるオプションが提示されます。「新しいブレークポイントのヒット」通知の矢印ボタンをクリックすると、ブレークポイントに遭遇したスレッドに切り替えることができます。通知ウィンドウ内のスレッドを選択すると、いつでも新しいスレッドに切り替えることができます。現在のブレークポイント・スレッドをステップ実行すると、現在のスレッドが再開されますが、他のアプリケーション・スレッドの状態は変わりません。</p>
+
+        <p class="notes"><strong>注意:</strong>「デバッグ」ウィンドウでは、現在のスレッド(Thread_Jirka)がマージン内の緑色のバーで示されていることがわかります。ブレークポイント(Thread_Roman)のヒットによって通知が呼び出されたスレッドは黄色のバーで示され、ブレークポイントによって一時停止されたスレッドはスレッド・アイコンで示されます。</p>
+        <img alt="「新しいブレークポイントのヒット」通知のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-current-suspended.png" title="「新しいブレークポイントのヒット」通知" />
+        </li>
+        <li>「新しいブレークポイントのヒット」通知内の矢印をクリックして、現在のスレッドを新しいスレッド(Thread_Roman)に切り替えます。
+        <p>新しいスレッドに切り替えるとき、次のことを確認できます。</p>
+        <ul>
+            <li>新しい現在のスレッド(Thread_Roman)で、プログラム・カウンタが175行目に移動します。</li>
+            <li>191行目のマージンに一時停止しているスレッドを示す注釈が表示され、スレッド(Thread_Jirka)がその行で一時停止されていることを示します。</li>
+        </ul>
+        <img alt="デバッグ注釈が表示されたエディタのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-editor-suspendedannot.png" title="デバッグ注釈が表示されたエディタ" />
+        </li>
+        <li>「ステップ・オーバー」を何回かクリックして、新しい現在のスレッド(Thread_Roman)をステップ実行します。</li>
+        <li>一時停止しているスレッドを示す注釈をエディタのマージンで右クリックし、「現在のスレッドとして設定」>「Thread_Jirka」を選択して、元の一時停止されたスレッドに切り替えます。<br /><img alt="「現在のスレッドとして設定」ポップアップが表示されたエディタのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-editor-setcurrent.png" title="「現在のスレッドとして設定」ポップアップが表示されたエディタ" />
+        <p class="tips">または、「現在のスレッド・チューザ」([Alt]+[Shift]+[T]、Macの場合は[Ctrl]+[Shift]+[T])を呼び出して、任意のアプリケーション・スレッドに切り替えることもできます。</p>
+        <img alt="Galleryアプリケーションのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-thread-chooser.png" title="Galleryアプリケーション" /></li>
+    </ol>
+    <p>元のThread_Jirkaに切り替えると、Thread_Romanが一時停止されている行の横に、一時停止しているスレッドを示す注釈が表示されます。「デバッグ」ウィンドウの「再開」をクリックすると、Thread_Romanを再開できます。</p>
+    <img alt="デバッグ注釈が表示されたエディタのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debugging-editor-suspendedannot2.png" title="デバッグ注釈が表示されたエディタ" />
+
+    <p>「デバッグ」ウィンドウを使用すると、スレッドの状態を正確に表示して制御できます。デバッガは、デバッグのワークフローを簡素化し、デバッグ処理でデッドロックが作成されるのを防ぐために、アプリケーション・スレッドを管理します。この課題では、IDEでアプリケーションをデバッグする際に発生する次の動作を確認しました。</p>
+    <ul>
+        <li>スレッドがブレークポイントをヒットすると、ブレークポイント・スレッドのみが一時停止されます。</li>
+        <li>アプリケーションをステップ実行しているとき、他のアプリケーション・スレッドがブレークポイントをヒットしても現在のスレッドには影響しません。</li>
+        <li>ステップ実行は現在のスレッドのみを再開します。ステップが完了すると、現在のスレッドのみが一時停止されます。</li>
+    </ul>
+    <p>Galleryアプリケーションを終了できます。次の課題では、Deadlockアプリケーションをデバッグし、IDEを使用してデッドロックの検出に役立てます。</p>
+    
+<a name="Exercise_23"></a>
+    <h3>デッドロックの検出</h3>
+    <p>IDEは、一時停止されたすべてのスレッドに対してデッドロックを自動的に検索して、潜在的なデッドロックの状況を特定するのに役立ちます。デッドロックが検出されると、IDEでは「デバッグ」ウィンドウに通知が表示され、関連するスレッドが特定されます。</p>
+
+    <p>IDEのデッドロック検出を示すために、デバッガにあるサンプルのDeadlockプロジェクトを実行し、デッドロックの状況を作成します。</p>
+
+    <ol>
+        <li><tt>myapplication</tt>パッケージを展開し、ソース・エディタで<tt>Thread1.java</tt>と<tt>Thread2.java</tt>を開きます。</li>
+        <li><tt>Thread1.java</tt>の20行目および<tt>Thread2.java</tt>の20行目にブレークポイントを設定します。
+        <p>ブレークポイントを設定するには、ブレークポイントを設定する行の横で、ソース・エディタ内のマージンをクリックします。ブレークポイント注釈が、行の横の左マージンに表示されます。「ブレークポイント」ウィンドウ([Alt]+[Shift]+[5]、Macの場合は[Ctrl]+[Shift]+[5])を開くと、2つのブレークポイントが設定され、有効になっていることがわかります。</p>
+        <img alt="20行目にブレークポイントが設定されていることを示すエディタのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debug-deadlock-setbkpt.png" title="20行目にブレークポイントが設定されていることを示すエディタ" />
+        </li>
+        <li>「プロジェクト」ウィンドウでDeadlockプロジェクトを右クリックし、「デバッグ」を選択します。
+        <p><tt>main</tt>メソッドによって2つのスレッドが実行され、これらのスレッドは、ブレークポイントの1つで両方とも一時停止されます。「デバッグ」ウィンドウでは、スレッドがブレークポイントによって一時停止されたことがわかります。</p></li>
+        <li>「デバッグ」ウィンドウで、「デバッグ」ウィンドウ内の一時停止されたスレッドの右にある「再開」ボタンをクリックすることによって、一時停止されたスレッド(<tt>MyThread1</tt>および<tt>MyThread2</tt>)を再開します。<br /><img alt="「デバッグ」ウィンドウでの一時停止されたスレッドの再開を示すスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debug-deadlock-resume.png" title="「デバッグ」ウィンドウでの一時停止されたスレッドの再開" />
+        <p><tt>MyThread1</tt>スレッドおよび<tt>MyThread2</tt>スレッドを再開すると、デッドロックの状況が作成されます。</p>
+        <li>メイン・メニューから「デバッグ」-「デッドロックを確認」を選択して、一時停止されたスレッドにデッドロックがないかを確認します。<br /><img alt="「デバッグ」ウィンドウでの一時停止されたスレッドの再開を示すスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/debug-multithread/debug-deadlock-detected.png" title="「デバッグ」ウィンドウでの一時停止されたスレッドの再開" />
+        <p>アプリケーションのデッドロックを確認してデッドロックを検出した場合、デッドロックについて知らせるメッセージが「デバッグ」ウィンドウに表示されます。デッドロックのあるスレッドは、「デバッグ」ウィンドウの左マージンに赤色のバーで示されます。</p>
+        </li>
+    </ol>
+
+
+</div>
+
+
+<!-- ===================================================================================== -->
+<p>このチュートリアルでは、IDEのデバッグ機能の一部に関する基本を紹介しました。「デバッグ」ウィンドウを使用すると、アプリケーションをデバッグするときにスレッドを簡単に一時停止および再開できます。これは、マルチスレッド・アプリケーションをデバッグする際に特に便利です。
+</p>
+
+
+<!-- End Content Area -->
+
+    <br>
+    <div class="feedback-box"><a href="https://netbeans.org/about/contact_form.html?to=3&amp;subject=Feedback:%20Debugging%20Multithreaded%20Applications">このチュートリアルに関するご意見をお寄せください</a></div>
+    <br style="clear:both;" />
+    <!-- ======================================================================================= -->
+    <h2><a name="nextsteps"></a>関連項目</h2>
+    <p>NetBeans IDEでのJavaアプリケーションの開発およびテストの詳細は、次のリソースを参照してください。</p>
+    <ul>
+        <li>デモ: <a href="debug-multithreaded-screencast.html">NetBeans IDEでのマルチスレッド・アプリケーションのデバッグ</a></li>
+        <li>デモ: <a href="debug-stepinto-screencast.html">NetBeansデバッガでの視覚的なステップ・イン・アクション</a></li>
+        <li>デモ: <a href="debug-deadlock-screencast.html">NetBeansデバッガを使用したデッドロックの検出</a></li>
+        <li>デモ: <a href="debug-evaluator-screencast.html">NetBeansデバッガのコード・スニペット評価の使用</a></li>
+        <li><a href="../../trails/java-se.html">基本的なIDEおよびJavaプログラミングの学習</a></li>
+        <li><a href="junit-intro.html">JUnitテストの作成</a></li>
+        <li><a href="profiler-intro.html">Javaアプリケーションのプロファイリング入門</a></li>
+    </ul>
+    </body>
+</html>

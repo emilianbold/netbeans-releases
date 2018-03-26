@@ -1,0 +1,329 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Интерналионализация формы графического интерфейса - учебный курс по IDE NetBeans</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="Tutorial - Internationalization of GUI Form in NetBeans IDE">
+      <link rel="stylesheet" href="../../../netbeans.css">
+      <meta name="author" content="Jana Maleckova, Marek Grummich">
+      <meta name="description" content="This tutorial shows you how to set up internationalization for a single form and for a whole project." >
+   </head>
+   <body>
+      <h1>Интернационализация формы графического интерфейса</h1>
+      <p>В следующем практическом руководстве приведены пошаговые инструкции по интернационализации в IDE NetBeans. Мы настроим интернационализацию для одной формы и затем разработаем эту форму. После этого мы интернационализируем весь пакет, содержащий несколько форм в различных пакетах. Приложения можно интернационализировать, устанавливая автоматическую интернационализацию либо используя специальный мастер.</p>
+      <p class="align-center"><b>Ожидаемая длительность: 30 минут</b></p>
+      
+         <p><strong>Содержание</strong></p>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.0 или более поздней версии" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.0 или более поздней версии">
+    <ul class="toc">
+            <li><a href="#about">Принцип интернационализации</a></li>
+            <li><a href="#Exercise_1">Как настроить автоматическую интернационализацию на этапе проектирования</a></li>
+            <li><a href="#Exercise_2">Интернационализация всего проекта</a></li>
+            <li><a href="#Exercise_3">Интернационализация одной формы</a></li>
+            <li><a href="#nextsteps">Дополнительные сведения</a></li>
+   </ul>
+         
+<p><b>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                <th class="tblheader" scope="col">Требуемая версия</th>
+            </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">версия 7.0 и более поздние </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 6, 7 или 8 </td>
+                </tr>
+        </tbody>
+    </table>
+      <h2 class="tutorial"><a name="about"></a>Принцип интернационализации</h2>
+      <p class="tutorial">Интернационализация делает возможной адаптацию приложений для различных языков и регионов без внесения технических изменений или перекомпиляции. В интернационализированных приложениях текстовые элементы, такие как сообщения о состоянии и названия элементов графического интерфейса, хранятся вне исходного кода и извлекаются динамически вместо жесткого определения их в программе.</p>
+      
+      <p class="tutorial">Интернационализированные строки обычно хранятся в файлах свойств, в форме пар &quot;ключ-значение&quot;. Ключ &ndash; это идентификатор, используемый программой для извлечения текста, а значение &ndash; это сам текст. Мы создаем один файл свойств для каждой локали (или языка), на которые планируется перевести программу. Ключи идентичны во всех локалях &ndash; различаются только строки. </p>
+      <p class="tutorial">Среда IDE предоставляет средства для выполнения всех нижеперечисленных действий:</p>
+      <ul>
+         <li>вставки интернационализированных строк при создании формы графического интерфейса или программы Javа;</li>
+         <li>замены всех жестко определенных строк в отдельном файле или группе файлов на интернационализированные строки;</li>
+      </ul>
+      <h2><a name="Exercise_1"></a>Интернационализации формы графического интерфейса на этапе разработки </h2>
+      <p>В этом упражнении мы откроем демонстрационную версию проекта приложения Java, содержащую хорошо известный диалог поиска, созданный с помощью конструктора графического интерфейса. Далее мы переключимся на автоматическую интернационализацию для формы FindDialog.java.  Чтобы проверить нашу интернационализированную форму графического интерфейса, мы добавим новую локаль к файлу свойств и запустим форму в локали, отличной от локали по умолчанию. </p>
+      <div class="indent">
+         <h3 class="tutorial">Открытие примера проекта</h3>
+         <ol>
+            <li> Загрузите проект <a href="https://netbeans.org/files/documents/4/770/InternationalizeDemo.zip" target="_blank">InternationalizeDemo.zip</a> в любую папку на своем компьютере и разархивируйте его. </li>
+            <li>Выберите 'Файл > Открыть проект', перейдите к проекту <tt>InternationalizeDemo</tt>, извлеченному на предыдущем этапе, и нажмите 'Открыть'. Папка проекта может находиться в содержащей папке, также именуемой <tt>InternationalizeDemo</tt>.</li>
+            <li>Разверните Source Packages (&quot;Пакеты исходного кода&quot;) &gt; Demo (&quot;Демонстрационная версия&quot;) и дважды щелкните <tt>FindDialog.java</tt>.  Образец формы откроется в конструкторе графического интерфейса. 
+               <p class="align-center"> <img alt="Диалоговое окно &amp;quot;Найти&amp;quot;" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/finddialog_ai18n.png"> 
+               </p>
+              
+            </li>
+         </ol>
+         <h3 class="tutorial">Включение автоматической интернационализации</h3>
+                  <ol>
+                     <li>Выберите корневой узел в окне 'Навигатор' (с именем <tt>Form FindDialog</tt>). 
+                       <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/navigator.png" border="1"></p></li>
+                     <li>В окне Properties (&quot;Свойства&quot;) установите флажок для свойства Automatic Internationalization (&quot;Автоматическая интернационализация&quot;).
+					   
+                         <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/properties.png" border="1"></p>
+						 
+                      </li>
+                    <li> Нажмите кнопку Upgrade (&quot;Обновить&quot;) в диалоговом окне GUI Form Format Upgrade (&quot;Обновление формата формы графического интерфейса&quot;). 
+						<p>Если флажок установлен, среда IDE создаст файл <tt>Bundle.properties</tt> в пакете <tt>demo</tt>, поскольку он установлен в свойстве <tt>Properties Bundle File</tt> (&quot;Файл набора свойств&quot;).  
+                        </p>
+                        <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/bundle_new.png"></p>
+						<p>Если нужно, чтобы файл <tt>Bundle.properties</tt> находился в другом месте, можно нажать расположенную справа кнопку обзора (...) и выбрать местоположение, либо ввести путь непосредственно в текстовом поле свойства.</p>
+					 
+                     </li>
+                     <li>В окне 'Проекты' дважды щелкните узел <tt>Bundle.properties</tt> в окне 'Проекты' или щелкните правой кнопкой мыши узел и выберите 'Правка'.
+                        <p>Файл свойств откроется в редакторе исходного кода. Как можно увидеть, созданы все необходимые ключи и значения для формы <tt>FindDialog.java</tt>.  (Имя каждого из ключей является производным от имени файла формы и имени переменной компонента.  Например, ключ <tt>FindDialog.jLabel1.text</tt> создан из компонента с именем переменной <tt>jLabel1</tt>, который помещен в файл формы <tt>FindDialog</tt>. Значение <tt>jLabel1</tt> представляет в данном примере свойство Text (&quot;Текст&quot;) компонента.</p>
+               </li>
+			   <li>Закройте файл <tt>Bundle.properties</tt>. </li></ol>
+         <h3 class="tutorial">Интернационализация отдельных компонентов графического интерфейса</h3>
+         <p>Теперь мы используем конструктор графического интерфейса, чтобы ввести в форму интернационализированные строки для компонентов JLabel и JButton. </p> 
+         <ol>
+            
+			<li>Выберите нужный компонент графического интерфейса (т. е. <tt>jLabel1</tt>) в области конструирования.</li>
+            <li>В окне Properties (&quot;Свойства&quot;) нажмите кнопку многоточия (...) для свойства Text.
+            <p class="note"><b>Примечание.</b> Также можно интернационализовать другие свойства, содержащие строковые значения, такие как Mnemonic, Accessible Name, Accessible Descriptor и ToolTip.</p></li>
+            <li>Редактор свойств переключен в режим набора ресурсов. Убедитесь, что в поле Bundle Name (&quot;Имя набора&quot;) введено <tt>demo.Bundle</tt>, а поле Key (&quot;Ключ&quot;) содержит строку <tt>FindDialog.jLabel1.text</tt></li>
+            <li>Введите <tt>Find What:</tt> в поле Value (&quot;Значение&quot;). </li>
+            <li>Нажмите кнопку &quot;ОК&quot;.</li>
+         </ol>
+         <p>Повторите вышеприведенные действия для всех компонентов, чтобы форма выглядела подобно следующей иллюстрации:</p>
+        
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_new.png" rel="lytebox" title="интернационализированная форма"> <img alt="интернационализированная форма" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_new_small.png"></a></p>
+         
+		  <p class="note"><b>Примечание.</b> Шаги 1-5 могут быть выполнены проще и быстрее: просто щелкните дважды <tt>jLabel1</tt> в представлении конструктора, измените текст с <tt>jLabel1</tt> на <tt>Find What:</tt> и нажмите Enter. Результат будет тот же, что и от вышеприведенных действий.</p>
+		
+		 <p>Чтобы придать компонентам одинаковую ширину, выполните следующие действия:</p>
+		 <ol>
+		   <li>Удерживая клавишу Control, щелкните все восемь компонентов jCheckBox в форме, чтобы выбрать их.</li>
+		   <li>После установки флажков для всех jCheckBox щелкните правой кнопкой мыши любой из них и выберите 'Идентичный размер' > 'Идентичная ширина' в контекстном меню.</li>
+		   <li>Примените действия 1-2 к трем компонентам jButton.</li>
+		 </ol>
+        
+         <a name="newlocale"></a>
+		 
+		
+
+         <h3 class="tutorial">Добавление новой локали </h3>
+         <ol>
+            <li>Выберите корневой узел в окне 'Навигатор' (узел <tt>Form FindDialog</tt>).</li>
+            <li>В окне Properties (&quot;Свойства&quot;) нажмите кнопку многоточия (...) для свойства Design Locale (&quot;Локаль проекта&quot;).</li>
+            <li>В диалоговом окне 'Новая локаль' выберите <tt>es_ES</tt> в поле со списком <tt>Предопределенные локали:</tt>.</li>
+            <li>Нажмите кнопку &quot;ОК&quot;.
+            <p>Новая локаль появится под узлом <tt>Bundle.properties</tt>, как показано ниже:</p>
+            <p class="align-center"><img alt="Файл свойств с несколькими локалями" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/addlocale_new.png"></p> </li>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши <tt>Bundle.properties</tt> и выберите 'Открыть'.</li>
+            <li>Переведите отдельные сообщения в соответствующем столбце таблицы на новый (например, испанский) язык, как показано ниже: 
+              <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-automatic-i18n/bundles_new.png" rel="lytebox" title="Редактор свойств с несколькими локалями"> <img alt="Редактор свойств с несколькими локалями" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/bundles_new_small.png"></a></p>
+           </li>
+			<li>Нажмите Ctrl+S для сохранения изменений.</li>
+			<li>Выберите вкладку <tt>FindDialog.java</tt> для отображения интернационализируемой формы.</li>
+            <li>Щелкните правой кнопкой мыши корневой узел в окне 'Навигатор' и выберите 'Перезагрузить форму' (или нажмите Ctrl+R).</li>
+               <li>Выберите Save (&quot;Сохранить&quot;) в отобразившемся диалоговом окне Question (&quot;Вопрос&quot;). <br>Форма будет открыта заново и в проект будет загружена испанская локаль, как показано ниже: 
+            
+			<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_es_new.png" rel="lytebox" title="Область конструирования, в которой отображаются сообщения на испанском языке"> <img alt="Область конструирования, в которой отображаются сообщения на испанском языке" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_es_new_small.png"></a></p>
+            </li>
+        </ol>
+         <h3 class="tutorial">Тестирование локали, отличной от локали по умолчанию</h3>
+         <ol>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши проект InternationalizeDemo и выберите 'Свойства'.</li>
+            <li>На панели Categories (&quot;Категории&quot;) выберите узел Run (&quot;Запуск&quot;).</li>
+            <li>Введите <tt>-Duser.language=es -Duser.country=ES</tt> в поле VM Options (&quot;Параметры ВМ&quot;).
+              <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/prjproperties.png" rel="lytebox" title="Диалоговое окно свойств"> <img alt="Диалоговое окно свойств" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/prjproperties_small.png"></a></p>
+            </li>
+            <li>Нажмите кнопку &quot;ОК&quot;.</li>
+            <li>Щелкните правой кнопкой мыши проект InternationalizeDemo и выберите Run (&quot;Запустить&quot;).
+               <p>Среда IDE запустит диалоговое окно <tt>FindDialog</tt> на испанском, как показано ниже.</p>
+			  
+			   <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-automatic-i18n/run.png" rel="lytebox" title="Диалоговое окно на испанском языке"> <img alt="Диалоговое окно на испанском языке" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/run_small.png"></a></p>
+           </li>
+         </ol>
+      </div>
+      <h2><a name="Exercise_2"></a>Интернационализация всего проекта</h2>
+      <p>Как правило, в локаль по умолчанию входит несколько файлов, которые необходимо согласовать для перевода на другие языки. Мастер интернационализации является прекрасным средством для этой задачи, поскольку он позволяет интернационализировать несколько файлов одновременно. Мы продемонстрируем эту функцию с помощью проекта примеров форм графического интерфейса, который содержит форму, созданную в руководстве <a href="quickstart-gui.html">Разработка графического интерфейса Swing</a>. </p>
+      <div class="indent">
+         <h3 class="tutorial"> Создание примера проекта </h3>
+                  <ol>
+                     <li>Выберите File (&quot;Файл&quot;) &gt; New Project (&quot;Создать проект&quot;) или щелкните значок New Project на панели инструментов среды IDE. </li>
+                     <li>На панели Categories (&quot;Категории&quot;) выберите Samples (&quot;Примеры&quot;) &gt; узел Javа. На панели Projects (&quot;Проекты&quot;) выберите GUI Form Examples (&quot;Образцы формы графического интерфейса&quot;).  Нажмите кнопку &quot;Далее&quot;.</li>
+                     <li>В поле 'Имя проекта' введите <tt>GUIFormExamples</tt> и укажите местоположение проекта (например, <tt>/space/projects</tt>).</li>
+                     <li>Нажмите кнопку &quot;Завершить&quot;.</li>
+                  </ol>
+
+<p class="align-center"><img alt="Пример проекта формы" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/formexamples.png"></p>
+
+         <h3 class="tutorial"> Подготовка файла свойств </h3>
+                  <ol>
+                     <li>Выберите File (&quot;Файл&quot;) &gt; New File (&quot;Создать файл&quot;) или щелкните значок New Project на панели инструментов среды IDE.</li>
+                     <li>На панели Categories (&quot;Категории&quot;) выберите узел Other (&quot;Прочие&quot;) и на панели File Types (&quot;Типы файлов&quot;) выберите Properties File (&quot;Файл свойств&quot;).  Нажмите кнопку &quot;Далее&quot;.</li>
+                     <li> Введите <tt>ContactEditor</tt> в поле File Name (&quot;Имя файла&quot;).</li>
+					 <li>Щелкните Browse (&quot;Обзор&quot;) и укажите папку <tt>GUIFormExamples/src/examples</tt> как местоположение файла в открывшемся диалоговом окне просмотра папок.</li>
+                     <li>Щелкните Select Folder (&quot;Выбрать папку&quot;).</li>
+					 <li>Нажмите кнопку &quot;Завершить&quot;.
+                        <p>Среда IDE создаст файл <tt>ContactEditor.properties</tt> и откроет его в редакторе исходного кода. </p>
+                        <p>Повторите предшествующие действия для создания нового файла <tt>Antenna.properties</tt>. </p>
+                     </li>
+                  </ol>
+
+<p class="align-center"> <img alt="проект с файлами свойств" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/ceprjprops.png"> </p>
+
+         <h3 class="tutorial">Вызов мастера интернационализации</h3>
+         <ol>
+            <li>В главном меню выберите Tools (&quot;Средства&quot;) &gt; Internationalization (&quot;Интернационализация&quot;) &gt; Internationalization Wizard (&quot;Мастер интернационализации&quot;). </li>
+			<li>На первой странице мастера выберите Add Source(s) (&quot;Добавить источник(и)&quot;).</li>
+			<li>В диалоговом окне выбора источников разверните узлы <tt>Source Packages</tt> (&quot;Пакеты исходного кода&quot;) &gt; <tt>examples</tt> (&quot;примеры&quot;) и, удерживая клавишу Сontrol, щелкните файлы <tt>Antenna.java</tt>, <tt>ContactEditor.java</tt> и <tt>Find.java</tt>, чтобы выбрать их.</li>
+			<li>Нажмите кнопку &quot;ОК&quot;. 
+			<p>Файлы исходного кода появятся на первой странице мастера, как показано ниже:</p>
+			<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardone.png" rel="lytebox" title="Мастер интернационализации"> <img alt="Мастер интернационализации" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardone_small.png"></a></p></li>
+            <li>Для демонстрации выберите <tt>examples.Find</tt> и нажмите кнопку Remove Source(s) (&quot;Удалить источник(и)&quot;).</li>
+            <li>Нажмите кнопку &quot;Далее&quot;. </li>
+            <li>Убедитесь, что мастер интернационализации предлагает верные файлы свойств: <tt>examples.Antenna</tt> и <tt>examples.ContactEditor</tt>.  Если это не так, используйте кнопку Select Resource (&quot;Выбор ресурса&quot;) для выбора верного файла свойств.
+              <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardtwo.png" rel="lytebox" title="Страница 2 мастера интернационализации"> <img alt="Страница 2 мастера интернационализации" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardtwo_small.png"></a></p>
+            </li>
+            <li>Нажмите кнопку &quot;Далее&quot;. </li>
+			<li>Пропустите страницу 3 мастера, поскольку мы не будем заниматься здесь созданием полей и изменением дополнительных значений и нажмите кнопку Next (&quot;Далее&quot;).</li>
+            <li>Все жестко определенные строки отображаются на последнем этапе работы с мастером интернационализации. Здесь можно определить, какие из них будут исходить из файла свойств (используйте флажок). Можно также осуществлять дополнительную настройку отдельных ключей, значений и формата замененных строк, нажимая на кнопку многоточия (...) для нужной строки. 
+               <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardthree.png" rel="lytebox" title="Страница 4 мастера интернационализации"> <img alt="Страница 4 мастера интернационализации" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardthree_small.png"></a></p>
+            </li>
+            <li>Нажмите кнопку &quot;Завершить&quot;.
+               <p>Теперь интернационализация исходного кода завершена, и можно <a href="#newlocale">добавлять</a> и <a href="#testlocale">тестировать</a> локали, как было показано ранее. </p>
+            </li>
+         </ol>
+      </div>
+      <h2><a name="Exercise_3"></a>Интернационализация одной формы</h2>
+      <p>Самый простой способ интернационализации формы графического интерфейса &ndash;  использование автоматических функций I18n.  Но если пакет обновлений не установлен, либо если нужно интернационализировать код, созданный не в редакторе форм, то следует использовать окно Internationalize (&quot;Интернационализировать&quot;). (Эта функция доступна для всех файлов <tt>.java</tt>, а не только для файлов, созданных в редакторе форм).  Следующий пример использует окно Internationalization (&quot;Интернационализация&quot;), входящее в установку по умолчанию среды IDE NetВeans.</p>
+      <p>В этом последнем упражнении мы снова используем проект примеров форм графического интерфейса и интернационализируем форму Find.java, исключенную в предыдущем упражнении. Мы вызовем диалоговое окно Internationalize (&quot;Интернационализировать&quot;), чтобы заменить все жестко заданные строки в данном файле. Наконец, мы рассмотрим краткую демонстрацию того, как вставить интернационализированную строку в исходный код при написании программы.</p>
+      <div class="indent">
+         <h3 class="tutorial"> Работа с диалоговым окном 'Интернационализация' </h3>
+         <ol>
+            <li>В окне 'Проекты' выберите <tt>Find.java</tt>, затем выберите 'Сервис > Интернационализация > Интернационализировать' в главном меню. 
+               <p>В среде IDE отображается диалоговое окно Internationalization (&quot;Интернационализация&quot;), в которое автоматически вставляется первая жестко определенная строка из исходного кода <tt>Find.java</tt>. </p>
+            </li>
+            <li>Нажмите кнопку Select (&quot;Выбор&quot;), чтобы выбрать определенный файл свойств или создать новый. </li>
+			<li>В диалоговом окне 'Выбор пакета ресурсов' в поле 'Имя файла' введите <tt>Find.properties</tt>, нажмите 'Создать' и ОК.</li>
+            <li>Формат замененной строки, ключа, значения или комментария при необходимости можно заменить. Мы просто оставим значения по умолчанию.</li>
+            <li>Нажмите кнопку Replace (&quot;Замена&quot;), чтобы подтвердить изменение, и переместите фокус на следующую жестко определенную строку. 
+               <p>Если жестко определенная строка не требует замены, нажмите кнопку Skip (&quot;Пропуск&quot;).</p>
+               
+			   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18ndialog.png" rel="lytebox" title="Диалоговое окно &apos;Интернационализация&apos;"> <img alt="Диалоговое окно &apos;Интернационализация&apos;" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18ndialog_small.png"></a></p>
+               
+            </li>
+         </ol>
+         <h3 class="tutorial"> Вставка единственной интернационализированной строки </h3>
+         <ol>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши <tt>Find.java</tt> и выберите 'Правка'.
+               <p>Среда IDE откроет файл <tt>Find.java</tt> в редакторе исходного кода. </p>
+            </li>
+            <li>Найдите в исходном коде главный метод. </li>
+            <li>Вставьте следующую строку, выделенную жирным шрифтом, в главный метод: 
+               <pre class="examplecode">    public static void main(String args[]) {
+			   /* Set the Nimbus look and feel */
+			   //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot; Look and feel setting code (optional) &quot;&gt;
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            javax.swing.UIManager.LookAndFeelInfo[] installedLookAndFeels=javax.swing.UIManager.getInstalledLookAndFeels();
+			for (int idx=0; idx&lt;installedLookAndFeels.length; idx++)
+			if (&quot;Nimbus&quot;.equals(installedLookAndFeels[idx].getName())) {
+			    javax.swing.UIManager.setLookAndFeel(installedLookAndFeels[idx].getClassName());
+				break;
+			}
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //&lt;/editor-fold&gt;
+        <b>System.out.println();</b>
+		/* Create and display the form */ 
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Find().setVisible(true);
+            }
+        });
+               }</pre>
+            </li>
+			<li>Поместите курсор в скобках выражения <tt>System.out.println();</tt> и вставьте интернационализированную строку как параметр.</li>
+            <li>Нажмите Ctrl-Shift-J для вызова диалогового окна Insert Internationalized String (&quot;Вставить интернационализированную строку&quot;) (как вариант, можно выбрать Tools (&quot;Сервис&quot;) &gt; Internationalization (&quot;Интернационализация&quot;) &gt; Insert Internationalized String (&quot;Вставить интернационализированную строку&quot;) из главного меню).</li>
+			
+            <li>Для ввода имени набора нажмите кнопку Select (&quot;Выбор&quot;), выберите <tt>Source Packages (&quot;Исходные пакеты&quot;) &gt; папку</tt> примеров и введите <tt>Find</tt> в качестве имя набора в текстовое поле File Name (&quot;Имя файла&quot;).  После этого нажмите кнопку OK.  <br>В поле 'Имя пакета' в диалоговом окне 'Вставка интернационализированной строки' отображается <tt>examples.Find</tt>.</li>
+            <li>Введите <tt>Start</tt> в раскрывающееся окно Key (&quot;Ключ&quot;) и <tt>Start Find Dialog</tt> в поле Value (&quot;Значение&quot;).  После этого нажмите кнопку OK.  
+               <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/insi18nstring.png"></p>
+            </li>
+            <li>Среда IDE вставит интернационализированную строку:
+               <pre class="examplecode">    public static void main(String args[]) {
+			   /* Set the Nimbus look and feel */
+			   //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot; Look and feel setting code (optional) &quot;&gt;
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            javax.swing.UIManager.LookAndFeelInfo[] installedLookAndFeels=javax.swing.UIManager.getInstalledLookAndFeels();
+			for (int idx=0; idx&lt;installedLookAndFeels.length; idx++)
+			if (&quot;Nimbus&quot;.equals(installedLookAndFeels[idx].getName())) {
+			    javax.swing.UIManager.setLookAndFeel(installedLookAndFeels[idx].getClassName());
+				break;
+			}
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //&lt;/editor-fold&gt;
+<b>        System.out.println(java.util.ResourceBundle.getBundle(&quot;examples/Find&quot;).getString(&quot;Start&quot;));</b>
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Find().setVisible(true);
+                }
+            });
+               }</pre>
+               
+            </li>
+         </ol>
+      </div>
+	  <br>
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:Internationalizing%20a%20GUI%20Form%20in%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a></div>
+      <br style="clear:both;" >   
+      <h2><a name="nextsteps"></a>Дополнительные сведения</h2>
+      <p>Дополнительную информацию можно найти по следующим ссылкам:</p>
+      <ul>
+	   <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Реализация графических интерфейсов Java</a> в документе <i>Разработка приложений в IDE NetBeans</i></li>
+         <li><a href="../../trails/matisse.html">Учебная карта по приложениям с графическим интерфейсом Java </a></li>
+         <li><a href="quickstart-gui.html">Проектирование графического интерфейса Swing</a></li>
+         <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ" target="_blank">Часто задаваемые вопросы по GUI Builder</a> </li>
+      </ul>
+      
+   </body>
+</html>
+

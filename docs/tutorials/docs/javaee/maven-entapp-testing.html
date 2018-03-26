@@ -1,0 +1,571 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Testing a Maven Enterprise Application</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE to test a database connection in a Maven enterprise application.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+        <meta name="author" content="ken ganfield">
+        
+    </head>
+    <body>
+        <h1>Testing a Maven Enterprise Application</h1>
+        
+        <p>This tutorial demonstrates how to test a simple enterprise application using NetBeans IDE and Maven archetypes.
+        In this tutorial you create an enterprise application that contains an entity class and a session bean.
+        You will use a wizard to create a simple test class for the bean class and then run the test in the IDE.
+        The test class will create an instance of the GlassFish embedded EJB container to test the connection to the database.
+        </p>
+        <p class="notes"><strong>Note.</strong> If you are using GlassFish 3.1.x, please see
+            <a href="../../73/javaee/maven-entapp-testing.html">Testing a Maven Enterprise Application with Embedded GlassFish Server 3.1</a></p>
+                       
+           <p><b>Tutorial Exercises</b></p>
+           <img  src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.4 and 8.0" >
+
+            <ul>
+                <li><a href="#intro">Using Maven in the IDE</a></li>
+                <li><a href="#Exercise_1">Creating the Enterprise Application</a>
+                    <ul>
+                        <li><a href="#Exercise_1a">Creating the Web Project</a></li>
+                        <li><a href="#Exercise_1b">Creating the Entity Class</a></li>
+                        <li><a href="#Exercise_1c">Creating the Session Bean</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_2">Creating the Session Bean Test</a></li>
+<!--                <li><a href="#Exercise_3">Checking Code Coverage</a></li>
+                <li><a href="#Exercise_4">Downloading the Solution Project</a></li>-->
+            </ul>
+           
+            <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.4, 8.0, Java EE bundle</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                    <td class="tbltd1">4.0</td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="notes"><strong>Note.</strong> The installer for GlassFish Server is included when you download
+            the Java EE bundle. You can install and register GlassFish as part of the NetBeans IDE installation process.</p>
+            <p><b>Prerequisites</b></p>
+            <p>This document assumes you have some basic knowledge of, or programming experience with, the following technologies:</p>
+            <ul>
+                <li>Java Programming</li>
+                <li>NetBeans IDE</li>
+            </ul>
+
+            <p>Before starting this tutorial you may want to familiarize yourself with
+            the following documentation.</p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Best Practices for Apache Maven in NetBeans IDE</a></li>
+                <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Chapter 1. Introducing Apache Maven</a>
+         (from <a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: The Complete Reference </a>)</li>
+            </ul>
+<!--            <p class="tips">You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FMavenEnterpriseApp.zip">a zip archive of the finished project</a>.</p>-->
+
+        <a name="intro"></a>
+        <!-- ===================================================================================== -->
+        <h2>Using Maven in the IDE</h2>
+        <p>Support for Maven is fully integrated in NetBeans IDE.
+        Developing a project that uses the Maven framework is nearly identical to developing a project in Ant.
+        However, there are some differences that are related to the way Maven builds projects and works with dependencies.
+        The following tips can help you avoid some problems if you are creating a Maven application for the first time.</p>
+
+
+        <p class="tips"><strong>Check your Maven settings</strong></p>
+        <div class="indent">
+        <p>If this is your first Maven project you will want to check the Maven configuration settings in the Options window.
+        To complete this tutorial you must have Maven installed on your local system.
+        Maven is bundled with the IDE and installed when you install the IDE.</p>
+
+        <ol>
+            <li>Open the Options window in the IDE (Tools &gt; Options; NetBeans &gt; Preferences on Mac).</li>
+            <li>Select the Java category in the Options window and click the Maven tab.</li>
+            <li>Confirm that a Maven Home is specified.
+                <p>You can use the Maven version bundled with the IDE or specify the location of a
+                local Maven installation (requires 2.0.9 or newer).</p></li>
+            <li>Click OK to close the Options window.</li>
+        </ol>
+
+        <p class="notes"><strong>Notes.</strong>
+            Maven support is automatically enabled when Java is enabled in the IDE. 
+            You will need to enable the Java EE plugin if it is not enabled.
+        </div>
+
+        <p class="tips"><strong>Update your Maven repositories</strong></p>
+        <div class="indent">
+        <p>Local and remote Maven repositories are used for code completion and when building projects.
+        You should update the indexes for the Maven remote repositories to ensure that any artifacts you
+        may need are readily available when you develop your project.
+        You can configure how often the IDE checks for updates in the Maven tab of the Options window.
+        You can perform an immediate check for updates and explore your local and remote Maven repositories
+        in the Services window.</p>
+
+        <ol>
+            <li>Choose Window &gt; Services to open the Services window.</li>
+            <li>Expand the Maven Repositories node in the Services window.</li>
+            <li>Right-click the repository node and choose Update Index in the popup menu.</li>
+        </ol>
+
+        <p>When you click Update Indexes, the IDE will check and download the most recent index for each of your Maven remote repositories.
+        An index represents the current state of the artifacts located in the repository and is used
+        to provide a reference to the artifacts that are available to your application.
+        By default, the IDE does not download an artifact from a repository until the artifact is explicitly required.</p>
+
+        <p class="notes"><strong>Notes.</strong></p>
+        <ul>
+            <li>Indexes are quite large and it can take some time to update them all.</li>
+            
+        </ul>
+        </div>
+
+
+        <p class="tip">For more details about using Maven in NetBeans IDE, see the section on
+        <a href="https://netbeans.org/kb/docs/java/maven-hib-java-se.html#02">Configuring Maven</a> in the
+        <a href="https://netbeans.org/kb/docs/java/maven-hib-java-se.html">Creating a Maven Swing Application Using Hibernate</a> tutorial
+        and also <a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Best Practices for Apache Maven in NetBeans IDE</a>.</p>
+
+
+        <a name="Exercise_1"></a> 
+            <!--Exercise 1: -->
+        <h2>Creating the Enterprise Application</h2>
+        <p>In this section you create a simple web application that contains an entity class and a
+        session bean that accesses the entity class.</p>
+        
+        <div class="indent">
+            <a name="Exercise_1a"></a> 
+            <h3>Creating the Web Project</h3>
+            <p>In this exercise you use the New Project wizard to create a Java EE 
+                web application from a Maven archetype. 
+                When you create the project with the wizard you will specify GlassFish Server
+            as the target server.</p>
+            <ol>
+                <li>Choose File &gt; New Project (Ctrl-Shift-N; &#8984;-Shift-N on Mac) from the main menu to open the New Project wizard.</li>
+                <li>Select Web Application in the Maven category. Click Next.</li>
+                <li>Name the project <strong>mavenwebtestapp</strong> and set the project location. Click Next.</li>
+                <li>Select the GlassFish Server in the Server dropdown list.</li>
+                <li>Select Java EE 6 Web or Java EE 7 Web in the Java EE Version dropdown list. Click Finish.</li>
+            </ol>
+            <p>When you click Finish the IDE creates the web application and opens the project in the Projects window.</p>
+
+<img  src="../../../images_www/articles/73/javaee/maven-testing/maven-testing-projects.png" class="margin-around b-all" alt="Projects window showing generated projects" title="Projects window showing generated projects" >
+
+<p>If you expand the project node in the Projects window you can see that the <tt>javaee-web-api</tt> JAR is listed as a project dependency
+    and that the JDK is listed as a Java dependency.
+    The IDE generated the project POM (<tt>pom.xml</tt>) and the file is listed under the Project Files node.
+    </p>
+            
+            <a name="Exercise_1b"></a> 
+            <h3>Creating the Entity Class</h3>
+            <p>In this exercise you use the New File wizard to create an entity class.
+            When you create the entity class you will select the <tt>jdbc/sample</tt> datasource in the wizard.
+            You do not need to create or register a new datasource because the <tt>jdbc/sample</tt>
+            datasource was registered when you installed the server.
+            </p>
+
+            <p class="notes"><strong>Note.</strong> If you want to create a new datasource or use a different datasource, 
+                the datasource must be registered on the server before you test the application
+                using the embedded container. 
+                When testing the application using the embedded container the IDE will not register the datasource for you
+                as it does when deploying to a GlassFish server instance. 
+            </p>
+
+            <ol>
+                <li>Right-click the project node and choose New &gt; Entity Class.
+                    <p>Alternatively, you can choose File &gt; New File (Ctrl-N; &#8984;-N on Mac) from the main menu 
+                        and select Entity Class in the Persistence category.</p></li>
+                <li>Type <strong>MyEntity</strong> for the Class Name.</li>
+                <li>Select <tt>com.mycompany.mavenwebtestapp</tt> as the Package and set the Primary Key Type to <strong><tt>int</tt></strong>.</li>
+                <li>Confirm that Create Persistence Unit is selected. Click Next.</li>
+                <li>Select <strong>jdbc/sample</strong> in the Data Source dropdown list.</li>
+                <li>Confirm that Use Java Transaction APIs is selected and select
+                    Drop and Create as the Table Generation Strategy. Click Finish.<br/>
+                    <img  src="../../../images_www/articles/74/javaee/maven-testing/maven-testing-pu.png" class="margin-around b-all" alt="Projects window showing generated projects" title="Projects window showing generated projects" >
+                    
+                    <p>When you click Finish the IDE generates the MyEntity class and opens the 
+                        class in the source editor. The IDE adds the <tt>eclipselink</tt>, 
+                        <tt>javax.persistence</tt> and <tt>org.eclipse.persistence.jpa.modelgen.processor</tt> artifacts
+                        as project dependencies.</p></li>
+                <li>In the source editor, add the private field <tt>name</tt> to the class.
+                <pre class="examplecode">private String name;</pre>
+                </li>
+                <li>Right-click in the editor and choose Getter and Setter in the Insert Code popup menu (Alt-Insert; Ctrl-I on Mac)
+                    to generate a getter and setter for the <tt>name</tt> field. </li>
+                <li>Add the following constructor. 
+                <pre class="examplecode">
+public MyEntity(int id) {
+    this.id = id;
+    name = "Entity number " + id + " created at " + new Date();
+}</pre>
+                </li>
+                <li>Add the following <tt>@NamedQueries</tt> and <tt>@NamedQuery</tt> annotations (in bold) to create a named SQL query
+                    that will find all records in the MyEntity table. 
+                <pre class="examplecode">
+@Entity
+<strong>@NamedQueries({
+    @NamedQuery(name = "MyEntity.findAll", query = "select e from MyEntity e")})</strong>
+public class MyEntity implements Serializable {</pre>
+                    <p></p>
+                </li>
+                <li>Click the hint in the left margin next to the class declaration and choose 
+                    the <strong>Create default constructor</strong> hint.<br/>
+                <img  src="../../../images_www/articles/74/javaee/maven-testing/maven-testing-createconstructor.png" class="margin-around b-all" alt="Projects window showing generated projects" title="Projects window showing generated projects" >
+                </li>
+                <li>Fix the import statements (Ctrl-Shift-I; &#8984;-Shift-I on Mac) to add import
+                    statements for <tt>javax.persistence.NamedQuery</tt>, <tt>javax.persistence.NamedQueries</tt> 
+                    and <tt>java.util.Date</tt>. Save your changes. <br/>
+                
+                </li>
+            </ol>
+
+            
+            <a name="Exercise_1c"></a> 
+            <h3>Creating the Session Bean</h3>
+
+            <p>In this exercise you will use a wizard to create a session facade for the <tt>MyEntity</tt> entity class.
+            When you use the wizard to generate the facade the IDE will also generate an abstract facade that
+            contains some methods such as <tt>create</tt> and <tt>find</tt> that are commonly used when accessing entity classes.
+            You will then add two methods to the facade. 
+            </p>
+
+            <ol>
+                <li>Right-click the project node and choose New &gt; Other.
+                    <p>Alternatively, you can choose File &gt; New File (Ctrl-N; &#8984;-N on Mac) from the main menu to open the New File wizard.</p></li>
+                <li>Select Session Beans For Entity Classes in the Enterprise JavaBeans category. Click Next.</li>
+                <li>Select the <tt>MyEntity</tt> class from the list of Available Entity Classes and click Add. Click Next.</li>
+                <li>Use the default properties in the Generated Session Beans panel of the wizard.
+                    Click Finish.
+                <p>When you click Finish the IDE generates <tt>AbstractFacade.java</tt> and 
+                    <tt>MyEntityFacade.java</tt> in the <tt>com.mycompany.mavenwebtestapp</tt> package and opens
+                    the classes in the source editor.</p>
+                <p>In the source editor you can see that the IDE generated code for <tt>EntityManager</tt>
+                    and added the <tt>@PersistenceContext</tt> annotation to specify the persistence unit.</p>
+<pre class="examplecode">
+@Stateless
+public class MyEntityFacade extends AbstractFacade&lt;MyEntity&gt; {
+    @PersistenceContext(unitName = "com.mycompany_mavenwebtestapp_war_1.0-SNAPSHOTPU")
+    private EntityManager em;
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return em;
+    }
+
+    public MyEntityFacade() {
+        super(MyEntity.class);
+    }
+    
+}</pre>
+
+                </li>
+                <li>Add the following methods to <tt>MyEntityFacade.java</tt>. 
+                <pre class="examplecode">
+    @PermitAll
+    public int verify() {
+        String result = null;
+        Query q = em.createNamedQuery("MyEntity.findAll");
+        Collection entities = q.getResultList();
+        int s = entities.size();
+        for (Object o : entities) {
+            MyEntity se = (MyEntity) o;
+            System.out.println("Found: " + se.getName());
+        }
+
+        return s;
+    }
+
+    @PermitAll
+    public void insert(int num) {
+        for (int i = 1; i <= num; i++) {
+            System.out.println("Inserting # " + i);
+            MyEntity e = new MyEntity(i);
+            em.persist(e);
+        }
+    }</pre>
+                </li>
+                <li>Fix your imports to add the required import statements. Save your changes. <br/>
+                    <img  src="../../../images_www/articles/74/javaee/maven-testing/maven-testing-fiximports.png" class="margin-around b-all" alt="Projects window showing generated projects" title="Projects window showing generated projects" >
+                    <p class="notes"><strong>Note.</strong> Confirm that  
+                    <strong><tt>javax.persistence.Query</tt></strong> is selected in the Fix All Imports dialog box.</p>
+                </li>
+
+            </ol>
+        </div>
+        
+        <a name="Exercise_2"></a> 
+        <h2>Creating the Session Bean Test</h2>
+        <p>In this section you will create a JUnit test class for the <tt>MyEntityFacade</tt> session facade.
+            The IDE will generate skeleton test methods for each of the methods in the facade class as well as each of the methods in the abstract facade.
+            You will annotate the test methods that are generated for the methods in the abstract facade to instruct the IDE and the JUnit test runner to ignore them. 
+            You will then modify the test method for the <tt>verify</tt> method that you added to <tt>MyEntityFacade</tt>.
+            </p>
+            
+            
+        <p>In the generated tests you will see that the IDE automatically adds code that calls on <tt>EJBContainer</tt> to create an 
+            instance of the EJB container. 
+        </p>
+        
+
+        <ol>
+            <li>Right-click <tt>MyEntityFacade.java</tt> in the Projects window and choose Tools &gt; Create Tests.</li>
+            <li>Select a test framework from the Framework dropdown list</li>
+            <li>Use the default options in the Create Tests dialog box. Click OK.
+                <p class="notes"><strong>Note.</strong> The first time that you create a JUnit test you need to specify the version of the JUnit framework.
+                Select JUnit 4.x as the JUnit version and click Select.</p>
+               
+                <p>By default, the IDE generates a skeleton test class that contains tests for each
+                of the methods in <tt>MyEntityFacade</tt> and <tt>AbstractFacade</tt>.
+                The IDE automatically adds a dependency on the JUnit 4.10 to the POM.</li>
+            <li>Annotate each of the test methods except <tt>testVerify</tt> with the <tt>@Ignore</tt> annotation.
+                The IDE will skip each of the tests annotated with <tt>@Ignore</tt> when running the tests.
+                <p>Alternatively, you can delete all the test methods except <tt>testVerify</tt>.</p>
+            </li>
+            <li>Locate the <tt>testVerify</tt> test method in the test class.
+                
+                <p>You can see that the test contains a line that calls on <tt>EJBContainer</tt>.</p>
+                <pre class="examplecode">
+    @Test
+    public void testVerify() throws Exception {
+        System.out.println("verify");
+        EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer();
+        MyEntityFacade instance = (MyEntityFacade)container.getContext().lookup("java:global/classes/MyEntityFacade");
+        int expResult = 0;
+        int result = instance.verify();
+        assertEquals(expResult, result);
+        container.close();
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }</pre>
+            </li>
+            <li>Make the following changes (in bold) to the skeleton of 
+                    the <tt>testVerify</tt> test method. 
+                <pre class="examplecode">
+@Test
+public void testVerify() throws Exception {
+    System.out.println("verify");
+    EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer();
+    MyEntityFacade instance = (MyEntityFacade)container.getContext().lookup("java:global/classes/MyEntityFacade");
+    <strong>System.out.println("Inserting entities...");
+    instance.insert(5);</strong>
+    int result = instance.verify();
+    <strong>System.out.println("JPA call returned: " + result);
+    System.out.println("Done calling EJB");
+    Assert.assertTrue("Unexpected number of entities", (result == 5));</strong>
+    container.close();
+}</pre>
+                </li>
+                <li>Fix the import statements to add <tt>junit.framework.Assert</tt>. Save your changes.
+                <p>You now need to modify the POM to add a dependency on the 
+                    <tt>&lt;glassfish.embedded-static-shell.jar&gt;</tt> that is 
+                located in your local installation of the GlassFish server.</p>
+                </li>
+                <li>Open <tt>pom.xml</tt> in the editor and locate the <tt>&lt;properties&gt;</tt> element.
+                <pre class="examplecode">
+    &lt;properties&gt;
+        &lt;endorsed.dir&gt;${project.build.directory}/endorsed&lt;/endorsed.dir&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+                </pre>
+                </li>
+                <li>Edit the <tt>&lt;properties&gt;</tt> element to add the <tt>&lt;glassfish.embedded-static-shell.jar&gt;</tt>
+                    element (in <strong>bold</strong>) that specifies the location of the JAR in your local GlassFish installation.
+                    You will then reference this property in the dependency on the artifact.
+                <pre class="examplecode">
+    &lt;properties&gt;
+        &lt;endorsed.dir&gt;${project.build.directory}/endorsed&lt;/endorsed.dir&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+        <strong>&lt;glassfish.embedded-static-shell.jar&gt;<em>&lt;INSTALLATION_PATH&gt;</em>/glassfish-4.0/glassfish/lib/embedded/glassfish-embedded-static-shell.jar&lt;/glassfish.embedded-static-shell.jar&gt;</strong>
+<!--        &lt;glassfish.embedded-static-shell.jar&gt;/Applications/NetBeans/glassfish-3.1.1/glassfish/lib/embedded/glassfish-embedded-static-shell.jar&lt;/glassfish.embedded-static-shell.jar&gt;-->
+    &lt;/properties&gt;
+                </pre>
+                    <p class="notes"><strong>Note.</strong> <tt><em>&lt;INSTALLATION_PATH&gt;</em></tt> is the absolute path to your local GlassFish installation.
+                    You will need to modify this element in the POM if the path to the local installation changes.</p>
+                </li>
+                <li>Right-click the Dependencies node in the Projects window and choose Add Dependency.</li>
+                <li>In the Add Dependency dialog box, type <strong>embedded-static-shell</strong>
+                in the Query text field.
+                
+                </li>
+                <li>Locate the 4.0 JAR in the search results and click Add.<br/>
+                    <img  src="../../../images_www/articles/74/javaee/maven-testing/add-shell-dependency.png" class="margin-around b-all" alt="screenshot of Test Results window" title="Test Results window" >
+                    
+                    <p>When you click Add the IDE adds the dependency to the POM.</p>
+                    <p>You now want to modify the POM to specify the local installation of GlassFish as the 
+                    source for the JAR.</p></li>
+                <li>Locate the dependency in the POM and make the following changes (in <strong>bold</strong>) to modify the element to
+                reference the <tt>&lt;glassfish.embedded-static-shell.jar&gt;</tt> property that you added
+                and to specify the <tt>&lt;scope&gt;</tt>. Save your changes.
+                
+                <pre class="examplecode">
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.glassfish.main.extras&lt;/groupId&gt;
+            &lt;artifactId&gt;glassfish-embedded-static-shell&lt;/artifactId&gt;
+            &lt;version&gt;4.0&lt;/version&gt;
+            <strong>&lt;scope&gt;system&lt;/scope&gt;
+            &lt;systemPath&gt;${glassfish.embedded-static-shell.jar}&lt;/systemPath&gt;</strong>
+        &lt;/dependency&gt;
+                </pre>
+                </li>
+                
+                <li>In the Services window, right-click the GlassFish Server node and choose Start.
+                    <p>The JavaDB database server will also start when you start the GlassFish Server.</p></li>
+                <li>In the Projects window, right-click the project node and choose Test. </li>
+            </ol>
+
+            <p>When you choose Test the IDE will build application and run the test phase of the build lifecycle.
+                The unit tests will be executed with the surefire plugin, which supports running JUnit 4.x tests.
+                For more about the surefire plugin, see 
+                <a href="http://maven.apache.org/plugins/maven-surefire-plugin/">http://maven.apache.org/plugins/maven-surefire-plugin/</a>.</p>
+                
+            
+
+            <p>You can see the results of the test in the Test Results window.
+            You can open the Test Results window by choosing Window &gt; Output &gt; Test Results from the main menu.
+            </p>
+            <img  src="../../../images_www/articles/74/javaee/maven-testing/maven-test-results.png" class="margin-around b-all" alt="screenshot of Test Results window" title="Test Results window" >
+            <p>In the Test Results window you can click the Show Passed icon 
+            (<img  src="../../../images_www/articles/74/javaee/maven-testing/test-ok_16.png" alt="Show Passed icon" title="Show Passed icon" >)
+            to display a list of all the tests that passed. 
+            In this example you can see that nine tests passed. If you look in the Output window you can see 
+                that only one test was run and eight tests were skipped. Skipped tests are included in the list of tests that passed in the Test Results window.</p>
+            <pre class="examplecode">
+Running com.mycompany.mavenwebtestapp.MyEntityFacadeTest
+verify
+...
+Inserting entities...
+Inserting # 1
+Inserting # 2
+Inserting # 3
+Inserting # 4
+Inserting # 5
+Found: Entity number 2 created at Wed Oct 09 19:06:59 CEST 2013
+Found: Entity number 4 created at Wed Oct 09 19:06:59 CEST 2013
+Found: Entity number 3 created at Wed Oct 09 19:06:59 CEST 2013
+Found: Entity number 1 created at Wed Oct 09 19:06:59 CEST 2013
+Found: Entity number 5 created at Wed Oct 09 19:06:59 CEST 2013
+JPA call returned: 5
+Done calling EJB
+...
+
+Results :
+
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 8
+</pre>
+
+            <!--
+            <a name="Exercise_3"></a> 
+            <h2>Checking Code Coverage</h2>
+
+            <p>In this section you install the Maven Code Coverage plugin and configure the POM to add reporting. See http://wiki.netbeans.org/MavenCodeCoverage</p>
+            <ol>
+<li>Open the Services window in the IDE.</li>
+<li>Expand the sample datasource connection under the Database node.</li>
+<li>Expand the Tables node under the App node.</li>
+<li>Right-click the SEQUENCE table and choose Delete.</li>
+                <li>Add the following to the POM. Save your changes. 
+                <pre class="examplecode">&lt;/dependencies&gt;
+
+<strong>&lt;reporting&gt;
+  &lt;plugins&gt;
+    &lt;plugin&gt;
+      &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+      &lt;artifactId&gt;cobertura-maven-plugin&lt;/artifactId&gt;
+      &lt;version&gt;2.5.1&lt;/version&gt;
+    &lt;/plugin&gt;
+  &lt;/plugins&gt;
+&lt;/reporting&gt;</strong>
+
+&lt;build&gt;</pre>
+                </li>
+                <li>Right-click project node and choose Code Coverage &gt; Show Report.</li>
+                <li>Open MyEntityFacadeTest in the editor.</li>
+                <li>Modify the test to change the JNDI lookup for the bean from 
+                    <tt>java:global/classes/MySessionBean</tt> to <tt>java:global/cobertura/MySessionBean</tt>.
+                    <pre class="examplecode">    
+    @Test
+    public void testVerify() throws Exception {
+        System.out.println("verify");
+        EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer();
+//        MyEntityFacade instance = (MyEntityFacade)container.getContext().lookup("java:global/classes/MyEntityFacade");
+        <strong>MyEntityFacade instance = (MyEntityFacade)container.getContext().lookup("java:global/cobertura/MyEntityFacade");</strong>
+        System.out.println("Inserting entities...");
+        instance.insert(5);
+        int result = instance.verify();
+        System.out.println("JPA call returned: " + result);
+        System.out.println("Done calling EJB");
+        Assert.assertTrue("Unexpected number of entities", (result==5));
+        container.close();
+    }</pre>
+
+                </li>
+                
+                
+                <li>Click Run All Tests in Code Coverage window. 
+
+                    <p>Result displays coverage is 0% and the following is in the Output window. </p>
+                </li>
+        
+            </ol>
+        
+        -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Enterprise%20Application%20Using%20Maven">Send Feedback on This Tutorial</a></div>
+            <br style="clear:both;" >
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>See Also</h2>
+            <p>For more information about using NetBeans IDE to develop Java EE applications, see the following resources:
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Introduction to Java EE Technology</a></li>
+            <li><a href="javaee-gettingstarted.html">Getting Started with Java EE Applications</a></li>
+            <li><a href="maven-entapp.html">Creating an Enterprise Application Using Maven</a></li>
+            <li><a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a></li>
+            </ul>
+            <p>You can find more information about using Enterprise Beans in the
+            <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Java EE 6 Tutorial</a>.</p>
+            <p>To send comments and suggestions, get support, and keep informed on the latest
+              developments on the NetBeans IDE Java EE development features, <a href="../../../community/lists/top.html">join
+              the nbj2ee mailing list</a>.</p>
+    </body>
+</html>

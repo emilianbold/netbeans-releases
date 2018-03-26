@@ -1,0 +1,448 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>创建 Swing 客户端，通过 Web 服务传递二进制数据，第 6 部分 - NetBeans IDE 教程</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial shows how to create a client for the web service that
+              displays the result in a GUI designed with Swing components.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    <body>
+        <h1>通过 Web 服务传递二进制数据，第 5 部分：创建 Swing 客户端</h1>
+        
+        
+        <p>本练习的目的在于为您以前创建和部署的 Web 服务创建一个客户端，然后给该客户端添加一个 GUI 界面。该界面显示 Web 服务以二进制数据传递的图像。</p>
+        <p>您可以从 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerClient.zip" target="_blank">NetBeans 样例目录</a>中下载完整版本的客户端。</p>
+    <p><b>本教程中的课程</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3 和 7.4" class="stamp" src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3 和 7.4">
+        <ol>
+            <li><a href="./flower_overview.html">概述</a></li>
+            <li><a href="./flower_ws.html">创建 Web 服务</a></li>
+        <li><a href="./flower-code-ws.html">对 Web 服务进行编码和测试</a></li>
+          <li><a href="./flower_wsdl_schema.html">修改方案文件和 WSDL 文件以传递二进制数据</a></li>
+          <li> =&gt; 创建 Swing 客户端</li>
+        </ol>
+    <p><b>本课内容</b></p>
+        <ol>
+          <li>
+            <p><a href="#create-client-app">创建客户端应用程序</a></p>
+          </li>
+          <li><a href="#design-jframe">设计 JFrame</a></li>
+          <li><p><a href="#bind-jframe">绑定 JFrame 组件</a></p>
+          <ul>
+          <li><a href="#initialize-components">初始化组件</a></li>
+          <li><a href="#show-flowers">显示鲜花</a></li>
+          </ul></li>
+          <li><a href="#code-main-class">对 Main 类进行编码</a></li>
+        </ol>
+        
+    <h2><a name="create-client-app"></a>创建客户端应用程序</h2>
+        <p>在此部分，将创建一个 Web 应用程序。在此应用程序内，将创建一个客户端，该客户端使用您在以前的教程中创建并修改的 Web 服务。 </p>
+    <p><strong>创建客户端应用程序：</strong></p>
+        <ol>
+            <li>选择 "File"（文件）> "New Project"（新建项目）（在 Linux/Windows 上为 Ctrl-Shift-N 组合键，在 MacOS 上为 ⌘-Shift-N 组合键）。此时将打开新建项目向导。 </li>
+            <li>选择 "Java" 类别中的 "Java Application"（Java 应用程序）选项。单击 "Next"（下一步）。此时将显示新建 Java 应用程序向导。在 "Project Name"（项目名称）中键入 <tt>FlowerClient</tt>。选择项目的位置，然后单击 "Finish"（完成）。IDE 创建一个新的 Java 应用程序项目。</li>
+            <li>右键单击 <tt>FlowerClient</tt> 项目节点，然后从上下文菜单选择 "New"（新建）> "Web Service Client"（Web 服务客户端）。此时将打开新建 Web 服务客户端向导。  </li>           
+          <li>选择 WSDL URL 单选按钮，并将 WSDL 文件的 URL 粘贴到该字段。（默认情况下，该 URL 为 <tt>http://localhost:8080/FlowerAlbumService/FlowerServiceService?wsdl</tt>。在浏览器中查找 URL，方法是测试 Web 服务，然后将 URL 末尾的 <tt>?Tester</tt> 替换为 <tt>?wsdl</tt>。）接受其他所有默认值，包括空的包名称。 <br><img alt="显示 WSDL URL 的 Web 服务客户端向导" class="margin-around" height="440" src="../../../images_www/articles/73/websvc/flower/ws-client-wiz.png" width="588"></li>
+            <li>单击 "Finish"（完成）。IDE 将下载该 WSDL 文件，添加与 Web 服务交互的客户端桩模块，并在 "Projects"（项目）窗口的 Java 应用程序项目中添加节点。 <br><img alt="显示新建 Web 服务客户端的项目视图" class="margin-around" height="474" src="../../../images_www/articles/73/websvc/flower/client-generated-sources.png" title="显示新建 Web 服务客户端的项目视图" width="360"></li></ol>
+    <h2 id="design-jframe">设计 JFrame 窗体</h2>
+                <p>在此部分，向该 Web 应用程序添加一个 <tt>JFrame</tt>，并在其中使用 Swing 组件设计一个 GUI 界面。最后，将该 Swing 组件绑定到该 Web 服务客户端代码。</p>
+                <p class="tips">如果不想亲自设计 JFrame 窗体，可以从<a href="https://netbeans.org/projects/www/downloads/download/webservices%252FFlowerFrame.java" target="_blank">此处</a>下载预先设计的 JFrame Java 文件。</p>
+<ol>
+            <li>右键单击 <tt>FlowerClient</tt> 节点，然后选择 "New"（新建）> "JFrame Form"（JFrame 窗体）。将该窗体命名为 <tt>FlowerFrame</tt>。并且，将其置于 <tt>flowerclient</tt> 包中。</li>
+          <li><tt>FlowerFrame</tt> 在编辑器中打开。如果 "Palette"（组件面板）尚未打开，请将其打开。扩展框架的底边框大约三分之一。<br><img alt="设计视图的编辑器中的 &quot;Flower&quot;（鲜花）窗体，同时组件面板也已打开" class="margin-around" height="437" src="../../../images_www/articles/73/websvc/flower/opened-flowerform.png" width="600"></li>
+          <li>将 JPanel 从 "Palette"（组件面板）的 "Swing Container"（Swing 容器）部分拖至 <tt>FlowerFrame</tt>。扩展该而板以填充整个 <tt>FlowerFrame</tt>。 <br> <img alt="在 FlowerFrame 中添加和扩展 JPanel" class="margin-around" height="408" src="../../../images_www/articles/73/websvc/flower/add-panel.png" width="587"></li>
+            <li>右键单击 "Design"（设计）视图中的 "Panel"（面板）。从上下文菜单中选择 "Change Variable Name... "（更改变量名称...）。将该面板命名为 <tt>gardenFlowersPanel</tt>。</li>
+            <li>将 JLabel 从 "Palette"（组件面板）拖至 <tt>gardenFlowersPanel</tt> 的顶部。右键单击标签，然后将标签的变量名称更改为 <tt>titleLabel</tt>。再次右键单击 <tt>titleLabel</tt> 然后选择 "Edit Text"（编辑文本）。将文本更改为 "Garden Flowers"。可能希望浏览 <tt>titleLabel</tt> 的属性，并为其设置一个醒目的字体。</li>
+            <li>将 "Button Group"（按钮组）拖至设计视图中。接受按钮组的默认变量名称 <tt>buttonGroup1</tt>。</li>
+            <li>将四个单选按钮拖至 <tt>titleLabel</tt> 下面的水平行中。在每个按钮的属性中，将其设置为 <tt>buttonGroup1</tt> 的成员。按钮的其他属性如下：
+              <table>
+                  <caption>buttonGroup1 中的单选按钮</caption>
+                <tbody>
+                  <tr>
+                    <th class="tblheader">变量名称</th>
+                    <th class="tblheader">已选定</th>
+                    <th class="tblheader">文本</th>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">asterRadioButton</td>
+                    <td class="tbltd1">true</td>
+                    <td class="tbltd1">紫苑</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">honeysuckleRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">金银花</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">roseRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">玫瑰</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">sunflowerRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">向日葵</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+            <li>将 "Scroll Pane"（滚动窗格）拖至单选按钮的下方。扩展该窗格以填充全部水平空间以及大约三分之二的空余垂直空间。将滚动窗格的变量名称更改为 <tt>mainScrollPane</tt>。</li>
+            <li>将 "Panel"（面板）拖至 <tt>mainScrollPane</tt> 中。将面板的变量名称更改为 <tt>mainPanel</tt>。 </li>
+            <li>在 "Design"（设计）视图中，右键单击 <tt>mainPanel</tt> 然后选择 "Set Layout"（设置布局）> "Border Layout"（边框式布局）。 </li>
+            <li>将 "Button"（按钮）拖至 <tt>mainPanel</tt> 中。因为 <tt>mainPanel</tt> 具有边框式布局，所以按钮将自动填充整个面板。将按钮的变量名称更改为 <tt>mainPictureButton</tt> 并将按钮的文本更改为 "Waiting for picture..."</li>
+            <li>再将一个滚动窗格拖至 <tt>mainScrollPane</tt> 下面的空间中。扩展新滚动窗格以填满全部剩余空间。将新滚动窗格的变量名称更改为 <tt>thumbnailScrollPane</tt>。</li>
+            <li>将 "Panel"（面板）拖至 <tt>thumbnailScrollPane</tt> 中。将面板的变量名称更改为 <tt>thumbnailPanel</tt>。将 <tt>thumbnailPanel</tt> 的布局设置为 "Grid Layout"（网格式布局）。</li>
+            <li>将四个 "Buttons"（按钮）拖至 <tt>thumbnailPanel</tt> 中。因为 <tt>thumbnailPanel</tt> 具有网格式布局，所以按钮将自动变为相同大小并且完全填满面板。按钮的属性如下：
+              <table>
+                <title>thumbnailPanel 中的按钮</title>
+                <tbody>
+                  <tr>
+                    <th class="tblheader">变量名称</th>
+                    <th class="tblheader">文本</th>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">asterButton</td>
+                    <td class="tbltd1">正在等待...</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">honeysuckleButton</td>
+                    <td class="tbltd1">正在等待...</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">roseButton</td>
+                    <td class="tbltd1">等待</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">sunflowerButton</td>
+                    <td class="tbltd1">正在等待...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+            </ol>
+              <p>现在 JFrame 窗体已经完全设计好了。此时，<tt>FlowerFrame</tt> 将如下所示。 <br> <img alt="显示按钮文本而不是图像的已完成 &quot;Flower&quot;（鲜花）框架" border="1" class="margin-around" height="412" src="../../../images_www/articles/73/websvc/flower/designed-form.png" title="显示按钮文本而不是图像的已完成 &quot;Flower&quot;（鲜花）框架" width="500"></p>
+              <a name="bind-jframe"></a>
+            <h2>绑定 JFrame 组件</h2>
+            <p>在此部分，将在构造函数中初始化组件，然后将这些组件绑定到监听程序。监听程序将调用用于显示鲜花图像的代码。</p>
+<div class="indent">
+            <h3><a name="initialize-components">初始化组件</h3>
+            <p>在此部分，将填充 <tt>FlowerFrame</tt> 构造函数</p>
+<ol>
+            <li>切换到编辑器的 "Source"（源）视图。找到 <tt>FlowerFrame</tt> 类主体的开头以及 <tt>FlowerFrame</tt> 构造函数。<br> <img alt="显示空 FlowerForm 构造函数的编辑器的源视图" border="1" class="margin-around" height="197" src="../../../images_www/articles/73/websvc/flower/ff-empty-constructor.png" width="492"></li>
+          
+            <li>在 <tt>FlowerFrame</tt> 类主体的顶部，并且在构造函数之前，创建一个用于表示每种花名称的字符串数组。
+              <pre class="examplecode">protected static final String[] FLOWERS = {"aster", "honeysuckle", "rose", "sunflower"};</pre>
+    </li>            
+            <li>在 FLOWERS 字符串数组和构造函数之间，添加一行代码以初始化名为 <tt>flowers</tt> 的 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/util/Map.html" target="_blank">java.util.Map</a></tt>。该映射使用一个 <tt>String</tt> 并将其映射到某个 <tt>Image</tt>。 
+              <pre class="examplecode">private Map&lt;String, Image&gt; flowers;</pre>   </li>         
+            <li>为 <tt>java.util.Map</tt> 和 <tt>java.awt.Image</tt> 添加导入语句。        </li>    
+            <li>向 <tt>FlowerFrame</tt> 构造函数添加代码，以将特定的 <tt>Image</tt> 与 <tt>flowers</tt> 映射特定实例的特定 <tt>String</tt> 相关联
+              <pre>
+public FlowerFrame(Map&lt;String, Image&gt; flowers) {
+
+    this.flowers = flowers;
+    for (String flower:FLOWERS) {
+        flowers.put(flower,null);
+    }
+
+    initComponents();    
+} </pre></li>
+            <li>初始化单选按钮的 <tt>ItemListener</tt> 以及四个花形按钮的 <tt>ActionListener</tt>，然后设置默认标题。 
+              <pre class="examplecode">
+public FlowerFrame(Map&lt;String, Image&gt; flowers) {
+
+    this.flowers = flowers;
+    for (String flower:FLOWERS) {
+        flowers.put(flower,null);
+    }
+
+    initComponents(); 
+    
+    setTitle("Garden Flowers [waiting for picture]");
+    
+    ItemListener rbListener = new RBListener();
+    asterRadioButton.addItemListener(rbListener);
+    honeysuckleRadioButton.addItemListener(rbListener);
+    roseRadioButton.addItemListener(rbListener);
+    sunflowerRadioButton.addItemListener(rbListener);
+    
+    ActionListener bListener = new ButtonListener();
+    asterButton.addActionListener(bListener);
+    honeysuckleButton.addActionListener(bListener);
+    roseButton.addActionListener(bListener);
+    sunflowerButton.addActionListener(bListener);
+}</pre>
+            </li>      
+            <li>为 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ItemListener.html" target="_blank">java.awt.event.ItemListener</a></tt> 和 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ActionListener.html" target="_blank">java.awt.event.ActionListener</a></tt> 添加导入语句。</li>
+            </ol>
+ <p>现在已完成构造函数。代码中出现了编译错误警告，这是因为代码未包含类 <tt>RBListener</tt> 和 <tt>ButtonListener</tt>。这两个类分别是 <tt>ItemListener</tt> 和 <tt>ActionListener</tt> 的定制实现。将在下一部分中编写这两个类。</p> 
+ <h3><a name="show-flowers">显示鲜花</h3>
+ <p>在此部分，将为单选按钮和花形按钮编写定制监听程序。还会编写一个方法，该方法用于确定按钮选择的是哪一种花，并通过 <tt>flowers</tt> 映射获取此花的 <tt>Image</tt>。最后，编写一个由 <tt>Main</tt> 类调用的方法，该方法将获取每个缩略图的 <tt>Image</tt>。</p>
+ <ol>
+   <li>在 <tt>FlowerFrame</tt> 类主体中找到 <tt>public static void main(String args[])</tt> 方法。删除此方法及其文档。（应用程序将改用 <tt>Main</tt> 类。）</li>
+    <li>为单选按钮编写定制 <tt>ItemListener</tt> 以代替 <tt>main</tt> 方法。当选择某个单选按钮时，该监听程序会显示新的鲜花图像。
+              <pre class="examplecode">private class RBListener implements ItemListener {
+    public void itemStateChanged(ItemEvent e) {
+        showFlower();
+    }
+}</pre></li>
+<li>为 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ItemEvent.html" target="_blank">java.awt.event.ItemEvent</a></tt> 添加一条导入语句。</li>
+            <li>在定制 <tt>ItemListener</tt> 的下面，为 4 个鲜花按钮编写定制 <tt>ActionListener</tt>。当单击某个按钮时，监听程序会选择相关的单选按钮：
+              <pre class="examplecode">private class ButtonListener implements ActionListener {
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == asterButton) asterRadioButton.setSelected(true);
+        else if (e.getSource() == honeysuckleButton) honeysuckleRadioButton.setSelected(true);
+        else if (e.getSource() == roseButton) roseRadioButton.setSelected(true);
+        else if (e.getSource() == sunflowerButton) sunflowerRadioButton.setSelected(true);
+    }
+}</pre>
+            </li>
+            <li>为 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ActionEvent.html" target="_blank">java.awt.event.ActionEvent</a></tt> 添加一条导入语句。</li>
+            <li>在定制 <tt>ActionListener</tt> 的下面，编写 <tt>showFlower</tt> 方法。该方法用于确定哪一个单选按钮已选中并从 <tt>flowers</tt> 映射中获取相应鲜花的 <tt>Image</tt>。
+              <pre class="examplecode">
+void showFlower() {
+    Image img = null;
+    if (asterRadioButton.isSelected()) {
+        img = flowers.get("aster");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Aster]");
+        }
+    } else if (honeysuckleRadioButton.isSelected()) {
+        img = flowers.get("honeysuckle");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Honeysuckle]");
+        }
+
+    } else if (roseRadioButton.isSelected()) {
+        img = flowers.get("rose");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Rose]");
+        }
+    } else if (sunflowerRadioButton.isSelected()) {
+        img = flowers.get("sunflower");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Sunflower]");
+        }
+    }
+    if (img == null) {
+        mainPictureButton.setIcon(null);
+        setTitle("Garden Flowers [waiting for picture]");            
+    } else mainPictureButton.setText("");
+}</pre>
+            </li>
+            <li>为 <tt><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/ImageIcon.html" target="_blank">javax.swing.ImageIcon</a></tt> 添加一条导入语句。</li>
+            <li>编写 <tt>setThumbnails</tt> 方法。此方法从 <tt>flowers</tt> 映射为每个缩略图获取图像。<tt>Main</tt> 类将调用此方法。
+              <pre class="examplecode">void setThumbnails(Map&lt;String, Image&gt; thumbs) {
+    Image img = thumbs.get("aster");
+    if (img != null) {
+        asterButton.setIcon(new ImageIcon(img));
+        asterButton.setText("");
+    }
+    img = thumbs.get("honeysuckle");
+    if (img != null) {
+        honeysuckleButton.setIcon(new ImageIcon(img));
+        honeysuckleButton.setText("");
+    }
+    img = thumbs.get("rose");
+    if (img != null) {
+        roseButton.setIcon(new ImageIcon(img));
+        roseButton.setText("");
+    }
+    img = thumbs.get("sunflower");
+    if (img != null) {
+        sunflowerButton.setIcon(new ImageIcon(img));
+        sunflowerButton.setText("");
+    }
+}</pre></li>
+            <li>在 <tt>FlowerFrame</tt> 中修复导入（如果在代码中粘贴导入内容时未对其进行修复）。通过在编辑器中单击鼠标右键，然后从上下文菜单中选择 "Fix Imports"（修复导入），可以一次性修复所有导入内容。下面是完整的导入语句集：
+            <pre class="examplecode">import java.awt.Image;<br>import java.awt.event.ActionEvent;<br>import java.awt.event.ActionListener;<br>import java.awt.event.ItemEvent;<br>import java.awt.event.ItemListener;<br>import java.util.Map;<br>import javax.swing.ImageIcon;</pre> </li>  </ol>
+            <p><tt>FlowerFrame</tt> 现在已完成。</p>
+    </div>
+            
+            <h2><a name="code-main-class">对 Main 类进行编码</h2>
+            <p>在此部分，将完成 <tt>Main</tt> 类，以使其显示 <tt>FlowerFrame</tt>，连接到 Web 服务，并调用 Web 服务操作。</p>
+            <ol>
+              <li>在编辑器中打开 <tt>Main.java</tt> 类。<br> <img alt="空主类" border="1" class="margin-around" height="303" src="../../../images_www/articles/73/websvc/flower/main-empty.png" width="425">            </li>
+              <li>在类主体中的 <tt>main</tt> 方法之前，为已下载的图片数初始化一个 <tt>int</tt> 变量。
+                <pre class="examplecode"> private static int downloadedPictures;</pre></li>
+              </li>
+          
+              <li>在 <tt>main</tt> 方法主体中，创建四种花的 <tt>HashMap</tt> 以及四张缩略图的另一个 <tt>HashMap</tt>。<pre class="examplecode">final Map&lt;String,Image&gt; flowers = new HashMap&lt;String,Image&gt;(4);
+final Map&lt;String,Image&gt; thumbs = new HashMap&lt;String,Image&gt;(4);</pre>
+              </li>
+              <li>为 <tt>java.awt.Image</tt>、<tt>java.util.Map</tt> 和 <tt>java.util.HashMap</tt> 添加导入语句。</li>
+              <li>在 <tt>main</tt> 方法主体中，添加代码以显示 <tt>FlowerFrame</tt>。<pre class="examplecode"><b>// Show the FlowerFrame.</b>
+final FlowerFrame frame = new FlowerFrame(flowers);
+frame.setVisible(true);  </pre>  
+              </li>
+              <li>在 <tt>main</tt> 方法主体中，添加代码以将客户端连接到服务。<pre class="examplecode"><b>// The client connects to the service with this code.</b>
+FlowerServiceService service = new FlowerServiceService();
+final FlowerService port = service.getFlowerServicePort();</pre>  
+              </li>            
+              <li>为 <tt>org.flower.service.FlowerService</tt> 和 <tt>org.flower.service.FlowerServiceService</tt> 添加导入语句。</li>
+              <li>在 <tt>main</tt> 方法主体中，添加代码，创建一个具有四个 <tt>Runnable</tt> 线程的数组，并在每个线程中调用一次 Web 服务的 <tt>getFlower</tt> 操作。<pre class="examplecode"><b>// The web service getFlower operation
+// is called 4 times, each in a separate thread.
+// When the operation finishes the picture is shown in
+// a specific button.</b>
+Runnable[] tasks = new Runnable[4];
+
+for (int i=0; i&lt;4;i++) {
+    final int index = i;
+    tasks[i] = new Runnable() {
+        public void run() {
+            try {
+            
+                <b>// Call the getFlower operation
+                // on the web service:</b>
+                Image img = port.getFlower(FlowerFrame.FLOWERS[index]);
+                System.out.println("picture downloaded: "+FlowerFrame.FLOWERS[index]);
+                     
+                <b>// Add strings to the hashmap:</b>
+                flowers.put(FlowerFrame.FLOWERS[index],img);
+                        
+                <b>// Call the showFlower operation
+                // on the FlowerFrame:</b>
+                frame.showFlower();
+                        
+            } catch (IOException_Exception ex) {
+                ex.printStackTrace();
+            }
+            downloadedPictures++;
+        }
+    };
+    new Thread(tasks[i]).start();
+}</pre>
+           </li>
+              <li>为 <tt>org.flower.service.IOException_Exception</tt> 添加一条导入语句。      </li>       
+              <li>在 <tt>main</tt> 方法主体中，添加代码以在单独的线程中调用 Web 服务的 <tt>getThumbnails</tt> 操作。
+              <pre class="examplecode"><b>// The web service getThumbnails operation is called
+// in a separate thread, just after the previous four threads finish.
+// When the images are downloaded, the thumbnails are shown at 
+// the bottom of the frame.</b>
+Runnable thumbsTask = new Runnable() {
+    public void run() {
+        try {
+            while (downloadedPictures &lt; 4) {                        
+                try {Thread.sleep(100);} catch (InterruptedException ex) {}
+            }
+                 
+            <b>// Call the getThumbnails operation
+            // on the web service:</b>
+            List&lt;Image&gt; images = port.getThumbnails();
+            System.out.println("thumbs downloaded");
+                    
+            if (images != null && images.size() == 4) {
+                for (int i=0;i&lt;4;i++) {
+                    thumbs.put(FlowerFrame.FLOWERS[i],images.get(i));
+                }
+                frame.setThumbnails(thumbs);
+            }
+        } catch (IOException_Exception ex) {
+            ex.printStackTrace();
+        }
+    }            
+};
+new Thread(thumbsTask).start();
+</pre>
+              </li>
+              <li>在 <tt>Main.java</tt> 中修复导入（如果在代码中粘贴导入内容时未对其进行修复）。通过在编辑器中单击鼠标右键，然后从上下文菜单中选择 "Fix Imports"（修复导入），可以一次性修复所有导入内容。您可以选择要导入的 List 类；请选择 <tt>java.util.List</tt>。下面是完整的导入语句集：
+                <pre class="examplecode">import flower.album.FlowerService;<br>import flower.album.FlowerService_Service;<br>import flower.album.IOException_Exception;<br>import java.awt.Image;<br>import java.util.HashMap;<br>import java.util.List;<br>import java.util.Map;</pre>
+              </li>
+            </ol>
+    <p><tt>Main</tt> 类现在已完成。</p>
+                <pre class="examplecode">public class Main {
+
+     private static int downloadedPictures;
+    
+     public static void main(String[] args) {
+    
+        final Map&lt;String,Image&gt; flowers = new HashMap&lt;String,Image&gt;(4);
+        final Map&lt;String,Image&gt; thumbs = new HashMap&lt;String,Image&gt;(4);
+        
+        <b>// Show the FlowerFrame.</b>
+        final FlowerFrame frame = new FlowerFrame(flowers);
+        frame.setVisible(true);
+        <br><b>        // The client connects to the service with this code.</b>
+        FlowerService_Service service = new FlowerService_Service();
+        final FlowerService port = service.getFlowerServicePort();
+        
+        Runnable[] tasks = new Runnable[4];
+        
+        <b>// The web service getFlower operation
+        // is called 4 times, each in a separate thread.
+        // When the operation finishes the picture is shown in
+        // a specific button.</b>
+        for (int i=0; i&lt;4;i++) {
+            final int index = i;
+            tasks[i] = new Runnable() {
+                public void run() {
+                    try {
+                    
+                        <b>// Call the getFlower operation
+                        // on the web service:</b>
+                        Image img = port.getFlower(FlowerFrame.FLOWERS[index]);
+                        System.out.println("picture downloaded: "+FlowerFrame.FLOWERS[index]);
+                        
+                        <b>// Add strings to the hashmap:</b>
+                        flowers.put(FlowerFrame.FLOWERS[index],img);
+                        
+                        <b>// Call the showFlower operation
+                        // on the FlowerFrame:</b>
+                        frame.showFlower();
+                        
+                    } catch (IOException_Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    downloadedPictures++;
+                }
+            };
+            new Thread(tasks[i]).start();
+        }
+        <b>// The web service getThumbnails operation is called
+        // in a separate thread, just after the previous four threads finish.
+        // When the images are downloaded, the thumbnails are shown at 
+        // the bottom of the frame.</b>
+        Runnable thumbsTask = new Runnable() {
+            public void run() {
+                try {
+                    while (downloadedPictures &lt; 4) {                        
+                        try {Thread.sleep(100);} catch (InterruptedException ex) {}
+                    }
+                    
+                    <b>// Call the getThumbnails operation
+                    // on the web service:</b>
+                    List&lt;Image&gt; images = port.getThumbnails();
+                    System.out.println("thumbs downloaded");
+                    
+                    if (images != null && images.size() == 4) {
+                        for (int i=0;i&lt;4;i++) {
+                            thumbs.put(FlowerFrame.FLOWERS[i],images.get(i));
+                        }
+                        frame.setThumbnails(thumbs);
+                    }
+                } catch (IOException_Exception ex) {
+                    ex.printStackTrace();
+                }
+            }            
+        };
+        new Thread(thumbsTask).start();
+    }
+
+}</pre>
+                         
+            
+                
+    <p>现在该客户端应用程序完整了，具有与 Web 服务交互的代码，该 Web 服务委托给了 EJB 模块，以公开其图像。右键单击客户端，然后选择 "Run"（运行）。将启动 Swing 应用程序，并且之后会填充从 Web 服务接收到的图像。如果图像没有全部出现，请清理并构建 FlowerService 项目，然后再次运行。请注意，可以通过选择单选按钮或者单击缩略图来更改主框架中显示的图像。<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Swing%20Client%20EE6">发送有关此教程的反馈意见</a></div>
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee@netbeans.org 邮件列表</a>。</p>
+    </body>
+</html>

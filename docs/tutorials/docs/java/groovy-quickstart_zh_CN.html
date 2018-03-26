@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Groovy 简介</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="A very simple and quick introduction to 
+      the Grails application development workflow by walking you through the creation of a
+         simple Hello World Java console application." >
+</head>
+   
+<body>
+
+<h1>Groovy 简介</h1>
+<p>
+    本文档将指导您在 NetBeans IDE 中使用 <a href="http://groovy.codehaus.org/">Groovy</a>。您将创建一个 Java 应用程序和一个 JFrame，然后从 Groovy 文件中检索一条简单的消息。
+</p>
+
+<p><b>目录</b></p>
+    <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+    <ul>
+        <li><a href="#activate">激活 Groovy 插件</a></li>
+        <li><a href="#application">创建应用程序</a></li>
+        <li><a href="#java">创建 Java 类和 Groovy 文件</a></li>
+        <li><a href="#groovy">从 Java 中调用 Groovy</a></li>
+    </ul>
+
+
+
+<p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">软件或资源</th>
+                <th class="tblheader" scope="col">要求的版本</th>
+            </tr> 
+             <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java 包</td>
+          </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+              <td class="tbltd1">版本 7 或 8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Groovy 插件</td>
+                <td class="tbltd1">-</td>
+            </tr>
+        </tbody>
+    </table>
+      
+<a name="activate"></a>
+<h2>激活 Groovy 插件</h2>
+<p>安装 Java 版本的 IDE 时，默认情况下禁用对 Groovy 的支持。要在 IDE 中使用 Groovy，您首先需要在插件管理器中激活 Groovy 插件。</p>
+
+<ol>
+    <li>从主菜单中选择 <strong>Tools</strong>（工具）> <strong>Plugins</strong>（插件）以打开插件管理器。</li>
+    <li>在插件管理器中单击 <strong>Installed</strong>（已安装）标签。</li>
+    <li>选择 "Show Details"（显示详细信息），然后在插件列表中查找 <strong>Groovy and Grails</strong>（Groovy 和 Grails）插件。
+        <p class="tips">或者，您也可以在搜索字段中键入 <code>groovy</code> 以过滤插件列表。</p></li>
+    <li>选中 "Groovy and Grails"（Groovy 和 Grails）插件对应的复选框，然后单击 "Activate"（激活）。<br> <img alt="插件管理器的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/java/groovy-quickstart/groovy-plugin.png" title="在插件管理器中选定的 Groovy 插件"></li>
+    <li>在 "NetBeans IDE Installer"（NetBeans IDE 安装程序）窗口中单击 "Activate"（激活）以激活 Groovy 插件。</li>
+    <li>在安装完成之后，在 "NetBeans IDE Installer"（NetBeans IDE 安装程序）窗口中单击 "Finish"（完成），然后在插件管理器中单击 "Close"（关闭）。</li>
+</ol>
+
+<a name="application"></a>
+<h2>创建应用程序</h2>
+
+<p>在此部分，您将创建一个新的 Java 应用程序。</p>
+
+<ol>
+    <li>从主菜单中选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键），以打开新建项目向导。</li>
+    <li>在 "Java" 类别中选择 "Java Application"（Java 应用程序）。单击 "Next"（下一步）。</li>
+
+    <li>键入 <strong>GroovyJavaDemo</strong> 作为项目名称，并在 "Project Location"（项目位置）字段中指定要创建应用程序的文件夹。</li>
+    <li>取消选中 "Create Main Class"（创建主类）复选框。单击 "Finish"（完成）。</li>
+</ol>
+<p>单击 "Finish"（完成）后，IDE 将创建项目并在 "Projects"（项目）窗口中显示项目节点。</p>
+
+<a name="java"></a>
+<h2>创建 Java 类和 Groovy 文件</h2>
+
+<p>在此部分，您将创建一个 JFrame 和一个 Groovy 类。</p>
+
+<ol>
+  <li>在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "New"（新建）> "Other"（其他）以打开 "New File"（新建文件）对话框。 </li>
+  <li>在 "Swing GUI Forms"（Swing GUI 窗体）类别中选择 "JFrame Form"（JFrame 窗体）。单击 "Next"（下一步）。<br> <img alt="&amp;quot;New File&amp;quot;（新建文件）向导中的 JFrame 窗体模板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/java/groovy-quickstart/groovy-newjframe.png" title="&amp;quot;New File&amp;quot;（新建文件）向导中的 JFrame 窗体模板"></li>
+  <li>键入 <strong>DisplayJFrame</strong> 作为类名。</li>
+  <li>键入 <strong>org.demo</strong> 作为包。单击 "Finish"（完成）。<br> <img alt="&amp;quot;New JFrame Form&amp;quot;（新建 JFrame 窗体）向导中的 &amp;quot;Name and Location&amp;quot;（名称和位置）面板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/java/groovy-quickstart/groovy-newjframe2.png" title="&amp;quot;New JFrame Form&amp;quot;（新建 JFrame 窗体）向导中的 &amp;quot;Name and Location&amp;quot;（名称和位置）面板">
+        <p>单击 "Finish"（完成）后，IDE 将创建 JFrame 窗体并在编辑器中打开文件。</li>
+    <li>在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "New"（新建）> "Other"（其他）以打开 "New File"（新建文件）对话框。 </li>
+    <li>在 "Groovy" 类别中选择 "Groovy Class"（Groovy 类）。单击 "Next"（下一步）。<br> <img alt="&amp;quot;New File&amp;quot;（新建文件）向导中的 Groovy 类模板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/java/groovy-quickstart/groovy-newgroovyclass.png" title="&amp;quot;New File&amp;quot;（新建文件）向导中的 Groovy 类模板">
+    <li>键入 <strong>GreetingProvider</strong> 作为类名。</li>
+    <li>从 "Package"（包）下拉列表中选择 <tt>org.demo</tt> 包。单击“完成”。<br>
+    <p>单击 "Finish"（完成）后，IDE 将创建 Groovy 文件并在编辑器中打开该文件。 </p></li>
+</ol>
+<p>如果在 "Projects"（项目）窗口中展开项目节点，您可以看到所创建的两个文件位于 "Source Packages"（源包）节点下。 </p>
+      <!--<img src="../../../images_www/articles/73/java/groovy-quickstart/groovy-projectswindow.png" alt="screenshot of Groovy project in Projects window" title="Groovy project in Projects window" class="margin-around b-all">-->
+
+<a name="groovy"></a>
+<h2>从 Java 中调用 Groovy</h2>
+
+<p>在此部分，您将通过代码实现 Groovy 文件与 Java 类的交互。</p>
+
+<ol>
+    <li>在编辑器中打开 <tt>GreetingProvider.groovy</tt>（如果尚未打开）。</li>
+    <li>通过添加以下代码（粗体），在类定义内定义问候语变量。保存所做的更改。
+<pre class="examplecode">class GreetingProvider {
+
+    <strong>def greeting = "Hello from Groovy"</strong>
+
+}</pre>
+    </li>
+    <li>在编辑器中打开 <tt>DisplayJFrame.java</tt>（如果尚未打开），然后单击 "Design"（设计）标签。 </li>
+    <li>打开 "Palette"（组件面板）（从主菜单中选择 "Window"（窗口）> "Palette"（组件面板）），然后将 "Text Field"（文本字段）元素 (<tt>jTextField</tt>) 从 "Palette"（组件面板）拖放到 JFrame。<br> <img alt="在编辑器 &amp;quot;Design&amp;quot;（设计）视图中打开的 DesignJFrame 中的 JTextfield 的屏幕快照" class="margin-around" src="../../../images_www/articles/73/java/groovy-quickstart/groovy-jtextfield.png" title="在编辑器 &amp;quot;Design&amp;quot;（设计）视图中打开的 DesignJFrame 中的 JTextfield"></li>
+    <li>在编辑器中单击 "Source"（源）标签，然后在类主体顶部添加以下代码以实例化 Groovy 类并在构造函数中调用 Groovy 类中的 <tt>getGreeting()</tt> 方法。
+        <pre class="examplecode">public class DisplayJFrameForm extends javax.swing.JFrame {<strong>
+
+    GreetingProvider provider = new GreetingProvider();</strong>
+
+    public DisplayJFrame() {
+        initComponents();
+        <strong>String greeting = provider.getGreeting().toString();
+        jTextField1.setText(greeting);</strong>
+    }</pre>
+    <p class="tips">您可以在 Java 类中使用代码完成来查找 Groovy 类中需要的方法。</p>
+    <img alt="编辑器中代码完成功能的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/java/groovy-quickstart/groovy-codecompletion.png" title="编辑器中的代码完成功能">
+    </li>        
+    <li>在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "Run"（运行）。
+    <p>选择 "Run"（运行）后，IDE 将编译并启动应用程序。</p>
+    <img alt="应用程序的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/java/groovy-quickstart/groovy-runproject.png" title="在文本字段中显示 Groovy 类中文本的应用程序的窗口">
+    <p>在应用程序的窗口中，您可以看到 Groovy 类中的文本显示在文本字段中。</p>
+</ol>
+
+<p> 现在，您已经了解了如何创建与 Groovy 交互的基本 Java 应用程序。</p>
+      
+      <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20NetBeans%20IDE%20Groovy%20Quick%20Start">发送有关此教程的反馈意见</a></div>
+      <br style="clear:both;" />
+     <a name="seealso"></a>
+<h2>另请参见</h2>
+<p>NetBeans IDE 还支持 Grails Web 框架，该框架使用 Groovy 语言进行 Java Web 开发。要了解如何在 NetBeans IDE 中使用 Grails 框架，请参见 <a href="../web/grails-quickstart.html">Grails 框架简介</a>。</p>
+</body>
+
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>NetBeans DTrace GUI plugin</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<h1>NetBeans
+DTrace GUI Plug-in<br>
+</h1>
+<p>By Nasser Nouri, Sun Microsystems, July, 2008</p>
+<p>This article describes how to download, install, and run the
+NetBeans<small><sup>TM</sup></small> 
+Dynamic Tracing (DTrace) GUI Plugin. The NetBeans DTrace GUI Plugin
+is a graphical user interface
+(GUI)
+for Solaris<small><sup>TM</sup></small> Dynamic Tracing (DTrace), and can be installed into the
+Sun<small><sup>TM</sup></small> Studio IDE, NetBeans<small><sup>TM</sup></small>
+IDE 6.0, NetBeans IDE 6.1, and NetBeans IDE 6.5.
+</p>
+<p>You can run D scripts from the
+GUI, even those that are embedded in shell scripts. In fact, the DTrace
+GUI Plugin runs all of the D
+scripts that are packaged in the <a
+ href="http://www.opensolaris.org/os/community/dtrace/dtracetoolkit/">DTraceToolkit</a>.
+The DTraceToolkit is a collection of useful documented scripts
+developed by the OpenSolaris DTrace community.<br>
+</p>
+<p>You can visualize the output of DTrace using <a
+ href="http://opensolaris.org/os/project/dtrace-chime/">Chime</a>.
+Chime is a graphical tool for visualizing <a
+ href="http://www.opensolaris.org/os/community/dtrace/">DTrace</a>
+aggregations. In
+particular, its ability to display data over time adds a missing
+dimension to system observability. Chime is fully integrated with the 
+NetBeans DTrace GUI Plugin.<br>
+</p>
+<p>An important feature of Chime is the ability to <a
+ href="http://opensolaris.org/os/project/dtrace-chime/new_displays">add
+new displays</a>
+without recompiling. Displays are described in XML. A placeholder
+syntax allows DTrace program values to be substituted behind the
+scenes, enabling the user of Chime to select from a described range of
+program modifications without having to know about DTrace. The
+resulting modified programs are displayable, making the tool
+educational as an added benefit. Chime can function as a toolkit of
+canned displays, but also leverages some of the dynamic potential of
+DTrace to answer unanticipated questions prompted by the current
+display.
+</p>
+<p>The NetBeans DTrace GUI Plugin is architected in such a way that
+you can easily extend and customize it.</p>
+<p>The GUI package consists of two components: The NetBeans plugin
+(includes Chime) and
+the <tt>DTraceScripts</tt> directory. </p>
+<ul>
+  <li>
+    <p>The NetBeans DTrace GUI Plugin can be installed easily into the 
+Sun
+Studio IDE, NetBeans IDE 6.0, NetBeans
+IDE 6.1, or NetBeans IDE 6.5. </p>
+  </li>
+  <li>
+    <p>The <tt>DTraceScripts</tt> directory contains several
+subdirectories. Each subdirectory contains several D scripts. The
+D scripts are categorized mostly based on DTrace providers. You can
+copy a new D script to an existing subdirectory from the shell command
+line, you can
+copy it into a newly created subdirectory in the <tt>DTraceScripts</tt>
+directory. You can also create and save a new D script from within the
+IDE. Chime displays are included in the DTraceScripts directory.</p>
+  </li>
+</ul>
+<h2>What is DTrace?</h2>
+<p>
+DTrace is a comprehensive tracing facility built into the
+Solaris<small><sup>TM</sup></small> Operating System that can be used
+by developers and administrators on live production systems to examine
+the behavior of both user programs and of the operating system itself.
+</p>
+<p>
+DTrace enables you to explore your system to understand how it works,
+track down performance problems across many layers of software, or
+locate the cause of aberrant behavior.
+</p>
+<p>
+DTrace helps you understand a software system by enabling you to
+dynamically modify the operating system kernel and user processes to
+record additional data that you specify at locations of interest,
+called probes.
+</p>
+<p>
+A probe is a location or activity to which DTrace can bind a request to
+perform a set of actions, like recording a stack trace, a timestamp, or
+the arguments to a function.
+</p>
+<p>
+Probes are like programmable sensors scattered all over your Solaris
+system in interesting places. If you want to figure out what's going
+on, you use D scripts to program the appropriate sensors to record the
+information that is of interest to you. Then, as each probe fires,
+DTrace gathers the data from your probes and reports it back to you.
+</p>
+<p>For more information, see <a
+ href="http://www.sun.com/software/solaris/observability.jsp">Observability</a>
+</p>
+<h2>System and Software Requirements and Downloads
+</h2>
+The system and software requirements are listed below:<br>
+<ul>
+  <li>The DTrace GUI plug-in is supported only on the Solaris<small><sup>TM</sup></small>
+10 08/07 Operating System and later Solaris 10 OS updates, and the OpenSolaris<small><sup>TM</sup></small> Operating
+System.</li>
+  <li>The NetBeans DTrace GUI Plugin runs with both the Sun Studio IDE
+and
+NetBeans
+IDE.</li>
+  <li>NetBeans IDE 6.0, NetBeans IDE 6.1, or NetBeans IDE 6.5 can
+be downloaded from <a href="https://netbeans.org/">https://netbeans.org/</a>
+web
+site.</li>
+  <li>The Sun Studio IDE can be downloaded from <a
+ href="http://developers.sun.com/sunstudio/downloads/">http://developers.sun.com/sunstudio/downloads/</a>
+web site.</li>
+</ul>
+<h2>The Rules of Engagement<br>
+</h2>
+<ul>
+  <li>Your privileges need to be set in the <tt>/etc/user_attr</tt>
+file. For example, the following is how DTrace privileges are set
+in the machines on which I run DTrace:
+    <pre>nassern::::defaultpriv=basic,dtrace_user,dtrace_proc,dtrace_kernel,proc_owner</pre>
+<p>You have to log out from your system completely. These
+privileges take effect when you log in to the system. </p>
+<p>User privileges are described in the security section of the
+article <a
+ href="http://docs.sun.com/app/docs/doc/820-4221"><i>Using
+DTrace with Sun Studio Tools to Understand, Analyze, Debug, and Enhance
+Complex Applications</i></a>. </p>
+  </li>
+  <li>If you have given yourself the Primary Administrator or root
+privileges,
+the DTraceScripts directory will be installed in root directory. See
+the example below:
+
+<pre>&nbsp;&nbsp;&nbsp; nassern::::profiles=Primary Administrator;roles=root;defaultpriv=basic,dtrace_user,dtrace_proc,dtrace_kernel</pre>
+</li>
+  <li>Remove or rename the DTraceScripts directory if it is already
+installed from the previous releases of the DTrace GUI Plugin.<br>
+  </li>
+  <li>The DTraceScripts directory will be installed automatically
+during the installation of the DTrace GUI Plugin.</li>
+  <li>If you will be running the IDE as yourself, the <tt>DTraceScripts</tt>
+directory will be installed in your home
+($HOME) directory. If you will be running the IDE as root, the <tt>DTraceScripts</tt>
+directory will be installed in the root directory.</li>
+</ul>
+<h2>How to Install the NetBeans DTrace GUI Plugin
+</h2>
+<ol>
+  <li>Start up NetBeans IDE or Sun Studio IDE.</li>
+  <br>
+  <li>Choose Tools &gt; Plugins.</li>
+  <br>
+  <li>On the Available Plugins tab of the Plugins window, click the
+checkbox for
+DTrace to add a checkmark. (If DTrace does not appear in the available
+plugins
+list, click Reload Catalog and try again.) Click Install. </li>
+  <br>
+  <img
+ src="../../../images_www/articles/ide/dtracegui/install60.1.png"
+ title="Available Plugins tab" alt="Available
+Plugins tab"><br>
+  <br>
+  <li>In the NetBeans IDE Installer window, click Next. <br>
+    <br>
+    <img
+ src="../../../images_www/articles/ide/dtracegui/install60.2.png"
+ title="NetBeans IDE Installer" alt="NetBeans
+IDE Installer"></li>
+  <br>
+  <li>Accept the License Agreement and click Install.</li>
+  <br>
+  <li>Click Finish. </li>
+  <br>
+  <li>Close the Plugins window. </li>
+</ol>
+<p>The NetBeans DTrace GUI Plugin is now installed into the NetBeans IDE or Sun
+Studio IDE.
+</p>
+<p>Your installation of the DTrace GUI Plugin is now complete. To open the
+DTrace
+GUI, choose Window &gt; DTrace.</p>
+<p>The DTrace GUI Plugin is also available for download from
+<a href="http://plugins.netbeans.org/"><tt>http://plugins.netbeans.org</tt></a>.</p>
+<br>
+<h2>How to Run the D Scripts in DTrace GUI Environment
+</h2>
+<p>To run D scripts in the DTrace GUI:</p>
+<ol>
+  <li>Start up the Sun Studio IDE, or NetBeans IDE. </li>
+  <br>
+  <li>Choose Windows &gt; DTrace. The DTrace tab opens on the left side
+of the IDE.</li>
+  <br>
+  <li>Select the Toolkit tab. Select a D script from the Category list box
+in the DTrace panel
+and click Start. 
+  </li>
+  <br>
+  <li>The output of the selected D script is displayed in the Output
+window. Some scripts do not generate any output until you click Stop
+(red icon).</li>
+</ol>
+&nbsp;
+<br>
+<img alt="Toolkit view"
+ src="../../../images_www/articles/ide/dtracegui/Screenshot1.png"><br>
+<ul>
+  <li>You can run multiple D scripts simultaneously.</li>
+  <li>Clicking Re-Run (green icon) runs the D script in the same Output tab.<br>
+  </li>
+  <li>Clicking Stop (red icon) stops the D script that is
+associated
+with the
+Output tab.<br>
+  </li>
+  <li>To save the output of a script, right-click in the Output window
+and choose Save As.</li>
+</ul>
+<br>
+<h3>View, Edit, or Create a New D Script<br>
+</h3>
+You can double clicks on a D script to display the selected D script in
+the Editor window. Or you may right click on the selected D script and
+choose the View/Edit option from the Popup menu to display the D script
+in the Editor window.<br>
+<br>
+<p>To create a new D script:
+</p>
+<ol>
+  <li>Click New Script. </li>
+  <br>
+  <li>In the New Script dialog box, type the name of the new D script.
+The empty D script will be created
+in the selected category (directory). The following example 
+shows how to create an empty <tt>hello</tt>
+D script in the <tt>Proc</tt> directory. <br>
+    <br>
+<img alt="Toolkit create view"
+ src="../../../images_www/articles/ide/dtracegui/Screenshot2.png"><br>
+    <br>
+  </li>
+  <li>The
+newly created
+(empty) <tt>hello.d</tt> script appear in the Editor window.</li>
+  <br>
+  <li>Enter the code for new D script in the Editor window and save
+the file. The following example shows the DTrace code for the <tt>hello.d</tt>
+script. <br>
+    <br>
+    <img alt="Toolkit hello.d view"
+ src="../../../images_www/articles/ide/dtracegui/Screenshot3.png"> <br>
+    <br>
+  </li>
+</ol>
+<p>You can run the newly created <tt>hello.d</tt> script from the
+DTrace GUI.</p>
+<p>The configuration panel lists optional parameters that
+you can specify for each selected D script.<br>
+<br>
+</p>
+<table border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td class="valign-top">Pid </td>
+      <td class="valign-top">The process-id of the running
+process</td>
+    </tr>
+    <tr>
+      <td class="valign-top">Script Args</td>
+      <td class="valign-top">The D script arguments</td>
+    </tr>
+    <tr>
+      <td class="valign-top">Executable</td>
+      <td class="valign-top">The absolute path name to the
+executable</td>
+    </tr>
+    <tr>
+      <td class="valign-top">Executable Args</td>
+      <td class="valign-top">The executable arguments</td>
+    </tr>
+  </tbody>
+</table>
+<p>In order to create the persistent data, the user specified
+parameters or properties are stored in a <tt>.xml</tt> file. The
+property file has the same name as the D script file, with the
+exception <tt>.xml</tt> extension. In other words, the user data is
+preserved for the subsequent invocation of D scripts and the IDE itself.<br>
+</p>
+<p>The following example shows how to run the <tt>memleak.d</tt>
+script. The
+<tt>memleak.d</tt> script can be used to detect memory leaks in
+applications.
+The
+<tt>memleak.d</tt> script requires two parameters: The absolute path
+name to the
+executable and the D script module name. In the example,
+<tt>/home/nassern/test/umem/hello</tt> is the absolute path name to the
+executable and <tt>libc</tt> is the module name.<br>
+</p>
+<br>
+<br>
+<img alt="Toolkit memory leak view"
+ src="../../../images_www/articles/ide/dtracegui/Screenshot4.png"><br>
+<br>
+<br>
+<h2>DTrace Output Visualization with Chime</h2>
+<p>Chime is a graphical tool for visualizing DTrace aggregations. It
+displays DTrace aggregations
+using bar charts and line graphs. <br>
+</p>
+<p>By default, Chime provides twelve display traces that can be
+selected from the list menu. The display
+traces can be used to monitor both the behavior of the Solaris kernel
+and applications that are currently running on the system. Users can
+visualize performance of functions that are defined in an application
+or
+they can visualize the kernel activities such
+as interrupt statistics, system calls, kernel function calls, and
+device I/O. <br>
+</p>
+<p>One of the most useful features of Chime is ability to turn on
+recording while DTrace is collecting data about the application and the
+system. The recorded data can be played back at a later time to
+diagnose
+the cause of failure or performance degradation. The recorded data can
+be sent to other users who have access to NetBeans DTrace GUI Plugin
+or Chime for further investigation.
+</p>
+<p>Steps to visualize the output of&nbsp; DTrace aggregations: <br>
+</p>
+<ol>
+  <li>Select Chime tab. <br>
+  </li>
+  <li>Select a display from the list of traces and press the Run button.<br>
+  </li>
+</ol>
+<br>
+<img alt="Chime view"
+ src="../../../images_www/articles/ide/dtracegui/Screenshot5.png"><br>
+<br>
+<br>
+<h3>Adding New Chime Displays</h3>
+An important feature of Chime is the ability to add new displays
+without re-compiling. A new display can easily be created by using
+Chime Display <a
+ href="http://opensolaris.org/os/project/dtrace-chime/new_displays/wizard/">Wizard</a>.
+Simply, click on the Create a New Display icon to invoke the New
+Display Wizard. The New Display Wizard will guide you through steps to
+create a new display.<br>
+<br>
+<br>
+<img alt="Chime new display wizard"
+ src="../../../images_www/articles/ide/dtracegui/Screenshot6.png"><br>
+<br>
+<br>
+<h3>Add Drilldown<br>
+</h3>
+<p>Drilldown lets you answer questions about values of interest. For
+example, for a selected executable you could get a breakdown of its
+system calls by function. Click <a
+ href="http://opensolaris.org/os/project/dtrace-chime/new_displays/wizard/drilldown">here</a>
+to continue this walk-through by adding drilldown to your new display.<br>
+<br>
+</p>
+<h2>List Probes Window</h2>
+Users can query for the list of available Providers, Modules,
+Functions,
+or Probes using the List Probes window. To open the List Probes window, click 
+the List DTrace Probes icon.<br>
+<br>
+<img alt="List Probes Window" title="List Probes Window"
+ src="../../../images_www/articles/ide/dtracegui/Screenshot7.png"><br>
+
+</body>
+</html>

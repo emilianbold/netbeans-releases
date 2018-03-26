@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+  <title>Conceitos Básicos sobre Monitoramento do JMX no NetBeans IDE</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  <meta name="description" content="Getting Started with JMX module">
+  <link rel="stylesheet" href="../../../netbeans.css">
+  <meta name="author" content="Jean-Francois Denise">
+  <meta name="author" content="Joel FERAUD">
+  <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JMX">
+  <meta name="description" content="An introductory guide to using JMX technology in NetBeans IDE"/>
+
+</head>
+
+<body>
+    
+<h1>Conceitos Básicos sobre Monitoramento do JMX no NetBeans IDE</h1>
+
+
+
+<p>O Módulo JMX do NetBeans integra a tecnologia do JMX correto para seu workflow no NetBeans IDE. Este módulo permite que você desenvolva aplicações de gerenciamento, adicione o gerenciamento às aplicações existentes, desenvolva aplicações do gerenciador e monitore o estado da Máquina Virtual. </p>
+  
+  <p>Este documento foi atualizado para a versão 3.0 do módulo do Assistente JMX, para NetBeans IDE 6.5 e mais recente e em execução no JDK 6 ou JDK 7. Você pode fazer download do módulo JMX do Centro de Atualização.</p>
+  
+
+<p class="note"> <b>Observação:</b> este documento é uma introdução curta e rápida ao módulo JMX do NetBeans IDE. Para obter informações mais detalhadas, conclua o Tutorial do Módulo JMX <a href="jmx-tutorial.html">Adicionando Instrumentação do JMX a uma Aplicação Java</a>.</p> 
+
+
+<p>Este documento com conceitos básicos fornece uma visão geral das funcionalidades do módulo JMX:</p>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+<ul>
+  <li>Assistente para criar MBeans e Gerenciadores do JMX.</li>
+  <li>Ações para atualizar MBeans existentes adicionando atributos e operações, implementando a Interface <tt>MBeanRegistration</tt> ou a <tt>NotificationEmitter</tt>.</li>
+  <li>Geração de MBean de uma Classe Java existente.</li>
+  <li>Ação para registrar MBeans no Servidor de MBeans da Plataforma Java.</li>
+  <li>Capacidade de acionar a console de gerenciamento da Plataforma Java (JConsole).</li>
+  <li>Capacidade de Executar e Depurar sua aplicação usando JConsole.</li>
+  <li>Aplicação de amostra com base no jogo de Anagramas que mostra como adicionar a potência JMX à sua aplicação.</li>
+  <li>Assistente para gerar um arquivo de propriedades de gerenciamento, que permite que você acione uma JVM gerenciável segura.</li>
+  <li>Ajuda on-line.
+  <li>Tutoriais acessíveis do site <a href="../../index.html">netbeans.org</a>.</li>
+</ul>
+
+
+<h3>Pré-requisitos</h3>
+<p>Este tutorial pressupõe que você tenha algum conhecimento básico das tecnologias a seguir ou alguma experiência de programação com elas: </p>
+    <ul>
+        <li>Tecnologia JMX: <a href="http://download.oracle.com/javase/6/docs/technotes/guides/jmx/index.html"> Documentação on-line do JMX</a>
+            </li>
+        <li>Tecnologia Java: <a href="http://www.oracle.com/technetwork/java/javase/tech/index.html"> Visão Geral das Tecnologias Java SE</a>
+            </li>
+        <li>NetBeans IDE</li>
+    </ul>
+<p>Você também se beneficiará tendo conhecimento sobre<a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/index.html"> Monitoramento e Gerenciamento da Plataforma Java</a></p>
+
+<h3>Software Necessário para o Tutorial</h3>
+<p>Para este tutorial, você precisa ter instalado no computador os seguintes softwares:</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">Software ou Recurso</th>
+        <th class="tblheader" scope="col">Versão Necessária</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">Pacote Java 7.2, 7.3, 7.4, 8.0</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+        <td class="tbltd1">versão 7 ou 8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">Plug-in do JMX</td>
+        <td class="tbltd1">Disponível na Central de Atualização do NetBeans</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">Plug-in de JConsole</td>
+        <td class="tbltd1">Disponível na Central de Atualização do NetBeans</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>Para instalar os plug-ins <strong>JMX</strong> e <strong>JConsole</strong>, selecione Ferramentas > Plug-ins e faça download dos módulos do Centro de Atualização do NetBeans.</p>
+
+<h2>Acessando os Assistentes do JMX</h2>
+<p>Depois de instalar o plug-in JMX e seu projeto ser aberto, você pode acessar o assistente JMX, escolhendo Arquivo > Novo Arquivo (Ctrl-N) e selecionando a categoria JMX. Em seguida, você pode escolher o seguinte:</p>
+<ul>
+  <li><b>Arquivo de Configuração de Gerenciamento.</b> Arquivo de propriedades Java padrão para armazenar sua configuração para gerenciamento do JMX, principalmente para conexão remota e segurança.</li>
+    
+  <li><b>Vários tipos de MBeans do JMX.</b> Um MBean pode representar um dispositivo, uma aplicação ou qualquer recurso que precisa ser gerenciado. Os MBeans expõem uma interface de gerenciamento: um conjunto de atributos legíveis e/ou graváveis e um conjunto de operações que podem ser chamadas, junto com uma autodescrição. A interface de gerenciamento não é alterada durante todo o ciclo de vida da instância do MBean. Os MBeans também poderão emitir notificações quando determinados eventos definidos ocorrerem. Os MBeans do JMX precisam ser registrados no Servidor MBean.</li>
+
+  <li><b>Gerenciador do JMX.</b> Um Gerenciador do JMX é uma aplicação que se conecta a um Servidor MBean do JMX remoto.<br /> <img alt="tela dos Assistentes Novo Arquivo JMX" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newfile.png" title="Assistentes de Novo Arquivo na categoria JMX" /></li>
+</ul>
+
+
+<h2>Atualizando MBeans</h2>
+<p>Você pode adicionar atributos e operações em seus MBeans com as ações do menu contextual do JMX, que exibirão uma caixa de diálogo. Seus MBeans também podem implementar a interface <tt>NotificationEmitter</tt>.</p>
+
+<p>Para atualizar um MBean, selecione o arquivo Java da classe do MBean na árvore do Projeto e acesse o menu pop-up, clicando com o botão direito do mouse no nó, ou simplesmente clique com o botão direito na janela do editor, na qual seu arquivo Java da classe do MBean está aberto e acesse o menu pop-up JMX.</p>
+  
+  <p>Estas ações são demonstradas no Exercício 3 do tutorial <a href="jmx-tutorial.html#Exercise_3"> Adicionando Instrumentação JMX a uma Aplicação Java</a>.</p>
+  
+<h2>Registrando MBeans</h2>
+
+<p>Para se conectar remotamente a seus MBeans e gerenciar sua aplicação, seus MBeans precisam ser registrados no Servidor MBean.</p>
+<p>Um Servidor MBean é a parte central principal da tecnologia JMX. Ele mantém referência de todos os MBeans registrados nele, pode enviar notificações do novo registro ou deleção do MBean e pode aceitar conexões remotas para expor atributos e operações de seus MBeans registrados. Se você não estiver familiarizado com Servidor MBean, leia a documentação de API <tt> <a href="http://download.oracle.com/javase/6/docs/api/javax/management/MBeanServer.html"> javax.management.mbeanserver </a> </tt>,</p>
+
+<p>Iniciando o JDK 5, a Plataforma Java fornece um Servidor MBean default, chamado o Servidor MBean da Plataforma. Ele permite que você monitore a JVM, mas também é possível usá-lo para registrar seu próprio MBean nele. Para obter detalhes sobre o Servidor MBean da Plataforma Java, leia a documentação<tt> <a href="http://download.oracle.com/javase/6/docs/api/java/lang/management/ManagementFactory.html"> java.lang.management.ManagementFactory </a></tt> da API.</p>
+
+<p>Dependendo de sua lógica, determina o local em seu código de aplicação, no qual você deseja que seus MBeans sejam registrados, geralmente na fase de inicialização de sua classe Principal. Clique com o Botão Direito do Mouse na janela do seu editor no local no qual você deseja que o código de registro do MBean seja gerado, selecione o submenu JMX e, em seguida, a ação "Gerar Registro de MBean...".</p>
+  
+    <p>Esta ação é demonstrada no Exercício 5 do tutorial <a href="jmx-tutorial.html#Exercise_5"> Adicionando Instrumentação JMX a uma Aplicação Java</a>.</p>
+
+    
+    
+<h2>Implementando e Executando Aplicações Gerenciáveis</h2>
+
+<p>JConsole é uma ferramenta gráfica compatível com JMX para monitorar uma máquina virtual Java. A JConsole pode monitorar JVMs locais e remotas e pode ser usada para monitorar e gerenciar aplicações JMX.</p>
+
+<p>Geralmente, o fluxo de trabalho da implementação e execução de aplicações gerenciáveis é o seguinte:</p>
+<ol>
+  <li>Gerar seus MBeans. </li>
+  <li>Adicionar implementação aos seus MBeans </li>
+  <li>Gerar código de registro do MBean.</li>
+  <li>Executar ou depurar seu projeto com JConsole.</li>
+</ol> 
+
+<p>Depois de instalar os plug-ins do JMX e da JConsole você verá que os seguintes botões são adicionados à barra de ferramentas. As ações também ficam acessíveis no item de menu Depurar no menu principal.</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">Botão</th>
+        <th class="tblheader" scope="col">Descrição</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="Botão Executar Projeto Principal com Monitoramento e Gerenciamento na barra de ferramentas" class="margin-around" src="../../../images_www/articles/74/java/jmx/run-project24.png" title="Botão Executar Projeto Principal com Monitoramento e Gerenciamento" /></td>
+        <td class="tbltd1">Executar Projeto Principal com Monitoramento e Gerenciamento</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="Depurar Projeto Principal com Monitoramento e Gerenciamento na barra de ferramentas" class="margin-around" src="../../../images_www/articles/74/java/jmx/debug-project24.png" title="Botão Depurar Projeto Principal com Monitoramento e Gerenciamento" /></td>
+        <td class="tbltd1">Depurar Projeto Principal com Monitoramento e Gerenciamento</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="Botão Iniciar Console de Gerenciamento de JConsole na barra de ferramentas" class="margin-around" src="../../../images_www/articles/74/java/jmx/console24.png" title="Botão Iniciar Console de Gerenciamento de JConsole" /></td>
+        <td class="tbltd1">Iniciar Console de Gerenciamento de JConsole</td>
+    </tr>
+    </tbody>
+</table>
+
+<p class="notes"><strong>Observação.</strong> JConsole faz parte da Plataforma Java e pode ser usado independentemente do IDE. Para obter detalhes, consulte os seguintes recursos.</p>
+<ul>
+    <li>Página principal <a href="http://download.oracle.com/javase/6/docs/technotes/tools/share/jconsole.html"><tt>jconsole</tt></a></li> 
+    <li><a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">Usando o documento da JConsole</a></li>
+</ul>
+
+<h2>Executando a Aplicação de Amostra</h2>
+
+<p>O módulo JMX inclui uma aplicação de amostra com o monitoramento do JMX incorporada nele.</p>
+<ol>
+  <li>Escolha Arquivo > Novo Projeto.</li>
+  <li>Nestas Amostras, selecione a categoria JMX.</li>
+  <li>Selecione o Jogo de Anagramas Gerenciado com o projeto JMX. <br /> <img alt="tela do Jogo de Anagramas Gerenciado com o projeto JMX no assistente Novo Projeto" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newproject.png" title="Jogo de Anagramas Gerenciado com o JMX no assistente Novo Projeto" width="600" />
+ </li>
+ 
+  <li>Clique em Próximo. Não é necessário alterar o nome do projeto default fornecido ou os valores do local. Confirme se a caixa de seleção Definir como Projeto Principal está selecionada. Clique em Finalizar.
+  <p class="notes"><strong>Observações.</strong> O IDE poderá solicitar a instalação das bibliotecas JUnit se você não tiver instalado o plug-in do JUnit anteriormente. Você pode clicar em Resolver, na caixa de diálogo Resolver Problemas de Recursos, para iniciar o Instalador a fim de instalar o plug-in do JUnit. Se preferir, instale o plug-in do JUnit no gerenciador de Plug-ins.</p>
+  </li>
+  <li>Depois que seu projeto for criado e definido como o Projeto Principal, Execute-o com o JConsole, clicando no botão "Executar Projeto Principal com Monitoramento e Gerenciamento" da JConsole.
+  <p class="notes"><strong>Observações.</strong> É possível que você veja uma advertência de Falha de Conexão na Console de Monitoramento e Gerenciamento Java quando a console tenta estabelecer conexão com o processo do Jogo de Anagramas. Neste tutorial, você pode clicar em Não Seguro quando solicitado a autorizar a conexão.</p>
+  
+  <p>Clicar neste botão aciona e exibe o Jogo de Anagramas:</p>
+  <img alt="Jogo de Anagramas" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-anagram.png" title="Jogo de Anagramas" />
+  
+  <p>A janela JConsole também é exibida.</p>
+  </li>
+  <li>Na janela JConsole, selecione a guia MBeans e no layout da árvore à esquerda, abra todos os nós em <tt>anagrams.toy.com</tt> conforme mostrado abaixo.<br /> <img alt="tela da janela JConsole" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jconsole1.png" title="Janela JConsole" />
+  </li>
+  <li>Selecione o nó Notificações e clique no botão Assinar na parte inferior, de forma que o JConsole recebem uma nova notificação cada vez que um anagrama é resolvido.</li>
+  <li>Agora vá para a janela Jogo de Anagramas e resolva os primeiros três ou quatro anagramas. (As respostas estão na classe WordLibrary, mas aqui estão elas: abstração, ambíguos, aritmética, barra invertida...)</li>
+  <li>Volte para a JConsole e observe que ela recebeu as quatro notificações.</li>
+  <li>Clique no nó Atributos e observe que os valores do atributo estão atualizados: <br /> <img alt="tela da janela JConsole mostrando valores atualizados" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jconsole2.png" title="Janela de JConsole mostrando valores atualizados" width="600" /></li>
+</ol>
+
+<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20JMX%20Monitoring">Enviar Feedback neste Tutorial</a></div>
+        
+        <br style="clear:both;">
+            
+<h2>Consulte Também</h2>
+<p>Este documento era uma introdução curta e rápida ao módulo JMX do NetBeans IDE. Para obter informações mais detalhadas, consulte o seguinte tutorial do módulo JMX:</p>
+<ul>
+    <li><a href="jmx-tutorial.html">Adicionando Instrumentação JMX a uma Aplicação Java</a></li>
+</ul>
+</body>
+</html>

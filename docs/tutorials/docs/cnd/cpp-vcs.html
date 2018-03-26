@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Storing NetBeans C/C++ Projects Under Version Control Systems</title>
+<link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+<link rel="stylesheet" type="text/css" href="../../../print.css" media="print">
+<link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+<meta name="description"
+content="An article about storing NetBeans IDE's or Oracle Solaris Studio IDE's C/C++ projects under version control systems">
+<meta name="author" content="Vladimir Kvashin "> 
+<meta name="keywords" content="NetBeans, IDE, integrated development environment, tutorial, guide, user, documentation, open source, C, C++, version control systems, vcs, Oracle, Solaris, Studio, development platform"> 
+
+
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Storing NetBeans C/C++ Projects Under Version Control Systems</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+<p>Contributed by Vladimir Kvashin, maintained by Alyona Stashkova<br>
+March 2014 [Revision number: V8.0-1]</p>
+</div>
+<p>Starting with NetBeans IDE 7.3 storing NetBeans C/C++ projects (mostly projects from existing code and projects from binary) under version control systems (VCS)  became less tricky. This article covers the details of storing NetBeans C/C++ projects under VCS in NetBeans IDE.</p>
+<h3>Contents</h3>
+   <img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp"
+alt="Content on this page applies to NetBeans IDE 7.3 and more recent" title="Content on this page applies to the NetBeans IDE 7.3 and more recent">
+<ul class="toc">
+    <li><a href="#requirements" title="Requirements">Requirements</a></li>
+    <li><a href="#issue" title="VCS Controlled Project Issues Resolved in 7.3">VCS Controlled Project Issues Resolved in NetBeans IDE</a>
+	<ul>
+	<li><a href="#unfriendly">VCS Unfriendly Project Data Storage</a></li>
+	<li><a href="#compiler">Compiler Options</a></li>
+	</ul></li>
+	<li><a href="#variables" title="Environment Variables List">Environment Variables List</a></li>
+	<li><a href="#cannotbuild" title="Configuring Code Assistance When You Cannot Build the Project">Configuring Code Assistance When You Cannot Build the Project</a></li>
+	<li><a href="#macros" title="Transient Macros">Transient Macros</a></li>
+	<li><a href="#prj" title="Managed Projects">Managed Projects</a></li>
+	<li><a href="#info" title="More Information about C/C++/Fortran Support">More Information about C/C++/Fortran Support</a></li>
+</ul>
+<h2><A NAME="requirements"></a>Requirements</h2>
+<p><b>To follow this tutorial, you need the following software.</b></p>
+
+<table>
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">Software</th>
+    <th class="tblheader" scope="col">Version Required</th>
+</tr>
+
+<tr>
+<td class="tbltd1">NetBeans IDE (including C/C++ support)</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">version 7.3 or more recent with NetBeans C/C++ plugin</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Java Development Kit (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Version 6, 7, or 8 </a></td>
+</tr>
+
+</tbody>
+</table>
+      <br>
+<p>See the <a href="../../../community/releases/74/install.html">NetBeans IDE Installation
+   Instructions</a> and <a href="../../../community/releases/74/cpp-setup-instructions.html">
+      Configuring the NetBeans IDE for C/C++/Fortran</a> documents for information about downloading and installing the required software.</p>
+
+
+   
+      
+
+<h2><a name="issue"></a>VCS Controlled Project Issues Resolved in NetBeans IDE </h2>
+      
+<p>The following issues were resolved in NetBeans IDE:</p>
+<ul><li><a href="#unfriendly">VCS unfriendly project data storage</a></li>
+<li><a href="#compiler">Compiler options</a></li></ul>
+<h3><a name="unfriendly"></a>VCS Unfriendly Project Data Storage</h3>
+<p>The NetBeans IDE used to change project metadata files too frequently. For example, you could just open a project that was under VCS, change nothing, and suddenly realize that some project metadata files was changed, so you needed to either check them in or roll back.</p>
+<p>This issue was mostly related to projects from existing code and projects from binary, in other words projects that are based on user make files. </p>
+<p>The root of the issue was due to the fact that the IDE had very little information about which files in such projects took part in build and what compiler options each file was build with. Without such knowledge,  the Code Assistance feature could not be precise. So the IDE had to use some background intelligence to figure out the project content and Code Assistance configuration to parse right files with right options. Unfortunately, such intelligence stored its data in a VCS-unfriendly manner.</p>
+<h3><a name="compiler"></a>Compiler Options</h3>
+<p>The compiler  issue stems from the fact that compiler options used for building a project can be very specific to the machine you build your project on. For example, OpenJDK build uses <code>ALT_BOOTDIR</code>, which needs to be set to the path to my JDK. This path can be different even on machines with the same operating system. The IDE stores all compiler options in project metadata – without knowing such options it won't be able to parse your code next time and be precise enough.</p>
+<p>When some  machine or user specific information gets into VCS, the project metadata is changed after  another user checks it out and  builds a project (new options are stored), although the user did no changes in the project.
+</p>
+
+<h2><a name="variables"></a>Environment Variables List</h2>
+      <p>For projects from existing code or from binary, you may specify the list of environment variables to be used when storing project metadata. When the IDE stores the compiler options and an option value coincides with a variable value, a macros will be written instead.</p>
+	  <p> Consider the following example. There <code>ALT_BOOTDIR=/usr/jdk/latest</code> and  <code>ALT_BOOTDIR</code> variables are listed in the above mentioned field in my environment. If the IDE realizes that the <code>-I/usr/jdk/latest/include</code> option was used when compiling a file, it will store <code>${ALT_BOOTDIR}/include</code> in the  project metadata.</p>
+    
+      <p>The Configure Code Assistance wizard also works on a per-configuration 
+basis: it alters only the configuration that is currently active. So you can 
+run it separately for each configuration, and get different code assistance 
+settings for different platforms.
+</p>
+      
+<h2><a name="cannotbuild"></a>Configuring Code Assistance When You Cannot Build the Project</h2>
+ <p>The Configure Code Assistance wizard is most efficient if you build 
+your code with the debugging information. The best options are <code>-g3
+-gdwarf-2</code> for GNU compilers and just <code>-g</code> for Sun compilers.
+</p>
+    
+ <p>In  case  your project is not built or does not contain any debugging 
+information, the Configure Code Assistance wizard has a special mode, Search 
+file system for C/C++ header files. In this mode, the NetBeans IDE tries to 
+resolve failed include directives by searching the file system for headers. 
+For this purpose the wizard asks you to enter the path to search for 
+headers. By default, it is a project source root.</p>     
+      
+ <h2><a name="macros"></a>Transient Macros</h2>
+      <p>
+     Another thing that may alter project metadata unexpectedly are macros (<code>-D</code> options) that are volatile. For example a macros that depends on a date or current user name. Storing such macros values alters project metadata files, but this does not make much sense.</p>
+      <p>You can specify the list of such macros to ignore in the &quot;Transient macros&quot; field. This prevents the IDE from storing these macros values in project metadata. Macros are to be specified in the  macro=value form.
+Here is a screenshot of  a project properties:</p>
+      <p class="align-center">
+		<a title="Project properties" rel="lytebox" href="../../../images_www/articles/73/cnd/cpp-vcs/proj_props.png">
+
+					   <img alt="Project properties" src="../../../images_www/articles/73/cnd/cpp-vcs/proj_props_small.png"></a></p>
+    
+
+<h2><a name="prj"></a>Managed Projects</h2>
+      <p>
+     In managed projects (&quot;C/C++ Application&quot;, &quot;C/C++ Dynamic Library&quot;, or &quot;C/C++ Static Library&quot; projects) you can also use environment variables to specify the compiler options. They should be preceded with a dollar sign and placed in curly braces as follows: <code>${ALTBOOTDIR}/include</code>.</p>
+    
+      <h2><a name="info"></a>More Information about C/C++/Fortran Support</h2>
+<ul>
+<li>Please visit the <a href="https://netbeans.org/kb/trails/cnd.html">C/C++ Learning Trail</a> for more information about using the C/C++ features of the NetBeans IDE.</li>
+
+<li>Join the <a href="http://forums.netbeans.org/cnd-users.html">NetBeans C/C++ User Forum</a> to take part in discussions related to C/C++ development using the NetBeans IDE or ask for help. </li>
+<li>You can  file a bug or suggest an enhancement to <a href="https://netbeans.org/bugzilla/enter_bug.cgi?component=cnd">Bugzilla</a> (netbeans.org registration is required).</li>
+<li>For  information on using popular version control packages with  NetBeans IDE, see &quot; <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&amp;id=NBDAG234">Versioning Applications with Version Control</a>&quot; in <i>Developing Applications with NetBeans IDE</i>.</li>
+</ul>
+
+      <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=subject=Feedback:%20Storing%20NetBeans%20C/++%20Projects%20Under%20Version%20Control%20System">Send Feedback on This Tutorial</a><br style="clear:both;">
+
+</div>
+
+</body>
+</html>

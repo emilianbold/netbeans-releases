@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+        <!--
+        Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+        --><title>Отладка исходного кода PHP в IDE NetBeans для редактора PHP</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, PHP, editor">
+        <meta name="DESCRIPTION" content="NetBeans, PHP editor, debugging">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></head><body>
+        <h1>Отладка исходного кода PHP в IDE NetBeans </h1>
+
+        <p><b>Содержание</b></p>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+        <ul>
+            <li><a href="#gettingReady">Подготовка</a></li><li><a href="#howDebuggerWorks">Работа отладки PHP с XDebug в IDE NetBeans</a></li>
+            <li><a href="#options">Параметры отладки</a></li>
+            <li><a href="#work">Работа с панелью инструментов и редактором</a></li>
+            <li><a href="#editorLayout">Окна отладчика</a></li>
+      <li><a href="#debuggingSession">Сеанс отладки</a></li><li><a href="#sampleDebuggingSession">Пример сеанса отладки</a>
+                </li><li><a href="#usingAdditionalWatches">Использование дополнительных наблюдаемых выражений</a></li>
+            <li><a href="#mixedPHPHTMLCases">Использование сочетания PHP и HTML</a></li><li><a href="#debug_url">Отображение пути, прокси отладчика и запуск сеанса отладки по пользовательскому URL-адресу</a></li>
+        </ul>
+
+        <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+
+        <table>
+
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">Пакет загрузки PHP</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Механизм PHP</td>
+                    <td class="tbltd1">Версия 5
+                    </td></tr>
+                <tr>
+
+                    <td class="tbltd1">Веб-сервер</td>
+                    <td>Рекомендуется использовать <a href="http://httpd.apache.org/download.cgi" target="_blank">сервер HTTP Apache версии 2.2</a>.<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Отладчик PHP</td>
+                    <td><a href="http://www.xdebug.org/" target="_blank">Версия XDebug 2.0 или выше</a></td>
+
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><a name="gettingReady"></a>Подготовка</h2>
+
+        <p>Для успешной отладки приложений PHP в IDE NetBeans для PHP, требуется механизм PHP, локальный веб-сервер Apache и отладчик XDebug, <a href="../../trails/php.html#configuration">установленный и настроенный для разработки PHP</a>. Если возникают проблемы с запуском XDebug, см. <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">материалы по XDebug на вики-сайте NetBeans</a> и/или обратитесь к сообществу по адресу users@php.netbeans.org.</p>
+
+        <h2><a name="howDebuggerWorks"></a>How PHP Debugging with XDebug Works in IDE NetBeans</h2>
+        
+        <p>When you run XDebug from IDE NetBeans, PHP program execution pauses at every line where you set a breakpoint. Когда исполнение программы установлено на паузу, XDebug может извлечь информацию о текущем состоянии программы, такую, как значения переменных программы. Фактически это означает следующую последовательность выполняемых действий: </p>
+
+
+        <ol>
+            <li>Установите точку останова в каждой строке, на которой исполнение исходного кода PHP должно приостановиться.</li>
+            <li>Начните сеанс отладки.</li><li>Когда достигнута строка с точкой останова, исполняйте сценарий по одной строке, нажимая F7 и F8. Отслеживайте состояние приложения в <a href="#editorLayout">окнах отладчика</a>.</li>
+            <li>Закройте сеанс отладки.</li>
+            
+        </ol>
+        <p>For a detailed workflow of using XDebug with IDE NetBeans, see <a href="#debuggingSession">Debugging Session</a>.</p>
+        <p>IDE NetBeans обеспечивает панель инструментов отладки, которая используется для пошагового перехода между файлами. См. <a href="#work">Работа с панелью инструментов и редактором</a></p>
+        <h2><a name="options"></a>Параметры отладки</h2>
+        <p>Параметры IDE NetBeans включают вкладку для изменения определенных настроек по умолчанию для отладки PHP. Чтобы открыть эти параметры, зайдите в Tools (&quot;Средства&quot;) &gt; Options (&quot;Параметры&quot;) (NetBeans &gt; Preferences (&quot;Настройки&quot;) на Mac), выберите параметры PHP, после чего выберите вкладку Debugging (&quot;Отладка&quot;).</p>
+        <p class="notes"><strong>Примечание </strong>. Вкладка 'Отладка' была реализована в IDE NetBeans версии 7.1. В более ранних версиях NetBeans на вкладке 'Общие' PHP имеются параметры отладки. Не все параметры версии 7.1 доступны в предыдущих версиях.</p>
+        <p><img alt="Вкладка &apos;Отладка&apos; в &apos;Параметры: PHP&apos;" class="margin-around" height="480" src="../../../images_www/articles/72/php/debugging/php-debugging-options.png" width="586"></p>
+        <p>В данной панели можно изменить следующие параметры:</p>
+        <ul>
+            <li><strong>Debugger port (&quot;Порт отладчика&quot;) </strong>Это порт, используемый XDebug  и установленный в php.ini.  По умолчанию используется порт 9000. <i>Номер порта в этом диалоге должен совпадать с номером порта отладчика, установленным в php.ini.  В данном диалоговом окне нельзя изменить порт, используемый XDebug.  В IDE NetBeans можно передать информацию только о порте, который используется XDebug.</i></li>
+            <li><strong>Идентификатор сеанса</strong> Произвольное название сеанса отладки.  По умолчанию он называется netbeans-xdebug. Это значение важно отметить в случаях, где нам надо установить свойство <tt>xdebug.idekey</tt> в php.ini, например в некоторых случаях удаленной отладки.</li>
+            <li><strong>Остановка на первой строке.</strong> Установите этот флажок для сеанса отладки, чтобы остановка произошла на первой строке кода вместо первой точки останова.  В результате фокус будет удержан в среде IDE вместо переключения на окно браузера при запуске сеанса отладки.</li>
+            <li><strong>Точки наблюдения и вычисления во всплывающем окне.</strong> Точки наблюдения и вычисления во всплывающем окне отключены по умолчанию. Точки наблюдения и вычисления во всплывающем окне нарушают стабильность работы XDebug.         </li>
+            <li><strong>Максимальная глубина структур.</strong> Задается видимость вложенных структур (таких как вложенные массивы, объекты в объектах и т.д.) </li>
+            <li><strong>Максимальное число потомков.</strong> Задается видимость элементов массивов при оценке наблюдения. (Если установить максимальное число дочерних элементов на 1, то можно будет увидеть только первый элемент массива, даже если массив включает более одного элемента).</li>
+            <li><strong>Показывать запрошенные URL-адреса.</strong> Открывается новое окно вывода при отладке. Это окно вывода называется PHP Requested Urls (&quot;URL-адреса, запрошенные PHP&quot;) и отображает URL-адреса, обрабатываемые в настоящий момент. URL-адреса можно щелкать.  Щелкните URL-адрес в окне вывода, чтобы открыть этот URL-адрес в окне браузера.</li>
+            <li><strong>Консоль отладчика PHP.</strong> Открывается новое окно вывода, в котором показан результат сценариев отладки.
+                
+                    <p class="notes"><strong>Примечание.</strong> Задайте <tt>output_buffering = Off</tt> в используемом файле <tt>php.ini</tt>. иначе выводы сценариев будут появляться в окне вывода с задержкой.</p>
+            </li>
+        </ul>
+        <p>В рамках данного учебного курса нет необходимости менять любые из этих параметров. При желании это можно сделать для включения точек наблюдения.</p>
+        
+        <h2 id="work">Работа с панелью инструментов и редактором</h2>
+        <p>Редактор позволяет просматривать содержимое файлов.  Использование редактора и панели инструментов отладчика при отладке обеспечивает пошаговое выполнение кода и возможность просмотра влияния содержимого файлов на то, что происходит в браузере.</p>
+        <ul>
+          <li><a href="#toolbar">Использование панели инструментов отладчика</a></li>
+          <li><a href="#editorBreakpoints">Установка точек останова</a></li>
+          <li><a href="#editorTooltips">Просмотр всплывающих подсказок</a></li>
+        </ul>
+        <div class="indent"> <a name="toolbar"></a>
+            <h3>Использование панели инструментов отладчика</h3>
+          <p>При запуске сеанса над редактором отладки отображается панель инструментов отладчика.             </p>
+          <p><img alt="Панель инструментов отладчика в отложенном состоянии" class="margin-around" src="../../../images_www/articles/72/php/debugging/debugger-toolbar2.png" title="Панель инструментов отладчика в отложенном состоянии"></p>
+        
+            <p>Панель инструментов предоставляет возможности выполнения следующих действий:</p>
+          <table class="cell align-left" width="600">
+              <tr>
+                <td class="align-right cell"><strong>Завершить сеанс</strong> (&nbsp;<img alt="Кнопка &apos;Завершить сеанс отладки&apos;" src="../../../images_www/articles/72/php/debugging/finish-session-button.png">&nbsp;)</td>
+                <td>Завершение сеанса отладки</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Приостановить</strong> (&nbsp;<img alt="Кнопка &apos;Приостановить&apos;" src="../../../images_www/articles/72/php/debugging/pause-button.png">&nbsp;)</td>
+                <td>Приостановка сеанса отладки</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Возобновить</strong> (&nbsp;<img alt="Кнопка &apos;Возобновить&apos;" src="../../../images_www/articles/72/php/debugging/resume-button.png">&nbsp;)</td>
+                <td>Возобновление сеанса отладки</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Обход процедур</strong> (&nbsp;<img alt="Кнопка &apos;Обход процедур&apos;" src="../../../images_www/articles/72/php/debugging/step-over-button.png">&nbsp;)</td>
+                <td>Переход к следующему оператору выполнения</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Вход в</strong> (&nbsp;<img alt="Кнопка &apos;Вход в&apos;" src="../../../images_www/articles/72/php/debugging/step-into-button.png">&nbsp;)</td>
+                <td>Переход к вызову функции</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Выходt</strong> (&nbsp;<img alt="Кнопка &apos;Выход&apos;" src="../../../images_www/articles/72/php/debugging/step-out-button.png">&nbsp;)</td>
+                <td>Выход из текущего состояния вызова функции</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Переход к курсору</strong> (&nbsp;<img alt="Кнопка &apos;Переход к курсору&apos;" src="../../../images_www/articles/72/php/debugging/run-to-cursor-button.png">&nbsp;)</td>
+                <td>Запуск выполнения с позиции курсора</td>
+              </tr>
+            </table>
+          <p>&nbsp;</p>
+      <a name="editorBreakpoints"></a>
+            <h3>Установка точек останова</h3>
+          <p>Точки останова, установленные в файлах, указывают позицию, в которой отладчик должен прервать выполнение кода. </p>
+          <p class="alert"><strong>Важно!</strong> Для использования XDebug в коде PHP <em>необходимо</em> установить точки останова.</p>
+          <p>Для установки точки останова щелкните в левом поле редактора строку, в которой необходимо установить эту точку.</p>
+          <img alt="Точка останова задана в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/set-breakpoint.png" title="Точка останова может быть задана в редакторе">
+          <p>Чтобы удалить точку останова, щелкните маркер точки останова (&nbsp;<img alt="Метка точки останова" src="../../../images_www/articles/72/php/debugging/breakpoint-badge.png">&nbsp;).</p>
+          <p>Также можно временно отключить точки останова.  Для этого щелкните правой кнопкой мыши значок точки останова и снимите выделение с 'Точка останова' > ✔'Включено'. Выполняется переключение точки останова в отключенное состояние, после чего маркер выделяется серым (&nbsp;<img alt="Метка точки останова" src="../../../images_www/articles/72/php/debugging/disabled-breakpoint-badge.png">&nbsp;) и отображается на левом поле.</p>
+          <p>Если отладчик во время работы достигает точки останова, отладка приостанавливается, что позволяет просмотреть значения в окнах отладки и перейти к любому месту кода после точки останова.</p>
+          <img alt="Отладчик приостанавливает работу по достижении точек останова" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/stop-on-breakpoint.png" title="Отладчик приостанавливает работу по достижении точек останова"> <a name="editorTooltips"></a>
+            <h3>Просмотр всплывающих подсказок</h3>
+          <p>Когда работа отладчика приостановлена в время сеанса отладки, можно навести мышь на идентификатор PHP в редакторе для отображения подсказки. Если идентификатор действителен в выбранном окне стека вызовов, отображается его значение.  Также можно выбрать выражения PHP. Значение выражения отображается в подсказке. </p>
+           <img alt="Подсказки отображаются в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/tool-tip.png" title="Подсказки отображаются в редакторе"> </div>
+        
+        <h2><a name="editorLayout"></a>Окна отладчика </h2>
+
+        <p>После начала сеанса отладки под главным окном редактора появится несколько окон отладчика.  Окна отладчика позволяют отслеживать значения переменных и выражений по мере перебора кода, изучать стеки вызовов исполняющихся потоков, проверять URL-адреса файлов исходного кода и переключаться между сеансами, если запущены параллельные сеансы отладки.</p>
+
+
+      <ul>
+          <li><a href="#sessions">Окно &quot;Sessions&quot;</a></li>
+          <li><a href="#localVar">Окно &quot;Variables&quot;</a></li>
+          <li><a href="#watches">Окно &quot;Watches&quot;</a></li>
+          <li><a href="#callStack">Окно &quot;Call Stack&quot;</a></li>
+          <li><a href="#threads">Окно &quot;Threads&quot;</a></li>
+          <li><a href="#sources">Окно &quot;Sources&quot;</a></li>
+          <li><a href="#breakpoints">Окно &quot;Breakpoints&quot;</a></li>
+        </ul>
+        <p>Все окна отладки можно вызвать из среды IDE путем выбора &quot;Window &gt; Debugging&quot;.  После активации сеанса отладки можно перейти в окна отладки.</p>
+         <img alt="Доступ к меню отладчика получается из главного меню среды IDE" class="margin-around" src="../../../images_www/articles/72/php/debugging/debugger-menu.png" title="Доступ к меню отладчика получается из главного меню среды IDE"> 
+        <div class="indent"> <a name="sessions"></a>
+            <h3>Окно &quot;Sessions&quot;</h3>
+          <p>В окне &quot;Sessions&quot; отображаются сеансы отладки, активные в настоящий момент.  При запуске сеанса отладки PHP запись для отладчика PHP можно увидеть в окне Sessions (&quot;Сеансы&quot;).</p>
+          <img alt="В окне &apos;Сеансы&apos; отображается сеанс отладчика FireFox" class="margin-around" src="../../../images_www/articles/72/php/debugging/sessions-win.png"> 
+          <p class="tip">IDE NetBeans также позволяет запускать одновременно несколько сеансов отладчиков. Например, можно одновременно отлаживать проект Java и проект PHP. В данном случае можно определить два сеанса, перечисленных в окне Sessions (&quot;Сеансы&quot;).</p>
+          <img alt="В окне &apos;Сеансы&apos; отображается несколько сеансов" class="margin-around" src="../../../images_www/articles/72/php/debugging/sessions-win2.png">
+          <p>Текущий сеанс (т.е. сеанс, которым можно управлять с помощью панели инструментов отладчика) отмечен более заметным значком ( <img alt="Значок текущего сеанса" src="../../../images_www/articles/72/php/debugging/current-session-icon.png"> ). Для переключения сеансов дважды щелкните сеанс, который необходимо сделать текущим или щелкните правой кнопкой мыши сеанс, который не является текущим и выберите 'Сделать текущим'.</p>
+          <p><strong class="notes">Примечание. </strong>Рекомендуется воспользоваться переключением сеансов, если текущий сеанс отложен.</p>
+          <p>Также можно щелкнуть правой кнопкой мыши всплывающее окно для завершения сеанса (щелкните правой кнопкой мыши и выберите 'Завершить') или переключитесь между отладкой текущего потока или всех потоков в сеансе (щелкните правой кнопкой мыши и выберите 'Область' > 'Отладка всех потоков' или 'Отладка текущего потока').</p>
+          <a name="localVar"></a>
+            <h3>Окно &quot;Variables&quot;</h3>
+          <p>Когда работа отладчика приостановлена, в окне Variables (&quot;Переменные&quot;) отображаются переменные текущего объекта <code>window</code> для выбранного кадра стека вызовов.  Узел отображается для каждой переменной в текущем окне. Суперглобальные переменные группируются в отдельном узле.</p>
+    <img alt="В окне &apos;Локальная переменная&apos; отображаются сведения об образце переменной" class="margin-around" src="../../../images_www/articles/72/php/debugging/vars-win.png">
+          <p>&nbsp;</p>
+          <p>По мере продвижения по коду значение некоторых локальных переменных может меняться. Такие локальные переменные в окне &quot;Local variables&quot; отображаются полужирным шрифтом. Также можно щелкнуть непосредственно столбец &quot;Value&quot; и вручную изменить значения переменной.</p>
+          
+          <a name="watches"></a>
+          <h3>Окно &quot;Watches&quot;</h3>
+          <p>Установка точек наблюдения нарушает стабильную работу XDebug и не рекомендуется. По умолчанию точки наблюдения отключены. Однако, если точки наблюдения все же нужно установить, см. <a href="#usingAdditionalWatches">Использование дополнительных точек наблюдения</a>.</p>
+          <h3><a name="callStack"></a>Окно &quot;Call Stack&quot;</h3>
+          <p>В окне &quot;Call Stack&quot; (&quot;Стек вызовов&quot;) представлена последовательность вызовов, осуществленных в процессе выполнения.  При приостановке отладчика в окне &quot;Call Stack&quot; отображается последовательность вызовов функций (т.е. <em>стек вызовов</em>).  При первой приостановке автоматически выделяется самое верхнее окно стека вызовов. Дважды щелкните вызов функции в окне, чтобы перейти к этой строке в редакторе. Если выполнен вызов к классу PHP, окно навигатора также переместится к этой строке, если дважды щелкнуть вызов.</p>
+           <img alt="В окне &apos;Стек вызовов&apos; отображается образец последовательности вызовов." class="margin-around b-bottom" src="../../../images_www/articles/72/php/debugging/call-stack-win.png"> 
+          <p>Можно дважды щелкнуть кадр стека вызовов, чтобы выбрать его, а затем рассмотреть значения переменных или выражений для данного кадра в окнах <a href="#localVar"> Variables</a> (&quot;Переменные&quot;) и <a href="#watches">Watches</a> (&quot;Точки наблюдения&quot;).<a name="threads"></a>            </p>
+          <h3>Окно &quot;Threads&quot;</h3>
+          <p>Окно Threads (&quot;Потоки&quot;) указывает, какой сценарий PHP активен в настоящий момент и выполняется ли он, либо находится на точке останова. Если сценарий выполняется, необходимо перейти в окно браузера для взаимодействия с ним.</p>
+          <img alt="Окно &apos;Потоки&apos;, в котором отображается страница с несколькими фреймами" class="margin-around" src="../../../images_www/articles/72/php/debugging/threads-win.png"> <a name="sources"></a>
+          <h3>Окно &quot;Sources&quot;</h3>
+          <p>В окне &quot;Sources&quot; отображаются все файлы и сценарии, загруженные для сеанса отладки.  В настоящий момент окно Sources (&quot;Исходные коды&quot;) не работает для проектов PHP.</p>
+      <a name="breakpoints"></a>
+              <h3>Окно &quot;Breakpoints&quot;</h3>
+          <p>Для просмотра всех точек останова, установленных в среде IDE, можно использовать окно &quot;Breakpoints&quot;.</p>
+            <img alt="В окне точек останова отображаются образцы точек останова" class="margin-around" src="../../../images_www/articles/72/php/debugging/breakpoints-win.png"> 
+          <p>Из окна Breakpoints можно включать или отключать точки останова в окне Context (&quot;Контекст&quot;).  Также можно создавать группы точек останова. </p>
+        </div>
+        <h2><a name="debuggingSession"></a>Сеанс отладки </h2>
+
+        <p>Следующая процедура представляет собой последовательность выполняемых действий в типичном сеансе отладки.</p>
+
+        <strong>Для запуска сеанса отладки выполните следующее:</strong>
+
+        <ol>
+            <li>Запустите среду IDE и откройте файл, содержащий исходный код, который необходимо отладить. </li><li>Установите точку останова в каждой строке, где отладчику следует приостановить работу. Для установки точки останова, поместите курсор в начало строки и нажмите Ctrl-F8 / ⌘-F8 или выберите 'Отладка' > 'Переключение точек останова на строке' </li><li>В окне 'Проекты' перейдите к узлу текущего проекта, щелкните правой кнопкой мыши и выберите 'Отладка' во всплывающем меню. Среда IDE открывает окна отладки и выполняет проект в отладчике до достижения установленной точки останова. <br> <strong>Примечание.</strong> Если текущий проект настроен как 'Главный' выберите 'Отладка' &nbsp;> 'Отладка главного проекта' или нажмите Ctrl-F5, или щелкните <img alt="Кнопка &apos;Отладка основного проекта&apos;" src="../../../images_www/articles/72/php/debugging/debug-main-project-button.png">. </li><li>Перейдите в окно &quot;Local Variables&quot;.  В данном окне показаны все переменные, которые инициализированы внутри текущей функции, их типы и их значения. </li><li>Для просмотра значения переменной отдельно от функции переместите курсор на отображаемую переменную.  Подсказка показывает значение переменной. </li><li>Для построчного выполнения программы (включая строки внутри всех вызванных функций) нажмите F7 или выберите &quot;Debug &gt; StepInto&quot; и наблюдайте за изменениями значений переменных в окне &quot;Локальные переменные&quot;. </li><li>Для проверки логики программы путем наблюдения за изменениями выражений определите новый параметр наблюдения:
+                <ol type="a"><li>Для открытия окна &quot;Watches &quot; выберите путь &quot;Window &gt; Debugging &gt; Watches&quot; или нажмите сочетание клавиш Ctrl-Shift-2.  Откроется окно &quot;Watches&quot;.</li><li>Щелкните окно &quot;Watches&quot; правой кнопкой мыши и выберите &quot;New Watch&quot; во всплывающем меню.  Откроется окно &quot;New Watch&quot;.</li><li>Введите наблюдаемое выражение и нажмите OK. </li>
+                    
+                </ol><p>Теперь в течение отладки можно выполнить дополнительную проверку.</p>
+                <p class="alert"><strong>Важно!</strong> Для установки точек наблюдения необходимо включить точки наблюдения на <a href="#options">вкладке Debugging (&quot;Отладка&quot;) параметров PHP</a>.</p>
+            </li><li>Для пропуска построчного выполнения кода в функции получите возвращенное этой функцией значение, перейдите к следующей строке после вызова функции и нажмите F8 или выберите &quot;Debug &gt; Step Over&quot;.</li><li>Для пропуска построчного выполнения кода в функции получите возвращенное этой функцией значение, перейдите к следующей строке после вызова функции и нажмите F8 или выберите &quot;Debug &gt; Step Over&quot;.</li><li>Для приостановки сеанса отладки выберите &quot;Debug &gt; Pause&quot;.</li><li>Для продолжения сеанса отладки выберите &quot;Debug &gt; Continue&quot;.<img alt="Кнопка &apos;Продолжить сеанс отладки&apos;" src="../../../images_www/articles/72/php/debugging/continue-debugging-session.png">.</li><li>Для отмены сеанса отладки нажмите <img alt="Кнопка &apos;Отменить сеанс отладки&apos;" src="../../../images_www/articles/72/php/debugging/stop-debugging-session.png">. </li><li>
+
+                <p>После завершения программы окна отладки закрываются. </p>
+            </li>
+        </ol>
+
+        <h2><a name="sampleDebuggingSession"></a>Пример сеанса отладки</h2>
+
+        Пример в этом разделе иллюстрирует базовые функции отладчика, включая вход в функции и перешагивание через них. Кроме того, в нём показан типичный вывод окна отладчика.
+        <ol>
+            <li>Создайте новый проект PHP со следующими параметрами:
+                <ul><li>Тип проекта &ndash; приложение PHP</li><li>Расположение исходных файлов &ndash; по умолчанию папка <tt>htdocs</tt></li><li>Настройка выполнения &ndash; локальный веб-сайт</li></ul>
+                Для получения более подробной информации о настройке проекта PHP см. <a href="project-setup.html">Настройка проекта PHP</a>.
+            </li><li>Для активации возможности использования &quot;горячих&quot; клавиш во время сеанса установите курсор на узел проекта и выберите &quot;Set as Main Project&quot; во всплывающем меню. </li><li>Введите следующий код в файле <tt>index.php</tt>:
+                <pre class="examplecode">  &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"&gt;<br>  &lt;html&gt;<br>  	&lt;head&gt;<br>  		&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;<br>  			&lt;title&gt;NetBeans PHP debugging sample&lt;/title&gt;<br>		&lt;/head&gt;<br>&lt;body&gt;<br>	&lt;?php<br>  	$m=5;<br>  	$n=10;<br>  	  $sum_of_factorials = calculate_sum_of_factorials ($m, $n);<br>  	  echo "The sum of factorials of the entered integers is " . $sum_of_factorials;<br>  	<br>	    function calculate_sum_of_factorials ($argument1, $argument2) {<br>  	 	$factorial1 = calculate_factorial ($argument1);<br>  	 	$factorial2 = calculate_factorial ($argument2);<br>  	 	$result = calculate_sum ($factorial1, $factorial2);<br>  	 	return $result;<br>  		}<br>	<br>	  function calculate_factorial ($argument) {<br>  	  	$factorial_result = 1;<br>  	 	for ($i=1; $i&lt;=$argument; $i++) {<br>  	 		$factorial_result = $factorial_result*$i;<br>  	 	}<br>  			return $factorial_result;<br>  		}<br>	  <br>	    function calculate_sum ($argument1, $argument2) {<br> 			return $argument1 + $argument2;<br>     	}	<br>?&gt;<br>  &lt;/body&gt;<br>&lt;/html&gt;<br>  </pre>
+
+                Этот код содержит три функции:
+                <ul><li>функция <tt>calculate_factorial ()</tt>;</li><li>функция <tt>calcualte_sum ()</tt>;</li><li> функция <tt>calculate_sum_of_factorials ()</tt> (дважды вызывает функцию <tt>calculate_factorial</tt>, затем однократно вызывает функцию <tt>calcualte_sum ()</tt> и возвращает рассчитанную сумму факториалов).</li></ul>
+            </li><li>Задайте точку останова (Ctrl-F8/⌘-F8) в начале блока PHP:
+                <pre class="examplecode">&lt;?php</pre>
+            </li><li>Для начала отладка щелкните <img alt="Кнопка &apos;Отладка основного проекта&apos;" src="../../../images_www/articles/72/php/debugging/debug-main-project-button.png">. Отладчик остановится по достижении точки останова.</li><li>Нажмите F7 три раза.  Отладчик остановится в той строке, в которой вызывается функция <tt>calculate_sum_of_factorials ()</tt>.  В окне &quot;Local Variables&quot; отображаются переменные <tt>$m</tt> и <tt>$n</tt> с соответствующими значениями:<br> <img alt="Отладчик остановится при вызове функции" class="margin-around" src="../../../images_www/articles/72/php/debugging/degugger-stopped-at-function-call.png"></li><li>Нажмите F7 для перехода к функции <tt>calculate_sum_of_factorials()</tt>.  Отладчик начнет выполнение кода внутри функции <tt>calculate_sum_of_factorials ()</tt> и остановится при вызове функции <tt>calculate_factorial()</tt>. <br> <img alt="Отладчик остановился при вызове встроенной функции calculate_factorial()." class="margin-around" src="../../../images_www/articles/72/php/debugging/call-of-embedded-function.png"> <br> Теперь в окне &quot;Local Variables&quot; отображаются локальные переменные <tt>$argument1</tt> и <tt>$argument2</tt>, заявленные в функции <tt>calculate_sum_of_factorials ()</tt>. <br> <img alt="В окне &apos;Локальные переменные&apos; отображаются переменные текущей функциии до вызова встроенной функции" class="margin-around" src="../../../images_www/articles/72/php/debugging/variables-inside-function-call-another-function.png"></li><li>Нажмите F7.  Отладчик начнет выполнение кода с функцией <tt>calculate_factorial()</tt>.  В окне &quot;Call Stack&quot; отображается стек вызовов функций в обратном порядке, начиная с последней вызванной функции: <br> <img alt="Окно &amp;quot;Call Stack&amp;quot; (&amp;quot;Стек вызовов&amp;quot;) с тремя вызовами функций, перечисленными в обратном порядке." class="margin-around" src="../../../images_www/articles/72/php/debugging/call-stack.png"> </li><li>Нажмите F7 для перехода к циклу.  Просмотрите значения переменных в окне Variables (&quot;Переменные&quot;). <br> <img alt="Окно &apos;Локальные переменные&apos; с переменными. Выполняется проверка корректности цикла." class="margin-around" src="../../../images_www/articles/72/php/debugging/local-variables-inside-loop.png"> </li><li>После подтверждения правильности работы кода нажмите Ctrl-F7/⌘-F7, чтобы отменить выполнение функции. Затем будет выполнен возврат к строке, следующей после строки вызова функции <tt>calculate_factorial()</tt>. <br> <strong>Примечание.</strong> В качестве альтернативы можно нажимать F7 до завершения программой выполнения функции <tt>calculate_factorial()</tt>. После вызова этой функции также будет выполнен возврат к следующей строке. <br> <img alt="Отладчик остановился при втором вызове встроенной функции calculate_factorial()." class="margin-around" src="../../../images_www/articles/72/php/debugging/call-of-embedded-function-second-time.png"> </li><li>Поскольку проверка функции <tt>calculate_factorial()</tt> была только что выполнена, и известно, что функция работает нормально, ее выполнение можно &quot;пропустить&quot;.  Для этого нажмите F8.  Программа завершит работу при вызове функции <tt>calculate_sum()</tt>. <br> <img alt="Отладчик остановился при вызове встроенной функции calculate_sum()." class="margin-around" src="../../../images_www/articles/72/php/debugging/cal-of-embedded-function-calculate-sum.png"> </li><li>Для перехода к функции <tt>calculate_sum()</tt> нажмите F7.</li><li>Для этого нажмите F8.  В любом случае отладчик остановится на последней строке в функции <tt>calculate_sum_of_factorials()</tt>.<br> <img alt="Отладчик остановился при возврате оператора $result в функции calcualate_sum_of_factorials()." class="margin-around" src="../../../images_www/articles/72/php/debugging/return-result.png"></li><li>Нажмите F7.  Отладчик переместится к строке с оператором <tt>echo</tt>.</li><li>Нажимайте F7 до тех пор, пока отладчик не завершит работу с программой.  Откроется окно браузера, в котором отображается результат выполнения программы:<br> <img alt="Выходные данные выполнения программы в окне браузера." class="margin-around" src="../../../images_www/articles/72/php/debugging/program-output.png">
+            </li>
+        </ol>
+
+        <div class="indent">
+            <h2><a name="usingAdditionalWatches"></a>Использование дополнительных наблюдаемых выражений</h2>
+            <p>В целях дальнейшего выполнения программы можно определить дополнительное наблюдаемое выражение.  Это может способствовать обнаружению ошибок.            </p>
+            <p class="alert"><strong>Внимание!</strong> Настройка дополнительных точек наблюдения нарушает стабильную работу XDebug.  По умолчанию точки наблюдения отключены в <a href="#options">параметрах отладки</a>.</p>
+          <ol><li>Обновите код, как показано ниже (замените знак &quot;плюс&quot; на знак &quot;минус&quot;):
+                    <pre class="examplecode">function calculate_sum ($argument1, $argument2) {<br> 			return $argument1 - argument2;<br>     	}<br> </pre>
+
+                    Можно предположить, что это следствие неправильного написания кода, но фактически требуется еще раз подсчитать сумму. </li><li>Выберите 'Отладка' > 'Создать наблюдение' или нажмите Ctrl/⌘-shift-F7. Откроется окно &quot;New Watch&quot;.</li><li>Введите следующее выражение и нажмите &quot;ОК&quot;.  
+                    <pre class="examplecode">$factorial1+$factorial2</pre>
+                    Новое выражение появится в окне &quot;Watches&quot;.
+                </li><li>Запустите сеанс отладки.  После остановки отладчика остановится в указанной строке: 
+                    <pre class="examplecode">return $result;</pre>сравните значение выражения в окне &quot;Watches&quot; со значением $result в окне &quot;Local Variables&quot;.  Эти значения должны совпадать, но они различны. <br> <img alt="Захват ошибок с помощью наблюдений" class="margin-around" src="../../../images_www/articles/72/php/debugging/watches.png">
+
+                </li></ol>
+            Этот пример является простым, однако позволяет получить некоторое представление об использовании наблюдаемых выражений.
+        </div>
+
+
+        <h2><a name="mixedPHPHTMLCases"></a>Использование сочетания PHP и HTML</h2>
+
+        Можно выполнить отладку кода, содержащего одновременно блоки на языках HTML и PHP.  В примере из раздела <a href="#sampleDebuggingSession">Пример сеанса отладки</a> значения жестко запрограммированы.  Расширьте код путем добавления формы ввода HTML для ввода значений. 
+        <ol>
+            <li>Добавьте следующий код HTML над блоком &lt;? php? &gt;:
+                <pre class="examplecode"> &lt;form action="index.php" method="POST"&gt;<br>       Enter the first integer, please:<br>       &lt;input type="text" name="first_integer"/&gt;&lt;br/&gt;<br>       Enter the second integer, please:<br>       &lt;input type="text" name="second_integer"/&gt;&lt;br/&gt;<br>       &lt;input type="submit" name="enter" value="Enter"/&gt;<br>&lt;/form&gt;</pre>
+
+                <p class="notes">Дополнительная информация о <a href="wish-list-lesson2.html#htmlForm">формах ввода HTML</a>.</p>
+            </li><li>Замените следующие строки в верхней части блока &lt;? php? &gt;:
+                <pre class="examplecode">$m=5;<br>  	$n=10;<br>  	  $sum_of_factorials = calculate_sum_of_factorials ($m, $n);<br>  	  echo "The sum of factorials of the entered integers is " . $sum_of_factorials;<br></pre>
+
+                на следующий код:
+                <pre class="examplecode">if (array_key_exists ("first_integer", $_POST) &amp;&amp; array_key_exists ("second_integer", $_POST)) {<br><br>    $result = calculate_sum_of_factorials ($_POST["first_integer"], $_POST["second_integer"]);<br><br>    echo "Sum of factorials is " . $result;<br><br>}</pre></li><li>Установите точку останова в начале блока &lt;? php? &gt; и начните <a href="#debuggingSession">сеанс отладки</a>. </li><li>Нажмите F7.  Отладчик перейдет к программе.  Откроется окно браузера, но форма ввода в нем не отображается.  Это нормальный режим работы отладчика, поскольку для отображения веб-страницы отладчик должен пройти по всему исходному коду.  Фактически это означает, что отладчик обрабатывает код дважды.  Первый раз обрабатывается код для отображения формы ввода HTML.  Второй раз поэтапно обрабатывается код PHP. </li><li>Нажимайте F7 до тех пор, пока не будет достигнут конец программы; после этого откроется форма ввода. </li><li>Заполните форму и нажмите Enter.  Сеанс отладки будет продолжен, как описано в разделе <a href="#sampleDebuggingSession">Пример сеанса отладки</a>. </li>
+        </ol>
+
+        <h2><a name="debug_url">Отображение пути, прокси отладчика и запуск сеанса отладки по пользовательскому URL-адресу</a></h2>
+
+        <p><a name="debug_url"></a>Отлаживать можно как сценарии, так и веб-страницы, причем отладку веб-страниц можно проводить как локально, так и удаленно. При удаленной отладке к сожалению файл отладки php на удаленном сервере не совпадает с файлом, открытым в IDE NetBeans, запущенном на локальном компьютере. Таким образом, поддержка отладчика в среде IDE NetBeans должна быть способна сопоставлять пути сервера с локальными путями. Однако, в силу различных осложнений, сопоставление путей невозможно разрешить автоматически для каждого отдельного сценария. Следовательно, начиная с NetBeans 6.7, пользвоатели могут вручную определять сопоставление путей с помощью <a href="https://netbeans.org/kb/docs/php/project-setup.html" target="_blank" title="Документация настройки проекта">настройки проекта</a> для отдельных конфигураций. Также можно указать прокси-сервер, если таковой имеется, и URL-адрес, с которого начинается сеанс отладки. Если этот URL-адрес не указать, отладка начнется с файла индекса.</p>
+
+
+        <p><strong>Чтобы настроить сопоставление путей и разрешить использование пользовательских URL-адресов при отладке:</strong></p>
+
+        <ol>
+            <li>Щелкните правой кнопкой узел проекта в окне Projects (&quot;Проекты&quot;) и откройте свойства проекта в контекстном меню.</li><li>В диалоговом окне 'Свойства проекта' перейдите в категорию 'Конфигурация запуска'.</li><li>Нажмите кнопку Advanced (&quot;Дополнительные&quot;).  Откроется диалоговое окно расширенной настройки сети.</li><li>Добавьте путь сервера и путь проекта для сопоставления путей.</li><li>В Debug URL (&quot;Отладка URL-адреса&quot;) выберите один из следующих вариантов (не оставляйте выбор по умолчанию): <br> <br>
+                <ul><li>Ask Every Time (&quot;Спрашивать каждый раз&quot;), указывающий среде IDE запрашивать URL-адрес у пользователя при каждом запуске сеанса отладки.</li><li>Do Not Open Web Browser (&quot;Не открывать веб-браузер&quot;), в результате чего придется открыть браузер и ввести URL-адрес вручную (будет необходима переменная GET/POST XDEBUG_SESSION_START).</li></ul></li><li>В случае использования для отладки прокси-сервера введите имя узла и порт сервера в разделе Debugger Proxy (&quot;Прокси отладчика&quot;).
+            </li>
+        </ol>
+
+        <p>Дополнительные сведения приведены в записи <a href="http://blogs.oracle.com/netbeansphp/entry/path_mapping_in_php_debugger" target="_blank">Path Mapping in PHP Debugger (&quot;Сопоставление путей в отладчике PHP&quot;)</a> блога по Net Beans для PHP.</p>
+
+        <br>
+
+
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Debugging%20PHP">Отправить отзыв по этому учебному курсу</a></div>
+
+
+        <br style="clear: both;">
+
+        <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+
+
+
+
+
+        <p><a href="../../trails/php.html">Возврат к учебной карте PHP</a> </p>
+    </body>
+</html>

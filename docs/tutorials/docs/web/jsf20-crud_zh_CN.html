@@ -1,0 +1,844 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Demonstrates how the IDE can generate robust and easily maintainable code when generating JSF pages from entity classes.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Java, Java EE, open source, web technology, CRUD, JSF, tutorial, database">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+
+        <title>通过数据库生成 JavaServer Faces 2.x CRUD 应用程序 - NetBeans IDE 教程</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>通过数据库生成 JavaServer Faces 2.x CRUD 应用程序</h1>
+
+        <p>在本教程中，您将使用 NetBeans IDE 来创建一个与后端数据库进行交互的 Web 应用程序。使用该应用程序可以查看和修改数据库中包含的数据，也称为 <em>CRUD</em>（创建、读取、更新和删除）功能。您将开发的应用程序依赖于以下技术。</p>
+
+        <ul>
+            <li><strong>JavaServer Faces (JSF) 2.x</strong>，用于前端 Web 页、验证处理和请求-响应周期的管理。</li>
+
+            <li><strong>Java Persistence API (JPA) 2.0</strong>，通过 EclipseLink 从数据库中生成实体类，并管理事务。（EclipseLink 是 JPA 的引用实现，也是 GlassFish Server 的默认持久性提供器。）</li>
+
+            <li><strong>Enterprise JavaBeans (EJB) 3.1</strong>，提供了用于访问实体类的无状态 EJB，并且包含了应用程序的业务逻辑。</li>
+        </ul>
+
+        <p>此 IDE 提供了两种可为应用程序生成所有代码的向导。一种是 <a href="#generateEntity">"Entity Classes from Database"（通过数据库生成实体类）向导</a>，您可以通过所提供的数据库来生成实体类。在创建实体类之后，可使用<a href="#jsfPagesEntityClasses">“通过实体类创建 JSF 页”向导</a>为实体类创建 JSF 受管 Bean 和 EJB，以及一组用于处理实体类数据视图的 Facelets 页。本教程的最后部分<a href="#explore">了解应用程序</a>为可选章节，其中提供了大量练习有助于您更好地理解应用程序并进一步熟悉此 IDE。</p>
+
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+
+        <h4>目录</h4>
+
+        <ul class="toc">
+            <li><a href="#createDB">创建数据库</a></li>
+            <li><a href="#examineDB">检查数据库结构</a></li>
+            <li><a href="#createProject">创建 Web 应用程序项目</a></li>
+            <li><a href="#generateEntity">通过数据库生成实体类</a></li>
+            <li><a href="#jsfPagesEntityClasses">通过实体类生成 JSF 页</a></li>
+            <li><a href="#explore">了解应用程序</a>
+
+                <ul>
+                    <li><a href="#completedProject">检查已完成的项目</a></li>
+                    <li><a href="#populateDB">使用 SQL 脚本填充数据库</a></li>
+                    <li><a href="#editorSupport">了解 Facelets 页中的编辑器支持</a></li>
+                    <li><a href="#dbIntegrity">通过字段验证来了解数据库完整性</a></li>
+                    <li><a href="#editEntity">编辑实体类</a></li>
+                </ul></li>
+
+            <li><a href="#troubleshooting">疑难解答</a></li>
+            <li><a href="#seeAlso">另请参见</a></li>
+        </ul>
+
+        <p id="requiredSoftware">要学完本教程，您需要具备以下软件和资源。</p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE 包</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">7 或 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://glassfish.dev.java.net/">GlassFish Server 开源版</a></td>
+                    <td class="tbltd1">3.x、4.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fmysql-consult.zip">mysql-consult.zip</a> (MySQL) <br><em class="margin-around" style="margin-left:6em">或</em><br> <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fjavadb-consult.zip">javadb-consult.zip</a> (JavaDB)</td>
+                    <td class="tbltd1">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>注：</strong></p>
+
+        <div class="indent">
+            <ul>
+                <li>NetBeans IDE Java EE 包还包括本教程所需的 GlassFish Server（一种 Java EE 兼容的服务器）。</li>
+
+                <li>要获取本教程的解决方案项目，请下载 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FConsultingAgencyJSF20.zip">ConsultingAgencyJSF20.zip</a>。</li>
+            </ul>
+        </div>
+
+        <br>
+        <h2 id="createDB">创建数据库</h2>
+
+        <p>本教程使用了一个名为 <code>consult</code> 的咨询代理数据库。安装 IDE 时，该数据库并未包括在其中，因此需要首先创建该数据库以按照本教程完成后续的学习。</p>
+
+        <p><code>consult</code> 数据库旨在演示 IDE 对处理各种数据库结构所提供的支持范围。因此，该数据库不应作为数据库设计的推荐范例或最佳做法。相反，它尝试将可能会在数据库设计中遇到的许多相关功能包含了进来。例如，<code>consult</code> 数据库包含了所有可能的关系类型、复合主键和许多不同的数据类型。有关此数据库结构的更详细概览，请参见下表。</p>
+
+        <p><strong class="notes">注：</strong></p>
+
+        <ul>
+            <li>本教程使用 MySQL 数据库服务器，但也可使用 JavaDB 数据库服务器来完成本教程的学习。要在 JavaDB 中创建该数据库，请下载并解压缩 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fjavadb-consult.zip">javadb-consult.zip</a> 档案文件。此档案文件包含用于创建、放置和填充 <code>consult</code> 数据库的 SQL 脚本。</li>
+
+            <li>有关配置 IDE 使用 MySQL 的详细信息，请参见<a href="../ide/mysql.html">连接 MySQL 数据库</a>教程。</li>
+
+            <li>有关配置 IDE 以使用 JavaDB 的详细信息，请参见<a href="../ide/java-db.html">使用 Java DB (Derby) 数据库</a>教程。</li>
+        </ul>
+
+        <div class="feedback-box float-left" style="width: 678px; margin: 0 0 10px 10px">
+            <p><strong class="alert">MySQL 和 GlassFish 组合：</strong></p>
+
+            <p>如果在使用 MySQL 的同时使用 GlassFish v3 或 Open Source Edition 3.0.1，则必须确保数据库受口令保护。（有关详细信息，请参见 GlassFish <a href="https://java.net/jira/browse/GLASSFISH-12221" target="_blank">问题 12221</a>。）如果您使用的是默认 MySQL <code>root</code> 帐户和空口令，则可以通过命令行提示符设置口令。<br><br> 例如，要将口令设置为 <code><em>nbuser</em></code>，请在命令行提示符下输入以下命令。</p>
+
+            <pre class="examplecode" style="width: 658px;">
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('<em>nbuser</em>') WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+
+            <p>如果收到 '<code>mysql: command not found</code>' 错误，则说明尚未将 <code>mysql</code> 命令添加到 <code>PATH</code> 环境变量中。可以改为通过输入 MySQL 安装的 <code>bin</code> 目录的完整路径来调用该命令。例如，如果 <code>mysql</code> 命令位于计算机上的 <code>/usr/local/mysql/bin</code> 中，请输入以下内容：</p>
+
+            <pre class="examplecode" style="width: 658px;">shell> /usr/local/mysql/bin/mysql -u root</pre>
+
+            <p>有关详细信息，请参见正式的 MySQL 参考手册：</p>
+
+            <ul>
+                <li>《<a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html" target="_blank">确保初始 MySQL 帐户安全</a>》</li>
+
+                <li>《<a href="http://dev.mysql.com/doc/refman/5.1/en/invoking-programs.html" target="_blank">4.2.1. 调用 MySQL 程序</a>》</li>
+
+                <li>《<a href="http://dev.mysql.com/doc/refman/5.1/en/setting-environment-variables.html" target="_blank">4.2.4. 设置环境变量</a>》</li>
+            </ul>
+
+        </div>
+        <br style="clear: both;"/>
+
+        <br>
+        <p>执行以下步骤以创建数据库并通过 IDE 与其进行连接。</p>
+
+        <ol style="margin-top:0">
+            <li>下载 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fmysql-consult.zip">mysql-consult.zip</a> 并将此档案解压缩到本地系统。在解压缩档案时您将看到用于创建和填充数据库的 SQL 脚本。档案中还包含了用于拖放表的脚本。</li>
+
+            <li>在 "Services"（服务）窗口中，展开 "Databases"（数据库）节点，右键单击 "MySQL" 节点并选择 "Start Server"（启动服务器）。</li>
+
+            <li>右键单击 MySQL 服务器节点并选择 "Create Database"（创建数据库）。</li>
+
+            <li>在 "Create MySQL Database"（创建 MySQL 数据库）对话框中键入 <strong>consult</strong> 作为数据库名称。单击 "OK"（确定）。"Databases"（数据库）节点 (<code>jdbc:mysql://localhost:3306/consult [root on Default schema]</code>) 下随即出现一个新的节点。</li>
+
+            <li>右键单击新节点并选择 "Connect"（连接）。</li>
+
+            <li>从主菜单中选择 "File"（文件）> "Open File"（打开文件）并导航至解压缩的文件 <code>mysql_create_consult.sql</code>。单击 "Open"（打开）。该文件会自动在 SQL 编辑器中打开。 <br> <img alt="SQL 编辑器的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-script.png" title="在 IDE 的编辑器中打开 SQL 文件"></li>
+
+            <li>确保在 SQL 编辑器工具栏的 "Connection"（连接）下拉列表中选择了 <code>consult</code> 数据库，然后单击 "Run SQL"（运行 SQL）(<img alt="&quot;Run SQL&quot;（运行 SQL）按钮" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-btn.png">) 按钮。
+
+                <p>单击 "Run SQL"（运行 SQL）时，"Output"（输出）窗口中出现以下输出内容。</p>
+
+                <img alt="&quot;Output&quot;（输出）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-output.png" title="&quot;Output&quot;（输出）窗口提供有关 SQL 执行的信息"></li>
+        </ol>
+
+
+        <br>
+        <h2 id="examineDB">检查数据库结构</h2>
+
+        <p>要确认已正确创建了表，请展开数据库连接节点下的 "Tables"（表）节点。您可以展开表节点来查看表的列、索引和任意外键。可以右键单击列并选择 "Properties"（属性）来查看有关该列的其他信息。</p>
+
+        <div class="indent">
+            <img alt="&quot;Services&quot;（服务）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/services-window-tables.png" title="&quot;Services&quot;（服务）窗口将显示数据库连接、表、表列、索引和外键">
+        </div>
+
+        <p class="notes"><strong>注：</strong>如果在 "Tables"（表）节点下未看到任何表，右键单击 "Tables"（表）节点并选择 "Refresh"（刷新）。</p>
+
+        <p>从 <code>consult</code> 数据库的结构可看出该数据库包含了具有多种关系和各种字段类型的表。通过数据库创建实体类时，IDE 会为各种字段类型自动生成相应的代码。</p>
+
+        <img alt="consult 数据库的实体关系图" class="margin-around b-all" id="er-diagram" src="../../../images_www/articles/72/web/jsf20-crud/diagram_consult.png" title="consult 数据库的实体关系图">
+
+        <p>下表描述了 <code>consult</code> 数据库中的表。</p>
+
+        <table class="indent" style="width: 744px">
+            <tr>
+                <th class="tblheader" scope="col">数据库表</th>
+                <th class="tblheader" scope="col">描述</th>
+                <th class="tblheader" scope="col">设计功能</th>
+            </tr>
+            <tr>
+                <td class="tbltd1">CLIENT</td>
+                <td class="tbltd0">咨询机构的客户</td>
+                <td class="tbltd0">非生成的复合主键（其字段不构成外键）</td>
+
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT</td>
+                <td class="tbltd0">咨询机构的员工，客户可基于合同对其进行聘用</td>
+                <td class="tbltd0">包括一个 LONG VARCHAR 类型的简历字段</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT_STATUS</td>
+                <td class="tbltd0">顾问在咨询机构的状态（例如，可能为活动和非活动的状态）</td>
+                <td class="tbltd0">CHAR 类型的非生成主键</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">RECRUITER</td>
+                <td class="tbltd0">负责联络客户和顾问的咨询机构的员工</td>
+                <td class="tbltd0">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">PROJECT</td>
+                <td class="tbltd0">客户配有咨询机构顾问的项目</td>
+                <td class="tbltd0">包含了构成 CLIENT 表的外键的两个字段的非生成复合主键</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">BILLABLE</td>
+                <td class="tbltd0">顾问在某个项目中工作的小时数，咨询机构据其向相关客户收费</td>
+                <td class="tbltd0">包括一个 CLOB 类型的工件字段</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">ADDRESS</td>
+                <td class="tbltd0">客户账单地址</td>
+                <td class="tbltd0">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">PROJECT_CONSULTANT</td>
+                <td class="tbltd0">一个连接表，表示当前为哪些项目指派了哪些顾问</td>
+                <td class="tbltd0">交叉引用了 PROJECT 和 CONSULTANT，其中前者有一个复合主键</td>
+            </tr>
+        </table>
+
+        <br>
+        <p><code>consult</code> 数据库包含了多种关系。在通过数据库创建实体类时，IDE 将基于列的 SQL 类型自动生成相应的 Java 类型的属性。下表描述了 <code>consult</code> 数据库的实体关系。（未显示反向关系。）</p>
+
+        <table id="relationships" class="indent" style="width: 744px">
+            <tr>
+                <th class="tblheader" scope="col">实体</th>
+                <th class="tblheader" scope="col">相关实体</th>
+                <th class="tblheader" scope="col">关系信息</th>
+                <th class="tblheader" scope="col">描述</th>
+            </tr>
+            <tr>
+                <td class="tbltd1">CLIENT</td>
+                <td class="tbltd0">RECRUITER</td>
+                <td class="tbltd0">进行手动编辑，允许为空值的一对一关系；如果不进行手动编辑，允许为空值的一对多关系</td>
+                <td class="tbltd0">一个 CLIENT 有多个 RECRUITER，而一个 RECRUITER 没有或有一个 CLIENT（如果不进行手动编辑）</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CLIENT</td>
+                <td class="tbltd0">ADDRESS</td>
+                <td class="tbltd0">不允许为空值的一对一关系</td>
+                <td class="tbltd0">一个 CLIENT 有一个 ADDRESS，而一个 ADDRESS 没有或有一个 CLIENT</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CLIENT</td>
+                <td class="tbltd0">PROJECT</td>
+                <td class="tbltd0">不允许为空值的一对多关系；在 "Project" 实体中，客户字段的值是 "Project" 主键的一部分</td>
+                <td class="tbltd0">一个 CLIENT 有多个 PROJECT，而一个 PROJECT 只有一个 CLIENT</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT</td>
+                <td class="tbltd0">PROJECT</td>
+                <td class="tbltd0">多对多关系</td>
+                <td class="tbltd0">一个 CONSULTANT 有多个 PROJECT，而一个 PROJECT 也有多个 CONSULTANT</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT</td>
+                <td class="tbltd0">BILLABLE</td>
+                <td class="tbltd0">不允许为空值的一对多关系</td>
+                <td class="tbltd0">一个 CONSULTANT 有多个 BILLABLE，而一个 BILLABLE 有一个 CONSULTANT</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT_STATUS</td>
+                <td class="tbltd0">CONSULTANT</td>
+                <td class="tbltd0">不允许为空值的一对多关系</td>
+                <td class="tbltd0">一个 CONSULTANT_STATUS 有多个 CONSULTANT，而一个 CONSULTANT 有一个 CONSULTANT_STATUS</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT</td>
+                <td class="tbltd0">RECRUITER</td>
+                <td class="tbltd0">允许为空值的一对多关系</td>
+                <td class="tbltd0">一个 CONSULTANT 没有或有一个 RECRUITER，而一个 RECRUITER 有多个 CONSULTANT</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">BILLABLE</td>
+                <td class="tbltd0">PROJECT</td>
+                <td class="tbltd0">不允许为空值的一对多关系</td>
+                <td class="tbltd0">一个 BILLABLE 有一个 PROJECT，而一个 PROJECT 有多个 BILLABLE</td>
+            </tr>
+        </table>
+
+        <p>既然已经创建了数据库，那么就可以创建 Web 应用程序，并使用 "Entity Classes from Database"（通过数据库生成实体类）向导基于数据库表生成实体类。</p>
+
+
+        <h2 id="createProject">创建 Web 应用程序项目</h2>
+
+        <p>在本练习中，您将创建一个 Web 项目并将 JavaServer Faces 框架添加到该项目中。在创建项目时，需要在新建项目向导的 "Frameworks"（框架）面板中选择 "JavaServer Faces"。</p>
+
+        <ol>
+            <li>从主菜单中，选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键）。</li>
+
+            <li>从 "Java Web" 类别中选择 "Web Application"（Web 应用程序）。单击 "Next"（下一步）。</li>
+
+            <li>键入 <code>ConsultingAgency</code> 作为项目名称，并设置项目位置。单击 "Next"（下一步）。</li>
+
+            <li>将服务器设置为 "GlassFish"，并将 Java EE 版本设置为 "Java EE 6 Web" 或 "Java EE 7 Web"。单击 "Next"（下一步）。</li>
+
+            <li>在 "Frameworks"（框架）面板中，选择 "JavaServer Faces" 选项。单击 "Finish"（完成）。</li>
+
+        </ol>
+        <p>单击 "Finish"（完成），此时 IDE 生成 Web 应用程序项目并在编辑器中打开 <code>index.xhtml</code>。</p>
+
+
+        <h2 id="generateEntity">通过数据库生成实体类</h2>
+
+        <p>在 IDE 中连接到数据库后，可以使用 "Entity Classes from Database"（通过数据库生成实体类）向导基于数据库中的表快速生成实体类。IDE 可以为所选的每个表生成实体类，也可以为相关表生成任何需要的实体类。</p>
+
+        <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击 <code>ConsultingAgency</code> 项目节点，并选择 "New"（新建）> "Entity Classes from Database"（通过数据库生成实体类）。（如果未列出此选项，请选择 "Other"（其他）。然后，在文件向导中，选择 "Persistence"（持久性）类别，再选择 "Entity Classes from Database"（通过数据库生成实体类）。）</li>
+
+            <li>从 "Data Source"（数据源）下拉列表中选择 "New Data Source"（新建数据源）以打开 "Create Data Source"（创建数据源）对话框。</li>
+
+            <li>键入 <code>jdbc/consult</code> 作为 JNDI 名称，并选择 <code>jdbc:mysql://localhost:3306/consult</code> 连接作为数据库连接。<br> <img alt="&quot;Create Datasource&quot;（创建数据源）对话框" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/create-datasource.png" title="指定 JNDI 名称和数据库连接以创建数据源"></li>
+
+            <li>单击 "OK"（确定）以关闭对话框并返回到向导。<code>consult</code> 数据库中的表出现在 "Available Tables"（可用表）列表框中。</li>
+
+            <li>单击 "Add All"（全部添加）按钮以选择数据库中包含的所有表。单击 "Next"（下一步）。 <br> <img alt="&quot;New Entities from Database&quot;（通过数据库新建实体）向导" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/new-entities-wizard.png"></li>
+
+            <li>键入 <code>jpa.entities</code> 作为包名称。 </li>
+
+            <li>确认已选中用于生成命名查询和创建持久性单元的复选框。单击 "Finish"（完成）。</li>
+        </ol>
+        
+        <p>单击 "Finish"（完成），此时 IDE 将在项目的 <code>jpa.entities</code> 包中生成实体类。</p>
+
+        <p>使用向导通过数据库创建实体类时，IDE 会检查数据库表之间的关系。在 "Projects"（项目）窗口中，如果展开 <code>jpa.entities</code> 包节点，则可以看到 IDE 为每个表（<code>PROJECT_CONSULTANT</code> 表除外）生成了一个实体类。因为 <code>PROJECT_CONSULTANT</code> 是一个连接表，所以 IDE 没有为其创建实体类。</p>
+
+        <div class="indent">
+            <img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/projects-window-entities.png" title="显示所生成实体类的 &quot;Projects&quot;（项目）窗口的屏幕快照">
+        </div>
+
+        <p>IDE 还为带有复合主键的表生成了两个额外的类：<code>CLIENT</code> 和 <code>PROJECT</code>。这些表的主键类（<code>ClientPK.java</code> 和 <code>ProjectPK.java</code>）在其名称后附加了 <code>PK</code>。</p>
+
+        <p>如果查看为实体类生成的代码，可以发现向导为自动生成的 ID 字段添加了 <code>@GeneratedValue</code> 标注，还为实体类中的某些字段添加了 <code>@Basic(optional = "false")</code> 标注。基于 <code>@Basic(optional = "false")</code> 标注，“通过实体类创建 JSF 页”向导可以生成包含检查的代码，这些检查可防止那些字段出现不允许为空值的列违规。</p>
+
+
+        <br>
+        <h2 id="jsfPagesEntityClasses">通过实体类生成 JSF 页</h2>
+
+        <p>创建了实体类之后，便可以创建用于显示和修改数据的 Web 接口。您将使用“通过实体类创建 JSF 页”向导来生成 JavaServer Faces 页。向导生成的代码将基于实体类中包含的持久性标注。</p>
+
+        <p>对于每个实体类，向导都会生成以下文件。</p>
+
+        <ul>
+            <li>扩展 <tt>AbstractFacade.java</tt> 的无状态会话 Bean</li>
+
+            <li>JSF 会话范围的受管 Bean</li>
+
+            <li>包含 CRUD 功能的四个 Facelets 文件（<code>Create.xhtml</code>、<code>Edit.xhtml</code>、<code>List.xhtml</code> 和 <code>View.xhtml</code>）的目录</li>
+        </ul>
+        <p>向导还会生成以下文件。</p>
+        <ul>
+            <li>包含实体实例的创建、检索、修改和删除业务逻辑的 <tt>AbstractFacade.java</tt> 类</li>
+            <li>JSF 受管 Bean 所使用的实用程序类（<code>JsfUtil</code> 和 <code>PaginationHelper</code>）</li>
+
+            <li>本地化消息的属性包，以及项目的 Faces 配置文件（如果不存在 <code>faces-config.xml</code> 文件，则会创建一个）中的相应条目</li>
+
+            <li>辅助 Web 文件（包括所呈现组件的默认样式表）和一个 Facelets 模板文件</li>
+        </ul>
+
+        <p>生成 JSF 页：</p>
+
+        <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击项目节点，然后选择 "New"（新建）> "JSF Pages from Entity Classes"（通过实体类创建 JSF 页）打开该向导。（如果未列出此选项，请选择 "Other"（其他）。然后，在文件向导中，选择 "JavaServer Faces" 类别，然后选择 "JSF Pages from Entity Classes"（通过实体类创建 JSF 页）。）
+
+                <p>
+                "Available Entity Classes"（可用的实体类）框列出了项目中所包含的七个实体类。该框并未列出可嵌入类（<code>ClientPK.java</code> 和 <code>ProjectPK.java</code>）。</p></li>
+
+            <li>单击 "Add All"（全部添加）以将所有类移动到 "Selected Entity Classes"（选定的实体类）框中。<br> <img alt="&quot;New JSF Pages from Entity Classes&quot;（通过实体类新建 JSF 页）向导" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/newjsf-wizard.png" title="&quot;New JSF Pages from Entity Classes&quot;（通过实体类新建 JSF 页）向导显示项目中包含的所有实体类"> <br> 单击 "Next"（下一步）。</li>
+
+            <li>在向导的“步骤 3”即 "Generate JSF Pages and Classes"（生成 JSF 页和类）中，键入 <code>jpa.session</code> 作为 JPA 会话 Bean 包。</li>
+
+            <li>键入 <code>jsf</code> 作为 JSF 类包。</li>
+
+            <li>在 "Localization Bundle Name"（本地化包名称）字段中输入 "<code>/resources/Bundle</code>"。这样将生成一个名为 <code>resources</code> 的包，其中将包含 <code>Bundle.properties</code> 文件。（如果将此字段保留为空，则在项目的默认包中将创建属性包。） <br> <img alt="&quot;New JSF Pages from Entity Classes&quot;（通过实体类新建 JSF 页）向导，步骤 3" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/newjsf-wizard2.png" title="为生成的文件指定包名称和文件夹名称">
+
+                <p class="tips">要使 IDE 能更好地适应您的项目约定，可以定制由向导生成的任何文件。单击 "Customize Template"（定制模板）链接以修改向导所使用的文件模板。<br> <img alt="&quot;Customize Template&quot;（定制模板）下拉列表" class="margin-around" src="../../../images_www/articles/72/web/jsf20-crud/customize-template.png" title="为向导所生成的文件定制模板"> <br> 通常，可以使用 "Template Manager"（模板管理器）（"Tools"（工具）> "Templates"（模板））来访问和更改 IDE 维护的所有模板。</p></li>
+
+            <li>单击 "Finish"（完成）。IDE 在 <code>jpa.session</code> 包中生成无状态会话 Bean，并在 <code>jsf</code> 包中生成 JSF 会话范围的受管 Bean。每个无状态会话 Bean 用于处理相应实体类的操作，其中包括通过 Java 持久性 API 创建、编辑和销毁实体类的实例。每个 JSF 受管 Bean 用于实现 <code>javax.faces.convert.Converter</code> 接口，并执行将相应实体类的实例转换为 <code>String</code> 对象的操作，反之亦然。</li>
+        </ol>
+
+        <p>如果展开 "Web Pages"（Web 页）节点，则可以看到 IDE 为每个实体类生成了一个文件夹。每个文件夹都包含 <code>Create.xhtml</code>、<code>Edit.xhtml</code>、<code>List.xhtml</code> 和 <code>View.xhtml</code> 文件。IDE 还通过向每个 <code>List.xhtml</code> 页中插入链接来修改 <code>index.xhtml</code> 文件。</p>
+
+        <div class="indent">
+            <img alt="&quot;Projects&quot;（项目）窗口中的 &quot;Web Pages&quot;（Web 页）目录的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/projects-jsfpages.png" title="向导为每个实体类生成 Facelets 页">
+        </div>
+
+        <p>每个 JSF 受管 Bean 都对应四个相应的 Facelets 文件，并且包含调用相应会话 Bean 中的方法的代码。</p>
+
+        <p>展开 <code>resources</code> 文件夹节点以查找由向导生成的 <code>jsfcrud.css</code> 默认样式表。如果在编辑器中打开应用程序欢迎页面 (<code>index.xhtml</code>) 或 Facelets 模板文件 (<code>template.xhtml</code>)，将会看到该文件包含了对样式表的引用。</p>
+
+        <div class="indent">
+            <pre class="examplecode">&lt;h:outputStylesheet name=&quot;css/jsfcrud.css&quot;/&gt;</pre>
+        </div>
+
+        <p>每个实体类所对应的四个 Facelets 文件中的每个文件都使用 Facelets 模板文件。</p>
+
+        <p>如果展开 "Source Packages"（源包）节点，则可以看到向导生成的会话 Bean、JSF 受管 Bean、实用程序类和属性包。</p>
+
+        <div class="indent">
+            <img alt="&quot;Projects&quot;（项目）窗口中的 &quot;Source Packages&quot;（源包）目录的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/projects-generated-classes70.png" title="&quot;Projects&quot;（项目）窗口中显示向导所生成类的 &quot;Source Packages&quot;（源包）目录的屏幕快照">
+        </div>
+
+        <p>为了注册属性包的位置，向导还生成了一个 Faces 配置文件 (<code>faces-config.xml</code>)。如果展开 "Configuration File"（配置文件）节点并在 XML 编辑器中打开 <code>faces-config.xml</code>，则可以看到该文件包含了以下条目。</p>
+
+        <div class="indent">
+            <pre class="examplecode">&lt;application&gt;
+    &lt;resource-bundle&gt;
+        &lt;base-name&gt;/resources/Bundle&lt;/base-name&gt;
+        &lt;var&gt;bundle&lt;/var&gt;
+    &lt;/resource-bundle&gt;
+&lt;/application&gt;</pre>
+        </div>
+
+        <p>此外，如果展开新的 <code>resources</code> 包，则会发现 <code>Bundle.properties</code> 文件，该文件包含了客户端默认语言的消息。这些消息是由实体类属性派生而来的。</p>
+
+        <p class="tips">要添加新的属性包，请右键单击 <code>Bundle.properties</code> 文件并选择 "Customize"（定制）。使用 "Customizer"（定制器）对话框可以将新的语言环境添加到您的应用程序中。</p>
+
+
+        <br>
+        <h2 id="explore">了解应用程序</h2>
+
+        <p>既然您的项目已包含了实体类、用于控制实体类的 EJB 会话 Bean 和 JSF 驱动的用于显示和修改数据库的前端，那么请尝试运行该项目以查看结果。</p>
+
+        <p>以下是一系列可选的小练习，可用来进一步熟悉应用程序，以及 IDE 所提供的功能。</p>
+
+        <ul>
+            <li><a href="#completedProject">检查已完成的项目</a></li>
+            <li><a href="#populateDB">使用 SQL 脚本填充数据库</a></li>
+            <li><a href="#editorSupport">了解 Facelets 页中的编辑器支持</a></li>
+            <li><a href="#dbIntegrity">通过字段验证来了解数据库完整性</a></li>
+            <li><a href="#editEntity">编辑实体类</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="completedProject">检查已完成的项目</h3>
+
+            <ol>
+                <li>要运行项目，请在 "Projects"（项目）窗口中右键单击项目节点并选择 "Run"（运行），或单击主工具栏中的 "Run Project"（运行项目）(<img alt="&quot;Run Project&quot;（运行项目）按钮" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png">) 按钮。
+
+                    <p>
+                    当显示应用程序的欢迎页面时，将提供一个链接列表，用于查看包含在每个数据库表中的条目。
+                    </p>
+                    <img alt="浏览器中的 ConsultingAgency 欢迎页" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/welcome-page-links.png" title="用于显示每个表的数据库内容的链接">
+
+                    <p>
+                    当完成了 "JSF Pages from Entity Classes"（通过实体类创建 JSF 页）向导时，链接将添加到欢迎页面 (<code>index.xhtml</code>)。这些链接将作为 Facelets 页（为“咨询机构”数据库提供 CRUD 功能）的入口点。</p>
+
+                    <pre class="examplecode">
+&lt;h:body&gt;
+    Hello from Facelets
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/address/List&quot; value=&quot;Show All Address Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/billable/List&quot; value=&quot;Show All Billable Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/client/List&quot; value=&quot;Show All Client Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/consultant/List&quot; value=&quot;Show All Consultant Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/consultantStatus/List&quot; value=&quot;Show All ConsultantStatus Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/project/List&quot; value=&quot;Show All Project Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/recruiter/List&quot; value=&quot;Show All Recruiter Items&quot;/&gt;
+    &lt;/h:form&gt;
+&lt;/h:body&gt;</pre></li>
+
+                <li>单击 "<code>Show All Consultant Items</code>" 链接。查看上面的代码，则可以看到目标页为 <code>/consultant/List.xhtml</code>。（在 JSF 2.x 中，由于隐式导航所以文件扩展名是推断出来的。）<br> <img alt="Consultants 页" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/empty-consultants-list.png" title="Consultants 表当前为空"> <br> 数据库目前不包含任何样例数据。可以通过单击 "<code>Create New Consultant</code>" 链接和使用提供的 Web 窗体手动添加数据。此操作将触发 <code>/consultant/Create.xhtml</code> 页进行显示。还在 IDE 中运行 SQL 脚本以使用样例数据填充表。以下子部分对这两个选项进行了说明。</li>
+            </ol>
+
+            <p>您可以单击索引链接返回到欢迎页面列出的链接。这些链接提供了保存在每个数据库表中数据的视图，并触发了每个实体文件夹中 <code>List.xhtml</code> 文件的显示。稍后会有说明，在将数据添加到表之后，会显示其他链接，其中每个条目都允许您查看 (<code>View.xhtml</code>)、编辑 (<code>Edit.xhmtl</code>) 和销毁单个表记录的数据。</p>
+            
+            <p class="notes"><strong>注：</strong>如果应用程序部署失败，请参见下面的<a href="#troubleshooting">疑难解答</a>部分。（另请参见<a href="mysql-webapp.html#troubleshoot">使用 MySQL 数据库创建简单的 Web 应用程序</a>的“疑难解答”部分。）</p>
+
+
+            <h3 id="populateDB">使用 SQL 脚本填充数据库</h3>
+
+            <p>运行提供的脚本，该脚本会生成数据库表的样例数据。脚本 (<code>mysql_insert_data_consult.sql</code>) 包含在咨询机构数据库 zip 文件中，该文件可从<a href="#requiredSoftware">所需软件表</a>中下载。</p>
+
+            <p>根据所使用的数据库服务器（MySQL 或 JavaDB），您可以运行提供的脚本，该脚本会为数据库表生成样例数据。对于 MySQL，该脚本为 <code>mysql_insert_data_consult.sql</code>。对于 JavaDB，该脚本为 <code>javadb_insert_data_consult.sql</code>。两个脚本分别包含在各自的档案文件中，可以通过<a href="#requiredSoftware">所需软件表</a>进行下载。</p>
+
+            <ol>
+                <li>从主菜单中选择 "File"（文件）> "Open File"（打开文件），然后导航到脚本在您的计算机上的位置。单击 "Open"（打开）。文件会自动在 IDE 的 SQL 编辑器中打开。</li>
+
+                <li>确保在 SQL 编辑器工具栏的 "Connection"（连接）下拉列表中选择了 <code>consult</code> 数据库。 <br> <img alt="SQL 编辑器和插入数据脚本的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-insert.png" title="在 IDE 的 SQL 编辑器中打开脚本">
+
+                    <p>
+                    在编辑器中右键单击并选择 "Run Statement"（运行语句），或单击 "Run SQL"（运行 SQL）(<img alt="&quot;Run SQL&quot;（运行 SQL）按钮" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-btn.png">) 按钮。您可以在 "Output"（输出）窗口中查看脚本运行的结果。</p></li>
+
+                <li>重新启动 GlassFish Server。这是使服务器可以重新加载和缓存 <code>consult</code> 数据库中包含的新数据所必需的步骤。为此，请在 "Output" 窗口中单击 "GlassFish Server" 标签（"GlassFish Server" 标签显示服务器日志。），然后单击左旁注中的 "Restart Server"（重新启动服务器）(<img alt="&quot;Restart Server&quot;（重新启动服务器）按钮" src="../../../images_www/articles/72/web/jsf20-crud/glassfish-restart.png">) 按钮。服务器即会停止，然后重新启动。</li>
+
+                <li>重新运行项目，然后单击 "<code>Show All Consultant Items</code>" 链接。将看到该列表不再为空。 <br> <a href="../../../images_www/articles/72/web/jsf20-crud/consultants-list.png" id="consultantsList" rel="lytebox" title="&quot;Facelets&quot; 页显示 Consultants 表中包含的条目"> <img alt="显示表条目的 &quot;Consultants&quot; 页" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/consultants-list-small.png"></a>
+
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>NetBeans 数据库支持</h3>
+
+                    <p>可以使用 IDE 的数据库表查看器来显示和修改直接在数据库中维护的表数据。例如，右键单击 "Services"（服务）窗口中的 <code>consultant</code> 表，然后选择 "View Data"（查看数据）。</p>
+
+                    <img alt="&quot;Services&quot;（服务）窗口 - 数据库表的右键单击菜单" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/view-data.png" title="从数据库表的右键单击菜单中选择 &quot;View Data&quot;（查看数据）">
+
+                    <p>在编辑器的顶部将显示用于执行操作的 SQL 查询，下面则显示表的图形视图。</p>
+
+                    <a href="../../../images_www/articles/72/web/jsf20-crud/view-data-table.png" rel="lytebox" title="使用数据库表的图形视图查看和修改表数据"> <img alt="显示数据库数据的 SQL 编辑器" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/view-data-table-small.png"></a>
+
+                    <p>在窗体元格内双击以对数据进行内联修改。单击 "Commit Records"（提交记录）(<img alt="&quot;Commit Records&quot;（提交记录）图标" src="../../../images_www/articles/72/web/jsf20-crud/commit-records-icon.png">) 图标以提交对数据库的更改。</p>
+
+                        <p>
+                        图形视图提供了更多的功能。有关详细信息，请参见 <a href="../../docs/ide/database-improvements-screencast.html">NetBeans IDE 中的数据库支持</a>。</p>
+                </div>
+                <br style="clear: both;"/></li>
+            </ol>
+
+
+            <h3 id="editorSupport">了解 Facelets 页中的编辑器支持</h3>
+
+            <ol>
+                <li>在编辑器中打开 <code>/consultant/List.xhtml</code> 页。第 8 行表明该页的呈现依赖于 Facelets <code>template.xhtml</code> 文件。
+
+                    <pre class="examplecode">&lt;ui:composition template=&quot;/template.xhtml&quot;&gt;</pre>
+
+                    <p class="tips">要显示行号，请右键单击编辑器的左旁注，然后选择 " Show Line"（显示行号）。</p></li>
+
+                <li>使用 IDE 的 "Go to File"（转至文件）对话框来打开 <code>template.xhtml</code>。按 Alt-Shift-O 组合键（在 Mac 上为 Ctrl-Shift-O 组合键），然后开始键入 <code>template</code>。 <br> <img alt="&quot;Go to File&quot;（转至文件）对话框" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/go-to-file.png" title="使用 &quot;Go to File&quot;（转至文件）对话框快速打开项目文件">
+
+                    <p>单击 "OK"（确定）（或按 Enter 键）。</p></li>
+
+                <li>模板将使用 <code>&lt;ui:insert&gt;</code> 标记将其他文件的内容插入到其标题和正文中。将光标置于 <code>&lt;ui:insert&gt;</code> 标记上，然后按 Ctrl-空格键调用文档弹出式窗口。 <br> <img alt="编辑器中显示的文档弹出式窗口" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/doc-popup.png" title="在 Facelets 标记上按 Ctrl-空格键调用文档弹出式窗口">
+
+                    <p>可以在 JSF 标记及其属性上按 Ctrl-空格键调用文档弹出式窗口。您查看的文档是从正式的 <a href="http://javaserverfaces.java.net/nonav/docs/2.1/vdldocs/facelets/index.html">JSF 标记库文档</a>所提供的描述中获取的。</p></li>
+
+                <li>切换回 <code>List.xhtml</code> 文件（按 Ctrl-Tab 组合键）。<code>&lt;ui:define&gt;</code> 标记用来定义将应用于模板标题和正文的内容。为每个实体类生成的所有 4 个 Facelets 文件（<code>Create.xhtml</code>、<code>Edit.xhtml</code>、<code>List.xhtml</code> 和 <code>View.xhtml</code>）都使用了此模式。</li>
+
+                <li>将您的光标置于任何 EL 表达式（用于包含在 <code>Bundle.properties</code> 文件中的本地化消息）上。按 Ctrl-空格键查看本地化消息。 <br> <a href="../../../images_www/articles/72/web/jsf20-crud/localized-messages.png" rel="lytebox" title="使用编辑器代码完成支持查看本地化消息"> <img alt="属性包中的消息的代码完成弹出式窗口" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/localized-messages-small.png"></a>
+
+                    <p>在上图上，可以看到 EL 表达式解析为 "<code>List</code>"，该表达式将应用到模板标题，并且可以从呈现在浏览器中的页面得到验证。</p></li>
+
+                <li>滚动到文件底部并找到 <code>Create New Consultant</code> 链接的代码（第 92 行）。如下所示：
+
+                    <pre class="examplecode">
+&lt;h:commandLink action=&quot;#{consultantController.prepareCreate}&quot; value=&quot;#{bundle.ListConsultantCreateLink}&quot;/&gt;</pre></li>
+
+                <li>在 <code>commandLink</code> 的 <code>action</code> 属性上按 Ctrl-空格键以调用文档弹出式窗口。<br><br> <code>action</code> 属性表示在浏览器中单击链接时处理请求的方法。将提供以下文档： <br><br>
+                    <div class="indent" style="width:680px">
+                        <em>方法表达式，用于表示在用户激活此组件时要调用的应用程序操作。该表达式的值必须为一个没有参数且返回对象（调用其 toString() 以派生逻辑结果）的公共方法，该对象将被传递到此应用程序的 NavigationHandler。</em></div>
+
+                    <br> 换句话说，<code>action</code> 值通常是指 JSF 受管 Bean 中的一个方法，其值为 <code>String</code>。然后 JSF 的 <code>NavigationHandler</code> 会使用该字符串将请求转发到相应的视图中。可通过以下步骤来验证这一点。</li>
+
+                <li>将光标置于 <code>consultantController</code> 上，然后按 Ctrl-空格组合键。编辑器的代码完成表明 <code>consultantController</code> 是一个 JSF 受管 Bean。 <br> <img alt="在编辑器中调用的代码完成" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/code-completion-managed-bean.png" title="为 JSF 受管 Bean 提供代码完成"></li>
+
+                <li>将光标移动到 <code>prepareCreate</code>，然后按 Ctrl-空格组合键。代码完成列出了包含在 <code>ConsultantController</code> 受管 Bean 中的方法。 <br> <img alt="在编辑器中调用的代码完成" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/code-completion-properties.png" title="为类方法提供代码完成"></li>
+
+                <li>按 Ctrl 键（在 Mac 上为 ⌘ 键），然后将鼠标悬停在 <code>prepareCreate</code> 上。形成了一个链接，您可以直接导航至 <code>ConsultantController</code> 受管 Bean 中的 <code>prepareCreate()</code> 方法。 <br> <img alt="编辑器中显示的链接" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/editor-navigation.png" title="使用编辑器导航快速导航源代码"></li>
+
+                <li>单击链接并查看 <code>prepareCreate()</code> 方法（如下所示）。
+
+                    <pre class="examplecode">
+public String prepareCreate() {
+    current = new Consultant();
+    selectedItemIndex = -1;
+    return &quot;Create&quot;;
+}</pre>
+
+                    该方法将返回 <code>Create</code>。<code>NavigationHandler</code> 在后台收集信息，并将 <code>Create</code> 字符串应用于以视图（为响应请求而发送）为目标的路径：<code>/consultant/<strong>Create</strong>.xhtml</code>。（在 JSF 2.x 中，由于隐式导航所以文件扩展名是推断出来的。）</li>
+            </ol>
+
+
+            <h3 id="dbIntegrity">通过字段验证来了解数据库完整性</h3>
+
+            <ol>
+                <li>在浏览器的 <a href="#consultantsList">Consultants List 页</a>中，单击 "<code>Create New Consultant</code>" 链接。正如之前子部分中的说明，此操作将触发呈现 <code>/consultant/Create.xhtml</code> 页。</li>
+
+                <li>在窗体中输入以下详细信息。目前，将 <code>RecruiterId</code> 和 <code>StatusId</code> 字段保留为空。 <br><br>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">字段</th>
+                                <th class="tblheader" scope="col">值</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">ConsultantId</td>
+                                <td class="tbltd1">2</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Email</td>
+                                <td class="tbltd1">jack.smart@jsfcrudconsultants.com</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Password</td>
+                                <td class="tbltd1">jack.smart</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">HourlyRate</td>
+                                <td class="tbltd1">75</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">BillableHourlyRate</td>
+                                <td class="tbltd1">110</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">HireDate</td>
+                                <td class="tbltd1">07/22/2008</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Resume</td>
+                                <td class="tbltd1">I'm a great consultant.Hire me - You won't be disappointed!</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">RecruiterId</td>
+                                <td class="tbltd1">---</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">StatusId</td>
+                                <td class="tbltd1">---</td>
+                            </tr>
+                        </tbody>
+                    </table></li>
+
+                <li>单击 "Save"（保存）。当您执行此操作后，将对 <code>StatusId</code> 字段标记一个验证错误。<br> <img alt="包含样例数据的 &quot;Create New Consultant&quot; 页" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/create-new-consultant.png" title="在窗体中输入样例数据"> <br> 为什么会出现这种情况？重新检查<a href="#er-diagram">“咨询机构”数据库的实体关系图</a>。如上面的<a href="#relationships">关系表</a>中所述，<code>CONSULTANT</code> 和 <code>CONSULTANT_STATUS</code> 表共享一个不允许为空值的一对多的关系。所以，<code>CONSULTANT</code> 表中的每一个条目都必须包含对 <code>CONSULTANT_STATUS</code> 表中条目的引用。这将通过链接这两个表的 <code>consultant_fk_consultant_status</code> 外键来表示。
+
+                    <p class="tips">可以通过在 "Services"（服务）窗口中展开一个表的 "Foreign Keys"（外键）节点（Ctrl-5 组合键；在 Mac 上为 ⌘-5 组合键）来查看表中保存的外键。</p>
+
+                    <img alt="&quot;Services&quot;（服务）窗口 - consultant 表的外键" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/consultant-fk.png" title="在 &quot;Services&quot;（服务）窗口中检查外键属性"></li>
+
+                <li>要解决验证错误，请从 <code>StatusId</code> 下拉列表中选择 <code>entity.ConsultantStatus[statusId=A]</code>。<br><br> <strong class="notes">注：</strong><code>RecruiterId</code> 字段可保留为空。正如<a href="#er-diagram">数据库实体关系图</a>中所示，在 <code>CONSULTANT</code> 和 <code>RECRUITER</code> 表之间存在一个允许为空值的一对多的关系，这就意味着 <code>CONSULTANT</code> 中的条目不需要与一个 <code>RECRUITER</code> 条目相关联。</li>
+
+                <li>单击 "Save"（保存）。将显示一条消息，表明顾问条目已成功保存。如果单击 <code>Show All Consultant Items</code>，将看到新条目列在表中。</li>
+            </ol>
+
+            <p>通常，生成的 Facelets 页会为产生下列问题的用户输入提供出错信息：</p>
+
+            <ul>
+                <li>不允许为空值的表单元格中出现了空字段。</li>
+                <li>对不可更改的数据（例如主键）进行了修改。</li>
+                <li>插入数据的类型不正确。</li>
+                <li>当用户视图与数据库不再同步时对数据进行了修改。</li>
+            </ul>
+
+
+            <h3 id="editEntity">编辑实体类</h3>
+
+            <p>在前面的子部分中，您看到了 <code>StatusId</code> 下拉列表是如何为您提供不那么容易使用的 <code>entity.ConsultantStatus[statusId=A]</code> 选项。您可能已经注意到：此下拉列表中针对每一项显示的文本都是每个遇到的 <code>ConsultantStatus</code> 实体（即，调用了实体类的 <code>toString()</code> 方法）的字符串表示。</p>
+
+            <p>该子部分将演示您可以使用编辑器的代码完成、文档和导航支持作此结论的方式。此外，还教您为下拉列表准备更加易于使用的消息。</p>
+
+            <ol>
+                <li id="markup">在编辑器中打开 <code>/consultant/Create.xhtml</code> 文件。这是您刚在浏览器中看到的 "Create New Consultant" 窗体。向下滚动到 <code>StatusId</code> 下拉列表的代码处（如下面<strong>粗体</strong>所示）。
+
+                    <pre class="examplecode">
+    &lt;h:outputLabel value=&quot;#{bundle.CreateConsultantLabel_resume}&quot; for=&quot;resume&quot; /&gt;
+    &lt;h:inputTextarea rows=&quot;4&quot; cols=&quot;30&quot; id=&quot;resume&quot; value=&quot;#{consultantController.selected.resume}&quot; title=&quot;#{bundle.CreateConsultantTitle_resume}&quot; /&gt;
+    <strong>&lt;h:outputLabel value=&quot;#{bundle.CreateConsultantLabel_statusId}&quot; for=&quot;statusId&quot; /&gt;
+    &lt;h:selectOneMenu id=&quot;statusId&quot; value=&quot;#{consultantController.selected.statusId}&quot; title=&quot;#{bundle.CreateConsultantTitle_statusId}&quot; required=&quot;true&quot; requiredMessage=&quot;#{bundle.CreateConsultantRequiredMessage_statusId}&quot;&gt;
+        &lt;f:selectItems value=&quot;#{consultantStatusController.itemsAvailableSelectOne}&quot;/&gt;
+    &lt;/h:selectOneMenu&gt;</strong>
+    &lt;h:outputLabel value=&quot;#{bundle.CreateConsultantLabel_recruiterId}&quot; for=&quot;recruiterId&quot; /&gt;
+    &lt;h:selectOneMenu id=&quot;recruiterId&quot; value=&quot;#{consultantController.selected.recruiterId}&quot; title=&quot;#{bundle.CreateConsultantTitle_recruiterId}&quot; &gt;
+        &lt;f:selectItems value=&quot;#{recruiterController.itemsAvailableSelectOne}&quot;/&gt;
+    &lt;/h:selectOneMenu&gt;
+&lt;/h:panelGrid&gt;</pre></li>
+
+                 <li>检查应用于 <code>&lt;f:selectItems&gt;</code> 标记的 <code>value</code>。<code>value</code> 属性决定了为下拉列表中每项显示的文本。<br><br> 在 <code>itemsAvailableSelectOne</code> 上按 Ctrl-空格组合键。编辑器的代码完成表示 <code>ConsultantStatusController</code> 的 <code>getItemsAvailableSelectOne()</code> 方法返回了 <code>SelectItem</code> 对象的数组。 <br> <img alt="在编辑器中调用的代码完成" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/code-completion-returned-object.png" title="代码完成显示方法的返回类"></li>
+
+                <li>按 Ctrl 键（在 Mac 上为 ⌘ 键），然后将鼠标悬停在 <code>itemsAvailableSelectOne</code> 上。形成了一个链接，您可以直接导航至 <code>ConsultantStatus</code> 实体源代码中的 <code>getItemsAvailableSelectOne()</code> 方法。单击该链接。</li>
+
+                <li>将光标置于方法签名中的 <code>SelectItem[]</code> 返回值上，然后按 Ctrl-空格键调用文档弹出式窗口。 <br> <img alt="在 Java 类中调用的文档弹出式窗口" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/documentation-select-item.png" title="按 Ctrl-空格键调用文档支持">
+
+                    <p class="tips">单击 "documentation"（文档）窗口中的 "web browser"（Web 浏览器）(<img alt="&quot;Web browser&quot;（Web 浏览器）图标" src="../../../images_www/articles/72/web/jsf20-crud/web-browser-icon.png">) 图标以在外部 Web 浏览器中打开 Javadoc。</p>
+
+                    正如您所看到的，<code>SelectItem</code> 类属于 JSF 框架。文档中提到的 <code>UISelectOne</code> 组件使用您在上述<a href="#markup">步骤 1</a> 中检查的标记中的 <code>&lt;h:selectOneMenu&gt;</code> 标记来表示。</li>
+
+                <li>按 Ctrl 键（在 Mac 上为 ⌘ 键），然后将鼠标悬停在 <code>findAll()</code> 上。随即出现一个弹出式窗口，显示方法签名。<br> <img alt="方法签名的弹出式窗口" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/method-signature.png" title="在编辑器中查看方法签名的弹出式窗口"> <br> 可以看到此处的 <code>ejbFacade.findAll()</code> 返回了 <code>ConsultantStatus</code> 对象的 <code>List</code>。</li>
+
+                <li>导航至 <code>JsfUtil.getSelectItems</code>。将鼠标悬停在 <code>getSelectItems</code> 上并按 Ctrl 键（在 Mac 上为 ⌘），然后单击显示的链接。<br><br> <strong class="notes">注：</strong>回想一下，<code>JsfUtil</code> 是在您完成<a href="#jsfPagesEntityClasses">“通过实体类创建 JSF 页”向导</a>时生成的一个实用程序类。<br><br> 该方法对实体列表（即 <code>ConsultantStatus</code> 对象的 <code>List</code>）执行循环操作，为每个实体创建 <code>SelectItem</code>。如下面<strong>粗体</strong>所示，每个 <code>SelectItem</code> 都是使用实体对象和对象的<em>标签</em>来创建的。
+
+                    <pre class="examplecode">
+public static SelectItem[] getSelectItems(List&lt;?&gt; entities, boolean selectOne) {
+    int size = selectOne ? entities.size() + 1 : entities.size();
+    SelectItem[] items = new SelectItem[size];
+    int i = 0;
+    if (selectOne) {
+        items[0] = new SelectItem(&quot;&quot;, &quot;---&quot;);
+        i++;
+    }
+    <strong>for (Object x : entities) {
+        items[i++] = new SelectItem(x, x.toString());
+    }</strong>
+    return items;
+}</pre>
+                    <p>该标签使用实体的 <code>toString()</code> 方法来创建，并且在响应中呈现对象时是对象的表示。（请参见 <code>SelectItem(java.lang.Object value, java.lang.String label)</code> 构造函数的 Javadoc 定义。）</p>
+
+                    <p>
+                    既然您已在查看下拉列表中的项时，验证了实体 <code>toString()</code> 方法正是浏览器中所呈现的内容，那么请修改 <code>ConsultantStatus</code> <code>toString()</code> 方法。</p>
+                </li>
+
+                <li>在编辑器中打开 <code>ConsultantStatus</code> 实体类。修改 <code>toString</code> 方法以返回 <code>statusId</code> 和 <code>description</code>。这些是对应于 <code>CONSULTANT_STATUS</code> 表的两列的实体属性。
+
+                    <pre class="examplecode">public String toString() {
+    return <strong>statusId + ", " + description;</strong>
+}</pre></li>
+
+                <li>重新运行项目。当浏览器显示欢迎页面时，单击 <code>Show All Consultant Items</code> 链接，然后单击 <code>Create New Consultant</code>。
+
+                    <p>
+                    检查 <code>StatusId</code> 下拉列表。将看到现在显示的是数据库的 <code>CONSULTANT_STATUS</code> 表中所包含的一个记录的状态 ID 和描述。</p>
+
+                    <img alt="&quot;StatusId&quot; 下拉列表的浏览器显示" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/drop-down.png" title="&quot;StatusId&quot; 下拉列表根据 ConsultantStatus 实体的 toString() 方法显示各项">
+                </li>
+            </ol>
+        </div>
+        
+        
+        
+        <h2 id="troubleshooting">疑难解答</h2>
+        <p>根据您的配置不同，将应用程序部署到服务器可能会失败，您可能会在 "Output"（输出）窗口中看到以下消息。
+       </p>
+        
+        <pre class="examplecode">GlassFish Server 4 is running.
+In-place deployment at /MyDocuments/ConsultingAgency/build/web
+GlassFish Server 4, deploy, null, false
+/MyDocuments/ConsultingAgency/nbproject/build-impl.xml:1045: The module has not been deployed.
+See the server log for details.</pre>
+        <p>最常见的失败原因是，在服务器上生成 JDBC 资源时出现问题。如果是这样，您可能会在 "Output"（输出）窗口的 "server log"（服务器日志）标签中看到类似于以下内容的消息。 
+        </p>
+        
+        <pre class="examplecode">Severe:   Exception while preparing the app : Invalid resource : jdbc/consult__pm
+com.sun.appserv.connectors.internal.api.ConnectorRuntimeException: Invalid resource : jdbc/consult__pm</pre>
+        
+        <p class=tips>如果 "server log"（服务器日志）标签未打开，您可以通过在 "Services"（服务）窗口中右键单击 "GlassFish Server" 节点并选择 "View Domain Server Log"（查看域服务器日志）来打开此标签。</p>
+
+        <p>此应用程序需要两个 JDBC 资源：</p>
+        <ul>
+            <li>JDBC 资源或数据源。此应用程序使用 JNDI 查找来定位 JDBC 资源。如果在持久性单元 (<code>persistence.xml</code>) 中查找，您可以看到此应用程序的 JTA 数据源的 JNDI 名称为 <code>jdbc/consult</code>。
+                <p>JDBC 资源标识当前由此应用程序使用的连接池。</p></li>
+            <li>JDBC 连接池。连接池指定数据库的连接详细信息，包括位置、用户名、口令。用于此应用程序的连接池为 <code>consultPool</code>。</li>
+        </ul>
+        <p>在 <code>glassfish-resources.xml</code> 文件中指定 JDBC 资源和连接池。通过在 "Projects"（项目）窗口中展开 "Server Resources"（服务器资源）节点并双击 <code>glassfish-resources.xml</code> 文件，可以在编辑器中打开此文件。此文件看起来类似于以下内容。</p>
+        
+        <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd"&gt;
+&lt;resources&gt;
+  &lt;jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="32" max-wait-time-in-millis="60000" name="consultPool" non-transactional-connections="false" ping="false" pool-resize-quantity="2" pooling="true" res-type="javax.sql.DataSource" statement-cache-size="0" statement-leak-reclaim="false" statement-leak-timeout-in-seconds="0" statement-timeout-in-seconds="-1" steady-pool-size="8" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false"&gt;
+    &lt;property name="serverName" value="localhost"/&gt;
+    &lt;property name="portNumber" value="3306"/&gt;
+    &lt;property name="databaseName" value="consult"/&gt;
+    &lt;property name="User" value="root"/&gt;
+    &lt;property name="Password" value="nb"/&gt;
+    &lt;property name="URL" value="jdbc:mysql://localhost:3306/consult?zeroDateTimeBehavior=convertToNull"/&gt;
+    &lt;property name="driverClass" value="com.mysql.jdbc.Driver"/&gt;
+  /&lt;jdbc-connection-pool&gt;
+  &lt;jdbc-resource enabled="true" jndi-name="jdbc/consult" object-type="user" pool-name="consultPool"/&gt;
+/&lt;resources&gt;</pre>
+  
+        <p>在 <code>glassfish-resources.xml</code> 中，您可以看到 JDBC 资源 <code>jdbc/consult</code> 将 <code>consultPool</code> 标识为连接池的名称。您还可以看到 <code>consultPool</code> 的属性。在此应用程序中，只在 <code>glassfish-resources.xml</code> 中定义一个数据源和一个连接池。在某些情况下，您可能需要指定其他资源，例如，用于标识仅用于开发或测试的临时数据存储。</p>
+        
+        <p>如果在运行应用程序时未自动在服务器上生成 JDBC 资源和连接池，您可以执行以下步骤在 GlassFish 管理控制台中手动创建这些资源。</p>
+
+        <ol>
+            <li>如果尚未打开 <code>glassfish-resources.xml</code>，请在编辑器中打开它。
+                <p>创建 JDBC 资源和连接池时，将使用在 <code>glassfish-resources.xml</code> 中指定的属性值。</p></li>
+            <li>在 "Services"（服务）窗口中右键单击 "GlassFish Server" 节点，然后在弹出式菜单中选择 "Open Domain Admin Console"（打开域管理控制台）在浏览器中打开 GlassFish 控制台。</li>
+            <li>在 GlassFish 控制台的 "Common Tasks"（常见任务）导航面板中，展开 <strong>JDBC</strong> 节点以及 <strong>JDBC Resources</strong>（JDBC 资源）和 <strong>JDBC Connection Pools</strong>（JDBC 连接池）节点。<br> <a href="../../../images_www/articles/80/web/jsf20-crud/gf-admin-console-lg.png"> <img alt="GlassFish 管理控制台的浏览器显示" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-admin-console-sm.png" title="单击查看 GlassFish 管理控制台的全图"></a>
+                <p>您可以看到当前注册到服务器的 JDBC 资源。如果在 "Common Tasks"（常见任务）导航面板中的 "JDBC" 节点下未列出 <code>jdbc/consult</code> 和 <code>consultPool</code>，则您将需要创建它们。在安装服务器时，默认情况下创建了一些 JDBC 资源并且这些资源显示为子节点。 </p></li>
+            <li>单击 <strong>JDBC Connection Pools</strong>（JDBC 连接池）节点，然后在 "New JDBC Connection Pool"（新建 JDBC 连接池）窗格中单击 "New"（新建）。<br> <img alt="&amp;quot;New JDBC Connection Pool&amp;quot;（新建 JDBC 连接池）窗格的浏览器显示" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-new-jdbc-pool1.png" title="GlassFish 管理控制台中的 &amp;quot;New JDBC Connection Pool&amp;quot;（新建 JDBC 连接池）窗格"></li>
+            <li>键入 <strong>consultPool</strong> 作为池名称，选择 <strong>javax.sql.ConnectionPoolDataSource</strong> 作为资源类型并选择 <strong>MySql</strong> 作为数据库驱动程序供应商。单击 "Next"（下一步）。</li>
+            <li>在步骤 2 中，定位并指定 <strong>URL</strong>、<strong>username</strong> 和 <strong>password</strong> 属性的值。单击 "Finish"（完成）。<br> <img alt="&amp;quot;New JDBC Connection Pool&amp;quot;（新建 JDBC 连接池）窗格的第二个面板的浏览器显示" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-new-jdbc-pool2.png" title="GlassFish 管理控制台中的 &amp;quot;New JDBC Connection Pool&amp;quot;（新建 JDBC 连接池）面板">
+            <p class="tips">可以在 <code>glassfish-resources.xml</code> 中查找这些属性的值。</p>
+            <p>单击 "Finish"（完成）时，将在服务器上创建新的连接池，并在 "JDBC Connection Pools"（JDBC 连接池）节点下显示此连接池的节点。</p></li>
+            <li>在 "Common Tasks"（常见任务）导航面板中单击 <strong>JDBC Resources</strong>（JDBC 资源）节点并单击 "New"（新建）。</li>
+            <li>为 "JNDI Name"（JNDI 名称）键入 <strong>jdbc/consult</strong>，并在 "Pool Name"（池名称）下拉列表中选择 <strong>consultPool</strong>。单击 "OK"（确定）。<br> <img alt="&amp;quot;New JDBC Resource&amp;quot;（新建 JDBC 资源）窗格的浏览器显示" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-new-jdbc-resource.png" title="GlassFish 管理控制台中的 &amp;quot;New JDBC Resource&amp;quot;（新建 JDBC 资源）窗格">
+            <p>单击 "OK"（确定）时，将在服务器上创建新的 JDBC 资源，并在 "JDBC Resources"（JDBC 资源）节点下显示此资源的节点。</p>
+            <p>在 IDE 的 "Service"（服务）窗口中，可以在 "GlassFish Server" 下展开 "Resources"（资源）节点，您会看到 IDE 已添加新资源。您可能需要刷新视图（右键单击 "Resources"（资源）并选择 "Refresh"（刷新））来查看更改。</p>
+            <img alt="IDE 中 &amp;quot;Services&amp;quot;（服务）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-services-jdbc-resources.png" title="在 IDE 的 &amp;quot;Service&amp;quot;（服务）窗口中显示的 JDBC 资源"></li>
+        </ol>
+        <p>有关使用 MySQL 和 IDE 时的问题疑难解答的更多提示，请参见以下文档：</p>
+        <ul>
+            <li><a href="../ide/mysql.html">连接 MySQL 数据库</a>教程。</li>
+            <li><a href="mysql-webapp.html#troubleshoot">使用 MySQL 数据库创建简单的 Web 应用程序</a>的“疑难解答”部分</li>
+        </ul>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20a%20JSF%202.0%20CRUD%20Application">发送有关此教程的反馈意见</a>
+        </div>
+
+        <br style="clear:both;" />
+
+
+        <h2 id="seealso">另请参见</h2>
+
+        <p>有关 JSF 2.x 的详细信息，请参见以下资源。</p>
+
+        <div class="indent">
+            <h3>NetBeans 文章和教程</h3>
+
+            <ul>
+                <li><a href="jsf20-intro.html">NetBeans IDE 中的 JavaServer Faces 2.x 简介</a></li>
+                <li><a href="jsf20-support.html">NetBeans IDE 中的 JSF 2.x 支持</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum 玩具 - JSF 2.0 完整样例应用程序</a></li>
+                <li><a href="../javaee/javaee-gettingstarted.html">Java EE 应用程序入门指南</a></li>
+                <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+            </ul>
+
+            <h3>外部资源</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">JavaServer Faces 技术</a>（官方主页）</li>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr314/index.html">JSR 314：JavaServer Faces 2.0 的规范</a></li>
+                <li>Java EE 7 教程中的 <a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-intro.htm">JavaServer Faces 技术</a>一章</li>
+                <li><a href="http://javaserverfaces.dev.java.net/">GlassFish 项目 Mojarra</a>（JSF 2.x 的正式引用实现）</li>
+                <li><a href="http://forums.oracle.com/forums/forum.jspa?forumID=982">OTN 论坛：JavaServer Faces</a></li>
+                <li><a href="http://www.jsfcentral.com/">JSF 中心</a></li>
+            </ul>
+
+            <h3>博客</h3>
+
+            <ul>
+                <li><a href="http://www.java.net/blogs/edburns/">Ed Burns</a></li>
+                <li><a href="http://www.java.net/blogs/driscoll/">Jim Driscoll</a></li>
+            </ul>
+        </div>
+
+    </body>
+</html>

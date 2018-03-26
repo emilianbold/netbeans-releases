@@ -1,0 +1,450 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Desenvolvendo uma Aplicação Corporativa para o Oracle WebLogic Server - Tutorial do NetBeans IDE</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="Demonstrates how to create an enterprise application that is deployed to the Oracle WebLogic server.">
+   <meta name="KEYWORDS" content="NetBeans, CRUD, JPA, JSF, WebLogic, weblogic, Tutorial, Database">
+   <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+       <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Desenvolvendo uma Aplicação Corporativa para o Oracle WebLogic Server</h1>
+
+    <p>Este tutorial demonstra como usar o IDE para criar uma aplicação Web que usa JSF (JavaServer Faces) 2.x e a JPA (Java Persistence API) 2.0 e, em seguida, como implantar a aplicação no Oracle WebLogic Server. Neste tutorial você registrará o Servidor WebLogic com o IDE e, em seguida, usará os assistentes no IDE para criar um recurso JDBC e as classes da entidade e do bean. Em seguida, você usará o IDE para implantar a aplicação ao servidor e registrará a nova origem de dados.</p>
+    
+    
+    <p><b>Conteúdo</b></p>
+    <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+    <ul class="toc">
+        <li><a href="#01">Registrando o Oracle WebLogic Server</a>
+        <ul class="toc">
+            <li><a href="#01a">Instalando o Servidor</a></li>
+            <li><a href="#01b">Registrando o Servidor com o IDE</a></li>
+            <li><a href="#01c">Abrindo a Console de Administração</a></li>
+            <li><a href="#01e">Ativando o Suporte para JPA 2.0</a></li>
+        </ul>
+        </li>
+        <li><a href="#02">Criando o Projeto de Aplicação Web</a>
+        <ul>
+            <li><a href="#02b">Criando a Conexão de Banco de Dados</a></li>
+            <li><a href="#02c">Criando a Unidade de Persistência</a></li>
+            <li><a href="#02d">Criando as Classes de Entidade</a></li>
+            <li><a href="#02e">Gerando Páginas JSF</a></li>
+            <li><a href="#02f">Executando a Aplicação</a></li>
+        </ul>
+        </li>
+<!--        <li><a href="#03">Troubleshooting</a></li>-->
+    </ul>
+
+   
+   <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software ou Recurso</th>
+                <th class="tblheader" scope="col">Versão Necessária</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="/downloads/">NetBeans IDE</a></td>
+                <td class="tbltd1">Java EE 7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                <td class="tbltd1">Versão 6 ou 7</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/middleware/weblogic/downloads/index.html">Oracle WebLogic Server</a></td>
+                <td class="tbltd1">11g Rel 1 (10.3.4, 10.3.5), 12c (12.1.1.0)</td>
+            </tr>   
+            <tr>
+                <td class="tbltd1">banco de dados de amostra</td>
+                <td class="tbltd1">MySQL ou JavaDB</td>
+            </tr>
+        </tbody>
+</table>
+
+ <p class="notes"><strong>Observações.</strong></p>
+    <div class="indent">
+    <ul>
+        <li>Este projeto usa o banco de dados <strong><tt>sample</tt></strong> que está disponível para os servidores de banco de dados MySQL e JavaDB. Para obter mais detalhes sobre como usar um servidor de banco de dados MySQL com o IDE e criar uma conexão com o banco de dados, consulte o tutorial <a href="../ide/mysql.html">Conectando a um Banco de Dados MySQL</a>. Como alternativa, você pode usar a conexão do banco de dados para o banco de dados <tt>sample</tt> do JavaDB que foi registrado com o IDE por default, se você instalou o GlassFish Server durante a instalação do IDE.
+        </li>
+    </ul>
+    </div>
+
+
+ 
+ <!--+++++++++++++++++++++++ Registering +++++++++++++++++++++++-->
+    <a name="01"></a>
+    <h2>Registrando o Oracle WebLogic Server</h2>
+    <p>Neste tutorial, você implantará uma aplicação Web no Oracle WebLogic Server. Para implantar aplicações no WebLogic Server a partir do IDE, será preciso registrar uma instância do servidor com o IDE. Esta seção descreve como usar o assistente Adicionar Instância de Servidor no IDE para registrar uma instância do WebLogic Server.
+    </p>
+
+<!--+++++++++++++++++++++++ Downloading +++++++++++++++++++++++-->    
+    <div class="indent">
+        <a name="01a"></a>
+        <h3>Download e Instalação do Servidor</h3>
+        <p>Para que você possa registrar o servidor, será necessário fazer download do instalador do WebLogic Server e seguir as etapas descritas no <a href="http://download.oracle.com/docs/cd/E17904_01/doc.1111/e14142/toc.htm" target="_blank">guia de instalação do Oracle WebLogic Server</a> para instalar o servidor em sua máquina local. Além de instalar o servidor, será necessário criar um domínio WebLogic antes de registrar o servidor com o IDE.</p>
+        <ol>
+            <li>Faça download do instalador da página <a href="http://www.oracle.com/technetwork/middleware/weblogic/downloads/index.html" target="_blank">Downloads do Oracle WebLogic Server</a>.</li>
+            <li>Instale o servidor seguindo as etapas do <a href="http://download.oracle.com/docs/cd/E17904_01/doc.1111/e14142/toc.htm" target="_blank">guia de instalação do Oracle WebLogic Server</a>.
+                <p>Lembre-se de anotar o nome de usuário e a senha.</p></li>
+            <li>Crie um domínio do WebLogic.
+                <p>Você pode usar o <a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e14140/newdom.htm#i1073602">Modo Gráfico do Assistente de Configuração do WebLogic</a> para ajudá-lo a criar o domínio.</p>
+            </li>
+        </ol>
+
+        <p class="tips">Consulte as seções a seguir do Guia de Instalação do WebLogic Server para obter detalhes sobre a instalação e a definição do servidor. </p>
+        <ul>
+            <li><a href="http://download.oracle.com/docs/cd/E17904_01/doc.1111/e14142/prepare.htm">Preparando para a Instalação</a></li>
+            <li><a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e14140/intro.htm">Introdução aos Domínios do WebLogic</a></li>
+            <li><a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e14140/newdom.htm">Criando um domínio do WebLogic</a></li>
+        </ul>
+                
+
+<!--+++++++++++++++++++++++ Registering with IDE +++++++++++++++++++++++-->        
+        <a name="01b"></a>
+        <h3>Registrando o Servidor no IDE</h3>
+        <p>Depois de instalar o servidor, é possível usar o assistente Adicionar Instância de Servidor para registrar uma instância do servidor especificando o domínio do servidor.</p>
+        <ol>
+            <li>Abra a janela Serviços.</li>
+            <li>Clique com o botão direito do mouse no nó Servidores e selecione Adicionar Servidor.</li>
+            <li>Selecione Oracle WebLogic Server. Clique em Próximo.</li>
+            <li>Clique em Procurar e localize o diretório de instalação do servidor. Clique em Próximo.
+                <p>O IDE automaticamente identificará o domínio da instância do servidor.</p>
+                </li>
+            <li>Digite o nome de usuário e a senha do domínio. </li>
+            <li>Ativar JPA 2.0 (Somente Servidor WebLogic 10.3.4 ou 10.3.5). Clique em Finalizar.
+                <p class="notes"><strong>Observação.</strong> Se estiver registrando uma instância do Servidor WebLogic 12c (12.1.1.0) você precisará ativar o JPA 2.0 porque JPA 2.0 é ativado por default. Se você estiver registrando uma instância do WebLogic Server 11g Rel 1 (10.3.4 ou 10.3.5), você poderá ativar o JPA 2.0 ao registrar o servidor ou no Gerenciador de servidores depois que o servidor estiver registrado. Consulte a seção <a href="#01e">Ativando Suporte para JPA 2.0 no Oracle WebLogic Server 11g</a> abaixo para obter mais detalhes.</p></li>
+        </ol>
+
+        <img alt="Assistente Adicionar Servidor" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/add-weblogic-server2.png" title="Assistente Adicionar Servidor">
+
+
+        <p>Quando você clica em Finalizar, o Oracle WebLogic Server será exibido sob o nó Servidores na janela Serviços.</p>
+        <p>Você pode clicar com o botão direito do mouse no nó do Oracle WebLogic Server e executar várias ações, incluindo:</p>
+        <ul>
+            <li>Iniciar e Parar o Servidor</li>
+            <li>Abrir a Console de Administração no seu browser</li>
+            <li>Exibir o Log do Servidor na janela de Saída do IDE </li>
+        </ul>
+        <img alt="tela da janela Serviços" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/weblogic-services-window1.png" title="WebLogic Server na janela Serviços">
+
+        
+
+
+<!--+++++++++++++++++++++++ Opening Admin Console +++++++++++++++++++++++-->
+        <a name="01c"></a>
+        <h3>Abrindo a Console de Administração</h3>
+        <p>Neste exercício você abrirá a Console de Administração para o WebLogic Server no browser. A Console de Administração permite configurar das definições do servidor e exibir aplicações implantadas e recursos disponíveis.</p>
+        <ol>
+            <li>Inicie o servidor clicando com o botão direito do mouse no nó do Oracle WebLogic Server na janela Serviços e selecione Iniciar.
+            <p>Quando o servidor é iniciado, é possível ver o log do servidor na guia Oracle WebLogic Server da janela de Saída.</p>
+            <p class="tips">Caso a guia não esteja visível, você poderá clicar com o botão direito do mouse no nó do Oracle WebLogic Server e selecionar Exibir Log do Servidor.</p></li>
+
+            <li>Clique com o botão direito do mouse no nó do Oracle WebLogic Server e selecione Exibir Console de Administração.
+            <p>Quando você escolhe Exibir Console Admin, a tela de log-in do servidor é aberta no browser.</p></li>
+            <li>Faça log-in com o nome de usuário e a senha especificados na instalação o servidor. </li>
+
+        </ol>
+        <p>Após o log-in, você verá a Home Page da Console de Administração no seu browser.</p>
+        <img alt="tela da Console de Administração do Oracle WebLogic Server" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/admin-console1.png" title="Console de Administração do Oracle WebLogic Server">
+
+
+
+<!--+++++++++++++++++++++++ Setting Persistence Provider +++++++++++++++++++++++-->
+<!--+++++++++++++++++++++++ Enabling JPA 2.0 +++++++++++++++++++++++-->
+
+        
+        <h3>Ativando Suporte para JPA 2.0 no Oracle WebLogic Server 11g<a name="01e"></a></h3>
+        <p>Se você estiver usando o Oracle WebLogic Server 11g (10.3.4 ou 10.3.5), será necessário ativar o suporte para a JPA 2.0 (Java Persistence API) e definir o provedor de persistência default para TopLink. O Oracle WebLogic Server 11g é um contêiner Java EE 5 e é compatível com o JPA 1.0 e JPA 2.0. O JPA 1.0 é ativado por default ao instalar o Oracle WebLogic Server 10.3.4 e 10.3.5, mas a instalação do WebLogic Server inclui os arquivos necessários para suportar o JPA 2.0. Você pode ativar o JPA 2.0 para o WebLogic Server ao registrar a instância do servidor ou no Gerenciador de servidores do IDE. Como alternativa, é possível seguir as etapas da seção <a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e13720/using_toplink.htm#EJBAD1309">Usando o JPA 2.0 com TopLink no WebLogic Server</a> da documentação do WebLogic Server.</p>
+        
+        <p>O WebLogic Server suporta a JPA (Java Persistence API) e vem com as bibliotecas de persistência Oracle TopLink e Kodo. Neste exercício ,você alterará o provedor de persistência default do Kodo para o Oracle TopLink na Console de Administração do WebLogic Server.</p>
+        
+        <p class="notes"><strong>Observação.</strong> O suporte ao TopLink e ao JPA 2.0 é ativado por default ao instalar o WebLogic Server 12c.</p>
+            
+            
+        <p>Para ativar o suporte à JPA 2.0 no Gerenciador de servidores e definir o provedor de persistência default, execute as etapas a seguir.</p>
+        
+        <ol>
+            <li>Clique com o botão direito do mouse no nó do Oracle WebLogic Server na janela Serviços e selecione Propriedades para abrir o Gerenciador de servidores.
+                <p>Ou então, selecione Ferramentas > Servidores no menu principal para abrir o Gerenciador de servidores.</p>
+            <img alt="tela da guia Domínio do Gerenciador de servidores" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/weblogic-properties-enablejpa.png" title="Guia Domínio do Gerenciador de servidores">
+            <p>A guia Domínio do Gerenciador de servidores permite que você exiba e modifique o nome de usuário e a senha.</p>
+            </li>
+            <li>Clique em Ativar JPA 2. Clique em Fechar.
+            <p>Quando você clicar em Ativar JPA 2, o IDE modificará o classpath do WebLogic Server para adicionar os arquivos e ativar o suporte ao JPA 2.</p>
+
+            <p class="notes"><strong>Observação.</strong> Você também pode ativar o JPA 2.0 utilizando o Oracle Smart Update ou modificando manualmente o classpath do WebLogic. Para obter mais detalhes sobre como ativar o suporte ao JPA 2.0, consulte os links a seguir.</p>
+            <ul>             
+                <li><a href="http://download.oracle.com/docs/cd/E17904_01/web.1111/e13720/using_toplink.htm#EJBAD1309">Usando o JPA 2.0 com o TopLink no WebLogic Server</a></li>
+                <li><a href="http://forums.oracle.com/forums/thread.jspa?threadID=1112476">Fórum de Discussão OTN: 11g Release 1 Conjunto de Patches 3 (WLS 10.3.4)</a></li>
+                <li><a href="http://wiki.eclipse.org/EclipseLink/Development/JPA_2.0/weblogic">Executando a API do JPA 2.0 no WebLogic 10.3</a></li>
+            </ul>
+        
+            </li>
+            <li>Abra a Console de Administração do Oracle WebLogic Server no seu browser e efetue log-in.</li>
+            <li>Clique em <strong>Domínio</strong> na seção Configurações de Domínio da Console de Administração.</li>
+            <li>Clique na guia <strong>JPA</strong> na guia Configuração.</li>
+            <li>Selecione <strong>TopLink</strong> na lista drop-down Provedor JPA Default. Clique em Salvar. </li>
+        </ol>
+        <img alt="tela da guia JPA na Console de Administração do Oracle WebLogic Server" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/admin-console-jpa.png" title="guia JPA na Console de Administração do Oracle WebLogic Server">
+
+        <p>Quando você clica em Salvar, o Oracle TopLink se tornará o provedor de persistência default para aplicações implantadas no servidor quando nenhum provedor de persistência for explicitamente especificado pela aplicação.</p>
+
+        <p class="notes"><strong>Observação.</strong> A aplicação deste tutorial utilizará a JTA (Java Transaction API) para gerenciar as transações. A JTA é ativada por default quando o WebLogic é instalado. É possível modificar as definições da JTA na guia JTA da guia Configuração do domínio.</p>
+        
+    </div>
+
+
+
+
+<!--+++++++++++++++++++++++ Creating Application +++++++++++++++++++++++-->
+
+    <a name="02"></a>
+    <h2>Criando a Aplicação Web</h2>
+    <p>Neste tutorial, você criará uma aplicação Web Java EE. A aplicação Web conterá classes de entidade baseadas no banco de dados de amostra. Após criar a conexão com o banco de dados, você criará uma unidade de persistência e usará o assistente no IDE para gerar classes de entidade a partir do banco de dados. Em seguida, use um assistente para criar páginas JSF com base nas classes de entidade.
+    </p>
+
+    <div class="indent">
+        
+
+<!--+++++++++++++++++++++++ Creating Project +++++++++++++++++++++++-->
+
+        <a name="02"></a>
+        <h3>Criando o Projeto</h3>
+        <p>Neste exercício, você usará o assistente de Novo Projeto para criar uma aplicação Web e especificar o Oracle WebLogic Server como servidor de destino.</p>
+
+        <ol>
+            <li>Selecione Arquivo > Novo Projeto (Ctrl-Shift-N; &amp;#8984-Shift-N no Mac).</li>
+            <li>Na categoria Java Web, selecione Aplicação Web. Clique em Próximo.</li>
+            <li>Digite <strong>WebLogicCustomer</strong> para o nome do projeto e especifique a localização do projeto.</li>
+            <li>Desmarque a opção Usar Pasta Dedicada, se ela estiver selecionada. Clique em Próximo.</li>
+            <li>Selecione <strong>Oracle WebLogic Server</strong> na lista drop-down Servidor.</li>
+            <li>Selecione <strong>Java EE 5</strong> ou <strong>Java EE 6 Web</strong> como a Versão Java EE. Clique em Próximo.<br>
+                <p class="notes"><strong>Observação.</strong> Java EE 6 Web só está disponível se você registrou uma instância do WebLogic Server 12c.</p>
+            <img alt="tela do assistente Novo Projeto" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/new-project-ee6.png" title="WebLogic selecionado no Assistente de Novo Projeto"></li>
+            <li>Selecione o framework JavaServer Faces.</li>
+            <li>Selecione JSF 2.x na lista drop-down Biblioteca do Servidor. Clique em Finalizar.<br> <img alt="tela do painel Frameworks do assistente de Novo Projeto" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/projectwizard-serverlib.png" title="Painel Frameworks do assistente de Novo Projeto">
+            
+            
+            
+            </li>
+        </ol>
+            <p>Quando você clicar em Finalizar, o IDE criará o projeto da aplicação Web e abrirá o <tt>index.xhtml</tt> no editor. Na janela Projetos você pode ver se o IDE criou o arquivo do descritor <tt>weblogic.xml</tt> e <tt>web.xml</tt> no nó Arquivos de Configuração.</p>
+            <img alt="tela da janela Projetos do weblogic.xml" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/wl-projects-window1.png" title="weblogic.xml selecionado na janela Projetos">
+            <p>Se você abrir <tt>web.xml</tt> no editor, você poderá ver que <tt>faces/index.xhtml</tt> foi especificado como a página de índice default. Se você abrir o arquivo <tt>weblogic.xml</tt> no editor, o arquivo se parecerá com o seguinte.</p>
+            
+            <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;weblogic-web-app xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.0/weblogic-web-app.xsd"&gt;
+  &lt;jsp-descriptor&gt;
+    &lt;keepgenerated&gt;true&lt;/keepgenerated&gt;
+    &lt;debug&gt;true&lt;/debug&gt;
+  &lt;/jsp-descriptor&gt;
+  &lt;context-root&gt;/WebLogicCustomer&lt;/context-root&gt;
+&lt;/weblogic-web-app&gt;</pre>
+            
+        <p class="notes"><strong>Observações.</strong></p>
+            <ul>
+                <li>Se o arquivo <tt>weblogic.xml</tt> contiver o elemento <tt>&lt;fast-swap></tt>, confirme se <tt>fast-swap</tt> está desativado, confirmando se o valor do elemento <tt>&lt;enabled></tt> é <strong>falso</strong>.
+            <pre class="examplecode">
+    &lt;fast-swap&gt;
+        &lt;enabled&gt;<strong>false</strong>&lt;/enabled&gt;
+    &lt;/fast-swap&gt;</pre>
+        </li>                
+                <li>Se o servidor de destino for WebLogic Server 11g (10.3.4 ou 10.3.5), a instalação do servidor incluirá as bibliotecas necessárias para usar JSF 1.2 e JSF 2.x nas aplicações, mas elas serão desativadas por default. É necessário implantar e instalar as bibliotecas JSF 2.x antes de utilizá-las. Se a biblioteca ainda não estiver instalada, o IDE solicitará a instalação da mesma, caso você selecione a biblioteca no assistente de Novo Projeto. A biblioteca precisa ser instalada uma única vez.<br> <img alt="tela da caixa de diálogo Resolver Problema de Biblioteca não Encontrada" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/install-libraries-dialog.png" title="Caixa de diálogo Resolver Problema de Biblioteca do Servidor não Encontrada">
+            <p>Após criar a aplicação, quando você exibir o arquivo <tt>weblogic.xml</tt> do descritor, você verá que o IDE modificou o arquivo para especificar a biblioteca JSF que será utilizada com a aplicação.</p>
+            
+            <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;weblogic-web-app xmlns="http://www.bea.com/ns/weblogic/90" xmlns:j2ee="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-web-app.xsd"&gt;
+  &lt;context-root&gt;/WebLogicCustomer&lt;/context-root&gt;
+  <strong>&lt;library-ref&gt;
+      &lt;library-name&gt;jsf&lt;/library-name&gt;
+      &lt;specification-version&gt;2.0&lt;/specification-version&gt;
+      &lt;implementation-version&gt;1.0.0.0_2-0-2&lt;/implementation-version&gt;
+      &lt;exact-match&gt;true&lt;/exact-match&gt;
+  &lt;/library-ref&gt;</strong>
+&lt;/weblogic-web-app&gt;</pre>
+
+            </li>
+        </ul>
+
+        
+<!--+++++++++++++++++++++++ Creating DB Connection +++++++++++++++++++++++-->
+
+        <a name="02b"></a>
+        <h3>Criando a Conexão de Banco de Dados</h3>
+
+        <p>Este tutorial utiliza um banco de dados chamado <strong>sample</strong> e é executado no servidor de banco de dados MySQL. Neste exercício, você usará o IDE para criar o banco de dados e preencher as tabelas do banco de dados. Em seguida, você abrirá uma conexão de banco de dados para o mesmo. O IDE utilizará os detalhes da conexão do banco de dados para criar a unidade de persistência para a aplicação. Para obter mais detalhes sobre como usar um servidor de banco de dados MySQL com o IDE, consulte o tutorial <a href="../ide/mysql.html">Conectando a um Banco de Dados MySQL</a>.
+        </p>
+
+            <p class="notes"><strong>Observação.</strong> Ou então, se você tiver instalado o GlassFish Server ao instalar o IDE, você poderá utilizar a conexão de banco de dados ao banco de dados de amostra do servidor de banco de dados do JavaDB registrado automaticamente durante a instalação do IDE.</p>
+            <p>Neste exercício, você criará e abrirá uma conexão para o banco de dados.</p>
+
+        <ol>
+            <li>Clique com o botão direito do mouse no nó do Servidor MySQL na janela Serviços e selecione Conectar.</li>
+            <li>Digite o nome de usuário e a senha. Clique em OK.</li>
+            <li>Clique com o botão direito do mouse no nó Servidor MySQL e escolha Criar Banco de Dados.</li>
+            <li>Selecione <strong>sample</strong> na lista drop-down Novo Nome do Banco de Dados. Clique em OK.<br> <img alt="tela da caixa de diálogo Criar Banco de Dados" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/create-db.png" title="Caixa de diálogo Criar Banco de Dados">
+                <p class="notes"><strong>Observação.</strong> Dependendo de como você tiver configurado o seu banco de dados, pode ser necessário especificar explicitamente as permissões de acesso para o novo banco de dados.</p>
+                <p>Quando você clicar em OK, o IDE criará o banco de dados de amostra e preencherá as tabelas do banco de dados. Se você expandir o nó do servidor MySQL, você verá que a lista de bancos de dados agora contém o novo banco de dados <tt>sample</tt>.</p>
+            </li>
+            <li>Expanda o nó do servidor MySQL e clique com o botão direito do mouse no banco de dados de amostra e selecione Conectar.</li>
+        </ol>
+        <p>Quando você clicar em Conectar, um nó de conexão de banco de dados para o banco de dados aparecerá sob o nó Bancos de Dados. É possível expandir o nó para exibir as tabelas do banco de dados.</p>
+        <img alt="tela do nó do banco de dados na janela Serviços" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/services-window2.png" title="Nó do banco de dados de amostra na janela Serviços">
+
+
+        <p>O IDE usa a conexão de banco de dados para se conectar ao banco de dados e recuperar os detalhes do mesmo. O IDE também utiliza os detalhes da conexão de banco de dados para gerar o arquivo XML que o WebLogic Server utiliza para criar as fontes de dados no servidor e identificar os drivers apropriados.</p>
+        
+        <p class="tips">Se você não tiver um banco de dados MySQL instalado, você poderá utilizar o banco de dados <tt>sample</tt> em execução no JavaDB. Caso o banco de dados <tt>sample</tt> não exista, você poderá clicar com o botão direito do mouse no nó MySQL (ou JavaDB) e selecionar Criar Banco de Dados.</p>
+
+        <p>Para obter mais detalhes, consulte o tutorial <a href="../ide/mysql.html">Conectando a um Banco de Dados MySQL</a>.</p>
+
+
+        
+<!--+++++++++++++++++++++++ Creating PU +++++++++++++++++++++++-->
+
+        <a name="02c"></a>
+        <h3>Criando a Unidade de Persistência</h3>
+
+        <p>Para gerenciar a persistência na aplicação, é necessário apenas criar uma unidade de persistência, especificar quais fonte de dados e gerenciador de entidade serão utilizados e permitir que o contêiner realize o trabalho de gerenciamento de entidades e persistência. Você criará uma unidade de persistência ao defini-la em <tt>persistence.xml</tt>.</p>
+
+        <p class="notes"><strong>Observação.</strong> Para fins de demonstração, neste exercício você utilizará o assistente de Nova Unidade de Persistência para criar o arquivo <tt>persistence.xml</tt>. O assistente o ajudará a especificar as propriedades da unidade de persistência. Você também pode criar uma unidade de persistência no assistente de Nova Classe de Entidade a Partir do Banco de Dados. Caso não haja unidades de persistência, o assistente fornecerá a opção de criar uma unidade de persistência para o projeto. O assistente criará uma unidade de persistência que utilizará o provedor de persistência default do WebLogic Server.</p>
+
+
+        <ol>
+            <li>Clique com o botão direito do mouse no nó do projeto na janela Projetos e escolha Propriedades.</li>
+            <li>Na categoria Códigos-Fonte da janela Propriedades, selecione <strong>JDK 6</strong> como o Formato Binário/Código-Fonte. Clique em OK.</li>
+            <li>Selecione Novo Arquivo (Ctrl-N; &amp;#8984-N no Mac) para abrir o assistente para Novo Arquivo.</li>
+            <li>Selecione Unidade de Persistência na categoria Persistência. Clique em Próximo.</li>
+            <li>Mantenha o nome default para a unidade de persistência sugerido pelo assistente.</li>
+            <li>Selecione <strong>EclipseLink</strong> na lista drop-down Provedor de Persistência.</li>
+            <li>Selecione Nova Fonte de Dados na lista drop-down Fonte de Dados.</li>
+            <li>Digite <strong>jdbc/mysql-sample</strong> para o nome do JNDI na caixa de diálogo Nova Fonte de Dados.</li>
+            <li>Selecione a conexão do banco de dados de amostra MySQL. Clique em OK para fechar a caixa de diálogo.</li>
+            <li>Clique em Finalizar no assistente de Nova Unidade de Persistência.</li>
+        </ol>
+        <img alt="tela do assistente de Nova Unidade de Persistência" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/new-persistence-eclipselink1.png" title="Assistente Nova Unidade de Persistência">
+
+
+        <p>Quando você clicar em Finalizar, o arquivo <tt>persistence.xml</tt> será criado para o seu projeto e aberto no editor. Você pode clicar em Código-fonte na barra de ferramentas do editor para abrir <tt>persistence.xml</tt> no editor do código-fonte de XML. Esse arquivo contém todas as informações que o servidor precisa para gerenciar as entidades e a persistência da aplicação.</p>
+
+
+        <p class="notes"><strong>Observação.</strong> Se você não estiver utilizando una fonte de dados, o IDE irá gerar um arquivo XML sob o nó Recursos do Servidor (por exemplo, <tt>datasource-1-jdbc.xml</tt>) que contenha os detalhes utilizados para criar a fonte de dados no servidor, incluindo o driver JDBC do banco de dados.</p>
+
+        <p>
+        Se o arquivo <tt>persistence.xml</tt> for aberto no editor de código-fonte XML, você verá que o IDE especificou a versão da persistência como 2.0 e o esquema como <tt>persistence_2_0.xsd</tt>. O IDE especifica <tt>org.eclipse.persistence.jpa.PersistenceProvider</tt> como o provedor de persistência em <tt>persistence.xml</tt>. O EclipseLink é a implementação de persistência principal para o Oracle TopLink e a implementação de referência da JPA.
+        </p>
+
+        <pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;persistence <strong>version="2.0"</strong> xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/<strong>persistence_2_0.xsd</strong>"&gt;
+  &lt;persistence-unit name="WebLogicCustomerPU" transaction-type="JTA"&gt;
+    &lt;provider&gt;org.eclipse.persistence.jpa.PersistenceProvider&lt;/provider&gt;
+    &lt;jta-data-source&gt;jdbc/mysql-sample&lt;/jta-data-source&gt;
+    &lt;exclude-unlisted-classes&gt;false&lt;/exclude-unlisted-classes&gt;
+    &lt;properties&gt;
+      &lt;property name="eclipselink.ddl-generation" value="create-tables"/&gt;
+    &lt;/properties&gt;
+  &lt;/persistence-unit&gt;
+&lt;/persistence&gt;</pre>
+        
+        <p>Também é possível selecionar o TopLink no assistente, nesse caso, o assistente especificará <tt>oracle.toplink.essentials.PersistenceProvider</tt> como o provedor de persistência em <tt>persistence.xml</tt>. O IDE adicionará as bibliotecas do Oracle TopLink Essentials - 2.0.1 ao classpath. Nas versões atuais e futuras do Oracle TopLink, o Oracle TopLink Essentials serão substituídos pelo EclipseLink. Onde for possível, você deverá optar por usar o Oracle TopLink/EclipseLink em vez do Oracle TopLink Essentials.</p>
+
+
+<!--+++++++++++++++++++++++ Creating Entity Classes +++++++++++++++++++++++-->
+
+        <a name="02d"></a>
+        <h3>Criando as Classes de Entidade</h3>
+        <p>Agora, você usará o assistente de Classes de Entidade do Banco de Dados para criar as classes de entidade com base no banco de dados relacional.</p>
+
+        <ol>
+            <li>Selecione Novo Arquivo (Ctrl-N) para abrir o assistente de Novo Arquivo. </li>
+            <li>Selecione Classes de entidade do Banco de Dados na categoria Persistência. Clique em Próximo.</li>
+            <li>No assistente de Classes de Entidade do Banco de Dados, selecione <strong>jdbc/mysql-sample</strong> na lista drop-down Fonte de Dados e forneça a senha, se necessário.</li>
+            <li>Selecione a tabela <strong>Customer</strong> nas Tabelas Disponíveis e clique em Adicionar. Clique em Próximo.
+            <p>O assistente lista a tabela <tt>customer</tt> e as tabelas relacionadas em Tabelas Selecionadas.</p></li>
+            <li>Digite <strong>ejb</strong> como o pacote para as classes geradas. Clique em Finalizar.</li>
+        </ol>
+
+        <p>Quando você clicar em Finalizar, o IDE gerará as classes de entidade para cada tabela selecionada. É possível expandir o nó do pacote de código-fonte <tt>ejb</tt> para exibir as classes de entidade geradas.</p>
+
+        
+        
+<!--+++++++++++++++++++++++ Creating JSF Pages+++++++++++++++++++++++-->        
+
+        <a name="02e"></a>
+        <h3>Gerando Páginas JSF</h3>
+        <p>
+        Neste exercício, você usará um assistente para gerar páginas JSF com base nas classes de entidade existentes.</p>
+
+        <ol>
+            <li>Clique com o botão direito do mouse no nó do projeto e selecione Novo > Outro.</li>
+            <li>Selecione Páginas JSF em Classes de Entidade na categoria JavaServer Faces do assistente de Novo Arquivo. Clique em Próximo.</li>
+            <li>Clique em Adicionar Tudo para criar páginas JSF para todas as entidades disponíveis. Clique em Próximo.</li>
+            <li>Digite <strong>web</strong> para o pacote de beans da sessão e para classes do controlador JPA. Clique em Finalizar.</li>
+        </ol>
+        <p>Quando você clicar em Finalizar, o IDE gerará páginas JSF 2.0 e as classes do controlador e do conversor para as páginas JSF. O IDE gera um conjunto de páginas JSF para cada classe de entidade no diretório de Páginas Web default. O IDE também gera uma classe de bean gerenciado para cada entidade que acessa a classe de fachada da sessão correspondente para a entidade.</p>
+
+
+   
+
+<!--+++++++++++++++++++++++ Running Project +++++++++++++++++++++++-->        
+        
+        <a name="02f"></a>
+        <h3>Executando o Projeto</h3>
+
+        <p>Neste exercício, você criará e implantará a aplicação Web no WebLogic Server. Você utilizará o comando Executar no IDE para criar, implantar e iniciar a aplicação.</p>
+        <ol>
+            <li>Clique com o botão direito do mouse no nó do projeto e selecione Executar.</li>
+        </ol>
+
+        <p>Quando você clicar em Executar, o IDE criará o projeto e implantará o arquivo compactado WAR no WebLogic Server e criará e registrará a nova fonte de dados JDBC. A página de boas-vindas da aplicação (<a href="http://localhost:7001/WebLogicCustomer/">http://localhost:7001/WebLogicCustomer/</a>) será aberta no seu browser.</p>
+        <img alt="tela da tabela da página Resumo de Boas-Vindas no browser" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/browser-welcome.png" title="Página de boas-vindas no browser">
+
+        <p>Se você fizer log-in na Console de Administração, você poderá clicar em Implantações na seção Seus Recursos Implantados para ver uma tabela com os recursos atualmente implantados no servidor.</p>
+        <img alt="tela da tabela Implantações na Console de Administração do WebLogic Server" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf-weblogic/adminconsole-deployments.png" title="Tabela de Implantações na Console de Administração do WebLogic Server">
+
+        <p>Você pode clicar no nome de cada recurso para exibir detalhes adicionais sobre o mesmo. Também é possível deletar recursos na tabela Implantações.</p>
+        
+        <p class="notes"><strong>Observações sobre como implantar o Servidor WebLogic 10.3.4 ou 10.3.5.</strong></p>
+        <ul>
+        <li>Se você implantou a aplicação ao Servidor WebLogic 10.3.4 ou 10.3.5 você pode ver na tabela que a biblioteca JSF 2.0 também foi implantada para o servidor, além da aplicação web <tt>WebLogicCustomer.war</tt> e a configuração <tt>jdbc/mysql-sample</tt> de JDBC. <br> <img alt="tela da tabela Implantações na Console de Administração do WebLogic Server" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/admin-console-deployments.png" title="Tabela de Implantações na Console de Administração do WebLogic Server">
+        </li>
+        <li>Se você expandir a instância do Oracle WebLogic Server na janela Serviços, será possível exibir os aplicações e os recursos implantados no servidor. Observe que os recursos JDBC foram criados no servidor e que as bibliotecas JSF estão instaladas.<br> <img alt="tela de aplicações e recursos do WebLogic Server na janela Serviços" class="margin-around b-all" src="../../../images_www/articles/74/web/jsf-weblogic/weblogic-services-window2.png" title="Aplicações e recursos do WebLogic Server na janela Serviços">
+        </li>
+    </ul>
+        <p class="tips">Para obter mais informações sobre a implantação de aplicações, consulte <a href="http://download.oracle.com/docs/cd/E12840_01/wls/docs103/deployment/index.html">Implantando aplicações no WebLogic Server</a>
+        </p>
+
+    </div>
+
+
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Developing%20an%20Enterprise%20Application%20on%20Oracle%20WebLogic">Enviar Feedback neste Tutorial</a></div>
+<br style="clear:both;">
+
+<h2>Consulte Também</h2>
+
+<p>Para obter mais informações sobre o uso do NetBeans IDE para desenvolver aplicações Web usando Persistência Java e JavaServer Faces, consulte os seguintes recursos:</p>
+    <ul>
+        <li><a href="../javaee/weblogic-javaee-m1-screencast.html">Vídeo sobre a Implantação de uma Aplicação Web no Oracle WebLogic Server</a></li>
+        <li><a href="jsf20-intro.html">Introdução ao JavaServer Faces 2.0</a></li>
+        <li><a href="../../docs/javaee/ecommerce/intro.html">Tutorial de E-commerce do NetBeans</a></li>
+        <li><a href="../../trails/java-ee.html">Trilha de Aprendizado do Java EE e Java Web</a></li>
+    </ul>
+
+   
+</body>
+</html>

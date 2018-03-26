@@ -1,0 +1,773 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>在 NetBeans IDE 中使用 CDI 将 OSGi 包作为服务注入</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE and Maven to create an OSGi bundle that is accessed from a web application using CDI.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>在 NetBeans IDE 中使用 CDI 将 OSGi 包作为服务注入</h1>
+
+
+        <p>本文档介绍了 NetBeans IDE 中对<a href="http://www.osgi.org/Main/HomePage">开放服务网关协议</a> (OSGi) 的集成支持如何简化创建 OSGi 包并在项目中使用该包的流程。在本教程中，将首先通过 Maven OSGi 包原型创建两个简单的 OSGi 包，然后将这些包部署到 GlassFish Server Open Source Edition 3.1 中。
+        </p>
+
+        <p>创建基本的 OSGi 包后，将创建 Web 客户端应用程序，并使用 CDI 将这些包作为服务注入。然后，将 Web 应用程序作为包部署到服务器。本教程接着将介绍如何使用 OSGi 管理控制台处理 OSGi 包。</p>
+        
+        <p>在企业应用程序中使用 OSGi 包可以为更新各个包提供更大的模块性和灵活性。GlassFish Server 中对 OSGi 的便捷支持可以轻松将包合并到应用程序中。</p>
+
+        <p class="notes">本教程基于 <a href="http://blogs.oracle.com/arungupta/entry/totd_154_dynamic_osgi_services" target="_blank">TOTD #154：GlassFish 3.1 中的动态 OSGi 服务 - 使用 CDI 和 @OSGiService</a> 博客帖子和其他博客条目（可在 <a href="http://blog.arungupta.me/" target="_blank">Arun Gupta 的博客</a>上找到）。请确保访问此博客，并查看许多其他有关使用 OSGi 的优秀博客。</p>
+        
+        <p>此外，以下资源中包含各种有关在混合应用程序中使用 OSGi 和 CDI 的信息。</p>
+
+        <ul>        
+            <li><a href="http://weblogs.java.net/blog/2009/06/14/developing-hybrid-osgi-java-ee-applications-glassfish">在 GlassFish 中开发混合应用程序 (OSGi + Java EE)</a></li>
+            <li><a href="http://blogs.oracle.com/sivakumart/entry/typesafe_injection_of_dynamic_osgi">在混合 Java EE 应用程序中以类型安全的方式注入动态 OSGi 服务</a>
+            <li><a href="http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish">GlassFish 中启用 OSGi 的 Web 应用程序</a></li>
+            <li><a href="http://www.youtube.com/watch?v=vaOpJJ-Xm70"> YouTube 视频：通过 GlassFish 3.1 和 CDI 以类型安全的方式注入 OSGi 动态服务 </a></li>
+            <li><a href="http://glassfish.java.net/public/GF-OSGi-Features.pdf"> 使用 GlassFish Server 进行 OSGi 应用程序开发</a> [PDF]</li>
+        </ul>
+        
+        <p><b>教程练习</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+        <ul>
+            <li><a href="#Exercise_1">创建父 POM 项目</a></li>
+            <li><a href="#Exercise_2">创建 OSGi 包项目</a>
+                <ul>
+                    <li><a href="#Exercise_2a">创建 MavenHelloServiceApi 接口包</a></li>
+                    <li><a href="#Exercise_2b">创建 MavenHelloServiceImpl 实现包</a></li>
+                    <li><a href="#Exercise_2c">构建和部署 OSGi 包</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_3">创建 Web 客户端应用程序</a>
+                <ul>
+                    <li><a href="#Exercise_3a">在 POM 项目中配置依赖关系</a></li>
+                    <li><a href="#Exercise_3b">创建 MavenHelloWebClient Web 应用程序</a></li>
+                    <li><a href="#Exercise_3c">以包的形式构建 Web 应用程序</a></li>
+                    <li><a href="#Exercise_3d">部署 Web 应用程序包</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_4">安装和使用 OSGi 管理控制台</a></li>
+            <li><a href="#Exercise_5">参考和深入阅读</a></li>
+        </ul>
+
+          
+
+        <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+        <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">软件或资源</th>
+                <th class="tblheader" scope="col">要求的版本</th>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://download.netbeans.org/netbeans/7.1/beta/">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE 版本</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                <td class="tbltd1">版本 7 或 8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                <td class="tbltd1">3.1.x 或 4.x</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><b>先决条件</b></p>
+    <p>本文档假定您具备以下技术的一些基本知识或编程经验：</p>
+    <ul>
+        <li>Java 编程</li>
+        <li>NetBeans IDE</li>
+        <li>Maven 框架</li>
+    </ul>
+
+    <p>在开始本教程之前，您可以先阅读下面这些文档。</p>
+    <ul>
+        <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">NetBeans IDE 中的 Apache Maven 最佳做法</a></li>
+        <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Chapter 1. Introducing Apache Maven</a>（第 1 章. Apache Maven 简介，来自 <a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: The Complete Reference</a>（Maven：完整参考））</li>
+        <li><a href="http://www.osgi.org/javadoc/r4v42/" target="_blank">OSGi 框架</a></li>
+    </ul>
+
+
+    <a name="intro"></a>
+    <!-- ===================================================================================== -->
+
+
+
+
+
+
+
+    <!-- ===================================================================================== -->
+    <!--                                Creating the POM Project                               -->
+    <!-- ===================================================================================== -->
+<a name="Exercise_1"></a>
+<h2>创建父 POM 项目</h2>
+<p>在本节中，将为您要在本教程中创建的 OSGi 包创建父 POM 项目。此外，还将编辑项目 POM (<tt>pom.xml</tt>)，以添加要作为依赖关系被子项目继承的依赖关系管理元素。</p>
+<!--    In this exercise you will modify the project POM to specify the repository that contains
+    some of the artifacts that you will use later.-->
+    <ol>
+        <li>从主菜单中选择 "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 中为 ⌘-Shift-N 组合键）。</li>
+        <li>从 "Maven" 类别中选择 "POM Project"（POM 项目）。<br> <img alt="新建项目向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/osgi-cdi/cdi-newpomproject.png" title="新建项目向导中 Maven POM 项目原型"></li>
+        
+        <li>键入 <strong>MavenOSGiCDIProject</strong> 作为项目名称。单击 "Finish"（完成）。
+        <p>单击 "Finish"（完成），此时 IDE 将创建 POM 项目并在 "Projects"（项目）窗口中打开该项目。</p>
+        </li>
+
+        <li>在 "Projects"（项目）窗口中展开 "Project Files"（项目文件）节点，然后双击 <tt>pom.xml</tt> 在编辑器中打开该文件。 
+        <p>项目的基本 POM 应类似于以下内容。</p>
+        <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+&lt;/project&gt;
+        </pre>
+        </li>
+        <li>修改父 <tt>pom.xml</tt> 以添加下列元素。保存所做的更改。
+        <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    <strong>&lt;dependencyManagement&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+                &lt;version&gt;4.2.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+        &lt;/dependencies&gt;
+    &lt;/dependencyManagement&gt;</strong>
+&lt;/project&gt;
+        </pre>
+        </li>
+    </ol>
+  
+    <p>在本练习中，您显式指定了要在项目中使用的工件和工件版本。通过使用依赖关系管理并在父 POM 中指定工件，可以使子项目中的 POM 更为简单，并确保依赖关系版本在项目中的一致性。</p>
+    
+    <p>有关使用依赖关系管理的详细信息，请参见<a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">依赖关系机制简介</a>。</p>
+
+
+
+
+
+    <!-- ===================================================================================== -->
+    <!--                                Creating the OSGi Bundles                              -->
+    <!-- ===================================================================================== -->
+    <a name="Exercise_2"></a>
+    <h2>创建 OSGi 包项目</h2>
+    <p>新建项目向导中的 "Maven" 类别包含用于创建 OSGi 包项目的“OSGi 包”原型。创建 OSGi 包项目时，构建的 POM 声明 <tt>org.osgi.core</tt> JAR 作为附属项，并指定 <tt>maven-bundle-plugin</tt> 用于构建项目。</p>
+
+    
+    
+    
+
+    <div class="indent">
+    
+    <!-- ===================================================================================== -->
+    <!--                                Creating the API bundle                                -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2a"></a>
+        <h3>创建 MavenHelloServiceApi 接口包</h3>
+        <p>在本练习中，将使用新建项目向导创建一个 OSGi 包项目，该项目将提供一个由其他包实现的简单接口。创建了包和接口后，将修改 POM 以更新对您在父 POM 项目中指定的 <tt>org.osgi.core</tt> 工件的依赖关系。
+        </p>
+    
+        <ol>
+            <li>选择 "File"（文件）> "New Project"（新建项目）以打开新建项目向导。</li>
+            <li>从 "Maven" 类别中选择 "OSGi Bundle"（OSGi 包）。单击 "Next"（下一步）。<br> <img alt="新建项目向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-new-osgiproject.png" title="新建项目向导中的 Maven OSGi 包原型"></li>
+            <li>键入 <strong>MavenHelloServiceApi</strong> 作为项目名称。</li>
+            <li>单击 "Browse"（浏览），并选择 <strong>MavenOSGiCDIProject</strong> POM 项目作为位置。单击 "Finish"（完成）。
+            <p>单击 "Finish"（完成），此时 IDE 将创建包项目并在 "Projects"（项目）窗口中打开该项目。如果在编辑器中打开 MavenHelloServiceApi 项目的 <tt>pom.xml</tt>，则可以看到 <tt>packaging</tt> 元素指定了 <tt>bundle</tt> 并且构建包时将使用 <tt>maven-bundle-plugin</tt>。</p>
+<pre class="examplecode">&lt;project&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;parent&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;/parent&gt;
+
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenHelloServiceApi&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    <strong>&lt;packaging&gt;bundle&lt;/packaging&gt;</strong>
+    &lt;name&gt;MavenHelloServiceApi OSGi Bundle&lt;/name&gt;
+
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+            &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+            &lt;version&gt;4.3.0&lt;/version&gt;
+            &lt;scope&gt;provided&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    &lt;build&gt;
+        &lt;plugins&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+                <strong>&lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;</strong>
+                &lt;version&gt;2.3.7&lt;/version&gt;
+                &lt;extensions&gt;true&lt;/extensions&gt;
+                &lt;configuration&gt;
+                    &lt;instructions&gt;
+                        &lt;Bundle-Activator&gt;com.mycompany.mavenhelloserviceimpl.Activator&lt;/Bundle-Activator&gt;
+                        &lt;Export-Package /&gt;
+                    &lt;/instructions&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+
+            ...
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+
+    ...
+&lt;project&gt;</pre>
+            <p>此外，您还可以看到，使用 Maven OSGi 包原型创建 OSGi 包项目时，IDE 在默认情况下将 <tt>org.osgi.core</tt> 工件添加为依赖关系。</p>
+            </li>
+            <li>在 "Projects"（项目）窗口中右键单击 "MavenHelloServiceApi" 项目节点，然后选择 "Properties"（属性）。</li>
+            <li>在 "Project Properties"（项目属性）对话框中选择 "Sources"（源）类别。</li>
+            <li>将 <strong>Source/Binary Format</strong>（源代码/二进制格式）设置为 "1.6"，并确认 <strong>Encoding</strong>（编码）是 "UTF-8"。单击 "OK"（确定）。</li>
+            <li>在 "Projects"（项目）窗口中右键单击 "Source Packages"（源包）节点，然后选择 "New"（新建）> "Java Interface"（Java 接口）。</li>
+            <li>键入 <strong>Hello</strong> 作为类名。</li>
+            <li>在 "Package"（包）中选择 <strong>com.mycompany.mavenhelloserviceapi</strong>。单击 "Finish"（完成）。</li>
+            <li>将以下 <tt>sayHello</tt> 方法添加到接口中（以粗体显示），然后保存所做的更改。 
+        <pre class="examplecode">
+public interface Hello {
+    <strong>String sayHello(String name);</strong>
+}</pre>
+            </li>
+
+            <li>在 "Projects"（项目）窗口中右键单击项目节点，并选择 "Build"（构建）。        
+            <p>构建项目后，如果打开 "Files"（文件）窗口，并展开项目节点，则可以看到在 <tt>target</tt> 文件夹中创建了 <tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt>。</p>
+
+            <img alt="&quot;Files&quot;（文件）窗口中项目的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-manifest.png" title="在 &quot;Files&quot;（文件）窗口中查看已编译 JAR 的内容" />
+
+
+
+        <p>构建项目时，<tt>maven-bundle-plugin</tt> 将处理 <tt>MANIFEST.MF</tt> 文件的构建。如果打开已编译的 JAR 中的 <tt>MANIFEST.MF</tt> 文件，将看到此插件已生成一个清单标题，此标题声明了导出包。对于 OSGi，要公开并可供其他包使用的所有包都必须列在 <tt>MANIFEST.MF</tt> 的 <tt>Export-Package</tt> 元素中。</p></li>
+            <li>确认 <tt>MANIFEST.MF</tt> 包含 <tt>Export-Package</tt> 元素（以下示例中<strong>粗体</strong>显示的元素）。
+        
+        <pre class="examplecode">
+Manifest-Version: 1.0
+Bnd-LastModified: 1395049732676
+Build-Jdk: 1.7.0_45
+Built-By: nb
+Bundle-Activator: com.mycompany.mavenhelloserviceapi.Activator
+Bundle-ManifestVersion: 2
+Bundle-Name: MavenHelloServiceApi OSGi Bundle
+Bundle-SymbolicName: com.mycompany.MavenHelloServiceApi
+Bundle-Version: 1.0.0.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+<strong>Export-Package: com.mycompany.mavenhelloserviceapi;uses:="org.osgi.frame
+ work";version="1.0.0.SNAPSHOT"</strong>
+Import-Package: org.osgi.framework;version="[1.6,2)"
+Tool: Bnd-1.50.0</pre>
+        
+        <p>OSGi 容器将读取 <tt>Export-Package</tt> 清单标题以确定可以从包外部访问此包中的类。在此示例中，<tt>com.mycompany.mavenhelloserviceapi</tt> 包中的类是公开的。</p>
+
+        <p class="notes"><strong>注：</strong>如果 <tt>MANIFEST.MF</tt> 不包含 <tt>Export-Package</tt> 元素，则您需要在 "Project Properties"（项目属性）窗口中启用插件的默认插件行为，并重新构建项目。在 "Project Properties"（项目属性）窗口中，选择 "Export Packages"（导出包）类别，然后选择 <strong>Default maven-bundle-plugin behavior</strong>（默认 maven-bundle-plugin 行为）选项。可以使用 "Project Properties"（项目属性）窗口的 "Export Packages"（导出包）面板显式指定应公开的包，或直接在 <tt>pom.xml</tt> 中指定包。</p>
+        </li>
+        </ol>
+    <!-- ===================================================================================== -->
+    <!--                                Creating the Impl bundle                               -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2b"></a>
+        <h3>创建 MavenHelloServiceImpl 实现包</h3>
+        <p>在本练习中，您将在 POM 项目中创建 MavenHelloServiceImpl。</p>
+        <ol>
+            <li>选择 "File"（文件）> "New Project"（新建项目）以打开新建项目向导。</li>
+            <li>从 "Maven" 类别中选择 "OSGi Bundle"（OSGi 包）。单击 "Next"（下一步）。</li>
+            <li>键入 <strong>MavenHelloServiceImpl</strong> 作为项目名称。</li>
+            <li>单击 "Browse"（浏览），并选择 <strong>MavenOSGiCDIProject</strong> POM 项目作为位置（如果未选择）。单击 "Finish"（完成）。</li>
+            <li>右键单击 "Projects"（项目）窗口中的项目节点，然后选择 "Properties"（属性）。</li>
+            <li>在 "Project Properties"（项目属性）对话框中选择 "Sources"（源）类别。</li>
+            <li>将 <strong>Source/Binary Format</strong>（源代码/二进制格式）设置为 "1.6"，并确认 <strong>Encoding</strong>（编码）是 "UTF-8"。单击 "OK"（确定）。</li>
+            <li>在 "Projects"（项目）窗口中右键单击 "Source Packages"（源包）节点，然后选择 "New"（新建）> "Java Class"（Java 类）。</li>
+            <li>键入 <strong>HelloImpl</strong> 作为类名。</li>
+            <li>选择 <strong>com.mycompany.mavenhelloserviceimpl</strong> 作为包。单击 "Finish"（完成）。</li>
+            <li>键入以下内容（以粗体显示），并保存所做的更改。 
+        <pre class="examplecode">
+public class HelloImpl <strong>implements Hello {
+    
+    public String sayHello(String name) {
+        return "Hello " + name;</strong>
+    }
+}</pre>
+    
+            <p>实现 <tt>Hello</tt> 时，IDE 将显示一个错误，您需要将 MavenHelloServiceApi 项目添加为依赖关系才能解决该错误。</p>
+            </li>
+            <li>在 "Projects"（项目）窗口中右键单击 <strong>MavenHelloServiceImpl</strong> 的 "Dependencies"（依赖关系）节点，然后选择 "Add Dependency"（添加依赖关系）。</li>
+            <li>在 "Add Library"（添加库）对话框中，单击 "Open Projects"（打开的项目）标签。</li>
+            <li>选择 "MavenHelloServiceApi OSGi Bundle"（MavenHelloServiceApi OSGi 包）。单击 "ADD"（添加）。<br> <img alt="&quot;Add Library&quot;（添加库）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-add-dependency.png" title="在 &quot;Add Library&quot;（添加库）对话框中打开 &quot;Projects&quot;（项目）标签">
+            </li>
+            <li>右键单击在编辑器中打开的 <tt>HelloImpl.java</tt> 类，然后选择 "Fix Imports"（修复导入）（Alt-Shift-I 组合键；在 Mac 上为 ⌘-Shift-I 组合键），以添加 <tt>com.mycompany.mavenhelloserviceapi.Hello</tt> 的 import 语句。保存所做的更改。</li>
+            <li>展开 <tt>com.mycompany.mavenhelloserviceimpl</tt> 包并双击 <tt>Activator.java</tt>，即可在编辑器中打开该文件。<br> <img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-activator.png" title="&quot;Projects&quot;（项目）窗口中的激活器类">
+            <p>IDE 在项目中自动创建了 <tt>Activator.java</tt> 包激活器类。包激活器用于管理包的生命周期。包激活器类在包的 <tt>MANIFEST.MF</tt> 中声明，并在容器启动该包时实例化。</p>
+
+            <p>OSGi 包不需要包激活器类，但可以使用激活器类中的 <tt>start()</tt> 方法，例如，用于初始化包所需的服务或其他资源。在此练习中将向类中添加一些代码行，将消息打印到 "Output"（输出）窗口。这将更便于确定包启动和停止的时间。</p>
+            </li>
+            <li>修改包激活器类中的 <tt>start()</tt> 和 <tt>stop()</tt> 方法，以添加下列行（以粗体显示）。
+            <pre class="examplecode">
+public class Activator implements BundleActivator {
+
+    public void start(BundleContext context) throws Exception {
+        <strong>System.out.println("HelloActivator::start");
+        context.registerService(Hello.class.getName(), new HelloImpl(), null);
+        System.out.println("HelloActivator::registration of Hello service successful");</strong>
+    }
+
+    public void stop(BundleContext context) throws Exception {
+        <strong>context.ungetService(context.getServiceReference(Hello.class.getName()));
+        System.out.println("HelloActivator stopped");</strong>
+    }
+}</pre>
+    
+            <p>可以看到包激活器类导入了 <tt>org.osgi.framework.BundleActivator</tt> 和 <tt>org.osgi.framework.BundleContext</tt>。默认情况下，生成的类包含两个方法：<tt>start()</tt> 和 <tt>stop()</tt>。OSGi 框架调用 <tt>start()</tt> 和 <tt>stop()</tt> 方法来启动和停止包提供的功能。启动包时，包提供的服务组件会在 OSGi 服务注册表中进行注册。注册包之后，其他包可以使用注册表进行查找，然后通过包上下文使用活动服务。</p>
+        
+            <p>如果查看项目的 POM，则可以在 <tt>maven-bundle-plugin</tt> 的配置元素下方看到用于指定包激活器的 <tt>&lt;Bundle-Activator&gt;</tt> 元素。</p>
+            <pre class="examplecode">
+&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;
+    &lt;version&gt;2.3.7&lt;/version&gt;
+    &lt;extensions&gt;true&lt;/extensions&gt;
+      &lt;configuration&gt;
+            &lt;instructions&gt;
+                  <strong>&lt;Bundle-Activator&gt;com.mycompany.mavenhelloserviceimpl.Activator&lt;/Bundle-Activator&gt;</strong>
+            &lt;/instructions&gt;
+      &lt;/configuration&gt;
+&lt;/plugin&gt;</pre>
+            <p>在构建包时，该插件将在 JAR 的包清单文件中构建清单标题，并指定包激活器类。部署包时，OSGi 运行时在清单文件中查找 <tt>Bundle-Activator</tt> 标题。</p>
+            </li>
+            <li>在 <tt>Activator.java</tt> 中修复 import 语句，以导入 <tt>com.mycompany.mavenhelloserviceapi.Hello</tt>。保存所做的更改。</li>
+            <li>展开 "Dependencies"（依赖关系）节点，然后确认 <tt>org.osgi.core</tt> 工件作为依赖关系列出。
+                <p class="notes"><strong>注：</strong>通过右键单击该工件并选择 "Remove Dependency"（移除依赖关系），移除 "Dependencies"（依赖关系）节点下列出的该工件的所有早期版本。唯一的依赖关系应是 MavenHelloServiceApi 项目和 <tt>org.osgi.core</tt> 工件。</p>
+        <img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-implproject.png" title="&quot;Projects&quot;（项目）窗口中的激活器类" />
+        </li>
+        </ol>
+        
+        
+        
+    <!-- ===================================================================================== -->
+    <!--                               Building and Deploying Bundles                          -->
+    <!-- ===================================================================================== -->
+        <a name="Exercise_2c"></a>
+        <h3>构建和部署 OSGi 包</h3>
+        <p>在本练习中，将构建 OSGi 包，并将这些包部署到 GlassFish。</p>
+
+        <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击 "MavenOSGiCDIProject" 节点，然后选择 "Clean and Build"（清理并构建）。 
+                <p>构建项目时，IDE 将在每个项目的 <tt>target</tt> 文件夹中创建 JAR 文件，还将在本地资源库中安装快照 JAR。在 "Files"（文件）窗口中，可以展开两个包项目中任一个的 <tt>target</tt> 文件夹，以查看两个 JAR 档案（<tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt> 和 <tt>MavenHelloServiceImpl-1.0-SNAPSHOT.jar</tt>）。</p>
+            </li>
+            <li>启动 GlassFish Server（如果尚未启动）。</li>
+            <li>将 <tt>MavenHelloServiceApi-1.0-SNAPSHOT.jar</tt> 复制到 GlassFish 安装的 <tt>glassfish/domains/domain1/autodeploy/bundles/</tt> 目录。 
+
+                <p>此时 "Output"（输出）窗口的 GlassFish Server 日志中应显示类似于以下内容的输出。</p>
+                <pre class="examplecode">
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceApi-1.0-SNAPSHOT.jar
+</pre>
+            <p class="tips">在 "Services"（服务）窗口中右键单击 "GlassFish Server" 节点，然后选择 "View Domain Server Log"（查看域服务器日志）（如果 "Output"（输出）窗口中不显示服务器日志）。</p>
+            </li>
+            <li>重复执行相关步骤，将 <tt>MavenHelloServiceImpl-1.0-SNAPSHOT.jar</tt> 复制到 <tt>autodeploy/bundles</tt> 目录。 </li>
+        </ol>
+        
+        <p>现在，GlassFish Server 日志中应显示类似于以下内容的输出。</p>
+        <pre class="examplecode">
+INFO: HelloActivator::start
+INFO: HelloActivator::registration of Hello service successful
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceImpl-1.0-SNAPSHOT.jar
+INFO: Started bundle: file:/glassfish-4.0/glassfish/domains/domain1/autodeploy/bundles/MavenHelloServiceImpl-1.0-SNAPSHOT.jar
+        </pre>
+        
+        
+        
+        <p class="tips">或者，也可以从 GlassFish OSGi 管理控制台安装包。有关详细信息，请参见<a href="#Exercise_4">安装和使用 OSGi 管理控制台</a>部分。</p>
+    </div>
+
+
+    <!-- ===================================================================================== -->
+    <!--                           Creating the web client application                         -->
+    <!-- ===================================================================================== -->
+    <a name="Exercise_3"></a>
+    <h2>创建 Web 客户端应用程序</h2>
+    <p>此部分演示如何创建访问 OSGi 包提供的服务的 Java EE Web 客户端。将在 Web 应用程序中创建一个简单 Servlet，然后注入声明的服务。创建项目前，将向父 POM 项目中添加一些依赖关系管理元素。</p> 
+
+    
+    <div class="indent">
+            
+        <a name="Exercise_3a"></a>
+        <h3>在父 POM 项目中配置依赖关系</h3>
+        <p>在本练习中，将指定父 POM 项目中的依赖关系元素。此外，还将添加项目要使用的工件的资源库。</p>
+            
+        <ol>
+            <li>在 "Projects"（项目）窗口中展开 <strong>MavenOSGiCDIProject</strong> 项目的 "Project Files"（项目文件）节点，然后双击 <tt>pom.xml</tt> 在编辑器中打开该文件。</li>
+            <li>修改父 <tt>pom.xml</tt> 以添加下列依赖关系管理元素（以粗体显示）。保存所做的更改。
+            <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.mycompany&lt;/groupId&gt;
+    &lt;artifactId&gt;MavenOSGiCDIProject&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;pom&lt;/packaging&gt;
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+
+    ...    
+            
+    &lt;dependencyManagement&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.core&lt;/artifactId&gt;
+                &lt;version&gt;4.3.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+            <strong>&lt;dependency&gt;
+                &lt;groupId&gt;org.osgi&lt;/groupId&gt;
+                &lt;artifactId&gt;org.osgi.compendium&lt;/artifactId&gt;
+                &lt;version&gt;4.2.0&lt;/version&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.glassfish&lt;/groupId&gt;
+                &lt;artifactId&gt;osgi-cdi-api&lt;/artifactId&gt;
+                &lt;version&gt;3.1-b41&lt;/version&gt;
+                &lt;type&gt;jar&lt;/type&gt;
+                &lt;scope&gt;provided&lt;/scope&gt;
+            &lt;/dependency&gt;</strong>
+          
+        &lt;/dependencies&gt;
+    &lt;/dependencyManagement&gt;
+
+    ...
+&lt;/project&gt;
+</pre>
+            </li>
+            <li>添加下列元素，将 GlassFish 资源库添加到 POM 中。保存所做的更改。
+            <pre class="examplecode">
+&lt;project&gt;
+
+    ...
+
+    &lt;/dependencyManagement&gt;
+
+    <strong>&lt;repositories&gt;
+        &lt;!-- glassfish nexus repo for glassfish dependencies --&gt;
+        &lt;repository&gt;
+            &lt;id&gt;glassfish-repo-archive&lt;/id&gt;
+            &lt;name&gt;Nexus repository collection for Glassfish&lt;/name&gt;
+            &lt;url&gt;http://maven.glassfish.org/content/groups/glassfish&lt;/url&gt;
+            &lt;snapshots&gt;
+                &lt;updatePolicy&gt;never&lt;/updatePolicy&gt;
+            &lt;/snapshots&gt;
+        &lt;/repository&gt;
+    &lt;/repositories&gt;</strong>
+    &lt;modules&gt;
+        &lt;module&gt;MavenHelloServiceApi&lt;/module&gt;
+        &lt;module&gt;MavenHelloServiceImpl&lt;/module&gt;
+    &lt;/modules&gt;
+&lt;/project&gt;
+            </pre>
+            </li>
+        </ol>
+
+        <p>将 GlassFish 资源库添加到 POM 后，如果在 "Services"（服务）窗口中查看 "Maven Repositories"（Maven 资源库）节点下的资源库列表，将会看到 IDE 为 GlassFish 资源库自动添加了一个节点。默认情况下，IDE 会为本地 Maven 资源库显示一个节点。在打开的项目指定资源库时，IDE 将在 "Maven Repositories"（Maven 资源库）节点下为该资源库自动添加一个节点。 
+        </p>
+        <img alt="&quot;Maven Repositories&quot;（Maven 资源库）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/osgi-cdi/cdi-maven-repositories.png" title="&quot;Maven Repositories&quot;（Maven 资源库）窗口中的 GlassFish 资源库" />
+        
+        <p>在本练习中，您添加了其他要在项目中使用的工件和工件版本。此外，您还添加了包含 <tt>osgi-cdi-api</tt> 工件的 GlassFish 资源库。</p>
+            
+            
+        
+        <a name="Exercise_3b"></a>
+        <h3>创建 MavenHelloWebClient Web 应用程序</h3>
+        <p>首先，将创建常规的 Web 应用程序，然后修改项目将其作为 OSGi 包（Web 应用程序包 (WAB)）。</p>
+        <ol>
+            <li>从主菜单中选择 "File"（文件）> "New Project"（新建项目）。</li>
+            <li>从 "Maven" 类别中选择 "Web Application"（Web 应用程序）。单击 "Next"（下一步）。</li>
+            <li>键入 <strong>MavenHelloWebClient</strong> 作为项目名称。</li>
+            <li>单击 "Browse"（浏览），并选择 <strong>MavenOSGiCDIProject</strong> POM 项目作为位置（如果尚未选择）。单击 "Next"（下一步）。</li>
+            <li>选择 "GlassFish Server" 作为服务器，并选择 "Java EE 6 Web" 或 "Java EE 7 Web" 作为 Java EE 版本。单击 "Finish"（完成）。</li>
+            <li>右键单击项目节点，然后选择 "New"（新建）> "Servlet"。</li>
+            <li>键入 <strong>HelloServlet</strong> 作为类名。</li>
+            <li>选择 <tt>com.mycompany.mavenhellowebclient</tt> 作为包。单击 "Finish"（完成）。</li>
+            <li>删除 Servlet 中已由 IDE 生成的默认方法（<tt>processRequest</tt>、<tt>doGet</tt>、<tt>doPost</tt>、<tt>getServletInfo</tt>）。
+                <p class="notes"><strong>注：</strong>需要展开编辑器折叠才能删除 HttpServlet 方法。</p></li>
+            <li>键入以下将注入服务的代码（以粗体显示）。
+            <pre class="examplecode">
+@WebServlet(name = "HelloServlet", urlPatterns = {"/HelloServlet"})
+public class HelloServlet extends HttpServlet {
+
+    <strong>@Inject
+    @OSGiService(dynamic=true)
+    Hello hello;</strong>
+}</pre>
+            </li>
+            <li>添加以下 <tt>doGet</tt> 方法。 
+            <pre class="examplecode">
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        PrintWriter out = response.getWriter();
+        out.println(hello.sayHello("Duke"));
+    }</pre>
+            </li>
+            <li>右键单击项目节点，然后选择 "New"（新建）> "Other"（其他）。</li>
+            <li>在 "Contexts and Dependency Injection"（上下文和依赖关系注入）类别中选择 <strong>beans.xml</strong>。单击 "Next"（下一步）。</li>
+            <li>使用默认文件名 (<tt>beans</tt>)。单击 "Finish"（完成）。
+                <p>单击 "Finish"（完成），此时该向导将在 Web 应用程序中创建 <tt>beans.xml</tt> 文件。如果 <tt>beans.xml</tt> 是该应用程序的一部分，则系统将自动启用 CDI。</li>
+            <li>修改 <tt>beans.xml</tt> 文件以将 <tt>bean-discovery-mode</tt> 的默认值更改为 <tt>all</tt>。
+                <pre class="examplecode">bean-discovery-mode="<strong>all</strong>"</pre>
+                <p>保存更改并关闭文件。</p>
+                <p>有关 <tt>bean-discovery-mode</tt> 值之间的差异的详细信息，请参见以下页：</p>
+                <ul>
+                    <li>Java EE 7 教程中的 <a href="http://docs.oracle.com/javaee/7/tutorial/doc/cdi-adv001.htm">25.1：打包 CDI 应用程序</a></li>
+                    <li><a href="http://stackoverflow.com/questions/18107858/cdi-inject-fails-on-maven-embedded-glassfish-plugin-org-jboss-weld-exceptions">http://stackoverflow.com/questions/18107858/cdi-inject-fails-on-maven-embedded-glassfish-plugin-org-jboss-weld-exceptions</a></li>
+                </ul>
+            </li>
+            <li>在 "Projects"（项目）窗口中右键单击 "MavenHelloWebClient" 的 "Dependencies"（依赖关系）节点，然后选择 "Add Dependency"（添加依赖关系）。</li>
+            <li>选择 <strong>Provided</strong> 作为作用域。</li>
+            <li>在 "Add Library"（添加库）对话框中单击 "Open Projects"（打开的项目）标签，然后选择 <strong>MavenHelloServiceApi OSGi Bundle（MavenHelloServiceApi OSGi 包）</strong>。单击 "ADD"（添加）。</li>
+            <li>再次右键单击 "Dependencies"（依赖关系）节点，然后选择 "Add Dependency"（添加依赖关系）。</li>
+            <li>在 "Add Library"（添加库）对话框中单击 "Dependency Management"（依赖关系管理）标签，然后选择在父 POM 项目中指定的 <tt>osgi-cdi-api</tt> 工件。单击 "ADD"（添加）。<br /> <img alt="&quot;Add Library&quot;（添加库）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-add-dependency3.png" title="&quot;Add Library&quot;（添加库）对话框中的 &quot;Dependency Management&quot;（依赖关系管理）标签" />
+            </li>
+            <li>在编辑器中右键单击 <tt>HelloServlet.java</tt>，然后选择 "Fix Imports"（修复导入）（Alt-Shift-I 组合键；在 Mac 上为 ⌘-Shift-I 组合键），以添加 <tt>com.mycompany.mavenhelloserviceapi.Hello</tt>、<tt>javax.inject.Inject</tt> 和 <tt>org.glassfish.osgicdi.OSGiService</tt>。保存所做的更改。
+                
+                <p class="notes"><strong>注：</strong>如果 IDE 未自动添加 <tt>com.mycompany.mavenhelloserviceapi.Hello</tt> 的 import 语句，则可能需要手动进行添加。</p>
+            </li>
+            <li>右键单击 "MavenOSGiCDIProject"，然后选择 "Clean and Build"（清理并构建）。</li>
+
+        </ol>
+        <p>构建项目时，"Output"（输出）窗口中应显示类似于以下内容的输出。</p>
+        <pre class="examplecode">
+Reactor Summary:
+
+MavenOSGiCDIProject ............................... SUCCESS [0.798s]
+MavenHelloServiceApi OSGi Bundle .................. SUCCESS [7.580s]
+MavenHelloServiceImpl OSGi Bundle ................. SUCCESS [1.142s]
+MavenHelloWebClient ............................... SUCCESS [8.072s]
+------------------------------------------------------------------------
+BUILD SUCCESS</pre>
+        <p class="notes"><strong>注：</strong>如果在构建 MavenOSGiCDIProject 项目时未自动构建 Web 应用程序，则您需要手动构建 Web 应用程序。</p>
+        <p>在 "Files"（文件）窗口中，展开 Web 应用程序的项目节点，并确认在目标目录中创建了档案 <tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt>。如果展开 Web 客户端的 WAR 档案并检查 <tt>MANIFEST.MF</tt>，则会看到清单中包含类似于以下内容的行。</p>
+        <pre class="examplecode">
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: nb
+Build-Jdk: 1.7.0_45</pre>
+
+        
+        
+
+        <a name="Exercise_3c"></a>
+        <h3>以 OSGi 包的形式构建 Web 应用程序</h3>
+        <p>要使用 <tt>@OSGiService</tt> 并检索已注册的 OSGi 包，您需要将 Web 应用程序作为可访问 <tt>BundleContext</tt> 的包。要使 WAR 成为 OSGi 包（Web 应用程序包），可将 <tt>Web-ContextPath</tt> 元数据添加到 WAR 中的 <tt>MANIFEST.MF</tt>。 
+<!--        To do this, you create a properties file that contains the meta-data, 
+        and then modify the POM so that the meta-data is included in the <tt>MANIFEST.MF</tt> when you build the WAR.-->
+        要执行此操作，请在 <tt>maven-bundle-plugin</tt> 的说明中指定 <tt>&lt;Web-ContextPath&gt;</tt> 元素，该元素将包含在由插件生成的清单中。然后，修改 <tt>maven-war-plugin</tt> 配置，以指示插件将 <tt>maven-bundle-plugin</tt> 生成的清单添加到 WAR 档案中。
+        </p>
+
+
+        <ol>
+            
+            <li>在 "Projects"（项目）窗口中，展开 "MavenHelloWebClient" 下方的 "Project Files"（项目文件）节点，然后双击 <tt>pom.xml</tt> 在编辑器中打开该文件。</li>
+            <li>添加以下条目，将 <tt>maven-bundle-plugin</tt> 添加到 POM 中。 
+                <pre class="examplecode">
+&lt;build&gt; 
+    &lt;plugins&gt;
+        <strong>&lt;plugin&gt;
+             &lt;groupId&gt;org.apache.felix&lt;/groupId&gt;
+             &lt;artifactId&gt;maven-bundle-plugin&lt;/artifactId&gt;
+             &lt;version&gt;2.2.0&lt;/version&gt;
+             &lt;extensions&gt;true&lt;/extensions&gt;
+             &lt;configuration&gt;
+                 &lt;supportedProjectTypes&gt;
+                     &lt;supportedProjectType&gt;ejb&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;war&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;bundle&lt;/supportedProjectType&gt;
+                     &lt;supportedProjectType&gt;jar&lt;/supportedProjectType&gt;
+                 &lt;/supportedProjectTypes&gt;
+                 &lt;instructions&gt;<!-- &lt;!-- Read all OSGi configuration info from this optional file --&gt;
+                     &lt;_include&gt;-osgi.properties&lt;/_include&gt;-->
+                     &lt;!-- Specify elements to add to MANIFEST.MF --&gt;
+                     &lt;Web-ContextPath&gt;/mavenhellowebclient&lt;/Web-ContextPath&gt;
+                     &lt;!-- By default, nothing is exported --&gt;
+                     &lt;Export-Package&gt;!*.impl.*, *&lt;/Export-Package&gt;
+                 &lt;/instructions&gt;
+             &lt;/configuration&gt;
+             &lt;executions&gt;
+                 &lt;execution&gt;
+                     &lt;id&gt;bundle-manifest&lt;/id&gt;
+                     &lt;phase&gt;process-classes&lt;/phase&gt;
+                     &lt;goals&gt;
+                         &lt;goal&gt;manifest&lt;/goal&gt;
+                     &lt;/goals&gt;
+                 &lt;/execution&gt;
+                 &lt;execution&gt;
+                     &lt;id&gt;bundle-install&lt;/id&gt;
+                     &lt;phase&gt;install&lt;/phase&gt;
+                     &lt;goals&gt;
+                         &lt;goal&gt;install&lt;/goal&gt;
+                     &lt;/goals&gt;
+                 &lt;/execution&gt;
+             &lt;/executions&gt;
+         &lt;/plugin&gt;</strong>
+            </pre>
+            </li>
+            <li>修改 <tt>maven-war-plugin</tt> 的配置元素，将包信息添加到 <tt>MANIFEST.MF</tt> 中。保存所做的更改。
+            <pre class="examplecode">
+ &lt;plugin>
+     &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+     &lt;artifactId&gt;maven-war-plugin&lt;/artifactId&gt;
+     &lt;version&gt;2.3&lt;/version&gt;
+     &lt;configuration&gt;
+         <strong>&lt;archive&gt;
+             &lt;!-- add bundle plugin generated manifest to the war --&gt;
+             &lt;manifestFile&gt;
+                 ${project.build.outputDirectory}/META-INF/MANIFEST.MF
+             &lt;/manifestFile&gt;
+             &lt;!-- For some reason, adding Bundle-ClassPath in maven-bundle-plugin
+             confuses that plugin and it generates wrong Import-Package, etc.
+             So, we generate it here.--&gt;
+             &lt;manifestEntries&gt;
+                 &lt;Bundle-ClassPath&gt;WEB-INF/classes/&lt;/Bundle-ClassPath&gt;
+             &lt;/manifestEntries&gt;
+         &lt;/archive&gt;</strong>
+         &lt;failOnMissingWebXml&gt;false&lt;/failOnMissingWebXml&gt;
+     &lt;/configuration&gt;
+ &lt;/plugin&gt;</pre>
+            </li>
+            <li>在 "Projects"（项目）窗口中，右键单击 "MavenHelloWebClient" 项目节点，然后选择 "Clean and Build"（清理并构建）。 </li>
+
+        </ol>
+        <p>如果您现在展开 WAR 档案，并在编辑器中打开 <tt>MANIFEST.MF</tt>，则会看到 <tt>MANIFEST.MF</tt> 现在包含其他信息，包括您在 <tt>maven-bundle-plugin</tt> 配置和包名称条目中指定的 <tt>Web-ContextPath: /mavenhellowebclient</tt> 条目。</p>
+        
+<pre class="examplecode">
+Manifest-Version: 1.0
+Export-Package: com.mycompany.mavenhellowebclient;uses:="com.mycompany
+ .mavenhelloserviceapi,javax.servlet,org.glassfish.osgicdi,javax.injec
+ t,javax.servlet.annotation,javax.servlet.http";version="1.0.0.SNAPSHO
+ T"
+Bundle-ClassPath: WEB-INF/classes/
+Built-By: nb
+Tool: Bnd-1.50.0
+Bundle-Name: MavenHelloWebClient
+Created-By: Apache Maven Bundle Plugin
+<strong>Web-ContextPath: /mavenhellowebclient</strong>
+Build-Jdk: 1.7.0_45
+Bundle-Version: 1.0.0.SNAPSHOT
+Bnd-LastModified: 1395053424008
+Bundle-ManifestVersion: 2
+Import-Package: com.mycompany.mavenhelloserviceapi;version="[1.0,2)",j
+ avax.inject,javax.servlet,javax.servlet.annotation,javax.servlet.http
+ ,org.glassfish.osgicdi;version="[1.0,2)"
+Bundle-SymbolicName: com.mycompany.MavenHelloWebClient
+Archiver-Version: Plexus Archiver</pre>
+
+        <p class="tips">有关如何以 OSGi 包的形式构建 Web 应用程序的详细信息，请参见以下页。</p>
+        <ul>
+            <li><a href="http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish">http://weblogs.java.net/blog/2009/06/04/osgi-enabled-web-applications-inglassfish</a></li>
+            <li><a href="http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html">http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html</a></li>
+        </ul>
+
+        
+        
+        
+        
+        <a name="Exercise_3d"></a>
+        <h3>部署 Web 应用程序包</h3>
+        <p>在本练习中，您需要将 Web 应用程序包复制到 GlassFish 安装中的 <tt>autodeploy/bundles</tt> 文件夹。</p>
+        <ol>
+            <li>导航至包含 <tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt> 的 <tt>target</tt> 目录。</li>
+            <li>将 <tt>MavenHelloWebClient-1.0-SNAPSHOT.war</tt> 复制到 GlassFish 安装的 <tt>autodeploy/bundles</tt> 文件夹中。</li>
+        </ol>
+
+        <p>将 WAR 档案复制到目录时，GlassFish Server 日志中将显示类似于以下内容的输出。</p>
+        <pre class="examplecode">
+INFO: Started bundle: file:/glassfish-3.1.1/glassfish/domains/domain1/autodeploy/bundles/MavenHelloWebClient-1.0-SNAPSHOT.war
+...
+INFO: ---- Injection requested for framework service type interface com.mycompany.mavenhelloserviceapi.Hello and annotated with dynamic=true, serviceCriteria=
+INFO: WEB0671: Loading application [com.mycompany.MavenHelloWebClient_1.0.0.SNAPSHOT] at [/mavenhellowebclient]
+INFO: Registered ServletContext as a service with properties: {osgi.web.symbolicname=com.mycompany.MavenHelloWebClient, osgi.web.version=1.0.0.SNAPSHOT, osgi.web.contextpath=/mavenhellowebclient} 
+        </pre>
+        
+        <p>现在，您可以通过单击以下链接 <a href="http://localhost:8080/mavenhellowebclient/HelloServlet">http://localhost:8080/mavenhellowebclient/HelloServlet</a> 在浏览器中查看 Servlet。</p>
+    
+    </div>    
+    
+    
+    <a name="Exercise_4"></a>
+    <h2>安装和使用 OSGi 管理控制台</h2>
+
+    <p>您可以使用 GlassFish OSGi 管理控制台来安装、启动和停止部署到服务器上的 OSGi 包。在本练习中，将启用 GlassFish OSGi 管理控制台，然后查看已注册的 OSGi 包列表。</p>
+    <p>执行以下步骤安装所需的 GlassFish 附件以启用 OSGi 控制台，并查看 GlassFish 域管理控制台中的已部署包。</p>
+    <ol>
+        <li>在浏览器中打开 GlassFish 域管理控制台。
+            <p class="tips">在 "Services"（服务）窗口中，右键单击 "GlassFish Server" 节点，然后选择 "View Domain Admin Console"（查看域管理控制台）。</p></li>
+        <li>单击左侧导航栏中的 "Update Tool"（更新工具）。</li>
+        <li>从可用附件列表中选择 <tt>glassfish-osgi-gui</tt>。
+            <p>单击 "Install"（安装），然后接受许可证。</p>
+        <img alt="GlassFish 管理控制台中 &quot;Update Tool&quot;（更新工具）的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-glassfish-addons.png" title="GlassFish 管理控制台的 &quot;Update Tool&quot;（更新工具）" />
+        </li>
+        <li>重新启动 GlassFish Server。
+        <p class="alert"><strong>重要说明：</strong>如果您运行的是 GlassFish Server 3.1.2.2，则需要修改位于 <tt><em>GLASSFISH-INSTALL</em>/glassfish/config/</tt> 目录中的 <tt>osgi.properties</tt> 文件，并将 <tt>org.osgi.framework.startlevel.beginning</tt> 属性的值设置为 "2" (<tt>org.osgi.framework.startlevel.beginning=2</tt>)。<br> 有关更多详细信息，请参见以下论坛帖子：<br><a href="http://www.java.net/forum/topic/glassfish/glassfish/cannot-start-web-console-glassfish-version-3122"> 无法在 Glassfish 3.1.2.2 版中启动 Web 控制台</a>。</p>
+        </li>
+        <li>再次打开管理控制台，然后在左侧的导航栏中单击 <strong>Server (Admin Server)</strong>（服务器（管理服务器））。</li>
+        <li>单击 "OSGi Console"（OSGi 控制台）标签，以查看已部署的 OSGi 包列表。 <br /> <img alt="&quot;Add Library&quot;（添加库）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/javaee/osgi-cdi/cdi-glassfish-console.png" title="&quot;Add Library&quot;（添加库）对话框中的 &quot;Dependency Management&quot;（依赖关系管理）标签" />
+        <p class="notes"><strong>注：</strong>系统可能会提示您输入用户名和口令来查看 OSGi 包列表。如果您在 "OSGi Console"（OSGi 控制台）标签中看不到包列表，请确认未隐藏授权对话框。如果您在安装 IDE 时安装了 GlassFish 4 Server，则此服务器的默认用户名为 <tt>admin</tt>。默认情况下口令为空。</p>
+        
+        </li>
+    </ol>
+    
+    <p>您可以向下滚动列表，以查看已注册的 OSGi 包的状态，并启动和停止各个包。如果按 ID 对列表进行排序（从高到低），则会看到已部署的三个包显示在该列表的顶部附近。</p>
+
+ 
+
+
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20CDI%20to%20Inject%20OSGi%20Bundles%20as%20Services">发送有关此教程的反馈意见</a></div>
+            <br style="clear:both;" />
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>另请参见</h2>
+            <p>有关使用 NetBeans IDE 和 Maven 开发 OSGi 包的更多信息，请参见以下资源：
+            </p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/OSGiAndNetBeans">wiki.netbeans.org 上的 OSGi 和 NetBeans</a></li>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">NetBeans IDE 中的 Apache Maven 最佳做法</a></li>
+                <li><a href="https://blogs.oracle.com/arungupta/entry/totd_125_creating_an_osgi" target="_blank">TOTD #125：使用 NetBeans 创建一个 OSGi 包，并在 GlassFish 中部署</a></li>
+                <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+            </ul>
+            
+            <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee 邮件列表</a>。</p>
+    </body>
+</html>

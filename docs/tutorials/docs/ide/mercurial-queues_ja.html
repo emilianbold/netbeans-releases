@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>NetBeans IDEでのMercurial Queuesサポートの使用</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Mercurial Queues in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Mercurial,
+              versioning software, open source, developers, collaborate"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+ </head>
+
+<body>
+<h1>NetBeans IDEでのMercurial Queuesサポートの使用</h1>
+<p>NetBeans IDEはMercurial Queues拡張をサポートしています。IDEのMercurial Queuesサポートにより、IDE内でパッチを作成または確認したり、パッチ間を切り替えることができる他、bugを修正したローカル変更でパッチをリフレッシュしたり、新しいベース・リビジョンに更新することもできます。このドキュメントでは、Mercurialバージョン管理ソフトウェアを使用してパッチを管理する場合の標準的なワークフローを説明することによって、IDEの基本的なパッチ固有のタスクの実行方法を示します。</p>
+<p></p>
+
+<h3>内容</h3>
+<img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" />
+
+        <ul class="toc">
+		    <li><a href="#reqs">要件</a></li>
+            <li><a href="#enable">Mercurial Queuesサポートの有効化</a></li>
+			<li><a href="#create">パッチの作成</a></li>
+			<li><a href="#refresh">ローカル変更を使用したパッチのリフレッシュ</a></li>
+			<li><a href="#diff">パッチ・リビジョンの比較</a></li>
+			<li><a href="#switch">パッチ間の切替え</a></li>  
+            <li><a href="#finish">適用パッチの終了</a></li>
+			<li><a href="#summary">サマリー</a></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>要件</h2>
+        <p><strong>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン7.4または8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">バージョン7または8</td>
+                </tr>
+				 <tr>
+                    <td class="tbltd1"><a href="http://mercurial.selenic.com/downloads/" target="_blank">Mercurialクライアント・ソフトウェア</a></td>
+                    <td class="tbltd1">1.04以降 </td>
+                </tr>
+				                 
+            </tbody>
+        </table>
+		<p class="notes"><b>注意:</b> 使用しているシステムにMercurialクライアント・ソフトウェアをインストールする方法の詳細は、<a href="mercurial.html#settingUp">NetBeans IDEでのMercurialサポートの使用</a>を参照してください。</p>
+
+        
+        <div>
+		<a name ="enable"></a>
+		<h2>Mercurial Queuesサポートの有効化</h2>
+		<p>Mercurial Queuesは拡張機能であるため、使用する前に明示的に有効化する必要があります。<br />MercurialリポジトリでMercurial Queuesの実行を開始するには、次の手順を完了する必要があります。</p>
+		 <ol>
+		 <li>システムで、<tt>.hgrc</tt>ファイルを参照します。<tt>.hgrc</tt>ファイルのデフォルトの場所は、OS XおよびLinuxでは<tt>$HOME/.hgrc</tt>、Windowsでは<tt>%USERPROFILE%\Mercurial.ini</tt>です。</li>
+		 <li>次の行を<tt>.hgrc</tt>ファイルに追加します。
+		 <pre>         [extensions]
+         hgext.mq =</pre></li>
+		 <li>ファイルを保存します。</li>
+		 </ol>
+		 <p class="align-center"><a href="#top">先頭</a></p>		
+		</div>
+		<div>
+		<a name="create"></a>
+		<h2>パッチの作成</h2>
+		<p>パッチを作成するには、次の手順を完了する必要があります。</p>
+		<ol>
+		<li>「プロジェクト」ウィンドウで、バージョン管理されたプロジェクトを選択し、「<tt>チーム</tt>」>「<tt>キュー</tt>」>「<tt>パッチの作成</tt>」を選択します(または、プロジェクト名を右クリックし、ポップアップ・メニューから「<tt>Mercurial</tt>」>「<tt>キュー</tt>」>「<tt>パッチの作成</tt>」を選択します)。<br />「パッチの作成」ダイアログ・ボックスが表示されます。
+		<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/create-patch.png" rel="lytebox" title="「パッチの作成」ダイアログ・ボックス"> <img alt="「パッチの作成」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/create-patch-small.png"></a></p>
+		  </li>
+		<li>「パッチ名」テキスト・フィールドにパッチの名前を指定します。</li>
+		<li>「パッチ・メッセージ」フィールドにパッチの説明を入力します。<br />または、次のオプションのいずれかを選択し、その後に「OK」をクリックします。
+		  <ul>
+		<li>「最近のメッセージ」ボタン(<img alt="最近のメッセージ" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/recent.png">)をクリックし、最近のコミット・メッセージのリストからメッセージを選択します。 </li>
+		<li>「テンプレートをロード」ボタン(<img alt="テンプレートをロード" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/load.png">)をクリックし、コミット・メッセージに対するメッセージ・テンプレートを選択します。</li>
+		</ul>
+		<p class="notes"><b>注意:</b> 入力したパッチの説明は、<a href="#finish">パッチを永久変更セットに変更</a>するときにコミット・メッセージとして使用されます。</p>
+		</li>
+		<li>「パッチに含めるファイル」表で、パッチに含めるファイルを選択します。 </li>
+		<li>(オプション)「問題を更新」領域のフィールドを使用して、作成したパッチに関連した問題に関する情報を指定します。</li>
+		<li>「パッチの作成」をクリックします。<br />新しいパッチが作成されて、<tt>.hg/patches</tt>ディレクトリに追加されます。
+		</li>
+		</ol>
+<p class="align-center"><a href="#top">先頭</a></p>				
+</div>
+<div>
+<a name="refresh"></a>
+<h2>ローカル変更を使用したパッチのリフレッシュ</h2>
+<p>作成中のパッチに進捗内容を保存するには、次の手順を完了する必要があります。 </p>
+<ol>
+<li>メイン・メニューから「<tt>チーム</tt>」>「<tt>キュー</tt>」>「<tt>パッチのリフレッシュ</tt>」を選択します(または、プロジェクト名を右クリックし、ポップアップ・メニューから「<tt>Mercurial</tt>」>「<tt>キュー</tt>」>「<tt>パッチのリフレッシュ</tt>」を選択します)。<br />「パッチのリフレッシュ」ダイアログ・ボックスが表示されます。
+<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch.png" rel="lytebox" title="「パッチのリフレッシュ」ダイアログ・ボックス"> <img alt="「パッチのリフレッシュ」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch-small.png"></a></p></li>
+<li>「パッチ・メッセージ」フィールドにパッチの説明を入力します。<br />または、次のオプションのいずれかを選択し、その後に「OK」をクリックします。
+		  <ul>
+		<li>「最近のメッセージ」ボタン(<img alt="最近のメッセージ" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/recent.png">)をクリックし、最近のコミット・メッセージのリストからメッセージを選択します。 </li>
+		<li>「テンプレートをロード」ボタン(<img alt="テンプレートをロード" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/load.png">)をクリックし、コミット・メッセージに対するメッセージ・テンプレートを選択します。</li>
+		</ul>
+		<p class="notes"><b>注意:</b> 入力したパッチの説明は、<a href="#finish">パッチを永久変更セットに変更</a>するときにコミット・メッセージとして使用されます。</p>
+	</li>
+		<li>「パッチに含めるファイル」表で、パッチに含めるファイルを選択します。 </li>
+		<li>(オプション)「問題を更新」領域で、コミットする変更に関連した問題に関する情報を指定します。</li>
+        <li>「パッチのリフレッシュ」をクリックします。<br />作業中のパッチが更新されます。</li>
+
+</ol>
+<p class="align-center"><a href="#top">先頭</a></p>
+</div>
+
+		<div><a name="diff"></a>
+		<h2>パッチ・リビジョンの比較</h2>
+		<p>パッチを生成して、パッチのリビジョンを並べて確認および比較するには、次の手順を完了する必要があります。 </p>
+<ol>
+<li>メイン・メニューから「<tt>チーム</tt>」>「<tt>キュー</tt>」>「<tt>差分</tt>」を選択します(または、プロジェクト名を右クリックし、ポップアップ・メニューから「<tt>Mercurial</tt>」>「<tt>キュー</tt>」>「<tt>差分</tt>」を選択します)。<br />差分ビューアには、現在のパッチと、コミットまたはリフレッシュされていないすべてのローカル変更との相違がパネルに並んで表示されます。
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/qdiff.png" rel="lytebox" title="差分ビューア"> <img alt="差分ビューア" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/qdiff-small.png"></a></p></li>
+<li> グラフィカルな差分ビューアまたはテキスト形式の差分ビューアを使用して、比較ファイルで検出された相違を確認および置換します。
+  <p class = "notes"><b>注意:</b> グラフィカルな差分ビューアは、次の色分けを使用してファイル内の変更を強調表示します。</p>
+  <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>青</strong> (<span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いパッチの後で変更された行を示します。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>緑</strong> (<span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いパッチの後で追加された行を示します。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>赤</strong> (<span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いパッチの後で除去された行を示します。</td>
+                </tr>
+</table>
+<p>
+次のアイコンを使用すると、グラフィカルな差分ビューアで直接変更を加えることができます。</p>
+ <table width="600px">
+				 <tr>
+                        <th class="tblheader" scope="col">アイコン</th>
+                        <th class="tblheader" scope="col" style="width:60px">名前</th>
+                        <th class="tblheader" scope="col">機能</th>
+        </tr>
+                    <tr>
+					 <td class="tbltd1 align-center"><img alt="「置換」アイコン" src="../../../images_www/articles/72/ide/mercurial-queues/replace.png" /></td>
+                        <td class="tbltd1 align-center" style="width:80px"><strong>置換</strong></td>
+                        <td class="tbltd1">前のパッチから現在のパッチに、強調表示されたテキストを挿入します。</td>
+                    </tr>
+					<tr>
+					<td class="tbltd1 align-center"><img alt="「すべてを置換」アイコン" src="../../../images_www/articles/72/ide/mercurial-queues/replace-all.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>すべてを置換</strong> </td>
+                        <td class="tbltd1">パッチの現在のバージョンを、選択された前のバージョンの状態に戻します。</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="「除去」アイコン" src="../../../images_www/articles/72/ide/mercurial-queues/remove.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>除去</strong></td>
+                        <td class="tbltd1">強調表示されたテキストをパッチの現在のバージョンから除去し、パッチの以前のバージョンが反映されるようにします。</td>
+                    </tr>
+      </table></li>
+</ol>
+		
+<p class="align-center"><a href="#top">先頭</a></p>
+        
+		</div>
+		
+		<div>
+		<a name="switch"></a>
+        <h2>パッチ間の切替え</h2>
+        <p>パッチ・キュー・シリーズで特定のパッチに切り替えるには、次の手順を完了する必要があります。 </p>
+		<p class="notes"><b>注意:</b> パッチ間を切り替えるには、作業コピーに<i>ローカル変更がない必要があり</i><i></i>、そうでない場合は切替えに失敗します。</p>
+		<ol>
+		<li>メイン・メニューから「<tt>チーム</tt>」>「<tt>キュー</tt>」>「<tt>パッチに移動</tt>」を選択します(または、プロジェクト名を右クリックし、ポップアップ・メニューから「<tt>Mercurial</tt>」>「<tt>キュー</tt>」>「<tt>パッチに移動</tt>」を選択します)。<br />「パッチに移動」ダイアログ・ボックスには、スタックで使用可能なすべてのパッチのリストが表示されます。 
+		
+		  <p class="align-center">
+	      <img alt="「パッチに移動」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/74/ide/mercurial-queues/go-patch.png"></p>
+		  
+		<p class="notes"><b>注意:</b></p> 
+		<ul>
+		<li>適用されているパッチの名前は太字で表示されます。</li>
+		<li> スタックの上部から適用済パッチを除去して作業ディレクトリを更新し、適用済パッチが影響しないようにするには、「<tt>チーム</tt>」>「<tt>キュー</tt>」>「<tt>すべてのパッチのポップ</tt>」を選択します。</li>
+		</ul>
+		</li>
+		<li>必要なパッチを選択して「移動」をクリックします。<br />選択したパッチに含まれている変更が、選択したプロジェクト、ファイルまたはフォルダに適用されます。</li>
+		</ol> 
+		<p class="align-center"><a href="#top">先頭</a></p>
+		</div> 
+		<div>   
+               
+        <a name="finish"></a>
+<h2>適用パッチの終了</h2>
+<p>パッチの作業を実行した後は、パッチを永久変更セットに変更できます。<br />パッチ・キュー・シリーズ内のすべての適用済パッチを通常の変更セットに変更するには、次の手順を完了する必要があります。</p>
+ <p class="notes"> <b>注意:</b> リポジトリにすべての保存済パッチを適用するには、メイン・メニューから「<tt>チーム</tt>」>「<tt>キュー</tt>」>「<tt>すべてのパッチのプッシュ</tt>」を選択します。</p>
+ 
+<ol>
+<li>メイン・メニューから「<tt>チーム</tt>」>「<tt>キュー</tt>」>「<tt>パッチの終了</tt>」を選択します(または、プロジェクト名を右クリックし、ポップアップ・メニューから「<tt>Mercurial</tt>」>「<tt>キュー</tt>」>「<tt>パッチの終了</tt>」を選択します)。<br />「パッチの終了」ダイアログ・ボックスが表示されます。
+   <p class="align-center">
+    <img alt="パッチの終了" border="1/" src="../../../images_www/articles/74/ide/mercurial-queues/finish-patches.png"></p></li>
+	<li>パッチ・フィールドで終了するパッチの名前を選択します。
+	<p class="notes"><b>注意:</b> 選択したパッチの前にあるシリーズのすべてのパッチも終了されます。</p></li>
+	<li>「パッチの終了」をクリックします。<br />選択したパッチまでのすべての適用済パッチが通常の変更セットに変更されます。</li>
+		  </ol>
+<p class="align-center"><a href="#top">先頭</a></p>
+</div>
+<div>
+<a name="summary"></a>
+<h2>サマリー</h2>
+<p>このチュートリアルでは、Mercurialバージョン管理ソフトウェアを使用してパッチを管理する場合の標準的なワークフローを説明することによって、IDEの基本的なパッチ固有のタスクの実行方法を示しました。IDEに含まれるMercurial固有の機能の一部を紹介しながら、NetBeans IDEでのMercurial Queuesサポートの有効化方法、およびパッチに対する基本タスクの実行方法を示しました。</p>
+<p class="align-center"><a href="#top">先頭</a></p>
+</div>
+		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Suport%20For%20Mercurial%20Queues%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+
+        <br style="clear:both;"/>
+		<a name="seealso"></a>
+        <h2>関連項目</h2>
+        
+        <p>関連する資料については、次のドキュメントを参照してください。</p>
+        <ul>
+           
+           	<li><a href="mercurial.html">NetBeans IDEでのMercurialサポートの使用</a></li>
+			<li><a href="http://wiki.netbeans.org/HgNetBeansSources">IDEでのMercurialを使用したNetBeansソースの操作</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">NetBeans IDEによるアプリケーションの開発</a>の<i>バージョン管理によるアプリケーションのバージョニング</i></a></li>
+			
+        </ul>
+		<p class="align-center"><a href="#top">先頭</a></p>
+</body>
+</html>

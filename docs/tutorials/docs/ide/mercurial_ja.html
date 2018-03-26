@@ -1,0 +1,575 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>NetBeans IDEでのMercurialサポートの使用</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="author" content="psunb@netbeans.org">
+        <meta name="description" content="Overview of Mercurial Features in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Mercurial,
+              versioning software, open source, developers, collaborate">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+    <body>
+        <h1>NetBeans IDEでのMercurialサポートの使用 </h1>
+
+        <p>NetBeans IDEはMercurialバージョン管理クライアント・バージョン1.0.x以降をサポートしています。IDEのMercurialサポートにより、IDE内のプロジェクトから直接バージョン管理タスクを実行できます。このドキュメントでは、バージョン管理ソフトウェアを使用する場合の標準的なワークフローを説明することによって、IDEの基本的なバージョン管理タスクの実行方法を示します。</p>
+
+        <p><a href="http://www.selenic.com/mercurial/wiki/" target="_blank">Mercurial</a>は、非常に大きな分散プロジェクトを効果的に処理するために設計された、高速で軽量なソース制御システムです。CVSやSubversionとは異なり、Mercurialは、オープン・ソース・プロジェクトの多くで一般的に使用されており集中管理を行わずに分散開発をサポートする分散リポジトリを扱います。ファイルとディレクトリの両方にMercurialコマンドを使用できます。IDEはグラフィカルな差分ビューアを備えており、ファイル・リビジョンを比較でき、エディタで直接インライン差分もサポートしています。</p>
+
+        <p>IDEのMercurialサポートは、IDEのSubversionサポートに似ています。主な違いは、Mercurialが分散リビジョン管理システムであることです。ユーザーは一般に、操作する外部リポジトリを<em>クローン</em>することから始めます。このクローンは、リビジョン履歴を含むリポジトリの完全なコピーです。必要な回数に応じてローカル・コピーをクローンできます。準備ができたら、権限があれば、ローカルで行った変更を元のリポジトリにプッシュし、権限がなければ、変更を<em>エクスポート</em>して、リポジトリ所有者に送信できます。
+        </p>
+		
+
+        <h3>内容</h3>
+        <img alt="このページの内容は、NetBeans IDE 8.0に適用されます" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="このページの内容は、NetBeans IDE 8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#settingUp">Mercurialの設定</a></li>
+            <li><a href="#synchronizing">ローカル・ファイルとリポジトリの同期</a></li>
+            <li><a href="#editing">ソースの編集</a>
+                <ul>
+                    <li><a href="#viewingChanges">ソース・エディタでの変更の表示</a></li>
+                    <li><a href="#viewingFileStatus">ファイルのステータス情報の表示</a></li>
+                    <li><a href="#comparing">ファイル・リビジョンの比較</a></li>
+                </ul></li>
+            <li><a href="#committing">リポジトリへのソースのコミット</a>
+                <ul>
+                    <li><a href="#updating">ローカル・コピーの更新</a></li>
+                   
+                    <li><a href="#committing">コミットの実行</a></li>
+					<li><a href="#issues">問題の更新</a></li>
+                    <li><a href="#pushing">共有リポジトリへのローカルの変更のプッシュ</a></li>
+                </ul>
+            </li>
+			<li><a href="#summary">サマリー</a></li>
+            <li><a href="#seeAlso">関連項目</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>要件</h2>
+        <p><strong>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">バージョン7または8 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.selenic.com/mercurial/" target="_blank">Mercurialクライアント・ソフトウェア</a></td>
+                    <td class="tbltd1">1.04またはそれ以降</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <a name="settingUp"></a>
+        <h2>Mercurialの設定</h2>
+        <p> IDEのMercurialサポートを活用するためには、システムにMercurialクライアント・ソフトウェアをインストールする必要があります。IDEがサポートしているMercurialクライアントのバージョンは1.04以降です。IDEのMercurialサポートは、Mercurialのコマンド行インタフェースと同じコマンドで動作します。</p>
+        <p>Mercurialは、ソースまたはバイナリ・パッケージのいずれかの形式で、<a href="http://www.selenic.com/mercurial/" target="_blank">Mercurial Webサイト</a>からダウンロードできます。</p>
+
+
+        <p>Mercurial実行可能ファイルのパスをIDEに設定するには:</p>
+        <ol>
+            <li>メイン・メニューから「<tt>ツール</tt>」→「<tt>オプション</tt>」(OS Xでは「<tt>NetBeans</tt>」→<tt>プリファレンス</tt>)を選択します。「オプション」ダイアログが開きます。</li>
+            <li>ダイアログの上部にある「チーム」アイコンを選択し、「バージョン管理」タブをクリックします。「バージョン管理システム」下の左側のペインで、「Mercurial」を選択します。ダイアログのメイン・ウィンドウに、Mercurialのユーザー定義オプションが表示されます。
+               <p class="align-center">
+				<a href="../../../images_www/articles/80/ide/mercurial/options-dialog.png" rel="lytebox" title="Mercurialの「オプション」ダイアログ"> <img alt="Mercurialの「オプション」ダイアログ" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/options-dialog-small.png"></a></p></li>
+
+            <li>「Mercurial実行可能ファイル・パス」テキスト・フィールドに、実行可能ファイルのパスを入力するか、または「参照」をクリックしてシステム上のその場所まで移動します。パスにMercurial実行可能ファイルを<em>含める</em>必要はありません。</li>
+            <li>「OK」をクリックします。</li>
+        </ol>
+        <p>Mercurialクライアントの設定後に、IDEの「<tt>チーム</tt>」>「<tt>Mercurial</tt>」メニューから、Mercurialコマンドを実行できます。外部Mercurialリポジトリをクローンするには、「<tt>チーム</tt>」>「<tt>Mercurial</tt>」>「<tt>他をクローン</tt>」を選択します。クローンのプロセスで、IDEはクローンされるファイルのすべての履歴とステータス情報を自動的にインポートします。</p>
+        <p>既存のMercurialリポジトリがある場合、それらのファイルをIDEプロジェクトで開くか、それらを「お気に入り」ウィンドウに追加した場合に、IDEが自動的にそれらをバージョン管理されたファイルとして認識します。このファイルに対するMercurialコマンドは、Mercurialのメニューから、あるいはファイルまたはフォルダを右クリックしてMercurialのコンテキスト・メニューから選択することによって使用できます。</p>
+        <p>コマンド行を使用して、コンピュータにMercurialリポジトリを作成するには、次を入力します。</p>
+
+        <pre class="examplecode">hg clone /path/to/your/repository</pre>
+		
+		<p class="notes"><b>注意:</b> NetBeans Mercurialリポジトリ(<a href="http://hg.netbeans.org/">http://hg.netbeans.org/</a>)は、このチュートリアルではデモの目的に使用します。 </p>
+
+        <a name="synchronizing"></a>
+        <h2>ローカル・ファイルとリポジトリの同期</h2>
+
+        <p>バージョン管理システムを使用する場合、ローカル・ファイルとリポジトリを同期させ、ローカル・コピーに変更を行い、それらをリポジトリにコミットすることによって作業します。次の一覧に、特定の状況に応じて、NetBeans IDEでプロジェクトを同期できる様々な方法を示します。</p>
+
+        <ul>
+            <li><a href="#opening">IDEでMercurialプロジェクトを開く</a> </li>
+            <li><a href="#checking">リポジトリからのファイルのチェックアウト</a></li>
+            <li><a href="#importing">リポジトリへのファイルのインポート</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="opening"></a>
+            <h3>IDEでMercurialプロジェクトを開く</h3>
+
+            <p>IDEの外部で操作していたMercurialバージョン管理プロジェクトがすでに存在する場合、それをIDEで開くと、バージョン管理機能が自動的に使用可能になります。IDEは開いているプロジェクトをスキャンし、Mercurialバージョン管理プロジェクトに対して、ファイル・ステータスとコンテキスト依存のサポートを自動的にアクティブにします。</p>
+
+            <a name="checking"></a>
+            <h3>リポジトリからのファイルのチェックアウト</h3>
+
+            <p>IDEからリモート・リポジトリに接続し、ファイルをチェックアウトし、それらをすぐに操作する場合、次を実行します。</p>
+
+            <ol>
+                <li>NetBeans IDEで、メイン・メニューから「<tt>チーム</tt>」>「<tt>Mercurial</tt>」>「<tt>他をクローン</tt>」を選択します。クローン・ウィザードが開きます。
+					
+<p class="align-center">
+<a href="../../../images_www/articles/80/ide/mercurial/clone-repository.png" rel="lytebox" title="Mercurialクローン・ウィザード"> <img alt="Mercurialクローン・ウィザード" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/clone-repository-small.png"></a></p>
+
+                    <p class="notes"><b>注意: </b>IDEのドロップダウン・メニューはコンテキスト依存です。つまり、使用可能なオプションは現在選択されている項目によって異なります。そのため、すでにMercurialプロジェクト内で作業している場合、メイン・メニューから「<tt>チーム</tt>」>「<tt>リモート</tt>」>「<tt>他をクローン</tt>」を選択できます。</p></li>
+<li>「リポジトリURL」に、リポジトリのパス(<tt>http://hg.netbeans.org/main</tt>など)を入力します。</li>
+<li>クローン・ウィザードに表示される「ユーザー」および「パスワード」フィールドに、netbeans.orgユーザー名およびパスワードを入力します。 
+
+
+<p class="align-center"> <a href="../../../images_www/articles/80/ide/mercurial/clone-username.png" rel="lytebox" title="Mercurialクローン・ウィザード"> <img alt="Mercurialクローン・ウィザード" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/clone-username-small.png"></a></p></li>
+                <li>プロキシを使用している場合は、「プロキシ構成」ボタンをクリックし、「オプション」ダイアログ・ボックスに必要な情報を入力します。リポジトリへの接続設定が正しいことを確認したら、「次」をクリックします。</li>
+					<li>2番目のステップで、「デフォルトのプッシュ・パス」フィールドの右側の「変更」をクリックします。「プッシュ・パスの変更」ダイアログ・ボックスが開きます。
+					<p class="align-center"><a href="../../../images_www/articles/80/ide/mercurial/clone-push.png" rel="lytebox" title="「プッシュ・パスの変更」ダイアログ"> <img alt="「プッシュ・パスの変更」ダイアログ" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/clone-push-small.png"></a></p></li>
+					
+					<li> NetBeansユーザー名とパスワードを追加し、プロトコルを<tt>https</tt>に変更して、デフォルトのプッシュ・エントリを変更します。 </li>
+					<li>「パスを設定」をクリックします。「プッシュ・パスの変更」ダイアログ・ボックスが閉じます。</li>
+					<li>「次」をクリックして、ウィザードの3番目の手順に移動します。 </li>
+                    
+                    <li>「親ディレクトリ」フィールドで、リポジトリ・ファイルのチェックアウト先にするコンピュータ上の場所を入力します(または、「参照」ボタンを使用できます)。 
+					
+					<p class="align-center"> <a href="../../../images_www/articles/80/ide/mercurial/clone-destination.png" rel="lytebox" title="Mercurialクローン・ウィザード"> <img alt="Mercurialクローン・ウィザード" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/clone-destination-small.png"></a></p>
+					<p class="note"><b>注意:</b> Windowsを実行している場合、指定するパスの長さに注意してください。つまり、<tt>C:\Documents and Settings\myName\My Documents\NetBeans\etc\etc</tt>は、ファイルのパスが非常に長いため、クローンが成功しないことがあります。かわりに<tt>C:\</tt>を使用してみてください。</p></li>
+					<li>「チェックアウト後にNetBeansプロジェクトをスキャン」オプションを選択されたままにし、「終了」をクリックしてチェックアウト・アクションを開始します。<br>IDEによって指定したソースがチェックアウトされ、リポジトリからローカルの作業用ディレクトリへのファイルのダウンロードの進捗状況がIDEのステータス・バーに示されます。チェックアウト中のファイルを、「出力」ウィンドウから表示することもできます(Windowsでは[Ctrl]-[4]、OS Xでは[Command]-[4])。
+
+
+                    <p class="notes"><b>注意: </b>チェックアウトされたソースにNetBeansプロジェクトが含まれている場合、それらをIDEで開くように求めるダイアログ・ボックスが表示されます。ソースにプロジェクトが含まれていない場合は、ソースから新しいプロジェクトを作成し、IDEでそれらを開くことを求めるダイアログが表示されます。そのようなソースで新しいプロジェクトを作成する場合、適切なプロジェクト・カテゴリを選択し(新規プロジェクト・ウィザードで)、そのカテゴリ内の「既存のソースを使用する」オプションを使用します。</p></li>
+            </ol>
+
+            <a name="importing"></a>
+            <h3>リポジトリへのファイルのインポート</h3>
+
+            <p>または、IDEで操作していたプロジェクトをリモート・リポジトリにインポートし、同期されるようになった後に、IDEでそれを引続き操作できます。</p>
+
+            <p><strong class="notes">注意: </strong>実際にはシステムからファイルを<em>エクスポート</em>しますが、「インポート」という用語は、バージョン管理システムで、ファイルがリポジトリに<em>インポート</em>されることを示すために使用されています。</p>
+
+            <p>プロジェクトをリポジトリにインポートするには:</p>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウ(Windowsでは[Ctrl]-[1]、OS Xでは[Command]-[1])から、バージョン管理されていないプロジェクトを選択し、ノードの右クリック・メニューから「<tt>チーム</tt>」>「<tt>Mercurial</tt>」>「<tt>リポジトリの初期化</tt>」を選択します。リポジトリのルート・パス・ダイアログ・ボックスが開きます。
+					<p class="align-center"><a href="../../../images_www/articles/80/ide/mercurial/repositoryrootpath.png" rel="lytebox" title="リポジトリのルート・パス・ダイアログ・ボックス"> <img alt="リポジトリのルート・パス・ダイアログ・ボックス" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/repositoryrootpath.png"></a></p></li>
+                <li>リポジトリ内でプロジェクトを配置するリポジトリ・フォルダを指定します。「ルート・パス」テキスト・フィールドには、デフォルトで、プロジェクトの名前を含むフォルダが自動的に提案されます。 </li>
+              
+                <li>「OK」をクリックし、Mercurial初期化アクションを開始します。<br> 「OK」をクリックすると、IDEによりプロジェクト・ファイルがリポジトリにアップロードされます。<br> 「ウィンドウ」>「出力」を選択すると、「出力」ウィンドウが開いて進捗状況が表示されます。
+					<p class="align-center">
+					 <a href="../../../images_www/articles/80/ide/mercurial/output.png" rel="lytebox" title="出力"> <img alt="出力" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/output-small.png"></a></p>
+				<p class="notes"><b>注意:</b> プロジェクト・ファイルをMercurialバージョン管理下に置くと、それらはリポジトリに「<tt>ローカルで新規</tt>」として登録されます。新しいファイルとそのステータスは、右クリック・メニューの「<tt>Mercurial</tt>」>「<tt>変更を表示</tt>」をクリックすると表示できます。</p>
+				<p class="align-center"><a href="../../../images_www/articles/80/ide/mercurial/status.png" rel="lytebox" title="ステータス"> <img alt="ステータス" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/status-small.png"></a></p></li>
+				<li>プロジェクトの右クリック・メニューから「<tt>Mercurial</tt>」>「<tt>コミット</tt>」を選択し、これらのプロジェクト・ファイルをMercurialリポジトリにコミットします。「コミット - [プロジェクト名]」ダイアログ・ボックスが開きます。
+				<p class="align-center"><a href="../../../images_www/articles/80/ide/mercurial/commit-dialog.png" rel="lytebox" title="「コミット」ダイアログ・ボックス"> <img alt="「コミット」ダイアログ・ボックス" class="margin-around" src="../../../images_www/articles/80/ide/mercurial/commit-dialog-small.png"></a></p></li>
+			  <li>「コミット・メッセージ」テキスト領域にメッセージを入力し、「コミット」をクリックします。
+				<p class="notes"><b>注意:</b> コミットされたファイルが、<tt>.hg</tt>ディレクトリと一緒にMercurialリポジトリ・ディレクトリに配置されます。コミットの詳細は、IDEの「出力」ウィンドウから表示することもできます(Windowsでは[Ctrl]-[4]、OS Xでは[Command]-[4])。</p></li>
+				
+            </ol>
+        </div>
+
+        <a name="editing"></a>
+        <h2>ソースの編集</h2>
+
+        <p>Mercurialバージョン管理プロジェクトをIDEで開くと、ソースの変更を開始できます。NetBeans IDEで開く任意のプロジェクトと同様に、(「プロジェクト」(Windowsでは[Ctrl]-[1]、OS Xでは[Command]-[1])、「ファイル」(Windowsでは[Ctrl]-[2]、OS Xでは[Command]-[2])、「お気に入り」(Windowsでは[Ctrl]-[3]、OS Xでは[Command]-[3])などの) IDEのウィンドウで表示されているファイルのノードをダブルクリックすると、ファイルをソース・エディタで開くことができます。</p>
+
+        <p>IDEのソースを操作する場合、自由に使用できる様々なUIコンポーネントがあります。これらは、表示およびバージョン管理コマンドの操作で役立ちます。</p>
+
+        <ul>
+            <li><a href="#viewingChanges">ソース・エディタでの変更の表示</a></li>
+            <li><a href="#viewingFileStatus">ファイルのステータス情報の表示</a></li>
+            <li><a href="#comparing">ファイル・リビジョンの比較</a></li>
+            <li><a href="#merging">ファイル・リビジョンのマージ</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="viewingChanges"></a>
+            <h3>ソース・エディタでの変更の表示</h3>
+
+            <p>IDEのソース・エディタでバージョン管理されたファイルを開くと、リポジトリから以前にチェックアウトした基本バージョンに照らしあわせながら、そのファイルに行われた変更がリアル・タイムで表示されます。作業に伴って、IDEはソース・エディタのマージンに色分けを使用し、次の情報を伝えます。</p>
+
+            <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>青</strong> (<span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で変更された行を示します。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>緑</strong> (<span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で追加された行を示します。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>赤</strong> (<span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で除去された行を示します。</td>
+                </tr>
+            </table>
+
+
+            <p>ソース・エディタの左側のマージンには、行ごとに発生した変更が表示されています。行を変更すると、その変更がすぐに左側のマージンに表示されます。</p>
+
+            <p>マージンの色のグループをクリックして、バージョン管理コマンドをコールできます。たとえば、左下のスクリーン・ショットは、赤いアイコンをクリックすると使用可能なウィジェットを示しており、ローカル・コピーから行が除去されたことを示します。</p>
+
+            <p>ソース・エディタの右側のマージンには、上から下に向かって、ファイル全体に行われた変更の概要が表示されます。ファイルに変更を行うと、すぐに色分けが生成されます。</p>
+
+            <p>マージンの特定の場所をクリックすると、インライン・カーソルがファイルのその場所にすぐに移動します。影響を受ける行数を表示するには、右側のマージンの色つきアイコンの上にマウスを動かします。</p>
+
+            <table class="cell" style="width:500px">
+                <tr>
+                    <td><a href="../../../images_www/articles/80/ide/mercurial/left-ui.png" rel="lytebox" title="エディタの左側のマージンに表示されたバージョン管理の色分け"><img alt="エディタの左側のマージンに表示されたバージョン管理の色分け" class="b-all" src="../../../images_www/articles/80/ide/mercurial/left-ui-small.png"></a><br><strong>左側のマージン</strong></td>
+                    <td><a href="../../../images_www/articles/80/ide/mercurial/right-ui.png" rel="lytebox" title="エディタの右側のマージンに表示されたバージョン管理の色分け"><img alt="エディタの右側のマージンに表示されたバージョン管理の色分け" class="b-all" src="../../../images_www/articles/80/ide/mercurial/right-ui-small.png"></a><br><strong>右側のマージン</strong></td>
+                </tr>
+            </table>
+
+            <a name="viewingFileStatus"></a>
+            <h3>ファイルのステータス情報の表示</h3>
+
+            <p>「プロジェクト」(Windowsでは[Ctrl]-[1]、OS Xでは[Command]-[1])、「ファイル」(Windowsでは[Ctrl]-[2]、OS Xでは[Command]-[2])、「お気に入り」(Windowsでは[Ctrl]-[3]、OS Xでは[Command]-[3])、または「バージョン管理」ウィンドウで作業する場合、IDEには、ファイルのステータス情報を表示するのに役立つ視覚機能がいくつかあります。次の例では、バッジ(例: <img alt="青のバッジ" src="../../../images_www/articles/80/ide/mercurial/blue-badge.png">)、ファイル名の色、および隣接するステータス・ラベルすべての相互の対応方法を確認し、ファイルに対するバージョン管理情報をトラックする単純だが効果的な方法について説明します。
+
+</p>
+                <p class="align-center"><img alt="「お気に入り」ウィンドウに表示された青のバッジ" class="b-all" src="../../../images_www/articles/80/ide/mercurial/badge-example.png"></p>
+					  <p class="notes"><b>注意:</b> ステータス・ラベルは、「バージョン管理」、「プロジェクト」および「ファイル」ウィンドウのファイル・ステータスをテキストで示します。ステータス・ラベルを表示するには、メイン・ツールバーから「表示」→「バージョン・ラベルを表示」を選択します。</p>
+
+                      <p>バッジ、色分け、ファイル・ステータス・ラベル、およびおそらく最も重要なバージョン管理ウィンドウはすべて、効果的な表示および管理能力、およびIDEでのバージョン管理情報に貢献します。</p>
+
+            <ul>
+                <li><a href="#badges">バッジと色分け</a></li>
+                <li><a href="#fileStatus">ファイル・ステータス・ラベル</a></li>
+                <li><a href="#versioning">バージョン管理ウィンドウ</a></li>
+            </ul>
+
+            <div class="indent">
+                <a name="badges"></a>
+                <h4>バッジと色分け</h4>
+
+                <p>バッジはプロジェクト、フォルダおよびパッケージ・ノードに適用され、そのノードに含まれているファイルのステータスを示します。</p>
+
+                <p>バッジに使用される色のスキームを次の表に示します。</p>
+
+                <table >
+                    <tr>
+                        <th class="tblheader" scope="col" style="width:110px">UIコンポーネント</th>
+                        <th class="tblheader" scope="col" style="width:490px">説明</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd0 align-center"><strong>青のバッジ</strong>(<img alt="青のバッジ" src="../../../images_www/articles/80/ide/mercurial/blue-badge.png">)</td>
+                        <td class="tbltd0">ローカルに変更、追加、または削除されたファイルの存在を示します。パッケージの場合、このバッジは、パッケージ自体にのみ適用され、そのサブパッケージには適用されません。プロジェクトまたはフォルダの場合、このバッジはその項目または含まれるサブフォルダ内の内容の変更を示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>赤のバッジ</strong>(<img alt="赤のバッジ" src="../../../images_www/articles/80/ide/mercurial/red-badge.png">)</td>
+                        <td class="tbltd1"><em>競合する</em>ファイル(リポジトリに保存されているバージョンと競合するローカル・バージョン)を含むプロジェクト、フォルダまたはパッケージをマークします。パッケージの場合、このバッジは、パッケージ自体にのみ適用され、そのサブパッケージには適用されません。プロジェクトまたはフォルダの場合、このバッジはその項目または含まれるサブフォルダ内の競合を示しています。</td>
+                    </tr>
+                </table>
+
+                <a name="color-coding-table"></a>
+                <p>色分けは、リポジトリに照らして、現在のステータスを示す目的でファイル名に適用されます。</p>
+
+                <table >
+                    <tr>
+                        <th class="tblheader" scope="col" style="width:40px">色</th>
+                        <th class="tblheader" scope="col">例</th>
+                        <th class="tblheader" scope="col">説明</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd0 align-center"><strong>青</strong></td>
+                        <td class="tbltd0"><img alt="青のテキスト" src="../../../images_www/articles/80/ide/mercurial/blue-text.png"></td>
+                        <td class="tbltd0">ファイルがローカルに変更されたことを示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>緑</strong></td>
+                        <td class="tbltd1"><img alt="緑のテキスト" src="../../../images_www/articles/80/ide/mercurial/green-text.png"></td>
+                        <td class="tbltd1">ファイルがローカルに追加されたことを示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd0 align-center"><strong>赤</strong></td>
+                        <td class="tbltd0"><img alt="赤のテキスト" src="../../../images_www/articles/80/ide/mercurial/red-text.png"></td>
+                        <td class="tbltd0">ファイルに、ローカル作業コピーとリポジトリのバージョン間の競合が含まれることを示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>グレー</strong></td>
+                        <td class="tbltd1"><img alt="グレーのテキスト" src="../../../images_www/articles/80/ide/mercurial/gray-text.png"></td>
+                        <td class="tbltd1">ファイルがMercurialによって無視され、バージョン管理コマンド(更新やコミットなど)に含まれないことを示します。まだバージョン管理されていない場合にのみ、ファイルが無視されます。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd0 align-center" style="width:120px"><strong>取消し線</strong></td>
+                        <td class="tbltd0 align-center"><img alt="取消し線のテキスト" src="../../../images_www/articles/80/ide/mercurial/strike-through-text.png"></td>
+                        <td class="tbltd0">ファイルがコミット操作から除外されることを示します。取消し線テキストは、個々のファイルをコミット・アクションから除外することを選択すると、「バージョン管理」ウィンドウや「コミット」ダイアログなどの特定の場所にのみ表示されます。そのようなファイルは、「更新」など、他のMercurialコマンドの影響は引続き受けます。</td>
+                    </tr>
+                </table>
+
+                <a name="fileStatus"></a>
+                <h4>ファイル・ステータス・ラベル</h4>
+
+                <p>ファイル・ステータス・ラベルは、バージョン管理ファイルのステータスを、IDEのウィンドウにテキストで示します。デフォルトで、IDEは、ファイルをウィンドウに一覧表示するときに、そのファイルの右側にステータス情報(新規、変更済、無視など)およびフォルダ情報をグレー・テキストで表示します。ただし、この形式は独自のものに変更できます。たとえば、リビジョン番号をステータス・ラベルに追加する場合は、次を実行します。</p>
+
+                <ol>
+                    <li>メイン・メニューから「<tt>ツール</tt>」→「<tt>オプション</tt>」(OS Xでは「<tt>NetBeans</tt>」→<tt>プリファレンス</tt>)を選択します。「オプション」ウィンドウが開きます。</li>
+                    <li>ウィンドウの上部にある「チーム」ボタンを選択し、その下にある「バージョン管理」タブをクリックします。左側のパネルの「バージョン管理システム」の下のMercurialが選択されていることを確認します。 </li>
+                    
+                    <li>ファイルの右側にステータスとフォルダのみが表示されるようにステータス・ラベルを再フォーマットするには、「ステータス・ラベル形式」テキスト・フィールドの内容を次のように再整理します。
+
+                        <pre class="examplecode">[{status}; {folder}]</pre>
+
+                        「OK」をクリックします。これでステータス・ラベルにはファイルのステータスとフォルダ(該当する場合)が表示されます。 </li></ol>
+
+
+                        <p class="align-center"><img alt="ファイル名の横に表示されたファイル・ラベル" class="b-all margin-around" src="../../../images_www/articles/80/ide/mercurial/file-labels.png"></p>
+               
+
+                <p class="tips">ファイル・ステータス・ラベルは、メイン・メニューから「<tt>表示</tt>」>「<tt>バージョン・ラベルを表示</tt>」を選択して、オンとオフを切り替えできます。</p>
+
+                <a name="versioning"></a>
+                <h4>バージョン管理ウィンドウ</h4>
+
+                <p>Mercurialバージョン管理ウィンドウは、ローカルの作業コピーの選択されたフォルダ内でファイルに行われた変更のすべてを、リアル・タイムで一覧表示します。これはIDEの下のパネルにデフォルトで開き、追加、削除または変更されたファイルを一覧表示します。</p>
+
+                <p>バージョン管理ウィンドウを開くには、(「プロジェクト」ウィンドウ、「ファイル」ウィンドウまたは「お気に入り」ウィンドウなどから)バージョン管理ファイルまたはフォルダを選択し、右クリック・メニューから「<tt>Mercurial</tt>」>「<tt>変更を表示</tt>」を選択するか、またはメイン・メニューから「<tt>チーム</tt>」>「<tt>Mercurial</tt>」>「<tt>変更を表示</tt>」を選択します。IDEの最下部に次のウィンドウが表示されます。
+
+</p>
+                    <p class="align-center"><img alt="ローカルで変更されたファイルが表示されたバージョン管理ウィンドウ" class="b-none margin-around" src="../../../images_www/articles/80/ide/mercurial/versioning-window.png"></p>
+
+                <p>デフォルトでは、「バージョン管理」ウィンドウは、選択されたパッケージまたはフォルダ内の変更されたすべてのファイルを一覧表示します。ツールバーにあるボタンを使用することによって、すべての変更を表示するか、表示されるファイルの一覧をローカルまたはリモートで変更されたファイルに制限できます。一覧表示されたファイルの上にある列の見出しをクリックして、名前、ステータス、または場所でファイルをソートすることもできます。</p>
+
+                <p>「バージョン管理」ウィンドウのツールバーには、一覧に表示されているすべてのファイルに対して一般的なMercurialタスクを呼び出すことができるボタンも用意されています。次の表は、「バージョン管理」ウィンドウのツールバーにあるMercurialコマンドをまとめています。</p>
+
+                <table >
+                    <tr>
+                        <th class="tblheader" scope="col">アイコン</th>
+                        <th class="tblheader" scope="col" style="width:110px">名前</th>
+                        <th class="tblheader" scope="col">機能</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd0 align-center"><img alt="「ステータスのリフレッシュ」アイコン" src="../../../images_www/articles/80/ide/mercurial/refresh.png"></td>
+                        <td class="tbltd0 align-center"><strong>ステータスのリフレッシュ</strong></td>
+                        <td class="tbltd0">選択したファイルとフォルダのステータスをリフレッシュします。「バージョン管理」ウィンドウに表示されたファイルは、外部で行われた可能性のある任意の変更を反映してリフレッシュできます。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「すべて差分を取得」アイコン" src="../../../images_www/articles/80/ide/mercurial/diff.png"></td>
+                        <td class="tbltd1 align-center"><strong>すべて差分を取得</strong></td>
+                        <td class="tbltd1">差分ビューアを開くと、ローカルのコピーとリポジトリで保持されているバージョンを並べた比較が表示されます。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd0 align-center"><img alt="「すべて更新」アイコン" src="../../../images_www/articles/80/ide/mercurial/update.png"></td>
+                        <td class="tbltd0 align-center"><strong>すべて更新</strong></td>
+                        <td class="tbltd0">リポジトリから選択したファイルをすべて更新します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="「すべてコミット」アイコン" src="../../../images_www/articles/80/ide/mercurial/commit.png"></td>
+                        <td class="tbltd1 align-center"><strong>すべてコミット</strong></td>
+                        <td class="tbltd1">ローカルの変更をリポジトリにコミットできます。</td>
+                    </tr>
+                </table>
+
+
+                <p>「バージョン管理」ウィンドウで、変更したファイルに対応する表の行を選択し、右クリック・メニューからコマンドを選択すると、他のMercurialコマンドにアクセスできます。</p>
+
+
+                    
+
+                <p>たとえば、ファイルでは次のアクションを実行できます。</p>
+
+                <table >
+                    <tr>
+                        <td>
+                            <ul>
+                                <li><strong>注釈を表示</strong>: ソース・エディタで開かれているファイルの左側のマージンに、作成者、リビジョン番号情報を表示します。</li>
+                            </ul></td>
+
+                        <td class="f-page-cell">
+                            <img alt="ソース・エディタの左側のマージンに表示された注釈" class="b-all" src="../../../images_www/articles/80/ide/mercurial/annotations.png"></td>
+                    </tr>
+                   
+                    <tr>
+                        <td>
+                            <ul>
+                                <li><strong>変更内容を元に戻す</strong>: ローカルの変更をリポジトリで管理されているリビジョンに戻す場合のパラメータを指定するために使用できる「変更内容を元に戻す」ダイアログを開きます。</li>
+                            </ul></td>
+
+                        <td class="f-page-cell">
+                            <a href="../../../images_www/articles/80/ide/mercurial/search-rev.png" rel="lytebox" title="日付に従ってファイル・リビジョンが一覧表示された「リビジョンの検索」ダイアログ"> <img alt="「変更内容を元に戻す」ダイアログ" class="b-right b-bottom" src="../../../images_www/articles/80/ide/mercurial/search-rev-small.png"></a></td>
+                    </tr>
+                </table>
+            </div>
+
+            <a name="comparing"></a>
+            <h3>ファイル・リビジョンの比較</h3>
+
+            <p>ファイル・リビジョンの比較は、バージョン管理されているプロジェクトを操作する場合に一般的なタスクです。差分コマンドを使用すると、IDEでリビジョンを比較できます。差分コマンドは、選択した項目の右クリック・メニュー(「<tt>Mercurial</tt>」>「<tt>差分</tt>」>「<tt>ベースとの差分</tt>」または「<tt>Mercurial</tt>」>「<tt>差分</tt>」>「<tt>リビジョンとの差分</tt>」)および「バージョン管理」ウィンドウから使用できます。「バージョン管理」ウィンドウで、差分を実行するには、リストされているファイルをダブルクリックするか、上部のツールバーにある「すべて差分を取得」アイコン(<img alt="「すべて差分を取得」アイコン" src="../../../images_www/articles/80/ide/mercurial/diff.png">)をクリックします。</p>
+
+            <p>差分の取得を実行すると、選択したファイルとリビジョンについてグラフィカルな差分ビューアがIDEのメイン・ウィンドウで開きます。差分ビューアには2つのコピーが並んだパネルに表示されます。右側により現在に近いコピーが表示されるため、作業コピーに対してリポジトリ・リビジョンを比較すると、右パネルに作業コピーが表示されます。</p>
+
+
+               <p class="align-center"><a href="../../../images_www/articles/80/ide/mercurial/diff-viewer.png" rel="lytebox" title="Mercurial差分ビューア"> <img alt="Mercurial差分ビューア" class="b-all margin-around" src="../../../images_www/articles/80/ide/mercurial/diff-viewer-small.png"></a></p>
+
+            <p>差分ビューアは、バージョン管理の変更を表示する場所に使用されているのと同じ<a href="#viewingChanges">色分け</a>を利用します。前に表示したスクリーン・ショットの緑色のブロックは、より現在に近いリビジョンに追加された内容を示します。赤いブロックは、前のリビジョンの内容が、より最近のリビジョンから除去されたことを示します。青は、強調表示された行で変更が発生したことを示します。</p>
+
+            <p>また、プロジェクト、パッケージまたはフォルダなどのグループで差分を実行する場合、あるいは「すべて差分を取得」(<img alt="「すべて差分を取得」アイコン" src="../../../images_www/articles/80/ide/mercurial/diff.png">)をクリックする場合は、差分ビューアの上部領域にリストされているファイルをクリックすると、差分を切り替えることができます。</p>
+
+            <p>差分ビューアには次の機能もあります。</p>
+
+            <ul>
+                <li><a href="#makeChanges">ローカル作業コピーへの変更の実行</a></li>
+                <li><a href="#navigateDifferences">差分間の移動</a></li>
+               
+            </ul>
+
+            <div class="indent">
+                <a name="makeChanges"></a>
+                <h4>ローカル作業コピーへの変更の実行</h4>
+
+                <p>ローカル作業コピーで差分の取得を実行する場合、IDEの差分ビューア内から直接変更を行うことができます。これを行うには、カーソルを差分ビューアの右ペインに置き、それに従ってファイルを変更するか、または強調表示された各変更の前後で表示されるインライン・アイコンを使用します。</p>
+
+                <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>置換</strong>(<img alt="「置換」アイコン" src="../../../images_www/articles/80/ide/mercurial/insert.png">):</td>
+                        <td>前のリビジョンから現在のリビジョンに、強調表示されたテキストを挿入します。</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>すべて移動</strong>(<img alt="「すべて移動」アイコン" src="../../../images_www/articles/80/ide/mercurial/arrow.png">):</td>
+                        <td>ファイルの現在のリビジョンを、選択した前のリビジョンの状態に戻します。</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>除去</strong>(<img alt="「除去」アイコン" src="../../../images_www/articles/80/ide/mercurial/remove.png">):</td>
+                        <td>現在のリビジョンから強調表示されているテキストを除去し、以前のリビジョンを反映させます。</td>
+                    </tr>
+                </table>
+
+                <a name="navigateDifferences"></a>
+                <h4>比較したファイルの相違間をナビゲート</h4>
+
+                <p>差分に複数の違いが含まれている場合、ツールバーに表示された矢印アイコンを使用して、それらをナビゲートできます。矢印アイコンを使用すると、差分を上から下へ出現順に表示できます。</p>
+
+                <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>前</strong>(<img alt="「前の差分」ボタン" src="../../../images_www/articles/80/ide/mercurial/diff-prev.png">):</td>
+                        <td>差分内で、前に表示された差分に移動します。</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>次</strong>(<img alt="「次の差分」ボタン" src="../../../images_www/articles/80/ide/mercurial/diff-next.png">):</td>
+                        <td>差分内で、次に表示された差分に移動します。</td>
+                    </tr>
+                </table>
+
+              
+            </div>
+
+            <a name="merging"></a>
+            <h3>ファイル・リビジョンのマージ</h3>
+
+            <p>NetBeans IDEでは、リポジトリ・リビジョンとローカル作業コピー間で変更をマージできます。具体的には、リポジトリ内の2つの別個の変更セットを、それらの組合せ方法を記述する新しい変更セットに組み合せます。</p>
+            <ol>
+                <li>「プロジェクト」ウィンドウ、「ファイル」ウィンドウまたは「お気に入り」ウィンドウで、マージ操作の実行先のファイルまたはフォルダを右クリックし、「<tt>Mercurial</tt>」>「<tt>分岐/タグ</tt>」>「<tt>変更をマージ</tt>」を選択します。「リビジョンとマージ」ダイアログが表示されます。</li>
+                <li>「リビジョンから選択」ドロップダウン・リストから、リビジョンを選択します。ローカル作業コピー・ファイルの作成時からのすべての変更を移植します。</li>
+                <li>「説明」、「作成者」および「日付」データが正しいことを確認します。
+
+
+                   <p class="align-center"> <a href="../../../images_www/articles/80/ide/mercurial/mercurial-merge.png" rel="lytebox" title="Mercurialの「マージ」ダイアログ"> <img alt="Mercurialの「マージ」ダイアログ" class="margin-around b-none" src="../../../images_www/articles/80/ide/mercurial/mercurial-merge-small.png"></a></p></li>
+
+                <li>「マージ」をクリックします。IDEによって、リポジトリ・リビジョンとファイルのローカル・コピー間に検出されたすべての相違が取り込まれます。マージ競合が発生した場合、ファイルのステータスはこれを示すために「<a href="#resolving">競合をマージ</a>」に更新されます。</li>
+            </ol>
+
+            <p><strong class="notes">注意:</strong> リビジョンをローカル作業コピーにマージした後、それらをリポジトリに追加するには、「コミット」コマンドを使用して、変更をコミットする必要があります。</p>
+        </div>
+
+        <a name="committing"></a>
+        <h2>リポジトリへのソースのコミット</h2>
+
+        <p>ソースに変更を加えた後は、それらをリポジトリにコミットします。一般に、競合が発生しないようにするため、コミットを実行する前に、リポジトリに照らして存在するコピーをすべて更新することをお薦めします。ただし、競合は発生する可能性があり、多くの開発者がプロジェクトを同時に操作する場合には自然な出来事であると考える必要があります。IDEでは、これらのすべての機能を実行できる柔軟なサポートを提供しています。さらに、競合が発生したときに、それらを安全に処理できる競合リゾルバも提供しています。</p>
+
+        <ul>
+            <li><a href="#updating">ローカル・コピーの更新</a></li>
+            
+            <li><a href="#performing">コミットの実行</a></li>
+			<li><a href="#issues">問題の更新</a></li>
+			<li><a href="#pushing">共有リポジトリへのローカルの変更のプッシュ</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="updating"></a>
+            <h3>ローカル・コピーの更新</h3>
+
+            <p>更新を実行するには、メイン・メニューから「<tt>チーム</tt>」>「<tt>更新</tt>」を選択します。</p>
+
+            <p>変更したソースに対して更新を実行するには、「すべて更新」アイコン(<img alt="「すべて更新」アイコン" src="../../../images_www/articles/80/ide/mercurial/update.png">)をクリックしますが、このアイコンは<a href="#versioning">「バージョン管理」ウィンドウ</a>と<a href="#comparing">差分ビューア</a>の両方の上部にあるツールバーに表示されます。リポジトリで行われた変更は、「バージョン管理の出力」ウィンドウに表示されます。</p>
+
+            <a name="comitting"></a>
+            <h3>コミットの実行</h3>
+
+            <p>ソース・ファイルの編集、更新の実行および競合の解決後、ローカル作業コピーからファイルをリポジトリにコミットします。IDEでは、次の方法でコミット・コマンドをコールできます。</p>
+
+            <ul>
+                <li>「プロジェクト」、「ファイル」または「お気に入り」ウィンドウで、新規または変更した項目を右クリックし、「<tt>Mercurial</tt>」>「<tt>コミット</tt>」を選択します。</li>
+                <li>「バージョン管理」ウィンドウまたは差分ビューアから、ツールバーにある「すべてコミット」(<img alt="「すべてコミット」アイコン" src="../../../images_www/articles/80/ide/mercurial/commit.png">)ボタンをクリックします。</li>
+            </ul>
+
+            <p>「コミット」ダイアログが開き、リポジトリにコミットされるファイルが表示されます。</p>
+
+
+                <p class="align-center"><a href="../../../images_www/articles/80/ide/mercurial/mercurial-commit-dialog.png" rel="lytebox" title="コミット予定のファイルが表示された「コミット」ダイアログ"> <img alt="コミット予定のファイルが表示された「コミット」ダイアログ" class="b-none margin-around" src="../../../images_www/articles/80/ide/mercurial/mercurial-commit-dialog-small.png"></a></p>
+
+            <p>「コミット」ダイアログには、次が表示されます。</p>
+
+            <ul>
+                <li>ローカルで変更されたすべてのファイル</li>
+                <li>ローカルで削除されたすべてのファイル</li>
+                <li>すべての新規ファイル(リポジトリにまだ存在しないファイル)</li>
+                <li>名前を変更したすべてのファイル。Mercurialは元のファイルを削除し、新しい名前で複製を作成して、名前が変更されたファイルを処理します。</li>
+            </ul>
+
+            <p>「コミット」ダイアログで、コミットから個々のファイルを除外するかどうかを指定できます。これを行うには、選択したファイルの「コミット・アクション」列をクリックして、ドロップダウン・リストから「コミットから除外」を選択します。</p>
+
+            <p>コミットを実行するには:</p>
+            <ol>
+                <li>「コミット・メッセージ」テキスト領域にコミット・メッセージを入力します。または、右上隅にある「最近のメッセージ」(<img alt="「最近のメッセージ」アイコン" src="../../../images_www/articles/80/ide/mercurial/recent-msgs.png">)アイコンをクリックして、以前使用したメッセージのリストを表示して選択します。</li>
+                <li>個々のファイルのアクションを指定して「コミット」をクリックします。IDEによってコミットが実行され、ローカルの変更がリポジトリに送信されます。コミット・アクションが実行されると、インタフェースの右下にあるIDEのステータス・バーが表示されます。コミットに成功すると、「プロジェクト」、「ファイル」および「お気に入り」ウィンドウのバージョン管理バッジが消え、コミットされたファイルの色分けが黒に戻ります。</li>
+            </ol>
+<a name="issues"></a>
+<h3>問題の更新</h3>
+<p>問題を更新するには、リポジトリの問題トラッカで既存の問題にコミット・アクションを関連付けます。これを実行するには、「コミット」ダイアログ・ボックスの「問題を更新」見出しをクリックして展開し、次を指定します。</p>
+<ul>
+<li><strong>問題トラッカ:</strong> ドロップダウン・リストから問題トラッカを選択して、リポジトリで使用する問題トラッカを指定します。ドロップダウンには、IDEに登録されているすべての問題トラッカの一覧が表示されます。リポジトリの問題トラッカが登録されていない場合は、「新規作成」ボタンをクリックして登録します。</li>
+<li><strong>問題:</strong> 問題IDを指定します。これを実行するには、IDを入力するか、説明の一部を入力します。</li>
+</ul>
+<p>また、次のオプションを指定できます。</p>
+<ul><li><strong>修正済みとして解決:</strong> 選択した場合、問題のステータスが「解決」とマークされます。</li>
+<li><strong>上で入力したコミット・メッセージを追加:</strong> 選択した場合、コミット・メッセージが問題に追加されます。</li>
+<li><strong>問題にリビジョン情報を追加:</strong> 選択した場合、問題が作成者、日付などのリビジョン情報を含めるように更新されます。「書式の変更」をクリックして、問題に追加されるリビジョン情報の書式を変更できます。</li>
+<li><strong>コミット・メッセージに問題情報を追加:</strong> 選択した場合、問題IDとサマリーがコミット・メッセージに追加されます。「書式の変更」をクリックして、メッセージに追加される問題情報の書式を変更できます。</li>
+<li><strong>コミット後:</strong> 選択した場合、変更のコミット後に問題が更新されます。</li> 
+<li><strong>プッシュ後:</strong> 選択した場合、変更がリポジトリにプッシュされた後にのみ問題が更新されます。</li></ul>
+
+<a name="pushing"></a>
+<h3>共有リポジトリへのローカルの変更のプッシュ</h3>
+<p>ローカルでコミットした変更を共有リポジトリにプッシュする前に、ローカル・リポジトリと共有リポジトリを同期させる必要があります。これを「フェッチ」コマンドで実行するには、メイン・メニューから「<tt>チーム</tt>」>(「<tt>Mercurial</tt>」>)「<tt>リモート</tt>」>「<tt>フェッチ</tt>」を選択します。「フェッチ」の成功後、ローカル・リポジトリが共有リポジトリと同期されます。</p>
+<p>変更をプッシュするには、メイン・メニューから「<tt>チーム</tt>」>(「<tt>Mercurial</tt>」>)「<tt>リモート</tt>」>「<tt>現在の分岐をプッシュ</tt>」、「<tt>チーム</tt>」>(「<tt>Mercurial</tt>」>)「<tt>リモート</tt>」>「<tt>すべての分岐をプッシュ</tt>」、または「<tt>チーム</tt>」>(「<tt>Mercurial</tt>」>)「<tt>リモート</tt>」>「<tt>プッシュ</tt>」を選択します。成功したプッシュの出力に、作成された変更セットが表示されます。</p>
+<p class="notes"><b>注意:</b> システムでリポジトリ全体のコピーを管理しているため、一般的な方法は、ローカル・リポジトリに複数のコミットを行い、特定のタスクの完了後にのみ、共有リポジトリへのプッシュを実行します。</p>
+
+        </div>
+		<a name="summary"></a>
+<h2>サマリー</h2>
+<p>このチュートリアルでは、IDEのMercurialサポートを使用する場合の標準的なワークフローを説明することによって、IDEの基本的なバージョン管理タスクの実行方法を示しました。IDEに含まれるMercurial固有の機能の一部を紹介しながら、バージョン管理されたプロジェクトの設定とバージョン管理されたファイルの基本タスクの実行方法を示しました。</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Mercurial%20Support%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>関連項目</h2>
+        
+        <p>関連する資料については、次のドキュメントを参照してください。</p>
+        <ul>
+            <li><a href="http://wiki.netbeans.org/HgNetBeansSources">IDEでのMercurialを使用したNetBeansソースの操作</a></li>
+			<li><a href="mercurial-queues.html">NetBeans IDEでのMercurial Queuesサポートの使用</a></li>
+			<li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">バージョン管理によるアプリケーションのバージョニング</a></li>
+					
+        </ul>
+    </body>
+</html>

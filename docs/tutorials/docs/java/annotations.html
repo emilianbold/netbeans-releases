@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Annotation Processors Support in the NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+    </head>
+
+    <body>
+
+        <h1>Annotation Processors Support in the NetBeans IDE</h1>
+<p><em>Sample contributed by Jesse Glick.</em></p>
+       
+       <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+	    <p><b>Contents</b></p>
+  
+        <ul class="toc">
+            <li><a href="#intro"><strong>Introduction</strong></a></li>
+            <li><a href="#map"><strong>Map of javac Options and IDE Commands</strong></a> </li>
+            <li><a href="annotations-lombok.html" title="Adding Code to the Generated Source File">Using Project Lombok for Custom Annotations</a></li>
+            <li><a href="annotations-custom.html">Using Own Custom Annotation Processor in the IDE</a></li>
+            <li><a href="annotations-custom.html#seealso" title="Compiling and Running the Program">See Also </a></li>
+        </ul>
+		</div>
+	</div>
+      <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+        <p>This two-part tutorial demonstrates how you can attach annotation processors to a project and use them while working on your  code in the IDE. 
+            NetBeans IDE includes built-in support for custom annotation processors. 
+            Now you can conveniently specify annotation processors to run with your project and see the results of annotation processing 
+            directly in the Java Editor through code completion and navigation. </p>
+        
+        <p>The <a href="annotations-lombok.html">first part of the tutorial</a> shows the use of the third-party annotation processor, <a href="http://projectlombok.org/" target="_blank">Project Lombok</a>, in the NetBeans IDE. </p>
+        <p>The <a href="annotations-custom.html">second part of the tutorial</a> provides explanations of how to add a self-written annotation processor to a project. The sample code for this part of the tutorial is contributed by Jesse Glick. </p>
+		
+		<p style="clear:both"><b>To complete this tutorial, you need the following software and resources.</b></p>
+		<table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                  <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">version 7 or 8</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+         <h2><a name="intro"></a>Introduction</h2>
+        <p><em>Annotations</em> are  a mechanism of the Java programming language that is used to hold metadata about the elements of your application.
+            Annotations hold meta-information on how the annotated elements should be processed by the compiler, during  deployment or at runtime.
+            In other words, annotations are comments to your code that can be processed by other programs and tools.</p>
+        <p>You can use custom annotations to accomplish a variety of tasks: mark parts of your  application (e.g. copyright information, test methods, etc.),
+            automatically generate code, parse command-line options, develop  web services, and others.
+            The information on how custom annotations should be processed is passed to the Java compiler through custom annotation processors.
+            <a href="http://www.jcp.org/en/jsr/detail?id=269" target="_blank">JSR 269</a> implemented in JDK 6 provides an official API for writing annotation  processors.
+            You can either write your own custom annotation processors or use third-party solutions.</p>
+        <p>For starting information about annotations in JDK 6, refer to the following resources:</p>
+        <ul>
+          <li>Java SE Documentation - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">Annotations</a></li>
+          <li>Java SE Tutorial - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">Annotations</a> </li>
+        </ul>
+        <p>In practice, annotations are  most widely used in combination with Java Persistence API (JPA), which is part of the Java EE specification, and some other technologies, such as JAXB (Java Architecture for XML Binding). 
+            Using JPA, Java classes can be annotated as entities that later can be persisted to a storage.
+            To develop JPA-based applications, it is convenient to use frameworks, for example, EclipseLink that is bundled with the IDE.
+            As a starting point for more information on writing JPA-based applications in the NetBeans IDE,
+            see <a href="../javaee/javaee-gettingstarted.html">Getting Started with Java EE Applications</a>.</p>
+        <h2><a name="map" id="map"></a>Map of javac Options and IDE Commands for Annotation Processing</h2>
+        <p>As mentioned above, in Java SE 6 javac, annotation processing was incorporated as an integral functionality of the Java compiler.
+            The compiler automatically searches for annotation processors by default at user class path (unless annotation processing is explicitly disabled).
+            In addition, the search path or a path to particular annotation processors can be specified by using javac options.
+            In the table below, you can see a map of the javac options related to annotation processing and the corresponding commands in the IDE.
+            For more information on javac options in JDK 6,
+            see <a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html" target="_blank">javac - Java programming language compiler</a>.</p>
+        <p class="notes"><strong>Note.</strong> In the IDE, the annotation processing options for all Java application with the exception of NetBeans platform applications
+            are specified in the Project Properties window.
+            To open the project's Properties window window, right-click your project and choose Properties.</p>
+       <table>
+         <tbody>
+
+            <tr>
+               <td class="tblheader">Java 6 javac Options  </td>
+               <td class="tblheader">IDE Command </td>
+               <td class="tblheader">Description</td>
+            </tr>
+            <tr>
+
+               <td class="tbltd0"><tt>-processor</tt></td>
+               <td class="tbltd0"><p>Project Properties &gt; Build &gt; Compiling &gt; Annotation Processors field. </p>
+               <p>Specify a fully qualified name of the annotation processor in the Annotation Processors field. </p></td>
+               <td class="tbltd0">Explicitly specifies the annotation processor to run. This option eliminates the need to create  service provider-configuration files (META-INF/services/javax.annotation.processing.Processor) </td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><tt>-proc:none</tt></td>
+              <td class="tbltd1"><p>Project Properties &gt; Build &gt; Compiling &gt; Enable Annotation Processing checkbox </p>
+                  <p>When the checkbox is disabled, the project is compiled without any annotation processing. </p></td>
+              <td class="tbltd1">Compilation proceeds without any annotation processing. The annotation processor discovery mechanism is not used during compilation. </td>
+            </tr>
+            <tr>
+              <td class="tbltd0"><tt>-processorpath</tt></td>
+              <td class="tbltd0"><p>Project Properties &gt; Libraries &gt; Processor tab </p>
+              <p>Specify the path to an IDE project, library or a JAR file that contains an annotation processor. Use this option if an annotation processor and annotations are packaged into separate JAR files.</p></td>
+              <td class="tbltd0">Specifies where to find annotation processors; if this   	  option is not given, the classpath is searched for   	  processors (see below). </td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><tt>-classpath</tt></td>
+              <td class="tbltd1"><p>Project Properties &gt; Libraries &gt; Compile tab </p>
+              <p>Specify the path to an IDE project, library or a JAR file that contains an annotation processor and  annotation declarations. Use this option if an annotation processor and annotations are packaged into a single JAR file. </p></td>
+              <td class="tbltd1">Specifies where to find user class files, and (optionally) annotation processors and source files. This path is searched for annotation processors if the -processorpath option is not specified.  </td>
+            </tr>
+            <tr>
+              <td class="tbltd0"><tt>-A<em>key[=value]</em></tt></td>
+              <td class="tbltd0"><p>Project Properties &gt; Build &gt; Compiling &gt; Processor Options field </p>
+              <p>Add options that should be passed to the annotation processor associated with your project. This value is optional. </p></td>
+              <td class="tbltd0">(Optional) Options to pass to annotation processors. </td>
+            </tr>
+         </tbody>
+      </table>
+
+        <p>&nbsp; </p>
+        <h2><a name="nextsteps" id="nextsteps"></a>Next Steps</h2>
+        <p>Read the following parts of the tutorial to learn how to use annotations in the IDE. </p>
+        <ul>
+          <li><a href="annotations-lombok.html">Part I: Using Project Lombok for Custom Annotations</a> </li>
+          <li><a href="annotations-custom.html">Part II: Using Own Custom Annotation Processor in the IDE</a> </li>
+        </ul>
+        <p> </p>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20the%20NetBeans%20IDE">Send Feedback on This Tutorial</a><br style="clear:both;" />
+        </div>
+</body>
+</html>

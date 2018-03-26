@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Grails Webフレームワーク入門</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="A very simple and quick introduction to 
+      the Grails application development workflow by walking you through the creation of a
+         simple Hello World Java console application." >
+   </head>
+   
+   <body>
+
+<h1>Grails Webフレームワーク入門</h1>
+<p>
+    このドキュメントでは、NetBeans IDEの<a href="http://www.grails.org">Grails</a>について説明します。Grailsサイトから引用します: 「Grailsの狙いは、「規約によるコーディング」のパラダイムをGroovyに取り入れることです。これは、Groovy言語を利用してJavaによるWeb開発を補完するオープン・ソースのWebアプリケーション・フレームワークです。Grailsは、構成の詳細がすべて隠されたスタンドアロンの開発環境として使用でき、Javaビジネス・ロジックを統合できます。Grailsが目指しているのは、開発作業を可能なかぎり簡素化することです。したがって、Javaコミュニティの開発者のみでなく、幅広い開発者にとって魅力があるはずです。」
+</p>
+
+<p><b>目次</b></p>
+    <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+    <ul>
+        <li><a href="#application">アプリケーションの作成</a></li>
+        <li><a href="#domain">ドメイン・クラスの作成</a></li>
+        <li><a href="#controller">コントローラの作成</a></li>
+      <li><a href="#running">アプリケーションの実行</a></li>
+
+    </ul>
+
+
+
+
+<p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+            <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン7.2 Java以上</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a class="pageLink" href="http://www.grails.org/Installation">Grails</a></td>
+                    <td class="tbltd1">現在のバージョン</td>
+                </tr>
+            
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>注意:</strong></p>
+    <div class="indent">
+        <ul>
+            <li>JavaプラットフォームとしてJDK 7を使用する必要があります。Grailsは現在、JDK 8上では実行されません。</li>
+            <li>IDEでGrailsアプリケーションを開発するには、Grailsプラグインをアクティブ化する必要があります。</li>
+            <li>IDEの「オプション」ウィンドウを開き、「Groovy」タブの「その他」カテゴリでGrailsの場所を設定します。
+            <p>Groovyを使用する場合は、Groovyの場所もここで設定します。</p></li>
+            <li>公式の<a class="pageLink" href="http://grails.org/Quick%20Start">Grailsクイック・スタート</a>をお読みください。このクイック・スタートで紹介しているシナリオをこの後の各項で再現します。</li>
+        </ul>
+    </div>
+
+
+<a name="application"></a>
+<h2>アプリケーションの作成</h2>
+
+<p>この項では、「Grailsアプリケーション」プロジェクト・テンプレートを使用して新しいGrailsアプリケーションを作成することで、IDEから「grails create-app」コマンドを実行します。</p>
+
+<ol>
+    <li>ローカル・システムにGrailsをインストールし、適切に構成されていることを確認します。
+        <p>コマンド・ラインからGrailsを実行することで、正しく機能していることを確認できます(コマンド・プロンプトで"grails"と入力します)。</p></li>
+<li>「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N])を選択し、「Groovy」カテゴリから「Grailsアプリケーション」を選択します。「次」をクリックします。</li>
+<li>「プロジェクト名」に「BookDemo」と入力し、「プロジェクトの場所」にアプリケーションを作成するフォルダを選択します。「終了」をクリックします。</li>
+</ol>
+
+<p>「grails create-app」コマンドが実行され、「出力」ウィンドウに出力が表示されます。「プロジェクト」ウィンドウに次のように表示されます。</p>
+
+<img alt="" border="0" src="../../../images_www/articles/72/web/grails/grails-65-4.png">
+<p>フォルダを展開し、IDEによってGrailsスクリプト経由で作成されたソース構造を確認します。また、生成されたファイルを見ると、その多くにデフォルト値が入力されていることがわかります。</p>
+
+ <a name="domain"></a>
+<h2>ドメイン・クラスの作成</h2>
+<p>この項では、IDEを使用して「grails create-domain-class」スクリプトを実行します。</p>
+<ol>
+<li>「ドメイン・クラス」ノードを右クリックし、「新規」>「Grailsドメイン・クラス」を選択します。
+<li>ドメイン・クラスに「Book」と名前を付け、「終了」をクリックします。「ドメイン・クラス」ノードに「Book.groovy」というドメインが作成されます。
+<li>Bookクラスを開き、2つの文字列「title」と「author」と入力します。次のような表示になります。<br> <img alt="ソース・エディタ内のbookクラスのスクリーンショット" border="1" src="../../../images_www/articles/72/web/grails/grails-65-8.png"><br></li>
+<li>「構成」ノード内のBootstrap.groovyクラスの初期値をいくつか作成します。クラスに追加するコードを次に太字で示します。
+<pre class="examplecode">class BootStrap {
+
+     def init = { servletContext ->
+         <b>new Book(author:"Stephen King",title:"The Shining").save()
+         new Book(author:"James Patterson",title:"Along Came a Spider").save()</b>
+     }
+     
+     def destroy = {
+     }
+     
+}</pre>
+ <p class="notes"><strong>注意:</strong>ソース・エディタの左マージンに警告が表示された場合は、<tt>bookdemo.Book</tt>のインポートを追加します。 </p>
+</li>
+</ol>
+
+<a name="controller"></a>
+<h2>コントローラの作成</h2>
+
+<p>この項では、「grails create-controller」スクリプトを使用して、ドメイン・クラスのコントローラを作成します。</p>
+
+<ol>
+    <li>「コントローラ」ノードを右クリックし、「新規」>「Grailsコントローラ」を選択します。</li>
+<li>「クラス名」に「Book」と入力します。生成されるクラスの名前「BookController」が表示されます。<br> <img alt="新規コントローラ・ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-11.png">
+  <p>「終了」をクリックします。コントローラが生成されます。</p></li>
+<li>中括弧内に生成された1行をコメントにし、「def scaffold=Book」を追加します。次のような表示になります。 <br> <img alt="ソース・エディタ内クラスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-13.png"></li>
+</ol>   
+
+<a name="running"></a>
+<h2>アプリケーションの実行</h2>
+<p>単純なGrailsアプリケーションが完成しました。この項では、完成したアプリケーションをデプロイします。</p>
+<ol>
+<li>アプリケーションを右クリックし、「実行」を選択します。「サービス」ウィンドウに表示されるように、アプリケーションはJettyにデプロイされます。 <br><img alt="「サービス」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-19.png"></li>
+<li>URLが「出力」ウィンドウに出力されます。ブラウザが自動的に開かない場合は、このURLをブラウザに貼り付けると、アプリケーションが表示されます。「BookController」リンクをクリックすると、次のような画面が表示されます。 <br><img alt="ブラウザ・ウィンドウのリストのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-14.png"></li>
+<li>「New Book」をクリックし、新規エントリを作成します。 <br><img alt="ブラウザ・ウィンドウのエントリ作成ページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-15.png"></li>
+<li>「Create」をクリックすると、エントリを編集または削除できるようになります。 <br><img alt="ブラウザ・ウィンドウの編集ページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-17.png"></li>
+<li>また、新規エントリがエントリのリストに反映されます。 <br><img alt="新規エントリがあるブラウザ・ウィンドウのリスト・ページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-18.png"></li>
+</ol>
+
+      
+      <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans IDE 6.5 Grails Quick Start Guide">このチュートリアルに関するご意見をお寄せください</a></div>
+      <br style="clear:both;" />
+      
+      
+        <a name="seeAlso"></a>
+        <h2>関連項目</h2>
+        
+        <p>これで、NetBeans IDEでのGrails入門は終わりです。IDEを使用してGrailsフレームワークで基本的なアプリケーションを作成する方法を習得しました。</p>
+            
+        <p>GrailsおよびGroovyテクノロジについては、<a href="https://netbeans.org/">netbeans.org</a>の<a href="../java/groovy-quickstart.html">Groovyの概要</a>を参照してください。
+
+     
+   </body>
+
+</html>

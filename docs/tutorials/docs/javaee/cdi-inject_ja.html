@@ -1,0 +1,535 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>CDIの注入および修飾子の操作 - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A demonstration of how to use CDI injection and apply qualifiers to Java EE projects using NetBeans IDE 7.0">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Contexts and Dependency Injection, CDI, Web Beans, injection, qualifier">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>CDIの注入および修飾子の操作</h1>
+
+        <p><em>執筆: Andy Gibson</em></p>
+
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h3>コンテキストと依存性の注入</h3>
+
+                <ol>
+                    <li><a href="cdi-intro.html">CDIおよびJSF 2.0の開始</a></li>
+                    <li><strong>CDIの注入および修飾子の操作</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#inject">注入(Injection): CDIの「I」</a></li>
+                            <li><a href="#qualifier">修飾子の操作</a></li>
+                            <li><a href="#alternative">代替の注入方法</a></li>
+                            <li><a href="#seealso">関連項目</a></li>
+                        </ul></li>
+
+                    <li><a href="cdi-validate.html">@Alternative Beanおよびライフサイクル注釈の適用</a></li>
+                    <li><a href="cdi-events.html">CDIのイベントの操作</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <p><a href="http://jcp.org/en/jsr/detail?id=299">JSR-299</a>で指定されているコンテキストと依存性の注入(CDI: Contexts and Dependency Injection)はJava EE 6の不可欠な部分であり、サーブレット、エンタープライズBean、JavaBeansなどのJava EEコンポーネントが、アプリケーションのライフサイクル内で明確なスコープを持って存在できるようにするためのアーキテクチャを提供します。また、CDIサービスによって、EJBセッションBeanやJSF (JavaServer Faces)管理対象BeanなどのJava EEコンポーネントが注入可能になり、イベントの起動や監視による疎結合方式の対話が可能になります。</p>
+
+        <p>このチュートリアルは、Andy Gibson氏によって投稿された<a href="http://www.andygibson.net/blog/index.php/2009/12/22/getting-started-with-cdi-part-2-injection/">CDI入門パート2 - 注入</a>というタイトルのブログをベースにしています。ここでは、クラスやインタフェースを他のクラスに<em>注入</em>するために、どのようにCDI注入を使用できるかについて示します。また、特定の注入ポイントに注入するクラスの型を指定できるようにするために、CDI<em>修飾子</em>をコードに適用する方法についても示します。</p>
+
+        <p>NetBeans IDEは、コンテキストと依存性の注入のサポートを組込みでサポートしています。これには、プロジェクト作成時に<code>beans.xml</code> CDI構成ファイルを生成するオプション、注釈のためのエディタおよびナビゲーション・サポート、一般的に使用されるCDIアーティファクトを作成するための各種ウィザードなどが含まれています。</p>
+
+        <br style="clear:left;">
+
+        <div class="indent">
+            <p>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</p>
+
+            <table id="requiredSoftware">
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                        <th class="tblheader" scope="col">必須バージョン</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                        <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバージョン</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                        <td class="tbltd1">バージョン7または8</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://glassfish.dev.java.net/">GlassFishサーバー</a></td>
+                        <td class="tbltd1">Open Source Edition 3.xまたは4x</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo.zip">cdiDemo.zip</a></td>
+                        <td class="tbltd1">n/a</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="notes"><strong>注意: </strong></p>
+        </div>
+
+        <ul>
+            <li>NetBeans IDEのJavaバンドル版には、Java EE準拠のコンテナであるGlassFish Server Open Source Editionも含まれています。</li>
+
+            <li>このチュートリアルのサンプル・ソリューション・プロジェクトをダウンロードできます: <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo2.zip">cdiDemo2.zip</a></li>
+        </ul>
+
+
+        <br>
+        <h2 id="inject">注入(Injection): CDIの「I」</h2>
+
+        <p>CDIは、コンテキストと依存性を注入するためのAPIです。SeamおよびSpringでは多くの場合、Beanに名前を付けて、その名前で注入ポイントにバインディングすることで依存性が機能します。<a href="cdi-intro.html">コンテキストと依存性の注入およびJSF 2.0の開始</a>を終えてからこのチュートリアルを進めている場合、これまでは<code>@Named</code>注釈を使用してBeanの名前を定義したときに、JSFページから名前で管理対象Beanを参照するのみでした。<code>@Named</code>注釈の主な役割は、アプリケーション内のEL文を解決できるようにBeanを定義することです。この解決は、通常はJSF ELリゾルバによって行われます。注入は名前を使用して実行することもできますが、この方法はCDIの注入を機能させる本来の方法ではありません。CDIには、注入ポイントおよび注入ポイントに注入するBeanを表すための様々な方法が提供されています。<em></em></p>
+
+        <p>次の例では、<code>ItemDao</code>インタフェースを実装するクラスから項目の一覧を取得する<code>ItemProcessor</code>を作成します。別のクラスにBeanを<em>注入</em>できるようにする方法を示すため、CDIの<code>@Inject</code>注釈を利用します。次の図は、この課題で構築するシナリオを図解しています。</p>
+
+        <div class="indent">
+            <img alt="この課題で作成されるオブジェクトを示すCDI図" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-inject/cdi-diagram-inject.png" title="アプリケーションの疎結合クラスへのCDI注入の使用">
+        </div>
+
+        <p class="tips">DAOはデータ・アクセス・オブジェクト(<em>Data Access Object</em>)を表します。</p>
+
+        <ol>
+            <li>まず、<code>cdiDemo.zip</code>ファイル(上記の<a href="#requiredSoftware">必要なリソースの一覧表</a>を参照)からサンプルのスタート・プロジェクトを抽出します。「ファイル」>「プロジェクトを開く」([Ctrl]-[Shift]-[O]、Macの場合は[⌘]-[Shift]-[O])を選択してから、コンピュータ上のこのプロジェクトの場所を選択することで、IDEでプロジェクトを開きます。</li>
+            <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「プロパティ」を選択します。</li>
+            <li>「実行」カテゴリを選択し、「サーバー」ドロップダウン・リストでGlassFishインスタンスが選択されていることを確認します。 </li>
+            
+            <li>新しい<code>Item</code>クラスを作成して、<code>exercise2</code>という名前の新しいパッケージに格納します。「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png">)ボタンをクリックするか、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押してファイル・ウィザードを開きます。</li>
+
+            <li>「Java」カテゴリから「Javaクラス」を選択します。「次」をクリックします。</li>
+
+            <li>クラス名として「<strong>Item</strong>」、パッケージとして「<strong>exercise2</strong>」と入力します。(ウィザードの完了時に新しいパッケージが作成されます。)<br> <img alt="Javaクラス・ウィザード" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/java-class-wizard.png" title="ファイル・ウィザードを使用した新しいJavaクラスの作成"></li>
+
+            <li>「終了」をクリックします。新しいクラスおよびパッケージが生成され、エディタで<code>Item</code>クラスが開きます。</li>
+
+            <li>POJOである<code>Item</code>に<code>value</code>および<code>limit</code>プロパティを作成して、<code>toString()</code>メソッドを実装します。次の内容をクラスに追加します。
+
+                <pre class="examplecode">
+public class Item {
+
+    <strong>private int value;
+    private int limit;
+
+    @Override
+    public String toString() {
+        return super.toString() + String.format(&quot; [Value=%d, Limit=%d]&quot;, value,limit);
+    }</strong>
+}</pre></li>
+
+            <li>取得メソッドおよび設定メソッドをクラスに追加します。これを行うには、カーソルがクラス定義の間(クラスの中括弧の間)にあることを確認してからエディタ内で右クリックし、「コードを挿入」を選択します([Alt]-[Insert]、Macの場合は[Ctrl]-[I])。取得メソッドおよび設定メソッドを選択します。<br> <img alt="「コードを挿入」ポップアップ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/insert-code.png" title="「コードを挿入」ポップアップを使用した取得メソッドおよび設定メソッドの作成"></li>
+
+            <li>「<code>Item</code>」チェックボックスを選択します(これで、クラスに含まれているプロパティがすべて選択されます)。<br> <img alt="「取得メソッドおよび設定メソッドの生成」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/generate-getters-setters.png" title="クラスに含まれているすべてのプロパティを選択するためのクラスのチェックボックスの選択"></li>
+
+            <li>「生成」をクリックします。クラスの取得メソッドと設定メソッドが生成されます。
+
+                <pre class="examplecode">
+public class Item {
+
+    private int value;
+    private int limit;
+
+    <strong>public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }</strong>
+
+    @Override
+    public String toString() {
+        return super.toString() + String.format(&quot; [Value=%d, Limit=%d]&quot;, value, limit);
+    }
+}</pre></li>
+
+            <li><code>value</code>と<code>limit</code>の両方の引数を取るコンストラクタを作成します。これにもIDEの支援機能を使用できます。クラス定義内で[Ctrl]-[Space]を押して、「<code>Item(int value, int limit) - 生成</code>」オプションを選択します。<br><img alt="エディタに表示されたコード補完機能の一覧" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/generate-constructor.png" title="[Ctrl]-[Space]の押下によるエディタのコード補完機能の利用"><br>次のコンストラクタがクラスに追加されます。
+
+                <pre class="examplecode">
+public class Item {
+
+    <strong>public Item(int value, int limit) {
+        this.value = value;
+        this.limit = limit;
+    }</strong>
+
+    private int value;
+    private int limit;
+
+    ...</pre></li>
+
+            <li><code>ItemDao</code>インタフェースを作成して、<code>Item</code>オブジェクトの一覧を取得する方法を定義します。このテスト・アプリケーションでは複数の実装を使用することを予定しているため、インタフェースへのコードを作成します。
+
+                <p>
+                「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png">)ボタンをクリックするか、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押してファイル・ウィザードを開きます。</p></li>
+
+            <li>「Java」カテゴリから「Javaインタフェース」を選択します。「次」をクリックします。</li>
+
+            <li>クラス名として「<strong>ItemDao</strong>」、パッケージとして「<strong>exercise2</strong>」と入力します。</li>
+
+            <li>「終了」をクリックします。新しいインタフェースが生成され、エディタで開かれます。</li>
+
+            <li><code>Item</code>オブジェクトの<code>List</code>を返す<code>fetchItems()</code>という名前のメソッドを追加します。
+
+                <pre class="examplecode">
+public interface ItemDao {
+
+    <strong>List&lt;Item&gt; fetchItems();</strong>
+
+}</pre>
+                (エディタのヒントを使用して<code>java.util.List</code>のインポート文を追加します。)</li>
+
+            <li><code>ItemProcessor</code>クラスを作成します。これはメイン・クラスであり、ここにBeanを注入したり、ここからプロセスを実行したりします。今のところはDAOから始めて、プロセッサBeanにこれを注入する方法を見てみます。
+
+                <p>
+                「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png">)ボタンをクリックするか、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押してファイル・ウィザードを開きます。</p></li>
+
+            <li>「Java」カテゴリから「Javaクラス」を選択します。「次」をクリックします。</li>
+
+            <li>クラス名として「<strong>ItemProcessor</strong>」、パッケージとして「<strong>exercise2</strong>」と入力します。「終了」をクリックします。
+                <p>新しいクラスが生成され、エディタで開かれます。</p></li>
+
+            <li>次のようにクラスを変更します。
+
+<pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    private ItemDao itemDao;
+
+    public void execute() {
+        List&lt;Item&gt; items = itemDao.fetchItems();
+        for (Item item : items) {
+            System.out.println(&quot;Found item &quot; + item);
+        }
+    }
+}</pre></li>
+
+            <li>インポートを修正します。エディタを右クリックして「インポートを修正」を選択するか、[Ctrl]-[Shift]-[I] (Macの場合は[⌘]-[Shift]-[I])を押します。<br> <img alt="「インポートを修正」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/fix-imports.png" title="エディタで右クリックして「インポートを修正」を選択し、クラスにインポート文を追加する"></li>
+
+            <li>「OK」をクリックします。次のクラスのインポート文が必要になります。
+
+                <ul>
+                    <li><code>java.util.List</code></li>
+                    <li><code>javax.inject.Named</code></li>
+                    <li><code>javax.enterprise.context.RequestScoped</code></li>
+                </ul></li>
+
+            <li>項目の一覧を作成して、決まった項目の一覧を返すのみの単純なDAOから始めます。<br><br>「プロジェクト」ウィンドウで「<code>exercise2</code>」パッケージ・ノードを右クリックし、「新規」>「Javaクラス」を選択します。新規Javaクラス・ウィザードで、クラス名を「<code>DefaultItemDao</code>」にします。「終了」をクリックします。 <img alt="Javaクラス・ウィザード" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/java-class-wizard2.png" title="Javaクラス・ウィザードを使用した新しいJavaクラスの作成"></li>
+
+            <li>エディタで、<code>DefaultItemDao</code>に<code>ItemDao</code>インタフェースを実装させて、<code>fetchItems()</code>を実装します。
+
+<pre class="examplecode">
+public class DefaultItemDao <strong>implements ItemDao</strong> {
+
+    <strong>@Override
+    public List&lt;Item&gt; fetchItems() {
+        List&lt;Item&gt; results = new ArrayList&lt;Item&gt;();
+        results.add(new Item(34, 7));
+        results.add(new Item(4, 37));
+        results.add(new Item(24, 19));
+        results.add(new Item(89, 32));
+        return results;
+    }</strong>
+}</pre>
+                [Ctrl]-[Shift]-[I] (Macの場合は[⌘]-[Shift]-[I])を押して、<code>java.util.List</code>および<code>java.util.ArrayList</code>のインポート文を追加します。</li>
+
+            <li><code>ItemProcessor</code>クラスに切り替えます([Ctrl]-[Tab]を押します)。<code>ItemProcessor</code>に<code>DefaultItemDao</code>を注入するために、<code>ItemDao</code>フィールドに<code>javax.inject.Inject</code>注釈を追加して、このフィールドが注入ポイントであることを示します。
+
+<pre class="examplecode">
+<strong>import javax.inject.Inject;</strong>
+...
+
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    <strong>@Inject</strong>
+    private ItemDao itemDao;
+
+    ...
+}</pre>
+                <span class="tips">エディタのコード補完サポートを利用して、クラスに<code>@Inject</code>注釈およびインポート文を追加します。たとえば、「<code>@Inj</code>」と入力してから[Ctrl]-[Space]を押します。</span></li>
+
+            <li>最後に、<code>ItemProcessor</code>で<code>execute()</code>メソッドをコールするためのなんらかの方法が必要です。これはSE環境なら実行できますが、今のところはJSFページ内にとどめておきます。<code>execute()</code>メソッドをコールするボタンを含む<code>process.xhtml</code>という名前の新しいページを作成します。<br><br>「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png">)ボタンをクリックするか、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押してファイル・ウィザードを開きます。</li>
+
+            <li>「JavaServer Faces」カテゴリを選択し、「JSFページ」を選択します。「次」をクリックします。</li>
+
+            <li>ファイル名として「<strong>process</strong>」と入力してから「終了」をクリックします。<br> <img alt="JSFページ・ウィザード" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/new-jsf-page.png" title="JSFファイル・ウィザードを使用した新しい「Facelets」ページの作成"></li>
+
+            <li>新しい<code>process.xhtml</code>ファイルで、<code>ItemProcessor.execute()</code>メソッドに接続されたボタンを追加します。ELを使用する場合、管理対象Beanのデフォルト名は、クラス名の最初の文字を小文字にした名前(つまり<code>itemProcessor</code>)になります。
+
+<pre class="examplecode">
+&lt;h:body&gt;
+    <strong>&lt;h:form&gt;
+        &lt;h:commandButton action=&quot;#{itemProcessor.execute}&quot; value=&quot;Execute&quot;/&gt;
+    &lt;/h:form&gt;</strong>
+&lt;/h:body&gt;</pre></li>
+
+            <li>プロジェクトを実行する前に、<code>process.xhtml</code>ファイルをプロジェクトのWebデプロイメント・ディスクリプタの新しい開始ページに設定します。<br><br> IDEの「ファイルに移動」ダイアログを使用すると、すばやく<code>web.xml</code>を開けます。IDEのメイン・メニューで「ナビゲート」>「ファイルに移動」([Alt]-[Shift]-[O]、Macの場合は[Ctrl]-[Shift]-[O])を選択してから「<code>web</code>」と入力します。<br> <img alt="「ファイルに移動」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/go-to-file.png" title="「ファイルに移動」ダイアログを使用した、プロジェクト・ファイルの速やかな検索"></li>
+
+            <li>「OK」をクリックします。<code>web.xml</code>ファイルの「XML」ビューで、次のように変更します。
+
+                <pre class="examplecode">
+&lt;welcome-file-list&gt;
+    &lt;welcome-file&gt;faces/<strong>process.xhtml</strong>&lt;/welcome-file&gt;
+&lt;/welcome-file-list&gt;</pre></li>
+
+            <li>IDEのメイン・ツールバーにある「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">)ボタンをクリックします。プロジェクトがコンパイルされてGlassFishにデプロイされ、<code>process.xhtml</code>ファイルがブラウザで開きます。</li>
+
+            <li>ページに表示されている「<code>Execute</code>」ボタンをクリックします。IDEに戻ってGlassFishのサーバー・ログを調べます。サーバー・ログは、「出力」ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])の「GlassFish Server」タブの下に表示されます。ボタンをクリックすると、デフォルトDAO実装による項目がログに一覧表示されます。<br><img alt="「出力」ウィンドウのGlassFishサーバー・ログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-inject/output-window.png" title="IDEの「出力」ウィンドウでのサーバー・ログの確認"><br><span class="tips">ログをクリアするには、「出力」ウィンドウで右クリックして「クリア」を選択([Ctrl]-[L]、Macの場合は[⌘]-[L])します。上記のイメージでは、「<code>Execute</code>」ボタンをクリックする直前にログをクリアしています。</span></li>
+        </ol>
+
+        <p><code>ItemDao</code>インタフェースを実装するクラスを作成し、モジュールの管理対象Beanは、アプリケーションがデプロイされたときに(モジュールの<code>beans.xml</code>ファイルのために) CDI実装によって処理されました。ここで使用した<code>@Inject</code>注釈は、そのフィールドに管理対象Beanを注入することを指定します(注入可能Beanについて把握していることは、このBeanが<code>ItemDao</code>またはこのインタフェースのサブタイプを実装する必要があることのみです)。この場合、<code>DefaultItemDao</code>クラスは条件を完全に満たしています。</p>
+
+        <p>注入された可能性のある<code>ItemDao</code>の実装が複数ある場合はどうなるでしょうか。CDIはどの実装を選択する必要があるかを判断できないため、デプロイ時エラーが発生します。これを解決するには、CDI修飾子を使用する必要があります。修飾子については次の項で詳しく説明します。</p>
+
+        <br>
+        <h2 id="qualifier">修飾子の操作</h2>
+
+        <p>CDI修飾子は、クラス・レベルで適用してクラスがどの種類のBeanなのかを示したり、(特に)フィールド・レベルで適用してその場所でどの種類のBeanが注入される必要があるかを示したりできる注釈です。</p>
+
+        <p>ここでビルドしているアプリケーションに修飾子が必要なことを示すために、やはり<code>ItemDao</code>インタフェースを実装するもう1つのDAOクラスをアプリケーションに追加してみます。次の図は、この課題で構築しているシナリオを図解しています。CDIは、注入ポイントで使用する必要があるBean実装を判断できる必要があります。2つの<code>ItemDao</code>の実装があるため、<code>Demo</code>という名前の修飾子を作成することでこれを解決できます。その後、使用するBeanと<code>ItemProcessor</code>の注入ポイントの両方に、<code>@Demo</code>注釈で「タグ」を付けます。</p>
+
+        <div class="indent">
+            <img alt="このチュートリアルで作成されるオブジェクトを示すCDI図" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-inject/cdi-diagram-qualify.png" title="アプリケーションの疎結合クラスへのCDI注入および修飾子の使用">
+        </div>
+
+        <p>次の手順を実行します。</p>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウで「<code>exercise2</code>」パッケージを右クリックし、「新規」>「Javaクラス」を選択します。</li>
+
+            <li>新規Javaクラス・ウィザードで、新しいクラス名を「<strong>AnotherItemDao</strong>」にしてから「終了」をクリックします。新しいクラスが生成され、エディタで開かれます。</li>
+
+            <li>クラスを次のように変更して、<code>ItemDao</code>インタフェースを実装し、インタフェースの<code>fetchItems()</code>メソッドを定義します。
+
+<pre class="examplecode">
+public class AnotherItemDao <strong>implements ItemDao</strong> {
+
+    <strong>@Override
+    public List&lt;Item&gt; fetchItems() {
+        List&lt;Item&gt; results = new ArrayList&lt;Item&gt;();
+        results.add(new Item(99, 9));
+        return results;
+    }</strong>
+}</pre>
+                <p><code>java.util.List</code>および<code>java.util.ArrayList</code>のインポート文を必ず追加するようにしてください。これを行うには、エディタを右クリックして「インポートを修正」を選択するか、[Ctrl]-[Shift]-[I] (Macの場合は[⌘]-[Shift]-[I])を押します。</p>
+
+                <p>
+                これで<code>ItemDao</code>を実装するクラスが2つになったため、どのBeanを注入する必要があるかがわからなくなりました。</p></li>
+
+            <li>「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">)ボタンをクリックして、プロジェクトを実行します。今度はプロジェクトのデプロイに失敗します。
+                <p class="tips">「保存時にデプロイ」がデフォルトで有効になっていて、IDEがプロジェクトを自動的にデプロイするため、ファイルを保存するのみで済む可能性があります。</p></li>
+
+            <li>出力ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])でサーバー・ログを調べます。次のようなエラー・メッセージが表示されています。
+
+                <pre class="examplecode">Caused by: org.jboss.weld.DeploymentException: Injection point has ambiguous dependencies.
+Injection point: field exercise2.ItemProcessor.itemDao;
+Qualifiers: [@javax.enterprise.inject.Default()];
+Possible dependencies: [exercise2.DefaultItemDao, exercise2.AnotherItemDao]</pre>
+
+                <p class="tips">「出力」ウィンドウでテキストを複数行に折り返すには、右クリックして「テキストを折り返す」を選択します。これにより、水平方向にスクロールさせる必要がなくなります。</p>
+
+                <p>
+                CDIの実装であるWeldによって示されたあいまいな依存性のエラーは、指定された注入ポイントに使用するBeanを決定できないということを意味しています。WeldのCDI注入に関して起こる可能性のあるエラーは、ほとんどがデプロイメント時に報告され、パッシベーション(非活性化)可能なBeanに<code>Serializable</code>実装が欠落していないかどうかのエラーについても報告されます。</p>
+
+                <p>
+                1つのクラス型のみに一致させることによって、<code>ItemProcessor</code>の<code>itemDao</code>フィールドを、<code>AnotherItemDao</code>実装型と<code>DefaultItemDao</code>実装型のうちの一致する方に指定できました。しかし、このようにするとインタフェースへのコードを作成するメリットがなくなり、フィールドの型を変えずに実装を変更することが難しくなります。よりよい解決策として、かわりにCDI修飾子に目を向けてみます。</p>
+
+                <p>
+                CDIが注入ポイントを調べて、注入する適切なBeanを探す際、クラスの型のみでなくすべての修飾子も考慮されます。知らないうちに、<code>@Any</code>というデフォルトの修飾子をすでに1つ使用しました。ここで使用している<code>DefaultItemDao</code>実装の他に、<code>ItemProcessor</code>の注入ポイントにも適用できる<code>@Demo</code>修飾子を作成しましょう。</p>
+
+                <p>
+                IDEには、CDI修飾子を生成できるウィザードがあります。</p></li>
+
+            <li>「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png">)ボタンをクリックするか、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押してファイル・ウィザードを開きます。</li>
+
+            <li>「コンテキストと依存性の注入」カテゴリから「修飾子タイプ」を選択します。「次」をクリックします。</li>
+
+            <li>クラス名として「<strong>Demo</strong>」、パッケージとして「<strong>exercise2</strong>」と入力します。</li>
+
+            <li>「終了」をクリックします。新しい<code>Demo</code>修飾子がエディタで開きます。
+
+<pre class="examplecode">
+package exercise2;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
+
+/**
+*
+* @author nbuser
+*/
+@Qualifier
+@Retention(RUNTIME)
+@Target({METHOD, FIELD, PARAMETER, TYPE})
+public @interface Demo {
+}</pre>
+
+                <p>次に、この修飾子をクラス・レベルでデフォルトのDAO実装に追加します。</p>
+                </li>
+                <li>エディタで<code>DefaultItemDao</code>に切り替え([Ctrl]-[Tab]を押し)、クラス定義の上に「<code>@Demo</code>」と入力します。
+
+                <pre class="examplecode">
+<strong>@Demo</strong>
+public class DefaultItemDao implements ItemDao {
+
+@Override
+public List&lt;Item&gt; fetchItems() {
+    List&lt;Item&gt; results = new ArrayList&lt;Item&gt;();
+    results.add(new Item(34, 7));
+    results.add(new Item(4, 37));
+    results.add(new Item(24, 19));
+    results.add(new Item(89, 32));
+    return results;
+}
+}</pre>
+
+                <span class="tips">「<code>@</code>」を入力した後で[Ctrl]-[Space]を押して、コード補完の候補を呼び出します。エディタは<code>Demo</code>修飾子を認識して、コード補完のオプションとして<code>@Demo</code>を表示します。</span></li>
+
+            <li>「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">)ボタンをクリックして、プロジェクトを実行します。プロジェクトがエラーなくビルドおよびデプロイされます。
+                <p class="notes"><strong>注意:</strong>この変更では、変更を増分的にデプロイするのではなく、プロジェクトを明示的に実行してアプリケーションを再デプロイする必要がある場合があります。</p></li>
+
+            <li>ブラウザで「<code>Execute</code>」ボタンをクリックしてからIDEに戻り、「出力」ウィンドウでサーバー・ログを調べます。次のような出力が表示されます。
+
+                <pre class="examplecode">INFO: Found item exercise2.Item@1ef62a93 [Value=99, Limit=9]</pre>
+
+                <p>出力には、<code>AnotherItemDao</code>クラスの項目が一覧表示されます。<code>ItemProcessor</code>の注入ポイントではなく、<code>DefaultItemDao</code>実装に注釈を付けたことを思い出してください。<code>@Demo</code>修飾子をデフォルトのDAO実装に追加することで、型と修飾子の両方で一致するようになるため、他の実装が注入ポイントに、より一致するようになりました。<code>DefaultItemDao</code>にある<code>Demo</code>修飾子は注入ポイントにはないため、あまり適切ではありません。</p>
+
+            <p>次に、<code>ItemProcessor</code>の注入ポイントに<code>@Demo</code>注釈を追加します。</p></li>
+            <li>エディタで<code>ItemProcessor</code>に切り替え([Ctrl]-[Tab]を押し)、次のように変更します。
+
+                <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+@Inject <strong>@Demo</strong>
+private ItemDao itemDao;
+
+public void execute() {
+    List&lt;Item&gt; items = itemDao.fetchItems();
+    for (Item item : items) {
+        System.out.println("Found item " + item);
+    }
+}
+}</pre></li>
+
+            <li>ブラウザで「<code>Execute</code>」ボタンをクリックしてからIDEに戻り、「出力」ウィンドウでサーバー・ログを調べます。デフォルトの実装(<code>DefaultItemDao</code>)による出力が再度表示されます。
+
+                <pre class="examplecode">
+INFO: Found item exercise2.Item@7b3640f1 [Value=34, Limit=7]
+INFO: Found item exercise2.Item@26e1cd69 [Value=4, Limit=37]
+INFO: Found item exercise2.Item@3274bc70 [Value=24, Limit=19]
+INFO: Found item exercise2.Item@dff76f1 [Value=89, Limit=32]</pre>
+
+                <p>これは、現時点では型と修飾子の<em>両方</em>をベースにしてマッチングを行っており、正しい型と<code>@Demo</code>注釈の両方が当てはまるBeanは<code>DefaultItemDao</code>のみであるためです。</p></li>
+        </ol>
+
+
+        <br>
+        <h2 id="alternative">代替の注入方法</h2>
+
+        <p>注入されるクラスの注入ポイントを定義するには複数の方法があります。これまでは、注入されるオブジェクトを参照するフィールドに注釈を付けました。フィールド注入のために取得メソッドや設定メソッドを提供する必要はありません。finalフィールドを持つ不変の管理対象Beanを作成する場合、<code>@Inject</code>注釈でコンストラクタに注釈を付けることで、コンストラクタで注入を使用できます。その後で、コンストラクタ・パラメータに任意の注釈を適用して、注入するBeanを修飾できます。(注入対象のBeanを修飾できるように、各パラメータには型があります)。Beanは注入ポイントが定義されたコンストラクタを1つしか持てませんが、複数のコンストラクタを実装することは可能です。</p>
+
+        <div class="indent">
+            <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    private final ItemDao itemDao;
+
+    @Inject
+    public ItemProcessor(@Demo ItemDao itemDao) {
+        this.itemDao = itemDao;
+    }
+}</pre>
+        </div>
+
+        <p>注入されるBeanに渡すことができる初期化メソッドをコールすることもできます。</p>
+
+        <div class="indent">
+            <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    private ItemDao itemDao;
+
+    @Inject
+    public void setItemDao(@Demo ItemDao itemDao) {
+        this.itemDao = itemDao;
+    }
+}</pre>
+        </div>
+
+        <p>上記の場合では初期化用に設定メソッドを使用しましたが、任意のメソッドを作成して、メソッド・コールの中で任意の数のBeanの初期化用に使用できます。1つのBeanに複数の初期化メソッドを持たせることもできます。</p>
+
+        <div class="indent">
+            <pre class="examplecode">
+@Inject
+public void initBeans(@Demo ItemDao itemDao, @SomeQualifier SomeType someBean) {
+    this.itemDao = itemDao;
+    this.bean = someBean;
+}</pre>
+        </div>
+
+        <p>注入ポイントがどのように定義されているかにかかわらず、Beanのマッチングにも同じルールが適用されます。CDIは、型と修飾子をベースに最も適切に一致するものを探そうとします。そして注入ポイントとして一致するBeanが複数ある場合や、一致するBeanがない場合は、デプロイメント時に失敗します。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20with%20Injection%20and%20Qualifiers%20in%20CDI">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">関連項目</h2>
+
+        <p>このコンテキストと依存性の注入についてのシリーズの次回に続きます:</p>
+
+        <ul>
+            <li><a href="cdi-validate.html">@Alternative Beanおよびライフサイクル注釈の適用</a></li>
+        </ul>
+
+        <p>CDIおよびJava EEの詳細は、次のリソースを参照してください。</p>
+
+        <ul>
+            <li><a href="cdi-intro.html">コンテキストと依存性の注入およびJSF 2.0の開始</a></li>
+            <li><a href="javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+            <li><a href="http://blogs.oracle.com/enterprisetechtips/entry/using_cdi_and_dependency_injection">エンタープライズ技術ヒント: JSF 2.0アプリケーションでのJavaのCDIおよび依存性の注入の使用</a></li>
+            <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/gjbnr.html">Java EE 6チュートリアル、パートV: Java EEプラットフォームのコンテキストと依存性の注入</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=299">JSR 299: コンテキストと依存性の注入の仕様</a></li>
+        </ul>
+
+    </body>
+</html>

@@ -1,0 +1,769 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Criando uma GUI Swing no NetBeans IDE: Tutorial</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+      <meta content="?and? 0.5.5" name="GENERATOR">
+      <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="This tutorial guides you through the process of creating the graphical user interface (GUI) for an application using the NetBeans IDE GUI Builder." >      
+          
+   </head>
+   <body>      
+    
+        <!-- Begin Content Area -->
+      <a name="top"></a>
+      <h1>Projetando uma GUI Swing no NetBeans IDE</h1>
+     
+      <img alt="O conteúdo desta página se aplica ao NetBeans IDE 6.9 e mais recente" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 6.9 e mais recente">
+	  <p>Este tutorial conduzirá você pelo processo de criação da interface gráfica do usuário (GUI) para uma aplicação nomeada ContactEditor, utilizando GUI Builder do NetBeans IDE. No processo, será feito o layout de uma GUI inicial que permite que você exiba e edite informações de contato dos indivíduos incluídos em um banco de dados de funcionários. </p>
+      
+      <p>Neste tutorial, você aprenderá a: usar a interface do GUI Builder, criar um Contêiner de GUI, adicionar, redimensionar e alinhar componentes, ajustar o ancoramento de componentes, definir o comportamento de redimensionamento automático de componentes, editar propriedades de componentes.</p>
+      
+         <p> Este tutorial demora aproximadamente 30 minutos para ser concluído. </p>
+  
+	  <h3>Conteúdo</h3>
+
+
+        <ul class="toc">
+            <li><a href="#getting_started">Conceitos Básicos</a>
+			<ul>
+			<li><a href="#project">Criando um Projeto</a></li>
+			<li><a href="#container">Criando um Contêiner JFrame</a></li>
+			</ul></li>
+            <li><a href="#getting_familiar">Familiarizando-se com o GUI Builder</a></li>
+			<li><a href="#key_concepts">Conceitos-Chave</a>
+			<ul>
+			<li><a href="#design">Design Livre</a></li>
+			<li><a href="#snapping">Posicionamento Automático do Componente (Encaixe)</a></li>
+			<li><a href="#feedback">Feedback Visual</a></li>
+			</ul></li>
+            <li><a href="#first_things">Primeiro o Principal</a>
+			<ul>
+			<li><a href="#adding_components">Adicionando Componentes: Conceitos Básicos</a></li>
+			<li><a href="#individual">Adicionando Componentes Individuais ao Form</a></li>
+			<li><a href="#multiple">Adicionando Vários Componentes ao Form</a></li>
+			<li><a href="#inserting">Inserindo Componentes</a></li>
+			</ul></li>
+               
+            <li><a href="#moving_forward">Avançando</a>
+			<ul>
+			<li><a href="#aligning_components">Alinhamento de Componentes</a></li>
+			<li><a href="#baseline_alignment">Alinhamento da Linha de Base</a></li>
+			</ul></li>
+			<li><a href="#reviewing">Revisando o Que Aprendemos</a>
+			<ul>
+			<li><a href="#adding_aligning_anchoring">Adicionando, Alinhando e Ancorando</a></li>
+			<li><a href="#component_sizing">Dimensionamento de Componentes</a></li>
+			<li><a href="#indentation">Recuo</a></li>
+			</ul></li>
+            <li><a href="#adjusting_form">Fazendo os Ajustes Finais</a></li>
+                
+            <li><a href="#previewing_form">Visualizando a GUI</a></li>
+			<li><a href="#deploying">Implantando Aplicações GUI</a></li>
+            <li><a href="#seealso">Consulte Também</a></li>
+        </ul>
+
+<p><b>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software ou Recurso</th>
+                <th class="tblheader" scope="col">Versão Necessária</th>
+            </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">versão 6.9 e mais recente </td>
+                </tr>
+                <tr>
+                  <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">JDK (Java Development Kit)</a></td>
+                  <td class="tbltd1">versão 6, 7 ou 8</td>
+                </tr>
+               
+        </tbody>
+    </table>
+      <a name="getting_started"></a> 
+      <h2>Introdução</h2>
+      <p>O GUI Builder do IDE torna possível construir GUIs de aparência profissional sem um conhecimento profundo dos gerenciadores de layout. Você pode criar forms, simplesmente colocando componentes onde desejar. </p>
+      <p>Para obter descrições sobre o feedback visual do GUI Builder, é possível utilizar a <a href="quickstart-gui-legend.html" target="_blank">Legenda de Feedback Visual do GUI Builder</a>.</p>
+      <blockquote>
+	   <a name="project"></a> 
+         <h3 class="tutorial">Criando um Projeto </h3>
+         <p>Como todo o desenvolvimento em Java no IDE ocorre dentro dos projetos, precisamos primeiro criar um projeto <tt>ContactEditor</tt> para armazenar os códigos-fonte e outros arquivos do projeto. Um projeto do IDE é um grupo de arquivos de códigos-fonte Java e metadados associados que inclui arquivos de propriedades específicos do projeto, um script de construção Ant que controla as definições de construção e execução e um arquivo <tt>project.xml</tt>, que mapeia destinos de Ant para comandos do IDE. Embora as aplicações Java geralmente consistam em vários projetos do IDE, para o objetivo deste tutorial, construiremos uma aplicação simples, inteiramente armazenada em um único projeto. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para criar um novo projeto de aplicação <tt>ContactEditor</tt>: </p>
+                  <ol>
+                     <li>Escolha Arquivo > Novo Projeto. Se preferir, é possível clicar no ícone Novo Projeto na barra de ferramentas do IDE. </li>
+                     <li>No painel Categorias, selecione o nó Java e no painel Projetos, escolha Aplicação Java. Clique em Próximo.</li>
+                     <li> Insira <tt>ContactEditor</tt> no campo Nome do Projeto e especifique o local do projeto.</li>
+                    <li>Deixe desmarcada a caixa de seleção Utilizar Pasta Dedicada para Armazenar Bibliotecas.               </li>
+                     <li>Verifique se a caixa de seleção Definir como Projeto Principal está marcada e desmarque o campo Criar Classe Principal. </li>
+                     <li>Clique em Finalizar. 
+                        <p>
+                           O IDE criará a pasta <tt>ContactEditor</tt> no sistema no local designado. Essa pasta contém todos os arquivos associados do projeto, como o script Ant, pastas para armazenamento de códigos-fontes e testes e uma pasta para os metadados específicos do projeto. Para exibir a estrutura do projeto, utilize a janela Arquivos do IDE. </p>
+                     </li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <a name="container"></a> 
+         <h3 class="tutorial">Criando um Contêiner JFrame</h3>
+         <p>Após criar a nova aplicação, você pode ter percebido que a pasta Pacotes de Códigos-fonte na janela Projetos contém um nó <tt>&lt;pacote default></tt> vazio. Para prosseguir com a construção da nossa interface, precisamos criar um contêiner Java no qual colocaremos os outros componentes requeridos da GUI. Nessa etapa, criaremos um contêiner utilizando o componente <tt>JFrame</tt> e o colocaremos em um novo pacote.</p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar um contêiner <tt>JFrame</tt>: </p>
+                  <ol>
+                     <li>na janela Projetos, clique com o botão direito do mouse no nó <tt>ContactEditor</tt> e selecione Novo > Form JFrame. <br> Outra opção é localizar um form JFrame escolhendo Novo > Outro > Forms da GUI Swing > Form JFrame. </li>
+                     <li>Insira <tt>ContactEditorUI</tt> como Nome da Classe. </li>
+                     <li>Insira <tt>my.contacteditor</tt> como o pacote.</li>
+                     <li>Clique em Finalizar. 
+                        <p> O IDE criará o form <tt>ContactEditorUI</tt> e a classe <tt>ContactEditorUI</tt> na aplicação <tt>ContactEditorUI.java</tt> e abrirá o form <tt>ContactEditorUI</tt> no GUI Builder. Observe que o pacote <tt>my.contacteditor</tt> substitui o pacote default. 
+                        </p>
+                     </li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+      </blockquote>
+      <p class="align-center"><a href="#top">início</a></p>
+      <a name="getting_familiar"></a> 
+      <h2>Familiarizando-se com o GUI Builder</h2>
+      <p>Agora que já configuramos o novo projeto para a aplicação, vamos nos familiarizar com a interface do GUI Builder. </p>
+      <p class="notes"><b>Observação:</b> Para explorar a interface do GUI Builder com uma demonstração interativa, assista o screencast <a href="http://bits.netbeans.org/media/quickstart-gui-explore.swf" name="explore">Explorando o GUI Builder (.swf)</a>.</p>
+     
+	  <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/01_gb_ui.png" rel="lytebox" title="A Interface GUI Builder do IDE"> <img alt="A Interface GUI Builder do IDE" border="1" src="../../../images_www/articles/80/java/quickstart-gui/01_gb_ui-small.png"></a></p>
+      
+      <p>Quando adicionamos o contêiner JFrame, o IDE abriu o form <tt>ContactEditorUI</tt> recém-criado em uma guia do Editor com uma barra de ferramentas que contém vários botões, como mostra a ilustração anterior. O form ContactEditor aberto na view Design do GUI Builder e três janelas adicionais apareceram automaticamente ao longo das margens do IDE, permitindo navegar, organizar e editar forms GUI à medida que você os constrói. 
+      </p>
+      <p>As várias janelas do GUI Builder incluem: </p>
+      <ul>
+         <li><b>Área de Design. </b>A janela principal do GUI Builder para criar e editar forms de GUI do Java. O botão Código-fonte da barra de ferramenta permite exibir o código-fonte de uma classe; o botão Design permite a exibição gráfica dos componentes da GUI; o botão Histórico permite o acesso ao histórico local de alterações do arquivo. Os botões adicionais da barra de ferramentas oferecem acesso conveniente aos comandos comuns, como escolher entre os modos Seleção e Conexão, alinhamento de componentes, definição do comportamento de dimensionamento automático e exibição de forms. </li>
+         <li><b>Navegador. </b>Fornece uma representação de todos os componentes, ambos visual e não-visuais na sua aplicação, como uma hierarquia de árvore. O Navegador também oferece apresentação visual sobre qual componente da árvore está sendo editado no GUI Builder, bem como permite organizar componentes nos painéis disponíveis. </li>
+         <li><b>Paleta. </b>Uma lista customizável de componentes disponíveis contendo guias para jfc/swing e JavaBeans componentes awt, bem como gerentes de layout. Além disso, é possível criar, remover e reorganizar as categorias exibidas na Paleta utilizando o personalizador. </li>
+         <li><b>Janela Propriedades. </b>Exibe as propriedades do componente atualmente selecionado no navegador GUI Builder, janela janela, projetos, ou arquivos janela.         </li>
+      </ul>
+      <p>Se você clicar no botão Código-fonte, o IDE exibirá o código-fonte Java da aplicação no Editor com seções de código geradas automaticamente pelo GUI Builder e indicadas por áreas cinzas (elas ficam azuis quando selecionadas), chamadas Blocos Protegidos. Blocos Protegidos são áreas protegidas que não são editáveis na view de Código-fonte. Só é possível editar o código exibido nas áreas brancas do Editor na view de Código-fonte. Se for necessário fazer alterações no código em um Bloco Protegido, clique no botão Design para que o Editor do IDE volte ao GUI Builder, onde você poderá fazer os ajustes necessários ao form. Ao salvar as alterações, o IDE atualizará os códigos-fonte do arquivo.</p> 
+      <p><b>Observação:</b> para os desenvolvedores avançados, está disponível o Gerenciador de Paleta, que ativa adicionar componentes personalizados de JARs, bibliotecas ou projetos à Paleta. Para adicionar componentes personalizados por meio do Gerenciador de Paleta, escolha Ferramentas > Paleta > Componentes Swing/AWT. </p>
+      <p class="align-center"><a href="#top">início</a></p>
+     
+      <a name="key_concepts"></a> 
+      <h2>Conceitos-Chave</h2>
+      <p>O GUI Builder do IDE resolve o problema central da criação de GUIs do Java otimizando o fluxo de dados da criação de interfaces gráficas, liberando os desenvolvedores das complexidades dos gerenciadores de layout do Swing. Ele faz isso estendendo o GUI Builder atual do NetBeans IDE para dar suporte ao paradigma "Design Livre" com regras simples de layout, fáceis de compreender e utilizar. À medida que você faz o layout do form, o GUI Builder fornece linhas-guias visuais sugerindo o espaçamento e alinhamento ideais dos componentes. Em segundo plano, o GUI Builder converte as decisões de design em uma UI funcional, que é implementada com o uso de um gerenciador de layouts GroupLayout e outras construções do Swing. Como ele utiliza um modelo de layout dinâmico, as GUIs construídas com o GUI Builder se comportam como o esperado em runtime, ajustando para acomodar as alterações feitas sem alterar os relacionamentos definidos entre os componentes. Quando você redimensionar o form, alterar configurações regionais ou especificar outra aparência, a GUI se ajustará automaticamente para respeitar a aparência do destino e os suplementos e deslocamentos da funcionalidade.</p>
+      <blockquote> 
+	  <a name="design"></a>
+         <h3 class="tutorial">Design Livre</h3>
+         <p>No GUI Builder do IDE, é possível construir forms simplesmente colocando os componentes onde quiser, como se estivesse utilizando posicionamento absoluto. O GUI Builder descobre quais atributos de layout são obrigatórios e gera o código automaticamente. Você não precisa se preocupar com suplementos, âncoras, preenchimentos, etc. </p>
+          <a name="snapping"></a>
+		 <h3 class="tutorial">Posicionamento Automático do Componente (Encaixe)</h3>
+         
+         <p>À medida em que os componentes são adicionados a um form, o GUI Builder fornece feedback visual, que auxilia no posicionamento dos componentes com base na aparência e funcionalidade do seu sistema operacional. O GUI Builder oferece dicas in-line úteis e outros feedbacks visuais em relação ao local no qual os componentes devem ser colocados no form, encaixando automaticamente os componentes na posição ao longo das linhas-guias. Ele faz essas sugestões com base nas posições dos componentes já colocados no form, enquanto permite que o preenchimento permaneça flexível, de maneira que a aparência e a funcionalidade do destino diferente sejam processadas corretamente em runtime.</p>
+		 <a name="feedback"></a>
+         <h3 class="tutorial">Feedback Visual </h3>
+         <p>O GUI Builder também oferece feedback visual sobre as relações de ancoragem e encadeamento de componentes. Esses indicadores permitem identificar rapidamente as várias relações de posicionamento e o comportamento fixo dos componentes que afetam a maneira como a GUI aparecerá e se comportará em runtime. Isso acelera o processo de design de GUI, permitindo que você crie rapidamente interfaces visuais com aspecto profissional e que funcionam.</p>
+      </blockquote>
+      <p class="align-center"><a href="#top">início</a></p>
+      <a name="first_things"></a> 
+      <h2>Primeiro o Principal</h2>
+      <p>Agora que você está familiarizado com a interface do GUI Builder, este é o momento para começar a desenvolver a UI da nossa aplicação ContactEditor. Nesta seção, veremos a utilização da Paleta do IDE para adicionar os vários componentes GUI necessários ao nosso form. </p>
+      <p>Graças ao paradigma Design Livre do IDE, não é necessário entrar em conflito com os gerenciadores de layout para controlar o tamanho e posição dos componentes nos contêineres. Tudo o que você precisa fazer é arrastar e soltar os componentes necessários no form da GUI conforme exibido nas ilustrações abaixo.      </p>
+   <blockquote> 
+	  <p class="notes"><b>Observação:</b> Consulte o screencast <a href="http://bits.netbeans.org/media/quickstart-gui-add.swf" name="add">Adicionando componentes individuais e múltiplos componentes (.swf)</a> para ver uma demonstração interativa na seção abaixo.</p>
+          <a name="adding_components"></a> 
+		 <h3 class="tutorial">Adicionando Componentes: Conceitos Básicos </h3>
+         <p>Embora o GUI Builder simplifique o processo de criação de GUI do Java, é sempre útil esboçar a maneira como quer que a interface se pareça antes de começar a fazer seu layout. Muitos designers de interfaces consideram isso uma técnica de "melhor prática", entretanto, para este tutorial, você pode simplesmente dar uma olhada como nosso form preenchido deve se parecer indo para a seção <a href="#previewing_form">Visualização da GUI </a>. </p>
+         <p>Como já adicionamos um JFrame como contêiner de nível superior do form, a próxima etapa é adicionar dois JPanels que nos permitirão unir os componentes da nossa UI utilizando bordas com títulos. Veja as ilustrações abaixo e observe o comportamento "arrastar e soltar" do IDE para fazer isso. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar um JPanel: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Painel na categoria Contêineres do Swing clicando e soltando o botão do mouse.</li>
+                     <li>Mova o cursor até o canto esquerdo superior do form no GUI Builder. Quando o componente estiver localizado próximo às margens superior e esquerda do contêiner, linhas-guia de alinhamento horizontal e vertical aparecerão indicando as margens preferenciais. Clique no form para colocar o JPanel nesse local. 
+                     <p>O componente <tt>JPanel</tt> aparece no form <tt>ContactEditorUI</tt> com realce na cor laranja, o que significa que ele está selecionado. Após soltar o botão do mouse, pequenos indicadores serão exibidos para mostrar as relações de ancoragem do componente e um nó JPanel correspondente será exibido na janela Navegador, como mostra a ilustração a seguir.</p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+		  <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_1.png" rel="lytebox" title="JPanel selecionado"> <img alt="JPanel selecionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_1-small.png"></a></p>
+         <p>Depois, precisamos redimensionar o JPanel para dar espaço aos componentes que serão inseridos posteriormente, mas antes tomemos um minuto para indicar outras funcionalidades de visualização do GUI Builder. Para fazer isso, precisamos desmarcar o JPanel que acabamos de adicionar. Como nós ainda não adicionamos uma borda com título, o painel desaparecerá. Observe, entretanto, que quando ao passar o cursor sobre o JPanel, as margens mudarão para cinza claro para que sua posição possa ser vista claramente. Você precisa apenas clicar em qualquer lugar no componente para selecioná-lo novamente e fazer com que os handles de redimensionamento e os indicadores de ancoragem reapareçam.</p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para redimensionar o JPanel:</p>
+                  <ol>
+                     <li>Selecione o JPanel recém-adicionado. Os pequenos handles de redimensionamento quadrados reaparecerão em torno do perímetro do componente.</li>
+                     <li>Clique e segure o handle de redimensionamento na margem direita do JPanel e arraste-a até que a linha-guia de alinhamento pontilhada seja exibida próxima à margem do form.</li>
+                     <li>Solte o handle de redimensionamento para redimensionar o componente.
+                     <p> O componente <tt>JPanel</tt> é estendido para ficar entre as margens esquerda e direita do contêiner de acordo com o deslocamento recomendado, como mostra a ilustração abaixo.</p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_2.png" rel="lytebox" title="JPanel redimensionado"> <img alt="JPanel redimensionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_2-small.png"></a></p>
+         <p>Agora que adicionamos um painel para conter a informação Nome da nossa UI, precisamos repetir o processo para adicionar outro diretamente abaixo da primeira para a informação de E-mail. Consultando as ilustrações abaixo, repita as duas tarefas anteriores, prestando atenção ao posicionamento sugerido pelo GUI Builder. Observe que o espaçamento vertical sugerido entre os dois JPanels é muito mais estreito que entre as margens. Quando você tiver adicionado o segundo JPanel, redimensione-o para que preencha o espaço vertical restante do form.</p> 
+        <table class="align-center">
+               <tr> 
+                  <td>
+				  <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_3.png" rel="lytebox" title="Outro JPanel adicionado"> <img alt="Outro JPanel adicionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_3-small.png"></a></p></td>
+					 <td><p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_4.png" rel="lytebox" title="Outro JPanel selecionado"> <img alt="Outro JPanel selecionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_4-small.png"></a></p></td></tr>
+               
+                  <tr><td><p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_5.png" rel="lytebox" title="Outro JPanel redimensionado"> <img alt="Outro JPanel redimensionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/02_add_panels_5-small.png"></a></p></td>
+               </tr>
+        </table>
+         
+         <p>Como queremos distinguir visualmente as funções nas seções superior e inferior da nossa GUI, precisamos adicionar uma borda e título a cada JPanel. Primeiro faremos isso utilizando a janela Propriedades e depois a experimentaremos utilizando o menu pop-up.</p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar bordas de título aos JPanels: </p>
+                  <ol>
+                     <li>Selecione o JPanel superior no GUI Builder. </li>
+                     <li>Na janela Propriedades, clique no botão de reticências (...) ao lado da propriedade Borda. </li>
+                     <li>No editor de Bordas do JPanel exibido, selecione o nó TitledBorder no painel Bordas Disponíveis. </li>
+                     <li>No painel Propriedades abaixo, insira <tt>Name</tt> para a propriedade Título. </li>
+                     <li>Clique nas reticências (...) ao lado da propriedade Fonte, selecione Negrito em Estilo de Fonte e insira 12 no Tamanho. Clique em OK para fechar as caixas de diálogo.</li>
+                     <li>Selecione o JPanel inferior e repita as etapas de 2 a 5, mas dessa vez clique com o botão direito do mouse no JPanel e acesse a janela Propriedades utilizando o menu pop-up. Insira <tt>E-mail</tt> para a propriedade Título. 
+                     <p>As bordas com título serão adicionadas a ambos componentes <tt>JPanel</tt>. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/02_add_borders.png" rel="lytebox" title="Bordas com título adicionadas"> <img alt="Bordas com título adicionadas" border="1" src="../../../images_www/articles/80/java/quickstart-gui/02_add_borders-small.png"></a></p>
+         
+        <a name="individual"></a> 
+         <h3 class="tutorial">Adicionando Componentes Individuais ao Form</h3>
+         <p>Agora precisamos começar a adição dos componentes que apresentarão as informações de contato reais na nossa lista de contatos. Nessa tarefa, adicionaremos quatro JTextFields que exibirão as informações de contato e os JLabels que as descreverão. Ao fazer isso, observe as linhas-guia horizontais e verticais que o GUI Builder exibe, sugerindo o espaçamento preferencial dos componentes conforme definido pela aparência e funcionalidade do sistema operacional. Isso assegura que nossa GUI seja processada automaticamente respeitando a aparência do sistema operacional de destino em runtime.</p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar um JLabel ao form: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Label na categoria Controles do Swing. </li>
+                     <li>Mova o cursor acima do JPanel <tt>Name</tt> adicionado anteriormente. Quando as linhas-guias aparecerem, indicando que o JLabel está posicionado no canto superior esquerdo do JPanel com pequena margem nos cantos superior e esquerdo, clique para posicionar o label. 
+                     <p>O JLabel será adicionado ao form e um nó correspondente, representando o componente, será adicionado à janela Inspetor.</p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <p>Antes de prosseguir, precisamos editar o texto de exibição do JLabel que acabamos de adicionar. Embora seja possível editar o texto de exibição do componente em qualquer ponto, a maneira mais fácil é fazer isso à medida que o adiciona. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para editar o texto de exibição de um JLabel: </p>
+                  <ol>
+                     <li>Clique duas vezes no JLabel para selecionar a exibição de texto.</li>
+                     <li>Digite <tt>Nome:</tt> e pressione Enter.
+                     <p>O novo nome do JLabel é exibido e a largura do componente será ajustada como resultado da edição. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+         <p>Agora adicionaremos um JTextField para que possamos ter uma vista rápida da funcionalidade de alinhamento da linha de base do GUI Builder. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar um JTextField ao form: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Campo de texto na categoria Controles do Swing. </li>
+                     <li>Mova o cursor imediatamente à direita do JLabel <tt>Nome:</tt> recém-adicionado. Quando a linha-guia horizontal aparecer, indicando que a linha de base do JTextField está alinhada com aquela do JLabel e o espaçamento entre os dois componentes for sugerido com uma linha-guia vertical, clique para posicionar o JTextField.
+                     <p>O JTextField se encaixará na posição no form alinhado com a linha de base do JLabel, conforme mostra a ilustração abaixo. Observe que o JLabel mudou ligeiramente para baixo para se alinhar à linha de base do campo de texto mais alto. Como sempre, um nó representando o componente será adicionado à janela Navegador. </p> 
+                     </li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+		 <p class="align-center">		
+					   <img alt="Jtextfield adicionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/03_indy_add_1.png"></p>
+         <p>Antes de prosseguir, precisamos adicionar mais um JLabel e JTextField imediatamente à direita desses já adicionados, conforme mostra a ilustração abaixo. Agora insira <tt>Sobrenome:</tt> como texto de exibição do JLabel e mantenha, por enquanto, o texto do espaço reservado dos JTextFields como está.</p>
+         
+		  <p class="align-center">		
+					   <img alt="Outro JTextField adicionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/03_indy_add_2.png"></p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para redimensionar um JTextField:</p>
+                  <ol>
+                     <li>selecione o JTextField que nós acabamos de adicionar à direita do JLabel <tt>Sobrenome:</tt>. </li>
+                     <li>Arraste o handle de redimensionamento direito do JTextField em direção à margem direita do JPanel de fechamento. </li>
+                     <li>Quando as linhas-guia de alinhamento vertical aparecerem sugerindo a margem entre o campo de texto e a margem direita do JPanel, solte o botão do mouse para redimensionar o JTextField. 
+                     <p>A margem direita do JTextField se encaixará em alinhamento à margem recomendada do JPanel, conforme mostra a ilustração abaixo. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+        
+		  <p class="align-center">		
+					   <img alt="JTextField redimensionada" border="1" src="../../../images_www/articles/80/java/quickstart-gui/03_indy_add_3.png"></p>
+         
+         
+         <a name="multiple"></a> 
+		 <h3 class="tutorial">Adicionando Vários Componentes ao Form</h3>
+         <p>Agora adicionaremos os JLabels <tt>Título:</tt> e <tt>Apelido:</tt> que descrevem dois JTextFields que adicionaremos em um minuto. Arrastaremos e soltaremos os componentes pressionando a tecla Shift para adicioná-los rapidamente ao form. Enquanto fazemos isso, observe novamente que o GUI Builder exibe linhas-guia horizontais e verticais sugerindo o espaçamento preferencial do componente. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar vários JLabels ao form: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Label na categoria Controles do Swing clicando e soltando o botão do mouse. </li>
+                     <li>Mova o cursor sobre o form diretamente abaixo do JLabel <tt>Nome:</tt> adicionado anteriormente. Quando as linhas-guia aparecerem, indicando que a nova borda esquerda do JLabel está alinhada à do JLabel acima e houver uma pequena margem entre ambos, clique pressionando a tecla Shift para posicionar o primeiro JLabel. </li>
+                     <li>Ainda pressionando a tecla Shift, clique para colocar outro JLabel imediatamente à direita do primeiro. Certifique-se de soltar a tecla Shift antes de posicionar o segundo JLabel. Se você se esquecer de soltar a tecla Shift antes de posicionar o último JLabel, basta pressionar a tecla Escape.
+                       <p>Os JLabels serão adicionados ao form criando uma segunda linha, como mostra a ilustração abaixo. Os nós que representam os componentes serão adicionados à janela Navegador. </p>
+                     </li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+		  <p class="align-center">		
+					   <img alt="Jlabels em uma segunda linha" border="1" src="../../../images_www/articles/80/java/quickstart-gui/04_multi-add_1.png"></p>
+         <p>Antes de continuar, precisamos editar o nome do JLabels para que possamos ver o efeito dos alinhamentos que definiremos posteriormente.</p>
+         <table width="91%">
+            <tr> 
+               <td> 
+                  <p>Para editar o texto de exibição de JLabels:</p>
+                  <ol>
+                     <li>clique duas vezes no primeiro JLabel para selecionar a exibição de texto.</li>
+                     <li>Digite <tt>Título:</tt> e pressione Enter.</li>
+                     <li>Repita as etapas 1 e 2, inserindo <tt>Apelido:</tt> para a propriedade de nome do segundo JLabel. 
+                     <p>Os novos nomes dos JLabels serão exibidos no form e mudarão como resultado das larguras editadas, como mostra a ilustração abaixo. 
+                     </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+        
+		  <p class="align-center">		
+					   <img alt="Novos nomes para jlabels em uma segunda linha" border="1" src="../../../images_www/articles/80/java/quickstart-gui/04_multi-add_2.png"></p>
+        
+        
+         <a name="inserting"></a> 
+		 <h3 class="tutorial">Inserindo Componentes</h3>
+		 <p class="notes"><b>Observação:</b> Consulte o screencast <a href="http://bits.netbeans.org/media/quickstart-gui-insert.swf" name="insert">Inserindo componentes (.swf)</a> para ver uma demonstração interativa na seção abaixo.</p>
+         <p>Geralmente, é necessário adicionar um componente entre componentes já colocados em um form. Quando você adiciona um componente entre dois componentes existentes, o GUI Builder automaticamente os mudará para dar espaço para o novo componente. Para demonstrar isso, inseriremos um JTextField entre os JLabels adicionados anteriormente, como mostram as duas ilustrações abaixo. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para inserir um JTextField entre dois JLabels: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Campo de texto na categoria Controles do Swing. </li>
+                     <li>Mova o cursor acima dos JLabels <tt>Título:</tt> e <tt>Apelido:</tt> na segunda linha de maneira que o JTextField sobreponha ambos e fique alinhado às suas linhas de base. Se você tiver dificuldade em posicionar o novo campo de texto, poderá encaixá-lo à linha-guia esquerda do JLabel <tt>Apelido</tt>, como mostra a primeira imagem abaixo.</li>
+                     <li>Clique para posicionar o JTextField entre os JLabels <tt>Título:</tt> e <tt>Apelido:</tt>.
+                     <p>O JTextField se encaixará entre os dois JLabels. O JLabel da extremidade direita muda em direção à direita do JTextField para acomodar o deslocamento horizontal sugerido. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <table class="align-center">
+            <tr> 
+               <td> <p class="align-center">		
+					   <img alt="JTextField sobrepõe o Apelido: JLabel" border="1" src="../../../images_www/articles/80/java/quickstart-gui/05_insert_1.png"></p></td>
+                  <td><p class="align-center"><img alt="JTextField entre Título: e Apelido: JLabels" border="1" src="../../../images_www/articles/80/java/quickstart-gui/05_insert_2.png"></p>
+               </td>
+            </tr>
+         </table>
+         <p>Ainda precisamos adicionar outro JTextField ao form que exibirá o apelido do contato no lado direito do form.</p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar um JTextField: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Campo de Texto na categoria Swing. </li>
+                     <li>Mova o cursor para a direita do label <tt>Apelido</tt> e clique para posicionar o campo de texto.
+                     <p>O JTextField se encaixará ao lado esquerdo do JLabel. 
+                        <!--Notice
+                    that it is the same margin that used elsewhere in the form.-->
+                     </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <table width="91%">
+           <tr>
+             <td><p>Para redimensionar um JTextField: </p>
+                 <ol>
+                   <li>Arraste os handles de redimensionamento do JTextField do label <tt>Apelido:</tt> adicionado na tarefa anterior à direita do JPanel de fechamento. </li>
+                   <li>Quando as linhas-guia de alinhamento vertical aparecerem sugerindo a margem entre o campo de texto e as margens do JPanel, solte o botão do mouse para redimensionar o JTextField.
+                     <p>A margem direita do JTextField se encaixará em alinhamento com a margem recomendada do JPanel e o GUI Builder deduzirá o comportamento de redimensionamento correto. </p>
+                   </li>
+                   <li>Pressione Ctrl-S para salvar o arquivo.</li>
+                 </ol></td>
+           </tr>
+         </table>
+   </blockquote>
+      <p class="align-center"><a href="#top">início</a></p>
+      <a name="moving_forward"></a> 
+      <h2>Avançando</h2>
+      <p>Alinhamento é um dos aspectos mais fundamentais da criação GUI com aparência profissional. Na seção anterior, tivemos uma vista rápida das funcionalidades de alinhamento do IDE durante a adição dos componentes JLabel e JTextField ao nosso form ContactEditorUI. Depois, veremos de maneira mais profunda as funcionalidades de alinhamento do GUI Builder, conforme trabalhamos com os outros componentes necessários para a nossa aplicação.</p>
+      <blockquote> 
+	  <a name="aligning_components"></a> 
+         <h3 class="tutorial">Alinhamento de Componentes</h3>
+		 <p class="notes"><b>Observação:</b> Consulte o screencast <a href="http://bits.netbeans.org/media/quickstart-gui-align.swf" name="align">Alinhando e ancorando componentes (.swf)</a> para ver uma demonstração interativa na seção abaixo.</p>
+		
+         <p>Sempre que você adiciona um componente a um form, o GUI Builder os alinha efetivamente, conforme evidenciado pelas linhas-guia de alinhamento exibidas. Entretanto, às vezes, também é necessário especificar diferentes relacionamentos entre os grupos de componentes. Anteriormente, nós adicionamos quatro JLabels necessários para a nossa GUI ContactEditor, mas nós não os alinhamos. Agora alinharemos as duas colunas de JLabels para que as margens direitas se alinhem. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para alinhar componentes: </p>
+                  <ol>
+                     <li>mantenha pressionada a tecla <tt>Ctrl</tt> e clique para selecionar os JLabels <tt>Nome:</tt> e <tt>Título:</tt> do lado esquerdo do form.</li>
+                     <li>Clique no botão Alinhar à Direita na coluna (<img src="../../../images_www/articles/80/java/quickstart-gui/align_r.png">) na barra de ferramentas. Alternativamente, clique com o botão direito do mouse em um deles e escolha Alinhar > Direita na coluna no menu pop-up.</li>
+                     <li>Repita isso também para os JLabels <tt>Sobrenome:</tt> e <tt>Apelido:</tt>.
+                     <p>A posição dos JLabels muda para que as margens direitas do texto de exibição sejam alinhadas. Os relacionamentos de ancoragem serão atualizados, indicando que os componentes foram agrupados. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <p>Antes de finalizarmos com os JTextFields adicionados anteriormente, precisamos nos certificar de que os dois JTextFields que inserimos entre os JLabels estejam definidos para se redimensionarem corretamente. Ao contrário dos dois JTextFields que foram esticados para a margem direita do form, o procedimento de redimensionamento dos componentes inseridos não é definido automaticamente. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para definir o procedimento de redimensionamento de um componente:</p>
+                  <ol>
+                     <li>Clique nos dois componentes JTextField inseridos para selecioná-los no GUI Builder.</li>
+                     <li>Com os dois JTextFields selecionados, clique com o botão direito do mouse em um deles e escolha Redimensionamento automático > Horizontal no menu pop-up.
+                     <p>Os JTextFields serão definidos com redimensionamento horizontal em runtime. As linhas-guia de alinhamento e os indicadores de ancoragem serão atualizados, fornecendo comentário visual dos relacionamentos dos componentes. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para configurar os componentes para que tenham o mesmo tamanho:</p>
+                  <ol>
+                     <li>Clique em todos os quatro JTextFields do form para selecioná-los.</li>
+                     <li>Com os JTextfields selecionados, clique com o botão direito do mouse em um deles e escolha Definir Mesmo Tamanho > Mesma Largura no menu pop-up.
+                     <p>Todos os JTextFields terão a mesma largura definida e os indicadores serão adicionados na parte superior destes, fornecendo feedback visual dos relacionamentos dos componentes.</p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <p>Agora precisamos adicionar outro JLabel que descreva a JComboBox que permitirá aos usuários selecionar o formato das informações que nossa aplicação ContactEditor exibirá.</p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para alinhar um JLabel a um grupo de componentes: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Label na categoria Swing. </li>
+                     <li>Mova o cursor abaixo dos JLabels <tt>Nome:</tt> e <tt>Título:</tt> no lado esquerdo do JPanel. Quando as linhas-guia aparecerem, indicando que a nova borda direita do JLabel está alinhada às margens direitas do grupo de componentes acima (os dois JLabels), clique para posicionar o componente. 
+                     <p>O JLabel se encaixará em uma posição alinhada à direita com a coluna dos JLabels acima, conforme mostra a ilustração abaixo. O GUI Builder atualiza as linhas de status de alinhamento, indicando as relações de espaçamento e ancoragem do componente. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/06_align_1.png" rel="lytebox" title="JLabel alinhado"> <img alt="JLabel alinhado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/06_align_1-small.png"></a></p>
+         <p>Como nos exemplos anteriores, clique duas vezes no JLabel para selecionar o texto de exibição e insira <tt>Exibir Formato:</tt> para nome de exibição. Observe que quando o JLabel se encaixa na posição, os outros componentes mudam para acomodar o texto de exibição maior. </p>
+         
+       <a name="baseline_alignment"></a> 
+         <h3 class="tutorial">Alinhamento da Linha de Base</h3>
+         <p>Quando você adiciona ou move componentes que incluem texto (JLabels, JTextFields, etc.), o IDE sugere alinhamentos baseados nas linhas de base do texto nos componentes. Quando inserimos o JTextField anteriormente, por exemplo, sua linha de base foi automaticamente alinhada aos JLabels adjacentes. </p>
+         <p>Agora adicionaremos a caixa de combinação que permitirá aos usuários selecionar o formato das informações que nossa aplicação ContactEditor exibirá. À medida que adicionamos JComboBox, alinharemos a linha de base com o texto do JLabel. Observe, mais uma vez as linhas-guia de alinhamento da linha de base aparece para nos auxiliar com o posicionamento. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para alinhar as linhas de base dos componentes: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Caixa de combinação na categoria Controles do Swing. </li>
+                     <li>Mova o cursor à direita do JLabel recém-adicionado. Quando a linha-guia horizontal aparecer, indicando que a linha de base do JComboBox está alinhada à linha de base do texto do JLabel e o espaçamento entre os dois componentes for sugerido com uma linha-guia vertical, clique para posicionar a caixa de combinação.
+                     <p> O componente se encaixará em uma posição alinhada com a linha de base do JLabel à esquerda, conforme mostra a ilustração abaixo. O GUI Builder exibe as linhas de status, indicando as relações de espaçamento e ancoragem do componente. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+		  <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/06_align_2.png" rel="lytebox" title="Caixa de Combinação alinhada"> <img alt="Caixa de Combinação alinhada" border="1" src="../../../images_www/articles/80/java/quickstart-gui/06_align_2-small.png"></a></p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para redimensionar o JComboBox: </p>
+                  <ol>
+                     <li>Selecione a Caixa de Combinação no GUI Builder. </li>
+                     <li>Arraste o handle de redimensionamento na margem direita do JComboBox até que as linhas-guia de alinhamento apareçam sugerindo o deslocamento preferencial entre as margens do JComboBox e do JPanel. 
+                     <p>Conforme mostra a ilustração abaixo, a margem direita do JComboBox se encaixará em alinhamento com a margem recomendada do JPanel e a largura do componente será automaticamente definida para se redimensionar ao form. 
+                     </p>
+					 
+                  
+        <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/06_align_3.png" rel="lytebox" title="Caixa de Combinação redimensionada"> <img alt="Caixa de Combinação redimensionada" border="1" src="../../../images_www/articles/80/java/quickstart-gui/06_align_3-small.png"></a></p></li>
+					 <li>Pressione Ctrl-S para salvar o arquivo.</li>
+					 </ol>
+               </td>
+            </tr>
+         </table>
+      
+         <p>A edição de modelos de componentes está além do escopo desse tutorial, portanto deixaremos, por enquanto, a lista de itens de espaço reservada da JComboBox como está.</p>
+        
+      </blockquote>
+      <p class="align-center"><a href="#top">início</a></p>
+      <a name="reviewing"></a> 
+      <h2>Revisando o Que Aprendemos</h2>
+      <p>Terminamos um bom início de construção da nossa GUI ContactEditor, mas tomemos um minuto para recapitular o que aprendemos enquanto adicionamos mais alguns componentes que nossa interface requer. </p>
+      <p>Até agora, nós nos concentramos na adição de componentes à nossa GUI ContactEditor utilizando as linhas-guia de alinhamento do IDE para nos ajudar no posicionamento. Entretanto, é importante compreender que a ancoragem é outra parte integrante do posicionamento de componentes. Embora ainda não tenhamos discutido isso, você já se beneficiou com essa funcionalidade sem perceber. Como mencionado antes, ao adicionar um componente a um form, o IDE sugere o posicionamento preferencial da aparência de destino com linhas-guia. Depois de posicionados, os novos componentes também são ancorados na margem mais próxima do contêiner ou componente para assegurar que os relacionamentos entre os componentes sejam mantidos em runtime. Nesta seção, nós nos concentraremos em concluir as tarefas de maneira mais otimizada, ao ressaltarmos o trabalho que o GUI Builder está fazendo nos bastidores. </p>
+      <blockquote> 
+	  <a name="adding_aligning_anchoring"></a>
+         <h3 class="tutorial">Adicionando, Alinhando e Ancorando</h3>
+         <p>O GUI Builder permite fazer o layout de forms rápida e facilmente otimizando gestos típicos do fluxo de trabalho. Quando você adiciona um componente a um form, o GUI Builder o encaixa automaticamente na posição preferencial e define as relações de encadeamento necessárias para que você se concentre no design dos forms em vez de conflitar com detalhes de implementação complicados. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar, alinhar e editar o texto de exibição de um JLabel: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Label na categoria Controles do Swing. </li>
+                     <li>Mova o cursor sobre o form imediatamente abaixo do título E-mail do JPanel inferior. Quando as linhas-guia aparecerem, indicando que está posicionado no canto superior esquerdo do JPanel com uma pequena margem nos cantos superior e esquerdo, clique para posicionar o JLabel. </li>
+                     <li>Clique duas vezes no JLabel para selecionar a exibição de texto. Depois digite <tt>Endereço de E-mail:</tt> e pressione Enter.
+                     <p>O JLabel se encaixará na posição preferencial no form e será ancorado nas margens superior e esquerda do JPanel de fechamento. Assim como ocorreu anteriormente, um nó correspondente, representando o componente, também será adicionado à janela Navegador. </p>
+                     </li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar um JTextField: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Campo de texto na categoria Controles do Swing. </li>
+                     <li>Mova o cursor imediatamente à direita do label <tt>Endereço de E-mail</tt> recém-adicionado. Quando as linhas-guia aparecerem, indicando que a linha de base do JTextField está alinhada à linha de base do texto no JLabel e a margem entre os dois componentes for sugerida com uma linha-guia vertical, clique para posicionar o campo de texto.
+                     <p>O JTextField se encaixará à direita do JLabel <tt>Endereço de E-mail:</tt> e será encadeado ao JLabel. O nó correspondente também será adicionado à janela Inspetor. </p></li>
+                     <li>Arraste o handle de redimensionamento do JTextField em direção à direita do JPanel até que as linhas-guia de alinhamento sejam exibidas sugerindo o deslocamento entre as margens do JTextField e do JPanel.
+                     <p>A margem direita do JTextField se encaixará na linha-guia de alinhamento indicando as margens preferenciais. </p> </li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         <p>Agora precisamos adicionar o JList que exibirá a lista de contatos completa do ContactEditor.</p>
+         <!--todo : add more info here-->
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar e redimensionar um JList: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Lista na categoria Controles do Swing.</li>
+                     <li>Mova o cursor imediatamente abaixo do JLabel <tt>Endereço de E-mail</tt> adicionado anteriormente. Quando as linhas-guia aparecerem, indicando que as margens superior e esquerda do JList estão alinhadas às margens preferenciais ao longo da margem esquerda do JPanel e do JLabel acima, clique para posicionar o JList.</li>
+                     <li>Arraste o handle de redimensionamento do JList em direção à direita do JPanel de fechamento até que as linhas-guia de alinhamento sejam exibidas indicando que tem a mesma largura do JTextField acima. 
+                     <p> O JList se encaixará na posição designada pelas linhas-guia de alinhamento e seu nó correspondente será exibido na janela Inspetor. Observe também que o form se expande para acomodar o JList recém-adicionado. </p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+		  <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/06_align_4.png" rel="lytebox" title="JList adicionado e redimensionado"> <img alt="JList adicionado e redimensionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/06_align_4-small.png"></a></p>
+         <p>Como as JLists são utilizadas para exibir longas listas de dados, geralmente requerem a adição de um JScrollPane. Quando você adiciona um componente que requer um JScrollPane, o GUI Builder o adiciona automaticamente para você. Como os JScrollPanes são componentes não visuais, é necessário utilizar a janela Inspetor para exibir ou editar os JScrollPanes que o GUI Builder criar.</p>
+         
+        
+         <a name="component_sizing"></a> <h3 class="tutorial">Dimensionamento de Componentes</h3>
+		 <p class="notes"><b>Observação:</b> Consulte o screencast <a href="http://bits.netbeans.org/media/quickstart-gui-resize.swf" name="resize">Redimensionando e recuando componentes (.swf)</a> para ver uma demonstração interativa na seção abaixo.</p>
+         <p>É sempre benéfico definir vários componentes relacionados, como botões em caixas de diálogo modais, para que tenham o mesmo tamanho a fim de oferecer consistência visual. Para demonstrar isso, adicionaremos quatro JButtons ao nosso form ContactEditor que permitirão adicionar, editar e remover entradas individuais da nossa lista de contatos, como mostram as ilustrações abaixo. Depois, definiremos os quatro botões para que tenham o mesmo tamanho e possam ser facilmente reconhecidos e ofereçam a funcionalidade relacionada. 
+         </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar, alinhar e editar o texto de exibição de vários botões: </p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Botão na categoria Controles do Swing.</li>
+                     <li>Mova o JButton acima da margem direita do JTextField <tt>Endereço de E-mail</tt> no JPanel inferior. Quando as linhas-guia aparecerem, indicando que a linha de base e a margem direita do JButton estão alinhadas às margens do JTextField, clique pressionando Shift para posicionar o primeiro botão ao longo da margem direita do JFrame. A largura do JTextField diminui para acomodar o JButton onde você soltar o botão do mouse.
+					 <table class="align-center">
+            <tr> 
+               <td><p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/buttons_1.png" rel="lytebox" title="JButton alinhado"> <img alt="JButton alinhado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/buttons_1-small.png"></a></p></td>
+               <td><p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/buttons_2.png" rel="lytebox" title="JButton adicionado"> <img alt="JButton adicionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/buttons_2-small.png"></a></p>
+                 
+               </td>
+            </tr>
+		</table>	</li>
+                     <li>Mova o cursor sobre o canto superior direito do JList no JPanel inferior. Quando as linhas-guia aparecerem, indicando que as margens superior e direita do JButton estão alinhadas às margens do JList, clique pressionando Shift para posicionar o segundo botão ao longo da margem direita do JFrame.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/buttons_3.png" rel="lytebox" title="Segundo JButton adicionado"> <img alt="Segundo JButton adicionado" border="1" src="../../../images_www/articles/80/java/quickstart-gui/buttons_3-small.png"></a></p></li>
+                     <li>Adicione dois outros JButtons abaixo dos dois já adicionados para criar uma coluna. Certifique-se de posicionar os JButtons de maneira que o espaçamento sugerido seja respeitado e consistente. Se você se esquecer de soltar a tecla Shift antes de posicionar o último JButton, basta pressionar a tecla Escape.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/buttons_4.png" rel="lytebox" title="Mais dois JButtons adicionados"> <img alt="Mais dois JButtons adicionados" border="1" src="../../../images_www/articles/80/java/quickstart-gui/buttons_4-small.png"></a></p></li>
+                     <li>Defina o texto de exibição de cada JButton. (Você pode editar o texto de um botão, clicando com o botão direito do mouse no botão e escolhendo Editar Texto. Ou você pode clicar no botão, pausar e clicar novamente.) Insira <code>Adicionar</code> para o botão superior, <code>Editar</code> para o segundo, <code>Remover</code> para o terceiro e <code>Default</code> para o quarto. 
+                     <p>Os componentes JButton se encaixam nas posições designadas pelas linhas-guia de alinhamento. A largura dos botões muda para acomodar os novos nomes. </p>
+					<p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/buttons_5.png" rel="lytebox" title="JButtons renomeados"> <img alt="JButtons renomeados" border="1" src="../../../images_www/articles/80/java/quickstart-gui/buttons_5-small.png"></a></p>	</li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+         <p>Agora que os botões estão posicionados onde queremos, nós definiremos os quatro botões para que tenham o mesmo tamanho e consistência visual, bem como para esclarecer a funcionalidade relacionada.</p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para definir componentes do mesmo tamanho: </p>
+                  <ol>
+                     <li>Selecione os quatro JButtons pressionando a tecla Control enquanto faz a seleção.</li>
+                     <li>Clique com o botão direito do mouse em um deles e escolha Mesmo Tamanho > Mesma Largura no menu pop-up. 
+                        <p>Os JButtons serão definidos com o mesmo tamanho do botão que tiver o nome mais longo. </p>
+						<p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/buttons_6.png" rel="lytebox" title="Jbuttons definido como o mesmo tamanho"> <img alt="Jbuttons definido como o mesmo tamanho" border="1" src="../../../images_www/articles/80/java/quickstart-gui/buttons_6-small.png"></a></p>
+                     </li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+        
+		 <a name="indentation"></a>
+         <h3 class="tutorial">Recuo</h3>
+         <p>Frequentemente é necessário unir vários componentes em outro para que fique claro que pertencem a um grupo de funções relacionadas. Um caso típico, por exemplo, é colocar várias caixas de seleção relacionadas abaixo de um label comum. O GUI Builder permite fazer o recuo facilmente oferecendo linhas-guia especiais que sugerem o deslocamento preferencial para a aparência e funcionalidade do seu sistema operacional.</p>
+         <p>Nesta seção, adicionaremos alguns JRadioButtons abaixo de um JLabel que permitirá aos usuários personalizar a maneira como a aplicação exibe dados. Veja as ilustrações abaixo enquanto faz isso ou clique no link Exibir Demonstração seguindo o procedimento para ver uma demonstração interativa. </p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para recuar JRadioButtons abaixo de um JLabel: </p>
+                  <ol>
+                     <li> Adicione um JLabel nomeado <tt>Formato de Correspondência</tt> ao form abaixo do JList. Certifique-se de que o label esteja alinhado à esquerda do JList acima.</li>
+                     <li>Na janela Paleta, selecione o componente Botão de Opção na categoria Swing. </li>
+                     <li>Mova o cursor abaixo do JLabel recém-adicionado. Quando as linhas-guia aparecerem, indicando que a borda esquerda do JRadioButton está alinhada com a do JLabel, mova o JRadioButton ligeiramente para a direita até as linhas-guia de recuo secundárias aparecerem. Clique pressionando a tecla Shift para posicionar o primeiro botão de opção. 
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/07_indent_1.png" rel="lytebox" title="Linhas-Guia de Recuo Secundárias para JRadioButton"> <img alt="Linhas-Guia de Recuo Secundárias para JRadioButton" border="1" src="../../../images_www/articles/80/java/quickstart-gui/07_indent_1-small.png"></a></p></li>
+                     <li>Mova o cursor à direita do primeiro JRadioButton. Clique pressionando a tecla Shift para inserir o segundo e o terceiro JRadioButtons, respeitando o espaçamento sugerido do componente. Certifique-se de soltar a tecla Shift antes de posicionar o último JRadioButton. </li>
+                     <li>Defina o texto de exibição de cada JRadioButton. (Você pode editar o texto de um botão, clicando com o botão direito do mouse no botão e escolhendo Editar Texto. Ou você pode clicar no botão, pausar e clicar novamente.) Insira <code>HTML</code> para o botão de opção esquerdo, <code>Texto Simples </code> para o segundo e <code>Personalizado</code> para o terceiro. 
+                     <p>Três JRadioButtons serão adicionados ao form e recuados abaixo do JLabel <tt>Formato de Correio</tt>. </p>
+					  <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/07_indent_3.png" rel="lytebox" title="Três jradiobuttons adicionado e renomeados"> <img alt="Três jradiobuttons adicionado e renomeados" border="1" src="../../../images_www/articles/80/java/quickstart-gui/07_indent_3-small.png"></a></p></li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+        
+         <p>Agora, precisamos adicionar os três JRadioButtons a um ButtonGroup para permitir o comportamento de alternância esperado, no qual somente um botão de opção pode ser selecionado por vez. Por sua vez, isso assegurará que as informações de contato da aplicação ContactEditor serão exibidas no formato de e-mail da nossa escolha.</p>
+         <table>
+            <tr> 
+               <td>
+                  <p>Para adicionar JRadioButtons a um ButtonGroup:</p>
+                  <ol>
+                     <li>Na janela Paleta, selecione o componente Grupo de Botões na categoria Controles do Swing. </li>
+                     <li>Clique em qualquer lugar na área de design do GUI Builder para adicionar o componente ButtonGroup ao form. Observe que o ButtonGroup em si não é exibido no form, no entanto, é visível na área Outros Componentes do Navegador. </li>
+                     <li>Selecione os três JRadioButtons do form.</li>
+                     <li>Na janela Propriedades, selecione buttonGroup1 na caixa de combinação da propriedade buttonGroup.
+                     <p>Três JRadioButtons serão adicionados ao grupo de botões.</p>
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/07_group.png" rel="lytebox" title="Três JRadioButtons estão sendo adicionados ao grupo de botões."> <img alt="Três JRadioButtons estão sendo adicionados ao grupo de botões." border="1" src="../../../images_www/articles/80/java/quickstart-gui/07_group-small.png"></a></p></li>
+					 <li>Pressione Ctrl-S para salvar o arquivo.</li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+         
+      </blockquote>
+      <p class="align-center"><a href="#top">início</a></p>
+      <a name="adjusting_form"></a> 
+      <h2>Fazendo os Ajustes Finais </h2>
+      <p>Conseguimos esboçar nossa GUI da aplicação ContactEditor, mas ainda há algumas coisas a serem feitas. Nesta seção, observaremos algumas das tarefas de layout típicas que o GUI Builder simplifica. </p>
+      <blockquote> 
+         <h3 class="tutorial">Finalizando</h3>
+         <p>Agora precisamos adicionar os botões que permitirão aos usuários confirmar as informações que inserirem de um contato individual e adicioná-las à lista de contatos ou cancelar, deixando o banco de dados inalterado. Nesta etapa, adicionaremos os dois botões requeridos e os editaremos para que sejam exibidos com o mesmo tamanho no form, embora seus textos de exibição tenham tamanhos diferentes.</p>
+         <table width="91%">
+            <tr> 
+               <td>
+                  <p>Para adicionar e editar o texto de exibição dos botões: </p>
+                  <ol>
+                     <li>se o JPanel inferior estiver estendido na margem inferior do form JFrame, arraste a margem inferior do JFrame para baixo. Isso proporciona espaço entre as margens do JFrame e do JPanel para os botões OK e Cancelar.</li>
+                     <li>Na janela Paleta, selecione o componente Botão na categoria Controles do Swing.</li>
+                     <li>Mova o cursor sobre o form abaixo do JPanel E-mail. Quando as linhas-guia aparecerem, indicando que a borda direita do JButton está alinhada ao canto direito do JFrame, clique para posicionar o botão.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/08_cancel.png" rel="lytebox" title="Botão adicionado abaixo de JPanel"> <img alt="Botão adicionado abaixo de JPanel" border="1" src="../../../images_www/articles/80/java/quickstart-gui/08_cancel-small.png"></a></p></li>
+                     <li>Adicione outro JButton à esquerda do primeiro, certificando-se de colocá-lo utilizando o espaçamento sugerido ao longo da margem inferior do JFrame.</li>
+                     <li>Defina o texto de exibição de cada JButton. Insira <tt>OK</tt> para o botão esquerdo e <tt>Cancelar</tt> para o botão direito. Observe que a largura dos botões muda para acomodar os novos nomes.</li>
+                     <li>Defina os dois JButtons para terem o mesmo tamanho selecionando-os, clicando com o botão direito do mouse em um deles e selecionando Mesmo Tamanho > Mesma Largura no menu pop-up.
+						<p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/08_same_size.png" rel="lytebox" title="Botões definidos como o mesmo tamanho"> <img alt="Botões definidos como o mesmo tamanho" border="1" src="../../../images_www/articles/80/java/quickstart-gui/08_same_size-small.png"></a></p> 
+                        <p>Os componentes <tt>JButton</tt> serão exibidos no form e seus nós correspondentes serão exibidos na janela Navegador. O código dos componentes <tt>JButton</tt> também será adicionado ao arquivo de código-fonte do form, que é visível na view Código-fonte do Editor. Todos os JButtons serão definidos com o mesmo tamanho do botão que possuir o maior nome. </p>
+                     </li>
+					 <li>Pressione Ctrl-S para salvar o arquivo.</li>
+                  </ol>
+               </td>
+            </tr>
+         </table>
+         
+         <p>A última coisa que precisamos fazer é deletar o texto do espaço reservado nos vários componentes. Observe que, embora a remoção do texto do placeholder após a configuração preliminar de um form possa ser uma técnica útil para evitar problemas de alinhamento e relações de ancoragem dos componentes, a maioria dos desenvolvedores geralmente remove esse texto no processo de layout de seus forms. À medida que percorre o form, selecione e delete o texto do espaço reservado de cada um dos JTextFields. Deixaremos os itens de placeholder no JComboBox e no JList para um tutorial posterior.</p>
+         
+         
+      </blockquote>
+      <p class="align-center"><a href="#top">início</a></p>
+      <a name="previewing_form"></a> 
+      <h2>Visualizando a GUI </h2>
+      <p>Agora que você criou com êxito a GUI ContactEditor, é possível experimentar a interface para ver os resultados. É possível visualizar o form à medida que trabalha clicando no botão Visualizar Form (<img src="../../../images_www/articles/80/java/quickstart-gui/test_form.png">) na barra de ferramentas do GUI Builder. O form será aberto em sua própria janela, permitindo que você o teste antes da construção e execução.</p>
+	  <p class="align-center">
+		<a href="../../../images_www/articles/80/java/quickstart-gui/08_preview_gui.png" rel="lytebox" title="Visualização do Form"> <img alt="Visualização do Form" border="1" src="../../../images_www/articles/80/java/quickstart-gui/08_preview_gui-small.png"></a></p> 
+     
+     
+      <p class="align-center"><a href="#top">início</a></p>
+      <a name="deploying"></a>
+      <h2>Implantando Aplicações GUI</h2>
+      <p>Para que as interfaces criadas com o GUI Builder funcionem fora do IDE, a aplicação deve ser compilada nas classes do gerenciador de layout GroupLayout e essas classes também devem estar disponíveis no runtime. Essas classes são incluídas no Java SE 6, mas não no Java SE 5. Se você desenvolver a aplicação para ser executada no Java SE 5, sua aplicação precisa utilizar a biblioteca de extensões de layout Swing.      </p>
+      <p>Se o IDE estiver sendo executado no JDK 5, o IDE gerará o código da aplicação automaticamente para utilizar a biblioteca de extensões de layout Swing. Quando você implanta a aplicação, é necessário incluir a biblioteca de extensões de layout Swing. Quando você constrói a aplicação (Construir > Construir Projeto Principal), o IDE fornece automaticamente uma cópia do arquivo JAR da biblioteca na pasta <tt>dist/lib</tt> da aplicação. O IDE também adiciona todos os arquivos JAR da pasta <tt>dist</tt> no elemento <tt>Class-Path</tt> no arquivo <tt>manifest.mf</tt> do arquivo JAR da aplicação. </p>
+      <p>Se você estiver executando o IDE no JDK 6, o IDE gera o código de sua aplicação para utilizar as classes GroupLayout que estão no Java SE 6. Isso significa que é possível implantar a aplicação para ser executada em sistemas com o Java SE 6 instalado e não é necessário encapsular sua aplicação com a biblioteca de extensões de layout Swing.</p>
+      
+      <div style="border: 1px solid rgb(14, 27, 85); padding: 10px 30px; background-color: rgb(231, 231, 231); margin-left: 60px; margin-right: 40px;"> 
+         <b>Observação: </b> se a aplicação for criada com o JDK 6, mas você precisar que também seja executada no Java SE 5, poderá fazer com que o IDE gere seu código para utilizar a biblioteca de extensões de layout Swing em vez das classes no Java SE 6. Abra a classe ContactEditorUI no Editor de GUI. No Navegador, clique com o botão direito do mouse no Form ContactEditorUI e escolha Propriedades no menu pop-up. Na caixa de diálogo Propriedades, altere o valor da propriedade Estilo de Geração de Layout para Biblioteca de Extensões de Layout Swing.      </div>
+      
+      <blockquote> 
+         <h3 class="tutorial">Distribuindo e Executando Aplicações GUI Standalone</h3>
+         
+         
+         <p>Para preparar a aplicação de GUI para distribuição fora do IDE:</p>
+         <ul>
+            <li>Compacte a pasta <tt>dist</tt> do projeto em um arquivo compactado ZIP. (A pasta <tt>dist</tt> também pode conter uma pasta <tt>lib</tt>, que também poderia necessitar ser incluída).</li>
+         </ul>
+		 <p>Para executar sua aplicação, clique com o botão direito do mouse no nome do projeto e selecione Executar a partir do menu de contexto. Na caixa de diálogo Executar Projeto, selecione a classe principal (<tt>my.contacteditor.ContactEditorUI</tt>, se estiver falando sobre o projeto que você acabou de criar) e clique em OK. Sua aplicação está ativa e em execução.</p>
+         <p>Para executar uma aplicação GUI standalone na linha de comandos:</p>
+         <ol>
+            <li>Navegue até a pasta <tt>dist</tt> do projeto.</li>
+            <li>Digite o seguinte: 
+               <blockquote> <tt>java -jar &lt;nome do jar>.jar</tt> </blockquote>
+            </li>
+         </ol>
+         
+      </blockquote>
+      <p><b>Observação:</b> se você encontrar este erro:</p>
+      <blockquote><tt>Exception in thread "main" java.lang.NoClassDefFoundError: org/jdesktop/layout/GroupLayout$Group</tt></blockquote>
+      <p>Verifique se o arquivo <tt>manifest.mf</tt> faz referência à versão atualmente instalada da Biblioteca de extensões de Layout Swing. </p>
+      
+      <!--<p>For more information about the layout extension library, visit the <a href="http://swing-layout.dev.java.net/" target="_blank">Swing
+      Layout Extensions project</a>. </p>-->
+      <p class="align-center"><a href="#top">início</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Designing%20a%20Swing%20GUI%20in%20NetBeans%20IDE">Enviar Feedback neste Tutorial</a></div>
+      <br style="clear:both;" >  
+      
+      <a name="seealso"></a><h2>Consulte Também</h2>
+      <p>Agora você concluiu o tutorial Criando uma GUI Swing. Para obter informações sobre como adicionar funcionalidade às GUIs que você cria, consulte:</p> 
+      <ul>
+         <li><a href="gui-functionality.html">Introdução à Construção de GUIs</a> </li>
+         <li><a href="gui-image-display.html">Manipulando Imagens em uma Aplicação da GUI</a></li>
+         <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ#section-NetBeansUserFAQ-GUIEditorMatisse" target="_blank"> FAQ do GUI Builder</a> </li>
+         <li><a href="../../trails/matisse.html">Trilha de Aprendizado das Aplicações de GUI do Java</a> </li>
+		 <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementando GUIs de Java</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">início</a></p>
+   </body>
+</html>

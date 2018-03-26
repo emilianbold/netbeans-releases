@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Creating a Database Driven Application With NetBeans IDE PHP Editor</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, PHP, MYSQL, CRUD">
+        <meta name="DESCRIPTION" content="This 9-part tutorial describes how to create a CRUD (Create, Read, Update, Delete) PHP application accessing a MySQL database, using the NetBeans IDE PHP editor." >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+    <body>
+        <h1>Creating a Database Driven Application With NetBeans IDE PHP Editor</h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+                <h4>Tutorial contents:</h4>
+                <ol start="0">
+                    <li>
+                        <p><b>=&gt; Creating a Database Driven Application With PHP - Main page</b></p>
+                    </li>
+                    <li><p>Creating the Database</p> <ol type="a"><li><a href="wish-list-lesson1.html">Creating a MySQL Database</a></li>
+                            <li><a href="wish-list-oracle-lesson1.html">Creating Oracle Database Tables</a></li>
+                        </ol></li>
+                    <li>
+                        <p><a href="wish-list-lesson2.html">Designing the Application. Reading from the Database</a></p>
+                    </li>
+                    <li><a href="wish-list-lesson3.html"> Creating a New Application User
+
+                        </a></li>
+                    <li><a href="wish-list-lesson4.html">Optimizing the Code</a></li>
+                    <li><a href="wish-list-lesson5.html">Adding Security. Implementing Application User Logon</a></li>
+                    <li><a href="wish-list-lesson6.html">Adding a New Wish to the Database</a></li>
+                    <li><a href="wish-list-lesson7.html">Updating and Deleting Entries in the Database</a></li>
+                    <li><a href="wish-list-lesson8.html">Making the Application Look Better Using the CSS Technology</a></li>
+                    <li><a href="wish-list-lesson9.html">Deploying the Application on a Remote Web Server</a></li>
+                </ol>
+            </div>
+        </div>
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+        <p>In this tutorial, you  use the PHP support in the NetBeans IDE  to create and run a simple web application. 
+            The example shows how to  create a wish list. After you create and deploy the application, it 
+            enables you to share information on wish lists with your friends,  such as lists for 
+            wedding, birthday, or holiday gifts.  The information is  stored in the database that 
+            you create in Lesson 1.</p>
+        <p> Any registered  user is able to view the wish lists of other users, 
+            and you   develop this functionality in Lesson 2.</p>
+        <p> The application  supports  registration of 
+            new users, a functionality that you  develop in   Lesson 3. </p>
+        <p>In Lesson 4 you  receive tips for  making the code easier to  maintain. </p>
+        <p>Lesson 5  provides you with possible solutions for security issues. </p>
+        <p>In Lessons 6 and 7 you  develop 
+            functionality that  enables each  registered user to  edit their own  wish list.</p>   
+        <p>You add styles to improve the appearance of your application by applying a CSS   
+            style sheet in Lesson 8.   Finally, you deploy the application on a remote 
+            web server using the hints given in lesson 9. </p>
+        <p>Code is provided for both users of  the MySQL database and users of Oracle Database. 
+            The tutorial uses the <tt>mysqli</tt> and OCI8 APIs. For users interested in PDO,
+            a PDO version of the complete tutorial is available for 
+            <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/php/wishlist-pdo.zip">download</a>.
+            Note that the PDO_OCI API is experimental!</p>
+        <br style="clear:left">
+
+        <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a target="_blank" href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">PHP download bundle</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">A PHP engine</td>
+                    <td class="tbltd1">Version 5
+                </tr>
+                <tr>
+                    <td class="tbltd1">A web server</td>
+                    <td><a target="_blank" href="http://httpd.apache.org/download.cgi">Apache HTTP Server 2.2</a> is recommended.<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">A database server</td>
+                    <td>MySQL, OracleXE, or Oracle11g</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>For details on installing and configuring the  required software,  see the document that describes <a href="../../trails/php.html#configuration">preparing the environment for PHP development</a> in your operating system. </p>
+        <h2>Next Step:</h2>
+        <p><a href="wish-list-lesson1.html">Creating a MySQL Database</a></p>
+        <p>or</p>
+        <p><a href="wish-list-oracle-lesson1.html">Creating Oracle Database Tables</a></p>
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%20Main">Send Feedback on This Tutorial</a></div>
+        <br style="clear:both;" >
+        <p>To send comments and suggestions, get support, and keep informed on the latest
+            developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+                the users@php.netbeans.org mailing list</a>.</p>
+
+
+        <p><a href="../../trails/php.html">Back to the PHP Learning Trail</a></p>
+    </body>
+</html>

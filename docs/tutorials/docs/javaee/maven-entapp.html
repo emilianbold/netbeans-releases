@@ -1,0 +1,846 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Creating an Enterprise Application Using Maven</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE to develop an enterprise application using Maven.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Creating an Enterprise Application Using Maven</h1>
+        
+        <p>This tutorial demonstrates how to create a simple enterprise application using NetBeans IDE and Maven archetypes.
+        The tutorial also provides some explanations and tips on using the IDE to create and build Maven applications.</p>
+
+        <p>In this tutorial you create an enterprise application that is packaged as
+        an EAR archive and deployed to GlassFish Server Open Source Edition 3.
+        You create the application using the Maven Enterprise Application archetype in the New Project wizard.
+        The application contains an EJB project that contains a persistent entity class,
+        a message-driven bean and a session bean facade for the entity.
+        The application also contains a web project that contains two servlets.</p>
+
+                       
+           <p><b>Tutorial Exercises</b></p>
+           <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+            <ul>
+                <li><a href="#intro">Using Maven in the IDE</a></li>
+                <li><a href="#Exercise_1">Creating the Maven Enterprise Application Project</a></li>
+                <li><a href="#Exercise_2">Coding the EJB Module</a>
+                    <ul>
+                        <li><a href="#Exercise_2a">Creating the Persistence Unit</a></li>
+                        <li><a href="#Exercise_2b">Creating the Entity Class</a></li>
+                        <li><a href="#Exercise_2c">Creating the Message-Driven Bean</a></li>
+                        <li><a href="#Exercise_2d">Creating the Session Facade</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_3">Coding the Web Module</a>
+                    <ul>
+                        <li><a href="#Exercise_3a">Creating the ListNews Servlet</a></li>
+                        <li><a href="#Exercise_3b">Creating the PostMessage Servlet</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_4">Building the Application with Maven</a>
+                    <ul>
+                        <li><a href="#Exercise_4a">Working with Project Dependencies</a></li>
+                        <li><a href="#Exercise_4b">Building with Dependencies</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_5">Deploying and Running the Application</a>
+                    <ul>
+                        <li><a href="#Exercise_5a">Deploying From the IDE</a></li>
+                        <li><a href="#Exercise_5b">Deploying From the GlassFish Server Admin Console</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_7">Downloading the Solution Project</a></li>
+            </ul>
+           
+            <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java EE version</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                    <td class="tbltd1">4.x</td>
+            </tr>
+            </tbody>
+        </table>
+            <p><b>Prerequisites</b></p>
+            <p>This document assumes you have some basic knowledge of, or programming experience with, the following technologies:</p>
+            <ul>
+                <li>Java Programming</li>
+                <li>NetBeans IDE</li>
+            </ul>
+
+            <p>Before starting this tutorial you may want to familiarize yourself with
+            the following documentation.</p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Best Practices for Apache Maven in NetBeans IDE</a></li>
+                <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Chapter 1. Introducing Apache Maven</a>
+         (from <a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: The Complete Reference </a>)</li>
+            </ul>
+            <p class="tips">You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FMavenEnterpriseApp.zip">a zip archive of the finished project</a>.</p>
+
+        <a name="intro"></a>
+        <!-- ===================================================================================== -->
+        <h2>Using Maven in the IDE</h2>
+        <p>Support for Maven is fully integrated in NetBeans IDE.
+        Developing a project that uses the Maven framework is nearly identical to developing a project in Ant.
+        However, there are some differences that are related to the way Maven builds projects and works with dependencies.
+        The following tips can help you avoid some problems if you are creating a Maven application for the first time.</p>
+
+
+        <p class="tips"><strong>Check your Maven settings</strong></p>
+        <div class="indent">
+        <p>If this is your first Maven project you will want to check the Maven configuration settings in the Options window.
+        Maven is bundled with the IDE and installed when you install the IDE.</p>
+
+        <ol>
+            <li>Open the Options window in the IDE (Tools &gt; Options; NetBeans &gt; Preferences on Mac).</li>
+            <li>Select the Java category in the Options window and click the Maven tab.</li>
+            <li>Confirm that a Maven Home is specified.
+                <p>You can use the Maven version bundled with the IDE or specify the location of a
+                local Maven installation (requires 2.0.9 or newer).</p></li>
+            <li>Click OK to close the Options window.</li>
+        </ol>
+
+        <p class="notes"><strong>Notes.</strong></p>
+        <ul>
+            <li>Maven support is automatically enabled when Java is enabled in the IDE. 
+            You will need to enable the Java EE plugin if it is not enabled.</li>
+        </ul>
+        </div>
+
+        <p class="tips"><strong>Update your Maven repositories</strong></p>
+        <div class="indent">
+        <p>Local and remote Maven repositories are used for code completion and when building projects.
+        You should update the indexes for the Maven remote repositories to ensure that any artifacts you
+        may need are readily available when you develop your project.
+        You can configure how often the IDE checks for updates in the Maven tab of the Options window.
+        You can perform an immediate check for updates and explore your local and remote Maven repositories
+        in the Services window.</p>
+
+        <ol>
+            <li>Choose Window &gt; Services to open the Services window.</li>
+            <li>Expand the Maven Repositories node in the Services window.</li>
+            <li>Expand a repository node to view the artifacts.</li>
+            <li>Right-click the repository node and choose Update Index in the popup menu.</li>
+        </ol>
+
+        <p>When you click Update Indexes, the IDE will check and download the most recent index for each of your Maven remote repositories.
+        An index represents the current state of the artifacts located in the repository and is used
+        to provide a reference to the artifacts that are available to your application.
+        By default, the IDE does not download an artifact from a repository until the artifact is explicitly required.</p>
+
+        <p class="tips">You can search for an artifact by right-clicking the Maven Repositories node in the Services window and choosing Find.</p>
+        <p class="notes"><strong>Notes.</strong></p>
+        <ul>
+            <li>Indexes are quite large and it can take some time to update them all.</li>
+            <li>If you are using NetBeans IDE 7.1 or earlier you
+            will need to choose Window &gt; Other &gt; Maven Repository Browser and click the
+            Update Indexes (&nbsp;<img  src="../../../images_www/articles/74/javaee/maven-testing//maven-refreshrepo.png" alt="Update Indexes button" title="Update Indexes button" >
+            &nbsp;) at the top of the Maven Repository Browser window.</li>
+        </ul>
+        </div>
+
+
+        <p class="tip">For more details about using Maven in NetBeans IDE, see the section on
+        <a href="https://netbeans.org/kb/docs/java/maven-hib-java-se.html#02">Configuring Maven</a> in the
+        <a href="https://netbeans.org/kb/docs/java/maven-hib-java-se.html">Creating a Maven Swing Application Using Hibernate</a> tutorial
+        and also <a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Best Practices for Apache Maven in NetBeans IDE</a>.</p>
+
+
+        <a name="Exercise_1"></a> 
+            <!--Exercise 1: -->
+        <h2>Creating the Maven Enterprise Application Project</h2>
+
+        <p>The goal of this exercise is to create an enterprise application project
+        using the Maven Enterprise Application archetype bundled with the IDE.
+        The enterprise application archetype will also create an EJB project and a webapp project.</p>
+
+        <p>The IDE includes several Maven archetypes in the New Project wizard to help you quickly create common NetBeans project types
+        such as enterprise application projects (EAR), web application projects (WAR) and EJB module projects (JAR).
+        The wizard also enables you to create projects from archetypes in registered remote repositories.
+        </p>
+
+        <ol>
+            <li>Choose File &gt; New Project (Ctrl-Shift-N; &#8984;-Shift-N on Mac) from the main menu.</li>
+            <li>Select Enterprise Application from the Maven category. Click Next.<br>
+            <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-newproject1.png" class="margin-around b-all" alt="Maven Enterprise Application project type in the New Project wizard" title="Maven Enterprise Application project type in the New Project wizard" >
+            </li>
+            <li>Type <strong>MavenEnterpriseApp</strong> for the the Project Name and set the Project Location.</li>
+            <li>(Optional) Modify the artifact details. Click Next. <br>
+            <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-newproject2.png" class="margin-around b-all" alt="Project details in the New Project wizard" title="Maven Project details in the New Project wizard" >
+            </li>
+            <li>Select GlassFish Server for the Server. </li>
+            <li>Set the Java EE Version to Java EE 6 or Java EE 7.</li>
+            <li>Select Create EJB Module and Create Web App Module. Click Finish.</li>
+        </ol>
+
+
+        <p>When you click Finish, the IDE creates the following projects from the Maven Enterprise Application archetype.</p>
+        <ul>
+            <li><strong>EJB.</strong> (MavenEnterpriseApp-ejb) The EJB project generally contains the source code with the business logic of the application.
+            The EJB project is packaged as an EJB JAR archive.</li>
+            <li><strong>Webapp.</strong> (MavenEnterpriseApp-web) The Webapp project generally contains the presentation layer of the application
+            such as JSF and JSP pages and servlets.
+            The Webapp project may also contain source code with business logic.
+            The Webapp project is packaged as a WAR archive.</li>
+            <li><strong>Assembly.</strong> (MavenEnterpriseApp) The Assembly project is used to assemble an EAR archive from the EJB and WAR archives.
+            The Assembly project does not contain any sources.</li>
+            <li><strong>Enterprise Application.</strong> (MavenEnterpriseApp-ear) The Enterprise Application project does not contain any sources.
+            The Enterprise Application only contains a POM file (<tt>pom.xml</tt>) with details about the modules contained
+            in the enterprise application.</li>
+        </ul>
+
+        <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-projectswindow2.png" class="margin-around b-all" alt="Projects window showing generated projects" title="Projects window showing generated projects" >
+        <p>After you create the enterprise application project, the enterprise application project will be badged if any dependencies are unavailable.
+        If you expand the Dependencies node for the MavenEnterpriseApp-ear project, you can see if
+        any required libraries are missing or not on the classpath.
+        The enterprise application project has dependencies on the JAR and WAR that will be packaged and available after you
+        compile the EJB project and the web project.
+        You can see that <tt>MavenEnterpriseApp-ejb</tt>
+        and <tt>MavenEnterpriseApp-web</tt> are listed as dependencies.</p>
+        <p class="tips">In some cases you will see a Maven icon in the status bar that you can click to run a priming build and resolve missing dependencies.</p>
+        <img  src="../../../images_www/articles/72/javaee/mavenentapp/priming-build.png" class="margin-around b-all" alt="screenshot of IDE showing Maven icon in status bar for running priming build" title="The Maven icon in the status bar enables you to run a priming build" >
+
+
+<!--        <p class="tips"><strong>Specify the target server (NetBeans IDE 7.0)</strong></p>
+            <div class="indent">
+            <p>In NetBeans IDE 7.0 you need to set the target server in the project's Properties window.</p>
+
+            <p>When developing Maven applications you typically do not need to specify an application server until you build the application.
+            However, to take advantage of some of the code generation features in the IDE,
+            it is recommended that you set the target server before you start writing your code.
+            By setting the deployment server, the IDE is able to recognize the technologies supported by the server and enable
+            various options in some wizards to generate code that is optimized for that server.</p>
+
+            <ol>
+                <li>Start the GlassFish Server.</li>
+                <li>Right-click the EJB project node in the Projects window and choose Properties.</li>
+                <li>Select the Run category and select the GlassFish Server. Click OK.</li>
+            </ol>
+
+            <p>By specifying GlassFish as the deployment server before coding,
+            the IDE will enable the option of selecting JTA in the wizard for creating the persistence unit.
+            You can also select to use any of the datasources registered with the server.</p>
+            </div>
+            <p class="notes"><strong>Note.</strong> If you do not specify GlassFish Server 3, the default transaction type when you create the persistence unit
+            will be <tt>RESOURCE-LOCAL</tt>.
+            You will need to edit the <tt>persistence.xml</tt> file manually to specify <tt>JTA</tt> if you want the container to manage the transactions.
+            You will also need to specify a database connection instead of a registered data source in the New Persistence Unit wizard.</p>
+      -->
+            
+            
+            
+        <a name="Exercise_2"></a>
+        <h2>Coding the EJB Project</h2>
+
+        <p>The EJB project contains the business logic of the application.
+            In this application the GlassFish container will manage transactions using the Java Transaction API (JTA).
+        In this tutorial you will create an entity class, a message-driven bean and a session facade for the entity class 
+        in the EJB project.</p>
+            
+            
+            <div class="indent">
+            <a name="Exercise_2a"></a>
+            <h3>Creating the Persistence Unit</h3>
+
+            <p>In this exercise you create a persistence unit in the EJB project.
+            The persistence unit specifies the database connection details and specifies how transactions are managed.
+            For this application you will specify JTA in the New Persistence Unit wizard because you want the GlassFish server to manage the transactions.</p>
+
+            <p>To create the persistence unit, perform the following steps.</p>
+            <ol>
+                <li>Right-click the EJB project node and choose New > Other from the popup menu to open the New File wizard.</li>
+                <li>Select Persistence Unit from the Persistence category. Click Next.</li>
+                <li>Select EclipseLink as the Persistence Provider in the New Persistence Unit dialog box.</li>
+                <li>Select a datasource (for example, select <tt>jdbc/sample</tt> if you want to use JavaDB).
+                   <p>The datasource <tt>jdbc/sample</tt> is bundled with the IDE when you install the IDE and the GlassFish server,
+                   but you can specify a different datasource if you want to use a different database.</p>
+                   <p>You can keep the other default options (persistence unit name, EclipseLink persistence provider).</p></li>
+                <li>Ensure that Use Java Transaction APIs is selected and that the Table Generation Strategy is set to Create
+                    so that the tables based on your entity classes are created when the application is deployed. Click Finish.</li>
+            </ol>
+            <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-persistenceunit.png" class="margin-around b-all" alt="New Persistence Unit wizard" title="New Persistence Unit wizard" >
+            <p>When you click Finish, the IDE creates the XML file <tt>persistence.xml</tt> and opens the file in the editor.
+                In the Projects window, you can see that the file was created in the <tt>Other Sources &gt; src/main/resources &gt; META-INF</tt> directory.
+            The file contains details about connecting to the database and how transactions are managed.
+            If you click the Source tab in the editor, you can see the following details about the persistence unit.</p>
+            <pre class="examplecode">...
+&lt;persistence-unit name="com.mycompany_MavenEnterpriseApp-ejb_ejb_1.0-SNAPSHOTPU" transaction-type="JTA"&gt;
+    &lt;provider&gt;org.eclipse.persistence.jpa.PersistenceProvider&lt;/provider&gt;
+    &lt;jta-data-source&gt;jdbc/sample&lt;/jta-data-source&gt;
+    &lt;exclude-unlisted-classes&gt;false&lt;/exclude-unlisted-classes&gt;
+    &lt;properties&gt;
+      &lt;property name="eclipselink.ddl-generation" value="create-tables"/&gt;
+    &lt;/properties&gt;
+&lt;/persistence-unit&gt;
+            </pre>
+
+            <p>You can see that <tt>JTA</tt> is specified as the transaction type and that the application
+            will use the registered datasource <tt>jdbc/sample</tt>.</p>
+
+
+            <a name="Exercise_2b"></a>
+            <h3>Creating the Entity Class</h3>
+            <p>In this exercise you will create an entity class in the EJB project to represent the objects that will be persisted to the database.
+            To create the NewsEntity entity class, perform the following steps.</p>
+
+            <ol>
+               <li>Right-click the EJB module in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+               <li>Select Entity Class from the Persistence category. Click Next.</li>
+               <li>Type <strong>NewsEntity</strong> for the Class Name.</li>
+               <li>Type <strong>ejb</strong> for the Package and leave the Primary Key Type as Long. Click Finish.</li>
+            </ol>
+            
+            <p>When you click Finish, the entity class <tt>NewsEntity.java</tt> opens in the Source Editor.
+                In the Source Editor, add some fields by performing the following steps.</p>
+            <ol>
+                <li>Add the following field declarations to the class.
+                    <pre class="examplecode">
+private String title;
+private String body;</pre>
+                </li>
+               <li>Right-click in the Source Editor between the class definition and choose Insert Code (Alt-Insert; Ctrl-I on Mac) &gt; Getter and Setter.</li>
+               <li>In the Generate Getters and Setters dialog box, select the <tt>body</tt> and <tt>title</tt> fields. Click Generate.</li>
+               <li><!--Right-click in the editor and choose Fix Imports (Alt-Shift-I; &#8984;-Shift-I on Mac).--> Save your changes to the class.</li>
+            </ol>
+
+            <a name="Exercise_2c"></a>
+            <h3>Creating the Message-Driven Bean</h3>
+            <p>In this exercise you will create a message-driven bean in the EJB project.
+            A message-driven bean is an enterprise bean that enables the asynchronous exchange of messages.
+            The NewsApp application uses a message-driven bean to receive and process messages sent to the queue by a servlet in the web module.</p>
+            
+            <p>To use a message-driven bean in an application, the connector resources used by the bean need to be registered with the server.
+            When you are deploying to the GlassFish server, you can create the resources directly on the server through the Admin Console
+            or you can create the resources on deployment by specifying the details in the <tt>glassfish-resources.xml</tt> descriptor file.
+            When the application is deployed to the server, the server registers the resources based on the descriptor file.
+            When you use the New File wizard in the IDE to create a message-driven bean,
+            the IDE will generate the elements in the descriptor file for you.</p>
+
+            <p class="tips">In a Maven project, the <tt>glassfish-resources.xml</tt> file is located in the <tt>src/main/setup</tt> directory under the project
+            node in the Files window.</p>
+            <ol>
+                <li>Right-click the EJB module in the Projects window and choose New > Other to open the New File wizard.</li>
+                <li>From the Enterprise JavaBeans category, select Message-Driven Bean. Click Next.</li>
+                <li>Type <strong>NewMessage</strong> for the EJB Name.</li>
+                <li>Select <strong>ejb</strong> from the Package drop-down list.</li>
+                <li>Click the Add button next to the Project Destination field to open the Add Message Destination dialog box.</li>
+                <li>In the Add Message Destination dialog box, type <strong>jms/NewMessage</strong> and select Queue for the destination type. Click OK.<br>
+                <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-messagedestination.png" class="margin-around b-all" alt="screenshot of Add Message Destination dialog" title="Add Message Destination dialog" >
+                </li>
+                <li>Confirm that the project destination is correct. Click Next.<br>
+                    <img  src="../../../images_www/articles/80/javaee/mavenentapp/maven-newmdb.png" class="margin-around b-all" alt="screenshot of New Message-Driven Bean wizard" title="New Message-Driven Bean wizard" ></li>
+                <li>Accept the default settings in the Activation Config Properties. Click Finish.
+                    <p>When you click Finish, the IDE generates the bean class and adds the following annotations that identify the class as
+                        a message-driven bean and configuration properties.</p>
+                    <pre class="examplecode">
+@MessageDriven(mappedName = "jms/NewMessage", activationConfig =  {
+        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
+    })
+public class NewMessage implements MessageListener {
+
+    public NewMessage() {
+    }
+
+    @Override
+    public void onMessage(Message message) {
+    }
+}</pre>
+                </li>
+
+                <li>Inject the <tt>MessageDrivenContext</tt> resource into the class by adding the following annotated field to the class.
+
+                    <pre class="examplecode">public class NewMessage implements MessageListener {
+
+<strong>@Resource
+private MessageDrivenContext mdc;</strong>
+</pre>
+                </li>
+               <li>Introduce the entity manager into the class by adding the following annotated field (in bold).
+                   <pre class="examplecode">
+public class NewMessage implements MessageListener {
+
+@Resource
+private MessageDrivenContext mdc;
+<strong>@PersistenceContext(unitName="com.mycompany_MavenEnterpriseApp-ejb_ejb_1.0-SNAPSHOTPU")
+private EntityManager em;</strong>
+                   </pre>
+                   <p>The <tt>@PersistenceContext</tt> annotation specifies the context by declaring the persistence unit.
+                   The <tt>unitName</tt> value is the name of the persistence unit.</p>
+               <li>Add the following <tt>save</tt> method (in bold).
+
+<pre class="examplecode">public NewMessage() {
+}
+
+@Override
+public void onMessage(Message message) {
+}
+
+<strong>private void save(Object object) {
+    em.persist(object);
+}</strong></pre>
+               </li>
+                <li>Modify the <tt>onMessage</tt> method by adding the following (in bold) to the body:
+                <pre class="examplecode">
+public void onMessage(Message message) {
+     <strong>ObjectMessage msg = null;
+     try {
+          if (message instanceof ObjectMessage) {
+          msg = (ObjectMessage) message;
+              NewsEntity e = (NewsEntity) msg.getObject();
+              save(e);
+          }
+     } catch (JMSException e) {
+          e.printStackTrace();
+          mdc.setRollbackOnly();
+     } catch (Throwable te) {
+          te.printStackTrace();
+     }</strong>
+}</pre>
+                </li>
+                <li>Fix your import statements (Ctrl-Shift-I; &#8984;-Shift-I on Mac) and save your changes.
+                <p class="notes"><strong>Note:</strong> When generating the import statements,
+                you want to make sure to import the <strong><tt>jms</tt></strong> and
+                <strong><tt>javax.annotation.Resource</tt></strong> libraries.</li>
+        </ol>
+
+             <p class="tips">For more details about message-driven beans,
+        see the chapter <a href="http://download.oracle.com/javaee/6/tutorial/doc/gipko.html">What is a Message-Driven Bean?</a>
+        in the <a href="http://download.oracle.com/javaee/6/tutorial/doc/index.html">Java EE 6 Tutorial, Part I</a>.</p>
+
+
+        <a name="Exercise_2d"></a>
+        <h3>Creating the Session Bean</h3>
+        <p>In this exercise you will use a wizard to create a session bean facade for the NewsEntity entity class.
+            The wizard will generate <tt>create</tt>, <tt>edit</tt> and <tt>find</tt> methods that will be accessed from the servlets in the webapp project.</p>
+        <ol>
+            <li>Right-click the EJB module and choose New &gt; Other.</li>
+            <li>From the Persistence category, select Session Beans for Entity Classes and click Next.</li>
+            <li>Select <strong>ejb.NewsEntity</strong> from the list of available entity classes and click Add to move the class to
+            the Selected Entity Classes pane. Click Next.</li>
+            <li>Select <strong>ejb</strong> as the Package. Click Finish.</li>
+        </ol>
+        
+        <p>When you click Finish the IDE generates two session facade classes: <tt>AbstractFacade.java</tt>, 
+            and <tt>NewsEntityFacade.java</tt> which extends the abstract facade class. 
+        The abstract facade class defines several methods that are commonly used with entity classes.</p>
+        <img  src="../../../images_www/articles/80/javaee/mavenentapp/maven-sessionwizard.png" class="margin-around b-all" alt="screenshot of Session Beans for Entity Classes wizard" title="Session Beans for Entity Classes wizard" >
+<!--        <p>Interfaces are optional in Java EE 6 and Java EE 7.
+        The local interface is optional and the servlet
+        in the web module can access the session bean directly via a no-interface facade.</p>-->
+
+            </div>
+
+    <a name="Exercise_3"></a>
+    <h2>Coding the Web Application</h2>
+    <p>In this section you will create two servlets in the webapp project.</p>
+        
+    <div class="indent">
+        <a name="Exercise_3a"></a>
+        <h3>Creating the ListNews Servlet</h3>
+        <p>In this exercise you will create the ListNews servlet that will be used to display a list of posted messages.
+        You will use annotations to inject the session facade and access the <tt>findAll</tt> method and retrieve
+        the posted messages.</p>
+        
+        <ol>
+            <li>Right-click the web module project and choose New &gt; Servlet.</li>
+            <li>Type <strong>ListNews</strong> for the Class Name.</li>
+            <li>Type <strong>web</strong> for the Package name. Click Finish. 
+            <p>When you click Finish, the class <tt>ListNews.java</tt> opens in the Source Editor.</p></li>
+            <li>Right-click in the Source Editor between the class definition and choose Insert Code (Alt-Insert; Ctrl-I on Mac) &gt; Call Enterprise Bean.</li>
+            <li>In the Call Enterprise Bean dialog box, expand the MavenEnterpriseApp-ejb node and select NewsEntityFacade.
+            Click OK.<br>
+            <img  src="../../../images_www/articles/80/javaee/mavenentapp/maven-callbean.png" class="margin-around b-all" alt="Call Enterprise Bean dialog" title="Call Enterprise Bean dialog" >
+            <p>When you click OK, the EJB resource is injected into the servlet using the <tt>@EJB</tt> annotation.</p>
+<pre class="examplecode">@WebServlet(name = "ListNews", urlPatterns = {"/ListNews"})
+public class ListNews extends HttpServlet {
+    @EJB
+    private NewsEntityFacade newsEntityFacade;</pre>
+            </li>
+            <li>In the <tt>processRequest</tt> method, modify the method by 
+                adding the following lines (in bold) to the body of the method:
+                <pre class="examplecode">
+out.println("&lt;h1&gt;Servlet ListNews at " + request.getContextPath () + "&lt;/h1&gt;");
+<strong>
+List news = newsEntityFacade.findAll();
+for (Iterator it = news.iterator(); it.hasNext();) {
+  NewsEntity elem = (NewsEntity) it.next();
+  out.println(" &lt;b&gt;"+elem.getTitle()+" &lt;/b&gt;&lt;br /&gt;");
+  out.println(elem.getBody()+"&lt;br /&gt; ");
+}
+out.println("&lt;a href='PostMessage'&gt;Add new message&lt;/a&gt;");
+</strong>
+out.println("&lt;/body&gt;");
+   </pre>
+                <p class="notes"><strong>Note.</strong> You might need to uncomment the code if
+                you are using an earlier version of the IDE.</p>
+            </li>
+            <li>Fix your imports (Ctrl-Shift-I; &#8984;-Shift-I on Mac) and save your changes.
+                <p>When generating the import statements, you want to import the <tt>java.util</tt> libraries.</p></li>
+        </ol>
+
+        <a name="Exercise_3b"></a>
+        <h3>Creating the PostMessage Servlet</h3>
+
+        <p>In this exercise you will create the PostMessage servlet that will be used to post messages.
+        You will use annotations to inject the JMS resources you created directly into the servlet,
+        specifying the variable name and the name to which it is mapped.
+        You will then add the code to send the JMS message and the code for the HTML form for adding a message.</p>
+        <ol>
+            <li>Right-click the web module project and choose New &gt; Servlet.</li>
+            <li>Type <strong>PostMessage</strong> for the Class Name.</li>
+            <li>Select <strong>web</strong> for the Package name. Click Finish.
+            <p>When you click Finish, the class <tt>PostMessage.java</tt> opens in the Source Editor.</p>
+            </li>
+
+
+            <li>In the Source Editor, use annotations to inject the <tt>ConnectionFactory</tt> and <tt>Queue</tt>
+                resources by adding the following field declarations.
+                <pre class="examplecode">
+@WebServlet(name="PostMessage", urlPatterns={"/PostMessage"})
+public class PostMessage extends HttpServlet {
+   <strong>@Resource(mappedName="jms/NewMessageFactory")
+   private  ConnectionFactory connectionFactory;
+
+   @Resource(mappedName="jms/NewMessage")
+   private  Queue queue;</strong></pre>
+
+                </li>
+                <li>Fix your imports to import the <strong><tt>javax.jms</tt></strong> libraries.<br>
+                <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-searchdepend1.png" class="margin-around b-all" alt="screenshot of Fix All Imports dialog" title="Fix All Imports dialog" >
+                <p class="notes"><strong>Note.</strong> If the IDE does not offer <tt>javax.jms</tt> as an option, you
+                can search the repositories for the correct artifact by clicking the suggestion icon in the margin next to
+                <tt>private ConnectionFactory connectionFactory;</tt> and choosing Search Dependency at Maven Repositories.</p>
+                <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-searchdependencies.png" class="margin-around b-all" alt="screenshot of hint in editor to search repositories" title="Hint in editor to search repositories for dependencies" >
+                <p>You can use the Search in Maven Repositories dialog to locate the <tt>javaee-api-6.0</tt> artifact that contains <tt>ConnectionFactory</tt>.</p>
+                <img  src="../../../images_www/articles/80/javaee/mavenentapp/maven-searchdepend2.png" class="margin-around b-all" alt="screenshot of Search in Maven Repositories dialog" title="Search in Maven Repositories dialog" >
+            </li>
+            <li>Add the following code to send the JMS messages to the <tt>processRequest</tt> method.
+      
+        <pre class="examplecode">
+response.setContentType("text/html;charset=UTF-8");
+
+<strong>// Add the following code to send the JMS message
+String title=request.getParameter("title");
+String body=request.getParameter("body");
+if ((title!=null) && (body!=null)) {
+    try {
+        Connection connection = connectionFactory.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        MessageProducer messageProducer = session.createProducer(queue);
+
+        ObjectMessage message = session.createObjectMessage();
+        // here we create NewsEntity, that will be sent in JMS message
+        NewsEntity e = new NewsEntity();
+        e.setTitle(title);
+        e.setBody(body);
+
+        message.setObject(e);
+        messageProducer.send(message);
+        messageProducer.close();
+        connection.close();
+        response.sendRedirect("ListNews");
+
+    } catch (JMSException ex) {
+        ex.printStackTrace();
+    }
+}</strong></pre>
+            </li>
+            <li>Add the following code (in bold) for the web form for adding a message.
+            <pre class="examplecode">
+out.println("Servlet PostMessage at " + request.getContextPath() + "&lt;/h1&gt;");
+
+<strong>// The following code adds the form to the web page
+out.println("&lt;form&gt;");
+out.println("Title: &lt;input type='text' name='title'&gt;&lt;br/&gt;");
+out.println("Message: &lt;textarea name='body'&gt;&lt;/textarea&gt;&lt;br/&gt;");
+out.println("&lt;input type='submit'&gt;&lt;br/&gt;");
+out.println("&lt;/form&gt;");
+</strong>
+out.println("&lt;/body&gt;");
+    </pre>
+                <p class="notes"><strong>Note.</strong> You might need to uncomment the code if
+                you are using an earlier version of the IDE.</p>
+            </li>
+            <li>Fix your imports and save your changes.<br/>
+
+            <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-jms-imports.png" class="margin-around b-all" alt="screenshot of Fix All Imports dialog" title="Fix All Imports dialog" >
+            <p class="notes"><strong>Note.</strong> You want to import the <strong><tt>javax.jms</tt></strong> libraries for
+            <tt>Connection</tt>, <tt>ConnectionFactory</tt>, <tt>Session</tt> and <tt>Queue</tt>.</p>
+            </li>
+        </ol>
+    </div>
+
+            
+    <a name="Exercise_4"></a>
+    <h2>Building the Application with Maven</h2>
+    <p>Now that you are finished coding the application, you can use Maven to build the enterprise application.
+    In this section you will build and package the projects in an EAR archive.
+    The EAR archive will contain an EJB JAR archive and a WAR archive.
+    After you create the EAR archive you can deploy the archive to the target server.</p>
+
+            
+        <div class="indent">
+        <a name="Exercise_4a"></a>
+        <h3>Working With Project Dependencies</h3>
+        <p>In this exercise you will examine the POM (<tt>pom.xml</tt>) of the web project 
+            and modify the POM to prevent unnecessary artifacts from being included in the WAR when packaging.
+<!--        This will prevent the EAR archive from containing two copies of the EJB archive.-->
+
+        Each Maven project contains a <tt>pom.xml</tt> file that contains details about the contents of archives.
+        Any external libraries that are required by the project are listed as dependencies in the POM.
+        You can modify the POM to specify the dependencies that need to be included or should be excluded when packaging the archive.</p>
+
+        <p>In this application, the EJB JAR and the WAR archives will be packaged in an EAR archive.
+        If you look at the <tt>pom.xml</tt> of the MavenEnterpriseApp-ear project, you can see that the EJB and WAR are declared as dependencies.</p>
+
+        <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-earpom.png" class="margin-around b-all" alt="pom.xml of EAR project" title="pom.xml of EAR project" >
+
+        <p>If you look at the <tt>pom.xml</tt> of the web project in the editor you can see that the EJB archive is declared as a dependency
+            and the scope is specified as <tt>provided</tt>. 
+            When the value of the scope element of an artifact is <tt>provided</tt>, the artifact will not be included during packaging.
+        The web project requires the EJB archive as a dependency, but for this application you do not want the EJB archive
+        to be included in the WAR during packaging because
+        the EJB archive will be available and provided as part of the EAR archive.</p>
+        <img  src="../../../images_www/articles/80/javaee/mavenentapp/maven-webpom.png" class="margin-around b-all" alt="pom.xml of Web App project" title="pom.xml of Web App project" >
+
+        <p class="tips">You can open <tt>pom.xml</tt> in the editor and click the Graph tab to see
+            a visual representation of the project dependencies.
+            If you are using an older version of the IDE you can right-click in <tt>pom.xml</tt> in the editor
+            and choose Show Dependency Graph.
+            You can place your cursor over an artifact to display a tooltip with the artifact details.</p>
+        <img  src="../../../images_www/articles/80/javaee/mavenentapp/maven-webpomgraph.png" class="margin-around b-all" alt="screenshot of graph of dependencies" title="Graph of dependencies" >
+
+        <p>Perform the following steps to modify the POM of the web project to add a <tt>scope</tt> element to
+            the dependency on the <tt>javaee-api</tt> artifact.</p>
+        <ol>
+            <li>Expand the Project Files node under the web project.</li>
+            <li>Double-click <tt>pom.xml</tt> to open the file in the editor.</li>
+            <li>Confirm that <tt>provided</tt> is set for the value of the <tt>&lt;scope&gt;</tt> for the 
+                <tt>javaee-api</tt> artifact.
+                <p>If the value is not <tt>provided</tt> you need to edit the POM to make
+                    the following changes:</p>
+            <pre class="examplecode">
+&lt;dependency&gt;
+    &lt;groupId&gt;javax&lt;/groupId&gt;
+    &lt;artifactId&gt;javaee-api&lt;/artifactId&gt;
+    &lt;version&gt;7.0&lt;/version&gt;
+    &lt;type&gt;jar&lt;/type&gt;
+    <strong>&lt;scope&gt;provided&lt;/scope&gt;</strong>
+&lt;/dependency&gt;</pre>
+            <p class="tips">You can use the code completion in the POM editor to help you edit the file.</p>
+            <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-addscope-javaee.png" class="margin-around b-all" alt="screenshot of code completion in POM" title="code completion for scope element in POM" >
+            <p>By declaring that the dependency is provided, Maven will not package the artifact when building the WAR archive.</p></li>
+            <li>Save your changes.</li>
+        </ol>
+        
+            <a name="Exercise_4b"></a>
+            <h3>Building with Dependencies</h3>
+            <p>The Maven build framework proceeds through a specific sequence of phases, and each phase consists of one or more goals
+            and can be configured to use various Maven plugins.
+            The Build with Dependencies menu item is mapped to the <tt>install</tt> phase of the Maven build lifecycle
+            and is configured to use the Reactor plugin.
+            When you choose Build with Dependencies in the popup menu, Maven builds the application and any required dependencies and
+            copies the build artifacts to the local repository.</p>
+
+            <p class="tips">You can modify how Maven phases and goals are mapped to menu actions in the Actions panel of the project's Properties dialog box.</p>
+
+            <p>To build the EAR archive, perform the following step.</p>
+            <ul>
+                <li>Right-click the MavenEnterpriseApp-ear project node and choose Build with Dependencies.</li>
+            </ul>
+            
+            <p>When you build the EAR project using the Reactor plugin, the sub-projects that are dependencies of the EAR project
+            are built before the EAR project is built. The Output window displays the build order.</p>
+
+            <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-reactor1.png" class="margin-around b-all" alt="Output window showing Reactor build order" title="Output window showing Reactor build order" >
+
+            <p>The results of the build are also displayed in the Output window.</p>
+            <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-reactor2.png" class="margin-around b-all" alt="Output window showing Reactor build status" title="Output window showing Reactor build status" >
+            <p>After you build the EAR project, you can see the final EAR archive inside
+            the <tt>target</tt> directory under the EAR project node in the Files window.</p>
+            <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-earfileswindow1.png" class="margin-around b-all" alt="Files window showing EAR archive" title="Files window showing EAR archive" >
+
+            
+            <p>If you used the default artifact name <tt>com.mycompany</tt>, you can use the Maven Repository Browser to
+            view the build artifacts by expanding <tt>com.mycompany</tt> in the Local Repository.</p>
+
+            <p class="tips">For more details about building Maven projects, see
+            <a href="http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html">Maven - Introduction to the Build Lifecycle</a>
+            at <a href="http://maven.apache.org">maven.apache.org</a>.</p>
+        </div>
+
+        <a name="Exercise_5"></a>
+        <h2>Deploying and Running the Application</h2>
+        <p>This section describes two methods for deploying the EAR archive to the server.
+        You can deploy the application to the GlassFish server by using a menu action in the IDE or by
+        using the Deploy tool in the GlassFish Admin Console.</p>
+
+        <div class="indent">
+            <a name="Exercise_5a"></a>
+            <h3>Deploying and Running the Application from the IDE</h3>
+            <p>In this exercise you will use the Run action to deploy the EAR archive to the the GlassFish server.
+            After you deploy the application you will open the ListNews page of the application in your browser and add a message.</p>
+            
+            <ol>
+                <li>Right-click the EAR project node in the Projects window and choose Run.
+                    <p>When you click Run the IDE will deploy the EAR archive and create the JMS resources on the server.
+                        The IDE will open the default project index page 
+                        (<a href="http://localhost:8080/MavenEnterpriseApp-web/">http://localhost:8080/MavenEnterpriseApp-web/</a>) 
+                        in your browser.</p></li>
+                <li>Open your browser to the following URL to display the ListNews page.
+                <p><a href="http://localhost:8080/MavenEnterpriseApp-web/ListNews">http://localhost:8080/MavenEnterpriseApp-web/ListNews</a>.</p>
+                <p>When you first run the project, the database is empty and there are no messages to display.</p>
+                <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-browser1.png" class="margin-around b-all" alt="ListNews page open in the browser" title="ListNews page open in the browser" ></li>
+                <li>Click Add new message.</li>
+                <li>Type a message in the form in the PostMessage servlet. Click Submit Query.<br>
+                <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-browser2.png" class="margin-around b-all" alt="PostMessage page open in the browser" title="PostMessage page open in the browser" >
+                </li>
+            </ol>
+
+            <p>When you add a message with the PostMessage servlet, the message is sent to the 
+                message-driven bean for writing to persistent storage, and the ListNews servlet is called to display the messages in the database.
+                The list of messages in the database retrieved by ListNews often does not yet contain the new message because our message service is asynchronous.
+            </p>
+            
+            <p class="tips">Compile on Save and Deploy on Save are enable by default on Maven projects that specify GlassFish server as the target server.
+            For example, if you modify a save a servlet, you can reload the servlet in the browser and view the changes without
+            redeploying the application.</p>
+            
+            
+
+                
+<!--                <img  src="../../../images_www/articles/72/javaee/mavenentapp/maven-selectserver.png" class="margin-around b-all" alt="Select Deployment Server dialog" title="Select Deployment Server dialog" >-->
+            </div>
+
+            <a name="Exercise_5b"></a>
+            <h3>Deploying From the GlassFish Admin Console</h3>
+            <p>In this exercise you will deploy the EAR archive using the Deploy tool in the GlassFish Admin Console.</p>
+            <ol>
+                <li>Expand the Servers node in the Services window.</li>
+                <li>Start the GlassFish server.</li>
+                <li>Right-click the GlassFish server node and choose View Admin Console to open the GlassFish Admin Console
+                in your browser.</li>
+                <li>Click the Applications node in the left pane of the Admin Console.</li>
+                <li>Click the Deploy button in the main pane of the Admin Console.</li>
+                <li>Click Browse to locate the EAR archive for the enterprise application.
+                    <p>The EAR archive is located in the <tt>target</tt> directory inside the enterprise application directory
+                    on your local system.</p></li>
+                <li>Click OK.</li>
+            </ol>
+            <p>When you click OK, the GlassFish deploy tool deploys the application.</p>
+
+            <p class="notes"><strong>Note.</strong> If you deploy the application using the deploy tool in the GlassFish Admin Console, you will also need to
+            manually create the resources that are required by the application if they do not exist.</p>
+        </div>
+
+        
+            
+                <a name="Exercise_7"></a>
+                <h2>Downloading the Solution Project</h2>
+                <p>You can download the solution to this tutorial as a project in the following ways.</p>
+                <ul>
+                    <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FMavenEnterpriseApp.zip">a zip archive of the finished project</a>.</li>
+                    <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+                    <ol>
+                        <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                        <li>In the Checkout dialog box, enter the following Repository URL:<br>
+                            <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br>
+                            Click Next.</li>
+                        <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                        <li>Expand the root node and select <strong>samples/javaee/MavenEnterpriseApp</strong>. Click OK.</li>
+                        <li>Specify the Local Folder for the sources (the local folder must be empty).</li>
+                        <li>Click Finish.
+                            <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                            and checks out the project sources.</p>
+                        </li>
+                        <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+                    </ol>
+                        <p class="notes"><strong>Notes.</strong> For more about installing Subversion,
+                        see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</p>
+                    </li>
+                </ul>
+                
+
+
+            <!--
+            <a name="Exercise_5"></a>
+                
+            <h2>Troubleshooting</h2>
+            <p>The following are some of the problems you may encounter when creating your project.</p>
+            <div class="indent">
+                <h3 class="tutorial">Problem with JMS Resources</h3>
+                <p>When using the wizard to create JMS resources, 
+                you may see the following server error message in the output window:</p>
+                <pre>[com.sun.enterprise.connectors.ConnectorRuntimeException:
+                    JMS resource not created : jms/Queue]
+                </pre>
+                <p>This message could indicate that the JMS resource was not created or was not registered with the application server.
+                You can use the Admin Console of the application server to check, create and edit JMS resources.</p>
+                <p>To open the Admin Console, do the following:</p>
+                <ol>
+                    <li>Confirm that the application server is running by expanding the Servers node in the Services window of the IDE.
+                    A small green arrow next to the application server node indicates the server is running.</li>
+                    <li>Right-click the application server node and choose View Admin Console to open the login window in your browser.</li>
+                    <li>Log in to the server. The default user name and password are <tt>admin</tt> and <tt>adminadmin</tt>.</li>
+                    <li>In the Admin Console in your browser, expand the Resources node and JMS Resources node in the left frame.</li>
+                    <li>Click on the Connection Factories and Destination Resources links in the left frame to check if the resources are
+                        registered with the server and if necessary modify the resources. If the resources do not exist, you can create them
+                    in the Admin Console.</li>
+                </ol>
+                <p>You need to make sure that the JMS connection factory resource
+                   in the PostMessage servlet is mapped to the correct JNDI name of the JMS connection factory resource
+                   registered with the Sun Java System Application Server.</p>
+                <p>The following resources should be registered with the Sun Java System Application Server:</p>
+                <ul>
+                    <li>a Destination resource with the JNDI name <tt>jms/NewMessage</tt> and type <tt>javax.jms.Queue</tt></li>
+                    <li>a Connection Factory resource with the JNDI name <tt>jms/NewMessageFactory</tt> and type <tt>	
+                    javax.jms.QueueConnectionFactory</tt></li>
+                </ul>
+
+                <p>make sure that the import in PostMessage is not <tt>javax.resource.cci.ConnectionFactory</tt></p>
+
+                <h3 class="tutorial">Problem with the Datasource</h3>
+
+            </div>-->
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Enterprise%20Application%20Using%20Maven">Send Feedback on This Tutorial</a></div>
+            <br style="clear:both;" >
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>See Also</h2>
+            <p>For more information about using NetBeans IDE to develop Java EE applications, see the following resources:
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Introduction to Java EE Technology</a></li>
+            <li><a href="javaee-gettingstarted.html">Getting Started with Java EE Applications</a></li>
+            <li><a href="maven-entapp-testing.html">Testing a Maven Enterprise Application</a></li>
+            <li><a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a></li>
+            </ul>
+            <p>You can find more information about using Enterprise Beans in the
+            <a href="http://download.oracle.com/javaee/7/tutorial/doc/">Java EE 7 Tutorial</a>.</p>
+            <p>To send comments and suggestions, get support, and keep informed on the latest
+              developments on the NetBeans IDE Java EE development features, <a href="../../../community/lists/top.html">join
+              the nbj2ee mailing list</a>.</p>
+    </body>
+</html>

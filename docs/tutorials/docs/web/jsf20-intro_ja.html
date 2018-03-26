@@ -1,0 +1,896 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>JavaServer Faces 2.x入門 - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial demonstrating how to create a web
+              application with JSF 2.x support in NetBeans">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              JavaServer Faces, JavaServer Faces 2.0, JSF, JSF 2.1, web application">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+    </head>
+    
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>JavaServer Faces 2.x入門</h1>
+
+        <p>JavaServer Faces (JSF)は、Java Webアプリケーション用のユーザー・インタフェース(UI)フレームワークです。これは、Javaアプリケーション・サーバー上で実行され、UIをターゲット・クライアントにレンダリングするアプリケーションの記述と維持にかかる負荷を大幅に軽減するように設計されています。JSFは、次のような方法で使いやすさを実現します。</p>
+
+        <ul class="toc">
+            <li>再利用可能なUIコンポーネントのセットからUIを簡単に構築できる</li>
+            <li>UIとの間でアプリケーション・データの移行を簡素化</li>
+            <li>サーバー・リクエスト間でのUIの状態管理を支援</li>
+            <li>クライアントが生成したイベントをサーバー側アプリケーション・コードに記述するための簡易モデルを提供</li>
+            <li>カスタムUIコンポーネントを簡単にビルドして再利用できる</li>
+        </ul>
+
+        <p>JSFフレームワークの詳細は、<a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop.htm">Java EE 7チュートリアル、第12章のJavaServer Facesテクノロジを使用した開発</a>を参照してください。</p>
+
+        <p>このチュートリアルでは、NetBeans IDEを使用してJSF 2.xサポートをWebアプリケーションに適用する方法を説明します。最初にJSF 2.xフレームワーク・サポートを基本的なWebアプリケーションに追加してから、次のタスクの実行に進みます。</p>
+
+        <ul class="toc">
+            <li>リクエスト・データを処理するJSF管理対象Beanの作成</li>
+            <li>管理対象BeanをアプリケーションのWebページに記述</li>
+            <li>WebページをFaceletsテンプレート・ファイルに変換</li>
+        </ul>
+
+        <p>NetBeans IDEは、JavaServer Facesのサポートを長期にわたって提供してきました。JSF 2.0およびJava EE 6のリリース以降、NetBeans IDEはJSF 2.0およびJSF 2.1のサポートを提供してきました。詳細は、<a href="jsf20-support.html">NetBeans IDEでのJSF 2.xのサポート</a>を参照してください。</p>
+
+
+        <h3>内容</h3>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <ul id="collapsableList">
+            <li><a href="#support">WebアプリケーションへのJSF 2.xサポートの追加</a></li>
+            <li><a href="#managedBean">管理対象Beanの作成</a>
+
+                <ul>
+                    <li><a href="#usingManagedBean">管理対象Beanウィザードの使用</a></li>
+                    <li><a href="#creatingConstructor">コンストラクタの作成</a></li>
+                    <li><a href="#addingProperties">プロパティの追加</a></li>
+                </ul></li>
+
+            <li><a href="#wire">ページへの管理対象Beanの接続</a>
+
+                <ul>
+                    <li><a href="#index">index.xhtml</a></li>
+                    <li><a href="#response">response.xhtml</a></li>
+                </ul></li>
+
+            <li><a href="#template">Faceletsテンプレートの適用</a>
+
+                <ul>
+                    <li><a href="#templateFile">Faceletsテンプレート・ファイルの作成</a></li>
+                    <li><a href="#templateClient">テンプレート・クライアント・ファイルの作成</a></li>
+                </ul></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+        <p id="requiredSoftware">このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバンドル版</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://glassfish.dev.java.net/">GlassFishサーバー</a></td>
+                    <td class="tbltd1">Open Source Edition 3.xまたは4</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FjsfDemo.zip"><code>jsfDemo</code> Webアプリケーション・プロジェクト</a></td>
+                    <td class="tbltd1">n/a</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>注意: </strong></p>
+
+        <div class="indent">
+            <ul>
+                <li>NetBeans IDEのJavaバンドル版には、このチュートリアルに必要な、Java EE準拠サーバーのGlassFishサーバーも含まれています。</li>
+
+                <li>プロジェクトを、正常に機能するソリューションと比較するには、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FjsfDemoCompleted.zip">完成したサンプル・プロジェクト</a>をダウンロードします。</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="support">WebアプリケーションへのJSF 2.xサポートの追加</h2>
+
+        <p>まず、IDEで<a href="#requiredSoftware"><code>jsfDemo</code> Webアプリケーション・プロジェクト</a>を開きます。IDEでプロジェクトが開いたら、プロジェクトの「プロパティ」ウィンドウを使用して、フレームワーク・サポートを追加できます。</p>
+
+        <p class="tips">IDEで、JSF 2.xをサポートする新しいプロジェクトを作成することもできます。詳細は、<a href="jsf20-support.html#creatingSupport">JSF 2.xサポートを含む新しいプロジェクトの作成</a>を参照してください。</p>
+
+        <ol>
+            <li>IDEのメイン・ツールバーで「プロジェクトを開く」(<img alt="「プロジェクトを開く」ボタン" src="../../../images_www/articles/72/web/jsf20-intro/open-project-btn.png">)ボタンをクリックするか、[Ctrl]-[Shift]-[O] (Macの場合は[&#8984]-[Shift]-[O])を押します。</li>
+
+            <li>「プロジェクトを開く」ダイアログで、展開したチュートリアル・プロジェクトを格納した場所に移動します。選択して「プロジェクトを開く」をクリックし、IDEで開きます。
+                <p class="notes"><strong>注意:</strong>IDEのインストール時にJUnitプラグインをインストールしていない場合は、NetBeansプロジェクトを開くときにJUnitライブラリへの参照を解決するよう求められることがあります。</p>
+            </li>
+
+            <li>プロジェクトを実行して、ブラウザでどのように表示されるかを確認します。「プロジェクト」ウィンドウで「<code>jsfDemo</code>」プロジェクト・ノードを右クリックして「実行」を選択するか、メイン・ツールバーの「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png">)ボタンをクリックします。プロジェクトがパッケージ化されてGlassFishサーバーにデプロイされ、ブラウザが開いて開始ページ(<code>index.xhtml</code>)が表示されます。<br><img alt="ブラウザの開始ページのスクリーンショット" class="margin-around b-all" id="staticPage" src="../../../images_www/articles/72/web/jsf20-intro/run-project.png" title="プロジェクトを実行してブラウザで表示"></li>
+
+            <li>「送信」ボタンをクリックします。レスポンス・ページ(<code>response.xhtml</code>)が次のように表示されます。<br> <img alt="ブラウザに表示されたレスポンス・ページのスクリーンショット" class="margin-around b-all" id="originalVersion" src="../../../images_www/articles/72/web/jsf20-intro/response.png" title="現在静的なページである開始ページとレスポンス・ページ">
+
+                <p>
+                現在、開始ページとレスポンス・ページは静的なページで、<code>stylesheet.css</code>ファイルと<code>duke.png</code>イメージがあり、ブラウザからアクセスできる唯一のアプリケーション・ファイルです。</p></li>
+
+            <li>「プロジェクト」ウィンドウ([Ctrl]-[1]、Macの場合は[&#8984]-[1])で、プロジェクト・ノードを右クリックし、「プロパティ」を選択して、「プロジェクト・プロパティ」ウィンドウを開きます。</li>
+
+            <li>「フレームワーク」カテゴリを選択し、「追加」ボタンをクリックします。 </li>
+            <li>「フレームワークの追加」ダイアログ・ボックスで、「JavaServer Faces」を選択します。「OK」をクリックします。 <br> <img alt="「プロジェクト・プロパティ」ウィンドウ: 「フレームワークの追加」ダイアログ" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-intro/add-framework.png" title="既存のプロジェクトへのJSFサポートの追加">
+
+                <p>
+                JavaServer Facesを選択すると、様々な構成オプションが使用可能になります。「ライブラリ」タブで、プロジェクトがJSF 2.xライブラリにアクセスする方法を指定できます。使用可能なJSFバージョンは、IDEとGlassFishサーバーのバージョンによって異なります。デフォルト・オプションでは、サーバー(GlassFishサーバー)に含まれているライブラリを使用します。ただし、IDEではJSF 2.xライブラリもバンドルされます。プロジェクトで登録されているライブラリを使用する場合は、「登録されているライブラリ」オプションを選択できます。</p>
+
+                <img alt="JSF構成設定: 「ライブラリ」タブ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/libraries-tab.png" title="JSF 2.xライブラリへのアクセスの指定"></li>
+
+            <li>「構成」タブをクリックします。Facesサーブレットをプロジェクトのデプロイメント・ディスクリプタにどのように登録するかを指定できます。また、プロジェクトでFaceletsまたはJSPページを使用するかどうかを示すこともできます。<br> <img alt="JSF構成設定: 「構成」タブ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/jsf-configuration.png" title="Facesサーブレット・オプションと優先言語の指定">
+                
+                <p>プロジェクトで使用する様々なJSFコンポーネント・スイートを「コンポーネント」タブで簡単に構成することもできます。コンポーネント・スイートを使用するには、必要なライブラリをダウンロードし、Antライブラリ・マネージャを使用して、コンポーネント・スイートのライブラリを含む新しいライブラリを作成する必要があります。</p>
+                
+                <img alt="JSF構成設定: 「構成」タブ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/jsf-components.png" title="Facesサーブレット・オプションと優先言語の指定">
+            </li>
+
+            <li>「OK」をクリックして変更を確定し、「プロジェクト・プロパティ」ウィンドウを終了します。</li>
+        </ol>
+
+        <p>プロジェクトにJSFサポートを追加すると、プロジェクトの<code>web.xml</code>デプロイメント・ディスクリプタが変更されて次のようになります。変更場所は<strong>太字</strong>で示されています。</p>
+
+        <div class="indent">
+        <pre class="examplecode">
+&lt;web-app version=&quot;3.0&quot; xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;&gt;
+    <strong>&lt;context-param&gt;
+        &lt;param-name&gt;javax.faces.PROJECT_STAGE&lt;/param-name&gt;
+        &lt;param-value&gt;Development&lt;/param-value&gt;
+    &lt;/context-param&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;javax.faces.webapp.FacesServlet&lt;/servlet-class&gt;
+        &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+    &lt;/servlet&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/faces/*&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;</strong>
+    &lt;welcome-file-list&gt;
+        &lt;welcome-file&gt;<strong>faces/</strong>index.xhtml&lt;/welcome-file&gt;
+    &lt;/welcome-file-list&gt;
+&lt;/web-app&gt;</pre></div>
+
+        <p class="alert"><strong>重要: </strong>例に示すように、<code>web.xml</code>に<code>&lt;welcome-file></code>エントリが1つのみ含まれ、このエントリに'<code>faces/</code>'が含まれていることを確認します。これにより、プロジェクトの開始ページ(<code>index.xhtml</code>)が、Facesサーブレットを介してブラウザに表示されるようになります。Faceletsタグ・ライブラリ・コンポーネントが正しくレンダリングされるようにするには、この処理が必要です。 </p>
+
+        <p>Facesサーブレットがプロジェクトに登録され、<code>index.xhtml</code>開始ページをリクエストすると、ページはFacesサーブレットを介して渡されるようになります。また、<code>PROJECT_STAGE</code>コンテキスト・パラメータのエントリも追加されています。このパラメータを「<code>Development</code>」に設定すると、アプリケーションをデバッグするときに有用な情報が提供されます。参照:
+            <!--<a href="http://java.sun.com/javaee/6/docs/tutorial/doc/giqxl.html">http://java.sun.com/javaee/6/docs/tutorial/doc/giqxl.html</a>
+            and-->
+            詳細は、<a href="http://blogs.oracle.com/rlubke/entry/jsf_2_0_new_feature2">http://blogs.oracle.com/rlubke/entry/jsf_2_0_new_feature2</a>。</p>
+
+        <p>JSFライブラリを見つけるには、「プロジェクト」ウィンドウでプロジェクトの「ライブラリ」ノードを展開します。GlassFish Server 3.1.2またはGlassFish Server 4に含まれているデフォルトのライブラリを使用している場合、これは「GlassFish Server」ノードに表示される<code>javax.faces.jar</code>です。(古いバージョンのGlassFishを使用している場合は、<code>jsf-api.jar</code>および<code>jsf-impl.jar</code>ライブラリが<code>javax.faces.jar</code>のかわりに表示されます。)</p>
+
+        <p>IDEのJSF 2.xサポートには、主にJSF固有の多数のウィザード、およびFaceletsエディタで提供される特別な機能が含まれています。これらの機能については、以降の手順で説明します。詳細は、<a href="jsf20-support.html">NetBeans IDEでのJSF 2.xのサポート</a>を参照してください。</p>
+
+
+        <h2 id="managedBean">管理対象Beanの作成</h2>
+
+        <p>JSFの管理対象Beanを使用して、ユーザー・データを処理し、リクエスト間でそれを保持することができます。管理対象Beanは、データの格納に使用できる<a href="http://en.wikipedia.org/wiki/Plain_Old_Java_Object">POJO</a> (プレーン・オールドJavaオブジェクト)です。これは、JSFフレームワークを使用してGlassFishサーバーなどのコンテナで管理されます。</p>
+
+        <p id="pojo" class="tips">POJOは基本的に、publicで引数のないコンストラクタを格納し、プロパティが<a href="http://download.oracle.com/javase/tutorial/javabeans/">JavaBeans</a>命名規則に準拠するJavaクラスです。</p>
+
+        <p>プロジェクトを実行して生成された<a href="#staticPage">静的ページ</a>を見ると、ユーザーが入力した数値が現在選択されている数値と一致するかどうか、また、この結果に適した表示が返されるかどうかを判断する機構が必要です。IDEの<a href="jsf20-support.html#managedBean">管理対象Beanウィザード</a>を使用して、この目的に応じた管理対象Beanを作成します。次の項で作成するFaceletsページは、ユーザーが入力する数値と生成されたレスポンスにアクセスする必要があります。これを有効にするには、<code>userNumber</code>および<code>response</code>プロパティを管理対象Beanに追加します。</p>
+
+        <ul>
+            <li><a href="#usingManagedBean">管理対象Beanウィザードの使用</a></li>
+            <li><a href="#creatingConstructor">コンストラクタの作成</a></li>
+            <li><a href="#addingProperties">プロパティの追加</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="usingManagedBean">管理対象Beanウィザードの使用</h3>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウで「<code>jsfDemo</code>」プロジェクト・ノードを右クリックし、「新規」>「JSF管理対象Bean」を選択します。(「管理対象Bean」が表示されない場合は、「その他」を選択します。次に、「JavaServer Faces」カテゴリから「JSF管理対象Bean」オプションを選択します。「次」をクリックします。)</li>
+
+                <li>ウィザードで、次の情報を入力します。
+
+                    <ul class="toc">
+                        <li><strong>クラス名:</strong> UserNumberBean</li>
+                        <li><strong>パッケージ:</strong> guessNumber</li>
+                        <li><strong>名前:</strong> UserNumberBean</li>
+                        <li><strong>スコープ:</strong> session</li>
+                    </ul>
+
+                    <img alt="JSF管理対象Beanウィザード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/managed-bean.png" title="JSF管理対象Beanウィザードを使用した新しい管理対象Beanの作成"></li>
+
+                <li>「終了」をクリックします。<code>UserNumberBean</code>クラスが生成され、エディタで開かれます。次の注釈(<strong>太字</strong>で表示)を確認します。
+
+                    <pre class="examplecode">
+package guessNumber;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
+/**
+ *
+ * @author nbuser
+ */
+<strong>@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped</strong>
+public class UserNumberBean {
+
+    /** Creates a new instance of UserNumberBean */
+    public UserNumberBean() {
+    }
+
+}</pre>
+                    <p>ここではJSF 2.xを使用しているため、注釈を使用して、JSF固有のコンポーネントをすべて宣言できます。以前のバージョンでは、Faces構成ファイル(<code>faces-config.xml</code>)で宣言する必要がありました。</p>
+
+                    <span class="tips">すべてのJSF 2.1注釈を確認するには、<a href="http://javaserverfaces.java.net/nonav/docs/2.1/managed-bean-javadocs/index.html">Faces管理対象Beanの注釈の仕様</a>を参照してください。</span></li>
+            </ol>
+
+
+            <h3 id="creatingConstructor">コンストラクタの作成</h3>
+
+            <p><code>UserNumberBean</code>コンストラクタは、0から10の間のランダムな数値を生成し、インスタンス変数に格納します。これが、アプリケーションのビジネス・ロジックの一部を形成します。</p>
+
+            <ol>
+                <li><code>UserNumberBean</code>クラスのコンストラクタを定義します。次のコードを入力します(変更箇所は<strong>太字</strong>で表示)。
+
+                    <pre class="examplecode">
+public class UserNumberBean {
+
+    <strong>Integer randomInt;</strong>
+
+    /** Creates a new instance of UserNumberBean */
+    public UserNumberBean() {
+        <strong><a href="http://docs.oracle.com/javase/7/docs/api/java/util/Random.html">Random</a> randomGR = new Random();
+        randomInt = new Integer(randomGR.<a href="http://docs.oracle.com/javase/7/docs/api/java/util/Random.html#nextInt%28int%29">nextInt</a>(10));
+        System.out.println(&quot;Duke's number: &quot; + randomInt);</strong>
+    }
+
+}</pre>
+
+                    <p>このコードは0から10の間のランダムな数値を生成し、その数値をサーバー・ログに出力します。</p></li>
+
+                <li>インポートを修正します。そのためには、エディタの左マージンに表示されるヒント・バッチ(<img alt="ヒント・バッジ" src="../../../images_www/articles/72/web/jsf20-intro/hint-icon.png">)をクリックし、<code>java.util.Random</code>をクラスにインポートするオプションを選択します。</li>
+
+                <li>プロジェクトを再度実行します(「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png">)ボタンをクリックするか、[F6] (Macの場合は[fn]-[F6])を押します)。プロジェクトを実行すると、サーバーのログ・ファイルが「出力」ウィンドウに自動的に開かれます。<br><img alt="「出力」ウィンドウのサーバーのログ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/output1.png" title="「出力」ウィンドウにサーバーのログ・ファイルが自動的に開きます。">
+
+                <p>コンストラクタで示されるように、出力には<code>Duke's number: </code>が表示されません。<code>UserNumberBean</code>オブジェクトは作成されませんでした。これは、JSFがデフォルトで<em>遅延インスタンス化</em>を使用するためです。つまり、特定のスコープ内のBeansは、アプリケーションで必要とされたときにのみ作成され、インスタンス化されます。</p>
+
+                    <p>
+                    <a href="http://javaserverfaces.java.net/nonav/docs/2.1/managed-bean-javadocs/index.html"><code>@ManagedBean</code>注釈用のJavadoc</a>には、次のように記載されています。</p>
+
+                    <div class="indent">
+                        <em><code>eager()</code>属性の値が<code>true</code>で、<code>managed-bean-scope</code>の値がapplicationの場合は、アプリケーションの開始時にランタイムがこのクラスをインスタンス化する必要があります。このインスタンス化とインスタンスの格納は、他のリクエストを処理する前に実行される必要があります。<em>eager</em>の値が指定されていないか<code>false</code>の場合、または<code>managed-bean-scope</code>がapplication以外の場合は、デフォルトの「遅延」インスタンス化と管理対象Beanのスコープ指定記憶域が生じます。</em>
+                    </div></li>
+
+
+                <li><code>UserNumberBean</code>はセッション・スコープ指定されているため、<code>Serializable</code>インタフェースを実装させます。
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean <strong>implements Serializable</strong> {</pre>
+
+                    ヒント・バッジ(<img alt="ヒント・バッジ" src="../../../images_www/articles/72/web/jsf20-intro/hint-icon.png">)を使用して、<code>java.io.Serializable</code>をクラスにインポートします。</li>
+            </ol>
+
+            <h3 id="addingProperties">プロパティの追加</h3>
+
+            <p>次の項で作成するFaceletsページは、ユーザーが入力する数値と生成されたレスポンスにアクセスする必要があります。これを容易にするため、<code>userNumber</code>および<code>response</code>プロパティをクラスに追加します。</p>
+
+            <ol>
+                <li>まず、<code>userNumber</code>という名前の<code>Integer</code>を宣言します。
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean implements Serializable {
+
+    Integer randomInt;
+    <strong>Integer userNumber;</strong></pre></li>
+
+                <li>エディタ内で右クリックし、「コードを挿入」を選択します([Alt]-[Insert]、Macの場合は[Ctrl]-[I])。取得メソッドおよび設定メソッドを選択します。<br> <img alt="コードのポップアップ・ウィンドウの生成" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/getter-setter.png" title="IDEを使用した、プロパティのアクセッサ・メソッドの生成"></li>
+
+                <li>「<code>userNumber</code>: <code>Integer</code>」オプションを選択します。「生成」をクリックします。 <br> <img alt="「取得メソッドおよび設定メソッドの生成」ダイアログ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/generate-getters-setters.png" title="IDEを使用した、プロパティのアクセッサ・メソッドの生成">
+
+                    <p><code>getUserNumber()</code>および<code>setUserNumber(Integer userNumber)</code>メソッドがクラスに追加されます。</p></li>
+
+                <li><code>response</code>プロパティを作成します。<code>response</code>という名前の<code>String</code>を宣言します。
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean implements Serializable {
+
+    Integer randomInt;
+    Integer userNumber;
+    <strong>String response;</strong></pre></li>
+
+                <li id="getResponse"><code>response</code>の取得メソッドを作成します。(このアプリケーションでは設定メソッドは必要ありません。)前出のステップ2で示したIDEの「コードを生成」ポップアップを使用して、テンプレート・コードを生成することもできます。ただし、このチュートリアルでは、単純に次のメソッドをクラスに貼り付けます。
+
+                    <pre class="examplecode">
+public String getResponse() {
+    if ((userNumber != null) && (userNumber.<a href="http://download.oracle.com/javase/6/docs/api/java/lang/Integer.html#compareTo(java.lang.Integer)">compareTo</a>(randomInt) == 0)) {
+
+        //invalidate user session
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpSession session = (HttpSession) context.getExternalContext().getSession(false);
+        session.invalidate();
+
+        return &quot;Yay! You got it!&quot;;
+    } else {
+
+        return &quot;&lt;p&gt;Sorry, &quot; + userNumber + &quot; isn't it.&lt;/p&gt;&quot;
+                + &quot;&lt;p&gt;Guess again...&lt;/p&gt;&quot;;
+    }
+}</pre>
+
+                    このメソッドでは2つの関数が実行されます。
+
+                    <ol>
+                        <li>ユーザーが入力した数値(<code>userNumber</code>)がセッション用に生成されたランダムな数値(<code>randomInt</code>)と等しいかどうか、および<code>String</code>レスポンスが返されるかどうかがテストされます。</li>
+
+                        <li>ユーザーが正しい数値を推測した場合(たとえば<code>userNumber</code>と<code>randomInt</code>が正しい場合)、ユーザー・セッションは無効化されます。ユーザーが再度操作する場合に新しい数値が生成されるようにするには、この処理が必要です。</li>
+                    </ol></li>
+
+                <li>エディタを右クリックし、「インポートを修正」を選択します([Alt]-[Shift]-[I]、Macの場合は[&#8984]-[Shift]-[I])。次の項目用に、インポート文が自動的に作成されます。
+
+                    <ul>
+                        <li><code>javax.servlet.http.HttpSession</code></li>
+                        <li><code>javax.faces.context.FacesContext</code></li>
+                    </ul>
+
+                    <p class="tips">エディタ内の項目上で[Ctrl]-[Space]を押すと、コード補完による候補とドキュメント・サポートを呼出しできます。<code>FacesContext</code>で[Ctrl]-[Space]を押して、Javadocのクラス説明を表示します。</p>
+
+                    <br> <img alt="ドキュメントのポップアップ・ウィンドウ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/documentation-support.png" title="[Ctrl]-[Space]の押下によるコード補完とドキュメント・サポートの呼出し"> <br>ドキュメント・ウィンドウの「Webブラウザ」(<img alt="「Webブラウザ」アイコン" src="../../../images_www/articles/72/web/jsf20-crud/web-browser-icon.png">)アイコンをクリックし、外部WebブラウザでJavadocを開きます。
+                </li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="wire">ページへの管理対象Beanの接続</h2>
+
+        <p>JSFの主な目的の1つは、<a href="#pojo">POJO</a>およびPOJOとアプリケーションのビューとの相互作用を管理するために、ボイラープレート・コードを記述する必要性を除去することです。前の項で、アプリケーションを実行したときにJSFが<code>UserNumberBean</code>オブジェクトをインスタンス化したのがこの例です。この概念は<a href="http://martinfowler.com/articles/injection.html">制御の反転</a> (IoC)と呼ばれ、コンテナがアプリケーションの一部を管理できるようにするものです。これがない場合、開発者は反復的なコードを記述する必要があります。</p>
+
+        <p>前の項では、0から10の間のランダムな数値を生成する管理対象Beanを作成しました。また、ユーザーが入力する数値を表す<code>userNumber</code>プロパティと、ユーザーの推測に対するレスポンスを表す<code>response</code>プロパティも作成しました。</p>
+
+        <p>この項では、<code>UserNumberBean</code>とそのプロパティをWebページで使用する方法について説明します。JSFでは、式言語(EL)を使用して実行できます。式言語を使用して、アプリケーションのWebページに含まれているJSFのUIコンポーネントにプロパティ値をバインドします。この項では、JSF 2.xの暗黙的なナビゲーション機能を活用してindexページとresponseページとの間を移動する方法も説明します。</p>
+
+        <p>IDEには、エディタ内の項目上で[Ctrl]-[Space]を押すことによって呼出しできる、コード補完とドキュメント機能によるサポートも用意されています。</p>
+
+        <p>まず<code>index.xhtml</code>を変更してから、<code>response.xhtml</code>を変更します。両方のページで、HTMLフォーム要素を、<a href="http://javaserverfaces.java.net/nonav/docs/2.1/vdldocs/facelets/index.html">JSF HTMLタグ・ライブラリ</a>で定義されているJSFの対応する要素で置き換えます。次に、JSF式言語を使用して、プロパティ値と選択したUIコンポーネントをバインドします。</p>
+
+        <ul>
+            <li><a href="#index">index.xhtml</a></li>
+            <li><a href="#response">response.xhtml</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="index">index.xhtml</h3>
+
+            <ol>
+                <li>エディタで<code>index.xhtml</code>ページを開きます。「プロジェクト」ウィンドウで「<code>index.xhtml</code>」ノードをダブルクリックするか、[Alt]-[Shift]-[O]を押して「ファイルに移動」ダイアログを使用します。<br><br>indexページとresponseページの両方に、ここで必要なJSF UIコンポーネントがすでに含まれています。それらをコメント解除し、現在使用しているHTML要素をコメントアウトします。</li>
+
+                <li>HTMLフォーム要素をコメントアウトします。これを行うには、次のイメージのHTMLフォーム要素を強調表示し、[Ctrl]-[/] (Macの場合は[&#8984]-[/])を押します。<br><br><strong class="notes">注意: </strong>強調表示するには、マウスを使用してエディタ内でクリックしてドラッグするか、キーボードを使用して、[Shift]を押しながら矢印キーを押します。<br> <img alt="エディタ内で強調表示されたコード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/comment-out.png" title="コードを強調表示した後の[Ctrl]-[/]の押下によるコードのコメントアウト">
+
+                    <p class="tips">[Ctrl]-[/] (Macの場合は[&#8984]-[/])を使用して、エディタ内のコメントを切り替えます。JavaやCSSなど、他のファイル・タイプにこのキーボード・ショートカットを適用することもできます。</p></li>
+
+                <li>JSF HTMLフォーム・コンポーネントをコメント解除します。次のイメージに示すように、コンポーネントを強調表示して[Ctrl]-[/] (Macの場合は[&#8984]-[/])を押します。
+                    <p class="notes"><strong>注意:</strong>コードのコメントを外すには[Ctrl]-[/]を2回押すことが必要な場合があります。</p>
+
+                    <br> <img alt="エディタ内で強調表示されたコード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/comment.png" title="コメントアウトされたコードを強調表示した後の[Ctrl]-[/]の押下によるコメント解除">
+
+                    <p>
+                    JSF HTMLフォーム・コンポーネントをコメント解除すると、<code>&lt;h:form></code>、<code>&lt;h:inputText></code>および<code>&lt;h:commandButton></code>タグが宣言されていないことがエディタに表示されます。</p>
+
+                    <img alt="エディタのエラー・メッセージ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/undeclared-component.png" title="エディタに表示された、宣言されていないコンポーネントに関するエラー・メッセージ"></li>
+
+                <li>これらのコンポーネントを宣言するには、IDEのコード補完を使用して、タグ・ライブラリ名前空間をページの<code>&lt;html></code>タグに追加します。宣言されていないいずれかのタグにカーソルを置き、[Alt]-[Enter]を押して提案されるタグ・ライブラリを追加します。(複数のオプションがある場合は、エディタに表示されているタグを選択してから[Enter]を押してください。)JSF HTMLタグ・ライブラリ名前空間が<code>&lt;html></code>タグ(次に<strong>太字</strong>で表示)に追加され、エラー表示が消えます。
+                    <p class="notes"><strong>注意:</strong>IDEでタグ・ライブラリを追加するオプションが表示されない場合、<tt>&lt;html></tt>要素を手動で変更する必要があります。 </p>
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre></li>
+
+                <li>JSF式言語を使用して、<code>UserNumberBean</code>の<code>userNumber</code>プロパティを<code>inputText</code>コンポーネントにバインドします。<code>value</code>属性は、レンダリングされたコンポーネントの現在の値を指定するために使用できます。次の<strong>太字</strong>で表示されているコードを入力します。
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+    &lt;h:inputText id=&quot;userNumber&quot; size=&quot;2&quot; maxlength=&quot;2&quot; <strong>value=&quot;#{UserNumberBean.userNumber}&quot;</strong> /&gt;</pre>
+
+                    <p>JSF式言語では<code>#{}</code>構文を使用します。これらの区切り文字内で、管理対象Beanの名前と、適用するBeanプロパティを、ドット(<code>.</code>)で区切って指定します。これで、フォーム・データがサーバーに送られると、プロパティの設定メソッド(<code>setUserNumber()</code>)を使用して、値が自動的に<code>userNumber</code>プロパティに保存されます。また、ページがリクエストされて<code>userNumber</code>の値がすでに設定されている場合、レンダリングされる<code>inputText</code>コンポーネントに値が自動的に表示されます。詳細は、<a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop001.htm#BNAQP">Java EE 7チュートリアル: 12.1.2項の式言語を使用した管理対象Beanの参照</a>を参照してください。</p></li>
+
+                <li>フォーム・ボタンをクリックして呼び出されたリクエストの宛先を指定します。フォームのHTMLバージョンでは、<code>&lt;form></code>タグの<code>action</code>属性を使用してこれを実行できました。JSFの場合は、<code>commandButton</code>の<code>action</code>属性を使用できます。また、JSF 2.xの暗黙的なナビゲーション機能により、宛先のファイルの名前を指定するのみで済みます。ファイル拡張子は不要です。
+
+                    <p>次の<strong>太字</strong>で表示されているコードを入力します。</p>
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+    &lt;h:inputText id=&quot;userNumber&quot; size=&quot;2&quot; maxlength=&quot;2&quot; value=&quot;#{UserNumberBean.userNumber}&quot; /&gt;
+    &lt;h:commandButton id=&quot;submit&quot; value=&quot;submit&quot; <strong>action=&quot;response&quot;</strong> /&gt;
+&lt;/h:form&gt;</pre>
+
+                    <p>JSFランタイムは、<code>response</code>という名前のファイルを検索します。リクエスト元のファイル(<code>index<strong>.xhtml</strong></code>)で使用されているのと同じファイル拡張子であると想定し、元のファイルと同じディレクトリ内(webrootなど)で<code>response.xhtml</code>ファイルを探します。</p>
+
+                    <p class="notes"><strong>注意:</strong> JSF 2.xは、開発者のタスクを容易にすることを目的としています。このプロジェクトでJSF 1.2を使用している場合は、Faces構成ファイルでナビゲーション・ルールを次のように宣言する必要があります。</p>
+
+                    <pre class="examplecode">
+&lt;navigation-rule&gt;
+    &lt;from-view-id&gt;/index.xhtml&lt;/from-view-id&gt;
+
+    &lt;navigation-case&gt;
+        &lt;from-outcome&gt;response&lt;/from-outcome&gt;
+        &lt;to-view-id&gt;/response.xhtml&lt;/to-view-id&gt;
+    &lt;/navigation-case&gt;
+&lt;/navigation-rule&gt;</pre>
+
+                    <p>以降のステップ7から12は、オプションです。プロジェクトをすばやくビルドする場合は、<a href="#response"><code>response.xhtml</code></a>に進みます。</p></li>
+
+                <li>前出のEL式でリクエストを処理するときに<code>setUserNumber()</code>メソッドが実際にコールされるかどうかをテストします。これを行うには、IDEのJavaデバッガを使用します。
+
+                    <p><code>UserNumberBean</code>クラスに切り替えます([Ctrl]-[Tab]を押し、一覧からファイルを選択します。)<code>setUserNumber()</code>メソッドの署名にブレークポイントを設定します。これを行うには、左マージンをクリックします。赤のバッジが表示され、メソッドのブレークポイントが設定されたことを示します。</p>
+
+                    <img alt="エディタの左マージンにあるブレークポイント" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/set-breakpoint.png" title="エディタの左マージンのクリックによるブレークポイントの設定"></li>
+
+                <li>IDEのメイン・ツールバーにある「プロジェクトをデバッグ」(<img alt="「プロジェクトをデバッグ」ボタン" src="../../../images_www/articles/72/web/jsf20-intro/breakpoint-btn.png">)ボタンをクリックします。デバッグ・セッションが開始され、プロジェクトの開始ページがブラウザに表示されます。
+
+                    <p class="notes"><strong>注意:</strong></p>
+                    <ul>
+                        <li>アプリケーションのデバッグ用のサーバー・ポートの確認を求められることがあります。</li>
+                        <li>「プロジェクトをデバッグ」ダイアログが表示されたら、デフォルトのサーバー側Javaオプションを選択して、「デバッグ」をクリックします。</li>
+                    </ul></li>
+                <li>ブラウザで、フォームに数値を入力し、「送信」ボタンをクリックします。</li>
+
+                <li>IDEに切り替え、<code>UserNumberBean</code>クラスを確認します。デバッガが<code>setUserNumber()</code>メソッド内で一時停止されています。<br> <img alt="一時停止したデバッガが表示されたエディタ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/debugger-suspended.png" title="ブレークポイントによるデバッガの一時停止"></li>
+
+                <li>デバッガの「変数」ウィンドウを開きます(「ウィンドウ」>「デバッグ」>「変数」を選択するか、[Ctrl]-[Shift]-[1]を押します)。デバッガが一時停止されている場所の変数値が表示されます。<br> <img alt="「変数」ウィンドウ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/variables-window.png" title="デバッガの「変数」ウィンドウを使用した変数値のモニター">
+
+                    <p>
+                    前出のイメージでは、<code>setUserNumber()</code>署名の<code>userNumber</code>変数に、値<code>4</code>が指定されています。(数値4がフォームに入力されたため。)「<code>this</code>」は、ユーザー・セッション用に作成された<code>UserNumberBean</code>オブジェクトを参照します。その下にある<code>userNumber</code>プロパティの値は、現在<code>null</code>と表示されています。</p></li>
+
+                <li>デバッガのツールバーで、「ステップ・イン」(<img alt="ステップ・イン・ボタン" src="../../../images_www/articles/72/web/jsf20-intro/step-into-btn.png">)ボタンをクリックします。デバッガは、現在一時停止されている行を実行します。「変数」ウィンドウがリフレッシュされ、実行による変更が表示されます。<br><img alt="「変数」ウィンドウ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/variables-window2.png" title="コードのステップ実行時の「変数」ウィンドウのリフレッシュ"><br>
+                    <p><code>userNumber</code>プロパティは、フォームに入力された値に設定されます。</p></li>
+                <li>メイン・メニューから「デバッグ」→「デバッガ・セッションを終了」([Shift]-[F5]、Macでは[Shift]-[Fn]-[F5])を選択して、デバッガを停止します。</li>
+            </ol>
+
+
+            <h3 id="response">response.xhtml</h3>
+
+            <ol>
+                <li>エディタで<code>response.xhtml</code>ページを開きます。「プロジェクト」ウィンドウで「<code>response.xhtml</code>」ノードをダブルクリックするか、[Alt]-[Shift]-[O]を押して「ファイルに移動」ダイアログを使用します。</li>
+
+                <li>HTMLフォーム要素をコメントアウトします。HTML<code>&lt;form></code>の開始タグと終了タグ、およびそれらのタグ間にあるコードを強調表示し、[Ctrl]-[/] (Macの場合は[&#8984]-[/])を押します。
+
+                    <p class="notes"><strong>注意: </strong>強調表示するには、マウスを使用してエディタ内でクリックしてドラッグするか、キーボードを使用して、[Shift]を押しながら矢印キーを押します。</p></li>
+
+                <li>JSF HTMLフォーム・コンポーネントをコメント解除します。<code>&lt;h:form></code>の開始タグと終了タグ、およびそれらのタグ間にあるコードを強調表示し、[Ctrl]-[/] (Macの場合は[&#8984]-[/])を押します。
+
+                    <p>この時点では、<code>&lt;body></code>タグ間のコードは次のようになります。</p>
+
+                    <pre class="examplecode">
+&lt;body&gt;
+    &lt;div id=&quot;mainContainer&quot;&gt;
+
+        &lt;div id=&quot;left&quot; class=&quot;subContainer greyBox&quot;&gt;
+
+            &lt;h4&gt;[ response here ]&lt;/h4&gt;
+
+            &lt;!--&lt;form action=&quot;index.xhtml&quot;&gt;
+
+                &lt;input type=&quot;submit&quot; id=&quot;backButton&quot; value=&quot;Back&quot;/&gt;
+
+            &lt;/form&gt;--&gt;
+
+            &lt;h:form&gt;
+
+                &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; /&gt;
+
+            &lt;/h:form&gt;
+
+        &lt;/div&gt;
+
+        &lt;div id=&quot;right&quot; class=&quot;subContainer&quot;&gt;
+
+            &lt;img src=&quot;duke.png&quot; alt=&quot;Duke waving&quot; /&gt;
+             &lt;!--&lt;h:graphicImage url=&quot;/duke.png&quot; alt=&quot;Duke waving&quot; /&gt;--&gt;
+
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;</pre>
+
+                    <p>JSF HTMLフォーム・コンポーネントをコメント解除すると、エディタに<code>&lt;h:form></code>と<code>&lt;h:commandButton></code>タグが宣言されていないことが表示されます。</p></li>
+
+                <li>これらのコンポーネントを宣言するには、IDEのコード補完を使用して、タグ・ライブラリ名前空間をページの<code>&lt;html></code>タグに追加します。
+
+                    <p class="tips">エディタのコード補完サポートを使用して、必要なJSF名前空間をファイルに追加します。コード補完を使用してJSFまたはFaceletsタグを選択すると、必要な名前空間が自動的にドキュメントのルート要素に追加されます。詳細は、<a href="jsf20-support.html#facelets">NetBeans IDEでのJSF 2.xのサポート</a>を参照してください。</p>
+
+                    <p>宣言されていない任意のタグの上にカーソルを置き、[Ctrl]-[Space]を押します。コード補完による候補とドキュメント・サポートが表示されます。</p>
+
+                    <img alt="コード補完による候補とドキュメント・ポップアップ・ウィンドウ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/code-completion2.png" title="[Ctrl]-[Space]の押下によるコード補完の候補とドキュメント・ポップアップ・ウィンドウの呼出し">
+
+                    <p>[Enter]を押します。(複数のオプションがある場合は、エディタに表示されているタグを選択してから[Enter]を押してください。)JSF HTMLタグ・ライブラリ名前空間が<code>&lt;html></code>タグ(次に<strong>太字</strong>で表示)に追加され、エラー表示が消えます。</p>
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre></li>
+
+                <li>フォーム・ボタンをクリックして呼び出されたリクエストの宛先を指定します。ユーザーがボタンをクリックするとindexページに戻るように、ボタンを設定します。これを行うには、<code>commandButton</code>の<code>action</code>属性を使用します。<strong>太字</strong>で表示されているコードを入力します。
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+
+    &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; <strong>action=&quot;index&quot;</strong> /&gt;
+
+&lt;/h:form&gt;</pre>
+
+                    <p class="notes"><strong>注意:</strong> 「<code>action="index"</code>」と入力すると、JSFの暗黙的なナビゲーション機能に依存することになります。ユーザーがフォーム・ボタンをクリックすると、JSFランタイムは<code>index</code>という名前のファイルを検索します。リクエスト元のファイル(<code>response<strong>.xhtml</strong></code>)で使用されているのと同じファイル拡張子であると想定し、元のファイルと同じディレクトリ内(webrootなど)で<code>index.xhtml</code>ファイルを探します。</p></li>
+
+                <li>静的テキスト「[response here]」を、<code>UserNumberBean</code>の<code>response</code>プロパティの値で置き換えます。これを行うには、JSF式言語を使用します。次の<strong>太字</strong>で示したコードを入力します。
+
+                    <pre class="examplecode">
+&lt;div id=&quot;left&quot; class=&quot;subContainer greyBox&quot;&gt;
+
+    &lt;h4&gt;<strong>&lt;h:outputText value=&quot;#{UserNumberBean.response}&quot;/&gt;</strong>&lt;/h4&gt;</pre></li>
+
+                <li>プロジェクトを実行します(「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png">)ボタンをクリックするか、[F6] (Macの場合は[fn]-[F6])を押します)。ブラウザに開始ページが表示されたら、数値を入力して「<code>送信</code>」をクリックします。次のようなレスポンス・ページが表示されます(正しい数値を推測しなかった場合)。<br><img alt="ブラウザに表示されたレスポンス・ページ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/response2.png" title="ブラウザでのプロジェクトの現在のステータスの表示">
+
+                    <p>レスポンス・ページの現在の状態に、2つの間違いがあります。</p>
+
+                    <ol>
+                        <li>Html<code>&lt;p></code>タグが、レスポンス・メッセージ内に表示されています。</li>
+                        <li>「戻る」ボタンが正しい位置に表示されていません。(<a href="#originalVersion">元のバージョン</a>と比較。)</li>
+                    </ol>
+
+                    <p>次の2つの手順で、これらの間違いを修正します。</p></li>
+
+                <li><code>&lt;h:outputText></code>タグの<code>escape</code>属性を<code>false</code>に設定します。カーソルを<code>outputText</code>と<code>value</code>の間に置き、スペースを挿入してから[Ctrl]-[Space]を押して、コード補完を呼び出します。下にスクロールして<code>escape</code>属性を選択し、ドキュメントを確認します。<br> <img alt="エディタに表示されたコード補完による候補とドキュメント" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/escape-false.png" title="[Ctrl]-[Space]の押下による考えられる属性値とドキュメントの表示">
+
+                    <p>ドキュメントで示されるように、<code>escape</code>の値はデフォルトで<code>true</code>に設定されます。つまり、前出に示すように、通常はhtmlとして解析される文字がすべて文字列に含まれます。値を<code>false</code>に設定すると、htmlとして解析できるすべての文字を、そのようにレンダリングできます。</p>
+
+                    <p>[Enter]を押し、値として「<code>false</code>」と入力します。</p>
+
+                    <pre class="examplecode">
+&lt;h4&gt;&lt;h:outputText <strong>escape=&quot;false&quot;</strong> value=&quot;#{UserNumberBean.response}&quot;/&gt;&lt;/h4&gt;</pre></li>
+
+                <li><code>&lt;h:form></code>タグの<code>prependId</code>属性を<code>false</code>に設定します。カーソルを<code>&lt;h:form></code>の「<code>m</code>」のすぐ後に置き、スペースを入力してから[Ctrl]-[Space]を押して、コード補完を呼び出します。下にスクロールして<code>prependId</code>属性を選択し、ドキュメントを確認します。次に[Enter]を押し、値として「<code>false</code>」と入力します。
+
+                    <pre class="examplecode">&lt;h:form <strong>prependId=&quot;false&quot;</strong>&gt;</pre>
+
+                    <p>JSFは内部IDを適用して、UIコンポーネントをトラックします。現在の例で、レンダリングされたページのソース・コードを調べると、次のように表示されます。</p>
+
+                    <pre class="examplecode">
+&lt;form id=&quot;j_idt5&quot; name=&quot;j_idt5&quot; method=&quot;post&quot; action=&quot;/jsfDemo/faces/response.xhtml&quot; enctype=&quot;application/x-www-form-urlencoded&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;j_idt5&quot; value=&quot;j_idt5&quot; /&gt;
+    &lt;input <strong>id=&quot;j_idt5:backButton&quot;</strong> type=&quot;submit&quot; name=&quot;j_idt5:backButton&quot; value=&quot;Back&quot; /&gt;
+    &lt;input type=&quot;hidden&quot; name=&quot;javax.faces.ViewState&quot; id=&quot;javax.faces.ViewState&quot; value=&quot;7464469350430442643:-8628336969383888926&quot; autocomplete=&quot;off&quot; /&gt;
+&lt;/form&gt;</pre>
+
+                    <p>フォーム要素のIDは<code>j_idt5</code>です。このIDは、フォームに含まれている「戻る」ボタンのIDに付加<em></em>されます(<strong>太字</strong>で表示)。「戻る」ボタンは<code>#backButton</code>スタイル・ルール(<code>stylesheet.css</code>で定義)に依存するため、JSFのIDが付加されると、このルールが妨げられます。これを回避するには、<code>prependId</code>を<code>false</code>に設定します。</p></li>
+
+                <li>プロジェクトを再度実行します(「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png">)ボタンをクリックするか、[F6] (Macの場合は[fn]-[F6])を押します)。開始ページに数値を入力し、「送信」をクリックします。レスポンス・ページに<code>&lt;p></code>タグのないレスポンス・メッセージが表示され、「戻る」ボタンが正しい位置に配置されます。<br><img alt="ブラウザに表示されたレスポンス・ページ" class="b-all margin-around" id="responsePage" src="../../../images_www/articles/72/web/jsf20-intro/response3.png" title="ブラウザでのプロジェクトの現在のステータスの表示"></li>
+
+                <li>「戻る」ボタンをクリックします。<code>UserNumberBean</code>の<code>userNumber</code>プロパティの現在の値はJSF<code>inputText</code>コンポーネントにバインドされているため、前に入力した数値がテキスト・フィールドに表示されます。</li>
+
+                <li>IDEの「出力」ウィンドウでサーバー・ログを確認し([Ctrl]-[4]、Macの場合は[&#8984]-[4])、正しい推測値を判断します。
+
+                    <p class="tips">なんらかの理由でサーバー・ログが表示されない場合は、「サービス」ウィンドウに切り替え([Ctrl]-[5]、Macの場合は[&#8984]-[5])、「サーバー」ノードを展開します。次に、プロジェクトがデプロイされているGlassFishサーバーを右クリックし、「サーバー・ログを表示」を選択します。サーバー・ログに数値が見つけることができない場合は、プロジェクト・ノードを右クリックし、「消去してビルド」を選択して、アプリケーションを再ビルドしてみてください。</p></li>
+
+                <li>正しい数値を入力し、「送信」をクリックします。アプリケーションは、入力された数値を現在保存されている数値と比較し、適切なメッセージを表示します。<br> <img alt="ブラウザに表示されたレスポンス・ページ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/yay.png" title="一致する数値を入力すると正しいレスポンスが表示される"></li>
+
+                <li>「戻る」ボタンをもう一度クリックします。前に入力した数値はテキスト・フィールドに表示されていません。<code>UserNumberBean</code>の<code>getResponse()</code>メソッドは、正しい数値が推測されると<a href="#getResponse">現在のユーザー・セッションを無効にします</a>。</li>
+            </ol>
+        </div>
+        <br>
+        <h2 id="template">Faceletsテンプレートの適用</h2>
+
+        <p>Faceletsは、JSF 2.xの標準表示テクノロジになりました。Faceletsは、すべてのJSF UIコンポーネントをサポートする軽量テンプレート作成フレームワークで、アプリケーション・ビュー用のJSFコンポーネント・ツリーをビルドおよびレンダリングするのに使用されます。また、ユーザーがスタック・トレース、コンポーネント・ツリー、およびスコープ指定された変数を確認できるようにすることで、ELエラー発生時の開発サポートを提供します。</p>
+
+        <p>チュートリアルでこれまでに操作してきた<code>index.xhtml</code>および<code>response.xhtml</code>ファイルは、Faceletsページです。Faceletsページでは<code>.xhtml</code>拡張子が使用されます。また、JSF 2.xプロジェクトで作業しているため(JSF 2.xライブラリにはFacelets JARファイルが含まれる)、ビューではJSFコンポーネント・ツリーを適切にレンダリングできました。</p>
+
+        <p>この項は、Faceletsのテンプレート作成に慣れることを目的としています。多くのビューを含むプロジェクトの場合、複数のビューの構造および外観を定義するテンプレート・ファイルを適用すると便利なことがよくあります。アプリケーションでは、リクエストをサービスするときに、動的に用意されたコンテンツをテンプレート・ファイルに挿入し、結果をクライアントに送り返します。このプロジェクトに含まれているビューは2つ(開始ページとレスポンス・ページ)のみですが、これらのビューには重複するコンテンツが多数含まれています。重複するコンテンツをFaceletsテンプレートにまとめて、テンプレート・クライアント・ファイルを作成し、開始ページとレスポンス・ページに固有のコンテンツを処理することができます。</p>
+
+        <p>IDEには、Faceletsテンプレートを作成するための<a href="jsf20-support.html#faceletsTemplate">Faceletsテンプレート・ウィザード</a>と、テンプレートに依存するファイルを作成するためのFaceletsテンプレート・クライアント・ウィザードが用意されています。この項では、これらのウィザードを使用します。</p>
+
+        <p><strong class="notes">注意:</strong> IDEには、プロジェクト用に個々のFaceletsページを作成するための、JSFページ・ウィザードも用意されています。詳細は、<a href="jsf20-support.html#jsfPage">NetBeans IDEでのJSF 2.xのサポート</a>を参照してください。</p>
+
+        <ul>
+            <li><a href="#templateFile">Faceletsテンプレート・ファイルの作成</a></li>
+            <li><a href="#templateClient">テンプレート・クライアント・ファイルの作成</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="templateFile">Faceletsテンプレート・ファイルの作成</h3>
+
+            <ol>
+                <li>Faceletsテンプレート・ファイルを作成します。[Ctrl]-[N] (Macの場合は[&#8984]-[N])を押して、ファイル・ウィザードを開きます。「JavaServer Faces」カテゴリを選択し、「Faceletsテンプレート」を選択します。「次」をクリックします。</li>
+
+                <li>ファイル名として「<code>template</code>」と入力します。</li>
+
+                <li>8つのレイアウト・スタイルから任意のスタイルを選択し、「終了」をクリックします。(既存のスタイル・シートを使用するので、どのレイアウト・スタイルを選択してもかまいません。)<br><img alt="Faceletsテンプレート・ウィザードに提示されたレイアウト・スタイル" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/layout-style.png" title="Faceletsテンプレート・ウィザードでの一般的なレイアウト・スタイルからの選択"><br>ウィザードで、選択に基づいて<code>template.xhtml</code>ファイルおよび付属するスタイル・シートが生成され、プロジェクトのwebroot内の「<code>resources</code>」>「<code>css</code>」フォルダに置かれます。
+
+                    <p class="tips">ウィザードが完了すると、テンプレート・ファイルがエディタに開かれます。ブラウザでこのテンプレートを表示するには、エディタ内を右クリックし、「表示」を選択します。</p></li>
+
+                <li>テンプレート・ファイルのマークアップを確認します。次の点を確認します。
+
+                    <ul>
+                        <li><code>facelets</code>タグ・ライブラリがページの<code>&lt;html></code>タグ内で宣言されています。タグ・ライブラリに接頭辞<code>ui</code>があります。
+
+                            <pre class="examplecode" style="width:639px">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;</strong>
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;</pre></li>
+
+                        <li>Faceletsページで、htmlの<code>&lt;head></code>および<code>&lt;body></code>タグではなく、<code>&lt;h:head></code>および<code>&lt;h:body></code>タグが使用されています。Faceletsは、これらのタグを使用することによって、ページ全体にわたるコンポーネント・ツリーを構築できます。</li>
+
+                        <li>ページは、ウィザードの完了時に作成されたスタイル・シートを参照します。
+
+                            <pre class="examplecode" style="width:639px">
+&lt;h:head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    <strong>&lt;link href=&quot;./resources/css/default.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;</strong>
+    <strong>&lt;link href=&quot;./resources/css/cssLayout.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;</strong>
+    &lt;title&gt;Facelets Template&lt;/title&gt;
+&lt;/h:head&gt;</pre></li>
+
+                        <li><code>&lt;ui:insert></code>タグは、選択したレイアウト・スタイルに関連付けられているすべての区画のページ本体で使用されます。それぞれの<code>&lt;ui:insert></code>タグには、区画を識別する<code>name</code>属性があります。例:
+
+                            <pre class="examplecode" style="width:639px">
+&lt;div id=&quot;top&quot;&gt;
+    <strong>&lt;ui:insert name=&quot;top&quot;&gt;Top&lt;/ui:insert&gt;</strong>
+&lt;/div&gt;</pre></li>
+                    </ul>
+                </li>
+
+                <li><a href="#staticPage">開始</a>ページと<a href="#responsePage">レスポンス</a>・ページを再度確認します。2つのページ間で異なるコンテンツは、グレーの四角形の中にあるタイトルとテキストのみです。そのため、テンプレートで残りのすべてのコンテンツを提供できます。</li>
+
+                <li>テンプレート・ファイルのすべてのコンテンツを、次のコンテンツに置き換えます。
+
+                    <pre class="examplecode">
+&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;
+
+    &lt;h:head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+        &lt;link href=&quot;css/stylesheet.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+        &lt;title&gt;&lt;ui:insert name=&quot;title&quot;&gt;Facelets Template&lt;/ui:insert&gt;&lt;/title&gt;
+    &lt;/h:head&gt;
+
+    &lt;h:body&gt;
+
+        &lt;div id=&quot;left&quot;&gt;
+            &lt;ui:insert name=&quot;box&quot;&gt;Box Content Here&lt;/ui:insert&gt;
+        &lt;/div&gt;
+
+    &lt;/h:body&gt;
+
+&lt;/html&gt;</pre>
+
+                    このコードによって、次の変更が実装されます。
+
+                    <ul>
+                        <li>プロジェクトの<code>stylesheet.css</code>ファイルによって、ウィザードで作成されたテンプレート・スタイル・シート参照が置き換えられます。</li>
+
+                        <li><code>&lt;ui:insert></code>タグ(およびそれらに含まれる<code>&lt;div></code>タグ)が、<code>box</code>という名前のものを除き、すべて除去されます。</li>
+
+                        <li>ページ・タイトルを囲んで<code>&lt;ui:insert></code>タグ・ペアが配置され、<code>title</code>という名前が付けられています。</li>
+                    </ul></li>
+
+                <li>該当するコードを、<code>index.xhtml</code>または<code>response.xhtml</code>ファイルからテンプレートにコピーします。次に<strong>太字</strong>で示されているコンテンツを、テンプレート・ファイルの<code>&lt;h:body></code>タグに追加します。
+
+                    <pre class="examplecode">
+&lt;h:body&gt;
+    <strong>&lt;div id=&quot;mainContainer&quot;&gt;</strong>
+        &lt;div id=&quot;left&quot; <strong>class=&quot;subContainer greyBox&quot;</strong>&gt;
+            &lt;ui:insert name=&quot;box&quot;&gt;Box Content Here&lt;/ui:insert&gt;
+        &lt;/div&gt;
+        <strong>&lt;div id=&quot;right&quot; class=&quot;subContainer&quot;&gt;
+            &lt;img src=&quot;duke.png&quot; alt=&quot;Duke waving&quot; /&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;</strong>
+&lt;/h:body&gt;</pre></li>
+
+                <li>プロジェクトを実行します。ブラウザで開始ページが開いたら、URLを次のように変更します。
+
+                    <pre class="examplecode">http://localhost:8080/jsfDemo/faces/template.xhtml</pre>
+
+                    テンプレート・ファイルが次のように表示されます。<br> <img alt="ブラウザに表示されたFaceletsテンプレート" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/facelets-template.png" title="ブラウザでのFaceletsテンプレートの表示">
+                </li>
+            </ol>
+
+            <p>これで、プロジェクトには、すべてのビューの外観と構造を定義するテンプレート・ファイルが作成されました。ここで、テンプレートを呼び出すクライアント・ファイルを作成できます。</p>
+
+
+            <h3 id="templateClient">テンプレート・クライアント・ファイルの作成</h3>
+
+            <p>開始ページおよびレスポンス・ページ用のテンプレート・クライアント・ファイルを作成します。開始ページのテンプレート・クライアント・ファイルには、<code>greeting.xhtml</code>という名前を付けます。レスポンス・ページのファイルには、<code>response.xhtml</code>という名前を付けます。</p>
+
+            <h4>greeting.xhtml</h4>
+
+            <ol>
+                <li>[Ctrl]-[N] (Macの場合は[⌘]-[N])を押して、新規ファイル・ウィザードを開きます。「JavaServer Faces」カテゴリを選択し、「Faceletsテンプレート・クライアント」を選択します。「次」をクリックします。</li>
+
+                <li>ファイル名として「<code>greeting</code>」と入力します。</li>
+
+                <li>「テンプレート」フィールドの横にある「参照」ボタンをクリックし、表示されたダイアログを使用して、前の項で作成した<code>template.xhtml</code>ファイルに移動します。<br> <img alt="Faceletsテンプレート・クライアント・ウィザード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/template-client.png" title="Faceletsテンプレート・クライアント・ウィザード"></li>
+
+                <li>「終了」をクリックします。新しいテンプレート・クライアント・ファイル<code>greeting.xhtml</code>が生成され、エディタに表示されます。</li>
+
+                <li>マークアップを確認します。<strong>太字</strong>で強調表示されているコンテンツを確認してください。
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;&gt;
+
+    &lt;body&gt;
+
+        &lt;ui:composition <strong>template=&quot;./template.xhtml&quot;</strong>&gt;
+
+            &lt;ui:define <strong>name=&quot;title&quot;</strong>&gt;
+                title
+            &lt;/ui:define&gt;
+
+            &lt;ui:define <strong>name=&quot;box&quot;</strong>&gt;
+                box
+            &lt;/ui:define&gt;
+
+        &lt;/ui:composition&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+                    テンプレート・クライアント・ファイルは、<code>&lt;ui:composition></code>タグの<code>template</code>属性を使用して、テンプレートを参照します。テンプレートには<code>title</code>および<code>box</code>の<code>&lt;ui:insert></code>タグが含まれているため、このテンプレート・クライアントには、これらの2つの名前の<code>&lt;ui:define></code>タグが含まれます。<code>&lt;ui:define></code>タグの間で指定するコンテンツは、テンプレートの対応する名前の<code>&lt;ui:insert></code>タグの間に挿入されるコンテンツです。</li>
+
+                <li>ファイルのタイトルとして「<code>greeting</code>」を指定します。次に<strong>太字</strong>で示す変更を加えます。
+
+                    <pre class="examplecode">
+&lt;ui:define name=&quot;title&quot;&gt;
+    <strong>Greeting</strong>
+&lt;/ui:define&gt;</pre></li>
+
+                <li><code>index.xhtml</code>ファイルに切り替え([Ctrl]-[Tab])、表示されるページで、通常はグレーの四角形内に表示されるコンテンツをコピーします。<code>greeting.xhtml</code>に切り替え、テンプレート・クライアント・ファイルに貼り付けます。変更場所は<strong>太字</strong>で示されています。
+
+                    <pre class="examplecode">
+&lt;ui:define name=&quot;box&quot;&gt;
+    <strong>&lt;h4&gt;Hi, my name is Duke!&lt;/h4&gt;
+
+    &lt;h5&gt;I'm thinking of a number
+
+        &lt;br/&gt;
+        between
+        &lt;span class=&quot;highlight&quot;&gt;0&lt;/span&gt; and
+        &lt;span class=&quot;highlight&quot;&gt;10&lt;/span&gt;.&lt;/h5&gt;
+
+    &lt;h5&gt;Can you guess it?&lt;/h5&gt;
+
+    &lt;h:form&gt;
+        &lt;h:inputText size=&quot;2&quot; maxlength=&quot;2&quot; value=&quot;#{UserNumberBean.userNumber}&quot; /&gt;
+        &lt;h:commandButton id=&quot;submit&quot; value=&quot;submit&quot; action=&quot;response&quot; /&gt;
+    &lt;/h:form&gt;</strong>
+&lt;/ui:define&gt;</pre></li>
+
+                <li>ファイルのJSF HTMLタグ・ライブラリを宣言します。エラーのフラグが付いているタグ(「<code>h</code>」接頭辞を使用するタグ)にカーソルを置き、[Ctrl]-[Space]を押します。コード補完による候補の一覧から、タグを選択します。タグ・ライブラリ名前空間がファイルの<code>&lt;html></code>タグ(<strong>太字</strong>で表示)に追加され、エラー表示が消えます。
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre>
+
+                    <p class="tips"><code>&lt;h:form></code>の「<code>m</code>」の後にカーソルを置き、[Ctrl]-[Space]を押すと、名前空間が自動的にファイルに追加されます。[Ctrl]-[Space]を押したときに使用可能な論理オプションが1つのみの場合は、それがすぐにファイルに適用されます。タグ上でコード補完を呼び出すときに、JSFタグ・ライブラリが自動的に宣言されます。</p>
+                </li>
+            </ol>
+
+            <h4>response.xhtml</h4>
+
+            <p>プロジェクトには<code>response.xhtml</code>という名前のファイルがすでに含まれており、テンプレート・クライアント・ファイルの内容もわかっているので、既存の<code>response.xhtml</code>を変更して、テンプレート・クライアント・ファイルにします。(このチュートリアルでは、提供されているコードをコピーして貼り付けます。)</p>
+
+            <ol>
+                <li>エディタで<code>response.xhtml</code>を開きます。(すでに開かれている場合は、[Ctrl]-[Tab]を押して選択します。)ファイル全体のコンテンツを、次のコードで置き換えます。
+
+                    <pre class="examplecode">
+&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;
+
+    &lt;body&gt;
+
+        &lt;ui:composition template=&quot;./template.xhtml&quot;&gt;
+
+            &lt;ui:define name=&quot;title&quot;&gt;
+                Response
+            &lt;/ui:define&gt;
+
+            &lt;ui:define name=&quot;box&quot;&gt;
+                &lt;h4&gt;&lt;h:outputText escape=&quot;false&quot; value=&quot;#{UserNumberBean.response}&quot;/&gt;&lt;/h4&gt;
+
+                &lt;h:form prependId=&quot;false&quot;&gt;
+
+                    &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; action=&quot;greeting&quot; /&gt;
+
+                &lt;/h:form&gt;
+            &lt;/ui:define&gt;
+
+        &lt;/ui:composition&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+                    <code>title</code>および<code>box</code>の<code>&lt;ui:define></code>タグ間で指定されているコンテンツを除き、ファイルは<code>greeting.xhtml</code>と同じになります。</li>
+
+                <li>プロジェクトの<code>web.xml</code>デプロイメント・ディスクリプタで、アプリケーションを実行したときに<code>greeting.xhtml</code>ページが開かれるように、開始ファイルのエントリを変更します。<br><br>「プロジェクト」ウィンドウで「構成ファイル」>「<code>web.xml</code>」をダブルクリックして、エディタで開きます。「ページ」タブで「開始ファイル」フィールドを「<code>faces/greeting.xhtml</code>」に変更します。<br> <img alt="デプロイメント・ディスクリプタ・インタフェース" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/welcome-files.png" title="デプロイメント・ディスクリプタでの「開始ファイル」エントリの変更"></li>
+
+                <li>プロジェクトを実行して、ブラウザでどのように表示されるかを確認します。[F6] (Macの場合は[fn]-[F6])を押すか、メイン・ツールバーの「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png">)ボタンをクリックします。プロジェクトがGlassFishサーバーにデプロイされ、ブラウザで開かれます。</li>
+            </ol>
+
+            <p>Faceletsテンプレートおよびテンプレート・クライアント・ファイルを使用して、アプリケーションは以前とまったく同じように動作します。アプリケーションの開始ページとレスポンス・ページで重複しているコードを取り除くことによって、アプリケーションのサイズを小さくするとともに、後でページが追加されたときに重複したコードを記述することがなくなりました。これにより、大規模なプロジェクトで作業するときに、開発作業が効率化され、管理が容易になります。</p>
+        </div>
+
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20JSF%202.0">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">関連項目</h2>
+
+        <p>JSF 2.xの詳細は、次のリソースを参照してください。</p>
+
+        <div class="indent">
+            <h3>NetBeansの記事およびチュートリアル</h3>
+
+            <ul>
+                <li><a href="jsf20-support.html">NetBeans IDEでのJSF 2.xのサポート</a></li>
+                <li><a href="jsf20-crud.html">データベースからのJavaServer Faces 2.x CRUDアプリケーションの生成</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum Toys - JSF 2.0の完全版サンプル・アプリケーション</a></li>
+                <li><a href="../javaee/javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+                <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+            </ul>
+
+            <h3>外部リソース</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">JavaServer Facesテクノロジ</a> (公式ホーム・ページ)</li>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr314/index.html">JSR 314 JavaServer Faces 2.0の仕様</a></li>
+                <li><a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop.htm">Java EE 7チュートリアル、第12章のJavaServer Facesテクノロジを使用した開発</a></li>
+                <li><a href="http://javaserverfaces.dev.java.net/">GlassFishプロジェクトMojarra</a> (JSF 2.xの公式リファレンス実装)</li>
+                <li><a href="http://forums.oracle.com/forums/forum.jspa?forumID=982">OTNディスカッション・フォーラム: JavaServer Faces</a></li>
+                <li><a href="http://www.jsfcentral.com/">JSF Central</a></li>
+            </ul>
+
+            <h3>ブログ</h3>
+
+            <ul>
+                <li><a href="http://www.java.net/blogs/edburns/">Ed Burns</a></li>
+                <li><a href="http://www.java.net/blogs/driscoll/">Jim Driscoll</a></li>
+            </ul>
+        </div>
+    </body>
+</html>

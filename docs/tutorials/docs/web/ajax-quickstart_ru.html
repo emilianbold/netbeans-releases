@@ -1,0 +1,1163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief introduction to Ajax using the NetBeans IDE, Java bundle">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Ajax, XML,
+            XMLHttpRequest, XMLHttpRequest object, callback function, asynchronous, Java, JavaScript,
+            JavaScript Editor, open source, web technology">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Введение в Ajax для веб-приложений Java - учебный курс по IDE NetBeans</title>
+    </head>
+
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Введение в Ajax для веб-приложений Java</h1>
+
+        <p>В этом документе содержится введение в Ajax и описываются некоторые из функций в IDE NetBeans, позволяющий сделать программирование более быстрым и более эффективным процессом при работе с технологиями, связанными с Ajax. На примере низкоуровневых функциональных возможностей Ajax продемонстрирована разработка простого приложения с функцией автозаполнения текстового поля.  В документе использованы материалы статьи Грега Мюррея (Greg Murray) и демонстрационное приложение из руководства <a href="http://weblogs.java.net/blog/gmurray71/archive/2005/12/using_ajax_with_1.html">Использование Ajax при помощи технологии Java</a>.</p>
+
+        <p>Ajax &ndash; это аббревиатура, означающая &quot;Асинхронный JavaScript и XML&quot; (Asynchronous JavaScript and XML).  Основное назначение Ajax состоит в предоставлении веб-приложению возможности эффективной обработки взаимодействия между пользователем и веб-страницей, при этом значительно снижаются требования к обновлению или полной перезагрузке страницы при каждом взаимодействии с пользователем.  Такой подход предоставляет широкие возможности при использовании браузера (аналогичные возможностям настольного приложения или веб-приложения на основе подключаемого модуля).  Обработка взаимодействия Ajax осуществляется асинхронно в фоновом режиме.  Благодаря этому пользователь может продолжать работу со страницей.  Взаимодействие Ajax инициируется посредством кода JavaScript.  После выполнения взаимодействия Ajax код JavaScript обновляет исходный текст HTML для страницы.  Изменения вносятся немедленно без необходимости обновления страницы.  Взаимодействия Ajax могут использоваться для выполнения таких задач, как проверка правильности формата вводимых записей на основе серверной логики (непосредственно во время их ввода пользователем), извлечение подробных данных из сервера, динамическое обновление данных на странице и передача элементов форм страницы.</p>
+
+
+        <p><strong>Содержание</strong></p>
+
+       <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <ul class="toc">
+            <li><a href="#overview">Обзор приложения</a></li>
+            <li><a href="#client1">Программирование на стороне клиента: часть 1</a>
+                <ul>
+                    <li><a href="#html">Работа с редактором HTML</a></li>
+                    <li><a href="#javascript">Работа с редактором JavaScript</a></li>
+                </ul></li>
+            <li><a href="#serverside">Программирование на стороне сервера</a>
+                <ul>
+                    <li><a href="#data">Создание хранилища данных</a></li>
+                    <li><a href="#servlet">Создание сервлета</a></li>
+                </ul></li>
+            <li><a href="#client2">Программирование на стороне клиента: часть 2</a>
+                <ul>
+                    <li><a href="#callback">Добавление функциональных возможностей обратного вызова</a></li>
+                    <li><a href="#htmldom">Обновление модели DOM HTML</a></li>
+                    <li><a href="#stylesheet">Присоединение таблицы стилей</a></li>
+                </ul></li>
+            <li><a href="#run">Выполнение приложения</a>
+                <ul>
+                    <li><a href="#httpMonitor">Использование средства наблюдения HTTP Server Monitor</a></li>
+                </ul></li>
+            <li><a href="#conclusion">Заключение</a></li>
+            <li><a href="#seeAlso">Дополнительные сведения</a></li>
+        </ul>
+
+        <p><strong>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans, Java EE bundle</a></td>
+                    <td class="tbltd1">7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://glassfish.java.net/">Сервер GlassFish</a> <br><em class="indent margin-around">или</em> <br><a href="http://tomcat.apache.org/index.html">Сервер Tomcat</a></td>
+                    <td class="tbltd1">Open Source Edition 3.1.x или 4.x <br><em class="margin-around indent"> </em> <br>, версия 7.x или 8.x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>Примечания</strong></p>
+
+        <ul>
+            <li>Установка Java EE в IDE позволяет при необходимости установить сервер GlassFish и контейнер сервлетов Apache Tomcat.</li>
+
+            <li>При этом предполагается, что читатель обладает практическими знаниями в области различных используемых технологий (т.е. HTML, CSS, JavaScript, Java и JSP).  В этом документе приведен обзор функциональных возможностей, предоставляемых кодом, однако он <em>не содержит</em> каких-либо пояснений относительно кода на более детальном уровне.</li>
+
+            <li>Если необходимо сравнить проект с работающим решением, можно <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaScript%252FMyAjaxApp.zip">загрузить демонстрационное приложение</a>.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="overview">Обзор приложения</h2>
+
+        <p>Предположим, что существует веб-страница, на которой пользователь может выполнять поиск информации о композиторах.  Эта страница содержит поле, в которое вводится имя композитора.  В примере приложения для поля ввода может использоваться функция автозавершения.  Другими словами, пользователь может ввести часть имени композитора, после чего веб-приложение предложит варианты полного имени, перечислив всех композиторов, чьи имена или фамилии начинаются с введенных символов.  Таким образом, пользователь может не помнить полное имя композитора, однако функция автозавершения обеспечит быстрый интуитивный доступ к требуемой информации.</p>
+
+        <div class="indent">
+            <img alt="Образец приложения отображается в браузере" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/sample-app.png" title="Образец приложения отображается в браузере">
+        </div>
+
+        <p>Реализация функции автозавершения в поле поиска может служить примером возможностей, предоставляемых Ajax.  Ajax использует объект <code>XMLHttpRequest</code> для асинхронной передачи запросов и ответов между клиентом и сервером.  На следующем рисунке представлена блок-схема операций связи, происходящих между клиентом и сервером.</p>
+
+        <div id="flow-diagram" class="indent">
+            <img alt="Диаграма потоков процессов Ajax" class="margin-around" src="../../../images_www/articles/73/web/ajax-intro/ajax-process-flow.png" title="Диаграма потоков процессов Ajax">
+        </div>
+
+        <br>
+        <p>Для описания потока операций на блок-схеме можно использовать следующие действия.</p>
+
+        <ol>
+            <li>Пользователь инициирует событие, например, отпускает клавишу при наборе имени.  Это приводит к вызову функции JavaScript, которая инициализирует объект <code>XMLHttpRequest</code>.</li>
+
+            <li>Объект <code>XMLHttpRequest</code> настроен с учетом параметра запроса, который включает идентификатор элемента управления, инициировавшего событие, а также произвольное значение, введенное пользователем.  Затем объект <code>XMLHttpRequest</code> выполняет асинхронный запрос к веб-серверу.</li>
+
+            <li>На веб-сервере осуществляется обработка этого запроса с использованием соответствующего объекта, например сервлета или прослушивающего процесса.  Из хранилища данных извлекаются необходимые данные и подготавливается ответ, содержащий данные в форме документа XML.</li>
+
+            <li>Наконец, объект <code>XMLHttpRequest</code> получает данные XML с использованием функции ответного вызова, выполняет их обработку и обновляет модель DOM (Document Object Model, объектная модель документов) HTML для отображения страницы, содержащей новые данные.</li>
+        </ol>
+
+        <p>В данном учебном курсе описан способ создания варианта автозаполнения путем выполнения потока операций процесса, показанного на рисунке выше.  Сначала на стороне клиента создаются файлы для страницы представления данных и функции, необходимые для генерации объекта <code>XMLHttpRequest</code>.  Затем выполняется настройка на стороне сервера, заключающаяся в создании хранилища данных и бизнес-логики с использованием технологий на основе Java.  Наконец, на стороне клиента реализуется функция обратного вызова <code>callback()</code> и другие функциональные возможности JavaScript, необходимые для обновления DOM HTML.</p>
+
+
+        <br>
+        <h2 id="client1">Программирование на стороне клиента: часть 1</h2>
+
+        <p>Сначала необходимо создать новый проект веб-приложения в среде IDE.  Среда IDE уже содержит встроенные шаблоны для различных типов проекта.</p>
+
+        <ol>
+            <li>Выберите команду &quot;Файл&quot; &gt; &quot;Новый проект&quot;. В области &quot;Категории&quot; выберите &quot;Java Web&quot;. В области &quot;Projects&quot; (Проекты) выберите &quot;Web Application&quot; (Веб-приложение) и нажмите кнопку &quot;Next&quot; (Далее).</li>
+
+            <li>На экране &quot;Имя и расположение&quot; введите <code>MyAjaxApp</code> в поле &quot;Имя проекта&quot;.  Поле &quot;Project Location&quot; позволяет указать местоположение проекта.  Для всех остальных параметров примите значения по умолчанию и нажмите кнопку &quot;Далее&quot;. <br> <img alt="Мастер создания веб-приложений - панель &apos;Имя и местоположение&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/java-name-location.png" title="Укажите имя проекта и местоположение проекта приложения"></li>
+
+            <li>На панели &quot;Сервер и параметры настройки&quot; выберите сервер, на котором требуется выполнить развертывание приложения.  В списке представлены только те серверы, которые зарегистрированы в среде IDE. <br> <img alt="Мастер создания веб-приложений - панель &apos;Настройки сервера&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/java-server-settings.png" title="Выберите сервер, на котором требуется выполнить развертывание приложения"></li>
+
+            <li>Подтвердите остальные значения по умолчанию и нажмите кнопку &quot;Готово&quot;.  Проект создается в файловой системе и открывается в среде IDE.</li>
+        </ol>
+
+        <p>При создании веб-проектов на основе Java автоматически создается сценарий сборки <a href="http://ant.apache.org/">Ant</a>, отвечающий за компиляцию проекта, что позволяет немедленно развернуть и запустить его на сервере, зарегистрированном в среде IDE.</p>
+
+        <p>В редакторе исходного кода среды IDE создается и открывается страница ввода по умолчанию. В зависимости от целевого сервера эта страница ввода будет иметь вид <code>index.jsp</code> или <code>index.html</code>.
+            </p>
+
+        <div class="indent">
+            <div class="indent">
+                <img alt="В окне &apos;Проекты&apos; содержится новый созданный проект" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/java-proj-win.png" title="В окне &apos;Проекты&apos; отображается проект MyAjaxApp">
+            </div>
+        </div>
+
+        <p>Перед написанием программы попробуйте запустить приложение в целях проверки правильности настройки взаимосвязи между средой IDE, сервером и браузером.</p>
+
+        <ol>
+            <li><p>В окне &quot;Проекты&quot; щелкните правой кнопкой мыши узел проекта и выберите команду &quot;Выполнить&quot;.</p>
+
+                <p>Приложение компилируется, сервер приложений запускается, после чего приложение развертывается на этом сервере и выполняется.  IDE открывает браузер по умолчанию и отображает страницу ввода по умолчанию.</p>
+            </li>
+        </ol>
+
+        <div class="indent">
+            <a name="html"></a>
+            <h3>Работа с редактором HTML</h3>
+
+            <div class="indent">
+                <img alt="На палитре отображаются элементы HTML" class="right margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/palette.png" title="На палитре отображаются элементы HTML"> <br>
+                <p class="margin-around">Теперь, после выполнения проверки правильности настройки среды, можно приступить к преобразованию страницы-указателя в интерфейс автозавершения, который будет отображаться для пользователей.</p>
+
+                <p class="margin-around">Одним из преимуществ использования среды IDE является то, что используемый редактор обеспечивает возможность применения функции автозавершения кода, что позволяет опытным пользователям значительно увеличить свою производительность при написании кода.  Редактор исходного кода среды IDE обеспечивает адаптацию к применяемой технологии благодаря чему при нажатии сочетания клавиш автозавершения кода CTRL+ПРОБЕЛ (при работе со страницей HTML) пользователю предлагаются варианты тегов HTML и атрибутов.  Далее мы увидим, что то же самое справедливо и для других технологий, например, CSS и JavaScript.</p>
+
+                <p class="margin-around">
+                    Вторым важным преимуществом является возможность использования палитры в среде IDE.  Эта палитра предоставляет удобные в работе шаблоны для элементов, часто используемых в технологиях программирования.  Необходимо просто выбрать отдельный элемент и перетащить его в определенное место файла, открытого в редакторе исходного кода.</p>
+
+                <p class="tips margin-around">Для отображения крупных значков (как в примере) необходимо щелкнуть палитру правой кнопкой мыши и выбрать пункт &quot;Отображать крупные значки&quot;.</p>
+            </div>
+
+            <br clear="all">
+            <ol>
+                <li>Измените содержимое тегов <code>&lt;title&gt;</code> и <code>&lt;h1&gt;</code>на<code>&quot;Автоматическое завершение с использованием AJAX&quot;</code> Для страницы-указателя создание какого-либо кода на стороне сервера не требуется, так что можно удалить строки, созданные по умолчанию.  Теперь должна появиться страница-указатель, аналогичная представленной ниже.
+
+<pre class="examplecode">
+&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;Auto-Completion using AJAX&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Auto-Completion using AJAX&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre></li>
+
+                <li>Для описания назначения текстового поля следует добавить соответствующий пояснительный текст.  Непосредственно под тегами <code>&lt;h1&gt;</code> можно скопировать и вставить следующий текст:
+
+<pre class="examplecode">
+&lt;p&gt;This example shows how you can do real time auto-completion using Asynchronous
+    JavaScript and XML (Ajax) interactions.&lt;/p&gt;
+
+&lt;p&gt;In the form below enter a name. Possible names that will be completed are displayed
+    below the form. For example, try typing in &quot;Bach,&quot &quot;Mozart,&quot; or &quot;Stravinsky,&quot;
+    then click on one of the selections to see composer details.&lt;/p&gt;
+</pre></li>
+
+                <li>Добавьте к странице форму HTML.  Для этого можно использовать элементы, содержащиеся в палитре среды IDE.  Если палитра не открыта, выберите в главном меню &quot;Окно&quot; &gt; &quot;Палитра&quot;.  Затем перейдите к узлу &quot;Формы HTML&quot;, выберите элемент &quot;Форма&quot; и перетащите его на страницу под только что добавленные теги <code>&lt;p&gt;</code>.  Появится диалоговое окно &quot;Вставить форму&quot;.  Введите следующее: <br><br>
+                    <ul>
+                        <li>Действие: autocomplete</li>
+                        <li>Method: GET;</li>
+                        <li>Имя: autofillform</li>
+                    </ul>
+
+                    <img alt="Диалоговое окно &apos;Вставить форму&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/insert-form.png" title="Диалоговое окно &apos;Вставить форму&apos;">
+
+                    <p>Нажмите кнопку &quot;ОК&quot;. Теги HTML <code>&lt;form&gt;</code> вставляются в страницу, содержащую указанные атрибуты.  (Метод GET применяется по умолчанию, и, следовательно, не объявляется явно).</p></li>
+
+                <li>Добавьте к странице таблицу HTML.  В категории палитры &quot;HTML&quot; выберите элемент &quot;Таблица&quot; и перетащите его непосредственно под теги <code>&lt;form&gt;</code>.  Откроется диалоговое окно &quot;Вставить таблицу&quot;.  Введите следующее: <br><br>
+                    <ul>
+                        <li>Строк: 2</li>
+                        <li>Столбцов: 2</li>
+                        <li>Размер границы : 0</li>
+                        <li>Заполнение ячеек: 5</li>
+                    </ul>
+
+                    <img alt="Диалоговое окно &apos;Вставить таблицу&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/insert-table.png" title="Диалоговое окно &apos;Вставить таблицу&apos;">
+                </li>
+
+                <li>Щелкните правой кнопкой мыши редактор исходного кода и выберите команду &quot;Форматировать&quot;. Последует выравнивание кода.  Теперь форма должна выглядеть следующим образом:
+
+<pre class="examplecode">
+&lt;form name=&quot;autofillform&quot; action=&quot;autocomplete&quot;&gt;
+  &lt;table border=&quot;0&quot; cellpadding=&quot;5&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/form&gt;
+</pre></li>
+
+                <li>В первый столбец первой строки таблицы введите следующий текст (изменения выделены <strong>полужирным шрифтом</strong>):
+
+<pre class="examplecode">&lt;td&gt;<strong>&lt;strong&gt;Composer Name:&lt;/strong&gt;</strong>&lt;/td&gt;</pre></li>
+
+                <li>Во второй столбец первой строки вместо перетаскивания поля &quot;Ввод текста&quot; из палитры введите указанный ниже код (изменения выделены <strong>полужирным</strong> шрифтом):
+
+
+<pre class="examplecode">
+&lt;td&gt;
+    <strong>&lt;input type=&quot;text&quot;
+        size=&quot;40&quot;
+        id=&quot;complete-field&quot;
+        onkeyup=&quot;doCompletion();&quot;&gt;</strong>
+&lt;/td&gt;
+</pre>
+
+                    При вводе кода можно использовать встроенную в среду IDE функцию автозавершения кода.  Например, введите <code>&lt;i</code>, а затем нажмите CTRL+ПРОБЕЛ.  Список предлагаемых вариантов выбора отображается под курсором, а в расположенном выше поле появляется описание выбранного элемента.  Для получения возможных вариантов выбора при написании кода достаточно в любой момент нажать в редакторе исходного кода сочетание клавиш CTRL+ПРОБЕЛ.  Кроме того, при наличии единственного возможного варианта выбора нажатие CTRL+ПРОБЕЛ приведет к автоматическому завершению кода с использованием элемента с этим именем. <br> <img alt="Автозавершение кода отображается в редакторе исходного кода" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/code-completion.png" style="width:688px" title="Для вызова поддержки автозавершения кода и документации нажмите сочетание клавиш CTRL+ПРОБЕЛ в редакторе.">
+                </li>
+
+            </ol>
+
+            <p>Атрибут <code>onkeyup</code>, введенный выше, указывает на функцию JavaScript с именем <code>doCompletion()</code>.  Эта функция вызывается при каждом нажатии клавиши в текстовом поле формы и соответствует вызову JavaScript на приведенной выше <a href="#flow-diagram">блок-схеме</a> Ajax.</p>
+
+
+            <h3 id="javascript">Работа с редактором JavaScript</h3>
+
+            <p>Редактор JavaScript в среде IDE предоставляет целый ряд расширенных возможностей редактирования, таких как интеллектуальное автозавершение кода, семантическое выделение, быстрое переименование, возможности переработки и многие другие функции.  </p>
+
+            <p>Возможность автозавершения кода JavaScript автоматически предоставляется при кодировании в файлах <code>.js</code>, а также внутри тегов <code>&lt;script&gt;</code> и при работе с другими технологиями (например, HTML, RHTML, JSP, PHP).  IDE может предоставить вам некоторые подсказки при редактировании кода JavaScript. Можно настроить наличие подсказок вариантов JavaScript, выбрав 'Сервис' > 'Параметры' ('NetBeans' > 'Предпочтения на Mac'), чтобы открыть окно 'Параметры' и выбрать язык JavaScript на вкладке 'Советы' в категории 'Редактор'. Также можно добавить собственные шаблоны кода JavaScript на вкладке 'Шаблоны кода' в окне 'Параметры'.</p>
+
+            <img alt="Параметры подсказки JavaScript в окне &apos;Параметры&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/javascript-options.png" title="Параметры подсказки JavaScript в окне &apos;Параметры&apos;">
+
+            <p>Добавьте файл JavaScript к приложению и выполните <code>doCompletion()</code>.</p>
+
+            <ol>
+                <li>В окне "Проекты" щелкните правой кнопкой мыши узел "Веб-страницы" и выберите "Создать > Файл JavaScript". (Если файл JavaScript отсутствует в списке, выберите &quot;Прочее&quot;.  Затем выберите файл JavaScript из категории &quot;Web&quot; в мастере создания файла).</li>
+                <li>Задайте имя файла <code>javascript</code> и нажмите кнопку 'Готово'. Новый файл JavaScript отображается в окне 'Проекты' в папке 'Веб-страницы'.</li>
+                <li>Введите приведенный ниже код в файл <code>javascript.js</code>.
+
+<pre class="examplecode">
+var req;
+var isIE;
+
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+}
+
+function doCompletion() {
+        var url = &quot;autocomplete?action=complete&id=&quot; + escape(completeField.value);
+        req = initRequest();
+        req.open(&quot;GET&quot;, url, true);
+        req.onreadystatechange = callback;
+        req.send(null);
+}
+
+function initRequest() {
+    if (window.XMLHttpRequest) {
+        if (navigator.userAgent.indexOf('MSIE') != -1) {
+            isIE = true;
+        }
+        return new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        isIE = true;
+        return new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+    }
+}</pre>
+
+                    <p class="tips">С помощью этого кода выполняется простая проверка совместимости веб-браузеров Firefox 3 и Internet Explorer версий 6 и 7).  Если требуется добавить более надежный код, устраняющий ошибки совместимости, используйте <a href="http://www.quirksmode.org/js/detect.html">сценарий для определения браузера</a> с веб-сайта <a href="http://www.quirksmode.org">http://www.quirksmode.org</a>.</p></li>
+
+                <li>Вернитесь к странице индекса и добавьте ссылку на файл JavaScript между тегами <code>&lt;head></code>.
+
+<pre class="examplecode">
+&lt;script type=&quot;text/javascript&quot; src=&quot;javascript.js&quot;&gt;&lt;/script&gt;</pre>
+
+                    <p class="tips">Для быстрого перехода между страницами, открытыми в редакторе исходного кода, можно воспользоваться сочетанием клавиш CTRL+TAB.</p></li>
+
+                <li>Вставьте вызов <code>init()</code> после открывающего тега <code>&lt;body&gt;</code>.
+
+<pre class="examplecode">
+&lt;body <strong>onload=&quot;init()&quot;</strong>&gt;</pre>
+
+                    Это обеспечит выполнение вызова <code>init()</code> при каждой загрузке страницы.</li>
+            </ol>
+
+            <p>Роль <code>doCompletion()</code> состоит в следующем:</p>
+
+            <ul>
+                <li>создание URL-адреса к местоположению, содержащему данные, которые могут использоваться на стороне сервера;</li>
+                <li>инициализация объекта <code>XMLHttpRequest</code>;</li>
+                <li>запрос объекта <code>XMLHttpRequest</code> для передачи асинхронного запроса в сервер.</li>
+            </ul>
+
+            <p>Объект <code>XMLHttpRequest</code> является основным объектом Ajax и своего рода фактическим стандартным решением для обеспечения асинхронной передачи данных XML по HTTP.  <em>Асинхронное</em> взаимодействие подразумевает возможность продолжения обработки браузером событий на странице даже после передачи запроса.  Данные передаются в фоновом режиме и могут автоматически загружаться на страницу без необходимости ее обновления.</p>
+
+            <p>Следует отметить, что объект <code>XMLHttpRequest</code> фактически создается с помощью функции <code>initRequest()</code>, которая вызывается функцией <code>doCompletion()</code>.  Эта функция позволяет выполнять проверку возможности распознавания браузером запроса <code>XMLHttpRequest</code>, и &ndash; в случае положительного ответа &ndash; создавать объект <code>XMLHttpRequest</code>.  В противном случае, с ее помощью выполняется проверка на <code>ActiveXObject</code> (<code>XMLHttpRequest</code> для Internet Explorer 6), и если результат идентификации является положительным, создается <code>ActiveXObject</code>.</p>
+
+            <p>При создании объекта необходимо определить три параметра <code>XMLHttpRequest</code>: URL-адрес, метод HTTP (<code>GET</code> или <code>POST</code>) и допустимость использования асинхронного взаимодействия.  В вышеупомянутом примере эти параметры определяются следующим образом:</p>
+
+            <ul>
+                <li>URL-адрес <code>autocomplete</code> и текст, введенный пользователем в поле <code>complete-field</code>:
+
+<pre class="examplecode">var url = &quot;autocomplete?action=complete&id=&quot; + escape(completeField.value);</pre></li>
+
+                <li><code>GET</code> означает, что взаимодействия HTTP используют метод <code>GET</code>;
+                <li><code>true</code> означает, что взаимодействие является асинхронным:
+
+                    <pre class="examplecode">req.open(&quot;GET&quot;, url, true);</pre></li>
+            </ul>
+
+            <p>Если взаимодействие определено как асинхронное, необходимо указать функцию обратного вызова.  Функция обратного вызова для этого взаимодействия определяется при помощи следующего оператора:</p>
+
+<div class="indent">
+    <div class="indent">
+        <pre class="examplecode">req.onreadystatechange = callback;</pre>
+    </div>
+</div>
+
+            <p>Затем следует определить функцию <code>callback()</code><a href="#callback"></a>.  Взаимодействие HTTP инициируется при вызове <code>XMLHttpRequest.send()</code>.  Это действие соответствует запросу HTTP, который передается на веб-сервер (см. представленную выше блок-схему<a href="#flow-diagram"></a>).</p>
+        </div>
+
+
+        <br>
+        <h2 id="serverside">Программирование на стороне сервера</h2>
+
+        <p>В среде IDE предусмотрена полная поддержка серверного веб-программирования.  Наряду с базовой поддержкой редактором многих популярных языков программирования и написания сценариев, поддерживаются также веб-службы, такие как SOAP, REST, SaaS, а также платформы, ориентированные на MVC, например JSF, Spring и Struts. Несколько подключаемых модулей NetBeans доступны в <a href="http://plugins.netbeans.org/">портале подключаемых модулей NetBeans</a> для платформ под управлением Ajax, включая <a href="https://developers.google.com/web-toolkit/">GWT</a> и <a href="http://struts.apache.org/2.x/">Struts2</a>.</p>
+
+        <p>Бизнес-логика разрабатываемого приложения предполагает обработку запросов путем извлечения данных из хранилища данных, их последующую подготовку и передачу ответа.  В данном случае этот принцип реализован с использованием сервлета.  Перед началом написания кода сервлета необходимо настроить хранилище данных и функциональные возможности, требуемые для доступа к данным со стороны этого сервлета.</p>
+
+        <ul>
+            <li><a href="#data">Создание хранилища данных</a></li>
+            <li><a href="#servlet">Создание сервлета</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="data"></a>
+            <h3>Создание хранилища данных</h3>
+
+            <p>Для данного простого приложения создается класс с именем <code>ComposerData</code>, в котором данные о композиторах содержатся в хранилище <a href="http://download.oracle.com/javase/1.5.0/docs/api/java/util/HashMap.html"><code>HashMap</code></a>.  В <code>HashMap</code> можно сохранять пары связанных элементов в парах ключевых значений.  Кроме того, следует создать класс <code>Composer</code>, который инициирует извлечение сервлетом данных из записей, содержащихся в хранилище <code>HashMap</code>.</p>
+
+            <ol>
+                <li>Щелкните правой кнопкой мыши узел проекта в окне &quot;Проекты&quot; и выберите команду &quot;Создать&quot; &gt; &quot;Класс Java&quot;.</li>
+                <li>Дайте классу имя <code>ComposerData</code> и введите <code>com.ajax</code> в поле &quot;Пакет&quot;.  При этом создается новый пакет, в который будет включен этот класс, а также другие классы, которые будут созданы позже.</li>
+                <li>Нажмите кнопку &quot;Завершить&quot;. Последует создание и открытие класса в редакторе исходного кода.</li>
+                <li>В редакторе исходного кода вставьте следующий код:
+
+<pre class="examplecode">
+package com.ajax;
+
+import java.util.HashMap;
+
+/**
+ *
+ * @author nbuser
+ */
+public class ComposerData {
+
+    private HashMap composers = new HashMap();
+
+    public HashMap getComposers() {
+        return composers;
+    }
+
+    public ComposerData() {
+
+        composers.put(&quot;1&quot;, new Composer(&quot;1&quot;, &quot;Johann Sebastian&quot;, &quot;Bach&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;2&quot;, new Composer(&quot;2&quot;, &quot;Arcangelo&quot;, &quot;Corelli&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;3&quot;, new Composer(&quot;3&quot;, &quot;George Frideric&quot;, &quot;Handel&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;4&quot;, new Composer(&quot;4&quot;, &quot;Henry&quot;, &quot;Purcell&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;5&quot;, new Composer(&quot;5&quot;, &quot;Jean-Philippe&quot;, &quot;Rameau&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;6&quot;, new Composer(&quot;6&quot;, &quot;Domenico&quot;, &quot;Scarlatti&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;7&quot;, new Composer(&quot;7&quot;, &quot;Antonio&quot;, &quot;Vivaldi&quot;, &quot;Baroque&quot;));
+
+        composers.put(&quot;8&quot;, new Composer(&quot;8&quot;, &quot;Ludwig van&quot;, &quot;Beethoven&quot;, &quot;Classical&quot;));
+        composers.put(&quot;9&quot;, new Composer(&quot;9&quot;, &quot;Johannes&quot;, &quot;Brahms&quot;, &quot;Classical&quot;));
+        composers.put(&quot;10&quot;, new Composer(&quot;10&quot;, &quot;Francesco&quot;, &quot;Cavalli&quot;, &quot;Classical&quot;));
+        composers.put(&quot;11&quot;, new Composer(&quot;11&quot;, &quot;Fryderyk Franciszek&quot;, &quot;Chopin&quot;, &quot;Classical&quot;));
+        composers.put(&quot;12&quot;, new Composer(&quot;12&quot;, &quot;Antonin&quot;, &quot;Dvorak&quot;, &quot;Classical&quot;));
+        composers.put(&quot;13&quot;, new Composer(&quot;13&quot;, &quot;Franz Joseph&quot;, &quot;Haydn&quot;, &quot;Classical&quot;));
+        composers.put(&quot;14&quot;, new Composer(&quot;14&quot;, &quot;Gustav&quot;, &quot;Mahler&quot;, &quot;Classical&quot;));
+        composers.put(&quot;15&quot;, new Composer(&quot;15&quot;, &quot;Wolfgang Amadeus&quot;, &quot;Mozart&quot;, &quot;Classical&quot;));
+        composers.put(&quot;16&quot;, new Composer(&quot;16&quot;, &quot;Johann&quot;, &quot;Pachelbel&quot;, &quot;Classical&quot;));
+        composers.put(&quot;17&quot;, new Composer(&quot;17&quot;, &quot;Gioachino&quot;, &quot;Rossini&quot;, &quot;Classical&quot;));
+        composers.put(&quot;18&quot;, new Composer(&quot;18&quot;, &quot;Dmitry&quot;, &quot;Shostakovich&quot;, &quot;Classical&quot;));
+        composers.put(&quot;19&quot;, new Composer(&quot;19&quot;, &quot;Richard&quot;, &quot;Wagner&quot;, &quot;Classical&quot;));
+
+        composers.put(&quot;20&quot;, new Composer(&quot;20&quot;, &quot;Louis-Hector&quot;, &quot;Berlioz&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;21&quot;, new Composer(&quot;21&quot;, &quot;Georges&quot;, &quot;Bizet&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;22&quot;, new Composer(&quot;22&quot;, &quot;Cesar&quot;, &quot;Cui&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;23&quot;, new Composer(&quot;23&quot;, &quot;Claude&quot;, &quot;Debussy&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;24&quot;, new Composer(&quot;24&quot;, &quot;Edward&quot;, &quot;Elgar&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;25&quot;, new Composer(&quot;25&quot;, &quot;Gabriel&quot;, &quot;Faure&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;26&quot;, new Composer(&quot;26&quot;, &quot;Cesar&quot;, &quot;Franck&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;27&quot;, new Composer(&quot;27&quot;, &quot;Edvard&quot;, &quot;Grieg&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;28&quot;, new Composer(&quot;28&quot;, &quot;Nikolay&quot;, &quot;Rimsky-Korsakov&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;29&quot;, new Composer(&quot;29&quot;, &quot;Franz Joseph&quot;, &quot;Liszt&quot;, &quot;Romantic&quot;));
+
+        composers.put(&quot;30&quot;, new Composer(&quot;30&quot;, &quot;Felix&quot;, &quot;Mendelssohn&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;31&quot;, new Composer(&quot;31&quot;, &quot;Giacomo&quot;, &quot;Puccini&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;32&quot;, new Composer(&quot;32&quot;, &quot;Sergei&quot;, &quot;Rachmaninoff&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;33&quot;, new Composer(&quot;33&quot;, &quot;Camille&quot;, &quot;Saint-Saens&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;34&quot;, new Composer(&quot;34&quot;, &quot;Franz&quot;, &quot;Schubert&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;35&quot;, new Composer(&quot;35&quot;, &quot;Robert&quot;, &quot;Schumann&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;36&quot;, new Composer(&quot;36&quot;, &quot;Jean&quot;, &quot;Sibelius&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;37&quot;, new Composer(&quot;37&quot;, &quot;Bedrich&quot;, &quot;Smetana&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;38&quot;, new Composer(&quot;38&quot;, &quot;Richard&quot;, &quot;Strauss&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;39&quot;, new Composer(&quot;39&quot;, &quot;Pyotr Il'yich&quot;, &quot;Tchaikovsky&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;40&quot;, new Composer(&quot;40&quot;, &quot;Guiseppe&quot;, &quot;Verdi&quot;, &quot;Romantic&quot;));
+
+        composers.put(&quot;41&quot;, new Composer(&quot;41&quot;, &quot;Bela&quot;, &quot;Bartok&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;42&quot;, new Composer(&quot;42&quot;, &quot;Leonard&quot;, &quot;Bernstein&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;43&quot;, new Composer(&quot;43&quot;, &quot;Benjamin&quot;, &quot;Britten&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;44&quot;, new Composer(&quot;44&quot;, &quot;John&quot;, &quot;Cage&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;45&quot;, new Composer(&quot;45&quot;, &quot;Aaron&quot;, &quot;Copland&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;46&quot;, new Composer(&quot;46&quot;, &quot;George&quot;, &quot;Gershwin&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;47&quot;, new Composer(&quot;47&quot;, &quot;Sergey&quot;, &quot;Prokofiev&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;48&quot;, new Composer(&quot;48&quot;, &quot;Maurice&quot;, &quot;Ravel&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;49&quot;, new Composer(&quot;49&quot;, &quot;Igor&quot;, &quot;Stravinsky&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;50&quot;, new Composer(&quot;50&quot;, &quot;Carl&quot;, &quot;Orff&quot;, &quot;Post-Romantic&quot;));
+
+    }
+}</pre></li>
+            </ol>
+            <p>Вы увидите, что в левом поле редактора выводится предупреждение о том, что не удается найти класс <tt>Composer</tt>. Выполните следующие шаги для создания класса <code>Composer</code>.</p>
+
+            <ol>
+                <li>Щелкните правой кнопкой мыши узел проекта в окне &quot;Проекты&quot; и выберите команду &quot;Создать&quot; &gt; &quot;Класс Java&quot;.</li>
+                <li>Дайте классу имя <code>Composer</code> и выберите <code>com.ajax</code> в раскрывающемся списке поля &quot;Package&quot;.  Нажмите кнопку &quot;Завершить&quot;.
+                <p>После нажатия кнопки 'Готово' в IDE создается класс, а файл открывается в редакторе исходного кода.</p></li>
+                <li>В редакторе исходного кода вставьте следующий код:
+
+<pre class="examplecode">
+package com.ajax;
+
+public class Composer {
+
+    private String id;
+    private String firstName;
+    private String lastName;
+    private String category;
+
+    public Composer (String id, String firstName, String lastName, String category) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.category = category;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+}</pre></li>
+            </ol>
+            <p>После создания класса <tt>Composer</tt>, если посмотреть на класс <tt>ComposerData</tt> в редакторе, вы увидите, что предупреждения больше не отображаются. Если в <tt>ComposerData</tt> по-прежнему отображаются аннотации с предупреждениями, можно попытаться устранить ошибку путем добавления отсутствующих операторов импорта.</p>
+            
+            <h3 id="servlet">Создание сервлета</h3>
+
+            <p>Создайте сервлет для обработки URL-адреса <code>autocomplete</code>, получаемого при входящем запросе.</p>
+
+            <ol>
+                <li>Щелкните правой кнопкой мыши узел проекта в окне 'Проекты' и выберите 'Создать' > 'Сервлет', чтобы открыть мастер создания сервлетов. (Выберите 'Другой' и выберите 'Сервлет' в меню 'Веб-категория', если сервлет не отображается по умолчанию во всплывающем меню).</li>
+                <li>Дайте сервлету имя <code>AutoCompleteServlet</code> и выберите <code>com.ajax</code> в раскрывающемся списке поля &quot;Package&quot;.  Нажмите кнопку 'Далее'.<br> <img alt="Мастер создания сервлетов: завершенная панель &apos;Имя и местоположение&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/newservlet-name-location.png"></li>
+                <li>На панели 'Настройка развертывания сервлета' измените шаблон адреса URL <strong><code>/autocomplete</code></strong> таким образом, чтобы он соответствовал адресу URL, заданному ранее в объекте <code>XMLHttpRequest</code>. <br> <img alt="Мастер создания сервлетов: завершенная панель &apos;Настройка развертывания сервлета&apos;" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/newservlet-configure-deployment.png">
+                    
+                    <p>Использование этой панели позволяет пропустить этап добавления дополнительных сведений вручную к дескриптору развертывания.</p></li>
+                <li>При желании выберите &quot;Добавить информацию о сервлете в дескриптор развертывания&quot;.  После выполнения этих действий созданный проект получится таким же, как загруженный пример. В последней версии среды IDE сервлет по умолчанию регистрируется аннотацией <code>@WebServlet</code> вместо регистрации в дескрипторе развертывания. Тем не менее, проект будет работать, если использовать аннотацию <code>@WebServlet</code> вместо дескриптора развертывания.</li>
+                <li>Нажмите кнопку &quot;Завершить&quot;. Сервлет будет создан и открыт в редакторе исходного кода. </li>
+            </ol>
+
+            <p>Единственными методами, которые следует переопределить, являются метод <code>doGet()</code> для определения обработки сервлетом запроса <code>autocomplete</code> <code>GET</code> и метод <code>init()</code>, который должен инициировать <code>ServletContext</code> для того, чтобы сервлет имел доступ к другим классам приложения после его запуска.</p>
+
+            <p>Существует возможность переопределения методов из родительских классов с помощью контекстного меню &quot;Вставить код&quot; в среде IDE.  Реализуйте <code>init()</code> , выполнив следующие шаги.</p>
+
+            <ol>
+                <li>Поместите курсор в нижней части объявления класса <code>AutoCompleteServlet</code> в редакторе исходного кода.  Нажмите ALT+INS (CTRL+I в Mac ОS) для открытия контекстного меню &quot;Создать код&quot;. <br> <img alt="Всплывающее меню &apos;Вставить код&apos; отображается в в редакторе исходного кода" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/insert-code.png" title="Всплывающее меню &apos;Вставить код&apos; отображается в в редакторе исходного кода"></li>
+
+                <li>Выберите команду &quot;Переопределить метод&quot;.  В появившемся диалоговом окне отображаются все родительские классы сервлета <code>AutoCompleteServlet</code>.  Разверните узел GenericServlet и выберите <code>init(Servlet Config config)</code>. <br> <img alt="В диалоговом окне &apos;Переопределить&apos; указаны унаследованные классы" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/new-override.png" title="В диалоговом окне &apos;Переопределить&apos; указаны унаследованные классы"></li>
+
+                <li>Нажмите кнопку &quot;ОК&quot;. Метод <code>init()</code> добавится в редактор исходного кода.</li>
+
+                <li>Добавьте переменную для объекта <code>ServletContext</code> и измените метод <code>init()</code> (изменения выделены <strong>полужирным</strong> шрифтом):
+
+<pre class="examplecode">
+<strong>private ServletContext context;</strong>
+
+@Override
+public void init(ServletConfig <strong>config</strong>) throws ServletException {
+    <strong>this.context = config.getServletContext();</strong>
+}</pre></li>
+
+                <li>Добавьте оператор импорта для объекта <code>ServletContext</code>.  Это можно сделать, выбрав значок лампочки, который отображается на экране в левом поле редактора исходного кода. <br> <img alt="Подсказки импорта отображаются в левом поле редактора исходного кода" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/import-hint.png" title="Подсказки импорта отображаются в левом поле редактора исходного кода"></li>
+            </ol>
+
+            <p>Метод <code>doGet()</code> должен преобразовать URL-адрес запроса, извлечь данные из хранилища данных и подготовить ответ в формате XML.  Следует отметить, что объявление метода было сгенерировано при создании класса.  Для просмотра, возможно, потребуется расширить методы HttpServlet, щелкнув значок развертывания в левом поле (<img alt="значок &apos;Развернуть&apos;" src="../../../images_www/articles/73/web/ajax-intro/expand-icon.png">).</p>
+
+            <ol>
+                <li>Добавьте к классу следующие объявления переменных в нижней части объявления класса <code>AutocompleteServlet</code>:
+
+<pre class="examplecode">
+private ComposerData compData = new ComposerData();
+private HashMap composers = compData.getComposers();</pre>
+
+                    При этом создается хранилище <code>HashMap</code>, включающее все данные о композиторах, которое затем используется методом <code>doGet()</code>.</li>
+
+                <li>Выполните прокрутку вниз до метода <code>doGet()</code> и реализуйте его следующим образом:
+
+<pre class="examplecode">
+@Override
+public void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
+
+    String action = request.getParameter(&quot;action&quot;);
+    String targetId = request.getParameter(&quot;id&quot;);
+    StringBuffer sb = new StringBuffer();
+
+    if (targetId != null) {
+        targetId = targetId.trim().toLowerCase();
+    } else {
+        context.getRequestDispatcher(&quot;/error.jsp&quot;).forward(request, response);
+    }
+
+    boolean namesAdded = false;
+    if (action.equals(&quot;complete&quot;)) {
+
+        // check if user sent empty string
+        if (!targetId.equals(&quot;&quot;)) {
+
+            Iterator it = composers.keySet().iterator();
+
+            while (it.hasNext()) {
+                String id = (String) it.next();
+                Composer composer = (Composer) composers.get(id);
+
+                if ( // targetId matches first name
+                     composer.getFirstName().toLowerCase().startsWith(targetId) ||
+                     // targetId matches last name
+                     composer.getLastName().toLowerCase().startsWith(targetId) ||
+                     // targetId matches full name
+                     composer.getFirstName().toLowerCase().concat(&quot; &quot;)
+                        .concat(composer.getLastName().toLowerCase()).startsWith(targetId)) {
+
+                    sb.append(&quot;&lt;composer&gt;&quot;);
+                    sb.append(&quot;&lt;id&gt;&quot; + composer.getId() + &quot;&lt;/id&gt;&quot;);
+                    sb.append(&quot;&lt;firstName&gt;&quot; + composer.getFirstName() + &quot;&lt;/firstName&gt;&quot;);
+                    sb.append(&quot;&lt;lastName&gt;&quot; + composer.getLastName() + &quot;&lt;/lastName&gt;&quot;);
+                    sb.append(&quot;&lt;/composer&gt;&quot;);
+                    namesAdded = true;
+                }
+            }
+        }
+
+        if (namesAdded) {
+            response.setContentType(&quot;text/xml&quot;);
+            response.setHeader(&quot;Cache-Control&quot;, &quot;no-cache&quot;);
+            response.getWriter().write(&quot;&lt;composers&gt;&quot; + sb.toString() + &quot;&lt;/composers&gt;&quot;);
+        } else {
+            //nothing to show
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
+    }
+    if (action.equals("lookup")) {
+
+        // put the target composer in the request scope to display 
+        if ((targetId != null) && composers.containsKey(targetId.trim())) {
+            request.setAttribute("composer", composers.get(targetId));
+            context.getRequestDispatcher("/composer.jsp").forward(request, response);
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>Итак, на этом примере создания сервлета можно убедиться, что написание кода на стороне сервера для обработки с использованием Ajax не требует каких-либо новых знаний.  Для случаев, когда требуется обмен документами XML, тип содержимого ответа должен иметь значение <code>text/xml</code>.  Кроме того, Ajax позволяет осуществлять обмен простыми текстами или даже фрагментами JavaScript, которые могут анализироваться или выполняться с использованием функции обратного вызова на стороне клиента.  Обратите внимание на то, что некоторые браузеры могут кэшировать результаты, следовательно, может потребоваться установка заголовка HTTP &quot;Cache-Control&quot; на <code>no-cache</code>.</p>
+
+            <p>В этом примере сервлет генерирует документ XML, в котором содержатся все композиторы, имя или фамилия которых начинается с введенных пользователем символов.  Этот документ соответствует данным XML, описанным в приведенной выше блок-схеме<a href="#flow-diagram"></a>.  Ниже приведен пример документа XML, который возвращается в объект <code>XMLHttpRequest</code>:</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;composers&gt;
+    &lt;composer&gt;
+        &lt;id&gt;12&lt;/id&gt;
+        &lt;firstName&gt;Antonin&lt;/firstName&gt;
+        &lt;lastName&gt;Dvorak&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;45&lt;/id&gt;
+        &lt;firstName&gt;Aaron&lt;/firstName&gt;
+        &lt;lastName&gt;Copland&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;7&lt;/id&gt;
+        &lt;firstName&gt;Antonio&lt;/firstName&gt;
+        &lt;lastName&gt;Vivaldi&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;2&lt;/id&gt;
+        &lt;firstName&gt;Arcangelo&lt;/firstName&gt;
+        &lt;lastName&gt;Corelli&lt;/lastName&gt;
+    &lt;/composer&gt;
+&lt;/composers&gt;
+</pre>
+                </div>
+            </div>
+
+            <p class="tips">После завершения кода приложения можно воспользоваться функцией <a href="#httpMonitor">HTTP Monitor</a> среды IDE для просмотра возвращенных данных XML.</p>
+
+        </div>
+
+
+        <h2 id="client2">Программирование на стороне клиента: часть 2</h2>
+
+        <p>Теперь необходимо определить функцию обратного вызова для обработки ответа сервера и добавить все функциональные возможности, необходимые для отражения изменений на странице, которая просматривается пользователем. В этом случае потребуется внести изменения в модель DOM HTML.  Необходимо создать JSP-страницы для отображения результатов успешного запроса или сообщений об ошибках запроса со сбоем. Можно затем создать простую таблицу стилей для презентации.</p>
+
+        <ul>
+            <li><a href="#callback">Добавление функциональных возможностей обратного вызова</a></li>
+            <li><a href="#htmldom">Обновление модели DOM HTML</a></li>
+            <li><a href="#displayresults">Отображение результатов</a></li>
+            <li><a href="#stylesheet">Присоединение таблицы стилей</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <a name="callback"></a>
+            <h3>Добавление функциональных возможностей обратного вызова</h3>
+
+            <p>Асинхронный вызов функции обратного вызова выполняется на определенных этапах взаимодействия HTTP &ndash; при изменении свойства <code>readyState</code> объекта <code>XMLHttpRequest</code>.  В разрабатываемом приложении в качестве функции обратного вызова используется <code>callback()</code>.  Следует помнить о том, что <code>callback</code> в <code>doCompletion()</code> была определена как свойство <code>XMLHttpRequest.onreadystatechange</code> для функции.  Теперь можно реализовать функцию обратного вызова следующим образом.</p>
+
+            <ol>
+                <li>Откройте <code>javascript.js</code> в редакторе исходного кода и введите следующий код.
+
+<pre class="examplecode">
+function callback() {
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>Значение &quot;4&quot; состояния <code>readyState</code> означает успешное выполнение взаимодействия HTTP.  Интерфейс API для <code>XMLHttpRequest.readState</code> указывает на наличие 5 возможных значений, которые могут быть использованы при настройке.  Это:</p>
+
+            <div class="indent">
+                <div class="indent">
+                    <table class="half-width">
+                        <thead class="tblheader">
+                            <tr>
+                                <th class="innerpadding">Значение <code>readyState</code></th>
+                                <th class="innerpadding">Определение состояния объекта</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbltd0 align-center">
+                            <tr>
+                                <td>0</td>
+                                <td>не инициализировано</td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>загрузка</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>загружено</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>интерактивный режим</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>выполнено</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br>
+            <p>Обратите внимание, что функция <code>parseMessages()</code> вызывается, только если <code>XMLHttpRequest.readyState</code> находится в состоянии &quot;4&quot;, а <code>status</code> &ndash; определение кода состояния HTTP запроса &ndash; имеет значение &quot;200&quot;, что указывает на успешное выполнение.  Метод <code> parseMessages()</code>будет определен далее в разделе <a href="#htmldom">Обновление модели DOM HTML</a>.</p>
+
+            <a name="htmldom"></a>
+            <h3>Обновление модели DOM HTML</h3>
+
+            <p>Функция <code>parseMessages()</code> позволяет выполнять обработку входящих данных XML.  При этом, в указанной функции используются несколько вспомогательных функций, например <code>appendComposer()</code>, <code>getElementY()</code> и <code>clearTable()</code>.  Кроме того, необходимо ввести новые элементы для страницы-указателя, например, вторую таблицу HTML, которая служит в качестве поля автозавершения, и идентификаторы для элементов, обеспечивающие возможность вызова в <code>javascript.js</code>.  Наконец, следует создать новые переменные, соответствующие идентификаторам элементов на странице индекса, инициализировать их в предварительно реализованной функции <code>init()</code> и добавить функциональность, которая требуется при каждой загрузке страницы индекса.</p>
+
+            <p class="notes"><strong>Примечание.</strong> Функции и элементы, которые создаются в следующих действиях, являются взаимозависимыми. После выполнения рекомендаций, приведенных в этом разделе, необходимо выполнить тщательную проверку реализованного кода.</p>
+
+            <ol>
+                <li>Откройте страницу индекса в редакторе исходного кода и введите указанный ниже код во вторую строку предварительно созданной таблицы HTML.
+
+<pre class="examplecode">
+&lt;tr&gt;
+    <strong>&lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        &lt;table id=&quot;complete-table&quot; /&gt;
+    &lt;/td&gt;</strong>
+&lt;/tr&gt;</pre>
+
+                    Вторая строка таблицы содержит еще одну таблицу HTML.  Эта таблица представляет поле автозавершения, используемое для автоматического ввода полных имен композиторов.</li>
+
+                <li>Откройте <code>javascript.js</code> в редакторе исходного кода и добавьте к первому фрагменту файла три следующих переменных:
+
+<pre class="examplecode">
+var completeField;
+var completeTable;
+var autoRow;</pre></li>
+
+                <li>Добавьте следующие строки (выделенные <strong>полужирным шрифтом</strong>) к функции <code>init()</code>.
+
+<pre class="examplecode">
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+    <strong>completeTable = document.getElementById(&quot;complete-table&quot;);
+    autoRow = document.getElementById(&quot;auto-row&quot;);
+    completeTable.style.top = getElementY(autoRow) + &quot;px&quot;;</strong>
+}</pre>
+
+                    Одной из целей <code>init()</code> является предоставление доступа к элементам страницы индекса для других функций, используемых в целях изменения DOM страницы индекса.</li>
+
+                <li>Добавьте <code>appendComposer()</code> в <code>javascript.js</code>.
+
+ <pre class="examplecode">
+function appendComposer(firstName,lastName,composerId) {
+
+    var row;
+    var cell;
+    var linkElement;
+
+    if (isIE) {
+        completeTable.style.display = 'block';
+        row = completeTable.insertRow(completeTable.rows.length);
+        cell = row.insertCell(0);
+    } else {
+        completeTable.style.display = 'table';
+        row = document.createElement(&quot;tr&quot;);
+        cell = document.createElement(&quot;td&quot;);
+        row.appendChild(cell);
+        completeTable.appendChild(row);
+    }
+
+    cell.className = &quot;popupCell&quot;;
+
+    linkElement = document.createElement(&quot;a&quot;);
+    linkElement.className = &quot;popupItem&quot;;
+    linkElement.setAttribute(&quot;href&quot;, &quot;autocomplete?action=lookup&id=&quot; + composerId);
+    linkElement.appendChild(document.createTextNode(firstName + &quot; &quot; + lastName));
+    cell.appendChild(linkElement);
+}</pre>
+
+                    Эта функция позволяет создавать новую строку таблицы и вставлять в нее ссылку на композитора с использованием данных, передаваемых в функцию посредством соответствующих трех параметров, а затем вставлять эту строку в элемент <code>complete-table</code> страницы-указателя.</li>
+
+                <li>Добавьте <code>getElementY()</code> в <code>javascript.js</code>.
+
+                <pre class="examplecode">
+function getElementY(element){
+
+    var targetTop = 0;
+
+    if (element.offsetParent) {
+        while (element.offsetParent) {
+            targetTop += element.offsetTop;
+            element = element.offsetParent;
+        }
+    } else if (element.y) {
+        targetTop += element.y;
+    }
+    return targetTop;
+}</pre>
+
+                    Указанная функция применяется для определения вертикальной позиции исходного элемента.  Это является необходимым, поскольку фактическое расположение элемента при его отображении часто зависит от типа и версии браузера.  Следует отметить, что при отображении на экране элемент <code>complete-table</code>, содержащий имена композиторов, перемещается в нижнюю правую часть таблицы, в которой он расположен. Правильное расположение по высоте определяется <code>getElementY()</code>. <br><br>
+                    <p class="notes"><strong>Примечание.</strong> См. <a href="http://www.quirksmode.org/js/findpos.html">это описание</a> <code>смещения</code> в <a href="http://www.quirksmode.org/">http://www.quirksmode.org/</a>.</p></li>
+
+                <li>Добавьте <code>clearTable()</code> в <code>javascript.js</code>.
+
+ <pre class="examplecode">
+function clearTable() {
+    if (completeTable.getElementsByTagName("tr").length > 0) {
+        completeTable.style.display = 'none';
+        for (loop = completeTable.childNodes.length -1; loop >= 0 ; loop--) {
+            completeTable.removeChild(completeTable.childNodes[loop]);
+        }
+    }
+}</pre>
+
+                    Эта функция позволяет скрывать элемент <code>complete-table</code> (т.е. делать его невидимым), но не удаляет какие-либо существующие записи имен композиторов, созданные ранее. </li>
+
+                <li>Для вызова <code>clearTable()</code> при каждом получении данных с сервера можно соответствующим образом изменить функцию <code>callback()</code>.  Поэтому любые скомбинированные записи, существующие в окне автозавершения, удаляются до того, как выполняется заполнение новыми записями.
+
+<pre class="examplecode">
+function callback() {
+
+    <strong>clearTable();</strong>
+
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+
+                <li>Добавьте <code>parseMessages()</code> в <code>javascript.js</code>.
+
+<pre class="examplecode">
+function parseMessages(responseXML) {
+
+    // no matches returned
+    if (responseXML == null) {
+        return false;
+    } else {
+
+        var composers = responseXML.getElementsByTagName(&quot;composers&quot;)[0];
+
+        if (composers.childNodes.length &gt; 0) {
+            completeTable.setAttribute(&quot;bordercolor&quot;, &quot;black&quot;);
+            completeTable.setAttribute(&quot;border&quot;, &quot;1&quot;);
+
+            for (loop = 0; loop &lt; composers.childNodes.length; loop++) {
+                var composer = composers.childNodes[loop];
+                var firstName = composer.getElementsByTagName(&quot;firstName&quot;)[0];
+                var lastName = composer.getElementsByTagName(&quot;lastName&quot;)[0];
+                var composerId = composer.getElementsByTagName(&quot;id&quot;)[0];
+                appendComposer(firstName.childNodes[0].nodeValue,
+                    lastName.childNodes[0].nodeValue,
+                    composerId.childNodes[0].nodeValue);
+            }
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>Функция <code>parseMessages()</code> получает в качестве параметра объектное представление документа XML, возвращаемое сервлетом <code>AutoComplete</code>.  С программной точки зрения, функция исследует документ XML и извлекает <code>firstName</code>, <code>lastName</code> и <code>id</code> каждой записи, а затем передает эти данные в <code>appendComposer()</code>.  Это приводит к динамическому обновлению содержимого элемента <code>complete-table</code>.  Например, запись, которая генерируется и вставляется в <code>complete-table</code>, может выглядеть следующим образом:
+
+                <div class="indent">
+                    <div class="indent">
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td class=&quot;popupCell&quot;&gt;
+        &lt;a class=&quot;popupItem&quot; href=&quot;autocomplete?action=lookup&id=12&quot;&gt;Antonin Dvorak&lt;/a&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+
+                    </div>
+                </div>
+
+            <p>Динамическое обновление элемента <code>complete-table</code> соответствует последнему этапу потока процесса передачи данных, который выполняется во время обмена данными на основе Ajax.  Это обновление соответствует передаче данных HTML и CSS на страницу представления, как показано на приведенной выше <a href="#flow-diagram">блок-схеме</a>.</p>
+
+            <h3 id="displayresults">Отображение результатов</h3>
+            <p>Для отображения результатов необходим файл JSP под названием <code>composers.jsp</code> Во время поиска эта страница вызывается из <code>AutoCompleteServlet</code>. Также понадобится файл <code>error.jsp</code>, который вызывается из<code>AutoCompleteServlet</code>, если композитор не был обнаружен.</p>
+            <p><strong>Для отображения результатов и ошибок:</strong></p>
+            <ol>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши папку 'Веб-страницы' приложения и выберите 'Создать' > JSP. Откроется мастер создания JSP.</li>
+                <li>В поле &quot;Имя файла&quot; введите<code>composer</code> В поле &quot;Созданный файл&quot; должен появиться путь, который заканчивается файлом <code>/web/composer.jsp</code>.</li>
+                <li>Нажмите кнопку &quot;Завершить&quot;. Файл <code>composer.jsp</code> открывается в редакторе. В папке веб-страниц в окне &quot;Проекты&quot; появляется путь к этому файлу. </li>
+                <li>Измените код заглушки в файле <code>composer.jsp</code> следующим кодом:
+                    <pre class="examplecode">&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Composer Information&lt;/title&gt;
+
+    &lt;link rel="stylesheet" type="text/css" href="stylesheet.css"&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+
+    &lt;table&gt;
+      &lt;tr&gt;
+        &lt;th colspan="2"&gt;Composer Information&lt;/th&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;First Name: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.firstName}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Last Name: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.lastName}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;ID: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.id}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Category: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.category}&lt;/td&gt;
+      &lt;/tr&gt;      
+    &lt;/table&gt;
+
+    &lt;p&gt;Go back to &lt;a href="index.html" class="link"&gt;application home&lt;/a&gt;.&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+                <p class="notes"><strong>Примечание.</strong> Если страница индекса имеет вид <tt>index.jsp</tt>, потребуется изменить ссылку для возврата на эту страницу.</p>
+                </li>
+<li>Создайте еще один файл JSP в папке с веб-страницами проекта. Назовите файл <code>error.jsp</code>.</li>
+<li>Измените код заглушки в файле <code>error.jsp</code> следующим кодом:
+    <pre class="examplecode">&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;link rel="stylesheet" type="text/css" href="stylesheet.css"&gt;      
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+        &lt;title&gt;Seach Error&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h2&gt;Seach Error&lt;/h2&gt;
+        
+        &lt;p&gt;An error occurred while performing the search. Please try again.&lt;/p&gt;
+        
+        &lt;p&gt;Go back to &lt;a href="index.html" class="link"&gt;application home&lt;/a&gt;.&lt;/p&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+    <p class="notes"><strong>Примечание.</strong> Если страница индекса имеет вид <tt>index.jsp</tt>, потребуется изменить ссылку для возврата на эту страницу.</p>
+</li>
+            </ol>
+            <h3 id="stylesheet">Присоединение таблицы стилей</h3>
+
+            <p>На данном этапе создан весь код, необходимый для реализации функциональных возможностей приложения.  Теперь для проверки результатов следует попытаться запустить приложение.</p>
+
+            <ol>
+                <li>В окне &quot;Проекты&quot; щелкните правой кнопкой мыши узел проекта и выберите команду &quot;Выполнить&quot;. Будет выполнена перекомпиляция проекта и его развертывание на целевом сервере.  Откроется браузер, в котором отображается страница-указатель. <br> <img alt="Приложение развернуто в браузере без таблицы стилей" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/no-css.png" title="Успешное развертывание без таблицы стилей"></li>
+            </ol>
+
+            <p>Для добавления таблицы стилей к приложению создайте файл <code>.css</code> и создайте ссылку на него на страницах презентации. При работе с файлами <code>.css</code> IDE предоставляет поддержку функции автозавершения кода, а также следующие окна, которые используются для создания и изменения правил стилей.</p>
+
+            <ul>
+                <li><strong>Окно 'Стили CSS'.</strong> Окно стилей CSS позволяет редактировать объявления правил для элементов HTML и средств выбора в файле CSS.</li>
+                <li><strong>Диалоговое окно 'Создание правил CSS'.</strong> Диалоговое окно 'Создание правил CSS' позволяет создавать новые правила в таблице стилей CSS. </li>
+                <li><strong>Диалоговое окно 'Добавить свойство CSS'.</strong>Диалоговое окно 'Добавить свойство CSS' позволяет добавлять объявления к правилу CSS в таблице стилей, добавляя свойства и значения. </li>
+            </ul>
+
+            <p>Для добавления таблицы стилей к приложению выполните следующие действия.</p>
+
+            <ol>
+                <li>В окне "Проекты" щелкните правой кнопкой мыши узел проекта и выберите "Создать > Каскадная таблица стилей". Если пункт "Каскадная таблица стилей" отсутствует в списке, выберите "Прочие". Затем выберите &quot;Каскадная таблица стилей&quot; из категории &quot;Web&quot; в мастере создания файла.</li>
+
+                <li>В текстовом поле 'Имя файла CSS' введите <strong><code>stylesheet</code></strong>. Нажмите кнопку &quot;Завершить&quot;. 
+                    <p>Новый файл будет создан и открыт в редакторе.</p></li>
+
+                <li>Введите следующие правила <code>stylesheet.css</code> в редакторе. При необходимости просмотра предложений можно использовать поддержку автозавершения кода среды IDE путем нажатия CTRL+ПРОБЕЛ.
+
+<pre class="examplecode">
+body {
+   font-family: Verdana, Arial, sans-serif;
+   font-size: smaller;
+   padding: 50px;
+   color: #555;
+   width: 650px;
+}
+
+h1 {
+   letter-spacing: 6px;
+   font-size: 1.6em;
+   color: #be7429;
+   font-weight: bold;
+}
+
+h2 {
+   text-align: left;
+   letter-spacing: 6px;
+   font-size: 1.4em;
+   color: #be7429;
+   font-weight: normal;
+   width: 450px;
+}
+
+table {
+   width: 550px;
+   padding: 10px;
+   background-color: #c5e7e0;
+}
+
+td {
+   padding: 10px;
+}
+
+a {
+  color: #be7429;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.popupBox {
+  position: absolute;
+  top: 170px;
+  left: 140px;
+}
+
+.popupCell {
+   background-color: #fffafa;
+}
+
+.popupCell:hover {
+  background-color: #f5ebe9;
+}
+
+.popupItem {
+  color: #333;
+  text-decoration: none;
+  font-size: 1.2em;
+}</pre>
+
+                </li>
+                <li>Откройте окно стилей CSS, выбрав 'Окно' > 'Web'> 'Стили CSS'. <br> <img alt="Окно &apos;Стили CSS&apos;, в котором отображаются свойства правила h1" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/css-styles-window.png" title="Окно &apos;Стили CSS&apos;, в котором отображаются свойства правила h1">
+
+                <p>Можно использовать окно 'Стили CSS' для быстрого просмотра свойств и редактирования правил стилей. При выборе правила в верхней панели окна 'Стиль CSS' отображаются свойства правила в нижней панели. Можно добавить CSS правила к таблице стилей, нажав значок 'Изменить правила CSS' (<img alt="Значок &apos;Новое свойство CSS&apos;" src="../../../images_www/articles/73/web/ajax-intro/newcssrule.png" title="Значок &apos;Новое свойство CSS&apos;">) на панели инструментов в верхней панели. Можно изменять правила в нижней панели путем редактирования таблицы свойств и добавления свойств, щелкнув значок 'Добавить свойство' (<img alt="Значок &apos;Новое свойство CSS&apos;" src="../../../images_www/articles/73/web/ajax-intro/newcssproperty.png" title="Значок &apos;Новое свойство CSS&apos;">) на панели инструментов в нижней панели.
+                </li>
+
+                <li>Перейдите на страницу индекса в редакторе исходного кода и добавьте ссылку на страницу стилей между тегами <code>&lt;head></code>.
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;</pre></li>
+
+
+                <li>Добавьте класс <code>popupBox</code>, определенный в таблице стилей, к элементу <code>complete-table</code> (начертание изменится на <strong>жирное</strong>).
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        &lt;table id=&quot;complete-table&quot; <strong>class=&quot;popupBox&quot;</strong> /&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+                    <p>Можно использовать функцию автозавершения кода в редакторе для выбора правила стиля, которое требуется применить к средству выбора.</p>
+                    <img alt="Автозавершение кода CSS в редакторе" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/css-completion.png" title="Автозавершение кода CSS в редакторе">
+
+                    <p>Как указано в <code>stylesheet.css</code>, согласно этому правилу элемент <code>complete-table</code> располагается таким образом, что отображается справа от родительского элемента.</p></li>
+            </ol>
+            <p>При сохранении страницы индекса приложение автоматически повторно развертывается на сервере. Если страница все еще открыта в браузере, можно перезагрузить ее, чтобы увидеть, что страница теперь визуализируется в соответствии с правилами в таблице стилей CSS. </p>
+        </div>
+
+
+        <br>
+        <h2 id="run">Выполнение проекта</h2>
+
+        <p>При повторном запуске приложения текст в браузере отображается с использованием только что созданной таблицы стилей.  При каждом вводе символа на сервер передается асинхронный запрос, который возвращается с данными XML, подготовленными при помощи <code>AutoCompleteServlet</code>.  При вводе последующих символов количество вариантов имен композиторов уменьшается, и на экране появляется новый список соответствий.</p>
+
+
+        <h3 id="httpMonitor">Использование средства наблюдения HTTP Server Monitor</h3>
+
+        <p>Можно использовать средство наблюдения HTTP Server Monitor среды IDE для проверки взаимодействия с HTTP, которое заключается в передаче запросов и ответов между клиентским приложением и сервером.  В HTTP Server Monitor отображается информация, например, заголовки клиентского приложения и сервера, свойства сеанса, подробные сведения о файлах cookie, а также параметры запроса.</p>
+
+        <p>Перед началом использования средства HTTP Monitor его следует сначала активировать на используемом сервере.</p>
+
+        <ol>
+            <li>Откройте окно &quot;Серверы&quot;, выбрав в главном меню &quot;Сервис&quot; &gt; &quot;Серверы&quot;.</li>
+
+            <li>На левой панели выберите сервер, который используется для проекта.  Затем на правой панели выберите режим &quot;Enable HTTP Monitor&quot;.
+                <p class="notes"><strong>Примечание.</strong> Этот параметр отображается на вкладке 'Общие' для сервера GlassFish.  На сервере Tomcat он расположен на вкладке &quot;Соединение&quot;.</p></li>
+            <li>Выберите &quot;Close&quot; (Закрыть).</li>
+        </ol>
+
+        <p class="alert">Если сервер уже запущен, необходимо перезапустить его для применения изменений.  Сервер можно перезапустить, открыв окно 'Службы' (Window > 'Службы'), то щелкните правой кнопкой мыши сервер ниже узла 'Серверы' и выберите 'Перезапуск'.</p>
+
+        <p>Теперь при повторном выполнении приложения в нижней области среды IDE откроется HTTP Monitor.  Для просмотра информации относительно каждого запроса можно выбрать запись на левой панели, затем перейти на соответствующие вкладки в главном окне.</p>
+
+        <div class="indent">
+            <img alt="Монитор сервера HTTP отображается в среде IDE" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/http-monitor.png" style="width:688px" title="Монитор сервера HTTP отображается в среде IDE"></div>
+
+        <p>Можно проверить данные XML, полученные от сервера в результате асинхронного запроса, переданного при вводе пользователем символа в поле автозавершения.</p>
+
+        <ol>
+            <li>В представлении дерева на левой стороне монитора HTTP щелкните правой кнопкой мыши запись запроса и выберите 'Воспроизвести'.</li>
+        </ol>
+
+        <p>Ответ генерируется в браузере.  В этом случае, поскольку ответ состоит из данных XML, данные в браузере отображаются с использованием собственной программы просмотра XML.</p>
+
+        <div class="indent">
+            <img alt="Монитор сервера HTTP отображается в среде IDE" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/xml-data.png" style="width:688px" title="Монитор сервера HTTP отображается в среде IDE"></div>
+
+
+        <h3 id="conclusion">Заключение</h3>
+
+        <p>Это заключительный раздел руководства &quot;Введение в Ajax&quot;.  Авторы полагают, что к настоящему времени у пользователей сформировалось четкое представление о том, каким образом Ajax поддерживает обмен информацией по HTTP в фоновом режиме и выполняет динамическое обновление страницы на основе полученных результатов.</p>
+
+        <p>Следует отметить, что разработанное приложение имеет ряд недостатков, например, при выборе имени композитора из поля автозавершения пользователь не получает какого-либо результата.  Для получения дополнительных сведений о реализации с использованием технологии JSP <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaScript%252FMyAjaxApp.zip">загрузите проект решения</a>.  Кроме того, существует возможность выполнения проверки допустимости на стороне сервера в целях предотвращения запроса пользователем имени, не существующего в хранилище данных.  Для более подробного изучения этих функций обратитесь к другим учебным курсам <a href="../../trails/java-ee.html">учебной карты по Java EE &amp; Java Web</a>.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Ajax%20(Java)">Мы ждем ваших отзывов</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">Дополнительные сведения</h2>
+
+        <p>Дополнительные сведения о технологиях Ajax и Java приведены в следующих материалах на сайте <a href="https://netbeans.org/">www.netbeans.org</a>:</p>
+
+        <ul>
+            <li><a href="../../docs/web/js-toolkits-jquery.html">Использование jQuery для улучшения внешнего вида веб-страницы и упрощения работы с ней</a>.  Показывает способ интеграции ядра jQuery и библиотек пользовательского интерфейса в проект NetBeans.</li>
+
+            <li><a href="../../docs/web/js-toolkits-dojo.html">Подключение дерева Dojo к списку ArrayList с помощью JSON</a>.  Данный документ основан на практическом примере JavaOne. В нем демонстрируются способы внедрения элемента оформления &quot;Дерево Dojo&quot; в веб-страницу и способы управления реакцией стороны сервера на запросы дерева в формате JSON.</li>
+
+            	<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2272">Создание файлов JavaScript</a> в документе <i>Разработка приложений в IDE NetBeans</i></li>
+
+            <li><a href="quickstart-webapps-wicket.html">Введение в веб-платформу Wicket</a>.  Введение в процесс создания повторно используемых компонентов и применения их в веб-приложении на основе платформы Wicket.</li>
+
+            
+            
+        </ul>
+
+    </body>
+</html>

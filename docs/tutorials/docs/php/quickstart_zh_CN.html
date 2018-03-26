@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>NetBeans IDE PHP 快速入门教程</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a 
+         simple Hello World PHP application." >
+   </head>
+   
+   <body>
+      
+      <h1>NetBeans IDE PHP 快速入门教程</h1>
+
+   <p>本文档为在适用于 PHP 的 NetBeans IDE 中准备 PHP 开发环境、设置 PHP 项目以及开发并运行首个 PHP 应用程序提供了一般性指导。 </p>
+<p><b>目录</b></p>
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<ul><li><a href="#componentInstallation">组件安装</a></li>
+      
+              
+  <li><a href="#setUpProject">在适用于 PHP 的 NetBeans IDE 中设置 PHP 项目</a>  </li>
+            <li><a href="#yurFirstPhpProject">运行首个 PHP 项目</a></li>
+            <li><a href="#usingDBServers">在适用于 PHP 的 NetBeans IDE 中使用数据库服务器</a></li>
+            <li><a href="#nextSteps">后续步骤</a></li>
+   </ul>
+<p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">软件或资源</th>
+      <th class="tblheader" scope="col">要求的版本</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+      <td class="tbltd1">PHP 下载包</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">PHP 引擎</td>
+      <td class="tbltd1">版本 5
+    </tr>
+    <tr>
+      <td class="tbltd1">Web 服务器</td>
+      <td>推荐使用 <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP Server 2.2</a>。<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">PHP 调试器</td>
+      <td><a href="http://www.xdebug.org" target="_blank">XDebug 2.0 或更高版本</a></td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  <!--
+<h2><a name="configuringSoftware"></a>Required Software</h2>
+<p>To create, run, and debug PHP projects you need the following software:</p>
+<ul>
+  <li>The NetBeans IDE for PHP.  Downloads are available <a href="
+http://bits.netbeans.org/download/trunk/nightly/latest/">here</a>. </li>
+  <li>A web server. Typically development and debugging is performed on a local web server, while the production environment is located on a remote web server. The current version enables using a local server. Using a remote server with FTP access will be supported in future versions. PHP support can be added to a number of web servers (IIS, Xitami, and so on), but most commonly <a target="_blank" href="http://httpd.apache.org/download.cgi">Apache HTTP Server</a> is used. Click <a target="_blank" href="http://httpd.apache.org/docs/2.2/install.html">here</a> for information on how to install and configure Apache 2.2. <a target="_blank" href="http://httpd.apache.org/docs/2.2/install.html"></a></li>
+</ul>
+<ul>
+  <li>The PHP engine. The supported version is PHP5. Downloads are available <a target="_blank" href="http://www.php.net/downloads.php">here</a>. </li>
+  <li>The PHP debugger. The NetBeans IDE for PHP allows you to use <a target="_blank" href="http://www.xdebug.org">XDebug</a>, but using a debugger is optional. The recommended version is XDebug 2.0 as it is compatible with PHP5. </li>
+   </ul>
+ -->
+</p>
+<p class="tips">您既可以单独安装 PHP 引擎、Web 服务器和数据库，也可以使用 AMP (<strong>A</strong>pache, <strong>M</strong>ySQL, <strong>P</strong>HP) 包进行安装。 </p>
+<h2><a name="componentInstallation"></a>安装和配置</h2>
+<p>下面的文档包含在操作系统上设置 PHP Web 堆栈的一种或两种方法的说明。这些说明并不具有权威性。Web 堆栈由第三方软件组成，而且由于您的环境可能不同，因此您可能希望使用其他 AMP 包或其他方法设置 PHP。您可能需要通过自己的研究来补充我们的说明。</p>
+<ul>
+  <li><a href="configure-php-environment-windows.html">在 Windows 中配置 PHP 开发环境</a></li>
+  <li><a href="configure-php-environment-ubuntu.html">在 Ubuntu Linux 发行版中配置 PHP 开发环境</a> </li>
+  <li><a href="configure-php-environment-mac-os.html">在 Mac 操作系统 (Mac OS X) 中配置 PHP 开发环境</a></li>
+</ul>
+
+ <h2><a name="setUpProject"></a>在适用于 PHP 的 NetBeans IDE 中设置 PHP 项目 </h2>
+  <p>有关安装并启动 NetBeans IDE 的帮助信息，请参见<a href="https://netbeans.org/community/releases/73/install.html" target="_blank">安装文档</a>。</p>
+  <p>要在适用于 PHP 的 NetBeans IDE 中着手开发 PHP 应用程序，首先需要创建一个项目。该项目包含有关项目文件位置以及应用程序的运行和调试方式（运行配置）的信息。<br>
+  
+   </p>
+<ol>
+      <li>启动 IDE，切换至 "Projects"（项目）窗口，然后选择 "File"（文件）> "New Project"（新建项目）。"Choose Project"（选择项目）面板打开。 </li>
+      <li>在 "Categories"（类别）列表中，选择 "PHP"。 </li>
+      <li>在 "Projects"（项目）区域中，选择 "PHP Application"（PHP 应用程序），然后单击 "Next"（下一步）。"New PHP Project"（新建 PHP 项目）的 "Name and Location"（名称和位置）面板打开。 <br><img alt="新建 PHP 项目向导的 &quot;Name and Location&quot;（名称和位置）面板，其中 &quot;Source Folder&quot;（源文件夹）位置作为 XAmpp 文档根目录。" class="margin-around" src="../../../images_www/articles/72/php/quickstart/new-project-name-location.png" title="新建 PHP 项目向导的 &quot;Name and Location&quot;（名称和位置）面板，其中 &quot;Source Folder&quot;（源文件夹）位置作为 XAmpp 文档根目录。"></li>
+      <li>在 "Project Name"（项目名称）文本字段中，输入 <tt>NewPHPProject</tt>。<br>
+     </li>
+     <li>在 "Sources Folder"（源文件夹）字段中，浏览到您的 PHP 文档根目录并在此处创建一个名为 <tt>NewPHPProject</tt> 的子目录。Web 服务器会从文档根目录文件夹中查找要在浏览器中打开的文件。文档根目录是在 Web 服务器<a href="../../trails/php.html#configuration">配置文件</a>中指定的。例如，对于 Xampp，文档根目录为 XAMPP_HOME/htdocs。
+	  
+     </li>
+      
+ 
+      <li>将所有其他字段保留为其默认值。单击 "Next"（下一步）。"Run Configuration"（运行配置）窗口打开。 <br><img alt="新建 PHP 项目向导的 &quot;Run Configuration&quot;（运行配置）面板，选中了默认值" class="margin-around" src="../../../images_www/articles/72/php/quickstart/new-project-run-config.png"></li>     
+      <li>在 "Run As"（运行方式）下拉列表中，选择 "Local Web Site"（本地 Web 站点）。该项目将在本地 Apache 服务器中运行。其他选项将通过 FTP 远程运行项目，以及在命令行中运行。</li>
+      <li>将 "Project URL"（项目 URL）保留为默认值。  </li>
+      
+      <li> 单击 "Finish"（完成）。IDE 将创建该项目。 </li>
+   </ol>
+
+  了解有关<a href="project-setup.html">在 NetBeans 中设置 PHP 项目</a>的更多信息。
+ 
+   <h2><a name="yurFirstPhpProject"></a>运行首个 PHP 项目</h2>
+   <ol>
+     <li>启动 IDE，选择 "File"（文件）> "Open Project"（打开项目）。"Open Project"（打开项目）对话框打开。</li>
+     <li>选择 <tt>NewPHPProject</tt>，然后单击 "Open Project"（打开项目）。在 "Projects"（项目）窗口中显示 NewPHPProject 树，并在编辑器和 "Navigator"（导航器）窗口中打开该项目的 <tt>index.php</tt> 文件。 <br> <img alt="NewPHPProject 在 IDE 中打开，并在编辑器中显示 index.php" border="1" class="margin-around" src="../../../images_www/articles/72/php/quickstart/getting-started-open-new-project.png"></li>
+
+     <li>在 <tt>&lt;?php ?&gt;</tt> 块内输入以下代码： 
+       <pre class="examplecode"> echo "Hello, world! This is my first PHP project!";</pre>
+     </li>
+     <li>要运行该项目，请将光标置于 "NewPHPProject" 节点上，然后从上下文菜单中选择 "Run"（运行）。下图显示了应在浏览器窗口中看到的内容：<br> <img alt="字段已填写的 &quot;New PHP Project&quot;（新建 PHP 项目）面板" border="1" class="margin-around" src="../../../images_www/articles/72/php/quickstart/getting-started-browser-hello-world.png"><br> 恭喜！您的程序可以正常运行！</li>
+   </ol>
+   <h2><a name="usingDBServers"></a>在适用于 PHP 的 NetBeans IDE 中使用数据库服务器</h2>
+   您可以在适用于 PHP 的 NetBeans IDE 中使用各种数据库服务器，但最常用的是 MySQL 服务器。可以从<a href="http://dev.mysql.com/downloads/mysql/5.1.html" target="_blank">此处</a>进行下载。<br> <strong>注：</strong>该产品的推荐版本为 MySQL Server 5.0。<br> 另请参见：
+   <ul>
+     <li> <a href="../ide/install-and-configure-mysql-server.html">在 Windows 操作系统中设置 MySQL 数据库服务器</a> </li>
+   <li><a href="wish-list-lesson1.html">使用测试数据创建样例数据库</a> </li>
+   <li><a href="../../articles/mysql.html">MySQL 和 NetBeans IDE</a> </li>
+   <li><a href="../ide/mysql.html">连接 MySQL 数据库</a> <br>
+   </li>
+  </ul>
+<h2><a name="nextSteps"></a>后续步骤 </h2>     
+     <p>同时，要查找特定于您正在开发的应用程序类型的信息，请使用该类型应用程序的 NetBeans IDE 学习资源。每个学习资源都包含一系列教程和指南，范围从初级到高级。可用的学习资源如下：</p>
+      <table width="100%">
+         <tr> 
+            <td> 
+               <ul>
+                  <li><a href="../../trails/php.html">PHP 编程</a></li>
+                  <li><a href="../../trails/java-se.html">基本 Java 编程</a></li>
+                  <li><a href="../../trails/matisse.html">Java GUI 应用程序</a></li>
+                  <li><a href="../../trails/web.html">Web 服务应用程序</a></li>
+                  <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 应用程序</a></li>
+               </ul>
+            </td>
+            <td> 
+               <ul>
+                  <li><a href="../../trails/mobility.html">Mobile 应用程序</a></li>
+                  <li><a href="../../trails/platform.html">NetBeans 插件和富客户端应用程序</a></li>
+                  <li><a href="../../trails/cnd.html">C/C++ 应用程序</a></li>
+               </ul>
+            </td>
+         </tr>
+      </table>
+      <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Quickstart">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" >
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+   </body>
+</html>

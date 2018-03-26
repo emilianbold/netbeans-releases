@@ -1,0 +1,681 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+  <title>Adding Java Management Extensions (JMX) Instrumentation to a Java Application in NetBeans IDE</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  <meta name="description" content="Anagram Game JMX instrumentation tutorial for the NetBeans JMX Wizard module">
+  <link rel="stylesheet" href="../../../netbeans.css">
+  <meta name="TOPIC" content="ADVANCED">
+  <meta name="TYPE" content="ARTICLE">
+  <meta name="AUDIENCE" content="NBUSER">
+  <meta name="author" content="Jean-Francois DENISE">
+  <meta name="author" content="Joel FERAUD">
+  <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JMX">
+  <meta name="description" content="An tutorial on how to add JMX management to an application in NetBeans IDE"/>
+
+</head>
+<body>
+<h1>Adding Java Management Extensions (JMX) Instrumentation to a Java Application</h1>
+
+
+
+<center><b>Expected duration: 60 minutes</b></center>
+
+<p>The NetBeans JMX Wizard Module integrates JMX technology right into your workflow 
+  in the NetBeans IDE. This module allows you to quickly develop management applications, 
+  add management to existing applications, develop manager applications, and 
+  monitor the state of the Virtual Machine.</p>
+
+
+
+<p>This tutorial shows you how to add management to an existing application (the 
+  NetBeans sample Anagrams Game application). You will first create a non-manageable 
+  Anagram Java Project. You will then use JMX Wizards to generate 90% of the management. 
+  Then you will implement the management behavior specific to the application. 
+  You will finally use the Run/Debug project with JConsole to visualize the Anagram 
+  MBeans. </p>
+
+<h3>Tutorial exercises</h3>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<ul>
+  <li><a href="#Exercise_1">Exercise 1: Creating the NetBeans sample Anagram Game project</a></li>
+  <li><a href="#Exercise_2">Exercise 2: Creating the AnagramsStats JMX Standard MBean and its Management interface</a></li>
+  <li><a href="#Exercise_3">Exercise 3: Adding attributes, operation and notification to the AnagramsStats JMX Standard MBean</a></li>
+  <li><a href="#Exercise_4">Exercise 4: Adding implementation code to the AnagramsStats JMX Standard MBean</a></li>
+  <li><a href="#Exercise_5">Exercise 5: Connecting the management and the application together</a></li>
+  <li><a href="#Exercise_6">Exercise 6: Running the Anagram Game with JConsole</a></li>
+</ul>
+
+
+<h3>Prerequisites</h3>
+<p>This tutorial assumes you have some basic knowledge of, or programming experience 
+  with, the following technologies. </p>
+    <ul>
+        <li>JMX technology: 
+        <a href="http://download.oracle.com/javase/6/docs/technotes/guides/jmx/index.html">
+            JMX online documentation</a></li>
+        <li>Java technology: 
+        <a href="http://www.oracle.com/technetwork/java/javase/tech/index.html">
+            Java SE Technologies at a Glance</a></li>
+        <li>NetBeans IDE</li>
+    </ul>
+<p>You will also benefit from having some knowledge on 
+<a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/index.html">
+Monitoring and Management for the Java Platform</a></p>
+
+<h3>Software Needed for the Tutorial</h3>
+<p>For this tutorial you need to have the following software installed on your computer:</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">Software or Resource</th>
+        <th class="tblheader" scope="col">Version Required</th>
+    </tr> 
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java version</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+        <td class="tbltd1">version 7 or 8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JMX plugin</td>
+        <td class="tbltd1">Available from NetBeans Update Center</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JConsole plugin</td>
+        <td class="tbltd1">Available from NetBeans Update Center</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>To install the <strong>JMX</strong> and <strong>JConsole</strong> plugins, choose Tools &gt; Plugins and download the module from the NetBeans Update Center.</p>
+
+<h3>Resources</h3>
+<ul>
+  <li>NetBeans help contents (Help &gt; Help Contents &gt; JMX). This help is 
+    also available from Wizards.</li>
+</ul>
+
+<h2><a name="Exercise_1"></a>Exercise 1: Creating the NetBeans sample Anagram Game project</h2>
+<p>The goal of this exercise is to create a runnable Java Project. The Anagram 
+  game is a Swing Application that displays a scrambled word to the user and waits 
+  for the user to solve the anagram. </p>
+<ol>
+  <li>Choose File &gt; New Project (Ctrl-Shift-N).</li>
+  <li>Select the Samples &gt; Java category.</li>
+  <li>Select the Anagram Game project. Click Next.</li>
+    
+  <li>In the Project Name and Location panel, 
+  set the project location or keep the default value if it suits you.
+  Select "Set as Main Project" checkbox if not selected because it will make subsequent 
+  actions easier. Click Finish.
+  <p>When you click Finish the IDE creates the Anagram Game project and displays the project in the Projects window.</p>
+  </li>
+  <li>Right-click the AnagramGame project and select Properties.</li>
+  <li>Select the Sources category and confirm that the Source/Binary format is set to JDK 7
+      or JDK 8. Click OK.
+      
+      <p class="notes"><strong>Note.</strong> To select JDK 7 or JDK 8, the Java Platform
+  for the AnagramGame project must also be at least JDK 7 or JDK 8, respectively. 
+  You can change the Java Platform for the AnagramGame in the Libraries category in the Properties window.</li>
+  <li>Right-click the Anagram Game project node and choose Run.</li>
+</ol>
+<p>When you choose Run, the IDE builds and launches the Anagram Game application.</p>
+
+<h2><a name="Exercise_2"></a>Exercise 2: Creating the AnagramsStats JMX Standard MBean and its Management interface</h2>
+
+<p>The goal of this exercise is to create a skeleton JMX Standard MBean, 
+which is composed of its implementation class and its management interface.</p>
+
+<p>Perform the following steps to create the JMX Standard MBean.</p>
+<ol>
+    <li>Confirm that the Anagram Game project is set as the main project. </li>
+    <li>Choose File &gt; New File (Ctrl-N).</li>
+    <li>From the JMX category, select Standard MBean. Click Next.<br/>
+    <img src="../../../images_www/articles/74/java/jmx/jmx-newfile.png"
+    alt="screenshot of Standard MBean file type in New File Wizard" title="Standard MBean file type in New File Wizard"
+    class="margin-around b-all" /></li>
+    <li>Enter the following information Name and Location panel:
+    <ul>
+        <li>Class Name: <tt>AnagramsStats</tt></li>
+        <li>Location: Source Packages (default)</li>
+        <li>Package: <tt>com.toy.anagrams.mbeans</tt></li>
+        <li>Description: <tt>Monitoring and Management of the Anagrams Game</tt></li>
+    </ul>
+    <br clear="all" />
+    <img alt="create_mbean2: create new Standard MBean, step 2"
+    src="../../../images_www/articles/74/java/jmx/jmx-newmbean.png"
+    class="margin-around b-all" />
+    </li>
+    <li>Click Finish.</li>
+</ol>
+    <p>When you click Finish the <tt>AnagramsStats</tt> MBean class and <tt>AnagramsStatsMBean</tt>
+    MBean interface are generated in the <tt>com.toy.anagrams.mbeans</tt>
+    package of the AnagramGame project. These are now several empty skeletons
+    that you will populate in the next exercise.</p>
+
+    
+    
+<h2><a name="Exercise_3"></a>Exercise 3: Adding attributes, operation and notification to the AnagramsStats JMX Standard MBean</h2>
+
+<p>The goal of this exercise is to populate the generated MBean skeleton,
+  so that it monitors the time spent by the user to solve a new anagram and a JMX notification is sent
+  each time an anagram is solved. </p>
+<p>The MBean will contain the following: </p>
+<ul>
+  <li>Two Attributes named <tt>LastThinkingTime</tt> and <tt>NumResolvedAnagrams</tt> </li>
+  <li>An Operation named <tt>resetAll</tt>. </li>
+  <li>A notification of type <tt>AttributeChangeNotification</tt>. This notification is emitted when <tt>LastThinkingTime</tt> is updated.</li>
+</ul>
+
+<p>Perform the following steps to populate the MBean skeleton.</p>
+
+<ol>
+  <li>Open the <tt>AnagramsStats.java</tt> MBean implementation file in the NetBeans editor.</li>
+  <li>Right-click in the source editor and select <strong>JMX &gt; Add MBean Attributes</strong> in the popup menu. </li>
+  <li>Add the <tt>LastThinkingTime</tt> attribute by clicking the Add Attribute button and 
+  supplying the following information.
+    <ul>
+      <li>Attribute Name: <tt>LastThinkingTime</tt></li>
+      <li>Type: int</li>
+      <li>Access: ReadOnly</li>
+      <li>Description: <tt>Elapsed time to solve last anagram</tt></li>
+    </ul>
+  <p class="notes"><strong>Note.</strong> Do not click OK yet!</p>
+  </li>
+  
+  <li>Click Add Attribute again and add the following <tt>NumSolvedAnagrams</tt> attribute. Click OK.
+    <ul>
+      <li>Attribute Name: <tt>NumSolvedAnagrams</tt></li>
+      <li>Type: int</li>
+      <li>Access: ReadOnly</li>
+      <li>Description: <tt>Number of solved anagrams</tt></li>
+    </ul>
+  <br/>
+ 
+  <img alt="create_mbean7: Add LastThinkingTime attribute"
+ src="../../../images_www/articles/74/java/jmx/jmx-addattribute.png" class="margin-around b-all" />
+    
+  <p>The necessary code to expose the read only <tt>LastThinkingTime</tt>
+    and <tt>NumSolvedAnagrams</tt> attributes is generated in both the
+    <tt>AnagramsStats</tt> MBean class and its interface.</p>
+    <p>You can see the private fields declaration and the public getter methods.
+    More precisely, looking at the members view and at the generated code, you will notice
+    that the <tt>getLastThinkingTime</tt> and <tt>getNumSolvedAnagrams</tt> methods
+    are generated both in the <tt>AnagramsStats</tt> class and in its
+    <tt>AnagramsStatsMBean</tt> interface. The private fields <tt>lastThinkingTime</tt>
+    and <tt>numSolvedAnagrams</tt> of type <tt>int</tt> were also generated and will be used to
+    store the actual attribute values.</p>
+
+    
+  <p>Next you will add three more attributes to keep track 
+  of the minimum and maximum thinking time the user took, and of the current 
+  anagram being proposed to the user. </p>
+  </li>
+  
+  <li>Right-click in the source editor and select <strong>JMX &gt; Add MBean Attributes</strong> in the popup menu.</li>
+  <li>Click the Add Attribute button and add the following attributes.
+  <table border="1" cellpadding="1">
+    <thead>
+    <tr>
+    <th>Attribute Name</th>
+    <th>Type</th>
+    <th>Access</th>
+    <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td>MinThinkingTime</td>
+    <td>int</td>
+    <td>ReadOnly</td>
+    <td>Minimum elapsed time to solve an anagram</td>
+    </tr>
+    <tr>
+    <td>MaxThinkingTime</td>
+    <td>int</td>
+    <td>ReadOnly</td>
+    <td>Maximum elapsed time to solve an anagram</td>
+    </tr>
+    <tr>
+    <td>CurrentAnagram</td>
+    <td>String</td>
+    <td>ReadOnly</td>
+    <td>Current anagram to solve</td>
+    </tr>
+    </tbody>
+    </table>
+
+    <p>The dialog box should be similar to the following image.</p>
+    <img alt="Screenshot of Add Attribute dialog after adding 3 more attributes"
+    src="../../../images_www/articles/74/java/jmx/jmx-addattribute2.png" title="Add Attribute dialog after adding 3 more attributes" class="margin-around b-all" />
+      
+    <p class="notes"><strong>Note.</strong> Notice that the attributes that you already created are listed in the dialog box.</p>
+    </li>
+    <li>Click OK and save your changes.</li>
+
+    <li>Right-click in the source editor and select <strong>JMX &gt; Add MBeans Operations</strong> in the popup menu.</li>
+    <li>Click Add Operation and add the <tt>resetAll()</tt> operation and specify the following details. Click OK.
+    <ul>
+        <li>Operation Name: <tt>resetAll</tt></li>
+        <li>Return Type: <tt>void</tt></li>
+        <li>Parameters: (leave empty)</li>
+        <li>Exceptions: (leave empty)</li>
+        <li>Description: <tt>Reset MBean state</tt></li>
+    </ul>
+    <br/>
+    <img alt="Screenshot of Add Operation dialog"
+    src="../../../images_www/articles/74/java/jmx/jmx-addoperation.png" title="Adding resetAll operation in Add Operation dialog"
+    class="margin-around b-all" />
+  
+    <p>After you click OK you can see that the necessary code to expose the <tt>resetAll</tt>
+    operation was generated in both the <tt>AnagramsStats</tt> MBean class and its interface. </p>
+    </li> 
+
+    <li>Right-click in the source editor and select the <strong>JMX &gt; Implement NotificationEmitter interface</strong> in the popup menu.</li>
+    <li>Specify the following details in the Implement NotificationEmitter interface dialog box.
+        <ul>
+            <li><strong>Select Generate Delegation to Broadcaster.</strong> All methods
+              declared by the <tt>NotificationEmitter</tt> interface will be implemented
+              by delegating to a notification broadcaster. A notification broadcaster
+              simplifies the way the MBean will send notifications.</li>
+            <li><strong>Select Generate Private Seq Number and Accessor.</strong> Some code will be
+              generated to handle the unique sequence number value that must be added
+              to each notification that is sent.</li>
+            <li><strong>Click Add Notification.</strong> Specify the following details in the Notifications table.
+                <ul>
+                  <li>Notification Class: <tt>javax.management.AttributeChangeNotification</tt></li>
+                  <li>Notification Type: (it is automatically set to <tt>ATTRIBUTE_CHANGE</tt>)</li>
+                  <li>Description: <tt>Anagram is Solved</tt><br></li>
+                </ul>
+            </li>
+        </ul>
+        <br/>
+        <img alt="Screenshot of Implement NotificationEmitter dialog" src="../../../images_www/articles/74/java/jmx/jmx-changenotification.png" 
+        title="Adding change notification in Implement NotificationEmitter dialog" class="margin-around b-all" />
+
+        <p>Click OK.</p>
+        <p>You can see that the necessary code to implement the <tt>NotificationEmitter</tt>
+            interface was generated in the <tt>AnagramsStats</tt> MBean class. 
+            You can see how the generated implementation delegates the handling of notifications
+            to the <tt>NotificationBroadcasterSupport</tt> class.</p>
+    </li>
+    <li>Save your changes.</li>
+</ol>
+
+<p>In this exercise you learned how to add attributes, operations and 
+notifications emission to an MBean using the JMX Wizard module. 
+The steps needed to populate your MBean with the necessary infrastructure 
+to expose the management information you want are now finished. 
+You now need to add internal logic to the <tt>AnagramsStats</tt> MBean 
+class implementation, then build the bridge between the MBean and the 
+Anagram Game application.</p>
+
+
+<h2><a name="Exercise_4"></a>Exercise 4: Adding implementation code to the AnagramsStats JMX Standard MBean</h2>
+<p>In this exercise you will add some internal logic to the <tt>AnagramsStats</tt> MBean class implementation. </p>
+  
+<p>Perform the following steps to add the implementation code.</p>
+<ol>
+    <li>The attributes already have their private fields declared, and nothing needs to be added
+    to their getter methods.</li>
+    <li>The <tt>resetAll()</tt> method needs to be implemented. The generated body 
+    is empty. When <tt>resetAll()</tt> is called, we simply set all counters 
+    to 0. Add the following lines of code (in bold) in the <tt>resetAll()</tt> method body:
+    <pre>public void resetAll() {
+    <strong>minThinkingTime = 0;
+    maxThinkingTime = 0;
+    lastThinkingTime = 0;
+    numSolvedAnagrams = 0;</strong>
+}</pre>
+    </li>
+    <li>You also need to add some implementation code that will do the following:
+    <ul>
+        <li>calculate the thinking time the user took to solve the last anagram,</li>
+        <li>calculate the minimum and maximum thinking times,</li>
+        <li>increment the counter of solved anagrams,</li>
+        <li>know wich is the current anagram,</li>
+        <li>create and send a notification when an anagram is solved.</li>
+    </ul>
+    <p>For that purpose you will add a private field <tt>startTime</tt> to store the 
+    time at which the last anagram was presented to the user, two methods 
+    <tt>startThinking()</tt> and <tt>stopThinking()</tt> to perform the operations
+    listed above, and a <tt>setCurrentAnagram()</tt> method.</p>
+    <p>Add the following code to <tt>AnagramsStats.java</tt>, e.g. at the end of the class implementation.
+      <pre class="examplecode">
+/*
+ * Methods exposed to Anagrams application to feed management with data.
+ */
+
+//Stores the time at which a new anagram is proposed to the user.
+private long startTime;
+
+/**
+ * A new Anagram is proposed to the user: store current time.
+ */
+public void startThinking() {
+    startTime = System.currentTimeMillis();
+}
+
+/**
+ * An Anagram has been resolved.
+ */
+public void stopThinking() {
+
+    //Update the number of resolved anagrams
+    numSolvedAnagrams++;
+
+    // Compute last, min and max thinking times
+    lastThinkingTime = (int) (System.currentTimeMillis() - startTime) / 1000 ;
+    minThinkingTime = (lastThinkingTime < minThinkingTime || minThinkingTime == 0) ?
+                      lastThinkingTime :
+                      minThinkingTime;
+    maxThinkingTime = (lastThinkingTime > maxThinkingTime) ?
+                      lastThinkingTime :
+                      maxThinkingTime;
+
+    //Create a JMX Notification
+    Notification notification = new Notification(AttributeChangeNotification.ATTRIBUTE_CHANGE,
+            this,
+            getNextSeqNumber(),
+            "Anagram solved: " + currentAnagram);
+
+    // Send a JMX notification.
+    broadcaster.sendNotification(notification);
+}
+
+/**
+ * Set latest anagram which has been computed by the Anagram application
+ */
+public void setCurrentAnagram(String currentAnagram) {
+    this.currentAnagram = currentAnagram;
+}</pre>
+
+    <p>Note that the three methods <tt>startThinking()</tt>,  <tt>stopThinking()</tt> and
+    <tt>setCurrentAnagram()</tt> are not part of the MBean management interface, because they 
+    are not declared in the <tt>AnagramsStatsMBean</tt> interface, but they are
+    public because they will be called by the Anagram Game application to tell the MBean
+    each time that a new anagram is presented to the user and when it is solved, and 
+    which is the current anagram. 
+    So, they are a necessary part of the bridge between the application and our MBean.</p>
+    <p>Notice also how a JMX notification of type <tt>ATTRIBUTE_CHANGE</tt> is sent 
+    each time an anagram is solved. </p>
+</li>
+</ol>
+
+<p>You are now done with the MBean implementation.
+In this section you added code and methods to allow the following:</p>
+    <ul>
+        <li>internal MBean state updates</li>
+        <li>calls from the application</li>
+        <li>sending of JMX notifications</li>
+    </ul>
+  
+  
+    <a name="Exercise_5"></a>
+<h2>Exercise 5: Connecting Management and the Application Together</h2>
+
+<p>In this exercise, we will add code to the Anagram Game application so that it
+can access the MBean to pass management information.</p>
+
+<p>Perform the following steps to</p>
+<ol>
+    <li>Open <tt>Anagrams.java</tt> in the editor.
+    <p>The <tt>Anagrams</tt> class in the <tt>com.toy.anagrams.ui</tt> package
+    is the <tt>main</tt> class of the Anagram Game application. 
+    The file opens in the Editor's Design view because the <tt>Anagrams</tt> class is also the User Interface class.</p></li>
+    <li>Click the Source button at the top of the Editor window to edit the class in the Source view.</li>
+
+    <li>Add the following empty <tt>initManagement()</tt> private method to the <tt>Anagrams</tt> class:
+    after the <tt>Anagrams</tt> constructor.
+          <pre>
+/**
+ * JMX initialization:
+ * Create and register Anagrams MBean in Platform MBeanServer.
+ * Initialize thinking time and current anagram.
+ */
+private void initManagement() throws Exception {
+
+}</pre>
+    </li>
+    <li>Add the following call to the <tt>initManagement()</tt> method at the end of 
+    the <tt>Anagrams</tt> class constructor before the enclosing 
+      curly brace marking the end of the constructor.
+          <pre>
+//JMX Management initialization
+initManagement();
+          </pre>
+
+      <p>You also need to add a <tt>throws Exception</tt> clause to the
+      <tt>Anagrams()</tt> constructor and surround the statement 
+      <tt>new Anagrams().setVisible(true);</tt> with a try-catch in the <tt>Main()</tt> method to compile.
+      You can see the suggestion glyph in the left margin of the editor. 
+      You can place your insert cursor in the line in the code and type Alt-Enter to invoke the
+      code hint in the source editor.</p>
+      <img alt="code hint to add try-catch" src="../../../images_www/articles/80/java/jmx/jmx-initmanagement-try.png"
+ class="margin-around b-all" title="Code hint to add try-catch">
+      
+      <p>Here is what you should see at this stage [click to view larger image]:</p>
+<a title="Instrument Anagram 1 - click for fullsize"
+ href="../../../images_www/articles/80/java/jmx/jmx-initmanagement.png"><img
+ alt="instrument_anagram1: adding initManagement()"
+ src="../../../images_www/articles/80/java/jmx/jmx-initmanagement-sm.png"
+ class="margin-around b-all"></a>
+    </li>
+    <li>We now add the MBean registration code to the <tt>initManagement()</tt> 
+    method, using the JMX Module MBean registration wizard:
+    <p>In the <tt>Anagrams.java</tt> source editor window, right-click 
+    <strong>inside</strong> the <tt>initManagement()</tt> method body,
+    select the JMX submenu and then the
+    &quot;Generate MBean Registration...&quot; action.
+    In the &quot;Instantiate and Register MBean&quot; panel that shows up,
+    keep the &quot;Register Existing MBean&quot; radio-button selected,
+    click the Browse button, choose the <tt>AnagramsStats</tt> MBean class and
+    click OK in the Browse panel. You should now see:</p>
+  
+  <img
+ alt="create_mbean_registration: Generate MBean Registration code"
+ src="../../../images_www/articles/74/java/jmx/jmx-registermbeandialog.png"
+ class="margin-around b-all">
+ 
+<p>No need to change the automatically specified MBean Object Name and Constructor. 
+Click OK, and you will see the generated MBean registration code 
+in the <tt>initManagement()</tt> method body.</p>
+    <hr style="width: 100%; height: 2px;" />
+    <h3>Best practice for naming your MBeans</h3>
+    <ul>
+        <li>When naming your MBean, use the &quot;<tt>type=</tt>&quot; key in the Object Name. The value
+        of this key should be the MBean class (in our case <tt>AnagramsStats</tt>).
+      </li>
+      <li>In the case of a singleton MBean (an MBean that has a single instance within
+        your application), having this unique key is sufficient for naming purposes.
+      </li>
+      <li>Avoid creating too many domain names. Use your application Java package names.
+        You can also use the default domain name: not specifying a domain before the <tt>ObjectName</tt>
+        &quot;<tt>:</tt>&quot; separator implicitly references the default domain. </li>
+    </ul>
+    <p>Applying best practices will make the way you name your MBeans more formalized.</p>
+
+      <p>So, the <tt>ObjectName</tt> created by default in our case above is:
+      <tt>com.toy.anagrams.mbeans:type=AnagramsStats</tt></p>
+
+    <hr style="width: 100%; height: 2px;"><br>
+
+    <p>In the context of this tutorial, an extra step is required. You want the
+    application to have access to the class implementing the management interface 
+    (<tt>AnagramsStats</tt>). This is not a general rule but it can be useful 
+    when your application needs to push data to an MBean. In this case, the 
+    <tt>startThinking()</tt>, <tt>stopThinking()</tt> and <tt>setCurrentAnagram()</tt> 
+    methods are not management methods but are used 
+    by the Anagrams Game application to notify the 
+    MBean that some events have occured. In turn, the MBean updates its state. 
+    In order to make <tt>AnagramsStats</tt> accessible from the <tt>Anagrams</tt> 
+    UI class, we need the <tt>Anagrams</tt> class to keep a direct reference to the
+    instance of the <tt>AnagramsStats</tt> MBean.</p>
+
+    <p>Therefore, you need to make the following changes to the code of the <tt>Anagrams.java</tt> file.</p>
+    </li>
+    <li>Add the following private field to the <tt>Anagrams</tt> class.
+    <pre>
+    // Reference to the AnagramsStats MBean
+    private AnagramsStats mbean;
+    </pre>
+    </li>
+    <li>Initialize the reference to the <tt>AnagramsStats</tt> MBean in the
+    <tt>initManagement()</tt> method by modifying the generated MBean Registration 
+    code so that it reads:
+    <pre>private void initManagement() throws Exception {
+    try { // Register MBean in Platform MBeanServer
+         <strong>mbean = new AnagramsStats();</strong>
+         ManagementFactory.getPlatformMBeanServer().
+                registerMBean(<strong>mbean</strong>,
+                new ObjectName("com.toy.anagrams.mbeans:type=AnagramsStats"));
+    } catch (JMException ex) {
+        <strong>ex.printStackTrace();</strong>
+}</pre>
+    </li>
+    <li>Initialize the <tt>AnagramsStats</tt> MBean state: 
+      when the Anagrams Game application starts up, an anagram is immediately displayed,
+      so we need to pass to the MBean the anagram string value and to start 
+      computing thinking time. Copy and paste the lines below at the end of the 
+      <tt>initManagement()</tt> method:<br/>
+      <pre>
+       // When the Anagrams game is first displayed, a word is proposed to the user.
+       // We must start time computing and set the current anagram
+       mbean.startThinking();
+       mbean.setCurrentAnagram(wordLibrary.getScrambledWord(wordIdx));
+      </pre>
+      <p>Here is what you should see at this stage [click to view larger image]:</p>
+      
+      <a title="Instrument Anagram 2 - click for fullsize"
+ href="../../../images_www/articles/74/java/jmx/jmx-initmanagement2.png"><img
+ alt="instrument_anagram1: adding initManagement()"
+ src="../../../images_www/articles/74/java/jmx/jmx-initmanagement2-sm.png"
+ class="margin-around b-all"></a>
+      <p>You now need to add code to track the user's anagram solving experience.</p>
+    </li>
+      
+     <li>Locate the <tt>nextTrialActionPerformed()</tt> method and paste the following code at the end of the
+         <tt>nextTrialActionPerformed()</tt> method.
+     <pre class="examplecode">
+    //Update management statistics and values
+    try {
+        mbean.setCurrentAnagram(wordLibrary.getScrambledWord(wordIdx));
+        mbean.startThinking();
+        } catch (Exception e) {e.printStackTrace();}</pre>
+         
+         <p>Each time that a new anagram is proposed to the user, the code tells the MBean
+         which anagram it is and to start counting the user thinking time.</p>
+        </li>
+        <li>Locate the <tt>guessedWordActionPerformed()</tt> method and add
+        the following lines to the code. Save your changes.
+    <pre class="examplecode">
+    //Update management stats
+    try {
+        mbean.stopThinking();
+    } catch(Exception e) {e.printStackTrace();}</pre>
+        
+        <p>The <tt>stopThinking()</tt> method in the MBean is called each time that an anagram is guessed correctly.</p>
+        <p>You should now see the following in the editor [click to view larger image]:</p>
+        <a title="Instrument Anagram 3 - click for fullsize"
+        href="../../../images_www/articles/74/java/jmx/jmx-stopthinking.png"><img
+        alt="instrument_anagram3: call MBean methods"
+        src="../../../images_www/articles/74/java/jmx/jmx-stopthinking-sm.png"
+        class="margin-around b-all"></a>
+        </li>
+    </ol>
+    <p>You have now finished linking the JMX management layer to the application layer.
+    In the next section you will build and run the Anagrams Game application and
+    look at the exposed management information through the JConsole GUI.</p>
+
+    <a name="Exercise_6"></a>
+    <h2>Exercise 6: Running the Application with JConsole</h2>
+
+    <p>In this exercise, you will learn how to build and run your project, and connect 
+    JConsole to visualize the JVM state, as well as the application MBeans. </p>
+  
+    <p>Perform the following steps to run the application and view the management information.</p>
+    <ol>
+        <li>A single step performs these three tasks: simply click the
+        &quot;Run Main Project with Monitoring and Management&quot; button in the toolbar (&nbsp;
+        <img alt="Run Main Project with Monitoring and Management button in the toolbar"
+        title="Run Main Project with Monitoring and Management button"
+        src="../../../images_www/articles/74/java/jmx/run-project24.png" />)
+        <p class="tips">You can also invoke the action from the Run menu in the main menu.</p>
+  
+        <p class="notes"><strong>Note.</strong> The first time that you build and run the 
+        application the IDE displays a warning dialog that informs you that the <tt>build.xml</tt> files will be updated.
+        You can click OK in the dialog.</p>
+    
+        <img alt="screenshot of warning dialog"
+        title="Warning dialog when monitoring application for the first time"
+        src="../../../images_www/articles/74/java/jmx/jmx-firsttime.png" class="margin-around" />
+ 
+        <p>You can follow the execution in the Output window.</p>
+        <img alt="screenshot of Output window"
+        title="Output window displaying process"
+        src="../../../images_www/articles/74/java/jmx/jmx-compiling.png" class="margin-around" />
+ 
+        <p>The IDE will build and launch the Anagram game and will automatically open the JConsole window.</p>
+        <img alt="screenshot of Anagram Game" title="Anagram Game"
+        src="../../../images_www/articles/74/java/jmx/jmx-anagram.png"
+        class="margin-around b-all" />
+         <p class="notes"><strong>Notes.</strong> You might see a Connection Failed warning in the 
+      Java Monitoring &amp; Management Console when the console attempts to connect to the Anagram Game process. 
+  For this tutorial you can click Insecure when you are prompted to authorize the connection.</p>
+        </li>
+      
+        <li>Select the MBeans tab in the JConsole window.</li>
+        <li>In the tree layout in the left pane, expand all the nodes under <tt>com.toy.anagrams.mbeans</tt>.
+        <br/>
+    
+        <img alt="screenshot of MBeans tab showing AnagramsStats node" title="MBeans tab showing AnagramsStats node"
+        src="../../../images_www/articles/74/java/jmx/jmx-jconsole-mbeans1.png"
+        class="margin-around b-all" />
+        </li>
+ 
+        <li>Select the Notifications node and click on the Subscribe button at the
+        bottom so that JConsole will receive a new notification each time an anagram is solved.</li>
+     
+        <li>In the Anagrams Game window, and solve the first three or four anagrams.
+        <p class="tips">The solutions to the anagrams (abstraction, ambiguous, arithmetic, backslash,...)
+        are contained in the <tt>WordLibrary</tt> class.</p></li>
+
+        <li>In the JConsole window, and notice that it received notifications for each of the solutions.
+        <br/>
+        <a title="Click to enlarge" href="../../../images_www/articles/74/java/jmx/jmx-jconsole-mbeans2.png">
+        <img alt="screenshot of MBeans tab showing AnagramsStats node" title="MBeans tab showing AnagramsStats node"
+         src="../../../images_www/articles/74/java/jmx/jmx-jconsole-mbeans2-sm.png" class="margin-around b-all" /></a>
+        </li>
+
+        <li>Click on the Attributes node and notice the attributes values are updated:
+        <br/>
+        <img alt="screenshot of MBeans tab showing AnagramsStats node" title="MBeans tab showing AnagramsStats node"
+        src="../../../images_www/articles/74/java/jmx/jmx-jconsole-mbeans3.png" class="margin-around b-all" />
+
+        <p>You can experiment with the JConsole interface and the Anagrams Game.
+        For example, if you invoke the management operation <tt>resetAll()</tt>
+        you will see that the MBean attribute values are reset to 0.</p></li>
+    </ol>
+
+    <p><strong>And now, you are done! You did a really good job, congratulations! </strong></p>
+
+    <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Adding%20Java%20Management%20Extensions%20(JMX)%20Instrumentation">Send Feedback on This Tutorial</a></div>
+        
+        <br style="clear:both;">
+            
+<h2>See Also</h2>
+<p>For more information, see the following:</p>
+<ul>
+    <li><a href="jmx-getstart.html">Getting Started with JMX Monitoring in NetBeans IDE</a></li>
+</ul>
+</body>
+</html>

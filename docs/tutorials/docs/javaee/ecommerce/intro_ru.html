@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Introduction to the NetBeans E-commerce Tutorial.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+
+        <title>Учебный курс по электронной коммерции в NetBeans. Введение</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Учебный курс по электронной коммерции в NetBeans. Введение</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Содержание учебного курса</h4>
+
+                <ol>
+                    <li><strong>Введение</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#about">Информация о данном курсе</a></li>
+                            <li><a href="#whatEcommerce">Что из себя представляет приложение электронной коммерции?</a></li>
+                            <li><a href="#whatJava">Что такое Java?</a></li>
+                            <li><a href="#jcp">Что такое Java Community Process?</a></li>
+                            <li><a href="#ide">В чем заключаются преимущества использования среды IDE?</a></li>
+                            <li><a href="#netBeans">В чем заключаются преимущества использования NetBeans?</a></li>
+                            <li><a href="#seeAlso">Дополнительные сведения</a></li>
+                        </ul></li>
+
+                    <li><a href="design.html">Проектирование приложения</a></li>
+                    <li><a href="setup-dev-environ.html">Настройка среды разработки</a></li>
+                    <li><a href="data-model.html">Проектирование модели данных</a></li>
+                    <li><a href="page-views-controller.html">Подготовка представлений страниц и сервлета контроллера</a></li>
+                    <li><a href="connect-db.html">Подключение приложения к базе данных</a></li>
+                    <li><a href="entity-session.html">Добавление классов сущностей и сеансных компонентов</a></li>
+                    <li><a href="manage-sessions.html">Управление сеансами</a></li>
+                    <li><a href="transaction.html">Интеграция транзакционной бизнес-логики</a></li>
+                    <li><a href="language.html">Добавление поддержки языков</a></li>
+                    <li><a href="security.html">Обеспечение безопасности приложений</a></li>
+                    <li><a href="test-profile.html">Тестирование и профилирование</a></li>
+                    <li><a href="conclusion.html">Заключение</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="Содержимое на этой странице применимо к IDE NetBeans, версии 6.8 и 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="Содержимое на этой странице применимо к IDE NetBeans, версии 6.8 и 6.9"></p>
+
+        <p>Добро пожаловать в учебный курс по электронной коммерции в NetBeans. В этом курсе, состоящем из нескольких частей, вы научитесь создавать простое, но эффективное приложение для торговли через Интернет. В ходе создания этого приложения будут продемонстрированы разнообразные возможности разработки  веб-приложений и приложений EE на языке Java. In doing so, you'll familiarize yourself with the IDE NetBeans and become capable of applying it to your own development purposes.</p>
+
+        <p>Время, затраченное на освоение IDE, в конечном итоге окупится, поскольку вы научитесь работать более эффективно и овладеете новыми методами разработки. В процессе работы над разделами учебного курса вы освоите оптимальные способы использования возможностей и инструментальных средств среды IDE. В частности, это следующие возможности:</p>
+
+        <ul style="margin-left: 320px" class="toc">
+            <li><strong>В редакторе обеспечивается поддержка для различных языков следующих возможностей:</strong> цветовое выделение синтаксиса, автозавершение, поддержка документации по интерфейсу API, сочетания клавиш для быстрого вызова команд, возможности реорганизации кода и шаблоны кода.</li>
+
+            <li><strong>Система окон:</strong> окна &quot;Проекты&quot;, &quot;Файлы&quot; и &quot;Службы&quot;, окно документации Java, &quot;Монитор HTTP&quot;, &quot;Навигатор&quot; и &quot;Палитра&quot;.</li>
+
+            <li><strong>Интеграция с другими службами:</strong> автоматическое развертывание на зарегистрированном сервере; обеспечение взаимодействия с базой данных; совместимость с браузерами.</li>
+
+            <li><strong>Инструменты разработки:</strong> отладчик, профилировщик, монитор сервера HTTP, поддержка локального журнала и программа графического представления отличий.</li>
+        </ul>
+
+        <p>Учебный курс организован по модульному принципу. Каждый урок посвящен конкретным концепциям, технологиям и возможностям среды IDE. Используя предоставляемые инструкции по настройке и моментальные снимки приложения (из урока 5), можно успешно изучить отдельный урок учебного курса. Однако для достижения наилучшего результата рекомендуется проработать все разделы последовательно, от начала до конца. Такой подход позволяет также продемонстрировать процесс разработки. </p>
+
+        <p>Unit 3, <a href="setup-dev-environ.html">Setting up the Development Environment</a> introduces you to the IDE NetBeans. В этом же уроке вы создаете веб-проект Java, который станет основой для работы, выполняемой в последующих уроках учебного курса.  Урок 4 <a href="data-model.html">Проектирование модели данных</a> посвящен главным образом созданию модели данных для приложения с помощью <a href="http://wb.mysql.com/" target="_blank">MySQL WorkBench</a>, визуального инструмента проектирования базы данных. В каждом уроке учебного курса предоставляется <em>моментальный снимок проекта</em>, соответствующий состоянию проекта на момент начала соответствующего урока. Это дает возможность работать над отдельным уроком курса вне рамок общего контекста учебного курса по электронной коммерции. Для использования этих снимков загрузите их на компьютер и откройте их в IDE с помощью мастера открытия проектов (Ctrl-Shift-O; ⌘-Shift-O в Mac).</p>
+
+        <p>Можно просмотреть интерактивную демонстрацию приложения, которое создается в этом учебном курсе: <a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">Демонстрация приложения электронной коммерции NetBeans</a></p>
+
+        <p>В оставшейся части этого урока сообщаются некоторые сведения, относящиеся к данному учебному курсу, а также основные концепции, необходимые для разработки приложения Java EE.  Прежде чем переходить к разработке, убедитесь в том, что вы хорошо понимаете описанные ниже понятия.</p>
+
+        <br clear="left">
+
+
+        <br>
+        <h2 id="about">Информация о данном учебном курсе</h2>
+
+        <div class="indent">
+            <h3>На кого рассчитан этот учебный курс</h3>
+
+            <p>Содержание этого учебного курса ориентировано на следующие четыре группы потребителей.</p>
+
+            <ul>
+                <li>Разработчики Java, заинтересованные в расширении своих навыков и освоении технологий Java EE.</li>
+
+                <li>Newcomers to the IDE NetBeans wanting to try out its development environment</li>
+
+                <li>Веб-разработчики, намеренные сравнить возможности Java с другими веб-технологиями.</li>
+
+                <li>Студенты, стремящиеся понять принципы создания простого приложения для электронной коммерции и то, каким образом они могут применить свои разработки для решения конкретных задач.</li>
+            </ul>
+
+            <p>Если вы относитесь к одной из этих категорий, данный учебный курс будет для вас полезен. В зависимости от вашей подготовки некоторые уроки курса могут оказаться более трудными для понимания, чем другие. Понимание принципов работы технологий является ключевым моментом для использования преимуществ среды IDE в конкретных целях. Поэтому, если вы действительно заинтересованы в изучении обсуждаемых технологий, вы, скорее всего, сочтете оптимальным подходом к изучению данного курса работу над ним параллельно с работой над <a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/" target="_blank">учебным курсом по Java EE </a>. Оптимальные результаты при работе над уроком достигаются в случае последовательного использования предоставляемых ссылок на соответствующие участки учебного курса по Java EE, а также на другие полезные материалы. </p>
+
+
+            <h3>Темы, включенные в данный учебный курс</h3>
+
+            <p>Приложение, разрабатываемое в данном курсе, основывается на целом ряде понятий, технологий и инструментальных средств.</p>
+
+            <ul class="toc">
+                <li><strong>Понятия</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>Разработка клиентской программы</li>
+                        <li>Структура проекта веб-приложения</li>
+                        <li>Моделирование данных</li>
+                        <li>Обеспечение взаимодействия с базой данных</li>
+                        <li>Объектно-реляционное сопоставление</li>
+                        <li>Управление сеансами </li>
+                        <li>Бизнес-логика транзакций</li>
+                        <li>Проверки на стороне клиента и на стороне сервера</li>
+                        <li>Локализация</li>
+                        <li>Безопасность веб-приложения </li>
+                        <li>Шаблоны проектов, включая <a href="http://java.sun.com/blueprints/patterns/MVC.html" target="_blank">Model-View-Controller</a> (MVC, &quot;Модель-представление-контроллер&quot;) и <a href="http://java.sun.com/blueprints/patterns/SessionFacade.html" target="_blank">Session Facade</a> (Фасад сеанса)</li>
+                    </ul></li>
+
+                <li><strong>Технологии</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>Технологии HTML, CSS и JavaScript</li>
+                        <li>Технологии Servlet и JavaServer Pages (JSP)</li>
+                        <li>Технология Enterprise JavaBeans (EJB)</li>
+                        <li>Интерфейс API сохранения состояния Java (Java Persistence API, JPA)</li>
+                        <li>Стандартная библиотека тегов страниц JavaServer (JSTL)</li>
+                        <li>Связь приложений Java с базами данных (JDBC)</li>
+                    </ul></li>
+
+                <li><strong>Средства разработки</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>IDE NetBeans</li>
+                        <li>GlassFish, сервер приложений Java EE</li>
+                        <li>MySQL, сервер управления реляционной базой данных (RDBMS)</li>
+                        <li>MySQL WorkBench, визуальный инструмент проектирования базы данных</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="whatEcommerce">Что из себя представляет приложение электронной коммерции?</h2>
+
+        <p>Термин <em>электронная коммерция</em> в его современном понимании относится к приобретению и продаже товаров или услуг через Интернет.  Например, можно вспомнить о веб-сайте <a href="http://www.amazon.com/" target="_blank">Amazon</a>, предоставляющим возможность приобретать по сети разнообразные товары, такие как книги, музыкальные произведения и электронные приборы.  Такая форма электронной коммерции известна под названием <em>розничной торговли через Интернет</em> и, как правило, предполагает транспортировку физических объектов.  Ее называют также <em>business-to-customer</em> или B2C.  Хорошо известны также и другие формы электронной коммерции.</p>
+
+        <ul>
+            <li><strong>Consumer-to-consumer (C2C). </strong>Сделки осуществляются между частными лицами, как правило посредством стороннего сайта, например интернет-аукциона.  Характерным примером торговли C2C является <a href="http://www.ebay.com/" target="_blank">eBay</a>.</li>
+
+            <li><strong>Business-to-business (B2B). </strong>Торговые сделки осуществляются между предприятиями, например между предприятием розничной торговли и предприятием оптовой торговли, или между предприятием оптовой торговли и производителем.</li>
+
+            <li><strong>Business-to-government (B2G). </strong>Торговые сделки осуществляются между предприятиями и государственными агентствами.</li>
+        </ul>
+
+        <p>Данный учебный курс посвящен, главным образом, интернет-торговле типа B2C. Рассматривается ситуация, в которой небольшому магазину розничной торговли требуется создать веб-сайт, на котором покупатели смогут совершать покупки через Интернет. Программное обеспечение, реализующее вариант интернет-торговли B2C, обычно состоит из следующих двух компонентов.</p>
+
+        <ol>
+            <li><strong>Витрина.</strong> Это веб-сайт, используемый покупателями для приобретения товаров по сети Интернет. Данные из каталога товаров магазина обычно хранятся в виде базы данных, и страницы, для которых требуются эти данные, генерируются динамически.</li>
+
+            <li><strong>Консоль администрирования.</strong> Защищенная паролем область, доступ к которой осуществляется по защищенному подключению персоналом магазина с целью интерактивного управления. Обычно это доступ к каталогу магазина для выполнения операций CRUD (создание, чтение, обновление, удаление), управление скидками, вариантами доставки и оплаты и просмотр заказов от покупателей.</li>
+        </ol>
+
+
+        <br>
+        <h2 id="whatJava">Что такое Java?</h2>
+
+        <p>В отрасли программного обеспечения для компьютеров термин &quot;Java&quot; относится к <em>платформе Java</em>, а также к <em>языку программирования Java</em>.</p>
+
+        <div class="feedback-box margin-around">
+            <img alt="Изображение Дьюка" class="margin-around" src="../../../../images_www/articles/73/javaee/ecommerce/intro/duke.png" title="Дьюк, эмблема Java">
+
+            <p>Дьюк, эмблема Java</p>
+        </div>
+
+        <div class="indent">
+            <h3>Java как язык программирования</h3>
+
+            <p>Концепция языка Java была создана <a href="http://en.wikipedia.org/wiki/James_Gosling" target="_blank">Джеймсом Гослингом (James Gosling)</a>, который начал работу над этим проектом в 1991 г.  Язык создавался на основе следующих 5 принципов проектирования<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>.</p>
+
+            <ol>
+                <li><strong>Простой, объектно-ориентированный и привычный.</strong> Java заключает в себе небольшое ядро согласованных основных понятий, которые быстро усваиваются.  Изначально язык моделировался на основе популярного в то время языка C++, поэтому программисты могли без труда перейти на Java.  Кроме этого, язык следует парадигме <em>объектной ориентированности</em>; системы состоят из инкапсулированных объектов, взаимодействующих путем передачи друг другу сообщений.</li>
+
+                <li><strong>Надежный и безопасный.</strong> В язык включены проверки на этапе компиляции и выполнения, что обеспечивает быстрое обнаружение ошибок. Кроме этого, в язык включены функции безопасного доступа к сети и файлам, чтобы работа распределенных приложений не могла быть нарушена в результате вторжения или повреждения.</li>
+
+                <li><strong>Нейтральный к архитектуре и переносимый.</strong> Одним из основных преимуществ Java является его <em>переносимость</em>.  Приложения без труда переносятся с одной платформы на другую с минимальными изменениями или вообще без изменений.  Девиз &quot;Написано однажды — работает всюду!&quot;, сопровождавший выпуск Java 1.0 в 1995 г., относится к межплатформенным преимуществам языка.</li>
+
+                <li><strong>Высокая производительность.</strong> Приложения выполняются быстро и эффективно благодаря различным функциям нижнего уровня, таким как возможность работы интерпретатора Java независимо от среды выполнения и использование программы автоматической чистки памяти для освобождения неиспользуемой памяти.</li>
+
+                <li><strong>Интерпретируемый, обеспечивающий создание потоков и динамический.</strong> При использовании Java исходный код, написанный разработчиком, компилируется в промежуточную интерпретируемую форму, известную под названием <em>байт-код</em>.  Понятие &quot;набор команд байт-кода&quot; относится к машинному языку, используемому виртуальной машиной Java (JVM — Java Virtual Machine).  При наличии соответствующего интерпретатора этот язык можно транслировать в <em>машинный код</em> платформы, на которой он выполняется.  Возможность создания нескольких потоков поддерживается, главным образом, средствами класса <code>Thread</code>, обеспечивающего одновременную работу нескольких задач.  Язык и система этапа выполнения являются динамическими в том смысле, что приложения во время выполнения могут приспосабливаться к изменениям рабочей среды.</li>
+            </ol>
+
+            <p>Тем, кто хочет подробнее узнать о языке Java, рекомендуется ознакомиться с <a href="http://java.sun.com/docs/books/tutorial/" target="_blank">Учебными курсами по Java</a>.</p>
+
+
+            <h3 id="platform">Java как платформа</h3>
+
+            <p>Под платформой Java понимается программная платформа, состоящая из следующих двух частей.</p>
+
+            <ul>
+                <li><strong>Виртуальная машина Java (JVM)</strong>. JVM представляет собой подсистему, выполняющую команды, генерируемые компилятором Java. JVM можно интерпретировать как экземпляр среды выполнения Java (JRE), встроенный в различные программные продукты, такие как веб-браузеры, серверы и операционные системы.</li>
+
+                <li><strong>Интерфейс прикладного программирования (API) Java.</strong> Это предварительно подготовленный код, организованный в виде пакетов кода для сходных задач. Например, в пакеты Applet и AWT входят классы для создания шрифтов, меню и кнопок. </li>
+            </ul>
+
+            <p>Пакет для разработки приложений Java, или JDK (Java Development Kit) относится к Java SE Edition, в то время как для других пакетов используется обозначение &quot;SDK&quot;, являющееся сокращением общего термина &quot;software development kit&quot; (пакет программ для разработки приложений) . Например, <a href="http://java.sun.com/javaee/sdk/" target="_blank">Java EE SDK</a>.<sup><a href="#footnote2" id="2" style="text-decoration:none">[2]</a></sup></p>
+
+            <p>С визуальным представлением платформы Java можно ознакомиться на концептуальной схеме входящих в ее состав технологий, представленной в <a href="http://download.oracle.com/javase/6/docs/index.html" target="_blank">Документации по JDK</a>.  Как показано ниже, схема является интерактивной. Для получения дополнительных сведений о конкретных технологиях следует щелкнуть соответствующий компонент. <br> <img alt="Диаграмма JDK 6" class="margin-around" src="../../../../images_www/articles/73/javaee/ecommerce/intro/jdk-diagram.png" title="Проверка платформы Java"></p>
+
+            <p>Как указано на схеме, в состав пакета JDK входит среда выполнения Java (JRE — Java Runtime Environment ).  Для выполнения программного обеспечения требуется среда JRE, а для его разработки — пакет JDK.  И то, и другое можно получить с помощью <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Загрузки Java SE</a>.</p>
+
+            <p>Платформа Java поступает в виде нескольких <em>версий</em>, например <a href="http://java.sun.com/javase/" target="_blank">Java SE</a> (Standard Edition), <a href="http://java.sun.com/javame/index.jsp" target="_blank">Java ME</a> (Micro Edition) и <a href="http://java.sun.com/javaee/" target="_blank">Java EE</a> (Enterprise Edition).</p>
+
+
+            <h3>Java EE</h3>
+
+            <p>Платформа Java под названием Enterprise Edition (Java EE) создана на основе платформы Java SE и предоставляет набор технологий для разработки и выполнения переносимых, устойчивых к ошибкам, масштабируемых, надежных и безопасных серверных приложений.</p>
+
+            <p>Технологии EE условно делятся на следующие две категории.</p>
+
+            <ul>
+                <li><a href="http://java.sun.com/javaee/technologies/webapps/" target="_blank">Технологии веб-приложений</a></li>
+                <li><a href="http://java.sun.com/javaee/technologies/entapps/" target="_blank">Технологии приложений для предприятий</a></li>
+            </ul>
+
+            <p>В зависимости от потребности можно использовать технологии из любой категории. Например, в данном учебном курсе используются технологии <a href="http://java.sun.com/products/servlet/index.jsp" target="_blank">Servlet</a>, <a href="http://java.sun.com/products/jsp/" target="_blank">JSP/EL</a> и <a href="http://java.sun.com/products/jsp/jstl/" target="_blank">JSTL</a>, &quot;ориентированные&quot; на Интернет, а также технологии <a href="http://java.sun.com/products/ejb/" target="_blank">EJB</a> и <a href="http://java.sun.com/javaee/technologies/persistence.jsp" target="_blank">JPA</a>, &quot;ориентированные&quot; на предприятия.</p>
+
+            <p>В настоящее время на рынке доминирует Java EE, особенно в финансовом секторе.  Следующая схема взята из выполненного в 2007 г.
+                <!-- <a href="http://www.sun.com/aboutsun/media/analyst/european_fsa.pdf"> -->
+                <a href="http://docs.google.com/viewer?a=v&q=cache:2NNYG8LtVFIJ:www.sun.com/aboutsun/media/analyst/european_fsa.pdf+european_fsa.pdf&hl=en&pid=bl&srcid=ADGEESi3vpbc32J7GzXFiqk__DvMp7_3deYe9td-HP3_QEXh77yBABi35uvL1z7ytj6o17io7_YFPnRFmhju5PQgrpgjVxt-2qXQSUh8xGUbeNP0k00dDsiq1Tl0DWJLOEH3SNubhit5&sig=AHIEtbTKL5tks3AlgEt57h4Aku_H55OXag" target="_blank"> независимого исследования европейских рынков</a>.</p>
+
+                <div class="indent">
+                    <img alt="Сравнение Java EE и .Net" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/intro/java-ee-vs-net.png" title="В настоящее время на рынке доминирует Java EE, особенно в финансовом секторе. ">
+                </div>
+
+            <p class="tips">Результаты недавно проведенного неофициального сравнения Java EE и .NET смотрите в сообщении <a href="http://www.adam-bien.com/roller/abien/entry/java_ee_or_net_an" target="_blank">Java EE or .NET - An Almost Unbiased Opinion</a> (Java EE или .NET - почти беспристрастное мнение), опубликованном широко известным членом сообщества Java EE.</p>
+
+
+            <h3>В чем состоит различие между...?</h3>
+
+            <p>Существует множество сокращений и акронимов, которые приходится интерпретировать.  Если вы мало знакомы с ними, и приведенное выше толкование вас смущает, обратитесь к следующим ресурсам, которые помогут понять разницу между некоторыми широко используемыми терминами.</p>
+
+            <ul>
+                <li><a href="http://www.java.com/en/download/faq/jre_jdk.xml" target="_blank">В чем состоит различие между JRE и JDK?</a></li>
+                <li><a href="http://www.java.com/en/download/faq/java_diff.xml" target="_blank">В чем состоит различие между JRE и платформой Java SE?</a></li>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaee-faq-jsp-135209.html#diff" target="_blank">В чем состоит различие между Java EE и J2EE?</a></li>
+                <li><a href="http://java.sun.com/new2java/programming/learn/unravelingjava.html" target="_blank">Толкование терминов Java</a></li>
+            </ul>
+
+        </div>
+
+
+        <br>
+        <h2 id="jcp">Что такое Java Community Process?</h2>
+
+        <p><a href="http://jcp.org/" target="_blank">Java Community Process</a> (JCP) представляет собой программу управления разработкой стандартных технических спецификаций для технологии Java.  В рамках программы JCP ведется каталог запросов JSR (Java Specification Request — запрос на спецификацию Java), являющихся официальными предложениями, описывающими технологии, которые следует добавить к платформе Java. Запросы JSR обрабатываются <em>Группой экспертов</em>, в которую обычно входят представители компаний, являющихся заинтересованными лицами в данной отрасли.  Программа JCP обеспечивает развитие технологии Java и ее соответствие потребностям и тенденциям, возникающим в этом сообществе.</p>
+
+        <p>К запросам JSR относительно технологий, используемых в данном учебном курсе, и технологий, на которые есть ссылки в курсе, относятся следующие.</p>
+
+        <ul>
+            <li><a href="http://jcp.org/en/jsr/summary?id=52" target="_blank">JSR 52. Стандартная библиотека тегов для страниц JavaServer</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=245" target="_blank">JSR 245. JavaServer Pages 2.1</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=315" target="_blank">JSR 315. Java Servlet 3.0</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=316" target="_blank">JSR 316. Платформа Java, Enterprise Edition 6</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=317" target="_blank">Сохранение состояния Java</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=318" target="_blank">JSR 318: Enterprise JavaBeans 3.1</a></li>
+        </ul>
+
+        <p>Поиск конкретных запросов JSR можно выполнить на <a href="http://jcp.org/" target="_blank">веб-сайте JCP</a>.  Кроме этого, перечень всех использующихся в настоящее время технологий EE (Java EE 6) можно просмотреть на веб-странице по адресу:</p>
+
+        <ul>
+            <li><a href="http://java.sun.com/javaee/technologies/index.jsp" target="_blank">http://java.sun.com/javaee/technologies/index.jsp</a></li>
+        </ul>
+
+        <p>Список технологий Java EE 5:</p>
+
+        <ul>
+            <li><a href="http://java.sun.com/javaee/technologies/javaee5.jsp" target="_blank">http://java.sun.com/javaee/technologies/javaee5.jsp</a></li>
+        </ul>
+
+        <p>В окончательной версии JSR предоставляется свободно распространяемый <em>пример реализации</em> этой технологии.  В настоящем учебном пособии эти реализации применяются для разработки примера приложения для интернет-торговли. Например, сервер приложений GlassFish v3, который входит в состав стандартного пакета загрузки Java для <a href="https://netbeans.org/downloads/6.8/index.html" target="_blank">NetBeans 6.8</a>, является примером реализации спецификации платформы Java EE 6 (<a href="http://jcp.org/en/jsr/summary?id=316" target="_blank">JSR 316</a>).  Являясь примером реализации для платформы Java EE, он включает в себя примеры реализаций для технологий, входящих в состав платформы, таких как Servlet, EJB и JPA.</p>
+
+
+        <br>
+        <h2 id="ide">В чем заключаются преимущества использования среды IDE?</h2>
+
+        <p>Во-первых, аббревиатура <em>IDE</em> раскрывается как <em>интегрированная среда разработки (integrated development environment)</em>.  По традиции назначение среды IDE состоит в обеспечении максимальной производительности разработчика за счет предоставления следующих инструментов и поддержки:</p>
+
+        <ul class="toc">
+            <li>редактор исходного кода; </li>
+            <li>компилятор и средства автоматической сборки;</li>
+            <li>система окон для просмотра проектов и артефактов проекта;</li>
+            <li>интеграция с другими широко применяемыми службами;</li>
+            <li>поддержка отладки;</li>
+            <li>поддержка профилирования.</li>
+        </ul>
+
+        <p>Обсудим, что понадобилось бы для создания вручную веб-приложения на основе Java. После установки <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">пакета для разработки приложений Java (JDK — Java Development Kit)</a> потребовалось бы настроить среду разработки, выполнив следующие действия.<sup><a href="#footnote3" id="3" style="text-decoration:none">[3]</a></sup></p>
+
+        <ol>
+            <li>Установить переменную рабочей среды <code>PATH</code>, указывающую на местоположение установки JDK.</li>
+
+            <li>Загрузить и настроить сервер, реализующий технологии, которые предполагается использовать.</li>
+
+            <li>Создать каталог для разработки, в котором предполагается создавать веб-приложения и работать с ними.  Кроме того, разработчик должен структурировать каталог приложения таким образом, чтобы она была понятна серверу.  (Рекомендуемая для использования структура приведена в документе <a href="http://java.sun.com/blueprints/code/projectconventions.html#99632" target="_blank">Java BluePrints: Strategy for Web Applications</a> (Java BluePrints. Стратегия для веб-приложений).)</li>
+
+            <li>Установить переменную рабочей среды <code>CLASSPATH</code>, включив в нее каталог разработки, а также все требуемые файлы JAR.</li>
+
+            <li>Установить метод разработки, т.е. способ копирования ресурсов из каталога разработки в область сервера, предназначенную для развертывания.</li>
+
+            <li>Создать закладки для соответствующей документации по интерфейсу API или установить ее.</li>
+        </ol>
+
+        <p>В целях обучения рекомендуется вручную создать и запустить веб-проект на основе Java, чтобы получить представление обо всех необходимых этапах. Но в конце концов вы задумаетесь о возможности использования средств, которые сокращают или вообще устраняют необходимость выполнения утомительных повторяющихся задач, позволяя сосредоточиться на разработке кода для решения конкретных бизнес-задач. Среда IDE позволяет упростить процесс, описанный выше.  As demonstrated in Unit 3, <a href="setup-dev-environ.html">Setting up the Development Environment</a>, you'll install IDE NetBeans with the GlassFish application server, and be able to set up a web application project with a conventional directory structure using a simple 3-step wizard. Более того, среда IDE предоставляет встроенную документацию по интерфейсу API, которую можно либо вызывать во время работы с кодом в редакторе, либо держать открытой во внешнем окне.</p>
+
+        <p>Как правило, в среде IDE ход процесса компиляции проекта и его развертывания вполне прозрачен для разработчика.  Например, веб-проект, создаваемый в NetBeans, включает в себя сценарий сборки Ant, используемый для компиляции, очистки, пакетирования и развертывания проекта.  Это означает, что вы можете из среды IDE запускать свой проект на выполнение, и он будет автоматически откомпилирован и развернут, а затем открыт в вашем браузере по умолчанию.  В развитие этой возможности во многих средах IDE поддерживается функция &quot;Развертывание при сохранении&quot;.  Иначе говоря, при сохранении любых изменений проекта развернутая на сервере версия автоматически обновляется.  Чтобы увидеть изменения в действии, достаточно переключиться на браузер и обновить страницу.</p>
+
+        <p>В средах IDE предоставляются также шаблоны для различных типов файлов, и зачастую предоставляется возможность добавлять их в собственный проект путем предложения общепринятых местоположений и информации о настройках по умолчанию, если это требуется.</p>
+
+        <p>Помимо &quot;базовой поддержки&quot;, описанной выше, в средах IDE обычно предоставляются интерфейсы для внешних инструментов и служб (например серверов приложений и баз данных, веб-служб, средств отладки и профилирования, а также инструментов для совместной работы), которые необходимы для работы, если разработка приложений Java является вашей профессией.</p>
+
+        <p>В заключение, в средах IDE, как правило, предоставляется расширенная поддержка средств редактирования. Основную часть рабочего времени вы проводите, скорее всего, в редакторе. В редакторах IDE, как правило, имеются функции цветового выделения синтаксиса и реорганизации кода, сочетания клавиш для быстрого вызова команд, функция автозавершения кода, сообщения с подсказками и сообщения об ошибках. Все эти возможности позволяют разумно организовать работу и повысить ее эффективность.</p>
+
+
+        <br>
+        <h2 id="netBeans">В чем заключаются преимущества использования среды NetBeans?</h2>
+
+        <p>The IDE NetBeans is a free, open-source integrated development environment written entirely in Java. В этой среде предоставляется целый ряд инструментов для создания профессиональных приложений для настольных систем, приложений для предприятий, веб-приложений и мобильных приложений, написанных на языке Java, C/C++ и даже на языках сценариев, таких как PHP, JavaScript, Groovy и Ruby.</p>
+
+        <p>Среда NetBeans заслужила самые благоприятные характеристики.  For a list of testimonials, see <a href="../../../../features/ide/testimonials.html" target="_blank">IDE NetBeans Testimonials</a>. Многие разработчики переносят свои приложения из других сред IDE в среду NetBeans. For reasons why, read <a href="../../../../switch/realstories.html" target="_blank">Real Stories From People Switching to IDE NetBeans</a>.</p>
+
+        <p>В этой среде IDE предоставляется множество <a href="../../../../features/web/index.html" target="_blank">функций для разработки веб-приложений</a>, а также некоторые преимущества по сравнению с другими IDE.  Отметим несколько заслуживающих внимания моментов.</p>
+
+        <ul>
+            <li><strong>Среда полностью готова к использованию.</strong> Просто загрузите и установите среду IDE, после чего можно сразу начинать работу.  Установка не представляет никакого труда, поскольку объем загрузки невелик. Среда IDE работает на многих платформах, включая Windows, Linux, Mac OS X и Solaris.  Все инструменты и функции среды IDE полностью интегрированы (нет никакой необходимости разыскивать подключаемые модули) и работают совместно при запуске среды IDE.</li>
+
+            <li><strong>Free and Open Source:</strong> When you use the IDE NetBeans, you join a vibrant, <a href="../../../../community/index.html" target="_blank">open source community</a> with thousands of users ready to help and contribute. Существуют дискуссии по <a href="../../../../community/lists/index.html" target="_blank">спискам рассылки по проектам NetBeans</a>, блогам по <a href="http://www.planetnetbeans.org/" target="_blank">Planet NetBeans</a> и полезные разделы часто задаваемых вопросов и учебные руководства на <a href="http://wiki.netbeans.org/" target="_blank">странице Wiki сообщества</a>.</li>
+
+            <li><strong>Profiling and Debugging Tools:</strong> With IDE NetBeans <a href="../../../../features/java/profiler.html">profiler</a>, you get real time insight into memory usage and potential performance bottlenecks. Более того, имеется возможность использовать во время профилирования специальные фрагменты кода, позволяющие избежать снижения производительности. Инструментальное средство <a href="http://profiler.netbeans.org/docs/help/6.0/heapwalker.html" target="_blank">HeapWalker</a> помогает оценить содержимое кучи Java и отыскать утечки памяти.</li>
+
+            <li><strong>Customizable Projects:</strong> Through the IDE NetBeans build process, which relies on industry standards such as <a href="http://ant.apache.org/" target="_blank">Apache Ant</a>, <a href="http://www.gnu.org/software/make/" target="_blank">make</a>, <a href="http://maven.apache.org/" target="_blank">Maven</a>, and <a href="http://rake.rubyforge.org/" target="_blank">rake</a> - rather than a proprietary build process - you can easily customize projects and add functionality. Вы можете собирать, запускать на выполнение и разворачивать проекты на серверах, находящихся вне среды IDE.</li>
+
+            <li><strong>Инструменты для совместной работы.</strong> В среде IDE предоставляется встроенная поддержка таких систем управления версиями, как CVS, Subversion и Mercurial.</li>
+
+            <li><strong>Расширенная документация.</strong> Встроенная справка IDE содержит множество советов и рекомендаций.  Для вызова справки по компоненту IDE достаточно нажать клавишу F1 (fn-F1 на компьютере Mac). Кроме этого, в <a href="../../../index.html" target="_blank">официальной базе знаний</a> среды IDE предоставляется доступ к сотням интерактивных учебных пособий, статей и <a href="../../intro-screencasts.html" target="_blank">демо-роликов</a>. Вся эта информация постоянно обновляется.</li>
+        </ul>
+
+        <p>For a more extensive list of reasons why you should consider choosing NetBeans, see <a href="../../../../switch/why.html" target="_blank">IDE NetBeans Connects Developers</a>.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Introduction">Мы ждем ваших отзывов</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">Дополнительные сведения</h2>
+
+        <div class="indent">
+            <h3>Интерактивные материалы</h3>
+
+                <ul>
+                    <li><a href="http://java.sun.com/docs/books/tutorial/" target="_blank">Учебные курсы по Java</a></li>
+                    <li><a href="http://www.oracle.com/technetwork/java/javaee/javaee-faq-jsp-135209.html" target="_blank">Часто задаваемые вопросы по Java EE</a></li>
+                    <li><a href="http://java.sun.com/javaee/reference/apis/" target="_blank">Интерфейсы API Java EE и документация</a></li>
+                    <li><a href="http://java.sun.com/new2java/programming/learn/unravelingjava.html" target="_blank">Толкование терминов Java</a></li>
+                    <li><a href="http://www.java.com/en/javahistory/index.jsp" target="_blank">История технологии Java</a></li>
+                    <li><a href="http://java.sun.com/new2java/gettingstarted.jsp" target="_blank">Центр &quot;Новичкам в программировании на Java&quot;</a></li>
+                </ul>
+
+            <h3>Книги</h3>
+
+            <ul>
+                <li><a href="http://www.apress.com/book/view/1590598954" target="_blank">Pro IDE NetBeans 6 Rich Client Platform Edition</a></li>
+
+                <li><a href="http://www.informit.com/store/product.aspx?isbn=0130092290" target="_blank">Core Servlets and JavaServer Pages, Volume 1: Core Technologies, 2nd Edition</a> (Основные сервлеты и страницы JavaServer, том 1: Основные технологии, 2-е издание)</li>
+
+                <li><a href="http://www.informit.com/store/product.aspx?isbn=0131482602" target="_blank">Core Servlets and JavaServer Pages, Volume 2: Advanced Technologies, 2nd Edition</a> (Основные сервлеты и страницы JavaServer, том 2: Современные технологии, 2-е издание</li>
+
+                <li><a href="http://java.sun.com/docs/books/faq/" target="_blank">Часто задаваемые вопросы по Java</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>Ссылки</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> В техническом документе <a href="http://java.sun.com/docs/white/langenv/Intro.doc2.html" target="_blank">The Java Language Environment</a> (Среда языка Java) описаны 5 принципов проектирования.</li>
+
+            <li id="footnote2"><a href="#2" style="text-decoration:none">^</a> Текущие названия и номера версий указаны в документе <a href="http://download.oracle.com/javase/6/webnotes/version-6.html" target="_blank">Java SE 6, название платформы и номера версий</a>.</li>
+
+            <li id="footnote3"><a href="#3" style="text-decoration:none">^</a> Эти действия в общих чертах основаны на тех, которые описаны в главе 2 &quot;Server Setup and Configuration&quot; (Установка и настройка сервера) из книги <a href="http://pdf.coreservlets.com/" target="_blank">Core Servlets and JavaServer Pages</a> (Основные сервлеты и страницы JavaServer), написанной Марти Холлом (Marty Hall) и Ларри Брауном (Larry Brown).  Эта книга в формате PDF находится в свободном доступе по адресу: <a href="http://pdf.coreservlets.com/" target="_blank">http://pdf.coreservlets.com/</a></li>
+        </ol>
+
+    </body>
+</html>

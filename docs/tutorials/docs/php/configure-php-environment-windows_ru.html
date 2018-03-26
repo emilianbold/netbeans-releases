@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Установка и настройка PHP, Apache и MySQL для разработки с использованием технологии PHP в Windows</title>
+     <meta name="KEYWORDS" content="NETBEANS, PHP, GUIDE, USER, DOCUMENTATION, XAMPP, MYSQL, APACHE">
+      <meta name="DESCRIPTION" content="This document describes how to install and configure PHP, Apache, and MySQL for PHP development in the NetBeans IDE under Windows" >
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+<h1>Настройка среды разработки PHP в Windows</h1>
+<p>В данном учебном курсе рассматриваются два способа настройки среды разработки PHP в операционной системе Windows.  Первый и наиболее удобный способ состоит в установке и настройке пакета AMP (<strong>A</strong>pache, <strong>М</strong>ySQL, <strong>P</strong>HP).  В данном учебном курсе приводится процедура установки пакета XAMPP.  Второй способ состоит в установке и настройке каждого компонента по отдельности.</p>
+<!--
+<div>
+  <p>  -->
+<!--    <!-- #BeginDate format:Am1-->
+<!-- July 29, 2008 #EndDate -->
+<!-- </p>
+</div> -->
+<p><strong>Содержание</strong></p>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+<ul>
+<!--<li><a href="#requiredSoftware">Required Software</a></li> -->
+<li><a href="#XAMPP">Использование пакета AMP</a>
+  <ul>
+<li><a href="#installConfigureXAMPP">Установка и настройка пакета XAMPP</a></li>
+<li><a href="#checkXAMPPInstallation">Проверка установки XAMPP</a></li>
+<li><a href="#installAndEnableXDebug">Установка и включение отладчика XDebug</a></li>
+</ul>
+</li>
+<li><a href="#installComponentsSeparately">Установка компонентов по отдельности</a>
+  <ul>
+<li><a href="#installApacheComponent">Сервер HTTP Apache</a></li>
+<li><a href="#installPHPEngine">Механизм PHP</a></li> 
+<li><a href="#installMySQL">Сервер базы данных MySQL</a></li>
+<li><a href="#installXDebug">XDebug</a></li>
+<li><a href="#settingUpEnvironment">Настройка среды</a></li> 
+</ul></li></ul>
+<p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+
+  <table>
+    <tbody>
+      <tr>
+        <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+        <th class="tblheader" scope="col">Требуемая версия</th>
+      </tr>
+      <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+        <td class="tbltd1">Пакет загрузки PHP</td>
+      </tr>
+      <tr>
+        <td class="tbltd1">Механизм PHP</td>
+        <td class="tbltd1">Версия 5. Содержится в <a href="http://www.apachefriends.org/en/xampp-windows.html" target="_blank">XAMPP Windows</a>. 
+        </tr>
+      <tr>
+        <td class="tbltd1">Веб-сервер</td>
+        <td>Рекомендуется использовать <a href="http://httpd.apache.org/download.cgi" target="_blank">сервер HTTP Apache версии 2.2</a>.<br> Содержится в XAMPP для Windows.</td>
+      </tr>
+      <tr>
+        <td class="tbltd1">Сервер базы данных</td>
+        <td>Рекомендуется использовать <a href="http://dev.mysql.com/downloads/mysql/5.1.html" target="_blank">сервер MySQL 5.0</a>.<br> Содержится в XAMPP для Windows.</td>
+      </tr>
+      <tr>
+        <td class="tbltd1">Отладчик PHP (не обязательно)</td>
+        <td><a href="http://www.xdebug.org" target="_blank">Версия XDebug 2.0 или выше.</a><br /></td>
+      </tr>
+    </tbody>
+  </table>
+<p class="notes">Как правило, разработка и отладка выполняются на локальном веб-сервере, в то время как производственная среда размещена на удаленном веб-сервере.  Настройка удаленного веб-сервера описана в разделе <a href="./remote-hosting-and-ftp-account.html"> Развертывание приложения PHP на удаленном веб-сервере с помощью IDE NetBeans</a>. Этот учебный курс содержит информацию, необходимую для настройки локального веб-сервера.  Поддержка PHP может добавляться к целому ряду локальных веб-серверов (IIS, Xitami и т.д.), но обычно используется <a href="http://httpd.apache.org/download.cgi" target="_blank">сервер HTTP Apache</a>. Сервер HTTP Apache включен в пакет AMP XAMPP, используемый в этом учебном курсе.  Сведения относительно установки и настройки автономного сервера HTTP Apache приведены <a href="http://httpd.apache.org/docs/2.2/install.html" target="_blank">здесь</a>. </p>
+<h2><a name="requiredSoftware"></a>Требуемое программное обеспечение</h2>
+<p>Для создания, выполнения и отладки проектов PHP необходимо следующее программное обеспечение:</p>
+<ul>
+  <li>IDE NetBeans для PHP. Загрузку можно осуществить <a href="https://netbeans.org/downloads/index.html" target="_blank">отсюда</a>. </li>
+  <li>Веб-сервер.  Как правило, разработка и отладка выполняются на локальном веб-сервере, в то время как производственная среда размещена на удаленном веб-сервере.  Текущая версия позволяет использовать локальный сервер.  Последующие версии будут поддерживать использование удаленного сервера с доступом по протоколу FTP.  Поддержка PHP может добавляться к целому ряду веб-серверов (IIS, Xitami и т.д.), но обычно используется <a href="http://httpd.apache.org/download.cgi" target="_blank">сервер HTTP Apache</a>.  Сведения относительно установки и настройки Apache 2.2 приведены <a href="http://httpd.apache.org/docs/2.2/install.html" target="_blank">здесь</a>. <a href="http://httpd.apache.org/docs/2.2/install.html" target="_blank"></a></li>
+</ul>
+<ul>
+  <li>Механизм PHP.  Поддерживается версия PHP5.  Загрузку можно осуществить <a href="http://www.php.net/downloads.php" target="_blank">отсюда</a>. </li>
+  <li>Отладчик PHP.  IDE NetBeans для PHP позволяет использовать <a href="http://www.xdebug.org" target="_blank">XDebug</a>, но использование отладчика не является обзательным. Из соображений совместимости с PHP5 рекомендуется использовать версию XDebug 2.0 или выше. </li>
+  <li>Сервер базы данных.  Существует возможность использования различных серверов базы данных, однако самым популярным из них является сервер MySQL.  Загрузку можно осуществить <a href="http://dev.mysql.com/downloads/mysql/5.1.html" target="_blank">отсюда</a>. <br> <strong>Примечание.</strong> Рекомендуемая версия продукта: MySQL Server 5.0. В предоставленных документах описывается работа с этой версией.</li>
+</ul>
+<p>По завершении установки необходимо выполнить настройку среды в целях обеспечения правильной совместной работы всех программных компонентов. </p>
+<p>Можно использовать <a href="#XAMPP">пакет</a>, содержащий требуемое программное обеспечение, или <a href="#installComponentsSeparately">установить каждый компонент по отдельности</a>. </p>
+<h2><a id="XAMPP" name="XAMPP"></a>Использование пакета AMP</h2>
+<p>В целях автоматической установки всех параметров настройки для механизма PHP, сервера HTTP Apache и сервера базы данных MySQL воспользуйтесь пакетом AMP.  В данном учебном курсе приведены указания только для пакета <a href="http://www.apachefriends.org/en/xampp-windows.html" target="_blank">XAMPP-Windows</a>.  Справочные сведения по пакету WAMP или другим пакетам приведены в разделе <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">NetBeans XDebug Wiki</a>.</p>
+<h3><a name="installConfigureXAMPP"></a>Установка и настройка пакета XAMPP</h3>
+<p>В этом разделе приведено описание процедур загрузки, установки и настройки пакета XAMPP. </p>
+<p class="alert"><strong>Предупреждение!</strong> НЕ используйте XAMPP 1.7.0. В этой версии имеются значительные проблемы с XDebug. Используйте версию 1.7.1 или выше, где эти неполадки устранены.</p>
+<p class="notes"><strong>Примечание: </strong> Начиная с XAMPP 1.7.2, XAMPP поставляется с PHP 5.3а не с PHP 5.2.x. IDE NetBeans для PHP версии 6.7.x не поддерживает новые функции PHP 5.3. IDE NetBeans для PHP 6.8, которая в настоящее время доступна как сборка разработки, полностью поддерживает PHP 5.3. Также обратите внимание, что установка Xdebug различается для PHP 5.2.x и PHP 5.3.</p>
+<ol>
+  <li>Загрузите пакет программы установки <a href="http://www.apachefriends.org/en/xampp-windows.html" target="_blank">XAMPP </a>.  В состав XAMPP Lite не входит XDebug.</li>
+  <li>По завершении загрузки запустите файл <tt>EXE</tt>. 
+    <p class="alert">В Microsoft Vista функция контроля учетных записей пользователей (UAC) блокирует обновление установщиком PHP настройки службы httpd Apache.  На время установки XAMPP следует отключить UAC.  Для получения дополнительных сведений обратитесь к разделу <a href="http://support.microsoft.com/kb/922708" target="_blank">Поддержка Майкрософт</a>.<br>
+    </p>
+  </li>
+  <li>Можно установить сервер Apache и сервер базы данных MySQL как веб-службы.  Если Apache Server и MySQL установлены как службы, то нет необходимости запускать их вручную с помощью &quot;XAMP Control Panel&quot;.  Следует учитывать, что установить и удалить эти службы можно с помощью <a href="#xamppConstolPanel">панели управления XAMPP</a>.</li>
+  <li>При использовании самораспаковывающегося архива после его распаковки запустите файл <tt>setup-xampp.bat</tt> для настройки компонентов пакета.  Программа установки XAMPP запускает этот файл автоматически.</li>
+  <li><a id="xamppConstolPanel" name="xamppConstolPanel"></a>После настройки откройте панель управления XAMP.  Эту панель можно открыть посредством запуска файла <tt>XAMPP_HOME/xampp-control.exe</tt> или с помощью значка панель управления XAMPP, автоматически размещаемого на рабочем столе. При открытии панели управления XAMPP следует учитывать, что модули, установленные как службы, уже выполняются.
+    <p class="alert"><b>Предупреждение. </b>Иногда в Windows Vista не удается запустить файл <tt>xampp-control.exe</tt>.  В этом случае можно запустить <tt>xampp-start.exe</tt>.</p>
+    <p class="alert"><b>Предупреждение. </b>Файл <tt>winmysqladmin.exe</tt>, запускаемый кнопкой &quot;Admin&quot; для MySQL, не функционирует.  Отображается последовательность сообщений об ошибках, которая может быть остановлена только путем завершения процесса <tt>winmysqladmin</tt> вручную. Файл <tt>winmysqladmin.exe</tt> также невозможно запустить из командной строки.  Обратитесь к странице <a href="http://bugs.xampp.org/view.php?id=71" target="_blank">http://bugs.xampp.org/view.php?id=71</a>.</p>
+  <img alt="Панель управления XAMPP" class="margin-around" height="361" src="../../../images_www/articles/72/php/configure-php-environment-windows/xampp-control-panel.png" width="454"> </li>
+  <li>Флажки &quot;Svc&quot; указывают на то, что модуль устанавливается как служба Windows и автоматически выполняется при запуске системы.  Службы Windows устанавливаются и удаляются при установке и снятии флажка &quot;Svc&quot;.  При удалении службы Windows сам модуль не удаляется, однако необходимо запускать его вручную.  Панель управления XAMPP включает в себя кнопки запуска и остановки модулей, а также открытия их консолей администратора.<br>
+  </li>
+  </ol>
+<h3><a name="checkXAMPPInstallation"></a>Проверка установки XAMPP </h3>
+<ol>
+<li>Запустите браузер и введите следующий URL-адрес: <tt>http://localhost</tt>.  Откроется страница приветствия XAMPP:<br> <img alt="Страница приветствия XAMPP, указывающая, что Apache запущен" border="1" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-windows/xampp-welcome-page.png">
+</li>
+<li>В целях обеспечения установки серверов Apache и MySQL в качестве служб системы перезапустите операционную систему, запустите браузер и повторно введите URL-адрес <tt>http://localhost</tt>.  Откроется страница приветствия XAMPP.  Обратите внимание на то, что в левом поле страницы приветствия XAMPP имеется меню, посредством которого можно проверить состояние компонентов XAMPP, запустить <tt>phpinfo()</tt>, а также воспользоваться другими важными функциями. При выполнении <tt>phpinfo()</tt> возвращается экран с информацией о настройке компонентов XAMPP. <br><img alt="Таблица сведений конфигурации, возвращенная phpinfo()" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-windows/xampp-phpinfo.png" /></li>
+</ol>
+<h3><a name="installAndEnableXDebug"></a>Установка и включение отладчика XDebug</h3>
+<p>Для использования отладчика XDebug необходимо настроить стек PHP.  Процесс отличается, если используется <a href="#xdebug-xampp-171">XAMPP 1.7.1</a>, который включает в себя PHP 5.2.6, или <a href="#xdebug-xampp-172">XAMPP 1.7.2</a>, который включает в себя PHP 5.3.</p>
+<p class="alert">Многие пользователи испытывают трудности при настройке работы XDebug в своих системах.  Справочные сведения приведены на <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">вики-странице</a>и <a href="http://forums.netbeans.org/viewforum.php?f=13&sid=5b63e6774fe7859b5edd35b1192d8efd" target="_blank">на форуме пользователей редактора NetBeans PHP Editor</a>.</p>
+
+<div class="indent">
+    <h4 id="xdebug-xampp-171">XDebug на XAMPP 1.7.1 (PHP 5.2)</h4>
+<p>Необходимо скачать XDebug, поместить файл .dll в базовый каталог php и настроить php.ini для поиска и использования данного файла.</p>
+<ol>
+<li>Загрузите самую последнюю, <em>ориентированную на многопотоковое исполнение</em> версию <a href="http://www.xdebug.org/download.php" target="_blank">XDebug</a>, совместимую с вашей версией PHP.  Ссылки для загрузки перечислены в разделе &quot;Releases&quot;.  Скопируйте файл <tt>.dll</tt> в каталог <tt>XAMP_HOME/php/ext</tt>.  (<tt>XAMPP_HOME</tt> ссылается на каталог установки XAMPP или XAMPP Lite, например, <tt>C:\Program Files\xampp</tt> или <tt>C:\xampplite</tt>.)</li>
+<li>Найдите и откройте активный файл <tt>php.ini</tt> для XAMPP.  По умолчанию он находится в каталоге <tt> XAMPP_HOME/apache/bin</tt>.  Подтвердите, какой файл <tt>php.ini</tt> является активным, с помощью <tt>phpinfo()</tt> и поиска загруженного файла конфигурации.</li>
+<li>Поскольку оптимизатор Zend блокирует XDebug, оптимизатор требуется отключить.  В активном файле <tt>php.ini </tt> найдите следующие строки и удалите или отметьте их как комментарии (для надежности выполните поиск и закомментируйте все свойства, связанные с Zend):
+  <pre class="examplecode">
+[Zend]
+;zend_extension_ts = "C:\Program Files\xampp\php\zendOptimizer\lib\ZendExtensionManager.dll"
+;zend_extension_manager.optimizer_ts = "C:\Program Files\xampplite\php\zendOptimizer\lib\Optimizer"
+;zend_optimizer.enable_loader = 0
+;zend_optimizer.optimization_level=15
+;zend_optimizer.license_path =
+</pre>
+</li>
+<li>Для присоединения<a id="attachXDebug" name="attachXDebug"></a> XDebug к механизму PHP раскомментируйте следующие строки в файлах <tt>php.ini</tt> (добавьте эти строки непосредственно в разделе [Zend]), если они отсутствуют.  Добавлены дополнительные примечания.
+  <pre class="examplecode">[XDebug]<br>; Only Zend OR (!) XDebug
+zend_extension_ts = &quot;./php/ext/php_xdebug&lt;-version-number&gt;.dll&quot;
+; XAMPP and XAMPP Lite 1.7.0 and later come with a bundled xdebug at &lt;XAMPP_HOME&gt;/php/ext/php_xdebug.dll, without a version number.<br>xdebug.remote_enable=1<br>xdebug.remote_host=127.0.0.1<br>xdebug.remote_port=9000
+; Port number must match debugger port number in NetBeans IDE Tools &gt; Options &gt; PHP<br>xdebug.remote_handler=dbgp<br>xdebug.profiler_enable=1<br>xdebug.profiler_output_dir=&quot;&lt;XAMPP_HOME&gt;\tmp&quot;<br>
+  </pre>
+  <p>Установите свойство <tt>xdebug.remote_enable</tt> в значение 1, а не в значение &quot;true&quot; или другое значение.</p>
+<p class="notes"><strong>Примечание.</strong> Убедитесь в том, что указанные пути соответствуют расположению соответствующих файлов, как это определено при установке.</p></li>
+<li>Сохраните файл <tt>php.ini</tt>.</li>
+<li>Запустите <a href="#xamppConstolPanel">панель управления XAMPP</a> и перезапустите сервер Apache. </li>
+</ol>
+Дополнительные сведения о настройке XDebug приведены на <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">вики-странице</a> и в <a href="http://www.xdebug.org/docs/install" target="_blank">документации по XDebug</a>.<br>
+<h4 id="xdebug-xampp-172">Xdebug на XAMPP 1.7.2 (PHP 5.3)</h4>
+<p>XAMPP 1.7.2 поставляется вместе с соответствующим файлом Xdebug .dll. Для начала использования необходимо только настроить <tt>php.ini</tt>. Обратите внимание, что все настройки Xdebug сопровождаются поясняющим текстом.</p>
+<ol>
+  <li>Найдите и откройте файл <tt>XAMPP_HOME\php\php.ini</tt> для редактирования.  В XAMPP 1.7.2 используется только файл <tt>php.ini</tt></li>
+  <li>Найдите строку <tt>zend_extension = &quot;XAMPP_HOME\php\ext\php_xdebug.dll&quot;</tt> и удалите символ комментария.</li>
+  <li>Найдите строку <tt>xdebug.remote_host=localhost</tt> и удалите символ комментария.  Измените значение параметра <tt>localhost</tt> на <tt>127.0.0.1</tt>.</li>
+  <li>Найдите строку <tt>xdebug.remote_enable = 0</tt> и удалите символ комментария.  Измените 0 на 1.</li>
+  <li>Найдите строку <tt>xdebug.remote_handler = &quot;dbgp&quot;</tt> и удалите символ комментария.</li>
+  <li>Найдите строку <tt>xdebug.remote_port = 9000</tt> и удалите символ комментария.</li>
+  <li>Сохраните файл <tt>php.ini</tt>.</li>
+  <li>Запустите <a href="#xamppConstolPanel">панель управления XAMPP</a> и перезапустите сервер Apache. </li>
+  </ol>
+<p>Дополнительные сведения о настройке XDebug приведены на <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">вики-странице</a> и в <a href="http://www.xdebug.org/docs/install" target="_blank">документации по XDebug</a>.<br>
+</p>
+</div>
+<h2><a id="installComponentsSeparately" name="installComponentsSeparately"></a>Установка компонентов по отдельности </h2>
+<div class="indent">
+<h3><a name="installApacheComponent"></a>Сервер HTTP Apache</h3>
+<ol>
+  <li>Загрузите <a href="http://httpd.apache.org/download.cgi" target="_blank">сервер HTTP Apache2</a>.</li>
+  <li>Запустите установочный файл <tt>.msi</tt>.  Запускается мастер установки. Следуйте указаниям.
+  <p class="alert">В Microsoft Vista не следует устанавливать Apache Server в местоположение по умолчанию, находящееся в папке &quot;Program Files&quot;.  Все файлы в папке &quot;Program Files&quot; защищены от записи.</p></li>
+  <li>По завершении установки перезапустите сервер Apache. </li>
+  <li>Для проверки успешности установки запустите браузер и введите следующий URL-адрес:
+    <pre class="examplecode">
+  http://localhost/</pre> 
+  Откроется страница приветствия Apache: <br> <img alt="Страница теста веб-сервера Apache, указывающая, что Apache запущен" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-windows/install-apache-it-works-port80.png"> </li>
+</ol>
+<h4>Устранение проблем</h4>
+По умолчанию сервер Apache прослушивает порт 80.  Однако этот порт, возможно, уже используется другими службами, например Skype.  Для разрешения проблемы измените порт, прослушиваемый сервером: 
+  <ol>
+    <li>Откройте файл настройки веб-сервера Apache <tt>httpd.conf</tt>.  По умолчанию файл расположен в <tt>C:\Program Files\Apache Software Foundation\Apache&lt;version&gt;\conf\</tt>.</li>
+	<li>Перейдите к строке <tt>Listen 80</tt> и замените номер порта: например, на <tt>8080</tt>.  Сохраните файл.</li>
+	<li>Перезапустите веб-сервер Apache.</li>
+	<li>Для проверки работоспособности веб-сервера запустите браузер, введите URL-адрес и явно укажите номер порта: <tt>http://localhost:8080</tt></li>
+</ol>
+  <p>Кроме того, можно также приостановить процессы, прослушивающие порт 80.  В окне &quot;Диспетчер задач&quot; выберите соответствующее имя файла и нажмите кнопку &quot;Завершить процесс&quot;.  </p>
+  <p>Дополнительные сведения об установке и настройке сервера приведены <a href="http://httpd.apache.org/docs/2.2/install.html" target="_blank">здесь</a>. </p>
+  <h3><a name="installPHPEngine"></a>Механизм PHP</h3>
+<ol>
+  <li>Загрузите <a href="http://windows.php.net/download/" target="_blank">бинарный пакет установщика Windows</a> для выбранной версии PHP5.
+      <p class="alert"><strong>Важно.</strong>Если установщик для нужной версии PHP отсутствует, установите ее вручную из файла .zip. См. раздел <a href="http://php.net/manual/en/install.windows.manual.php" target="_blank">Этапы ручной установки</a> в документации php.net.</p></li>
+  <li>По завершении загрузки запустите установочный файл <tt>.msi</tt>.  Запускается мастер установки. </li>
+  <li>На экране &quot;Каталог конфигурации Apache&quot; укажите каталог, в котором расположен файл <tt>httpd.conf</tt> (по умолчанию используется каталог <tt>C:\Program Files\Apache Software Foundation\Apache&lt;version&gt;\conf\</tt>).  Обработка кода PHP включается автоматически.</li>
+  <li>При необходимости использования сервера базы данных MySQL выберите вариант &quot;Полная установка&quot; или выберите элементы MySQL и MySQLi в списке &quot;Расширения&quot;. </li>
+  <li>После завершения установки перезапустите сервер Apache. </li>
+  <li>Для проверки успешности установки механизма PHP и включения обработки кода PHP в настройке Apache выполните следующие действия:
+    <ul>
+  <li>Откройте блокнот или любой другой текстовый редактор. Создайте файл и введите следующий текст:
+  <pre class="examplecode">&lt;?php 
+     echo &quot;PHP has been installed successfully!&quot;;
+?&gt;</pre>  </li>
+  <li>Сохраните файл в папке htdocs с именем <code>test.php</code>. По умолчанию путь к файлу имеет вид <tt>C:\Program Files\Apache Software Foundation\Apache&lt;version>\htdocs\test.php</tt></li>
+  <li>Запустите браузер и введите следующий URL-адрес: <tt>http://localhost:&lt;port&gt;/test.php</tt>.  Откроется следующая страница:<br> <img alt="Страница теста PHP, указывающая, что механизм PHP включен" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-windows/install-php-test.png">
+   </li>
+  </ul>
+  </li>
+</ol>
+<h4>Устранение проблем</h4>
+Если страница не открывается, выполните следующие действия:
+<ol>
+  <li>Перезапустите сервер Apache.</li>
+  <li>Убедитесь, что файл настройки сервера Apache httpd.conf содержит следующие строки:
+     <pre class="examplecode">
+  AddType Application/x-httpd-php .php 
+  LoadModule php5_module &quot;c:/php/sapi/php5apache2_2.dll&quot;</pre>
+  </li>
+  <li>Если эти строки отсутствуют, добавьте их, сохраните <tt>httpd.conf</tt> и перезапустите сервер Apache.</li>
+  <li>Обновите страницу http://localhost:&lt;port&gt;/test.php.   </li>
+</ol>
+<h3><a name="installMySQL"></a>Сервер базы данных MySQL</h3>
+<p>Ознакомьтесь с подробными сведениями относительно <a href="../ide/install-and-configure-mysql-server.html">установки и настройки сервера базы данных MySQL</a>. </p>
+<h3><a name="installXDebug"></a>XDebug  </h3>
+<ol>
+<li>Загрузите <a href="http://www.xdebug.org" target="_blank">XDebug</a>.</li>
+<li>Установите XDebug в папку <tt>php/</tt>.  Путь к этой папке необходим для <a href="#settingUpEnvironment">настройки среды</a>.</li>
+</ol>
+
+<h3><a name="settingUpEnvironment"></a>Настройка среды  </h3>
+<ol>
+  <li>Если при установке используются настройки по умолчанию, обработка PHP включается автоматически. </li>
+  <li>Для присоединения<a id="attachXDebug" name="attachXDebug"></a> XDebug к механизму PHP перейдите к файлу <tt>php.ini</tt> и добавьте в него следующие строки:
+  <p>Для механизма PHP 5.2 <strong>с ориентацией на многопотоковое исполнение</strong>:  
+  <pre class="examplecode">zend_extension_ts=&quot;&lt;path to the php folder&gt;/php_xdebug-&lt;version-number&gt;.dll&quot;
+xdebug.remote_enable=1</pre>
+<p>Для механизма PHP 5.2 <strong>без ориентации на многопотоковое исполнение</strong>: </p>
+<pre class="examplecode">zend_extension_nts="&lt;path to the php folder&gt;/php_xdebug-&lt;version-number&gt;.dll"
+xdebug.remote_enable=1</pre>
+<p>Для <b>любого</b> механизма PHP 5.3:</p>
+<pre class="examplecode">zend_extension="&lt;path to the php folder&gt;/php_xdebug-&lt;version-number&gt;.dll"
+xdebug.remote_enable=1</pre>
+
+  <p>Некоторые пользователи считают, что необходимо включить в код следующие строки, однако другие пользователи пропускают их:</p>
+<pre>xdebug.remote_host=127.0.0.1<br>xdebug.remote_port=9000
+; Port number must match debugger port number in NetBeans IDE Tools &gt; Options &gt; PHP<br>xdebug.remote_handler=dbgp<br></pre>
+  <p>Дополнительные сведения о настройке отладчика XDebug приведена <a href="http://www.xdebug.org/docs/install" target="_blank">здесь</a>.</p>
+  <p class="notes"><strong>Примечание.</strong> Убедитесь в том, что указанные пути соответствуют именам и расположению соответствующих файлов, как это определено при установке.</p></li>
+  <li>Для проверки того, что предварительно установленный механизм PHP поддерживает использование сервера базы данных MySQL выполните следующие действия:
+    <ol type="a">
+      <li type="a">Выберите команду &quot;Пуск&quot; &gt; &quot;Панель управления&quot;.</li>
+      <li type="a">На экране &quot;Панель управления&quot; выберите параметр &quot;Добавление или удаление программ&quot;. </li>
+      <li type="a">На экране &quot;Добавление или удаление программ&quot; перейдите к области &quot;PHP &lt;номер_версии&gt;&quot; и нажмите кнопку &quot;Изменить&quot;.  Последует запуск мастера настройки PHP.  Нажмите кнопку &quot;Далее&quot;.</li>
+      <li type="a">На экране &quot;Изменение, исправление или удаление&quot; выберите команду &quot;Изменить&quot; и нажмите кнопку &quot;Далее&quot;. </li>
+      <li>На экране &quot;Установка веб-сервера&quot; выберите версию сервера Apache &ndash; в рассматриваемом примере используется Apache 2.2.x Module.  Нажмите кнопку &quot;Далее&quot;.</li>
+      <li>На экране &quot;Каталог конфигурации Apache&quot; укажите каталог, в котором расположен файл настройки Apache <tt>httpd.conf</tt>.  Нажмите кнопку &quot;Далее&quot;.</li>
+      <li>На экране &quot;Выбор компонентов для установки&quot; разверните узел &quot;Расширения&quot; и выберите элементы MySQL и MySQLi.  Нажмите кнопку &quot;Далее&quot;.</li>
+      <li>На экране &quot;Все готово к изменению PHP &lt;номер_версии&gt;&quot; выберите команду &quot;Изменить&quot;.</li>
+      <li>На экране &quot;Мастер установки PHP &lt;номер_версии&gt; завершен&quot; нажмите кнопку &quot;Готово&quot;.</li>
+    </ol>
+    <br></li>
+  </ol>
+  </div>
+  <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Configuring%20PHP%20on%20Windows">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear:both;" />
+
+<p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+<a href="../../trails/php.html">Возврат к учебной карте PHP</a>
+</body>
+</html>

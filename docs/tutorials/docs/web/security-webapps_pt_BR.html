@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Protegendo uma aplicação Web no NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Style-Type" content="text/css">
+        <meta name="keywords"
+              content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, IDE, Platform, free, open source, developer">
+        <meta name="description"
+              content="This document takes you through the basics of adding security to a web application that is deployed to either the Tomcat server or the Oracle GlassFish Open Source server.">
+        <meta name="author" content="Dan Kolar">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+        <h1>Protegendo uma aplicação Web no NetBeans IDE</h1>
+        <div class="articledate" style="margin-left: 0px;">Contribuição de Dan Kolar, Manutenção de James Branam e Jeff Rubinoff </div>
+        <p>Este documento lhe orienta a respeito dos conceitos básicos da adição de segurança a uma aplicação Web implantada em um servidor Oracle GlassFish Open Source Edition, Oracle WebLogic ou Apache Tomcat.</p>
+        <p>Este documento mostra como configurar a autenticação de segurança usando uma janela de log-in básico e usando também um form de log-in em uma página Web. Este documento guia você pelas etapas de criação de usuários no servidor Tomcat e no GlassFish Server. Depois de criar os usuários, você cria as atribuições de segurança, definindo as propriedades de segurança no descritor de implantação. Este documento também mostra como usar a autenticação JDBC para proteger sua aplicação durante a implantação do GlassFish Server.</p>
+        <!-- END VCD1 OVERVIEW COMPONENT  -->
+        <p class="align-center"><b>Duração esperada: <i>40 </i>minutos</b></p>
+        <!-- BEGIN VCD5 ANCHOR LINKS COMPONENT  -->
+        <p><b>Conteúdo</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+        <ul class="toc">
+
+            <li><a href="#Exercise_0">Instalando e Configurando o Ambiente de Trabalho</a></li>
+            <li><a href="#Creating_Web_App">Criando a Aplicação Web</a>
+                <ul>
+                    <li><a href="#createdir">Criando Diretórios Seguros</a></li>
+                    <li><a href="#indexpage">Criando a Página de Índice JSP</a></li>
+                    <li><a href="#loginform">Criando um Form de Log-in (Obrigatório para Tomcat e opcional para GlassFish ou WebLogic Server)</a></li>
+                </ul>
+            </li>
+            <li><a href="#Creating_users_roles">Criando Usuários e Atribuições no Servidor de Destino</a>
+                <ul>
+                    <li><a href="#SJSAS">Definindo Atribuições no GlassFish Server</a></li>
+                    <li><a href="#Tomcat">Definindo Atribuições no Servidor Web Tomcat</a></li>
+                    <li><a href="#wl">Definindo Atribuições e Grupos no WebLogic Server</a></li>
+
+                </ul>
+            </li>
+            <li><a href="#Basic_login_config">Configurando o Método de Log-in</a>
+
+                <ul>
+
+                    <li><a href="#Basic">Log-in Básico</a></li>
+                    <li><a href="#Form">Log-in com Form</a></li>
+                </ul></li>
+
+            <li><a href="#sec-dd">Configurando os Descritores de Implantação de Servidor</a>
+                <ul>
+                    <li><a href="#gf-dd">Configurando o Descritor de Implantação do GlassFish Server</a></li>
+                    <li><a href="#wl-dd">Configurando o Descritor de Implantação do Servidor WebLogic</a> </li>
+                </ul>
+            </li>
+            <li><a href="#Deploy_run">Implantando e Executando a Aplicação</a></li>
+
+        </ul>
+        <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Versão Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Developer Kit)</a></td>
+                    <td class="tbltd1">Versão 7 ou 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Plataforma Java EE</td>
+                    <td class="tbltd1">Java EE 6 ou 7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Travel Database</td>
+                    <td class="tbltd1">Não é Obrigatório</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Servidor de aplicações ou Web compatível com Java EE</td>
+                    <td class="tbltd1">Servidor Web Tomcat 7.x ou 8.x, Oracle WebLogic 11g ou<br /> GlassFish Server Open Source Edition 4.x
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <!-- ===================================================================================== -->
+        <h2><a name="Exercise_0"></a>Instalando e Configurando o Ambiente de Trabalho</h2>
+        <p>Instale e inicie o NetBeans IDE. Você pode seguir este tutorial usando o servidor Tomcat fornecido ou o GlassFish Server.</p>
+        <p>Verifique se o servidor está instalado e se há uma instância do servidor registrada no IDE. Você pode usar o Gerenciador de Servidores para registrar uma instância do servidor instalado. (Selecione Ferramentas > Servidores > Adicionar Servidor. Selecione “GlassFish Server &lt;número da versão>” ou “Tomcat &lt;número da versão>” e clique em Próximo. Clique em Procurar e localize o diretório de instalação do servidor de aplicações. Clique em Finalizar.)</p>
+        <!-- ===================================================================================== -->
+
+        <h2 class="tutorial"><a name="Creating_Web_App"></a><!--Exercise 1: -->
+            Criando a Aplicação Web</h2>
+        <p>Neste exercício, você primeiro cria o projeto de aplicação Web e a estrutura do diretório. Em seguida, você cria alguns arquivos <tt>html</tt> simples em cada um dos diretórios seguros. A aplicação Web utiliza uma autenticação de log-in básico para acessar os diretórios seguros. Se quiser usar um form de log-in para autenticação, você pode adicionar uma página <tt>jsp</tt> com o form.</p>
+        <div class="indent">
+            <a name="createdir"></a>
+            <h3 class="tutorial">Criando os Diretórios Seguros</h3>
+
+            <ol>
+                <li>Selecione Arquivo > Novo Projeto (Ctrl-Shift-N), selecione Aplicação Web na categoria Java Web e clique em Próximo.</li>
+                <li>Chame o projeto de <tt>WebApplicationSecurity</tt>. Aceite as definições default.</li>
+                <li>(Opcional) Marque a caixa de seleção Utilizar Pasta Dedicada para Armazenamento de Bibliotecas e especifique o local da pasta de bibliotecas. Consulte <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">Compartilhando uma Biblioteca com Outros Usuários</a> em <em>Desenvolvendo Aplicações com o NetBeans IDE</em> para obter mais informações sobre essa opção.</li>
+                <li>Clique em Próximo.</li><li>Selecione o servidor no qual deseja implantar a aplicação. Somente os servidores registrados com o IDE serão listados. Clique em Próximo.</li>
+                <li>Não é necessário adicionar um framework; portanto, clique em Finalizar.</li>
+                <li>Se você criou uma aplicação EE 6, vá à janela Projetos do IDE, clique com o botão direito do mouse no nó do projeto e selecione Novo > Outro > Web > Descritor de Implantação Padrão (web.xml). Aceite todos os defaults e percorra o assistente.
+                    <p class="notes" ><b>Observação:</b> este tutorial mostra como configurar a segurança no descritor de implantação, mas as aplicações EE 6 e EE 7 usam anotações em vez de um descritor de implantação, por padrão.</p></li>
+                <li>Se estiver usando um GlassFish ou WebLogic Server e o NetBeans IDE 7.0.1 ou posterior, você precisará gerar um descritor específico para o servidor. Clique com o botão direito do mouse no nó do projeto e selecione Novo > Outro > GlassFish > Descritor do GlassFish ou Novo > Outro > WebLogic > Descritor do WebLogic. A caixa de diálogo Criar Descritor Específico do Servidor será aberta. Aceite todos os defaults e clique em Finalizar. O descritor específico do servidor, chamado <tt>glassfish-web.xml</tt> ou <tt>weblogic.xml</tt>, aparecerá no projeto na pasta Arquivos de Configuração.</li>
+                <li>Na janela Projetos do IDE, clique com o botão direito do mouse em Páginas Web e selecione Novo > Outro.</li>
+                <li>No assistente de Novo Arquivo, selecione Outro como Categoria e Pasta como o Tipo de Arquivo. Clique em Próximo.</li>
+                <li>
+                    <p>No assistente de Nova Pasta, chame a pasta de secureAdmin e clique em Finalizar.</p>
+                    A pasta secureAdmin será exibida na janela Projetos da pasta Páginas Web.
+                </li>
+                <li>Repita as três últimas etapas para criar outra pasta chamada secureUser.</li>
+                <li>Crie um novo arquivo <tt>html</tt> na pasta secureUser, clicando com o botão direito do mouse na janela Projetos e selecionando Novo > Outros.</li>
+                <li>Selecione o tipo de arquivo HTML na categoria Outro. Clique em Próximo.</li>
+                <li>Chame o novo arquivo de pageU e clique em Finalizar.
+                    <p>Quando você clica em Finalizar, o arquivo <tt>pageU.html</tt> é aberto no Editor de Código-Fonte.</p></li>
+                <li>No Editor de Código-Fonte, substitua o código existente em <tt>pageU.html</tt> pelo código a seguir:
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+   &lt;head&gt;
+      &lt;title&gt;</span>User secure area<span class="html-tag">&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h1&gt;</span>User Secure Area<span class="html-tag">&lt;/h1&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+                <li>Clique com o botão direito do mouse na pasta secureAdmin e crie um novo arquivo <tt>html</tt> chamado pageA.</li>
+                <li>No Editor de Código-Fonte, substitua o código existente em <tt>pageA.html</tt> pelo código a seguir:
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+   &lt;head&gt;
+      &lt;title&gt;</span>Admin secure area<span class="html-tag">&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h1&gt;</span>Admin secure area<span class="html-tag">&lt;/h1&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+            </ol>
+
+            <a name="indexpage"></a>
+            <h3 class="tutorial">Criando a Página de Índice JSP</h3>
+            <p>Agora você criará a página de índice JSP contendo links para as áreas seguras. Quando o usuário clicar no link, será solicitado que ele forneça o nome de usuário e a senha. Se você estiver utilizando um log-in básico, esses dados serão solicitados na janela de log-in do browser default. Se você estiver utilizando uma página de form de log-in, o usuário informará o nome de usuário e a senha em um form.</p>
+            <ol>
+                <li>Abra <tt>index.jsp</tt> no Editor de Código-Fonte e adicione os seguintes links a <tt>pageA.html</tt> e <tt>pageU.html</tt>:
+                    <pre class="examplecode"><span class="jsp-html-tag">&lt;p&gt;</span>Request a secure Admin page <span
+ class="jsp-html-tag">&lt;a</span> <span
+ class="jsp-html-argument">href=</span><span class="jsp-xml-value">"secureAdmin/pageA.html"</span><span
+ class="jsp-html-tag">&gt;</span>here!<span class="jsp-html-tag">&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;</span>Request a secure User page <span
+ class="jsp-html-tag">&lt;a</span> <span
+ class="jsp-html-argument">href=</span><span
+ class="jsp-xml-value">"secureUser/pageU.html"</span> <span
+                class="jsp-html-tag">&gt;</span>here!<span class="jsp-html-tag">&lt;/a&gt;&lt;/p&gt;</span></pre>
+                </li>
+                <li>Salve as alterações.</li>
+            </ol>
+
+
+            <a name="loginform"></a>
+            <h3 class="tutorial">Criando um Form de Log-in (obrigatório para Tomcat e opcional para GlassFish ou WebLogic Server)</h3>
+            <p>Se você quiser usar um form de log-in em vez do log-in básico, crie uma página <tt>jsp</tt> contendo o form. Em seguida, especifique o log-in e as páginas de erro ao <a href="#Basic_login_config">configurar o método de log-in</a>.</p>
+            <p class="alert"><strong>Importante:</strong> Os usuários do Tomcat devem criar um form de log-in.</p>
+            <ol>
+                <li>Na janela Projetos, clique com o botão direito do mouse na pasta Páginas Web e selecione Novo > JSP.</li>
+                <li>Defina o nome do arquivo como <tt>login</tt>, deixe os outros campos com seu valor default e clique em Finalizar.</li>
+                <li>No Editor de Código-Fonte, insira o código a seguir entre as tags <tt>&lt;body></tt> de <tt>login.jsp</tt>.<br>
+                    <pre class="examplecode">&lt;<span class="jsp-html-tag">form</span> <span
+              class="jsp-html-argument">action=</span><span
+              class="jsp-xml-value">"j_security_check"</span> <span
+              class="jsp-html-argument">method=</span><span
+              class="jsp-xml-value">"POST"</span><span class="jsp-html-tag">&gt;</span>
+   Username:<span class="jsp-html-tag">&lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"text"</span> <span class="jsp-html-argument">name=</span><span class="jsp-xml-value">"j_username"</span><span
+              class="jsp-html-tag">&gt;&lt;br&gt;</span>
+   Password:<span class="jsp-html-tag">&lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"password"</span> <span class="jsp-html-argument">name=</span><span class="jsp-xml-value">"j_password"</span><span
+                  class="jsp-html-tag">&gt;
+   &lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"submit"</span> <span class="jsp-html-argument">value=</span><span class="jsp-xml-value">"Login"</span><span class="jsp-html-tag">&gt;
+&lt;/form&gt;</span></pre>
+                </li>
+                <li>Crie um novo arquivo <tt>html</tt> chamado <tt>loginError.html</tt> na pasta Páginas Web. Trata-se de uma página de erro simples.</li>
+                <li>No Editor de Código-Fonte, substitua o código existente em <tt>loginError.html</tt>  pelo código a seguir:
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;</span>Login Test: Error logging in<span class="html-tag">&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;</span>Error Logging In<span class="html-tag">&lt;/h1&gt;
+        &lt;br/&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+            </ol>
+
+
+        </div>
+        <!-- ======================================================================================== -->
+        <h2 class="tutorial"><a name="Creating_users_roles"></a>Criando Usuários no Servidor de Destino</h2>
+        <p class="tutorial">Para poder usar a segurança da autenticação de usuário/senha (log-in básico ou log-in com base em form) em aplicações Web, os usuários e suas atribuições apropriadas devem ser definidos no servidor de destino. Para fazer log-in em um servidor, a conta do usuário precisa existir nesse servidor.</p>
+        <p>A forma como você define os usuários e as atribuições varia de acordo com o servidor de destino especificado. Neste tutorial, os usuários <tt>admin</tt> e <tt>user</tt> são usados para testar a configuração da segurança. Você precisa confirmar que esses usuários existem nos respectivos servidores, e que as atribuições apropriadas estejam designadas aos usuários.</p>
+
+        <div class="indent">
+            <h3 class="tutorial"><a name="SJSAS"></a>Definindo Usuários no GlassFish Server </h3>
+            <p>Para este cenário, você precisará usar a Console de Administração do GlassFish Server para criar dois novos usuários chamados <tt>user</tt> e <tt>admin</tt>. O usuário chamado <tt>user</tt> terá acesso limitado à aplicação, enquanto que o <tt>admin</tt> terá privilégios de administração. 
+            <ol>
+                <li>
+                    <p>Abra a Console de Administração na janela Serviços do IDE e clique com o botão da direita do mouse em Servidores > GlassFish Server > Exibir Console de Administração do Domínio. A página de log-in do GlassFish Server será aberta na janela do browser. Você deverá fazer log-in usando o nome de usuário e a senha de administrador para acessar a Console de Administração.</p>
+                    <p class="notes"><b>Observação: </b>O Servidor de Aplicações deve estar em execução antes de você acessar a Console de Administração. Para iniciar o servidor, clique com o botão direito do mouse no nó do GlassFish Server e selecione Iniciar.</p>
+                </li>
+                <li>Na Console de Administração, vá até Configurações > server-config > Segurança > Realms > Arquivo. O painel Editar Realm será aberto.<br><img alt="Realm do arquivo para server-config na console de administração do GlassFish 3.1" class="margin-around" src="../../../images_www/articles/72/web/security/edit-realm.png"></li>
+
+                <li>Clique no botão Gerenciar Usuários na parte superior do painel Editar Realm. O painel Usuários do Arquivo será aberto.<br><img alt="Painel Usuário do Arquivo com o botão Novo usuário realçado" class="margin-around" src="../../../images_www/articles/72/web/security/file-users.png">
+                </li>
+                <li>Clique em Novo. O painel Novo Usuário do Realm do Arquivo será aberto. Digite <tt>user</tt> como o ID de usuário e <tt>userpw01</tt> como a senha. Clique em OK.          </li>
+                <li>Siga as etapas anteriores para criar um usuário chamado <tt>admin</tt> com a senha <tt>adminpw1</tt> no realm <tt>file</tt>.</li>
+            </ol>
+            <h3 class="tutorial"><a name="Tomcat"></a>Definindo Atribuições e Usuários no Servidor Web Tomcat</h3>
+            <p>Para Tomcat 7, crie um usuário com a atribuição de script de gerência e uma senha para esse usuário ao registrar o servidor no NetBeans IDE.</p>
+            <p>Os usuários e as atribuições básicas para o servidor Tomcat estão em <tt>tomcat-users.xml</tt>. Você encontra <tt>tomcat-users.xml</tt> no diretório <tt><i>&lt;CATALINA_BASE></i>\conf</tt>.</p>
+            <p class="notes"><b>Observação:</b> Você encontra a localização CATALINA_BASE clicando com o botão direito do mouse no nó do servidor Tomcat na janela Serviços e selecionando Propriedades. As Propriedades do Servidor serão abertas. A localização de CATALINA_BASE encontra-se na guia Conexão.</p>
+            <img alt="Janela Serviços mostrando o menu de contexto para abrir as propriedades do Tomcat 7.0" class="margin-around" src="../../../images_www/articles/72/web/security/tomcat-properties.png"> <img alt="Caixa de diálogo de propriedade do servidor Tomcat 7 mostrando a localização de CATALINA_BASE" class="margin-around" src="../../../images_www/articles/72/web/security/catalina-base.png">
+
+
+            <p class="notes"><b>Observação:</b> Se você usar o Tomcat 6 fornecido com versões mais antigas do IDE, este servidor terá o usuário <tt>ide</tt> definido com uma senha e as atribuições de administrador e gerenciador. A senha do usuário <tt>ide</tt> é gerada quando o Tomcat 6 é instalado. Você pode alterar a senha do usuário <tt>ide</tt> ou copiar a senha em <tt>tomcat-users.xml</tt>.</p>
+            <p><b>Para adicionar usuários ao Tomcat:</b></p>
+            <ol>
+                <li>Abra <tt><i>&lt;CATALINA_BASE></i>/conf/tomcat-users.xml</tt> em um editor. 
+                </li>
+                <li>Adicione uma atribuição chamada <tt>AdminRole</tt>. <pre class="examplecode">&lt;role rolename="AdminRole"/&gt;</pre></li>
+                <li>Adicione uma atribuição chamada <tt>UserRole</tt>.<pre class="examplecode">&lt;role rolename="UserRole"/&gt;</pre></li>
+                <li>Adicione um usuário chamado <tt>admin</tt> com a senha <tt>adminpw1</tt> e a atribuição <tt>AdminRole</tt>.
+                    <pre class="examplecode">&lt;user username="admin" password="adminpw1" roles="AdminRole"/&gt;</pre></li>
+                <li>Adicione um usuário chamado <tt>user</tt> com a senha <tt>userpw01</tt> e a atribuição <tt>UserRole</tt>.
+                    <pre class="examplecode">&lt;user username="user" password="userpw01" roles="UserRole"/&gt;</pre></li>
+
+
+            </ol>
+            <p>O arquivo <tt>tomcat-users.xml</tt> terá a seguinte aparência:</p>
+            <pre class="examplecode">&lt;tomcat-users&gt;
+&lt;!--
+  &lt;role rolename="tomcat"/&gt;
+  &lt;role rolename="role1"/&gt;
+  &lt;user username="tomcat" password="tomcat" roles="tomcat"/&gt;
+  &lt;user username="both" password="tomcat" roles="tomcat,role1"/&gt;
+  &lt;user username="role1" password="tomcat" roles="role1"/&gt;
+--&gt;
+...
+&lt;role rolename="AdminRole"/&gt;
+&lt;role rolename="UserRole"/&gt;
+&lt;user username="user" password="userpw01" roles="UserRole"/&gt;
+&lt;user username="admin" password="adminpw1" roles="AdminRole"/&gt;
+[User with manager-script role, defined when Tomcat 7 was registered with the IDE]
+...
+&lt;/tomcat-users&gt;</pre>
+            <h3><a name="wl"></a>Definindo Usuários e Grupos no WebLogic Server</h3>
+            <p>Para este cenário, é necessário primeiro usar a Console de Administração do WebLogic Server para criar dois novos usuários chamados <tt>user</tt> e <tt>admin</tt>. Adicione esses usuários aos grupos <tt>userGroup</tt> e <tt>adminGroup</tt>, respectivamente. Posteriormente, você designará atribuições de segurança a esses grupos. O <tt>userGroup</tt> terá acesso limitado à aplicação, enquanto que o <tt>adminGroup</tt> terá privilégios de administração.</p>
+            <p>As instruções gerais sobre como adicionar usuários e grupos ao servidor WebLogic se encontram na <a href="http://download.oracle.com/docs/cd/E21764_01/apirefs.1111/e13952/taskhelp/security/ManageUsersAndGroups.html">Ajuda On-Line da Console de Administração</a> do WebLogic. </p>
+            <p><b>Para adicionar os usuários “user” e “admin” e os grupos ao WebLogic:</b></p>
+            <ol>
+                <li>
+                    <p>Abra a Console de Administração na janela Serviços do IDE e clique com o botão direito do mouse em Servidores > WebLogic Server > Exibir Console de Administração. A página de log-in do GlassFish Server será aberta na janela do browser. Você deverá fazer log-in usando o nome de usuário e a senha de administrador para acessar a Console de Administração.</p>
+                    <p class="notes"><b>Observação: </b>O Servidor de Aplicações deve estar em execução antes de você acessar a Console de Administração. Para iniciar o servidor, clique com o botão direito do mouse no nó do WebLogic Server e selecione Iniciar.</p>
+                </li>
+                <li>No painel esquerdo, selecione Realms de Segurança. A página Resumo de Realms de Segurança será aberta.</li>
+                <li>Na página Resumo de Realms de Segurança, selecione o nome do realm (o realm default é “myrealm”). A página Definições de Nome do Realm será aberta.</li>
+                <li>Na página Definições de Nome do Realm, selecione Usuários e Grupos > Usuários. A tabela Usuários será exibida.
+                </li>
+                <li>Na tabela Usuários, clique em Novo. A página Criar Novo Usuário será aberta.</li>
+                <li>Digite no nome “user” e na senha “userpw01”. Opcionalmente, digite uma descrição. Aceite o Provedor de Autenticação default. <br><img alt="Caixa de diálogo da Console de Administração do WebLogic mostrando o novo usuário" class="margin-around" src="../../../images_www/articles/72/web/security/wl-admin-newuser.png"></li>
+                <li>Clique em OK. Retorne para a tabela Usuários.</li>
+                <li>Clique em Novo e adicione um usuário chamado “admin” e a senha “admin1”.</li>
+                <li>Abra a guia Grupos. A tabela Grupos será exibida. </li>
+                <li>Clique em Novo. A janela Criar um Novo Grupo será aberta.</li>
+                <li>Defina o nome do grupo como userGroup. Aceite o provedor default e clique em OK. Você retornará para a tabela Grupos.</li>
+                <li>Clique em Novo e crie o grupo adminGroup.</li>
+                <li>Abra a guia Usuários para o próximo procedimento.</li>
+
+            </ol>
+            <p>Agora, adicione o usuário <tt>admin</tt> ao <tt>adminGroup</tt> e o usuário <tt>user</tt> ao <tt>userGroup</tt>.</p>
+            <p><b>Para adicionar usuários a grupos:</b></p>
+            <ol>
+                <li>Na guia Usuários, clique no usuário <tt>admin</tt>. A página Definições do usuário será aberta.</li>
+                <li>Na página Definições, abra a guia Grupos.</li>
+                <li>Nos Grupos Pai: Disponível: tabela, selecione <tt>adminGroup</tt>.</li>
+                <li>Clique na seta para a direita, >. O <tt>adminGroup</tt> será exibido nos Grupos Pais: Selecionado: tabela.<br><img alt="Console de administração do WebLogic mostrando as definições de usuário admin" class="margin-around" src="../../../images_www/articles/72/web/security/wl-admin-usersettings.png"></li>
+                <li>Clique em Salvar.</li>
+                <li>Retorne à guia Usuários.</li>
+                <li>Clique no usuário <tt>user</tt> e adicione-o ao <tt>userGroup</tt>.</li>
+
+            </ol>
+        </div>
+
+        <a name="Basic_login_config"></a>
+        <h2 class="tutorial">Configurando o Método de Log-in</h2>
+        <p>Ao configurar o método de log-in da aplicação, você pode usar a janela de log-in fornecida pelo browser para autenticação de log-in básico. Como alternativa, você pode criar uma página Web com um form de log-in. Ambos os tipos de configuração de log-in são baseadas na autenticação de usuário/senha.</p>
+        <p>Para configurar o log-in, crie <em>restrições de segurança</em> e designe atribuições a elas. As restrições de segurança definem um conjunto de arquivos. Quando você designa uma atribuição a uma restrição, os usuários com essa atribuição passam a ter acesso aos conjuntos de arquivos definidos pela restrição. Por exemplo, neste tutorial você designa a atribuição AdminRole à restrição AdminConstraint e as atribuições UserRole e AdminRole à restrição UserConstraint. Isso significa que os usuários com a AdminRole têm acesso aos arquivos de Administrador e arquivos de Usuário, mas os usuários com a UserRole têm acesso somente ao arquivos de Usuário.</p>
+        <p class="notes"><b>Observação:</b> Não é um caso comum conceder o acesso separado da atribuição de administrador para arquivos de usuário. Uma alternativa é designar somente a UserRole à UserConstraint e, no lado do servidor, conceder a AdminRole a *usuários* específicos que também são administradores. Você deve decidir como o acesso será concedido caso a caso. </p>
+    <p>Configure o método de log-in para a aplicação, configurando <tt>web.xml</tt>. O arquivo <tt>web.xml</tt> pode ser encontrado no diretório Arquivos de Configuração da janela Projetos.</p>
+
+        <div class="indent">
+            <a name="Basic"></a>
+            <h3 class="tutorial">Log-in Básico</h3>
+            <p>Quando você utiliza a configuração de log-in básico, a janela de log-in é fornecida pelo browser. É necessário ter um nome de usuário e uma senha válidos para acessar o conteúdo seguro.</p>
+
+            <p>As seguintes etapas mostram como configurar um log-in básico para GlassFish Servers e WebLogic Servers. Usuários Tomcat precisam usar o <a href="#form-login">log-in com form</a>.</p>
+            <p><b>Para configurar o log-in básico:</b></p>
+            <ol>
+                <li>Na janela Projetos, expanda o nó Arquivos de Configuração do projeto e clique duas vezes em <tt>web.xml</tt>. O arquivo <tt>web.xml</tt> será aberto no Editor Visual.</li>
+                <li>Clique em Segurança na barra de ferramentas para abrir o arquivo na view Segurança.</li>
+                <li>Expanda o nó Configuração de Log-in e defina a Configuração de Log-in como Básico.
+                    <p class="notes"><b>Observação: </b>Se você quiser usar um form, selecione Form em vez de Básico e especifique o log-in e as páginas de erro de log-in.          </li>
+                <li>Insira um nome de realm, dependendo do seu servidor.
+                    <ul>
+                        <li><b>GlassFish:</b> Especifique <tt>file</tt> como o Nome do Realm. Este é o nome default do realm onde você criou os usuários no GlassFish Server.</li>
+                        <li><b>Tomcat:</b> Não especifique um nome de realm.</li>
+                        <li><b>WebLogic:</b> Especifique o nome do realm. O realm default é <tt>myrealm</tt>.</li>
+                    </ul>
+
+                    <img alt="Adicionando o log-in básico e atribuições ao web.xml" class="margin-around" src="../../../images_www/articles/72/web/security/security-roles.png"></li>
+                <li>Expanda o nó Atribuições de Segurança e clique em Adicionar para adicionar um nome de atribuição.</li>
+                <li>Adicione as Seguintes Atribuições de Segurança:
+                    <ul>
+                        <li><tt>AdminRole</tt>. Os usuários adicionados a esta atribuição terão acesso ao diretório <tt>secureAdmin</tt> do servidor.</li>
+                        <li><tt>UserRole</tt>. Os usuários adicionados a esta atribuição terão acesso ao diretório <tt>secureUser</tt> do servidor.</li>
+                    </ul>
+                    <p class="alert"><b>Cuidado:</b> os nomes de atribuição no GlassFish devem começar com letra maiúscula.</p>
+                </li>
+                <li>Crie e configure um restrição de segurança chamada <tt>AdminConstraint</tt>, fazendo o seguinte:
+                    <ol>
+                        <li>Clique em Adicionar Restrição de Segurança. Será exibida uma seção para a nova restrição de segurança.</li>
+                        <li>Indique <tt>AdminConstraint</tt> para o Nome de View da nova restrição de segurança.<br><img alt="Adicionando a AdminConstraint" class="margin-around" src="../../../images_www/articles/72/web/security/admin-constraint.png"></li>
+                        <li>Clique em Add. A caixa de diálogo Adicionar Recurso da Web é aberta.</li>
+                        <li><p>Na caixa de diálogo Adicionar Recurso da Web, defina o Nome do Recurso como <tt>Admin</tt> e o Padrão de URL como <tt>/secureAdmin/*</tt> e clique em OK. A caixa de diálogo é fechada.</p>
+                            <p class="notes"><b>Observação: </b> Ao utilizar um asterisco (*), você permite que o usuário tenha acesso a todos os arquivos dessa pasta.</p><img alt="Caixa de diálogo Adicionar Recurso da Web" class="margin-around" height="370" src="../../../images_www/articles/72/web/security/addwebresource.png" width="455"></li>
+                        <li>Selecione Ativar Restrição de Autenticação e clique em Editar. A caixa de diálogo Editar Nomes de Atribuições será aberta.</li>
+                        <li>Na caixa de diálogo Editar Nomes de Atribuições, selecione AdminRole no painel esquerdo, clique em Adicionar e em OK.
+                            <p>Depois de concluídas as etapas acima, o resultado deverá ser semelhante à figura a seguir:</p>
+                            <img alt="Restrições de Admin e do Usuário" border="1" class="margin-around" src="../../../images_www/articles/72/web/security/constraints.png" width="600"></li>
+                    </ol>
+                </li>
+                <li>Crie e configure uma restrição de segurança chamada <tt>UserConstraint</tt>, fazendo o seguinte:
+                    <ol>
+                        <li>Clique em Adicionar restrição de segurança para criar uma nova restrição de segurança.</li>
+                        <li>Indique <tt>UserConstraint</tt> para o Nome de View da nova restrição de segurança.</li>
+                        <li>Clique em Adicionar para adicionar uma Coleção de Recursos da Web.</li>
+                        <li>Na caixa de diálogo Adicionar Recurso da Web, defina o Nome do Recurso como <tt>User</tt> e o Padrão de URL como <tt>/secureUser/*</tt> e clique em OK.</li>
+                        <li>Selecione Ativar Restrição de Autenticação e clique em Editar para editar o campo Nome da Atribuição.</li>
+                        <li>Na caixa de diálogo Editar Nomes de Atribuições, selecione AdminRole e UserRole no painel esquerdo, clique em Adicionar e em OK. </li>
+                    </ol>
+                    Observação: Você também pode definir o time-out da sessão em web.xml. Para definir o time-out, clique na guia Geral do Editor Visual e especifique quanto tempo você deseja que a sessão dure. O default é 30 minutos. <a name="Form"></a> <a name="form-login" /></a>
+                    <h3 class="tutorial">Log-in com Form</h3>
+                    <p>A utilização de um form para log-in permite que você personalize o conteúdo das páginas de log-in e de erro. As etapas para configurar a autenticação usando um form são as mesmas para a configuração do log-in básico, com a diferença que você especifica as <a href="#loginform">páginas de log-in e de erro</a> criadas.</p>
+                    <p>As seguintes etapas mostram como configurar um form para log-in</p>
+                    <ol>
+                        <li>Na janela Projetos, clique duas vezes em <tt>web.xml</tt> localizado no diretório <tt>Web Pages/WEB-INF</tt> para abrir o arquivo no Editor Visual.</li>
+
+                        <li>Clique em Segurança na barra de ferramentas para abrir o arquivo na view Segurança e expanda o nó Configuração de Log-in.</li>
+                        <li>Defina a Configuração de Log-in como Form.</li>
+                        <li>Defina a Página de Log-in com Form, clicando em Procurar e localizando <tt>login.jsp</tt>.</li>
+                        <li>
+                            <p>Defina a Página de Erro de Form, clicando em Procurar e localizando <tt>loginError.html</tt>.</p><img alt="Configurando Forms de Log-in em web.xml" class="margin-around" src="../../../images_www/articles/72/web/security/login-forms.png">  </li>
+                        <li>Insira um nome de realm, dependendo do seu servidor.
+                            <ul>
+                                <li><b>GlassFish:</b> Especifique <tt>file</tt> como o Nome do Realm. Este é o nome default do realm onde você criou os usuários no GlassFish Server.</li>
+                                <li><b>Tomcat:</b> Não especifique um nome de realm.</li>
+                                <li><b>WebLogic:</b> Especifique o nome do realm. O realm default é <tt>myrealm</tt>.</li>
+                            </ul>
+                        </li>
+                        <li>Expanda o nó Atribuições de Segurança e clique em Adicionar para adicionar um nome de atribuição.</li>
+                        <li>Adicione as Seguintes Atribuições de Segurança:
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <th class="tblheader" scope="col">Atribuição Servidor</th>
+
+                                        <th class="tblheader" scope="col">Descrição</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1">AdminRole</td>
+
+                                        <td class="tbltd1">Os usuários adicionados a esta atribuição terão acesso ao diretório <tt>secureAdmin</tt> do servidor.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1">UserRole</td>
+
+                                        <td class="tbltd1">Os usuários adicionados a esta atribuição terão acesso ao diretório <tt>secureUser</tt> do servidor.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </li>
+                        <li>Crie e configure um restrição de segurança chamada <tt>AdminConstraint</tt>, fazendo o seguinte:
+                            <ol>
+                                <li>Clique em Adicionar restrição de segurança para criar uma nova restrição de segurança.</li>
+                                <li>Especifique <tt>AdminConstraint</tt> para o Nome de View da nova restrição de segurança.</li>
+                                <li>Clique em Adicionar para adicionar uma Coleção de Recursos da Web.</li>
+                                <li>
+                                    <p>Na caixa de diálogo Adicionar Recurso da Web, defina o Nome do Recurso como <tt>Admin</tt> e o Padrão de URL como <tt>/secureAdmin/*</tt> e clique em OK.</p>
+                                    <p class="notes"><b>Observação: </b> Ao utilizar um asterisco (*), você permite que o usuário tenha acesso a todos os arquivos dessa pasta.</p>
+                                    <img alt="Caixa de diálogo Adicionar Recurso da Web" class="margin-around" height="370" src="../../../images_www/articles/72/web/security/addwebresource.png" width="455"></li>
+                                <li>Selecione Ativar Restrição de Autenticação e clique em Editar. A caixa de diálogo Editar Nomes de Atribuições será aberta.</li>
+                                <li>Na caixa de diálogo Editar Nomes de Atribuições, selecione AdminRole no painel esquerdo, clique em Adicionar e em OK.
+                                    <p>Depois de concluídas as etapas acima, o resultado deverá ser semelhante à figura a seguir:</p>
+                                    <img alt="Restrições de Admin e do Usuário" border="1" class="margin-around" src="../../../images_www/articles/72/web/security/constraints.png" width="600"></li>
+                            </ol>
+                        </li>
+                        <li>Crie e configure uma restrição de segurança chamada <tt>UserConstraint</tt>, fazendo o seguinte:
+                            <ol>
+                                <li>Clique em Adicionar restrição de segurança para criar uma nova restrição de segurança.</li>
+                                <li>Indique <tt>UserConstraint</tt> para o Nome de View da nova restrição de segurança.</li>
+                                <li>Clique em Adicionar para adicionar uma Coleção de Recursos da Web.</li>
+                                <li>Na caixa de diálogo Adicionar Recurso da Web, defina o Nome do Recurso como <tt>User</tt> e o Padrão de URL como <tt>/secureUser/*</tt> e clique em OK.</li>
+                                <li>Selecione Ativar Restrição de Autenticação e clique em Editar para editar o campo Nome da Atribuição.</li>
+                                <li>Na caixa de diálogo Editar Nomes de Atribuições, selecione AdminRole e UserRole no painel esquerdo, clique em Adicionar e em OK. </li>
+                            </ol>
+                            Observação: Você também pode definir o time-out da sessão em web.xml. Para definir o time-out, clique na guia Geral do Editor Visual e especifique quanto tempo você deseja que a sessão dure. O default é 30 minutos.<a name="Form"></a>            
+                    </ol>
+
+                    <!--<li>Add Admin and Tomcat (<span style="color: rgb(204, 51, 204);">User</span>) role</li>-->
+            </ol>
+
+        </div>
+        <h2><a name="sec-dd"></a>Configurando os Descritores de Implantação de Servidor</h2>
+        <p>Se você estiver implantando sua aplicação em um GlassFish Server ou WebLogic Server, será necessário configurar o descritor de implantação de servidor para mapear as atribuições de segurança definidas em <tt>web.xml</tt>. O descritor de implantação de servidor está listado no nó Arquivos de Configuração do seu projeto na janela Projetos. </p>
+        <div class="indent">
+            <h3><a name="gf-dd"></a>Configurando o Descritor de Implantação do GlassFish Server</h3>
+            <p>O descritor de implantação do GlassFish Server é chamado de <tt>glassfish-web.xml</tt>. O descritor de implantação de servidor se encontra na pasta Arquivos de Configuração. Se não for esse o caso, crie o descritor clicando com o botão direito do mouse no nó do projeto e selecionando Novo > Outro > GlassFish > Descritor de Implantação do GlassFish. Aceite todos os defaults.</p>
+            <p>Observe que os valores inseridos em <tt>web.xml</tt> serão exibidos em <tt>glassfish-web.xml</tt>. O IDE pega esses valores do <tt>web.xml</tt> para você.</p>
+            <p><b>Para configurar o descritor de implantação do GlassFish:</b></p>
+            <ol>
+                <li>Na janela Projetos, expanda o nó Arquivos de Configuração do projeto e clique duas vezes em <tt>glassfish-web.xml</tt>. O descritor de implantação do <tt>glassfish-web.xml</tt> será aberto em um editor especial tabulado para descritores de implantação do GlassFish.
+                    <p class="notes"><b>Observação:</b> Em versões do GlassFish Server anteriores à 3.1, esse arquivo é chamado <tt>sun-web.xml</tt>.</p></li>
+                <li>Selecione a guia Segurança para revelar as atribuições de segurança.</li>
+                <li>Selecione o nó da atribuição de segurança AdminRole para abrir o painel Mapeamento de Atribuição de Segurança.</li>
+                <li><p>Clique em Adicionar principal e especifique <tt>admin</tt> como o nome principal. Clique em OK.</p>
+                    <img alt="Caixa de diálogo Adicionar Principal" class="marin-around" height="335" src="../../../images_www/articles/72/web/security/add-principal.png" width="454"></li>
+                <li>Selecione o nó da atribuição de segurança UserRole para abrir o painel Mapeamento de Atribuição de Segurança.</li>
+                <li>Clique em Adicionar Principal e especifique <tt>user</tt> como o nome principal. Clique em OK</li>
+                <li>Salve as alterações em <tt>glassfish-web.xml</tt>.</li>
+            </ol>
+            <p>Também é possível exibir e editar o <tt>glassfish-web.xml</tt> no editor de XML clicando na guia XML. Se você abrir o <tt>glassfish-web.xml</tt> no editor XML, você verá que o <tt>glassfish-web.xml</tt> possui as seguintes informações de mapeamento de atribuição de segurança:</p>
+            <pre class="examplecode"><span class="xml-tag">&lt;security-role-mapping&gt;
+    &lt;role-name&gt;</span>AdminRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>admin<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-mapping&gt;
+&lt;security-role-mapping&gt;
+    &lt;role-name&gt;</span>UserRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>user<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-mapping&gt;</span></pre>
+
+            <!--<a name="jdbc"></a>
+            <h2 class="tutorial">Using JDBC Authorization</h2>
+            <p>If you are deploying your application to the Sun Java System Application Server, you can also configure your application to retrieve the authorization information from a JDBC database table. 
+            Using this method, managing user accounts is much easier than managing user accounts directly on the server.</p>
+            <p>The JDBC authorization method is already supported in <a href="http://glassfish.dev.java.net/downloads/31May06.html">the GlassFish server
+            2.1</a>, but if you are using Sun Java System Application Server 9.0 you need to use a <a
+             href="http://glassfish.dev.java.net/nonav/issues/showattachment.cgi/65/JDBCRealm.jar">precompiled jar</a>.
+            To enable the realm <tt>jdbc-realm</tt> on the Sun Java System Application Server you need to do the following steps. 
+            (The steps are based on <a href="http://glassfish.dev.java.net/issues/show_bug.cgi?id=171">JDBCRealm for the GlassFish server.</a>)</p>
+            <ol>
+              <li>Download <a href="http://glassfish.dev.java.net/nonav/issues/showattachment.cgi/65/JDBCRealm.jar">JDBCRealm.jar</a>.</li>
+              <li>Copy the <tt>jar</tt> to the <tt>lib</tt> directory located in the Sun Java System Application Server installation directory.</li>
+              <li>Add the following to the <tt>login.conf</tt> file located in the <tt><i>&lt;APPSERVER_HOME&gt;</i>/domains/domain1/config/</tt><br>
+            <pre class="examplecode">jdbcRealm {
+            net.java.the GlassFish server.security.auth.realm.jdbc.JDBCLoginModule required;
+            };
+            </pre></li>
+              <li>Start the server and open the Admin Console.</li>
+              <li>In Configuration &gt; Security &gt; Realms, create a new Realm named
+            "jdbc-realm" and enter the following classname:
+            <pre>net.java.the GlassFish server.security.auth.realm.jdbc.JDBCRealm</pre></li>
+             <li>Add the following properties and values to the realm:
+              <ul>
+                <li>jaas-context : jdbcRealm</li>
+                <li>datasource : jdbc/__default</li>
+                <li>user : APP</li>
+                <li>password : APP</li>
+                <li>find user query : A SQL query that return the user's identifier
+            when injected two parameters (username/password), like<br>
+            "SELECT IDENTIFIER FROM PERSON WHERE USERID = ? AND PASSWORD = ?" </li>
+                <li>find-groups-query : A SQL query that return group name(s) when
+            injected the user name, like<br>
+            "SELECT GROUP_NAME FROM PERSON P, GROUP G WHERE P.GROUP_ID = G.ID AND
+            USERID = ?"</li>
+              </ul>
+              <p><b>Note:</b> The user and password are for the Java DB database server bundled with the Sun Java System Application Server.</p>
+              </li>
+              <li>In the Admin Console, locate Application Server/JVM Settings/Path Settings/Classpath suffix and
+            add the following line:<pre> ${com.sun.aas.installRoot}/lib/JDBCRealm.jar</pre></li>
+              <li>Create the appropriate tables in <tt>jdbc/__default</tt> and add the proper data to the table.</li>
+            </ol>
+            -->
+            <h3><a name="wl-dd"></a>Configurando o Descritor de Implantação do WebLogic Server</h3>
+            <p>O descritor de implantação do WebLogic é chamado de <tt>weblogic.xml</tt>. Atualmente, o <a href="#gf-dd">suporte para descritores de implantação do GlassFish</a> do IDE não se estende aos descritores de implantação do WebLogic. Portanto, você precisa fazer todas as alterações no <tt>weblogic.xml</tt> manualmente.</p>
+            <p>O descritor de implantação do WebLogic Server se encontra na pasta Arquivos de Configuração. Se não for esse o caso, crie o descritor clicando com o botão direito do mouse no nó do projeto e selecionando Novo > Outro > WebLogic > Descritor de Implantação do WebLogic. Aceite todos os defaults.</p></p>
+            <p class="notes" ><b>Observação:</b> Para obter mais informações sobre a segurança de aplicações Web no WebLogic, incluindo segurança declarativa e programática, consulte <a href="http://download.oracle.com/docs/cd/E21764_01/web.1111/e13711/thin_client.htm" target="_blank">Oracle Fusion Middleware Programming Security for Oracle WebLogic Server.</a>. </p>
+            <p><b>Para configurar o descritor de implantação do WebLogic:</b></p>
+            <ol>
+                <li>Na janela Projetos, expanda o nó Arquivos de Configuração do projeto e clique duas vezes em <tt>weblogic.xml</tt>. O descritor de implantação do <tt>weblogic.xml</tt> será aberto no Editor.</li>
+                <li>Dentro do elemento <tt>&lt;weblogic-web-app></tt>, digite ou cole os seguintes elementos de designação de atribuição de segurança:
+                    <pre class="examplecode"><span class="xml-tag">&lt;security-role-assignment&gt;
+    &lt;role-name&gt;</span>AdminRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>adminGroup<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-assignment&gt;
+&lt;security-role-assignment&gt;
+    &lt;role-name&gt;</span>UserRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>userGroup<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-assignment&gt;</span></pre>
+                </li>
+                <li>Salve as alterações em <tt>weblogic.xml</tt>.</li>
+            </ol>
+        </div>
+        <a name="Deploy_run"></a>
+        <h2 class="tutorial">Implantando e Executando a Aplicação</h2>
+        <p>Na janela Projetos, clique com o botão direito do mouse no nó do projeto e selecione Executar.</p>
+        <p class="notes"><b>Observação:</b> Por default, o projeto foi criado com a funcionalidade Compilar ao Salvar ativado, então, não é necessário compilar o código primeiro para executar a aplicação no IDE. Para obter mais informações sobre a funcionalidade Compile on Save, consulte <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG510">Building Java Projects</a> no <em>Developing Applications with NetBeans IDE User's Guide</em>.</p>
+        <p>Após a construção e a implantação da aplicação no servidor, a página inicial será aberta no seu Web browser. Selecione a área segura que deseja acessar, clicando em <b>admin</b> ou <b>user</b>.</p>
+        <img alt="Aplicação Implantada 1" border="0" class="margin-around" height="385" src="../../../images_www/articles/72/web/security/deploy1.png" width="459">
+        <p>Após o fornecimento de usuário e senha, existem três resultados possíveis:
+        <ul>
+            <li><p>A senha deste usuário está correta e o usuário tem privilégios para o conteúdo protegido -> a página de conteúdo protegido será exibida</p><img alt="Área Protegida do Usuário" border="0" class="margin-around" height="385" src="../../../images_www/articles/72/web/security/deploy2.png" width="459"></li>
+            <li><p>A senha deste usuário está incorreta -> A página de erro será exibida</p><img alt="Página de Erro de Log-in" border="0" class="margin-around" height="398" src="../../../images_www/articles/72/web/security/deploy3.png" width="484"></li>
+            <li><p>A senha deste usuário está correta, mas o usuário não tem direito a acessar o conteúdo protegido -> o browser exibe Erro 403 O acesso ao recurso solicitado foi negado</p><img alt="Acesso Negado" border="0" class="margin-around" height="438" src="../../../images_www/articles/72/web/security/deploy4.png" width="510"></li>
+        </ul>
+        <h2><a name="06"></a>Resumo</h2>
+        <p>Neste tutorial, você criou uma aplicação Web protegida. Você editou as definições de segurança usando os editores de Descritor web.xml e glassfish-web.xml, criando páginas Web com log-ins seguros e diversas identidades.</p>
+
+        <br>
+        <h2>Consulte Também</h2>
+        <ul>
+
+            <li><a href="quickstart-webapps.html">Introdução ao Desenvolvimento de Aplicações Web</a></li>
+            <li><a href="../../trails/java-ee.html">Trilha de Aprendizado do Java EE e Java Web</a></li>
+        </ul>
+        <hr class="light">
+        <br>
+        
+        <table class="b-none" cellpadding="10" cellspacing="0" width="100%">
+            <!-- BEGIN SPACER ROW -->
+            <tr>
+                <td><br>
+                    <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback: Securing a Web Application">Enviar Feedback neste Tutorial</a></div>
+                    <br style="clear:both;" />
+
+
+                    <br style="clear:both;" />
+                </td>
+            </tr>
+            <!-- END SPACER ROW -->
+        </table>
+        <!-- END WRAPPER TABLE, 2 COLUMN, MAIN/RIGHT -->
+    </body>
+</html>
+
+</body>
+</html>

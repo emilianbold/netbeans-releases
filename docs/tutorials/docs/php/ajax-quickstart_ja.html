@@ -1,0 +1,1026 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief introduction to Ajax using the NetBeans IDE, PHP bundle">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Ajax,
+            XMLHttpRequest, XMLHttpRequest object, callback function, asynchronous, asynchronous,
+            JavaScript, JavaScript editor, PHP, PHP editor, XML, open source">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>PHP WebアプリケーションでのAjax入門 - NetBeans IDEチュートリアル</title>
+    </head>
+
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>PHP WebアプリケーションでのAjax入門</h1>
+
+        <p>このドキュメントでは、Ajaxの概要を説明し、Ajax関連のテクノロジを使用するときにより短時間で効率よくプログラミングできるNetBeans IDEの機能を示します。Ajaxの基本的な機能を学びながら、テキスト・フィールドの自動補完を行う単純なアプリケーションをビルドします。このドキュメントでは、<a href="http://weblogs.java.net/blog/gmurray71/archive/2005/12/using_ajax_with_1.html" target="_blank">Javaテクノロジを使用するAjaxの使用</a>に公開しているGreg Murrayの記事とサンプル・アプリケーションを使用します。</p>
+
+        <p>Ajaxは「Asynchronous JavaScript and XML」(非同期JavaScriptとXML)の略です。Ajaxは基本的に、ユーザーによるWebページの操作をWebアプリケーションで効率的に処理する方法であり、ユーザーが操作するたびにページをリフレッシュしたり、ページ全体を再ロードしたりする必要を減らします。その結果、デスクトップ・アプリケーションやプラグインに基づいたWebアプリケーションのような、ブラウザを使用したスムーズな操作が可能になります。Ajaxの相互作用はバックグラウンドで非同期で処理されます。このとき、ユーザーはページの操作を続けることができます。Ajaxの相互作用はJavaScriptコードによって開始されます。Ajaxの相互作用が完了したら、JavaScriptがそのページのHTMLソースを更新します。変更は、ページをリフレッシュすることなく、すぐに反映されます。Ajaxの相互作用を使用して、ユーザーがフォームに入力している間にサーバー側ロジックを使用してフォーム・エントリを検証したり、サーバーから詳細なデータを取り出したり、ページ上のデータを動的に更新したり、ページから部分フォームを送信したりできます。</p>
+
+
+        <p><strong>目次</strong></p>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#overview">アプリケーションの概要</a></li>
+            <li><a href="#client1">クライアント側のプログラミング: 第1部</a>
+                <ul>
+                    <li><a href="#html">HTMLエディタの使用</a></li>
+                    <li><a href="#javascript">JavaScriptエディタの使用</a></li>
+                </ul></li>
+            <li><a href="#serverside">サーバー側のプログラミング</a>
+                <ul>
+                    <li><a href="#data">データ・ストアの作成</a></li>
+                    <li><a href="#business">ビジネス・ロジックの作成</a></li>
+                </ul>
+                    </li>
+            <li><a href="#client2">クライアント側のプログラミング: 第2部</a>
+                <ul>
+                    <li><a href="#callback">コールバック機能の追加</a></li>
+                    <li><a href="#htmldom">HTML DOMの更新</a></li>
+                    <li><a href="#stylesheet">スタイル・シートの添付</a></li>
+                </ul></li>
+            <li><a href="#conclusion">まとめ</a></li>
+            <li><a href="#seeAlso">関連項目</a></li>
+        </ul>
+
+        <p><strong>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                  <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDEのPHPバンドル版</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.php.net/downloads.php">PHPエンジン</a></td>
+                    <td class="tbltd1">PHP5</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://httpd.apache.org/download.cgi">Apache Webサーバー</a></td>
+                    <td class="tbltd1">2.2</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>注意: </strong></p>
+
+        <ul>
+            <li>使用しているオペレーティング・システムによっては、*AMPパッケージを使用してPHPの開発環境を構成できる場合があります。このパッケージにはPHPエンジンとApache Webサーバーが含まれます。環境の構成方法については、<a href="../../trails/php.html">PHPの学習</a>を参照してください。</li>
+
+            <li>このチュートリアルは、使用する各テクノロジ(HTML、CSS、JavaScript、およびPHPなど)に関する実用的な知識がある方を対象としています。コードによって提供される機能の概要は説明しますが、コード行ごとの処理は<em>説明しません</em>。</li>
+
+            <li>プロジェクトを、正常に機能するソリューションと比較する必要がある場合は、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip" target="_blank">サンプル・アプリケーションをダウンロード</a>できます。IDEの新規プロジェクト・ウィザード([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])で「PHP」を選択し、「既存のソースを使用するPHPアプリケーション」プロジェクト・タイプを選択します。ウィザードで、コンピュータにダウンロードされているソースを指定します。</li>
+        </ul>
+
+
+        <br>
+        <h2 id="overview">アプリケーションの概要</h2>
+
+        <p>ユーザーが作曲家に関する情報を検索できるWebページを考えます。このページには、ユーザーが作曲家の名前を入力できるフィールドがあります。サンプル・アプリケーションのエントリ・フィールドには、オートコンプリート機能があります。つまり、ユーザーが作曲家の名前の一部を入力すると、Webアプリケーションでは、入力した文字から名または姓のいずれかが始まるすべての作曲家のリストを表示してその名前を補完します。オートコンプリート機能によってユーザーは作曲家の名前を完全に覚えている必要がなく、また求めている情報を直観的かつ容易に入手できます。</p>
+
+        <div class="indent">
+            <img alt="ブラウザに表示されたサンプル・アプリケーション" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/sample-app.png" title="ブラウザに表示されたサンプル・アプリケーション">
+        </div>
+
+        <p>検索フィールドへの自動補完の実装は、Ajaxを使用して実行できます。Ajaxは、<code>XMLHttpRequest</code>オブジェクトを使用してクライアントとサーバーの間でリクエストとレスポンスを非同期で受け渡しすることで機能します。次の図は、クライアントとサーバーの間で行われる通信のプロセス・フローを示します。</p>
+
+        <div id="flow-diagram" class="indent">
+            <img alt="Ajaxのプロセス・フロー図" class="margin-around" src="../../../images_www/articles/73/web/ajax-intro/ajax-process-flow.png" title="Ajaxのプロセス・フロー図">
+        </div>
+
+        <br>
+        <p>この図には、次の手順のプロセス・フローを示しています。</p>
+
+        <ol>
+            <li>ユーザーが、たとえば名前を入力しているときにキーを解除して、イベントをトリガーします。すると、<code>XMLHttpRequest</code>オブジェクトを初期化する関数へのJavaScriptコールが行われます。</li>
+
+            <li><code>XMLHttpRequest</code>オブジェクトが、イベントをトリガーしたコンポーネントのIDを含むリクエスト・パラメータと、ユーザーが入力した値で構成されます。次に、<code>XMLHttpRequest</code>オブジェクトがWebサーバーへの非同期リクエストを実行します。</li>
+
+            <li>Webサーバーでは、サーブレットやリスナーなどのオブジェクトがリクエストを処理します。データ・ストアからデータが取り出され、XMLドキュメント形式のデータを含むレスポンスが作成されます。</li>
+
+            <li>最後に、コールバック関数を使用して<code>XMLHttpRequest</code>オブジェクトがXMLデータを受け取って処理し、新しいデータを含むページを表示するようにHTMLのDOM (Document Object Model)を更新します。</li>
+        </ol>
+
+        <p>このチュートリアルでは、前述の図で示したプロセス・フローに従ってオートコンプリートのシナリオを構築する方法を示します。最初に、プレゼンテーション用、および<code>XMLHttpRequest</code>オブジェクトの生成に必要な機能用のクライアント側ファイルを作成します。次に、PHPベースのテクノロジを使用してデータ・ストアとビジネス・ロジックを作成してサーバー側を設定します。最後に、クライアント側に戻り、<code>callback()</code>と、HTMLのDOMを更新するためのその他のJavaScript機能を実装します。</p>
+
+
+        <br>
+        <h2 id="client1">クライアント側のプログラミング: 第1部</h2>
+
+        <p>最初に、IDEで新しいPHPアプリケーション・プロジェクトを作成します。</p>
+
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択します。「カテゴリ」から「<strong>PHP</strong>」を選択します。「プロジェクト」で「<strong>PHPアプリケーション</strong>」を選択し、「<strong>次</strong>」をクリックします。</li>
+
+            <li>ステップ2の「名前と場所」で、プロジェクト名に「<code>MyAjaxApp</code>」と入力します。「ソース・フォルダ」フィールドでコンピュータ上でのプロジェクトの場所を指定できます。他のオプションはデフォルトのままにして、「<strong>次</strong>」をクリックします。<br> <img alt="新規PHPプロジェクト・ウィザード - 「名前と場所」パネル" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-name-location.png" title="新規PHPプロジェクト・ウィザード - 「名前と場所」パネル"></li>
+
+            <li>ステップ3の「実行構成」で、アプリケーションのデプロイ方法を指定します。*AMPパッケージを構成してPHP開発環境を設定した場合は、ドロップダウン・リストから「<strong>ローカルWebサイト</strong>」を選択し、ブラウザに表示するプロジェクトのURLを指定します。</li>
+
+            <li>「ファイルをソース・フォルダから別の場所にコピー」オプションを選択します。次に、「フォルダにコピー」フィールドに、サーバー上のデプロイ先のパスを入力します。(Apacheでは、デフォルトの<code>htdocs</code>ディレクトリを使用します。)<br><a href="../../../images_www/articles/73/web/ajax-intro/php-run-config.png"><img alt="新規PHPプロジェクト・ウィザード - 「実行構成」パネル" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-run-config.png" style="width:688px" title="クリックして拡大"></a></li>
+
+            <li>「<strong>終了</strong>」をクリックします。IDEによってプロジェクト・フォルダがファイル・システム内に作成され、プロジェクトがIDEで開きます。<br><br>
+                <p class="tips">プロジェクト・ウィザードを使用して、 <!-- Zend and --> 
+                  フレームワークのサポートをプロジェクトに追加することもできます(ウィザードのステップ4)。</p>
+
+              <p>デフォルトの<code>index.php</code>インデックス・ページが生成され、IDEのエディタで開きます。また、「プロジェクト」ウィンドウにプロジェクトが表示されます。</p>
+
+                <img alt="新規作成されたプロジェクトが表示された「プロジェクト」ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-proj-win.png" title="MyAjaxAppプロジェクトが表示された「プロジェクト」ウィンドウ"></li>
+
+                <li>コーディングを始める前に、アプリケーションを実行してみて、IDE、サーバー、ブラウザの間の構成が正しく設定されていることを確認します。<br><br>IDEのエディタで、indexページに次の<code>echo</code>文を追加します。
+
+<pre class="examplecode">
+&lt;?php
+    // put your code here
+    <strong>echo &quot;&lt;h2&gt;Hello World!&lt;/h2&gt;&quot;;</strong>
+?&gt;
+</pre></li>
+
+            <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「実行」を選択します。IDEによってデフォルトのブラウザが開き、<code>index.php</code>で作成したメッセージ「Hello World」が表示されます。<br><br>
+                <p class="notes"><strong>注意:</strong> プロジェクトを設定できない場合、またはIDE、サーバー、およびブラウザ間で通信を確立できない場合は、<a href="project-setup.html">PHPプロジェクトの設定</a>を参照して、詳細な手順を確認してください。環境の構成については、<a href="../../trails/php.html">PHPの学習</a>を参照してください。</p></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="html">HTMLエディタの使用</h3>
+
+            <div class="indent">
+                <img alt="HTML要素が表示されたパレット" class="right margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/palette.png" title="HTML要素が表示されたパレット"> <br>
+                <p class="margin-around">環境が正しく設定されていることを確認したら、まず、ユーザーに表示するオートコンプリート・インタフェースの開発から始めます。作成するインデックス・ページにはサーバー側のスクリプト要素は必要ないため、まずHTMLページを作成し、そのページをアプリケーションのエントリ・ポイントとして設定します。</p>
+
+                <p class="margin-around">IDEを使用する利点の1つは、作業を行うエディタには一般にコード補完機能が用意されていて、コーディングするときに適用すれば生産性を大幅に向上できることです。IDEのエディタは通常、使用しているテクノロジに適応するので、HTMLページで作業しているときにコード補完のキーの組合せ([Ctrl]-[Space])を押すとHTMLのタグと属性の候補が表示されます。後述するように、CSSやJavaScriptなどその他のテクノロジも同様です。</p>
+
+                <p class="margin-around">
+                    IDEのパレットも便利な機能です。パレットには、コーディングするテクノロジで一般的に適用される要素の使いやすいテンプレートが用意されています。項目をクリックして、ソース・エディタで開いているファイル内の任意の位置にドラッグするのみです。</p>
+
+                <p class="tips margin-around">この図のように大きなアイコンを表示するには、パレット内を右クリックし、「大きなアイコンを表示」を選択します。</p>
+            </div>
+
+            <br clear="all">
+            <ol>
+                <li>「プロジェクト」ウィンドウで「<code>MyAjaxApp</code>」プロジェクト・ノードを右クリックし、「新規」>「HTMLファイル」を選択します。</li>
+
+                <li>HTMLファイル・ウィザードで、ファイル名に「<code>index</code>」と入力し、「<strong>終了</strong>」をクリックします。新しい<code>index.html</code>ファイルがエディタで開きます。</li>
+
+                <li>このファイルの既存の内容を次の内容に置き換えます。
+
+<pre class="examplecode">
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;Auto-Completion using AJAX&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Auto-Completion using AJAX&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre></li>
+
+                <li>テキスト・フィールドの目的を説明するテキストを追加します。次のテキストをコピーして、<code>&lt;h1></code>タグのすぐ下に貼り付けることもできます。
+
+<pre class="examplecode">
+&lt;p&gt;This example shows how you can do real time auto-completion using Asynchronous
+    JavaScript and XML (Ajax) interactions.&lt;/p&gt;
+
+&lt;p&gt;In the form below enter a name. Possible names that will be completed are displayed
+    below the form. For example, try typing in &quot;Bach,&quot; &quot;Mozart,&quot; or &quot;Stravinsky,&quot;
+    then click on one of the selections to see composer details.&lt;/p&gt;
+</pre>
+                </li>
+
+                <li>ページにHTMLフォームを追加します。この操作を行うには、IDEのパレットに表示されている要素を使用します。パレットが開いていない場合は、メイン・メニューから「ウィンドウ」>「パレット」を選択します。次に「HTMLフォーム」の下にある「フォーム」要素をクリックし、ページ内に追加した<code>&lt;p></code>タグの下までドラッグします。「挿入フォーム」ダイアログ・ボックスが表示されます。次の値を指定します。<br><br>
+                    <ul>
+                        <li>アクション: autocomplete.php</li>
+                        <li>メソッド: GET</li>
+                        <li>名前: autofillform</li>
+                    </ul>
+
+                    <img alt="「挿入フォーム」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-insert-form.png" title="「挿入フォーム」ダイアログ">
+
+                    <p>「OK」をクリックします。指定した属性を含むHTMLの<code>&lt;form></code>タグがページに挿入されます。(GETはデフォルトで適用されるので、明示的に宣言しません。)</p></li>
+
+                <li>HTML表をページに追加します。パレットの「HTML」カテゴリの下で「表」要素をクリックし、<code>&lt;form></code>タグの間の位置までドラッグします。「挿入表」ダイアログ・ボックスが開きます。次の値を指定します。<br><br>
+                    <ul>
+                        <li>行: 2</li>
+                        <li>列: 2</li>
+                        <li>境界線のサイズ: 0</li>
+                        <li>幅: 0</li>
+                        <li>セルの間隔: 0</li>
+                        <li>セルのパディング: 5</li>
+                    </ul>
+
+                  <img alt="「挿入表」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/insert-table.png" title="「挿入表」ダイアログ">
+                </li>
+
+                <li>ソース・エディタ内を右クリックし、「フォーマット」を選択します。これでコードの体裁が整います。フォームは次のようになります。
+
+<pre class="examplecode">
+&lt;form name=&quot;autofillform&quot; action=&quot;autocomplete.php&quot;&gt;
+  &lt;table border=&quot;0&quot; cellpadding=&quot;5&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/form&gt;
+</pre></li>
+
+                <li>表の1行目の1列目に次のテキストを入力します(<strong>太字</strong>部分が変更箇所)。
+
+<pre class="examplecode">&lt;td&gt;<strong>&lt;strong&gt;Composer Name:&lt;/strong&gt;</strong>&lt;/td&gt;</pre></li>
+
+                <li>1行目の2列目では、パレットから「テキスト入力」フィールドをドラッグしないで、次のコードを手動で入力します。
+
+
+<pre class="examplecode">
+&lt;input type=&quot;text&quot;
+    size=&quot;40&quot;
+    id=&quot;complete-field&quot;
+    onkeyup=&quot;doCompletion();&quot;&gt;
+</pre>
+
+                    入力するときは、IDEに組み込まれているコード補完サポートを使用してみてください。たとえば、「<code>&lt;i</code>」と入力して[Ctrl]-[Space]を押します。カーソルの下に候補のリストが表示され、選択されている要素の説明が上のボックスに表示されます。ソース・エディタでコーディングしているときはいつでも[Ctrl]-[Space]を押して候補を表示できます。候補が1つのみの場合は、[Ctrl]-[Space]を押すと要素名が自動的に補完されます。<br><img alt="ソース・エディタに表示されたコード補完" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/code-completion.png" style="width:688px" title="[Ctrl]-[Space]を押してソース・エディタでトリガーされたコード補完"><br>入力した<code>onkeyup</code>属性はJavaScript関数<code>doCompletion()</code>を指しています。この関数は、フォームのテキスト・フィールド内でキーが押されるたびにコールされ、Ajaxの<a href="#flow-diagram">フロー図</a>に示したJavaScriptコールに対応します。</li>
+
+                <li>JavaScriptエディタでの作業に移る前に、アプリケーションのエントリ・ポイントとして<code>index.php</code>ファイルを新しい<code>index.html</code>ファイルに置き換えます。<br><br>これを行うには、「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「プロパティ」を選択します。「<strong>実行構成</strong>」カテゴリを選択し、「開始ファイル」フィールドに「<code>index.html</code>」と入力します。<img alt="「プロジェクト・プロパティ」ウィンドウ - 実行構成" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-entry-point.png" style="width:688px" title="「プロジェクト・プロパティ」ウィンドウで、アプリケーションのエントリ・ポイントを指定します。"></li>
+
+                <li>「OK」をクリックして変更を保存し、「プロジェクト・プロパティ」ウィンドウを終了します。</li>
+
+                <li>プロジェクトを実行して、ブラウザでどのように表示されるかを確認します。「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/web/ajax-intro/run-project-btn.png">)ボタンをクリックします。<code>index.html</code>ファイルがデフォルトのブラウザに表示されます。<br><img alt="ブラウザに表示されたインデックス・ページ" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/index-page.png" style="width:688px" title="プロジェクトを実行してブラウザに現在の状態を表示">
+                </li>
+            </ol>
+
+
+            <h3 id="javascript">JavaScriptエディタの使用</h3>
+
+            <p>IDEのJavaScriptエディタには、インテリジェントなコード補完、意味解釈の強調表示、名前の即時変更機能とリファクタリング機能など、多数の高度な編集機能が用意されています。IDEでのJavaScriptの編集機能の詳細は、<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG">NetBeans IDEによるアプリケーションの開発ユーザーズ・ガイド</a>の<a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/dev_html_apps.htm#BACFIFIG">JavaScriptファイルの作成</a>を参照してください。詳細は、<a href="http://wiki.netbeans.org/JavaScript" target="_blank">http://wiki.netbeans.org/JavaScript</a>を参照してください。</p>
+
+            <p>JavaScriptのコード補完は、<code>.js</code>ファイル内でコーディングするとき、および他のテクノロジ(HTML、RHTML、JSP、PHPなど)を使用しているときに<code>&lt;script></code>タグ内で自動的に提供されます。JavaScriptエディタの使用中は、IDEによって、JavaScriptの「オプション」パネルで指定するブラウザのタイプとバージョンに従って、ブラウザの互換性情報が表示されます。JavaScriptの「オプション」パネルを開くには、「ツール」>「オプション」(Macの場合は「NetBeans」>「プリファレンス」)を選択してから「その他」>「JavaScript」を選択します。</p>
+
+            <img alt="JavaScriptの「オプション」パネル" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-javascript-options.png" title="JavaScriptの「オプション」パネル">
+
+            <p>IDEでは、Firefox、Internet Explorer、Safari、およびOperaをデフォルトでサポートしています。JavaScriptの「オプション」パネルでは、コード補完を適用するJavaScriptエンジンのバージョンを指定することもできます。</p>
+
+            <p>アプリケーションにJavaScriptファイルを追加し、<code>doCompletion()</code>の実装を始めます。</p>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「新規」>「JavaScriptファイル」を選択します。(「JavaScriptファイル」がリストにない場合は「その他」を選択します。次に、新規ファイル・ウィザードで「その他」カテゴリから「JavaScriptファイル」を選択します。)</li>
+
+                <li>ファイル名を<code>javascript</code>にし、「終了」をクリックします。新しいJavaScriptファイルが「プロジェクト」ウィンドウに表示され、エディタで開きます。</li>
+
+                <li>次のコードを<code>javascript.js</code>に入力します。
+
+<pre class="examplecode">
+var req;
+var isIE;
+
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+}
+
+function doCompletion() {
+        var url = &quot;autocomplete.php?action=complete&id=&quot; + escape(completeField.value);
+        req = initRequest();
+        req.open(&quot;GET&quot;, url, true);
+        req.onreadystatechange = callback;
+        req.send(null);
+}
+
+function initRequest() {
+    if (window.XMLHttpRequest) {
+        if (navigator.userAgent.indexOf('MSIE') != -1) {
+            isIE = true;
+        }
+        return new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        isIE = true;
+        return new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+    }
+}
+</pre>
+
+
+                    <p class="tips">上のコードは、Firefox 3およびInternet Explorerバージョン6と7の単純なブラウザ互換性チェックを行います。互換性の問題に対してさらに堅牢なコードを取り込むには、<a href="http://www.quirksmode.org" target="_blank">http://www.quirksmode.org</a>の<a href="http://www.quirksmode.org/js/detect.html" target="_blank">ブラウザ検出スクリプト</a>を使用することを検討してください。</p></li>
+
+                <li><code>index.html</code>に戻り、JavaScriptファイルへの参照を<code>&lt;head></code>タグの間に追加します。
+
+<pre class="examplecode">
+&lt;script type=&quot;text/javascript&quot; src=&quot;javascript.js&quot;&gt;&lt;/script&gt;
+</pre>
+
+                    <p class="tips">[Ctrl]-[Tab]を押すと、エディタ内で開いているページを簡単に切り替えることができます。</p></li>
+
+                <li><code>init()</code>へのコールを開始<code>&lt;body></code>タグ内に挿入します。
+
+<pre class="examplecode">
+&lt;body <strong>onload=&quot;init()&quot;</strong>&gt;
+</pre>
+
+                    このようにすると、ページがロードされるたびに<code>init()</code>がコールされます。</li>
+            </ol>
+
+            <p><code>doCompletion()</code>には次の役割があります。</p>
+
+            <ul>
+                <li>サーバー側で利用できるデータを含むURLを作成すること</li>
+                <li><code>XMLHttpRequest</code>オブジェクトを初期化すること</li>
+                <li>非同期リクエストをサーバーに送信するように<code>XMLHttpRequest</code>オブジェクトに要求すること</li>
+            </ul>
+
+            <p><code>XMLHttpRequest</code>オブジェクトはAjaxの中核であり、HTTPを使用してXMLデータを非同期で送信するときの事実上の標準になっています。相互作用が<em>非同期</em>であるということは、リクエストの送信後にブラウザではページ内で引続きイベントを処理できることを意味します。データはバックグラウンドで送信され、ページをリフレッシュしないで自動的にページにロードできます。</p>
+
+            <p><code>XMLHttpRequest</code>オブジェクトは実際には<code>initRequest()</code>で作成し、これは<code>doCompletion()</code>からコールされます。この関数では、ブラウザで<code>XMLHttpRequest</code>を認識できるかどうかを確認し、認識できる場合は<code>XMLHttpRequest</code>オブジェクトを作成します。そうでない場合は、<code>ActiveXObject</code> (Internet Explorer 6で<code>XMLHttpRequest</code>に相当する)を確認し、識別された場合は<code>ActiveXObject</code>を作成します。</p>
+
+            <p>相互作用が非同期であるかどうかに関係なく、<code>XMLHttpRequest</code>オブジェクトを作成するときは、URL、HTTPメソッド(<code>GET</code>または<code>POST</code>)の3つのパラメータを指定します。前述の例では、これらのパラメータは次のとおりです。</p>
+
+            <ul>
+                <li>URL <code>autocomplete.php</code>、およびユーザーが<code>complete-field</code>に入力したテキスト
+
+<pre class="examplecode">var url = &quot;autocomplete.php?action=complete&id=&quot; + escape(completeField.value);</pre></li>
+
+                <li><code>GET</code> (HTTPの相互作用で<code>GET</code>メソッドを使用することを示します)
+                <li><code>true</code> (相互作用は非同期であることを示します)
+
+                    <pre class="examplecode">req.open(&quot;GET&quot;, url, true);</pre></li>
+            </ul>
+
+            <p>相互作用を非同期に設定する場合は、コールバック関数を指定します。この相互作用のコールバック関数は次の文で設定します。</p>
+
+<div class="indent">
+    <div class="indent">
+        <pre class="examplecode">req.onreadystatechange = callback;</pre>
+    </div>
+</div>
+
+            <p>そして、<code>callback()</code>関数を<a href="#callback">後で定義</a>する必要があります。HTTPの相互作用は<code>XMLHttpRequest.send()</code>のコール時に開始します。このアクションは、前述の<a href="#flow-diagram">フロー図</a>でWebサーバーに送信されているHTTPリクエストに対応します。</p>
+        </div>
+
+
+        <br>
+        <h2 id="serverside">サーバー側のプログラミング</h2>
+
+        <p>NetBeans IDEでは、PHPを使用したWeb開発が総合的にサポートされています。*AMPパッケージを使用して開発環境を設定し、IDEで短時間で効率よく編集とデプロイができます。IDEでは、ローカル・サーバーに加えて、FTPまたはSFTPを使用してリモートでも環境を構成できます。また、<a href="http://xdebug.org/" target="_blank">XDebug</a>など外部のデバッガを構成し、IDEの「PHPオプション」ウィンドウから(「ツール」>「オプション」を選択、Macの場合は「NetBeans」>「プリファレンス」を選択し、「PHP」タブを選択)、<a href="http://www.phpunit.de/" target="_blank">PHPUnit</a>を使用した単体テストを設定できます。PHPエディタには、コード補完、構文の強調表示、出現箇所のマーク、リファクタリング、コード・テンプレート、ドキュメントのポップアップ、コード・ナビゲーション、エディタの警告、およびNetBeans 6.9の場合は形式の不正な構文のエラー・バッジなどの、標準の編集機能があります。PHPのサポートのスクリーンキャストについては、<a href="../intro-screencasts.html">NetBeansのビデオ・チュートリアルとデモ</a>のページを参照してください。</p>
+
+        <p>アプリケーションにデータベースが必要な場合、IDEでは、ほとんどの主要なデータベース、特にMySQLがサポートされています。詳細は、<a href="../../articles/mysql.html">NetBeansのMySQLのスクリーンキャスト</a>と<a href="../../../features/ide/database.html">データベース統合の説明</a>を参照してください。</p>
+
+        <p>ここでビルドしているオートコンプリート・アプリケーションのビジネス・ロジックでは、データ・ストアからデータを取り出してリクエストを処理し、レスポンスを作成して送信する必要があります。これは、<code>autocomplete</code>という名前のPHPファイルを使用して、ここで実装します。ファイルのコーディングを始める前に、データ・ストアと、ファイルからデータにアクセスするために必要な機能を設定します。</p>
+
+        <ul>
+            <li><a href="#data">データ・ストアの作成</a></li>
+            <li><a href="#business">ビジネス・ロジックの作成</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="data">データ・ストアの作成</h3>
+
+            <p>この単純なアプリケーションでは、ビジネス・ロジックで<code>composers</code>配列に含まれるエントリからデータを取得できるようにする<code>Composer</code>というクラスを作成します。次に、その配列を使用して作曲家のデータを保持する<code>ComposerData</code>というクラスを作成します。</p>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウで「<code>MyAjaxApp</code>」プロジェクト・ノードを右クリックし、「新規」>「PHPクラス」を選択します。</li>
+
+                <li>クラス名を<code>Composer</code>にし、「終了」をクリックします。クラスが作成され、エディタで開きます。</li>
+
+                <li>次のコードをクラス内に貼り付けます(変更箇所は<strong>太字</strong>で表示)。
+
+<pre class="examplecode">
+&lt;?php
+
+class Composer {
+
+    <strong>public $id;
+    public $firstName;
+    public $lastName;
+    public $category;
+
+    function __construct($id, $firstName, $lastName, $category) {
+        $this-&gt;id = $id;
+        $this-&gt;firstName = $firstName;
+        $this-&gt;lastName = $lastName;
+        $this-&gt;category = $category;
+    }</strong>
+}
+
+?&gt;</pre>
+                </li>
+            </ol>
+
+            <p><code>ComposerData</code>クラスを作成します。</p>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウで「<code>MyAjaxApp</code>」プロジェクト・ノードを右クリックし、「新規」>「PHPクラス」を選択します。</li>
+
+                <li>クラス名を<code>ComposerData</code>にし、「終了」をクリックします。クラスが作成され、IDEのエディタで開きます。</li>
+
+                <li><code>require</code>文をクラスの先頭に追加し、作成した<code>Composer.php</code>クラスをこのクラスが要求するように指定します(変更箇所は<strong>太字</strong>で表示)。
+
+<pre class="examplecode">
+&lt;?php
+
+<strong>require &quot;Composer.php&quot;;</strong>
+
+class ComposerData {
+
+}</pre></li>
+
+                <li>エディタで、次のコードをクラス内に貼り付けます(変更箇所は<strong>太字</strong>で表示)。
+
+<pre class="examplecode">
+&lt;?php
+
+require &quot;Composer.php&quot;;
+
+class ComposerData {
+
+    <strong>public $composers;
+
+    function __construct() {
+        $this-&gt;composers = array(
+            new Composer(&quot;1&quot;, &quot;Johann Sebastian&quot;, &quot;Bach&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;2&quot;, &quot;Arcangelo&quot;, &quot;Corelli&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;3&quot;, &quot;George Frideric&quot;, &quot;Handel&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;4&quot;, &quot;Henry&quot;, &quot;Purcell&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;5&quot;, &quot;Jean-Philippe&quot;, &quot;Rameau&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;6&quot;, &quot;Domenico&quot;, &quot;Scarlatti&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;7&quot;, &quot;Antonio&quot;, &quot;Vivaldi&quot;, &quot;Baroque&quot;),
+
+            new Composer(&quot;8&quot;, &quot;Ludwig van&quot;, &quot;Beethoven&quot;, &quot;Classical&quot;),
+            new Composer(&quot;9&quot;, &quot;Johannes&quot;, &quot;Brahms&quot;, &quot;Classical&quot;),
+            new Composer(&quot;10&quot;, &quot;Francesco&quot;, &quot;Cavalli&quot;, &quot;Classical&quot;),
+            new Composer(&quot;11&quot;, &quot;Fryderyk Franciszek&quot;, &quot;Chopin&quot;, &quot;Classical&quot;),
+            new Composer(&quot;12&quot;, &quot;Antonin&quot;, &quot;Dvorak&quot;, &quot;Classical&quot;),
+            new Composer(&quot;13&quot;, &quot;Franz Joseph&quot;, &quot;Haydn&quot;, &quot;Classical&quot;),
+            new Composer(&quot;14&quot;, &quot;Gustav&quot;, &quot;Mahler&quot;, &quot;Classical&quot;),
+            new Composer(&quot;15&quot;, &quot;Wolfgang Amadeus&quot;, &quot;Mozart&quot;, &quot;Classical&quot;),
+            new Composer(&quot;16&quot;, &quot;Johann&quot;, &quot;Pachelbel&quot;, &quot;Classical&quot;),
+            new Composer(&quot;17&quot;, &quot;Gioachino&quot;, &quot;Rossini&quot;, &quot;Classical&quot;),
+            new Composer(&quot;18&quot;, &quot;Dmitry&quot;, &quot;Shostakovich&quot;, &quot;Classical&quot;),
+            new Composer(&quot;19&quot;, &quot;Richard&quot;, &quot;Wagner&quot;, &quot;Classical&quot;),
+
+            new Composer(&quot;20&quot;, &quot;Louis-Hector&quot;, &quot;Berlioz&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;21&quot;, &quot;Georges&quot;, &quot;Bizet&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;22&quot;, &quot;Cesar&quot;, &quot;Cui&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;23&quot;, &quot;Claude&quot;, &quot;Debussy&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;24&quot;, &quot;Edward&quot;, &quot;Elgar&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;25&quot;, &quot;Gabriel&quot;, &quot;Faure&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;26&quot;, &quot;Cesar&quot;, &quot;Franck&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;27&quot;, &quot;Edvard&quot;, &quot;Grieg&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;28&quot;, &quot;Nikolay&quot;, &quot;Rimsky-Korsakov&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;29&quot;, &quot;Franz Joseph&quot;, &quot;Liszt&quot;, &quot;Romantic&quot;),
+
+            new Composer(&quot;30&quot;, &quot;Felix&quot;, &quot;Mendelssohn&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;31&quot;, &quot;Giacomo&quot;, &quot;Puccini&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;32&quot;, &quot;Sergei&quot;, &quot;Rachmaninoff&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;33&quot;, &quot;Camille&quot;, &quot;Saint-Saens&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;34&quot;, &quot;Franz&quot;, &quot;Schubert&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;35&quot;, &quot;Robert&quot;, &quot;Schumann&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;36&quot;, &quot;Jean&quot;, &quot;Sibelius&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;37&quot;, &quot;Bedrich&quot;, &quot;Smetana&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;38&quot;, &quot;Richard&quot;, &quot;Strauss&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;39&quot;, &quot;Pyotr Il'yich&quot;, &quot;Tchaikovsky&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;40&quot;, &quot;Guiseppe&quot;, &quot;Verdi&quot;, &quot;Romantic&quot;),
+
+            new Composer(&quot;41&quot;, &quot;Bela&quot;, &quot;Bartok&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;42&quot;, &quot;Leonard&quot;, &quot;Bernstein&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;43&quot;, &quot;Benjamin&quot;, &quot;Britten&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;44&quot;, &quot;John&quot;, &quot;Cage&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;45&quot;, &quot;Aaron&quot;, &quot;Copland&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;46&quot;, &quot;George&quot;, &quot;Gershwin&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;47&quot;, &quot;Sergey&quot;, &quot;Prokofiev&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;48&quot;, &quot;Maurice&quot;, &quot;Ravel&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;49&quot;, &quot;Igor&quot;, &quot;Stravinsky&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;50&quot;, &quot;Carl&quot;, &quot;Orff&quot;, &quot;Post-Romantic&quot;),
+        );
+    }</strong>
+}
+
+?&gt;
+</pre>
+                </li>
+            </ol>
+
+
+            <h3 id="business">ビジネス・ロジックの作成</h3>
+
+            <p>受信リクエストによって受け取る<code>autocomplete</code> URLを処理するロジックを実装します。前の項で説明したように、ファイル・ウィザードを使用して新しいPHPファイルを作成するかわりに、ここでは既存の<code>index.php</code>ファイルを変更します。</p>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウで<code>index.php</code>ファイル・ノードをクリックします。ファイル名が編集可能になり、名前を変更できるようになります。<br> <img alt="編集可能なファイル名が表示された「プロジェクト」ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/edit-file-name.png" title="ファイル・ノードをクリックして名前を編集"></li>
+
+                <li>ファイル名を<code>autocomplete</code>にし、[Enter]を押します。新しい<code>autocomplete.php</code>ファイルをダブルクリックし、エディタに表示します。</li>
+
+                <li>このファイルの既存のコードを次のスクリプトに置き換えます。
+
+<pre class="examplecode">
+&lt;?php
+
+require_once(&quot;ComposerData.php&quot;);
+
+session_start();
+
+$composerData = new ComposerData();
+$composers = $composerData-&gt;composers;
+
+$results = array();
+$namesAdded = false;
+
+// simple matching for start of first or last name, or both
+if(isset($_GET['action']) && $_GET['action'] == &quot;complete&quot;) {
+    foreach($composers as $composer) {
+        if(!is_numeric($_GET['id']) &&
+
+            // if id matches first name
+            (stripos($composer-&gt;firstName, $_GET['id']) === 0 ||
+
+            // if id matches last name
+            stripos($composer-&gt;lastName, $_GET['id']) === 0) ||
+
+            // if id matches full name
+            stripos($composer-&gt;firstName.&quot; &quot;.$composer-&gt;lastName, $_GET['id']) === 0) {
+
+                $results[] = $composer;
+        }
+    }
+
+    // prepare xml data
+    if(sizeof($results) != 0) {
+        header('Content-type: text/xml');
+        echo &quot;&lt;composers&gt;&quot;;
+        foreach($results as $result) {
+            echo &quot;&lt;composer&gt;&quot;;
+            echo &quot;&lt;id&gt;&quot; . $result-&gt;id . &quot;&lt;/id&gt;&quot;;
+            echo &quot;&lt;firstName&gt;&quot; . $result-&gt;firstName . &quot;&lt;/firstName&gt;&quot;;
+            echo &quot;&lt;lastName&gt;&quot; . $result-&gt;lastName . &quot;&lt;/lastName&gt;&quot;;
+            echo &quot;&lt;/composer&gt;&quot;;
+        }
+        echo &quot;&lt;/composers&gt;&quot;;
+    }
+}
+
+// if user chooses from pop-up box
+if(isset($_GET['action']) && isset($_GET['id']) && $_GET['action'] == &quot;lookup&quot;) {
+    foreach($composers as $composer) {
+        if($composer-&gt;id == $_GET['id']) {
+            $_SESSION [&quot;id&quot;] = $composer-&gt;id;
+            $_SESSION [&quot;firstName&quot;] = $composer-&gt;firstName;
+            $_SESSION [&quot;lastName&quot;] = $composer-&gt;lastName;
+            $_SESSION [&quot;category&quot;] = $composer-&gt;category;
+
+            header(&quot;Location: composerView.php&quot;);
+        }
+    }
+}
+
+?&gt;</pre>
+                </li>
+            </ol>
+            <p class="notes"><strong>注意: </strong> composerView.phpファイルについては、このチュートリアルでは説明しません。そのようなファイルを作成して検索の最終結果を確認できます。ファイルのサンプルは、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip" target="_blank">sample application</a>に含まれています。</p>
+            <p>このように、Ajax処理用のサーバー側コードを記述するために新たに学習することはありません。XMLドキュメントを交換する場合は、レスポンスのコンテンツ・タイプを<code>text/xml</code>に設定します。Ajaxでは、プレーン・テキストを交換でき、クライアントのコールバック関数によって評価または実行できるJavaScriptのスニペットを交換することもできます。一部のブラウザでは結果がキャッシュに保存される場合があるので、Cache-Control HTTPヘッダーを<code>no-cache</code>に設定する必要がある場合もあります。</p>
+
+            <p>この例では、<code>autocomplete.php</code>ファイルによってXMLドキュメントが生成され、このXMLドキュメントには、名または姓のいずれかがユーザーが入力した文字で始まる作曲家がすべて含まれています。このドキュメントは、前述の<a href="#flow-diagram">フロー図</a>に示すXMLデータに対応します。<code>XMLHttpRequest</code>オブジェクトに返されるXMLドキュメントの例を示します。</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;composers&gt;
+    &lt;composer&gt;
+        &lt;id&gt;12&lt;/id&gt;
+        &lt;firstName&gt;Antonin&lt;/firstName&gt;
+        &lt;lastName&gt;Dvorak&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;45&lt;/id&gt;
+        &lt;firstName&gt;Aaron&lt;/firstName&gt;
+        &lt;lastName&gt;Copland&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;7&lt;/id&gt;
+        &lt;firstName&gt;Antonio&lt;/firstName&gt;
+        &lt;lastName&gt;Vivaldi&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;2&lt;/id&gt;
+        &lt;firstName&gt;Arcangelo&lt;/firstName&gt;
+        &lt;lastName&gt;Corelli&lt;/lastName&gt;
+    &lt;/composer&gt;
+&lt;/composers&gt;
+</pre>
+                </div>
+            </div>
+        </div>
+
+
+        <br>
+        <h2 id="client2">クライアント側のプログラミング: 第2部</h2>
+
+        <p>サーバーのレスポンスを処理するコールバック関数を定義し、ユーザーに表示するページに変更を反映するために必要な機能を追加する必要があります。そのためには、HTMLのDOMを変更する必要があります。最後に、IDEのCSSエディタを使用して、単純なスタイル・シートをプレゼンテーションに追加できます。</p>
+
+        <ul>
+            <li><a href="#callback">コールバック機能の追加</a></li>
+            <li><a href="#htmldom">HTML DOMの更新</a></li>
+            <li><a href="#stylesheet">スタイル・シートの添付</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="callback">コールバック機能の追加</h3>
+
+            <p>コールバック関数は、HTTPの相互作用中に<code>XMLHttpRequest</code>オブジェクトの「<code>readyState</code>」プロパティが変化したとき、非同期でコールされます。ここでビルドしているアプリケーションでは、コールバック関数は<code>callback()</code>です。<code>doCompletion()</code>では、<code>callback</code>を関数の「<code>XMLHttpRequest.onreadystatechange</code>」プロパティとして設定しました。ここで、コールバック関数を次のように実装します。</p>
+
+            <ol>
+                <li><code>javascript.js</code>をエディタで開き、次のコードを入力します。
+
+<pre class="examplecode">
+function callback() {
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}
+</pre>
+                </li>
+            </ol>
+
+            <p><code>readyState</code>が「4」のとき、HTTPの相互作用は完了しています。<code>XMLHttpRequest.readState</code>のAPIは、設定できる値が5つあることを示します。これらを次に示します。</p>
+
+            <div class="indent">
+                <div class="indent">
+                    <table style="width:400px">
+                        <thead class="tblheader">
+                            <tr>
+                                <th class="innerpadding"><code>readyState</code>の値</th>
+                                <th class="innerpadding">オブジェクト・ステータスの定義</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbltd0 align-center">
+                            <tr>
+                                <td>0</td>
+                                <td>非初期化</td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>ロード中</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>ロード済</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>対話式</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>完了</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br>
+            <p><code>parseMessages()</code>関数は、<code>XMLHttpRequest.readyState</code>が「4」で、<code>status</code> (リクエストのHTTPステータス・コード定義)が「200」、つまり成功の場合にのみコールされます。<code>parseMessages()</code>は、次の<a href="#htmldom">HTML DOMの更新</a>で定義します。</p>
+
+
+            <h3 id="htmldom">HTML DOMの更新</h3>
+
+            <p>受信するXMLデータは<code>parseMessages()</code>関数で処理します。このとき、<code>appendComposer()</code>、<code>getElementY()</code>、および<code>clearTable()</code>などの補助的関数を使用します。また、オートコンプリート・ボックスとして機能する2番目のHTML表、要素を<code>javascript.js</code>で参照可能にするための要素のIDなど、新しい要素をindexページに追加する必要があります。最後に、<code>index.php</code>内の要素のIDに対応する新しい変数を作成し、前に実装した<code>init()</code>関数で初期化し、<code>index.php</code>がロードされるたびに必要とされる機能を追加します。</p>
+
+            <p class="notes"><strong>注意: </strong>次の手順で作成する関数と要素は、相互に依存して動作します。この項の手順を最後まで行い、コードが完成してからその内容を確認することをお薦めします。</p>
+
+            <ol>
+                <li><code>index.html</code>をエディタで開き、前に作成したHTML表の2行目として次のコードを入力します。
+
+<pre class="examplecode">
+&lt;tr&gt;
+    <strong>&lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+
+    &lt;td/&gt;</strong>
+&lt;/tr&gt;</pre>
+
+                    この新しい行は「<code>auto-row</code>」として識別でき、オートコンプリート・ボックスを形成する新しいHTML表を挿入するための、JavaScriptコード用のハンドルの役割を果たします。</li>
+
+                <li><code>javascript.js</code>をエディタで開き、次の3つの変数をファイルの先頭に追加します。
+
+<pre class="examplecode">
+var completeField;
+var completeTable;
+var autoRow;</pre></li>
+
+                <li>次の<strong>太字</strong>の行を<code>init()</code>関数に追加します。
+
+<pre class="examplecode">
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+    <strong>completeTable = document.createElement(&quot;table&quot;);
+    completeTable.setAttribute(&quot;class&quot;, &quot;popupBox&quot;);
+    completeTable.setAttribute(&quot;style&quot;, &quot;display: none&quot;);
+    autoRow = document.getElementById(&quot;auto-row&quot;);
+    autoRow.appendChild(completeTable);
+    completeTable.style.top = getElementY(autoRow) + &quot;px&quot;;</strong>
+}</pre>
+
+                    <code>init()</code>の目的の1つは、indexページのDOMを変更する他の関数から<code>index.html</code>内の要素にアクセスできるようにすることです。上記のスクリプトは、新しいHTML<code>表</code>を作成し、<code>popupBox</code>クラスを追加して、要素のスタイルを<code>display: none</code>に変更します。最後に、<code>id</code>が<code>auto-row</code>である要素を取得し、ここに新しい<code>表</code>を挿入します。つまり、このコードを実行するときには、変更されたHTMLは次のようになります。
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        <strong>&lt;table class=&quot;popupBox&quot; style=&quot;display: none&quot;&gt;&lt;/table&gt;</strong>
+    &lt;td/&gt;
+&lt;/tr&gt;</pre></li>
+
+                <li><code>appendComposer()</code>を<code>javascript.js</code>に追加します。
+
+ <pre class="examplecode">
+function appendComposer(firstName,lastName,composerId) {
+
+    var row;
+    var cell;
+    var linkElement;
+
+    if (isIE) {
+        completeTable.style.display = 'block';
+        row = completeTable.insertRow(completeTable.rows.length);
+        cell = row.insertCell(0);
+    } else {
+        completeTable.style.display = 'table';
+        row = document.createElement(&quot;tr&quot;);
+        cell = document.createElement(&quot;td&quot;);
+        row.appendChild(cell);
+        completeTable.appendChild(row);
+    }
+
+    cell.className = &quot;popupCell&quot;;
+
+    linkElement = document.createElement(&quot;a&quot;);
+    linkElement.className = &quot;popupItem&quot;;
+    linkElement.setAttribute(&quot;href&quot;, &quot;autocomplete.php?action=lookup&id=&quot; + composerId);
+    linkElement.appendChild(document.createTextNode(firstName + &quot; &quot; + lastName));
+    cell.appendChild(linkElement);
+}</pre>
+
+                    この関数は、表の新しい行を作成し、3つのパラメータによって関数に渡されたデータを使用して作曲家へのリンクを挿入してから、行をindexページの<code>complete-table</code>要素に挿入します。</li>
+
+                <li><code>clearTable()</code>を<code>javascript.js</code>に追加します。
+
+ <pre class="examplecode">
+function clearTable() {
+    if (completeTable.getElementsByTagName("tr").length > 0) {
+        completeTable.style.display = 'none';
+        for (loop = completeTable.childNodes.length -1; loop >= 0 ; loop--) {
+            completeTable.removeChild(completeTable.childNodes[loop]);
+        }
+    }
+}</pre>
+
+                    この関数は<code>complete-table</code>要素の表示を'none'に設定し(非表示にし)、作成された既存の作曲家の名前エントリを除去します。</li>
+
+                <li><code>getElementY()</code>を<code>javascript.js</code>に追加します。
+
+                <pre class="examplecode">
+function getElementY(element){
+
+    var targetTop = 0;
+
+    if (element.offsetParent) {
+        while (element.offsetParent) {
+            targetTop += element.offsetTop;
+            element = element.offsetParent;
+        }
+    } else if (element.y) {
+        targetTop += element.y;
+    }
+    return targetTop;
+}</pre>
+
+                    この関数は、親要素の縦方向表示位置を見つけるために適用します。これは、要素の実際の表示位置はブラウザのタイプとバージョンによって異なることが多いため必要です。<code>complete-table</code>要素は、作曲家の名前が表示されるときに、この要素が存在する表の右下にシフトします。正しい縦方向の配置は<code>getElementY()</code>で決まります。<br><br>
+                    <p class="notes"><strong>注意: </strong><a href="http://www.quirksmode.org/" target="_blank">http://www.quirksmode.org/</a>にある<code>offset</code>に関する<a href="http://www.quirksmode.org/js/findpos.html" target="_blank">説明</a>を参照してください。</p></li>
+
+                <li><code>callback()</code>関数を変更して、サーバーから新しいデータを受け取るたびに<code>clearTable()</code>をコールするようにします。オートコンプリート・ボックスに作曲家のエントリがある場合は、新しいエントリが入力される前に除去されます。
+
+<pre class="examplecode">
+function callback() {
+
+    <strong>clearTable();</strong>
+
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+
+                <li><code>parseMessages()</code>を<code>javascript.js</code>に追加します。
+
+<pre class="examplecode">
+function parseMessages(responseXML) {
+
+    // no matches returned
+    if (responseXML == null) {
+        return false;
+    } else {
+
+        var composers = responseXML.getElementsByTagName(&quot;composers&quot;)[0];
+
+        if (composers.childNodes.length &gt; 0) {
+            completeTable.setAttribute(&quot;bordercolor&quot;, &quot;black&quot;);
+            completeTable.setAttribute(&quot;border&quot;, &quot;1&quot;);
+
+            for (loop = 0; loop &lt; composers.childNodes.length; loop++) {
+                var composer = composers.childNodes[loop];
+                var firstName = composer.getElementsByTagName(&quot;firstName&quot;)[0];
+                var lastName = composer.getElementsByTagName(&quot;lastName&quot;)[0];
+                var composerId = composer.getElementsByTagName(&quot;id&quot;)[0];
+                appendComposer(firstName.childNodes[0].nodeValue,
+                    lastName.childNodes[0].nodeValue,
+                    composerId.childNodes[0].nodeValue);
+            }
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p><code>parseMessages()</code>関数は、<code>autocomplete.php</code>ファイルから返されるXMLドキュメントのオブジェクト表現をパラメータとして受け取ります。この関数はプログラムでXMLドキュメント内を横断し、各エントリの<code>firstName</code>、<code>lastName</code>、および<code>id</code>を抽出して、このデータを<code>appendComposer()</code>に渡します。その結果、<code>complete-table</code>要素の内容が動的に更新されます。たとえば、次のようなエントリが生成され、<code>complete-table</code>に挿入されます。</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td class=&quot;popupCell&quot;&gt;
+        &lt;a class=&quot;popupItem&quot; href=&quot;autocomplete?action=lookup&id=12&quot;&gt;Antonin Dvorak&lt;/a&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+</pre>
+                </div>
+            </div>
+
+            <p><code>complete-table</code>要素の動的な更新は、Ajaxを使用して行われる通信のプロセス・フローの中で最後の手順を表します。この更新は、前述の<a href="#flow-diagram">フロー図</a>のプレゼンテーションに送信されるHTMLとCSSデータに対応します。</p>
+
+
+            <h3 id="stylesheet">スタイル・シートの添付</h3>
+
+            <p>これで、アプリケーションの機能に必要なコードが完成しました。作業の結果を確認するため、今すぐアプリケーションを実行してみてください。</p>
+
+            <ol>
+                <li>プロジェクトを実行して、ブラウザでどのように表示されるかを確認します。「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/web/ajax-intro/run-project-btn.png">)ボタンをクリックします。<code>index.html</code>ファイルがブラウザに表示されます。<br><img alt="スタイル・シートなしでブラウザに表示されたアプリケーション" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/no-css.png" title="スタイル・シートなしでの正常なデプロイメント"></li>
+            </ol>
+
+            <p>アプリケーションにスタイル・シートを添付するには、CSS (Cascading Style Sheet)ファイルを作成し、プレゼンテーション・ページからそのファイルにリンクします。CSSファイルで作業する場合、IDEには、コード補完サポートや、スタイル・シート・ルールの作成に役立つ他のいくつかの機能が提供されています。これには次のものが含まれています。</p>
+
+            <ul>
+                <li><strong>CSSスタイル・ビルダー: </strong>選択したコントロールやウィジェットを使用してルールを作成できるように設計されたインタフェースです(「ウィンドウ」>「その他」>「CSSスタイル・ビルダー」)。</li>
+
+                <li><strong>CSSプレビュー:</strong> ルール内にカーソルを置くと、そのルールの宣言ブロックに従ってサンプル・テキストがレンダリングされるプレビュー・ウィンドウです(「ウィンドウ」>「その他」>「CSSプレビュー」)。</li>
+
+                <li><strong>スタイル・ルール・エディタ: </strong>クラス、ID、HTML要素に基づいてルールを作成し、ドキュメント階層における位置を設定できるダイアログです(CSSエディタのツールバーの左上側にある「ルールを作成」(<img alt="スタイル・ルール・エディタ" src="../../../images_www/articles/73/web/ajax-intro/style-rule-editor-btn.png">)ボタン)。</li>
+            </ul>
+
+            <p class="tips">NetBeans 6.9は、「名前の変更のリファクタリング」機能と「使用状況を検索」機能をサポートしています。これは、CSSファイルのみでなく、CSSコードが埋め込まれているすべてのファイルでサポートされます(HTML、PHPなど)。CSSのクラス、ID、およびタイプ要素を、すべてのプロジェクト・ファイルでリファクタリングできます。このリファクタリングのサポートを利用するには、任意のCSS要素上で[Ctrl]-[R]を押し、表示されたダイアログで名前変更アクションを実行します。また、名前変更アクションを実行する前に、変更をプレビューすることもできます。「使用状況を検索」機能のサポートを利用するには、CSS要素を右クリックし、「使用状況を検索」を選択します。詳細は、<a href="http://wiki.netbeans.org/wiki/index.php?title=NewAndNoteworthy69m1&section=T-25#Web_Languages" target="_blank">NewAndNoteworthy69m1</a>を参照してください。</p>
+
+            <p>スタイル・シートをアプリケーションに添付するには、次の手順を行います:</p>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「新規」>「Cascading Style Sheet」を選択します(「Cascading Style Sheet」が表示されない場合は、「その他」を選択します。次に、新規ファイル・ウィザードで「その他」カテゴリから「Cascading Style Sheet」を選択します。)</li>
+
+                <li>「CSSファイル名」テキスト・フィールドに、「<code>stylesheet</code>」と入力します。</li>
+
+                <li>「終了」をクリックします。新しいファイルが「プロジェクト」ウィンドウに追加され、IDEのエディタで開きます。</li>
+
+                <li><code>stylesheet.css</code>に、次のルールを入力します。IDEのコード補完サポートを利用するには、候補を呼び出したい場所で[Ctrl]-[Space]を押します。
+
+<pre class="examplecode">
+body {
+   font-family: sans-serif;
+   font-size: smaller;
+   padding: 50px;
+   color: #555;
+   width: 650px;
+}
+
+h1 {
+   letter-spacing: 6px;
+   font-size: 1.6em;
+   color: #be7429;
+   font-weight: bold;
+}
+
+h2 {
+   text-align: left;
+   letter-spacing: 6px;
+   font-size: 1.4em;
+   color: #be7429;
+   font-weight: normal;
+   width: 450px;
+}
+
+table {
+   width: 550px;
+   padding: 10px;
+   background-color: #c5e7e0;
+}
+
+td {
+   padding: 10px;
+}
+
+a {
+  color: #be7429;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.popupBox {
+  position: absolute;
+  top: 170px;
+  left: 140px;
+}
+
+.popupCell {
+   background-color: #fffafa;
+}
+
+.popupCell:hover {
+  background-color: #f5ebe9;
+}
+
+.popupItem {
+  color: #333;
+  text-decoration: none;
+  font-size: 1.2em;
+}</pre>
+
+                    <p class="tips">CSSエディタ内を右クリックして「CSSの確認」を選択し、CSSコードの妥当性のチェックを実行します。エラーがあった場合は「出力」ウィンドウ(「ウィンドウ」>「出力」)に表示されます。</p></li>
+
+                <li>エディタで<code>index.html</code>ページに切り替え([Ctrl]-[Tab]を押します)、<code>&lt;head></code>タグの間にスタイル・シートへの参照を追加します。
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;
+</pre></li>
+
+                <li>アプリケーションをもう一度実行します。インデックス・ページが、作成したスタイル・シートを使用してブラウザに表示されます。文字を入力するたびに非同期のリクエストがサーバーに送信され、<code>autocomplete.php</code>によって作成されたXMLデータが返されます。さらに文字を入力すると、新しい一致リストを反映して作曲家の名前の数が減ります。</li>
+
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="conclusion">まとめ</h2>
+
+        <p>これでAjax入門を終了します。ここでは、Ajaxは単にHTTPを使用してバックグラウンドで情報を交換し、その結果に基づいてページを動的に更新していることを学習しました。</p>
+
+        <p>ここでビルドしたアプリケーションは、オートコンプリート・ボックスで作曲家の名前を選択しても何も起こらないなど、完全ではありません。<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip" target="_blank">サンプル・アプリケーションをダウンロード</a>すると、PHPテクノロジを使用して、これを実装する方法を確認できます。また、ユーザーがデータ・ストアにない名前をリクエストしないように検証する方法を検討することもできます。これらの手法については、<a href="../../trails/php.html">NetBeansのPHPの学習</a>にある他のチュートリアルで紹介しています。</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: Introduction to Ajax (PHP)">ご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">関連項目</h2>
+
+        <p><a href="https://netbeans.org/" target="_blank">netbeans.org</a>でのAjaxおよびPHPテクノロジの詳細は、次のリソースを参照してください。</p>
+
+        <ul>
+            <li><a href="wish-list-tutorial-main-page.html">PHPを使用するウィッシュ・リストCRUDアプリケーションの作成</a>。IDEでのPHPのサポートを使用してCRUDアプリケーションを作成する方法を説明する、9つのステップのチュートリアルです。</li>
+            <li><a href="../../docs/web/js-toolkits-jquery.html">jQueryを使用した、Webページの見た目と使いやすさの向上</a>。jQueryコアおよびUIライブラリをNetBeansプロジェクトに統合する方法について説明しています。</li>
+            <li><a href="../../docs/web/js-toolkits-dojo.html">JSONを使用したDojoツリーのArrayListへの接続</a>。JavaOneハンズオン・ラボに基づいて、このドキュメントではDojoツリー・ウィジェットをWebページに統合する方法や、サーバー側からJSON形式でツリー・リクエストにレスポンスできるようにする方法について説明しています。</li>
+        </ul>
+
+    </body>
+</html>

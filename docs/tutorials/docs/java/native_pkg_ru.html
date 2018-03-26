@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Создание встроенных пакетов в IDE NetBeans</title>
+     <meta name="KEYWORDS" content="NETBEANS, NATIVE PACKAGING, JAVAFX, JAVA SE">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Native Packaging in NetBeans IDE" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+        <h1>Создание встроенных пакетов в IDE NetBeans</h1>
+		<div class="articledate" style="margin-left: 0px;">Авторы: Петр Сомол (Petr Somol) и Алена Сташкова (Alyona Stashkova)</div>
+        <p>Возможность создания встроенных пакетов была впервые реализована в составе JavaFX 2.2 SDK. Эта возможность позволяет создавать <i>встроенные пакеты</i> приложений и выполнять установку и запуск без внешней зависимости от системы JRE или JavaFX SDK. В дальнейшем эта возможность была добавлена в проекты Java SE.</p>
+		<p> Создание встроенных пакетов не меняет модель разработки приложения. Приложение включается в пакет как есть, вместе со средой выполнения Java, и для него создается установщик, соответствующий используемой операционной системе. Смысл заключается в том, чтобы сделать приложение независимым от любых компонентов, которые могут присутствовать или отсутствовать в среде выполнения Java на целевых машинах. Такой установщик можно запустить на машине, где не установлены никакие компоненты Java, и он успешно установит как само приложение, так и необходимые компоненты среды выполнения Java. Размер таких установщиков достаточно велик, так как даже к демонстрационному приложению "Hello world" прилагается целый комплект артефактов среды выполнения Java.</p>
+		<p>В этом практическом руководстве вы узнаете, как создать установщик <tt>EXE</tt> приложения Java SE и установщик <tt>MSI</tt> приложения JavaFX для операционной системы Windows, используя демонстрационные приложения, поставляемые в комплекте с IDE.</p>
+		<p class="notes"><b>Примечание.</b> </p>
+		<ul><li>Создаваемые установщики <tt>EXE</tt> и <tt>MSI</tt> зависят от платформы и будут работать только в системе, совместимой с целевой платформой Java, для которой созданы установочные пакеты <tt>EXE</tt>/<tt>MSI</tt>. (Например, если установщик <tt>EXE</tt> или <tt>MSI</tt> создан на машине, где установлена 64-разрядная версия платформы JDK, его необходимо запускать на машине под управлением 64-разрядной версии Windows.)</li>
+		<li>В Windows оба приложения установлены в каталог <tt>C:\Users\&lt;username>\AppData\Local\</tt> и доступны в меню 'Пуск'. </li></ul>
+		
+		
+        <p><b>Содержание</b></p>
+   <p><img alt="Содержимое на этой странице применимо к IDE NetBeans 7.4 или 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое на этой странице применимо к IDE NetBeans 7.4 или 8.0"></p>
+<ul>
+		<li><a href="#tool">Установка и добавление необходимых средств в переменную Path</a></li>
+		
+		<li><a href="#se">Создание встроенных пакетов в проектах Java SE</a>
+        <ul>
+        <li><a href="#createse">Настройка проекта Java SE</a></li>
+        <li><a href="#enable">Включение создания встроенных пакетов для проекта</a></li>
+		<li><a href="#buildse">Сборка приложения</a></li>
+		<li><a href="#instse">Создание установщика EXE</a></li>
+        </ul>
+  </li>
+        <li><a href="#fx">Создание независимых пакетов приложений в проектах JavaFX</a>
+        <ul>
+          <li><a href="#createfx">Создание проекта JavaFX</a></li>
+		  <li><a href="#enablefx">Включение создания встроенных пакетов для проекта</a></li>
+		  <li><a href="#buildfx">Сборка приложения</a></li>
+		<li><a href="#instfx">Создание установщика MSI</a></li>	
+		</ul>
+		</li>
+<li><a href="#check">Проверка готовых к установке приложений</a></li>		
+<li><a href="#see">См. также</a></li>
+</ul>
+   
+   <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+   <table>
+     <tbody>
+       <tr>
+         <th width="208" class="tblheader" scope="col">Программное обеспечение или ресурс</th>
+         <th width="218" class="tblheader" scope="col">Требуемая версия</th>
+       </tr>
+       <tr>
+         <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+         <td class="tbltd1">7.4 или 8.0 </td>
+       </tr>
+       <tr>
+         <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javafx/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+       <td class="tbltd1">7 с обновлением 25 (или более поздняя) или 8 </td>
+       </tr>
+	   <tr>
+         <td class="tbltd1"><a href="http://www.jrsoftware.org/" target="_blank">Inno Setup</a></td>
+         <td class="tbltd1">5.5 или более поздняя </td>
+	   </tr>
+	   <tr>
+         <td class="tbltd1"><a href="http://wixtoolset.org/" target="_blank">WiX</a></td>
+         <td class="tbltd1">3.7 или более поздняя </td>
+	   </tr>
+     </tbody>
+   </table>
+   
+	    
+   <div class="indent">
+   <h2><a name="tool"></a>Установка и добавление необходимых средств в переменную Path </h2>
+   <p>Чтобы воспользоваться поддержкой создания встроенных пакетов в IDE, необходимо установить следующие средства:</p>
+   <ul>
+   <li><a href="http://www.jrsoftware.org/" target="_blank">Inno Setup 5.5</a> (или более поздняя версия) требуется для создания установщиков EXE в Windows.</li>
+   <li><a href="http://wixtoolset.org/">WiX 3.7</a> (или более поздняя версия) требуется для создания установщиков MSI в Windows.</li>
+   </ul>
+  
+   <p class="notes"><b>Примечание.</b> Список средств, необходимых для создания установщиков для различных платформ, см. в разделе "<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2508">Упаковка приложения во встроенный установщик</a>" в документе <i>Разработка приложений в IDE NetBeans</i>.</p>
+   
+   <p><b>Установка Inno Setup:</b></p>
+   <ol>
+     <li>Загрузите файл <tt>ispack-5.5.3.exe</tt> со страницы <a href="http://www.jrsoftware.org/isdl.php" target="_blank">Inno Setup Downloads</a>.</li>
+     <li>Дважды щелкните файл, чтобы запустить установщик.</li>
+     <li>Примите условия лицензионного соглашения Inno Setup и нажмите 'Далее'. </li>
+     <li>Установите Inno Setup, следуя инструкциям мастера. </li>
+     </ol>
+	 <p><b>Установка WiX:</b></p>
+     <ol>
+     <li>Загрузите файл <tt>wix37.exe</tt> со страницы <a href="http://wix.codeplex.com/releases/view/99514" target="_blank">WiX Toolset - Download</a>.</li>
+     <li>Дважды щелкните файл, чтобы запустить установщик.</li>
+     <li>Установите WiX, следуя инструкциям мастера. </li>
+     </ol>
+	 <p><b>Добавление Inno Setup и/или WiX в системную переменную Path:</b></p>
+	 <ol>
+	 <li>В Windows 7 выберите Пуск > Компьютер > Свойства > Дополнительные параметры системы.</li>
+	 <li>Перейдите на вкладку 'Дополнительно' и нажмите кнопку 'Переменные среды'.</li>
+	 <li>В области 'Системные переменные' дважды щелкните переменную Path.</li>
+	 <li>В открывшемся диалоговом окне 'Изменение системной переменной' добавьте новый путь в поле 'Значение переменной' (после точки с запятой), например: <tt>C:\Program Files (x86)\Inno Setup 5 </tt> или <tt>C:\Program Files (x86)\WiX Toolset v3.6\bin</tt>. </li>
+	 <li>Нажмите ОК, чтобы закрыть все диалоговые окна.</li>
+	 </ol>
+	 <p class="notes"><strong>Примечания</strong> </p>
+	 <ul>
+	 <li>Проверьте, что установленное средство указано в переменной Path. Для этого откройте окно командной строки и введите <tt>iscc.exe</tt> для Inno Setup или <tt>candle.exe</tt> для WiX. (Если при этом окно командной строки сразу закрывается, попробуйте ввести команду <tt>cmd.exe /c cmd.exe /k iscc.exe</tt> или <tt>cmd.exe /c cmd.exe /k candle.exe</tt> соответственно.)<br> На рисунке показано окно командной строки с результатом, указывающим на успешное добавление Inno Setup в системную переменную Path. 
+     <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/cmd.png" rel="lytebox" title="Командная строка"> <img alt="Командная строка" src="../../../images_www/articles/74/java/native_pkg/cmd_small.png"></a></p></li>
+	 <li>После добавления всех средств в системную переменную Path обязательно перезапустите IDE.</li>
+	 </ul>
+      
+     
+      
+   </div>
+   <h2><a name="se"></a>Создание встроенных пакетов в проектах Java SE</h2>
+   <p>Чтобы воспользоваться поддержкой создания встроенных пакетов в IDE, необходимо выполнить следующие действия: </p>
+   <ul>
+   <li><a href="#createse">Создать проект IDE</a> </li>
+   <li><a href="#enable">Включить поддержку создания встроенных пакетов для проекта</a> </li>
+   <li><a href="#buildse">Очистить и собрать проект</a> </li>
+   <li><a href="#instse">Упаковать приложение в установщик</a> </li>
+   </ul>
+   
+   <div class="indent">
+   <h3><a name="createse"></a>Настройка проекта Java SE</h3>
+   <p>Перед упаковкой приложения в установщик необходимо создать само приложение.</p>
+   <p> Создайте новый проект Java SE на основе образца игры Anagram, поставляемого в комплекте с IDE NetBeans.</p>
+   <p><b>Для создания проекта IDE выполните следующие действия:</b></p>
+   <ol>
+   <li>В меню IDE выберите Файл > Создать проект.</li>
+   <li>В мастере создания проектов разверните категорию 'Образцы' и выберите Java.</li>
+   <li>В списке 'Проекты' выберите 'Игра Anagram'. Затем нажмите кнопку &quot;Дальше&quot;.  
+   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/new_javase_prj.png" rel="lytebox" title="Создание проекта Java SE"> <img alt="Создание проекта Java SE" src="../../../images_www/articles/74/java/native_pkg/new_javase_prj_small.png"></a></p></li>
+   <li>На панели 'Имя и местоположение' оставьте без изменения данные в полях 'Имя проекта' и 'Местоположение проекта'. </li>
+   <li>Нажмите 'Готово'.<br>В IDE создается и открывается проект Java SE.</li>
+   
+   </ol>
+   
+   <p>Чтобы проверить работоспособность проекта, запустите его с помощью команды 'Выполнить >Запуск проекта' в главном меню.<br> На компьютере должно запуститься и отобразиться приложение Anagram.</p>
+	 <p class="align-center">
+		<img alt="Запущенное приложение Anagram" src="../../../images_www/articles/74/java/native_pkg/anagrams.png"></p>
+    <h3><a name="enable"></a>Включение создания встроенных пакетов в IDE</h3>
+       <p>По умолчанию команды создания встроенных пакетов в IDE отключены.</p>
+	   <p>Щелкните правой кнопкой мыши проект AnagramGame в окне 'Проекты' и проверьте, доступны ли для этого проекта Java SE какие-либо действия. Как видите, контекстное меню проекта не содержит команд создания пакетов.</p>
+	   <p class="align-center">
+		<img alt="Контекстное меню без команд создания пакетов" src="../../../images_www/articles/74/java/native_pkg/context_wo_pkg.png"></p>
+       
+       <p><b>Включение создания встроенных пакетов для проекта:</b></p>
+       <ol>
+     <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта и выберите 'Свойства' в контекстном меню.</li>
+     <li>В диалоговом окне 'Свойства проекта' выберите категорию 'Развертывание', затем выберите параметр 'Включить команды создания встроенных пакетов в меню проекта'.
+	   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/enable_native_pkg.png" rel="lytebox" title="Выбранный параметр &apos;Включить создание встроенных пакетов&apos;"> <img alt="Выбранный параметр &apos;Включить создание встроенных пакетов&apos;" src="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_small.png"></a></p></li>
+     <li>Нажмите ОК.<br>В контекстном меню проекта появится команда 'Упаковать'.
+	 <p class="align-center">
+		<img alt="Включенная команда &apos;Упаковать&apos; в контекстном меню" src="../../../images_www/articles/74/java/native_pkg/pkg_enabled.png"></p> </li>
+     
+   </ol>
+   <h3><a name="buildse"></a>Сборка приложения </h3>
+   <p>Теперь нужно очистить и собрать приложение для развертывания.</p>
+   <p><b>Очистка и сборка проекта:</b></p>
+   <ul>
+   <li>Выберите 'Выполнить > Очистить и собрать проект' в главном меню.<br> Результаты выполнения команды отображаются в окне 'Результаты'.
+   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/output.png" rel="lytebox" title="Окно вывода"> <img alt="Окно вывода" src="../../../images_www/articles/74/java/native_pkg/output_small.png"></a></p></li></ul>
+	 <p>В каталоге проекта создается папка <tt>dist</tt> с файлом <tt>jar</tt>.</p>
+   <h3><a name="instse"></a>Создание установщика <tt>EXE</tt> </h3>
+   <p>Теперь можно упаковать приложение в установщик для Windows. </p>
+   <p><b>Сборка установщика <tt>EXE</tt>:</b></p>
+   <ul>
+     <li>Щелкните проект AnagramGame правой кнопкой мыши и выберите 'Упаковать в... > Установщик EXE' в контекстном меню. </li>
+   </ul>
+   <p class="notes"><b>Примечание.</b> IDE создает установщик <tt>EXE</tt>, только если средства Inno Setup <a href="#tool">установлены на компьютере и добавлены в системную переменную Path</a>.</p>
+   <p>IDE отображает ход выполнения и результат процесса упаковки в окне 'Результаты'.</p>
+   <p class="align-center"><a href="../../../images_www/articles/74/java/native_pkg/output_se_exe.png" rel="lytebox" title="Окно &apos;Результаты&apos; отображает ход выполнения сборки установщика EXE"> <img alt="Окно &apos;Результаты&apos; отображает ход выполнения сборки установщика EXE" src="../../../images_www/articles/74/java/native_pkg/output_se_exe_small.png"></a></p>
+	 <p class="notes"><b>Примечание.</b> При отображении хода выполнения IDE изображение на экране может некоторое время не меняться - именно в этот момент в фоновом режиме работает Inno Setup. Процесс упаковки займет некоторое время.</p>
+	 <p>Готовый установщик <tt>EXE</tt> помещается в каталог <tt>AnagramGame/dist/bundles/</tt>. </p>
+	 <p class="align-center"><img alt="Окно &apos;Результаты&apos; отображает ход выполнения сборки установщика EXE" src="../../../images_www/articles/74/java/native_pkg/anagram_exe.png"></p>
+   
+   </div>
+   <h2><a name="fx"></a>Создание независимых пакетов приложений в проектах JavaFX</h2>
+    <div class="indent">
+	<p>Чтобы собрать готовое к установке приложение JavaFX, используя поддержку создания встроенных пакетов в IDE, необходимо выполнить следующие действия. </p>
+	<ul>
+	<li><a href="#createfx">Создать новый проект JavaFX в IDE</a></li>
+	<li><a href="#enablefx">Включить поддержку создания встроенных пакетов для проекта</a></li>
+	<li><a href="#buildfx">Очистить и собрать приложение JavaFX</a></li>
+	<li><a href="#instfx">Собрать готовое к установке приложение JavaFX</a></li>
+	</ul>
+   <h3><a name="createfx"></a>Создание проекта JavaFX</h3>
+   <p>Сначала необходимо создать проект JavaFX на основе образца BrickBreaker, поставляемого в комплекте с IDE. </p>
+   <p><b>Создание проекта JavaFX в IDE:</b></p>
+   <ol>
+   <li>В меню IDE выберите 'Файл > Создать проект'.</li>
+   <li>В мастере создания проектов разверните категорию 'Образцы' и выберите JavaFX.</li>
+   <li>В списке 'Проекты' выберите BrickBreaker. Затем нажмите кнопку &quot;Дальше&quot;.  </li>
+   <li>На панели 'Имя и местоположение' оставьте без изменения данные в полях 'Имя проекта' и 'Местоположение проекта' и 'Платформа JavaFX'. 
+     <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/new_javafx_prj.png" rel="lytebox" title="Создание проекта JavaFX"> <img alt="Создание проекта JavaFX" src="../../../images_www/articles/74/java/native_pkg/new_javafx_prj_small.png"></a></p></li>
+   <li>Нажмите 'Готово'. <br> Проект JavaFX BrickBreaker отображается в IDE в окне 'Проекты'.</li>
+   </ol>
+    <p>Чтобы проверить работоспособность проекта, запустите его с помощью команды 'Выполнить >Запуск проекта (BrickBreaker)' в главном меню.<br> На компьютере должно запуститься и отобразиться приложение Brick Breaker.</p>
+	
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/brickbreaker.png" rel="lytebox" title="Запущенное приложение Brick Breaker"> <img alt="Запущенное приложение Brick Breaker" src="../../../images_www/articles/74/java/native_pkg/brickbreaker_small.png"></a></p>
+   <h3><a name="enablefx"></a>Включение создания встроенных пакетов для проекта</h3>
+   <p>Чтобы воспользоваться поддержкой создания встроенных пакетов для проекта в IDE, необходимо сначала включить эту поддержку.</p>
+   <p> Если щелкнуть проект Brick Breaker правой кнопкой мыши, в контекстном меню не будет команд создания встроенных пакетов. </p>
+    <p class="align-center">
+		<img alt="Контекстное меню без команд создания пакетов" src="../../../images_www/articles/74/java/native_pkg/javafx_wo_pkg.png"></p>
+   <p><b>Включение команд создания встроенных пакетов для проекта в контекстном меню:</b></p>
+       <ol>
+     <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта и выберите 'Свойства' в контекстном меню.</li>
+     <li>В диалоговом окне 'Свойства проекта' в категории 'Сборка' выберите 'Развертывание', затем выберите параметр 'Включить создание встроенных пакетов'.
+	   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_fx.png" rel="lytebox" title="Выбранный параметр &apos;Включить создание встроенных пакетов&apos; в проекте JavaFX"> <img alt="Выбранный параметр &apos;Включить создание встроенных пакетов&apos; в проекте JavaFX" src="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_fx_small.png"></a></p></li>
+     <li>Нажмите ОК.<br>В контекстном меню проекта появится пункт 'Упаковать'.
+	 <p class="align-center">
+		<img alt="Включенная команда &apos;Упаковать&apos; в контекстном меню проекта JavaFX" src="../../../images_www/articles/74/java/native_pkg/pkg_fx_enabled.png"></p> </li>
+     
+   </ol>
+   <h3><a name="buildfx"></a>Сборка приложения </h3>
+   <p>Приложение JavaFX готово к очистке и сборке.</p>
+   <p><b>Очистка и сборка проекта:</b></p>
+   <ul>
+   <li>Выберите 'Выполнить > Очистить и собрать проект' в главном меню.<br> Результаты выполнения команды отображаются в окне 'Результаты'.
+ </li></ul>
+ <p class="notes"><b>Примечание.</b> Если сборка выполнена успешно, но в окне 'Результаты' отображается <tt>предупреждение: [options] путь класса bootstrap не задан в связи с -source 1.6</tt>, необходимо указать JDK 8 в качестве исходного/двоичного формата в свойствах проекта и выполнить повторную очистку и сборку: </p>
+ <ol>
+   <li>Щелкните проект BrickBreaker правой кнопкой мыши в окне 'Проекты' и выберите 'Свойства'. </li>
+   <li>В диалоговом окне 'Свойства проекта' выберите категорию 'Источники'. </li>
+   <li>В списке 'Исходный/двоичный формат' выберите JDK 8 и нажмите ОК. </li>
+   <li>Щелкните проект BrickBreaker правой кнопкой мыши в окне 'Проекты' и выберите 'Очистить и собрать' в контекстном меню.</li>
+ </ol> 
+ 
+   <h3><a name="instfx"></a>Создание установщика <tt>MSI</tt> </h3>
+   <p>Теперь можно упаковать приложение в установочный пакет для определенной операционной системы Windows. </p>
+   <p><b>Сборка установщика <tt>MSI</tt>:</b></p>
+   <ul>
+     <li>Щелкните проект BrickBreaker правой кнопкой мыши и выберите 'Упаковать в... > Установщик MSI' в контекстном меню. </li>
+   </ul>
+   <p class="notes"><b>Примечание.</b> IDE создает установщик <tt>MSI</tt>, только если средства WiX <a href="#tool">установлены на компьютере и добавлены в системную переменную Path</a>.</p>
+   <p>IDE отображает ход выполнения и результат процесса упаковки в окне 'Результаты'.</p>
+   <p class="align-center"><a href="../../../images_www/articles/74/java/native_pkg/output_fx_msi.png" rel="lytebox" title="Окно &apos;Результаты&apos; отображает ход выполнения сборки установщика MSI"> <img alt="Окно &apos;Результаты&apos; отображает ход выполнения сборки установщика MSI" src="../../../images_www/articles/74/java/native_pkg/output_fx_msi_small.png"></a></p>
+	 <p class="notes"><b>Примечание.</b> При отображении хода выполнения IDE изображение на экране может некоторое время не меняться - именно в этот момент в фоновом режиме работает WiX. Процесс упаковки займет некоторое время.</p>
+	 <p>Готовое к установке приложение JavaFX помещается в каталог <tt>BrickBreaker/dist/bundles/</tt>. </p>
+	 <p class="align-center"><img alt="Установщик MSI" src="../../../images_www/articles/74/java/native_pkg/brickbreaker_msi.png"></p>
+   </div>
+   <h2><a name="check">Проверка готовых к установке приложений</a></h2>
+   После создания установщиков <tt>AnagramGame-1.0.exe</tt> и <tt>BrickBreaker-1.0.msi</tt> необходимо проверить, в какой каталог установлены приложения Anagram и BrickBreaker в родной системе.
+   
+   <p><b>Проверка установщиков:</b></p>
+   <ol>
+   <li>Перейдите в каталог с файлом установщика (<tt>AnagramGame-1.0.exe</tt> или <tt>BrickBreaker-1.0.msi</tt>) на жестком диске.</li>
+   <li>Дважды щелкните файл, чтобы запустить установщик. </li>
+   </ol>
+   <p>Оба приложения должны установиться в каталог <tt>C:\Users\&lt;username>\AppData\Local\</tt> и появиться в меню 'Пуск'. </p>
+   <h2><a name="see"></a>См. также</h2>
+   <ul>
+    
+   <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2508">Упаковка приложения как встроенного установщика</a> в документе <i>Разработка приложений в IDE NetBeans</i></li>
+   <li><a href="http://docs.oracle.com/javafx/2/deployment/self-contained-packaging.htm">Развертывание приложений JavaFX. Создание независимых пакетов приложений</a></li>
+   <li><a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/packagingAppsForMac.html">Упаковка приложений Java для распространения на Mac</a></li>
+   </ul>
+   
+   <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Native%20Packaging%20In%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear:both;" >
+
+   <p><a href="../../trails/matisse.html">Возврат к учебной карте</a></p>
+   </body>
+</html>

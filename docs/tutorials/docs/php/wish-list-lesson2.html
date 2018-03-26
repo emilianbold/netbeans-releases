@@ -1,0 +1,343 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+    <title>Creating a Database Driven Application With PHP. Design PHP application. Using HTML input form. PHP implementation of reading from MySQL database</title>
+    <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+    <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Design PHP application. HTML input form. PHP implementation of reading from MySQL database" >
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+            <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+        <script type="text/javascript">
+ 
+function toggle(id) {
+  var e = document.getElementById(id);
+ 
+  if (e.style.display == '')
+    e.style.display = 'none';
+  else
+    e.style.display = '';
+}
+ 
+</script></head>
+<body>
+<h1>Creating a Database Driven Application With PHP </h1>
+<h1>Lesson 2:  Designing the Application. Reading from the Database </h1>
+
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Tutorial contents:</h4>
+<ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Creating a Database Driven Application With PHP - Main page</a></li>
+    <li><p>Creating the Database</p> <ol type="a"><li><a href="wish-list-lesson1.html">Creating a MySQL Database</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Creating Oracle Database Tables</a></li>
+    </ol></li>
+    <li><p><b>=&gt; Designing the Application. Reading from the Database</b></p>
+    <ul><li><a href="#createProject">Creating a PHP Project</a></li>
+    <li><a href="#pageFlowDiagram">Defining a Page Flow Diagram</a></li>
+    
+  <li><a href="#transferDataFromIndexToWishlist">Adding a Form To index.php</a>
+                <li><a href="#createNewFile">Creating wishlist.php and Testing the Application</a></li>
+            
+            <li><a href="#receiveAndProcessDaaInWishlist">Establishing a Connection and Getting the Wisher ID</a></li>
+        
+            <li><a href="#wish-table">Displaying a Table of Wishes</a></li>
+          <li><a href="#lessonResultSourceCode">Application Source Code After the Current Lesson Is Completed</a></li>
+</ul>
+    </li>
+    <li><a href="wish-list-lesson3.html">Creating a New Application User</a></li>
+    <li><a href="wish-list-lesson4.html">Optimizing the Code</a></li>
+    <li><a href="wish-list-lesson5.html">Adding Security. Implementing Application User Logon</a></li>
+    <li><a href="wish-list-lesson6.html">Adding a New Wish to the Database</a></li>
+    <li><a href="wish-list-lesson7.html">Updating and Deleting Entries in the Database</a></li>
+    <li><a href="wish-list-lesson8.html">Making the Application Look Better Using the CSS Technology</a></li>
+    <li><a href="wish-list-lesson9.html">Deploying the Application on a Remote Web Server</a></li>
+</ol>
+</div>
+</div>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<p>In this lesson you create and configure the PHP project to develop your application, create a list of pages in the application, and define the relations between them. You  also develop basic application functionality and test it against the data you entered in the sample database in lesson 1. </p>
+<p>The PHP code you write in this lesson performs the following functions:</p>
+<p>1. Gets the name of a person that the user types in.</p>
+<p>2. Checks whether that person is really in the database. Exits with an error message if the person is not in the database.</p>
+<p>3. Displays a table of that person's wishes.</p>
+<p>The current document is a part of the Creating a Database-Driven Application in the NetBeans IDE for PHP tutorial. </p>
+
+<br style="clear:left">
+
+<h2><a name="createProject"></a>Creating a PHP Project</h2>
+<p>Select File &gt; New Project (Ctrl-Shift-N on Windows and Linux, &#8984;-Shift-N on MacOS). Create a new PHP project named &quot;wishlist&quot;. When you create a PHP project, it contains the index file <tt>index.php</tt> by default. For information on creating and configuring a PHP project, see <a href="project-setup.html">Setting Up a PHP Project</a>. </p>
+<h2><a name="pageFlowDiagram"></a>Defining a Page Flow Diagram </h2>
+The scope of your application covers the following use cases:
+<ol>
+    <li>The user views the wish list of a person.</li>
+    <li>The user registers as a new wisher.</li>
+    <li>The user logs in and creates her/his wish list.</li>
+    <li>The user logs in and edits his/her wish list. </li>
+</ol>
+To cover this basic functionality, you will need to implement the following PHP files:
+<ol>
+    <li>The &quot;front&quot; page index.php for logging in, registering, and switching to wish lists of other users.</li>
+    <li>The wishlist.php page for viewing the wish list of a particular wisher.</li>
+    <li>The createNewWisher.php page for registering as a wisher. </li>
+    <li>The editWishList.php page for editing a wish list by its owner.</li>
+    <li>The editWish.php page for creating and editing wishes. </li>
+</ol>
+<img src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram.png" alt="The diagram shows the planned switches between the pages in various use cases" class="margin-around">
+
+<p>Now that you have finished the preliminary steps, you can start implementing the basic functionality of your application. Start with viewing the wish list of a wisher. This feature does not involve any validations and can be easily tested as you have already entered the test data into the database. The feature's functionality will be implemented on two pages, index.php and wishlist.php.</p>
+
+<h2><a name="transferDataFromIndexToWishlist"></a>Adding a Form To index.php</h2>
+<p>The index.php file will not contain any PHP code so you can easily remove the following block:</p>
+<p>The <tt>index.php</tt> file is used for two purposes:</p>
+<ul>
+    <li>Displaying a page with controls for entering data.</li>
+    <li>Transferring the entered data to another PHP file, where the data is processed. In this tutorial, the data is passed to a file named <tt>wishlist.php</tt>, which you create and code in the next section.</li>
+</ul>
+<p>These actions are performed using an HTML form. Each HTML form contains:</p>
+<ul>
+    <li>A set of fields that correspond to the controls on the page. </li>
+    <li>The "action" that is performed after the user submits the data on the form. The action is represented by the path to the page that processes the data. </li>
+</ul>
+<p><strong>To add a form to index.php:</strong></p>
+<ol>
+  <li>Switch to the Projects window, expand your project node and the Source Files node, and double click the <tt>index.php</tt> file. The <tt>index.php</tt> file opens in the main IDE editor area. The file contains a template for entering HTML and PHP code.
+    <p class="notes"><b>Note: </b>You can ignore warnings from the HTML validator.</p>
+    . </li>
+  <li>Remove the PHP block. The index.php file will not contain any PHP code.<br>
+    <img src="../../../images_www/articles/72/php/wish-list-lesson2/remove-php-block.png" alt="An empty PHP block that can be removed" class="margin-around"></li>
+  <li>Open the Palette from the Window menu or by pressing Ctrl-Shift-8. </li>
+  <li>From the Palette's<strong> HTML Forms</strong> section, drag and drop a Form into the &lt;body&gt; section of <tt>index.php</tt>.
+  <br><img src="../../../images_www/articles/72/php/oracle-wishlist/form-dnd.png" height="254" width="566" class="margin-around" alt="Dragging and dropping an HTML Form element from the Palette into the body of index.php"></li>
+  <li>The Insert Form dialog opens. In the Action field, type the path to the file to which the form will transfer data. In this case, type in <tt>wishlist.php</tt>. (You will create this file in the same location as <tt>index.php</tt>. See <a href="#createNewFile">Creating wishlist.php and Testing the Application</a>.) Select the GET method for transferring data. Give the form an arbitrary name, such as <tt>wishList</tt>. Click OK when you are done.<br>
+  <img src="../../../images_www/articles/72/php/oracle-wishlist/insert-form-dialog.png" height="249" width="430" class="margin-around" alt="Insert Dialog form, filled out">
+  <p>The file now looks like this:</p>
+  <img src="../../../images_www/articles/72/php/oracle-wishlist/blank-form.png" height="271" width="480" class="margin-around" alt="index.php with a form added, no content in the form"></li>
+  <li>Between the opening and closing tags of the form, type the text &quot;Show wish list of: &quot;.</li>
+  <li>Drag a Text Input component from the <strong>HTML Forms</strong> section of the Palette to the space after the text &quot;Show wish list of: 
+
+    &quot;.
+    The Insert Text
+    Input dialog opens.  </li>
+  <li>Name the input <tt>user</tt>. Select input type <tt>text</tt>. Leave all other fields empty and click OK.<br>
+  <img src="../../../images_www/articles/72/php/oracle-wishlist/insert-text-input.png" height="291" width="349" class="margin-around" alt="Insert Text Input dialog">
+  <p>The file now looks like this:</p>
+  <img src="../../../images_www/articles/72/php/oracle-wishlist/form-with-text-input.png" height="248" width="600" class="margin-around" alt="index.php with text input form">  </li>
+  <li>Add a blank line above the &lt;/form&gt; tag. Into this blank line, drag and drop a Button component from the<strong> HTML Forms</strong> section of the Palette.</li>
+  <li>The Insert Button dialog opens. Type <tt>Go</tt> into the Label field and click OK.<br>
+  <img src="../../../images_www/articles/72/php/oracle-wishlist/insert-button-dialog.png" height="246" width="349" class="margin-around" alt="Insert Button dialog, filled in"></li>
+  <li>The form now looks like the code below, with one difference. In the code below, the 
+    <tt>method</tt> attribute is explicit in the &lt;form&gt; tag. NetBeans IDE did not add a method attribute to your form because GET is the default value of this attribute.
+    However, 
+    you might understand the code more easily if the <tt>method</tt> attribute is explicit.
+
+    <pre class="examplecode">&lt;form action=&quot;wishlist.php&quot; method=&quot;GET&quot; name=&quot;wishList&quot;&gt;<br>      Show wish list of: &lt;input type=&quot;text&quot; name=&quot;user&quot; value=&quot;&quot;/&gt;<br>		&lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>&lt;/form&gt;</pre>
+  </li>
+</ol>
+<p>Note the following elements of the form:</p>
+    <ul>
+        <li>The opening &lt;form&gt; tag contains the <tt>action</tt> attribute. The action attribute specifies the file to which the  form transfers data. In this case, the file is named <tt>wishlist.php</tt> and it is in the same folder as <tt>index.php</tt>. (You will create this file in the section <a href="#createNewFile">Creating wishlist.php and Testing the Application</a>.)</li>
+        <li>The opening &lt;form&gt; tag also contains  the method to be applied to transferring data (GET). PHP uses a   <tt>$_GET</tt> or <tt>$_POST</tt> array for the values passed by this form depending on the value of the <tt>method</tt> attribute. In this case, PHP uses <tt>$_GET</tt>.</li>
+        <li>A <tt>text</tt>  input component. This component is a text field for entering the name of the user whose wish list one wants to view. The starting value of the text field is an empty string. The name of this field is <tt>user</tt>. PHP uses the name of the field when creating an array for the values of the field. In this case, the array for the values of this field is <tt>htmlentities($_GET[&quot;user&quot;])</tt>.</li>
+        <li>A <tt>submit</tt> input component with the value &quot;Go&quot;.  The  &quot;submit&quot; type means that the input field appears on the page as a button. The value "Go" is the label of the button. When the user clicks the button, the data in the <tt>text</tt> component is transferred to the file specified in the <tt>action</tt> attribute.</li>
+    </ul>
+<h2><a name="createNewFile" id="createNewFile"></a>Creating  wishlist.php and Testing the Application</h2>
+<p>In <a href="#transferDataFromIndexToWishlist">Adding a Form To index.php</a> you created a form in which the user submits the name of someone  whose wish list the user wants to see. The name is passed to the page <tt>wishlist.php</tt>. However, this page does not exist. If you run <tt>index.php</tt>, you will get a 404: File Not Found error when you submit a name. 
+    In this section, you create <tt>wishlist.php</tt> then test the application.</p>
+<p><strong>To create wishlist.php and test the application:</strong></p>
+<ol>
+    <li>Inside the &quot;wishlist&quot; project you created, click the right mouse button on the Source files node and from the context menu choose New &gt; PHP Web Page. The New PHP Web Page wizard opens.</li>
+    <li>Type <tt>wishlist</tt> in the File Name field and press Finish.<br>
+    </li>
+
+        <li>Click the right mouse button on the Sources node and choose Run Project from the context menu or click the Run Main Project icon <img src="../../../images_www/articles/72/php/wish-list-lesson2/run-main-project-button.png" alt="The Run Main Project button on the toolbar: a green triangle arrow">on the toolbar if you have set your project as Main.
+            <br>
+            <img src="../../../images_www/articles/72/php/wish-list-lesson2/index-php-works.png" alt="The main application page index.php with a Show wish list of edit box and a button Go" class="margin-around">
+        </li>
+        <li>In the Show wish list of: edit box, enter Tom and click Go. An empty page with the following URL appears: http://localhost:90/Lesson2/wishlist.php?user=tom. This URL indicates that your main page works properly. </li>
+</ol>
+<h2><a name="receiveAndProcessDaaInWishlist"></a>Establishing the Connection and Getting the Wisher ID</h2>
+<p>In this section, you first add code to <tt>wishlist.php</tt> that creates a connection to the database. You then add code to retrieve the ID number of the wisher whose name was typed into the <tt>index.php</tt> form.</p>
+<ol>
+<li>Double click the wishlist.php file. The template that opens is different from index.php. Begin and end the file with &lt;html&gt;&lt;/html&gt; and &lt;body&gt;&lt;/body&gt; tags as the file will contain HTML code too.
+    <pre class="examplecode">&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>    &lt;head&gt;<br>        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;<br>        &lt;title&gt;&lt;/title&gt;<br>    &lt;/head&gt;<br>    &lt;body&gt;<br>        &lt;?php<br>        // put your code here<br>        ?&gt;<br>    &lt;/body&gt;<br>&lt;/html&gt;</pre>
+</li>
+<li>To display the title, enter the following code block immediately after the opening &lt;body&gt; tag, before the generated &lt;?php tag:
+    <pre class="examplecode"> Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]).&quot;&lt;br/&gt;&quot;;?&gt;</pre>
+    <p>The code now looks like this:</p>
+        <pre class="examplecode">
+&lt;body&gt;Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]).&quot;&lt;br/&gt;&quot;;?&gt;<br>    &lt;?php<br>
+    // put your code here<br>
+&lt;/body&gt;
+</pre>
+
+    <p>The PHP code block displays the data that is received through the method GET in the field &quot;user&quot;. This data is transferred from <tt>index.php</tt> where the name of the wish list owner Tom was entered in the text field &quot;user&quot;. Repeat the steps from <a href="#createNewFile">Testing index.php</a> to see that wishlist.php works properly.
+    <br>
+<img src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-title-works.png" alt="The wishList.php page shows the text Wish List of Tom" class="margin-around">          </li>
+<li><p><a name="connect-db"></a>Delete the commented section in the template PHP block. In its place, type or paste in the following code. This code opens the connection to the database. </p>
+
+ <p><b>For the MySQL database:</b></p>
+    <pre class="examplecode">$con = mysqli_connect(&quot;localhost&quot;, &quot;phpuser&quot;, &quot;phpuserpw&quot;);<br>if (!$con) {<br>    exit('Connect Error (' . mysqli_connect_errno() . ') '<br>           . mysqli_connect_error());<br>}<br>//set the default client character set <br>mysqli_set_charset($con, 'utf-8');</pre>
+
+<p><b>For the Oracle database:</b></p>
+<pre class="examplecode">$con = oci_connect("phpuser", "phpuserpw", "localhost/XE", "AL32UTF8");
+if (!$con) {
+    $m = oci_error();
+    exit('Connect Error ' . $m['message']);
+}</pre>
+<p>The code attempts to open a connection to the database and gives an error message if there is a failure.</p>
+<p class="notes"><b>Note for Oracle Database users:</b> You may need to alter the database connection in the <tt>oci_connect</tt> command. The standard syntax is "hostname/service name". The connection to an Oracle XE database in this snippet is "localhost/XE" to follow that syntax. </p>
+<p class="notes"><b>Note:</b> You can use NetBeans IDE's code completion for either mysqli or OCI8 functions.</p>
+<img src="../../../images_www/articles/72/php/oracle-wishlist/codecompletion.png" height="107" width="342" class="margin-around" alt="Code completion for MySQL calls"><img src="../../../images_www/articles/72/php/oracle-wishlist/codecompletion-oci.png" alt="Code completion for OCI8 calls" class="margin-around"></li>
+<li><p>Beneath the code to open the connection to the database, in the same PHP block, type or paste the following code. This code retrieves the ID of the wisher whose wish list was requested. If the wisher is not in the database, the code kills/exits the process and displays an error message.</p>
+<p><b>For the MySQL database:</b></p>
+    <pre class="examplecode">mysqli_select_db($con, &quot;wishlist&quot;);<br>
+$user = mysqli_real_escape_string($con, htmlentities($_GET[&quot;user&quot;]));<br>
+$wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot; . $user . &quot;'&quot;);<br>
+if (mysqli_num_rows($wisher) &lt; 1) {
+    exit(&quot;The person &quot; . htmlentities($_GET[&quot;user&quot;]) . &quot; is not found. Please check the spelling and try again&quot;);
+}<br>$row = mysqli_fetch_row($wisher);<br>$wisherID = $row[0];<br>mysqli_free_result($wisher);</pre>
+<p><b>For the Oracle database:</b> (Note that oci8 does not have an equivalent to <tt>mysqli_num_rows</tt>)</p>
+<pre class="examplecode">$query = "SELECT id FROM wishers WHERE NAME = :user_bv";
+$stid = oci_parse($con, $query);
+$user = $_GET['user'];
+
+oci_bind_by_name($stid, ':user_bv', $user);
+oci_execute($stid);
+
+//Because user is a unique value I only expect one row
+$row = oci_fetch_array($stid, OCI_ASSOC);
+if (!$row) {
+    exit("The person " . $user . " is not found. Please check the spelling and try again" );
+}
+$wisherID = $row['ID'];
+oci_free_statement($stid);</pre>
+    <p>The data is selected from the <tt>wishlist</tt> database through the $con connection. The selection criterion is the name received from the index.php as &quot;user&quot;.</p>
+    <p>The syntax of a <tt>SELECT</tt> SQL statement can be briefly described as follows:</p>
+    <ul>
+        <li>After SELECT, specify the fields from which you want to get data. An asterisk (*) stands for all fields.</li>
+        <li>After FROM clause, specify the name of the table from which the data must be retrieved. </li>
+        <li>The WHERE clause is optional. Specify the filter conditions in it.</li>
+    </ul>
+    <p>The mysqli query returns a result object. OCI8 returns an executed statement. In either case, you fetch a row from the result of the executed query and extract the value of the ID row, storing it in the variable <tt>$wisherID</tt>.</p>
+    <p> Lastly, you free the mysqli result or OCI8 statement. You need to free all resources that use a connection before the&nbsp;connection will physically be closed. Otherwise PHP's internal&nbsp;refcounting system will keep the underlying DB connection open even&nbsp;if <tt>$con</tt> is not usable following a <tt>mysqli_close()</tt> or <tt>oci_close()</tt> call. </p>
+    <p class="notes"><b>Security Note:</b> For MySQL, the <tt>htmlentities($_GET[&quot;user&quot;])</tt> parameter is escaped in order to prevent SQL injection attacks. See <a target="_blank" href="http://en.wikipedia.org/wiki/SQL_injection">Wikipedia on SQL injections</a> and the <a target="_blank" href="http://us3.php.net/mysql_real_escape_string">mysql_real_escape_string documentation</a>. Although in the context of this tutorial you are not at risk of harmful SQL injections, it is best practice to escape strings in MySQL queries that would be at risk of such an attack. OCI8 avoids this through bind variables.</p>
+</li></ol>
+
+<p>This PHP block is now complete. If you are using a MySQL database, the <tt>wishlist.php</tt> file now looks like this:</p>
+<pre class="examplecode">Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]) . &quot;&lt;br/&gt;&quot;; ?&gt;<br>
+&lt;?php<br>
+  $con = mysqli_connect(&quot;localhost&quot;, &quot;phpuser&quot;, &quot;phpuserpw&quot;);
+  if (!$con) {
+     exit('Connect Error (' . mysqli_connect_errno() . ') '
+            . mysqli_connect_error());
+  }<br>
+  //set the default client character set 
+  mysqli_set_charset($con, 'utf-8');
+  mysqli_select_db($con, &quot;wishlist&quot;);
+  $user = mysqli_real_escape_string($con, htmlentities($_GET[&quot;user&quot;]));
+  $wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot; . $user . &quot;'&quot;);
+  if (mysqli_num_rows($wisher) &lt; 1) {
+     exit(&quot;The person &quot; . htmlentities($_GET[&quot;user&quot;]) . &quot; is not found. Please check the spelling and try again&quot;);
+  }
+  $row = mysqli_fetch_row($wisher);
+  $wisherID = $row[0];
+  mysqli_free_result($wisher);
+  ?&gt;</pre>
+<p>If you are using an Oracle database, the <tt>wishlist.php</tt> file now looks like this:</p>
+
+<pre class="examplecode">Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]) . &quot;&lt;br/&gt;&quot;; ?&gt;
+  &lt;?php
+  $con = oci_connect(&quot;phpuser&quot;, &quot;phpuserpw&quot;, &quot;localhost/XE&quot;, &quot;AL32UTF8&quot;);
+  if (!$con) {
+     $m = oci_error();
+     exit('Connect Error ' . $m['message'];
+     exit;
+  }
+  $query = &quot;SELECT id FROM wishers WHERE name = :user_bv&quot;;
+  $stid = oci_parse($con, $query);
+  $user = htmlentities($_GET[&quot;user&quot;]);
+  oci_bind_by_name($stid, ':user_bv', $user);
+  oci_execute($stid);<br>
+//Because user is a unique value I only expect one row
+  $row = oci_fetch_array($stid, OCI_ASSOC);
+  if (!$row) {
+     exit(&quot;The person &quot; . $user . &quot; is not found. Please check the spelling and try again&quot; );
+  }
+  $wisherID = $row[&quot;ID&quot;]; 
+  oci_free_statement($stid);
+  ?&gt;</pre>
+
+ 
+ 
+<p>If you test the application and enter an invalid user, the following message appears.</p>
+  <img src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-title-user-not-found-works.png" alt="The wishlist.php page shows an error message: The user is not found" class="margin-around"> 
+<h2><a name="wish-table"></a>Displaying a Table of Wishes</h2>
+<p>In this section, you add code that displays an HTML table of the wishes associated with the wisher. The wisher is identified by the ID you retrieved in the code in the previous section.</p>
+<ol>
+<li>Beneath the PHP block, type or paste  the following HTML code block. This code opens a table, specifies the color of its borders (black), and &quot;draws&quot; the table header with the columns &quot;Item&quot; and &quot;Due Date.&quot;
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Item&lt;/th&gt;
+        &lt;th&gt;Due Date&lt;/th&gt;
+    &lt;/tr&gt;
+&lt;/table></pre>
+The &lt;/table&gt; tag closes the table. </li>
+<li>
+  <p>Enter the following PHP code block above the closing &lt;/table&gt; tag.</p>
+  <p><b>For the MySQL database:</b></p>
+    <pre class="examplecode">&lt;?php<br>$result = mysqli_query($con, &quot;SELECT description, due_date FROM wishes WHERE wisher_id=&quot; . $wisherID);<br>while ($row = mysqli_fetch_array($result)) {<br>    echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>    echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>}<br>mysqli_free_result($result);<br>mysqli_close($con);<br>?&gt;</pre>
+        <p><b>For the Oracle database:</b></p>
+        <pre class="examplecode">&lt;?php<br>$query = &quot;SELECT description, due_date FROM wishes WHERE wisher_id = :id_bv&quot;;<br>$stid = oci_parse($con, $query);<br>oci_bind_by_name($stid, &quot;:id_bv&quot;, $wisherID);<br>oci_execute($stid);<br>while ($row = oci_fetch_array($stid)) {<br>    echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;DESCRIPTION&quot;]) . &quot;&lt;/td&gt;&quot;;<br>    echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;DUE_DATE&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>}<br>oci_free_statement($stid);<br>oci_close($con);<br>?&gt;</pre>
+    <p>Within the  code:</p>
+    <ul>
+        <li>The SELECT query retrieves the wishes with their due dates for  the specified wisher by his ID, which was retrieved in step 4, and stores the wishes and due dates in an array $result.</li>
+        <li>A loop displays the items of the $result array as rows in the table while the array is not empty. </li>
+        <li>The &lt;tr&gt;&lt;/tr&gt; tags form rows, the &lt;td&gt;&lt;/td&gt; tags form cells within rows, and \n starts a new line.</li>
+        <li>The <tt>htmlentities</tt> function converts all characters that have HTML entity equivalents into HTML entities. This helps to prevent <a target="_blank" href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site scripting</a>.</li>
+        <li>Functions at the end free all resources (mysqli results and OCI8 statements) and close the database connection. Note you need to free all resources that use a connection before the          connection can physically be closed. Otherwise PHP's internal refcounting system  keeps the underlying DB connection open even 
+        if the connection is not usable following an <tt>oci_close()</tt> or <tt>mysqli_close()</tt> call. </li>
+    </ul>
+    <p class="alert"><strong>Caution: </strong>Make sure you type the names of database fields exactly as they are specified during the database table creation. For Oracle, column names are returned as uppercase by default.</p>
+</li>
+<li>To test the application, run the project as described in the section <a href="#createNewFile">Testing index.php</a>.<br>
+<img src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-works.png" alt="The wishlist.php page shows a list of Tom's wishes" class="margin-around">          </li>
+</ol>
+
+<h2><a name="lessonResultSourceCode"></a>Application Source Code after the Current Lesson Is Completed </h2>
+<p>MySQL users: Click <a target="_blank" href="https://netbeans.org/files/documents/4/1928/lesson2.zip"> here</a> to download the source code that reflects the project state after the lesson is completed.</p>
+<p>Oracle Database users: Click <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson2.zip">here</a> to download the source code that reflects the project state after the lesson is completed.</p>
+<h2><a name="nextSteps"></a>Next Step</h2>
+<p><a href="wish-list-lesson1.html">&lt;&lt; Previous lesson</a></p>
+<p><a href="wish-list-lesson3.html">Next lesson >></a></p>
+<p><a href="wish-list-tutorial-main-page.html">Back to the Tutorial Main page</a>
+</p>
+<h2><a name="learnMoreUsefulLinks"></a>Useful Links </h2>
+<p>Find more information on using HTML, PHP, and MySQL or Oracle Database here:</p>
+<ul>
+    <li><a target="_blank" href="http://www.w3schools.com/html/">HTML Tutorial </a></li>
+    <li><a target="_blank" href="http://www.html.com/">HTML Code Tutorial - Free Reference Guide for Help with HTML Tags</a></li>
+    <li><a target="_blank" href="http://www.w3schools.com/php/default.asp">PHP Tutorial</a></li>
+    <li><a target="_blank" href="http://www.tizag.com/phpT/">PHP Tutorial - Learn PHP</a></li>
+    <li><a target="_blank" href="http://www.killerphp.com/">PHP Video Tutorials</a> </li>
+    <li><a target="_blank" href="http://dev.mysql.com/tech-resources/articles/mysql_intro.html">Getting Started with MySQL</a> </li>
+    <li><a target="_blank" href="http://www.killerphp.com/">PHP / MySQL Tutorial</a> </li>
+    <li><a target="_blank" href="http://www.php-mysql-tutorial.com/">PHP MySQL Tutorial</a></li>
+    <li><a target="_blank" href="http://php.net/manual/en/book.oci8.php">The Oracle OCI8 Manual</a></li>
+    <li><a target="_blank" href="http://blogs.oracle.com/opal/">Christopher Jones' OCI8 blog</a></li>
+</ul>
+<br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%202:%20Designing%20the%20Application">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;">
+<p>To send comments and suggestions, get support, and keep informed on the latest
+    developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+the users@php.netbeans.org mailing list</a>.</p>
+<p><a href="../../trails/php.html">Back to the PHP Learning Trail</a><br>
+</p>
+</body>
+</html>

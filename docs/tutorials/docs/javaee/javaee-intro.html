@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+<title>Introduction to Support for Java EE Technology in NetBeans IDE</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+<meta name="description" content="This document provides an introduction to the major concepts of the Java EE specifications and how they relate to your hands-on programming. ">
+<link rel="stylesheet" href="../../../netbeans.css">
+</head>
+<body>
+<h1>Introduction to Support for Java EE Technology in NetBeans IDE</h1>
+
+<p>NetBeans IDE has been developed in close cooperation with the Java EE and
+GlassFish teams to provide the tightest integration and easiest possible use of the
+Java EE specification. NetBeans IDE is the best way to quickly
+learn and become productive in Java EE programming.</p>
+<p>This document provides an introduction to the major concepts of the Java EE specifications
+and how they relate to your hands-on programming. The following topics are covered:</p>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<ul>
+<li><a href="#annotations" >Annotations Instead of Deployment Descriptors</a></li>
+<li><a href="#ejb" >Simplified EJB Software Development</a></li>
+<li><a href="#injection" >Use Dependency Injection to Access Resources</a></li>
+<li><a href="#persistence" >Java Persistence API Model</a></li>
+<li><a href="#webservice" >Web Services</a></li>
+</ul>
+
+<p>You can find more information about developing and deploying Java EE applications in the
+    <a href="http://download.oracle.com/javaee/7/tutorial/doc/">Java EE 7 Tutorial</a>
+    and the
+<a href="http://download.oracle.com/javaee/6/tutorial/doc/">Java EE 6 Tutorial</a>.</p>
+
+<a name="annotations"></a>
+<h2>Annotations Instead of Deployment Descriptors</h2>
+
+<p>The Java EE platform simplifies deployment by removing the need for deployment descriptors, except
+for the deployment descriptor required by the servlet specification, the <tt>web.xml</tt> file.
+Other deployment descriptors, such as <tt>ejb-jar.xml</tt> and entries related to web services
+in <tt>web.xml</tt>, are obsolete. J2EE 1.4 deployment descriptors were often complex and
+it was easy to make mistakes in filling them out. Instead, the Java EE platform makes use of "annotations". Annotations
+are Java modifiers, similar to <tt>public</tt> and <tt>private</tt>, that you specify in your code. For
+example, the EJB 3 specification,
+which is a subset of the Java EE specification, defines annotations for the bean type, interface type,
+resource references, transaction attributes, security, and more. A similar set of annotations is provided
+for web services by the JAX-WS 2.0 specification. Some annotations are used for generating artifacts. Other
+annotations are used for documenting your code. Still others provide enhanced services such as security
+or runtime-specific logic. In summary, the Java EE platform provides annotations for the following tasks, among others:</p>
+
+<ul>
+    <li>Defining and using web services</li>
+    <li>Developing EJB software applications</li>
+    <li>Mapping Java technology classes to XML</li>
+    <li>Mapping Java technology classes to databases</li>
+    <li>Mapping methods to operations</li>
+    <li>Specifying external dependencies</li>
+    <li>Specifying deployment information, including security attributes</li>
+</ul>
+
+<p>Annotations are marked with a <tt>@</tt> character. In the IDE, when you create a type
+that makes use of annotations in Java EE, related placeholders
+are provided in the generated code. For example, when you use the IDE to create a stateless session bean,
+the following code is generated, which includes the <tt>@Stateless()</tt> annotation:</p>
+
+<pre class="examplecode">package mypackage;
+
+import javax.ejb.*;
+
+@Stateless()
+public class HelloWorldSessionBean implements mypackage.HelloWorldSessionLocal {
+
+}</pre>
+
+<p>Code completion provides access to annotation attributes specific
+to the item under the cursor. For example, when you press Ctrl-Space in the brackets
+of a <tt>@WebService()</tt> annotation, you see the following:</p>
+
+<img src="../../../images_www/articles/72/javaee/javaee-intro/jax-ws-annotate.png" alt="annotation in ws" class="margin-around" />
+
+<p>Each attribute has default values. Therefore, you do not need to specify any attributes unless
+you want to use a value other than the default value. In simple cases, the default value is sufficient,
+which
+means that you do not even need to provide attributes at all.</p>
+
+
+
+<a name="ejb"></a>
+<h2>Simplified EJB Software Development</h2>
+
+<p>The new EJB 3.0 API makes software development easier by reducing and simplifying the
+amount of work required from the developer. In other words, fewer classes and less code.
+This is possible because more of the work is now performed by the container.
+Here are some of the features and benefits of the EJB 3:</p>
+<ul>
+<li><b>Fewer required classes and interfaces.</b> You no longer need
+home and object interfaces for EJB components because the container is now 
+responsible for exposing the necessary methods. You only need to supply a 
+ business interface. You can use annotations to declare your EJB components and
+the container will manage the transactions.</li>
+<li><b>No more deployment descriptors.</b> You can use annotations directly in the class
+to tell the container about dependencies and configuration that you formerly defined in
+deployment descriptors. If there are no specific instructions, the container uses default rules to handle the most 
+common situations.</li>
+
+<li><b>Simple lookups.</b> The <code>EJBContext</code>
+enables you to lookup objects in the JNDI name space directly in the class.</li>
+<li><b>Simplified object-relational mapping.</b>
+The new Java Persistence API makes object-relational mapping much simpler 
+and transparent by allowing you to use annotations in POJOs to map Java 
+objects to relational databases.</li>
+</ul>
+
+
+<p>In the IDE, you can code enterprise beans just as you would code other Java classes, using
+code completion and editor hints to implement the correct methods and keep the classes in synch
+with their interfaces. You do not need to use special commands and dialog boxes to generate
+things like business methods or web service operations, although the commands are still available
+to help acquaint you with the syntax of Java EE code.</p>
+
+
+
+<a name="injection"></a>
+<h2>Use Dependency Injection to Access Resources</h2>
+<p><i>Dependency injection</i> enables an object to use annotations to request 
+external resources directly. This results in cleaner code because you no
+longer need to clutter your code with resource creation and lookup code.
+You can use resource injection in EJB components, web containers, and clients. </p>
+<p>
+To request injection of a resource, a component uses the <code>@Resource</code>
+annotation or, in the case of some specialized resources, the <code>@EJB</code>
+and <code>@WebServiceRef</code> annotations. 
+Resources that can be injected include:
+</p>
+<ul>
+    <li><code>SessionContext</code> object</li>
+    <li><code>DataSources</code> object</li>
+    <li><code>EntityManager</code> interface</li>
+    <li>Other enterprise beans</li>
+    <li>Web services</li>
+    <li>Message queues and topics</li>
+    <li>Connection factories for resource adapters</li>
+</ul>
+
+<p>In the IDE, the Source Editor provides full code completion for resources injection
+annotations provided by the Java EE platform. In addition, the IDE automatically
+injects resources into your files when you run commands like Call EJB and Use Database.
+</p>
+
+
+
+<a name="persistence"></a>
+<h2>Java Persistence API Model</h2>
+<p>
+The Java EE platform introduces the Java Persistence API, which was developed as part of <a
+href="http://jcp.org/en/jsr/detail?id=220" target="_blank">JSR-220</a>. The Java Persistence
+API can also be used outside of EJB components, 
+for example, in web applications and application clients, and also
+outside the Java EE platform, in Java SE applications.</p>
+<p>The Java Persistence API has the following key features:</p>
+<ul>
+<li><b>Entities are POJOs.</b> Unlike EJB components that used container-managed persistence (CMP), entity
+objects using the new APIs are no longer components, and they no longer need to be in an EJB module.</li>
+<li><b>Standardized object-relational mapping.</b> The new specification standardizes how object-relational mapping
+is handled, freeing the developer from learning vendor-specific strategies. 
+The Java Persistence API uses annotations to specify object-relational mapping information, but still support XML descriptors.</li>
+<li><b>Named queries.</b> A named query is now a static query expressed in metadata. The query can be either
+a Java Persistence API query or a native query. This makes reusing queries very simple. </li>
+<li><b>Simple packaging rules.</b> Because entity beans are simple Java technology classes, they can be
+packaged virtually anywhere in a Java EE application. For example, entity beans can be part of an EJB
+<code>JAR</code>, application-client <code>JAR</code>, <code>WEB-INF/lib</code>,
+<code>WEB-INF/classes</code>, or even part of a utility <code>JAR</code> in an enterprise application
+archive (EAR) file. With these simple packaging rules, you no longer have to make an EAR file to use entity
+beans from a web application or application client. </li>
+
+<li><b>Detached entities.</b> Because entity beans are POJOs, they can be serialized and sent across the
+network to a different address space and used in a persistence-unaware environment. As a result, you no
+longer need to use data transfer objects (DTOs). </li>
+<li><b>EntityManager API.</b> Application programmers now use a standard EntityManager API to perform
+<code>Create Read Update Delete</code> (CRUD) operations that involve entities. </li>
+</ul>
+
+<p>The IDE provides tools to work with the new Java Persistence API. You can generate entity classes
+automatically from a database, or code entity classes by hand. 
+The IDE also provides templates and graphic editors for creating and maintaining
+persistence units. See <a href="javaee-gettingstarted.html">Getting Started with Java EE Applications</a> for more
+information on using the Java Persistence API.</p>
+
+    <a name="webservice"></a>
+    <h2>Web Services</h2>
+
+<p>
+In the Java EE platform, the use of annotations has greatly improved and simplified web services support.
+The following specifications contributed to this area: JSR 224, Java API for XML-Based Web Services (JAX-WS)
+2.0; JSR 222, Java Architecture for XML Binding (JAXB) 2.0; and JSR 181, Web Services Metadata for the Java
+Platform.
+</p>
+<div class="indent">
+    
+    <h3 class="tutorial">JAX-WS 2.0</h3>
+    <p>
+        JAX-WS 2.0 is the new API for web services in the Java EE platform. As a successor to JAX-RPC 1.1,
+        JAX-WS 2.0 retains the natural RPC programming model while improving on several fronts: data binding,
+        protocol and transport independence, support for the <code>REST</code> style of web services, and ease of
+        development.
+    </p>
+    <p>
+        A crucial difference from JAX-RPC 1.1 is that all data binding has now been delegated to JAXB 2.0.
+        This allows JAX-WS-based web services to use 100 percent of XML Schema, which results in improved
+        interoperability and ease of use. The two technologies are well integrated, so users no longer have
+        to juggle two sets of tools. When starting from Java technology classes, JAXB 2.0 can generate XML
+        Schema documents that are automatically embedded inside a Web Service Description Language (WSDL)
+        document, saving users from performing this error-prone integration manually.
+    </p>
+    <p>
+        Out of the box, JAX-WS 2.0 supports the SOAP 1.1, SOAP 1.2, and XML/HTTP protocols. Protocol extensibility
+        has been a goal from the very beginning, and JAX-WS 2.0 allows vendors to support additional protocols and
+        encodings for better performance -- for example, the FAST Infoset -- or for specialized applications. Web
+        services that use attachments to optimize the sending and receiving of large binary data can take advantage
+        of the MTOM/XOP (short for message transmission optimization mechanism/XML-binary optimized packaging)
+        standard from W3C without any adverse effect on the programming model. (See this page for information
+        on <a href="http://www.w3.org/TR/2005/REC-soap12-mtom-20050125/" target="_blank">MTOM/XOP</a>.)
+        Before Java EE technology, defining a web service required long, unwieldy descriptors. Now it's
+        as easy as placing the <code>@WebService</code> annotation on a Java technology class. All the
+        public methods on the class are automatically published as web service operations, and all their
+        arguments are mapped to XML Schema data types using JAXB 2.0.
+    </p>
+    
+    
+    
+    
+    <h3 class="tutorial">Asynchronous Web Services</h3>
+    
+    <p>
+        Because web service invocations take place over a network, such calls can take unpredictable lengths of
+        time. Many clients, especially interactive ones such as JFC/Swing-based desktop applications, experience
+        serious performance degradation from having to wait for a server's response. To avoid such performance
+        degradation, JAX-WS 2.0 provides a new asynchronous client API. With this API, application programmers no
+        longer have to create threads on their own. Instead, they can rely on the JAX-WS runtime to manage
+        long-running remote invocations for them.
+    </p>
+    <p>
+        Asynchronous methods can be used in conjunction with any WSDL-generated interfaces as well as with the more
+        dynamic <code>Dispatch</code> API. For your convenience, when importing a WSDL document, you can require
+        asynchronous methods to be generated for any of the operations defined by the web service.
+        
+    </p>
+    <p>There are two usage models:</p>
+    <ul>
+        <li>In the polling model, you make a call. When you're ready, you request the results.<br></li>
+        <li>In the callback model, you register a handler. As soon as the response arrives, you are notified.</li>
+    </ul>
+    <p>Note that asynchronous invocation support is entirely implemented on the client side, so no changes are
+    required to the target web service.</p>
+    
+    <p>The IDE provides tools to work with JAX-WS. You can use templates in the New File wizard
+    to generate JAX-WS artifacts. Asynchronous web services can be created by means of a Web Service Customization editor.
+    The code completion functionality includes annotations that you can use in your web services.
+</div>
+ <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Intro%20to%20Java%20EE%205%20Technology">Send Feedback on This Tutorial</a></div>
+            <br style="clear:both;" />
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>Next Steps</h2>
+            <p>For more information about using NetBeans IDE to develop Java EE applications, see the following resources:</p>
+            <ul>
+            <li><a href="javaee-gettingstarted.html">Getting Started with Java EE Applications</a></li>
+            <li><a href="../websvc/jax-ws.html">Getting Started with JAX-WS Web Services</a></li>
+            <li><a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a></li>
+            </ul>
+            <p>To send comments and suggestions, get support, and keep informed on the latest
+  developments on the NetBeans IDE Java EE development features, <a href="../../../community/lists/top.html">join
+  the nbj2ee@netbeans.org mailing list</a>.</p>
+</body>
+</html>

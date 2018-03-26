@@ -1,0 +1,1163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief introduction to Ajax using the NetBeans IDE, Java bundle">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Ajax, XML,
+            XMLHttpRequest, XMLHttpRequest object, callback function, asynchronous, Java, JavaScript,
+            JavaScript Editor, open source, web technology">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>用于 Java Web 应用程序的 Ajax 简介 - NetBeans IDE 教程</title>
+    </head>
+
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>用于 Java Web 应用程序的 Ajax 简介</h1>
+
+        <p>本文档介绍了 Ajax，并展示了 NetBeans IDE 中的一些功能，这些功能使您在使用 Ajax 相关技术编程时更加快捷高效。在学习 Ajax 初级功能时，您将构建一个用于自动完成文本字段的简单应用程序。此处的内容改编自 Greg Murray 的文章，样例应用程序取自<a href="http://weblogs.java.net/blog/gmurray71/archive/2005/12/using_ajax_with_1.html">将 Ajax 与 Java 技术一起使用</a>。</p>
+
+        <p>Ajax 代表异步 JavaScript 和 XML。在本质上，Ajax 是一种 Web 应用程序用来处理用户与 Web 页间交互的有效方法，它不需要在每次用户交互时都进行页面刷新或重新加载完整页面。这样就能在使用浏览器时提供丰富的行为（与桌面应用程序或基于插件的 Web 应用程序的行为类似）。Ajax 交互在后台异步处理。同时，用户可以继续使用页面。Ajax 交互由 JavaScript 代码启动。Ajax 交互完成后，JavaScript 会更新页面的 HTML 源代码。这些更改会立即进行，不需要刷新页面。Ajax 交互可用于执行一些操作，如使用服务器端逻辑验证窗体条目（当用户输入窗体条目时）、检索服务器中的详细数据、动态更新页面上的数据，以及从页面提交部分窗体。</p>
+
+
+        <p><strong>目录</strong></p>
+
+       <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+        <ul class="toc">
+            <li><a href="#overview">应用程序概述</a></li>
+            <li><a href="#client1">客户端编程：第 1 部分</a>
+                <ul>
+                    <li><a href="#html">使用 HTML 编辑器</a></li>
+                    <li><a href="#javascript">使用 JavaScript 编辑器</a></li>
+                </ul></li>
+            <li><a href="#serverside">服务器端编程</a>
+                <ul>
+                    <li><a href="#data">创建数据存储</a></li>
+                    <li><a href="#servlet">创建 Servlet</a></li>
+                </ul></li>
+            <li><a href="#client2">客户端编程：第 2 部分</a>
+                <ul>
+                    <li><a href="#callback">添加回调功能</a></li>
+                    <li><a href="#htmldom">更新 HTML DOM</a></li>
+                    <li><a href="#stylesheet">附加样式表</a></li>
+                </ul></li>
+            <li><a href="#run">运行应用程序</a>
+                <ul>
+                    <li><a href="#httpMonitor">使用 HTTP 服务器监视器</a></li>
+                </ul></li>
+            <li><a href="#conclusion">小结</a></li>
+            <li><a href="#seeAlso">另请参见</a></li>
+        </ul>
+
+        <p><strong>要学完本教程，您需要具备以下软件和资源。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE，Java EE 包</a></td>
+                    <td class="tbltd1">7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">7 或 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://glassfish.java.net/">GlassFish Server</a> <br><em class="indent margin-around">或</em> <br><a href="http://tomcat.apache.org/index.html">Tomcat 服务器</a></td>
+                    <td class="tbltd1">Open Source Edition 3.1.x 或 4.x <br><em class="margin-around indent"> </em> <br>版本 7.x 或 8.x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>注：</strong></p>
+
+        <ul>
+            <li>IDE 的 Java EE 安装使您能够有选择地安装 GlassFish Server 和 Apache Tomcat Servlet 容器。</li>
+
+            <li>本教程假定您具有所使用的各种技术的应用知识（例如 HTML、CSS、JavaScript、Java 和 JSP）。它尝试以代码的形式提供功能的概述，但<em>不</em>解释每行代码的含义。</li>
+
+            <li>如果需要将项目与工作解决方案进行比较，可以<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaScript%252FMyAjaxApp.zip">下载样例应用程序</a>。</li>
+        </ul>
+
+
+        <br>
+        <h2 id="overview">应用程序概述</h2>
+
+        <p>设想一个用户可以在其中搜索作曲家信息的 Web 页。该页面包含一个字段，用户可以在其中输入作曲家的名字。在示例应用程序中，输入字段具有自动完成功能。换句话说，用户可以键入作曲家的部分名字，然后 Web 应用程序即可以列出其名字或姓氏以所输入字符开头的所有作曲家，尝试完成整个名字。自动完成功能使用户不必记住作曲家的完整名字，并且可以更加直观和直接的搜索热门信息。</p>
+
+        <div class="indent">
+            <img alt="浏览器中显示的样例应用程序" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/sample-app.png" title="浏览器中显示的样例应用程序">
+        </div>
+
+        <p>在搜索字段中实现自动完成功能可以使用 Ajax 来完成。Ajax 的工作原理是使用 <code>XMLHttpRequest</code> 对象在客户端和服务器之间异步传递请求和响应。下图说明了客户端和服务器之间进行通信的过程流。</p>
+
+        <div id="flow-diagram" class="indent">
+            <img alt="Ajax 过程流图" class="margin-around" src="../../../images_www/articles/73/web/ajax-intro/ajax-process-flow.png" title="Ajax 过程流图">
+        </div>
+
+        <br>
+        <p>该图中的过程流可以按以下步骤进行解释：</p>
+
+        <ol>
+            <li>用户触发一个事件，例如，在键入姓名时释放一个按键。这会引发调用初始化 <code>XMLHttpRequest</code> 对象的 JavaScript 函数。</li>
+
+            <li><code>XMLHttpRequest</code> 对象将使用一个请求参数进行配置，该参数将包含触发该事件的组件 ID 以及用户所输入的任何值。然后，<code>XMLHttpRequest</code> 对象将向 Web 服务器发出异步请求。</li>
+
+            <li>在 Web 服务器上，诸如 servlet 或监听程序之类的对象会处理该请求。从数据存储检索数据，并且准备一个响应，其中包含 XML 文档形式的数据。</li>
+
+            <li>最后，<code>XMLHttpRequest</code> 对象使用回调函数接收 XML 数据并对其进行处理，然后更新 HTML DOM（文档对象模型）以显示包含新数据的页面。</li>
+        </ol>
+
+        <p>本教程说明了如何根据上图所示的过程流构建自动完成方案。首先，为生成 <code>XMLHttpRequest</code> 对象所需的表示和功能创建客户端文件。然后，通过使用基于 Java 的技术创建数据存储和业务逻辑来设置服务器端。最后，返回客户端，并实现 <code>callback()</code> 和其他 JavaScript 功能以更新 HTML DOM。</p>
+
+
+        <br>
+        <h2 id="client1">客户端编程：第 1 部分</h2>
+
+        <p>首先在 IDE 中新建一个新的 Web 应用程序项目。IDE 中包含多种项目类型的内置模板。</p>
+
+        <ol>
+            <li>选择 "File"（文件）> "New Project"（新建项目）。在 "Categories"（类别）下，选择 "Java Web"。在 "Projects"（项目）下选择 "Web Application"（Web 应用程序），然后单击 "Next"（下一步）。</li>
+
+            <li>在 "Name and Location"（名称和位置）面板中，输入 <code>MyAjaxApp</code> 作为项目名称。使用 "Project Location"（项目位置）字段可以指定您计算机上项目的位置。将其他选项保留为默认设置，然后单击 "Next"（下一步）。 <br> <img alt="新建 Web 应用程序向导 - &amp;quot;Name and Location&amp;quot;（名称和位置）面板" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/java-name-location.png" title="为应用程序项目指定名称和位置"></li>
+
+            <li>在 "Server and Settings"（服务器和设置）面板中，选择要将您的应用程序部署到的服务器。这里仅列出了已在 IDE 中注册的服务器。 <br> <img alt="新建 Web 应用程序向导 - &amp;quot;Server Settings&amp;quot;（服务器设置）面板" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/java-server-settings.png" title="指定应用程序将部署到的服务器"></li>
+
+            <li>接受其他默认设置，然后单击 "Finish"（完成）。项目在文件系统中生成，并在 IDE 中打开。</li>
+        </ol>
+
+        <p>在创建基于 Java 的 Web 项目后，将自动构建用于编译该项目的 <a href="http://ant.apache.org/">Ant</a> 构建脚本，以便在 IDE 中注册的服务器上快速部署和运行该项目。</p>
+
+        <p>将生成一个默认的入口页，并在 IDE 的源代码编辑器中打开。根据目标服务器不同，入口页将为 <code>index.jsp</code> 或 <code>index.html</code>。
+            </p>
+
+        <div class="indent">
+            <div class="indent">
+                <img alt="包含新创建的项目的 &amp;quot;Projects&amp;quot;（项目）窗口" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/java-proj-win.png" title="&amp;quot;Projects&amp;quot;（项目）窗口将显示 MyAjaxApp 项目">
+            </div>
+        </div>
+
+        <p>在开始编码前，请立即尝试运行该应用程序以确保正确设置了 IDE、您的服务器和浏览器之间的配置。</p>
+
+        <ol>
+            <li><p>在 "Projects"（项目）窗口中，右键单击该项目节点并选择 "Run"（运行）。</p>
+
+                <p>编译应用程序，启动应用服务器，并在该服务器上部署和运行该应用程序。IDE 将打开默认浏览器并显示默认入口页。</p>
+            </li>
+        </ol>
+
+        <div class="indent">
+            <a name="html"></a>
+            <h3>使用 HTML 编辑器</h3>
+
+            <div class="indent">
+                <img alt="显示 HTML 元素的 &amp;quot;Palette&amp;quot;（组件面板）" class="right margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/palette.png" title="显示 HTML 元素的 &amp;quot;Palette&amp;quot;（组件面板）"> <br>
+                <p class="margin-around">既然您确定已正确设置了您的环境，请首先将您的索引页转换成用户将查看的自动完成界面。</p>
+
+                <p class="margin-around">使用 IDE 的一个好处是：您所使用的编辑器通常可以为您提供代码完成功能，如果在编写代码时学会应用此功能，可以快速提高效率。IDE 的源代码编辑器通常适用您所使用的技术，因此，在使用 HTML 页时，按下代码完成组合键（Ctrl-空格键）将生成关于 HTML 标记和属性的建议。下面您还将了解到，IDE 编辑器也适用其他技术（如 CSS 和 JavaScript）。</p>
+
+                <p class="margin-around">
+                    您可以使用的第二个功能是 IDE 的 "Palette"（组件面板）。"Palette"（组件面板）为您编写代码所采用的技术中的常用元素提供了易于使用的模板。您只需单击某一项，然后将其拖至源代码编辑器所打开的文件中的某个位置。</p>
+
+                <p class="tips margin-around">您可以查看大图标（如此处显示），方法是右键单击组件面板，然后选择 "Show Big Icons"（显示大图标）。</p>
+            </div>
+
+            <br clear="all">
+            <ol>
+                <li>将 <code>&lt;title&gt;</code> 和 <code>&lt;h1&gt;</code> 标记的内容替换为：<code>Auto-Completion using AJAX</code>。索引页不需要服务器端脚本代码，因此可以安全地删除默认创建的任何遗留代码。现在，索引页应该如下显示。
+
+<pre class="examplecode">
+&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;Auto-Completion using AJAX&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Auto-Completion using AJAX&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre></li>
+
+                <li>添加一些说明性文本以介绍文本字段的用途。您可以复制以下文本并将其粘贴在 <code>&lt;h1&gt;</code> 标记下方的某一位置：
+
+<pre class="examplecode">
+&lt;p&gt;This example shows how you can do real time auto-completion using Asynchronous
+    JavaScript and XML (Ajax) interactions.&lt;/p&gt;
+
+&lt;p&gt;In the form below enter a name. Possible names that will be completed are displayed
+    below the form. For example, try typing in &quot;Bach,&quot &quot;Mozart,&quot; or &quot;Stravinsky,&quot;
+    then click on one of the selections to see composer details.&lt;/p&gt;
+</pre></li>
+
+                <li>向该页面中添加一个 HTML 窗体。可以利用 IDE "Palette"（组件面板）中列出的元素执行此操作。如果组件面板没有打开，请从主菜单中选择 "Window"（窗口）> "Palette"（组件面板）。然后，在 "HTML Forms"（HTML 窗体）下，单击某个窗体元素，并将其拖至该页面中您刚添加的 <code>&lt;p&gt;</code> 标记下的某一位置。此时将打开 "Insert Form"（插入窗体）对话框。指定以下内容： <br><br>
+                    <ul>
+                        <li>操作：autocomplete</li>
+                        <li>"Method"（方法）：GET</li>
+                        <li>"Name"（名称）：autofillform</li>
+                    </ul>
+
+                    <img alt="&amp;quot;Insert form&amp;quot;（插入窗体）对话框" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/insert-form.png" title="&amp;quot;Insert form&amp;quot;（插入窗体）对话框">
+
+                    <p>单击 "OK"（确定）。HTML <code>&lt;form&gt;</code> 标记已插入到包含您所指定的属性的页面中。（GET 在默认情况下应用，因此没有进行显式声明。）</p></li>
+
+                <li>向该页面添加一个 HTML 表格。在 "Palette"（组件面板）中的 "HTML" 类别下，单击某个表格元素，并将其拖至 <code>&lt;form&gt;</code> 标记之间的位置。"Insert Table"（插入表格）对话框即打开。指定以下内容： <br><br>
+                    <ul>
+                        <li>"Rows"（行）：2</li>
+                        <li>"Columns"（列）：2</li>
+                        <li>"Border Size"（边框大小）：0</li>
+                        <li>"Cell Padding"（单元格边距）：5</li>
+                    </ul>
+
+                    <img alt="&amp;quot;Insert table&amp;quot;（插入表格）对话框" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/insert-table.png" title="&amp;quot;Insert table&amp;quot;（插入表格）对话框">
+                </li>
+
+                <li>在源代码编辑器中单击鼠标右键，然后选择 "Format"（格式化代码）。此操作将对代码进行整理。现在，您的窗体应该如下显示：
+
+<pre class="examplecode">
+&lt;form name=&quot;autofillform&quot; action=&quot;autocomplete&quot;&gt;
+  &lt;table border=&quot;0&quot; cellpadding=&quot;5&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/form&gt;
+</pre></li>
+
+                <li>将以下文本键入到此表格第一行的第一列中（更改的内容以<strong>粗体</strong>显示）：
+
+<pre class="examplecode">&lt;td&gt;<strong>&lt;strong&gt;Composer Name:&lt;/strong&gt;</strong>&lt;/td&gt;</pre></li>
+
+                <li>在第一行的第二列中，手动键入以下代码，而不是从组件面板中拖动 "Text Input"（文本输入）字段（更改的内容以<strong>粗体</strong>显示）：
+
+
+<pre class="examplecode">
+&lt;td&gt;
+    <strong>&lt;input type=&quot;text&quot;
+        size=&quot;40&quot;
+        id=&quot;complete-field&quot;
+        onkeyup=&quot;doCompletion();&quot;&gt;</strong>
+&lt;/td&gt;
+</pre>
+
+                    在键入时，请尝试使用 IDE 内置的代码完成支持。例如，键入 <code>&lt;i</code>，然后按 Ctrl-空格组合键。建议的选项列表会显示在光标下方，并且选中元素的说明会显示在上方的框中。事实上，在源代码编辑器中编写代码时，可以随时按 Ctrl-空格键调出可能的选项。而且，如果只有一个可用的选项，按 Ctrl-空格键将自动完成元素名称。 <br> <img alt="源代码编辑器中显示的代码完成" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/code-completion.png" style="width:688px" title="在编辑器中按 Ctrl-空格键以调用代码完成和文档支持">
+                </li>
+
+            </ol>
+
+            <p>您在上文中键入的 <code>onkeyup</code> 属性指向名为 <code>doCompletion()</code> 的 JavaScript 函数。每次在窗体文本字段中按下一个键时，此函数都会被调用，并映射到以上 Ajax <a href="#flow-diagram">流程图</a>中所描述的 JavaScript 调用。</p>
+
+
+            <h3 id="javascript">使用 JavaScript 编辑器</h3>
+
+            <p>IDE 的 JavaScript 编辑器提供了许多高级编辑功能，如智能代码完成、语义突出显示、即时重命名和重构功能等。 </p>
+
+            <p>当您使用其他技术（即 HTML、RHTML、JSP、PHP）在 <code>.js</code> 文件以及 <code>&lt;script&gt;</code> 标记中编码时，将自动提供 JavaScript 代码完成功能。当编辑 JavaScript 代码时，IDE 可以为您提供一些提示。通过选择 "Tools"（工具）> "Options"（选项）（在 Mac 上为 "NetBeans" > "Preferences"（首选项））打开 "Options"（选项）窗口，并在 "Editor"（编辑器）类别的 "Hints"（提示）标签中选择 "JavaScript" 语言，可以指定 JavaScript 提示选项。此外，您还可以在 "Options"（选项）窗口中的 "Code Templates"（代码模板）标签中添加您自己的 JavaScript 代码模板。</p>
+
+            <img alt="&amp;quot;Options&amp;quot;（选项）窗口中的 JavaScript 提示选项" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/javascript-options.png" title="&amp;quot;Options&amp;quot;（选项）窗口中的 JavaScript 提示选项">
+
+            <p>将 JavaScript 文件添加到此应用程序，然后开始实现 <code>doCompletion()</code>。</p>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口中，右键单击 "Web Pages"（Web 页）节点，然后选择 "New"（新建）> "JavaScript file"（JavaScript 文件）。（如果 "JavaScript file"（JavaScript 文件）未列出，请选择 "Other"（其他）。然后从新建文件向导的 "Web" 类别中选择 "JavaScript file"（JavaScript 文件）。）</li>
+                <li>将文件命名为 <code>javascript</code>，然后单击 "Finish"（完成）。新的 JavaScript 文件将显示在 "Projects"（项目）窗口的 "Web Pages"（Web 页）文件夹中。</li>
+                <li>将以下代码键入 <code>javascript.js</code>。
+
+<pre class="examplecode">
+var req;
+var isIE;
+
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+}
+
+function doCompletion() {
+        var url = &quot;autocomplete?action=complete&id=&quot; + escape(completeField.value);
+        req = initRequest();
+        req.open(&quot;GET&quot;, url, true);
+        req.onreadystatechange = callback;
+        req.send(null);
+}
+
+function initRequest() {
+    if (window.XMLHttpRequest) {
+        if (navigator.userAgent.indexOf('MSIE') != -1) {
+            isIE = true;
+        }
+        return new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        isIE = true;
+        return new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+    }
+}</pre>
+
+                    <p class="tips">以上代码将对 Firefox 3 以及 Internet Explorer 版本 6 和 7 执行简单的浏览器兼容性检查。如果希望包含更多强健的代码以处理兼容性问题，建议您使用 <a href="http://www.quirksmode.org">http://www.quirksmode.org</a> 中的<a href="http://www.quirksmode.org/js/detect.html">浏览器检测脚本</a>。</p></li>
+
+                <li>切换回索引页，然后在 <code>&lt;head></code> 标记之间添加对 JavaScript 文件的引用。
+
+<pre class="examplecode">
+&lt;script type=&quot;text/javascript&quot; src=&quot;javascript.js&quot;&gt;&lt;/script&gt;</pre>
+
+                    <p class="tips">您可以按 Ctrl-Tab 组合键在源代码编辑器中打开的页面之间快速切换。</p></li>
+
+                <li>在开始标记 <code>&lt;body&gt;</code> 中，插入对 <code>init()</code> 的调用。
+
+<pre class="examplecode">
+&lt;body <strong>onload=&quot;init()&quot;</strong>&gt;</pre>
+
+                    这可以确保每次加载页面时，都会调用 <code>init()</code>。</li>
+            </ol>
+
+            <p><code>doCompletion()</code> 的作用是：</p>
+
+            <ul>
+                <li>创建一个 URL，其中包含可由服务器端使用的数据，</li>
+                <li>初始化 <code>XMLHttpRequest</code> 对象，并</li>
+                <li>提示 <code>XMLHttpRequest</code> 对象向服务器发送一个异步请求。</li>
+            </ul>
+
+            <p><code>XMLHttpRequest</code> 对象是 Ajax 的核心，并已经成为通过 HTTP 异步传递 XML 数据的实际标准。<em>异步</em>交互意味着在发送请求之后浏览器可以继续处理页面中的事件。数据在后台进行传递，并且可以自动加载到页面中，无需进行页面刷新。</p>
+
+            <p>请注意，<code>XMLHttpRequest</code> 对象实际上是由 <code>initRequest()</code>（由 <code>doCompletion()</code> 调用）创建的。此函数用于检查浏览器是否可以识别 <code>XMLHttpRequest</code>；如果可以，即创建 <code>XMLHttpRequest</code> 对象。否则，它将对 <code>ActiveXObject</code>（相当于 Internet Explorer 6 的 <code>XMLHttpRequest</code>）执行检查，并创建 <code>ActiveXObject</code>（如果被识别）。</p>
+
+            <p>当您创建 <code>XMLHttpRequest</code> 对象时会指定三个参数：URL、HTTP 方法（<code>GET</code> 或 <code>POST</code>），以及此交互是否为异步交互。以上示例中的参数有：</p>
+
+            <ul>
+                <li>URL，<code>autocomplete</code> 和用户输入 <code>complete-field</code> 的文本：
+
+<pre class="examplecode">var url = &quot;autocomplete?action=complete&id=&quot; + escape(completeField.value);</pre></li>
+
+                <li><code>GET</code>，表示 HTTP 交互使用 <code>GET</code> 方法，以及
+                <li><code>true</code>，表示此交互是异步交互：
+
+                    <pre class="examplecode">req.open(&quot;GET&quot;, url, true);</pre></li>
+            </ul>
+
+            <p>如果此交互设为异步交互，则必须指定回调函数。此交互的回调函数是使用以下语句进行设置的：</p>
+
+<div class="indent">
+    <div class="indent">
+        <pre class="examplecode">req.onreadystatechange = callback;</pre>
+    </div>
+</div>
+
+            <p>并且<a href="#callback">稍后必须定义</a> <code>callback()</code> 函数。HTTP 交互在调用 <code>XMLHttpRequest.send()</code> 时开始。在以上<a href="#flow-diagram">流程图</a>中，此操作映射到发送给 Web 服务器的 HTTP 请求。</p>
+        </div>
+
+
+        <br>
+        <h2 id="serverside">服务器端编程</h2>
+
+        <p>IDE 对服务器端 Web 编程提供全面支持。它不但包括对许多常用编程和脚本语言的基本编辑器支持，还包括 Web 服务（例如 SOAP、REST、SaaS）及面向 MVC 的框架（例如 JSF、Spring 和 Struts）。从 <a href="http://plugins.netbeans.org/">NetBeans 插件门户</a>可以获取由 Ajax 驱动的框架的若干 NetBeans 插件，其中包括 <a href="https://developers.google.com/web-toolkit/">GWT</a> 和 <a href="http://struts.apache.org/2.x/">Struts2</a>。</p>
+
+        <p>应用程序的业务逻辑通过以下方式处理请求：从数据存储中检索数据，然后准备和发送响应。这里使用一个 servlet 实现该任务。在您对 servlet 进行编码之前，请设置数据存储和 servlet 访问数据所需的功能。</p>
+
+        <ul>
+            <li><a href="#data">创建数据存储</a></li>
+            <li><a href="#servlet">创建 Servlet</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="data"></a>
+            <h3>创建数据存储</h3>
+
+            <p>对于这种简单的应用程序，您可以创建一个名为 <code>ComposerData</code> 的类，在其中使用 <a href="http://download.oracle.com/javase/1.5.0/docs/api/java/util/HashMap.html"><code>HashMap</code></a> 保留作曲家的数据。<code>HashMap</code> 允许以键值对的形式存储链接项目对。还要创建一个 <code>Composer</code> 类，使 servlet 能够从 <code>HashMap</code> 中的条目检索数据。</p>
+
+            <ol>
+                <li>在“项目”窗口中右键单击项目节点，然后选择“新建”>“Java 类”。</li>
+                <li>将该类命名为 <code>ComposerData</code>，并在“包”字段中输入 <code>com.ajax</code>。这将创建新包以包含该类，以及以后要创建的其他类。</li>
+                <li>单击“完成”。该类随即创建，并在源代码编辑器中打开。</li>
+                <li>在源代码编辑器中，粘贴以下代码：
+
+<pre class="examplecode">
+package com.ajax;
+
+import java.util.HashMap;
+
+/**
+ *
+ * @author nbuser
+ */
+public class ComposerData {
+
+    private HashMap composers = new HashMap();
+
+    public HashMap getComposers() {
+        return composers;
+    }
+
+    public ComposerData() {
+
+        composers.put(&quot;1&quot;, new Composer(&quot;1&quot;, &quot;Johann Sebastian&quot;, &quot;Bach&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;2&quot;, new Composer(&quot;2&quot;, &quot;Arcangelo&quot;, &quot;Corelli&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;3&quot;, new Composer(&quot;3&quot;, &quot;George Frideric&quot;, &quot;Handel&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;4&quot;, new Composer(&quot;4&quot;, &quot;Henry&quot;, &quot;Purcell&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;5&quot;, new Composer(&quot;5&quot;, &quot;Jean-Philippe&quot;, &quot;Rameau&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;6&quot;, new Composer(&quot;6&quot;, &quot;Domenico&quot;, &quot;Scarlatti&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;7&quot;, new Composer(&quot;7&quot;, &quot;Antonio&quot;, &quot;Vivaldi&quot;, &quot;Baroque&quot;));
+
+        composers.put(&quot;8&quot;, new Composer(&quot;8&quot;, &quot;Ludwig van&quot;, &quot;Beethoven&quot;, &quot;Classical&quot;));
+        composers.put(&quot;9&quot;, new Composer(&quot;9&quot;, &quot;Johannes&quot;, &quot;Brahms&quot;, &quot;Classical&quot;));
+        composers.put(&quot;10&quot;, new Composer(&quot;10&quot;, &quot;Francesco&quot;, &quot;Cavalli&quot;, &quot;Classical&quot;));
+        composers.put(&quot;11&quot;, new Composer(&quot;11&quot;, &quot;Fryderyk Franciszek&quot;, &quot;Chopin&quot;, &quot;Classical&quot;));
+        composers.put(&quot;12&quot;, new Composer(&quot;12&quot;, &quot;Antonin&quot;, &quot;Dvorak&quot;, &quot;Classical&quot;));
+        composers.put(&quot;13&quot;, new Composer(&quot;13&quot;, &quot;Franz Joseph&quot;, &quot;Haydn&quot;, &quot;Classical&quot;));
+        composers.put(&quot;14&quot;, new Composer(&quot;14&quot;, &quot;Gustav&quot;, &quot;Mahler&quot;, &quot;Classical&quot;));
+        composers.put(&quot;15&quot;, new Composer(&quot;15&quot;, &quot;Wolfgang Amadeus&quot;, &quot;Mozart&quot;, &quot;Classical&quot;));
+        composers.put(&quot;16&quot;, new Composer(&quot;16&quot;, &quot;Johann&quot;, &quot;Pachelbel&quot;, &quot;Classical&quot;));
+        composers.put(&quot;17&quot;, new Composer(&quot;17&quot;, &quot;Gioachino&quot;, &quot;Rossini&quot;, &quot;Classical&quot;));
+        composers.put(&quot;18&quot;, new Composer(&quot;18&quot;, &quot;Dmitry&quot;, &quot;Shostakovich&quot;, &quot;Classical&quot;));
+        composers.put(&quot;19&quot;, new Composer(&quot;19&quot;, &quot;Richard&quot;, &quot;Wagner&quot;, &quot;Classical&quot;));
+
+        composers.put(&quot;20&quot;, new Composer(&quot;20&quot;, &quot;Louis-Hector&quot;, &quot;Berlioz&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;21&quot;, new Composer(&quot;21&quot;, &quot;Georges&quot;, &quot;Bizet&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;22&quot;, new Composer(&quot;22&quot;, &quot;Cesar&quot;, &quot;Cui&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;23&quot;, new Composer(&quot;23&quot;, &quot;Claude&quot;, &quot;Debussy&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;24&quot;, new Composer(&quot;24&quot;, &quot;Edward&quot;, &quot;Elgar&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;25&quot;, new Composer(&quot;25&quot;, &quot;Gabriel&quot;, &quot;Faure&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;26&quot;, new Composer(&quot;26&quot;, &quot;Cesar&quot;, &quot;Franck&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;27&quot;, new Composer(&quot;27&quot;, &quot;Edvard&quot;, &quot;Grieg&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;28&quot;, new Composer(&quot;28&quot;, &quot;Nikolay&quot;, &quot;Rimsky-Korsakov&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;29&quot;, new Composer(&quot;29&quot;, &quot;Franz Joseph&quot;, &quot;Liszt&quot;, &quot;Romantic&quot;));
+
+        composers.put(&quot;30&quot;, new Composer(&quot;30&quot;, &quot;Felix&quot;, &quot;Mendelssohn&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;31&quot;, new Composer(&quot;31&quot;, &quot;Giacomo&quot;, &quot;Puccini&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;32&quot;, new Composer(&quot;32&quot;, &quot;Sergei&quot;, &quot;Rachmaninoff&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;33&quot;, new Composer(&quot;33&quot;, &quot;Camille&quot;, &quot;Saint-Saens&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;34&quot;, new Composer(&quot;34&quot;, &quot;Franz&quot;, &quot;Schubert&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;35&quot;, new Composer(&quot;35&quot;, &quot;Robert&quot;, &quot;Schumann&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;36&quot;, new Composer(&quot;36&quot;, &quot;Jean&quot;, &quot;Sibelius&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;37&quot;, new Composer(&quot;37&quot;, &quot;Bedrich&quot;, &quot;Smetana&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;38&quot;, new Composer(&quot;38&quot;, &quot;Richard&quot;, &quot;Strauss&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;39&quot;, new Composer(&quot;39&quot;, &quot;Pyotr Il'yich&quot;, &quot;Tchaikovsky&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;40&quot;, new Composer(&quot;40&quot;, &quot;Guiseppe&quot;, &quot;Verdi&quot;, &quot;Romantic&quot;));
+
+        composers.put(&quot;41&quot;, new Composer(&quot;41&quot;, &quot;Bela&quot;, &quot;Bartok&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;42&quot;, new Composer(&quot;42&quot;, &quot;Leonard&quot;, &quot;Bernstein&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;43&quot;, new Composer(&quot;43&quot;, &quot;Benjamin&quot;, &quot;Britten&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;44&quot;, new Composer(&quot;44&quot;, &quot;John&quot;, &quot;Cage&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;45&quot;, new Composer(&quot;45&quot;, &quot;Aaron&quot;, &quot;Copland&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;46&quot;, new Composer(&quot;46&quot;, &quot;George&quot;, &quot;Gershwin&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;47&quot;, new Composer(&quot;47&quot;, &quot;Sergey&quot;, &quot;Prokofiev&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;48&quot;, new Composer(&quot;48&quot;, &quot;Maurice&quot;, &quot;Ravel&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;49&quot;, new Composer(&quot;49&quot;, &quot;Igor&quot;, &quot;Stravinsky&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;50&quot;, new Composer(&quot;50&quot;, &quot;Carl&quot;, &quot;Orff&quot;, &quot;Post-Romantic&quot;));
+
+    }
+}</pre></li>
+            </ol>
+            <p>您会注意到由于找不到 <tt>Composer</tt> 类，因此会在编辑器左旁注中显示一条警告。请执行以下步骤以便创建 <code>Composer</code> 类。</p>
+
+            <ol>
+                <li>在“项目”窗口中右键单击项目节点，然后选择“新建”>“Java 类”。</li>
+                <li>将该类命名为 <code>Composer</code>，并从“包”字段的下拉列表中选择 <code>com.ajax</code>。单击“完成”。
+                <p>单击“完成”，此时 IDE 将创建此类并在源代码编辑器中打开该文件。</p></li>
+                <li>在源代码编辑器中，粘贴以下代码：
+
+<pre class="examplecode">
+package com.ajax;
+
+public class Composer {
+
+    private String id;
+    private String firstName;
+    private String lastName;
+    private String category;
+
+    public Composer (String id, String firstName, String lastName, String category) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.category = category;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+}</pre></li>
+            </ol>
+            <p>在创建 <tt>Composer</tt> 类之后，如果在编辑器中查看 <tt>ComposerData</tt> 类，您可以看到编辑器中不再显示警告标注。如果您仍会在 <tt>ComposerData</tt> 中看到警告标注，则可以尝试通过添加任何缺少的 import 语句来解决错误。</p>
+            
+            <h3 id="servlet">创建 Servlet</h3>
+
+            <p>创建一个 servlet 以处理由传入请求接收的 <code>autocomplete</code> URL。</p>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "New"（新建）> "Servlet" 以打开新建 Servlet 向导。（如果在默认情况下弹出式菜单中未显示 "Servlet"，请选择 "Other"（其他），并从 "Web" 类别中选择 "Servlet"。）</li>
+                <li>将该 servlet 命名为 <code>AutoCompleteServlet</code>，并从 "Package"（包）字段的下拉列表中选择 <code>com.ajax</code>。单击 "Next"（下一步）。<br> <img alt="新建 Servlet 向导，已完成 &amp;quot;Name and Location&amp;quot;（名称和位置）窗格" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/newservlet-name-location.png"></li>
+                <li>在 "Configure Servlet Deployment"（配置 Servlet 部署）面板中，将 URL 模式更改为 <strong><code>/autocomplete</code></strong>，使之与以前在 <code>XMLHttpRequest</code> 对象中设置的 URL 匹配。<br> <img alt="新建 Servlet 向导，已完成 &amp;quot;Configure Servlet Deployment&amp;quot;（配置 Servlet 部署）面板" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/newservlet-configure-deployment.png">
+                    
+                    <p>此面板可以省去手动向部署描述符添加这些详细信息所需的步骤。</p></li>
+                <li>也可以选择 "Add servlet information to deployment descriptor"（将 Servlet 信息添加到部署描述符）。这样，您的项目将与下载的样例相同。在使用 IDE 的高级版本时，默认情况下用 <code>@WebServlet</code> 标注而不是部署描述符来注册 Servlet。如果您使用 <code>@WebServlet</code> 标注而不是部署描述符，该项目仍将工作。</li>
+                <li>单击 "Finish"（完成）。该 servlet 随即创建，并在源代码编辑器中打开。</li>
+            </ol>
+
+            <p>您需要覆盖的方法只有 <code>doGet()</code>（该方法用于定义 servlet 处理 <code>autocomplete</code> <code>GET</code> 请求的方式）以及 <code>init()</code>（该方法需要启动一个 <code>ServletContext</code>，以便在应用程序提供服务时 servlet 可以访问该应用程序中的其他类）。</p>
+
+            <p>使用 IDE 的 "Insert Code"（插入代码）弹出式菜单可以覆盖超类的方法。通过执行下列步骤来实现 <code>init()</code>。</p>
+
+            <ol>
+                <li>将光标放在源代码编辑器中的 <code>AutoCompleteServlet</code> 类声明下。按 Alt-Insert 组合键（在 Mac 上按 Ctrl-I 组合键）打开 "Generate Code"（生成代码）弹出式菜单。 <br> <img alt="源代码编辑器中显示的 &amp;quot;Insert Code&amp;quot;（插入代码）弹出式菜单" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/insert-code.png" title="源代码编辑器中显示的 &amp;quot;Insert Code&amp;quot;（插入代码）弹出式菜单"></li>
+
+                <li>选择 "Override Method"（覆盖方法）。在显示的对话框中，将显示 <code>AutoCompleteServlet</code> 继承的所有类。展开 GenericServlet 节点并选择 <code>init(Servlet Config config)</code>。 <br> <img alt="列出继承的类的 &amp;quot;Override&amp;quot;（覆盖）对话框" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/new-override.png" title="&amp;quot;Override&amp;quot;（覆盖）对话框列出继承的类"></li>
+
+                <li>单击 "OK"（确定）。<code>init()</code> 方法将添加到源代码编辑器中。</li>
+
+                <li>为 <code>ServletContext</code> 对象添加一个变量并修改 <code>init()</code>（更改的内容以<strong>粗体</strong>显示）：
+
+<pre class="examplecode">
+<strong>private ServletContext context;</strong>
+
+@Override
+public void init(ServletConfig <strong>config</strong>) throws ServletException {
+    <strong>this.context = config.getServletContext();</strong>
+}</pre></li>
+
+                <li>为 <code>ServletContext</code> 添加一个导入语句。通过单击源代码编辑器左旁注中显示的灯泡图标可以执行此操作 <br> <img alt="显示在源代码编辑器的左旁注中的导入提示" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/import-hint.png" title="导入提示显示在源代码编辑器的左旁注中"></li>
+            </ol>
+
+            <p><code>doGet()</code> 方法需要解析请求的 URL，从数据存储中检索数据，并准备 XML 格式的响应。注意，方法声明是在创建类时生成的。要查看它，您可能需要通过单击左旁注中的 "expand"（展开）图标 (<img alt="&amp;quot;expand&amp;quot;（展开）图标" src="../../../images_www/articles/73/web/ajax-intro/expand-icon.png">) 来展开 HttpServlet 方法。</p>
+
+            <ol>
+                <li>在 <code>AutocompleteServlet</code> 类声明下添加以下变量声明。
+
+<pre class="examplecode">
+private ComposerData compData = new ComposerData();
+private HashMap composers = compData.getComposers();</pre>
+
+                    这将创建所有作曲家数据的 <code>HashMap</code>，然后由 <code>doGet()</code> 使用。</li>
+
+                <li>向下滚动到 <code>doGet()</code> 并按如下方式实现该方法：
+
+<pre class="examplecode">
+@Override
+public void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
+
+    String action = request.getParameter(&quot;action&quot;);
+    String targetId = request.getParameter(&quot;id&quot;);
+    StringBuffer sb = new StringBuffer();
+
+    if (targetId != null) {
+        targetId = targetId.trim().toLowerCase();
+    } else {
+        context.getRequestDispatcher(&quot;/error.jsp&quot;).forward(request, response);
+    }
+
+    boolean namesAdded = false;
+    if (action.equals(&quot;complete&quot;)) {
+
+        // check if user sent empty string
+        if (!targetId.equals(&quot;&quot;)) {
+
+            Iterator it = composers.keySet().iterator();
+
+            while (it.hasNext()) {
+                String id = (String) it.next();
+                Composer composer = (Composer) composers.get(id);
+
+                if ( // targetId matches first name
+                     composer.getFirstName().toLowerCase().startsWith(targetId) ||
+                     // targetId matches last name
+                     composer.getLastName().toLowerCase().startsWith(targetId) ||
+                     // targetId matches full name
+                     composer.getFirstName().toLowerCase().concat(&quot; &quot;)
+                        .concat(composer.getLastName().toLowerCase()).startsWith(targetId)) {
+
+                    sb.append(&quot;&lt;composer&gt;&quot;);
+                    sb.append(&quot;&lt;id&gt;&quot; + composer.getId() + &quot;&lt;/id&gt;&quot;);
+                    sb.append(&quot;&lt;firstName&gt;&quot; + composer.getFirstName() + &quot;&lt;/firstName&gt;&quot;);
+                    sb.append(&quot;&lt;lastName&gt;&quot; + composer.getLastName() + &quot;&lt;/lastName&gt;&quot;);
+                    sb.append(&quot;&lt;/composer&gt;&quot;);
+                    namesAdded = true;
+                }
+            }
+        }
+
+        if (namesAdded) {
+            response.setContentType(&quot;text/xml&quot;);
+            response.setHeader(&quot;Cache-Control&quot;, &quot;no-cache&quot;);
+            response.getWriter().write(&quot;&lt;composers&gt;&quot; + sb.toString() + &quot;&lt;/composers&gt;&quot;);
+        } else {
+            //nothing to show
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
+    }
+    if (action.equals("lookup")) {
+
+        // put the target composer in the request scope to display 
+        if ((targetId != null) && composers.containsKey(targetId.trim())) {
+            request.setAttribute("composer", composers.get(targetId));
+            context.getRequestDispatcher("/composer.jsp").forward(request, response);
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>正如您在 servlet 中看到的，编写用于进行 Ajax 处理的服务器端的代码时并没有什么真正的新内容要了解。如果希望交换 XML 文档，则需要将响应内容类型设置为 <code>text/xml</code>。通过 Ajax，您还可以交换纯文本，甚至可以交换可在客户端由回调函数计算或执行的 JavaScript 片段。还请注意，有些浏览器可能会缓存结果，因此可能需要将 Cache-Control HTTP 头信息设置为 <code>no-cache</code>。</p>
+
+            <p>在本例中，servlet 生成一个包含所有作曲家的 XML 文档，其名字和姓氏以用户键入的字符开头。本文档会映射到以上<a href="#flow-diagram">流程图</a>中所描述的 XML 数据。以下是返回到 <code>XMLHttpRequest</code> 对象的 XML 文档的示例：</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;composers&gt;
+    &lt;composer&gt;
+        &lt;id&gt;12&lt;/id&gt;
+        &lt;firstName&gt;Antonin&lt;/firstName&gt;
+        &lt;lastName&gt;Dvorak&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;45&lt;/id&gt;
+        &lt;firstName&gt;Aaron&lt;/firstName&gt;
+        &lt;lastName&gt;Copland&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;7&lt;/id&gt;
+        &lt;firstName&gt;Antonio&lt;/firstName&gt;
+        &lt;lastName&gt;Vivaldi&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;2&lt;/id&gt;
+        &lt;firstName&gt;Arcangelo&lt;/firstName&gt;
+        &lt;lastName&gt;Corelli&lt;/lastName&gt;
+    &lt;/composer&gt;
+&lt;/composers&gt;
+</pre>
+                </div>
+            </div>
+
+            <p class="tips">在完成应用程序之后，可以使用 IDE 的 <a href="#httpMonitor">HTTP 监视器</a>查看返回的 XML 数据。</p>
+
+        </div>
+
+
+        <h2 id="client2">客户端编程：第 2 部分</h2>
+
+        <p>现在，您必须定义回调函数，以处理服务器的响应，同时添加一些必要的功能，以反映用户所查看页面中的更改。这需要修改 HTML DOM。您需要创建 JSP 页以便显示成功请求的结果或失败请求的错误消息。然后，您可以创建简单的样式表以便演示。</p>
+
+        <ul>
+            <li><a href="#callback">添加回调功能</a></li>
+            <li><a href="#htmldom">更新 HTML DOM</a></li>
+            <li><a href="#displayresults">显示结果</a></li>
+            <li><a href="#stylesheet">附加样式表</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <a name="callback"></a>
+            <h3>添加回调功能</h3>
+
+            <p>在 <code>XMLHttpRequest</code> 对象的 <code>readyState</code> 属性发生更改时，回调函数会在 HTTP 交互过程中的某个特定点被异步调用。在您要构建的应用程序中，回调函数是 <code>callback()</code>。您可以回想一下，在 <code>doCompletion()</code> 中，<code>callback</code> 设置为某个函数的 <code>XMLHttpRequest.onreadystatechange</code> 属性。现在，按以下步骤实现回调函数。</p>
+
+            <ol>
+                <li>在源代码编辑器中打开 <code>javascript.js</code>，然后键入以下代码。
+
+<pre class="examplecode">
+function callback() {
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p><code>readyState</code> 为 "4" 表示 HTTP 交互完成。<code>XMLHttpRequest.readState</code> 的 API 表示可以设置 5 个值。它们是：</p>
+
+            <div class="indent">
+                <div class="indent">
+                    <table class="half-width">
+                        <thead class="tblheader">
+                            <tr>
+                                <th class="innerpadding"><code>readyState</code> 值</th>
+                                <th class="innerpadding">对象状态定义</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbltd0 align-center">
+                            <tr>
+                                <td>0</td>
+                                <td>未初始化</td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>正在加载</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>已加载</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>交互中</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>完成</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br>
+            <p>请注意，仅当 <code>XMLHttpRequest.readyState</code> 为 "4" 并且 <code>status</code>（请求的 HTTP 状态代码定义）为 "200"（表示成功）时，才会调用 <code>parseMessages()</code> 函数。您将在下面的<a href="#htmldom">更新 HTML DOM</a> 部分中定义 <code>parseMessages()</code>。</p>
+
+            <a name="htmldom"></a>
+            <h3>更新 HTML DOM</h3>
+
+            <p><code>parseMessages()</code> 函数用于处理传入的 XML 数据。为了实现此功能，它需要依靠若干附属的函数，如 <code>appendComposer()</code>、<code>getElementY()</code> 和 <code>clearTable()</code>。您还必须向此索引页引入新的元素（如用作自动完成框的另一个 HTML 表格），以及元素的 ID，以便它们可以在 <code>javascript.js</code> 中引用。最后，创建对应于索引页中元素 ID 的新变量，并且在之前实现的 <code>init()</code> 函数中对其进行初始化，然后添加每次加载索引页时所需要的一些功能。</p>
+
+            <p class="notes"><strong>注：</strong>您在以下步骤中创建的函数和元素之间存在相互依赖关系。建议您完成此部分，然后在代码全部完成之后检查此代码。</p>
+
+            <ol>
+                <li>在源代码编辑器中打开索引页，并在刚才创建的 HTML 表格的第二行中键入以下代码。
+
+<pre class="examplecode">
+&lt;tr&gt;
+    <strong>&lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        &lt;table id=&quot;complete-table&quot; /&gt;
+    &lt;/td&gt;</strong>
+&lt;/tr&gt;</pre>
+
+                    此表格的第二行包含其他 HTML 表格。此表格表示将用于填写作曲家名字的自动完成框。</li>
+
+                <li>在源代码编辑器中打开 <code>javascript.js</code>，并在文件顶部添加以下三个变量。
+
+<pre class="examplecode">
+var completeField;
+var completeTable;
+var autoRow;</pre></li>
+
+                <li>将以下行（以<strong>粗体</strong>显示）添加到 <code>init()</code> 函数中。
+
+<pre class="examplecode">
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+    <strong>completeTable = document.getElementById(&quot;complete-table&quot;);
+    autoRow = document.getElementById(&quot;auto-row&quot;);
+    completeTable.style.top = getElementY(autoRow) + &quot;px&quot;;</strong>
+}</pre>
+
+                    <code>init()</code> 的一个作用是使修改索引页 DOM 的其他函数可以访问索引页内的元素。</li>
+
+                <li>将 <code>appendComposer()</code> 添加到 <code>javascript.js</code>。
+
+ <pre class="examplecode">
+function appendComposer(firstName,lastName,composerId) {
+
+    var row;
+    var cell;
+    var linkElement;
+
+    if (isIE) {
+        completeTable.style.display = 'block';
+        row = completeTable.insertRow(completeTable.rows.length);
+        cell = row.insertCell(0);
+    } else {
+        completeTable.style.display = 'table';
+        row = document.createElement(&quot;tr&quot;);
+        cell = document.createElement(&quot;td&quot;);
+        row.appendChild(cell);
+        completeTable.appendChild(row);
+    }
+
+    cell.className = &quot;popupCell&quot;;
+
+    linkElement = document.createElement(&quot;a&quot;);
+    linkElement.className = &quot;popupItem&quot;;
+    linkElement.setAttribute(&quot;href&quot;, &quot;autocomplete?action=lookup&id=&quot; + composerId);
+    linkElement.appendChild(document.createTextNode(firstName + &quot; &quot; + lastName));
+    cell.appendChild(linkElement);
+}</pre>
+
+                    此函数创建了一个新的表行，并用其所含的三个参数传递的数据将指向作曲家的链接插入此表行中，然后将此行插入索引页的 <code>complete-table</code> 元素中。</li>
+
+                <li>将 <code>getElementY()</code> 添加到 <code>javascript.js</code>。
+
+                <pre class="examplecode">
+function getElementY(element){
+
+    var targetTop = 0;
+
+    if (element.offsetParent) {
+        while (element.offsetParent) {
+            targetTop += element.offsetTop;
+            element = element.offsetParent;
+        }
+    } else if (element.y) {
+        targetTop += element.y;
+    }
+    return targetTop;
+}</pre>
+
+                    此函数用于查找父元素的垂直位置。这是必要的，因为此元素的实际位置（如果显示）通常根据浏览器的类型和版本而定。请注意，如果 <code>complete-table</code> 元素显示包含作曲家名字，则会移动到其所在表格中的右下角。正确的高度定位由 <code>getElementY()</code> 确定。 <br><br>
+                    <p class="notes"><strong>注：</strong>请在 <a href="http://www.quirksmode.org/">http://www.quirksmode.org/</a> 上查看 <code>offset</code> 的<a href="http://www.quirksmode.org/js/findpos.html">说明</a>。</p></li>
+
+                <li>将 <code>clearTable()</code> 添加到 <code>javascript.js</code>。
+
+ <pre class="examplecode">
+function clearTable() {
+    if (completeTable.getElementsByTagName("tr").length > 0) {
+        completeTable.style.display = 'none';
+        for (loop = completeTable.childNodes.length -1; loop >= 0 ; loop--) {
+            completeTable.removeChild(completeTable.childNodes[loop]);
+        }
+    }
+}</pre>
+
+                    此函数用于将 <code>complete-table</code> 元素的显示方式设置为“无”（也就是使其不可见），并删除所有已创建的现有作曲家名字条目。</li>
+
+                <li>修改 <code>callback()</code> 函数以便每次从服务器接收到新数据时都调用 <code>clearTable()</code>。因此，在用新条目填充自动完成框之前其中已存在的任何作曲家条目均会删除。
+
+<pre class="examplecode">
+function callback() {
+
+    <strong>clearTable();</strong>
+
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+
+                <li>将 <code>parseMessages()</code> 添加到 <code>javascript.js</code>。
+
+<pre class="examplecode">
+function parseMessages(responseXML) {
+
+    // no matches returned
+    if (responseXML == null) {
+        return false;
+    } else {
+
+        var composers = responseXML.getElementsByTagName(&quot;composers&quot;)[0];
+
+        if (composers.childNodes.length &gt; 0) {
+            completeTable.setAttribute(&quot;bordercolor&quot;, &quot;black&quot;);
+            completeTable.setAttribute(&quot;border&quot;, &quot;1&quot;);
+
+            for (loop = 0; loop &lt; composers.childNodes.length; loop++) {
+                var composer = composers.childNodes[loop];
+                var firstName = composer.getElementsByTagName(&quot;firstName&quot;)[0];
+                var lastName = composer.getElementsByTagName(&quot;lastName&quot;)[0];
+                var composerId = composer.getElementsByTagName(&quot;id&quot;)[0];
+                appendComposer(firstName.childNodes[0].nodeValue,
+                    lastName.childNodes[0].nodeValue,
+                    composerId.childNodes[0].nodeValue);
+            }
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p><code>parseMessages()</code> 函数作为参数接收由 <code>AutoComplete</code> servlet 返回的 XML 文档的对象表示。此函数以编程方式遍历 XML 文档，提取每个条目的 <code>firstName</code>、<code>lastName</code> 和 <code>id</code>，然后将数据传递到 <code>appendComposer()</code>。这将导致动态更新 <code>complete-table</code> 元素的内容。例如，已生成并插入 <code>complete-table</code> 中的条目如下所示：
+
+                <div class="indent">
+                    <div class="indent">
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td class=&quot;popupCell&quot;&gt;
+        &lt;a class=&quot;popupItem&quot; href=&quot;autocomplete?action=lookup&id=12&quot;&gt;Antonin Dvorak&lt;/a&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+
+                    </div>
+                </div>
+
+            <p>对 <code>complete-table</code> 元素的动态更新是使用 Ajax 进行通信的过程中所产生的通信过程流的最后一步。此更新会映射到正在发送给以上<a href="#flow-diagram">流程图</a>中表示的 HTML 和 CSS 数据。</p>
+
+            <h3 id="displayresults">显示结果</h3>
+            <p>要显示结果，您需要一个名为 <code>composers.jsp</code> 的 JSP 文件。在查找操作期间会从 <code>AutoCompleteServlet</code> 中调用此页。您还需要一个 <code>error.jsp</code> 文件，如果找不到编写器，则从 <code>AutoCompleteServlet</code> 中调用此文件。</p>
+            <p><strong>显示结果和错误：</strong></p>
+            <ol>
+                <li>在“项目”窗口中，右键单击应用程序的“Web 页”文件夹并选择“新建”> "JSP"。此时将打开新建 JSP 向导。</li>
+                <li>在“文件名”字段中，键入 <code>composer</code>。在“创建的文件”字段中，您会看到一个以 <code>/web/composer.jsp</code> 结尾的路径。</li>
+                <li>单击“完成”。<code>composer.jsp</code> 文件在编辑器中打开。该文件的节点将显示在“项目”窗口的“Web 页”文件夹中。 </li>
+                <li>将 <code>composer.jsp</code> 中的占位符代码替换为以下代码：
+                    <pre class="examplecode">&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Composer Information&lt;/title&gt;
+
+    &lt;link rel="stylesheet" type="text/css" href="stylesheet.css"&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+
+    &lt;table&gt;
+      &lt;tr&gt;
+        &lt;th colspan="2"&gt;Composer Information&lt;/th&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;First Name: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.firstName}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Last Name: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.lastName}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;ID: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.id}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Category: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.category}&lt;/td&gt;
+      &lt;/tr&gt;      
+    &lt;/table&gt;
+
+    &lt;p&gt;Go back to &lt;a href="index.html" class="link"&gt;application home&lt;/a&gt;.&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+                <p class="notes"><strong>注：</strong>如果索引页为 <tt>index.jsp</tt>，则需要更改链接以返回到该索引页。</p>
+                </li>
+<li>在该项目的“Web 页”文件夹下创建另一个 JSP 文件。将该文件命名为 <code>error.jsp</code>。</li>
+<li>将 <code>error.jsp</code> 中的占位符代码替换为以下代码：
+    <pre class="examplecode">&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;link rel="stylesheet" type="text/css" href="stylesheet.css"&gt;      
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+        &lt;title&gt;Seach Error&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h2&gt;Seach Error&lt;/h2&gt;
+        
+        &lt;p&gt;An error occurred while performing the search. Please try again.&lt;/p&gt;
+        
+        &lt;p&gt;Go back to &lt;a href="index.html" class="link"&gt;application home&lt;/a&gt;.&lt;/p&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+    <p class="notes"><strong>注：</strong>如果索引页为 <tt>index.jsp</tt>，则需要更改链接以返回到该索引页。</p>
+</li>
+            </ol>
+            <h3 id="stylesheet">附加样式表</h3>
+
+            <p>在此阶段，您已完成了实现此应用程序功能所需的所有代码。要查看您的努力成果，请立即尝试运行此应用程序。</p>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口中，右键单击该项目节点并选择 "Run"（运行）。此项目会重新编译，并部署到目标服务器。此时您的浏览器会打开，并可以查看索引页。 <br> <img alt="浏览器中显示的不带样式表的应用程序" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/no-css.png" title="不带样式表的成功部署"></li>
+            </ol>
+
+            <p>要向您的应用程序添加一个样式表，只需创建 <code>.css</code> 文件，并从您的演示页面链接到此文件。当您使用 <code>.css</code> 文件时，IDE 会为您提供代码完成支持，以及以下有助于生成和编辑样式表规则的窗口。</p>
+
+            <ul>
+                <li><strong>"CSS Styles"（CSS 样式）窗口。</strong>"CSS Styles"（CSS 样式）窗口用于编辑 CSS 文件中的 HTML 元素和选择器的规则声明。</li>
+                <li><strong>"Create CSS Rules"（创建 CSS 规则）对话框。</strong>"Create CSS Rule"（创建 CSS 规则）对话框用于在 CSS 样式表中创建新规则。 </li>
+                <li><strong>"Add CSS Property"（添加 CSS 属性）对话框。</strong>"Add CSS Property"（添加 CSS 属性）对话框用于通过添加属性和值来为样式表中 CSS 规则添加声明。 </li>
+            </ul>
+
+            <p>要向您的应用程序添加一个样式表，请执行以下步骤。</p>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口中，右键单击 "Web Pages"（Web 页）节点，然后选择 "New"（新建）> "Cascading Style Sheet"（级联样式表）（如果 "Cascading Style Sheet"（级联样式表）未列出，则选择 "Other"（其他）。然后从新建文件向导的 "Web" 类别中选择 "Cascading Style Sheet"（级联样式表）。）</li>
+
+                <li>在 "CSS File Name"（CSS 文件名）文本字段中，键入 <strong><code>stylesheet</code></strong>。单击 "Finish"（完成）。 
+                    <p>此时会创建新文件，并在编辑器中打开。</p></li>
+
+                <li>在编辑器的 <code>stylesheet.css</code> 中键入以下规则。您可以使用 IDE 的代码完成支持，方法是：在希望查看建议时按 Ctrl-空格组合键。
+
+<pre class="examplecode">
+body {
+   font-family: Verdana, Arial, sans-serif;
+   font-size: smaller;
+   padding: 50px;
+   color: #555;
+   width: 650px;
+}
+
+h1 {
+   letter-spacing: 6px;
+   font-size: 1.6em;
+   color: #be7429;
+   font-weight: bold;
+}
+
+h2 {
+   text-align: left;
+   letter-spacing: 6px;
+   font-size: 1.4em;
+   color: #be7429;
+   font-weight: normal;
+   width: 450px;
+}
+
+table {
+   width: 550px;
+   padding: 10px;
+   background-color: #c5e7e0;
+}
+
+td {
+   padding: 10px;
+}
+
+a {
+  color: #be7429;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.popupBox {
+  position: absolute;
+  top: 170px;
+  left: 140px;
+}
+
+.popupCell {
+   background-color: #fffafa;
+}
+
+.popupCell:hover {
+  background-color: #f5ebe9;
+}
+
+.popupItem {
+  color: #333;
+  text-decoration: none;
+  font-size: 1.2em;
+}</pre>
+
+                </li>
+                <li>选择 "Window"（窗口）> "Web" > "CSS Styles"（CSS 样式），打开 "CSS Styles"（CSS 样式）窗口。<br> <img alt="&amp;quot;CSS Styles&amp;quot;（CSS 样式）窗口显示 h1 规则属性" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/css-styles-window.png" title="&amp;quot;CSS Styles&amp;quot;（CSS 样式）窗口显示 h1 规则属性">
+
+                <p>使用 "CSS Styles"（CSS 样式）窗口可以快速查看属性和编辑样式规则。当在 "CSS Styles"（CSS 样式）窗口的上方窗格中选择规则时，您可以在下方窗格中查看该规则的属性。单击上方窗格工具栏中的 "Edit CSS Rules"（编辑 CSS 规则）图标 (<img alt="&amp;quot;New CSS Property&amp;quot;（新建 CSS 属性）图标" src="../../../images_www/articles/73/web/ajax-intro/newcssrule.png" title="&amp;quot;New CSS Property&amp;quot;（新建 CSS 属性）图标">)，可以为样式表添加 CSS 规则。通过编辑属性表单可以在下方窗格中修改规则，通过单击下方窗格工具栏中的 "Add Property"（添加属性）图标 (<img alt="&amp;quot;New CSS Property&amp;quot;（新建 CSS 属性）图标" src="../../../images_www/articles/73/web/ajax-intro/newcssproperty.png" title="&amp;quot;New CSS Property&amp;quot;（新建 CSS 属性）图标">) 可以添加属性。
+                </li>
+
+                <li>切换到源代码编辑器中的索引页，并在 <code>&lt;head></code> 标记之间添加对样式表的引用。
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;</pre></li>
+
+
+                <li>将样式表中定义的 <code>popupBox</code> 类添加到 <code>complete-table</code> 元素中（更改的内容以<strong>粗体</strong>显示）。
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        &lt;table id=&quot;complete-table&quot; <strong>class=&quot;popupBox&quot;</strong> /&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+                    <p>使用编辑器中的代码完成可以帮助您选择要应用于选择器的样式规则。</p>
+                    <img alt="编辑器中的 CSS 代码完成" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/css-completion.png" title="编辑器中的 CSS 代码完成">
+
+                    <p>如 <code>stylesheet.css</code> 中所示，此规则确定 <code>complete-table</code> 元素的位置，以便该元素显示在略靠其父元素右侧的位置。</p></li>
+            </ol>
+            <p>保存索引页时，应用程序会自动重新部署到服务器。如果仍在浏览器中打开该页，则可以重新加载该页，您可以看到此时该页根据 CSS 样式表中的规则呈现。 </p>
+        </div>
+
+
+        <br>
+        <h2 id="run">运行项目</h2>
+
+        <p>当再次运行该应用程序时，它将使用刚才创建的样式表显示在浏览器中。每次您键入字符时，都会向服务器发送异步请求，并返回 <code>AutoCompleteServlet</code> 准备好的 XML 数据。随着您输入的字符增多，为了反映匹配项的新列表，作曲家名字的数量会越来越少。</p>
+
+
+        <h3 id="httpMonitor">使用 HTTP 服务器监视器</h3>
+
+        <p>您可以使用 IDE 的 HTTP 服务器监视器来验证在客户端与服务器之间传递请求和响应时发生的 HTTP 通信。HTTP 服务器监视器显示以下信息：如客户端和服务器头、会话属性、cookie 详细信息以及请求参数。</p>
+
+        <p>必须先在您使用的服务器上启用 HTTP 监视器，然后才能开始使用它。</p>
+
+        <ol>
+            <li>通过从主菜单中选择 "Tools"（工具）> "Servers"（服务器）打开 "Servers"（服务器）窗口。</li>
+
+            <li>在左窗格中，选择用于该项目的服务器。然后，在右窗格中，选择 "Enable HTTP Monitor"（启用 HTTP 监视器）选项。
+                <p class="notes"><strong>注：</strong>对于 GlassFish Server，此选项显示在 "Common"（通用）标签下。对于 Tomcat，则位于 "Connection"（连接）标签下。</p></li>
+            <li>单击 "Close"（关闭）。</li>
+        </ol>
+
+        <p class="alert">如果服务器已经运行，则必须重新启动服务器，更改才能生效。您可以通过以下方式重新启动服务器：打开 "Services"（服务）窗口（"Window"（窗口）> "Services"（服务）），然后在 "Servers"（服务器）节点下右键单击您的服务器，并选择 "Restart"（重新启动）。</p>
+
+        <p>现在，当再次运行应用程序时，HTTP 监视器在 IDE 下部区域中打开。您可以在左窗格中选择一条记录，然后在主窗口中单击标签来查看与每个请求相关的信息。</p>
+
+        <div class="indent">
+            <img alt="HTTP 服务器监视器显示在 IDE 中" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/http-monitor.png" style="width:688px" title="HTTP 服务器监视器显示在 IDE 中"></div>
+
+        <p>当用户在自动完成字段中输入字符时，您可以验证作为异步请求的结果从服务器发送的 XML 数据。</p>
+
+        <ol>
+            <li>在 HTTP 监视器左侧的树视图中，右键单击一个请求记录并选择 "Replay"（重新显示）。</li>
+        </ol>
+
+        <p>随即在您的浏览器中生成响应。在本例中，由于响应中包含 XML 数据，因此浏览器将在其本机 XML 查看器中显示数据。</p>
+
+        <div class="indent">
+            <img alt="HTTP 服务器监视器显示在 IDE 中" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/xml-data.png" style="width:688px" title="HTTP 服务器监视器显示在 IDE 中"></div>
+
+
+        <h3 id="conclusion">小结</h3>
+
+        <p>以下内容对 Ajax 简介进行了小结。希望现在您已经明白了 Ajax 只是在后台通过 HTTP 交换信息，并基于结果动态地更新该页面。</p>
+
+        <p>您可能注意到，构建的应用程序存在许多缺点，例如，从自动完成框中选择作曲家姓名时无任何响应！欢迎您<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaScript%252FMyAjaxApp.zip">下载解决方案项目</a>，以了解如何使用 JSP 技术实现这一点。此外，您可能希望研究如何通过服务器端验证来阻止用户请求数据存储中不存在的姓名。通过 <a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a>中的其他教程，您可以进一步学习这些技巧和技术。</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Ajax%20(Java)">请将您的反馈意见发送给我们</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">另请参见</h2>
+
+        <p>有关 <a href="https://netbeans.org/">netbeans.org</a> 中的 Ajax 和 Java 技术的更多信息，请参见以下资源：</p>
+
+        <ul>
+            <li><a href="../../docs/web/js-toolkits-jquery.html">使用 jQuery 改善 Web 页的外观和可用性</a>。介绍如何将 jQuery 核心和 UI 库集成到 NetBeans 项目中。</li>
+
+            <li><a href="../../docs/web/js-toolkits-dojo.html">使用 JSON 将 Dojo 树连接至 ArrayList</a>。本文档基于 JavaOne 动手实验室，介绍了如何在 Web 页中实现 Dojo 树窗口部件，并使服务器端能够以 JSON 格式响应树请求。</li>
+
+            	<li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2272">创建 JavaScript 文件</a>。</li>
+
+            <li><a href="quickstart-webapps-wicket.html">Wicket Web 框架简介</a>。介绍使用 Wicket 框架创建可重用组件并将它们应用于 Web 应用程序。</li>
+
+            
+            
+        </ul>
+
+    </body>
+</html>

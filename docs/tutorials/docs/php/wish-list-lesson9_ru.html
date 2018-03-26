@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Создание приложения на основе базы данных на языке PHP.  Развертывание приложения на удаленном веб-сервере </title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Deploying the Application on a Remote Server" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">  
+   </head>
+   <body>
+<h1>Создание приложения на основе базы данных на языке PHP</h1>
+<h1>Урок 9: Развертывание приложения на удаленном веб-сервере </h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Содержание учебного курса.</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Создание приложения на основе базы данных с помощью языка PHP &ndash; главная страница</a></li>
+    <li><p>Создание базы данных</p> <ol type="a"><li><a href="wish-list-lesson1.html">Создание базы данных MySQL</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Создание таблиц базы данных Oracle</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">Проектирование приложения. Чтение из базы данных</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">Создание нового пользователя приложения</a></li>
+    <li><a href="wish-list-lesson4.html">Усовершенствование кода</a></li>
+    <li><a href="wish-list-lesson5.html">Добавление функций безопасности. Реализация входа пользователя в приложение</a></li>
+    <li><a href="wish-list-lesson6.html">Добавление нового пожелания в базу данных</a></li>
+    <li>      <a href="wish-list-lesson7.html">Обновление и удаление записей в базе данных</a></li>
+    <li><a href="wish-list-lesson8.html">Усовершенствование внешнего вида приложения с использованием технологии CSS</a></li>
+    <li>
+      <p><b>=&gt;Развертывание приложения на удаленном веб-сервере</b></p>
+    <ul>
+    <li><a href="#previousLessonSourceCode">Исходный код приложения из предыдущего урока</a></li>
+    <li><a href="#registerEmailAccount">Регистрация учетной записи электронной почты</a></li>
+    <li><a href="#registerHostingAccount">Регистрация учетной записи размещения</a></li>
+    <li><a href="#registeringFTPAccount">Регистрация учетной записи FTP</a></li>
+    <li><a href="#creatingRemoteDatabase">Создание удаленной базы данных</a></li>
+    <li><a href="#settingUpPHPProjectWithSources">Настройка проекта PHP с существующими исходными файлами</a></li>
+    <li><a href="#updatingClassWishDB">Обновление класса WishDB</a></li>
+    <li><a href="#nextSteps">Следующие действия</a></li></ul></li>
+        </ol>
+</div>
+</div>
+
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+<p>Как правило, в реальной жизни PHP-приложение запускается на удаленном сервере и доступно через протокол передачи файлов (FTP). Для развертывания приложения CRUD на удаленном сервере необходимо зарегистрировать учетную запись у поставщика услуг размещения, зарегистрировать учетную запись FTP и создать удаленную базу данных.</p>
+<p>Можно использовать любое размещение.  В данном документе описывается процедура развертывания приложения на бесплатном размещении X10HOSTING. На этом размещении имеется сервер MySQL, но не сервер базы данных Oracle.</p>
+<p class="notes"> Все имена пользователей, пароли и адреса электронной почты являются вымышленными и используются только в качестве примера.  Администрация размещения блокирует учетную запись, если пользователь не посещает форум больше недели.  Таким образом, возможно, что попытка использовать имена пользователей, пароли, адреса электронной почты и тому подобные координаты, взятые неизменными из данного учебного курса, будет неудачной.</p>
+<p>В этом уроке вы научитесь выполнению следующих действий:</p>
+<ul>
+  <li style="margin-left:40em"><a href="#hideLogonForm">Регистрация учетной записи размещения</a></li>
+  <li style="margin-left:40em"><a href="#improveTableEmptyCells">Регистрация учетной записи FTP </a> </li>
+  <li style="margin-left:40em"><a href="#designStyles">Создание удаленной базы данных MySQL </a></li>
+  <li style="margin-left:40em"><a href="#divs">Настройка проекта для использования зарегистрированного удаленного веб-размещения</a></li>
+  <li style="margin-left:40em">Изменение параметров настройки подключения к базе данных для использования удаленной базы данных </li>
+</ul>
+<p>Текущий документ является частью краткого учебного курса "Создание приложения CRUD в IDE NetBeans для PHP". </p>
+<br style="clear:left">
+<h2><a name="previousLessonSourceCode"></a>Исходный код приложения из предыдущего урока</h2>
+<p>Для пользователей MySQL: щелкните <a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank"> здесь</a>, чтобы загрузить исходный код, отражающий состояние проекта после завершения предыдущего урока.</p>
+<h2><a name="registerEmailAccount"></a>Регистрация учетной записи электронной почты</h2>
+<p>Создайте учетную запись электронной почты, если она не существует.  В этом примере используется адрес электронной почты phpuser65@googlemail.com. </p>
+<h2><a name="registerHostingAccount"></a>Регистрация учетной записи размещения </h2>
+<p>Для создания учетной записи размещения на бесплатном размещении <a href="http://x10hosting.com/" target="_blank">X10HOSTING</a> выполните действия, предлагаемые мастером, путем ввода следующих параметров.  Подобная информация вводится на любом другом сайте размещения.</p>
+<table>
+     <tbody>
+	   <tr>
+         <th class="tblheader" scope="col">Параметр учетной записи </th>
+         <th class="tblheader" scope="col">Значение</th>
+       </tr>
+	   <tr>
+	   <td>Адрес электронной почты</td>
+	   <td>phpuser65@gmail.com</td>
+	   </tr>
+       <tr>
+         <td>Имя домена </td>
+         <td><a href="http://x10hosting.com/" target="_blank">x10Hosting.com</a></td>
+       </tr>
+       <tr>
+         <td>Поддомен</td>
+         <td>phpuser
+       </tr>
+       <tr>
+         <td>Имя учетной записи размещения (также для входа в cPanel) </td>
+         <td>phpuser</td>
+       </tr>
+       <tr>
+         <td>Пароль учетной записи размещения (также для входа в cPanel) </td>
+         <td>qwerty1234</td>
+       </tr>
+	   <tr>
+         <td>Имя пользователя форума </td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+         <td>Пароль форума </td>
+         <td>qwerty</td>
+       </tr>
+	   <tr>
+         <td>Имя учетной записи FTP </td>
+         <td>средство загрузки</td>
+       </tr>
+	   <tr>
+         <td>Имя пользователя FTP </td>
+         <td>uploader@phpuser.x10hosting.com</td>
+       </tr>
+	   <tr>
+         <td>Сервер FTP </td>
+         <td>ftp.phpuser.x10hosting.com</td>
+       </tr>
+       <tr>
+         <td>Имя узла удаленной базы данных</td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+	   <td>Удаленная база данных</td>
+	   <td>wishlist</td>
+	   </tr>
+	   <tr>
+	   <td>Имя пользователя удаленной базы данных</td>
+	   <td>phpuser</td>
+	   </tr>
+	   <tr>
+	   <td>Пароль пользователя удаленной базы данных</td>
+	   <td>phpuserpw</td>
+	   </tr>
+     </tbody>
+   </table>
+<h2><a name="registeringFTPAccount"></a>Регистрация учетной записи FTP</h2>
+<p>Теперь при наличии учетной записи размещения необходимо создать учетную запись FTP, с использованием которой осуществляется передача исходного файла PHP и других связанных файлов для выполнения их на сервере.  На размещении x10Hosting откройте cPanel и выберите &quot;New FTP Account&quot;, а затем выполните указания мастера.</p>
+<h2><a name="creatingRemoteDatabase"></a>Создание удаленной базы данных</h2>
+<p>Приложение CRUD использует базу данных, поэтому на удаленном сервере, на котором была создана <a href="#registerHostingAccount">учетная запись размещения</a>, также необходимо развернуть базу данных MySQL <tt>wishlist</tt>. </p>
+
+<h2><a name="settingUpPHPProjectWithSources"></a>Настройка проекта PHP с существующими исходными файлами и настройкой выполнения &quot;Удаленный веб-сайт&quot; </h2>
+<ol>
+<li><a href="#previousLessonSourceCode">Загрузите исходные файлы</a>, описывающие состояние приложения на момент завершения предыдущего урока.  Извлеките файлы. </li>
+<li>Сохраните исходные файлы в папке <tt>htdocs</tt>.</li>
+<li>Создайте проект PHP <a href="project-setup.html#importSources"> с существующими исходными файлами</a>:
+  <ul>
+<li>Укажите местоположение загруженных исходных файлов в папке в &quot;Source&quot;.</li>
+<li>Выберите настройку выполнения <a href="project-setup.html#remiteWebSite">Удаленный веб-сайт</a> и настройте подключение по FTP. </li>
+</ul>
+</li>
+<li>Завершите создание проекта.</li>
+</ol>
+<h2><a name="updatingClassWishDB"></a>Обновление класса WishDB</h2>
+<p>Вы уже создали и выполнили приложение Wish List на локальном сервере, а также использовали локальный сервер базы данных MySQL или Oracle.  Чтобы ваше приложение работало с удаленной базой данных MySQL, необходимо обновить параметры подключения, указанные в переменных класса <tt>WishDB</tt>.</p>
+<ol>
+<li>Откройте файл <tt>db.php</tt>.</li>
+<li>Измените переменные класса <tt>WishDB</tt>:
+  <pre class="examplecode">
+    var $user = "&lt;the name of the remote database user&gt;";        
+    var $pass = "&lt;the password of the remote database user&gt;";
+    var $dbName = "&lt;the name of the remote database&gt;";
+    var $dbHost = "&lt;the account username specified during the hosting account creation&gt;";
+</pre>
+
+В этом примере переменные обновляются следующим образом:
+<pre class="examplecode">
+    var $user = "phpuser";        
+    var $pass = "phpuserpw";
+    var $dbName = "wishlist";
+    var $dbHost = "phpuser";
+</pre>
+</li>
+</ol>
+<h2><a name="nextSteps"></a>Что дальше?</h2>
+  <p><a href="wish-list-lesson8.html">&lt;&lt;Предыдущий урок</a></p>
+  <p>
+  <a href="wish-list-tutorial-main-page.html">Назад на главную страницу руководства</a></p>
+  
+  <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear:both;" >
+<p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.
+   <p><a href="../../trails/php.html">Возврат к учебной карте PHP</a></p>
+
+</body>
+</html>

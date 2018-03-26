@@ -1,0 +1,359 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+    <meta name="description" content="An introductory tutorial describing how to connect
+          to an Oracle Database in NetBeans IDE">
+
+    <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+          Orace database, SQL, structured query language, multi-user database
+          management system, Oracle XE, open source">
+
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+    <title>Oracleデータベースへの接続 - NetBeans IDEチュートリアル</title><meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+
+<body>
+<h1>NetBeans IDEからのOracleデータベースへの接続</h1>
+        <p>NetBeans IDEには、Oracleデータベースのサポートが組み込まれています。IDE内から簡単に接続を確立してデータベースの操作を開始できます。このチュートリアルでは、無償で開発、デプロイおよび配布できる小規模なデータベースであるOracle Database 10<em>g</em> Express Edition (Oracle Database XE)のローカル・インストールの使用方法を説明します。 </p>
+        
+<p>このドキュメントでは、NetBeans IDEからOracle Database XEの<a href="#connect">ローカル・インストールへの接続の設定</a>、IDEの組込みのSQLエディタを使用した<a href="#createuser">データベース・データの処理</a>、および<a href="#oci8">OCI 8 PHP拡張を有効にして</a>、Oracleデータベースに接続するPHPコードを記述する方法について説明します。 </p>
+
+<p><strong>目次</strong></p>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+<ul class="toc">
+    <li><a href="#start">始める前に</a> </li>
+    <li><a href="#connect">Oracleデータベースへの接続の確立</a></li>
+    <li><a href="#handledata">IDEからのOracleデータベースのデータの操作</a>
+      <ul>
+        <li><a href="#createuser">新規ユーザーの作成</a></li>
+        <li><a href="#createtable">表の作成</a></li>
+        <li><a href="#altertable">表データの操作</a></li>
+      </ul>
+    </li>
+    <li><a href="#tips">NetBeans IDE SQLエディタでの操作のヒント</a></li>
+    <li><a href="#oci8">OCI 8およびPHP向けのNetBeans IDE</a></li>
+    <li><a href="#oci">NetBeans IDEでのOCI JDBCドライバの使用</a> </li>
+    <li><a href="#troubleshoot">トラブルシューティング</a></li>
+    <li><a href="#seeAlso">関連項目</a></li>
+</ul> 
+
+<p><strong>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</strong></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバンドル版</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">バージョン7または8</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://www.oracle.com/technetwork/database/express-edition/overview/index.html" target="_blank">Oracle Database XE</a></td>
+              <td class="tbltd1">10 <em>g</em> Express Edition</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://www.oracle.com/technetwork/database/enterprise-edition/jdbc-112010-090769.html" target="_blank">Oracle JDBCドライバ</a></td>
+              <td class="tbltd1"><a href="http://download.oracle.com/otn/utilities_drivers/jdbc/11202/ojdbc6.jar" target="_blank">ojdbc6.jar</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2><a id="start" name="start"></a>始める前に</h2>
+    <p>このチュートリアルを始める前に、次を考慮してください。 </p>
+    <ul>
+      <li>このチュートリアルでは、ローカル・システムにインストールされているOracle Database XEインスタンスに接続する方法を説明しますが、その手順は、リモート・インスタンスに接続する場合にも適用できます。ローカル・インスタンスに接続する場合、Oracle Database XEを<a href="http://www.oracle.com/technetwork/database/express-edition/overview/index.html" target="_blank">ダウンロード</a>して、インストールする必要があります。インストール・プロセスは単純で直観的ですが、質問がある場合は、使用しているプラットフォームの<a href="http://www.oracle.com/pls/xe102/homepage" target="_blank">Oracle Database XEインストレーション・ガイド</a>を参照してください。</li>
+      <li>Oracle JDBCドライバには、OCIとJDBC Thinの2つのカテゴリがあります。
+        <ul>
+          <li>OracleのJDBC Thinドライバは、Javaに基づいており、プラットフォームから独立しています。このスタンドアロン・ドライバは他のOracleライブラリの存在を必要とせず、Oracleデータベースに直接接続できます。このチュートリアルでは、このドライバを使用して、Oracleデータベースへの接続方法を説明します。チュートリアルを進める前に、<tt>ojdbc6.jar</tt>ファイルを<a href="http://www.oracle.com/technetwork/database/enterprise-edition/jdbc-112010-090769.html" target="_blank">ダウンロード</a>してシステムに保存する必要があります。  <p class="notes"><b>Windowsユーザーに対する注意:</b> Windowsでは、ダウンロード・ファイルの拡張子が.jarから.zipに変わることがあります。ただし、それは.jarファイルのままです。ファイルの名前を.jarに変更できます。</p></li>
+          <li>OracleのOCIドライバは、Oracleのネイティブ・クライアント・ライブラリを使用してデータベースと通信します。これらのライブラリは、Oracle Instant Clientの一部として取得します。ほとんどの場合はThinドライバで十分ですが、<a href="#oci">NetBeans IDEでのOCI JDBCドライバの使用</a>の手順に従って、OCIドライバを使用する必要がある場合もあります。<br>OCIドライバの使用のよい例は、Oracle Instant Clientライブラリを使用して、PHPアプリケーションからリモートOracleデータベースにアクセスすることです。PHP用にOCI 8拡張を有効にする方法については、このチュートリアルの<a href="#oci8">OCI 8およびPHP向けのNetBeans IDE</a>の項を参照してください。</li>
+        </ul>
+      </li>
+      <li>これまでOracle Database XEを使用したことがない場合、Oracle Database XE<a href="http://download.oracle.com/docs/cd/B25329_01/doc/admin.102/b25610/toc.htm">入門チュートリアル</a>を実行してください。</li></ul>
+      <p class="alert"><strong>GlassFishユーザーに対する警告:</strong> データベースの管理に使用するOracle Database XEホーム・ページでは、デフォルトでポート8080を使用します。Oracle GlassFishアプリケーション・サーバーもデフォルトでポート8080を使用します。両方のプログラムを同時に実行すると、Oracle Database XEは、ブラウザがlocalhost:8080でGlassFishにアクセスしないようにブロックします。この場合、GlassFishにデプロイされたすべてのアプリケーションが404を返します。単純な解決方法は、GlassFishを実行する場合に、Oracle Database XEが必要なければ、それを停止することです。同時に両方を実行する必要がある場合は、Oracle Database XEが使用するデフォルトのポートを変更します。これは、GlassFishのデフォルトのポートを変更するよりも簡単です。Oracle Database XEのデフォルトのポートの変更についての手順は、<a href="https://forums.oracle.com/forums/thread.jspa?threadID=336855">Oracleフォーラム</a>のものを含めて、インターネット上に多く掲載されています。</p>
+
+  
+<h2><a id="connect" name="connect"></a>Oracleデータベースへの接続の確立</h2>
+    <p>この課題では、データベースへの新しい接続をテストし、作成します。 </p>
+    <ol>
+      <li>Oracleデータベースを起動します。</li>
+      <li>「サービス」ウィンドウ(「ウィンドウ」>「サービス」またはCtrl-5、Macの場合は⌘-5)を開きます。「サービス」ウィンドウで、「データベース」ノードを右クリックし、「新規接続」を選択します。<br> <img alt="「データベース」ノードのポップアップ・メニューにある「新規接続」項目" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/new-connection.png"></li>
+      <li>新規接続ウィザードで、「ドライバ」ドロップダウン・リストの「Oracle Thin」を選択します。</li>
+      <li>「追加」をクリックし、前にダウンロードした<tt>ojdbc6.jar</tt>ファイルを見つけます。「次」をクリックします。      </li>
+      <li>ウィザードの「接続をカスタマイズ」パネルで、次の値を入力して、「次」をクリックします。<br>
+        <table width="85%" >
+          <tr>
+            <th width="25%" class="tblheader" scope="col">名前</th>
+            <th width="75%" class="tblheader" scope="col">値</th>
+          </tr>
+          <tr>
+            <td class="tbltd1">ドライバ名 </td>
+            <td class="tbltd1">Oracle Thin (サービスID (SID)) </td>
+          </tr>
+          <tr>
+            <td class="tbltd1">ホスト</td>
+            <td class="tbltd1"><tt>localhost</tt>または127.0.0.1<br><em>注意:</em> リモート接続の場合、データベースがインストールされているマシンのIPアドレスまたは解決可能なホスト名を指定します。 </td>
+          </tr>
+          <tr>
+            <td class="tbltd1">ポート</td>
+            <td class="tbltd1">1521 (デフォルト)</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">サービスID (SID) </td>
+            <td class="tbltd1"><tt>XE</tt> (Oracle Database XEのデフォルトのSID)<br><em>注意</em>: リモート・データベースに接続する場合、データベース管理者に、データベースSIDの提供を依頼します。 </td>
+          </tr>
+          <tr>
+            <td class="tbltd1">ユーザー名</td>
+            <td class="tbltd1"><p>ユーザー名を入力してください。<br>チュートリアルの目的のため、「<tt>system</tt>」(デフォルトのデータベース管理者アカウント)と、データベースのインストール時に使用したパスワードを入力します。 </p></td>
+          </tr>
+          <tr>
+            <td class="tbltd1">パスワード</td>
+            <td class="tbltd1">選択したユーザー名のパスワードを入力します。 </td>
+          </tr>
+        </table>
+      </li>
+      <li>「接続をテスト」をクリックし、IDEがデータベースに接続できることを確認します。「次」をクリックします。
+          <p>成功した場合、ウィザードにメッセージ「接続に成功しました」が表示されます。 </p>
+      <img alt="確立された接続" border="0" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/customize-conn.png"></li>
+      <li>「スキーマを選択」ドロップダウン・リストの「<tt>HR</tt>」を選択します。「終了」をクリックします。
+      <p class="notes"><b>注意:</b> NetBeansでHRスキーマにアクセスする前に、それをロック解除する必要があります。HRデータベースのロック解除については、Oracle Database XE<a href="http://download.oracle.com/docs/cd/B25329_01/doc/admin.102/b25610/toc.htm">入門チュートリアル</a>で説明されています。</p></li>
+    </ol>
+<p>「サービス」ウィンドウの「データベース」ノードの下に新しい接続が表示されます。それを展開し、データベース・オブジェクトの構造の参照を開始できます。<br>接続ノードの表示名を変更します。ノードのポップアップ・メニューから「プロパティ」を選択し、「表示名」プロパティの省略符号ボタンをクリックします。「表示名」として「OracleDB」と入力し、「OK」をクリックします。</p>
+    <img alt="確立された接続" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/connection.png"><br>
+    <p class="notes"><strong>注意:</strong>前述の手順では、ローカル・データベース・インスタンスに接続する場合について説明していますが、<em>リモート</em>・データベースに接続する場合の手順も同じです。唯一の違いは、ホスト名として<tt>localhost</tt>を指定するかわりに、Oracleデータベースがインストールされているリモート・マシンのIPアドレスまたはホスト名を入力することです。</p>
+
+
+    <h2><a name="handledata"></a>Oracleデータベースのデータの操作 </h2>
+    <p>データベースと対話する一般的な方法は、SQLエディタまたはデータベース管理インタフェースを使用して、SQLコマンドを実行することです。たとえば、Oracle Database XEにはブラウザ・ベースのインタフェースがあり、データベースの管理、データベース・オブジェクトの管理、およびデータの操作を行うことができます。  </p>
+    <p>Oracleデータベース管理インタフェースから、ほとんどのデータベース関連タスクを実行できますが、このチュートリアルでは、NetBeans IDEでSQLエディタを使用して、これらのタスクの一部を実行する方法を説明します。次の課題では、新しいユーザーを作成し、表をすばやく再作成して、表データをコピーする方法を説明します。 </p>
+    
+    <div class="indent">
+    <h3><a name="createuser"></a>ユーザーの作成</h3>
+    <p>新しいデータベース・ユーザー・アカウントを作成して、データベースの表とデータを操作します。新規ユーザーを作成するには、データベース管理者アカウント、この例では、データベースのインストール時に作成したデフォルトの<tt>system</tt>アカウントでログインする必要があります。</p>
+    <ol>
+      <li>「サービス」ウィンドウで、OracleDB接続ノードを右クリックし、「コマンドの実行」を選択します。これにより、NetBeans IDEのSQLエディタが開き、データベースに送信するSQLコマンドを入力できます。<br> <img alt="「サービス」ウィンドウの「コマンドの実行」メニュー項目" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/execute.png"></li>
+      <li>新しいユーザーを作成するには、SQLエディタ・ウィンドウで次のコマンドを入力し、ツールバーの「SQLの実行」ボタンをクリックします。<br><img alt="ユーザーの作成コマンド" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/create-user.png"><br>
+      <pre class="examplecode">create user jim<br>identified by mypassword<br>default tablespace users<br>temporary tablespace temp<br>quota unlimited on users;</pre>
+      <p>このコマンドは、新規ユーザー<tt>jim</tt>をパスワード<tt>mypassword</tt>で作成します。デフォルトの表領域は<tt>users</tt>で、割り当てられる領域は無制限です。 </p></li>
+      <li>次のステップは、<tt>jim</tt>ユーザー・アカウントに、データベースのアクションを実行する権限を与えることです。ユーザーがデータベースに接続し、ユーザーのデフォルトの表領域で表を作成して変更し、サンプル<tt>hr</tt>データベースの<tt>Employees</tt>表にアクセスできるようにする必要があります。
+
+          <p class="notes">実際には、データベース管理者がカスタム・ロールを作成し、各ロールの権限を微調整します。ただし、チュートリアルの目的のため、<tt>CONNECT</tt>などの定義済のロールを使用できます。ロールと権限の詳細は、<a href="http://download.oracle.com/docs/cd/E11882_01/network.112/e16543/toc.htm" target="_blank">Oracle Databaseセキュリティ・ガイド</a>を参照してください。</p>
+        <pre class="examplecode">
+grant connect to jim;
+grant create table to jim;
+grant select on hr.departments to jim;</pre>
+      </li>
+    </ol>
+
+    <div class="feedback-box float-left" style="width: 723px;">
+        
+        <h3>Oracleデータベースの表領域 </h3>
+        <p>表領域は、Oracleデータベースの論理データベース記憶域単位です。実際に、データベースのすべてのデータが表領域に保存されます。割り当てられた表領域内に表を作成します。デフォルトの表領域が明示的にユーザーに割り当てられていない場合、システムの表領域がデフォルトで使用されます(この状況は避けたほうが得策です) </p>
+        <p>表領域の概念の詳細は、<a href="http://www.orafaq.com/wiki/Tablespace" target="_blank">Oracle FAQ: 表領域</a>を参照してください。</p>
+    </div>
+
+    <br style="clear: left">
+
+
+    <h3><a name="createtable"></a>表の作成</h3>
+    <p>NetBeans IDEからデータベースに表を作成する方法は複数あります。たとえば、SQLファイルを実行する(ファイルを右クリックし、「ファイルを実行」を選択)、SQLコマンドを実行する(接続ノードを右クリックし、「コマンドの実行」を選択)、または「表を作成」ダイアログ・ボックスを使用する(「表」ノードを右クリックし、「表を作成」を選択)ことができます。この課題では、別の表の構造を使用して、表を再作成します。 </p>
+
+    <p>この例では、ユーザー<tt>jim</tt>で、<tt>hr</tt>データベースから表を再作成して、そのスキーマに<tt>Departments</tt>表のコピーを作成します。表を作成する前に、サーバーから切断し、ユーザー<tt>jim</tt>としてログインする必要があります。</p>
+
+    <ol>
+        <li>「サービス」ウィンドウで<tt>OracleDB</tt>接続ノードを右クリックし、「切断」を選択します。</li>
+        <li>「<tt>OracleDB</tt>」接続ノードを右クリックし、「接続」を選択して、<tt>jim</tt>としてログインします。</li>
+        <li>HRスキーマの下の「表」ノードを展開し、ユーザー<tt>jim</tt>から<tt>Departments</tt>表にのみアクセスできることを確認します。
+        <p>ユーザー<tt>jim</tt>の作成時に、選択権限が<tt>Departments</tt>表にのみ制限されています。   </p>
+        <img alt="表の構造の保存" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/hr-view.png"></li>
+        <li>「<tt>Departments</tt>」表ノードを右クリックし、「構造を保存」を選択します。ディスクに<tt>.grab</tt>ファイルを保存します。</li>
+        <li><tt>JIM</tt>スキーマを展開し、「<tt>表</tt>」ノードを右クリックして、「表を再作成」を選択します。<br>作成した<tt>.grab</tt>ファイルをポイントします。<br> <img alt="別のユーザーのスキーマでの表の再作成" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/recreate.png"></li>
+        <li>表の作成に使用するSQLスクリプトを確認します。「OK」をクリックします。<br><img alt="別のユーザーのスキーマでの表の再作成" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/nametable.png"><br>「OK」をクリックすると、新しい<tt>DEPARTMENTS</tt>表が作成され、<tt>JIM</tt>スキーマ・ノードの下に表示されます。表ノードを右クリックし、「データを表示」を選択すると、表が空であることがわかります。 </li>
+    </ol>
+    <p>元の<tt>Departments</tt>表から新しい表にデータをコピーする場合、表エディタでデータを手動で入力するか、新しい表に対してSQLスクリプトを実行して、表に入力できます。</p>
+
+    <p><strong>データを手動で入力するには、次の手順を実行します。</strong></p>
+    <ol>
+        <li><tt>JIM</tt>スキーマの下の<tt>DEPARTMENTS</tt>表を右クリックし、「データを表示」を選択します。</li>
+        <li>「データを表示」ツールバーの「レコードを挿入」アイコンをクリックし、「レコードを挿入」ウィンドウを開きます。<br> <img alt="「レコードを挿入」アイコン" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/insert-rec.png"></li>
+        <li>フィールドにデータを入力します。「OK」をクリックします。
+            <p>たとえば、元の<tt>DEPARTMENTS</tt>表から取得した次の値を入力できます。</p>
+            <table width="25%" >
+          <tr>
+            <th width="50%" class="tblheader" scope="col">列</th>
+            <th width="50%" class="tblheader" scope="col">値</th>
+          </tr>
+          <tr>
+            <td class="tbltd1">DEPARTMENT_ID</td>
+            <td class="tbltd1">10</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">DEPARTMENT_NAME</td>
+            <td class="tbltd1">Administration</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">MANAGER_ID</td>
+            <td class="tbltd1">200</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">LOCATION_ID</td>
+            <td class="tbltd1">1700</td>
+          </tr>
+        </table>
+        </li>
+    </ol>
+
+    <p><strong>SQLスクリプトを使用して表に入力するには、次の手順を実行します。</strong></p>
+    <ol>
+        <li><tt>JIM</tt>スキーマの下の<tt>DEPARTMENT</tt>表を右クリックして、「コマンドの実行」を選択します。</li>
+        <li>「SQLコマンド」タブでスクリプトを入力します。ツールバーの「実行」ボタンをクリックします。
+        <p>次のスクリプトによって、新しい表の1行目に元の表のデータが入力されます。</p>
+        <pre class="examplecode">INSERT INTO JIM.DEPARTMENTS (DEPARTMENT_ID, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID) VALUES (10, 'Administration', 200, 1700);</pre>
+        </li>
+    </ol>
+    <p class="tips">元の表から表に入力するためのSQLスクリプトを取得するには、次の手順を実行します。</p>
+    <ol>
+        <li><tt>HR</tt>スキーマの下の<tt>DEPARTMENTS</tt>表を右クリックし、「データを表示」を選択します。</li>
+        <li>「データを表示」ウィンドウのすべての行を選択し、表を右クリックして、ポップアップ・メニューから「INSERTのSQLスクリプトを表示」を選択し、スクリプトを含む「SQLを表示」ダイアログを開きます。
+        <p>スクリプトをコピーし、それを必要に応じて変更して、データを表に挿入できます。</p>
+        </li>
+    </ol>
+
+
+    <p>SQLエディタの操作の詳細は、<a href="#tips">ヒント</a>を参照してください。</p>
+
+
+    <h3><a name="altertable"></a>表データの操作 </h3>
+    <p>表データの操作には、NetBeans IDEのSQLエディタを利用できます。SQL問合せを実行することによって、データベース構造内で保持されているデータを追加、変更および削除できます。 </p>
+    <p>最初に、<tt>jim</tt>スキーマにLocationsという2つ目の表を作成します(jimのユーザー・アカウントでログインしたまま)。今回は、IDEですぐに使用できるSQLファイルを実行するのみです。</p>
+    <ol>
+        <li><a href="https://netbeans.org/project_downloads/samples/Samples/Java/locations.sql" target="_blank">locations.sql</a>ファイルをコンピュータ上の<em>USER_HOME</em>ディレクトリにダウンロードして保存します。
+        </li>
+        <li>IDEの「お気に入り」ウィンドウを開き、<tt>locations.sql</tt>ファイルを見つけます。
+            <p class="tips">「お気に入り」ウィンドウを開くには、メイン・メニューの「ウィンドウ」>「お気に入り」をクリックします(Ctrl-3キーを押します)。デフォルトで、「お気に入り」ウィンドウに<em>USER_HOME</em>ディレクトリが表示されます。</p>
+        </li>
+        <li><tt>locations.sql</tt>ファイルを右クリックし、「ファイルを実行」を選択します。<br> <img alt="「レコードを挿入」アイコン" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/run-file.png">
+        <p class="notes"><strong>注意:</strong>IDEに複数のデータベース接続が登録されている場合は、IDEによって正しい接続を選択するように求められます。</p></li>
+        <li>「サービス」ウィンドウで、「表」ノードを右クリックし、ポップアップ・メニューの「リフレッシュ」を選択します。
+            <p>データを含む<tt>Locations</tt>表が<tt>JIM</tt>スキーマに追加されたことがわかります。</p>
+        <img alt="jimスキーマに追加された2番目の表" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/second-table.png"></li>
+        <li>「Locations」表ノードを右クリックし、「データを表示」を選択して、表の内容を確認します。「Locations」表の内容を確認します。<br>この表示ウィンドウで直接、新しいレコードを挿入したり、既存のデータを変更したりできます。<br> <img alt="「Locations」表のすべてのデータの表示" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/view-data1.png"></li>
+        <li>次に、DepartmentsとLocationsの2つの表の情報を表示する問合せを実行します。
+            <p>この例では、両方の表に同じデータ型の値を保持する同じ「location_id」列があるため、単純な「自然結合」を使用します。この結合では、一致するlocation_id列に等しい値を持つ行のみが選択されます。</p>
+            <p>「SQLコマンド」ウィンドウを開き(<tt>JIM</tt>スキーマの下の「<tt>表</tt>」ノードを右クリックし、「コマンドの実行」を選択)、次のSQL文を入力して、「SQLの実行」アイコンをクリックします。</p>
+            <pre class="examplecode">
+SELECT DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID, STREET_ADDRESS, POSTAL_CODE, CITY, STATE_PROVINCE 
+FROM departments NATURAL JOIN locations
+ORDER by DEPARTMENT_NAME;</pre>
+            <p>このSQL問合せは、location_id値がLocations表の一致する列の値に等しいDepartments表の行を、Department名で順序付けられた結果で返します。この問合せの結果には、単一の表の表現で実行できるように、直接新しいレコードを挿入することはできません。 </p>
+            <img alt="複数の場所にあるデータの結合" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/join.png"><br>
+            <p class="tips">ビューとしてSQL結合問合せを保存(「ビュー」ノードを右クリックし、「ビューの作成」を選択)して、必要なときにいつでも便利に実行できます。このため、データベース・ユーザーには、サンプル・ユーザーが持たないビューを作成する権限を付与するようにしてください。システム・アカウントでログインし、<tt>jim</tt>にビューの作成権限を付与し(SQL文「grant create view to jim;」で)、独自のビューを作成してみます。 </p>
+        </li>
+<!-- <li>Now we need to add a foreign key.<br>
+  <br>
+ALTER TABLE jim.departments<br>
+ADD CONSTRAINT location_fk FOREIGN KEY (location_id)<br>
+REFERENCES jim.locations (location_id) enable;</li> -->
+    </ol>
+    
+    
+    <div class="feedback-box float-left" style="width: 723px;">
+        
+        <h3><a name="tips"></a>NetBeans IDE SQLエディタでの操作のヒント</h3>
+        <p>このチュートリアルに従っていれば、NetBeans IDE SQLエディタの機能をすでに使用しています。次に、役立つ可能性があるNetBeans IDE SQLエディタの他の機能をいくつか示します。 
+        <ol>
+            <li><strong>データベース表のGUIビュー</strong>。「サービス」ウィンドウで表ノードを右クリックし、「データを表示」を選択すると、(上の図に示すように) IDEによって表とそのデータの視覚的表現が表示されます。このビューで、表のデータを直接追加、変更および削除することもできます。
+                <ul>
+                <li>レコードを追加するには、「レコードを挿入」(<img alt="「レコードを挿入」アイコン" src="../../../images_www/articles/73/ide/oracle-db/row-add.png">)アイコンをクリックし、開いた「レコードを挿入」ウィンドウに新しいデータを挿入します。「SQLを表示」ボタンをクリックして、この操作のSQLコードを表示します。表が新しいレコードで自動的に更新されます。 </li>
+                <li>レコードを変更するには、表のGUIビューの任意のセル内を直接ダブルクリックし、新しい値を入力します。変更がコミットされるまで、変更したテキストは緑で表示されます。変更内容をコミットするには、「変更をコミット」(<img alt="「変更をコミット」アイコン" src="../../../images_www/articles/73/ide/oracle-db/row-commit.png">)アイコンをクリックします。変更内容を取り消すには、「編集の取消」(<img alt="「編集の取消」アイコン" src="../../../images_www/articles/73/ide/oracle-db/row-commit.png">)アイコンをクリックします。</li>
+                <li>行を削除するには、行を選択して「選択したレコードを削除」(<img alt="「選択したレコードを削除」アイコン" src="../../../images_www/articles/73/ide/oracle-db/row-commit.png">)アイコンをクリックします。 </li>
+            </ul>
+            <li><strong>前のタブの保持</strong>。SQLエディタ・ツールバーの「前のタブの保持」(<img alt="「前のタブの保持」アイコン" src="../../../images_www/articles/73/ide/oracle-db/keepoldresulttabs.png">)アイコンをクリックし、前の問合せの結果を開いた状態でウィンドウを保持します。これは、複数の問合せの結果を比較する場合に役立つことがあります。 </li>
+            <li><strong>SQL履歴</strong>(Ctrl-Alt-Shift-H)。SQLエディタツールバーの「SQL履歴」(<img alt="「SQL履歴」アイコン" src="../../../images_www/articles/73/ide/oracle-db/sql-history.png">)アイコンを使用して、各データベース接続に対して実行したすべてのSQL文を表示します。ドロップダウン・リストから接続を選択し、必要なSQL文を見つけて、「挿入」をクリックし、「SQLコマンド」ウィンドウに文を配置します。 </li>
+            <li><strong>接続の一覧</strong>。複数のデータベース接続があり、SQLエディタでそれらをすばやく切り替える必要がある場合、「接続」ドロップダウン・リストを使用します。 </li>
+            <li><strong>SQL文の実行</strong>。SQLコマンド・ウィンドウに現在ある文全体を実行するには、「SQLの実行」(<img alt="「SQLの実行」アイコン" src="../../../images_www/articles/73/ide/oracle-db/runsql.png">)アイコンをクリックします。SQLの一部のみを実行する場合は、「SQLコマンド」ウィンドウでその部分を選択し、選択を右クリックして、「セクションを実行」を選択します。この場合、選択した部分のみが実行されます。 </li>
+        </ol>
+    </div>
+
+    </div>
+
+
+  <br style="clear: left">
+  <h2><a name="oci8" /></a>OCI 8およびPHP向けのNetBeans IDE </h2>
+  <p>OCI 8 PHP拡張およびPHP向けのNetBeans IDEを使用して、Oracleデータベースと通信するPHPコードを記述できます。PHP向けのNetBeans IDEおよびOracleデータベースを使用するには:</p>
+  <ol>
+    <li><a href="../../trails/php.html">PHPの学習</a>のPHP開発のための環境の構成の項で説明されているように、PHP環境を設定します。NetBeans IDEではPHP 5.2または5.3のみをサポートしています。</li>
+    <li>エディタで<tt>php.ini</tt>ファイルを開きます。<tt>extension_dir</tt>プロパティがPHP拡張のディレクトリに設定されていることを確認します。このディレクトリは通常<tt>PHP_HOME/ext</tt>です。たとえば、PHP 5.2.9が<tt>C:</tt>のルート・ディレクトリにインストールされている場合、<tt>extension_dir</tt>設定は<tt>extension_dir="C:\php-5.2.9\ext"</tt>になります。</li>
+    <li>行<tt>extension=php_oci8_11g.dll</tt> (Oracle 11gの場合)または<tt>extension=php_oci8.dll</tt> (Oracle 10.2またはXEの場合)を見つけてコメントを解除します。これらの拡張のうち一度に有効にできるのは1つのみです。
+<p class="alert"><strong>重要: </strong><tt>php.ini</tt>にそのような行がない場合、拡張フォルダでOCI 8拡張ファイルを探してください。拡張フォルダにOCI 8拡張ファイルがない場合、OCI 8のダウンロードとインストールについては、<a href="http://www.oracle.com/technetwork/articles/technote-php-instant-084410.html" target="_blank">LinuxおよびWindowsへのPHPおよびOracle Instant Clientのインストール</a>を参照してください。
+    <li>Apacheを再起動します。(Windowsユーザーはコンピュータを再起動するようにしてください。) </li>
+    <li><tt>phpinfo()</tt>を実行します。OCI 8を正常に有効にすると、<tt>phpinfo()</tt>の出力にOCI 8セクションが表示されます。</li>
+  </ol>
+  <p>OCI 8を有効にする方法と特にリモートOracle DBサーバーでOCI 8を使用する方法の詳細は、<a href="http://www.oracle.com/technetwork/articles/technote-php-instant-084410.html" target="_blank">LinuxおよびWindowsへのPHPおよびOracle Instant Clientのインストール</a>を参照してください。</p>
+  <p>OCI 8を有効にすると、PHP向けのNetBeans IDEはコード補完とデバッグのためにこの拡張にアクセスします。</p>
+  <p><img alt="OCI 8コード補完オプションを備えたエディタ・ウィンドウ" border="1" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/oci-cc.png"></p>
+  <h2><a name="oci"></a>NetBeans IDEでのOCI JDBCドライバの使用</h2>
+  <p>OCIドライバ・パッケージは、JDBC Thinドライバと同じJARファイル(<tt>ojdbc6.jar</tt>)で利用できます。使用するドライバの選択は、インタフェースによって異なります。Thinドライバの場合は<tt>oracle.jdbc.OracleDriver</tt>、OCIドライバの場合は<tt>oracle.jdbc.driver.OracleDriver</tt>です。Oracle Database Instant Clientには、OCIドライバがデータベースと通信するために必要なすべてのライブラリが含まれているため、OCIドライバを使用するには、Oracle Database Instant Clientもインストールする必要があります。 </p>
+  <p><strong>OracleのOCIドライバを使用してNetBeans IDEからOracle Databaseに接続するには:</strong> </p>
+  <ol>
+    <li>使用しているプラットフォームに対応するOracle Database Instant Clientの「Basic」パッケージを<a href="http://www.oracle.com/technetwork/database/features/instant-client/index-100365.html" target="_blank">ダウンロード</a>します。<a href="http://www.oracle.com/technetwork/database/features/instant-client/index-100365.html" target="_blank">このページ</a>のインストール手順に従います。 </li>
+    <li>IDEの「サービス」ウィンドウで、「データベース」ノードを右クリックし、「新規接続」を選択します。</li>
+    <li>「ドライバを検索」ステップで、「Oracle OCI」を選択し、「追加」をクリックして、<tt>ojdbc6.jar</tt>ファイルを指定します。 </li>
+    <li>「接続をカスタマイズ」ダイアログ・ボックスで、IPアドレス、ポート、SID、ユーザー名とパスワードなどの接続の詳細を指定します。<br> OCIドライバとThinドライバのJDBC URLの違いに注意してください。<br><img alt="OCI 8コード補完オプションを備えたエディタ・ウィンドウ" border="1" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/oci-connection.png"><br>
+</li>
+  </ol>
+  <h2><a id="troubleshoot" name="troubleshoot"></a>トラブルシューティング</h2>
+<p>下のトラブルシューティングのヒントでは、発生したほんの少数の例外について説明しています。質問がここで解決されない場合は、独自に検索するか、「このチュートリアルに関するご意見をお寄せください」リンクを使用して、建設的なフィード・バックを提供してください。 </p>
+<ul>
+<li>
+次のようなエラーが表示されます。<br>
+ <pre class="examplecode" style="width: 700px">Shutting down v3 due to startup exception : No free port within range:
+>> 8080=com.sun.enterprise.v3.services.impl.monitor.MonitorableSelectorHandler@7dedad</pre>
+これは、GlassFishアプリケーション・サーバーとOracle Databaseの両方でポート8080を使用しているために発生します。そのため、両方のアプリケーションを同時に使用する場合は、それらのどちらかのこのデフォルトのポートを変更する必要があります。Oracle Databaseのデフォルトのポートをリセットする場合は、次のコマンドを使用できます。
+<pre>CONNECT SYSTEM/password<br>EXEC DBMS_XDB.SETHTTPPORT(&lt;new port number&gt;);</pre> 
+</li>
+  <li>次のエラーが表示されます。<br>
+    <pre class="examplecode" style="width: 700px">Listener refused the connection with the following error: ORA-12505, TNS:listener does not currently know of SID given in connect descriptor.</pre>
+    これは、接続ディスクリプタによって指定されたデータベース・インスタンスのサービスID (SID)がリスナーによって認識されていない場合に発生します。この例外には多くの原因があります。たとえば、Oracle Databaseが起動されていない場合に発生する可能性があります(最も単純な例)。またはSIDが正しくないか、リスナーによって認識されていません。デフォルトのSID (たとえば、Oracle Database Express Editionの場合、デフォルトのSIDはXEです)を使用する場合、この問題が発生する可能性はほとんどありません。SIDは、<tt>tnsnames.ora</tt>ファイル(Windowsマシンの場合、このファイルは<tt>%ORACLE_HOME%\network\admin\tnsnames.ora</tt>にあります)のCONNECT DATA部分に含まれています。  </li>
+  <li>次のエラーが表示されます。<br>
+  <pre class="examplecode" style="width: 700px">ORA-12705: Cannot access NLS data files or invalid environment specified.</pre>
+  </li>
+</ul>
+<p>一般的な場合、これは、NLS_LANG環境変数に、言語、地域または文字セットの無効な値が含まれることを意味します。この場合は、無効なNLS_LANG設定をオペレーティング・システム・レベルで無効にするようにしてください。Windowsでは、Windowsレジストリの\HKEY_LOCAL_MACHINE\SOFTWARE\ORACLEにあるNLS_LANGサブキーの名前を変更します。Linux/Unixでは、コマンド「unset NLS_LANG」を実行します。</p>
+<div class="feedback-box">
+    <a href="/about/contact_form.html?to=3&subject=Feedback:%20Connecting%20to%20Oracle%20Database%20from%20NetBeans%20IDE">ご意見をお寄せください</a></div>
+
+<br style="clear:both;">
+
+<a name="seeAlso"></a>
+<h2>関連項目</h2>
+
+<p>Oracle Databaseの管理と操作の詳細は、対応するOracleのドキュメントを参照してください。下に、最もよく使用されるドキュメントの簡単な一覧を示します。 </p>
+
+<ul>
+    <li><a href="http://download.oracle.com/docs/cd/E11882_01/server.112/e17118/toc.htm" target="_blank">Oracle Database SQLリファレンス</a>。Oracle Databaseの情報を処理するために使用するすべてのSQL文の説明です。 </li>
+    <li><a href="http://download.oracle.com/docs/cd/E11882_01/network.112/e16543/toc.htm" target="_blank">Oracle Databaseセキュリティ・ガイド</a>。Oracle Databaseの管理で使用される主な概念について説明しています。 </li>
+    <li><a href="http://st-curriculum.oracle.com/tutorial/DBXETutorial/index.htm" target="_blank">Oracle Database 10<em>g</em> Express Editionチュートリアル</a>。Oracle Database XEの使用方法ついての簡単かつ詳細な紹介です。 </li>
+    <li><a href="http://www.oracle.com/technetwork/articles/technote-php-instant-084410.html">LinuxおよびWindowsへのPHPおよびOracle Instant Clientのインストール</a>。PHPおよびOracle Instant Clientのインストール方法に関する簡単な記事です。 </li>
+</ul>
+
+<p>NetBeans IDEで他のデータベースを操作する方法については、次を参照してください。</p>
+<ul>
+  <li><a href="java-db.html">Java DB (Derby)データベースの操作</a> </li>
+  <li><a href="mysql.html">MySQLデータベースへの接続</a></li>
+  <li><a href="../web/mysql-webapp.html">MySQLデータベースを使用した単純なWebアプリケーションの作成</a></li>
+</ul>
+</body>
+</html>

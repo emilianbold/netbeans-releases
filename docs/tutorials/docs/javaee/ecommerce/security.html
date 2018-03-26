@@ -1,0 +1,1443 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to set up a login form using declarative security with form-based authentication, and configure SSL support between a web application and the GlassFish server">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce, declarative security, SSL">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>The NetBeans E-commerce Tutorial - Securing the Application</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>The NetBeans E-commerce Tutorial - Securing the Application</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Tutorial Contents</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introduction</a></li>
+                    <li><a href="design.html">Designing the Application</a></li>
+                    <li><a href="setup-dev-environ.html">Setting up the Development Environment</a></li>
+                    <li><a href="data-model.html">Designing the Data Model</a></li>
+                    <li><a href="page-views-controller.html">Preparing the Page Views and Controller Servlet</a></li>
+                    <li><a href="connect-db.html">Connecting the Application to the Database</a></li>
+                    <li><a href="entity-session.html">Adding Entity Classes and Session Beans</a></li>
+                    <li><a href="manage-sessions.html">Managing Sessions</a></li>
+                    <li><a href="transaction.html">Integrating Transactional Business Logic</a></li>
+                    <li><a href="language.html">Adding Language Support</a></li>
+                    <li><strong>Securing the Application</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#examineSnapshot">Examining the Project Snapshot</a></li>
+                            <li><a href="#formBased">Setting up Form-Based Authentication</a></li>
+                            <li><a href="#usersGroups">Creating Users, Groups and Roles</a></li>
+                            <li><a href="#secureTransport">Configuring Secure Data Transport</a></li>
+                            <li><a href="#seeAlso">See Also</a></li>
+                        </ul></li>
+
+                    <li><a href="test-profile.html">Testing and Profiling</a></li>
+                    <li><a href="conclusion.html">Conclusion</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>This tutorial unit focuses on web application security. When securing web applications,
+            there are two primary concerns that need to be addressed:</p>
+
+        <ol style="margin: 0 0 0 325px">
+            <li>Preventing unauthorized users from gaining access to protected content.</li>
+            <li>Preventing protected content from being read while it is being transmitted.</li>
+        </ol>
+
+        <p>The first concern, <em>access control</em>, is typically a two-step process that
+            involves (1) determining whether a user is who he or she claims to be (i.e.,
+            <em>authentication</em>), and then (2) either granting or denying the user
+            access to the requested resource (i.e., <em>authorization</em>). A simple and
+            common way to implement access control for web applications is with a login
+            form that enables the server to compare user credentials with a pre-existing list
+            of authenticated users.</p>
+
+        <p>The second concern, protecting data while it is in transit, typically involves
+            using Transport Layer Security (TLS), or its predecessor, Secure Sockets Layer
+            (SSL), in order to encrypt any data communicated between the client and server.</p>
+
+        <p>Upon reviewing the Affable Bean staff's <a href="design.html#requirements">list of
+            requirements</a>, we'll need to secure the application in the following ways:</p>
+
+        <ul style="margin-left: 320px">
+            <li>Set up a login form for the administration console that enables staff
+                members access to the console's services, and blocks unauthorized users.</li>
+
+            <li>Configure secure data transport for both the customer checkout process, and
+                for any data transmitted to and from the administration console.</li>
+        </ul>
+
+        <p>In order to implement the above, we'll take advantage of NetBeans' visual editor
+            for the <code>web.xml</code> deployment descriptor. We'll also work in the
+            GlassFish Administration Console to configure a &quot;user group&quot; that
+            corresponds to Affable Bean staff members, and verify SSL support.</p>
+
+        <p>You can view a live demo of the application that you build in this tutorial:
+            <a href="http://services.netbeans.org/AffableBean/" target="_blank">NetBeans
+            E-commerce Tutorial Demo Application</a>.</p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java bundle, 6.8 or 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFish server</a></td>
+                    <td class="tbltd1">v3 or Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQL database server</a></td>
+                    <td class="tbltd1">version 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot10.zip">AffableBean
+                            project</a></td>
+                    <td class="tbltd1">snapshot 10</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The NetBeans IDE requires the Java Development Kit (JDK) to run properly.
+                If you do not have any of the resources listed above, the JDK should be
+                the first item that you download and install.</li>
+
+            <li>The NetBeans IDE Java Bundle includes Java Web and EE technologies, which are
+                required for the application you build in this tutorial.</li>
+
+            <li id="glassFish">The NetBeans IDE Java Bundle also includes the GlassFish server,
+                which you require for this tutorial. You could
+                <a href="http://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">download
+                the GlassFish server independently</a>, but the version provided with the
+                NetBeans download has the added benefit of being automatically registered with
+                the IDE.</li>
+
+            <li>You can follow this tutorial unit without having completed previous units. To
+                do so, see the <a href="setup.html">setup instructions</a>, which describe how
+                to prepare the database and establish connectivity between the IDE, GlassFish,
+                and MySQL.</li>
+
+            <li>Java EE security is an expansive topic that spans well beyond the scope of this
+                tutorial unit. In order to fully appreciate the range of implementation options
+                that are available to you, refer to the <a href="http://download.oracle.com/javaee/6/tutorial/doc/gijrp.html"
+                target="_blank">Java EE 6 Tutorial, Part VII: Security</a>. This unit provides
+                ample references to relevant sub-sections within the Java EE Tutorial.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="examineSnapshot">Examining the Project Snapshot</h2>
+
+        <p>The beginning state of the snapshot helps to illustrate the need for security
+            in the application.</p>
+
+        <ol style="margin-top:0">
+            <li>Open the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot10.zip">project
+                snapshot</a> for this tutorial unit in the IDE. Click the Open Project (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/open-project-btn.png"
+                alt="Open Project button"> ) button and use the wizard to navigate to the location
+                on your computer where you downloaded the project.</li>
+
+            <li>Run the project (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                alt="Run Project button"> ) to ensure that it is properly configured with your database
+                and application server.
+
+                <br><br>
+                <p class="alert">If you receive an error when running the project, revisit the
+                    <a href="setup.html">setup instructions</a>, which describe how to prepare the
+                    database and establish connectivity between the IDE, GlassFish, and MySQL.</p></li>
+
+            <li>Test the application's functionality in your browser. This snapshot provides an
+                implementation of the administration console, as specified in the
+                <a href="design.html#requirements">customer requirements</a>. To examine the
+                administration console, enter the following URL in your browser:
+
+                <pre class="examplecode">http://localhost:8080/AffableBean<strong>/admin/</strong></pre>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/security/admin-console.png"
+                     class="margin-around b-all" style="width:688px" alt="AffableBean administration console displayed in a browser"
+                     title="Append the application's default URL with '/admin' to view the administration console in a browser">
+
+                <br>
+                The administration console enables you to view all customers and orders contained
+                in the database. When you click either of the links in the left panel, the page will
+                update to display a table listing customers or orders, depending on your choice. (The
+                'log out' link currently does not &quot;log out&quot; an authenticated user.)
+
+                <br><br>
+                <p class="notes"><strong>Note:</strong> The customers and orders that you see displayed
+                    in the administration console are dependent on the data stored in your database. You can
+                    create new records by stepping through the checkout process in the website. Alternatively,
+                    you can run the <a href="https://netbeans.org/project_downloads/samples/Samples/JavaEE/ecommerce/affablebean_sample_data.sql">affablebean_sample_data.sql</a>
+                    script on your <code>affablebean</code> database to have your data correspond to the
+                    records displayed in the following screenshots. (If you need help with this task, refer
+                    to step 2 in the <a href="setup.html">setup instructions</a>.)</p>
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/security/admin-console-customers.png"
+                     class="margin-around b-all" style="width:688px" alt="AffableBean administration console displaying all customer records"
+                     title="Click the 'view all customers' link to view all customer records in a table">
+
+                <br>
+                You can view details for each customer record by hovering your mouse and selecting an individual
+                record.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/security/customer-selected.png"
+                     class="margin-around b-all" alt="Customer record selected in administration console"
+                     title="Hover your mouse over a customer record and click to view customer details">
+
+                <br>
+                Likewise, you can view an order summary for each customer either by selecting an order from the
+                administration console's &quot;orders&quot; table, or by clicking the &quot;view order summary&quot;
+                link in a &quot;customer details&quot; display.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/security/view-order-summary.png"
+                     class="margin-around" alt="'view order summary' link being hovered over in a 'customer details' view"
+                     title="Click 'view order summary' from a customer details display in order to view a customer's order details">
+
+                <br>
+                Naturally, none of this information should be available to an anonymous site visitor. In the
+                coming steps, you'll create login and error pages, so that when an unauthenticated user attempts
+                to access the administration console, he or she will be directed to the login page. Upon successful
+                login, the user is then redirected to the administration console's menu; upon login failure, the
+                error page is displayed.</li>
+
+            <li id="adminConsole">Examine the project snapshot in the Projects window.
+
+                <table>
+                    <tr>
+                        <td>
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/security/projects-window.png"
+                                 class="margin-around b-all" alt="Projects window displaying resources for administration console"
+                                 title="The AdminServlet forwards requests to resources within the web/admin folder"></td>
+
+                        <td class="valign-top">
+
+                            <p style="margin: 20px 0 0 5px">This implementation of the administration console
+                                primarily relies on the following project resources:
+
+                            <ul style="margin: 5px 0 0 -.7em">
+                                <li>An <strong><code>admin</code></strong> directory within the project's webroot,
+                                    which contains all page view files.</li>
+
+                                <li>An <strong><code>AdminServlet</code></strong>, contained in the <code>controller</code>
+                                    package, which forwards requests to page views within the <code>admin</code>
+                                    directory.</li>
+                            </ul>
+
+                            <p style="margin: 20px 0 0 5px">Also, the following files have been modified from the previous snapshot:</p>
+
+                            <ul style="margin: 10px 0 0 -.7em">
+                                <li><strong><code>WEB-INF/web.xml</code>:</strong> Contains a new <code>&lt;jsp-property-group&gt;</code>
+                                    that includes the header and footer fragments for page views contained in the <code>admin</code>
+                                    directory.</li>
+
+                                <li><strong><code>css/affablebean.css</code>:</strong> Includes new style definitions for
+                                    elements in the administration console</li>
+                            </ul>
+
+                            <p style="margin-left:5px">If you have been following the NetBeans E-commerce Tutorial
+                                sequentially, you'll find that there is nothing contained in the implementation for
+                                the administration console which hasn't already been covered in previous units.
+                                Essentially, the <code>AdminServlet</code> processes requests from the <code>admin/index.jsp</code>
+                                page, EJBs and entity classes are employed to retrieve information from the database,
+                                and the information is then forwarded back to the <code>admin/index.jsp</code> page
+                                to be displayed.</p>
+                        </td>
+                    </tr>
+                </table>
+            </li>
+
+            <li style="margin-top:-10px">In the browser, return to the customer website by clicking the Affable Bean
+                logo in the upper left corner of the web page. Step through the entire <a href="design.html#business">business
+                process flow</a> of the application and note that the checkout process is handled over a non-secure channel.
+
+                <br><br>
+                When customers reach the checkout page, they are expected to submit sensitive personal information
+                in order to complete their orders. Part of your task in this tutorial unit is to ensure that this
+                data is sent over a secure channel. Because the administration console also enables authenticated
+                users to view customers' personal information, it too needs to be configured so that data is sent
+                over the Internet securely.</li>
+        </ol>
+
+
+        <br>
+        <h2 id="formBased">Setting up Form-Based Authentication</h2>
+
+        <p>In this section, you set up <em>form-based authentication</em> for the <code>AffableBean</code>
+            administration console. Form-based authentication enables the server to authenticate users based
+            on the credentials they enter into a login form. With these credentials, the server is able to
+            make a decision on whether to grant the user access to protected resources. In order to implement
+            this, you'll create login and error pages, and will rely on <em>declarative security</em> by
+            entering security settings in the application's <code>web.xml</code> deployment descriptor.</p>
+
+        <p>Before you begin implementing a form-based authentication mechanism for the <code>AffableBean</code>
+            application, the following background information is provided to help clarify the security terms
+            relevant to our scenario.</p>
+
+        <ul>
+            <li><a href="#declarativeSecurity">Declarative and Programmatic Security</a></li>
+            <li><a href="#authenticationMech">Choosing an Authentication Mechanism</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="declarativeSecurity">Declarative and Programmatic Security</h3>
+
+            <p>With <em>declarative security</em>, you specify all security settings for your
+                application, including authentication requirements, access control, and security
+                roles, using annotations and/or deployment descriptors. In other words, the security
+                for your application is in a form that is external to the application, and relies
+                on the mechanisms provided by the Java EE container for its management.</p>
+
+            <p>With <em>programmatic security</em>, your classes, entities, servlets, and page views
+                manage security themselves. In this case, security logic is integrated directly
+                into your application, and is used to handle authentication and authorization, and
+                ensure that data is sent over a secure network protocol when necessary.</p>
+
+            <p>For the <code>AffableBean</code> application, we'll use declarative security by
+                declaring all security information in the <code>web.xml</code> deployment descriptor.</p>
+
+            <p class="tips">For more information on declarative and programmatic security types,
+                see the <a href="http://download.oracle.com/javaee/6/tutorial/doc/bncat.html"
+                target="_blank">Java EE 6 Tutorial: Overview of Web Application Security</a>.</p>
+
+
+            <h3 id="authenticationMech">Choosing an Authentication Mechanism</h3>
+
+            <p>An <em>authentication mechanism</em> is used to determine how a user gains access to
+                restricted content. The Java EE platform supports various authentication mechanisms,
+                such as <em>HTTP basic authentication</em>, <em>form-based authentication</em>, and
+                <em>client authentication</em>. The authentication mechanism behind our login form
+                will be <em>form-based authentication</em>. You'll learn what form-based authentication
+                is when you begin <a href="#loginForm">setting up the login form</a> for the
+                <code>AffableBean</code> administration console below.</p>
+
+            <p class="tips">See the Java EE 6 Tutorial:
+                <a href="http://download.oracle.com/javaee/6/tutorial/doc/gkbaa.html#gkbsa"
+                target="_blank">Specifying Authentication Mechanisms</a> for further information.</p>
+        </div>
+
+        <br>
+        <p>Form-based authentication has the advantage of enabling the developer to design the
+            appearance of the login form so that it better suits the application which it belongs to.
+            Our implementation for the form-based authentication mechanism can be divided into two
+            steps. Begin by creating page views for the required login form and error message. Then
+            add entries to the <code>web.xml</code> deployment descriptor to inform the servlet
+            container that the application requires form-based authentication for access to the
+            resources that comprise the administration console.</p>
+
+        <ol style="margin: 0 0 0 -.7em">
+            <li><a href="#createPages">Create Pages for Login and Login Failure</a></li>
+            <li><a href="#addSecurity">Add Security Entries to the Deployment Descriptor</a></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="createPages">Create Pages for Login and Login Failure</h3>
+
+            <p>In form-based authentication, the process of authentication and authorization is
+                shown in the following four steps:</p>
+
+            <ol style="margin: 0 0 0 -.7em">
+                <li>The client sends a request to the server for a protected resource.</li>
+
+                <li>The server recognizes that a protected resource has been requested, and returns
+                    the login page to the client.</li>
+
+                <li>The client sends username and password credentials using the provided form.</li>
+
+                <li>The server processes the credentials, and if an authorized user is identified
+                    the protected resource is returned, otherwise the error page is returned.</li>
+            </ol>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/security/form-based-authentication.png"
+                 class="margin-around"
+                 alt="Diagram depicting process flow of form-based authentication"
+                 title="Authentication and authorization take place in a four-step process using form-based authentication">
+
+            <p class="tips">For more information on form-based authentication, see the Java EE 6 Tutorial:
+                <a href="http://download.oracle.com/javaee/6/tutorial/doc/gkbaa.html#bncbq" target="_blank">Form-Based
+                Authentication</a>.</p>
+
+            <br>
+            <p id="template">The <code>j_security_check</code> keyword represents the destination in
+                the servlet container that handles authentication and authorization. When implementing
+                the HTML login form, you apply it as the value for the form's <code>action</code> attribute.
+                You also apply the &quot;<code>j_username</code>&quot; and &quot;<code>j_password</code>&quot;
+                keywords, as in the following template:</p>
+
+            <pre class="examplecode">
+&lt;form action=&quot;<strong>j_security_check</strong>&quot; method=post&gt;
+
+    &lt;p&gt;username: &lt;input type=&quot;text&quot; name=&quot;<strong>j_username</strong>&quot;&gt;&lt;/p&gt;
+
+    &lt;p&gt;password: &lt;input type=&quot;password&quot; name=&quot;<strong>j_password</strong>&quot;&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;input type=&quot;submit&quot; value=&quot;submit&quot;&gt;&lt;/p&gt;
+&lt;/form&gt;</pre>
+
+            <br>
+            <p>Perform the following steps.</p>
+
+            <ol style="margin-top: 0">
+                <li>In the Projects window, right-click the <code>admin</code> folder node and choose New &gt; JSP.</li>
+
+                <li>Name the file <code>login</code>, then click Finish. The new <code>login.jsp</code> file is created
+                    and opens in the editor.</li>
+
+                <li>Repeat the previous two steps to create a new <code>error.jsp</code> file. In the New JSP wizard,
+                    name the file <code>error</code>. When you finish, you'll have two new files listed in the Projects
+                    window.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/projects-window-jsp.png"
+                         class="margin-around b-all" alt="New login and error JSP files displayed in Projects window"
+                         title="New JSP file nodes displayed in Projects window"></li>
+
+                <li>Open the project's web deployment descriptor. Press Alt-Shift-O (Ctrl-Shift-O on Mac)
+                    and in the Go to File dialog, type '<code>web</code>', then click OK.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/go-to-file.png"
+                         class="margin-around b-all" alt="Go to File dialog"
+                         title="Use the Go to File dialog to quickly open files in the editor"></li>
+
+                <li>In the editor, scroll to the bottom of the <code>web.xml</code> file and note the
+                    <code>&lt;jsp-property-group&gt;</code> entry created for JSP pages in the administration
+                    console. Add the new login and error JSP pages as <code>&lt;url-pattern&gt;</code>
+                    entries. (Changes in <strong>bold</strong>.)
+
+                    <pre class="examplecode">
+&lt;jsp-property-group&gt;
+    &lt;description&gt;JSP configuration for the admin console&lt;/description&gt;
+    &lt;url-pattern&gt;/admin/index.jsp&lt;/url-pattern&gt;
+    <strong>&lt;url-pattern&gt;/admin/login.jsp&lt;/url-pattern&gt;
+    &lt;url-pattern&gt;/admin/error.jsp&lt;/url-pattern&gt;</strong>
+    &lt;include-prelude&gt;/admin/jspf/header.jspf&lt;/include-prelude&gt;
+    &lt;include-coda&gt;/admin/jspf/footer.jspf&lt;/include-coda&gt;
+&lt;/jsp-property-group&gt;</pre>
+
+                    This step ensures that when these two pages are returned to a client, they
+                    will be prepended and appended with the defined <code>header.jspf</code> and
+                    <code>footer.jspf</code> fragments, respectively.
+
+                    <br><br>
+                    <p class="tips">You can equally configure the <code>&lt;jsp-property-group&gt;</code>
+                        entry from the <code>web.xml</code>'s visual editor. Click the Pages tab along
+                        the top of the editor, and enter the URL patterns into the respective JSP
+                        Property Group.</p></li>
+
+                <li>Press Ctrl-Tab to switch to the <code>login.jsp</code> file in the editor.
+                    Delete the entire template contents for the file, then enter the following
+                    HTML form.
+
+                    <pre class="examplecode">
+&lt;form action=&quot;<strong>j_security_check</strong>&quot; method=post&gt;
+    &lt;div id=&quot;loginBox&quot;&gt;
+        &lt;p&gt;&lt;strong&gt;username:&lt;/strong&gt;
+            &lt;input type=&quot;text&quot; size=&quot;20&quot; name=&quot;<strong>j_username</strong>&quot;&gt;&lt;/p&gt;
+
+        &lt;p&gt;&lt;strong&gt;password:&lt;/strong&gt;
+            &lt;input type=&quot;password&quot; size=&quot;20&quot; name=&quot;<strong>j_password</strong>&quot;&gt;&lt;/p&gt;
+
+        &lt;p&gt;&lt;input type=&quot;submit&quot; value=&quot;submit&quot;&gt;&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/form&gt;</pre>
+
+                    Note that the HTML form is based on the <a href="#template">template provided above</a>.
+                    Here, you use the &quot;<code>j_security_check</code>&quot; keyword as the value for the
+                    form's <code>action</code> attribute, and the &quot;<code>j_username</code>&quot; and
+                    &quot;<code>j_password</code>&quot; keywords as the values for the <code>name</code>
+                    attribute of the username and password text fields. The style of the form is implemented
+                    by encapsulating the form widgets within a <code>&lt;div&gt;</code> element, then defining
+                    a set of rules for the <code>loginBox</code> ID in <code>affablebean.css</code>.</li>
+
+                <li>Press Ctrl-Tab and switch to the <code>error.jsp</code> file in the editor. Delete the
+                    entire template contents for the file, then enter the following.
+
+                    <pre class="examplecode">
+&lt;div id=&quot;loginBox&quot;&gt;
+
+    &lt;p class=&quot;error&quot;&gt;Invalid username or password.&lt;/p&gt;
+
+    &lt;p&gt;Return to &lt;strong&gt;&lt;a href=&quot;login.jsp&quot;&gt;admin login&lt;/a&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;/div&gt;</pre>
+
+                    The above content includes a simple message indicating that login has failed, and
+                    provides a link that allows the user to return to the login form.</li>
+            </ol>
+
+            <h3 id="addSecurity">Add Security Entries to the Deployment Descriptor</h3>
+
+            <p>In order to instruct the servlet container that form-based authentication is to be
+                used, you add entries to the <code>web.xml</code> deployment descriptor. This is
+                essentially a three-step process, which can be followed by specifying settings under
+                the three headings in the <code>web.xml</code> file's Security tab. These are: (1)
+                Login Configuration, (2) Security Roles, and (3) Security Constraints.</p>
+
+            <ol>
+                <li>Open the project's <code>web.xml</code> file in the editor. (If it is already opened,
+                    you can press Ctrl-Tab and select it.)</li>
+
+                <li>Click the Security tab along the top of the editor. The IDE's visual editor enables
+                    you to specify security settings under the Security tab.</li>
+
+                <li>Expand the Login Configuration heading, select Form, then enter the following
+                    details:
+
+                    <ul style="margin: 10px 0 0 -.7em">
+                        <li><strong>Form Login Page:</strong> <code>/admin/login.jsp</code></li>
+                        <li><strong>Form Error Page:</strong> <code>/admin/error.jsp</code></li>
+                        <li><strong>Realm Name:</strong> <code>file</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/login-configuration.png"
+                         class="margin-around b-all" style="width:688px"
+                         alt="Visual editor for web.xml - Security tab"
+                         title="Specify security settings for the application using the IDE's web.xml visual editor"></li>
+
+                <li>Click the XML tab along the top of the editor and verify the changes made to
+                    the deployment descriptor. The following entry has been added to the bottom of
+                    the file:
+
+                    <pre class="examplecode">
+&lt;login-config&gt;
+    &lt;auth-method&gt;FORM&lt;/auth-method&gt;
+    &lt;realm-name&gt;file&lt;/realm-name&gt;
+    &lt;form-login-config&gt;
+        &lt;form-login-page&gt;/admin/login.jsp&lt;/form-login-page&gt;
+        &lt;form-error-page&gt;/admin/error.jsp&lt;/form-error-page&gt;
+    &lt;/form-login-config&gt;
+&lt;/login-config&gt;</pre>
+
+                    This entry informs the servlet container that form-based authentication is used,
+                    the realm named <code>file</code> should be checked for user credentials, and specifies
+                    the whereabouts of the login and error pages.</li>
+
+                <li id="securityRole">Click the Security tab again, then expand the Security Roles heading
+                    and click Add.</li>
+
+                <li>In the Add Security Role dialog, type in <code>affableBeanAdmin</code> for the role
+                    name, then click OK. The new role entry is added beneath Security Roles.</li>
+
+                <li>Click the XML tab to examine how the file has been affected. Note that the following
+                    entry has been added:
+
+                    <pre class="examplecode">
+&lt;security-role&gt;
+    &lt;description/&gt;
+    &lt;role-name&gt;affableBeanAdmin&lt;/role-name&gt;
+&lt;/security-role&gt;</pre>
+
+                    Here we've specified the name of a security role used with the application. We'll
+                    need to associate this role with the protected resources that define the administration
+                    console (under the Security Constraints heading below), and later we'll
+                    <a href="#defineRoles">create this role on the GlassFish server</a>.</li>
+
+                <li>Click the Security tab again, then click the Add Security Constraint button.</li>
+
+                <li>Type in <code>Admin</code> for the Display Name, then under Web Resource Collection
+                    click the Add button. Enter the following details, then when you are finished, click OK.
+
+                    <ul style="margin: 10px 0 0 -.7em">
+                        <li><strong>Resource Name:</strong> <code>Affable Bean Administration</code></li>
+                        <li><strong>URL Pattern(s):</strong> <code>/admin/*</code></li>
+                        <li><strong>HTTP Method(s):</strong> <code>All HTTP Methods</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/add-web-resource.png"
+                         class="margin-around b-all" alt="Add Web Resource dialog"
+                         title="Specify which resources need to be protected using the Add Web Resource dialog"></li>
+
+                <li id="enableAuthConstraint">Under the new Admin security constraint, select the Enable
+                    Authentication Constraint option and click the Edit button next to the Role Name(s)
+                    text field.</li>
+
+                <li>In the dialog that displays, select the <code>affableBeanAdmin</code> role in the
+                    left column, then click Add. The role is moved to the right column.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/edit-role-names.png"
+                         class="margin-around b-all" alt="Edit Role Names dialog"
+                         title="Specify roles to be associated with an authentication constraint"></li>
+
+                <li>Click OK. The role is added to the Role Name(s) text field.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/security-tab.png"
+                         class="margin-around b-all" style="width:688px" alt="Visual editor for web.xml - Security tab"
+                         title="Security constraints include specifying the web resource collection, and role(s) that are granted access to the collection"></li>
+
+                <li>Click the XML tab to examine how the file has been affected. Note that the following
+                    entry has been added:
+
+                    <pre class="examplecode">
+&lt;security-constraint&gt;
+    &lt;display-name&gt;Admin&lt;/display-name&gt;
+    &lt;web-resource-collection&gt;
+        &lt;web-resource-name&gt;Affable Bean Administration&lt;/web-resource-name&gt;
+        &lt;description/&gt;
+        &lt;url-pattern&gt;/admin/*&lt;/url-pattern&gt;
+    &lt;/web-resource-collection&gt;
+    &lt;auth-constraint&gt;
+        &lt;description/&gt;
+        &lt;role-name&gt;affableBeanAdmin&lt;/role-name&gt;
+    &lt;/auth-constraint&gt;
+&lt;/security-constraint&gt;</pre>
+
+                    In these previous six steps, you've created a security constraint that specifies which
+                    resources need to be protected, and identifies the role(s) that are granted access to them.
+                    Since the administration console implementation is essentially everything contained
+                    within the application's <code>admin</code> folder, you use a wildcard (<code>*</code>).
+                    Although you've specified that all HTTP methods should be protected, you could have
+                    equally selected just GET and POST, since these are the only two that are handled by
+                    the <code>AdminServlet</code>. As previously mentioned, the <code>affableBeanAdmin</code>
+                    role that we declared still needs to be created on the GlassFish server.</li>
+
+                <li>Run the project (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                    alt="Run Project button"> ) to examine how the application now handles access to the
+                    administration console.</li>
+
+                <li>When the application opens in the browser, attempt to access the administration console
+                    by entering the following URL into the browser's address bar:
+
+                    <pre class="examplecode">http://localhost:8080/AffableBean<strong>/admin/</strong></pre>
+
+                    When you attempt to access the administration console, the login page is now presented.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/login-form.png"
+                         class="margin-around b-all" style="width:688px" alt="Browser display of login page"
+                         title="Unauthenticated attempts to access the administration console are redirected to the login page"></li>
+
+                <li>Click the 'submit' button to attempt login. You see the error page displayed.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/error-page.png"
+                         class="margin-around b-all" style="width:688px" alt="Browser display of error page"
+                         title="Error page is displayed when the server is unable to authenticate a user">
+                </li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="usersGroups">Setting up Users, Groups and Roles</h2>
+
+        <p>Much of our security implementation is dependent on configuration between the application
+            and the GlassFish server we are using. This involves setting up <em>users</em>, <em>groups</em>,
+            and <em>roles</em> between the two, and using one of the preconfigured security policy
+            domains, or <em>realms</em>, on the server. Start by reading some background information
+            relevant to our scenario, then proceed by configuring users, groups and roles between
+            the application and the GlassFish server.</p>
+
+        <ul>
+            <li><a href="#understandUsers">Understanding Users, Groups, and Roles</a></li>
+            <li><a href="#understandRealms">Understanding Realms on the GlassFish Server</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="understandUsers">Understanding Users, Groups, and Roles</h3>
+
+            <p>A <em>user</em> is a unique identity recognized by the server. You define users on the
+                server so that it can be able to determine who should have access to protected resources.
+                You can optionally cluster users together into a <em>group</em>, which can be understood
+                as a set of authenticated users. In order to specify which users and/or groups have access
+                to protected resources, you create <em>roles</em>. As stated in the Java EE 6 Tutorial,</p>
+
+            <blockquote style="margin-top: 0">
+                <em>A role is an abstract name for the permission to access a particular set of resources
+                    in an application. A role can be compared to a key that can open a lock. Many people
+                    might have a copy of the key. The lock doesn’t care who you are, only that you have
+                    the right key.</em>
+            </blockquote>
+
+            <p>The role that a user or group is assigned to is what specifically allows the server to
+                determine whether protected resources can be accessed. Users and groups can be assigned
+                to multiple roles. As will be demonstrated below, you accomplish this by defining the
+                role in the application, then mapping it to users and groups on the server. </p>
+
+            <p>The relationship between users, groups, and roles, and the process in which you establish
+                them in the application and on the server, is presented in the following diagram.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/security/groups-users-roles.png"
+                 id="usersRolesGroupsDiagram" class="margin-around"
+                 alt="Diagram depicting relationship of users, groups and roles between the application and server"
+                 title="Users, groups, and roles need to be set up and mapped between the application and server">
+
+            <p class="tips">For more information on groups, users, and roles, see
+                <a href="http://download.oracle.com/javaee/6/tutorial/doc/bnbxj.html" target="_blank">Working
+                with Realms, Users, Groups, and Roles</a> in the Java EE 6 Tutorial.</p>
+
+
+            <h3 id="understandRealms">Understanding Realms on the GlassFish Server</h3>
+
+            <p>When you define users and groups on the server, you do so by entering details into
+                a security policy domain, otherwise known as a <em>realm</em>. A realm protects user
+                credentials (e.g., user names and passwords) through an authentication scheme. For
+                example, user credentials can be stored in a local text file, or maintained in a
+                certificate database.</p>
+
+            <p>The GlassFish server provides three preconfigured realms by default. These are the
+                <code>file</code>, <code>admin-realm</code>, and <code>certificate</code> realms.
+                Briefly, the <code>file</code> realm stores user credentials in a local text file
+                named <code>keyfile</code>. The <code>admin-realm</code> also stores credentials
+                in a local text file, and is reserved for server administrator users. The
+                <code>certificate</code> realm, the server stores user credentials in a certificate
+                database.</p>
+
+            <p>When defining users, groups and roles for the <code>AffableBean</code> administration
+                console, we'll use the server's preconfigured <code>file</code> realm.</p>
+        </div>
+
+        <br>
+        <p>In order to set up users, groups and roles to satisfy the form-based authentication
+            mechanism we've created, perform the following three steps corresponding to the
+            <a href="#usersRolesGroupsDiagram">diagram above</a>.</p>
+
+        <ol style="margin: 0 0 0 -.7em">
+            <li><a href="#createUsers">Create Users and/or Groups on the Server</a></li>
+            <li><a href="#defineRoles">Define Roles in the Application</a></li>
+            <li><a href="#mapApplication">Map Roles to Users and/or Groups</a></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="createUsers">Create Users and/or Groups on the Server</h3>
+
+            <p>In this step, we'll use the GlassFish Administration Console to create a user named
+                <code>nbuser</code> within the preexisting <code>file</code> security realm. We'll
+                also assign the new <code>nbuser</code> to a <em>group</em> that we'll create called
+                <code>affableBeanAdmin</code>.</p>
+
+            <ol>
+                <li>Open the Services window (Ctrl-5; &#8984;-5 on Mac) and expand the Servers node
+                    so that the GlassFish server node is visible.</li>
+
+                <li>Ensure that the GlassFish server is running. If the server is running, a small green
+                    arrow is displayed next to the GlassFish icon (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/gf-server-running-node.png"
+                    alt="GlassFish server node in Services window"> ). If you need to start it, right-click
+                    the server node and choose Start.</li>
+
+                <li>Right-click the GlassFish server node and choose View Admin Console. The login form
+                    for the GlassFish Administration Console opens in a browser.</li>
+
+                <li>Log into the Administration Console by typing <code>admin</code> / <code>adminadmin</code>
+                    for the username / password.</li>
+
+                <li>In the Tree which displays in the left column of the Administration Console, expand
+                    the Configuration &gt; Security &gt; Realms nodes, then click the <code>file</code> realm.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/file-realm.png"
+                         class="margin-around b-all" alt="Tree displayed in GlassFish Administration Console"
+                         title="Expand the Configuration > Security > Realms nodes to view existing security realms"></li>
+
+                <li>In the main panel of the GlassFish Administration Console, under Edit Realm, click
+                    the Manage Users button.</li>
+
+                <li>Under File Users, click the New button.</li>
+
+                <li>Under New File Realm User, enter the following details:
+
+                    <ul style="margin: 10px 0 0 -.7em">
+                        <li><strong>User ID:</strong> <code>nbuser</code></li>
+                        <li><strong>Group List:</strong> <code>affableBeanAdmin</code></li>
+                        <li><strong>New Password:</strong> <code>secret</code></li>
+                        <li><strong>Confirm New Password:</strong> <code>secret</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/new-file-realm-user.png"
+                         class="margin-around b-all" alt="New File Realm User panel in GlassFish Administration Console"
+                         title="Enter new user and group details in the New File Realm User panel">
+
+                    <br>
+                    Here, we are creating a user for the <code>file</code> security realm, which
+                    we've randomly named <code>nbuser</code>. We have also assigned the new user
+                    to a randomly named <code>affableBeanAdmin</code> group. Remember the <code>secret</code>
+                    password you set, as you will require it to later log into the <code>AffableBean</code>
+                    administration console.</li>
+
+                <li>Click OK. The new <code>nbuser</code> user is now listed under File Users in the
+                    GlassFish Administration Console.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/nbuser-file-realm.png"
+                         class="margin-around b-all" alt="File Users panel displaying newly created user and group"
+                         title="All users and groups pertaining to the 'file' realm are displayed under File Users">
+
+                    <br>
+                    Optionally close the browser window for the GlassFish Administration Console, or
+                    leave it open for the time being. You will need to return to the Administration Console
+                    in the <a href="#mapApplication">Map Roles to Users and/or Groups</a> step below.
+                </li>
+            </ol>
+
+
+            <h3 id="defineRoles">Define Roles in the Application</h3>
+
+            <p>By &quot;defining roles in the application,&quot; you specify which roles have access
+                to EJB session beans, servlets, and/or specific methods that they contain. You can accomplish this
+                declaratively by creating entries in the deployment descriptor, or using annotations.
+                For the <code>AffableBean</code> administration console, we've actually already
+                completed this step when we <a href="#enableAuthConstraint">added the <code>affableBeanAdmin</code>
+                role to the security constraint</a> that we created when implementing form-based
+                authentication. However, in more complicated scenarios you may have multiple roles,
+                each with varying degrees of access. In such cases, implementation requires a more
+                fine-grained access control.</p>
+
+            <p>The Java EE 6 API includes various security annotations that you can use in place of the
+                XML entries you add to deployment descriptors. The availability of annotations primarily
+                aims to offer ease of development and flexibility when coding. One common method is to use
+                annotations within classes, but override them when necessary using deployment descriptors.</p>
+
+            <ul>
+                <li><a href="#secureServlet">Using Security Annotations in Servlets</a></li>
+                <li><a href="#secureEJB">Using Security Annotations in EJBs</a></li>
+            </ul>
+
+
+            <h4 id="secureServlet">Using Security Annotations in Servlets</h4>
+
+            <p>The following table lists some of the annotations available to you when applying roles
+                to servlets.</p>
+
+            <div class="indent">
+                <table style="width:722px">
+                    <tbody>
+                        <tr>
+                            <th class="tblheader" colspan="3">Servlet 3.0 Security Annotations (specified in <a href="http://www.jcp.org/en/jsr/detail?id=315" target="_blank">JSR 315</a>)</th>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><code><a href="http://download.oracle.com/javaee/6/api/javax/servlet/annotation/ServletSecurity.html" target="_blank">@ServletSecurity</a></code></td>
+                            <td class="tbltd1">Used to specify security constraints to be enforced by a Servlet container on HTTP protocol messages.</td>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><code><a href="http://download.oracle.com/javaee/6/api/javax/servlet/annotation/HttpConstraint.html" target="_blank">@HttpConstraint</a></code></td>
+                            <td class="tbltd1">Used within the <code>ServletSecurity</code> annotation to represent the security constraints to be applied to all HTTP protocol methods.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <br>
+            <p>If we wanted to apply the Servlet 3.0 annotations to declare the <code>affableBeanAdmin</code> role
+                on the <code>AdminServlet</code>, we could do so as follows. (Changes in <strong>bold</strong>.)</p>
+
+            <div class="indent">
+                <pre class="examplecode" style="margin-top:0; width:700px">
+@WebServlet(name = &quot;AdminServlet&quot;,
+            urlPatterns = {&quot;/admin/&quot;,
+                           &quot;/admin/viewOrders&quot;,
+                           &quot;/admin/viewCustomers&quot;,
+                           &quot;/admin/customerRecord&quot;,
+                           &quot;/admin/orderRecord&quot;,
+                           &quot;/admin/logout&quot;})
+<strong>@ServletSecurity( @HttpConstraint(rolesAllowed = {&quot;affableBeanAdmin&quot;}) )</strong>
+public class AdminServlet extends HttpServlet { ... }</pre></div>
+
+            <p>In this case, we could then remove the corresponding entry in the <code>web.xml</code>
+                deployment descriptor. (Removed content displayed as <strike><strong>strike-through</strong></strike> text.)</p>
+
+            <div class="indent">
+                <pre class="examplecode" style="margin-top:0; width:700px">
+&lt;login-config&gt;
+    &lt;auth-method&gt;FORM&lt;/auth-method&gt;
+    &lt;realm-name&gt;file&lt;/realm-name&gt;
+    &lt;form-login-config&gt;
+        &lt;form-login-page&gt;/admin/login.jsp&lt;/form-login-page&gt;
+        &lt;form-error-page&gt;/admin/error.jsp&lt;/form-error-page&gt;
+    &lt;/form-login-config&gt;
+&lt;/login-config&gt;
+
+<strike><strong>&lt;security-constraint&gt;</strong></strike>
+    <strike><strong>&lt;display-name&gt;Admin&lt;/display-name&gt;</strong></strike>
+    <strike><strong>&lt;web-resource-collection&gt;</strong></strike>
+        <strike><strong>&lt;web-resource-name&gt;Affable Bean Administration&lt;/web-resource-name&gt;</strong></strike>
+        <strike><strong>&lt;description/&gt;</strong></strike>
+        <strike><strong>&lt;url-pattern&gt;/admin/*&lt;/url-pattern&gt;</strong></strike>
+    <strike><strong>&lt;/web-resource-collection&gt;</strong></strike>
+    <strike><strong>&lt;auth-constraint&gt;</strong></strike>
+        <strike><strong>&lt;description/&gt;</strong></strike>
+        <strike><strong>&lt;role-name&gt;affableBeanAdmin&lt;/role-name&gt;</strong></strike>
+    <strike><strong>&lt;/auth-constraint&gt;</strong></strike>
+<strike><strong>&lt;/security-constraint&gt;</strong></strike>
+
+<strike><strong>&lt;security-role&gt;</strong></strike>
+    <strike><strong>&lt;description/&gt;</strong></strike>
+    <strike><strong>&lt;role-name&gt;affableBeanAdmin&lt;/role-name&gt;</strong></strike>
+<strike><strong>&lt;/security-role&gt;</strong></strike></pre></div>
+
+
+            <h4 id="secureEJB">Using Security Annotations in EJBs</h4>
+
+            <p>The following table lists some of the annotations available to you when applying roles to EJBs.</p>
+
+            <div class="indent">
+                <table style="width:722px">
+                    <tbody>
+                        <tr>
+                            <th class="tblheader" colspan="3">EJB Security Annotations (specified in <a href="http://www.jcp.org/en/jsr/detail?id=250" target="_blank">JSR 250</a>)</th>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><code><a href="http://download.oracle.com/javaee/6/api/javax/annotation/security/DeclareRoles.html" target="_blank">@DeclareRoles</a></code></td>
+                            <td class="tbltd1">Used by application to declare roles. It can be specified on a class.</td>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><code><a href="http://download.oracle.com/javaee/6/api/javax/annotation/security/RolesAllowed.html" target="_blank">@RolesAllowed</a></code></td>
+                            <td class="tbltd1">Specifies the list of roles permitted to access method(s) in an application.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <br>
+            <p>To demonstrate the use of EJB security annotations, we'll apply the <code>@RolesAllowed</code>
+                annotation to a method that should only be called when a user has been identified as belonging
+                to the <code>affableBeanAdmin</code> role.</p>
+
+            <ol>
+                <li>Reexamine the <a href="#adminConsole">snapshot implementation for the <code>AffableBean</code>
+                    administration console</a>. Note that in the <code>CustomerOrderFacade</code> session bean,
+                    a new <code>findByCustomer</code> method enables the <code>AdminServlet</code> to access a
+                    specified <code>Customer</code>.</li>
+
+                <li>Open the <code>CustomerOrderFacade</code> bean in the editor, then add the <code>@RolesAllowed</code>
+                    annotation to the <code>findByCustomer</code> method.
+
+                    <pre class="examplecode" style="width:680px">
+<strong>@RolesAllowed(&quot;affableBeanAdmin&quot;)</strong>
+public CustomerOrder findByCustomer(Object customer) { ... }</pre></li>
+
+                <li>Press Ctrl-Shift-I (&#8984;-Shift-I on Mac) to fix imports. An import statement
+                    for <code>javax.annotation.security.RolesAllowed</code> is added to the top of
+                    the class.
+
+                    <br><br>
+                    The <code>findByCustomer</code> method is only called by the <code>AdminServlet</code>,
+                    which is previously authenticated into the <code>affableBeanAdmin</code> role using
+                    our implementation of form-based authentication. The use of the <code>@RolesAllowed</code>
+                    annotation here is not strictly necessary - its application simply guarantees that the
+                    method can only be called by a user who has been authenticated in the <code>affableBeanAdmin</code>
+                    role.</li>
+            </ol>
+
+
+            <h3 id="mapApplication">Map Roles to Users and/or Groups</h3>
+
+            <p>We have so far accomplished the following:</p>
+
+            <ul>
+                <li>Defined the <code>affableBeanAdmin</code> role for our form-based authentication
+                    mechanism (either in the <code>web.xml</code> deployment descriptor, or as an
+                    annotation in the <code>AdminServlet</code>).</li>
+
+                <li>Created a user named <code>nbuser</code> on the GlassFish server, and associated
+                    it with a group named <code>affableBeanAdmin</code>.</li>
+            </ul>
+
+            <p>It is no coincidence that the group and role names are the same. While it is not
+                necessary that these names be identical, this makes sense if we are only creating
+                one-to-one matching between roles and groups. In more complicated scenarios, you
+                can map users and groups to multiple roles providing access to different resources.
+                In such cases, you would give unique names to groups and roles.</p>
+
+            <p>In order to map the <code>affableBeanAdmin</code> role to the <code>affableBeanAdmin</code>
+                group, you have a choice of performing one of two actions. You can either create a
+                <code>&lt;security-role-mapping&gt;</code> entry in GlassFish' <code>sun-web.xml</code>
+                deployment descriptor. (In the Projects window, <code>sun-web.xml</code> is located
+                within the project's Configuration Files). This would look as follows:</p>
+
+
+            <div class="indent">
+                <pre class="examplecode" style="margin-top:0; width:700px">
+&lt;security-role-mapping&gt;
+    &lt;role-name&gt;affableBeanAdmin&lt;/role-name&gt;
+    &lt;group-name&gt;affableBeanAdmin&lt;/group-name&gt;
+&lt;/security-role-mapping&gt;</pre>
+            </div>
+
+            <p>This action explicitly maps the <code>affableBeanAdmin</code> role to the
+                <code>affableBeanAdmin</code> group. Otherwise, you can enable GlassFish' Default
+                Principal To Role Mapping service so that roles are automatically assigned to groups
+                of the same name.</p>
+
+            <p>The following steps demonstrate how to enable the Default Principal To Role Mapping
+                service in the GlassFish Administration Console.</p>
+
+            <ol style="margin-top: 0">
+                <li>Open the Services window (Ctrl-5; &#8984;-5 on Mac) and expand the Servers node
+                    so that the GlassFish server node is visible.</li>
+
+                <li>Ensure that the GlassFish server is running. If the server is running, a small green
+                    arrow is displayed next to the GlassFish icon (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/gf-server-running-node.png"
+                    alt="GlassFish server node in Services window"> ). If you need to start it, right-click
+                    the server node and choose Start.</li>
+
+                <li>Right-click the GlassFish server node and choose View Admin Console. The login form
+                    for the GlassFish Administration Console opens in a browser.</li>
+
+                <li>Log into the Administration Console by typing <code>admin</code> / <code>adminadmin</code>
+                    for the username / password.</li>
+
+                <li>In the Tree which displays in the left column of the Administration Console, expand
+                    the Configuration node, then click the Security node.</li>
+
+                <li>In the main panel of the Administration Console, select the Default Principal To Role
+                    Mapping option.
+
+                    <br>
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/security/gf-admin-console-security.png" rel="lytebox"
+                       title="With the Default Principal To Role Mapping option enabled, roles and groups of the same name are automatically mapped">
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/security/gf-admin-console-security.png"
+                             class="margin-around b-all" style="width: 688px" title="Click to enlarge" alt="GlassFish Administration Console - Security panel">
+                    </a>
+
+                    <br>
+                    <p class="tips">The Java EE 6 Tutorial defines the term <em>principal</em> as, &quot;An
+                        entity that can be authenticated by an authentication protocol in a security service
+                        that is deployed in an enterprise. A principal is identified by using a principal
+                        name and authenticated by using authentication data.&quot; See
+                        <a href="http://download.oracle.com/javaee/6/tutorial/doc/bnbxj.html#bnbxq" target="_blank">Working
+                        with Realms, Users, Groups, and Roles: Some Other Terminology</a> for more information.</p></li>
+
+                <li>Click the Save button.
+
+                    <br><br>
+                    At this stage, you have taken the necessary steps to enable you to log into the
+                    <code>AffableBean</code> administration console using the <code>nbuser</code> /
+                    <code>secret</code> username / password combination that you set earlier.</li>
+
+                <li>Run the project (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                    alt="Run Project button"> ). When the application opens in the browser, attempt
+                    the access the administration console by entering the following URL into the browser's
+                    address bar:
+
+                    <pre class="examplecode">http://localhost:8080/AffableBean<strong>/admin/</strong></pre></li>
+
+                <li>When the login page displays, enter the username and password you set earlier in the
+                    GlassFish Administration Console (<code>nbuser</code> / <code>secret</code>), then click
+                    'submit'.
+
+                    <br><br>
+                    Using form-based authentication, the server authenticates the client using the username
+                    and password credentials sent from the form. Because the <code>nbuser</code> belongs to
+                    the <code>affableBeanAdmin</code> group, and that group is associated with the
+                    <code>affableBeanAdmin</code> role, access is granted to the administration console.</li>
+
+                <li>Click the 'log out' link provided in the administration console. The <code>nbuser</code>
+                    is logged out of the administration console, and you are returned to the login page.
+
+                    <br><br>
+                    The <code>AdminServlet</code> handles the '<code>/logout</code>' URL pattern by invalidating
+                    the user session:
+
+                    <pre class="examplecode">
+// if logout is requested
+if (userPath.equals(&quot;/admin/logout&quot;)) {
+    session = request.getSession();
+    <strong>session.invalidate();</strong>   // terminate session
+    response.sendRedirect(&quot;/AffableBean/admin/&quot;);
+    return;
+}</pre>
+                    Calling <code>invalidate()</code> terminates the user session. As a consequence, the
+                    authenticated user is dissociated from the active session and would need to login in
+                    again in order to access protected resources.</li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="secureTransport">Configuring Secure Data Transport</h2>
+
+        <p>There are two instances in the <code>AffableBean</code> application that require a secure connection
+            when data is transmitted over the Internet. The first is when a user initiates the checkout process.
+            On the checkout page, a user must fill in his or her personal details to complete an order. This
+            sensitive data must be protected while it is sent to the server. The second instance occurs when
+            a user logs into the administration console, as the console is used to access sensitive data, i.e.,
+            customer and order details.</p>
+
+        <p>Secure data transport is typically implemented using Transport Layer Security (TLS) or Secure Sockets
+            Layer (SSL). HTTP is applied on top of the TLS/SSL protocol to provide both encrypted communication
+            and secure identification of the server. The combination of HTTP with TLS or SSL results in an HTTPS
+            connection, which can readily be identified in a browser's address bar (e.g.,
+            <code><strong>https</strong>://</code>).</p>
+
+        <p>The GlassFish server has a secure (HTTPS) service enabled by default. This service uses a self-signed
+            digital certificate, which is adequate for development purposes. Your production server however would
+            require a certificate signed by a trusted third-party Certificate Authority (CA), such as
+            <a href="http://www.verisign.com" target="_blank">VeriSign</a> or <a href="http://www.thawte.com/"
+            target="_blank">Thawte</a>.</p>
+
+        <p class="tips">You can find the generated certificate in:
+            <code><em>&lt;gf-install-dir&gt;</em>/glassfish/domains/domain1/config/keystore.jks</code></p>
+
+        <p>Begin this section by verifying that GlassFish' HTTPS service is enabled. Then configure the application
+            so that a secure HTTPS connection is applied to the checkout process and administration console.</p>
+
+        <ul>
+            <li><a href="#verifyHTTPS">Verify HTTPS Support on the Server</a></li>
+            <li><a href="#configureSecure">Configure Secure Connection in the Application</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="verifyHTTPS">Verify HTTPS Support on the Server</h3>
+
+            <ol>
+                <li>Open the Services window (Ctrl-5; &#8984;-5 on Mac) and expand the Servers node
+                    so that the GlassFish server node is visible.</li>
+
+                <li>Ensure that the GlassFish server is running. If the server is running, a small green
+                    arrow is displayed next to the GlassFish icon (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/gf-server-running-node.png"
+                    alt="GlassFish server node in Services window"> ). If you need to start it, right-click
+                    the server node and choose Start.</li>
+
+                <li>Switch to your browser and type the following URL into the browser's address bar:
+
+                    <pre class="examplecode">https://localhost:8181/</pre>
+
+                    The browser displays a warning, indicating that the server is presenting you with
+                    a self-signed certificate. In Firefox for example, the warning looks as follows.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/ff-untrusted-connection.png"
+                         class="margin-around b-all" title="Firefox provides warnings for self-signed certificates"
+                         alt="Firefox warning for self-signed certificates"></li>
+
+                <li>Enable your browser to accept the self-signed certificate. With Firefox, click the Add
+                    Exception button displayed in the warning. The following pane displays, allowing you to
+                    view the certificate.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/ff-confirm-security-exception.png"
+                         class="margin-around b-all" alt="Firefox window for confirming a security exception"
+                         title="Firefox enables you to view the digital certificate before confirming the security exception">
+
+                    <br>
+                    Click Confirm Security Exception. A secure connection is established on port 8181, and
+                    your local development server, GlassFish, is then able to display the following page.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/gf-https.png"
+                         class="margin-around b-all" title="GlassFish provides a secure connection by default on port 8181"
+                         alt="Browser welcome message for GlassFish webroot" id="serverWelcomePage">
+
+                    <br>
+                    <p class="tips">Aside from the HTTPS protocol displayed in the browser's address bar, Firefox
+                        indicates that a secure connection is established with the blue background behind
+                        <code>localhost</code> in the address bar. Also, a lock (
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/security/firefox-lock-icon.png"
+                        alt="Firefox lock icon"> ) icon displays in the lower right corner of the browser.
+                        You can click the lock icon for secure pages to review certificate details.</p>
+
+                    The following optional steps demonstrate how you can identify this security support in
+                    the GlassFish Administration Console.</li>
+
+                <li>Open the GlassFish Administration Console in the browser. (Either type '<code>http://localhost:4848/</code>'
+                    in your browser, or click the '<code>go to the Administration Console</code>' link in the GlassFish
+                    server's welcome page, as displayed in the <a href="#serverWelcomePage">image above</a>.)</li>
+
+                <li>In the Tree which displays in the left column of the Administration Console, expand the
+                    Configuration &gt; Network Config nodes, then click the Network Listeners node.
+
+                    <br><br>
+                    The main panel displays the three network listeners enabled by default on the GlassFish server.
+                    <code>http-listener-2</code>, which has been configured to listen over port 8181, is the network
+                    listener used for secure connections.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/network-listeners.png"
+                         class="margin-around b-all" alt="Network Listeners panel displayed in GlassFish Administration Console"
+                         title="View all HTTP listeners from the Network Listeners panel">
+
+                    <br>
+                    <p class="tips">For more information on network listeners, see the Oracle GlassFish Server 3.0.1
+                        Administration Guide:
+                        <a href="http://docs.sun.com/app/docs/doc/821-1751/giuri?l=en&a=view" target="_blank">About
+                        HTTP Network Listeners</a>.</p></li>
+
+                <li>Under the Name column, click the link for <code>http-listener-2</code>. In the main panel, note
+                    that the Security checkbox is selected.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/edit-network-listener.png"
+                         class="margin-around b-all" alt="Edit Network Listener panel in GlassFish Administration Console"
+                         title="Security is enabled for the 'http-listener-2' network listener"></li>
+
+                <li>Click the SSL tab. Note that TLS is selected. In the lower portion of the SSL panel, you see the
+                    Cipher Suites that are available for the connection. As stated in the Oracle GlassFish Server 3.0.1
+                    Administration Guide, <a href="http://docs.sun.com/app/docs/doc/821-1751/ablnk" target="_blank">Chapter
+                    11: Administering System Security</a>,
+
+                    <blockquote>
+                        <em>A cipher is a cryptographic algorithm used for encryption or decryption. SSL and TLS
+                            protocols support a variety of ciphers used to authenticate the server and client to
+                            each other, transmit certificates, and establish session keys. Some ciphers are stronger
+                            and more secure than others. Clients and servers can support different cipher suites.
+                            During a secure connection, the client and the server agree to use the strongest cipher
+                            that they both have enabled for communication, so it is usually sufficient to enable
+                            all ciphers.</em>
+                    </blockquote>
+
+                    At this stage, you have an understanding of how the GlassFish server supports secure connections
+                    out-of-the-box. Naturally, you could set up your own network listener, have it listen on a port
+                    other than 8181, enable SSL 3 instead of TLS (or both), or generate and sign your own digital
+                    certificates using Java's <a href="http://download.oracle.com/javase/6/docs/technotes/tools/solaris/keytool.html"
+                    target="_blank"><code>keytool</code></a> management utility. You can find instructions on how to
+                    accomplish all of these tasks from the following resources:
+
+                    <ul style="margin: 10px 0 0 -.7em">
+                        <li>The Java EE 6 Tutorial, <a href="http://download.oracle.com/javaee/6/tutorial/doc/bnbxw.html" target="_blank">Establishing a Secure Connection Using SSL</a></li>
+                        <li>Oracle GlassFish Server 3.0.1 Administration Guide, <a href="http://docs.sun.com/app/docs/doc/821-1751/ablnk" target="_blank">Chapter 11: Administering System Security</a></li>
+                        <li>Oracle GlassFish Server 3.0.1 Administration Guide, <a href="http://docs.sun.com/app/docs/doc/821-1751/ablsw" target="_blank">Chapter 16: Administering Internet Connectivity</a></li>
+                    </ul>
+                </li>
+            </ol>
+
+
+            <h3 id="configureSecure">Configure Secure Connection in the Application</h3>
+
+            <p>This example demonstrates how to specify a secure connection using both XML in the web deployment
+                descriptor, as well as Servlet 3.0 annotations directly in a servlet. You begin by creating an
+                <code>&lt;security-constraint&gt;</code> entry in <code>web.xml</code> for the customer checkout
+                process. Then, to create a secure connection for access to the administration console, you specify
+                a <code>TransportGuarantee</code> constraint for the <code>@HttpConstraint</code> annotation in
+                the <code>AdminServlet</code>.</p>
+
+            <ol>
+                <li>Open the project's <code>web.xml</code> file in the editor. (If it is already opened,
+                    you can press Ctrl-Tab and select it.)</li>
+
+                <li>Click the Security tab along the top of the editor, then click the Add Security Constraint button.</li>
+
+                <li>Type in <code>Checkout</code> for the Display Name, then under Web Resource Collection
+                    click the Add button. Enter the following details, then when you are finished, click OK.
+
+                    <ul style="margin: 10px 0 0 -.7em">
+                        <li><strong>Resource Name:</strong> <code>Checkout</code></li>
+                        <li><strong>URL Pattern(s):</strong> <code>/checkout</code></li>
+                        <li><strong>HTTP Method(s):</strong> <code>Selected HTTP Methods</code> (<code>GET</code>)</li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/add-web-resource2.png"
+                         class="margin-around b-all" alt="Add Web Resource dialog"
+                         title="Specify which resources need to be protected using the Add Web Resource dialog">
+
+                    <p class="notes"><strong>Note:</strong> Recall that the <code>/checkout</code> URL pattern is
+                        handled by the <code>ControllerServlet</code>'s <code>doGet</code> method, and forwards the
+                        user to the checkout page.</p></li>
+
+                <li>Under the new Checkout security constraint, select the Enable User Data Constraint option,
+                    then in the Transport Guarantee drop-down, select <code>CONFIDENTIAL</code>.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/checkout-security-constraint.png"
+                         class="margin-around b-all" style="width:688px" alt="Checkout security constraint displayed under Security tab"
+                         title="Use the web.xml visual editor to specify security settings for the application">
+
+                    <p class="tips">When you choose <code>CONFIDENTIAL</code> as a security constraint, you are
+                        instructing the server to encrypt data using TLS/SSL so that it cannot be read while in
+                        transit. For more information, see the Java EE 6 Tutorial,
+                        <a href="http://download.oracle.com/javaee/6/tutorial/doc/gkbaa.html#bncbm"
+                        target="_blank">Specifying a Secure Connection</a>.</p></li>
+
+                <li>Click the XML tab along the top of the editor. Note that the following
+                    <code>&lt;security-constraint&gt;</code> entry has been added.
+
+                    <pre class="examplecode">
+&lt;security-constraint&gt;
+    &lt;display-name&gt;Checkout&lt;/display-name&gt;
+    &lt;web-resource-collection&gt;
+        &lt;web-resource-name&gt;Checkout&lt;/web-resource-name&gt;
+        &lt;url-pattern&gt;/checkout&lt;/url-pattern&gt;
+        &lt;http-method&gt;GET&lt;/http-method&gt;
+    &lt;/web-resource-collection&gt;
+    &lt;user-data-constraint&gt;
+        &lt;description/&gt;
+        &lt;transport-guarantee&gt;CONFIDENTIAL&lt;/transport-guarantee&gt;
+    &lt;/user-data-constraint&gt;
+&lt;/security-constraint&gt;</pre>
+
+                    Configuration for the customer checkout process is now complete. To ensure that a
+                    secure connection is applied for access to the administration console, simply specify
+                    that any requests handled by the <code>AdminServlet</code> are transmitted over a
+                    secure channel.</li>
+
+                <li>Open the <code>AdminServlet</code>. Press Alt-Shift-O (Ctrl-Shift-O on Mac)
+                    and in the Go to File dialog, type '<code>admin</code>', then click OK.</li>
+
+                <li>Use the <a href="http://download.oracle.com/javaee/6/api/javax/servlet/annotation/HttpConstraint.html"
+                    target="_blank"><code>@HttpConstraint</code></a> annotation's <code>transportGuarantee</code>
+                    element to specify a <code>CONFIDENTIAL</code> security constraint. Make the following
+                    change (in <strong>bold</strong>).
+
+                <pre class="examplecode">
+@WebServlet(name = &quot;AdminServlet&quot;,
+            urlPatterns = {&quot;/admin/&quot;,
+                           &quot;/admin/viewOrders&quot;,
+                           &quot;/admin/viewCustomers&quot;,
+                           &quot;/admin/customerRecord&quot;,
+                           &quot;/admin/orderRecord&quot;,
+                           &quot;/admin/logout&quot;})
+@ServletSecurity(
+    @HttpConstraint(<strong>transportGuarantee = TransportGuarantee.CONFIDENTIAL,</strong>
+                    rolesAllowed = {&quot;affableBeanAdmin&quot;})
+)
+public class AdminServlet extends HttpServlet { ... }</pre></li>
+
+                <li>Press Ctrl-Shift-I (&#8984;-Shift-I on Mac) to fix imports. An import statement
+                    for <code>javax.servlet.annotation.ServletSecurity.TransportGuarantee</code> is
+                    added to the top of the class.</li>
+
+                <li>Run the project (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                    alt="Run Project button"> ) to examine the application's behavior in a browser.</li>
+
+                <li>In the browser, step through the <code>AffableBean</code> website by selecting
+                    a product category and adding several items to your shopping cart. Then click the
+                    'proceed to checkout' button. The website now automatically switches to a secure
+                    channel when presenting the checkout page. You see the HTTPS protocol displayed
+                    in the browser's address bar, and the port is changed to 8181.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/secure-checkout.png"
+                         class="margin-around b-all" alt="Browser address bar showing HTTPS protocol for checkout request"
+                         title="The browser address bar indicates that a secure connection is established for customer checkout">
+
+                    <br>
+                    Also, in Firefox, note the lock (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/firefox-lock-icon.png"
+                    alt="Firefox lock icon"> ) icon displayed in the lower right corner of the browser.</li>
+
+                <li>Investigate security for the administration console. Type in the following URL into the browser's
+                    address bar:
+
+                    <pre class="examplecode">http://localhost:8080/AffableBean/admin/</pre>
+
+                    The website now automatically switches to a secure
+                    channel when presenting the checkout page. You see the HTTPS protocol displayed
+                    in the browser's address bar, and the port is changed to 8181.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/security/secure-admin.png"
+                         class="margin-around b-all" alt="Browser address bar showing HTTPS protocol for checkout request"
+                         title="The browser address bar indicates that a secure connection is established for customer checkout">
+
+                    <p class="notes"><strong>Note:</strong> You way wonder at this point how it is possible
+                        to switch from a secure connection back to a normal, unsecured one. This practice
+                        however is not recommended. The <a href="http://download.oracle.com/javaee/6/tutorial/doc/gkbaa.html#bncbm"
+                        target="_blank">Java EE 6 Tutorial</a> explains as follows:</p>
+
+                    <blockquote style="margin-top: 0">
+                        <em>If you are using sessions, after you switch to SSL you should never accept any
+                            further requests for that session that are non-SSL. For example, a shopping site
+                            might not use SSL until the checkout page, and then it might switch to using SSL
+                            to accept your card number. After switching to SSL, you should stop listening to
+                            non-SSL requests for this session. The reason for this practice is that the session
+                            ID itself was not encrypted on the earlier communications. This is not so bad when
+                            you’re only doing your shopping, but after the credit card information is stored
+                            in the session, you don’t want a bad guy trying to fake the purchase transaction
+                            against your credit card. This practice could be easily implemented using a filter.</em>
+                    </blockquote></li>
+            </ol>
+        </div>
+
+        <p>You have now successfully secured the <code>AffableBean</code> application according to the defined
+            customer requirements. You've set up a login form for the administration console to authorize or deny
+            access based on user credentials, and you configured the application and server to create a secure
+            connection for access to the administration console, as well as the customer checkout process.</p>
+
+        <p>You can compare your work with the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_complete.zip">completed
+            <code>AffableBean</code> project</a>. The completed project includes the security implementation
+            demonstrated in this unit, and also provides a basic implementation for web page error customization,
+            such as when a request for a nonexistent resource is made, and the server returns an HTTP 404
+            'Not Found' error message.</p>
+
+        <div class="indent">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/security/http-404.png"
+                 class="margin-around b-all" style="width:728px" alt="Browser address bar showing HTTPS protocol for checkout request"
+                 title="The browser address bar indicates that a secure connection is established for customer checkout">
+        </div>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Securing the Application">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <br>
+        <h2 id="seeAlso">See Also</h2>
+
+        <div class="indent">
+            <h3>NetBeans Resources</h3>
+
+            <ul>
+                <li><a href="../../web/security-webapps.html" target="_blank">Securing a Web Application</a></li>
+                <li><a href="../javaee-intro.html" target="_blank">Introduction to Java EE Technology</a></li>
+                <li><a href="../javaee-gettingstarted.html" target="_blank">Getting Started with Java EE Applications</a></li>
+                <li><a href="https://netbeans.org/projects/www/downloads/download/shortcuts.pdf">Keyboard Shortcuts & Code Templates Card</a></li>
+                <li><a href="../../../trails/java-ee.html" target="_blank">Java EE & Java Web Learning Trail</a></li>
+            </ul>
+
+            <h3>External Resources</h3>
+
+            <ul>
+                <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/bnbwj.html" target="_blank">The Java EE 6 Tutorial, Chapter 24: Introduction to Security in the Java EE Platform</a></li>
+                <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/bncas.html" target="_blank">The Java EE 6 Tutorial, Chapter 25: Getting Started Securing Web Applications</a></li>
+                <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/bnbyk.html" target="_blank">The Java EE 6 Tutorial, Chapter 26: Getting Started Securing Enterprise Applications</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1751" target="_blank">Oracle GlassFish Server 3.0.1 Administration Guide</a></li>
+                <li><a href="http://java.sun.com/developer/technicalArticles/J2EE/security_annotation/" target="_blank">Security Annotations and Authorization in GlassFish and the Java EE 5 SDK</a></li>
+                <li><a href="http://www.infoq.com/news/2010/07/javaee6-security" target="_blank">Java EE 6: Application Security Enhancements</a></li>
+                <li><a href="http://refcardz.dzone.com/refcardz/getting-started-java-ee" target="_blank">Getting Started with Java EE Security</a> [RefCard]</li>
+                <li><a href="http://en.wikipedia.org/wiki/Https" target="_blank">HTTP Secure</a> [Wikipedia]</li>
+                <li><a href="http://en.wikipedia.org/wiki/Digital_certificate" target="_blank">Public key certificate</a> [Wikipedia]</li>
+            </ul>
+        </div>
+
+    </body>
+</html>

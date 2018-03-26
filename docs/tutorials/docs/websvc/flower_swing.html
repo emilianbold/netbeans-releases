@@ -1,0 +1,478 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>Creating the Swing Client, Web Service Passing Binary Data pt 6 - NetBeans IDE Tutorial</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial shows how to create a client for the web service that
+              displays the result in a GUI designed with Swing components.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    <body>
+        <h1>Web Service Passing Binary Data, pt 5: Creating the Swing Client</h1>
+        
+        
+        <p>The goal of this exercise is to create a client for the web service you previously created and deployed, and then add a GUI interface to that client. The interface displays the images that the web service passes as binary data.</p>
+        <p>You can download a complete version of the client from the <a target="_blank" href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerClient.zip">NetBeans Samples Catalog</a>.</p>
+    <p><b>Lessons In This Tutorial</b></p>
+        <img  src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3 and 7.4" title="Content on this page applies to the NetBeans IDE 7.2, 7.3 and 7.4" >
+        <ol>
+            <li><a href="./flower_overview.html">Overview</a></li>
+            <li><a href="./flower_ws.html">Creating the Web Service</a></li>
+        <li><a href="./flower-code-ws.html">Coding and Testing the Web Service</a></li>
+          <li><a href="./flower_wsdl_schema.html">Modifying the Schema and WSDL Files to Pass Binary Data</a></li>
+          <li> =&gt; Creating the Swing Client</li>
+        </ol>
+    <p><b>Contents of This Lesson</b></p>
+        <ol>
+          <li>
+            <p><a href="#create-client-app">Creating the Client Application</a></p>
+          </li>
+          <li><a href="#design-jframe">Designing the JFrame</a></li>
+          <li><p><a href="#bind-jframe">Binding  the JFrame Components</a></p>
+          <ul>
+          <li><a href="#initialize-components">Initializing the Components</a></li>
+          <li><a href="#show-flowers">Showing the Flowers</a></li>
+          </ul></li>
+          <li><a href="#code-main-class">Coding the Main Class</a></li>
+        </ol>
+        
+    <h2><a name="create-client-app"></a> Creating the Client Application</h2>
+        <p>In this section, you create a web application. Within this application, you create a client that consumes the web service you created and modified in previous tutorials. </p>
+    <p><strong>To create the  client application: </strong></p>
+        <ol>
+            <li>Choose File &gt; New Project (Ctrl-Shift-N on Linux/Windows, &#8984;-Shift-N on MacOS). The
+            New Project wizard appears. </li>
+            <li>Select
+              Java Application from the Java category. Click
+              Next. The New Java Application wizard appears.
+              Type <tt>FlowerClient</tt> in Project Name. Select a location for the project and click Finish. 
+              The IDE creates a new Java application project.</li>
+            <li>Right-click the <tt>FlowerClient</tt> project node
+            and choose New &gt; Web Service Client from the context menu. The New Web Service Client wizard opens.  </li>           
+          <li>Select the WSDL URL radio button and paste the URL of the WSDL file into that field. (By default, the URL is <tt>http://localhost:8080/FlowerAlbumService/FlowerServiceService?wsdl</tt>. Find the URL in the browser by testing the web service and replacing <tt>?Tester</tt> with <tt>?wsdl</tt> at the end of the URL.) Accept all other default values, including a blank package name.   <br><img src="../../../images_www/articles/73/websvc/flower/ws-client-wiz.png" alt="Web Service Client wizard showing WSDL URL" height="440" width="588" class="margin-around"></li>
+            <li>Click Finish. The IDE downloads the WSDL file, adds client
+              stubs for interacting with the web service,
+              and adds nodes to the Projects window in the Java application project.
+              
+    <br><img src="../../../images_www/articles/73/websvc/flower/client-generated-sources.png" alt="Projects view showing new web service client" height="474" width="360" class="margin-around" title="Projects view showing new web service client"></li></ol>
+    <h2 id="design-jframe">Designing the JFrame Form</h2>
+                <p>In this section, you add a <tt>JFrame</tt> to the web application and design a GUI interface within it, using Swing components. Finally, you bind the Swing components to the web service client code.</p>
+                <p class="tips">If you do not want to design the JFrame form yourself, you can download a predesigned JFrame Java file <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/webservices%252FFlowerFrame.java">here</a>.</p>
+<ol>
+            <li>Right-click the <tt>FlowerClient</tt> node and select New &gt; JFrame Form. Name the frame <tt>FlowerFrame</tt>.
+            Place it in the <tt>flowerclient</tt> package.</li>
+          <li>The <tt>FlowerFrame</tt> opens in the editor. Open the Palette if it is not open.
+            Extend the bottom boundary of the frame by around one-third.<br><img src="../../../images_www/articles/73/websvc/flower/opened-flowerform.png" alt="Flower Form in editor, in design view, with Palette also open" height="437" width="600" class="margin-around"></li>
+          <li>Drag a JPanel from the Swing Containers section of the Palette to the <tt>FlowerFrame</tt>. Expand it to fill the entire <tt>FlowerFrame</tt>. <br>
+          <img src="../../../images_www/articles/73/websvc/flower/add-panel.png" alt="Adding and expanding a JPanel in the FlowerFrame" height="408" width="587" class="margin-around"></li>
+            <li>Right-click the Panel in the Design View. Select Change Variable Name... from the context menu. Name the panel <tt>gardenFlowersPanel</tt>.</li>
+            <li>Drag a JLabel from the Palette to the top of the<tt> gardenFlowersPanel</tt>. Right-click the label, and change  the label's variable name to <tt>titleLabel</tt>. Right-click the <tt>titleLabel</tt> again and select Edit Text. Change the text to Garden Flowers. You may want to explore the <tt>titleLabel</tt>'s properties and give it a prominent font.</li>
+            <li>Drag a Button Group into the design view. Accept the button group's default variable name of <tt>buttonGroup1</tt>.</li>
+            <li>Drag four Radio Buttons  into a horizontal row beneath the <tt>titleLabel</tt>. In the properties of each button, set it as a member of <tt>buttonGroup1</tt>.
+              The buttons' other properties are as follows:
+              <table>
+                  <caption>Radio Buttons in buttonGroup1</caption>
+                <tbody>
+                  <tr>
+                    <th class="tblheader">Variable Name</th>
+                    <th class="tblheader">Selected</th>
+                    <th class="tblheader">Text</th>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">asterRadioButton</td>
+                    <td class="tbltd1">true</td>
+                    <td class="tbltd1">Aster</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">honeysuckleRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Honeysuckle</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">roseRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Rose</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">sunflowerRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Sunflower</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+            <li>Drag a Scroll Pane to below the radio buttons. Expand it to fill all the horizontal space and about two-thirds of the free vertical space. Change the scroll pane's variable name to <tt>mainScrollPane</tt>.</li>
+            <li>Drag a Panel into the <tt>mainScrollPane</tt>. Change the Panel's variable name to <tt>mainPanel</tt>. </li>
+            <li>In the Design view, right-click the <tt>mainPanel</tt> and select Set Layout &gt; Border Layout. </li>
+            <li>Drag a Button into the <tt>mainPanel</tt>. Because the <tt>mainPanel</tt> has border layout, the button automatically fills the entire panel. Change the button's variable name to <tt>mainPictureButton</tt> and change the button's text to &quot;Waiting for picture...&quot;</li>
+            <li>Drag another Scroll Pane to the space below the <tt>mainScrollPane</tt>. Expand the new scroll pane to fill up all remaining free space. Change the new scroll pane's variable name to <tt>thumbnailScrollPane</tt>.</li>
+            <li>Drag a Panel into the <tt>thumbnailScrollPane</tt>. Change the Panel's variable name to <tt>thumbnailPanel</tt>. Set the <tt>thumbnailPanel</tt>'s layout to Grid Layout.</li>
+            <li>Drag four Buttons into the <tt>thumbnailPanel</tt>. Because the <tt>thumbnailPanel</tt> has Grid Layout, the Buttons are automatically of equal size and completely fill the panel. The buttons' properties are as follows:
+              <table>
+                <title>Buttons in the thumbnailPanel</title>
+                <tbody>
+                  <tr>
+                    <th class="tblheader">Variable Name</th>
+                    <th class="tblheader">Text</th>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">asterButton</td>
+                    <td class="tbltd1">Waiting...</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">honeysuckleButton</td>
+                    <td class="tbltd1">Waiting...</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">roseButton</td>
+                    <td class="tbltd1">Waiting</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">sunflowerButton</td>
+                    <td class="tbltd1">Waiting...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+            </ol>
+              <p>The JFrame Form is now completely designed. At this point, the <tt>FlowerFrame</tt> looks
+            as follows.
+            
+            <br>
+            <img src="../../../images_www/articles/73/websvc/flower/designed-form.png" alt="Completed Flower Frame showing button texts instead of images" height="412" width="500" border="1" class="margin-around" title="Completed Flower Frame showing button texts instead of images"></p>
+              <a name="bind-jframe"></a>
+            <h2>Binding the JFrame Components</h2>
+            <p>In this section, you initialize the components in the constructor and bind the components to listeners. The listeners call code that shows the flower images.</p>
+<div class="indent">
+            <h3><a name="initialize-components">Initializing the Components</h3>
+            <p>In this section, you fill in the <tt>FlowerFrame</tt> constructor</p>
+<ol>
+            <li>Change to the Source view of the editor. Locate the beginning of the <tt>FlowerFrame</tt> class body and the <tt>FlowerFrame</tt> constructor.<br>
+            <img src="../../../images_www/articles/73/websvc/flower/ff-empty-constructor.png" alt="Source view of editor showing empty FlowerForm constructor" height="197" width="492" class="margin-around" border="1"></li>
+          
+            <li>At the top of the class body of <tt>FlowerFrame</tt>, before the constructor, create an array of strings of the names of every flower.
+              <pre class="examplecode">protected static final String[] FLOWERS = {"aster", "honeysuckle", "rose", "sunflower"};</pre>
+    </li>            
+            <li>Between the FLOWERS string array and the constructor, add a line that initializes a <tt><a target="_blank" href="http://download.oracle.com/javase/6/docs/api/java/util/Map.html">java.util.Map</a></tt> named <tt>flowers</tt>. The map takes a <tt>String</tt> and maps it to an <tt>Image</tt>. 
+              <pre class="examplecode">private Map&lt;String, Image&gt; flowers;</pre>   </li>         
+            <li>Add  import statements for <tt>java.util.Map</tt> and <tt>java.awt.Image</tt>.        </li>    
+            <li>Add code to  the <tt>FlowerFrame</tt> constructor to associate a specific <tt>Image</tt> with a specific <tt>String</tt> for a specific instance of the <tt>flowers</tt> map
+              <pre>
+public FlowerFrame(Map&lt;String, Image&gt; flowers) {
+
+    this.flowers = flowers;
+    for (String flower:FLOWERS) {
+        flowers.put(flower,null);
+    }
+
+    initComponents();    
+} </pre></li>
+            <li>Initialize  <tt>ItemListener</tt>s for the radio buttons and <tt>ActionListener</tt>s for the four flower buttons, and set the default title. 
+              <pre class="examplecode">
+public FlowerFrame(Map&lt;String, Image&gt; flowers) {
+
+    this.flowers = flowers;
+    for (String flower:FLOWERS) {
+        flowers.put(flower,null);
+    }
+
+    initComponents(); 
+    
+    setTitle("Garden Flowers [waiting for picture]");
+    
+    ItemListener rbListener = new RBListener();
+    asterRadioButton.addItemListener(rbListener);
+    honeysuckleRadioButton.addItemListener(rbListener);
+    roseRadioButton.addItemListener(rbListener);
+    sunflowerRadioButton.addItemListener(rbListener);
+    
+    ActionListener bListener = new ButtonListener();
+    asterButton.addActionListener(bListener);
+    honeysuckleButton.addActionListener(bListener);
+    roseButton.addActionListener(bListener);
+    sunflowerButton.addActionListener(bListener);
+}</pre>
+            </li>      
+            <li>Add import statements for <tt><a target="_blank" href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ItemListener.html">java.awt.event.ItemListener</a></tt> and <tt><a target="_blank" href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ActionListener.html">java.awt.event.ActionListener</a></tt>.</li>
+            </ol>
+ <p>The constructor is now complete. You have compile error warnings in the code because the code does not contain the classes <tt>RBListener</tt> and <tt>ButtonListener</tt>. These two classes are custom implementations of <tt>ItemListener</tt> and <tt>ActionListener</tt>, respectively. You write these two classes in the next section.</p> 
+ <h3><a name="show-flowers">Showing the Flowers</h3>
+ <p>In this section, you write custom listeners for the radio buttons and the flower buttons. You also write a method that determines which flower is selected by the buttons and gets an <tt>Image</tt> of that flower from the <tt>flowers</tt> map. Lastly, you write a method that is called by the <tt>Main</tt> class and that gets an <tt>Image</tt> for each thumbnail.</p>
+ <ol>
+   <li>Find the <tt>public static void main(String args[])</tt> method in the <tt>FlowerFrame</tt> class body. Delete this method and its documentation. (The application uses the <tt>Main</tt> class instead.)</li>
+    <li>In place of the <tt>main</tt> method, write a custom <tt>ItemListener</tt> for the radio buttons.
+            This listener shows a new flower image when a radio button is chosen.
+              <pre class="examplecode">private class RBListener implements ItemListener {
+    public void itemStateChanged(ItemEvent e) {
+        showFlower();
+    }
+}</pre></li>
+<li>Add an import statement for <tt><a target="_blank" href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ItemEvent.html">java.awt.event.ItemEvent</a></tt>.</li>
+            <li>Below the custom <tt>ItemListener</tt>, write a custom <tt>ActionListener</tt> for the 4 flower buttons. When a button is clicked, the listener selects the related radio button:
+              <pre class="examplecode">private class ButtonListener implements ActionListener {
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == asterButton) asterRadioButton.setSelected(true);
+        else if (e.getSource() == honeysuckleButton) honeysuckleRadioButton.setSelected(true);
+        else if (e.getSource() == roseButton) roseRadioButton.setSelected(true);
+        else if (e.getSource() == sunflowerButton) sunflowerRadioButton.setSelected(true);
+    }
+}</pre>
+            </li>
+            <li>Add an import statement for <tt><a target="_blank" href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ActionEvent.html">java.awt.event.ActionEvent</a></tt>.</li>
+            <li>Below the custom <tt>ActionListener</tt>, write the <tt>showFlower</tt> method. This method determines which radio button is selected and gets an <tt>Image</tt> of the corresponding flower from the <tt>flowers</tt> map.
+              <pre class="examplecode">
+void showFlower() {
+    Image img = null;
+    if (asterRadioButton.isSelected()) {
+        img = flowers.get("aster");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Aster]");
+        }
+    } else if (honeysuckleRadioButton.isSelected()) {
+        img = flowers.get("honeysuckle");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Honeysuckle]");
+        }
+
+    } else if (roseRadioButton.isSelected()) {
+        img = flowers.get("rose");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Rose]");
+        }
+    } else if (sunflowerRadioButton.isSelected()) {
+        img = flowers.get("sunflower");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Sunflower]");
+        }
+    }
+    if (img == null) {
+        mainPictureButton.setIcon(null);
+        setTitle("Garden Flowers [waiting for picture]");            
+    } else mainPictureButton.setText("");
+}</pre>
+            </li>
+            <li>Add an import statement for <tt><a target="_blank" href="http://download.oracle.com/javase/6/docs/api/javax/swing/ImageIcon.html">javax.swing.ImageIcon</a></tt>.</li>
+            <li>Write the <tt>setThumbnails</tt> method. This method gets an image for each thumbnail from the <tt>flowers</tt> map. The  <tt>Main</tt> class calls this method.
+              <pre class="examplecode">void setThumbnails(Map&lt;String, Image&gt; thumbs) {
+    Image img = thumbs.get("aster");
+    if (img != null) {
+        asterButton.setIcon(new ImageIcon(img));
+        asterButton.setText("");
+    }
+    img = thumbs.get("honeysuckle");
+    if (img != null) {
+        honeysuckleButton.setIcon(new ImageIcon(img));
+        honeysuckleButton.setText("");
+    }
+    img = thumbs.get("rose");
+    if (img != null) {
+        roseButton.setIcon(new ImageIcon(img));
+        roseButton.setText("");
+    }
+    img = thumbs.get("sunflower");
+    if (img != null) {
+        sunflowerButton.setIcon(new ImageIcon(img));
+        sunflowerButton.setText("");
+    }
+}</pre></li>
+            <li>Fix the imports in <tt>FlowerFrame</tt>, if you did not fix them as you pasted in the code. You can fix them all at once by right-clicking in the editor and choosing Fix Imports from the context menu. The complete set of import statements follows:
+            <pre class="examplecode">import java.awt.Image;<br>import java.awt.event.ActionEvent;<br>import java.awt.event.ActionListener;<br>import java.awt.event.ItemEvent;<br>import java.awt.event.ItemListener;<br>import java.util.Map;<br>import javax.swing.ImageIcon;</pre> </li>  </ol>
+            <p>The <tt>FlowerFrame</tt> is now complete.</p>
+    </div>
+            
+            <h2><a name="code-main-class">Coding the Main Class</h2>
+            <p>In this section, you complete the <tt>Main</tt> class so that is shows the <tt>FlowerFrame</tt>, connects to the web service, and calls the web service operations.</p>
+            <ol>
+              <li>Open the <tt>Main.java</tt> class in the editor.<br>
+              <img src="../../../images_www/articles/73/websvc/flower/main-empty.png" alt="Empty Main class" height="303" width="425" class="margin-around" border="1">            </li>
+              <li>In the class body, before the <tt>main</tt> method, initialize an <tt>int</tt> variable for the number of downloaded pictures.
+                <pre class="examplecode"> private static int downloadedPictures;</pre></li>
+              </li>
+          
+              <li>In the <tt>main</tt> method body, create a <tt>HashMap</tt> of four flowers and another <tt>HashMap</tt> of four thumbnails.<pre class="examplecode">final Map&lt;String,Image&gt; flowers = new HashMap&lt;String,Image&gt;(4);
+final Map&lt;String,Image&gt; thumbs = new HashMap&lt;String,Image&gt;(4);</pre>
+              </li>
+              <li>Add import statements for <tt>java.awt.Image</tt>, <tt>java.util.Map</tt>, and <tt>java.util.HashMap</tt>.</li>
+              <li>In the <tt>main</tt>
+method body, add code to show the <tt>FlowerFrame</tt>.<pre class="examplecode"><b>// Show the FlowerFrame.</b>
+final FlowerFrame frame = new FlowerFrame(flowers);
+frame.setVisible(true);  </pre>  
+              </li>
+              <li>In the <tt>main</tt> method body, add code to connect the client to the service.<pre class="examplecode"><b>// The client connects to the service with this code.</b>
+FlowerServiceService service = new FlowerServiceService();
+final FlowerService port = service.getFlowerServicePort();</pre>  
+              </li>            
+              <li>Add import statements for <tt>org.flower.service.FlowerService</tt> and <tt>org.flower.service.FlowerServiceService</tt>.</li>
+              <li>In the <tt>main</tt> method body, add code that creates an array of four <tt>Runnable</tt> threads and calls the 
+ web service's <tt>getFlower</tt> operation once in each thread.<pre class="examplecode"><b>// The web service getFlower operation
+// is called 4 times, each in a separate thread.
+// When the operation finishes the picture is shown in
+// a specific button.</b>
+Runnable[] tasks = new Runnable[4];
+
+for (int i=0; i&lt;4;i++) {
+    final int index = i;
+    tasks[i] = new Runnable() {
+        public void run() {
+            try {
+            
+                <b>// Call the getFlower operation
+                // on the web service:</b>
+                Image img = port.getFlower(FlowerFrame.FLOWERS[index]);
+                System.out.println("picture downloaded: "+FlowerFrame.FLOWERS[index]);
+                     
+                <b>// Add strings to the hashmap:</b>
+                flowers.put(FlowerFrame.FLOWERS[index],img);
+                        
+                <b>// Call the showFlower operation
+                // on the FlowerFrame:</b>
+                frame.showFlower();
+                        
+            } catch (IOException_Exception ex) {
+                ex.printStackTrace();
+            }
+            downloadedPictures++;
+        }
+    };
+    new Thread(tasks[i]).start();
+}</pre>
+           </li>
+              <li>Add an import statement for <tt>org.flower.service.IOException_Exception</tt>.      </li>       
+              <li>In the <tt>main</tt> method body, add code that calls the web service's <tt>getThumbnails</tt> operation in a separate thread.
+              <pre class="examplecode"><b>// The web service getThumbnails operation is called
+// in a separate thread, just after the previous four threads finish.
+// When the images are downloaded, the thumbnails are shown at 
+// the bottom of the frame.</b>
+Runnable thumbsTask = new Runnable() {
+    public void run() {
+        try {
+            while (downloadedPictures &lt; 4) {                        
+                try {Thread.sleep(100);} catch (InterruptedException ex) {}
+            }
+                 
+            <b>// Call the getThumbnails operation
+            // on the web service:</b>
+            List&lt;Image&gt; images = port.getThumbnails();
+            System.out.println("thumbs downloaded");
+                    
+            if (images != null && images.size() == 4) {
+                for (int i=0;i&lt;4;i++) {
+                    thumbs.put(FlowerFrame.FLOWERS[i],images.get(i));
+                }
+                frame.setThumbnails(thumbs);
+            }
+        } catch (IOException_Exception ex) {
+            ex.printStackTrace();
+        }
+    }            
+};
+new Thread(thumbsTask).start();
+</pre>
+              </li>
+              <li>Fix the imports in <tt>Main.java</tt>, if you did not fix them as you pasted in the code. You can fix them all at once by right-clicking in the editor and choosing Fix Imports from the context menu. You are given a choice of List classes to import; select <tt>java.util.List</tt>. The complete set of import statements follows:
+                <pre class="examplecode">import flower.album.FlowerService;<br>import flower.album.FlowerService_Service;<br>import flower.album.IOException_Exception;<br>import java.awt.Image;<br>import java.util.HashMap;<br>import java.util.List;<br>import java.util.Map;</pre>
+              </li>
+            </ol>
+    <p>The <tt>Main</tt> class is now complete.</p>
+                <pre class="examplecode">public class Main {
+
+     private static int downloadedPictures;
+    
+     public static void main(String[] args) {
+    
+        final Map&lt;String,Image&gt; flowers = new HashMap&lt;String,Image&gt;(4);
+        final Map&lt;String,Image&gt; thumbs = new HashMap&lt;String,Image&gt;(4);
+        
+        <b>// Show the FlowerFrame.</b>
+        final FlowerFrame frame = new FlowerFrame(flowers);
+        frame.setVisible(true);
+        <br><b>        // The client connects to the service with this code.</b>
+        FlowerService_Service service = new FlowerService_Service();
+        final FlowerService port = service.getFlowerServicePort();
+        
+        Runnable[] tasks = new Runnable[4];
+        
+        <b>// The web service getFlower operation
+        // is called 4 times, each in a separate thread.
+        // When the operation finishes the picture is shown in
+        // a specific button.</b>
+        for (int i=0; i&lt;4;i++) {
+            final int index = i;
+            tasks[i] = new Runnable() {
+                public void run() {
+                    try {
+                    
+                        <b>// Call the getFlower operation
+                        // on the web service:</b>
+                        Image img = port.getFlower(FlowerFrame.FLOWERS[index]);
+                        System.out.println("picture downloaded: "+FlowerFrame.FLOWERS[index]);
+                        
+                        <b>// Add strings to the hashmap:</b>
+                        flowers.put(FlowerFrame.FLOWERS[index],img);
+                        
+                        <b>// Call the showFlower operation
+                        // on the FlowerFrame:</b>
+                        frame.showFlower();
+                        
+                    } catch (IOException_Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    downloadedPictures++;
+                }
+            };
+            new Thread(tasks[i]).start();
+        }
+        <b>// The web service getThumbnails operation is called
+        // in a separate thread, just after the previous four threads finish.
+        // When the images are downloaded, the thumbnails are shown at 
+        // the bottom of the frame.</b>
+        Runnable thumbsTask = new Runnable() {
+            public void run() {
+                try {
+                    while (downloadedPictures &lt; 4) {                        
+                        try {Thread.sleep(100);} catch (InterruptedException ex) {}
+                    }
+                    
+                    <b>// Call the getThumbnails operation
+                    // on the web service:</b>
+                    List&lt;Image&gt; images = port.getThumbnails();
+                    System.out.println("thumbs downloaded");
+                    
+                    if (images != null && images.size() == 4) {
+                        for (int i=0;i&lt;4;i++) {
+                            thumbs.put(FlowerFrame.FLOWERS[i],images.get(i));
+                        }
+                        frame.setThumbnails(thumbs);
+                    }
+                } catch (IOException_Exception ex) {
+                    ex.printStackTrace();
+                }
+            }            
+        };
+        new Thread(thumbsTask).start();
+    }
+
+}</pre>
+                         
+            
+                
+    <p>The client application is now complete, with code that interacts with
+        the web service that delegates to the EJB module to exposes its images. Right-click
+        the client and choose Run. The Swing application starts up and, after a moment,
+        is filled with the images received from the web service.
+        If the images do not all appear, clean and build the FlowerService project and run it again.
+        Note that you can change the image that appears in the main frame either by selecting a radio button or by clicking a thumbnail.<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Swing%20Client%20EE6">Send Feedback on This Tutorial</a></div>
+        <p>To send comments and suggestions, get support, and keep informed about the latest
+            developments on the NetBeans IDE Java EE development features, <a href="../../../community/lists/top.html">join
+        the nbj2ee@netbeans.org mailing list</a>.</p>
+    </body>
+</html>

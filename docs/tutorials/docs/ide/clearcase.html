@@ -1,0 +1,735 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">        
+        <meta name="author" content="troy.giunipero@sun.com">    
+        <meta name="description" content="A preview of ClearCase Features in NetBeans IDE 6.9 and more recent">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, 
+            ClearCase, IBM, versioning, open source, developers, collaborate"> 
+            
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Using ClearCase Support in NetBeans IDE</title>
+    </head>
+    
+    <body>
+
+<!--
+Copyright (c) 2009 - 2014 Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Using ClearCase Support in NetBeans IDE</h1>
+
+        <p>The IDE's ClearCase support is designed to help you perform versioning
+            tasks directly to your project when working in the IDE.</p>
+
+        <p>This document guides you through the basic steps involved in using ClearCase
+            in NetBeans IDE.</p>
+            
+        <p>Rational ClearCase is a version control software tool developed by IBM. ClearCase 
+            forms the base of version control for projects of many large and medium-sized 
+            businesses.</p>
+        
+        <p><strong>Contents</strong></p>
+    <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" 
+   class="stamp" 
+   alt="Content on this page applies to NetBeans IDE 6.9 and more recent" 
+   title="Content on this page applies to the NetBeans IDE 6.9 and more recent" >
+
+        <ul class="toc">
+            <li><a href="#settingUp">Setting up ClearCase</a>
+                <ul>
+                    <li><a href="#specifying">Specifying the Path to the <tt>cleartool</tt> Executable</a></li>
+                </ul></li>
+            <li><a href="#starting">Starting to Work with Versioned Files</a>
+                <ul>
+                    <li><a href="#opening">Opening an Existing Project in the IDE</a></li>
+                    <li><a href="#addingSourceControl">Creating a New Project and Placing it under Source Control</a></li>                
+                </ul></li>
+            <li><a href="#editing">Editing Sources</a>
+                <ul>
+                    <li><a href="#viewingChanges">Viewing Changes in the Source Editor</a></li>
+                    <li><a href="#viewingFileStatus">Viewing File Status Information</a></li>
+                    <li><a href="#comparing">Comparing File Revisions</a></li>
+                </ul></li>
+            <li><a href="#checkingin">Checking in Sources</a></li>
+            <li><a href="#seeAlso">See Also</a></li>
+        </ul>
+    
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans
+                        IDE</a></td>
+                    <td class="tbltd1">version 6.9 and more recent</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java
+                        Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6, 7, or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">ClearCase client software</td>
+                    <td class="tbltd1"> V 7.0 or later</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">NetBeans ClearCase plugin</td>
+                    <td class="tbltd1">version 0.9.x or higher</td>
+                </tr>                
+            </tbody>
+        </table>  
+        
+        <p><strong class="notes">Note: </strong>To get the NetBeans ClearCase plugin, go to the Plugin Manager 
+            in the IDE (Tools &gt; Plugins from the main menu) and install the plugin, as shown below:</p>
+                
+        <p class="align-center">
+            <a href="../../../images_www/articles/74/ide/clearcase/cc-plugin.png" rel="lytebox"
+                title="NetBeans ClearCase plugin is accessible via the Plugin Manager">
+                <img src="../../../images_www/articles/74/ide/clearcase/cc-plugin-small.png"
+                class="margin-around" alt="NetBeans ClearCase plugin displayed in Plugin Manager"></a>
+        </p>
+    
+        <a name="settingUp"></a>    
+        <h2>Setting up ClearCase</h2>
+        
+        <p>Before you can take advantage of the IDE's ClearCase support, you need to have the ClearCase client 
+            software installed and running on your computer.</p>
+
+        <p>NetBeans ClearCase support works with both <em>snapshot</em> and <em>dynamic</em> views. <strong>Views have
+            to be configured externally from the IDE and a connection to a ClearCase server must be properly 
+            set up.</strong> No extra work is needed to access files in snapshot views. If you want to access files
+            from a dynamic view however, you must first initiate it with the native ClearCase tools installed 
+            on your computer.</p>
+
+        <p><strong class="notes">Notes:</strong></p>   
+         
+        <ul>
+            <li>Currently it is not possible to connect to a ClearCase Web Interface (CCWeb).</li>
+            <li>A limitation for *nix-like systems is that you have to start the IDE from a dynamic views 
+                context to be able to access your files.</li>
+        </ul>
+            
+        <p>The IDE's ClearCase support works by interacting with the <tt>cleartool</tt> client to carry out 
+            versioning commands. Depending on your system, and whether you install the <tt>cleartool</tt> client 
+            to a non-default location, you may also need to register the path to the <tt>cleartool</tt> executable 
+            in the IDE.</p>           
+
+        <div class="indent">
+            <a name="specifying"></a>
+            <h3>Specifying the Path to the <tt>cleartool</tt> Executable</h3>
+
+            <p>NetBeans IDE automatically tries to identify the location of the <tt>cleartool</tt>
+                executable file by using the <tt>&#36;PATH</tt> system variable on your computer.
+                Depending on your platform however, or whether you installed the ClearCase
+                client to a different location, it may be necessary to specify the path to
+                the executable file explicitly. To set the path to the ClearCase executable
+                file in the IDE:</p>
+
+            <ol>
+                <li>Choose Tools &gt; Options (NetBeans &gt; Preferences on Mac) from the main menu.
+                    The Options dialog opens.</li>
+                <li>Select the Miscellaneous icon along the top of the dialog, then click the
+                    Versioning tab. In the left pane under Versioning Systems, select ClearCase.
+                    User-defined options for ClearCase display in the main window of the dialog:
+
+                    <p class="align-center"><a name="ccOptions"></a>               
+                    <a href="../../../images_www/articles/74/ide/clearcase/cc-options.jpg" rel="lytebox"
+                        title="ClearCase Options dialog featuring user-defined options">
+                        <img src="../../../images_www/articles/74/ide/clearcase/cc-options-small.jpg"
+                            alt="ClearCase Options dialog featuring user-defined options"
+                            class="margin-around"></a></p></li>
+
+                <li>In the Specify the <tt>cleartool</tt> Executable Path text field, either type 
+                    in the path to the executable file or click Browse to navigate to it on your 
+                    system.</li>
+                <li>Click OK, then restart the IDE to allow changes to take effect.</li>
+            </ol>
+        
+            <p><strong class="notes">Note: </strong>For more information see 
+                <a href="http://versioncontrol.netbeans.org/clearcase/install.html">NetBeans ClearCase
+                Integration Setup and Release Notes</a>.</p>
+        </div>
+
+        <a name="starting"></a>
+        <h2>Starting to Work with Versioned Files</h2>
+
+        <p>When working with ClearCase in the IDE for the first time, you need to begin by opening an existing
+            versioned project, or by creating a new project <strong>within a ClearCase view</strong> on your computer.</p>
+
+        <ul>
+            <li><a href="#opening">Opening an Existing Project in the IDE</a> </li>   
+            <li><a href="#addingSourceControl">Creating a New Project and Placing it under Source Control</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="opening"></a>
+            <h3>Opening an Existing Project in the IDE</h3>
+
+            <p>If you already have a ClearCase versioned project which you have been working with, you can open it 
+                in the IDE and versioning features will automatically become available to you. The IDE scans your 
+                open projects and if they are located in a ClearCase view directory, file status and context-sensitive 
+                support automatically become active.</p>
+
+            <p>To open a ClearCase versioned project:</p>
+
+            <ol>
+                <li>Choose File &gt; Open Project from the main menu and work your way through the Open Project 
+                    wizard. When specifying the project location, navigate to the location <strong>within a ClearCase
+                    view</strong> directory on your computer. When you complete the wizard, the project displays in the
+                    Projects window (Ctrl-1), and versioning support becomes active.</li>
+            </ol>
+            
+            <p><strong class="notes">Note: </strong>You can also open a project or directory in the Favorites window. 
+                This may be necessary if your ClearCase directory is not a NetBeans project. To do so, right-click in 
+                the Favorites window (Ctrl-3) and choose Add to Favorites. In the Add to Favorites dialog that displays, 
+                navigate to the top-level ClearCase view directory on your computer and click Add. A tree view of the 
+                directory is added to the Favorites window.</p>
+
+            <a name="addingSourceControl"></a>
+            <h3>Creating a New Project and Placing it under Source Control</h3>
+
+            <p>Alternately, you can create a new project and place it under ClearCase source control, then continue 
+                to work on it in the IDE. When you create a new project, you need to specify its location <strong>within a
+                ClearCase view</strong>. This allows the IDE to recognize that versioning support is required. When the project
+                is created, all files are initially <em>view-private</em>). You can then add the project to the ClearCase 
+                server using the IDE's Add to Source Control command.</p>
+
+            <p>To create a new project:</p>
+
+            <ol>
+                <li>Choose File &gt; New Project from the main menu and work your way through the New Project wizard.</li> 
+                 <li>In Step 2, Name and Location, select a directory in a ClearCase view.</li> 
+				 <li>When you click Finish, the 
+                    project is created and a tree view of its directory is added to the Projects window (Ctrl-1).<br> Upon 
+                    creation, the IDE automatically recognizes that the project is in a view and all relevant ClearCase 
+                    actions and file status information become available.</li>
+            </ol>
+
+            <p>When a versioned project is opened in the IDE, all file and folder names are rendered green, indicating 
+                that they have 'new' status. (Any files displayed in grey have 'ignored' status. See <a href="#badges">Badges
+                and Color Encoding</a> below for more information.) The IDE automatically decides for each versioned 
+                project file whether it is a candidate for version control or not (i.e., Source files in packages are 
+                usually meant to be versioned, whereas project private files are generally ignored).</p>
+
+           <!-- <p><span class="tips"></span>It is possible to to modify the way IDE handles private file views using the 
+                following options:</p>
+
+            <ul>
+                <li>Schedule View Private Files For checkin option in the <a href="#ccOptions">ClearCase Options dialog</a></li>
+                <li>Ignored Files setting available under Tools &gt; Options (NetBeans &gt; Preferences on Mac) &gt;
+                    Advanced Options &gt; IDE Configuration &gt; System &gt; System Settings &gt; Ignored Files</li>
+            </ul>    -->                     
+
+            <p>Now that your project is created, you can synchronize it with a ClearCase server using the IDE's Add to 
+                Source Control command:</p>
+
+            <ol>
+                <li>Right-click the project node in the Projects window and choose Add to source control. The 
+                    Add dialog opens listing all new view-private files which are not automatically ignored by 
+                    the IDE:
+
+                    <p class="align-center"><a name="addDialog"></a>                
+                    <a href="../../../images_www/articles/74/ide/clearcase/add-dialog.jpg" rel="lytebox"
+                        title="ClearCase Add dialog lists all files to be added to source control">
+                        <img src="../../../images_www/articles/74/ide/clearcase/add-dialog-small.jpg" class="margin-around"
+                        alt="ClearCase Add dialog"></a></p></li>
+
+                <li>Type in a message in the Describing Message text area. Alternatively, click the Recent Messages 
+                    ( <img src="../../../images_www/articles/74/ide/clearcase/recent-msgs.png" alt="recent messages icon"> ) icon located
+                    in the upper right corner to view and select from a list of messages that you have previously used.</li>
+                <li>After specifying actions for individual files, click Add. The IDE's status bar, located in the bottom 
+                    right of the interface, displays as the Add action takes place. Upon a successful Add, versioning badges 
+                    disappear in the Projects, Files and Favorites windows, and the color encoding of checked-in files becomes 
+                    black.</li>                    
+            </ol>
+
+            <p><strong class="notes">Note: </strong>From the Add dialog, it is possible to specify whether to exclude 
+                individual files from the Add action. To do so, click the Action column of a selected file and choose 
+                Do not Add from the drop-down list.</p>
+        </div>
+
+        <a name="checkingout"></a>
+        <h2>Checking out Sources</h2>
+
+        <p>Once you have a ClearCase versioned project opened in the IDE, you can begin making changes to sources. 
+            Modifying ClearCase versioned files requires them to be checked out or <em>hijacked</em> first. NetBeans 
+            ClearCase support provides two ways to achieve this:</p>
+
+        <ul> 
+            <li><strong>Manually</strong>: Simply right-click a file node and choose ClearCase &gt; Checkout 
+                (or ClearCase &gt; Hijack).</li>
+            <li><strong>Using the On Demand Checkout feature</strong>: Each time an action occurs that requires a file 
+                to be writable, the IDE automatically runs the relevant ClearCase command (e.g. changing file contents 
+                in the editor for the first time or running a refactoring action).</li>
+        </ul>
+
+        <p><span class="tips"></span>The On Demand Checkout feature can be fine-tuned using the On Demand checkout 
+            option in <a href="#ccOptions">ClearCase Options dialog</a>.</p>
+
+        <a name="editing"></a>
+        <h2>Editing Sources</h2>
+
+        <p>As with any project opened in NetBeans IDE, you can open files in the Source Editor by double-clicking 
+            their nodes, as they appear in the IDE's windows (e.g. Projects (Ctrl-1), Files (Ctrl-2), Favorites (Ctrl-3) 
+            windows).</p>
+
+        <p>When working with sources in the IDE, there are various UI components at your disposal, which aid in both 
+            viewing and operating version control commands:</p>
+
+        <ul>
+            <li><a href="#viewingChanges">Viewing Changes in the Source Editor</a></li>
+            <li><a href="#viewingFileStatus">Viewing File Status Information</a></li>
+            <li><a href="#comparing">Comparing File Versions</a></li>        
+        </ul>
+
+        <div class="indent">
+            <a name="viewingChanges"></a>
+            <h3>Viewing Changes in the Source Editor</h3>
+
+            <p>When you open a versioned file in the IDE's Source Editor, you can view real-time changes occurring to 
+                your file as you modify it against your previously checked-out version from the repository. As you work, 
+                the IDE uses color encoding in the Source Editor's margins to convey the following information:</p>
+
+            <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>Blue</strong>
+                        ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been changed since the earlier version.</td>
+
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Green</strong>
+                        ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been added since the earlier version.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Red</strong>
+                        ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+
+                    <td>Indicates lines that have been removed since the earlier version.</td>
+                </tr>
+            </table>
+
+            <p>The Source Editor's left margin shows changes occurring on a line-by-line basis. When you modify a 
+                given line, changes are immediately shown in the left margin.</p>
+
+            <p>You can click on a color grouping in the margin to revert the newly made changes. For example, the 
+                screen capture below left shows widgets available to you when clicking a red icon, indicating that 
+                lines have been removed from your checked out file.</p>
+
+            <p>The Source Editor's right margin provides you with an overview that displays changes made to your 
+                file as a whole, from top to bottom. Color encoding is generated immediately when you make changes 
+                to your file.</p>
+
+            <p>Note that you can click on a specific point within the margin to bring your inline cursor immediately 
+                to that location in the file. To view the number of lines affected, hover your mouse over the colored 
+                icons in the right margin:</p>
+
+            <table class="cell" style="width:500px">
+                <tr>
+                    <td><a href="../../../images_www/articles/74/ide/clearcase/left-ui.png" rel="lytebox"
+                        title="Versioning color encoding is displayed in editor's left margin">
+                        <img src="../../../images_www/articles/74/ide/clearcase/left-ui-small.png" class="b-all"
+                        alt="Versioning color encoding displayed in editor's left margin"></a>
+                        <br><strong>Left margin</strong></td>
+                    <td><img src="../../../images_www/articles/74/ide/clearcase/right-ui.png" class="b-all"
+                        alt="Versioning color encoding displayed in editor's right margin"
+                        title="Versioning color encoding displays in editor's right margin">
+                        <br><strong>Right margin</strong></td>
+                </tr>
+            </table>
+
+            <a name="viewingFileStatus"></a>
+            <h3>Viewing File Status Information</h3>
+
+            <p>When you are working in the Projects (Ctrl-1), Files (Ctrl-2), Favorites (Ctrl-3), or Versioning 
+                windows, the IDE provides several visual features that aid in viewing status information about 
+                your files. In the example below, notice how the badge (e.g. <img src="../../../images_www/articles/74/ide/clearcase/blue-badge.png"
+                alt="blue badge">), color of the file name, and adjacent status label, all coincide with each 
+                other to provide you with a simple but effective way to keep track of versioning information on 
+                your files:</p>
+
+                    <p class="align-center">
+                    <img src="../../../images_www/articles/74/ide/clearcase/badge-example.jpg" class="b-all margin-around"
+                        title="blue versioning badge displays in Favorites window" 
+                        alt="blue versioning badge displayed in Favorites window"></p>
+
+            <p>Badges, color coding, file status labels, and perhaps most importantly, the Versioning window all 
+                contribute to your ability to effectively view and manage and versioning information in the IDE.</p>
+
+            <ul>
+                <li><a href="#badges">Badges and Color Coding</a></li>
+                <li><a href="#fileStatus">File Status Labels</a></li>
+                <li><a href="#versioning">The Versioning Window</a></li>
+            </ul>
+
+            <div class="indent">
+                <a name="badges"></a>
+                <h4>Badges and Color Coding</h4>
+
+                <p>Badges are applied to project, folder, and package nodes and inform you of the status of files contained 
+                    within that node:</p>
+
+                <p>The following table displays the color scheme used for badges:</p>
+
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:120px">UI Component</th>
+                        <th class="tblheader" scope="col">Description</th>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Blue Badge</strong>
+                            (<img src="../../../images_www/articles/74/ide/clearcase/blue-badge.png" alt="blue badge">)</td>
+                        <td class="tbltd1">Indicates the presence of files or folders that have been checkedout, hijacked or added. 
+                            For packages, this badge applies only to the package itself and not its subpackages. For projects 
+                            or folders, the badge indicates changes within that item, or any of the contained subfolders.</td>
+                    </tr>
+                </table>
+
+                <br><a name="color-coding-table"></a>
+                <p>Color coding is applied to file names in order to indicate their current status:</p>
+
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:40px">Color</th>
+                        <th class="tblheader" scope="col">Example</th>
+                        <th class="tblheader" scope="col">Description</th>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Blue</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/74/ide/clearcase/blue-text.png"
+                            alt="blue text"></td>
+                        <td class="tbltd1">Indicates that the file has been checked out.</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Green</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/74/ide/clearcase/green-text.png"
+                            alt="green text"></td>
+                        <td class="tbltd1">Indicates that the file is new and has not been added to source control yet.</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Gray</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/74/ide/clearcase/gray-text.png"
+                            alt="gray text"></td>
+                        <td class="tbltd1">Indicates that the file is ignored by ClearCase and will not be included in 
+                            versioning commands (e.g. Add to Source Control or Checkin). Files can only be made to be 
+                            ignored if they have not yet been versioned.</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Strike-Through</strong></td>
+                        <td class="tbltd1 align-center"><img alt="strike-through text" 
+                            src="../../../images_www/articles/74/ide/clearcase/strike-through-text.png"></td>
+                        <td class="tbltd1">Indicates that the file is excluded from checkin or Add to Source Control 
+                            operations. Strike-through text only appears in specific locations, such as the Versioning 
+                            window, checkin dialog and Add to Source Control dialog, when you choose to exclude 
+                            individual files from an action. Such files are still affected by other ClearCase commands, 
+                            such as Update.</td>
+                    </tr>  
+                </table>
+
+                <br><a name="fileStatus"></a>
+                <h4>File Status Labels</h4>
+
+                <p>File status labels provide a textual indication of the status of versioned files in the IDE's windows. 
+                    By default, the IDE displays status (new, reserved, unreserved, ignored, etc.) information in gray text 
+                    to the right of files, as they are listed in windows. You can, however, modify this format to suit
+                    your own needs. For example, if you want to add version selectors to status labels, do the following:</p>
+
+                <ol>
+                    <li>Choose Tools &gt; Options (NetBeans &gt; Preferences on Mac) from the main menu. The Options
+                        window opens.</li>
+                    <li>Select the Miscellaneous button along the top of the window, then click the Versioning tab beneath 
+                        it. Make sure ClearCase is selected beneath Versioning Systems in the left panel. (See the above 
+                        <a href="#ccOptions">screen capture</a> for reference.)</li>
+                    <li>Click the Add Variable button to the right of the status label Format text field. In the Add Variable 
+                        dialog that displays, select the <tt>{version}</tt> variable, then click OK. The version variable
+                        is added to the status label Format text field.</li>
+                    <li>To reformat status labels so that only status and version selector display to the right of files, 
+                        rearrange the contents of the Status Label Format text field to the following:<br>
+
+                        <pre class="examplecode">[{status}; {version}]</pre>
+
+                        Click OK. Status labels now list file status and version selector (where applicable):
+
+                        <p class="align-center">
+                        <img src="../../../images_www/articles/74/ide/clearcase/file-labels.jpg"
+                            class="b-all margin-around" alt="file labels displayed next to file names"
+                            title="file labels display next to file names"></p>
+                    </li>
+                </ol>
+
+                <p><span class="tips"></span>File status labels can be toggled on and off by choosing View &gt; Show 
+                    Versioning Labels from the main menu.</p>
+
+                <a name="versioning"></a>
+                <h4>The Versioning Window</h4>
+
+                <p>The ClearCase Versioning window provides you with a real-time list of all of the changes made to files 
+                    within a selected folder of your local working copy. It opens by default in the bottom panel of the IDE, 
+                    listing new, checked out, or hijacked files.</p>
+
+                <p>To open the Versioning window, select a versioned file or folder (e.g. from the Projects, Files, or 
+                    Favorites window) and either choose ClearCase &gt; Show Changes from the right-click menu, or choose 
+                    Versioning &gt; Show Changes from the main menu. The following window appears in the bottom of the IDE:</p>
+
+                    <p class="align-center">
+                    <a href="../../../images_www/articles/74/ide/clearcase/versioning-window.jpg" rel="lytebox"
+                        title="Versioning window displays locally modified files">
+                        <img src="../../../images_www/articles/74/ide/clearcase/versioning-window-small.jpg"
+                        class="b-all margin-around" alt="Versioning window displaying locally modified files"></a></p>
+
+                <p>By default, the Versioning window displays a list of all files within the selected package or folder 
+                    that exhibit a noteworthy status (i.e., new, reserved, unreserved, etc.). You can click the column 
+                    headings above the listed files to sort the files by name, status, location or rule.</p>
+
+                <p>The Versioning window toolbar also includes buttons that enable you to invoke the most common ClearCase 
+                    tasks on all files displayed in the list. The following table lists the ClearCase commands available in 
+                    the toolbar of the Versioning window:</p>
+
+                <table>
+                    <tr>
+                        <th class="tblheader" scope="col">Icon</th>
+                        <th class="tblheader" scope="col" style="width:110px">Name</th>
+                        <th class="tblheader" scope="col">Function</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/clearcase/refresh.png"
+                            alt="refresh status icon"></td>
+                        <td class="tbltd1 align-center"><strong>Refresh Status</strong></td>
+                        <td class="tbltd1">Refreshes the status of the selected files and folders. Files displayed in 
+                            the Versioning window can be refreshed to reflect any changes that may have been made 
+                            externally.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/clearcase/diff.png"
+                            alt="diff all icon"></td>
+                        <td class="tbltd1 align-center"><strong>Diff All</strong></td>
+                        <td class="tbltd1">Opens the Diff Viewer providing you with a side-by-side comparison of your 
+                            local changes with versions maintained in the repository.</td>
+                    </tr>     
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/clearcase/update.png"
+                            alt="update all icon"></td>
+                        <td class="tbltd1 align-center"><strong>Update All</strong></td>
+                        <td class="tbltd1">Updates all selected files. (Applies only to snapshot views.)</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/clearcase/commit.png"
+                            alt="commit all icon"></td>
+                        <td class="tbltd1 align-center"><strong>checkin All</strong></td>
+                        <td class="tbltd1">Enables you to check in local changes.</td>
+                    </tr>            
+                </table>
+
+                <br>
+                <p>You can access other ClearCase commands in the Versioning window by selecting a table row that 
+                    corresponds to a file, and choosing a command from the right-click menu:</p>
+
+                 <p class="align-center">
+                    <img src="../../../images_www/articles/74/ide/clearcase/versioning-right-click.jpg"
+                        alt="Right-click menu displayed on selected file in Versioning window" class="margin-around"
+                        title="Right-click menu displays on a selected file in the Versioning window"></p>
+
+                <br>
+                <p>For example, you can perform the following actions on a file:</p>
+
+                <table>
+                    <tr>
+                        <td style="width:200px">
+                            <ul>
+                                <li><strong>Show Annotations</strong>:
+                                    <br><br>
+                                    Displays author and revision number information in the left
+                                    margin of files opened in the Source Editor.</li></ul></td>
+                        <td class="f-page-cell">
+                            <a href="../../../images_www/articles/74/ide/clearcase/annotations.jpg" rel="lytebox"
+                                title="Annotations are displayed in Source Editor's left margin">
+                                <img src="../../../images_www/articles/74/ide/clearcase/annotations-small.jpg"
+                                class="b-all" alt="Annotations displayed in Source Editor's left margin"></a></td>
+                    </tr>               
+                    <tr>
+                        <td style="width:200px">
+                            <ul>
+                                <li><strong>Exclude from Checkin</strong>:
+                                    <br><br>
+                                    Allows you to mark the file to be excluded when performing
+                                    a checkin.</li></ul></td>
+                        <td class="f-page-cell">
+                                <img src="../../../images_www/articles/74/ide/clearcase/exclude-from-checkin.jpg"
+                                class="b-all" alt="Files marked as excluded in the Checkin dialog"
+                                title="Files are marked as excluded in the Checkin dialog"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <a name="comparing"></a>
+        <h3>Comparing File Versions</h3>
+
+        <p>Comparing file versions is a common task when working with versioned projects. The IDE enables you 
+            to compare versions by using the Diff command, which is available from the right-click menu of a 
+            selected item (ClearCase &gt; Diff), as well as from the Versioning window. In the Versioning window, 
+            you can perform diffs by either double-clicking a listed file, otherwise you can click the Diff All 
+            icon (<img alt="diff all icon" src="../../../images_www/articles/74/ide/clearcase/diff.png">) located in the
+            toolbar at the top.</p>
+
+        <p>When you perform a diff, a graphical Diff Viewer opens for the selected file(s) in the IDE's main 
+            window. The Diff Viewer displays two copies in side-by-side panels:</p>
+
+           <p class="align-center">
+            <a href="../../../images_www/articles/74/ide/clearcase/diff-viewer.jpg" rel="lytebox"
+                title="ClearCase Diff Viewer">
+                <img src="../../../images_www/articles/74/ide/clearcase/diff-viewer-small.jpg"
+                    class="b-all margin-around" alt="ClearCase Diff Viewer"></a></p>
+
+        <p>The Diff Viewer makes use of the same <a href="#viewingChanges">color encoding</a> used elsewhere to 
+            display version control changes. In the screen capture displayed above, the green block indicates 
+            content that has been added to the more current version. The red block indicates that content from 
+            the earlier version has been removed from the later.  Blue indicates that changes have occurred within 
+            the highlighted line(s).</p>
+
+        <p>Also, when performing a diff on a group of files, such as on a project, package, or folder, or when 
+            clicking Diff All (<img src="../../../images_www/articles/74/ide/clearcase/diff.png" alt="diff all icon">), you
+            can switch between diffs by clicking files listed in the upper region of the Diff Viewer.</p>
+
+        <p>The Diff Viewer also provides you with the following functionality:</p>
+
+        <ul>
+            <li><a href="#makeChanges">Make Changes to your checked out file</a></li>
+            <li><a href="#navigateDifferences">Navigate Among Differences</a></li>            
+        </ul>
+
+        <div class="indent">
+            <a name="makeChanges"></a>
+            <h4>Make Changes to your checked out file</h4>
+
+            <p>If you are performing a diff on checked out files, it is possible to make changes directly from 
+                within the Diff Viewer. To do so, you can either place your cursor within the right pane of the 
+                Diff Viewer and modify your file accordingly, otherwise make use of the inline icons that display 
+                adjacent to each highlighted change:</p>
+
+            <table>
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Replace</strong> (<img alt="replace icon"
+                        src="../../../images_www/articles/74/ide/clearcase/insert.png">):</td>
+                    <td>Inserts the highlighted text from the previous versions into the checked out version</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Move All</strong> (<img alt="move all icon"
+                        src="../../../images_www/articles/74/ide/clearcase/arrow.png">):</td>
+                    <td>Reverts the file's checkedout version to the state of the selected previous version</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Remove</strong> (<img alt="remove icon"
+                        src="../../../images_www/articles/74/ide/clearcase/remove.png">):</td>
+                    <td>Removes the highlighted text from the checked out version so that it mirrors the previous version</td>
+                </tr>
+            </table>
+
+            <a name="navigateDifferences"></a>
+            <h4>Navigate among Differences between Compared Files</h4>
+
+            <p>If your diff contains multiple differences, you can navigate among them by using the arrow icons 
+                displayed in the toolbar. The arrow icons enable you to view differences as they appear from top 
+                to bottom:</p>
+
+            <table>
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Previous</strong>
+                        (<img src="../../../images_www/articles/74/ide/clearcase/diff-prev.png" alt="previous difference button">):</td>
+                    <td>Goes to previous difference displayed in the diff</td>
+                </tr>
+
+                <tr>
+                    <td class="align-right cell" style="width:120px"><strong>Next</strong>
+                        (<img src="../../../images_www/articles/74/ide/clearcase/diff-next.png" alt="next difference button">):</td>
+                    <td>Goes to next difference displayed in the diff</td>
+                </tr>
+            </table>
+        </div>
+
+        <a name="checkingin"></a>
+        <h2>Checking in Sources</h2>
+
+        <p>After making changes to sources, you check them in to the repository. The IDE enables you to call the 
+            checkin command in the following ways:</p>
+
+        <ul>
+            <li>From the Projects, Files or Favorites windows, right-click new or checked-out items and choose 
+                ClearCase &gt; Checkin.</li>
+
+            <li>From the Versioning window or Diff Viewer, click the Checkin All (<img src="../../../images_www/articles/74/ide/clearcase/commit.png"
+                alt="checkin all icon">) button located in the toolbar.</li>
+        </ul>
+
+        <p>The Checkin dialog opens, listing:</p>
+
+        <ul>
+            <li>all checked-out files</li>
+            <li>all new files, which will be automatically added to source control first (i.e., view-private files 
+                which are not yet versioned and are not ignored by the IDE).</li>
+        </ul>        
+
+        <p class="align-center">
+            <a href="../../../images_www/articles/74/ide/clearcase/checkin-dialog.png" rel="lytebox"
+                title="Checkin dialog displays files about to be checked in">
+                <img src="../../../images_www/articles/74/ide/clearcase/checkin-dialog-small.png"
+                    class="margin-around" alt="Checkin dialog displaying files about to be checked in"></a>
+        </p>
+
+        <p>From the Checkin dialog, it is possible to specify whether to exclude individual files from the checkin. 
+            To do so, click the Checkin Action column of a selected file and choose Exclude from Checkin from the 
+            drop-down list.</p>
+
+        <p>To perform the checkin:</p>
+
+        <ol>
+            <li>Type in a checkin message in the Checkin Message text area. Alternatively, click the Recent Messages 
+                ( <img src="../../../images_www/articles/74/ide/clearcase/recent-msgs.png" alt="recent messages icon"> ) icon located
+                in the upper right corner to view and select from a list of messages that you have previously used.</li>
+
+            <li>After specifying actions for individual files, click Checkin. The IDE executes the checkin. The 
+                IDE's status bar, located in the bottom right of the interface, displays as the checkin action 
+                takes place. Upon a successful checkin, versioning badges disappear in the Projects, Files and 
+                Favorites windows, and the color encoding of checked-in files returns to black.</li>
+        </ol>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20ClearCase%20Support%20in%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+        
+        <br style="clear:both;">
+        
+        <a name="seeAlso"></a>
+        <h2>See Also</h2>
+        
+        <p>This concludes the Guided Tour of ClearCase for the NetBeans IDE. This document demonstrated how to
+            perform basic versioning tasks in the IDE by guiding you through the standard workflow when using 
+            the IDE's ClearCase support.</p>
+          
+        <p>For related documents, see the following resources:</p>
+        
+        <ul>
+            <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#ClearCase">ClearCase Support FAQ for NetBeans IDE</a></li>
+			<li><a href="git.html">Using Git Support in NetBeans IDE</a></li>
+			<li><a href="mercurial.html">Using Mercurial Support in NetBeans IDE</a></li>
+            <li><a href="subversion.html">Using Subversion Support in NetBeans IDE</a></li>
+            <li><a href="cvs.html">Using CVS Support in NetBeans IDE</a></li>
+			<li><a href="mercurial-queues.html">Using Support for Mercurial Queues in NetBeans IDE</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">Versioning Applications with Version Control</a> in <i>Developing Applications with NetBeans IDE</i></li></a>
+			
+
+        </ul>
+
+    </body>
+</html>

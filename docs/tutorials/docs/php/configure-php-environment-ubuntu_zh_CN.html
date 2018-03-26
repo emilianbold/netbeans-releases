@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>在 Linux Ubuntu 中配置 PHP 开发环境</title>
+     <meta name="KEYWORDS" content="NETBEANS, CONFIGURE, PHP, Apache, MySQL, Linux, Ubuntu">
+      <meta name="DESCRIPTION" content="Install, configure, and enable PHP, Apache, MySQL, XDebug for PHP development in the NetBeans IDE under Linux Ubuntu. Virtual host" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
+   <body>
+
+<h1>在 Linux Ubuntu 中配置 PHP 开发环境</h1>
+<p>本教程将介绍如何在 Ubuntu 操作系统（7.10 及更高版本）中配置 PHP 开发环境。其中包括安装和配置 PHP 引擎、MySQL 数据库、Apache Web 服务器和 XDebug 调试器。</p>
+
+<p><b>目录</b></p>
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<ul>
+<!--<li><a href="#requiredSoftware">Required Software</a></li> -->
+
+<li><a href="#installingSoftware">安装 PHP Web 堆栈</a>
+  <ul>
+<li><a href="#lamp">将软件包一起安装</a></li>
+<li><a href="#separate-packages">单独安装软件包</a></li>
+<li><a href="#checkInstallation">检查安装</a></li>
+<li><a href="#troubleshooting">疑难解答</a></li>
+  </ul>
+</li>
+<li><a href="#specifyDocumentRoot">指定 Apache2 HTTP 服务器的文档根目录</a>
+  <ul>
+<li><a href="#createDocumentRootLocation">创建文档根目录位置</a></li>
+<li><a href="#createNewVirtualHost">创建新虚拟主机</a></li>
+<li><a href="#activateNewVirtualHost">激活新虚拟主机</a></li>
+</ul>
+</li>
+<li><a href="#configureMySQL">配置 MySQL 数据库服务器</a></li>
+<li><a href="#installAndConfigureXDebug">安装和启用 XDebug 调试器</a><a href="#installXDebug"></a>
+  <ul>
+<li><a href="#xdebug-package">安装 XDebug 软件包（Ubuntu 8.05 及更高版本）</a></li>
+<li><a href="#InstallingPHP5andPEARModules">从源构建 XDebug (Ubuntu 7.10)</a></li>
+<li><a href="#enableXDebug">启用 XDebug</a></li>
+</ul>
+</li>
+</ul>
+<p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">软件或资源</th>
+      <th class="tblheader" scope="col">要求的版本</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+      <td class="tbltd1">
+        PHP 下载包</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">PHP 引擎</td>
+      <td class="tbltd1">版本 5。 </tr>
+    <tr>
+      <td class="tbltd1">Web 服务器</td>
+      <td>推荐使用 Apache HTTP Server 2.2。<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">数据库服务器</td>
+      <td>推荐使用 MySQL Server 5.0。<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">PHP 调试器（可选）</td>
+      <td>XDebug 2.0 或更高版本</td>
+    </tr>
+  </tbody>
+</table>
+<p class="notes">通常，开发和调试都是在本地 Web 服务器上执行，而生产环境位于远程 Web 服务器上。<a href="./remote-hosting-and-ftp-account.html">使用 NetBeans IDE 在远程 Web 服务器上部署 PHP 应用程序</a>中介绍了如何设置远程 Web 服务器。本教程会引导您设置本地 Web 服务器。PHP 支持可以添加到许多本地 Web 服务器（IIS、Xitami 等）上，但最常用的是 <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP 服务器</a>。   </p>
+
+<h2><a id="installingSoftware" name="installingSoftware"></a>安装软件</h2>
+<p>本教程将介绍如何在 Ubuntu 7.04 及更高版本中配置 PHP 开发环境。您需要执行以下操作： </p>
+<ol>
+  <li>安装 Apache2 HTTP 服务器、PHP5 引擎、MySQL 5.0 数据库服务器和 PHP5-MySQL 模块。这些软件包可以<a href="#lamp">作为 LAMP 堆栈一起安装</a>，也可以<a href="#separate-packages">单独安装</a>。</li>
+  <li><a href="#specifyDocumentRoot">指定 Apache2 HTTP 服务器的文档根目录</a></li>
+  <li><a href="#configureMySQL">配置 MySQL 数据库服务器</a></li>
+  <li><a href="#installXDebug">安装和启用 XDebug 2.0 调试器</a></li>
+</ol>
+有关安装 Apache、MySQL 和 PHP 的详细信息，请参见 <a href="https://help.ubuntu.com/community/ApacheMySQLPHP">Ubuntu 社区</a>。
+<div class="indent"><h3 id="lamp">将软件包一起安装</h3>
+<p>Ubuntu 提供了一个 Linux AMP (LAMP) 包，其中包含 PHP 环境所需的全部软件包。可通过在“终端”窗口的命令提示符下执行以下命令安装此软件：
+</p>
+<pre class="examplecode">sudo tasksel install lamp-server</pre>
+<p><tt>lamp-server</tt> 包中包含最适合的 PHP、Apache 2、MySQL 和 PHP5-MySQL 版本。</p>
+<h3 id="separate-packages">单独安装软件包</h3>
+<p>除了安装整个 LAMP 软件包集合以外，您还可以逐个安装这些软件包。如果您已经安装了其中的某个组件（如 Apache 服务器或 MySQL 数据库服务器），则此方法非常有用。您可以使用命令行工具或 Synaptic 包管理器 GUI。</p>
+<p>要逐个安装的软件包如下所示：</p>
+<ul>
+      <li>apache2</li>
+      <li>php5</li>
+      <li>mysql-server</li>
+      <li>php5-mysql</li>
+  </ul>
+<h3>&nbsp;</h3>
+<h3><a id="checkInstallation" name="checkInstallation"></a>检查安装</h3>
+<p>在设置 PHP Web 堆栈之后，应检查其安装是否正确，以及 Apache 服务器是否可以识别 PHP 引擎。</p>
+<p>要检查 Apache 和 PHP 是否已安装并正在运行，请打开 NetBeans IDE 并<a href="./project-setup.html">创建 PHP 项目</a>。在 <tt>index.php</tt> 文件中，输入 PHP 方法 <tt>phpinfo()</tt>。运行该文件。此时应显示标准 PHP 信息页。 <br /> <img alt="浏览器中有关 Ubuntu 的 PHP 信息测试页" class="margin-around" height="478" src="../../../images_www/articles/72/php/configure-php-environment-ubuntu/ubuntu-phpinfo.png" width="639" /></p>
+<h3 id="troubleshooting">疑难解答</h3>
+<p>以下是检查 Ubuntu 中的 PHP 堆栈安装时经常遇到的一些问题：</p>
+<ul>
+  <li><strong>浏览器窗口显示无法找到 <tt>~USER/PROJECT/index.php</tt> 错误</strong>。从 URL 中删除 <tt>~USER</tt> 字符串。例如，如果 URL <tt>~ubuntu/test1/index.php</tt> 出现此错误，请将该 URL 更改为 <tt>test1/index.php</tt>。请注意，您既可以在 NetBeans IDE 中创建 PHP 项目时为该项目设置 URL，也可以通过右键单击该项目节点，然后转至“属性”>“运行配置”进行设置。</li>
+  <li><strong>浏览器显示一个弹出式窗口，要求您打开文件，就像 PHP 引擎无法识别一样。</strong><tt>php5-common</tt> 软件包出现问题。请用 <tt>php5</tt> 和 <tt>phpmyadmin</tt> 替换此软件包。要替换 <tt>php5-common</tt>，请运行下面的两个命令：
+    <pre class="examplecode">apt-get --purge remove php5-common<br/>
+apt-get install php5 phpmyadmin</pre></li>
+</ul>
+</div>
+<h2><a id="specifyDocumentRoot" name="specifyDocumentRoot"></a>指定 Apache2 HTTP 服务器的文档根目录</h2>
+文档根目录是 Apache HTTP 服务器存放用于在浏览器中显示的文件的目录。文档根目录是在定义虚拟主机的文件中指定的。默认虚拟主机配置文件为
+<pre class="examplecode">/etc/apache2/sites-available/default</pre>
+其中指定的文档根目录为
+<pre class="examplecode">/var/www/</pre>
+我们建议您创建自己的虚拟主机并启用它，而不是编辑默认的虚拟主机。
+<ul>
+  <li><a href="#createDocumentRootLocation">创建文档根目录位置</a></li>
+  <li><a href="#createNewVirtualHost">在新虚拟主机中指定新文档根目录</a></li>
+  <li><a href="#activateNewVirtualHost">激活新虚拟主机</a></li>
+</ul>
+<div class="indent">
+<h3><a id="createDocumentRootLocation" name="createDocumentRootLocation"></a>创建文档根目录位置</h3>
+<ol>
+  <li>选择“位置”>“主文件夹”。</li>
+  <li>从上下文菜单中，选择“创建文件夹”。</li>
+  <li>输入文件夹的名称，例如，public_html。</li>
+</ol>
+<h3><a id="createNewVirtualHost" name="createNewVirtualHost"></a>创建新虚拟主机</h3>
+<ol>
+  <li>要<a id="launchTerminal" name="launchTerminal"></a>启动终端，请选择“应用程序”>“附件”>“终端”。此时将打开“终端”窗口。</li>
+  <li>要将默认虚拟主机的配置文件复制到新文件 (<tt>mysite</tt>)，请在命令提示符下键入以下命令：
+    <pre class="examplecode">sudo cp /etc/apache2/sites-available/default /etc/apache2/sites-available/mysite</pre>
+  </li>
+  <li>运行 <tt><a id="gedit" name="gedit"></a>gedit</tt> 应用程序并在其中编辑新配置文件 (<tt>mysite</tt>)：
+    <pre class="examplecode">gksudo gedit /etc/apache2/sites-available/mysite </pre>
+    如果系统询问，请输入操作系统安装过程中为超级用户指定的口令。</li>
+  <li>更改文档根目录以指向新位置：
+    <pre class="examplecode">/home/&lt;user&gt;/public_html/</pre>
+  </li>
+  <li>更改目录指令，将 
+    <pre class="examplecode">&lt;Directory /var/www/&gt;</pre>
+    替换为 
+    <pre class="examplecode">&lt;Directory /home/user/public_html/&gt;</pre>
+  <img alt="在 Ubuntu 中更改根目录" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-ubuntu/ubuntu-change-directory-root.png">  </li>
+  <li>保存文件 <tt>mysite</tt></li>
+</ol>
+<h3><a id="activateNewVirtualHost" name="activateNewVirtualHost"></a>激活新虚拟主机</h3>
+<ol>
+  <li>要取消激活默认主机并激活新主机，<a href="#launchTerminal">请启动终端</a>并在“终端”窗口运行以下两个实用程序：
+    <pre class="examplecode">sudo a2dissite default &amp;&amp; sudo a2ensite mysite</pre>
+  </li>
+  <li>重新启动 Apache HTTP 服务器：
+    <pre class="examplecode">sudo /etc/init.d/apache2 reload</pre>
+</li>
+</ol></div>
+<h2><a id="configureMySQL" name="configureMySQL"></a>配置 MySQL 数据库服务器</h2>
+在 MySQL 数据库服务器的安装过程中，会创建一个超级用户。安装期间，将会打开一个设置超级用户口令的对话框。如果未打开此对话框，或者您未在此对话框中设置口令，则您需要立即创建 MySQL 超级用户口令。您将需要此口令来创建其他 MySQL 服务器用户。
+<ol>
+  <li>要连接到 MySQL 服务器，<a href="#launchTerminal">请启动终端</a>，然后在“终端”窗口中输入以下命令：
+    <pre class="examplecode">mysql -u root -p</pre>
+  此时将显示 MySQL 命令提示符。</li>
+  <li>在命令提示符下输入以下命令并按 Enter 键：
+    <pre class="examplecode">SET PASSWORD FOR 'root'@'localhost' = PASSWORD('&lt;yourpassword&gt;');</pre>
+    如果命令执行成功，则会显示以下消息：
+    <pre class="examplecode">Query OK, 0 rows affected (0.00 sec)</pre>
+  </li>
+</ol>
+<h2><a id="installAndConfigureXDebug" name="installAndConfigureXDebug"></a>安装和启用 XDebug 调试器</h2>
+<p>仅当要使用 XDebug（对于 PHP 开发是可选的）时才需要执行下列步骤。XDebug 是 PHP 的一个扩展。当为 PHP Web 堆栈正确配置了 XDebug 时，NetBeans IDE 会自动使用它。有关 XDebug 和 NetBeans IDE 的详细信息，请参见<a href="./debugging.html">在 NetBeans IDE 中调试 PHP 源代码</a>。此外，还可参见<a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">有关 XDebug 的 NetBeans wiki 页</a>。</p>
+<div class="indent">
+    <h3 id="xdebug-package">安装 XDebug 软件包（Ubuntu 8.05 及更高版本）</h3>
+<p>从 Ubuntu 8.05 开始，提供了名为 <tt>php5-xdebug</tt> 的 XDebug 软件包。受支持的 XDebug 版本为 2.0.3-1。您可以使用命令行工具或通过 Synaptic 包管理器 UI 对其进行安装。安装 XDebug 之后，您必须按照<a href="#enableXDebug">启用 XDebug</a> 中的所述修改 <tt>php.ini</tt>。</p>
+<h3><a name="InstallingPHP5andPEARModules">从源构建 XDebug (Ubuntu 7.10)</a> </h3>
+<p>要从源构建 XDebug，您还需要两个模块：PHP5 开发和 PEAR。 </p>
+<ol>
+  <li>启动 <a href="#startSynapticPackageManager">Synaptic 包管理器</a>。</li>
+  <li>切换到“Installed”面板查看 make 模块是否已安装。</li>
+  <li>切换到“All”标签，并单击以下软件包旁边的复选框：
+    <ul>
+        <li>php5-dev</li>
+      <li>php-pear</li>
+    </ul>
+    对于每一项，从上下文菜单中选择“Mark for installation”。</li>
+  <li>打开“Mark additional required changes”对话框打开，其中具有相关包的列表，这些包也应该进行安装，以使软件能够正常工作。单击“Mark”。</li>
+  <li>系统将返回到“Synaptic Package Manager”面板，其中所选的软件包已标记为要安装。</li>
+  <li>选择工具栏上的“Apply”。此时将打开“Apply the following changes”概要面板，其中具有选择安装的包列表。单击“Apply”。</li>
+  <li>成功完成下载和安装之后，“Changes applied”面板将会打开。单击 "Close"（关闭）。<p class="notes"><strong>注：</strong>您也可以通过在“终端”窗口中运行以下命令来安装这些模块：<tt class="examplecode">aptitude install php5-dev php-pear</tt></p>
+</li>
+    <li>现在，您可以下载并安装 XDebug。在“终端”窗口中输入以下命令：
+<pre class="examplecode">sudo pecl install xdebug</pre></li>
+</ol>
+<h3><a name="enableXDebug"></a>启用 XDebug</h3>
+要启用 XDebug，您需要在 <a href="#gedit"><tt>gedit</tt></a> 文本处理器中编辑 php.ini 文件。
+<ol>
+  <li>要启动 <tt>gedit</tt> 文本处理器，请先启动<a href="#launchTerminal">终端</a>，然后在命令提示符下键入以下命令：
+    <pre class="examplecode">gksudo gedit</pre>
+    如果系统询问，请输入操作系统安装过程中为超级用户指定的口令。</li>
+  <li>打开文件 <tt>/etc/php5/apache2/php.ini</tt>。</li>
+  <li>将以下行添加到此文件中：
+    <pre class="examplecode">zend_extension=/usr/lib/php5/&lt;DATE+lfs&gt;/xdebug.so
+xdebug.remote_enable=on
+</pre>  
+  </li>
+</ol>
+<p>查看<a href="http://2bits.com/articles/setting-up-xdebug-dbgp-for-php-on-debian-ubuntu.html" target="_blank">此处</a>了解有关配置 XDebug 的详细信息。</p></div>
+<br style="clear:both;" />
+
+   <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+<a href="../../trails/php.html">返回至 PHP 学习资源</a>
+   </body>
+</html>

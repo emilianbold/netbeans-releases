@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Tutorial that shows how to handle images and
+              other resources when creating Swing applications in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment tutorial, guide, user, documentation, open source">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Обработка изображений в приложении Java с графическим интерфейсом - Практическое руководство по IDE NetBeans</title>
+    </head>
+    <body>
+        <h1>Обработка изображений в приложении с графическим интерфейсом</h1>
+
+
+        <p><b>Содержание</b></p>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.4 и 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.4 и 8.0">
+        <ul class="toc">
+            <li><a href="#intro">Введение</a></li>
+            <li><a href="#form">Создание формы приложения </a></li>
+            <li><a href="#package">Добавление пакета для изображения </a></li>
+            <li><a href="#displaying">Вывод изображения на метке</a></li>
+            <li><a href="#building">Сборка и запуск приложения</a></li>
+			<li><a href="#background">Показ изображения как фона в кадре</a></li>
+            <li><a href="#custom"> Создание пользовательского кода</a></li>
+            <li><a href="#summary">Заключение</a></li>
+            <li><a href="#seealso">Дополнительные сведения</a></li>
+        </ul>
+
+
+        <p>
+            <b>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</b>
+        </p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия 7.4 или 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">Версия 6, 7 или 8 </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <a name="intro"></a><h2>Введение</h2>
+        <p>Для многих начинающих программистов на Java проблемой является обработка изображений в приложении.  Обычный способ доступа к изображениям в приложении на Java состоит в применении метода <code><a href="http://download.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#getResource(java.lang.String)" target="_blank">getResource()</a></code>.  В данном учебном курсе описывается использование конструктора графических интерфейсов среды IDE для создания кода с добавлением изображений (и других ресурсов) в приложение.  Кроме того, пользователь научится настраивать способы создания средой IDE кода для обработки изображений.</p>
+        <p>Созданное в результате изучения этого учебного курса приложение будет представлять собой простую форму, содержащую одну надпись с одним изображением.</p>
+        <h2>Создание приложения</h2>
+        <ol>
+            <li>Выберите команду &quot;Файл&quot; &gt; &quot;Новый проект&quot;.</li>
+            <li>В мастере создания проекта выберите &quot;Java&quot; &gt; &quot;Приложение Java&quot;, затем нажмите кнопку &quot;Дальше&quot;.</li>
+            <li>В качестве имени проекта введите <code>ImageDisplayApp</code>.</li>
+            <li>Снимите флажок &quot;Создать главный класс&quot;.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/newproj.png" rel="lytebox" title="Мастер создания проектов: платформы"> <img alt="Мастер создания проектов" border="1" src="../../../images_www/articles/72/java/gui-image-display/newproj-small.png"></a></p></li>
+            <li>Нажмите кнопку 'Готово'.</li>
+        </ol>
+
+        <a name="form"></a><h2> Создание формы приложения </h2>
+
+        <p>В примере в этом разделе будет создана форма JFrame, и в нее добавлена метка JLabel.</p>
+        <p><b>Создание формы JFrame:</b></p>
+        <ol>
+            <li>В окне 'Проекты' разверните узел <tt>ImageDisplayApp</tt>.</li>
+            <li>Щелкните правой кнопкой узел &quot;Исходные файлы&quot; и выберите форму &quot;Создать&quot; &gt; &quot;JFrame&quot;.</li>
+            <li>В качестве имени класса введите <code>ImageDisplay</code>.</li>
+            <li>В качестве имени пакета введите <code>org.me.myimageapp</code>.</li>
+            <li>Нажмите кнопку 'Готово'.</li>
+        </ol>
+
+        <p><b>Добавление надписи:</b></p>
+        <ul>
+            <li>В разделе &quot;Палитра&quot; выберите компонент &quot;Метка&quot; и перетащите его в форму.</li>
+        </ul>
+        <p>Форма должна принять следующий вид:</p>
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/form.png" rel="lytebox" title="Созданная форма с добавленной надписью - Нажмите, чтобы увеличить"> <img alt="Созданная форма с добавленной меткой" border="1" src="../../../images_www/articles/72/java/gui-image-display/form-small.png"></a></p>
+                <a name="package"></a><h2> Добавление пакета для изображения </h2>
+        <p>Если в приложении используются изображения или другие ресурсы, то для этих ресурсов обычно следует выбрать отдельный пакет Java.  В локальной файловой системе пакет соответствует папке.</p>
+
+        <p><b>Создание пакета для изображения:</b></p>
+        <ol>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши узел <code>org.me.myimageapp</code> и выберите 'Создать' > 'Пакет Java'.<br>
+            
+				 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/package.png" rel="lytebox" title="Добавление нового пакета Java - Нажмите, чтобы увеличить"> <img alt=" Добавление нового пакета Java" border="1" src="../../../images_www/articles/72/java/gui-image-display/package-small.png"></a></p></li>
+
+            <li>Нажмите кнопку 'Готово'.</li>
+        </ol>
+        <p>В окне 'Проекты' в папке <code>Исходные пакеты</code> отображается новый пакет.</p>
+     <p class="align-center"><img alt="Окно проектов" border="1" src="../../../images_www/articles/72/java/gui-image-display/project-with-imagepack.png"></p>
+
+
+        <a name="displaying"></a><h2>Вывод изображения в качестве метки</h2>
+
+        <p>В этом приложении изображение будет встроено в компонент JLabel.</p>
+
+        <p><b>Добавление изображения к метке:</b></p>
+        <ol>
+            <li>В редакторе GUI Designer выберите метку, добавленную ранее в форму.</li>
+            <li>В окне &quot;Свойства&quot; щелкните категорию &quot;Свойства&quot; и выполните прокрутку до свойства &quot;Значок&quot;.</li>
+            <li>Нажмите кнопку со многоточием (...).<br> Отображается редактор свойств значка.
+			  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/importimage.png" rel="lytebox" title="Редактор свойств значка - Нажмите, чтобы увеличить"> <img alt="Редактор свойств значка" border="1" src="../../../images_www/articles/72/java/gui-image-display/importimage-small.png"></a></p></li>
+            <li>В диалоговом окне свойств значка щелкните Import to Project (&quot;Импорт в проект&quot;).</li>
+            <li>В окне выбора файлов выберите любое сохраненное в компьютере изображение.  Затем нажмите кнопку &quot;Дальше&quot;. </li>
+            <li>На странице 'Выбор целевой папки' выберите папку <code>newpackage</code> и нажмите 'Готово'.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/targetfolder.png" rel="lytebox" title="Выберите страницу &apos;Целевая папка&apos; мастера импорта изображений в проекты"> <img alt="Выберите страницу &apos;Целевая папка&apos; мастера импорта изображений в проекты" border="1" src="../../../images_www/articles/72/java/gui-image-display/targetfolder-small.png"></a></p>
+            </li>
+			<li>Нажмите ОК, чтобы закрыть диалоговое окно свойств значка.</li>
+        </ol>
+
+        <p>При нажатии на кнопку OK IDE выполняет следующие действия:</p>
+        <ul>
+            <li>Копирование изображения в проект. В результате при выполнении сборки и распространения приложения это изображение добавляется в распространяемый архив JAR.</li>
+            <li>Создание кода, реализующего доступ к изображению, в классе &quot;ImageDisplay&quot;.</li>
+            <li>Отображение изображения в качестве метки в режиме разработки формы.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/label-added.png" rel="lytebox" title="Изображение добавлено в метку"> <img alt="Изображение добавлено в метку" border="1" src="../../../images_www/articles/72/java/gui-image-display/label-added-small.png"></a></p></li>
+        </ul>
+
+        <p>Теперь можно выполнить несколько действий по оптимизации вида формы, например:</p>
+        <ul>
+            <li>В окне &quot;Свойства&quot; выберите свойство <code>text</code> и удалите метку <code>jLabel1</code>.  Это значение было создано конструктором графического интерфейса в качестве отображаемого текста метки.  В данном же случае в качестве метки отображается изображение, а не текст, поэтому вводить текст не требуется.</li>
+            <li>Перетащите <code>jLabel1</code> в центральную область формы.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/centered.png" rel="lytebox" title="Класс ImageDisplay в режиме конструирования с изображением по центру"> <img alt="Класс ImageDisplay в режиме конструирования с изображением по центру" border="1" src="../../../images_www/articles/72/java/gui-image-display/centered-small.png"></a></p></li>
+        </ul>
+        
+       
+
+        
+		<p><b>Просмотр созданного кода:</b></p>
+        <ol>
+            <li>В средстве проектирования GUI нажмите кнопку 'Исходный код'. (Если кнопка 'Исходный код' скрыта, выберите Вид > Панель редактора исходного кода в главном меню.)</li>
+            <li>Прокрутите вниз до строки &quot;Созданный код&quot;.</li>
+            <li>Щелкните значок (+) слева от строки &quot;Созданный код&quot; для просмотра кода, созданного GUI Designer.</li>
+        </ol>
+        <p>Основная строка выглядит следующим образом:</p>
+
+        <pre class="examplecode">jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource(&quot;/org/me/myimageapp/newpackage/image.png&quot;))); // NOI18N</pre>
+
+        <p>Свойство <code>Icon</code> элемента <code>jLabel1</code> было изменено в редакторе свойств, поэтому средой IDE был создан метод <code>setIcon</code>.  В параметре этого метода содержится вызов метода <code><a href="http://download.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#getResource(java.lang.String)" target="_blank">getResource()</a></code> анонимного внутреннего класса в <code>ImageIcon</code>.  Обратите внимание на то, что созданный путь к изображению связан с его местоположением в структуре пакетов приложения.</p>
+
+        <p class="notes"><b>Примечания</b></p>
+        <ul>
+            <li>Если в редакторе свойств значка установить параметр &quot;Внешнее изображение&quot;, то средой IDE будет создан абсолютный путь к изображению, т.е. само изображение не будет скопировано в проект.  Как следствие, при запуске приложения на этом же компьютере изображение появится, а при запуске на другом компьютере -- скорее всего, нет.</li>
+            <li>Метод <code>getResource</code> также используется для доступа к другим ресурсам, таким как текстовые файлы с какими-либо данными, используемыми в приложении.</li>
+        </ul>
+		<p><b>Чтобы зарегистрировать обработчики для событий мыши на Jlabel:</b></p>
+        <p>
+		В режиме конструирования щелкните правой кнопкой мыши объект JLabel и выберите События > Мышь > mouseClicked/mousePressed/mouseReleased в контекстном меню.<br> Для выбранного события создается обработчик событий.</p>
+		<p class="notes"><b>Примечание.</b> Можно получить координаты мыши (например, местоположение щелчка мыши) в обработчике событий с помощью методов <code>event.getPoint()</code>, <code>event.getX()</code> и <code>event.getY()</code>. Подробности приведены в разделе <a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/awt/event/MouseEvent.html">Класс MouseEvent</a>.</p>
+
+        <a name="background"></a>
+        <h2>Показ изображения как фона в кадре</h2>
+
+        <p> Конструктор графического интерфейса не поддерживает напрямую использование JFrame как фонового изображения, поскольку такой поддержки нет в Swing.<br> Тем не менее, этой цели можно достигнуть различными непрямыми путями. В этом приложении JLabel с изображением будет внедрен в компонент JFrame, тогда как JPanel будет размещен над JLabel и использован как родительский элемент для всех компонентов.</p>
+
+        <p><b>Добавление прозрачного компонента JPanel к JFrame внутри изображения:</b></p>
+        <ol>
+		<li>Выберите команду &quot;Файл&quot; &gt; &quot;Новый проект&quot;.</li>
+        <li>В мастере создания проекта выберите &quot;Java&quot; &gt; &quot;Приложение Java&quot;, затем нажмите кнопку &quot;Дальше&quot;.</li>
+        <li>В качестве имени проекта введите <code>BackgroundImageApp</code>.</li>
+		<li>Снимите флажок &quot;Создать главный класс&quot;.
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/prj.png" rel="lytebox" title="Создание нового проекта - Нажмите, чтобы увеличить"> <img alt="Создание нового проекта" border="1" src="../../../images_www/articles/72/java/gui-image-display/prj-small.png"></a></p></li>
+		<li>Нажмите кнопку 'Готово'.</li>
+		<li>В окне 'Проекты' разверните узел <code>BackgroundImageApp</code>.</li>
+        <li>Щелкните правой кнопкой узел &quot;Исходные файлы&quot; и выберите форму &quot;Создать&quot; &gt; &quot;JFrame&quot;.</li>
+        <li>В качестве имени класса введите <code>ImageDisplay</code>.</li>
+        <li>В качестве имени пакета введите <code>org.me.mybackgroundapp</code>.
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/newjframe.png" rel="lytebox" title="Добавление новой формы - Нажмите, чтобы увеличить"> <img alt="Добавление новой формы" border="1" src="../../../images_www/articles/72/java/gui-image-display/newjframe-small.png"></a></p></li>
+        <li>Нажмите кнопку 'Готово'.</li>
+		<li>В режиме конструирования щелкните правой кнопкой мыши объект JFrame и выберите 'Выбрать макет > Макет контейнера сетки' в контекстном меню. </li>
+		<li>Щелкните правой кнопкой мыши объект JFrame и выберите Добавить из палитры > Контейнеры Swing > Панель в контекстном меню. </li>
+		<li>В окне свойств отмените выбор свойства jPanel <code>opaque</code>.</li>
+		<li>Щелкните правой кнопкой мыши объект JFrame и выберите Добавить из палитры > Элементы управления Swing > Метка в контекстном меню.</li>
+		<li>В окне 'Проекты' щелкните правой кнопкой мыши узел <code>org.me.mybackgroundapp</code> и выберите 'Создать' > 'Пакет Java'.</li>
+            <li>Нажмите кнопку "Готово". В результате будет добавлен новый пакет.
+			</li>
+		    <li>В редакторе GUI Designer выберите метку, добавленную ранее в форму.</li>
+		    <li>В окне &quot;Свойства&quot; щелкните категорию &quot;Свойства&quot; и выполните прокрутку до свойства &quot;Значок&quot;.</li>
+		    <li>Нажмите кнопку со многоточием (...). </li>
+			<li>В диалоговом окне свойств значка щелкните Import to Project (&quot;Импорт в проект&quot;).</li>
+			<li>В окне выбора файлов выберите любое сохраненное в компьютере изображение.  Затем нажмите кнопку &quot;Дальше&quot;. </li>
+			<li>На странице 'Выбор целевой папки' в мастере выберите каталог ресурсов <code>newpackage</code> и нажмите 'Готово'.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/targetfolder.png" rel="lytebox" title="Выберите страницу &apos;Целевая папка&apos; мастера импорта изображений в проекты - Нажмите, чтобы увеличить"> <img alt="Выберите страницу &apos;Целевая папка&apos; мастера импорта изображений в проекты" border="1" src="../../../images_www/articles/72/java/gui-image-display/targetfolder-small.png"></a></p></li>
+			<li>Нажмите ОК, чтобы закрыть диалоговое окно свойств значка.</li>
+			<li>В навигаторе щелкните правой кнопкой мыши jPanel и выберите 'Свойства' во всплывающем меню. </li>
+			<li>В диалоговом окне Properties (&quot;Свойства&quot;) установите свойства <code>Grid X</code>, <code>Grid Y</code>, <code>Weight X</code> и <code>Weight Y</code> на <code>1</code>, а свойство <code>Fill</code> на <code>Both</code>.  
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/panelprops.png" rel="lytebox" title="Свойства панели - Нажмите, чтобы увеличить"> <img alt="Свойства панели" border="1" src="../../../images_www/articles/72/java/gui-image-display/panelprops-small.png"></a></p></li>
+			<li>Выберите &quot;Close&quot; (Закрыть). </li>
+			<li>Повторите шаги 24 и 25 для jLabel.</li>
+			<li>В диалоговом окне 'Свойства' выберите свойство <code>text</code> и удалите <code>jLabel1</code>.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/labelprops.png" rel="lytebox" title="Свойства метки - Нажмите, чтобы увеличить"> <img alt="Свойства метки" border="1" src="../../../images_www/articles/72/java/gui-image-display/labelprops-small.png"></a></p>
+			  Фон готов. Теперь можно, например, перетащить jLabel и jTextField в jPanel из Palette.  Оба они будут отображены поверх фонового изображения.
+		  <p class="align-center"><img alt="Снимок представления конструирования класса Background." class="margin-around" src="../../../images_www/articles/72/java/gui-image-display/background.png"></p></li>
+        </ol>
+		<p class="notes"><b>Примечание.</b> Преимуществом описанного решения является то, что фоновое изображение показывается как в ходе разработки, так и во время выполнения.</p>
+		
+        <a name="building"></a><h2>Сборка и запуск приложения</h2>
+        <p>На данном этапе после создания кода, реализующего доступ к изображению и вывод его на экран, можно выполнить сборку и запуск приложения и проверить правильность вызова изображения.</p>
+        <p>Сначала необходимо указать главный класс проекта.  При назначении главного класса среда IDE получает информацию о том, какой класс следует запускать при запуске проекта.  Кроме того, таким образом обеспечивается создание элемента <code>Main-Class</code> в архиве JAR приложения при его сборке.</p>
+        <p><b>Для назначения главного класса проекта выполните следующие действия:</b></p>
+        <ol>
+            <li>Правой кнопкой щелкните узел &quot;ImageDisplayApp&quot; проекта и выберите &quot;Свойства&quot;.</li>
+            <li>В диалоговом окне &quot;Свойства проекта&quot; выберите категорию &quot;Выполнение&quot;.</li>
+            <li>Нажмите кнопку &quot;Обзор&quot; рядом с полем &quot;Главный класс&quot;.  Затем выберите класс <code>org.me.myimageapp.ImageDisplay</code>.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/mainclass.png" rel="lytebox" title="Выбор основного класса - Нажмите, чтобы увеличить"> <img alt="Выбор основного класса" border="1" src="../../../images_www/articles/72/java/gui-image-display/mainclass-small.png"></a></p></li>
+			<li>Нажмите кнопку 'Выбрать основной класс'.</li>
+			<li>Нажмите кнопку &quot;ОК&quot; для закрытия диалогового окна &quot;Свойства проекта&quot;. </li>
+        </ol>
+        <p><b>Для сборки проекта:</b></p>
+        <ul>
+            <li>Выберите Запуск > Очистить и собрать проект (<i>project_name</i>) на главной панели инструментов.</li>
+        </ul>
+        <p>В окне &quot;Файлы&quot; отображаются объекты, созданные при сборке приложения.  Скомпилированный класс находится в папке <code>build</code>.  В папке <code>dist</code> находится исполняемый архив JAR, содержащий скомпилированный класс и изображение.</p>
+
+        <p class="align-center"><img alt="Развернутое окно &apos;Файлы&apos; с папками build и dist" border="1" src="../../../images_www/articles/72/java/gui-image-display/files.png"></p>
+
+        <p><b>Для запуска проекта выполните следующие действия:</b></p>
+        <ul>
+            <li>Выберите Запуск > Запуск проекта (<i>project_name</i>) на главной панели инструментов.</li>
+        </ul>
+
+        <a name="custom"></a><h2> Создание пользовательского кода</h2>
+
+        <p>Во многих приложениях выводимое изображение определяется не статически, как в данном примере.  К примеру, выводимое изображение может определяться тем, что выбрал пользователь. </p>
+        <p>Если требуется предоставить возможность выбора изображения в исходном коде, то можно написать пользовательский код для вызова и отображения необходимых ресурсов.  В среде IDE не предусмотрена возможность добавления кода в &quot;защищенные блоки&quot;, содержащие созданный GUI Builder код, в режиме просмотра исходного кода.  Однако существует возможность вставки кода в защищенные блоки с помощью редакторов свойств, которые можно вызвать в окне &quot;Свойства&quot;.  Если использовать в этих целях редакторы свойств, то пользовательский код не будет потерян при внесении изменений в GUI Builder.</p>
+        <p><b>Например, для вставки пользовательского кода в свойство <code>icon</code> метки JLabel выполните следующие действия:</b></p>
+        <ol>
+            <li>Выберите JLabel в представлении 'Конструирование' или в окне 'Навигатор'.</li>
+            <li>В окне 'Свойства' нажмите кнопку (...) рядом со свойством <code>icon</code>.</li>
+            <li>В раскрывающемся списке в верхней области диалогового окна выберите параметр &quot;Пользовательский код&quot;.</li>
+        </ol>
+
+        <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/custom-code.png" rel="lytebox" title="Редактор свойств значка с выбранным параметром &apos;Пользовательский код&apos; - Нажмите, чтобы увеличить"><img alt="Редактор свойств значка с выбранным параметром &apos;Пользовательский код&apos;" border="1" src="../../../images_www/articles/72/java/gui-image-display/custom-code-small.png"></a></p>
+        <p>С помощью параметра &quot;Пользовательский код&quot; в этом редакторе свойств можно вручную указать метод <code>setIcon</code>.  Кроме того, в этом параметре можно ввести требуемую логику или указать вызов отдельного метода, для которого вручную был создан код.</p>
+        <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/custom-view.png" rel="lytebox" title="Текстовая область для ввода параметра setIcon - Нажмите, чтобы увеличить"> <img alt="Текстовая область для ввода параметра setIcon" border="1" src="../../../images_www/articles/72/java/gui-image-display/custom-view-small.png"></a></p>
+        <a name="summary"></a><h2>Заключение</h2>
+        <p>В этом руководстве описывается получение доступа к изображениям из приложения, созданного в IDE NetBeans. Более подробно работа с изображениями рассматривается в учебном курсе по Java. </p>
+        <p class="notes"><b>Примечание. </b>Пример в этом учебном курсе очень схож с первым примером в разделе учебного курса по Java <a href="http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html" target="_blank">Использование раздела значков</a>. Отличие заключается в том, что в коде, создаваемом при работе по этому учебному курсу, для вставки изображения в надпись используется метод <code><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html#setIcon(javax.swing.Icon)" target="_blank">setIcon</a></code> элемента <code><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html" target="_blank">JLabel</a></code>.  В примере, приведенном в учебном курсе по Java, в значок добавляется в метку путем его передачи через конструктор.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Handling%20Images%20in%20a%20GUI%20Application">Отправить отзыв по этому учебному курсу</a>
+        </div>
+        <br style="clear:both;" >
+
+
+        <a name="seealso"></a><h2>Дополнительные сведения</h2>
+        <ul>
+            <li><a href="gui-functionality.html">Введение в разработку графического интерфейса </a></li>
+            <li><a href="quickstart-gui.html">Разработка Swing GUI в IDE NetBeans</a></li>
+            <li><a href="../../trails/matisse.html">Учебная карта по приложениям с графическим интерфейсом Java </a></li>
+            <li><a href="../../trails/java-se.html">Учебная карта по общим сведениям о разработке на Java</a></li>
+            <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUI Builder &ndash; часто задаваемые вопросы</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&amp;id=NBDAG920">Реализация Java GUI</a> в документе <i>Разработка приложений в IDE NetBeans</i></li>
+        </ul>
+
+    </body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>NetBeans IDEでの注釈プロセッサのサポートの使用</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+</head>
+
+    <body>
+
+        <h1>NetBeans IDEでの注釈プロセッサのサポート、パートI: プロジェクトLombokの使用 </h1>
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+	    <p><b>目次</b></p>
+  
+        <ul class="toc">
+            <li><a href="annotations.html">概要</a></li>
+            <li><a href="annotations.html#map">javacオプションとIDEコマンドのマップ</a> </li>
+          <li><strong>カスタム注釈のためのプロジェクトLombokの使用</strong>
+            <ul>
+              <li><a href="#create">Javaプロジェクトの新規作成</a></li>
+              <li><a href="#enableann">プロジェクトのカスタム注釈の有効化</a> </li>
+              <li><a href="#writeapp">Lombokカスタム注釈を使用したアプリケーションの記述</a></li>
+            </ul>
+          </li>
+            <li><a href="annotations-custom.html">IDEでの独自のカスタム注釈プロセッサの使用</a></li>
+            <li><a href="annotations-custom.html#seealso" title="プログラムのコンパイルと実行">関連項目</a></li>
+        </ul>
+        </div>
+	</div>
+	   
+	   <p>カスタム注釈がNetBeans IDEでどのように機能するかを示すために、複数のJavaコード要素(取得メソッド、設定メソッド、コンストラクタなど)を自動生成するのに便利な、プロジェクトLombokを使用します。この機能の詳細は、<a href="http://projectlombok.org/" target="_blank">プロジェクトLombokのWebサイト</a>を参照してください。ただし、プロジェクトLombokに含まれる一部の機能は、開発環境によって機能しない場合があります。</p>
+
+           <p style="clear:both"><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+        <table>
+          <tbody>
+            <tr>
+              <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+              <th class="tblheader" scope="col">必須バージョン</th>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+              <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+              <td class="tbltd1">バージョン7または8</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://code.google.com/p/projectlombok/downloads/list">lombok.jar</a></td>
+              <td class="tbltd1">v1.12.4以降</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2><a name="create"></a>Javaプロジェクトの新規作成 </h2>
+        <p>この課題では、単純なJavaプロジェクトと、動作している注釈を示す<tt>MyBooks.java</tt>という名前のクラスを作成します。</p>
+        <ol>
+            <li>メイン・メニューから<strong>「ファイル」>「新規プロジェクト」</strong>を選択して新規プロジェクト・ウィザードを開きます。</li>
+            <li>「Java」カテゴリで「Javaアプリケーション」プロジェクト・タイプを選択します。「次」をクリックします。</li>
+            <li>ウィザードの名前と場所ページで、プロジェクト名として<strong><tt>「TestAnn」</tt></strong>と入力します。</li>
+            <li>「メイン・クラスの作成」フィールドに「<strong><tt>testann.TestBooks</tt></strong>」と入力して、デフォルトのクラス名を置き換えます。「終了」をクリックします。<br> <img alt="新規プロジェクト・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/newproj.png" title="NetBeans IDEでの新しいJavaプロジェクトの作成">
+            <p>「終了」をクリックすると、IDEによってJavaアプリケーション・プロジェクトが作成され、<tt>TestBooks.java</tt>クラスがエディタに表示されます。ここで、新しいプロジェクトが「プロジェクト」ウィンドウに表示され、<tt>TestBooks.java</tt>クラスが「ソース・パッケージ」ノードの下にある<tt>testann</tt>パッケージに含まれていることが確認できます。</p></li>
+            <li>「プロジェクト」ウィンドウで「<tt>testann</tt>」パッケージ・ノードを右クリックし、「新規」>「Javaクラス」を選択します。</li>
+            <li>「クラス名」に「<strong><tt>MyBooks</tt></strong>」と入力し、そのクラスが<tt>testann</tt>パッケージ内に作成されることを確認します。「終了」をクリックします。
+            <p>「終了」をクリックすると、IDEによって新しいクラスがエディタに表示されます。</p></li>
+            <li>ソース・エディタで、次の3つのフィールドを<tt>MyBooks.java</tt>に追加します。
+           <pre class="examplecode">package testann;
+
+public class MyBooks {   
+    <strong>private int year; //fields
+    private String title;
+    private String author;</strong>
+
+}</pre></li>
+            <li>挿入カーソルをクラス宣言に置き、[Ctrl]-[Space]を押して、エディタのコード補完サポートを呼び出します。</li> 
+            <li>コード補完リストで「<tt>MyBooks (int year, String title, String author) - generate</tt>」を選択して、<tt>MyBooks.java</tt>のコンストラクタを生成します。<br> <img alt="エディタでのコード補完のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/generate-constructor.png" title="コンストラクタを生成するためのコード補完">
+            </li>
+            <li>変更を保存します。</li>
+    </ol>
+
+        
+    <h2><a name="enableann"></a>プロジェクトのカスタム注釈(lombok.jar)の有効化 </h2>
+    <p>この課題では、プロジェクトの「プロパティ」ウィンドウを変更して、プロジェクトのクラスパスにライブラリを追加し、エディタでの注釈処理を有効にします。</p>
+    <ol>
+        <li><a href="http://code.google.com/p/projectlombok/downloads/list" target="_blank">lombok.jar</a>ファイルをダウンロードして、システムに保存します。 </li>
+        <li>「<tt>TestAnn</tt>」プロジェクトのノードを右クリックして、「プロパティ」を選択します。 </li>
+        <li>「プロジェクト・プロパティ」ダイアログで「ライブラリ」カテゴリを選択します。</li>
+        <li>「コンパイル」タブで「JAR/フォルダの追加」をクリックし、ダウンロードした<tt>lombok.jar</tt>ファイルを指定します。<br> <img alt="「プロパティ」ウィンドウ内の「ライブラリ」カテゴリのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/properties1.png" title="「プロパティ」ウィンドウ内の「ライブラリ」カテゴリ">
+
+        <p>「コンパイル」タブで追加されたリソースは、<a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html#options" target="_blank">Javaコンパイラ</a>の<tt>-classpath</tt>オプションに相当します。<tt>lombok.jar</tt>は、注釈定義と注釈プロセッサの両方を含む単一のJARファイルであるため、これをプロジェクトのクラスパス(つまり「コンパイル」タブ)に追加する必要があります。 </p>
+        </li>
+        <li>「プロジェクト・プロパティ」ウィンドウで「コンパイル」カテゴリを選択します。</li>
+        <li>「注釈処理を有効にする」チェックボックスが選択されていることを確認し(デフォルトでは有効)、「エディタでの注釈処理を有効にする」チェックボックスを選択します。<br> <img alt="「プロパティ」ウィンドウ内の「コンパイル」カテゴリのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/properties2.png" title="「プロパティ」ウィンドウ内の「コンパイル」カテゴリ">
+
+        <p>「注釈処理を有効にする」チェックボックスを選択すると、プロジェクトのビルドおよびコンパイル時に注釈処理が有効になります。このチェックボックスが選択されていないと、<tt>-proc:none</tt>オプションがJavaコンパイラに渡され、どのような注釈処理もされずにコンパイルが実行されます。このため、コードで注釈を処理する場合は、「注釈処理を有効にする」チェックボックスを選択する必要があります。</p>
+        <p>「エディタでの注釈処理を有効にする」チェックボックスを選択することにより、エディタに注釈処理の結果が表示されるようになります。注釈プロセッサによって生成されたどの追加アーティファクト(クラス、メソッド、フィールドなど)もIDEエディタに表示されるようになり、コード補完、「ナビゲータ」、「型に移動」、「使用状況を検索」などで使用できるようになります。</p>
+        </li>
+        <li>「プロジェクト・プロパティ」ウィンドウで「OK」をクリックして、<tt>MyBooks.java</tt>ファイルに戻ります。 </li>
+    </ol>
+
+    <p>「プロジェクト」ウィンドウで「ライブラリ」ノードを展開すると、<tt>lombok.jar</tt>がプロジェクト・ライブラリとして表示されるようになっていることがわかります。</p>
+<img alt="「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/projects-window.png" title="「プロジェクト」ウィンドウ内の「ライブラリ」ノード">
+
+    <h2><a name="writeapp"></a>Lombokカスタム注釈を使用したアプリケーションの記述 </h2>
+    <ol>
+        <li><tt>MyBooks.java</tt>ファイルで、<tt>MyBooks</tt>クラス定義の前に「<tt>@Data</tt>」と入力します。<tt>@Data</tt>は、Javaクラスのボイラープレート・コード(すべてのフィールドの取得メソッド、finalではないすべてのフィールドの設定メソッド、およびクラスのフィールドを含む適切な<tt>toString</tt>、<tt>equals</tt>、<tt>hashCode</tt>実装)を生成する注釈です。
+        <p class="tips">プロジェクトLombokがサポートする注釈の詳細は、Lombokの<a href="http://projectlombok.org/features/index.html">機能の概要</a>を参照してください。</p></li>
+        <li>エディタの左マージンにあるヒントをクリックして、<tt>lombok.Data</tt>のインポートを追加します。<br> <img alt="エディタ内のヒントのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/import-lombok.png" title="lombokをインポートするためのエディタ内のヒント">
+
+            <p>この結果、エディタのコードは次の例のようになっているはずです。</p>
+                <pre class="examplecode">package testann;
+
+import lombok.Data;
+
+
+@Data
+public class MyBooks {
+
+    private int year; //fields
+    private String title;
+    private String author;
+
+    public MyBooks(int year, String title, String author) {
+        this.year = year;
+        this.title = title;
+        this.author = author;
+    }
+}</pre>
+            <p>取得メソッド、設定メソッド、toStringなどの必要なコード・アーティファクトが生成されているのが「ナビゲータ」ウィンドウで確認できます。<tt>@Data</tt>注釈によって、一般的なクラスに必要なすべてのボイラープレート・コードが生成されました。</p>
+            <img alt="「ナビゲータ」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/nav.png" title="プロジェクト・メンバーが表示された「ナビゲータ」ウィンドウ">
+            <p>コード補完ウィンドウを呼び出すと([Ctrl]-[Space])、生成されたアーティファクトも選択可能になっているのが確認できます。ここで、プロジェクトがコンパイルされ、生成されたアーティファクトをプログラムの他の部分からコールできることを確認します。</p>
+            </li>
+            <li><em>main</em>メソッドで<tt>TestBooks.java</tt>ファイルを開き、次のコード(太字)を追加して、<tt>MyBooks</tt>クラスの新規オブジェクトを作成します。
+                <pre class="examplecode">package testann;
+
+public class TestBooks {
+
+    public static void main(String[] args) {
+        <strong>MyBooks books = new MyBooks(2009, "My Beautiful Dream", "John Smith");</strong>
+    }
+}</pre>
+            </li>
+            <li><tt>books</tt>変数の値を出力するための次のコードを追加します。
+                <p>値を返すため、<tt>lombok.jar</tt>によって自動生成された取得メソッドをコールします。入力中に、自動生成されたアーティファクトをコード補完ウィンドウから使用できます。</p>
+                <pre class="examplecode">package testann;
+
+public class TestBooks {
+
+    public static void main(String[] args) {
+        MyBooks books = new MyBooks(2009, "My Beautiful Dream", "John Smith");
+        <strong>System.out.println("Year: " + books.getYear() + ", Title: " + books.getTitle() +  ", Author: " + books.getAuthor());</strong>
+    }
+}</pre>
+            </li>
+            <li>変更を保存します。</li>
+            <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「実行」([F6])を選択します。
+                <p>このアプリケーションを実行すると、アプリケーションが正常にコンパイルされたことを示す次の出力が表示されるはずです。</p>
+                <img alt="「出力」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/output.png" title="アプリケーションを実行した後の「出力」ウィンドウ"></li>
+        </ol>
+        <p>Lombok注釈プロセッサによって生成されたアーティファクトが、プログラムの他の部分からアクセス可能であることが確認できます。</p>
+
+
+        <h2><a name="nextsteps"></a>次の手順 </h2>
+          <ul>
+              <li>Java SEのドキュメント - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">注釈</a></li>
+              <li>Java SEのチュートリアル - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">注釈</a> </li>
+            <!--<li><a href="annotations-custom.html">Part II: Using Own Custom Annotation Processor in the IDE</a></li>-->
+          </ul>
+          <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a><br style="clear:both;" />
+        </div>
+</body>
+</html>

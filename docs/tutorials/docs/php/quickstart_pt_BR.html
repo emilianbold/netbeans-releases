@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Tutorial para Início Rápido em PHP do NetBeans IDE</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a 
+         simple Hello World PHP application." >
+   </head>
+   
+   <body>
+      
+      <h1>Tutorial para Início Rápido em PHP do NetBeans IDE</h1>
+
+   <p>Este documento oferece orientações gerais para preparar o ambiente de desenvolvimento do PHP, configurar um projeto PHP e desenvolver e executar a sua primeira aplicação PHP no NetBeans IDE para PHP. </p>
+<p><b>Conteúdo</b></p>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+<ul><li><a href="#componentInstallation">Instalação de Componentes</a></li>
+      
+              
+  <li><a href="#setUpProject">Configurando um projeto PHP no NetBeans IDE para PHP</a>  </li>
+            <li><a href="#yurFirstPhpProject">Executando Seu Primeiro Projeto PHP</a></li>
+            <li><a href="#usingDBServers">Utilizando Servidores de Banco de Dados com NetBeans IDE para PHP</a></li>
+            <li><a href="#nextSteps">Próximas Etapas</a></li>
+   </ul>
+<p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">Software ou Recurso</th>
+      <th class="tblheader" scope="col">Versão Necessária</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+      <td class="tbltd1">Pacote de download do PHP</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">Um mecanismo PHP</td>
+      <td class="tbltd1">Versão 5
+    </tr>
+    <tr>
+      <td class="tbltd1">Um servidor web</td>
+      <td>É recomendado o <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP Server 2.2</a>.<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">Um depurador PHP</td>
+      <td><a href="http://www.xdebug.org" target="_blank">XDebug 2.0 ou superior</a></td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  <!--
+<h2><a name="configuringSoftware"></a>Required Software</h2>
+<p>To create, run, and debug PHP projects you need the following software:</p>
+<ul>
+  <li>The NetBeans IDE for PHP.  Downloads are available <a href="
+http://bits.netbeans.org/download/trunk/nightly/latest/">here</a>. </li>
+  <li>A web server. Typically development and debugging is performed on a local web server, while the production environment is located on a remote web server. The current version enables using a local server. Using a remote server with FTP access will be supported in future versions. PHP support can be added to a number of web servers (IIS, Xitami, and so on), but most commonly <a target="_blank" href="http://httpd.apache.org/download.cgi">Apache HTTP Server</a> is used. Click <a target="_blank" href="http://httpd.apache.org/docs/2.2/install.html">here</a> for information on how to install and configure Apache 2.2. <a target="_blank" href="http://httpd.apache.org/docs/2.2/install.html"></a></li>
+</ul>
+<ul>
+  <li>The PHP engine. The supported version is PHP5. Downloads are available <a target="_blank" href="http://www.php.net/downloads.php">here</a>. </li>
+  <li>The PHP debugger. The NetBeans IDE for PHP allows you to use <a target="_blank" href="http://www.xdebug.org">XDebug</a>, but using a debugger is optional. The recommended version is XDebug 2.0 as it is compatible with PHP5. </li>
+   </ul>
+ -->
+</p>
+<p class="tips">Você pode instalar o mecanismo PHP, o servidor Web e o banco de dados separadamente ou utilizar os pacotes AMP (<strong>A</strong>pache, <strong>M</strong>ySQL e <strong>P</strong>HP). </p>
+<h2><a name="componentInstallation"></a>Instalação e Configuração</h2>
+<p>Os documentos a seguir contêm instruções para uma das duas formas de configurar uma pilha Web de PHP no seu sistema operacional. Essas instruções não são definitivas. A pilha Web consiste no software de terceiros, seu ambiente pode ser diferente e talvez você tenha preferência por outro pacote AMP ou outra forma de configurar o PHP. Você pode precisar completar nossas instruções com suas próprias investigações.</p>
+<ul>
+  <li><a href="configure-php-environment-windows.html">Configurando o Ambiente de Desenvolvimento de PHP no Windows</a></li>
+  <li><a href="configure-php-environment-ubuntu.html">Configurando o Ambiente de Desenvolvimento de PHP para Distribuição Ubuntu Linux</a> </li>
+  <li><a href="configure-php-environment-mac-os.html">Configurando o Ambiente de Desenvolvimento de PHP no Sistema Operacional Mac (Mac OS X)</a></li>
+</ul>
+
+ <h2><a name="setUpProject"></a>Configurando um Projeto PHP no NetBeans IDE para PHP </h2>
+  <p>Para obter ajuda para instalar e iniciar o NetBeans IDE, consulte a <a href="https://netbeans.org/community/releases/73/install.html" target="_blank">documentação de instalação</a>.</p>
+  <p>Para iniciar o desenvolvimento de PHP no NetBeans IDE para PHP, é necessário, primeiro, criar o projeto. Um projeto contém as informações sobre o local dos arquivos do projeto e a forma como você deseja executar e depurar sua aplicação (executar configuração).<br>
+  
+   </p>
+<ol>
+      <li>Inicie o IDE, alterne para a janela Projetos e selecione Arquivo > Novo projeto. O painel Escolher Projeto será aberto </li>
+      <li>Na lista Categorias, selecione PHP. </li>
+      <li>Na área Projetos, selecione Aplicação PHP e clique em Próximo. O painel Novo Projeto PHP > Nome e Localização será aberto. <br><img alt="Painel Nome e Localização do assistente Novo Projeto PHP, com localização da Pasta de Código-fonte como raiz de documento XAmpp" class="margin-around" src="../../../images_www/articles/72/php/quickstart/new-project-name-location.png" title="Painel Nome e Localização do assistente Novo Projeto PHP, com localização da Pasta de Código-fonte como raiz de documento XAmpp"></li>
+      <li>No campo de texto Nome do Projeto, digite <tt>NewPHPProject</tt>.<br>
+     </li>
+     <li>No campo Pasta de Códigos-fonte, procure a raiz do seu documento PHP e crie uma subpasta denominada <tt>NewPHPProject</tt>. A raiz do documento é a pasta em que o servidor Web procura por arquivos a serem abertos no browser. A raiz do documento é especificada no <a href="../../trails/php.html#configuration">arquivo de configuração</a> do servidor Web. Por exemplo, no Xampp, a raiz do documento é XAMPP_HOME/htdocs.
+	  
+     </li>
+      
+ 
+      <li>Deixe todos os outros campos com seus valores default. Clique em Próximo. O painel Configuração de Execução será aberto. <br><img alt="Painel Configuração de Execução do assistente Novo Projeto PHP, com os valores default escolhidos" class="margin-around" src="../../../images_www/articles/72/php/quickstart/new-project-run-config.png"></li>     
+      <li>Na lista drop-down Executar Como, selecione Web Site Local. O projeto será executado no servidor Apache local. As outras opções são executar o projeto remotamente via FTP e executá-lo da linha de comandos.</li>
+      <li>Deixe o URL do projeto com o valor default.  </li>
+      
+      <li> Clique em Finalizar. O IDE criará o projeto. </li>
+   </ol>
+
+  Saiba mais sobre <a href="project-setup.html">Configurando um projeto PHP no NetBeans</a>.
+ 
+   <h2><a name="yurFirstPhpProject"></a>Executando Seu Primeiro Projeto PHP</h2>
+   <ol>
+     <li>Inicie o IDE, selecione Arquivo > Abrir Projeto. A caixa de diálogo Abrir Projeto será aberta.</li>
+     <li>Selecione <tt>NewPHPProject</tt> e clique em Abrir Projeto. A árvore NewPHPProject será exibida na janela Projetos e o arquivo <tt>index.php</tt> do projeto será aberto no editor e na janela Navegador. <br> <img alt="NewPHPProject será aberto no IDE, mostrando index.php no editor" border="1" class="margin-around" src="../../../images_www/articles/72/php/quickstart/getting-started-open-new-project.png"></li>
+
+     <li>Digite o seguinte código no bloco <tt>&lt;?php ?></tt>: 
+       <pre class="examplecode"> echo "Hello, world! This is my first PHP project!";</pre>
+     </li>
+     <li>Para executar o projeto, posicione o cursor no nó NewPHPProject e selecione Executar no menu de contexto. A ilustração abaixo mostra o que deveria ser exibido na janela do browser:<br> <img alt="Painel Novo Projeto PHP com os campos preenchidos" border="1" class="margin-around" src="../../../images_www/articles/72/php/quickstart/getting-started-browser-hello-world.png"><br> Parabéns! Seu programa funciona!</li>
+   </ol>
+   <h2><a name="usingDBServers"></a>Utilizando Servidores de Banco de Dados com NetBeans IDE para PHP</h2>
+   Você pode utilizar vários servidores de banco de dados com o NetBeans IDE para PHP, embora o mais popular seja o servidor MySQL. Os downloads estão disponíveis <a href="http://dev.mysql.com/downloads/mysql/5.1.html" target="_blank">aqui</a>. <br> <strong>Observação:</strong> a versão recomendada do produto é MySQL Server 5.0.<br> Consulte também:
+   <ul>
+     <li> <a href="../ide/install-and-configure-mysql-server.html">Configurando o Servidor de Banco de Dados MySQL no Sistema Operacional Windows</a> </li>
+   <li><a href="wish-list-lesson1.html">Criando um Banco de Dados de Amostra com Dados de Teste</a> </li>
+   <li><a href="../../articles/mysql.html">MySQL e o NetBeans IDE</a> </li>
+   <li><a href="../ide/mysql.html">Conectando se a um Banco de Dados MySQL</a> <br>
+   </li>
+  </ul>
+<h2><a name="nextSteps"></a>Próximas Etapas </h2>     
+     <p>Nesse meio tempo, para localizar informações específicas do tipo de aplicação que você está desenvolvendo, utilize a trilha do aprendizado do NetBeans IDE para esse tipo de aplicação. Cada trilha do aprendizado contém uma série de tutoriais e guias que variam em escopo do básico ao avançado. As seguintes trilhas do aprendizado estão disponíveis:</p>
+      <table width="100%">
+         <tr> 
+            <td> 
+               <ul>
+                  <li><a href="../../trails/php.html">Programação em PHP</a></li>
+                  <li><a href="../../trails/java-se.html">Programação Básica em Java</a></li>
+                  <li><a href="../../trails/matisse.html">Aplicações de GUI do Java</a></li>
+                  <li><a href="../../trails/web.html">Aplicações de Web Services</a></li>
+                  <li><a href="../../trails/java-ee.html">Aplicações Java EE e Java Web</a></li>
+               </ul>
+            </td>
+            <td> 
+               <ul>
+                  <li><a href="../../trails/mobility.html">Aplicações Móveis</a></li>
+                  <li><a href="../../trails/platform.html">Plug-ins e Aplicações Clientes Ricas do NetBeans</a></li>
+                  <li><a href="../../trails/cnd.html">Aplicações C/C++</a></li>
+               </ul>
+            </td>
+         </tr>
+      </table>
+      <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Quickstart">Enviar Feedback neste Tutorial</a></div>
+<br style="clear:both;" >
+<p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>.</p>
+   </body>
+</html>

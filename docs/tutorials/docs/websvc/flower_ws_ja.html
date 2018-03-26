@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>バイナリSOAPアタッチメント(パート2): Webサービスの作成 - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+        <meta name="description"
+              content="This tutorial shows how to create and
+              consume an EE6 web service that sends binary data via SOAP.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    <body>
+        <h1>エンドツーエンドのバイナリSOAPアタッチメント2: Webサービスの作成</h1>
+    <p>このレッスンの目標は、Webサービスを含むWebアプリケーションを作成することです。Webサービスは、ステートレス・セッションBeanとして実装します。 </p>
+    <p>Webサービスの完全版サンプルは、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerAlbumService.zip" target="_blank">NetBeansサンプル・カタログ</a>からダウンロードできます。</p>
+    <p><b>このチュートリアルのレッスン</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        <ol>
+            <li><a href="./flower_overview.html">概要</a></li>
+          <li> => Webサービスの作成</li>
+          <li><a href="flower-code-ws.html">Webサービスのコーディングおよびテスト</a></li>
+          <li><a href="./flower_wsdl_schema.html">バイナリ・データを渡すためのスキーマとWSDLファイルの変更</a></li>
+            <li><a href="./flower_swing.html">Swingクライアントの作成</a></li>
+            <!--        <li><a href="./flower_wsit.html">
+            Logging and Optimizing the Web Service</a></li> -->
+        </ol>
+        <p><b>このレッスンの目次</b></p>
+        <ol>
+        <li><a href="#create-web-app">Webアプリケーションの作成</a></li>
+        <li><a href="#add-ws">Webサービスの追加</a></li>
+        </ol>
+        <h2 id="create-web-app">Webアプリケーションの作成</h2>
+        <p>この項では、Java EE Webアプリケーションを作成します。このアプリケーションに、Webサービスがバイナリ・データとして渡すイメージを追加します。 </p>
+  <p><b>Webアプリケーションを作成するには:</b><br>
+        </p>
+        <ol>
+          <li> 「ファイル」>「新規プロジェクト」(LinuxおよびWindowsでは[Ctrl]-[Shift]-[N]、MacOSでは[⌘]-[Shift]-[N])を選択します。新規プロジェクト・ウィザードが表示されます。「Java Web」カテゴリから「Webアプリケーション」を選択し、「次」をクリックします。名前と場所ページが開きます。</li>
+          <li>「プロジェクト名」フィールドに「<tt>FlowerAlbumService</tt>」と入力します。このプロジェクトの場所を選択します。その他のオプションについては、デフォルトの設定を保持し、「次」をクリックします。サーバーと設定ページが開きます。    </li> 
+          <li>「GlassFish Server」を選択し、「Java EEバージョン」に「Java EE 6 Web」または「Java EE 7 Web」を選択します。 </li>               
+          <li>「終了」をクリックします。<tt>FlowerAlbumService</tt>プロジェクトが作成され、「プロジェクト」ウィンドウに表示されます。</li>
+          <li>「ソース・パッケージ」ノードを右クリックし、「新規」>「Javaパッケージ」を選択します。 
+              <p>または、「新規」>「その他」を選択し、新規ファイル・ウィザードの「Java」カテゴリで「Javaパッケージ」を選択します。</p></li>
+          <li>パッケージ名を<tt>org.flower.resources</tt>にします。「終了」をクリックします。<br> <img alt="org.flower.resourcesパッケージの名前と場所が表示された、新規パッケージ・ウィザード" class="margin-around" src="../../../images_www/articles/73/websvc/flower/new-package.png"></li>
+          
+          <li>次のイメージを<tt>org.flower.resources</tt>にコピーします。
+            <ul>
+              <li><a href="../../../images_www/articles/73/websvc/flower/rose.jpg">rose.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/sunflower.jpg">sunflower.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/aster.jpg">aster.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/honeysuckle.jpg">honeysuckle.jpg</a></li>
+            </ul>
+          </li>
+    </ol> 
+          <p>プロジェクトの「ソース・パッケージ」に、<tt>org.flower.resources</tt>パッケージが追加されています。他の内容は追加されていません。</p>
+          <img alt="花のイメージのみのプロジェクト" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/project-w-resources.png">
+          <h2 id="add-ws">Webサービスの追加</h2>
+          <p>この項では、Webアプリケーション内にWebサービスを作成します。サービスは、ステートレス・セッションBeanとして作成します。次のWeb操作をサービスに追加します。</p>
+          <ul>
+            <li>花の名前を取得し、その名前に関連付けられた<tt>Image</tt>を取得する操作。</li>
+            <li>すべての花のイメージのサムネイルを取得し、それらのサムネイルを<tt>List</tt>として返す操作。</li>
+          </ul>
+    <p><strong>Webサービスを追加するには:</strong></p>
+          <ol>
+          <li>「プロジェクト」ウィンドウで、「<tt>FlowerAlbumService</tt>」プロジェクト・ノードを右クリックし、「新規」>「Webサービス」を選択します。または、「新規」>「その他」を選択し、新規ファイル・ウィザードの「Webサービス」の下にある「Webサービス」を選択します。新規Webサービス・ウィザードが開きます。</li>
+          <li>新規Webサービス・ウィザードで、「Webサービス名」に「<tt>FlowerService</tt>」、「パッケージ名」に「<tt>org.flower.service</tt>」と入力します。「Webサービスを新規に作成」を選択します。「ステートレス・セッションBeanとしてWebサービスを実装」を選択します。「終了」をクリックします。<br><img alt="完了した新規Webサービス・ウィザード" class="margin-around" src="../../../images_www/articles/73/websvc/flower/new-service.png">
+            <p>Webサービスが、「プロジェクト」ウィンドウのこのプロジェクトのノードに表示されます。「ソース・パッケージ」ディレクトリには、「service」パッケージと「resources」パッケージが含まれています。</p>
+            <img alt="花のイメージとWebサービスを示す「プロジェクト」ウィンドウ" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/project-w-service-and-resources.png"></li>
+            <li>エディタで<tt>FlowerService.java</tt>を開きます。「デザイン」ビューに切り替えます。操作およびサービス品質の要素をWebサービスに追加できるフォームが表示されます。<br> <img alt="何も追加されていないFlowerServiceの「デザイン」ビュー" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/flower-service-empty-design.png"></li>
+            
+            <li>「操作の追加」をクリックします。「操作の追加」ウィザードが開きます。</li>
+            <li>操作に<tt>getFlower</tt>という名前を付けます。「戻り値の型」フィールドに、「<tt>java.awt.Image</tt>」と入力するか、参照して入力します。</li>
+            <li>「パラメータ」タブで、「追加」をクリックします。このパラメータに<tt>name</tt>という名前を付け、デフォルトの<tt>java.lang.String</tt>型を受け入れます。<br> <img alt="getFlower操作の名前と戻り値の型、およびnameパラメータが表示された「操作の追加」タブ" class="margin-around" src="../../../images_www/articles/73/websvc/flower/add-getflower-param.png"></li>
+            <li>「例外」タブを開きます。「<tt>IOException</tt>」を追加します。<br> <img alt="IO例外の参照" class="margin-around" src="../../../images_www/articles/73/websvc/flower/io-exception.png"> </li>        
+          <li>「OK」をクリックしてウィザードを閉じます。次に、「操作の追加」を再度クリックして、次のプロパティを使用して操作を追加します。
+          <ul>
+          <li><b>名前:</b> getThumbnails</li>
+          <li><b>戻り値の型:</b> java.util.List</li>
+          <li><b>例外: </b> IOException</li>
+    </ul></li></ol>
+          
+          <p>「デザイン」ビューに、<tt>getFlower</tt>操作と<tt>getThumbnails</tt>操作が表示されます。両方の操作で一覧表示に切り替えると、操作のパラメータをすべて確認できます。</p><img alt="操作が表示されたFlowerサービスの「デザイン」ビュー" class="margin-around" src="../../../images_www/articles/73/websvc/flower/flower-service-full-design.png"> 
+          <h2>&nbsp;</h2>
+    <h2>次の手順:</h2>
+        <p><a href="./flower-code-ws.html">Webサービスのコーディングおよびテスト</a></p>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Creating%20WS%20EE6">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear:both;" >
+        <!-- ======================================================================================= -->
+
+        <p><a href="../../../community/lists/top.html">nbj2ee@netbeans.orgメーリング・リスト</a>に登録することによって、NetBeans IDE Java EE開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+</body>
+</html>

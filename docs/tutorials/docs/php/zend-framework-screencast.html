@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+  <head>
+    <title>Zend Framework Support in NetBeans IDE for PHP</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+    <meta name="description" content="This screencast demonstrates Zend Framework support in NetBeans IDE, starting with version 6.9.">
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css"> 
+  </head>
+  <body>
+
+
+    <h1>Zend Framework Support in NetBeans IDE for PHP</h1>
+
+    <table>
+      <tr>
+        <td class="valign-top">
+          <p>
+            This screencast demonstrates how to develop PHP applications using Zend Framework in the NetBeans IDE. Zend Framework support is introduced in NetBeans IDE version 6.9
+          </p>
+          <p>
+            Author: Jeff Rubinoff<br>
+            Time: 11:52 <br />
+            <a target="_blank" href="http://bits.netbeans.org/media/zf.flv">Download</a> (30.2 MB)
+          </p>
+
+          <div class="feedback-box" style="float:left">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: Zend Framework Support Screencast">Send Feedback on This Tutorial</a>
+          </div>
+          <br style="clear:both;">
+        </td>
+        <td width="640" class="align-center">
+          <div id="player" style="margin-bottom:30px;">
+            <center>
+              <div id="flashContent"></div>
+            </center>
+          </div>
+        </td>
+      </tr>
+    </table>
+    <script src="/images_www/js/mediaplayer-5.2/swfobject.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        showMedia('zf.flv');
+      } );
+
+      function showMedia(file) {
+        var targetFile='http://bits.netbeans.org/media/'+file;
+        var s1 = new SWFObject('/images_www/js/mediaplayer-5.2/player.swf','player','480','376','9');
+        s1.addParam('allowfullscreen','true');
+        s1.addParam('allowscriptaccess','always');
+        s1.addParam('flashvars','file='+targetFile+'&autostart=true');
+        s1.write('flashContent');
+      }
+    </script>
+  </body>
+</html>

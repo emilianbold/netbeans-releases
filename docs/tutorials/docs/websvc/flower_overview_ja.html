@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>概要: バイナリ・データを渡すWebサービス(パート1) - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, web service, soap, ejb, binary attachment, jax-ws">
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial provides an overview and specifies requirements.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    
+    
+    <body>
+        <h1>バイナリ・データを渡すWebサービス・アプリケーション(パート1): 概要</h1>
+        
+        
+
+        
+        <p>このチュートリアルでは、ステートレス・セッションBeanとして実装するWebサービスを含むJava EE Webアプリケーションを作成します。また、4つのJPEGファイルを含むパッケージをWebアプリケーションに追加します。このWebサービスは、クライアントからアクセス可能な2つの操作を提供します。1つはイメージを個別に取得する操作、もう1つは4つのイメージすべてのセットをサムネイルとして取得する操作です。JPEGファイルをバイト配列に変換するプライベート・メソッド、およびそれらのバイト配列を<tt>Image</tt>オブジェクトに変換するプライベート・メソッドを追加します。Java EEではWebサービスもEJBであるため、これらのプライベート・メソッドを直接Webサービスに追加します。 </p>
+        <p>Webサービスを作成した後、これをGlassFishサーバー3.1以降のインスタンスにデプロイします。NetBeans IDEの組込みWebサービス・テスト・ページを使用して、サンプルSOAPリクエスト・メッセージやレスポンス・メッセージを表示します。</p>
+        <p>デフォルトのJAX-WSサービス・インフラストラクチャでは、バイナリ・データがJPEGファイルとして解釈される必要があることをクライアントに通知できません。そのため、XMLスキーマ・ファイルとWSDLファイルのコピーを生成し、そのXMLスキーマを編集して、戻り要素として<tt>image/jpeg</tt>のコンテンツ・タイプを予想するようクライアントに通知します。また、カスタマイズしたWSDLおよびスキーマを使用するために、サービス・コードを変更します。</p>
+        <p>最後に、Swingコンポーネントから作成されたアルバムにイメージを表示するJavaクライアント・アプリケーションを作成します。 </p>
+        <p>完全版のサービスとクライアント・アプリケーションは、<a href="https://netbeans.org/projects/samples/downloads/directory/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6" target="_blank">NetBeansサンプル・カタログ</a>からダウンロードできます。</p>
+    <p><b>このチュートリアルのレッスン</b></p>
+            <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+            <ol>
+                <li> => 概要</li>
+              <li><a href="./flower_ws.html">Webサービスの作成</a></li>
+                <li><a href="./flower-code-ws.html">Webサービスのコーディングおよびテスト</a></li>
+                <li><a href="./flower_wsdl_schema.html">バイナリ・データを渡すためのスキーマとWSDLファイルの変更</a></li>
+                <li><a href="./flower_swing.html">Swingクライアントの作成</a></li>
+            </ol>  
+            
+    <h3>チュートリアルに必要なソフトウェア</h3>
+            
+            
+            <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+            
+            <table>
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                        <th class="tblheader" scope="col">必須バージョン</th>
+                    </tr> 
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                        <td class="tbltd1">Java EEダウンロード・バンドル</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                        <td class="tbltd1">バージョン7または8</td>
+                  </tr>
+                    
+                    
+                    <tr>
+                        <td class="tbltd1">Java EE互換のWebサーバーまたはアプリケーション・サーバー</td>
+                        <td class="tbltd1"><a href="http://glassfish.java.net/" target="_blank">GlassFish Server Open Source Edition 3.1以降</a><br />
+						
+                    </td>
+                    </tr>
+                    <tr><td class="tbltd1">このチュートリアルで使用される画像</td>
+                        <td class="tbltd1"><a href="../../../images_www/articles/73/websvc/flower/rose.jpg">rose.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/sunflower.jpg">sunflower.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/aster.jpg">aster.jpg</a><br> <a href="../../../images_www/articles/73/websvc/flower/honeysuckle.jpg">honeysuckle.jpg</a></td></tr>
+                    
+                </tbody>
+            </table>
+			<p class="alert"><b>注意: </b>GlassFishサーバーは、NetBeans IDEのJava EEダウンロード・バンドルとともにインストールできます。または、<a href="https://glassfish.java.net/download.html">GlassFishサーバーのダウンロード・ページ</a>にアクセスしてください。</p>
+			<p class="tips"><b>ヒント: </b>トラブルシューティングのために、<a href="https://netbeans.org/files/documents/4/2343/SoapWithAttachments.zip" target="_blank">完了したサンプルをダウンロード</a>してソースを調べることもできます(オプション)。</p>
+	<p>このチュートリアルの最後では、Webサービス経由でJPEGイメージを使用するJava Swingアプリケーションを実行し、次のような結果が表示されるようにします。</p>
+        
+        <img alt="Webサービスから渡された花のイメージをすべて表示するJFrame" class="margin-around" src="../../../images_www/articles/73/websvc/flower/running-client.png" title="Webサービスから渡された花のイメージをすべて表示するJFrame">
+        <h2>次の手順:</h2>
+        <p><a href="./flower_ws.html">Webサービスの作成</a></p>
+        
+        
+    <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Overview%20EE6">このチュートリアルに関するご意見をお寄せください</a></div>
+        
+        <!-- ======================================================================================= -->
+        <br>
+		<h2><a name="seealso"></a>関連項目</h2>
+        <p>このチュートリアルを使用する前の背景情報については、次のリソースを参照してください。
+        </p>
+        <ul>
+            <li><a href="./jax-ws.html">JAX-WS Webサービスについて</a></li>
+            <li><a href="../../docs/websvc/client.html">Webサービス・クライアントの開発</a></li>
+            <li><a href="../javaee/javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+            <li><a href="./wsit.html">高度なWebサービス相互運用性</a></li>
+            
+        </ul>
+        
+        <p><a href="../../../community/lists/top.html">nbj2ee@netbeans.orgメーリング・リスト</a>に登録することによって、NetBeans IDE Java EE開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+    </body>
+</html>

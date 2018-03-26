@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Настройка PHP, Apache, MySQL и Xdebug для разработки приложений на PHP в MAC OS X - Учебный курс по NetBeans IDE</title>
+        <meta name="KEYWORDS" content="NetBeans, tutorial, configure, PHP, PHP engine, guide, documentation, Mamp, Apache, server, MySQL, database">
+        <meta name="DESCRIPTION" content="This document describes how to configure PHP, Apache,
+            and MySQL for PHP development in the NetBeans IDE under MAC OS 10.5 Leopard. It also
+            demonstrates how to set up Xdebug in the IDE for debugging PHP applications.">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script></head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Настройка PHP, Apache, MySQL и Xdebug для разработки приложений на PHP в MAC OS X</h1>
+
+        <p>Этот учебный курс содержит инструкции по настройке PHP для пакета <a href="http://www.mamp.info/en/index.php" target="_blank">MAMP</a> (<b>M</b>acintosh,<b> A</b>pache, <b>M</b>ySQL, <b>P</b>HP), который включает в себя веб-сервер Apache, сервер баз данных MySQL и модуль PHP. MAMP - среда разработки на PHP для Mac, полностью совместимая с NetBeans IDE.</p>
+            
+        <p><a href="http://www.Xdebug.org/" target="_blank">Xdebug</a> - расширение для PHP, используемое для предоставления ценной информации для отладки сценариев PHP. Отладчик NetBeans работает поверх расширения Xdebug, что обеспечивает эффективный механизм отладки для среды разработки.</p>
+    <p><b>Содержание</b></p>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <ul class="toc">
+            <li><a href="#installMamp">Установка и настройка MAMP</a></li>
+            <li><a href="#mampMySQL">Регистрация базы данных MySQL для MAMP</a></li>
+            <li><a href="#phpProject">Создание проектов PHP</a></li>
+            <li><a href="#installEnableXdebug">Включение расширения Xdebug в MAMP</a></li>
+          <li><a href="#debug">Отладка проектов PHP</a></li>
+            <li><a href="#seeAlso">См. также</a></li>
+        </ul>
+
+        <p><b>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или ресурс</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">Пакет загрузки PHP</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.mamp.info/en/download.html" target="_blank">MAMP</a> </td>
+                    <td class="tbltd1">1.7.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.Xdebug.org/download.php" target="_blank">Xdebug</a> (не обязательно)</td>
+                    <td class="tbltd1">2.x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Примечание. </strong>В пакет MAMP входят веб-сервер Apache, модуль PHP и база данных MySQL. Mac OS X 10.5 и более поздние версии включают в себя базу данных MySQL и сервера Apache с поддержкой PHP. Разумеется, встроенную базу данных и сервер можно настроить и в IDE, но универсальный пакет MAMP представляет собой более удобное и простое решение.</p>
+
+        <a name="installMamp"></a>
+        <h2>Установка и настройка MAMP</h2>
+
+        <ol>
+            <li>Загрузите последнюю версию <a href="http://www.mamp.info/en/download.html" target="_blank">MAMP</a>.</li>
+            <li>Распакуйте загруженный архив и запустите файл <code>.dmg</code>. Когда отобразится экран установщика, переместите MAMP в папку <code>/Applications</code>. <br> <img alt="На экране установщика MAMP отображаются компоненты MAMP и MAMP-Pro" class="margin-around b-all" height="426" src="../../../images_www/articles/72/php/configure-php-environment-mac/mamp-install.png" title="На экране установщика MAMP отображаются компоненты MAMP и MAMP-Pro" width="600"></li>
+                    
+            <li>Перейдите в папку <code>/Applications/MAMP</code> и дважды щелкните файл <code>MAMP.app</code>. Открывается панель управления MAMP. <br><br> <span class="tips"></span>Также можно установить виджет панели управления MAMP, следуя инструкциям в файле <code>MAMP/README.rtf</code>. С помощью этого виджета можно будет запускать и останавливать серверы. <br> <img alt="Панель управления MAMP" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mamp-control-panel.png"></li>
+
+            <li>Нажмите "Предпочтения". На открывшейся панели "Предпочтения" перейдите на вкладку "Порты".</li>
+            
+            <li>Выберите параметр "Значения умолчанию" для портов Apache и MySQL. Для порта Apache устанавливается значение 80, а для порта MySQL - 3306. <br> <img alt="Панель управления MAMP со вкладкой &quot;Порты&quot;, на которой установлены значения портов по умолчанию" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mamp-control-panel-preferences-ports.png" title="Панель управления MAMP со вкладкой &quot;Порты&quot;, на которой установлены значения портов по умолчанию"></li>
+        </ol>
+
+        <a name="mampMySQL"></a>
+        <h2>Регистрация базы данных MySQL для MAMP</h2>
+
+        <p>База MySQL, включенная в состав пакета MAMP, по умолчанию находится в каталоге <code>/Applications/MAMP/db/MySQL</code>. В качестве имени пользователя и пароля по умолчанию используется значение <code>root</code>. Эти данные можно проверить на странице приветствия MAMP, которая открывается в браузере при запуске MAMP.</p>
+
+        <p>IDE взаимодействует с базами данных в окне "Службы" (⌘-5). Базу данных MySQL для MAMP можно зарегистрировать следующим образом:</p>
+
+        <ol>
+            <li>Щелкните правой кнопкой мыши узел "Базы данных > MySQL Server" и выберите "Свойства". Отображается диалоговое окно "Свойства MySQL Server". В этом диалоговом окне можно настроить все параметры MySQL.</li>
+
+            <li>Введите имя хоста для сервера баз данных, номер порта, имя пользователя и пароль. Все эти данные отображаются на странице приветствия MAMP при запуске сервера и базы данных. При локальном запуске MAMP по умолчанию используются следующие параметры: <br><br>
+                <ul>
+                    <li><strong>Имя хоста для сервера: </strong><code>localhost</code></li>
+                    <li><strong>Номер порта сервера: </strong><code>3306</code></li>
+                    <li><strong>Имя администратора: </strong><code>root</code></li>
+                    <li><strong>Пароль администратора: </strong><code>root</code></li>
+                </ul>
+
+                <img alt="Диалоговое окно &quot;Основные свойства MySQL&quot;" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mysql-basic-properties.png" title="В диалоговом окне &quot;Основные свойства MySQL&quot; можно настроить параметры подключений MAMP, используемые по умолчанию"></li>
+
+            <li>Перейдите на вкладку "Администрирование", где можно настроить параметры запуска и останова сервера баз данных в IDE. Сценарии оболочки MAMP хранятся в папке <code>bin</code>. Здесь находятся сценарии для запуска и останова серверов. Вы можете выбрать путь к средствам администрирования и связать IDE с файлом <code>MAMP.app</code>, чтобы в дальнейшем запускать панель управления MAMP из IDE. Для этого введите путь <code>/Applications/MAMP/MAMP.app</code>. В качестве альтернативы можно использовать инструмент <a href="http://dev.mysql.com/downloads/workbench/" target="_blank">MySQL Workbench</a>, предоставляющий интуитивный графический интерфейс для выполнения административных задач, таких как настройка и мониторинг сервера MySQL, управление пользователями и подключениями, создание резервных копий и т. д. Чтобы использовать инструмент MySQL Workbench, необходимо сначала загрузить и установить его, а затем ввести в диалоговом окне следующие параметры: <br><br>
+                <ul>
+                    <li><strong>Путь/URL средства администрирования: </strong><code>/Applications/MySQL Tools/MySQLWorkbench.app</code> <em>(папка установки MySQL Workbench по умолчанию)</em></li>
+                    <li><strong>Путь для команды запуска: </strong><code>/Applications/MAMP/bin/startMysql.sh</code></li>
+                    <li><strong>Путь для команды останова: </strong><code>/Applications/MAMP/bin/stopMysql.sh</code></li>
+                </ul>
+
+                <img alt="Диалоговое окно &quot;Администрирование MySQL&quot;" class="margin-around b-all" height="323" src="../../../images_www/articles/72/php/configure-php-environment-mac/mysql-admin-props.png" title="В диалоговом окне &quot;Администрирование MySQL&quot; можно настроить примерные параметры администрирования" width="600"></li>
+
+            <li>Если в качестве инструмента администрирования сервера MySQL планируется использовать MySQL Workbench, необходимо указать сокет для подключения к базе данных MAMP. Запустите MySQL Workbench. В разделе "Администрирование сервера" на главной странице выберите "Новый экземпляр сервера".<br /> <img alt="Главная страница MySQL Workbench" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mysql-workbench-home.png" /></li>
+            <li>Отображается диалоговое окно "Создать профиль нового экземпляра сервера". Выберите метод подключения "Локальный сокет/канал" и укажите путь к файлу сокета на вкладке "Параметры". По умолчанию сокет находится в папке <code>/Applications/MAMP/tmp/mysql/mysql.sock</code>. <br> <img alt="Диалоговое окно &quot;Создать новый экземпляр сервера&quot; с путем к файлу сокета по умолчанию" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-mac/socket-path.png" />
+            </li>
+        </ol>
+
+        <h2 id="phpProject">Создание проектов PHP</h2>
+
+        <p>Для создания проектов PHP в IDE с использованием ресурсов MAMP необходимо настроить IDE таким образом, чтобы она копировала ваши ресурсы в папку Apache <code>htdocs</code>. В этом случае при сохранении изменений в файлах будет автоматически обновляться исходный код развернутой версии.</p>
+
+        <p>Например, можно создать новый проект PHP с помощью мастера новых проектов (нажмите значок "Создать проект" на панели инструментов IDE ( <img alt="Значок &quot;Создать проект&quot;" src="../../../images_www/articles/72/php/configure-php-environment-mac/new-project-icon.png"> ). На третьем экране мастера "Конфигурация запуска" выберите параметр "Копировать файлы из исходной папки в другое расположение" и укажите путь к папке <code>htdocs</code>.</p>
+
+        <div class="indent">
+            <a href="../../../images_www/articles/72/php/configure-php-environment-mac/new-php-project.png" rel="lytebox"> <img alt="Мастер создания проектов, этап 3: конфигурация запуска" class="margin-around b-all" height="293" src="../../../images_www/articles/72/php/configure-php-environment-mac/new-php-project.png" title="Укажите путь к папке Apache htdocs, чтобы разрешить IDE копировать исходный код в местоположение развернутой версии" width="600"></a>
+        </div>
+
+        <p><span class="tips"></span>IDE запоминает указанный путь и использует его в последующих проектах. Более подробные инструкции по созданию проектов PHP в NetBeans IDE см. в разделе <a href="project-setup.html">Настройка проекта PHP</a>.</p>
+
+        <a name="installEnableXdebug"></a>
+        <h2>Включение расширения Xdebug в MAMP</h2>
+        
+        <p>В пакет MAMP входит заранее скомпилированный файл <tt>xdebug.so</tt>. Чтобы использовать этот файл, необходимо включить его поддержку в файле MAMP <tt>php.ini</tt>. Расширение Xdebug несовместимо с Zend Optimizer, поэтому необходимо отключить Zend Optimizer в том же файле <tt>php.ini</tt>.</p>
+        <p><strong>Чтобы включить расширение Xdebug в MAMP:</strong><br>
+            </p>
+        <ol><li>Откройте файл <code>php.ini</code> в редакторе. Этот файл находится в папке <br><br> <code>/Applications/MAMP/conf/php5/php.ini</code>.</li>
+
+            <li>Найдите раздел <tt>[Zend]</tt> и закомментируйте в нем все строки.
+            <pre class="examplecode">;[Zend]
+;zend_optimizer.optimization_level=15
+;zend_extension_manager.optimizer=/Applications/MAMP/bin/php5/zend/lib/Optimizer-3.3.3
+;zend_optimizer.version=3.3.3
+ 
+;zend_extension=/Applications/MAMP/bin/php5/zend/lib/ZendExtensionManager.so</pre>
+</li>
+
+            <li>Найдите раздел <tt>[xdebug]</tt> и активируйте Xdebug (замените <code>xxxxxxxx</code> фактическим номером). Добавьте в конец файла <tt>php.ini</tt> следующий раздел (если он отсутствует).
+
+              <pre class="examplecode">
+[xdebug]
+ 
+xdebug.default_enable=1
+ 
+xdebug.remote_enable=1
+xdebug.remote_handler=dbgp
+xdebug.remote_host=localhost
+xdebug.remote_port=9000
+xdebug.remote_autostart=1
+ 
+zend_extension="/Applications/MAMP/bin/php5/lib/php/extensions/no-debug-non-zts-xxxxxxxx/xdebug.so"</pre>
+              Пояснения см. в разделе "Связанные настройки" документа <a href="http://www.Xdebug.org/docs/remote" target="_blank">Удаленная отладка Xdebug</a>.</li>
+          <li>Обратите внимание, что на предыдущем этапе был указан удаленный порт Xdebug 9000. Этот порт отладчика используется в NetBeans по умолчанию. Чтобы проверить номер порта, выберите "NetBeans > Предпочтения" в главном меню, затем выберите PHP в окне "Параметры". <br><a name="phpOptions"></a> <img alt="Окно &quot;Параметры PHP&quot;" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/php-options68.png" title="Порт отладки можно указать в окне &quot;Параметры PHP&quot;" width="600"> <br> При необходимости здесь можно изменить порт отладчика.</li>
+
+            <li>Откройте панель управления MAMP и перейдите на вкладку "PHP". Снимите флажок для параметра Zend Optimizer. <br> <img alt="Панель управления MAMP со вкладкой &quot;Порты&quot;, на которой установлены значения портов по умолчанию" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mamp-control-panel-preferences-php.png" title="Панель управления MAMP со вкладкой &quot;Порты&quot;, на которой установлены значения портов по умолчанию"></li>
+
+            <li>Запустите (или перезапустите) сервер Apache MAMP.</li>
+        </ol>
+
+<a name="debug"></a>
+        <h2>Отладка проектов PHP</h2>
+
+        <p>Чтобы выполнить отладку проекта PHP в IDE, щелкните проект правой кнопкой мыши в окне "Проекты" и выберите "Отладка". Также, если проект выбран в окне "Проекты", можно нажать значок "Отладка проекта" ( <img alt="Значок &quot;Отладка проекта&quot;" src="../../../images_www/articles/72/php/configure-php-environment-mac/debug-icon.png"> ) на основной панели инструментов.</p>
+
+        <p class="tips">Если требуется временно приостановить отладчик на первой строке кода, включите соответствующий параметр в окне <a href="#phpOptions">Параметры PHP</a>.</p>
+
+        <p>Во время активного сеанса отладчика панель инструментов отладчика отображается над редактором.</p>
+
+        <div class="indent">
+            <img alt="Панель инструментов отладчика" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-mac/debugger-toolbar.png" title="Панель инструментов отладчика в приостановленном состоянии">
+        </div>
+
+        <p>Чтобы проверить, активен ли сеанс отладки PHP, также можно открыть окно "Сеансы". Выберите "Окно > Отладка > Сеансы" в главном меню.</p>
+
+        <div class="indent">
+            <img alt="Панель инструментов отладчика" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-mac/debugger-sessions-win.png" title="Информация в окне &quot;Сеансы&quot; указывает на то, что сеанс отладчика Xdebug активен">
+        </div>            
+
+        
+
+
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Configuring%20PHP%20on%20Mac%20OS">Отправить отзыв по этому учебному курсу</a></div>
+
+        <br style="clear:both;" />
+
+        <a name="seeAlso"></a>
+        <h2>См. также</h2>
+
+        <p>Для получения дополнительных сведений о технологии PHP на сайте <a href="https://netbeans.org/" target="_blank">netbeans.org</a> можно воспользоваться следующими материалами:</p>
+
+        <ul>
+            <li><a href="project-config-screencast.html">Редактор PHP в NetBeans IDE 6.9-7.0</a>. Экранная демонстрация поддержки нового редактора PHP.</li>
+            <li><a href="debugging.html">Отладка исходного кода PHP</a> В этом документе описан процесс отладки исходного кода в IDE с помощью Xdebug.</li> 
+            <li><a href="wish-list-tutorial-main-page.html">Создание приложения CRUD</a>. Этот учебный курс, состоящий из 9 частей, включает в себя демонстрации и инструкции по созданию приложений CRUD с помощью редактора PHP в IDE.</li>
+            <li><a href="remote-hosting-and-ftp-account.html">Развертывание приложения PHP на удаленном веб-сервере</a>. Этот документ содержит инструкции по развертыванию приложений PHP на удаленном сервере с хостинговой учетной записью.</li>
+        </ul>
+
+        <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+
+    </body>
+</html>

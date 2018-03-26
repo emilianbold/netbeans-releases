@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>Debugging C/C++ Projects Tutorial</TITLE>
+   <meta name="DESCRIPTION" content="Short tutorial that demonstrates debugging C/C++
+   projects in NetBeans IDE">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Debugging C/C++ Projects Tutorial</h1>
+<!-- START INTRO  -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+ <!--  <p><em>Contributed  by <i>Ann
+      Rice</i> and maintained by <i>Susan Morgan</i> --><br>
+March 2013</em> [Revision number: V8.0-1]</div>
+
+<p>The following short tutorial takes you through some of the features for
+debugging a C or C++ project in NetBeans IDE.
+</p>
+<!-- END INTRO -->
+<h3>Contents</h3>
+<img src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp"
+alt="Content on this page applies to NetBeans IDE 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE
+7.4 and 8.0">
+<table class="b-none vatop " cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#requirements" title="Requirements">Requirements</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#project" title="Creating the Sample Project">
+      Creating the Sample Project</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#breakpoints" title="Creating Breakpoints">
+      Creating Breakpoints</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#starting" title="Starting a Debugging Session">Starting a 
+      Debugging Session</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#inspecting" title="Inspecting the State of the Application">Inspecting the State of the Application</a></td>
+   </tr>
+</table>
+
+<h2><A NAME="requirements"></a>Requirements</h2>
+<p><b>To follow this tutorial, you need the following software and resources.</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Software or Resource</th>
+<th class="tblheader" scope="col">Version Required</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a
+href="https://netbeans.org/downloads/index.html">version 7.4 or 8.0 with NetBeans C/C++ plugin module</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java Developer Kit (JDK)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">version 7 or 8</a></td>
+</tr>
+</table>
+<p>See the <a href="../../../community/releases/80/install.html">NetBeans IDE
+      Installation
+   Instructions</a> and <a
+      HREF="../../../community/releases/80/cpp-setup-instructions.html">
+      Configuring the NetBeans IDE for C/C++/Fortran</a> for
+   information on downloading and installing the required software. 
+</p>
+<h2><a name="project"></a>Creating the Sample Project</h2>
+<p>The NetBeans IDE with C/C++ uses the <tt>gdb</tt> debugger and provides
+numerous features for debugging your projects. To explore these features, you will use 
+         the <tt>Quote</tt> project. If you have not already created this
+         project, do the following:
+         <ol>
+            <li>Choose File &gt; New Project.</li>            
+            <li>In the project wizard, expand the Samples category and the C/C++ subcategory.</li>            
+            <li>Select the Applications subcategory, then select the <tt>Quote</tt> 
+               project. Click Next, then click Finish.
+            </li>
+         </ol>
+   <h2><a name="breakpoints"></a>Creating Breakpoints</h2>
+   <p>
+      You can create and manipulate breakpoints in your code at any time
+      without starting a debugging session.
+   </p>
+   <div class="indent">
+       <h3><a name="LineBreakpoint"></a>Creating and Removing a Line Breakpoint</h3>
+      <ol>
+         <li>
+            In the <tt>Quote_1</tt> project, open the <tt>quote.cc</tt> file.
+         </li>
+         <li>Set a line breakpoint by clicking in the left margin of the Source Editor
+            window next to line 171 (<tt>response = readChar("Enter disk module type: (S for single disks, R for RAID; Q - exit)",
+            'S');</tt>). The line 
+            is highlighted in red to indicate that
+            the breakpoint is set.<br>
+            <img src="../../../images_www/articles/74/cnd/debugging/line_breakpoint1.png" 
+                 alt="Screenshot of Source Editor window" class="margin-around b-all">
+         </li>
+         <li>You could remove the breakpoint by clicking on the icon in the left margin.
+         </li>
+         <li>Choose Window &gt; Debugging &gt; Breakpoints to open the Breakpoints
+         window. Your line breakpoint is listed under the C/C++ node.<br>
+        <img src="../../../images_www/articles/74/cnd/debugging/line_breakpoint2.png" 
+             alt="Screenshot of Breakpoints window" class="margin-around b-all">
+        </li>
+        <li>Expand the C/C++ node to see your breakpoint.<br>
+        <img src="../../../images_www/articles/74/cnd/debugging/line_breakpoint2_expand.png" 
+             alt="Screenshot of Breakpoints window" class="margin-around b-all"></li>
+      </ol>
+      <h3><a name="FunctionBreakpoint"></a>Creating a Function Breakpoint</h3>
+      <ol>
+         <li>Click the Create New Breakpoint button in the left margin of the Breakpoints window
+             or choose Debug &gt; New Breakpoint (Ctrl+Shift+F8) to open the New Breakpoint
+            dialog box.
+         </li>
+         <li>In the Debugger Type list, select Native.</li>
+         <li>
+            In the Breakpoint Type list, select Function.
+         </li>
+         <li>Type the function name <tt>Customer::GetDiscount</tt> in the Function
+            Name text field. Click OK.
+         <br>
+         <img src="../../../images_www/articles/74/cnd/debugging/function_breakpoint1.png" 
+              alt="Screenshot of New Breakpoint dialog box" class="margin-around">
+         </li>
+         <li>Your function breakpoint is set and is added to the list in the
+            Breakpoints window.<br>
+            <img src="../../../images_www/articles/74/cnd/debugging/function_breakpoint2.png" 
+                 alt="Screenshot of Breakpoints window" class="margin-around b-all">
+         </li>
+         <li>Click the Select Breakpoint Groups button in the left margin to organize the breakpoints into different groups and select Type.<br>
+            <img src="../../../images_www/articles/74/cnd/debugging/group_breakpoint_type.png" 
+                 alt="Screenshot of grouping categor
+                 ies in Breakpoints window" class="margin-around b-all"></li>
+         <li>Expand the File:Line and Function groups to display your breakpoints. <br>
+            <img src="../../../images_www/articles/74/cnd/debugging/breakpoint_types.png" 
+                 alt="Screenshot of breakpoints
+                 organized by type" class="margin-around b-all"></li>
+      </ol>
+   </div>
+   
+<h2><a name="starting"></a>Starting a Debugging Session</h2>
+<p>When you start a debugging session, the IDE starts the <tt>gdb</tt>  
+   debugger, then runs the application inside the debugger. The IDE automatically 
+   opens the debugger 
+windows and debugger toolbar and prints debugger output to the Output window.</p>
+<ol>
+   <li>Start a debugging session for the <tt>Quote_1</tt> project by clicking the
+       Debug Project button 
+       <img src="../../../images_www/articles/74/cnd/debugging/debugbutton.png" 
+                 alt="Screenshot of debug button"> or by 
+      choosing Debug &gt; Debug Project. <br>The debugger
+      starts and the application 
+      runs.  The debug toolbar is displayed.
+      <br>
+      <img src="../../../images_www/articles/74/cnd/debugging/debugger_toolbar.png" 
+                 alt="Screenshot of debugger toolbar buttons" class="margin-around">
+   </li>
+   <li>Open the Sessions window by choosing Window &gt; Debugging &gt; Sessions.
+      <br>The debugging session is shown in this window.
+   </li>
+</ol>
+<h2><a name="inspecting"></a>Inspecting the State of the Application</h2>
+<ol>
+   <li>The <tt>Quote_1</tt> application prompts you for input in the Output (Debug) window.</li>
+   <li>Enter a customer name after the "Enter customer name:" prompt.
+   <p>The application stops at the Customer::GetDiscount function breakpoint you set earlier and the
+       customer.cc file opens in the editor at the line where the funtion is called. 
+     The Breakpoints window lists the two breakpoints you set earlier.
+      The green program counter arrow appears on top of the breakpoint icon of the function breakpoint. 
+   <br>
+   <img src="../../../images_www/articles/74/cnd/debugging/function_breakpoint3.png"
+        alt="Screenshot of Breakpoints tab" class="margin-around b-all"></p>
+   </li>
+   <li>Click the tab for the Call Stack window or choose Window &gt; Debugging &gt; Call Stack. The call stack shows three frames.<br>
+   <img src="../../../images_www/articles/74/cnd/debugging/call_stack.png" 
+        alt="Screenshot of Call Stack tab" class="margin-around b-all">
+   </li>
+   <li>Open the Variables window and note that one variable is displayed. </li>
+   <!--<li>Click the <img src="../../../images_www/articles/74/cnd/debugging/autos.png" alt="Show autos button">
+   button in the left column in the Variables tab to show Autos instead of local
+   variables.</li>-->
+   <li>Click the expand icons to expand the structure.
+   <br>
+   <img src="../../../images_www/articles/74/cnd/debugging/local_variables1.png" 
+        alt="Screenshot of
+         Variables tab" class="margin-around b-all">
+   </li>
+   <li>Click the Continue button in the toolbar. <br>The <tt>GetDiscount</tt>
+      function is executed, printing the customer discount to the Output (Debug)
+      window. Then you are prompted for input.
+   </li>
+   <li>Enter the input in response to the prompts. 
+<p>The program stops at the next
+      breakpoint, the line breakpoint you set earlier. In the
+      <tt>quote.cc</tt> file, the green program counter arrow appears on top
+      of the breakpoint icon indicating the line on which the program is
+      stopped.
+      <br><br>
+      <img src="../../../images_www/articles/74/cnd/debugging/line_breakpoint3.png" 
+           alt="Screenshot of the Source Editor" class="margin-around b-all">
+      </p>
+      </li>
+      <li>
+      Click the
+      Variables tab and note the long list of variables. 
+   <br>
+   <img src="../../../images_www/articles/74/cnd/debugging/local_variables2.png" 
+        alt="Screenshot of Local Variables tab" class="margin-around b-all">
+   </li>
+   <li>Click the Call
+      Stack tab and note that there is now one frame in the stack.
+   </li>
+   <li>Choose Window &gt; Debugging &gt; Registers. 
+<br>The Registers window
+   opens, displaying the current contents of the registers.
+   <br>
+   <img src="../../../images_www/articles/74/cnd/debugging/registers.png" 
+        alt="Screenshot of Registers window" class="margin-around b-all">
+   <br>
+   </li>
+   <li>Choose Window &gt; Debugging &gt; Disassembly. 
+<br>The Disassembly window
+   opens, displaying the assembly instructions for the current source file.
+   <br>
+   <img src="../../../images_www/articles/74/cnd/debugging/disassembly.png" 
+        alt="Screenshot of Disassembler window" class="margin-around b-all">
+   <br>
+   </li> 
+   <li>
+      Click the Continue button in the toolbar and continue entering input in response to the
+      prompts in the Output window until the program is completed. </li>
+	<li>When you
+      press Enter to exit the program, your
+      debug session ends. To end the debug session before the
+      execution of the program was complete, you could 
+      click the Finish Debugger Session button in the toolbar or choose Debug &gt; Finish Debugger Session.
+   </li>
+</ol>
+ <p>
+   </p><h2>See Also</h2>
+   <p>Please see the 
+       <a href="https://netbeans.org/kb/trails/cnd.html">C/C++ Learning Trail</a> for
+       more articles about developing with C/C++/Fortran in NetBeans IDE.</p>
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Debugging%20C/C++%20Projects%20-%20NetBeans%20IDE%207.4%20Tutorial">Send Feedback on This Tutorial</a></div>
+
+</body>
+</html>

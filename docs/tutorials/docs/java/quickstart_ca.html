@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Guia d'inici r&agrave;pid a Java en l'IDE NetBeans 6.8</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+    </head>
+
+    <body>
+
+        <h1>Guia d'inici r&agrave;pid a Java en l'IDE NetBeans</h1>
+
+        <p>Benvinguts a l'IDE NetBeans!</p>
+        <p>Aquesta guia d'aprenentatge proporciona una introducci&oacute; molt senzilla i r&agrave;pida al flux de treball de l'IDE NetBeans, tot passant a trav&eacute;s de la creaci&oacute; d'una aplicaci&oacute; senzilla de consola Java de &quot;Hola m&oacute;n!!&quot;. Un cop hagueu finalitzat aquesta guia d'aprenentatge, tindreu un coneixement general de com crear i executar aplicacions en l'IDE.</p>
+        <p>Aquesta guia d'aprenentatge pren menys de 10 minuts per a completar-se.</p>
+        <p>Un cop hagueu finalitzat aquesta guia d'aprenentatge, podeu dirigir-vos als camins d'aprenentatge, els quals estan enlla&ccedil;ats des de la p&agrave;gina de <a href="../../index.html">Documentaci&oacute;, Formaci&oacute; i Suport</a>. Els camins d'aprenentatge proporcionen guies assimilables que remarquen un ampli ventall de caracter&iacute;stiques de l'IDE i t&egrave;cniques de programaci&oacute; per a una varietat de tipus d'aplicaci&oacute;. Si no voleu realitzar l'aplicaci&oacute; &quot;Hola m&oacute;n!&quot;, us podeu saltar aquesta guia d'aprenentatge i dirigir-vos als camins d'aprenentatge.
+        </p>
+        <p><b>Continguts</b></p>
+        <img  src="../../../images_www/articles/68/netbeans-stamp.gif" class="stamp" width="114" height="114" alt="El contingut d'aquesta p&agrave;gina s'aplica a l'IDE NetBeans 6.8" title="El contingut d'aquesta p&agrave;gina s'aplica a l'IDE NetBeans 6.5">
+        <ul class="toc">
+            <li><a href="#setup" title="Configurant el projecte">Configurant el projecte</a></li>
+            <li><a href="#code" title="Afegint codi al fitxer font generat">Afegint codi al fitxer font generat</a></li>
+            <li><a href="#run" title="Compilant i executant el programa">Compilant i executant l'aplicaci&oacute;</a></li>
+            <li><a href="#build" title="Construint i desplegant l'aplicaci&oacute;">Construint i desplegant l'aplicaci&oacute;</a></li>
+            <li><a href="#nextsteps" title="Passos seg&uuml;ents">Passos seg&uuml;ents</a></li>
+        </ul>
+
+        <p><b>Per a completar aquesta guia d'aprenentatge, necessiteu el seg&uuml;ent programari i els seg&uuml;ents recursos</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Programari o Recurs</th>
+                    <th class="tblheader" scope="col">Versi&oacute; necess&agrave;ria</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">versi&oacute; 6.8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">Kit de desenvolupament de Java(JDK)</a></td>
+                    <td class="tbltd1">versi&oacute; 6 o<br>
+                    versi&oacute; 5</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <h2>Configurant el projecte<a name="setup"></a></h2>
+        <p>Per crear un projecte en l'IDE:</p>
+
+        <ol>
+            <li>Inicieu l'IDE  NetBeans.</li>
+            <li>En l'IDE, seleccioneu Fitxer &gt; Nou projecte (Ctrl-Maj-N), tal com es mostra en la seg&uuml;ent figura.
+                <p><img src="../../../images_www/articles/72/java/quickstart/new-proj.png" alt="IDE NetBeans amb l'element de men&uacute; selecciona: Fitxer &gt; Nou projecte." class="margin-around"></p>
+            </li>
+            <li>En l'assistent de Nou projecte, expandiu la categoria Java i seleccioneu Aplicaci&oacute; Java, tal com es mostra en la seg&uuml;ent figura. Despr&eacute;s cliqueu a Seg&uuml;ent. <img src="../../../images_www/articles/72/java/quickstart/proj-wizard.png" width="594" height="405"  alt="IDE NetBeans, assistent Nou projecte, p&agrave;gina selecci&oacute; de projecte." class="margin-around">
+            </li>
+            <li>En la p&agrave;gina del nom i la localitzaci&oacute; de l'assistent, feu el seg&uuml;ent (com es mostra en la seg&uuml;ent figura):
+
+                <ul>
+                    <li>En el camp del nom del projecte, escriviu <code>HelloWorldApp</code>.</li>
+                    <li>Deixeu sense marcar la casella de selecci&oacute;, Utilitzar una carpeta dedicada per a emmagatzemar les biblioteques.</li>
+                    <li>En el camp Crear la classe principal, escriviu <code>helloworldapp.HelloWorldApp</code>.</li>
+                    <li>Deixeu sense marcar la casella de selecci&oacute;, Establir com a projecte principal.</li>
+                </ul>
+                <p class="align-center"><img src="../../../images_www/articles/72/java/quickstart/proj-wizard2.png" alt="IDE NetBeans, assistent Nou projecte, p&agrave;gina Nom i Localitzaci&oacute;."  class="margin-around"></p>
+            </li>
+            <li>Cliqueu a Finalitzar</li>
+        </ol>
+        <p>Es crea el projecte i s'obre a l'IDE. Haur&iacute;eu de visualitzar els seg&uuml;ent components:
+        <ul>
+            <li>La finestra Projectes, la qual cont&eacute; una visualitzaci&oacute; en arbre dels components del projecte, incloent els fitxers font, les biblioteques les quals el vostre codi en dep&egrave;n, i d'altres.
+            </li>
+            <li>La finestra d'edici&oacute; de codi amb un fitxer obert anomenat <code>HelloWorldApp</code>.
+            </li>
+            <li>La finestra Navegador, que podeu utilitzar-la per a navegar r&agrave;pidament entre els elements sense seleccionar la classe.</li>
+            <li>La finestra Tasques, la qual llista els errors de compilaci&oacute; aix&iacute; com altres tasques que estiguin marcades amb les paraules clau XXX i TODO.</li>
+        </ul>
+        <p class="align-center"><img src="../../../images_www/articles/72/java/quickstart/proj-opened.png"  alt="IDE NetBeans amb el projecte HelloWorldApp obert." class="margin-around"></p>
+        <a name="code"></a><h2>Afegint codi al fitxer font generat</h2>
+
+        <p>Degut a que heu deixat la casella, Crear la classe principal, en l'assistent Nou projecte, l'IDE us ha creat l'esquelet de la classe. Podeu afegir el missatge &quot;Hola m&oacute;n!&quot; al codi de l'esquelet tot substituint la l&iacute;nia:
+
+        <pre class="examplecode">
+            // TODO code application logic here
+        </pre>
+
+        amb la l&iacute;nia:
+
+        <pre class="examplecode">
+            System.out.println(&quot;Hola m&oacute;n!&quot;);
+        </pre>
+
+        <p>Deseu els canvis amb Fitxer &gt; Desar.</p>
+
+        <p>El fitxer s'hauria de semblar al seg&uuml;ent codi.</p>
+        <pre class="examplecode">
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package helloworldapp;
+
+/**
+ *
+ * @author &lt;your name&gt;
+ */
+public class HelloWorldApp {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+            System.out.println(&quot;Hola m&oacute;n!&quot;);
+    }
+
+}
+
+        </pre>
+
+        <a name="run"></a><h2>Compilant i executant el programa</h2>
+        <p>Degut a la caracter&iacute;stica de compilar al desar, no teniu que compilar manualment el vostre projecte en ordre d'executa'l en l'IDE. Quant deseu el fitxer font java, l'IDE autom&agrave;ticament el compila.</p>
+
+        <p><b>Per executar el programa:</b></p>
+        <ul>
+            <li>Seleccioneu Execuci&oacute; &gt; Executar projecte principal (F6).</li>
+        </ul>
+
+        <p>La seg&uuml;ent figura mostra el que haur&iacute;eu de visualitzar.</p>
+        <p class="align-center"><img src="../../../images_www/articles/72/java/quickstart/run-output.png" ALT="El programa imprimeix Hola m&oacute;n! en la finestra de Sortida (juntament amb altres sortides de l'script de construcci&oacute;)." class="margin-around"></p>
+        <p>
+            Enhorabona! El vostre programa funciona!
+        </p>
+
+        <p>Si hi han errors de compilaci&oacute;, hi haurien marques amb s&iacute;mbols vermells als cantons dret i esquerra de l'editor de codi. Els s&iacute;mbols en el marge esquerra indiquen els errors per a les l&iacute;nies corresponents. Els s&iacute;mbols en el marge dret mostren totes les &agrave;rees del fitxer que contenen errors, incloent els errors en l&iacute;nies que no estan visibles. Podeu despla&ccedil;ar el ratol&iacute; pel damunt d'una marca d'error per a obtenir la descripci&oacute; de l'error. Podeu clicar un s&iacute;mbol en el cant&oacute; dret per a saltar a la l&iacute;nia amb l'error.
+        </p>
+
+        <a name="build"></a><h2>Construint i desplegant l'aplicaci&oacute;</h2>
+
+        <p>Un cop hagueu escrit i provat la vostra aplicaci&oacute;, podeu utilitzar la comanda Netejar i construir, per a construir la vostra aplicaci&oacute; per al desplegament. Quant utilitzeu la comanda Netejar i construir, l'IDE executa un script de construcci&oacute; que realitza les seg&uuml;ents tasques:</p>
+        <ul>
+            <li>Elimina qualsevol fitxer compilat en anterioritat i altres sortides de construcci&oacute;.</li>
+            <li>Torna a compilar l'aplicaci&oacute; o construeix un fitxer JAR que cont&eacute; els fitxers compilats.</li>
+        </ul>
+        <p><b>Per a construir la vostra aplicaci&oacute;:</b></p>
+        <ul>
+            <li>Seleccioneu Execuci&oacute; &gt; Netejar i Construir proj. principal (Maj-F11).</li>
+        </ul>
+
+        <p>Podeu visualitzar la sortida de la construcci&oacute; tot obrint la finestra Fitxers i expandint el node HelloWorldApp. El fitxer compilat amb bytecode <code>HelloWorldApp.class</code> est&agrave; dins del subnode <code>build/classes/helloworldapp</code>. Un fitxer JAR desplegable que cont&eacute; <code>HelloWorldApp.class</code> est&agrave; dins del node <code>dist</code>.</p>
+    <img src="../../../images_www/articles/72/java/quickstart/files-window.png"
+         alt="Imatge mostrant la finestra Fitxers amb els nodes per a HelloWorldApp expandits per mostrar els continguts dels subnodes build i dist." class="margin-around">
+
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback: NetBeans IDE 6.8 Java Quick Start Guide">Envia'ns la vostra opini&oacute;</a></div>
+        <br style="clear:both;" />
+        <h2><a name="nextsteps"></a>Passos seg&uuml;ents</h2>
+        <p>Ara ja sabeu com dur a terme algunes de les tasques m&eacute;s comuns en l'IDE.</p>
+
+        <p>Per a aprendre m&eacute;s quant al flux de treball de l'IDE per al desenvolupament d'aplicacions Java, incloent la gesti&oacute; del classpath, vegeu <a href="javase-intro.html">Desenvolupant i desplegant Aplicacions generals Java</a>.</p>
+        <p>Per a trobar informaci&oacute; espec&iacute;fica al tipus d'aplicaci&oacute; que esteu desenvolupant, utilitzeu els camins d'aprenentatge de l'IDE NetBeans per a aquest tipus d'aplicaci&oacute;. Cadascun dels camins d'aprenentatge cont&eacute; una s&egrave;rie de guies d'aprenentatge que inclouen un ventall des de l'&agrave;mbit senzill al m&eacute;s l'avan&ccedil;at. Estan disponibles els seg&uuml;ents camins d'aprenentatge:</p>
+        <table width="100%">
+            <tr>
+                <td>
+                    <ul>
+                        <li><a href="../../trails/java-se_ca.html">Desenvolupament general Java </a></li>
+                        <li><a href="../../trails/tools_ca.html">Integraci&oacute; amb eines i serveis externs</a></li>
+                        <li><a href="../../trails/matisse_ca.html">Interf&iacute;cies gr&agrave;fiques d'usuari Java i JavaFX</a></li>
+                        <li><a href="../../trails/web_ca.html">Aplicacions web Java</a></li>
+                        <li><a href="../../trails/java-ee_ca.html">Aplicacions EJB i serveis web</a></li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li><a href="../../trails/php_ca.html">Aplicacions PHP</a></li>
+                        <!--<li><a href="../../trails/ruby_ca.html">Llenguatges din&agrave;mics</a></li>-->
+                        <li><a href="../../trails/platform_ca.html">Plataforma NetBeans i desenvolupament de m&ograve;duls</a></li>
+                        <li><a href="../../trails/cnd_ca.html">Aplicacions C/C++</a></li>
+                        <li><a href="../../trails/mobility_ca.html">Aplicacions per a dispositius m&ograve;bils</a></li>
+                    </ul>
+              </td>
+            </tr>
+        </table>
+
+    </body>
+</html>

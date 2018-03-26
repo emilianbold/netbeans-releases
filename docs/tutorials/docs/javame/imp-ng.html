@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--      Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved. -->
+<!--     Use is subject to license terms.-->
+<html>
+<head>
+   <title>Creating, Debugging, and Profiling a Mobile Embedded Application - NetBeans IDE Tutorial</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   </head>
+<body>
+<a name="top"></a>
+<h1>Creating, Debugging, and Profiling a Mobile Embedded Application</h1>
+<div class="articledate" style="margin-left: 0px;"> Sungmoon Cho, Alyona Stashkova</div>
+<p>Mobile embedded applications are employed in small embedded devices such as industrial metering devices, 
+vending machines, security systems, modems, home electronics devices, and similar devices with either simple or no display 
+and with some limited network connectivity. This example shows you how to develop a new Java ME  embedded project 
+in the NetBeans IDE using the Oracle Java Micro Edition Embedded platform that  includes support for <a href="http://jcp.org/en/jsr/detail?id=228">JSR 228</a>, the Information Module Profile-Next Generation API (IMP-NG). It will also explain how to debug and profile your own IMlet using NetBeans support for Oracle Java ME Embedded.</p>
+
+
+<h3>Contents</h3>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.3 and more recent" title="Content on this page applies to the NetBeans IDE 7.3 and more recent" >
+<ul>
+
+<li><a href="#install" title="Installing Oracle Java ME Embedded">Installing Oracle Java ME Embedded</a></li>
+<li><a href="#create" title="Creating an Embedded Project">Creating an Embedded Project</a></li>
+<li><a href="#run" title="Running the Application">Running the Application</a></li>
+<li><a href="#debug" title="Debugging the Application">Debugging the Application</a></li>
+<li><a href="#profile" title="Profiling the Application">Profiling the Application</a></li>
+<li><a href="#nextsteps" title="See Also">See Also</a></li>
+
+</ul>
+
+<p><b>To complete this tutorial, you need the following software and resources:</b></p>
+
+<table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE with Java ME</a></td>
+                <td class="tbltd1">Version 7.3 and more recent</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit</a> (JDK)</td>
+                <td class="tbltd1">Version 6,  7, or 8 </td>
+            </tr> 
+			 <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">Java ME SDK</a></td>
+                <td class="tbltd1">Version 3.2 and more recent </td>
+            </tr>      
+        </tbody>
+</table>
+<p class="alert"><b>Important:</b> This tutorial runs on Win32 compatible platforms only.</p>
+
+<h2><a name="install"></a>Installing Oracle Java ME Embedded</h2>
+<p>To set up the NetBeans IDE with  the Oracle Java ME Embedded software for the
+Windows platform, you need to: </p>
+<ul>
+<li>install Oracle Java ME  SDK </li>
+<li>activate the Java ME feature in the NetBeans IDE</li>
+<li>install the Oracle Java ME Embedded platform in the NetBeans IDE </li>
+</ul>
+<p><b>To install Oracle Java ME SDK:</b></p>
+<ol>
+<li>Go to the <a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">Java ME SDK download</a> page.</li>
+<li>Click the Accept License Agreement option.</li>
+<li>Download an Oracle Java ME SDK installer file (for example, oracle-jmesdk-3-4-rr-win32-bin.exe) and save it to any location on your computer.</li>
+<li>Double-click the installer file to run the installer, and follow the instructions.<br>
+When the installation is complete, the Java (TM) ME Platform SDK Device Manager icon ( <img src="../../../images_www/articles/73/javame/imp-ng/icon.png" alt="Java (TM) ME Platform SDK 3.2 Device Manager icon">) appears in the Windows system tray.</li>
+
+</ol>
+<p><b>To activate the Java ME feature:</b> </p>
+<ol>
+<li>Choose Tools &gt; Plugins from the main IDE's toolbar.</li>
+<li>In the Plugins dialog box, click the Installed tab and select Java ME in the list of available features. 
+  <p class="align-center"><a href="../../../images_www/articles/73/javame/imp-ng/plugins.png" rel="lytebox" title="Plugins dialog box">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/plugins-small.png" alt="Plugins dialog box" border=1></a></p></li>
+<li>Click Activate.</li>
+<li>At the Welcome panel of the Installer dialog box, click Activate.
+<p class="align-center"><a href="../../../images_www/articles/73/javame/imp-ng/installer.png" rel="lytebox" title="Installer dialog box">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/installer-small.png" alt="Installer dialog box" border=1></a></p></li>
+<li>When the activation is successfully completed, click Finish.</li>
+<li>Click Close to close the Plugins dialog box.</li>
+</ol>
+
+<p><b>To install the Oracle Java ME Embedded platform:</b></p>
+
+<ol>
+<li>Choose Tools &gt; Java Platforms.<br>
+The Java Platform Manager dialog box displays.
+<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpmanager.png" rel="lytebox"
+                       title="Name and Location panel">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/jpmanager-small.png"
+                     alt="Name and Location panel" border=1></a></p></li>
+<li>Click Add Platform.</li>
+<li>In the Select Platform Type of the Add Java Platform wizard, select Java ME CLDC Platform Emulator and click Next.<br>
+  The IDE  displays the Choose directory to search for platforms dialog box.</li>
+<li>Select the directory you installed the Java ME SDK Platform to (for example, <tt>C:\Java_ME_Platform_SDK_3.2</tt>) and click Open.</li> 
+<li>In the Platform Folders panel of the Add Java Platform wizard, ensure the platform you selected in the previous step is chosen and click Next.</li>
+<li>As soon as the IDE detects the platform, click Finish in the Detected Platforms panel of the the Add Java Platform wizard.
+<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpdetected.png" rel="lytebox"
+                       title="J2ME Platform detected">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/jpdetected-small.png"
+                     alt="J2ME Platform detected" border=1></a></p>
+		The Oracle Java ME Platform is now registered in the Netbeans IDE.
+		<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpregistered.png" rel="lytebox"
+                       title="J2ME Platform registered">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/jpregistered-small.png"
+                     alt="J2ME Platform registered" border=1></a></p></li>
+					 <li>In the Java Platform Manager dialog box, click Close.</li>
+</ol>
+<p>Now your NetBeans IDE is set up for mobile development.</p>
+  
+<h2><a name="create"></a>Creating an Embedded Project </h2>
+ 
+  <p>Creating a new project is your first step in developing a new Java ME Embedded application with the NetBeans IDE. </p>
+  <ol>
+  <li>Choose File &gt; New Project.<br>
+  The New Project dialog box displays.</li>
+  <li>Select the Java ME category and the Embedded Application project. Click Next.</li>
+  <li>In the Name and Location panel of the New Embedded Application wizard, specify <tt>EmbeddedApp</tt> as the project name. 
+  <p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/newappname.png" rel="lytebox"
+                       title="Name and Location panel">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/newappname-small.png"
+                     alt="Name and Location panel" border=1></a></p></li>
+  <li>Leave the Create Default Package and IMlet Class option selected and click Next.</li>
+  <li>Make sure CLDC Oracle Java(TM) Platform Micro Edition SDK  is selected as the emulator platform and IMPNGPhone1 is selected as the device. </li>
+  <li>Click Finish.<br>An IMP-NG application with an IMLet is created in a standard IDE project.
+  <p class="align-center"><img src="../../../images_www/articles/73/javame/imp-ng/prjcreated.png"
+                     alt="New project created" border=1></p></li>
+  </ol>	
+  <p class="align-center"><a href="#top">top</a></p>
+  <h2><a name="run"></a>Running the Application</h2>			 
+  <p>To verify whether the application runs properly, modify the application source code as follows:</p>
+  <ol>
+  <li>In the Projects window, double-click the <tt>IMlet.java</tt> file and choose Edit.<br>The IDE opens the <tt>IMlet.java</tt> file in the Source Editor. </li>
+  <li>Scroll through the source code and find the <tt>StartApp</tt> method.</li>
+  <li>Insert the following line in bold in the <tt>StartApp</tt> method's body:
+  <pre class="examplecode"> public void startApp() {
+      <b>System.out.println(&quot;Hello, world!&quot;);</b>
+ }</pre></li>
+ <li>Choose File &gt; Save from the IDE's main menu to save the edits.</li>
+</ol>
+  <p>Now that you have created the application, you can  run the application in the IDE as described below:</p>
+  
+
+            <ol>
+			<li>Right-click the <tt>EmbeddedApp</tt> project node and choose Clean and Build.<br>
+			The Output window displays the BUILD SUCCESSFUL statement. 
+			<p class="notes"><b>Note:</b> Choose Window &gt; Output &gt; Output from the the IDE's main menu if the Output window is not visible.</p>
+			</li>
+            <li>From the IDE's menu bar, choose Run &gt; Run Project.<br>
+			The IMPNGPhone1 emulator starts and displays the EmbeddedApp application running.
+			  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/emulator.png" rel="lytebox"
+                       title="Emulator">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/emulator-small.png"
+                     alt="Emulator" border=1></a></p>
+<p class="notes"><b>Note:</b> More information on the  Java ME Embedded Emulator is available in the <a href="http://docs.oracle.com/javame/config/cldc/rel/3.2/get-started-win/title.htm">Oracle Java ME Embedded Getting Started Guide for the Windows 32 Platform</a>.</p>
+             In the Output window, you should see the output from the program, <code>Hello, world!</code>
+			 <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/output.png" rel="lytebox"
+                       title="Output">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/output-small.png"
+                     alt="Output" border=1></a></p></li>
+		<li>In the emulator, select <tt>Embedded App (running)</tt> and click Suspend on the right.<br>
+		The application is paused. </li>
+		<li>Click Resume.<br>
+		The application resumes running. </li>
+		<li>To stop the application and close the emulator, click Stop and choose Application &gt; Exit from the emulator's menu.<br>
+		The run process is terminated in the IDE.</li>
+            </ol>
+			<p class="align-center"><a href="#top">top</a></p>
+<h2><a name="debug"></a>Debugging the Application</h2>
+<p>Debugging embedded projects is accomplished similarly to debugging general Java projects.</p>
+<p>Right-click on the project, and choose Debug to start a debugging session. The emulator opens and the program execution stops at any set breakpoints.</p>
+
+<p class="align-center"><a href="#top">top</a></p>
+<h2><a name="profile"></a>Profiling the Application</h2>
+<p>Use common profiling tasks, such as standard CPU or memory profiling, to build a reliable mobile embedded application.</p>
+<p>Before profiling your application, you need to install the Java ME SDK Tools plugin as follows:</p>
+<ol>
+<!--<li>Go to the <a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">Java ME SDK download</a> page.</li>
+<li>Click the Accept License Agreement option.</li>
+<li>Download the <a href="http://download.oracle.com/otn-pub/java/java_me_sdk/3.2/nb-me-sdk-plugins-uc.zip">nb-me-sdk-plugins-uc.zip</a> file and save it on your computer.</li>
+<li>Unpack the archive to a folder on your hard drive (for example, <code>C:/mesdk_nb</code>).</li>-->
+<li>In the NetBeans IDE, choose Tools &gt; Plugins.</li>
+<!--<li>In the Plugins Manager, select the Settings tab and click Add.
+<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/add.png" rel="lytebox"
+                       title="The Add button highlighted">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/add-small.png"
+                     alt="The Add button highlighted" border=1></a></p></li>
+<li>In the Name field of the Update Center Customizer dialog box, type <code>Java ME SDK Plugins</code>.</li>
+<li>In the URL text field, specify the path to the <code>updates.xml</code> file in the directory where you unpacked the <code>nb-me-sdk-plugins-uc.zip</code> file (for example, <code>file:/c:/mesdk_nb/updates.xml</code>) and click OK.<br> 
+The Java ME SDK Plugins configuration displays in the Configuration of the Update Centers list on the Setting tab.
+  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/settings-plugins.png" rel="lytebox"
+                       title="Java ME SDK Plugins added">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/settings-plugins-small.png"
+                     alt="Java ME SDK Plugins added" border=1></a></p></li>-->
+<li>In the Plugins Manager, select the Available Plugins tab.</li>
+<li>In the Available Plugins tab, scroll to find the Java ME SDK Tools plugin and select it for installation. 
+<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/available-plugins.png" rel="lytebox"
+                       title="Java ME SDK Plugins added">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/available-plugins-small.png"
+                     alt="Java ME SDK Plugins added" border=1></a></p></li>
+<li>Click Install.</li>
+<li>At the Welcome page of the Installer dialog box, click Next. </li>
+<li>At the License Agreement page, read the license agreements associated with the plugin. If you agree to the terms of all of the license agreements, click the appropriate option and then click Install.</li>
+<li>When the installation process is complete, leave the Restart IDE now option selected and click Finish. </li>
+</ol>
+<p>After NetBeans IDE restarts, you can start using the IDE to profile your mobile embedded application.</p>
+
+<ol>
+  <li>In the Projects tab of the IDE, select the <code>EmbeddedApp</code> project name.</li>
+  <li>Choose Profile &gt; Profile Project from the main menu to start a profiling session.
+  <p class="notes"><b>Note:</b> You are prompted to integrate the profiler when a project is going to be profiled for the first time. </p>
+  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/enable.png" rel="lytebox"
+                       title="Java ME SDK Plugins added">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/enable-small.png"
+                     alt="Java ME SDK Plugins added" border=1></a></p>
+  </li>
+  <li>(Applicable if this is first-time profiling of the project) In the Enable Profiling dialog box, click Yes to perform the integration.</li>
+  <li>In the Profile dialog box, choose CPU Profiler, and optionally check Profile System Classes.</li>
+  <li>Click Run.<br>
+    The emulator opens with the <code>EmbeddedApp</code> application running.</li>
+  <li>Interact with the application.</li>
+  <li>Exit the application or close the emulator. <br>The IDE displays the profile data  in the  <code>cpu:<i>time</i></code> window. 
+	<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/cpu.png" rel="lytebox"
+                       title="The cpu: time window">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/cpu-small.png"
+                     alt="The cpu: time window" border=1></a></p>
+	<p class="notes"><b>Note:</b> To save the data collected during the emulation session for future reference you can either:</p>
+	<ul>
+	  <li>export the data to a <code>nps</code> file by clicking the Export to button (<img src="../../../images_www/articles/73/javame/imp-ng/export.png" alt="Export to button" border=1>)</li>
+	  <li>save a snapshot to a <code>png</code> file by clicking the Save Current View to Image button (<img src="../../../images_www/articles/73/javame/imp-ng/image.png" alt="Save Current View to Image button" border=1>)</li>
+	</ul>
+  </li>
+</ol>
+
+  <div class="feedback-box"><a href="/about/contact_form.html?to=6&subject=Creating,%20Debugging,%20and%20Profiling%20an%20Embedded%20Application">Send Feedback on This Tutorial</a></div>
+   <br style="clear:both;" >
+   <p class="align-center"><a href="#top">top</a></p>
+ <h2><a name="nextsteps"></a>See Also</h2>
+  <ul>
+    <li><a target="_blank" href="imp-ng-screencast.html">Demo: Support for IMP-NG Profile in NetBeans IDE</a></li>
+    <li><a target="_blank" href="http://www.oracle.com/technetwork/java/javame/javamobile/training/jmesdk/index.html">Java Mobile - Start Learning</a></li>
+	<li><a target="_blank" href="http://www.oracle.com/technetwork/java/embedded/resources/me-embeddocs/index.html">Oracle Java ME Embedded Client Documentation</a></li>
+	<li><a target="_blank" href="https://blogs.oracle.com/javamesdk/">Java ME SDK Team Blog</a></li>
+	<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1552">Developing Java ME Applications</a> in <i>Developing Applications with NetBeans IDE</i></li>
+  </ul>
+<p class="align-center"><a href="#top">top</a></p>
+</body>
+</html>

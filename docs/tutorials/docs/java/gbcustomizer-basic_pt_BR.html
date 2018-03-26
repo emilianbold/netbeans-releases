@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Criando um Form Java Básico usando o GridBag Customizer - Tutorial do NetBeans IDE</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="This tutorial guides you through the process of managing an application form layout using the NetBeans IDE GridBag Designer basic features.">
+   <meta name="KEYWORDS" content="NetBeans, GridBag, GridBag Customizer, Layout Manager, Tutorial, Guide, User, Documentation, Basic">
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Criando um Form Java Básico usando o GridBag Customizer</h1>
+    <div class="articledate" style="margin-left: 0px;">Escrito por Jan Stola, Tomas Pavek e Alyona Stashkova</div>
+    <p>Este tutorial é a primeira série de duas partes que demonstra como criar um form Java simples usando as funcionalidades básicas do GridBag Customizer do NetBeans IDE.<br> Esta série tem a intenção de ser um guia para mostrar como é possível criar o layout de seus componentes da GUI sem escrever manualmente seu código de layout e, a seguir, executar alterações adicionais em um form existente para implementar um layout alvo específico que seja necessário ao seu projeto. </p>
+    <p>Cada documento nesta série aborda conjuntos específicos de funcionalidades.</p>
+    <ul>
+        <li>Parte 1: Criando um Form Java Básico usando o GridBag Customizer</li>
+        <li>Parte 2: <a href="../java/gbcustomizer-advanced.html">Criando um Form Java Avançado usando o GridBag Customizer</a></li>
+    </ul>
+
+   
+ 
+    
+    
+       <p><b>Conteúdo</b></p>
+    <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.1 e à versão mais recente" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.1 e à versão mais recente">
+    <ul class="toc">
+        <li><a href="#zip">Abrindo o Projeto de Exemplo</a></li>
+		<li><a href="#01">Visão Geral do GridBag Customizer</a>
+        <ul>
+            <li><a href="#01a">Área da Grade</a></li>
+			<li><a href="#01b">Barra de Ferramentas</a></li>
+			<li><a href="#01c">Personalizador de Propriedades</a></li>
+			<li><a href="#01d">Folha de Propriedades</a></li>
+        </ul>
+		</li>
+        
+        <li><a href="#02">Criando o Layout de Componentes</a>
+		<ul>
+		<li><a href="#02a">Movendo</a></li>
+		<li><a href="#02b">Redimensionando</a></li>
+		<li><a href="#02c">Especificando a Restrição de Preenchimento do Layout</a></li>
+		<li><a href="#02d">Visualizando</a></li>
+		<li><a href="#02e">Especificando as restrições da Espessura X e Y</a></li>
+		<li><a href="#02f">Ancorando</a></li>
+		<li><a href="#02g">Espaçamento</a></li>
+		</ul></li>
+        <li><a href="#summary">Resumo</a></li>
+		<li><a href="#seealso">Consulte Também</a></li>
+    </ul>
+
+   
+   <p><b>Para acompanhar este tutorial, são necessários os recursos e softwares listados abaixo.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software ou Recurso</th>
+                <th class="tblheader" scope="col">Versão Necessária</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.1 e posterior</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                <td class="tbltd1">Versão 6, 7 ou 8 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-basic-tutorial.zip">gbcustomizer-basic-tutorial.zip</a></td>
+                <td class="tbltd1">Um arquivo compactado com o projeto de demonstração contendo os layouts inicial e de destino do tutorial.</td>
+            </tr>
+           
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>Observações:</strong></p>
+    <div class="indent">
+    <ul>
+        <li>Você pode fazer download do projeto que é usado como um ponto inicial para esta série como um arquivo compactado <tt>.zip</tt>. </li>
+        <li>Este tutorial concentra-se na criação do layout somente para o contêiner. A adição de funcionalidade na GUI está fora de seu escopo.</li>
+    </ul>
+    </div>
+    <!-- ++++++++++++ Using .zip ++++++++++++ -->
+<a name="zip"></a>
+    <h2>Abrindo o Projeto de Exemplo</h2>
+	<ol><li>Faça download e descompacte o projeto <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-basic-tutorial.zip">gbcustomizer-basic-tutorial.zip</a> em qualquer lugar no computador.</li>
+	<li>Na guia Projetos, selecione <tt>Arquivo</tt> > <tt>Abrir Projeto</tt>, navegue para o projeto <tt>gbcustomizer-basic-tutorial</tt> que você extraiu na etapa anterior e clique em Abrir Projeto. A pasta do projeto pode estar contida em uma pasta também chamada <tt>gbcustomizer-basic-tutorial</tt>.</li>
+	<li>Na caixa de diálogo Problema de Referência, clique em Resolver. O IDE faz download automaticamente das bibliotecas JUnit e JUnit4. Siga as instruções do instalador do NetBeans IDE para instalar os plug-ins necessários. Quando a instalação for concluída, clique em Finalizar.</li>
+    <li> Expanda <tt>Pacotes de Código-fonte</tt> > <tt>Tutorial</tt> e clique duas vezes em <tt>ContactsAdvancedInitial.java</tt>. <br> O form de exemplo é aberto na view Design do GUI Builder. 
+	   <p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/sampleform.png" rel="lytebox" title="Form de amostra inicial aberto"> <img alt="Form de amostra inicial aberto" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/sampleform-small.png"></a></p></li>
+	</ol>
+    <a name="01"></a>
+    <h2>Visão Geral do GridBag Customizer</h2>
+    
+     <p>O GridBag Layout Customizer é um dos gerenciadores de layout mais flexível e complexo que a plataforma Java fornece. O Personalizador coloca os componentes em uma grade de linhas e colunas, permitindo que componentes especificados se expandam para múltiplas linhas ou colunas. Nem todas as linhas precisam necessariamente ter a mesma altura. De forma similar, nem todas as colunas precisam necessariamente ter a mesma largura. Essencialmente, o GridBagLayout coloca os componentes em retângulos (células) em uma grade e, a seguir, usa os tamanhos preferenciais dos componentes para determinar o tamanho das células.  </p>
+	 <p>Para exibir o GridBag Customizer, siga as etapas abaixo: </p>
+	 <ol>
+	 <li>Na view Design, selecione o form JFrame.</li>
+	 
+	 <li>Clique com o botão direito do mouse no form e escolha <tt>Personalizar Layout</tt> a partir do menu de contexto.<br> A caixa de diálogo Personalizar Layout é aberta, conforme mostrado abaixo.
+	  <p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/customizerdialog.png" rel="lytebox" title="GridBag Customizer"> <img alt="GridBag Customizer" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/customizerdialog-small.png"></a></p></li>
+				 
+	 </ol>
+<p class="notes"><b>Observação:</b> neste tutorial, o GridBagLayout já está definido. Caso você trabalhe com outro form, na etapa 2 acima, clique com o botão direito do mouse no form e escolha <tt>Definir Layout</tt> > <tt>Layout do Grid Bag</tt> no menu de contexto (isso ativa o item de menu <tt>Personalizar Layout</tt>). A seguir, conclua o procedimento.</p>					 
+
+     <div class="indent">
+        <a name="01a"></a>
+        <h3>Área da Grade</h3>
+        <p>A Área da grade está no lado direito da caixa de diálogo Personalizar Layout. Ela mostra o layout da grade dos componentes.<br> Os componentes no form de amostra já estão adicionados, mas não estão dispostos corretamente. </p>
+        
+        <a name="01b"></a>
+        <h3>Barra de Ferramentas</h3>
+        <p>Uma barra de ferramentas com cinco botões está localizada acima da Área da grade. Ela fornece acesso conveniente para comandos comuns, como desfazer, refazer, ativar intervalos uniformes, ocultar linhas e colunas vazias e testar o layout.</p>
+		<p class="align-center"><img alt="Barra de Ferramentas" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/toolbar.png"></p>
+				
+		<a name="01c"></a>
+        <h3>Personalizador de Propriedades</h3>
+        <p>O Personalizador de Propriedades está posicionado no canto superior esquerdo da caixa de diálogo Personalizar Layout. Ele permite modificar com facilidade as restrições mais comuns de layout, como <tt>Ancorar</tt> e <tt>Insets</tt>. </p>
+		<p class="align-center"><img alt="Personalizador de Propriedades" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/propcustomizer.png"></p>
+		
+		<a name="01d"></a>
+        <h3>Folha de Propriedades</h3>
+        <p>A Folha de Propriedades está localizada abaixo do Personalizador de Propriedades. Ela exibe as restrições do layout dos componentes selecionados. </p>
+		<p class="align-center"><img alt="Folha de Propriedades" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/propsheet.png"></p>
+		
+
+    </div>
+
+
+<!-- ++++++++++++ Laying Out Components ++++++++++++ -->
+<a name="02"></a>
+<h2>Criando o Layout de Componentes</h2>
+ <p>Os componentes do form <tt>ContactsBasicInitial</tt> são adicionados e dispostos em uma única linha. O GridBagLayout dispõe os componentes desta forma quando nenhuma restrição de layout for especificada.</p>
+
+ <div class="indent">
+<a name="02a"></a>
+<h3>Movendo</h3>
+<p>Você pode mover os componentes usando um simples arrastar e soltar, como desejado. O componente é realçado em verde quando for selecionado. Enquanto você arrasta um componente, as propriedades de <tt>Grade X</tt> e <tt>Grade Y</tt> alteram-se para refletir a nova posição. Novas colunas e linhas são automaticamente criadas quando necessário.</p>
+
+<p> Para criar um layout como o mostrado na figura abaixo, mova os componentes da coluna 2 para a 11, como segue:</p>
+  <ol>
+	 <li>Arraste o label <tt>Sobrenome:</tt> e o campo de texto adjacente para a primeira das duas células da segunda linha.</li>
+	 
+     <li>Arraste o label <tt>Rua:</tt>, o campo de texto adjacente e o botão <tt>Procurar</tt> adjacente para a primeira das três células da terceira linha. </li>
+	 <li>Arraste o label <tt>Cidade:</tt>, o campo de texto adjacente e o botão <tt>Procurar</tt> adjacente para a primeira das três células da quarta linha. </li>
+	 <li>Arraste o label <tt>Estado:</tt> e a caixa de combinação adjacente para a primeira das duas células da quinta linha. 
+	 <p>Os componentes estão agora colocados de acordo com o layout alvo.</p>
+	 </li>
+	
+  </ol>
+<p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/layout1.png" rel="lytebox" title="Layout sem colunas extras"> <img alt="Layout sem colunas extras" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/layout1-small.png"></a></p>
+
+ <p class="note"><b>Observação:</b> Quando um componente for movido para as células alvo, ele será realçado em verde. </p>
+
+<a name="02b"></a>
+    <h3>Redimensionando</h3>
+    <p>Um componente pode ser redimensionado arrastando-se as alças de redimensionamento quadradas que aparece em torno de seu perímetro quando ele é selecionado.</p>
+	<p>Para redimensionar os campos de texto <tt>Nome:</tt> e <tt>Sobrenome:</tt> e fazer com que ocupem duas células adjacentes, complete as etapas abaixo:</p>
+                  <ol>
+                     <li>Pressione Ctrl+Clique nos dois componentes JTextField para selecioná-los.  </li>
+                     <li>Com ambos os JTextFields selecionados, posicione o cursor sobre a borda direita da células, clique e arraste até que a linha guia laranja realçada envolva as células adjacentes na coluna 2 na direita.</li>
+
+                     <li>Solte o cursor para redimensionar os componentes.
+                     <p> Os campos de texto <tt>Nome:</tt> e <tt>Sobrenome:</tt> são redimensionados para se estender entre as duas células, como mostrado na ilustração a seguir. As células ocupadas são realçadas.</p></li>
+                  </ol>
+					 <p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/tfieldsresized.png" rel="lytebox" title="Campos de texto redimensionados"> <img alt="Campos de texto redimensionados" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/tfieldsresized-small.png"></a></p>
+
+    <a name="02c"></a>
+    <h3>Especificando a Restrição de Preenchimento do Layout</h3>
+    <p>Apesar dos campos de texto <tt>Nome:</tt> e <tt>Sobrenome:</tt> ocuparem duas células, eles têm o tamanho preferencial e são colocados no meio da área de exibição. Antes de continuar, precisamos preencher toda a área de células usando a restrição de layout <tt>Preencher</tt>. </p>
+	<p>Para tornar os campos de texto largos o suficiente para preencher suas áreas horizontalmente sem alterar suas alturas, na caixa de combinação <tt>Preencher</tt> na área Folha de propriedades, selecione <tt>Horizontal</tt>. </p>  
+	<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/horizontalset.png" rel="lytebox" title="Campos de texto redimensionados"> <img alt="Campos de texto redimensionados" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/horizontalset-small.png"></a></p>
+
+    <a name="02d"></a>
+    <h3>Visualizando</h3>
+    <p>Agora que você completou com êxito o layout do form <tt>ContactsBasicInitial</tt>, pode testar sua interface para ver os resultados. É possível exibir o form à medida que trabalha clicando no botão Testar Layout (<img src="../../../images_www/articles/72/java/gbcustomizer-basic/testbutton.png">) na barra de ferramentas do Personalizador. O form será aberto em sua própria janela, permitindo que você o teste antes da construção e execução.</p>    
+	<p class="align-center"><img alt="Visualização do Design" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/designpreview.png">  </p>
+   <p>A visualização é útil para testar o comportamento dinâmico do layout, ou seja, como o layout se comporta quando o contêiner desenhado é redimensionado.</p>
+    <a name="02e"></a>
+    <h3>Especificando as Restrições da Espessura X e Y</h3>
+   <p>A especificação de espessuras tem um impacto significativo na aparência dos componentes do GridBagLayout. As espessuras são usadas para determinar como distribuir o espaço entre colunas (peso X) e entre linhas (peso Y). Isso é importante para especificar o comportamento do redimensionamento.<br>Normalmente os pesos são especificados como 0.0 e 1.0 com os extremos. Os números entre eles são usados conforme necessário. Números maiores indicam que a linha ou coluna do componente deveria ter mais espaço. </p>
+   <p>Se você tentar redimensionar na horizontal o contêiner exibido, poderá ver que os componentes do layout permanecem com o mesmo tamanho e permanecem acumulados no meio do contêiner. Até os campos <tt>Nome:</tt> e <tt>Sobrenome</tt>, que têm a restrição Preencher definida como Horizontal, não crescem, porque a restrição Preencher se refere à área interna da célula e não ao tamanho dela. Em outras palavras, um componente com o atributo Preencher definido para um valor diferente de <tt>none</tt> alega que <b>"pode"</b> crescer, mas não alega que <b>"deseja"</b> crescer. <br> As restrições de layout de Espessura X e Espessura Y determinam se um componente <b>"deseja"</b> crescer nas direções horizontal e vertical. <br> Quando dois componentes em uma linha (ou coluna) têm uma restrição de valor não zero de Espessura X (ou Espessura Y), os valores determinam como o componente individual cresce. Por exemplo, se os valores forem 0.6 e 0.4, então o primeiro componente obtém 60% do espaço disponível e o segundo componente obtém 40%.	</p>
+    <p>Para fazer com que o contêiner desenhado seja corretamente redimensionado, faça o seguinte: </p>
+    <ol>
+	<li>Selecione o campo de texto à direita do label <tt>Nome:</tt> na Área de grade do GridBag Customizer. </li>
+	<li>Digite <tt>1.0</tt> no campo de valor de restrição de layout, <tt>Espessura X</tt>, e pressione Enter. </li>
+	<li>Selecione o campo de texto à direita do label <tt>Sobrenome</tt> na Área de Grade do GridBag Customizer.</li>
+	<li>Digite <tt>1.0</tt> no campo de valor de restrição de layout, <tt>Espessura X</tt>, e pressione Enter.</li>
+	<li>Selecione o campo de texto à direita do label <tt>Rua</tt> na Área de Grade do GridBag Customizer.</li>
+	<li>Selecione <tt>Horizontal</tt> na caixa de combinação <tt>Preencher</tt> e pressione Enter. </li>
+	<li>Digite <tt>1.0</tt> no campo de valor de restrição de layout, <tt>Espessura X</tt>, e pressione Enter.</li>
+	<li>Selecione o campo de texto à direita do label <tt>Rua</tt> na Área de Grade do GridBag Customizer.</li>
+	<li>Selecione <tt>Horizontal</tt> na caixa de combinação <tt>Preencher</tt> e pressione Enter. </li>
+	<li>Digite <tt>1.0</tt> no campo de valor de restrição de layout, <tt>Espessura X</tt>, e pressione Enter.</li>
+	</ol>
+	
+    <p>Para verificar se o contêiner desenhado é corretamente redimensionado na direção horizontal, clique no botão Testar Layout (<img src="../../../images_www/articles/72/java/gbcustomizer-basic/testbutton.png">) na barra de ferramentas do Personalizador e arraste as bordas do form <tt>ContactsBasicInitial</tt>. </p>
+   <p class="align-center"><img alt="Contactsbasicinitial Redimensionada" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/resizedpreview.png"> </p>
+    
+    <a name="02f"></a>
+    <h3>Ancorando</h3>
+    <p>A ancoragem é usada quando o componente for menor do que sua área de exibição para determinar onde (dentro da área) colocar o componente.</p>
+	<p>Durante o redimensionamento horizontal do form <tt>ContactsBasicInitial</tt> na seção anterior, você provavelmente observou que a caixa de combinação <tt>Estado</tt> se move para longe do label <tt>Estado</tt>. Como o tamanho preferencial da caixa combo é menor do que o tamanho da célula correspondentes, o GridBagLayout coloca o componente no centro da célula por default.</p>
+        <p>Para mudar este comportamento, especifique as restrições do layout <tt>Âncora</tt> como segue:</p>
+<ol>
+<li>Selecione a caixa de combinação à direita do label de <tt>Estado</tt> e clique no botão de seta (<img alt="Botão de Seta" src="../../../images_www/articles/72/java/gbcustomizer-basic/arrowbutton.png">) à direita da caixa de combinação de <tt>Âncora</tt> na <a href="#01d">Folha de Propriedades</a> do Customizer.</li>
+<li>Escolha <tt>Início da Linha</tt> na lista drop-down.</li>
+</ol>
+<p>A caixa de combinação <tt>Estado</tt> é ancorada no lado esquerdo do form quando a anterior é agora redimensionada na horizontal.</p>
+<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/comboanchored.png" rel="lytebox" title="A caixa de combinação é ancorada"> <img alt="A caixa de combinação é ancorada" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/comboanchored-small.png"></a></p>
+<p>Para fazer com os labels se alinhem na esquerda ao invés de no centro, como estão no momento, complete as etapas abaixo:</p>
+<ol>
+<li>Selecione os labels <tt>Nome:</tt>, <tt>Sobrenome:</tt>, <tt>Rua</tt>, <tt>Cidade</tt> e <tt>Estado</tt>. 
+<p class="note"><b>Observação:</b> Você pode selecionar vários componentes ao pressionar o botão esquerdo do mouse no primeiro componente, mantê-lo pressionado e arrastá-lo para o último componente, como se estivesse desenhando um retângulo que incorpora todos os labels. Após você soltar o botão do mouse, todos os cinco componentes são realçados com bordas laranja e um plano de fundo verde, como mostrado abaixo.</p>
+	 <p class="align-center"> <img alt="Componentes selecionados" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/multiselect.png"> </p></li>
+  
+  <li> Altere a restrição do layout <tt>Âncora</tt> dos labels para <tt>Início da Linha</tt>.<br> Os labels são ancorados na esquerda.
+   <p class="align-center"> <img alt="Os labels são ancorados na esquerda." border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/linestartanchor.png"> </p></li> 
+</ol> 	
+	<a name="02g"></a>
+    <h3>Espaçamento</h3>
+    <p>Por default, cada componente não tem preenchimento externo. A restrição <tt>Inset</tt> especifica o preenchimento externo do componente - a quantidade mínima de espaço entre o componente e as bordas de sua área de exibição.</p>
+	<p>No layout atual, os componentes são colocados pertos uns dos outros. Para separá-los, faça o seguinte:</p>
+	<ol>
+	<li>Pressione Ctrl+Clique para selecionar todos os componentes.</li>
+	<li>Pressione o botão na direita do campo de texto restrição Insets. </li>
+	<li>Na caixa de diálogo exibida, altere os valores <tt>Superior:</tt> e <tt>Esquerad:</tt> para <tt>5</tt> e clique em OK.
+	<p class="align-center"> <img alt="Caixa de diálogo Insets" border="1" src="../../../images_www/articles/72/java/gbcustomizer-basic/insets.png"> </p>
+	Seu form deverá ter a aparência de um do arquivo <tt>ContactsBasicFinal.java</tt> se você abri-lo.
+	<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/contactsbasicfinal.png" rel="lytebox" title="ContactsBasicFinal"> <img alt="ContactsBasicFinal" class="margin-around b-none" src="../../../images_www/articles/72/java/gbcustomizer-basic/contactsbasicfinal-small.png"></a></p>
+	</li>
+	
+	</ol>
+
+	
+	
+
+</div>
+
+<!-- ++++++++++++ Summary ++++++++++++ -->
+<a name="summary"></a>
+<h2>Resumo</h2>
+<p>Neste curto tutorial você desenhou um form simples. Ao editar o layout, você aprendeu como usar as funcionalidades básicas do GridBag Customizer.<br> Você agora pode ir para a segunda parte de um tutorial em duas partes, onde modificará o form <tt>ContactsAdvancedInitial</tt> para se familiarizar com as funcionalidades avançadas do GridBag Customizer.</p>
+
+
+<p>Siga para <a href="../java/gbcustomizer-advanced.html">Criando um Form Java Avançado usando o GridBag Customizer</a></p>
+
+
+
+
+
+
+
+ <p class="align-center"><a href="#top">início</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Designing%20a%20Basic%20Java%20Form%20Using%20the%20GridBag%20Customizer">Enviar Feedback neste Tutorial</a></div>
+      <br style="clear:both;" >  
+<a name="seealso"></a>
+<h2>Consulte Também</h2>
+<p>Você agora completou o tutorial Criando um Form Java Básico usando o GridBag Customizer. Para obter informações sobre como adicionar funcionalidade às GUIs que você cria, consulte:</p> 
+      <ul>
+         <li><a href="gui-functionality.html">Introdução à Construção de GUIs</a> </li>
+		 
+         <li><a href="gui-image-display.html">Manipulando Imagens em uma Aplicação da GUI</a></li>
+        
+         <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank"> FAQ do GUI Builder</a> </li>
+         <li><a href="../../trails/matisse.html">Trilha de Aprendizado das Aplicações de GUI do Java</a></li>
+		 <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementando GUIs de Java</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></a></li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">início</a></p>
+
+   
+</body>
+</html>

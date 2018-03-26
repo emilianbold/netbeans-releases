@@ -1,0 +1,1324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to implement transactional logic using EJB 3.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce, EJB 3, Enterprise JavaBeans,
+            JPA, Java Persistence, persistence provider, Eclipselink">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>The NetBeans E-commerce Tutorial - Integrating Transactional Business Logic</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>The NetBeans E-commerce Tutorial - Integrating Transactional Business Logic</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Tutorial Contents</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introduction</a></li>
+                    <li><a href="design.html">Designing the Application</a></li>
+                    <li><a href="setup-dev-environ.html">Setting up the Development Environment</a></li>
+                    <li><a href="data-model.html">Designing the Data Model</a></li>
+                    <li><a href="page-views-controller.html">Preparing the Page Views and Controller Servlet</a></li>
+                    <li><a href="connect-db.html">Connecting the Application to the Database</a></li>
+                    <li><a href="entity-session.html">Adding Entity Classes and Session Beans</a></li>
+                    <li><a href="manage-sessions.html">Managing Sessions</a></li>
+                    <li><strong>Integrating Transactional Business Logic</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#overview">Overview of the Transaction</a></li>
+                            <li><a href="#projSnapshot">Examining the Project Snapshot</a></li>
+                            <li><a href="#orderManager">Creating the <code>OrderManager</code> EJB</a></li>
+                            <li><a href="#requestParam">Handling Request Parameters</a></li>
+                            <li><a href="#placeOrder">Implementing <code>placeOrder</code> and Helper Methods</a></li>
+                            <li><a href="#entityManager">Utilizing JPA's EntityManager</a></li>
+                            <li><a href="#persistenceContext">Synchronizing the Persistence Context with the Database</a></li>
+                            <li><a href="#transaction">Setting up the Transaction Programmatically</a></li>
+                            <li><a href="#validate">Validating and Converting User Input</a></li>
+                            <li><a href="#seeAlso">See Also</a></li>
+                        </ul></li>
+
+                    <li><a href="language.html">Adding Language Support</a></li>
+                    <li><a href="security.html">Securing the Application</a></li>
+                    <li><a href="test-profile.html">Testing and Profiling</a></li>
+                    <li><a href="conclusion.html">Conclusion</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>The purpose of this tutorial unit is to demonstrate how you can use the object-relational
+            mapping (ORM) capabilities provided by EJB and JPA technologies to gather data
+            from a web request and write to a back-end database. Of particular interest is
+            EJB's support for <em>container-managed</em> transactions (refer to the
+            <a href="entity-session.html#gf-java-ee-container">GlassFish v3 Java EE Container
+            diagram</a>). By applying several non-intrusive annotations, you can transform
+            your EJB class into a transaction manager, thereby ensuring the integrity of the
+            data contained in the database. In other words, the transaction manager handles
+            multiple write actions to the database as a single unit of work. It ensures that
+            the work-unit is performed either in its entirety or, if failure occurs at some
+            point during the process, any changes made are rolled back to the database's
+            pre-transaction state.</p>
+
+        <p>Within the context of the <code>AffableBean</code> application, this tutorial unit
+            focuses on processing a customer order when data from the checkout form is received.
+            You create an <code>OrderManager</code> EJB to process the checkout form data
+            along with the session <code>cart</code> object. The <code>OrderManager</code>
+            performs a transaction that involves multiple write actions to the <code>affablebean</code>
+            database. If any of the actions fails, the transaction is rolled back.</p>
+
+        <p>You can view a live demo of the application that you build in this tutorial:
+            <a href="http://services.netbeans.org/AffableBean/" target="_blank">NetBeans
+            E-commerce Tutorial Demo Application</a>.</p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java bundle, 6.8 or 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFish server</a></td>
+                    <td class="tbltd1">v3 or Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQL database server</a></td>
+                    <td class="tbltd1">version 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot7.zip">AffableBean
+                        project</a></td>
+                    <td class="tbltd1">snapshot 7</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The NetBeans IDE requires the Java Development Kit (JDK) to run properly.
+                If you do not have any of the resources listed above, the JDK should be
+                the first item that you download and install.</li>
+
+            <li>The NetBeans IDE Java Bundle includes Java Web and EE technologies, which are
+                required for the application you build in this tutorial.</li>
+
+            <li id="glassFish">The NetBeans IDE Java Bundle also includes the GlassFish server,
+                which you require for this tutorial. You could
+                <a href="http://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">download
+                the GlassFish server independently</a>, but the version provided with the
+                NetBeans download has the added benefit of being automatically registered with
+                the IDE.</li>
+
+            <li>You can follow this tutorial unit without having completed previous units. To
+                do so, see the <a href="setup.html">setup instructions</a>, which describe how
+                to prepare the database and establish connectivity between the IDE, GlassFish,
+                and MySQL.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="overview">Overview of the Transaction</h2>
+
+        <p>In order to process the data from the checkout form as well as the items contained
+            in the customer's shopping cart, you create an <code>OrderManager</code> EJB. The
+            <code>OrderManager</code> uses the provided data and performs the following write
+            actions to the database:</p>
+
+        <ul style="margin: 5px 0 0 -.7em" class="toc">
+            <li>A new <code>Customer</code> record is added.</li>
+            <li>A new <code>CustomerOrder</code> record is added.</li>
+            <li>New <code>OrderedProduct</code> records are added, according to the items contained
+                in the <code>ShoppingCart</code>.</li>
+        </ul>
+
+        <p>We'll implement this by creating a <code>placeOrder</code> method which performs the
+            three write actions by sequentially calling private helper methods, <code>addCustomer</code>,
+            <code>addOrder</code>, and <code>addOrderedItems</code>. We'll also implement the
+            three helper methods in the class. To leverage EJB's container-managed transaction
+            service, we only require two annotations. These are:</p>
+
+        <ul style="margin: 5px 0 0 -.7em" class="toc">
+            <li><a href="http://java.sun.com/javaee/6/docs/api/javax/ejb/TransactionManagement.html" target="_blank"><code>@TransactionManagement</code></a><code>(</code><a href="http://java.sun.com/javaee/6/docs/api/javax/ejb/TransactionManagementType.html"><code>TransactionManagementType</code></a>.<code><em>CONTAINER</em>)</code>: Used to specify that any transactions occurring in the class are container-managed.</li>
+            <li><a href="http://java.sun.com/javaee/6/docs/api/javax/ejb/TransactionAttribute.html" target="_blank"><code>@TransactionAttribute</code></a><code>(</code><a href="http://java.sun.com/javaee/6/docs/api/javax/ejb/TransactionAttributeType.html"><code>TransactionAttributeType</code></a>.<code><em>REQUIRED</em>)</code>: Used on the method that invokes the transaction to specify that a new transaction should be created (if one does not already exist).</li>
+        </ul>
+
+        <div class="indent" id="transactionDiagram">
+        <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/transaction-diagram.png"
+             alt="Diagram of transaction implemented in AffableBean" class="margin-around"
+             title="Several write actions are performed within a single transaction">
+        </div>
+
+        <p>Because we are implementing the transaction within a larger context, we'll approach this
+            exercise by dividing it into several easily-digestible tasks.</p>
+
+        <ul>
+            <li><a href="#projSnapshot">Examining the Project Snapshot</a></li>
+            <li><a href="#orderManager">Creating the OrderManager EJB</a></li>
+            <li><a href="#requestParam">Handling Request Parameters</a></li>
+            <li><a href="#placeOrder">Implementing <code>placeOrder</code> and Helper Methods</a></li>
+            <li><a href="#entityManager">Utilizing JPA's EntityManager</a></li>
+            <li><a href="#persistenceContext">Synchronizing the Persistence Context with the Database</a></li>
+            <li><a href="#transaction">Setting up the Transaction Programmatically</a></li>
+        </ul>
+
+
+        <br>
+        <h2 id="projSnapshot">Examining the Project Snapshot</h2>
+
+        <p>Begin by examining the project snapshot associated with this tutorial unit.</p>
+
+        <ol style="margin-top:0">
+            <li>Open the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot7.zip">project
+                snapshot</a> for this tutorial unit in the IDE. Click the Open Project (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/open-project-btn.png"
+                alt="Open Project button"> ) button and use the wizard to navigate to the location
+                on your computer where you downloaded the project. If you are proceeding from the
+                <a href="manage-sessions.html">previous tutorial unit</a>, note that this project
+                snapshot is identical to the state of the project after completing the previous unit,
+                but with the following exceptions:
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>The <code>confirmation.jsp</code> page is fully implemented.</li>
+                    <li>The <code>affablebean.css</code> stylesheet includes rules specific
+                        to the <code>confirmation.jsp</code> page implementation.</li>
+                </ul></li>
+
+            <li>Run the project (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                alt="Run Project button"> ) to ensure that it is properly configured with your database
+                and application server.
+
+                <br><br>
+                <p class="alert">If you receive an error when running the project, revisit the
+                    <a href="setup.html">setup instructions</a>, which describe how to prepare the
+                    database and establish connectivity between the IDE, GlassFish, and MySQL.</p></li>
+
+            <li>Test the application's functionality in your browser. In particular, step through the
+                entire <a href="design.html#business">business process flow</a>. When you click the
+                submit an order from the checkout page, the confirmation page currently displays as
+                follows:
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/confirmation-page-start.png"
+                     alt="Confirmation page displayed in browser" class="margin-around b-all" style="width:688px"
+                     title="Confirmation page displays without any data relating to the processed order">
+
+                <br>
+                No data related to the order is displayed on the confirmation page. In fact, in its
+                current state the application doesn't do anything with the data from the checkout form.
+                By the end of this tutorial unit, the application will gather customer data and use
+                it to process an order. In its final state, the application will display a summary
+                of the processed order on the confirmation page, remove the user's <code>ShoppingCart</code>
+                and terminate the user session.
+                (<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">Snapshot
+                8</a> completes the request-response cycle when a checkout form is submitted.)
+            </li>
+        </ol>
+
+
+        <br>
+        <h2 id="orderManager">Creating the OrderManager EJB</h2>
+
+        <ol>
+            <li>Click the New File (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png"
+                alt="New File button"> ) button in the IDE's toolbar. (Alternatively, press Ctrl-N;
+                &#8984;-N on Mac.) In the New File wizard, select the Java EE category, then select
+                Session Bean.</li>
+
+            <li>Click Next. Name the EJB '<code>OrderManager</code>', place the EJB in the <code>session</code>
+                package, and accept other default settings. (Create a stateless session bean, and do not
+                have the wizard generate an interface for the bean.)
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/ejb-wizard.png"
+                     alt="Session Bean wizard" class="margin-around b-all"
+                     title="Create a stateless EJB session bean using the Session Bean wizard"></li>
+
+            <li>Click Finish. The new <code>OrderManager</code> class is generated and opens in the editor.</li>
+        </ol>
+
+        <br>
+        <h2 id="requestParam">Handling Request Parameters</h2>
+
+        <ol>
+            <li>Open the project's <code>ControllerServlet</code>. (Either select it from the Projects
+                window, or press Alt-Shift-O (Ctrl-Shift-O on Mac) and use the Go to File dialog.)</li>
+
+            <li>Locate the area in the <code>doPost</code> method where the <code>/purchase</code> request
+                will be implemented (line 190).
+
+                <br><br>
+                <p class="tips">Press Ctrl-G to use the Go To Line dialog.</p>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/go-to-line.png"
+                     alt="Go to Line dialog" class="margin-around b-all"
+                     title="Use the Go to Line dialog to quickly navigate to a specific line"></li>
+
+            <li>Implement code that extracts the parameters from a submitted checkout form. Locate
+                the <code>TODO: Implement purchase action</code> comment, delete it, and add the
+                following:
+
+                <pre class="examplecode">
+// if purchase action is called
+} else if (userPath.equals(&quot;/purchase&quot;)) {
+
+    <strong>if (cart != null) {
+
+        // extract user data from request
+        String name = request.getParameter(&quot;name&quot;);
+        String email = request.getParameter(&quot;email&quot;);
+        String phone = request.getParameter(&quot;phone&quot;);
+        String address = request.getParameter(&quot;address&quot;);
+        String cityRegion = request.getParameter(&quot;cityRegion&quot;);
+        String ccNumber = request.getParameter(&quot;creditcard&quot;);
+    }</strong>
+
+    userPath = &quot;/confirmation&quot;;
+}</pre></li>
+        </ol>
+
+
+        <br>
+        <h2 id="placeOrder">Implementing placeOrder and Helper Methods</h2>
+
+        <ol>
+            <li>In the <code>ControllerServlet</code>, add a reference to the <code>OrderManager</code>
+                EJB. Scroll to the top of the class and add a reference beneath the session facade EJBs
+                that are already listed.
+
+                <pre class="examplecode">
+public class ControllerServlet extends HttpServlet {
+
+    private String userPath;
+    private String surcharge;
+    private ShoppingCart cart;
+
+    @EJB
+    private CategoryFacade categoryFacade;
+    @EJB
+    private ProductFacade productFacade;
+    <strong>@EJB
+    private OrderManager orderManager;</strong></pre></li>
+
+            <li>Press Ctrl-Shift-I (⌘:-Shift-I on Mac) to allow the editor to add an import
+                statement for <code>session.OrderManager</code>.</li>
+
+            <li>Use the extracted parameters, as well as the session <code>cart</code> object, as
+                arguments for the <code>OrderManager.placeOrder</code> method. Add the following
+                code:
+
+                <pre class="examplecode">
+// if purchase action is called
+} else if (userPath.equals(&quot;/purchase&quot;)) {
+
+    if (cart != null) {
+
+        // extract user data from request
+        String name = request.getParameter(&quot;name&quot;);
+        String email = request.getParameter(&quot;email&quot;);
+        String phone = request.getParameter(&quot;phone&quot;);
+        String address = request.getParameter(&quot;address&quot;);
+        String cityRegion = request.getParameter(&quot;cityRegion&quot;);
+        String ccNumber = request.getParameter(&quot;creditcard&quot;);
+
+        <strong>int orderId = orderManager.placeOrder(name, email, phone, address, cityRegion, ccNumber, cart);</strong>
+    }
+
+    userPath = &quot;/confirmation&quot;;
+}</pre>
+
+                Note that we haven't created the <code>placeOrder</code> method yet. This is why
+                the editor flags an error. You can use the tip that displays in the left margin,
+                which allows you to generate the method signature in the appropriate class.
+
+                <br>
+                <a href="../../../../images_www/articles/73/javaee/ecommerce/transaction/tool-tip-create-method.png"
+                   rel="lytebox" title="Use editor tips to generate method signatures in other classes">
+                   <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/tool-tip-create-method.png"
+                        alt="Tip displayed in editor" class="margin-around b-all" style="width:688px"
+                        title="Click to enlarge"></a></li>
+
+            <li>Click the tip. The IDE generates the <code>placeOrder</code> method in the
+                <code>OrderManager</code> class.
+
+                <pre class="examplecode">
+@Stateless
+public class OrderManager {
+
+    <strong>public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+        throw new UnsupportedOperationException(&quot;Not yet implemented&quot;);
+    }</strong>
+
+    ...
+}</pre>
+
+                The import statement for <code>cart.ShoppingCart</code> is also automatically inserted at the
+                top of the file.</li>
+
+            <li>In the new <code>placeOrder</code> method, use the method arguments to make calls to the
+                (yet nonexistent) helper methods. Enter the following:
+
+                <pre class="examplecode">
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    <strong>Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+    CustomerOrder order = addOrder(customer, cart);
+    addOrderedItems(order, cart);</strong>
+}</pre>
+
+                Note that we need to follow a particular order due to database constraints. For example,
+                a <code>Customer</code> record needs to be created before the <code>CustomerOrder</code>
+                record, since the <code>CustomerOrder</code> requires a reference to a <code>Customer</code>.
+                Likewise, the <code>OrderedItem</code> records require a reference to an existing
+                <code>CustomerOrder</code>.</li>
+
+            <li>Press Ctrl-Shift-I (&#8984:-Shift-I on Mac) to fix imports. Import statements for
+                <code>entity.Customer</code> and <code>entity.CustomerOrder</code> are automatically
+                added to the top of the file.</li>
+
+            <li>Use the editor hints to have the IDE generate method signatures for <code>addCustomer</code>,
+                <code>addOrder</code>, and <code>addOrderedItems</code>. After utilizing the three hints,
+                the <code>OrderManager</code> class looks as follows.
+
+                <pre class="examplecode">
+@Stateless
+public class OrderManager {
+
+    public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+        Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+        CustomerOrder order = addOrder(customer, cart);
+        addOrderedItems(order, cart);
+    }
+
+    <strong>private Customer addCustomer(String name, String email, String phone, String address, String cityRegion, String ccNumber) {
+        throw new UnsupportedOperationException(&quot;Not yet implemented&quot;);
+    }
+
+    private CustomerOrder addOrder(Customer customer, ShoppingCart cart) {
+        throw new UnsupportedOperationException(&quot;Not yet implemented&quot;);
+    }
+
+    private void addOrderedItems(CustomerOrder order, ShoppingCart cart) {
+        throw new UnsupportedOperationException(&quot;Not yet implemented&quot;);
+    }</strong>
+
+}</pre>
+
+            Note that an error is still flagged in the editor, due to the fact that the method
+            is currently lacking a return statement. The <code>placeOrder</code> signature
+            indicates that the method returns an <code>int</code>. As will later be demonstrated,
+            the method returns the order ID if it has been successfully processed, otherwise
+            <code>0</code> is returned.</li>
+
+            <li>Enter the following return statement.
+
+                <pre class="examplecode">
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+    CustomerOrder order = addOrder(customer, cart);
+    addOrderedItems(order, cart);
+    <strong>return order.getId();</strong>
+}</pre>
+
+            At this stage, all errors in the <code>OrderManager</code> class are resolved.</li>
+
+            <li>Begin implementing the three helper methods. For now, simply add code that
+                applies each method's input parameters to create new entity objects.
+
+                <br><br>
+                <h4>addCustomer</h4>
+
+                <p>Create a new <code>Customer</code> object and return the object.</p>
+
+                <pre class="examplecode">
+private Customer addCustomer(String name, String email, String phone, String address, String cityRegion, String ccNumber) {
+
+    <strong>Customer customer = new Customer();
+    customer.setName(name);
+    customer.setEmail(email);
+    customer.setPhone(phone);
+    customer.setAddress(address);
+    customer.setCityRegion(cityRegion);
+    customer.setCcNumber(ccNumber);
+
+    return customer;</strong>
+}</pre>
+
+                <br>
+                <h4>addOrder</h4>
+
+                <p>Create a new <code>CustomerOrder</code> object and return the object. Use the
+                    <code>java.util.Random</code> class to generate a random confirmation number.</p>
+
+                <pre class="examplecode">
+private CustomerOrder addOrder(Customer customer, ShoppingCart cart) {
+
+    <strong>// set up customer order
+    CustomerOrder order = new CustomerOrder();
+    order.setCustomer(customer);
+    order.setAmount(BigDecimal.valueOf(cart.getTotal()));
+
+    // create confirmation number
+    Random random = new Random();
+    int i = random.nextInt(999999999);
+    order.setConfirmationNumber(i);
+
+    return order;</strong>
+}</pre>
+
+                <br>
+                <h4>addOrderedItems</h4>
+
+                <p>Iterate through the <code>ShoppingCart</code> and create
+                    <code>OrderedProduct</code>s. In order to create an <code>OrderedProduct</code>,
+                    you can use the <code>OrderedProductPK</code> entity class. The instantiated
+                    <code>OrderedProductPK</code> can be passed to the <code>OrderedProduct</code>
+                    constructor, as demonstrated below.</p>
+
+                <pre class="examplecode">
+private void addOrderedItems(CustomerOrder order, ShoppingCart cart) {
+
+    <strong>List&lt;ShoppingCartItem&gt; items = cart.getItems();
+
+    // iterate through shopping cart and create OrderedProducts
+    for (ShoppingCartItem scItem : items) {
+
+        int productId = scItem.getProduct().getId();
+
+        // set up primary key object
+        OrderedProductPK orderedProductPK = new OrderedProductPK();
+        orderedProductPK.setCustomerOrderId(order.getId());
+        orderedProductPK.setProductId(productId);
+
+        // create ordered item using PK object
+        OrderedProduct orderedItem = new OrderedProduct(orderedProductPK);
+
+        // set quantity
+        orderedItem.setQuantity(scItem.getQuantity());
+    }</strong>
+}</pre></li>
+
+            <li>Press Ctrl-Shift-I (&#8984;-Shift-I on Mac) to fix imports. A dialog
+                opens to display all classes that will be imported. Note that the dialog
+                correctly guesses for <code>java.util.List</code>.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/fix-all-imports.png"
+                     alt="Fix All Imports dialog" class="margin-around b-all"
+                     title="Press Ctrl-Shift-I to fix imports in a file"></li>
+
+            <li>Click OK. All necessary import statements are added, and the class becomes
+                free of any compiler errors.</li>
+        </ol>
+
+
+        <br>
+        <h2 id="entityManager">Utilizing JPA's EntityManager</h2>
+
+        <p>As was mentioned in <a href="entity-session.html">Adding Entity Classes and Session
+            Beans</a>, the <code>EntityManager</code> API is included in JPA, and is responsible
+            for performing persistence operations on the database. In the <code>AffableBean</code>
+            project, all of the EJBs employ the <code>EntityManager</code>. To demonstrate,
+            open any of the session facade beans in the editor and note that the class uses
+            the <code>@PersistenceContext</code> annotation to express a dependency on a
+            container-managed <code>EntityManager</code> and its associated persistence context
+            (<code>AffableBeanPU</code>, as specified in the <code>persistence.xml</code> file).
+            For example, the <code>ProductFacade</code> bean looks as follows:</p>
+
+        <pre class="examplecode" style="width:720px">
+@Stateless
+public class ProductFacade extends AbstractFacade&lt;Product&gt; {
+    <strong>@PersistenceContext(unitName = &quot;AffableBeanPU&quot;)
+    private EntityManager em;</strong>
+
+    protected EntityManager getEntityManager() {
+        return em;
+    }
+
+    ...
+
+    // manually created
+    public List&lt;Product&gt; findForCategory(Category category) {
+        return em.createQuery(&quot;SELECT p FROM Product p WHERE p.category = :category&quot;).
+               setParameter(&quot;category&quot;, category).getResultList();
+    }
+
+}</pre>
+
+        <p>To be able to write to the database, the <code>OrderManager</code> EJB must
+            take similar measures. With an <code>EntityManager</code> instance, we can
+            then modify the helper methods (<code>addCustomer</code>, <code>addOrder</code>,
+            <code>addOrderedItems</code>) so that the entity objects they create are
+            written to the database.</p>
+
+        <ol>
+            <li>In <code>OrderManager</code>, apply the <code>@PersistenceContext</code>
+                annotation to express a dependency on a container-managed <code>EntityManager</code>
+                and the <code>AffableBeanPU</code> persistence context. Also declare
+                an <code>EntityManager</code> instance.
+
+                <pre class="examplecode">
+@Stateless
+public class OrderManager {
+
+    <strong>@PersistenceContext(unitName = &quot;AffableBeanPU&quot;)
+    private EntityManager em;</strong>
+
+    ...
+}</pre></li>
+            <li>Press Ctrl-Shift-I (&#8984:-Shift-I on Mac) to fix imports. Import statements
+                for <code>javax.persistence.EntityManager</code> and <code>javax.persistence.PersistenceContext</code>
+                are added to the top of the class.</li>
+
+            <li>Use the <code>EntityManager</code> to mark entity objects to be written to the
+                database. This is accomplished using the <code>persist</code> method in the
+                <code>EntityManager</code> API. Make the following modifications to the helper
+                methods.
+
+                <br><br>
+                <h4>addCustomer</h4>
+
+                <pre class="examplecode" style="margin-top:0">
+private Customer addCustomer(String name, String email, String phone, String address, String cityRegion, String ccNumber) {
+
+    Customer customer = new Customer();
+    customer.setName(name);
+    customer.setEmail(email);
+    customer.setPhone(phone);
+    customer.setAddress(address);
+    customer.setCityRegion(cityRegion);
+    customer.setCcNumber(ccNumber);
+
+    <strong>em.persist(customer);</strong>
+    return customer;
+}</pre>
+
+                <br>
+                <h4>addOrder</h4>
+
+                <pre class="examplecode" style="margin-top:0">
+private CustomerOrder addOrder(Customer customer, ShoppingCart cart) {
+
+    // set up customer order
+    CustomerOrder order = new CustomerOrder();
+    order.setCustomer(customer);
+    order.setAmount(BigDecimal.valueOf(cart.getTotal()));
+
+    // create confirmation number
+    Random random = new Random();
+    int i = random.nextInt(999999999);
+    order.setConfirmationNumber(i);
+
+    <strong>em.persist(order);</strong>
+    return order;
+}</pre>
+
+                <br>
+                <h4>addOrderedItems</h4>
+
+                <pre class="examplecode" style="margin-top:0">
+private void addOrderedItems(CustomerOrder order, ShoppingCart cart) {
+
+    List&lt;ShoppingCartItem&gt; items = cart.getItems();
+
+    // iterate through shopping cart and create OrderedProducts
+    for (ShoppingCartItem scItem : items) {
+
+        int productId = scItem.getProduct().getId();
+
+        // set up primary key object
+        OrderedProductPK orderedProductPK = new OrderedProductPK();
+        orderedProductPK.setCustomerOrderId(order.getId());
+        orderedProductPK.setProductId(productId);
+
+        // create ordered item using PK object
+        OrderedProduct orderedItem = new OrderedProduct(orderedProductPK);
+
+        // set quantity
+        orderedItem.setQuantity(String.valueOf(scItem.getQuantity()));
+
+        <strong>em.persist(orderedItem);</strong>
+    }
+}</pre>
+
+            The <code>EntityManager</code>'s <code>persist</code> method does not immediately
+            write the targeted object to the database. To describe this more accurately, the
+            <code>persist</code> method places the object in the <em>persistence context</em>.
+            This means that the <code>EntityManager</code> takes on the responsibility of ensuring
+            that the entity object is synchronized with the database. Think of the persistence
+            context as an intermediate state used by the <code>EntityManager</code> to pass
+            entities between the object realm and the relational realm (hence the term 'object-relational
+            mapping').
+
+            <br><br>
+            What is the scope of the persistence context? If you open the IDE's Javadoc Index Search
+            (Shift-F1; Shift-fn-F1 on Mac) and examine the Javadoc documentation for the
+            <a href="http://java.sun.com/javaee/6/docs/api/javax/persistence/PersistenceContext.html" target="_blank"><code>@PersistenceContext</code></a>
+            annotation, you'll note that the <code>type</code> element is used to &quot;specif[y]
+            whether a transaction-scoped persistence context or an extended persistence context
+            is to be used.&quot; A <em>transaction-scoped</em> persistence context is created at
+            the start of a transaction, and terminated when the transaction ends. An <em>extended</em>
+            persistence context applies to stateful session beans only, and spans multiple transactions.
+            The Javadoc documentation also informs us that <code>javax.persistence.PersistenceContextType.TRANSACTION</code>
+            is the default value for the <code>type</code> element. Therefore, although we didn't
+            specify that the <code>EntityManager</code> place objects in a transaction-scoped persistence
+            context, this is in fact how a container-managed <code>EntityManager</code> behaves by
+            default.</li>
+        </ol>
+
+
+        <br>
+        <h2 id="persistenceContext">Synchronizing the Persistence Context with the Database</h2>
+
+        <p>At this stage you might assume that, transaction or no transaction, the <code>OrderManager</code>
+            is now able to successfully write entity objects to the database. Run the project
+            and see how customer orders are currently being processed.</p>
+
+        <ol>
+            <li>Press F6 (fn-F6 on Mac) to run the project.</li>
+
+            <li>Step through the <a href="design.html#business">business process flow</a>.
+                When you arrive at the checkout page, be sure to enter data that you know
+                will not cause SQL errors to occur when the write actions are performed.
+                (Validation is discussed in a later tutorial unit.) For example, enter the
+                following into the checkout form:
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li><strong>name:</strong> <code>Hugo Reyes</code></li>
+                    <li><strong>email:</strong> <code>hurley@mrcluck.com</code></li>
+                    <li><strong>phone:</strong> <code>606252924</code></li>
+                    <li><strong>address:</strong> <code>Karlova 33</code></li>
+                    <li><strong>prague:</strong> <code>1</code></li>
+                    <li><strong>credit card number:</strong> <code>1111222233334444</code></li>
+                </ul>
+
+                <p class="tips">In the coming steps, you are going to examine the server log
+                    in the IDE's Output window. Before submitting the checkout form, open the
+                    Output window and clear the server log. You can accomplish this by right-clicking
+                    in the server log and choosing Clear (Ctrl-L; &#8984;-L on Mac).</p></li>
+
+            <li>Click the 'submit purchase' button. The server responds with an HTTP status 500
+                message.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/gf-error-report.png"
+                     alt="Browser window displaying HTTP status 500 message" class="margin-around b-all"
+                     title="Server responds with an HTTP status 500 message" style="width:688px"></li>
+
+            <li>Switch to the IDE and examine the server log. The server log is located in the
+                Output window (Ctrl-4; &#8984;-4 on Mac) under the GlassFish server tab. You come
+                across the following text.
+
+                <pre class="examplecode">WARNING: A system exception occurred during an invocation on EJB OrderManager method
+public int session.OrderManager.placeOrder(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,cart.ShoppingCart)
+javax.ejb.EJBException
+...
+Caused by: java.lang.NullPointerException
+        <u>at session.OrderManager.addOrderedItems(OrderManager.java:75)</u>
+        <u>at session.OrderManager.placeOrder(OrderManager.java:33)</u></pre>
+
+                <p class="tips">Maximize the Output window by pressing Shift-Esc.</p>
+
+                The underlines displayed in the server log form links allowing you to navigate
+                directly to the lines in your source files where errors are occurring.</li>
+
+            <li>Click the link to <code>session.OrderManager.addOrderedItems</code>.
+                The editor displays the line that is causing the exception.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/null-pointer-exception.png"
+                     alt="Editor displaying NullPointerException error" class="margin-around b-all"
+                     title="Click links in server output window to navigate directly to offending lines in source files">
+
+                <br>
+                To understand why <code>order.getId</code> method returns <code>null</code>,
+                consider what the code is actually trying to accomplish. The <code>getId</code>
+                method attempts to get the ID of an order which is currently in the process
+                of being created. Since the ID is an auto-incrementing primary key, the database
+                automatically generates the value only when the record is added. One way to
+                overcome this is to manually synchronize the persistence context with the database.
+                This can be accomplished using the <code>EntityManager</code>'s
+                <a href="http://java.sun.com/javaee/6/docs/api/javax/persistence/EntityManager.html#flush%28%29" target="_blank"><code>flush</code></a>
+                method.</li>
+
+            <li>In the <code>addOrderedItems</code> method, add a call to flush the persistence
+                context to the database.
+
+                <pre class="examplecode">
+private void addOrderedItems(CustomerOrder order, ShoppingCart cart) {
+
+    <strong>em.flush();</strong>
+
+    List&lt;ShoppingCartItem&gt; items = cart.getItems();
+
+    // iterate through shopping cart and create OrderedProducts
+    for (ShoppingCartItem scItem : items) {
+
+        int productId = scItem.getProduct().getId();
+
+        // set up primary key object
+        OrderedProductPK orderedProductPK = new OrderedProductPK();
+        orderedProductPK.setCustomerOrderId(order.getId());
+        orderedProductPK.setProductId(productId);
+
+        // create ordered item using PK object
+        OrderedProduct orderedItem = new OrderedProduct(orderedProductPK);
+
+        // set quantity
+        orderedItem.setQuantity(String.valueOf(scItem.getQuantity()));
+
+        em.persist(orderedItem);
+    }
+}</pre></li>
+
+            <li>Rerun the project and step through the business process flow. This time,
+                when you submit the checkout form the confirmation page displays.</li>
+
+            <li>To confirm that the details have been recorded in the database, open
+                the IDE's Services window (Ctrl-5; &#8984;-5 on Mac). Locate the <code>affablebean</code>
+                connection node. If the node appears broken (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/connection-broken.png"
+                alt="Broken connection node"> ), right-click the node and choose Connect.</li>
+
+            <li>Drill into the connection and locate the <code>affablebean</code> database's
+                <code>customer</code> table. Right-click the table and choose View Data. A
+                graphical display of the <code>customer</code> table appears in the editor.
+                The customer details that you added in the checkout form display as a record
+                in the table.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/customer-record.png"
+                     alt="Graphical display of affablebean customer table" class="margin-around b-all" style="width:688px"
+                     title="View Data menu option performs a 'select *' query on the selected table">
+
+                <br>
+                In this manner, you can also examine the <code>customer_order</code> and
+                <code>ordered_product</code> tables to determine whether data has been recorded.</li>
+        </ol>
+
+
+        <br>
+        <h2 id="transaction">Setting up the Transaction Programmatically</h2>
+
+        <p>A transaction's primary function is to ensure that all operations are performed
+            successfully, and if not, then none of the individual operations are
+            performed.<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>
+            The following steps demonstrate how to ensure that the write operations performed
+            in the <code>placeOrder</code> method are treated as a single transaction.</p>
+
+        <ol>
+            <li>Refer to the <a href="#transactionDiagram">transaction diagram</a> above. Add the
+                two transaction-related annotations to the <code>OrderManager</code> EJB.
+
+                <pre class="examplecode">
+@Stateless
+<strong>@TransactionManagement(TransactionManagementType.CONTAINER)</strong>
+public class OrderManager {
+
+    @PersistenceContext(unitName = &quot;AffableBeanPU&quot;)
+    private EntityManager em;
+
+    <strong>@TransactionAttribute(TransactionAttributeType.REQUIRED)</strong>
+    public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+        try {
+            ...</pre>
+
+                The <code>@TransactionManagement</code> annotation is used to specify that any
+                transactions occurring in the <code>OrderManager</code> EJB are container-managed.
+                The <code>@TransactionAttribute</code> annotation placed on the <code>placeOrder</code>
+                method specifies that any operations occurring in the method must be treated as part
+                of a transaction.
+
+                <br><br>
+                <p class="tips">According to the <a href="http://jcp.org/aboutJava/communityprocess/final/jsr318/index.html" target="_blank">EJB
+                    Specification</a>, container-managed transactions are enabled by default for
+                    session beans. Furthermore, if you examine the Javadoc for both of the above
+                    annotations, you will rightly point out that <code>CONTAINER</code> is the default
+                    <code>TransactionManagementType</code>, and <code>REQUIRED</code> is the default
+                    <code>TransactionAttributeType</code>. In other words, neither of the two annotations
+                    is required for your code to run properly. However, it is often helpful to explicitly
+                    include default settings in your sources to improve readability.</p></li>
+
+            <li>Currently, the <code>placeOrder</code> method returns the ID of the processed order.
+                In the event that the transaction fails and the order isn't processed, have the method
+                return '<code>0</code>'. Use a <code>try-catch</code> expression.
+
+                <pre class="examplecode">
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    <strong>try {</strong>
+        Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+        CustomerOrder order = addOrder(customer, cart);
+        addOrderedItems(order, cart);
+        return order.getId();
+    <strong>} catch (Exception e) {
+        return 0;
+    }</strong></pre>
+
+            <div class="feedback-box float-left" style="width: 683px;">
+
+                <h3>NetBeans Support for Code Templates</h3>
+
+                <p>When you work in the editor, take advantage of the IDE's support for
+                    code templates. Becoming proficient in using code templates ultimately
+                    enables you to work more efficiently and reliably.</p>
+
+                <br>
+                <p>For example, in the above step you can apply the <code>trycatch</code>
+                    template by typing in '<code>trycatch</code>' then pressing Tab. The
+                    template is added to your file.</p>
+
+                <div class="indent">
+                    <pre class="examplecode" style="width:630px">
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    <strong>try {
+
+    } catch (Exception e) {
+    }</strong>
+    Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+    CustomerOrder order = addOrder(customer, cart);
+    addOrderedItems(order, cart);
+    return order.getId();</pre></div>
+
+                <p>You can then move the four existing lines into the <code>try</code> clause
+                    by highlighting the lines, then holding Alt-Shift (Ctrl-Shift on Mac) and
+                    pressing the up arrow key. When you are finished, press F while holding
+                    Alt-Shift (Ctrl-Shift on Mac) to format the code.</p>
+
+                <div class="indent">
+                    <pre class="examplecode" style="width:630px">
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    try {
+        <strong>Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+        CustomerOrder order = addOrder(customer, cart);
+        addOrderedItems(order, cart);
+        return order.getId();</strong>
+    } catch (Exception e) {
+    }</pre></div>
+
+                <p>It is also possible to view and edit existing code templates, and add
+                    new templates in the IDE. Choose Tools &gt; Options (NetBeans &gt;
+                    Preferences on Mac) to open the Options window. Select Editor &gt;
+                    Code Templates.</p>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/code-templates.png"
+                     class="margin-around b-all" title="View default code templates and define new templates in the Options window"
+                     alt="Options window - Code Templates" style="width:660px"/>
+
+                <br>
+                <p class="tips">If you'd like to see more templates, consult the Keyboard Shortcuts Card.
+                    The Keyboard Shortcuts Card provides a list of commonly-used code templates
+                    and keyboard shortcuts. Choose Help &gt; Keyboard Shortcuts Card from the
+                    main menu.</p>
+
+            </div>
+            <br style="clear: both;"/></li>
+
+            <li>Add the following code. Explanation follows.
+
+                <pre class="examplecode">
+@PersistenceContext(unitName = &quot;AffableBeanPU&quot;)
+private EntityManager em;
+<strong>@Resource
+private SessionContext context;</strong>
+
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    try {
+        Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+        CustomerOrder order = addOrder(customer, cart);
+        addOrderedItems(order, cart);
+        return order.getId();
+    } catch (Exception e) {
+        <strong>context.setRollbackOnly();</strong>
+        return 0;
+    }
+}</pre>
+
+                Unfortunately, placing the three methods in the <code>try</code> clause
+                means that if one of them fails during runtime, the engine immediately
+                jumps to the <code>catch</code> clause, thus skipping any rollback operations
+                that would normally follow.
+
+                <br><br>
+                <p class="tips">You can test this by commenting out the <code>em.flush()</code>
+                    line you previously added. This way, you know that the first two methods
+                    (<code>addCustomer</code> and <code>addOrder</code>) process successfully,
+                    but the third method (<code>addOrderedItems</code>) fails. Run the project
+                    and submit the checkout form in the browser. Since the transaction doesn't
+                    roll back, the customer and order records are written to the database, but
+                    any ordered items are not. This leads to a situation where the database is
+                    corrupt.</p>
+
+                To overcome this, you explicitly set the transaction for rollback in the
+                <code>catch</code> clause. The above <code>@Resource</code> annotation is
+                applied to grab an instance of the EJB's current <code>SessionContext</code>.
+                The transaction is marked for rollback using the <code>setRollbackOnly</code>
+                method.</li>
+
+            <li>Run the project and step through the business process flow. When you submit
+                an order, return to the IDE and examine the server log. You'll see output
+                similar to the following:
+
+                <br>
+                <a href="../../../../images_www/articles/73/javaee/ecommerce/transaction/transaction-output.png"
+                   rel="lytebox" title="Persistence provider output can be examined in the server log">
+                   <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/transaction-output.png"
+                        class="margin-around b-all" style="width:688px" alt="Output window - server output"
+                        title="Click to enlarge"></a>
+
+                <p class="tips">Press Shift-Esc on the Output window to maximize it.</p>
+
+                As shown in the above image, the green text indicates output from EclipseLink.
+                Recall how in <a href="entity-session.html">Adding Entity Classes and Session Beans</a>
+                you set EclipseLink's logging level to <code>FINEST</code> in the persistence unit.
+                Being able to examine this output is key to understanding how the persistence provider
+                interacts with the database and is a great help when you need to debug your project.</li>
+        </ol>
+
+        <p>You've now successfully integrated the transaction into the <code>AffableBean</code> project.
+            You can <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">download
+            snapshot 8</a> to examine code that completes the request-response cycle when a checkout
+            form is submitted. The snapshot implements a <code>getOrderDetails</code> method in the
+            <code>OrderManager</code>, which gathers all details pertaining to the placed order. If
+            the transaction succeeds, the <code>ControllerServlet</code> places order details in the
+            request scope, destroys the user's <code>cart</code> object, terminates the session, and
+            forwards the request to the confirmation view. If the transaction fails, the <code>ControllerServlet</code>
+            flags an error and forwards the response to the checkout view, enabling the user to attempt
+            a resubmit.</p>
+
+        <div class="indent">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/checkout-page.png"
+                 alt="Checkout page displayed with process failure message" class="margin-around b-all" style="width:708px"
+                 title="Upon transaction failure, the checkout page redisplays with error message">
+        </div>
+
+
+        <br>
+        <h2 id="validate">Validating and Converting User Input</h2>
+
+        <p>Also included in
+            <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">snapshot
+            8</a> are implementations for client and server-side validation for the checkout form.
+            Form validation is the process of checking that a form has been filled in correctly
+            before it is processed. This not only aids users by providing meaningful feedback for
+            fields with invalid entries, but it also serves to thwart any malicious attempts to
+            submit content that could adversely affect processing or storage.</p>
+
+        <p>There are two primary methods for validating forms: server-side (in our case, using Java),
+            and client-side (using JavaScript). Both methods are usually essential for providing
+            a pleasant user experience, as well as robust security for your application. Client-side
+            validation is useful for offering immediate feedback to the user without the need to
+            initiate a round-trip between the browser and server. As such, it can stem network traffic
+            and decrease the server load. Modern forms of client-side validation are often implemented
+            to provide immediate, &quot;as-you-type&quot;, field-specific feedback to the user. Client-side
+            JavaScript is run on the browser, and browsers generally allow JavaScript to be disabled.
+            For this reason alone, your application cannot rely on client-side validation as the sole
+            means of guarding against malformed or nefarious input. Server-side validation checks should
+            therefore be performed when form data reaches the server. Data is extracted from the request
+            and checked prior to being processed and/or stored. If a validation error is detected,
+            the server responds by returning the form to the user with an appropriate message. If all
+            data passes validation, data is converted to a different format if required.</p>
+
+        <ul>
+            <li><a href="#client">Client-Side Validation</a></li>
+            <li><a href="#server">Server-Side Validation</a></li>
+            <li><a href="#data">Data Conversion</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="client">Client-Side Validation</h3>
+
+            <p>For the <code>AffableBean</code> application, client-side validation is provided by a
+                popular <a href="http://plugins.jquery.com/project/validate" target="_blank">jQuery
+                plugin</a>. jQuery is a cross-browser JavaScript library designed to simplify client-side
+                scripting of HTML.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/client-side-validation.png"
+                 alt="jQuery field validation displayed on checkout form" class="margin-around b-all"
+                 title="Field validation messages appear upon clicking 'submit purchase'">
+
+            <p><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">Snapshot
+                8</a> includes a <code>js</code> folder that contains the jQuery core library
+                (<code>jquery-1.4.2.js</code>) as well as the script for the validation plugin
+                (<code>jquery.validate.js</code>). The core library is referenced in the application
+                <code>header.jspf</code> file, while the validation plugin script is referenced
+                directly in <code>checkout.jsp</code> since it is only required by that file. Within
+                <code>checkout.jsp</code>, the plugin is customized to suit the checkout form based
+                on <a href="http://docs.jquery.com/Plugins/Validation/validate#toptions" target="_blank">available
+                documentation</a>.
+
+            <pre class="examplecode" style="margin-top: 0">
+&lt;script type=&quot;text/javascript&quot;&gt;
+
+    $(document).ready(function(){
+        $(&quot;#checkoutForm&quot;).validate({
+            rules: {
+                name: &quot;required&quot;,
+                email: {
+                    required: true,
+                    email: true
+                },
+                phone: {
+                    required: true,
+                    number: true,
+                    minlength: 9
+                },
+                address: {
+                    required: true
+                },
+                creditcard: {
+                    required: true,
+                    creditcard: true
+                }
+            }
+        });
+    });
+&lt;/script&gt;</pre>
+
+            <p>The IDE provides support for jQuery by enabling you to invoke code completion and documentation
+                in the editor when pressing Ctrl-Space.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/jquery-editor-support.png"
+                 alt="jQuery documentation popup window in editor" class="margin-around b-all" style="width:688px"
+                 title="Press Ctrl-Space on JavaScript code to invoke jQuery documentation">
+
+            <p>When you code in JavaScript, the IDE lets you specify which browsers your application is
+                targeting. Open the Options window (Choose Tools &gt; Options; NetBeans &gt; Preferences
+                on Mac), select Miscellaneous, then select the JavaScript tab.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/javascript-window.png"
+                 alt="Options window - JavaScript pane" class="margin-around b-all"
+                 title="Specify targetted browsers for your application in the Options window">
+
+            <p>If the function you are calling documentation on does not support all of your targeted browsers,
+                the documentation popup flags a warning. For example in the image below, Internet Explorer version
+                5.5 has been included in the application's targeted browsers.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/ie-55.png"
+                 alt="JavaScript documentation popup" class="margin-around b-all"
+                 title="Documentation popup warns of method calls to non-compatible browser versions">
+
+
+            <h3 id="server">Server-Side Validation</h3>
+
+            <p>The purpose of server-side validation is to ensure that each piece of data is in a
+                format that is ready for further processing or is acceptable for storage. By &quot;format&quot;,
+                we mean both the data type as well as the size of the piece of data. The generated JPA
+                entity classes are guaranteed to map their properties to the appropriate data types of
+                the corresponding database table columns. When relying on these entity classes, we need
+                to not only make sure that user data can be applied to create (or update) entity classes,
+                but that the size of the data is appropriate for the data types of the database columns.</p>
+
+            <p>To illustrate an example, consider the checkout form's credit card number field. Client-side
+                validation checks that the entered data does not include letters.<sup><a href="#footnote2"
+                id="2" style="text-decoration:none">[2]</a></sup> Because the <code>maxlength</code> attribute
+                in the HTML markup is set to <code>19</code>, users cannot enter more than 19 characters
+                into this field. Server-side validation also places a limit at 19 characters. Keep in mind
+                that the data type of the <code>cc_number</code> column in the database's <code>customer</code>
+                table is: <code>VARCHAR(19)</code> (Refer to step 3 of <a href="data-model.html#addProperties">Designing
+                the Data Model: Adding Entity Properties</a>.) Now, consider what would happen if the data
+                type of the <code>cc_number</code> column is set to <code>VARCHAR(16)</code>, and a user
+                enters a number that is 19 characters long. When the checkout form is submitted, the
+                <code>creditcard</code> parameter is extracted from the request and converted into a
+                <code>String</code> so that it becomes the <code>ccNumber</code> property in a newly
+                created <code>Customer</code> object. Because 16 is the maximum number of characters
+                the database column will hold, the database server will either truncate the number to
+                16 characters or produce a <code>MysqlDataTruncation</code> error, depending on the SQL
+                mode set for the server. (For more information on the <code>VARCHAR</code> data type,
+                see <a href="http://dev.mysql.com/doc/refman/5.1/en/char.html" target="_blank">10.4.1.
+                The CHAR and VARCHAR Types</a>.) In this manner, by not having client and server-side
+                validation properly handle the size (i.e., length) of the data received for a credit
+                card number, we risk a failed attempt at placing an order, or perhaps even worse, a
+                truncated credit card number, which obviously won't allow payment.</p>
+
+            <p>Server-side validation in the <code>AffableBean</code> project is implemented by means of
+                a <code>Validator</code> class. The <code>ControllerServlet</code> creates a <code>Validator</code>
+                object and calls its <code>validateForm</code> method on the user data:</p>
+
+            <pre class="examplecode" style="margin-top: 0">
+// validate user data
+boolean validationErrorFlag = false;
+validationErrorFlag = validator.validateForm(name, email, phone, address, cityRegion, ccNumber, request);
+
+// if validation error found, return user to checkout
+if (validationErrorFlag == true) {
+    request.setAttribute(&quot;validationErrorFlag&quot;, validationErrorFlag);
+    userPath = &quot;/checkout&quot;;
+
+    // otherwise, save order to database
+} else {
+
+    ...
+}</pre>
+
+            <p>If a validation error is found (i.e., if <code>validateForm</code> returns <code>true</code>),
+                a flag is raised in the form of a request-scoped attribute, and the server sends the
+                checkout page back to the client. When the flag is detected in <code>checkout.jsp</code>,
+                a new table row is created to display error messages at the top of the table.</p>
+
+            <pre class="examplecode" style="margin-top: 0">
+&lt;form id=&quot;checkoutForm&quot; action=&quot;&lt;c:url value='purchase'/&gt;&quot; method=&quot;post&quot;&gt;
+    &lt;table id=&quot;checkoutTable&quot;&gt;
+      &lt;c:if test=&quot;${!empty validationErrorFlag}&quot;&gt;
+        &lt;tr&gt;
+            &lt;td colspan=&quot;2&quot; style=&quot;text-align:left&quot;&gt;
+                &lt;span class=&quot;error smallText&quot;&gt;Please provide valid entries for the following field(s):
+
+                  &lt;c:if test=&quot;${!empty nameError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;name&lt;/strong&gt; (e.g., Bilbo Baggins)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty emailError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;email&lt;/strong&gt; (e.g., b.baggins@hobbit.com)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty phoneError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;phone&lt;/strong&gt; (e.g., 222333444)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty addressError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;address&lt;/strong&gt; (e.g., Korunní 56)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty cityRegionError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;city region&lt;/strong&gt; (e.g., 2)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty ccNumberError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;credit card&lt;/strong&gt; (e.g., 1111222233334444)&lt;/span&gt;
+                  &lt;/c:if&gt;
+
+                &lt;/span&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/c:if&gt;
+
+      ...
+    &lt;/table&gt;
+&lt;/form&gt;</pre>
+
+            <p>You can test server-side validation by temporarily disabling JavaScript in your browser.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/server-side-validation.png"
+                 alt="Server-side validation displayed on checkout form" class="margin-around b-all"
+                 title="Temporarily disable JavaScript in your browser to test server-side validation">
+
+            <p class="alert">The provided implementation of server-side validation here serves merely to
+                demonstrate how server-side validation can be set up in your project. The actual validation
+                logic contained in the <code>Validator</code> class does not perform anything beyond the
+                most basic of checks and should certainly not be used in a production environment!</p>
+
+
+            <h3 id="data">Data Conversion</h3>
+
+            <p>Sometimes, after data has passed validation, you may need to convert it into a different
+                 format. For example, this might apply to dates when users are allowed to enter them manually,
+                 or numbers that have been received as <code>String</code> objects but require calculation.
+                 This important step is referred to as server-side <em>data conversion</em>.</p>
+
+            <p>Although not implemented in the <code>AffableBean</code> application, consider again the
+                checkout form's credit card number field. Both client and server-side validation allows
+                for different formats for numbers. For example, validation will accept the following number:</p>
+
+            <pre class="examplecode">1111222233334444</pre>
+
+            <p>Validation will also accept the same number in the following format.</p>
+
+            <pre class="examplecode">1111-2222-3333-4444</pre>
+
+            <p>Because of the ambiguous nature in which this piece of user data is acquired, it might
+                be necessary to remove any hyphens ('<code>-</code>') or other non-numeric characters
+                prior to processing payment. This step would likely occur before the data is placed
+                in storage.</p>
+        </div>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Integrating Transactional Business Logic">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">See Also</h2>
+
+        <div class="indent">
+            <h3>NetBeans Resources</h3>
+
+            <ul>
+                <li><a href="../javaee-intro.html" target="_blank">Introduction to Java EE Technology</a></li>
+                <li><a href="../javaee-gettingstarted.html" target="_blank">Getting Started with Java EE Applications</a></li>
+                <li><a href="https://netbeans.org/projects/www/downloads/download/shortcuts.pdf">Keyboard Shortcuts & Code Templates Card</a></li>
+                <li><a href="../../../trails/java-ee.html" target="_blank">Java EE & Java Web Learning Trail</a></li>
+            </ul>
+
+            <h3>External Resources</h3>
+
+            <ul>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr318/index.html" target="_blank">JSR 318: EJB 3.1 Final Release</a> [Specification Download]</li>
+                <li><a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/bncih.html" target="_blank">Java EE 6 Tutorial: Transactions</a></li>
+                <li><a href="http://www.manning.com/panda/" target="_blank">EJB 3 in Action</a> [Book]</li>
+                <li><a href="http://en.wikipedia.org/wiki/Database_transaction" target="_blank">Database Transaction</a> [Wikipedia]</li>
+                <li><a href="http://en.wikipedia.org/wiki/Ejb" target="_blank">Enterprise JavaBean</a> [Wikipedia]</li>
+                <li><a href="http://en.wikipedia.org/wiki/ACID" target="_blank">ACID</a> [Wikipedia]</li>
+                <li><a href="http://jquery.com/" target="_blank">jQuery</a></li>
+                <li><a href="http://en.wikipedia.org/wiki/Jquery" target="_blank">jQuery</a> [Wikipedia]</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>References</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> This <em>all or nothing</em> concept
+                can be further extrapolated into the four defining characteristics of transactions: <em>atomicity</em>,
+                <em>consistency</em>, <em>isolation</em>, and <em>durability</em> (ACID). For more information, see:
+                <a href="http://en.wikipedia.org/wiki/ACID" target="_blank">ACID</a> [Wikipedia].</li>
+
+            <li id="footnote2"><a href="#2" style="text-decoration:none">^</a> Actually, for credit card number entries,
+                validation typically ensures that the entered string conforms to the Luhn algorithm, which is a simple
+                method of differentiating between valid numbers and a collection of random digits. This applies to the
+                <a href="http://plugins.jquery.com/project/validate" target="_blank">jQuery validation plugin</a> as
+                well. For more information, see
+                <a href="http://en.wikipedia.org/wiki/Luhn_algorithm" target="_blank">Luhn algorithm</a> [Wikipedia].</li>
+        </ol>
+
+    </body>
+</html>

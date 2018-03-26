@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>スキーマ・ファイルおよびWSDLファイルの変更: バイナリ・データを渡すWebサービス(パート5) - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial shows how to replace the default generated Schema and WSDL files
+              with custom files that interpret arrays of bytes as images.">
+    <link rel="stylesheet" href="../../../netbeans.css"></head>
+
+    <body>
+        <h1>バイナリ・データを渡すWebサービス(パート4): スキーマ・ファイルおよびWSDLファイルの変更</h1>
+        <p>このレッスンでは、WSDLファイルとスキーマ・ファイルをWebアプリケーションに追加します。次に、バイトの配列をイメージとして解釈するようスキーマ・ファイルを変更します。また、スキーマ・ファイルとWSDLファイルを正しく検索できるようWebサービスのソース・コードを編集します。このプロセスでは、WSDLファイルとスキーマ・ファイルを扱うのに役立つ、IDEの様々なツールを紹介します。        </p>
+        
+    <p>この項の手順をJAX-WS Webサービスに適用すると、任意のMIMEタイプをバイナリ・データとして渡すことができます。まず、バイナリ・データを渡すWebサービスを作成し、レッスン2および3で作成したように、WebサービスのWSDLとXMLスキーマをカスタマイズします。カスタマイズしたXMLスキーマ・ファイルで、<tt>expectedContentTypes="<em>mime_type</em>"</tt>属性を、バイナリ・データの戻り要素に追加します。この属性は、クライアントがMIMEからJava型へのマッピングを行って、バイナリ・データをバイト配列ではなくJava型にマップする必要があることを通知します。このチュートリアルでは、バイナリ・データを<tt>java.awt.Image</tt>にマップしますが、<a href="http://jax-ws.dev.java.net/nonav/2.1.4/docs/mtom-swaref.html">JAX-WSユーザー・ガイド</a>で説明しているように、バイナリ・データはJAXB 2.0仕様で規定されている任意のJava型にマップできます。
+        <p>Webサービスの完全版サンプルは、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerAlbumService.zip" target="_blank">NetBeansサンプル・カタログ</a>からダウンロードできます。
+        
+<p><b>このチュートリアルのレッスン</b></p>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        <ol>
+            <li><a href="./flower_overview.html">概要</a></li>
+            <li><a href="./flower_ws.html">Webサービスの作成</a></li>
+            <li><a href="./flower-code-ws.html">Webサービスのコーディングおよびテスト</a></li>
+          <li> => バイナリ・データを渡すためのスキーマ・ファイルおよびWSDLファイルの変更</li>
+            <li><a href="./flower_swing.html">Swingクライアントの作成</a></li>
+            <!--         <li><a href="./flower_wsit.html">
+            Logging and Optimizing the Web Service</a></li> -->
+        </ol>
+    <h2 class="tutorial">バイナリ・データを渡すためのスキーマ・ファイルおよびWSDLファイルの変更</h2>
+        <p class="tutorial">次の手順では、前のチュートリアルで作成したWebサービス用に、変更したWSDLファイルとXMLスキーマ・ファイルを作成します。変更されたWSDLファイルとスキーマ・ファイルにより、Webサービスと、それを使用するクライアントは、バイナリ・データとして渡されるJPEGイメージ・データを解析できます。 </p>
+        <p><b>WSDLファイルおよびスキーマ・ファイルを変更するには:</b></p>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウで、「FlowerService」Webアプリケーション・ノードを展開し、「<tt>WEB-INF</tt>」ノードを表示します。「<tt>WEB-INF</tt>」フォルダを右クリックし、「新規」>「フォルダ」を選択します。「新規」>「その他」を選択し、「その他」カテゴリを選択することが必要な場合もあります。<br> <img alt="FlowerServiceプロジェクトのノードとWEB-INFディレクトリ" class="margin-around" src="../../../images_www/articles/73/websvc/flower/new-file-wiz-folder.png"></li>
+
+            <li>「次」をクリックします。名前と場所ページが開きます。フォルダに<tt>wsdl</tt>という名前を付けます。<br> <img alt="新規フォルダに対する「新規ファイル」ウィザードの「名前と場所」ページに、wsdlという名前とweb/WEB-INFという場所が表示された状態" class="margin-around" src="../../../images_www/articles/73/websvc/flower/wsdl-folder-name-location.png"></li>
+            <li>「終了」をクリックします。「<tt>wsdl</tt>」フォルダが「プロジェクト」ウィンドウに表示されます。<br> <img alt="「プロジェクト」ウィンドウの「wsdl」フォルダ" class="margin-around" src="../../../images_www/articles/73/websvc/flower/wsdl-folder.png"></li>
+          <li>「Webサービス」ノードを展開し、「FlowerService」ノードを右クリックします。「WSDLを生成してコピー...」を選択します。<br>
+          </li>
+          <li>「WSDLを生成してコピー」ダイアログが開き、ナビゲーション・ツリーが表示されます。作成した<tt>wsdl</tt>フォルダに移動し(「FlowerAlbumService」>「web」>「WEB-INF」>「wsdl」)、「OK」をクリックします。<br>
+                <p>「<tt>FlowerService.wsdl</tt>」と「<tt>FlowerService_schema1.xsd</tt>」が「<tt>wsdl</tt>」ノードに表示されます。また、「生成されたソース(jax-ws)」という新しいノードが表示されます。</p>
+
+            <img alt="コピーしたwsdlとスキーマ・ファイルが表示された「プロジェクト」ウィンドウ" class="margin-around" src="../../../images_www/articles/73/websvc/flower/generated-wsdl-and-schema.png"> </li>
+
+
+            <li>アプリケーション・サーバーが独自バージョンのWSDLファイルを使用するように明示します。そうでない場合、アプリケーション・サーバー自体がWSDLファイルを生成します。<tt>FlowerService.java</tt>を開き、<tt>@WebService</tt>注釈を探します。次に示すように、この注釈に<tt>wsdlLocation="WEB-INF/wsdl/FlowerService.wsdl"</tt>パラメータを追加します。
+                <pre class="examplecode">@WebService(serviceName = "FlowerService"<b>, wsdlLocation = "WEB-INF/wsdl/FlowerService.wsdl")</b></pre>
+            </li>
+            <li><tt>FlowerService_schema1.xsd</tt>スキーマ・ファイルを変更し、戻り要素に予想されるコンテンツ・タイプを指定します。戻り要素をスキーマ・ファイル内で識別するには、スキーマ・ファイルを開き、<tt>getThumbnailResponse</tt>と<tt>getFlowerResponse</tt>の複合型を探します。
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getThumbnailsResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;/&gt;<br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre>
+            <pre class="examplecode">&lt;xs:complexType name=&quot;getFlowerResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot;/&gt; <br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre></li>
+            <li><i></i>次の属性を両方の戻り要素(<tt>&lt;xs:element name="return".../></tt>)に追加します。
+                <pre>xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"</pre>
+                <p>以下の内容が同じ行に表示されるようにする必要があります。</p>
+
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getThumbnailsResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;
+                xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"/&gt;<br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre>
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getFlowerResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot;
+            xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"/&gt; <br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre></li>
+
+            <li>これで、TesterアプリケーションにWebサービスを再デプロイしてどちらかの操作を呼び出すと、イメージが正しく返されます。<br><img alt="使用しているWebサービスを含むJavaアプリケーション" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/ws-tester-goodschema.png"> </li>
+        </ol>
+
+    <p>これで、イメージが正しく返され、Swingクライアントを作成してイメージを取得および表示できることが、Testerアプリケーションで確認されました。
+    <h2>次の手順:</h2>
+        <p><a href="./flower_swing.html">Swingクライアントの作成</a></p>
+
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20WSDL%20EE6">このチュートリアルに関するご意見をお寄せください</a></div>
+
+
+        <p><a href="../../../community/lists/top.html">nbj2ee@netbeans.orgメーリング・リスト</a>に登録することによって、NetBeans IDE Java EE開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+    </body>
+</html>

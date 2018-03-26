@@ -1,0 +1,833 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, 2014 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Использование WebSocket API в веб-приложении</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE to use the WebSocket API in a Java EE 7 web application.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Использование WebSocket API в веб-приложении</h1>
+        
+            <p>В этом учебном курсе приведен пример создания простого веб-приложения, обеспечивающего взаимодействие браузерных клиентов, подключенных к одному серверному приложению. Когда пользователь рисует графический элемент на полотне в браузере клиента, этот элемент появляется на полотне всех подключенных клиентов. Как это работает? Когда браузер загружает веб-страницу, сценарий на стороне клиента отправляет запрос квитирования WebSocket на сервер приложений. Приложение может принимать двоичные сообщения и сообщения JSON от клиентов, подключенных к сеансу, и транслировать эти сообщения на все подключенные клиенты.</p>
+            
+            <p>Из этого учебного курса вы узнаете о том, как создать веб-приложение, использующее интерфейс Java API for WebSocket (<a href="http://www.jcp.org/en/jsr/detail?id=356">JSR 356</a>) для двустороннего обмена данными между браузерными клиентами и сервером приложений. Интерфейс Java API for WebSocket обеспечивает возможность создания компонентов Java WebSocket, инициализации и перехвата событий WebSocket, а также создания и использования текстовых и двоичных сообщений WebSocket. В этом учебном курсе также приведен пример использования интерфейса Java API for JSON Processing (<a href="http://jcp.org/en/jsr/detail?id=353">JSR 353</a>) для создания и использования компонентов JSON. Интерфейсы Java API for WebSocket и Java API for JSON Processing являются компонентами платформы Java EE 7 (<a href="http://jcp.org/en/jsr/detail?id=342">JSR 342</a>).</p>
+            
+            <p>Приложение содержит интерфейсы WebSocket для терминала, декодера и кодера, веб-страницу и ряд файлов JavaScript, запускаемых в браузере клиента при загрузке страницы или вызываемых формой на веб-странице. Развертывание приложения осуществляется на экземпляре GlassFish Server Open Source Edition 4, эталонной версии реализации технологии Java EE 7.</p>
+        
+            <p class="notes"><strong>Примечание.</strong> Этот курс основывается на статье блога <a href="https://blogs.oracle.com/arungupta/entry/collaborative_whiteboard_using_websocket_in" target="_blank"> Collaborative Whiteboard using WebSocket in GlassFish 4 - Text/JSON and Binary/ArrayBuffer Data Transfer (TOTD #189) </a> и других статьях блога <a href="http://blog.arungupta.me/" target="_blank">Arun Gupta</a>. Рекомендуем посетить этот блог и ознакомиться с другими интересными статьями о работе с WebSocket API и GlassFish 4.</p>
+        
+            <p class="tips">Также рекомендуем посмотреть видеоролик <a href="maven-websocketapi-screencast.html">Использование WebSocket API в веб-приложении</a>.</p>
+        
+
+                       
+           <p><b>Упражнения по темам руководства</b></p>
+           <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.3, 7.4 и 8.0">
+
+            <ul>
+                <li><a href="#Exercise_1">Создание проекта веб-приложения</a></li>
+                <li><a href="#createendpoint">Создание терминала WebSocket</a>
+                    <ul>
+                        <li><a href="#createendpoint1">Создание терминала</a></li>
+                        <li><a href="#createendpoint2">Инициализация сеанса WebSocket</a></li>
+                        <li><a href="#createendpoint3">Тестирование терминала</a></li>
+                    </ul>
+                </li>
+                <li><a href="#createwhiteboard">Создание интерактивной доски</a>
+                    <ul>
+                        <li><a href="#createwhiteboard1">Добавление полотна</a></li>
+                        <li><a href="#createwhiteboard2">Создание POJO</a></li>
+                        <li><a href="#createwhiteboard3">Создание класса координат</a></li>
+                        <li><a href="#createwhiteboard6">Генерация строки JSON</a></li>
+                        <li><a href="#createwhiteboard4">Реализация интерфейсов кодера и декодера</a></li>
+                        <li><a href="#createwhiteboard5">Запуск приложения</a></li>
+                    </ul>
+                </li>
+                <li><a href="#sendbinary">Отправка двоичных данных на терминал</a></li>
+                <!--<li><a href="#Exercise_7">Downloading the Solution Project</a></li>-->
+            </ul>
+           
+            <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или ресурс</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия Java EE 7.3.1, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://glassfish.java.net/">GlassFish Server Open Source Edition 3.1.2.2</a></td>
+                    <td class="tbltd1">4</td>
+            </tr>
+            </tbody>
+        </table>
+            <p class="notes"><strong>Примечание.</strong> GlassFish 4 входит в состав загружаемого комплекта Java EE для NetBeans IDE.</p>
+            
+            <p><b>Предпосылки</b></p>
+            <p>Предполагается, что читатель обладает базовыми знаниями по следующим технологиям или опытом программирования с их использованием:</p>
+            <ul>
+                <li>Программирование на Java</li>
+                <li>Программирование на JavaScript/HTML</li>
+                <li>IDE NetBeans</li>
+            </ul>
+
+            <p>Перед изучением этого учебного курса можно ознакомиться со следующей документацией:</p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Испытанные приемы для Apache Maven в IDE NetBeans</a></li>
+                <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Глава 1. Введение в Apache Maven</a> (из книги <a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: The Complete Reference </a>)</li>
+            </ul>
+            <p class="tips">Можно загрузить <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/WhiteboardApp.zip">готовый проект в виде архива ZIP</a>.</p>
+
+        <!-- ===================================================================================== -->
+        <a name="Exercise_1"></a> 
+            <!--Exercise 1: -->
+        <h2>Создание проекта веб-приложения</h2>
+
+        <p>Цель этого упражнения - создать проект веб-приложения с помощью мастера создания проектов в IDE. При создании проекта в качестве версии Java EE необходимо указать Java EE 7, а в качестве сервера приложений - GlassFish 4. GlassFish 4 является эталонной реализацией платформы Java EE 7. Для создания приложения по инструкциям, приведенным в этом учебном курсе, вам потребуется сервер приложений с поддержкой Java EE 7, зарегистрированный в IDE.</p>
+
+        
+        <ol>
+            <li>Выберите Файл > Создать проект в главном меню (в Windows можно использовать сочетание клавиш Ctrl-Shift-N; в Mac - сочетание клавиш ⌘-Shift-N).</li>
+            <li>Выберите в категории Maven пункт &quot;Веб-приложение&quot;.  Нажмите 'Далее'.</li>
+            <li>В поле 'Имя проекта' введите <strong>WhiteboardApp</strong> и укажите местоположение проекта.</li>
+            <li>В поле 'ИД группы' введите <strong>org.sample</strong>. Нажмите 'Далее'.</li>
+            <li>В списке 'Сервер' выберите <strong>GlassFish Server 4.0</strong>. </li>
+            <li>В списке 'Версия Java EE' выберите <strong>Java EE 7 Web</strong>. Нажмите 'Готово'.<br> <img alt="Сведения о проекте в мастере создания проектов" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-newproject.png" title="Версии сервера и Java EE в мастере создания проектов">
+            </li>
+        </ol>
+
+
+        <p>При нажатии кнопки &quot;Завершить&quot; проект будет создан в среде IDE, который откроется в окне &quot;Проекты&quot;. </p>
+        
+        <!-- ===================================================================================== -->
+        <a name="createendpoint"></a>
+        <h2>Создание терминала WebSocket</h2>
+        <p>Этот раздел содержит инструкции по созданию класса терминала WebSocket и файла JavaScript. Класс терминала WebSocket содержит несколько базовых методов, которые выполняются при открытии сеанса. Затем необходимо создать файл JavaScript, который запускает процесс квитирования с сервером при загрузке страницы. После этого останется только запустить приложение и проверить подключение.</p>
+        
+        <p class="tips">Дополнительные сведения об использовании API-интерфейсов и аннотаций WebSocket см. в описании пакета <a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/package-summary.html" target="_blank"> javax.websocket</a>.</p>
+        
+        <div class="indent">
+            <a name="createendpoint1"></a>
+            <h3>Создание терминала</h3>
+            <p>В этом упражнении показано, как создать класс терминала WebSocket с помощью мастера IDE.</p>
+        <ol>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши узел 'Исходные пакеты' и выберите 'Создать > Другие'.</li>
+            <li>В категории 'Веб' выберите 'Терминал WebSocket'. Нажмите 'Далее'.</li>
+            <li>В поле 'Имя класса' введите <strong>MyWhiteboard</strong>.</li>
+            <li>В списке 'Пакет' выберите <tt>org.sample.whiteboardapp</tt>.</li>
+            <li>В поле 'WebSocket URI' введите <strong>/whiteboardendpoint</strong>. Нажмите 'Готово'.<br> <img alt="Терминал WebSocket в мастере создания файлов" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-newendpoint.png" title="Терминал WebSocket в мастере создания файлов">
+        
+                <p>При нажатии кнопки 'Готово' среда IDE создает класс терминала WebSocket и открывает файл в редакторе исходного кода. При просмотре файла в редакторе вы увидите, что среда IDE сгенерировала несколько аннотаций, которые входят в состав API-интерфейса WebSocket. Класс имеет аннотацию <tt><a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/server/ServerEndpoint.html" target="_blank">@ServerEndpoint</a></tt>, указывающую на его принадлежность к классам терминала, а в качестве параметра аннотации указан WebSocket URI. Среда IDE также создает стандартный метод <tt>onMessage</tt> с аннотацией <tt><a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/OnMessage.html" target="_blank">@OnMessage</a></tt>. Метод с аннотацией <tt>@OnMessage</tt> вызывается каждый раз, когда клиент получает сообщение WebSocket.</p>
+        
+            <pre class="examplecode">
+@ServerEndpoint("/whiteboardendpoint")
+public class MyWhiteboard {
+
+    @OnMessage
+    public String onMessage(String message) {
+        return null;
+    }
+    
+}</pre>
+            </li>
+            <li>Добавьте в класс следующее поле (выделено <strong>полужирным шрифтом</strong>).
+                <pre class="examplecode">
+@ServerEndpoint("/whiteboardendpoint")
+public class MyWhiteboard {
+    <strong>private static Set&lt;Session&gt; peers = Collections.synchronizedSet(new HashSet&lt;Session&gt;());</strong>
+
+    @OnMessage
+    public String onMessage(String message) {
+        return null;
+    }
+}</pre>
+            </li>
+            <li>Добавьте методы <tt>onOpen</tt> и <tt>onClose</tt>.
+                <pre class="examplecode">
+    @OnOpen
+    public void onOpen (Session peer) {
+        peers.add(peer);
+    }
+
+    @OnClose
+    public void onClose (Session peer) {
+        peers.remove(peer);
+    }</pre>
+                <p>Методы <tt>onOpen</tt> и <tt>onClose</tt> имеют аннотации API-интерфейса WebSocket: <tt><a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/OnOpen.html" target="_blank">@OnOpen</a></tt> и <tt><a href="https://javaee-spec.java.net/nonav/javadocs/javax/websocket/OnClose.html" target="_blank">@OnClose</a></tt>. Метод с аннотацией <tt>@OnOpen</tt> вызывается при открытии сеанса WebSocket. В этом примере аннотированный метод <tt>onOpen</tt> добавляет браузерного клиента в группу одноранговых узлов текущего сеанса, а метод <tt>onClose</tt> удаляет клиента из этой группы.</p>
+                
+                <p class="tips">Создайте методы, используя подсказки и автозавершение кода в редакторе исходного кода. Щелкните значок подсказки в левом поле рядом с объявлением класса (или поместите указатель мыши на объявление класса и нажмите Alt-Enter), затем выберите этот метод в раскрывающемся меню. Для создания кода метода можно использовать автозавершение кода.</p>
+                <img alt="снимок экрана - Подсказка к коду в редакторе исходного кода" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-endpoint-hint.png" title="Подсказка к коду в редакторе исходного кода">
+                
+            </li>
+            <li>Щелкните правой кнопкой мыши в редакторе и выберите 'Исправить операторы импорта' (Alt-Shift-I; ⌘-Shift-I для Mac). Сохраните изменения.
+                <p>В результате в файл будут добавлены операторы импорта для классов в <tt>javax.websocket</tt>.</p></li>
+        </ol>
+        <p>Терминал создан. Теперь необходимо создать файл JavaScript для инициализации сеанса WebSocket.
+        </p>
+        
+        <!-- ===================================================================================== -->
+        <a name="createendpoint2"></a>
+        <h3>Инициализация сеанса WebSocket</h3>
+        <p>Этот раздел содержит инструкции по созданию файла JavaScript для инициализации сеанса WebSocket. Браузерный клиент подключается к сеансу, используя HTTP-запрос для квитирования с сервером по протоколу TCP. В файле JavaScript необходимо указать <tt>wsURI</tt> терминала и объявить WebSocket. Схема <tt>wsURI</tt> является составным элементом протокола WebSocket и указывает путь к терминалу для приложения.</p>
+        
+        <ol>
+            <li>Щелкните правой кнопкой мыши узел проекта в окне &quot;Проекты&quot; и выберите &quot;New &gt; Other&quot;(Создать &gt; Другое). </li>
+            <li>Откройте мастер создания файлов и выберите 'Файл JavaScript' в категории 'Веб'. Нажмите 'Далее'.</li>
+            <li>В поле 'Имя файла JavaScript' введите <strong>websocket</strong>. Нажмите 'Готово'.</li>
+            <li>Добавьте в файл JavaScript следующие элементы.
+                <pre class="examplecode">
+var wsUri = "ws://" + document.location.host + document.location.pathname + "whiteboardendpoint";
+var websocket = new WebSocket(wsUri);
+
+websocket.onerror = function(evt) { onError(evt) };
+
+function onError(evt) {
+    writeToScreen('&lt;span style="color: red;"&gt;ERROR:&lt;/span&gt; ' + evt.data);
+}</pre>
+                <p>Этот сценарий инициализирует квитирование сеанса с сервером, когда браузер загружает файл <tt>websocket.js</tt>.</p> 
+            </li>
+            <li>Откройте файл <tt>index.html</tt> и добавьте следующий код (выделен <strong>полужирным шрифтом</strong>) в самый нижний сегмент файла, чтобы по завершении загрузки страницы загружался файл <tt>websocket.js</tt>.
+                <pre class="examplecode">&lt;body&gt;
+    <strong>&lt;h1&gt;Collaborative Whiteboard App&lt;/h1&gt;
+        
+    &lt;script type="text/javascript" src="websocket.js"&gt;&lt;/script&gt;</strong>
+&lt;/body&gt;</pre>
+            </li>
+        </ol>
+        <p>Теперь можно проверить функционирование терминала WebSocket, возможность открытия сеанса и подключения клиента к сеансу.</p>
+        
+        <!-- ===================================================================================== -->
+        <a name="createendpoint3"></a>
+        <h3>Тестирование терминала</h3>
+        <p>В этом упражнении показано, как добавить ряд простых методов в файл JavaScript, чтобы при подключении браузера к терминалу в окне браузера выводились данные <tt>wsURI</tt>.</p>
+        
+        <ol>
+            <li>Добавьте тег <tt>&lt;div></tt> (выделен <strong>полужирным шрифтом</strong>) в файл <tt>index.html</tt>
+            <pre class="examplecode">&lt;h1&gt;Collaborative Whiteboard App&lt;/h1&gt;
+        
+<strong>&lt;div id="output"&gt;&lt;/div&gt;</strong>
+&lt;script type="text/javascript" src="websocket.js"&gt;&lt;/script&gt;</pre>
+            </li>
+            <li>Добавьте следующее объявление и методы в файл <tt>websocket.js</tt>. Сохраните изменения.
+                <pre class="examplecode">// For testing purposes
+var output = document.getElementById("output");
+websocket.onopen = function(evt) { onOpen(evt) };
+
+function writeToScreen(message) {
+    output.innerHTML += message + "&lt;br&gt;";
+}
+
+function onOpen() {
+    writeToScreen("Connected to " + wsUri);
+}
+// End test functions</pre>
+            <p>При загрузке страницы функции JavaScript будут выводить сообщение о том, что браузер подключен к терминалу. Эти функции можно удалить после успешной проверки функционирования терминала. </p>       
+            </li>
+            <li>Правой кнопкой мыши щелкните окно 'Проект' и выберите 'Выполнить'.</li>
+        </ol>
+        <p>При запуске приложения среда IDE запускает сервер GlassFish и выполняет построение и развертывание приложения. В браузере открывается страница индекса со следующим сообщением.</p>
+        <img alt="Сообщение &apos;Подключение к терминалу установлено&apos; в окне браузера" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-browser1.png" title="Сообщение &apos;Подключение к терминалу установлено&apos; в окне браузера">
+        <p>В окне браузера отображается терминал, принимающий сообщения: <tt>http://localhost:8080/WhiteboardApp/whiteboardendpoint</tt></p>
+       </div>
+        
+        
+        
+        <!-- ===================================================================================== -->
+        <a name="createwhiteboard"></a>
+        <h2>Создание интерактивной доски</h2>
+        <p>Этот раздел содержит инструкции по созданию классов и файлов JavaScript для отправки и получения текстовых сообщений JSON. Также в этом разделе показано, как создать элемент <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html">HTML5 Canvas</a> для рисования и отображения содержимого и HTML-форму <tt>&lt;form></tt> с переключателями, с помощью которых можно выбрать форму и цвет кисти.</p>
+
+        <!-- ===================================================================================== -->
+        <div class="indent">
+        <a name="createwhiteboard1"></a>
+        <h3>Добавление полотна на веб-страницу</h3>
+        <p>В этом упражнении показано, как добавить элемент <tt>canvas</tt> и элемент <tt>form</tt> на страницу индекса по умолчанию. Флажки на форме определяют свойства кисти на полотне.</p>
+        <ol>
+            <li>Откройте файл <tt>index.html</tt> в редакторе исходного кода.</li>
+            <li>Удалите тег <tt>&lt;div></tt>, добавленный перед тестированием терминала, и добавьте элементы <tt>&lt;table></tt> и <tt>&lt;form></tt> (выделены <strong>полужирным шрифтом</strong>) после открывающего тега body.
+            <pre class="examplecode">&lt;h1&gt;Collaborative Whiteboard App&lt;/h1&gt;
+        
+    <strong>&lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+            &lt;/td&gt;
+            &lt;td&gt;
+                &lt;form name="inputForm"&gt;
+                    
+
+                &lt;/form&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;</strong>
+    &lt;script type="text/javascript" src="websocket.js"&gt;&lt;/script&gt;
+    &lt;/body&gt;</pre>
+            </li>
+            <li>Добавьте следующий код (выделен <strong>полужирным шрифтом</strong>) для элемента canvas.
+        <pre class="examplecode">
+        &lt;table&gt;
+            &lt;tr&gt;
+                &lt;td&gt;
+                    <strong>&lt;canvas id="myCanvas" width="150" height="150" style="border:1px solid #000000;"&gt;&lt;/canvas&gt;</strong>
+                &lt;/td&gt;</pre>
+    </li>
+    <li>Добавьте элемент <tt>&lt;table></tt> для создания переключателей, позволяющих выбирать цвет и форму. Сохраните изменения. 
+        
+         <pre class="examplecode">
+        &lt;table&gt;
+            &lt;tr&gt;
+                &lt;td&gt;
+                    &lt;canvas id="myCanvas" width="150" height="150" style="border:1px solid #000000;"&gt;&lt;/canvas&gt;
+                &lt;/td&gt;
+                &lt;td&gt;
+                    &lt;form name="inputForm"&gt;
+                        <strong>&lt;table&gt;
+
+                            &lt;tr&gt;
+                                &lt;th&gt;Color&lt;/th&gt;
+                                &lt;td&gt;&lt;input type="radio" name="color" value="#FF0000" checked="true"&gt;Red&lt;/td&gt;
+                                &lt;td&gt;&lt;input type="radio" name="color" value="#0000FF"&gt;Blue&lt;/td&gt;
+                                &lt;td&gt;&lt;input type="radio" name="color" value="#FF9900"&gt;Orange&lt;/td&gt;
+                                &lt;td&gt;&lt;input type="radio" name="color" value="#33CC33"&gt;Green&lt;/td&gt;
+                            &lt;/tr&gt;
+
+                            &lt;tr&gt;
+                                &lt;th&gt;Shape&lt;/th&gt;
+                                &lt;td&gt;&lt;input type="radio" name="shape" value="square" checked="true"&gt;Square&lt;/td&gt;
+                                &lt;td&gt;&lt;input type="radio" name="shape" value="circle"&gt;Circle&lt;/td&gt;
+                                &lt;td&gt;&nbsp;&lt;/td&gt;
+                                &lt;td&gt;&nbsp;&lt;/td&gt;
+                            &lt;/tr&gt;
+
+                        &lt;/table&gt;</strong>
+                    &lt;/form&gt;</pre>
+        
+        <p>Форма, цвет и координаты любой фигуры, нарисованной на полотне, преобразуются в строковые данные в структуре JSON и отправляются в виде сообщения на терминал WebSocket.</p> 
+    </li>
+</ol>
+        
+        <!-- ===================================================================================== -->
+        <a name="createwhiteboard2"></a>
+        <h3>Создание POJO</h3>
+        <p>В этом упражнении показано, как создать простой компонент POJO.</p>
+        
+        <ol>
+            <li>Щелкните узел проекта правой кнопкой мыши и выберите Создать > Класс Java.</li>
+            <li>В поле 'Имя класса' введите <strong>Figure</strong> и выберите <tt>org.sample.whiteboardapp</tt> в списке 'Пакет'. Нажмите 'Готово'.</li>
+            <li>В редакторе исходного кода добавьте следующие элементы (выделены <strong>полужирным шрифтом</strong>):
+                <pre class="examplecode">public class Figure {
+    <strong>private JsonObject json;</strong>
+}</pre>
+                <p>При добавлении кода отобразится запрос на добавление оператора импорта для <tt>javax.json.JsonObject</tt>. Если запрос не отображается, нажмите Alt-Enter.</p>
+                <p class="tips">Дополнительные сведения о <tt>javax.json.JsonObject</tt> см. в описании интерфейса Java API for JSON Processing (<a href="http://jcp.org/en/jsr/detail?id=353">JSR 353</a>), который входит в спецификацию Java EE 7.</p>
+            </li>
+            <li>Создайте операторы получения и установки для <tt>json</tt>.
+                <p class="tips">Методы получения и установки можно выбрать в раскрывающемся меню 'Вставить код' (Alt-Ins в Windows; Ctrl-I в Mac). В результате откроется диалоговое окно 'Создание методов получения и установки'. Также можно выбрать Исходный код > Вставить код в главном меню.</p>
+            <img alt="Диалоговое окно &apos;Создание методов получения и установки&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-generategetter.png" title="Диалоговое окно &apos;Создание методов получения и установки&apos;">
+            </li>
+            <li>Добавьте конструктор для <tt>json</tt>.
+                <pre class="examplecode">
+    public Figure(JsonObject json) {
+        this.json = json;
+    }</pre>
+                <p class="tips">Конструктор можно выбрать в раскрывающемся меню 'Вставить код' (Ctrl-I).</p>
+            <img alt="Раскрывающееся меню &apos;Создать конструктор&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-generateconstructor.png" title="Раскрывающееся меню &apos;Создать конструктор&apos;">
+            </li>
+            <li>Добавьте метод <tt>toString</tt>:
+        <pre class="examplecode">
+    @Override
+    public String toString() {
+        StringWriter writer = new StringWriter();
+        Json.createWriter(writer).write(json);
+        return writer.toString();
+    }</pre>
+            </li>
+            <li>Щелкните правой кнопкой мыши в редакторе и выберите 'Исправить операторы импорта' (Alt-Shift-I; ⌘-Shift-I для Mac). Сохраните изменения.</li>
+        </ol>
+        
+        <!-- ===================================================================================== -->
+        <a name="createwhiteboard3"></a>
+        <h3>Создание класса координат</h3>
+        <p>Теперь необходимо создать класс координат фигур, которые пользователи будут рисовать на полотне.</p>
+        
+        <ol>
+            <li>Щелкните узел проекта правой кнопкой мыши и выберите Создать > Класс Java.</li>
+            <li>Откроется мастер создания классов Java. В поле 'Имя класса' введите <strong>Coordinates</strong> и выберите <tt>org.sample.whiteboardapp</tt> в списке 'Пакет'. Нажмите 'Готово'.</li>
+            <li>В редакторе исходного кода добавьте следующий код. Сохраните изменения.
+                <pre class="examplecode">
+    private float x;
+    private float y;
+
+    public Coordinates() {
+    }
+
+    public Coordinates(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+                </pre>
+            </li>
+        </ol>
+        <p>Этот класс содержит только поля для координат <tt>x</tt> и <tt>y</tt>, а также несколько методов получения и установки.</p>
+        
+        
+        <!-- ===================================================================================== -->
+        <a name="createwhiteboard6"></a>
+        <h3>Создание строки JSON</h3>
+        <p>В этом упражнении показано, как создать файл JavaScript, преобразующий все сведения о фигуре, которую пользователь рисует на полотне (элемент <tt>canvas</tt>), в структуру JSON для отправки на терминал WebSocket.</p>
+        <ol>
+            <li>Щелкните узел проекта правой кнопкой мыши и выберите Создать > Файл JavaScript. В результате откроется мастер создания файлов JavaScript.</li>
+            <li>В поле 'Имя файла' введите <strong>whiteboard</strong>. Нажмите 'Готово'.
+                <p>При нажатии кнопки 'Готово' среда IDE создает пустой файл JavaScript и открывает его в редакторе. Новый файл отображается в структуре узла 'Веб-страницы' в окне 'Проекты'.</p></li>
+            <li>Добавьте следующий код для инициализации элемента canvas и создания прослушивателя событий.
+                <pre class="examplecode">
+var canvas = document.getElementById("myCanvas");
+var context = canvas.getContext("2d");
+canvas.addEventListener("click", defineImage, false);</pre>
+                <p>Когда пользователь нажимает на полотно (элемент <tt>canvas</tt>), вызывается метод <tt>defineImage</tt>.</p>
+            </li>
+            <li>Добавьте методы <tt>getCurrentPos</tt>, <tt>defineImage</tt> и <tt>drawImageText</tt> для создания структуры JSON и ее отправки на терминал (<tt>sendText(json)</tt>).
+
+<pre class="examplecode">
+function getCurrentPos(evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+            
+function defineImage(evt) {
+    var currentPos = getCurrentPos(evt);
+    
+    for (i = 0; i &lt; document.inputForm.color.length; i++) {
+        if (document.inputForm.color[i].checked) {
+            var color = document.inputForm.color[i];
+            break;
+        }
+    }
+            
+    for (i = 0; i &lt; document.inputForm.shape.length; i++) {
+        if (document.inputForm.shape[i].checked) {
+            var shape = document.inputForm.shape[i];
+            break;
+        }
+    }
+    
+    var json = JSON.stringify({
+        "shape": shape.value,
+        "color": color.value,
+        "coords": {
+            "x": currentPos.x,
+            "y": currentPos.y
+        }
+    });
+    drawImageText(json);
+        sendText(json);
+}
+
+function drawImageText(image) {
+    console.log("drawImageText");
+    var json = JSON.parse(image);
+    context.fillStyle = json.color;
+    switch (json.shape) {
+    case "circle":
+        context.beginPath();
+        context.arc(json.coords.x, json.coords.y, 5, 0, 2 * Math.PI, false);
+        context.fill();
+        break;
+    case "square":
+    default:
+        context.fillRect(json.coords.x, json.coords.y, 10, 10);
+        break;
+    }
+}</pre>
+              <p>Готовая к отправке структура JSON будет выглядеть примерно так:</p>
+
+                <pre class="examplecode">{
+ "shape": "square",
+ "color": "#FF0000",
+ "coords": {
+ "x": 31.59999942779541,
+ "y": 49.91999053955078
+ }
+} </pre>
+                
+              <p>Теперь необходимо добавить метод <tt>sendText(json)</tt> для отправки строковых данных JSON с помощью <tt>websocket.send()</tt>.</p>           
+            </li>
+            <li>Откройте файл <tt>websocket.js</tt> в редакторе и добавьте следующие методы для отправки JSON на терминал и рисования изображения при получении сообщения от терминала.
+                <pre class="examplecode">
+websocket.onmessage = function(evt) { onMessage(evt) };
+
+function sendText(json) {
+    console.log("sending text: " + json);
+    websocket.send(json);
+}
+                
+function onMessage(evt) {
+    console.log("received: " + evt.data);
+    drawImageText(evt.data);
+}</pre>
+                <p class="notes"><strong>Примечание.</strong> Код, добавленный в файл <tt>websocket.js</tt> для тестирования терминала, можно удалить.</p>
+            </li>
+            <li>Добавьте следующую строку (выделена <strong>полужирным шрифтом</strong>) в нижний сегмент файла <tt>index.html</tt> для загрузки файла <tt>whiteboard.js</tt>.
+                <pre class="examplecode">
+        &lt;/table&gt;
+    &lt;script type="text/javascript" src="websocket.js"&gt;&lt;/script&gt;
+    <strong>&lt;script type="text/javascript" src="whiteboard.js"&gt;&lt;/script&gt;</strong>
+&lt;body&gt;
+                </pre>
+            </li>
+        </ol>
+        
+        
+        
+<!-- +++++++++++++++  Creating Implementations of Encoder and Decoder Interfaces +++++++++++++++ -->        
+        <a name="createwhiteboard4"></a>
+        <h3>Реализация интерфейсов кодера и декодера</h3>
+        <p>В этом упражнении показано, как создать классы для реализации интерфейсов декодера и кодера, которые требуются для преобразования сообщений WebSocket (JSON) в класс POJO <tt>Figure</tt> и преобразования класса <tt>Figure</tt> в формат строковых данных JSON, отправляемых на терминал.</p>
+        <p class="tips">Дополнительные сведения можно найти в разделе технической статьи о типах сообщений, кодерах и декодерах <a href="http://www.oracle.com/technetwork/articles/java/jsr356-1937161.html">JSR 356, Java API for WebSocket</a>.</p>
+        
+        <ol>
+            <li>Щелкните узел проекта правой кнопкой мыши и выберите Создать > Класс Java.</li>
+            <li>В поле 'Имя класса' введите <strong>FigureEncoder</strong> и выберите <tt>org.sample.whiteboardapp</tt> в списке 'Пакет'. Нажмите 'Готово'.</li>
+            <li>В редакторе исходного кода реализуйте интерфейс кодера WebSocket. Для этого добавьте следующий код (выделен <strong>полужирным шрифтом</strong>):
+                <pre class="examplecode">            
+public class FigureEncoder <strong>implements Encoder.Text&lt;Figure&gt;</strong> {
+    
+}</pre>
+            </li>
+            <li>Добавьте оператор импорта для <tt>javax.websocket.Encoder</tt> и реализуйте абстрактные методы.
+                <p class="tips">Поместите указатель мыши на объявление класса, нажмите Alt-Enter и выберите <strong>Реализовать все абстрактные методы</strong> в раскрывающемся меню.</p></li>
+            <li>Внесите следующие изменения в созданные абстрактные методы (выделены <strong>полужирным шрифтом</strong>). Сохраните изменения.
+                <pre class="examplecode">
+    @Override
+    public String encode(Figure <strong>figure</strong>) throws EncodeException {
+        <strong>return figure.getJson().toString();</strong>
+    }
+
+    @Override
+    public void init(EndpointConfig ec) {
+        <strong>System.out.println("init");</strong>
+    }
+
+    @Override
+    public void destroy() {
+        <strong>System.out.println("destroy");</strong>
+    }</pre>
+                
+            </li>
+            <li>Щелкните узел проекта правой кнопкой мыши и выберите Создать > Класс Java.</li>
+            <li>В поле 'Имя класса' введите <strong>FigureDecoder</strong> и выберите <tt>org.sample.whiteboardapp</tt> в списке 'Пакет'. Нажмите 'Готово'.</li>
+            <li>В редакторе исходного кода реализуйте интерфейс декодера WebSocket. Для этого добавьте следующий код (выделен <strong>полужирным шрифтом</strong>):
+                <pre class="examplecode">            
+public class FigureDecoder <strong>implements Decoder.Text&lt;Figure&gt;</strong> {
+    
+}</pre>
+            </li>
+            <li>Добавьте оператор импорта для <tt>javax.websocket.Decoder</tt> и реализуйте абстрактные методы.</li>
+            <li>Внесите следующие изменения (выделены <strong>полужирным шрифтом</strong>) в созданные абстрактные методы. 
+                <pre class="examplecode">
+    @Override
+    public Figure decode(String <strong>string</strong>) throws DecodeException {
+        <strong>JsonObject jsonObject = Json.createReader(new StringReader(string)).readObject();
+        return  new Figure(jsonObject);</strong>
+    }
+
+    @Override
+    public boolean willDecode(String <strong>string</strong>) {
+        <strong>try {
+            Json.createReader(new StringReader(string)).readObject();
+            return true;
+        } catch (JsonException ex) {
+            ex.printStackTrace();
+            return false;
+        }</strong>
+    
+    }
+
+    @Override
+    public void init(EndpointConfig ec) {
+        <strong>System.out.println("init");</strong>
+    }
+
+    @Override
+    public void destroy() {
+        <strong>System.out.println("destroy");</strong>
+    }</pre>
+            </li>
+            <li>Исправьте операторы импорта и сохраните изменения.</li>
+        </ol>
+        <p>Теперь необходимо внести изменения в файл <tt>MyWhiteboard.java</tt> и указать кодер и декодер.</p>
+
+<!-- +++++++++++++++  Running the Application +++++++++++++++ -->
+        <a name="createwhiteboard5"></a>
+        <h3>Запуск приложения</h3>
+        <p>Скоро вы сможете запустить приложение. В этом упражнении показано, как изменить класс терминала WebSocket и указать кодер и декодер для строковых данных JSON, а также добавить метод для отправки строковых данных JSON на подключенные клиенты при получении сообщения.</p>
+        <ol>
+            <li>Откройте файл <tt>MyWhiteboard.java</tt> в редакторе.</li>
+            <li>Измените аннотацию <tt>@ServerEndpoint</tt> и укажите кодер и декодер для терминала. Обратите внимание, что необходимо явно указать параметр <tt>value</tt> для имени терминала.    
+        <pre class="examplecode">
+@ServerEndpoint(<strong>value=</strong>"/whiteboardendpoint"<strong>, encoders = {FigureEncoder.class}, decoders = {FigureDecoder.class}</strong>)
+        </pre>
+            </li>
+            <li>Удалите метод <tt>onMessage</tt>, созданный по умолчанию.</li>
+            <li>Добавьте метод <tt>broadcastFigure</tt> и создайте для него аннотацию <tt>@OnMessage</tt>.
+            
+                <pre class="examplecode">
+    @OnMessage
+    public void broadcastFigure(Figure figure, Session session) throws IOException, EncodeException {
+        System.out.println("broadcastFigure: " + figure);
+        for (Session peer : peers) {
+            if (!peer.equals(session)) {
+                peer.getBasicRemote().sendObject(figure);
+            }
+        }
+    }</pre>
+            </li>
+            
+            <li>Щелкните правой кнопкой мыши в редакторе и выберите 'Исправить операторы импорта' (Alt-Shift-I; ⌘-Shift-I для Mac). Сохраните изменения.</li>
+            <li>В окне 'Проекты' щелкните проект правой кнопкой мыши и выберите 'Выполнить'.</li>
+        </ol>
+        <p>При нажатии кнопки 'Выполнить' среда IDE открывает окно браузера с адресом <a href="http://localhost:8080/WhiteboardApp/">http://localhost:8080/WhiteboardApp/</a>.</p>
+        <p class="notes"><strong>Примечание.</strong> Может потребоваться удалить предыдущее приложение с сервера приложений или выполнить принудительную перезагрузку страницы в браузере.
+        </p>
+        <p>Просмотрите сообщения браузера. Вы увидите, что при каждом нажатии на полотно на терминал отправляются строковые данные JSON.</p>
+        <img alt="снимок приложения в окне браузера" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-onebrowser.png" title="Полотно с нарисованными фигурами в окне браузера и JSON в веб-консоли">
+        <p>Если открыть страницу с адресом <tt>http://localhost:8080/WhiteboardApp/</tt> в другом браузере, можно видеть, что при каждом нажатии на полотно в окне одного браузера в окне другого браузера появляется новый круг или квадрат.</p>
+        <img alt="снимок приложения, открытого в двух браузерах" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-twobrowsers.png" title="Два браузера, отправляющие данные JSON через терминал">
+        </div>
+        
+        
+        <!-- ===================================================================================== -->        
+        <a name="sendbinary"></a>
+        <h2>Отправка двоичных данных на терминал</h2>
+        <p>Теперь приложение может обрабатывать и отправлять строковые данные через JSON на терминал, а затем эти строковые данные будут пересылаться на подключенные клиенты. Этот раздел содержит инструкции по изменению файлов JavaScript для отправки и получения двоичных данных.</p>
+        
+        <p>Чтобы отправлять двоичные данные на терминал, необходимо задать для свойства <tt>binaryType</tt> компонента WebSocket значение <tt>arraybuffer</tt>. Таким образом гарантируется, что любые двоичные данные, передаваемые посредством WebSocket, передаются посредством <tt>ArrayBuffer</tt>. Преобразование двоичных данных осуществляется методом <tt>defineImageBinary</tt> в файле <tt>whiteboard.js</tt>.</p>
+        
+            <ol>
+                <li>Откройте файл <tt>websocket.js</tt> и добавьте в него следующий код, чтобы задать для свойства <tt>binaryType</tt> компонента WebSocket значение <tt>arraybuffer</tt>.
+                    <pre class="examplecode">
+websocket.binaryType = "arraybuffer";</pre>
+                </li>
+                <li>Добавьте следующий метод для отправки двоичных данных на терминал.
+                    <pre class="examplecode">
+function sendBinary(bytes) {
+    console.log("sending binary: " + Object.prototype.toString.call(bytes));
+    websocket.send(bytes);
+}</pre>
+                </li>
+                <li>Измените метод <tt>onMessage</tt> и добавьте в него следующий код (выделен <strong>полужирным шрифтом</strong>), чтобы выбрать метод обновления полотна в соответствии с типом данных, переданных во входящем сообщении.
+                    <pre class="examplecode">
+function onMessage(evt) {
+    console.log("received: " + evt.data);
+    <strong>if (typeof evt.data == "string") {</strong>
+        drawImageText(evt.data);
+    <strong>} else {
+        drawImageBinary(evt.data);
+    }</strong>
+}</pre>
+                    <p>Метод <tt>drawImageBinary</tt> вызывается при получении сообщения с двоичными данными.</p>
+                </li>
+                <li>Откройте файл <tt>whiteboard.js</tt> и добавьте следующие методы. Метод <tt>drawImageBinary</tt> вызывается для обновления полотна после анализа входных двоичных данных. Метод <tt>defineImageBinary</tt> используется для подготовки снимка полотна в двоичном формате.
+                    <pre class="examplecode">
+function drawImageBinary(blob) {
+    var bytes = new Uint8Array(blob);
+//    console.log('drawImageBinary (bytes.length): ' + bytes.length);
+    
+    var imageData = context.createImageData(canvas.width, canvas.height);
+    
+    for (var i=8; i&lt;imageData.data.length; i++) {
+        imageData.data[i] = bytes[i];
+    }
+    context.putImageData(imageData, 0, 0);
+    
+    var img = document.createElement('img');
+    img.height = canvas.height;
+    img.width = canvas.width;
+    img.src = canvas.toDataURL();
+}
+                    
+function defineImageBinary() {
+    var image = context.getImageData(0, 0, canvas.width, canvas.height);
+    var buffer = new ArrayBuffer(image.data.length);
+    var bytes = new Uint8Array(buffer);
+    for (var i=0; i&lt;bytes.length; i++) {
+        bytes[i] = image.data[i];
+    }
+    sendBinary(buffer);
+}</pre>
+                    <p>Теперь необходимо реализовать вызов метода <tt>defineImageBinary</tt>, когда требуется сгенерировать двоичные данные с типом <tt>ArrayBuffer</tt> и отправить их на терминал.</p>
+                </li>
+                <li>Откройте файл <tt>index.html</tt> и измените элемент <tt>&lt;table></tt> так, чтобы в таблице формы появилась следующая строка.
+                <pre class="examplecode">
+&lt;tr&gt;
+    &lt;th&gt;&nbsp;&lt;/th&gt;
+    &lt;td&gt;&lt;input type="submit" value="Send Snapshot" onclick="defineImageBinary(); return false;"&gt;&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+&lt;/tr&gt;
+                </pre>
+                <p>Новая строка содержит кнопку 'Отправить снимок', которая позволяет отправить двоичный снимок полотна на подключенные одноранговые узлы. При нажатии этой кнопки вызывается метод <tt>defineImageBinary</tt> в файле <tt>whiteboard.js</tt>.</p>
+                </li>
+                <li>Откройте файл <tt>MyWhiteboard.java</tt> и добавьте следующий метод. Этот метод используется для отправки двоичных данных на одноранговые узлы, когда на терминал поступает сообщение с двоичными данными.
+                    <pre class="examplecode">
+@OnMessage
+public void broadcastSnapshot(ByteBuffer data, Session session) throws IOException {
+    System.out.println("broadcastBinary: " + data);
+    for (Session peer : peers) {
+        if (!peer.equals(session)) {
+            peer.getBasicRemote().sendBinary(data);
+        }
+    }
+}</pre>
+                    <p class="notes"><strong>Примечание.</strong> Потребуется добавить оператор импорта для <tt>java.nio.ByteBuffer</tt>.
+                    </p>
+                </li>
+            </ol>
+        
+        <p class="tips">
+        Вы можете изменить приложение так, чтобы пользователь мог остановить отправку данных на терминал. По умолчанию все одноранговые узлы подключаются в момент открытия страницы и отправки данных из браузера на все подключенные клиенты. Вы можете добавить простой условный оператор, чтобы данные отправлялись на терминал только в том случае, если выбран этот параметр. Этот параметр не влияет на получение данных. Клиенты по-прежнему будут получать данные от терминала.</p>
+        <div class="indent">
+            <ol>
+                <li>Измените метод <tt>defineImage</tt> в файле <tt>whiteboard.js</tt>, добавив в него следующий код (выделен <strong>полужирным шрифтом</strong>).
+            <pre class="examplecode">
+        drawImageText(json);
+<strong>    if (document.getElementById("instant").checked) {</strong>
+        sendText(json);
+<strong>    }</strong>
+}</pre>
+                <p>Этот код условия проверяет, <tt>установлен ли флажок</tt> для элемента с этим идентификатором</p>
+                </li>
+                <li>Откройте файл <tt>index.html</tt> и измените элемент <tt>&lt;table></tt>, добавив в форму флажок.
+                <pre class="examplecode">
+&lt;tr&gt;
+    &lt;th&gt;&nbsp;&lt;/th&gt;
+    &lt;td&gt;&lt;input type="submit" value="Send Snapshot" onclick="defineImageBinary(); return false;"&gt;&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;input type="checkbox" id="instant" value="Online" checked="true"&gt;Online</strong>&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+    &lt;td&gt;&nbsp;&lt;/td&gt;
+&lt;/tr&gt;
+                </pre>
+                    <p>Если флажок 'Подключено' не установлен, отправка данных не осуществляется, но клиенты по-прежнему могут получать данные от терминала.</p>
+                
+            </ol>
+            <p>Если добавить кнопку 'Отправить снимок' и флажок 'Подключено' и снова запустить приложение, на странице индекса отобразятся новые элементы. Если открыть другой браузер и снять флажок 'Подключено', можно видеть, что при нажатии на полотно сообщение JSON не отправляется на терминал.</p>
+            <img alt="снимок приложения в окне браузера" class="margin-around b-all" src="../../../images_www/articles/73/javaee/ee7-websocket/websocket-onebrowser-binary.png" title="Веб-консоль в окне браузера с сообщением об отправке двоичных данных">
+            <p>Если нажать кнопку 'Отправить снимок', двоичные данные будут отправлены на терминал, который будет транслировать эти данные на все подключенные клиенты.</p>
+        </div>
+
+            <!--
+                <a name="Exercise_7"></a>
+                <h2>Downloading the Solution Project</h2>
+                <p>You can download the solution to this tutorial as a project in the following ways.</p>
+                <ul>
+                    <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FMavenEnterpriseApp.zip">a zip archive of the finished project</a>.</li>
+                    <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+                    <ol>
+                        <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                        <li>In the Checkout dialog box, enter the following Repository URL:<br>
+                            <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br>
+                            Click Next.</li>
+                        <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                        <li>Expand the root node and select <strong>samples/javaee/MavenEnterpriseApp</strong>. Click OK.</li>
+                        <li>Specify the Local Folder for the sources (the local folder must be empty).</li>
+                        <li>Click Finish.
+                            <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                            and checks out the project sources.</p>
+                        </li>
+                        <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+                    </ol>
+                        <p class="notes"><strong>Notes.</strong> For more about installing Subversion,
+                        see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</p>
+                    </li>
+                </ul>
+                -->
+
+
+            <!--
+            <a name="Exercise_5"></a>
+                
+            <h2>Troubleshooting</h2>
+            <p>The following are some of the problems you may encounter when creating your project.</p>
+            <div class="indent">
+                <h3 class="tutorial">Problem with JMS Resources</h3>
+                <p>When using the wizard to create JMS resources, 
+                you may see the following server error message in the output window:</p>
+                <pre>[com.sun.enterprise.connectors.ConnectorRuntimeException:
+                    JMS resource not created : jms/Queue]
+                </pre>
+                <p>This message could indicate that the JMS resource was not created or was not registered with the application server.
+                You can use the Admin Console of the application server to check, create and edit JMS resources.</p>
+                <p>To open the Admin Console, do the following:</p>
+                <ol>
+                    <li>Confirm that the application server is running by expanding the Servers node in the Services window of the IDE.
+                    A small green arrow next to the application server node indicates the server is running.</li>
+                    <li>Right-click the application server node and choose View Admin Console to open the login window in your browser.</li>
+                    <li>Log in to the server. The default user name and password are <tt>admin</tt> and <tt>adminadmin</tt>.</li>
+                    <li>In the Admin Console in your browser, expand the Resources node and JMS Resources node in the left frame.</li>
+                    <li>Click on the Connection Factories and Destination Resources links in the left frame to check if the resources are
+                        registered with the server and if necessary modify the resources. If the resources do not exist, you can create them
+                    in the Admin Console.</li>
+                </ol>
+                <p>You need to make sure that the JMS connection factory resource
+                   in the PostMessage servlet is mapped to the correct JNDI name of the JMS connection factory resource
+                   registered with the Sun Java System Application Server.</p>
+                <p>The following resources should be registered with the Sun Java System Application Server:</p>
+                <ul>
+                    <li>a Destination resource with the JNDI name <tt>jms/NewMessage</tt> and type <tt>javax.jms.Queue</tt></li>
+                    <li>a Connection Factory resource with the JNDI name <tt>jms/NewMessageFactory</tt> and type <tt>	
+                    javax.jms.QueueConnectionFactory</tt></li>
+                </ul>
+
+                <p>make sure that the import in PostMessage is not <tt>javax.resource.cci.ConnectionFactory</tt></p>
+
+                <h3 class="tutorial">Problem with the Datasource</h3>
+
+            </div>-->
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20the%20WebSocket%20API%20in%20a%20Web%20Application">Отправить отзыв по этому учебному курсу</a></div>
+            <br style="clear:both;" >
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>См. также</h2>
+            <p>Подробнее об использовании IDE NetBeans для разработки приложений Java EE см. в следующих ресурсах:
+            </p>
+            <ul>
+            <li>Демонстрация: <a href="maven-websocketapi-screencast.html">Использование WebSocket API в веб-приложении</a></li>
+            <li><a href="javaee-intro.html">Введение в технологию Java EE </a></li>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+            <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+            <p>Дополнительные сведения об использовании Java EE можно найти в <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Учебном курсе по Java EE</a>.</p>
+            <p>To send comments and suggestions, get support, and keep informed on the latest developments on the IDE NetBeans Java EE development features, <a href="../../../community/lists/top.html">join the nbj2ee mailing list</a>.</p>
+    </body>
+</html>

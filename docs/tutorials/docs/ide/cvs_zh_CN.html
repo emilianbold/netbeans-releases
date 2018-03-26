@@ -1,0 +1,618 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="author" content="troy.giunipero@sun.com">    
+        <meta name="description" content="A preview of CVS Features in NetBeans IDE 6.x and 7.x">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, CVS,
+            Concurrent versions system, versioning, open source, developers, collaborate, GNU"> 
+            
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>在 NetBeans IDE 中使用 CVS 支持</title>
+    </head>
+    
+    <body>
+
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>在 NetBeans IDE 中使用 CVS 支持</h1>
+        
+        <p>NetBeans IDE 的 CVS 支持旨在帮助使用共享资源库工作的团队简化开发过程，从而使您可以在 IDE 内直接从项目系统中执行版本控制任务。CVS 客户端软件与 NetBeans IDE 捆绑在一起，因此，无需进行特别设置，即可开始使用 CVS。</p>
+        
+        <p>本文档通过指导您完成使用版本控制软件的标准工作流，介绍了如何在 IDE 中执行基本的版本控制任务。</p>
+            
+        <p>CVS（并发版本控制系统）是一个开源版本控制系统，可用于跟踪一组文件中的所有工作和更改。该系统通常在实现软件项目的过程中使用，允许多名开发人员通过它进行协作。有关 CVS 的详细信息，请查阅<a href="http://ximbiot.com/cvs/">正式文档</a>。</p>
+		<p class="notes"><b>注：</b>自 NetBeans IDE 7.0.1 之后，从 NetBeans IDE 更新中心安装 CVS 插件后将提供 CVS 支持。有关详细信息，请参见 <a href="http://wiki.netbeans.org/CVSSupport">CVS 常见问题解答</a>页。</p>
+            
+        <p><strong>目录</strong></p>
+
+    <img alt="此页上的内容适用于 NetBeans IDE 6.9 及更高版本" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 6.9 及更高版本">
+
+        <ul class="toc">
+            <li><a href="#synchronizing">将本地文件与资源库保持同步</a>
+                <ul>
+                    <li><a href="#opening">在 IDE 中打开 CVS 项目</a></li>
+                    <li><a href="#checking">从资源库中检出文件</a></li>
+                    <li><a href="#importing">将文件导入资源库中</a></li>
+                </ul></li>
+            <li><a href="#editing">编辑源</a>
+                <ul>
+                    <li><a href="#viewingChanges">在源代码编辑器中查看更改</a></li>
+                    <li><a href="#viewingFileStatus">查看文件状态信息</a></li>
+                    <li><a href="#comparing">比较文件版本</a></li>
+                    <li><a href="#merging">合并文件修订版本</a></li>
+                </ul></li>
+            <li><a href="#committing">将源文件提交到资源库</a>
+                <ul>
+                    <li><a href="#updating">更新本地副本</a></li>
+                    <li><a href="#resolving">解决冲突</a></li>
+                    <li><a href="#performing">执行提交</a></li>
+                </ul></li>
+            <li><a href="#seeAlso">另请参见</a></li>                
+        </ul>            
+        
+        <p><strong>要学完本教程，您需要具备以下软件和资源。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">版本 6.x 及更高版本</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 6 或更高版本</td>
+                </tr>
+            </tbody>
+        </table>
+  
+        <a name="synchronizing"></a>     
+        <h2>将本地文件与资源库保持同步</h2>
+        
+        <p>使用版本控制系统时，可以这样操作：将本地文件与资源库保持同步，再对本地副本进行更改，然后将其提交到该资源库。下表介绍了在 NetBeans IDE 中同步项目所能使用的各种方法，这取决于您的具体情况：</p>
+            
+        <ul>
+            <li><a href="#opening">在 IDE 中打开 CVS 项目</a></li>
+            <li><a href="#checking">从资源库中检出文件</a></li>
+            <li><a href="#importing">将文件导入资源库中</a></li>
+        </ul>
+        
+        <div class="indent">
+            <a name="opening"></a>
+            <h3>在 IDE 中打开 CVS 项目</h3>
+
+            <p>如果您已拥有 CVS 版本控制项目，并且已在 IDE 之外使用该项目，则可在 IDE 中将其打开，版本控制功能将自动变为可用。IDE 将扫描打开的项目，如果其中包含 <code>CVS</code> 目录，则文件状态和上下文相关支持将针对 CVS 版本控制项目自动激活。</p> 
+
+            <a name="checking"></a>
+            <h3>从资源库中检出文件</h3>
+
+            <p>如果要通过 IDE 与远程资源库相连，请检出并立即开始使用文件，具体操作如下：</p>
+            
+            <ol>
+                <li>在 NetBeans IDE 内，从主菜单中选择 "Team"（团队开发）> "CVS" > "Checkout"（检出）。检出向导打开。<br> <br> <strong class="notes">注：</strong>IDE 的下拉菜单是与上下文相关的，即可用选项取决于当前选定的项。因此，如果您已在使用 CVS 项目，则可以从主菜单中选择 "Versioning"（版本控制）> "Checkout"（检出）。</li>
+                <li>在向导的第一个面板中，输入由 <code>CVSROOT</code> 定义的资源库位置。 <br><br> <a name="protocolTypes"></a>IDE 支持多种 <code>CVSROOT</code> 格式，这取决于 CVS 资源库是本地还是远程的，以及连接该资源库所用的方法： <br><br>
+                    <table>
+                        <tr>
+                            <th class="tblheader" scope="col">方法</th>
+                            <th class="tblheader" scope="col">描述</th>
+                            <th class="tblheader" scope="col">示例</th>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>pserver</strong></td>
+                            <td class="tbltd1">远程口令服务器</td>
+                            <td class="tbltd1"><code>:pserver:username@hostname:/repository_path</code></td>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>ext</strong></td>
+                            <td class="tbltd1">使用远程 Shell (RSH) 或安全 Shell (SSH) 访问</td>
+                            <td class="tbltd1"><code>:ext:username@hostname:/repository_path</code></td>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>local</strong></td>
+                            <td class="tbltd1">访问本地资源库</td>
+                            <td class="tbltd1"><code>:local:/repository_path</code> <br><span class="float-right">（需要外部 CVS 可执行文件）</span></td>
+                        </tr>                        
+                        <tr>
+                            <td class="tbltd1"><strong>fork</strong></td>
+                            <td class="tbltd1">使用远程协议访问本地资源库</td>
+                            <td class="tbltd1"><code>:fork:/repository_path</code> <br><span class="float-right">（需要外部 CVS 可执行文件）</span></td>
+                        </tr>
+                    </table>
+                    
+                    <br> 根据所使用的方法，您可能需要指定其他信息，如用于连接到远程资源库（例如，<code>pserver</code>）的口令及代理设置。单击 "Next"（下一步）。<br><br> <strong class="notes">注：</strong>尝试设置公共密钥 SSH 身份验证时，请参见：<a href="http://wiki.netbeans.org/wiki/view/FaqHowToSetUpSSHAuth">如何设置公共密钥 SSH 身份验证？</a><br><br> 如需获得访问本地资源库的更多帮助，请参见：<a href="http://wiki.netbeans.org/wiki/view/FaqHowToAccessLocalCVS">如何访问本地资源库？</a></li>
+
+                <li>在向导的 "Modules to Checkout"（要检出的模块）面板的 "Module"（模块）字段中，指定要检出的模块。如果不知道要检出的模块的名称，请单击 "Browse"（浏览）按钮，以查看资源库的内容。在显示的 "Browse CVS Module"（浏览 CVS 模块）对话框中，选择任意已列出的模块，然后单击 "OK"（确定）。此后会将所选内容添加到 "Module"（模块）字段中：                
+                    <p class="align-center">
+                    <a href="../../../images_www/articles/73/ide/cvs/cvs-checkout.png" rel="lytebox" title="CVS 检出向导：&amp;quot;Modules to Checkout&amp;quot;（要检出的模块）面板"> <img alt="CVS 检出向导：&amp;quot;Modules to Checkout&amp;quot;（要检出的模块）面板" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-checkout-small.png"></a></p></li>
+                        
+                <li>在 "Branch"（分支）文本字段中，输入要检出的分支的名称。您可以单击 "Browse"（浏览）按钮打开 "Browse Tags"（浏览标记）对话框，以搜索可用的分支和标记。如果未指定分支或标记，则会检出<em>主干</em>。</li>
+                <li>在 "Local Folder"（本地文件夹）字段中，输入计算机上要将文件检出到的位置，然后单击 "Finish"（完成），以启动 CVS 检出。IDE 将检出指定的源，而在右下角显示其状态栏，指示文件从资源库下载到本地目录的进度。此外，也可以在 "Output"（输出）窗口（Ctrl-4 组合键）中查看正在检出的文件。<br><br> <strong class="notes">注：</strong>如果已检出的源中包含 NetBeans 项目，则将显示一个对话框，提示您在 IDE 中将其打开。如果源中不包含项目，也将显示该对话框，提示您创建基于这些源的新项目，然后在 IDE 中将其打开。如果为这类源创建新项目，请选择相应的项目类别（即在新建项目向导中选择），然后使用该类别中的 "With Existing Sources"（基于现有源）选项。</li>
+            </ol>            
+            
+            <a name="importing"></a>
+            <h3>将文件导入资源库中</h3>        
+
+            <p>此外，也可以将已在 IDE 中处理的项目导入远程资源库中，然后使用 CVS 资源库对该项目进行版本控制，再在 IDE 中继续进行处理。</p>
+
+            <p><strong class="notes">注：</strong>事实上，从系统中<em>导出</em>文件时，可在版本控制系统中使用术语 "import" 表明文件正<em>导入</em>资源库中。</p>
+            
+            <p>将项目导入资源库中：</p>
+            
+            <ol>
+                <li>在 "Projects"（项目）窗口（Ctrl-1 组合键）中，选择未进行版本控制的项目，然后从节点的右键单击菜单中，选择 "Versioning"（版本控制）> "Import into CVS Repository"（导入到 CVS 资源库中）。CVS 的导入向导打开。</li>
+                <li>在导入向导的 "CVS Root"（CVS 根目录）面板中，根据 <a href="#protocolTypes"><code>CVSROOT</code></a> 的定义指定资源库的位置。根据所使用的方法，您可能需要指定其他信息，如用于连接到远程资源库（例如，<code>pserver</code>）的口令及代理设置。单击 "Next"（下一步）。</li>
+                <li>在 "Folder to Import"（要导入的文件夹）面板中，指定要放在资源库中的本地文件夹。默认情况下，将建议您在 "Folder to Import"（要导入的文件夹）文本字段中输入项目的名称：
+                    
+                    <p class="align-center">
+                    <a href="../../../images_www/articles/73/ide/cvs/folder-to-import.png" rel="lytebox" title="CVS 检出向导：&amp;quot;Folder to Import&amp;quot;（要导入的文件夹）面板"> <img alt="CVS 检出向导：&amp;quot;Folder to Import&amp;quot;（要导入的文件夹）面板" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/folder-to-import-small.png"></a></p></li>
+                        
+                <li>在 "Import Message"（导入消息）文本区域中，输入要导入资源库中的项目的描述。</li> 
+                <li>在 "Repository Folder"（资源库文件夹）文本字段中键入路径，以指定资源库中要导入项目的位置。或者，单击 "Browse"（浏览）按钮，以导航至资源库中的特定位置。单击 "Finish"（完成）以启动导入操作。IDE 会将项目文件上载到资源库中，并打开 "Output"（输出）窗口以显示进度。</li>
+            </ol>
+            
+            <p><strong class="notes">注：</strong>默认情况下，CVS 客户端不处理二进制文件导入操作。导入二进制文件源的最佳做法是，在资源库中创建 <code>cvswrappers</code> 文件。有关详细信息，请参见<a href="http://wiki.netbeans.org/FaqCVSHowToImportBinaries">如何正确导入二进制文件</a>。</p>
+        </div>
+        
+        <a name="editing"></a>
+        <h2>编辑源</h2>
+        
+        <p>在 IDE 中打开 CVS 版本控制项目后，可以开始对源进行更改。与 NetBeans IDE 中打开的任何项目一样，在 IDE 窗口（例如“项目”（Ctrl-1 组合键）、“文件”（Ctrl-2 组合键）或“收藏夹”（Ctrl-3 组合键）窗口）中显示文件时，您可以双击文件节点，在源代码编辑器中打开文件。</p>
+        
+        <p>在 IDE 中的处理源时，您需要处理各种 UI 组件，这有助于查看和操作版本控制命令：</p> 
+   
+        <ul>
+            <li><a href="#viewingChanges">在源代码编辑器中查看更改</a></li>
+            <li><a href="#viewingFileStatus">查看文件状态信息</a></li>
+            <li><a href="#comparing">比较文件版本</a></li>
+            <li><a href="#merging">合并文件修订版本</a></li>            
+        </ul>
+            
+        <div class="indent">
+            <a name="viewingChanges"></a>
+            <h3>在源代码编辑器中查看更改</h3>
+            
+            <p>如果在 IDE 的源代码编辑器中打开版本控制文件，则对照资源库中以前检出的基本版本对文件进行修改时，可以查看对该文件进行的实时更改。您在操作时，IDE 通过源代码编辑器旁注中的颜色编码传递了以下信息：</p>
+            
+            <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>蓝色</strong> (<span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>表示自早期修订版本以来更改的行。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>绿色</strong> (<span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>表示自早期修订版本以来添加的行。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>红色</strong> (<span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>表示自早期修订版本以来删除的行。</td>                
+                </tr>
+            </table>                
+            
+            <br>
+            <p>源代码编辑器左旁注逐行显示发生的更改。当修改给定行时，所做更改会立即在左旁注中显示出来。</p>
+                
+            <p>您可以单击旁注中的颜色组以调用版本控制命令。例如，单击红色图标（指明从本地副本中删除了行）时，左下方的屏幕快照会显示可用的窗口部件。</p>
+                
+            <p>源代码编辑器右旁注提供了对文件所做的更改的整体视图，从上到下显示。更改文件之后，将会立即生成颜色编码。</p>
+                
+            <p>注：单击旁注的特定点可以让内联光标立即转到文件中的该位置。想要查看受影响行的行号，可以将鼠标放在右旁注中的彩色图标上：</p>                
+              
+            <table class="cell" style="width:500px">
+                <tr>
+                    <td><a href="../../../images_www/articles/73/ide/cvs/left-ui.png" rel="lytebox" title="显示在编辑器左旁注中的版本控制颜色编码"> <img alt="显示在编辑器左旁注中的版本控制颜色编码" class="b-all" src="../../../images_www/articles/73/ide/cvs/left-ui-small.png"></a> <br><strong>左旁注</strong></td>
+                    <td><img alt="显示在编辑器右旁注中的版本控制颜色编码" class="b-all" src="../../../images_www/articles/73/ide/cvs/right-ui.png" title="显示在编辑器右旁注中的版本控制颜色编码"> <br><strong>右旁注</strong></td>
+                </tr>
+            </table>         
+             
+            <a name="viewingFileStatus"></a>
+            <h3>查看文件状态信息</h3>            
+             
+            <p>使用 "Projects"（项目）（Ctrl-1 组合键）、"Files"（文件）（Ctrl-2 组合键）、"Favorites"（收藏夹）（Ctrl-3 组合键）或 "Versioning"（版本控制）窗口时，IDE 提供了一些可视化功能，有助于查看文件状态信息。在下面的示例中，请注意标记（例如，<img alt="蓝色标记" src="../../../images_www/articles/73/ide/cvs/blue-badge.png">）、文件名颜色和相邻状态标签如何全都彼此一致，以向您提供一种简单而有效的方法来跟踪文件的版本控制信息：</p>
+            
+                <p class="align-center">
+                <img alt="&amp;quot;Favorites&amp;quot;（收藏夹）窗口中显示的蓝色标记" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/badge-example.png"></p>
+                
+            <p>标记、颜色编码、文件状态标签和最重要的 "Versioning"（版本控制）窗口都有助于在 IDE 中有效地查看和管理版本控制信息。</p>
+                
+            <ul>
+                <li><a href="#badges">标记和颜色编码</a></li>
+                <li><a href="#fileStatus">文件状态标签</a></li>
+                <li><a href="#versioning">"Versioning"（版本控制）窗口</a></li>
+            </ul>
+            
+            <div class="indent">
+                <a name="badges"></a>
+                <h4>标记和颜色编码</h4>
+            
+                <p>标记应用于项目、文件夹、包节点，通知您包含在该节点中的文件状态：</p>
+
+                <p>下表显示了用于标记的颜色方案：</p>
+
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:110px">UI 组件</th>
+                        <th class="tblheader" scope="col">描述</th>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>蓝色标记</strong> (<img alt="蓝色标记" src="../../../images_www/articles/73/ide/cvs/blue-badge.png">)</td>
+                        <td class="tbltd1">指示存在已在本地修改、添加或删除的文件。对于包，此标记仅应用于包本身，而不应用于它的子包。对于项目或文件夹，此标记指示其中的更改，或指示其所包含子文件夹中的任何更改。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>红色标记</strong> (<img alt="红色标记" src="../../../images_www/articles/73/ide/cvs/red-badge.png">)</td>
+                        <td class="tbltd1">标记包含<em>冲突</em>文件（即与资源库中保留的版本冲突的本地版本）的项目、文件夹或包。对于包，此标记仅应用于包本身，而不应用于它的子包。对于项目或文件夹，此标记指示其中的冲突，或指示其所包含子文件夹中的任何冲突。</td>
+                    </tr>
+                </table>
+                
+                <br><br><a name="color-coding-table"></a>
+                <p>颜色编码应用于文件名，以指示它们相对于资源库的当前状态：</p>
+                
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:40px">颜色</th>
+                        <th class="tblheader" scope="col">示例</th>
+                        <th class="tblheader" scope="col">描述</th>
+                    </tr>                    
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>蓝色</strong></td>
+                        <td class="tbltd1"><img alt="蓝色文本" src="../../../images_www/articles/73/ide/cvs/blue-text.png"></td>
+                        <td class="tbltd1">表示在本地修改了文件。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>绿色</strong></td>
+                        <td class="tbltd1"><img alt="绿色文本" src="../../../images_www/articles/73/ide/cvs/green-text.png"></td>
+                        <td class="tbltd1">表示在本地添加了文件。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>红色</strong></td>
+                        <td class="tbltd1"><img alt="红色文本" src="../../../images_www/articles/73/ide/cvs/red-text.png"></td>
+                        <td class="tbltd1">表示文件中包含本地工作副本与资源库中版本之间的冲突。</td>
+                    </tr>
+                     <tr> 
+                        <td class="tbltd1 align-center"><strong>灰色</strong></td>
+                        <td class="tbltd1"><img alt="灰色文本" src="../../../images_www/articles/73/ide/cvs/gray-text.png"></td>
+                        <td class="tbltd1">表示文件被 CVS 忽略，并且不会包含在版本控制命令（例如 "Update"（更新）和 "Commit"（提交））中。如果文件没有进行版本化，那么它们只能被忽略。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center" style="width:120px"><strong>删除线</strong></td>
+                        <td class="tbltd1 align-center"><img alt="删除文本" src="../../../images_www/articles/73/ide/cvs/strike-through-text.png"></td>
+                        <td class="tbltd1">表示从提交操作中排除了文件。只有选择从提交操作中排除个别文件时，删除线文本才出现在特定位置，例如 "Versioning"（版本控制）窗口或 "Commit"（提交）对话框。这类文件仍受其他 CVS 命令（例如 "Update"（更新））的影响。</td>
+                    </tr>  
+                </table>
+                
+                <br><a name="fileStatus"></a>
+                <h4>文件状态标签</h4>
+                
+                <p>文件状态标签以文本的形式指示 IDE 窗口中的版本控制文件的状态。默认情况下，IDE 在窗口中列出的文件右侧以灰色文本显示状态（新的、已修改、已忽略等）和标记信息。然而，您可以根据需要修改此格式。例如，如果要将修订版本号添加到状态标签中，请执行以下操作：</p>
+                    
+                <ol>
+                    <li>从主菜单中选择 "Tools"（工具）> "Options"（选项）；在 Mac 上为 "NetBeans" > "Preferences"（首选项）。此时将打开 "Options"（选项）窗口。</li>
+                    <li>选择窗口顶部的 "Miscellaneous"（其他）图标，然后单击下面的 "Versioning"（版本控制）标签。确保在左面板中的版本控制系统下方选择了 "CVS"：
+                        
+                        <p class="align-center">
+                        <a href="../../../images_www/articles/73/ide/cvs/cvs-options.png" rel="lytebox" title="CVS &amp;quot;Options&amp;quot;（选项）窗口"> <img alt="CVS &amp;quot;Options&amp;quot;（选项）窗口" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-options-small.png"></a></p></li>
+
+                    <li>单击 "Status Label Format"（状态标签格式）文本字段右侧的 "Add Variable"（添加变量）按钮。在显示的 "Add Variable"（添加变量）对话框中，选择 <code>{revision}</code> 变量，然后单击 "OK"（确定）。此时修订版本变量将添加到 "Status Label Format"（状态标签格式）文本字段中。</li>
+                    <li>要重新设置状态标签的格式，以在文件右侧仅显示状态和修订版本，可按下列顺序重新排列 "Status Label Format"（状态标签格式）文本字段的内容：
+                        
+                        <pre class="examplecode">[{status}; {revision}]</pre>
+               
+                        单击 "OK"（确定）。状态标签现在列出了文件状态和修订版本号（如果适用）：
+                    
+                        <p class="align-center">
+                        <img alt="显示在文件名旁边的文件标签" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-file-labels.png"></p></li>
+                </ol>                    
+                    
+                <p class="tips">从主菜单中选择 "View"（视图）> "Show Versioning Labels"（显示版本控制标签），可打开和关闭文件状态标签。</p>
+
+                <a name="versioning"></a>
+                <h4>"Versioning"（版本控制）窗口</h4>
+                    
+                <p>CVS "Versioning"（版本控制）窗口为您提供了一个实时列表，其中包括对本地工作副本的选定文件夹中的文件做出的所有更改。默认情况下，它将在 IDE 的底部面板中打开，其中列出了已添加、删除或修改的文件。</p>
+                
+                <p>要打开 "Versioning"（版本控制）窗口，选择一个版本化文件或文件夹（例如，从 "Projects"（项目）、"Files"（文件）或 "Favorites"（收藏夹）窗口中选择），然后从右键菜单中选择 "CVS" > "Show Changes"（显示更改）或者从主菜单中选择 "Versioning"（版本控制）> "Show Changes"（显示更改）。下面的窗口出现在 IDE 底部：</p>
+                
+                   <p class="align-center">
+                        <a href="../../../images_www/articles/73/ide/cvs/cvs-versioning-window.png" rel="lytebox" title="显示本地修改的文件的版本控制窗口"> <img alt="显示本地修改的文件的版本控制窗口" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-versioning-window-small.png"></a></p>
+    
+                <p>默认情况下，"Versioning"（版本控制）窗口会显示选定包或文件夹中所有已修改文件的列表。使用工具栏中的按钮，可以选择显示所有更改，也可以将显示的文件列表限定为本地或远程修改的文件。此外，也可以单击列出的文件上面的列标题，按名称、状态或位置对这些文件进行排序。</p>
+
+                <p>"Versioning"（版本控制）窗口工具栏中还包含一些按钮，可以为列表中显示的所有文件调用最常见的 CVS 任务。下表列出了 "Versioning"（版本控制）窗口工具栏中提供的 CVS 命令：</p>
+                
+                <table >
+                    <tr>
+                        <th class="tblheader" scope="col">图标</th>
+                        <th class="tblheader" scope="col" style="width:110px">名称</th>
+                        <th class="tblheader" scope="col">功能</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img alt="&amp;quot;refresh status&amp;quot;（刷新状态）图标" src="../../../images_www/articles/73/ide/cvs/refresh.png"></td>
+                        <td class="tbltd1 align-center"><strong>刷新状态</strong></td>
+                        <td class="tbltd1">刷新选定文件和文件夹的状态。可以刷新 "Versioning"（版本控制）窗口中显示的文件，以反映可能已在外部执行的任何更改。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img alt="&amp;quot;diff all&amp;quot;（全部比较）图标" src="../../../images_www/articles/73/ide/cvs/diff.png"></td>
+                        <td class="tbltd1 align-center"><strong>全部比较</strong></td>
+                        <td class="tbltd1">打开比较查看器，您可以用它对本地副本和资源库中保留的版本进行并排比较。</td>
+                    </tr>     
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img alt="&amp;quot;update all&amp;quot;（全部更新）图标" src="../../../images_www/articles/73/ide/cvs/update.png"></td>
+                        <td class="tbltd1 align-center"><strong>全部更新</strong></td>
+                        <td class="tbltd1">更新资源库中的所有选定文件。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img alt="&amp;quot;commit all&amp;quot;（全部提交）图标" src="../../../images_www/articles/73/ide/cvs/commit.png"></td>
+                        <td class="tbltd1 align-center"><strong>全部提交</strong></td>
+                        <td class="tbltd1">用于将本地更改提交到资源库。</td>
+                    </tr>            
+                </table>
+
+               
+                <p>您可以在 "Versioning"（版本控制）窗口中访问其他 CVS 命令，方法是选择与修改的文件相对应的表行，然后从右键单击菜单中选择一个命令：</p>
+                    
+                    <p class="align-center">
+                    <img alt="显示在 &amp;quot;Versioning&amp;quot;（版本控制）窗口中的所选文件上的右键单击菜单" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-right-click.png"></p>
+                       
+                
+                <p>例如，您可以在文件上执行以下操作：</p>               
+                        
+                <table>
+                    <tr>
+                        <td>
+                            <ul><li><strong>显示标注</strong>： <br><br>在源代码编辑器中打开的文件的左旁注中显示作者和修订版本号信息。</li></ul></td>                        
+                        <td class="f-page-cell"><img alt="显示在源代码编辑器左旁注中的标注" class="b-all" src="../../../images_www/articles/73/ide/cvs/annotations.png"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>搜索历史记录</strong>： <br><br>用于在 IDE 的历史记录查看器中搜索并比较选定文件的多个修订版本。通过历史记录查看器，还可以执行<a href="#comparing">比较</a>，或将本地副本回退至选定修订版本。</li></ul></td>                       
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/history-viewer.png" rel="lytebox" title="显示文件的多个修订版本的 CVS 历史记录查看器"> <img alt="显示文件的多个修订版本的 CVS 历史记录查看器" class="b-all" src="../../../images_www/articles/73/ide/cvs/history-viewer-small.png"></a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>从提交中排除</strong>： <br><br>用于标记执行提交时要排除的文件。</li></ul></td>                       
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/exclude-from-commit.png" rel="lytebox" title="在 &amp;quot;Commit&amp;quot;（提交）对话框中标记为排除的文件"> <img alt="在 &amp;quot;Commit&amp;quot;（提交）对话框中标记为排除的文件" class="b-all" src="../../../images_www/articles/73/ide/cvs/exclude-from-commit-small.png"></a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>还原修改</strong>： <br><br>打开 "Confirm Overwrite"（确认覆盖）对话框，以便还原已提交到本地工作副本中的文件的任何操作。</li></ul></td>                      
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/cvs-confirm-overwrite.png" rel="lytebox" title="在 &amp;quot;Commit&amp;quot;（提交）对话框中标记为排除的文件"> <img alt="在 &amp;quot;Commit&amp;quot;（提交）对话框中标记为排除的文件" class="b-right" src="../../../images_www/articles/73/ide/cvs/cvs-confirm-overwrite-small.png"></a></td>
+                    </tr>
+                </table>    
+            </div>
+        
+            <a name="comparing"></a>
+            <h3>比较文件版本</h3>
+            
+            <p>使用版本控制项目时，比较文件修订版本是一项常见任务。IDE 让您可以使用 "Diff"（比较）命令比较修订版本，该命令可以从选定项的右键单击菜单（"CVS" > "Diff"（比较））获得，也可以从 "Versioning"（版本控制）窗口获得。在 "Versioning"（版本控制）窗口中，可通过双击列出的文件来执行比较；否则，可单击顶部工具栏中的 "Diff All"（全部比较）图标 (<img alt="&amp;quot;diff all&amp;quot;（全部比较）图标" src="../../../images_www/articles/73/ide/cvs/diff.png">)。</p>
+            
+            <p>进行比较时，将在 IDE 的主窗口中打开选定文件和修订版本的图形化比较查看器。比较查看器在两个并行面板中显示两个副本。较新的副本显示在右侧，因此，如果要将资源库修订版本与工作副本进行比较，则在右面板中显示工作副本：</p>
+
+               <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/diff-viewer.png" rel="lytebox" title="CVS 比较查看器"> <img alt="CVS 比较查看器" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/diff-viewer-small.png"></a></p>
+              
+            <p>比较查看器使用<a href="#viewingChanges">颜色编码</a>来显示版本控制更改，该颜色编码与其他地方使用的颜色编码相同。在上面显示的屏幕快照中，绿色块指示已添加到较新修订版本中的内容。红色块指示从较新修订版本中删除了以前的修订内容。蓝色指示在突出显示的行中发的更改。</p>
+              
+            <p>此外，当对一组文件（例如，项目、包或文件夹）执行比较时，或者当单击 "Diff All"（全部比较）(<img alt="&amp;quot;diff all&amp;quot;（全部比较）图标" src="../../../images_www/articles/73/ide/cvs/diff.png">) 时，可在各比较之间进行切换，只需单击比较查看器上方区域中列出的文件即可。</p>
+            
+            <p>比较查看器还为您提供了以下功能：</p>
+            
+            <ul>
+                <li><a href="#makeChanges">对本地工作副本进行更改</a></li>
+                <li><a href="#navigateDifferences">在差异之间导航</a></li>                
+                <li><a href="#changeViewCriteria">更改查看条件</a></li>
+            </ul>
+            
+            <div class="indent">
+                <a name="makeChanges"></a>
+                <h4>对本地工作副本进行更改</h4>
+
+                <p>如果要对本地工作副本进行比较，IDE 允许您从比较查看器中直接进行更改。为此，可以将光标放在比较查看器的右侧窗格中，并且相应地修改文件，也可以每个突出显示的更改旁边的内联图标：</p>
+
+                <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Replace</strong>（替换）(<img alt="&amp;quot;replace&amp;quot;（替换）图标" src="../../../images_www/articles/73/ide/cvs/insert.png">)：</td>
+                        <td>将突出显示的文本从上一修订版本插入当前修订版本中</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Move All</strong>（全部移动）(<img alt="&amp;quot;move all&amp;quot;（全部移动）图标" src="../../../images_www/articles/73/ide/cvs/arrow.png">)：</td>
+                        <td>将文件的当前修订版本还原到上一个选定修订版本的状态</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Remove</strong>（删除）(<img alt="&amp;quot;remove&amp;quot;（删除）图标" src="../../../images_www/articles/73/ide/cvs/remove.png">)：</td>
+                        <td>从当前版本中删除突出显示的文本，使之与先前版本完全匹配。</td>                
+                    </tr>
+                </table>
+
+                <a name="navigateDifferences"></a>
+                <h4>在比较文件之间的差异中导航</h4>
+
+                <p>如果您的比较中包含多个差异，则可以使用工具栏中的箭头图标在它们之间导航。箭头图标可用于查看从上到下列出的差异：</p>
+
+                 <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Previous</strong>（上一个）(<img alt="&amp;quot;previous difference&amp;quot;（上一个差异）按钮" src="../../../images_www/articles/73/ide/cvs/diff-prev.png">)：</td>
+                        <td>转至比较中显示的上一个差异</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Next</strong>（下一个）(<img alt="&amp;quot;next difference&amp;quot;（下一个差异）按钮" src="../../../images_www/articles/73/ide/cvs/diff-next.png">)：</td>
+                        <td>转至比较中显示的下一个差异</td>
+                    </tr>
+                </table>
+
+                <a name="changeViewCriteria"></a>
+                <h4>更改查看条件</h4>
+
+                <p>您可以选择是查看包含本地工作副本或资源库中更改的文件，还是查看同时包含两者中的更改的文件：</p>
+
+                 <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Local</strong>（本地）(<img alt="&amp;quot;locally modified&amp;quot;（本地修改）图标" src="../../../images_www/articles/73/ide/cvs/locally-mod.png">)：</td>
+                        <td>仅显示本地修改的文件</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Remote</strong>（远程）(<img alt="&amp;quot;remotely modified&amp;quot;（远程修改）图标" src="../../../images_www/articles/73/ide/cvs/remotely-mod.png">)：</td>
+                        <td>仅显示远程修改的文件</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Both</strong>（两者）(<img alt="&amp;quot;locally and remotely modified&amp;quot;（本地和远程修改）图标" src="../../../images_www/articles/73/ide/cvs/both-mod.png">)：</td>
+                        <td>同时显示本地和远程修改的文件</td>
+                    </tr>                
+                </table>
+            </div>
+
+            <a name="merging"></a>
+            <h3>合并文件修订版本</h3>
+
+            <p>通过 NetBeans IDE，可以将对资源库中不同分支所做的更改与本地工作副本进行合并。使用 CVS "Merge"（合并）对话框时，只需指定相应的条件，表明要与工作副本合并的资源库源即可。</p>
+
+            <p>以下简单用例说明如何应用 "Merge"（合并）对话框，将完整分支合并到主干的标头中：</p>
+                
+            <br>
+            <table >
+                <tr>
+                    <td class="tblheader valign-top align-center" style="width:80px"><strong>用例：</strong></td>
+                    <td class="tbltd1">
+                        这是一项请求，请求开始开发项目的新功能，因此，将会从该项目主干的当前状态创建新分支。完成所有必要的工作并且分支中的代码足够稳定后，可以将新功能集成到主干中。
+                    </td>
+                </tr>
+            </table>
+                
+            <ol>
+                <li>为项目创建新分支，方法是右键单击项目节点，然后选择 "CVS" > "Branch"（分支）。在 "Branch"（分支）对话框中，输入 <code>new_feature</code> 作为分支名称，并确保 "Switch to this Branch Afterwards"（以后切换到此分支）选项处于选中状态：
+                    
+                    <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-branch-dialog.png" rel="lytebox" title="包含用户指定数据的 &amp;quot;Branch&amp;quot;（分支）对话框"> <img alt="包含用户指定数据的 &amp;quot;Branch&amp;quot;（分支）对话框" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-branch-dialog-small.png"></a></p>
+                    
+                    单击 "Branch"（分支）按钮。此时将在资源库中创建新分支，而且 IDE 会将目标资源库位置切换至新分支。在 "Projects"（项目）窗口中，新的分支名称以灰色文本显示在版本控制文件旁，表示您目前正在使用分支。
+                    <p class="notes"><b>注：</b>确保激活了<a href="#fileStatus">文件状态标签</a>（从主菜单中选择 "View"（视图）> "Show Versioning Labels"（显示版本控制标签））。</p></li>
+                <li>编辑文件，添加文件，删除文件。提交所有更改。</li>
+                <li>新功能准备就绪后，切换回主干。如果要在两个分支之间进行合并，使用的必须是目标分支（即，在这种情况下为主干）。右键单击项目节点，然后选择 "CVS" > "Switch to Branch"（切换到分支）。在显示的对话框中，选择 "Switch to Trunk"（切换到主干），然后单击 "Switch"（切换）。<br><br> IDE 会将目标资源库位置切换至主干。在 "Projects"（项目）窗口中，注意文件状态标签会自动更新，以反映新的工作位置。</li>
+                <li>要进行合并，请右键单击项目节点，然后选择 "CVS" > "Merge Changes from Branch"（合并分支中的更改）。在显示的对话框中，您会看到 "Merge Changes Into Working Branch"（将更改合并到工作分支）字段中包含 <code>Trunk</code>，这指示当前工作位置。<br><br> 在该对话框中，指定以下条件：
+                    
+                    <ul>
+                        <li>将 "Starting From"（起始位置）选项设置为 "Branch Point/Branch Root"（分支点/分支根），因为创建分支后需要合并所有更改。</li>
+                        <li>对于 "Until"（结束位置）选项，请选择 "Branch Head"（分支标头），然后键入要合并到主干中的分支名称。您还可以单击 "Browse"（浏览），以搜索资源库中的现有分支。</li>
+                        <li>如果要在合并后标记修订版本，请选择 "Tag Trunk after Merge"（标记合并后的主干），然后输入所选的标记名称。
+						<p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-merge-branches.png" rel="lytebox" title="包含用户指定数据的 &amp;quot;Merge Changes from Branch&amp;quot;（合并分支中的更改）对话框"> <img alt="包含用户指定数据的 &amp;quot;Merge Changes from Branch&amp;quot;（合并分支中的更改）对话框" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-merge-branches-small.png"></a></p></li>
+                    </ul>
+                   
+                    单击 "Merge"（合并）。IDE 会将分支合并到主干中。如果该过程中出现任何合并冲突，则会将项目的状态更新为<a href="#resolving">合并冲突</a>，以说明这一情况。</li>
+            </ol>
+
+            <p><strong class="notes">注：</strong>将分支中的文件更改合并到本地工作目录后，仍须使用 "Commit"（提交）命令提交更改，以便将其添加到资源库中。</p>
+        </div>
+
+        <a name="committing"></a>
+        <h2>将源文件提交到资源库</h2>
+         
+        <p>对源进行更改后，可以将其提交到资源库。通常，最好对照资源库更新现有的所有副本，然后再执行提交，以便确保不会出现冲突。然而，当多名开发者同时处理项目时，可能会发生冲突，这应该属于正常现象。IDE 提供了灵活的支持，让您可以执行所有这些功能。此外，还提供了冲突解决程序，用于安全地处理发生的任何冲突。</p>
+            
+        <ul>
+            <li><a href="#updating">更新本地副本</a></li>
+            <li><a href="#resolving">解决冲突</a></li>
+            <li><a href="#performing">执行提交</a></li>
+        </ul>
+         
+        <div class="indent">
+            <a name="updating"></a>
+            <h3>更新本地副本</h3>
+            
+            <p>在“项目”、“文件”或“收藏夹”窗口中，可以从任何版本控制项的右键单击菜单中选择 "CVS" >“更新”进行更新。直接在“版本控制”窗口中工作时，只需右键单击列出的文件并选择“更新”即可。</p>
+                
+            <p>要对已修改的源执行更新，可以单击“全部更新”图标 (<img alt="&amp;quot;update all&amp;quot;（全部更新）图标" src="../../../images_www/articles/73/ide/cvs/update.png">)，该图标显示在位于<a href="#versioning">“版本控制”窗口</a>和<a href="#comparing">比较查看器</a>顶部的工具栏中。资源库中可能进行的任何更改显示在“版本控制输出”窗口中。</p>
+    
+            <a name="resolving"></a>
+            <h3>解决冲突</h3>
+            
+            <p>执行更新或提交时，IDE 的 CVS 支持会将文件与资源库源进行比较，以确保相同位置尚未进行其他更改。如果上次检出（或更新）不再匹配资源库 <em>HEAD</em>（即最新修订版本），<em>并且</em>应用于本地工作副本的更改与 HEAD 中也已更改的区域保持一致，则更新或提交会导致<em>冲突</em>。</p>
+                
+            <p>如<a href="#badges">标记和颜色编码</a>中所示，当在 "Projects"（项目）、"Files"（文件）或 "Favorites"（收藏夹）窗口中进行查看时，冲突会在 IDE 中显示为红色文本，并附带有一个红色标记 (<img alt="红色标记" src="../../../images_www/articles/73/ide/cvs/red-badge.png">)。在 "Versioning"（版本控制）窗口中工作时，冲突还可通过文件的状态表示：</p>
+                
+                <p class="align-center">
+                <img alt="显示在 &amp;quot;Versioning&amp;quot;（版本控制）窗口中的文件冲突" class="b-right margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-conflict-versioning-win.png"></p>
+               
+            <p>出现的任何冲突必须在文件提交到资源库之前得到解决。您可以在 IDE 中使用合并冲突解决程序解决冲突。合并冲突解决程序提供了一个直观的界面，让您可以在按顺序解决各个冲突的同时，边查看合并的冲突边进行更改。您可以访问发生冲突的文件中的合并冲突解决程序，方法是右键单击该文件，然后选择 "CVS" > "Resolve Conflicts"（解决冲突）。</p>
+      
+            <p>"Merge Conflicts Resolver"（合并冲突解决程序）在顶部窗格中并排显示两个冲突的修订版本，并突出显示冲突区域。对两个修订版本之间的各个冲突进行合并时，下方窗格会描述显示的文件：</p>
+                
+                <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/conflict-resolver.png" rel="lytebox" title="显示发生冲突的文件的冲突解决程序"> <img alt="显示发生冲突的文件的冲突解决程序" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/conflict-resolver-small.png"></a></p>
+               
+                <p>您可以通过接受顶部窗格中显示的两个修订版本之一来解决冲突。单击要接受的修订版本的 "Accept"（接受）按钮。IDE 会将接受的修订版本与源文件合并，您可以立即在合并冲突解决程序的底部窗格中看到合并结果。解决了所有冲突后，单击 "OK"（确定）退出合并冲突解决程序并保存修改的文件。此时将删除冲突标记，现在您就可以将修改的文件提交到资源库了。</p>
+            
+            <a name="performing"></a>
+            <h3>执行提交</h3>
+            
+            <p>编辑源文件、执行更新并解决所有冲突后，您可以将文件从本地工作副本提交到资源库。IDE 允许通过以下方式调用提交命令：</p>
+            
+            <ul>
+                <li>在 "Projects"（项目）、"Files"（文件）或 "Favorites"（收藏夹）窗口中，右键单击新项或修改的项，然后选择 "CVS" > "Commit"（提交）。</li>
+                <li>从 "Versioning"（版本控制）窗口或比较查看器中，单击位于工具栏中的 "Commit All"（全部提交）(<img alt="&amp;quot;commit all&amp;quot;（全部提交）图标" src="../../../images_www/articles/73/ide/cvs/commit.png">) 按钮。</li>
+            </ul>
+                
+            <p>此时将打开 "Commit"（提交）对话框，其中显示要提交到资源库的文件：</p>
+                
+                <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-commit-dialog.png" rel="lytebox" title="显示将要提交的文件的 &amp;quot;Commit&amp;quot;（提交）对话框"> <img alt="显示将要提交的文件的 &amp;quot;Commit&amp;quot;（提交）对话框" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-commit-dialog-small.png"></a></p>
+                
+            <p>"Commit"（提交）对话框将列出以下内容：</p>
+            
+            <ul>
+                <li>本地修改的所有文件</li>
+                <li>本地删除的所有文件</li>                
+                <li>所有新文件（即尚未包含在资源库中的文件）</li>
+                <li>已重命名的所有文件。CVS 可通过删除原始文件并使用新名称创建副本来处理重命名的文件。</li>
+            </ul>
+            
+            <p>在 "Commit"（提交）对话框中，可以指定是否从提交中排除个别文件。为此，可以单击选定文件的 "Commit Action"（提交操作）列，并从下拉列表中选择 "Exclude from Commit"（从提交中排除）。</p>
+                
+            <p>包含图像文件等新的二进制文件时，系统将其自动检测为二进制文件。您可以指定 MIME 类型的文件，方法是在 "Commit Action"（提交操作）列中，从下拉列表中选择 "Add as Binary"（作为二进制内容添加）或 "Add as Text"（作为文本添加）。</p>
+            
+            <p>执行提交：</p>
+            
+            <ol>
+                <li>在 "Commit Message"（提交消息）文本区域中键入提交消息。或者，单击右上角的 "Recent Messages"（近期的消息）(<img alt="&amp;quot;Recent Messages&amp;quot;（近期的消息）图标" src="../../../images_www/articles/73/ide/cvs/recent-msgs.png">) 图标，以便在以前使用过的消息列表中进行查看和选择。</li>
+                <li>指定各个文件的操作后，单击 "Commit"（提交）。IDE 将执行提交操作，并将本地更改发送到资源库中。在执行提交操作时，将在界面右下方显示 IDE 的状态栏。成功提交后，版本控制标记会在 "Projects"（项目）、"Files"（文件）或 "Favorites"（收藏夹）窗口中消失，并且提交文件中的颜色编码会变回黑色。</li>
+            </ol>
+        </div>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20CVS%20Support%20in%20NetBeans%20IDE">发送有关此教程的反馈意见</a></div>
+        
+        <br style="clear:both;">
+        
+        <a name="seeAlso"></a>
+        <h2>另请参见</h2>
+        
+        <p>NetBeans IDE 的 CVS 指导教程到此就结束了。本文档通过指导您在使用 IDE 的 CVS 支持时完成标准的工作流，介绍了如何在 IDE 中执行基本的版本控制任务。它还介绍了如何设置版本控制项目和对版本控制文件执行基本任务，同时简要说明了 IDE 中包含的一些新的 CVS 功能。</p>
+          
+        <p>有关相关文档，请参见以下参考资料：</p>
+        
+        <ul>
+		<li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#CVS">NetBeans IDE 的 CVS 支持常见问题解答</a>。包含在 NetBeans IDE 中设置和使用 CVS 的常见问题的文档。</li>
+		<li><a href="git.html">在 NetBeans IDE 中使用 Git 支持</a>。一个关于如何在 NetBeans IDE 中使用 Git 版本控制客户端的介绍性指南。</li>
+		<li><a href="mercurial.html">在 NetBeans IDE 中使用 Mercurial 支持</a>。一个关于如何在 NetBeans IDE 中使用 Mercurial 版本控制客户端的指南。</li>
+		<li><a href="subversion.html">在 NetBeans IDE 中使用 Subversion 支持</a>。一个关于如何在 NetBeans IDE 6.x 中使用 Subversion 版本控制的介绍性指南。</li>
+        <li><a href="clearcase.html">在 NetBeans IDE 中使用 ClearCase 支持</a>。一个在 IDE 中使用 ClearCase 版本控制功能的简介。</li>
+		<li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">使用版本控制对应用程序进行版本控制</a>。</li>
+        
+        
+				
+        </ul>
+
+    </body>
+</html>

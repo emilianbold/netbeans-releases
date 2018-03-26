@@ -1,0 +1,355 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<!--
+Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+    <head>
+        <title>Javaデスクトップ・アプリケーションのパッケージ化と配布</title>
+        <meta name="description" content="Creating executable JAR files and distributing NetBeans projects">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="author" content="Max Sauer, Patrick Keegan">
+        <style type="text/css">
+
+        </style>
+<meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+    <body>
+        <h1>Javaデスクトップ・アプリケーションのパッケージ化と配布</h1>
+        
+        <p>多くの初級プログラマが尋ねる質問の1つに、「IDEでアプリケーションを作成しましたが、これをIDEの外部のコマンド行から動作させるにはどうすればよいですか」というものがあります。同様に、「このアプリケーションを他のユーザーに、IDE全体を一緒に提供することなく配布するにはどうすればよいですか」と尋ねる場合もあります。
+        </p>
+        <p>これらの質問への答えは比較的単純ですが、必ずしも明白ではありません。このドキュメントでは、IDEを使用してアプリケーションを配布やデプロイメントのために準備する方法の基本を説明することによって、これらの質問に対処します。さらに、このドキュメントでは、システムを構成するために必要になる可能性のある(または、アプリケーションのユーザーに渡すことが必要になる可能性のある)情報を提供します。ここでは、ユーザーが次の方法でアプリケーションにアクセスできるように、アプリケーションをデプロイするためのいくつかの異なるアプローチを示します。</p>
+    <ul>
+                <li>アプリケーションのJAR (Java Archive)ファイルをダブルクリックする。</li>
+                <li>コマンド行からアプリケーションをコールする。</li>
+                <li>スクリプト・ファイルからアプリケーションをコールする。</li>
+                <li>Java Web Startを使用する。</li>
+    </ul>
+
+            <p><b>目次</b></p>
+        <img alt="このページの内容は、NetBeans IDE 8.0に適用されます" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="このページの内容は、NetBeans IDE 8.0に適用されます">
+        <ul class="toc">
+            <li><a href="#createjar">実行可能なJARファイルの作成</a>
+              <ul>
+                <li><a href="#setup" title="プロジェクトの設定">既存のソースを使用したプロジェクトの作成</a></li>
+                <li><a href="#configure">プロジェクトの構成</a></li>
+                <li><a href="#build">プロジェクトのビルドおよびJARファイルの作成</a> </li>
+              </ul>
+            </li>
+            <li><a href="#run">JARファイルの実行と配布</a></li>
+            <li><a href="#startapp">Javaアプリケーションの起動</a>
+              <ul>
+                <li><a href="#commandline">コマンド行からのアプリケーションの起動</a></li>
+                <li><a href="#script">スクリプトからのアプリケーションの起動</a></li>
+              </ul>
+            </li>
+            <li><a href="#javaws">Java Web Start用のアプリケーションのパッケージ化</a></li>
+            <li><a href="#troubleshooting">トラブルシューティングのヒント</a>
+              <ul>
+                <li><a href="#jarfiles">JARファイルの関連付けの指定</a> </li>
+                <li><a href="#path">PATH環境変数の設定</a> </li>
+              </ul>
+            </li>
+            <li><a href="#nextsteps" title="次の手順">次の手順</a></li>
+        </ul>
+            <p class="align-center">&nbsp;</p>
+   <p><b>このチュートリアルを完了するには、次の表に示すソフトウェアとリソースが必要です。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th width="165" class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th width="142" class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1"><p>バージョン7または8 </p></td>
+                </tr>
+				<tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FDeploymentTutorial.zip" target="_blank">デプロイメント・チュートリアルのソース・ファイル</a></td>
+                    <td class="tbltd1"><p>&nbsp;</p></td>
+                </tr>
+            </tbody>
+        </table>
+
+            <br>
+            <!-- ===================================================================================== -->
+    
+
+        
+    <!-- ===================================================================================== -->
+    <h2><a id="createjar" name="createjar"></a>実行可能なJARファイルの作成</h2> 
+        <p>チュートリアルのこの部分では、IDEで配布可能なアプリケーションを作成した後、そのアプリケーションをIDEの外部から実行するための方法を示します。このアプリケーションを実行可能な<a href="http://download.oracle.com/javase/tutorial/deployment/jar/run.html" target="_blank">JAR</a>ファイルの形式でパッケージ化します。 </p>
+        <p>JARファイルは、複数のファイルやフォルダを含めることができるアーカイブ・ファイルです。JARファイルはzipファイルに似ていますが、JARファイルには、Javaアプリケーションを配布するために役立つ追加の属性を含めることができます。これらの属性には、JARファイルのデジタル署名、追加の圧縮、マルチプラットフォーム互換性などが含まれます。 </p>
+        <p>この課題では、IDEプロジェクトを作成した後、そのプロジェクトに2つのあらかじめ記述されたJavaソース・ファイルを配置します。次に、クラスをコンパイルし、実行可能なJARファイルをビルドします。その後、JARファイルをIDEの外部から実行する方法について学習します。</p>
+        <p>このチュートリアルで使用されるクラスには、テキスト・ファイル内部のテキストまたは正規表現パターンを検索するために使用できる、<a href="http://www.gnu.org/software/grep/">GNU grep</a>ユーティリティの機能が実装されています。このプロジェクトにはコマンド行とGUIの両方のバージョンのアプリケーションが含まれているため、アプリケーションを実行するための異なる方法を確認できます。        </p>
+        
+        
+  
+            <h3 class="tutorial"><a name="setup"></a>既存のソースを使用したプロジェクトの作成 </h3>
+            <ol>
+                <li>
+                  <p><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FDeploymentTutorial.zip" target="_blank">DeploymentTutorial.zip</a>ファイルをダウンロードし、その内容をシステム上に抽出します。<br>このzipアーカイブには、アプリケーションのソース・ファイルに加えて、このチュートリアルで使用されるその他のファイルもいくつか含まれています。</p>
+                </li>
+                <li>
+                  <p>NetBeans IDEで、「ファイル」>「新規プロジェクト」を選択します。</p>
+                </li>
+                <li>カテゴリを選択ページで、「Java」カテゴリにある「既存のソースを使用するJavaプロジェクト」を選択し、「次」をクリックします。</li>
+                <li>ウィザードの名前と場所ページで、プロジェクト名として「<tt>AnotherGrep</tt>」と入力し、プロジェクトの場所を指定します。<br>「次」をクリックします。
+                    <p class="tips">プロジェクト・フォルダが、プロジェクトにインポートするソース・ファイルと同じ場所に存在する必要は<i>ありません</i>。</p>
+                </li>
+                <li>ウィザードの既存のソース・ページで、プロジェクトに含めるソースを指定します。<br>「ソース・パッケージ・フォルダ」フィールドの右にある「フォルダの追加」ボタンをクリックします。システム上にある解凍済の<tt>DeploymentTutorial</tt>フォルダに移動してそのフォルダを展開し、<tt>src</tt>フォルダを選択して「開く」をクリックします。<tt>src</tt>フォルダが「ソース・パッケージ・フォルダ」フィールドに追加されます。</li>
+                <li>「終了」をクリックします。<br>
+                  <p class="notes"><b>注意:</b> たとえば、プロジェクトへのインポートから一部のソース・ファイルを除外する場合は、「次」をクリックして最後の「含める/除外する」ウィンドウを開きます。ここでは、<tt>src</tt>フォルダ内のすべてのソース・ファイルを使用するため、「終了」をクリックして新規プロジェクト・ウィザードでの操作を終了します。        </p>
+                </li>
+            </ol>
+        
+            <p>プロジェクトがIDEで開かれ、「プロジェクト」ウィンドウに表示されます。プロジェクトの「ソース・パッケージ」ノードを展開することによって、プロジェクトの内容を調べることができます。ここには、<tt>Grep</tt>と<tt>xGrep</tt>という名前のクラスが表示されます。<tt>Grep.java</tt>は、このアプリケーションのコンソール・バージョンです。<tt>xGrep.java</tt>はこのアプリケーションのGUIバージョンであり、<tt>Grep.java</tt>で定義されたメソッドを使用します。</p>
+
+            <h3 class="tutorial"><a name="configure"></a>プロジェクトの構成</h3>
+        
+            <p>次のような、実行する必要のあるいくつかの構成手順があります。</p>
+            <ul>
+                <li>ソースをコンパイルするために使用されるJavaプラットフォームを選択します。 </li>
+                <li>プロジェクトのメイン・クラスを設定します。これを行うことにより、プロジェクトのビルド時に作成するJARファイルが実行可能であることが保証されます。</li>
+            </ul>
+      
+                <h4>Javaプラットフォームの確認</h4>
+                <p>このプロジェクトは、Java 7またはJava 8プラットフォーム上でコンパイルおよび実行する必要があります。そのため、このプロジェクトのプラットフォームとしてJava 7またはJava 8がそれぞれ使用されることを確認する必要があります。  </p>
+                <ol>
+                  <li>プロジェクト・ノードを右クリックし、「プロパティ」を選択します。</li>
+                  <li>「ライブラリ」タブで、「Javaプラットフォーム」が「JDK 1.7」(またはJDK 1.8)であることを確認します。</li>
+                  <li>「ソース」タブの「ソース/バイナリ形式」で「JDK 7」(またはJDK 8)を選択します。</li>
+                  <li>「OK」をクリックして「プロパティ」ウィンドウを閉じます。 </li>
+                </ol>
+                <h4>メイン・クラスの設定</h4>
+                <p>ユーザーが(JARファイルをダブルクリックするか、またはコマンド行で「<tt>java -jar AnotherGrep.jar</tt>」と入力することによって) JARファイルを容易に実行するには、そのJARの<i>マニフェスト</i>ファイル内でメイン・クラスを指定する必要があります。(マニフェストは、アプリケーションを実行するときに<tt>java</tt>起動プログラムに役立つJARファイルに関する情報を含む、JARファイルの標準の部分です。)メイン・クラスは、<tt>java</tt>起動プログラムがアプリケーションの実行を開始するエントリ・ポイントとして機能します。 </p>
+                <p>プロジェクトをビルドすると、IDEによってJARファイルがビルドされ、マニフェストが含められます。プロジェクトのメイン・クラスを設定する場合は、そのメイン・クラスがマニフェストで指定されていることを確認してください。</p>
+                <p>プロジェクトのメイン・クラスを設定するには:</p>
+                <ol>
+                    <li>プロジェクト・ノードを右クリックし、「プロパティ」を選択します。</li>
+                    <li>「実行」カテゴリを選択し、「メイン・クラス」フィールドに<tt>anothergrep.xGrep</tt>と入力します。</li>
+                    <li>「OK」をクリックして、「プロジェクト・プロパティ」ダイアログ・ボックスを閉じます。</li>
+                </ol>
+        <p>このチュートリアルで後でプロジェクトをビルドすると、マニフェストが生成され、次のエントリが含まれます。</p>
+    <pre class="examplecode">Main-Class: anothergrep.xGrep</pre>
+    <h3><a name="build"></a>プロジェクトのビルドおよびJARファイルの作成 </h3>
+            <p>これでソースの準備ができ、プロジェクトが構成されたので、次にプロジェクトをビルドします。</p> 
+            <p>プロジェクトをビルドするには:</p>
+            <ul>
+                <li>「実行」>「プロジェクトのビルド」(AnotherGrep)を選択します。<br>または、「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「ビルド」を選択します。 </li>
+            </ul>
+        
+            <p>プロジェクトをビルドすると、次が行われます。</p>
+            <ul>
+                <li><tt>build</tt>フォルダおよび<tt>dist</tt>フォルダは、プロジェクト・フォルダ(以後<i>PROJECT_HOME</i>フォルダと呼ぶ)に追加されます。</li>
+                <li>すべてのソースは、<i>PROJECT_HOME</i><tt>/build</tt>フォルダにある<tt>.class</tt>ファイルにコンパイルされます。</li>
+                <li>プロジェクトが含まれたJARファイルが<tt><i>PROJECT_HOME</i>/dist</tt>フォルダ内に作成されます。</li>
+                <li>プロジェクトのライブラリを指定した場合(JDKに加えて)、<tt>dist</tt>フォルダに<tt>lib</tt>フォルダが作成されます。ライブラリが<tt>dist/lib</tt>にコピーされます。
+                </li>
+                <li>JARにあるマニフェスト・ファイルが更新され、プロジェクトのクラスパスにあるメイン・クラスとライブラリを指定するエントリが含まれます。</li>
+            </ul>
+            <p class="notes"><b>注意:</b> IDEの「ファイル」ウィンドウで、マニフェストの内容を表示できます。プロジェクトをビルドした後に、「ファイル」ウィンドウに切り替え、<tt>dist/AnotherGrep.jar</tt>に移動します。JARファイルのノードを展開し、<tt>META-INF</tt>フォルダを展開します。次に、<tt>MANIFEST.MF</tt>をダブルクリックしてソース・エディタのマニフェストを表示します。</p>
+            <pre class="examplecode">Main-Class: anothergrep.xGrep</pre>
+            
+            マニフェスト・ファイルの詳細を調べるには、Javaチュートリアルの<a href="http://java.sun.com/docs/books/tutorial/deployment/jar/manifestindex.html">この章</a>を読んでください。 
+          <h2 class="tutorial"><a name="run"></a>JARファイルの実行と配布 </h2>
+          <h3 class="tutorial">IDEの内部でのアプリケーションの実行</h3>
+          <p>IDEでアプリケーションを開発する場合は通常、配布する前に、それらのアプリケーションをテストして調整する必要があります。IDEからアプリケーションを実行することによって、作業中のアプリケーションを容易にテストできます。</p>
+            <p>IDEで<tt>AnotherGrep</tt>プロジェクトを実行するには、「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「実行」を選択します。</p>
+            <p>「xGrep」ウィンドウが開きます。「Browse」ボタンをクリックすると、テキストのパターンを検索するファイルを選択できます。「Search Pattern」フィールドに、一致を検索するテキストまたは正規表現パターンを入力し、「Search」をクリックします。それぞれの一致の結果が「xGrep」ウィンドウの「Output」領域に表示されます。</p> 
+            <p>このアプリケーションで使用できる正規表現に関する情報は、<a href="http://www.gnu.org/software/grep/manual/html_node/Regular-Expressions.html#Regular-Expressions">ここ</a>や、その他の多くの場所で入手できます。</p>
+
+
+
+            <h3 class="tutorial">IDEの外部でのアプリケーションの実行</h3>
+            <p>アプリケーションの開発を終了したら、配布する前に、そのアプリケーションがIDEの外部でも動作することの確認が必要になる場合があります。</p>
+            <p>次の手順に従うことによって、IDEの外部でアプリケーションを実行できます。</p>
+            <ul>
+                <li>システムのファイル・マネージャ(たとえば、Windows XPシステム上の「マイ コンピュータ」ウィンドウ)で、<tt><i>PROJECT_HOME</i>/dist</tt>に移動して<tt>AnotherGrep.jar</tt>ファイルをダブルクリックします。 </li>
+            </ul>
+            <p>「xGrep」ウィンドウが開いたら、アプリケーションが正常に起動されたことがわかります。</p>
+            <p>「xGrep」ウィンドウが開かない場合は、システムにJARファイルとJava Runtime Environmentの間のファイルの関連付けが存在しない可能性があります。後述する<a href="#troubleshooting">JARファイルの関連付けのトラブルシューティング</a>を参照してください。</p>
+
+            <h3 class="tutorial">アプリケーションの他のユーザーへの配布</h3>       
+            <p>これでIDEの外部でアプリケーションが動作することが確認されたため、そのアプリケーションを配布する準備ができました。</p>
+                       
+            <ul>
+              <li>このアプリケーションを使用するユーザーに、アプリケーションのJARファイルを送信します。このアプリケーションのユーザーは、JARファイルをダブルクリックすることによって実行できるはずです。これが正しく機能しない場合は、後述する<a href="#troubleshooting">JARファイルの関連付けのトラブルシューティング</a>の項にある情報を示してください。</li>
+            </ul>
+            <p class="notes"><strong>注意:</strong> アプリケーションがJDKに含まれているライブラリ以外の追加ライブラリに依存している場合は、配布にそれらのライブラリも含める必要があります(この例には該当しません)。これらのライブラリの相対パスは、IDEでアプリケーションを開発しているときにJARのマニフェスト・ファイルの<tt>classpath</tt>エントリに追加されます。起動時に、これらの追加ライブラリが指定されたクラスパス(つまり、相対パス)に見つからない場合、アプリケーションは起動されません。<br>アプリケーションのJARファイルとライブラリを含むzipアーカイブを作成し、このzipファイルをユーザーに提供します。このzipファイルを展開して、このJARファイルとライブラリのJARファイルが同じフォルダに存在することを確認するようユーザーに指示します。アプリケーションのJARファイルを実行します。 
+      <!-- ===================================================================================== -->
+    </p>
+        <h2><a name="startapp"></a>Javaアプリケーションの起動</h2>
+            
+        <p>この課題の目標は、コマンド行からアプリケーションを起動するためのいくつかの方法を示すことです。</p>     
+       
+        <p>この課題では、Javaアプリケーションを起動するための次の2つの方法を示します。</p>
+        <ul>
+            <li>コマンド行から<tt>java</tt>コマンドを実行します。</li>
+            <li>スクリプトを使用して、JARファイル内のクラスをコールします。</li>
+        </ul>
+  
+            <h3 class="tutorial"><a id="commandline" name="commandline"></a>コマンド行からのアプリケーションの起動</h3>
+            <p><tt>java</tt>コマンドを使用して、コマンド行からアプリケーションを起動できます。実行可能なJARファイルを実行する場合は、このコマンドの<tt>-jar</tt>オプションを使用します。</p>
+            <p>たとえば、AnotherGrepアプリケーションを実行するには、次の手順を行います:</p>
+            <ol>
+                <li>ターミナル・ウィンドウを開きます。Microsoft Windowsシステムでこれを行うには、「スタート」>「ファイル名を指定して実行」を選択し、「名前」フィールドに「<tt>cmd</tt>」と入力して「OK」をクリックします。</li>
+                <li><tt><i>PROJECT_HOME</i>/dist</tt>フォルダにディレクトリを変更します(<tt>cd</tt>コマンドを使用します)。</li>
+                <li>次の行を入力して、アプリケーションのメイン・クラスを実行します。
+                <pre class="examplecode">java -jar AnotherGrep.jar</pre></li>
+            </ol>
+            <p>これらの手順に従ってもアプリケーションが実行されない場合は、次のいずれかを実行する必要があります。</p>
+            <ul>
+                <li>ステップ3で、<tt>java</tt>バイナリのフル・パスを含めます。たとえば、JDKまたはJREが存在する場所に応じて、次のように入力します。
+                  <pre class="examplecode">C:\Program Files\Java\jdk1.7.0_51\bin\java -jar AnotherGrep.jar</pre>
+                </li>
+                <li>コマンド行から<tt>java</tt>バイナリのパスを指定しなくても済むように、PATH環境変数にJavaバイナリを追加します。<a href="#path">PATH環境変数の設定</a>を参照してください。</li>
+            </ul>
+
+            <h3 class="tutorial"><a name="script"></a>スクリプトからのアプリケーションの起動</h3>
+            <p>配布するアプリケーションがコンソール・アプリケーションである場合は、そのアプリケーションをスクリプトから起動するのが便利なことに気付くかもしれません(特に、そのアプリケーションが、実行のために長く、複雑な引数を必要とする場合)。この項では、Grepプログラムのコンソール・バージョンを使用します。その場合、JARファイルに引数(検索パターンとファイル・リスト)を渡す必要がありますが、それはこのスクリプトで呼び出されます。コマンド行での入力を減らすために、テスト・アプリケーションを実行するのに適した単純なスクリプトを使用します。</p>
+            <p>まず、アプリケーション内のメイン・クラスをコンソール・バージョンのクラスになるように変更し、JARファイルを再ビルドする必要があります。</p>
+            <ol>
+                <li>IDEの「プロジェクト」ウィンドウで、プロジェクトのノード(<tt>AnotherGrep</tt>)を右クリックし、「プロパティ」を選択します。</li>
+                <li>「実行」ノードを選択し、「メイン・クラス」プロパティを(「<tt>anothergrep.xGrep</tt>」から)「<tt>anothergrep.Grep</tt>」に変更します。「OK」をクリックして、「プロジェクト・プロパティ」ウィンドウを閉じます。</li>
+                <li>プロジェクトのノードをもう一度右クリックし、「プロジェクトを消去してビルド」を選択します。</li>
+            </ol>
+            <p>これらの手順を完了すると、JARファイルが再ビルドされ、JARファイルのマニフェストの<tt>Main-Class</tt>属性が<tt>anothergrep.Grep</tt>を指すように変更されます。</p>
+         
+    <h4><a href="http://www.gnu.org/software/bash/bash.html">BASH</a>スクリプト -- UNIXおよびLinuxマシン用</h4>
+                <p>
+                    <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FDeploymentTutorial.zip" target="_blank">DeploymentTutorial.zip</a>ファイルの内容を抽出したシステム上のフォルダ内に、<tt>grep.sh</tt> bashスクリプトがあります。それを見てください。</p>
+              <pre class="examplecode">#!/bin/bash
+                    java -jar dist/AnotherGrep.jar $@</pre>
+                
+                <p>
+                    1行目は、どのシェルを使用してこれを解釈するかを明示しています。2行目は、IDEによって<tt><i>PROJECT_HOME</i>/dist</tt>フォルダ内に作成されたJARファイルを実行します。<tt>$@</tt>は単純に、指定されたすべての引数を、それぞれ引用符で囲んでコピーします。
+                </p>
+                <p>
+                    このスクリプトでは、JavaバイナリがPATH環境変数に含まれていることを想定しています。このスクリプトが正しく動作しない場合は、<a href="#path">PATH環境変数の設定</a>を参照してください。
+                </p>
+            
+                <p>
+                    bashスクリプトの詳細は、<a href="http://www.gnu.org/software/bash/manual/bashref.html">ここ</a>を参照してください。
+                </p>
+            
+                <h4>Windowsマシン用の .batスクリプト</h4>
+                <p>
+                    Microsoft Windowsシステムでは、バッチ・ファイルに一度に9つの引数しか渡すことができません。9つを超える引数がある場合は、JARファイルを複数回実行する必要があります。
+                </p>
+                <p>これを処理するスクリプトは次のようになります。</p>
+              <pre class="examplecode">
+                @echo off
+                set jarpath=&quot;dist/AnotherGrep.jar&quot;
+                set pattern=&quot;%1&quot;
+                shift
+                :loop
+                  if &quot;%1&quot; == &quot;&quot; goto :allprocessed
+                  set files=%1 %2 %3 %4 %5 %6 %7 %8 %9
+                  java -jar %jarpath% %pattern% %files%
+                  for %%i in (0 1 2 3 4 5 6 7 8) do shift
+                goto :loop
+
+                :allprocessed
+                    </pre>
+                    <p>このスクリプトは、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FDeploymentTutorial.zip" target="_blank">DeploymentTutorial.zip</a>ファイルの内容を抽出したシステム上のフォルダ内に<tt>grep.bat</tt>として含まれているため、試してみることができます。
+                </p>
+                <p>
+                    9つの引数は、このバッチ・ファイルの内部で<tt>%&lt;ARG_NUMBER></tt>で表されています。ここで、<tt>&lt;ARG_NUMBER></tt>は<tt>&lt;0-9></tt>の範囲内にある必要があります。<tt>%0</tt>は、スクリプト名のために予約されています。
+                </p>
+                <p>
+                    プログラムに一度に(1回のループで) 9つの引数しか渡されないことがわかります。<tt>for</tt>文は、次のループに備えて単純に引数を9シフトします。<tt>if</tt>文によって空のファイル引数が検出されると(処理するファイルがそれ以上ない場合)、ループは終了します。
+                </p>
+                <p>
+                    バッチ・スクリプト処理の詳細は、<a href="http://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/batch.mspx">このページ</a>を参照してください。                </p>
+                <h2><a name="javaws"></a>Java Web Start用のアプリケーションのパッケージ化</h2>
+                <p>Java Web Startは、シングル・クリックでWebブラウザからJavaアプリケーションを実行するために使用されるテクノロジです。Java Web Startを使用したデプロイメントのためのアプリケーションのパッケージ化の詳細は、<a href="../../73/java/javase-jws.html">NetBeans IDEでのJava Web Startの有効化</a>を参照してください。ここでは、Java Web Startを使用してアプリケーションをデプロイ可能にするために従う必要のある簡単な手順のみを示します。 </p>
+                <ol>
+                  <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「プロパティ」を選択します。</li>
+                  <li>「プロジェクト・プロパティ」ウィンドウの「Web Start」タブで、「Web Startを有効化」チェックボックスを選択します。</li>
+                  <li>「コードベース」ドロップダウン・リストから「ローカル実行」を選択します(ここではローカル実行のみをテストするため)。</li>
+				  <li>「カスタマイズ」をクリックし、「署名」ダイアログ・ボックスで詳細を指定してアプリケーションを署名します。 
+				    <p class="notes"><b>注意:</b> 2013年4月のJava SE 7 Update 21以降、すべてのJavaアプレットおよびWeb Startアプリケーションは、信頼できる証明書で署名することを求められます。詳細は、<a href="http://www.oracle.com/technetwork/java/javase/tech/java-code-signing-1915323.html">JavaアプレットとWeb Start - コード署名</a>を参照してください。</p>
+				  </li>
+                  <li>その他の設定はすべてデフォルト値のままにして、「OK」をクリックします。 </li>
+                  <li>プロジェクトのノードを右クリックし、「消去してビルド」を選択します。<br>このIDEコマンドによって、以前にコンパイルされたファイルやビルド出力がすべて削除され、アプリケーションが再コンパイルされて、プロジェクトが新しい設定でビルドされます。 </li>
+                  <li>IDEの外部で、<tt><i>PROJECT_HOME</i>/dist</tt>フォルダを開き、<tt>launch.html</tt>ファイルをブラウザで開きます。<br>「Launch」ボタンを含むテスト用HTMLページが開きます。 </li>
+                  <li>「Launch」ボタンをクリックしてアプリケーションを開きます。<br>Javaがロードされ、アプリケーションが起動されることが確認できます。 
+				  <p class="notes"><b>注意:</b> 一部のブラウザでは、最初にJavaのダウンロード・ページにリダイレクトされます。</p></li>
+                </ol>
+            <h2 class="tutorial"><a name="troubleshooting"></a>トラブルシューティングのヒント </h2>
+            <h3 class="tutorial"><a name="jarfiles"></a>JARファイルの関連付けの指定 </h3>
+            <p>ほとんどのシステムでは、実行可能なJARファイルを単純にダブルクリックすることによって、そのJARファイルを実行できます。JARファイルをダブルクリックしても何も起こらない場合は、次の2つの理由のどちらかが原因である可能性があります。</p>
+            <ul>
+              <li>JARファイル・タイプがそのシステム上のJRE (Java Runtime Environment)に関連付けられていない。
+                <p>JARファイル・タイプがJREに関連付けられている場合は、そのファイルを表すアイコンにJavaのロゴが含まれているはずです。</p>
+              </li>
+              <li>JARファイル・タイプはJREに関連付けられているが、アイコンをダブルクリックしたときにJREに渡されるコマンドに<tt>-jar</tt>オプションが含まれていない。</li>
+    </ul>
+            <p class="notes"><b>注意:</b> JARファイルの関連付けが、zipファイルを処理するソフトウェアなどの、インストールしたソフトウェアによって切り替えられる場合があります。</p>
+            <p>JARファイル・タイプを<tt>java</tt>起動プログラムに関連付ける方法は、使用しているオペレーティング・システムによって異なります。 </p>
+            <p class="notes"><b>注意:</b> いずれかのバージョンのJREがシステムにインストールされていることを確認します。バージョン1.4.2以降を使用するようにしてください。Javaがインストールされていない場合は、Javaアプリケーションを起動できません。(JDKをインストールすると、JREも取得されます。ただし、プログラマ以外にプログラムを配布する場合は、そのユーザーが必ずしもJREやJDKを持っているとは限りません。)</p>
+                <ul>
+				<li>Windows XPでは、「スタート」>「コントロール パネル」>「プログラムの追加と削除」を選択することによって、Javaのインストールされているバージョンを確認できます(たとえば、「Java(TM) 7 Update 51」が表示されます)。 </li>
+				<li>Windows VistaまたはWindows 7では、「スタート」>「コントロール パネル」>「プログラムおよびコンポーネント」を選択することによって、Javaのインストールされているバージョンを確認できます(たとえば、「Java(TM) 7 Update 51」が表示されます)。 </li>
+				</ul>
+                <p>システム上にJavaが存在しない場合は、<a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java SEダウンロード・サイト</a>からJREを取得できます。</p>
+                <p>システムにJavaがインストールされているが、ファイルの関連付けが機能していない場合は、Microsoft WindowsでJARファイルの関連付けを追加するための手順に進みます。</p>
+              <ol>
+              <li>「スタート」>「コントロール パネル」を選択します。</li>
+			  <li>(Windows Vistaのみ該当)「コントロール パネル ホーム」>「プログラム」をクリックします。</li>
+              <li>Windows XPの場合は、「フォルダ オプション」をダブルクリックし、「ファイルの種類」タブを選択します。<br>Windows VistaまたはWindows 7の場合は、「既定のプログラム」をクリックし、「ファイルの種類またはプロトコルのプログラムへの関連付け」を選択します。</li>
+              <li>「登録されているファイルの種類」リストで、「JARファイル」を選択します。</li>
+              <li>(Windows XPの場合は、ダイアログ・ボックスの「詳細」セクションで)「プログラムの変更」をクリックします。</li>
+              <li>「ファイルを開くプログラムの選択」ダイアログ・ボックスで、「Java Platform SEバイナリ」を選択します。</li>
+              <li>「OK」をクリックして「ファイルを開くプログラムの選択」ダイアログ・ボックスを終了します。</li>
+              <li>「閉じる」をクリックして、「フォルダ オプション」ダイアログ・ボックス(Windows XPの場合)、または「ファイルの種類またはプロトコルのプログラムへの関連付け」ダイアログ・ボックス(Windows 7の場合)を終了します。</li>
+            </ol>
+            <p class="notes"><b>注意:</b> システム上でJARファイルがJava Platform SEバイナリに関連付けられているが、依然としてJARファイルをダブルクリックしても実行されない場合は、ファイルの関連付けで<tt>-jar</tt>オプションの指定が必要である可能性があります。</p>
+            <p>Microsoft Windows XPで、ファイルの関連付けで<tt>-jar</tt>オプションを指定するには:</p>
+            <ol>
+              <li>「スタート」>「コントロール パネル」を選択します。</li>
+			  <li>Windows XPの場合は、「フォルダ オプション」をダブルクリックし、「ファイルの種類」タブを選択します。</li>
+              <li>「登録されているファイルの種類」リストで、「JARファイル」を選択します。</li>
+              <li>ダイアログ・ボックスの「詳細」セクションで、「詳細設定」をクリックします。</li>
+              <li>「ファイルの種類の編集」ダイアログ・ボックスで、「編集」をクリックします。</li>
+              <li>「アクションを実行するアプリケーション」テキスト・フィールドで、JREのパスの最後に次を追加します。
+                <pre class="examplecode"> -jar &quot;%1&quot; %*</pre>
+                その後、フィールドには次のようなテキストが含まれているはずです。
+                <pre class="examplecode">&quot;C:\Program Files\Java\jre1.7.0_51\bin\javaw.exe&quot; -jar &quot;%1&quot; %*</pre>
+              </li>
+              <li>「OK」をクリックして「アクションの編集」ダイアログ・ボックスを終了します。</li>
+              <li>「OK」をクリックして「ファイルの種類の編集」ダイアログ・ボックスを終了します。</li>
+              <li>「閉じる」をクリックして「フォルダ オプション」ダイアログ・ボックスを終了します。</li>
+            </ol>
+			<p class="notes"><b>注意:</b> Windows Vista以降の詳細なファイルの関連付けは、RegEditを使用して設定できます。詳細は、<a href="http://technet.microsoft.com/en-us/magazine/ee914604.aspx">「ファイルの種類」ダイアログで何が発生したか</a>の記事を参照してください。</p>
+            <p>UNIXおよびLinuxシステムの場合、ファイルの関連付けを変更するための手順は、使用しているデスクトップ環境(GNOMEやKDEなど)によって異なります。デスクトップ環境のプリファレンス設定を確認するか、またはデスクトップ環境のドキュメントを参照してください。</p>
+            <h3 class="tutorial"><a name="path"></a>PATH環境変数の設定 </h3>
+            システム上のJDKまたはJREの場所を指し示さないとシステム上でJavaクラスまたはJARファイルを実行できない場合は、システムの<tt>PATH</tt>変数の値の変更が必要である可能性があります。
+            <p>Microsoft Windowsシステム上で実行している場合、PATH変数を設定するための手順は、使用しているWindowsのバージョンによって異なります。</p>
+            <p>次の手順は、Windows XPシステム上で<tt>PATH</tt>変数を設定する場合を示しています。</p>
+            <ol>
+                <li>「スタート」>「コントロール パネル」を選択し、「システム」をダブルクリックします。</li>
+                <li>「システムのプロパティ」ダイアログ・ボックスで、「詳細設定」タブをクリックします。</li>
+                <li>「環境変数」タブをクリックします。</li>
+                <li>ユーザー変数の一覧で、「<tt>PATH</tt>」を選択し、「編集」をクリックします。</li>
+            <li>パスのリストの最後にJREの場所を追加します。このリスト内の場所はセミコロン(;)で区切られます。<br> たとえば、JREのある場所が<code>C:\Program Files\Java\jdk1.7.0_51</code>の場合、PATH変数の最後に次を追加します。
+                <pre class="examplecode">C:\Program Files\Java\jdk1.7.0_51\bin</pre>
+            </li>
+                <li>「OK」をクリックして「環境変数」ダイアログ・ボックスを終了し、「OK」をクリックして「システムのプロパティ」ダイアログ・ボックスを終了します。</li>
+            </ol>
+            <p>UNIXまたはLinuxシステム上で実行している場合、PATH変数を変更するための手順は、使用しているシェル・プログラムによって異なります。詳細は、使用しているシェルのドキュメントを参照してください。</p>
+
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Packaging%20and%20Distributing%20Java%20Desktop%20Applications">このチュートリアルに関するご意見をお寄せください</a></div>
+<br style="clear:both;" >
+        <h2><a name="nextsteps"></a>次の手順</h2>
+        <div><p>NetBeans IDEの使用方法については、NetBeansのWebサイトの<a href="https://netbeans.org/kb">ドキュメントおよびサポート</a>・ページを参照してください。</p>
+        <p>Javaアプリケーションを開発するためのIDEのワークフロー(クラスパス管理を含む)の詳細は、<a href="javase-intro.html">一般的なJavaアプリケーションの開発</a>を参照してください。</p>
+		<p>NetBeans IDEのビルド機能の詳細は、<i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG510">Javaプロジェクトのビルド</a>を参照してください。</p></div>
+    </body>
+</html>

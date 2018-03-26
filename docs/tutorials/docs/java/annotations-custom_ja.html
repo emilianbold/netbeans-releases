@@ -1,0 +1,308 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>NetBeans IDEでの注釈プロセッサのサポート</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+</head>
+
+    <body>
+<!-- TODO: this tutorial apparently not working: see https://netbeans.org/bugzilla/show_bug.cgi?id=241476 -->
+        <h1>NetBeans IDEでの注釈プロセッサのサポート、パートII: IDEでの独自のカスタム注釈プロセッサの使用 </h1>
+        <p><em>執筆: Jesse Glick、執筆および管理: Irina Filippova</em></p>
+        <div class="margin-around">
+        <div class="feedback-box margin-around float-left" style="margin-right:15px">
+        <p><b>目次</b></p>
+  
+        <ul class="toc">
+            <li><a href="annotations.html">概要</a></li>
+            <li><a href="annotations.html#map">javacオプションとIDEコマンドのマップ</a> </li>
+          <li><a href="annotations-lombok.html">カスタム注釈のためのプロジェクトLombokの使用</a></li>
+            <li><strong>IDEでの独自のカスタム注釈プロセッサの使用</strong>
+              <ul>
+                <li><a href="#defineann">注釈の定義および注釈プロセッサの作成</a></li>
+                <li><a href="#useprocessor">注釈プロセッサの使用</a> </li>
+              </ul>
+            </li>
+            <li><a href="#seealso" title="関連項目"><strong>関連項目 </strong></a></li>
+        </ul>
+		</div>
+	</div>
+	<img alt="このページの内容は、NetBeans IDE 7.0、7.1、7.2および7.3に適用されます" class="stamp" src="../../../images_www/articles/71/netbeans-stamp-71-72-73.png" title="このページの内容は、NetBeans IDE 7.0、7.1、7.2および7.3に適用されます" />
+        <p>チュートリアルのこの項では、ユーザーが自身で記述したカスタム注釈プロセッサをIDEのプロジェクトに追加する方法を学習します。このチュートリアルでは注釈プロセッサの記述方法については扱いません。NetBeans IDEプロジェクトに追加する方法を説明します。 </p>
+        <p>この項で使用されているサンプル・アプリケーションはJesse Glick氏によって作成され、以前のIDEリリースの<a href="http://wiki.netbeans.org/FaqApt" target="_blank">FAQエントリ</a>として公開されました。  </p>
+        <p>例として使用されている注釈プロセッサは、注釈付きクラスの親クラスを生成します。生成された親クラスには、注釈付きクラスからコールされるメソッドも含まれています。次の手順に従って、カスタム注釈プロセッサを作成し、IDEのプロジェクトに追加します。 </p>
+        <p style="clear:both"><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                  <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                  <td class="tbltd1">7.0, 7.1, 7.2, 7.3</td>
+                </tr>
+                <tr>
+                  <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">バージョン6または7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://code.google.com/p/projectlombok/downloads/list">lombok.jar</a></td>
+                    <td class="tbltd1">v1.12.4以降</td>
+                </tr>
+            </tbody>
+        </table>
+        
+    <h2><a name="defineann"></a>注釈の定義および注釈プロセッサの作成</h2>
+    <p>この課題では、クラス・ライブラリ・プロジェクトを作成します。</p>
+    <ol>
+        <li>「ファイル」>「新規プロジェクト」を選択し、「Java」カテゴリで「Javaクラス・ライブラリ」プロジェクト・タイプを選択します。「次」をクリックします。</li>
+        <li>「プロジェクト名」として<strong><tt>「AnnProcessor」</tt></strong>と入力し、プロジェクトの場所を指定します。「終了」をクリックします。
+        <p>「終了」をクリックすると、IDEによってクラス・ライブラリ・プロジェクトが作成され、そのプロジェクトが「プロジェクト」ウィンドウに表示されます。</p>
+        </li>
+        <li>「プロジェクト」ウィンドウで「AnnProcessor」プロジェクト・ノードを右クリックし、「プロパティ」を選択します。</li>
+        <li>「ソース」カテゴリで、ソース/バイナリ形式としてJDK 6またはJDK 7が指定されていることを確認します。</li>
+        <li>「ライブラリ」タブを選択し、「Javaプラットフォーム」がJDK 1.6またはJDK 1.7またはに設定されていることを確認します。「OK」をクリックして、「プロジェクト・プロパティ」ウィンドウを閉じます。</li>
+    </ol>
+    
+    <p>この課題では、2つのJavaパッケージを作成し、各パッケージ内に1つのJavaクラスを作成します。</p>
+    <ol>
+        <li>「AnnProcessor」プロジェクト・ノードで「ソース・パッケージ」ノードを右クリックし、「新規」>「Javaパッケージ」を選択します。</li>
+        <li>パッケージ名に<strong><tt>「ann」</tt></strong>と入力して「終了」をクリックし、新しいJavaパッケージを作成します。</li>
+        <li>前の2つのステップを繰り返して<strong><tt>proc</tt></strong>という名前のJavaパッケージを作成します。
+            <p>2つのJavaパッケージを作成すると、プロジェクトの構造は次のイメージのようになるはずです。</p>
+            <img alt="Javaパッケージが表示された「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/packages.png" title="注釈プロセッサのプロジェクトの構造。"></li>
+        <li>「<tt>ann</tt>」Javaパッケージを右クリックし、「新規」>「Javaクラス」を選択します。</li>
+        <li>「クラス名」に「<strong><tt>Handleable</tt></strong>」と入力します。「終了」をクリックします。</li>
+        <li>新しい<tt>Handleable.java</tt>ファイルを編集して、次の変更を加えます。ファイルを保存します。
+            <pre>package ann;
+
+public <strong>@interface</strong> Handleable {
+
+}</pre>
+
+            <p>これは注釈を宣言するための方法であり、インタフェースの宣言と非常によく似ています。異なるのは、<tt>interface</tt>キーワードの前に<tt>at</tt>記号(@)が必要であることです。この注釈は<tt>Handleable</tt>と呼ばれます。</p>
+
+            <p class="notes"><strong>追加情報: </strong>注釈宣言では、注釈を付けることができる要素のタイプ(例: クラス、メソッド)などの追加のパラメータを指定することもできます。これを行うには、<tt>@Target(value = {ElementType.TYPE})</tt>(クラスの場合)および<tt>@Target(value = {ElementType.METHOD})</tt>を追加します。つまり、注釈宣言は、自身に<em>meta-annotations</em>で注釈が付けられます。 </p>
+
+            <p>ここで、<tt>Handleable</tt>注釈を処理する注釈プロセッサのコードを追加する必要があります。<p>
+        </li>
+        <li>「<strong><tt>proc</tt></strong>」Javaパッケージを右クリックし、「新規」>「Javaクラス」を選択します。</li>
+        <li>「クラス名」に「<strong><tt>HandleableProcessor</tt></strong>」と入力します。「終了」をクリックします。</li>
+        <li><tt>HandleableProcessor.java</tt>クラスを変更して次のコードを追加します。変更を保存します。
+            <p class="notes"><strong>注意:</strong><tt>@SupportedSourceVersion</tt> (<strong>太字</strong>)の値は使用しているJDKのバージョンによって異なり、<tt>(SourceVersion.RELEASE_7)</tt>または<tt>(SourceVersion.RELEASE_6)</tt>になります。</p>
+            <pre class="examplecode">package proc;
+
+import ann.Handleable;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Set;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+
+@SupportedAnnotationTypes("ann.Handleable")
+@SupportedSourceVersion(<strong>SourceVersion.RELEASE_7</strong>)
+public class HandleableProcessor extends AbstractProcessor {
+
+    /** public for ServiceLoader */
+    public HandleableProcessor() {
+    }
+
+    public boolean process(Set&lt;? extends TypeElement&gt; annotations,
+            RoundEnvironment roundEnv) {
+        for (Element e : roundEnv.getElementsAnnotatedWith(Handleable.class)) {
+            if (e.getKind() != ElementKind.FIELD) {
+                processingEnv.getMessager().printMessage(
+                        Diagnostic.Kind.WARNING,
+                        "Not a field", e);
+                continue;
+            }
+            String name = capitalize(e.getSimpleName().toString());
+            TypeElement clazz = (TypeElement) e.getEnclosingElement();
+            try {
+                JavaFileObject f = processingEnv.getFiler().
+                        createSourceFile(clazz.getQualifiedName() + "Extras");
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
+                        "Creating " + f.toUri());
+                Writer w = f.openWriter();
+                try {
+                    PrintWriter pw = new PrintWriter(w);
+                    pw.println("package "
+                            + clazz.getEnclosingElement().getSimpleName() + ";");
+                    pw.println("public abstract class "
+                            + clazz.getSimpleName() + "Extras {");
+                    pw.println("    protected " + clazz.getSimpleName()
+                            + "Extras() {}");
+                    TypeMirror type = e.asType();
+                    pw.println("    /** Handle something. */");
+                    pw.println("    protected final void handle" + name
+                            + "(" + type + " value) {");
+                    pw.println("        System.out.println(value);");
+                    pw.println("    }");
+                    pw.println("}");
+                    pw.flush();
+                } finally {
+                    w.close();
+                }
+            } catch (IOException x) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        x.toString());
+            }
+        }
+        return true;
+    }
+
+    private static String capitalize(String name) {
+        char[] c = name.toCharArray();
+        c[0] = Character.toUpperCase(c[0]);
+        return new String(c);
+    }
+}</pre>
+                <p>ここで、注釈プロセッサのコードを構成する主要な部分について少し詳しく見てみます(便宜上、コードの一部しか示されていないことに注意してください)。 </p>
+                <p>最初に、注釈プロセッサでサポートされている注釈型(<tt>@SupportedAnnotationTypes</tt>を使用)と、サポートされているソース・ファイルのバージョン(<tt>@SupportedSourceVersion</tt>を使用。この場合のバージョンはJDK 6)を指定します。<br>
+                <pre class="examplecode">
+@SupportedAnnotationTypes("ann.Handleable")
+@SupportedSourceVersion(SourceVersion.RELEASE_6)</pre>
+                 <p>次に、<tt>javax.annotation.processing</tt>パッケージの<tt>AbstractProcessor</tt>クラスを拡張する、このプロセッサのための公開クラスを宣言します。<tt>AbstractProcessor</tt>は、注釈を処理するために必要なメソッドを含む、具象注釈プロセッサの標準スーパー・クラスです。</p>
+                 <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {
+...
+}</pre>
+                 <p>ここで、このクラスのpublicコンストラクタを指定する必要があります。</p>
+                 <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {
+<strong>    public HandleableProcessor() {
+    }</strong>
+...
+
+}</pre>
+                 <p>次に、親<tt>AbstractProcessor</tt>クラスの<tt>process</tt>()メソッドをコールします。このメソッドを通して、処理対象の注釈が提供されます。また、このメソッドには、処理のラウンドについての情報も含まれています。</p>
+                
+            <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {<strong>
+   </strong>...
+<strong>     public boolean process(Set&lt;? extends TypeElement&gt; annotations,
+            RoundEnvironment roundEnv) {
+     ...
+     }
+</strong>
+}</pre>
+                 <p>注釈プロセッサのロジックは、<tt>AbstractProcessor</tt>クラスの<tt>process()</tt>メソッド内に含まれています。<tt>AbstractProcessor</tt>を通して<tt>ProcessingEnvironment</tt>のインタフェースにもアクセスすることにより、注釈プロセッサはFiler(注釈プロセッサが新しいファイルを作成できるようになるファイラ・ハンドラ)やMessager(注釈プロセッサがエラーを報告する手段)のような複数の便利な機能を使用できるようになります。</p>
+                 <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {<strong>
+   </strong>...
+     public boolean process(Set&lt;? extends TypeElement&gt; annotations,
+            RoundEnvironment roundEnv) {<br>
+            //For each element annotated with the Handleable annotation
+            <strong>for (Element e : roundEnv.getElementsAnnotatedWith(Handleable.class)) {
+<br>            </strong>//Check if the type of the annotated element is not a field. If yes, return a warning<strong>.<br>            if (e.getKind() != ElementKind.FIELD) {<br>                processingEnv.getMessager().printMessage(<br>                        Diagnostic.Kind.WARNING,<br>                        &quot;Not a field&quot;, e);<br>                continue;<br>            }
+            </strong>//Define the following variables: name and clazz<strong>.</strong><strong><br>            String name = capitalize(e.getSimpleName().toString());<br>            TypeElement clazz = (TypeElement) e.getEnclosingElement();<br>            </strong>//Generate a source file with a specified class name. <strong>
+            try {<br>                JavaFileObject f = processingEnv.getFiler().<br>                        createSourceFile(clazz.getQualifiedName() + &quot;Extras&quot;);<br>                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,<br>                        &quot;Creating &quot; + f.toUri());<br>                Writer w = f.openWriter();<br>                    </strong>//Add the content to the newly generated file<strong>.
+                    try {<br>                    PrintWriter pw = new PrintWriter(w);<br>                    pw.println(&quot;package &quot;<br>                            + clazz.getEnclosingElement().getSimpleName() + &quot;;&quot;);<br>                    pw.println(&quot;public abstract class &quot;<br>                            + clazz.getSimpleName() + &quot;Extras {&quot;);<br>                    pw.println(&quot;    protected &quot; + clazz.getSimpleName()<br>                            + &quot;Extras() {}&quot;);<br>                    TypeMirror type = e.asType();<br>                    pw.println(&quot;    /** Handle something. */&quot;);<br>                    pw.println(&quot;    protected final void handle&quot; + name<br>                            + &quot;(&quot; + type + &quot; value) {&quot;);<br>                    pw.println(&quot;        System.out.println(value);&quot;);<br>                    pw.println(&quot;    }&quot;);<br>                    pw.println(&quot;}&quot;);<br>                    pw.flush();<br>                } finally {<br>                    w.close();<br>                }<br>            } catch (IOException x) {<br>                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,<br>                        x.toString());<br>            }<br>        }</strong><br>        return true;
+    <strong> }</strong>
+...
+}</pre>
+                 <p>このコードの最後のブロックでは、注釈付き要素の名前を大文字にするために使用される<tt>capitalize</tt>メソッドを宣言しています。</p>
+             <pre class="examplecode">public class HandleableProcessor extends AbstractProcessor {<strong>
+   </strong>...<strong>
+
+  private static String capitalize(String name) {<br>        char[] c = name.toCharArray();<br>        c[0] = Character.toUpperCase(c[0]);<br>        return new String(c);<br>    }
+</strong>}</pre>
+            </li>
+            <li>「<tt>AnnProcessor</tt>」プロジェクトを右クリックし、「ビルド」を選択することによってプロジェクトをビルドします。</li>
+        </ol>
+
+    
+        <h2><a name="useprocessor"></a>IDEでの注釈プロセッサの使用</h2>
+        <p>この項では、注釈プロセッサが使用されるJavaアプリケーション・プロジェクトを作成します。</p>
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択し、「Java」カテゴリで「Javaアプリケーション」プロジェクト・タイプを選択します。「次」をクリックします。</li>
+            <li>名前と場所ページで、「プロジェクト名」として<strong><tt>「Demo」</tt></strong>と入力し、プロジェクトの場所を指定します。</li>
+            <li>「メイン・クラスの作成」フィールドに「<strong><tt>demo.Main</tt></strong>」と入力します。「終了」をクリックします。<br> <img alt="新規プロジェクト・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-project-wizard.png" title="新規プロジェクト・ウィザードでのDemoプロジェクトの作成。"></li>
+
+            <li>「プロジェクト・プロパティ」ウィンドウを開き、「ソース」パネルでソース/バイナリ形式としてJDK 6またはJDK 7が選択されていること、および「ライブラリ」パネルで「Javaプラットフォーム」がJDK 1.6またはJDK 1.7に設定されていることを確認します。</li>
+            <li><tt>Main.java</tt>クラスを変更して次のコードを追加します。変更を保存します。
+                <pre class="examplecode">package demo;
+
+<strong>import ann.Handleable;</strong>
+
+public class Main <strong>extends MainExtras</strong> {
+
+    <strong>@Handleable
+    private String stuff;</strong>
+
+    <strong>public static void main(String[] args) {
+        new Main().handleStuff("hello");
+    }</strong>
+}</pre>
+                <p>このコードには、次の要素が含まれています。</p>
+                <ul>
+                    <li>カスタム注釈プロセッサ<tt>ann.Handleable</tt>のインポート文</li>
+                    <li><tt>MainExtras</tt>クラスを拡張する公開クラス<tt>Main</tt> (<tt>MainExtras</tt>は、コンパイル中にこの注釈プロセッサによって生成される)</li>
+                    <li><tt>@Handleable</tt>注釈が付いている<tt>stuff</tt>という名前のprivateフィールド </li>
+                    <li>自動的に生成された<tt>MainExtras</tt>クラスで宣言されている、<tt>handleStuff</tt>メソッドをコールする<tt>main</tt>メソッド
+                        
+                        <p>この単純な例では、<tt>handleStuff</tt>メソッドは現在の値の出力のみを行います。他のタスクを行うように、このメソッドを変更できます。</p></li>
+                </ul>
+                <p><tt>Main.java</tt>コードを保存した後、IDEによって複数のコンパイル・エラーが報告されたことが表示されます。これは、まだこのプロジェクトに注釈プロセッサが追加されていないためです。</p>
+            </li>
+            <li>「プロジェクト・プロパティ」ウィンドウで<tt>「Demo」</tt>プロジェクト・ノードを右クリックし、「プロパティ」を選択した後、「プロパティ」ウィンドウで「ライブラリ」カテゴリを選択します。</li>
+            <li>「コンパイル」タブで「プロジェクトの追加」をクリックし、「<tt>AnnProcessor</tt>」プロジェクトを指定します。<br> <img alt="プロジェクトの「プロパティ」ウィンドウ内の「ライブラリ」カテゴリにある「コンパイル」タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-properties-compile.png" title="プロジェクトの「プロパティ」ウィンドウ内の「ライブラリ」カテゴリにある「コンパイル」タブ">
+                
+                <p>「コンパイル」タブは、<a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html#options" target="_blank">Javaコンパイラ</a>の<tt>-classpath</tt>オプションに相当します。この注釈プロセッサは、注釈定義と注釈プロセッサの両方を含む単一のJARファイルであるため、これをプロジェクトのクラスパス(つまり「コンパイル」タブ)に追加する必要があります。</p>
+            </li>
+            <li>「プロジェクト・プロパティ」ウィンドウで「コンパイル」カテゴリを選択し、「注釈処理を有効にする」および「エディタでの注釈処理を有効にする」チェックボックスを選択します。</li>
+            <li>「注釈プロセッサ」テキスト領域の横にある「追加」ボタンをクリックし、「注釈プロセッサFQN」フィールドに <strong><tt>「proc.HandleableProcessor」</tt></strong>と入力することによって、実行する注釈プロセッサを指定します。<br> <img alt="「注釈プロセッサFQN」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-processor-fqn.png" title="「注釈プロセッサFQN」ダイアログ・ボックス">
+                
+                <p>「プロジェクト・プロパティ」ウィンドウ内の「コンパイル」カテゴリは、次のイメージのように表示されるはずです。</p>
+                <img alt="プロジェクトの「プロパティ」ウィンドウ内の「コンパイル」カテゴリのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-properties-compiling.png" title="プロジェクトの「プロパティ」ウィンドウ内の「コンパイル」カテゴリ">
+                
+            </li>
+            <li>「プロパティ」ウィンドウで「OK」をクリックします。
+        
+                <p class="notes"><strong>注意:</strong><tt>Main.java</tt>ファイルでは、依然としてコンパイル・エラーが表示される場合があります。これは、<tt>handleStuff</tt>メソッドを宣言している<tt>MainExtras.java</tt>ファイルを、IDEがまだ認識できていないためです。<tt>MainExtras.java</tt>ファイルは、最初にDemoプロジェクトをビルドした後で生成されます。プロジェクトで「保存時にコンパイル」が有効になっている場合は、<tt>Main.java</tt>を保存したときにIDEがプロジェクトをコンパイルしました。</p>
+            </li>
+            <li>「Demo」プロジェクトを右クリックし、「ビルド」を選択します。
+            <p>プロジェクトをビルドした後に「プロジェクト」ウィンドウでそのプロジェクトを見ると、新しい<tt>「生成されたソース」</tt>ノードが<tt>demo/MainExtras.java</tt>ファイルとともに表示されます。</p>
+            <img alt="生成されたソースが表示された「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-generated-sources.png" title="生成されたソースが表示された「プロジェクト」ウィンドウ">
+
+            <p>生成された<tt>MainExtras.java</tt>ファイルの内容を確認すると、注釈プロセッサが<tt>handleStuff</tt>メソッドを使用して<tt>MainExtras</tt>クラスを生成したことがわかります。<tt>handleStuff</tt>メソッドは、注釈付きの<tt>Main.java</tt>ファイルから呼び出されるメソッドです。 </p>
+                <pre class="examplecode">package demo;
+public abstract class MainExtras {
+    protected MainExtras() {}
+    /** Handle something. */
+    protected final void handleStuff(java.lang.String value) {
+        System.out.println(value);
+    }
+}</pre>
+            </li>
+            <li>「Demo」プロジェクトを右クリックし、「実行」を選択します。
+                <p>「実行」をクリックすると、「出力」ウィンドウに次が表示されるはずです。Demoプロジェクトがコンパイルされ、メッセージが出力されます。</p>
+            <img alt="生成されたソースが表示された「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/annotations/demo-run.png" title="生成されたソースが表示された「プロジェクト」ウィンドウ">
+          </ol>
+          <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a><br style="clear:both;" />
+        </div>
+        <h2><a id="seealso" name="seealso"></a>関連項目</h2>
+        <p>Javaアプリケーションでの注釈の詳細は、次のリソースを参照してください。</p>
+        <ul>
+          <li>Java SEのドキュメント - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">注釈</a></li>
+          <li>Java SEのチュートリアル - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">注釈</a> </li>
+          <li><a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html#processing" target="_blank">Javaコンパイラ: 注釈処理のオプション</a> </li>
+          <li><a href="http://blogs.oracle.com/darcy/">Joseph D. Darcy氏のブログ</a> - JSR-269仕様リードによる役立つヒント </li>
+    </ul>
+</body>
+</html>

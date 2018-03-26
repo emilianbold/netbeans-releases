@@ -1,0 +1,448 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>Swingクライアントの作成: バイナリ・データを渡すWebサービス(パート6) - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial shows how to create a client for the web service that
+              displays the result in a GUI designed with Swing components.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    <body>
+        <h1>バイナリ・データを渡すWebサービス(パート5): Swingクライアントの作成</h1>
+        
+        
+        <p>この課題の目標は、すでに作成、デプロイしたWebサービスのクライアントを作成し、そのクライアントにGUIインタフェースを追加することです。このインタフェースには、Webサービスがバイナリ・データとして渡すイメージが表示されます。</p>
+        <p>クライアントの完全版サンプルは、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerClient.zip" target="_blank">NetBeansサンプル・カタログ</a>からダウンロードできます。</p>
+    <p><b>このチュートリアルのレッスン</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3および7.4に適用されます" class="stamp" src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" title="このページの内容は、NetBeans IDE 7.2、7.3および7.4に適用されます">
+        <ol>
+            <li><a href="./flower_overview.html">概要</a></li>
+            <li><a href="./flower_ws.html">Webサービスの作成</a></li>
+        <li><a href="./flower-code-ws.html">Webサービスのコーディングおよびテスト</a></li>
+          <li><a href="./flower_wsdl_schema.html">バイナリ・データを渡すためのスキーマとWSDLファイルの変更</a></li>
+          <li> => Swingクライアントの作成</li>
+        </ol>
+    <p><b>このレッスンの目次</b></p>
+        <ol>
+          <li>
+            <p><a href="#create-client-app">クライアント・アプリケーションの作成</a></p>
+          </li>
+          <li><a href="#design-jframe">JFrameのデザイン</a></li>
+          <li><p><a href="#bind-jframe">JFrameコンポーネントのバインディング</a></p>
+          <ul>
+          <li><a href="#initialize-components">コンポーネントの初期化</a></li>
+          <li><a href="#show-flowers">花の表示</a></li>
+          </ul></li>
+          <li><a href="#code-main-class">メイン・クラスのコーディング</a></li>
+        </ol>
+        
+    <h2><a name="create-client-app"></a>クライアント・アプリケーションの作成</h2>
+        <p>この項では、Webアプリケーションを作成します。このアプリケーション内で、前のチュートリアルで作成および変更したWebサービスを使用するクライアントを作成します。 </p>
+    <p><strong>クライアント・アプリケーションを作成するには:</strong></p>
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」(LinuxおよびWindowsでは[Ctrl]-[Shift]-[N]、MacOSでは[⌘]-[Shift]-[N])を選択します。新規プロジェクト・ウィザードが表示されます。 </li>
+            <li>「Java」カテゴリから「Javaアプリケーション」を選択します。「次」をクリックします。新規Javaアプリケーション・ウィザードが表示されます。「プロジェクト名」に「<tt>FlowerClient</tt>」と入力します。プロジェクトの場所を選択し、「終了」をクリックします。IDEにより新しいJavaアプリケーション・プロジェクトが作成されます。</li>
+            <li>「<tt>FlowerClient</tt>」プロジェクト・ノードを右クリックし、コンテキスト・メニューから「新規」>「Webサービス・クライアント」を選択します。新規Webサービス・クライアント・ウィザードが開きます。  </li>           
+          <li>「WSDL URL」ラジオ・ボタンを選択し、WSDLファイルのURLをそのフィールドに貼り付けます。デフォルトでは、URLは<tt>http://localhost:8080/FlowerAlbumService/FlowerServiceService?wsdl</tt>です。ブラウザでURLを見つけるには、Webサービスをテストし、URLの末尾を<tt>?Tester</tt>から<tt>?wsdl</tt>に置き換えます。空のパッケージ名を含め、他のデフォルト値をすべて受け入れます。<br><img alt="WSDLのURLが表示されたWebサービス・クライアント・ウィザード" class="margin-around" src="../../../images_www/articles/73/websvc/flower/ws-client-wiz.png"></li>
+            <li>「終了」をクリックします。IDEによりWSDLファイルがダウンロードされ、Webサービスと対話するためのクライアント・スタブが追加され、Javaアプリケーション・プロジェクトの「プロジェクト」ウィンドウにノードが追加されます。<br><img alt="新しいWebサービス・クライアントが表示された「プロジェクト」ビュー" class="margin-around" src="../../../images_www/articles/73/websvc/flower/client-generated-sources.png" title="新しいWebサービス・クライアントが表示された「プロジェクト」ビュー"></li></ol>
+    <h2 id="design-jframe">JFrameフォームのデザイン</h2>
+                <p>この項では、<tt>JFrame</tt>をWebアプリケーションに追加し、Swingコンポーネントを使用してJFrame内にGUIインタフェースをデザインします。最後に、SwingコンポーネントをWebサービス・クライアント・コードにバインドします。</p>
+                <p class="tips">自分でJFrameフォームをデザインしない場合は、すでにデザインされたJFrame Javaファイルを<a href="https://netbeans.org/projects/www/downloads/download/webservices%252FFlowerFrame.java" target="_blank">ここから</a>ダウンロードできます。</p>
+<ol>
+            <li>「<tt>FlowerClient</tt>」ノードを右クリックし、「新規」>「JFrameフォーム」を選択します。フレームに「<tt>FlowerFrame</tt>」という名前を付けます。このフレームを<tt>flowerclient</tt>パッケージに配置します。</li>
+          <li><tt>FlowerFrame</tt>がエディタに表示されます。パレットが開かれていない場合は、パレットを開きます。フレームの下部の境界線をおよそ3分の1まで拡げます。<br><img alt="エディタの「デザイン」ビューにFlowerフォームが表示され、パレットも開いた状態" class="margin-around" src="../../../images_www/articles/73/websvc/flower/opened-flowerform.png"></li>
+          <li>パレットの「Swingコンテナ」セクションからJPanelを<tt>FlowerFrame</tt>にドラッグします。<tt>FlowerFrame</tt>全体を埋めるように拡げます。<br> <img alt="FlowerFrameでJPanelを追加して拡張した状態" class="margin-around" src="../../../images_www/articles/73/websvc/flower/add-panel.png"></li>
+            <li>「デザイン」ビューでこのパネルを右クリックします。コンテキスト・メニューから「変数名を変更...」を選択します。パネルに「<tt>gardenFlowersPanel</tt>」という名前を付けます。</li>
+            <li>パレットからJLabelを<tt>gardenFlowersPanel</tt>の上にドラッグします。ラベルを右クリックし、ラベルの変数名を<tt>titleLabel</tt>に変更します。「<tt>titleLabel</tt>」を再度右クリックし、「テキストを編集」を選択します。テキストを「Garden Flowers」に変更します。必要に応じて、<tt>titleLabel</tt>のプロパティを表示して、目立つフォントに変更します。</li>
+            <li>「ボタン・グループ」を「デザイン」ビューにドラッグします。ボタン・グループの変数名はデフォルトの<tt>buttonGroup1</tt>のままにします。</li>
+            <li>4つの「ラジオ・ボタン」を、<tt>titleLabel</tt>の真下に横一列に並ぶようにドラッグします。各ボタンのプロパティで、<tt>buttonGroup1</tt>のメンバーとして設定します。これらのボタンの他のプロパティは、次のとおりです。
+              <table>
+                  <caption>buttonGroup1のラジオ・ボタン</caption>
+                <tbody>
+                  <tr>
+                    <th class="tblheader">変数名</th>
+                    <th class="tblheader">選択状態</th>
+                    <th class="tblheader">テキスト</th>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">asterRadioButton</td>
+                    <td class="tbltd1">true</td>
+                    <td class="tbltd1">Aster</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">honeysuckleRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Honeysuckle</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">roseRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Rose</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">sunflowerRadioButton</td>
+                    <td class="tbltd1">false</td>
+                    <td class="tbltd1">Sunflower</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+            <li>「スクロール・ペイン」をラジオ・ボタンの下にドラッグします。横のスペースのすべて、および縦のスペースのおよそ3分の2を埋めるようにスクロール・ペインを拡げます。スクロール・ペインの変数名を<tt>mainScrollPane</tt>に変更します。</li>
+            <li>「パネル」を<tt>mainScrollPane</tt>にドラッグします。パネルの変数名を<tt>mainPanel</tt>に変更します。 </li>
+            <li>「デザイン」ビューで<tt>mainPanel</tt>を右クリックし、「レイアウトを設定」>「境界線レイアウト」を選択します。 </li>
+            <li>「ボタン」を<tt>mainPanel</tt>にドラッグします。<tt>mainPanel</tt>に境界線レイアウトが設定されているため、ボタンはパネル全体を埋めるように自動的に拡げられます。ボタンの変数名を<tt>mainPictureButton</tt>に、ボタンのテキストを「Waiting for picture...」に変更します。</li>
+            <li>もう1つの「スクロール・ペイン」を<tt>mainScrollPane</tt>の下のスペースにドラッグします。残りの全スペースを埋めるように、このスクロール・ペインを拡げます。新しいスクロール・ペインの変数名を<tt>thumbnailScrollPane</tt>に変更します。</li>
+            <li>「パネル」を<tt>thumbnailScrollPane</tt>にドラッグします。このパネルの変数名を<tt>thumbnailPanel</tt>に変更します。<tt>thumbnailPanel</tt>のレイアウトを「グリッド・レイアウト」に設定します。</li>
+            <li>4つの「ボタン」を<tt>thumbnailPanel</tt>にドラッグします。<tt>thumbnailPanel</tt>にグリッド・レイアウトが設定されているため、すべてのボタンが自動的に同じサイズになり、パネル全体を埋めるように拡げられます。これらのボタンのプロパティは、次のとおりです。
+              <table>
+                <title>thumbnailPanelのボタン</title>
+                <tbody>
+                  <tr>
+                    <th class="tblheader">変数名</th>
+                    <th class="tblheader">テキスト</th>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">asterButton</td>
+                    <td class="tbltd1">待機中...</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">honeysuckleButton</td>
+                    <td class="tbltd1">待機中...</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">roseButton</td>
+                    <td class="tbltd1">待機中</td>
+                  </tr>
+                  <tr>
+                    <td class="tbltd1">sunflowerButton</td>
+                    <td class="tbltd1">待機中...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+            </ol>
+              <p>これでJFrameフォームのデザインは完成です。この段階で、<tt>FlowerFrame</tt>は次のように表示されます。<br> <img alt="イメージのかわりにボタンのテキストが表示された、完成したFlowerFrame" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/designed-form.png" title="イメージのかわりにボタンのテキストが表示された、完成したFlowerFrame"></p>
+              <a name="bind-jframe"></a>
+            <h2>JFrameコンポーネントのバインディング</h2>
+            <p>この項では、コンストラクタでコンポーネントを初期化し、そのコンポーネントをリスナーにバインドします。リスナーは、花のイメージを表示するコードをコールします。</p>
+<div class="indent">
+            <h3><a name="initialize-components">コンポーネントの初期化</h3>
+            <p>この項では、<tt>FlowerFrame</tt>コンストラクタを記述します。</p>
+<ol>
+            <li>エディタの「ソース」ビューに変更します。<tt>FlowerFrame</tt>クラス本文の先頭と<tt>FlowerFrame</tt>コンストラクタを探します。<br> <img alt="空のFlowerFormコンストラクタが表示された、エディタの「ソース」ビュー" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/ff-empty-constructor.png"></li>
+          
+            <li>コンストラクタの前にある<tt>FlowerFrame</tt>のクラス本文の先頭に、すべての花の名前の文字列配列を作成します。
+              <pre class="examplecode">protected static final String[] FLOWERS = {"aster", "honeysuckle", "rose", "sunflower"};</pre>
+    </li>            
+            <li>FLOWERS文字列配列とコンストラクタの間に、<tt>flowers</tt>という名前の<tt><a href="http://download.oracle.com/javase/6/docs/api/java/util/Map.html" target="_blank">java.util.Map</a></tt>を初期化する行を追加します。このマップは<tt>String</tt>を取って<tt>Image</tt>にマップします。 
+              <pre class="examplecode">private Map&lt;String, Image&gt; flowers;</pre>   </li>         
+            <li><tt>java.util.Map</tt>と<tt>java.awt.Image</tt>のインポート文を追加します。        </li>    
+            <li><tt>flowers</tt>マップの特定のインスタンスで特定の<tt>Image</tt>を特定の<tt>String</tt>に関連付けるコードを、<tt>FlowerFrame</tt>コンストラクタに追加します。
+              <pre>
+public FlowerFrame(Map&lt;String, Image&gt; flowers) {
+
+    this.flowers = flowers;
+    for (String flower:FLOWERS) {
+        flowers.put(flower,null);
+    }
+
+    initComponents();    
+} </pre></li>
+            <li>ラジオ・ボタン用の<tt>ItemListener</tt>と4つの花のボタン用の<tt>ActionListener</tt>を初期化し、デフォルトのタイトルを設定します。 
+              <pre class="examplecode">
+public FlowerFrame(Map&lt;String, Image&gt; flowers) {
+
+    this.flowers = flowers;
+    for (String flower:FLOWERS) {
+        flowers.put(flower,null);
+    }
+
+    initComponents(); 
+    
+    setTitle("Garden Flowers [waiting for picture]");
+    
+    ItemListener rbListener = new RBListener();
+    asterRadioButton.addItemListener(rbListener);
+    honeysuckleRadioButton.addItemListener(rbListener);
+    roseRadioButton.addItemListener(rbListener);
+    sunflowerRadioButton.addItemListener(rbListener);
+    
+    ActionListener bListener = new ButtonListener();
+    asterButton.addActionListener(bListener);
+    honeysuckleButton.addActionListener(bListener);
+    roseButton.addActionListener(bListener);
+    sunflowerButton.addActionListener(bListener);
+}</pre>
+            </li>      
+            <li><tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ItemListener.html" target="_blank">java.awt.event.ItemListener</a></tt>と<tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ActionListener.html" target="_blank">java.awt.event.ActionListener</a></tt>のインポート文を追加します。</li>
+            </ol>
+ <p>これでコンストラクタは完成しました。ただし、コードに<tt>RBListener</tt>クラスと<tt>ButtonListener</tt>クラスが含まれていないため、コンパイル・エラーの警告が表示されます。この2つのクラスは、それぞれ<tt>ItemListener</tt>と<tt>ActionListener</tt>のカスタム実装です。この2つのクラスの記述は、次の項で行います。</p> 
+ <h3><a name="show-flowers">花の表示</h3>
+ <p>この項では、ラジオ・ボタンと花のボタンのカスタム・リスナーを記述します。また、ボタンによって選択された花を判断し、その花の<tt>Image</tt>を<tt>flowers</tt>マップから取得するメソッドを記述します。最後に、<tt>Main</tt>クラスによってコールされ、各サムネイルの<tt>Image</tt>を取得するメソッドを記述します。</p>
+ <ol>
+   <li><tt>FlowerFrame</tt>のクラス本文で<tt>public static void main(String args[])</tt>メソッドを探します。このメソッドとそのドキュメントを削除します。このアプリケーションでは、かわりに<tt>Main</tt>クラスを使用します。</li>
+    <li><tt>main</tt>メソッドのかわりに、カスタム<tt>ItemListener</tt>をラジオ・ボタン用に記述します。このリスナーは、ラジオ・ボタンが選択されたときに新しい花のイメージを表示します。
+              <pre class="examplecode">private class RBListener implements ItemListener {
+    public void itemStateChanged(ItemEvent e) {
+        showFlower();
+    }
+}</pre></li>
+<li><tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ItemEvent.html" target="_blank">java.awt.event.ItemEvent</a></tt>のインポート文を追加します。</li>
+            <li>カスタム<tt>ItemListener</tt>の下に、カスタム<tt>ActionListener</tt>を4つの花のボタン用に記述します。ボタンがクリックされると、リスナーは関連するラジオ・ボタンを選択します。
+              <pre class="examplecode">private class ButtonListener implements ActionListener {
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == asterButton) asterRadioButton.setSelected(true);
+        else if (e.getSource() == honeysuckleButton) honeysuckleRadioButton.setSelected(true);
+        else if (e.getSource() == roseButton) roseRadioButton.setSelected(true);
+        else if (e.getSource() == sunflowerButton) sunflowerRadioButton.setSelected(true);
+    }
+}</pre>
+            </li>
+            <li><tt><a href="http://download.oracle.com/javase/6/docs/api/java/awt/event/ActionEvent.html" target="_blank">java.awt.event.ActionEvent</a></tt>のインポート文を追加します。</li>
+            <li>カスタム<tt>ActionListener</tt>の下に<tt>showFlower</tt>メソッドを記述します。このメソッドは、選択されているラジオ・ボタンを判断し、対応する花の<tt>Image</tt>を<tt>flowers</tt>マップから取得します。
+              <pre class="examplecode">
+void showFlower() {
+    Image img = null;
+    if (asterRadioButton.isSelected()) {
+        img = flowers.get("aster");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Aster]");
+        }
+    } else if (honeysuckleRadioButton.isSelected()) {
+        img = flowers.get("honeysuckle");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Honeysuckle]");
+        }
+
+    } else if (roseRadioButton.isSelected()) {
+        img = flowers.get("rose");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Rose]");
+        }
+    } else if (sunflowerRadioButton.isSelected()) {
+        img = flowers.get("sunflower");
+        if (img != null) {
+            mainPictureButton.setIcon(new ImageIcon(img));
+            setTitle("Garden Flowers [Sunflower]");
+        }
+    }
+    if (img == null) {
+        mainPictureButton.setIcon(null);
+        setTitle("Garden Flowers [waiting for picture]");            
+    } else mainPictureButton.setText("");
+}</pre>
+            </li>
+            <li><tt><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/ImageIcon.html" target="_blank">javax.swing.ImageIcon</a></tt>のインポート文を追加します。</li>
+            <li><tt>setThumbnails</tt>メソッドを記述します。このメソッドは、各サムネイルのイメージを<tt>flowers</tt>マップから取得します。<tt>Main</tt>クラスがこのメソッドをコールします。
+              <pre class="examplecode">void setThumbnails(Map&lt;String, Image&gt; thumbs) {
+    Image img = thumbs.get("aster");
+    if (img != null) {
+        asterButton.setIcon(new ImageIcon(img));
+        asterButton.setText("");
+    }
+    img = thumbs.get("honeysuckle");
+    if (img != null) {
+        honeysuckleButton.setIcon(new ImageIcon(img));
+        honeysuckleButton.setText("");
+    }
+    img = thumbs.get("rose");
+    if (img != null) {
+        roseButton.setIcon(new ImageIcon(img));
+        roseButton.setText("");
+    }
+    img = thumbs.get("sunflower");
+    if (img != null) {
+        sunflowerButton.setIcon(new ImageIcon(img));
+        sunflowerButton.setText("");
+    }
+}</pre></li>
+            <li><tt>FlowerFrame</tt>のコードに貼り付けたときにインポートを修正していない場合は、インポートを修正します。エディタで右クリックし、コンテキスト・メニューから「インポートを修正」を選択すると、すべてのインポートを一度に修正できます。完成した一連のインポート文は次のようになります。
+            <pre class="examplecode">import java.awt.Image;<br>import java.awt.event.ActionEvent;<br>import java.awt.event.ActionListener;<br>import java.awt.event.ItemEvent;<br>import java.awt.event.ItemListener;<br>import java.util.Map;<br>import javax.swing.ImageIcon;</pre> </li>  </ol>
+            <p>これで<tt>FlowerFrame</tt>は完成しました。</p>
+    </div>
+            
+            <h2><a name="code-main-class">メイン・クラスのコーディング</h2>
+            <p>この項では、<tt>Main</tt>クラスを完成させ、<tt>FlowerFrame</tt>の表示、Webサービスへの接続、およびWebサービスの操作のコールを実行できるようにします。</p>
+            <ol>
+              <li><tt>Main.java</tt>クラスをエディタで開きます。<br> <img alt="空のMainクラス" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/main-empty.png">            </li>
+              <li>クラス本文の<tt>main</tt>メソッドの前で、ダウンロードした写真の数を示す<tt>int</tt>変数を初期化します。
+                <pre class="examplecode"> private static int downloadedPictures;</pre></li>
+              </li>
+          
+              <li><tt>main</tt>メソッドの本文で、4つの花用の<tt>HashMap</tt>と、4つのサムネイル用に別の<tt>HashMap</tt>を作成します。<pre class="examplecode">final Map&lt;String,Image&gt; flowers = new HashMap&lt;String,Image&gt;(4);
+final Map&lt;String,Image&gt; thumbs = new HashMap&lt;String,Image&gt;(4);</pre>
+              </li>
+              <li><tt>java.awt.Image</tt>、<tt>java.util.Map</tt>および<tt>java.util.HashMap</tt>のインポート文を追加します。</li>
+              <li><tt>main</tt>メソッドの本文で、<tt>FlowerFrame</tt>を表示するコードを追加します。<pre class="examplecode"><b>// Show the FlowerFrame.</b>
+final FlowerFrame frame = new FlowerFrame(flowers);
+frame.setVisible(true);  </pre>  
+              </li>
+              <li><tt>main</tt>メソッドの本文で、クライアントをサービスに接続するコードを追加します。<pre class="examplecode"><b>// The client connects to the service with this code.</b>
+FlowerServiceService service = new FlowerServiceService();
+final FlowerService port = service.getFlowerServicePort();</pre>  
+              </li>            
+              <li><tt>org.flower.service.FlowerService</tt>と<tt>org.flower.service.FlowerServiceService</tt>のインポート文を追加します。</li>
+              <li><tt>main</tt>メソッドの本文で、4つの<tt>Runnable</tt>スレッドの配列を作成し、Webサービスの<tt>getFlower</tt>操作をスレッドごとに一度コールするコードを追加します。<pre class="examplecode"><b>// The web service getFlower operation
+// is called 4 times, each in a separate thread.
+// When the operation finishes the picture is shown in
+// a specific button.</b>
+Runnable[] tasks = new Runnable[4];
+
+for (int i=0; i&lt;4;i++) {
+    final int index = i;
+    tasks[i] = new Runnable() {
+        public void run() {
+            try {
+            
+                <b>// Call the getFlower operation
+                // on the web service:</b>
+                Image img = port.getFlower(FlowerFrame.FLOWERS[index]);
+                System.out.println("picture downloaded: "+FlowerFrame.FLOWERS[index]);
+                     
+                <b>// Add strings to the hashmap:</b>
+                flowers.put(FlowerFrame.FLOWERS[index],img);
+                        
+                <b>// Call the showFlower operation
+                // on the FlowerFrame:</b>
+                frame.showFlower();
+                        
+            } catch (IOException_Exception ex) {
+                ex.printStackTrace();
+            }
+            downloadedPictures++;
+        }
+    };
+    new Thread(tasks[i]).start();
+}</pre>
+           </li>
+              <li><tt>org.flower.service.IOException_Exception</tt>のインポート文を追加します。      </li>       
+              <li>the<tt>main</tt>メソッドの本文で、Webサービスの<tt>getThumbnails</tt>操作を別スレッドでコールするコードを追加します。
+              <pre class="examplecode"><b>// The web service getThumbnails operation is called
+// in a separate thread, just after the previous four threads finish.
+// When the images are downloaded, the thumbnails are shown at 
+// the bottom of the frame.</b>
+Runnable thumbsTask = new Runnable() {
+    public void run() {
+        try {
+            while (downloadedPictures &lt; 4) {                        
+                try {Thread.sleep(100);} catch (InterruptedException ex) {}
+            }
+                 
+            <b>// Call the getThumbnails operation
+            // on the web service:</b>
+            List&lt;Image&gt; images = port.getThumbnails();
+            System.out.println("thumbs downloaded");
+                    
+            if (images != null && images.size() == 4) {
+                for (int i=0;i&lt;4;i++) {
+                    thumbs.put(FlowerFrame.FLOWERS[i],images.get(i));
+                }
+                frame.setThumbnails(thumbs);
+            }
+        } catch (IOException_Exception ex) {
+            ex.printStackTrace();
+        }
+    }            
+};
+new Thread(thumbsTask).start();
+</pre>
+              </li>
+              <li><tt>Main.java</tt>のコードに貼り付けたときにインポートを修正していない場合は、インポートを修正します。エディタで右クリックし、コンテキスト・メニューから「インポートを修正」を選択すると、すべてのインポートを一度に修正できます。インポートするListクラスの選択肢が表示されたら、「<tt>java.util.List</tt>」を選択します。完成した一連のインポート文は次のようになります。
+                <pre class="examplecode">import flower.album.FlowerService;<br>import flower.album.FlowerService_Service;<br>import flower.album.IOException_Exception;<br>import java.awt.Image;<br>import java.util.HashMap;<br>import java.util.List;<br>import java.util.Map;</pre>
+              </li>
+            </ol>
+    <p>これで<tt>Main</tt>クラスは完成しました。</p>
+                <pre class="examplecode">public class Main {
+
+     private static int downloadedPictures;
+    
+     public static void main(String[] args) {
+    
+        final Map&lt;String,Image&gt; flowers = new HashMap&lt;String,Image&gt;(4);
+        final Map&lt;String,Image&gt; thumbs = new HashMap&lt;String,Image&gt;(4);
+        
+        <b>// Show the FlowerFrame.</b>
+        final FlowerFrame frame = new FlowerFrame(flowers);
+        frame.setVisible(true);
+        <br><b>        // The client connects to the service with this code.</b>
+        FlowerService_Service service = new FlowerService_Service();
+        final FlowerService port = service.getFlowerServicePort();
+        
+        Runnable[] tasks = new Runnable[4];
+        
+        <b>// The web service getFlower operation
+        // is called 4 times, each in a separate thread.
+        // When the operation finishes the picture is shown in
+        // a specific button.</b>
+        for (int i=0; i&lt;4;i++) {
+            final int index = i;
+            tasks[i] = new Runnable() {
+                public void run() {
+                    try {
+                    
+                        <b>// Call the getFlower operation
+                        // on the web service:</b>
+                        Image img = port.getFlower(FlowerFrame.FLOWERS[index]);
+                        System.out.println("picture downloaded: "+FlowerFrame.FLOWERS[index]);
+                        
+                        <b>// Add strings to the hashmap:</b>
+                        flowers.put(FlowerFrame.FLOWERS[index],img);
+                        
+                        <b>// Call the showFlower operation
+                        // on the FlowerFrame:</b>
+                        frame.showFlower();
+                        
+                    } catch (IOException_Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    downloadedPictures++;
+                }
+            };
+            new Thread(tasks[i]).start();
+        }
+        <b>// The web service getThumbnails operation is called
+        // in a separate thread, just after the previous four threads finish.
+        // When the images are downloaded, the thumbnails are shown at 
+        // the bottom of the frame.</b>
+        Runnable thumbsTask = new Runnable() {
+            public void run() {
+                try {
+                    while (downloadedPictures &lt; 4) {                        
+                        try {Thread.sleep(100);} catch (InterruptedException ex) {}
+                    }
+                    
+                    <b>// Call the getThumbnails operation
+                    // on the web service:</b>
+                    List&lt;Image&gt; images = port.getThumbnails();
+                    System.out.println("thumbs downloaded");
+                    
+                    if (images != null && images.size() == 4) {
+                        for (int i=0;i&lt;4;i++) {
+                            thumbs.put(FlowerFrame.FLOWERS[i],images.get(i));
+                        }
+                        frame.setThumbnails(thumbs);
+                    }
+                } catch (IOException_Exception ex) {
+                    ex.printStackTrace();
+                }
+            }            
+        };
+        new Thread(thumbsTask).start();
+    }
+
+}</pre>
+                         
+            
+                
+    <p>これでクライアント・アプリケーションは完了です。EJBモジュールに委譲してそのイメージを公開するWebサービスと対話するコードを作成しました。クライアントを右クリックし、「実行」を選択します。Swingアプリケーションが起動し、しばらくするとWebサービスから受信されるイメージが表示されます。表示されないイメージがある場合は、FlowerServiceプロジェクトを消去およびビルドしてから、再度実行します。メイン・フレームに表示されるイメージは、ラジオ・ボタンを選択するか、サムネイルをクリックすることによって変更できることに注意してください。<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Swing%20Client%20EE6">このチュートリアルに関するご意見をお寄せください</a></div>
+        <p><a href="../../../community/lists/top.html">nbj2ee@netbeans.orgメーリング・リスト</a>に登録することによって、NetBeans IDE Java EE開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+    </body>
+</html>

@@ -1,0 +1,409 @@
+<html>
+<head>
+   <title>Beginning JNI with NetBeans IDE and C/C++ Plugin on Linux</title>
+   <meta name="DESCRIPTION" content="A tutorial describing how to compile
+and run JNI powered Java applications using NetBeans IDE or Oracle Solaris Studio IDE.">
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  </head>
+<body>
+<a name="top"></a>
+
+<h1>Beginning JNI with NetBeans IDE and C/C++ Plugin on Linux</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+ <!--  <p><em>Contributed by <i>Susan Morgan</i> <br> -->
+ <em>March 2014</em> [Revision number: V8.0-1]</div>
+
+<p>This tutorial takes you through the creation of a simple application that
+uses Java<sup><small>TM</small></sup> Native Interface (JNI) code written in the C
+programming language.
+<p class="notes">The tutorial is specific to Linux.</p>
+<!-- END INTRO -->
+
+<h3>Contents</h3>
+<img src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp"
+alt="Content on this page applies to NetBeans IDE 7.4and 8.0" title="Content on this page applies to the NetBeans IDE 7.4 and 8.0">
+
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#requirements" title="Requirements">Requirements</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#modules" title="Setting Up Your Environment for the Tutorial">
+          Setting Up Your Environment for the Tutorial</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#javaproject" title="Setting Up the Java Application
+Project">Setting Up the Java Application Project</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#c-library" title="Setting Up a New C/C++ Dynamic Library Project">
+          Setting Up a New C/C++ Dynamic Library Project</a>
+</td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#running" title="Building and Running the
+Application">Building and Running the Application
+      </a></td>
+      </tr>
+       <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#next" title="Next Steps">Next Steps
+      </a></td>
+      </tr>
+</table>
+
+<h2><A NAME="requirements"></a>Requirements</h2>
+<p><b>To follow this tutorial, you need the following software and resources.</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Software or Resource</th>
+<th class="tblheader" scope="col">Version Required</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a
+href="https://netbeans.org/downloads/index.html">version 7.4 or 8.0 with NetBeans C/C++ plugin</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java Developer Kit (JDK)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">version 7 or 8</a></td>
+</tr>
+<tr>
+<td class="tbltd1">
+C and C++ compilers, <tt>make</tt>, <tt>gdb</tt></td>
+   <td class="tbltd1">
+   <a HREF="../../../community/releases/80/cpp-setup-instructions.html">
+       Configuring the NetBeans IDE for C/C++/Fortran</a></td>
+</tr>
+</table>
+<p>See the <a href="../../../community/releases/80/install.html">NetBeans IDE
+      8.0 Installation
+   Instructions</a> and <a
+      HREF="../../../community/releases/80/cpp-setup-instructions.html">
+      Configuring the NetBeans IDE for C/C++/Fortran</a> for
+   information on downloading and installing the required software. 
+</p>
+
+<h2><a name="modules"></a>Setting Up Your Environment for the Tutorial</h2>
+<p>You need both Java modules and C/C++
+modules for this tutorial.  If you already have downloaded the NetBeans IDE C/C++ bundle,
+you can download the additional Java modules separately.</p>
+<p>To determine if you have the Java and C/C++ modules, select File &gt; New Project.
+The project categories should include both Java and C/C++.
+<p><b>To download Java and C/C++ modules that may be missing:</b></p>
+<ol><li>In the NetBeans IDE, select Tools &gt; Plugins.</li>
+<li>In the Available Plugins tab, select the checkbox for Java or C/C++, depending
+on which is missing from your IDE.  If you already have the plugins, they
+will be listed in the Installed tab.
+</li>
+<li>Click Install.</li>
+<li>Click Next in the NetBeans IDE Installer dialog box, accept the license terms checkbox,
+and click Install.</li>
+<li>Click Finish when the installation is complete.</li></ol>
+
+<h2><a name="javaproject"></a>Setting Up the Java Application Project</h2>
+<p>
+This program requires a Java project and a C project. In this section,
+you will create and configure the Java project for the
+JNI application you will be developing. You will create a new Java application
+project, initialize its main class, and add a native method to this class.
+</p>
+<ol>
+<li>Choose File &gt; New Project.  Select the Java category and Java Application
+project type. Click Next.<br>
+<img src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-project-java.png" alt="Screenshot
+of the New Project Wizard" class="margin-around"></li>
+<li>In the Project Name field, type <tt>JNIDemoJava</tt>.</li>
+<li>You can change the Project Location to any directory on your computer, but here
+we use the default NetBeansProjects in the user directory.
+</li>
+<li>Leave the Create Main Class checkbox selected and change the Main class name to 
+<tt>jnidemojava.Main</tt>.<br>
+
+<br>
+<img src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-java-app.png" alt="Screenshot
+of the Name and Location page of the New Java Application Wizard" class="margin-around">
+</li>
+<li>Click Finish. <br> <br>
+<p>
+The IDE creates the <tt>NetBeansProjects/JNIDemoJava</tt> project folder.
+</p>
+</li>
+</ol>
+
+<h3>Editing the Main Class Source</h3>
+<ol>
+<li>To open the Main class source in the editor, right-click the <tt>Main.java</tt> class
+node and choose Open.</li>
+<li>Replace the line <tt>//TODO code application logic here</tt> in the <tt>main</tt> method with the following:
+<pre class="examplecode">new Main().nativePrint();</pre>
+</li>
+<li>Notice the indicator in the left margin showing an error and lightbulb. Click on the indicator,
+and you are prompted with a shortcut to create the method <tt>nativePrint</tt>.  </li>
+<li>Click on this shortcut and the IDE inserts the following code:
+<pre class="examplecode">private void nativePrint() {
+      throw new UnsupportedOperationException("Not supported yet");
+   }</pre>
+   
+</li>
+<li>Delete the line
+    <pre class="examplecode">throw new UnsupportedOperationException("Not supported yet");</pre>
+ </li>
+<li>Modify the  <tt>nativePrint()</tt> method by 
+inserting the <tt>native</tt> keyword into the method signature so that
+it now looks as follows:
+<pre class="examplecode">private native void nativePrint();</pre>
+<p>
+The <tt>native</tt> keyword indicates that the method has an implementation located in
+an external native library. However, at runtime the library location is not clear.
+</p>
+
+<p>The new main method should look as follows:</p>
+<pre class="examplecode">public static void main(String[] args) {
+       new Main().nativePrint();
+   }
+
+   private native void nativePrint();
+}</pre>
+
+</li>
+
+<li>Right-click the project name and select Clean and Build. The project should build
+successfully.
+</li>
+</ol>
+<h3><a name="header"></a>Creating the Native Library Header File</h3>
+In this section we use <tt>javah</tt>, a Java tool that creates a C header from a Java class.
+<ol>
+<li>In a terminal window, navigate to the <tt>NetBeansProjects</tt>
+directory.
+</li>
+<li>Type the following:
+<pre class="examplecode">
+javah -o JNIDemoJava.h -classpath JNIDemoJava/build/classes jnidemojava.Main
+</pre>
+<p>
+A <tt>JNIDemoJava.h</tt> C header file is generated in the NetBeansProjects directory.
+This file is required to provide a correct function declaration for the native implementation of the
+<tt>nativePrint()</tt> method. You will need it later when you create the C part of this application.</p>
+</li>
+<li>Switch back to the NetBeans IDE window.
+</li>
+</ol>
+<p><b>Summary</b>
+<p>In this exercise you created a new Java application project,
+specified its location, and defined the package and name of the main class
+of the project. You also added a new method to the main class and marked it
+as a method having a native implementation. As a final step, you created a C
+header file, which is required later for the native library compilation.</p>
+
+<h2><a name="c-library"></a>Setting Up a New C/C++ Dynamic Library Project</h2>
+<p>This section shows you how to create the native part
+of the application. You will create the C++ Dynamic Library project and
+configure it to be able to build JNI code.
+</p>
+<p>After you have set up the project, you will create the implementation for
+the native method you declared earlier in the Java part of the application.
+
+<ol>
+<li>
+Choose File &gt; New Project. Under Categories, select C/C++. Under
+Projects, select C/C++ Dynamic Library. Click Next.
+<br>
+<img src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-project-c.png"
+alt="Screenshot of the Choose Project page of the New Project wizard" class="margin-around">
+</li>
+<li>In the Project Name field, type <tt>JNIDemoCdl</tt>.
+</li>
+<li>In the Project Location field, use the same location that you used for
+the Java application project, <tt>NetBeansProjects</tt>. The
+location should be shown as the default value.
+</li>
+<li>Accept the defaults for all other fields and click Finish.
+
+<p>The IDE creates the <tt>NetBeansProjects/JNIDemoCdl</tt> project
+folder.
+</p>
+</li>
+</ol>
+<h3>Setting Project Properties</h3>
+<ol>
+<li>Right-click the JNIDemoCdl project node and choose Properties.</li>
+<li>In the Properties dialog box, select the C Compiler node under the Build properties.</li>
+<li>Click the Include Directories and Headers ... button and click Add in the Include Directories and Headers dialog box.
+<li>Browse into your JDK directory, and select the <tt>include</tt> subdirectory. </li>
+<li>Select the Store path as Absolute option, then click Select to add this directory to the project's
+Include Directories.</li>
+<li>Add the JDK's <tt>include/linux</tt> directory in the same way, then click OK.
+<br>
+<img src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-include-directories.png" alt="Screenshot of the Project Properties dialog
+box and the Debug-Include Directories dialog box" class="margin-around">
+
+<p>These settings are required to enable references to the Java <tt>jni.h</tt> library
+from your C code.
+</p>
+</li>
+<li>
+Find the Compilation Line area of the C Compiler options. Click in the text field of the Additional Options
+property and type <tt>-shared -m32</tt>.
+
+<img src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-project-properties-cmd-options.png"
+alt="Screenshot of the Debug-Additional Optionstext field being edited"  class="margin-around">
+
+<p>
+The <tt>-shared</tt> option tells the compiler to generate a dynamic library.<br>
+    The
+<tt>-m32</tt> option tells the compiler to create a 32-bit binary. By default on 64-bit
+systems the compiled binaries are 64-bit, which causes a lot of problems with
+32-bit JDKs.
+</p>
+</li>
+<li>
+Click the Linker category in the left panel.</li>
+<li>Click the Output text field, and replace the string
+ <pre class="examplecode">${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libJNIDemoCdl.so</pre>
+
+ with the string
+ <pre class="examplecode">dist/libJNIDemoCdl.so</pre>
+ to simplify the path of the resulting shared object file.
+ This will make the file easer to reference from Java.<br>
+
+<img src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-project-properties-linker.png"
+alt="Screenshot of the Project Properties dialog box with Linker properties" class="margin-around">
+
+
+
+</li>
+<li>Click OK. The defined settings are saved.
+</li>
+</ol>
+
+<h3>Adding a Header File</h3>
+<ol>
+<li>Go to a terminal window and move the <tt>JNIDemoJava.h</tt> header file that
+you generated previously from your <tt>NetBeansProjects</tt> directory to the
+C/C++ Library project directory, <tt>NetBeansProjects/JNIDemoCdl</tt>.
+</li>
+<li>
+<p>In the Projects window, right-click the Header Files node
+of the <tt>JNIDemoCdl</tt> project and choose Add Existing Item. Navigate to
+the  <tt>NetBeansProjects/JNIDemoCdl</tt> directory and select the <tt>JNIDemoJava.h</tt> file, then click
+Select.
+</p>
+<p>The <tt>JNIDemoJava.h</tt> file appears under Header Files.
+</p>
+
+<img src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-source-files-include-file.png" alt="Screenshor of
+the Projects window" class="margin-around b-all">
+</li>
+</ol>
+<h3>Implementing a Method</h3>
+
+<ol>
+<li>Right-click the Source Files node of the <tt>JNIDemoCdl</tt> project and choose New &gt; C Source File. Type
+<tt>JNIDemo</tt> in the File Name field, and click Finish. The editor opens
+the <tt>JNIDemo.c</tt> file.
+</li>
+<li>Edit the <tt>JNIDemo.c</tt> file by typing the following code:
+<pre class="examplecode">
+#include &lt;jni.h&gt;
+#include &lt;stdio.h&gt;
+#include "JNIDemoJava.h"
+
+JNIEXPORT void JNICALL Java_jnidemojava_Main_nativePrint
+        (JNIEnv *env, jobject obj)
+{
+
+    printf("\nHello World from C\n");
+
+}
+</pre>
+</li>
+<li>Save the <tt>JNIDemo.c</tt> file.</li>
+<li>
+Right-click the <tt>JNIDemoCdl</tt> project node and choose Build. The
+Output window displays <tt>BUILD SUCCESSFUL (total time 171ms)</tt> or similar.
+</li>
+</ol>
+<p><b>Summary</b></p>
+
+<p>In this exercise you created a new C/C++ Dynamic Library, specified its
+location, and configured it to be able to build a JNI implementation of your
+Java method. You added the generated header file for the native method you
+declared in the Java application, and implemented it.
+</p>
+
+<h2><a name="running"></a>Building and Running the Application</h2>
+<p>
+In this exercise, you will perform some final alterations to the Java part of
+the application. These changes are required to ensure the Java part properly
+loads the native library you compiled in the previous exercise. After that you
+will compile and run the resulting application.
+</p>
+<div class="indent">
+<h3>Configuring the Java Project</h3>
+<ol>
+<li>Open the <tt>Main.java</tt> file in the editor.
+<li>Add the following initialization code for the C++ dynamic library after the <tt>public class Main</tt> line, using the path to the output file 
+that you shortened
+in the previous exercise:
+<pre class="examplecode">
+static {
+        System.load("<i>full-path-to-NetBeansProjects-dir</i>/JNIDemoCdl/dist/libJNIDemoCdl.so");
+       }
+</pre>
+Replace <i>full-path-to-NetBeansProjects-dir</i> with the path to your NetBeansProjects directory,
+which should be something similar to
+<tt>/home/<i>username</i>/NetBeansProjects</tt>
+
+</li>
+<li>Save the <tt>Main.java</tt> file.</li>
+
+</ol>
+<h3>Running the JNIDemoJava Application</h3>
+<ol><li>Select the JNIDemoJava application in the Projects window.</li>
+<li>Press F6 or click the Run button in the toolbar to run the application.
+The program should execute correctly and the Output window should display output similar to the following:
+<br>
+<img src="../../../images_www/articles/72/cnd/beginning-jni-linux/jni-build-success.png"
+alt="Screenshot of the Output window" class="margin-around">
+</li>
+</ol>
+<h3>Summary</h3>
+<p>In this exercise you made some final configuration steps and ran the
+application to verify that the implementation of the native method comes from
+the native C library.
+</p>
+</div>
+<h2><a name="next"></a>Next Steps</h2>
+<p>If you want to check your work against a working example, you can
+<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FCPlusPlus%252FJNIDemo.zip" target="_blank">
+    download a zip file containing the source code</a> from netbeans.org.
+</p>
+   
+
+<p>
+You can use the following documents to get more information:
+<ul>
+<li><a href="quickstart.html">
+C/C++ Projects Quick Start Tutorial</a>
+<li><a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jni/" target="_blank">JNI Specification</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Java_Native_Interface" target="_blank">Java Native Interface</a>
+
+</ul>
+  <DIV CLASS="feedback-box">
+   <A
+      HREF="https://netbeans.org/about/contact_form.html?to=7&amp;subject=Feedback:%20Beginning%20JNI%20with%20NetBeans%20IDE%20and%20C/C++%20Plugin%20on%20Linux">Send Feedback on This Tutorial</a>
+</DIV>
+</body>
+</html>

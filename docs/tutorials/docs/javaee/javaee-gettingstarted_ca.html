@@ -1,0 +1,439 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Com comen&ccedil;ar amb aplicacions Java EE 6</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial that introduces NetBeans IDE 6.8 support for some of the new features in Java EE 6.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Com comen&ccedil;ar amb aplicacions Java EE 6</h1>
+        
+        <p>aquest document proporciona un breu introducci&oacute; a algunes de les caracter&iacute;stiques introdu&iuml;des com a part de l'especificaci&oacute; de l'edici&oacute; empresarial de Java 6 (Java EE 6). Per il&middot;lustrar les noves caracter&iacute;stiques, aquest tutoria demostrar&agrave; com crear una aplicaci&oacute; web senzilla de Java EE 6 web que cont&eacute; un bean de sessi&oacute; sense-estat EJB 3.1 en la part frontal d'una classe d'entitat. Utilitzareu l'assistent al IDE per generar una classe d'entitat i un bean de sessi&oacute;. El codi generat per l'assistent utilitza consultes que estan definides en l'API Criteria que forma part de JPA 2.0 i que est&agrave; contemplada en l'especificaci&oacute; de Java EE 6. Despr&eacute;s creareu un bean gestionat amb nom que accedeixi a la part frontal de la sessi&oacute; i al disseny de presentaci&oacute; que utilitza el Framework de visualitzaci&oacute; Facelets com s'especifica en JSF 2.0.</p>
+
+        <p>Aquesta guia d'aprenentatge est&agrave; basada en l'entrada del blog <a href="http://www.adam-bien.com/roller/abien/entry/simplest_possible_jsf_2_ejb" title="http://www.adam-bien.com/roller/abien/entry/simplest_possible_jsf_2_ejb" target="_blank"> Simplest Possible JSF 2 / EJB 3.1 / JPA Component - With WAR Deployment</a> per Adam Bien. Podeu trobar exemples addicionals de Java EE al projecte kenai d'Adam Bien <a href="http://kenai.com/projects/javaee-patterns" title="http://kenai.com/projects/javaee-patterns"  target="_blank"> Java EE Patterns and Best Practices</a> i al seu llibre &quot;Real World Java EE Patterns - Rethinking Best Practices&quot;, disponible a <a href="http://press.adam-bien.com" title="http://press.adam-bien.com" target="_blank">http://press.adam-bien.com</a>.</p>
+
+        <p class="notes">Aquest document utilitza el llan&ccedil;ament de l'IDE NetBeans 6.8.</p>
+        
+        <p><b>Exercicis de la guia d'aprenentatge</b></p>
+        <img  src="../../../images_www/articles/71/netbeans-stamp-71-72.gif" class="stamp" width="114" height="114" alt="El contingut d'aquesta p&agrave;gina s'aplica al IDE NetBeans 7.1" title="El contingut d'aquesta p&agrave;gina s'aplica al IDE NetBeans 7.1"  />
+        <ul>
+            <li><a href="#Exercise_1">Creant el projecte d'aplicaci&oacute; Web</a></li>
+            <li><a href="#Exercise_2">Creant la classe d'entitat i la part frontal de la sessi&oacute;</a>
+                <ul>
+                    <li><a href="#Exercise_2a">Creant la classes d'entitat</a></li>
+                    <li><a href="#Exercise_2b">Creant la part frontal de la sessi&oacute;</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_3">Creant el Bean gestionat JSF i les p&agrave;gines JSF</a>
+            <ul>
+                    <li><a href="#Exercise_3a">Creant el Bean gestionat</a></li>
+                    <li><a href="#Exercise_3b">Modificant la p&agrave;gina d'&iacute;ndex</a></li>
+                    <li><a href="#Exercise_3c">Creant la p&agrave;gina de resultats</a></li>
+                </ul>
+
+            </li>
+            <li><a href="#Exercise_4">Executant el projecte</a>
+                <!--<ul>
+                    <li><a href="#Exercise_4a">Downloading the Solution Project</a></li>
+                </ul>-->
+            </li>
+            <!--<li><a href="#Exercise_5">Troubleshooting</a></li>-->
+        </ul>
+        <p><b>Per seguir aquesta guia d'aprenentatge, necessiteu el seg&uuml;ent programari i recursos.</b></p>
+        <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Programari o Recurs</th>
+                <th class="tblheader" scope="col">Versi&oacute; necess&agrave;ria</th>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                <td class="tbltd1">6.8, versi&oacute; Java</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Kit de desenvolupament de Kava (JDK)</a></td>
+                <td class="tbltd1">versi&oacute; 6</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                <td class="tbltd1">3.0.1</td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="note"><strong>Nota.</strong> GlassFish V3 necessita el kit de desenvolupament de Java (JDK) 6.</p>
+
+        <p><b>Prerequisits</b></p>
+        <p>Aquest document assumeix que teniu un coneixement b&agrave;sic de, o experi&egrave;ncia de programaci&oacute; amb, les seg&uuml;ent tecnologies:</p>
+        <ul>
+            <li>Programaci&oacute; Java</li>
+            <li>IDE NetBeans</li>
+        </ul>
+        <!--<p class="tips">You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FSimpleEE6App.zip">a zip archive of the finished project</a>.</p>-->
+
+        <!-- ===================================================================================== -->
+
+
+        <a name="Exercise_1"></a>
+            <!--Exercise 1: -->
+        <h2>Creant el projecte d'aplicaci&oacute; Web</h2>
+        <p>En aquest exercici creareu una aplicaci&oacute; web senzilla. Quant creeu l'aplicaci&oacute; web especificareu el servidor d'aplicacions GlassFish v3 com a objectiu del contenidor Java EE. El servidor d'aplicacions GlassFish v3 &eacute;s compatible amb Java EE i inclou les biblioteques JSF 2.0 que es necessiten en aquesta aplicaci&oacute;.</p>
+
+        <p>En l'assistent de nou projecte seleccionareu Java EE 6 web com la versi&oacute; de Java EE. Java EE 6 Web &eacute;s un perfil Java EE 6 lleuger que cont&eacute; un subconjunt de la plataforma sencera de Java EE 6. El perfil Java EE 6 Web est&agrave; dissenyat per a aplicacions web que no necessiten tecnologies avan&ccedil;ades de Java EE 6 com el suport per a interf&iacute;cies remotes, tota l'especificaci&oacute; de EJB 3.1 i l'API de servei de missatges Java (JMS, de l'angl&egrave;s Java Message Service).</p>
+
+        <p>El perfil Web suporta el processament de la transacci&oacute; i la gesti&oacute; de  persist&egrave;ncia que s&oacute;n utilitzats de freq&uuml;entment en aplicacions web empresarials. Podeu utilitzar el perfil Java EE Web per aplicacions web que utilitzen beans de sessi&oacute; amb interf&iacute;cie local o sense interf&iacute;cie. El perfil Java EE sencer es requerit si l'aplicaci&oacute; utilitza una interf&iacute;cie remota.</p>
+
+
+        <ol>
+            <li>Seleccioneu Fitxer &gt; Nou projecte (Ctrl-Maj-N) des del men&uacute; principal.</li>
+            <li>Seleccioneu Aplicaci&oacute; Web des de la categoria Java Web i cliqueu a Seg&uuml;ent.</li>
+            <li>Escriviu <strong>SimpleEE6App</strong> pel nom del projecte i establiu una localitzaci&oacute; per al projecte. </li>
+            <li>Desmarqueu l'opci&oacute; Utilitzar un directori dedicat per emmagatzemar biblioteques, si est&egrave;s seleccionat. Cliqueu a Seg&uuml;ent.<br />
+                (Per aquesta guia d'aprenentatge no hi ha cap ra&oacute; de pes per copiar les biblioteques del projecte a una carpeta dedicada perqu&egrave; no necessitareu compartir les biblioteques amb altres usuaris o projectes.)<br />
+            </li>
+            <li>Establiu el servidor a GlassFish v3 i establiu la versi&oacute; de Java EE a Java EE 6 web. Cliqueu a Seg&uuml;ent.<br/>
+            <img src="../../../images_www/articles/71/javaee/gettingstarted/newappwizard.png" alt="Assistent nou projecte" title="panell servidor i prefer&egrave;ncies en l'assistent de nou projecte" class="margin-around b-all">
+
+
+            </li>
+            <li>Seleccioneu JavaServer Faces en el panell de Frameworks. Cliqueu a Finalitzar
+                <p>Per defecte, si esteu desenvolupant una aplicaci&oacute; web Java EE 6 i desplegant a GlassFish V3, l'IDE seleccionar&agrave; la biblioteca JSF2.0. La biblioteca JSF 2.0 us permet utilitzar Facelets com a llenguatge de la p&agrave;gina i tamb&eacute; proporciona suport per a JSF 1.2 i JSP.</p>
+            <img src="../../../images_www/articles/71/javaee/gettingstarted/newappwizard2.png" alt="Assistent nou projecte" title="panell Frameworks en l'assistent de nou projecte" class="margin-around b-all"></li>
+        </ol>
+
+        <p>Quant cliqueu a Finalitzar, l'IDE crea el projecte i l'obre en la finestra de projectes. El IDE crea autom&agrave;ticament la p&agrave;gina JSF <tt>index.xhtml</tt> i l'obre en l'editor.</p>
+
+
+
+        <a name="Exercise_2"></a>
+        <h2>Creant la classe d'entitat i la part frontal de la sessi&oacute;</h2>
+
+        <p>En aquesta secci&oacute; creareu una classe d'entitat i la part frontal de la sessi&oacute; per a la classe d'entitat. Una classe d'entitat &eacute;s un objecte Java antic i planer (POJO, de l'angl&egrave;s Plain Old Java Object), una classe Java senzilla que est&agrave; identificada com una entitat mitjan&ccedil;ant l'anotaci&oacute; <tt>@Entity</tt>. Comen&ccedil;ant amb l'especificaci&oacute; Java EE 5, podeu utilitzar les classes d'entitat com a objectes persistents per a representar taules en una base de dades.
+        </p>
+
+        <p>La part frontal de la sessi&oacute; per la classe d'entitat en aquesta aplicaci&oacute; &eacute;s un bean de sessi&oacute; sense estat. L'arquitectura JavaBean Empresaria (EJB, de l'angl&egrave;s Enterprise JavaBean) 3.1 introdu&iuml;da com a part de l'especificaci&oacute; de Java EE 6 us permet crear beans de sessi&oacute; sense les interf&iacute;cies de negoci que eren necess&agrave;ries en EJB 3.0. L'especificaci&oacute; Java EE 6 tamb&eacute; us permet empaquetar components EJB directament en un fitxer WAR. Aquest simplifica el desenvolupament d'aplicacions web petites tot eliminant la necessitat de crear m&ograve;duls EJB separats que estan empaquetats com a arxius JAR en un arxiu EAR. Tanmateix, per a aplicacions empresarials grans que estan distribu&iuml;des al voltant de m&agrave;quines diferents, encara voldreu continuar creant arxius EAR per separar la vostra l&ograve;gica de negoci de la capa de presentaci&oacute;.</p>
+
+        <p class="tips">Per a m&eacute;s informaci&oacute; quant a les classes d'entitat i persist&egrave;ncia, vegeu el cap&iacute;tol <strong>Introducci&oacute; a l'API Persist&egrave;ncia de Java</strong> en la <a href="http://java.sun.com/javaee/6/docs/tutorial/doc/index.html" target="_blank">Guia d'aprenentatge Java EE 6, Volum I</a>.</p>
+
+        <p class="tips">Per a m&eacute;s informaci&oacute; quant als beans de sessi&oacute;, vegeu el cap&iacute;tol <strong>Beans Empresarials</strong> en la <a href="http://java.sun.com/javaee/6/docs/tutorial/doc/index.html" target="_blank">Guia d'aprenentatge Java EE 6, Volum I</a>.</p>
+
+
+    
+        <div class="indent">
+            <a name="Exercise_2a"></a>
+            <h3>Creant la classe d'entitat</h3>
+            <p>En aquest exercici utilitzareu l'assistent Nova classe d'entitat, per crear una senzilla classe d'entitat persistent. Tamb&eacute; utilitzareu l'assistent per crear una unitat de persist&egrave;ncia que defineixi la font de dades i el gestor d'entitat utilitzats en l'aplicaci&oacute;. Afegireu un camp en la classe per representar les dades en la vostra taula i generar els m&egrave;todes getter i setter pel nou camp.</p>
+
+            <p>Una classe d'entitat ha de tenir una clau prim&agrave;ria. Quant creeu la classe d'entitat mitjan&ccedil;ant l'assistent, l'IDE per defecte genera el camp <tt>id</tt> i anota el camp amb l'anotaci&oacute; <tt>@Id</tt> per declarar el camp com a clau prim&agrave;ria. El IDE tamb&eacute; afegeix l'anotaci&oacute; <tt>@GeneratedValue</tt> i especifica l'estrat&egrave;gia de generaci&oacute; de clau pel camp id primari.</p>
+
+            <p>Per crear la classe d'entitat. realitzeu els seg&uuml;ent passos.</p>
+            <ol>
+               <li>En el node del projecte amb un clic dret de ratol&iacute;, seleccioneu Nou &gt; Altres.</li>
+               <li>Seleccioneu la classe d'entitat des de la categoria Persist&egrave;ncia. Cliqueu a Seg&uuml;ent.</li>
+               <li>Escriviu <strong>Message</strong> pel nom de la classe.</li>
+               <li>Escriviu <strong>entities</strong> pel paquet.</li>
+               <li>Cliqueu al bot&oacute; Crear Unitat Persist&egrave;ncia. </li>
+               <li>Seleccioneu la font de dades (per exemple, seleccioneu <tt>jdbc/sample</tt> si voleu utilitzar JavaDB).
+                   <p>La font de dades per <tt>jdbc/sample</tt> est&agrave; integrada amb l'IDE quant instal&middot;leu l'IDE i GlassFish, per&ograve; podeu especificar una font de dades diferent si voleu utilitzar una base de dades diferent.</p>
+                   <p>Podeu mantindre les altres opcions predeterminades (nom unitat de persist&egrave;ncia, prove&iuml;dor de persist&egrave;ncia EclipseLink). Comproveu que la unitat de persist&egrave;ncia estigui utilitzant l'API de Transacci&oacute; Java i que l'estrat&egrave;gia de generaci&oacute; de taula estigui establerta a Crear, ja que les tales basades en les vostres classes d'entitat s&oacute;n creades quant l'aplicaci&oacute; &eacute;s desplegada.
+                   </p></li>
+               <li>Cliqueu a Crear, en l'assistent Nova unitat de persist&egrave;ncia.</li>
+
+               <li>Cliqueu a Finalitzar el l'assistent de la nova classe d'entitat.
+                   <p>Quant cliqueu a Finalitzar, l'IDE crea la classe d'entitat i obre la classe en l'editor. Podeu veure que l'IDE ha generat el camp id <tt>private Long id;</tt> i ha anotat el camp amb <tt>@Id</tt> i <tt>@GeneratedValue(strategy = GenerationType.AUTO)</tt>.</p></li>
+               <li>En l'editor, afegiu el camp <tt>message</tt> (en negreta) despr&eacute;s del camp <tt>id</tt>.
+               <pre class="examplecode">
+private Long id;
+<strong>private String message;</strong></pre>
+               </li>
+               <li>Cliqueu amb el bot&oacute; dret a l'editor i seleccioneu Inserir codi (Ctrl+I) i despr&eacute;s seleccioneu Getter i Setter.</li>
+               <li>En el quadre de di&agrave;leg Generar Generate Getters i Setters, seleccioneu el camp <tt>message</tt> i cliqueu a Generar.
+                   <p>El IDE genera els m&egrave;todes getter i setter pel camp <tt>message</tt>.</p>
+               <img src="../../../images_www/articles/72/javaee/gettingstarted/getters-dialog.png" alt="Assistent crear unitat de persist&egrave;ncia" title="Assistent crear unitat de persist&egrave;ncia" class="margin-around b-all"></li>
+
+               <li>Deseu els vostres canvis.</li>
+            </ol>
+
+            <p>La classe d'entitat representa una taula en la base de dades. Quant executeu aquesta aplicaci&oacute;, es crear&agrave; autom&agrave;ticament una taula Message a la base de dades. La taula contindr&agrave; les columnes <tt>id</tt> i <tt>message</tt>.</p>
+
+            <p>Si observeu la unitat de persist&egrave;ncia en l'editor XML, podeu veure que l'aplicaci&oacute; utilitzar&agrave; l'API de transacci&oacute; Java (JTA, de l'angl&egrave;s Java Transaction API) (<tt>transaction-type=&quot;JTA&quot;</tt>). Aix&ograve; especifica que la responsabilitat del cicle de vida de les entitats en el content de persist&egrave;ncia est&agrave; assignat al contenidor. Aix&ograve; resulta un menor codi perqu&egrave; el cicle de vida de l'entitat est&agrave; gestionat pel contenidor no per l'aplicaci&oacute;. Per a m&eacute;s informaci&oacute; quant a la utilitzaci&oacute; de JTA per gestionar transaccions, vegeu la documentaci&oacute; de l'<a href="http://java.sun.com/javaee/technologies/jta/index.jsp" target="_blank">API transacci&oacute; de Java</a>.</p>
+
+
+            <a name="Exercise_2b"></a>
+            <h3>Creant la part frontal de la sessi&oacute;</h3>
+
+            <p>En aquest execici utilitzareu un assistent per a la part frontal d'una sessi&oacute; sense estat per a l'entitat Message. Les especificacions EJB 3.1. fan constar que les interf&iacute;cies de negoci pels beans de sessi&oacute; ara s&oacute;n opcionals. En aquesta aplicaci&oacute; on el client que accedeix al bean &eacute;s un client local, teniu l'opci&oacute; d'utilitzar una interf&iacute;cie local o una vista sense interf&iacute;cie per exposar el bean.</p>
+
+            <p>Per crear el bean de sessi&oacute;, realitzeu els seg&uuml;ent passos.</p>
+            <ol>
+                <li>En el node del projecte cliqueu amb el boto dret i seleccioneu Nou &gt; Altres.</li>
+                <li>Seleccioneu Beans de sessi&oacute; per a classes d'entitat, des de la categoria Java EE. Cliqueu a Seg&uuml;ent.</li>
+                <li>Seleccioneu l'entitat <tt>Message</tt> i cliqueu Afegir. Cliqueu a Seg&uuml;ent.</li>
+                <li>Escriviu <strong>boundary</strong> pel paquet. Cliqueu a Finalitzar.
+                    <p>Fixeu-vos que no heu necessitat crear una interf&iacute;cie de negoci per al bean de sessi&oacute;. En canvi, en aquesta aplicaci&oacute; el bean ser&agrave; exposat a un bean gestionat localment mitjan&ccedil;ant una vista sense interf&iacute;cie.</p>
+                <img src="../../../images_www/articles/72/javaee/gettingstarted/sessionwizard.png" alt="Assistent Beans de sessi&oacute; per a classes d'entitat" title="Assistent Beans de sessi&oacute; per a classes d'entitat" class="margin-around b-all"></li>
+            </ol>
+
+            <p>Quant cliqueu a Finalitzar, la classe de la part frontal de sessi&oacute; <tt>MessageFacade.java</tt> &eacute;s creada i s'obre en l'editor de codi font. La classe bean cont&eacute; la l&ograve;gica de negoci i gestiona l'EntityManager. Com podeu veure en el codi generat, s'utilitza l'anotaci&oacute; <tt>@Stateless</tt> per declarar la classe com un component bean de sessi&oacute; sense estat.</p>
+
+            <pre class="examplecode">
+@Stateless
+public class MessageFacade {
+    @PersistenceContext(unitName = &quot;SimpleEE6AppPU&quot;)
+    private EntityManager em;
+            </pre>
+
+            <p>Quant creeu la part frontal per l'entitat mitjan&ccedil;ant l'assistent, per defecte el IDE afegeix l'anotaci&oacute; <tt>PersistenceContext</tt>  (<tt>@PersistenceContext(unitName = &quot;SimpleEE6AppPU&quot;)</tt>) per injectar el recurs de gesti&oacute; d'entitat dins del component bean de sessi&oacute;, i per especificar el nom de la unitat de persist&egrave;ncia. En aquest exemple el nom de la unitat de persist&egrave;ncia est&agrave; declarat expl&iacute;citament, no obstant el nom &eacute;s opcional si l'aplicaci&oacute; t&eacute; &uacute;nicament una unitat de persist&egrave;ncia.</p>
+
+            <p>El IDE tamb&eacute; genera els m&egrave;todes en la part frontal per crear, editar, treure i trobar entitats. L'API EntityManager defineix els m&egrave;todes que s'utilitzen per interactuar amb el context de persist&egrave;ncia. Podeu veure que l'IDE genera alguns m&egrave;todes de consulta predeterminats utilitzant freq&uuml;entment que poden ser utilitzats per a trobar objectes d'entitat.</p>
+            
+
+<pre class="examplecode">
+public List&lt;Message&gt; findAll() {
+    CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
+    cq.select(cq.from(Message.class));
+    return em.createQuery(cq).getResultList();
+}
+
+public List&lt;Message&gt; findRange(int[] range) {
+    CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
+    cq.select(cq.from(Message.class));
+    Query q = em.createQuery(cq);
+    q.setMaxResults(range[1] - range[0]);
+    q.setFirstResult(range[0]);
+    return q.getResultList();
+}
+
+public int count() {
+    CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
+    Root&lt;Message&gt; rt = cq.from(Message.class);
+    cq.select(em.getCriteriaBuilder().count(rt));
+    Query q = em.createQuery(cq);
+    return ((Long) q.getSingleResult()).intValue();
+}
+</pre>
+
+            <p>
+            Els m&egrave;todes <tt>findAll</tt>, <tt>findRange</tt> i <tt>count</tt>, utilitzen m&egrave;todes definits en l'API Criteria per a la creaci&oacute; de consultes. L'API Criteria API forma part de l'especificaci&oacute; JPA 2.0 que est&agrave;a inclosa en l'especificaci&oacute; Java EE 6.</p>
+
+        </div>
+        
+        
+        
+        <!-- ===================================================================================== -->
+        <a name="Exercise_3"></a>
+        <h2>Creant el Bean gestionat JSF i les p&agrave;gines JSF</h2>
+
+        <p>En aquesta secci&oacute; creareu la capa de presentaci&oacute; per l'aplicaci&oacute; utilitzant JavaServer Faces (JSF) 2.0 i el bean gestionat que dona suport al bean que &eacute;s utilitzat per les p&agrave;gines JSF. L'especificaci&oacute; JSF 2.0 afegeix suport per a Facelets com la tecnologia de visualitzaci&oacute; preferida per a les aplicacions basades amb JSF. Comen&ccedil;ant amb JSF 2.0, tamb&eacute; podeu utilitzar l'anotaci&oacute; <tt>@ManagedBean</tt> al vostre codi font per declarar una classe de bean gestionat. Ja no necessiteu afegir m&eacute;s entitats en el fitxer <tt>faces-config.xml</tt> per declarar els bans gestionats JSF. Podeu utilitzar noms en p&agrave;gines JSF per accedir als m&egrave;todes en el bean gestionat.</p>
+        <p class="tips">Per a m&eacute;s informaci&oacute; quan al suport de l'IDE per les especificacions de JavaServer Faces 2.0, vegeu <a href="../web/jsf20-support.html">Suport JSF 2.0 en l'IDE NetBeans 6.8</a>.</p>
+        <p class="tips">Per a m&eacute;s informaci&oacute; quant a l'especificaci&oacute; de JavaServer Faces 2.0, vegeu el cap&iacute;tol de la tecnologia JavaServer Faces en la <a href="http://java.sun.com/javaee/6/docs/tutorial/doc/index.html" target="_blank">Guia d'aprenentatge Java EE 6, Volum I</a>.</p>
+
+        <div class="indent">
+
+        <a name="Exercise_3a"></a>
+        <h3>Creant un Bean gestionat</h3>
+        <p>En aquest exercici creareu un senzill bean gestionat JSF utilitzat per accedir a la part frontal de la sessi&oacute; L'especificaci&oacute; JSF 2.0 que forma part de Java EE 6 us permet utilitzar anotacions en la classe bean per identificar la classe com un bean gestionat JSF, per especificar l'&agrave;mbit i el nom pel bean.</p>
+
+        <p>Per crear un bean gestionat, realitzeu els seg&uuml;ents passos.</p>
+        <ol>
+           <li>Cliqueu amb el bot&oacute; dret damunt del node del projecte i seleccioneu Nou &gt; Altres.</li>
+           <li>Seleccioneu Bean gestionat JSF des de la categoria JavaServer Faces. Cliqueu a Seg&uuml;ent.</li>
+           <li>Escriviu <strong>MessageView</strong> pel nom de la classe.
+                <p>Utilitzareu el nom pel bean gestionat <tt>MessageView</tt> com el valor pel <tt>inputText</tt> i <tt>commandButton</tt> en la p&agrave;gina JSF <tt>index.xhtml</tt> quant crideu els m&egrave;todes en el bean.</p>
+           </li>
+           <li>Escriviu <strong>my.presentation</strong> pel paquet.</li>
+           <li>Escriviu <strong>MessageView</strong> pel nom que ser&agrave; utilitzat pel bean gestionat.
+               <p>Quan creeu el bean gestionat mitjan&ccedil;ant l'assistent, l'IDE per defecte assignar&agrave; un nom al bean basat amb el nom de la classe bean.</p></li>
+           <li>Establir l'&Agrave;mbit a Petici&oacute;. Cliqueu a Finalitzar</li>
+        </ol>
+        <img src="../../../images_www/articles/71/javaee/gettingstarted/newjsfbean.png" alt="Nou assistent Bean gestionat per JSF" title="Nou assistent Bean gestionat per JSF" class="margin-around b-all">
+
+        <p>Quan cliqueu a Finalitzar, l'IDE crea la classe bean i l'obre en l'editor. En la finestra de projectes veureu els seg&uuml;ent fitxers.</p>
+        <img src="../../../images_www/articles/72/javaee/gettingstarted/projectswindow.png" alt="Finestra de projecte mostrant l'estructura de fitxers" title="Finestra de projecte mostrant l'estructura de fitxers" class="margin-around b-all">
+
+        <p>En l'editor, podeu veure que l'IDE ha afegit les anotacions <tt>@ManagedBean</tt> i <tt>@RequestScoped</tt> i el nom del bean.</p>
+<pre class="examplecode">
+@ManagedBean(name=&quot;MessageView&quot;)
+@RequestScoped
+public class MessageView {
+
+    /** Crea una nova inst&agrave;ncia de MessageView */
+    public MessageView() {
+    }
+
+}
+</pre>
+
+        <p>Ara utilitzareu la injecci&oacute; de depend&egrave;ncia per obtenir una refer&egrave;ncia al bean de sessi&oacute; MessageFacade amb l'anotaci&oacute; <tt>@EJB</tt>. Tamb&eacute; podreu cridar els m&egrave;todes <tt>findAll</tt> i <tt>create</tt> que estan exposats en la part frontal de la sessi&oacute;. L'auto-completat de codi pot ajudar-vos quant escriviu els m&egrave;todes.</p>
+        <ol>
+            <li>Cliqueu amb el bot&oacute; dret en l'editor i seleccioneu Inserir codi (Ctrl+I) per obrir el men&uacute; emergent.</li>
+            <li>Seleccioneu Cridar Bean empresarial, en el men&uacute; emergent.</li>
+            <li>Seleccioneu MessageFacade en el quadre de di&agrave;leg Cridar Bean empresarial. Cliqueu a Acceptar.<br/>
+                <img src="../../../images_www/articles/72/javaee/gettingstarted/callbean.png" alt="Di&agrave;leg Cridar Bean empresarial" title="Di&agrave;leg Cridar Bean empresarial," class="margin-around b-all">
+                <p>Quan cliqueu a Acceptar, l'IDE afegeix el seg&uuml;ent codi (en negreta) per injectar el bean.</p>
+<pre class="examplecode">
+public class MessageView {
+
+    /** Crea una nova inst&agrave;ncia de MessageView */
+    public MessageView() {
+    }
+
+    <strong>// Injecta el bean de sessi&oacute; MessageFacade utilitzant l'anotaci&oacute; @EJB
+    @EJB
+    MessageFacade messageFacade;</strong>
+}
+</pre>
+            </li>
+            <li>Afegiu el seg&uuml;ent codi a la classe.
+<pre class="examplecode">
+    // Crea un nou camp
+    private Message message;
+
+    // Crea una nova inst&agrave;ncia de Message
+    public MessageView() {
+       this.message = new Message();
+    }
+
+    // Crida a getMessage per recuperar un missatge
+    public Message getMessage() {
+       return message;
+    }
+
+    // Retorna el nombre total de missatges
+    public int getNumberOfMessages(){
+       return messageFacade.findAll().size();
+    }
+
+    // Desa el missatge i despr&eacute;s retorna la cadena de text &quot;theend&quot;
+    public String postMessage(){
+       this.messageFacade.create(message);
+       return &quot;theend&quot;;
+    }
+</pre>
+            </li>
+            <li>Corregiu les vostres importacions (Ctrl-Maj-I) i deseu els canvis.</li>
+        </ol>
+        <p class="tips">Utilitzeu l'auto-completat de codi per a ajudar-vos quant escriviu el vostre codi.</p>
+        <p>Observeu que el m&egrave;tode <tt>postMessage</tt> retorna la cadena de text &quot;theend&quot;. L'especificaci&oacute; de JSF 2.0 permet la utilitzaci&oacute; de regles de navegaci&oacute; impl&iacute;cita en l'aplicaci&oacute; que utilitza tecnologia Facelets. En aquesta aplicaci&oacute;, cap regla de navegaci&oacute; est&agrave; configurada en <tt>faces-config.xml</tt>. En lloc seu, l'encarregat de navegaci&oacute; intentar&agrave; localitzar una p&agrave;gina adequada en l'aplicaci&oacute;. En aquest cas, l'encarregat de la navegaci&oacute; intentar&agrave; localitzar una p&agrave;gina anomenada <tt>theend.xhtml</tt> qual el m&egrave;tode <tt>postMessage</tt> sigui invocat.<p>
+
+
+        <a name="Exercise_3b"></a>
+        <h3>Modificant la p&agrave;gina d'&Iacute;ndex</h3>
+
+        <p>en aquest exercici fareu alguns canvis senzill a la p&agrave;gina <tt>index.xhtml</tt> per afegir alguns components d'interf&iacute;cie gr&agrave;fica (UI). Afegireu un formulari amb un camp de text d'entada i un bot&oacute;.</p>
+        <ol>
+            <li>Obriu <tt>index.xhtml</tt> en l'editor.</li>
+            <li>Modifiqueu el fitxer per afegir el seg&uuml;ent formulari senzill entre les etiquetes <tt>&lt;h:body&gt;</tt>.
+<pre class="examplecode">
+&lt;h:body&gt;
+    &lt;f:view&gt;
+        &lt;h:form&gt;
+            &lt;h:outputLabel value=&quot;Missatge:&quot;/&gt;&lt;h:inputText value=&quot;#{MessageView.message.message}&quot;/&gt;
+            &lt;h:commandButton action=&quot;#{MessageView.postMessage}&quot; value=&quot;Enviar missatge&quot;/&gt;
+        &lt;/h:form&gt;
+    &lt;/f:view&gt;
+&lt;/h:body&gt;</pre>
+                <p class="tips">L'auto-completat de codi JSF pot ajudar-vos quant escriviu el codi.
+                </p>
+                <img src="../../../images_www/articles/72/javaee/gettingstarted/jsfcodecompletion1.png" alt="Auto-completat de codi en l'editor de codi" title="Auto-completat de codi en l'editor de codi" class="margin-around b-all">
+            </li>
+            <li>Deseu els vostres canvis.</li>
+        </ol>
+
+        <p>Els components <tt>inputText</tt> i <tt>commandButton</tt> invocaran els m&egrave;todes en el bean gestionat JSF anomenat <tt>MessageView</tt>. El m&egrave;tode <tt>postMessage</tt> retornar&agrave; &quot;theend&quot;, i l'encarregat de navegaci&oacute; cercar&agrave; una p&agrave;gina anomenada <tt>theend.xhtml</tt>.</p>
+
+        <a name="Exercise_3c"></a>
+        <h3>Creant la p&agrave;gina de resultats</h3>
+
+        <p>En aquest exercici creareu la p&agrave;gina JSF <tt>theend.xhtml</tt>. La p&agrave;gina es mostrar&agrave; quant l'usuari cliqui al bot&oacute; Enviar missatge, en <tt>index.xhtml</tt> i invoqui el m&egrave;tode <tt>postMessage</tt> en el bean gestionat JSF.</p>
+        <ol>
+            <li>Cliqueu amb el bot&oacute; dret al node del projecte i seleccioneu Nou &gt; Altres.</li>
+            <li>Seleccionau P&agrave;gina JSF, des de a categoria JavaServer. Cliqueu a Seg&uuml;ent.</li>
+            <li>Escriviu <strong>theend</strong> com a nom de fitxer.</li>
+            <li>Assegureu-vos que estigui marcada l'opci&oacute; Facelets. Cliqueu a Finalitzar</li>
+            <li>Modifiqueu el fitxer escrivint el seg&uuml;ent entre les etiquetes &lt;h:body&gt;.
+<pre class="examplecode">
+&lt;h:body&gt;
+    &lt;h:outputLabel value=&quot;Gr&agrave;cies! Hi han &quot;/&gt;
+    &lt;h:outputText value=&quot;#{MessageView.numberOfMessages}&quot;/&gt; missatges!
+&lt;/h:body&gt;</pre>
+            </li>
+        </ol>
+        <p class="tips">Quant comenceu a escriure, el IDE afegir&agrave; autom&agrave;ticament la definici&oacute; de la biblioteca d'etiquetes <tt>xmlns:h=&quot;http://java.sun.com/jsf/html</tt> al fitxer pels elements JSF.</p>
+    </div>
+            
+    <a name="Exercise_4"></a>
+    <h2>Executant l'aplicaci&oacute;</h2>
+    <p>Ara hageu finalitzat la codificaci&oacute; de l'aplicaci&oacute;. Ara podeu provar l'aplicaci&oacute; al vostre navegador.</p>
+    <ol>
+        <li>Cliqueu amb el bot&oacute; dret en la finestra de projectes i seleccioneu Executar.
+            <p>Quant seleccioneu Executar, l'IDE construeix i desplega l'aplicaci&oacute; i obre <tt>index.xhtml</tt> en el vostre navegador.</p></li>
+        <li>Escriviu un missatge en el camp de text. Cliqueu a Enviar missatge. <br/>
+        <img src="../../../images_www/articles/72/javaee/gettingstarted/browser1.png" alt="Aplicaci&oacute; en el navegador" title="Aplicaci&oacute; en el navegador" class="margin-around b-all">
+        </li>
+    </ol>
+
+    <p>Quant cliqueu a Enviar missatge, el missatge &eacute;s desat a la base de dades i el nombre de missatges &eacute;s recuperant i mostrat.</p>
+        <img src="../../../images_www/articles/72/javaee/gettingstarted/browser2.png" alt="Aplicaci&oacute; en el navegador mostrant resultats" title="Aplicaci&oacute; en el navegador mostrant resultats" class="margin-around b-all">
+
+
+
+<!--
+            
+            <a name="Exercise_5"></a>
+                
+            <h2>Troubleshooting</h2>
+            <p>The following are some of the problems you may encounter when creating your project.</p>
+            <div class="indent">
+                <h3 class="tutorial">Problem with JMS Resources</h3>
+                <p>When using the wizard to create JMS resources, 
+                you may see the following server error message in the output window:</p>
+                <pre>[com.sun.enterprise.connectors.ConnectorRuntimeException:
+                    JMS resource not created : jms/Queue]
+                </pre>
+                <p>This message could indicate that the JMS resource was not created or was not registered with the application server.
+                You can use the Admin Console of the application server to check, create and edit JMS resources.</p>
+                <p>To open the Admin Console, do the following:</p>
+                <ol>
+                    <li>Confirm that the application server is running by expanding the Servers node in the Services window of the IDE.
+                    A small green arrow next to the application server node indicates the server is running.</li>
+                    <li>Right-click the application server node and choose View Admin Console to open the login window in your browser.</li>
+                    <li>Log in to the server. The default user name and password are <tt>admin</tt> and <tt>adminadmin</tt>.</li>
+                    <li>In the Admin Console in your browser, expand the Resources node and JMS Resources node in the left frame.</li>
+                    <li>Click on the Connection Factories and Destination Resources links in the left frame to check if the resources are
+                        registered with the server and if necessary modify the resources. If the resources do not exist, you can create them
+                    in the Admin Console.</li>
+                </ol>
+                <p>You need to make sure that the JMS connection factory resource
+                   in the PostMessage servlet is mapped to the correct JNDI name of the JMS connection factory resource
+                   registered with the Sun Java System Application Server.</p>
+                <p>The following resources should be registered with the Sun Java System Application Server:</p>
+                <ul>
+                    <li>a Destination resource with the JNDI name <tt>jms/NewMessage</tt> and type <tt>javax.jms.Queue</tt></li>
+                    <li>a Connection Factory resource with the JNDI name <tt>jms/NewMessageFactory</tt> and type <tt>	
+                    javax.jms.QueueConnectionFactory</tt></li>
+                </ul>
+                
+            </div>-->
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20Java%20EE%206%20Applications">Envia'ns la vostra opini&oacute;</a></div>
+            <br style="clear:both;" />
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>Vegeu tamb&eacute;</h2>
+            <p>Per a m&eacute;s informaci&oacute; quant a la utilitzaci&oacute; de l'IDE NetBeans per desenvolupar aplicacions Java EE, vegeu els seg&uuml;ents recursos:
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Introducci&oacute; a la tecnologia Java EE</a></li>
+            <li><a href="../web/jsf20-support.html">Suport JSF 2.0 en NetBeans IDE 6.8</a></li>
+            <li><a href="../../trails/java-ee.html">Cam&iacute; d'aprenentatge d'aplicacions de serveis Web &amp; EJB</a></li>
+            </ul>
+            <p>Podeu trobar m&eacute;s informaci&oacute; quant a la utilitzaci&oacute; de tecnologies Java EE 6 per a desenvolupar aplicacions en la <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Guia d'aprenentatge de Java EE 6</a>.</p>
+            <p>Per enviar comentaris i suggeriments, obtenir suport, i mantindre's informat dels &uacute;ltims desenvolupaments en caracter&iacute;stiques de desenvolupament Java EE al IDE NetBeans, <a href="../../../community/lists/top.html">uniu-vos a la llita de correu nbj2ee</a>.</p>
+    </body>
+</html>

@@ -1,0 +1,938 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief guide to creating a web application
+            using the Struts framework in NetBeans IDE">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Struts, web framework, open source">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Introduction to the Struts Web Framework - NetBeans IDE Tutorial</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Introduction to the Struts Web Framework</h1>
+
+        <p>This document takes you through the basics of using NetBeans IDE to develop web applications
+            using the Struts web framework. Struts is an open source framework that extends the Java
+            Servlet API and employs a Model, View, Controller (MVC) architecture. It enables you to create maintainable, extensible,
+            and flexible web applications based on standard technologies, such as JSP pages, JavaBeans,
+            resource bundles, and XML.</p>
+
+        <p>This tutorial teaches you how to build a simple MVC application that displays a login page
+            and returns a success page upon submitting data that passes validation. You learn several
+            basic features provided by Struts, as well as how these features are implemented using the
+            IDE. Specifically, you use Struts tags in JSP pages, maintain user data with a Struts <code>ActionForm</code>
+            bean, and implement forwarding logic using a Struts <code>Action</code> object. You are also
+            shown how to implement simple validation to your application, including setting up warning
+            message for a failed login attempt.</p>
+
+        <p>For a more fine-grained introduction to Struts, see <a href="http://struts.apache.org/struts-action/faqs/works.html">How
+            does Struts work?</a> on the official <a href="http://struts.apache.org/">Struts</a> website.
+            Also, make use of the IDE's Javadoc Index Search (Help &gt; Javadoc Index Search) to view
+            the <a href="http://struts.apache.org/release/1.3.x/apidocs/index.html">Struts Framework API</a>, which
+            is packaged with the Struts libraries.</p>
+
+        <p><strong>Contents</strong></p>
+
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+        <ul class="toc">
+            <li><a href="#overview">Overview of the Application</a></li>
+            <li><a href="#set">Setting Up a Struts Application</a></li>
+            <li><a href="#jsp">Creating JSP Pages</a>
+                <ul>
+                    <li><a href="#login">Creating a Login Page</a></li>
+                    <li><a href="#success">Creating a Success Page</a></li>
+                </ul></li>
+            <li><a href="#actionForm">Creating an <code>ActionForm</code> Bean</a></li>
+            <li><a href="#actionClass">Creating an <code>Action</code> Class</a></li>
+            <li><a href="#validate">Implementing Validation</a>
+                <ul>
+                    <li><a href="#beanData">Accessing Bean Data and Preparing a Forwarding Condition</a></li>
+                    <li><a href="#errorMsg">Setting Up an Error Message</a></li>
+                </ul></li>
+            <li><a href="#forward">Adding <code>forward</code> Entries to <code>struts-config.xml</code></a></li>
+            <li><a href="#configure">Configuring and Running the Application</a>
+                <ul>
+                    <li><a href="#welcome">Setting the Welcome Page</a></li>
+                    <li><a href="#style">Attaching a Stylesheet</a></li>
+                    <li><a href="#run">Running the Application</a></li>
+                </ul></li>
+            <li><a href="#seeAlso">See Also</a></li>
+        </ul>
+
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java
+                        Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish server
+                        <br><em class="indent margin-around">or</em>
+                        <br>Tomcat servlet container</td>
+                    <td class="tbltd1">Open Source Edition 3.x or 4.0
+                        <br><em class="margin-around indent">&nbsp;</em>
+                        <br>version 7.x or 8.x</td>
+                </tr> 
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The Java installation enables you to optionally install the GlassFish server
+                and the Apache Tomcat servlet container. You must install one of
+                these (or register a different server in the IDE) to work through this tutorial.</li>
+            <li>If you need to compare your project with a working solution, you can
+                <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252FMyStrutsApp.zip">download
+                    the sample application</a>.</li>
+        </ul>
+
+        <a name="overview"></a>
+        <h2>Overview of the Application</h2>
+
+        <p>When you use Struts, the framework provides you with a controller servlet, <code>ActionServlet</code>,
+            which is defined in the Struts libraries that are included in the IDE, and which is automatically
+            registered in the <code>web.xml</code> deployment descriptor as <a href="#controllerServlet">shown
+            below</a>. The controller servlet uses a <code>struts-config.xml</code> file to map incoming
+            requests to Struts <code>Action</code> objects, and instantiate any <code>ActionForm</code> objects
+            associated with the action to temporarily store form data. The <code>Action</code> object processes
+            requests using its <code>execute</code> method, while making use of any data stored in the form
+            bean. Once the <code>Action</code> object processes a request, it stores any new data (i.e., in
+            the form bean, or in a separate result bean), and forwards the results to the appropriate
+            view.</p>
+
+        <div class="indent">
+            <img src="../../../images_www/articles/72/web/struts/workflow.png"
+                alt="Struts workflow" title="Struts workflow" class="margin-around">
+        </div>
+
+        <p>Developing a Struts application is similar to developing any other kind of web application
+            in NetBeans IDE. However, you complement your web development toolkit by taking advantage
+            of the Struts support provided by the IDE. For example, you use templates in the IDE to create
+            Struts <code>Action</code> objects and <code>ActionForm</code> beans. Upon creation, the IDE
+            automatically registers these classes in the <code>struts-config.xml</code> file and lets
+            you extend this file very easily using menu items in the Source Editor's right-click menu.
+            Because many web applications use JSP pages for the view, Struts also provides custom tag
+            libraries which facilitate interaction with HTML forms. Within the IDE's Source Editor, you
+            can invoke code completion and Javadoc support that helps you to work efficiently with these
+            libraries.</p>
+
+        <p>The following steps demonstrate how to create a simple form that collects user data, performs
+            simple validation, and outputs the data on a success page.</p>
+
+        <a name="set"></a>
+        <h2>Setting Up a Struts Application</h2>
+
+        <p>In the IDE, a Struts application is nothing more than a normal web application accompanied
+            by the Struts libraries and configuration files. You create a Struts application in the same
+            way as you create any other web application in the IDE - using the New Web Application wizard,
+            with the additional step of indicating that you want the Struts libraries and configuration
+            files to be included in your application.</p>
+
+        <ol>
+            <li>Choose File &gt; New Project (Ctrl-Shift-N; &#8984-Shift-N on Mac) from the main menu. 
+                Select Java Web in the list of Categories and then select Web
+                Application in the list of Projects. Click Next.</li>
+            <li>In the Name and Location panel, enter <code>MyStrutsApp</code> for Project Name and click
+                Next.</li>
+            <li>In the Server and Settings panel, select the server to which you want to deploy your
+                application. Only servers that are registered with the IDE are listed. (To register a
+                server, click Add next to the Server drop-down list.) Also, note that the Context Path
+                to your deployed application becomes <code>/MyStrutsApp</code>. Click Next.</li>
+            <li>Select Struts in the Frameworks panel. 
+                <br>
+                <img src="../../../images_www/articles/72/web/struts/new-project-wizard.png" class="margin-around b-all"
+                    alt="Struts option displayed in Frameworks panel of New Web Application wizard"
+                    title="Struts option displays in Frameworks panel of New Web Application wizard">
+
+                <p>For purposes of this tutorial, do not change any of the configuration values in the lower
+                region of this panel. The wizard displays the following configuration options.</p>
+
+                <ul>
+                    <li><strong>Action Servlet Name</strong>: The name of the Struts action servlet used
+                        in the application. The <code>web.xml</code> deployment descriptor contains an entry
+                        for the action servlet and specifies the appropriate Struts-specific parameters, such
+                        as the path to the servlet class within the Struts library and to the <code>struts-config.xml</code>
+                        configuration file within the application.</li>
+                    <li><strong>Action URL Pattern</strong>: Specifies the patterns of incoming requests
+                        which are mapped to the Struts action controller. This generates a mapping entry
+                        in the deployment descriptor. By default, only the <code>*.do</code> pattern is mapped.</li>
+                    <li><strong>Application Resource</strong>: Lets you specify the resource bundle which
+                        will be used in the <code>struts-config.xml</code> file for localizing messages. By
+                        default, this is <code>com.myapp.struts.ApplicationResource</code>.</li>
+                    <li><strong>Add Struts TLDs</strong>: Lets you generate tag library descriptors for
+                        the Struts tag libraries. A tag library descriptor is an XML document which contains
+                        additional information about the entire tag library as well as each individual
+                        tag. In general this is not necessary, because you can refer to on-line URIs
+                        rather than local TLD files.</li>
+                </ul></li>
+
+            <li>Click Finish. The IDE creates the project folder in your file system. As with any web
+                application in the IDE, the project folder contains all of your sources and the IDE's
+                project metadata, such as the Ant build script. However, your web application in addition
+                has all of the Struts libraries on its classpath. Not only are they on the application's
+                classpath, but they are included in the project and will be packaged with it later when
+                you build the project.</li>
+        </ol>
+
+        <p>The project opens in the IDE. The Projects window is the main entry point to your project
+            sources. It shows a logical view of important project contents. For example, if you expand
+            several nodes within the new project, it may appear as follows:</p>
+
+        <div class="indent">
+            <img src="../../../images_www/articles/72/web/struts/proj-window-init.png"
+            alt="Projects window containing newly created project" class="margin-around b-all"
+            title="Projects window displays MyStrutsApp project">
+        </div>
+
+        <p><strong class="notes">Note: </strong>Use the Files window (Window &gt; Files) to see all of
+            your project contents in a directory-based view.</p>
+
+        <p><a name="controllerServlet"></a>The Struts-specific configuration files, as well as the application's
+            deployment descriptor, are conveniently placed within the Configuration Files folder. Open
+            the deployment descriptor (double-click the <code>web.xml</code> file node to have it display
+            in the Source Editor). In order to handle Struts processing, a mapping is provided for the
+            Struts controller servlet.</p>
+
+<pre class="examplecode">
+&lt;servlet&gt;
+    &lt;servlet-name&gt;action&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.apache.struts.action.ActionServlet&lt;/servlet-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;config&lt;/param-name&gt;
+        &lt;param-value&gt;/WEB-INF/struts-config.xml&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;debug&lt;/param-name&gt;
+        &lt;param-value&gt;2&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+       &lt;param-name&gt;detail&lt;/param-name&gt;
+       &lt;param-value&gt;2&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;load-on-startup&gt;2&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;action&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;</pre>
+
+        <p>Above, the Struts controller servlet is named <code>action</code> and is defined in the Struts
+            library (<code>org.apache.struts.action.ActionServlet</code>). It is set to handle all requests
+            that satisfy the <code>*.do</code> mapping. In addition, initialization parameters for the servlet
+            are specified by means of the <code>struts-config.xml</code> file, also contained in the <code>WEB-INF</code>
+            folder.</p>
+
+        <a name="jsp"></a>
+        <h2>Creating JSP Pages</h2>
+
+        <p>Begin by creating two JSP pages for the application. The first displays a form. The second
+            is the view returned when login is successful.</p>
+
+        <ul>
+            <li><a href="#login">Creating a Login Page</a></li>
+            <li><a href="#success">Creating a Success Page</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="login"></a>
+            <h3>Creating a Login Page</h3>
+
+            <ol>
+                <li>Right-click the <code>MyStrutsApp</code> project node, choose New &gt; JSP, and name
+                    the new file <code>login</code>. Click Finish. The <code>login.jsp</code> file opens in the
+                    Source Editor.</li>
+                <li>In the Source Editor, change the content of both the <code>&lt;title&gt;</code> and
+                    <code>&lt;h1&gt;</code>  tags (or <code>&lt;h2&gt;</code> tags, depending on the IDE
+                    version you are using) to <code>Login Form</code>.</li>
+                <li>Add the following two taglib directives to the top of the file:
+
+<pre class="examplecode">
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-bean&quot; prefix=&quot;bean&quot; %&gt;
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-html&quot; prefix=&quot;html&quot; %&gt;</pre>
+
+                    <p>Many web applications use JSP pages for views in the MVC paradigm, so Struts provides
+                    custom tag libraries which facilitate interaction with HTML forms. These can be easily
+                    applied to a JSP file using the IDE's support for code completion. When you type
+                    in the Source Editor, the IDE provides you with code completion for Struts tags,
+                    as well as the Struts Javadoc. You can also invoke code completion manually by pressing
+                    Ctrl-Space:</p>
+
+                    <img src="../../../images_www/articles/72/web/struts/code-completion.png" class="margin-around b-all"
+                    alt="Code completion and Javadoc for Struts tags provided in Source Editor"
+                    title="Code completion and Javadoc are supplied for Struts tags">
+
+                    <p>The <a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_bean.html">bean taglib</a>
+                    provides you with numerous tags that are helpful when associating a form bean (i.e.,
+                    an <code>ActionForm</code> bean) with the data collected from the form. The
+                    <a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_html.html">html taglib</a>
+                    offers an interface between the view and other components necessary to a web application.
+                    For example, below you replace common html <code>form</code> tags with Struts' <code>&lt;html:form&gt;</code>
+                    tags. One benefit this provides is that it causes the server to locate or create
+                    a bean object that corresponds to the value provided for <code>html:form</code>'s <code>action</code>
+                    element.</p></li>
+
+                <li>Below the <code>&lt;h1&gt;</code> (or <code>&lt;h2&gt;</code>) tags, add the following:
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+
+   &lt;html:submit value=&quot;Login&quot; /&gt;
+
+&lt;/html:form&gt;</pre>
+
+                    <p class="tips">Whenever you finish typing in the Source Editor, you can tidy
+                        up the code by right-clicking and choosing Format (Alt-Shift-F).</p></li>
+
+                <li>In the Palette (Window &gt; Palette) in the right region of the IDE, drag a Table
+                    item from the HTML category to a point just above the <code>&lt;html:submit value=&quot;Login&quot;
+                    /&gt;</code> line. The Insert Table dialog box displays. Set the rows to <code>3</code>,
+                    columns to <code>2</code>, and leave all other settings at <code>0</code>. Later in the
+                    tutorial, you will <a href="#style">attach a stylesheet</a> to affect the table
+                    display.
+
+                    <br>
+                    <img src="../../../images_www/articles/72/web/struts/insert-table.png" class="margin-around b-all"
+                    alt="Create Table dialog displayed in Source Editor"
+                    title="The Palette provides dialogs for easy-to-use code templates">
+
+                    <br>
+                    Click OK, then optionally reformat the code (Alt-Shift-F).
+                    The form in <code>login.jsp</code> now looks as follows:
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;&lt;/th&gt;
+                &lt;th&gt;&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+
+    &lt;html:submit value=&quot;Login&quot; /&gt;
+
+&lt;/html:form&gt;</pre>
+
+                    <p><strong class="notes">Note: </strong>You can safely delete the <code>&lt;thead&gt;</code>
+                        table row, as it is not used in this tutorial.</p></li>
+
+                <li>In the first table row, enter the following (changes in <strong>bold</strong>):
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;<strong>Enter your name:</strong>&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:text property=&quot;name&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre></li>
+
+                <li>In the second table row, enter the following (changes in <strong>bold</strong>):
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;<strong>Enter your email:</strong>&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:text property=&quot;email&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre>
+
+                    The <code>html:text</code> element enables you to match the input fields from the form
+                    with properties in the form bean that will be created in the next step. So for example,
+                    the value of <code>property</code> must match a field declared in the form bean associated
+                    with this form.</li>
+
+                <li>Move the &lt;html:submit value=&quot;Login&quot; /&gt; element into
+                    the second column of the third table row, so that the third table row
+                    appears as follows (changes in <strong>bold</strong>):
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;<strong>&lt;html:submit value=&quot;Login&quot; /&gt;</strong>&lt;/td&gt;
+&lt;/tr&gt;</pre>
+                </li>
+            </ol>
+
+            <p>At this stage, your login form should look as follows:</p>
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Enter your name:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;name&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Enter your email:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;email&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;html:submit value=&quot;Login&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+&lt;/html:form&gt;</pre>
+
+            <a name="success"></a>
+            <h3>Creating a Success Page</h3>
+
+            <ol>
+                <li>Right-click the <code>MyStrutsApp</code> project node, choose New &gt; JSP, and name
+                    the new file <code>success</code>. In the Folder field, click the adjacent Browse button
+                    and select <code>WEB-INF</code> from the dialog that displays. Click Select Folder to
+                    enter WEB-INF in the Folder field. Any files contained in the WEB-INF folder are
+                    not directly accessible to client requests. In order for <code>success.jsp</code> to
+                    be properly displayed, it must contain processed data. Click Finish.</li>
+                <li>In the Source Editor, change the content of the newly created page to the following:
+
+<pre class="examplecode">
+&lt;head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    &lt;title&gt;Login Success&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Congratulations!&lt;/h1&gt;
+
+    &lt;p&gt;You have successfully logged in.&lt;/p&gt;
+
+    &lt;p&gt;Your name is: .&lt;/p&gt;
+
+    &lt;p&gt;Your email address is: .&lt;/p&gt;
+&lt;/body&gt;</pre></li>
+
+                <li>Add a <a href="http://struts.apache.org/release/1.3.x/struts-taglib/dev_bean.html">bean taglib</a>
+                    directive to the top of the file:
+
+<pre class="examplecode">
+&lt;%@ taglib uri=&quot;http://struts.apache.org/tags-bean&quot; prefix=&quot;bean&quot; %&gt;
+</pre></li>
+                <li>Add the following <code>&lt;bean:write&gt;</code> tags (changes in <strong>bold</strong>):
+
+<pre class="examplecode">
+&lt;p&gt;Your name is: <strong>&lt;bean:write name=&quot;LoginForm&quot; property=&quot;name&quot; /&gt;</strong>.&lt;/p&gt;
+
+&lt;p&gt;Your email address is: <strong>&lt;bean:write name=&quot;LoginForm&quot; property=&quot;email&quot; /&gt;</strong>.&lt;/p&gt;
+</pre>
+
+                    By employing the <code>&lt;bean:write&gt;</code> tags, you make use of the bean taglib
+                    to locate the <code>ActionForm</code> bean you are about to create, and display the user
+                    data saved for <code>name</code> and <code>email</code>.</li>
+            </ol>
+        </div>
+
+        <a name="actionForm"></a>
+        <h2>Creating an <code>ActionForm</code> Bean</h2>
+
+        <p>A Struts <code>ActionForm</code> bean is used to persist data between requests. For example, if
+            a user submits a form, the data is temporarily stored in the form bean so that it can either
+            be redisplayed in the form page (if the data is in an invalid format or if login fails) or
+            displayed in a login success page (if data passes validation).</p>
+
+        <ol>
+            <li>Right-click the <code>MyStrutsApp</code> project node and choose New &gt; Other. Under Categories
+                choose Struts, then under File Types choose Struts ActionForm Bean. Click Next.</li>
+            <li>Type in <code>LoginForm</code> for the Class Name. Then select <code>com.myapp.struts</code>
+                in the Package drop-down list and click Finish.
+
+                <p>
+                The IDE creates the <code>LoginForm</code> bean and opens it in the Source Editor. By default,
+                the IDE provides it with a <code>String</code> called <code>name</code> and an <code>int</code> called
+                <code>number</code>. Both fields have accessor methods defined for them. Also, the IDE adds
+                a bean declaration to the <code>struts-config.xml</code> file. If you open the <code>struts-config.xml</code>
+                file in the Source Editor, you can see the following declaration, which was added by
+                the wizard:</p>
+
+<pre class="examplecode">
+&lt;form-beans&gt;
+    <strong>&lt;form-bean name=&quot;LoginForm&quot; type=&quot;com.myapp.struts.LoginForm&quot; /&gt;</strong>
+&lt;/form-beans&gt;
+</pre>
+
+                <p>The IDE provides navigation support in the <code>struts-config.xml</code> file. Hold down
+                the Ctrl key and hover your mouse over the <code>LoginForm</code> bean's
+                fully qualified class name. The name becomes a link, enabling you to navigate directly
+                to the class in the Source Editor:</p>
+
+                <img src="../../../images_www/articles/72/web/struts/navigation-support.png"
+                    class="margin-around b-all"
+                    title="Navigation support is provided in struts-config.xml"
+                    alt="Navigation support displayed in Struts config file"></li>
+
+            <li>In the <code>LoginForm</code> bean in the Source Editor, create fields and accompanying
+                accessor methods that correspond to the <code>name</code> and <code>email</code> text input fields
+                that you created in <code>login.jsp</code>. Because <code>name</code> has already been created
+                in the <code>LoginForm</code> skeleton, you only need to implement <code>email</code>.
+
+                <p>
+                Add the following declaration beneath <code>name</code> (changes in <strong>bold</strong>):</p>
+
+<pre class="examplecode">
+private String name;
+<strong>private String email;</strong></pre>
+
+                <a name="accessors"></a>
+                <p>To create accessor methods, place your cursor on <code>email</code> and press Alt-Insert.</p>
+
+                <img src="../../../images_www/articles/72/web/struts/create-accessors.png"
+                     class="margin-around b-all"
+                    alt="Insert Code menu displayed in Source Editor"
+                    title="Insert Code menu displays when pressing Ctrl-I in Source Editor">
+
+                <p>
+                Select Getter and Setter, then in the dialog that displays, select <code>email : String</code>
+                and click Generate. Accessor methods are generated for the <code>email</code> field.</p>
+
+                <p class="notes"><strong>Note: </strong>You can delete the declaration and accessor methods
+                    for <code>number</code>, as it is not used in this tutorial.</p></li>
+        </ol>
+
+        <a name="actionClass"></a>
+        <h2>Creating an <code>Action</code> Class</h2>
+
+        <p>The <code>Action</code> class contains the business logic in the application. When form data is
+            received, it is the <code>execute</code> method of an <code>Action</code> object that processes the
+            data and determines which view to forward the processed data to. Because the <code>Action</code>
+            class is integral to the Struts framework, NetBeans IDE provides you with a wizard.</p>
+
+        <ol>
+            <li>In the Projects window, right-click the <code>MyStrutsApp</code> project node and choose
+                New &gt; Other. From the Struts category choose Struts Action and click Next.</li>
+            <li>In the Name and Location panel, change the name to <code>LoginAction</code>.</li>
+            <li>Select <code>com.myapp.struts</code> in the Package drop-down list.</li>
+            <li>Type <code>/login</code> in Action Path. This value must match the value you set for
+                the <code>action</code> attribute of the <code>&lt;html:form&gt;</code> tags in <code>login.jsp</code>.
+                Make sure settings appear as in the screenshot below, then click Next.
+
+                <br>
+                <img src="../../../images_www/articles/72/web/struts/new-struts-action.png"
+                    class="margin-around b-all" alt="New Struts Action wizard"
+                    title="New Struts Action wizard"></li>
+
+            <li>In the third step of the wizard, you are given the opportunity to associate the <code>Action</code>
+                class with a form bean. Notice that the <code>LoginForm</code> bean you previously created
+                is listed as an option for ActionForm Bean Name. Make the following adjustments to the
+                panel:
+
+                <ul>
+                    <li>Delete the forward slash for the Input Resource field</li>
+                    <li>Set Scope to Request (Session is the default scope setting in Struts.)</li>
+                    <li>Deselect the Validate ActionForm Bean option</li>
+                </ul>
+
+                Click Finish. The <code>LoginAction</code> class is generated, and the file opens in the
+                Source Editor. Also note that the following <code>action</code> entry is added to the <code>struts-config.xml</code>
+                file:
+
+<pre class="examplecode">
+&lt;action-mappings&gt;
+    <strong>&lt;action name=&quot;LoginForm&quot; path=&quot;/login&quot; scope=&quot;request&quot; type=&quot;com.myapp.struts.LoginAction&quot; validate=&quot;false&quot;/&gt;</strong>
+    &lt;action path=&quot;/Welcome&quot; forward=&quot;/welcomeStruts.jsp&quot;/&gt;
+&lt;/action-mappings&gt;</pre>
+
+                The <code>name</code> and <code>scope</code> attributes apply to the form bean that is associated
+                with the action. Specifically, when an incoming request matches <code>/login</code>, the
+                Struts framework automatically instantiates a <code>LoginForm</code> object and populates
+                it with the form data sent in the request. The default value of <code>validate</code> is
+                set to <code>true</code>. This tells the framework to call the <code>validate</code> method of
+                the form bean. You deselected this option in the wizard however because you will hand-code
+                simple validation in the next step, which does not require the <code>validate</code> method.</li>
+        </ol>
+
+        <a name="validate"></a>
+        <h2>Implementing Validation</h2>
+
+        <p>In the Source Editor, browse through the <code>LoginAction</code> class and look at the <code>execute</code>
+            method:</p>
+
+<pre class="examplecode">
+public ActionForward execute(ActionMapping mapping, ActionForm form,
+    HttpServletRequest request, HttpServletResponse response)
+    throws Exception {
+
+    return mapping.findForward(SUCCESS);
+}</pre>
+
+        <p>Notice the definition of <code>SUCCESS</code>, listed beneath the <code>LoginAction</code> class declaration:</p>
+
+<pre class="examplecode">private final static String SUCCESS = &quot;success&quot;;</pre>
+
+        <p>Currently, the <code>mapping.findForward</code> method is set to unconditionally forward any request
+            to an output view called <code>success</code>. This is not really desirable; you want to first
+            perform some sort of validation on the incoming data to determine whether to send the <code>success</code>
+            view, or any different view.</p>
+
+        <ul>
+            <li><a href="#beanData">Accessing Bean Data and Preparing a Forwarding Condition</a></li>
+            <li><a href="#errorMsg">Setting Up an Error Message</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="beanData"></a>
+            <h3>Accessing Bean Data and Preparing a Forwarding Condition</h3>
+
+            <ol>
+                <li>Type in the following code within the body of the <code>execute</code> method:
+
+<pre class="examplecode">
+// extract user data
+LoginForm formBean = (LoginForm)form;
+String name = formBean.getName();
+String email = formBean.getEmail();</pre>
+
+                    In order to use the incoming form data, you need to take <code>execute</code>'s <code>ActionForm</code>
+                    argument and cast it as <code>LoginForm</code>, then apply the getter methods that you
+                    created earlier.</li>
+
+                <li>Type in the following conditional clause to perform validation on the incoming data:
+
+<pre class="examplecode">
+// perform validation
+if ((name == null) ||             // name parameter does not exist
+    email == null  ||             // email parameter does not exist
+    name.equals(&quot;&quot;) ||            // name parameter is empty
+    email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+    return mapping.findForward(FAILURE);
+}</pre>
+
+                    At this stage, the <code>execute</code> method should look as follows:
+
+<pre class="examplecode">public ActionForward execute(ActionMapping mapping, ActionForm form,
+        HttpServletRequest request, HttpServletResponse response)
+        throws Exception {
+
+    // extract user data
+    LoginForm formBean = (LoginForm) form;
+    String name = formBean.getName();
+    String email = formBean.getEmail();
+
+    // perform validation
+    if ((name == null) || // name parameter does not exist
+            email == null || // email parameter does not exist
+            name.equals(&quot;&quot;) || // name parameter is empty
+            email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+        return mapping.findForward(FAILURE);
+    }
+
+    return mapping.findForward(SUCCESS);
+}</pre></li>
+
+                <li>Add a declaration for <code>FAILURE</code> to the <code>LoginAction</code>
+                    class (changes in <strong>bold</strong>):
+
+<pre class="examplecode">
+private final static String SUCCESS = &quot;success&quot;;
+<strong>private final static String FAILURE = &quot;failure&quot;;</strong>
+</pre>
+                </li>
+            </ol>
+
+            <p>Using the above logic, the <code>execute</code> method forwards the request to the <code>success</code>
+                view if the user provides an entry for both <code>name</code> and <code>email</code> fields,
+                and the email entered contains an '@' sign. Otherwise, the <code>failure</code> view is forwarded.
+                As will be demonstrated below in <a href="#forward">Adding <code>forward</code> Entries to <code>struts-config.xml</code></a>,
+                you can set the <code>failure</code> view to point back to the form page, so that the user
+                has another chance to enter data in the correct format.</p>
+
+            <a name="errorMsg"></a>
+            <h3>Setting Up an Error Message</h3>
+
+            <p>If the login form is returned, it would be good to inform the user that validation failed.
+                You can accomplish this by adding an <code>error</code> field in the form bean, and an appropriate
+                <code>&lt;bean:write&gt;</code> tag to the form in <code>login.jsp</code>. Finally, in the <code>Action</code>
+                object, set the error message to be displayed in the event that the <code>failure</code>
+                view is chosen.</p>
+
+            <ol>
+                <li>Open <code>LoginForm</code> and add an <code>error</code> field to the class:
+
+<pre class="examplecode">
+// error message
+private String error;</pre></li>
+
+                <li>Add a getter method and a setter method for <code>error</code>, as <a href="#accessors">demonstrated
+                    above</a>.</li>
+                <li>Modify the setter method so that it appears as follows:
+
+<pre class="examplecode">
+public void setError() {
+    this.error =
+        &quot;&lt;span style='color:red'&gt;Please provide valid entries for both fields&lt;/span&gt;&quot;;
+}
+</pre></li>
+                <li>Open <code>login.jsp</code> and make the following changes:
+
+<pre class="examplecode">
+&lt;html:form action=&quot;/login&quot;&gt;
+    &lt;table border=&quot;0&quot;&gt;
+        &lt;tbody&gt;
+            <strong>&lt;tr&gt;
+                &lt;td colspan=&quot;2&quot;&gt;
+                    &lt;bean:write name=&quot;LoginForm&quot; property=&quot;error&quot; filter=&quot;false&quot;/&gt;
+                    &amp;nbsp;&lt;/td&gt;
+            &lt;/tr&gt;</strong>
+            &lt;tr&gt;
+                &lt;td&gt;Enter your name:&lt;/td&gt;
+                &lt;td&gt;&lt;html:text property=&quot;name&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+</pre></li>
+
+                <li>In <code>LoginAction</code>, within the <code>if</code> conditional clause, add a statement
+                    to set the error message before forwarding the <code>failure</code> condition (changes
+                    in <strong>bold</strong>):
+
+<pre class="examplecode">
+if ((name == null) ||             // name parameter does not exist
+    email == null  ||             // email parameter does not exist
+    name.equals(&quot;&quot;) ||            // name parameter is empty
+    email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+    <strong>formBean.setError();</strong>
+    return mapping.findForward(FAILURE);
+}
+</pre></li>
+            </ol>
+
+            <p>Your completed <code>LoginAction</code> class should now appear as follows:</p>
+
+<pre class="examplecode">
+public class LoginAction extends org.apache.struts.action.Action {
+
+    private final static String SUCCESS = &quot;success&quot;;
+    private final static String FAILURE = &quot;failure&quot;;
+
+    public ActionForward execute(ActionMapping mapping, ActionForm form,
+            HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+
+        // extract user data
+        LoginForm formBean = (LoginForm)form;
+        String name = formBean.getName();
+        String email = formBean.getEmail();
+
+        // perform validation
+        if ((name == null) ||             // name parameter does not exist
+            email == null  ||             // email parameter does not exist
+            name.equals(&quot;&quot;) ||            // name parameter is empty
+            email.indexOf(&quot;@&quot;) == -1) {   // email lacks '@'
+
+            formBean.setError();
+            return mapping.findForward(FAILURE);
+        }
+
+        return mapping.findForward(SUCCESS);
+
+    }
+}
+</pre>
+        </div>
+
+        <a name="forward"></a>
+        <h2>Adding <code>forward</code> Entries to <code>struts-config.xml</code></h2>
+
+        <p>In order for the application to match JSP pages with forwarding conditions returned by <code>LoginAction</code>'s
+            <code>execute</code> method, you need to add <code>forward</code> entries to the <code>struts-config.xml</code>
+            file.</p>
+
+        <ol>
+            <li>Open <code>struts-config.xml</code> in the Source Editor, right-click anywhere in the <code>action</code>
+                entry for <code>LoginForm</code>, and choose Struts &gt; Add Forward.
+
+
+                <br>
+                <img src="../../../images_www/articles/72/web/struts/add-forward.png"
+                    class="margin-around b-all"
+                    alt="Struts options displayed in right-click menu of struts-config.xml"
+                    title="Right-click and choose Struts &gt; Add Forward"></li>
+
+            <li>In the Add Forward dialog box, type <code>success</code> in Forward Name.
+                Enter the path to <code>success.jsp</code> in the Resource File field (i.e.,
+                <code>/WEB-INF/success.jsp</code>). The dialog box should now look as follows:
+
+                <br>
+                <img src="../../../images_www/articles/72/web/struts/add-forward-dialog.png"
+                     class="margin-around b-all" alt="Add Forward dialog"
+                     title="Add Forward dialog creates a forward entry in struts-config.xml">
+
+                <br>
+                Click Add. Note that the following <code>forward</code> entry was added to <code>struts-config.xml</code>
+                (changes in <strong>bold</strong>):
+
+<pre class="examplecode">
+&lt;action name=&quot;LoginForm&quot; path=&quot;/login&quot; scope=&quot;request&quot; type=&quot;com.myapp.struts.LoginAction&quot; validate=&quot;false&quot;&gt;
+    <strong>&lt;forward name=&quot;success&quot; path=&quot;/WEB-INF/success.jsp&quot;/&gt;</strong>
+&lt;/action&gt;
+</pre></li>
+
+            <li>Perform the same action to add a forward entry for <code>failure</code>. Set the
+                Resource File path to <code>/login.jsp</code>. The following <code>forward</code>
+                entry is added to <code>struts-config.xml</code> (changes in <strong>bold</strong>):
+
+<pre class="examplecode">
+&lt;forward name=&quot;success&quot; path=&quot;/WEB-INF/success.jsp&quot;/&gt;
+<strong>&lt;forward name=&quot;failure&quot; path=&quot;/login.jsp&quot;/&gt;</strong>
+</pre>
+            </li>
+        </ol>
+
+        <a name="configure"></a>
+        <h2>Configuring and Running the Application</h2>
+
+        <p>The IDE uses an Ant build script to build and run your web application. The IDE generated
+            the build script when you created the project, basing it on the options you entered in the
+            New Project wizard. Before you build and run the application, you need to set the application's
+            default entry point to <code>login.jsp</code>. Optionally, you can also add a simple stylesheet
+            to the project.</p>
+
+        <ul>
+            <li><a href="#welcome">Setting the Welcome Page</a></li>
+            <li><a href="#style">Attaching a Stylesheet</a></li>
+            <li><a href="#run">Running the Application</a></li>
+        </ul>
+
+        <a name="welcome"></a>
+        <h3>Setting the Welcome Page</h3>
+
+        <ol>
+            <li>In the Projects window, double-click the <code>web.xml</code> deployment descriptor. The
+                tabs listed along the top of the Source Editor provide you with an interface to the
+                <code>web.xml</code> file. Click on the Pages tab. In the Welcome Files field, enter <code>login.jsp</code>.
+
+                <br>
+                <img src="../../../images_www/articles/72/web/struts/welcome-files.png"
+                    class="margin-around b-all" alt="deployment descriptor interface"
+                    title="Graphical editor for the application's deployment descriptor">
+
+                <br>
+                Now click on the Source tab to view the file. Note that <code>login.jsp</code> is now listed
+                in the <code>welcome-file</code> entry:
+
+<pre class="examplecode">
+&lt;welcome-file&gt;login.jsp&lt;/welcome-file&gt;
+</pre></li>
+        </ol>
+
+
+        <a name="style"></a>
+        <h3>Attaching a Stylesheet</h3>
+
+        <ol>
+            <li>Add a simple stylesheet to the project. One easy way to do this is by saving
+                <a href="https://netbeans.org/files/documents/4/2228/stylesheet.css">this
+                sample stylesheet</a> to your computer. Copy the file (Ctrl-C), then
+                in the IDE, select the Web Pages node in the Projects window and press Ctrl-V).
+                The file is added to your project.</li>
+            <li>Link the stylesheet to your JSP pages by adding a reference between the <code>&lt;head&gt;</code>
+                tags of both <code>login.jsp</code> and <code>success.jsp</code>:
+
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;
+</pre></li>
+        </ol>
+
+        <a name="run"></a>
+        <h3>Running the Application</h3>
+
+        <ol>
+            <li>In the Projects window, right-click the project node and choose Run. The IDE builds the
+                web application and deploys it, using the server you specified when creating the project.
+                The browser opens and displays the <code>login.jsp</code> page. Type in some data that
+                should fail validation, i.e., either leave either field blank, or enter an email address
+                with a missing '@' sign:
+
+                <br>
+                <img src="../../../images_www/articles/72/web/struts/login-form.png" class="margin-around b-all"
+                    alt="login.jsp displayed in browser with sample data"
+                    title="Form contains data that will fail validation">
+
+                <br><br>
+                When you click Login, the login form page redisplays, containing an error message:
+
+                <br>
+                <img src="../../../images_www/articles/72/web/struts/login-form-error.png" class="margin-around b-all"
+                    alt="login.jsp with error message displayed"
+                    title="Form redisplays with error message">
+
+                <br><br>
+                Try entering data that should pass validation. Upon clicking Login, you are presented
+                with the success page:
+
+                <br>
+                <img src="../../../images_www/articles/72/web/struts/success-page.png" class="margin-around b-all"
+                    alt="success.jsp displayed showing input data"
+                    title="Success page displays showing input data">
+            </li>
+        </ol>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Struts">Send
+            Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>See Also</h2>
+
+        <p>This concludes the Introduction to the Struts Framework in NetBeans IDE. This document demonstrated
+            how to construct a simple web MVC application in NetBeans IDE using the Struts Framework,
+            and introduced you to the IDE's interface for developing web applications. You were shown
+            how to use Struts tags in JSP pages, temporarily store user data in a Struts <code>ActionForm</code>
+            bean, and implement forwarding logic using a Struts <code>Action</code> object. You are also
+            shown how to implement simple validation to your application, including setting up warning
+            message for a failed login attempt.</p>
+
+        <p>For related tutorials, see the following resources:</p>
+
+        <ul>
+            <li><a href="framework-adding-support.html">Adding Support for a Web Framework</a>.
+                A general guide describing how to add web framework support to NetBeans IDE using the
+                Plugin Manager.</li>
+            <li><a href="quickstart-webapps-spring.html">Introduction to the Spring Web Framework</a>.
+                Describes the basics of using NetBeans IDE to develop web applications using the Spring
+                framework.</li>
+            <li><a href="jsf20-intro.html">Introduction to JavaServer Faces 2.0</a>. A document describing
+                how to wire a managed bean to web pages, and how to take advantage of Facelets templating.
+                .</li>
+        </ul>
+
+    </body>
+</html>

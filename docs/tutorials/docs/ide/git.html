@@ -1,0 +1,996 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Using Git Support in NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of GIT Features in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, GIT,
+              versioning software, open source, developers, collaborate"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body>
+<h1>Using Git Support in NetBeans IDE</h1>
+<p>The NetBeans IDE provides support for the Git version control client. The IDE's Git support allows you to perform versioning tasks directly from your project within the IDE. This document demonstrates how to perform basic versioning tasks in the IDE by guiding you through the standard workflow when using versioning software.</p>
+<p>Git is a free and open source, distributed version control system designed to handle everything from small to very large projects with speed and efficiency. Every Git clone is a full-fledged repository with complete history and full revision tracking capabilities, not dependent on network access or a central server. Branching and merging are fast and easy to do. Git is used for version control of files, much like tools such as Mercurial, Subversion, CVS, Perforce, etc.</p>
+
+<h3>Contents</h3>
+<img  src="../../../images_www/articles/74/netbeans-stamp-80-74.png"
+              class="stamp" 
+              alt="Content on this page applies to NetBeans IDE 7.4 and 8.0"
+              title="Content on this page applies to the NetBeans IDE 7.4 and 8.0" />
+
+        <ul class="toc">
+           
+			<li><a href="#initialize">Initializing a Git Repository</a></li>
+			<li><a href="#clone">Cloning a Git Repository</a>
+			<ul><li><a href="#github">Cloning a Repository from GitHub via SSH Protocol</a></li></ul></li>
+			<li><a href="#add">Adding Files to a Git Repository</a></li>
+			<li><a href="#editing">Editing Files</a>
+			<ul>
+			<li><a href="#viewChanges">Viewing Changes in the Source Editor</a> </li>
+			<li><a href="#viewFileStatus">Viewing File Status Information</a></li>
+			<li><a href="#diff">Comparing File Revisions</a></li>
+			<li><a href="#revert">Reverting Changes</a></li>
+            </ul> </li>  
+            <li><a href="#committing">Committing Sources to a Repository</a></li>
+			<li><a href="#branch">Working with Branches</a>
+			<ul>
+			<li><a href="#branchCreate">Creating a Branch</a></li>
+			<li><a href="#branchCheckOut">Checking Out a Branch</a></li>
+			<li><a href="#branchMerge">Merging</a></li>
+			<li><a href="#branchDelete">Deleting a Branch</a></li>
+			</ul></li>
+			<li><a href="#remote">Working with Remote Repositories</a>
+			<ul>
+			<li><a href="#fetch">Fetching</a></li>
+			<li><a href="#pull">Pulling</a></li>
+			<li><a href="#push">Pushing</a></li>
+			</ul></li>
+            <li><a href="#summary">Summary</a></li>
+            <li><a href="#seealso">See Also</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Requirements</h2>
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Version 7.4 or 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">Version 7 or 8</td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        
+
+		<div>
+		<a name="initialize"></a>
+		<h2>Initializing a Git Repository</h2>
+		<p>To initialize  a Git repository  from existing files that are not in source control yet, you need to complete the following steps:</p>
+		<ol>
+		<li>In the Projects window, select an unversioned project and right-click the project name.</li>
+		<li>In the context menu, choose <tt>Versioning</tt> &gt; <tt>Initialize Git Repository</tt> (alternatively, in the main menu, choose <tt>Team</tt> &gt; <tt>Git</tt> &gt; <tt>Initialize</tt>).
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/initialize-git-repo.png" rel="lytebox"
+                       title="Plugins dialog box">
+					   <img src="../../../images_www/articles/74/ide/git/initialize-git-repo-small.png"
+                     alt="Plugins dialog box" border=1/></a></p>
+					 </li>
+		<li>Specify the path to the repository you are going to store your versioned files in the <tt>Initialize a Git Repository </tt> dialog box or click Browse and browse for the directory required. </li>
+		<li>Click OK.
+		<p>A <tt>.git</tt> subfolder is created in the folder you specified in step 3 above (your NetBeans project folder by default), which is your Git repository where all the data of your project snapshots are stored. Git starts versioning all files in the folder you specified.<br/> You can open <tt>Window</tt> &gt; <tt>Output</tt> &gt; <tt>Output</tt> to view the IDE's report about the progress of the repository creation under your local working directory.</p>
+		<p class="align-center"><img src="../../../images_www/articles/74/ide/git/output-init.png"
+                     alt="Output window" border=1/></p>
+		
+		</li>
+		</ol>
+		
+		<p>All the project files are marked <tt>Added</tt> in your Working Tree. To view a file <a href="#viewFileStatus">status</a>, place the cursor over the file name in the Projects window. The status of the file in the Working Tree displays in green to the right of the slash like shown in the following picture.</p>
+		<p class="align-center"><img src="../../../images_www/articles/74/ide/git/new-locally.png"
+                     alt="New in Working Tree" border=1/></p>
+					 <p>After you initialized the Git repository, you  either <a href="#add">add</a> files or directly  <a href="#committing">commit</a> them to the Git repository.</p>
+		
+</div>
+<div>
+<a name="clone"></a>
+<h2>Cloning a Git Repository</h2>
+<p>To get a copy of an already existing Git repository, you need to clone it. Make sure you know the Git repository URL before starting the Clone Repository wizard in the IDE. </p>
+<ol>
+<li>Choose <tt>Team</tt> &gt; <tt>Git</tt> &gt; <tt>Clone</tt> from the main menu. The Clone Repository wizard displays.
+<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/clone-wizard.png" rel="lytebox"
+                       title="Clone Repository wizard">
+					   <img src="../../../images_www/articles/74/ide/git/clone-wizard-small.png"
+                     alt="Clone Repository wizard" border=1/></a></p></li>
+<li>At the Repository page, specify the path to a Git repository location, user name and password (you can save them for the future if required).</li>
+<li>(Optional) Click Proxy Configuration to display the Options dialog box and set the proxy server settings. Click OK when finished. </li>
+<li>Click Next to switch to the next step of the wizard.</li>
+<li>At the Remote Branches page, select the repository branch(es)   to be fetched (downloaded) to your local repository. Click Next.</li>
+<li>At the Destination Directory page, specify the following:
+  <ul>
+<li>In the Parent Directory field, the path to the directory intended for the cloned repository on your hard drive (alternatively, click the Browse button and navigate to the  directory).<br/> 
+  The Parent Directory field is pre-filled with the path to the default <tt>NetBeansProjects</tt> directory where all NetBeans projects are stored.</li>
+<li>In the Clone Name field, the name of the local folder where the original project will be cloned to.<br/>
+  By default Clone Name is filled out with the actual Git repository name. </li>
+<li>In the Checkout Branch field, select the branch to be checked out into the working tree.</li>
+<li>In the Remote Name field, the name that represents the original repository being cloned.<br/>
+  <tt>origin</tt> is the default alias of the repository being cloned. It is a  recommended value.</li>
+<li>Leave the Scan for NetBeans Projects after Clone checkbox selected to activate  after-scanning right after the clone finishes. (The plugin searches for NetBeans projects in the cloned resources and offers to open the found projects.)
+</li>
+</ul> </li>
+<li>Click Finish.<br/>After a Git repository is cloned, the metadata <tt>.git</tt> folder is created inside the folder you selected in the wizard.</li>
+</ol>
+<a name="github"></a>
+<h3>Cloning a Repository from GitHub via SSH protocol</h3>
+<p>To clone a repository from GitHub via the SSH protocol, proceed as follows:</p>
+<p class="notes"><b>Note:</b> You need to have a GitHub account and be a project member in order to clone via SSH.</p>
+<ol>
+<li>Choose <tt>Team</tt> &gt; <tt>Git</tt> &gt; <tt>Clone</tt> from the main menu. The Clone Repository wizard displays.</li>
+<li>At the Remote Repository page of the Clone Repository wizard, specify the path to the repository required  in the Repository URL field, for example, <tt>git@github.com:tstupka/koliba.git</tt>.</li>
+<li>Verify <tt>git</tt> is specified in the Username text field.</li>
+<li>Select the Private/public key option.</li>
+<li>(<b>Skip if  using SSH-agent or Pageant for automated SSH access to the Git server.</b>) Complete the following steps to access the Git server using your private SSH key and a   passphrase:
+<ol type="a">
+<li>Specify the path to the key file, for example <tt>C:\Users\key</tt>.
+<p class="notes"><b>Note:</b> The OpenSSH private key format is required. Keys generated by PuTTYgen for Microsoft Windows must be converted to the OpenSSH format before using them in the IDE.</p></li>
+<li>Enter the passphrase for the key file, for example, <tt>abcd</tt>.</li>
+
+<li>(Optional) Select the Save Passphrase option if required.</li>
+</ol>
+</li>
+<li> (<b>Applies if using SSH-agent or Pageant for automated SSH access to the Git server.</b>) Leave the Private Key File and Passphrase fields empty to get authenticated access from the IDE to the Git server via correctly configured SSH-agent or   Pageant. </li>
+<li>(Optional) Click Proxy Configuration to display the Options dialog box and set the proxy server settings. Click OK when finished. 
+<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/github-repo.png" rel="lytebox"
+                       title="Remote Repository page of the Clone Repository wizard">
+					   <img src="../../../images_www/articles/74/ide/git/github-repo-small.png"
+                     alt="Remote Repository page of the Clone Repository wizard" border=1/></a></p></li></li>
+<li>Click Next.</li>
+
+<li>At the Remote Branches page, select the repository branch(es) to be fetched (downloaded) to your local repository, for example <tt>master</tt>. 
+  <p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/github-branches.png" rel="lytebox"
+                       title="Remote Branches page of the Clone Repository wizard">
+					   <img src="../../../images_www/articles/74/ide/git/github-branches-small.png"
+                     alt="Remote Branches page of the Clone Repository wizard" border=1/></a></p></li>
+<li>Click Next.</li>
+<li>At the Destination Directory page, specify the following:
+  <ul>
+<li>In the Parent Directory field, the path to the directory intended for the cloned repository on your hard drive (alternatively, click the Browse button and navigate to the  directory).<br/> 
+  The Parent Directory field is pre-filled with the path to the default <tt>NetBeansProjects</tt> directory where all NetBeans projects are stored.</li>
+<li>In the Clone Name field, the name of the local folder where the original project will be cloned to.<br/>
+  By default Clone Name is filled out with the actual Git repository name. </li>
+<li>In the Checkout Branch field, select the branch to be checked out into the working tree.</li>
+<li>In the Remote Name field, the name that represents the original repository being cloned.<br/>
+  <tt>origin</tt> is the default alias of the repository being cloned. It is a  recommended value.</li>
+<li>Leave the Scan for NetBeans Projects after Clone checkbox selected to activate  after-scanning right after the clone finishes. (The plugin searches for NetBeans projects in the cloned resources and offers to open the found projects.)
+<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/github-destination.png" rel="lytebox"
+                       title="Destination Directory of the Clone Repository wizard">
+					   <img src="../../../images_www/articles/74/ide/git/github-destination-small.png"
+                     alt="Destination Directory of the Clone Repository wizard" border=1/></a></p></li>
+</ul> </li>
+<li>Click Finish.<br/>
+After the repository is cloned, the Clone Completed message displays.
+<p class="align-center"><img src="../../../images_www/articles/74/ide/git/clone-completed.png"
+                     class="b-all" alt="Clone Completed message"/></p></li>
+<li>Choose the desired option.</li>
+</ol>
+</div>
+
+		<div><a name="add"></a>
+		<h2>Adding Files to a Git Repository</h2>
+		
+		<a name="ide"></a>
+		To start tracking a new file and also to stage changes to an already tracked file in the Git repository, you need to add it to the
+		repository. </p>
+		<p>When adding files to a Git repository, the IDE composes and saves snapshots of your project first in the Index. After you perform the commit, the IDE saves  those snapshots in the HEAD. The IDE allows you to choose between the two  workflows described in the following table. </p>
+		 <table width="800px">
+		 <tr>
+                        <th class="tblheader" scope="col" style="width:100px">Workflow Description</th>
+						<td class="tbltd1">
+                            
+                                Explicitly add new or modified  files to the Index and then commit only those that are staged in the Index to the HEAD
+                      </td>
+                        <td class="tbltd1">Skip adding  
+                                    new or modified  files to the Index 
+									
+
+
+                                   and commit the required files directly to the HEAD 
+                     </td>
+						
+           </tr>
+                    <tr>
+					 <th class="tblheader" scope="col">Steps to Follow the Workflow </th>
+					<td class="tbltd1">
+                          <ol>
+						  <li>In the Projects window, right-click the file you want to add.</li> 
+		  <li>In the context menu, choose <tt>Git</tt> &gt; <tt>Add</tt>.<br/>
+		  This adds the file contents to the  Index before you commit it. </li>
+		  <li>In the Projects window, right-click the file you want to commit.</li>
+		  <li>In the Commit dialog box, select the Changes between HEAD and Index ( <img src="../../../images_www/articles/74/ide/git/changes-head-index.png" alt="Changes between HEAD and Index icon" /> ) toggle button.<br/> This displays the list of files that are already staged. </li> 
+		<li>Commit the file(s) as described in the <a href="#committing">Committing Sources to a Repository</a> section below.</li>
+                          </ol>  </td>
+                        <td class="tbltd1">
+						<ol>
+						<li>In the Projects window, right-click the file you want to commit.</li> 
+		                <li>In the context menu, choose <tt>Git</tt> &gt; <tt>Commit</tt>.		   </li>
+		 			  <li>In the Commit dialog box, select the Select the Changes between HEAD and Working Tree (<img src="../../../images_www/articles/74/ide/git/changes-head-wt.png" alt="Changes between HEAD and Working Tree icon"/>) toggle button. <br/> 
+		 			    This displays the list of files that are not staged.  </li>
+						<li>Commit the file(s) as described in the <a href="#committing">Committing Sources to a Repository</a> section below.</li>
+						</ol>
+                      </td>
+                      </tr>                            
+</table>
+		  <p class="notes"><b>Note:</b> 
+		  The <a href="#viewFileStatus">status</a> of the file in the HEAD displays in green to the left of the slash like shown in the following picture. </p>
+		  <p class="align-center"><img src="../../../images_www/articles/74/ide/git/new.png"
+                     alt="New in Staging Area" border=1/></p>
+		<p>The action works recursively if invoked on folders while respecting the NetBeans IDE flat folder content structure.  </p>
+		
+
+
+		
+        
+		</div>
+		
+		<div>
+		<a name="editing"></a>
+        <h2>Editing Files</h2>
+        
+        <p>Once you have a Git versioned project opened in the IDE, you can begin
+            making changes to sources. As with any project opened in NetBeans IDE, you can
+            open files in the Source Editor by double-clicking on their nodes, as they
+            appear in the IDE's windows (e.g., Projects (Ctrl-1), Files (Ctrl-2), Favorites
+            (Ctrl-3) windows).</p>
+		<p>When working with source files in the IDE, there are various UI components at your disposal, which aid in both viewing and operating version control commands:</p>
+        <ul>
+		<li><a href="#viewChanges">Viewing Changes in the Source Editor</a></li>
+		<li><a href="#viewFileStatus">Viewing File Status Information</a></li>
+		<li><a href="#revert">Reverting Changes</a></li>
+		</ul>
+        <a name="viewChanges"></a>
+		<h3>Viewing Changes in the Source Editor</h3>
+		<p>When you open a versioned file in the IDE's Source Editor, you can view real-time changes occurring to your file as you modify it against the base version from the Git  repository. As you work, the IDE uses color coding in the Source Editor's margins to convey the following information:</p>
+		<table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>Blue</strong>
+                        ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been changed since the earlier revision.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Green</strong>
+                        ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been added since the earlier revision.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Red</strong>
+                        ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been removed since the earlier revision.</td>
+                </tr>
+</table>
+
+
+            <p>The Source Editor's left margin shows changes occurring on a line-by-line basis.
+                When you modify a given line, changes are immediately shown in the left margin.</p>
+			<p class="align-center"><img src="../../../images_www/articles/74/ide/git/left-margin.png"
+                     alt="Left Margin" border=1/></p>	
+
+            <p class="notes"><b>Note:</b> You can click on a color grouping in the margin to call versioning commands. For
+                example, the picture below shows widgets available to you when clicking
+                a red icon which indicates that lines have been removed from your local copy:</p>
+				<p class="align-center"><img src="../../../images_www/articles/74/ide/git/left-widgets.png"
+                     alt="Widgets Available" border=1/></p>	
+
+            <p>The Source Editor's right margin provides you with an overview that displays
+                changes made to your file as a whole, from top to bottom. Color coding is
+                generated immediately when you make changes to your file.</p>
+				<p class="align-center"><img src="../../../images_www/articles/74/ide/git/right-margin.png"
+                     alt="Right Margin" border=1/></p>	
+
+
+            <p class="notes"><b>Note</b>: You can click on a specific point within the margin to bring your
+                inline cursor immediately to that location in the file. To view the number of
+                lines affected, hover your mouse over the colored icons in the right margin:</p>
+				<p class="align-center"><img src="../../../images_www/articles/74/ide/git/right-lines-number.png"
+                     alt="Widgets Available" border=1/></p>	
+		
+        <a name="viewFileStatus"></a>
+		<h3>Viewing File Status Information</h3>
+        <p>When you are working in the Projects (Ctrl-1), Files (Ctrl-2), Favorites
+                (Ctrl-3), or Versioning views, the IDE provides several visual features
+                that aid in viewing status information about your files. In the example
+                below, notice how the badge (e.g.
+                <img src="../../../images_www/articles/74/ide/git/blue-badge.png"
+                     alt="Blue badge"/>), color of the file name, and adjacent status
+                label, all coincide with each other to provide you with a simple but
+                effective way to keep track of versioning information on your files:
+
+</p>
+                <p class="align-center"><img src="../../../images_www/articles/74/ide/git/file-status.png"
+                     class="b-all" alt="File Status Info"/></p>
+
+                <p>Badges, color coding, file status labels, and perhaps most importantly,
+                the Git Diff Viewer  all contribute to your ability to effectively
+                view and manage versioning information in the IDE.</p>
+
+                <ul>
+                <li><a href="#badges">Badges and Color Coding</a></li>
+                <li><a href="#fileStatus">File Status Labels</a></li>
+               	<li><a href="#versioningView">Git Versioning View</a></li>
+            </ul>
+
+
+                <a name="badges"></a>
+                <h4>Badges and Color Coding</h4>
+
+                <p>Badges are applied to project, folder, and package nodes and
+                    inform you of the status of files contained within that node:</p>
+
+                <p>The following table displays the color scheme used for badges:</p>
+				<a name="badges-color-scheme"></a>
+
+                <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col" style="width:110px">UI Component</th>
+                        <th class="tblheader" scope="col">Description</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>Blue Badge</strong>
+                            (<img src="../../../images_www/articles/74/ide/git/blue-badge.png"
+                                  alt="Blue badge"/>)</td>
+                        <td class="tbltd1">Indicates the presence of files that have been modified, added or
+                            deleted in your working tree. For packages, this badge applies only to the package itself and
+                            not its subpackages. For projects or folders, the badge indicates changes
+                            within that item, or any of the contained subfolders.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>Red Badge</strong>
+                            (<img src="../../../images_www/articles/74/ide/git/red-badge.png"
+                                  alt="Red badge"/>)</td>
+                        <td class="tbltd1">Marks projects, folders or packages that contain <em>conflicting</em>
+                            files. For packages, this badge applies only to the package
+                            itself and not its subpackages. For projects or folders, the badge
+                            indicates conflicts within that item, or any of the contained subfolders.</td>
+                    </tr>
+                </table>
+
+                <a name="color-coding-table"></a>
+                <p>Color coding is applied to file names in order to indicate their current
+                    status against the repository:</p>
+
+                <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col" style="width:40px">Color</th>
+                        <th class="tblheader" scope="col">Example</th>
+                        <th class="tblheader" scope="col">Description</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><strong>No specific color (black)</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/74/ide/git/black-text.png"
+                                                alt="Black text"/></td>
+                        <td class="tbltd1">Indicates that the file has no changes.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>Blue</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/74/ide/git/blue-text.png"
+                                                alt="Blue text"/></td>
+                        <td class="tbltd1">Indicates that the file has been locally modified.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>Green</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/74/ide/git/green-text.png"
+                                                alt="Green text"/></td>
+                        <td class="tbltd1">Indicates that the file has been locally added.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>Red</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/74/ide/git/red-text.png"
+                                                alt="Red text"/></td>
+                        <td class="tbltd1">Indicates that the file is in a merge conflict.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>Gray</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/74/ide/git/gray-text.png"
+                                                alt="Gray text"/></td>
+                        <td class="tbltd1">Indicates that the file is ignored by Git and will not
+                            be included in versioning commands (e.g. Update and Commit). Files
+                            cannot  be ignored if they are versioned.</td>
+                    </tr>
+                    
+                </table>
+
+                <a name="fileStatus"></a>
+                <h4>File Status Labels</h4>
+				<p>The IDE displays two status values for a file:</p>
+<ul>
+    <li>A status describing differences between the files Working Tree and Index state,</li>
+    <li>A status describing differences between the files Index state and current HEAD commit.</li> 
+  </ul>
+
+     <p>File status labels provide a textual indication of the status of versioned
+                    files in the IDE's windows:</p>
+					 <table width="300px">
+                    <tr>
+                        <th class="tblheader" scope="col" style="width:90px">Status Label</th>
+                        
+                        <th class="tblheader" scope="col">Meaning</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><strong>-</strong></td>
+                       
+                        <td class="tbltd1 align-center">Unmodified</td>
+                    </tr>
+					<tr>
+                        <td class="tbltd1 align-center"><strong>A</strong></td>
+                       
+                        <td class="tbltd1 align-center">Added</td>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><strong>U</strong></td>
+                       
+                        <td class="tbltd1 align-center">Updated but unmerged</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>M</strong></td>
+                      
+                        <td class="tbltd1 align-center">Modified</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>D</strong></td>
+                       
+                        <td class="tbltd1 align-center">Deleted</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><strong>I</strong></td>
+                        
+                        <td class="tbltd1 align-center">Ignored</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>R</strong></td>
+                       
+                        <td class="tbltd1 align-center">Renamed</td>
+                    </tr>
+  </table>
+
+					
+	<p>By default, the IDE displays status (new, modified,
+                    ignored, etc.) and folder information in gray text to the right of files, as
+                    they are listed in windows. </p>
+
+                       <p class="align-center"> <img src="../../../images_www/articles/74/ide/git/file-labels.png"
+                             class="b-all margin-around" alt="File labels displayed next to file names"/></p>
+      <p>File(s) in merge conflict feature the unmerged status that is generally annotated by red color until the file(s) is not resolved by your explicit action. The status label for unmerged file(s) depends on the scenario (e.g., <tt>A/A</tt> - unmerged, both added).</p>         
+
+               
+              
+              
+                <p class="tips">File status labels can be toggled on and off by choosing
+                    <tt>View</tt> &gt; <tt>Show Versioning Labels</tt> from the main menu.</p>
+
+ <a name="versioningView"></a>
+                <h4>Git Versioning View</h4>
+<p>The Git Versioning view provides you with a real-time list of all
+                    of the changes made to files within a selected folder of your local working
+                    tree. It opens by default in the bottom panel of the IDE, listing added,
+                    deleted or modified files.</p>
+
+                <p>To open the Versioning view, select a versioned file or folder (e.g. from
+                    the Projects, Files, or Favorites window) and either choose <tt>Git</tt> &gt;
+                    <tt>Show Changes</tt> from the right-click menu, or choose <tt>Team</tt> &gt; <tt>Show Changes</tt>
+                    from the main menu. The following window appears in the bottom of the IDE:</p>
+                    <p class="align-center"> 
+						 <a href="../../../images_www/articles/74/ide/git/versioning-view.png" rel="lytebox"
+                       title="Versioning view displaying changes between HEAD and working tree">
+                       <img src="../../../images_www/articles/74/ide/git/versioning-view-small.png"
+                         alt="Versioning view displaying changes between HEAD and working tree" border=1/></a></p>
+
+                <p>By default, the Versioning view displays a list of all modified files within
+                    the selected package or folder in your Working Tree. Using the buttons in the toolbar, you can choose to display the list of files which have differences either between Index and HEAD, Working Tree and Index or Working Tree and HEAD. You can also click the column headings
+                    above the listed files to sort the files by name, status or location.</p>
+
+                <p>The Versioning view toolbar also includes buttons that enable you to invoke
+                    the most common Git tasks on all files displayed in the list. The
+                    following table lists the Git commands available in the toolbar of the
+                    Versioning view:</p>
+
+                <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col">Icon</th>
+                        <th class="tblheader" scope="col" style="width:110px">Name</th>
+                        <th class="tblheader" scope="col">Function</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/changes-head-wt.png"
+                                                             alt="Changes between HEAD and Working Tree icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Changes between HEAD and Working Tree</strong></td>
+                        <td class="tbltd1">Displays a list of files that are either already staged or only modified/created and not staged yet.</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/changes-head-index.png"
+                                                             alt="Changes between HEAD and Index icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Changes between HEAD and Index</strong></td>
+                        <td class="tbltd1">Displays a list of files that are staged.</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/changes-index-wt.png"
+                                                             alt="Changes between Index and Working Tree icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Changes between Index and Working Tree</strong></td>
+                        <td class="tbltd1">Displays files that have differences between their staged and Working Tree states.</td>
+                    </tr>
+					
+					
+					
+					
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/refresh.png"
+                                                             alt="Refresh Statuses icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Refresh Statuses</strong></td>
+                        <td class="tbltd1">Refreshes the status of the selected files and
+                            folders. Files displayed in the Versioning view can be
+                            refreshed to reflect any changes that may have been made
+                            externally.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/open-diff.png"
+                                                             alt="Open Diff icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Open Diff</strong></td>
+                        <td class="tbltd1">Opens the Diff Viewer providing you with a side-by-side
+                            comparison of your local copies and the versions maintained in the
+                            repository.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/update.png"
+                                                             alt="Checkout Paths icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Revert Modifications</strong></td>
+                        <td class="tbltd1">Displays the <a href="#revertdialog">Revert Modifications</a> dialog box.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/commit-button.png"
+                                                             alt="Commit Changes icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Commit Changes</strong></td>
+                        <td class="tbltd1">Displays the <a href="#commitdialog">Commit</a> dialog box.</td>
+                    </tr>
+                </table>
+
+
+                <p>You can access other Git commands in the Versioning view by selecting a table
+                    row that corresponds to a modified file, and choosing a command from the right-click menu:</p>
+
+
+                     <p class="align-center">
+					 <a href="../../../images_www/articles/74/ide/git/versioning-right-click.png" rel="lytebox"
+                       title="Right-click menu displayed on selected file in Versioning window">
+					 <img src="../../../images_www/articles/74/ide/git/versioning-right-click-small.png" alt="Right-click menu displayed on selected file in Versioning window" border=1/></a></p>
+
+
+               
+
+
+
+           
+                <a name="diff"></a>
+                <h3>Comparing File Revisions</h3>  				
+
+                <p>Comparing file versions is a common task when working with versioned projects. The IDE enables you to compare revisions by using the Diff command:</p>
+				<p class="notes"><b>Note:</b>
+				Several comparing modes - Diff To HEAD, Diff To Tracked, and Diff To - are available in the IDE. </p>
+				<ol>
+				<li>Select a versioned file or folder (e.g. from
+                    the <tt>Projects</tt>, <tt>Files</tt>, or <tt>Favorites</tt> window).</li>
+				<li>Choose <tt>Team</tt> &gt; <tt>Diff</tt> &gt; <tt>Diff to HEAD</tt>
+                    from the main menu.<br/> 
+                    A graphical Diff Viewer opens for the selected file(s) and revisions in the IDE's main window. The Diff Viewer displays two copies in side-by-side panels. The more current copy appears on the right side, so if you are comparing a repository revision against your working tree, the working tree displays in the right panel:
+                <p class="align-center"><a href="../../../images_www/articles/74/ide/git/diff-viewer.png" rel="lytebox"
+                       title="Diff Viewer">
+					   <img src="../../../images_www/articles/74/ide/git/diff-viewer-small.png"
+                        alt="Diff Viewer" border=1/></a></p>
+						
+						 <p>The Diff Viewer makes use of the same <a href="#color-coding-table">color coding</a> used elsewhere to display version control changes. In the screen capture displayed above, the green block indicates content that has been added to the more current revision. The red block indicates that content from the earlier revision has been removed from the later. Blue indicates that changes have occurred within the highlighted line(s).</p>
+						  <p class="notes"><b>Note:</b> Other revisions can be selected from the <tt>Diff</tt> and <tt>to</tt> drop-down lists below the Diff Viewer toolbar.</p></li>
+                </ol>
+                  
+                
+
+    <p>The Diff Viewer toolbar also includes buttons that enable you to invoke
+                    the most common Git tasks on all files displayed in the list. The
+                    following table lists the Git commands available in the toolbar of the
+        Diff Viewer:</p>
+
+                <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col">Icon</th>
+                        <th class="tblheader" scope="col" style="width:130px">Name</th>
+                        <th class="tblheader" scope="col">Function</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/changes-head-wt.png"
+                                                             alt="Changes between HEAD and Working Tree icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Changes between HEAD and Working Tree</strong></td>
+                        <td class="tbltd1">Displays a list of files that are either already staged or only modified/created and not staged yet.</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/changes-head-index.png"
+                                                             alt="Changes between HEAD and Index icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Changes between HEAD and Index</strong></td>
+                        <td class="tbltd1">Displays a list of files that are staged.</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/changes-index-wt.png"
+                                                             alt="Changes between Index and Working Tree icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Changes between Index and Working Tree</strong></td>
+                        <td class="tbltd1">Displays files that have differences between their staged and working tree states. </td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/nextdiff.png"
+                                                             alt="Go to Next Difference icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Go to Next Difference</strong></td>
+                        <td class="tbltd1">Displays next difference in the  file.</td>
+                    </tr>
+					
+					<tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/prevdiff.png"
+                                                             alt="Go to Previous Difference icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Go to Previous Difference</strong></td>
+                        <td class="tbltd1">Displays previous difference in the  file.</td>
+                    </tr>
+					
+					
+					
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/refresh.png"
+                                                             alt="Refresh Statuses icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Refresh Statuses</strong></td>
+                        <td class="tbltd1">Refreshes the status of the selected files and
+                            folders. Files displayed in the Versioning window can be
+                            refreshed to reflect any changes that may have been made
+                            externally.</td>
+                    </tr>
+                   
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/update.png"
+                                                             alt="Checkout Paths icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Revert Modifications</strong></td>
+                        <td class="tbltd1">Displays the <a href="#revertdialog">Revert Modifications</a> dialog box.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/commit-button.png"
+                                                             alt="Commit Changes icon"/></td>
+                        <td class="tbltd1 align-center"><strong>Commit Changes</strong></td>
+                        <td class="tbltd1">Displays the <a href="#commitdialog">Commit</a> dialog box.</td>
+                    </tr>
+                </table>
+
+
+   
+
+           <p>If you are performing a diff on your local  copy in the Working Tree, the IDE enables you to
+                    make changes directly from within the Diff Viewer. To do so, you can either
+                    place your cursor within the right pane of the Diff Viewer and modify your file
+                    accordingly, otherwise make use of the inline icons that display adjacent to
+                    each highlighted change:</p>
+
+                <table width="600px">
+				 <tr>
+                        <th class="tblheader" scope="col">Icon</th>
+                        <th class="tblheader" scope="col" style="width:60px">Name</th>
+                        <th class="tblheader" scope="col">Function</th>
+                  </tr>
+                    <tr>
+					 <td class="tbltd1 align-center"><img alt="Replace icon" src="../../../images_www/articles/74/ide/git/insert.png"/></td>
+                        <td class="tbltd1 align-center" style="width:80px"><strong>Replace</strong></td>
+                        <td class="tbltd1">Inserts the highlighted text into your Working Tree copy.</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="Move all icon" src="../../../images_www/articles/74/ide/git/arrow.png"/></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Move All</strong> </td>
+                        <td class="tbltd1">Reverts the whole local Working Tree copy.</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="Remove icon" src="../../../images_www/articles/74/ide/git/remove.png"/></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Remove</strong></td>
+                        <td class="tbltd1">Removes the highlighted text from the local Working Tree copy.</td>
+                    </tr>
+                </table>
+				 
+               
+          
+
+                <a name="revert"></a>
+                <h3>Reverting Changes</h3>
+				<p>To  throw away local changes made to selected files in your Working Tree and replace those files with the ones in the Index or HEAD:</p> 
+				<ol>
+				<li>Select a versioned file or folder (e.g. from the <tt>Projects</tt>, <tt>Files</tt>, or <tt>Favorites</tt> window).</li>
+				<li>Choose <tt>Team</tt> &gt; <tt>Revert Modifications</tt> from the main menu.<br/>
+				   <a name="revertdialog"></a>The <tt>Revert Modifications</tt> dialog box displays.
+				
+				<p class="align-center"><img src="../../../images_www/articles/74/ide/git/revert.png"
+                         class="b-none margin-around" alt="Revert Modifications Dialog Box"/></p></li> 
+				<li><a name="three"></a>Specify additional options (e.g., <tt>Revert only Uncommitted Changes in Index to HEAD</tt>) . </li>
+				<li>Click Revert.</li>
+				</ol>
+				<p>The IDE replaces the selected files with those specified in <a href="#three">step 3</a> above.</p>
+</div>    
+       
+<div>
+                <a name="committing"></a>
+<h2>Committing Sources to a Repository</h2>
+<p>To commit files to the Git repository:</p>
+<ol>
+<li>In the <tt>Projects</tt> window, right-click the file(s) you want to commit.</li> 
+<li>In the context menu, choose <tt>Git</tt> &gt; <tt>Commit</tt>. 
+		 <p><a name="commitdialog"></a>The <tt>Commit</tt> dialog box displays.</p>
+		<p class="align-center">
+		 <a href="../../../images_www/articles/74/ide/git/commit.png" rel="lytebox"
+                       title="Commit dialog box">
+                       <img src="../../../images_www/articles/74/ide/git/commit-small.png"
+                     alt="Commit dialog box" border=1/></a>
+		</p>
+					  <p>The <tt>Commit</tt> dialog box contains the following components:</p>
+
+                      <ul>
+			<li><tt>Commit Message</tt> text area intended for describing the change being committed</li>
+			<li><tt>Author</tt> and <tt>Commiter</tt> drop-down lists that allow to differentiate between those who made the change and who physically committed the file   if necessary.</li>
+			<li><tt>Files to Commit</tt> section that lists:
+                <ul>
+                <li>all files modified, </li>
+                <li>all files that have been deleted  in the Working Tree (locally), </li>
+                <li>all new files (i.e. files that do not yet exist in the Git repository),</li>
+                <li>all files that you have renamed.
+				<p>Two toggle buttons  that switch the mode in which the actual commit is to be performed are available here: </p> 
+				 <table width="700px">
+                    <tr>
+                        <th class="tblheader" scope="col" >UI Component</th>
+						<th class="tblheader" scope="col" style="width:300px">Name</th>
+                        <th class="tblheader" scope="col">Description</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/changes-head-index.png"
+                                  alt="Changes between HEAD and Index"/></td>
+                        <td class="tbltd1 align-center"><strong>Changes between HEAD and Index</strong></td>
+						<td class="tbltd1">Displays a list of files that are staged.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center"><img src="../../../images_www/articles/74/ide/git/changes-head-wt.png"
+                                  alt="Changes between HEAD and Working Tree"/>                            </td>
+                        <td class="tbltd1 align-center"><strong>Changes between HEAD and Working Tree</strong></td>
+							<td class="tbltd1">Displays a list of files that are either already staged or only modified/created and not staged yet.</td>
+                    </tr>
+                </table></li>
+                </ul>
+				<p class="notes"><b>Note</b>: To specify here whether to exclude
+                individual files from the commit, either deselect the checkbox in the first column called <tt>Commit</tt> or right-click a file row in the <tt>Commit Action</tt> column and choose <tt>Exclude from commit</tt> from the pop-up menu. To display the Diff Viewer here, right-click a file row in the <tt>Commit Action</tt> column and choose <tt>Diff</tt> from the pop-up menu.</p></li>
+			    <li><tt>Update Issue</tt> section intended for tracking issues related to the change being committed.
+			 <p class="notes"><b>Note</b>: You need to install the JIRA or Subversion plugin to start tracking issues in the IDE.</p></li>
+            </ul></li>
+
+           
+
+                      <li>Type in a commit message in the <tt>Commit Message</tt> text area. Alternatively, you can do any of the following:
+                    <ul><li>click the <tt>Recent Messages</tt> ( <img src="../../../images_www/articles/74/ide/git/recent-msgs.png"
+                                                     alt="Recent messages icon"/> ) icon located in the upper right corner to
+                    view and select from a list of messages that you have previously used,</li>
+					<li>click the <tt>Load Template</tt> (<img src="../../../images_www/articles/74/ide/git/msg-template.png"
+                                                     alt="Select template icon"/>) icon  located in the upper right corner to select a message template.</li>
+					</ul>
+  </li>
+                <li>After specifying actions for individual files, click <tt>Commit</tt>. <br/>The IDE
+                    executes the commit and stores your snapshots to the repository.
+                    The IDE's status bar, located in the bottom right of the interface,
+                    displays as the commit action takes place. Upon a successful commit,
+                    versioning badges disappear in the <tt>Projects</tt>, <tt>Files</tt> and <tt>Favorites</tt> windows,
+                    and the color coding of committed files returns to black.</li>		 
+</ol>
+</div>
+<div>
+		<a name="branch"></a>
+		<h2>Working with Branches</h2>
+		<p>The IDE's Git support enables you to maintain different versions of an entire code base using branches.</p>
+		<p>When working with branches in the IDE, the following actions are supported:</p>
+        <ul>
+		<li><a href="#branchCreate">Creating</a></li>
+		<li><a href="#branchCheckOut">Checking out</a></li>
+		<li><a href="#branchMerge">Merging</a></li>
+		<li><a href="#branchDelete">Deleting</a></li>
+		</ul>
+        <a name="branchCreate"></a>
+		<h3>Creating a Branch</h3>
+		<p>To create a local branch, if you want to work on a separate version of your file system for stabilization or experimentation purposes  without disturbing the main trunk, complete the following steps:</p>
+		<ol>
+		<li>In the Projects or Files window, choose a project or folder from the repository in which you want to create the branch.</li>
+		<li>In the main menu, choose Team &gt; Branch/Tag &gt; Create Branch.
+		 <p class="notes"><b>Note:</b> As an alternative right-click the versioned project or folder and choose Git &gt; Branch/Tag &gt; Create Branch in the popup menu.</p>
+		The Create Branch dialog box displays.
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/create-branch.png" rel="lytebox"
+                       title="Create Branch dialog box">
+					   <img src="../../../images_www/articles/74/ide/git/create-branch-small.png"
+                     alt="Create Branch dialog box" border=1/></a></p>
+		 </li>
+		<li>In the Branch Name field, enter the name of the branch being created.</li>
+		<li>Type a specific revision of the selected item by entering a commit ID, existing branch, or tag name in the Revision field or press  Select to view the list of revisions maintained in the repository.</li>
+		<li>(Optional) In the Select Revision dialog box, expand Branches and choose the branch required, specify the commit ID in the adjacent list, and press Select.</li>
+		<li>Review the Commit ID, Author, Message fields information specific to the revision being branched from and click Create.<br/>
+		The branch is added to the <tt>Branches/Local</tt> folder of the Git repository.
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/ide/git/branch-added.png" rel="lytebox"
+                       title="Git Repository: New branch created">
+					   <img src="../../../images_www/articles/74/ide/git/branch-added-small.png"
+                     alt="Branch added" border=1/></a></p></li>
+		</ol>
+		 <a name="branchCheckOut"></a>
+		<h3>Checking Out</h3>
+		<p>If you need to edit files on a branch that already exists, you can check out the branch to copy the files to your Working Tree.</p>
+		
+		<p>To check out a revision, perform the following: </p>
+		<ol>
+		<li>Choose Team &gt; Checkout &gt;  Checkout Revision from the main menu. <br/>The Checkout Selected Revision
+                dialog box displays.
+				<p class="align-center"><a href="../../../images_www/articles/74/ide/git/chkout-rev.png" rel="lytebox"
+                       title="Checkout Selected Revision">
+			    <img src="../../../images_www/articles/74/ide/git/chkout-rev-small.png"
+                     alt="Checkout Selected Revision" border=1/></a></p></li>
+					 <li>Specify the revision required by entering a commit ID, existing branch, or tag name in the Revision field or press  Select to view the list of revisions maintained in the repository.</li>
+					 <li>Skip if you did not press Select in the previous step. In the Select Revision dialog box, expand Branches and choose the branch required, specify the commit ID in the adjacent list if required, and press Select.
+					 <p class = "notes"><b>Note:</b> If the specified revision refers to a valid commit that is not marked with a branch name, your HEAD becomes detached and you are no longer on any branch.</p></li>
+					 <li>Review the Commit ID, Author, Message fields information specific to the revision being checked out.</li>
+					 <li>To create a new branch out of the checked out revision, choose the Checkout as New Branch option and enter the name in the Branch Name field.</li>
+					 <li>Press Checkout to check out revision.<br/> 
+					 Files in the Working Tree and in the Index are updated to match the version in the specified revision.</li>
+		</ol>
+		<p class="notes"><b>Note:</b> If you want to switch your files to a branch that already exists (e.g., to a commit that is not at the top of one of your branches), you can use the Team &gt; Git &gt; Branch &gt; Switch To Branch command,  specify the branch in the Switch to Selected Branch dialog box, check it out as a new branch (optionally), and press Switch.</p>
+		<p>The IDE supports context-sensitive checkout of the file(s), folder(s), or project(s) currently selected in the IDE. To check  out some files (not a branch) from the Index, complete the following steps: </p>
+		<ol>
+		<li>Choose Team &gt; Checkout &gt;  Checkout Files from the main menu. <br/>
+		  The Checkout Selected Paths
+                dialog box displays.
+				<p class="align-center"><a href="../../../images_www/articles/74/ide/git/chkout-path.png" rel="lytebox"
+                       title="Checkout Selected Paths">
+			    <img src="../../../images_www/articles/74/ide/git/chkout-path-small.png"
+                     alt="Checkout Selected Paths" border=1/></a></p></li>
+		  <li>Choose the Update Index with Entries from the Selected Revision option.<br/>
+		    If selected,  the Index is updated with the state in the selected revision prior to the checkout itself (i.e., the selected files both in the Working Tree and Index are updated). </li>
+					 <li>Specify the revision required by entering a commit ID, existing branch, or tag name in the Revision field or press Select to view the list of revisions maintained in the repository.</li>
+					 <li>Skip if you did not press Select in the previous step. In the Select Revision dialog box, expand Branches and choose the branch required, specify the revision number in the adjacent list if required, and press Select.</li>
+					 <li>Press Checkout to complete the checkout.</li>
+		</ol>
+		
+		 <a name="branchMerge"></a>
+		<h3>Merging</h3>
+		<p>To port  modifications from  <span title="Monday, September 5, 2011 7:59:41 AM PDT"> a repository revision to the Working Tree</span>, do as follows:</p>
+		<ol>
+		<li>Choose Team &gt; Branch/Tag &gt; Merge Revision from the main menu.<br/>
+		   The Merge Revision dialog box displays.
+		<p class="align-center"><a href="../../../images_www/articles/74/ide/git/merge.png" rel="lytebox"
+                       title="Merge Revision">
+			    <img src="../../../images_www/articles/74/ide/git/merge-small.png"
+                     alt="Merge Revision" border=1/></a></p></li>
+		<li>Specify the revision required by entering a commit ID, existing branch, or tag name in the Revision field or press Select to view the list of revisions maintained in the repository.</li>
+		<li>Skip if you did not press Select in the previous step. In the Select Revision dialog box, expand Branches and choose the branch required, specify the commit ID in the adjacent list if required, and press Select.</li>
+		<li>Press Merge.<br/>
+		A three-way merge between the current branch, your Working Tree contents, and the specified branch is done.
+		<p class="notes"><b>Note:</b> If a merge conflict occurs, the conflicting file is marked with <a href="#badges">a red badge</a> to indicate this.</p>
+		<p class="notes"><b>Note:</b> After merging you must still <a href="#committing">commit</a> the changes in order for them to be added to the HEAD.</p>
+		</li>
+		</ol>
+		
+		 <a name="branchDelete"></a>
+		<h3>Deleting a Branch</h3>
+		<p>To delete an unnecessary local branch, complete the following steps: </p>
+		<ol>
+		<li>Choose Team &gt; Repository Browser from the main menu.</li>
+		<li>In the Git Repository Browser, choose the branch to be deleted.<p class="notes"><b>Note:</b> The branch must be inactive, i.e. not currently checked out into the Working Tree.</p></li>
+		<li>Right-click the selected branch and choose Delete Branch from the popup menu.</li>
+		<li>In the Delete Branch dialog box, press OK to confirm the branch deletion.<br/> The branch is removed from the local repository as well as the Git Repository Browser.</li>
+		</ol></div>
+		<div>
+		<a name="remote"></a>
+		<h2>Working with Remote Repositories</h2>
+		<p>When you work with other developers you need to share your work, which involves fetching, pushing, and pulling data to and from remote repositories hosted on the Internet or network.</p>
+		<ul>
+		<li><a href="#fetch">Fetching</a></li>
+		<li><a href="#pull">Pulling</a></li>
+		<li><a href="#push">Pushing</a></li>
+		</ul>
+		<a name="fetch"></a>
+		<h3>Fetching</h3>
+		<p>Fetching gets the changes from the original remote repository that you do not have yet. It never changes any of your local branches. Fetching  gets all the branches from remote repositories, which you can merge into your branch or just inspect at any time.</p>
+		<p>To fetch the updates, do as follows:</p>
+		<ol>
+		<li>Choose Team &gt;  Remote &gt; Fetch.<br/>
+		   The Fetch from Remote Repository wizard displays.
+		   <p class="align-center"><a href="../../../images_www/articles/74/ide/git/fetch.png" rel="lytebox"
+                       title="Fetch from Remote Repository wizard">
+	      <img src="../../../images_www/articles/74/ide/git/fetch-small.png"
+                     alt="Fetch from Remote Repository wizard" border=1/></a></p></li>
+					 <li>At the Remote Repository page of the wizard, select either the Configured repository (to use the path to the repository configured earlier) or Specify Git Repository Location option (to define the path to a remote repository that has not been accessed yet, its name,  login,  password, and proxy configuration if required) and click Next.</li>
+					 <li>At the Remote Branches page of the wizard, choose the branches to  fetch changes from and click Finish.<br/>
+					   A local copy of a remote branch is created. The selected branch are updated in the <tt>Branches</tt> &gt; <tt>Remote</tt> directory in the Git Repository Browser.<br/>
+					   Next the fetched updates can be merged into a local branch. </li>
+		</ol>
+		
+		<a name="pull"></a>
+		<h3>Pulling</h3>
+		<p>When pulling some updates from a remote Git repository, the changes are fetched from it and merged into the current HEAD of your local repository.<br/>
+		To perform pulling, complete the following steps: </p>
+		<ol>
+		<li>Choose Team &gt;  Remote &gt; Pull.<br/> 
+		  The Pull from Remote Repository wizard displays.
+		<p class="align-center"><a href="../../../images_www/articles/74/ide/git/pull.png" rel="lytebox"
+                       title="Pull from Remote Repository wizard">
+	      <img src="../../../images_www/articles/74/ide/git/pull-small.png"
+                     alt="Pull from Remote Repository wizard" border=1/></a></p></li>
+		<li>At the Remote Repository page of the wizard, select either the Configured repository (to use the path to the repository configured earlier) or Specify Git Repository Location option (to define the path to a remote repository that has not been accessed yet, its name, and login and password if required) and click Next. </li>
+		<li>At the Remote Branches page of the wizard, choose the branches to be pulled changes from and click Finish.<br/>
+		Your local repository is synchronized with the origin repository.</li>
+		</ol>
+		<a name="push"></a>
+		<h3>Pushing</h3>
+		<p>To contribute changes from your local Git repository into a public Git repository, perform the following steps:</p>
+		<p class="notes"><b>Note:</b> When you are going to push your commits into a repository and some other changes have been pushed in the meantime, you need to pull and merge those changes first.</p>
+		<ol>
+		<li>Choose Team &gt; Remote &gt; Push.<br/> 
+		The Push to Remote Repository wizard displays.
+		  <p class="align-center"><a href="../../../images_www/articles/74/ide/git/push.png" rel="lytebox"
+                       title="Push to Remote Repository wizard">
+	      <img src="../../../images_www/articles/74/ide/git/push-small.png"
+                     alt="Push to Remote Repository wizard" border=1/></a></p></li>
+		<li>At the Remote Repository page of the wizard, select either the Configured repository (to use the path to the repository configured earlier) or Specify Git Repository Location option (to define the path to a remote repository that has not been accessed yet, its name, and login and password if required) and click Next. </li>
+		<li>At the Select Local Branches page, choose the branch(es)  to push your edits to and click Next.</li>
+		<li>At the Update Local References page, choose the branch(es)   to be updated in the Remotes directory of your local  repository and click Finish.<br/>
+		  The specified remote repository branch  is updated with the latest state of your local branch.</li>
+		</ol>
+		
+		</div>
+
+
+<a name="summary"></a>
+<h2>Summary</h2>
+<p>This tutorial showed how to perform basic versioning tasks in the IDE by guiding you through the standard workflow when
+            using the IDE's GIT support. It demonstrated how to set up a versioned project and perform basic tasks on versioned
+            files while introducing you to some of the GIT specific features included in the IDE.</p>
+		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Git%20Support%20in%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+
+        <br style="clear:both;"/>
+		<a name="seealso"></a>
+        <h2>See Also</h2>
+        
+        <p>For related material see the following documents:</p>
+        <ul>
+           
+            <li><a href="clearcase.html">Using ClearCase Support in NetBeans IDE</a></li>
+            <li><a href="subversion.html">Using Subversion Support in NetBeans IDE</a></li>
+			<li><a href="mercurial.html">Using Mercurial Support in NetBeans IDE</a></li>
+			<li><a href="cvs.html">Using CVS Support in NetBeans IDE</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">Versioning Applications with Version Control</a> in <i>Developing Applications with NetBeans IDE</i></a></li>
+        </ul>
+</body>
+</html>

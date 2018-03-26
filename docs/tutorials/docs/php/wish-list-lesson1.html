@@ -1,0 +1,306 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. --><title>Creating a Database Driven Application With PHP. Creating a Sample
+MySQL Database using the NetBeans Interface</title>
+
+<meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans. ">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Create MySQL database in NetBeans">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+
+
+   <body>
+<h1>Creating a Database Driven Application With PHP </h1>
+<h1>Lesson 1a: Creating a MySQL Database</h1>
+<div style="margin-left: -3px;">
+<div class="feedback-box margin-around float-left" style="margin-right: 15px;">
+<h4>Tutorial contents:</h4>
+<ol start="0">
+<li><a href="wish-list-tutorial-main-page.html">Creating
+a CRUD Application with PHP - Main page</a></li>
+<li>
+<p>Creating the Database</p>
+<ol type="a"><li>
+<p><b>=&gt; Creating a MySQL Database</b></p>
+<ul>
+<li><a href="#register-mysql">Registering a MySQL Server</a></li>
+<li><a href="#CreateUser">Creating the
+Database User</a></li>
+<li><a href="#CreateDatabase">Creating the
+Wishlist Database</a></li>
+<li><a href="#EstablishConnection">Establishing
+Connection to the Wishlist Database</a></li>
+<li><a href="#DatabaseStructure">Designing
+the Structure of the Wishlist Database </a></li>
+<li><a href="#CreateTables">Creating the
+Tables</a></li>
+<li><a href="#EnterTestData">Entering the
+Test Data</a></li>
+</ul>
+</li>
+<li><a href="wish-list-oracle-lesson1.html">
+Creating Oracle Database Tables </a></li>
+</ol>
+</li>
+<li><a href="wish-list-lesson2.html"> Designing
+the Application. Reading from the Database</a></li>
+<li><a href="wish-list-lesson3.html">Creating a
+New Application User</a></li>
+<li><a href="wish-list-lesson4.html">Optimizing
+the Code</a></li>
+<li><a href="wish-list-lesson5.html">Adding
+Security. Implementing Application User Logon</a></li>
+<li><a href="wish-list-lesson6.html">Adding a New
+Wish to the Database</a></li>
+<li><a href="wish-list-lesson7.html">Updating and
+Deleting Entries in the Database</a></li>
+<li><a href="wish-list-lesson8.html">Making the
+Application Look Better Using the CSS Technology</a></li>
+<li><a href="wish-list-lesson9.html">Deploying the
+Application on a Remote Web Server</a></li>
+</ol>
+</div>
+</div>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<p>This lesson describes the last preliminary step in developing
+the Wish List application, that of creating a sample database with test
+data. To complete the steps in this tutorial, you will need a database
+in which to store data of wishers. With the NetBeans IDE you can
+perform all these activities through the IDE interface. <br>
+Before starting, see the tutorial requirements described in <a href="wish-list-tutorial-main-page.html">Creating a CRUD
+Application with PHP - Main page</a>. </p>
+<p>The current document is a part of the Creating a CRUD
+Application in the NetBeans IDE for PHP tutorial. </p>
+<br style="clear: left;">
+<h2 id="register-mysql">Registering a MySQL Server</h2>
+<p>If you do not have a MySQL database server registered in the IDE, or you want general information about using MySQL with NetBeans IDE, see <a href="../ide/mysql.html">Connecting to a MySQL Database</a>.</p>
+<h2><a name="CreateUser" id="CreateUser"></a>Creating
+the Database User</h2>
+<p>Before you create a database you need to create its User who
+will be granted the right to perform any operations on the database.
+Creating a database User involves:</p>
+<ul>
+<li><a href="#connectToMySQLServer">Connecting to
+the MySQL server as the root user</a>.</li>
+<li><a href="#connectToDefaultDatabase">Connecting
+to the MySQL system database as a root user</a>. This step is
+necessary to enable running an SQL command for creating a user because
+you cannot run an SQL command without being connected to any database. </li>
+<li><a href="#createUserQuery">Executing a user
+creation MySQL statement</a>. </li>
+</ul>
+<ol>
+<li>Start the IDE, switch to the Services window (Ctrl-5), and expand
+the Databases node.</li>
+<li>To <a name="connectToMySQLServer" id="connectToMySQLServer"></a>connect to the MySQL
+database server, navigate to the <tt>MySQL Server</tt>
+node and from the context menu choose Connect. <br>
+<img src="../../../images_www/articles/72/php/wishlist/mysql-ctxmenu-connect.png" alt="Establishing connection to the MySQL server using the NetBeans IDE interface: Choosing Connect from the context menu" class="margin-around b-bottom"><br>
+</li>
+<li> The NetBeans IDE connects to the MySQL server, checks for the databases
+available through the server, detects the system <tt>mysql</tt>
+database, and adds the corresponding new node <tt>mysql</tt>
+to the Databases tree. <br>
+<img src="../../../images_www/articles/72/php/wish-list-lesson1/mysql_node_added.png" alt="A new node mysql is added to the Databases tree" class="margin-around" height="159" width="337"> </li>
+<li>To execute an SQL command, you need to be connected to a
+database. Because only the MySQL system is available, you need to
+connect to it. <a name="connectToDefaultDatabase" id="connectToDefaultDatabase"></a>To connect to the
+system database, navigate to the <tt>mysql</tt> node and
+from the context menu choose Connect. If a connection does not already
+exist, the New Database Connection dialog box appears. The User Name
+field is by default filled in with root. In the Password field, enter
+the root user's password. 
+<p class="notes"><strong>Note: </strong>If you have connected to the <code>mysql</code> database before, this dialog does not appear. Instead, the new connection
+node simply appears in the tree.</p>
+<img src="../../../images_www/articles/72/php/wish-list-lesson1/create-new-database-connection.png" alt="Creating a new database connection" class="margin-around">
+<br>
+The New Database Connection dialog box shows the message "Connection
+established." Click OK. A new node named <tt>jdbc:mysql://localhost:3306/mysql</tt>
+is added to the Databases tree.</li>
+<li><a name="createUserQuery" id="createUserQuery"></a>Navigate
+to the <tt>jdbc:mysql://localhost:3306/mysql</tt> node and
+from the context menu choose Execute Command. <br>
+<img src="../../../images_www/articles/72/php/wish-list-lesson1/execute-command.png" alt="Choosing Execute command from the context menu" class="margin-around b-bottom" height="282" width="441"> <br>
+An SQL Command window opens. In the SQL Command window, use syntax
+similar to the following statement:
+<pre class="examplecode">CREATE USER 'phpuser'@'localhost' <br>	IDENTIFIED BY 'phpuserpw'</pre>
+From the context menu, choose Run Statement. If the command is executed
+successfully, the Status bar shows the message: "SQL Statement(s)
+executed successfully". If another message is displayed, check the
+syntax and follow the message hints. </li>
+</ol>
+<h2><a name="CreateDatabase" id="CreateDatabase"></a>Creating
+the Wishlist Database </h2>
+<p>To create the database:</p>
+<ol>
+<li>Navigate to the <tt>MySQL Server at localhost:3306</tt>
+node and from the context menu choose Create Database. The Create MySQL
+Database dialog box appears. Fill in the fields:
+<ul>
+<li>In the Database Name field, enter wishlist.</li>
+<li>Switch on the Grant full access to user checkbox and
+from the drop down list select <tt>phpuser@localhost</tt>
+Click OK.<br>
+<img src="../../../images_www/articles/72/php/wish-list-lesson1/create-user.png" alt="Create database dialog box. Granting access rights to the newly created user" class="margin-around">
+<p class="alert">The "Grant full access to user"
+function does not always work. If it does not work, <a href="#EstablishConnection">connect to the database</a>
+as the root user and send the SQL query <span class="examplecode"><tt>GRANT
+ALL ON wishlist.* TO phpuser@localhost</tt></span>. </p>
+</li>
+</ul>
+A connection to the database appears in the tree. However the connection is for the <code>root</code> user. You need a connection for the<code> phpuser</code> user.</li>
+</ol>
+<h2><a name="EstablishConnection" id="EstablishConnection"></a>Establishing Connection
+to the Wishlist Database </h2>
+<p>At the end of the previous section, you created the <code>wishlist</code> database with a connection to the <code>root</code> user. Now you create a new connection for the <code>phpuser</code> user. </p>
+<ol>
+<li>In the Services window, right-click the Databases node and select New Connection. The New Connection Wizard opens.<br>
+<img alt="Database connection context menu showing Properties item" src="../../../images_www/articles/72/php/wishlist/databases-ctxmenu-newconnection.png" class="margin-around b-bottom b-right"></li>
+<li>In the New Connection Wizard's Locate Driver panel, select the <code>MySQL (Connector/J Driver).</code> Click Next. The Customize Connection panel opens.<br>
+<img alt="Locate Driver panel of New Connection Wizard" src="../../../images_www/articles/72/php/wishlist/locate-driver.png" class="margin-around" height="384" width="441"></li>
+<li>In the Database field, type <code>wishlist</code>.</li>
+<li>In the User Name and Password edit boxes, enter the name
+and the password specified in section <a href="#CreateUser">Creating
+the Owner (User) of the Database</a> (in our example <tt>phpuser</tt>
+and <tt>phpuserpw</tt> respectively). Tick Remember Password. Click Test Connection, and if the connection succeeds, click OK. <br>
+<img alt="Completed Customize Connection panel of New Connection wizard" src="../../../images_www/articles/72/php/wishlist/phpuser-connection.png" class="margin-around" height="439" width="455"></li></ol>
+<p>The
+  corresponding new connection node is displayed in the Databases tree. Now you can delete the <code>root</code> user's connection
+  to the <code>wishlist</code> database. Click the <tt>jdbc:mysql://localhost:3306/wishlist [root on Default schema]</tt> connection
+  and choose Delete.</p>
+  <img src="../../../images_www/articles/72/php/wish-list-lesson1/new-database-connection-added.png" alt="New connection node has been added to the Databases tree" class="margin-around" height="120" width="504"> 
+
+<h2><a name="DatabaseStructure" id="DatabaseStructure"></a>Designing
+the Structure of the Wishlist Database </h2>
+<p>To arrange and store all the necessary data you need two
+tables: </p>
+<ul>
+<li>A wishers table for storing names and passwords of
+registered users</li>
+<li>A wishes table for storing descriptions of wishes</li>
+</ul>
+<img src="../../../images_www/articles/72/php/wish-list-lesson1/wishlist-db.png" alt="The structure of the sample database: two tables are related through the wisher-id" class="margin-around"><br>
+The wishers table contains three fields:
+<ol>
+<li>id - the unique ID of a wisher. This field is used as the
+Primary Key</li>
+<li>name </li>
+<li>password</li>
+</ol>
+<p>The wishes table contains four fields:</p>
+<ol>
+<li>id - the unique ID of a wish. The field is used as the
+Primary Key</li>
+<li>wisher_id - the ID of the wisher to whom the wish belongs.
+The field is used as the Foreign Key. </li>
+<li>description</li>
+<li>due_date - the date by when the wish is requested </li>
+</ol>
+<p>The tables are related through the wisher's ID. All the fields
+are mandatory except due_date in wishes. </p>
+<h2><a name="CreateTables" id="CreateTables"></a>Creating
+the Tables</h2>
+<ol>
+<li>To connect to the database, on the <tt>jdbc:mysql://localhost:3306/wishlist</tt>
+connection, click the right mouse button and choose Connect from the
+context menu.<br>
+<strong>Note:</strong> If the menu item is disabled,
+you are already connected. Continue with step 2.</li>
+<li>From the same context menu, choose Execute Command. An
+empty SQL Command window opens. </li>
+<li>To create the wishers table,
+<ol>
+<li type="a">Type the following SQL query (note that
+you need to explicitly set character sets to UTF-8 for
+internationalization):
+<pre class="examplecode">CREATE TABLE wishers(<br> id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, <br> name CHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL UNIQUE,<br> password CHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL<br>)</pre>
+<strong>Note:</strong> You can get a unique auto
+generated number from MySQL by specifying the AUTO_INCREMENT property
+for a field. MySQL will generate a unique number by incrementing the
+last number of the table and will automatically add to the auto
+incremented field. In our example the ID field is auto incremented. </li>
+<li type="a">Click the right mouse button on the
+query and then choose Run Statement from the context menu.
+<p class="notes"><b>Note: </b>The
+default storage engine for MySQL is MyISAM, which does not support
+foreign keys. If you want to use foreign keys, consider using InnoDB as
+the storage engine.</p>
+</li>
+</ol>
+</li>
+<li>To create the wishes table:
+<ol>
+<li type="a">Type the following SQL query:
+<pre class="examplecode">CREATE TABLE wishes(<br> id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,<br> wisher_id INT NOT NULL,<br> description CHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,<br> due_date DATE,<br> FOREIGN KEY (wisher_id) REFERENCES wishers(id)<br>)</pre>
+</li>
+<li type="a">Click the right mouse button on the
+query and then choose Run Statement from the context menu. </li>
+</ol>
+</li>
+<li>To verify that the new tables are added to the database,
+switch to the Services window and then navigate to the
+jdbc:mysql://localhost:3306/wishlist connection node. </li>
+<li>Click the right mouse button and choose Refresh. The nodes
+wishers and wishes appear in the tree.</li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">Note:</span>
+You
+can download a set of SQL commands for creating the MySQL wishlist
+database <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-MySQL.zip">here</a>.</p>
+<h2><a name="EnterTestData" id="EnterTestData"></a>Entering
+the Test Data </h2>
+<p>To test your application you will need some data in the
+database. The example below shows how to add two wishers and four
+wishes.</p>
+<ol>
+<li>On the jdbc:mysql://localhost:3306/wishlist connection,
+click the right mouse button and choose Execute Command. An empty SQL
+Command window opens. </li>
+<li>To add a wisher, use syntax similar to the example below:
+<pre class="examplecode">INSERT INTO wishers (name, password) <br> VALUES ('Tom', 'tomcat');</pre>
+Click the right mouse button on the query and from the context menu
+choose Run Statement.<br>
+<strong>Note: </strong> The statement does not contain
+a value for the <tt>id</tt> field. The values are entered
+automatically because the field type is specified as <tt>AUTO_INCREMENT</tt>.<br>
+Enter another test wisher:
+<pre class="examplecode">INSERT INTO wishers (name, password) <br> VALUES ('Jerry', 'jerrymouse');</pre>
+</li>
+<li>To add the wishes, use syntax similar to the example below:
+<pre class="examplecode">INSERT INTO wishes (wisher_id, description, due_date) <br> VALUES (1, 'Sausage', 080401);<br>INSERT INTO wishes (wisher_id, description) <br> VALUES (1, 'Icecream');<br>INSERT INTO wishes (wisher_id, description, due_date) <br> VALUES (2, 'Cheese', 080501);<br>INSERT INTO wishes (wisher_id, description)<br> VALUES (2, 'Candle');</pre>
+<p>Select the queries, click the right mouse button on each query and from
+the context menu choose Run Selection. </p>
+<p class="notes"><strong>Note:</strong> You can also execute the queries
+one after another as described in item 2.</p> </li>
+<li>To view the test data, click the right mouse button on the
+relevant table and from the context menu choose View Data. <br>
+<img src="../../../images_www/articles/72/php/wish-list-lesson1/view-test-data.png" alt="Viewing the entered test data using the NetBeans IDE interface" class="margin-around" height="339" width="590"> </li>
+</ol>
+<p>To get some general understanding of database principles and
+design patterns, check the following tutorial: <a onclick="return top.js.OpenExtLink(window,event,this)" target="_blank" href="http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1">http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1</a>.</p>
+<p>For more information on the syntax of MySQL <tt>CREATE
+TABLE</tt> statements, see <a onclick="return top.js.OpenExtLink(window,event,this)" target="_blank" href="http://dev.mysql.com/doc/refman/5.0/en/create-table.html">http://dev.mysql.com/doc/refman/5.0/en/create-table.html</a>.
+</p>
+<p>For more information on inserting values into table, see <a onclick="return top.js.OpenExtLink(window,event,this)" target="_blank" href="http://dev.mysql.com/doc/refman/5.0/en/insert.html">http://dev.mysql.com/doc/refman/5.0/en/insert.html</a>.</p>
+<p class="notes"><span style="font-weight: bold;">Note:</span>
+You
+can download a set of SQL commands for creating the MySQL wishlist
+database <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-MySQL.zip">here</a>.
+</p>
+<h2><a name="nextSteps"></a>Next Step</h2>
+<p><a href="wish-list-lesson2.html">Next Lesson
+&gt;&gt;</a></p>
+<p><a href="wish-list-tutorial-main-page.html">Back
+to the Tutorial main page</a></p>
+<br>
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%201:%20Create%20MySQL%20Database">Send
+Us Your Feedback</a></div>
+<br style="clear: both;">
+<p>To send comments and suggestions, get support, and keep
+informed on the latest developments on the NetBeans IDE PHP development
+features, <a href="../../../community/lists/top.html">join
+the users@php.netbeans.org mailing list</a>.</p>
+<a href="../../trails/php.html">Back to the PHP Learning
+Trail</a><br>
+</body></html>

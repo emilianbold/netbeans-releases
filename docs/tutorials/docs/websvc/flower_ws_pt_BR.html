@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>Anexo SOAP binário 2: Criando o Web service - Tutorial do NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+        <meta name="description"
+              content="This tutorial shows how to create and
+              consume an EE6 web service that sends binary data via SOAP.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    <body>
+        <h1>Anexo SOAP Binário Ponto a Ponto 2: Criando o Web Service</h1>
+    <p>O objetivo desta lição é criar uma aplicação Web que contenha um Web service. Você implementará o Web service como um bean de sessão sem estado. </p>
+    <p>É possível fazer download de uma amostra completa do Web service do <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerAlbumService.zip" target="_blank">Catálogo de Amostras do NetBeans</a>.</p>
+    <p><b>Lições Deste Tutorial</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+        <ol>
+            <li><a href="./flower_overview.html">Visão Geral</a></li>
+          <li> => Criando o Web Service</li>
+          <li><a href="flower-code-ws.html">Codificando e Testando o Web Service</a></li>
+          <li><a href="./flower_wsdl_schema.html"> Modificando o Esquema e os Arquivos WSDL para Passar Dados Binários</a></li>
+            <li><a href="./flower_swing.html"> Criando o Cliente Swing</a></li>
+            <!--        <li><a href="./flower_wsit.html">
+            Logging and Optimizing the Web Service</a></li> -->
+        </ol>
+        <p><b>Conteúdo Desta Lição</b></p>
+        <ol>
+        <li><a href="#create-web-app">Criando a Aplicação Web</a></li>
+        <li><a href="#add-ws">Adicionando o Web Service</a></li>
+        </ol>
+        <h2 id="create-web-app">Criando a Aplicação Web</h2>
+        <p>Nesta seção, você criará uma aplicação Web Java EE. Para esta aplicação, você adicionará as imagens que o Web service passará como dados binários. </p>
+  <p><b>Para criar a aplicação Web:</b><br>
+        </p>
+        <ol>
+          <li> Selecione Arquivo > Novo Projeto (Ctrl-Shift-N no Linux e no Windows, ⌘-Shift-N no MacOS). O Assistente de Novo Projeto será exibido. Selecione Aplicação Web na categoria Java Web e clique em Próximo. A página Nome e Localização será aberta.</li>
+          <li>Digite <tt>FlowerAlbumService</tt> no campo Nome do Projeto. Selecione a localização que deseja para este projeto. Mantenha as definições default das outras opções e clique em Próximo. A página Servidor e Definições será aberta.    </li> 
+          <li>Selecione o servidor GlassFish Server e Java EE versão Java EE 6 Web ou Java EE 7 Web. </li>               
+          <li>Clique em Finalizar. O projeto <tt>FlowerAlbumService</tt> será criado e aparecerá na janela Projetos.</li>
+          <li>Clique com o botão direito do mouse no nó Pacotes de Código-Fonte e selecione Novo > Pacote Java. 
+              <p>Se preferir, selecione Novo > Outro e selecione Pacote Java na categoria Java do assistente de Novo Arquivo.</p></li>
+          <li>Nomeie o pacote <tt>org.flower.resources</tt>. Clique em Finalizar.<br> <img alt="Assistente Novo Pacote que mostra o nome e a localização do pacote org.flower.resources." class="margin-around" height="383" src="../../../images_www/articles/73/websvc/flower/new-package.png" width="568"></li>
+          
+          <li>Copie as imagens a seguir para <tt>org.flower.resources</tt>:
+            <ul>
+              <li><a href="../../../images_www/articles/73/websvc/flower/rose.jpg">rose.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/sunflower.jpg">sunflower.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/aster.jpg">aster.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/honeysuckle.jpg">honeysuckle.jpg</a></li>
+            </ul>
+          </li>
+    </ol> 
+          <p>O projeto agora tem o pacote <tt>org.flower.resources</tt> no Pacote de Código-Fonte. Nenhum outro conteúdo foi adicionado.</p>
+          <img alt="Projeto apenas com imagens de flores" border="1" class="margin-around" height="274" src="../../../images_www/articles/73/websvc/flower/project-w-resources.png" width="204">
+          <h2 id="add-ws">Adicionando o Web Service</h2>
+          <p>Nesta seção, você criará um Web service na aplicação Web. Você criará o serviço como um bean de sessão sem estado. Você adicionará as operações da Web a seguir ao serviço:</p>
+          <ul>
+            <li>Uma operação que leva o nome de uma flor e tem sua <tt>Imagem</tt> associada.</li>
+            <li>Uma operação que obtém miniaturas de todas as imagens de flores e as retorna como uma<tt> Lista</tt>.</li>
+          </ul>
+    <p><strong>Para adicionar o Web service:</strong></p>
+          <ol>
+          <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto <tt>FlowerAlbumService</tt> e selecione Novo > Web Service. Como alternativa, escolha Novo > Outro e selecione Web Service em Web Services no assistente Novo Arquivo. O assistente Novo Web Service será aberto.</li>
+          <li>No assistente Novo Web Service, digite <tt>FlowerService</tt> em Nome do Web Service e <tt>org.flower.service</tt> em Nome do Pacote. Selecione Criar Web Service do Início. Selecione Implementar Serviço como Bean de Sessão Sem Estado. Clique em Finalizar. <br><img alt="Assistente Novo Web Service Concluído" class="margin-around" height="409" src="../../../images_www/articles/73/websvc/flower/new-service.png" width="572">
+            <p>O Web service aparecerá em nós do projeto na janela Projetos. O diretório Pacotes de Código-Fonte inclui o pacote do serviço e o pacote de recursos.</p>
+            <img alt="Janela Projetos que mostra imagens de flores e Web service" border="1" class="margin-around" height="344" src="../../../images_www/articles/73/websvc/flower/project-w-service-and-resources.png" width="223"></li>
+            <li>Abra <tt>FlowerService.java</tt> no editor. Alterne para a view de Design. Um form aparecerá, no qual você pode adicionar operações e elementos de qualidade de serviço ao Web service.<br> <img alt="View de design do FlowerService, com nada adicionado" border="1" class="margin-around" height="340" src="../../../images_www/articles/73/websvc/flower/flower-service-empty-design.png" width="600"></li>
+            
+            <li>Clique em Adicionar Operação. O assistente Adicionar Operação será aberto.</li>
+            <li>Nomeie a operação <tt>getFlower</tt>. No campo Tipo de Retorno, digite ou navegue para <tt>java.awt.Image</tt>.</li>
+            <li>Na guia Parâmetros, clique em Adicionar. Nomeie o parâmetro <tt>nome</tt> e aceite o tipo <tt>java.lang.String</tt> default. <br> <img alt="Guia Adicionar Operação que mostra o nome e o tipo de retorno para a operação getFlower e o parâmetro name" class="margin-around" height="406" src="../../../images_www/articles/73/websvc/flower/add-getflower-param.png" width="518"></li>
+            <li>Abra a guia Exceções. Adicione uma <tt>IOException</tt>.<br> <img alt="Procurando IO Exception" class="margin-around" height="393" src="../../../images_www/articles/73/websvc/flower/io-exception.png" width="486"> </li>        
+          <li>Clique em OK e feche o assistente. Em seguida, clique novamente em Adicionar Operação e adicione uma operação com as seguintes propriedades:
+          <ul>
+          <li><b>Nome:</b> getThumbnails</li>
+          <li><b>Tipo de retorno:</b> java.util.List</li>
+          <li><b>Exceção: </b> IOException</li>
+    </ul></li></ol>
+          
+          <p>A view de Design agora mostra as operações <tt>getFlower</tt> e <tt>getThumbnails</tt>. Alterne para View de Lista das duas operações e veja todos os parâmetros delas.</p><img alt="View de design do serviço Flower que mostra operações" class="margin-around" height="667" src="../../../images_www/articles/73/websvc/flower/flower-service-full-design.png" width="478"> 
+          <h2>&nbsp;</h2>
+    <h2>Próxima etapa:</h2>
+        <p><a href="./flower-code-ws.html">Codificando e Testando o Web Service</a></p>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Creating%20WS%20EE6">Enviar Feedback neste Tutorial</a></div>
+        <br style="clear:both;" >
+        <!-- ======================================================================================= -->
+
+        <p>Para enviar comentários e sugestões, obter suporte e se manter informado sobre os mais recentes desenvolvimentos das funcionalidades de desenvolvimento Java EE do NetBeans IDE, <a href="../../../community/lists/top.html">inscreva-se na lista de notícias nbj2ee@netbeans.org</a>.</p>
+</body>
+</html>

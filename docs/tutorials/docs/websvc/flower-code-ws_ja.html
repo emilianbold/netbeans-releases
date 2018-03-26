@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+        <meta name="description"
+              content="This tutorial shows how to create and
+              consume an EE6 web service that sends binary data via SOAP.">
+<title>バイナリSOAPアタッチメント(パート3): Webサービスのコーディングおよびテスト - NetBeans IDEチュートリアル</title>
+<link href="../../../netbeans.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+</head>
+
+<body>
+<h1>エンドツーエンドのバイナリSOAPアタッチメント(パート3): Webサービスのコーディングおよびテスト</h1>
+<p>このレッスンでは、Webサービス/セッションBeanクラスにコードを追加し、JPEGファイルのバイト配列への変換と、バイト配列の<tt>java.awt.Image</tt>オブジェクトへの変換を実行します。また、公開されているWebサービス操作にコードを追加し、これらの<tt>Image</tt>オブジェクトが返されるようにします。最後に、NetBeans IDEの「Webサービスをテスト」ユーティリティを使用して、Webサービスをブラウザでテストします。</p>
+<p>Webサービスの完全版サンプルは、<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerAlbumService.zip" target="_blank">NetBeansサンプル・カタログ</a>からダウンロードできます。</p>
+<p><b>このチュートリアルのレッスン</b></p>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+<ol>
+  <li><a href="./flower_overview.html">概要</a></li>
+  <li><a href="flower_ws.html">Webサービスの作成</a></li>
+  <li>=> Webサービスのコーディングおよびテスト</li>
+  <li><a href="./flower_wsdl_schema.html">バイナリ・データを渡すためのスキーマとWSDLファイルの変更</a></li>
+  <li><a href="./flower_swing.html">Swingクライアントの作成</a></li>
+  <!--        <li><a href="./flower_wsit.html">
+            Logging and Optimizing the Web Service</a></li> -->
+</ol>
+<p><b>このレッスンの目次</b></p>
+<ol>
+  <li><p><a href="#coding-ws">Webサービスのコーディング</a></p>
+  <ol>
+  <li><a href="#retrieve-jpeg-as-bytes">JPEGファイルをバイト配列として取得</a></li>
+  <li><a href="#read-bytes-as-image">バイト配列をイメージとして読み取る</a></li>
+  <li><a href="#implement-getflower">getFlowerの実装</a></li>
+  <li><a href="#create-byte-array-list">すべてのJPEGファイルのバイト配列のリストの作成</a></li>
+  <li><a href="#implement-getthumbnails">getThumbnailsの実装</a></li>
+  </ol>
+  </li>
+  <li><a href="#test-ws">Webサービスのテスト</a></li>
+</ol>
+<h2 id="coding-ws">Webサービスのコーディング</h2>
+<p>一連のJPEGファイルとWebサービスが含まれるWebアプリケーションを作成しました。このWebサービスは、ステートレス・セッションBeanとして実装されています。このWebサービスには、2つの空のWeb操作が含まれています。このレッスンでは、Webサービスにコードを追加し、JPEGファイルのバイト配列への変換と、バイト配列の<tt>java.awt.Image</tt>オブジェクトへの変換を実行します。また、公開されているWebサービス操作にコードを追加し、これらの<tt>Image</tt>オブジェクトが返されるようにします。
+  
+<div class="indent">
+    <h3 id="retrieve-jpeg-as-bytes">JPEGファイルをバイト配列として取得</h3>
+  <p>この項では、1組のプライベート・メソッドを<tt>FlowerService</tt>クラス本文に追加します。これらのメソッドは、花の名前を取得し、その花のJPEGファイルへのパスを作成し、JPEGファイルのバイナリ表現(バイト配列)を返します。後の項では、公開されているWebサービス操作にコードを追加して、操作がこれらのプライベート・メソッドをコールするようにします。</p>
+  <ol>
+    <li>プロジェクトの「ソース」ビューを開きます。イメージの名前を取得し、その名前に基づいてイメージへのパスを作成し、そのイメージをバイト配列として取得するコードを追加する必要があります。次のコードを<tt>FlowerService</tt>クラス本文に入力または貼り付けます。
+      <pre class="examplecode">
+private byte[] getFlowerBytes(String name) throws IOException {
+    URL resource = this.getClass().getResource("/org/flower/resources/"+name+".jpg");
+    return getBytes(resource);
+}</pre>
+    </li>
+    <li>IDEがクラス<tt>URL</tt>を見つけられないことを示す警告が表示されます。<tt><a href="http://download.oracle.com/javase/6/docs/api/java/net/URL.html" target="_blank">java.net.URL</a></tt>のインポート文を、手動で追加するか、[Ctrl]-[Shift]-[I] (Macの場合は[⌘]-[Shift]-[I])を押して追加します。</li>
+    <li>新しい警告が表示されます。この警告は、IDEが<tt>getBytes</tt>メソッドを見つけられないことを示します。警告アイコンを左クリックし、ヒントをクリックして<tt>getBytes</tt>メソッドを作成します。<br> <img alt="見つからないメソッドを作成するためのヒント" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/create-method-tip.png"></li>
+    <li>作成したばかりの<tt>getBytes</tt>メソッドがエディタでフォーカスされます。メソッドに次のコードを追加します。このコードは、<tt>getFlowerBytes</tt>メソッドから渡した<a href="http://download.oracle.com/javase/6/docs/api/java/net/URL.html#openStream%28%29" target="_blank">URLへの接続を開き</a>、<tt><a href="http://download.oracle.com/javase/6/docs/api/java/io/InputStream.html" target="_blank">InputStream</a></tt>を返します。次に、1024バイトごとに入力ストリームを読み取り、そのバイトをバイト配列バッファに保存して、バッファから<tt><a href="http://download.oracle.com/javase/6/docs/api/java/io/ByteArrayOutputStream.html" target="_blank">ByteArrayOutputStream</a></tt>に書き込みます。
+      <pre class="examplecode">private byte[] getBytes(URL resource) throws IOException {
+    InputStream in = resource.openStream();
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    byte[] buf = new byte[1024];
+    for(int read; (read = in.read(buf)) != -1;) {
+        bos.write(buf, 0, read);
+    }
+    return bos.toByteArray();
+}</pre>
+    </li>
+    <li><tt>java.io.InputStream</tt>と<tt>java.io.ByteArrayOutputStream</tt>のインポート文を追加します。</li>
+  </ol>
+  <h3 id="read-bytes-as-image">バイト配列をイメージとして読み取る</h3>
+  <p>この項では、プライベート・メソッドを<tt>FlowerService</tt>クラス本文に追加します。このメソッドでは、JPEGファイルを表すバイト配列を取得し、<tt>java.awt.Image</tt>オブジェクトを返します。バイト配列は、<a href="#retrieve-jpeg-as-bytes">JPEGファイルをバイト配列として取得</a>の項で作成した<tt>getBytes(URL)</tt>メソッドによって作成されることに注意してください。</p>
+  <ol>
+    <li><tt>FlowerService</tt>クラス本文で、<tt>getImage</tt>という次のプライベート・メソッドを追加します。<tt>getImage</tt>メソッドの戻り値の型は<tt>Image</tt>です。このメソッドは、2つのパラメータを取ります。最初のパラメータは、<tt>getBytes</tt>メソッドによって作成されるバイト配列です。2番目のパラメータは、イメージがサムネイルかどうかを示すブールです。<tt>getImage</tt>メソッドは、<tt>IOException</tt>をスローします。
+      <pre class="examplecode">private Image getImage(byte[] bytes, boolean isThumbnail) throws IOException {
+    }</pre></li>
+    <li><tt>getImage</tt>メソッドの本文で、このメソッドがパラメータとして取得するバイト配列から<tt><a href="http://download.oracle.com/javase/6/docs/api/java/io/ByteArrayInputStream.html" target="_blank">ByteArrayInputStream</a></tt>を作成する行を追加します。
+      <pre class="examplecode">ByteArrayInputStream bis = new ByteArrayInputStream(bytes);</pre></li>
+    <li><tt>ByteArrayInputStream</tt>から<tt>Object</tt>を作成する行を追加します。 <pre class="examplecode">Object source = bis;</pre></li>
+    <li>汎用の<tt>Object</tt>から<tt><a href="http://download.oracle.com/javase/6/docs/api/javax/imageio/stream/ImageInputStream.html" target="_blank">ImageInputStream</a></tt>を作成する行を追加します。 <pre class="examplecode">ImageInputStream iis = ImageIO.createImageInputStream(source);</pre></li>
+    <li>JPEGファイルのデコードが可能な、現在登録されているすべての<tt><a href="http://download.oracle.com/javase/6/docs/api/javax/imageio/ImageReader.html" target="_blank">ImageReader</a></tt>から<tt><a href="http://download.oracle.com/javase/6/docs/api/java/util/Iterator.html" target="_blank">Iterator</a></tt>を作成する行を追加します。 
+      <pre class="examplecode">Iterator readers = ImageIO.getImageReadersByFormatName("jpeg");</pre>
+    </li>
+    <li><tt>Iterator</tt>の次の要素から<tt>ImageReader</tt>を作成する行を追加します。 
+      <pre class="examplecode">ImageReader reader = (ImageReader) readers.next();</pre></li>
+    <li>デフォルトの<a href="http://download.oracle.com/javase/6/docs/api/javax/imageio/IIOParam.html" target="_blank">イメージ読取りパラメータ</a>を作成する行を追加します(<tt></tt>ただし、<tt>Image</tt>がサムネイルを表す場合はイメージ読取りパラメータに4対1の<a href="http://download.oracle.com/javase/6/docs/api/javax/imageio/IIOParam.html#setSourceSubsampling%28int,%20int,%20int,%20int%29" target="_blank">サブサンプリング処理</a>を追加)。 
+      <pre class="examplecode">ImageReadParam param = reader.getDefaultReadParam();
+if (isThumbnail) {
+    param.setSourceSubsampling(4, 4, 0, 0);
+}</pre>
+    </li>
+    <li>最後に、<tt>ImageReader</tt>オブジェクトを使用して<tt>ImageInputStream</tt>オブジェクトを読み取り、そのオブジェクトに基づく<tt>Image</tt>とイメージ読取りパラメータを返すコードを追加します。 
+      <pre class="examplecode">reader.setInput(iis, true);
+return reader.read(0, param);</pre></li>
+<li>[Ctrl]-[Shift]-[I] (MacOSの場合は[⌘]-[Shift]-[I])を押します。「すべてのインポートを修正」ダイアログが開きます。「すべてのインポートを修正」のデフォルトの修正候補をすべて受け入れ、「OK」をクリックします。<br> <img alt="デフォルトのjava.util.Iteratorクラスが選択された状態を示す「すべてのインポートを修正」ダイアログ" class="margin-around" src="../../../images_www/articles/73/websvc/flower/fix-getimage-imports.png"></li></ol>
+    <p>これで<tt>getImage</tt>メソッドは完成です。 </p>
+      <pre class="examplecode">private Image getImage(byte[] bytes, boolean isThumbnail) throws IOException {
+    ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+    Object source = bis; // File or InputStream
+    ImageInputStream iis = ImageIO.createImageInputStream(source);
+    Iterator readers = ImageIO.getImageReadersByFormatName("jpeg");
+    ImageReader reader = (ImageReader) readers.next();
+    ImageReadParam param = reader.getDefaultReadParam();
+    if (isThumbnail) {
+        param.setSourceSubsampling(4, 4, 0, 0);
+    }
+    reader.setInput(iis, true);
+    return reader.read(0, param);
+}</pre>
+    
+    
+ 
+    <h3 id="implement-getflower">getFlowerの実装</h3>
+  <p>名前によって花を取得してその花のイメージを返すために、次の実装コードを<tt>getFlower()</tt>メソッドに追加します。このコードは、<tt>getFlowerBytes(name)</tt>プライベート・メソッドをコールし、JPEGファイルをバイト配列として取得することに注意してください。次に、<tt>getImage</tt>プライベート・メソッドをコールし、バイト配列を<tt>Image</tt>オブジェクトとして返します。</p>
+  <pre class="examplecode">@WebMethod(operationName = "getFlower")
+public Image getFlower(@WebParam(name = "name") String name) throws IOException {
+    byte[] bytes = getFlowerBytes(name);
+    return getImage(bytes, false);
+}</pre>
+  <h3 id="create-byte-array-list">すべてのJPEGファイルのバイト配列のリストの作成</h3>
+  <ol>
+    <li><tt>FlowerService</tt>のクラス本文の先頭で、すべての花の名前の文字列配列を作成します。
+      <pre class="examplecode">private static final String[] FLOWERS = {"aster", "honeysuckle", "rose", "sunflower"};</pre>
+    </li>
+    <li><tt><a href="http://download.oracle.com/javase/6/docs/api/java/util/ArrayList.html" target="_blank">ArrayList</a></tt>を作成し、すべての花のバイト配列を<tt>List</tt>に追加するメソッドを追加します。
+      
+      <pre class="examplecode">private List allFlowers() throws IOException {
+    List flowers = new ArrayList();
+    for (String flower:FLOWERS) {
+        URL resource = this.getClass().getResource("/org/flower/resources/"+flower+".jpg");
+        flowers.add(getBytes(resource));
+    }
+    return flowers;
+}</pre>
+    </li>
+    <li><tt>java.util.ArrayList</tt>と<tt>java.util.List</tt>のインポート文を追加します。 </li>
+  </ol>
+  <h3 id="implement-getthumbnails">getThumbnailsの実装</h3>
+  <p><tt>getThumbnails()</tt>メソッドを次のように変更します。ここでは、実装コードを追加し、戻り値の型を<tt>List</tt>から<tt>List&lt;Image></tt>に変更することに注意してください。また、<tt>getImage</tt>メソッドの<tt>isThumbnail</tt>のブール値に<tt>true</tt>を渡すことに注意してください。<tt>getThumbnails</tt>実装コードは<tt>allFlowers</tt>メソッドをコールし、<a href="#create-byte-array-list">すべてのJPEGファイルのバイト配列のリストを作成します</a>。次に、<tt>getThumbnails</tt>メソッドは<tt>Image</tt>の<tt>List</tt>を作成し、それぞれの花の<tt>getImage</tt>メソッドをコールすることで、その花のバイト配列を<tt>Image</tt>オブジェクトとして返し、その<tt>Image</tt>を<tt>List</tt>に追加します。 </p>
+  <pre class="examplecode">@WebMethod(operationName = "getThumbnails")
+public List&lt;Image&gt; getThumbnails() throws IOException {
+    List&lt;byte[]&gt; flowers = allFlowers();
+    List&lt;Image&gt; flowerList = new ArrayList&lt;Image&gt;(flowers.size());
+    for (byte[] flower : flowers) {
+        flowerList.add(getImage(flower, true));
+    }
+    return flowerList;
+}</pre>
+</div>
+<p>これで、Webサービス/セッションを組み合せたBeanは完成しました。このWebサービス・クラスの最終的な形は次のようになります。</p>
+<pre class="examplecode">package org.flower.service;<br>
+<br>
+import java.awt.Image;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import javax.ejb.Stateless;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;<br>
+<br>
+@WebService(serviceName = "FlowerService")
+@Stateless()
+public class FlowerService {<br>
+<br>
+    private static final String[] FLOWERS = {"aster", "honeysuckle", "rose", "sunflower"};<br>
+<br>
+    @WebMethod(operationName = "getFlower")
+    public Image getFlower(@WebParam(name = "name") String name) throws IOException {
+        byte[] bytes = getFlowerBytes(name);
+        return getImage(bytes, false);
+    }<br>
+<br>
+    @WebMethod(operationName = "getThumbnails")
+    public List&lt;Image&gt; getThumbnails() throws IOException {
+        List flowers = allFlowers();
+        List&lt;Image&gt; flowerList = new ArrayList&lt;Image&gt;(flowers.size());
+        for (byte[] flower : flowers) {
+            flowerList.add(getImage(flower, true));
+        }
+        return flowerList;
+    }<br>
+<br>
+    private byte[] getFlowerBytes(String name) throws IOException {
+        URL resource = this.getClass().getResource("/org/flower/resources/" + name + ".jpg");
+        return getBytes(resource);
+    }<br>
+<br>
+    private byte[] getBytes(URL resource) throws IOException {
+        InputStream in = resource.openStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024];
+        for (int read; (read = in.read(buf)) != -1;) {
+            bos.write(buf, 0, read);
+        }
+        return bos.toByteArray();
+    }<br>
+<br>
+    private Image getImage(byte[] bytes, boolean isThumbnail) throws IOException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        Iterator readers = ImageIO.getImageReadersByFormatName("jpeg");
+        ImageReader reader = (ImageReader) readers.next();
+        Object source = bis; // File or InputStream
+        ImageInputStream iis = ImageIO.createImageInputStream(source);
+        reader.setInput(iis, true);
+        ImageReadParam param = reader.getDefaultReadParam();
+        if (isThumbnail) {
+            param.setSourceSubsampling(4, 4, 0, 0);
+        }
+        return reader.read(0, param);
+    }<br>
+<br>
+    private List allFlowers() throws IOException {
+        List flowers = new ArrayList();
+        for (String flower : FLOWERS) {
+            URL resource = this.getClass().getResource("/flower/album/resources/" + flower + ".jpg");
+            flowers.add(getBytes(resource));
+        }
+        return flowers;
+    }
+}</pre>
+<h2 id="test-ws">Webサービスのテスト</h2>
+<p>Webサービスが完成したので、デプロイとテストを実行できます。</p>
+<p><strong>Webサービスをテストするには:</strong></p>
+<ol>
+  <li>「FlowerAlbumService」ノードを右クリックし、「デプロイ」を選択します。IDEはソース・コードをコンパイルし、GlassFishサーバーを起動して、プロジェクトのWARファイルをサーバーにデプロイします。「サービス」ウィンドウを開くと、デプロイされた<tt>FlowerService</tt>がサーバーの「アプリケーション」ノードに表示されます。 
+      <p class="alert"><b>重要: </b>GlassFish Server Open Source Editionはバージョン3.1以降である必要があります。</p>
+  <img alt="「サービス」ウィンドウ内のデプロイ済FlowerService" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/deployed-service.png"></li>
+  <li>プロジェクトの「Webサービス」ノードを展開します。「FlowerService」を右クリックし、「Webサービスをテスト」を選択します。<br> <img alt="「Webサービスをテスト」オプションを表示するコンテキスト・メニュー" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/test-ws-node.png"></li>
+  <li>Webサービスのテスト・ページがブラウザで開きます。「<tt>getFlower</tt>」パラメータ・フィールドに「rose」と入力します。<br> <img alt="Webサービスのテスト・ページが開きます" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/ws-tester.png"> </li>
+  <li>「<tt>getFlower</tt>」ボタンを押します。IDEが、この呼出しに関する情報をブラウザに表示します。「Method Returned」を見ると、中身が文字化けしていることがわかります。見たいのは記号の羅列ではなく、イメージです。しかし、<tt>java.awt.Image</tt>は有効なスキーマ・タイプではないため、バイナリのimage/jpegデータを返すようにスキーマ・ファイルを手動で構成する必要があります。これは、次のチュートリアルで行います。<br> <img alt="ブラウザ・ウィンドウに表示されたWebサービスのテスト・ページの結果" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/ws-tester-badschema.png"></li>
+  <li>
+    <h2>次の手順:</h2>
+    <p><a href="./flower_wsdl_schema.html">バイナリ・データを渡すためのスキーマとWSDLファイルの変更</a></p>
+    <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Coding%20WS%20EE6">このチュートリアルに関するご意見をお寄せください</a></div>
+    <br style="clear:both;" >
+    <!-- ======================================================================================= -->
+    <p><a href="../../../community/lists/top.html">nbj2ee@netbeans.orgメーリング・リスト</a>に登録することによって、NetBeans IDE Java EE開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+  </li>
+</ol>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>GUIビルダーの視覚的なフィード・バックの説明 - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <meta name="KEYWORDS" content="NETBEANS, GUI BUILDER, GUIDE, USER, DOCUMENTATION">
+        <meta content="?and? 0.5.5" name="GENERATOR">
+
+    </head>
+    
+    <body>    
+    <a name="top"></a>    
+        <h1>GUIビルダーの視覚的なフィード・バックの説明</h1>
+<p>このドキュメントでは、IDEのGUIビルダー(旧コード名Matisse)でJava GUIを作成するときに表示される視覚的なフィード・バックについて説明します。 </p>
+ <h3>内容</h3>
+<img alt="このページの内容は、NetBeans IDE 6.9以降に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 6.9以降に適用されます">
+
+        <ul class="toc">
+           
+			<li><a href="#alignment">位置揃えのガイドライン</a></li>
+			<li><a href="#anchor">アンカーのインジケータ</a></li>
+			<li><a href="#size">サイズのインジケータ</a></li>
+			<li><a href="#highlight">強調表示とハンドル</a></li>
+			<li><a href="#seealso">関連項目</a></li>
+		</ul>       
+        <blockquote>
+            <a name="alignment"></a>
+			<h2>位置揃えのガイドライン</h2>
+            <p>位置揃えのガイドラインは、コンポーネントを追加または移動するときにのみ表示され、マウス・ボタンを離したときにコンポーネントがスナップする位置を示します。コンポーネントを配置したら、ガイドラインは、複数のコンポーネントがそろえてある位置を示す実線と、アンカーのインジケータに変わります。</p>
+            <br>
+            <table>
+            <tr>
+                <td class="tbltd1 align-center"><b>インセット</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend5.png" border=1>
+                    
+                </td>
+                <td class="tbltd1">インセットは、コンポーネントと、そのコンポーネントが配置されているコンテナの間隔です。インセットは、横方向と縦方向の点線のガイドラインで表示されます。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>オフセット</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend30.png" border=1></td>
+                <td class="tbltd1">オフセットは、隣接するコンポーネントの間隔です。オフセットは、横方向と縦方向の点線のガイドラインで表示されます。</td>
+            </tr>
+
+            <tr>
+                <td class="tbltd1 align-center"><b>ベースライン</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend13.png" border=1></td>
+                <td class="tbltd1">ベースラインの位置揃えは、表示テキストを含む隣接するコンポーネント間の関係です。ベースラインの位置揃えは、横方向の点線のガイドラインで表示されます。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><p class="align-right"><b>エッジ</b></p></td>
+                <td class="tbltd1 align-center">
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend12.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend14.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend32.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend33.png" border=1></p>                    
+                </td>
+                <td class="tbltd1"><br>エッジの位置揃え(上下左右)は、隣接するコンポーネント間の位置関係です。エッジの位置揃えは、横方向と縦方向の点線のガイドラインで表示されます。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>インデント設定</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend31b.png" border=1>
+                </td>
+                <td class="tbltd1">インデントの位置揃えは、1つのコンポーネントを別のコンポーネントの下に配置し、少し右にずらす特殊な位置関係です。インデントの位置揃えは、2本の縦方向の点線のガイドラインで表示されます。</td>
+            </tr>
+			<tr>
+			<td class="tbltd1 align-center"><b>優先の距離</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend34.png" border=1>
+                </td>
+                <td class="tbltd1">優先の距離(小、中、および長)は、隣接するコンポーネント間の間隔のサイズです。優先の距離は、横方向または縦方向の点線のガイドラインで表示されます。 </td>
+			</tr>
+            </table>
+            <p class="align-center"><a href="#top">先頭</a></p>
+            <a name="anchor"></a>
+            <h2>アンカーのインジケータ</h2>
+            <p>コンポーネントが特定に位置にスナップしたら、塗りつぶされたアンカーのインジケータが表示され、複数のコンポーネントがそろえてある位置を示します。</p>
+            <br>
+            <table>
+            <tr>
+                <td class="tbltd1 align-center"><b>コンテナ</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend50.png" border=1></td>
+                <td class="tbltd1">個々のコンポーネントを、そのコンポーネントが配置されているコンテナに接続するアンカーは、小さな半円のインジケータで表示され、コンテナの端からコンポーネントまで点線で結びます。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>コンポーネント</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend51.png" border=1></td>
+                <td class="tbltd1">個々のコンポーネントを隣接するコンポーネントに接続するアンカーは、小さな半円のインジケータで表示され、一方のコンポーネントから他方のコンポーネントまで点線で結びます。 </td>
+            </tr>
+            </table>
+            <p class="align-center"><a href="#top">先頭</a></p>
+            <a name="size"></a>
+            <h2>サイズのインジケータ</h2>
+            <br>
+            <table>
+           
+            <tr>
+                <td class="tbltd1 align-center"><b>同じサイズ</b></td>
+                <td class="tbltd1 align-center">
+				<p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend28.png" border=1></p>
+				<p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend29.png" border=1></p></td>
+                <td class="tbltd1">同じサイズは、コンポーネントのグループ(隣接しているかどうかに関係ない)が同じ幅と高さに設定されている状態です。同じサイズに設定されている場合、プロパティが設定されている各コンポーネントの上端に小さな四角形のインジケータが表示されます。</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>自動サイズ変更</b></td>
+                <td class="tbltd1 align-center">
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend42.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend41.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend43.png" border=1></p>
+                </td>
+                <td class="tbltd1"><br>自動サイズ変更は、コンポーネントの幅または高さが実行時に動的に変更されるように設定されている状態です。自動サイズ変更は、GUIビルダーのツールバーにある水平および垂直方向のサイズ変更ボタン(それぞれ、「水平方向のサイズ変更可能状態を変更」および「垂直方向のサイズ変更可能状態を変更」と呼ばれます)の状態で示されます。自動サイズ変更は、「プロパティ」ウィンドウ内の「他のプロパティ」リストにある「<tt>resizable</tt>」を選択することによって有効になります。</td>
+            </tr>
+            </table>
+ <p class="align-center"><a href="#top">先頭</a></p>
+ <a name="highlight"></a>
+            <h2>強調表示とハンドル</h2>
+			 <table>           
+            <tr>
+                <td class="tbltd1 align-center"><b>強調表示</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend10.png" border=1></td>
+                <td class="tbltd1">オレンジ色の強調表示は、選択されたコンポーネントが配置される場所を示します。</td>
+            </tr>
+			<tr>
+                <td class="tbltd1 align-center"><b>ハンドル</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend11.png" border=1></td>
+                <td class="tbltd1"> コンポーネントが選択されると、そのコンポーネントの境界の周りに小さい四角形のサイズ変更ハンドルが表示されます。コンポーネントの端にあるハンドルをクリックしたままドラッグすると、コンポーネントのサイズが変更されます。 </td>
+            </tr>
+			</table>
+			<p class="align-center"><a href="#top">先頭</a></p>
+        </blockquote>
+
+          
+       
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20GUI%20Builder%20Visual%20Feedback%20Legend,%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+<br style="clear:both;"> 
+<h2><a name="seealso"></a>関連項目</h2>
+        <ul>
+            <li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Java GUIの実装</a></li>
+			<li><a href="../../trails/matisse.html">Java GUIアプリケーションの学習</a></li>
+			<li><a href="../../trails/java-se.html">一般的なJava開発の学習</a></li></ul>
+    </body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Creating a Database Driven Application With PHP. Creating new record in MySQL database.</title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Creating new record in MySQL database" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+<h1>Creating a Database Driven Application With PHP </h1>
+<h1>Lesson 6: Adding a New Wish to the Database</h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Tutorial contents:</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Creating a Database Driven Application With PHP - Main page</a></li>
+    <li><p>Creating the Database</p> <ol type="a"><li><a href="wish-list-lesson1.html">Creating a MySQL Database</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Creating Oracle Database Tables</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">Designing the Application. Reading from the Database</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">Creating a New Application User
+    
+    </a></li>
+    <li><a href="wish-list-lesson4.html">Optimizing the Code</a></li>
+    <li><a href="wish-list-lesson5.html">Adding Security. Implementing Application User Logon</a></li>
+    <li>
+      <p><b>=&gt; Adding a New Wish to the Database</b></p>
+      <ul>
+<li><a href="#previousLessonSourceCode">Application Source Code from the Previous Lesson</a></li>
+<li><a href="#addNewWish">Submitting a New Wish</a>
+  <ul>
+<li><a href="#add-wish-ui-elements">Adding the User Interface Components</a></li>
+
+<li><a href="#inputFormAfterunsuccessfulSave">Redisplaying the Due Date after an <br>Unsuccessful Submission</a></li>
+</ul></li>
+<li><a href="#logonVerification">Verifying the Wisher's Logon</a></li>
+<li><a href="#insert-new-wish">Inserting the New Wish to the Database</a>
+<ul>
+<li><a href="#add-insert-wish">Adding the insert_wish Function to WishDB</a></li>
+<li><a href="#add-format-date-for-sql">Adding the  format_date_for_sql Function to WishDB</a></li>
+<li><a href="#validateAndEnterWishToDatabase">Entering the New Wish Record in the Database</a></li>
+<li><a href="#displayingErrorMessages">Displaying Error Messages</a></li>
+</ul>
+</li>
+
+
+<li><a href="#backToIndex">Returning to the Front index.php Page</a></li>
+<li><a href="#testingAddWishFunctionality">Testing the Add Wish Functionality</a></li>
+<li><a href="#lessonResultSourceCode">Application Source Code after the Current Lesson Is Completed</a></li>
+</ul>
+    </li>
+    <li><a href="wish-list-lesson7.html">Updating and Deleting Entries in the Database</a></li>
+    <li><a href="wish-list-lesson8.html">Making the Application Look Better Using the CSS Technology</a></li>
+    <li><a href="wish-list-lesson9.html">Deploying the Application on a Remote Web Server</a></li>
+</ol>
+</div>
+</div>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+<p>In this lesson you  expand the application functionality with two features:</p>
+<ul>
+  <li style="margin-left:42em"><a href="#addNewWish">Adding a new wish</a></li>
+  <li style="margin-left:42em"><a href="#backToIndex">Returning to the front index.php page</a></li>
+</ul>
+<p>To implement this functionality, you edit the <tt>editWishList.php</tt> file and create the new  file <tt>editWish.php</tt>.</p>
+<img src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram-l6.png" width="439" height="368" alt="Page flow diagram highlighting Lesson 6 additions">
+<p>The current document is a part of the <a href="wish-list-tutorial-main-page.html">Creating a CRUD Application in the NetBeans IDE for PHP</a> tutorial. </p>
+<br style="clear:left">
+<h2><a name="previousLessonSourceCode"></a>Application Source Code from the Previous Lesson</h2>
+<p>MySQL users: Click <a target="_blank" href="https://netbeans.org/files/documents/4/1931/lesson5.zip"> here</a> to download the source code that reflects the project state after the previous lesson is completed.</p>
+<p>Oracle Database users: Click <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson5.zip"> here</a> to download the source code that reflects the project state after the previous lesson is completed.</p>
+<h2><a name="addNewWish" id="addNewWish"></a>Submitting a New Wish </h2>
+<p>The user submits a new wish in the following steps: </p>
+<ol>
+  <li>The user logs in, switches to the <tt>editWishList.php</tt> page, and presses the Add Wish button. The <tt>editWish.php</tt> page opens, displaying an HTML form.</li>
+  <li>In the HTML  form, the user enters a description of a wish and possibly the date by when he/she wants it and presses the Save Changes button. </li>
+  <li>If a form is submitted without a description of the wish, the user is returned to the form to try again. If the user submitted a due date but no description, that date is redisplayed when the form reloads.</li>
+</ol>
+
+
+<!--<ul>
+   <li>If the description is not filled in, an error message is displayed and the user returns to the editWish.php page. </li>
+  <li>Else, if a description is filled in, the application returns to the editWishList.php page with the list of wishes expanded with the new wish. </li>
+
+</ul> -->
+<p>To enable this procedure for the user, you add the following functionality to the application:</p>
+<ul>
+  <li><a href="#add-wish-ui-elements">User interface components</a>, consisting of an HTML form for adding wishes and a button in <tt>editWishList.php </tt>that redirects the user to the form. </li>
+  <li>Code for <a href="#inputFormAfterunsuccessfulSave">redisplaying the due date</a> if an incomplete form is submitted. </li>
+</ul>
+<div class="indent">
+    <h3 id="add-wish-ui-elements">Adding the User Interface Components</h3>
+<p><strong>To add functionality for adding a new wish:</strong></p>
+<ol>
+  <li><a name="addWishButton" id="addWishButton"></a>Implement the Add Wish button. In the <tt>editWishList.php</tt> file, add the following HTML code beneath the PHP block:
+    <pre class="examplecode">
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+&lt;html&gt;
+    &lt;head&gt;
+
+       &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;form name="addNewWish" action="editWish.php">            
+            &lt;input type="submit" value="Add Wish">
+        &lt;/form>
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+              <p class="notes"><b>Note: </b>You can ignore warnings from the HTML validator.</p>
+
+  <p>The form contains an &quot;Add Wish&quot; input field of the <tt>submit</tt> type. This field implements the &quot;Add Wish&quot; button. When the user clicks Add Wish, they are redirected to the <tt>editWish.php</tt> page. Because no data is transferred through this form, no Server Request method is used.</p>
+  </li>
+  <li>Add a table above the addNewWish form that displays the existing wishes for the wisher. The code is similar to <tt>wishlist.php</tt>. 
+    <p><strong>For the MySQL database</strong>:</p>
+  <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;<br>    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;<br>    &lt;?php<br>    require_once(&quot;Includes/db.php&quot;);<br>    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);<br>    $result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);<br>    while($row = mysqli_fetch_array($result)) {<br>
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row['description']) . &quot;&lt;/td&gt;&quot;;<br>
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row['due_date']) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>    }<br>    ?&gt;<br>&lt;/table&gt;</pre>
+  <p><b>For the Oracle database:</b></p>
+  <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $stid = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while ($row = oci_fetch_array($stid)) {<br>        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row['DESCRIPTION']) . &quot;&lt;/td&gt;&quot;;<br>
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row['DUE_DATE']) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;
+    }
+    ?&gt;
+&lt;/table&gt;</pre>
+  </li>
+  <li>Create the <tt>editWish.php</tt> PHP file in the Source Files folder.</li>
+  <li><a name="EmptyAddWishForm" id="EmptyAddWishForm"></a>In <tt>editWish.php</tt>, implement the Add Wish form. 
+  Type or paste the following code below the &lt;? php ?&gt; block:
+   <pre class="examplecode">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+
+       &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;POST&quot;&gt;<br>            Describe your wish: &lt;input type=&quot;text&quot; name=&quot;wish&quot;  value=&quot;&quot; /&gt;&lt;br/&gt;<br>            When do you want to get it? &lt;input type=&quot;text&quot; name=&quot;dueDate&quot; value=&quot;&quot;/&gt;&lt;br/&gt;<br>            &lt;input type=&quot;submit&quot; name=&quot;saveWish&quot; value=&quot;Save Changes&quot;/&gt;<br>            &lt;input type=&quot;submit&quot; name=&quot;back&quot; value=&quot;Back to the List&quot;/&gt;
+        &lt;/form>
+    &lt;/body&gt;
+&lt;/html&gt; </pre></li>
+</ol>
+  <p>The Add Wish  form contains:</p>
+    <ul>
+      <li>Two empty text fields for entering the wish description and due date.</li>
+      <li>The texts to be printed next to the input fields.</li>
+      <li>A <tt>submit</tt> field that represents a Save Changes button </li>
+      <li>A <tt>submit</tt> field that represents a Back to the List button for returning to the <tt>editWishList.php</tt> page </li>
+    </ul>
+<p>Upon pressing the Add Wish button, the form submits the entered data to the same page, <tt>editWish.php</tt>,  through the Request method POST. </p>
+  
+
+
+<h3><a name="inputFormAfterunsuccessfulSave" id="inputFormAfterunsuccessfulSave"></a>Redisplaying the Due Date After an Unsuccessful Submission </h3>
+    <p>If the user does not fill in  a description in the Add Wish form, an error message is displayed and the user returns to the <tt>editWish.php</tt> page. When the user returns to <tt>editWish.php</tt>, the Add Wish form should show the value of <tt>dueDate</tt> if it was entered. In the current implementation of the form, both fields are always empty. To keep  entered values, you need to save the data of the new wish in an array. The array will consist of two elements named <tt>description</tt> and <tt>due_date</tt>. You then need to change the Add Wish form so it retrieves the value of the <tt>dueDate</tt> field from the array.</p>
+  <p><strong>Note: </strong>The code that  reloads the input form if no description is entered is included in the <a href="#validateAndEnterWishToDatabase">code that validates the data and enters it to the database</a>. This code is not described in this section. The code in this section only preserves the value of <tt>dueDate</tt> so that it is displayed if the form is reloaded .</p>
+   <p><strong>To redisplay the input form after the user submits it unsuccessfully:</strong></p>
+    <ol><li>Type or paste  the following code block inside the HTML &lt;body&gt; element of <tt>editWish.php</tt>, directly above the input form:
+   <pre class="examplecode">&lt;?php 
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;)<br>    $wish = array(&quot;description&quot; =&gt; $_POST[&quot;wish&quot;], <br>    &quot;due_date&quot; =&gt; $_POST[&quot;dueDate&quot;]);<br>else<br>    $wish = array(&quot;description&quot; =&gt; &quot;&quot;, <br>    &quot;due_date&quot; =&gt; &quot;&quot;);
+?&gt;  </pre>
+   <p>The code checks which Request Server method was used for transferring the data and creates an array named $wish. If the method is POST, which means that the input form is displayed after an unsuccessful attempt to save a wish with an empty description, the elements <tt>description</tt> and <tt>due_date</tt> accept the values transferred through POST. </p>
+   <p>If the method is not POST, which means that the input form is displayed for the first time after redirection form the <tt>editWishList.php</tt> page, the elements <tt>description</tt> and <tt>due_date</tt> are empty.</p>
+   <p class="notes"> <strong>Note:</strong> In either case the description is empty. The difference is only in the <tt>dueDate</tt>. </p></li>
+   <li>Update the Add Wish form so that the values of its input fields are retrieved from the <tt>$wish</tt> array. Replace the lines in the Add Wish form:
+     <pre class="examplecode">Describe your wish: &lt;input type=&quot;text&quot; name=&quot;wish&quot;  value=&quot;&quot; /&gt;&lt;br/&gt;
+When do you want to get it? &lt;input type=&quot;text&quot; name=&quot;dueDate&quot; value=&quot;&quot;/&gt;&lt;br/&gt;</pre>
+with:
+    <pre class="examplecode">Describe your wish: &lt;input type=&quot;text&quot; name=&quot;wish&quot;  value=&quot;&lt;?php echo $wish['description'];?&gt;&quot; /&gt;&lt;br/&gt;
+When do you want to get it? &lt;input type=&quot;text&quot; name=&quot;dueDate&quot; value=&quot;&lt;?php echo $wish['due_date']; ?&gt;&quot;/&gt;&lt;br/&gt;</pre></li></ol>
+ </div>    
+<h2><a name="logonVerification" id="logonVerification"></a>Verifying  the Wisher's Logon    </h2>
+    In the <tt>editWish.php</tt> file, enter the following session handling code inside the &lt;? php ?&gt; block at the top of the file:
+      <pre class="examplecode">session_start();
+if (!array_key_exists("user", $_SESSION)) {
+    header('Location: index.php');
+    exit;
+}</pre>
+The code:   
+      <ul>
+        <li>Opens the $_SESSION array for retrieving data..</li>
+        <li>Verifies that the array $_SESSION contains an element with the identifier &quot;user&quot;.</li>
+        <li>If the check fails, which means that the user is not logged on, redirects the application to the front index.php page and cancels the PHP processing. </li>
+      </ul>
+   <p>To check that session handling works correctly,  run the editWish.php file from the IDE. The index.php page opens, because no user has been transferred to the editWish.page through a session. </p>
+      
+   <h2 id="insert-new-wish">Inserting the New Wish to the Database</h2>
+      <p>After the user submits a new wish, the application needs to add the wish to the &quot;wishes&quot; database. To enable this functionality, add the following code to the application:</p>
+      <ul>
+        <li>Add two more auxiliary functions to the <tt>WishDB</tt> class in <tt>db.php</tt>. 
+        <ul><li>One function  adds a new record to the wishes table.</li><li> The other function  converts dates into the format that the MySQL databases server supports. </li></ul></li>
+        <li>Add code to <tt>editWish.php</tt> that will use the new auxilliary functions in <tt>WishDB</tt> to enter the new wish into the database.</li>
+      </ul>
+      <h3 id="add-insert-wish">Adding the  insert_wish Function to WishDB</h3>
+   <p>This function requires the wisher's id, a description of the new wish, and the due date of the wish as the input parameters and enters this data to the database in a new record. The function does not return any values.   </p>
+   <p>Open <tt>db.php </tt> and add the function <tt>insert_wish</tt> into the <tt>WishDB </tt>class:</p>
+   <p><b>For the MySQL database</b></p>
+ <pre class="examplecode">function insert_wish($wisherID, $description, $duedate){
+    $description = $this-&gt;real_escape_string($description);<br>    if ($this->format_date_for_sql($duedate)==null){<br>        $this->query("INSERT INTO wishes (wisher_id, description)" .<br>             " VALUES (" . $wisherID . ", '" . $description . "')");<br>    } else<br>    $this-&gt;query(&quot;INSERT INTO wishes (wisher_id, description, due_date)&quot; . <br>                       &quot; VALUES (&quot; . $wisherID . &quot;, '&quot; . $description . &quot;', &quot; <br>                       . $this-&gt;format_date_for_sql($duedate) . &quot;)&quot;);
+}</pre>
+    <p><b>For the Oracle database:</b></p>
+   <pre class="examplecode">function insert_wish($wisherID, $description, $duedate) {
+  $query = "INSERT INTO wishes (wisher_id, description, due_date) VALUES (:wisher_id_bv, :desc_bv, to_date(:due_date_bv, 'YYYY-MM-DD'))"; 
+  $stid = oci_parse($this->con, $query);
+  oci_bind_by_name($stid, ':wisher_id_bv', $wisherID);
+  oci_bind_by_name($stid, ':desc_bv', $description);
+  oci_bind_by_name($stid, ':due_date_bv', $this->format_date_for_sql($duedate));
+  oci_execute($stid);
+  oci_free_statement($stid);
+}</pre>
+<p>The code calls the function format_date_for_sql to convert the entered due date into a format that can be processed by the database server. Then the query INSERT INTO wishes (wisher_id, description, due_date) is executed to enter the new wish to the database.</p>
+<h3 id="add-format-date-for-sql">Adding the  format_date_for_sql Function to WishDB</h3>
+<p>Add the function <tt>format_date_for_sql</tt> to the <tt>WishDB</tt> class in <tt>db.php</tt>. The function requires a string with a date as the input parameter. The function returns a date in the format that can be processed by the  database server or <tt>null</tt> if the input string is empty.</p>
+<p class="notes"><b>Note:</b> The function in this example uses the PHP <tt>date_parse</tt> function. This function works only with English-language dates, such as December 25, 2010, and only Arabic numerals. A professional web site would use a date picker.</p>
+<strong>For the MySQL database:</strong>
+<pre class="examplecode">function format_date_for_sql($date){<br>    if ($date == &quot;&quot;)<br>        return null;<br>    else {<br>        $dateParts = date_parse($date);<br>        return $dateParts[&quot;year&quot;]*10000 + $dateParts[&quot;month&quot;]*100 + $dateParts[&quot;day&quot;];<br>   }<br>
+}</pre>
+<p><strong>For the Oracle database:</strong></p>
+<pre class="examplecode">function format_date_for_sql($date){
+    if ($date == "")
+        return null;
+    else {
+        $dateParts = date_parse($date);
+        return $dateParts['year']*10000 + '-' + $dateParts['month']*100 + '-' + $dateParts['day'];
+   }
+}</pre>
+<p>If the input string is empty, the code returns NULL. Otherwise, the internal <tt>date_parse</tt> function is called with the <tt>$date</tt> as the input parameter. The <tt>date_parse</tt> function returns an array that consists of three elements named <tt>$dateParts[&quot;year&quot;]</tt>, <tt>$dateParts[&quot;month&quot;]</tt>, and <tt>$dateParts[&quot;day&quot;]</tt>. The final output string is constructed of the elements of the <tt>$dateParts</tt> array.  </p>
+<p class="alert"><strong>Important:</strong> The <tt>date_parse</tt> function recognizes only English dates. For example, it parses &quot;February 2, 2016&quot; but not &quot;2 Unora, 2016&quot;.</p>
+<!--Note to translators: Please replace "2 Unora, 2016" with a date in your own language. -->
+<p class="notes"><strong>Note to Oracle Database users:</strong> The only format requirement is that the format of the date in the <tt>return $dateParts...</tt> statement matches the date format in the <tt>to_date</tt> SQL function in the <tt>insert_wish</tt> query.</p>
+<h3 id="validateAndEnterWishToDatabase">Entering the New Wish Record in the Database </h3>
+ <p>Now that you have developed the auxiliary functions, add code to validate the new wish data and enter the data to the database if it is valid. If the data is not valid, the code must reload the Add Wish form. If the data is invalid because no description has been entered but there is a due date, the due date is saved and redisplayed when the form reloads, thanks to code you <a href="#inputFormAfterunsuccessfulSave">developed earlier</a>.</p>
+     Enter the following code inside the top &lt;? php?&gt; block of <tt>editWish.php</tt>, below the session handling code:
+     <pre class="examplecode">require_once("Includes/db.php");
+    $wisherID = WishDB::getInstance()->get_wisher_id_by_name($_SESSION['user']);
+
+    $wishDescriptionIsEmpty = false;
+    if ($_SERVER['REQUEST_METHOD'] == "POST"){
+        if (array_key_exists("back", $_POST)) {
+           header('Location: editWishList.php' ); 
+           exit;
+        } else
+        if ($_POST['wish'] == &quot;&quot;) {
+            $wishDescriptionIsEmpty =  true;
+        } 
+		 else {
+           WishDB::getInstance()->insert_wish($wisherID, $_POST['wish'], $_POST['dueDate']);
+           header('Location: editWishList.php' );
+           exit;
+        }
+    }
+	</pre>
+	
+     <p>The code performs the following functions:</p>
+     <ul>
+       <li>Enables the use of the <tt>db.php</tt> file</li>
+       <li>Gets or creates an instance  of the class <tt>WishDB</tt> </li>
+       <li>Retrieves the id of the wisher who is attempting to add a wish by calling the function <tt>get_wisher_id_by_name</tt></li>
+       <li>Initializes the <tt>$wishDescriptionIsEmpty</tt> flag, which will be  used later for showing error messages.</li>
+       <li>Checks that the Request method is POST, which means that the data was submitted from the form for entering the wish data on the <tt>editWish.php</tt> page itself. </li>
+       <li>Checks whether the <tt>$_POST</tt> array contains an element with the  &quot;back&quot; key</li>
+     </ul>
+     <p>If the <tt>$_POST</tt> array  contains an element with the &quot;back&quot; key,  the Back to the List button was pressed before submitting the form. In this case the code redirects the user to the <tt>editWishList.php</tt> without saving any data that was entered in the fields and stops PHP processing. </p>
+     <p>If the $_POST array <em>does not</em> contain an element with the &quot;back&quot; key, the data was submitted by pressing the Save Changes button. In this case the code validates whether the wish description is filled in. The code does it by checking  whether the element with the &quot;wish&quot; key in the $_POST array is empty and, if the key is empty, changes the   $wishDescriptionIsEmpty flag to true. Note that with no further code executed in the PHP block, the Add Wish form reloads.</p>
+	  <p>If the Back to the List button was not pressed and the wish description is filled in, the code  
+	    calls the function <tt>insert_wish</tt> with the wisher's id, the description, and the due date for the wish as the input parameters. The code then redirects the user to the <tt>editWishList.php</tt> page and stops the PHP processing.</p>
+	
+	  <h3><a name="displayingErrorMessages"></a>Displaying Error Messages</h3>
+If the user attempts to save a wish but has not entered a description for it, an error message must be displayed.<br>
+      Enter the following &lt;? php?&gt; block inside the HTML input form, below the &quot;Describe your wish&quot; input field: 
+	  <pre class="examplecode">&lt;?php<br>  if ($wishDescriptionIsEmpty) echo &quot;Please enter description&lt;br/&gt;&quot;;<br>?&gt;</pre>
+	  The error message is displayed if the <tt>$wishDescriptionIsEmpty</tt> flag is true. The flag is processed during the input form validation.
+   <h2><a name="backToIndex" id="backToIndex"></a>Returning to the Front index.php Page </h2>
+      The user should be able to return to the front page of the application at any time by pressing a button. <br>
+To implement this functionality, enter the following HTML input form  in the <tt>editWishList.php</tt> file, before the closing &lt;/body&gt; tag:
+   <pre class="examplecode">&lt;form name=&quot;backToMainPage&quot; action=&quot;index.php&quot;&gt;<br>&lt;input type=&quot;submit&quot; value=&quot;Back To Main Page&quot;/&gt;<br>&lt;/form&gt;</pre>
+The form redirects the user to the front index.php page upon pressing the Back to Main Page button.
+<h2><a name="testingAddWishFunctionality"></a>Testing the Add Wish Functionality </h2>
+<ol>
+  <li>Run the application. On the <tt>index.php</tt> page, fill in the fields:
+    in the Username field, enter &quot;Tom&quot;, in the Password field, enter &quot;tomcat&quot;.<br>
+<img src="../../../images_www/articles/72/php/wish-list-lesson6/user-logon-to-edit-wish-list.png" alt="User Logs on to Edit Wish List" class="margin-around">  </li>
+  <li>Press the Edit My Wish List button. The <tt>editWishList.php</tt> page opens.
+    <br>
+  <img src="../../../images_www/articles/72/php/wish-list-lesson6/edit-wish-list-add-wish.png" alt="Edit Wish List with the Add button added" class="margin-around"></li>
+  <li>Press the Back to Main Page button. The <tt>index.php</tt> page opens. </li>
+  <li>Logon as Tom and press the Edit My Wish List button again. The <tt>editWishList.php</tt> page opens. </li>
+  <li>Press the Add Wish button. The <tt>editWish.php</tt> page opens. Fill in the form.<br>
+    <img src="../../../images_www/articles/72/php/wish-list-lesson6/new-wish.png" alt="The form for a new wish is filled in" class="margin-around"> <br>
+  Press the Back to the List button. The <tt>editWishList.php</tt> page opens but the entered wish is not added.</li>
+  <li>Press the Add Wish button again. The <tt>editWish.php</tt> page opens. Fill in the due date and leave the description empty. Press the Save Changes button. The <tt>editWish.php</tt> page displays the input form with an error message and filled in due date. </li>
+  <li>Press the Add Wish button again. The <tt>editWish.php</tt> page opens. Fill in the form and press the Save Changes button. The <tt>editWishList.php</tt> page shows an updated list of wishes. 
+  <br>
+  <img src="../../../images_www/articles/72/php/wish-list-lesson6/edit-wish-list-updated.png" alt="The new wish is added to the Wish List" class="margin-around"></li>
+</ol>
+<h2><a name="lessonResultSourceCode"></a>Application Source Code after the Current Lesson Is Completed </h2>
+<p>MySQL users: Click <a target="_blank" href="https://netbeans.org/files/documents/4/1932/lesson6.zip"> here</a> to download the source code that reflects the project state after the lesson is completed.</p>
+<p>Oracle Database users: Click <a target="_blank" href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson6.zip"> here</a> to download the source code that reflects the project state after the lesson is completed.</p>
+<h2><a name="nextSteps"></a>Next Steps</h2>
+            <p><a href="wish-list-lesson5.html">&lt;&lt; Previous lesson</a><br>
+              <br>
+                          <a href="wish-list-lesson7.html">Next lesson >></a><br>
+              <br>
+                        <a href="wish-list-tutorial-main-page.html">Back to the Tutorial main page</a></p>
+            <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%206:%20Writing%20New%20DB%20Entry">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;" >
+<p>To send comments and suggestions, get support, and keep informed on the latest
+  developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+  the users@php.netbeans.org mailing list</a>.
+   <p><a href="wish-list-tutorial-main-page.html"></a>
+   <p><a href="../../trails/php.html">Back to the PHP Learning Trail</a></p>
+</body>
+</html>

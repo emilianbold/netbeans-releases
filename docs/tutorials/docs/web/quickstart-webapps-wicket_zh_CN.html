@@ -1,0 +1,717 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>       
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">        
+        <meta name="description" content="A short introduction to the Wicket web framework
+              in NetBeans IDE">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Wicket, wereplacedb frameworks, open source">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+        <title>Wicket Web 框架简介 - NetBeans IDE 教程</title>
+    </head>
+
+    <body>
+        <h1>Wicket Web 框架简介</h1>
+
+        <p>本文档逐步向您介绍创建可重用组件并将其组合到 Web 应用程序的基础知识。每个组件均由一个 Java 类和一个 HTML 文件组成。允许您以这种方式开发应用程序的框架称为 Wicket。除了基于组件的方法，Wicket 的一个显著特征就是不需要 XML 配置文件。使用 Java 类进行应用程序范围的设置（例如主页标识），而不使用 XML 配置文件。 <p>在 Java 类中创建 Web 应用程序中的每个窗口部件并将其呈现在 HTML 页中。Java 类和 HTML 页必须具有相同的名称且存在于相同的源结构中。它们通过 Wicket 标识符彼此链接。将向您演示 IDE 如何支持 Wicket 应用程序开发，以便您可以快速有效地创建可重用组件，这样您无需执行太多操作即可生成外观一致的 Web 应用程序。</p>
+
+        <p><strong>目录</strong></p>
+
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+        <ul class="toc">
+            <li><a href="#setup">设置环境</a>
+                <ul>
+                    <li><a href="#creating">创建 Wicket 应用程序的源代码结构</a>
+                        <ul>
+                            <li><a href="#create-1">方案 1：从头开始创建基于 Ant 的 Wicket 应用程序</a></li>
+                            <li><a href="#create-2">方案 2：从头开始创建基于 Maven 的 Wicket 应用程序</a></li>
+                            <li><a href="#create-3">方案 3：根据原型创建基于 Maven 的 Wicket 应用程序</a></li>
+                            <li><a href="#create-4">方案 4：将 Wicket 支持添加到现有应用程序中</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#libraries">提供对 Wicket 的替代版本的支持</a></li>
+                    <li><a href="#examining">检查生成的 Wicket 应用程序的源代码结构</a></li>
+                </ul>
+            </li>
+            <li><a href="#features">使用 Wicket 功能</a>
+                <ul>
+                    <li><a href="#widget">添加窗口部件</a>
+                    <li><a href="#component">添加可重用组件</a></li>
+                    <li><a href="#ajax">添加 AJAX 功能</a></li>                      
+                </ul>
+            </li>  
+            <li><a href="#next">后续步骤</a></li>
+            <li><a href="#seeAlso">另请参见</a></li>
+        </ul>
+
+        <p><strong>要学习本教程，您需要具备以下软件和资源。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE</td>
+                </tr>                
+                <tr>
+                    <td class="tbltd1">Java 开发工具包 (JDK)</td>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">版本 7</a> 或更高版本</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">NetBeans IDE 的 Wicket 插件</td>
+                    <td class="tbltd1"><a href="http://plugins.netbeans.org/plugin/3586/wicket-support">NetBeans Wicket 插件页</a></td>
+                </tr>               
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition <br><em class="indent margin-around">或</em> <br>Tomcat Servlet 容器</td>
+                    <td class="tbltd1">3.1.x 或更高版本 <br><em class="margin-around indent">和</em> <br>版本 7.x 或更高版本</td>
+                </tr>                                 
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注：</strong></p>
+
+        <ul>
+            <li>NetBeans 的 Wicket 支持插件包含以下模块：
+
+                <ul>
+                    <li><b>org-netbeans-modules-web-wicket.nbm。</b>提供在本教程中使用的 Wicket 特定的功能。</li>
+                    <li><b>org-netbeans-modules-wicket-templates.nbm。</b>提供用于创建典型 Wicket 工件（例如，页面和面板）的 Wicket 文件级别模板。</li>
+                    <li><b>org-netbeans-modules-wicket-library.nbm。</b>提供 Wicket JAR，并将其安装在 IDE 的库管理器中。因此，您无需从 Wicket 站点下载 Wicket 发行版本，因为该插件提供了您需要的所有内容。</li>
+                </ul></li>
+
+            <li>要将 Wicket 支持插件安装到 IDE，请转到 "Plugin Manager"（插件管理器）（从主菜单中选择 "Tools"（工具）> "Plugins"（插件）），然后在 "Downloaded"（已下载）标签下安装该插件。有关如何将框架插件安装到 IDE 的更详细说明，请参见<a href="framework-adding-support.html">添加对 Web 框架的支持</a>。</li>
+
+
+            <li>      
+                有关 Wicket 的更多信息，请访问 <a href="http://wicket.sourceforge.net/">http://wicket.sourceforge.net/</a>。有关 NetBeans IDE 中的 Wicket 支持的开发页，请访问 <a href="http://java.net/projects/NbWicketSupport">http://java.net/projects/NbWicketSupport</a>。如果您熟悉 Wicket，欢迎您为 NetBeans IDE 的 Wicket 插件贡献代码。</li>            
+
+        </ul>   
+
+        <a name="setup"></a>
+        <h2>设置环境</h2>
+
+        <p>在开始编写 Wicket 应用程序之前，您必须确保具有所有必需的软件并且您的项目设置正确。如上所述，安装 NetBeans IDE 的 Wicket 支持插件之后，您可以通过一个向导设置 Wicket 应用程序所需的所有基本文件。</p>
+
+        <div class="indent">
+
+            <a name="creating"></a>
+            <h3>创建 Wicket 应用程序的源代码结构</h3>
+
+            <p>应用程序的源代码结构必须包含 Wicket JAR 文件、<tt>web.xml</tt> 文件中的 Wicket servlet 注册，以及一些标准工件，例如应用程序类和主页。由于我们使用的是 IDE，因此应该不需要手动创建所有这些文件。而我们可以通过向导来执行操作。</p>
+
+            <p>根据您的需求，选择以下某个适当的方案：</p>
+
+            <ul>
+                <li><a href="#create-1">方案 1：从头开始创建基于 Ant 的 Wicket 应用程序</a></li>
+                <li><a href="#create-2">方案 2：从头开始创建基于 Maven 的 Wicket 应用程序</a></li>
+                <li><a href="#create-3">方案 3：根据原型创建基于 Maven 的 Wicket 应用程序</a></li>
+                <li><a href="#create-4">方案 4：将 Wicket 支持添加到现有应用程序中</a></li>
+            </ul>
+
+            <div class="indent">
+
+                <h4><a name="create-1"></a>方案 1：从头开始创建基于 Ant 的 Wicket 应用程序</h4>
+
+                <p>在 IDE 中创建新的 Web 应用程序时，Web 应用程序向导的最终面板在 Wicket 应用程序的上下文中非常有用。</p>
+
+                <ol>
+                    <li>选择 "File"（文件）> "New Project"（新建项目）。在 "Categories"（类别）下，选择 "Web"。在 "Projects"（项目）下，选择 "Web Application"（Web 应用程序）。单击 "Next"（下一步）。</li>
+                    <li>在 "Name and Location"（名称和位置）面板的 "Project Name"（项目名称）中，键入 <tt>MyFirstWicketApp</tt>。将项目位置更改为计算机上的任意目录。单击 "Next"（下一步）。
+                    <li>保留所有设置不变。您也可以根据需要更改它们。Wicket 支持任何版本的 Java EE。可以将 Wicket 应用程序部署到任何服务器。单击 "Next"（下一步）。
+                    <li><p>在 "Frameworks"（框架）面板中，选择 "Wicket"，如下所示：</p>
+
+                        <p><p class="align-left"><img alt="框架 1" src="https://blogs.oracle.com/geertjan_images/resource/wicket-160-nb.png">
+
+                        <p class="notes"><b>注：</b>根据安装到 IDE 的模块不同，您可能会在以上屏幕快照所示的 "Frameworks"（框架）列表中看到更多或更少的项。
+
+                        <p>在以上所示的面板中，保留所有默认值不变。以上面板提供以下字段：
+
+                        <p><ul>
+                            <li><b>Wicket Filter Name</b>（Wicket 过滤器名称）。显示将在 <tt>web.xml</tt> 文件中定义的过滤器的名称。
+                            <li><b>Wicket URL Pattern</b>（Wicket URL 模式）。将相对 URL 模式添加到 <tt>web.xml</tt> 文件中。
+                            <li><b>Wicket Application Class</b>（Wicket 应用程序类）。指定设置应用程序范围设置（例如主页）的类的名称。
+                            <li><b>Wicket Home Page</b>（Wicket 主页）。指定将包含称为 <tt>xxx.java</tt> 和 <tt>xxx.html</tt> 的文件的主页名称。
+                            <li><b>Main Package</b>（主包）。IDE 将生成的所有工件放入的 Java 包。
+                            <li><b>Version</b>（版本）。Wicket 版本。以上 "Version"（版本）下拉列表中将列出库管理器中名称以 "Wicket" 开头的所有库。默认情况下，唯一列出的版本是 1.6.0，因为这是插件所提供的版本。
+                        </ul>
+                    <li>单击 "Finish"（完成）。
+
+                </ol>
+
+                <p>IDE 将创建 <tt>MyFirstWicketApp </tt> 项目。此项目包含所有源代码和项目元数据，例如项目的 Ant 构建脚本。此项目在 IDE 中打开。可以在 "Projects"（项目）窗口（Ctrl-1 组合键）中查看其逻辑结构：
+
+                <p><p class="align-left"><img alt="初始 &amp;quot;Projects&amp;quot;（项目）窗口。" src="https://blogs.oracle.com/geertjan_images/resource/wicket-160-nb-2.png">
+
+                <h4><a name="create-2"></a>方案 2：从头开始创建基于 Maven 的 Wicket 应用程序</h4>
+
+                <p>当您已有一个基于 Ant 的应用程序时，IDE 可帮助您添加 Wicket 支持。</p>
+
+                <ol>
+                    <li>选择 "File"（文件）> "New Project"（新建项目）。在 "Categories"（类别）下，选择 "Maven"。在 "Projects"（项目）下，选择 "Web Application"（Web 应用程序）。
+                        <p><p class="align-left"><img alt="超链接的 HTML 端。" src="../../../images_www/articles/74/web/wicket/maven-1.png">
+                        <p>单击 "Next"（下一步）。</p>    
+                    </li>
+                    <li>在 "Name and Location"（名称和位置）面板的 "Project Name"（项目名称）中，键入 <tt>MyFirstWicketApp</tt>。根据您的需求更改 "Project Location"（项目位置）和默认 Maven 设置。
+                        <p><p class="align-left"><img alt="超链接的 HTML 端。" src="../../../images_www/articles/74/web/wicket/maven-3.png">
+                        <p>单击 "Next"（下一步）。</p>    
+                    </li>
+                    <li>根据您的需求选择适当的服务器，并选择 "Java EE 6 Web" 作为 "Java EE Version"（Java EE 版本）设置。
+                        <p><p class="align-left"><img alt="超链接的 HTML 端。" src="../../../images_www/articles/74/web/wicket/maven-4.png">
+                        <p>单击 "Finish"（完成）。IDE 将创建下面显示的源代码结构：</p>    
+                        <p><p class="align-left"><img alt="超链接的 HTML 端。" src="../../../images_www/articles/74/web/wicket/maven-5.png">
+                    </li>
+                    <li><p>因为我们已添加对 Java EE 6 的支持，所以上一步中未创建 <tt>web.xml</tt> 文件。但是，Wicket 要求在 <tt>web.xml</tt> 文件中注册 Wicket 应用程序过滤器。因此，我们将在应用程序中添加新的 <tt>web.xml</tt> 文件，然后继续。</p>
+                        <p>右键单击应用程序，选择 "New"（新建）> "Other"（其他），然后选择 "Web" > "Standard Deployment Descriptor"（标准部署描述符）(web.xml)。单击 "Next"（下一步），然后单击 "Finish"（完成）。</p>
+                    </li>
+                    <li><p>此时我们即可将 Wicket 支持添加到应用程序中。右键单击项目节点，然后选择 "Properties"（属性）。在 "Project Properties"（项目属性）对话框中，选择 "Frameworks"（框架），然后单击 "Wicket"。使用前几部分中的描述在此对话框的 "Wicket Configuration"（Wicket 配置）部分中填写详细信息。单击 "OK"（确定）。</p>
+                        <p>IDE 将创建入门所需的所有 Wicket 文件：</p>
+                        <p><p class="align-left"><img alt="超链接的 HTML 端。" src="../../../images_www/articles/74/web/wicket/maven-6.png">
+                    </li>
+                </ol>
+
+                <h4><a name="create-3"></a>方案 3：根据原型创建基于 Maven 的 Wicket 应用程序</h4>
+
+                <p>原型存在于 Maven 资源库中，用于设置 Wicket 应用程序。</p>
+
+                <ol>
+                    <li><p>选择 "File"（文件）> "New Project"（新建项目）。在 "Categories"（类别）下，选择 "Maven"。在 "Projects"（项目）下，选择 "Project from Archetype"（基于原型的项目）。</p>
+                        <p><p class="align-left"><img alt="超链接的 HTML 端。" src="../../../images_www/articles/74/web/wicket/maven-7.png">
+                        <p>单击 "Next"（下一步）。</p>
+                    </li>
+                    <li><p>在 "Search"（搜索）字段中，键入 "wicket"，然后选择要使用的原型。</p>
+                        <p><p class="align-left"><img alt="超链接的 HTML 端。" src="../../../images_www/articles/74/web/wicket/maven-8.png">
+                        <p>根据您的需求使用适当的值完成向导。单击 "Finish"（完成）。</p>
+                    </li>
+                </ol>
+
+                <p>IDE 将向根据原型创建的应用程序中添加 Wicket 支持。</p>
+
+                <h4><a name="create-4"></a>方案 4：将 Wicket 支持添加到现有应用程序中</h4>
+
+                <p>当您已有一个应用程序（无论是基于 Ant 还是基于 Maven 创建的）时，IDE 可帮助您添加 Wicket 支持。</p>
+
+                <ol>
+                    <li>右键单击应用程序，然后选择 "Properties"（属性）。</li>
+                    <li>在 "Project Properties"（项目属性）对话框中，选择 "Frameworks"（框架）面板，然后单击 "Add"（添加）。然后选择 "Wicket"。单击 "OK"（确定）。</li>
+                    <li>使用上一部分中的描述在 "Frameworks"（框架）面板中填写 "Wicket Configuration"（Wicket 配置）。</li>
+                    <li>单击确定以进行确认。</li>
+                </ol>
+
+                <p>IDE 将向现有应用程序中添加 Wicket 支持。</p>
+
+            </div>
+
+            <p>在下一部分，我们将详细了解生成的每个文件。
+
+            <h3><a name="libraries"></a>提供对 Wicket 的替代版本的支持</h3>
+
+            <p>NetBeans Wicket 插件中包含的 Wicket 版本可能不是您需要的版本。执行以下步骤以注册和使用 Wicket 的替代版本。</p>
+
+            <ol>
+                <li><p>转到 "Tools"（工具）| "Ant Libraries"（Ant 库）。请注意，NetBeans Wicket 插件所注册的 Wicket JAR 可用：</p>
+                    <p><p class="align-left"><img alt="Ant 库" src="../../../images_www/articles/74/web/wicket/maven-9.png">
+                </li>
+                <li>在上面显示的对话框中，单击 "New Library"（新建库），使用以 "Wicket" 开头的名称创建一个新库。将 JAR 添加到该库中，即，将 Wicket 的首选版本的 JAR 注册到您已创建的库中。</li>
+                <li><p>当您接下来创建新的 Web 应用程序时，或将 Wicket 支持添加到现有应用程序中时，"Frameworks"（框架）面板将显示新注册的库（如果其名称以 "Wicket" 一词开头）：</p>
+                    <p><p class="align-left"><img alt="Ant 库" src="../../../images_www/articles/74/web/wicket/maven-91.png">
+                    <p>完成向导后，在所选库中注册的 JAR 将放在应用程序的类路径上。</p>
+                </li>
+            </ol>
+
+            <p class="notes"><b>注：</b>以上方法适用于基于 Ant 的 Wicket 应用程序。如果要在基于 Maven 的应用程序中使用 Wicket 的替代版本，请更改相关的 POM 文件。</p>
+            <h3><a name="examining"></a>检查生成的 Wicket 应用程序的源代码结构</h3>
+
+            <p>IDE 的 Web 应用程序向导已经为我们创建了许多文件。在此可查看这些文件并了解这些文件在 Wicket 开发的上下文内是如何彼此相关的。</p>
+
+            <ol>    
+                <li>让我们开始了解生成的文件。<p></p><p></p><p></p>
+                    <ul>
+                        <li><b>Web Descriptor</b>（Web 描述符）。首先查看 <tt>web.xml</tt> 文件，该文件是符合 Servlet 规范的所有 Web 应用程序通用的一般部署描述符。展开 <tt>WEB-INF</tt> 文件夹或 "Configuration Files"（配置文件）文件夹，在原始 XML 视图中打开文件，然后查看 Wicket 过滤器的定义：
+
+                            <p><pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"&gt;
+    &lt;filter&gt;
+        &lt;filter-name&gt;WicketApplication&lt;/filter-name&gt;
+        &lt;filter-class&gt;org.apache.wicket.protocol.http.WicketFilter&lt;/filter-class&gt;
+        &lt;init-param&gt;
+            &lt;param-name&gt;applicationClassName&lt;/param-name&gt;
+            &lt;param-value&gt;com.myapp.wicket.Application&lt;/param-value&gt;
+        &lt;/init-param&gt;
+    &lt;/filter&gt;
+    &lt;filter-mapping&gt;
+        &lt;filter-name&gt;WicketApplication&lt;/filter-name&gt;
+        &lt;url-pattern&gt;/wicket/*&lt;/url-pattern&gt;
+    &lt;/filter-mapping&gt;
+    &lt;session-config&gt;
+        &lt;session-timeout&gt;
+            30
+        &lt;/session-timeout&gt;
+    &lt;/session-config&gt;
+    &lt;welcome-file-list&gt;
+        &lt;welcome-file/&gt;
+    &lt;/welcome-file-list&gt;
+&lt;/web-app&gt;</pre>        
+
+                            <p class="notes"><b>注：</b>应用程序类名的值设置为 <tt>com.myapp.wicket.Application</tt>。在下一步中，我们将打开应用程序类文件并检查其内容。
+
+                        <li><b>Wicket Application Class</b>（Wicket 应用程序类）。打开 "Source Packages"（源包）文件夹中的 <tt>com.myapp.wicket</tt> 包，然后打开 <tt>Application.java</tt> 文件。此文件如下所示：
+
+                            <p><pre class="examplecode">package com.myapp.wicket;           
+
+import org.apache.wicket.protocol.http.WebApplication;
+
+public class Application extends WebApplication {
+
+    public Application() {
+    }
+
+    @Override
+    public Class getHomePage() {
+        return HomePage.class;
+    }
+
+}</pre>
+
+                            <p>这是提供应用程序范围设置的 Java 文件，可比较于 Struts 框架中的 <tt>struts-config.xml</tt> 和 JSF 框架中的 <tt>faces-config.xml</tt>。注意 <tt>getHomePage()</tt> 方法的定义。此方法是应用程序范围类的最低要求。它指定部署应用程序时将显示的第一页（主页）。请注意，返回了 <tt>HomePage.class</tt>。在下一步中，我们将打开 <tt>HomePage.java</tt> 文件并检查其内容。
+
+                        <li><b>Wicket Home Page</b>（Wicket 主页）。打开 <tt>HomePage.java</tt>。此文件如下所示：
+
+                            <p><pre class="examplecode">package com.myapp.wicket;           
+
+public class HomePage extends BasePage {
+
+    public HomePage() {
+        add(new Label("message", "Hello, World!"));
+    }
+
+}</pre>
+
+                            <p>此文件将向主页中添加标签。呈现在此文件中创建的 Wicket 窗口部件是在具有相同源代码结构中的相同名称的文件中完成的，该文件只能是 <tt>HomePage.html</tt>，目前看起来如下所示：
+
+                            <p><pre class="examplecode">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en"&gt; 
+    &lt;head&gt; 
+        &lt;wicket:head&gt; 
+            &lt;title&gt;Wicket Example&lt;/title&gt; 
+        &lt;/wicket:head&gt; 
+    &lt;/head&gt; 
+    &lt;body&gt; 
+        &lt;wicket:extend&gt; 
+            &lt;h1 wicket:id="message"&gt;This gets replaced&lt;/h1&gt;
+        &lt;/wicket:extend&gt; 
+    &lt;/body&gt; 
+&lt;/html&gt;</pre>    
+
+                            <p>请注意，我们在 <tt>HomePage.java</tt> 中扩展 <tt>BasePage</tt>。在 <tt>HomePage.html</tt> 中具有一个 <tt>wicket:id</tt> 属性，该属性指示这是 Java 文件在某位置创建的某内容的占位符。另外，我们还引用了 IDE 生成的 CSS 样式表。您可以在 "Projects"（项目）窗口的 "Web Pages"（Web 页）文件夹中找到该样式表。在下一步中，我们将打开 <tt>BasePage</tt> 并检查其内容。</p></li>
+
+                        <li><b>Base Page</b>（基本页）。打开 <tt>BasePage.java</tt>。内容如下所示：
+
+                            <p><pre class="examplecode">package com.myapp.wicket;           
+
+import org.apache.wicket.markup.html.WebPage;
+
+public abstract class BasePage extends WebPage {
+
+    public BasePage() { 
+        super(); 
+        add(new HeaderPanel("headerpanel", "Welcome To Wicket")); 
+        add(new FooterPanel("footerpanel", "Powered by Wicket and the NetBeans Wicket Plugin"));
+    } 
+
+}</pre>
+
+                            <p>这是我们希望所有 Web 页扩展的类。每个扩展 <tt>BasePage</tt> 的类都将继承 <tt>HeaderPanel</tt> 和 <tt>FooterPanel</tt> 的实例。这可确保所有 Web 页都将具有相同的页眉和页脚。基本页的 HTML 端如下所示：</p>
+
+                            <p><pre class="examplecode">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en"&gt; 
+    &lt;head&gt; 
+        &lt;wicket:head&gt; 
+            &lt;wicket:link&gt; 
+                &lt;link rel="stylesheet" type="text/css" href="style.css"/&gt; 
+            &lt;/wicket:link&gt; 
+        &lt;/wicket:head&gt; 
+    &lt;/head&gt; 
+    &lt;body&gt; 
+        &lt;header wicket:id="headerpanel" /&gt;
+        &lt;section class="content_container"&gt; 
+            &lt;wicket:child/&gt; 
+        &lt;/section&gt; 
+        &lt;footer wicket:id="footerpanel" /&gt; 
+    &lt;/body&gt; 
+&lt;/html&gt;</pre>
+
+
+                            <p>在下一步中，我们将打开 <tt>HeaderPanel.java</tt> 并检查其内容。
+
+
+                        <li><b>Header Panel</b>（页眉面板）。打开 <tt>HeaderPanel.java</tt>。内容如下所示：    
+
+                            <p><pre class="examplecode">package com.myapp.wicket;           
+
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
+
+public class HeaderPanel extends Panel {
+
+    public HeaderPanel(String componentName, String exampleTitle)
+    {
+        super(componentName);
+        <b>add(new Label("exampleTitle", exampleTitle));</b>
+    }
+
+}</pre>
+
+
+                            <p>请注意上面粗体显示的行。在此我们创建一个 Wicket 标签窗口部件。HeaderPanel 是可重用组件。这是创建了窗口部件的 Java 端。接下来，我们将查看预期呈现 Wicket 标签窗口部件的 HTML 端。在下一步中，我们将打开 <tt>HeaderPanel.html</tt> 文件并检查其内容。
+
+                            <p>现在，将第二个参数更改为 "My Very First Component Based Application"，以使标签的定义此时如下所示：
+
+
+                            <p><pre class="examplecode">add(new Label("exampleTitle", "My Very First Component Based Application"));</pre>
+
+                            <p>打开 <tt>HeaderPanel.html</tt>。请注意，它的名称与我们刚刚查看的 Java 文件的名称相同。在相同的包结构内找到此文件。内容如下所示：
+
+                            <p><pre class="examplecode">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en"&gt; 
+    &lt;head&gt;&lt;title&gt;Wicket Example&lt;/title&gt;&lt;/head&gt;
+    &lt;body&gt;
+        &lt;wicket:panel&gt;
+            &lt;h1&gt;Wicket Example&lt;/h1&gt;
+            &lt;p id="titleblock"&gt;
+                &lt;b&gt;&lt;font size="+1"&gt;Start of &lt;span wicket:id="exampleTitle"&gt;Example Title Goes Here&lt;/span&gt;&lt;/font&gt;&lt;/b&gt;
+            &lt;/p&gt;
+        &lt;/wicket:panel&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+                            <p>请注意上面粗体显示的行。这是您指定应在 Web 页 HTML 端呈现窗口部件的位置的方式。按住 Ctrl 键并将鼠标移到 <tt>span</tt> 标记中的 <tt>wicket:id</tt> 属性值之上。请注意，此值将转变为超链接：
+
+                            <p><p class="align-left"><img alt="超链接的 HTML 端。" src="../../../images_www/articles/74/web/wicket/hyperlink-1.png">
+
+                            <p>单击该超链接，此时注意将打开 Java 端的 Web 页。
+
+                            <p>现在，单击源代码编辑器顶部的左箭头以返回到 HTML 页：
+
+                            <p><p class="align-left"><img alt="超链接的 Java 端。" border="1" src="../../../images_www/articles/74/web/wicket/hyperlink-2.png">
+
+
+                            <p>通过这种方式，可以在 Wicket 组件的两端之间快速有效地导航。
+                        <li><b>Footer Panel</b>（页脚面板）。页脚面板的结构与页眉面板相同，如上所示。</li>
+                    </ul></li>
+                <li><p>右键单击项目并运行该项目。IDE 将编译应用程序，创建 WAR 文件，将该文件发送到部署服务器，打开 IDE 的默认浏览器，并显示应用程序：</p>
+
+
+                    <p><p class="align-left"><img alt="首次部署。" border="1" src="../../../images_www/articles/74/web/wicket/deploy-1.png">
+                    <p class="notes"><b>注：</b>确保将 "/wicket" 附加到 URL（如上所示），以便将 URL 映射到 <tt>web.xml</tt> 文件中注册的 Wicket 过滤器。</p>
+
+            </ol>
+
+
+        </div>
+        <br />
+        <!-- ===================================================================================== -->
+
+        <h2><a name="features"></a>使用 Wicket 功能</h2>
+
+        <p>在下面各个部分，您将了解三个关键的 Wicket 功能以及 NetBeans IDE 如何通过 NetBeans Wicket 插件支持这些功能：</p>
+
+        <ul>
+            <li><a href="#widget">窗口部件</a></li>
+            <li><a href="#component">可重用组件</a></li>
+            <li><a href="#ajax">AJAX 支持</a></li>
+        </ul>
+
+        <p>下面各个部分还向您介绍了 NetBeans Wicket 插件提供的各种支持的功能。</p>
+
+        <div class="indent">
+
+
+            <h3><a name="widget"></a>添加窗口部件</h3>
+
+
+            <p>在此部分，我们将在 Wicket 中创建第一个窗口部件。就像 Wicket 中的其他大多数工件一样，窗口部件具有一个 Java 端和一个 HTML 端。在 Java 端创建窗口部件。在 HTML 端呈现窗口部件。如上所示，可通过超链接在两端之间导航。
+            <ol>
+
+                <li><p>打开 <tt>HomePage.html</tt>。如果 "Palette"（组件面板）未自动打开，请通过 "Window"（窗口）> "Palette"（组件面板）（Ctrl-Shift-8 组合键）将其打开。</p>
+                    <p><p class="align-left"><img alt="超链接的 Java 端。" border="1" src="../../../images_www/articles/74/web/wicket/widget-2.png">
+                </li>
+                <li><p>在 HTML 文件中的 H1 元素下方添加一行之后，将 "Label"（标签）项从 "Palette"（组件面板）拖放到 H1 元素下方。您会看到下面的对话框：</p>
+                    <p><p class="align-left"><img alt="超链接的 Java 端。" src="../../../images_www/articles/74/web/wicket/widget-3.png">
+                    <p><p>将此对话框中的值更改为以下值：</p>
+                    <p><p class="align-left"><img alt="超链接的 Java 端。" src="../../../images_www/articles/74/web/wicket/widget-4.png">
+                    <p><p>单击 "OK"（确定）。请注意，下面粗体显示的标记已添加到文件中：</p>
+
+                    <p><pre class="examplecode">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en"&gt; 
+    &lt;head&gt; 
+        &lt;wicket:head&gt; 
+            &lt;title&gt;Wicket Example&lt;/title&gt; 
+        &lt;/wicket:head&gt; 
+    &lt;/head&gt; 
+    &lt;body&gt; 
+        &lt;wicket:extend&gt; 
+            &lt;h1 wicket:id="message"&gt;This gets replaced&lt;/h1&gt;
+            <b>&lt;span wicket:id="message1"&gt;This gets replaced&lt;/span&gt;</b>
+        &lt;/wicket:extend&gt; 
+    &lt;/body&gt; 
+&lt;/html&gt;</pre> 
+                    <p>现在，您即可使用 H3 标记等为新添加的窗口部件添加样式：</p>
+                    
+<pre class="examplecode">&lt;h3 wicket:id="message1">This gets replaced&lt;/h3&gt;</pre> 
+
+                    <p>接下来，打开 <tt>HomePage.java</tt>，注意添加了一个标签，该标签具有 HTML 文件中的相同标识符（更改内容以<strong>粗体</strong>显示）：
+
+                    <pre class="examplecode">public class HomePage extends BasePage {
+
+    public HomePage() {
+        add(new Label("message", "Hello, World!"));
+        <b>add(new Label("message1", "Hello again, World!"));</b>
+    }
+
+}</pre>
+                </li>
+
+
+                <li><p>保存文件。刷新浏览器后，您将会看到在 <tt>HomePage.html</tt> 文件中呈现的 Wicket 标签：</p>
+
+                    <p><p><img alt="组件面板。" border="1" src="../../../images_www/articles/74/web/wicket/deploy-2.png">
+
+            </ol>
+
+            <p>您可以创建占位符（就像在上面的 <tt>HomePage.html</tt> 文件中创建的标记一样），然后将 HTML 文件传递给 Web 设计者。当 Web 设计者设计 Web 页时，您可以在 Java 端完全独立地创建窗口部件。由于 HTML 标记未嵌入到 Java 文件中，因此您和 Web 设计者可以实现 Wicket 中心焦点的“关注分离”。</p>
+
+            <p class="tips">打开 "Navigator"（导航器）（"Window"（窗口）> "Navigating"（导航）> "Navigator"（导航器）），同时在编辑器中选定以上 HTML 文件，然后您即可查看导航器 "Wicket Tags"（Wicket 标记）列表中的标记概览：</p>
+
+            <p><img alt="wicket 导航器" border="1" src="../../../images_www/articles/74/web/wicket/wicket-navigator.png">
+
+            <p class="tips">如果匹配的 HTML 页中不存在匹配的标记，您将会在 Java 文件中看到错误消息：
+
+            <p><img alt="通过单击左旁注中的电灯泡图标显示的标签 import 语句" src="../../../images_www/articles/74/web/wicket/widget-1.png" style="border:1px solid">
+            </p>
+
+            <!-- ===================================================================================== -->
+
+            <h3><a name="component"></a>添加可重用组件</h3>
+
+            <p>“可重用组件”概念是 Wicket 的优势之一。在此部分，我们将使用向导生成一个面板，该面板再次具有 Java 端和 HTML 端。我们将创建该面板，以便在 Web 页上重用我们具有的标帜，这样该标帜就会在 Web 站点之间保持一致。我们会看到将面板添加到 Web 页中是多么容易。
+
+            <ol>
+                <li><p>右键单击 <tt>com.myapp.wicket</tt> 包节点，然后选择 "New"（新建）> "Other"（其他）。在 "Categories"（类别）下，选择 "Web"。在 "File Types"（文件类型）下，注意以下模板：</p>
+
+                    <p><p><img alt="文件模板" src="../../../images_www/articles/74/web/wicket/panel-1.png"></p>
+
+                    <p>选择 "Wicket Panel"（Wicket 面板）并单击 "Next"（下一步）。</p>
+
+
+                <li>在 "File Name"（文件名）中键入 <tt>BannerPanel</tt>。您现在应该看到下面的屏幕：
+
+                    <p><p><img alt="文件模板" src="../../../images_www/articles/74/web/wicket/panel-2.png">
+
+                    <p>单击 "Finish"（完成）。</p>
+
+                    <p>请注意，我们的包中现在包含 <tt>BannerPanel.html</tt> 和 <tt>BannerPanel.java</tt> 这两个新文件。
+
+
+                <li>打开 <tt>BannerPanel.html</tt>，注意此文件的内容如下：
+
+                    <p><pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns:wicket&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/&gt;
+        &lt;title&gt;BannerPanel&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;wicket:panel&gt;
+            &lt;!-- TODO - add components here, ala
+            
+            &lt;span wicket:id="title"&gt;title here&lt;/span&gt;
+            
+            --&gt;
+        &lt;/wicket:panel&gt;
+    &lt;/body&gt;
+&lt;/html</pre>    
+
+                    <p>在 <tt>wicket:panel</tt> 标记之间找到 Wicket 占位符。删除 SPAN 标记上方和下方的行，以便不再注释掉带有 SPAN 标记的行。按住 Ctrl 键并将鼠标移到 Wicket ID 值上方，然后单击出现的超链接。<tt>BannerPanel.java</tt> 文件将打开：
+
+                    <p><pre class="examplecode">package com.myapp.wicket;
+
+import org.apache.wicket.markup.html.panel.Panel;
+
+public final class BannerPanel extends Panel {
+    BannerPanel(String id) {
+        super (id);
+    }
+}</pre>
+
+                    <p>如之前在 <tt>HomePage.java</tt> 文件中所做的那样，添加下面粗体显示的标签：
+
+                    <p><pre class="examplecode">package com.myapp.wicket;
+
+<b>import org.apache.wicket.markup.html.basic.Label;</b>
+import org.apache.wicket.markup.html.panel.Panel;
+
+public final class BannerPanel extends Panel {
+    BannerPanel(String id) {
+        super (id);
+        <b>add(new Label("title","I am a reusable component!"));</b>
+    }
+}</pre>
+
+                <li>我们的面板虽然简单，但实际上已经完整。将该面板添加到主页中。打开 <tt>HomePage.java</tt>，然后通过在构造函数结尾添加以下行来创建 BannerPanel 的新实例：
+
+                    <p><pre class="examplecode">add(new BannerPanel("bannerPanel"));</pre>
+
+                <li>接下来，我们需要呈现面板。打开 <tt>HomePage.html</tt>，然后在结束的 BODY 标记上方添加占位符标记，并确保使用 Java 文件中使用的相同 Wicket 标识符：
+
+                    <p><pre class="examplecode">&lt;span wicket:id='bannerPanel'/&gt;</pre>  
+
+                <li><p>重新运行项目。请注意，面板的显示位置完全如 HTML 文件指定的：</p>
+
+                    <p class="align-left"><p><img alt="新部署" border="1" src="../../../images_www/articles/74/web/wicket/result-3.png">
+
+            </ol>
+
+
+            <p>在 Wicket 术语中，面板是可重用组件。正如此部分所示，您可以任意频繁地重用该面板并且可以在任意多的 Web 页中使用。
+
+                <!-- ===================================================================================== -->
+
+            <h3><a name="ajax"></a>添加 AJAX 功能</h3>
+
+            <p>代替使用 JavaScript 将异步 Web 功能（通过 <a href="http://en.wikipedia.org/wiki/Ajax_(programming)">AJAX 技术</a>）添加到 Wicket 应用程序中，Wicket 提供了一个封装 AJAX 功能的 Java 组件模型。下面，将向您演示如何更改 BannerPanel 以包含 AJAX 自动完成窗口部件，而不是之前创建的标签窗口部件。</p>
+
+            <ol>         
+
+
+                <li><p>在 <tt>BannerPanel</tt> 类的 HTML 端，从 "Palette"（组件面板）拖动 AJAX 文本输入项（Ctrl-Shift-8 组合键），如下所示：</p>
+
+                    <p><p><img alt="文件模板" src="../../../images_www/articles/74/web/wicket/drag-1.png"></p>
+                    <p>将此项放在现有 Wicket 占位符下方，如下所示：</p>
+
+                    <p><pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns:wicket&gt;
+
+    &lt;head&gt;
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/&gt;
+        &lt;title&gt;BannerPanel&lt;/title&gt;
+    &lt;/head&gt;
+
+    &lt;body&gt;
+        
+        &lt;wicket:panel&gt;
+
+            &lt;span wicket:id="title"&gt;title here&lt;/span&gt;
+
+            <b>&lt;input type="text" wicket:id="countries" size="50"/&gt;</b>
+
+        &lt;/wicket:panel&gt;
+
+    &lt;/body&gt;
+    
+&lt;/html&gt;</pre>
+
+                </li>
+
+
+                <li>在匹配的 Java 端，注意已自动添加了以下内容：
+
+                    <p><pre class="examplecode">final AutoCompleteTextField field = new AutoCompleteTextField("countries", new Model("")) {
+    @Override
+    protected Iterator getChoices(String input) {
+        if (Strings.isEmpty(input)) {
+            return Collections.EMPTY_LIST.iterator();
+        }
+        List choices = new ArrayList(10);
+        Locale[] locales = Locale.getAvailableLocales();
+        for (int i = 0; i < locales.length; i++) {
+            final Locale locale = locales[i];
+            final String country = locale.getDisplayCountry();
+            if (country.toUpperCase().startsWith(input.toUpperCase())) {
+                choices.add(country);
+                if (choices.size() == 10) {
+                    break;
+                }
+            }
+        }
+        return choices.iterator();
+    }
+};</pre>
+                </li>
+
+                <li>按 Ctrl-Shift-I 组合键，然后确保选择正确的 import 语句：
+                    <p><p><img alt="文件模板" src="../../../images_www/articles/74/web/wicket/imports-1.png"></p>
+                    <p>单击 "OK"（确定），然后确保 <tt>BannerPanel</tt> 类使用以下 import 语句：
+
+                    <pre>import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.Model;
+import org.apache.wicket.util.string.Strings;</pre>
+                </li>
+                <li><p>再次刷新浏览器后，您将具有一个 AJAX 自动完成字段。当您键入时，该字段中将填充与输入的文本匹配的国家/地区。</p>
+                    <p><p><img alt="文件模板" border="1" src="../../../images_www/articles/74/web/wicket/result-4.png"></p>
+
+            </ol>
+
+        </div>
+
+        <!-- ===================================================================================== -->
+
+        <h2><a name="next"></a>后续步骤</h2>
+
+
+        <p>NetBeans IDE 中的 Wicket 开发简介到此结束。建议您通过 David R.Heffelfinger 提供的 <a href="http://www.ensode.net/wicket_first_look.html">Wicket 框架入门</a>中描述的 Pizza 应用程序样例，继续了解 Wicket 框架。请注意，本教程的结果作为样例与其他样例一起在 "New Project"（新建项目）向导中提供，如下所示：
+
+        <p><img alt="文件模板" src="../../../images_www/articles/74/web/wicket/samples.png"> <br>
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: Introduction to the Wicket Framework in 7.2">请将您的反馈意见发送给我们</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>另请参见</h2>
+
+        <p>有关相关或更高级的教程，请参见以下资源：</p>
+
+        <ul>
+            <li><a href="../../docs/web/quickstart-webapps.html">Web 应用程序开发简介</a></li>
+            <li><a href="../../docs/web/quickstart-webapps-struts.html">Struts Web 框架简介</a></li>
+            <li><a href="quickstart-webapps-spring.html">Spring Web 框架简介</a></li>
+        </ul>
+
+    </body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+
+    <head>
+        <title>GUIビルドの概要 - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="Adding Functionality to Buttons with the NetBeans GUI Builder: This tutorial teaches you how to build a simple GUI with back-end functionality. This tutorial is geared to the beginner and introduces the basic construction of a GUI with functionality. We will work through the layout and design of a GUI and add a few Buttons and Text Boxes. The Text Boxes will be used for receiving user input and also for displaying the program output. The Button will initiate the functionality built into the front end.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="Saleem Gul, Tomas Pavek">
+    </head>
+
+    <body>
+        <h1>GUIビルドの概要</h1>
+
+
+        <div class="articledate" style="margin-left: 0px;">執筆: Saleem GulおよびTomas Pavek</div>
+
+        <p>この初心者向けチュートリアルでは、単純なグラフィカル・ユーザー・インタフェースを作成し、基本的なバックエンド機能を追加する方法を示します。具体的には、Swingフォーム内のボタンとフィールドの動作をコーディングする方法を示します。
+        </p>
+
+        <p>GUIのレイアウトとデザインを行い、ボタンとテキスト・フィールドをいくつか追加します。テキスト・フィールドはユーザー入力を受け取るために使用し、またプログラム出力の表示にも使用します。ボタンは、フロント・エンドに組み込まれた機能を開始します。作成するアプリケーションは、単純なものですが機能的な電卓です。
+        </p>
+
+        <p>GUIビルダーのデザイン機能に関する一般的な説明(様々なデザイン機能のビデオによるデモを含む)については、<a href="quickstart-gui.html">NetBeans IDEでのSwing GUIのデザイン</a>を参照してください。</p>
+
+        <p align="center"><b>予想される所要時間: 20分</b></p>
+
+        <div class="indent">
+            <h3>内容</h3>
+            <img alt="このページの内容は、NetBeans IDE 6.9以降に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 6.9以降に適用されます">
+            <ul class="toc">
+                <li><a HREF="#Exercise_1">課題1: プロジェクトの作成</a></li>
+                <li><a HREF="#Exercise_2">課題2: フロント・エンドのビルド</a></li>
+                <li><a HREF="#Exercise_3">課題3: 機能の追加</a></li>
+                <li><a HREF="#Exercise_4">課題4: プログラムの実行</a></li>
+                <li><a HREF="#how">イベント処理の方法</a></li>
+                <li><a HREF="#seealso">関連項目</a></li>
+            </ul>
+            <p><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+
+            <table>
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                        <th class="tblheader" scope="col">必須バージョン</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://netbeans.org/downloads/">NetBeans IDEとJava SE</a></td>
+                        <td class="tbltd1">バージョン6.9以降</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                        <td class="tbltd1">バージョン6、7または8 </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        
+        <h2><a name="Exercise_1"></a>課題1: プロジェクトの作成</h2>
+
+        <p>最初の手順では、開発するアプリケーション用のIDEプロジェクトを作成します。プロジェクトの名前は<tt>NumberAddition</tt>にします。</p>
+        <ol>
+            <li>「<tt>ファイル</tt>」>「<tt>新規プロジェクト</tt>」を選択します。または、IDEツールバーにある「新規プロジェクト」アイコンをクリックして選択することもできます。</li>
+            <li>「カテゴリ」ペインで「Java」ノードを選択します。「プロジェクト」ペインで「Javaアプリケーション」を選択します。「次」をクリックします。 </li>
+            <li>「プロジェクト名」フィールドに「<code>NumberAddition</code>」と入力し、プロジェクトの場所として(たとえば、ホーム・ディレクトリ内の)パスを指定します。 </li>
+            <li>(オプション)「ライブラリの格納用に専用フォルダを使用」チェックボックスを選択し、ライブラリ・フォルダの場所を指定します。詳細は、<i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">他のユーザーとのライブラリの共有</a>を参照してください。</li>
+            <li>「メイン・クラスの作成」チェックボックスが選択されている場合は選択を解除します。 </li>
+            <li>「終了」をクリックします。</li>
+        </ol>
+
+
+        <!-- ===================================================================================== -->
+
+        <h2><a name="Exercise_2"></a>課題2: フロント・エンドのビルド</h2>
+
+        <p>インタフェースのビルドに進むには、他の必要なGUIコンポーネントを入れるJavaコンテナを作成する必要があります。この手順では、<code>JFrame</code>コンポーネントを使用してコンテナを作成します。コンテナは新しいパッケージに入れます。このパッケージは「ソース・パッケージ」ノード内に表示されます。</p>
+
+        <div class="indent">
+            <h3 class="tutorial">JFrameコンテナを作成します。</h3>
+            <ol>
+                <li>「プロジェクト」ウィンドウで、「<tt>NumberAddition</tt>」ノードを右クリックし、「<tt>新規</tt>」>「<tt>その他</tt>」を選択します。 </li>
+				<li>「新規ファイル」ダイアログ・ボックスで、「<tt>Swing GUIフォーム</tt>」カテゴリおよび「<tt>JFrameフォーム</tt>」ファイル・タイプを選択します。「次」をクリックします。</li>
+                <li>クラス名として「<tt>NumberAdditionUI</tt>」と入力します。</li>
+                <li>パッケージとして「<code>my.numberaddition</code>」と入力します。 </li>
+                <li>「終了」をクリックします。</li>
+            </ol>
+
+            <p>IDEによって、<code>NumberAddition</code>アプリケーション内に<code>NumberAdditionUI</code>フォームと<code>NumberAdditionUI</code>クラスが作成され、<code>NumberAdditionUI</code>フォームがGUIビルダー内で開きます。<code>my.NumberAddition</code>パッケージがデフォルトのパッケージに置き換わります。</p>
+
+            <h3 class="tutorial">コンポーネントの追加: フロント・エンドの作成</h3>
+            <p>次にパレットを使用してアプリケーションのフロント・エンドにJPanelを挿入します。次にJLabelを3つ、JTextFieldを3つ、JButtonを3つ追加します。以前にGUIビルダーを使用したことがない場合は、<a href="quickstart-gui.html">NetBeans IDEでのSwing GUIのデザイン</a>・チュートリアルにある有用なコンポーネントの配置に関する説明を参照してください。</p>
+            <p>前述のコンポーネントをドラッグして配置したら、JFrameは次のスクリーンショットのようになります。 </p>
+
+			<p class="align-center"><img alt="3つのJLabel、3つのJButton、および3つのJTextFieldが配置されたJFrame" class="margin-around" src="../../../images_www/articles/72/java/gui-functionality/Figure1.png"></p>
+
+            <p>IDEの右上隅に「パレット」ウィンドウが表示されない場合は、「ウィンドウ」>「パレット」を選択します。</p>
+            <ol>
+                <li>まず、パレットの「Swingコンテナ」カテゴリから「パネル」を選択し、それをJFrameにドロップします。</li>
+                <li>JPanelが強調表示されている状態で、「プロパティ」ウィンドウに移動し、「境界線」の横の省略符号(...)ボタンをクリックして、境界線スタイルを選択します。</li>
+                <li>「境界線」ダイアログで、リストから「TitledBorder」を選択し、「タイトル」フィールドに「<code>Number Addition</code>」と入力します。「OK」をクリックして変更を保存し、ダイアログを閉じます。</li>
+                <li>この時点で、スクリーンショットのように「Number Addition」というタイトルの空のJFrameが表示されます。スクリーンショットを確認し、上記のようにJLabelを3つ、JTextFieldを3つ、JButtonを3つ追加します。</li>
+            </ol>
+
+            <h3 class="tutorial">コンポーネントの名前変更</h3>
+            <p>この手順では、JFrameに追加したコンポーネントの表示テキストを名前変更します。</p>
+            <ol>
+                <li><code>jLabel1</code>をダブルクリックしてtextプロパティを<code>First Number</code>に変更します。</li>
+                <li><code>jLabel2</code>をダブルクリックしてtextを<code>Second Number</code>に変更します。</li>
+                <li><code>jLabel3</code>をダブルクリックしてtextを<code>Result</code>に変更します。 </li>
+                <li><code>jTextField1</code>からサンプル・テキストを削除します。テキスト・フィールドを右クリックし、ポップアップ・メニューから「テキストを編集」を選択することによって、表示テキストを編集可能にすることができます。<code>jTextField1</code>を元のサイズに戻す必要がある場合があります。<code>jTextField2</code>と<code>jTextField3</code>についてこの手順を繰り返します。 </li>
+                <li> <code>jButton1</code>の表示テキストを<code>Clear</code>に名前変更します。(ボタンのテキストを編集するには、ボタンを右クリックして「テキストを編集」を選択します。または、ボタンをクリックし、しばらくしてからもう一度クリックすることもできます。) </li>
+                <li> <code>jButton2</code>の表示テキストを<code>Add</code>に名前変更します。</li>
+                <li> <code>jButton3</code>の表示テキストを<code>Exit</code>に名前変更します。</li>
+            </ol>
+            <p>完成したGUIは次のスクリーンショットのようになります。</p>
+            <p class="align-center"><img alt="完成したアプリケーション" class="margin-around" src="../../../images_www/articles/72/java/gui-functionality/Figure2.png"></p>
+
+
+        </div>
+
+
+        <!-- ======================================================================================= -->
+
+        <h2><a name="Exercise_3"></a>課題3: 機能の追加</h2>
+
+        <p>この課題では、「Add」、「Clear」、「Exit」の各ボタンに機能を追加します。<code>jTextField1</code>ボックスと<code>jTextField2</code>ボックスをユーザー入力用に、<code>jTextField3</code>をプログラム出力用に使用して、単純な電卓を作成します。それでは始めましょう。</p>
+
+        <div class="indent">
+            <h3 class="tutorial">「Exit」ボタンの機能の追加</h3>
+
+            <p>ボタンに機能を追加するには、イベントに応答できるようにそれぞれにイベント・ハンドラを割り当てます。この例では、マウス・クリックまたはキーボードを使用してボタンが押されたときを認識できる必要があります。そこでActionEventに応答するActionListenerを使用します。 <!--TODO clarify here--></p>
+
+            <ol>
+                <li>「Exit」ボタンを右クリックします。ポップアップ・メニューから「イベント」>「アクション」>「actionPerformed」を選択します。メニューには、応答できるイベントが他にも多数あります。「<tt>actionPerformed</tt>」イベントを選択すると、IDEによってActionListenerが「Exit」ボタンに自動的に追加され、リスナーのactionPerformedメソッドを処理するためのハンドラ・メソッドが生成されます。 </li>
+                <li>IDEで「ソース・コード」ウィンドウが開き、マウス・クリックまたはキーボードを使用してボタンが押されたときに実行するアクションを実装する場所までスクロールされます。「ソース・コード」ウィンドウには次の行が表示されます。
+                    <pre class="examplecode">private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
+    //TODO add your handling code here:
+                }</pre></li>
+                <li>「Exit」ボタンで行う処理のコードを追加します。TODOの行を<code>System.exit(0);</code>に置き換えます。完成した「Exit」ボタンのコードは次のようになります。
+
+                  <pre class="examplecode">private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
+    System.exit(0);
+                } </pre>
+				</li>
+            </ol>
+
+            <h3 class="tutorial">「Clear」ボタンの機能の追加</h3>
+            <ol>
+                <li>作業領域の上部にある「デザイン」タブをクリックし、フォームのデザインに戻ります。</li>
+                <li>「Clear」ボタン(<code>jButton1</code>)を右クリックします。ポップアップ・メニューから「イベント」>「アクション」>「actionPerformed」を選択します。</li>
+
+                <li>「Clear」ボタンを使用して、jTextFieldのテキストをすべて消去します。そのためには、前述のようにコードを追加します。完成したソース・コードは次のようになります。 
+                <pre class="examplecode">private void jButton1ActionPerformed(java.awt.event.ActionEvent evt){
+    jTextField1.setText(&quot;&quot;);
+    jTextField2.setText(&quot;&quot;);
+    jTextField3.setText(&quot;&quot;);
+                }</pre>
+			</li>
+            </ol>
+			
+            <p>上記のコードでは、3つのJTextField内の既存のテキストを空白で上書きすることで、テキストを空にしています。</p>
+
+            <h3 class="tutorial">「Add」ボタンの機能の追加</h3>
+            <p>「Add」ボタンでは、3つのアクションを実行します。 </p>
+            <ol><li><code>jTextField1</code>と<code>jTextField2</code>からユーザー入力を受け取り、入力内容を文字列型から浮動小数点に変換します。 </li>
+            <li>次に、2つの数値の加算を実行します。</li>
+                <li>そして最後に、その和を文字列型に変換し、それを<code>jTextField3</code>に配置します。</li>
+            </ol>
+            それでは始めましょう。
+
+            <ol>
+                <li>作業領域の上部にある「デザイン」タブをクリックし、フォームのデザインに戻ります。</li>
+                <li>「Add」ボタン(<code>jButton2</code>)を右クリックします。ポップアップ・メニューから「イベント」>「アクション」>「actionPerformed」を選択します。</li>
+                <li>「Add」ボタンが機能するようにコードを追加します。完成したソース・コードは次のようになります。
+                    <pre class="examplecode">private void jButton2ActionPerformed(java.awt.event.ActionEvent evt){
+    // First we define float variables.
+    float num1, num2, result;
+    // We have to parse the text to a type float.
+    num1 = Float.parseFloat(jTextField1.getText());
+    num2 = Float.parseFloat(jTextField2.getText());
+   // Now we can perform the addition.
+    result = num1+num2;
+    // We will now pass the value of result to jTextField3.
+    // At the same time, we are going to
+    // change the value of result from a float to a string.
+    jTextField3.setText(String.valueOf(result));
+                    }</pre>
+                </li>
+            </ol>
+
+            <p>これでプログラムは完成なので、ビルドして実行し、動作するところを確認できます。 </p>
+        </div>
+
+
+        <h2><a name="Exercise_4"></a>課題4: プログラムの実行</h2>
+
+        <p><b>IDEでプログラムを実行するには:</b></p>
+
+        <ol>
+            <li>「実行」>「メイン・プロジェクトの実行」を選択します(または[F6]を押します)。
+            <p class="notes"><b>注意:</b> プロジェクトNumberAdditionでメイン・クラスが設定されていないことを通知するウィンドウが表示された場合は、同じウィンドウで<tt>my.NumberAddition.NumberAdditionUI</tt>をメイン・クラスとして選択し、「OK」をクリックします。</p></li>
+            
+        </ol>
+
+        <p><b>IDEの外部でプログラムを実行するには:</b></p>
+        <ol>
+            <li>「実行」>メイン・プロジェクトを消去してビルド([Shift]-[F11])を選択し、アプリケーションJARファイルをビルドします。</li>
+            <li>システムのファイル・エクスプローラまたはファイル・マネージャを使用し、<code>NumberAddition/dist</code>ディレクトリに移動します。
+			<p class="notes"><b>注意:</b> <tt>NumberAddition</tt>プロジェクト・ディレクトリの場所は、<a href="#Exercise_1">課題1: プロジェクトの作成</a>の項でプロジェクトを作成するときにステップ3で指定したパスによって決まります。</p>
+            </li>
+            <li><code>NumberAddition.jar</code>ファイルをダブルクリックします。</li>
+        </ol>
+        <p>数秒後、アプリケーションが起動するはずです。</p>
+        <p class="notes"><b>注意:</b> JARファイルをダブルクリックしてもアプリケーションが起動しない場合、使用しているオペレーティング・システムに対応するJARファイルの関連付けに関する情報を<a href="../../articles/javase-deploy.html#troubleshooting">この記事</a>で確認してください。</p>
+
+        <p>アプリケーションは、コマンド行からも起動できます。</p>
+        <p><b>コマンド行からアプリケーションを起動するには:</b></p>
+        <ol>
+            <li>システムで、コマンド・プロンプトまたはターミナル・ウィンドウを開きます。</li>
+            <li>コマンド・プロンプトで、ディレクトリを<code>NumberAddition/dist</code>ディレクトリに変更します。</li>
+            <li>コマンド行に、次の文を入力します。
+            <pre class="examplecode">java -jar  NumberAddition.jar</pre>
+			<p class="notes"><b>注意:</b> アプリケーションを実行する前に、<tt>my.NumberAddition.NumberAdditionUI</tt>がメイン・クラスとして設定されていることを確認してください。これを確認するには、「プロジェクト」ペインで「NumberAddition」プロジェクト・ノードを右クリックし、ポップアップ・メニューから「プロパティ」を選択して、「プロジェクト・プロパティ」ダイアログ・ボックスで「実行」カテゴリを選択します。「メイン・クラス」フィールドに「<tt>my.numberaddition.NumberAdditionUI</tt>」と表示されます。 </p>
+            </li>
+        </ol>
+
+        <h2><a name="how"></a>イベント処理の方法</h2>
+
+        <p>このチュートリアルでは、単純なボタン・イベントに応答する方法を示しました。アプリケーションで応答できるイベントは他にも多数あります。IDEでは、GUIコンポーネントで処理できるイベントのリストを簡単に確認できます。</p>
+        <ol>
+            <li>エディタ内のファイル<code>NumberAdditionUI.java</code>に戻ります。「デザイン」タブをクリックして、GUIのレイアウトをGUIビルダーに表示します。</li>
+            <li>任意のGUIコンポーネントを右クリックし、ポップアップ・メニューから「イベント」を選択します。現時点では、メニューの内容を確認するのみで、何も選択しません。</li>
+            <li>「ウィンドウ」メニューから「プロパティ」を選択することもできます。「プロパティ」ウィンドウで「イベント」タブをクリックします。「イベント」タブでは、現在アクティブなGUIコンポーネントに関連付けられているイベント・ハンドラを表示および編集できます。</li>
+            <li>アプリケーションは、キーの押下、マウスのクリック、ダブルクリック、トリプル・クリック、マウスの移動、ウィンドウのサイズやフォーカスの変更に応答できます。これらすべてのイベント・ハンドラを「イベント」メニューから作成できます。最もよく使用するイベントはActionイベントです。(<a href="http://java.sun.com/docs/books/tutorial/uiswing/events/generalrules.html#twokinds">イベント処理のベスト・プラクティス</a>については、Sunの<a href="http://java.sun.com/docs/books/tutorial/uiswing/events/index.html">イベントに関するJavaチュートリアル</a>を参照。)</li>
+        </ol>
+
+        <p>イベント処理はどのように機能するのでしょうか。「イベント」メニューからイベントを選択するたびに、IDEによって、いわゆるイベント・リスナーが自動的に作成され、コンポーネントに関連付けられます。次の手順に従って、イベント処理の方法を確認します。</p>
+
+        <ol>
+            <li>エディタ内のファイル<code>NumberAdditionUI.java</code>に戻ります。「ソース」タブをクリックしてGUIのソースを表示します。</li>
+            <li>下にスクロールし、実装した<code>jButton1ActionPerformed()</code>、<code>jButton2ActionPerformed()</code>、<code>jButton3ActionPerformed()</code>の各メソッドを確認します。これらのメソッドはイベント・ハンドラと呼ばれます。</li>
+            <li>次に<code>initComponents()</code>というメソッドまでスクロールします。このメソッドが表示されない場合は、「<code>生成されたコード</code>」と表示されている行を探し、その横の+記号をクリックして、縮小されている<code>initComponents()</code>メソッドを展開します。</li>
+            <li><code>initComponents()</code>メソッドは、青いブロックで囲まれています。このコードはIDEによって自動的に生成されたものであり、編集できません。</li>
+            <li>次に<code>initComponents()</code>メソッドの中を見てみます。このメソッドには、GUIコンポーネントを初期化し、フォームに配置するコードが含まれます。このコードは、デザイン・ビューでコンポーネントを配置し、編集したときに自動的に生成、更新されています。</li>
+            <li><code>initComponents()</code>内で次のコードまでスクロールします。
+                <pre class="examplecode">jButton3.setText(&quot;Exit&quot;);
+jButton3.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+           jButton3ActionPerformed(evt);
+    }
+            });</pre> 
+
+            <p>この箇所で、GUIコンポーネントにイベント・リスナー・オブジェクトが追加されています。この例では、ActionListenerを<code>jButton3</code>に登録しています。ActionListenerインタフェースにはActionEventオブジェクトを受け取るactionPerformedメソッドがあり、これは<code>jButton3ActionPerformed</code>イベント・ハンドラをコールすることで実装されています。このボタンは、アクション・イベントを待機しています。ボタンがクリックされるとActionEventが生成され、リスナーのactionPerformedメソッドに渡されます。このメソッドによって、このイベントのイベント・ハンドラに入力したコードが実行されます。</p></li>
+        </ol>
+        <p>
+            一般に、応答できるためには、対話型のGUIコンポーネントがイベント・リスナーに登録され、イベント・ハンドラを実装する必要があります。イベント・リスナーの関連付けはNetBeans IDEによって自動的に行われるので、開発者はそのイベントでトリガーする実際のビジネス・ロジックの実装に専念できます。
+        </p>
+        <!--TODO: Add Swing App framework info, links-->
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20GUI%20Building">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+        <br style="clear:both;">
+        <h2><a name="seealso"></a>関連項目</h2>
+        <ul>
+            <li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Java GUIの実装</a></li>
+			<li><a href="quickstart-gui.html">NetBeans IDEでのSwing GUIのデザイン</a></li>
+            <li><a href="gui-image-display.html">GUIアプリケーションでのイメージの処理</a></li>
+            <li><a href="hibernate-java-se.html">Java SwingアプリケーションでのHibernateの使用</a></li>
+            <li><a href="../../trails/matisse.html">Java GUIアプリケーションの学習</a></li>
+            <li><a href="../../trails/java-se.html">一般的なJava開発の学習</a></li>
+            <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ#section-NetBeansUserFAQ-GUIEditorMatisse" target="_blank">GUIビルダー - FAQ</a></li>
+            <li><a href="http://download.oracle.com/javase/tutorial/index.html" target="_blank">The Java(tm) Tutorials</a>の<a href="http://download.oracle.com/javase/tutorial/uiswing/events/index.html" target="_blank">Lesson: Writing Event Listeners</a>。</li>
+           
+        </ul>
+
+</body>
+
+</html>

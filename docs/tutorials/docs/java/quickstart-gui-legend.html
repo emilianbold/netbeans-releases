@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2014 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>GUI Builder Visual Feedback Legend - NetBeans IDE Tutorial</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <meta name="KEYWORDS" content="NETBEANS, GUI BUILDER, GUIDE, USER, DOCUMENTATION">
+        <meta content="?and? 0.5.5" name="GENERATOR">
+
+    </head>
+    
+    <body>    
+    <a name="top"></a>    
+        <h1>GUI Builder Visual Feedback Legend</h1>
+<p>This document describes visual feedback the IDE's GUI Builder (formerly code-named Matisse) 
+        provides during the process of Java GUI creation. </p>
+ <h3>Contents</h3>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png"
+              class="stamp"
+              alt="Content on this page applies to NetBeans IDE 6.9 and more recent"
+              title="Content on this page applies to NetBeans IDE 6.9 and more recent">
+
+        <ul class="toc">
+           
+			<li><a href="#alignment">Alignment Guidelines</a></li>
+			<li><a href="#anchor">Anchoring Indicators</a></li>
+			<li><a href="#size">Sizing Indicators</a></li>
+			<li><a href="#highlight">Highlighting and Handles</a></li>
+			<li><a href="#seealso">See Also</a></li>
+		</ul>       
+        <blockquote>
+            <a name="alignment"></a>
+			<h2>Alignment Guidelines</h2>
+            <p>Alignment guidelines appear only when adding or moving components, 
+            indicating the preferred positions to which components snap when the mouse button is released. 
+            Once positioned, alignment guidelines are replaced by solid lines illustrating 
+            the common alignments shared among components as well as anchoring indicators.</p>
+            <br>
+            <table>
+            <tr>
+                <td class="tbltd1 align-center"><b>Inset</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend5.png" border=1>
+                    
+                </td>
+                <td class="tbltd1">Insets are the preferred spacings between 
+                components and the containers within which they are located. Insets 
+                are suggested by dashed horizontal and vertical guidelines.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>Offset</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend30.png" border=1></td>
+                <td class="tbltd1">Offsets are the preferred spacings between 
+                adjacent components. Offsets are suggested by dashed horizontal and 
+                vertical guidelines.</td>
+            </tr>
+
+            <tr>
+                <td class="tbltd1 align-center"><b>Baseline</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend13.png" border=1></td>
+                <td class="tbltd1">Baseline alignment is the preferred relationship 
+                between adjacent components containing display text. Baseline alignment 
+                is suggested by dashed a horizontal guideline.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><p class="align-right"><b>Edge</b></p></td>
+                <td class="tbltd1 align-center">
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend12.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend14.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend32.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend33.png" border=1></p>                    
+                </td>
+                <td class="tbltd1"><br>Edge alignments (Top, Bottom, Left, and Right) are 
+                the alignment relationships possible between adjacent components. 
+                Edge alignments are suggested by dashed horizontal and vertical guidelines.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>Indentation</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend31b.png" border=1>
+                </td>
+                <td class="tbltd1">Indentation alignment is 
+                a special alignment relationship in which one component is located 
+                below another and offset slightly to the right. 
+                Indentation alignment is suggested by the appearance of two 
+                vertical dashed guidelines.</td>
+            </tr>
+			<tr>
+			<td class="tbltd1 align-center"><b>Preferred Distance</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend34.png" border=1>
+                </td>
+                <td class="tbltd1">Preferred  distances (Small, Medium, and Large) are gap sizes between adjacent components. Preferred distances are suggested by  dashed horizontal or vertical guidelines. </td>
+			</tr>
+            </table>
+            <p class="align-center"><a href="#top">top</a></p>
+            <a name="anchor"></a>
+            <h2>Anchoring Indicators</h2>
+            <p>Once components have snapped into position, solid anchoring indicators 
+            appear illustrating the common alignments shared among components.</p>
+            <br>
+            <table>
+            <tr>
+                <td class="tbltd1 align-center"><b>Container</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend50.png" border=1></td>
+                <td class="tbltd1">Anchors connecting individual components to the 
+                containers within which they are located are represented by small 
+                semi-circular indicators with dashed lines extending from the 
+                container edge to the component itself.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>Component</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend51.png" border=1></td>
+                <td class="tbltd1">Anchors connecting individual components to  
+                adjacent components are represented by small semi-circular indicators 
+                with dashed lines extending from the one component to the other. </td>
+            </tr>
+            </table>
+            <p class="align-center"><a href="#top">top</a></p>
+            <a name="size"></a>
+            <h2>Sizing Indicators</h2>
+            <br>
+            <table>
+           
+            <tr>
+                <td class="tbltd1 align-center"><b>Same Size</b></td>
+                <td class="tbltd1 align-center">
+				<p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend28.png" border=1></p>
+				<p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend29.png" border=1></p></td>
+                <td class="tbltd1">Same Sizing is the state in which a group of components 
+                (adjacent or otherwise) are all set to have the same width or height. 
+                Same Sizing is illustrated by the appearance of small rectangular 
+                indicators appearing on the top edge of each component for which 
+                the property is set.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>Auto-Resizing</b></td>
+                <td class="tbltd1 align-center">
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend42.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend41.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend43.png" border=1></p>
+                </td>
+                <td class="tbltd1"><br>
+                Auto-Resizing is the state in which a component's 
+                width or height is set to resize dynamically at runtime. 
+                Auto-Resizing is indicated by the state of the horizontal and vertical 
+                Resizing buttons (called Change horizontal resizeability and Change vertical resizeability respectively) in the GUI Builder's toolbar. Auto-Resizing is enabled by selecting <tt>resizable</tt> in the Other Properties list in the Properties window.</td>
+            </tr>
+            </table>
+ <p class="align-center"><a href="#top">top</a></p>
+ <a name="highlight"></a>
+            <h2>Highlighting and Handles</h2>
+			 <table>           
+            <tr>
+                <td class="tbltd1 align-center"><b> Highlighting</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend10.png" border=1></td>
+                <td class="tbltd1">Orange highlighting indicates where a selected component is going to be placed.</td>
+            </tr>
+			<tr>
+                <td class="tbltd1 align-center"><b>Handles</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend11.png" border=1></td>
+                <td class="tbltd1"> Small square resize handles appear around a component's perimeter when  a component is selected. Clicking, holding, and dragging a  handle on the edge of a component resizes the latter. </td>
+            </tr>
+			</table>
+			<p class="align-center"><a href="#top">top</a></p>
+        </blockquote>
+
+          
+       
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20GUI%20Builder%20Visual%20Feedback%20Legend,%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;"> 
+<h2><a name="seealso"></a>See Also</h2>
+        <ul>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementing Java GUIs</a> in <i>Developing Applications with NetBeans IDE</i></li>
+			<li><a href="../../trails/matisse.html">Java GUI Applications Learning Trail</a></li>
+			<li><a href="../../trails/java-se.html">General Java Development Learning Trail</a></li></ul>
+    </body>
+</html>

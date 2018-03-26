@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>使用 PHP 创建数据库驱动的应用程序。将应用程序部署到远程 Web 服务器 </title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Deploying the Application on a Remote Server" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">  
+   </head>
+   <body>
+<h1>使用 PHP 创建数据库驱动的应用程序</h1>
+<h1>第 9 课：将应用程序部署到远程 Web 服务器 </h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>教程目录：</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">使用 PHP 创建数据库驱动的应用程序 - 主页</a></li>
+    <li><p>创建数据库</p> <ol type="a"><li><a href="wish-list-lesson1.html">创建 MySQL 数据库</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">创建 Oracle 数据库表</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">设计应用程序。从数据库读取数据</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">创建新的应用程序用户</a></li>
+    <li><a href="wish-list-lesson4.html">优化代码</a></li>
+    <li><a href="wish-list-lesson5.html">添加安全功能。实现应用程序用户登录</a></li>
+    <li><a href="wish-list-lesson6.html">在数据库中添加新的愿望</a></li>
+    <li>      <a href="wish-list-lesson7.html">更新和删除数据库中的条目</a></li>
+    <li><a href="wish-list-lesson8.html">使用 CSS 技术改进应用程序的外观</a></li>
+    <li>
+      <p><b>=&gt;将应用程序部署到远程 Web 服务器</b></p>
+    <ul>
+    <li><a href="#previousLessonSourceCode">来自上一课的应用程序源代码</a></li>
+    <li><a href="#registerEmailAccount">注册电子邮件帐户</a></li>
+    <li><a href="#registerHostingAccount">注册托管帐户</a></li>
+    <li><a href="#registeringFTPAccount">注册 FTP 帐户</a></li>
+    <li><a href="#creatingRemoteDatabase">创建远程数据库</a></li>
+    <li><a href="#settingUpPHPProjectWithSources">设置基于现有源代码的 PHP 项目</a></li>
+    <li><a href="#updatingClassWishDB">更新 WishDB 类</a></li>
+    <li><a href="#nextSteps">后续步骤</a></li></ul></li>
+        </ol>
+</div>
+</div>
+
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<p>通常，PHP 应用程序实际上在远程服务器上运行，并通过文件传输协议 (FTP) 进行访问。要在远程服务器上部署 CRUD 应用程序，您将需要向托管提供商注册一个普通帐户、注册一个 FTP 帐户并创建一个远程数据库。</p>
+<p>您可以使用您喜欢的任何托管。当前文档介绍 X10HOSTING 免费托管中的部署过程。此托管包括 MySQL，但不包括 Oracle 数据库服务器。</p>
+<p class="notes"> 所有的用户名、口令和电子邮件地址都是虚构的，仅用作示例。如果用户未登录论坛的时间超过了一个星期，则托管管理会阻止该用户的帐户。因此您可能无法再使用与本教程中完全相同的用户名、口令、电子邮件地址和其他凭证。</p>
+<p>在本课程中，您将了解如何执行以下操作：</p>
+<ul>
+  <li style="margin-left:40em"><a href="#hideLogonForm">注册托管帐户</a></li>
+  <li style="margin-left:40em"><a href="#improveTableEmptyCells">注册 FTP 帐户</a> </li>
+  <li style="margin-left:40em"><a href="#designStyles">创建远程 MySQL 数据库</a></li>
+  <li style="margin-left:40em"><a href="#divs">设置项目以使用注册的远程 Web 托管</a></li>
+  <li style="margin-left:40em">更改数据库连接设置以使用远程数据库 </li>
+</ul>
+<p>当前文档是“在适用于 PHP 的 NetBeans IDE 中创建 CRUD 应用程序”教程的一部分。 </p>
+<br style="clear:left">
+<h2><a name="previousLessonSourceCode"></a>来自上一课的应用程序源代码</h2>
+<p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。</p>
+<h2><a name="registerEmailAccount"></a>注册电子邮件帐户</h2>
+<p>如果之前尚未创建电子邮件帐户，则创建一个。在此示例中，电子邮件地址为 phpuser65@googlemail.com。 </p>
+<h2><a name="registerHostingAccount"></a>注册托管帐户 </h2>
+<p>要在 <a href="http://x10hosting.com/" target="_blank">X10HOSTING</a> 免费托管中创建托管帐户，请执行向导中的步骤，同时输入以下设置。您将在任何其他托管站点中输入类似信息。</p>
+<table>
+     <tbody>
+	   <tr>
+         <th class="tblheader" scope="col">帐户设置 </th>
+         <th class="tblheader" scope="col">值</th>
+       </tr>
+	   <tr>
+	   <td>电子邮件地址</td>
+	   <td>phpuser65@gmail.com</td>
+	   </tr>
+       <tr>
+         <td>域名 </td>
+         <td><a href="http://x10hosting.com/" target="_blank">x10Hosting.com</a></td>
+       </tr>
+       <tr>
+         <td>子域</td>
+         <td>phpuser
+       </tr>
+       <tr>
+         <td>托管帐户用户名（也用于登录到 cPanel） </td>
+         <td>phpuser</td>
+       </tr>
+       <tr>
+         <td>托管帐户口令（也用于登录到 cPanel） </td>
+         <td>qwerty1234</td>
+       </tr>
+	   <tr>
+         <td>论坛用户名 </td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+         <td>论坛口令 </td>
+         <td>qwerty</td>
+       </tr>
+	   <tr>
+         <td>FTP 帐户名称 </td>
+         <td>uploader</td>
+       </tr>
+	   <tr>
+         <td>FTP 用户名 </td>
+         <td>uploader@phpuser.x10hosting.com</td>
+       </tr>
+	   <tr>
+         <td>FTP 服务器 </td>
+         <td>ftp.phpuser.x10hosting.com</td>
+       </tr>
+       <tr>
+         <td>远程数据库主机名</td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+	   <td>远程数据库</td>
+	   <td>wishlist</td>
+	   </tr>
+	   <tr>
+	   <td>远程数据库用户名</td>
+	   <td>phpuser</td>
+	   </tr>
+	   <tr>
+	   <td>远程数据库用户口令</td>
+	   <td>phpuserpw</td>
+	   </tr>
+     </tbody>
+   </table>
+<h2><a name="registeringFTPAccount"></a>注册 FTP 帐户</h2>
+<p>现在，您已有一个托管帐户，还需要一个 FTP 帐户，用来传输 PHP 源代码和其他相关文件，以便于在服务器上执行。对于 x10Hosting，打开 cPanel 并选择 "New FTP Account"，然后按向导的指示操作。</p>
+<h2><a name="creatingRemoteDatabase"></a>创建远程数据库</h2>
+<p>由于 CRUD 应用程序使用数据库，因此，您还将需要在具有<a href="#registerHostingAccount">托管帐户</a>的远程服务器上部署 <tt>wishlist</tt> MySQL 数据库。</p>
+
+<h2><a name="settingUpPHPProjectWithSources"></a>使用现有源代码和远程 Web 站点运行配置设置 PHP 项目 </h2>
+<ol>
+<li><a href="#previousLessonSourceCode">下载源文件</a>，这些文件与完成上一课后的应用程序状态相对应。解压缩文件。 </li>
+<li>在 <tt>htdocs</tt> 文件夹中保存源文件。</li>
+<li>创建<a href="project-setup.html#importSources">基于现有源代码的 PHP 项目</a>：
+  <ul>
+<li>指定下载的源代码在“源”文件夹中的位置</li>
+<li>选择<a href="project-setup.html#remiteWebSite">远程 Web 站点</a>运行配置并配置 FTP 连接 </li>
+</ul>
+</li>
+<li>完成项目创建。</li>
+</ol>
+<h2><a name="updatingClassWishDB"></a>更新 WishDB 类</h2>
+<p>到目前为止，您已在本地 Web 服务器上开发并运行“愿望列表”应用程序，并使用了本地的 MySQL 或 Oracle 数据库服务器。为使应用程序使用远程 MySQL 数据库，您需要更新通过 <tt>WishDB</tt> 类的变量指定的连接设置。</p>
+<ol>
+<li>打开文件 <tt>db.php</tt>。</li>
+<li>更改 <tt>WishDB</tt> 类的变量：
+  <pre class="examplecode">
+    var $user = "&lt;the name of the remote database user&gt;";        
+    var $pass = "&lt;the password of the remote database user&gt;";
+    var $dbName = "&lt;the name of the remote database&gt;";
+    var $dbHost = "&lt;the account username specified during the hosting account creation&gt;";
+</pre>
+
+在此示例中，变量将进行如下更新：
+<pre class="examplecode">
+    var $user = "phpuser";        
+    var $pass = "phpuserpw";
+    var $dbName = "wishlist";
+    var $dbHost = "phpuser";
+</pre>
+</li>
+</ol>
+<h2><a name="nextSteps"></a>后续步骤</h2>
+  <p><a href="wish-list-lesson8.html">&lt;&lt; 上一课</a></p>
+  <p>
+  <a href="wish-list-tutorial-main-page.html">返回到教程主页</a></p>
+  
+  <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" >
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。
+   <p><a href="../../trails/php.html">返回至 PHP 学习资源</a></p>
+
+</body>
+</html>

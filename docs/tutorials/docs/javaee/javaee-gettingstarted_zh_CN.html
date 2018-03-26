@@ -1,0 +1,397 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Java EE 应用程序入门指南</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial that introduces NetBeans IDE support for some of the new features in Java EE 6.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Java EE 应用程序入门指南</h1>
+        
+        <p>本文档简要介绍了作为 Java Enterprise Edition 6 (Java EE 6) 规范一部分引入的某些功能。为了说明这些新功能，本教程介绍了如何创建简单的 Java EE Web 应用程序，其中包含实体类的 EJB 3.1 无状态会话 Bean Facade。将使用 IDE 中的向导生成实体类和会话 Bean。向导生成的代码使用在条件 API 中定义的查询，该 API 是 JPA 2.x 的一部分并包含在 Java EE 6 规范中。然后，将创建一个用于访问会话 Facade 的命名受管 Bean，并且还创建一个表示层，它使用 JSF 2.x 中所指定的 Facelets 视图框架。</p>
+
+        <p>本教程基于 Adam Bien 发布的博客帖子<a href="http://www.adam-bien.com/roller/abien/entry/simplest_possible_jsf_2_ejb" target="_blank" title="http://www.adam-bien.com/roller/abien/entry/simplest_possible_jsf_2_ejb">尽可能简单的 JSF 2/EJB 3.1/JPA 组件 - 使用 WAR 部署</a>。您可以在 Adam Bien 的 Kenai 项目 <a href="http://kenai.com/projects/javaee-patterns" target="_blank" title="http://kenai.com/projects/javaee-patterns">Java EE 模式和最佳做法</a>中找到其他 Java EE 示例，他撰写的书籍“现实的 Java EE 模式 - 反思最佳做法”可通过以下网址下载：<a href="http://press.adam-bien.com" target="_blank" title="http://press.adam-bien.com">http://press.adam-bien.com</a>。</p>
+
+        
+        <p><b>教程练习</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+        <ul>
+            <li><a href="#Exercise_1">创建 Web 应用程序项目</a></li>
+            <li><a href="#Exercise_2">创建实体类和会话 Facade</a>
+                <ul>
+                    <li><a href="#Exercise_2a">创建实体类</a></li>
+                    <li><a href="#Exercise_2b">创建会话 Facade</a></li>
+                </ul>
+            </li>
+            <li><a href="#Exercise_3">创建 JSF 受管 Bean 和 JSF 页</a>
+            <ul>
+                    <li><a href="#Exercise_3a">创建受管 Bean</a></li>
+                    <li><a href="#Exercise_3b">修改索引页</a></li>
+                    <li><a href="#Exercise_3c">创建结果页</a></li>
+                </ul>
+
+            </li>
+            <li><a href="#Exercise_4">运行项目</a></li>
+            <li><a href="#Exercise_5">下载解决方案项目</a></li>
+        </ul>
+        <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+        <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">软件或资源</th>
+                <th class="tblheader" scope="col">要求的版本</th>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE 版本</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                <td class="tbltd1">版本 7 或 8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                <td class="tbltd1">3.x、4.x</td>
+            </tr>
+            </tbody>
+        </table>
+        
+        <p><b>先决条件</b></p>
+        <p>本文档假定您具备以下技术的一些基本知识或编程经验：</p>
+        <ul>
+            <li>Java 编程</li>
+            <li>NetBeans IDE</li>
+        </ul>
+        <p class="tips">您可以下载<a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/SimpleEE6App72.zip">已完成项目的 zip 档案文件</a>。</p>
+
+        <!-- ===================================================================================== -->
+
+
+        <a name="Exercise_1"></a>
+            <!--Exercise 1: -->
+        <h2>创建 Web 应用程序项目</h2>
+        <p>在本练习中，将创建一个简单的 Web 应用程序。在创建 Web 应用程序时，请将 GlassFish Server 指定为目标 Java EE 容器。GlassFish Server 与 Java EE 兼容，并包含此应用程序中所需的 JSF 2.x 库。</p>
+
+        <p>在 "New Project"（新建项目）向导中，可以选择 "Java EE 6 Web" 或 "Java EE 7 Web" 作为 Java EE 版本。Java EE 6 Web 和 Java EE 7 Web 是小型 Java EE 配置文件，其中包含完整 Java EE 平台的一部分。Java EE Web 配置文件设计用于不需要高级 Java EE 技术的 Web 应用程序，例如远程接口支持、完整 EJB 3.1 规范以及 Java 消息服务 (JMS) API。</p>
+
+        <p>Web 配置文件支持企业 Web 应用程序中经常使用的事务处理和持久性管理。可以将 Java EE Web 配置文件用于使用具有本地接口或没有接口的会话 Bean 的 Web 应用程序。如果应用程序使用远程接口，则需要使用完整 Java EE 配置文件。</p>
+
+
+        <ol>
+            <li>从主菜单中选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键）。</li>
+            <li>从 "Java Web" 类别中选择 "Web Application"（Web 应用程序），然后单击 "Next"（下一步）。</li>
+            <li>键入 <strong>SimpleEE6App</strong> 作为项目名称并设置项目位置。 </li>
+            <li>取消选中 "Use Dedicated Folder"（使用专用文件夹）选项（如果该选项处于选中状态）。单击 "Next"（下一步）。<br /> （在本教程中，我们将项目库复制到一个专门的文件夹中，因为需要与其他用户或项目共享库。）<br />
+            </li>
+            <li>选择 "GlassFish Server"，并将 "Java EE Version"（Java EE 版本）设置为 "Java EE 6 Web" 或 "Java EE 7 Web"。单击 "Next"（下一步）。<br /> <img alt="新建项目向导" class="margin-around b-all" src="../../../images_www/articles/74/javaee/gettingstarted/newappwizard.png" title="新建项目向导中的 &quot;Server and Settings&quot;（服务器和设置）面板">
+
+
+            </li>
+            <li>在 "Frameworks"（框架）窗格中选择 "JavaServer Faces"。单击 "Finish"（完成）。
+                <p>默认情况下，如果要开发 Java EE Web 应用程序并将其部署到 GlassFish Server 中，IDE 将选择 JSF 2.x 库。默认 JSF 库的版本取决于随 GlassFish Server 捆绑提供的版本。JSF 2.x 库允许将 Facelets 作为页面语言，并且还提供了 JSF 1.2 和 JSP 支持。</p>
+            <img alt="新建项目向导" class="margin-around b-all" src="../../../images_www/articles/74/javaee/gettingstarted/newappwizard2.png" title="新建项目向导中的 &quot;Frameworks&quot;（框架）面板"></li>
+        </ol>
+
+        <p>单击 "Finish"（完成），此时 IDE 将创建项目并在 "Projects"（项目）窗口中打开该项目。IDE 自动创建 <tt>index.xhtml</tt> 页，并在编辑器中打开该页。</p>
+
+
+
+        <a name="Exercise_2"></a>
+        <h2>创建实体类和会话 Facade</h2>
+
+        <p>在此部分，将创建一个实体类，并为该实体类创建会话 Facade。实体类是一种简单的传统 Java 对象 (POJO)，可通过 <tt>@Entity</tt> 标注将这种简单的 Java 类标识为实体。从 Java EE 5 规范开始，可以将实体类作为持久性对象来表示数据库中的表。通过使用 Java 持久性 API，您可以在 Web 应用程序中使用持久性，而无需创建 EJB 模块。
+        </p>
+
+        <p>该应用程序中的实体类的会话 Facade 是无状态会话 Bean。Enterprise JavaBean (EJB) 3.1 体系结构作为 Java EE 6 规范的一部分引入，使您无需使用业务接口即可创建会话 Bean，而在 EJB 3.0 中则要求使用此类接口。此外，Java EE 6 规范允许您可以直接将 EJB 组件打包到 WAR 档案中。由于不需要创建作为 JAR 档案打包到 EAR 档案中的单独 EJB 模块，这就简化了较小 Web 应用程序的开发过程。不过，对于分布到不同计算机的大型企业应用程序，仍需要创建 EAR 档案以便将业务逻辑与表示层分开。</p>
+
+        <p class="tips">有关在 IDE 中使用 EJB 3.1 的更多信息，请参见<a href="javaee-entapp-ejb.html">使用 EJB 3.1 创建企业应用程序</a>教程。</p>
+
+        <p class="tips">有关实体类的更多详细信息，请参见 <a href="http://download.oracle.com/javaee/7/tutorial/doc/">Java EE 7 教程</a>中的 <a href="http://docs.oracle.com/javaee/7/tutorial/doc/persistence-intro.htm">Java 持久性 API 简介</a>一章。</p>
+
+        <p class="tips">有关会话 Bean 的更多信息，请参见 <a href="http://download.oracle.com/javaee/7/tutorial/doc/">Java EE 7 教程</a>中的<a href="http://docs.oracle.com/javaee/7/tutorial/doc/ejb-intro002.htm">什么是会话 Bean？</a>一章。</p>
+
+    
+        <div class="indent">
+            <a name="Exercise_2a"></a>
+            <h3>创建实体类</h3>
+            <p>在本练习中，将使用新建实体类向导创建简单的持久性实体类。您还会使用该向导创建持久性单元，以定义应用程序中使用的数据源和实体管理器。将在类中添加一个字段以表示表中的数据，并为新字段生成 getter 和 setter。</p>
+
+            <p>实体类必须具有一个主键。在使用向导创建实体类时，IDE 将默认生成 <tt>id</tt> 字段，并使用 <tt>@Id</tt> 标注来标注该字段以将其声明为主键。IDE 还会添加 <tt>@GeneratedValue</tt> 标注并指定主 id 字段的键生成策略。</p>
+
+            <p>在项目中使用 Java 持久性可以大大简化应用程序的开发，因为不需要配置部署描述符为持久性字段或属性提供对象关系映射信息。您可以使用标注直接在简单的 Java 类中定义这些属性。</p>
+
+            <p>实体持久性是通过 EntityManager API 来管理的。EntityManager API 用于处理持久性上下文，而每个持久性上下文是一组实体实例。开发应用程序时，您可以在类中使用标注来指定实体实例的持久性上下文实例。然后通过容器处理实体实例的生命周期。</p>
+
+            <p>要创建实体类，请执行以下步骤。</p>
+            <ol>
+               <li>右键单击项目节点，然后选择 "New"（新建）> "Other"（其他）。</li>
+               <li>从 "Persistence"（持久性）类别中，选择 "Entity Class"（实体类）。单击 "Next"（下一步）。</li>
+               <li>键入 <strong>Message</strong> 作为类名。</li>
+               <li>键入 <strong>entities</strong> 作为包名。</li>
+               <li>选择 "Create Persistence Unit"（创建持久性单元）。单击 "Next"（下一步）。</li>
+               <li>选择数据源（例如，如果要使用 JavaDB，则选择 <tt>jdbc/sample</tt>）。
+                   <p>在安装 IDE 和 GlassFish Server 时，<tt>jdbc/sample</tt> 的数据源将与 IDE 资源包捆绑在一起；但如果要使用不同的数据库，则可以指定不同的数据源。</p>
+                   <p>您可以保留其他默认选项（持久性单元名称、EclipseLink 持久性提供器）。确保持久性单元将使用 Java 事务 API，并且已将 "Table Generation Strategy"（表生成策略）设置为 "Create"（创建），以便在部署应用程序时将创建基于实体类的表。
+                   </p></li>
+
+               <li>在新建实体类向导中单击 "Finish"（完成）。
+                   <p>单击 "Finish"（完成），此时 IDE 将创建实体类并在编辑器中打开该类。您可以看到 IDE 生成了 id 字段 <tt>private Long id;</tt> 并使用 <tt>@Id</tt> 和 <tt>@GeneratedValue(strategy = GenerationType.AUTO)</tt> 标注该字段。</p></li>
+               <li>在编辑器中，将 <tt>message</tt> 字段（以粗体显示）添加到 <tt>id</tt> 字段下面。
+               <pre class="examplecode">
+private Long id;
+<strong>private String message;</strong></pre>
+               </li>
+               <li>在编辑器中右键单击，选择 "Insert Code"（插入代码）（Alt-Insert 组合键；在 Mac 上为 Ctrl-I 组合键），然后选择 "Getter and Setter"（Getter 和 Setter）。</li>
+               <li>在 "Generate Getters and Setters"（生成 getter 和 setter）对话框中，选择 <tt>message</tt> 字段，然后单击 "Generate"（生成）。
+                   <p>IDE 将为 <tt>message</tt> 字段生成 getter 和 setter 方法。</p>
+               <img alt="创建持久性单元向导" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/getters-dialog.png" title="创建持久性单元向导"></li>
+
+               <li>保存所做的更改。</li>
+            </ol>
+
+            <p>实体类表示数据库中的表。在运行此应用程序时，将自动创建 Message 的数据库表。该表包含 <tt>id</tt> 和 <tt>message</tt> 列。</p>
+
+            <p>如果在 XML 编辑器中查看持久性单元，则可以看到应用程序将使用 Java 事务 API (JTA) (<tt>transaction-type="JTA"</tt>)。这指定了在持久性上下文中管理实体生命周期的责任将指定给容器。这可减少所需的代码，因为实体生命周期是由容器而不是应用程序管理的。有关使用 JTA 管理事务的更多信息，请参见 <a href="http://www.oracle.com/technetwork/java/javaee/jta/index.html" target="_blank">Java 事务 API</a> 文档。</p>
+
+
+            <a name="Exercise_2b"></a>
+            <h3>创建会话 Facade</h3>
+
+            <p>在本练习中，将使用向导为 Message 实体创建无状态会话 Facade。EJB 3.1. 规范指出，会话 Bean 的业务接口现在是可选的。在此应用程序中，访问该 Bean 的客户端是本地客户端，您可以选择使用本地接口或无接口视图公开该 Bean。</p>
+
+            <p>要创建会话 Bean，请执行以下步骤。</p>
+            <ol>
+                <li>右键单击项目节点，然后选择 "New"（新建）> "Other"（其他）。</li>
+                <li>从 "Enterprise JavaBeans" 类别中选择 "Session Beans for Entity Classes"（实体类的会话 Bean）。单击 "Next"（下一步）。</li>
+                <li>选择 <tt>Message</tt> 实体，然后单击 "Add"（添加）。单击 "Next"（下一步）。</li>
+                <li>键入 <strong>boundary</strong> 作为包名。单击 "Finish"（完成）。
+                    <p>请注意，无需为会话 Bean 创建业务接口。相反，在此应用程序中，将使用无接口视图向本地受管 Bean 公开该 Bean。</p>
+                <img alt="实体类的会话 Bean 向导" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/sessionwizard.png" title="实体类的会话 Bean 向导"></li>
+            </ol>
+
+            <p>单击 "Finish"（完成），此时 IDE 将会生成会话 Facade 类 <tt>MessageFacade.java</tt> 和 <tt>AbstractFacade.java</tt>，然后在编辑器中打开文件。正如在生成的代码中所看到的一样，<tt>@Stateless</tt> 标注用于将 <tt>MessageFacade.java</tt> 声明为无状态会话 Bean 组件。<tt>MessageFacade.java</tt> 用于扩展 <tt>AbstractFacade.java</tt>，该类包含业务逻辑，用于管理事务。</p>
+
+            <pre class="examplecode">
+@Stateless
+public class MessageFacade extends AbstractFacade&lt;Message&gt; {
+    @PersistenceContext(unitName = "SimpleEE6AppPU")
+    private EntityManager em;
+            </pre>
+
+            <p>在使用向导为实体创建 Facade 时，IDE 将默认添加 <tt>PersistenceContext</tt> annotation 标注 (<tt>@PersistenceContext(unitName = "SimpleEE6AppPU")</tt>)，以便将实体管理器资源注入会话 Bean 组件并指定持久性单元名称。在本示例中，将显式声明持久性单元的名称；但如果应用程序只有一个持久性单元，则该名称是可选的。</p>
+
+            <p>IDE 还会在 <tt>AbstractFacade.java</tt> 中生成相应的方法以创建、编辑、删除和查找实体。实体管理器 API 定义了用于与持久性上下文交互的方法。您可以看到 IDE 生成了一些常用的默认查询方法，可使用这些方法查找实体对象。<tt>findAll</tt>、<tt>findRange</tt> 和 <tt>count</tt> 方法使用条件 API 中定义的方法来创建查询。条件 API 是 JPA 2.x 规范的一部分，它包含在 Java EE 6 规范中。</p>
+
+        </div>
+        
+        
+        
+        <!-- ===================================================================================== -->
+        <a name="Exercise_3"></a>
+        <h2>创建 JSF 受管 Bean 和 JSF 页</h2>
+
+        <p>在此部分，将使用 JavaServer Faces (JSF) 2.x 和 JSF 页所使用的受管支持 Bean 创建应用程序的表示层。JSF 2.x 规范支持将 Facelets 作为基于 JSF 的应用程序的首选视图技术。从 JSF 2.x 开始，您还可以在源代码中使用 <tt>@ManagedBean</tt> 标注将类声明为受管 Bean。您不再需要在 <tt>faces-config.xml</tt> 文件中添加实体以声明 JSF 受管 Bean。可以在 JSF 页中使用 Bean 名称访问受管 Bean 中的方法。</p>
+        <p class="tips">有关 IDE 中的 JavaServer Faces 2.x 规范支持的详细信息，请参见 <a href="../web/jsf20-support.html">NetBeans IDE 中的 JSF 2.x 支持</a>。</p>
+        <p class="tips">有关 JavaServer Faces 2.x 规范的详细信息，请参见 Java EE 7 教程中的 <a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-intro.htm" target="_blank">JavaServer Faces 技术</a>一章。</p>
+
+        <div class="indent">
+
+        <a name="Exercise_3a"></a>
+        <h3>创建受管 Bean</h3>
+        <p>在本练习中，将创建一个用于访问会话 Facade 的简单 JSF 受管 Bean。JSF 2.x 规范允许在 Bean 类中使用标注以将类标识为 JSF 受管 Bean，以及指定范围和 Bean 名称。</p>
+
+        <p>要创建受管 Bean，请执行以下步骤。</p>
+        <ol>
+           <li>右键单击项目节点，然后选择 "New"（新建）> "Other"（其他）。</li>
+           <li>从 "JavaServer Faces" 类别中选择 "JSF Managed Bean"（JSF 受管 Bean）。单击 "Next"（下一步）。</li>
+           <li>键入 <strong>MessageView</strong> 作为类名。
+                <p>在调用受管 Bean 中的方法时，将使用 Bean 名称 <tt>MessageView</tt> 作为 JSF 页 <tt>index.xhtml</tt> 中的 <tt>inputText</tt> 和 <tt>commandButton</tt> 的值。</p>
+           </li>
+           <li>键入 <strong>my.presentation</strong> 作为包名。</li>
+           <li>键入 <strong>MessageView</strong> 作为将用于受管 Bean 的名称。
+               <p class="notes"><strong>注：</strong>在使用此向导创建受管 Bean 时，默认情况下 IDE 将会根据该 Bean 类的名称为该 Bean 指定名称，名称以小写字母开头。出于本教程和演示之目的，您要为 Bean 明确指定以小写字母开头的名称。在 JSF 页中引用 Bean 时，您要使用 <tt>MessageView</tt> 而不是 <tt>messageView</tt>。如果尚未明确指定名称，则应在 JSF 页中使用默认的 <tt>messageView</tt>。</p></li>
+           <li>将 "Scope"（范围）设置为 "request"（请求）。单击 "Finish"（完成）。</li>
+        </ol>
+        <img alt="新建 JSF 受管 Bean 向导" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/newjsfbean.png" title="新建 JSF 受管 Bean 向导">
+
+        <p>单击 "Finish"（完成），此时 IDE 创建 Bean 类并在编辑器中打开该类。在 "Projects"（项目）窗口中，将会看到以下文件。</p>
+        <img alt="显示文件结构的 &quot;Project&quot;（项目）窗口" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/projectswindow.png" title="显示文件结构的 &quot;Project&quot;（项目）窗口">
+
+        <p>在编辑器中，您可以看到 IDE 添加了 <tt>@ManagedBean</tt> 和 <tt>@RequestScoped</tt> 标注以及 Bean 名称。</p>
+<pre class="examplecode">
+@ManagedBean(name="MessageView")
+@RequestScoped
+public class MessageView {
+
+    /** Creates a new instance of MessageView */
+    public MessageView() {
+    }
+
+}
+</pre>
+
+        <p>现在，将添加 <tt>@EJB</tt> 标注，以使用依赖关系注入获取对 MessageFacade 会话 Bean 的引用。此外，还要调用在 Facade 中公开的 <tt>findAll</tt> 和 <tt>create</tt> 方法。在键入这些方法时，IDE 的代码完成功能可为您提供帮助。</p>
+        <ol>
+            <li>在编辑器中右键单击，选择 "Insert Code"（插入代码）（Alt-Insert 组合键；在 Mac 上为 Ctrl-I 组合键），然后在弹出式菜单中选择 "Call Enterprise Bean"（调用企业 Bean）。</li>
+            <li>在 "Call Enterprise Bean"（调用企业 Bean）对话框中选择 "MessageFacade"。单击 "OK"（确定）。<br /> <img alt="&quot;Call Enterprise Bean&quot;（调用企业 Bean）对话框" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/callbean.png" title="&quot;Call Enterprise Bean&quot;（调用企业 Bean）对话框">
+                <p>在单击 "OK"（确定）时，IDE 将添加以下代码（以粗体显示）以注入该 Bean。</p>
+<pre class="examplecode">
+public class MessageView {
+
+    /** Creates a new instance of MessageView */
+    public MessageView() {
+    }
+
+    // Injects the MessageFacade session bean using the @EJB annotation
+    <strong>@EJB
+    private MessageFacade messageFacade;</strong>
+}
+</pre>
+            </li>
+            <li>添加以下代码以创建新实例。
+                <pre class="examplecode">/** Creates a new instance of MessageView */
+    public MessageView() {
+       this.message = new Message();
+    }</pre>
+            </li>
+            <li>在该类中添加以下代码。
+<pre class="examplecode">
+    // Creates a new field
+    private Message message;
+
+
+    // Calls getMessage to retrieve the message
+    public Message getMessage() {
+       return message;
+    }
+
+    // Returns the total number of messages
+    public int getNumberOfMessages(){
+       return messageFacade.findAll().size();
+    }
+
+    // Saves the message and then returns the string "theend"
+    public String postMessage(){
+       this.messageFacade.create(message);
+       return "theend";
+    }
+</pre>
+            </li>
+            <li>在编辑器中右键单击并选择 "Fix Imports"（修复导入）（Alt-Shift-I 组合键；在 Mac 中为 ⌘-Shift-I 组合键），然后保存您的更改。</li>
+        </ol>
+        <p class="tips">您可以在编辑器中使用代码完成以帮助键入代码。
+        </p>
+
+        
+        <p>请注意，<tt>postMessage</tt> 方法将返回 "theend" 字符串。JSF 2.x 规范允许在使用 Facelets 技术的应用程序中使用隐式导航规则。此应用程序中，没有在 <tt>faces-config.xml</tt> 中配置任何导航规则。导航处理程序将尝试在应用程序中查找合适的页面。在这种情况下，在调用 <tt>postMessage</tt> 方法时，导航处理程序将尝试查找名为 <tt>theend.xhtml</tt> 的页面。<p>
+
+
+        <a name="Exercise_3b"></a>
+        <h3>修改索引页</h3>
+
+        <p>在本练习中，将对 <tt>index.xhtml</tt> 页面进行简单的更改以添加一些 UI 组件。将在窗体中添加输入文本字段和按钮。</p>
+        <ol>
+            <li>在编辑器中打开 <tt>index.xhtml</tt>。</li>
+            <li>修改该文件，在 <tt>&lt;h:body&gt;</tt> 标记之间添加以下简单窗体。
+<pre class="examplecode">
+&lt;h:body&gt;
+    <strong>&lt;f:view&gt;
+        &lt;h:form&gt;
+            &lt;h:outputLabel value="Message:"/&gt;&lt;h:inputText value="#{MessageView.message.message}"/&gt;
+            &lt;h:commandButton action="#{MessageView.postMessage}" value="Post Message"/&gt;
+        &lt;/h:form&gt;
+    &lt;/f:view&gt;</strong>
+&lt;/h:body&gt;</pre>
+                <p class="tips">在键入代码时，JSF 代码完成功能可为您提供帮助。
+                </p>
+                <img alt="源代码编辑器中的代码完成" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/jsfcodecompletion1.png" title="源代码编辑器中的代码完成">
+            <p class="notes"><strong>注：</strong>如果将代码复制并粘贴到文件，您将会在 <tt>&lt;f:view></tt> 所在行旁边的左旁注中看到一条警告。您可以将插入光标放在该行中，然后按 Alt-Space 组合键以打开有关如何解决错误的提示。该提示告知您需要添加 <tt>xmlns:f="http://xmlns.jcp.org/jsf/core"</tt> 库声明。</p>
+            </li>
+            <li>保存所做的更改。
+            </li>
+        </ol>
+
+        <p><tt>inputText</tt> 和 <tt>commandButton</tt> 组件将在命名 JSF 受管 Bean <tt>MessageView</tt> 中调用方法。<tt>postMessage</tt> 方法返回 "theend"，导航处理程序将查找名为 <tt>theend.xhtml</tt> 的页面。</p>
+
+        <a name="Exercise_3c"></a>
+        <h3>创建结果页</h3>
+
+        <p>在本练习中，将创建 JSF 页 <tt>theend.xhtml</tt>。当用户在 <tt>index.xhtml</tt> 中单击 "Post Message" 按钮并在 JSF 受管 Bean 中调用 <tt>postMessage</tt> 方法时，将显示该页面。</p>
+        <ol>
+            <li>右键单击项目节点，然后选择 "New"（新建）> "Other"（其他）。</li>
+            <li>从 "JavaServer Faces" 类别中选择 "JSF Page"（JSF 页）。单击 "Next"（下一步）。</li>
+            <li>键入 <strong>theend</strong> 作为文件名。</li>
+            <li>确认选择了 "Facelets" 选项。单击 "Finish"（完成）。<br> <img alt="新建 JSF 文件向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/result-jsf-page.png" title="在新建 JSF 文件向导中创建 theend JSF 文件">
+            </li>
+            <li>在 &lt;h:body&gt; 标记之间键入以下内容以修改该文件。
+<pre class="examplecode">
+&lt;h:body&gt;
+    <strong>&lt;h:outputLabel value="Thanks! There are "/&gt;
+    &lt;h:outputText value="#{MessageView.numberOfMessages}"/&gt;
+    &lt;h:outputLabel value=" messages!"/&gt;</strong>
+&lt;/h:body&gt;</pre>
+            </li>
+        </ol>
+        <p class="tips">在开始键入时，IDE 自动在文件中为 JSF 元素添加 <tt>xmlns:h="http://xmlns.jcp.org/jsf/html"</tt> 标记库定义。</p>
+    </div>
+            
+    <a name="Exercise_4"></a>
+    <h2>运行应用程序</h2>
+    <p>现在，已完成了应用程序的编码工作。您可以在浏览器中测试应用程序。</p>
+    <ol>
+        <li>在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "Run"（运行）。
+            <p>在选择 "Run"（运行）时，IDE 构建和部署应用程序，并在浏览器中打开 <tt>index.xhtml</tt>。</p></li>
+        <li>在文本字段中键入消息。单击 "Post Message"。 <br /> <img alt="浏览器中的应用程序" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/browser1.png" title="浏览器中的应用程序">
+
+        </li>
+    </ol>
+
+    <p>在单击 "Post Message" 时，该消息将保存到数据库中，然后检索并显示消息数。</p>
+        <img alt="显示结果的浏览器中的应用程序" class="margin-around b-all" src="../../../images_www/articles/72/javaee/gettingstarted/browser2.png" title="显示结果的浏览器中的应用程序"> <a name="Exercise_5"></a>
+    <h2>下载解决方案项目</h2>
+    <p>您可以采用下列方法下载本教程中使用的样例项目。</p>
+    <ul>
+        <li>下载<a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/SimpleEE6App72.zip">已完成项目的 zip 档案文件</a>。</li>
+        <li>通过执行以下步骤从 NetBeans 样例检出项目源代码：
+            <ol>
+                <li>从主菜单中选择 "Team"（团队开发）> "Subversion" > "Checkout"（检出）。</li>
+                <li>在 "Checkout"（检出）对话框中，输入以下资源库 URL：<br /> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br /> 单击 "Next"（下一步）。</li>
+                <li>单击 "Browse"（浏览）以打开 "Browse Repository Folders"（浏览资源库文件夹）对话框。</li>
+                <li>展开根节点并选择 <strong>samples/javaee/SimpleEE6App</strong>。单击 "OK"（确定）。</li>
+                <li>指定用于存储源代码的本地文件夹（本地文件夹必须为空）。</li>
+                <li>单击 "Finish"（完成）。
+                    <p>单击 "Finish"（完成），此时 IDE 会将本地文件夹初始化为 Subversion 资源库，并检出项目源代码。</p>
+                </li>
+                <li>在完成检出操作后将会显示一个对话框，在该对话框中单击 "Open Project"（打开项目）。</li>
+            </ol>
+
+            <p class="notes"><strong>注：</strong></p>
+            <ul>
+                <li>需要 Subversion 客户端检出源代码。有关安装 Subversion 的更多信息，请参见 <a href="../ide/subversion.html">NetBeans IDE 中的 Subversion 指南</a>中有关<a href="../ide/subversion.html#settingUp">设置 Subversion</a> 的部分。</li>
+            </ul>
+        </li>
+    </ul>
+                
+            
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20Java%20EE%206%20Applications">发送有关此教程的反馈意见</a></div>
+            <br style="clear:both;" />
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>另请参见</h2>
+            <p>有关使用 NetBeans IDE 开发 Java EE 应用程序的更多信息，请参见以下资源：
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Java EE 技术简介</a></li>
+            <li><a href="../web/jsf20-support.html">NetBeans IDE 中的 JSF 2.x 支持</a></li>
+            <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+            </ul>
+            <p>可以在 <a href="http://download.oracle.com/javaee/7/tutorial/doc/">Java EE 7 教程</a>中找到使用 Java EE 技术开发应用程序的详细信息。</p>
+            <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee 邮件列表</a>。</p>
+    </body>
+</html>

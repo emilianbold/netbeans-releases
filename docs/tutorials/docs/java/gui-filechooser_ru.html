@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Добавление выбора файлов к приложению Java</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen" />
+    <meta name="author" content="Petr Dvorak, Alyona Stashkova" />
+    <meta name="description" content="How to add a file chooser to a Java application using the javax.swing.JFileChooser component and the NetBeans GUI Builder." />
+    <meta name="keywords" content="javax.swing.JFileChooser, java, application, file, chooser, GUI builder" />
+  </head>
+  <body>
+
+    <h1>Добавление выбора файлов к приложению Java</h1>
+    <p><em>Составитель: Петр Дворжак <a href="http://blogs.oracle.com/joshis/entry/a_quick_jfilechooser_demo">(декабрь 2009 г.)</a>, редактор: Алёна Сташкова</em></p>
+
+    <p>
+      В этом учебном курсе вы узнаете, как добавлять выбор файлов к приложению Java с помощью компонента <tt>javax.swing.JFileChooser</tt>.  Код можно написать вручную, но использование редактора GUI Builder среды NetBeans существенно снижает объём работы. В рамках этого упражнения вы создадите небольшое приложение Java, загружающее файл <tt>.txt</tt> в текстовую область.    </p>
+
+    <p>Полученный проект <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FJFileChooserDemo.zip" title="ZIP с демо-версией проекта (JFileChooserDemo)"> можно загрузить с использованием средства выбора файлов</a>. <br />
+    </p>
+
+    <p><b>Содержание</b></p>
+     <img alt="Содержимое этой страницы применимо к IDE NetBeans 7.0 и более поздним версиям" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.0 и более поздним версиям" />
+    <ul>
+      <li><a href="#app" title="Создание приложения"> Создание приложения</a></li>
+      <li><a href="#menu" title=" Создание формы приложения ">Создание формы приложения </a></li>
+      <li><a href="#filechooser" title="Добавление выбора файлов">Добавление выбора файлов</a></li>
+      <li><a href="#config" title="Настройка выбора файлов">Настройка выбора файлов</a></li>
+      <li><a href="#run" title="Запуск приложения">Выполнение приложения</a></li>
+    </ul>
+<p><b>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                <th class="tblheader" scope="col">Требуемая версия</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://netbeans.org/downloads/">IDE NetBeans</a></td>
+                <td class="tbltd1">Версия 7.0 или более поздняя </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработки приложений на языке Java</a> (JDK)</td>
+                <td class="tbltd1">Версия 6, 7 или 8 </td>
+            </tr>
+                      
+        </tbody>
+    </table>
+  
+
+    <h2><a name="app"></a>Создание приложения</h2>
+
+    <p>Прежде всего необходимо создать приложение Java:</p>
+    <ol>
+      <li>Выберите в главном меню &quot;Файл &gt; Новый проект&quot;. Выберите категорию &quot;Java&quot; и тип проекта &quot;Приложение Java&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+      <li>В качестве имени проекта введите <code>JFileChooserDemo</code>, затем укажите местоположение проекта.</li>
+      <li>Снимите флажок &quot;Создать главный класс&quot;.    
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/newproj.png" rel="lytebox" title="Мастер создания проектов"> <img alt="Мастер создания проектов" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/newproj-small.png"></a></p></li>
+	  <li>Нажмите кнопку &quot;Завершить&quot;.</li>
+	  
+    </ol>
+    
+    
+    <h2><a name="menu"></a>Создание формы приложения</h2>
+    <p>В этом разделе вы создадите контейнер <tt>JFrame</tt> и добавите к нему несколько компонентов.</p>
+	
+	<p><b>Создание формы JFrame:</b></p>
+        <ol>
+            <li>Щелкните правой кнопкой мыши узел &quot;Исходные файлы&quot; и выберите пункт &quot;Создать &gt; Другое&quot;.  Выберите категорию &quot;Формы Swing GUI&quot; и тип файла &quot;JFrameForm&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>В поле &quot;Имя класса&quot; введите <code>JFileChooserDemo</code>.</li>
+            <li>В поле &quot;Пакет&quot; введите <code>jfilechooserdemo.resources</code>.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/newjframeform.png" rel="lytebox" title="Создается новый контейнер JFrame"> <img alt="Создается новый контейнер JFrame" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/newjframeform-small.png"></a></p></li>
+			
+            <li>Нажмите кнопку &quot;Завершить&quot;.</li>
+			<li>В окне &quot;Свойства&quot; введите <code>Demo application</code> в качестве свойства &quot;Заголовок&quot; и нажмите ENTER для подтверждения.</li>
+        </ol>
+	<p><b>Чтобы добавить компоненты к форме JFrame, выполните следующие действия.</b></p>
+        <ol>
+            <li>В окне &quot;Палитра&quot; откройте категорию &quot;Меню Swing&quot;, выберите компонент &quot;Строка меню&quot; и перетащите его в левый верхний угол JFrame. 
+			
+			 <p class="notes"><b>Примечание.</b> Если палитра не отображается, выберите 'Окно > Палитра' в главном меню. </p>
+			 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/menubaradded.png" rel="lytebox" title="Строка меню добавлена в форму JFrame"> <img alt="Строка меню добавлена в форму JFrame" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/menubaradded-small.png"></a></p></li>
+
+			<li>Правой кнопкой мыши щелкните элемент &quot;Правка&quot; компонента &quot;Строка меню&quot; и выберите в контекстном меню пункт &quot;Удалить&quot;.
+ </li>
+			<li>Чтобы добавить пункт меню, позволяющий открывать компонент FileChooser из выполняемого приложения, в категории &quot;Меню Swing&quot; в окне &quot;Палитра&quot; выберите новый пункт меню (JMenuItem1), перетащите его в элемент &quot;Строка меню&quot; и поместите его в поле &quot;Файл&quot; элемента &quot;Строка меню&quot;.
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/menuitemadded.png" rel="lytebox" title="Пункт меню добавлен в строку меню"> <img alt="Пункт меню добавлен в строку меню" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/menuitemadded-small.png"></a></p>
+			 <p class="notes"><b>Примечание. </b> Убедитесь, что панель меню выбрана до перетаскивания другого элемента меню в него, чтобы добавить этот другой элемент на панель меню. </p></li>
+			
+			<li>Правой кнопкой мыши щелкните элемент jMenuItem1 в режиме конструирования и выберите 'Изменить имя переменной' в контекстном меню. Измените имя элемента на <code>Open</code> и нажмите кнопку &quot;ОК&quot;.</li>
+			<li>Убедитесь, что элемент jMenuItem1 все еще выбран в режиме проектирования. Нажмите клавишу ПРОБЕЛ, чтобы изменить текст компонента. Измените текст на <code>Open</code> и нажмите ENTER для подтверждения.</li>
+			<li>Укажите обработчик действий для пункта меню &quot;Open&quot;.  Правой кнопкой мыши щелкните пункт меню и выберите в контекстном меню &quot;События &gt;Действие &gt; Выполненное действие&quot;. GUI Builder автоматически переключается в режим просмотра исходного кода, и создается новый метод обработчика событий с именем <tt>OpenActionPerformed()</tt>.  Окно навигатора должно выглядеть следующим образом: 
+			<p class="align-center"><img alt="Пункт меню добавлен в строку меню" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/openactionperformednavigator.png"></p></li>
+			<li>Чтобы добавить пункт меню для выхода элемента FileChooser из создаваемого приложения, вернитесь в режим проектирования, в категории &quot;Меню Swing&quot; в окне &quot;Палитра&quot; выберите пункт меню JMenuItem1 и перетащите его в элемент &quot;Строка меню&quot; под пункт меню &quot;Open&quot;.  Место вставки элемента <tt>JMenuItem1</tt> выделено оранжевым цветом. 
+		 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/highlighting.png" rel="lytebox" title="Выделение"> <img alt="Выделение" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/highlighting-small.png"></a></p></li>
+			<li>Щелкните правой кнопкой мыши элемент <tt>jMenuItem1</tt> в режиме конструирования и выберите 'Изменить имя переменной' в контекстном меню. Измените имя элемента на <code>Exit</code> и нажмите кнопку &quot;ОК&quot;.</li>
+			<li>Убедитесь, что элемент <tt>jMenuItem1</tt> все еще выбран в режиме конструирования. Нажмите клавишу ПРОБЕЛ, чтобы изменить текст компонента. Измените текст на <tt>Exit</tt> и нажмите ENTER для подтверждения.</li>
+			<li>Укажите обработчик действий для пункта меню &quot;Exit&quot;.  Правой кнопкой мыши щелкните пункт меню и выберите в контекстном меню &quot;События &gt;Действие &gt; Выполненное действие&quot;. GUI Builder автоматически переключается в режим просмотра исходного кода, и создается новый метод обработчика событий с именем <code>ExitActionPerformed()</code>. В окне навигатора, под узлом <code>OpenActionPerformed()</code> отображается узел <code>ExitActionPerformed</code>. </li>   
+			<li>Чтобы сделать пункт меню &quot;Exit&quot; рабочим, в тело метода <code>ExitActionPerformed()</code> необходимо включить следующий исходный код:  
+			 <pre class="samplecode">
+			 System.exit(0); </pre></li>      
+	  <li>Переключитесь обратно в режим проектирования. Перетащите текстовую область (<tt>JTextArea</tt>) из категории 'Элементы управления Swing' палитры на форму, как показано на иллюстрации.
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/textareadded.png" rel="lytebox" title="Текстовая область добавлена в форму JForm"> <img alt="Текстовая область добавлена в форму JForm" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/textareadded-small.png"></a></p></li>
+	  <li>Измените размер компонента, чтобы оставить место для текста, который отобразится в выборе файлов позже.  Измените имя переменной на <code>textarea</code>.  Форма должна иметь следующий вид:
+		 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/jfilechooserdemoview_final.png" rel="lytebox" title="Приложение Java - конструктор графического интерфейса пользователя"> <img alt="Приложение Java - конструктор графического интерфейса пользователя" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/jfilechooserdemoview_final-small.png"></a></p></li>	               
+        </ol>
+		
+        <p>Основным упражнением данного учебного курса была настройка простого приложения Java.  Сейчас следует добавить фактический выбор файлов.</p>
+
+    <h2><a name="filechooser"></a>Добавление выбора файлов</h2>
+
+<ol>
+    <li>Выберите Окно > Навигация > Навигатор, чтобы открыть окно 'Навигатор'(если оно еще не открыто).</li>
+	<li>В навигаторе щелкните правой кнопкой мыши узел <tt>Другие компоненты</tt>. Выберите в контекстном меню пункт &quot;Добавить из палитры &gt; Диалоговые окна Swing &gt; Выбор файлов
+	
+	  <p class=tips>
+        Помимо использования контекстного меню <tt>Добавить из палитры</tt> можно также перетащить компонент <tt>JFileChooser</tt> из категории 'Окно Swing' палитры на белое поле конструктора графического интерфейса. Вы получите тот же результат, но данный метод требует немного больше усилий, так как эскиз <tt>JFileChooser</tt> занимает достаточно большую область экрана и можно случайно вставить окно в одну из панелей, что не соответствует поставленной задаче.</p>
+	</li>
+    
+    <li>Навигатор показывает, что элемент <tt>JFileChooser</tt> добавлен в форму.
+    </li>
+    <li>Щелкните узел <tt>JFileChooser</tt> правой кнопкой мыши и измените имя переменной на <code>fileChooser</code>.
+	
+                <p class="align-center"><img alt="Добавлено средство выбора файлов - представление навигатора" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/navigator_jframe.png"></p></li>
+</ol>
+
+
+
+ <p>Вы добавили выбор файлов. Далее следует настроить выбор файлов для отображения необходимого заголовка, добавить пользовательский фильтр файлов и интегрировать выбор файлов в приложение.</p>
+
+
+    
+    
+
+    <h2><a name="config"></a>Настройка выбора файлов</h2>
+	
+	<h3>Реализация действия &quot;Открыть&quot;</h3>
+
+<ol>
+    <li>Выберите элемент <tt>JFileChooser</tt> в окне 'Навигатор', затем измените его свойства в диалоговом окне 'Свойства' Измените свойство <tt>dialogTitle</tt> на <code>Мой открытый диалог</code>, затем нажмите Enter и закройте диалоговое окно 'Свойства'</li>
+    <li>
+      Нажмите кнопку &quot;Перейти к исходному тексту&quot; в GUI Builder, чтобы вернуться к режиму просмотра исходного кода. Чтобы интегрировать выбор файлов в приложение, необходимо вставить в существующий метод <code>OpenActionPerformed()</code> следующий фрагмент кода.   
+
+      <pre class="samplecode">
+private void OpenActionPerformed(java.awt.event.ActionEvent evt) {
+    int returnVal = fileChooser.showOpenDialog(this);
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
+        File file = fileChooser.getSelectedFile();
+        try {
+          // What to do with the file, e.g. display it in a TextArea
+          textarea.read( new FileReader( file.getAbsolutePath() ), null );
+        } catch (IOException ex) {
+          System.out.println(&quot;problem accessing file&quot;+file.getAbsolutePath());
+        }
+    } else {
+        System.out.println(&quot;File access cancelled by user.&quot;);
+    }
+} </pre>
+<p class="notes"><b>Примечание. </b> Удалите первую и последнюю строку фрагмента кода, которые дублируют существующие строки в исходном файле. </p></li>
+
+   <li>Если редактор создает отчет об ошибках в коде, щелкните правой кнопкой мыши в любом месте кода и выберите 'Исправить выражения импорта' или нажмите Ctrl+Shift+I. В диалоговом окне 'Исправить все выражения импорта' примите значения по умолчанию для обновления операторов импорта и нажмите OK.</li>
+</ol>
+   <p>
+     Итак, метод FileChooser <tt>getSelectedFile()</tt> вызывается для определения файла, выбранного пользователем, в целях дальнейшей работы с ним. В этом примере считывается содержимое файлов, которое затем отображается в TextArea. 
+   </p>
+
+    
+   <h3>Реализация фильтра файлов</h3>
+
+  <p>Теперь можно добавить пользовательский фильтр файлов, благодаря которому в выборе файлов будут отображаться только файлы<tt>*.txt</tt>.</p>
+  <ol>
+  
+    <li>Переключитесь в режим конструирования и выберите элемент <tt>fileChooser</tt> в окне 'Навигатор'. </li>
+       <li>В окне 'Свойства' нажмите кнопку обзора ('...') рядом со свойством <tt>fileFilter</tt>.</li>
+       <li>В диалоговом окне &quot;Фильтр файлов&quot; выберите пользовательский код из поля со списком. 
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/combobox.png" rel="lytebox" title="Открытый список"> <img alt="Открытый список" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/combobox-small.png"></a></p></li>
+	<li>
+      Введите <tt>new MyCustomFilter()</tt> в текстовое поле.  Нажмите кнопку &quot;ОК&quot;.
+    </li>
+    <li>
+      Для использования пользовательского кода необходимо создать внутренний (или внешний) класс <tt>MyCustomFilter</tt>, расширяющий класс <tt>FileFilter</tt>.  Чтобы создать внутренний класс, реализующий фильтр, скопируйте и вставьте следующий фрагмент кода в исходный код класса под операторами импорта.
+
+      <pre class="samplecode">
+    class MyCustomFilter extends javax.swing.filechooser.FileFilter {
+        @Override
+        public boolean accept(File file) {
+            // Allow only directories, or files with &quot;.txt&quot; extension
+            return file.isDirectory() || file.getAbsolutePath().endsWith(&quot;.txt&quot;);
+        }
+        @Override
+        public String getDescription() {
+            // This description will be displayed in the dialog,
+            // hard-coded = ugly, should be done via I18N
+            return &quot;Text documents (*.txt)&quot;;
+        }
+    } </pre></li>
+  </ol>
+  <p class=notes><b>Примечание.</b> Описание реализации более интеллектуальных, поддерживающих переключение фильтров файлов просмотрите метод <a href="http://java.sun.com/javase/7/docs/api/javax/swing/JFileChooser.html#addChoosableFileFilter%28javax.swing.filechooser.FileFilter%29" target="_blank" title="Документация по API JDK">addChoosableFileFilter</a>. 
+  </p>
+
+<h2><a name="run"></a>Выполнение приложения</h2>
+<ol>
+    <li>Для запуска примера проекта щелкните проект JFileChooserDemo правой кнопкой мыши и нажмите кнопку &quot;Выполнить&quot;. </li>
+	<li>В диалоговом окне &quot;Запуск проекта&quot; выберите главный класс <code>jfilechooserdemo.resources.JFileChooserDemo</code> и нажмите кнопку &quot;ОК&quot;.
+	<p class="align-center"><img alt="Выполнить" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/run.png"></p>
+	</li> 
+	<li>В меню 'Файл' запущенного демо-приложения выберите 'Открыть', чтобы инициировать действие. Результат должен иметь следующий вид:
+	  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-filechooser/result_jfilechooserdemo.png" rel="lytebox" title="Демо-версия JFileChooser - результат"> <img alt="Демо-версия JFileChooser - результат" border="1/" src="../../../images_www/articles/72/java/gui-filechooser/result_jfilechooserdemo-small.png"></a></p>
+</li>
+    
+	<li>Чтобы закрыть приложение, выберите &quot;Выход&quot; в меню &quot;Файл&quot;. </li>
+  </ol>
+    <p>Следует обратить внимание на другие полезные окна и диалоговые окна Swing, например ColorChooser или OptionPane в палитре графического интерфейса.</p>
+
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Adding%20a%20FileChooser">Отправить отзыв по этому учебному курсу</a></div>
+      <br style="clear:both;" />   
+   
+<h2><a name="next"></a>Что дальше?</h2>
+
+  <ul>
+  <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Реализация графических интерфейсов Java</a> в документе <i>Разработка приложений в IDE NetBeans</i>
+    <li><a href="gui-binding.html">Привязка компонентов Bean и данных в приложениях Java с помощью IDE NetBeans</a></li>
+    <li><a href="gui-automatic-i18n.html">Интерналионализация формы графического интерфейса с помощью IDE NetBeans</a></li>
+    <li><a href="http://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html" target="_blank" title="Использование выбора файлов">Учебный курс по Java: использование средств выбора файлов</a> </li>
+  </ul>
+
+  </body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--      Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved. -->
+<!--     Use is subject to license terms.-->
+<html>
+<head>
+   <title>モバイル埋込みアプリケーションの作成、デバッグおよびプロファイリング - NetBeans IDEチュートリアル</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   </head>
+<body>
+<a name="top"></a>
+<h1>モバイル埋込みアプリケーションの作成、デバッグおよびプロファイリング</h1>
+<div class="articledate" style="margin-left: 0px;"> Sungmoon Cho、Alyona Stashkova</div>
+<p>モバイル埋込みアプリケーションは、産業用計測デバイス、自動販売機、セキュリティ・システム、モデム、家庭用電子機器、同様に表示が単純であるか表示がなく、ネットワーク接続が限定されているデバイスなどの、小型埋込みデバイスで使用されています。この例では、<a href="http://jcp.org/en/jsr/detail?id=228">JSR 228</a>、Information Module Profile-Next Generation API (IMP-NG)のサポートを含むOracle Java Micro Edition Embeddedプラットフォームを使用してNetBeans IDEで新しいJava ME埋込みプロジェクトを開発する方法を示します。Oracle Java ME EmbeddedのNetBeansサポートを使用して独自のIMletをデバッグおよびプロファイリングする方法も説明します。</p>
+
+
+<h3>目次</h3>
+<img alt="このページの内容は、NetBeans IDE 7.3以降に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.3以降に適用されます">
+<ul>
+
+<li><a href="#install" title="Oracle Java ME Embeddedのインストール">Oracle Java ME Embeddedのインストール</a></li>
+<li><a href="#create" title="埋込みプロジェクトの作成">埋込みプロジェクトの作成</a></li>
+<li><a href="#run" title="アプリケーションの実行">アプリケーションの実行</a></li>
+<li><a href="#debug" title="アプリケーションのデバッグ">アプリケーションのデバッグ</a></li>
+<li><a href="#profile" title="アプリケーションのプロファイリング">アプリケーションのプロファイリング</a></li>
+<li><a href="#nextsteps" title="関連項目">関連項目</a></li>
+
+</ul>
+
+<p><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+
+<table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDEとJava ME</a></td>
+                <td class="tbltd1">バージョン7.3またはそれ以降</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit</a> (JDK)</td>
+                <td class="tbltd1">バージョン6、7または8 </td>
+            </tr> 
+			 <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">Java ME SDK</a></td>
+                <td class="tbltd1">バージョン3.2またはそれ以降 </td>
+            </tr>      
+        </tbody>
+</table>
+<p class="alert"><b>重要:</b> このチュートリアルは、Win32互換プラットフォームでのみ稼働します。</p>
+
+<h2><a name="install"></a>Oracle Java ME Embeddedのインストール</h2>
+<p>NetBeans IDEをWindowsプラットフォーム用のOracle Java ME Embeddedソフトウェアとともに設定するには、次の操作を行う必要があります。 </p>
+<ul>
+<li>Oracle Java ME SDKのインストール </li>
+<li>NetBeans IDEでのJava ME機能のアクティブ化</li>
+<li>NetBeans IDEへのOracle Java ME Embeddedプラットフォームのインストール </li>
+</ul>
+<p><b>Oracle Java ME SDKをインストールする手順:</b></p>
+<ol>
+<li><a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">Java ME SDKダウンロード</a>・ページに移動します。</li>
+<li>「Accept License Agreement」オプションをクリックします。</li>
+<li>Oracle Java ME SDKインストーラ・ファイル(oracle-jmesdk-3-4-rr-win32-bin.exeなど)をダウンロードし、コンピュータ上の任意の場所に保存します。</li>
+<li>インストーラ・ファイルをダブルクリックしてインストーラを実行し、指示に従います。<br>インストールが完了すると、Java (TM) ME Platform SDK Device Managerアイコン(<img alt="Java (TM) ME Platform SDK 3.2 Device Managerアイコン" src="../../../images_www/articles/73/javame/imp-ng/icon.png">)がWindowsシステム・トレイに表示されます。</li>
+
+</ol>
+<p><b>Java ME機能をアクティブにする手順:</b> </p>
+<ol>
+<li>IDEのメイン・ツールバーから「ツール」→「プラグイン」を選択します。</li>
+<li>「プラグイン」ダイアログ・ボックスで、「インストール済み」タブをクリックし、使用可能な機能のリストで「Java ME」を選択します。 
+  <p class="align-center"><a href="../../../images_www/articles/73/javame/imp-ng/plugins.png" rel="lytebox" title="「プラグイン」ダイアログ・ボックス"> <img alt="「プラグイン」ダイアログ・ボックス" border="1" src="../../../images_www/articles/73/javame/imp-ng/plugins-small.png"></a></p></li>
+<li>「アクティブ化」をクリックします。</li>
+<li>「インストーラ」ダイアログ・ボックスの「ようこそ」パネルで「アクティブ化」をクリックします。
+<p class="align-center"><a href="../../../images_www/articles/73/javame/imp-ng/installer.png" rel="lytebox" title="「インストーラ」ダイアログ・ボックス"> <img alt="「インストーラ」ダイアログ・ボックス" border="1" src="../../../images_www/articles/73/javame/imp-ng/installer-small.png"></a></p></li>
+<li>アクティブ化が正常に完了したら、「終了」をクリックします。</li>
+<li>「閉じる」をクリックして「プラグイン」ダイアログ・ボックスを閉じます。</li>
+</ol>
+
+<p><b>Oracle Java ME Embeddedプラットフォームをインストールする手順:</b></p>
+
+<ol>
+<li>「ツール」→「Javaプラットフォーム」を選択します。<br>「Javaプラットフォーム・マネージャ」ダイアログ・ボックスが表示されます。
+<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpmanager.png" rel="lytebox" title="「名前と場所」パネル"> <img alt="「名前と場所」パネル" border="1" src="../../../images_www/articles/73/javame/imp-ng/jpmanager-small.png"></a></p></li>
+<li>「プラットフォームの追加」をクリックします。</li>
+<li>「Javaプラットフォームの追加」ウィザードの「プラットフォーム・タイプを選択」で、「Java ME CLDCプラットフォーム・エミュレータ」を選択し、「次」をクリックします。<br> IDEに、「プラットフォームを検索するディレクトリを選択してください」ダイアログ・ボックスが表示されます。</li>
+<li>Java ME SDKプラットフォームをインストールしたディレクトリ(<tt>C:\Java_ME_Platform_SDK_3.2</tt>など)を選択し、「開く」をクリックします。</li> 
+<li>「Javaプラットフォームの追加」ウィザードの「プラットフォームのフォルダ」パネルで、前の手順で選択したプラットフォームが選択されていることを確認し、「次」をクリックします。</li>
+<li>IDEがプラットフォームを検出したらすぐに、「Javaプラットフォームの追加」ウィザードの「検出されたプラットフォーム」パネルで「終了」をクリックします。
+<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpdetected.png" rel="lytebox" title="検出されたJ2MEプラットフォーム"> <img alt="検出されたJ2MEプラットフォーム" border="1" src="../../../images_www/articles/73/javame/imp-ng/jpdetected-small.png"></a></p>
+		これで、Oracle Java MEプラットフォームがNetbeans IDEに登録されます。
+		<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpregistered.png" rel="lytebox" title="登録されたJ2MEプラットフォーム"> <img alt="登録されたJ2MEプラットフォーム" border="1" src="../../../images_www/articles/73/javame/imp-ng/jpregistered-small.png"></a></p></li>
+					 <li>「Javaプラットフォーム・マネージャ」ダイアログ・ボックスで、「閉じる」をクリックします。</li>
+</ol>
+<p>これで、NetBeans IDEがモバイル開発用に設定されます。</p>
+  
+<h2><a name="create"></a>埋込みプロジェクトの作成 </h2>
+ 
+  <p>新規プロジェクトの作成は、NetBeans IDEでの新規Java ME Embeddedアプリケーションの開発の最初の手順です。 </p>
+  <ol>
+  <li>「ファイル」>「新規プロジェクト」を選択します。<br>「新規プロジェクト」ダイアログ・ボックスが表示されます。</li>
+  <li>「Java ME」カテゴリと「埋込みアプリケーション」プロジェクトを選択します。「次」をクリックします。</li>
+  <li>新規埋込みアプリケーション・ウィザードの「名前と場所」パネルで、プロジェクト名として「<tt>EmbeddedApp</tt>」を指定します。 
+  <p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/newappname.png" rel="lytebox" title="「名前と場所」パネル"> <img alt="「名前と場所」パネル" border="1" src="../../../images_www/articles/73/javame/imp-ng/newappname-small.png"></a></p></li>
+  <li>「デフォルト・パッケージとIMletクラスの作成」オプションは選択したままにし、「次」をクリックします。</li>
+  <li>CLDC Oracle Java(TM) Platform Micro Edition SDKがエミュレータ・プラットフォームとして選択され、IMPNGPhone1がデバイスとして選択されていることを確認します。 </li>
+  <li>「終了」をクリックします。<br>IMP-NGアプリケーションとIMLetが標準IDEプロジェクトに作成されます。
+  <p class="align-center"><img alt="作成された新規プロジェクト" border="1" src="../../../images_www/articles/73/javame/imp-ng/prjcreated.png"></p></li>
+  </ol>	
+  <p class="align-center"><a href="#top">先頭</a></p>
+  <h2><a name="run"></a>アプリケーションの実行</h2>			 
+  <p>アプリケーションが正しく稼働していることを確認するには、アプリケーション・ソース・コードを次のように修正します。</p>
+  <ol>
+  <li>「プロジェクト」ウィンドウで、「<tt>IMlet.java</tt>」ファイルをダブルクリックし、「編集」を選択します。<br>IDEによって、<tt>IMlet.java</tt>ファイルがソース・エディタに開かれます。 </li>
+  <li>ソース・コードをスクロールし、<tt>StartApp</tt>メソッドを探します。</li>
+  <li><tt>StartApp</tt>メソッドの本体に、次の太字の行を挿入します。
+  <pre class="examplecode"> public void startApp() {
+      <b>System.out.println(&quot;Hello, world!&quot;);</b>
+ }</pre></li>
+ <li>IDEのメイン・メニューから「ファイル」→「保存」を選択して、編集内容を保存します。</li>
+</ol>
+  <p>これでアプリケーションが作成され、次の説明に従ってIDEでアプリケーションを実行できます。</p>
+  
+
+            <ol>
+			<li>「<tt>EmbeddedApp</tt>」プロジェクトを右クリックし、「消去してビルド」を選択します。<br>「出力」ウィンドウにBUILD SUCCESSFUL文が表示されます。 
+			<p class="notes"><b>注意:</b> 「出力」ウィンドウが表示されない場合は、IDEのメイン・メニューから「ウィンドウ」→「出力」→「出力」を選択します。</p>
+			</li>
+            <li>IDEのメニュー・バーから、「実行」→「プロジェクトの実行」を選択します。<br> IMPNGPhone1エミュレータが起動し、実行されているEmbeddedAppアプリケーションが表示されます。
+			  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/emulator.png" rel="lytebox" title="エミュレータ"> <img alt="エミュレータ" border="1" src="../../../images_www/articles/73/javame/imp-ng/emulator-small.png"></a></p>
+<p class="notes"><b>注意:</b> Java ME Embeddedエミュレータの詳細は、<a href="http://docs.oracle.com/javame/config/cldc/rel/3.2/get-started-win/title.htm">Oracle Java ME Embeddedスタート・ガイド for Windows 32プラットフォーム</a>を参照してください。</p>
+             「出力」ウィンドウに、プログラムからの出力として<code>Hello, world!</code>が表示されます。
+			 <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/output.png" rel="lytebox" title="出力"> <img alt="出力" border="1" src="../../../images_www/articles/73/javame/imp-ng/output-small.png"></a></p></li>
+		<li>エミュレータで、「<tt>Embedded App (running)</tt>」を選択し、右側の「一時停止」をクリックします。<br>アプリケーションが一時停止します。 </li>
+		<li>「再開」をクリックします。<br>アプリケーションの実行が再開します。 </li>
+		<li>アプリケーションを停止し、エミュレータを終了するには、「停止」をクリックし、エミュレータのメニューから「アプリケーション」→「終了」を選択します。<br>IDEで実行プロセスが終了します。</li>
+            </ol>
+			<p class="align-center"><a href="#top">先頭</a></p>
+<h2><a name="debug"></a>アプリケーションのデバッグ</h2>
+<p>埋込みプロジェクトのデバッグは、一般的なJavaプロジェクトのデバッグと同様に実行します。</p>
+<p>プロジェクトを右クリックし、「デバッグ」を選択してデバッグ・セッションを開始します。エミュレータが開き、プログラムの実行が任意の設定したブレークポイントで停止します。</p>
+
+<p class="align-center"><a href="#top">先頭</a></p>
+<h2><a name="profile"></a>アプリケーションのプロファイリング</h2>
+<p>標準CPUまたはメモリー・プロファイリングなどの一般的なプロファイリング・タスクを使用して、信頼性のあるモバイル埋込みアプリケーションをビルドします。</p>
+<p>アプリケーションをプロファイリングする前に、次のようにJava ME SDK Toolsプラグインをインストールする必要があります。</p>
+<ol>
+<!--<li>Go to the <a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">Java ME SDK download</a> page.</li>
+<li>Click the Accept License Agreement option.</li>
+<li>Download the <a href="http://download.oracle.com/otn-pub/java/java_me_sdk/3.2/nb-me-sdk-plugins-uc.zip">nb-me-sdk-plugins-uc.zip</a> file and save it on your computer.</li>
+<li>Unpack the archive to a folder on your hard drive (for example, <code>C:/mesdk_nb</code>).</li>-->
+<li>NetBeans IDEで、「ツール」→「プラグイン」を選択します。</li>
+<!--<li>In the Plugins Manager, select the Settings tab and click Add.
+<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/add.png" rel="lytebox"
+                       title="The Add button highlighted">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/add-small.png"
+                     alt="The Add button highlighted" border=1></a></p></li>
+<li>In the Name field of the Update Center Customizer dialog box, type <code>Java ME SDK Plugins</code>.</li>
+<li>In the URL text field, specify the path to the <code>updates.xml</code> file in the directory where you unpacked the <code>nb-me-sdk-plugins-uc.zip</code> file (for example, <code>file:/c:/mesdk_nb/updates.xml</code>) and click OK.<br> 
+The Java ME SDK Plugins configuration displays in the Configuration of the Update Centers list on the Setting tab.
+  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/settings-plugins.png" rel="lytebox"
+                       title="Java ME SDK Plugins added">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/settings-plugins-small.png"
+                     alt="Java ME SDK Plugins added" border=1></a></p></li>-->
+<li>プラグイン・マネージャで、「使用可能なプラグイン」タブを選択します。</li>
+<li>「使用可能なプラグイン」タブで、Java ME SDK Toolsプラグインを探し、選択してインストールします。 
+<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/available-plugins.png" rel="lytebox" title="追加されたJava ME SDKプラグイン"> <img alt="追加されたJava ME SDKプラグイン" border="1" src="../../../images_www/articles/73/javame/imp-ng/available-plugins-small.png"></a></p></li>
+<li>「インストール」をクリックします。</li>
+<li>「インストーラ」ダイアログ・ボックスの「ようこそ」ページで「次」をクリックします。 </li>
+<li>「ライセンス契約」ページで、プラグインに関連するライセンス契約を読みます。ライセンス契約のすべての条件に同意する場合は、該当するオプションをクリックしてから「インストール」をクリックします。</li>
+<li>インストール・プロセスが完了したら、「今すぐIDEを再起動」オプションを選択したままにして「終了」をクリックします。 </li>
+</ol>
+<p>NetBeans IDEの再起動後に、IDEを使用したモバイル埋込みアプリケーションのプロファイリングを開始できます。</p>
+
+<ol>
+  <li>IDEの「プロジェクト」タブで、<code>EmbeddedApp</code>プロジェクト名を選択します。</li>
+  <li>メイン・メニューから「プロファイル」→「プロジェクトをプロファイル」を選択して、プロファイリング・セッションを開始します。
+  <p class="notes"><b>注意:</b> プロジェクトが初めてプロファイリングされるときに、プロファイラの統合を求められます。 </p>
+  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/enable.png" rel="lytebox" title="追加されたJava ME SDKプラグイン"> <img alt="追加されたJava ME SDKプラグイン" border="1" src="../../../images_www/articles/73/javame/imp-ng/enable-small.png"></a></p>
+  </li>
+  <li>(プロジェクトの初回プロファイリングに適用)「プロファイリングの有効化」ダイアログ・ボックスで、「はい」をクリックして統合を実行します。</li>
+  <li>「プロファイル」ダイアログ・ボックスで、CPUプロファイラを選択し、オプションでプロファイル・システム・クラスをチェックします。</li>
+  <li>「実行」をクリックします。<br> <code>EmbeddedApp</code>アプリケーションが実行されたエミュレータが開きます。</li>
+  <li>アプリケーションと対話します。</li>
+  <li>アプリケーションを終了するか、エミュレータを閉じます。<br>IDEにより、「<code>cpu:<i>time</i></code>」ウィンドウにプロファイル・データが表示されます。 
+	<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/cpu.png" rel="lytebox" title="「cpu: time」ウィンドウ"> <img alt="「cpu: time」ウィンドウ" border="1" src="../../../images_www/articles/73/javame/imp-ng/cpu-small.png"></a></p>
+	<p class="notes"><b>注意:</b> 後で参照するためにエミュレーション・セッション中に収集されたデータを保存するには、次のいずれかを行います。</p>
+	<ul>
+	  <li>「エクスポート先」ボタン(<img alt="「エクスポート先」ボタン" border="1" src="../../../images_www/articles/73/javame/imp-ng/export.png">)をクリックして、データを<code>nps</code>ファイルにエクスポートする</li>
+	  <li>「現在のビューを画像に保存」ボタン(<img alt="「現在のビューを画像に保存」ボタン" border="1" src="../../../images_www/articles/73/javame/imp-ng/image.png">)をクリックして、スナップショットを<code>png</code>ファイルに保存する</li>
+	</ul>
+  </li>
+</ol>
+
+  <div class="feedback-box"><a href="/about/contact_form.html?to=6&subject=Creating,%20Debugging,%20and%20Profiling%20an%20Embedded%20Application">このチュートリアルに関するご意見をお寄せください</a></div>
+   <br style="clear:both;" >
+   <p class="align-center"><a href="#top">先頭</a></p>
+ <h2><a name="nextsteps"></a>関連項目</h2>
+  <ul>
+    <li><a href="imp-ng-screencast.html" target="_blank">デモ: NetBeans IDEでのIMP-NGプロファイルのサポート</a></li>
+    <li><a href="http://www.oracle.com/technetwork/java/javame/javamobile/training/jmesdk/index.html" target="_blank">Javaモバイル - 学習の開始</a></li>
+	<li><a href="http://www.oracle.com/technetwork/java/embedded/resources/me-embeddocs/index.html" target="_blank">Oracle Java ME Embeddedクライアント・ドキュメント</a></li>
+	<li><a href="https://blogs.oracle.com/javamesdk/" target="_blank">Java ME SDK Teamブログ</a></li>
+	<li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1552">Java MEアプリケーションの開発</a></li>
+  </ul>
+<p class="align-center"><a href="#top">先頭</a></p>
+</body>
+</html>

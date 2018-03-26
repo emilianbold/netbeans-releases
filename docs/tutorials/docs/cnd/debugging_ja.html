@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>C/C++プロジェクトのデバッグのチュートリアル</TITLE>
+   <meta name="DESCRIPTION" content="Short tutorial that demonstrates debugging C/C++
+   projects in NetBeans IDE">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>C/C++プロジェクトのデバッグのチュートリアル</h1>
+<!-- START INTRO  -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+ <!--  <p><em>Contributed  by <i>Ann
+      Rice</i> and maintained by <i>Susan Morgan</i> --><br>2013年3月</em> [リビジョン番号: V8.0-1]</div>
+
+<p>この短いチュートリアルでは、NetBeans IDEのC/C++プロジェクトをデバッグするための機能の一部を学ぶことができます。
+</p>
+<!-- END INTRO -->
+<h3>内容</h3>
+<img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます">
+<table class="b-none vatop " cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#requirements" title="要件">要件</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#project" title="サンプル・プロジェクトの作成">サンプル・プロジェクトの作成</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#breakpoints" title="ブレークポイントの作成">ブレークポイントの作成</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#starting" title="デバッグ・セッションの開始">デバッグ・セッションの開始</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#inspecting" title="アプリケーションの状態の検査">アプリケーションの状態の検査</a></td>
+   </tr>
+</table>
+
+<h2><a NAME="requirements"></a>要件</h2>
+<p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+<th class="tblheader" scope="col">必須バージョン</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">バージョン7.4または8.0とNetBeans C/C++プラグイン・モジュール</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java Developer Kit (JDK)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">バージョン7または8</a></td>
+</tr>
+</table>
+<p>必要なソフトウェアのダウンロードとインストールについては、<a href="../../../community/releases/80/install.html">NetBeans IDEのインストール手順</a>および<a HREF="../../../community/releases/80/cpp-setup-instructions.html">C/C++/Fortran向けのNetBeans IDEの構成</a>を参照してください。 
+</p>
+<h2><a name="project"></a>サンプル・プロジェクトの作成</h2>
+<p>C/C++を使用するNetBeans IDEでは、<tt>gdb</tt>デバッガが使用され、プロジェクトをデバッグするための多数の機能が提供されています。<tt>Quote</tt>プロジェクトを使用して、これらの機能を確認します。まだこのプロジェクトを作成していない場合は、次の操作を実行します。
+         <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択します。</li>            
+            <li>プロジェクトのウィザードで「サンプル」カテゴリ、「C/C++」サブカテゴリを順番に展開します。</li>            
+            <li>「アプリケーション」サブカテゴリを選択して、「<tt>Quote</tt>」プロジェクトを選択します。「次」をクリックして、「終了」をクリックします。
+            </li>
+         </ol>
+   <h2><a name="breakpoints"></a>ブレークポイントの作成</h2>
+   <p>
+      デバッグ・セッションを開始することなく、いつでもコードにブレークポイントを作成したり、操作したりできます。
+   </p>
+   <div class="indent">
+       <h3><a name="LineBreakpoint"></a>行ブレークポイントの作成と除去</h3>
+      <ol>
+         <li>
+            <tt>Quote_1</tt>プロジェクトの<tt>quote.cc</tt>ファイルを開きます。
+         </li>
+         <li>行171 (<tt>response=readChar("Enter disk module type: (S for single disks, R for RAID; Q - exit)", 'S');</tt>)の横の、「ソース・エディタ」ウィンドウの左マージンをクリックすることによって行ブレークポイントを設定します。赤く強調表示されている行は、ブレークポイントが設定されていることを示します。<br> <img alt="「ソース・エディタ」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/line_breakpoint1.png">
+         </li>
+         <li>ブレークポイントは、左マージン内のアイコンをクリックすることによって除去できます。
+         </li>
+         <li>「ウィンドウ」>「デバッグ」>「ブレークポイント」を選択し、「ブレークポイント」ウィンドウを開きます。行ブレークポイントがC/C++ノードの下に一覧表示されます。<br> <img alt="「ブレークポイント」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/line_breakpoint2.png">
+        </li>
+        <li>行ブレークポイントを表示するには、C/C++ノードを拡張します。<br> <img alt="「ブレークポイント」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/line_breakpoint2_expand.png"></li>
+      </ol>
+      <h3><a name="FunctionBreakpoint"></a>関数ブレークポイントの作成</h3>
+      <ol>
+         <li>「ブレークポイント」ウィンドウの左マージンで「新規ブレークポイントを作成」ボタンをクリックするか、「デバッグ」>「新規ブレークポイント」([Ctrl]+[Shift]+[F8])を選択して「新規ブレークポイント」ダイアログ・ボックスを開きます。
+         </li>
+         <li>「デバッガ・タイプ」リストで、「ネイティブ」を選択します。</li>
+         <li>
+            「ブレークポイント・タイプ」リストで、「関数」を選択します。
+         </li>
+         <li>「関数名」テキスト・フィールドに「<tt>Customer::GetDiscount</tt>」を入力します。「OK」をクリックします。 <br> <img alt="「新規ブレークポイント」ダイアログ・ボックスのスクリーンショット" class="margin-around" src="../../../images_www/articles/74/cnd/debugging/function_breakpoint1.png">
+         </li>
+         <li>関数ブレークポイントが設定され、「ブレークポイント」ウィンドウの一覧に追加されます。<br> <img alt="「ブレークポイント」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/function_breakpoint2.png">
+         </li>
+         <li>左マージンで「ブレークポイント・グループを選択」ボタンをクリックしてブレークポイントを各種グループに編成し、「タイプ」を選択します。<br> <img alt="「ブレークポイント」ウィンドウのグループ分けカテゴリのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/group_breakpoint_type.png"></li>
+         <li>ブレークポイントを表示するには、「ファイル:行」および「関数」グループを拡張します。<br> <img alt="タイプ別に編成されたブレークポイントのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/breakpoint_types.png"></li>
+      </ol>
+   </div>
+   
+<h2><a name="starting"></a>デバッグ・セッションの開始</h2>
+<p>デバッグ・セッションを開始すると、IDEによって<tt>gdb</tt>デバッガが起動され、そのデバッガ内でアプリケーションが実行されます。デバッガ・ウィンドウおよびデバッガ・ツールバーが自動的に開き、「出力」ウィンドウにデバッガの出力が出力されます。</p>
+<ol>
+   <li>「プロジェクトをデバッグ」ボタン<img alt="デバッグ・ボタンのスクリーンショット" src="../../../images_www/articles/74/cnd/debugging/debugbutton.png">をクリックして<tt>Quote_1</tt>プロジェクトのデバッグ・セッションを開始するか、「デバッグ」>「プロジェクトをデバッグ」を選択します。<br>デバッガが起動し、アプリケーションが実行されます。デバッグ・ツールバーが表示されます。<br> <img alt="デバッガ・ツールバー・ボタンのスクリーンショット" class="margin-around" src="../../../images_www/articles/74/cnd/debugging/debugger_toolbar.png">
+   </li>
+   <li>「ウィンドウ」>「デバッグ」>「セッション」を選択して「セッション」ウィンドウを開きます。<br>開いたウィンドウにデバッグ・セッションが表示されます。
+   </li>
+</ol>
+<h2><a name="inspecting"></a>アプリケーションの状態の検査</h2>
+<ol>
+   <li><tt>Quote_1</tt>アプリケーションは、「出力」(デバッグ)ウィンドウ上に入力を求めるメッセージを出力します。</li>
+   <li>「Enter customer name:」プロンプトの後に顧客名を入力します。
+   <p>アプリケーションは、前に設定したCustomer::GetDiscount関数ブレークポイントで停止し、customer.ccファイルがエディタ内の関数が呼び出された行で開かれます。「ブレークポイント」ウィンドウに、前に設定した2つのブレークポイントが表示されます。関数ブレークポイントのブレークポイント・アイコンの上に、緑色のプログラム・カウンタの矢印が表示されます。<br> <img alt="「ブレークポイント」タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/function_breakpoint3.png"></p>
+   </li>
+   <li>「呼出しスタック」ウィンドウのタブをクリックするか、「ウィンドウ」>「デバッグ」>「呼出しスタック」を選択します。コール・スタックに3つのフレームが表示されます。<br> <img alt="「コール・スタック」タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/call_stack.png">
+   </li>
+   <li>「変数」ウィンドウを開いて、変数が1つ表示されていることを確認します。 </li>
+   <!--<li>Click the <img src="../../../images_www/articles/74/cnd/debugging/autos.png" alt="Show autos button">
+   button in the left column in the Variables tab to show Autos instead of local
+   variables.</li>-->
+   <li>展開アイコンをクリックし、構造を展開します。<br> <img alt="「変数」タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/local_variables1.png">
+   </li>
+   <li>ツールバーにある「続行」ボタンをクリックします。<br><tt>GetDiscount</tt>関数が実行され、「出力」(デバッグ)ウィンドウに顧客の割引額が表示されます。その後、入力が求められます。
+   </li>
+   <li>このプロンプトに対して入力を行います。 
+<p>次のブレークポイント、すなわち前に設定した行ブレークポイントでプログラムが停止します。<tt>quote.cc</tt>ファイルでは、プログラムが停止した行を示すブレークポイントのアイコンの上に、緑色のプログラム・カウンタの矢印が表示されます。<br><br> <img alt="「ソース・エディタ」のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/line_breakpoint3.png">
+      </p>
+      </li>
+      <li>
+      「変数」タブをクリックし、変数の一覧を確認します。 <br> <img alt="「ローカル変数」タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/local_variables2.png">
+   </li>
+   <li>「コール・スタック」タブをクリックし、スタック内にフレームが1つあることを確認します。
+   </li>
+   <li>「ウィンドウ」>「デバッグ」>「レジスタ」を選択します。<br>「レジスタ」ウィンドウが開き、現在のレジスタの内容が表示されます。 <br> <img alt="「レジスタ」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/registers.png"> <br>
+   </li>
+   <li>「ウィンドウ」>「デバッグ」>「逆アセンブリ」を選択します。<br>「逆アセンブリ」ウィンドウが開き、現在のソース・ファイルのアセンブリ命令が表示されます。 <br> <img alt="逆アセンブリ・ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/disassembly.png"> <br>
+   </li> 
+   <li>
+      ツールバーにある「続行」ボタンをクリックし、プログラムが完了するまで、「出力」ウィンドウのプロンプトに対応して入力を続けます。 </li>
+	<li>[Enter]を押してプログラムを終了するとデバッグ・セッションが終了します。プログラムの実行が完了する前にデバッグ・セッションを終了するには、ツールバーで「デバッガ・セッションを終了」ボタンをクリックするか、「デバッグ」>「デバッガ・セッションを終了」を選択します。
+   </li>
+</ol>
+ <p>
+   </p><h2>関連項目</h2>
+   <p>NetBeans IDEでのC/C++/Fortranを使用した開発に関する詳細な記事は、<a href="https://netbeans.org/kb/trails/cnd.html">C/C++の学習</a>を参照してください。</p>
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Debugging%20C/C++%20Projects%20-%20NetBeans%20IDE%207.4%20Tutorial">このチュートリアルに関するご意見をお寄せください</a></div>
+
+</body>
+</html>

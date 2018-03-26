@@ -1,0 +1,399 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Criando uma Aplicação Orientada pelo Banco de Dados Com o PHP. Implementação PHP da criação de um registro no banco de dados MySQL</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. PHP implementation of creating a new record in MySQL database" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+   <body>
+        <h1>Criando uma Aplicação Orientada pelo Banco de Dados com o PHP </h1>
+        <h1>Lição 3: Criando um Novo Usuário de Aplicação </h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Conteúdo do tutorial:</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Criando uma Aplicação Orientada pelo Banco de Dados com o PHP - Página Principal</a></li>
+    <li><p>Criando o Banco de Dados</p> <ol type="a"><li><a href="wish-list-lesson1.html">Criando um Banco de Dados MySQL</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Criando Tabelas do Banco de Dados Oracle</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">Projetando a Aplicação. Lendo o Banco de Dados</a></p>
+    </li>
+    <li><p><b>=> Criando um Novo Usuário de Aplicação</b></p>
+    <ul>
+		<li><a href="#previousLessonSourceCode">Código-fonte da Aplicação da Lição Anterior</a></li>
+  <li><a href="#addLinkNewWisher">Adicionando um Link para Começar a Criar um Novo Wisher</a></li>
+  <li><a href="#implementCreateNewWisher">Criando Novas Páginas Web de PHP</a>
+  <li><a href="#inputFormNewWisher">Adicionando um Form HTML para Inserir os Dados de um Novo Wisher</a></li>
+		<li><a href="#validatinDataBeforeAddingToDatabase">Validando Dados e Adicionando-os ao Banco de Dados</a></li>
+		<li><a href="#errorMessagesInInputForm">Exibindo Mensagens de Erro no Form de Entrada</a></li>
+		<li><a href="#testCreateNewWisherFunctionality">Testando a Funcionalidade de Criação do Novo Wisher</a></li>
+		
+		
+		<li><a href="#lessonResultSourceCode">O Código-fonte da Aplicação após a Lição Atual está Concluído</a></li>
+   </ul>
+    </li>
+    <li><a href="wish-list-lesson4.html">Otimizando o Código</a></li>
+    <li><a href="wish-list-lesson5.html">Adicionando Segurança. Implementando o Log-in de Usuário da Aplicação</a></li>
+    <li><a href="wish-list-lesson6.html">Adicionando um Novo Desejo ao Banco de Dados</a></li>
+    <li><a href="wish-list-lesson7.html">Atualizando e Deletando Entradas no Banco de Dados</a></li>
+    <li><a href="wish-list-lesson8.html">Melhorando a Aparência da Aplicação Usando a Tecnologia CSS</a></li>
+    <li><a href="wish-list-lesson9.html">Implantando a Aplicação em um Servidor Web Remoto</a></li>
+</ol>
+</div>
+</div>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+   <p>Nesta lição, você expande a aplicação com a funcionalidade Criar um Novo Wisher. </p>
+        <p>A implementação afetará o arquivo index.php e os dois novos arquivos criados se chamarão <tt>createNewWisher.php</tt> e <tt>editWishList.php</tt>.</p>
+        <p>O caso de uso Criar um Novo Wisher consiste em três etapas:</p>
+       <p>1. <a href="#addLinkNewWisher">O usuário abre a página inicial index.php e clica no link para registrar</a>.</p>
+         <p>2. <a href="#implementCreateNewWisher">O usuário alterna para a página createNewWisher.php para criar um novo wisher</a>. </p>
+         <p>3. Após criar um novo wisher, o usuário alterna para editWishList.php, onde ele criará uma lista de desejos para o usuário.</p>
+         <img alt="Diagrama de fluxo de página destacando novos arquivos criado na Lição 3" class="margin-around" height="265" src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram-l3.png" width="439">   
+   <p>O documento atual é uma parte do tutorial Criando uma Aplicação de Banco de Dados no NetBeans IDE para PHP. </p>
+        <br style="clear:left">
+
+        
+   <h2><a name="previousLessonSourceCode"></a>Código-fonte da Aplicação da Lição Anterior</h2>
+<p>Usuários MySQL: clique <a href="https://netbeans.org/files/documents/4/1928/lesson2.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição anterior estiver concluída. </p>
+<p>Usuários do Banco de Dados Oracle: clique <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson2.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição anterior estiver concluída.</p>
+<h2><a id="addLinkNewWisher" name="addLinkNewWisher"></a>Adicionando um Link para Começar a Criar um Novo Wisher </h2>
+   Abra o <tt>index.php</tt>. Adicione uma linha em branco abaixo da tag de fechamento &lt;/form>. Na linha em branco, insira o seguinte bloco de código:
+<pre class="examplecode"> &lt;br&gt;Still don't have a wish list?! &lt;a href=&quot;createNewWisher.php&quot;&gt;Create now&lt;/a&gt;</pre>
+        <p>No qual:</p>
+        <ul>
+          <li><tt>Ainda não tem uma lista de desejos?! </tt> é o texto exibido na página ao lado do link. </li>
+          <li><tt>&lt;a href="createNewWisher.php">&lt;/a></tt> é o código que implementa um link que abre a página createNewWisher.php.
+          </li>
+          <li><tt>Criar agora</tt> é o texto que será exibido como um link.
+          </li>
+    </ul>
+        <h2><a id="implementCreateNewWisher" name="implementCreateNewWisher"></a>Criando Novas Páginas Web de PHP</h2>
+        <p>Crie duas novas páginas web de PHP nos Arquivos de Código-fonte do projeto, como <a href="wish-list-lesson2.html#createNewFile">descrito</a> na Lição 2.</p>
+        <ul>
+          <li><tt>createnewwisher.php</tt></li>
+          <li><tt>editWishList.php</tt></li>
+        </ul>
+        <p>Em <tt>editWishList.php</tt>, adicione o texto “Olá!" ao corpo do HTML, ou então, deixe-o com seu conteúdo default. Você modificará esse arquivo em lições posteriores, mas você precisa dele agora porque o <tt>createNewWisher.php</tt> faz referência a ele. Para o restante desta lição, você modificará o <tt>createNewWisher.php</tt>.</p>
+   
+        <h2><a id="inputFormNewWisher" name="inputFormNewWisher"></a>Adicionando um Form HTML para Inserir os Dados de um Novo Wisher </h2>
+        <p>Digite ou cole o seguinte bloco HTML no <tt>createNewWisher.php</tt>, abaixo do bloco PHP:</p>
+          <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;<br>      Welcome!&lt;br&gt;<br>        &lt;form action=&quot;createNewWisher.php&quot; method=&quot;POST&quot;&gt;<br>            Your name: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;&lt;br/&gt;<br>            Password: &lt;input type=&quot;password&quot; name=&quot;password&quot;/&gt;&lt;br/&gt;<br>            Please confirm your password: &lt;input type=&quot;password&quot; name=&quot;password2&quot;/&gt;&lt;br/&gt;<br>            &lt;input type=&quot;submit&quot; value=&quot;Register&quot;/&gt;<br>        &lt;/form&gt;<br>     &lt;/body&gt;
+&lt;/html&gt;</pre>
+          <p class="notes"><strong>Observação:</strong> O tipo <tt>senha</tt> é um tipo especial de um campo de texto onde os caracteres são substituídos por asteriscos. O código apresenta um <a href="wish-list-lesson3.html#htmlForm">form HTML</a> para um usuário inserir o nome e a senha do novo wisher nos campos de texto. Quando o usuário clica no botão "Registrar", os dados inseridos são transferidos para validação na mesma página, <tt>createNewWisher.php</tt>.</p>
+                  <p class="notes"><b>Observação: </b>você pode ignorar as advertências do validador HTML.</p>
+
+		  <h3><a id="validatinDataBeforeAddingToDatabase" name="validatinDataBeforeAddingToDatabase"></a>Validando Dados e Adicionando-os ao Banco de Dados </h3>
+			<p>Nesta seção, você adiciona o código PHP ao <tt>createNewWisher.php</tt>. Adicione este código ao bloco PHP na parte superior do arquivo. O bloco PHP deve estar acima de <strong>todo</strong> o código HTML, linhas vazias ou espaço em branco. A posição do bloco do código PHP é importante para permitir o correto funcionamento da instrução de redirecionamento. No bloco PHP, digite ou cole os blocos de código descritos abaixo desta seção, na ordem em que eles são escritos.</p>
+   <p><strong>Adicione o código a seguir para validar os dados:</strong></p>
+			<ol>
+			  <li>Inicialize as variáveis. As primeiras variáveis passam as credenciais do banco de dados e as outras serão usadas nas operações PHP. <pre class="examplecode">
+/** database connection credentials */<br>$dbHost=&quot;localhost&quot;; //on MySql
+$dbXeHost=&quot;localhost/XE&quot;; <br>$dbUsername=&quot;phpuser&quot;;<br>$dbPassword=&quot;phpuserpw&quot;;
+
+/** other variables */
+$userNameIsUnique = true;
+$passwordIsValid = true;				
+$userIsEmpty = false;					
+$passwordIsEmpty = false;				
+$password2IsEmpty = false;	
+
+			</pre>
+			  </li>
+              <li>Abaixo das variáveis, adicione uma cláusula <tt>se </tt>. O parâmetro da cláusula <tt>se</tt> verifica se a página foi solicitada a partir dela mesma usando o método POST. Caso contrário, as validações posteriores não são realizadas e a página é mostrada com campos vazios, como descrito acima.
+                <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) {
+
+}</pre>
+              </li>
+              <li>Dentro das chaves da cláusula <tt>se </tt>, adicione outra cláusula <tt>se </tt> que verifica se o usuário preencheu o nome do wisher. Se o campo de texto "user" estiver vazio, o valor de <tt>$userIsEmpty</tt> será alterado para verdadeiro.	<pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) {
+
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */    <strong>
+    if ($_POST[&quot;user&quot;]==&quot;&quot;) {
+    $userIsEmpty = true;
+    }</strong>
+}</pre> 
+              </li>
+              <li><p>Adicione o código que estabelece uma conexão de banco de dados. Se não for possível estabelecer a conexão, o erro de MySQL ou Oracle OCI8 é enviado para a saída.</p>
+                <p><b>Para o banco de dados MySQL:</b></p>
+                <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) {
+
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */    
+    if ($_POST[&quot;user&quot;]==&quot;&quot;) {
+        $userIsEmpty = true;
+    }
+
+    /** Create database connection */<br>
+    <strong>$con = mysqli_connect($dbHost, $dbUsername, $dbPassword);<br>    if (!$con) {<br>        exit('Connect Error (' . mysqli_connect_errno() . ') '<br>                . mysqli_connect_error());<br>    }<br>//set the default client character set <br>    mysqli_set_charset($con, 'utf-8');</strong>
+} </pre>
+<p><b>Para o banco de dados Oracle:</b></p>
+<pre class="examplecode">
+/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */
+    if ($_POST['user'] == "") {
+        $userIsEmpty = true;
+    }
+
+    /** Create database connection */<br>
+    <strong>$con = oci_connect($dbUsername, $dbPassword, $dbXeHost, &quot;AL32UTF8&quot;);
+    if (!$con) {
+        $m = oci_error();
+        exit('Connect Error' . $m['message']);
+
+    }</strong>
+}</pre>
+              </li>
+              <li>Adicione o código que verifica se um usuário cujo nome corresponde ao campo "user" já existe. O código faz isso, tentando localizar o número do wisher ID para um nome correspondente ao nome no campo "user". Se houver tal número de ID, o valor de <tt>$userNameIsUnique</tt> é alterado para "false".
+                <p><b>Para o banco de dados MySQL:</b></p>
+                <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) {
+
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */
+
+    if ($_POST[&quot;user&quot;]==&quot;&quot;) {
+        $userIsEmpty = true;
+    }<br>
+    
+    /** Create database connection */<br>    $con = mysqli_connect($dbHost, $dbUsername, $dbPassword);<br>    if (!$con) {<br>        exit('Connect Error (' . mysqli_connect_errno() . ') '<br>                . mysqli_connect_error());<br>    }<br>   <strong>/**set the default client character set */ <br>    mysqli_set_charset($con, 'utf-8');</strong>
+   <strong>/** Check whether a user whose name matches the &quot;user&quot; field already exists */</strong><br>
+    <strong>mysqli_select_db($con, &quot;wishlist&quot;);
+    $user = mysqli_real_escape_string($con, $_POST[&quot;user&quot;]);<br>    $wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot;.$user.&quot;'&quot;);<br>    $wisherIDnum=mysqli_num_rows($wisher);<br>    if ($wisherIDnum) {<br>        $userNameIsUnique = false;<br>    }</strong>
+} </pre>
+<p><b>Para o banco de dados Oracle:</b></p>
+<pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */
+    if ($_POST['user'] == "") {
+        $userIsEmpty = true;
+    }
+    /** Create database connection */<br>
+    $con = oci_connect($dbUsername, $dbPassword, $dbXeHost, &quot;AL32UTF8&quot;);
+    if (!$con) {
+        $m = oci_error();
+        exit('Connection Error ' . $m['message']);
+
+    }
+
+   <strong>/** Check whether a user whose name matches the &quot;user&quot; field already exists */</strong>
+    <strong>$query = "SELECT id FROM wishers WHERE name = :user_bv";
+    $stid = oci_parse($con, $query);
+    $user = $_POST['user'];
+    $wisherID = null;
+    oci_bind_by_name($stid, ':user_bv', $user);
+    oci_execute($stid);
+
+// Each user name should be unique. Check if the submitted user already exists.
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    if ($row){
+        $userNameIsUnique = false;
+    }</strong>
+}</pre>
+              </li>
+              <li>Com do código que verifica se o usuário sendo único, adicione uma série de cláusulas<tt>se </tt> para verificar se o usuário inseriu e confirmou a senha corretamente. O código verifica se os campos Senha ("password") e Confirmar senha ('password2) não estão vazios no form e não são idênticos. Caso contrário, os valores das variáveis boolianas correspondentes são alterados de acordo.
+              <pre class="examplecode">if ($_POST[&quot;password&quot;]==&quot;&quot;) {<br>    $passwordIsEmpty = true;
+}<br>if ($_POST[&quot;password2&quot;]==&quot;&quot;) {<br>    $password2IsEmpty = true;
+}<br>if ($_POST[&quot;password&quot;]!=$_POST[&quot;password2&quot;]) {<br>    $passwordIsValid = false;
+} </pre>
+</li>
+<li>
+  <p>Complete a cláusula <tt>se ($_SERVER['REQUEST_METHOD'] == "POST")</tt> adicionando o código que insere uma nova entrada no banco de dados "wishers". O código verifica se o nome do wisher é especificado exclusivamente e se a senha é indicada e confirmada validamente. Se as condições forem atendidas, o código pegará os valores "user" e "password" do form HTML e os inserirá nas colunas Nome e Senha, respectivamente, de uma nova linha no banco de dados wishers. Depois de criar a linha, o código fecha a conexão do banco de dados e redireciona a aplicação para a página <tt>editWishList.php</tt>.</p>
+  <p><b>Para o banco de dados MySQL:</b></p>
+  <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    /** Check whether the user has filled in the wisher's name in the text field "user" */
+    if ($_POST['user'] == "") {
+        $userIsEmpty = true;
+    }
+
+    /** Create database connection */
+    $con = mysqli_connect($dbHost, $dbUsername, $dbPassword);
+    if (!$con) {
+        exit('Connect Error (' . mysqli_connect_errno() . ') '
+                . mysqli_connect_error());
+    }
+    //set the default client character set 
+    mysqli_set_charset($con, 'utf-8');
+
+    /** Check whether a user whose name matches the "user" field already exists */
+    mysqli_select_db($con, "wishlist");
+    $user = mysqli_real_escape_string($con, $_POST['user']);
+    $wisher = mysqli_query($con, "SELECT id FROM wishers WHERE name='".$user."'");
+    $wisherIDnum=mysqli_num_rows($wisher);
+    if ($wisherIDnum) {
+        $userNameIsUnique = false;
+    }
+
+    /** Check whether a password was entered and confirmed correctly */
+    if ($_POST['password'] == "") {
+        $passwordIsEmpty = true;
+    }
+    if ($_POST['password2'] == "") {
+        $password2IsEmpty = true;
+    }
+    if ($_POST['password'] != $_POST['password2']) {
+        $passwordIsValid = false;
+    }
+
+    /** Check whether the boolean values show that the input data was validated successfully.
+     * If the data was validated successfully, add it as a new entry in the "wishers" database.
+     * After adding the new entry, close the connection and redirect the application to editWishList.php.
+     */
+    <strong>if (!$userIsEmpty && $userNameIsUnique && !$passwordIsEmpty && !$password2IsEmpty && $passwordIsValid) {
+        $password = mysqli_real_escape_string($con, $_POST['password']);
+        mysqli_select_db($con, "wishlist");
+        mysqli_query($con, "INSERT wishers (name, password) VALUES ('" . $user . "', '" . $password . "')");
+        mysqli_free_result($wisher);
+        mysqli_close($con);
+        header('Location: editWishList.php');
+        exit;
+    }</strong>
+}</pre>
+    <p><b>Para o banco de dados Oracle:</b></p>
+    <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+
+/** Check whether the user has filled in the wisher's name in the text field "user" */
+    if ($_POST['user'] == "")
+        $userIsEmpty = true;
+
+    /** Create database connection */
+    $con = oci_connect($dbUsername, $dbPassword, $dbXeHost, &quot;AL32UTF8&quot;);
+    if (!$con) {
+        $m = oci_error();
+        echo $m['message'], "\n";
+        exit;
+    }
+    
+    /** Check whether a user whose name matches the "user" field already exists */
+    $query = "select ID from wishers where name = :user_bv";
+    $stid = oci_parse($con, $query);
+    $user = $_POST['user'];
+    $wisherID = null;
+    oci_bind_by_name($stid, ':user_bv', $user);
+    oci_execute($stid);
+
+/**Each user name should be unique. Check if the submitted user already exists. */
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    if ($row) {
+    $wisherID = $row['ID']; 
+    }
+    if ($wisherID != null) {
+        $userNameIsUnique = false;
+    }
+    //Check for the existence and validity of the password
+    if ($_POST['password'] == "") {
+        $passwordIsEmpty = true;
+    }
+    if ($_POST['password2'] == "") {
+        $password2IsEmpty = true;
+    }
+    if ($_POST['password'] != $_POST['password2']) {
+        $passwordIsValid = false;
+    }
+    /** Check whether the boolean values show that the input data was validated successfully.
+     * If the data was validated successfully, add it as a new entry in the "wishers" database.
+     * After adding the new entry, close the connection and redirect the application to editWishList.php.
+     */
+    <strong>if (!$userIsEmpty && $userNameIsUnique && !$passwordIsEmpty && !$password2IsEmpty && $passwordIsValid) {
+
+        $query = "INSERT INTO wishers (name, password) VALUES (:user_bv, :pwd_bv)";
+        $stid = oci_parse($con, $query);
+        $pwd = $_POST['password'];
+        oci_bind_by_name($stid, ':user_bv', $user);
+        oci_bind_by_name($stid, ':pwd_bv', $pwd);
+        oci_execute($stid);
+        oci_free_statement($stid);
+        oci_close($con);
+        header('Location: editWishList.php');
+        exit;
+    }</strong>
+}</pre>
+</li>
+		  </ol>
+			
+       
+   <h2><a id="errorMessagesInInputForm" name="errorMessagesInInputForm"></a>Exibindo Mensagens de Erro no Form de Entrada</h2>
+          <p>Agora você deve implementar a exibição das mensagens de erro quando os dados inseridos forem inválidos. A implementação é baseada nas validações e alterações nos valores das variáveis boolianas descritas em <a href="#validatinDataBeforeAddingToDatabase">Validando Dados e Adicionando-os ao Banco de Dados</a>. </p>
+          <ol>
+          <li>Insira o seguinte bloco de código PHP dentro do form de entrada HTML, abaixo da entrada do nome do wisher:
+            <pre class="examplecode">Welcome!&lt;br&gt;<br>&lt;form action=&quot;createNewWisher.php&quot; method=&quot;POST&quot;&gt;<br>    Your name: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;&lt;br/&gt;
+
+<br>
+    <strong>&lt;?php
+    if ($userIsEmpty) {
+        echo (&quot;Enter your name, please!&quot;);
+        echo (&quot;&lt;br/&gt;&quot;);
+    }                
+    if (!$userNameIsUnique) {
+        echo (&quot;The person already exists. Please check the spelling and try again&quot;);
+        echo (&quot;&lt;br/&gt;&quot;);
+    }
+    ?&gt; </strong></pre>
+          </li>
+          <li>Insira o seguinte bloco de código PHP dentro do form de entrada HTML abaixo do código da entrada de senha:
+            <pre class="examplecode">Password: &lt;input type=&quot;password&quot; name=&quot;password&quot;/&gt;&lt;br/&gt;
+<br>
+<strong>&lt;?php
+ if ($passwordIsEmpty) {
+     echo (&quot;Enter the password, please!&quot;);
+     echo (&quot;&lt;br/&gt;&quot;);
+ }                
+ ?&gt;</strong></pre>
+          </li>
+          <li>Insira os seguintes blocos de código PHP dentro do form de entrada HTML abaixo do código de confirmação de senha:
+            <pre class="examplecode">Please confirm your password: &lt;input type=&quot;password&quot; name=&quot;password2&quot;/&gt;&lt;br/&gt;
+
+
+<br>
+<strong>&lt;?php
+ if ($password2IsEmpty) {
+     echo (&quot;Confirm your password, please&quot;);
+     echo (&quot;&lt;br/&gt;&quot;);    
+ }                
+ if (!$password2IsEmpty &amp;&amp; !$passwordIsValid) {
+     echo  (&quot;The passwords do not match!&quot;);
+     echo (&quot;&lt;br/&gt;&quot;);  
+ }                 
+?&gt;</strong></pre>
+          </li>
+        </ol>
+       <h3> <a name="testCreateNewWisherFunctionality"></a>Testando a Funcionalidade da Criação do Novo Wisher</h3>
+        <ol>
+          <li>Execute a aplicação. A página de índice abre.<br> <img alt="Página da aplicação principal index.php com duas opções: visualizando a lista de desejos de uma pessoa e criando uma lista de desejos" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson3/index-php-3.png"></li>
+          <li>Na página de índice, clique no link ao lado do texto Ainda não possui uma lista de desejos? O seguinte form abre:<br> <img alt="Um form vazio para registro como um wisher" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson3/create-new-wisher-empty-form.png"></li>
+          <li>Deixe estes campos em branco e clique em Registrar. Uma mensagem de erro é exibida<br> <img alt="Form de registro do wisher com uma mensagem de erro: o nome não foi preenchido" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson3/create-new-wisher-name-empty.png"></li>
+          <li>Insira o nome de um wisher registrado, por exemplo, Tom no campo Seu nome, preencha os outros campos corretamente e clique em Registrar. Uma mensagem de erro é exibida.</li>
+          <li>Preencha os campos Senha e Confirme sua senha com valores diferentes e clique em Registrar. Uma mensagem de erro é exibida.</li>
+          <li>Insira Bob no campo Seu nome, especifique a mesma senha em ambos os campos de senha e clique em Registrar. A página exibida está vazia, mas o redirecionamento foi passado corretamente já que o URL termina com editWishList.php:<br> <img alt="A página editwishlist.php com uma saudação de boas-vindas" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson3/edit-wish-list-empty.png"></li>
+          <li>Para verificar se os dados estão armazenados no banco de dados, vá para wishers na janela Serviços abaixo do nó wislist1 e no menu de contexto, selecione Visualizar Dados <br><img alt="Visualizando os dados no banco de dados usando a interface NetBeans IDE: o novo wisher Bob foi adicionado" class="margin-around b-all" src="../../../images_www/articles/72/php/wishlist/wishers.png"></li>
+        </ol>
+<h2><a name="lessonResultSourceCode"></a>O código-fonte da Aplicação após a Lição Atual está Concluído </h2>
+<p>Usuários do MySQL: clique <a href="https://netbeans.org/files/documents/4/1929/lesson3.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição estiver concluída.</p>
+<p>Usuários de banco de dados Oracle: clique <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson3.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição estiver concluída.</p>
+<h2><a name="nextSteps"></a>Próximas Etapas</h2>
+        <p><a href="wish-list-lesson2.html">&lt;&lt; Lição anterior</a></p>
+        <p><a href="wish-list-lesson4.html">Próxima lição >></a>    </p>
+        <p><a href="wish-list-tutorial-main-page.html">Voltar à página principal do Tutorial</a>
+</p><br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%203:%20Creating%20New%20User">Enviar Feedback neste Tutorial</a></div>
+<br style="clear:both;" >
+<p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>.</p>
+<p><a href="../../trails/php.html">Voltar à Trilha de Aprendizado PHP</a><br>
+</p>
+</body>
+</html>

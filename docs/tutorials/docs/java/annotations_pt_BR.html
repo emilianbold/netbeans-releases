@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Suporte aos Processadores de Anotação no NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+    </head>
+
+    <body>
+
+        <h1>Suporte aos Processadores de Anotação no NetBeans IDE</h1>
+<p><em>Amostra contribuída por Jesse Glick.</em></p>
+       
+       <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+	    <p><b>Conteúdo</b></p>
+  
+        <ul class="toc">
+            <li><a href="#intro"><strong>Introdução</strong></a></li>
+            <li><a href="#map"><strong>Mapa das Opções javac e Comandos IDE</strong></a> </li>
+            <li><a href="annotations-lombok.html" title="Adicionando Código ao Arquivo de Origem Gerado">Utilizando Projeto Lombok para Anotações Personalizadas</a></li>
+            <li><a href="annotations-custom.html">Utilizando o Próprio Processador de Anotação Personalizado no IDE</a></li>
+            <li><a href="annotations-custom.html#seealso" title="Compilando e Executando o Programa">Consulte Também </a></li>
+        </ul>
+		</div>
+	</div>
+      <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+        <p>Esse tutorial de duas partes demonstra como é possível anexar processadores de anotação a um projeto e utilizá-los enquanto estiver trabalhando no código no IDE. O NetBeans IDE possui suporte incorporado a processadores de anotações personalizados. Agora é possível especificar convenientemente processadores de anotação para serem executados com o projeto e visualizar os resultados do processo de anotação diretamente no editor Java usando o recurso autocompletar código e navegação. </p>
+        
+        <p>A <a href="annotations-lombok.html">primeira parte do tutorial</a> exibe a utilização do processador de anotação de terceiros, <a href="http://projectlombok.org/" target="_blank">Projeto Lombok</a>, no NetBeans IDE. </p>
+        <p>A <a href="annotations-custom.html">segunda parte do tutorial</a> fornece explicações sobre como adicionar um processador de anotação de autoescrita em um projeto. O código amostra para essa parte do tutorial é uma colaboração de Jesse Glick. </p>
+		
+		<p style="clear:both"><b>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</b></p>
+		<table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                  <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                  <td class="tbltd1">versão 7 ou 8</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+         <h2><a name="intro"></a>Introdução</h2>
+        <p><em>Anotações</em> são mecanismos da linguagem de programação Java que são utilizados para manter metadados sobre os elementos da aplicação. Anotações mantêm metainformações sobre como os elementos anotados devem ser processados pelo compilador, durante uma implantação ou runtime. Em outras palavras, anotações são comentários do código que podem ser processadas por outros programas e ferramentas.</p>
+        <p>É possível utilizar anotações personalizadas para realizar uma variedade de tarefas: marcar partes da aplicação (por exemplo, a informação de direitos autorais, métodos de teste, etc.), gerar código automaticamente, fazer parsing das opções de linha de comandos, desenvolver Web services, e outros. As informações sobre como anotações personalizadas devem ser processadas são passadas para o compilador Java por meio dos processadores de anotação personalizados. <a href="http://www.jcp.org/en/jsr/detail?id=269" target="_blank">JSR 269</a> implementado em JDK 6 fornece uma API original para processadores de anotação escrita. É possível escrever seu próprio processador de anotação personalizado ou utilizar as soluções de terceiros.</p>
+        <p>Para informações iniciais sobre anotações no JDK 6, consulte os recursos a seguir:</p>
+        <ul>
+          <li>Documentação Java SE - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">Anotações</a></li>
+          <li>Tutorial Java SE - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">Anotações</a> </li>
+        </ul>
+        <p>Na prática, anotações são mais utilizadas combinadas com Java Persistence API (JPA), que é parte da especificação Java EE e algumas outras tecnologias, como o JAXB (Java Architecture para vinculação de XML). Utilizando JPA, as classes Java podem ser anotadas como entidades que mais tarde podem ser persistidas em um dispositivo de armazenamento. Para desenvolver aplicações com base em JPA, é conveniente utilizar frameworks, como por exemplo o EclipseLink, que é agrupado com o IDE. Como ponto de partida para obter mais informações sobre como escrever aplicações baseadas em JPA no NetBeans IDE, consulte <a href="../javaee/javaee-gettingstarted.html">Conceitos Básicos sobre Aplicações Java EE</a>.</p>
+        <h2><a id="map" name="map"></a>Mapa das Opções do javac e comandos IDE para Processamento de Anotação</h2>
+        <p>Como mencionado acima, no Java SE 6 javac, o processamento de anotação foi incorporado como funcionalidade integral do compilador Java. O compilador pesquisa automaticamente processadores de anotação por default, como caminho de classe de usuário (a menos que o processamento de anotação estiver desativado explicitamente). Além disso, o caminho de pesquisa ou o caminho para processadores de anotação específicos podem ser especificados utilizando opções javac. Na tabela abaixo, é possível visualizar um mapa das opções javac relacionado ao processamento de anotação e os comandos correspondentes no IDE. Para mais informações sobre opções javac no JDK 6, consulte <a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html" target="_blank">javac - Compilador da linguagem de programação Java</a>.</p>
+        <p class="notes"><strong>Observação.</strong> No IDE, as opções de processamento da anotação para todas as aplicações Java, com exceção das aplicações da plataforma Netbeans são especificados na janela Propriedades do Projeto. Para abrir a janela Propriedades do projeto, clique com o botão direito do mouse em seu projeto e selecione Propriedades.</p>
+       <table>
+         <tbody>
+
+            <tr>
+               <td class="tblheader">Opções Java 6 javac  </td>
+               <td class="tblheader">Comando IDE </td>
+               <td class="tblheader">Descrição</td>
+            </tr>
+            <tr>
+
+               <td class="tbltd0"><tt>-processador </tt></td>
+               <td class="tbltd0"><p>Propriedades do Projeto > Construção > Compilação > campo Processadores de Anotação. </p>
+               <p>Especifique um nome completo qualificado do processador de anotação no campo Processador da Anotação. </p></td>
+               <td class="tbltd0">Especifique explicitamente o processador de anotação para executar. Esta opção elimina a necessidade de criar arquivos de configuração do serviço do provedor (META-INF/services/javax.annotation.processing.Processor) </td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><tt>-proc:none</tt></td>
+              <td class="tbltd1"><p>Propriedades do Projeto > Construção > Compilação > caixa de seleção Ativar Processamento de Anotação </p>
+                  <p>Quando a caixa de seleção estiver desativada, o projeto será compilado sem qualquer processamento de anotação. </p></td>
+              <td class="tbltd1">A compilação continua sem qualquer processamento de anotação. O mecanismo de descoberta do processador de anotação não é usado durante a compilação. </td>
+            </tr>
+            <tr>
+              <td class="tbltd0"><tt>-processorpath</tt></td>
+              <td class="tbltd0"><p>Propriedades do Projeto > Bibliotecas > guia Processador </p>
+              <p>Especifique o caminho para um projeto IDE, biblioteca ou um arquivo Jar que contém um processador de anotação. Utilize esta opção se um processador de anotação e anotações são encapsulados em arquivos JAR separados.</p></td>
+              <td class="tbltd0">Especifica onde localizar processadores de anotação; se essa opção não for oferecida, o caminho da classe é localizado por processadores (veja abaixo). </td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><tt>-classpath</tt></td>
+              <td class="tbltd1"><p>Propriedades do projeto > Bibliotecas > guia Compilador </p>
+              <p>Especifique o caminho para um projeto IDE, biblioteca ou um arquivo Jar que contém um processador de anotação e declarações de anotação. Utilize esta opção se um processador de anotação e anotações forem encapsulados em um único arquivo JAR. </p></td>
+              <td class="tbltd1">Especifica onde localizar arquivos de classe de usuário e (opcionalmente) processadores de anotação e arquivos código-fonte. Esse caminho é localizado para processadores de anotação se a opção -processorpath não for especificada.  </td>
+            </tr>
+            <tr>
+              <td class="tbltd0"><tt>-A<em>key[=value]</em></tt></td>
+              <td class="tbltd0"><p>Propriedades do Projeto > Construção > Compilação > campo Opções do processador </p>
+              <p>Adicione opções que devem ser passadas para o processador de anotação associado ao projeto. Esse valor é opcional. </p></td>
+              <td class="tbltd0">(Opcional) Opções para passar para processadores de anotação. </td>
+            </tr>
+         </tbody>
+      </table>
+
+        <p>&nbsp; </p>
+        <h2><a id="nextsteps" name="nextsteps"></a>Próximas Etapas</h2>
+        <p>Leia as partes a seguir do tutorial para aprender como utilizar anotações no IDE. </p>
+        <ul>
+          <li><a href="annotations-lombok.html">Parte I: Utilizando Projeto Lombok para Anotações Personalizadas</a> </li>
+          <li><a href="annotations-custom.html">Parte II: Utilizando o Próprio Processador de Anotação Personalizado no IDE</a> </li>
+        </ul>
+        <p> </p>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20the%20NetBeans%20IDE">Enviar Feedback neste Tutorial</a><br style="clear:both;" />
+        </div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>使用 NetBeans IDE PHP 编辑器创建数据库驱动的应用程序</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, PHP, MYSQL, CRUD">
+        <meta name="DESCRIPTION" content="This 9-part tutorial describes how to create a CRUD (Create, Read, Update, Delete) PHP application accessing a MySQL database, using the NetBeans IDE PHP editor." >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+    <body>
+        <h1>使用 NetBeans IDE PHP 编辑器创建数据库驱动的应用程序</h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+                <h4>教程目录：</h4>
+                <ol start="0">
+                    <li>
+                        <p><b>=&gt; 使用 PHP 创建数据库驱动的应用程序 - 主页</b></p>
+                    </li>
+                    <li><p>创建数据库</p> <ol type="a"><li><a href="wish-list-lesson1.html">创建 MySQL 数据库</a></li>
+                            <li><a href="wish-list-oracle-lesson1.html">创建 Oracle 数据库表</a></li>
+                        </ol></li>
+                    <li>
+                        <p><a href="wish-list-lesson2.html">设计应用程序。从数据库读取数据</a></p>
+                    </li>
+                    <li><a href="wish-list-lesson3.html">创建新的应用程序用户</a></li>
+                    <li><a href="wish-list-lesson4.html">优化代码</a></li>
+                    <li><a href="wish-list-lesson5.html">添加安全功能。实现应用程序用户登录</a></li>
+                    <li><a href="wish-list-lesson6.html">在数据库中添加新的愿望</a></li>
+                    <li><a href="wish-list-lesson7.html">更新和删除数据库中的条目</a></li>
+                    <li><a href="wish-list-lesson8.html">使用 CSS 技术改进应用程序的外观</a></li>
+                    <li><a href="wish-list-lesson9.html">将应用程序部署到远程 Web 服务器</a></li>
+                </ol>
+            </div>
+        </div>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+        <p>在本教程中，您将利用 NetBeans IDE 对 PHP 的支持创建并运行一个简单的 Web 应用程序。该示例说明了如何创建愿望列表。在创建和部署应用程序后，您可以通过该应用程序与朋友分享愿望列表上的信息，例如，婚礼、生日或节日礼物列表。该信息存储在第 1 课创建的数据库中。</p>
+        <p> 任何注册用户都可以查看其他用户的愿望列表，该功能是在第 2 课中开发的。</p>
+        <p> 应用程序支持新用户注册，该功能是在第 3 课中开发的。 </p>
+        <p>在第 4 课中，您了解了简化代码维护的提示。 </p>
+        <p>第 5 课提供了安全问题的可能解决方案。 </p>
+        <p>在第 6 和 7 课中，您开发了允许每个注册用户编辑自己的愿望列表的功能。</p>   
+        <p>在第 8 课中，您通过应用 CSS 样式表，添加了一些样式以美化应用程序外观。最后，您使用第 9 课中提供的提示，在远程 Web 服务器上部署了应用程序。 </p>
+        <p>这些代码是为 MySQL 数据库和 Oracle 数据库用户提供的。该教程使用 <tt>mysqli</tt> 和 OCI8 API。对 PDO 感兴趣的用户可以<a href="https://netbeans.org/projects/www/downloads/download/php/wishlist-pdo.zip" target="_blank">下载</a>完整教程的 PDO 版本。注意，PDO_OCI API 是实验性的！</p>
+        <br style="clear:left">
+
+        <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">PHP 下载包</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">PHP 引擎</td>
+                    <td class="tbltd1">版本 5
+                </tr>
+                <tr>
+                    <td class="tbltd1">Web 服务器</td>
+                    <td>推荐使用 <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP Server 2.2</a>。<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">数据库服务器</td>
+                    <td>MySQL、OracleXE 或 Oracle11g</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>有关安装和配置必需软件的详细信息，请参见介绍在操作系统中<a href="../../trails/php.html#configuration">准备 PHP 开发环境</a>的文档。 </p>
+        <h2>后续步骤：</h2>
+        <p><a href="wish-list-lesson1.html">创建 MySQL 数据库</a></p>
+        <p>或者</p>
+        <p><a href="wish-list-oracle-lesson1.html">创建 Oracle 数据库表</a></p>
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%20Main">发送有关此教程的反馈意见</a></div>
+        <br style="clear:both;" >
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+
+
+        <p><a href="../../trails/php.html">返回至 PHP 学习资源</a></p>
+    </body>
+</html>

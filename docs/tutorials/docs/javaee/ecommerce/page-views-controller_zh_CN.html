@@ -1,0 +1,970 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to create project files in the IDE, and introduces you to some of the facilities available for HTML and CSS development.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>NetBeans 电子商务教程 - 准备页面视图和控制器 Servlet</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans 电子商务教程 - 准备页面视图和控制器 Servlet</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>教程目录</h4>
+
+                <ol>
+                    <li><a href="intro.html">简介</a></li>
+                    <li><a href="design.html">设计应用程序</a></li>
+                    <li><a href="setup-dev-environ.html">设置开发环境</a></li>
+                    <li><a href="data-model.html">设计数据模型</a></li>
+                    <li><strong>准备页面视图和控制器 Servlet</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#createProjectFiles">创建项目文件</a></li>
+                            <li><a href="#implementHTML">实现 HTML 和 CSS 内容</a></li>
+                            <li><a href="#view">在 WEB-INF 中放置 JSP 页</a></li>
+                            <li><a href="#jspf">创建页眉和页脚</a></li>
+                            <li><a href="#dd">向部署描述符中添加指令</a></li>
+                            <li><a href="#controller">创建控制器 Servlet</a></li>
+                            <li><a href="#implement">实现控制器 Servlet</a></li>
+                            <li><a href="#seeAlso">另请参见</a></li>
+                        </ul></li>
+
+                    <li><a href="connect-db.html">将应用程序与数据库连接</a></li>
+                    <li><a href="entity-session.html">添加实体类和会话 Bean</a></li>
+                    <li><a href="manage-sessions.html">管理会话</a></li>
+                    <li><a href="transaction.html">集成事务性业务逻辑</a></li>
+                    <li><a href="language.html">添加语言支持</a></li>
+                    <li><a href="security.html">保护应用程序</a></li>
+                    <li><a href="test-profile.html">测试和性能分析</a></li>
+                    <li><a href="conclusion.html">小结</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="此页上的内容适用于 NetBeans IDE 版本 6.8 和 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="此页上的内容适用于 NetBeans IDE 版本 6.8 和 6.9"></p>
+
+        <p>本单元演示了如何在 IDE 中创建项目文件，并介绍了一些适用于 HTML 和 CSS 开发的功能。创建必需的项目文件之后，您便可以开始组织应用程序的前端。也就是说，您将在项目结构中的适当位置放置 JSP 文件，创建将应用于所有视图的页眉和页脚，并设置控制器 Servlet 以处理传入请求。</p>
+
+        <p>在此单元中，您还将为应用程序创建 Web 部署描述符（<code>web.xml</code> 文件）。可以使用该部署描述符指定在部署期间由服务器读取的配置信息。尽管 <a href="http://jcp.org/en/jsr/detail?id=315" target="_blank">Servlet 3.0 规范</a>（包含在 Java EE 6 中）允许您使用类标注替换 XML，但是您可能仍需要使用部署描述符来配置应用程序的某些元素。具体说来，您将在此单元中为页眉和页脚添加指令，并指定要将它们应用于哪些文件。</p>
+
+        <p>本单元的一个目标是创建与应用程序设计中指定的视图相对应的 JSP 页。查阅<a href="design.html#mockups">页面模型</a>和<a href="design.html#business">过程流图</a>，您可以通过为所有可视和功能组件创建<em>占位符</em>，开始根据模型实现页面布局。此单元为实现欢迎页的布局提供了指导。您可以应用下述步骤自行创建其他页，也可以<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot1.zip">下载项目快照 1</a>，其中提供了完成的所有页的布局。</p>
+
+        <p>您可以查看此教程中构建的应用程序的实时演示：<a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">NetBeans 电子商务教程演示应用程序</a>。</p>
+
+        <br style="clear:left">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java 包，6.8 或 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFish Server</a></td>
+                    <td class="tbltd1">v3 或 Open Source Edition 3.0.1</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注：</strong></p>
+
+        <ul>
+            <li>NetBeans IDE 需要 Java 开发工具包 (JDK) 才能正常运行。如果不具备上面列出的任何资源，则应首先下载并安装 JDK。</li>
+
+            <li>NetBeans IDE Java 包包含在本教程中构建的应用程序所需的 Java Web 和 Java EE 技术。</li>
+
+            <li id="glassFish">NetBeans IDE Java 包还包含本教程所需的 GlassFish Server。可以<a href="https://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">单独下载 GlassFish Server</a>，但是 NetBeans 下载中附带的版本具有在 IDE 中自动注册的额外好处。</li>
+        </ul>
+
+
+        <br>
+        <h2 id="createProjectFiles">创建项目文件</h2>
+
+        <p>要为项目创建新文件，请访问 IDE 的文件向导。可以单击 "New File"（新建文件）(<img alt=""New File"（新建文件）按钮" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png">) 按钮，然后按 Ctrl-N 组合键（在 Mac 上为 ⌘-N 组合键）；或者在 "Projects"（项目）窗口中，右键单击包含新文件的文件夹节点，然后选择 "New"（新建）> [file-type]"（[文件类型]）。在下面的小节中，将为项目创建 JSP 页和样式表。</p>
+
+        <ul>
+            <li><a href="#jsp">创建 JSP 页</a></li>
+            <li><a href="#css">创建样式表</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsp">创建 JSP 页</h3>
+
+            <p>通过创建与<a href="design.html#business">过程流图</a>中显示的视图相对应的 JSP 页，开始处理项目。</p>
+
+            <p>IDE 生成的 <code>index.jsp</code> 页将成为项目的欢迎页。为其余四个视图创建 JSP 页，当前将这些页面放在 <code>index.jsp</code> 所在的项目 Web 根目录中。</p>
+
+            <ol>
+                <li>单击 "New File"（新建文件）(<img alt=""New File"（新建文件）按钮" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png">) 按钮以打开文件向导。</li>
+
+                <li>选择 "Web" 类别，然后选择 "JSP" 并单击 "Next"（下一步）。</li>
+
+                <li>将该文件命名为 "<code>category</code>"。请注意，"Location"（位置）字段设置为 <code>Web Pages</code>（Web 页），表明将在项目的 Web 根目录中创建该文件。该位置对应于项目的 <code>web</code> 文件夹，您可以稍后在 IDE 的 "Files"（文件）窗口中对此进行验证。</li>
+
+                <li>单击 "Finish"（完成）。IDE 生成新的 JSP 页并在编辑器中将其打开。</li>
+
+                <li>重复上面的步骤 1 至步骤 4，以创建其余的 <code>cart.jsp</code>、<code>checkout.jsp</code> 和 <code>confirmation.jsp</code> 页。<br><br> 完成后，"Projects"（项目）窗口将如下所示： <br> <img alt="显示 "view" 文件夹和 JSP 页的 "Projects"（项目）窗口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/projects-win-views.png" title="包含在 "WEB-INF/view/" 文件夹中的视图">
+                </li>
+            </ol>
+
+
+            <h3 id="css">创建样式表</h3>
+
+            <p>创建 CSS 文件以包含特定于应用程序的所有样式。</p>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口中，右键单击 "Web Pages"（Web 页）节点，然后选择 "New"（新建）> "Folder"（文件夹）。</li>
+
+                <li>在新建文件夹向导中，将文件夹命名为 "<code>css</code>"，然后单击 "Finish"（完成）。</li>
+
+                <li>右键单击新的 <code>css</code> 文件夹，然后选择 "New"（新建）> "Cascading Style Sheet"（级联样式表）。（如果未列出 "Cascading Style Sheet"（级联样式表）项目，请选择 "Other"（其他）。在文件向导中，选择 "Web" 类别，然后选择 "Cascading Style Sheet"（级联样式表）并选择 "Next"（下一步）。）</li>
+
+                <li>将样式表命名为 <code>affablebean</code>，然后单击 "Finish"（完成）。<br><br> 完成后，将看到 <code>affablebean.css</code> 文件显示在 "Projects"（项目）窗口中。 <br> <img alt="显示 "affablebean.css" 样式表的 "Projects"（项目）窗口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/projects-win-css.png" title=""Projects"（项目）窗口显示新的 "css" 文件夹和样式表"></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="implementHTML">实现 HTML 和 CSS 内容</h2>
+
+        <p>此部分的目的是设计页面视图，以便它们开始镜像提供的<a href="design.html#mockups">页面模型</a>。这样，您就可以在项目开发后期使用它们作为插入动态内容的构架。为此，您将利用 IDE 的 HTML 和 CSS 编辑器，以及一些 CSS 支持窗口。</p>
+
+        <p class="notes"><strong>浏览器兼容性说明：</strong>本教程使用 Firefox 3，并且<em>不</em>保证页面视图标记与其他新型浏览器相兼容。当然，使用前端 Web 技术（HTML、CSS 和 JavaScript）时，您需要采取措施以确保 Web 页能正确呈现在站点访问者将使用的浏览器和浏览器版本中（通常是 Internet Explorer、Firefox、Safari、Chrome 和 Opera）。使用 IDE 时，您可以设置希望应用程序在其中打开的浏览器。选择 "Tools"（工具）> "Options"（选项）（在 Mac 上为 "NetBeans" > "Preferences"（首选项）），然后在 "Options"（选项）窗口的 "General"（常规）标签下，从 "Web Browser"（Web 浏览器）下拉列表中选择您希望使用的浏览器。IDE 会检测已安装到默认位置的浏览器。如果未显示计算机上安装的浏览器，可单击 "Edit"（编辑）按钮，然后手动注册该浏览器。</p>
+
+        <p>准备 Web 页显示通常是一个重复过程，需要根据客户的定期反馈不断进行完善。以下步骤向您介绍 IDE 提供的一些功能，并使用<a href="design.html#index">欢迎页模型</a>作为示例演示如何开始着手操作。</p>
+
+        <ol>
+            <li>在 "Projects"（项目）窗口中，双击 <code>index.jsp</code> 以在编辑器中将其打开。</li>
+
+            <li>首先为页面的主区域创建 <code>&lt;div&gt;</code> 标记。您总共可以创建五个标记：四个用于主区域（页眉、页脚、左栏和右栏），第五个用于包含其他内容。删除 <code>&lt;body&gt;</code> 标记内的任何内容并替换为以下内容。（新代码以<strong>粗体</strong>显示。）
+
+                <pre class="examplecode">
+&lt;body&gt;
+    <strong>&lt;div id=&quot;main&quot;&gt;
+        &lt;div id=&quot;header&quot;&gt;
+            header
+        &lt;/div&gt;
+
+        &lt;div id=&quot;indexLeftColumn&quot;&gt;
+            left column
+        &lt;/div&gt;
+
+        &lt;div id=&quot;indexRightColumn&quot;&gt;
+            right column
+        &lt;/div&gt;
+
+        &lt;div id=&quot;footer&quot;&gt;
+            footer
+        &lt;/div&gt;
+    &lt;/div&gt;</strong>
+&lt;/body&gt;</pre></li>
+
+            <li>在页面的头中添加对样式表的引用，并更改标题文本。
+
+                <pre class="examplecode">
+&lt;head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    <strong>&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;css/affablebean.css&quot;&gt;</strong>
+    &lt;title&gt;<strong>The Affable Bean</strong>&lt;/title&gt;
+&lt;/head&gt;</pre></li>
+
+            <li>在编辑器中打开 <code>affablebean.css</code> 样式表。首先为刚创建的 <code>&lt;div&gt;</code> ID 创建样式规则。
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>使用 <code>width</code> 和 <code>height</code> 属性创建每个区域所占的空间。</li>
+
+                    <li>使用 <code>background</code> 属性区分显示的页面区域。</li>
+
+                    <li>为了使四个区域在页面中水平居中，可以在 <code>body</code> 规则中包含 <code>margin: 20px auto</code>。（<code>20px</code> 适用于顶部和底部间距；<code>auto</code> 可在左侧和右侧创建相等的间距。）然后，在左栏和右栏中包括 <code>float: left</code>。</li>
+
+                    <li>页脚需要 <code>clear: left</code>，以便在其上方的任何左侧浮动区域（即左栏和右栏）的底部边框后面显示其顶部边框。</li>
+                </ul>
+
+                <pre class="examplecode">
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    width: 850px;
+    text-align: center;
+    margin: 20px auto;
+}
+
+#main { background: #eee }
+
+#header {
+    height: 250px;
+    background: #aaa;
+}
+
+#footer {
+    height: 60px;
+    clear: left;
+    background: #aaa;
+}
+
+#indexLeftColumn {
+    height: 400px;
+    width: 350px;
+    float: left;
+    background: #ccc;
+}
+
+#indexRightColumn {
+    height: 400px;
+    width: 500px;
+    float: left;
+    background: #eee;
+}</pre></li>
+
+            <li>在 IDE 的主工具栏中单击 "Run Project"（运行项目）(<img alt=""Run Project"（运行项目）按钮" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png">) 按钮。此时，将自动保存包含更改的项目文件、编译项目中的任何 Java 代码、打包项目并将其部署到 GlassFish，并且浏览器随即打开以显示欢迎页的当前状态。 <br> <img alt="显示在浏览器中的欢迎页" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/index-page.png" style="width:688px" title="运行项目以查看页的当前状态"></li>
+
+            <li>现在，开始分别为四个可视区域中的页面组件创建占位符。首先从页眉开始。查看<a href="design.html#index">欢迎页模型</a>，页眉应该包含以下组件：
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>徽标</li>
+                    <li>徽标文本</li>
+                    <li>购物车窗口部件</li>
+                    <li>语言切换</li>
+                </ul>
+
+                对 <code>index.jsp</code> 文件进行如下更改。（新代码以<strong>粗体</strong>显示。）
+
+                <pre class="examplecode">
+&lt;div id=&quot;header&quot;&gt;
+    <strong>&lt;div id=&quot;widgetBar&quot;&gt;
+
+        &lt;div class=&quot;headerWidget&quot;&gt;
+            [ language toggle ]
+        &lt;/div&gt;
+
+        &lt;div class=&quot;headerWidget&quot;&gt;
+            [ shopping cart widget ]
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;a href=&quot;#&quot;&gt;
+        &lt;img src=&quot;#&quot; id=&quot;logo&quot; alt=&quot;Affable Bean logo&quot;&gt;
+    &lt;/a&gt;
+
+    &lt;img src=&quot;#&quot; id=&quot;logoText&quot; alt=&quot;the affable bean&quot;&gt;</strong>
+&lt;/div&gt;</pre>
+
+                在上面的代码中，您使用 <code>&lt;div id="widgetBar"&gt;</code> 元素来包含语言切换和购物车窗口部件。 <br><br>
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>NetBeans HTML 编辑器支持</h3>
+
+                    <p>使用编辑器时，您可以利用 IDE 的 HTML 支持。除了便于您区分标记、属性、属性值和文本的典型语法突出显示之外，该支持还提供了许多其他功能。</p>
+
+                    <p>在编辑器中键入标记和属性时，您可以通过按 Ctrl-空格键调用代码完成和文档支持。IDE 会显示一个可供您选择的建议列表，以及一个定义选定项目并提供代码示例的文档窗口。</p>
+
+                    <img alt="显示在编辑器中的代码完成和文档窗口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/documentation-popup.png" title="按 Ctrl-空格键可查看代码完成和文档窗口" />
+
+                    <p>IDE 会检测代码中的错误，并向您提供警告、错误消息，而且在某些情况下，还会提供建议。警告消息显示为黄色，而错误则显示为红色。将指针悬停在指定的区域上，可以查看工具提示中的消息。</p>
+
+                    <img alt="显示在编辑器中的 HTML 警告" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/html-hint.png" title="悬停指针可查看工具提示警告" />
+
+                    <p>您还可以利用大量的快捷键。从主菜单中选择 "Help"（帮助）> "Keyboard Shortcuts Card"（快捷键列表）。</p>
+                </div>
+                <br style="clear: both;"/></li>
+
+            <li>在样式表中，为新 ID 和类创建规则。在 <code>header</code> 规则下面添加以下规则。（新代码以<strong>粗体</strong>显示。）
+
+                <pre class="examplecode">
+#header {
+    height: 250px;
+    background: #aaa;
+}
+
+<strong>#logo {
+    height: 155px;
+    width: 155px;
+    float: left;
+    margin-left: 30px;
+    margin-top: -20px;
+}
+
+#logoText {
+    float: left;
+    margin: 20px 0 0 70px;
+    /* font styles apply to text within alt tags */
+    font-family: 'American Typewriter', Courier, monospace;
+    font-size: 50px;
+    color: #333;
+}
+
+#widgetBar {
+    height: 50px;
+    width: 850px;
+    float: right;
+    background: #ccc;
+}
+
+.headerWidget {
+    width: 194px;
+    margin: 20px 2px;
+    font-size: small;
+    float: right;
+    line-height: 25px;
+    background: #aaa;
+}</strong></pre>
+
+                对于 <code>logo</code> 规则，应用 <code>margin-left</code> 和 <code>margin-top</code> 属性来定位页面上的组件。<br><br> 如果上面的代码中存在您不熟悉的属性，请将光标置于给定属性上面并按 Ctrl-空格键，以便调用提供文档支持的弹出式窗口。 <br> <img alt="CSS 支持的文档窗口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/css-doc-support.png" title="在 CSS 属性上按 Ctrl-空格键可调用文档支持"> <br>
+                <p class="tips">要查看属性影响页面的方式，您可以将其注释掉，然后在浏览器中刷新页面。要注释掉代码，请将光标置于代码行上，或者突出显示代码块，然后按 Ctrl-/ 组合键（在 Mac 上为 ⌘-/ 组合键）。</p></li>
+
+            <li>保存（Ctrl-S 组合键；在 Mac 上为 ⌘-S 组合键）<code>index.jsp</code> 和 <code>affablebean.css</code> 文件，然后切换到浏览器并刷新页面以查看其当前状态。 <br><br>
+                <p class="notes"><strong>注：</strong>系统会自动为 Java Web 项目激活 IDE 的“在保存时部署”功能。这意味着每次保存文件时，都会自动编译该文件（即，如果该文件为 Java 类或 JSP 页），并且还会重新打包项目并将其部署到服务器。因此，在进行 HTML 或 CSS 更改时，您不需要显式重新运行项目以在浏览器中查看更新后的版本。您只需保存文件，然后切换到浏览器并刷新页面。</p>
+
+                <img alt="显示在浏览器中的欢迎页" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/index-page2.png" style="width:688px" title="在运行项目时会显示页眉的占位符"> <br> 按照以上步骤，您应该能够看见有一个图形出现。对于页面上的每个区域，执行下面三个步骤。
+
+                <ol style="list-style:lower-alpha; margin-top:5px">
+                    <li>在 HTML 中创建结构。</li>
+                    <li>创建一组用于定义外观的样式。</li>
+                    <li>查看页面以检查更改后的结果。</li>
+                </ol>
+
+                按照这三个步骤，让我们实现其余区域中的组件。</li>
+
+            <li>为右栏中的组件创建占位符。根据<a href="design.html#index">欢迎页模型</a>，右栏包含四个均匀分布的框。<br><br> 为这四个框创建结构。在 <code>&lt;div id="indexRightColumn"&gt;</code> 标记之间插入以下代码。（新代码以<strong>粗体</strong>显示。）
+
+                <pre class="examplecode">
+&lt;div id=&quot;indexRightColumn&quot;&gt;
+    <strong>&lt;div class=&quot;categoryBox&quot;&gt;
+        &lt;a href=&quot;#&quot;&gt;
+            &lt;span class=&quot;categoryLabelText&quot;&gt;dairy&lt;/span&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;categoryBox&quot;&gt;
+        &lt;a href=&quot;#&quot;&gt;
+            &lt;span class=&quot;categoryLabelText&quot;&gt;meats&lt;/span&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;categoryBox&quot;&gt;
+        &lt;a href=&quot;#&quot;&gt;
+            &lt;span class=&quot;categoryLabelText&quot;&gt;bakery&lt;/span&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;categoryBox&quot;&gt;
+        &lt;a href=&quot;#&quot;&gt;
+            &lt;span class=&quot;categoryLabelText&quot;&gt;fruit & veg&lt;/span&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;</strong>
+&lt;/div&gt;</pre></li>
+
+            <li>在 <code>affablebean.css</code> 中为新的 <code>categoryBox</code> 和 <code>categoryLabelText</code> 类添加样式规则。（新代码以<strong>粗体</strong>显示。）
+
+                <pre class="examplecode">
+#indexRightColumn {
+    height: 400px;
+    width: 500px;
+    float: left;
+    background: #eee;
+}
+
+<strong>.categoryBox {
+    height: 176px;
+    width: 212px;
+    margin: 21px 14px 6px;
+    float: inherit;
+    background: #ccc;
+}
+
+.categoryLabelText {
+    line-height: 150%;
+    font-size: x-large;
+}</strong></pre>
+
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>NetBeans CSS 支持</h3>
+
+                    <p>使用样式表时，有两个窗口可能会特别有用。使用“CSS 预览”，您可以按样式规则在浏览器中呈现的方式查看样式规则。要打开“CSS 预览”，请从主菜单中选择 "Window"（窗口）> "Other"（其他）> "CSS Preview"（CSS 预览）。当您将光标置于编辑器中的样式规则上时，“CSS 预览”会根据规则中定义的属性自动刷新以显示样例文本。</p>
+
+                        <img alt="CSS Preview（CSS 预览）" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/css-preview.png" title="使用 "CSS Preview"（CSS 预览）查看呈现的样式规则">
+
+                    <p>如果不喜欢手动编写样式规则代码，则“CSS 样式构建器”会非常有用。要打开 CSS 样式构建器，请从主菜单中选择 "Window"（窗口）> "Other"（其他）> "CSS Style Builder"（CSS 样式构建器）。使用此界面，您可以通过从图形界面中选择属性和值来构建规则。</p>
+
+                        <img alt="CSS 样式构建器" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/style-builder.png" title="使用 CSS 样式构建器构建样式规则">
+
+                    <p>与“CSS 预览”一样，样式构建器会与编辑器保持同步。当在样式构建器中做出选择时，编辑器中的样式规则也会自动更新。同样，当在编辑器中键入更改时，样式构建器中的选择也会立即更新。</p>
+                </div>
+                <br style="clear: both;"/></li>
+
+            <li>保存（Ctrl-S 组合键；在 Mac 上为 ⌘-S 组合键）<code>index.jsp</code> 和 <code>affablebean.css</code> 文件，然后切换到浏览器并刷新页面以查看其当前状态。 <br> <img alt="显示在浏览器中的欢迎页" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/index-page3.png" style="width:688px" title="在运行项目时会显示页眉和右栏的占位符">
+
+            <li>左栏和页脚只需要静态文本的占位符，因此让我们同时实现这两个区域。<br><br> 在 <code>&lt;div id="indexLefttColumn"&gt;</code> 和 <code>&lt;div id="footer"&gt;</code> 标记之间插入以下代码。（新代码以<strong>粗体</strong>显示。）
+
+                <pre class="examplecode">
+&lt;div id=&quot;indexLeftColumn&quot;&gt;
+    <strong>&lt;div id=&quot;welcomeText&quot;&gt;
+        &lt;p&gt;[ welcome text ]&lt;/p&gt;
+    &lt;/div&gt;</strong>
+&lt;/div&gt;
+
+...
+
+&lt;div id=&quot;footer&quot;&gt;
+    <strong>&lt;hr&gt;
+    &lt;p id=&quot;footerText&quot;&gt;[ footer text ]&lt;/p&gt;</strong>
+&lt;/div&gt;</pre></li>
+
+            <li>更改 <code>affablebean.css</code> 样式表。此时无需考虑所有的新 ID 和类 - 您可在以后从客户接收到文本和图像时再微调外观。<br><br> 水平规则 (<code>&lt;hr&gt;</code>) 标记会扩展至包含它的元素 (<code>&lt;div id="footer"</code>) 的整个长度。因此，要根据模型图像缩短其长度，您可以调整 <code>&lt;div id="footer"&gt;</code> 的宽度。（新代码以<strong>粗体</strong>显示。）
+
+                <pre class="examplecode">
+#footer {
+    height: 60px;
+    <strong>width: 350px;</strong>
+    clear: left;
+    background: #aaa;
+}
+
+<strong>hr {
+    border: 0;
+    background-color: #333;
+    height: 1px;
+    margin: 0 25px;
+    width: 300px;
+}</strong></pre></li>
+
+            <li>保存（Ctrl-S 组合键；在 Mac 上为 ⌘-S 组合键）<code>index.jsp</code> 和 <code>affablebean.css</code> 文件，然后切换到浏览器并刷新页面以查看其当前状态。<br> <img alt="显示在浏览器中的欢迎页" class="margin-around b-all" id="welcome-page" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/index-page4.png" style="width:688px" title="显示左栏和页脚的占位符"> <br> 欢迎页已经完成。您已经为将存在于页面上的组件创建了所有必需的占位符。
+            </li>
+        </ol>
+
+        <p>现在，您已经完成了应用程序欢迎页的初始设计。页面组件的所有占位符都已存在。在教程的后面部分，当您开始对页面视图应用动态逻辑时，您只需将 JSTL 和 EL 表达式插入这些占位符中。</p>
+
+        <p>剩下的任务是根据<a href="design.html#mockups">模型</a>为其他页面实现初始设计。要完成该任务，请按照上述模式进行操作，即：</p>
+
+        <ol style="margin: 5px 0 0 -.7em">
+            <li>为主页面区域创建 <code>&lt;div&gt;</code> 标记。</li>
+            <li>依次为每个区域重复执行以下三个步骤：
+
+                <ol style="margin: 5px 0 0 -1.4em; list-style-type: lower-alpha">
+                    <li>在 HTML 中创建结构。</li>
+                    <li>创建一组用于定义外观的样式。</li>
+                    <li>查看页面以检查更改后的结果。</li>
+                </ol></li>
+        </ol>
+
+        <p>请确保利用 IDE 所提供的 HTML 和 CSS 支持。下面介绍了一些<a href="#tipsTricks">提示和技巧</a>。如果您只希望获取其余页面的代码并继续完成本教程，可以<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot1.zip">下载 <code>AffableBean</code> 项目的快照 1</a>。此处包含其余页面的初始模型实现图像。</p>
+
+        <div class="indent">
+            <h4 id="categoryPage">类别页</h4>
+
+            <img alt="显示在浏览器中的类别页" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/category-page.png" style="width:708px" title="为类别页实现的占位符"> <br><br>
+
+            <h4 id="cartPage">购物车页</h4>
+
+            <img alt="显示在浏览器中的购物车页" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/cart-page.png" style="width:708px" title="为购物车页实现的占位符"> <br><br>
+
+            <h4 id="checkoutPage">结帐页</h4>
+
+            <img alt="显示在浏览器中的结帐页" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/checkout-page.png" style="width:708px" title="为结帐页实现的占位符"> <br><br>
+
+            <h4>确认页</h4>
+
+            <img alt="显示在浏览器中的确认页" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/confirmation-page.png" style="width:708px" title="为结帐页实现的占位符"> <br><br>
+
+            <p class="notes"><strong>注：</strong>每个页面区域的背景色仅用于帮助您在开发应用程序时定位元素。最后，您将要从样式表中将其删除，并应用更适合应用程序的背景色。您可以通过调整 <code>main</code> 类的背景规则来实现此操作：</p>
+
+            <div class="indent">
+                <pre class="examplecode">#main { background: #f7f7e9 }</pre>
+            </div>
+
+
+            <h3 id="tipsTricks">提示和技巧</h3>
+
+            <p>IDE 的编辑器提供了许多有助于您提高工作效率的功能。如果您熟悉快捷键和编辑器工具栏中的按钮，则可以提高工作效率。下面所列的提示适用于 HTML 和 CSS 文件编辑器。要查看更多快捷键，可从主菜单中选择 "Help"（帮助）> "Keyboard Shortcuts Card"（快捷键列表）以打开 IDE 的快捷键列表。</p>
+
+            <ul style="margin: 5px 0 0 -.7em">
+                <li><strong>代码完成：</strong>当您键入标记和属性时，会自动在一个弹出式框中显示代码完成的建议。按 Enter 键可完成建议的标记。</li>
+
+                <li><strong>格式化代码：</strong>在编辑器中单击鼠标右键，然后选择 "Format"（格式化）。</li>
+
+                <li><strong>开启/关闭行号：</strong>在左旁注中单击鼠标右键，然后选择 "Show Line Numbers"（显示行号）。</li>
+
+                <li><strong>查找实例：</strong>突出显示文本块，然后按 Ctrl-F 组合键（在 Mac 上为 ⌘-F 组合键）。所有匹配项在编辑器中突出显示。要开启/关闭突出显示，请在编辑器的工具栏中按 "Toggle Highlight Search"（开启/关闭搜索文本的突出显示）(<img alt=""Toggle Highlight Search"（开启/关闭搜索文本的突出显示）按钮" class="b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/toggle-highlight.png">) 按钮（Ctrl-Shift-H 组合键）。</li>
+
+                <li><strong>Create a bookmark</strong>（创建书签）：按 "Toggle Bookmark"（开启/关闭书签）(<img alt=""Toggle Bookmark"（开启/关闭书签）按钮" class="b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/toggle-bookmark.png">) 按钮（Ctrl-Shift-M 组合键）可在编辑器的左旁注中创建书签。无论您处于文件的哪个位置，都可以通过在编辑器的工具栏中按 "Previous Bookmark"（上一个书签）/"Next Bookmark"（下一个书签）按钮跳转至相应的书签。</li>
+
+                <li><strong>向上或向下复制代码片段：</strong>突出显示代码片段，然后按 Ctrl-Shift-向上方向键/向下方向键。</li>
+
+                <li><strong>突出显示起始和结束标记：</strong>将光标置于起始或结束标记上，两者都会以黄色突出显示。</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="view">在 WEB-INF 中放置 JSP 页</h2>
+
+        <p>查看创建的<a href="design.html#mockups">页面模型</a>，可以发现无论何时由谁来请求<a href="design.html#index">欢迎页</a>，该页面的外观都应该相同。也就是说，欢迎页上显示的内容不是由用户的<em>会话</em>决定的。（在第 8 单元<a href="manage-sessions.html">管理会话</a>中将对会话进行介绍。）但请注意，所有其他页面确实需要某些形式的用户特定信息才能正常显示。例如，<a href="design.html#category">类别页</a>需要用户选择类别才能显示，<a href="design.html#cart">购物车页</a>需要知道当前放入购物车的所有项目。如果服务器不能将用户特定信息与传入请求相关联，则无法正常呈现这些页面。因此，我们不希望直接从浏览器的地址栏中访问这些页面。项目的 <code>WEB-INF</code> 文件夹可以用于此目的：<code>WEB-INF</code> 文件夹中包含的任何资源都不能直接从浏览器进行访问。</p>
+
+        <p>创建一个名为 <code>view</code> 的新文件夹，并将其置于 <code>WEB-INF</code> 文件夹中。然后，将除欢迎页之外的所有其他 JSP 页移动到此新文件夹中。</p>
+
+        <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击 "WEB-INF" 节点，然后选择 "New"（新建）> "Folder"（文件夹）。</li>
+
+            <li>在新建文件夹向导中，将文件夹命名为 <code>view</code>，然后单击 "Finish"（完成）。请注意，"Projects"（项目）窗口中出现新文件夹节点。</li>
+
+            <li>将 <code>category.jsp</code>、<code>cart.jsp</code>、<code>checkout.jsp</code> 和 <code>confirmation.jsp</code> 页移动到 <code>view</code> 文件夹中。<br><br> 也可以通过单击 <code>cart.jsp</code> 将其选定，然后按住 Shift 键并单击 <code>confirmation.jsp</code> 来选择文件。这可选定四个文件。然后，在选定四个文件的情况下，单击它们并将它们拖至 <code>WEB-INF/view</code> 文件夹中。 <br> <img alt="显示拖至 "view" 文件夹的 JSP 页的 "Projects"（项目）窗口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/view-folder.png" title="单击 JSP 页并将其拖至 "WEB-INF/view/" 文件夹"></li>
+        </ol>
+
+        <p>要演示无法再从浏览器访问这些页，请单击 "Run Project"（运行项目）(<img alt=""Run Project"（运行项目）按钮" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png">) 按钮以运行项目。当应用程序显示在浏览器中时，在地址栏中输入其中任意文件的完整路径。例如，键入：</p>
+
+        <div class="indent">
+            <pre class="examplecode" style="width:700px">http://localhost:8080/AffableBean/WEB-INF/view/category.jsp</pre>
+        </div>
+
+        <p>您会收到一条 HTTP 状态 404 消息，指示该资源不可用。</p>
+
+
+        <br>
+        <h2 id="jspf">创建页眉和页脚</h2>
+
+        <p>查看<a href="design.html#mockups">页面模型</a>，很容易发现所有五个视图都共享了相同的内容；在顶部，它们包含公司徽标、语言切换以及与购物车功能相关的其他窗口部件。在底部，它们包含一些具有隐私政策和联系信息链接的文本。我们可以将此代码提取到两个 JSP 片段（一个页眉和一个页脚）中，而不是在每个页面的源文件中都包含此代码。然后，在需要呈现片段文件时，我们将这些文件包含在页面视图中。</p>
+
+        <p>对于这些片段，让我们创建一个名为 <code>jspf</code> 的新文件夹，并将其置于 <code>WEB-INF</code> 中。</p>
+
+        <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击 "WEB-INF" 节点，然后选择 "New"（新建）> "Folder"（文件夹）。</li>
+
+            <li>在新建文件夹向导中，将文件夹命名为 <code>jspf</code>，然后单击 "Finish"（完成）。 <br><br>
+                <p class="tips">IDE 提供的菜单项通常与上下文有关。例如，由于您右键单击了 "WEB-INF" 节点，因此在显示新建文件夹向导时，会在 "Parent Folder"（父文件夹）字段中自动输入 <code>web/WEB-INF</code>。同样，当您在 "Projects"（项目）窗口中右键单击某个节点并选择“新建”时，所列的文件类型部分取决于您之前选择的项目。</p>
+            </li>
+
+            <li>创建两个 JSP 片段：<code>header.jspf</code> 和 <code>footer.jspf</code>。为此，请右键单击新创建的 <code>jspf</code> 文件夹，然后选择 "New"（新建）> "JSP"。在新建 JSP 向导中，输入文件名，在 "Options"（选项）下选择 "Create as a JSP Segment"（作为 JSP 片段创建）选项，然后单击 "Finish"（完成）。<br><br> 完成后，将看到 <code>header.jspf</code> 和 <code>footer.jspf</code> 显示在 "Projects"（项目）窗口中： <br> <img alt="显示 JSP 片段的 "Projects"（项目）窗口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/projects-win-jspf.png" title="将在项目中显示页眉和页脚 JSP 片段"> <br><br> 现在，您可以从任意 JSP 页中复制页眉代码并将其粘贴到 <code>header.jspf</code> 文件中。同样，您可以从任意 JSP 页中复制页脚代码并将其粘贴到 <code>footer.jspf</code> 文件中。完成此任务后，可以从所有 JSP 页中删除页眉和页脚代码。</li>
+
+            <li>从任意 JSP 页中复制页眉代码并将其粘贴到 <code>header.jspf</code> 文件中。页眉应该包括页面文档类型以及从 <code>&lt;html&gt;</code>、<code>&lt;head&gt;</code> 和 <code>&lt;body&gt;</code> 起始标记到 <code>&lt;div id="header"&gt;</code> 元素的结束标记之间的内容。请确保包括在页面视图顶部使用的购物车窗口部件、语言切换和 "proceed to checkout" 按钮的占位符。在将代码粘贴到 <code>header.jspf</code> 中后，该文件将如下所示。
+
+<pre class="examplecode">
+&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;css/affablebean.css&quot;&gt;
+        &lt;title&gt;The Affable Bean&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div id=&quot;main&quot;&gt;
+            &lt;div id=&quot;header&quot;&gt;
+                &lt;div id=&quot;widgetBar&quot;&gt;
+
+                    &lt;div class=&quot;headerWidget&quot;&gt;
+                        [ language toggle ]
+                    &lt;/div&gt;
+
+                    &lt;div class=&quot;headerWidget&quot;&gt;
+                        [ checkout button ]
+                    &lt;/div&gt;
+
+                    &lt;div class=&quot;headerWidget&quot;&gt;
+                        [ shopping cart widget ]
+                    &lt;/div&gt;
+
+                &lt;/div&gt;
+
+                &lt;a href=&quot;#&quot;&gt;
+                    &lt;img src=&quot;#&quot; id=&quot;logo&quot; alt=&quot;Affable Bean logo&quot;&gt;
+                &lt;/a&gt;
+
+                &lt;img src=&quot;#&quot; id=&quot;logoText&quot; alt=&quot;the affable bean&quot;&gt;
+            &lt;/div&gt;</pre></li>
+
+            <li>从任意 JSP 页中复制页脚代码并将其粘贴到 <code>footer.jspf</code> 文件中。页脚代码应该包括从 <code>&lt;div id="footer"&gt;</code> 元素到 <code>&lt;html&gt;</code> 结束标记之间的内容。在将代码粘贴到 <code>footer.jspf</code> 中后，该文件将如下所示。
+
+<pre class="examplecode">
+            &lt;div id=&quot;footer&quot;&gt;
+                &lt;hr&gt;
+                &lt;p id=&quot;footerText&quot;&gt;[ footer text ]&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre></li>
+
+            <li>从所有五个 JSP 页（<code>index.jsp</code>、<code>category.jsp</code>、<code>cart.jsp</code>、<code>checkout.jsp</code> 和 <code>confirmation.jsp</code>）中删除页眉和页脚。</li>
+        </ol>
+
+
+        <br>
+        <h2 id="dd">向部署描述符中添加指令</h2>
+
+        <p>到目前为止，您已经将视图放在适当的位置并将公用的页眉和页脚代码提取到 <code>header.jspf</code> 和 <code>footer.jspf</code> 文件中。应用程序仍然需要知道页眉和页脚文件将应用到哪些页面。您可以在每个页面视图中添加 <code>&lt;jsp:include&gt;</code> 标记。但是，这样做只会重新引入我们刚要努力消除的重复代码。一种替代解决方案是创建一个 <code>web.xml</code> 部署描述符，然后添加 JSP 属性组指令以指定页眉和页脚片段应该应用到哪些页面视图。</p>
+
+        <ol>
+            <li>按 Ctrl-N 组合键（在 Mac 上为 ⌘-N 组合键）以打开新建文件向导。选择 "Web" 类别，然后在 "File Types"（文件类型）下选择 "Standard Deployment Descriptor (web.xml)"（标准部署描述符 (web.xml)）。</li>
+
+            <li>单击 "Next"（下一步）。请注意，该文件名为 <code>web.xml</code>，并且在完成后，该向导会将其放置在项目的 <code>WEB-INF</code> 目录中。</li>
+
+            <li>单击 "Finish"（完成）。将会创建 <code>web.xml</code> 文件并将其添加到项目中。编辑器中会打开部署描述符的 IDE 图形界面。<br><br> 该界面按可以在 Web 应用程序中配置的区域进行分类。这些区域在编辑器工具栏中显示为标签，并包含 "Servlet"、“过滤器”、“引用”和“安全”等主题。"XML" 标签显示文件的整个源代码。您在图形界面中所做的任何更改将会导致立即更新部署描述符的源代码，通过切换到 "XML" 标签可以对此进行验证。下面的步骤演示了这一点。</li>
+
+            <li>单击 "Pages"（页面）标签，然后单击 "Add JSP Property Group"（添加 JSP 属性组）按钮。打开 "Add JSP Property Group"（添加 JSP 属性组）对话框。</li>
+
+            <li>在 "Description"（描述）字段中键入 "<code>header and footer settings</code>"。将 "Display Name"（显示名称）保留为空。"Display Name"（显示名称）和 "Description"（描述）字段均为可选字段。</li>
+
+            <li>对于 "URL Patterns"（URL 模式），指定五个视图的路径。键入 "<code>/index.jsp</code>" 和 "<code>/WEB-INF/view/*</code>"。使用逗号分隔这两个路径。（"<code>*</code>" 是表示给定文件夹内所有文件的通配符。） <br> <img alt=""Add JSP Property Group"（添加 JSP 属性组）对话框" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/add-jsp-prop-group-dialog.png" title="使用 "Add JSP Property Group"（添加 JSP 属性组）对话框可在部署描述符中指定 &lt;jsp-config> 标记"></li>
+
+            <li>单击 "OK"（确定）。在 "Pages"（页面）标签的 "JSP Properties Groups"（JSP 属性组）类别中添加一个条目。</li>
+
+            <li>切换回 "XML" 标签。请注意，以下代码已添加到部署描述符中。
+
+                <pre class="examplecode">
+&lt;jsp-config&gt;
+    &lt;jsp-property-group&gt;
+        &lt;description&gt;header and footer settings&lt;/description&gt;
+        &lt;url-pattern&gt;/index.jsp&lt;/url-pattern&gt;
+        &lt;url-pattern&gt;/WEB-INF/view/*&lt;/url-pattern&gt;
+    &lt;/jsp-property-group&gt;
+&lt;/jsp-config&gt;</pre>
+
+                <p class="notes"><strong>注：</strong>您可能需要在代码中添加回车符，以便该代码显示为多行。可以在编辑器中单击鼠标右键并选择 "Format"（格式化）（Alt-Shift-F 组合键；在 Mac 上为 Ctrl-Shift-F 组合键）来适当缩进代码。</p></li>
+
+            <li>再次切换到 "Pages"（页面）标签，然后在 "Include Preludes"（包括 Prelude）和 "Include Codas"（包括 Coda）字段中，分别输入 <code>header.jspf</code> 和 <code>footer.jspf</code> 文件的路径。您可以单击 "Browse"（浏览）按钮，然后在提供的对话框中导航至这些文件。 <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/jsp-prop-groups.png" rel="lytebox" title="在 "JSP Property Group"（JSP 属性组）中输入页眉和页脚的路径"> <img alt="显示在 web.xml 的 "Pages"（页）标签下的 "JSP Property Group"（JSP 属性组）" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/jsp-prop-groups-small.png" title="单击查看大图"></a></li>
+
+            <li>切换回 "XML" 标签。请注意，已经添加以下代码。（更改内容以<strong>粗体</strong>显示。）
+
+                <pre class="examplecode">
+&lt;jsp-config&gt;
+    &lt;jsp-property-group&gt;
+        &lt;description&gt;header and footer settings&lt;/description&gt;
+        &lt;url-pattern&gt;/index.jsp&lt;/url-pattern&gt;
+        &lt;url-pattern&gt;/WEB-INF/view/*&lt;/url-pattern&gt;
+        <strong>&lt;include-prelude&gt;/WEB-INF/jspf/header.jspf&lt;/include-prelude&gt;
+        &lt;include-coda&gt;/WEB-INF/jspf/footer.jspf&lt;/include-coda&gt;</strong>
+    &lt;/jsp-property-group&gt;
+&lt;/jsp-config&gt;</pre>
+
+                上面的指令指定在给定 <code>url-pattern</code> 包含的所有文件前面附加 <code>header.jspf</code> 文件，并在后面附加 <code>footer.jspf</code> 文件。 <br><br>
+                <p class="tips">要查看上述标记以及 Web 部署描述符中提供的所有标记的定义，请参见 <a href="http://jcp.org/en/jsr/detail?id=315" target="_blank">Servlet 规范</a>。</p></li>
+
+            <li>再次运行应用程序（按 F6 键；在 Mac 上为 fn-F6 组合键）。您已经删除了 <code>index.jsp</code> 文件中的页眉和页脚代码，因此可以确定在请求该文件时是否会自动添加页眉和页脚。<br><br> 您将看到<a href="#welcome-page">欢迎页显示的内容和以前一样</a>，其中包括页眉和页脚内容。</li>
+        </ol>
+
+
+        <br>
+        <h2 id="controller">创建控制器 Servlet</h2>
+
+        <p>控制器 Servlet 通过以下方式来处理传入请求：启动任何所需的操作来生成请求模型，然后将请求转发到相应的视图。有关可视表示，请参见 <a href="design.html#mvcDiagram">AffableBean 项目的 MVC 图</a>。</p>
+
+        <p>IDE 提供了一个 Servlet 向导，使用该向导可以在 Web 应用程序中定义 Servlet 组件，方法是在生成的类中包括 <code>@WebServlet</code> 标注，或者将必需的指令添加到部署描述符中。在以下步骤中，您将创建 <code>ControllerServlet</code> 并使用 <a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/annotation/WebServlet.html" target="_blank"><code>@WebServlet</code></a> 标注在应用程序上下文中对其进行定义。</p>
+
+        <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击 <code>AffableBean</code> 项目节点，然后选择 "New"（新建）> "Servlet"。</li>
+
+            <li>在向导的 "Class Name"（类名）字段中，键入 <code>ControllerServlet</code>。</li>
+
+            <li>在 "Package"（包）字段中，键入 <code>controller</code>。（完成向导后，将会自动创建新包。） <br> <img alt="Servlet 向导" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/servlet-wizard.png" title="使用 Servlet 向导可为项目创建 Servlet"></li>
+
+            <li>单击 "Next"（下一步）。该向导的步骤 3 允许您配置 Servlet。最重要的是您需要指定 URL 模式。该模式标识用于调用 Servlet 的 URL。例如，如果输入 "<code>/category</code>"，则会指定 Servlet 处理如下所示的请求。
+
+                <pre class="examplecode">http://localhost/AffableBean<strong>/category</strong></pre>
+
+                URL 模式应该与用户可以启动的视图和操作相对应。查看<a href="design.html#index">欢迎页模型</a>，用户应该能够选择类别。因此，我们可以将 <code>/category</code> URL 与单击类别图像的操作相关联。同样，在<a href="design.html#category">类别页</a>中，用户应该能够向购物车添加项目。因此，我们可以指定 <code>/addToCart</code>。</li>
+
+            <li>在 "URL Pattern(s)"（URL 模式）字段中，键入 "<code>/category, /addToCart, /viewCart</code>"。各模式之间使用逗号分隔。创建 Servlet 类后，您可以直接在其中添加更多模式。 <br> <img alt="Servlet 向导的 "Step 3: Configure Servlet Deployment"（步骤 3：配置 Servlet 部署）" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/servlet-wizard2.png" title="直接在向导中配置 Servlet 部署"></li>
+
+            <li>单击 "Finish"（完成）。IDE 生成 <code>ControllerServlet</code> 并在编辑器中将其打开。Servlet 和 URL 模式包括在 <code>@WebServlet</code> 标注中，该标注显示在类签名上面。
+
+                <pre class="examplecode">
+<strong>@WebServlet(name=&quot;ControllerServlet&quot;, urlPatterns={&quot;/category&quot;, &quot;/addToCart&quot;, &quot;/viewCart&quot;})</strong>
+public class ControllerServlet extends HttpServlet {</pre>
+
+                在上一步中，如果您在向导中选择了 <code>Add information to deployment descriptor (web.xml)</code>（将信息添加到部署描述符 (web.xml)）选项，则会在应用程序的 <code>web.xml</code> 文件中生成以下标记。
+
+                <pre class="examplecode">
+&lt;servlet&gt;
+    &lt;servlet-name&gt;ControllerServlet&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;controller.ControllerServlet&lt;/servlet-class&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;ControllerServlet&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/category&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;ControllerServlet&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/addToCart&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;ControllerServlet&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/viewCart&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;</pre></li>
+
+            <li>直接在 <code>@WebServlet</code> 标注的 <code>urlPatterns</code> 元素中添加其他 URL 模式。应用程序需要更多 URL 模式以便用于其他操作和视图。您可以键入下列模式：
+
+                <ul class="toc" style="margin: 5px 0 0 -1em">
+                    <li><code>/updateCart</code></li>
+                    <li><code>/checkout</code></li>
+                    <li><code>/purchase</code></li>
+                    <li><code>/chooseLanguage</code></li>
+                </ul>
+
+                请确保使用逗号分隔每个模式。您还可以按如下方式重新格式化标注：
+
+                <pre class="examplecode">
+@WebServlet(name=&quot;ControllerServlet&quot;,
+            urlPatterns = {&quot;/category&quot;,
+                           &quot;/addToCart&quot;,
+                           &quot;/viewCart&quot;<strong>,
+                           &quot;/updateCart&quot;,
+                           &quot;/checkout&quot;,
+                           &quot;/purchase&quot;,
+                           &quot;/chooseLanguage&quot;</strong>})</pre></li>
+
+            <li>最后，包括 <code>loadOnStartup</code> 元素，以便在部署应用程序时实例化和初始化该 Servlet。值等于或大于 <code>0</code> 将导致发生此行为（<code>-1</code> 为默认值）。
+
+                <pre class="examplecode">
+@WebServlet(name=&quot;ControllerServlet&quot;,
+            <strong>loadOnStartup = 1,</strong>
+            urlPatterns = {&quot;/category&quot;,
+                           &quot;/addToCart&quot;,
+                           &quot;/viewCart&quot;,
+                           &quot;/updateCart&quot;,
+                           &quot;/checkout&quot;,
+                           &quot;/purchase&quot;,
+                           &quot;/chooseLanguage&quot;})</pre></li>
+        </ol>
+
+
+        <br>
+        <h2 id="implement">实现控制器 Servlet</h2>
+
+        <p>如前面所述，控制器 Servlet 通过以下方式来处理传入请求：启动任何所需的操作来生成请求模型，然后将请求转发到相应的视图。有关可视表示，请参见 <a href="design.html#mvcDiagram">AffableBean 项目的 MVC 图</a>。</p>
+
+        <p>查看为新的 <code>ControllerServlet</code> 生成的代码时，可以看到 IDE 的 Servlet 模板采用 <code>processRequest</code> 方法，该方法由 <code>doGet</code> 和 <code>doPost</code> 方法调用。（要查看这些方法，您可能需要展开代码折叠，方法是编辑器的左旁注中单击加号图标 (<img alt="代码折叠图标" src="../../../../images_www/articles/73/javaee/ecommerce/common/code-fold-icon.png">)。）由于此应用程序区分 <code>doGet</code> 和 <code>doPost</code>，因此您将直接在这些方法中添加代码并完全删除 <code>processRequest</code> 方法。</p>
+
+        <div class="indent">
+            <div class="feedback-box float-left" style="width: 703px;">
+
+                <h3>使用 IDE 的模板管理器修改文件模板</h3>
+
+                <p>IDE 为您创建的任何新文件都提供了一个基本模板。如果模板并不适合您的工作模式，可以使用 IDE 的模板管理器对其进行更改。IDE 几乎为所有文件类型都提供了模板。</p>
+
+                <p>例如，要修改 Servlet 模板，请执行以下操作：</p>
+
+                <ol>
+                    <li>通过从主菜单中选择 "Tools"（工具）> "Templates"（模板）以打开 "Template Manager"（模板管理器）。</li>
+
+                    <li>展开 "Web" 类别，然后选择 "Servlet" 模板。 <br> <img alt="模板管理器" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/template-manager.png" title="通过模板管理器访问和修改文件模板" /></li>
+
+                    <li>单击 "Open in Editor"（在编辑器中打开）按钮。</li>
+
+                    <li>在编辑器中修改模板。下次您创建新的 Servlet（例如，使用 Servlet 向导）时，将会应用新版本。</li>
+                </ol>
+            </div>
+        </div>
+        <br style="clear: both;"/>
+
+        <br>
+        <p>现在，您已经使用 <code>@WebServlet</code> 标注将 URL 模式映射到 Servlet，接下来应设置 <code>ControllerServlet</code> 以处理这些模式。此外，还应实例化 <code>RequestDispatcher</code> 以将请求的模式转发到相应的视图。</p>
+
+        <ol>
+            <li>将 <code>ControllerServlet</code> 类模板代码替换为以下代码。
+
+                <pre class="examplecode">
+public class ControllerServlet extends HttpServlet {
+
+    /**
+     * Handles the HTTP &lt;code&gt;GET&lt;/code&gt; method.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+
+        String userPath = request.getServletPath();
+
+        // if category page is requested
+        if (userPath.equals(&quot;/category&quot;)) {
+            // TODO: Implement category request
+
+        // if cart page is requested
+        } else if (userPath.equals(&quot;/viewCart&quot;)) {
+            // TODO: Implement cart page request
+
+            userPath = &quot;/cart&quot;;
+
+        // if checkout page is requested
+        } else if (userPath.equals(&quot;/checkout&quot;)) {
+            // TODO: Implement checkout page request
+
+        // if user switches language
+        } else if (userPath.equals(&quot;/chooseLanguage&quot;)) {
+            // TODO: Implement language request
+
+        }
+
+        // use RequestDispatcher to forward request internally
+        String url = &quot;/WEB-INF/view&quot; + userPath + &quot;.jsp&quot;;
+
+        try {
+            request.getRequestDispatcher(url).forward(request, response);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Handles the HTTP &lt;code&gt;POST&lt;/code&gt; method.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+
+        String userPath = request.getServletPath();
+
+        // if addToCart action is called
+        if (userPath.equals(&quot;/addToCart&quot;)) {
+            // TODO: Implement add product to cart action
+
+        // if updateCart action is called
+        } else if (userPath.equals(&quot;/updateCart&quot;)) {
+            // TODO: Implement update cart action
+
+        // if purchase action is called
+        } else if (userPath.equals(&quot;/purchase&quot;)) {
+            // TODO: Implement purchase action
+
+            userPath = &quot;/confirmation&quot;;
+        }
+
+        // use RequestDispatcher to forward request internally
+        String url = &quot;/WEB-INF/view&quot; + userPath + &quot;.jsp&quot;;
+
+        try {
+            request.getRequestDispatcher(url).forward(request, response);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+}</pre>
+
+                继续执行该教程的操作时，将返回 <code>ControllerServlet</code>，并单独实现每个映射的 URL 模式。</li>
+
+            <li>检查上面的代码。有几点需要注：
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>Servlet 使用 <code>userPath</code> 实例变量从客户端获取请求的 URL 模式：
+
+                        <pre class="examplecode" style="width: 640px">String userPath = request.getServletPath();</pre>
+
+                        <code>userPath</code> 由 <code>doGet</code> 和 <code>doPost</code> 方法使用。</li>
+
+                    <li>主要与页面请求相关联的 URL 模式由 <code>doGet</code> 方法管理。例如，<code>/category</code>、<code>/viewCart</code> 和 <code>/checkout</code> 会导致显示类别、购物车和结帐页。 </li>
+
+                    <li>与窗体提交和敏感用户数据传输相关联的 URL 模式（例如，<code>/addToCart</code>、<code>/updateCart</code> 和 <code>/purchase</code>）由 <code>doPost</code> 方法管理。</li>
+
+                    <li>对于 <code>doGet</code> 和 <code>doPost</code> 方法，相应视图的路径采用 <code>url</code> 字符串形式：
+
+                        <pre class="examplecode" style="width: 640px">String url = &quot;/WEB-INF/view&quot; + userPath + &quot;.jsp&quot;;</pre>
+                    </li>
+
+                    <li><code>RequestDispatcher</code> 从 <code>HttpServletRequest</code> 获取并应用 <code>url</code> 转发请求：
+
+                        <pre class="examplecode" style="width: 640px">request.getRequestDispatcher(url).forward(request, response);</pre>
+                    </li>
+
+                    <li><code>TODO</code> 注释用于表示仍需要完成的工作。例如：
+
+                        <pre class="examplecode" style="width: 640px">// if category page is requested
+if (userPath.equals(&quot;/category&quot;)) {
+    // TODO: Implement category request</pre>
+
+                        在代码中应用 <code>TODO</code> 注释是一种便于跟踪需要完成的任务的有用方法。可以使用 IDE 的 "Tasks"（任务）窗口（Ctrl-6 组合键；在 Mac 上为 ⌘-6 组合键）查看所有 TODO 注释，以及项目中包含的任何语法或编译错误。 <br> <img alt=""Tasks"（任务）窗口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/tasks-window.png" title="使用 IDE 的 "Tasks"（任务）窗口跟踪实现任务" /> <br>
+                        <p class="tips">您可以控制 "Tasks"（任务）窗口中显示的关键字。打开 "Options"（选项）窗口（"Tools"（工具）> "Options"（选项）；在 Mac 上为 "NetBeans" > "Preferences"（首选项）），然后选择 "Miscellaneous"（其他）> "Tasks"（任务）。</p></li>
+                </ul>
+            </li>
+
+            <li>运行项目（按 F6 键；在 Mac 上为 fn-F6 组合键）并测试以查看 <code>ControllerServlet</code> 是否将请求转发到相应的视图。
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>在浏览器的地址栏中键入 <code>http://localhost:8080/AffableBean/category</code>。将显示应用程序的<a href="#categoryPage">类别页</a>。</li>
+
+                    <li>在浏览器的地址栏中键入 <code>http://localhost:8080/AffableBean/viewCart</code>。将显示应用程序的<a href="#cartPage">购物车页</a>。</li>
+
+                    <li>在浏览器的地址栏中键入 <code>http://localhost:8080/AffableBean/checkout</code>。将显示应用程序的<a href="#checkoutPage">结帐页</a>。</li>
+                </ul>
+
+                <p class="notes"><strong>注：</strong>在浏览器的地址栏中输入 <code>http://localhost:8080/AffableBean/purchase</code> 时，不能查看<a href="#confirmationPage">确认页</a>。当然，这是因为，<code>/purchase</code> URL 模式由 Servlet 的 <code>doPost</code> 方法处理，而从浏览器地址栏发送的请求通常是使用 HTTP GET 方法发送的。</p></li>
+        </ol>
+
+        <p>此时，您已经创建了包含功能组件占位符的 JSP 页。您还设置了应用程序的前端结构。现在，JSP 页已位于 <code>WEB-INF</code> 文件夹中，页眉和页脚代码已被提取到单独的文件中，对部署描述符进行了正确配置，并且您设置了 <code>ControllerServlet</code> 来处理传入请求。在下一个教程单元中，您将采取措施来启用应用程序和数据库之间的连接。</p>
+
+        <p>如果希望将自己的工作与此单元的样例解决方案进行比较，可以<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot2.zip">下载 AffableBean 项目的快照 2</a>。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Preparing the Page Views and Controller Servlet">请将您的反馈意见发送给我们</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">另请参见</h2>
+
+        <div class="indent">
+            <h3>NetBeans 教程</h3>
+
+            <ul>
+                <li><a href="../javaee-intro.html" target="_blank">Java EE 技术简介</a></li>
+                <li><a href="../javaee-gettingstarted.html" target="_blank">Java EE 6 应用程序入门指南</a></li>
+                <li><a href="../../web/quickstart-webapps.html" target="_blank">Web 应用程序开发简介</a></li>
+                <li><a href="../../web/mysql-webapp.html" target="_blank">使用 MySQL 数据库创建简单的 Web 应用程序</a></li>
+                <li><a href="../../screencasts.html" target="_blank">NetBeans IDE 6.x 的视频教程和演示</a></li>
+                <li><a href="https://netbeans.org/projects/www/downloads/download/shortcuts.pdf">快捷键和代码模板列表</a></li>
+                <li><a href="../../../trails/java-ee.html" target="_blank">Java EE 和 Java Web 学习资源</a></li>
+            </ul>
+
+            <h3>NetBeans 书籍</h3>
+
+            <ul>
+                <li><a href="https://netbeans.org/kb/articles/netbeans-tips-and-tricks-book.html" target="_blank">100 个 NetBeans IDE 提示和技巧</a></li>
+                <li><a href="http://www.apress.com/book/view/1590598954" target="_blank">专业的 NetBeans IDE 6 富客户端平台版本</a></li>
+                <li><a href="http://apress.com/book/view/1430219548" target="_blank">带有 GlassFish 3 的 Java EE 6 平台入门：从初学者到专业人士</a></li>
+                <li><a href="https://netbeans.org/kb/articles/books.html" target="_blank">有关 NetBeans IDE 的更多书籍</a></li>
+            </ul>
+
+            <h3>外部资源</h3>
+
+            <ul>
+                <li><a href="http://jcp.org/en/jsr/detail?id=315" target="_blank">Servlet 3.0 规范</a></li>
+                <li><a href="https://developer.mozilla.org/en/Common_CSS_Questions" target="_blank">常见的 CSS 问题</a></li>
+                <li><a href="http://quirksmode.org/compatibility.html" target="_blank">浏览器兼容性主表</a></li>
+                <li><a href="http://refcardz.dzone.com/refcardz/netbeans-ide-67-update" target="_blank">用于 NetBeans Java 编辑器的 DZone Refcard</a></li>
+            </ul>
+        </div>
+
+    </body>
+</html>

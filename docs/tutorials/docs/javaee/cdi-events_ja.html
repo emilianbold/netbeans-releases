@@ -1,0 +1,278 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>CDIのイベントの操作 - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial demonstrates how to integrate Java EE events into an application with CDI using NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Contexts and Dependency Injection, CDI, Web Beans, injection, qualifier">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>CDIのイベントの操作</h1>
+
+        <p><em>執筆: Andy Gibson</em></p>
+
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h3>コンテキストと依存性の注入</h3>
+
+                <ol>
+                    <li><a href="cdi-intro.html">CDIおよびJSF 2.0の開始</a></li>
+                    <li><a href="cdi-inject.html">CDIの注入および修飾子の操作</a></li>
+                    <li><a href="cdi-validate.html">@Alternative Beanおよびライフサイクル注釈の適用</a>
+
+                    <li><strong>CDIのイベントの操作</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#event">イベントの利用</a></li>
+                            <li><a href="#scopes">スコープの処理</a></li>
+                            <li><a href="#seealso">関連項目</a></li>
+                        </ul></li>
+                </ol>
+            </div>
+        </div>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <p><a href="http://jcp.org/en/jsr/detail?id=299">JSR-299</a>で指定されているコンテキストと依存性の注入(CDI: Contexts and Dependency Injection)はJava EE 6の不可欠な部分であり、サーブレット、エンタープライズBean、JavaBeansなどのJava EEコンポーネントが、アプリケーションのライフサイクル内で明確なスコープを持って存在できるようにするためのアーキテクチャを提供します。また、CDIサービスによって、EJBセッションBeanやJSF (JavaServer Faces)管理対象BeanなどのJava EEコンポーネントが注入可能になり、イベントの起動や監視による疎結合方式の対話が可能になります。</p>
+
+        <p>このチュートリアルは、Andy Gibson氏によって投稿された<a href="http://www.andygibson.net/blog/index.php/2010/01/11/getting-started-with-jsf-2-0-and-cdi-part-3/">CDI入門パート3 - イベント</a>というタイトルのブログをベースにしています。ここでは、Java EEの<em>イベント</em>の概念を活用する方法を示します。この方法は、アプリケーション内のイベントの生成およびイベントへのサブスクライブ(つまり<em>監視</em>)について、プロデューサとオブザーバの間でコードを分離して管理できます。<code>javax.enterprise.event.Event</code>クラスを使用してイベントを作成し、CDIの<code>@Observes</code>注釈を使用してイベントにサブスクライブします。</p>
+
+        <p>NetBeans IDEは、コンテキストと依存性の注入のサポートを組込みでサポートしています。これには、プロジェクト作成時に<code>beans.xml</code> CDI構成ファイルを生成するオプション、注釈のためのエディタおよびナビゲーション・サポート、一般的に使用されるCDIアーティファクトを作成するための各種ウィザードなどが含まれています。</p>
+
+        <br style="clear:left;">
+
+        <div class="indent">
+            <p>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</p>
+
+            <table id="requiredSoftware">
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                        <th class="tblheader" scope="col">必須バージョン</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                        <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバージョン</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                        <td class="tbltd1">バージョン7または8</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://glassfish.dev.java.net/">GlassFishサーバー</a></td>
+                        <td class="tbltd1">Open Source Edition 3.xまたは4x</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo3.zip">cdiDemo3.zip</a></td>
+                        <td class="tbltd1">n/a</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="notes"><strong>注意: </strong></p>
+        </div>
+
+        <ul>
+            <li>NetBeans IDEのJava EEバンドル版には、Java EE準拠のコンテナであるGlassFish Server Open Source Editionも含まれています。</li>
+
+            <li>このチュートリアルのサンプル・ソリューション・プロジェクトをダウンロードできます: <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemoComplete.zip">cdiDemoComplete.zip</a></li>
+        </ul>
+
+
+        <br>
+        <h2 id="event">イベントの利用</h2>
+
+        <p>前の<a href="cdi-validate.html">@Alternative Beanおよびライフサイクル注釈の適用</a>のチュートリアルでは、項目の一覧を取得してそれを検証し、無効な項目が見つかったら特定のアクションを起こすアプリケーションを作成しました。仮に、今後システムを拡大して、無効な項目が見つかった場合に発生するあらゆることを処理できるようにするとします。これには、電子メールの送信、他のデータの変更(注文の取消しなど)、またはファイルやデータベース表への却下リストの格納など、様々なものがあります。実装を完全に分離するために、Java EEの<em>イベント</em>を使用できます。イベントは、イベント・<em>プロデューサ</em>によって生成され、イベント・<em>オブザーバ</em>からサブスクライブされます。ほとんどのCDIと同様にイベントの生成およびサブスクライブは型保証であるため、修飾子は、監視するイベント・オブザーバを判別できます。</p>
+
+        <p>このシリーズで前のチュートリアルからビルドしているアプリケーションを使用した場合、それほど多くの変更をしなくてもこの実装が可能です。項目を処理するたびにイベントを生成する、もう1つの<code>ItemErrorHandler</code> (<a href="cdi-validate.html">前のチュートリアル</a>で作成)の実装を提供するのみです。このクラスに<code>EventItemHandler</code>という名前を付けて<code>ItemProcessor</code>に注入します。注入対象を選択するには、<code>Notify</code>修飾子を使用します。</p>
+
+        <div class="indent">
+            <img alt="この課題で作成されるオブジェクトを示すCDI図" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-events/cdi-diagram-events.png" title="アプリケーションの疎結合クラスへのCDI注入の使用">
+        </div>
+
+        <ol>
+            <li>まず、<code>cdiDemo3.zip</code>ファイル(上記の<a href="#requiredSoftware">必要なリソースの一覧表</a>を参照)からサンプルのスタート・プロジェクトを抽出します。「ファイル」>「プロジェクトを開く」([Ctrl]-[Shift]-[O]、Macの場合は[⌘]-[Shift]-[O])を選択してから、コンピュータ上のこのプロジェクトの場所を選択することで、IDEでプロジェクトを開きます。</li>
+
+            <li><code>EventItemHandler</code>という名前のクラスを作成します。「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png">)ボタンをクリックするか、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押してファイル・ウィザードを開きます。</li>
+
+            <li>「Java」カテゴリから「Javaクラス」を選択します。「次」をクリックします。</li>
+
+            <li>クラス名として「<strong>EventItemHandler</strong>」、パッケージとして「<strong>exercise4</strong>」と入力します。</li>
+
+            <li>「終了」をクリックします。新しいクラスおよびパッケージが生成され、エディタでクラスが開きます。</li>
+
+            <li>次のようにして<strong>EventItemHandler</strong>を実装します。
+
+                <pre class="examplecode">
+public class EventItemHandler <strong>implements ItemErrorHandler</strong> {
+
+    <strong>@Inject
+    private Event&lt;Item&gt; itemEvent;
+
+    @Override
+    public void handleItem(Item item) {
+        System.out.println("Firing Event");
+        itemEvent.fire(item);
+    }</strong>
+}</pre>
+
+                イベント・ペイロードが<code>Item</code>になる<code>Event</code>のインスタンスを注入します。イベント・ペイロードとはイベント・プロデューサからイベント・オブザーバに渡される状態データのことで、この場合は却下されたItemが渡されます。無効な項目が処理されたら、イベントを起動して、受け取った無効な項目を渡します。このイベント・ベースの項目ハンドラは、他の項目ハンドラと同じように注入されるため、いつでも必要なときに交換したり、テスト中に取り換えたりできます。</li>
+
+            <li>すべてのインポートを修正します。エディタを右クリックして「インポートを修正」を選択するか、[Ctrl]-[Shift]-[I] (Macの場合は[⌘]-[Shift]-[I])を押します。必ず<code>Event</code>クラスの完全修飾名として<code>javax.enterprise.event.Event</code>を選択するようにしてください。<br><img alt="「インポートを修正」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/fix-all-imports.png" title="エディタで右クリックして「インポートを修正」を選択し、「インポートを修正」ダイアログを呼び出す"><br><br><span class="tips"><code>Event</code>の上で[Ctrl]-[Space]を押して、クラスのJavadoc定義を表示します。上記で使用した<code>fire()</code>メソッドも定義されています。</span><br><img alt="エディタのJavadocポップアップ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/event-javadoc.png" title="[Ctrl]-[Space]を押して、APIのクラスのJavadocドキュメントを表示する"></li>
+
+            <li><code>Notify</code>という名前の修飾子を作成します。(修飾子については<a href="cdi-inject.html">CDIの注入および修飾子の操作</a>に記載。)</li>
+
+            <li>「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png">)ボタンをクリックするか、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押してファイル・ウィザードを開きます。</li>
+
+            <li>「コンテキストと依存性の注入」カテゴリから「修飾子タイプ」を選択します。「次」をクリックします。</li>
+
+            <li>クラス名として「<strong>Notify</strong>」、パッケージとして「<strong>exercise4</strong>」と入力します。</li>
+
+            <li>「終了」をクリックします。新しい<code>Notify</code>修飾子がエディタで開きます。
+
+<pre class="examplecode">
+@Qualifier
+@Retention(RUNTIME)
+@Target({METHOD, FIELD, PARAMETER, TYPE})
+public @interface Notify {
+}</pre></li>
+
+            <li><code>EventItemHandler</code>に<code>@Notify</code>注釈を追加します。
+
+                <pre class="examplecode">
+<strong>@Notify</strong>
+public class EventItemHandler implements ItemErrorHandler {
+
+    ...
+}</pre>
+
+                このエラー・ハンドラを注入のために識別し、<code>ItemProcessor</code>で注入ポイントに追加して使用できる<code>@Notify</code>修飾子注釈を作成しました。</li>
+
+            <li><code>exercise2.ItemProcessor</code>で、<code>EventItemHandler</code>の注入ポイントに<code>@Notify</code>注釈を追加します。
+
+                <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    @Inject @Demo
+    private ItemDao itemDao;
+
+    @Inject
+    private ItemValidator itemValidator;
+
+    @Inject <strong>@Notify</strong>
+    private ItemErrorHandler itemErrorHandler;
+
+    public void execute() {
+        List&lt;Item&gt; items = itemDao.fetchItems();
+        for (Item item : items) {
+            if (!itemValidator.isValid(item)) {
+                itemErrorHandler.handleItem(item);
+            }
+        }
+    }
+}</pre>
+                (エディタのヒントを使用して<code>exercise4.Notify</code>のインポート文を追加します。)</li>
+
+            <li>「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">)ボタンをクリックして、プロジェクトを実行します。</li>
+
+            <li>ブラウザで「<code>Execute</code>」ボタンをクリックしてからIDEに戻り、「出力」ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])でサーバー・ログを調べます。ビルドしてきたアプリケーションは、現時点で<code>DefaultItemDao</code>を使用して4つの<code>Item</code>を設定してから<code>Item</code>に<code>RelaxedItemValidator</code>を適用するため、<code>itemErrorHandler</code>が2度起動するのが確認できるはずです。<br><img alt="「出力」ウィンドウ - GlassFishサーバー・ログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/output-window.png" title="「出力」ウィンドウに表示されたGlassFishサーバー・ログの確認"><br>しかし、現時点ではイベントを監視しているものはありません。これは、<code>@Observes</code>注釈を使用して<em>オブザーバ</em>・メソッドを作成すれば修正できます。イベントを監視するために必要な手順はこれのみです。これを示すため、<code>FileErrorReporter</code> (<a href="cdi-validate.html">前のチュートリアル</a>で作成)にこの<code>handleItem()</code>メソッドをコールするオブザーバ・メソッドを追加して、起動されたイベントに応答するように変更できます。</li>
+
+            <li><code>FileErrorReporter</code>がイベントに応答するようにするには、クラスに次のメソッドを追加します。
+
+                <pre class="examplecode">
+public class FileErrorReporter implements ItemErrorHandler {
+
+    <strong>public void eventFired(@Observes Item item) {
+        handleItem(item);
+    }</strong>
+
+    ...
+}</pre>
+
+                (エディタのヒントを使用して<code>javax.enterprise.event.Observes</code>のインポート文を追加します。)</li>
+
+            <li>再びプロジェクトを実行([F6]、Macの場合は[fn]-[F6])し、「<code>Execute</code>」ボタンをクリックしてからIDEに戻り、「出力」ウィンドウでサーバー・ログを調べます。<br><img alt="「出力」ウィンドウ - GlassFishサーバー・ログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/output-window2.png" title="「出力」ウィンドウに表示されたGlassFishサーバー・ログの確認"><br>先ほどと同じく無効なオブジェクトでイベントが起動されますが、今度は各イベントの起動時に項目の情報が保存されるようになったのが確認できます。また、起動されたイベントごとに<code>FileErrorReporter</code> Beanが作成されて閉じられているため、ライフサイクル・イベントが監視されていることもわかります。(<code>@PostConstruct</code>や<code>@PreDestroy</code>などのライフサイクル注釈については、<a href="cdi-validate.html">@Alternative Beanおよびライフサイクル注釈の適用</a>を参照。)</li>
+        </ol>
+
+        <p>上記の手順で示したように、<code>@Observes</code>注釈はイベントを監視するための簡単な方法を提供します。</p>
+
+        <p class="tips">イベントおよびオブザーバは、修飾子を使用して注釈を付けることによって、オブザーバが項目の特定のイベントのみを監視するようにもできます。デモについては、<a href="http://www.andygibson.net/blog/index.php/2010/01/11/getting-started-with-jsf-2-0-and-cdi-part-3/">CDI入門パート3 – イベント</a>を参照してください。</p>
+
+
+        <br>
+        <h2 id="scopes">スコープの処理</h2>
+
+        <p>現状のアプリケーションでは、イベントが生成されるたびに<code>FileErrorReporter</code> Beanが作成されます。この場合、項目ごとにファイルを開いて閉じる必要はないため、毎回新しいBeanを作成することは望ましくありません。ただし、プロセスの開始時にファイルを開き、プロセスの完了時にファイルを閉じる必要があります。このために、<code>FileErrorReporter</code> Beanの<em>スコープ</em>について考慮する必要があります。</p>
+
+        <p>現時点では、<code>FileErrorReporter</code> Beanに定義されたスコープはありません。定義されたスコープがない場合、CDIはデフォルトの依存擬似スコープを使用します。これは実際のところ、Beanが非常に短い期間(通常はメソッド・コールの期間)で作成および破棄されることを意味します。現在のシナリオでは、起動されたイベントの期間でBeanが作成および破棄されます。これを修正するために、手動でスコープ注釈を追加してBeanのスコープを延ばすことができます。このBeanに<code>@RequestScoped</code>を指定して、最初のイベント起動時にBeanが作成されたら、リクエストの期間存在し続けるようにします。これはまた、このBeanを注入できるどの注入ポイントにおいても、同じBeanインスタンスが注入されることを意味します。</p>
+
+        <ol>
+            <li><code>FileErrorReporter</code>クラスに、<code>@RequestScope</code>注釈および対応する<code>javax.enterprise.context.RequestScoped</code>のインポート文を追加します。
+
+                <pre class="examplecode">
+<strong>import javax.enterprise.context.RequestScoped;</strong>
+...
+
+<strong>@RequestScoped</strong>
+public class FileErrorReporter implements ItemErrorHandler { ... }</pre>
+
+                <span class="tips">入力中に[Ctrl]-[Space]を押すと、エディタのコード補完サポートを呼び出せます。コード補完で項目を選択すると、関連付けられたすべてのインポート文が自動的にクラスに追加されます。</span><br> <img alt="エディタのコード補完ポップアップ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/code-completion.png" title="入力中に [Ctrl]-[Space]を押してコード補完の候補を呼び出す"></li>
+
+            <li>再びプロジェクトを実行([F6]、Macの場合は[fn]-[F6])し、「<code>Execute</code>」ボタンをクリックしてからIDEに戻り、「出力」ウィンドウでサーバー・ログを調べます。<br><img alt="「出力」ウィンドウ - GlassFishサーバー・ログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-events/output-window3.png" title="「出力」ウィンドウに表示されたGlassFishサーバー・ログの確認"><br><code>FileErrorReporter</code> Beanが最初のイベントの起動時にのみ作成され、最後のイベントの起動後に閉じられます。
+
+                <pre class="examplecode">
+INFO: Firing Event
+<strong>INFO: Creating file error reporter</strong>
+INFO: Saving exercise2.Item@48ce88f6 [Value=34, Limit=7] to file
+INFO: Firing Event
+INFO: Saving exercise2.Item@3cae5788 [Value=89, Limit=32] to file
+<strong>INFO: Closing file error reporter</strong>
+</pre></li>
+        </ol>
+
+        <p>システムの各部分をモジュール式で分離するには、イベントの使用をお薦めします。イベントを使用すると、イベントのオブザーバとプロデューサは互いのことを意識する必要がなくなり、そのための構成の必要もなくなります。イベントのプロデューサにオブザーバを意識させることなく、イベントにサブスクライブするコード部分を追加できます。(イベントを使用しない場合、通常は手動でイベントのプロデューサにオブザーバをコールさせる必要があります。)たとえば、だれかが注文ステータスを更新したら営業担当に電子メールを送るイベントや、技術サポートの問題が未解決のまま1週間を超えたらアカウント・マネージャに通知するイベントを追加できます。このような種類のルールはイベントを使用しなくても実装できますが、イベントを使用するとビジネス・ロジックを簡単に分離できるようになります。さらに、コンパイル時やビルド時の依存性がなくなります。ただアプリケーションにモジュールを追加するのみで、自動的にイベントの監視および生成が始まります。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20with%20Events%20in%20CDI">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">関連項目</h2>
+
+        <p>CDIおよびJava EEの詳細は、次のリソースを参照してください。</p>
+
+        <h3>NetBeansリソース</h3>
+
+        <ul>
+            <li><a href="cdi-intro.html">コンテキストと依存性の注入およびJSF 2.0の開始</a></li>
+            <li><a href="cdi-inject.html">CDIの注入および修飾子の操作</a></li>
+            <li><a href="cdi-validate.html">@Alternative Beanおよびライフサイクル注釈の適用</a></li>
+            <li><a href="javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+            <li><a href="../web/jsf20-intro.html">JavaServer Faces 2.0入門</a></li>
+        </ul>
+
+        <h3>外部リソース</h3>
+
+        <ul>
+            <li><a href="http://blogs.oracle.com/enterprisetechtips/entry/using_cdi_and_dependency_injection">エンタープライズ技術ヒント: JSF 2.0アプリケーションでのJavaのCDIおよび依存性の注入の使用</a></li>
+            <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/gjbnr.html">Java EE 6チュートリアル、パートV: Java EEプラットフォームのコンテキストと依存性の注入</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=299">JSR 299: コンテキストと依存性の注入の仕様</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=316">JSR 316: Java Platform Enterprise Edition 6の仕様</a></li>
+        </ul>
+
+    </body>
+</html>

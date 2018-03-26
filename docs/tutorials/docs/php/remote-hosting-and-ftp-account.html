@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Deploying a PHP Application on a Remote Web Server Using the NetBeans IDE  </title>
+     <meta name="KEYWORDS" content="NETBEANS, PHP">
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="DESCRIPTION" content="Deploying a PHP application on a remote hosting account through FTP using NetBeans" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+        <h1>Deploying a PHP Application on a Remote Web Server Using the NetBeans IDE</h1>
+        <p>Normally, a real-life PHP application is run on a remote server. Remote applications are accessed either through a version control system or through File Transfer Protocol (FTP). </p> 
+        <p class="alert"><b>Caution:</b> NetBeans provides basic support for FTP/SFTP, sufficient for a lone developer to work on a simple project. If you are working on a complex project or with multiple developers, you should use a version control system. NetBeans IDE supports a number of version control systems. See our <a href="../ide/subversion.html">Subversion</a> and <a href="../ide/git.html">Git</a> tutorials, for example. If you must use FTP/SFTP with a complex project, consider using the IDE in combination with a full-featured FTP client, and editing the PHP project in the IDE as a local web site.</p>
+        <p class="alert"><b>JDK 7 + Windows 7/Vista:</b> Windows 7 and Windows Vista firewall blocks some FTP operations that are launched by JDK 7. See <a target="_blank" href="http://forums.netbeans.org/post-115176.html#113923">NetBeans forum</a> for workaround.</p>
+   <p>To deploy your PHP application on a remote server, you will need to register an account on a hosting provider. You can also  deploy a MySQL database on the remote server where you have a hosting account.</p>
+        <p class="notes">All the user names, passwords, and email addresses are fake and used as examples only.  The administration of the hosting blocks an account if the user does not show up on the forum for more than a week. So you may fail to apply exactly the same user names, passwords, email addresses, and other credentials from the tutorial.</p>
+   
+        <p><b>Contents</b></p>
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<ul>
+		<li><a href="#runPHPApplicationOnRemoteServer">Setting Up Run Configuration for PHP Projects to be Hosted Remotely </a>
+		  <ul>
+		<li><a href="#chooisngRunConfigurationType">Choosing the Run Configuration Type</a></li>
+		<li><a href="#specifyFTPConnectionSettings">Specifying the FTP Connection Settings</a></li>
+		</ul>
+		</li>
+		<li><a href="#uploadSourcesOnRemoteServer">Uploading the Source Files to a Remote Server</a></li>
+                <li><a href="#remote-synchronization">Remote Synchronization</a></li>
+                <li><a href="#runPHPApplication">Running a PHP Application</a></li>
+                <li><a href="#remote-mysql-database">Using a Remote MySQL Database</a></li>
+		
+		
+   </ul>
+   
+   <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+   <table>
+     <tbody>
+       <tr>
+         <th class="tblheader" scope="col">Software or Resource</th>
+         <th class="tblheader" scope="col">Version Required</th>
+       </tr>
+       <tr>
+         <td class="tbltd1"><a target="_blank" href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+         <td class="tbltd1">PHP download bundle</td>
+       </tr>
+       <tr>
+         <td class="tbltd1">A PHP engine</td>
+         <td class="tbltd1">Version 5
+       </tr>
+       <tr>
+         <td class="tbltd1">A hosting account and <br>
+         an FTP account on a remote server</td>
+         <td>For example, <a target="_blank" href="http://x10hosting.com/">x10Hosting</a> <br>provides free FTP account hosting.</td>
+       </tr>
+       <tr>
+         <td class="tbltd1">A PHP debugger (optional)</td>
+         <td><a target="_blank" href="http://www.xdebug.org">XDebug 2.0 or later</a></td>
+       </tr>
+     </tbody>
+   </table>
+   
+		
+   
+		
+
+		<h2><a name="runPHPApplicationOnRemoteServer"></a>Setting Up Run Configuration for PHP Projects to be Hosted Remotely </h2>
+		<p>If you have a hosting account on a remote Web server and an FTP account to transfer your source files to the remote server, you can  create and debug your  PHP project locally and then deploy it on the remote server. With the concept of Run Configurations, you can switch between these workflows within the same NetBeans PHP project by changing the Run Configuration type from Local Web Site to Remote Web Site. </p>
+		<p>To enable running a PHP application on a remote web server, you need to set up a run configuration that contains an FTP connection profile. </p>
+		<p>If you already have a project with a default run configuration and you want to add a new remote run configuration, <a href="project-setup.html#managingProjectSetup">customize your project</a>:</p>
+		<ol>
+<li>Click the right mouse button on the project node and choose Properties from the popup menu. The Project Properties panel opens.</li>
+<li>From the Categories list, choose Run Configuration. The Run Configurations panel opens. </li>
+<li><a href="#chooisngRunConfigurationType">Choose the run configuration type</a> and <a href="#specifyFTPConnectionSettings">specify the (S)FTP connection settings</a> as described in the sections below. </li>
+   </ol>
+To create a NetBeans project for a PHP application on a remote server, or to create a new project that uses a remote run configuration as default:<br>		
+		<ol>
+		<li>Start the IDE, choose File -&gt; New Project. The New Project panel opens.</li>
+		<li>Choose PHP  from the Categories and choose the PHP Application from Remote Server. Then click Next. The Name and Location panel opens. </li>
+		<li>Specify the project name, the location of the application source files, and the location of the project internal files (optional). Click Next. The Run Configuration panel opens.</li>
+		<li><a href="#specifyFTPConnectionSettings">Specify the FTP connection settings</a> as described in the section below. </li>
+   </ol>
+		<div class="indent">
+		<h3><a name="chooisngRunConfigurationType"></a>Choosing the Run Configuration Type</h3>
+		<p>On the Run Configurations panel, 	 choose Remote Web Site (FTP, SFTP)  from the Run As dropdown list. The hidden area for setting up the configuration displays.</p>
+		<p class="notes">If you are creating a new project with the PHP Application from Remote Server wizard, you do not need to choose from the Run As dropdown list. The wizard automatically takes you to the Remote Connection panel. This panel has only Project URL, Remote Connections and Upload Directory fields.</p>
+		<img src="../../../images_www/articles/72/php/remote-hosting/ftp-run-config-blank.png" height="425" width="600" alt="Run Configuration screen for Remote Web Site, no config chosen" class="margin-around">
+		<h3><a name="specifyFTPConnectionSettings" id="specifyFTPConnectionSettings"></a>Specifying the (S)FTP Connection Settings </h3>
+		To create an FTP connection:<br><br>
+		<ol>
+		<li>Click Manage next to the FTP Connection dropdown list. The Manage Remote Connections dialog box displays.</li>
+		<li>Click Add. The Create New Connection dialog box opens. (It may open automatically if you are defining your first connection.)</li>
+		<li>In the Connection Name field, enter the name of the new connection. In this example the connection name is <tt>x10hosting</tt>. From the Type dropdown list, choose FTP or SFTP. Click OK. The Manage Remote Connections dialog box displays with the name of the new connection in the Connection Name display field.</li>
+		<li>In the Host Name field, enter the FTP Server name as it is written in the FTP account creation confirmation message. In this example, the FTP server is <tt>nbuser.x10.mx</tt>.</li>
+		<li>In the Port field, specify 21.</li>
+		<li>In the User Name field, enter your FTP  Username as it is written in the FTP account creation confirmation message. In this example, the FTP username is <tt>nbuser</tt>.</li>
+		<li>Fill in the Password field. In this example the password is <tt>qwerty1234</tt>. </li>
+		<li>In the Initial Directory field, enter the name of your account directory on the FTP server.	In	this example, no account directory is specified, enter a slash in the field. <br>
+		  <img src="../../../images_www/articles/72/php/remote-hosting/manageremoteconnections.png" height="487" width="599" alt="Manage FTP Connections dialogbox."  class="margin-around"></li>
+		<li>Click OK. You return to the Run Configuration panel. </li>
+		<li>In the Upload Directory field, enter the name of the  subfolder in the initial directory where the source files will be uploaded. The prompt below the field shows the FTP host URL. </li>
+		<!--
+		<li>To specify when the files will be uploaded, choose the relevant option from the <a name="uploadFilesDropdownBox"></a>Upload Files dropdown list. The available options are: Manually and On Run.</li>
+		
+		<li>Click OK if you are updating the existing project settings.</li> -->
+		<li>To complete setting up a new project, click Finish. </li>
+		</ol>
+   </div>
+		<h2><a name="uploadSourcesOnRemoteServer"></a>Uploading the Source Files to a Remote Server </h2>
+		<p>After you choose the remote connection for your project, select whether to upload your source files on run, on save, or manually.</p>
+		<ul>
+		  <li><strong>On Run:</strong> Source files are uploaded to the server when you run the project.</li>
+          <li><strong>On Save: </strong>Every change (create, edit, rename, delete) is immediately  propagated to your remote server. If the operation  takes more than 1 second, a progress bar is shown.</li>
+          <li><strong>Manually:</strong> Files are never uploaded automatically. You must use the IDE's manual upload function, described in this section.</li>
+   </ul>
+		<p><img src="../../../images_www/articles/72/php/remote-hosting/ftp-run-config.png" alt="Run Configuration panel options for saving" height="67" width="589" class="margin-around"></p>
+   <p>To manually upload files from your project to your FTP server, right-click the Source Files node of your project and select Upload. Note that you can also download files from your FTP server in the same menu.</p>
+		<img src="../../../images_www/articles/72/php/remote-hosting/beta-source-upload.png" border="1" alt="Context menu in Project Manager showing Upload option for PHP project Source Files" class="margin-around" >
+		    
+   
+		<p>When you start to upload files, a dialog opens with a tree view of the source files. In this dialog, you can select individual files to upload or not upload. For more information, see the <a target="_blank" href="http://blogs.oracle.com/netbeansphp/entry/new_download_upload_dialog">NetBeans PHP blog entry</a> on the File Upload dialog.</p>
+        <p><img src="../../../images_www/articles/72/php/remote-hosting/file-upload-dialog.png" alt="Dialog where you can select files to upload" height="359" width="439">        </p>
+        <p>While you upload files, the results of your upload appear in an output tab.</p>
+        <p><img src="../../../images_www/articles/72/php/remote-hosting/upload-output.png" alt="Output tab for file upload" width="465" height="319"></p>
+        <h2 id="remote-synchronization">Remote Synchronization</h2>
+        <p>For developers who must work over (S)FTP in multiple developer environments  without proper version control, NetBeans IDE provides remote synchronization. Remote synchronization allows you to compare your local copy of project files with the copies on the (S)FTP server. You can upload your local copy to the server or download the server's copy to your local machine. When the copy on the server was updated after you began work on your local copy, NetBeans IDE warns you of a file conflict. When there is a file conflict, NetBeans IDE lets you diff your local version with the version on the server and decide which version to accept on a line-by-line basis. </p>
+        
+        <p  class="alert"><strong>Warning: </strong>Remote synchronization is never 100% reliable because the timestamps on FTP servers
+   are not 100% reliable. Version control is a safer solution.</p>
+        <p  class="alert"><strong>Caution: </strong>Remote synchronization works more reliably when you perform it on an entire project. You can perform remote synchronization on individual files but this has higher risk.</p>
+        <p><strong>To perform remote synchronization:</strong></p>
+        <ol>
+          <li>In the Projects window (Ctrl-1), expand the node for the PHP project that you want to synchronize. Right-click the Source Files node. The context menu appears, including the Synchronize option. <br>
+          <img src="../../../images_www/articles/72/php/remote-hosting/sync-ctxmenuitem.png" alt="Project source files context menu showing Synchronize option" height="287" width="250" class="margin-around b-bottom b-right"></li>
+          <li>Select Synchronize. The IDE retrieves the file names and paths from the remote server and opens the Remote Synchronization dialog.
+            <p>The Remote Synchronization dialog shows a table of project files. The remote versions on the file are on the left and the local versions are on the right. In the center column is an icon showing the operation that the IDE will perform on synchronization. Warning icons are on the far left. A summary of operations and problems appears at the bottom of the table. A verbose description of any errors appears below the table. Above the table are sets of checkboxes for filtering which problems and operations the dialog shows. For detailed information about this dialog, click Help. </p>
+          <img src="../../../images_www/articles/72/php/remote-hosting/main-dialog.png" alt="Main remote synchronization dialog" class="margin-around" width="600" height="518"></li>
+          <li>Select multiple items in the table. At the bottom of the table the summary now only includes those items.<br><img src="../../../images_www/articles/72/php/remote-hosting/multiple-items.png" alt="Remote synchronization dialog with multiple items selected" width="600" height="518" class="margin-around"></li>
+          <li>Right-click the selected items. A context menu of possible operations appears. <br><img src="../../../images_www/articles/72/php/remote-hosting/context-menu.png" alt="Context menu" width="151" height="200" class="margin-around"></li>
+          <li>If an item has a Resolve Conflicts error icon, select that item. A description of the error appears at the bottom of the table.<br><img src="../../../images_www/articles/72/php/remote-hosting/error-item.png" alt="Selected item with error" width="501" height="158" class="margin-around b-all"></li>
+          <li>Select the item with an error. Select Diff... <img src="../../../images_www/articles/72/php/remote-hosting/diff-icon.png" alt="diff icon" width="16" height="15"> from either the row of buttons or from the context menu. The Diff dialog opens. In this dialog, scroll down to each difference between the remote and local versions of the file. In the graphics view, you can apply or refuse to apply the remote change to your local file. If you want to edit the file manually, switch to the Textual tab. When you are finished with the diff, click OK. You return to the Remote Synchronization dialog. The operation for the file changes to Upload and the file is marked with an asterisk, because you changed it.<br><img src="../../../images_www/articles/72/php/remote-hosting/diff.png" alt="Diff dialog" width="600" height="561" class="margin-around"></li>
+          <li>If you have no conflict, click Synchronize. If you selected Show Summary Before Start, the Synchronize summary appears so you can review the operations one more time before performing the synchronization. If you approve of the operations, click OK.<br><img src="../../../images_www/articles/72/php/remote-hosting/sync-summary.png" alt="Synchronization summary" width="182" height="178" class="margin-around"></li>
+        </ol>
+        <p>The IDE performs the synchronization. You can follow the progress of the synchronization in a window that the IDE opens.</p><img src="../../../images_www/articles/72/php/remote-hosting/sync-progress.png" alt="Synchronization progress dialog" width="341" height="334" class="margin-around">
+        <h2><a name="runPHPApplication"></a>Running a PHP Application</h2>
+   <br>To run a PHP application on a remote server:
+		<ol>
+		<li>On the Properties panel, make sure that the Remote Web Site is chosen from the <a href="#chooisngRunConfigurationType">Run As dropdown list</a>. </li>
+		<li>Check the Run Configuration settings.</li>
+                <li>If the project is set as main, click  <img src="../../../images_www/articles/72/php/remote-hosting/run-main-project-button.png" width="24" height="26" alt="run main project button"> on the toolbar.  </li>
+		<li>If the project is not set as main, position the cursor on the project node and choose Run from the popup menu. </li>
+		
+		</ol>
+                <h2 id="remote-mysql-database">Using a Remote MySQL Database</h2>
+   <p>Remote hosting services such as x10Hosting.com usually allow you to set up a MySQL database on their servers.  You can create databases, manage users, and copy, read, update, or delete (CRUD) data with the tools provided by the remote hosting service. </p>
+   <p>For example, if you are using x10Hosting.com, you create a MySQL database by logging onto the x10Hosting cPanel and then opening the MySQL Databases panel. You can also create users, assign users to databases, and grant privileges to users in the MySQL Databases panel. You then can use the CRUD tools in the phpMyAdmin panel.</p>
+   <p>An alternative to working with remote database CRUD tools is to use NetBeans IDE's  CRUD features to work with a local database. Then you can copy or dump the local database to the remote database. On x10Hosting.com, you can use their phpMyAdmin panel to upload the local database.</p>
+   <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Remote%20Hosting%20and%20FTP">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;" >
+<p>To send comments and suggestions, get support, and keep informed on the latest
+  developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+  the users@php.netbeans.org mailing list</a>.</p>
+		<p><a href="../../trails/php.html">Back to the Learning Trail</a></p>
+   </body>
+</html>

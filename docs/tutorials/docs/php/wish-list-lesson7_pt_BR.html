@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Criando uma Aplicação Orientada pelo Banco de Dados Com o PHP. Editar, Atualizar e Deletar registro no banco de dados MySQL</title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Edit / Update  and Delete record in MySQL database" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+   <body>
+<h1>Criando uma Aplicação Orientada pelo Banco de Dados com o PHP </h1>
+<h1>Lição 7: Atualizando e Deletando Entradas no Banco de Dados </h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Conteúdo do tutorial:</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Criando uma Aplicação Orientada pelo Banco de Dados com o PHP - Página Principal</a></li>
+    <li><p>Criando o Banco de Dados</p> <ol type="a"><li><a href="wish-list-lesson1.html">Criando um Banco de Dados MySQL</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Criando Tabelas do Banco de Dados Oracle</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">Projetando a Aplicação. Lendo o Banco de Dados</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">Criando um Novo Usuário de Aplicação</a></li>
+    <li><a href="wish-list-lesson4.html">Otimizando o Código</a></li>
+    <li><a href="wish-list-lesson5.html">Adicionando Segurança. Implementando o Log-in de Usuário da Aplicação</a></li>
+    <li><a href="wish-list-lesson6.html">Adicionando um Novo Desejo ao Banco de Dados</a></li>
+    <li>
+      <p><b>=> Atualizando e Deletando Entradas no Banco de Dados</b></p>
+      <ul>
+<li><a href="#previousLessonSourceCode">Código-fonte da Aplicação da Lição Anterior</a></li>
+<li><a href="#editWish">Editando um Desejo</a>
+  <ul>
+<li><a href="#addEditButton">Implementando o Botão Editar</a></li>
+<li><a href="#wishArrayUpdate">Expandindo o Array $wish</a></li>
+<li><a href="#updateInputForm">Atualizando o Form de Entrada HTML</a></li>
+<li><a href="#updateWishRecord">Atualizando o Desejo no Banco de Dados</a></li>
+</ul>
+</li>
+<li><a href="#testingEditWishFunctionality">Testando a Funcionalidade Editar Desejo</a></li>
+<li><a href="#deleteWish">Deletando um Desejo</a></li>
+<li><a href="#testingDeleteWishFunctionality">Testando a Funcionalidade Deletar Desejo</a></li>
+<li><a href="#lessonResultSourceCode">Código-fonte da Aplicação Após a <br>Lição Atual Estar Concluída</a></li>
+<li><a href="#nextSteps">Próximas Etapas</a></li>
+</ul>
+    </li>
+    <li><a href="wish-list-lesson8.html">Melhorando a Aparência da Aplicação Usando a Tecnologia CSS</a></li>
+    <li><a href="wish-list-lesson9.html">Implantando a Aplicação em um Servidor Web Remoto</a></li>
+</ol>
+</div>
+</div>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+<p>Nesta lição, você expandirá a funcionalidade da aplicação com duas funcionalidades:</p>
+<ul>
+  <li style="margin-left:40em"><a href="#editWish">Editando um desejo</a></li>
+  <li style="margin-left:40em"><a href="#deleteWish">Deletando um desejo</a></li>
+</ul>
+<p>Para implementar essas funcionalidades, edite os arquivos <tt>editWishList.php</tt> e <tt>editWish.php</tt>. Crie também um novo arquivo chamado <tt>deleteWish.php</tt>.</p>
+<img alt="Fluxo do projeto PHP afetado na Lição 7" class="margin-around" height="384" src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram-l7.png" width="500">
+<p>O documento atual é uma parte do tutorial Criando uma Aplicação CRUD no NetBeans IDE para PHP.</p><br style="clear:left">
+
+<h2><a name="previousLessonSourceCode"></a>Código-fonte da Aplicação da Lição Anterior</h2>
+<p>Usuários MySQL: clique <a href="https://netbeans.org/files/documents/4/1932/lesson6.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição anterior estiver concluída. </p>
+<p>Usuários do banco de dados Oracle: clique <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson6.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição anterior for concluída.</p>
+<h2><a id="editWish" name="editWish"></a>Editando um Desejo</h2>
+A funcionalidade suporta o seguinte caso de uso: 
+<ul>
+  <li>Na página <tt>editWishList.php</tt>, o usuário pressiona o botão Editar à direita de um desejo. A página <tt>editWish.php</tt> com os dados do desejo selecionado abre.</li>
+  <li>O usuário altera a descrição e/ou a data de vencimento do desejo e pressiona o botão Salvar Alterações. </li>
+  <li>Se a descrição <em>não</em> for preenchida, uma mensagem de erro é exibida e o usuário retorna para a página <tt>editWish.php</tt>. </li>
+  <li>Se a descrição for preenchida, a aplicação retorna à página <tt>editWishList.php</tt>, onde o desejo é atualizado.</li>
+</ul>
+<p>A implementação consiste nas seguintes etapas:</p>
+<ul>
+  <li><a href="#addEditButton">Adicionar um botão Editar na página editWishList</a></li>
+  <li><a href="#wishArrayUpdate">Na página editWish.php, atualizar o array $wish para armazenar os dados do desejo</a></li>
+  <li><a href="#updateInputForm">Atualizar o form de entrada na página editWish.php</a></li>
+  <li><a href="#updateWishRecord">Validar os dados enviados e atualizar o desejo no banco de dados</a> </li>
+</ul>
+<div class="indent"><h3><a id="addEditButton" name="addEditButton"></a>Implementando o Botão Editar </h3>
+<p>Em <tt>editWishList.php</tt>, uma tabela com os desejos de um wisher é implementada por um loop (uma instrução <tt>while</tt>) que exibe linhas com desejos enquanto os desejos são selecionados no banco de dados. Adicione um botão Editar como a célula da extrema direita em uma linha.</p>
+<ol><li>Para transferir o ID de um desejo usando o form de entrada HTML, armazene-o em uma variável. Insira a seguinte linha de código no fim do loop <tt>while</tt>:
+    <pre class="examplecode">while ($row = ...) {<br>    echo ...<br>    echo ...<br>    <strong>$wishID = $row[&quot;id&quot;];</strong><br>
+}
+?&gt;</pre>
+  </li>
+  <li>Implemente o botão Editar. Adicione outra célula à tabela antes de fechar a tag &lt;/table> com o form editWish. Esse form contém um componente botão e um componente oculto que envia o valor <tt>$wishID</tt> ao clicar no botão. (O código para o banco de dados MySQL é mostrado, mas o código adicionado é o mesmo, no mesmo local, para o banco de dados Oracle).
+    <pre class="examplecode">
+   Hello &lt;?php echo $_SESSION[&quot;user&quot;]; ?&gt;&lt;br/&gt;<br>        &lt;table border=&quot;black&quot;&gt;<br>            &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;<br>            &lt;?php<br>            require_once(&quot;Includes/db.php&quot;);<br>            $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);<br>            $result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);<br>            while ($row = mysqli_fetch_array($result)) {<br>                echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>                echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>            }<br>            mysqli_free_result($result);<br>            ?&gt;
+            <strong>&lt;td>
+                &lt;form name="editWish" action="editWish.php" method="GET">
+                    &lt;input type="hidden" name="wishID" value="&lt;?php echo <tt>$wish</tt>ID; ?>">
+                    &lt;input type="submit" name="editWish" value="Edit">
+                    &lt;/form>
+            &lt;/td></strong><br>        &lt;/table&gt;</pre>
+    </li>
+  <li>Altere o loop <tt>while</tt> para usar a <a href="http://www.php.net/manual/en/control-structures.alternative-syntax.php" target="_blank">sintaxe alternativa</a>. Isso facilita a execução de blocos HTML dentro do loop <tt>while</tt>. Na sintaxe alternativa do loop <tt>while</tt>, as chaves de abertura { são substituídas por dois-pontos : e as chaves de fechamento } são substituídas pela instrução <tt>endwhile;</tt>. Substitua as chaves de abertura por dois-pontos, delete as chaves de fechamento e adicione um novo bloco PHP antes da tag de fechamento &lt;/table> com a instrução <tt>endwhile;</tt>. Isso incorpora a nova célula da tabela para o loop <tt>while</tt>. Mova o código instrução livre/resultado para após a instrução <tt>endwhile.</tt> (O código para o MySQL é exibido novamente, mas o código muda e o local é o mesmo para o banco de dados da Oracle).
+    <pre class="examplecode">    while ($row = mysqli_fetch_array($result))<del>{</del><strong>:</strong><br>        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br><del>    }<br>    mysqli_free_result($result);</del><br>    ?&gt;
+    &lt;td>
+        &lt;form name="editWish" action="editWish.php" method="GET">
+           &lt;input type="hidden" name="wishID" value="&lt;?php echo <tt>$wish</tt>ID; ?>">
+           &lt;input type="submit" name="editWish" value="Edit">
+        &lt;/form>
+    &lt;/td>
+<strong>    &lt;?php
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;</strong>
+&lt;/table&gt;</pre>
+  </li>
+  <li>
+    <p>Conserte a sintaxe da linha da tabela. Mova os caracteres de final de linha &lt;/tr>\n da instrução de exibição de data de vencimento para a nova instrução logo acima do <tt>endwhile;</tt>.</p>
+    <pre class="examplecode">    while ($row = mysqli_fetch_array($result))<del></del><strong>:</strong><br>        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;<del>&lt;/tr&gt;\n</del>&quot;;<br>    ?&gt;
+    &lt;td>
+        &lt;form name="editWish" action="editWish.php" method="GET">
+           &lt;input type="hidden" name="wishID" value="&lt;?php echo <tt>$wish</tt>ID; ?>">
+           &lt;input type="submit" name="editWish" value="Edit">
+        &lt;/form>
+    &lt;/td>
+    &lt;?php
+    <strong>echo &quot;&lt;/tr&gt;\n&quot;;</strong>
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;
+&lt;/table&gt;</pre>
+  </li>
+  <li>
+    <p>A tabela inteira, incluindo o form com o botão Editar dentro do loop <tt>while </tt>, agora tem a seguinte aparência:</p>
+    <p><b>Para o banco de dados MySQL:</b></p>
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while($row = mysqli_fetch_array($result)):
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row['description']) . &quot;&lt;/td&gt;&quot;;
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row['due_date']) . &quot;&lt;/td&gt;&quot;;
+        $wishID = $row[&quot;id&quot;];
+    ?&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;GET&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;editWish&quot; value=&quot;Edit&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;
+&lt;/table&gt;</pre>
+    <p><b>Para banco de dados Oracle:</b></p>
+    
+    
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $stid = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while ($row = oci_fetch_array($stid)):
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;DESCRIPTION&quot;]) . &quot;&lt;/td&gt;&quot;;
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;DUE_DATE&quot;]) . &quot;&lt;/td&gt;&quot;;
+        $wishID = $row[&quot;ID&quot;];
+    ?&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;GET&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;editWish&quot; value=&quot;Edit&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;deleteWish&quot; action=&quot;deleteWish.php&quot; method=&quot;POST&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;deleteWish&quot; value=&quot;Delete&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    oci_free_statement($stid);
+   ?&gt;
+&lt;/table&gt;</pre>
+  </li>
+  </ol>
+<h3><a id="wishArrayUpdate" name="wishArrayUpdate"></a>Expandindo o Array <tt>$wish</tt>    </h3>
+<p>Quando o botão Editar é pressionado na página <tt>editWishList.php</tt>, o wisher ID selecionado é transferido para a página <tt>editWish.php</tt> usando o método de Solicitação de Servidor GET. Para armazenar o wisher ID, você precisa adicionar um novo elemento ao array <tt>$wish</tt>. </p>
+<p>Como acontece quando um novo desejo é adicionado, o form de entrada pode ser acessado da página <tt>editWishList.php</tt> e da página <tt>editWish.php</tt> após uma tentativa malsucedida de salvar. Os casos são distinguidos pelo método de Solicitação de Servidor por meio do qual os dados são transferidos. O GET indica que o form é exibido quando o usuário chega pela primeira vez à página, pressionando Editar Desejo. O POST indica que o usuário é redirecionado para o form após tentar salvar um desejo sem uma descrição. </p>
+<p>Em <tt>editWish.php</tt>, substitua o bloco PHP na tag HTML &lt;body> acima do form de entrada <tt>EditWish</tt> com o código expandido para o array <tt>$wish</tt>.</p>
+<p><strong>Para o banco de dados MySQL:</strong></p>
+<pre class="examplecode">&lt;?php<br>if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;)<br>$wish = array(&quot;id&quot; =&gt; $_POST[&quot;wishID&quot;], &quot;description&quot; =&gt; 
+        $_POST[&quot;wish&quot;], &quot;due_date&quot; =&gt; $_POST[&quot;dueDate&quot;]);<br>else if (array_key_exists(&quot;wishID&quot;, $_GET))<br>$wish = mysqli_fetch_array(WishDB::getInstance()-&gt;get_wish_by_wish_id($_GET[&quot;wishID&quot;]));<br>else<br>$wish = array(&quot;id&quot; =&gt; &quot;&quot;, &quot;description&quot; =&gt; &quot;&quot;, &quot;due_date&quot; =&gt; &quot;&quot;);<br>?&gt;</pre>
+<p><strong>Para o banco de dados Oracle:</strong></p>
+  <pre class="examplecode">&lt;?php
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;)
+    $wish = array(&quot;id&quot; =&gt; $_POST[&quot;wishID&quot;], &quot;description&quot; =&gt;
+            $_POST[&quot;wish&quot;], &quot;due_date&quot; =&gt; $_POST[&quot;dueDate&quot;]);
+else if (array_key_exists(&quot;wishID&quot;, $_GET)) {
+    $stid = WishDB::getInstance()-&gt;get_wish_by_wish_id($_GET[&quot;wishID&quot;]);
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    $wish = array(&quot;id&quot; =&gt; $row[&quot;ID&quot;], &quot;description&quot; =&gt;
+                $row[&quot;DESCRIPTION&quot;], &quot;due_date&quot; =&gt; $row[&quot;DUE_DATE&quot;]);
+    oci_free_statement($stid);
+} else
+$wish = array(&quot;id&quot; =&gt; &quot;&quot;, &quot;description&quot; =&gt; &quot;&quot;, &quot;due_date&quot; =&gt; &quot;&quot;);
+?&gt;</pre>
+
+<p>O código inicializa o array <tt>$wish</tt> com três elementos: <tt>id</tt>, <tt>description</tt> e <tt>due_date</tt>. Os valores desses elementos dependem do método de Solicitação de Servidor. Se o método de Solicitação de Servidor for POST, os valores serão recebidos do form de entrada. Caso contrário, se o método de Solicitação de Servidor for GET e o array $_GET contiverem um elemento com a chave "wishID", os valores serão recuperados do banco de dados pela função get_wish_by_wish_id. Finalmente, se o método de Solicitação do Servidor não for POST nem GET, o que significa que o caso de uso Adicionar Novo Desejo acontece, os elementos ficam vazios. </p>
+<p>O código precedente cobre os casos de criação e edição de desejos. Agora você precisa atualizar o form de entrada para que ele possa ser usado por ambos os casos. </p>
+<h3><a id="updateInputForm" name="updateInputForm"></a>Atualizando o Form de Entrada HTML</h3>
+Atualmente, o form de entrada funciona quando você quer criar um novo desejo e não há id de desejo. Para que o form funcione ao editar um desejo existente, é necessário adicionar um campo oculto para transferir o ID de um desejo. O valor do campo oculto deve ser recuperado no array $wish. O valor deve ser uma string vazia durante a criação de um novo desejo. Se o desejo for editado, o valor do campo oculto deve ser alterado para o wisher ID. Para criar esse campo oculto, adicione a linha seguinte à parte superior do form de entrada <tt>EditWish</tt> em <tt>editWish.php</tt>:
+<pre class="examplecode">&lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo <tt>$wish</tt>[&quot;id&quot;];?&gt;&quot; /&gt;</pre>
+<h3><a id="updateWishRecord" name="updateWishRecord"></a>Atualizando o Desejo no Banco de Dados </h3>
+<p>Agora você precisa atualizar o código que verifica os dados de entrada e insere o desejo no banco de dados. O código atual não distingue entre a criação de um novo caso de desejo e a atualização de um existente. Na implementação atual, um novo registro sempre é adicionado ao banco de dados porque o código não verifica o valor do wisher ID transferido do form de entrada. </p>
+<p>Você precisa adicionar as seguintes funções:</p>
+<ul>
+  <li>Se o elemento transferido "wishID" for uma string vazia, crie um novo desejo.</li>
+  <li>Caso contrário, se o elemento "wishID" não for uma string vazia, atualize o desejo.</li>
+  </ul>
+<p><strong>Para atualizar o editWish.php para que ele verifique se um desejo é novo e atualizá-lo caso não seja novo:</strong></p>
+<ol>
+<li>
+  <p>Adicione a função <tt>update_wish</tt> ao <tt>db.php</tt>.  </p>
+  <p><b>Para o banco de dados MySQL:</b></p>
+    <pre class="examplecode">public function update_wish($wishID, $description, $duedate){
+    $description = $this-&gt;real_escape_string($description);<br>    if ($duedate==''){<br>        $this-&gt;query(&quot;UPDATE wishes SET description = '&quot; . $description . &quot;',<br>             due_date = NULL WHERE id = &quot; . $wishID);<br>    } else<br>        $this-&gt;query(&quot;UPDATE wishes SET description = '&quot; . $description .<br>            &quot;', due_date = &quot; . $this-&gt;format_date_for_sql($duedate)<br>            . &quot; WHERE id = &quot; . $wishID);<br>}  </pre>
+                       <p><b>Para o banco de dados Oracle:</b></p>
+                       <pre class="examplecode">public function update_wish($wishID, $description, $duedate) {
+    $query = "UPDATE wishes SET description = :desc_bv, due_date = to_date(:due_date_bv, 
+              'YYYY-MM-DD')  WHERE id = :wish_id_bv";
+    $stid = oci_parse($this->con, $query);
+    oci_bind_by_name($stid, ':wish_id_bv', $wishID);
+    oci_bind_by_name($stid, ':desc_bv', $description);
+    oci_bind_by_name($stid, ':due_date_bv', $this->format_date_for_sql($duedate));
+    oci_execute($stid);
+
+}</pre>
+  </li>
+  <li>
+    <p>Adicione a função <tt>get_wish_by_wish_id</tt> ao <tt>db.php</tt>.    </p>
+    <p><b>Para o banco de dados MySQL:</b></p>
+    <pre class="examplecode">public function get_wish_by_wish_id ($wishID) {<br>    return $this-&gt;query(&quot;SELECT id, description, due_date FROM wishes WHERE id = &quot; . $wishID);<br>}</pre>
+    <p><b>Para o banco de dados Oracle:</b></p>
+      <pre class="examplecode">public function get_wish_by_wish_id($wishID) {
+    $query = &quot;SELECT id, description, due_date FROM wishes WHERE id = :wish_id_bv&quot;;
+    $stid = oci_parse($this-&gt;con, $query);
+    oci_bind_by_name($stid, ':wish_id_bv', $wishID);
+    oci_execute($stid);
+    return $stid;
+}</pre>
+    
+  </li>
+  <li>Na parte principal, no bloco PHP superior do <tt>editWish.php</tt>, adicione uma condição para a instrução<code>else</code> final. Esta é a instrução <tt>else</tt> que insere o desejo no banco de dados. Trocar para instrução <tt>else if</tt>:
+    <pre class="examplecode">else if ($_POST[&quot;wishID&quot;]==&quot;&quot;) {<br>    WishDB::getInstance()-&gt;insert_wish($wisherID, $_POST[&quot;wish&quot;], $_POST[&quot;dueDate&quot;]);<br>    header('Location: <tt>editWishList.php</tt>' );<br>    exit;<br>}</pre></li>
+  <li>
+
+Digite ou cole outra instrução <tt>else if</tt> abaixo daquela que você acabou de editar:
+
+  <pre class="examplecode">else if ($_POST[&quot;wishID&quot;]!=&quot;&quot;) {<br>    WishDB::getInstance()-&gt;update_wish($_POST[&quot;wishID&quot;], $_POST[&quot;wish&quot;], $_POST[&quot;dueDate&quot;]);<br>    header('Location: <tt>editWishList.php</tt>' );<br>    exit;
+} </pre>
+  </li>
+</ol>
+<p>O código verifica se o elemento <tt>wishID</tt> no array <tt>$_POST</tt> não é uma string vazia, o que significa que o usuário foi redirecionado da página <tt>editWishList.php</tt>, pressionando o botão Editar, e se o usuário preencheu a descrição do desejo. Se a verificação for bem-sucedida, o código chamará a função <tt>update_wish</tt> com os parâmetros de entrada <tt>wishid</tt>, <tt>description</tt>e <tt>duedate. </tt>Esses parâmetros são recebidos do form de entrada HTML usando o método post. Depois que o <tt>update_wish</tt> for chamado, a aplicação será redirecionada para a página <tt>editWishList.php</tt> e o processamento de PHP será cancelado. </p>
+</div>
+<h2><a name="testingEditWishFunctionality"></a>Testando a Funcionalidade Editar Desejo </h2>
+<ol>
+  <li>Execute a aplicação. Na página index.php, preencha os campos: no campo Nome do Usuário, digite "Tom", e no campo Senha, digite "tomcat".<br> <img alt="O usuário se conecta ao editar sua lista de desejos" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/user-logon-to-edit-wish-list.png"></li>
+  <li> Pressione o botão Editar Minha Lista de Desejos. A página <tt>editWishList.php</tt> abre.<br> <img alt="O botão Editar é adicionada à página &lt;tt&gt;editwishlist.php&lt;/tt&gt;" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/edit-wish-list-edit-wish.png"></li>
+ <li>Clique em Editar ao lado de Icecream. A página <tt>editWish.php</tt> abre.<br><img alt="A página &lt;tt&gt;editwish.php&lt;/tt&gt; com um form para a edição de um desejo. Os campos são preenchidos com os dados do desejo." class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/edit-wish.png"></li>
+ <li>Edite os campos e pressione Voltar à Lista. A página <tt>editWishList.php</tt> abre, mas as alterações não são salvas.</li>
+ <li>Pressione Editar ao lado de Icecream. Limpe o campo Descreva seu desejo e pressione Salvar Alterações. Uma mensagem de erro é exibida.<br><img alt="O form para edição do desejo mostra uma mensagem de erro: a descrição não foi preenchida" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/editWishEmptyDescription.png"></li>
+ <li>Insira Chocolate Icecream no campo Descreva seu desejo e pressione Salvar Alterações. A página <tt>editWishList.php</tt> abre com uma lista atualizada.<br><img alt="Página editwishlist.php: a opção updatedwish está na lista" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/editWishListWishAdded.png"> </li>
+</ol>
+
+<h2><a id="deleteWish" name="deleteWish"></a>Deletando um Desejo   </h2>
+<p>Agora que você pode criar, ler e editar desejos, adicione um método para deletar um desejo.</p>
+<p><strong>Para permitir que o usuário delete desejos:</strong></p>
+<ol>
+<li><p>Adicione uma função<tt> delete_wish</tt> ao <tt>db.php</tt>.</p>
+<p><b>Para o banco de dados MySQL:</b></p>
+<pre class="examplecode">function delete_wish ($wishID){<br>    $this-&gt;query(&quot;DELETE FROM wishes WHERE id = &quot; . $wishID);<br>}
+</pre>
+<p><b>Para o banco de dados Oracle:</b></p>
+  <pre class="examplecode">public function delete_wish($wishID) {
+    $query = &quot;DELETE FROM wishes WHERE id = :wish_id_bv&quot;;
+    $stid = oci_parse($this-&gt;con, $query);
+    oci_bind_by_name($stid, ':wish_id_bv', $wishID);
+    oci_execute($stid); 
+}</pre>
+
+</li>
+  <li>Crie um novo arquivo PHP chamado <tt>deleteWish.php</tt> e insira o seguinte código no &lt;? php?>: 
+    <pre class="examplecode">require_once(&quot;Includes/db.php&quot;);<br>WishDB::getInstance()-&gt;delete_wish ($_POST[&quot;wishID&quot;]);<br>header('Location: <tt>editWishList.php</tt>' );</pre>  
+O código permite o uso do arquivo <tt>db.php</tt>. Em seguida, ele chama a função <tt>delete_wish</tt> a partir de uma instância do WishDB, com o <tt>wishID</tt> como o parâmetro de entrada. Finalmente, a aplicação é redirecionada para a página <tt>editWishList.php</tt>.</li>
+<li>Para implementar o botão Deletar, adicione outra célula da tabela ao loop <tt>while</tt> no <tt>editWishList.php</tt>, diretamente abaixo do código do bloco para o botão <tt>editWish</tt>. O form de entrada HTML contém um campo oculto para <tt>wishID</tt> e um botão de envio chamado Deletar. (O código para o banco de dados MySQL é mostrado, mas o código adicionado é o mesmo, no mesmo local, para o banco de dados Oracle).
+    
+  <pre class="examplecode">    while ($row = mysqli_fetch_array($result))<del></del><strong>:</strong><br>        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;<del>&lt;/tr&gt;\n</del>&quot;;<br>    ?&gt;
+    &lt;td>
+        &lt;form name="editWish" action="editWish.php" method="GET">
+           &lt;input type="hidden" name="wishID" value="&lt;?php echo <tt>$wish</tt>ID; ?>">
+           &lt;input type="submit" name="editWish" value="Edit">
+        &lt;/form>
+    &lt;/td>
+    <strong>&lt;td&gt;
+        &lt;form name=&quot;deleteWish&quot; action=&quot;deleteWish.php&quot; method=&quot;POST&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;deleteWish&quot; value=&quot;Delete&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;</strong>
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;
+&lt;/table&gt;</pre>
+  </li></ol>
+ 
+    <p>A tabela inteira, incluindo o form com o botão Editar dentro do loop <tt>while </tt>, agora tem a seguinte aparência:</p>
+    <p><b>Para o banco de dados MySQL:</b></p>
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while($row = mysqli_fetch_array($result)):
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row['description") . &quot;&lt;/td&gt;&quot;;
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row['due_date']) . &quot;&lt;/td&gt;&quot;;
+        $wishID = $row[&quot;id&quot;];
+    ?&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;GET&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;editWish&quot; value=&quot;Edit&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;deleteWish&quot; action=&quot;deleteWish.php&quot; method=&quot;POST&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;deleteWish&quot; value=&quot;Delete&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;
+&lt;/table&gt;</pre>
+    <p><b>Para banco de dados Oracle:</b>    </p>
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $stid = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while ($row = oci_fetch_array($stid)):
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;DESCRIPTION&quot;]) . &quot;&lt;/td&gt;&quot;;
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;DUE_DATE&quot;]) . &quot;&lt;/td&gt;&quot;;
+        $wishID = $row[&quot;ID&quot;];
+    ?&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;GET&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;editWish&quot; value=&quot;Edit&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;deleteWish&quot; action=&quot;deleteWish.php&quot; method=&quot;POST&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;deleteWish&quot; value=&quot;Delete&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    oci_free_statement($stid);
+   ?&gt;
+&lt;/table&gt;</pre>
+ 
+<h2><a name="testingDeleteWishFunctionality"></a>Testando a Funcionalidade Deletar Desejo</h2>
+<p>Para verificar se a funcionalidade foi implementada corretamente, pressione Deletar ao lado de qualquer item na página <tt>editWishList.php</tt>. O item não está mais na lista.</p> 
+  <img alt="Página editwishlist.php: o desejo foi deletado" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/deleteWish.png">
+  
+<h2><a name="lessonResultSourceCode"></a>O código-fonte da Aplicação após a Lição Atual está Concluído </h2>
+<p>Usuários MySQL: clique <a href="https://netbeans.org/files/documents/4/1933/lesson7.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição estiver concluída.</p>
+<p>Usuários do banco de dados Oracle: clique <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson7.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição for concluída.</p>
+<h2><a name="nextSteps"></a>Próximas Etapas</h2>
+<p>  <a href="wish-list-lesson6.html">&lt;&lt; Lição anterior</a> <br> <br> <a href="wish-list-lesson8.html">Próxima lição >></a> <br> <br> <a href="wish-list-tutorial-main-page.html">Voltar à página principal do Tutorial</a> </p>
+  <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%207:%20Updating%20and%20Deleting%20DB%20Entries">Enviar Feedback neste Tutorial</a></div>
+<br style="clear:both;" >
+<p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>.
+   <p><a href="wish-list-tutorial-main-page.html"></a>
+  <p>
+<a href="../../trails/php.html">Voltar à Trilha de Aprendizado PHP</a><br>
+  
+</p>
+</body>
+</html>

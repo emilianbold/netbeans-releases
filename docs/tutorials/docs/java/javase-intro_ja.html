@@ -1,0 +1,313 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>一般的なJavaアプリケーションの開発 - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="author" content="John Jullion-Ceccarelli, Patrick Keegan">
+        <meta name="description" content="A short guide to creating, running, and debugging a simple 
+        Java SE application in NetBeans IDE. Also includes information on setting the JDK.">
+    </head>
+
+    <body>
+
+        <h1>一般的なJavaアプリケーション開発</h1>
+
+        <p>次のチュートリアルでは、NetBeans IDEでJava SEアプリケーションを開発する基本的な手順の一部を紹介します。このチュートリアルは、Javaアプリケーションを開発した経験があるユーザーを対象としています。手順の中で、アプリケーション開発に役立つIDEの機能を紹介していきます。</p>
+        <p>このチュートリアルでは、複数の単語それぞれから1文字ずつ取り、1つの単語を作成するアプリケーションを作成します。このような単語を<i>アクロスティック</i>といいます。</p>
+        <p>このチュートリアルを完了するのに要する時間は約30分です。時間の短い「Hello World」チュートリアルを行う場合は、<a href="quickstart.html">NetBeans IDE Javaクイック・スタート・チュートリアル</a>を参照してください。</p>
+
+        <p><b>目次</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます">
+        <ul class="toc">
+            <li><a href="#setup" title="プロジェクトの設定">プロジェクトの設定</a></li>
+            <li><a href="#create" title="Javaソース・コードの作成と編集">Javaソース・コードの作成と編集</a></li>
+            <li><a href="#comp" title="アプリケーションのコンパイルと実行">アプリケーションのコンパイルと実行</a></li>
+            <li><a href="#test" title="アプリケーションのテストとデバッグ">アプリケーションのテストとデバッグ</a></li>
+            <li><a href="#build" title="アプリケーションのビルド、実行、および配布">アプリケーションのビルド、実行、および配布</a></li>
+            <li><a href="#other-tasks" title="その他の共通タスク">その他の共通タスク</a></li>
+            <li><a href="#nextsteps" title="次の手順">次の手順</a></li>
+        </ul>
+
+        <p><b>このチュートリアルを完了するには、次の表に示すソフトウェアとリソースが必要です。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.4または8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">6、7または8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2>プロジェクトの設定<a name="setup"></a></h2>
+        <p>このチュートリアルで作成するアプリケーションは、次の2つのプロジェクトから構成されます。</p>
+        <ul>
+            <li>ユーティリティ・クラスを作成するJavaクラス・ライブラリ・プロジェクト。</li>
+            <li>ライブラリ・プロジェクトのユーティリティ・クラスからメソッドを実装するメイン・クラスを含むJavaアプリケーション・プロジェクト。</li>
+        </ul>
+        <p>プロジェクトを作成した後、アプリケーション・プロジェクトのクラスパスにライブラリ・プロジェクトを追加します。次に、アプリケーションをコーディングします。ライブラリ・プロジェクトには、<code>acrostic</code>メソッドがあるユーティリティ・クラスが含まれます。<code>acrostic</code>メソッドは、パラメータとして複数の単語の配列を使用し、それらの単語に基づいてアクロスティックを生成します。MyAppプロジェクトには、<code>acrostic</code>メソッドをコールし、アプリケーションの実行時に引数として入力される単語を渡すメイン・クラスが含まれます。</p>
+
+        <p class="notes"><b>注意:</b> 通常はこのような単純なアプリケーションに2つのプロジェクトは必要ありません。このチュートリアルでは、より複雑なアプリケーションに必要になる可能性がある機能を紹介するために、2つのプロジェクトを使用します。
+        </p>
+        <div class="indent">
+            <h3 class="tutorial"><a name="setup-library">Javaクラス・ライブラリ・プロジェクトの作成</a></h3>
+
+            <ol>
+                <li>「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N])を選択します。「カテゴリ」から「Java」を選択します。「プロジェクト」から「Javaクラス・ライブラリ」を選択します。「次」をクリックします。 </li>
+                <li>「プロジェクト名」に「<code>MyLib</code>」と入力します。「プロジェクトの場所」を使用コンピュータ上の任意のフォルダに変更します。以降、このチュートリアルでは、このディレクトリを<code><i>NetBeansProjects</i></code>と表記します。
+                    <p class="notes"><b>注意:</b> ここで指定したパスは、ウィザードの「プロジェクト・フォルダ」フィールドに<code>/<code><i>NetBeansProjects</i></code>/MyLib/</code>のように表示されます。</p>
+                </li>
+                <li>(オプション)「ライブラリの格納用に専用フォルダを使用」チェックボックスを選択し、ライブラリ・フォルダの場所を指定します。このオプションの詳細は、<i>NetBeans IDEによるアプリケーションの開発</i></a>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">他のユーザーとのライブラリの共有</a>を参照してください。</li>
+                <li>「終了」をクリックします。「プロジェクト」および「ファイル」ウィンドウの両方にMyLibプロジェクトが表示されます。</li>
+            </ol>
+            <h3 class="tutorial"><a name="setup-application">Javaアプリケーション・プロジェクトの作成</a></h3>
+
+            <ol>
+                <li>「ファイル」>「新規プロジェクト」を選択します。「カテゴリ」から「Java」を選択します。「プロジェクト」で「Javaアプリケーション」を選択します。「次」をクリックします。</li>
+                <li>「プロジェクト名」に「<code>MyApp</code>」と入力します。「プロジェクトの場所」が<code><i>NetBeansProjects</i></code>に設定されていることを確認します。 </li>
+                <li>(オプション)「ライブラリの格納用に専用フォルダを使用」チェックボックスを選択します。
+                </li>
+                <li>メイン・クラスとして<code>acrostic.Main</code>と入力します。 </li>
+                <li>「メイン・クラスの作成」チェックボックスが選択されていることを確認します。 </li>
+                <li>「終了」をクリックします。「プロジェクト」ウィンドウにMyAppプロジェクトが表示され、ソース・エディタに<code>Main.java</code>が表示されます。</li>
+            </ol>
+            <h3 class="tutorial"><a name="setup-classpath">コンパイル時クラスパスの構成</a></h3>
+
+            <p>MyAppはMyLib内のクラスに依存するので、MyLibをMyAppのクラスパスに追加する必要があります。MyLibをクラスパスに追加すれば、MyAppプロジェクト内のクラスがMyLibプロジェクト内のクラスを確実に参照でき、コンパイル・エラーが発生しません。また、MyAppプロジェクトでコード補完を使用して、MyLibプロジェクトに基づいてコードを入力できます。IDEでは、クラスパスは「ライブラリ」ノードで視覚的に表されます。</p>
+            <p><b>ライブラリのユーティリティ・クラスをプロジェクトのクラスパスに追加する</b></p>
+            <ol>
+                <li>次のイメージに示すように、「プロジェクト」ウィンドウでMyAppプロジェクトの「ライブラリ」ノードを右クリックし、「プロジェクトの追加」を選択します。
+                    <p><img alt="プロジェクトのノードを右クリックすると表示される「プロジェクトの追加」コマンドを示すイメージ。" class="margin-around" src="../../../images_www/articles/80/java/javase-intro/addproj.png"></p></li>
+                <li><code><i>NetBeansProjects</i>/</code>に移動して、<code>MyLib</code>プロジェクト・フォルダを選択します。「プロジェクトJARファイル」ペインに、プロジェクトに追加できるJARファイルが表示されます。実際にはまだMyLibのJARファイルをビルドしていませんが、JARファイルが一覧表示されることに注意してください。このJARファイルは、MyAppプロジェクトをビルド、実行したときに作成されます。 </li>
+                <li>「プロジェクトJARファイルの追加」をクリックします。</li>
+                <li>「ライブラリ」ノードを展開します。MyLibプロジェクトのJARファイルがMyAppプロジェクトのクラスパスに追加されます。</li>            </ol>
+        </div>
+        <!-- =============================================================================== -->
+        <h2>Javaソース・コードの作成と編集<a name="create"></a></h2>
+        <p>ここでは、Javaパッケージを作成し、アクロスティックを構築するために使用するメソッドを追加する必要があります。次に、<code>Main</code>クラスで<code>acrostic</code>メソッドを実装する必要があります。 </p>
+        <div class="indent">
+            <h3 class="tutorial">Javaパッケージとクラス・ファイルの作成</h3>
+            <ol>
+                <li>「MyLib」プロジェクト・ノードを右クリックし、「新規」>「Javaクラス」を選択します。新しいクラスに<code>LibClass</code>という名前を指定し、「パッケージ」フィールドに<code>org.me.mylib</code>と入力して「終了」をクリックします。ソース・エディタに<code>LibClass.java</code>が表示されます。
+                </li>
+                <li><code>LibClass.java</code>で、クラス宣言(<code>public class LibClass {</code>)の後の行にカーソルを置きます。</li>
+                <li>次のメソッド・コードを入力または貼り付けます。<br>
+                <pre class="examplecode">    public static String acrostic(String[] args) {
+        StringBuffer b = new StringBuffer();
+        for (int i = 0; i &lt; args.length; i++) {
+            if (args[i].length() &gt; i) {
+                b.append(args[i].charAt(i));
+            } else {
+                b.append('?');
+            }
+        }
+        return b.toString();
+                }</pre></li>
+                <li>貼り付けたコードが正しくフォーマットされていない場合は、[Alt]-[Shift]-[F]を押して、ファイル全体を再フォーマットします。</li>
+                <!--note: reformat doesn't work for mac-->
+                <li>[Ctrl]-[S]を押して、ファイルを保存します。</li>
+            </ol>
+            <h3 class="tutorial">Javaファイルの編集</h3>
+            <p>ここでは、<code>Main.java</code>にいくつかのコードを追加しながら、ソース・エディタのコード補完機能およびコード・テンプレート機能(省略名)を説明します。</p>
+
+            <ol>
+                <li>ソース・エディタで「<code>Main.java</code>」タブを選択します。Javaファイルが開いていない場合は、「プロジェクト」ウィンドウで「MyApp」>「ソース・パッケージ」>「acrostic」を展開し、<code>Main.java</code>をダブルクリックします。 </li>
+                <li><code>main</code>メソッドにある<code>//TODO code application logic here</code>コメントを削除します。</li>
+                <li>コメントのかわりに次のように入力します。
+                    <pre class="examplecode">String result = Li</pre>
+                    <p>カーソルは<code>Li</code>の直後に置いたままにします。次の手順で、コード補完を使用して<code>Li</code>を<code>LibClass</code>に変えます。</p>
+                </li>
+                <li>[Ctrl]-[Space]を押して、コード補完ボックスを開きます。
+                    <p>語の補完方法の候補一覧が表示されます。ただし、必要なクラス<code>LibClass</code>が一覧に含まれない可能性があります。</p></li>
+                <li>再び[Ctrl]-[Space]を押すとさらに候補が表示されます。
+                <p><code>LibClass</code>はこの一覧に含まれるはずです。</p></li>
+                <li>「<code>LibClass</code>」を選択し、[Enter]を押します。IDEは残りのクラス名を整理し、自動的にクラスのimport文を作成します。
+                    <p><b class="notes">注意:</b> IDEでは、コード補完ボックスの上に、選択されたクラスまたはパッケージに関するJavadoc情報を表示する別のボックスも表示されます。このパッケージにはJavadoc情報がないため、ボックスにJavadocが見つからないというメッセージが表示されます。</p></li>
+                <li>mainメソッドで、<code>LibClass</code>の後にピリオド(.)を入力します。再びコード補完ボックスが開きます。</li>
+                <li><code>acrostic(String[]args) </code>メソッドを選択し、[Enter]を押します。IDEによって<code>acrostic</code>メソッドの内容が入力され、<code>args</code>パラメータが強調表示されます。 </li>
+                <li>[Enter]を押して、パラメータとして<code>args</code>を設定します。</li>
+                <li>セミコロン(;)を入力します。
+                    <p>最後の行は次の行のようになるはずです。</p>
+                    <pre class="examplecode">String result = LibClass.acrostic(args);</pre>
+                </li>
+                <li>[Enter]を押して、新しい行を開始します。次に<code>sout</code>と入力して、[Tab]を押します。省略名<code>sout</code>が<code>System.out.println("");</code>に展開され、引用符の間にカーソルが表示されます。引用符内に<code>Result=</code>、引用符の後に<code>+result</code>と入力します。
+                    <p>最後の行は次の行のようになるはずです。</p>
+                    <pre class="examplecode">System.out.println(&quot;Result = &quot; + result);</pre>
+                </li>
+                <li>[Ctrl]-[S]を押して、ファイルを保存します。</li>
+            </ol>
+            <p class="notes"><b>注意:</b> <code>sout</code>は、ソース・エディタで使用できる多くのコード・テンプレートの1つです。コード・テンプレートのリストを検索して編集するには、「ツール」>「オプション」>「エディタ」>「コード・テンプレート」を選択します。</p>
+        </div>
+
+        <h2>アプリケーションのコンパイルと実行<a name="comp"></a></h2>
+        <p>プロジェクトを実行するには、メイン・クラスおよび実行時引数を設定する必要があります。 </p>
+        <p class="notes"><b>注意:</b> デフォルトで、プロジェクトは有効になっている保存時にコンパイル機能を使用して作成されているため、IDEでアプリケーションを実行するためにコードを最初にコンパイルする必要はありません。詳細は、<i>NetBeans IDEによるアプリケーションの開発</i></a>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG525">単一のJavaファイルのコンパイル</a>を参照してください。        </p>
+        <div class="indent">
+            <h3 class="tutorial">メイン・クラスと実行時引数の設定</h3>
+            <p>このプログラムの出力は、プログラムの実行時に指定する引数に基づきます。引数として、アクロスティックが「Hello」となる5つの単語を指定します。アクロスティックは、最初の単語の1文字目、2番目の単語の2文字目、3番目の単語の3文字目(以下同様)から組み立てられます。 </p>
+            <p><b>アプリケーションの実行時に使用するIDEの引数を追加する</b></p>
+            <ol>
+                <li>「MyApp」プロジェクト・ノードを右クリックして「プロパティ」を選択し、ダイアログの左ペインで「実行」ノードを選択します。
+                    <p>メイン・クラスは、すでに<code>acrostic.Main</code>に設定されているはずです。</p></li>
+                <li>「引数」フィールドに<code>However&nbsp;we&nbsp;all&nbsp;feel&nbsp;zealous</code>と入力し、「OK」をクリックします。</li>
+            </ol>
+
+            <h3 class="tutorial">アプリケーションの実行</h3>
+            <p>アプリケーションを作成し、アプリケーションの実行時引数を指定できました。IDEでアプリケーションをテスト実行できます。</p>
+
+            <p><b>IDEでアプリケーションを実行する</b></p>
+            <ol>
+			<li>「MyApp」プロジェクトを右クリックし、「消去してビルド」を選択します。</li>
+            <li>「実行」>「プロジェクトの実行」([F6])を選択します。
+             <p>「出力」ウィンドウに、プログラムからの出力<code>Result=Hello</code> (引数としてプログラムに渡されたフレーズのアクロスティック)が表示されるはずです。 </p></li>
+            </ol>
+        </div>
+        <!-- =============================================================================== -->
+        <h2>アプリケーションのテストとデバッグ<a name="test"></a></h2>
+        <p>ここでは、JUnitを使用してプロジェクトに対するテストを作成および実行し、IDEのデバッガでアプリケーションを実行してエラーの有無を確認します。JUnitテストでは、<code>acrostic</code>メソッドにフレーズを渡し、表明を使用して予測される結果を示すことで、LibClassをテストします。</p>
+        <div class="indent">
+            <h3 class="tutorial">JUnitテストの作成</h3>
+            <ol>
+                <li>「プロジェクト」ウィンドウで「<code>LibClass.java</code>」ノードを右クリックして、「ツール」>「JUnitテスト」>「テストを作成」([Ctrl]-[Shift]-[U])を選択します。
+                    <p>JUnitテストをIDEで初めて作成する場合は、「JUnitのバージョンを選択」ダイアログ・ボックスが表示されます。[Enter]を押してJUnit 4.xを選択し、「テストを作成」ダイアログ・ボックスに進みます。</p></li>
+                <li>「テストを作成」ダイアログ・ボックスで「OK」をクリックして、デフォルトのオプションでコマンドを実行します。IDEでは、<code>org.me.mylib</code>パッケージと<code>LibClassTest.java</code>ファイルが、別個の<code>test</code>フォルダに作成されます。このファイルを見つけるには、「テスト・パッケージ」ノード、「<code>org.me.mylib</code>」サブノードを順に展開します。</li>
+                <li><code>LibClassTest.java</code>で、<code>public void testAcrostic()</code>メソッドの本文を削除します。
+                </li>
+                <li>行を削除した部分に次のコードを入力または貼り付けます。<br>
+                <pre class="examplecode">System.err.println(&quot;Running testAcrostic...&quot;);
+String result = LibClass.acrostic(new String[]
+                  {&quot;fnord&quot;, &quot;polly&quot;, &quot;tropism&quot;});
+                assertEquals(&quot;Correct value&quot;, &quot;foo&quot;, result);</pre></li>
+                <li> [Ctrl]-[S]を押してファイルを保存します。 </li>
+            </ol>
+            <h3 class="tutorial">JUnitテストの実行</h3>
+            <ol>
+                <li>「MyLib」プロジェクト・ノードを選択して、「実行」>「プロジェクト(MyLib)をテスト」を選択するか、[Alt]-[F6]を押します。「出力」ウィンドウに「<code>MyLib (test)</code>」タブが開きます。JUnitテスト・ケースがコンパイルされて、実行されます。JUnitテスト結果で、テストに合格したことが示されます。 </li>
+                <li>プロジェクト全体をテストするのではなく、1つのテスト・ファイルを実行することもできます。ソース・エディタで「<code>LibClass.java</code>」タブを選択し、「実行」>「ファイルをテスト」を選択します。 </li>
+            </ol>
+            <p>IDEにはJUnit APIに関するドキュメントが付属します。「ヘルプ」>「Javadoc参照」>「JUnit <code><i>VersionNumber</i></code>」を選択します。</p>
+            <p>JUnitの詳細は、<a href="http://www.junit.org">http://www.junit.org</a>を参照してください。</p>
+          <h3 class="tutorial">アプリケーションのデバッグ</h3>
+                <p>この項では、デバッガを使用してアプリケーションのステップ実行を行い、アクロスティックが組み立てられたときの変数の値の変化をウォッチします。</p>
+            
+            <p><b>デバッガでアプリケーションを実行する</b></p>
+            <ol>
+                <li> <code>LibClass.java</code>ファイル内の<code>acrostic</code>メソッドに移動し、<code>b.append(args[i].charAt(i));</code>内の任意の位置に挿入ポイントを置きます。[Ctrl]-[F8]を押して、ブレークポイントを設定します。 </li>
+                <li>「デバッグ」>「プロジェクトのデバッグ」([Ctrl]+[F5])を選択します。IDEでデバッガ・ウィンドウが開き、ブレークポイントに達するまで、デバッガでプロジェクトが実行されます。                </li>
+                <li>IDEの下部にある「ローカル変数」ウィンドウを選択し、「<code>args</code>」ノードを展開します。文字列型の配列に、コマンド引数として入力したフレーズが含まれています。
+                </li>
+                <li>[F7]を押し(または「デバッグ」>「ステップ・イン」を選択し)、プログラムのステップ実行によって、アクロスティックが構築されたときの<code>b</code>変数の変化をウォッチします。
+                    <p>プログラムの最後に到達すると、デバッガ・ウィンドウが閉じます。</p>
+                </li>
+            </ol>
+            <p>詳細は、<a href="junit-intro.html">NetBeans IDEでのJUnitテストの記述</a>を参照してください。</p>
+        </div>
+        <a name="build"></a>
+        <h2>アプリケーションのビルド、実行、および配布</h2>
+        <p>アプリケーションが正しく動作することを確認したら、そのアプリケーションをIDEの外部にデプロイする準備ができます。この項では、アプリケーションのJARファイルをビルドし、コマンド行からJARファイルを実行します。</p>
+        <div class="indent">
+            <h3 class="tutorial">アプリケーションのビルド</h3>
+            <p>IDEのメインのビルド・コマンドは、「消去してビルド」コマンドです。「消去してビルド」コマンドは、以前にコンパイルされたクラスとその他のビルド・アーティファクトを削除し、プロジェクト全体を最初から再ビルドします。</p>
+            <p class="notes"><b>注意:</b> 古いビルド・アーティファクトを削除しないビルド・コマンドもありますが、このコマンドはデフォルトで無効になっています。詳細は、<i>NetBeans IDEによるアプリケーションの開発</i></a>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG512">Javaプロジェクトのビルドについて</a>を参照してください。</p>
+            <p><b>アプリケーションをビルドする</b></p>
+            <ul>
+                <li>「実行」>「プロジェクトを消去してビルド」([Shift]+[F11])を選択します。</li>
+            </ul>
+            <p>Antビルド・スクリプトの出力が、「出力」ウィンドウに表示されます。「出力」ウィンドウが表示されない場合、「ウィンドウ」>「出力」>「出力」を選択し、手動で開くことができます。</p>
+            <p>プロジェクトを消去してビルドした場合、次のことが発生します。</p>
+            <ul>
+                <li>以前のビルド・アクションで生成された出力フォルダが削除(「消去」)されます。ほとんどの場合、<code>build</code>フォルダおよび<code>dist</code>フォルダです。</li>
+                <li><code>build</code>フォルダおよび<code>dist</code>フォルダは、プロジェクト・フォルダ(以後<i>PROJECT_HOME</i>フォルダと呼ぶ)に追加されます。これらのフォルダは、「ファイル」ウィンドウで表示できます。 </li>
+                <li>すべてのソースは、<i>PROJECT_HOME</i><code>/build</code>フォルダにある<code>.class</code>ファイルにコンパイルされます。</li>
+                <li>プロジェクトが含まれたJARファイルが<code><i>PROJECT_HOME</i>/dist</code>フォルダ内に作成されます。</li>
+                <li>プロジェクトのライブラリを指定した場合(JDKに加えて)、<code>dist</code>フォルダに<code>lib</code>フォルダが作成されます。ライブラリが<code>dist/lib</code>にコピーされます。
+                </li>
+                <li>JARにあるマニフェスト・ファイルが更新され、プロジェクトのクラスパスにあるメイン・クラスとライブラリを指定するエントリが含まれます。</li>
+            </ul>
+            <p class="notes"><b>注意:</b> IDEの「ファイル」ウィンドウで、マニフェストの内容を表示できます。プロジェクトをビルドした後に、「ファイル」ウィンドウに切り替え、<code>dist/MyApp.jar</code>に移動します。JARファイルのノードを展開し、<code>META-INF</code>フォルダを展開します。次に、<code>MANIFEST.MF</code>をダブルクリックしてソース・エディタのマニフェストを表示します。</p>
+          <pre class="examplecode">Main-Class: acrostic.Main
+            Class-Path: lib/MyLib.jar</pre>
+            <p>マニフェスト・ファイルの詳細を調べるには、Javaチュートリアルの<a href="http://java.sun.com/docs/books/tutorial/deployment/jar/manifestindex.html" target="_blank">この章</a>を読んでください。 </p>
+
+            <a name="running-outside-IDE"></a><h3>IDEの外部でのアプリケーションの実行</h3>
+            <p><b>IDEの外部でアプリケーションを実行する</b></p>
+            <ol>
+                <li>システムで、コマンド・プロンプトまたはターミナル・ウィンドウを開きます。</li>
+                <li>コマンド・プロンプトで、ディレクトリを<code>MyApp/dist</code>ディレクトリに変更します。</li>
+                <li>コマンド行に、次の文を入力します。
+                    <pre class="examplecode">
+                java -jar MyApp.jar However we all feel zealous    </pre></li>
+            </ol>
+            <p>アプリケーションが実行され、次のイメージに示すように次の出力が返されます。</p>
+            <pre class="examplecode">Result = Hello
+            </pre>
+            <a href="../../../images_www/articles/80/java/javase-intro/command-prompt.png" rel="lytebox" title="アプリケーションの出力を示すコマンド・プロンプト - クリックして拡大"> <img alt="実行中のプログラムからの出力を示すコマンド・プロンプト。" class="margin-around" src="../../../images_www/articles/80/java/javase-intro/command-prompt-smaller.png"></a>
+            <h3 class="tutorial">アプリケーションの他のユーザーへの配布</h3>
+            <p>IDEの外部でアプリケーションが動作することを確認したので、アプリケーションを配布する準備ができました。</p>
+
+            <p><b>アプリケーションを配布する</b></p>
+            <ol>
+                <li>システム上で、アプリケーションJARファイル(<code>MyApp.jar</code>)と、<code>MyLib.jar</code>を含む付属の<code>lib</code>フォルダを含むZIPファイルを作成します。</li>
+                <li>このアプリケーションを使用する人に、ファイルを送信します。ZIPファイルを展開するよう指示し、<code>MyApp.jar</code>ファイルと<code>lib</code>フォルダが同じフォルダにあることを確認します。
+                </li>
+                <li>ユーザーに、前述の<a href="#running-outside-IDE">IDEの外部でのアプリケーションの実行</a>の項の手順に従うように指示します。</li>
+            </ol>
+        </div>
+        <a name="other-tasks"></a><h2>その他の共通タスク</h2>
+        <p>チュートリアルの主要部分は完了しましたが、まだ、カバーされていないいくつかの基本タスクがあります。この項には、それらのタスクがいくつか含まれています。</p>
+        <div class="indent">
+            <a name="projects-jdk-javadoc"></a>
+            <h3 class="tutorial">IDEで使用可能なJavadocの作成</h3>
+
+            <p>NetBeans IDEでJavaSE APIのドキュメントを参照するには、「ソース」>「ドキュメントを表示」コマンドを使用するか、メイン・メニューから「ウィンドウ」>「IDEツール」>「Javadocドキュメント」を選択して、別のウィンドウでAPIのドキュメントを表示します。</p>
+            <p>ただし、いくつかの他社製のライブラリには、APIドキュメントを使用できません。その場合、Javadocリソースを手動でIDEに関連付ける必要があります。</p>
+            <p><b>Javadocを表示コマンドで使用可能なJavadoc APIドキュメントを作成する</b></p>
+            <ol>
+                <li>Javadoc APIドキュメントのソースをダウンロードします(詳細は<a href="http://wiki.netbeans.org/FaqJavaDoc#Adding_the_JDK_Javadoc_to_the_NetBeans_IDE">FaqJavaDoc</a>ページを参照してください)。</li>
+                <li>「ツール」→「Javaプラットフォーム」を選択します。</li>
+                <li>「Javadoc」タブをクリックします。</li>
+                <li>「ZIP/フォルダを追加」ボタンをクリックし、システム上のJavadoc APIドキュメントを含むZIPファイルまたはフォルダに移動します。ZIPファイルまたはフォルダを選択し、「ZIP/フォルダを追加」ボタンをクリックします。
+				<li>「閉じる」をクリックします。</li>
+            </ol>
+
+            <h3 class="tutorial">プロジェクトのJavadocの生成</h3>
+            <p>クラスに追加したJavadocコメントに基づいて、プロジェクト用にコンパイルされたJavadocドキュメントを生成できます。</p>
+            <p><b>Javadocドキュメントを生成する</b></p>
+            <ol>
+                <li>MyLibプロジェクトを選択します。</li>
+                <li>IDEのメイン・メニューから「実行」>「"MyLib" のJavadocを生成」を選択します。<br>生成されたJavadocは、プロジェクトの<code>dist</code>フォルダに追加されます。また、IDEはWebブラウザを開いてJavadocを表示します。
+                </li>
+            </ol>
+
+        </div>
+        <!--<br>-->
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Developing%20General%20Java%20Applications">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear:both;" >
+        <h2><a name="nextsteps"></a>次の手順</h2>
+        <p>NetBeans IDEを使用してJava SEアプリケーションを開発する方法の詳細は、次のリソースを参照してください。
+        </p>
+        <ul>
+            <li><a href="javase-deploy.html">デスクトップJavaアプリケーションのパッケージ化とデプロイ</a></li>
+            <li><a href="annotations.html">NetBeans IDEでの注釈プロセッサのサポート</a></li>
+            <li><a href="debug-multithreaded.html">マルチスレッド・アプリケーションのデバッグ</a></li>
+            <li><a href="../../trails/java-se.html">一般的なJava開発の学習</a></li>
+            <li><a href="../../trails/matisse.html">JavaおよびJavaFX GUIの学習</a></li>
+            <li><a href="../../index.html">NetBeans IDEドキュメントとサポート</a></li>
+			<li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">Javaプロジェクトの作成</a></a></li>
+        </ul>
+
+    </body>
+</html>

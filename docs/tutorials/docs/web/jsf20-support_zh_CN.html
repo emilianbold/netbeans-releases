@@ -1,0 +1,626 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>NetBeans IDE 中的 JSF 2.x 支持</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="An article outlining JSF 2.x support in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              JavaServer Faces, JavaServer Faces 2.0, JSF, JSF 2.1">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+    </head>
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans IDE 中的 JSF 2.x 支持</h1>
+
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+        <p>NetBeans IDE 提供多种功能来实现对 JavaServer Faces (JSF) 2.0 和 2.1 的内置支持。IDE 的 JSF 2.x 支持基于其以前对 JavaServer Faces 的支持构建，包括针对 Facelets 页面的通用编辑器增强功能，各种用于处理实体类的工具，以及一套关于常见开发任务（例如创建 JSF 受管 Bean、Facelets 模板和复合组件）的向导。</p>
+
+        <p>下面的主题介绍了在 NetBeans IDE 中工作时可以使用的 JSF 2.x 功能。要试用新增的 JSF 功能，请<a href="https://netbeans.org/downloads/index.html">下载 NetBeans IDE 的 Java 包</a>，其中包含 Java Web 和 Java EE 技术。下载的包中还包含 GlassFish Server Open Source Edition，它是 Java EE 6 平台规范 (JSR 316) 的引用实现。</p>
+
+
+        <h3>目录</h3>
+
+        <ul id="collapsableList">
+            <li><a href="#support">项目的 JSF 2.x 支持</a>
+
+                <ul>
+                    <li><a href="#creatingSupport">创建具有 JSF 2.x 支持的新项目</a></li>
+                    <li><a href="#addingSupport">将 JSF 2.x 支持添加到现有项目中</a></li>
+                </ul></li>
+
+            <li><a href="#editor">使用编辑器</a>
+
+                <ul>
+                    <li><a href="#facelets">Facelets 编辑器</a></li>
+                    <li><a href="#xml">Faces XML 配置编辑器</a></li>
+                </ul></li>
+
+            <li><a href="#wizard">JSF 向导</a>
+
+                <ul>
+                    <li><a href="#jsfPage">JSF 页向导</a></li>
+                    <li><a href="#managedBean">JSF 受管 Bean 向导</a></li>
+                    <li><a href="#facesConfig">“Faces 配置”向导</a></li>
+                    <li><a href="#composite">复合组件向导</a></li>
+                    <li><a href="#jsfPagesEntity">“通过实体类创建 JSF 页”向导</a></li>
+                    <li><a href="#faceletsTemplate">Facelets 模板向导</a></li>
+                </ul></li>
+
+            <li><a href="#entity">实体类支持</a>
+
+                <ul>
+                    <li><a href="#jsfPages">通过实体类创建 JSF 页</a></li>
+                    <li><a href="#form">通过实体生成窗体对话框</a></li>
+                    <li><a href="#dataTable">通过实体生成数据表对话框</a></li>
+                </ul></li>
+
+            <li><a href="#palette">JSF "Palette"（组件面板）组件</a></li>
+
+            <li><a href="#seealso">另请参见</a></li>
+        </ul>
+
+
+        <h2 id="support">项目的 JSF 2.x 支持</h2>
+
+        <p>项目的 JSF 支持可以分为以下几类。</p>
+
+        <ul>
+            <li>项目中包含 Facelets 模板文件</li>
+            <li>项目的类路径中添加了 JSF 2.x 库</li>
+            <li>项目的部署描述符中添加了 Faces Servlet 和 Servlet 映射</li>
+        </ul>
+
+        <p>使用 GlassFish Server 或任何其他 Java EE 兼容的服务器，可以创建具有 JSF 2.x 支持的项目，或者将 JSF 2.x 支持添加到现有项目中。</p>
+
+        <ul>
+            <li><a href="#creatingSupport">创建具有 JSF 2.x 支持的新项目</a></li>
+            <li><a href="#addingSupport">将 JSF 2.x 支持添加到现有项目中</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="creatingSupport">创建具有 JSF 2.x 支持的新项目</h3>
+
+            <p>使用 IDE 的项目向导，创建一个新的 Java Web 应用程序。为此，请单击 IDE 主工具栏中的 "New Project"（新建项目）(<img alt="&quot;New Project&quot;（新建项目）按钮" src="../../../images_www/articles/72/web/jsf20-support/new-project-btn.png">) 按钮，或者按 Ctrl-Shift-N（在 Mac 上按 ⌘-Shift-N）。到“步骤 4 ：Frameworks（框架）”时，请选择 "JavaServer Faces"。</p>
+
+            <div class="indent">
+                <img alt="新建项目向导：框架" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/new-proj-wizard-framework.png" title="创建项目时添加 JSF 框架支持">
+            </div>
+
+            <p>选择 "JavaServer Faces" 后，将会看到各种配置选项（如上图所示）。您可以决定项目访问 JSF 2.x 库的方式。单击 "Configuration"（配置）标签，在其中指定 Faces Servlet 在项目的部署描述符中的注册方式。</p>
+
+            <div class="indent">
+                <img alt="&quot;Configuration&quot;（配置）标签" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/jsf-configuration.png" title="在 &quot;Configuration&quot;（配置）标签下指定 Faces servlet 设置">
+            </div>
+
+
+            <h3 id="addingSupport">将 JSF 2.x 支持添加到现有项目中</h3>
+
+            <p>如果要将 JSF 2.x 支持添加到现有 Java Web 应用程序中，可以通过项目的 "Properties"（属性）窗口来完成此操作。</p>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口（Ctrl-1 组合键；在 Mac 上为 ⌘-1 组合键）中，右键单击项目节点，然后选择 "Properties"（属性）。将显示 "Project Properties"（项目属性）窗口。</li>
+
+                <li>选择 "Frameworks"（框架）类别，然后单击 "Add"（添加）按钮。 </li>
+                <li>在 "Add a Framework"（添加框架）对话框中选择 "JavaServer Faces"。单击 "OK"（确定）。<br> <img alt="&quot;Project Properties&quot;（项目属性）窗口：&quot;Add a Framework&quot;（添加框架）对话框" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-intro/add-framework.png" title="将 JSF 支持添加到现有项目">
+
+                    <p>
+                    选择 "JavaServer Faces" 后，将会看到各种配置选项，例如指定 JSF 2.x 库的路径以及 Faces servlet 在项目的部署描述符中的注册。</p></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="editor">使用编辑器</h2>
+
+        <p>IDE 的编辑器是特定于语言的，并根据您所使用的文件类型来提供支持。一般而言，在文件中的某个元素上，按 Ctrl-空格键可以调用代码完成和 API 文档。还可以利用快捷键和代码模板。</p>
+
+        <p class="tips">从 IDE 的主菜单中选择 "Help"（帮助）> "Keyboard Shortcuts Card"（快捷键列表），可以查看常见的快捷键和代码模板。要查看完整的列表，请参见 <a href="http://wiki.netbeans.org/KeymapProfileFor60">NetBeans IDE 6.x 快捷键规范</a>。</p>
+
+        <p>IDE 为 <a href="http://javaserverfaces.java.net/nonav/docs/2.0/javadocs/index.html">JSF 2.0 API</a> 和 <a href="http://javaserverfaces.java.net/nonav/docs/2.1/javadocs/index.html">JSF 2.1 API</a> 提供了内置的 Javadoc 支持以及 JSF 的<a href="http://javaserverfaces.java.net/nonav/docs/2.1/vdldocs/facelets/index.html">标记库文档</a>。要在工作中利用这些资源，只需在编辑器中的某个给定元素上按 Ctrl-空格键即可。</p>
+
+        <p class="tips">如果要不断地访问 Javadoc 文档，可以打开 IDE 的 Javadoc 窗口（"Window"（窗口）> "Other"（其他）> "Javadoc"）。Javadoc 窗口会根据光标在编辑器中的位置自动刷新。</p>
+
+        <p>在处理 JSF 项目时，编辑工作将主要集中于 Facelets 文件、JSF 受管 Bean 和 Faces 配置文件 (<code>faces-config.xml</code>)。以下简要说明了可以供您使用的编辑器支持。</p>
+
+        <ul>
+            <li><a href="#facelets">Facelets 编辑器</a></li>
+            <li><a href="#xml">Faces XML 配置编辑器</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="facelets">Facelets 编辑器</h3>
+
+            <p>IDE 的 Facelets 编辑器提供了大量有助于 JSF 开发的功能，其中包括 JSF 标记的语法突出显示和错误检查、文档支持、EL 表达式的代码完成、核心 Facelets 库和名称空间。</p>
+
+            <p>您可以在适用的场合按 Ctrl-空格键调用代码完成和文档支持。</p>
+
+            <div class="indent">
+                <img alt="显示代码完成和文档支持的 IDE 编辑器" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/doc-support.png" title="按 Ctrl-空格键调用代码完成和文档支持">
+            </div>
+
+            <p id="popup">当光标不在标记上时，按 Ctrl-空格键将调用一个弹出式项目列表。也可以从 IDE 的 <a href="#palette">"Palette"（组件面板）</a>（Ctrl-Shift-8 组合键；在 Mac 上为 ⌘-Shift-8 组合键）访问这些项目。</p>
+
+            <p class="tips">还可以在按 Ctrl-空格键之前，键入一个前缀（如 <code>jsf</code>）以对项目进行过滤。</p>
+            
+            <div class="indent">
+                <img alt="IDE 编辑器中的代码完成弹出式列表" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/code-completion.png" title="在编辑器中按 Ctrl-空格键调用项目列表">
+            </div>
+
+            <p>可以按 Ctrl-空格键调用 Facelets 名称空间的代码完成。</p>
+
+            <div class="indent">
+                <img alt="IDE 编辑器中的代码完成弹出式列表" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/namespace.png" title="按 Ctrl-空格键完成 Facelets 名称空间">
+            </div>
+
+            <p>同样地，如果您键入的 JSF 标记的名称空间未在页面中进行声明，IDE 会自动将该标记添加到 <code>&lt;html&gt;</code> 标记中。</p>
+
+            <p>IDE 编辑器可以为表达式语言 (EL) 的语法提供完成支持。在 EL 代码上按 Ctrl-空格键，可以调用隐式对象、JSF 受管 Bean 及其属性的建议。</p>
+
+            <div class="indent">
+                <img alt="EL 表达式的代码完成弹出式列表" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/el-code-completion.png" title="在 EL 表达式上按 Ctrl-空格键调用对隐式对象、JSF 受管 Bean 和 Bean 属性的完成支持">
+            </div>
+            
+            <p>还可以在编辑器中突出显示代码片段，然后选择 "Convert to Composite Component"（转换为复合组件）以创建 JSF 复合组件。有关详细信息，请参见<a href="#composite">复合组件向导</a>。</p>
+
+            <p>IDE 编辑器可以提供基本的错误检查功能。使用红色下划线显示错误，并且左旁注中显示相应的标记。警告是黄色下划线，并且左旁注中使用黄色标记来表示。将鼠标悬停在标记或带有下划线的文本上，可以查看错误的描述。</p>
+                                
+            <p>输入 JSF 标记时，会执行各种检查。这些检查包括：</p>
+
+            <ul>
+                <li>声明的库是否存在</li>
+                <li>与标记前缀匹配的库是否包含组件或标记</li>
+                <li>标记是否包含所有所需的属性</li>
+                <li>所有输入的属性是否已在组件的接口中定义</li>
+            </ul>
+
+            <p>编辑器还会检查：</p>
+
+            <ul>
+                <li>是否存在未声明的组件</li>
+                <li>是否存在未使用的标记库声明</li>
+            </ul>
+
+
+            <h3 id="xml">Faces XML 配置编辑器</h3>
+
+            <p>如果您的 JSF 项目包含 <code>faces-config.xml</code> 文件，则在定义导航规则或声明受管 Bean 时，您可以按 Ctrl-空格键以显示代码完成和文档支持。</p>
+
+            <p>如果要使用对话框输入导航规则和受管 Bean，而不手动对其进行编码，IDE 提供了多个 JSF 特定的对话框来实现此目的。可以通过编辑器的右键单击菜单来访问。</p>
+
+            <div class="indent">
+                <img alt="faces-config.xml 文件 - 右键单击菜单" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/faces-config-menu.png" title="在 faces-config.xml 的右键单击菜单中提供的特定于 JSF 的对话框">
+            </div>
+
+            <p>IDE 为 <code>faces-config.xml</code> 文件提供了两种不同的<em>视图</em>："Source"（源）视图（显示 XML 源代码）和 "PageFlow"（页面流）视图（描述 <code>faces-config.xml</code> 文件中定义的 JSF 导航规则的图形界面）。</p>
+
+            <p>例如，如果文件中包含以下导航规则：</p>
+
+            <div class="indent">
+                <pre class="examplecode">&lt;navigation-rule&gt;
+    &lt;from-view-id&gt;/greeting.xhtml&lt;/from-view-id&gt;
+    &lt;navigation-case&gt;
+        &lt;from-outcome&gt;response&lt;/from-outcome&gt;
+        &lt;to-view-id&gt;/success.xhtml&lt;/to-view-id&gt;
+    &lt;/navigation-case&gt;
+&lt;/navigation-rule&gt;</pre>
+            </div>
+
+            <p>"PageFlow"（页面流）视图显示以下关系，表示当 "<code>response</code>" 传递到 JSF 的 <code>NavigationHandler</code> 时，从 <code>greeting.xhtml</code> 到 <code>success.xhtml</code> 发生了一次导航。</p>
+
+            <div class="indent">
+                <img alt="faces-config.xml 文件：&quot;PageFlow&quot;（页面流）视图" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/page-flow.png" title="&quot;PageFlow&quot;（页面流）视图显示导航关系">
+            </div>
+
+            <p>双击 "PageFlow"（页面流）视图中的组件，可以直接导航至源文件。例如，在双击 <code>greeting.xhtml</code> 组件时，<code>greeting.xhtml</code> 文件在编辑器中打开。同样，如果双击两个组件之间的箭头，编辑器将聚焦于 <code>faces-config.xml</code> 的 XML 视图中定义的导航规则。</p>
+        </div>
+
+
+        <br>
+        <h2 id="wizard">JSF 向导</h2>
+
+        <p>NetBeans IDE 提供了各种向导以便于使用 JSF 2.x 进行开发。您可以创建新的 Facelets 页、Facelets 模板、JSF 受管 Bean、复合组件、Faces 配置文件等。</p>
+
+        <p id="fileWizard">所有向导都可以通过 IDE 的通用文件向导访问。要访问文件向导，请按 "New File"（新建文件）(<img alt="&quot;New File&quot;（新建文件）按钮" src="../../../images_www/articles/72/web/jsf20-support/new-file-btn.png">) 按钮，或从主菜单中选择 "File"（文件）&gt "New File"（新建文件）（或按 Ctrl-N；在 Mac 上按 ⌘-N）。在 "JavaServer Faces" 类别中列出了特定于 JSF 的向导。</p>
+
+            <div class="indent">
+                <img alt="文件向导：选中 &quot;JavaServer Faces&quot; 类别" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/file-wizard.png" title="可从文件向导访问面向 JSF 的向导">
+            </div>
+
+        <p>在处理具有 JSF 支持的 Java Web 项目时，可以使用以下向导。</p>
+
+        <ul>
+            <li><a href="#jsfPage">JSF 页向导</a></li>
+            <li><a href="#managedBean">JSF 受管 Bean 向导</a></li>
+            <li><a href="#facesConfig">“Faces 配置”向导</a></li>
+            <li><a href="#composite">复合组件向导</a></li>
+            <li><a href="#jsfPagesEntity">“通过实体类创建 JSF 页”向导</a></li>
+            <li><a href="#faceletsTemplate">Facelets 模板向导</a></li>
+            <li><a href="#faceletsTemplateClient">Facelets 模板客户端向导</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsfPage">JSF 页向导</h3>
+
+            <p>使用 JSF 页向导为您的项目创建 Facelets 和 JSP 页。在 IDE 的文件向导中，选择 "JavaServer Faces" 类别，然后选择“JSF 页”。在 JSF 2.x 中，Facelets 是声明 JSF 页的首选方式。在默认情况下，"Facelets" 选项在向导中处于选中状态。如果要创建新的 JSP 页或 JSP 片段（<code>.jspf</code> 文件），请选中 "JSP File"（JSP 文件）选项。</p>
+
+            <div class="indent">
+                <img alt="JSF 文件向导" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-file-wizard.png" title="使用 IDE 的 JSF 文件向导创建 Facelets 页">
+            </div>
+
+
+            <h3 id="managedBean">受管 Bean 向导</h3>
+
+            <p>可以使用 IDE 的受管 Bean 向导为应用程序创建 JSF 受管 Bean。从 IDE 的<a href="#fileWizard">文件向导</a>的 "JavaServer Faces" 类别中，选择 "JSF Managed Bean"（JSF 受管 Bean）。</p>
+
+            <p>默认情况下，在此向导中指定的任何元数据都会转换为标注，这些标注将应用于受管 Bean（在其生成之后）。例如，在下图中，您可以创建一个新的、名为 <code>NewJSFManagedBean</code> 的会话范围的类，然后将其命名为 <code>myManagedBean</code>。</p>
+
+            <div class="indent">
+                <img alt="受管 Bean 向导" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/managed-bean.png" title="使用 IDE 的受管 Bean 向导创建 JSF 受管 Bean">
+            </div>
+
+            <p>受管 Bean 生成后，会带有相应的标注（如下所示）。</p>
+
+            <pre class="examplecode">package my.org;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
+<strong>@ManagedBean(name=&quot;myManagedBean&quot;)</strong>
+<strong>@SessionScoped</strong>
+public class NewJSFManagedBean {
+
+    /** Creates a new instance of NewJSFManagedBean */
+    public NewJSFManagedBean() {
+    }
+
+}</pre>
+
+            <p>如果您的项目已经包含 <code>faces-config.xml</code> 文件，则向导的 "Add data to configuration file"（向配置文件添加数据）选项将变为活动状态，您可以在 Faces 配置文件中声明受管 Bean，也可以通过受管 Bean 中的标注指定所有元数据。</p>
+
+
+            <h3 id="facesConfig">“Faces 配置”向导</h3>
+
+            <p>JSF 2.x 引入标注作为配置应用程序的标准 Faces 配置文件 (<code>faces-config.xml</code>) 的替代方案。因此，在向项目添加 JSF 2.x 支持时，IDE 就<em>不会</em>像 JSF 1.2 中一样生成默认的 <code>faces-config.xml</code> 文件。当然，您可能希望将 <code>faces-config.xml</code> 文件添加到项目中，以便定义某些配置设置。为此，请使用 IDE 的“Faces 配置”向导。</p>
+
+            <p>从 IDE 的<a href="#fileWizard">文件向导</a>的 "JavaServer Faces" 类别中，选择 "JSF Faces Configuration"（JSF Faces 配置）。您可以通过此选项创建新 <code>faces-config.xml</code> 文件（默认情况下，位于项目的 <code>WEB-INF</code> 文件夹中）。</p>
+
+            <p class="tips">有关 <code>faces-config.xml</code> 的 IDE 编辑器支持的描述，请参见 <a href="#xml">Faces XML 配置编辑器</a>。</p>
+
+
+            <h3 id="composite">复合组件向导</h3>
+
+            <p>JSF 2.x 简化了创建复合用户界面 (UI) 组件（可以在 Web 页中重复使用）的过程。可以使用 IDE 的复合组件向导为 JSF 复合组件生成 Facelets 模板。</p>
+
+            <p>和所有 JSF 相关的向导一样，可以从 IDE 的<a href="#fileWizard">文件向导</a>的 "JavaServer Faces" 类别中访问复合组件向导。但是，有一种提示向导的更直观的方式：通过在编辑器中突出显示 Facelets 页的代码片段，然后从弹出菜单中选择 "Refactor"（重构）> "Convert to Composite Component"（转换为复合组件）。</p>
+
+            <p>以下示例说明了对代码片段 "<code>&lt;p&gt;This is the composite component.&lt;/p&gt;</code>" 调用复合组件向导时发生的操作以及供您使用的功能。</p>
+
+            <div class="indent">
+                <img alt="Facelets 编辑器 - &quot;Convert to Composite Component&quot;（转换为复合组件）菜单选项" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/convert-comp-component.png" title="突出显示代码片段，并从右键单击菜单中选择 &quot;Convert to Composite Component&quot;（转换为复合组件）">
+            </div>
+
+            <p>此时将打开复合组件向导，其中向导的 "Implementation Section"（实现部分）面板中包含所选的代码片段。</p>
+
+            <div class="indent">
+                <img alt="复合组件向导" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/comp-component.png" title="显示复合组件向导，其中包含所选的代码片段">
+            </div>
+
+            <p>默认情况下，该向导会创建一个 <code>ezcomp</code> 文件夹来包含复合组件。例如，如果您创建了一个名为 <code>myComponent</code> 的新组件，则向导会生成一个 <code>myComponent.xhtml</code> Facelets 页，将其存放在应用程序的 Web 根目录的 <code>resources/ezcomp</code> 文件夹中。</p>
+
+            <p>完成该向导后，会为给定的代码片段生成复合组件源文件。模板包含了 JSF 2.x 的<code>复合</code>标记库的引用。</p>
+
+            <pre class="examplecode">&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+    <strong>xmlns:cc=&quot;http://xmlns.jcp.org/jsf/composite&quot;</strong>&gt;
+
+  &lt;!-- INTERFACE --&gt;
+  &lt;cc:interface&gt;
+  &lt;/cc:interface&gt;
+
+  &lt;!-- IMPLEMENTATION --&gt;
+  &lt;cc:implementation&gt;
+    <strong>&lt;p&gt;This is the composite component.&lt;/p&gt;</strong>
+  &lt;/cc:implementation&gt;
+&lt;/html&gt;</pre>                
+              
+            <p>同时，还会在编辑器中突出显示代码片段的位置插入一个新组件标记。在这种情况下，生成的标记为：<code>&lt;ez:myComponent/&gt;</code>。请注意，IDE 会自动将复合组件所驻留的名称空间添加到页面的 <code>&lt;html&gt;</code> 标记中。</p>
+
+            <div class="indent">
+                <img alt="复合组件向导" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/comp-component-editor.png" title="组件标记自动插入到您的页面中">
+            </div>
+
+            <p class="tips">IDE 还支持向复合组件的源文件添加超链接。当鼠标悬停在复合组件标记上时，按 Ctrl 键（在 Mac 上为 ⌘ 键）可以从 Facelets 页导航至该复合组件。单击该超链接，复合组件的源文件在编辑器中打开。</p>
+
+            
+
+            <p class="tips">有关 JSF 2.x 中的复合组件的更多信息，请参见<a href="http://blogs.oracle.com/enterprisetechtips/entry/true_abstraction_composite_ui_components">揭开面纱：JSF 2.0 中的复合 UI 组件</a>。</p>
+
+
+            <h3 id="jsfPagesEntity">“通过实体类创建 JSF 页”向导</h3>
+
+            <p>请参见<a href="#entity">实体类支持</a>下的<a href="#jsfPages">通过实体类创建 JSF 页</a>主题。</p>
+
+
+            <h3 id="faceletsTemplate">Facelets 模板向导</h3>
+
+            <p>使用 Facelets 模板向导可生成 Facelets 模板。从 IDE 的<a href="#fileWizard">文件向导</a>的 "JavaServer Faces" 类别中，选择 "Facelets Template"（Facelets 模板）。您可以选择八种不同的布局样式，并指定该布局是使用 CSS，还是使用 HTML <code>&lt;table&gt;</code> 标记来实现。</p>
+
+            <div class="indent">
+                <img alt="Facelets 模板向导" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/template-wizard.png" title="使用 Facelets 模板向导创建 Facelets 模板">
+            </div>
+
+            <p>该向导会使用 <code>&lt;h:head&gt;</code> 和 <code>&lt;h:body&gt;</code> 标记创建一个 XHTML 模板文件，并将关联的样式表放入应用程序的 Web 根目录的 <code>resources/css</code> 文件夹中。向导生成的是 <code>default.css</code> 文件、<code>cssLayout.css</code> 文件，还是 <code>tableLayout.css</code> 文件，具体取决于所选择的布局。</p>
+
+            <p class="tips">要在浏览器中查看模板，请右键单击编辑器，然后选择 "View"（视图）。随即会打开一个浏览器窗口，显示该模板。</p>
+
+            <h3 id="faceletsTemplate">Facelets 模板客户端向导</h3>
+
+            <p>使用 Facelets 模板客户端向导可生成页面，以便在项目中引用 Facelets 模板。从 IDE 的<a href="#fileWizard">文件向导</a>的 "JavaServer Faces" 类别中，选择 "Facelets Template Client"（Facelets 模板客户端）。可以指定客户端使用的 Facelets 模板的位置。还可以指定根标记是 <tt>&lt;html&gt;</tt> 还是 <tt>&lt;ui:composition&gt;</tt></p>
+
+            <div class="indent">
+                <img alt="Facelets 模板客户端向导" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/new-template-client.png" title="使用 Facelets 模板客户端向导为 Facelets 模板创建客户端">
+            </div>
+            <p>有关使用 Facelets 模板和客户端的更多详细信息，请参见 <a href="jsf20-intro.html">NetBeans IDE 中的 JavaServer Faces 2.x 简介</a>中有关<a href="jsf20-intro.html#template">应用 Facelets 模板</a>的部分。</p>
+
+        </div>
+
+
+        <br>
+        <h2 id="entity">实体类支持</h2>
+
+        <p>如果在应用程序中使用 Java 持久性，并且您具有基于数据库方案的实体类，则 IDE 会为您提供有效使用实体类数据的功能。</p>
+
+        <p><strong class="notes">注：</strong>要通过数据库表创建实体类，请使用 IDE 的 "Entity Classes from Database"（通过数据库生成实体类）向导（可以从 IDE 的<a href="#fileWizard">文件向导</a>的 "Persistence"（持久性）类别中访问）。</p>
+
+        <ul>
+            <li><a href="#jsfPages">通过实体类创建 JSF 页</a></li>
+            <li><a href="#form">为实体数据创建 JSF 窗体</a></li>
+            <li><a href="#dataTable">为实体数据创建 JSF 数据表</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsfPages">通过实体类创建 JSF 页</h3>
+
+            <p>如果您的应用程序中含有实体类，则可以使用 IDE 的“通过实体类创建 JSF 页”向导创建一个用于显示和修改实体类数据的 Web 界面。向导生成的代码将基于实体类中包含的持久性标注。</p>
+
+            <p>对于每个实体类，向导都会生成以下内容：</p>
+
+            <ul>
+                <li>用于创建、检索、修改和删除实体实例的无状态会话 Bean</li>
+
+                <li>JSF 会话范围的受管 Bean</li>
+
+                <li>包含 CRUD 功能的四个 Facelets 文件（<code>Create.xhtml</code>、<code>Edit.xhtml</code>、<code>List.xhtml</code> 和 <code>View.xhtml</code>）的目录</li>
+
+                <li>JSF 受管 Bean 所使用的实用程序类（<code>JsfUtil</code> 和 <code>PaginationHelper</code>）</li>
+
+                <li>本地化消息的属性包，以及项目的 Faces 配置文件（如果不存在 <code>faces-config.xml</code> 文件，则会创建一个）中的相应条目</li>
+
+                <li>辅助 Web 文件（包含呈现的组件的默认样式表）和一个 Facelets 模板文件</li>
+            </ul>
+
+            <p>要使用“通过实体类创建 JSF 页”向导，<a href="#fileWizard">请访问 IDE 的文件向导</a>。选择 "JavaServer Faces" 类别，然后选择 "JSF Pages from Entity Classes"（通过实体类创建 JSF 页）。</p>
+
+            <p>到“步骤 3："Generate JSF Pages and Classes"（生成 JSF 页和类）”时，您可以指定将要生成的文件的位置。</p>
+
+            <div class="indent">
+                <img alt="步骤 3：生成 JSF 页和类" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-entity-wizard.png" title="指定将生成的文件的位置">
+            </div>
+
+            <p>例如，如果将该向导应用于 <code>Customer</code> 实体类，则上图中显示的设置将生成以下文件：</p>
+
+            <table class="indent">
+                <tr>
+                    <td>
+                        <img alt="&quot;Projects&quot;（项目）窗口 - 通过向导生成的文件" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/projects-win-generated-files.png" title="&quot;Projects&quot;（项目）窗口将显示新生成的文件">
+                    </td>
+                    <td class="valign-top">
+                        <ul style="margin-top:3em">
+                            <li><code>faces-config.xml</code> 文件，用于注册包含 JSF 视图的本地化消息的属性包的位置。例如，在向导中指定 <code>/my/org/Bundle</code> 作为本地化包名称会生成以下条目：
+
+                                <pre class="examplecode" style="width:500px">
+&lt;application&gt;
+    &lt;resource-bundle&gt;
+        &lt;base-name&gt;/my/org/Bundle&lt;/base-name&gt;
+        &lt;var&gt;bundle&lt;/var&gt;
+    &lt;/resource-bundle&gt;
+&lt;/application&gt;</pre></li>
+
+                            <li>Web 根目录中的 <code>customer</code> 文件夹包含 CRUD 功能的四个 Facelets 文件：
+
+                                <ul>
+                                    <li><code>Create.xhtml</code>：用于创建新客户的 JSF 窗体。</li>
+                                    <li><code>Edit.xhtml</code>：用于编辑客户的 JSF 窗体。</li>
+                                    <li><code>List.xhtml</code>：用于滚动查看客户的 JSF 数据表。</li>
+                                    <li><code>View.xhtml</code>：用于查看客户详细信息的 JSF 窗体。</li>
+                                </ul></li>
+
+                            <li><code>jsfcrud.css</code>：用于呈现 JSF 窗体和数据表的样式表。</li>
+
+                            <li><code>template.xhtml</code>：可选的 Facelets 模板页，其中包含对生成的 <code>jsfcrud.css</code> 样式表的引用。</li>
+
+                            <li>一个名为 <code>CustomerFacade</code> 无状态会话（企业）Bean（位于 <code>my.org.data</code> 包中）。此类还可以通过项目的 "Enterprise Bean"（企业 Bean）节点访问。</li>
+
+                            <li><code>Bundle.properties</code>：一种属性包，其中包含 JSF 视图的默认本地化消息。</li>
+
+                            <li>一个名为 <code>CustomerController</code> 的 JSF 会话范围的、受管 Bean（位于 <code>my.org.ui</code> 包中）。</li>
+
+                            <li>两个实用程序类（<code>JsfUtil</code> 和 <code>PaginationHelper</code>），位于 <code>my.org.ui.util</code> 包中。这些文件都由 <code>CustomerController</code> 受管 Bean 所使用。</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+
+            <h3 id="form">为实体数据创建 JSF 窗体</h3>
+
+            <p>可以使用通过实体生成窗体对话框，以生成包含实体类中所有属性字段的 JSF 窗体。必须先创建一个 JSF 受管 Bean，才能处理与该窗体关联的所有用户数据。</p>
+
+            <p><strong class="notes">注：</strong>如果在没有关联的受管 Bean 的情况下使用此对话框，可以在该对话框中输入一个受管 Bean 的名称，这样无论该名称是否有效，页面中都将使用该名称。随后您可以使用 IDE 的<a href="#managedBean">受管 Bean 向导</a>创建一个受管 Bean，或者如果使用<a href="#jsfPages">“通过实体类创建 JSF 页”向导</a>，为所有选定的实体类生成受管 Bean。</p>
+
+            <p>可以通过两种方式访问通过实体生成窗体对话框：<a href="#popup">在 Facelets 页的编辑器中按 Ctrl-空格键</a>，然后选择 "JSF Form From Entity"（通过实体生成 JSF 窗体），或者双击 IDE 的 <a href="#palette">"Palette"（组件面板）</a>（Ctrl-Shift-8 组合键；在 Mac 上为 ⌘-Shift-8 组合键）中列出的通过实体生成窗体项。</p>
+
+            <p>例如，在下图中，给定项目的 <code>my.org</code> 包中已经存在了一个 <code>Customer</code> 实体类。同时，给定项目中也包含 <code>customerController</code> 受管 Bean，且该受管 Bean 包含名为 <code>selected</code> 的属性，该属性会返回一个 <code>Customer</code> 对象。</p>
+
+            <div class="indent">
+                <img alt="&quot;JSF Form from Entity&quot;（通过实体生成 JSF 窗体）对话框" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-form-from-entity.png" title="使用 &quot;Form from Entity&quot;（通过实体生成窗体）对话框通过实体数据生成 JSF 窗体">
+            </div>
+
+            <p><strong class="notes">注：</strong>选择 "Generate read only view"（生成只读视图）选项可以创建包含只读字段的窗体。选中此选项时，IDE 会为窗体字段应用 <code>&lt;h:outputText&gt;</code> 标记，而在没有选中此选项时应用的则是 <code>&lt;h:inputText&gt;</code> 标记。</p>
+
+            <p>完成此对话框之后，IDE 会为 Facelets 页生成代码。例如，<code>Customer</code> 实体类（包含 <code>customerId</code> 属性）将按以下格式显示：</p>
+
+            <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;Create/Edit&quot;/&gt;&lt;/h1&gt;
+        &lt;h:panelGrid columns=&quot;2&quot;&gt;
+            &lt;h:outputLabel value=&quot;CustomerId:&quot; for=&quot;customerId&quot; /&gt;
+            &lt;h:inputText id=&quot;customerId&quot; value=&quot;#{customerController.selected.customerId}&quot; title=&quot;CustomerId&quot; required=&quot;true&quot; requiredMessage=&quot;The CustomerId field is required.&quot;/&gt;
+            ...
+            <em>[ Other fields added here. ]</em>
+            ...
+        &lt;/h:panelGrid&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+
+            <p class="tips">要对生成的代码所使用的模板进行修改，请单击通过实体生成窗体对话框中的 "Customize Template"（定制模板）链接。</p>
+
+
+            <h3 id="dataTable">为实体数据创建 JSF 数据表</h3>
+
+            <p>可以使用通过实体生成数据表对话框，生成包含实体类中所有属性列的 JSF 数据表。要使用此功能，您必须先创建一个 JSF 受管 Bean，才能处理所有与该实体类相关联的后端数据。</p>
+
+            <p><strong class="notes">注：</strong>如果在没有关联的受管 Bean 的情况下使用此对话框，可以在该对话框中输入一个受管 Bean 的名称，这样无论该名称是否有效，页面中都将使用该名称。随后您可以使用 IDE 的<a href="#managedBean">受管 Bean 向导</a>创建一个受管 Bean，或者如果使用<a href="#jsfPages">“通过实体类创建 JSF 页”向导</a>，为所有选定的实体类生成受管 Bean。</p>
+
+            <p>可以通过两种方式访问通过实体生成数据表对话框：<a href="#popup">在 Facelets 页的编辑器中按 Ctrl-空格键</a>，然后选择“通过实体生成 JSF 数据表”，或者双击 IDE 的 <a href="#palette">"Palette"（组件面板）</a>（Ctrl-Shift-8 组合键；在 Mac 上为 ⌘-Shift-8 组合键）中列出的通过实体生成数据表项。</p>
+
+            <p>例如，在下图中，给定项目的 <code>my.org.entity</code> 包中已经存在了 <code>Product</code> 实体类。同时，该项目也包含了 <code>productController</code> 受管 Bean，且该受管 Bean 包含一个名为 <code>getProductItems()</code> 的方法，该方法会返回一个 <code>Product</code> 对象<code>列表</code>。</p>
+
+            <div class="indent">
+                <img alt="&quot;JSF Data Table from Entity&quot;（通过实体生成 JSF 数据表）对话框" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-data-table-from-entity.png" title="使用 &quot;Data Table from Entity&quot;（通过实体生成数据表）对话框通过实体数据生成 JSF 数据表">
+            </div>
+
+            <p>完成此对话框之后，IDE 会为 Facelets 页生成代码。例如，<code>Product</code> 实体类（包含 <code>productId</code> 属性）将按以下格式显示：</p>
+
+            <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;List&quot;/&gt;&lt;/h1&gt;
+        &lt;h:dataTable value=&quot;#{productController.productItems}&quot; var=&quot;item&quot;&gt;
+            &lt;h:column&gt;
+                &lt;f:facet name=&quot;header&quot;&gt;
+                    &lt;h:outputText value=&quot;ProductId&quot;/&gt;
+                &lt;/f:facet&gt;
+                &lt;h:outputText value=&quot;#{item.productId}&quot;/&gt;
+            &lt;/h:column&gt;
+            ...
+            <em>[ Other columns added here. ]</em>
+            ...
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+
+            <p class="tips">要对生成的代码所使用的模板进行修改，请单击通过数据表生成窗体对话框中的 "Customize Template"（定制模板）链接。</p>
+        </div>
+
+
+        <br>
+        <h2 id="palette">JSF "Palette"（组件面板）组件</h2>
+
+        <p>使用 Facelets 页时，可以使用 IDE 的 "Palette"（组件面板）向页面拖放 JSF 标记。您既可以从主菜单中选择 "Window"（窗口）> "Palette"（组件面板），也可以按 Ctrl-Shift-8 组合键（在 Mac 上为 ⌘-Shift-8 组合键）访问组件面板。</p>
+
+        <div class="indent">
+            <img alt="展开 JSF 类别的 &quot;Palette&quot;（组件面板）" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/palette.png" title="使用 IDE 的 &quot;Palette&quot;（组件面板）将公用 JSF 组件拖放到 &quot;Facelets&quot; 页上">
+        </div>
+
+        <p class="tips">您还可以从 IDE 的主菜单中选择 "Source"（源）> "Insert Code"（插入代码）（Alt-Insert 组合键；在 Mac 上为 Ctrl-I 组合键），调用包含组件面板中特定于 JSF 组件的弹出式列表。</p>
+
+        <div class="indent">
+            <img alt="IDE 编辑器中的代码完成弹出式列表" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/insert-code.png" title="在编辑器中，按 Alt-Insert（在 Mac 上按 Ctrl-I）调用 JSF 特定的组件列表">
+        </div>
+
+        <p>"Palette"（组件面板）提供了五种 JSF 相关的组件：</p>
+
+        <ul>
+            <li><strong>Metadata（元数据）：</strong>调用一个对话框以在 JSF 元数据标记内添加名称-值对。例如，如果您指定 "<code>myId</code>" 和 "<code>myValue</code>" 作为名称-值对，则会产生以下代码片段：
+
+                <pre class="examplecode">&lt;f:metadata&gt;
+    &lt;f:viewParam id='myId' value='myValue'/&gt;
+&lt;/f:metadata&gt;</pre></li>
+
+            <li><strong>JSF Form（JSF 窗体）：</strong>向页面添加以下代码片段。
+
+                <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li><strong>JSF Form From Entity（通过实体生成 JSF 窗体）：</strong>调用一个对话框，您可以在该对话框中将实体类中的数据与 JSF 窗体中的字段相关联。请参见<a href="#form">为实体数据创建 JSF 窗体</a>。</li>
+
+            <li><strong>JSF Data Table（JSF 数据表）：</strong>向页面添加以下代码片段。
+
+                <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h:dataTable value=&quot;#{}&quot; var=&quot;item&quot;&gt;
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li><strong>JSF Data Table from Entity（通过实体生成 JSF 数据表）：</strong>调用一个对话框，您可以在该对话框中将实体类中的数据与 JSF 数据表中的字段相关联。请参见<a href="#dataTable">为实体数据创建 JSF 数据表</a>。</li>
+        </ul>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20JSF%202.x%20Support%20in%20NetBeans%20IDE">发送有关此教程的反馈意见</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">另请参见</h2>
+
+        <p>有关 JSF 2.x 的详细信息，请参见以下资源。</p>
+
+        <div class="indent">
+            <h3>NetBeans 文章和教程</h3>
+
+            <ul>
+                <li><a href="jsf20-intro.html">NetBeans IDE 中的 JavaServer Faces 2.x 简介</a></li>
+                <li><a href="jsf20-crud.html">通过数据库生成 JavaServer Faces 2.x CRUD 应用程序</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum 玩具 - JSF 2.0 完整样例应用程序</a></li>
+                <li><a href="../javaee/javaee-gettingstarted.html">Java EE 应用程序入门指南</a></li>
+                <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+            </ul>
+
+            <h3>外部资源</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">JavaServer Faces 技术</a>（官方主页）</li>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr314/index.html">JSR 314：JavaServer Faces 2.0 的规范</a></li>
+                <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/bnaph.html">Java EE 6 教程第 5 章：JavaServer Faces 技术</a></li>
+                <li><a href="http://javaserverfaces.java.net/">GlassFish Server 项目 Mojarra</a>（JSF 2.x 的正式引用实现）</li>
+                <li><a href="http://forums.oracle.com/forums/forum.jspa?forumID=982">OTN 论坛：JavaServer Faces</a></li>
+                <li><a href="http://www.jsfcentral.com/">JSF 中心</a></li>
+            </ul>
+
+            <h3>博客</h3>
+
+            <ul>
+                <li><a href="http://www.java.net/blogs/edburns/">Ed Burns</a></li>
+                <li><a href="http://www.java.net/blogs/driscoll/">Jim Driscoll</a></li>
+            </ul>
+        </div>
+
+        <script type="text/javascript">
+            <!--
+            compactMenu('collapsableList', true, '&plusmn; ');
+            -->
+        </script>
+    </body>
+</html>

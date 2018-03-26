@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>PHPを使用するデータベース駆動型アプリケーションの作成CSSのクラスとdivの使用 </title>
+        <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Using CSS classes and divs. Hiding forms using Javascript" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+    </head>
+    <body>
+        <h1>PHPを使用するデータベース駆動型アプリケーションの作成</h1>
+        <h1>レッスン8: CSSテクノロジを使用したアプリケーションの外観の改良 </h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+                <h4>チュートリアルの目次:</h4>
+                <ol start="0">
+                    <li><a href="wish-list-tutorial-main-page.html">PHPを使用するデータベース駆動型アプリケーションの作成 - メイン・ページ</a></li>
+                    <li><p>データベースの作成</p> <ol type="a"><li><a href="wish-list-lesson1.html">MySQLデータベースの作成</a></li>
+                            <li><a href="wish-list-oracle-lesson1.html">Oracleデータベース表の作成</a></li>
+                        </ol></li>
+                    <li>
+                        <p><a href="wish-list-lesson2.html">アプリケーションの設計。データベースからの読取り</a></p>
+                    </li>
+                    <li><a href="wish-list-lesson3.html">新規アプリケーション・ユーザーの作成</a></li>
+                    <li><a href="wish-list-lesson4.html">コードの最適化</a></li>
+                    <li><a href="wish-list-lesson5.html">セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</a></li>
+                    <li><a href="wish-list-lesson6.html">データベースへの新しいウィッシュの追加</a></li>
+                    <li>      <a href="wish-list-lesson7.html">データベース内のエントリの更新および削除</a></li>
+                    <li>
+                        <p><b>=>CSSテクノロジを使用したアプリケーションの外観の改良</b></p>
+                        <ul class="toc">
+                            <li><a href="#previousLessonSourceCode">前のレッスンからのアプリケーション・ソース・コード</a></li>
+                            <li><a href="#hideLogonForm">フォームの非表示</a>
+                                <ul>
+                                    <li><a href="#javaScriptFunctions">JavaScript関数</a></li>
+                                    <li><a href="#showHideLogonInIndex">index.phpの更新</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#designStyles">Cascading Style Sheetを使用したスタイルの定義</a>
+                                <ul>
+                                    <li><a href="#creatingCSSFile">CSSファイルの作成</a></li>
+                                    <li><a href="#defineCSSStyles">CSSスタイルの定義</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#divs">HTML Divを使用したデザインの実装</a></li>
+                            <li><a href="#lessonResultSourceCode">現在のレッスン完了後のアプリケーション・ソース・コード</a></li>
+                            <li><a href="#nextSteps">次の手順</a></li>
+                        </ul>
+
+                    </li>
+                    <li><a href="wish-list-lesson9.html">リモートWebサーバーへのアプリケーションのデプロイ</a></li>
+                </ol>
+            </div>
+        </div>
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        <p>このレッスンでは、次のことを行う方法を学習します。</p>
+        <ul>
+            <li style="margin-left:40em"><a href="#hideLogonForm">JavaScript関数を実装して、入力フォームが使用されていないときに非表示にする</a></li>
+            <li style="margin-left:40em"><a href="#designStyles">Cascading Style Sheetを適用して、ページ要素のスタイルと位置を定義する</a></li>
+            <li style="margin-left:40em"><a href="#divs">divを使用してアプリケーションのデザインを実装する</a> </li>
+        </ul>
+        <p>現在のドキュメントは、PHP向けのNetBeans IDEでのCRUDアプリケーションの作成というPHPチュートリアルの一部です。 </p>
+        <br style="clear:left">
+        <h2><a name="previousLessonSourceCode"></a>前のレッスンからのアプリケーション・ソース・コード</h2>
+        <p>MySQLユーザー: 前のレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/files/documents/4/1933/lesson7.zip" target="_blank">ここ</a>をクリックします。 </p>
+        <p>Oracleデータベース・ユーザー: 前のレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson7.zip" target="_blank">ここ</a>をクリックします。</p>
+        <h2><a id="hideLogonForm" name="hideLogonForm"></a>フォームの非表示 </h2>
+        <p>現時点で、アプリケーションのメインの<tt>index.php</tt>ページには、常にログオンおよびshowWishListフォームの全体が表示されます。アプリケーションの外観を改良するために、フォームを非表示にしてボタンに置き換えることができます。ユーザーがボタンを押すと、対応する非表示フォームが拡張されます。 </p>
+        <p>この動作を実装するには:</p>
+        <ol>
+            <li><tt>index.php</tt>ファイルの終了&lt;/body>タグの直前に、&lt;script>&lt;/script>ブロックを追加します。</li>
+            <li><a href="#javaScriptFunctions">&lt;script>&lt;/script>タグ内に2つのJavaScript関数を開発します</a>。</li>
+            <li><a href="#showHideLogonInIndex">index.phpファイルに小さな変更をいくつか行います。</a></li>
+        </ol>
+        <div class="indent"><h3><a id="javaScriptFunctions" name="javaScriptFunctions"></a>JavaScript関数 </h3>
+            <p>JavaScript関数は入力パラメータを必要とせず、結果を返しません。次のコードは、対応するフォームの可視状態を確認し、反対の状態に変更します。また、ボタン上のテキストも変更します。これらの変更を完了するには、次のコードを&lt;script>&lt;/script>タグ内に入力します。</p>
+            <pre class="examplecode">&lt;script&gt;
+function showHideLogonForm() {
+    if (document.all.logon.style.visibility == "visible"){
+        document.all.logon.style.visibility = "hidden";
+        document.all.myWishList.value = "My Wishlist &gt;&gt;";
+    } 
+    else {
+        document.all.logon.style.visibility = "visible";
+        document.all.myWishList.value = "&lt;&lt; My Wishlist";
+    }
+}
+function showHideShowWishListForm() {
+    if (document.all.wishList.style.visibility == "visible") {
+        document.all.wishList.style.visibility = "hidden";
+        document.all.showWishList.value = "Show Wish List of >>";
+    }
+    else {
+        document.all.wishList.style.visibility = "visible";
+        document.all.showWishList.value = "&lt;&lt; Show Wish List of";
+    }
+}
+&lt;/script&gt;	</pre>
+            <h3><a id="showHideLogonInIndex" name="showHideLogonInIndex"></a><tt>index.php</tt>の更新 </h3>
+            <ol>
+                <li>ログオン・フォームに、次の<tt>style</tt>属性を追加します。 
+                    <pre class="examplecode">&lt;form name=&quot;logon&quot; action=&quot;index.php&quot; method=&quot;POST&quot; 
+        <strong>style=&quot;visibility:&lt;?php if ($logonSuccess) echo &quot;hidden&quot;;
+        else echo &quot;visible&quot;;?&gt;&quot;</strong>&gt;</pre>
+                    <tt>style</tt>属性は、フォームが非表示か可視かを定義します。&lt;?php?>ブロックは、ユーザーが正常にログオンするまでフォームを可視のままにするために使用されます。<br>
+                </li>
+                <li> ログオン入力フォーム・コードの上に、次のコードを入力します。 
+                    <pre class="examplecode"> &lt;input type=&quot;submit&quot; name=&quot;myWishList&quot; value=&quot;My Wishlist &gt;&gt;&quot; onclick=&quot;javascript:showHideLogonForm()&quot;/&gt;</pre>
+                    このコードは、「My Wishlist >>」というテキストを持つボタンを実装します。ログオン・フォームのかわりにボタンが表示されます。ボタンを押すと、showHideLogonForm関数がコールされます。</li>
+                <li>wishListフォームに<tt>style</tt>属性を追加します。
+                    <pre class="examplecode">&lt;form name=&quot;wishList&quot; action=&quot;wishlist.php&quot; method=&quot;GET&quot; <strong>style=&quot;visibility:hidden&quot;</strong>&gt;
+Show wish list of: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>            &lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>&lt;/form&gt;</pre>
+                </li>
+                <li>wishListフォームの上に、次のコードを入力します。
+                    <pre class="examplecode">&lt;input type=&quot;submit&quot; name=&quot;showWishList&quot; value=&quot;Show Wish List of &gt;&gt;&quot; onclick=&quot;javascript:showHideShowWishListForm()&quot;/&gt;</pre>
+                </li>
+                <li>次のコードはすでにボタンにあるので、フォームから除去します。 
+                    <pre class="examplecode">Show wishlist of: </pre>
+                </li>
+            </ol>
+        </div>
+
+        <h2><a id="designStyles" name="designStyles"></a>Cascading Style Sheetを使用したスタイルの定義</h2>
+        <p>現在、アプリケーション内のコントロールは互いに「くっついて」おり、通常は画面の左上隅に配置されています。アプリケーションのページの外観を改良するには、スタイルを定義し、そのスタイルを特定のコントロールに割り当てることによって、コントロールのサイズ、位置、色、フォント、およびその他のパラメータを指定します。スタイルは個別のCascading Style Sheet (CSS)ファイルで定義されます。 </p>
+        <p>アプリケーションのデザインに関する推奨および提案は、すべてオプションです。次のスタイル定義は、アプリケーションの外観の改良の例を示しています。この設定は、画面解像度1024x768ピクセル以上に適しています。 </p>
+        <div class="indent"><h3><a name="creatingCSSFile"></a>CSSファイルの作成</h3>
+            <ol>
+                <li>「ソース・ファイル」ノードでマウスの右ボタンをクリックし、コンテキスト・メニューから「新規」>「Cascading Style Sheet」を選択します。</li>
+                <li>「Cascading Style Sheet」パネルで、「ファイル名」編集ボックスに「wishlist」と入力します。「終了」をクリックします。<br><img alt="「新規CSSファイル」パネル" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson8/newCascadingStyleSheetFile.png"><br>新しいファイル<tt>wishlist.css</tt>がプロジェクト・ツリーに表示されます。</li>
+            </ol>
+
+            <h3><a name="defineCSSStyles"></a>CSSスタイルの定義</h3>
+            
+            <p>wishlist.cssファイルを開きます。ファイルには、除去可能な「root」クラスがすでに含まれています。<a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">ここ</a>から入手できるこのチュートリアルの完成したバージョンをダウンロードすることによって、<tt>wishlist.css</tt>のコピーを取得できます。コードは直観的にわかりやすく、また、次のものが含まれています。</p>
+            <ul>
+                <li>2つのスタイル: 「body」および「input」 - 任意の<tt>&lt;body>&lt;/body></tt>または<tt>&lt;input/></tt>タグの内部に自動的に適用されます。  </li>
+                <li>明示的に指定されたときに適用される、CSSクラス。クラス名は、<tt>.createWishList</tt>のように、前にドットがあります。一部のクラスは複数回使用され、たとえば、「.error」クラスはアプリケーションのすべてのエラー・メッセージに適用されます。「.showWishList」、「.logon」など、その他のクラスは1度のみ使用されます。</li>
+            </ul></div>
+        <h2><a id="divs" name="divs"></a>HTMLのdivを使用したデザインの実装 </h2>
+        <p>アプリケーションのデザインに関する推奨および提案は、すべてオプションです。前述のスタイルの定義と同じように、アプリケーションの外観を改良する方法の例を示しています。 </p>
+        <p> 次の例で、<tt>index.php</tt>ページの外観を改良する方法を示します。 </p>
+
+        <ol>
+            <li>定義したCSSクラスを使用できるようにするには、次のコードを<tt>&lt;head>&lt;/head></tt>ブロック内に入力します。
+                <pre class="examplecode">     &lt;link href=&quot;wishlist.css&quot; type=&quot;text/css&quot; rel=&quot;stylesheet&quot; media=&quot;all&quot; /&gt;</pre>スタイル「body」と「input」は対応するタグ内に自動的に適用されるため、明示的に指定する必要はありません。</li>
+            <li>別のスタイル(クラス)を領域に適用するには、領域を実装するコードを<tt>&lt;div class="">&lt;/div></tt>タグで囲みます。
+                <pre class="examplecode"> &lt;div class=&quot;showWishList&quot;&gt;<br>            &lt;input type=&quot;submit&quot; name=&quot;showWishList&quot; value=&quot;Show Wish List of &gt;&gt;&quot; onclick=&quot;javascript:showHideShowWishListForm()&quot;/&gt;<br>            <br>            &lt;form name=&quot;wishList&quot; action=&quot;wishlist.php&quot; method=&quot;GET&quot; style=&quot;visibility:hidden&quot;&gt;<br>               &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>               &lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>            &lt;/form&gt;<br>&lt;/div&gt;</pre> 
+                <p><strong>注意:</strong> クラスが&lt;div>タグの内部で指定されている場合、前にドットを置く必要はありません。</p> </li>
+            <li>次の埋込み&lt;div>タグを使用できます。
+                <pre class="examplecode">&lt;div class=&quot;logon&quot;&gt;<br>     &lt;input type=&quot;submit&quot; name=&quot;myWishList&quot; value=&quot;My Wishlist &gt;&gt;&quot; onclick=&quot;javascript:showHideLogonForm()&quot;/&gt;<br>            &lt;form name=&quot;logon&quot; action=&quot;index.php&quot; method=&quot;POST&quot; <br>                      style=&quot;visibility:&lt;?php if ($logonSuccess) echo &quot;hidden&quot;; else echo &quot;visible&quot;;?&gt;&quot;&gt;<br>                Username: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>                Password:  &lt;input type=&quot;password&quot; name=&quot;userpassword&quot;/&gt;&lt;br/&gt;<br>                &lt;div class=&quot;error&quot;&gt;<br>                  &lt;?php<br>                     if (!$logonSuccess) echo &quot;Invalid name and/or password&quot;;<br>                   ?&gt;<br>                &lt;/div&gt;<br>                &lt;input type=&quot;submit&quot; value=&quot;Edit My Wish List&quot;/&gt;<br>            &lt;/form&gt;<br>&lt;/div&gt;  </pre>
+                クラス「logon」がフォーム全体に適用され、クラス「error」がフォーム内のエラー・メッセージに適用されます。  </li>
+        </ol>
+        <p>Cascading Style Sheet (CSS)の使用については、<span lang="ru"><a href="http://www.htmlpedia.org/wiki/List_of_CSS_Properties" onClick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.htmlpedia.org/wiki/List_of_CSS_Properties</a></span>を参照してください。</p>
+
+        <h2><a name="lessonResultSourceCode"></a>現在のレッスン完了後のアプリケーション・ソース・コード </h2>
+        <p>MySQLユーザー: サンプルのデザインおよびCSSファイルを含むソース・コードをダウンロードするには、<a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">ここ</a>をクリックします。</p>
+        <p>Oracleデータベース・ユーザー: サンプルのデザインおよびCSSファイルを含むソース・コードをダウンロードするには、<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson8.zip" target="_blank">ここ</a>をクリックします。</p>
+        <p>PDO: コミュニティのメンバーであるGoran Miskovic氏のご厚意で提供されたPDOバージョンの完全なチュートリアルは、<a href="https://netbeans.org/projects/www/downloads/download/php/wishlist-pdo.zip" target="_blank">ここ</a>から入手できます。このプロジェクトでは、DSNパラメータを変更することによって、Oracle XEとMySQLデータベースを簡単に切り替えることができます。プロジェクトには必要なすべてのSQLスクリプトが含まれ、コード内に説明があります。ただし、PDO_OCIは試験段階であることに注意してください。</p>
+        <p>NetBeans IDEチームは、CSSを提供して、完成したサンプルのコードを改良されたOzan Hazer氏に感謝申し上げます。</p>
+        <h2><a name="nextSteps"></a>次の手順</h2>
+        <p><a href="wish-list-lesson7.html">&lt;&lt; 前のレッスン</a></p>
+        <p><a href="wish-list-lesson9.html">次のレッスン>></a>    </p>
+        <p>
+            <a href="wish-list-tutorial-main-page.html">チュートリアルのメイン・ページに戻る</a></p>
+
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear:both;" >
+        <p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。
+        <p><a href="../../trails/php.html">PHPの学習に戻る</a></p>
+
+    </body>
+</html>

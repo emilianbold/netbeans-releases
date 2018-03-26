@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   
+   <head>
+      <title>Using a Load Generator in NetBeans IDE</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <meta name="description" content="An overview of how to use a JMeter load testing script in NetBeans IDE.">
+      <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+   </head>
+   <body>
+      <h2>Using a Load Generator in NetBeans IDE</h2>
+      
+      <p>When testing the performance of an application, it can be beneficial to perform your tests
+         under a typical load. This can be difficult if you are running your application in a development
+         environment. One way to emulate an application running under load is through the use of a 
+         load generator script.
+      This document presents an overview of load generator support offered by the IDE.</p>
+      <p>Instead of supplying its own load generator runtime, the IDE relies on integrating third party tools.
+         NetBeans IDE supports the Apache JMeter Load Testing Tool (<a href="http://jakarta.apache.org/jmeter">homepage</a>) 
+         to replay load testing scripts. To use the JMeter tool in the IDE, you first need to download
+         the required plugins from the Update Center.</p>
+      
+      <div class="indent"> 
+         
+         <h3 class="tutorial">Contents</h3>
+       <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+         <ul>
+            <li><a href="#Exercise_1">Installing the JMeter Plugins</a></li>
+            <li><a href="#Exercise_2">Working with the JMeter Load Testing Script</a>
+               <ul>
+                  <li><a href="#Exercise_2a">Creating a Load Testing Script</a></li>
+                  <li><a href="#Exercise_2b">Editing a Load Testing Script</a></li>
+                  <li><a href="#Exercise_2c">Starting a Load Testing Script</a></li>
+                  <li><a href="#Exercise_2d">Stopping and Restarting a Load Testing Script</a></li>                    
+               </ul>
+            </li>
+         </ul>
+         </div>
+         
+          <h2>Getting Started</h2>
+         <div class="indent">   
+            <h3>Prerequisites</h3>
+            <p>This document assumes you have some basic knowledge of, or programming experience with, the following technologies:</p>
+            <ul>
+                <li>Java Programming</li>
+                <li>NetBeans IDE</li>
+            </ul>
+            
+            <h3>Software Needed for the Tutorial</h3>
+            <p>For this tutorial you need to have the following software installed on your computer:</p>
+            <table>
+            <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+           <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">Version 7 or 8</td>
+            </tr>
+
+            <tr>
+                <td class="tbltd1">JMeter Kit and Load Generator plugins</td>
+                <td class="tbltd1">download from NetBeans Update Center</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFish application server</td>
+                <td class="tbltd1">3.x, 4.x</td>
+            </tr>
+            
+            </tbody>
+            </table>
+         <p class="notes"><strong>Notes.</strong></p>
+            <ul>
+                <li>The profiling tool is bundled with NetBeans IDE, and no special setup is necessary in order to begin profiling an application.</li>
+                <li>To add support for the JMeter Load Testing Tool, use the Plugins Manager to download the JMeter Kit and the Load Generator plugins from the Update Center.</li>
+            </ul>
+      </div>
+      <!-- ===================================================================================== -->
+      <a name="Exercise_1"></a>
+      <h2>Installing the JMeter Plugins</h2>
+      <p>You can easily add support for the JMeter load generator by downloading and installing the <b>JMeter Kit</b> and <b>Load Generator</b>
+      plugins from the NetBeans Update Center.</p>
+      <p>To download the plugins, do the following:</p>
+      <ol>
+         <li>Choose Tools &gt; Plugins from the main menu to open the Plugins manager.</li>
+         <li>Click the Available Plugins tab and select the checkboxes for the JMeter Kit and Load Generator plugins.
+         Click Install.<br>
+         <img src="../../../images_www/articles/74/java/profile-loadgen/generator-plugin.png"
+              alt="screenshot of Plugins manager" title="Load Generator plugins in Plugins manager" class="margin-around b-all" />
+         </li>
+         <li>Step through the installer to download and install the plugins and click Finish.
+         Click Close to close the Plugins Manager.</li>
+      </ol>
+      
+      <p>After installing the plugins, the category Load Testing Scripts is added to the New File wizard.</p>
+      
+      <a name="Exercise_2"></a>
+      <h2>Working with the JMeter Load Testing Script</h2>
+      <p>Support for the JMeter plugins is closely integrated with the IDE's profiling tool.
+      The JMeter plugins enable you to easily create and run JMeter load testing scripts from within the IDE.</p>
+      <p>To use a load generator script, you create a script for a specific project and modify the script according
+         to the type of project load that would be placed on a server running the application. 
+         When you run the script, the script places a load on the server that emulates
+         the behavior of the application under typical running conditions. 
+         You can then test the performance of the application and the test results you achieve
+      would more closely approximate the performance of the application under typical conditions.</p>
+      
+      <div class="indent">
+         <a name="Exercise_2a"></a>
+         <h3>Creating a New Load Testing Script</h3>
+         <p>After you download and install the plugins, a new category is created in the New File wizard.
+         You use the New File wizard to create a load script file in your project.</p>
+         <p>To create a new load test script, do the following:</p>
+         <ol>
+            <li>Right-click the project node in the Projects window and choose New &gt; Other.</li>
+            <li>In the Categories pane, expand Load Testing Scripts, select JMeter Plans and then select New JMeter Plan in the File Types pane. Click Next.</li>
+            <li>Type a name for the script and click Finish.</li>
+         </ol>
+         <p>When you create a new script, the IDE places the script under the Load Generator Scripts node in the Projects window. 
+            In the Files window, you can see that the IDE saves the script in the <tt>jmeter</tt> directory.
+            If you already have a load testing script created outside of the IDE, you can create a
+         <tt>jmeter</tt> directory and add the script to the directory to run the script from within the IDE.</p>
+         
+         <img src="../../../images_www/articles/74/java/profile-loadgen/new-plan.png"
+              alt="Creating new JMeter load testing script" class="margin-around b-all" />
+         
+         <a name="Exercise_2b"></a>
+         <h3>Editing a Load Testing Script</h3>
+         <p>The JMeter external editor enables you to modify the script according to the needs of your application.
+            After you have created a load testing script or added a script to your project, 
+         you can invoke the external editor by right-clicking the script in the Projects window and choosing <b>External Edit</b>.</p>
+         <p>For more information about editing the JMeter testing scripts, see the <a href="http://jakarta.apache.org/jmeter/usermanual/index.html">JMeter User Manual</a>.</p>
+         <img src="../../../images_www/articles/74/java/profile-loadgen/jmeter-externaledit.png"
+              alt="JMeter load testing script in project structure" title="JMeter load testing script in project structure" class="margin-around b-all" />
+         
+         
+         <a name="Exercise_2c"></a>
+         <h3>Starting a Load Testing Script</h3>
+         <p>The load testing script can be started in the following ways:</p>
+         <ul>
+            <li>
+               <b>In standalone mode</b>
+               <p>In the <b>Services</b> window, right-click the Load Generators node and choose <b>JMeter &gt; Start</b>.
+               This action will bring up a browse dialog where you can specify the script to run.</p>
+               <img src="../../../images_www/articles/74/java/profile-loadgen/jmeter-services.png"
+                    alt="Load Generators in the Runtime Tab" class="margin-around b-all" />
+            </li>
+            <li>
+               <b>From the Select Profiling Task window</b>
+               <p>When profiling a web application you can specify a load testing script to be run in the Select Profiling Task window. 
+               The selected script will be started right before the browser window opens.</p>
+               <img src="../../../images_www/articles/74/java/profile-loadgen/jmeter-profilewindow72.png"
+                    alt="Start load generator script from Select Task Panel" class="margin-around b-all" />
+            </li>
+         </ul>
+         
+         <a name="Exercise_2d"></a>
+         <h3>Stopping and Restarting a Load Testing Script</h3>
+         <p>You can stop and restart a load testing script from either the 
+         <b>Output window</b> or the <b>Services window</b>.</p>
+         <p>A JMeter tab opens in the <b>Output window</b> after the script has been loaded. 
+            The window displays the current state of the load generator.
+         In the left margin of the Output window there are controls to start, stop or restart the script.</p>
+         <img src="../../../images_www/articles/74/java/profile-loadgen/jmeter-output.png"
+              alt="Load Generator Output Window - Running" title="Output window showing Load Generator status" class="margin-around b-all" />
+         <p>The current status of the load generator is also displayed in the <b>Services window</b>.
+            You can stop and restart a script by selecting a node under the JMeter node and choosing an
+         item from the popup menu.</p>
+         <img src="../../../images_www/articles/74/java/profile-loadgen/jmeter-services2.png"
+               alt="Services window - Load Generator Running" title="Services window showing status of Load Generator" class="margin-around b-all" />
+         
+         
+      </div>
+      
+      
+      <br>
+      
+      <br style="clear:both;">
+      <a name="Exercise_3"></a>
+      <h2>Additional Resources</h2>
+      <p>This basic overview shows how to use a JMeter load testing script from within the IDE.
+      For information on developing a load testing script for your application, see the following resources:</p>
+      <ul>
+         <li><a href="http://jakarta.apache.org/jmeter">Apache JMeter Load Testing Tool</a></li>
+         <li><a href="http://jakarta.apache.org/jmeter/usermanual/index.html">JMeter User Manual</a></li>
+      </ul>
+      
+      <div class="feedback-box">
+         <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20a%20Load%20Generator">Send Feedback on This Tutorial</a>
+      </div>
+      <br style="clear:both;">
+      
+      <h2>See Also</h2>
+      <ul>
+         <li><a href="../web/quickstart-webapps.html">Introduction to Developing Web Applications</a></li>
+         <li><a href="profiler-intro.html">Introduction to Profiling Java Applications</a></li>
+         <li><a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a></li>
+      </ul>
+      
+   </body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>使用 PHP 创建数据库驱动的应用程序。使用 CSS 类和 div </title>
+        <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Using CSS classes and divs. Hiding forms using Javascript" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+    </head>
+    <body>
+        <h1>使用 PHP 创建数据库驱动的应用程序</h1>
+        <h1>第 8 课：使用 CSS 技术改进应用程序的外观 </h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+                <h4>教程目录：</h4>
+                <ol start="0">
+                    <li><a href="wish-list-tutorial-main-page.html">使用 PHP 创建数据库驱动的应用程序 - 主页</a></li>
+                    <li><p>创建数据库</p> <ol type="a"><li><a href="wish-list-lesson1.html">创建 MySQL 数据库</a></li>
+                            <li><a href="wish-list-oracle-lesson1.html">创建 Oracle 数据库表</a></li>
+                        </ol></li>
+                    <li>
+                        <p><a href="wish-list-lesson2.html">设计应用程序。从数据库读取数据</a></p>
+                    </li>
+                    <li><a href="wish-list-lesson3.html">创建新的应用程序用户</a></li>
+                    <li><a href="wish-list-lesson4.html">优化代码</a></li>
+                    <li><a href="wish-list-lesson5.html">添加安全功能。实现应用程序用户登录</a></li>
+                    <li><a href="wish-list-lesson6.html">在数据库中添加新的愿望</a></li>
+                    <li>      <a href="wish-list-lesson7.html">更新和删除数据库中的条目</a></li>
+                    <li>
+                        <p><b>=&gt;使用 CSS 技术改进应用程序的外观</b></p>
+                        <ul class="toc">
+                            <li><a href="#previousLessonSourceCode">来自上一课的应用程序源代码</a></li>
+                            <li><a href="#hideLogonForm">隐藏窗体</a>
+                                <ul>
+                                    <li><a href="#javaScriptFunctions">JavaScript 函数</a></li>
+                                    <li><a href="#showHideLogonInIndex">更新 index.php</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#designStyles">使用级联样式表定义样式</a>
+                                <ul>
+                                    <li><a href="#creatingCSSFile">创建 CSS 文件</a></li>
+                                    <li><a href="#defineCSSStyles">定义 CSS 样式</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#divs">使用 HTML Div 实现设计</a></li>
+                            <li><a href="#lessonResultSourceCode">完成当前课程后的应用程序源代码</a></li>
+                            <li><a href="#nextSteps">后续步骤</a></li>
+                        </ul>
+
+                    </li>
+                    <li><a href="wish-list-lesson9.html">将应用程序部署到远程 Web 服务器</a></li>
+                </ol>
+            </div>
+        </div>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+        <p>在本课程中，您将了解如何执行以下操作：</p>
+        <ul>
+            <li style="margin-left:40em"><a href="#hideLogonForm">通过实现 JavaScript 函数，在不使用输入窗体时将其隐藏</a></li>
+            <li style="margin-left:40em"><a href="#designStyles">通过应用级联样式表，定义页面元素样式和位置</a></li>
+            <li style="margin-left:40em"><a href="#divs">使用 div 实现应用程序设计</a>。 </li>
+        </ul>
+        <p>当前文档是“在适用于 PHP 的 NetBeans IDE 中创建 CRUD 应用程序”教程的一部分。 </p>
+        <br style="clear:left">
+        <h2><a name="previousLessonSourceCode"></a>来自上一课的应用程序源代码</h2>
+        <p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1933/lesson7.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。 </p>
+        <p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson7.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。</p>
+        <h2><a id="hideLogonForm" name="hideLogonForm"></a>隐藏窗体 </h2>
+        <p>目前，应用程序的主 <tt>index.php</tt> 页始终显示整个登录和 showWishList 窗体。要改进应用程序的外观，您可以隐藏窗体并将其替换为按钮。当用户按下按钮时，将展开相应的隐藏窗体。 </p>
+        <p>实现该行为：</p>
+        <ol>
+            <li>将 &lt;script&gt;&lt;/script&gt; 块添加到 <tt>index.php</tt> 文件的结束 &lt;/body&gt; 标记的正上方。</li>
+            <li><a href="#javaScriptFunctions">在 &lt;script&gt;&lt;/script&gt; 标记内开发两个 JavaScript 函数</a>。</li>
+            <li><a href="#showHideLogonInIndex">对 index.php 文件进行一些小的改动</a></li>
+        </ol>
+        <div class="indent"><h3><a id="javaScriptFunctions" name="javaScriptFunctions"></a>JavaScript 函数 </h3>
+            <p>JavaScript 函数不需要任何输入参数，并且不返回任何结果。以下代码检查相应窗体的可视性状态，然后将其更改为相反的状态。该代码还会更改按钮上的文本。要完成这些更改，请在 &lt;script&gt;&lt;/script&gt; 标记内输入以下代码：</p>
+            <pre class="examplecode">&lt;script&gt;
+function showHideLogonForm() {
+    if (document.all.logon.style.visibility == "visible"){
+        document.all.logon.style.visibility = "hidden";
+        document.all.myWishList.value = "My Wishlist &gt;&gt;";
+    } 
+    else {
+        document.all.logon.style.visibility = "visible";
+        document.all.myWishList.value = "&lt;&lt; My Wishlist";
+    }
+}
+function showHideShowWishListForm() {
+    if (document.all.wishList.style.visibility == "visible") {
+        document.all.wishList.style.visibility = "hidden";
+        document.all.showWishList.value = "Show Wish List of >>";
+    }
+    else {
+        document.all.wishList.style.visibility = "visible";
+        document.all.showWishList.value = "&lt;&lt; Show Wish List of";
+    }
+}
+&lt;/script&gt;	</pre>
+            <h3><a id="showHideLogonInIndex" name="showHideLogonInIndex"></a>更新 <tt>index.php</tt> </h3>
+            <ol>
+                <li>在登录窗体中添加一个 <tt>style</tt> 属性： 
+                    <pre class="examplecode">&lt;form name=&quot;logon&quot; action=&quot;index.php&quot; method=&quot;POST&quot; 
+        <strong>style=&quot;visibility:&lt;?php if ($logonSuccess) echo &quot;hidden&quot;;
+        else echo &quot;visible&quot;;?&gt;&quot;</strong>&gt;</pre>
+                    <tt>style</tt> 属性定义了是隐藏还是显示窗体。&lt;?php ?&gt; 块用于将窗体保持可见，直至用户成功登录。<br>
+                </li>
+                <li> 在登录输入窗体代码上方输入以下代码： 
+                    <pre class="examplecode"> &lt;input type=&quot;submit&quot; name=&quot;myWishList&quot; value=&quot;My Wishlist &gt;&gt;&quot; onclick=&quot;javascript:showHideLogonForm()&quot;/&gt;</pre>
+                    该代码实现一个包含 "My Wishlist &gt;&gt;" 文本的按钮。该按钮位于登录窗体所在的位置。如果按下该按钮，则会调用 showHideLogonForm 函数。</li>
+                <li>在 wishList 窗体中添加一个 <tt>style</tt> 属性：
+                    <pre class="examplecode">&lt;form name=&quot;wishList&quot; action=&quot;wishlist.php&quot; method=&quot;GET&quot; <strong>style=&quot;visibility:hidden&quot;</strong>&gt;
+Show wish list of: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>            &lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>&lt;/form&gt;</pre>
+                </li>
+                <li>在 wishList 窗体上方输入以下代码：
+                    <pre class="examplecode">&lt;input type=&quot;submit&quot; name=&quot;showWishList&quot; value=&quot;Show Wish List of &gt;&gt;&quot; onclick=&quot;javascript:showHideShowWishListForm()&quot;/&gt;</pre>
+                </li>
+                <li>从窗体中删除以下代码，因为它已位于按钮上： 
+                    <pre class="examplecode">Show wishlist of: </pre>
+                </li>
+            </ol>
+        </div>
+
+        <h2><a id="designStyles" name="designStyles"></a>使用级联样式表定义样式</h2>
+        <p>目前，应用程序中的控件彼此“粘”在一起，它们通常位于屏幕的左上角。要改进应用程序的页面外观，请定义样式并为特定控件指定这些样式以指定控件的大小、位置、颜色、字体和其他参数。样式是在单独的级联样式表 (CSS) 文件中定义的。 </p>
+        <p>有关应用程序设计的所有建议都是可选的。下面的样式定义仅用于举例说明如何改进应用程序的外观。这些设置适用于 1024x768 像素或更高的屏幕分辨率。 </p>
+        <div class="indent"><h3><a name="creatingCSSFile"></a>创建 CSS 文件</h3>
+            <ol>
+                <li>在 "Source Files"（源文件）节点上单击鼠标右键，然后从上下文菜单中选择 "New"（新建）> "Cascading Style Sheet"（级联样式表）。</li>
+                <li>在 "Cascading Style Sheet"（级联样式表）面板的 "File Name"（文件名）编辑框中输入 wishlist。单击 "Finish"（完成）。<br> <img alt="&quot;New CSS File&quot;（新建 CSS 文件）面板" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson8/newCascadingStyleSheetFile.png"><br> 将在项目树中显示新文件 <tt>wishlist.css</tt>。</li>
+            </ol>
+
+            <h3><a name="defineCSSStyles"></a>定义 CSS 样式</h3>
+            
+            <p>打开 wishlist.css 文件。该文件已包含一个 "root" 类，您可以将其删除。您可以在<a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">此处</a>下载本教程的完成版本以获取 <tt>wishlist.css</tt> 的副本。该代码简单直观并且包含：</p>
+            <ul>
+                <li>两个样式（"body" 和 "input"），它们是在任何 <tt>&lt;body&gt;&lt;/body&gt;</tt> 或 <tt>&lt;input/&gt;</tt> 标记内自动应用的。  </li>
+                <li>应用的 CSS 类（如果明确指定）。类名前面包含圆点，例如，<tt>.createWishList</tt>。某些类可以多次使用，例如，将 ".error" 类应用于应用程序中的所有错误消息。另外一些类只能使用一次，例如，".showWishList"、".logon"。</li>
+            </ul></div>
+        <h2><a id="divs" name="divs"></a>使用 HTML Div 实现设计 </h2>
+        <p>有关应用程序设计的所有建议都是可选的。与上面的样式定义一样，它们仅用于举例说明如何改进应用程序的外观。 </p>
+        <p> 下面的示例介绍了如何改进 <tt>index.php</tt> 页面的外观。 </p>
+
+        <ol>
+            <li>要启用定义的 CSS 类，请在 <tt>&lt;head&gt;&lt;/head&gt;</tt> 块中输入以下代码：
+                <pre class="examplecode">     &lt;link href=&quot;wishlist.css&quot; type=&quot;text/css&quot; rel=&quot;stylesheet&quot; media=&quot;all&quot; /&gt;</pre>将在相应标记内自动应用 "body" 和 "input" 样式，因此，您不需要明确指定这些样式。</li>
+            <li>要将任何其他样式（类）应用于某个区域，请将实现该区域的代码包含在 <tt>&lt;div class=""&gt;&lt;/div&gt;</tt> 标记内：
+                <pre class="examplecode"> &lt;div class=&quot;showWishList&quot;&gt;<br>            &lt;input type=&quot;submit&quot; name=&quot;showWishList&quot; value=&quot;Show Wish List of &gt;&gt;&quot; onclick=&quot;javascript:showHideShowWishListForm()&quot;/&gt;<br>            <br>            &lt;form name=&quot;wishList&quot; action=&quot;wishlist.php&quot; method=&quot;GET&quot; style=&quot;visibility:hidden&quot;&gt;<br>               &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>               &lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>            &lt;/form&gt;<br>&lt;/div&gt;</pre> 
+                <p><strong>注：</strong>在 &lt;div&gt; 标记中指定类时，不需要在前面添加圆点。</p> </li>
+            <li>您可以使用嵌入式 &lt;div&gt; 标记：
+                <pre class="examplecode">&lt;div class=&quot;logon&quot;&gt;<br>     &lt;input type=&quot;submit&quot; name=&quot;myWishList&quot; value=&quot;My Wishlist &gt;&gt;&quot; onclick=&quot;javascript:showHideLogonForm()&quot;/&gt;<br>            &lt;form name=&quot;logon&quot; action=&quot;index.php&quot; method=&quot;POST&quot; <br>                      style=&quot;visibility:&lt;?php if ($logonSuccess) echo &quot;hidden&quot;; else echo &quot;visible&quot;;?&gt;&quot;&gt;<br>                Username: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>                Password:  &lt;input type=&quot;password&quot; name=&quot;userpassword&quot;/&gt;&lt;br/&gt;<br>                &lt;div class=&quot;error&quot;&gt;<br>                  &lt;?php<br>                     if (!$logonSuccess) echo &quot;Invalid name and/or password&quot;;<br>                   ?&gt;<br>                &lt;/div&gt;<br>                &lt;input type=&quot;submit&quot; value=&quot;Edit My Wish List&quot;/&gt;<br>            &lt;/form&gt;<br>&lt;/div&gt;  </pre>
+                "logon" 类应用于整个窗体，而 "error" 类应用于窗体中的错误消息。  </li>
+        </ol>
+        <p>有关使用级联样式表 (CSS) 的更多详细信息，请参见 <span lang="ru"><a href="http://www.htmlpedia.org/wiki/List_of_CSS_Properties" onClick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.htmlpedia.org/wiki/List_of_CSS_Properties</a></span></p>
+
+        <h2><a name="lessonResultSourceCode"></a>完成当前课程后的应用程序源代码 </h2>
+        <p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">此处</a>以下载包含样例设计和 CSS 文件的源代码。</p>
+        <p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson8.zip" target="_blank">此处</a>以下载包含样例设计和 CSS 文件的源代码。</p>
+        <p>PDO：Goran Miskovic 是一位社区成员，他在<a href="https://netbeans.org/projects/www/downloads/download/php/wishlist-pdo.zip" target="_blank">此处</a>热心提供了完整教程的 PDO 版本。在本项目中，只需更改 DSN 参数便可在 Oracle XE 和 MySQL 数据库之间进行切换。该项目包括您需要的所有 SQL 脚本，并记录在该代码中。但请注意，PDO_OCI 是实验性的。</p>
+        <p>NetBeans IDE 团队非常感谢 Ozan Hazer 在创建 CSS 和改进完成的样例中的代码方面所做的贡献。</p>
+        <h2><a name="nextSteps"></a>后续步骤</h2>
+        <p><a href="wish-list-lesson7.html">&lt;&lt; 上一课</a></p>
+        <p><a href="wish-list-lesson9.html">下一课 &gt;&gt;</a>    </p>
+        <p>
+            <a href="wish-list-tutorial-main-page.html">返回到教程主页</a></p>
+
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">发送有关此教程的反馈意见</a></div>
+        <br style="clear:both;" >
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。
+        <p><a href="../../trails/php.html">返回至 PHP 学习资源</a></p>
+
+    </body>
+</html>

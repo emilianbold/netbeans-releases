@@ -1,0 +1,329 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>国际化 GUI 窗体 - NetBeans IDE 教程</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="Tutorial - Internationalization of GUI Form in NetBeans IDE">
+      <link rel="stylesheet" href="../../../netbeans.css">
+      <meta name="author" content="Jana Maleckova, Marek Grummich">
+      <meta name="description" content="This tutorial shows you how to set up internationalization for a single form and for a whole project." >
+   </head>
+   <body>
+      <h1>国际化 GUI 窗体</h1>
+      <p>本教程将指导您完成在 NetBeans IDE 中进行国际化的一些基本步骤。我们将对一个窗体设置国际化，并在稍后设计该窗体。接下来，我们会国际化整个项目，该项目在几个不同的包中包含若干窗体。您可以通过指定自动国际化或使用专门的向导来国际化应用程序。</p>
+      <p class="align-center"><b>预计时间：30 分钟</b></p>
+      
+         <p><strong>目录</strong></p>
+<img alt="此页上的内容适用于 NetBeans IDE 7.0 和更高版本" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.0 和更高版本">
+    <ul class="toc">
+            <li><a href="#about">国际化的原理</a></li>
+            <li><a href="#Exercise_1">如何在设计时设置自动国际化</a></li>
+            <li><a href="#Exercise_2">国际化整个项目</a></li>
+            <li><a href="#Exercise_3">国际化单个窗体</a></li>
+            <li><a href="#nextsteps">另请参见</a></li>
+   </ul>
+         
+<p><b>要学完本教程，您需要具备以下软件和资源。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">软件或资源</th>
+                <th class="tblheader" scope="col">要求的版本</th>
+            </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">版本 7.0 或更高版本 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 6、7 或 8 </td>
+                </tr>
+        </tbody>
+    </table>
+      <h2 class="tutorial"><a name="about"></a>国际化的原理</h2>
+      <p class="tutorial">通过进行国际化，可以根据不同的语言和地区来改编应用程序，而无需进行工程更改或重新编译。国际化程序允许将文本性元素（如状态消息和 GUI 组件标签）存储在源代码外部并对其进行动态检索，而不是在程序中对其进行固定编码。</p>
+      
+      <p class="tutorial">通常将国际化字符串以键/值对的形式存储在属性文件中。键是程序用于检索文本的标识符，而值是实际文本。对于转换程序所用的每种语言环境（或语言），都将创建一个属性文件。键在每种语言环境中都相同，只是字符串不同。 </p>
+      <p class="tutorial">IDE 提供了用于执行下列各项操作的工具：</p>
+      <ul>
+         <li>在创建 GUI 窗体或 Java 程序时插入国际化字符串</li>
+         <li>将单个文件或文件组中的所有固定编码字符串替换为国际化字符串</li>
+      </ul>
+      <h2><a name="Exercise_1"></a>在设计时国际化 GUI 窗体 </h2>
+      <p>在此练习中，我们将打开 Java 应用程序演示项目，其中包含使用 GUI 构建器创建的常用查找对话框。接下来，我们将对窗体 FindDialog.java 启用自动国际化。为了测试已国际化的 GUI 窗体，我们将在属性文件中添加一种新的语言环境，然后在非默认语言环境下运行该窗体。 </p>
+      <div class="indent">
+         <h3 class="tutorial">打开示例项目</h3>
+         <ol>
+            <li> 下载 <a href="https://netbeans.org/files/documents/4/770/InternationalizeDemo.zip" target="_blank">InternationalizeDemo.zip</a> 项目并将其解压缩到您计算机上的任何位置。 </li>
+            <li>选择 "File"（文件）> "Open Project"（打开项目），导航至您在上一步中解压缩的 <tt>InternationalizeDemo</tt> 项目，然后单击 "Open"（打开）。项目文件夹可能包含在同样名为 <tt>InternationalizeDemo</tt> 的文件夹中。</li>
+            <li>展开 "Source Packages"（源包）> "Demo"（演示），然后双击 <tt>FindDialog.java</tt>。将在 GUI 构建器中打开样例窗体。 
+               <p class="align-center"> <img alt="&quot;Find&quot;（查找）对话框" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/finddialog_ai18n.png"> 
+               </p>
+              
+            </li>
+         </ol>
+         <h3 class="tutorial">启用自动国际化</h3>
+                  <ol>
+                     <li>在 "Navigator"（导航器）窗口中选择根节点（名为 <tt>Form FindDialog</tt>（窗体 FindDialog））。 
+                       <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/navigator.png" border="1"></p></li>
+                     <li>在 "Properties"（属性）窗口中，选中 "Automatic Internationalization"（自动国际化）属性中的复选框。
+					   
+                         <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/properties.png" border="1"></p>
+						 
+                      </li>
+                    <li> 在 "GUI Form Format Upgrade"（GUI 窗体格式升级）对话框中，单击 "Upgrade"（升级）。 
+						<p>如果选中该复选框，则 IDE 将按照 <tt>Properties Bundle File</tt>（属性包文件）属性中的设置在 <tt>demo</tt> 包中创建 <tt>Bundle.properties</tt> 文件。 
+                        </p>
+                        <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/bundle_new.png"></p>
+						<p>如果您需要在其他位置创建 <tt>Bundle.properties</tt> 文件，则可以单击 "Properties Bundle File"（属性包文件）右侧的省略号 (...) 按钮，然后选择一个位置，或者直接在该属性的文本字段中键入路径。</p>
+					 
+                     </li>
+                     <li>在 "Projects"（项目）窗口中，双击 <tt>Bundle.properties</tt> 节点，或者右键单击该节点，然后选择 "Edit"（编辑）。
+                        <p>将在源代码编辑器中打开该属性文件。正如您所看到的，将为窗体 <tt>FindDialog.java</tt> 生成所有相应的键和值。（每个键的名称是从窗体文件名和组件变量名派生的。例如，键 <tt>FindDialog.jLabel1.text</tt> 是为窗体文件 <tt>FindDialog</tt> 中包含的变量名为 <tt>jLabel1</tt> 的组件生成的。在此示例中，值 <tt>jLabel1</tt> 表示组件的 "text" 属性。</p>
+               </li>
+			   <li>关闭 <tt>Bundle.properties</tt> 文件。 </li></ol>
+         <h3 class="tutorial">国际化各个 GUI 组件</h3>
+         <p>现在，我们将使用 GUI 构建器为窗体中的 JLabel 和 JButton 输入国际化字符串。 </p> 
+         <ol>
+            
+			<li>在设计区域中选择相应的 GUI 组件（例如 <tt>jLabel1</tt>）。</li>
+            <li>在 "Properties"（属性）窗口中，单击 "text" 属性的省略号 (...) 按钮。
+            <p class="note"><b>注：</b>您还可以对具有字符串值的其他属性进行国际化，例如助记符、可访问的名称、可访问的描述符和工具提示。</p></li>
+            <li>属性编辑器将切换至资源包模式。检查 "Bundle Name"（包名）字段是否设置为 <tt>demo.Bundle</tt>，以及 "Key"（键）字段是否包含字符串 <tt>FindDialog.jLabel1.text</tt>。</li>
+            <li>在 "Value"（值）字段中键入 <tt>Find What:</tt>。 </li>
+            <li>单击 "OK"（确定）。</li>
+         </ol>
+         <p>对所有组件重复执行以上步骤，使该窗体如下图所示：</p>
+        
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_new.png" rel="lytebox" title="国际化窗体"> <img alt="国际化窗体" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_new_small.png"></a></p>
+         
+		  <p class="note"><b>注：</b>可使用更便捷的方法来完成步骤 1 至 5 的操作：只需在 "Design"（设计）视图中双击 <tt>jLabel1</tt>，将其文本从 <tt>jLabel1</tt> 更改为 <tt>Find What:</tt>，然后按 Enter 键即可。其结果与以上提供的步骤所得到的结果相同。</p>
+		
+		 <p>要使组件的宽度相同，请完成以下步骤：</p>
+		 <ol>
+		   <li>按住 Ctrl 键单击窗体中的所有八个 jCheckBox 将它们选中。</li>
+		   <li>在选中了这些 jCheckBox 的情况下，右键单击其中任何一个，然后从弹出式菜单中选择 "Same Size"（相同大小）> "Same Width"（相同宽度）。</li>
+		   <li>对三个 jButton 执行步骤 1 至 2 的操作。</li>
+		 </ol>
+        
+         <a name="newlocale"></a>
+		 
+		
+
+         <h3 class="tutorial">添加新语言环境</h3>
+         <ol>
+            <li>在 "Navigator"（导航器）窗口中选择根节点（<tt>Form FindDialog</tt>（窗体 FindDialog）节点）。</li>
+            <li>在 "Properties"（属性）窗口中，单击 "Design Locale"（设计语言环境）属性的省略号 (...) 按钮。</li>
+            <li>在 "New Locale"（新建语言环境）对话框中，从 <tt>Predefined Locales:</tt>（预定义的语言环境：）组合框中选择 <tt>es_ES</tt>。</li>
+            <li>单击 "OK"（确定）。
+            <p><tt>Bundle.properties</tt> 节点下将显示新语言环境，如下所示：</p>
+            <p class="align-center"><img alt="带有多个区域设置的属性文件" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/addlocale_new.png"></p> </li>
+            <li>在 "Projects"（项目）窗口中，右键单击 <tt>Bundle.properties</tt>，然后选择 "Open"（打开）。</li>
+            <li>将相应表列中的各条消息转换为新语言（例如西班牙语），如下所示： 
+              <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-automatic-i18n/bundles_new.png" rel="lytebox" title="带有多个区域设置的属性编辑器"> <img alt="带有多个区域设置的属性编辑器" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/bundles_new_small.png"></a></p>
+           </li>
+			<li>按 Ctrl-S 组合键保存所做的编辑。</li>
+			<li>选择 <tt>FindDialog.java</tt> 标签，以显示要国际化的窗体。</li>
+            <li>在 "Navigator"（导航器）窗口中右键单击根节点，然后选择 "Reload Form"（重新加载窗体）（或者，按 Ctrl-R 组合键）。</li>
+               <li>在显示的 "Question"（问题）对话框中单击 "Save"（保存）。<br>将重新打开该窗体，并在设计区域中加载西班牙语语言环境，如下所示： 
+            
+			<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_es_new.png" rel="lytebox" title="显示西班牙语消息的设计区域"> <img alt="显示西班牙语消息的设计区域" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/finddialog_es_new_small.png"></a></p>
+            </li>
+        </ol>
+         <h3 class="tutorial">测试非默认语言环境</h3>
+         <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击 InternationalizeDemo 项目，然后选择 "Properties"（属性）。</li>
+            <li>在 "Categories"（类别）窗格中，选择 "Run"（运行）节点。</li>
+            <li>在 "VM Options"（VM 选项）字段中输入 <tt>-Duser.language=es -Duser.country=ES</tt>。
+              <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/prjproperties.png" rel="lytebox" title="&amp;quot;Properties&amp;quot;（属性）对话框"> <img alt="&amp;quot;Properties&amp;quot;（属性）对话框" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/prjproperties_small.png"></a></p>
+            </li>
+            <li>单击 "OK"（确定）。</li>
+            <li>右键单击 "InternationalizeDemo" 项目，然后选择 "Run"（运行）。
+               <p>IDE 将在西班牙语语言环境中运行 <tt>FindDialog</tt> 对话框，如下所示。</p>
+			  
+			   <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-automatic-i18n/run.png" rel="lytebox" title="使用西班牙语语言环境的对话框"> <img alt="使用西班牙语语言环境的对话框" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/run_small.png"></a></p>
+           </li>
+         </ol>
+      </div>
+      <h2><a name="Exercise_2"></a>国际化整个项目</h2>
+      <p>通常，我们在默认语言环境中拥有几个文件，并且系统要求我们改编这些文件，以便将其转换为其他语言。国际化向导是用于执行此任务的最佳工具，因为它可以一次国际化多个文件。我们将在 GUI 窗体示例项目中演示此功能，该项目包含在<a href="quickstart-gui.html">设计 Swing GUI</a> 教程中创建的窗体。 </p>
+      <div class="indent">
+         <h3 class="tutorial"> 创建样例项目 </h3>
+                  <ol>
+                     <li>选择 "File"（文件）> "New Project"（新建项目），或者单击 IDE 工具栏中的 "New Project"（新建项目）图标。 </li>
+                     <li>在 "Categories"（类别）窗格中，选择 "Samples"（样例）> "Java" 节点。在 "Projects"（项目）窗格中，选择 "GUI Form Examples"（GUI 窗体示例）。单击 "Next"（下一步）。</li>
+                     <li>在 "Project Name"（项目名称）字段中输入 <tt>GUIFormExamples</tt>，然后指定项目位置（例如 <tt>/space/projects</tt>）。</li>
+                     <li>单击 "Finish"（完成）。</li>
+                  </ol>
+
+<p class="align-center"><img alt="样例窗体项目" border="1" src="../../../images_www/articles/72/java/gui-automatic-i18n/formexamples.png"></p>
+
+         <h3 class="tutorial"> 准备属性文件 </h3>
+                  <ol>
+                     <li>选择 "File"（文件）> "New File"（新建文件），或者单击 IDE 工具栏中的 "New File"（新建文件）图标。</li>
+                     <li>在 "Categories"（类别）窗格中，选择 "Other"（其他）节点；在 "File Types"（文件类型）窗格中，选择 "Properties File"（属性文件）。单击 "Next"（下一步）。</li>
+                     <li> 在 "File Name"（文件名）字段中输入 <tt>ContactEditor</tt>。</li>
+					 <li>单击 "Browse"（浏览），然后在 "Browse Folders"（浏览文件夹）对话框中，将 <tt>GUIFormExamples/src/examples</tt> 文件夹指定为文件位置。</li>
+                     <li>单击 "Select Folder"（选择文件夹）。</li>
+					 <li>单击 "Finish"（完成）。
+                        <p>IDE 将创建 <tt>ContactEditor.properties</tt> 文件并在源代码编辑器中将其打开。 </p>
+                        <p>重复上述步骤以创建另一个 <tt>Antenna.properties</tt> 文件。 </p>
+                     </li>
+                  </ol>
+
+<p class="align-center"> <img alt="带有属性文件的项目" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/ceprjprops.png"> </p>
+
+         <h3 class="tutorial">调用国际化向导</h3>
+         <ol>
+            <li>在主菜单中，选择 "Tools"（工具）> "Internationalization"（国际化）> "Internationalization Wizard"（国际化向导）。 </li>
+			<li>在该向导的第一页上，单击 "Add Source(s)"（添加源）。</li>
+			<li>在 "Select Sources"（选择源）对话框中，展开 <tt>Source Packages</tt>（源包）> <tt>Examples</tt>（示例）节点，然后按住 Ctrl 键单击 <tt>Antenna.java</tt>、<tt>ContactEditor.java</tt> 和 <tt>Find.java</tt> 文件将其选中。</li>
+			<li>单击 "OK"（确定）。 
+			<p>源文件将显示在该向导的第一页中，如下所示：</p>
+			<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardone.png" rel="lytebox" title="国际化向导"> <img alt="国际化向导" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardone_small.png"></a></p></li>
+            <li>为了便于演示，选择 <tt>examples.Find</tt>，然后单击 "Remove Source(s)"（删除源）按钮。</li>
+            <li>单击 "Next"（下一步）。 </li>
+            <li>检查国际化向导是否提供了正确的属性文件 <tt>examples.Antenna</tt> 和 <tt>examples.ContactEditor</tt>。如果未提供，请使用 "Select Resource"（选择资源）按钮来选择正确的属性文件。
+              <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardtwo.png" rel="lytebox" title="国际化向导的第 2 页"> <img alt="国际化向导的第 2 页" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardtwo_small.png"></a></p>
+            </li>
+            <li>单击 "Next"（下一步）。 </li>
+			<li>跳过该向导的第 3 页（因为您不打算创建任何字段并修改其他值），然后单击 "Next"（下一步）。</li>
+            <li>所有固定编码字符串都将显示在国际化向导的最后一步中，您可以在该步中确定将哪些字符串包含在属性文件中（使用复选框）。您也可以进一步定制各个键、值、注释和替换字符串的格式，方法是单击字符串的省略号 (...) 按钮。 
+               <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardthree.png" rel="lytebox" title="国际化向导的第 4 页"> <img alt="国际化向导的第 4 页" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18nwizardthree_small.png"></a></p>
+            </li>
+            <li>单击 "Finish"（完成）。
+               <p>现在，已完成源代码的国际化，接下来可以按照先前所述<a href="#newlocale">添加</a>和<a href="#testlocale">测试</a>其他语言环境。 </p>
+            </li>
+         </ol>
+      </div>
+      <h2><a name="Exercise_3"></a>国际化单个窗体</h2>
+      <p>使用自动国际化功能是国际化 GUI 窗体的最简便方法。但是，如果您没有安装更新包，或者还希望国际化不是由窗体编辑器生成的代码，则可以使用 "Internationalize"（国际化）窗口。（此功能可处理任何 <tt>.java</tt> 文件，而不仅仅是通过窗体编辑器创建的文件）。下面的示例使用了 "Internationalization"（国际化）窗口，该窗口是 NetBeans IDE 默认安装的一部分。</p>
+      <p>在此最后练习中，我们将重用 GUI 窗体示例项目并国际化 Find.java 窗体（在先前的练习中排除了该窗体）。我们将调用 "Internationalize"（国际化）对话框来替换此文件中的所有固定编码字符串。最后，我们将简要演示如何在编写程序时将国际化字符串插入源代码中。</p>
+      <div class="indent">
+         <h3 class="tutorial"> 使用 "Internationalize"（国际化）对话框 </h3>
+         <ol>
+            <li>在 "Projects"（项目）窗口中，选择 <tt>Find.java</tt>，然后从主菜单中选择 "Tools"（工具）> "Internationalization"（国际化）> "Internationalize"（国际化）。 
+               <p>IDE 将显示 "Internationalization"（国际化）对话框，并预先填写 <tt>Find.java</tt> 源代码中的第一个固定编码字符串。 </p>
+            </li>
+            <li>单击 "Select"（选择）以选择特定的属性文件，或者创建新文件。 </li>
+			<li>在 "Select Resource Bundle"（选择资源包）对话框中，在 "File Name"（文件名）文本字段中输入 <tt>Find.properties</tt>，单击 "Create New"（新建），然后单击 "OK"（确定）。</li>
+            <li>您可以修改替换字符串的格式、键、值或注释（如有必要）。我们将仅保留默认值。</li>
+            <li>单击 "Replace"（替换）以确认更改，并将焦点移到下一个固定编码字符串上。 
+               <p>如果不需要替换固定编码字符串，请单击 "Skip"（跳过）按钮。</p>
+               
+			   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-automatic-i18n/i18ndialog.png" rel="lytebox" title="&quot;Internationalize&quot;（国际化）对话框"> <img alt="&quot;Internationalize&quot;（国际化）对话框" border="1" src="../../../images_www/articles/80/java/gui-automatic-i18n/i18ndialog_small.png"></a></p>
+               
+            </li>
+         </ol>
+         <h3 class="tutorial"> 插入单个国际化字符串 </h3>
+         <ol>
+            <li>在 "Projects"（项目）窗口中，右键单击 <tt>Find.java</tt>，然后选择 "Edit"（编辑）。
+               <p>IDE 将在源代码编辑器中打开 <tt>Find.java</tt> 文件。 </p>
+            </li>
+            <li>滚动查看源代码并查找 main 方法。 </li>
+            <li>在 main 方法中插入以下用粗体显示的行： 
+               <pre class="examplecode">    public static void main(String args[]) {
+			   /* Set the Nimbus look and feel */
+			   //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot; Look and feel setting code (optional) &quot;&gt;
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            javax.swing.UIManager.LookAndFeelInfo[] installedLookAndFeels=javax.swing.UIManager.getInstalledLookAndFeels();
+			for (int idx=0; idx&lt;installedLookAndFeels.length; idx++)
+			if (&quot;Nimbus&quot;.equals(installedLookAndFeels[idx].getName())) {
+			    javax.swing.UIManager.setLookAndFeel(installedLookAndFeels[idx].getClassName());
+				break;
+			}
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //&lt;/editor-fold&gt;
+        <b>System.out.println();</b>
+		/* Create and display the form */ 
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Find().setVisible(true);
+            }
+        });
+               }</pre>
+            </li>
+			<li>将鼠标光标放在 <tt>System.out.println();</tt> 的圆括号内，以便作为参数插入国际化字符串。</li>
+            <li>按 Ctrl-Shift-J 组合键调用 "Insert Internationalized String"（插入国际化字符串）对话框（也可以从主菜单中选择 "Tools"（工具）> "Internationalization"（国际化）> "Insert Internationalized String"（插入国际化字符串））。</li>
+			
+            <li>对于 "Bundle Name"（包名），单击 "Select"（选择）按钮，选择 <tt>"Source Packages"（源包）> "Examples"（样例）</tt>文件夹，然后在 "File Name"（文件名）文本字段中输入 <tt>Find</tt> 作为包名。然后，单击 "OK"（确定）。<br>"Insert Internationalized String"（插入国际化字符串）对话框的 "Bundle Name"（包名称）字段显示 <tt>examples.Find</tt>。</li>
+            <li>在 "Key"（键）下拉框中键入 <tt>Start</tt>，并在 "Value"（值）字段中键入 <tt>Start Find Dialog</tt>。然后，单击 "OK"（确定）。 
+               <p class="align-center"><img src="../../../images_www/articles/80/java/gui-automatic-i18n/insi18nstring.png"></p>
+            </li>
+            <li>IDE 将插入国际化字符串：
+               <pre class="examplecode">    public static void main(String args[]) {
+			   /* Set the Nimbus look and feel */
+			   //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot; Look and feel setting code (optional) &quot;&gt;
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            javax.swing.UIManager.LookAndFeelInfo[] installedLookAndFeels=javax.swing.UIManager.getInstalledLookAndFeels();
+			for (int idx=0; idx&lt;installedLookAndFeels.length; idx++)
+			if (&quot;Nimbus&quot;.equals(installedLookAndFeels[idx].getName())) {
+			    javax.swing.UIManager.setLookAndFeel(installedLookAndFeels[idx].getClassName());
+				break;
+			}
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Find.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //&lt;/editor-fold&gt;
+<b>        System.out.println(java.util.ResourceBundle.getBundle(&quot;examples/Find&quot;).getString(&quot;Start&quot;));</b>
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Find().setVisible(true);
+                }
+            });
+               }</pre>
+               
+            </li>
+         </ol>
+      </div>
+	  <br>
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:Internationalizing%20a%20GUI%20Form%20in%20NetBeans%20IDE">发送有关此教程的反馈意见</a></div>
+      <br style="clear:both;" >   
+      <h2><a name="nextsteps"></a>另请参见</h2>
+      <p>有关更多信息，请参见以下链接：</p>
+      <ul>
+	   <li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">实现 Java GUI</a></li>
+         <li><a href="../../trails/matisse.html">Java GUI 应用程序学习资源</a></li>
+         <li><a href="quickstart-gui.html">设计 Swing GUI</a></li>
+         <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ" target="_blank">GUI 构建器常见问题解答</a> </li>
+      </ul>
+      
+   </body>
+</html>
+

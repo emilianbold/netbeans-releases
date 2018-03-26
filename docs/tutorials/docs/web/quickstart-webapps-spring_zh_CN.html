@@ -1,0 +1,436 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="An introduction to using the Spring Framework
+            in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Spring framework, frameworks, MVC, Model View Controller, web application">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+        <title>Spring Web MVC 简介 - NetBeans IDE 教程</title>
+    </head>
+
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Spring Web MVC 简介</h1>
+
+        <p>本文档向您介绍如何使用 <a href="http://www.springframework.org/">Spring Framework</a> 构造简单的 Web <a href="http://www.oracle.com/technetwork/articles/javase/index-142890.html">MVC</a> 应用程序。该应用程序使用户能够在一个文本字段中输入他的姓名，单击 "OK"（确定）后，返回该姓名并且显示在具有欢迎问候的另一个页面上。</p>
+
+        <p>Spring Framework 是一种流行的开源应用程序框架，可简化 Java EE 开发。它包括一个容器、一个用于管理组件的框架和一组针对 Web 用户界面、事务和持久性的咬接（snap-in）服务。Spring Web MVC 是 Spring Framework 的一部分，它是用于创建 Web 应用程序的可扩展 MVC 框架。</p>
+
+        <p>IDE 提供了对 Spring Framework 4.x 和 3.x 的内置支持。框架库是与 IDE 一起打包的，当选择该框架时会自动添加到项目类路径。提供配置设置，如 Spring Web MVC <code>DispatcherServlet</code> 的命名和映射。也可以选择在项目创建时注册 JSTL 库。此外，还提供了对 Spring XML Bean 配置文件的支持，包括以下功能：</p>
+
+        <ul>
+            <li><strong>代码完成</strong>。在 Spring XML 配置文件中调用，用于 Java 类和 bean 引用。</li>
+
+            <li><strong>导航</strong>。在 Spring bean 定义中提到的 Java 类和属性的超链接以及到其他 Spring bean 引用的超链接。</li>
+
+            <li><strong>重构</strong>。在 Spring XML 配置文件中重命名对 Java 类的引用。</li>
+        </ul>
+
+        <p>有关 Spring Framework 的详细信息，请访问 <a href="http://www.springsource.org/">http://www.springsource.org/</a>。有关 Spring Framework 工件的工作原理以及如何与应用程序中其他对象交互的更详细信息，请参见正式的 <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/">Spring Framework 参考文档</a>或参阅 <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/">Spring Framework API 文档</a>。</p>
+
+        <p><strong>目录</strong></p>
+
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+        <ul class="toc">
+            <li><a href="#setting">建立具有 Spring Web MVC 支持的新项目</a>
+
+                <ul>
+                    <li><a href="#creating">创建 Spring Web MVC 框架项目</a></li>
+                    <li><a href="#running">运行框架项目</a></li>
+                </ul></li>
+
+            <li><a href="#overview">应用程序概述</a></li>
+            <li><a href="#service">实现服务</a></li>
+            <li><a href="#controller">实现控制器和模型</a></li>
+            <li><a href="#view">实现视图</a></li>
+            <li><a href="#seeAlso">另请参见</a></li>
+        </ul>
+
+        <p><strong>要学完本教程，您需要具备以下软件和资源。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 7 或 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://glassfish.dev.java.net/public/downloadsindex.html">GlassFish Server</a></td>
+                    <td class="tbltd1">3.x、4.x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注：</strong></p>
+
+        <ul>
+            <li>IDE 的 Java 安装允许您选择性地在 IDE 中安装和注册 GlassFish Server。</li>
+            <li>如果需要将项目与工作解决方案进行比较，可以<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%2520Web%252FHelloSpring69.zip">下载样例应用程序</a>。</li>
+        </ul>
+
+
+        <h2 id="setting">建立具有 Spring Web MVC 支持的新项目</h2>
+
+        <ul>
+            <li><a href="#creating">创建 Spring Web MVC 框架项目</a></li>
+            <li><a href="#running">运行框架项目</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="creating">创建 Spring Web MVC 框架项目</h3>
+
+            <p>首先，使用 Spring Framework 为 Web 应用程序创建一个新项目。</p>
+
+            <ol>
+                <li>从 IDE 的 "File"（文件）菜单中选择 "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键）。选择 "Java Web" 类别，然后在 "Projects"（项目）下选择 "Web Application"（Web 应用程序）。单击 "Next"（下一步）。</li>
+
+                <li>在 "Project Name"（项目名称）中键入 <strong>HelloSpring</strong>。单击 "Next"（下一步）。</li>
+
+                <li>在步骤 3 "Server and Settings"（服务器和设置）中，取消选择 "Enable Contexts and Dependency Injection"（启用上下文和依赖关系注入）选项，因为在本教程中将不使用 <a href="http://jcp.org/en/jsr/detail?id=299">JSR-299</a> 规范。</li>
+
+                    <li>确认在 "Server"（服务器）下拉列表中选定 "GlassFish Server"。单击 "Next"（下一步）。
+                        <p>Java EE 版本取决于所选服务器的版本。当所选服务器为 GlassFish Server 4.0 时，默认 Java EE 版本是 Java EE 7 Web。
+                    </p></li>
+
+                    <li>在步骤 4 "Frameworks"（框架）面板中，选择 "Spring Web MVC"。</li>
+                    <li>在 "Spring Library"（Spring 库）下拉列表中选择 <strong>Spring Framework 3.x</strong>。<br> <img alt="&quot;Frameworks&quot;（框架）面板中显示的 Spring Web MVC" class="margin-around b-all" src="../../../images_www/articles/80/web/spring/frameworks-window.png" title="&quot;Frameworks&quot;（框架）面板中显示的 Spring Web MVC">
+
+                    <p class="alert">
+                    请注意，尽管使用 IDE 可以将 Spring 4.x 库添加到项目中，但是对于本教程，将使用 Spring 4.x 中不支持的 SimpleFormController。另外，当选择 "Spring Web MVC" 时，注意到在项目创建期间默认将 JSTL (JavaServer Pages Standard Tag Library) 库添加到类路径中。取消选择此选项（如以上屏幕快照中所示），因为本教程中不需要 JSTL。 </p></li>
+
+                <li>单击 "Configuration"（配置）标签，并请注意，您可以在向导中指定 Spring 分派程序 Servlet 的名称和映射。 <br> <img alt="Spring 配置选项" class="margin-around b-all" src="../../../images_www/articles/72/web/spring/spring-configuration.png" title="在 &quot;Configuration&quot;（配置）标签下指定 Spring 分派程序 Servlet 的名称和映射"></li>
+
+                <li>单击 "Finish"（完成）。IDE 将为整个应用程序创建一个项目，包括所有元数据以及可以从 "Files"（文件）窗口（Ctrl-2 组合键；在 Mac 上为 ⌘-2 组合键）中查看的项目的 Ant 构建脚本。可以从 "Projects"（项目）窗口（Ctrl-1 组合键；在 Mac 上为 ⌘-1 组合键）中查看模板结构。另请注意，默认情况下在 IDE 的编辑器中打开四个文件：<code>dispatcher-servlet.xml</code>、<code>applicationContext.xml</code>、<code>redirect.jsp</code> 和 <code>index.jsp</code>。</li>
+
+                <li>在 "Projects"（项目）窗口中，展开新项目的 "Libraries"（库）节点，并请注意 Spring JAR 包含在项目的类路径中。 <br> <img alt="在项目的 &quot;Libraries&quot;（库）节点下列出的 Spring JAR" class="margin-around b-all" src="../../../images_www/articles/72/web/spring/spring-libraries.png" title="Spring JAR 在项目的 &quot;Libraries&quot;（库）节点下列出">
+                </li>
+            </ol>
+
+
+            <h3 id="running">运行框架项目</h3>
+
+            <p>在对项目文件进行任何更改之前，尝试在 IDE 中运行新项目：</p>
+
+            <ol>
+                <li>单击 IDE 主工具栏中的 "Run Project"（运行项目）(<img alt="&quot;Run Project&quot;（运行项目）按钮" src="../../../images_www/articles/72/web/spring/run-project-btn.png">)。IDE 将自动启动 GlassFish Server（如果尚未运行），编译项目，然后将其部署到该服务器。请注意 IDE "Output"（输出）窗口（Ctrl-4 组合键；在 Mac 上为 ⌘-4 组合键）中显示的任何输出。构建的输出以<code>成功构建</code>消息结尾。<br> <img alt="运行项目时显示信息的 &quot;Output&quot;（输出）窗口" class="margin-around b-all" src="../../../images_www/articles/72/web/spring/output.png" title="运行项目时 &quot;Output&quot;（输出）窗口将显示信息"> <br> IDE 的默认浏览器将启动，并且您会看到欢迎页视图 (<code>/WEB-INF/jsp/index.jsp</code>) 的内容。 <br> <img alt="显示在浏览器中的欢迎页输出" class="margin-around b-all" src="../../../images_www/articles/72/web/spring/browser-output.png" title="欢迎页输出显示在浏览器中" width="668"></li>
+            </ol>
+
+            <p class="tips">在 IDE 中运行项目时，将编译项目并将其部署到服务器，然后在默认浏览器中将其打开。此外，IDE 还提供“在保存时部署”功能，默认情况下将为 Web 项目激活该功能。在编辑器中保存文件时，会自动重新编译项目并将其部署到服务器。要查看更改，只需在浏览器中刷新页面即可。</p>
+
+            <p>为了了解刚刚发生的情况，我们从检查项目的部署描述符 (<code>Web.xml</code>) 开始。要在源代码编辑器中打开该文件，请在 "Projects"（项目）窗口中右键单击 <code>WEB-INF</code> &gt; <code>Web.xml</code> 节点，然后选择 "Edit"（编辑）。应用程序的默认入口点为 <code>redirect.jsp</code>：</p>
+
+            <div class="indent">
+<pre class="examplecode">
+&lt;welcome-file-list&gt;
+    &lt;welcome-file&gt;redirect.jsp&lt;/welcome-file&gt;
+&lt;/welcome-file-list&gt;</pre>
+            </div>
+
+            <p>在 <code>redirect.jsp</code> 中，有一个重定向语句，该语句将所有请求指向 <code>index.htm</code>：</p>
+
+            <div class="indent">
+                <pre class="examplecode">&lt;% response.sendRedirect(&quot;index.htm&quot;); %&gt;</pre>
+            </div>
+
+            <p>在部署描述符中，请注意，与 <code>*.htm</code> 匹配的 URL 模式的所有请求都被映射到 Spring 的 <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/DispatcherServlet.html"><code>DispatcherServlet</code></a>。</p>
+
+            <div class="indent">
+<pre class="examplecode">
+&lt;servlet&gt;
+    &lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+    &lt;load-on-startup&gt;2&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;*.htm&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;</pre>
+            </div>
+
+            <p class="tips">上面显示的分派程序 Servlet 的全限定名称为 <code>org.springframework.web.servlet.DispatcherServlet</code>。此类包含在创建项目时添加到项目类路径的 Spring 库中。您可以在 "Projects"（项目）窗口的 "Libraries"（库）节点中向下浏览，以便对此进行验证。找到 <code>spring-webmvc-3.1.1.RELEASE.jar</code>，然后将其展开以查找 <code>org.springframework.web.servlet</code> &gt; <code>DispatcherServlet</code>。</p>
+
+            <p><code>DispatcherServlet</code> 根据 <code>dispatcher-servlet.xml</code> 中的配置设置处理传入请求。单击编辑器中的 <code>dispatcher-servlet.xml</code> 标签以将其打开。请注意以下代码。</p>
+
+            <div class="indent">
+<pre class="examplecode">
+&lt;bean id=&quot;urlMapping&quot; class=&quot;org.springframework.web.servlet.handler.<a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/handler/SimpleUrlHandlerMapping.html">SimpleUrlHandlerMapping</a>&quot;&gt;
+    &lt;property name=&quot;mappings&quot;&gt;
+        &lt;props&gt;
+            &lt;prop key=&quot;/index.htm&quot;&gt;indexController&lt;/prop&gt;
+        &lt;/props&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean id=&quot;viewResolver&quot;
+      class=&quot;org.springframework.web.servlet.view.<a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/view/InternalResourceViewResolver.html">InternalResourceViewResolver</a>&quot;
+      p:prefix=&quot;/WEB-INF/jsp/&quot;
+      p:suffix=&quot;.jsp&quot; /&gt;
+
+&lt;bean name=&quot;indexController&quot;
+      class=&quot;org.springframework.web.servlet.mvc.<a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/ParameterizableViewController.html">ParameterizableViewController</a>&quot;
+      p:viewName=&quot;index&quot; /&gt;</pre>
+            </div>
+
+            <p>在该文件中定义了三个 Bean：<code>indexController</code>、<code>viewResolver</code> 和 <code>urlMapping</code>。当 <code>DispatcherServlet</code> 收到与 <code>*.htm</code> 匹配的请求（如 <code>index.htm</code>）时，它将在 <code>urlMapping</code> 中查找可以容纳该请求的控制器。从上面可以看出，有一个 <code>mappings</code> 属性将 <code>/index.htm</code> 链接到 <code>indexController</code>。</p>
+
+            <p>然后运行时环境将搜索名为 <code>indexController</code> 的 Bean 定义，该定义由框架项目提供。请注意，<code>indexController</code> 扩展了 <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/ParameterizableViewController.html"><code>ParameterizableViewController</code></a>。这是由 Spring 提供的另一个类，该类只返回一个视图。注意 <code>p:viewName="index"</code> 指定逻辑视图名称，使用 <code>viewResolver</code> 通过加前缀 <code>/WEB-INF/jsp/</code> 以及加后缀 <code>.jsp</code> 来解析该名称。这将允许运行时环境在应用程序目录中查找该文件，并用欢迎页视图 (<code>/WEB-INF/jsp/index.jsp</code>) 进行响应。</p>
+        </div>
+
+
+        <h2 id="overview">应用程序概述</h2>
+
+        <p>您创建的应用程序由两个 JSP 页（在 <a href="http://www.oracle.com/technetwork/articles/javase/index-142890.html">MVC</a> 术语中称为<em>视图</em>）组成。第一个视图包含一个 HTML 窗体，该窗体具有一个要求用户输入名字的输入字段。第二个视图是一个页面，该页面只显示包含用户名字的一个 hello 消息。</p>
+
+        <p>视图由<em>控制器</em>管理，控制器接收应用程序的请求并确定返回的视图。它还向视图传递所需显示的任何信息（这称为<em>控制器</em>）。该应用程序的控制器名为 <code>HelloController</code>。</p>
+
+        <p>在复杂的 Web 应用程序中，业务逻辑不直接包含在控制器中。在控制器需要执行某些业务逻辑时，它会使用另一个名为<em>服务</em>的实体。在我们的应用程序中，业务逻辑限制为处理 hello 消息的操作，出于此目的，您将创建 <code>HelloService</code>。<a name="service"></a>
+        <h2>实现服务</h2>
+
+        <p>确定正确设置环境之后，可以开始根据需要扩展框架项目。从创建 <code>HelloService</code> 类开始。</p>
+
+        <ol>
+            <li>在 IDE 的工具栏中单击 "New File"（新建文件）(<img alt="&quot;New File&quot;（新建文件）按钮" src="../../../images_www/articles/72/web/spring/new-file-btn.png">) 按钮。（也可以按 Ctrl-N 组合键；在 Mac 上按 ⌘-N 组合键。）</li>
+
+            <li>选择 <strong>Java</strong> 类别，然后选择 <strong>Java Class</strong>（Java 类）并单击 "Next"（下一步）。</li>
+
+            <li>在显示的新建 Java 类向导中，为 "Class Name"（类名）键入 <strong>HelloService</strong>，为 "Package Name"（包名）输入 <strong>service</strong> 来为该类创建一个新包。</li>
+
+            <li>单击 "Finish"（完成）。IDE 将创建新类，并在编辑器中打开该类。</li>
+        </ol>
+
+        <p><code>HelloService</code> 类执行一个非常简单的服务。它将名称用作参数并准备返回一个包含该名称的 <code>String</code>。在编辑器中，为该类创建以下 <code>sayHello()</code> 方法（更改以<strong>粗体</strong>显示）。</p>
+
+        <div class="indent">
+<pre class="examplecode">
+public class HelloService {
+
+    <strong>public static String sayHello(String name) {
+        return &quot;Hello &quot; + name + &quot;!&quot;;
+    }</strong>
+}</pre></div>
+
+
+        <h2 id="controller">实现控制器和模型</h2>
+
+        <p>可以使用 <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/SimpleFormController.html"><code>SimpleFormController</code></a> 来处理用户数据并确定返回的视图。</p>
+<p class="notes"><strong>注：</strong>SimpleFormController 在 Spring 3.x 中已过时。在本教程中使用它是出于演示目的。但是，应使用标注的控制器而非 XML 文件。</p>
+        <ol>
+            <li>按 Ctrl-N 组合键（在 Mac 上按 ⌘-N 组合键）打开新建文件向导。在 "Categories"（类别）下，选择 <strong>Spring Framework</strong>；在 "File Types"（文件类型）下，选择 <strong>Simple Form Controller</strong>（简单窗体控制器）。<br> <img alt="新建文件向导 - &quot;Spring Framework&quot; 类别" class="b-all margin-around" src="../../../images_www/articles/72/web/spring/simple-form-controller.png" style="width:668px" title="NetBeans IDE 为各种 Spring 工件提供模板"> <br> <span class="tips">NetBeans IDE 为各种 Spring 工件（包括 Spring XML 配置文件、<a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/AbstractController.html"><code>AbstractController</code></a> 和 <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/SimpleFormController.html"><code>SimpleFormController</code></a>）提供了模板。</span>
+
+            </li>
+
+
+            <li>单击 "Next"（下一步）。</li>
+
+            <li>将该类命名为 <strong>HelloController</strong> 并通过在 "Package"（包）文本字段中键入 <strong>controller</strong> 为其创建一个新的包。单击 "Finish"（完成）。IDE 将创建新类，并在编辑器中打开该类。</li>
+
+            <li>通过取消注释 setter 方法（默认情况下，在类模板中显示）来指定控制器属性。要取消注释代码片段，请突出显示该代码（如下图所示），然后按 Ctrl-/ 组合键（在 Mac 上按 ⌘-/ 组合键）。<br> <img alt="在编辑器中突出显示的代码片段" class="b-all margin-around" src="../../../images_www/articles/72/web/spring/comment-out.png" title="突出显示代码片段，然后按 Ctrl-/ 以开启/关闭注释"> <br> <span class="tips">按 Ctrl-/ 组合键（在 Mac 上按 ⌘-/ 组合键）可在编辑器中开启/关闭注释。</span>
+            </li>
+
+            <li>进行以下更改（以<strong>粗体</strong>显示）。
+
+<pre class="examplecode">
+public HelloController() {
+    <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/BaseCommandController.html#setCommandClass(java.lang.Class)">setCommandClass</a>(<strong>Name</strong>.class);
+    <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/BaseCommandController.html#setCommandName(java.lang.String)">setCommandName</a>(&quot;<strong>name</strong>&quot;);
+    <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/SimpleFormController.html#setSuccessView(java.lang.String)">setSuccessView</a>(&quot;<strong>hello</strong>View&quot;);
+    <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/SimpleFormController.html#setFormView(java.lang.String)">setFormView</a>(&quot;<strong>name</strong>View&quot;);
+}</pre>
+
+                <p>设置 <code>FormView</code> 使您能够设置用于显示窗体的视图的名称。这是包含允许用户输入其名称的文本字段的页面。同样，设置 <code>SuccessView</code> 允许您设置在成功提交时应该显示的视图的名称。当设置 <code>CommandName</code> 时，在模型中定义命令的名称。在本例中，命令就是将请求参数绑定到自身的窗体对象。设置 <code>CommandClass</code> 允许您设置命令类的名称。填充该类的一个实例并在每个请求上验证它。</p>
+
+                <p>注意在 <code>setCommandClass()</code> 方法中为 <code>Name</code> 标记了一个错误：</p>
+
+                <img alt="为 setCommandClass() 显示错误的编辑器" class="b-all margin-around" src="../../../images_www/articles/72/web/spring/set-command-class.png" title="为 setCommandClass() 显示错误标记">
+
+                <p>
+                现在，您需要创建 <code>Name</code> 类作为简单 Bean 以包含每个请求的信息。</p></li>
+
+            <li>在 "Projects"（项目）窗口中，右键单击项目节点并选择 "New"（新建）> "Java Class"（Java 类）。此时将显示新建 Java 类向导。</li>
+
+            <li>在 "Class Name"（类名）中输入 <strong>Name</strong>，从 "Package"（包）的下拉列表中选择 <strong>controller</strong>。</li>
+
+            <li>单击 "Finish"（完成）。<code>Name</code> 类随即创建，并在编辑器中打开。</li>
+
+            <li>对于 <code>Name</code> 类，创建一个名为 <code>value</code> 的字段，然后为该字段创建存取方法（即，getter 和 setter 方法）。首先声明 <code>value</code> 字段：
+
+<pre class="examplecode">
+public class Name {
+
+    <strong>private String value;</strong>
+
+}</pre>
+                <p class="tips">要快速键入 "<code>private</code>"，您可以键入 "<code>pr</code>"，然后按 Tab 键。"<code>private</code>" 访问修饰符会自动添加到该行。这是使用编辑器代码模板的一个示例。要获得代码模板的完整列表，请选择 "Help"（帮助）> "Keyboard Shortcuts Card"（快捷键列表）。</p>
+
+                <br><a name="createAccessors"></a>IDE 可以为您创建存取方法。在编辑器中，右键单击 <code>value</code>，然后选择 "Insert Code"（插入代码）（或按 Alt-Insert 组合键；在 Mac 上按 Ctrl-I 组合键）。在弹出式菜单中，选择 "Getter and Setter"（getter 和 setter）。 <br> <img alt="编辑器中显示的 &quot;Generate Code&quot;（生成代码）弹出式菜单" class="margin-around b-all" src="../../../images_www/articles/72/web/spring/generate-code.png" title="通过 &quot;Generate Code&quot;（生成代码）弹出式菜单可以设置存取方法"></li>
+
+
+            <li>在显示的对话框中，选择 <code>value : String</code> 选项，然后单击 "OK"（确定）。<code>getValue()</code> 和 <code>setValue()</code> 方法会添加到 <code>Name</code> 类中：
+
+<pre class="examplecode">
+public String getValue() {
+    return value;
+}
+
+public void setValue(String value) {
+    this.value = value;
+}</pre></li>
+
+            <li>按 Ctrl-Tab 组合键并选择 <code>HelloController</code> 以切换回 <code>HelloController</code> 类。请注意，以前的错误标记已经消失，因为现在存在 <code>Name</code> 类。</li>
+            <li>删除 <code>doSubmitAction()</code> 方法并取消注释 <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/SimpleFormController.html#setFormView(java.lang.String)"><code>onSubmit()</code></a> 方法。使用 <code>onSubmit()</code> 方法，您可以创建自己的 <code>ModelAndView</code>，此处需要这样做。进行以下更改：
+
+<pre class="examplecode">@Override
+protected ModelAndView onSubmit(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Object command,
+            BindException errors) throws Exception {
+
+        Name name = (Name) command;
+        ModelAndView mv = new ModelAndView(getSuccessView());
+        mv.addObject("helloMessage", helloService.sayHello(name.getValue()));
+        return mv;
+}</pre>
+
+                如上所述，将 <code>command</code> 重塑为 <code>Name</code> 对象。创建 <code>ModelAndView</code> 的一个实例，并且在 <code>SimpleFormController</code> 中使用 getter 获取成功视图。最后，用数据填充模型。我们模型中的唯一项就是从以前创建的 <code>HelloService</code> 中获取的 hello 消息。使用 <code>addObject</code> 方法将此 hello 消息添加到名称 <code>helloMessage</code> 下的模型中。</li>
+
+            <li>在编辑器中单击鼠标右键并选择 "Fix Imports"（修复导入）（Ctrl-Shift-I 组合键；在 Mac 上为 ⌘-Shift-I 组合键）以修复导入错误。 <br> <img alt="&quot;Fix All Imports&quot;（修复所有导入）对话框" class="margin-around b-all" src="../../../images_www/articles/72/web/spring/fix-imports70.png" title="按 Ctrl-Shift-I 修复文件中的导入">
+                <p class="notes"><strong>注：</strong>确认在 "Fix All Imports"（修复所有导入）对话框中选择了 <strong><tt>org.springframework.validation.BindException</tt></strong> 和 <strong><tt>org.springframework.web.servlet.ModelAndView</tt></strong>。</p></li>
+
+            <li>单击 "OK"（确定）。向文件顶部添加以下导入语句：
+
+<pre class="examplecode">import <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/ModelAndView.html">org.springframework.web.servlet.ModelAndView</a>;</pre>
+
+                如 API 文档中所述，此类“表示处理程序返回的要由 <code>DispatcherServlet</code> 解析的模型和视图。视图可以采用需要由 <code>ViewResolver</code> 对象解析的 <code>String</code> 视图名称格式；或者，也可以直接指定 <code>View</code> 对象。模型是一个 <code>Map</code>，允许使用按照名称键入的多个对象。”<br><br> 请注意，此时并未修复所有错误，因为该类仍然无法识别 <code>HelloService</code> 类，也不能使用其 <code>sayHello()</code> 方法。</li>
+
+            <li>在 <code>HelloController</code> 中，声明一个名为 <code>HelloService</code> 的私有字段：
+
+<pre class="examplecode">private HelloService helloService;</pre>
+
+                然后为该字段创建一个公用的 setter 方法：
+
+<pre class="examplecode">public void setHelloService(HelloService helloService) {
+    this.helloService = helloService;
+}</pre>
+
+                最后，在编辑器中单击鼠标右键，然后选择 "Fix Imports"（修复导入）（Ctrl-Shift-I 组合键；在 Mac 上为 ⌘-Shift-I 组合键）。以下语句将添加到文件顶部：
+
+<pre class="examplecode">import service.HelloService;</pre>
+
+                现在应该修复了所有错误。</li>
+
+            <li>在 <code>applicationContext.xml</code> 中注册 <code>HelloService</code>。在编辑器中打开 <code>applicationContext.xml</code>，然后输入以下 Bean 声明：
+
+<pre class="examplecode">
+&lt;bean name=&quot;helloService&quot; class=&quot;service.HelloService&quot; /></pre>
+
+                <div class="tips">IDE 中的 Spring 支持包括 XML 配置文件中 Java 类以及 Bean 引用的代码完成。要调用代码完成，请在使用编辑器时按 Ctrl-空格键： <br> <img alt="按 Ctrl-空格键时调用的代码完成" class="b-all margin-around" src="../../../images_www/articles/72/web/spring/code-completion.png" title="按 Ctrl-空格键时调用的代码完成"></div></li>
+
+            <li>在 <code>dispatcher-servlet.xml</code> 中注册 <code>HelloController</code>。在编辑器中打开 <code>dispatcher-servlet.xml</code>，然后输入以下 Bean 声明：
+
+<pre class="examplecode">
+&lt;bean class=&quot;controller.HelloController&quot; p:helloService-ref=&quot;helloService&quot;/&gt;</pre></li>
+        </ol>
+
+
+        <h2 id="view">实现视图</h2>
+
+        <p>要实现此项目的视图，您需要创建两个 JSP 页。首先，您将调用 <code>nameView.jsp</code> 作为欢迎页，并且允许用户输入名称。另一个页面 <code>helloView.jsp</code> 显示包含输入名称的问候消息。首先创建 <code>helloView.jsp</code>。</p>
+
+        <ol>
+            <li id="create-jsp">在 "Projects"（项目）窗口中，右键单击 "WEB-INF" > <code>jsp</code> 节点，然后选择 "New"（新建）> "JSP"。此时将打开新建 JSP 文件向导。将该文件命名为 <strong>helloView</strong>。</li>
+
+            <li>单击 "Finish"（完成）。新的 JSP 页随即在 <code>jsp</code> 文件夹中创建，并在编辑器中打开。</li>
+
+            <li>在编辑器中，将文件标题更改为 <code>Hello</code>，并且更改输出消息以检索在 <code>HelloController</code> 中创建的 <code>ModelandView</code> 对象的 <code>helloMessage</code>。
+
+
+<pre class="examplecode">
+&lt;head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    &lt;title&gt;<strong>Hello</strong>&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;<strong>${helloMessage}</strong>&lt;/h1&gt;
+&lt;/body&gt;
+</pre></li>
+
+            <li>采用与<a href="#create-jsp">以上所述</a>相同的方式创建另一个 JSP 页，但将其命名为 <code>nameView</code>。</li>
+
+            <li>在编辑器中，将以下 Spring 标记库声明添加到 <code>nameView.jsp</code> 中。
+
+<pre class="examplecode">&lt;%@taglib uri=&quot;http://www.springframework.org/tags&quot; prefix=&quot;spring&quot; %&gt;</pre>
+
+                这将导入 <a href="http://static.springframework.org/spring/docs/2.5.x/reference/spring.tld.html">Spring 标记库</a>，它包含将视图作为 JSP 页实现时有用的标记。
+
+            <li>将 <code>&lt;title&gt;</code> 和 <code>&lt;h1&gt;</code> 标记的内容更改为：<code>Enter Your Name</code>。</li>
+
+            <li>在 <code>&lt;h1&gt;</code> 标记下面输入以下代码：
+
+<pre class="examplecode">
+&lt;spring:nestedPath path=&quot;name&quot;&gt;
+    &lt;form action=&quot;&quot; method=&quot;post&quot;&gt;
+        Name:
+        &lt;spring:bind path=&quot;value&quot;&gt;
+            &lt;input type=&quot;text&quot; name=&quot;${status.expression}&quot; value=&quot;${status.value}&quot;&gt;
+        &lt;/spring:bind&gt;
+        &lt;input type=&quot;submit&quot; value=&quot;OK&quot;&gt;
+    &lt;/form&gt;
+&lt;/spring:nestedPath&gt;
+</pre>
+
+                <a href="http://static.springframework.org/spring/docs/2.5.x/reference/spring.tld.html#spring.tld.bind">spring:bind</a> 允许您绑定一个 bean 属性。绑定标记提供一个绑定状态和值，您可以将它用作输入字段的名称和值。采用这种方法提交窗体时，Spring 将知道如何提取提交的值。此处，我们的命令类 (<code>controller.Name</code>) 具有一个 <code>value</code> 属性，因此将 <code>path</code> 设置为 <code>value</code>。 <br><br> <a href="http://static.springframework.org/spring/docs/2.5.x/reference/spring.tld.html#spring.tld.nestedPath">spring:nestedPath</a> 使您能够在 Bean 前面加上指定的路径。因此，当与上面显示的 <code>spring:bind</code> 一起使用时，Bean 的路径变为：<code>name.value</code>。当再次调用时，<code>HelloController</code> 的命令名称为 <code>name</code>。因此，该路径引用该页面范围内名为 <code>name</code> 的 Bean 的 <code>value</code> 属性。
+
+            <li>更改应用程序的相对入口点。当前，项目入口点仍然为 <code>index.htm</code>，如上面的<a href="#running">运行框架项目</a>中所述，它重定向到 <code>WEB-INF/jsp/index.jsp</code>。当部署和运行项目时，可以指定项目的入口点。在 "Projects"（项目）窗口中，右键单击该项目节点并选择 "Properties"（属性）。此时将显示 "Project Properties"（项目属性）对话框。在 "Categories"（类别）下，选择 "Run"（运行）。在 "Relative URL"（相对 URL）字段中，键入 <code>/hello.htm</code>，然后单击 "OK"（确定）。<br><br> 此时，您可能希望了解 <code>hello.htm</code> 到 <code>HelloController</code> 的映射所在的位置。您尚未添加到 <code>urlMapping</code> Bean 的映射，框架项目的欢迎页 <code>index.htm</code> 就是这样。这可能就是 Spring 的特殊魅力所在，它是由 <code>dispatcher-servlet.xml</code> 文件中的下列 bean 定义提供的：
+
+<pre class="examplecode">&lt;bean class=&quot;org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping&quot;/&gt;</pre>
+
+                此 Bean 负责为文件中注册的所有控制器自动创建 URL 映射。它获取控制器的全限定类名（本例中为 <code>controller.HelloController</code>）并且去除读写包名称和 <code>Controller</code> 后缀，然后将结果用作 URL 映射。因此，对于 <code>HelloController</code> 而言，它创建了一个 <code>hello.htm</code> 映射。但是，此特点并不适于 Spring Framework 中包含的控制器，如 <code>ParameterizableViewController</code>。它们需要显式映射。</li>
+
+            <li>在 "Projects"（项目）窗口中，右键单击该项目节点并选择 "Run"（运行）。这将编译、部署和运行该项目。您的默认浏览器会打开，并且将 <code>hello.htm</code> 显示为项目的 <code>nameView</code>： <br> <img alt="显示在浏览器中的 nameView" class="b-all margin-around" src="../../../images_www/articles/72/web/spring/name-view.png" title="nameView 显示在浏览器中"> <br> 在文本字段中输入您的名字，然后按 Enter 键。将显示带有问候消息的 <code>helloView</code>： <br> <img alt="显示在浏览器中的 helloView" class="b-all margin-around" src="../../../images_www/articles/72/web/spring/hello-view.png" title="helloView 显示在浏览器中"></li>
+        </ol>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Spring">请将您的反馈意见发送给我们</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">另请参见</h2>
+
+        <p>对 NetBeans IDE 中 Spring Framework 的简介到此结束。本文档演示了如何使用 Spring Framework 在 NetBeans IDE 中构建简单的 Web MVC 应用程序，并且向您介绍了用于开发 Web 应用程序的 IDE 界面。</p>
+
+        <p>建议您通过 NetBeans IDE 中的其他教程继续学习 Spring Framework，例如<a href="http://sites.google.com/site/springmvcnetbeans/step-by-step/">使用 NetBeans 和 GlassFish Server 循序渐进开发 Spring Framework MVC 应用程序</a>。这是 Thomas Risberg 编写的官方 <a href="http://static.springframework.org/docs/Spring-MVC-step-by-step/">Spring Framework 教程</a>，Arulazi Dhesiaseelan 已针对 NetBeans IDE 对该教程进行了改编。</p>
+
+        <p>许多 Spring NetBeans Module 功能还适用不基于 Web 的 Spring Framework 应用程序。
+
+        <p>有关其他相关教程，请参见以下资源：</p>
+
+        <ul>
+            <li><a href="../../docs/web/framework-adding-support.html">添加对 Web 框架的支持</a>。此基本指南介绍如何通过使用 NetBeans Update Center 安装 Web 框架插件来添加支持。</li>
+
+            <li><a href="jsf20-intro.html">JavaServer Faces 2.0 简介</a>。演示如何将 JSF 2.0 支持添加到现有项目中，连接受管 Bean，以及利用 Facelets 模板。</li>
+        </ul>
+
+    </body>
+</html>

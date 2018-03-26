@@ -1,0 +1,565 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Добавление модульных тестов к проекту C/C++</title>
+        <meta name="DESCRIPTION" content="A tutorial for using unit testing in C/++ projects in NetBeans IDE and
+              Oracle Solaris Studio IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,Oracle Solaris Studio
+              tutorial, guide, user, documentation, open source, unit testing, CUnit, CppUnit, C, C++">
+        <meta name="author" content="Susan Morgan"><!--Optional tag-->
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+    </head>
+    <body>
+        <h1>Добавление модульных тестов в проект C - Практическое руководство по IDE NetBeans</h1>
+        <!-- START INTRO ---------------------------------------------------------------------------------------* -->
+        <div class="articledate" style="margin-left: 0px;font-style:italic;">
+           <p><em>Составитель: <a href="mailto:susanm@netbeans.org"><i>Сьюзан Морган (Susan Morgan)</i></a> <br> Март 2014 г.</em> [Номер версии: V8.0-1]</div>
+        <!-- END INTRO -->
+        <h3>Содержание</h3>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.4 и 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.4 и 8.0">
+        <table class="b-none vatop" cellpadding="0" cellspacing="0">
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#requirements">Требования</a></td>
+            </tr>
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#intro">Введение</a></td>
+            </tr>
+             <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#cunit">Установка инфраструктуры тестирования CUnit</a></td>
+            </tr>
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#project">Создание проекта для учебного курса</a></td>
+            </tr>
+           
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#addtest">Добавление тестов CUnit в управляемый проект NetBeans</a></td>
+            </tr>
+
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#runtest">Выполнение теста CUnit</a></td>
+            </tr>
+
+        <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#addmore"> Добавление еще одного теста CUnit</a></td>
+        </tr>
+
+         <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#debug">Отладка теста</a></td>
+            </tr>
+
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#addsimple">Добавление простого тeста</a></td>
+            </tr>
+              <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#editsimple">Изменение простого теста</a></td>
+            </tr>
+              <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#commandline">Выполнение тестов в интерфейсе командной строки</a></td>
+            </tr>
+
+
+        </table>
+
+        <h2><a NAME="requirements"></a>Требования</h2>
+        <p><b>Для работы с этим учебным курсом требуется программное обеспечение, указанное ниже.</b></p>
+
+<table>
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">Программное обеспечение</th>
+    <th class="tblheader" scope="col">Требуемая версия</th>
+</tr>
+
+<tr>
+<td class="tbltd1">IDE NetBeans (включая поддержку C/C++/Fortran) </td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">версия 7.4 или 8.0 с подключаемым модулем NetBeans C/C++</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Комплект для разработчика на языке Java (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Версия 7 или 8</a></td>
+</tr>
+
+<tr>
+     <td class="tbltd1">
+        Инфраструктура тестирования CUnit 2.1
+    </td>
+    <td class="tbltd1">
+       <a href="http://sourceforge.net/projects/cunit/">Инфраструктура модульного тестирования для проектов C на sourceforge.</a>
+</tr>
+</tbody>
+</table>
+      <br>
+<p>Дополнительные сведения о загрузке и установке необходимого программного обеспечения NetBeans см. в разделах <a href="../../../community/releases/80/install.html">Инструкции по установке IDE NetBeans</a> и <a href="../../../community/releases/80/cpp-setup-instructions.html">Настройка IDE NetBeans для C/C++/Fortran</a><br>.</p>
+
+        <a name="intro"></a>
+        <h2>Введение</h2>
+         <p>
+        IDE NetBeans c подключаемым модулем C/C++/Fortran поддерживает модульное тестирование в проектах C/C++. В среде IDE можно создавать и выполнять тесты C и C++, осуществлять их отладку и просматривать результаты. В этой статье описывается использование модульных тестов в проектах C/C++ в среде IDE.
+    </p>
+    <p>При создании управляемого проекта создается логическая папка 'Файлы тестов' для работы с модульными тестами проекта. Тесты можно создавать непосредственно в этой папке 'Файлы тестов' или группировать их во вложенные логические папки. Узел теста в папке 'Файлы тестов' представляет собой специальную папку для выполнения действий, связанных с тестом. При сборке теста основной файл будет исключен из проекта. В противном случае будут использоваться все остальные параметры проекта. </p>
+        <p>
+        IDE поддерживает только форматы CUnit, CppUnit и свой собственный "простой" формат выходных данных. Это означает, что результаты тестов представляют собой выходные данные в одном из указанных форматов. В среде IDE предусмотрены шаблоны модульных тестов:
+    <ul>
+        <li>Простой тест C</li>
+        <li>Простой тест C++</li>
+        <li>Тест CUnit</li>
+        <li>Тест CppUnit</li>
+        <li>Средство запуска теста CppUnit</li>
+    </ul>
+        <p>В этом руководстве описывается использование инфраструктуры тестирования CUnit и простых тестов C в среде NetBeans на Ubuntu Linux, но приведенные здесь инструкции применимы и к другим типам тестов на других плафтормах. Инфраструктуры тестирования CUnit и CppUnit в этом руководстве не рассматриваются. Информацию об использовании этих инфраструктур можно найти в соответствующей документации.</p>
+
+        <h2><a name="cunit"></a>Установка инфраструктуры тестирования CUnit</h2>
+    <p>Чтобы выполнить практические задания, представленные в этом руководстве, необходимо сначала установить CUnit на локальном компьютере. Дополнительные сведения об инфраструктуре CUnit см. в разделе <a href="http://sourceforge.net/projects/cunit/">Проект инфраструктуры тестирования C Unit на sourceforge.</a></p>
+    
+    <p>Документация по CUnit включена в загружаемый пакет CUnit. Также с документацией можно ознакомиться на веб-сайте по адресу <a href="http://cunit.sourceforge.net/doc/index.html">http://cunit.sourceforge.net/doc/index.html</a>.</p>
+    <p>Следуйте инструкциям по установке для вашей платформы:</p>
+    <ul>
+        <li><a href="#linux">Установка CUnit на Linux или Mac OS</a></li>
+        <li><a href="#solaris">Установка CUnit на Oracle Solaris 11</a></li>
+        <li><a href="#mingw">Установка CUnit на Windows и MinGW</a></li>
+        <li><a href="#cygwin">Установка CUnit на Windows и Cygwin</a></li>
+    </ul>
+
+          
+    <h3><a name='linux'></a>Установка CUnit на Linux или Mac OS</h3>
+    
+    <p>При установке на платформу Linux должна быть возможность установить пакеты libcunitl, libcunitl-doc и libcunitl-dev из репозитория пакетов. </p>
+    <p>Если пакеты libcunitl* недоступны на Mac OS или Linux, можно загрузить исходный код CUnit и выполнить сборку в соответствии с инструкциями в данном документе. </p>
+     <p>Приведенные ниже инструкции подразумевают, что вы загрузили файл CUnit-2.1-2-src.tar.bz2 в каталог /tmp. Если загруженный файл имеет другое имя, обязательно укажите фактическое имя загружаемого файла CUnit и фактический каталог, в который был сохранен этот файл.</p>
+    <ol>
+        <li>Загрузите исходный код CUnit-2.1-2-src.tar.bz2 со страницы <a href="http://sourceforge.net/projects/cunit/files">Файлы CUnit</a> и сохраните его в каталог временных файлов, например /tmp.
+        </li>
+         <li>В окне терминала распакуйте файл <tt>CUnit-2.1-2-src.tar.bz2</tt> следующим образом:
+             <pre>$ cd /tmp
+$ bunzip2 CUnit-2.1-2-src.tar.bz2
+$ tar -xvf CUnit-2.1-2-src.tar</pre></li>
+        <li>Создайте конфигурацию, выполните сборку и установку CUnit из каталога /tmp следующим образом:
+            <pre>$ cd CUnit-2.1-2
+$ ./configure --prefix=/usr
+$ make
+$ sudo make install</pre></li>
+    </ol>
+<p>После выполнения команды 'make install' инфраструктура тестирования CUnit готова к использованию в среде IDE. Мoжно переходить к разделу <a href='#project'>Создание проекта</a>.
+</p>
+   
+    <h3 name='solaris'>Установка CUnit на Oracle Solaris</h3>
+ <p>Перед использованием тестов CUnit необходимо выполнить сборку CUnit в системе сборки <a href="http://en.wikipedia.org/wiki/GNU_build_system">GNU</a>. Система сборки GNU в Oracle Solaris 11, как правило, не установлена по умолчанию. Компоненты системы сборки GNU можно получить из репозитория пакетов Oracle Solaris 11 с помощью следующих команд:</p>
+    <pre>pkg install pkg://solaris/developer/build/gnu-make
+pkg install pkg://solaris/developer/build/make
+pkg install pkg://solaris/developer/gcc-45
+pkg install pkg://solaris/system/header
+pkg install pkg://solaris/developer/build/autoconf
+pkg install pkg://solaris/developer/build/automake-110</pre>
+
+   <p>Приведенные ниже инструкции подразумевают, что вы загрузили файл CUnit-2.1-2-src.tar.bz2 в каталог /tmp. Если загруженный файл имеет другое имя, обязательно укажите фактическое имя загружаемого файла CUnit и фактический каталог, в который был сохранен этот файл.</p>
+    <ol>
+        <li>Загрузите исходный код CUnit-2.1-2-src.tar.bz2 со страницы <a href="http://sourceforge.net/projects/cunit/files">Файлы CUnit</a> и сохраните его в каталог временных файлов, например /tmp.
+        </li>
+         <li>В окне терминала распакуйте файл <tt>CUnit-2.1-2-src.tar.bz2</tt> следующим образом:
+             <pre>$ cd /tmp
+$ bunzip2 CUnit-2.1-2-src.tar.bz2
+$ tar -xvf CUnit-2.1-2-src.tar</pre></li>
+        <li>Создайте конфигурацию, выполните сборку и установку CUnit из каталога /tmp следующим образом:
+            <pre>$ cd CUnit-2.1-2
+$ ./configure --prefix=/usr
+$ make
+$ make install</pre></li>
+    </ol>
+<p>После выполнения команды 'make install' инфраструктура тестирования CUnit готова к использованию в среде IDE. Мoжно переходить к разделу <a href='#project'>Создание проекта</a>.
+</p>
+
+<h3><a name='mingw'></a>Установка CUnit на Windows и MinGW</h3>
+    <p>Приведенные ниже инструкции подразумевают, что вы загрузили файл CUnit-2.1-2-src.tar.bz2 в каталог C:/distr. Если загруженный файл имеет другое имя, обязательно укажите фактическое имя загружаемого файла CUnit и фактический каталог, в который был сохранен этот файл.</p>
+    <ol>
+        <li>Загрузите исходный код CUnit-2.1-2-src.tar.bz2 со страницы <a href="http://sourceforge.net/projects/cunit/files">Файлы CUnit</a> и сохраните его в каталог временных файлов, например C:/distr.
+        </li><li>Запустите оболочку MinGW в Windows (выберите Пуск > Все программы > MinGW > MinGW Shell).</li>
+        <li>В окне MinGW Shell распакуйте файл <tt>CUnit-2.1-2-src.tar.bz2</tt> следующим образом:
+             <pre>$ cd c:/distr
+$ bunzip2.exe CUnit-2.1-2-src.tar.bz2
+$ tar xvf CUnit-2.1-2-src.tar
+$ cd ./CUnit-2.1-2</pre></li>
+          <li>Найдите путь Unix к MinGW с помощью команды mount.
+              <pre>$ mount</pre>
+              Результат будет выглядеть примерно так:
+              <pre>C:\Users\username\AppData\Local\Temp on /tmp type user (binmode,noumount)
+C:\MinGW\msys\1.0 on /usr type user (binmode,noumount)
+C:\MinGW\msys\1.0 on / type user (binmode,noumount)
+<b>C:\MinGW on /mingw type user (binmode)</b></pre>
+          В последней строке, выделенной полужирным шрифтом, показан путь Unix: /mingw. Система может выдать и другой результат. Запишите этот путь, так как его потребуется указать в следующей команде.</li>
+           <li>Создайте конфигурацию Makefile с помощью следующей команды. <br>Если оболочка MinGW расположена на пути, отличном от /mingw, обязательно укажите соответствующее местосположение MinGW в Unix с помощью параметра --prefix=.
+
+               <pre>$ ./configure --prefix=/mingw
+<i>(lots of output about checking and configuring)<br>
+...</i>
+config.status: executing depfiles commands
+config.status: executing libtool commands
+</pre></li>
+<li>Выполните сборку библиотеки для CUnit:
+    <pre>$ make
+make all-recursive
+make[1]: Entering directory 'c/distr/CUnit-2.1-2'
+Making all in CUnit
+...
+<i>(lots of other output)</i>
+make[1]: Leaving directory 'c/distr/CUnit-2.1-2'
+$</pre>
+ </li>
+<li>Установите библиотеку CUnit в каталоги C:/MinGW/include/CUnit, C:/MinGW/share/CUnit и C:/MinGW/doc/CUnit с помощью команды make install:
+  <pre>$ make install
+Making install in CUnit
+make[1]: Entering directory 'c/distr/CUnit-2.1-2/CUnit'
+Making install in Sources
+make[1]: Entering directory 'c/distr/CUnit-2.1-2/Cunit/Sources'
+...
+ <i>(lots of other output)</i>
+make[1]: Leaving directory 'c/distr/CUnit-2.1-2'
+$</pre>
+   </li>
+<li>Если вы используете версию Java 7 Update 21, 25 или 40, необходимо применить временное решение <a href='https://netbeans.org/bugzilla/show_bug.cgi?id=236867'>проблемы 236867</a>, чтобы использовать CUnit для выполнения заданий этого практического руководства.<br><br>
+        <ol type="a">
+            <li>Перейдите в раздел Сервис > Параметры > C/C++ > Средства сборки и выберите набор средств MinGW.</li>
+        <li>Измените запись комынды make на make.exe без указания полного пути.</li>
+        <li>Выйдите из среды IDE.</li>
+        <li>В Windows 7 или более поздних версиях введите <b>var</b> в поле поиска в меню 'Пуск' для быстрого поиска ссылки 'Изменит системные переменные среды'.</li>
+        <li>Перейдите на вкладку 'Дополнительно' и щелкните 'Переменные среды'.</li>
+        <li>На панели 'Системные переменные' в диалоговом окне 'Переменные среды' нажмите 'Создать'.</li>
+        <li>В поле 'Имя переменной' введите MAKE, а в поле 'Значение переменной' - make.exe.</li>
+        <li>Нажмите кнопку OK в каждом диалоговом окне, чтобы сохранить изменения.</li>
+        <li>Запустите IDE и перейдите к следующему разделу.</li></ol></li>
+    </ol>
+     <p>После выполнения команды make install инфраструктура CUnit готова к использованию в среде IDE. Мoжно переходить к разделу <a href='#project'>Создание проекта</a>.
+        </p>
+
+        <h3><a name='cygwin'></a>Установка CUnit на Windows и Cygwin</h3>
+     <p>
+     В Cygwin для установки CUnit можно использовать стандартный установщик Cygwin, setup-x86.exe или setup-x86_64.exe, который можно загрузить на веб-сайте http://cygwin.com/install.html. Пакет CUnit находится в категории 'Библиотеки', и его можно установить точно так же, как и другие пакеты.</p>
+     <p class="notes">Проверьте правильность используемой версии. Если вы работаете в 64-разрядной версии IDE NetBeans, необходимо использовать 64-разрядную версию Cygwin и CUnit.</p>
+     <p>Если среда Cygwin еще не установлена, воспользуйтесь общими инструкциями по установке Cygwin в разделе <a href='../../../community/releases/80/cpp-setup-instructions.html#cygwin'> Настройка NetBeans IDE для C/C++/Fortran</a>. Чтобы установить CUnit, можно выбрать соответствующий файл в категории 'Библиотеки' в программе установки.
+     </p>
+     
+        <h2><a name="project"></a>Создание проекта для учебного курса</h2>
+        <p>Чтобы изучить компоненты модульных тестов, необходимо сначала создать новое приложение C:
+         <ol>
+            <li>Выберите команду &quot;Файл&quot; &gt; &quot;Новый проект&quot;.</li>
+            <li>В мастере создания проектов выберите 'C/C++', а затем 'Приложение C/C++'.</li>
+            <li>В диалоговом окне 'Создание приложения C/C++' выберите 'Создать основной файл', затем выберите язык C. Оставьте все остальные настройки по умолчанию без изменения.<br /> <img alt="Снимок диалогового окна &apos;Создание проекта&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-new-project.png">
+             </li>
+            <li>Нажмите 'Готово'. В результате будет создан проект Cpp_Application_<i>x</i>.</li>
+            <li>В окне 'Проекты' откройте папку 'Исходные файлы' и дважды щелкните файл <code>main.c</code>, чтобы открыть его в редакторе. Содержимое файла будет выглядеть примерно так, как показано на рисунке:<br /> <img alt="Снимок файла main.c до редактирования" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-initial.png">
+            </li>
+         <li>Чтобы дать программе задачу, замените код в файле <code>main.c</code> на следующий код. В результате получится простая программа вычисления факториала:
+<pre class="examplecode">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+long factorial(int arg) {
+    long result = 1;
+    int i;
+    for (i = 2; i <= arg; ++i) {
+        result *= i;
+     }
+    return result;
+}
+
+int main(int argc, char** argv) {
+    printf("Type an integer and press Enter to calculate the integer's factorial: \n");
+    int arg;
+    fflush(stdout);
+    scanf("%d", &arg);
+    
+    printf("factorial(%d) = %ld\n", arg, factorial(arg));
+
+    return (EXIT_SUCCESS);
+}
+ </pre>
+
+   <p>После редактирования файл принимает следующий вид:</p>
+             <img alt="Снимок файла main.c после редактирования" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-edited.png">
+         </li>
+         <li>Сохраните файл нажатием клавиш Ctrl+S.</li>
+
+         <li>Выполните сборку и запуск проекта, чтобы проверить его работоспособность. Для этого нажмите кнопку 'Выполнить' на панели инструментов IDE.<br> Если в качестве целого числа указать 8, должен получиться следующий результат:<br /> <img alt="Снимок результата программы вычисления факториала" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-output-factorial.png">
+         <p class="tips">
+        На некоторых платформах может потребоваться двукратное нажатие на клавишу Enter.
+    </p>
+         </li>
+
+         </ol>
+
+        <h2><a name="addtest"></a>Добавление тестов CUnit в управляемый проект NetBeans</h2>
+    <p>В процессе разработки приложения полезно добавить модульные тесты.
+     </p>
+     <p class="tips">
+        Каждый тест должен содержать функцию <code>main</code> и создавать один исполняемый файл.
+    </p>
+     <ol>
+         <li>
+     В окне 'Проекты' дважды щелкните исходный файл <code>main.c</code> и выберите Создать тест > Создать тест CUnit.<br /> <img alt="Снимок создания нового теста" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-create-test.png">
+    <p>Открывается мастер создания тестов.</p>
+    </li>
+    <li>В окне 'Выбор элементов' установите флажок напротив функции <code>main</code>. В результате будут выбраны все функции в файле <code>main</code>. В нашей программе есть только одна функция - <code>factorial()</code>.</li>
+    <li>Нажмите 'Далее'.</li>
+
+    <li>Оставьте заданное по умолчанию имя New CUnit Test без изменения и нажмите 'Готово'.
+        <p>В структуре папки 'Файлы тестов' появляется новый узел New CUnit Test.</p>
+    
+        Папка New CUnit Test содержит следующие шаблоны файлов для теста. В эту папку можно добавлять новые файлы тем же способом, каким вы добавляете исходные файлы в проект - с помощью команды в контекстном меню папки.
+    </li>
+    <li>Разверните структуру папки New CUnit Test. В этой структуре должен присутствовать файл <code>newcunittest.c</code>. Откройте этот файл в редакторе.</li>
+   
+    <li>В файле <code>newcunittest.c</code> обратите внимание на оператор <code>#include "CUnit/Basic.h"</code>, предназначенный для обращения к библиотеке CUnit. Файл <code>newcunittest.c</code> содержит автоматически генерируемую тестовую функцию <code>testFactorial</code> для функции <code>factorial()</code> в основном файле <code>main.c</code>.        
+     </li>
+     </ol>
+
+     <img alt="Снимок элементов include файла newcunittest.c" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-includes.png">
+     <p class="tips">
+        Если среда IDE не обнаружила файл <code>CUnit/Basic.h</code>, можно изменить путь include, чтобы он указывал на правильное местоположение. Например, если библиотека CUnit установлена в Windows в каталог <code>C:\Tools\CUnit-2.1-2</code>, необходимо изменить путь на следующий: <br> <br> <code>#include &lt;C:\Tools\CUnit-2.1-2\CUnit\Headers\Basic.h></code>
+    </p>
+     <p>Созданный тест является заглушкой, которую следует отредактировать для создания более функциональных тестов, но этот тест может успешно выполняться и без редактирования.</p>
+
+    <h2><a name="runtest"></a>Выполнение теста C Unit</h2>
+
+        <p>В среде IDE предусмотрено несколько способов выполнения тестов. Для запуска тестов можно щелкнуть правой кнопкой мыши узел проекта, папку 'Файлы теста или вложенную папку теста и выбрать Тест. Также можно выбрать команду Выполнить > Тестировать проект в строке меню или нажать сочетание клавиш Alt+F6.
+         </p>
+
+    <ol>
+     <li>Запустите тест, щелкнув правой кнопкой мыши папку New CUnit Test и выбрав 'Тест'. 
+         <p>В среде IDE открывается окно 'Результаты теста, в котором должны отображаться выходные данные, сходные с показанными ниже. Эти данные указывают на то, что тест не пройден.</p>
+         <p class="tips">Если окно 'Результаты теста' не отображается, откройте его самостоятельно. Для этого выберите Окно > Средства IDE > Результаты теста или нажмите сочетание клавиш Alt+Shift+R.</p>
+
+     <img alt="Снимок первого выполнения теста" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-test-orig.png">
+     </li>
+     <li>Окно 'Результаты теста разделено на две части. <br> В правой части отображаются консольные выходные данные тестов. В левой части отображается сводная информация о пройденных и непройденных тестах, а также описание непройденных тестов.</li>
+     <li>В окне 'Результаты теста дважды щелкните узел <code>testFactorial caused an ERROR</code> для перехода к функции <code>testFactorial</code> в редакторе исходного кода. <br>Очевидно, что эта функция сама по себе ничего не проверяет, а только подтверждает, что модульный тест не пройден, задавая параметр CU_ASSERT(0). Значение условия равно 0, что эквивалентно значению FALSE, поэтому инфраструктура CUnit интерпретирует это значение как неуспешный результат теста. </li>
+
+     <li>Измените строку CU_ASSERT(0) на CU_ASSERT(1) и сохраните файл (Ctrl+S).</li>
+     <li>Запустите тест повторно, щелкнув правой кнопкой мыши папку New CUnit Test и выбрав 'Тест'.<br> В окне 'Результаты теста выводятся данные, указывающие на то, что тест пройден.<br /> <img alt="Снимок выполнения теста после изменения значения CU_ASSERT" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-test-pass.png">
+    </li>
+
+    </ol>
+
+         <h2><a name="addmore"></a>Добавление еще одного теста CUnit</h2>
+     <ol>
+     <li>Создайте общий шаблон теста CUnit. Для этого щелкните правой кнопкой мыши папку 'Файлы тестов' и выберите 'Создать тест CUnit'.<br /> <img alt="Снимок добавления нового теста cunit в папку &apos;Файлы тестов&apos; " class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-new-cunit-test.png">
+    </li>
+     <li>Назовите тест My CUnit Test (имя файла должно иметь вид <code>mycunittest</code>) и нажмите 'Готово'.<br /> <img alt="Снимок мастера создания тестов" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-create-mycunittest.png">
+    </li>
+         <li>Создается новая папка теста My CUnit Test. Эта папка содержит файл <code>mycunittest.c</code>, который открывается в редакторе.</li>
+
+     <li>Изучите файл теста <code>mycunittest.c</code>. Этот файл содержит два теста. Тест с именем test1 будет пройден, поскольку имеет значение TRUE, а тест с именем test2 завершится с ошибкой, поскольку имеет значение FALSE (2*2 не равно 5).
+         <pre class="examplecode">
+void test1()
+{
+CU_ASSERT(2*2 == 4);
+}
+void test2()
+{
+CU_ASSERT(2*2 == 5);
+}    </pre>
+</li>
+     <li>Выполните тест так же, как предыдущий. Отобразится следующий результат:<br /> <img alt="Снимок пройденного и непройденного теста" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-mytest1.png">
+    </li>
+     <li>Выполните все тесты. Для этого в главном меню IDE выберите Запуск > Тестировать проект (Cpp_Application_<i>x</i>). Будут выполнены оба набора тестов, и результаты их выполнения (успешные и неуспешные) отобразятся в окне 'Результаты теста'.
+     </li>
+    
+     <li>Наведите указатель мыши на непройденный тест, чтобы просмотреть сведения об ошибке.<br /> <img alt="Снимок аннотации непройденного теста" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-test-fail-annotation.png">
+     </li>
+     <li>С помощью кнопок в левой части окна 'Результаты теста' можно показать или скрыть пройденные или непройденные тесты.
+     </ol>
+
+
+         <h2><a name="debug"></a>Отладка теста My CUnit Test</h2>
+     <p>Отладка тестов осуществляется так же, как и отладка исходных файлов проекта. Процесс отладки описан в <a href="https://netbeans.org/kb/docs/cnd/debugging.html">Практическом руководстве по отладке проектов C/C++</a>.</p>
+
+     <ol>
+     <li>В окне 'Проекты' щелкните правой кнопкой мыши папку My CUnit Test и выберите 'Шаг с заходом в тест'.
+          <p class="tips">Также можно запустить отладчик. Для этого щелкните тест правой кнопкой мыши в окне 'Результаты теста' и выберите 'Отладка'.</p>
+         <br>Отображается панель инструментов отладчика.
+         </li>
+     <li>Нажмите кнопку 'Шаг с заходом' для пошагового выполнения программы. При каждом нажатии этой кнопки выполняется один оператор.<br /> <img alt="Снимок значка пошаговой отладки" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-debug-icons.png">
+</li>
+  <li>Откройте окно 'Стек вызовов' (Окно > Отладка > Стек вызовов), чтобы просматривать вызовы функций во время пошагового выполнения теста.</li>
+     </ol>
+
+    
+     <h2><a name="addsimple"></a>Добавление простого тeста</h2>
+     <p>Простые тесты C используют собственную простую инфраструктуру тестирования IDE. Для использования простых тестов не требуется загружать отдельную инфраструктуру тестирования.</p>
+
+       <ol>
+         <li>
+     В окне 'Проекты' щелкните правой кнопкой мыши исходный файл <tt>main.c</tt> и выберите Создать тест > Создать простой тест C.<br /> <img alt="Снимок создания нового простого теста" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test.png">
+        </li>
+        <li>В окне 'Выбор элементов' мастера создания тестов установите флажок напротив функции <tt>main</tt> и нажмите 'Далее'.<br /> <img alt="Снимок окна &apos;Выбор элементов&apos; в мастере создания тестов" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-select.png">
+        </li>
+    <li>В полях 'Имя' и 'Местоположение' оставьте заданное по умолчанию имя New C Simple Test и нажмите 'Готово'.
+
+        <p>В структуре папки 'Файлы тестов' появляется новый узел New C Simple Test.</p>
+    </li>
+    <li>Разверните структуру папки New C Simple. Эта папка должна содержать файл <code>newsimpletest.c</code>. Откройте этот файл в редакторе исходного кода.<br /> <img alt="Снимок папки теста New C Simple" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-folder.png">
+    </li>
+    <li>Аналогично тесту CUnit файл <code>newsimpletest.c</code> содержит автоматически генерируемую тестовую функцию <code>testFactorial</code> для функции <code>factorial()</code> основного файла <code>main.c</code>.<br /> <img alt="Снимок кода теста New C Simple" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-code.png">
+
+     <p>Оператор <tt>if</tt> должен проверять условие. Если условие имеет значение true, тест считается непройденным. Маркер <tt>%%TEST_FAILED%%</tt> инициирует отображение графического обозначения неуспешного выполнения тестов в окне 'Результаты теста'. Оператор <tt>if</tt> в созданном тесте задает для условия значение true (1), поэтому при запуске этого теста без предварительного редактирования он всегда будет неуспешным.</p>
+     <p>Другие маркеры в функции <tt>main</tt>, такие как <tt>%%TEST_STARTED%%</tt> и <tt>%%TEST_FINISHED%%</tt> упрощают чтение выходных данных в командной строке при выполнении тестов.</p>
+     <p>Параметр <tt>time=0</tt> используется для добавления в тест измерения времени.</p>
+     <p>Параметр <tt>message</tt> позволяет выводить сообщение о неуспешном результате теста.</p>
+    </li>
+     <li>Выполните тест. В окне 'Результаты теста' должен отобразиться неуспешный результат.</li>
+       </ol>
+
+     <p class="note">Теперь необходимо отредактировать файл теста, чтобы посмотреть успешное выполнение тестов.</p>
+
+     <h2><a name="editsimple"></a>Изменение простого теста C</h2>
+     <ol>
+         <li>Скопируйте и вставьте новую функцию под функцией <code>testFactorial</code>. <br>Новая функция имеет вид:
+         <pre class="examplecode">
+void testNew() {
+    int arg = 8;
+    long result = factorial(arg);
+    if(result != 40320) {
+        printf("%%TEST_FAILED%% time=0 testname=testNew (newsimpletest) message=Error calculating %d factorial.\n", arg);
+    }
+}</pre>
+         <p>Функцию <code>main</code> также необходимо изменить, чтобы она могла вызывать новую тестовую функцию.</p>
+ 
+     </li>
+
+     <li>Скопируйте следующие строки в функции <code>main</code>:
+    <pre class="examplecode">
+printf("%%TEST_STARTED%%  testFactorial (newsimpletest)\n");
+    testFactorial();
+    printf("%%TEST_FINISHED%% time=0 testFactorial (newsimpletest)\n");
+    </pre>
+</li>
+<li>Вставьте скопированные строки сразу под исходными и измените в скопированных строках имя <code>testFactorial</code> на <code>testNew</code>. Во всем файле необходимо изменить три вхождения. <br>Готовый файл <code>newsimpletest.c</code> выглядит следующим образом:
+<pre class="examplecode">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+/*
+ * Simple C Test Suite
+ */
+
+long factorial(int arg);
+
+void testFactorial() {
+    int arg;
+    long result = factorial(arg);
+    if(1 /*check result*/) {
+        printf("%%TEST_FAILED%% time=0 testname=testFactorial (newsimpletest) message=When value is 1 this statement is executed.\n");
+    }
+}
+
+
+void testNew() {
+    int arg = 8;
+    long result = factorial(arg);
+    if(result != 40320) {
+        printf("%%TEST_FAILED%% time=0 testname=testNew (newsimpletest) message=Error calculating %d factorial.\n", arg);
+    }
+}
+
+
+int main(int argc, char** argv) {
+    printf("%%SUITE_STARTING%% newsimpletest\n");
+    printf("%%SUITE_STARTED%%\n");
+
+    printf("%%TEST_STARTED%%  testFactorial (newsimpletest)\n");
+    testFactorial();
+    printf("%%TEST_FINISHED%% time=0 testFactorial (newsimpletest)\n");
+
+    printf("%%TEST_STARTED%%  testNew (newsimpletest)\n");
+    testNew();
+    printf("%%TEST_FINISHED%% time=0 testNew (newsimpletest)\n");
+
+    printf("%%SUITE_FINISHED%% time=0\n");
+
+    return (EXIT_SUCCESS);
+}
+
+</pre></li>
+<li>В окне 'Проекты' запустите тест, щелкнув правой кнопкой мыши папку New C Simple Test и выбрав 'Тест'. <br>В окне 'Результаты теста' должны отобразиться следующие данные:<br /> <img alt="Снимок результатов простого теста" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-simpletest-results.png">
+  <p>Если вы не уверены, что тест testNew пройден, нажмите значок в виде зеленой галочки в левой части окна 'Результаты теста', чтобы просмотреть все пройденные тесты.</p>
+  <p class="tips">Маркер %%TEST_FAILED%% инициирует отображение неуспешного результата теста в окне 'Результаты теста'. Оператор if должен проверять условие. Если это условие не имеет значения true, результат теста будет неуспешным. </p>
+  <p class="tips">Маркер %%SUITE_STARTING%% и другие подобные маркеры не выводятся в окне результатов в среде IDE. Эти маркеры используются для консольного вывода.
+      </li>
+       </ol>
+
+
+    <h2><a name="commandline"></a>Выполнение тестов в интерфейсе командной строки</h2>
+    <p>
+        Тесты можно создавать в командной строке за пределами IDE с помощью команды <code>make build-tests</code> и выполнять с помощью команды <code>make test</code>. Если проект находится в каталоге ~/NetBeansProjects/Cpp_Application_<i>x</i> в системе Linux, сборка и выполнение тестов будут выполняться, как показано ниже.
+    <ol>
+        <li>Откройте окно терминала в IDE (выберите Окно > Результаты и нажмите кнопку 'Терминал' в левой части окна 'Результаты'). В рабочем каталоге текущего проекта откроется окно терминала.
+    </li>
+        <li>В окне терминала введите команды, выделенные полужирным шрифтом:
+            <pre class="examplecode">
+ <b>make test</b></pre>
+            <p>Результаты сборки и выполнения теста должны выглядеть примерно так. Примечание. Некоторые результаты команды <code>make</code> удалены.</p>
+    
+    <pre class="examplecode">
+"make" -f nbproject/Makefile-Debug.mk QMAKE= SUBPROJECTS= .build-conf
+make[1]: Entering directory `/home/tester/NetBeansProjects/CppApplication_1'
+"make"  -f nbproject/Makefile-Debug.mk dist/Debug/GNU-Linux-x86/cppapplication_1
+make[2]: Entering directory `/home/tester/NetBeansProjects/CppApplication_1'
+make[2]: `dist/Debug/GNU-Linux-x86/cppapplication_1' is up to date.
+...
+
+     CUnit - A Unit testing framework for C - Version 2.1-2
+     http://cunit.sourceforge.net/
+
+
+Suite: mycunittest
+  Test: test1 ... passed
+  Test: test2 ... FAILED
+    1. tests/mycunittest.c:33  - 2*2 == 5
+  Test: test3 ... passed
+
+--Run Summary: Type      Total     Ran  Passed  Failed
+               suites        1       1     n/a       0
+               tests         3       3       2       1
+               asserts       3       3       2       1
+%SUITE_STARTING% newsimpletest
+%SUITE_STARTED%
+%TEST_STARTED%  testFactorial (newsimpletest)
+%TEST_FAILED% time=0 testname=testFactorial (newsimpletest) message=error message sample
+%TEST_FINISHED% time=0 testFactorial (newsimpletest)
+%SUITE_FINISHED% time=0
+
+
+     CUnit - A Unit testing framework for C - Version 2.1-2
+     http://cunit.sourceforge.net/
+
+
+Suite: newcunittest
+  Test: testFactorial ... passed
+
+--Run Summary: Type      Total     Ran  Passed  Failed
+               suites        1       1     n/a       0
+               tests         1       1       1       0
+               asserts       1       1       1       0
+make[1]: Leaving directory `/home/tester/NetBeansProjects/CppApplication_1'
+
+    </pre>
+    </li>
+    </ol>
+    
+    <h2>Добавление поддержки других инфраструктур тестирования</h2>
+    <p>Чтобы добавить поддержку предпочтительной инфраструктуры тестирования C/C++, необходимо создать модуль NetBeans. См. документ для разработчиков NetBeans, <a href="http://wiki.netbeans.org/CND69UnitTestsPluginTutotial" target="_blank">Руководство по созданию подключаемого модуля тестирования C/C++</a> в статье о NetBeans. </p>
+
+   
+
+        <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Adding%20Unit%20Tests%20to%20a%20C/C++%20Project%20-%20NetBeans%20IDE%207.4%20Tutorial">Отправить отзыв по этому учебному курсу</a></div>
+        <br style="clear: both;">
+</body></html>

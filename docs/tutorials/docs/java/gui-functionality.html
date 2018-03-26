@@ -1,0 +1,395 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+
+    <head>
+        <title>Introduction to GUI Building - NetBeans IDE Tutorial</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="Adding Functionality to Buttons with the NetBeans GUI Builder: This tutorial teaches you how to build a simple GUI with back-end functionality. This tutorial is geared to the beginner and introduces the basic construction of a GUI with functionality. We will work through the layout and design of a GUI and add a few Buttons and Text Boxes. The Text Boxes will be used for receiving user input and also for displaying the program output. The Button will initiate the functionality built into the front end.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="Saleem Gul, Tomas Pavek">
+    </head>
+
+    <body>
+        <h1>Introduction to GUI Building</h1>
+
+
+        <div class="articledate" style="margin-left: 0px;">Contributed
+        by Saleem Gul and Tomas Pavek</div>
+
+        <p>This beginner tutorial teaches you how to create a simple graphical user
+            interface and add simple back-end functionality. In particular we will show how to code the behavior of
+            buttons and fields in a Swing form.
+        </p>
+
+        <p>We will work through the
+            layout and design of a GUI and add a few buttons and text fields. The text fields
+            will be used for receiving user input and also for displaying the program output.
+            The button will initiate the functionality built into the front end.
+            The application we create will be a simple but functional calculator.
+        </p>
+
+        <p>For a more comprehensive guide to the GUI Builder's design features, including video
+            demonstrations of the various design features,
+        see  <a href="quickstart-gui.html">Designing a Swing GUI in NetBeans IDE</a>.</p>
+
+        <p align="center"><B>Expected duration: 20 minutes</B></p>
+
+        <div class="indent">
+            <h3>Contents</h3>
+            <img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 6.9 and more recent" title="Content on this page applies to the NetBeans IDE 6.9 and more recent">
+            <ul class="toc">
+                <li><A HREF="#Exercise_1">Exercise 1: Creating a Project</A></li>
+                <li><A HREF="#Exercise_2">Exercise 2: Building the Front End</A></li>
+                <li><A HREF="#Exercise_3">Exercise 3: Adding Functionality</A></li>
+                <li><A HREF="#Exercise_4">Exercise 4: Running the Program</A></li>
+                <li><A HREF="#how">How Event Handling Works</A></li>
+                <li><A HREF="#seealso">See Also</A></li>
+            </ul>
+            <p><b>To complete this tutorial, you need the following software and resources.</b></p>
+
+            <table>
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Software or Resource</th>
+                        <th class="tblheader" scope="col">Version Required</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://netbeans.org/downloads/">NetBeans IDE with Java SE</a></td>
+                        <td class="tbltd1">version 6.9 or higher</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                        <td class="tbltd1">version 6, 7 or 8 </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        
+        <h2><a name="Exercise_1"></a>Exercise 1: Creating a Project</h2>
+
+        <p>The first step is to create an IDE project for the application that
+        we are going to develop. We will name our project <tt>NumberAddition</tt>.</p>
+        <ol>
+            <li>Choose <tt>File</tt> &gt; <tt>New Project</tt>. Alternatively, you can click the New Project
+            icon in the IDE toolbar.</li>
+            <li>In the Categories pane, select the Java node. In the Projects pane,
+            choose Java Application. Click Next. </li>
+            <li>Type <code>NumberAddition</code> in the Project Name field and specify a path, for example, in your home directory, as the project
+            location. </li>
+            <li>(Optional) Select the Use Dedicated Folder for Storing Libraries
+                checkbox and specify the location for the libraries folder.
+                See <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">Sharing a Library with Other Users</a> in <i>Developing Applications with NetBeans IDE</i>
+            for more information.</li>
+            <li>Deselect the Create
+            Main Class checkbox if it is selected. </li>
+            <li>Click Finish.</li>
+        </ol>
+
+
+        <!-- ===================================================================================== -->
+
+        <h2><a name="Exercise_2"></a>Exercise 2: Building the Front End</h2>
+
+        <p>To proceed with building our interface, we need to create a Java container
+            within which we will place the other required GUI components. In this step we'll
+            create a container using the <code>JFrame</code> component. We will place the container
+        in a new package, which will appear within the Source Packages node.</p>
+
+        <div class="indent">
+            <h3 class="tutorial">Create a JFrame container</h3>
+            <ol>
+                <li>In the Projects window, right-click the <tt>NumberAddition</tt> node and choose
+                <tt>New</tt> &gt; <tt>Other</tt>. </li>
+				<li>In the New File dialog box, choose the <tt>Swing GUI Forms</tt> category and the <tt>JFrame Form</tt> file type. Click Next.</li>
+                <li>Enter <tt>NumberAdditionUI</tt> as the class name.</li>
+                <li>Enter <code>my.numberaddition</code> as the package. </li>
+                <li>Click Finish.</li>
+            </ol>
+
+            <p>The IDE creates the <code>NumberAdditionUI</code> form and the
+                <code>NumberAdditionUI</code> class within the <code>NumberAddition</code>
+                application, and opens the <code>NumberAdditionUI</code> form in the
+                GUI Builder. The <code>my.NumberAddition</code>
+            package replaces the default package.</p>
+
+            <h3 class="tutorial">Adding Components: Making the Front End</h3>
+            <p>Next we will use the Palette to populate our application's front end with a JPanel.
+                Then we will add three JLabels, three JTextFields, and three JButtons.
+                If you have not used the GUI Builder before, you might find information in
+                the <a href="quickstart-gui.html">Designing a Swing GUI in NetBeans IDE</a> tutorial
+            on positioning components useful.</p>
+            <p>Once you are done dragging and positioning the aforementioned components,
+            the JFrame should look something like the following screenshot. </p>
+
+			<p class="align-center"><img src="../../../images_www/articles/72/java/gui-functionality/Figure1.png" alt="JFrame with 3 JLabels, 3 JButtons, and 3 JTextFields" class="margin-around"></p>
+
+            <p>If you do not see the
+            Palette window in the upper right corner of the IDE, choose Window &gt; Palette.</p>
+            <ol>
+                <li>Start by selecting a Panel from the Swing Containers category on Palette and drop it onto the JFrame.</li>
+                <li>While the JPanel is highlighted, go to the Properties window
+                and click the ellipsis (...) button next to Border to choose a border style.</li>
+                <li>In the Border dialog, select TitledBorder from the list,
+                    and type in <code>Number Addition</code> in the Title field.
+                Click OK to save the changes and exit the dialog.</li>
+                <li>You should now see an empty titled JFrame that says Number Addition
+                    like in the screenshot. Look at the screenshot and add three
+                JLabels, three JTextFields and three JButtons as you see above.</li>
+            </ol>
+
+            <h3 class="tutorial">Renaming the Components</h3>
+            <p>In this step we are going to rename the display text of the
+            components that were just added to the JFrame.</p>
+            <ol>
+                <li>Double-click <code>jLabel1</code> and change the text property to <code>First
+                Number:</code>.</li>
+                <li>Double-click <code>jLabel2</code> and change the text to <code>Second Number:</code>.</li>
+                <li>Double-click <code>jLabel3</code> and change the text to <code>Result:</code>. </li>
+                <li>Delete the sample text from <code>jTextField1</code>. You can make the display text
+                    editable by right-clicking the
+                    text field and choosing Edit Text from the popup menu. You may have to resize the <code>jTextField1</code> to its original size. Repeat
+                this step for <code>jTextField2</code> and <code>jTextField3</code>. </li>
+                <li> Rename the display text of <code>jButton1</code> to <code>Clear</code>.
+                    (You can edit a button's text by right-clicking the button and choosing
+                Edit Text. Or you can click the button, pause, and then click again.) </li>
+                <li> Rename the display text of <code>jButton2</code> to <code>Add</code>.</li>
+                <li> Rename the display text of <code>jButton3</code> to <code>Exit</code>.</li>
+            </ol>
+            <p>Your Finished GUI should now look like the following screenshot:</p>
+            <p class="align-center"><img src="../../../images_www/articles/72/java/gui-functionality/Figure2.png"  alt="the completed application" class="margin-around"></p>
+
+
+        </div>
+
+
+        <!-- ======================================================================================= -->
+
+        <h2><a name="Exercise_3"></a>Exercise 3: Adding Functionality</h2>
+
+        <p>In this exercise we are going to give functionality to the Add, Clear, and
+            Exit buttons. The <code>jTextField1</code> and <code>jTextField2</code> boxes will be used for user input
+            and <code>jTextField3</code> for program output - what we are creating is a very simple calculator.
+        Let's begin.</p>
+
+        <div class="indent">
+            <h3 class="tutorial">Making the Exit Button Work</h3>
+
+            <p>In order to give function to the buttons, we have to assign an event
+                handler to each to respond to events.
+                In our case we want to know when the button is pressed, either by mouse
+            click or via keyboard. So we will use ActionListener responding to ActionEvent. <!--TODO clarify here--></p>
+
+            <ol>
+                <li>Right click the Exit button.
+                    From the pop-up menu choose Events &gt; Action &gt; actionPerformed.
+                    Note that the menu contains many more events you can respond to!
+                    When you select the <tt>actionPerformed</tt> event, the IDE will automatically
+                    add an ActionListener to the Exit button and generate a handler method
+                for handling the listener's actionPerformed method. </li>
+                <li>The IDE will open up the Source Code window and scroll to
+                    where you implement the action
+                    you want the button to do when the button is pressed (either by mouse
+                    click or via keyboard).
+                    Your Source Code window should contain the following lines:
+                    <pre class="examplecode">private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
+    //TODO add your handling code here:
+                }</pre></li>
+                <li>We
+                are now going to add code for what we want the Exit Button to do. Replace the TODO line with <code>System.exit(0);</code>.
+                Your finished Exit button code should look like this:
+
+                  <pre class="examplecode">private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
+    System.exit(0);
+                } </pre>
+				</li>
+            </ol>
+
+            <h3 class="tutorial">Making the Clear Button Work</h3>
+            <ol>
+                <li>Click the Design tab at the top of your work area to go back to the
+                Form Design.</li>
+                <li>Right click the Clear button (<code>jButton1</code>). From the pop-up menu select
+                Events &gt; Action &gt; actionPerformed.</li>
+
+                <li>We are going to have the Clear button erase all text from the jTextFields.
+                    To do this, you will add some code like above. Your finished source code should look
+                like this: 
+                <pre class="examplecode">private void jButton1ActionPerformed(java.awt.event.ActionEvent evt){
+    jTextField1.setText(&quot;&quot;);
+    jTextField2.setText(&quot;&quot;);
+    jTextField3.setText(&quot;&quot;);
+                }</pre>
+			</li>
+            </ol>
+			
+            <p>The above code changes the text in all three
+                of our JTextFields to nothing, in essence it is overwriting the existing
+            Text with a blank.</p>
+
+            <h3 class="tutorial">Making the Add Button Work</h3>
+            <p>The Add button will perform
+            three actions. </p>
+            <ol><li>It is going to accept user input from <code>jTextField1</code> and <code>jTextField2</code> and
+                convert the input from a type String to a float. </li>
+            <li>It will then perform
+                addition of the two numbers.</li>
+                <li>And finally, it will convert the sum to a type String
+            and place it in <code>jTextField3</code>.</li>
+            </ol>
+            Lets get started!
+
+            <ol>
+                <li>Click the Design tab at the top of your work area to go back to the
+                Form Design.</li>
+                <li>Right-click the Add button (<code>jButton2</code>).  From the pop-up menu, select Events &gt;
+                Action &gt; actionPerformed.</li>
+                <li>We are going to add some code to have our Add button work.  The
+                    finished source code shall look like this:
+                    <pre class="examplecode">private void jButton2ActionPerformed(java.awt.event.ActionEvent evt){
+    // First we define float variables.
+    float num1, num2, result;
+    // We have to parse the text to a type float.
+    num1 = Float.parseFloat(jTextField1.getText());
+    num2 = Float.parseFloat(jTextField2.getText());
+   // Now we can perform the addition.
+    result = num1+num2;
+    // We will now pass the value of result to jTextField3.
+    // At the same time, we are going to
+    // change the value of result from a float to a string.
+    jTextField3.setText(String.valueOf(result));
+                    }</pre>
+                </li>
+            </ol>
+
+            <p>Our program is now complete we can now build and run it to see it in action. </p>
+        </div>
+
+
+        <h2><a name="Exercise_4"></a>Exercise 4: Running the Program</h2>
+
+        <p><b>To run the program in the IDE:</b></p>
+
+        <ol>
+            <li>Choose Run &gt; Run  Project (Number Addition) (alternatively, press F6).
+              <p class="notes"><b>Note:</b> If you get a window informing you
+                that Project NumberAddition does not have a main class set, then
+                you should select <tt>my.NumberAddition.NumberAdditionUI</tt> as the main
+          class in the same window and click the OK button.</p></li>
+            
+        </ol>
+
+        <p><b>To run the program outside of the IDE:</b></p>
+        <ol>
+            <li>Choose Run&nbsp;&gt; Clean and Build Main Project (Shift-F11)
+            to build the application JAR file.</li>
+            <li>Using your system's file explorer or file manager, navigate to the <code> NumberAddition/dist</code> directory.
+			<p class="notes"><b>Note:</b> The location of the <tt>NumberAddition</tt> project directory depends on the path you specified while creating the project in step 3 of the  <a href="#Exercise_1">Exercise 1: Creating a Project</a> section.</p>
+            </li>
+            <li>Double-click the <code>NumberAddition.jar</code> file.</li>
+        </ol>
+        <p>After a few seconds, the application should start.</p>
+        <p class="notes"><b>Note:</b> If double-clicking the JAR file
+            does not launch the application, see
+            <a href="../../articles/javase-deploy.html#troubleshooting">this article</a>
+        for information on setting JAR file associations in your operating system.</p>
+
+        <p>You can also launch the application from the command line.</p>
+        <p><b>To launch the application from the command line:</b></p>
+        <ol>
+            <li>On your system, open up a command prompt or terminal window.</li>
+            <li>In the command prompt, change directories to the <code>NumberAddition/dist</code> directory.</li>
+            <li>At the command line, type the following statement:
+            <pre class="examplecode">java -jar  NumberAddition.jar</pre>
+			<p class="notes"><b>Note:</b> Make sure <tt>my.NumberAddition.NumberAdditionUI</tt> is set as the main class before running the application. You can check this by right-clicking the NumberAddition project
+ node in the Projects pane, choosing Properties in the popup menu, and selecting the Run category in the Project Properties dialog box. The Main Class field should display <tt>my.numberaddition.NumberAdditionUI</tt>. </p>
+            </li>
+        </ol>
+
+        <h2><a name="how"></a>How Event Handling Works</h2>
+
+        <p>This tutorial has showed how to respond to a simple button event.
+            There are many more events you can have your application respond to. The IDE can help you find the
+        list of available events your GUI components can handle:</p>
+        <ol>
+            <li>Go back to the file  <code>NumberAdditionUI.java</code> in the Editor.
+            Click the Design tab to see the GUI's layout in the GUI Builder.</li>
+            <li>Right-click any GUI component, and select Events from the pop-up menu.
+            For now, just browse the menu to see what's there, you don't need to select anything.</li>
+            <li>Alternatively, you can select Properties from the Window menu. In the Properties window, click the Events tab.
+            In the Events tab, you can view and edit events handlers associated with the currently active GUI component.</li>
+            <li>You can have your application respond to key presses, single,
+                double and triple mouse clicks, mouse motion, window size and focus changes.
+                You can generate event handlers for all of them from the Events menu.
+                The most common event you will use is an Action event.
+            (Learn <a href="http://java.sun.com/docs/books/tutorial/uiswing/events/generalrules.html#twokinds">best practices for Event handling</a> from Sun's <a href="http://java.sun.com/docs/books/tutorial/uiswing/events/index.html">Java Events Tutorial</a>.)</li>
+        </ol>
+
+        <p>How does event handling work? Every time you select an event from the Event menu,
+            the IDE automatically creates a so-called event listener for you, and hooks it up to your component.
+        Go through the following steps to see how event handling works.</p>
+
+        <ol>
+            <li>Go back to the file <code>NumberAdditionUI.java</code> in the Editor. Click the Source tab to see the GUI's source.</li>
+            <li>Scroll down and note the methods <code>jButton1ActionPerformed()</code>,
+                <code>jButton2ActionPerformed()</code>, and <code>jButton3ActionPerformed()</code> that you just implemented.
+            These methods are called event handlers.</li>
+            <li>Now scroll to a method called <code>initComponents()</code>. If you do not see this method,
+                look for a line that says <code>Generated Code</code>; click the + sign next to it
+            to expand the collapsed <code>initComponents()</code> method.</li>
+            <li>First, note the blue block around the <code>initComponents()</code> method. This code was auto-generated
+            by the IDE and you cannot edit it.</li>
+            <li>Now, browse through the <code>initComponents()</code> method. Among other things,
+                it contains the code that initializes and places your GUI components on the form.
+            This code is generated and updated automatically while you place and edit components in the Design view.</li>
+            <li>In <code>initComponents()</code>, scroll down to where it reads
+                <pre class="examplecode">jButton3.setText(&quot;Exit&quot;);
+jButton3.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+           jButton3ActionPerformed(evt);
+    }
+            });</pre> 
+
+            <p>This is the spot where an event listener object is added to the GUI component;
+                in this case, you register an ActionListener to the <code>jButton3</code>.
+                The ActionListener interface has an actionPerformed method taking ActionEvent
+                object which is implemented simply by calling your <code>jButton3ActionPerformed</code> event handler.
+                The button is now listening to action events. Everytime it is pressed an
+                ActionEvent is generated and passed to the listener's actionPerformed method
+            which in turn executes code that you provided in the event handler for this event.</p></li>
+        </ol>
+        <p>
+            Generally speaking, to be able to respond, each interactive GUI component
+            needs to register to an event listener and needs to implement an event handler.
+            As you can see, NetBeans IDE handles hooking up the event listener for you, so you can concentrate
+            on implementing the actual business logic that should be triggered by the event.
+        </p>
+        <!--TODO: Add Swing App framework info, links-->
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20GUI%20Building">Send Feedback on This Tutorial</a>
+        </div>
+        <br style="clear:both;">
+        <h2><a name="seealso"></a>See Also</h2>
+        <ul>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementing Java GUIs</a> in <i>Developing Applications with NetBeans IDE</i></li>
+			<li><a href="quickstart-gui.html">Designing a Swing GUI in NetBeans IDE</a></li>
+            <li><a href="gui-image-display.html">Handling Images in A GUI Application</a></li>
+            <li><a href="hibernate-java-se.html">Using Hibernate in a Java Swing Application</a></li>
+            <li><a href="../../trails/matisse.html">Java GUI Applications Learning Trail</a></li>
+            <li><a href="../../trails/java-se.html">General Java Development Learning Trail</a></li>
+            <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ#section-NetBeansUserFAQ-GUIEditorMatisse" target="_blank">GUI Builder - Frequently Asked Questions</a></li>
+            <li><a href="http://download.oracle.com/javase/tutorial/uiswing/events/index.html" target="_blank">Lesson: Writing Event Listeners</a> from 
+            <a href="http://download.oracle.com/javase/tutorial/index.html" target="_blank">The Java™ Tutorials</a>.</li>
+           
+        </ul>
+
+</body>
+
+</html>

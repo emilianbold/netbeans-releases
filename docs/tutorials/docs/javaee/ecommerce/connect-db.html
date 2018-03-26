@@ -1,0 +1,1678 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit focuses on communication between the database and the application. You learn to set context parameters and work with JSTL to dynamically retrieve and display data in web pages.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+
+        <title>The NetBeans E-commerce Tutorial - Connecting the Application to the Database</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>The NetBeans E-commerce Tutorial - Connecting the Application to the Database</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Tutorial Contents</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introduction</a></li>
+                    <li><a href="design.html">Designing the Application</a></li>
+                    <li><a href="setup-dev-environ.html">Setting up the Development Environment</a></li>
+                    <li><a href="data-model.html">Designing the Data Model</a></li>
+                    <li><a href="page-views-controller.html">Preparing the Page Views and Controller Servlet</a></li>
+                    <li><strong>Connecting the Application to the Database</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#sampleData">Adding Sample Data to the Database</a></li>
+                            <li><a href="#createConnPoolDataSource">Creating a Connection Pool and Data Source</a></li>
+                            <li><a href="#testConnPoolDataSource">Testing the Connection Pool and Data Source</a></li>
+                            <li><a href="#param">Setting Context Parameters</a></li>
+                            <li><a href="#jstl">Working with JSTL</a></li>
+                            <li><a href="#troubleshoot">Troubleshooting</a></li>
+                            <li><a href="#seeAlso">See Also</a></li>
+                        </ul></li>
+
+                    <li><a href="entity-session.html">Adding Entity Classes and Session Beans</a></li>
+                    <li><a href="manage-sessions.html">Managing Sessions</a></li>
+                    <li><a href="transaction.html">Integrating Transactional Business Logic</a></li>
+                    <li><a href="language.html">Adding Language Support</a></li>
+                    <li><a href="security.html">Securing the Application</a></li>
+                    <li><a href="test-profile.html">Testing and Profiling</a></li>
+                    <li><a href="conclusion.html">Conclusion</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>This tutorial unit focuses on communication between the database and the application.
+            You begin by adding sample data to the database and explore some of the features
+            provided by the IDE's SQL editor. You set up a data source and connection pool on
+            the GlassFish server, and proceed by creating a JSP page that tests the data source
+            by performing a simple query on the database.</p>
+
+        <p>This unit also addresses how the application retrieves and displays images necessary
+            for web presentation, and how to set context parameters and retrieve their values from
+            web pages. Once you are certain the data source is working correctly, you apply JSTL's
+            <code>core</code> and <code>sql</code> tag libraries to retrieve and display category
+            and product images for the <a href="design.html#index">index</a> and
+            <a href="design.html#category">category</a> pages.</p>
+
+        <p>You can view a live demo of the application that you build in this tutorial:
+            <a href="http://services.netbeans.org/AffableBean/" target="_blank">NetBeans E-commerce
+            Tutorial Demo Application</a>.</p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java bundle, 6.8 or 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFish server</a></td>
+                    <td class="tbltd1">v3 or Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQL database server</a></td>
+                    <td class="tbltd1">version 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot2.zip">AffableBean
+                            project</a></td>
+                    <td class="tbltd1">snapshot 2</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Fimg.zip">website images</a></td>
+                    <td class="tbltd1">n/a</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The NetBeans IDE requires the Java Development Kit (JDK) to run properly.
+                If you do not have any of the resources listed above, the JDK should be
+                the first item that you download and install.</li>
+
+            <li>The NetBeans IDE Java Bundle includes Java Web and EE technologies, which
+                are required for the application you build in this tutorial.</li>
+
+            <li id="glassFish">The NetBeans IDE Java Bundle also includes the GlassFish server,
+                which you require for this tutorial. You could
+                <a href="http://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">download
+                the GlassFish server independently</a>, but the version provided with the
+                NetBeans download has the added benefit of being automatically registered
+                with the IDE.</li>
+
+            <li>You can follow this tutorial unit without having completed previous units. To
+                do so, perform the following three steps:
+
+                <ol style="margin: 5px 0 0 -1.5em">
+                    <li><strong>Set up your MySQL database server.</strong> Follow the steps
+                        outlined in: <a href="setup-dev-environ.html#communicate">Communicating
+                        with the Database Server</a>.</li>
+
+                    <li><strong>Create the <code>affablebean</code> schema on the database server.</strong>
+
+                        <ol style="list-style-type: lower-alpha; margin-top: 5px; margin-left: -1.5em">
+                            <li>Click on <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Faffablebean_schema_creation.sql">affablebean_schema_creation.sql</a>
+                                and copy (Ctrl-C; &#8984;-C on Mac) the entire contents of the file.</li>
+
+                            <li>Open the IDE's SQL editor.  In the Services window (Ctrl-5; &#8984;-5 on Mac),
+                                right-click the <code>affablebean</code> database connection (
+                                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/db-connection-node.png"
+                                alt="Database connection node"> ) node and choose Execute Command. The
+                                IDE's SQL editor opens.</li>
+
+                            <li>Paste (Ctrl-V; &#8984;-V on Mac) the entire contents of the <code>affablebean.sql</code>
+                                file into the editor.</li>
+
+                            <li>Click the Run SQL ( <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-sql-btn.png"
+                                alt="Run SQL button"> ) button in the editor's toolbar. The script runs on your
+                                MySQL server. Tables are generated for the <code>affablebean</code> database.</li>
+                        </ol></li>
+
+                    <li>Open the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot2.zip">project
+                        snapshot</a> in the IDE. In the IDE, press Ctrl-Shift-O (&#8984;-Shift-O on Mac) and
+                        navigate to the location on your computer where you unzipped the downloaded file.</li>
+                </ol>
+            </li>
+        </ul>
+
+
+        <br>
+        <h2 id="sampleData">Adding Sample Data to the Database</h2>
+
+        <p>Begin by adding sample data to the <code>category</code> and <code>product</code>
+            tables. You can do this using the IDE's SQL editor, which allows you to interact
+            directly with the database using native SQL. The IDE's SQL support also includes
+            a GUI editor that enables you to add, remove, modify and delete table records.</p>
+
+        <ul>
+            <li><a href="#category">category table</a></li>
+            <li><a href="#product">product table</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="category">category table</h3>
+
+            <ol>
+                <li>In the Services window (Ctrl-5; &#8984;-5 on Mac), right-click the
+                    <code>category</code> table (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/db-table-node.png"
+                         alt="database table node"> ) node and choose View Data. The SQL
+                    editor opens and displays with a GUI representation of the <code>category</code>
+                    table in the lower region. Note that the table is empty, as no data has
+                    yet been added.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/category-table-empty.png"
+                         class="margin-around b-all" alt="Empty category table displayed in SQL editor"
+                         title="Use the SQL editor to view table data in the IDE">
+
+                    <br>
+                    Also, note that the native SQL query used to generate the GUI representation
+                    is displayed in the upper region of the editor: '<code>select * from category</code>'.</li>
+
+                <li>Delete '<code>select * from category</code>' and enter the following SQL statement:
+
+                    <pre class="examplecode">INSERT INTO `category` (`name`) VALUES ('dairy'),('meats'),('bakery'),('fruit & veg');</pre>
+
+                    This statement inserts four new records, each with a unique entry for the
+                    '<code>name</code>' column. Because the <code>id</code> column was specified
+                    as <code>AUTO_INCREMENT</code> when you created the schema, you do not need
+                    to worry about supplying a value.</li>
+
+                <li>Click the Run SQL ( <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-sql-btn.png"
+                    alt="Run SQL button"> ) button in the editor's toolbar. The SQL statement is
+                    executed.</li>
+
+                <li>To confirm that the data has been added, run the '<code>select * from category</code>'
+                    query again. To do so, you can use the SQL History window. Click the SQL History (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/sql-history-btn.png"
+                    alt="SQL History button"> ) button in the editor's toolbar and double-click
+                    the '<code>select * from category</code>' entry. The SQL History window lists
+                    all SQL statements that you recently executed in the IDE.</li>
+            </ol>
+
+            <br>
+            <p class="tips">Watch the screencast below to see how you can follow the above steps.
+                When typing in the editor, be sure to take advantage of the IDE's code completion
+                and suggestion facilities.</p>
+
+            <br>
+            <script src="/images_www/js/mediaplayer-5.9/jwplayer.js" type="text/javascript"></script> 
+            
+            <div id="player" >
+                <center>
+                    <div id="flashContent"></div>
+                </center>
+            </div>
+            <script type="text/javascript">
+	$(function(){
+	    var targetFile='http://bits.netbeans.org/media/nb-sql-editor.flv';
+		jwplayer('flashContent').setup({
+	                'id': 'flashContentId',
+	                'width': '530',
+	                'height': '340',
+	                'autostart': 'false',
+	                'file': targetFile,
+	                'controlbar':{position:'bottom'},
+	                'modes': [
+	                      {type: 'html5'},
+	                      {type: 'flash', src: '/images_www/js/mediaplayer-5.9/player.swf'},
+	                      {type: 'download'}
+	                         ]
+	           });	
+	});
+    </script>
+
+
+            <br><br>
+            <h3 id="product">product table</h3>
+
+            <ol>
+                <li>Right-click the <code>product</code> table (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/db-table-node.png"
+                    alt="database table node"> ) node and choose Execute Command. Choosing the Execute
+                    Command menu option in the Services window opens the SQL editor in the IDE.</li>
+
+                <li>Copy and paste the following <code>INSERT</code> statements into the editor.
+
+                    <pre class="examplecode">
+--
+-- Sample data for table `product`
+--
+
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('milk', 1.70, 'semi skimmed (1L)', 1);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('cheese', 2.39, 'mild cheddar (330g)', 1);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('butter', 1.09, 'unsalted (250g)', 1);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('free range eggs', 1.76, 'medium-sized (6 eggs)', 1);
+
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('organic meat patties', 2.29, 'rolled in fresh herbs&lt;br&gt;2 patties (250g)', 2);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('parma ham', 3.49, 'matured, organic (70g)', 2);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('chicken leg', 2.59, 'free range (250g)', 2);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('sausages', 3.55, 'reduced fat, pork&lt;br&gt;3 sausages (350g)', 2);
+
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('sunflower seed loaf', 1.89, '600g', 3);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('sesame seed bagel', 1.19, '4 bagels', 3);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('pumpkin seed bun', 1.15, '4 buns', 3);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('chocolate cookies', 2.39, 'contain peanuts&lt;br&gt;(3 cookies)', 3);
+
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('corn on the cob', 1.59, '2 pieces', 4);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('red currants', 2.49, '150g', 4);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('broccoli', 1.29, '500g', 4);
+INSERT INTO `product` (`name`, price, description, category_id) VALUES ('seedless watermelon', 1.49, '250g', 4);
+</pre>
+
+                    Examine the above code and note the following points:
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>By examining the
+                            <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Faffablebean_schema_creation.sql"><code>affablebean</code>
+                            schema generation script</a>, you'll note that the <code>product</code>
+                            table contains a non-nullable, automatically incremental primary key.
+                            Whenever you insert a new record into the table (and don't explicitly
+                            set the value of the primary key), the SQL engine sets it for you.
+                            Also, note that the <code>product</code> table's <code>last_update</code>
+                            column applies <code>CURRENT_TIMESTAMP</code> as its default value.
+                            The SQL engine will therefore provide the current date and time for
+                            this field when a record is created.
+
+                            <br><br>
+                            Looking at this another way, if you were to create an <code>INSERT</code>
+                            statement that didn't indicate which columns would be affected by the
+                            insertion action, you would need to account for all columns. In this
+                            case, you could enter a <code>NULL</code> value to enable the SQL engine
+                            to automatically handle fields that have default values specified. For
+                            example, the following statement elicits the same result as the first
+                            line of the above code:
+
+                            <pre class="examplecode" style="width:662px">INSERT INTO `product` VALUES (NULL, 'milk', 1.70, 'semi skimmed (1L)', NULL, 1);</pre>
+
+                            After running the statement, you'll see that the record contains an
+                            automatically incremented primary key, and the <code>last_update</code>
+                            column lists the current date and time.</li>
+
+                        <li>The value for the final column, '<code>category_id</code>', must
+                            correspond to a value contained in the <code>category</code> table's
+                            <code>id</code> column. Because you have already added four records
+                            to the <code>category</code> table, the <code>product</code> records
+                            you are inserting reference one of these four records. If you try to
+                            insert a <code>product</code> record that references a <code>category_id</code>
+                            that doesn't exist, a foreign key constraint fails.</li>
+                    </ul></li>
+
+                <li>Click the Run SQL ( <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-sql-btn.png"
+                    alt="Run SQL button"> ) button in the editor's toolbar.
+
+                    <br><br>
+                    <p class="notes"><strong>Note:</strong> View the Output window (Ctrl-4; &#8984;-4
+                    on Mac) to see a log file containing results of the execution.</p></li>
+
+                <li>Right-click the <code>product</code> table (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/db-table-node.png"
+                    alt="database table node"> ) node and choose View Data. You can see 16 new records
+                    listed in the table.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/product-table.png"
+                         class="margin-around b-all" alt="16 new records displayed in SQL editor's 'product' table"
+                         title="Choose View Data from a table node's right-click menu to verify sample data"
+                         style="width:688px">
+
+
+                    <br>
+                    <div class="feedback-box float-left" style="width: 683px;">
+
+                        <h3>NetBeans GUI Support for Database Tables</h3>
+
+                        <p>In the Services window, when you right-click a table (
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/common/db-table-node.png"
+                            alt="database table node"> ) node and choose View Data, the IDE displays
+                            a visual representation of the table and the data it contains (as depicted
+                            in the image above). You can also use this GUI support to add, modify, and
+                            delete table data.</p>
+
+                        <ul>
+                            <li><strong>Add new records:</strong> To add new records, click the Insert
+                                Record ( <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/insert-record-btn.png"
+                                alt="Insert Record button"> ) button. An Insert Records dialog window
+                                displays, enabling you to enter new records. When you click OK, the
+                                new data is committed to the database, and the GUI representation of
+                                the table is automatically updated.
+
+                                <br><br>
+                                <p class="tips">Click the Show SQL button within the dialog window
+                                to view the SQL statement(s) that will be applied upon initiating the
+                                action.</p></li>
+
+                            <li><strong>Modify records:</strong> You can make edits to existing records
+                                by double-clicking directly in table cells and modifying field entries.
+                                Modified entries display as <span style="color: #259125">green text</span>.
+                                When you are finished editing data, click the Commit Record
+                                ( <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/commit-record-btn.png"
+                                alt="Commit Record button"> ) button to commit changes to the actual database.
+                                (Similarly, click the Cancel Edits
+                                ( <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/cancel-edits-btn.png"
+                                alt="Cancel Edits button"> ) button to cancel any edits you have made.</li>
+
+                            <li><strong>Delete individual records:</strong> Click a row in the table,
+                                then click the Delete Selected Record (
+                                <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/delete-selected-record-btn.png"
+                                alt="Delete Selected Record button"> ) button. You can also delete
+                                multiple rows simultaneously by holding Ctrl (&#8984; on Mac) while
+                                clicking to select rows.</li>
+
+                            <li><strong>Delete all records:</strong> Deleting all records within a
+                                table is referred to as '<em>truncating</em>' the table. Click the
+                                Truncate Table ( <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/truncate-table-btn.png"
+                                alt="Truncate Table button"> ) button to delete all records contained
+                                in the displayed table.</li>
+                        </ul>
+
+                        <p>If the displayed data needs to be resynchronized with the actual database,
+                            you can click the Refresh Records (
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/refresh-records-btn.png"
+                            alt="Refresh Records button"> ) button. Note that much of the above-described
+                            functionality can also be accessed from the right-click menu within the GUI
+                            editor.</p>
+                    </div>
+
+                    <div style="clear:left"></div>
+                </li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="createConnPoolDataSource">Creating a Connection Pool and Data Source</h2>
+
+        <p>From this point onward, you establish connectivity between the MySQL database and the
+            <code>affablebean</code> application through the GlassFish server which it is deployed
+            to. This communication is made possible with the Java Database Connectivity
+            (<a href="http://java.sun.com/products/jdbc/overview.html" target="_blank">JDBC</a>) API.
+            The JDBC API is an integration library contained in the JDK (refer back to the component
+            diagram displayed in the tutorial <a href="intro.html#platform">Introduction</a>). Although
+            this tutorial does not work directly with JDBC programming, the application that we are
+            building does utilize the JDBC API whenever communication is required between the SQL and
+            Java languages. For example, you start by creating a <em>connection pool</em> on the
+            GlassFish server. In order for the server to communicate directly with the the MySQL
+            database, it requires the <a href="http://www.mysql.com/downloads/connector/j/" target="_blank">Connector/J</a>
+            JDBC driver which converts JDBC calls directly into a MySQL-specific protocol. Later in
+            this tutorial unit, when you apply JSTL's
+            <a href="http://download.oracle.com/docs/cd/E17802_01/products/products/jsp/jstl/1.1/docs/tlddocs/sql/query.html" target="_blank"><code>&lt;sql:query&gt;</code></a>
+            tags to query the <code>affablebean</code> database, the tags are translated into JDBC
+            <a href="http://download-llnw.oracle.com/javase/6/docs/api/java/sql/Statement.html" target="_blank"><code>Statement</code></a>s.</p>
+
+        <p>A connection pool contains a group of reusable connections for a particular database.
+            Because creating each new physical connection is time-consuming, the server maintains
+            a pool of available connections to increase performance. When an application requests
+            a connection, it obtains one from the pool. When an application closes a connection,
+            the connection is returned to the pool. Connection pools use a JDBC driver to create
+            physical database connections.</p>
+
+        <p>A data source (a.k.a. a JDBC resource) provides applications with the means of connecting
+            to a database. Applications get a database connection from a connection pool by looking
+            up a data source using the Java Naming and Directory Interface
+            (<a href="http://www.oracle.com/technetwork/java/overview-142035.html" target="_blank">JNDI</a>)
+            and then requesting a connection. The connection pool associated with the data source
+            provides the connection for the application.</p>
+
+        <p>In order to enable the application access to the <code>affablebean</code> database,
+            you need to create a connection pool and a data source that uses the connection pool.
+            Use the NetBeans GlassFish JDBC Resource wizard to accomplish this.</p>
+
+        <p class="notes"><strong>Note:</strong> You can also create connection pools and data
+            sources directly on the GlassFish server using the GlassFish Administration Console.
+            However, creating these resources in this manner requires that you manually enter
+            database connection details (i.e., username, password and URL). The benefit of using
+            the NetBeans wizard is that it extracts any connection details directly from an
+            existing database connection, thus eliminating potential connectivity problems.</p>
+
+        <p class="tips">To access the console from the IDE, in the Services window right-click
+            the Servers &gt; GlassFish node and choose View Admin Console. The default username / password
+            is: <code>admin</code> / <code>adminadmin</code>. If you'd like to set up the connection
+            pool and data source using the GlassFish Administration console, follow steps 3-15 of
+            the <a href="setup.html">NetBeans E-commerce Tutorial Setup Instructions</a>. The setup
+            instructions are provided for later tutorial units.</p>
+
+        <ol>
+            <li>Click the New File (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png"
+                alt="New File button"> ) button in the IDE's toolbar. (Alternatively, press Ctrl-N;
+                &#8984;-N on Mac.)</li>
+
+            <li>Select the <strong>GlassFish</strong> category, then select <strong>JDBC Resource</strong>
+                and click Next.</li>
+
+            <li>In Step 2 of the JDBC Resource wizard, select the <code>Create New JDBC Connection Pool</code>
+                option. When you do so, three new steps are added to the wizard, enabling you to specify
+                connection pool settings.</li>
+
+            <li>Enter details to set up the data source:
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li><strong>JNDI Name:</strong> <code>jdbc/affablebean</code>
+
+                        <br><span class="tips" style="line-height: 25px">By convention, the JNDI name for
+                            a JDBC resource begins with the '<code>jdbc/</code>' string.</span></li>
+
+                    <li><strong>Object Type:</strong> <code>user</code></li>
+
+                    <li><strong>Enabled:</strong> <code>true</code></li>
+                </ul>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/jdbc-resource-gen-attributes.png"
+                     class="margin-around b-all" style="width:688px" alt="JDBC Resource wizard - General Attributes"
+                     title="Create a new connection pool and data source using the JDBC Resource wizard">
+            </li>
+
+            <li>Click Next. In Step 3, Additional Properties, you do not need to specify any additional
+                configuration information for the data source.</li>
+
+            <li>Click Next. In Step 4, Choose Database Connection, type in <code>AffableBeanPool</code>
+                as the JDBC connection pool name. Also, ensure that the <code>Extract from Existing
+                Connection</code> option is selected, and that the <code>jdbc:mysql://localhost:3306/affablebean</code>
+                connection is listed.</li>
+
+            <li>Click Next. In Step 5, Add Connection Pool Properties, specify the following details:
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li><strong>Datasource Classname:</strong> <code>com.mysql.jdbc.jdbc2.optional.MysqlDataSource</code></li>
+                    <li><strong>Resource Type:</strong> <code>javax.sql.ConnectionPoolDataSource</code></li>
+                    <li><strong>Description:</strong> <em>(Optional)</em> <code>Connects to the affablebean database</code></li>
+                </ul>
+
+                Also, note that the wizard extracts and displays properties from the existing connection.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/jdbc-resource-conn-pool.png"
+                     class="margin-around b-all" style="width:688px" alt="JDBC Resource wizard - Add Connection Pool"
+                     title="Create a new connection pool and data source using the JDBC Resource wizard"></li>
+
+            <li>Click Finish. The wizard generates a <code>sun-resources.xml</code> file for the
+                project that contains all information required to set up the connection pool and
+                data source on GlassFish. The <code>sun-resources.xml</code> file is a deployment
+                descriptor specific to the GlassFish application server. When the project next gets
+                deployed, the server will read in any configuration data contained in
+                <code>sun-resources.xml</code>, and set up the connection pool and data source
+                accordingly. Note that once the connection pool and data source exist on the server,
+                your project no longer requires the <code>sun-resources.xml</code> file.</li>
+
+            <li>In the Projects window (Ctrl-1; &#8984;-1 on Mac), expand the Server Resources node
+                and double-click the <code>sun-resources.xml</code> file to open it in the editor.
+                Here you see the XML configuration required to set up the connection pool and data
+                source. (Code below is formatted for readability.)
+
+                <pre class="examplecode">
+&lt;resources&gt;
+  &lt;jdbc-resource enabled=&quot;true&quot;
+                 jndi-name=&quot;jdbc/affablebean&quot;
+                 object-type=&quot;user&quot;
+                 pool-name=&quot;AffableBeanPool&quot;&gt;
+  &lt;/jdbc-resource&gt;
+
+  &lt;jdbc-connection-pool allow-non-component-callers=&quot;false&quot;
+                        associate-with-thread=&quot;false&quot;
+                        connection-creation-retry-attempts=&quot;0&quot;
+                        connection-creation-retry-interval-in-seconds=&quot;10&quot;
+                        connection-leak-reclaim=&quot;false&quot;
+                        connection-leak-timeout-in-seconds=&quot;0&quot;
+                        connection-validation-method=&quot;auto-commit&quot;
+                        datasource-classname=&quot;com.mysql.jdbc.jdbc2.optional.MysqlDataSource&quot;
+                        fail-all-connections=&quot;false&quot;
+                        idle-timeout-in-seconds=&quot;300&quot;
+                        is-connection-validation-required=&quot;false&quot;
+                        is-isolation-level-guaranteed=&quot;true&quot;
+                        lazy-connection-association=&quot;false&quot;
+                        lazy-connection-enlistment=&quot;false&quot;
+                        match-connections=&quot;false&quot;
+                        max-connection-usage-count=&quot;0&quot;
+                        max-pool-size=&quot;32&quot;
+                        max-wait-time-in-millis=&quot;60000&quot;
+                        name=&quot;AffableBeanPool&quot;
+                        non-transactional-connections=&quot;false&quot;
+                        pool-resize-quantity=&quot;2&quot;
+                        res-type=&quot;javax.sql.ConnectionPoolDataSource&quot;
+                        statement-timeout-in-seconds=&quot;-1&quot;
+                        steady-pool-size=&quot;8&quot;
+                        validate-atmost-once-period-in-seconds=&quot;0&quot;
+                        wrap-jdbc-objects=&quot;false&quot;&gt;
+
+    &lt;description&gt;Connects to the affablebean database&lt;/description&gt;
+    &lt;property name=&quot;URL&quot; value=&quot;jdbc:mysql://localhost:3306/affablebean&quot;/&gt;
+    &lt;property name=&quot;User&quot; value=&quot;root&quot;/&gt;
+    &lt;property name=&quot;Password&quot; value=&quot;nbuser&quot;/&gt;
+  &lt;/jdbc-connection-pool&gt;
+&lt;/resources&gt;</pre>
+            </li>
+
+            <li>In the Projects window (Ctrl-1; &#8984;-1 on Mac), right-click the <code>AffableBean</code>
+                project node and choose Deploy. The GlassFish server reads configuration data from
+                the <code>sun-resources.xml</code> file and creates the <code>AffableBeanPool</code>
+                connection pool, and <code>jdbc/affablebean</code> data source.</li>
+
+            <li>In the Services window, expand the Servers &gt; GlassFish &gt; Resources &gt; JDBC node.
+                Here you can locate the <code>jdbc/affablebean</code> data source listed under JDBC
+                Resources, and the <code>AffableBeanPool</code> connection pool listed under Connection
+                Pools.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/gf-server-jdbc-resources.png"
+                     class="margin-around b-all" alt="Services window - GlassFish JDBC Resources"
+                     title="View data sources and connection pools registered on the server">
+
+                <br>
+                <p class="tips">Right-click data source and connection pool nodes to view and
+                    make changes to their properties. You can associate a data source with any
+                    connection pool registered on the server. You can edit property values for
+                    connection pools, and unregister both data sources and connection pools from
+                    the server.</p></li>
+        </ol>
+
+
+        <br>
+        <h2 id="testConnPoolDataSource">Testing the Connection Pool and Data Source</h2>
+
+        <p>Start by making sure the GlassFish server can successfully connect to the MySQL database.
+            You can do this by pinging the <code>AffableBeanPool</code> connection pool in the GlassFish
+            Administration Console.</p>
+
+        <p>Then proceed by adding a reference in your project to the data source you created on
+            the server. To do so, you create a <code>&lt;resource-ref&gt;</code> entry in the
+            application's <code>web.xml</code> deployment descriptor.</p>
+
+        <p>Finally, use the IDE's editor support for the <a href="http://java.sun.com/products/jsp/jstl/" target="_blank">JSTL</a>
+            <code>sql</code> tag library, and create a JSP page that queries the database and
+            outputs data in a table on a web page.</p>
+
+        <ul style="margin: 5px 0 0 -2em">
+            <li><a href="#ping">Pinging the Connection Pool</a></li>
+            <li><a href="#resourceReference">Creating a Resource Reference to the Data Source</a></li>
+            <li><a href="#query">Querying the Database from a JSP Page</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="ping">Pinging the Connection Pool</h3>
+
+            <ol>
+                <li>Ensure that the GlassFish server is already running. In the Services window (Ctrl-5;
+                    &#8984;-5 on Mac), expand the Servers node. Note the small green arrow next to the
+                    GlassFish icon ( <img src="../../../../images_www/articles/73/javaee/ecommerce/common/gf-server-running-node.png"
+                    alt="GlassFish server node in Services window"> ).
+
+                    <br><br>
+                    (If the server is not running, right-click the server node and choose Start.)</li>
+
+
+                <li>Right-click the server node and choose View Admin Console. The GlassFish Administration
+                    Console opens in a browser.</li>
+
+                <li>Log into the administration console. The default username / password is: <code>admin</code>
+                    / <code>adminadmin</code>.</li>
+
+                <li>In the console's tree on the left, expand the Resources &gt; JDBC &gt; Connection Pools
+                    nodes, then click <code>AffableBeanPool</code>. In the main window, the Edit Connection
+                    Pool interface displays for the selected connection pool.</li>
+
+                <li>Click the Ping button. If the ping succeeds, the GlassFish server has a working connection to
+                    the <code>affablebean</code> database on the MySQL server.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/ping-succeeded.png"
+                         class="margin-around b-all" alt="GlassFish Administration Console - Edit Connection Pool"
+                         title="Ping the connection pool to determine whether it has a physical connection to the database">
+
+                    <br>
+                    (If the ping fails, see suggestions in the <a href="#troubleshoot">Troubleshooting</a> section
+                    below.)</li>
+            </ol>
+
+
+            <h3 id="resourceReference">Creating a Resource Reference to the Data Source</h3>
+
+            <ol>
+                <li>In the Projects window, expand the Configuration Files folder and double-click
+                    <code>web.xml</code>. A graphical interface for the file displays in the IDE's
+                    main window.</li>
+
+                <li>Click the References tab located along the top of the editor. Expand the Resource
+                    References heading, then click Add. The Add Resource Reference dialog opens.</li>
+
+                <li>Enter the following details into the dialog:
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li><strong>Resource Name:</strong> <code>jdbc/affablebean</code></li>
+                        <li><strong>Resource Type:</strong> <code>javax.sql.ConnectionPoolDataSource</code></li>
+                        <li><strong>Authentication:</strong> <code>Container</code></li>
+                        <li><strong>Sharing Scope:</strong> <code>Shareable</code></li>
+                        <li><strong>Description:</strong> <em>(Optional)</em> <code>Connects to database for AffableBean application</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/add-resource-ref-dialog.png"
+                         alt="Add Resource Reference dialog" class="margin-around b-all"
+                         title="Specify resource properties in the Add Resource Reference dialog"></li>
+
+                <li>Click OK. The new resource is added under the Resource References heading.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/resource-reference.png"
+                         title="Create a reference to the data source for the application" style="width: 688px"
+                         alt="Resource reference to jdbc/affablebean data source listed in the deployment descriptor"
+                         class="margin-around b-all">
+
+                    <br>
+                    To verify that the resource is now added to the <code>web.xml</code> file,
+                    click the XML tab located along the top of the editor. Notice that the
+                    following <code>&lt;resource-ref&gt;</code> tags are now included:
+
+                    <pre class="examplecode">
+&lt;resource-ref&gt;
+    &lt;description&gt;Connects to database for AffableBean application&lt;/description&gt;
+    &lt;res-ref-name&gt;jdbc/affablebean&lt;/res-ref-name&gt;
+    &lt;res-type&gt;javax.sql.ConnectionPoolDataSource&lt;/res-type&gt;
+    &lt;res-auth&gt;Container&lt;/res-auth&gt;
+    &lt;res-sharing-scope&gt;Shareable&lt;/res-sharing-scope&gt;
+&lt;/resource-ref&gt;</pre>
+                </li>
+            </ol>
+
+
+            <h3 id="query">Querying the Database from a JSP Page</h3>
+
+            <ol>
+                <li>Create a new JSP page to test the data source. Click the New File (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png"
+                    alt="New File button"> ) button. (Alternatively, press Ctrl-N; &#8984;-N on Mac.)</li>
+
+                <li>Select the Web category, then select the JSP file type and click Next.</li>
+
+                <li>Enter '<code>testDataSource</code>' as the file name. In the Folder field, type
+                    in '<code>test</code>'.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/new-jsp-wzd.png"
+                         class="margin-around b-all" style="width:688px" alt="JSP wizard"
+                         title="Enter details to name and place a new JSP page into the project">
+
+                    <br>
+                    <p class="tips">The project does not yet have a folder named '<code>test</code>' within
+                        the Web Pages location (i.e., within the <code>web</code> folder). By entering '<code>test</code>'
+                        into the Folder field, you have the IDE create the folder upon completing the wizard.</p></li>
+
+                <li>Click finish. The IDE generates a new <code>testDataSource.jsp</code> file, and places
+                    it into the new <code>test</code> folder within the project.</li>
+
+                <li>In the new <code>testDataSource.jsp</code> file, in the editor, place your cursor at
+                    the end of the line containing the <code>&lt;h1&gt;</code> tags (line 17). Press Return,
+                    then press Ctrl-Space to invoke code suggestions. Choose DB Report from the list of
+                    options.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/db-report.png"
+                         class="margin-around b-all" alt="Code suggestions displayed in editor"
+                         title="Press Ctrl-Space in editor to invoke code suggestions">
+
+
+                    <br>
+                    <p class="tips">If line numbers do not display, right-click in the left margin of the
+                        editor and choose Show Line Numbers.</p></li>
+
+                <li>In the Insert DB Report dialog, specify the data source and modify the SQL query
+                    to be executed:
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li><strong>Data Source:</strong> <code>jdbc/affablebean</code></li>
+                        <li><strong>Query Statement:</strong> <code>SELECT * FROM category, product WHERE category.id = product.category_id</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/insert-db-report.png"
+                         class="margin-around b-all"  alt="Insert DB Report dialog"
+                         title="Specify the data source and SQL query to be executed"></li>
+
+                <li>Click OK. The dialog adds the <code>taglib</code> directives for the JSTL
+                    <code>core</code> and <code>sql</code> libraries to the top of the file:
+
+                    <pre class="examplecode">
+&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</pre>
+
+                    The dialog also generates template code to display the query results in an
+                    HTML table:
+
+                    <pre class="examplecode">
+&lt;sql:query var=&quot;result&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT * FROM category, product
+    WHERE category.id = product.category_id
+&lt;/sql:query&gt;
+
+&lt;table border=&quot;1&quot;&gt;
+    &lt;!-- column headers --&gt;
+    &lt;tr&gt;
+        &lt;c:forEach var=&quot;columnName&quot; items=&quot;${result.columnNames}&quot;&gt;
+            &lt;th&gt;&lt;c:out value=&quot;${columnName}&quot;/&gt;&lt;/th&gt;
+        &lt;/c:forEach&gt;
+    &lt;/tr&gt;
+    &lt;!-- column data --&gt;
+    &lt;c:forEach var=&quot;row&quot; items=&quot;${result.rowsByIndex}&quot;&gt;
+        &lt;tr&gt;
+            &lt;c:forEach var=&quot;column&quot; items=&quot;${row}&quot;&gt;
+                &lt;td&gt;&lt;c:out value=&quot;${column}&quot;/&gt;&lt;/td&gt;
+            &lt;/c:forEach&gt;
+        &lt;/tr&gt;
+    &lt;/c:forEach&gt;
+&lt;/table&gt;</pre></li>
+
+                <li>Before running the file in a browser, make sure you have enabled the JDBC driver
+                    deployment option in NetBeans' GlassFish support. Choose Tools &gt; Servers to
+                    open the Servers window. In the left column, select the GlassFish server you are
+                    deploying to. In the main column, ensure that the 'Enable JDBC Driver Deployment'
+                    option is selected, then click Close.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/servers-window.png"
+                         class="margin-around b-all" style="width:688px" alt="Servers window"
+                         title="Ensure that the Enable JDBC Driver Deployment option is selected">
+
+                    <br>
+                    For Java applications that connect to a database, the server requires a JDBC
+                    driver to be able to create a communication bridge between the SQL and Java
+                    languages. In the case of MySQL, you use the <a href="http://www.mysql.com/downloads/connector/j/" target="_blank">Connector/J</a>
+                    JDBC driver. Ordinarily you would need to manually place the driver JAR file
+                    into the server's <code>lib</code> directory. With the 'Enable JDBC Driver
+                    Deployment' option selected, the server performs a check to see whether a
+                    driver is needed, and if so, the IDE deploys the driver to the server.</li>
+
+                <li>Right-click in the editor and choose Run File (Shift-F6; fn-Shift-F6 on Mac).
+                    The <code>testDataSource.jsp</code> file is compiled into a servlet, deployed
+                    to the server, then runs in a browser.</li>
+
+                <li>Open the Output window (Ctrl-4; &#8984;-4 on Mac) and click the 'AffableBean (run)'
+                    tab. The output indicates that the driver JAR file (<code>mysql-connector-java-5.1.6-bin.jar</code>)
+                    is deployed.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/output-window-mysql-driver.png"
+                         class="margin-around b-all" style="width:688px" alt="Output window listing MySQL driver deployment"
+                         title="When JDBC Driver Deployment is enabled, the IDE deploys the MySQL driver to GlassFish when required"></li>
+
+                <li>Examine <code>testDataSource.jsp</code> in the browser. You see an HTML table
+                    listing data contained in the <code>category</code> and <code>product</code> tables.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/test-data-source.png"
+                         class="margin-around b-all" style="width:688px" alt="Browser display of testDataSource.jsp"
+                         title="The JSP page contains data extracted from the 'affablebean' database">
+
+                    <br>
+                    (If you receive a server error, see suggestions in the <a href="#troubleshoot">Troubleshooting</a>
+                    section below.)</li>
+            </ol>
+        </div>
+
+        <p>At this stage, we have set up a working data source and connection pool on the server, and
+            demonstrated that the application can access data contained in the <code>affablebean</code>
+            database.</p>
+
+
+        <br>
+        <h2 id="param">Setting Context Parameters</h2>
+
+        <p>This section demonstrates how to configure context parameters for the application,
+            and how to access parameter values from JSP pages. The owner of an application may want
+            to be able to change certain settings without the need to make intrusive changes to
+            source code. Context parameters enable you application-wide access to parameter
+            values, and provide a convenient way to change parameter values from a single location,
+            should the need arise.</p>
+
+        <p>Setting up context parameters can be accomplished in two steps:</p>
+
+        <ol style="margin-top: 0">
+            <li>Listing parameter names and values in the web deployment descriptor</li>
+            <li>Calling the parameters in JSP pages using the <code>initParam</code> object</li>
+        </ol>
+
+        <p>The JSP Expression Language (EL) defines <em>implicit objects</em>, which <code>initParam</code>
+            is an example of. When working in JSP pages, you can utilize implicit objects
+            using dot notation and placing expressions within EL delimiters (<code>${...}</code>).
+            For example, if you have an initialization parameter named <code>myParam</code>,
+            you can access it from a JSP page with the expression <code>${initParam.myParam}</code>.</p>
+
+        <p class="tips">For more information on the JSP Expression Language and implicit objects,
+            see the following chapter in the Java EE 6 Tutorial:
+            <a href="http://docs.oracle.com/javaee/6/tutorial/doc/gjddd.html" target="_blank">
+                Chapter 6 - Expression Language</a>.</p>
+
+        <p>By way of demonstration, you create context parameters for the image paths to
+            category and product images used in the <code>AffableBean</code> project. Begin
+            by adding the provided image resources to the project, then perform the two steps
+            outlined above.</p>
+
+        <ol>
+            <li>Download the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Fimg.zip">website
+                sample images</a>, and unzip the file to a location on your computer. The unzipped
+                file is an <code>img</code> folder that contains all of the image resources required
+                for the <code>AffableBean</code> application.</li>
+
+            <li>Import the <code>img</code> folder into the <code>AffableBean</code> project.
+                Copy (Ctrl-C; &#8984;-C on Mac) the <code>img</code> folder, then in the IDE's
+                Projects window, paste (Ctrl-V; &#8984;-V on Mac) the folder into the project's
+                Web Pages node.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/projects-win-img-folder.png"
+                     class="margin-around b-all" alt="'img' folder displayed in Projects window"
+                     title="Import the 'img' folder into the AffableBean project">
+
+                <br>
+                The <code>categories</code> and <code>products</code> folders contain the
+                images that will be displayed in the <a href="design.html#index">index</a> and
+                <a href="design.html#category">category</a> pages, respectively.</li>
+
+            <li>Open the project's web deployment descriptor. In the Projects window, expand
+                the Configuration Files node and double-click <code>web.xml</code>.</li>
+
+            <li>Click the General tab, then expand Context Parameters and click the Add button.</li>
+
+            <li>In the Add Context Parameter dialog, enter the following details:
+
+                <ul style="margin: 5px 0 0 -1em">
+                    <li><strong>Parameter Name:</strong> <code>productImagePath</code></li>
+                    <li><strong>Parameter Value:</strong> <code>img/products/</code></li>
+                    <li><strong>Description:</strong> <em>(Optional)</em>
+                        <code>The relative path to product images</code></li>
+                </ul>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/add-context-param-dialog.png"
+                     class="margin-around b-all" alt="Add Context Parameter dialog"
+                     title="Add initialization parameters using the Add Context Parameter dialog"></li>
+
+            <li>Click OK.</li>
+
+            <li>Click the Add button again and enter the following details:
+
+                <ul style="margin: 5px 0 0 -1em">
+                    <li><strong>Parameter Name:</strong> <code>categoryImagePath</code></li>
+                    <li><strong>Parameter Value:</strong> <code>img/categories/</code></li>
+                    <li><strong>Description:</strong> <em>(Optional)</em>
+                        <code>The relative path to category images</code></li>
+                </ul></li>
+
+            <li>Click OK. The two context parameters are now listed:
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/context-parameters.png"
+                     class="margin-around b-all" alt="web.xml - context parameters"
+                     title="Context parameters display in the web.xml interface"></li>
+
+            <li>Click the XML tab to view the XML content that has been added to the deployment
+                descriptor. The following <code>&lt;context-param&gt;</code> entries have been
+                added:
+
+                <pre class="examplecode">
+&lt;context-param&gt;
+    &lt;description&gt;The relative path to product images&lt;/description&gt;
+    &lt;param-name&gt;productImagePath&lt;/param-name&gt;
+    &lt;param-value&gt;img/products/&lt;/param-value&gt;
+&lt;/context-param&gt;
+&lt;context-param&gt;
+    &lt;description&gt;The relative path to category images&lt;/description&gt;
+    &lt;param-name&gt;categoryImagePath&lt;/param-name&gt;
+    &lt;param-value&gt;img/categories/&lt;/param-value&gt;
+&lt;/context-param&gt;</pre></li>
+
+            <li>To test whether the values for the context parameters are accessible to web
+                pages, open any of the project's web pages in the editor and enter EL
+                expressions using the <code>initParam</code> implicit object. For example,
+                open <code>index.jsp</code> and enter the following (New code in <strong>bold</strong>):
+
+                <pre class="examplecode">
+&lt;div id=&quot;indexLeftColumn&quot;&gt;
+    &lt;div id=&quot;welcomeText&quot;&gt;
+        &lt;p&gt;[ welcome text ]&lt;/p&gt;
+
+        <strong>&lt;!-- test to access context parameters --&gt;
+        categoryImagePath: ${initParam.categoryImagePath}
+        productImagePath: ${initParam.productImagePath}</strong>
+    &lt;/div&gt;
+&lt;/div&gt;</pre></li>
+
+            <li>Run the project. Click the Run Project (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                alt="Run Project button"> ) button. The project's index page opens in the browser,
+                and you see the values for the <code>categoryImagePath</code> and <code>productImagePath</code>
+                context parameters displayed in the page.
+
+                <br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/context-params-browser.png"
+                     class="margin-around b-all" alt="Context parameter values displayed in browser"
+                     title="Use 'initParam' with JSP EL delimiters to display context parameter values">
+            </li>
+        </ol>
+
+
+        <br>
+        <h2 id="jstl">Working with JSTL</h2>
+
+        <p>So far in this tutorial unit, you've established how to access data from the
+            <code>affablebean</code> database, add image resources to the project, and
+            have set up several context parameters. In this final section, you combine
+            these achievements to plug the product and category images into the application.
+            In order to do so effectively, you need to begin taking advantage of the JavaServer
+            Pages Standard Tag Library (JSTL).</p>
+
+        <p>Note that you do not have to worry about adding the JSTL JAR file (<code>jstl-impl.jar</code>)
+            to your project's classpath because it already exists. When you created the
+            <code>AffableBean</code> project and selected GlassFish as your development server,
+            the libraries contained in the server were automatically added to your project's
+            classpath. You can verify this in the Projects window by expanding the <code>AffableBean</code>
+            project's Libraries &gt; GlassFish Server 3 node to view all of the libraries
+            provided by the server.
+
+            <br>
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/gf-libraries.png"
+                 class="margin-around b-all" alt="GlassFish libraries listed in Projects window"
+                 title="GlassFish libraries are available to your project">
+
+            <br>
+            The <code>jstl-impl.jar</code> file is GlassFish' implementation of JSTL, version 1.2.</p>
+
+        <p class="tips">You can also download the GlassFish JSTL JAR file separately from:
+            <a href="http://jstl.dev.java.net/download.html" target="_blank">http://jstl.dev.java.net/download.html</a></p>
+
+        <p>Before embarking upon an exercise involving JSTL, one implementation detail
+            needs to first be clarified. Examine the files contained in the <code>categories</code>
+            and <code>products</code> folders and note that the names of the provided
+            image files match the names of the category and product entries found in the
+            database. This enables us to leverage the database data to dynamically call
+            image files within the page. So for example, if the web page needs to access
+            the image for the broccoli product entry, you can make this happen using the
+            following statement.</p>
+
+        <div class="indent">
+            <pre class="examplecode" style="width:700px">${initParam.productImagePath}broccoli.png</pre>
+        </div>
+
+        <p>After implementing a JSTL
+            <code><a href="http://java.sun.com/products/jsp/jstl/1.1/docs/tlddocs/c/forEach.html" target="_blank">forEach</a></code>
+            loop, you'll be able to replace the hard-coded name of the product with an EL
+            expression that dynamically extracts the name of the product from the database,
+            and inserts it into the page.</p>
+
+        <div class="indent">
+            <pre class="examplecode" style="width:700px">${initParam.productImagePath}${product.name}.png</pre>
+        </div>
+
+        <p>Begin by integrating the category images into the index page, then work within the
+            category page so that data pertaining to the selected category is dynamically handled.</p>
+
+        <ul>
+            <li><a href="#indexJSTL">index page</a></li>
+            <li><a href="#categoryJSTL">category page</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="indexJSTL">index page</h3>
+
+            <ol>
+                <li>In the Projects window, double-click the <code>index.jsp</code> node to open
+                    it in the editor. (If already opened, press Ctrl-Tab to select it in the editor.)</li>
+
+                <li>At the top of the file, before the first <code>&lt;div&gt;</code> tag, place your
+                    cursor on a blank line, then type '<code>db</code>' and press Ctrl-Space. In the
+                    code-completion pop-up window that displays, choose DB Query.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/db-query.png"
+                         class="margin-around b-all" alt="DB completion items displayed in editor"
+                         title="Type 'db', then press Ctrl-Space to invoke code completion suggestions"></li>
+
+                <li>In the Insert DB Query dialog, enter the following details:
+
+                    <ul style="margin: 5px 0 0 -1em">
+                        <li><strong>Variable Name:</strong> <code>categories</code></li>
+                        <li><strong>Scope:</strong> <code>page</code></li>
+                        <li><strong>Data Source:</strong> <code>jdbc/affablebean</code></li>
+                        <li><strong>Query Statement:</strong> <code>SELECT * FROM category</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/insert-db-query.png"
+                         class="margin-around b-all" alt="Insert DB query dialog"
+                         title="Specify query details to create an SQL query using JSTL <sql:query> tags"></li>
+
+                <li>Click OK. The dialog generates an SQL query using JSTL <code>&lt;sql:query&gt;</code> tags.
+                    Also, note that the required reference to the <code>sql</code> <code>taglib</code> directive
+                    has been automatically inserted at the top of the page. (Changes displayed in <strong>bold</strong>.)
+
+                    <pre class="examplecode">
+<strong>&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</strong>
+&lt;%--
+    Document   : index
+    Created on : Sep 5, 2009, 4:32:42 PM
+    Author     : nbuser
+--%&gt;
+
+<strong>&lt;sql:query var=&quot;categories&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT * FROM category
+&lt;/sql:query&gt;</strong>
+
+            &lt;div id=&quot;indexLeftColumn&quot;&gt;
+                &lt;div id=&quot;welcomeText&quot;&gt;
+                    &lt;p&gt;[ welcome text ]&lt;/p&gt;
+                    </pre>
+
+                    The SQL query creates a result set which is stored in the <code>categories</code>
+                    variable. You can then access the result set using EL syntax, e.g., <code>${categories}</code>
+                    (demonstrated below).</li>
+
+                <li>Place your cursor at the end of '<code>&lt;div id=&quot;indexRightColumn&quot;&gt;</code>'
+                    (line 22), hit return, type '<code>jstl</code>' then press Ctrl-Space and choose
+                    JSTL For Each.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/jstl-for-each.png"
+                         class="margin-around b-all" alt="JSTL completion items displayed in editor"
+                         title="Type 'jstl', then press Ctrl-Space to invoke code completion suggestions"></li>
+
+                <li>In the Insert JSTL For Each dialog, enter the following details:
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li><strong>Collection:</strong> <code>${categories.rows}</code></li>
+                        <li><strong>Current Item of the Iteration:</strong> <code>category</code></li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/insert-jstl-for-each.png"
+                         class="margin-around b-all" style="width:625px" alt="Insert JSTL For Each dialog"
+                         title="Specify details to create a 'for each' loop using JSTL <c:forEach> tags"></li>
+
+                <li>Click OK. The dialog sets up syntax for a JSTL <code>forEach</code> loop using <code>&lt;c:forEach&gt;</code>
+                    tags. Also, note that the required reference to the <code>core</code> <code>taglib</code>
+                    directive has been automatically inserted at the top of the page. (Changes displayed in
+                    <strong>bold</strong>.)
+
+                    <pre class="examplecode">
+<strong>&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;</strong>
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;
+
+    ...
+
+    &lt;div id=&quot;indexRightColumn&quot;&gt;
+        <strong>&lt;c:forEach var=&quot;category&quot; items=&quot;categories.rows&quot;&gt;
+        &lt;/c:forEach&gt;</strong>
+        &lt;div class=&quot;categoryBox&quot;&gt;</pre>
+
+                    <br>
+                    <p class="tips">If you are wondering what '<code>rows</code>' refers to in the
+                        generated code, recall that the <code>categories</code> variable represents a
+                        result set. More specifically, <code>categories</code> refers to an object that
+                        implements the
+                        <code><a href="http://java.sun.com/products/jsp/jstl/1.1/docs/api/javax/servlet/jsp/jstl/sql/Result.html" target="_blank">javax.servlet.jsp.jstl.sql.Result</a></code>
+                        interface. This object provides properties for accessing the rows, column names,
+                        and size of the query’s result set. When using dot notation as in the above
+                        example, '<code>categories.rows</code>' is translated in Java to
+                        '<code>categories.getRows()</code>'.</p></li>
+
+                 <li>Integrate the <code>&lt;c:forEach&gt;</code> tags into the page. You can nest
+                     the <code>&lt;div class=&quot;categoryBox&quot;&gt;</code> tags within the
+                     <code>forEach</code> loop so that HTML markup is generated for each of the four
+                     categories. Use EL syntax to extract the <code>category</code> table's <code>id</code>
+                     and <code>name</code> column values for each of the four records. Make sure to
+                     delete the other <code>&lt;div class=&quot;categoryBox&quot;&gt;</code> tags which
+                     exist outside the <code>forEach</code> loop. When you finish, the complete
+                     <code>index.jsp</code> file will look as follows. (<code>&lt;c:forEach&gt;</code>
+                     tags and contents are displayed in <strong>bold</strong>.)
+
+                     <pre class="examplecode">
+&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;
+&lt;%--
+    Document   : index
+    Created on : Sep 5, 2009, 4:32:42 PM
+    Author     : nbuser
+--%&gt;
+
+&lt;sql:query var=&quot;categories&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT * FROM category
+&lt;/sql:query&gt;
+
+            &lt;div id=&quot;indexLeftColumn&quot;&gt;
+                &lt;div id=&quot;welcomeText&quot;&gt;
+                    &lt;p&gt;[ welcome text ]&lt;/p&gt;
+
+                    &lt;!-- test to access context parameters --&gt;
+                    categoryImagePath: ${initParam.categoryImagePath}
+                    productImagePath: ${initParam.productImagePath}
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            <strong>&lt;div id=&quot;indexRightColumn&quot;&gt;
+                &lt;c:forEach var=&quot;category&quot; items=&quot;${categories.rows}&quot;&gt;
+                    &lt;div class=&quot;categoryBox&quot;&gt;
+                        &lt;a href=&quot;category?${category.id}&quot;&gt;
+
+                            &lt;span class=&quot;categoryLabelText&quot;&gt;${category.name}&lt;/span&gt;
+
+                            &lt;img src=&quot;${initParam.categoryImagePath}${category.name}.jpg&quot;
+                                 alt=&quot;${category.name}&quot;&gt;
+                        &lt;/a&gt;
+                    &lt;/div&gt;
+                &lt;/c:forEach&gt;
+            &lt;/div&gt;</strong></pre></li>
+
+                <li>Click the Run Project (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                    alt="Run Project button"> ) button. The project's index page opens in the browser,
+                    and you see the names and images of the four categories.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/index-category-images.png"
+                         class="margin-around b-all" style="width:688px" alt="Category images displayed in index page in browser"
+                         title="'for each' loop extracts details from the database and utilizes them in the page"></li>
+
+                <li>Click any of the four images in the browser. The category page displays.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/category-page.png"
+                         class="margin-around b-all" style="width:688px" alt="Category page in browser"
+                         title="Category images from index page link to category page">
+
+                    <p>
+                    To understand how linking takes place between the index and category pages,
+                    reexamine the HTML anchor tags within the <code>forEach</code> loop:</p>
+
+                    <pre class="examplecode">&lt;a href=&quot;category?${category.id}&quot;&gt;</pre>
+
+                    <p>When a user clicks the image link in the browser, a request for '<code>category</code>'
+                    is sent to the application's context root on the server. In your development environment,
+                    the URL is as follows:</p>
+
+                    <pre class="examplecode">http://localhost:8080/AffableBean/category</pre>
+
+                    <p>This URL can can be explained in the following manner:</p>
+
+                    <ul style="margin: 5px 0 0 -1em">
+                        <li><code>http://localhost:8080</code>: The default location of the GlassFish server on your computer</li>
+                        <li><code>/AffableBean</code>: The context root of your deployed application</li>
+                        <li><code>/category</code>: The path to the request</li>
+                    </ul>
+
+                    <p>Recall that in <a href="page-views-controller.html#controller">Preparing the Page
+                    Views and Controller Servlet</a>, you mapped a request for '<code>/category</code>'
+                    to the <code>ControllerServlet</code>. Currently, the <code>ControllerServlet</code>
+                    internally forwards the request to <code>/WEB-INF/view/category.jsp</code>, which
+                    is why the category page displays upon clicking an image link.</p>
+
+                    <p class="tips">You can verify the application's context root by expanding the Configuration
+                        Files node in the Projects window, and opening the <code>sun-web.xml</code> file. The
+                        <code>sun-web.xml</code> file is a deployment descriptor specific to GlassFish.</p>
+
+                    <p>
+                    Also, note that a question mark (<code>?</code>) and category ID are appended to
+                    the requested URL.</p>
+
+                    <pre class="examplecode">&lt;a href=&quot;category<strong>?${category.id}</strong>&quot;&gt;</pre>
+
+                    <p>This forms the <em>query string</em>. As is demonstrated in the next section,
+                    you can apply <code>(pageContext.request.queryString}</code> to extract the value
+                    of the query string from the request. You can then use the category ID from the
+                    query string to determine which category details need to be included in the
+                    response.</p></li>
+            </ol>
+
+            <h3 id="categoryJSTL">category page</h3>
+
+            <p>Three aspects of the category page need to be handled dynamically. The left column
+                must indicate which category is selected, the table heading must display the name
+                of the selected category, and the table must list product details pertaining to
+                the selected category. In order to implement these aspects using JSTL, you can
+                follow a simple, 2-step pattern:</p>
+
+            <ol style="margin: 5px 0 0 -1em">
+                <li>Retrieve data from the database using the JSTL <code>sql</code> tag library.</li>
+                <li>Display the data using the JSTL <code>core</code> library and EL syntax.</li>
+            </ol>
+
+            <p>Tackle each of the three tasks individually.</p>
+
+            <h4>Display selected category in left column</h4>
+
+            <ol>
+                <li>In the Projects window, double-click the <code>category.jsp</code> node to open
+                    it in the editor. (If already opened, press Ctrl-Tab to select it in the editor.)</li>
+
+                <li>Add the following SQL query to the top of the file.
+
+                    <pre class="examplecode">
+&lt;sql:query var=&quot;categories&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT * FROM category
+&lt;/sql:query&gt;</pre>
+
+                    Either use the Insert DB Query dialog as <a href="#categoryIndex">described above</a>,
+                    or use the editor's code suggestion and completion facilities by pressing Ctrl-Space
+                    while typing.</li>
+
+                <li>Between the <code>&lt;div id=&quot;categoryLeftColumn&quot;&gt;</code> tags,
+                    replace the existing static placeholder content with the following
+                    <code>&lt;c:forEach&gt;</code> loop.
+
+                    <pre class="examplecode">
+&lt;div id=&quot;categoryLeftColumn&quot;&gt;
+
+    <strong>&lt;c:forEach var=&quot;category&quot; items=&quot;${categories.rows}&quot;&gt;
+
+        &lt;c:choose&gt;
+            &lt;c:when test=&quot;${category.id == pageContext.request.queryString}&quot;&gt;
+                &lt;div class=&quot;categoryButton&quot; id=&quot;selectedCategory&quot;&gt;
+                    &lt;span class=&quot;categoryText&quot;&gt;
+                        ${category.name}
+                    &lt;/span&gt;
+                &lt;/div&gt;
+            &lt;/c:when&gt;
+            &lt;c:otherwise&gt;
+                &lt;a href=&quot;category?${category.id}&quot; class=&quot;categoryButton&quot;&gt;
+                    &lt;div class=&quot;categoryText&quot;&gt;
+                        ${category.name}
+                    &lt;/div&gt;
+                &lt;/a&gt;
+            &lt;/c:otherwise&gt;
+        &lt;/c:choose&gt;
+
+    &lt;/c:forEach&gt;</strong>
+
+&lt;/div&gt;</pre>
+
+                    In the above snippet, you access the request's query string using
+                    '<code>pageContext.request.queryString</code>'. <code>pageContext</code>
+                    is another <a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnahq.html#bnaij" target="_blank">implicit
+                    object</a> defined by the JSP Expression Language. The EL expression uses the
+                    <code><a href="http://java.sun.com/webservices/docs/1.6/api/javax/servlet/jsp/PageContext.html" target="_blank">PageContext</a></code>
+                    to access the current request (an <code><a href="http://java.sun.com/webservices/docs/1.6/api/javax/servlet/http/HttpServletRequest.html" target="_blank">HttpServletRequest</a></code>
+                    object). From <code>HttpServletRequest</code>, the <code>getQueryString()</code>
+                    method is called to obtain the value of the request's query string.</li>
+
+                <li>Make sure to add the JSTL <code>core</code> and <code>sql</code> <code>taglib</code>
+                    directives to the top of the page. (This is done automatically when using the
+                    editor's code suggestion and completion facilities.)
+
+                    <pre class="examplecode">
+&lt;%@taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;
+&lt;%@taglib prefix=&quot;sql&quot; uri=&quot;http://java.sun.com/jsp/jstl/sql&quot;%&gt;</pre></li>
+
+                <li>Run the project. In the browser, navigate to the category page and click
+                    the category buttons in the left column. Each time you click, the page refreshes
+                    highlighting the selected category.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/category-page-bakery.png"
+                         class="margin-around b-all" style="width:688px" alt="Category page with bakery category selected"
+                         title="Select categories by clicking category buttons in the left column">
+
+                    <br>
+                    Also, note that the ID of the selected category is displayed in the page's URL.
+                    (In the above image, the bakery category is selected, and '<code>3</code>' is
+                    appended to the URL in the browser's navigation toolbar.)
+
+                    <br><br>
+                    <p class="tips">Your servlet container (i.e., GlassFish) converts JSP pages
+                        into servlets before running them as part of a project. You can view the
+                        generated servlet for a JSP page by right-clicking the page node in the
+                        Projects window and choosing View Servlet. Of course, you first need to
+                        run the project so that the servlet is generated. Taking the <code>index.jsp</code>
+                        file as an example, when you choose View Servlet, the IDE displays a read-only
+                        copy of the generated servlet, <code>index_jsp.java</code>, in the editor.
+                        The servlet exists on the server at:
+                        <code><em>&lt;gf-install-dir&gt;</em>/glassfish/domains/domain1/generated/jsp/AffableBean/org/apache/jsp/index_jsp.java</code>.</p></li>
+            </ol>
+
+            <div class="indent">
+                <div class="feedback-box float-left" style="width: 703px;">
+
+                    <h3>Examining Implicit Object Values using the IDE's Debugger</h3>
+
+                    <p>You can use the IDE's Java debugger to examine values for implicit objects.
+                        To do so, set a breakpoint on a line containing JSP or JSTL syntax in a
+                        JSP page, then run the debugger. When the debugger suspends on the breakpoint,
+                        you can open the Variables window (Window &gt; Debugging &gt; Variables)
+                        to inspect values currently held by the application.</p>
+
+                    <p>Taking your current implementation of <code>category.jsp</code> as an
+                        example, perform the following steps:</p>
+
+                    <ol>
+                        <li>Set a breakpoint on the line containing:
+
+                            <pre>&lt;c:when test=&quot;${category.id == pageContext.request.queryString}&quot;&gt;</pre>
+
+                            (To set a breakpoint, click in the left margin of the line. A breakpoint
+                            ( <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/breakpoint-icon.png"
+                            alt="Breakpoint icon"> ) icon displays.)</li>
+
+                        <li>In the IDE's main toolbar, click the Debug Project (
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png"
+                            alt="Debug Project button"> ) button. A debugging session is
+                            activated for the project, and the application's index page opens
+                            in the browser.</li>
+
+                        <li>Click the bakery category in the index page. (You know that the
+                            ID for the bakery category is '<code>3</code>').</li>
+
+                        <li>Return to the IDE, and note that the debugger is suspended on the
+                            line containing the breakpoint. When suspended, the margin shows
+                            a green arrow on the breakpoint (
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/debugger-suspended-icon.png"
+                            alt="Debug Project button"> ), and the line displays with green background.</li>
+
+                        <li>Open the Variables window (Ctrl-Shift-1) and expand the Implicit Objects &gt;
+                            pageContext &gt; request &gt; queryString node. Inspect the variable value
+                            and note that the value is '<code>3</code>', corresponding to the category ID
+                            from your selection.</li>
+
+                        <li>Press the Finish Debugger Session (
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/finish-debugger-session-btn.png"
+                            alt="Finish Debuger Session button"> ) button to terminate the debugger session.</li>
+                    </ol>
+
+                </div>
+            </div>
+            <br style="clear: left"/>
+
+            <br>
+            <h4>Display title heading above product table</h4>
+
+            <ol>
+                <li>Add the following SQL query to the top of the file, underneath the query you
+                    just implemented. (New query is shown in <strong>bold</strong>.)
+
+                    <pre class="examplecode">
+&lt;sql:query var=&quot;categories&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT * FROM category
+&lt;/sql:query&gt;
+
+<strong>&lt;sql:query var=&quot;selectedCategory&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT name FROM category WHERE id = ?
+    &lt;sql:param value=&quot;${pageContext.request.queryString}&quot;/&gt;
+&lt;/sql:query&gt;</strong></pre></li>
+
+                <li>Use JSP EL syntax to extract the category name from the query and
+                    display it in the page. Make the following change to the
+                    <code>&lt;p id=&quot;categoryTitle&quot;&gt;</code> element.
+                    (Displayed in <strong>bold</strong>.)
+
+                    <pre class="examplecode">
+&lt;p id=&quot;categoryTitle&quot;&gt;<strong>${selectedCategory.rows[0].name}</strong>&lt;/p&gt;</pre>
+
+                    Since the result from the <code>selectedCategory</code> query contains
+                    only one item (i.e., user can select only one category), you can retrieve
+                    the first row of the result set using '<code>selectedCategory<strong>.rows[0]</strong></code>'.
+                    If a user selects the 'meats' category for example, the returned expression
+                    would be '<code>{name=meats}</code>'. You could then access the category name
+                    with '<code>${selectedCategory.rows[0]<strong>.name</strong>}</code>'.</li>
+
+                <li>Save (Ctrl-S; &#8984;-S on Mac) changes made to the file.</li>
+
+                <li>Return to the browser and refresh the category page. The name of
+                    the selected category now displays above the product table.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/category-page-bakery-title.png"
+                         class="margin-around b-all" style="width:688px" alt="Category page with bakery title displayed over product table"
+                         title="The name of the selected category dynamically displays above the product table">
+
+                    <br>
+                    <p class="notes"><strong>Note:</strong> As demonstrated in this and the
+                    previous step, you do not need to explicitly recompile, deploy, and run
+                    the project with each change to your code base. The IDE provides a Deploy
+                    on on Save feature, which is enabled for Java web projects by default.
+                    To verify that the feature is activated, right-click your project node
+                    in the Projects window and choose Properties. In the Project Properties
+                    window, click the Run category and examine the 'Deploy on Save' option.</p></li>
+            </ol>
+
+            <h4>Display product details within the table</h4>
+
+            <ol>
+                <li>Add the following SQL query to the top of the file, underneath the previous
+                    queries you implemented. (New query is shown in <strong>bold</strong>.)
+
+                    <pre class="examplecode">
+&lt;sql:query var=&quot;categories&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT * FROM category
+&lt;/sql:query&gt;
+
+&lt;sql:query var=&quot;selectedCategory&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT name FROM category WHERE id = ?
+    &lt;sql:param value=&quot;${pageContext.request.queryString}&quot;/&gt;
+&lt;/sql:query&gt;
+
+<strong>&lt;sql:query var=&quot;categoryProducts&quot; dataSource=&quot;jdbc/affablebean&quot;&gt;
+    SELECT * FROM product WHERE category_id = ?
+    &lt;sql:param value=&quot;${pageContext.request.queryString}&quot;/&gt;
+&lt;/sql:query&gt;</strong></pre></li>
+
+                <li>Between the <code>&lt;table id=&quot;productTable&quot;&gt;</code> tags,
+                    replace the existing static table row placeholders (<code>&lt;tr&gt;</code>
+                    tags) with the following <code>&lt;c:forEach&gt;</code> loop.
+                    (Changes are displayed in <strong>bold</strong>.)
+
+                    <pre class="examplecode">
+&lt;table id=&quot;productTable&quot;&gt;
+
+    <strong>&lt;c:forEach var=&quot;product&quot; items=&quot;${categoryProducts.rows}&quot; varStatus=&quot;iter&quot;&gt;
+
+        &lt;tr class=&quot;${((iter.index % 2) == 0) ? 'lightBlue' : 'white'}&quot;&gt;
+            &lt;td&gt;
+                &lt;img src=&quot;${initParam.productImagePath}${product.name}.png&quot;
+                    alt=&quot;${product.name}&quot;&gt;
+            &lt;/td&gt;
+            &lt;td&gt;
+                ${product.name}
+                &lt;br&gt;
+                &lt;span class=&quot;smallText&quot;&gt;${product.description}&lt;/span&gt;
+            &lt;/td&gt;
+            &lt;td&gt;
+                &amp;euro; ${product.price} / unit
+            &lt;/td&gt;
+            &lt;td&gt;
+                &lt;form action=&quot;addToCart&quot; method=&quot;post&quot;&gt;
+                    &lt;input type=&quot;hidden&quot;
+                           name=&quot;productId&quot;
+                           value=&quot;${product.id}&quot;&gt;
+                    &lt;input type=&quot;submit&quot;
+                           value=&quot;add to cart&quot;&gt;
+                &lt;/form&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+
+    &lt;/c:forEach&gt;</strong>
+
+&lt;/table&gt;</pre>
+
+                Note that in the above snippet an EL expression is used to determine the background
+                color for table rows:
+
+                <pre class="examplecode">class=&quot;${((iter.index % 2) == 0) ? 'lightBlue' : 'white'}&quot;</pre>
+
+                The API documentation for the <code><a href="http://java.sun.com/products/jsp/jstl/1.1/docs/tlddocs/c/forEach.html" target="_blank">&lt;c:forEach&gt;</a></code>
+                tag indicates that the <code>varStatus</code> attribute represents an object
+                that implements the
+                <code><a href="http://java.sun.com/products/jsp/jstl/1.1/docs/api/javax/servlet/jsp/jstl/core/LoopTagStatus.html" target="_blank">LoopTagStatus</a></code>
+                interface. Therefore, <code>iter.index</code> retrieves the index of the current
+                round of the iteration. Continuing with the expression, <code>(iter.index % 2) == 0)</code>
+                evaluates the remainder when <code>iter.index</code> is divided by <code>2</code>,
+                and returns a boolean value based on the outcome. Finally, an EL conditional operator
+                (<code>? :</code>) is used to set the returned value to '<code>lightBlue</code>' if true,
+                '<code>white</code>' otherwise.
+
+                <br><br>
+                <p class="tips">For a description of JSP Expression Language operators, see the
+                    Java EE 5 Tutorial: <a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnahq.html#bnaik" target="_blank">JavaServer
+                    Pages Technology &gt; Unified Expression Language &gt; Operators</a>.</p></li>
+
+                <li>Save (Ctrl-S; &#8984;-S on Mac) changes made to the file.</li>
+
+                <li>Return to the browser and refresh the category page. Product details
+                    now display within the table for the selected category.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/category-page-bakery-product-table.png"
+                         class="margin-around b-all" style="width:688px" alt="Category page displaying products for selected category"
+                         title="Product details are dynamically displayed for the selected category"></li>
+            </ol>
+
+            <p>You have now completed this tutorial unit. In it, you explored how to connect your
+                application to the database by setting up a connection pool and data source on the
+                server, then referenced the data source from the application. You also created several
+                context parameters, and learned how to access them from JSP pages. Finally, you
+                implemented JSTL tags into the application's web pages in order to dynamically
+                retrieve and display database data.</p>
+
+            <p>You can download and examine <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot3.zip">snapshot
+                3</a> if you'd like to compare your work with the solution project. The solution project
+                contains enhancements to the HTML markup and stylesheet in order to properly display all
+                provided images. It also provides welcome page text, and a basic implementation for the
+                page footer.</p>
+        </div>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20NetBeans%20E-commerce%20Tutorial%20-%20Connecting%20the%20Application%20to%20the%20Database">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="troubleshoot">Troubleshooting</h2>
+
+        <p>If you are having problems, see the troubleshooting tips below. If you continue to have difficulty,
+            or would like to provide constructive feedback, use the Send us Your Feedback link.</p>
+
+        <ul>
+            <li>You receive the following exception:
+
+                <pre class="examplecode" style="width: 700px">
+org.apache.jasper.JasperException: PWC6188: The absolute uri: http://java.sun.com/jsp/jstl/core cannot be resolved in either web.xml or the jar files deployed with this application</pre>
+                
+                This is a <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=188406" target="_blank">known
+                issue</a> for NetBeans IDE 6.9. Try to deploy the project, then access the file by typing its
+                URL in the browser. For example, if you are trying to view <code>testDataSource.jsp</code> in
+                a browser, enter '<code>http://localhost:8080/AffableBean/test/testDataSource.jsp</code>' in
+                the browser's URL field directly. Otherwise, add the IDE's JSTL 1.1 library to the project. In
+                the Projects window, right-click the Libraries node and choose Add Library. Select JSTL 1.1.
+                For more information, see:
+                <a href="http://forums.netbeans.org/topic28571.html" target="_blank">http://forums.netbeans.org/topic28571.html</a>.</li>
+
+            <li>You receive the following exception:
+
+                <pre class="examplecode" style="width: 700px">javax.servlet.ServletException: javax.servlet.jsp.JspException: Unable to get connection, DataSource invalid: "java.sql.SQLException: Error in allocating a connection. Cause: Class name is wrong or classpath is not set for : com.mysql.jdbc.jdbc2.optional.MysqlDataSource"</pre>
+
+                This can occur when the MySQL driver has not been added to the domain <code>lib</code>
+                folder. (Note that after adding, it is necessary to restart the server if it is already
+                running.)</li>
+
+            <li>You receive the following exception:
+
+                <pre class="examplecode" style="width: 700px">javax.servlet.ServletException: javax.servlet.jsp.JspException: Unable to get connection, DataSource invalid: "java.sql.SQLException: No suitable driver found for jdbc/affablebean"</pre>
+
+                This can occur when the <code>jdbc/affablebean</code> resource reference hasn't been
+                added to the <code>web.xml</code> deployment descriptor.</li>
+
+            <li>You receive the following exception:
+
+                <pre class="examplecode" style="width: 700px">javax.servlet.ServletException: javax.servlet.jsp.JspException: Unable to get connection, DataSource invalid: "java.sql.SQLException: Error in allocating a connection. Cause: Connection could not be allocated because: Access denied for user 'root'@'localhost' (using password: YES)"</pre>
+
+                This can occur when you are using an incorrect username/password combination. Make sure
+                the username and password you use to connect to the MySQL server are correctly set for
+                your connection pool in the <code>sun-resources.xml</code> file. Also, check that the
+                username and password are correctly set for the connection pool in the GlassFish
+                Administration Console.</li>
+        </ul>
+
+        <br>
+        <h2 id="seeAlso">See Also</h2>
+
+        <div class="indent">
+            <h3>NetBeans Resources</h3>
+
+            <ul>
+                <li><a href="../../ide/mysql.html" target="_blank">Connecting to a MySQL Database</a></li>
+                <li><a href="../../web/quickstart-webapps.html" target="_blank">Introduction to Developing Web Applications</a></li>
+                <li><a href="../../web/mysql-webapp.html" target="_blank">Creating a Simple Web Application Using a MySQL Database</a></li>
+                <li><a href="../../ide/database-improvements-screencast.html" target="_blank">Screencast: Database Support in NetBeans IDE</a></li>
+<!--                <li><a href="http://refcardz.dzone.com/refcardz/netbeans-java-editor-68" target="_blank">NetBeans Java Editor 6.8 Reference Card</a></li>-->
+            </ul>
+
+            <h3>MySQL Resources</h3>
+
+            <ul>
+                <li><a href="http://dev.mysql.com/librarian/" target="_blank">The MySQL Community Librarian</a></li>
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/" target="_blank">MySQL 5.1 Reference Manual</a></li>
+                <li><a href="http://www.mysql.com/why-mysql/java/#howtos" target="_blank">MySQL and Java</a></li>
+                <li><a href="http://forums.mysql.com/" target="_blank">MySQL Forums</a></li>
+            </ul>
+
+            <h3>JSP & EL Resources</h3>
+
+            <ul>
+                <li><strong>Product Page:</strong> <a href="http://java.sun.com/products/jsp/" target="_blank">JavaServer Pages Technology</a></li>
+                <li><strong>Specification Download:</strong> <a href="http://jcp.org/aboutJava/communityprocess/mrel/jsr245/index.html" target="_blank">JSR 245: JSP and EL 2.2 Maintenance Release</a></li>
+                <li><strong>API Documentation:</strong> <a href="http://java.sun.com/products/jsp/2.1/docs/jsp-2_1-pfd2/index.html" target="_blank">JavaServer Pages 2.1 API Documentation</a></li>
+                <li><strong>Supporting Documentation:</strong> <a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnagx.html" target="_blank">Java EE 5 Tutorial - Chapter 5: JavaServer Pages Technology</a></li>
+                <li><strong>Syntax Reference:</strong> <a href="http://java.sun.com/products/jsp/syntax/2.0/syntaxref20.html" target="_blank">JavaServer Pages 2.0 Syntax Reference</a></li>
+                <li><strong>Official Forum:</strong> <a href="http://forums.sun.com/forum.jspa?forumID=45" target="_blank">Web Tier APIs - JavaServer Pages (JSP) and JSTL</a></li>
+            </ul>
+
+            <h3>JSTL Resources</h3>
+
+            <ul>
+                <li><strong>Product Page:</strong> <a href="http://java.sun.com/products/jsp/jstl/" target="_blank">JavaServer Pages Standard Tag Library</a></li>
+                <li><strong>Specification Download:</strong> <a href="http://jcp.org/aboutJava/communityprocess/final/jsr052/index2.html" target="_blank">JSR 52: JSTL 1.2 Maintenance Release</a></li>
+                <li><strong>Implementation Download:</strong> <a href="http://jstl.dev.java.net/download.html" target="_blank">GlassFish JSTL Project Download</a></li>
+                <li><strong>Tag Library Documentation:</strong> <a href="http://java.sun.com/products/jsp/jstl/1.1/docs/tlddocs/index.html" target="_blank">JSTL 1.1 Tag Reference</a></li>
+                <li><strong>API Documentation:</strong> <a href="http://java.sun.com/products/jsp/jstl/1.1/docs/api/index.html" target="_blank">JSTL 1.1 API Reference</a></li>
+            </ul>
+
+            <h3>Technical Articles & Reference Cards</h3>
+
+            <ul>
+                <li><a href="http://java.sun.com/developer/technicalArticles/javaserverpages/JSP20/" target="_blank">Developing Web Applications With JavaServer Pages 2.0</a></li>
+                <li><a href="http://java.sun.com/developer/technicalArticles/J2EE/jsp_21/" target="_blank">Web Tier to Go With Java EE 5: Summary of New Features in JSP 2.1 Technology</a></li>
+                <li><a href="http://java.sun.com/products/jsp/reference/techart/unifiedEL.html" target="_blank">Unified Expression Language</a></li>
+                <li><a href="http://today.java.net/pub/a/today/2003/10/07/jstl1.html" target="_blank">Practical JSTL, Part 1</a></li>
+                <li><a href="http://www.ibm.com/developerworks/java/library/j-jstl0520/index.html" target="_blank">A JSTL primer, Part 4: Accessing SQL and XML content</a></li>
+                <li><a href="http://java.sun.com/products/jsp/syntax/2.0/card20.pdf">JavaServer Pages v2.0 Syntax Card</a></li>
+                <li><a href="http://refcardz.dzone.com/refcardz/essential-jsp-expression" target="_blank">Essential JSP Expression Language Reference Card</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E17409_01/javase/tutorial/jdbc/index.html" target="_blank">The Java Tutorials: JDBC Database Access</a></li>
+                <li><a href="http://java.sun.com/developer/Books/jdbc/" target="_blank">Database Programming with JDBC and Java, Second Edition</a></li>
+                <li><a href="http://refcardz.dzone.com/refcardz/essential-jsp-expression" target="_blank">Essential JSP Expression Language Reference Card</a></li>
+                <li><a href="http://java.sun.com/products/jndi/tutorial/" target="_blank">The JNDI Tutorial</a></li>
+            </ul>
+        </div>
+
+    </body>
+</html>

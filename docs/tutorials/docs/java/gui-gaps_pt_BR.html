@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009 - 2014, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Suporte de Edição da Lacuna no GUI Builder do NetBeans</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="This tutorial is intended as a guide to show how to utilize gap editing in the NetBeans GUI Builder without concern for the underlying layout manager.">
+   <meta name="KEYWORDS" content="NetBeans, Free Design, Tutorial, Guide, User, Documentation, Basic">
+   <link rel="stylesheet" href="../../../netbeans.css">
+   
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Suporte de Edição da Lacuna no GUI Builder do NetBeans</h1>
+    <div class="articledate" style="margin-left: 0px;">Jan Stola, Alyona Stashkova</div>
+    <p>Um layout de um contêiner no modo Design Livre consiste em componentes e intervalos entre esses componentes. Os componentes e intervalos são visualizados na view Design do GUI Builder. O NetBeans IDE permite que você edite lacunas diretamente no GUI Builder. </p>
+	<p>Este tutorial demonstra como utilizar edição de lacuna para inserir novos componentes de IU entre outros componentes, bem como para centralizar componentes facilmente em torno de um quadro no GUI Builder do NetBeans sem preocupação para o gerenciador de layout subjacente. O tutorial destina-se como um guia para mostrar como você pode executar alterações em um form existente no modo Design Livre para implementar um layout de destino específico que é necessário pelo projeto. </p>
+	
+    
+ 
+    
+    
+       <p><b>Conteúdo</b></p>
+    <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+    <ul class="toc">
+        <li><a href="#zip">Abrindo o Projeto de Exemplo</a></li>
+		<li><a href="#drag">Redimensionando uma Lacuna Arrastando e Soltando suas Bordas</a></li>
+        <li><a href="#wheel">Redimensionando uma Lacuna usando a Roda do Mouse</a></li>
+		<li><a href="#container">Editando Lacunas em Torno de um Componente</a></li>
+        <li><a href="#summary">Resumo</a></li>
+		<li><a href="#seealso">Consulte Também</a></li>
+    </ul>
+
+   
+   <p><b>Para acompanhar este tutorial, são necessários os recursos e softwares listados abaixo.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software ou Recurso</th>
+                <th class="tblheader" scope="col">Versão Necessária</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2, 7.3, 7.4 ou 8.0 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">JDK (Java Development Kit)</a></td>
+                <td class="tbltd1">Versão 6, 7 ou 8 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FGapSupport.zip">GapSupport.zip</a></td>
+                <td class="tbltd1">Um arquivo compactado com arquivos de código-fonte que contém os layouts inicial e de destino do tutorial.</td>
+            </tr>
+           
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>Observações:</strong></p>
+    <div class="indent">
+    <ul>
+        <li>Você pode fazer download do projeto que é usado como um ponto inicial para este tutorial como um arquivo compactado <tt>.zip</tt>. </li>
+        <li>Este tutorial concentra-se na criação do layout somente para o contêiner. A adição de funcionalidade na GUI está fora de seu escopo.</li>
+		<li>Você pode ativar e desativar a visualização de lacunas, usando a opção <tt>Visualizar Informações de Layout Adicionais</tt> depois de escolher <tt>Ferramentas</tt> > <tt>Opções</tt> > <tt>Java</tt> > <tt>GUI Builder</tt> no menu principal do IDE. </li>
+    </ul>
+</div>
+    <!-- ++++++++++++ Using .zip ++++++++++++ -->
+<a name="zip"></a>
+    <h2>Abrindo o Projeto de Exemplo</h2>
+	
+	<ol><li>Faça download e descompacte o arquivo compactado <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FGapSupport.zip">GapSupport.zip</a> em qualquer lugar no computador.</li>
+	<li>No menu principal do NetBeans IDE, selecione <tt>Arquivo</tt> > <tt>Abrir Projeto</tt>, navegue até a pasta que contém os arquivos descompactado do projeto <tt>GapSupport</tt> que você extraiu na etapa anterior.</li>
+	<li>Clique em Abrir Projeto.<br> A janela Projetos deve ter uma aparência semelhante a esta:
+	<p class="align-center"><img alt="A janela Projetos" border="1" src="../../../images_www/articles/72/java/gui-gaps/prj.png"></p></li>
+    <li> Clique duas vezes no arquivo <tt>Initial.java</tt>.<br> O form de exemplo é aberto na view Design do GUI Builder. 
+	<p class="align-center"><img alt="Initial.java open" border="1" src="../../../images_www/articles/72/java/gui-gaps/initialform.png"></p>
+					 <p class="notes"><b>Observação:</b> você pode exibir a hierarquia de componentes do form na janela do Navegador escolhendo Janela > Navegador na barra de ferramentas principal.</p>
+<p class="align-center"><img alt="Janela do Navegador" border="1" src="../../../images_www/articles/72/java/gui-gaps/navigator.png"></p></li>
+	</ol>
+
+
+<p class="align-center"><a href="#top">início</a></p>
+ <!-- ++++++++++++ DnD an Edge of a Gap ++++++++++++ -->
+    <a name="drag"></a>
+    <h2>Redimensionando uma Lacuna Arrastando e Soltando suas Bordas </h2>
+	<p>Vamos explorar como editar uma lacuna arrastando e soltando suas bordas na view Design do IDE.</p>
+	<p> Para adicionar uma linha de <tt>Nome do Meio</tt> entre as linhas do <tt>Nome</tt> e do <tt>Sobrenome</tt>, você precisa concluir as seguintes etapas:</p>
+	
+    <ol>
+<li>Clique na lacuna entre os labels <tt>Nome</tt> e o <tt>Sobrenome</tt>.<br>A lacuna é realçada em verde.
+<p class="align-center"><img alt="Lacuna realçada" border="1" src="../../../images_www/articles/72/java/gui-gaps/gap-highlighted.png"></p></li>
+<li>Passe o ponteiro do mouse sobre a parte inferior da lacuna realçada.<br>O ponteiro é alterado para um redimensionável vertical.
+  <p class="align-center"><img alt="O ponteiro é alterado para redimensionável" border="1" src="../../../images_www/articles/72/java/gui-gaps/gap-resizable.png"></p></li>
+<li>Aumente a lacuna selecionada para 50, pressionando o botão esquerdo do mouse, arrastando o ponteiro para baixo, e liberando o botão esquerdo do mouse.<br>O novo tamanho da lacuna é exibido em uma dica de ferramenta.
+  <p class="align-center"><img alt="Aumentando a lacuna" border="1" src="../../../images_www/articles/72/java/gui-gaps/resizing.png"></p></li>
+<li>Adicionar um novo label à lacuna criada, arrastando-a da seção Controles Swing da Paleta e soltando-a para que sua borda esquerda seja alinhada com a borda esquerda do label <tt>Nome</tt> e sua borda superior tenha a lacuna preferencial sugerida da linha <tt>Nome</tt>. 
+  <p class="align-center"><img alt="Adicionando um label" border="1" src="../../../images_www/articles/72/java/gui-gaps/jlabel.png"></p></li>
+<li>Clique duas vezes no label e altere o texto do label para <tt>Nome do Meio:</tt>.
+<p class="align-center"><img alt="Texto alterado para Nome do Meio:" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-name.png"></p></li>
+<li>Adicione um novo campo de texto à direita do nome do label <tt>Nome do Meio:</tt>, arrastando-o da seção Controles Swing da Paleta e soltando-o, de forma que ele seja alinhado com o label do <tt>Nome do Meio</tt> e sua borda esquerda seja alinhada com os outros campos de texto.
+<p class="align-center"><img alt="Adicionando um campo de texto" border="1" src="../../../images_www/articles/72/java/gui-gaps/textfield.png"></p></li>
+<li>Arraste a borda direita do campo de texto para alinhá-la com a borda direita dos outros campos de texto. 
+<p class="align-center"><img alt="Redimensionando o campo de texto" border="1" src="../../../images_www/articles/72/java/gui-gaps/textfield-resized.png"></p></li>
+<li>Clique com o botão direito do mouse no texto no campo de texto e escolha Editar Texto no menu pop-up. Remover o texto. </li>
+</ol>
+<p>A linha <tt>Nome do Meio</tt> é inserida entre os componentes do form.</p>
+<p class="align-center"><img alt="Redimensionando o campo de texto" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-inserted-gap.png"></p>
+<p class="align-center"><a href="#top">início</a></p>
+    
+     
+
+<!-- ++++++++++++ Using Mouse Wheel When Resizing ++++++++++++ -->
+<a name="wheel"></a>
+<h2>Redimensionando uma Lacuna usando a Roda do Mouse</h2>
+
+<p>O IDE permite que você redimensione uma lacuna clicando nela e, em seguida, rodando o mouse para ajustar o tamanho da lacuna. </p>
+<p>Para remover o espaço restante entre as linhas do <tt>Nome do Meio</tt> e do <tt>Sobrenome</tt>, clique na lacuna abaixo e diminua a altura da lacuna, rolando o mouse para baixo e definindo o novo tamanho para <tt>pequeno default</tt>.</p>
+<p class="notes"><b>Observação:</b> o GUI Builder do NetBeans suporta três lacunas preferenciais de posicionamento de componente - <tt>pequeno default</tt>, <tt>pequeno médio</tt>e <tt>grande default</tt>. </p>
+<p class="align-center"><img alt="pequeno default" border="1" src="../../../images_www/articles/72/java/gui-gaps/default-small.png"></p>
+
+
+<p>A lacuna entre os componentes do form é redimensionada usando a roda do mouse e utilizando uma lacuna preferencial.</p> 
+<p class="align-center"><img alt="Linha do Nome do Meio inserida" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-inserted.png"></p>
+
+<p class="align-center"><a href="#top">início</a></p>
+<!-- ++++++++++++ Resizing a Gap Around a Container ++++++++++++ -->
+<a name="container"></a>
+<h2>Editando Lacunas em Torno de um Componente</h2>
+<p>Você pode centralizar um componente para consultá-lo em duas lacunas idênticas que tiverem sido marcadas como redimensionável anteriormente.</p>
+<p class="notes"><b>Observação:</b> um contêiner ajuda a especificar onde os componentes deve ser centralizados. É possível centralizar os botões sem colocá-los em um novo painel, mas é mais difícil fazer isso no GUI Builder e o layout resultante é um pouco frágil. Portanto, sugerimos incluir o componente centralizado em um painel sempre que for possível.</p>
+<p><b>Para incluir os botões e lacunas redimensionáveis em um contêiner separado, faça o seguinte:</b> </p>
+
+<ol>
+<li>Selecione todos os quatro botões no form. </li>
+<li>Clique com o botão direito na seleção e escolha <tt>Incluir em</tt> > <tt>Painel</tt> no menu pop-up.
+<p class="align-center"><img alt="Escolhendo Painel no menu pop-up" border="1" src="../../../images_www/articles/72/java/gui-gaps/enclose-panel.png"></p>
+Os botões são incluídos em um contêiner.
+<p class="align-center"><img alt="Botões incluídos em um painel" border="1" src="../../../images_www/articles/72/java/gui-gaps/buttons-enclosed.png"></p></li>
+</ol>
+
+<p><b>Para remover as lacunas recém-criadas à esquerda e à direita dos botões, conclua as seguintes etapas: </b></p>
+<ol>
+<li>Clique com o botão direito em um dos botões e escolha Editar Espaço de Layout do menu pop-up.<br>A caixa de diálogo Editar Espaço de Layout é exibida.
+<p class="align-center"><img alt="Caixa de diálogo Editar Espaço de Layout" border="1" src="../../../images_www/articles/72/java/gui-gaps/edit-layout-space.png"></p></li>
+<li> Defina o tamanho das lacunas Esquerda e Direita para 0 e clique em OK.<br> As lacunas à esquerda e à direita dos botões são removidas usando a caixa de diálogo Editar Espaço de Layout.
+  <p class="align-center"><img alt="Lacunas Esquerda e Direita Removidas" border="1" src="../../../images_www/articles/72/java/gui-gaps/gaps-removed.png"></p></li>
+</ol>
+<p><b>Para colocar as lacunas acima e abaixo do contêiner redimensionável, faça o seguinte:</b></p>
+
+<ol>
+<li> Clique duas vezes na lacuna na parte inferior do último botão.<br>A caixa de diálogo Editar Espaço de Layout é exibida.</li>
+<li>Na caixa de diálogo Editar Espaço de Layout, selecione a opção <tt>Redimensionável</tt> e clique em OK.
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-gaps/bottom.png" rel="lytebox" title="A lacuna na parte inferior está sendo redimensionada"> <img alt="A lacuna na parte inferior está sendo redimensionada" border="1" src="../../../images_www/articles/72/java/gui-gaps/bottom-small.png"></a></p></li>
+<li> Repita as etapas 1 e 2 da lacuna acima do botão superior.<br> As lacunas acima e abaixo do contêiner com os botões são redimensionáveis.</li>
+</ol>
+
+<p><b>Para centralizar os botões do form de exemplo</b>:</p>
+<p>Arraste a borda inferior do contêiner com os botões para alinhar com as bordas inferiores·das listas, conforme mostrado abaixo: </p>
+<p class="align-center"><img alt="Centralizando o contêiner com os botões" border="1" src="../../../images_www/articles/72/java/gui-gaps/align.png"></p>
+<p>O contêiner é aumentado para corresponder à altura das listas <tt>Tópicos Disponíveis</tt> e <tt>Tópicos Selecionado</tt>. Os botões são centralizados no espaço determinado pelo contêiner delimitador desde que os intervalos adjacentes foram marcados como redimensionáveis.  </p>
+<p class="align-center"><img alt="Os botões são centralizados" border="1" src="../../../images_www/articles/72/java/gui-gaps/buttons-centered.png"></p>
+
+
+
+<p class="align-center"><a href="#top">início</a></p>
+
+ 
+<!-- ++++++++++++ Summary ++++++++++++ -->
+<a name="summary"></a>
+<h2>Resumo</h2>
+<p>Neste tutorial você aperfeiçoou form simples. Ao tratar lacunas, você aprendeu como gerenciar espaços vazios no modo Design Livre e como criar uma IU interessante sem gastos extras para ajustar cada detalhe da implementação do layout.</p>
+
+
+
+
+
+
+
+
+
+ <p class="align-center"><a href="#top">início</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Gap%20Support">Enviar Feedback neste Tutorial</a></div>
+      <br style="clear:both;" >  
+<a name="seealso"></a>
+<h2>Consulte Também</h2>
+<p>Agora você concluiu o Suporte de Edição da Lacuna no tutorial do GUI Builder do NetBeans. Para obter informações sobre como adicionar funcionalidade às GUIs que você cria, consulte:</p> 
+      <ul>
+	     <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementando GUIs de Java</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></li>
+         <li><a href="gui-functionality.html">Introdução à Construção de GUIs do Java</a></li>
+		 <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">FAQ do GUI Builder</a> </li>
+         <li><a href="../../trails/matisse.html">Trilha de Aprendizado das Aplicações de GUI do Java</a> </li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">início</a></p>
+
+   
+</body>
+</html>

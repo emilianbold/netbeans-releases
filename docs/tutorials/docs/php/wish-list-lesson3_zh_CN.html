@@ -1,0 +1,399 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>使用 PHP 创建数据库驱动的应用程序。在 MySQL 数据库中创建记录的 PHP 实现</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. PHP implementation of creating a new record in MySQL database" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+   <body>
+        <h1>使用 PHP 创建数据库驱动的应用程序 </h1>
+        <h1>第 3 课：创建新的应用程序用户 </h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>教程目录：</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">使用 PHP 创建数据库驱动的应用程序 - 主页</a></li>
+    <li><p>创建数据库</p> <ol type="a"><li><a href="wish-list-lesson1.html">创建 MySQL 数据库</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">创建 Oracle 数据库表</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">设计应用程序。从数据库读取数据</a></p>
+    </li>
+    <li><p><b>=&gt; 创建新的应用程序用户</b></p>
+    <ul>
+		<li><a href="#previousLessonSourceCode">来自上一课的应用程序源代码</a></li>
+  <li><a href="#addLinkNewWisher">添加链接以开始创建新的许愿者</a></li>
+  <li><a href="#implementCreateNewWisher">创建新 PHP Web 页</a>
+  <li><a href="#inputFormNewWisher">添加 HTML 窗体以输入新的许愿者数据</a></li>
+		<li><a href="#validatinDataBeforeAddingToDatabase">验证数据并将其添加到数据库中</a></li>
+		<li><a href="#errorMessagesInInputForm">在输入窗体中显示错误消息</a></li>
+		<li><a href="#testCreateNewWisherFunctionality">测试“创建新的许愿者”功能</a></li>
+		
+		
+		<li><a href="#lessonResultSourceCode">完成当前课程后的应用程序源代码</a></li>
+   </ul>
+    </li>
+    <li><a href="wish-list-lesson4.html">优化代码</a></li>
+    <li><a href="wish-list-lesson5.html">添加安全功能。实现应用程序用户登录</a></li>
+    <li><a href="wish-list-lesson6.html">在数据库中添加新的愿望</a></li>
+    <li><a href="wish-list-lesson7.html">更新和删除数据库中的条目</a></li>
+    <li><a href="wish-list-lesson8.html">使用 CSS 技术改进应用程序的外观</a></li>
+    <li><a href="wish-list-lesson9.html">将应用程序部署到远程 Web 服务器</a></li>
+</ol>
+</div>
+</div>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+   <p>在本课中，将使用“创建新的许愿者”功能扩展应用程序。 </p>
+        <p>该实现将影响 index.php 文件，并将创建名为 <tt>createNewWisher.php</tt> 和 <tt>editWishList.php</tt> 的两个新文件。</p>
+        <p>“创建新的许愿者”用例包含三个步骤：</p>
+       <p>1. <a href="#addLinkNewWisher">用户打开主页 index.php，然后单击链接进行注册</a>。</p>
+         <p>2. <a href="#implementCreateNewWisher">用户切换到 createNewWisher.php 页以创建新的许愿者</a>。 </p>
+         <p>3. 在创建新的许愿者后，用户将切换到 editWishList.php，以便在其中为该用户创建愿望列表。</p>
+         <img alt="突出显示在第 3 课创建的新文件的页面流程图" class="margin-around" height="265" src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram-l3.png" width="439">   
+   <p>当前文档是“在适用于 PHP 的 NetBeans IDE 中创建数据库应用程序”教程的一部分。 </p>
+        <br style="clear:left">
+
+        
+   <h2><a name="previousLessonSourceCode"></a>来自上一课的应用程序源代码</h2>
+<p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1928/lesson2.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。 </p>
+<p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson2.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。</p>
+<h2><a id="addLinkNewWisher" name="addLinkNewWisher"></a>添加链接以开始创建新的许愿者 </h2>
+   打开 <tt>index.php</tt>。在结束 &lt;/form&gt; 标记下面添加一个空行。在该空行中，输入以下代码块：
+<pre class="examplecode"> &lt;br&gt;Still don't have a wish list?! &lt;a href=&quot;createNewWisher.php&quot;&gt;Create now&lt;/a&gt;</pre>
+        <p>其中，</p>
+        <ul>
+          <li><tt>Still don't have a wish list?! </tt> 是在页面上的链接旁边显示的文本。 </li>
+          <li><tt>&lt;a href="createNewWisher.php"&gt;&lt;/a&gt;</tt> 是实现打开 createNewWisher.php 页的链接的代码。
+          </li>
+          <li><tt>Create now</tt> 是作为链接显示的文本。
+          </li>
+    </ul>
+        <h2><a id="implementCreateNewWisher" name="implementCreateNewWisher"></a>创建新 PHP Web 页</h2>
+        <p>在项目的 "Source Files"（源文件）中创建两个新的 PHP Web 页，如第 2 课<a href="wish-list-lesson2.html#createNewFile">所述</a>。</p>
+        <ul>
+          <li><tt>createNewWisher.php</tt></li>
+          <li><tt>editWishList.php</tt></li>
+        </ul>
+        <p>在 <tt>editWishList.php</tt> 中，将文本 "Hello!" 添加到 HTML 主体中，否则应将其与默认内容保存在一起。将在后面的课程中修改该文件，但需要该文件现在存在，因为 <tt>createNewWisher.php</tt> 引用该文件。在本课的其余部分，将修改 <tt>createNewWisher.php</tt>。</p>
+   
+        <h2><a id="inputFormNewWisher" name="inputFormNewWisher"></a>添加 HTML 窗体以输入新的许愿者数据 </h2>
+        <p>在 <tt>createNewWisher.php</tt> 的 PHP 块下面键入或粘贴以下 HTML 块：</p>
+          <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;<br>      Welcome!&lt;br&gt;<br>        &lt;form action=&quot;createNewWisher.php&quot; method=&quot;POST&quot;&gt;<br>            Your name: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;&lt;br/&gt;<br>            Password: &lt;input type=&quot;password&quot; name=&quot;password&quot;/&gt;&lt;br/&gt;<br>            Please confirm your password: &lt;input type=&quot;password&quot; name=&quot;password2&quot;/&gt;&lt;br/&gt;<br>            &lt;input type=&quot;submit&quot; value=&quot;Register&quot;/&gt;<br>        &lt;/form&gt;<br>     &lt;/body&gt;
+&lt;/html&gt;</pre>
+          <p class="notes"><strong>注：</strong><tt>password</tt> 类型是一种特殊的文本字段类型，其中将字符替换为星号。该代码显示一个 <a href="wish-list-lesson3.html#htmlForm">HTML 窗体</a>，以使用户在文本字段中输入新许愿者的名字和口令。在用户单击 "Register" 按钮时，输入的数据将传输到相同页 (<tt>createNewWisher.php</tt>) 进行验证。</p>
+                  <p class="notes"><b>注：</b>您可以忽略来自 HTML 验证器的警告。</p>
+
+		  <h3><a id="validatinDataBeforeAddingToDatabase" name="validatinDataBeforeAddingToDatabase"></a>验证数据并将其添加到数据库中 </h3>
+			<p>在此部分，您要将 PHP 代码添加到 <tt>createNewWisher.php</tt> 中。将该代码添加到文件顶部的 PHP 块中。PHP 块必须在<strong>所有</strong> HTML 代码上面，是空行或是空白内容。要使重定向语句正常工作，PHP 代码块位置是非常重要的。在 PHP 块中，按编写顺序键入或粘贴本节下面介绍的代码块。</p>
+   <p><strong>添加以下代码以验证数据：</strong></p>
+			<ol>
+			  <li>初始化变量。前几个变量用于传送数据库凭证，其他变量在 PHP 操作中使用。 <pre class="examplecode">
+/** database connection credentials */<br>$dbHost=&quot;localhost&quot;; //on MySql
+$dbXeHost=&quot;localhost/XE&quot;; <br>$dbUsername=&quot;phpuser&quot;;<br>$dbPassword=&quot;phpuserpw&quot;;
+
+/** other variables */
+$userNameIsUnique = true;
+$passwordIsValid = true;				
+$userIsEmpty = false;					
+$passwordIsEmpty = false;				
+$password2IsEmpty = false;	
+
+			</pre>
+			  </li>
+              <li>在这些变量下面，添加一个 <tt>if </tt>子句。<tt>if</tt> 子句的参数检查是否通过 POST 方法从自身请求页面。如果不是，将不执行进一步验证，并且页面显示上述空字段。
+                <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) {
+
+}</pre>
+              </li>
+              <li>在 <tt>if</tt> 子句的花括号中，添加另一个 <tt>if</tt> 子句，用于检查用户是否填写了许愿者的名字。如果文本字段 "user" 为空，则将 <tt>$userIsEmpty</tt> 值更改为 true。	<pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) {
+
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */    <strong>
+    if ($_POST[&quot;user&quot;]==&quot;&quot;) {
+    $userIsEmpty = true;
+    }</strong>
+}</pre> 
+              </li>
+              <li><p>添加代码以建立数据库连接。如果无法建立连接，则将 MySQL 或 Oracle OCI8 错误发送到输出。</p>
+                <p><b>对于 MySQL 数据库：</b></p>
+                <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) {
+
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */    
+    if ($_POST[&quot;user&quot;]==&quot;&quot;) {
+        $userIsEmpty = true;
+    }
+
+    /** Create database connection */<br>
+    <strong>$con = mysqli_connect($dbHost, $dbUsername, $dbPassword);<br>    if (!$con) {<br>        exit('Connect Error (' . mysqli_connect_errno() . ') '<br>                . mysqli_connect_error());<br>    }<br>//set the default client character set <br>    mysqli_set_charset($con, 'utf-8');</strong>
+} </pre>
+<p><b>对于 Oracle 数据库：</b></p>
+<pre class="examplecode">
+/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */
+    if ($_POST['user'] == "") {
+        $userIsEmpty = true;
+    }
+
+    /** Create database connection */<br>
+    <strong>$con = oci_connect($dbUsername, $dbPassword, $dbXeHost, &quot;AL32UTF8&quot;);
+    if (!$con) {
+        $m = oci_error();
+        exit('Connect Error' . $m['message']);
+
+    }</strong>
+}</pre>
+              </li>
+              <li>添加代码以检查名字与 "user" 字段匹配的用户是否已存在。该代码的工作方式是，尝试查找名字与 "user" 字段中的名字匹配的许愿者 ID 号。如果此类 ID 号存在，则将 <tt>$userNameIsUnique</tt> 的值更改为 "false"。
+                <p><b>对于 MySQL 数据库：</b></p>
+                <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) {
+
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */
+
+    if ($_POST[&quot;user&quot;]==&quot;&quot;) {
+        $userIsEmpty = true;
+    }<br>
+    
+    /** Create database connection */<br>    $con = mysqli_connect($dbHost, $dbUsername, $dbPassword);<br>    if (!$con) {<br>        exit('Connect Error (' . mysqli_connect_errno() . ') '<br>                . mysqli_connect_error());<br>    }<br>   <strong>/**set the default client character set */ <br>    mysqli_set_charset($con, 'utf-8');</strong>
+   <strong>/** Check whether a user whose name matches the &quot;user&quot; field already exists */</strong><br>
+    <strong>mysqli_select_db($con, &quot;wishlist&quot;);
+    $user = mysqli_real_escape_string($con, $_POST[&quot;user&quot;]);<br>    $wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot;.$user.&quot;'&quot;);<br>    $wisherIDnum=mysqli_num_rows($wisher);<br>    if ($wisherIDnum) {<br>        $userNameIsUnique = false;<br>    }</strong>
+} </pre>
+<p><b>对于 Oracle 数据库：</b></p>
+<pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+/** Check whether the user has filled in the wisher's name in the text field &quot;user&quot; */
+    if ($_POST['user'] == "") {
+        $userIsEmpty = true;
+    }
+    /** Create database connection */<br>
+    $con = oci_connect($dbUsername, $dbPassword, $dbXeHost, &quot;AL32UTF8&quot;);
+    if (!$con) {
+        $m = oci_error();
+        exit('Connection Error ' . $m['message']);
+
+    }
+
+   <strong>/** Check whether a user whose name matches the &quot;user&quot; field already exists */</strong>
+    <strong>$query = "SELECT id FROM wishers WHERE name = :user_bv";
+    $stid = oci_parse($con, $query);
+    $user = $_POST['user'];
+    $wisherID = null;
+    oci_bind_by_name($stid, ':user_bv', $user);
+    oci_execute($stid);
+
+// Each user name should be unique. Check if the submitted user already exists.
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    if ($row){
+        $userNameIsUnique = false;
+    }</strong>
+}</pre>
+              </li>
+              <li>在检查用户是否唯一的代码后面，添加一系列 <tt>if</tt> 子句，以便检查用户是否正确输入并确认了口令。该代码检查窗体中的 Password ("password") 和 Confirm Password ('password2) 字段是否不为空以及是否相同。如果为空或不相同，则会更改相应的布尔型变量的值。
+              <pre class="examplecode">if ($_POST[&quot;password&quot;]==&quot;&quot;) {<br>    $passwordIsEmpty = true;
+}<br>if ($_POST[&quot;password2&quot;]==&quot;&quot;) {<br>    $password2IsEmpty = true;
+}<br>if ($_POST[&quot;password&quot;]!=$_POST[&quot;password2&quot;]) {<br>    $passwordIsValid = false;
+} </pre>
+</li>
+<li>
+  <p>通过添加在 "wishers" 数据库中插入新条目的代码，完成 <tt>if ($_SERVER['REQUEST_METHOD'] == "POST")</tt> 子句。该代码检查是否唯一地指定了许愿者名字，以及是否有效地输入并确认了口令。如果符合这些条件，该代码将从 HTML 窗体中提取 "user" 和 "password" 值，然后将其分别插入到 wishers 数据库新行中的 Name 和 Password 列。在创建该行后，该代码将关闭数据库连接并将应用程序重定向到 <tt>editWishList.php</tt> 页。</p>
+  <p><b>对于 MySQL 数据库：</b></p>
+  <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    /** Check whether the user has filled in the wisher's name in the text field "user" */
+    if ($_POST['user'] == "") {
+        $userIsEmpty = true;
+    }
+
+    /** Create database connection */
+    $con = mysqli_connect($dbHost, $dbUsername, $dbPassword);
+    if (!$con) {
+        exit('Connect Error (' . mysqli_connect_errno() . ') '
+                . mysqli_connect_error());
+    }
+    //set the default client character set 
+    mysqli_set_charset($con, 'utf-8');
+
+    /** Check whether a user whose name matches the "user" field already exists */
+    mysqli_select_db($con, "wishlist");
+    $user = mysqli_real_escape_string($con, $_POST['user']);
+    $wisher = mysqli_query($con, "SELECT id FROM wishers WHERE name='".$user."'");
+    $wisherIDnum=mysqli_num_rows($wisher);
+    if ($wisherIDnum) {
+        $userNameIsUnique = false;
+    }
+
+    /** Check whether a password was entered and confirmed correctly */
+    if ($_POST['password'] == "") {
+        $passwordIsEmpty = true;
+    }
+    if ($_POST['password2'] == "") {
+        $password2IsEmpty = true;
+    }
+    if ($_POST['password'] != $_POST['password2']) {
+        $passwordIsValid = false;
+    }
+
+    /** Check whether the boolean values show that the input data was validated successfully.
+     * If the data was validated successfully, add it as a new entry in the "wishers" database.
+     * After adding the new entry, close the connection and redirect the application to editWishList.php.
+     */
+    <strong>if (!$userIsEmpty && $userNameIsUnique && !$passwordIsEmpty && !$password2IsEmpty && $passwordIsValid) {
+        $password = mysqli_real_escape_string($con, $_POST['password']);
+        mysqli_select_db($con, "wishlist");
+        mysqli_query($con, "INSERT wishers (name, password) VALUES ('" . $user . "', '" . $password . "')");
+        mysqli_free_result($wisher);
+        mysqli_close($con);
+        header('Location: editWishList.php');
+        exit;
+    }</strong>
+}</pre>
+    <p><b>对于 Oracle 数据库：</b></p>
+    <pre class="examplecode">/** Check that the page was requested from itself via the POST method. */
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+
+/** Check whether the user has filled in the wisher's name in the text field "user" */
+    if ($_POST['user'] == "")
+        $userIsEmpty = true;
+
+    /** Create database connection */
+    $con = oci_connect($dbUsername, $dbPassword, $dbXeHost, &quot;AL32UTF8&quot;);
+    if (!$con) {
+        $m = oci_error();
+        echo $m['message'], "\n";
+        exit;
+    }
+    
+    /** Check whether a user whose name matches the "user" field already exists */
+    $query = "select ID from wishers where name = :user_bv";
+    $stid = oci_parse($con, $query);
+    $user = $_POST['user'];
+    $wisherID = null;
+    oci_bind_by_name($stid, ':user_bv', $user);
+    oci_execute($stid);
+
+/**Each user name should be unique. Check if the submitted user already exists. */
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    if ($row) {
+    $wisherID = $row['ID']; 
+    }
+    if ($wisherID != null) {
+        $userNameIsUnique = false;
+    }
+    //Check for the existence and validity of the password
+    if ($_POST['password'] == "") {
+        $passwordIsEmpty = true;
+    }
+    if ($_POST['password2'] == "") {
+        $password2IsEmpty = true;
+    }
+    if ($_POST['password'] != $_POST['password2']) {
+        $passwordIsValid = false;
+    }
+    /** Check whether the boolean values show that the input data was validated successfully.
+     * If the data was validated successfully, add it as a new entry in the "wishers" database.
+     * After adding the new entry, close the connection and redirect the application to editWishList.php.
+     */
+    <strong>if (!$userIsEmpty && $userNameIsUnique && !$passwordIsEmpty && !$password2IsEmpty && $passwordIsValid) {
+
+        $query = "INSERT INTO wishers (name, password) VALUES (:user_bv, :pwd_bv)";
+        $stid = oci_parse($con, $query);
+        $pwd = $_POST['password'];
+        oci_bind_by_name($stid, ':user_bv', $user);
+        oci_bind_by_name($stid, ':pwd_bv', $pwd);
+        oci_execute($stid);
+        oci_free_statement($stid);
+        oci_close($con);
+        header('Location: editWishList.php');
+        exit;
+    }</strong>
+}</pre>
+</li>
+		  </ol>
+			
+       
+   <h2><a id="errorMessagesInInputForm" name="errorMessagesInInputForm"></a>在输入窗体中显示错误消息</h2>
+          <p>现在，将实现在输入无效数据时显示错误消息的功能。该实现基于验证和布尔型变量值更改，如<a href="#validatinDataBeforeAddingToDatabase">验证数据并将其添加到数据库中</a>所述。 </p>
+          <ol>
+          <li>在 HTML 输入窗体中，在许愿者的名字输入下面输入以下 PHP 代码块：
+            <pre class="examplecode">Welcome!&lt;br&gt;<br>&lt;form action=&quot;createNewWisher.php&quot; method=&quot;POST&quot;&gt;<br>    Your name: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;&lt;br/&gt;
+
+<br>
+    <strong>&lt;?php
+    if ($userIsEmpty) {
+        echo (&quot;Enter your name, please!&quot;);
+        echo (&quot;&lt;br/&gt;&quot;);
+    }                
+    if (!$userNameIsUnique) {
+        echo (&quot;The person already exists. Please check the spelling and try again&quot;);
+        echo (&quot;&lt;br/&gt;&quot;);
+    }
+    ?&gt; </strong></pre>
+          </li>
+          <li>在 HTML 输入窗体中，在口令输入代码下输入以下 PHP 代码块：
+            <pre class="examplecode">Password: &lt;input type=&quot;password&quot; name=&quot;password&quot;/&gt;&lt;br/&gt;
+<br>
+<strong>&lt;?php
+ if ($passwordIsEmpty) {
+     echo (&quot;Enter the password, please!&quot;);
+     echo (&quot;&lt;br/&gt;&quot;);
+ }                
+ ?&gt;</strong></pre>
+          </li>
+          <li>在 HTML 输入窗体中，在口令确认代码下面输入以下 PHP 代码块：
+            <pre class="examplecode">Please confirm your password: &lt;input type=&quot;password&quot; name=&quot;password2&quot;/&gt;&lt;br/&gt;
+
+
+<br>
+<strong>&lt;?php
+ if ($password2IsEmpty) {
+     echo (&quot;Confirm your password, please&quot;);
+     echo (&quot;&lt;br/&gt;&quot;);    
+ }                
+ if (!$password2IsEmpty &amp;&amp; !$passwordIsValid) {
+     echo  (&quot;The passwords do not match!&quot;);
+     echo (&quot;&lt;br/&gt;&quot;);  
+ }                 
+?&gt;</strong></pre>
+          </li>
+        </ol>
+       <h3> <a name="testCreateNewWisherFunctionality"></a>测试“创建新的许愿者”功能</h3>
+        <ol>
+          <li>运行应用程序。索引页打开。<br> <img alt="主应用程序页 index.php 包含两个选项：查看某个人的愿望列表和创建愿望列表" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson3/index-php-3.png"></li>
+          <li>在索引页中，单击 "Still don't have a wish list?" 文本旁边的链接。以下窗体打开：<br> <img alt="用于注册为许愿者的空窗体" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson3/create-new-wisher-empty-form.png"></li>
+          <li>将这些字段保留空白，然后单击 "Register"。此时将显示一条错误消息。<br> <img alt="许愿者注册窗体具有错误消息：未填写姓名" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson3/create-new-wisher-name-empty.png"></li>
+          <li>在 "Your name" 字段中输入注册的许愿者名字（如 Tom），正确填写其他字段，然后单击 "Register"。此时将显示一条错误消息。</li>
+          <li>使用不同的值填写 "Password" 和 "Please confirm your password" 字段，然后单击 "Register"。此时将显示一条错误消息。</li>
+          <li>在 "Your name" 字段中输入 Bob，在两个口令字段中指定相同的口令，然后单击 "Register"。打开的页为空页，但正确传送了重定向，因为 URL 以 editWishList.php 结尾：<br> <img alt="具有欢迎问候的 editWishList.php 页" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson3/edit-wish-list-empty.png"></li>
+          <li>要检查数据是否存储在数据库中，请导航到 "Services"（服务）窗口中的 wislist1 节点下面的 wishers，然后从上下文菜单中选择 "View Data"（查看数据） <br><img alt="使用 NetBeans IDE 界面查看数据库中的数据：已添加新许愿者 Bob" class="margin-around b-all" src="../../../images_www/articles/72/php/wishlist/wishers.png"></li>
+        </ol>
+<h2><a name="lessonResultSourceCode"></a>完成当前课程后的应用程序源代码 </h2>
+<p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1929/lesson3.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成课程后的项目状态。</p>
+<p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson3.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成课程后的项目状态。</p>
+<h2><a name="nextSteps"></a>后续步骤</h2>
+        <p><a href="wish-list-lesson2.html">&lt;&lt; 上一课</a></p>
+        <p><a href="wish-list-lesson4.html">下一课 &gt;&gt;</a>    </p>
+        <p><a href="wish-list-tutorial-main-page.html">返回到教程主页</a>
+</p><br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%203:%20Creating%20New%20User">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" >
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+<p><a href="../../trails/php.html">返回至 PHP 学习资源</a><br>
+</p>
+</body>
+</html>

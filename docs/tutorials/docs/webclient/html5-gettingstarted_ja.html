@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>HTML5アプリケーションの開始 - NetBeansチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that introduces the support for developing HTML5 applications in NetBeans IDE 
+              and uses the jQuery JavaScript library.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>HTML5アプリケーションの開始</h1>
+
+        <p>
+        このドキュメントは、IDEでHTML5プロジェクトを作成する方法と、プロジェクトでのJavaScriptおよびCSSの使用をサポートするIDEの機能の一部を示します。このドキュメントでは、jQuery JavaScriptライブラリを使用してWebページのリストを変更する単純なHTML5アプリケーションを作成します。</p>
+        
+        <p>このドキュメントでは、Chrome WebストアからChromeブラウザのNetBeans Connector拡張機能をインストールする方法も示します。</p>
+
+        <p class="tips">チュートリアルのスクリーンショットを確認するには、<a href="../web/html5-gettingstarted-screencast.html">HTML5アプリケーションの開始のビデオ</a>を参照してください。</p>
+        
+        <p class="tips">NetBeans Java WebアプリケーションでjQueryを使用する方法のチュートリアルは、チュートリアル<a href="../web/js-toolkits-jquery.html">jQueryを使用したWebページの外観と使いやすさの強化</a>を参照してください。</p>
+
+
+
+        <h3>目次</h3>
+        <img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#installchrome">ChromeブラウザでのIDEの使用</a>
+                <ul>
+                    <li><a href="#installchrome1">Chrome Webストアからの拡張機能のインストール</a></li>
+                    <li><a href="#installchrome2">拡張機能のオフライン・インストール</a></li>
+                </ul></li>
+            <li><a href="#webkit">埋込みWebKitブラウザの使用</a></li>
+            <li><a href="#createproject">NetBeans HTML5プロジェクトの作成</a></li>
+            <li><a href="#editingpage">HTMLファイルの編集</a></li>
+            <li><a href="#saving">サイト・テンプレートとしてのプロジェクトの保存</a></li>
+            <li><a href="#summary">サマリー</a></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+        <h4>このチュートリアルを完了するには、次のリソースが必要です。</h4>
+
+        <table id="requiredSoftware">
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE、Java</a></td>
+                    <td class="tbltd1">7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chromeブラウザ</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">ChromeのNetBeans Connector拡張機能</a></td>
+                    <td class="tbltd1">1.0.0以上</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">HTML5デモ・プロジェクト・リソース</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">完成したプロジェクトのサイト・テンプレート</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注意: </strong></p>
+
+        <ul>
+            <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">プロジェクト・リソースzipファイル</a>には、このチュートリアルでプロジェクトに追加する必要のあるJPGイメージとCSSファイルが含まれます。</li>
+
+            <li>プロジェクトを動作中のソリューションと比較する場合は、完成したプロジェクトの<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">サイト・テンプレート</a>をダウンロードできます。</li>
+
+            <li>このドキュメントは、HTML、CSSおよびJavaScriptについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。</li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Installing the Extension ++++++++++++++++ -->
+        <a name="installchrome"></a>
+        <h2>ChromeブラウザでのIDEの使用</h2>
+        <p>HTML5アプリケーション開発をサポートする、IDEで使用可能なツールの一部をフルに活用するには、Chromeブラウザを使用し、<a href="https://chrome.google.com/webstore/">Chrome Webストア</a>からNetBeans Connector拡張機能をインストールすることをお薦めします。拡張機能をインストールする必要があるのは1回のみです。
+        </p>
+        
+        <p>インストールすると、NetBeans Connector拡張機能は、ChromeブラウザでNetBeans HTML5プロジェクトを実行する際にURLの場所バーからアクセス可能なNetBeansアクション・メニューを追加します。NetBeansアクション・メニューでは、NetBeansでの検査モードを有効にし、ブラウザ・ウィンドウを一般的な表示デバイスのサイズにすばやく変更できます。JavaScriptデバッガも、HTML5アプリケーションを実行すると自動的に有効になります。 
+        </p>
+        
+        
+        
+        <a name="installchrome1"></a>
+        <div class="indent">
+        <h3>Chrome Webストアからの拡張機能のインストール</h3>
+        <p> IDEからNetBeans HTML5アプリケーション・プロジェクトを実行し、NetBeans統合でターゲット・ブラウザとしてChromeを選択した場合は、NetBeans Connector拡張機能のインストールを確認するプロンプトが自動的に表示されます。この課題では、ダミーのHTML5プロジェクトを作成および実行することで拡張機能をインストールする方法を示します。この課題をスキップし、IDEから求められた場合に拡張機能をインストールするか、NetBeans Connector拡張機能をChrome Webストアから直接インストールすることもできます。
+        </p>
+        
+        
+        <p class="notes"><strong>注意:</strong>IDEにより、Chrome Webストアがデフォルト・ブラウザに開きます。ChromeがIDEのデフォルト・ブラウザとして設定されていない場合は、次の手順を実行する前に、「オプション」ウィンドウを開き、「一般」カテゴリの「Webブラウザ」ドロップダウン・リストで「Chrome」を選択する必要があります。
+        </p>
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択し、新規プロジェクト・ウィザードを開きます。</li>
+            <li>HTML/JavaScriptカテゴリで「HTML5アプリケーション」を選択します。「次」をクリックします。</li>
+            <li>プロジェクトの「名前と場所」を指定します。「次」をクリックします。
+                <p>この課題では、名前は重要ではありません。</p></li>
+            <li>「サイト・テンプレートなし」を選択します。「終了」をクリックします。
+                <p>「終了」をクリックすると、IDEにより新規HTML5プロジェクトが作成され、<tt>index.html</tt>がエディタに開きます。</p></li>
+            <li>NetBeans統合のあるChromeがツールバーのドロップダウン・リストで選択されていることを確認します。</li>
+            <li>ツールバーの「実行」をクリックします。</li>
+            <li>「Chrome拡張機能のインストール」ダイアログ・ボックスで「Chrome Webストアへ移動」をクリックします。<br> <img alt="「Chrome拡張機能のインストール」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension1.png" title="「Chrome拡張機能のインストール」ダイアログ・ボックス">
+                <p>「Chrome Webストアへ移動」をクリックすると、ChromeブラウザにChrome WebストアのNetBeans Connectorページが開きます。 </p>
+                <p class="notes"><strong>注意:</strong>「Chrome拡張機能のインストール」では、拡張機能がインストールされた後にクリックするボタンが表示されます。</p>
+            <img alt="「Chrome拡張機能のインストール」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-rerun-dialog.png" title="「Chrome拡張機能のインストール」ダイアログ・ボックス"></li>
+            <li>Chromeブラウザに移動し、NetBeans Connectorページで「Chromeに追加」をクリックします。拡張機能を追加するかどうかを確認するプロンプトが表示されたら、「追加」をクリックします。<br> <img alt="Chrome WebストアのNetBeans Connectorページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-chrome-netbeanshome.png" title="Chrome WebストアのNetBeans Connectorページ">
+                <p>拡張機能がインストールされると、拡張機能が追加されたことを示す通知が表示され、ChromeブラウザでNetBeans HTML5プロジェクトを実行するとNetBeans ConnectorアイコンがURLの場所バーに表示されます。</p>
+                <img alt="拡張機能がインストールされたことの確認のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension2.png" title="拡張機能がインストールされたことの確認">
+            </li>
+            <li>IDEで、「Chrome拡張機能のインストール」ダイアログ・ボックスの「プロジェクトの再実行」をクリックします。
+                <p>「プロジェクトの再実行」をクリックすると、Chromeブラウザに新しいタブが開き、HTML5アプリケーションの索引ページが表示されます。</p>
+                <p>拡張機能がインストールされると、ChromeブラウザでNetBeans HTML5プロジェクトを実行したときにNetBeans ConnectorアイコンがURLの場所バーに表示されます。</p> 
+            </li>
+            
+            </ol>
+            <p>ChromeブラウザでChromeの「拡張機能」ページ(<tt>chrome://extensions/</tt>)を開くと、拡張機能が有効になっています。</p>
+            <img alt="Chromeの「拡張機能」のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension3.png" title="NetBeans Connector拡張機能がChromeの「拡張機能」で有効になっている">
+
+        <p class="notes"><strong>注意:</strong>または、次の手順を実行して、NetBeans Connector拡張機能をChrome Webストアから直接インストールできます。</p>
+            <ol>
+            <li>Chromeブラウザを起動し、<a href="https://chrome.google.com/webstore/">Chrome Webストア</a>に移動します。</li>
+            <li>Chrome WebストアでNetbeans Connector拡張機能を検索します。</li>
+            <li>検索結果ページで「Chromeに追加」をクリックし、拡張機能の追加を確認するプロンプトが表示されたら「追加」をクリックします。<br> <img alt="Chrome WebストアのNetBeans Connector拡張機能のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension1.png" title="Chrome WebストアのNetBeans Connector拡張機能"></li>
+        </ol>
+              
+        
+        <a name="installchrome2"></a>
+        <h3>拡張機能のオフライン・インストール</h3>
+        <p>Chrome Webストアに接続できない場合は、IDEにバンドルされているNetBeans Connector拡張機能をインストールできます。NetBeans HTML5プロジェクトを実行し、NetBeans Connector拡張機能のインストールを求められた場合に、Chrome Webストアにアクセスできない場合は、次の手順を実行して拡張機能をインストールできます。</p>
+        <ol>
+            <li>「Chrome拡張機能のインストール」ダイアログ・ボックスで「接続なし」をクリックします。<br> <img alt="「Chrome拡張機能のインストール」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension1.png" title="「Chrome拡張機能のインストール」ダイアログ・ボックス">
+            </li>
+            <li>ダイアログ・ボックスの<strong>検索</strong>をクリックして、ローカル・システム上の<strong><tt>netbeans-chrome-connector.crx</tt></strong>拡張機能を含むNetBeans IDEインストール・フォルダを開きます。<br> <img alt="Chromeの「拡張機能」のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension2.png" title="NetBeans Connector拡張機能がChromeの「拡張機能」で有効になっている">
+            </li>
+            <li>ChromeブラウザでChromeの「拡張機能」ページ(<tt>chrome://extensions/</tt>)を開きます。<br> <img alt="Chromeの「拡張機能」のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension3.png" title="NetBeans Connector拡張機能がChromeの「拡張機能」で有効になっている">
+            </li>
+            <li><tt>netbeans-chrome-connector.crx</tt>拡張機能をブラウザの「拡張機能」ページにドラッグし、「追加」をクリックして、拡張機能を追加することを確認します。
+                <p>拡張機能が追加されると、NetBeans Connector拡張機能がインストール済拡張機能のリストに追加されていることが表示されます。</p></li>
+            <li>「Chrome拡張機能のインストール」ダイアログ・ボックスで<strong>「はい、プラグインをただちにインストールします」</strong>をクリックして、ChromeブラウザにNetBeans HTML5プロジェクトを開きます。ブラウザ・タブの場所バーにNetBeans Connectorアイコンが表示されます。
+            </li>
+        </ol>
+        </div>
+
+        
+<!-- ++++++++++++++++ Using the WebKit Browser ++++++++++++++++ -->
+        <a name="webkit"></a>
+        <h2>埋込みWebKitブラウザの使用</h2>
+        <p>アプリケーションを開発している場合は、NetBeans Connector拡張機能がインストールされたChromeブラウザでHTML5を実行することをお薦めします。HTML5アプリケーションを作成する場合は、実行ターゲットとして<strong>NetBeans統合のあるChrome</strong>がデフォルトで選択されています。ただし、IDEにバンドルされている埋込みWebKitブラウザでHTML5アプリケーションを実行することもできます。</p>
+        
+        <p>埋込みWebKitブラウザでHTML5アプリケーションを実行すると、「Webブラウザ」ウィンドウがIDEに開かれます。埋込みWebKitブラウザでは、「検査」モード、各種画面サイズ・オプション、JavaScriptデバッグなど、NetBeans Connector拡張機能がインストールされている場合にChromeブラウザで有効になる機能の多くがサポートされます。
+        </p>
+        <p class="notes"><strong>注意:</strong>メイン・メニューで「ウィンドウ」→「Web」→「Webブラウザ」を選択すると、IDEによって、「オプション」ウィンドウで「Webブラウザ」として指定されたブラウザが開かれます。 </p>
+        <p>次の手順を実行して、埋込みWebKitブラウザでHTML5アプリケーションを実行します。</p>
+        <ol>
+            <li>ツールバーのドロップダウン・リストで「埋込みWebKitブラウザ」を選択します。<br> <img alt="ツールバーのターゲット・ブラウザ・ドロップダウン・リストのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-embedded1.png" title="ツールバーのドロップダウン・リストのHTML5アプリケーションのターゲット・ブラウザのリスト">
+            </li>
+            <li>ツールバーで「実行」をクリックするか、「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックして「実行」を選択します。
+                <p>アプリケーションを実行すると、IDEに「Webブラウザ」ウィンドウが開きます。</p>
+                <img alt="「埋込みWebKitブラウザ」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-embedded2.png" title="「埋込みWebKitブラウザ」ウィンドウ">
+                <p>「Webブラウザ」タブのツールバーでアイコンをクリックして「検査」モードを有効にし、異なる表示サイズ間をすばやく切り替えることができます。</p></li>
+        </ol>
+        
+        
+<!-- ++++++++++++++++ Creating the Project ++++++++++++++++ -->
+        <a name="createproject"></a>
+        <h2>NetBeans HTML5プロジェクトの作成</h2>
+        <p>この課題では、IDEの新規プロジェクト・ウィザードを使用して新規HTML5プロジェクトを作成します。このチュートリアルでは、<tt>index.html</tt>ファイルのみ持つ非常に基本的なHTML5プロジェクトを作成します。ウィザードでは、プロジェクトで使用するいくつかのjQuery JavaScriptライブラリも選択します。
+        </p>
+        <ol>
+            <li>メイン・メニューで「ファイル」→「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])を選択して新規プロジェクト・ウィザードを開きます。</li>
+            <li><strong>HTML5</strong>カテゴリを選択し、<strong>「HTML5アプリケーション」</strong>を選択します。「次」をクリックします。<br> <img alt="新規プロジェクト・ウィザードのHTML5アプリケーション・テンプレートのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-newproject1.png" title="新規プロジェクト・ウィザードのHTML5アプリケーション・テンプレート">
+            </li>
+
+            <li>「プロジェクト名」に<strong>「HTML5Demo」</strong>と入力し、プロジェクトを保存するコンピュータ上のディレクトリを指定します。「次」をクリックします。</li>
+
+            <li>手順3の「サイト・テンプレート」では、「サイト・テンプレートなし」を選択します。「次」をクリックします。<br> <img alt="新規HTML5アプリケーション・ウィザードの「サイト・テンプレート」パネルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-newproject2.png" title="新規HTML5アプリケーション・ウィザードの「サイト・テンプレート」パネル">
+                <p>「サイト・テンプレートなし」オプションを選択すると、ウィザードによって基本的な空のNetBeans HTML5プロジェクトが生成されます。ここで「終了」をクリックした場合、プロジェクトには「サイト・ルート」フォルダのみ含まれ、「サイト・ルート」フォルダには<tt>index.html</tt>ファイルのみ含まれます。</p>
+                
+                <p>ウィザードの「サイト・テンプレート」ページでは、HTML5プロジェクトに対して一般的なオンライン・テンプレートのリストから選択するか、サイト・テンプレートの<tt>.zip</tt>アーカイブの場所を指定できます。<tt>.zip</tt>アーカイブのURLを入力するか、「参照」をクリックしてローカル・システム上の場所を指定できます。サイト・テンプレートに基づいてプロジェクトを作成すると、プロジェクトのファイル、ライブラリおよび構造はテンプレートによって決定されます。</p>
+                <p><strong class="notes">注意:</strong> リストのオンライン・テンプレートの1つに基づくプロジェクトを作成するにはオンラインになっている必要があります。</p></li>
+            
+            <li>手順4の「JavaScriptファイル」では、「使用可能」ペインで<tt>jquery</tt>および<tt>jqueryui</tt> JavaScriptライブラリを選択し、右矢印アイコン(&nbsp;>&nbsp;)をクリックして、選択したライブラリをウィザードの「選択済」ペインに移動します。デフォルトでは、ライブラリはプロジェクトの「<tt>js/libraries</tt>」フォルダに作成されます。このチュートリアルでは、「縮小」バージョンのJavaScriptライブラリを使用します。
+                
+                <p class="tips">パネルのテキスト・フィールドを使用して、JavaScriptライブラリのリストをフィルタできます。たとえば、フィールドに<strong>「jq」</strong>と入力して、<tt>jquery</tt>ライブラリを探します。[Ctrl]を押しながらライブラリの名前をクリックして、複数のライブラリを選択できます。</p>
+                
+            <img alt="新規HTML5アプリケーション・ウィザードの「JavaScriptライブラリ」パネルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-newproject3.png" title="新規HTML5アプリケーション・ウィザードの「JavaScriptライブラリ」パネル">
+            
+            <p class="notes"><strong>注意:</strong></p>
+            <ul>
+                <li>「バージョン」列でライブラリのバージョン番号をクリックして、旧バージョンのライブラリを選択できるポップアップ・ウィンドウを開くことができます。デフォルトでは、ウィザードには最新バージョンが表示されます。</li>
+                <li>JavaScriptライブラリの最小バージョンは、圧縮されたバージョンであり、エディタで表示するとコードは包括的に表示されません。</li>
+            </ul>
+            <li><strong>「終了」</strong>をクリックすると、ウィザードが完了します。
+            
+            <p>「終了」をクリックすると、IDEによりプロジェクトが作成され、「プロジェクト」ウィンドウにプロジェクトのノードが表示され、エディタに<tt>index.html</tt>ファイルが開かれます。</p>
+
+            <img alt="新規HTML5アプリケーション・ウィザードの「JavaScriptライブラリ」パネルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-projectswindow1.png" title="新規HTML5アプリケーション・ウィザードの「JavaScriptライブラリ」パネル">
+
+            <p>「プロジェクト」ウィンドウで「<tt>js/libs</tt>」フォルダを展開した場合、新規プロジェクト・ウィザードで指定したJavaScriptライブラリがプロジェクトに自動的に追加されたことがわかります。JavaScriptファイルを右クリックし、ポップアップ・メニューで「削除」を選択して、JavaScriptライブラリをプロジェクトから削除できます。</p>
+
+            <p class="tips">JavaScriptライブラリをプロジェクトに追加するには、プロジェクト・ノードを右クリックし、「プロパティ」を選択して、「プロジェクト・プロパティ」ウィンドウを開きます。「プロジェクト・プロパティ」ウィンドウの「JavaScriptライブラリ」パネルでライブラリを追加できます。または、ローカル・システムにあるJavaScriptファイルを「<tt>js</tt>」フォルダに直接コピーできます。</p>
+            
+            <p>ここで、プロジェクトがChromeブラウザに正しく表示されることをテストできます。</p>
+            </li>
+            <li>NetBeans Connector統合付きChromeがツールバーのブラウザ・ドロップダウン表で選択されていることを確認します。<br> <img alt="ツールバーのドロップダウン・リストのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-js/html5-js-selectbrowser.png" title="ツールバーのドロップダウン・リストで選択されたブラウザ"></li>
+            <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「実行」を選択します。</li>
+        </ol>
+        
+        <p>「実行」を選択すると、IDEによってChromeブラウザにタブが開き、アプリケーションのデフォルトの<tt>index.html</tt>ページが表示されます。IDEで「ブラウザDOM」ウィンドウが開き、ブラウザで開いているページのDOMツリーが表示されます。</p>
+
+        <img alt="Chromeブラウザ・タブのアプリケーションのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject.png" title="Chromeブラウザ・タブのアプリケーション">
+
+        <p>NetBeans Connectorがタブをデバッグしていることを示す黄色いバーがブラウザ・タブに表示されます。黄色いバーが表示されているときは、IDEとブラウザが接続され、相互に通信できます。IDEからHTML5アプリケーションを起動すると、JavaScriptデバッガが自動的に有効になります。ファイルに変更を保存するかCSSスタイル・シートに変更を加えた場合は、ブラウザ・ウィンドウが自動的に更新されて変更が表示されるため、ページを再ロードする必要はありません。</p>
+
+        <p class="alert">黄色いバーを閉じるか「取消」をクリックした場合は、IDEとブラウザ間の接続が切断されます。接続を切断した場合は、IDEからHTML5アプリケーションを再度実行する必要があります。</p>
+
+        <p>また、NetBeansアイコンがブラウザのURLの場所フィールドに表示されます。アイコンをクリックして、ブラウザの表示サイズの変更および「NetBeansでの検査」モードの有効化を行う各種オプションを提供するメニューを開くことができます。</p>
+
+        <img alt="Chromeブラウザ・タブの「NetBeans」メニューのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject2.png" title="Chromeブラウザ・タブの「NetBeans」メニュー">
+        
+        <p>メニューでデフォルト・デバイスの1つを選択した場合、ブラウザ・ウィンドウがデバイスのサイズに変更されます。これにより、アプリケーションが選択したデバイスでどのように表示されるかを確認できます。HTML5アプリケーションは、通常、表示されるデバイスの画面サイズに対応するように設計されています。画面サイズに対応するJavaScriptおよびCSSルールを使用し、レイアウトがデバイスに対して最適化されるようにアプリケーションの表示方法を変更できます。 </p>
+
+        
+<!-- ++++++++++++++++ Editing the HTML File ++++++++++++++++ -->
+
+        <a name="editingpage"></a>
+        <h2>HTMLファイルの編集</h2>
+        <p>この課題では、プロジェクトにプロジェクト・リソースを追加し、<tt>index.html</tt>ファイルを編集してリソースへのリンクを追加し、いくつかのCSSルールを追加します。JavaScriptと組み合せた場合に、いくつかの単純なCSSセレクタによってブラウザへのページの表示方法が大幅に変化する様子を確認します。</p>    
+        
+        <ol>
+            <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">project resources</a>アーカイブをダウンロードし、コンテンツを抽出します。
+            <p>zipアーカイブには、プロジェクトに追加する必要のあるファイルを含む2つのフォルダ(<tt>pix</tt>および<tt>css</tt>)が含まれます。</p></li>
+            <li><tt>pix</tt>および<tt>css</tt>フォルダを「サイト・ルート」フォルダにコピーします。
+            <p class="notes"><strong>注意:</strong>プロジェクトのディレクトリ構造を参照する場合は、フォルダを<tt>public_html</tt>フォルダにコピーする必要があります。</p>
+            <img alt="Chromeブラウザ・タブの「NetBeans」メニューのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-fileswindow.png" title="Chromeブラウザ・タブの「NetBeans」メニュー">
+            </li>
+            <li>エディタに<code>index.html</code>を開きます(まだ開いていない場合)。</li>
+            <li>エディタで、開始および終了<tt>&lt;head></tt>タグの間に次のコード(太字)を追加することで、プロジェクトの作成時に追加したJavaScriptライブラリへの参照を追加します。
+            <pre class="examplecode">
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;&lt;/title&gt;
+    &lt;meta charset=UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+    <strong>&lt;script type="text/javascript" src="js/libs/jquery/jquery.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="js/libs/jqueryui/jquery-ui.js"&gt;&lt;/script&gt;</strong>
+  &lt;/head&gt;
+  &lt;body&gt;
+    TODO write content
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+                    
+                <p class="tips">エディタでのコード補完の使用が役立つ場合があります。</p>
+                <img alt="エディタでのコード補完のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-editor1.png" title="エディタでのコード補完">
+            </li>
+            <li>デフォルトの「<code>TODO write content</code>」コメントを削除し、<tt>body</tt>タグの間に次のコードを入力します。
+    <pre class="examplecode">
+    &lt;body&gt;
+        &lt;div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Mary Adams&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/maryadams.jpg" alt="Mary Adams"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Vice President&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x8234&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 102 Bldg 1&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; m.adams@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;John Matthews&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/johnmatthews.jpg" alt="John Matthews"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Middle Manager&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x3082&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 307 Bldg 1&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; j.matthews@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Sam Jackson&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/samjackson.jpg" alt="Sam Jackson"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Deputy Assistant&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x3494&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 457 Bldg 2&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; s.jackson@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Jennifer Brooks&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/jeniferapplethwaite.jpg" alt="Jenifer Applethwaite"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Senior Technician&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x9430&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 327 Bldg 2&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; j.brooks@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;</pre>
+            </li>
+            <li>変更を保存します。
+            <p>変更を保存すると、ブラウザにページが自動的に再ロードされ、ページは次の図のようになります。</p>
+            <img alt="Chromeブラウザ・タブに再ロードされたページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject3.png" title="Chromeブラウザ・タブに再ロードされたページ">
+            </li>
+            <li>次のインラインCSSルールをファイルの<tt>&lt;head></tt>タグの間に入力します。 
+            <pre class="examplecode">&lt;style type=&quot;text/css&quot;&gt;
+    ul {list-style-type: none}
+    img {
+        margin-right: 20px; 
+        float:left; 
+        border: 1px solid;
+    }
+&lt;/style&gt;</pre>
+
+            <p class="tips">CSSルールを追加する際に、[Ctrl]-[Space]を押して、エディタでコード補完を使用します。</p>
+
+            <img alt="エディタでのCSSルールのコード補完のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-editor2.png" title="エディタでのCSSルールのコード補完">
+                
+            <p>「ブラウザDOM」ウィンドウを開くと、現在のページの構造を確認できます。</p>
+            <img alt="DOMツリーを表示している「ブラウザDOM」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/dom-browser.png" title="DOMツリーを表示している「ブラウザDOM」ウィンドウ">
+            </li>
+            <li>スタイル・シートへの次のリンク(<strong>bold</strong>)を<code>&lt;head></code>タグの間に追加します。 
+            <pre class="examplecode">&lt;head&gt;
+...
+    &lt;script type="text/javascript" src="js/libs/jqueryui/jquery-ui.js"&gt;&lt;/script&gt;
+    <strong>&lt;link type="text/css" rel="stylesheet" href="css/basecss.css"&gt;</strong>
+...
+&lt;/head&gt;</pre>
+            
+            <p><tt>basecss.css</tt>スタイル・シートは、jQuery "UI lightness"テーマのカスタムCSSスタイル・シートに定義されているCSSルールの一部に基づきます。</p>
+            
+            <p class="tips">エディタに<tt>basecss.css</tt>スタイル・シートを開き、スタイル・シートを変更して前の手順で追加したCSSルールを追加するか、CSSルールの新規スタイル・シートを作成できます。</p>
+            </li>
+            
+            <li><tt>&lt;head></tt>タグの間に次のコードを追加して、ページの要素がロードされる際にjQueryスクリプトを実行します。
+<pre class="examplecode">
+    <strong>&lt;script type=&quot;text/javascript&quot;&gt;
+        $(document).ready(function() {
+
+        });
+    &lt;/script&gt;</strong>
+&lt;/head&gt;</pre>
+    
+            <p>jQueryは、動的に適用されるJavaScriptの属性と動作をDOM (Document Object Model)の要素に結び付けることによって機能します。この例で使用するjQuery命令は、DOMのすべての要素がブラウザにロードされた後にのみ実行される必要があります。jQuery動作はDOMの要素に接続されるので、期待する結果を得るにはこれらの要素がjQueryで使用できる必要があるため、これは重要です。jQueryは、<code>$</code>で表される、jQueryオブジェクトの後に続く組込みの<code>(document).ready</code>関数を使用して、これを処理してくれます。</p>
+
+            <p class="tips">この関数の次の省略バージョンを使用することもできます。</p>
+            <pre class="examplecode">$(function(){
+
+});</pre>
+
+            <p>jQueryの命令は、JavaScriptメソッドの形式をとり、パラメータの配列を表すオプションのオブジェクト・リテラルを持ちます。また、適切なとき、つまりDOMが完全にロードされた後にのみ実行されるように、<code>(document).ready</code>関数内の中括弧<code>{}</code>の間に置く必要があります。</p>
+            </li>
+
+            <li><code>(document).ready</code>関数内の中括弧<code>{}</code>の間に、次のコード(太字)を追加します。
+<pre class="examplecode">
+    &lt;script type=&quot;text/javascript&quot;&gt;
+        $(document).ready(function() {
+            <strong>$("#infolist").accordion({
+                autoHeight: false
+            });</strong>
+        });
+    &lt;/script&gt;
+&lt;/head&gt;</pre>
+                
+            <p>このコードは、<a href="http://jqueryui.com/">jQuery UIライブラリ</a>に含まれる<a href="http://jqueryui.com/demos/accordion/">jQuery accordionウィジェット</a>・スクリプトを呼び出します。accordionスクリプトは、<tt>infolist</tt>として識別されているDOMオブジェクト内の要素を変更します。このコードで、<code>#infolist</code>は、値<code>infolist</code>の<code>id</code>属性を持つ一意のDOM要素に接続されたCSSセレクタです。これは、典型的なJavaScriptドット表記法(「<code>.</code>」)を使用して、<code>accordion()</code>メソッドを使用してこの要素を表示するjQuery命令に接続されています。</p>
+            
+            <p>次の手順では、ページ内の要素を<tt>infolist</tt>として識別します。</p>
+
+            <p class="notes"><strong>注意:</strong>上記のスニペットでは、「<code>autoHeight: false</code>」も指定しています。これは、アコーディオン・ウィジェットが各パネルの高さをマークアップ内で最も高いコンテンツ部分に基づいて設定することを防止します。詳細は、<a href="http://docs.jquery.com/UI/Accordion">アコーディオンのAPIドキュメント</a>を参照してください。</p>
+            
+            <p><code>index.html</code>ファイルの<tt>&lt;head></tt>セクションは次のようになります。
+ <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;&lt;/title&gt;
+        &lt;meta charset=&quot;UTF-8&quot;&gt;        
+        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery/jquery.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jqueryui/jquery-ui.js&quot;&gt;&lt;/script&gt;
+        &lt;link type="text/css" rel="stylesheet" href="css/basecss.css"&gt;
+
+        &lt;style type=&quot;text/css&quot;&gt;
+            ul {list-style-type: none}
+            img {
+                margin-right: 20px; 
+                float:left; 
+                border: 1px solid;
+            }
+        &lt;/style&gt;
+        &lt;script type=&quot;text/javascript&quot;&gt;
+            $(document).ready(function() {
+                $("#infolist").accordion({
+                    autoHeight: false
+                });
+            });
+        &lt;/script&gt;
+    &lt;/head&gt;</pre>
+
+            <p class="tips">エディタ内で右クリックし、「フォーマット」を選択すると、コードの体裁を整えることができます。</p>
+            </li>
+
+            <li>次の<code>id</code>セレクタと値(太字)を追加することで、ページのコンテンツを囲む<tt>&lt;div></tt>要素を変更します。
+            <pre class="examplecode">&lt;body&gt;
+    &lt;div <strong>id="infolist"</strong>&gt;
+            </pre>
+            <p>この<code>&lt;div></code>要素は、ページのコンテンツを囲みます(4セットの<code>&lt;h3></code>タグと、チュートリアルで前に追加した<code>&lt;div></code>タグ)。</p>
+            
+            <p class="tips">「CSSルールの編集」ダイアログ・ボックスで、要素にセレクタを追加できます。「CSSルールの編集」ダイアログ・ボックスを開くには、エディタで<tt>&lt;div></tt>タグを右クリックし、ポップアップ・メニューで「CSSルールの編集」を選択します。または、エディタで挿入カーソルが<tt>&lt;div></tt>タグにある場合は、「CSSスタイル」ウィンドウ(「ウィンドウ」>「Web」>「CSSスタイル」)の「CSSルールの編集」ボタン(<img alt="エディタでのコード補完のスクリーンショット" src="../../../images_www/articles/73/web/html5-gettingstarted/newcssrule.png" title="エディタでのコード補完">)をクリックします。</p>
+            <div class="indent">
+            
+                    <img alt="「CSSスタイル」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-cssstyles.png" title="「CSSスタイル」ウィンドウ">
+                <p>CSSルール・ダイアログ・ボックスで、「セレクタ・タイプ」として「<tt>id</tt>」を選択し、「セレクタ」として<strong>「infolist」</strong>を入力します。「要素に変更を適用」が選択されていることを確認します。
+                </p>
+                <img alt="「CSSルールの編集」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-cssrules.png" title="「CSSルールの編集」ダイアログ・ボックス。">
+                <p>ダイアログ・ボックスで「OK」をクリックすると、<tt>infolist</tt>セレクタのCSSルールが<tt>basecss.css</tt>スタイル・シートに自動的に追加されます。</p>
+            </div>
+ 
+            </li>
+            <li>変更を<tt>index.html</tt>に保存します([Ctrl]-[S]、Macの場合は[⌘]-[S])。 
+            <p>変更を保存すると、Webブラウザにページが自動的に再ロードされます。ページのレイアウトが変更され、<tt>basecss.css</tt>スタイル・シートに定義されているCSSスタイル・ルールがページで使用されています。下のリストのうち<tt>&lt;h3></tt>は開いていますが、その他は縮小されています。<tt>&lt;h3></tt>要素をクリックしてリストを展開できます。</p>
+            
+            <img alt="ブラウザにロードされたプロジェクトのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject5.png" title="ブラウザにロードされた最終プロジェクト">
+
+            
+            <p>jQuery accordion関数は、<tt>infolist</tt> DOMオブジェクトに含まれるすべてのページ要素を変更します。「ナビゲータ」ウィンドウで、HTMLファイルの構造および<tt>id=infolist</tt>で識別された<tt>div</tt>要素を確認できます。</p>
+            
+            <img alt="「ナビゲータ」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/navigator3.png" title="「ブラウザDOM」ウィンドウ">
+            <p class="tips">「ナビゲータ」ウィンドウで要素を右クリックし、「ソースへ移動」を選択して、ソース・ファイル内のその要素の場所にすばやく移動できます。</p>
+            <p>「ブラウザDOM」ウィンドウで、ブラウザでレンダリングされたページのDOM要素、および要素に適用されるJQueryスタイルを確認できます。
+            </p>
+            <img alt="「ブラウザDOM」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/dom-browser3.png" title="「ブラウザDOM」ウィンドウ">
+            <p class="tips">ブラウザでNetBeansでの検査モードが有効になっている場合、ブラウザ・ウィンドウで要素を選択すると、その要素が「ブラウザDOM」ウィンドウで強調表示されます。</p>
+            </li>
+        </ol>
+
+        
+<!-- ++++++++++++++++ Saving the Project  ++++++++++++++++ -->
+        <a name="saving"></a>
+        <h2 id="template">サイト・テンプレートとしてのプロジェクトの保存</h2>
+        <p>テンプレートとして使用できるサイト・テンプレートとしてプロジェクトを保存して、プロジェクトに基づく他のHTML5サイトを作成できます。サイト・テンプレートには、JavaScriptライブラリ、CSSファイル、イメージおよびHTMLファイルのテンプレートを含めることができます。IDEには、サイト・テンプレートに含めるファイルを選択できるウィザードが用意されています。</p>
+            
+        <ol>
+            <li>「プロジェクト」ウィンドウでプロジェクトを右クリックし、ポップアップ・メニューから「テンプレートとして保存」を選択します。</li>
+            <li>「名前」フィールドに<strong>「HTML5DemoSiteTemplate」</strong>と入力し、テンプレートを保存する場所を指定します。</li>
+            <li>すべてのファイルが選択されていることを確認します。「終了」をクリックします。
+                <p>ダイアログ・ボックスのツリーでノードを展開すると、サイト・テンプレートに含まれるファイルを確認できます。</p>
+                <img alt="「サイト・テンプレートを作成」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-sitetemplate.png" title="「サイト・テンプレートを作成」ダイアログ・ボックス">
+                <p>サイト・テンプレートに<tt>index.html</tt>ファイル、CSSスタイル・シート、プロジェクトに使用されるイメージおよびJavaScriptライブラリが含まれることを確認できます。サイト・テンプレートには、構成ファイルとテストを含めることもできます。</p>
+                <p>「終了」をクリックすると、IDEによってサイト・テンプレートが<tt>.zip</tt>アーカイブとして生成されます。</p>
+            </li>
+        </ol>
+        
+        <p>
+        サイト・テンプレートに基づくプロジェクトを作成する場合は、新規プロジェクト・ウィザードの「サイト・テンプレート」パネルで<tt>.zip</tt>アーカイブの場所を指定します。</p>
+        
+        <h2 id="summary">サマリー</h2>
+
+        <p>このチュートリアルでは、いくつかのjQuery JavaScriptライブラリを使用する空のHTML5プロジェクトを作成する方法を学習しました。ChromeブラウザのNetBeans Connector拡張機能をインストールし、ブラウザでHTML5プロジェクトを実行する方法も学習しました。<tt>index.html</tt>ファイルを編集するときに、HTMLおよびCSSファイルの編集に役立ついくつかのツールがIDEによって提供されることを確認しました。
+            </p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20HTML5%20Applications">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        
+        <h2 id="seealso">関連項目</h2>
+
+        <p>IDEでのHTML5アプリケーションのサポートの詳細は、<a href="https://netbeans.org/">netbeans.org</a>で次のソースを参照してください。</p>
+
+        <ul>
+            <li><a href="html5-editing-css.html">HTML5アプリケーションでのCSSスタイル・シートの操作</a>。このチュートリアルで作成したアプリケーションを継続するドキュメントで、IDEでCSSのウィザードおよびウィンドウのいくつかを使用する方法、およびChromeブラウザの「検査」モードを使用してプロジェクト・ソース内の要素をビジュアルに特定する方法を示します。</li>
+            <li><a href="html5-js-support.html">HTML5アプリケーションでのJavaScriptのデバッグとテスト</a>。IDEでJavaScriptファイルをデバッグおよびテストするのに役立つツールをIDEが提供する方法を示すドキュメントです。</li>
+        </ul>
+        
+        <p>jQueryの詳細は、公式ドキュメントを参照してください。</p>
+
+        <ul>
+            <li>公式ホーム・ページ: <a href="http://jquery.com">http://jquery.com</a></li>
+            <li>UIホーム・ページ: <a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>チュートリアル: <a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>ドキュメントのメイン・ページ: <a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>UIデモおよびドキュメント: <a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+    </body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>Defining Your C/C++ Project's Development Environment</TITLE>
+<meta name="KEYWORDS" content="NETBEANS, TUTORIAL, C/C++, tools">
+<meta name="DESCRIPTION" content="Short tutorial that demonstrates using 
+   local or remote tool collections to develop C/C++ projects in NetBeans IDE">
+       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Defining Your C/C++ Project's Development Environment</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<!-- Contributed by <i>Ann
+      Rice</i> and maintained by
+      <i>Susan Morgan</i><br> -->
+
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+   <p><em>March 2014</em> [Revision number: V8.0-1]</p></div>
+
+<p>The following short tutorial takes you through the basic
+   steps of selecting the build host and tool collection for building and 
+   debugging a C or C++ project in NetBeans IDE.
+</p>
+<!-- END INTRO -->
+<p><b>Contents</b></p>
+<img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp"
+alt="Content on this page applies to NetBeans IDE 7.3 and more recent" title="Content on this page applies to the NetBeans IDE 7.3 and more recent">
+<ul class="toc">
+<li><a href="#requirements" title="Requirements">Requirements</a></li>
+<li><a href="#installing" title="Installing Tool Collections">Installing Tool
+Collections</a></li>
+<li><a href="#host" title="Specifying the Build Host">Specifying the
+Build Host</a></li>
+<li><a href="#using" title="Using the Tool Collection List">Using the Tool Collection List</a></li>
+<li><a href="#changing" title="Changing the Tool Collection for a Project">
+Changing the Tool Collection for a Project</a></li>
+
+</ul>
+
+<h2><a name="requirements"></a>Requirements</h2>
+<p><b>To follow this tutorial, you need the following software and resources.</b> </p>
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Software or Resource</th>
+<th class="tblheader" scope="col">Version Required</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a
+href="https://netbeans.org/downloads/index.html">version 7.3 or more recent with NetBeans C/C++ plugin</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java Developer Kit (JDK)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">version 6, 7, or 8</a></td>
+</tr>
+</table>
+<br>
+<p>See the <a href="../../../community/releases/80/install.html">NetBeans IDE
+       Installation
+   Instructions</a> for information on downloading and installing the required software. 
+</p>
+<h2><a name="installing"></a>Installing Tool Collections</h2>
+<p>The Netbeans C/C++ module minimally requires a C compiler, C++ compiler, make utility, and
+gdb debugger. 
+   See <a href="../../../community/releases/80/cpp-setup-instructions.html">
+   Configuring the NetBeans IDE for C/C++/Fortran</a> for instructions on 
+   installing and configuring the required compilers and tools.
+   
+    
+   </p><h2><a name="host"></a>Specifying the Build Host</h2>
+   <p>You can build, run, and debug your project on the local host (the system
+   from which you started the IDE) or on a remote host running a UNIX®
+   operating system. Only the Oracle Solaris and Linux operating systems have been
+   tested as remote build hosts. Initially, the IDE is set up to use the
+   local host only.</p>
+
+<p>You can define remote build hosts in several ways:
+<ul><li>Using the Services window:  Choose Window &gt; Services, 
+        then right-click C/C++ Build Hosts and select Add New Host.
+    </li>
+    <li>Right-click a project, select Set Build Host &gt; Manage Hosts, then click Add in the Build Host Manager dialog box.</li>
+    <li>Using the Options window: Choose Tools &gt; Options &gt; C/C++ &gt; Build Tools and click the Edit button
+    next to the Build Host list.</li>
+   </ul>
+<p>See the <a href="./remotedev-tutorial.html">C/C++ Remote Development Tutorial</a> for more information.
+</p>
+
+
+<h2><a name="using"></a>Using the Tool Collection List</h2>  
+<p>The Tool Collection list shows what tool collections are available to the IDE on the local host
+    and on each remote build host. You can see the Tool Collections in any of the following ways:
+<ul><li>Using the Services window:  Choose Window &gt; Services, 
+        expand C/C++ Build Hosts and the host you are interested in.  The Tool Collections node lists the
+        tool collections available on the host.
+    </li>
+    <li>Use the Projects window: Right-click a project, select Properties, and click the Build category. 
+        You can select a tool collection to use for the project or click the button next to the Tool Collection list
+        to open the Tool Collection Manager to set the default collection, and add or remove tool collections.
+     </li>
+    <li>Using the Options window: Choose Tools &gt; Options &gt; C/C++ &gt; Build Tools.  In this property
+        sheet you can manage the tool collections after selecting the host in the Build Host list. 
+    </li>
+</ul>
+<p>
+ In each case, the Tool Collection list displays the collections found on the host currently selected in the Build Host list. 
+ The default collection is listed in bold type, and is selected for any new project you create using the build host. 
+ You can change the tool collection for a specific project in the project properties.</p>
+
+     <h3>Changing the Default Tool Collection</h3>
+     <p>To change the default tool collection, select a collection from the Tool Collection list
+     and click Default. The new default tool collection will be selected for any new projects
+     you create using the selected build host.
+     </p>
+     <h3><a name="adding"></a>Adding a Tool                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Collection to a Build Host</h3>
+     <p>When you add a tool collection, you make the compilers available to the IDE. The tools
+     must be installed on the system already.</p>
+     <p>To add a tool collection associated with a build host:
+     </p>
+     <ol>
+     <li>In the Services window, expand the node for the C/C++ Build Host where you want to add the collection.
+        </li>
+        <li>Right-click the Tool Collections node and select Add New Tool Collection.<br>
+        You can also add collections from the Tools &gt; Options &gt; C/C++ &gt; 
+        Build Tools tab by clicking the Add button below the Tool Collection list. 
+        <br><br>The Add Tool Collection dialog box opens.   
+         <br><br>
+     <img src="../../../images_www/articles/73/cnd/development-environment/add-collection.png" alt="screenshot of Add New Tool Collection dialog box" class="b-all margin-around">
+     </li>
+     <li>In the Add New Tool Collection dialog box, type the directory path for
+     the tool collection's executable files in the Base Directory field, or use the Browse button to navigate to the
+     directory, which is usually called <tt>bin</tt>.
+     </li>
+     <li>The Tool Collection Family and Tool Collection Name are filled in automatically for
+     valid paths. You can specify a different name to display in the IDE for the collection. If you change the Tool Collection Family, make sure that the family 
+     you specify is correct for the collection or the compiler flags might not be valid.
+    </li>
+     <li>Click OK.
+         <br><br>The new tool collection is added to the Tool Collection list.</li>
+     </ol>
+     
+      <h2><a name="changing"></a>Changing the Tool Collection for a Project</h2>
+      <p>When you create a project, the current default tool collection is selected as the tool
+      collection for the project. You can change the tool collection for your project to another
+      collection on the collection list, or you can customize a tool collection especially for
+      the project.
+      </p><p>To select a different tool collection for an existing project:</p>
+     
+      <ol>
+         <li>Right-click the project node in the Projects window and choose Properties.</li>
+         <li>
+            In the Project Properties dialog box, select the Build node in the Categories list.
+         </li>
+         <li>In the build tools properties, make sure the Build Host is set to the host you want to build on.
+         </li>
+         <li>Select a collection from the Tool Collection
+         dropdown list.
+         <br><br>
+         <img
+         src="../../../images_www/articles/73/cnd/development-environment/select-collection.png"
+         alt="Screenshot of Build panel of Project Properties dialog" class="b-all margin-around">
+         </li>
+         <li>Click OK.</li>
+      </ol>
+     <p>The next time you build the project, the selected tool collection will be used.</p>
+
+   <p>
+   </p><h2>See Also</h2>
+   <p>Please see the 
+       <a href="https://netbeans.org/kb/trails/cnd.html">C/C++ Learning Trail</a> for
+       more articles about developing with C/C++/Fortran in NetBeans IDE.</p>
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Defining%20Your%20C/C++%20Project's%20Development%20Environment%20-%20NetBeans%20IDE%207.3%20Tutorial">Send Feedback on This Tutorial</a></div>
+</BODY>
+</HTML>

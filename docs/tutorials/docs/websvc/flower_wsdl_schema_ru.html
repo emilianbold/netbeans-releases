@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>Изменение файлов схем и WSDL, веб-служба передачи двоичных данных часть 5 - учебный курс по IDE NetBeans</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+        <meta name="description"
+              content="This learning trail shows how to create and
+              consume a web service that delegates to an EJB and sends binary data via SOAP.
+              This tutorial shows how to replace the default generated Schema and WSDL files
+              with custom files that interpret arrays of bytes as images.">
+    <link rel="stylesheet" href="../../../netbeans.css"></head>
+
+    <body>
+        <h1>Передача двоичных данных с помощью приложения веб-службы, часть 4: изменение файлов схемы и WSDL</h1>
+        <p>В этом уроке рассматривается добавление файла WSDL и файла схемы в веб-приложение.  Также описывается изменение файла схемы для интерпретации массива байтов как изображений.  Кроме того, в этом уроке представлены способы редактирования исходного кода веб-службы для правильного определения местоположения файлов схемы и WSDL.  В процессе изучения учебного курса описаны различные средства среды IDE для работы с файлами WSDL и схемы.        </p>
+        
+    <p>Процедуру, рассматриваемую в этом разделе, можно применять к любым веб-службам JAX-WS для передачи данных типа MIME в качестве двоичных данных.  В качестве основы для настройки схем WSDL и XML можно использовать веб-службу, передающую двоичные данные, которая была создана при изучении уроков 2 и 3.  В настроенном файле схемы XML в возвращаемый элемент добавляется атрибут <tt>expectedContentTypes=&quot;<em>mime_type</em>&quot;</tt> для двоичных данных.  Этот атрибут сообщает клиенту о необходимости сопоставления двоичных данных с типом Java (сопоставление &quot;MIME &gt; Тип Java&quot;), а не с массивом байтов.  В этом учебном курсе выполняется сопоставление двоичных данных с <tt>java.awt.Image</tt>, однако двоичные данные можно сопоставлять с любыми типами Java, указанными в спецификации JAXB 2.0, как описано в <a href="http://jax-ws.dev.java.net/nonav/2.1.4/docs/mtom-swaref.html">руководстве пользователя по JAX-WS</a>.
+        <p>Готовый образец веб-службы можно загрузить из <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerAlbumService.zip" target="_blank">каталога примеров NetBeans</a>.
+        
+<p><b>Уроки, представленные в этом учебном курсе</b></p>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+        <ol>
+            <li><a href="./flower_overview.html">Обзор</a></li>
+            <li><a href="./flower_ws.html">Создание веб-службы</a></li>
+            <li><a href="./flower-code-ws.html">Написание кода веб-службы и ее тестирование</a></li>
+          <li> =&gt; Изменение файлов схемы и WSDL для передачи двоичных данных</li>
+            <li><a href="./flower_swing.html"> Создание клиента Swing</a></li>
+            <!--         <li><a href="./flower_wsit.html">
+            Logging and Optimizing the Web Service</a></li> -->
+        </ol>
+    <h2 class="tutorial">Изменение файла схемы и файлов WSDL для передачи двоичных данных</h2>
+        <p class="tutorial">Ниже приведена процедура создания измененных файлов WSDL схемы XML для веб-службы, созданной при изучении предыдущего учебного курса.  Измененные файлы WSDL и схемы позволяют веб-службе и потребляющим ее клиентам обрабатывать данные изображений JPEG, передаваемых как двоичные данные. </p>
+        <p><b>Изменение файлов WSDL и схемы:</b></p>
+
+        <ol>
+            <li>В окне 'Проекты' разверните узел веб-приложения FlowerService до перехода к узлу <tt>WEB-INF</tt>. Щелкните папку <tt>WEB-INF</tt> правой кнопкой мыши и выберите пункт &quot;Создать&quot;, а затем &ndash; &quot;Папка&quot;.  (При необходимости выберите &quot;Создать&quot; &gt; &quot;Прочее&quot;, а затем &ndash; категорию &quot;Прочее&quot;). <br> <img alt="Узлы проекта FlowerService с каталогом WEB-INF" class="margin-around" height="452" src="../../../images_www/articles/73/websvc/flower/new-file-wiz-folder.png" width="600"></li>
+
+            <li>Нажмите кнопку &quot;Далее&quot;. Откроется страница &quot;Имя и местоположение&quot;.  Присвойте папке имя <tt>wsdl</tt>.<br> <img alt="Страница &apos;Имя и местоположение&apos; мастера создания файлов для новой папки, с указанием имени wsdl и местоположения в web/WEB-INF" class="margin-around" height="347" src="../../../images_www/articles/73/websvc/flower/wsdl-folder-name-location.png" width="534"></li>
+            <li>Нажмите кнопку &quot;Завершить&quot;. В окне &quot;Проекты&quot; появится папка <tt>wsdl</tt>.<br> <img alt="папка wsdl в окне &apos;Проекты&apos;" class="margin-around" height="353" src="../../../images_www/articles/73/websvc/flower/wsdl-folder.png" width="289"></li>
+          <li>Разверните узел 'Веб-службы' и щелкните правой кнопкой мыши узел FlowerService. Выберите команду &quot;Создать и копировать файл WSDL&quot; <br>
+          </li>
+          <li>Откроется диалоговое окно &quot;Создать и копировать файл WSDL&quot; с деревом навигации.  Перейдите к созданной папке <tt>wsdl</tt> (FlowerAlbumService &gt; web &gt; WEB-INF &gt; wsdl) и щелкните ОК.<br>
+                <p>Теперь в узле <tt>wsdl</tt> отображаются файлы <tt>FlowerService.wsdl</tt> и <tt>FlowerService_schema1.xsd</tt>.  Также выводится новый узел для созданных исходных файлов (jax-ws).</p>
+
+            <img alt="Окно &apos;Проекты&apos;, в котором показываются скопированные wsdl и файлы схемы" class="margin-around" height="420" src="../../../images_www/articles/73/websvc/flower/generated-wsdl-and-schema.png" width="294"> </li>
+
+
+            <li>Необходимо явно указать на необходимость использования созданной версии файла WSDL для сервера приложений.  В противном случае на сервере приложений будет создан собственный файл WSDL. Откройте файл <tt>FlowerService.java</tt> и найдите аннотацию <tt>@WebService</tt>.  Добавьте в эту аннотацию параметр <tt>wsdlLocation=&quot;WEB-INF/wsdl/FlowerService.wsdl&quot;</tt> следующим образом:
+                <pre class="examplecode">@WebService(serviceName = "FlowerService"<b>, wsdlLocation = "WEB-INF/wsdl/FlowerService.wsdl")</b></pre>
+            </li>
+            <li>Измените файл схемы <tt>FlowerService_schema1.xsd</tt> таким образом, чтобы он определял ожидаемый тип возвращаемого элемента. Для определения возвращаемого элемента в файле схемы откройте этот файл и найдите составные типы <tt>getThumbnailResponse</tt> и <tt>getFlowerResponse</tt>:
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getThumbnailsResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;/&gt;<br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre>
+            <pre class="examplecode">&lt;xs:complexType name=&quot;getFlowerResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot;/&gt; <br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre></li>
+            <li>Добавьте<i></i> следующие атрибуты в оба возвращаемых элемента (<tt>&lt;xs:element name=&quot;return&quot;.../&gt;):</tt>.
+                <pre>xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"</pre>
+                <p>Теперь те же строки должны выглядеть следующим образом:</p>
+
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getThumbnailsResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;
+                xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"/&gt;<br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre>
+                <pre class="examplecode">&lt;xs:complexType name=&quot;getFlowerResponse&quot;&gt;<br>    &lt;xs:sequence&gt;<br>        &lt;xs:element name=&quot;return&quot; type=&quot;xs:base64Binary&quot; minOccurs=&quot;0&quot;
+            xmime:expectedContentTypes="image/jpeg" xmlns:xmime="http://www.w3.org/2005/05/xmlmime"/&gt; <br>    &lt;/xs:sequence&gt;<br>&lt;/xs:complexType&gt;</pre></li>
+
+            <li>Теперь при повторном развертывании веб-службы в приложении тестирования и вызове одной из операций можно убедиться, что изображение возвращается корректно: <br><img alt="Приложение Converter будет запущено с помощью Java Web Start." border="1" class="margin-around" height="390" src="../../../images_www/articles/73/websvc/flower/ws-tester-goodschema.png" width="500"> </li>
+        </ol>
+
+    <p>После подтверждения в приложении тестирования, что изображения возвращаются корректно, можно создать клиент Swing для получения и отображения изображений.
+    <h2>Что дальше?</h2>
+        <p><a href="./flower_swing.html">Создание клиента Swing</a></p>
+
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20WSDL%20EE6">Отправить отзыв по этому учебному курсу</a></div>
+
+
+        <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с Java EE IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки nbj2ee@netbeans.org</a>.</p>
+    </body>
+</html>

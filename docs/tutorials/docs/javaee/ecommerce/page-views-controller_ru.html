@@ -1,0 +1,970 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to create project files in the IDE, and introduces you to some of the facilities available for HTML and CSS development.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Учебный курс по электронной коммерции в NetBeans. Подготовка представлений страниц и сервлета Controller</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Учебный курс по электронной коммерции в NetBeans. Подготовка представлений страниц и сервлета Controller</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Содержание учебного курса</h4>
+
+                <ol>
+                    <li><a href="intro.html">Введение</a></li>
+                    <li><a href="design.html">Проектирование приложения</a></li>
+                    <li><a href="setup-dev-environ.html">Настройка среды разработки</a></li>
+                    <li><a href="data-model.html">Проектирование модели данных</a></li>
+                    <li><strong>Подготовка представлений страниц и сервлета контроллера</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#createProjectFiles">Создание файлов проекта</a></li>
+                            <li><a href="#implementHTML">Создание содержимого HTML и CSS</a></li>
+                            <li><a href="#view">Размещение страниц JSP в папке WEB-INF</a></li>
+                            <li><a href="#jspf">Создание верхнего и нижнего колонтитулов</a></li>
+                            <li><a href="#dd">Добавление директивы к дескриптору развертывания</a></li>
+                            <li><a href="#controller">Создание сервлета Controller</a></li>
+                            <li><a href="#implement">Реализация сервлета Controller</a></li>
+                            <li><a href="#seeAlso">Дополнительные сведения</a></li>
+                        </ul></li>
+
+                    <li><a href="connect-db.html">Подключение приложения к базе данных</a></li>
+                    <li><a href="entity-session.html">Добавление классов сущностей и сеансных компонентов</a></li>
+                    <li><a href="manage-sessions.html">Управление сеансами</a></li>
+                    <li><a href="transaction.html">Интеграция транзакционной бизнес-логики</a></li>
+                    <li><a href="language.html">Добавление поддержки языков</a></li>
+                    <li><a href="security.html">Обеспечение безопасности приложений</a></li>
+                    <li><a href="test-profile.html">Тестирование и профилирование</a></li>
+                    <li><a href="conclusion.html">Заключение</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="Содержимое на этой странице применимо к IDE NetBeans, версиям 6.8 и 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="Содержимое на этой странице применимо к IDE NetBeans, версиям 6.8 и 6.9"></p>
+
+        <p>В учебном курсе показано создание файлов проекта в среде IDE и рассмотрены некоторые возможности, применяемые при работе с HTML и CSS. После создания необходимых файлов проекта, начните создание внешнего интерфейса приложения. Для этого поместите файлы JSP в нужные позиции в структуре проекта, создайте верхний и нижний колонтитулы, которые будут применяться ко всем представлениям, и создайте сервлет Controller для обработки входящих запросов.</p>
+
+        <p>Также в этой главе для приложения будет создан дескриптор веб-развертывания (файл <code>web.xml</code>). Дескриптор развертывания может использоваться для указания конфигурационной информации, считываемой сервером при развертывании. Хотя <a href="http://jcp.org/en/jsr/detail?id=315" target="_blank">спецификации сервлетов версии 3.0</a>, включенные в Java EE 6, позволяют использовать аннотации класса вместо XML, дескриптор развертывания, тем не менее, может потребоваться для настройки определенных элементов приложения. В этой главе в частности будут добавлены директивы для определения верхнего и нижнего колонтитулов и указания, к каким файлам они будут применяться.</p>
+
+        <p>Одна из целей этого учебного курса — создать страницы JSP, соответствующие представлениям, указанным в проекте приложения. В соответствии с <a href="design.html#mockups">макетами страниц</a> и <a href="design.html#business">блок-схемой процесса</a>, реализация макетов страниц начинается с создания <em>заполнителей</em> всех визуальных и функциональных компонентов. В этом учебном курсе приведено руководство по реализации макета главной страницы. Перечисленные ниже действия можно использовать для создания других страниц по своему усмотрению или можно <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot1.zip">загрузить снимок 1 проекта</a>, на котором представлены макеты всех страниц.</p>
+
+        <p>Можно просмотреть интерактивную демонстрацию приложения, которое создается в этом учебном курсе: <a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">Демонстрация приложения электронной коммерции NetBeans</a></p>
+
+        <br style="clear:left">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">Набор Java, версия 6.8 или 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">Сервер GlassFish</a></td>
+                    <td class="tbltd1">v3 или Open Source Edition 3.0.1</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Примечания:</strong></p>
+
+        <ul>
+            <li>The IDE NetBeans requires the Java Development Kit (JDK) to run properly. Если указанные материалы не установлены, JDK следует загрузить и установить в первую очередь.</li>
+
+            <li>The IDE NetBeans Java Bundle includes Java Web and EE technologies, which are required for the application you build in this tutorial.</li>
+
+            <li id="glassFish">The IDE NetBeans Java Bundle also includes the GlassFish server, which you require for this tutorial. Можно <a href="https://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">загрузить сервер GlassFish отдельно</a>, но версия, предоставляемая с NetBeans, имеет преимущество, так как автоматически зарегистрирована в среде IDE.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="createProjectFiles">Создание файлов проекта</h2>
+
+        <p>Для создания файлов проекта воспользуйтесь мастером создания файлов среды IDE. Вы можете нажать кнопку 'Создать файл' ( <img alt="Кнопка 'Создать файл'" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png"> ), нажать Ctrl-N (⌘+N в Mac) или в окне 'Проекты' щелкните правой кнопкой мыши узел папку, в которой будет содержаться новый файл, и выберите папку 'Создать' > [тип_файла]. В следующих подразделах будут созданы страницы JSP и таблица стилей проекта.</p>
+
+        <ul>
+            <li><a href="#jsp">Создание страниц JSP</a></li>
+            <li><a href="#css">Создание таблицы стилей</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsp">Создание страниц JSP</h3>
+
+            <p>Начните работу с создания страниц JSP, соответствующих представлениям, отображенным на <a href="design.html#business">блок-схеме</a>.</p>
+
+            <p>Страница <code>index.jsp</code>, созданная средой IDE, станет главной страницей проекта. Создайте страницы JSP для оставшихся представлений и на время разместите их в корне проекта вместе с <code>index.jsp</code>.</p>
+
+            <ol>
+                <li>Для открытия мастера создания файлов нажмите кнопку 'Создать файл' ( <img alt="Кнопка 'Создать файл'" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png"> ).</li>
+
+                <li>Выберите категорию Web, затем элемент JSP и нажмите кнопку &quot;Далее&quot;.</li>
+
+                <li>Введите имя файла &quot;<code>category</code>&quot;. Обратите внимание, что в поле &quot;Местоположение&quot; указано значение <code>Web Pages</code>, означающее, что файл будет создан в корневом веб-узле проекта. Это соответствует папке проекта <code>web</code>, что можно позже проверить в окне &quot;Файлы&quot; среды IDE.</li>
+
+                <li>Нажмите кнопку &quot;Завершить&quot;. В среде IDE создается и открывается в редакторе новая страница JSP.</li>
+
+                <li>Повторите действия 1 - 4 для создания оставшихся страниц <code>cart.jsp</code>, <code>checkout.jsp</code> и <code>confirmation.jsp</code>. <br><br> После завершения окно &quot;Проекты&quot; выглядит следующим образом: <br> <img alt="В окне &quot;Проекты&quot; отображаются папка 'view' и страницы JSP" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/projects-win-views.png" title="Представления содержатся в папке 'WEB-INF/view/'">
+                </li>
+            </ol>
+
+
+            <h3 id="css">Создание таблицы стилей</h3>
+
+            <p>Создайте файл CSS, содержащий все стили приложения.</p>
+
+            <ol>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши узел 'Веб-страницы' и выберите 'Создать' > 'Папка'.</li>
+
+                <li>В мастере создания новой папки назовите папку &quot;<code>css</code>&quot; и нажмите кнопку &quot;Готово&quot;.</li>
+
+                <li>Щелкните правой кнопкой мыши папку <code>css</code> и выберите в меню &quot;Создать&quot; пункт &quot;Каскадная таблица стилей&quot;. (Если пункта &quot;Каскадная таблица стилей&quot; нет, выберите &quot;Прочее&quot;. В мастере создания файлов выберите категорию Web, затем &quot;Каскадная таблица стилей&quot; и нажмите кнопку &quot;Далее&quot;.)</li>
+
+                <li>Назовите таблицу стилей <code>affablebean</code> и нажмите кнопку &quot;Готово&quot;. <br><br> После этого файл <code>affablebean.css</code> отображается в окне &quot;Проекты&quot;. <br> <img alt="В окне &quot;Проекты&quot; отображается таблица стилей 'affablebean.css'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/projects-win-css.png" title="В окне &quot;Проекты&quot; отображается новая папка 'css' и таблица стилей"></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="implementHTML">Создание содержимого HTML и CSS</h2>
+
+        <p>В этом разделе создаются представления страниц для соответствия предлагаемым <a href="design.html#mockups">макетам страниц</a>.  Они будут основой, к которой можно добавить динамическое содержимое на последующих стадиях разработки. Для этого используются редакторы HTML и CSS среды IDE, а также дополнительные окна поддержки CSS.</p>
+
+        <p class="notes"><strong>Замечание о совместимости браузеров.</strong>В этом учебном курсе используется браузер Firefox 3 и <em>не</em> гарантируется совместимость разметки страницы с другими современными браузерами. В реальности при работе с технологиями создания внешнего интерфейса (HTML, CSS, JavaScript) необходимо принимать меры для обеспечения корректного отображения веб-страниц во всех версиях браузеров, которые могут использоваться посетителями (как правило, Internet Explorer, Firefox, Safari, Chrome и Opera). При работе в среде IDE можно указать, в каком браузере должно открываться приложение. Выберите в меню &quot;Сервис&quot; пункт &quot;Параметры&quot; (в Mac OS — пункт &quot;Параметры&quot; в меню NetBeans) и под вкладкой &quot;Общее&quot; в окне &quot;Параметры&quot; выберите нужный браузер в выпадающем списке &quot;Веб-браузер&quot;. Среда IDE обнаруживает браузеры, установленные в местоположении по умолчанию. Если установленный на компьютере браузер не отображается, нажмите кнопку &quot;Правка&quot; и зарегистрируйте браузер вручную.</p>
+
+        <p>Подготовка отображения веб-страниц, как правило, итерационный процесс, при котором требуется постоянная обратная связь с потребителем. Следующие действия демонстрируют средства среды IDE на примере <a href="design.html#index">макета главной страницы</a>.</p>
+
+        <ol>
+            <li>В окне 'Проекты' дважды щелкните <code>index.jsp</code>, чтобы открыть его в редакторе.</li>
+
+            <li>Вначале создайте теги <code>&lt;div&gt;</code> для основных областей страницы. Можно создать пять тегов: четыре для основных областей (верхний и нижний колонтитулы, левый и правый столбец) и пятый, содержащий все остальные. Удалите весь текст внутри тегов <code>&lt;body&gt;</code> и замените его на следующий. Новый код показан <strong>полужирным шрифтом</strong>.
+
+                <pre class="examplecode">
+&lt;body&gt;
+    <strong>&lt;div id=&quot;main&quot;&gt;
+        &lt;div id=&quot;header&quot;&gt;
+            header
+        &lt;/div&gt;
+
+        &lt;div id=&quot;indexLeftColumn&quot;&gt;
+            left column
+        &lt;/div&gt;
+
+        &lt;div id=&quot;indexRightColumn&quot;&gt;
+            right column
+        &lt;/div&gt;
+
+        &lt;div id=&quot;footer&quot;&gt;
+            footer
+        &lt;/div&gt;
+    &lt;/div&gt;</strong>
+&lt;/body&gt;</pre></li>
+
+            <li>Добавьте ссылку на таблицу стилей в заголовке страницы и измените текст заголовка.
+
+                <pre class="examplecode">
+&lt;head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    <strong>&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;css/affablebean.css&quot;&gt;</strong>
+    &lt;title&gt;<strong>The Affable Bean</strong>&lt;/title&gt;
+&lt;/head&gt;</pre></li>
+
+            <li>Откройте в редакторе таблицу стилей <code>affablebean.css</code>. Вначале создайте правила для идентификаторов созданных тегов <code>&lt;div&gt;</code>.
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>Для указания размеров областей используйте свойства <code>width</code> и <code>height</code>.</li>
+
+                    <li>Чтобы отличать области при просмотре страницы, используйте свойство <code>background</code>.</li>
+
+                    <li>Для горизонтального центрирования четырех областей на странице, можно добавить параметр <code>margin: 20px auto</code> к правилу <code>body</code>. (<code>20px</code> относится к верхнему и нижнему полю; <code>auto</code> создает равные промежутки слева и справа.) Затем добавьте параметр <code>float: left</code> к левому и правому столбцу.</li>
+
+                    <li>В нижнем колонтитуле требуется параметр <code>clear: left</code>, чтобы его верхняя граница отображалась после нижних границ выровненных влево и расположенных выше областей (т.е. левого и правого столбца).</li>
+                </ul>
+
+                <pre class="examplecode">
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    width: 850px;
+    text-align: center;
+    margin: 20px auto;
+}
+
+#main { background: #eee }
+
+#header {
+    height: 250px;
+    background: #aaa;
+}
+
+#footer {
+    height: 60px;
+    clear: left;
+    background: #aaa;
+}
+
+#indexLeftColumn {
+    height: 400px;
+    width: 350px;
+    float: left;
+    background: #ccc;
+}
+
+#indexRightColumn {
+    height: 400px;
+    width: 500px;
+    float: left;
+    background: #eee;
+}</pre></li>
+
+            <li>Нажмите кнопку 'Запустить проект' (<img alt="Кнопка 'Выполнить проект'" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png">) на главной панели инструментов IDE. Измененные файлы проекта автоматически сохраняются, код Java компилируется, проект упаковывается и развертывается в GlassFish, затем открывается браузер для просмотра текущего состояния страницы приветствия. <br> <img alt="Страница приветствия отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/index-page.png" style="width:688px" title="Выполните проект для просмотра текущего состояния страниц"></li>
+
+            <li>Теперь создайте заполнитель для компонентов страницы в каждой из четырех видимых областей. Начните с верхнего колонтитула. Согласно <a href="design.html#index">макету страницы приветствия</a>, верхний колонтитул должен содержать следующие компоненты:
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>Логотип</li>
+                    <li>Текст логотипа</li>
+                    <li>Корзина покупок (элемент оформления)</li>
+                    <li>Переключатель языка</li>
+                </ul>
+
+                Внесите в файл <code>index.jsp</code> следующие изменения.  Новый код отображается <strong>полужирным шрифтом</strong>.
+
+                <pre class="examplecode">
+&lt;div id=&quot;header&quot;&gt;
+    <strong>&lt;div id=&quot;widgetBar&quot;&gt;
+
+        &lt;div class=&quot;headerWidget&quot;&gt;
+            [ language toggle ]
+        &lt;/div&gt;
+
+        &lt;div class=&quot;headerWidget&quot;&gt;
+            [ shopping cart widget ]
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;a href=&quot;#&quot;&gt;
+        &lt;img src=&quot;#&quot; id=&quot;logo&quot; alt=&quot;Affable Bean logo&quot;&gt;
+    &lt;/a&gt;
+
+    &lt;img src=&quot;#&quot; id=&quot;logoText&quot; alt=&quot;the affable bean&quot;&gt;</strong>
+&lt;/div&gt;</pre>
+
+                В этом коде элемент <code>&lt;div id=&quot;widgetBar&quot;&gt;</code> будет содержать переключатель языков и корзину покупок. <br><br>
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>Поддержка правки HTML в среде NetBeans</h3>
+
+                    <p>При работе в редакторе пользуйтесь поддержкой HTML среды IDE. В дополнение к обычной подсветке синтаксиса, позволяющей отличать друг от друга теги, атрибуты, значения атрибутов и текст, существует также много других возможностей.</p>
+
+                    <p>При вводе тегов и атрибутов можно нажатием комбинации клавиш CTRL+ПРОБЕЛ вызывать автозавершение кода и документацию. Среда IDE отображает список предположений, из которого можно выбрать вариант, а также окно документации с определением выбранного элемента и примерами кода.</p>
+
+                    <img alt="Окна автозавершения кода и документации отображаются в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/documentation-popup.png" title="Для просмотра окон автозавершения кода и документации нажмите сочетание клавиш CTRL+ПРОБЕЛ." />
+
+                    <p>При обнаружении ошибок в коде в среде IDE отображаются предупреждения, сообщения об ошибках и, в некоторых случаях, предположения. Предупреждения отображаются желтым цветом, а ошибки — красным. Можно навести указатель мыши на выбранную область для просмотра сообщения во всплывающем окне.</p>
+
+                    <img alt="Предупреждение HTML отображается в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/html-hint.png" title="Наведите указатель мыши дляч просмотра подсказки с предупреждением" />
+
+                    <p>Также доступно множество комбинаций клавиш. Выберите в основном меню &quot;Справка&quot; пункт &quot;Таблица сочетаний клавиш&quot;.</p>
+                </div>
+                <br style="clear: both;"/></li>
+
+            <li>Создайте в таблице стилей правила для новых идентификаторов и классов. После правила <code>header</code> добавьте следующие правила. Новый код отображается <strong>полужирным шрифтом</strong>.
+
+                <pre class="examplecode">
+#header {
+    height: 250px;
+    background: #aaa;
+}
+
+<strong>#logo {
+    height: 155px;
+    width: 155px;
+    float: left;
+    margin-left: 30px;
+    margin-top: -20px;
+}
+
+#logoText {
+    float: left;
+    margin: 20px 0 0 70px;
+    /* font styles apply to text within alt tags */
+    font-family: 'American Typewriter', Courier, monospace;
+    font-size: 50px;
+    color: #333;
+}
+
+#widgetBar {
+    height: 50px;
+    width: 850px;
+    float: right;
+    background: #ccc;
+}
+
+.headerWidget {
+    width: 194px;
+    margin: 20px 2px;
+    font-size: small;
+    float: right;
+    line-height: 25px;
+    background: #aaa;
+}</strong></pre>
+
+                Для правила <code>logo</code> примените свойства <code>margin-left</code> и <code>margin-top</code> для указания позиции компонента на странице. <br><br> Если требуются сведения о свойствах в этом коде, поместите курсор на нужное свойство и нажмите комбинацию клавиш CTRL+ПРОБЕЛ для вызова всплывающего окна с документацией. <br> <img alt="Окно документации для поддержки CSS" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/css-doc-support.png" title="Нажмите Ctrl-Space в свойстве CSS для вызова поддержки документации"> <br>
+                <p class="tips">Чтобы увидеть, как свойство действует на страницу, можно закомментировать его и обновить страницу в браузере. Чтобы закомментировать наведите курсор на строку или выделите блок кода, а затем нажмите Ctrl-/ (⌘-/ в Mac).</p></li>
+
+            <li>Сохраните (Ctrl-S; ⌘-S в Mac) файлы <code>index.jsp</code> и <code>affablebean.css</code>, затем перейдите к браузеру и обновите страницу для просмотра текущего состояния. <br><br>
+                <p class="notes"><strong>Примечание.</strong> Служебная программа 'Развертывать при сохранении' в IDE автоматически активируется для веб-проектов Java. Это означает, что при каждом сохранении файла, он автоматически компилируется (если это класс Java или страница JSP), и выполняется упаковывание и развертывание проекта на сервере. Поэтому при внесении изменений в HTML и CSS нет необходимости вручную перезапускать проект для просмотра обновленной версии в браузере. Просто сохраните файлы, перейдите к браузеру и обновите страницу.</p>
+
+                <img alt="Страница приветствия отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/index-page2.png" style="width:688px" title="Заполнители для заголовков отображаются при запуске проекта"> <br> В предыдущих действиях можно уловить закономерность. Для каждой области страницы выполняется три действия.
+
+                <ol style="list-style:lower-alpha; margin-top:5px">
+                    <li>Создание структуры с помощью HTML.</li>
+                    <li>Создание набора стилей для определения внешнего вида.</li>
+                    <li>Просмотр страницы для анализа результатов этих изменений.</li>
+                </ol>
+
+                Выполняя эти действия, реализуем компоненты в оставшихся областях.</li>
+
+            <li>Создайте заполнители для компонентов в правом столбце. В соответствии с <a href="design.html#index">макетом страницы приветствия</a>, в правом столбце расположены четыре блока одинакового размера. <br><br> Создайте структуру четырех блоков. Вставьте следующий текст между тегами <code>&lt;div id=&quot;indexRightColumn&quot;&gt;</code>.  Новый код отображается <strong>полужирным шрифтом</strong>.
+
+                <pre class="examplecode">
+&lt;div id=&quot;indexRightColumn&quot;&gt;
+    <strong>&lt;div class=&quot;categoryBox&quot;&gt;
+        &lt;a href=&quot;#&quot;&gt;
+            &lt;span class=&quot;categoryLabelText&quot;&gt;dairy&lt;/span&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;categoryBox&quot;&gt;
+        &lt;a href=&quot;#&quot;&gt;
+            &lt;span class=&quot;categoryLabelText&quot;&gt;meats&lt;/span&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;categoryBox&quot;&gt;
+        &lt;a href=&quot;#&quot;&gt;
+            &lt;span class=&quot;categoryLabelText&quot;&gt;bakery&lt;/span&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;categoryBox&quot;&gt;
+        &lt;a href=&quot;#&quot;&gt;
+            &lt;span class=&quot;categoryLabelText&quot;&gt;fruit & veg&lt;/span&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;</strong>
+&lt;/div&gt;</pre></li>
+
+            <li>Добавьте в файл <code>affablebean.css</code> правила стилей для новых классов <code>categoryBox</code> и <code>categoryLabelText</code>.  Новый код отображается <strong>полужирным шрифтом</strong>.
+
+                <pre class="examplecode">
+#indexRightColumn {
+    height: 400px;
+    width: 500px;
+    float: left;
+    background: #eee;
+}
+
+<strong>.categoryBox {
+    height: 176px;
+    width: 212px;
+    margin: 21px 14px 6px;
+    float: inherit;
+    background: #ccc;
+}
+
+.categoryLabelText {
+    line-height: 150%;
+    font-size: x-large;
+}</strong></pre>
+
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>Поддержка CSS в среде NetBeans</h3>
+
+                    <p>Рассмотрим два окна, которые важно использовать при работе с таблицами стилей. Окно &quot;Предварительный просмотр CSS&quot; позволяет просмотреть правила стилей так, как они отображаются в браузере. Чтобы открыть это окно, выберите в главном меню &quot;Окно&quot; пункт &quot;Прочее&quot;, затем &quot;Предварительный просмотр CSS&quot;. Если поместить курсор внутри правила стиля в редакторе, пример текста в окне &quot;Предварительный просмотр CSS&quot; автоматически обновляется в соответствии с указанными в этом правиле свойствами.</p>
+
+                        <img alt="Предварительный просмотр CSS" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/css-preview.png" title="Используйте 'Окно предварительного просмотра CSS' для просмотра визуализированных правил стилей">
+
+                    <p>Окно &quot;Конструктор стилей CSS&quot; позволяет не набирать правила стилей вручную. Чтобы открыть это окно, выберите в главном меню &quot;Окно&quot; пункт &quot;Прочее&quot;, затем &quot;Конструктор стилей CSS&quot;. С помощью этого интерфейса можно создавать правила, выбирая свойства и значения в графическом интерфейсе.</p>
+
+                        <img alt="Проектировщик стилей CSS" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/style-builder.png" title="Используйте 'Конструктор стилей CSS' для создания правил стилей">
+
+                    <p>Так же как &quot;Предварительный просмотр CSS&quot;, &quot;Конструктор стилей CSS&quot; синхронизирован с редактором. При выборе свойства в &quot;Конструкторе стилей CSS&quot; правило автоматически обновляется в редакторе. Аналогично, при внесении изменений в редакторе выбранные свойства в &quot;Конструкторе стилей CSS&quot; немедленно обновляются.</p>
+                </div>
+                <br style="clear: both;"/></li>
+
+            <li>Сохраните (Ctrl-S; ?-S в Mac) файлы <code>index.jsp</code> и <code>affablebean.css</code>, затем перейдите к браузеру и обновите страницу для просмотра текущего состояния. <br> <img alt="Страница приветствия отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/index-page3.png" style="width:688px" title="Заполнители для заголовков и правого столбца отображаются при запуске проекта">
+
+            <li>В левом столбце и нижнем колонтитуле требуются заполнители только для статического текста, поэтому добавьте их одновременно. <br><br> Вставьте между тегами <code>&lt;div id=&quot;indexLefttColumn&quot;&gt;</code> и <code>&lt;div id=&quot;footer&quot;&gt;</code> следующий код.  Новый код отображается <strong>полужирным шрифтом</strong>.
+
+                <pre class="examplecode">
+&lt;div id=&quot;indexLeftColumn&quot;&gt;
+    <strong>&lt;div id=&quot;welcomeText&quot;&gt;
+        &lt;p&gt;[ welcome text ]&lt;/p&gt;
+    &lt;/div&gt;</strong>
+&lt;/div&gt;
+
+...
+
+&lt;div id=&quot;footer&quot;&gt;
+    <strong>&lt;hr&gt;
+    &lt;p id=&quot;footerText&quot;&gt;[ footer text ]&lt;/p&gt;</strong>
+&lt;/div&gt;</pre></li>
+
+            <li>Внесите изменения в таблицу стилей <code>affablebean.css</code>.  Нет необходимости учитывать все новые идентификаторы и классы, можно улучшить внешний вид позже, после получения от клиента текста и изображений. <br><br> Тег горизонтальной линии (<code>&lt;hr&gt;</code>) занимает всю ширину родительского элемента (<code>&lt;div id=&quot;footer&quot;</code>).  Поэтому для изменения ширины линии в соответствии с макетом следует изменить ширину элемента <code>&lt;div id=&quot;footer&quot;&gt;</code>.  Новый код отображается <strong>полужирным шрифтом</strong>.
+
+                <pre class="examplecode">
+#footer {
+    height: 60px;
+    <strong>width: 350px;</strong>
+    clear: left;
+    background: #aaa;
+}
+
+<strong>hr {
+    border: 0;
+    background-color: #333;
+    height: 1px;
+    margin: 0 25px;
+    width: 300px;
+}</strong></pre></li>
+
+            <li>Сохраните (Ctrl-S; ?-S в Mac) файлы <code>index.jsp</code> и <code>affablebean.css</code>, затем перейдите к браузеру и обновите страницу для просмотра текущего состояния. <br> <img alt="Страница приветствия отображается в браузере" class="margin-around b-all" id="welcome-page" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/index-page4.png" style="width:688px" title="Отображаются заполнители для левого столбца и нижнего колонтитула"> <br> Страница приветствия готова. Созданы все необходимые заполнители для компонентов, которые будут добавлены на страницу.
+            </li>
+        </ol>
+
+        <p>Начальный дизайн страницы приветствия приложения выполнен. Созданы все заполнители для компонентов страницы. Позже в этом учебном курсе, когда будет применяться динамическая логика для представлений страниц, можно будет просто включить выражения JSTL и EL в эти заполнители.</p>
+
+        <p>Самостоятельно реализуйте начальный проект для остальных страниц в соответствии с <a href="design.html#mockups">макетами</a>. Для этого следуйте шаблону:</p>
+
+        <ol style="margin: 5px 0 0 -.7em">
+            <li>Создайте теги <code>&lt;div&gt;</code> для основных областей страницы.</li>
+            <li>Для каждой области страницы выполните следующие действия:
+
+                <ol style="margin: 5px 0 0 -1.4em; list-style-type: lower-alpha">
+                    <li>Создание структуры с помощью HTML.</li>
+                    <li>Создание набора стилей для определения внешнего вида.</li>
+                    <li>Просмотр страницы для анализа результатов этих изменений.</li>
+                </ol></li>
+        </ol>
+
+        <p>Не забывайте использовать поддержку HTML и CSS среды IDE. <a href="#tipsTricks">Полезные советы</a> Если требуется просто получить код для оставшихся страниц и продолжить выполнение учебного курса, можно <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot1.zip">загрузить снимок 1 <code> проекта AffableBean</code></a>. Изображения начальной реализации макетов оставшихся страниц.</p>
+
+        <div class="indent">
+            <h4 id="categoryPage">страница категории</h4>
+
+            <img alt="Страница категории отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/category-page.png" style="width:708px" title="Заполнители реализованы для страницы категории"> <br><br>
+
+            <h4 id="cartPage">страница корзины покупок</h4>
+
+            <img alt="Страница корзины отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/cart-page.png" style="width:708px" title="Заполнители реализованы для страницы корзины"> <br><br>
+
+            <h4 id="checkoutPage">страница проверки</h4>
+
+            <img alt="Страница изъятия из использования отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/checkout-page.png" style="width:708px" title="Заполнители реализованы для страницы изъятия из использования"> <br><br>
+
+            <h4>страница подтверждения</h4>
+
+            <img alt="Страница подтверждения отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/confirmation-page.png" style="width:708px" title="Заполнители реализованы для страницы изъятия из использования"> <br><br>
+
+            <p class="notes"><strong>Примечание.</strong> Фоновые цвета для всех областей страницы используются только для расположения элементов при разработке приложения. В конце следует удалить их из таблицы стилей и применить более подходящий цвет фона. Для этого измените правило background класса <code>main</code>:</p>
+
+            <div class="indent">
+                <pre class="examplecode">#main { background: #f7f7e9 }</pre>
+            </div>
+
+
+            <h3 id="tipsTricks">Полезные советы</h3>
+
+            <p>В редакторе среды IDE есть много полезных возможностей для эффективной работы. Изучение комбинаций клавиш и кнопок панели инструментов увеличит эффективность работы. Следующие советы относятся к правке файлов HTML и CSS. Для просмотра остальных комбинаций клавиш, откройте таблицу сочетаний клавиш среды IDE, выбрав в основном меню &quot;Справка&quot; пункт &quot;Таблица сочетаний клавиш&quot;.</p>
+
+            <ul style="margin: 5px 0 0 -.7em">
+                <li><strong>Автозавершение кода.</strong> При вводе тегов и атрибутов во всплывающем окне автоматически отображаются предположения. Нажатие клавиши ВВОД завершает выбранный тег.</li>
+
+                <li><strong>Форматирование кода.</strong> Щелкните правой кнопкой мыши в редакторе и выберите пункт &quot;Формат&quot;.</li>
+
+                <li><strong>Переключение номеров строк.</strong> Щелкните правой кнопкой мыши в левом поле редактора и выберите команду &quot;Показать номера строк&quot;.</li>
+
+                <li><strong>Найти вхождения:</strong> Выделите блок текста и нажмите Ctrl-F (⌘-F в Mac). Все вхождения текста подсвечиваются в редакторе. Для переключения выделения нажмите кнопку 'Переключение выделения при поиске' ( <img alt="Кнопка 'Переключение выделения при поиске'" class="b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/toggle-highlight.png"> ) (Ctrl-Shift-H) на панели инструментов редактора.</li>
+
+                <li><strong>Создание закладки.</strong> Нажмите кнопку 'Переключение закладок' ( <img alt="Кнопка 'Переключение закладок'" class="b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/toggle-bookmark.png"> ) (Ctrl-Shift-M) для создания закладки в левом поле редактора. Независимо от положения в файле можно перейти к закладке нажатием кнопок &quot;Предыдущая закладка&quot;/&quot;Следующая закладка&quot; на панели инструментов редактора.</li>
+
+                <li><strong>Копирование фрагментов кода вверх или вниз</strong>Выделите фрагмент кода и нажмите комбинацию клавиш CTRL+SHIFT+СТРЕЛКА ВВЕРХ/СТРЕЛКА ВНИЗ.</li>
+
+                <li><strong>Выделение открывающих и закрывающих тегов.</strong> Поместите курсор на открывающий или закрывающий тег, и оба тега будут подсвечены желтым.</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="view">Размещение страниц JSP в папке WEB-INF</h2>
+
+        <p>В соответствии с созданными <a href="design.html#mockups">макетами страниц</a>, <a href="design.html#index">страница приветствия</a> всегда должна выглядеть одинаково для всех посетителей. Это означает, что содержимое страницы приветствия не зависит от <em>сеанса</em> пользователя. (Сеансы рассматриваются в главе 8, <a href="manage-sessions.html">Управление сеансами</a>.)  Обратите внимание, что всем остальным страницам для верного отображения требуется информация, зависящая от пользователя. Например, на <a href="design.html#category">странице категории</a> требуется, чтобы пользователь выбрал категорию для отображения, а на <a href="design.html#cart">странице корзины</a> требуется информация о добавленных пользователем в корзину покупок элементах. Эти страницы не будут отображаться верно, если сервер не свяжет информацию, зависящую от пользователя, с входящим запросом. Поэтому нужно избежать прямого запроса этих страниц путем ввода их адреса в адресной строке браузера. Для этой цели можно использовать папку проекта <code>WEB-INF</code>: все ресурсы, содержащиеся в папке <code>WEB-INF</code> недоступны из браузера напрямую.</p>
+
+        <p>Создайте папку <code>view</code> и поместите ее в папку <code>WEB-INF</code>. Затем переместите все страницы JSP, кроме страницы приветствия, в эту папку.</p>
+
+        <ol>
+            <li>В окне 'Проекты', щелкните правой кнопкой мыши узел WEB-INF и выберите 'Создать' > 'Папка'.</li>
+
+            <li>В мастере создания папки введите название <code>view</code> и нажмите кнопку &quot;Готово&quot;. Обратите внимание, что созданная папка отображается в окне &quot;Проекты&quot;.</li>
+
+            <li>Переместите страницы <code>category.jsp</code>, <code>cart.jsp</code>, <code>checkout.jsp</code> и <code>confirmation.jsp</code> в папку <code>view</code>. <br><br> Для этого щелкните файл <code>cart.jsp</code> для его выбора, затем, удерживая нажатой клавишу SHIFT, щелкните файл <code>confirmation.jsp</code>.  При этом будут выделены четыре файла. Когда эти файлы выделены, щелкните их и перетащите в папку <code>WEB-INF/view</code>. <br> <img alt="В окне &quot;Проекты&quot; отображаются страницы JSP, перетаскиваемые в папку 'view'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/view-folder.png" title="Щелкните и перетащите страницы JSP в папку 'WEB-INF/view/'"></li>
+        </ol>
+
+        <p>Для демонстрации того, что эти страницы более недоступны из браузера, нажмите кнопку 'Запустить проект' ( <img alt="Кнопка 'Выполнить проект'" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"> ) для запуска проекта. После отображения приложения в браузере введите полный путь к одному из этих файлов в строке адреса. Например, введите адрес:</p>
+
+        <div class="indent">
+            <pre class="examplecode" style="width:700px">http://localhost:8080/AffableBean/WEB-INF/view/category.jsp</pre>
+        </div>
+
+        <p>Вы получите статус HTTP 404, означающий, что ресурс недоступен.</p>
+
+
+        <br>
+        <h2 id="jspf">Создание верхнего и нижнего колонтитула</h2>
+
+        <p>Как видно из <a href="design.html#mockups">макетов страниц</a>, у всех пяти представлений есть общее содержание. В верхней части все они содержат логотип компании, переключатель языков и другие элементы оформления, связанные с корзиной покупок.  В нижней части они содержат текст о политике конфиденциальности и ссылки на контакты. Вместо того, чтобы включать этот код в исходные файлы всех страниц, можно выделить его в два фрагмента JSP: верхний и нижний колонтитулы. Затем можно включить файлы фрагментов в представления страниц в нужных позициях.</p>
+
+        <p>Для этих фрагментов создайте новую папку <code>jspf</code>, расположенную в папке <code>WEB-INF</code>.</p>
+
+        <ol>
+            <li>В окне 'Проекты', щелкните правой кнопкой мыши узел WEB-INF и выберите 'Создать' > 'Папка'.</li>
+
+            <li>В мастере создания папки введите имя <code>jspf</code> и нажмите кнопку &quot;Готово&quot;. <br><br>
+                <p class="tips">Поведение элементов меню среды IDE часто зависит от контекста. Например, при щелчке правой кнопкой мыши узла WEB-INF когда отображен мастер создания папок, <code>web/WEB-INF</code> был автоматически введен в поле 'Родительская папка'. Точно так же, при щелчке правой кнопкой мыши узла в окне 'Проекты' и выборе 'Создать', список типов файлов частично определяется предыдущими выборками.</p>
+            </li>
+
+            <li>Создайте два сегмента JSP: <code>header.jspf</code> и <code>footer.jspf</code>.  Для этого щелкните правой кнопкой мыши новую созданную папку <code>jspf</code> и выберите 'Создать' > JSP. В мастере создания JSP введите имя файла и под надписью &quot;Параметры&quot; выберите параметр &quot;Создать как сегмент JSP&quot;, затем нажмите кнопку &quot;Готово&quot;. <br><br> После этого в окне &quot;Проекты&quot; отображаются файлы <code>header.jspf</code> и <code>footer.jspf</code>: <br> <img alt="В окне &quot;Проекты&quot; отображаются фрагменты JSP" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/projects-win-jspf.png" title="В проекте отображаются фрагменты JSP нижнего и верхнего колонтитулов"> <br><br> Теперь можно скопировать код верхнего колонтитула из любой страницы JSP и вставить его в файл <code>header.jspf</code>. Аналогично, можно скопировать текст нижнего колонтитула из любой страницы JSP и вставить его в файл <code>footer.jspf</code>.  После этого можно удалить код верхнего и нижнего колонтитулов из всех страниц JSP.</li>
+
+            <li>Скопируйте код верхнего колонтитула из любой страницы JSP и вставьте его в файл <code>header.jspf</code>. Верхний колонтитул должен включать описатель типа документа и открывающие теги <code>&lt;html&gt;</code>, <code>&lt;head&gt;</code> и <code>&lt;body&gt;</code> и текст до закрывающего тега элемента <code>&lt;div id=&quot;header&amp;quot&gt;</code>.  Убедитесь, что добавлены заполнители для элементов, используемых в верхней части представлений страниц: корзины покупок, переключателя языков и кнопки &quot;Переход к проверке&quot;. После вставки кода в файл <code>header.jspf</code>, он будет выглядеть следующим образом:
+
+<pre class="examplecode">
+&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;css/affablebean.css&quot;&gt;
+        &lt;title&gt;The Affable Bean&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div id=&quot;main&quot;&gt;
+            &lt;div id=&quot;header&quot;&gt;
+                &lt;div id=&quot;widgetBar&quot;&gt;
+
+                    &lt;div class=&quot;headerWidget&quot;&gt;
+                        [ language toggle ]
+                    &lt;/div&gt;
+
+                    &lt;div class=&quot;headerWidget&quot;&gt;
+                        [ checkout button ]
+                    &lt;/div&gt;
+
+                    &lt;div class=&quot;headerWidget&quot;&gt;
+                        [ shopping cart widget ]
+                    &lt;/div&gt;
+
+                &lt;/div&gt;
+
+                &lt;a href=&quot;#&quot;&gt;
+                    &lt;img src=&quot;#&quot; id=&quot;logo&quot; alt=&quot;Affable Bean logo&quot;&gt;
+                &lt;/a&gt;
+
+                &lt;img src=&quot;#&quot; id=&quot;logoText&quot; alt=&quot;the affable bean&quot;&gt;
+            &lt;/div&gt;</pre></li>
+
+            <li>Скопируйте код нижнего колонтитула из любой страницы JSP и вставьте его в файл <code>footer.jspf</code>. Код нижнего колонтитула должен включать в себя элемент <code>&lt;div id=&quot;footer&quot;&gt;</code> и текст до закрывающего тега <code>&lt;html&gt;</code>. После вставки кода в файл <code>footer.jspf</code> он будет выглядеть следующим образом:
+
+<pre class="examplecode">
+            &lt;div id=&quot;footer&quot;&gt;
+                &lt;hr&gt;
+                &lt;p id=&quot;footerText&quot;&gt;[ footer text ]&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre></li>
+
+            <li>Удалите код верхнего и нижнего колонтитулов из всех пяти страниц JSP (<code>index.jsp</code>, <code>category.jsp</code>, <code>cart.jsp</code>, <code>checkout.jsp</code> и <code>confirmation.jsp</code>).</li>
+        </ol>
+
+
+        <br>
+        <h2 id="dd">Добавление директивы к дескриптору развертывания</h2>
+
+        <p>В настоящий момент представления размещены правильным образом и общий код колонтитулов выделен в файлы <code>header.jspf</code> и <code>footer.jspf</code>.  По-прежнему не указано, к каким страницам относятся верхний и нижний колонтитулы. К каждому представлению страницы можно добавить теги <code>&lt;jsp:include&gt;</code>.  Однако это приведет только к дублированию кода, которое требовалось устранить. В качестве альтернативы можно создать дескриптор развертывания <code>web.xml</code> и добавить директиву &quot;Группа свойств JSP&quot; для указания, к каким страницам относятся фрагменты верхнего и нижнего колонтитула.</p>
+
+        <ol>
+            <li>Нажмите сочетание клавиш CTRL+N (⌘-N на компьютере Mac) для открытия мастера создания файлов. Выберите категорию Web, затем выберите тип файла &quot;Стандартный дескриптор развертывания (web.xml)&quot;.</li>
+
+            <li>Нажмите кнопку &quot;Далее&quot;. Обратите внимание, что файл называется <code>web.xml</code>, и будет помещен в папку <code>WEB-INF</code> проекта после завершения работы мастера.</li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. Файл <code>web.xml</code> создается и добавляется в проект.  В редакторе открывается графический интерфейс среды IDE для дескриптора развертывания. <br><br> Интерфейс разбит на категории в соответствии в областями, которые могут быть настроены в веб-приложении. Эти области (например, &quot;Сервлеты&quot;, &quot;Фильтры&quot;,&quot;Ссылки&quot; и &quot;Безопасность&quot;) отображаются на панели инструментов редактора как вкладки.  На вкладке XML отображается весь исходный код файла. При любых изменениях, сделанных в графическом интерфейсе, исходный код дескриптора развертывания немедленно обновляется. В этом можно убедиться, открыв вкладку XML. Выполните следующие действия.</li>
+
+            <li>Выберите вкладку &quot;Страницы&quot;, затем нажмите кнопку &quot;Добавить в группу свойств JSP&quot;. Открывается диалоговое окно &quot;Добавление группы свойств JSP&quot;.</li>
+
+            <li>Введите в поле &quot;Описание&quot; текст &quot;<code>header and footer settings</code>&quot;.  Оставьте поле &quot;Отображаемое имя&quot; пустым. Поля &quot;Отображаемое имя&quot; и &quot;Описание&quot; являются необязательными для заполнения.</li>
+
+            <li>В поле &quot;Шаблоны URL&quot; введите пути к пяти представлениям. Введите &quot;<code>/index.jsp</code>&quot; и &quot;<code>/WEB-INF/view/*</code>&quot;.  Разделите эти два пути запятой. (Символ &quot;<code>*</code>&quot; — это подстановочный знак, обозначающий все файлы в данной папке.) <br> <img alt="Диалоговое окно &quot;Добавление группы свойств JSP&quot;." class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/add-jsp-prop-group-dialog.png" title="Используйте диалоговое окно 'Добавить группу свойств JSP', чтобы указать теги &lt;jsp-config> в дескрипторе развертывания"></li>
+
+            <li>Нажмите кнопку &quot;ОК&quot;. В категорию &quot;Группа свойств JSP&quot; на вкладке &quot;Страницы&quot; добавляется запись.</li>
+
+            <li>Переключитесь обратно на вкладку XML. Обратите внимание, что в дескриптор развертывания добавился следующий код.
+
+                <pre class="examplecode">
+&lt;jsp-config&gt;
+    &lt;jsp-property-group&gt;
+        &lt;description&gt;header and footer settings&lt;/description&gt;
+        &lt;url-pattern&gt;/index.jsp&lt;/url-pattern&gt;
+        &lt;url-pattern&gt;/WEB-INF/view/*&lt;/url-pattern&gt;
+    &lt;/jsp-property-group&gt;
+&lt;/jsp-config&gt;</pre>
+
+                <p class="notes"><strong>Примечание.</strong> Может потребоваться добавление символа возврата каретки к коду, чтобы он отображался на нескольких строках. Можно щелкнуть правой кнопкой мыши в редакторе и выбрать 'Формат' (Alt-Shift-F, Ctrl-Shift-F на Mac), чтобы задать для код правильные отступы.</p></li>
+
+            <li>Переключитесь снова на вкладку &quot;Страницы&quot; и введите в поля &quot;Включить вводные части&quot; и &quot;Включить заключительные части&quot; пути к файлам <code>header.jspf</code> и <code>footer.jspf</code> соответственно. Можно нажать кнопку &quot;Обзор&quot; и выбрать файлы в диалоговом окне. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/jsp-prop-groups.png" rel="lytebox" title="Введите путеи к нижнему и верхнему колонтитулам в группе свойств JSP"> <img alt="Группа свойств JSP отображается на вкладке 'Страницы' в web.xml" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/jsp-prop-groups-small.png" title="Щелкните для увеличения"></a></li>
+
+            <li>Переключитесь обратно на вкладку XML. Обратите внимание, что добавился следующий код. (Изменения <strong>выделены полужирным шрифтом</strong>.)
+
+                <pre class="examplecode">
+&lt;jsp-config&gt;
+    &lt;jsp-property-group&gt;
+        &lt;description&gt;header and footer settings&lt;/description&gt;
+        &lt;url-pattern&gt;/index.jsp&lt;/url-pattern&gt;
+        &lt;url-pattern&gt;/WEB-INF/view/*&lt;/url-pattern&gt;
+        <strong>&lt;include-prelude&gt;/WEB-INF/jspf/header.jspf&lt;/include-prelude&gt;
+        &lt;include-coda&gt;/WEB-INF/jspf/footer.jspf&lt;/include-coda&gt;</strong>
+    &lt;/jsp-property-group&gt;
+&lt;/jsp-config&gt;</pre>
+
+                Эти директивы означают, что для всех файлов, расположенных по указанным <code>шаблонам путей</code>, файл<code>header.jspf</code> будет добавлен в начало, а файл <code>footer.jspf</code>  добавлен в конец. <br><br>
+                <p class="tips">Определения этих и остальных доступных в дескрипторе веб-развертывания тегов приведены в <a href="http://jcp.org/en/jsr/detail?id=315" target="_blank">Спецификации сервлетов</a>.</p></li>
+
+            <li>Выполните приложение повторно (нажмите клавишу F6; комбинацию клавиш fn+F6 в Mac OS).  Код верхнего и нижнего колонтитулов уже удален из файла<code>index.jsp</code>, поэтому при запросе этого файла можно убедиться, что код автоматически добавляется. <br><br> <a href="#welcome-page">Страница приветствия отображается как ранее</a>, включая содержимое верхнего и нижнего колонтитулов.</li>
+        </ol>
+
+
+        <br>
+        <h2 id="controller">Создание сервлета Controller</h2>
+
+        <p>Сервлет Controller обрабатывает входящие запросы, запуская необходимые для создания модели действия и перенаправляя запрос соответствующему представлению. Визуальное представление приведено на <a href="design.html#mvcDiagram">диаграмме MVC для проекта AffableBean</a>.</p>
+
+        <p>Мастер создания сервлета среды IDE позволяет определить компонент сервлета веб-приложения с помощью аннотации <code>@WebServlet</code> в создаваемом классе или с помощью добавления необходимых директив в дескриптор развертывания.  Далее класс <code>ControllerServlet</code> будет создан и определен в контексте приложения с помощью аннотации <a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/annotation/WebServlet.html" target="_blank"><code>@WebServlet</code></a>.</p>
+
+        <ol>
+            <li>В окне 'Проекты', щелкните правой кнопкой мыши узел проекта <code>AffableBean</code> и выберите 'Создать' > 'Сервлет'.</li>
+
+            <li>В мастере введите в поле &quot;Имя класса&quot; <code>ControllerServlet</code>.</li>
+
+            <li>В поле &quot;Пакет&quot;, введите <code>controller</code>. (Пакет автоматически создается после завершения работы мастера.) <br> <img alt="Мастер создания сервлетов" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/servlet-wizard.png" title="Используйте мастер создания сервлетов для создания сервлетов для проекта"></li>
+
+            <li>Нажмите кнопку &quot;Далее&quot;. На третьем экране мастера можно настроить сервлет. Наиболее значимыми являются шаблоны URL-адресов, которые требуется указать. Эти шаблоны определяют URL-адреса, по которым выполняется сервлет. Например, если ввести &quot;<code>/category</code>&quot;, сервлет будет обрабатывать запросы следующего вида.
+
+                <pre class="examplecode">http://localhost/AffableBean<strong>/category</strong></pre>
+
+                Шаблоны URL-адресов должны соответствовать представлениям и действиям пользователя. В соответствии с <a href="design.html#index">макетом страницы приветствия</a>, пользователь должен иметь возможность выбрать категорию.  Поэтому можно связать URL-адрес <code>/category</code> с действием нажатия изображения категории.  Аналогично, на <a href="design.html#category">странице категории</a> пользователи должны иметь возможность добавить элемент в корзину покупок. Поэтому можно указать URL-адрес <code>/addToCart</code>.</li>
+
+            <li>В поле &quot;Шаблоны URL-адресов&quot; введите <code>/category, /addToCart, /viewCart</code>.  Шаблоны разделяются запятыми. Можно создать дополнительные шаблоны непосредственно в классе сервлета после его создания. <br> <img alt="Мастер создания сервлетов. Шаг 3. Настройка развертывания сервлетов" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/servlet-wizard2.png" title="Настройте развертывание сервлета напрямую в мастере"></li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. <code>ControllerServlet</code> создается в среде IDE и открывается в редакторе. Сервлет и шаблоны URL-адресов включены в аннотацию <code>@WebServlet</code>, расположенную перед сигнатурой класса.
+
+                <pre class="examplecode">
+<strong>@WebServlet(name=&quot;ControllerServlet&quot;, urlPatterns={&quot;/category&quot;, &quot;/addToCart&quot;, &quot;/viewCart&quot;})</strong>
+public class ControllerServlet extends HttpServlet {</pre>
+
+                Если выбрать на предыдущем шаге параметр &quot;<code>Добавить сведения в дескриптор развертывания (web.xml)</code>&quot;, вместо этого была бы создана такая разметка в файле приложения <code>web.xml</code>.
+
+                <pre class="examplecode">
+&lt;servlet&gt;
+    &lt;servlet-name&gt;ControllerServlet&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;controller.ControllerServlet&lt;/servlet-class&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;ControllerServlet&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/category&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;ControllerServlet&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/addToCart&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;ControllerServlet&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/viewCart&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;</pre></li>
+
+            <li>Добавьте остальные шаблоны URL-адресов прямо в аннотацию <code>@WebServlet</code> в элемент <code>urlPatterns</code>. В приложении требуются шаблоны URL-адресов для остальных действий и представлений. Можно ввести следующие шаблоны:
+
+                <ul class="toc" style="margin: 5px 0 0 -1em">
+                    <li><code>/updateCart</code></li>
+                    <li><code>/checkout</code></li>
+                    <li><code>/purchase</code></li>
+                    <li><code>/chooseLanguage</code></li>
+                </ul>
+
+                Запишите шаблоны через запятую. Также можно переформатировать аннотацию таким образом:
+
+                <pre class="examplecode">
+@WebServlet(name=&quot;ControllerServlet&quot;,
+            urlPatterns = {&quot;/category&quot;,
+                           &quot;/addToCart&quot;,
+                           &quot;/viewCart&quot;<strong>,
+                           &quot;/updateCart&quot;,
+                           &quot;/checkout&quot;,
+                           &quot;/purchase&quot;,
+                           &quot;/chooseLanguage&quot;</strong>})</pre></li>
+
+            <li>Наконец, добавьте элемент <code>loadOnStartup</code>, чтобы экземпляр сервлета создавался и инициализировался при развертывании приложения. Для этого задайте значение <code>0</code> или большее (по умолчанию используется значение <code>-1</code>).
+
+                <pre class="examplecode">
+@WebServlet(name=&quot;ControllerServlet&quot;,
+            <strong>loadOnStartup = 1,</strong>
+            urlPatterns = {&quot;/category&quot;,
+                           &quot;/addToCart&quot;,
+                           &quot;/viewCart&quot;,
+                           &quot;/updateCart&quot;,
+                           &quot;/checkout&quot;,
+                           &quot;/purchase&quot;,
+                           &quot;/chooseLanguage&quot;})</pre></li>
+        </ol>
+
+
+        <br>
+        <h2 id="implement">Реализация сервлета Controller</h2>
+
+        <p>Сервлет Controller обрабатывает входящие запросы, запуская необходимые для создания модели действия и перенаправляя запрос соответствующему представлению. Визуальное представление приведено на <a href="design.html#mvcDiagram">диаграмме MVC для проекта AffableBean</a>.</p>
+
+        <p>Открыв созданный код для поиска нового <code>ControllerServlet</code>, можно заметить, что шаблон сервлета IDE использует метод <code>processRequest</code>, который вызывается как методом <code>doGet</code>, так и <code>doPost</code>. (Возможно, потребуется расширить свертывание кода, щелкнув значок плюса ( <img alt="Значок 'Свертывание кода'" src="../../../../images_www/articles/73/javaee/ecommerce/common/code-fold-icon.png"> ) в левом поле редактора, чтобы просмотреть эти методы). Поскольку приложение проводит различие между <code>doGet</code> и <code>doPost</code>, код добавляется прямо в эти методы и полностью исключается из метода <code>processRequest</code>.</p>
+
+        <div class="indent">
+            <div class="feedback-box float-left" style="width: 703px;">
+
+                <h3>Изменение шаблонов файлов с помощью диспетчера шаблонов среды IDE</h3>
+
+                <p>Среда IDE предоставляет простой шаблон для каждого создаваемого файла. Если шаблон не соответствует вашим рабочим шаблонам, можно изменить его в диспетчере шаблонов среды IDE. В среде IDE есть шаблоны практически для каждого типа файлов.</p>
+
+                <p>Например, для изменения шаблона сервлета выполните следующие действия:</p>
+
+                <ol>
+                    <li>Откройте диспетчер шаблонов, выбрав в главном меню &quot;Сервис&quot; пункт &quot;Шаблоны&quot;.</li>
+
+                    <li>Разверните категорию Web, затем выберите шаблон &quot;Сервлет&quot;. <br> <img alt="Управление шаблонами" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/template-manager.png" title="Доступ и изменение шаблонов файлов с помощью диспетчера шаблонов" /></li>
+
+                    <li>Нажмите кнопку &quot;Открыть в редакторе&quot;.</li>
+
+                    <li>Измените шаблон в редакторе. При следующем создании нового сервлета (например, с помощью мастера создания сервлетов), будет применена новая версия.</li>
+                </ol>
+            </div>
+        </div>
+        <br style="clear: both;"/>
+
+        <br>
+        <p>После связывания шаблонов URL-адресов в сервлетом с помощью аннотации <code>@WebServlet</code>, настройте <code>ControllerServlet</code> для обработки этих шаблонов.  Также создайте экземпляр <code>RequestDispatcher</code> для перенаправления запроса к соответствующему представлению.</p>
+
+        <ol>
+            <li>Замените код шаблона класса <code>ControllerServlet</code> на следующий.
+
+                <pre class="examplecode">
+public class ControllerServlet extends HttpServlet {
+
+    /**
+     * Handles the HTTP &lt;code&gt;GET&lt;/code&gt; method.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+
+        String userPath = request.getServletPath();
+
+        // if category page is requested
+        if (userPath.equals(&quot;/category&quot;)) {
+            // TODO: Implement category request
+
+        // if cart page is requested
+        } else if (userPath.equals(&quot;/viewCart&quot;)) {
+            // TODO: Implement cart page request
+
+            userPath = &quot;/cart&quot;;
+
+        // if checkout page is requested
+        } else if (userPath.equals(&quot;/checkout&quot;)) {
+            // TODO: Implement checkout page request
+
+        // if user switches language
+        } else if (userPath.equals(&quot;/chooseLanguage&quot;)) {
+            // TODO: Implement language request
+
+        }
+
+        // use RequestDispatcher to forward request internally
+        String url = &quot;/WEB-INF/view&quot; + userPath + &quot;.jsp&quot;;
+
+        try {
+            request.getRequestDispatcher(url).forward(request, response);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Handles the HTTP &lt;code&gt;POST&lt;/code&gt; method.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+
+        String userPath = request.getServletPath();
+
+        // if addToCart action is called
+        if (userPath.equals(&quot;/addToCart&quot;)) {
+            // TODO: Implement add product to cart action
+
+        // if updateCart action is called
+        } else if (userPath.equals(&quot;/updateCart&quot;)) {
+            // TODO: Implement update cart action
+
+        // if purchase action is called
+        } else if (userPath.equals(&quot;/purchase&quot;)) {
+            // TODO: Implement purchase action
+
+            userPath = &quot;/confirmation&quot;;
+        }
+
+        // use RequestDispatcher to forward request internally
+        String url = &quot;/WEB-INF/view&quot; + userPath + &quot;.jsp&quot;;
+
+        try {
+            request.getRequestDispatcher(url).forward(request, response);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+}</pre>
+
+                Продолжив работу с учебным курсом, вы вернётесь к <code>ControllerServlet</code> и реализуете каждый из сопоставленных шаблонов URL-адреса отдельно.</li>
+
+            <li>Рассмотрим этот код. Следует обратить внимание на следующие моменты:
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>Сервлет использует переменную экземпляра <code>userPath</code> для получения запрошенного шаблона URL-адреса от клиента:
+
+                        <pre class="examplecode" style="width: 640px">String userPath = request.getServletPath();</pre>
+
+                        <code>userPath</code> используется как методом <code>doGet</code>, так и <code>doPost</code>.</li>
+
+                    <li>Шаблоны URL-адресов связаны в первую очередь с запросом страниц и управляются методом <code>doGet</code>. Например, запросы <code>/category</code>, <code>/viewCart</code> и <code>/checkout</code> соответственно приведут к отображению страниц категории, корзины покупок и проверки. </li>
+
+                    <li>Шаблоны URL-адресов. связанные с отправкой форм и передачей конфиденциальной информации пользователей (например,, <code>/addToCart</code>, <code>/updateCart</code> и <code>/purchase</code>) управляются методом <code>doPost</code>.</li>
+
+                    <li>Как для метода <code>doGet</code>, так и для <code>doPost</code>, путь к соответствующему виду формируется с использованием строки адреса <code>url</code>.
+
+                        <pre class="examplecode" style="width: 640px">String url = &quot;/WEB-INF/view&quot; + userPath + &quot;.jsp&quot;;</pre>
+                    </li>
+
+                    <li><code>RequestDispatcher</code> получается из <code>HttpServletRequest</code> и использует <code>url</code> для перенаправления запроса:
+
+                        <pre class="examplecode" style="width: 640px">request.getRequestDispatcher(url).forward(request, response);</pre>
+                    </li>
+
+                    <li>Примечания <code>TODO</code> используются для обозначения работы, которую предстоит выполнить.  Например:
+
+                        <pre class="examplecode" style="width: 640px">// if category page is requested
+if (userPath.equals(&quot;/category&quot;)) {
+    // TODO: Implement category request</pre>
+
+                        Применение примечаний <code>TODO</code> в коде — полезный способ отслеживать задания, которые предстоит выполнить.  Можно использовать окно 'Задачи' среды IDE (Ctrl-6; ⌘-6 в Mac), чтобы просмотреть все заметки TODO, а также любой синтаксис или ошибки компиляции, содержащиеся в проекте. <br> <img alt="Окно &quot;Задачи&quot;" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/page-views-controller/tasks-window.png" title="Отслеживание задач реализации в окне 'Задачи' среды IDE" /> <br>
+                        <p class="tips">Можно управлять ключевыми словами, отображаемыми в окне &quot;Задачи&quot;. Откройте окно &quot;Параметры&quot; (в меню &quot;Сервис&quot; пункт &quot;Параметры&quot;; меню NetBeans, пункт &quot;Параметры&quot; в Mac OS), затем выберите &quot;Разное&quot; &gt; &quot;Задания&quot;.</p></li>
+                </ul>
+            </li>
+
+            <li>Выполните проект (нажмите клавишу F6; fn+F6 в Mac OS) и проверьте, что <code>ControllerServlet</code> перенаправляет запросы соответствующим представлениям.
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>Введите в строке адреса браузера <code>http://localhost:8080/AffableBean/category</code>. Отображается <a href="#categoryPage">страница категории</a> приложения.</li>
+
+                    <li>Введите в строке адреса браузера <code>http://localhost:8080/AffableBean/viewCart</code>.  Отображается <a href="#cartPage">страница корзины покупок</a>.</li>
+
+                    <li>Введите в строке адреса браузера <code>http://localhost:8080/AffableBean/checkout</code>.  Отображается <a href="#checkoutPage">страница проверки</a> приложения.</li>
+                </ul>
+
+                <p class="notes"><strong>Примечание.</strong> Ввод <code>http://localhost:8080/AffableBean/purchase</code> в адресной строке браузера не обеспечивает разрешения для просмотра <a href="#confirmationPage">страницы подтверждения</a>. Это происходит потому, что шаблон URL-адреса <code>/purchase</code> управляется методом <code>doPost</code> сервлета, а запрос формы отправки из адресной строки браузера обычно посылается с помощью метода HTTP GET.</p></li>
+        </ol>
+
+        <p>В настоящий момент созданы страницы JSP, содержащие заполнители для всех функциональных компонентов. Также создана структура внешнего интерфейса приложения. Страницы JSP теперь расположены в папке <code>WEB-INF</code>, верхний и нижний колонтитулы выделены в отдельные файлы, дескриптор развертывания настроен и для обработки входящих запросов создан <code>ControllerServlet</code>.  В следующей главе учебного курса будет создано подключение приложения к базе данных.</p>
+
+        <p>Если требуется сравнить результаты выполнения этой главы с образцом, <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot2.zip">загрузите снимок 2 проекта AffableBean</a>.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Preparing the Page Views and Controller Servlet">Мы ждем ваших отзывов</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">Дополнительные сведения</h2>
+
+        <div class="indent">
+            <h3>Учебные курсы по среде NetBeans</h3>
+
+            <ul>
+                <li><a href="../javaee-intro.html" target="_blank">Введение в технологию Java EE </a></li>
+                <li><a href="../javaee-gettingstarted.html" target="_blank">Начало работы с приложениями для Java EE</a></li>
+                <li><a href="../../web/quickstart-webapps.html" target="_blank">Введение в разработку веб-приложений</a></li>
+                <li><a href="../../web/mysql-webapp.html" target="_blank">Создание простого веб-приложения, использующего базу данных MySQL</a></li>
+                <li><a href="../../screencasts.html" target="_blank">Video Tutorials and Demos for IDE NetBeans 6.x</a></li>
+                <li><a href="https://netbeans.org/projects/www/downloads/download/shortcuts.pdf">Таблица комбинаций клавиш и шаблонов кода</a></li>
+                <li><a href="../../../trails/java-ee.html" target="_blank">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+
+            <h3>Книги по среде NetBeans</h3>
+
+            <ul>
+                <li><a href="https://netbeans.org/kb/articles/netbeans-tips-and-tricks-book.html" target="_blank">100 IDE NetBeans Tips and Tricks</a></li>
+                <li><a href="http://www.apress.com/book/view/1590598954" target="_blank">Pro IDE NetBeans 6 Rich Client Platform Edition</a></li>
+                <li><a href="http://apress.com/book/view/1430219548" target="_blank">Начало работы с платформой Java EE 6 с GlassFish 3: от новичка до профессионала</a></li>
+                <li><a href="https://netbeans.org/kb/articles/books.html" target="_blank">More books about IDE NetBeans</a></li>
+            </ul>
+
+            <h3>Внешние ресурсы</h3>
+
+            <ul>
+                <li><a href="http://jcp.org/en/jsr/detail?id=315" target="_blank">Спецификация сервлета 3.0</a></li>
+                <li><a href="https://developer.mozilla.org/en/Common_CSS_Questions" target="_blank">Часто задаваемые вопросы по CSS</a></li>
+                <li><a href="http://quirksmode.org/compatibility.html" target="_blank">Главная таблица совместимости с браузерами</a></li>
+                <li><a href="http://refcardz.dzone.com/refcardz/netbeans-ide-67-update" target="_blank">DZone Refcard для редактора Java NetBeans</a></li>
+            </ul>
+        </div>
+
+    </body>
+</html>

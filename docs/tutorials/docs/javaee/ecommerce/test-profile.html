@@ -1,0 +1,1722 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to use JMeter and the NetBeans Profiler to examine the functionality and performance of applications">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce, JMeter, load testing,
+            profiling, Profiler, JVM, heap, HeapWalker">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>The NetBeans E-commerce Tutorial - Testing and Profiling</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>The NetBeans E-commerce Tutorial - Testing and Profiling</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Tutorial Contents</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introduction</a></li>
+                    <li><a href="design.html">Designing the Application</a></li>
+                    <li><a href="setup-dev-environ.html">Setting up the Development Environment</a></li>
+                    <li><a href="data-model.html">Designing the Data Model</a></li>
+                    <li><a href="page-views-controller.html">Preparing the Page Views and Controller Servlet</a></li>
+                    <li><a href="connect-db.html">Connecting the Application to the Database</a></li>
+                    <li><a href="entity-session.html">Adding Entity Classes and Session Beans</a></li>
+                    <li><a href="manage-sessions.html">Managing Sessions</a></li>
+                    <li><a href="transaction.html">Integrating Transactional Business Logic</a></li>
+                    <li><a href="language.html">Adding Language Support</a></li>
+                    <li><a href="security.html">Securing the Application</a></li>
+                    <li><strong>Testing and Profiling</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#test">Testing with JMeter</a></li>
+                            <li><a href="#profile">Using the NetBeans Profiler</a></li>
+                            <li><a href="#glassFishTune">Tuning the GlassFish Server</a></li>
+                            <li><a href="#seeAlso">See Also</a></li>
+                        </ul></li>
+
+                    <li><a href="conclusion.html">Conclusion</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>Before delivering any application, it is important to ensure that it functions
+            properly, and that it can perform acceptably for the demands expected of it. Web
+            applications, especially e-commerce applications, by their very nature provide
+            concurrent access to shared resources. In other words, the servers on which they
+            are hosted must be able to respond to multiple users requesting the same resources
+            over the same period of time. Be mindful of this fact when during development
+            your application appears to behave correctly as you click through web pages in
+            your browser. How will the application perform when handling 100 users simultaneously?
+            Are there memory leaks that will degrade the server's performance after the
+            application has been running for long periods of time? What steps can you take
+            to ensure that your production server best handles traffic to your application?</p>
+
+        <p>This tutorial unit is designed to introduce you to the IDE's support for testing
+            and profiling. You begin by installing the JMeter Kit plugin, which enables you to
+            create test plans and open them in <a href="http://jakarta.apache.org/jmeter/"
+            target="_blank">Apache JMeter</a> from the IDE. You then create a basic test plan
+            in JMeter, and proceed by exploring the tool's capacity for functional and
+            performance testing. Finally, you explore the IDE's Profiler, and use it to
+            examine GlassFish' memory consumption while you run the JMeter test plan against
+            the <code>AffableBean</code> application over an extended period of time. This unit
+            concludes by presenting various tips that enable you to tune the GlassFish server
+            for your application in a production environment.</p>
+
+        <p>You can view a live demo of the application that you build in this tutorial:
+            <a href="http://services.netbeans.org/AffableBean/" target="_blank">NetBeans
+            E-commerce Tutorial Demo Application</a>.</p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java bundle, 6.8 or 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFish server</a></td>
+                    <td class="tbltd1">v3 or Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#jmeter">JMeter</a></td>
+                    <td class="tbltd1">2.2 or more recent</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQL database server</a></td>
+                    <td class="tbltd1">version 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_complete.zip">AffableBean
+                            project</a></td>
+                    <td class="tbltd1">complete version</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Notes:</strong></p>
+
+        <ul>
+            <li>The NetBeans IDE requires the Java Development Kit (JDK) to run properly.
+                If you do not have any of the resources listed above, the JDK should be
+                the first item that you download and install.</li>
+
+            <li>The NetBeans IDE Java Bundle includes Java Web and EE technologies, which are
+                required for the application you build in this tutorial.</li>
+
+            <li id="glassFish">The NetBeans IDE Java Bundle also includes the GlassFish server,
+                which you require for this tutorial. You could
+                <a href="http://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">download
+                the GlassFish server independently</a>, but the version provided with the
+                NetBeans download has the added benefit of being automatically registered with
+                the IDE.</li>
+
+            <li>You can follow this tutorial unit without having completed previous units. To
+                do so, see the <a href="setup.html">setup instructions</a>, which describe how
+                to prepare the database and establish connectivity between the IDE, GlassFish,
+                and MySQL.</li>
+
+            <li id="jmeter"><strong>You do not need to download JMeter for its use in this tutorial.</strong>
+                Instead, you install the NetBeans JMeter Kit plugin, which includes the JMeter
+                distribution. You will therefore require an Internet connection at the point
+                when you install the plugin in the tutorial. JMeter can be downloaded independently
+                from <a href="http://jakarta.apache.org/site/downloads/downloads_jmeter.cgi"
+                target="_blank">http://jakarta.apache.org/site/downloads/downloads_jmeter.cgi</a>.</li>
+
+            <li>The JMeter Kit plugin for NetBeans 6.8 installs JMeter version 2.2 (released
+                June 2006). The plugin for NetBeans 6.9 installs JMeter version 2.4 (released
+                July 2010). There is a significant difference between these two versions.</li>
+        </ul>
+
+
+        <h2 id="test">Testing with JMeter</h2>
+
+        <p>Begin by examining the <code>AffableBean</code> tutorial application. Then install the
+            JMeter Kit plugin using the IDE's Plugins Manager. Launch JMeter from the IDE, and
+            proceed by creating a test plan based on the tutorial <a href="design.html#mockups">use-case</a>.
+            Finally, explore some of JMeter's facilities for functional and load testing.</p>
+
+        <ul>
+            <li><a href="#install">Install the JMeter Kit Plugin</a></li>
+            <li><a href="#createTestPlan">Create a Test Plan</a></li>
+            <li><a href="#loadTest">Load Testing</a></li>
+            <li><a href="#stressTest">Stress Testing</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="install">Install the JMeter Kit Plugin</h3>
+
+            <ol>
+                <li>Open the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_complete.zip"><code>AffableBean</code>
+                    project</a> in the IDE. Click the Open Project (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/open-project-btn.png"
+                    alt="Open Project button"> ) button and use the wizard to navigate to the location
+                    on your computer where you downloaded the project.</li>
+
+                <li>Run the project (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                    alt="Run Project button"> ) to ensure that it is properly configured with your database
+                    and application server.
+
+                    <br>
+                    <p class="alert margin-around">If you receive an error when running the project, revisit the
+                        <a href="setup.html">setup instructions</a>, which describe how to prepare the
+                        database and establish connectivity between the IDE, GlassFish, and MySQL.
+                        If you want to log into the project's administration console (not required in
+                        this tutorial unit), you'll need to create a user named <code>nbuser</code> on
+                        the GlassFish server. This task is described in Unit 11,
+                        <a href="security.html#createUsers">Securing the Application: Create Users and/or
+                        Groups on the Server</a>.</p></li>
+
+                <li>Open the IDE's Plugins Manager by choosing Tools &gt; Plugins from the main menu.
+                    Select the Available Plugins tab, then type in '<code>jmeter</code>' into the Search
+                    field. When you see JMeter Kit displayed from the filtered results, select it by
+                    clicking the checkbox under the Install column.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/plugins-manager.png"
+                         class="margin-around b-all" style="width:688px" alt="JMeter Kit displayed under Available Plugins in the Plugins Manager"
+                         title="JMeter Kit is a NetBeans certified plugin available in the Plugins Manager"></li>
+
+                <li>Click Install. The IDE's installer informs you that two plugins will be installed:
+                    The JMeter Kit and the Load Generator, which provides a generic infrastructure for
+                    load generator engines registered in the IDE.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/ide-installer.png"
+                         class="margin-around b-all" alt="JMeter Kit and Load Generator listed in the IDE's Plugin Installer"
+                         title="Plugins dependencies are automatically included during installation"></li>
+
+                <li>Click Next. Accept the license agreement, then click Install.
+
+                    <br>
+                    <p class="alert margin-around">You require an Internet connection to download the selected plugins.</p>
+
+                    The installer downloads, verifies, and installs the plugins. When installation
+                    has successfully completed, click Finish to exit the installer, then click Close
+                    to close the Plugins Manager.</li>
+
+                <li>In the Projects window, note that a new Load Generator Scripts node displays in
+                    your project.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/load-generator-scripts.png"
+                         class="margin-around b-all" alt="Projects window displaying Load Generator Scripts node"
+                         title="The Load Generator plugin enables you to access scripts from the Projects window">
+
+                    <br>
+                    If you open the Files window (Ctrl-2; &#8984;-2 on Mac), you'll see a new <code>jmeter</code>
+                    folder added to the project. (Recall that the Files window provides a directory-based view of
+                    projects, i.e., it displays the folder structure of projects as they exist on your computer's
+                    file system.) The <code>jmeter</code> folder corresponds to the Project window's Load Generator
+                    Scripts node, and will contain any load scripts that you later add to the project.</li>
+            </ol>
+
+
+            <h3 id="createTestPlan">Create a Test Plan</h3>
+
+            <p>To demonstrate how to create a test plan in JMeter, we'll base our plan on the
+                tutorial use-case, which was presented in <a href="design.html#mockups">Designing
+                the Application</a>. A list of user-initiated requests to the server, based on
+                the given use-case, might look something like the following:</p>
+
+            <table id="useCase" style="width:742px">
+                <tr>
+                    <th width="558px" class="tblheader" scope="col">Use-Case</th>
+                    <th class="tblheader" scope="col">Server Request</th>
+                </tr>
+                <tr class="tbltd0">
+                    <td><em>Customer visits the welcome page...</em></td>
+                    <td><code>/AffableBean/</code></td>
+                </tr>
+                <tr class="tbltd1">
+                    <td><em>...and selects a product category.</em></td>
+                    <td><code>/AffableBean/category</code></td>
+                </tr>
+                <tr class="tbltd0">
+                    <td><em>Customer browses products within the selected category page,
+                            then adds a product to his or her shopping cart.</em></td>
+                    <td><code>/AffableBean/addToCart</code></td>
+                </tr>
+                <tr class="tbltd1">
+                    <td><em>Customer continues shopping and selects a different category.</em></td>
+                    <td><code>/AffableBean/category</code></td>
+                </tr>
+                <tr class="tbltd0">
+                    <td><em>Customer adds several products from this category to shopping cart.</em></td>
+                    <td><code>/AffableBean/addToCart</code><br><code>/AffableBean/addToCart</code></td>
+                </tr>
+                <tr class="tbltd1">
+                    <td><em>Customer selects 'view cart' option...</em></td>
+                    <td><code>/AffableBean/viewCart</code></td>
+                </tr>
+                <tr class="tbltd0">
+                    <td><em>...and updates quantities for cart products in the cart page.</em></td>
+                    <td><code>/AffableBean/updateCart</code></td>
+                </tr>
+                <tr class="tbltd1">
+                    <td><em>Customer verifies shopping cart contents and proceeds to checkout.</em></td>
+                    <td><code>/AffableBean/checkout</code></td>
+                </tr>
+                <tr class="tbltd0">
+                    <td><em>In the checkout page, customer views the cost of the order and other
+                            information, fills in personal data, then submits his or her details.</em></td>
+                    <td><code>/AffableBean/purchase</code></td>
+                </tr>
+                <tr class="tbltd1">
+                    <td><em>The order is processed and customer is taken to a confirmation page.
+                            The confirmation page provides a unique reference number for tracking
+                            the customer order, as well as a summary of the order.</em></td>
+                    <td>(n/a)</td>
+                </tr>
+            </table>
+
+            <p>Let's proceed by creating a JMeter test plan that follows the above list of requests.</p>
+
+            <ol style="margin-top:0">
+                <li>Click the New File (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png"
+                    alt="New File button"> ) button in the IDE's toolbar. (Alternatively, press Ctrl-N;
+                    &#8984;-N on Mac.)</li>
+
+                <li>Under Categories, select <strong>Load Testing Scripts</strong>.
+
+                    <br><br>
+                    <p class="tips">Instead of scrolling to the bottom of the list, simply begin typing
+                        '<code>load</code>'. As shown in the image below, the Load Testing Scripts
+                        category displays.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/file-wizard-load.png"
+                         class="margin-around b-all" alt="Load Generator Scripts category displayed in File wizard"
+                         title="You can filter category entries by typing the category you are searching for"></p></li>
+
+                <li>Expand the Load Testing Scripts category and select <strong>JMeter Plans</strong>.
+                    Under File Types, select <strong>New JMeter Plan</strong>, then click Next.</li>
+
+                <li>Name the plan <code>useCaseTest</code>, then click Finish. The new test plan
+                    displays in the Projects window.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/use-case-test.png"
+                         class="margin-around b-all" alt="New 'useCaseTest' test plan displayed in Projects window"
+                         title="JMeter test plans display under Load Testing Scripts in the Projects window"></li>
+
+                <li>To begin customizing the plan in JMeter, right-click the <code>useCaseTest.jmx</code>
+                    node and choose External Edit. JMeter opens.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/jmeter.png"
+                         class="margin-around b-all" style="width:688px" alt="NetBeans template plan displayed in JMeter"
+                         title="NetBeans template plan is provided when opening JMeter" id="testPlanPanel">
+
+                    <p class="notes"><strong>Note:</strong> The NetBeans template plan includes various
+                        user-defined variables, as shown in the above image. Usage of several of these
+                        variables will become clear as we work with the test plan. For more information,
+                        see the Apache JMeter User's Manual:
+                        <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#User_Defined_Variables"
+                        target="_blank">18.4.13 User Defined Variables</a>.</li>
+
+                <li>Click the HTTP Request Defaults node in the left column. The
+                    <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#HTTP_Request_Defaults"
+                    target="_blank">HTTP Request Defaults</a> panel enables you to set default values for
+                    all HTTP requests invoked from your test plan. Note that the entries for Server Name
+                    and Port Number are <code>${nb.server}</code> and <code>${nb.port}</code>, respectively.
+                    From the image above, you see that these equate to <code>localhost</code> and
+                    <code>8080</code>, which you typically use when deploying NetBeans projects to
+                    GlassFish.</li>
+
+                <li>Click the Thread Group node in the left column. In JMeter, a &quot;thread&quot; refers
+                    to a user. Let's rename the Thread Group to <code>AffableBean</code> <code>Users</code>.
+                    Type '<code>AffableBean</code> <code>Users</code>' into the Name field under Thread Group.
+
+                    <br><br>
+                    Let's begin recording requests for the test plan. To do so, we'll use JMeter's
+                    <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#HTTP_Proxy_Server"
+                    target="_blank">HTTP Proxy Server</a>. Instead of entering test plan requests
+                    manually, we'll run the proxy server and have it record requests sent from the
+                    browser. For large test plans this technique is invaluable.</li>
+
+                <li>In the left column, right-click WorkBench and choose Add &gt; Non-Test Elements &gt;
+                    HTTP Proxy Server.</li>
+
+                <li>In the HTTP Proxy Server panel, change the port number from <code>8080</code> to another,
+                    random number, for example <code>9090</code>. JMeter provides <code>8080</code> as
+                    its default port number for the proxy server. However, the GlassFish server also occupies
+                    the <code>8080</code> port, so we're modifying the proxy server's port number to avoid
+                    a port conflict.</li>
+
+                <li>In the Grouping drop-down list, select 'Put each group in a new controller'. Also, deselect
+                    the 'Capture HTTP Headers' option. We do not require header information for each recorded
+                    request.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/http-proxy-server.png"
+                         class="margin-around b-all" style="width:688px" alt="JMeter HTTP Proxy Server - top panes"
+                         title="Configure the proxy server">
+
+                    <br>
+                    Note that the 'Use Recording Controller' option is selected by default for the Target Controller
+                    field. When you begin recording requests, they will be stored in the Recording Controller
+                    that is listed in the left column. </li>
+
+                <li>Switch to your browser and temporarily change its port number to <code>9090</code>.
+
+                    <br>
+                    <p class="alert margin-around">If you have previously configured your browser's proxy, remember your settings
+                        so that you may be able to reenter them after completing this exercise.</p>
+
+                    In Firefox, you can do this from the Options window (Preferences window on Mac).
+
+                    <ul style="margin-top:8px; list-style-type:lower-alpha">
+                        <li>Choose Tools &gt; Options (Firefox &gt; Preferences on Mac).</li>
+
+                        <li>Select the Advanced &gt; Network tabs.</li>
+
+                        <li>Under the Connection heading, click Settings.</li>
+
+                        <li>Select the 'Manual proxy configuration' option, then type in <code>localhost</code>
+                            and <code>9090</code> for the HTTP Proxy and Port fields, respectively.</li>
+
+                        <li>Remove the <code>127.0.0.1</code> and <code>localhost</code> entries in the
+                            'No Proxy for' field.
+
+                        <br>
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/firefox-proxy.png"
+                             class="margin-around b-all" alt="Firefox Preferences window - proxy settings" id="ff-proxy-config"
+                             title="Specify 'localhost:9090' and remove entries in the 'No Proxy for' field"></li>
+
+                        <li>Click OK.</li>
+                    </ul>
+                </li>
+
+                <li>Clear your browser's cache before you begin recording requests. You want to make sure
+                    that the HTTP Proxy Server is able to record all resources required for displaying
+                    pages in the Affable Bean website, including images, JavaScript scripts and CSS stylesheets.
+
+                    <br><br>
+                    In Firefox, you can do this by pressing Ctrl-Shift-Del (&#8984;-Shift-Del on Mac) to
+                    open the Clear Recent History dialog. Under 'Time range to clear', ensure that you've
+                    selected a range that extends to the first time the browser accessed the Affable Bean
+                    website. Select Cache, then click Clear Now.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/ff-clear-recent-history.png"
+                         class="margin-around b-all" alt="Firefox Clear Recent History dialog"
+                         title="Clear your browser's cache before proceeding with recording"></li>
+
+                <li>Return to the JMeter Test Plan panel (<a href="#testPlanPanel">shown above</a>) and
+                    change the values for <code>nb.users</code> and <code>nb.rampup</code> to <code>99</code>.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/user-defined-variables.png"
+                         class="margin-around b-all" alt="User-defined variables in JMeter"
+                         title="Double-click into User Defined Variables table to modify variables">
+
+                    <br>
+                    The reason this is recommended is that JMeter automatically inserts user-defined variables
+                    throughout the test plan, wherever their values occur. So, for example, when the URL for
+                    <code>/AffableBean/js/jquery-1.4.2.js</code> is encountered, it will be recorded as:
+                    <code>AffableBean/js/jquery-1.4.<strong>${nb.users}</strong>.js</code>. Later, when we
+                    modify the value and rerun the test plan, URLs such as this will also change, which is
+                    not desired behavior. Here, we enter a random value (<code>99</code>), since we don't
+                    expect it to occur in the URLs that we are about to record.</li>
+
+                <li>Return to the HTTP Proxy Server panel, then at the bottom of the panel, click the Start
+                    button. JMeter's proxy server is now listening on port 9090.</li>
+
+                <li>Run the project ( <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                    alt="Run Project button"> ) from the IDE. The project is deployed to GlassFish, and the
+                    welcome page opens in the browser.</li>
+
+                <li>Switch to JMeter and inspect the Recording Controller in the left column. All of the
+                    requests generated for accessing the welcome page are listed under the Recording Controller
+                    in a node named after the first request (i.e., <code>/AffableBean/</code>).
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/recording-controller.png"
+                         class="margin-around b-all" alt="JMeter - Recording Controller in left column"
+                         title="Request grouping for welcome page displayed under Recording Controller">
+
+                    <br>
+                    <p class="tips">If you inspect the <code>/AffableBean/</code> node, you'll note that it
+                        is a <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#Simple_Controller"
+                        target="_blank">Simple Controller</a>. Although dubbed a &quot;Controller&quot;, the
+                        Simple Controller doesn't offer any functionality beyond enabling you to group elements
+                        together - as demonstrated here.</p></li>
+
+                <li>Return to the browser and continue clicking through the website according to the use-case
+                    <a href="#useCase">outlined above</a>. You can select any of the categories and products.
+                    Stop when you reach the checkout page - the proxy server will not be able to record requests
+                    sent over HTTPS.<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>
+
+                    <br><br>
+                    The elements within the Recording Controller will look as follows.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/recording-controller2.png"
+                         class="margin-around b-all" alt="JMeter - Recording Controller in left column"
+                         title="Requests according to use-case listed under Recording Controller"></li>
+
+                <li>Stop the proxy server. Click the Stop button in JMeter's HTTP Proxy Server panel.</li>
+
+                <li>In your browser, change the proxy configuration so that it no longer uses port 9090.
+                    In Firefox for example, return to the proxy configuration window (<a href="#ff-proxy-config">displayed
+                    above</a>) and select No Proxy.</li>
+
+                <li>Manually create the request for <code>/AffableBean/purchase</code>. Perform the following
+                    steps:
+
+                    <ol style="margin-top:8px; list-style-type:lower-alpha">
+                        <li>Click the Simple Controller in JMeter's left column, then press Ctrl-X (&#8984;-X
+                            on Mac) to cut the element.</li>
+
+                        <li>Click the Recording Controller, then press press Ctrl-V (&#8984;-V on Mac) to paste
+                            the element. The Simple Controller now displays beneath the <code>/AffableBean/checkout</code>
+                            request.</li>
+
+                        <li>Click the Simple Controller node, then in its main panel rename the controller to
+                            <code>/AffableBean/purchase</code>.</li>
+
+                        <li>Right-click the new <code>/AffableBean/purchase</code> node and choose Add &gt; Sampler
+                            &gt; <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#HTTP_Request"
+                            target="_blank">HTTP Request</a>.</li>
+
+                        <li>Click the new HTTP Request node, then in its main panel configure it as follows:
+
+                            <ul style="margin: 7px 0 0 -1.7em">
+                                <li><strong>Name:</strong> <code>/AffableBean/purchase</code></li>
+                                <li><strong>Server Name or IP:</strong> <code>${nb.server}</code></li>
+                                <li><strong>Port Number:</strong> <code>8181</code></li>
+                                <li><strong>Protocol:</strong> <code>https</code></li>
+                                <li><strong>Method:</strong> <code>POST</code></li>
+                                <li><strong>Path:</strong> <code>/AffableBean/purchase</code></li>
+                            </ul></li>
+
+                        <li>Under 'Send Parameters With the Request', click the Add button and create
+                            the following entries:
+
+                            <table class="margin-around">
+                                <tbody>
+                                    <tr>
+                                        <th class="tblheader" scope="col">Name</th>
+                                        <th class="tblheader" scope="col">Value</th>
+                                        <th class="tblheader" scope="col">Encode?</th>
+                                        <th class="tblheader" scope="col">Include Equals?</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1"><code>name</code></td>
+                                        <td class="tbltd1"><code>Benjamin Linus</code></td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1"><code>email</code></td>
+                                        <td class="tbltd1"><code>b.linus@lost.com</code></td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1"><code>phone</code></td>
+                                        <td class="tbltd1"><code>222756448</code></td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1"><code>address</code></td>
+                                        <td class="tbltd1"><code>Družstevní 77</code></td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1"><code>cityRegion</code></td>
+                                        <td class="tbltd1"><code>4</code></td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1"><code>creditcard</code></td>
+                                        <td class="tbltd1"><code>4444222233331111</code></td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                        <td class="tbltd1" style="text-align: center">&#10003;</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </li>
+                    </ol>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/http-request.png"
+                         class="margin-around b-all" style="margin-top:0; width:688px" alt="JMeter - HTTP Request panel"
+                         title="Configure an HTTP Request for HTTPS connection"></li>
+
+                <li>Now, add an <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#HTTP_Cookie_Manager"
+                    target="_blank">HTTP Cookie Manager</a> to the test plan. Right-click the <code>AffableBean</code>
+                    <code>Users</code> thread group node in JMeter's left column, then choose Add &gt; Config Element
+                    &gt; HTTP Cookie Manager.
+
+                    <br><br>
+                    Recall that the <code>AffableBean</code> application relies on a session-tracking mechanism
+                    (i.e., cookies or URL-rewriting) to remember which shopping cart belongs to which request.
+                    Therefore, we need to account for this in the test plan. JMeter acts as the client when sending
+                    requests to the server, however unlike a browser, it doesn't have cookies &quot;enabled by
+                    default.&quot; We apply the HTTP Cookie Manager to the thread group so that the
+                    <code>JSESSIONID</code> cookie can be passed between client and server.
+
+                    <br><br>
+                    <p class="notes"><strong>Note:</strong> If you want to employ URL rewriting as the
+                        session-tracking mechanism, you would need to add the
+                        <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#HTTP_URL_Re-writing_Modifier"
+                        target="_blank">HTTP URL Re-writing Modifier</a> to the thread group.</p></li>
+
+                <li>Finally, add an element to the test plan that simulates a delay between user-initiated requests.
+
+                    <ol style="margin-top:8px; list-style-type:lower-alpha">
+                        <li>Right-click the <code>/AffableBean/</code> Simple Controller in the left column
+                            and choose Add &gt; Sampler &gt; Test Action.</li>
+
+                        <li>In the main panel, specify the following:
+
+                            <ul style="margin-top:8px">
+                                <li><strong>Name:</strong> <code>user delay</code></li>
+                                <li><strong>Duration (milliseconds):</strong> <code>${nb.interleave}</code></li>
+                            </ul>
+
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/test-action.png"
+                                 class="margin-around b-all" alt="JMeter - Test Action panel"
+                                 title="Use a Test Action element to simulate a delay between user-initiated requests"></li>
+
+                        <li>In JMeter's left column, copy (Ctrl-C; &#8984;-C on Mac) the new <code>user</code> <code>delay</code>
+                            Test Action node, then paste it (Ctrl-V; &#8984;-V on Mac) into each of the other Simple Controllers (
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/simple-controller-node.png"
+                            alt="Simple Controller icon"> ) that form the test plan, except for the final one
+                            (<code>/AffableBean/purchase</code>).
+
+                            <br><br>
+                            When you finish, the final six Simple Controllers and their contents will look as follows.
+
+                            <br>
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/user-delay.png"
+                                 class="margin-around b-all" alt="Test Action nodes shown in JMeter left column"
+                                 title="Use copy and paste functionality to place existing elements elsewhere in your test plan">
+                        </li>
+                    </ol>
+                </li>
+
+                <li>(<em>Optional</em>.) Clean up the test plan. You can remove the Loop Controller and
+                    Constant Timer. (Right-click and choose Remove.) Also, move all of the Recording Controller's
+                    child elements directly into the <code>AffableBean</code> <code>Users</code> thread group,
+                    then remove the Recording Controller. When you finish, the test plan will look as follows.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/test-plan.png"
+                         class="margin-around b-all" alt="Test plan displayed in JMeter left column"
+                         title="Remove unnecessary items from test plan">
+                </li>
+            </ol>
+
+
+            <h3 id="loadTest">Load Testing</h3>
+
+            <p><a href="http://en.wikipedia.org/wiki/Load_testing" target="_blank">Load testing</a> a web
+                application involves making concurrent requests for resources, typically by simulating multiple
+                users, and then examining the server's behavior. We can use the test plan we created for this
+                purpose, and make adjustments to the number of users and other settings to determine how the
+                server behaves under the given work load.</p>
+
+            <p>Load testing should be performed with specific goals in mind, such as determining the
+                <a href="http://en.wikipedia.org/wiki/Throughput" target="_blank">throughput</a> for
+                the anticipated average and peak numbers of users. It is also worthwhile to assess the
+                <em>response time</em> for requests, to ensure that site customers are not having to wait
+                too long to be served. In order to measure the response time, you need to take into account
+                the time during which data spends traveling over the Internet. One way to do this is to
+                compare test results between a local server, where network travel time is nearly non-existent,
+                and results from testing the production server remotely. The following example demonstrates
+                how you can perform tests using your local development server. Once you migrate an application
+                to the production server, you can simply change the value for the server variable set
+                under the test plan's User Defined Variables.</p>
+
+            <p>The results recorded in this and the following sections were arrived at by running tests on
+                a computer with a 2.4 GHz Intel Core 2 Duo processor and 4 GB of memory. Naturally, the results
+                you get depend on your computer's performance, and will likely not match those displayed here.</p>
+
+            <p class="alert">When you run load tests, you should be careful not to overload your computer.
+                If you set too many threads (i.e., users), do not place adequate delay between individual
+                requests, or continuously loop through the test plan, there is a chance that JMeter will
+                expend your computer’s processing capacity or memory. JMeter will then become unresponsive
+                and you may need to &quot;force quit&quot; the tool using your computer's task manager. It
+                is therefore recommended that you open the task manager in order to monitor the computer's
+                CPU and memory levels while the test is running. This will allow you to gauge the limits
+                of your computer in terms of running the test plan.</p>
+
+            <ol>
+                <li>Open JMeter if it is not already opened. (In the IDE's Projects window, right-click
+                    <code>useCaseTest.jmx</code> and choose External Edit.)
+
+                    <br><br>
+                    <p class="notes"><strong>Note:</strong> If you did not create the JMeter test plan in
+                        the <a href="#createTestPlan">previous sub-section</a>, you can download the complete
+                        <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FuseCaseTest.jmx"><code>useCaseTest.jmx</code></a>
+                        file and add it to your project. To add it to the <code>AffableBean</code> project,
+                        copy it from your computer's file system (Ctrl-C; &#8984;-C on Mac), then in the IDE,
+                        open the Files window (Ctrl-2; &#8984;-2 on Mac), right-click the <code>jmeter</code>
+                        folder and choose Paste.</p></li>
+
+                <li>Add several <em>listeners</em> to the test plan:
+
+                    <ul style="margin: 7px 0 0 -1.7em">
+                        <li>Right-click <code>AffableBean</code> <code>Users</code> and choose Add &gt;
+                            Listener &gt; <strong>Summary Report</strong>.</li>
+
+                        <li>Right-click <code>AffableBean</code> <code>Users</code> and choose Add &gt;
+                            Listener &gt; <strong>View Results Tree</strong>.</li>
+
+                        <li>Right-click <code>AffableBean</code> <code>Users</code> and choose Add &gt;
+                            Listener &gt; <strong>Graph Results</strong>.</li>
+                    </ul>
+
+                    In JMeter, you require a <em>listener</em> to record and display the results of your test plan.
+                    The <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#Summary_Report"
+                    target="_blank">Summary Report</a> displays a table, with each row corresponding to each
+                    differently named request in your test. The
+                    <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#View_Results_Tree"
+                    target="_blank">View Results Tree</a> shows a tree of all sample responses, allowing you
+                    to view response details for any sample. The
+                    <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#Graph_Results"
+                    target="_blank">Graph Results</a> listener displays a simple graph that plots all
+                    sample times.</li>
+
+                <li>Click the JMeter Template Plan node, then make the following changes to User Defined
+                    Variables:
+
+                    <ul style="margin: 7px 0 0 -1.7em">
+                        <li><strong><code>nb.users</code>:</strong> <code>1</code></li>
+                        <li><strong><code>nb.interleave</code>:</strong> <code>5000</code></li>
+                    </ul>
+
+                    We begin the test by simulating just one user. The value for <code>nb.interleave</code>
+                    is used in the <code>user</code> <code>delay</code> Test Action that we created, and
+                    represents the duration of a pause in milliseconds. Therefore, the test will pause for
+                    5 seconds between each user-initiated request.</li>
+
+                <li>Click the Summary Report node so that you are able to view the test results while the
+                     test is running.</li>
+
+                <li>Run the test plan. Choose Run &gt; Start (Ctrl-R; &#8984;-R on Mac) from the main menu.
+
+                    <br><br>
+                    The test plan runs for approximately 50 seconds. Note that request samples are taken
+                    every three seconds, during which you can watch as results are added and updated. Note
+                    that values for the <code>Average</code>, <code>Min</code>, and <code>Max</code> columns
+                    are represented in milliseconds.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/summary-report.png"
+                         class="margin-around b-all" alt="JMeter - Summary Report" style="width:688px"
+                         title="Summary Report displays results from the completed test plan">
+
+                    <p>From the results displayed in the above image, we can observe that:</p>
+
+                    <ul style="margin: 7px 0 0 -1.7em">
+                        <li>The server, when loaded with a single user, provides a total <em>throughput</em> of
+                            approximately 41 per minute. In other words, the server is capable of serving all
+                            requests within the test plan 41 times within a minute. According to the
+                            <a href="http://jakarta.apache.org/jmeter/usermanual/glossary.html#Throughput"
+                            target="_blank">JMeter User's Manual</a>, the throughput is calculated as:
+                            <code>(number</code> <code>of</code> <code>requests)/(total</code> <code>time)</code>,
+                            and includes any delay inserted between samples, as it is supposed to represent
+                            the load on the server. When we consider that the <code>user</code> <code>delay</code>
+                            occurs for 5 seconds between each request (9 times in total, 9 * 5 seconds = 45 seconds),
+                            we see that with the server would theoretically be utilized for only approximately
+                            15 seconds.</li>
+
+                        <li>The <code>AffableBean/checkout</code> request, recorded at 33 milliseconds, takes
+                            much longer to process than most other requests. This is likely due to the fact that
+                            the initial request is redirected to the HTTP + SSL protocol on port 8181. So there
+                            are essentially two requests taking place.</li>
+
+                        <li>The <code>AffableBean/purchase</code> request, recorded at 147 milliseconds, takes
+                            the most time to be served. This is likely due to both the write operations required
+                            on the database, and the fact that client-server communication takes place over an
+                            encrypted channel (i.e., using HTTPS).</li>
+
+                        <li>According to the <code>Error</code> <code>%</code> column, no errors occurred from
+                            running the test. In other words, all server responses included an HTTP 200 status.</li>
+
+                        <li>The <code>Avg.</code> <code>Bytes</code> column represents the average size of the
+                            sample response. We see that the JQuery core library (<code>jquery-1.4.2.js</code>)
+                            is the largest file that is served in the test plan, at nearly 164 KB. Because the
+                            file is served each time a new user accesses the site, it may be worth linking to
+                            this file on a public <a href="http://en.wikipedia.org/wiki/Content_delivery_network"
+                            target="_blank">content delivery network</a> (CDN) instead of maintaining it on the
+                            server. &quot;Unburdening&quot; the server in this manner could have a notable
+                            effect on its overall performance.
+
+                            <br><br>
+                            <p class="tips">For further information, see the official jQuery documentation:
+                            <a href="http://docs.jquery.com/Downloading_jQuery#CDN_Hosted_jQuery" target="_blank">CDN
+                            Hosted jQuery</a>.</p></li>
+                    </ul></li>
+
+                <li>Click the View Results Tree node. Here you see the individual results from each of the sample
+                    requests, listed in the order in which they occurred.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/view-results-tree.png"
+                         class="margin-around b-all" alt="JMeter - View Results Tree" style="width:688px"
+                         title="View Results Tree displays a tree of all sample responses listed in the order in which they occurred">
+
+                    <br>
+                    The green (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/jmeter-ok-icon.png"
+                    alt="success icon"> ) icons indicate an HTTP status response of 200. In the above image, under
+                    'Sampler result' in the right panel, note that the Thread Name for the selected sample is
+                    'AffableBean Users 1-1'. The second '1' represents the thread (i.e., user) number. When testing
+                    multiple threads, you can use View Results Tree listener to pinpoint exactly when each thread
+                    makes a request within the test. Finally, in the image above, note that the 'HTML (download
+                    embedded resources)' option is selected in the lower left corner. When you select the 'Response
+                    data' tab in the right panel, JMeter attempts to render the response as it would display in a
+                    browser.
+
+                    <br><br>
+                    <p class="notes"><strong>Note:</strong> Red warning
+                        ( <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/jmeter-warning-icon.png"
+                        alt="warning icon"> ) icons indicate that requests are not being handled properly
+                        (i.e., HTTP 404 status messages are being sent). While this begins to happen when a
+                        server reaches its performance capacity, 404 status messages under a normal load
+                        suggest that the application is not functionally stable. You should then check the
+                        server log to determine why requests are failing, and make changes to your application.
+
+                    <br><br>
+                    In the coming steps, we'll add an increasing number of users to the test, and examine the
+                    server's overall throughput.</li>
+
+                <li>Click the JMeter Template Plan node, then make the following changes to User Defined Variables:
+
+                    <ul style="margin: 7px 0 0 -1.7em">
+                        <li><strong><code>nb.users</code>:</strong> <code>20</code></li>
+                        <li><strong><code>nb.rampup</code>:</strong> <code>20</code></li>
+                    </ul>
+
+                    The <code>nb.rampup</code> variable is used in the <code>AffableBean</code> <code>Users</code>
+                    Thread Group panel, and specifies the ramp-up period in seconds. In this case, if we test 20
+                    users and the ramp-up period is 20 seconds, then a new user will begin sending requests
+                    every second.</li>
+
+                <li>Clear the results from the previous test by choosing Run &gt; Clear All (Ctrl-E; &#8984;-E on Mac).</li>
+
+                <li>Click the Graph Results node so that you are able to view the test results while the
+                     test is running.</li>
+
+                <li>Run the test plan. Choose Run &gt; Start (Ctrl-R; &#8984;-R on Mac) from the main menu.
+                    When the test plan runs, make the following observations:
+
+                    <ul style="margin: 7px 0 0 -1.7em">
+                        <li>A green square displays in the upper right corner of the interface, indicating that
+                            the test plan is running. Adjacent to the square is a ratio listing the number of
+                            active threads against the total number of threads being tested. For example,
+                            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/jmeter-active-threads.png"
+                            class="b-all" style="margin:2px 0 -2px 0" alt="Green square with number of active threads"> demonstrates that
+                            the test is running, and that there are currently 15 active threads of a total of 20.
+                            Because of the ramp-up period, you should notice that the number of active threads
+                            increases each second to 20, remains at 20 for some time, then gradually decreases
+                            to zero, at which the square becomes gray indicating that the test has terminated.</li>
+
+                        <li>You can filter the graphs you wish to display by selecting the checkboxes above the
+                            graph. For an explanation of Median and Deviation, refer to the
+                            <a href="http://jakarta.apache.org/jmeter/usermanual/glossary.html" target="_blank">JMeter
+                            User's Manual Glossary</a>. The image below displays graphs for Average and Throughput
+                            only. The metric values provided at the bottom of the graph apply to the most recent sample.</li>
+
+                        <li>From the green line designating throughput, we see that the server was able to maintain
+                            a nearly consistent value as the load increased to 20 users. Toward the end of the test,
+                            as user number decreases, we see that the throughput slightly lessens. We can assume
+                            that this is simply due to the fact that there are fewer requests per unit of time.</li>
+
+                        <li>While the vertical line of the graph represents time (in milliseconds), this doesn't
+                            apply to the throughput measurement (nor the measurement for standard deviation, for
+                            that matter). The throughput represents the number of requests the server processes
+                            during the total time which the test plan runs. In the image below, note that the
+                            throughput value listed at the bottom of the graph is: <code>577.496/minute</code>.
+                            Switching to the Summary Report, the total throughput value is listed as:
+                            <code>9.6/second</code>. The two values equate: <code>577.496/60 = 9.6</code>.</li>
+
+                        <li>The blue line, designating the average time (in milliseconds), increases dramatically
+                            at the end of the test. If you examine the final request samples in the View Results
+                            Tree, you can get an idea why. The final samples taken are all <code>/checkout</code>
+                            and <code>/purchase</code> requests, which as we've already seen, take much longer than
+                            the other requests in the test plan.</li>
+                    </ul>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/graph-results.png"
+                         class="margin-around b-all" alt="JMeter - Graph Results" style="width:688px"
+                         title="Graph Results shows a graph that plots all sample times">
+                </li>
+            </ol>
+
+
+            <h3 id="stressTest">Stress Testing</h3>
+
+            <p>In the tests we've so far conducted, the throughput for a single user was calculated at 41/min,
+                and for 20 users it was 577/min. You can continue to increase the demand on the server to see
+                if it's possible to determine what the maximum throughput value can be, given your local setup.
+                This is an example of <a href="http://en.wikipedia.org/wiki/Stress_testing" target="_blank">stress
+                testing</a>, in which the system resources are purposely worked to their limits in order to
+                arrive at a maximum capacity value.</p>
+
+            <p>You can adjust the User Defined Variables, then run the test plan and examine the results.
+                For example, experiment by increasing the number of users, or decreasing the ramp-up period
+                or delay between requests.</p>
+
+            <p class="alert"><strong>Important:</strong> When stress testing, you should monitor your computer's
+                CPU and memory levels. If you see that JMeter is not able to record results under a specific
+                load and becomes unresponsive, you can try to stop the test by choosing Run &gt; Stop (Ctrl-.;
+                &#8984;-. on Mac). Otherwise, if JMeter does not respond, you may need to kill the JMeter
+                process from your computer's task manager.</p>
+
+            <p>The following table lists results recorded in JMeter's
+                <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#Summary_Report"
+                target="_blank">Summary Report</a>, from increasing the number of users with each test run.</p>
+
+            <table>
+                <tr>
+                    <td style="vertical-align:top">
+                        <table class="margin-around" style="width:350px">
+                            <tbody>
+                                <tr>
+                                    <th class="tblheader" scope="col">Users</th>
+                                    <th class="tblheader" scope="col">Ramp-up<br><small>(seconds)</small</th>
+                                    <th class="tblheader" scope="col">Average<br><small>(milliseconds)</small></th>
+                                    <th class="tblheader" scope="col">Throughput</th>
+                                    <th class="tblheader" scope="col">Error&nbsp;%</th>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">1</td>
+                                    <td class="tbltd1">(n/a)</td>
+                                    <td class="tbltd1">11</td>
+                                    <td class="tbltd1">41/min</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">20</td>
+                                    <td class="tbltd1">20</td>
+                                    <td class="tbltd1">9</td>
+                                    <td class="tbltd1">577/min</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">50</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">8</td>
+                                    <td class="tbltd1">22.2/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">80</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">8</td>
+                                    <td class="tbltd1">35.3/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">100</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">7</td>
+                                    <td class="tbltd1">44.1/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">120</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">7</td>
+                                    <td class="tbltd1">52.9/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">150</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">7</td>
+                                    <td class="tbltd1">66.0/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">200</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">11</td>
+                                    <td class="tbltd1">87.5/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">250</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">16</td>
+                                    <td class="tbltd1">109.5/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">300</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">35</td>
+                                    <td class="tbltd1">130.1/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">350</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">54</td>
+                                    <td class="tbltd1">150.4/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">400</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">120</td>
+                                    <td class="tbltd1">164.3/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">450</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">394</td>
+                                    <td class="tbltd1">158.4/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">500</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">355</td>
+                                    <td class="tbltd1">182.9/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">550</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">369</td>
+                                    <td class="tbltd1">198.4/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">600</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">446</td>
+                                    <td class="tbltd1">206.4/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">650</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">492</td>
+                                    <td class="tbltd1">219.9/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">700</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">599</td>
+                                    <td class="tbltd1">225.9/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">750</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">668</td>
+                                    <td class="tbltd1">231.9/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">800</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">875</td>
+                                    <td class="tbltd1">225.6/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">850</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">976</td>
+                                    <td class="tbltd1">230.5/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">900</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">1258</td>
+                                    <td class="tbltd1">220.9/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">950</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">1474</td>
+                                    <td class="tbltd1">215.8/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tbltd1">1000</td>
+                                    <td class="tbltd1">25</td>
+                                    <td class="tbltd1">1966</td>
+                                    <td class="tbltd1">190.8/sec</td>
+                                    <td class="tbltd1">0.00%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+
+                    <td class="valign-top">
+
+                        <p style="margin: 20px 0 0 5px"><strong>Notes and observations:</strong></p>
+
+                        <ul style="margin: 5px 0 0 -.7em">
+                            <li>Maximum throughput was recorded at 231.9/sec for 750 users. Throughput
+                                is generally much quicker for requests in the first part of the test
+                                plan, and then decreases as <code>/checkout</code> and <code>/purchase</code>
+                                requests are served. Because the elapsed time for these requests begins
+                                to dramatically increase beyond 750 users, the overall throughput begins
+                                to decrease beyond this number.</li>
+
+                            <li>When testing for 500 users, JMeter became unresponsive and it was necessary
+                                to shut it down from the task manager. It is likely that JMeter was running
+                                out of memory to record and display results for the
+                                <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#Graph_Results"
+                                target="_blank">Graph Results</a> and
+                                <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#View_Results_Tree"
+                                target="_blank">View Results Tree</a> listeners. These two listeners were
+                                removed from the test plan, and results for 500 - 1000 users were then recorded
+                                using the <a href="http://jakarta.apache.org/jmeter/usermanual/component_reference.html#Summary_Report"
+                                target="_blank">Summary Report</a> listener only.</li>
+
+                            <li>In all tests, the <code>Error</code> <code>%</code> column remained at
+                                <code>0.00%</code>. The server was able to successfully respond to all
+                                requests, even when the computer's CPU levels were at a maximum, and JMeter
+                                was lagging in its ability to display results. This would indicate that the
+                                bottleneck in these tests was the computer's processing resources. (The
+                                computer had available memory for all tests.)</li>
+
+                            <li>The Average represents the average elapsed time (in milliseconds)
+                                for all requests serviced in the test plan. While the average values
+                                for the most demanding tests were still under 2 seconds, the Summary
+                                Report's Maximum values recorded for elapsed time were much higher,
+                                reaching nearly 70 seconds for the <code>/purchase</code> request.
+                                When determining what resources are required for a normal load, consider
+                                that these results do not include network time, and that most users
+                                are willing to wait at most 4 - 8 seconds for a
+                                response.<sup><a href="#footnote2" id="2" style="text-decoration:none">[2]</a></sup>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+            <p style="margin-top: 0">If the production server is on a machine that has resources similar
+                to those of your development environment, and assuming your computer is not running other
+                CPU-intensive processes while tests are conducted, you can get a rough idea of how many
+                users can be served by examining your computer's CPU usage during tests. For example, if
+                it has been decided that CPU levels for normal and peak loads will be approximately 30%
+                and 70%, respectively, you can watch the CPU monitor as you increase the number of users
+                with each run of the test plan. The following images suggest 150 users could be served
+                during a normal load, and 400 during a peak load.</p>
+
+            <table>
+                <tr>
+                    <td><strong>CPU levels for 150 users</strong></td>
+                    <td><strong>CPU levels for 400 users</strong></td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/150-users.png"
+                             alt="CPU graph for 150 users" class="margin-around b-all"
+                             title="CPU levels when running the test with 150 users"></td>
+                    <td>
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/400-users.png"
+                             alt="CPU graph for 400 users" class="margin-around b-all"
+                             title="CPU levels when running the test with 400 users"></td>
+                </tr>
+            </table>
+
+            <p>Keep in mind that when running tests in this manner, your local server is
+                competing with JMeter for the computer's resources. Eventually, you'll want
+                to test your production server remotely to get more accurate results. See the
+                following resources for more information:</p>
+
+            <ul style="margin: 0 0 0 -1.7em">
+                <li><a href="http://jakarta.apache.org/jmeter/usermanual/remote-test.html"
+                       target="_blank">JMeter User's Manual: 15. Remote Testing</a></li>
+                <li><a href="http://jakarta.apache.org/jmeter/usermanual/jmeter_distributed_testing_step_by_step.pdf"
+                       target="_blank">JMeter Distributed Testing Step-by-Step</a> [pdf]</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="profile">Using the NetBeans Profiler</h2>
+
+        <p>The NetBeans Profiler is an
+            <a href="http://www.developer.com/java/other/article.php/3795991/Winners-of-the-Developercom-Product-of-the-Year-2009-Are-Announced.htm"
+            target="_blank">award winning</a> development utility that enables you to profile
+            and monitor your application's CPU and memory usage, and thread status. The Profiler
+            is an integral component of the IDE, and offers a click-of-the-button profiling environment
+            that aids you when handling memory and performance-related issues. For an overview of
+            the Profiler's features, see
+            <a href="../../../../features/java/profiler.html" target="_blank">NetBeans IDE 6.9
+            Features: Profiler</a>.</p>
+
+        <p>When profiling web applications, you can use the Profiler to work in tandem with a load
+            script, such as a test plan created in JMeter. Often, problems start to arise only after
+            your application has been running in a host environment for a certain period of time, and
+            has begun serving multiple concurrent requests. In order to get an idea of how the application
+            will perform before it is migrated to a production environment, you can launch the Profiler,
+            run a test script on the application, and examine the results in the Profiler's interface.</p>
+
+        <ul>
+            <li><a href="#memoryLeaks">About Memory Leaks</a></li>
+            <li><a href="#monitoring">Monitoring your Application</a></li>
+            <li><a href="#heapWalker">Evaluating Heap Contents with the HeapWalker</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="memoryLeaks">About Memory Leaks</h3>
+
+            <p>In Java, memory leaks occur when objects continue to be referenced even after they are no
+                longer needed. This prevents Java's built-in garbage collection mechanism from destroying
+                these objects, and consequently they remain in existence throughout the life of your
+                application. When these objects are regularly created, the Java Virtual Machine (JVM) <em>heap</em>
+                will continue to grow over time, ultimately resulting in an <code>OutOfMemoryError</code>
+                when the heap is eventually exhausted.</p>
+
+            <p>The JVM heap represents memory that is dynamically allocated by the Virtual Machine during
+                runtime. Because the GlassFish server runs on Java, it relies on the JVM heap for memory
+                resources during execution. All applications that are deployed to the server can be perceived
+                as extensions to this rule; in other words when your web application runs, it consumes
+                resources from the JVM heap.</p>
+
+            <p>When building web applications, you need to be mindful of memory allocation. Aside from
+                avoiding memory leaks in your code, you must ensure that the JVM heap is large enough to
+                accommodate all user sessions at a given time, and that your system is able to support the
+                maximum heap size set by your server.</p>
+
+
+            <h3 id="monitoring">Monitoring your Application</h3>
+
+            <p>The following example aims to familiarize you with the Profiler's interface, and demonstrates
+                how you can utilize its functionality to ensure that the <code>AffableBean</code> application
+                will continue to perform efficiently after it has been serving client requests for some time.
+                In this example, you download and add a new JMeter test plan,
+                <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FuseCaseTestRandom.jmx"><code>useCaseTestRandom.jmx</code></a>,
+                to the project. The new test plan is an advanced version of the one you created earlier
+                in this unit. It makes use of JMeter's conditional and random controllers to adapt a slightly
+                more realistic simulation of the tutorial's use-case.</p>
+
+            <p>Consider that only a small fraction of visits to an e-commerce site will result in a completed
+                order. If you recall from units 8 and 9, <a href="manage-sessions.html">Managing Sessions</a>
+                and <a href="transaction.html">Integrating Transactional Business Logic</a>, the application
+                terminates the user session upon a successfully completed order. In other words, with each
+                completed order, the server is able to free up any resources that were previously tied to the
+                session. Now, consider the far more common scenario of a user not completing an order, but
+                simply navigating away from the site. Based on the session time-out which you specified in the
+                application's web deployment descriptor, the server will need to wait a period of time before
+                it can free any resources tied to the session. The new load script, <code>useCaseTestRandom.jmx</code>,
+                is configured so that on average one in ten user threads completes an order. Our goal by running
+                this load script is to determine whether the application's host environment (i.e., the GlassFish
+                server running locally on your computer) has enough memory capacity to provide continuous, fast
+                service for an extended period of time.</p>
+
+            <p class="notes"><strong>Note:</strong> Recall that in
+                <a href="manage-sessions.html#time-out">Managing Sessions: Handling Session Time-Outs</a>,
+                you set the <code>AffableBean</code> session time-out to 10 minutes.</p>
+
+            <ol>
+                <li>Download
+                    <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FuseCaseTestRandom.jmx"><code>useCaseTestRandom.jmx</code></a>
+                    and add it to the <code>AffableBean</code> project. To add it to the project, copy it from
+                    your computer's file system (Ctrl-C; &#8984;-C on Mac), then in the IDE, open the Files
+                    window (Ctrl-2; &#8984;-2 on Mac), right-click the <code>jmeter</code> folder and choose
+                    Paste.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/files-window.png"
+                         alt="JMeter test plans displayed in Files window" class="margin-around b-all"
+                         title="JMeter test plans contained in 'jmeter' folder within project">
+
+                    <br>
+                    <p class="notes"><strong>NetBeans 6.8 note:</strong> The <code>useCaseTestRandom.jmx</code>
+                        script is not compatible with the JMeter Kit plugin for NetBeans 6.8. Because the script
+                        utilizes various logic controllers which unfortunately are not available in JMeter
+                        version 2.2, it will not run on the JMeter implementation in NetBeans 6.8. In order to
+                        become familiar with the Profiler, use <code>useCaseTest.jmx</code> in this exercise
+                        instead. If you use <code>useCaseTest.jmx</code>, you need to set the load script to
+                        run continuously. To do so, open the script in JMeter, select the <code>AffableBeanUsers</code>
+                        thread group, then in the main panel, select the 'Forever' checkbox for the Loop Count
+                        field.</p></li>
+
+                <li>If you are running the Profiler for the first time, you need to perform a calibration step
+                    on the JDK. To do so, choose Profile &gt; Advanced Commands &gt; Run Profiler Calibration.
+                    For more information, refer to the NetBeans User FAQ wiki:
+                    <a href="http://wiki.netbeans.org/FaqProfilerCalibration" target="_blank">What exactly does
+                    the Profiler Calibration mean?</a>.</li>
+
+                <li>Click the Profile Project ( <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/profile-btn.png"
+                    alt="Profile Project button"> ) button. When a project is profiled for the first time, its
+                    build script must be modified to enable profiling. The IDE warns you that it will modify the
+                    project's build script.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/enable-profiling.png"
+                         alt="Profiler dialog box warning that build script will be modified" class="margin-around b-all"
+                         title="The project build script must be modified to enable profiling">
+
+                    <p class="notes"><strong>Note:</strong> You can undo this action at a later point by choosing
+                        Profile &gt; Advanced Commands &gt; Unintegrate Profiler from the main menu. Alternatively,
+                        you can switch to the Files window, delete your project's <code>build.xml</code> file, then
+                        rename the <code>build-before-profiler.xml</code> file to <code>build.xml</code>.</p></li>
+
+                <li>Click OK. The project's build file is modified, and the Profiler window opens for the project.
+                    The window enables you to select from one of three profiling tasks:
+
+                    <ul style="margin: 7px 0 0 -1.7em">
+                        <li><strong>Monitor Application:</strong> Provides obtain high-level information about
+                            properties of the target JVM, including thread activity and memory allocations.</li>
+                        <li><strong>Analyze Performance:</strong> Provides detailed data on application performance, including
+                            the time to execute methods and the number of times the method is invoked.</li>
+                        <li><strong>Analyze Memory:</strong> Provides detailed data on object allocation and garbage
+                            collection.</li>
+                    </ul>
+
+                <li>Click the Monitor button in the left column. Select the 'LoadGenerator Script' option, then choose
+                    <code>useTestCaseRandom.jmx</code> from the drop-down list.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/monitor-application.png"
+                         alt="Profiler window - Monitor Application" class="margin-around b-all" id="profilerWindow"
+                         title="Profiler window opens, enabling task selection and configuration"></li>
+
+                <li>Click Run. The IDE takes the following actions:
+
+                    <ul style="margin: 7px 0 0 -1.7em">
+                        <li>Starts the GlassFish server in profile mode. (If the server is already running, it is first stopped.)</li>
+                        <li>Deploys the web application to GlassFish.</li>
+                        <li>Starts a profiling session, attaches the profiler to the server, and opens the Profiler Control Panel in the IDE.</li>
+                        <li>Runs the associated load script (<code>useTestCaseRandom.jmx</code>).</li>
+                    </ul>
+
+                    <p class="notes"><strong>Note:</strong> If the profiler does not run the load script after starting
+                        the application in profile mode, you can invoke it yourself. From the Projects window, right-click
+                        the script and choose External Edit. Then, in JMeter, press Ctrl-R (&#8984;-R on Mac) to run the
+                        script. If the left-hand graph displayed by the VM Telemetry Overview depicts the purple area as
+                        remaining horizontal (shown below), you can be fairly certain that the load script is not running.</p>
+
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/vm-telemetry-overview-heap.png"
+                         alt="VM Telemetry Overview - JVM Heap" class="margin-around b-all" style="margin:0 0 0 35px"
+                         title="The server is loaded, but the load script is not running"></li>
+
+                <li>In the Profiler Control Panel, click the Threads (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/threads-btn.png"
+                    alt="VM Telemetry button"> ) button. The Threads window opens to display all threads
+                    maintained by the server while the application is running. You can select Live Threads Only,
+                    or Finished Threads Only in drop-down at the top of the window in order to filter the display
+                    according to live or finished threads.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/live-threads.png"
+                         alt="Threads window" class="margin-around b-all" style="width:688px"
+                         title="View live threads maintained by the server at runtime">
+
+                    <p class="tips">You can select the Enable Threads Monitoring option in the Profiler window
+                        (displayed <a href="#profilerWindow">above</a>). This will trigger the Threads window to
+                        open by default when running the Profiler.</p></li>
+
+                <li>In the Profiler Control Panel, click the VM Telemetry (
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/vm-telemetry-btn.png"
+                    alt="VM Telemetry button"> ) button.
+
+                    <br><br>
+                    Similar to the VM Telemetry Overview, the VM Telemetry window provides views on the
+                    JVM heap, garbage collection (GC), as well as threads and loaded classes.</li>
+
+                <li>Ensure that the Memory (Heap) tab is selected at the bottom of the window, then allow the
+                    Profiler to monitor the heap while the load script runs against the application.
+
+                    <br><br>
+                    You can hover your cursor over the graph to view real-time measurements of the heap size versus the used heap.
+
+                    <br>
+                    <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/heap-popup.png"
+                         alt="Popup displaying heap measurements in the Memory (Heap) tab of the VM Telemetry window"
+                         class="margin-around b-all"
+                         title="Hover your cursor over the graph for a real-time display of heap measurements">
+
+                    <p class="tips">Click the Scale to Fit (
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/scale-to-fit-btn.png"
+                        alt="Scale to Fit button"> ) button above the graph to maintain a continuous view of the entire
+                        monitoring session.</p>
+
+                    <br>
+                    The image below shows the state of the heap after monitoring the server for approximately
+                    three hours while running the <code>useTestCaseRandom.jmx</code> script continuously with
+                    150 simultaneous users. The <code>AffableBean</code> application running on the GlassFish
+                    server uses under 175 MB of the JVM heap.
+
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/test-profile/heap-monitor.png" rel="lytebox"
+                       title="The profiler monitors the JVM heap while the JMeter load script runs continuously against the application"
+                       <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/heap-monitor.png"
+                            alt="VM Telemetry - Memory (Heap)" class="margin-around b-all" style="width: 688px"
+                            title="Click to enlarge" id="vmTelemetryMonitor"></a>
+                </li>
+            </ol>
+
+            <h3 id="heapWalker">Evaluating Heap Contents with the HeapWalker</h3>
+
+            <p>The HeapWalker is a tool that is built into the NetBeans Profiler, which allows you to examine
+                JVM heap contents. You can use it to browse classes and instances of classes on the heap, fields
+                of each instance or class, and references to each instance.</p>
+
+            <p>The HeapWalker is particularly useful when locating the cause of memory leaks in your code. You can
+                set the Profiler to automatically take a heap dump if an <code>OutOfMemoryError</code> occurs
+                when you are profiling an application. You can then use the HeapWalker to inspect the heap dump
+                and determine which objects were consuming the most memory.</p>
+
+            <p>This functionality is enabled by default, but you can view and modify Profiler settings from
+                the IDE's Options window (Tools &gt; Options; NetBeans &gt; Preferences on Mac). From the Options
+                window, select Miscellaneous, then select the Profiler tab. In the On OutOfMemoryError field,
+                note that 'Save heap dump to profiled project' option is selected.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/profiler-options.png"
+                 alt="Options window - Profiler options" class="margin-around b-all" style="margin-top:0"
+                 title="A heap dump is taken by default if the JVM runs out of memory for the profiled application">
+
+            <p>For example, if the GlassFish server utilizes 512 MB of memory, and the JVM attempts to allocate
+                more than 512 MB of memory to the JVM heap (represented by the pink area in the heap size graph
+                of the VM Telemetry monitor, <a href="#vmTelemetryMonitor">shown above</a>), an <code>OutOfMemoryError</code>
+                will occur, and the IDE will ask you if you would like to view the heap in the HeapWalker.</p>
+
+            <p>To take a heap dump while your application is being profiled, choose Profile &gt; Take Heap Dump
+                from the main menu.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/take-heap-dump.png"
+                 alt="Profiler menu" class="margin-around b-all" style="margin-top:0"
+                 title="To take a heap dump, choose Profile > Take Heap Dump from the main menu">
+
+            <p>The following example depicts a heap dump from running the <code>useCaseTestRandom.jmx</code>
+                script at 500 users, ramp-up period at 100 seconds, and with a loop count of 5. The HeapWalker's
+                Summary provides an Inspect panel which enables you to locate the largest objects in the heap.
+                Specify the number of objects you want to search for, then click Find.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/inspect-heap.png"
+                 alt="HeapWalker - Summary - Inspect panel" class="margin-around b-all" style="margin-top:0"
+                 title="Use the Inspect panel to determine the largest objects in the heap">
+
+            <p>In the above image, you can see that for the <code>AffableBean</code> application, the largest
+                object in the heap dump is an instance of the <code>org.apache.catalina.session.StandardManager</code>
+                class, with a retained size of nearly 79 MB.</p>
+
+            <p>Clicking the object name enables you to open the Instances view on the object. When you do so,
+                you can see the instances of the class that exist on the heap (left column), the fields contained
+                in the class, and their values (right column, top), and other objects on the heap referring
+                to the instance (right column, bottom).</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/instances-view.png"
+                alt="HeapWalker - Instances view" class="margin-around b-all" style="width:728px; margin-top:0"
+                title="Use the Instances view to examine class instances, their fields and references">
+
+            <p>In the above image, it appears that 706 <code>StandardSession</code> objects were active on
+                the heap, a result of the load script simulating multiple user sessions. The server must have
+                sufficient memory resources to maintain session objects during periods of high traffic.</p>
+
+            <p>You can save (Ctrl-S; &#8984;-S on Mac) heap dumps. When you do so, they become listed in the
+                Profiler Control Panel under Saved Snapshots.</p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/test-profile/saved-snapshots.png"
+                alt="Profiler Control Panel - Saved Snapshots" class="margin-around b-all" style="margin-top:0"
+                title="Saved heap dumps can be loaded from the Profiler Control Panel">
+        </div>
+
+
+        <br>
+        <h2 id="glassFishTune">Tuning the GlassFish Server</h2>
+
+        <p>In order to gain optimum performance for your application when it is deployed to GlassFish,
+            you should become acquainted with various tuning parameters which can be adjusted from the
+            Administration Console. The following tips are taken directly from the white paper,
+            <a href="https://www.sun.com/offers/details/OptimizeGlassFishPerformance.xml" target="_blank">Optimize
+            GlassFish Performance in a Production Environment</a>. Although the paper focuses on GlassFish
+            v2, the tuning tips can be directly applied to GlassFish v3 or Open Source Edition 3.0.1.</p>
+
+        <p class="tips">There are various mapping changes that occurred between GlassFish v2 and v3. Tables
+            listing changes are provided on the GlassFish wiki: <a href="http://wikis.sun.com/display/GlassFish/GrizzlyConfigOnePager"
+            target="_blank">GrizzlyConfig One Pager</a>.</p>
+
+        <p>The GlassFish Administration Console can be accessed from the IDE's Services window:</p>
+
+        <ol style="margin-top:0">
+            <li>Open the Services window (Ctrl-5; &#8984;-5 on Mac) and expand the Servers node
+                so that the GlassFish server node is visible.</li>
+
+            <li>Ensure that the GlassFish server is running. If the server is running, a small green
+                arrow is displayed next to the GlassFish icon (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/gf-server-running-node.png"
+                alt="GlassFish server node in Services window"> ). If you need to start it, right-click
+                the server node and choose Start.</li>
+
+            <li>Right-click the GlassFish server node and choose View Admin Console. The login form
+                for the GlassFish Administration Console opens in a browser.</li>
+
+            <li>Log into the Administration Console by typing <code>admin</code> / <code>adminadmin</code>
+                for the username / password.</li>
+        </ol>
+
+        <p>From the GlassFish Administration Console, you can view and make adjustments to the following
+            parameters.</p>
+
+        <ul>
+            <li><a href="#tip3">Tip 3: Java Heap Size</a></li>
+            <li><a href="#tip6">Tip 6: HTTP Request Processing Threads</a></li>
+            <li><a href="#tip10">Tip 10: JDBC Tuning</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="tip3">Tip 3: Java Heap Size</h3>
+
+            <p>From <a href="https://www.sun.com/offers/details/OptimizeGlassFishPerformance.xml" target="_blank">Optimize
+                GlassFish Performance in a Production Environment</a>:</p>
+
+            <blockquote style="margin-top: 0">
+                <em>The size of the heap is determined by the Java options -Xmx (maximum) and -Xms
+                    (minimum). While a larger heap can contain more objects and reduce the frequency
+                    of garbage collection, it may result in longer garbage collection times especially
+                    for a full GC cycle. The recommendation is to tune the heap based on the size of
+                    total available memory in your system, process data model (32-bit or 64-bit) and
+                    operating system.</em>
+            </blockquote>
+
+            <ol>
+                <li>In the Tree which displays in the left column of the Administration Console,
+                    expand the Configuration node, then click JVM Settings.</li>
+
+                <li>In the main panel, select the JVM Options tab.</li>
+
+                <li>Scroll the list of options and note the <code>-Xmx</code> option:
+
+                    <pre class="examplecode">-Xmx512m</pre>
+
+                    The GlassFish server (v3 and Open Source Edition 3.0.1) sets the heap to 512 MB
+                    by default. If you wanted to increase the heap size to 1 GB, you would enter
+                    '<code>-Xmx1024m</code>', click the Save button in the upper right corner, and
+                    then restart the server.</li>
+            </ol>
+
+
+            <h3 id="tip6">Tip 6: HTTP Request Processing Threads</h3>
+
+            <p>From the <a href="http://docs.sun.com/app/docs/doc/819-3681/abefm" target="_blank">Sun Java
+                    System Application Server 9.1 Performance Tuning Guide</a>:</p>
+
+            <blockquote style="margin-top: 0">
+                <em>The</em> [Max Thread Pool Size] <em>parameter specifies the maximum number of
+                    simultaneous requests the server can handle. The default value is 5. When the server
+                    has reached the limit or request threads, it defers processing new requests until the
+                    number of active requests drops below the maximum amount. Increasing this value will
+                    reduce HTTP response latency times.
+
+                    <br><br>
+                    In practice, clients frequently connect to the server and then do not complete their
+                    requests. In these cases, the server waits a length of time specified by the Idle Thread
+                    Timeout parameter.</em> [900 seconds, i.e., 15 minutes, is the default entry for GlassFish
+                    v3 and Open Source Edition 3.0.1.]
+
+                    <br><br>
+                    <em>Also, some sites do heavyweight transactions that take minutes to complete. Both of
+                    these factors add to the maximum simultaneous requests that are required. If your site
+                    is processing many requests that take many seconds, you might need to increase the number
+                    of maximum simultaneous requests.
+
+                    <br><br>
+                    Adjust the thread count value based on your load and the length of time for an average
+                    request. In general, increase this number if you have idle CPU time and requests that are
+                    pending; decrease it if the CPU becomes overloaded. If you have many HTTP 1.0 clients
+                    (or HTTP 1.1 clients that disconnect frequently), adjust the timeout value to reduce the
+                    time a connection is kept open.
+
+                    <br><br>
+                    Suitable Request Thread Count values range from 100 to 500, depending on the load. If your
+                    system has extra CPU cycles, keep incrementally increasing thread count and monitor performance
+                    after each incremental increase. When performance saturates (stops improving), then stop
+                    increasing thread count.</em>
+            </blockquote>
+
+            <ol>
+                <li>In the Administration Console Tree, expand the Configuration node, then click
+                    Thread Pools.
+
+                    <br><br>
+                    The GlassFish server provides two thread pools by default. The <code>http-thread-pool</code>
+                    thread pool is configured for use by network listeners, while <code>thread-pool-1</code> is
+                    configured for use by the ORB (object request broker) for RMI/IIOP requests.
+                    (A stand-alone web application deployed over a non-distributed environment, such
+                    as the <code>AffableBean</code> application, relies on the <code>http-thread-pool</code>
+                    by default.)</li>
+
+                <li>Under the Thread Pool ID column, click <code>http-thread-pool</code>.</li>
+
+                <li>In the <strong>Max Thread Pool Size</strong> field, adjust the maximum number of threads
+                    available to the thread pool.</li>
+
+                <li>Click the Save button in the upper right corner, and then restart the server.</li>
+            </ol>
+
+
+            <h3 id="tip10">Tip 10: JDBC Tuning</h3>
+
+            <p>From <a href="https://www.sun.com/offers/details/OptimizeGlassFishPerformance.xml" target="_blank">Optimize
+            GlassFish Performance in a Production Environment</a>:</p>
+
+            <blockquote style="margin-top: 0">
+                <em>If your application uses Java DataBase Connectivity (JDBC) software for database access,
+                    it may be beneficial to tune your database connection pool. A general rule of thumb is to
+                    tune the value for <code>max-pool-size</code> and <code>steady-pool-size</code> to the
+                    same number of HTTP request processing threads. If your JDBC driver supports this
+                    feature, it is advisable to use JDBC drivers that use statement caching to re-use
+                    prepared statements.</em>
+            </blockquote>
+
+            <ol>
+                <li>In the Administration Console Tree, expand the Resources &gt; JDBC &gt; Connection Pools node,
+                    then click the <code>AffableBeanPool</code> node.</li>
+
+                <li>In the General tab under Pool Settings, specify values for the following fields:
+
+                    <ul style="margin: 7px 0 0 -1.7em">
+                        <li><strong>Initial and Minimum Pool Size:</strong> (<code>steady-pool-size</code>)
+                            Minimum and initial number of connections maintained in the pool.</li>
+
+                        <li><strong>Maximum Pool Size:</strong> (<code>max-pool-size</code>)
+                            Maximum number of connections that can be created to satisfy client requests.</li>
+
+                        <li><strong>Pool Resize Quantity:</strong> (<code>pool-resize-quantity</code>)
+                            Number of connections to be removed when pool idle timeout expires.</li>
+
+                        <li><strong>Idle Timeout:</strong> (<code>idle-timeout-in-seconds</code>)
+                            Maximum time that connection can remain idle in the pool.</li>
+
+                        <li><strong>Max Wait Time:</strong> (<code>max-wait-time-in-millis</code>)
+                            Amount of time caller waits before connection timeout is sent.</li>
+                    </ul></li>
+
+                <li>Click the Save button in the upper right corner, and then restart the server.</li>
+            </ol>
+
+            <p class="tips">Connection pool settings can also be specified in the <code>sun-resources.xml</code> descriptor:</p>
+
+            <pre class="examplecode" style="margin-top:0; margin-left:35px; width:685px">
+&lt;jdbc-connection-pool <strong>max-pool-size</strong>=&quot;32&quot;
+                      <strong>steady-pool-size</strong>=&quot;8&quot;
+                      <strong>pool-resize-quantity</strong>=&quot;2&quot;
+                      <strong>idle-timeout-in-seconds</strong>=&quot;300&quot;
+                      <strong>max-wait-time-in-millis</strong>=&quot;60000&quot;&gt;
+    ...
+&lt;/jdbc-connection-pool&gt;</pre></div>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Testing and Profiling">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <br>
+        <h2 id="seeAlso">See Also</h2>
+
+        <div class="indent">
+            <h3>NetBeans Resources</h3>
+
+            <ul>
+                <li><a href="http://profiler.netbeans.org/" target="_blank">NetBeans Profiler</a> [product page]</li>
+                <li><a href="../../../../features/java/profiler.html" target="_blank">NetBeans Profiler Features</a></li>
+                <li><a href="../../java/profiler-profilingpoints.html" target="_blank">Using Profiling Points</a></li>
+                <li><a href="http://profiler.netbeans.org/docs/help/6.0/heapwalker.html" target="_blank">Using HeapWalker</a></li>
+                <li><a href="http://wiki.netbeans.org/HeapWalkerDemo" target="_blank">HeapWalker Demo</a></li>
+                <li><a href="../../java/profile-loadgenerator.html" target="_blank">Using a Load Generator</a></li>
+                <li><a href="../profiler-javaee.html" target="_blank">Profiling an Enterprise Application</a></li>
+                <li><a href="../../java/profiler-intro.html" target="_blank">Introduction to Profiling Java Applications</a></li>
+                <li><a href="../../../articles/nb-profiler-uncoveringleaks_pt1.html" target="_blank">Uncovering Memory Leaks Using NetBeans Profiler</a></li>
+                <li><a href="../../../../community/magazine/html/04/profiler.html" target="_blank">Advanced Profiling: Theory in Practice with NetBeans</a></li>
+                <li><a href="https://netbeans.org/download/magazine/01/nb01_profiler.pdf" target="_blank">Exploring the NetBeans Profiler</a> [pdf]</li>
+                <li><a href="https://channelsun.sun.com/media/show/14757?n=playlist&nid=81" target="_blank">The New NetBeans IDE 6 Profiler</a> [screencast]</li>
+                <li><a href="https://netbeans.org/project_downloads/www/flashdemo/profiler-demo1.swf" target="_blank">Getting Started with NetBeans Profiler 5.0</a> [screencast]</li>
+                <li><a href="https://netbeans.org/project_downloads/www/flashdemo/profiler-demo2.swf" target="_blank">Performance Profiling with NetBeans Profiler 5.0</a> [screencast]</li>
+                <li><a href="http://www.javapassion.com/handsonlabs/javatestjmeter/index.html" target="_blank">JavaPassion LAB 5116: Finding Memory Leaks Using the NetBeans Profiler</a></li>
+            </ul>
+
+            <h3>JMeter</h3>
+
+            <ul>
+                <li><a href="http://jakarta.apache.org/jmeter/" target="_blank">Apache JMeter</a> [product homepage]</li>
+                <li><a href="http://jakarta.apache.org/jmeter/usermanual/index.html" target="_blank">Apache JMeter: User's Manual</a></li>
+                <li><a href="http://jakarta.apache.org/jmeter/usermanual/jmeter_distributed_testing_step_by_step.pdf" target="_blank">jMeter Distributed Testing</a> [pdf]</li>
+                <li><a href="http://www.javapassion.com/handsonlabs/javatestjmeter/index.html" target="_blank">JavaPassion LAB 1077: JMeter Load Testing</a></li>
+                <li><a href="http://vimeo.com/3453772" target="_blank">Apache JMeter Getting Started Tutorial</a> [screencast]</li>
+                <li><a href="https://www.packtpub.com/beginning-apache-jmeter/book" target="_blank">Apache JMeter</a> [book]</li>
+            </ul>
+
+            <h3>GlassFish Performance</h3>
+
+            <ul>
+                <li><a href="http://java.sun.com/performance/reference/whitepapers/tuning.html" target="_blank">Java Tuning White Paper</a></li>
+                <li><a href="http://www.google.co.uk/url?sa=t&source=web&cd=3&ved=0CCMQFjAC&url=http%3A%2F%2Fdeveloper.connectopensource.org%2Fdownload%2Fattachments%2F29851654%2FGlassFishDay2008PerfPreso.pdf&rct=j&q=Tuning%20GlassFish%20Performance%20Tips%20Deep%20Singh&ei=ru7WTNjUPIWUjAenyZTHCQ&usg=AFQjCNHLz1wnaG7h-ey6wsPOOIxV-xoDzA&sig2=aNoCg9O132PgIQ0eWmHx6g&cad=rja">Tuning Your GlassFish - Performance Tips</a> [pdf]</li>
+                <li><a href="https://www.sun.com/offers/details/OptimizeGlassFishPerformance.xml" target="_blank">Optimize GlassFish Performance in a Production Environment</a> [pdf]</li>
+                <li><a href="http://dlc.sun.com/pdf/819-3681/819-3681.pdf" target="_blank">Sun Java System Application Server 9.1 Performance Tuning Guide</a> [pdf]</li>
+            </ul>
+
+        </div>
+
+
+        <br>
+        <h2>References</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> Actually, in JMeter version 2.4,
+                using the HTTP Proxy Server to record HTTPS requests should be possible. See the JMeter User's
+                Manual, <a href="http://jakarta.apache.org/jmeter/usermanual/get-started.html#opt_ssl"
+                target="_blank">2.2.4 SSL Encryption</a> for more details.</li>
+
+            <li id="footnote2"><a href="#2" style="text-decoration:none">^</a> The acceptable response time for
+                retail web page response times is debatable, but general concensus seems to waver between 4 and
+                8 seconds. For example, see:
+
+                <ul style="margin: 7px 0 0 -0.7em">
+                    <li><a href="http://answers.google.com/answers/threadview/id/716510.html" target="_blank">Google Answers: E-Commerce Site Speed Industry Standards</a></li>
+                    <li><a href="http://www.conversionchronicles.com/The_Billion-Dollar_Question_-_What_is_the_Impact_of_Web_Site_Performance_on_E-commerce.html" target="_blank">Conversion Chronicles: What is the Impact of Web Site Performance on E-commerce?</a></li>
+                    <li><a href="http://www.akamai.com/html/about/press/releases/2006/press_110606.html" target="_blank">Akamai and JupiterResearch Identify '4 Seconds' as the New Threshold of Acceptability for Retail Web Page Response Times</a></li>
+                    <li><a href="http://www.websiteoptimization.com/speed/1/" target="_blank">Response Time: Eight Seconds, Plus or Minus Two</a></li>
+                </ul>
+            </li>
+        </ol>
+
+    </body>
+</html>

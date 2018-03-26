@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Using the Visual Debugger</title>
+<link rel="stylesheet" href="../../../netbeans.css">
+<link rel="stylesheet" type="text/css" href="../../../print.css" media="print">
+<link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+<meta name="description" content="A guide to using the visual debugger in NetBeans IDE to locate source code in GUI applications."/>
+</head>
+<body>
+<h1>Using the Visual Debugger in NetBeans IDE</h1>
+
+<p>This document describes how to use the Visual Debugger to
+    help you locate and debug the code for visual elements in your GUI application.
+    You can use the visual debugger in Java and JavaFX GUI applications.
+    </p>
+
+<p>In this document you will use the Visual Debugger to explore the Anagram Game sample project.
+    This document will demonstrate how to take a GUI snapshot of the application and then work with the snapshot
+    to locate source code, add listeners to events and view the event log of GUI components.
+</p>
+
+    <p><b>Contents</b></p>
+    <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+    <ul>
+        <li><a href="#Exercise_10">Taking a GUI Snapshot</a></li>
+        <li><a href="#Exercise_20">Working with the Visual Debugger</a>
+        <ul>
+            <li><a href="#Exercise_21">Locating Sources</a></li>
+            <li><a href="#Exercise_22">Exploring Component Events</a></li>
+        </ul>
+        </li>
+    </ul>
+
+    <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+    <table>
+    <tr>
+        <th class="tblheader" scope="col">Software or Resource</th>
+        <th class="tblheader" scope="col">Version Required</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+        <td class="tbltd1">version 7 or 8</td>
+    </tr>
+    </table>
+    <p class="notes"><strong>Note about JUnit.</strong> If JUnit libraries were not installed when you
+        installed the IDE you will be prompted to resolve missing resources and install JUnit when you try to debug the application.</p>
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_10"></a>
+    <h2>Taking a GUI Snapshot</h2>
+    <p>In this tutorial you will use the Anagram Game sample application, a Java desktop application
+        with a simple GUI that is available as a sample in the New Project wizard. 
+        After you create the project you will start a debugging session and take a GUI snapshot of the application.
+    </p>
+
+    <ol>
+        <li>Choose File &gt; New Project from the main menu (Ctrl-Shift-N; &#8984;-Shift-N
+                on Mac) to open the New Project wizard.</li>
+        <li>Select Anagram Game in the Samples &gt; Java category. Click Next.</li>
+        <li>Specify a location for the project. Click Finish.
+            <p>When you click Finish, the IDE creates the project and opens the project in the Projects window.</p>
+        </li>
+        <li>Click the Debug button in the toolbar (Ctrl-F5; &#8984;-F5 on Mac) to start the debugging session.
+            <p>Alternatively, right-click the project node in the Projects window and choose Debug.</p>
+            <p>When you start the session, the IDE will launch the Anagram Game application  
+            and open the Debugging window.</p>
+            <p>For more on running the debugger, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG798">About Running and Debugging Java Application Projects</a> in <em>Developing Applications with NetBeans IDE</em>.</p>
+        </li>
+        <li>Choose Debug &gt; Take GUI Snapshot from the main menu.
+        <p>When you choose Take GUI Snapshot, the IDE will take a snapshot of the GUI 
+        and will open the snapshot in the main window.</p>
+
+        </li>
+    </ol>
+    <a href="../../../images_www/articles/74/java/visualdebug/debug-fullscreen.png" rel="lytebox"
+    title="The GUI snapshot is displayed in the main window of the IDE">
+    <img src="../../../images_www/articles/74/java/visualdebug/debug-fullscreen.png"
+    class="margin-around b-all" alt="screenshot of GUI snapshot" style="width:600px"
+    title="Click to enlarge"></a>
+
+    <p>In this guide to the visual debugger you will not use the Debugging window.</p>
+    
+
+
+    <a name="Exercise_20"></a>
+    <h2>Working with the Visual Debugger</h2>
+
+    <p>The GUI snapshot is a visual debugging tool that can help you locate the source code for GUI components.
+    The source code for GUI components can sometimes be difficult to locate and the snapshot
+    provides a way for you to locate the code based on the GUI instead of searching through the code.
+    You can select components in the snapshot and invoke tasks from the popup menu to view the source code
+    for the component, show the listeners and set breakpoints on components. 
+    </p>
+
+    <div class="indent">
+        <a name="Exercise_21"></a>
+        <h3>Locating the Source Code for Components</h3>
+        <p>This exercise will demonstrate how to use the GUI snapshot to navigate to the lines in the source code 
+            where a component is declared and defined. When you select a component in the GUI snapshot, 
+            you can use the popup menu to invoke various commands. 
+            </p>
+            <p class="tips">The commands can also be invoked from the Navigator window by right-clicking the component and choosing the command in the popup menu.</p>
+        
+        <ol>
+            <li>In the GUI snapshot, select the Guess button.
+                <p>When you select a component in the snapshot, the IDE displays details about the selected component in the Properties window.
+                If the Properties window is not visible you can choose Window &gt; Properties from the main menu to open the window.</p>
+                <img src="../../../images_www/articles/74/java/visualdebug/debug-snapshot.png" alt="Screenshot of GUI snapshot" title="GUI Snapshot" class="margin-around b-all" >
+                <p>The IDE also displays the location of the component in the form hierarchy in the Navigator window.</p>
+                <img src="../../../images_www/articles/74/java/visualdebug/debug-navigator.png" alt="Screenshot of GUI snapshot" title="GUI Snapshot" class="margin-around b-all" >
+            </li>
+            <li>Right-click the Guess button in the snapshot and choose Go to Component Declaration 
+                from the popup menu.
+                <p>When you choose Go to Component Declaration the IDE opens the source file 
+                    in the editor and moves the cursor to the line in the code where <tt>guessButton</tt> is declared.</p>
+                <img src="../../../images_www/articles/74/java/visualdebug/debug-gotodeclaration.png" alt="Screenshot of source code in editor" title="Line of code where component is declared" class="margin-around b-all" >
+                </li>
+            <li>Right-click the Guess button in the snapshot again and choose Go to Component Source. 
+                <p>When you choose Go to Component Source the IDE opens the source file 
+                in the editor and moves the cursor to the line in the source code for the JButton component.</p>
+                <img src="../../../images_www/articles/74/java/visualdebug/debug-gotosource.png" alt="Screenshot of source code in editor" title="Line of source code for component" class="margin-around b-all" />
+                </li>
+                
+        </ol>
+    
+        <p>
+        You can use the Go to Hierarchy Addition command in the GUI snapshot to locate the line in the source code where a component is added to its container.
+        The Go to Hierarchy Addition command is disabled by default. 
+        You can enable the command in the Options window.
+        </p>
+        
+            <ol>
+                <li>Open the Options window.</li>
+                <li>Click the Java Debugger tab in the Java category in the Options window.
+                    <p class="notes"><strong>Note.</strong> In NetBeans IDE 7.1 the Java Debugger tab is located in the Miscellaneous category in the Options window.</p></li>
+                <li>Select Visual Debugging in the list of categories and select <strong>Track locations of component hierarchy changes</strong>. Click OK.</li>
+                <li>Stop your debugging session (if one is running).
+                    <p class="notes"><strong>Note.</strong> After you enable the command in the Options window
+                    you will need to restart your debugging session and take a new GUI snapshot
+                    before you can use the Go to Hierarchy Addition command.</p>
+                </li>
+                <li>Start a new debugging session and take a GUI snapshot.</li>
+                <li>Right-click a component in the GUI snapshot and choose Go to Hierarchy Addition.
+                    <p>The IDE will open the source code in the editor at the line where the component is added.</p>
+                    <img src="../../../images_www/articles/74/java/visualdebug/debug-hierarchy.png" alt="Screenshot of source code in editor" title="Line of source code where component is added to container" class="margin-around b-all" />
+                </li>
+            </ol>
+    
+    <a name="Exercise_22"></a>
+    <h3>Exploring Component Events</h3>
+    
+    <p>This exercise will demonstrate how you can use the GUI snapshot and the Events window to explore component events, 
+        enabling you to locate component listeners and the events that are triggered by the components.</p>
+    
+    <ol>
+        <li>Right-click the Guess button in the snapshot and choose Show Listeners from the popup menu. 
+        <p>When you choose Show Listeners, the IDE opens the Events window.
+            You can see that the Custom Listeners node is expanded.</p>
+        <img src="../../../images_www/articles/74/java/visualdebug/debug-customlisteners.png" alt="Screenshot of source code in editor" title="Line of source code where component is added to container" class="margin-around b-all" />
+        </li>
+        <li>Right-click <strong>com.toy.anagrams.ui.Anagrams$3</strong> below the Custom Listeners node and choose 
+            Go to Component Source in the popup menu. 
+            <p>The source code opens in the editor at the line where the listener is defined.</p>
+        </li>
+        <li>Select the empty text field in the snapshot.
+        <p>Alternatively, you can select the <tt>guessedWord</tt> text field in the Navigator window.</p>
+        <p>When you select the text field, the items in the Events window will change 
+        automatically to display the listeners for the selected component.</p></li>
+        <li>In the Events window, double-click the Event Log node to open the Select Listener window.
+        <p>Alternatively, you can right-click the Event Log node and choose Set Logging Events from the popup menu.</p></li>
+        <li>Select the <tt>java.awt.event.KeyListener</tt> listener from the dialog. Click OK.<br/>
+        <img src="../../../images_www/articles/74/java/visualdebug/debug-select-listener.png" alt="Screenshot of source code in editor" title="Line of source code where component is added to container" class="margin-around b-all" />
+        <p>This listener is now listening for keyboard events in the text field.</p>
+        </li>
+        <li>In the Anagram Game application, type some characters in the text field.
+        <p>When you type a character in the text field, the event is recorded in the events log.
+            If you expand the Event Log node you can see that each keystroke is now logged.
+        New events appear each time that you type in the Anagram Game application text field.
+        If you expand an individual event, for example <tt>keyPressed</tt>, you can see the properties of that event in the log.</p>
+        
+        <img src="../../../images_www/articles/74/java/visualdebug/debug-eventlog.png" alt="Screenshot of source code in editor" title="Line of source code where component is added to container" class="margin-around b-all" />
+        <p>If you expand the "Called From..." node for an event you can see the stack trace for the event.</p>
+        </li>
+    </ol>
+
+    </div>
+
+
+
+<!-- ===================================================================================== -->
+<p>This tutorial was a basic introduction to the visual debugger in the IDE.
+The visual debugger enables you to easily locate the source code and log events for GUI components.
+This can be extremely helpful when you are debugging GUI applications.
+</p>
+
+
+<!-- End Content Area -->
+
+    <br>
+    <div class="feedback-box"><a href="https://netbeans.org/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20the%20Visual%20Debugger">Send Feedback on This Tutorial</a></div>
+    <br style="clear:both;" />
+    <!-- ======================================================================================= -->
+    <h2><a name="nextsteps"></a>See Also</h2>
+    <p>For more information about developing and testing Java applications in NetBeans IDE, see the following resources:</p>
+    <ul>
+        <li><a href="gui-functionality.html">Introduction to Java GUI Building</a></li>
+        <li>Demo: <a href="debug-visual-screencast.html">Using the Visual Debugger</a></li>
+        <li>Demo: <a href="debug-multithreaded-screencast.html">Debugging a Multithreaded Application</a></li>
+        <li>Demo: <a href="debug-stepinto-screencast.html">Visual Step Into Action in NetBeans Debugger</a></li>
+        <li>Demo: <a href="debug-deadlock-screencast.html">Deadlock Detection Using the NetBeans Debugger</a></li>
+        <li>Demo: <a href="debug-evaluator-screencast.html">Using the Code Snippet Evaluator in the NetBeans Debugger</a></li>
+        <li><a href="../../trails/java-se.html">Basic IDE and Java Programming Learning Trail</a></li>
+    </ul>
+    
+    </body>
+</html>

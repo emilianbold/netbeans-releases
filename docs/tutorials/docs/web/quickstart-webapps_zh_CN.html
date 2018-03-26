@@ -1,0 +1,331 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>       
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A short guide to creating and using web
+              applications in NetBeans IDE.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              web applications, open source, JSP, JavaServer Pages, JavaBeans">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+        <title>Web 应用程序开发简介 - NetBeans IDE 教程</title>
+    </head>
+
+    <body>
+        <h1>Web 应用程序开发简介</h1>
+
+        <p>本文档将向您介绍有关使用 NetBeans IDE 开发 Web 应用程序的基础知识。它将演示如何创建简单的 Web 应用程序，如何将该应用程序部署到服务器，以及如何在浏览器中查看该应用程序的表现形式。该应用程序采用 <a href="http://www.oracle.com/technetwork/java/javaee/jsp/index.html">JavaServer Pages</a>(tm) (JSP) 页来要求您输入姓名。然后，使用 JavaBeans 组件在 HTTP 会话期间保留该姓名，并检索该姓名以输出到第二个 JSP 页上。</p>
+
+        <p><strong>目录</strong></p>
+
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+        <ul class="toc">
+            <li><a href="#setting">设置 Web 应用程序项目</a></li>
+            <li><a href="#creating">创建并编辑 Web 应用程序源文件</a>
+                <ul>
+                    <li><a href="#creatingJava">创建 Java 包和 Java 源文件</a></li>
+                    <li><a href="#generating">生成 getter 和 setter 方法</a></li>
+                    <li><a href="#editing">编辑默认的 JavaServer Pages 文件</a></li>
+                    <li><a href="#creatingJSP">创建 JavaServer Pages 文件</a></li>
+            </ul></li>
+            <li><a href="#building">运行 Web 应用程序项目</a></li>
+          <li><a href="#trouble">疑难解答</a></li>
+            <li><a href="#seeAlso">另请参见</a></li>
+        </ul>
+
+        <p><strong>要学习本教程，您需要具备以下软件和资源。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EE 版本</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 7 或 8</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition <br><em class="indent margin-around">或</em> <br>Tomcat Servlet 容器 <br> <em class="indent margin-around">或</em> <br> Oracle Web Logic 服务器 </td>
+                    <td class="tbltd1" valign="top">4.x <br> <em class="margin-around indent">和</em> <br>7.x 或 8.x<br> <br>11gR1 (10.3.3) 或更高版本</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong>注：</strong></p>
+
+        <ul>
+            <li>Java EE 安装（不是 Java SE！）使您能够有选择地安装 GlassFish Server 和 Apache Tomcat Servlet 容器。</li>
+          
+          <li>如果要将项目与工作解决方案进行比较，可以<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/HelloWebEE6.zip">下载样例应用程序</a>。</li>
+        </ul>
+
+        <a name="setting"></a>
+        <h2>设置 Web 应用程序项目</h2>
+
+        <ol>
+            <li>从主菜单中选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键）。在 "Categories"（类别）下，选择 "Java Web"。在 "Projects"（项目）下选择 "Web Application"（Web 应用程序），然后单击 "Next"（下一步）。</li>
+            <li>在步骤 2 中，在 "Project Name"（项目名称）文本框中输入 <tt>HelloWeb</tt>。 </li>
+            <li>将 "Project Location"（项目位置）指定为计算机上的任意目录。在本教程中，将此目录称为 <tt><i>$PROJECTHOME</i></tt>。          </li>
+            <li>（可选）选中“使用专用文件夹存储库”复选框，并指定库文件夹的位置。有关此选项的详细信息，请参见<em>使用 NetBeans IDE 开发应用程序</em>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">创建 Java 项目</a>。</li>
+
+            <li>单击 "Next"（下一步）。此时将打开 "Server and Settings"（服务器和设置）面板。选择要与应用程序一起使用的 Java EE 版本。 </li>
+            <li>选择要在其中部署应用程序的服务器。这里仅列出了已在 IDE 中注册的服务器。请注意，服务器上的上下文路径将变为 <tt>/HelloWeb</tt>（基于您在上一步中为项目指定的名称）。 
+            </li>
+            <li>单击 "Finish"（完成）。 
+                <p>IDE 将创建 <tt><i>$PROJECTHOME</i>/HelloWeb</tt> 项目文件夹。您可以在 "Files"（文件）窗口（Ctrl-2 组合键）中查看项目的文件结构，在 "Projects"（项目）窗口（Ctrl-1 组合键）中查看其逻辑结构。 </p>
+                <img alt="&quot;Projects&quot;（项目）窗口中显示的 HelloWeb 项目逻辑结构" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/projects-window.png">
+            </li>
+        </ol>
+                <p>此项目文件夹包含所有源代码和项目元数据，例如项目的 Ant 构建脚本。在 IDE 中，将打开 HelloWeb 项目。在主窗口的源代码编辑器中，将打开欢迎页 <tt>index.jsp</tt>。 </p>
+                <p class="notes"><strong>注：</strong>根据您在创建项目时指定的服务器和 Java EE 版本不同，IDE 可能会生成 <tt>index.html</tt> 作为 Web 项目的默认欢迎页面。可以执行本教程中的步骤并使用 <tt>index.html</tt> 文件，也可以使用新建文件向导生成 <tt>index.jsp</tt> 文件以用作欢迎页面，在这种情况下，应删除 <tt>index.html</tt> 文件。</p>
+
+
+        <a name="creating"></a>
+        <h2>创建并编辑 Web 应用程序源文件</h2>
+
+        <p>创建并编辑源文件是 IDE 所提供的最重要的功能。毕竟，这大概是您花费时间最多的工作。IDE 提供了各种工具来迎合任何开发者的个人风格，无论您是愿意手动编写所有代码，还是希望 IDE 为您生成大量代码。</p>
+
+        <div class="indent">
+            <a name="creatingJava"></a>
+            <h3>创建 Java 包和 Java 源文件</h3>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口中，展开 "Source Packages"（源包）节点。请注意，"Source Packages"（源包）节点仅包含一个空的默认包节点。</li>
+                <li>右键单击 "Source Packages"（源包）节点，然后选择 "New"（新建）> "Java Class"（Java 类）。在 "Class Name"（类名）文本框中输入 <tt>NameHandler</tt>，并在 "Package"（包）组合框中键入 <tt>org.mypackage.hello</tt>。单击 "Finish"（完成）。请注意，将在源代码编辑器中打开新的 <tt>NameHandler.java</tt> 文件。</li>
+                <li>在源代码编辑器中，通过在紧靠类声明的下方键入以下代码行来声明一个 <tt>String</tt> 变量。
+                <pre class="examplecode">String name;</pre></li>
+                <li>将以下构造函数添加到类中：
+                <pre class="examplecode">public NameHandler() { }</pre></li>
+                <li>在 <tt>NameHandler()</tt> 构造函数中添加以下代码行：
+                <pre class="examplecode">name = null;</pre></li>
+            </ol>
+
+            <a name="generating"></a>
+            <h3>生成 getter 和 setter 方法</h3>
+
+            <ol>
+                <li>在源代码编辑器中右键单击 <tt>name</tt> 字段，然后选择 "Refactor"（重构）> "Encapsulate Fields"（封装字段）。 
+                    <p>将打开 "Encapsulate Fields"（封装字段）对话框，其中列出 <tt>name</tt> 字段。请注意，默认情况下将 "Fields' Visibility"（字段的可视性）设置为 "private"，将 "Accessors' Visibility"（存取方法的可视性）设置为 "public"，这表示类变量声明的访问修饰符将被指定为 private，而 getter 和 setter 方法将分别以 <tt>public</tt> 和 <tt>private</tt> 修饰符生成。</p>
+                    <img alt="&quot;encapsulate fields&quot;（封装字段）对话框" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/encapsulatefields-dialog.png"></li>
+                <li>单击 "Refactor"（重构）。 
+                    <p>将为 <tt>name</tt> 字段生成 getter 和 setter 方法。类变量的修饰符将被设置为 <tt>private</tt>，而 getter 和 setter 方法将以 public 修饰符生成。Java 类现在应该与以下代码类似。</p>
+
+                    <pre class="examplecode">package org.mypackage.hello;
+
+/**
+ *
+ * @author nbuser
+ */
+
+public class NameHandler {
+
+    private String name;
+
+    /** Creates a new instance of NameHandler */
+    public NameHandler() {
+       name = null;
+    }
+
+    public String getName() {
+       return name;
+    }
+
+    public void setName(String name) {
+       this.name = name;
+    }
+
+}</pre>
+                </li>
+            </ol>
+
+            <a name="editing"></a>
+            <h3>编辑默认的 JavaServer Pages 文件</h3>
+
+            <ol>
+                <li>通过单击在源代码编辑器顶部显示的 <tt>index.jsp</tt> 文件标签以重新选中该文件。</li>
+                <li><p>在位于源代码编辑器右侧的 "Palette"（组件面板）（Ctrl-Shift-8 组合键）中，展开 "HTML Forms"（HTML 窗体），然后将一个窗体项拖至源代码编辑器中 <tt>&lt;h1></tt> 标记后的某个位置。 </p>
+             <p>  此时将显示 "Insert Form"（插入窗体）对话框。</p></li>
+                  
+                  
+          <li>        请指定以下值：
+                  <ul>
+                    <li><strong>Action（操作）：</strong>response.jsp
+                    <li><strong>Method（方法）：</strong>GET
+                    <li><strong>Name（名称）：</strong>Name Input Form
+            </ul>
+                  <p>单击 "OK"（确定）。将在 <tt>index.jsp</tt> 文件中添加一个 HTML 窗体。</p>
+                  <img alt="&quot;Input Form&quot;（输入窗体）对话框" src="../../../images_www/articles/72/web/quickstart-web/input-form.png"></li>
+                <li>将一个 "Text Input"（文本输入）项拖至紧靠 <tt>&lt;/form&gt;</tt> 标记前面的位置，然后指定以下值：
+
+                    <ul>
+                        <li><strong>Name（名称）：</strong>name
+                        <li><strong>Type（类型）：</strong>text
+                    </ul>
+
+                    单击 "OK"（确定）。将在 <tt>&lt;form&gt;</tt> 标记之间添加一个 HTML <tt>&lt;input&gt;</tt> 标记。从此标记中删除 <tt>value</tt> 属性。</li>
+
+                <li>将一个按钮项拖至紧靠 <tt>&lt;/form&gt;</tt> 标记前面的位置。请指定以下值：
+
+                    <ul>
+                        <li><strong>Label（标签）：</strong>OK
+                        <li><strong>Type（类型）：</strong>submit
+                    </ul>
+
+                    单击 "OK"（确定）。将在 <tt>&lt;form&gt;</tt> 标记之间添加一个 HTML 按钮。</li>
+
+                <li>在紧靠第一个 <tt>&lt;input&gt;</tt> 标记前面的位置键入 <tt>Enter your name:</tt>，然后将 <tt>&lt;h1&gt;</tt> 标记之间的默认 <tt>Hello World!</tt> 文本更改为 <tt>Entry Form</tt>。</li>
+
+                <li>在源代码编辑器中单击鼠标右键，然后选择 "Format"（格式化代码）（Alt-Shift-F 组合键）以整理代码的格式。<tt>index.jsp</tt> 文件现在应该与以下代码类似：
+
+                    <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;JSP Page&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Entry Form&lt;/h1&gt;
+
+        &lt;form name=&quot;Name Input Form&quot; action=&quot;response.jsp&quot;&gt;
+            Enter your name:
+            &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;
+            &lt;input type=&quot;submit&quot; value=&quot;OK&quot; /&gt;
+        &lt;/form&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+                </li>
+            </ol>
+
+      <a name="creatingJSP"></a>
+            <h3>创建 JavaServer Pages 文件</h3>
+
+            <ol>
+                <li>在 "Projects"（项目）窗口中，右键单击 "HelloWeb" 项目节点，然后选择 "New"（新建）> "JSP"。此时将打开新建 JSP 文件向导。将文件命名为 <tt>response</tt>，然后单击 "Finish"（完成）。请注意，在 "Projects"（项目）窗口中的 <tt>index.jsp</tt> 下方将显示 <tt>response.jsp</tt> 文件节点，并且会在源代码编辑器中打开新文件。</li>
+                <li>
+                    <p>在位于源代码编辑器右侧的 "Palette"（组件面板）中，展开 "JSP"，然后将一个使用 Bean 项拖至源代码编辑器中紧靠 <tt>&lt;body&gt;</tt> 标记下方的位置。将打开 "Insert Use Bean"（插入使用 Bean）对话框。指定下图中显示的值。</p>
+
+
+                    <img alt="包含指定字段的 &quot;Use Bean&quot;（使用 Bean）对话框" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/usebean-dialog.png">
+
+                    <ul>
+                        <li><strong>ID：</strong>mybean
+                        <li><strong>Class（类）：</strong>org.mypackage.hello.NameHandler
+                        <li><strong>Scope（范围）：</strong>Session（会话）
+                    </ul>
+
+                    单击 "OK"（确定）。请注意，将在 <tt>&lt;body></tt> 标记的下方添加 <tt>&lt;jsp:useBean></tt> 标记。</li>
+
+                <li>将一个设置 Bean 属性项从 "Palette"（组件面板）拖至紧靠 <tt>&lt;h1&gt;</tt> 标记前面的位置，然后单击 "OK"（确定）。在出现的 <tt>&lt;jsp:setProperty></tt> 标记中，删除空的 <tt>value</tt> 属性，然后将其编辑为以下代码。如果 IDE 创建了 <tt>value = ""</tt> 属性，请将其删除！否则，它会覆盖传递到 <tt>index.jsp</tt> 中的 <tt>name</tt> 的值。
+
+                    <pre class="examplecode">&lt;jsp:setProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;</pre>
+
+                    <p>正如 </p><tt>&lt;jsp:setProperty></tt> 文档中所述，可以通过各种方法来设置属性值。在本例中，<tt>index.jsp</tt> 页上的用户输入将成为传递至 <tt>request</tt> 对象的名称/值对。当使用 <tt>&lt;jsp:setProperty&gt;</tt> 标记设置属性时，可以根据 <tt>request</tt> 对象中包含的属性名称来指定值。因此，通过将 <tt>property</tt> 设置为 <tt>name</tt>，可以检索由用户输入所指定的值。</p></li>
+
+                <li>更改 &lt;h1&gt; 标记之间的文本，以使其如下所示：
+                    <pre class="examplecode">&lt;h1&gt;Hello, !&lt;/h1&gt;</pre>
+                </li>
+                <li>将一个获取 Bean 属性项从 "Palette"（组件面板）拖放至 <tt>&lt;h1&gt;</tt> 标记之间的逗号后面。在 "Insert Get Bean Property"（插入获取 Bean 属性）对话框中指定以下值：
+
+                    <ul>
+                        <li><strong>Bean Name（Bean 名称）：</strong>mybean
+                        <li><strong>Property Name（属性名称）：</strong>name
+                    </ul>
+
+                    <p>单击 "OK"（确定）。请注意，此时将在 <tt>&lt;h1></tt> 标记之间添加 <tt>&lt;jsp:getProperty></tt> 标记。</p>
+                <p class="alert"><b>注：</b>属性名称区分大小写。"name" 属性在 <tt>response.jsp</tt> 和 <tt>index.jsp</tt> 的输入窗体中必须具有相同的大小写形式。
+              </li>
+
+                <li>在源代码编辑器中单击鼠标右键，然后选择 "Format"（格式化代码）（Alt-Shift-F 组合键）以整理代码的格式。<tt>response.jsp</tt> 文件的 <tt>&lt;body&gt;</tt> 标记现在应该与以下代码类似：
+
+                    <pre class="examplecode">&lt;body&gt;
+    &lt;jsp:useBean id=&quot;mybean&quot; scope=&quot;session&quot; class=&quot;org.mypackage.hello.NameHandler&quot; /&gt;
+    &lt;jsp:setProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;
+    &lt;h1&gt;Hello, &lt;jsp:getProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;!&lt;/h1&gt;
+&lt;/body&gt;</pre>
+                </li>
+            </ol>
+        </div>
+
+        <a name="building"></a>
+        <h2>运行 Web 应用程序项目</h2>
+
+    <p>IDE 使用 Ant 构建脚本来构建和运行 Web 应用程序。此构建脚本是由 IDE 基于您在新建项目向导中指定的选项以及项目的 "Project Properties"（项目属性）对话框（在 "Projects"（项目）窗口中，右键单击项目节点，然后从出现的菜单中选择 "Properties"（属性））中的选项来构建的。</p>
+
+        <ol>
+            <li>
+              <p>在 "Projects"（项目）窗口中，右键单击 "HelloWeb" 项目节点，然后选择 "Run"（运行）（F6 键）。在运行 Web 应用程序时，IDE 会执行以下步骤：</p>
+                    <ul>
+                    <li>构建和编译应用程序代码（请参见下面的注释）。可以通过从项目节点上下文菜单中选择 "Build"（构建）或 "Clean and Build"（清理并构建）来单独执行此步骤。</li>
+                    <li>启动服务器。</li>
+                    <li>将应用程序部署至服务器。可以通过从项目节点上下文菜单中选择 "Deploy"（部署）来单独执行此步骤。</li>
+                    <li>在浏览器窗口中显示应用程序。</li>
+                    </ul>
+                    <p class="notes"><b>注：</b>默认情况下，将在启用“在保存时编译”功能的情况下创建项目，因此无需先编译代码即可在 IDE 中运行应用程序。 </p>
+            </li>
+
+            <li>
+              <p>IDE 将打开一个输出窗口，其中显示运行应用程序的进度。查看 "Output"（输出）窗口中的 "HelloWeb" 标签。在此标签中，您可以遵循 IDE 执行的所有步骤。如果出现问题，IDE 将在此窗口中显示错误信息。</p>
+          <img alt="NetBeans IDE 的 Hello Web 应用程序运行输出窗口" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/app-output-tab.png"></li>
+            <li>IDE 会打开一个显示服务器状态的输出窗口。在 "Output"（输出）窗口中查看具有服务器名称的标签。
+              <p class="alert"><b>重要信息：</b>如果 GlassFish Server 无法启动，请将其手动启动并再次运行该项目。可以手动启动该服务器，方法是：在 "Services"（服务）窗口中右键单击该服务器节点，然后选择 "Start"（启动）。</p>
+                <p class="tips">服务器输出窗口会提供有关运行 Web 应用程序时所遇到问题的大量信息。服务器的日志也会很有帮助。它们位于服务器的相关域目录中。通过选择 "View"（视图）> "IDE log"（IDE 日志）还可以查看可见的 IDE 日志。</p>
+                <img alt="运行 Hello Web 应用程序时 NetBeans IDE 的 GlassFish 3 Server 输出窗口" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/gf-output-tab.png">
+            </li>
+            <li>
+              <p>将在默认浏览器中打开 <tt>index.jsp</tt> 页。请注意，在 IDE 显示服务器输出之前，浏览器窗口可能会打开。</p>
+              
+              <img alt="浏览器中显示的 index.jsp" border="1" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/result1.png"></li>
+            <li><p>在文本框中输入您的姓名，然后单击 "OK"（确定）。将出现 <tt>response.jsp</tt> 页，并向您显示一条简单的问候语。</p>
+
+
+                <img alt="浏览器中显示的 response.jsp" border="1" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/result2.png"></li>
+        </ol>
+
+<a name="trouble"></a>
+        <h2>疑难解答</h2>
+
+        <p><em>我已经构建并运行了项目。当我单击 <tt>index.jsp</tt> 中的 "OK" 按钮时，会显示一个指示 <tt>response.jsp</tt> 不可用的错误页。</em></p>
+
+        <div class="indent">
+            <p>您是否已查看 IDE "Output"（输出）窗口中的 "project"（项目）标签或 "server"（服务器）标签（Ctrl-4 组合键）？窗口中的错误消息是什么？项目使用的 JDK 是什么？什么服务器？JDK 7 需要 GlassFish 3.x 或 Tomcat 7.x。在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "Properties"（属性）。JDK 位于 "Java Platform"（Java 平台）字段中的 "Libraries"（库）类别中。服务器版本位于 "Run"（运行）类别中。最后，下载<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/HelloWebEE6.zip">样例项目</a>并将其与您自己的项目进行比较。</p>
+        </div>
+		<p><em>我已经构建并运行了项目，但没有出现任何名称，只显示 "Hello, !"</em></p>
+		<div class="indent">
+		<p>&lt;jsp:setProperty&gt; 标记是否包含 <tt>value = ""</tt> 属性？此属性会覆盖传递到 <tt>index.jsp</tt> 窗体中的值，并将该值替换为一个空字符串。删除 <tt>value</tt> 属性。</p></div>
+        <p><em>我已经构建并运行了项目，但却得到 "Hello, null!"</em></p>
+        <div class="indent">
+        <p>首先，检查 IDE 用于应用程序和服务器的 "Output"（输出）窗口以及服务器日志。服务器是否正在运行？服务器是否已部署？如果服务器正在运行且应用程序已部署，您是否获得 <tt>org.apache.jasper.JasperException: java.lang.NullPointerException</tt>？这通常意味着代码中的值未正确初始化。在本教程中，这意味着在 JSP 文件的属性名称中可能某处存在输入错误。请记得，属性名称区分大小写！</p>
+        </div>
+
+        <div class="feedback-box">
+        <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Developing%20Web%20Applications">发送有关此教程的反馈意见</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>另请参见</h2>
+
+        <p>“Web 应用程序开发简介”教程到此结束。本文档演示了如何使用 NetBeans IDE 创建简单的 Web 应用程序，如何将该应用程序部署到服务器，以及如何在浏览器中查看该应用程序的表现形式。此外，还说明了如何在应用程序中使用 JavaServer Pages 和 JavaBeans 来收集、保留和输出用户数据。</p>
+
+        <p>有关在 NetBeans IDE 中开发 Web 应用程序的更深入的相关信息，请参见以下资源：</p>
+
+        <ul>
+            
+            <li><a href="quickstart-webapps-struts.html">Struts Web 框架简介</a>。介绍通过 NetBeans IDE 开发使用 Struts 框架的 Web 应用程序的基础知识。</li>
+          <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+        </ul>
+
+    </body>
+</html>

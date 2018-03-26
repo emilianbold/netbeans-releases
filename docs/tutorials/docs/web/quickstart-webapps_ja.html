@@ -1,0 +1,331 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>       
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A short guide to creating and using web
+              applications in NetBeans IDE.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              web applications, open source, JSP, JavaServer Pages, JavaBeans">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+        <title>Webアプリケーション開発入門 - NetBeans IDEチュートリアル</title>
+    </head>
+
+    <body>
+        <h1>Webアプリケーション開発入門</h1>
+
+        <p>このドキュメントでは、NetBeans IDEを使用してWebアプリケーションを開発する基本的な手順を学習できます。単純なWebアプリケーションを作成し、サーバーにデプロイし、その表現をブラウザに表示する方法を示します。このアプリケーションは<a href="http://www.oracle.com/technetwork/java/javaee/jsp/index.html">JavaServer Pages</a>(tm) (JSP)ページを使用して、名前の入力を求めます。次にJavaBeansコンポーネントを使用してHTTPセッションの間その名前を維持し、2つ目のJSPページに出力するために名前を取得します。</p>
+
+        <p><strong>目次</strong></p>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#setting">Webアプリケーション・プロジェクトの準備と作成</a></li>
+            <li><a href="#creating">Webアプリケーションのソース・ファイルの作成と編集</a>
+                <ul>
+                    <li><a href="#creatingJava">JavaパッケージとJavaソース・ファイルの作成</a></li>
+                    <li><a href="#generating">取得メソッドと設定メソッドの生成</a></li>
+                    <li><a href="#editing">デフォルトのJavaServer Pagesファイルの編集</a></li>
+                    <li><a href="#creatingJSP">JavaServer Pagesファイルの作成</a></li>
+            </ul></li>
+            <li><a href="#building">Webアプリケーション・プロジェクトの実行</a></li>
+          <li><a href="#trouble">トラブルシューティング</a></li>
+            <li><a href="#seeAlso">関連項目</a></li>
+        </ul>
+
+        <p><strong>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバージョン</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン7または8</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition<br><em class="indent margin-around">または</em><br>Tomcatサーブレット・コンテナ<br><em class="indent margin-around">または</em><br> Oracle WebLogic Server </td>
+                    <td class="tbltd1" valign="top">4.x <br> <em class="margin-around indent">&nbsp;</em> <br>7.xまたは8.x<br> <br>11gR1 (10.3.3)以降</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong>注意: </strong></p>
+
+        <ul>
+            <li>Java EEインストール版(Java SEではない)では、GlassFishサーバーとApache Tomcatサーブレット・コンテナをオプションでインストールできます。</li>
+          
+          <li>プロジェクトを、正常に機能するソリューションと比較する必要がある場合は、<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/HelloWebEE6.zip">サンプル・アプリケーションをダウンロード</a>できます。</li>
+        </ul>
+
+        <a name="setting"></a>
+        <h2>Webアプリケーション・プロジェクトの準備と作成</h2>
+
+        <ol>
+            <li>メイン・メニューから「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N])を選択します。「カテゴリ」から「Java Web」を選択します。「プロジェクト」で「Webアプリケーション」を選択して、「次」をクリックします。</li>
+            <li>ステップ2で、「プロジェクト名」テキスト・ボックスに「<tt>HelloWeb</tt>」と入力します。 </li>
+            <li>「プロジェクトの場所」を使用コンピュータ上の任意のディレクトリにします。このチュートリアルでは、このディレクトリを<tt><i>$PROJECTHOME</i></tt>と表します。          </li>
+            <li>(オプション)「ライブラリの格納用に専用フォルダを使用」チェックボックスを選択し、ライブラリ・フォルダの場所を指定します。このオプションの詳細は、<em>NetBeans IDEによるアプリケーションの開発</em>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">Javaプロジェクトの作成</a>を参照してください。</li>
+
+            <li>「次」をクリックします。「サーバーと設定」パネルが開きます。アプリケーションで使用するJava EEのバージョンを選択します。 </li>
+            <li>アプリケーションをデプロイするサーバーを選択します。表示されるのは、IDEに登録されているサーバーのみです。「コンテキスト・パス」(サーバー上など)が<tt>/HelloWeb</tt>になっていることを確認します。これは、前のステップでプロジェクトにつけた名前に基づいています。 
+            </li>
+            <li>「終了」をクリックします。 
+                <p>これで、<tt><i>$PROJECTHOME</i>/HelloWeb</tt>プロジェクト・フォルダが作成されます。プロジェクトのファイル構造を「ファイル」ウィンドウ([Ctrl]-[2])で、論理構造を「プロジェクト」ウィンドウ([Ctrl]-[1])で表示できます。 </p>
+                <img alt="「プロジェクト」ウィンドウに表示されたHelloWebプロジェクトの論理構造" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/projects-window.png">
+            </li>
+        </ol>
+                <p>このプロジェクト・フォルダには、ソースおよびプロジェクト・メタデータ(プロジェクトのAntビルド・スクリプトなど)のすべてが含まれます。IDEでHelloWebプロジェクトが開きます。開始ページである<tt>index.jsp</tt>が、メイン・ウィンドウ内のソース・エディタで開きます。 </p>
+                <p class="notes"><strong>注意:</strong>プロジェクトの作成時に指定したサーバーおよびJava EEのバージョンによっては、Webプロジェクトのデフォルト開始ページとして<tt>index.html</tt>が生成される場合があります。このチュートリアルの手順を実行して<tt>index.html</tt>ファイルを使用することも、新規ファイル・ウィザードを使用して<tt>index.jsp</tt>ファイルを生成し、開始ページとして使用することもできます。後者の場合、<tt>index.html</tt>ファイルを削除する必要があります。</p>
+
+
+        <a name="creating"></a>
+        <h2>Webアプリケーションのソース・ファイルの作成と編集</h2>
+
+        <p>ソース・ファイルの作成と編集は、IDEが提供する最も重要な機能です。これは、開発者が時間の大半を費やす部分です。IDEには、開発者が手動ですべてのコードを作成するか、あるいはコードのかなりの部分をIDEに自動的に生成させるかどうかに関係なく、開発者各自の開発スタイルに役立つ広範囲のツールが用意されています。</p>
+
+        <div class="indent">
+            <a name="creatingJava"></a>
+            <h3>JavaパッケージとJavaソース・ファイルの作成</h3>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウで「ソース・パッケージ」ノードを展開します。「ソース・パッケージ」ノードには、空の「デフォルト・パッケージ」ノードのみが含まれていることに注意してください。</li>
+                <li>「ソース・パッケージ」ノードを右クリックし、「新規」>「Javaクラス」を選択します。「クラス名」テキスト・ボックスに「<tt>NameHandler</tt>」と入力し、「パッケージ」コンボ・ボックスに「<tt>org.mypackage.hello</tt>」と入力します。「終了」をクリックします。新しい<tt>NameHandler.java</tt>ファイルがソース・エディタで開きます。</li>
+                <li>ソース・エディタで、クラス宣言のすぐ下に次の行を入力して<tt>String</tt>変数を宣言します。
+                <pre class="examplecode">String name;</pre></li>
+                <li>次のコンストラクタをクラスに追加します。
+                <pre class="examplecode">public NameHandler() { }</pre></li>
+                <li><tt>nameHandler() </tt>コンストラクタに次の行を追加します。
+                <pre class="examplecode">name = null;</pre></li>
+            </ol>
+
+            <a name="generating"></a>
+            <h3>取得メソッドと設定メソッドの生成</h3>
+
+            <ol>
+                <li>ソース・エディタで<tt>name</tt>フィールドを右クリックし、「リファクタリング」>「フィールドをカプセル化」を選択します。 
+                    <p>「フィールドをカプセル化」ダイアログが開き、<tt>name</tt>フィールドが表示されます。フィールドの可視性はデフォルトでprivateに、アクセッサ・メソッドの可視性はpublicに設定されています。これは、クラス変数宣言のアクセス修飾子はprivateと指定され、取得メソッドと設定メソッドはそれぞれ<tt>public</tt>と<tt>private</tt>の修飾子を指定して生成されることを示します。</p>
+                    <img alt="「フィールドをカプセル化」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/encapsulatefields-dialog.png"></li>
+                <li>「リファクタリング」をクリックします。 
+                    <p><tt>name</tt>フィールドの取得メソッドと設定メソッドが生成されます。クラス変数の修飾子は<tt>private</tt>に設定され、取得メソッドと設定メソッドはpublicの修飾子を指定して生成されます。Javaクラスは次のようになります。</p>
+
+                    <pre class="examplecode">package org.mypackage.hello;
+
+/**
+ *
+ * @author nbuser
+ */
+
+public class NameHandler {
+
+    private String name;
+
+    /** Creates a new instance of NameHandler */
+    public NameHandler() {
+       name = null;
+    }
+
+    public String getName() {
+       return name;
+    }
+
+    public void setName(String name) {
+       this.name = name;
+    }
+
+}</pre>
+                </li>
+            </ol>
+
+            <a name="editing"></a>
+            <h3>デフォルトのJavaServer Pagesファイルの編集</h3>
+
+            <ol>
+                <li>ソース・エディタの上部に表示されている<tt>index.jsp</tt>ファイルのタブをクリックして再度フォーカスします。</li>
+                <li><p>ソース・エディタの右側にあるパレット([Ctrl]-[Shift]-8)で「HTMLフォーム」を展開し、「フォーム」項目をソース・エディタ内の<tt>&lt;h1></tt>タグの後にドラッグします。 </p>
+             <p>  「挿入フォーム」ダイアログ・ボックスが表示されます。</p></li>
+                  
+                  
+          <li>        次の値を指定します。
+                  <ul>
+                    <li><strong>アクション:</strong> response.jsp
+                    <li><strong>メソッド:</strong> GET
+                    <li><strong>名前:</strong> Name Input Form
+            </ul>
+                  <p>「OK」をクリックします。<tt>index.jsp</tt>ファイルにHTMLフォームが追加されます。</p>
+                  <img alt="入力フォーム・ダイアログ・ボックス" src="../../../images_www/articles/72/web/quickstart-web/input-form.png"></li>
+                <li>「テキスト入力」項目を<tt>&lt;/form></tt>タグの直前にドラッグし、次の値を指定します。
+
+                    <ul>
+                        <li><strong>名前:</strong> name
+                        <li><strong>型:</strong> text
+                    </ul>
+
+                    「OK」をクリックします。<tt>&lt;form></tt>タグの間にHTML<tt>&lt;input></tt>タグが追加されます。このタグから<tt>value</tt>属性を削除します。</li>
+
+                <li><tt>&lt;/form></tt>タグの直前に「ボタン」項目をドラッグします。次の値を指定します。
+
+                    <ul>
+                        <li><strong>ラベル:</strong> OK
+                        <li><strong>型:</strong> submit
+                    </ul>
+
+                    「OK」をクリックします。<tt>&lt;form></tt>タグの間にHTMLのボタンが追加されます。</li>
+
+                <li><tt>&lt;input></tt>タグの直前に「<tt>Enter your name:</tt>」と入力し、<tt>&lt;h1></tt>タグで囲まれたデフォルトの「<tt>Hello World!</tt>」というテキストを「<tt>Entry Form</tt>」に変更します。</li>
+
+                <li>ソース・エディタ内を右クリックし、「フォーマット」([Alt]-[Shift]-[F])を選択してコードの体裁を整えます。<tt>index.jsp</tt>ファイルは次のようになります。
+
+                    <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;JSP Page&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Entry Form&lt;/h1&gt;
+
+        &lt;form name=&quot;Name Input Form&quot; action=&quot;response.jsp&quot;&gt;
+            Enter your name:
+            &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;
+            &lt;input type=&quot;submit&quot; value=&quot;OK&quot; /&gt;
+        &lt;/form&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+                </li>
+            </ol>
+
+      <a name="creatingJSP"></a>
+            <h3>JavaServer Pagesファイルの作成</h3>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウで「HelloWeb」プロジェクト・ノードを右クリックし、「新規」>「JSP」を選択します。新規JSPファイル・ウィザードが開きます。ファイルを<tt>response</tt>という名前にして、「終了」をクリックします。「プロジェクト」ウィンドウ内で<tt>index.jsp</tt>の下に<tt>response.jsp</tt>ファイル・ノードが表示され、ソース・エディタで新しいファイルが開きます。</li>
+                <li>
+                    <p>ソース・エディタの右側の「パレット」で、「JSP」を展開し、「Beanを使用」項目をソース・エディタ内の<tt>&lt;body></tt>タグのすぐ下にドラッグします。「挿入Beanを使用」ダイアログが開きます。次の図に示すように、値を指定します。</p>
+
+
+                    <img alt="指定したフィールドが含まれている「Beanの使用」ダイアログ" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/usebean-dialog.png">
+
+                    <ul>
+                        <li><strong>ID:</strong> mybean
+                        <li><strong>クラス: </strong>org.mypackage.hello.NameHandler
+                        <li><strong>スコープ:</strong> session
+                    </ul>
+
+                    「OK」をクリックします。<tt>&lt;jsp:useBean></tt>タグが<tt>&lt;body></tt>タグの下に追加されていることがわかります。</li>
+
+                <li>パレットから、「Beanプロパティを設定」項目を<tt>&lt;h1></tt>タグの直前にドラッグし、「OK」をクリックします。表示される<tt>&lt;jsp:setProperty></tt>タグ内で、空の<tt>value</tt>属性を削除し、次のように編集します。<tt>value=""</tt>属性が作成されている場合は削除します。そうでない場合は、<tt>index.jsp</tt>で渡す<tt>name</tt>の値が上書きされます。
+
+                    <pre class="examplecode">&lt;jsp:setProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;</pre>
+
+                    <p>プロパティ値は、 </p><tt>&lt;jsp:setProperty></tt>のドキュメントに示すように、様々な方法で設定できます。この例では、<tt>index.jsp</tt>からのユーザー入力が、<tt>request</tt>オブジェクトに渡される名前と値のペアになります。<tt>&lt;jsp:setProperty></tt>タグを使用してプロパティを設定するとき、<tt>request</tt>オブジェクトに含まれるプロパティの名前に従って値を指定できます。したがって、<tt>property</tt>を<tt>name</tt>に設定することで、ユーザー入力で指定された値を取得できます。</p></li>
+
+                <li>&lt;h1> タグの間のテキストを次のように変更します。
+                    <pre class="examplecode">&lt;h1&gt;Hello, !&lt;/h1&gt;</pre>
+                </li>
+                <li>パレットから「Beanプロパティを取得」項目をドラッグし、<tt>&lt;h1></tt>タグ間のカンマの後にドロップします。「挿入Beanプロパティを取得」ダイアログで次の値を指定します。
+
+                    <ul>
+                        <li><strong>Bean名: </strong>mybean
+                        <li><strong>プロパティ名: </strong>name
+                    </ul>
+
+                    <p>「OK」をクリックします。<tt>&lt;jsp:getProperty></tt> タグが<tt>&lt;h1></tt>タグの間に追加されていることがわかります。</p>
+                <p class="alert"><b>注意:</b> プロパティ名では大文字と小文字が区別されます。<tt>response.jsp</tt>と<tt>index.jsp</tt>の入力フォームの"name" プロパティは、同じ大文字と小文字で指定する必要があります。
+              </li>
+
+                <li>ソース・エディタ内を右クリックし、「フォーマット」([Alt]-[Shift]-[F])を選択してコードの体裁を整えます。<tt>response.jsp</tt>ファイルの<tt>&lt;body></tt>タグは次のようになります。
+
+                    <pre class="examplecode">&lt;body&gt;
+    &lt;jsp:useBean id=&quot;mybean&quot; scope=&quot;session&quot; class=&quot;org.mypackage.hello.NameHandler&quot; /&gt;
+    &lt;jsp:setProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;
+    &lt;h1&gt;Hello, &lt;jsp:getProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;!&lt;/h1&gt;
+&lt;/body&gt;</pre>
+                </li>
+            </ol>
+        </div>
+
+        <a name="building"></a>
+        <h2>Webアプリケーション・プロジェクトの実行</h2>
+
+    <p>IDEでは、Antビルド・スクリプトを使用し、Webアプリケーションをビルドおよび実行します。IDEでは、新規プロジェクト・ウィザードで指定するオプションと、プロジェクトの「プロジェクト・プロパティ」ダイアログ・ボックス(「プロジェクト」ウィンドウでプロジェクト・ノードの右クリック・メニューから「プロパティ」を選択)のオプションに基づいてビルド・スクリプトが生成されます。</p>
+
+        <ol>
+            <li>
+              <p>「プロジェクト」ウィンドウで「HelloWeb」プロジェクト・ノードを右クリックし、「実行」([F6])を選択します。Webアプリケーションを実行すると、IDEによって次の手順が実行されます。</p>
+                    <ul>
+                    <li>アプリケーション・コードのビルドとコンパイル(後述の注意を参照)。プロジェクト・ノードのコンテキスト・メニューから「ビルド」または「消去してビルド」を選択すると、このステップを個別に実行できます。</li>
+                    <li>サーバーの起動。</li>
+                    <li>サーバーへのアプリケーションのデプロイ。プロジェクト・ノードのコンテキスト・メニューから「デプロイ」を選択すると、このステップを個別に実行できます。</li>
+                    <li>ブラウザ・ウィンドウでのアプリケーションの表示。</li>
+                    </ul>
+                    <p class="notes"><b>注意:</b> プロジェクトはデフォルトで「保存時にコンパイル」機能が有効になっている状態で作成されているので、アプリケーションをIDEで実行するときに先にコードをコンパイルする必要はありません。 </p>
+            </li>
+
+            <li>
+              <p>アプリケーションの実行の進行状況を示す出力ウィンドウが開きます。出力ウィンドウの「HelloWeb」タブを見てください。このタブでは、IDEで実行されるすべての手順を追跡できます。問題がある場合は、このウィンドウにエラー情報が表示されます。</p>
+          <img alt="Hello Webアプリケーションの実行に関するNetBeans IDEの出力ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/app-output-tab.png"></li>
+            <li>サーバーのステータスを示す出力ウィンドウが開きます。出力ウィンドウで、使用しているサーバーの名前が付いているタブを見てください。
+              <p class="alert"><b>重要:</b> GlassFishサーバーの起動に失敗した場合は、手動で起動し、プロジェクトを再度実行してください。サーバーは、「サービス」ウィンドウでサーバー・ノードを右クリックし、「起動」を選択することで手動で起動できます。</p>
+                <p class="tips">サーバーの出力ウィンドウは、Webアプリケーションの実行の問題に関する詳細な情報を提供します。サーバーのログも役立つ場合があります。これらは、サーバーのドメイン・ディレクトリにあります。「表示」>「IDEのログ」を選択して、IDEのログを表示することもできます。</p>
+                <img alt="Hello Webアプリケーション実行時のGlassFish 3サーバーに関するNetBeans IDEの出力ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/gf-output-tab.png">
+            </li>
+            <li>
+              <p>デフォルトのブラウザで<tt>index.jsp</tt>ページが開きます。IDEがサーバーの出力を表示する前に、ブラウザ・ウィンドウが開くこともあります。</p>
+              
+              <img alt="ブラウザに表示されたindex.jsp" border="1" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/result1.png"></li>
+            <li><p>テキスト・ボックスに名前を入力し、「OK」をクリックします。<tt>response.jsp</tt>ページが表示され、単純な挨拶のメッセージが表示されます。</p>
+
+
+                <img alt="ブラウザに表示されたresponse.jsp" border="1" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/result2.png"></li>
+        </ol>
+
+<a name="trouble"></a>
+        <h2>トラブルシューティング</h2>
+
+        <p><em>プロジェクトをビルドして実行しました。<tt>index.jsp</tt>の「OK」ボタンをクリックすると、<tt>response.jsp</tt>を使用できないことを示すエラー・ページが表示されます。</em></p>
+
+        <div class="indent">
+            <p>「プロジェクト」タブまたは「サーバー」タブでIDEの「出力」ウィンドウ([Ctrl]-[4])を確認しましたか。どんなエラー・メッセージがありましたか。プロジェクトで使用しているJDKは何ですか。サーバーは何ですか。JDK 7にはGlassFish 3.xまたはTomcat 7.xが必要です。「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「プロパティ」を選択します。JDKは、「ライブラリ」カテゴリの「Javaプラットフォーム」フィールドにあります。サーバーのバージョンは、「実行」カテゴリにあります。最後に、<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/HelloWebEE6.zip">サンプル・プロジェクト</a>をダウンロードし、自分のプロジェクトと比較します。</p>
+        </div>
+		<p><em>プロジェクトをビルドして実行しましたが、「Hello,!」しか表示されず、名前が表示されません。</em></p>
+		<div class="indent">
+		<p>&lt;jsp:setProperty> タグに<tt>value=""</tt>属性が含まれていませんか。これは<tt>index.jsp</tt>フォームで渡す値を上書きし、空の文字列に置き換えます。<tt>value</tt>属性を削除してください。</p></div>
+        <p><em>プロジェクトをビルドして実行しましたが、「Hello, null!」と表示されます。</em></p>
+        <div class="indent">
+        <p>まず、IDEの出力ウィンドウをアプリケーションとサーバーの両方について確認し、サーバーのログを確認します。サーバーが稼働しているかどうかを確認してください。アプリケーションがデプロイされているかどうかを確認してください。サーバーが稼働中で、アプリケーションがデプロイされている場合は<tt>org.apache.jasper.JasperException: java.lang.NullPointerException</tt>が発生しているかどうかを確認してください。これは通常、コード内で値が正しく初期化されていないことを意味します。このチュートリアルでは、これはJSPファイル内のプロパティ名の入力誤りを示しています。プロパティ名では大文字と小文字が区別されることに注意してください。</p>
+        </div>
+
+        <div class="feedback-box">
+        <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Developing%20Web%20Applications">このチュートリアルに関するご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>関連項目</h2>
+
+        <p>これで、Webアプリケーション開発入門のチュートリアルは終わりです。このドキュメントでは、NetBeans IDEを使用して単純なWebアプリケーションを作成し、サーバーにデプロイし、その表現をブラウザに表示する方法を示しました。また、アプリケーションでJavaServer PagesとJavaBeansを使用してユーザー・データを収集、維持、および出力する方法も示しました。</p>
+
+        <p>NetBeans IDEでのWebアプリケーションの開発の詳細は、次のリソースを参照してください。</p>
+
+        <ul>
+            
+            <li><a href="quickstart-webapps-struts.html">Struts Webフレームワーク入門</a>。NetBeans IDEを使用して、Strutsフレームワークを使用するWebアプリケーションを開発する基本的な手順を示します。</li>
+          <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+        </ul>
+
+    </body>
+</html>

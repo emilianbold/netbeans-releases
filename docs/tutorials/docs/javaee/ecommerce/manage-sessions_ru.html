@@ -1,0 +1,845 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to implement shopping cart functionality into the application.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Учебный курс по электронной коммерции в NetBeans - управление сеансами</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Учебный курс по электронной коммерции в NetBeans - управление сеансами</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Содержание учебного курса</h4>
+
+                <ol>
+                    <li><a href="intro.html">Введение</a></li>
+                    <li><a href="design.html">Проектирование приложения</a></li>
+                    <li><a href="setup-dev-environ.html">Настройка среды разработки</a></li>
+                    <li><a href="data-model.html">Проектирование модели данных</a></li>
+                    <li><a href="page-views-controller.html">Подготовка представлений страниц и сервлета контроллера</a></li>
+                    <li><a href="connect-db.html">Подключение приложения к базе данных</a></li>
+                    <li><a href="entity-session.html">Добавление классов сущностей и сеансных компонентов</a></li>
+                    <li><strong>Управление сеансами</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#session-data">Обработка данных сеанса</a></li>
+                            <li><a href="#debug">Изучение данных сеанса при помощи отладчика Java</a></li>
+                            <li><a href="#session-track">Изучение параметров отслеживания сеанса</a></li>
+                            <li><a href="#time-out">Обработка истечения времени ожидания сеанса</a></li>
+                            <li><a href="#seeAlso">Дополнительные сведения</a></li>
+                        </ul></li>
+
+                    <li><a href="transaction.html">Интеграция транзакционной бизнес-логики</a></li>
+                    <li><a href="language.html">Добавление поддержки языков</a></li>
+                    <li><a href="security.html">Обеспечение безопасности приложений</a></li>
+                    <li><a href="test-profile.html">Тестирование и профилирование</a></li>
+                    <li><a href="conclusion.html">Заключение</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="Содержимое на этой странице применимо к IDE NetBeans, версии 6.8 и 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="Содержимое на этой странице применимо к IDE NetBeans, версии 6.8 и 6.9"></p>
+
+        <p>Каждое приложение электронной коммерции, предлагающее какие-либо возможности корзины покупок, должно обладать функцией запоминания пользовательских данных в процессе перехода по веб-страницам/страницам веб-сайта.  К сожалению, протокол HTTP, посредством которого осуществляется взаимодействие в Интернете, является протоколом <em>без поддержки состояния</em>.  Каждый запрос, получаемый сервером, является независимым элементом данных, не связанным с ранее поступившими запросами.  Поэтому при нажатии кнопки для добавления товара в корзину покупок приложение должно не только обеспечивать обновление корзины пользователя, но и предупреждать влияние данной корзины на корзины других пользователей, просматривающих сайт в это же время.</p>
+
+        <p>Чтобы правильно обработать описанный выше сценарий, необходимо реализовать функцию для создания и ведения <em>сеанса</em> на протяжении пребывания пользователя на сайте.  Технология сервлета, являющаяся основой для всех веб-приложений на базе Java, предоставляет для этих целей интерфейс <a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpSession.html" target="_blank"><code>HttpSession</code></a>.  Также необходимо определить некоторые классы, а именно <code>ShoppingCart</code> и <code>ShoppingCartItem</code>, что позволит приложению хранить данные пользователя, пока время сеанса не истекло.</p>
+
+        <p>Подход данного раздела учебного курса отличается от остальных подходов, рассматриваемых в учебном курсе по электронной коммерции NetBeans.  Вместо создания файлов проекта и предоставления пошаговых инструкций с фрагментами кода для копирования и вставки в собственный проект предлагается открыть пример готового проекта для данного раздела и изучить код при помощи отладчика среды IDE и других средств.  В процессе работы будут изучены способы применения объекта <code>HttpSession</code> к коду, чтобы в результате каждого посещения веб-сайта создавался отдельный сеанс.  Также будут рассмотрены <em>контекстные переменные</em> и их использование как в классах Java, так и на страницах JSP.  Кроме того, в этом разделе описывается стандартный механизм <code>HttpSession</code> для ведения сеансов (например файлов cookie) и пошаговые инструкции, которые необходимо выполнить в случае деактивации файлов cookie в браузере пользователя.  В заключение затрагивается время ожидания сеанса и демонстрируется принцип его обработки с созданием элементарного фильтра, перехватывающего запросы для проверки существования сеанса.</p>
+
+        <p>Можно просмотреть интерактивную демонстрацию приложения, которое создается в этом учебном курсе: <a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">Демонстрация приложения электронной коммерции NetBeans</a></p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">Набор Java, версия 6.8 или 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">Сервер GlassFish</a></td>
+                    <td class="tbltd1">v3 или Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">Сервер базы данных MySQL</a></td>
+                    <td class="tbltd1">Версия 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot5.zip">Проект AffableBean</a></td>
+                    <td class="tbltd1">снимок 5</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Примечания:</strong></p>
+
+        <ul>
+            <li>The IDE NetBeans requires the Java Development Kit (JDK) to run properly. Если указанные материалы не установлены, JDK следует загрузить и установить в первую очередь.</li>
+
+            <li>The IDE NetBeans Java Bundle includes Java Web and EE technologies, which are required for the application you build in this tutorial.</li>
+
+            <li id="glassFish">The IDE NetBeans Java Bundle also includes the GlassFish server, which you require for this tutorial. Можно <a href="https://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">загрузить сервер GlassFish отдельно</a>, но версия, предоставляемая с NetBeans, имеет преимущество, так как автоматически зарегистрирована в среде IDE.</li>
+
+            <li>Этот учебный курс можно выполнять без выполнения предыдущих. Для этого обратитесь к <a href="setup.html">инструкциям по настройке</a>, в которых описана подготовка базы данных и настройка подключений между IDE, GlassFish, и MySQL.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="session-data">Обработка данных сеанса</h2>
+
+        <p>Приложения могут управлять пользовательскими сеансами при помощи объекта <code>HttpSession</code>.  Можно привязать пользовательские данные к объекту <code>HttpSession</code> и получить возможность доступа к этим данным на дальнейших этапах.  Операции привязки и доступа могут быть выполнены при помощи классов Java, а также переменных в контексте сеанса в выражениях на языке выражений.</p>
+
+        <ul>
+            <li><a href="#httpSession">Работа с объектом HttpSession</a></li>
+            <li><a href="#scopedVariables">Работа с контекстными переменными в веб-приложениях</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="httpSession">Работа с объектом HttpSession</h3>
+
+            <p>В приложении <code>AffableBean</code> используется объект <code>HttpSession</code> для идентификации пользователей при неоднократных запросах.  Объект <code>HttpSession</code> можно получить при помощи метода <code>getSession()</code> для заданного запроса:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+HttpSession session = request.getSession();</pre>
+
+            <p>Если объект сеанса для запроса еще не существует, метод создает и возвращает новый объект сеанса.</p>
+
+            <p>Объект сеанса можно использовать в качестве средства для передачи данных между запросами.  Метод <code>setAttribute</code> используется для привязки объектов к сеансу.  Таким же образом метод <code>getAttribute</code> используется для извлечения объектов из сеанса.  Например, в приложении <code>AffableBean</code> корзина покупок пользователя создается и привязывается к пользовательскому сеансу следующим образом:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+ShoppingCart cart = new ShoppingCart();
+session.setAttribute(&quot;cart&quot;, cart);</pre>
+
+            <p>Для извлечения корзины из сеанса применяется метод <code>getAttribute</code>:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+cart = (ShoppingCart) session.getAttribute(&quot;cart&quot;);</pre>
+
+            <p>На страницах JSP можно получить доступ к объектам, привязанным к сеансу с использованием выражений на языке выражений.  Также, если объект <code>ShoppingCart</code> с именем <code>cart</code> привязан к сеансу, можно получить доступ к объекту при помощи следующего выражения на языке выражений:
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">${cart}</pre>
+
+            <p>Доступ к объекту <code>ShoppingCart</code> сам по себе не представляет большого значения.  Целью является доступ к значениям, хранящимся в объекте.  При изучении нового класса <code>ShoppingCart</code> на снимке проекта обратите внимание, что он содержит следующие свойства:</p>
+
+            <ul>
+                <li><code>удвоенный итог</code></li>
+                <li><code>int numberOfItems</code></li>
+                <li><code>List&lt;String, ShoppingCartItem&gt; items</code></li>
+            </ul>
+
+            <p>При условии, что свойства соответствуют методам получения, можно получить доступ к значениям отдельных свойств при помощи простого точечного представления в выражении на языке выражений.  На странице <code>cart.jsp</code> приведен точный способ доступа к свойству <code>numberOfItems</code>:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+&lt;p&gt;Your shopping cart contains ${cart.numberOfItems} items.&lt;/p&gt;</pre>
+
+            <p>Для извлечения данных из свойств с несколькими значениями, например списка <code>items</code>, приведенного выше, на странице <code>cart.jsp</code> используется цикл <code>&lt;c:forEach&gt;</code>:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+&lt;c:forEach var=&quot;cartItem&quot; items=&quot;${cart.items}&quot; varStatus=&quot;iter&quot;&gt;
+
+  &lt;c:set var=&quot;product&quot; value=&quot;${cartItem.product}&quot;/&gt;
+
+    &lt;tr class=&quot;${((iter.index % 2) == 0) ? 'lightBlue' : 'white'}&quot;&gt;
+        &lt;td&gt;
+            &lt;img src=&quot;${initParam.productImagePath}${product.name}.png&quot;
+                 alt=&quot;${product.name}&quot;&gt;
+        &lt;/td&gt;
+
+        &lt;td&gt;${product.name}&lt;/td&gt;
+
+        &lt;td&gt;
+            &amp;euro; ${cartItem.total}
+            &lt;br&gt;
+            &lt;span class=&quot;smallText&quot;&gt;( &amp;euro; ${product.price} / unit )&lt;/span&gt;
+        &lt;/td&gt;
+        ...
+    &lt;/tr&gt;
+
+&lt;/c:forEach&gt;</pre>
+
+            <p>Принадлежащая <code>ShoppingCartItem</code> собственность <code>product</code> определяет тип продукта для элемента корзины. Цикл, рассматриваемый выше, использует результаты определения при первой установке переменной <code>product</code> в выражении <code>${cartItem.product}</code>.  Затем переменная используется для получения сведений об этом продукте (например имя, цена).</p>
+
+
+            <h3 id="scopedVariables">Работа с контекстными переменными в веб-приложениях</h3>
+
+            <p>При работе с технологией JSP/сервлетов доступны четыре контекстных объекта в области приложения.  Технология JSP реализует <em>скрытые объекты</em>, позволяющие получить доступ к классам, определяемым интерфейсом API сервлетов.</p>
+
+            <div class="margin-around">
+                <table width="688px">
+                    <tr>
+                        <th class="tblheader" scope="col">Контекст</th>
+                        <th class="tblheader" scope="col">Определение</th>
+                        <th class="tblheader" scope="col">Класс сервлетов</th>
+                        <th class="tblheader" scope="col">Скрытые объекты JSP</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>Приложение</strong></td>
+                        <td class="tbltd1">Глобальная память веб-приложения</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/ServletContext.html" target="_blank">javax.servlet.ServletContext</a></code></td>
+                        <td class="tbltd1"><code>applicationScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>Сеанс</strong></td>
+                        <td class="tbltd1">Данные пользовательского сеанса</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpSession.html" target="_blank">javax.servlet.http.HttpSession</a></code></td>
+                        <td class="tbltd1"><code>sessionScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>Запрос</strong></td>
+                        <td class="tbltd1">Данные отдельного запроса сервера</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpServletRequest.html" target="_blank">javax.servlet.HttpServletRequest</a></code></td>
+                        <td class="tbltd1"><code>requestScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>Страница</strong></td>
+                        <td class="tbltd1">Данные, действительные только в контексте отдельной страницы (только JSP)</td>
+                        <td class="tbltd1"><code>неприменимо</code></td>
+                        <td class="tbltd1"><code>pageScope</code></td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>При открытии файла <code>category.jsp</code> проекта в редакторе обратите внимание, что выражения на языке выражений включают в себя различные контекстные переменные, в частности, <code>${categories}</code>, <code>${selectedCategory}</code> и <code>${categoryProducts}</code>.  Переменная <code>${categories}</code> находится в контексте приложения, устанавливаемого в методе <code>init</code> файла <code>ControllerServlet</code>:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+// store category list in servlet context
+getServletContext().setAttribute(&quot;categories&quot;, categoryFacade.findAll());</pre>
+
+            <p>Остальные переменные, <code>${selectedCategory}</code> и <code>${categoryProducts}</code>, размещаются в контексте сеанса приложения в файле <code>ControllerServlet</code>.  Например:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+// place selected category in session scope
+session.setAttribute(&quot;selectedCategory&quot;, selectedCategory);</pre>
+
+            <p class="notes"><strong>Примечание.</strong> Если изучить предыдущие разделы руководства, можно заметить, что <code>${selectedCategory}</code> и <code>${categoryProducts}</code> были изначально помещены в область запроса. В предыдущих разделах такое размещение было целесообразным, но рассмотрим, что случится, если пользователь нажмет кнопку &quot;добавить в корзину&quot; на странице категорий. В ответ на запрос <code>addToCart</code> сервлет возвратит текущую страницу категорий. Таким образом нужно будет получить информацию о <code>selectedCategory</code> и <code>categoryProducts</code>, относящихся к выбранной категории. Вместо того чтобы узнавать данную информацию о каждом запросе, достаточно поместить ее в область сеанса запроса <code>category</code>, так чтобы она поддерживалась многими запросами и могла быть получена, когда в ней возникнет необходимость. Рассмотрим также функциональность страницы корзины. (Функции <a href="#cartPage">описываются ниже</a>). Кнопка &quot;Продолжить покупки&quot; возвращает пользователя в предыдущую просмотренную категорию. Опять же запрашиваются переменные <code>selectedCategory</code> и <code>categoryProducts</code>.</p>
+
+            <p>При ссылке на контекстные переменные в выражении на языке выражений нет необходимости в указании контекста переменной (при условии отсутствия двух переменных с одинаковым именем в различных контекстах).  Механизм JSP выполняет проверку всех четырех контекстов и возвращает первое найденное соответствие переменных.  Например, в файле <code>category.jsp</code> выражение</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+${categoryProducts}</pre>
+
+            <p>является сокращением для</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+${sessionScope.categoryProducts}</pre>
+
+            <span class="tips">Для получения дополнительных сведений ознакомьтесь со следующими материалами:</span>
+
+            <ul style="margin: 5px 0 0 1em">
+                <li><a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier5.html#1079198" target="_blank">Проектирование приложений уровня предприятия при помощи платформы J2EE: контексты состояния</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnafo.html" target="_blank">&quot;Совместные данные&quot; &gt; &quot;Использование контекстных объектов&quot;</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnahq.html#bnaij" target="_blank">&quot;Унифицированный язык выражений&quot; &gt; &quot;Скрытые объекты&quot;</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="debug">Изучение данных сеанса при помощи отладчика Java</h2>
+
+        <p>Начало изучения принципов поведения приложения во время выполнения.  Используйте отладчик среды IDE для перехода по коду и изучения способов создания объекта <code>HttpSession</code> и размещения прочих объектов в контексте сеанса для их дальнейшего извлечения.</p>
+
+        <ol>
+            <li>Откройте <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot5.zip">пример проекта</a> для данного раздела учебного курса в среде IDE.  В диалоговом окне &quot;Открытие проекта&quot; ( <img alt="Кнопка 'Открыть проект'" src="../../../../images_www/articles/73/javaee/ecommerce/common/open-project-btn.png"> ) перейдите к папке на компьютере, в которой хранится разархивированный файл учебного проекта.  Если изучить <a href="entity-session.html">предыдущий раздел руководства</a>, можно заметить, что снимок проекта включает новый пакет <code>cart</code>, содержащий классы <code>ShoppingCart</code> и <code>ShoppingCartItem</code>. Также изменены следующие файлы:
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li><code>WEB-INF/web.xml</code></li>
+                    <li><code>css/affablebean.css</code></li>
+                    <li><code>WEB-INF/jspf/header.jspf</code></li>
+                    <li><code>WEB-INF/jspf/footer.jspf</code></li>
+                    <li><code>WEB-INF/view/cart.jsp</code></li>
+                    <li><code>WEB-INF/view/category.jsp</code></li>
+                    <li><code>WEB-INF/view/checkout.jsp</code></li>
+                    <li><code>controller/ControllerServlet</code></li>
+                </ul></li>
+
+            <li>Запустите проект ( <img alt="Кнопка 'Выполнить проект'" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"> ), чтобы убедиться, что этот проект правильно настроен с помощью используемой базы данных и сервера приложений. <br><br>
+                <p class="alert">Если при выполнении проекта выводится сообщение об ошибке, еще раз обратитесь к <a href="setup.html">указаниям по настройке</a>, в которых описаны принципы подготовки базы данных и установки соединения между средой IDE, сервером GlassFish и MySQL.</p></li>
+
+            <li>Протестируйте функциональные возможности приложения в браузере.  Если <a href="entity-session.html">предыдущий раздел учебного курса</a> уже изучен, обратите внимание на следующие расширения.
+
+                <h4>страница категории</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>Первое нажатие кнопки &quot;add to cart&quot; активирует корзину покупок и виджеты &quot;proceed to checkout&quot;, отображаемые в заголовке.</li>
+                    <li>Нажатие кнопки &quot;add to cart&quot; приводит к обновлению числа товаров в виджете корзины покупок в заголовке.</li>
+                    <li>В результате щелчка ссылки &quot;view cart&quot; отображается страница корзины.</li>
+                    <li>При щелчке ссылки &quot;proceed to checkout&quot; открывается страница кассы.</li>
+                </ul>
+
+                <img alt="Изображение в браузере страницы категории" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/category-page.png" style="width:688px" title="IDE NetBeans включает функции отладки.">
+
+                <h4 id="cartPage">страница корзины покупок</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>Щелчок ссылки &quot;clear cart&quot; обеспечивает удаление всех товаров из корзины покупок.</li>
+                    <li>В результате щелчка ссылки &quot;continue shopping&quot; выполняется возврат к ранее просматриваемой категории.</li>
+                    <li>При щелчке ссылки &quot;proceed to checkout&quot; открывается страница кассы.</li>
+                    <li>Ввод числа (от 1 до 99) в поле количества товара и нажатие кнопки &quot;update&quot; запускает повторный расчет общей стоимости товара, а также промежуточной суммы.</li>
+                    <li>При вводе нуля в поле количества товара и нажатии кнопки &quot;update&quot; товар удаляется из отображаемой таблицы.</li>
+                </ul>
+
+                <img alt="Изображение в браузере страницы покупательской корзины" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-page.png" style="width:688px" title="IDE NetBeans включает функции отладки.">
+
+                <h4>страница проверки</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>В результате щелчка ссылки &quot;view cart&quot; отображается страница корзины.</li>
+                    <li>В результате нажатия &quot;подтвердить покупку&quot; на странице подтверждения отображаются результаты покупки (без указания информации о пользователе).</li>
+                </ul>
+
+                <img alt="Изображение в браузере страницы кассы" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/checkout-page.png" style="width:688px" title="Страница кассы включает функцию покупательской корзины"></li>
+
+            <li>Используйте диалоговое окно &quot;Перейти к файлу&quot;, чтобы открыть файл <code>ControllerServlet</code> в редакторе.  Нажмите ALT+SHIFT+O (CTRL+SHIFT+O в Mac OS), затем введите &quot;<code>Controller</code>&quot; в поле диалога и нажмите кнопку &quot;ОК&quot;. <br> <img alt="Диалоговое окно 'Перейти к файлу'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/go-to-file-dialog.png" title="С помощью диалогового окна &quot;Переход к файлу&quot;  быстро откройте ресурсы проекта в редакторе"></li>
+
+            <li>Установите точку останова в методе <code>doPost</code> на строке, которая создает объект <code>HttpSession</code> (строка 150). Для установки точки останова щелкните в левом поле редактора. <br> <img alt="Точка останова задана в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint.png" title="Щелкните левую границу редактора для задания точек останова">
+
+                <p class="tips">Для переключения номеров строк в редакторе щелкните правой кнопкой мыши в левом поле и выберите команду &quot;Показать номера строк&quot;.</p></li>
+
+            <li>Запустите отладчик.  Нажмите кнопку 'Отладка проекта' (<img alt="Кнопка 'Отладка проекта'" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png">) на главной панели инструментов IDE. Сервер GlassFish запускается (или перезапускается, если уже работал ) и открывает подключение через сокет по его отладочному номеру порта. В браузере откроется страница приветствия приложения. <br><br>
+                <p class="tips">Можно просматривать и изменять номер порта отладки в диалоговом окне &quot;Серверы&quot; (&quot;Сервис&quot; &gt; &quot;Серверы&quot;).  Выберите вкладку &quot;Java&quot; для используемого сервера.  Укажите номер порта в поле &quot;Используемый адрес&quot; под заголовком &quot;Параметры отладки&quot;.</p></li>
+
+            <li>При выводе страницы приветствия в браузере выберите категорию и добавьте несколько элементов в корзину покупок. Следует помнить, что нажатие кнопки &quot;add to cart&quot; отправляет запрос <code>addToCart</code> на сервер:
+
+                <pre class="examplecode">&lt;form action=&quot;addToCart&quot; method=&quot;post&quot;&gt;</pre>
+
+                Как уже было описано в разделе <a href="page-views-controller.html#controller">Подготовка представлений страницы и сервлета контроллера</a>, принадлежащий <code>ControllerServlet</code> метод <code>doPost</code> поддерживает запросы URL-адреса шаблона <code>/addToCart</code>. Следовательно, при нажатии кнопки &quot;add to cart&quot; ожидается вызов метода <code>doPost</code>.</li>
+
+            <li>Нажмите кнопку &quot;add to cart&quot; для любого элемента на странице категорий.  Перейдите к среде IDE и обратите внимание, что отладчик приостановил работу в точке останова. <br> <img alt="Отладчик приостанавливает работу по достижении точек останова, заданных в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint-suspended.png" title="Отладчик приостанавливает работу по достижении точек останова, заданных в редакторе"></li>
+
+            <li>Поместите курсор в месте вызова метода <code>getSession()</code> и нажмите сочетание клавиш CTRL+ПРОБЕЛ для вывода документации Javadoc. <br> <img alt="Документация Javadoc, отображаемая в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/javadoc-getsession.png" style="width:688px" title="Нажмите Ctrl-Space для вызова документации Javadoc"> <br> В соответствии с документацией метод <code>getSession()</code> возвращает объект <code>HttpSession</code>, связанный в настоящее время с запросом, и (при отсутствии сеанса) создает новый объект сеанса. <br><br>
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>Использование поддержки документации Javadoc в среде IDE</h3>
+
+                    <p>Среда IDE предоставляет встроенную поддержку документации Javadoc для разработки на базе Java EE.  Среда IDE связывается со спецификацией интерфейса API Java EE 6, доступной во внешнем браузере по пути &quot;Справка&quot; &gt; &quot;Справочные сведения Javadoc&quot; &gt; &quot;Java EE 6&quot;.</p>
+
+                    <p>Также среда IDE включает в себя различные функции, позволяющие получить быстрый доступ к документации интерфейса API:</p>
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>Диалоговое окно документации Javadoc:</strong> выберите &quot;Окно&quot; &gt; &quot;Прочее&quot; &gt; &quot;Javadoc&quot;.  В нижней области среды IDE откроется диалоговое окно &quot;Javadoc&quot;, в котором отобразится документация интерфейса API, релевантная для позиции курсора в редакторе.</li>
+
+                        <li><strong>Поиск документации по индексу:</strong> выберите в меню &quot;Справка&quot; пункт &quot;Поиск документации по индексу&quot; (SHIFT+F1; fn+SHIFT+F1 в системе Mac).  Введите имя искомого класса и выберите класс из списка результатов поиска.  Полное описание класса в спецификации интерфейса API отображается на нижней панели диалогового окна.</li>
+
+                        <li><strong>Всплывающее окно документации в редакторе:</strong> документация Javadoc отображается во всплывающем окне при нажатии сочетания клавиш CTRL+ПРОБЕЛ для определенного элемента в редакторе.  Можно нажать кнопку 'Внешний браузер' ( <img alt="Кнопка 'Внешний браузер'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/external-browser-btn.png"> ) для открытия документации в используемом браузере. Для использования сочетания клавиш CTRL+ПРОБЕЛ только для автозавершения кода можно деактивировать всплывающее окно документации, открыв диалоговое окно &quot;Параметры&quot; (&quot;Сервис&quot; &gt; &quot;Параметры&quot;; &quot;NetBeans&quot; &gt; &quot;Параметры&quot; для системы Mac), и затем выбрав в меню &quot;Редактор&quot; пункт &quot;Автозавершение кода&quot;.  Отмените выбор параметра &quot;Автоматический вызов окна документации&quot;.</li>
+                    </ul>
+
+                    <p>При документировании собственной работы рекомендуется добавить комментарии документации Javadoc к классам и методам.  Откройте класс <code>ShoppingCart</code> и изучите комментарии документации Javadoc, добавленные к методам класса.  Комментарии документации Javadoc отмечены парными символами <code>/** ... */</code>.  Например, для метода <code>addItem</code> добавлен следующий комментарий:</p>
+
+                    <div class="margin-around">
+                        <pre class="examplecode" style="width:643px">
+/**
+ * Adds a &lt;code&gt;ShoppingCartItem&lt;/code&gt; to the &lt;code&gt;ShoppingCart&lt;/code&gt;'s
+ * &lt;code&gt;items&lt;/code&gt; list. If item of the specified &lt;code&gt;product&lt;/code&gt;
+ * already exists in shopping cart list, the quantity of that item is
+ * incremented.
+ *
+ * @param product the &lt;code&gt;Product&lt;/code&gt; that defines the type of shopping cart item
+ * @see ShoppingCartItem
+ */
+public synchronized void addItem(Product product) {</pre>
+                    </div>
+
+                    <p>Это позволяет разработчикам просматривать документацию Javadoc по методу.  Для демонстрации откройте 'Навигатор' (Ctrl-7; ⌘-7 в Mac) и подведите курсор мыши к методу <code>addItem</code>.</p>
+
+                    <img alt="Всплывающее окно Javadoc" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/javadoc-additem.png" title="Подведите курсор мыши к 'Навигатору' для просмотра документации Javadoc">
+
+                    <p>Также можно использовать среду IDE для создания набора страниц HTML документации Javadoc.  В окне &quot;Проекты&quot; щелкните правой кнопкой мыши узел проекта и выберите пункт &quot;Создание документации Javadoc&quot;.  Среда IDE создает документацию Javadoc в папке <code>dist/javadoc</code> каталога проекта и открывает страницу-указатель в браузере.</p>
+
+                    <br>
+                    <p>Для получения дополнительных сведений о документации Javadoc обратитесь к следующим ресурсам:</p>
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><a href="http://java.sun.com/j2se/javadoc/" target="_blank">Официальная домашняя страницы средства Javadoc</a></li>
+                        <li><a href="http://java.sun.com/j2se/javadoc/writingdoccomments/index.html" target="_blank">Принцип записи комментариев документации для средства Javadoc</a></li>
+                    </ul>
+                </div>
+
+                <div style="clear:left"></div>
+            </li>
+
+            <li>Наведите курсор на переменную <code>session</code>.  Обратите внимание, что отладчик приостанавливает работу на строке, <em>которая должна быть запущена в нем.</em> Значение, возвращаемое <code>getSession()</code> еще не сохранено в переменной <code>session</code> и отображается всплываюшщее окно, в котором указывается, что "<code>session</code> не является известной переменной в текущем контексте". <br> <img alt="Всплывающее окно отладчика отображается в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable.png" title="Наведите курсор на переменные и выражения для определения их текущих значений"></li>
+
+            <li>Нажмите кнопку 'Обход процедур' (<img alt="Кнопка 'Обход процедур'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">) в отладчике на панели инструментов, расположенной выше в редакторе. Строка обрабатывается, и отладчик переходит к следующей строке файла.</li>
+
+            <li>Снова наведите курсор на переменную <code>session</code>.  Можно увидеть, что текущее значение сохранено в переменной <code>session</code>. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable-set.png" rel="lytebox" title="Наведите курсор на переменные и выражения для определения их текущих значений"> <img alt="Всплывающее окно отладчика отображается в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable-set.png" title="Щелкните для увеличения" width="688px"></a>
+
+                <p class="tips">В NetBeans 6.9 можно щелкнуть серый указатель  ( <img alt="Кнопка 'Обход процедур'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/grey-pointer.png"> ) во всплывающем окне, чтобы расширить список значений переменных, содержащихся в выделенном элементе.</p></li>
+
+            <li>Нажмите кнопку 'Обход процедур' ( <img alt="Кнопка 'Обход процедур'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png"> ) (F8; fn-F8 в Mac) для перехода к оператору <code>if</code> (строка 154). Поскольку в браузере только что была нажата кнопка &quot;add to cart&quot;, выражение <code>userPath.equals(&quot;/addToCart&quot;)</code> должно иметь значение <code>true</code>.</li>
+
+            <li>Выделите выражение <code>userPath.equals(&quot;/addToCart&quot;)</code> (нажав клавишу CTRL и щелкнув клавишей мыши).  При этом будет выведено всплывающее окно со значением выделенного выражения. <br> <img alt="Оцениваемое выражение отображается во всплывающем окне" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/expression.png" title="Выделите выражения для определения их текущих значений"></li>
+
+            <li>Нажмите клавишу F8 (fn-F8 в Mac OS) для перехода к следующей строке (строка 158). Приложение спроектировано таким образом, что объект <code>ShoppingCart</code> создается для пользовательского сеанса только при первом добавлении элемента в корзину пользователя.  Поскольку запрос <code>addToCart</code> в этом сеансе отладки получен впервые, предполагается, что объект <code>cart</code> имеет значение <code>null</code>. <br> <img alt="Оцениваемое выражение отображается во всплывающем окне" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-null.png" title="Объект покупательской корзины появляется только после добавления пользователем элемента к покупательской корзине"></li>
+
+            <li>Нажмите клавишу F8 (fn-F8 в Mac OS) для перехода к следующей линии (линия 160). Затем в строке 160, где создан объект <code>ShoppingCart</code>, нажмите кнопку 'Вход в' ( <img alt="Кнопка 'Вход в'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-into-btn.png"> ). Отладчик переходит к вызываемому методу.  В этом случае выполняется переход непосредственно к конструктору файла <code>ShoppingCart</code>. <br> <img alt="Оцениваемое выражение отображается во всплывающем окне" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-constructor.png" title="Перейдите к методам для отслеживания этапа выполнения для других классов"></li>
+
+            <li>Нажмите сочетание клавиш CTRL+TAB для перехода к файлу <code>ControllerServlet</code>.  Обратите внимание, что IDE предоставляет значок 'Стек вызовов' ( <img alt="Метка &quot;Стек вызовов&quot;" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/call-stack-badge.png"> ) в строке 160, указывая, что отладчик в настоящее время приостановлен где-то на методе выше в стеке вызовов. <br><br>
+                <p class="tips">Нажмите ALT+SHIFT+3 (CTRL+SHIFT+3 в Mac OS), чтобы открыть окно стека вызовов.</p></li>
+
+            <li>Нажмите клавишу F8 (fn+F8 в системе Mac) для продолжения перехода по коду.  При завершении обработки отладчиком конструктора <code>ShoppingCart</code> выполняется возврат к файлу <code>ControllerServlet</code>. <br><br> Строка 161 <code>ControllerServlet</code> привязывает вновь созданный объект <code>cart</code> к сеансу.
+
+                <pre class="examplecode">session.setAttribute(&quot;cart&quot;, cart);</pre>
+
+                Чтобы в этом удостовериться, откройте окно переменных отладчика. Выберите &quot;Окно&quot; &gt; &quot;Отладка&quot; &gt; &quot;Переменные&quot; или нажмите ALT+SHIFT+1 (CTRL+SHIFT+1 в Mac OS). <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session.png" rel="lytebox" title="Откройте диалоговое окно отладчика 'Переменные' для проверки значений переменных при переходе по коду."> <img alt="Окно &quot;Переменные&quot;" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session.png" title="Щелкните для увеличения" width="688px"></a> <br> При последовательной развертке узлов &quot;session&quot; &gt; &quot;session&quot; &gt; &quot;attributes&quot; можно просмотреть объекты, привязанные к сеансу.  На изображении выше отображены два элемента, привязанные в настоящее время к сеансу (выделены на снимке).  Это <code>selectedCategory</code> и <code>categoryProducts</code>, показанные в <code>ControllerServlet</code> на строках 83 и 89, соответственно. Оба элемента были привязаны ранее при щелчке изображения категории и обработке запроса страниц категории в файле <code>ControllerServlet</code>.</li>
+
+            <li>Нажмите клавишу F8 (fn-F8 в Mac OS) для выполнения кода со строки 161. Объект <code>cart</code> привязывается к сеансу, и диалоговое окно &quot;Переменные&quot; обновляется для отображения изменений.  Обратите внимание, что в окне &quot;Переменные&quot; сеанс содержит в настоящий момент три атрибута, третьим атрибутом является только что инициализированный объект <code>ShoppingCart</code> (выделен на снимке ниже). <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session-cart.png" rel="lytebox" title="Объект 'Покупательская корзина' привязан к сеансу с помощью метода setAttribute"> <img alt="Окно &quot;Переменные&quot;" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session-cart.png" title="Щелкните для увеличения" width="688px"></a> <br>
+                <p class="tips">Пока что не было &quot;доказано&quot;, что сеанс, как указано в диалоговом окне &quot;Переменные&quot;, представляет объект <code>HttpSession</code>.  Как упоминалось выше, <code>HttpSession</code> фактически является интерфейсом, так что при рассмотрении объекта <code>HttpSession</code> или объекта сеанса фактически имеется в виду любой объект, реализующий интерфейс <code>HttpSession</code>.  При наведении курсора мыши в диалоговом окне &quot;Переменные&quot; на элемент <code>session</code> будет выведено всплывающее окно, указывающее на то, что переменная представляет объект <code>HttpSession</code>.  Тип <code>StandardSessionFacade</code>, отображенный на снимке, является внутренним классом, используемым сервером GlassFish для реализации интерфейса <code>HttpSession</code>.  При наличии опыта работы с Tomcat обратите внимание, что пути <code>org.apache.catalina</code> в столбце &quot;Значение&quot; обусловлены тем, что веб-контейнер/контейнер сервлета GlassFish фактически является производным от контейнера Apache Tomcat.</p>
+
+                В сеанс добавляется новый объект <code>ShoppingCart</code>, и запрос продолжает обрабатываться.  Для завершения реализации функции &quot;add to cart&quot; предпринимаются следующие действия:
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>Идентификатор выбранного продукта получается из запроса (строка 165).</li>
+                    <li>Объект <code>Product</code> создается с помощью идентификатора (строка 169).</li>
+                    <li>Новый экземпляр <code>ShoppingCartItem</code> создается с помощью <code>product</code> (строка 170).</li>
+                    <li>Экземпляр <code>ShoppingCartItem</code> добавляется в состоящий из <code>ShoppingCartItem</code> список <code>экземпляров</code> (строка 170).</li>
+                </ul></li>
+
+           <li>Нажмите клавишу F8 (fn+F8 в системе Mac OS), чтобы продолжить выполнение перехода по коду с учетом перечисленных выше четырех действий.  Сделайте паузу, когда отладчик временно остановится на строке 170.</li>
+
+           <li id="step21">Создайте наблюдение за сеансом.  Эта функция позволит просматривать значения, содержащиеся в сеансе, при переходе к методу <code>addItem</code> в следующем шаге.  Щелкните правой кнопкой мыши сеанс в диалоговом окне &quot;Переменные&quot; и выберите команду &quot;Установить постоянное наблюдение&quot;. <br> <img alt="Контекстное меню отображается в окне 'Переменные'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/create-watch.png" title="Создайте наблюдения за переменными при переходе по коду в сеансе отладки">
+
+                <p class="tips">Кроме того, вы можете поместить курсор на переменной <code>session</code> в редакторе, а затем щелкнуть правой кнопкой мыши и выбрать 'Новое наблюдение'. Диалоговое окно создания наблюдения позволяет определить переменные или выражения для постоянного наблюдения за отладкой приложения. (При использовании выражений, сначала выделите выражение, а затем щелкните правой кнопкой мыши и выберите 'Новое наблюдение'). <br> <img alt="Диалоговое окно 'Соблюдать наблюдение'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/new-watch-dialog.png" title="Щелкните правой кнопкой мыши переменные и выражения в редакторе и выберите 'Создать наблюдение'"></p>
+
+                Для переменной <code>session</code> и всех содержащихся в ней переменных создается наблюдение.  Наблюдение отображается в окне 'Наблюдения' (Window > 'Отладка' > 'Наблюдения') или при переключении кнопки наблюдений  ( <img alt="Кнопка 'Наблюдения'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/watch-btn.png"> ) на левой границе окна 'Переменные' оно отображается в верхней строке окна 'Переменные'. <br><br> Отладчик позволяет наблюдать за переменными по мере перехода по коду.  Это важно, например, при отслеживании изменения для отдельных значений переменных (без просмотра полного списка в окне &quot;Переменные&quot; для каждого шага) или при временном переходе к классу, не содержащему рассматриваемые переменные.</li>
+
+           <li>Нажмите кнопок 'Вход в' ( <img alt="Кнопка 'Вход в'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-into-btn.png"> ) для перехода к <code>ShoppingCart</code> к методу <code>addItem</code>.</li>
+
+           <li>Последовательно шагайте по методу <code>addItem</code>, пока не достигните строки 53. Согласно документации Javadoc <code>addItem</code> <em>&quot;добавляет элемент<code>ShoppingCartItem</code> в список <code>items</code> в файле <code>ShoppingCart</code>.  Если указанный товар из списка <code>product</code> уже существует в списке корзины покупок, количество этого товара увеличивается.&quot;</em></li>
+
+           <li>Изучите переменную <code>session</code>, для которой был создан параметр наблюдения (<a href="#step21">шаг 21</a> выше). Выражение <code>items.add(scItem)</code> на странице 51 добавляет новый экземпляр <code>ShoppingCartItem</code> в список <code>items</code> в <code>ShoppingCart</code>. Этот процесс можно проследить при переходе к третьему атрибуту, содержащемуся в сеансе (например, переменной <code>cart</code>). <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-add-item.png" rel="lytebox" title="Сеанс отображается в новом ShoppingCartItem, как указанный в списке элементов ShoppingCart"> <img alt="Окно &quot;Переменные&quot;" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-add-item.png" title="Щелкните для увеличения" width="688px"></a> <br> На данном этапе можно изучить принцип создания <code>HttpSession</code> для запроса, создания объекта <code>ShoppingCart</code> и его прикрепления к сеансу, а также создания элемента <code>ShoppingCartItem</code> на основе пользовательского выбора продукта с последующим добавлением в список <code>items</code> файла <code>ShoppingCart</code>.  Последним действием является переадресация запроса в представление <code>category.jsp</code>.</li>
+
+            <li>Откройте в редакторе фрагмент JSP заголовка (<code>header.jspf</code>) и разместите точку останова в строке 86.  Эта строка содержит оператор на языке выражений в пределах виджета корзины покупок, отображающего число элементов корзины. <br> <img alt="Точка останова задана на странице JSP" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint-jsp.png" title="Отладчик можно приостановить на страницах JSP" width="688px"></li>
+
+            <li>Нажмите кнопку 'Продолжить' ( <img alt="Кнопка 'Продолжить'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/continue-btn.png"> ) на панели инструментов отладчика. Отладчик продолжает работу до завершения обработки или до следующей точки останова.  В последнем случае отладчик приостанавливается на строке 86 фрагмента JSP заголовка. <br><br>
+                <p class="notes"><strong>Примечание.</strong> Чтобы отложить работу отладчика на странице JSP требуется контрольная точка. Например, если в файле <code>ControllerServlet</code> выполняется переадресация запроса в соответствующее представление, отладчик не будет автоматически приостановлен на странице JSP.</p></li>
+
+            <li>Откройте окно переменных (ALT+SHIFT+1; CTRL+SHIFT+1 в системе Mac OS), если оно еще не открыто. В отличие от классов Java отладчик <em>не</em> предоставляет подсказки при наведении курсора мыши на переменные или выражения на странице JSP.  Однако диалоговое окно &quot;Переменные&quot; не позволяет определять значения переменных при переходе по коду.  Где можно найти значение для переменной <code>${cart.numberOfItems}</code>?</li>
+
+            <li>Последовательно разверните в диалоговом окне &quot;Переменные&quot; узлы &quot;Скрытые объекты&quot; &gt; &quot;pageContext&quot; &gt; &quot;session&quot; &gt; &quot;session&quot; &gt; &quot;attributes&quot;.  В результате будет предоставлен доступ к объекту сеанса, как и при работе с файлом <code>ControllerServlet</code>.  Обратите внимание, что сеанс, для которого на шаге 21 было создано наблюдение, указывает на сам объект.  Здесь можно убедиться, что значение переменной <code>${cart.numberOfItems}</code> составляет &quot;<code>1</code>&quot;. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-number-of-items.png" rel="lytebox" title="На страницах JSP просмотрите атрибты сеанса в неявном объекте pageContext"> <img alt="Окно &quot;Переменные&quot;" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-number-of-items.png" title="Щелкните для увеличения" width="688px"></a>
+
+                <p class="tips">Разверните окно 'Переменные' или любое окно в IDE, щелкнув правой кнопкой мыши заголовок окна, а затем выбрав 'Развернуть окно' (Shift-Esc).</p>
+
+                Отладчик предоставляет доступ к скрытому объекту <code>pageContext</code>. <code>pageContext</code> предоставляет контекст страницы JSP и открывает прямой доступ к различным объектам, включая объекты <code>HttpServletRequest</code>, <code>HttpSession</code> и <code>ServletContext</code>.  Для получения дополнительных сведений обратитесь к <a href="http://java.sun.com/javaee/5/docs/tutorial/doc/bnahq.html#bnaij" target="_blank">Учебному курсу по Java EE 5: скрытые объекты</a>.</li>
+
+            <li>Нажмите кнопку 'Завершить сеанс' ( <img alt="Кнопка 'Завершить сеанс'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png"> ). Работа среды выполнения и сеанса отладки завершается.  Браузер отображает страницу категорий с полной визуализацией, и виджет корзины покупок в заголовке страницы содержит один элемент.</li>
+        </ol>
+
+        <p>Надеемся, что теперь использование отладчика среды IDE не только для анализа проекта при неожиданном поведении, но и в качестве средства изучения кода, не вызывает у вас затруднений.  Ниже перечислены другие функциональные кнопки на панели инструментов:</p>
+
+        <ul>
+            <li>( <img alt="Кнопка 'Выход'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-out.png"> ) <strong>Выход.</strong> Выполняется выход из вызова текущего метода. Выполняется обработка и удаление самого верхнего вызова метода в стеке вызовов.</li>
+
+            <li>( <img alt="Кнопка 'Переход к курсору'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/run-to-cursor.png"> ) <strong>Переход к курсору</strong> Выполнение до строки, на которой размещен курсор.</li>
+
+            <li>( <img alt="Кнопка 'Применить изменения кода'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/apply-code-changes.png"> ) <strong>Применить изменения кода.</strong> После редактирования файла можно нажать эту кнопку, чтобы файл был повторно скомпилирован и изменения учитывались в сеансе отладки.</li>
+
+            <li>( <img alt="Кнопка 'Выражение обхода процедур'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-expression.png"> ) <strong>Выражение обхода процедур.</strong> Позволяет просматривать входные параметры и получаемые выходные значения всех вызовов методов в выражении. Можно изучить выходные значения для предыдущего метода и входные параметры для следующего метода в диалоговом окне &quot;Локальные переменные&quot;.  При отсутствии дальнейших вызовов методов, режим работы выражения обхода процедур аналогичено команде Step Over ( <img alt="Кнопка 'Обход процедур'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png"> ).</li>
+        </ul>
+
+
+        <br>
+        <h2 id="session-track">Изучение параметров отслеживания сеанса</h2>
+
+        <p>Существует три традиционных способа отслеживания сеансов между клиентом и сервером.  Самым распространенным является способ с использованием файлов cookie.  Перезапись URL-адресов можно применять в случае, если файлы cookie не поддерживаются или отключены.  Скрытые поля формы также могут использоваться в качестве способа &quot;ведения состояния&quot; нескольких запросов, однако они ограничены использованием в пределах формы.</p>
+
+        <p>Проект <code>AffableBean</code> включает в себя пример метода скрытого поля на странице категорий и корзины.  Кнопки &quot;add to cart&quot; и &quot;update&quot;, отображаемые для элементов продукта, содержат скрытое поле, передающее идентификатор продукта на сервер при нажатии кнопки.  При открытии страницы <code>cart.jsp</code> в редакторе можно заметить, что теги <code>&lt;form&gt;</code> содержат скрытое поле.</p>
+
+        <pre class="examplecode" style="width:730px; margin-left:10px; margin-top:-2px">
+&lt;form action=&quot;updateCart&quot; method=&quot;post&quot;&gt;
+    <strong>&lt;input type=&quot;hidden&quot;
+           name=&quot;productId&quot;
+           value=&quot;${product.id}&quot;&gt;</strong>
+    ...
+&lt;/form&gt;</pre>
+
+        <p>Таким образом, идентификатор продукта отправляется в виде параметра запроса, используемого сервером для идентификации элемента в пользовательской корзине, количество которой необходимо изменить.</p>
+
+        <p>Интерфейс API сервлета предоставляет высокоуровневый механизм для управления сеансами.  Фактически он создает и передает файлы cookie между клиентом и сервером в каждом цикле &quot;запрос-ответ&quot;.  Если браузер клиента не принимает файлы cookie, механизм сервлета автоматически возвращается к перезаписи URL-адреса.  Следующие два упражнения демонстрируют работу этой функции.</p>
+
+        <ul>
+            <li><a href="#http-monitor">Изучение обмена данными между сервером и клиентом с использованием монитора HTTP</a></li>
+            <li><a href="#url-rewrite">Ведение сеансов с перезаписью URL-адреса</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="http-monitor">Изучение обмена данными между сервером и клиентом с использованием монитора HTTP</h3>
+
+            <p>По умолчанию механизм сервлета использует файлы cookie для ведения и идентификации сеансов между запросами.  Для каждого объекта сеанса создается случайный буквенно-цифровой номер, служащий уникальным идентификатором.  Этот идентификатор передается в клиент как файл cookie <code>JSESSIONID</code>.  При создании запроса клиентом механизм сервлета считывает значение файла cookie <code>JSESSIONID</code> для определения сеанса, к которому относится запрос.</p>
+
+            <p>Для наглядности отладчик используется вместе с монитором HTTP среды IDE.</p>
+
+            <ol>
+                <li>Начните работу с активации монитора HTTP для используемого сервера.  Выберите элементы &quot;Сервис&quot; &gt; &quot;Серверы&quot;. В левом столбце окна &quot;Серверы&quot; выберите используемый сервер (GlassFish). Затем выберите на главной панели режим &quot;Включить монитор HTTP&quot;. <br> <img alt="Окно 'Серверы'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/servers-win-http-monitor.png" title="Выберите режим 'Включить монитор HTTP', чтобы активировать монитор HTTP" width="688px"></li>
+
+                <li>Если сервер уже запущен, необходимо перезапустить его.  Однако поскольку планируется использование отладчика, а при запуске отладчика выполняется перезапуск сервера для взаимодействия с другим портом, просто нажмите кнопку 'Отладка проекта' ( <img alt="Кнопка 'Отладка проекта'" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png"> ) на главной панели инструментов IDE. Будет выполнена перезагрузка сервера, запустится сеанс отладки, и в браузере откроется страница приветствия приложения.  В нижней области среды IDE будет отображен монитор HTTP. <br> <img alt="Монитор HTTP" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor.png" title="Монитор HTTP отображается по умолчанию в нижней области среды IDE" width="688px"></li>
+
+                <li>Щелкните запись AffableBean в левом столбце (как показано на снимке выше).  При выборе записей в левом столбце правый (т.е. главный) столбец обновляется для отображения соответствующих данных.  На изображении выше вкладка &quot;Запрос&quot; отображает идентификатор URI запроса (<code>/AffableBean/</code>), метод HTTP (<code>GET</code>) и указывает на отсутствие отправки строки запроса вместе с запросом.</li>
+
+                <li>Выберите вкладку &quot;Сеанс&quot;.  Обратите внимание на утверждение: &quot;Сеанс создан в результате этого запроса.&quot; Это вызвано отправкой сервером заголовка <code>Set-Cookie</code> для файла cookie <code>JSESSIONID</code> в качестве ответа.  Также обратите внимание, что новый идентификатор сеанса указан в области &quot;Свойства сеанса&quot;.  Как будет продемонстрировано ниже, идентификатор сеанса представляет собой значение файла cookie <code>JSESSIONID</code>. <br> <img alt="Монитор HTTP - вкладка &quot;Сеанс&quot;." class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-tab.png" title="Сведения о сеансе отображаются на вкладке 'Сеанс' в мониторе HTTP"> <br> Может возникнуть вопрос о способе создания объекта сеанса из запроса для страницы приветствия сайта.  Ведь в файле <code>ControllerServlet</code> не выполняется обработка начального запроса для <code>/AffableBean/</code>, и этот запрос нигде не сталкивается с методом <code>getSession()</code>.  Или сталкивается?  Напомним, что страницы JSP скомпилированы в сервлеты при развертывании.  При первом развертывании проекта на сервере можно фактически использовать среду IDE для просмотра скомпилированного сервлета JSP на собственном сервере.</li>
+
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши файл <code>index.jsp</code> и выберите 'Просмотреть сервлет'. В редакторе откроется файл <code>index_jsp.java</code>.  Файл является сервлетом, автоматически скомпилированным на основе страницы <code>index.jsp</code>.</li>
+
+                <li>Выполните в файле поиск метода <code>getSession</code>.  Нажмите Ctrl-F (⌘-F в Mac), введите '<code>getSession</code>' на панели поиска, затем нажмите кклавишу Enter. <br><br>
+                    <p class="tips"> Ctrl-F (⌘-F в Mac) - это сочетание клавиш для 'Правка' > 'Найти'.</p>
+
+                    <img alt="В редакторе отображается метод getSession" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/get-session.png" title="Метод getSession существует в скомпилированном сервлете страницы JSP"> <br> Фактически выполняется вызов метода <code>getSession</code>.  Это вызвано тем, что страницы JSP по умолчанию включают в себя скрытый объект <code>pageContext.session</code>.  Для деактивации этого поведения можно добавить следующую директиву в верхнюю область файла JSP:
+
+                    <pre class="examplecode">&lt;%@page session=&quot;false&quot; %&gt;</pre>
+
+                    , и метод<code>getSession</code> в скомпилированном сервлете будет деактивирован. <br><br>
+                    <p class="tips">Для выяснения местоположения скомпилированного сервлета на сервере можно навести курсор мыши на вкладку с именем сервлета над редактором.  Будет выведено всплывающее окно с путем к файлу на компьютере.</p></li>
+
+                <li>Выберите категорию в браузере и добавьте товар в корзину.  Перейдите в среду IDE.  Заметим, что отладчик приостанавливает работу на точке останова в <code>ControllerServlet</code>, поставленную ранее (на строке 150). Все точки останова между сеансами запоминаются.  Для удаления точки останова можно щелкнуть метку точки останова ( <img alt="Метка точки останова" src="../../../../images_www/articles/73/javaee/ecommerce/common/breakpoint-badge.png"> ) на левой границе редактора. Тем не менее, поскольку в проект уже добавлено несколько точек останова, откройте окно отладчика &quot;Точки останова&quot; (&quot;Окно&quot; &gt; &quot;Отладка&quot; &gt; &quot;Точки останова&quot;). <br> <img alt="Окно 'Точки останова'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoints-window.png" title="Просмотрите все точки останова в проекте в окне 'Точка останова'"> <br> В окне &quot;Точки останова&quot; можно просматривать и вызывать действия для всех точек останова, установленных в проектах, которые открыты в среде IDE.</li>
+
+                <li>Щелкните правой кнопкой мыши точку останова, установленную в файле <code>header.jspf</code>, и выберите команду &quot;Удалить&quot;.  Then щелкните правой кнопкой мыши the breakpoint set in the <code>ControllerServlet</code> and choose Disable. (Позднее в этом упражнении будет выполнено ее повторное включение).</li>
+
+                <li>Нажмите кнопку 'Продолжить' ( <img alt="Кнопка 'Продолжить'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/continue-btn.png"> ). Обработка запроса завершается, и на странице категорий браузера выводится добавленный в корзину товар.</li>
+
+                <li>В мониторе HTTP выполните поиск запроса <code>addToCart</code> в левом столбце, затем выберите его для отображения подробных данных в главном столбце. <br><br>
+                    <p class="tips">Нажмите кнопку 'Сортировка по возрастанию' ( <img alt="Кнопка 'Сортировка по возрастанию'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/ascending-sort-btn.png"> ), чтобы последние записи были указаны в верхней части.</p>
+
+                    <br> Обратите внимание на идентификатор URI запроса (<code>/AffableBean/addToCart</code>), метод HTTP (<code>POST</code>) и параметры запроса (<code>productId</code> и <code>submit</code>) на вкладке &quot;Запрос&quot;. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor-add-to-cart.png" rel="lytebox" title="Просмотрите данные запроса, включая параметры запроса на вкладке 'Запрос монитора HTTP'"> <img alt="Монитор HTTP - вкладка &quot;Запрос&quot;." class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor-add-to-cart.png" style="width:688px" title="Щелкните для увеличения"></a></li>
+
+                <li>Выберите вкладку &quot;Файлы cookie&quot;.  Здесь отображаются данные о существовании файла cookie с именем <code>JSESSIONID</code> и его отправке от клиента на сервер.  Обратите внимание, что значение файла cookie совпадает с идентификатором сеанса, отображаемом на вкладке &quot;Сеанс&quot;. <br> <img alt="Монитор HTTP - вкладка &quot;Файлы Cookies&quot;." class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cookies-tab.png" title="Файлы cookies отображаются на вкладке 'Файлы Cookies' в мониторе HTTP"> <br> Схожие данные представлены на вкладке &quot;Заголовок&quot;, на которой отображается файл cookie, поскольку <code>Cookie</code> является заголовком запроса, отправленного клиентом. <br> <img alt="Монитор HTTP - вкладка &quot;Файлы Cookies&quot;." class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/headers-tab.png" title="Файлы cookies отображаются на вкладке 'Файлы Cookies' в мониторе HTTP">
+
+                    <p class="tips">Для получения дополнительных сведений о заголовках запроса и ответа обратитесь к странице веб-энциклопедии Wikipedia <a href="http://en.wikipedia.org/wiki/List_of_HTTP_headers" target="_blank">Список заголовков HTTP</a>.</p></li>
+
+                <li>Выберите вкладку &quot;Сеанс&quot;.  На вкладке отображается сообщение &quot;Сеанс предшествует запросу&quot;.  Также обратите внимание, что атрибут <code>cart</code> отображается в списке &quot;Атрибуты сеанса после запроса&quot;.  И это объяснимо, ведь объект <code>cart</code> привязывается к сеансу при первой обработке запроса <code>addToCart</code>. <br> <img alt="Монитор HTTP - вкладка &quot;Сеанс&quot;." class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-tab-add-to-cart.png" title="Атрибуты сеанса отображаются на вкладке 'Сеанс' в мониторе HTTP"> <br><br> В следующих нескольких шагах рассматривается поиск идентификатора сеанса и файла cookie <code>JSESSIONID</code> в диалоговом окне &quot;Переменные&quot;.</li>
+
+                <li>Снова активируйте точку останова, ранее установленную в файле <code>ControllerServlet</code>.  Нажмите ALT+SHIFT+5 (CTRL+SHIFT+5 в Mac OS), чтобы открыть окно точек останова, затем установите флажок напротив точки останова, чтобы включить ее заново.</li>
+
+                <li>Нажмите в браузере кнопку &quot;add to cart&quot; для одного из перечисленных продуктов.</li>
+
+                <li>Перейдите в среду IDE и обратите внимание, что отладчик приостановился на точке останова, установленной в файле <code>ControllerServlet</code>.  Нажмите кнопку 'Обход процедур' ( <img alt="Кнопка 'Обход процедур'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png"> ) для назначения переменной <code>session</code> объекту сеанса.</li>
+
+                <li>Откройте окно &quot;Переменные&quot; (ALT+SHIFT+1; CTRL+SHIFT+1 в Mac OS), чтобы развернуть session &gt; session. Идентификатор сессии будет указан в качестве значения переменной <code>id</code>.</li>
+
+                <li>При поиске файла cookie <code>JSESSIONID</code> следует помнить, что обычно файл cookie доступен из сервлета при вызове метода <a href="http://java.sun.com/webservices/docs/1.6/api/javax/servlet/http/HttpServletRequest.html#getCookies%28%29" target="_blank"><code>getCookies</code></a> в объекте <code>HttpServletRequest</code>.  Поэтому перейдите к объекту запроса по пути: &quot;request&quot; &gt; &quot;Inherited&quot; &gt; &quot;request&quot; &gt; &quot;request&quot; &gt; &quot;Inherited&quot; &gt; &quot;cookies&quot;.  Здесь можно просмотреть список <code>файлов cookie</code> ArrayList.  При развертке списка можно найти файл cookie <code>JSESSIONID</code>, значением которого является идентификатор сеанса.</li>
+
+                <li>Нажмите кнопку 'Завершить сеанс' ( <img alt="Кнопка 'Завершить сеанс'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png"> ), чтобы завершить сеанс отладки.</li>
+            </ol>
+
+
+            <h3 id="url-rewrite">Ведение сеансов с перезаписью URL-адреса</h3>
+
+            <p>Как упоминалось выше, механизм сервлета обнаруживает возможность поддержки файлов cookie в браузере клиента, в случае невозможности поддержки механизм переходит к перезаписи URL-адреса как способа ведения сеансов.  Эти процессы являются прозрачными для клиента.  Для разработчиков процесс не является полностью прозрачным.</p>
+
+            <p>Необходимо убедиться, что приложение может перезаписывать URL-адреса при каждом отключении файлов cookie.  Для этого вызовите метод отклика <code>encodeURL</code> для всех URL-адресов, возвращаемых сервлетами в приложении. В результате идентификатор сеанса будет добавлен к URL-адресу в случае, если использование файлов cookie невозможно; в противном случае URL-адрес будет возвращен без изменений.</p>
+
+            <p>Например, браузер отправляет запрос для третьей категории приложения <code>AffableBean</code> (bakery): <code>category?3</code>.  Сервер отправляет в ответ идентификатор сеанса, включенный в URL-адрес:</p>
+
+            <pre class="examplecode">/AffableBean/category<strong>;jsessionid=364b636d75d90a6e4d0085119990</strong>?3</pre>
+
+            <p>Как описано выше, <em>все URL-адреса, возвращенные сервлетами приложения, необходимо зашифровать</em>.  Помните, что страницы JSP компилируются в сервлеты.  Как зашифровать URL-адреса на страницах JSP?  Для этих целей необходимо использовать тег <a href="http://java.sun.com/products/jsp/jstl/1.1/docs/tlddocs/c/url.html" target="_blank"><code>&lt;c:url&gt;</code></a> JSTL.  Следующие упражнения демонстрируют проблему и ее решение.</p>
+
+            <ol>
+                <li>Временно отключите файлы cookie в браузере.  При использовании Firefox можно выбрать пункт &quot;Настройки&quot; в меню &quot;Инструменты&quot; (&quot;Firefox&quot; &gt; &quot;Параметры&quot; в системе Mac).  Выберите в открывшемся диалоговом окне вкладку &quot;Приватность&quot;, затем выберите в области &quot;История&quot; пункт &quot;будет использовать ваши настройки хранения истории&quot; в предоставленном раскрывающемся списке.  Снимите флажок параметра &quot;Принимать cookie с сайтов&quot;. <br> <img alt="Окно предпочтений Firefox" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/firefox.png" title="Временно отключите файлы cookie в браузере"></li>
+
+                <li>Запустите проект <code>AffableBean</code>.  При отображении страницы приветствия щелкните категорию и попытайтесь добавить элемент в корзину.  Обратите внимание, что функциональные возможности приложения строго ограничены. <br> <img alt="Страница 'Некорректные категории'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/compromised.png" title="Для функций приложения возникает угроза в случае, если клиента не принимает файлы cookies" width="688px"> <br> Как и ранее, сервер создает сеанс и привязывает к нему объекты.  Это метод для отображения выбранной категории и продуктов на странице категорий.  Тем не менее, при попытке установить файл cookie <code>JSESSIONID</code> на сервере происходит сбой.  Следовательно, при повторном запросе клиента (когда пользователь нажмите кнопку &quot;add to cart&quot;) сервер не может определить сеанс, к которому относится запрос.  Поэтому невозможно найти атрибуты, ранее установленные в сеансе, например <code>selectedCategory</code> и <code>categoryProducts</code>.  По этой причине в отображаемом ответе отсутствуют данные, определяемые этими атрибутами.</li>
+
+                <li>Откройте в редакторе страницу <code>category.jsp</code> проекта.  Найдите строку, в которой реализуется кнопка &quot;add to cart&quot; (строка 58).  Атрибут <code>action</code> элемента <code>&lt;form&gt;</code> определяет запрос, отправленный на сервер.
+
+                    <pre class="examplecode">&lt;form action=&quot;addToCart&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>Измените запрос для его передачи посредством тега <code>&lt;c:url&gt;</code>.
+
+                    <pre class="examplecode">&lt;form action=&quot;<strong>&lt;c:url value='addToCart'/&gt;</strong>&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>Для сохранения изменений в файле нажмите сочетание клавиш CTRL+S (⌘-S в Mac). Помните, что среда IDE предоставляет функцию &quot;Развертывание при сохранении&quot;, которая активна по умолчанию.  Это означает, что все сохраненные изменения автоматически разворачиваются на сервере.</li>
+
+                <li>Выберите в браузере другую категорию для отображения в приложении измененной страницы категорий.</li>
+
+                <li>Изучите исходный код страницы.  В Firefox можно нажать Ctrl-U (⌘-U в Mac). Отобразится кнопка &quot;add to cart&quot; для каждого продукта с идентификатором сеанса, добавленным к URL-адресу.
+
+                    <pre class="examplecode">
+&lt;form action=&quot;addToCart<strong>;jsessionid=4188657e21d72f364e0782136dde</strong>&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>Нажмите кнопку &quot;add to cart&quot; для любого товара.  Теперь сервер способен определить сеанс, которому принадлежит запрос, и создает соответствующий ответ.</li>
+
+                <li>Перед продолжением убедитесь, что файлы cookie в браузере снова включены.</li>
+            </ol>
+
+            <p id="encodeUrl">Снова возникает необходимость в шифровании каждой активной ссылки приложения, ответ которой требует определенной формы данных сеанса.  Иногда реализация выполняется не так очевидно, как описывается в примере выше.  Например, в настоящий момент виджет &quot;clear cart&quot;, используемый на странице <code>cart.jsp</code>, устанавливает для параметра <code>clear</code> значение <code>true</code> при щелчке ссылки.</p>
+
+            <div class="indent">
+            <pre class="examplecode" style="width:700px">
+&lt;%-- clear cart widget --%&gt;
+&lt;c:if test=&quot;${!empty cart && cart.numberOfItems != 0}&quot;&gt;
+    &lt;a href=&quot;viewCart<strong>?clear=true</strong>&quot; class=&quot;bubble hMargin&quot;&gt;clear cart&lt;/a&gt;
+&lt;/c:if&gt;</pre></div>
+
+            <p>Тег <code>&lt;c:url&gt;</code> можно применить к URL-адресу следующим образом:</p>
+
+            <div class="indent">
+            <pre class="examplecode" style="width:700px">
+&lt;%-- clear cart widget --%&gt;
+&lt;c:if test=&quot;${!empty cart && cart.numberOfItems != 0}&quot;&gt;
+
+    <strong>&lt;c:url var=&quot;url&quot; value=&quot;viewCart&quot;&gt;
+        &lt;c:param name=&quot;clear&quot; value=&quot;true&quot;/&gt;
+    &lt;/c:url&gt;</strong>
+
+    &lt;a href=&quot;<strong>${url}</strong>&quot; class=&quot;bubble hMargin&quot;&gt;clear cart&lt;/a&gt;
+&lt;/c:if&gt;</pre></div>
+
+            <p>Параметр <code>clear=true</code> устанавливается путем добавления тега <code>&lt;c:param</code> между тегами <code>&lt;c:url&gt;</code>.  Переменная <code>url</code> устанавливается при помощи атрибута <code>var</code> тега &lt;c:url&gt;, затем доступ к атрибуту <code>var</code> осуществляется в теге привязки HTML с использованием выражения <code>${url}</code>.</p>
+
+            <p>Можно загрузить и изучить <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot6.zip">снимок 6</a> для просмотра способа шифрования всех ссылок проекта.</p>
+
+            <p class="alert">Перезапись URL-адреса следует использовать только в случае, если файлы cookie не доступны как метод отслеживания.  Перезапись URL, по общему мнению, не является оптимальным решением, поскольку он предоставляет идентификатор сеанса в журналах, закладках, ссылочных заголовках и коде HTML в кэше, а также адресной строке браузера.  Также для этого требуются ресурсы на стороне сервера, поскольку серверу необходимо выполнить дополнительные шаги для каждого входящего запроса, чтобы извлечь идентификатор сеанса из URL-адреса и согласовать с существующим сеансом.</p>
+        </div>
+
+
+        <br>
+        <h2 id="time-out">Обработка истечения времени ожидания сеанса</h2>
+
+        <ul>
+            <li><a href="#time-interval">Установка временных интервалов сеанса</a></li>
+            <li><a href="#programmatically">Автоматическая обработка истечения времени ожидания сеанса</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="time-interval">Установка временных интервалов сеанса</h3>
+
+            <p>Необходимо учитывать максимальный интервал времени, в который выполняется ведение сеансов.  Если веб-сайт обрабатывает большой поток данных, большое число сеансов может занять весь объем памяти.  Следовательно, необходимо сократить интервал для удаления неиспользуемых сеансов.  С другой стороны, следует избегать излишнего сокращения сеансов, поскольку это может привести к проблемам использования веб-сайта, сказывающимся на эффективности работы.  В примере проекта <code>AffableBean</code> пользователь переходит к кассе после заполнения корзины покупок товарами.  Затем пользователь выходит из сети, например, чтобы найти кредитную карту для ввода данных карты.  После входа в сеть пользователь заполняет форму на кассе и нажимает кнопку подтверждения.  Однако время ожидания сеанса на сервере уже истекло.  Корзина покупок становится пустой, и пользователь перенаправляется на домашнюю страницу.  Найдется ли у пользователя время на повторение процесса?</p>
+
+            <p>Следующие шаги демонстрируют способы установки в проекте <code>AffableBean</code> в качестве интервала для истечения времени ожидания сеанса значения в 10 минут.  Конечно, фактическая длительность в конечном счете зависит от ресурсов сервера, бизнес-целей приложения и популярности веб-сайта.</p>
+
+            <ol>
+                <li>Откройте в редакторе дескриптор развертывания приложения.  Нажмите ALT+SHIFT+O (CTRL+SHIFT+O в Mac OS) для использования диалога &quot;Перейти к файлу&quot;. Введите &quot;<code>web</code>&quot;, затем нажмите кнопку &quot;ОК&quot;. <br> <img alt="Диалоговое окно 'Перейти к файлу'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/go-to-file.png" title="Диалоговое окно 'Переход к файлу' позволяет быстро перейти к файлам проекта"> <br> В редакторе будет выведен файл <code>web.xml</code> в представлении XML.  Шаблон, предоставляемый NetBeans для файла <code>web.xml</code>, включает в себя по умолчанию параметр с интервалом в 30 минут.
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;
+        30
+    &lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre></li>
+
+                <li>Выберите вкладку &quot;Общее&quot; и введите в поле &quot;Время ожидания сеанса&quot; значение &quot;<code>10</code>&quot;. <br> <img alt="Вкладка 'Общие' файла web.xml" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-timeout.png" style="width:688px" title="Укажите время ожидания сеанса для приложения на вкладке 'Общие' файла web.xml"></li>
+
+                <li>Сохраните файл (сочетание клавиш Ctrl-S; ⌘-S в Mac). <br><br> При обратном переходе в представление XML можно заметить, что элемент <code>&lt;session-timeout&gt;</code> был обновлен.
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;10&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre>
+                </li>
+            </ol>
+
+            <p class="notes"><strong>Примечание.</strong> В качестве альтернативы вы можете полностью удалить элемент <code>&lt;session-timeout></code> и изменить элемент <code>session-properties</code> в дескрипторе развертывания, связанном с GlassFish (<code>sun-web.xml</code>). В результате будет установлено глобальное время ожидания для всех приложений в веб-модуле сервера.  Получить более подробную информацию можно в руководстве <a href="http://docs.sun.com/app/docs/doc/821-1752/beaha" target="_blank">Oracle GlassFish Server 3.0.1 Application Development Guide: Creating and Managing Sessions</a> (Oracle GlassFish Server 3.0.1 Руководство по разработке приложений. Создание сеансов и управление ими).</p>
+
+
+            <h3 id="programmatically">Автоматическая обработка истечения времени ожидания сеанса</h3>
+
+            <p>Если приложение основано на сеансах, необходимо принять меры для обеспечения простоты и удобства обработки ситуаций, когда поступает запрос для сеанса, время ожидания которого истекло или который невозможно определить.  Это можно выполнить в проекте <code>AffableBean</code>, создав простой фильтр, перехватывающий заголовки запросов в файле <code>ControllerServlet</code>.  Фильтр проверяет факт существования сеанса; если сеанс не существует, он перенаправляет запрос на страницу приветствия сайта.</p>
+
+            <ol>
+                <li>Начните работу с изучения проблемы, возникающей при истечении времени ожидания сеанса до его завершения из-за посещения сайта пользователем.  Временно установите для времени ожидания сеанса значение в 1 минуту.  Откройте дескриптор развертывания веб-приложения (<code>web.xml</code>) и введите значение &quot;<code>1</code>&quot; между тегами <code>&lt;session-timeout&gt;</code>.
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;<strong>1</strong>&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre></li>
+
+                <li>Запустите проект <code>AffableBean</code>.  Щелкните на странице категорий в браузере, добавьте несколько элементов в корзину и щелкните ссылку &quot;view cart&quot;. <br> <img alt="На странице корзины отображаются элементы в покупательской корзине" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-page-session-intact.png" style="width:688px" title="Страница корзины зависит от объекта сеанса при отображении элементов в покупательской корзине"></li>
+
+                <li>Подождите минимум 1 минуту.</li>
+
+                <li>Обновите количество для одного из товаров на странице корзины.  (Допустимо любое число от 1 до 99.)  Нажмите кнопку &quot;update&quot;.  Сервер отправит сообщение со статусом HTTP &quot;500&quot;. <br> <img alt="Отчет об ошибке GlassFish отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/glassfish-error-report.png" style="width:688px" title="NullPointerException возникает при получении запроса для сеанса, срок действия которого истек"></li>
+
+                <li>Изучите журнал сервера GlassFish в среде IDE.  Откройте окно вывода (Ctrl-4; ⌘-4 в Mac) и перейдите на вкладку 'Сервер GlassFish'. Прокрутите до конца журнала для изучения трассировки стека ошибок. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/gf-server-output.png" rel="lytebox" title="NullPointerException возникает при получении запроса, принадлежащего сеансу, срок действия которого истек"> <img alt="Отчет об ошибке GlassFish отображается в браузере" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/gf-server-output.png" style="width:688px" title="Щелкните для увеличения"></a> <br> Журнал сервера показывает, что исключение <code>NullPointerException</code> возникло в строке 184 <code>ControllerServlet</code>. В диалоговом окне &quot;Вывод&quot; появляется ссылка на строку, в которой возникло исключение.</li>
+
+                <li>Щелкните ссылку.  Вы попадете прямо на строку 184 в <code>ControllerServlet</code>. При наведении курсора мыши на значок ошибки в левом поле редактора выводится всплывающая подсказка с описанием исключения. <br> <img alt="Метка ошибки и подсказка отображаются в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/nullpointer-exception.png" title="Метка ошибки и подсказка указывают местоположение и причину проблемы"> <br> Поскольку время ожидания сеанса истекло до получения запроса, механизму сервлета не удалось связать запрос с соответствующим сеансом.  Таким образом, оказалось невозможным обнаружить объект <code>cart</code> (строка 151). В конце концов, исключение произойдет на строке 184, когда попытка вызова метода по переменной, имеющей значение <code>null</code>. <br><br> Проблема определена, для ее исправления необходимо реализовать фильтр.</li>
+
+                <li>Нажмите кнопку 'Создать файл' (<img alt="Кнопка 'Создать файл'" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png">) на панели инструментов IDE. (В качестве альтернативы нажмите Ctrl-N; ⌘-N в Mac.)</li>
+
+                <li>Выберите категорию &quot;<strong>Веб</strong>&quot;, затем выберите <strong>&quot;Фильтр&quot;</strong> и нажмите кнопку &quot;Далее&quot;.</li>
+
+                <li>Присвойте фильтру имя <code>SessionTimeoutFilter</code>.  Введите текст <code>filter</code> в поле &quot;Пакеты&quot; для размещения класса фильтра в новом пакете при его создании.</li>
+
+                <li>Нажмите кнопку &quot;Далее&quot;. Примите настройки по умолчанию и нажмите кнопку &quot;Готово&quot;.  Для фильтра <code>SessionTimeoutFilter</code> создается и открывается в редакторе шаблон. <br><br>
+                    <p class="notes"><strong>Примечание.</strong> В настоящее время в NetBeans 6.9 не поддерживается использование мастера для задания сопоставления с сервлетом, которые не зарегистрирован в дескрипторе веб-развертывания. (<code>ControllerServlet</code> был зарегистрирован с помощью аннотации <code>@WebServlet</code>). Следовательно, необходимо изменить созданный код в следующем шаге.</p></li>
+
+                <li>Измените подпись аннотации <code>@WebFilter</code> следующим образом:
+
+
+                    <pre class="examplecode">@WebFilter(<strong>servletNames = {&quot;Controller&quot;}</strong>)
+public class SessionTimeoutFilter implements Filter {</pre>
+
+                    Фильтр с такими настройками будет перехватывать любой запрос, который управляется <code>ControllerServlet</code>. (Также можно сохранить атрибут <code>urlPatterns</code> и перечислить все шаблоны, обрабатываемые в файле <code>ControllerServlet</code>.) <br><br> Обратите внимание, что <code>Controller</code> является именем файла <code>ControllerServlet</code>, как указано в подписи аннотации <code>@WebServlet</code> сервлета.  Заметим также, что атрибут <code>filterName</code> был удален, поскольку имя класса фильтра используется по умолчанию. <br><br> Шаблон фильтра среды IDE предоставляет множество примеров кода, которые рекомендуется изучить.  Однако большая часть кода не потребуется для целей этого упражнения.  Любой класс фильтра должен реализовывать интерфейс <code>Filter</code>, определяющий три метода.
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong><code>init</code>:</strong> выполняет действия после инициализации фильтра, но до его размещения в службе.</li>
+                        <li><strong><code>destroy</code>:</strong> удаляет фильтр из службы.  Этот метод может быть также использован для выполнения операций очистки.</li>
+                        <li><strong><code>doFilter</code>:</strong> используется для выполнения операций для каждого запроса, перехваченного фильтром.</li>
+                    </ul>
+
+                    <p class="tips">Используйте функцию поиска документации по индексу, чтобы вытянуть документацию по интерфейсу <code>Filter</code>.  Нажмите сочетание клавиш SHIFT+F1 (fn+SHIFT+F1 в системе Mac), введите текст <code>Filter</code> в поле поиска и нажмите ENTER.  Выберите запись &quot;Interface in javax.servlet&quot;.  Документация Javadoc выводится на нижней панели средства поиска по индексу.</p></li>
+
+                <li>Замените тело фильтра <code>SessionTimeoutFilter</code> на следующее содержимое.
+
+                    <pre class="examplecode">
+@WebFilter(servletNames = {&quot;Controller&quot;})
+public class SessionTimeoutFilter implements Filter {
+
+    <strong>public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+
+        HttpSession session = req.getSession(false);
+
+        // if session doesn't exist, forward user to welcome page
+        if (session == null) {
+            try {
+                req.getRequestDispatcher(&quot;/index.jsp&quot;).forward(request, response);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    public void init(FilterConfig filterConfig) throws ServletException {}
+
+    public void destroy() {}</strong>
+
+}</pre></li>
+
+                <li>Нажмите Ctrl-Shift-I (⌘-Shift-I в Mac) для исправления операторов импорта. (Необходимо добавить импорт для <code>HttpServletRequest</code> и <code>HttpSession</code>.) Используйте подсказки редактора чтобы добавить аннотацию <code>@Override</code> к методам <code>init</code>, <code>destroy</code> и <code>doFilter</code>. <br><br> В следующих шагах выполняется запуск отладчика для проекта и переход по методу <code>doFilter</code> для просмотра способа определения привязки запроса существующему сеансу.</li>
+
+                <li>Откройте окно точек останова (ALT+SHIFT+5; CTRL+SHIFT+5 в Mac OS) и удостоверьтесь, что не установлена ни одна точка останова. Для удаления точки останова щелкните правой кнопкой мыши точку останова и выбериет 'Удалить'. (Если было выполнено упражнение выше, <a href="#http-monitor">Examining Client-Server Communication with the HTTP Monitor</a> (Проверка соединения клиент-сервер с помощью HTTP-монитора), в <code>ControllerServlet</code> может быть установлена лишняя точка останова).</li>
+
+                <li>Запустите отладчик.  Нажмите кнопку 'Отладка проекта' (<img alt="Кнопка 'Отладка проекта'" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png">) на главной панели инструментов IDE.</li>
+
+                <li>При выводе страницы приветствия в браузере выберите категорию и добавьте несколько элементов в корзину покупок.</li>
+
+                <li>Установите точку останова на строку принадлежащего фильтру <code>SessionTimeoutFilter</code> метода <code>doFilter</code>, который пытается получить доступ к сеансу (строка 32). <br> <img alt="Точка останова задана в редакторе" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/filter-breakpoint.png" title="Установите точку останова в методе getSession"></li>
+
+                <li>Щелкните в браузере ссылку &quot;view cart&quot;.  Перейдите к среде IDE и обратите внимание, что отладчик приостановил работу в точке останова. <br><br> Учтите, что метод <code>getSession()</code> создает новый объект сеанса, если текущий объект не существует.  В данном случае используется метод <code>getSession(false)</code>, который не создает новый объект, если объект не найден.  Другими словами, метод возвращает значение <code>null</code>, если сеанс не существует.</li>
+
+                <li>Нажмите кнопку 'Обход процедур' ( <img alt="Кнопка 'Обход процедур'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png"> ), затем подведите курсор мыши к переменной <code>session</code>. При условии, что с момента отправки предыдущего запроса не прошла минута, переменная присваивается типу <code>StandardSessionFacade</code>.  Он представляет объект сеанса для запроса. <br> <img alt="Во всплывающем окне отображается переменная 'session', назначенная объекту сеанса" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-exists.png" title="Наведите курсор на переменные для определения их текущих значений"></li>
+
+                <li>Продолжайте двигаться по строкам метода, пока запрос не будет обработан. Поскольку переменная <code>session</code> не равна <code>null</code>, можно пропустить выражение <code>if</code>, и фильтр <code>chain.doFilter</code> направит запрос прямо к <code>ControllerServlet</code> (строка 44).</li>
+
+                <li>Перейдите в браузер, убедитесь, что прошла минута, и обновите количество для одного из элементов продукта в корзине.  Это та же самая процедура, которая выполнялась ранее в упражнении с возвратом сообщения 500.  Выясним, что происходит при истечении времени ожидания сеанса теперь, когда фильтр перехватывает заголовки запросов для файла <code>ControllerServlet</code>.</li>
+
+                <li>После щелчка элемента &quot;Обновить&quot; перейдите в среду IDE и обратите внимание, что отладчик снова приостановился на точке останова, установленной в фильтре.</li>
+
+                <li>Выделите выражение <code>req.getSession(false)</code> и наведите на него курсор мыши.  Обратите внимание, что выражение имеет значение <code>null</code>, поскольку время ожидания сеанса истекло. <br> <img alt="Во всплывающем окне отображается переменная 'session' со значением 'null'" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-null.png" title="Выделите выражения и наведите курсор мыши на них для определения их текущих значений"></li>
+
+                <li>Продолжите переход по коду.  Теперь переменная <code>session</code> равна <code>null</code>, выражение <code>if</code> на странице 35 обрабатывается, и запрос направляется прямо к <code>/index.jsp</code>. Когда отладчик завершает работу, в браузере выводится страница приветствия сайта.</li>
+
+                <li>Нажмите кнопку 'Завершить сеанс' ( <img alt="Кнопка 'Завершить сеанс'" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png"> ), чтобы завершить сеанс отладки.</li>
+
+                <li>Откройте файл <code>web.xml</code> проекта и снова измените время ожидания сеанса на 10 минут.
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;<strong>10</strong>&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre>
+                </li>
+
+                <li>Сохраните файл (Ctrl-S; ⌘-S в Mac).</li>
+            </ol>
+        </div>
+
+        <p><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot6.zip">Снимок 6</a> демонстрирует полную версию проекта для данного раздела руководства. Рассмотрим еще один вопрос, касающийся управления сеансом.  Можно завершить сеанс явным образом, вызвав метод <code>invalidate</code> для объекта сеанса.  Если сеанс больше не требуется, необходимо удалить его для сохранения доступной памяти на сервере.  После завершения следующего раздела, <a href="transaction.html">Интеграция транзакционной бизнес-логики</a>, можно увидеть, как <code>ControllerServlet</code> после успешной обработки заказ клиента, уничтожает пользовательский объект <code>cart</code> и прерывает сессию, используя метод <code>invalidate</code>.</p>
+
+        <div class="indent">
+            <pre class="examplecode" style="width:710px; margin-left:10px; margin-top:-2px">
+// if order processed successfully send user to confirmation page
+if (orderId != 0) {
+
+    // dissociate shopping cart from session
+    cart = null;
+
+    // end session
+    session.invalidate();
+
+    ...
+}</pre></div>
+
+        <p>Это демонстрируется в <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">проектный снимок 8</a> (и следующих снимках).</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Managing Sessions">Мы ждем ваших отзывов</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">Дополнительные сведения</h2>
+
+        <div class="indent">
+            <h3>Материалы по NetBeans</h3>
+
+            <ul>
+                <li><a href="../../../../features/java/debugger.html" target="_blank">IDE NetBeans Features: Debugger</a></li>
+                <li><a href="../../java/debug-multithreaded.html" target="_blank">Отладка многопоточных приложений</a></li>
+                <li><a href="../../java/debug-multithreaded-screencast.html" target="_blank">Видеообзор многопотоковой отладки с помощью IDE NetBeans</a></li>
+                <li><a href="../../java/debug-evaluator-screencast.html" target="_blank">Видео использования блока оценки фрагмента кода в отладчике NetBeans</a></li>
+                <li><a href="../../screencasts.html" target="_blank">Video Tutorials and Demos for IDE NetBeans 6.x</a></li>
+                <li><a href="https://netbeans.org/projects/www/downloads/download/shortcuts.pdf">Таблица комбинаций клавиш и шаблонов кода</a></li>
+                <li><a href="../javaee-gettingstarted.html" target="_blank">Начало работы с приложениями для Java EE</a></li>
+                <li><a href="../javaee-intro.html" target="_blank">Введение в технологию Java EE </a></li>
+                <li><a href="../../../trails/java-ee.html" target="_blank">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+
+            <h3>Ресурсы по GlassFish</h3>
+
+            <ul>
+                <li><a href="http://wiki.glassfish.java.net/Wiki.jsp?page=Screencasts" target="_blank">Экранные демонстрации GlassFish</a></li>
+                <li><a href="https://glassfish.dev.java.net/docs/index.html" target="_blank">Документация GlassFish v3</a></li>
+                <li><a href="http://www.sun.com/offers/details/GlassFish_Tomcat.html" target="_blank">Изучение GlassFish в Tomcat</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1751" target="_blank">Oracle GlassFish Server 3.0.1 Руководства администратора</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1750" target="_blank">Oracle GlassFish Server 3.0.1 Руководство по развертыванию приложений</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1752" target="_blank">Oracle GlassFish Server 3.0.1 Руководство по разработке приложений</a></li>
+            </ul>
+
+            <h3>Технические статьи и различные ресурсы</h3>
+
+            <ul>
+                <li><a href="http://java.sun.com/javaee/reference/code/" target="_blank">Примеры кода Java EE и приложения</a></li>
+                <li><a href="http://java.sun.com/j2se/javadoc/" target="_blank">Средство Javadoc</a>[домашняя страница продукта]</li>
+                <li><a href="http://java.sun.com/j2se/javadoc/writingdoccomments/index.html" target="_blank">Принцип записи комментариев документации для средства Javadoc</a></li>
+                <li><a href="http://java.sun.com/products/servlet/Filters.html" target="_blank">Сущность фильтров</a></li>
+                <li><a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/InterceptingFilter.html" target="_blank">Шаблоны Core J2EE - перехватывающий фильтр</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/csajsp2.html" target="_blank">Учебные курсы по сервлетам начального и среднего уровней, JSP и JDBC</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/msajsp.html" target="_blank">Учебный курс по расширенным сервлетам и JSP</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/java5.html" target="_blank">Учебные курсы по Java 5 и Java 6</a></li>
+                <li><a href="http://www.ibm.com/developerworks/java/library/j-jstl0211.html" target="_blank">JSTL для начинающих, часть 1: язык выражений</a></li>
+                <li><a href="http://www.ibm.com/developerworks/java/library/j-jstl0318/index.html" target="_blank">JSTL для начинающих, часть 2: подробное изучение</a></li>
+            </ul>
+        </div>
+
+    </body>
+</html>

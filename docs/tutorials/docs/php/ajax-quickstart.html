@@ -1,0 +1,1385 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief introduction to Ajax using the NetBeans IDE, PHP bundle">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Ajax,
+            XMLHttpRequest, XMLHttpRequest object, callback function, asynchronous, asynchronous,
+            JavaScript, JavaScript editor, PHP, PHP editor, XML, open source">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Introduction to Ajax for PHP Web Applications - NetBeans IDE Tutorial</title>
+    </head>
+
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Introduction to Ajax for PHP Web Applications</h1>
+
+        <p>This document provides an introduction to Ajax and demonstrates some of the features in the
+            NetBeans IDE that allow you to program faster and more efficiently when working with Ajax-related
+            technologies. While learning about the low-level functionality of Ajax, you build a simple
+            application that employs auto-completion in a text field. Content here has been adapted from
+            Greg Murray's article and sample application from
+            <a target="_blank" href="http://weblogs.java.net/blog/gmurray71/archive/2005/12/using_ajax_with_1.html">Using
+            Ajax with Java Technology</a>.</p>
+
+        <p>Ajax stands for Asynchronous JavaScript and XML. In essence, Ajax is an efficient way for
+            a web application to handle user interactions with a web page - a way that reduces the need
+            to do a page refresh or full page reload for every user interaction. This enables rich behavior
+            (similar to that of a desktop application or plugin-based web application) using a browser.
+            Ajax interactions are handled asynchronously in the background. As this happens, a user can
+            continue working with the page. Ajax interactions are initiated by JavaScript code. When
+            the Ajax interaction is complete, JavaScript updates the HTML source of the page. The changes
+            are made immediately without requiring a page refresh. Ajax interactions can be used to do
+            things such as validate form entries (while the user is entering them) using server-side
+            logic, retrieve detailed data from the server, dynamically update data on a page, and submit
+            partial forms from the page.</p>
+
+
+        <p><strong>Contents</strong></p>
+
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+        <ul class="toc">
+            <li><a href="#overview">Overview of the Application</a></li>
+            <li><a href="#client1">Programming the Client-Side: Part 1</a>
+                <ul>
+                    <li><a href="#html">Using the HTML Editor</a></li>
+                    <li><a href="#javascript">Using the JavaScript Editor</a></li>
+                </ul></li>
+            <li><a href="#serverside">Programming the Server-Side</a>
+                <ul>
+                    <li><a href="#data">Creating the Data Store</a></li>
+                    <li><a href="#business">Creating the Business Logic</a></li>
+                </ul>
+                    </li>
+            <li><a href="#client2">Programming the Client-Side: Part 2</a>
+                <ul>
+                    <li><a href="#callback">Adding Callback Functionality</a></li>
+                    <li><a href="#htmldom">Updating the HTML DOM</a></li>
+                    <li><a href="#stylesheet">Attaching a Stylesheet</a></li>
+                </ul></li>
+            <li><a href="#conclusion">Conclusion</a></li>
+            <li><a href="#seeAlso">See Also</a></li>
+        </ul>
+
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                  <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans
+                        IDE, PHP bundle</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.php.net/downloads.php">PHP engine</a></td>
+                    <td class="tbltd1">PHP 5</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://httpd.apache.org/download.cgi">Apache web server</a></td>
+                    <td class="tbltd1">2.2</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>Notes:</strong></p>
+
+        <ul>
+            <li>PHP development environment is often configured using an *AMP package, depending on your
+                operating system. This includes the PHP engine and Apache web server. For instructions
+                on configuring your environment, see the <a href="../../trails/php.html">PHP
+                Learning Trail</a>.</li>
+
+            <li>This tutorial assumes that you have a working knowledge of the various technologies it
+                employs (i.e., HTML, CSS, JavaScript, and PHP). It attempts to provide an overview of
+                the functionality provided by the code, but <em>does not</em> explain how the code works
+                on a line-to-line basis.</li>
+
+            <li>If you need to compare your project with a working solution, you can
+                <a target="_blank" href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip">download
+                the sample application</a>. Use the IDE's New Project wizard (Ctrl-Shift-N; &#8984;-Shift-N
+                on Mac), and select the PHP with Existing Sources project type. In the wizard, point to the
+                downloaded sources on your computer.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="overview">Overview of the Application</h2>
+
+        <p>Imagine a web page in which a user can search for information about musical composers. The
+            page includes a field where the user can enter the name of the composer. In the example application,
+            the entry field has an auto-complete feature. In other words, the user can type in part of
+            the composer name, and the web application attempts to complete the name by listing all composers
+            whose first or last name begins with the characters entered. The auto-complete feature saves
+            the user from having to remember the complete name of the composer and can provide a more
+            intuitive and direct path to the sought-after information.</p>
+
+        <div class="indent">
+            <img src="../../../images_www/articles/73/web/ajax-intro/sample-app.png"
+                alt="Sample application displayed in browser" class="margin-around b-all"
+                title="Sample application displayed in browser">
+        </div>
+
+        <p>Implementing auto-completion in a search field is something that can be performed using Ajax.
+            Ajax works by employing an <code>XMLHttpRequest</code> object to pass requests and responses
+            asynchronously between the client and server. The following diagram illustrates the process
+            flow of the communication that takes place between the client and server.</p>
+
+        <div id="flow-diagram" class="indent">
+            <img src="../../../images_www/articles/73/web/ajax-intro/ajax-process-flow.png"
+                alt="Ajax process flow diagram" class="margin-around"
+                title="Ajax process flow diagram">
+        </div>
+
+        <br>
+        <p>The process flow of the diagram can be described by the following steps:</p>
+
+        <ol>
+            <li>The user triggers an event, for example by releasing a key when typing in a name. This
+                results in a JavaScript call to a function that initializes an <code>XMLHttpRequest</code>
+                object.</li>
+
+            <li>The <code>XMLHttpRequest</code> object is configured with a request parameter that includes
+                the ID of the component that triggered the event, and any value that the user entered.
+                The <code>XMLHttpRequest</code> object then makes an asynchronous request to the web
+                server.</li>
+
+            <li>On the web server, an object such as a servlet or listener handles the request. Data
+                is retrieved from the data store, and a response is prepared containing the data in the
+                form of an XML document.</li>
+
+            <li>Finally, the <code>XMLHttpRequest</code> object receives the XML data using a callback
+                function, processes it, and updates the HTML DOM (Document Object Model) to display the
+                page containing the new data.</li>
+        </ol>
+
+        <p>This tutorial demonstrates how to construct the auto-complete scenario by following the
+            process flow indicated in the above diagram. You first create the client-side files for the
+            presentation and functionality needed to generate the <code>XMLHttpRequest</code> object.
+            Then, you set up the server-side by creating the data store and business logic using PHP-based
+            technology. Finally, you return to the client-side and implement <code>callback()</code>,
+            and other JavaScript functionality to update the HTML DOM.</p>
+
+
+        <br>
+        <h2 id="client1">Programming the Client-Side: Part 1</h2>
+
+        <p>Begin by creating a new PHP application project in the IDE.</p>
+
+        <ol>
+            <li>Choose File &gt; New Project. Under Categories, select <strong>PHP</strong>. Under Projects,
+                select <strong>PHP Application</strong> then click <strong>Next</strong>.</li>
+
+            <li>In Step 2: Name and Location, name the project <code>MyAjaxApp</code>. The Sources Folder
+                field enables you to specify the location of the project on your computer. Leave other
+                options at their defaults and click <strong>Next</strong>.
+
+                <br>
+                <img src="../../../images_www/articles/73/web/ajax-intro/php-name-location.png"
+                     title="New PHP Project wizard - Name and Location panel" class="margin-around b-all"
+                     alt="New PHP Project wizard - Name and Location panel"></li>
+
+            <li>In Step 3: Run Configuration, specify how you want to deploy your application. If you
+                have set up your PHP development environment by configuring an *AMP package, you should
+                select <strong>Local Web Site</strong> from the drop-down list, and specify the URL of
+                the project, as it will appear in a browser.</li>
+
+            <li>Select the Copy files from Sources Folder to another location option. Then, in the Copy
+                to Folder field, type in the path to the deployment location on the server. (On Apache,
+                this is the default <code>htdocs</code> directory.)
+
+                <br>
+                <a href="../../../images_www/articles/73/web/ajax-intro/php-run-config.png">
+                    <img src="../../../images_www/articles/73/web/ajax-intro/php-run-config.png"
+                        title="Click to Enlarge" class="margin-around b-all" style="width:688px"
+                        alt="New PHP Project wizard - Run Configuration panel">
+                </a></li>
+
+            <li>Click <strong>Finish</strong>. The IDE creates the project folder in your file system
+                and the project opens in the IDE.
+
+                <br><br>
+                <p class="tips">You can also use the Project wizard to add <!-- Zend and --> 
+                  framework support to your project (provided in Step 4 of the wizard).</p>
+
+              <p>A default <code>index.php</code> index page is generated and opens in the IDE's
+                    editor. Also, your project appears in the Projects window.</p>
+
+                <img src="../../../images_www/articles/73/web/ajax-intro/php-proj-win.png"
+                    title="Projects window displays MyAjaxApp project" class="margin-around b-all"
+                    alt="Projects window containing newly created project"></li>
+
+                <li>Before beginning to code, quickly try running the application to ensure that
+                    configuration between the IDE, your server, and browser is set up properly.
+
+                    <br><br>
+                    In the IDE's editor, add an <code>echo</code> statement to the index page:
+
+<pre class="examplecode">
+&lt;?php
+    // put your code here
+    <strong>echo &quot;&lt;h2&gt;Hello World!&lt;/h2&gt;&quot;;</strong>
+?&gt;
+</pre></li>
+
+            <li>In the Projects window, right-click on the project node and choose Run. The IDE opens
+                your default browser and displays the Hello World message you just created in <code>index.php</code>.
+
+                <br><br>
+                <p class="notes"><strong>Note:</strong> If you have difficulty setting up your
+                    project or establishing communication between the IDE, the server and browser,
+                    see <a href="project-setup.html">Setting
+                    Up a PHP Project</a> for a more thorough description. The <a href="../../trails/php.html">PHP
+                    Learning Trail</a> can provide more information on configuring your environment.</p></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="html">Using the HTML Editor</h3>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/73/web/ajax-intro/palette.png"
+                    alt="Palette displaying HTML elements" class="right margin-around b-all"
+                    title="Palette displaying HTML elements">
+
+                <br>
+                <p class="margin-around">Now that you are certain your environment is set up correctly,
+                    begin by developing the auto-complete interface that will be viewed by users. Because
+                    the index page that we'll create does not require any server-side scripting elements,
+                    start by creating an HTML page and setting it as the entry point for the application.</p>
+
+                <p class="margin-around">One of the advantages of using an IDE is that the editor you
+                    work in often provides you with code completion which, if you learn to apply it when
+                    you code, can rapidly increase your productivity. The IDE's editor generally adapts
+                    to the technology you are using, so if you are working in an HTML page, pressing
+                    the code completion key combination (Ctrl-Space) will produce suggestions for HTML
+                    tags and attributes. As will later be shown, the same applies for other technologies,
+                    such as CSS and JavaScript.</p>
+
+                <p class="margin-around">
+                    A second feature you can make use of is the IDE's Palette. The Palette provides easy-to-use
+                    templates for elements that are commonly applied in the technology you are coding
+                    in. You simply click on an item, and drag it to a location in the file open in the
+                    Source Editor.</p>
+
+                <p class="tips margin-around">You can view large icons (as displayed here) by right-clicking
+                    in the Palette and choosing Show Big Icons.</p>
+            </div>
+
+            <br clear="all">
+            <ol>
+                <li>In the Projects window, right-click the <code>MyAjaxApp</code> project node and choose
+                    New &gt; HTML File.</li>
+
+                <li>In the HTML File wizard, name the file <code>index</code>, then click <strong>Finish</strong>.
+                    The new <code>index.html</code> file opens in the editor.</li>
+
+                <li>Replace the existing content for the file as follows.
+
+<pre class="examplecode">
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;Auto-Completion using AJAX&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Auto-Completion using AJAX&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre></li>
+
+                <li>Add some explanatory text to describe the purpose of the text field. You can copy
+                    and paste in the following text at a point just beneath the <code>&lt;h1&gt;</code>
+                    tags:
+
+<pre class="examplecode">
+&lt;p&gt;This example shows how you can do real time auto-completion using Asynchronous
+    JavaScript and XML (Ajax) interactions.&lt;/p&gt;
+
+&lt;p&gt;In the form below enter a name. Possible names that will be completed are displayed
+    below the form. For example, try typing in &quot;Bach,&quot; &quot;Mozart,&quot; or &quot;Stravinsky,&quot;
+    then click on one of the selections to see composer details.&lt;/p&gt;
+</pre>
+                </li>
+
+                <li>Add an HTML form to the page. You can do this by making use of the elements listed
+                    in the IDE's Palette. If the Palette is not open, choose Window &gt; Palette from
+                    the main menu. Then, under HTML Forms, click on and drag a Form element into the
+                    page to a point beneath the <code>&lt;p&gt;</code> tags that you just added. The
+                    Insert Form dialog box opens. Specify the following:
+
+                    <br><br>
+                    <ul>
+                        <li>Action: autocomplete.php</li>
+                        <li>Method: GET</li>
+                        <li>Name: autofillform</li>
+                    </ul>
+
+                    <img src="../../../images_www/articles/73/web/ajax-intro/php-insert-form.png"
+                        alt="Insert form dialog" class="margin-around b-all"
+                        title="Insert form dialog">
+
+                    <p>Click OK. The HTML <code>&lt;form&gt;</code> tags are inserted into the page containing
+                        the attributes you specified. (GET is applied by default, and so is not explicitly
+                        declared.)</p></li>
+
+                <li>Add an HTML table to the page. Under the HTML category in the Palette, click on a
+                    Table element and drag it to a point between the <code>&lt;form&gt;</code> tags. The
+                    Insert Table dialog box opens. Specify the following:
+
+                    <br><br>
+                    <ul>
+                        <li>Rows: 2</li>
+                        <li>Columns: 2</li>
+                        <li>Border Size: 0</li>
+                        <li>Width: 0</li>
+                        <li>Cell Spacing: 0</li>
+                        <li>Cell Padding: 5</li>
+                    </ul>
+
+                  <img src="../../../images_www/articles/73/web/ajax-intro/insert-table.png"
+                         alt="Insert table dialog" class="margin-around b-all" title="Insert table dialog">
+                </li>
+
+                <li>Right-click inside the Source Editor and choose Format. This tidies up the code. Your
+                    form should now display similar to that below:
+
+<pre class="examplecode">
+&lt;form name=&quot;autofillform&quot; action=&quot;autocomplete.php&quot;&gt;
+  &lt;table border=&quot;0&quot; cellpadding=&quot;5&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/form&gt;
+</pre></li>
+
+                <li>Within the first row of the table, type the following text into the first column
+                    (changes in <strong>bold</strong>):
+
+<pre class="examplecode">&lt;td&gt;<strong>&lt;strong&gt;Composer Name:&lt;/strong&gt;</strong>&lt;/td&gt;</pre></li>
+
+                <li>Within the second column of the first row, instead of dragging a Text Input field
+                    from the Palette, type in the code below manually.
+
+
+<pre class="examplecode">
+&lt;input type=&quot;text&quot;
+    size=&quot;40&quot;
+    id=&quot;complete-field&quot;
+    onkeyup=&quot;doCompletion();&quot;&gt;
+</pre>
+
+                    When you type, try using the IDE's built-in code completion support. For example,
+                    type in <code>&lt;i</code>, then press Ctrl-Space. A list of suggested options displays
+                    below your cursor, and a description of the selected element appears in a box above.
+                    You can in fact press Ctrl-Space at anytime you are coding in the Source Editor to
+                    bring up possible options. Also, if there is only one possible option, pressing Ctrl-Space
+                    will automatically complete the element name.
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/code-completion.png"
+                         title="Ctrl-Space triggers code completion in the Source Editor" style="width:688px"
+                         alt="Code completion displayed in the Source Editor" class="margin-around b-all">
+
+                    <br>
+                    The <code>onkeyup</code> attribute that you typed in above points to a JavaScript function
+                    named <code>doCompletion()</code>. This function is called each time a key is pressed
+                    in the form text field, and maps to the JavaScript call depicted in the Ajax <a href="#flow-diagram">flow
+                    diagram</a> above.</li>
+
+                <li>Before moving on to work in the JavaScript editor, make the new <code>index.html</code>
+                    file replace the <code>index.php</code> file as the entry point for the application.
+
+                    <br><br>
+                    To do so, right-click the project node in the Projects window and choose Properties.
+                    Select the <strong>Run Configuration</strong> category, then enter <code>index.html</code>
+                    in the Index File field.
+
+                    <img src="../../../images_www/articles/73/web/ajax-intro/php-entry-point.png"
+                        alt="Project Properties window - Run Configuration" class="margin-around b-all" style="width:688px"
+                        title="Specify the application's entry point in the Project Properties window"></li>
+
+                <li>Click OK to save changes and exit the Project Properties window.</li>
+
+                <li>Run the project to see what it looks like in a browser. Click the Run Project (
+                    <img src="../../../images_www/articles/73/web/ajax-intro/run-project-btn.png"
+                    alt="Run Project button"> ) button. The <code>index.html</code> file displays in
+                    your default browser.
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/index-page.png"
+                        alt="Index page displayed in browser" class="margin-around b-all" style="width:688px"
+                        title="Run project to view its current state in browser">
+                </li>
+            </ol>
+
+
+            <h3 id="javascript">Using the JavaScript Editor</h3>
+
+            <p>The IDE's JavaScript Editor provides many advanced editing capabilities, such as intelligent
+                code completion, semantic highlighting, instant renaming and refactoring capabilities,
+                as well as many more features. 
+                For more information on the JavaScript editing features in the IDE, see 
+                <a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/dev_html_apps.htm#BACFIFIG">Creating JavaScript Files</a>
+                in the <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG">Developing Applications with NetBeans IDE User's Guide</a>.
+                See <a target="_blank" href="http://wiki.netbeans.org/JavaScript">http://wiki.netbeans.org/JavaScript</a>
+                for a detailed specification.</p>
+
+            <p>JavaScript code completion is automatically provided when you code in <code>.js</code>
+                files, as well as within <code>&lt;script&gt;</code> tags when you work with other technologies
+                (i.e., HTML, RHTML, JSP, PHP). When using the JavaScript Editor, the IDE provides you
+                with browser-compatibility information, depending on the browser types and versions you
+                specify in the JavaScript Options panel. Open the JavaScript Options panel by choosing
+                Tools &gt; Options (NetBeans &gt; Preferences on Mac), then Miscellaneous &gt; JavaScript.</p>
+
+            <img src="../../../images_www/articles/73/web/ajax-intro/php-javascript-options.png"
+                 alt="JavaScript Options panel" class="margin-around b-all" title="JavaScript Options panel">
+
+            <p>The IDE provides out-of-the-box support for Firefox, Internet Explorer, Safari, and Opera.
+                From the JavaScript Options panel, you can also specify the JavaScript engine version
+                that code completion applies to.</p>
+
+            <p>Add a JavaScript file to the application and begin implementing <code>doCompletion()</code>.</p>
+
+            <ol>
+                <li>In the Projects window, right-click on the project node and choose New &gt; JavaScript
+                    file. (If JavaScript file is not listed, choose Other. Then choose JavaScript file
+                    from the Other category in the New File wizard.)</li>
+
+                <li>Name the file <code>javascript</code>, then click Finish. The new JavaScript file
+                    appears in the Projects window and opens in the editor.</li>
+
+                <li>Type the code below into <code>javascript.js</code>.
+
+<pre class="examplecode">
+var req;
+var isIE;
+
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+}
+
+function doCompletion() {
+        var url = &quot;autocomplete.php?action=complete&id=&quot; + escape(completeField.value);
+        req = initRequest();
+        req.open(&quot;GET&quot;, url, true);
+        req.onreadystatechange = callback;
+        req.send(null);
+}
+
+function initRequest() {
+    if (window.XMLHttpRequest) {
+        if (navigator.userAgent.indexOf('MSIE') != -1) {
+            isIE = true;
+        }
+        return new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        isIE = true;
+        return new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+    }
+}
+</pre>
+
+
+                    <p class="tips">The above code performs a simple browser compatibility check
+                        for Firefox 3 and Internet Explorer versions 6 and 7). If you would like
+                        to incorporate more robust code for compatibility issues, consider using
+                        this <a target="_blank" href="http://www.quirksmode.org/js/detect.html">browser detect
+                        script</a> from <a target="_blank" href="http://www.quirksmode.org">http://www.quirksmode.org</a>.</p></li>
+
+                <li>Switch back to <code>index.html</code> and add a reference to the JavaScript
+                    file between the <code>&lt;head&gt;</code> tags.
+
+<pre class="examplecode">
+&lt;script type=&quot;text/javascript&quot; src=&quot;javascript.js&quot;&gt;&lt;/script&gt;
+</pre>
+
+                    <p class="tips">You can quickly toggle between pages opened in the editor by pressing
+                        Ctrl-Tab.</p></li>
+
+                <li>Insert a call to <code>init()</code> in the opening <code>&lt;body&gt;</code> tag.
+
+<pre class="examplecode">
+&lt;body <strong>onload=&quot;init()&quot;</strong>&gt;
+</pre>
+
+                    This ensures that <code>init()</code> is called each time the page is loaded.</li>
+            </ol>
+
+            <p>The role of <code>doCompletion()</code> is to:</p>
+
+            <ul>
+                <li>create a URL that contains data that can be utilized by the server-side,</li>
+                <li>initialize an <code>XMLHttpRequest</code> object, and</li>
+                <li>prompt the <code>XMLHttpRequest</code> object to send an asynchronous request to
+                    the server.</li>
+            </ul>
+
+            <p>The <code>XMLHttpRequest</code> object is at the heart of Ajax and has become the de facto
+                standard for enabling XML data to be passed asynchronously over HTTP. <em>Asynchronous</em>
+                interaction implies that the browser can continue to process events in the page after the
+                request is sent. Data is passed in the background, and can be automatically loaded into
+                the page without requiring a page refresh.</p>
+
+            <p>Notice that the <code>XMLHttpRequest</code> object is actually created by <code>initRequest()</code>,
+                which is called by <code>doCompletion()</code>. The function checks whether <code>XMLHttpRequest</code>
+                can be understood by the browser, and if so it creates an <code>XMLHttpRequest</code>
+                object. Otherwise, it performs a check on <code>ActiveXObject</code> (the <code>XMLHttpRequest</code>
+                equivalent for Internet Explorer 6), and creates an <code>ActiveXObject</code> if identified.</p>
+
+            <p>Three parameters are specified when you create an <code>XMLHttpRequest</code> object:
+                a URL, the HTTP method (<code>GET</code> or <code>POST</code>), and whether or not the
+                interaction is asynchronous. In the above example, the parameters are:</p>
+
+            <ul>
+                <li>The URL <code>autocomplete.php</code>, and the text entered into the <code>complete-field</code>
+                    by the user:
+
+<pre class="examplecode">var url = &quot;autocomplete.php?action=complete&id=&quot; + escape(completeField.value);</pre></li>
+
+                <li><code>GET</code>, signifying that HTTP interactions use the <code>GET</code> method,
+                    and
+                <li><code>true</code>, signifying that the interaction is asynchronous:
+
+                    <pre class="examplecode">req.open(&quot;GET&quot;, url, true);</pre></li>
+            </ul>
+
+            <p>If the interaction is set as asynchronous, a callback function must be specified. The
+                callback function for this interaction is set with the statement:</p>
+
+<div class="indent">
+    <div class="indent">
+        <pre class="examplecode">req.onreadystatechange = callback;</pre>
+    </div>
+</div>
+
+            <p>and a <code>callback()</code> function <a href="#callback">must later be defined</a>.
+                The HTTP interaction begins when <code>XMLHttpRequest.send()</code> is called. This action
+                maps to the HTTP request that is sent to the web server in the above <a href="#flow-diagram">flow
+                diagram</a>.</p>
+        </div>
+
+
+        <br>
+        <h2 id="serverside">Programming the Server-Side</h2>
+
+        <p>The NetBeans IDE provides comprehensive support for web development using PHP. You can set
+            up your development environment using an *AMP package, enabling you to edit and deploy
+            from the IDE quickly and efficiently. The IDE allows you to configure your environment
+            with a local server, as well as remotely, using FTP or SFTP. You can also configure an
+            external debugger, such as <a target="_blank" href="http://xdebug.org/">Xdebug</a>, and set up unit testing
+            with <a target="_blank" href="http://www.phpunit.de/">PHPUnit</a> from the IDE's PHP Options window (Choose
+            Tools &gt; Options; NetBeans &gt; Preferences on Mac, then select the PHP tab.) The PHP
+            editor provides standard editing features such as code completion, syntax highlighting,
+            mark occurrences, refactoring, code templates, documentation pop-up, code navigation,
+            editor warnings and, for NetBeans 6.9, error badges for malformed syntax.
+
+            See the <a href="../intro-screencasts.html">NetBeans Video Tutorials and
+                Demos</a> page for screencasts on PHP support.</p>
+
+        <p>For applications requiring a database, the IDE supports wide-ranging support for most main-stream
+            databases, especially MySQL. See the <a href="../../articles/mysql.html">NetBeans
+            MySQL screencast</a> and <a href="../../../features/ide/database.html">Database
+            Integration</a> features for more details.</p>
+
+        <p>The business logic for the auto-complete application that you are building needs to process
+            requests by retrieving data from the data store, then prepare and send the response. This
+            is implemented here using a PHP file named <code>autocomplete</code>. Before you begin coding
+            the file, set up the data store and the functionality required by the file to access data.</p>
+
+        <ul>
+            <li><a href="#data">Creating the Data Store</a></li>
+            <li><a href="#business">Creating the Business Logic</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="data">Creating the Data Store</h3>
+
+            <p>For this simple application, you create a class called <code>Composer</code> that
+                enables the business logic to retrieve data from entries contained in a <code>composers</code>
+                array. You then create a class called <code>ComposerData</code> that retains composer
+                data using the array.</p>
+
+            <ol>
+                <li>Right-click the <code>MyAjaxApp</code> project node in the Projects window and choose New &gt; PHP Class.</li>
+
+                <li>Name the class <code>Composer</code>, and click Finish. The class is created and
+                    opens in the editor.</li>
+
+                <li>Paste in the following code within the class (changes in <strong>bold</strong>).
+
+<pre class="examplecode">
+&lt;?php
+
+class Composer {
+
+    <strong>public $id;
+    public $firstName;
+    public $lastName;
+    public $category;
+
+    function __construct($id, $firstName, $lastName, $category) {
+        $this-&gt;id = $id;
+        $this-&gt;firstName = $firstName;
+        $this-&gt;lastName = $lastName;
+        $this-&gt;category = $category;
+    }</strong>
+}
+
+?&gt;</pre>
+                </li>
+            </ol>
+
+            <p>Create the <code>ComposerData</code> class.</p>
+
+            <ol>
+                <li>Right-click the <code>MyAjaxApp</code> project node in the Projects window
+                    and choose New &gt; PHP Class.</li>
+
+                <li>Name the class <code>ComposerData</code>, and click Finish. The class is created
+                    and opens in the IDE's editor.</li>
+
+                <li>Add a <code>require</code> statement to the top of the class to specify that
+                    the class requires the <code>Composer.php</code> class that you just created
+                    (changes in <strong>bold</strong>).
+
+<pre class="examplecode">
+&lt;?php
+
+<strong>require &quot;Composer.php&quot;;</strong>
+
+class ComposerData {
+
+}</pre></li>
+
+                <li>In the editor, paste in the following code within the class (changes in <strong>bold</strong>).
+
+<pre class="examplecode">
+&lt;?php
+
+require &quot;Composer.php&quot;;
+
+class ComposerData {
+
+    <strong>public $composers;
+
+    function __construct() {
+        $this-&gt;composers = array(
+            new Composer(&quot;1&quot;, &quot;Johann Sebastian&quot;, &quot;Bach&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;2&quot;, &quot;Arcangelo&quot;, &quot;Corelli&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;3&quot;, &quot;George Frideric&quot;, &quot;Handel&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;4&quot;, &quot;Henry&quot;, &quot;Purcell&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;5&quot;, &quot;Jean-Philippe&quot;, &quot;Rameau&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;6&quot;, &quot;Domenico&quot;, &quot;Scarlatti&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;7&quot;, &quot;Antonio&quot;, &quot;Vivaldi&quot;, &quot;Baroque&quot;),
+
+            new Composer(&quot;8&quot;, &quot;Ludwig van&quot;, &quot;Beethoven&quot;, &quot;Classical&quot;),
+            new Composer(&quot;9&quot;, &quot;Johannes&quot;, &quot;Brahms&quot;, &quot;Classical&quot;),
+            new Composer(&quot;10&quot;, &quot;Francesco&quot;, &quot;Cavalli&quot;, &quot;Classical&quot;),
+            new Composer(&quot;11&quot;, &quot;Fryderyk Franciszek&quot;, &quot;Chopin&quot;, &quot;Classical&quot;),
+            new Composer(&quot;12&quot;, &quot;Antonin&quot;, &quot;Dvorak&quot;, &quot;Classical&quot;),
+            new Composer(&quot;13&quot;, &quot;Franz Joseph&quot;, &quot;Haydn&quot;, &quot;Classical&quot;),
+            new Composer(&quot;14&quot;, &quot;Gustav&quot;, &quot;Mahler&quot;, &quot;Classical&quot;),
+            new Composer(&quot;15&quot;, &quot;Wolfgang Amadeus&quot;, &quot;Mozart&quot;, &quot;Classical&quot;),
+            new Composer(&quot;16&quot;, &quot;Johann&quot;, &quot;Pachelbel&quot;, &quot;Classical&quot;),
+            new Composer(&quot;17&quot;, &quot;Gioachino&quot;, &quot;Rossini&quot;, &quot;Classical&quot;),
+            new Composer(&quot;18&quot;, &quot;Dmitry&quot;, &quot;Shostakovich&quot;, &quot;Classical&quot;),
+            new Composer(&quot;19&quot;, &quot;Richard&quot;, &quot;Wagner&quot;, &quot;Classical&quot;),
+
+            new Composer(&quot;20&quot;, &quot;Louis-Hector&quot;, &quot;Berlioz&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;21&quot;, &quot;Georges&quot;, &quot;Bizet&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;22&quot;, &quot;Cesar&quot;, &quot;Cui&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;23&quot;, &quot;Claude&quot;, &quot;Debussy&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;24&quot;, &quot;Edward&quot;, &quot;Elgar&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;25&quot;, &quot;Gabriel&quot;, &quot;Faure&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;26&quot;, &quot;Cesar&quot;, &quot;Franck&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;27&quot;, &quot;Edvard&quot;, &quot;Grieg&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;28&quot;, &quot;Nikolay&quot;, &quot;Rimsky-Korsakov&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;29&quot;, &quot;Franz Joseph&quot;, &quot;Liszt&quot;, &quot;Romantic&quot;),
+
+            new Composer(&quot;30&quot;, &quot;Felix&quot;, &quot;Mendelssohn&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;31&quot;, &quot;Giacomo&quot;, &quot;Puccini&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;32&quot;, &quot;Sergei&quot;, &quot;Rachmaninoff&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;33&quot;, &quot;Camille&quot;, &quot;Saint-Saens&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;34&quot;, &quot;Franz&quot;, &quot;Schubert&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;35&quot;, &quot;Robert&quot;, &quot;Schumann&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;36&quot;, &quot;Jean&quot;, &quot;Sibelius&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;37&quot;, &quot;Bedrich&quot;, &quot;Smetana&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;38&quot;, &quot;Richard&quot;, &quot;Strauss&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;39&quot;, &quot;Pyotr Il'yich&quot;, &quot;Tchaikovsky&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;40&quot;, &quot;Guiseppe&quot;, &quot;Verdi&quot;, &quot;Romantic&quot;),
+
+            new Composer(&quot;41&quot;, &quot;Bela&quot;, &quot;Bartok&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;42&quot;, &quot;Leonard&quot;, &quot;Bernstein&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;43&quot;, &quot;Benjamin&quot;, &quot;Britten&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;44&quot;, &quot;John&quot;, &quot;Cage&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;45&quot;, &quot;Aaron&quot;, &quot;Copland&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;46&quot;, &quot;George&quot;, &quot;Gershwin&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;47&quot;, &quot;Sergey&quot;, &quot;Prokofiev&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;48&quot;, &quot;Maurice&quot;, &quot;Ravel&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;49&quot;, &quot;Igor&quot;, &quot;Stravinsky&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;50&quot;, &quot;Carl&quot;, &quot;Orff&quot;, &quot;Post-Romantic&quot;),
+        );
+    }</strong>
+}
+
+?&gt;
+</pre>
+                </li>
+            </ol>
+
+
+            <h3 id="business">Creating the Business Logic</h3>
+
+            <p>Implement the logic to handle the <code>autocomplete</code> URL that is received by the
+                incoming request. Instead of creating a new PHP file using the File wizard as demonstrated
+                in the previous section, modify the existing <code>index.php</code> file for this purpose.</p>
+
+            <ol>
+                <li>In the Projects window, click the <code>index.php</code> file node. The file name
+                    becomes editable, enabling you to modify the name.
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/edit-file-name.png"
+                        alt="Projects window displaying editable file name" class="margin-around b-all"
+                        title="Click on file nodes to edit names"></li>
+
+                <li>Name the file <code>autocomplete</code>, then click Enter. Double-click the new
+                    <code>autocomplete.php</code> file to have it display in the editor.</li>
+
+                <li>Replace the file's existing code with the following script.
+
+<pre class="examplecode">
+&lt;?php
+
+require_once(&quot;ComposerData.php&quot;);
+
+session_start();
+
+$composerData = new ComposerData();
+$composers = $composerData-&gt;composers;
+
+$results = array();
+$namesAdded = false;
+
+// simple matching for start of first or last name, or both
+if(isset($_GET['action']) && $_GET['action'] == &quot;complete&quot;) {
+    foreach($composers as $composer) {
+        if(!is_numeric($_GET['id']) &&
+
+            // if id matches first name
+            (stripos($composer-&gt;firstName, $_GET['id']) === 0 ||
+
+            // if id matches last name
+            stripos($composer-&gt;lastName, $_GET['id']) === 0) ||
+
+            // if id matches full name
+            stripos($composer-&gt;firstName.&quot; &quot;.$composer-&gt;lastName, $_GET['id']) === 0) {
+
+                $results[] = $composer;
+        }
+    }
+
+    // prepare xml data
+    if(sizeof($results) != 0) {
+        header('Content-type: text/xml');
+        echo &quot;&lt;composers&gt;&quot;;
+        foreach($results as $result) {
+            echo &quot;&lt;composer&gt;&quot;;
+            echo &quot;&lt;id&gt;&quot; . $result-&gt;id . &quot;&lt;/id&gt;&quot;;
+            echo &quot;&lt;firstName&gt;&quot; . $result-&gt;firstName . &quot;&lt;/firstName&gt;&quot;;
+            echo &quot;&lt;lastName&gt;&quot; . $result-&gt;lastName . &quot;&lt;/lastName&gt;&quot;;
+            echo &quot;&lt;/composer&gt;&quot;;
+        }
+        echo &quot;&lt;/composers&gt;&quot;;
+    }
+}
+
+// if user chooses from pop-up box
+if(isset($_GET['action']) && isset($_GET['id']) && $_GET['action'] == &quot;lookup&quot;) {
+    foreach($composers as $composer) {
+        if($composer-&gt;id == $_GET['id']) {
+            $_SESSION [&quot;id&quot;] = $composer-&gt;id;
+            $_SESSION [&quot;firstName&quot;] = $composer-&gt;firstName;
+            $_SESSION [&quot;lastName&quot;] = $composer-&gt;lastName;
+            $_SESSION [&quot;category&quot;] = $composer-&gt;category;
+
+            header(&quot;Location: composerView.php&quot;);
+        }
+    }
+}
+
+?&gt;</pre>
+                </li>
+            </ol>
+            <p class="notes"><strong>Note: </strong> The file composerView.php is not described in this tutorial. You may create such a file to see the final result of the search. A sample of the file is included in the <a target="_blank" href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip">sample application</a>.</p>
+            <p>As you can see, there is nothing really new you need to learn to write server-side code
+                for Ajax processing. The response content type needs to be set to <code>text/xml</code>
+                for cases where you want to exchange XML documents. With Ajax, you can also exchange
+                plain text or even snippets of JavaScript which may be evaluated or executed by the callback
+                function on the client. Note too that some browsers might cache the results, and so it
+                may be necessary to set the Cache-Control HTTP header to <code>no-cache</code>.</p>
+
+            <p>In this example, the <code>autocomplete.php</code> file generates an XML document that
+                contains all composers with a first or last name beginning with the characters typed in
+                by the user. This document maps to the XML Data depicted in the <a href="#flow-diagram">flow
+                diagram</a> above. Here is an example of an XML document that is returned to the <code>XMLHttpRequest</code>
+                object:</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;composers&gt;
+    &lt;composer&gt;
+        &lt;id&gt;12&lt;/id&gt;
+        &lt;firstName&gt;Antonin&lt;/firstName&gt;
+        &lt;lastName&gt;Dvorak&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;45&lt;/id&gt;
+        &lt;firstName&gt;Aaron&lt;/firstName&gt;
+        &lt;lastName&gt;Copland&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;7&lt;/id&gt;
+        &lt;firstName&gt;Antonio&lt;/firstName&gt;
+        &lt;lastName&gt;Vivaldi&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;2&lt;/id&gt;
+        &lt;firstName&gt;Arcangelo&lt;/firstName&gt;
+        &lt;lastName&gt;Corelli&lt;/lastName&gt;
+    &lt;/composer&gt;
+&lt;/composers&gt;
+</pre>
+                </div>
+            </div>
+        </div>
+
+
+        <br>
+        <h2 id="client2">Programming the Client-Side: Part 2</h2>
+
+        <p>You must define the callback function to handle the server's response, and add any functionality
+            necessary to reflect changes in the page that is viewed by the user. This requires modifying
+            the HTML DOM. Finally, you can work in the IDE's CSS Editor to add a simple stylesheet to
+            the presentation.</p>
+
+        <ul>
+            <li><a href="#callback">Adding Callback Functionality</a></li>
+            <li><a href="#htmldom">Updating the HTML DOM</a></li>
+            <li><a href="#stylesheet">Attaching a Stylesheet</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="callback">Adding Callback Functionality</h3>
+
+            <p>The callback function is called asynchronously at specific points during HTTP interaction
+                when the <code>readyState</code> property of the <code>XMLHttpRequest</code> object changes.
+                In the application you are building, the callback function is <code>callback()</code>.
+                You recall that in <code>doCompletion()</code>, <code>callback</code> was set as the
+                <code>XMLHttpRequest.onreadystatechange</code> property to a function. Now, implement
+                the callback function as follows.</p>
+
+            <ol>
+                <li>Open <code>javascript.js</code> in the editor and type in the code below.
+
+<pre class="examplecode">
+function callback() {
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}
+</pre>
+                </li>
+            </ol>
+
+            <p>A <code>readyState</code> of &quot;4&quot; signifies the completion of the HTTP interaction.
+                The API for <code>XMLHttpRequest.readState</code> indicates that there are 5 possible
+                values that can be set. These are:</p>
+
+            <div class="indent">
+                <div class="indent">
+                    <table style="width:400px">
+                        <thead class="tblheader">
+                            <tr>
+                                <th class="innerpadding"><code>readyState</code> Value</th>
+                                <th class="innerpadding">Object Status Definition</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbltd0 align-center">
+                            <tr>
+                                <td>0</td>
+                                <td>uninitialized</td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>loading</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>loaded</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>interactive</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>complete</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br>
+            <p>Notice that the <code>parseMessages()</code> function is called only when the
+                <code>XMLHttpRequest.readyState</code> is &quot;4&quot; and the <code>status</code>
+                -- the HTTP status code definition of the request -- is &quot;200&quot;, signifying a
+                success. You will define <code>parseMessages()</code> next in <a href="#htmldom">Updating
+                the HTML DOM</a>.</p>
+
+
+            <h3 id="htmldom">Updating the HTML DOM</h3>
+
+            <p>The <code>parseMessages()</code> function handles the incoming XML data. In doing so,
+                it relies on several ancillary functions, such as <code>appendComposer()</code>,
+                <code>getElementY()</code>, and <code>clearTable()</code>. You must also introduce new
+                elements to the index page, such as a second HTML table which serves as the auto-complete
+                box, and ID's for elements so they can be referenced in <code>javascript.js</code>.
+                Finally, you create new variables corresponding to ID's for elements in <code>index.php</code>,
+                initialize them in the <code>init()</code> function that you previously implemented,
+                and add some functionality that is needed each time <code>index.php</code> is loaded.</p>
+
+            <p class="notes"><strong>Note:</strong> The functions and elements that you create in the
+                following steps work interdependently. It is recommended that you work through this section,
+                then examine the code once it is all in place.</p>
+
+            <ol>
+                <li>Open <code>index.html</code> in the editor and type in the below code for the
+                    second row of the HTML table you previously created.
+
+<pre class="examplecode">
+&lt;tr&gt;
+    <strong>&lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+
+    &lt;td/&gt;</strong>
+&lt;/tr&gt;</pre>
+
+                    This new row, which can be identified as '<code>auto-row</code>', serves as a handle
+                    for the JavaScript code in order to insert a new HTML table that will form the auto-complete
+                    box.</li>
+
+                <li>Open <code>javascript.js</code> in the editor and the following three variables to
+                    the top of the file.
+
+<pre class="examplecode">
+var completeField;
+var completeTable;
+var autoRow;</pre></li>
+
+                <li>Add the following lines (in <strong>bold</strong>) to the <code>init()</code> function.
+
+<pre class="examplecode">
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+    <strong>completeTable = document.createElement(&quot;table&quot;);
+    completeTable.setAttribute(&quot;class&quot;, &quot;popupBox&quot;);
+    completeTable.setAttribute(&quot;style&quot;, &quot;display: none&quot;);
+    autoRow = document.getElementById(&quot;auto-row&quot;);
+    autoRow.appendChild(completeTable);
+    completeTable.style.top = getElementY(autoRow) + &quot;px&quot;;</strong>
+}</pre>
+
+                    One purpose of <code>init()</code> is to make elements inside <code>index.html</code>
+                    accessible to other functions that will modify the index page's DOM. Above, the script
+                    creates a new HTML <code>table</code>, adds the <code>popupBox</code> class and modifies
+                    the element's style to <code>display: none</code>. Finally, it gets the element whose
+                    <code>id</code> is <code>auto-row</code> and inserts the new <code>table</code> into it.
+                    In other words, the modified HTML looks as follows when the code is run.
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        <strong>&lt;table class=&quot;popupBox&quot; style=&quot;display: none&quot;&gt;&lt;/table&gt;</strong>
+    &lt;td/&gt;
+&lt;/tr&gt;</pre></li>
+
+                <li>Add <code>appendComposer()</code> to <code>javascript.js</code>.
+
+ <pre class="examplecode">
+function appendComposer(firstName,lastName,composerId) {
+
+    var row;
+    var cell;
+    var linkElement;
+
+    if (isIE) {
+        completeTable.style.display = 'block';
+        row = completeTable.insertRow(completeTable.rows.length);
+        cell = row.insertCell(0);
+    } else {
+        completeTable.style.display = 'table';
+        row = document.createElement(&quot;tr&quot;);
+        cell = document.createElement(&quot;td&quot;);
+        row.appendChild(cell);
+        completeTable.appendChild(row);
+    }
+
+    cell.className = &quot;popupCell&quot;;
+
+    linkElement = document.createElement(&quot;a&quot;);
+    linkElement.className = &quot;popupItem&quot;;
+    linkElement.setAttribute(&quot;href&quot;, &quot;autocomplete.php?action=lookup&id=&quot; + composerId);
+    linkElement.appendChild(document.createTextNode(firstName + &quot; &quot; + lastName));
+    cell.appendChild(linkElement);
+}</pre>
+
+                    This function creates a new table row, inserts a link to a composer into it using
+                    the data passed to the function via its three parameters, and inserts the row into
+                    the index page's <code>complete-table</code> element.</li>
+
+                <li>Add <code>clearTable()</code> to <code>javascript.js</code>.
+
+ <pre class="examplecode">
+function clearTable() {
+    if (completeTable.getElementsByTagName("tr").length > 0) {
+        completeTable.style.display = 'none';
+        for (loop = completeTable.childNodes.length -1; loop >= 0 ; loop--) {
+            completeTable.removeChild(completeTable.childNodes[loop]);
+        }
+    }
+}</pre>
+
+                    This function sets the display of the <code>complete-table</code> element to 'none',
+                    (i.e., makes it invisible), and it removes any existing composer name entries that
+                    were created.</li>
+
+                <li>Add <code>getElementY()</code> to <code>javascript.js</code>.
+
+                <pre class="examplecode">
+function getElementY(element){
+
+    var targetTop = 0;
+
+    if (element.offsetParent) {
+        while (element.offsetParent) {
+            targetTop += element.offsetTop;
+            element = element.offsetParent;
+        }
+    } else if (element.y) {
+        targetTop += element.y;
+    }
+    return targetTop;
+}</pre>
+
+                    This function is applied to find the vertical position of the parent element. This
+                    is necessary because the actual position of the element, when it is displayed, is
+                    often dependent on browser type and version. Note that the <code>complete-table</code>
+                    element, when displayed containing composer names, is shifted to the lower right
+                    of the table in which it exists. The correct height positioning is determined by
+                    <code>getElementY()</code>.
+
+                    <br><br>
+                    <p class="notes"><strong>Note:</strong> See <a target="_blank" href="http://www.quirksmode.org/js/findpos.html">this
+                    explanation</a> of <code>offset</code> on <a target="_blank" href="http://www.quirksmode.org/">http://www.quirksmode.org/</a>.</p></li>
+
+                <li>Modify the <code>callback()</code> function to call <code>clearTable()</code>
+                    each time new data is received from the server. Any composer entries that already
+                    exist in the auto-complete box are therefore removed before it becomes populated
+                    with new entries.
+
+<pre class="examplecode">
+function callback() {
+
+    <strong>clearTable();</strong>
+
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+
+                <li>Add <code>parseMessages()</code> to <code>javascript.js</code>.
+
+<pre class="examplecode">
+function parseMessages(responseXML) {
+
+    // no matches returned
+    if (responseXML == null) {
+        return false;
+    } else {
+
+        var composers = responseXML.getElementsByTagName(&quot;composers&quot;)[0];
+
+        if (composers.childNodes.length &gt; 0) {
+            completeTable.setAttribute(&quot;bordercolor&quot;, &quot;black&quot;);
+            completeTable.setAttribute(&quot;border&quot;, &quot;1&quot;);
+
+            for (loop = 0; loop &lt; composers.childNodes.length; loop++) {
+                var composer = composers.childNodes[loop];
+                var firstName = composer.getElementsByTagName(&quot;firstName&quot;)[0];
+                var lastName = composer.getElementsByTagName(&quot;lastName&quot;)[0];
+                var composerId = composer.getElementsByTagName(&quot;id&quot;)[0];
+                appendComposer(firstName.childNodes[0].nodeValue,
+                    lastName.childNodes[0].nodeValue,
+                    composerId.childNodes[0].nodeValue);
+            }
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>The <code>parseMessages()</code> function receives as a parameter an object representation
+                of the XML document returned by the <code>autocomplete.php</code> file. The function
+                programmatically traverses the XML document, extracting the <code>firstName</code>, <code>lastName</code>,
+                and <code>id</code> of each entry, then passes this data to <code>appendComposer()</code>.
+                This results in a dynamic update to the contents of the <code>complete-table</code> element.
+                For example, an entry that is generated and inserted into <code>complete-table</code>
+                might look as follows:</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td class=&quot;popupCell&quot;&gt;
+        &lt;a class=&quot;popupItem&quot; href=&quot;autocomplete?action=lookup&id=12&quot;&gt;Antonin Dvorak&lt;/a&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+</pre>
+                </div>
+            </div>
+
+            <p>The dynamic update to the <code>complete-table</code> element represents the final step
+                of the process flow of communication that takes place during communication using Ajax.
+                This update maps to the HTML & CSS data being sent to the presentation in the <a href="#flow-diagram">flow
+                diagram</a> above.</p>
+
+
+            <h3 id="stylesheet">Attaching a Stylesheet</h3>
+
+            <p>At this stage, you have completed all the code needed for the functionality of the application.
+                To see the results of your efforts, try running the application now.</p>
+
+            <ol>
+                <li>Run the project to see what it looks like in a browser. Click the Run Project (
+                    <img src="../../../images_www/articles/73/web/ajax-intro/run-project-btn.png"
+                    alt="Run Project button"> ) button. The <code>index.html</code> file displays in
+                    your browser.
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/no-css.png"
+                        alt="Application displayed in browser without stylesheet" class="margin-around b-all"
+                        title="Successful deployment without stylesheet"></li>
+            </ol>
+
+            <p>To attach a stylesheet to your application, simply create a CSS (Cascading Style Sheets)
+                file and link to it from your presentation page(s). When you work in CSS files, the
+                IDE provides you with code completion support, as well as several other features
+                that can aid in producing stylesheet rules. These include:</p>
+
+            <ul>
+                <li><strong>CSS Style Builder:</strong> An interface designed to enable you to create
+                    rules using a selection of controls and widgets. (Window &gt; Other &gt; CSS Style
+                    Builder)</li>
+
+                <li><strong>CSS Preview:</strong> A preview window which, when you place your cursor
+                    within a rule, displays sample text rendered according to the declaration block
+                    of that rule. (Window &gt; Other &gt; CSS Preview)</li>
+
+                <li><strong>Style Rule Editor:</strong> A dialog enabling you to create rules based
+                    on classes, ID's and HTML elements, and set their position in the document hierarchy.
+                    (Create Rule ( <img src="../../../images_www/articles/73/web/ajax-intro/style-rule-editor-btn.png"
+                    alt="Style Rule Editor"> ) button, located in upper-left region of CSS editor toolbar)</li>
+            </ul>
+
+            <p class="tips">NetBeans 6.9 provides Rename Refactoring and Find Usages support. This support
+                is available not only in css files, but in all files containing embedded CSS code (e.g.,
+                HTML, PHP). CSS classes, id's and type elements can be refactored in all project files. To
+                make use of this refactoring support, press Ctrl-R on a given  CSS element and use the
+                provided dialog to perform the rename action. You can also preview changes before performing
+                the rename action. To utilize Find Usages support, right-click a CSS element and choose Find Usages. See
+                <a target="_blank" href="http://wiki.netbeans.org/wiki/index.php?title=NewAndNoteworthy69m1&section=T-25#Web_Languages">NewAndNoteworthy69m1</a>
+                for more details.</p>
+
+            <p>Perform the following steps to attach a stylesheet to your application.</p>
+
+            <ol>
+                <li>In the Projects window, right-click on the project node and choose New &gt; Cascading
+                    Style Sheet (If Cascading Style Sheet is not listed, choose Other. Then choose
+                    Cascading Style Sheet from the Other category in the New File wizard.)</li>
+
+                <li>In the CSS File Name text field, type in <code>stylesheet</code>.</li>
+
+                <li>Click Finish. The new file is added to the Projects window, and opens in the IDE's
+                    editor.</li>
+
+                <li>In <code>stylesheet.css</code>, type in the following rules. You can make use of
+                    the IDE's code completion support by pressing Ctrl-Space at points when you want
+                    to call up suggestions.
+
+<pre class="examplecode">
+body {
+   font-family: sans-serif;
+   font-size: smaller;
+   padding: 50px;
+   color: #555;
+   width: 650px;
+}
+
+h1 {
+   letter-spacing: 6px;
+   font-size: 1.6em;
+   color: #be7429;
+   font-weight: bold;
+}
+
+h2 {
+   text-align: left;
+   letter-spacing: 6px;
+   font-size: 1.4em;
+   color: #be7429;
+   font-weight: normal;
+   width: 450px;
+}
+
+table {
+   width: 550px;
+   padding: 10px;
+   background-color: #c5e7e0;
+}
+
+td {
+   padding: 10px;
+}
+
+a {
+  color: #be7429;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.popupBox {
+  position: absolute;
+  top: 170px;
+  left: 140px;
+}
+
+.popupCell {
+   background-color: #fffafa;
+}
+
+.popupCell:hover {
+  background-color: #f5ebe9;
+}
+
+.popupItem {
+  color: #333;
+  text-decoration: none;
+  font-size: 1.2em;
+}</pre>
+
+                    <p class="tips">Perform a check on the validity of your CSS code by right-clicking
+                        in the CSS Editor and choosing Check CSS. Any errors encountered are displayed
+                        in the Output window (Windows &gt; Output).</p></li>
+
+
+                <li>Switch to the <code>index.html</code> page in the editor (press Ctrl-Tab), and add
+                    a reference to the stylesheet between the <code>&lt;head&gt;</code> tags.
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;
+</pre></li>
+
+                <li>Run the application again. The index page displays in the browser using the
+                    stylesheet you just created. Each time you type in a character, an asynchronous
+                    request is sent to the server, and returned with XML data that has been prepared
+                    by <code>autocomplete.php</code>. As you enter more characters, the number of
+                    composer names decreases to reflect the new list of matches.</li>
+
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="conclusion">Conclusion</h2>
+
+        <p>This concludes the Introduction to Ajax. Hopefully by now you realize that Ajax is simply
+            exchanging information over HTTP in the background, and updating that page dynamically based
+            on the results.</p>
+
+        <p>You may note that the application you built has numerous shortcomings, for example nothing
+            happens when a composer name is selected from the auto-complete box! You are welcome to
+            <a target="_blank" href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip">download
+            the sample application</a> to see how this can be implemented using PHP technology. Furthermore,
+            you might want to investigate validation that prevents a user from requesting a name that
+            does not exist in the data store. You can learn more about these techniques by following
+            other tutorials on the <a href="../../trails/php.html">NetBeans PHP Learning Trail</a>.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: Introduction to Ajax (PHP)">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">See Also</h2>
+
+        <p>For more information about Ajax and PHP technology on <a target="_blank" href="https://netbeans.org/">netbeans.org</a>,
+            see the following resources:</p>
+
+        <ul>
+            <li><a href="wish-list-tutorial-main-page.html">Creating a Wish List CRUD Application with PHP</a>.
+                A 9-step tutorial describing how to create a CRUD application using PHP support in the IDE.</li>
+            <li><a href="../../docs/web/js-toolkits-jquery.html">Using jQuery to Enhance the Appearance and Usability
+                    of a Web Page</a>. Demonstrates how to integrate jQuery core and UI libraries into a NetBeans project.</li>
+            <li><a href="../../docs/web/js-toolkits-dojo.html">Connecting a Dojo Tree to an ArrayList using JSON</a>.
+                Based on a JavaOne Hands-On Lab, this document shows how to implement a Dojo Tree widget into a
+                web page and enable the server-side to respond to Tree requests in JSON format.</li>
+        </ul>
+
+    </body>
+</html>

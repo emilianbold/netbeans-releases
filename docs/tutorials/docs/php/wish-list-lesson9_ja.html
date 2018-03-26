@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>PHPを使用するデータベース駆動型アプリケーションの作成リモートWebサーバーへのアプリケーションのデプロイ </title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Deploying the Application on a Remote Server" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">  
+   </head>
+   <body>
+<h1>PHPを使用するデータベース駆動型アプリケーションの作成</h1>
+<h1>レッスン9: リモートWebサーバーへのアプリケーションのデプロイ </h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>チュートリアルの目次:</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">PHPを使用するデータベース駆動型アプリケーションの作成 - メイン・ページ</a></li>
+    <li><p>データベースの作成</p> <ol type="a"><li><a href="wish-list-lesson1.html">MySQLデータベースの作成</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Oracleデータベース表の作成</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">アプリケーションの設計。データベースからの読取り</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">新規アプリケーション・ユーザーの作成</a></li>
+    <li><a href="wish-list-lesson4.html">コードの最適化</a></li>
+    <li><a href="wish-list-lesson5.html">セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</a></li>
+    <li><a href="wish-list-lesson6.html">データベースへの新しいウィッシュの追加</a></li>
+    <li>      <a href="wish-list-lesson7.html">データベース内のエントリの更新および削除</a></li>
+    <li><a href="wish-list-lesson8.html">CSSテクノロジを使用したアプリケーションの外観の改良</a></li>
+    <li>
+      <p><b>=>リモートWebサーバーへのアプリケーションのデプロイ</b></p>
+    <ul>
+    <li><a href="#previousLessonSourceCode">前のレッスンからのアプリケーション・ソース・コード</a></li>
+    <li><a href="#registerEmailAccount">電子メール・アカウントの登録</a></li>
+    <li><a href="#registerHostingAccount">ホスティング・アカウントの登録</a></li>
+    <li><a href="#registeringFTPAccount">FTPアカウントの登録</a></li>
+    <li><a href="#creatingRemoteDatabase">リモート・データベースの作成</a></li>
+    <li><a href="#settingUpPHPProjectWithSources">既存のソースを使用したPHPプロジェクトの設定</a></li>
+    <li><a href="#updatingClassWishDB">クラスWishDBの更新</a></li>
+    <li><a href="#nextSteps">次の手順</a></li></ul></li>
+        </ol>
+</div>
+</div>
+
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+<p>通常、実際のPHPアプリケーションはリモート・サーバー上で実行され、ファイル転送プロトコル(FTP)でアクセスされます。リモート・サーバー上にCRUDアプリケーションをデプロイするには、ホスティング・プロバイダでのアカウントの登録、FTPアカウントの登録、およびリモート・データベースの作成を行う必要があります。</p>
+<p>ホスティングは任意のものを使用できます。このドキュメントでは、X10HOSTINGフリー・ホスティングでのデプロイ手順について説明します。このホスティングにはMySQLが含まれますが、Oracleデータベース・サーバーは含まれません。</p>
+<p class="notes"> ユーザー名、パスワード、および電子メール・アドレスはすべて仮のもので、単なる例として使用されています。ユーザーが1週間以上フォーラムに現れない場合、ホスティングの管理によってアカウントがブロックされます。そのため、チュートリアルとまったく同じユーザー名、パスワード、電子メール・アドレス、およびその他の証明書を適用できない場合があります。</p>
+<p>このレッスンでは、次のことを行う方法を学習します。</p>
+<ul>
+  <li style="margin-left:40em"><a href="#hideLogonForm">ホスティング・アカウントを登録する</a></li>
+  <li style="margin-left:40em"><a href="#improveTableEmptyCells">FTPアカウントを登録する</a> </li>
+  <li style="margin-left:40em"><a href="#designStyles">リモートMySQLデータベースを作成する</a></li>
+  <li style="margin-left:40em"><a href="#divs">登録済のリモートWebホスティングを使用するように、プロジェクトを設定する</a></li>
+  <li style="margin-left:40em">リモート・データベースを使用するように、データベースの接続設定を変更する </li>
+</ul>
+<p>現在のドキュメントは、PHP向けのNetBeans IDEでのCRUDアプリケーションの作成というPHPチュートリアルの一部です。 </p>
+<br style="clear:left">
+<h2><a name="previousLessonSourceCode"></a>前のレッスンからのアプリケーション・ソース・コード</h2>
+<p>MySQLユーザー: 前のレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">ここ</a>をクリックします。</p>
+<h2><a name="registerEmailAccount"></a>電子メール・アカウントの登録</h2>
+<p>まだ電子メール・アカウントを作成していない場合は、電子メール・アカウントを作成します。この例での電子メール・アドレスは、phpuser65@googlemail.comです。 </p>
+<h2><a name="registerHostingAccount"></a>ホスティング・アカウントの登録 </h2>
+<p><a href="http://x10hosting.com/" target="_blank">X10HOSTING</a>フリー・ホスティングにホスティング・アカウントを作成するには、ウィザードの手順に従って、次の設定を入力します。他のホスティング・サイトでも、同様の情報を入力します。</p>
+<table>
+     <tbody>
+	   <tr>
+         <th class="tblheader" scope="col">アカウント設定 </th>
+         <th class="tblheader" scope="col">値</th>
+       </tr>
+	   <tr>
+	   <td>電子メール・アドレス</td>
+	   <td>phpuser65@gmail.com</td>
+	   </tr>
+       <tr>
+         <td>ドメイン名 </td>
+         <td><a href="http://x10hosting.com/" target="_blank">x10Hosting.com</a></td>
+       </tr>
+       <tr>
+         <td>サブドメイン</td>
+         <td>phpuser
+       </tr>
+       <tr>
+         <td>ホスティング・アカウントのユーザー名(cPanelへのログイン用を兼ねる) </td>
+         <td>phpuser</td>
+       </tr>
+       <tr>
+         <td>ホスティング・アカウントのパスワード(cPanelへのログイン用を兼ねる) </td>
+         <td>qwerty1234</td>
+       </tr>
+	   <tr>
+         <td>フォーラムのユーザー名 </td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+         <td>フォーラムのパスワード </td>
+         <td>qwerty</td>
+       </tr>
+	   <tr>
+         <td>FTPアカウント名 </td>
+         <td>uploader</td>
+       </tr>
+	   <tr>
+         <td>FTPユーザー名 </td>
+         <td>uploader@phpuser.x10hosting.com</td>
+       </tr>
+	   <tr>
+         <td>FTPサーバー </td>
+         <td>ftp.phpuser.x10hosting.com</td>
+       </tr>
+       <tr>
+         <td>リモート・データベースのホスト名</td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+	   <td>リモート・データベース</td>
+	   <td>wishlist</td>
+	   </tr>
+	   <tr>
+	   <td>リモート・データベースのユーザー名</td>
+	   <td>phpuser</td>
+	   </tr>
+	   <tr>
+	   <td>リモート・データベースのユーザー・パスワード</td>
+	   <td>phpuserpw</td>
+	   </tr>
+     </tbody>
+   </table>
+<h2><a name="registeringFTPAccount"></a>FTPアカウントの登録</h2>
+<p>ホスティング・アカウントができたので、PHPソースとその他の関連ファイルをサーバー上で実行するために、それらを転送するFTPアカウントが必要です。x10Hostingでは、cPanelを開いて「New FTP Account」を選択し、ウィザードに従います。</p>
+<h2><a name="creatingRemoteDatabase"></a>リモート・データベースの作成</h2>
+<p>CRUDアプリケーションはデータベースを使用するため、<a href="#registerHostingAccount">ホスティング・アカウント</a>を持つリモート・サーバーにも<tt>wishlist</tt> MySQLデータベースをデプロイする必要があります。</p>
+
+<h2><a name="settingUpPHPProjectWithSources"></a>既存のソースを使用したPHPプロジェクトの設定およびリモートWebサイトの実行構成 </h2>
+<ol>
+<li>前のレッスンが完了した後のアプリケーションの状態に対応する<a href="#previousLessonSourceCode">ソース・ファイルをダウンロード</a>します。ファイルを抽出します。 </li>
+<li>ソース・ファイルを<tt>htdocs</tt>フォルダに保存します。</li>
+<li><a href="project-setup.html#importSources">既存のソースを使用したPHPプロジェクト</a>を作成するには:
+  <ul>
+<li>ソース・フォルダのダウンロード済ソースの場所を指定する</li>
+<li><a href="project-setup.html#remiteWebSite">リモートWebサイト</a>の実行構成を選択し、FTP接続を構成する </li>
+</ul>
+</li>
+<li>プロジェクトの作成を完了します。</li>
+</ol>
+<h2><a name="updatingClassWishDB"></a>クラスWishDBの更新</h2>
+<p>これまでは、ウィッシュ・リスト・アプリケーションをローカルWebサーバーで開発して実行し、ローカルのMySQLまたはOracleデータベース・サーバーを使用しました。アプリケーションがリモートMySQLデータベースを操作できるようにするには、クラス<tt>WishDB</tt>の変数を使用して指定した接続設定を更新する必要があります。</p>
+<ol>
+<li>ファイル<tt>db.php</tt>を開きます。</li>
+<li>クラス<tt>WishDB</tt>の変数を次のように変更します。
+  <pre class="examplecode">
+    var $user = "&lt;the name of the remote database user&gt;";        
+    var $pass = "&lt;the password of the remote database user&gt;";
+    var $dbName = "&lt;the name of the remote database&gt;";
+    var $dbHost = "&lt;the account username specified during the hosting account creation&gt;";
+</pre>
+
+この例では、変数は次のように更新されます。
+<pre class="examplecode">
+    var $user = "phpuser";        
+    var $pass = "phpuserpw";
+    var $dbName = "wishlist";
+    var $dbHost = "phpuser";
+</pre>
+</li>
+</ol>
+<h2><a name="nextSteps"></a>次の手順</h2>
+  <p><a href="wish-list-lesson8.html">&lt;&lt; 前のレッスン</a></p>
+  <p>
+  <a href="wish-list-tutorial-main-page.html">チュートリアルのメイン・ページに戻る</a></p>
+  
+  <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">このチュートリアルに関するご意見をお寄せください</a></div>
+<br style="clear:both;" >
+<p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。
+   <p><a href="../../trails/php.html">PHPの学習に戻る</a></p>
+
+</body>
+</html>

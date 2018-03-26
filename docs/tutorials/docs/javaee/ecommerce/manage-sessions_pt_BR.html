@@ -1,0 +1,845 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit demonstrates how to implement shopping cart functionality into the application.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Tutorial do NetBeans E-commerce: Gerenciando Sessões</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Tutorial do NetBeans E-commerce: Gerenciando Sessões</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Conteúdo do Tutorial</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introdução</a></li>
+                    <li><a href="design.html">Criando a Aplicação</a></li>
+                    <li><a href="setup-dev-environ.html">Configurando o Ambiente de Desenvolvimento</a></li>
+                    <li><a href="data-model.html">Criando o Modelo de Dados</a></li>
+                    <li><a href="page-views-controller.html">Preparando as Views de Página e o Servlet do Controlador</a></li>
+                    <li><a href="connect-db.html">Conectando a Aplicação ao Banco de Dados</a></li>
+                    <li><a href="entity-session.html">Adicionando Classes de Entidades e Beans de Sessão</a></li>
+                    <li><strong>Gerenciando Seções</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#session-data">Tratand Dados de Sessão</a></li>
+                            <li><a href="#debug">Analisando os Dados de Sessão com o Depurador Java</a></li>
+                            <li><a href="#session-track">Analisando as Opções de Rastreamento de Sessão</a></li>
+                            <li><a href="#time-out">Tratando Time-Outs de Sessão</a></li>
+                            <li><a href="#seeAlso">Consulte Também</a></li>
+                        </ul></li>
+
+                    <li><a href="transaction.html">Integrando a Lógica de Negócios Transacional</a></li>
+                    <li><a href="language.html">Adicionando o Suporte a Idioma</a></li>
+                    <li><a href="security.html">Protegendo a Aplicação</a></li>
+                    <li><a href="test-profile.html">Testando e Criando Perfis</a></li>
+                    <li><a href="conclusion.html">Conclusão</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="O conteúdo desta página se aplica ao NetBeans IDE, versões e 6.8 e 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="O conteúdo desta página se aplica ao NetBeans IDE, versões e 6.8 e 6.9"></p>
+
+        <p>Cada aplicação de e-commerce que oferece alguma forma de funcionalidade de carrinho de compras precisa poder lembrar dados específicos do usuário, conforme os usuários clicam no site. Infelizmente, para o desenvolvedor, o protocolo HTTP, sobre o qual a comunicação na Internet ocorre, é um protocolo <em>sem estado</em>. Cada solicitação recebida pelo servidor é uma informação independente que não tem nenhuma relação com solicitações recebidas anteriormente. Portanto, se o cliente clicar em um botão para adicionar um item ao seu carrinho de compras, a aplicação deverá tomar medidas para assegurar não somente que o estado do carrinho do usuário seja atualizado, mas que a ação não afete o carrinho de outro usuário que pode estar navegando pelo site ao mesmo tempo.</p>
+
+        <p>A fim de tratar corretamente o cenário descrito acima, é necessário implementar uma funcionalidade, de maneira que uma <em>sessão</em> possa ser criada e mantida durante toda a visita do usuário ao site. A tecnologia Servlet, que é a base de todas as aplicações web baseadas em Java, fornece isso com sua interface <a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpSession.html" target="_blank"><code>HttpSession</code></a>. É necessário também definir várias classes, como, por exemplo, <code>ShoppingCart</code> e <code>ShoppingCartItem</code>, que permitem à aplicação armazenar temporariamente dados do usuário, enquanto a sessão é mantida.</p>
+
+        <p>Esta unidade do tutorial utiliza uma abordagem diferente das outras no Tutorial do NetBeans E-commerce. Ao invés de criar os arquivos de projeto e fornecer as etapas com snippets de código para copiar e colar no seu próprio projeto, você abre o snapshot do projeto completo para esta unidade e examina o código utilizando o depurador do IDE e outras ferramentas. No processo, será possível aprender como aplicar um objeto <code>HttpSession</code> ao seu código, de forma que cada visita ao website resulte em uma sessão dedicada. Você aprenderá também sobre <em>variáveis de escopo</em> e seu uso nas classes Java e nas páginas JSP. Esta unidade também discute o mecanismo default de <code>HttpSession</code> para manutenção de sessões (ex., cookies) e mostra que medidas devem ser tomadas no caso de os cookies estarem desativados no browser do usuário. Por fim, os time-outs de sessão são cobertos e a unidade demonstra como tratá-los criando um filtro simples que intercepta solicitações de verificação da existência da sessão.</p>
+
+        <p>Você pode exibir uma demonstração ao vivo da aplicação construída neste tutorial: <a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">Aplicação de Demonstração do Tutorial do NetBeans E-commerce</a></p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote Java, 6.8 ou 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">versão 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFish Server</a></td>
+                    <td class="tbltd1">v3 ou Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">Servidor de banco de dados MySQL</a></td>
+                    <td class="tbltd1">versão 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot5.zip">Projeto AffableBean</a></td>
+                    <td class="tbltd1">snapshot 5</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Observações:</strong></p>
+
+        <ul>
+            <li>O NetBeans IDE requer o Java Development Kit (JDK) para ser executado adequadamente. Se você não tiver nenhum dos recursos listados acima, o JDK deverá ser o primeiro item a ser submetido a download e instalado.</li>
+
+            <li>O Pacote Java do NetBeans IDE inclui o Java Web e tecnologias EE, que são necessárias para a aplicação construída neste tutorial.</li>
+
+            <li id="glassFish">O pacote Java do NetBeans IDE também inclui o GlassFish Server, necessário para este tutorial. Você poderia <a href="https://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">fazer download do GlassFish Server independentemente</a>, mas a versão fornecida pelo NetBeans do qual fez download tem a vantagem adicional de ser registrada automaticamente no IDE.</li>
+
+            <li>Você pode seguir esta unidade do tutorial sem ter concluído as unidades anteriores. Para isso, consulte as <a href="setup.html">instruções de configuração</a>, que descrevem como preparar o banco de dados e estabelecer uma conectividade entre o IDE, o GlassFish e o MySQL.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="session-data">Tratando Dados de Sessão</h2>
+
+        <p>As aplicações podem gerenciar sessões de usuário com o objeto <code>HttpSession</code>. Você pode vincular dados específicos do usuário ao objeto <code>HttpSession</code> e, em seguida, acessar esses dados em um estágio mais avançado. As duas ações de vincular e acessar podem ser feitas por meio das classes Java, assim como usando variáveis de escopo de sessão em expressões EL.</p>
+
+        <ul>
+            <li><a href="#httpSession">Trabalhando com um Objeto HttpSession</a></li>
+            <li><a href="#scopedVariables">Trabalhando com Variáveis de Escopos em Aplicações Web</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="httpSession">Trabalhando com um Objeto HttpSession</h3>
+
+            <p>A aplicação <code>AffableBean</code> utiliza o objeto <code>HttpSession</code> para identificar usuários em várias solicitações. Um objeto <code>HttpSession</code> é obtido utilizando <code>getSession()</code> em uma determinada solicitação:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+HttpSession session = request.getSession();</pre>
+
+            <p>Se ainda não existir um objeto de sessão para a solicitação, o método cria e retorna um novo objeto de sessão.</p>
+
+            <p>Você pode utilizar o objeto de sessão como um veículo para a transferência de dados entre as solicitações. Você pode utilizar o método <code>setAttribute</code> para vincular objetos à sessão. Da mesma forma, você usa <code>getAttribute</code> para recuperar objetos da sessão. Na aplicação <code>AffableBean</code>, por exemplo, o carrinho de compras do usuário é criado e vinculado à sessão do usuário da seguinte forma:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+ShoppingCart cart = new ShoppingCart();
+session.setAttribute(&quot;cart&quot;, cart);</pre>
+
+            <p>Para recuperar o carrinho da sessão, o método <code>getAttibute</code> é aplicado:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+cart = (ShoppingCart) session.getAttribute(&quot;cart&quot;);</pre>
+
+            <p>Nas páginas JSP, você pode acessar objetos vinculados à sessão utilizando expressões EL. Continuando com o exemplo acima, se um objeto <code>ShoppingCart</code> chamado "<code>cart</code>" estiver vinculado à sessão, você poderá acessá-lo utilizando a seguinte expressão EL:
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">${cart}</pre>
+
+            <p>No entanto, acessar o objeto <code>ShoppingCart</code> em si tem pouco valor. O que você realmente quer é uma maneira de acessar valores armazenados no objeto. Se explorar a nova classe <code>ShoppingCart</code> no snapshot do projeto, você notará que ela contém as seguintes propriedades:</p>
+
+            <ul>
+                <li><code>double total</code></li>
+                <li><code>int Numberofitems </code></li>
+                <li><code>List&lt;String, ShoppingCartItem> items</code></li>
+            </ul>
+
+            <p>Desde que as propriedades tenham métodos getter correspondentes, você poderá acessar valores para propriedades singulares utilizando notação de ponto simples em uma expressão EL. Se examinar a página <code>cart.jsp</code>, verá que é exatamente assim que o valor para <code>numberOfItems</code> é acessado:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+&lt;p&gt;Your shopping cart contains ${cart.numberOfItems} items.&lt;/p&gt;</pre>
+
+            <p>Para extrair dados de propriedades que contêm valores múltiplos, tal como a lista <code>items</code> acima, a página <code>cart.jsp</code> utiliza um loop <code>&lt;c:forEach></code>:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+&lt;c:forEach var=&quot;cartItem&quot; items=&quot;${cart.items}&quot; varStatus=&quot;iter&quot;&gt;
+
+  &lt;c:set var=&quot;product&quot; value=&quot;${cartItem.product}&quot;/&gt;
+
+    &lt;tr class=&quot;${((iter.index % 2) == 0) ? 'lightBlue' : 'white'}&quot;&gt;
+        &lt;td&gt;
+            &lt;img src=&quot;${initParam.productImagePath}${product.name}.png&quot;
+                 alt=&quot;${product.name}&quot;&gt;
+        &lt;/td&gt;
+
+        &lt;td&gt;${product.name}&lt;/td&gt;
+
+        &lt;td&gt;
+            &amp;euro; ${cartItem.total}
+            &lt;br&gt;
+            &lt;span class=&quot;smallText&quot;&gt;( &amp;euro; ${product.price} / unit )&lt;/span&gt;
+        &lt;/td&gt;
+        ...
+    &lt;/tr&gt;
+
+&lt;/c:forEach&gt;</pre>
+
+            <p>A propriedade <code>product</code> de <code>ShoppingCartItem</code> identifica o tipo de produto de um item do carrinho. O loop acima aproveita isso definindo primeiramente uma variável <code>product</code> para a expressão <code>${cartItem.product}</code>. Em seguida ele utiliza a variável para obter informações sobre esse produto (ex., nome e preço).</p>
+
+
+            <h3 id="scopedVariables">Trabalhando com Variáveis de Escopos em Aplicações Web</h3>
+
+            <p>Quando se trabalha com a tecnologia JSP/Servlet, há quatro objetos de escopo disponíveis no realm da aplicação. A tecnologia JSP implementa <em>objetos implícitos</em> que permitem acessar classes definidas pela API do Servlet.</p>
+
+            <div class="margin-around">
+                <table width="688px">
+                    <tr>
+                        <th class="tblheader" scope="col">Escopo</th>
+                        <th class="tblheader" scope="col">Definição</th>
+                        <th class="tblheader" scope="col">Classe Servlet</th>
+                        <th class="tblheader" scope="col">Objeto Implícito JSP</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>Aplicação</strong></td>
+                        <td class="tbltd1">Memória global para uma aplicação web</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/ServletContext.html" target="_blank">javax.servlet.ServletContext</a></code></td>
+                        <td class="tbltd1"><code>applicationScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>Sessão</strong></td>
+                        <td class="tbltd1">Dados específicos para uma sessão de usuário</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpSession.html" target="_blank">javax.servlet.http.HttpSession</a></code></td>
+                        <td class="tbltd1"><code>sessionScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>Solicitação</strong></td>
+                        <td class="tbltd1">Dados específicos para uma solicitação de servidor individual</td>
+                        <td class="tbltd1"><code><a href="http://java.sun.com/javaee/6/docs/api/javax/servlet/http/HttpServletRequest.html" target="_blank">javax.servlet.HttpServletRequest</a></code></td>
+                        <td class="tbltd1"><code>requestScope</code></td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><strong>Página</strong></td>
+                        <td class="tbltd1">Dados que são válidos somente no contexto de uma única página (somente JSPs)</td>
+                        <td class="tbltd1"><code>[n/d]</code></td>
+                        <td class="tbltd1"><code>pageScope</code></td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>Se abrir o arquivo <code>category.jsp</code> do projeto no editor, verá que as expressões EL incluem diversas variáveis de escopo, incluindo <code>${categories}</code>, <code>${selectedCategory}</code> e <code>${categoryProducts}</code>. A variável <code>${categories}</code> é uma aplicação de escopo, definida no método <code>init</code> do <code>ControllerServlet</code>:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+// store category list in servlet context
+getServletContext().setAttribute(&quot;categories&quot;, categoryFacade.findAll());</pre>
+
+            <p>As outras duas, <code>${selectedCategory}</code> e <code>${categoryProducts}</code>, são inseridas no escopo da sessão da aplicação a partir do <code>ControllerServlet</code>. Por exemplo:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+// place selected category in session scope
+session.setAttribute(&quot;selectedCategory&quot;, selectedCategory);</pre>
+
+            <p class="notes"><strong>Observação:</strong> Se você estiver continuando de unidades anteriores do tutorial, provavelmente notará que <code>${selectedCategory}</code> e <code>${categoryProducts}</code> foram originalmente colocadas no escopo da solicitação. Em unidades anteriores, isso não era problema, mas considere agora o que acontece se um usuário clicar no botão "adicionar ao carrinho" na página de uma categoria. O servidor responde a uma solicitação <code>addToCart</code> retornando a página de categoria em exibição no momento. Portanto, é preciso saber a <code>selectedCategory</code> e a <code>categoryProducts</code> pertencentes à categoria selecionada. Em vez de estabelecer essas informações para cada solicitação, você as coloca no escopo da sessão de uma solicitação de <code>category</code> para que sejam mantidas em várias solicitações e possam ser acessadas quando necessário. Além disso, examine a funcionalidade fornecida pela página do carrinho. (Uma descrição funcional é <a href="#cartPage">fornecida abaixo</a>.) O botão "continuar comprando" retorna o usuário à categoria exibida anteriormente. Novamente, as variáveis <code>selectedCategory</code> e <code>categoryProducts</code> são necessárias.</p>
+
+            <p>Ao fazer referência às variáveis do escopo em uma expressão EL, você não precisa especificar o escopo da variável (desde que você não tenha duas variáveis com o mesmo nome em escopos diferentes). O mecanismo JSP verifica todos os quatro escopos e retorna a primeira variável correspondente que encontrar. Em <code>category.jsp</code> por exemplo, a expressão:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+${categoryProducts}</pre>
+
+            <p>é uma abreviação para:</p>
+
+            <pre class="examplecode" style="width:664px; margin-left:10px; margin-top:-2px">
+${sessionScope.categoryProducts}</pre>
+
+            <span class="tips">Para obter mais informações, consulte os recursos a seguir:</span>
+
+            <ul style="margin: 5px 0 0 1em">
+                <li><a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier5.html#1079198" target="_blank">Criando Aplicações Corporativas com a Plataforma J2EE: Escopos de Estado</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnafo.html" target="_blank">Compartilhando Informações > Usando Objetos de Escopo</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnahq.html#bnaij" target="_blank">Linguagem de Expressão Unificada > Objetos Implícitos</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="debug">Examinando Dados de Sessão com o Depurador Java</h2>
+
+        <p>Comece explorando como a aplicação se comporta durante o runtime. Utilize o depurador do IDE para avançar pelo código e examinar como a <code>HttpSession</code> é criada e como outros objetos podem ser colocados no escopo da sessão para serem recuperados em um ponto mais adiante.</p>
+
+        <ol>
+            <li>Abra o <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot5.zip">snapshot do projeto</a> para esta unidade do tutorial no IDE. Clique no botão Abrir Projeto (<img alt="Botão Abrir Projeto" src="../../../../images_www/articles/73/javaee/ecommerce/common/open-project-btn.png">) e use o assistente para navegar para o local em seu computador em que você fez download do projeto. Se estiver prosseguindo de uma <a href="entity-session.html">unidade de tutorial anterior</a>, observe que este snapshot do projeto inclui um novo pacote <code>cart</code>, que contém as classes <code>ShoppingCart</code> e <code>ShoppingCartItem</code>. E note também que os seguintes arquivos foram modificados:
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li><code>WEB-INF/web.xml</code></li>
+                    <li><code>css/affablebean.css</code></li>
+                    <li><code>WEB-INF/jspf/header.jspf</code></li>
+                    <li><code>WEB-INF/jspf/footer.jspf</code></li>
+                    <li><code>WEB-INF/view/cart.jsp</code></li>
+                    <li><code>WEB-INF/view/category.jsp</code></li>
+                    <li><code>WEB-INF/view/checkout.jsp</code></li>
+                    <li><code>controller/ControllerServlet</code></li>
+                </ul></li>
+
+            <li>Execute o projeto (<img alt="Botão Executar Projeto" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png">) para garantir que esteja configurado corretamente com seu banco de dados e servidor de aplicações. <br><br>
+                <p class="alert">Se receber uma mensagem de erro ao executar o projeto, consulte novamente as <a href="setup.html">instruções de configuração</a>, que descrevem como preparar um banco de dados e estabelecer conectividade entre o IDE, o GlassFish e o MySQL.</p></li>
+
+            <li>Teste a funcionalidade da aplicação no browser. Se estiver prosseguindo diretamente da <a href="entity-session.html">unidade anterior do tutorial</a>, notará as seguintes melhorias.
+
+                <h4>página de categoria</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>Clicar em "adicionar ao carrinho" ativa, pela primeira vez, o carrinho de compras e os widgets "avançar para check-out" para serem exibidos no cabeçalho.</li>
+                    <li>Clicar em "adicionar ao carrinho" resulta em uma atualização no número de itens do carrinho no widget do carrinho de compras do cabeçalho.</li>
+                    <li>Clicar em "exibir carrinho" resulta na exibição da página do carrinho.</li>
+                    <li>Clicar em "avançar para check-out" resulta na exibição da página de check-out.</li>
+                </ul>
+
+                <img alt="Imagem do browser da página da categoria" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/category-page.png" style="width:688px" title="A página Categoria inclui a funcionalidade do carrinho de compras">
+
+                <h4 id="cartPage">página do carrinho</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>Clicar em "limpar carrinho" resulta no esvaziamento dos itens do carrinho de compras.</li>
+                    <li>Clicar em "continuar comprando" resulta em um retorno à categoria exibida previamente.</li>
+                    <li>Clicar em "avançar para check-out" resulta na exibição da página de check-out.</li>
+                    <li>Inserir um número (1 a 99) no campo de quantidade de itens e, em seguida, clicar em "atualizar" resulta no recálculo do preço total para o item e do subtotal.</li>
+                    <li>Inserir zero no campo de quantidade de um item e, em seguida, clicar em "atualizar" resulta na remoção do item da tabela exibida.</li>
+                </ul>
+
+                <img alt="Imagem do browser da página do carrinho" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-page.png" style="width:688px" title="A página Carrinho inclui a funcionalidade do carrinho de compras">
+
+                <h4>página de check-out</h4>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>Clicar em "exibir carrinho" resulta na exibição da página do carrinho.</li>
+                    <li>Clicar em "submeter compra" resulta na exibição da página de confirmação (sem dados específicos do usuário).</li>
+                </ul>
+
+                <img alt="Imagem do browser da página de check-out" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/checkout-page.png" style="width:688px" title="A página Check-out inclui a funcionalidade do carrinho de compras"></li>
+
+            <li>Utilize a caixa de diálogo Ir para Arquivo para abrir o <code>ControllerServlet</code> no editor. Pressione Alt-Shift-O (Ctrl-Shift-O no Mac), digite "<code>Controller</code>" na caixa de diálogo e clique em OK. <br> <img alt="Caixa de diálogo Ir para Arquivo" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/connect-db/go-to-file-dialog.png" title="Use a caixa de diálogo Ir para Arquivo para abrir rapidamente recursos do projeto no editor"></li>
+
+            <li>Defina um ponto de interrupção no método <code>doPost</code> na linha que cria um objeto <code>HttpSession</code> (linha 150). Para definir um ponto de interrupção, clique na margem esquerda do editor. <br> <img alt="Ponto de interrupção definido no editor" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint.png" title="Clique na margem esquerda do editor para definir pontos de interrupção">
+
+                <p class="tips">Para alternar números de linhas para o editor, clique com o botão direito do mouse na margem esquerda e selecione Exibir Número de Linhas.</p></li>
+
+            <li>Execute o depurador. Clique no botão Depurar Projeto (<img alt="Botão Depurar Projeto" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png">) na barra de ferramentas principal do IDE. O GlassFish Server será iniciado (ou reiniciado, se já estiver sendo executado) e abrirá um soquete no número da porta de depuração. A página de boas-vindas da aplicação será aberta no browser. <br><br>
+                <p class="tips">É possível exibir e modificar o número da porta do depurador a partir da janela Servidores (Ferramentas > Servidores). Selecione a guia Java para o servidor que está utilizando. Especifique o número da porta no campo "Endereço a ser utilizado" em Definições de Depuração.</p></li>
+
+            <li>Quando a página de boas-vindas da aplicação for exibida no browser, clique em qualquer imagem da categoria para navegar para a página da categoria. Lembre-se de que quando você clicar no botão "adicionar ao carrinho" uma solicitação <code>addToCart</code> será enviada ao servidor:
+
+                <pre class="examplecode">&lt;form action=&quot;addToCart&quot; method=&quot;post&quot;&gt;</pre>
+
+                Como você deve se lembrar de <a href="page-views-controller.html#controller">Preparando as Views de Página e o Servlet do Controlador</a>, o método <code>doPost</code> de <code>ControllerServlet</code> trata solicitações para o padrão de URL <code>/addToCart</code>. Você poderá, portanto, esperar que quando um usuário clica no botão "adicionar ao carrinho", o método <code>doPost</code> é chamado.</li>
+
+            <li>Clique em "adicionar ao carrinho" para qualquer produto na página da categoria. Volte para o IDE e note que o depurador é suspenso no ponto de interrupção. <br> <img alt="O depurador é suspenso no ponto de interrupção do editor" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint-suspended.png" title="O depurador é suspenso em pontos de interrupção no editor"></li>
+
+            <li>Posicione o cursor na chamada para <code>getSession()</code> e pressione Ctrl-Espaço para chamar a documentação do Javadoc. <br> <img alt="Documentação do Javadoc exibida no editor" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/javadoc-getsession.png" style="width:688px" title="Pressione Ctrl-Espaço para chamar a documentação do Javadoc"> <br> De acordo com a documentação, a <code>getSession()</code> retorna a <code>HttpSession</code> atualmente associada à solicitação e, caso não exista nenhuma sessão, o método cria um novo objeto de sessão. <br><br>
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>Aproveitando o Suporte do Javadoc do IDE</h3>
+
+                    <p>O IDE fornece suporte incorporado para Javadoc para o desenvolvimento do Java EE. O IDE agrega a especificação da API do Java EE 6, que pode ser aberta em um browser externo selecionando Ajuda > Referências do Javadoc > Java EE 6.</p>
+
+                    <p>O IDE inclui também várias outras funcionalidades que possibilitam um fácil acesso à documentação da API:</p>
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong>Janela Javadoc:</strong> Selecione Janela > Outros > Javadoc. A janela Javadoc será aberta na região inferior do IDE e exibirá a documentação da API relevante à localização do seu cursor no editor.</li>
+
+                        <li><strong>Pesquisa Javadoc por Índice:</strong> Selecione Ajuda > Pesquisa Javadoc por Índice (Shift-F1; fn-Shift-F1 no Mac). Digite o nome da classe que está procurando e, em seguida, selecione uma classe nos resultados listados. A descrição completa da classe a partir da Especificação da API será exibida no painel inferior da janela.</li>
+
+                        <li><strong>Popup da documentação no editor:</strong> a documentação Javadoc é exibida em uma janela de popup ao pressionar Ctrl-Espaço ou em um determinado elemento no editor. Você pode clicar no botão Navegador Externo (<img alt="Botão do Browser Externo" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/external-browser-btn.png">) para abrir a documentação no seu browser. Se desejar utilizar as teclas Ctrl-Espaço somente para a funcionalidade autocompletar código, poderá desativar o popup da documentação abrindo a janela Opções (Ferramentas > Opções; NetBeans > Preferências no Mac) e, em seguida, selecionando Editor > Autocompletar Código. Desmarque a opção "Janela de Popup Automático da Documentação".</li>
+                    </ul>
+
+                    <p>Ao documentar seu próprio trabalho, considere a adição de comentários Javadoc às suas classes e métodos. Abra a classe <code>ShoppingCart</code> e examine os comentários Javadoc adicionados aos métodos da classe. Os comentários Javadoc são marcados pelos delimitadores <code>/** ... */</code>. Por exemplo, o método <code>addItem</code> tem o seguinte comentário antes da sua assinatura:</p>
+
+                    <div class="margin-around">
+                        <pre class="examplecode" style="width:643px">
+/**
+ * Adds a &lt;code&gt;ShoppingCartItem&lt;/code&gt; to the &lt;code&gt;ShoppingCart&lt;/code&gt;'s
+ * &lt;code&gt;items&lt;/code&gt; list. If item of the specified &lt;code&gt;product&lt;/code&gt;
+ * already exists in shopping cart list, the quantity of that item is
+ * incremented.
+ *
+ * @param product the &lt;code&gt;Product&lt;/code&gt; that defines the type of shopping cart item
+ * @see ShoppingCartItem
+ */
+public synchronized void addItem(Product product) {</pre>
+                    </div>
+
+                    <p>Isso lhe permite (assim como aos outros que estejam trabalhando no projeto) exibir a documentação Javadoc no método. Para demonstrar, abra o Navegador (Ctrl-7; ⌘-7 no Mac) e passe o mouse sobre o método <code>addItem</code>.</p>
+
+                    <img alt="Popup do Javadoc" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/javadoc-additem.png" title="Passe o mouse sobre métodos no Navegador para exibir documentação do Javadoc">
+
+                    <p>Você também pode utilizar o IDE para gerar um conjunto de páginas HTML do Javadoc. Na janela Projetos, clique com o botão direito do mouse no nó do projeto e selecione Gerar Javadoc. O IDE gerará o Javadoc na pasta <code>dist/javadoc</code> no diretório do projeto e abrirá a página do índice no browser.</p>
+
+                    <br>
+                    <p>Para obter mais informações sobre o Javadoc, consulte os recursos a seguir:</p>
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><a href="http://java.sun.com/j2se/javadoc/" target="_blank">Home Page Oficial da Ferramenta Javadoc</a></li>
+                        <li><a href="http://java.sun.com/j2se/javadoc/writingdoccomments/index.html" target="_blank">Como Escrever Comentários Doc na Ferramenta Javadoc</a></li>
+                    </ul>
+                </div>
+
+                <div style="clear:left"></div>
+            </li>
+
+            <li>Passe o mouse sobre a variável <code>session</code>. Observe que o depurador é suspenso na linha <em>está prestes a ser executado.</em> O valor retornado por <code>getSession()</code> ainda não foi salvo na variável de <code>session</code> e você verá uma popup informando que "<code> session</code> não é uma variável conhecida "no contexto atual". <br> <img alt="Pop-up do depurador exibido no editor" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable.png" title="Passe o mouse sobre variáveis e expressões para determinar seus valores atuais"></li>
+
+            <li>Clique no botão Fazer Step Over (<img alt="Botão Fazer Step Over" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">) na barra de ferramentas do depurador, localizada acima do editor. A linha será executada e o depurador passará para a próxima linha do arquivo.</li>
+
+            <li>Passe novamente o mouse sobre a variável <code>session</code>. Agora você poderá ver o valor definido no momento para a variável <code>session</code>. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable-set.png" rel="lytebox" title="Passe o mouse sobre variáveis e expressões para determinar seus valores atuais"> <img alt="Pop-up do depurador exibido no editor" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-variable-set.png" title="Clique para aumentar" width="688px"></a>
+
+                <p class="tips">No NetBeans 6.9, você pode clicar no ponteiro cinza (<img alt="Botão Fazer Step Over" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/grey-pointer.png">) no popup para expandir uma lista de valores de variáveis contidos no elemento destacado.</p></li>
+
+            <li>Clique o botão Fazer Step Over (<img alt="Botão Fazer Step Over" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">) (F8; fn-F8 no Mac) para chegar à instrução <code>if</code> (linha 154). Como você acabou de clicar no botão "adicionar ao carrinho" no browser, deve sabe que a expressão <code>userPath.equals("/addToCart)</code> deverá ser avaliada como <code>true</code>.</li>
+
+            <li>Realce a expressão <code>userPath.equals("/addToCart")</code> (clicando com o mouse enquanto mantém a tecla Ctrl pressionada). Desta vez você verá um popup que indica o valor da expressão que foi realçada. <br> <img alt="Expressão avaliada exibida no popup" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/expression.png" title="Destaque as expressões para determinar seus valores atuais"></li>
+
+            <li>Pressione F8 (fn-F8 no Mac) para passar para a próxima linha (linha 158). A aplicação foi criada para que o objeto <code>ShoppingCart</code> para a sessão do usuário seja criado somente quando o usuário adicionar um item ao carrinho pela primeira vez. Já que esta é a primeira vez que a solicitação <code>addToCart</code> foi recebida nesta sessão de depuração, pode-se esperar que o objeto <code>cart</code> seja igual a <code>null</code>. <br> <img alt="Expressão avaliada exibida no popup" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-null.png" title="O objeto carrinho não existe, até que o usuário adicione item ao carrinho de compras"></li>
+
+            <li>Pressione F8 (fn-F8 no Mac) para passar à próxima linha (linha 160). Depois, na linha 160, onde o objeto <code>ShoppingCart</code> é criado, clique no botão Fazer Step Into (<img alt="Botão Fazer Step Into" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-into-btn.png">). O depurador entra no método que está sendo chamado. Neste caso, você será levado diretamente ao construtor do <code>ShoppingCart</code>. <br> <img alt="Expressão avaliada exibida no popup" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-constructor.png" title="Fazer step into nos métodos para seguir a execução de runtime para outras classes"></li>
+
+            <li>Pressione Ctrl-Tab para voltar ao <code>ControllerServlet</code>. Observe que o IDE fornece um Emblema (<img alt="Emblema da Pilha de Chamada" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/call-stack-badge.png">) de Pilha de Chamada na linha 160, indicando que o depurador está suspenso temporariamente em algum lugar em um método mais no início da pilha de chamada. <br><br>
+                <p class="tips">Pressione Alt-Shift-3 (Ctrl-Shift-3 no Mac) para abrir a janela Pilha de Chamada do IDE.</p></li>
+
+            <li>Pressione F8 (fn-F8 no Mac) para continuar avançando pelo código. Quando o depurador conclui o construtor <code>ShoppingCart</code>, você é levado de volta ao <code>ControllerServlet</code>. <br><br> A linha 161 do <code>ControllerServlet</code> vincula o objeto <code>cart</code> recém-criado à sessão.
+
+                <pre class="examplecode">session.setAttribute(&quot;cart&quot;, cart);</pre>
+
+                Para testemunhar isso, abra a janela Variáveis do depurador. Escolha Janela > Depurando > Variáveis ou pressione Alt-Shift-1 (Ctrl-Shift-1 no Mac). <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session.png" rel="lytebox" title="Abra a janela Variáveis do depurador janela para inspecionar os valores das variáveis à medida que percorre o código"> <img alt="Janela Variáveis" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session.png" title="Clique para aumentar" width="688px"></a> <br> Se expandir o nó sessão > sessão > atributos, você poderá exibir os objetos que estão vinculados à sessão. Na imagem acima há dois itens vinculados atualmente à sessão (realçados). Eles são <code>selectedCategory</code> e <code>categoryProducts</code>, instanciados no <code>ControllerServlet</code>, nas linhas 83 e 89, respectivamente. Os dois itens foram vinculados anteriormente, quando você clicou na imagem de uma categoria, e o <code>ControllerServlet</code> processou a solicitação da página da categoria.</li>
+
+            <li>Pressione F8 (fn-F8 no Mac) para executar a linha 161. O objeto <code>cart</code> será vinculado à sessão e a janela Variáveis será atualizada para exibir as alterações. Na janela Variáveis, note que agora a sessão contém três atributos, sendo o terceiro o objeto <code>ShoppingCart</code> recém-inicializado (realçado abaixo). <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session-cart.png" rel="lytebox" title="O objeto ShoppingCart está vinculado à sessão com o método setAttribute"> <img alt="Janela Variáveis" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-win-session-cart.png" title="Clique para aumentar" width="688px"></a> <br>
+                <p class="tips">Até agora não "provamos" que a sessão, como listada na janela Variáveis, representa uma <code>HttpSession</code>. Como mencionado anteriormente, a <code>HttpSession</code> é na verdade uma interface, portanto, quando falamos sobre um objeto<code>HttpSession</code>, ou sobre um objeto de sessão, estamos nos referindo a qualquer objeto que implementa a interface <code>HttpSession</code>. Na janela Variáveis, se você posicionar o cursor sobre "<code>session</code>", um popup será exibido indicando que a variável representa um objeto <code>HttpSession</code>. O tipo <code>StandardSessionFacade</code>, como exibido, é a classe interna que o GlassFish utiliza para implementar a interface <code>HttpSession</code>. Se você estiver familiarizado com o Tomcat e estiver intrigado com os caminhos "<code>org.apache.catalina</code>" que aparecem na coluna Valor, é porque o contêiner web/servlet do GlassFish é, na verdade, um derivado do contêiner Apache Tomcat.</p>
+
+                Um novo <code>ShoppingCart</code> é adicionado à sessão e a solicitação continua a ser processada. Para concluir a implementação da funcionalidade "adicionar ao carrinho", são realizadas as seguintes ações:
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li>o ID do produto selecionado é recuperado da solicitação (linha 165)</li>
+                    <li>um objeto <code>Product</code> é criado utilizando o ID (linha 169)</li>
+                    <li>um novo <code>ShoppingCartItem</code> é criado utilizando o <code>product</code> (linha 170)</li>
+                    <li>o <code>ShoppingCartItem</code> é adicionado à lista de <code>itens</code> do <code>ShoppingCart</code> (linha 170)</li>
+                </ul></li>
+
+           <li>Pressione F8 (fn-F8 no Mac) para continuar avançando pelo código, ao mesmo tempo ciente das quatro ações listadas acima. Pause quando o depurador for suspenso na linha 170.</li>
+
+           <li id="step21">Crie um watch na sessão. Isso lhe permitirá exibir valores contidos na sessão ao fazer step into no método <code>addItem</code> na próxima etapa. Clique com o botão direito do mouse na sessão na janela Variáveis e selecione Criar Watch Fixo. <br> <img alt="Clique com o botão direito do mouse no menu exibido na janela Variáveis" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/create-watch.png" title="Crie controles em variáveis, à medida que percorre o código em uma sessão de depuração">
+
+                <p class="tips">Como alternativa, você pode colocar o cursor na variável <code>session</code> no editor e, em seguida, clicar com o botão direito do mouse e selecionar Novo Watch. A caixa de diálogo Novo Watch permite que você especifique variáveis ou expressões para watch continuamente ao depurar uma aplicação. (No caso de expressões, realce primeiro a expressão e, em seguida, clique com o botão direito do mouse e selecione Novo Watch.) <br> <img alt="Caixa de diálogo Novo Watch" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/new-watch-dialog.png" title="Clique com o botão direito do mouse nas variáveis e expressões no editor e escolha Novo Watch"></p>
+
+                Um novo watch será criado na variável <code>session</code> e em todas as variáveis que ela contiver. O watch é visível na janela Watches (Janela >Depuração >Watches) ou, se você alternar o botão Watches (<img alt="Botão Watches" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/watch-btn.png">) na margem esquerda da janela Variáveis, ele será exibido na linha superior da janela Variáveis. <br><br> O depurador lhe permite ficar atento às variáveis enquanto percorre o código. Isso pode ser útil, por exemplo, se você quiser seguir as alterações de valores de variáveis específicas (e não quiser ter que analisar toda a lista apresentada na janela Variáveis em cada etapa) ou se fizer step into temporariamente em uma classe que não contenha as variáveis que lhe interessam.</li>
+
+           <li>Clique na botão Fazer Step Into para (<img alt="Botão Fazer Step Into" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-into-btn.png">) fazer step into no método <code>addItem</code> do <code>ShoppingCart</code>.</li>
+
+           <li>Percorra o método <code>addItem</code> até chegar na linha 53. Como o Javadoc atesta, <code>addItem</code> <em>"adiciona um <code>ShoppingCartItem</code> à lista de <code>items</code> do <code>ShoppingCart</code>. Se o item do <code>product</code> especificado já existe no carrinho de compra, a quantidade desse item é aumentada."</em></li>
+
+           <li>Examine a variável <code>session</code> na qual você criou um watch (<a href="#step21">etapa 21</a> acima). A instrução <code>items.add(scItem)</code> na linha 51 adicionou o novo <code>ShoppingCartItem</code> à lista de <code>items</code> no <code>ShoppingCart</code>. Isso fica evidente ao entrar no terceiro atributo (ex., a variável <code>cart</code>) contida na sessão. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-add-item.png" rel="lytebox" title="A sessão exibirá o novo carrinho ShoppingCartItem conforme listado na lista "Itens""> <img alt="Janela Variáveis" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-add-item.png" title="Clique para aumentar" width="688px"></a> <br> Nesta etapa, você pode ver como uma <code>HttpSession</code> é criada para a solicitação, como um objeto <code>ShoppingCart</code> é criado e anexado à sessão e como um <code>ShoppingCartItem</code> é criado com base na escolha de produto do usuário e adicionado à lista de <code>Items</code> do <code>ShoppingCart</code>. A única ação remanescente é encaminhar a solicitação à view <code>category.jsp</code>.</li>
+
+            <li>Abra o fragmento JSP do cabeçalho (<code>header.jsp</code>) no editor e coloque um ponto de interrupção na linha 86. Essa linha contém a instrução EL no widget do carrinho de compras que exibe o número de itens do carrinho. <br> <img alt="Ponto de interrupção definido na página JSP" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoint-jsp.png" title="Você pode suspender o depurador nas páginas JSP" width="688px"></li>
+
+            <li>Clique no botão Continuar ( <img alt="Botão Continuar" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/continue-btn.png"> ) na barra de ferramentas do depurador. O depurador continua agindo até que a execução seja concluída ou até atingir outro ponto de interrupção. Nesse caso, o depurador é suspenso na linha 86 no fragmento JSP do cabeçalho. <br><br>
+                <p class="notes"><strong>Observação:</strong> para suspender o depurador em uma página JSP, é necessário definir um ponto de interrupção. Por exemplo, quando o <code>ControllerServlet</code> encaminha a solicitação à view apropriada, o depurador não será suspenso automaticamente dentro da página JSP.</p></li>
+
+            <li>Abra a janela Variáveis (Alt-Shift-1; Ctrl-Shift-1 no Mac), se ainda não estiver aberta. Diferente do que acontece com as classes Java, o depurador <em>não</em> fornece dicas de ferramenta quando o mouse é posicionado sobre as variáveis ou expressões em uma página JSP. Entretanto, a janela Variáveis lhe permitirá determinar os valores das variáveis ao percorrer o código. Então, onde você pode encontrar o valor para <code>${cart.numberOfItems}</code>?</li>
+
+            <li>Na janela Variáveis, amplie o nó Objetos implícitos > pageContext > sessão > sessão > atributos. Isso permite o acesso ao objeto de sessão, como o que foi visto anteriormente ao trabalhar com o <code>ControllerServlet</code>. Na verdade, você pode notar que a sessão na qual um watch foi criado na etapa 21 acima indica o mesmo objeto. Aqui você pode verificar se o valor de <code>${cart.numberOfItems}</code> é igual a "<code>1</code>". <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-number-of-items.png" rel="lytebox" title="Nas páginas jsp, exiba atributos da sessão dentro do objeto implícito PageContext"> <img alt="Janela Variáveis" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/variables-window-number-of-items.png" title="Clique para aumentar" width="688px"></a>
+
+                <p class="tips">Maximize a janela Variáveis, ou qualquer janela no IDE, clicando com o botão direito do mouse no cabeçalho da janela e, em seguida, selecionando Maximizar Janela (Shift-Esc).</p>
+
+                O depurador lhe dá acesso ao objeto implícito <code>pageContext</code>. <code>pageContext</code> representa o contexto da página JSP e oferece acesso direto aos vários objetos, incluindo os objetos <code>HttpServletRequest</code>, <code>HttpSession</code> e <code>ServletContext</code>. Para obter mais informações, consulte o <a href="http://java.sun.com/javaee/5/docs/tutorial/doc/bnahq.html#bnaij" target="_blank">Tutorial do Java EE 5: Objetos Implícitos</a>.</li>
+
+            <li>Clique no botão Finalizar Sessão (<img alt="Botão Finalizar Sessão" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png">). O runtime finaliza a execução e a sessão de depuração é encerrada. O browser exibe uma página de categoria totalmente renderizada e você poderá ver que o widget carrinho de compras no cabeçalho da página contém um item.</li>
+        </ol>
+
+        <p>Esperamos que agora você se sinta confortável ao utilizar o depurador do IDE, não somente para examinar seu projeto quando ele apresentar um comportamento inesperado, mas também como uma ferramenta que o ajuda a se familiarizar mais com o código. Outros botões úteis na barra de ferramentas do depurador incluem:</p>
+
+        <ul>
+            <li>(<img alt="Botão Fazer Step Out" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-out.png">) <strong>Fazer Step Out:</strong> você sai da chamada do método atual. Execute e remova o método de chamada superior da pilha de chamadas.</li>
+
+            <li>(<img alt="Botão Executar até o Cursor" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/run-to-cursor.png">) <strong>Executar até o Cursor:</strong> executa até a linha na qual o cursor está posicionado.</li>
+
+            <li>(<img alt="Botão Aplicar Alterações de Código" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/apply-code-changes.png">) <strong>Aplicar Alterações de Código:</strong> depois de editar um arquivo, você pode pressionar este botão para que o arquivo seja recompilado e as alterações levadas em conta na sessão de depuração.</li>
+
+            <li>(<img alt="Botão Fazer Step Over da Expressão" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-expression.png">) <strong>Fazer Step Over da Expressão:</strong> permite que você exiba os parâmetros de entrada e os valores de saída resultantes de cada chamada de método dentro de uma expressão. Você pode inspecionar os valores de saída do método anterior e os parâmetros de entrada para o próximo método na janela Variáveis Locais. Quando não há mais nenhuma chamada de método, Fazer Step Over da Expressão se comporta como o comando Fazer Step Over (<img alt="Botão Fazer Step Over" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">).</li>
+        </ul>
+
+
+        <br>
+        <h2 id="session-track">Analisando as Opções de Rastreamento da Sessão</h2>
+
+        <p>Há três maneiras convencionais de rastrear as sessões entre o cliente e o servidor. Com certeza a mais comum é com cookies. A reescrita de URL pode ser aplicada na ocasião em que os cookies não estiverem suportados ou desativados. Campos de forms ocultos também podem ser utilizados como uma maneira de "manter o estado" sobre várias solicitações, mas estão limitados ao uso dentro dos forms.</p>
+
+        <p>O projeto <code>AffableBean</code> inclui um exemplo do método de campo oculto nas duas páginas, da categorias e do carrinho. Os botões "adicionar ao carrinho" e "atualizar", que são exibidos para os itens de produtos, contêm um campo oculto que retransmite ID do produto para o servidor quando o botão é clicado. Se abrir a página <code>cart.jsp</code> no editor, você verá que as tags <code>&lt;form></code> contêm um campo oculto.</p>
+
+        <pre class="examplecode" style="width:730px; margin-left:10px; margin-top:-2px">
+&lt;form action=&quot;updateCart&quot; method=&quot;post&quot;&gt;
+    <strong>&lt;input type=&quot;hidden&quot;
+           name=&quot;productId&quot;
+           value=&quot;${product.id}&quot;&gt;</strong>
+    ...
+&lt;/form&gt;</pre>
+
+        <p>Dessa forma, o ID do produto é enviado como um parâmetro de solicitação que o servidor utiliza para identificar o item dentro do carrinho do usuário, cuja quantidade precisa ser modificada.</p>
+
+        <p>A API do Servlet fornece um mecanismo de alto nível para o gerenciamento de sessões. Essencialmente, ela cria e passa um cookie entre o cliente e o servidor com cada ciclo de resposta da solicitação. Se o browser do cliente não aceitar cookies, o mecanismo do servlet será revertido automaticamente para a reescrita de URL. Os dois exercícios a seguir demonstram essa funcionalidade.</p>
+
+        <ul>
+            <li><a href="#http-monitor">Analisando a Comunicação Cliente-Servidor com o Monitor HTTP</a></li>
+            <li><a href="#url-rewrite">Mantendo Sessões com a Reescrita de URL</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="http-monitor">Analisando a Comunicação Cliente-Servidor com o Monitor HTTP</h3>
+
+            <p>Como default, o mecanismo do servlet utiliza cookies para manter e identificar sessões entre as solicitações. Um número alfanumérico aleatório é gerado para cada objeto de sessão, que serve como um identificador exclusivo. Esse identificador é passado como um cookie "<code>JSESSIONID</code>" ao cliente. Quando o cliente faz uma solicitação, o mecanismo do servlet lê o valor do cookie <code>JSESSIONID</code> para determinar a sessão à qual a solicitação pertence.</p>
+
+            <p>Para demonstrar isso, nós utilizaremos o depurador em conjunto com o monitor HTTP do IDE.</p>
+
+            <ol>
+                <li>Comece com a ativação do monitor HTTP para o servidor que está utilizando. Selecione Ferramentas > Servidores. Na coluna à esquerda da janela Servidores, selecione o servidor que está utilizando (GlassFish). Em seguida, na coluna principal, selecione a opção Ativar Monitor HTTP. <br> <img alt="Janela Servidores" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/servers-win-http-monitor.png" title="Selecione a opção Ativar Monitor HTTP para ativar o Monitor HTTP" width="688px"></li>
+
+                <li>Se o servidor já estiver sendo executado, será necessário reiniciá-lo. No entanto, como pretende usar o depurador e executar o depurador reinicia o servidor para se comunicar em uma porta diferente, simplesmente clique no botão Depurar Projeto (<img alt="Botão Depurar Projeto" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png">) no na barra de ferramentas principal do IDE. Quando o servidor é reiniciado, uma sessão de depuração é iniciada e a página de boas-vindas da aplicação é aberta no browser. O monitor HTTP é exibido na parte inferior do IDE. <br> <img alt="Monitor HTTP" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor.png" title="O Monitor HTTP é exibido por default na região inferior do IDE" width="688px"></li>
+
+                <li>Clique no registro AffableBean na coluna à esquerda (como mostrado na imagem acima). Quando você seleciona registros na coluna à esquerda, a coluna à direita (ex., principal) será atualizada para exibir os dados correspondentes. Na imagem acima, a guia Solicitação exibe o URI solicitado ( <code>/AffableBean/</code>), o método HTTP ( <code>GET</code>) e indica que nenhuma string de consulta foi enviada com a solicitação.</li>
+
+                <li>Selecione a guia Sessão. Note que há uma instrução: "a sessão foi criada como resultado desta solicitação.&amp;quot Isso se deve ao fato de o servidor ter enviado um cabeçalho <code>Set-Cookie</code> para o cookie<code>JSESSIONID</code> na sua resposta. Observe também que o novo ID da sessão está listado em "Propriedades da sessão". Como será mostrado mais tarde, o ID da sessão é o valor do cookie <code>JSESSIONID</code>. <br> <img alt="Monitor HTTP - guia Sessão" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-tab.png" title="Detalhes da sessão são exibidos na guia Sessão no Monitor HTTP"> <br> Talvez esteja pensando como um objeto de sessão foi criado de uma solicitação para a página de boas-vindas do site. Afinal, o <code>ControllerServlet</code> não trata a solicitação inicial para <code>/AffableBean/</code> e em nenhum lugar essa solicitação encontra <code>getSession()</code>. Ou encontra? Lembre-se de que as páginas JSP são compiladas em servlets na implantação. Depois de ter implantado o projeto no servidor, você poderá, na verdade, utilizar o IDE para exibir o servlet compilado do JSP no seu servidor.</li>
+
+                <li>Na janela Projetos, clique com o botão direito do mouse no arquivo <code>index.jsp</code> e selecione Exibir Servlet. Será aberto um arquivo <code>index_jsp.java</code> no editor. Esse é o servlet que foi compilado automaticamente a partir da página <code>index.jsp</code>.</li>
+
+                <li>Execute uma pesquisa no arquivo por <code>getSession</code>. Pressione Ctrl-F (⌘-F no Mac), digite "<code>getSession</code>" na barra de pesquisa e, em seguida, pressione Enter. <br><br>
+                    <p class="tips"> Ctrl-F (⌘-F no Mac) é um atalho do teclado para Editar > Localizar.</p>
+
+                    <img alt="Editor que exibe o método getSession" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/get-session.png" title="O método getSession existe no servidor compilado da página JSP"> <br> O método <code>getSession</code> foi, na verdade, chamado. A razão para isso é que as páginas JSP incluem, por default, o objeto implícito <code>pageContext.session</code>. Se quisesse desativar esse comportamento, você poderia ter adicionado a diretiva a seguir à parte superior de um arquivo JSP:
+
+                    <pre class="examplecode">&lt;%@page session=&quot;false&quot; %&gt;</pre>
+
+                    e o método <code>getSession</code> no servlet compilado seria removido. <br><br>
+                    <p class="tips">Para encontrar a localização do servlet compilado no servidor, você pode passar o mouse sobre a guia do nome do servlet acima do editor. Um popup exibe o caminho o caminho para o arquivo no computador.</p></li>
+
+                <li>No browser, selecione uma categoria e, em seguida, adicione um item ao seu carrinho. Volte para o IDE. Observe que o depurador é suspenso no ponto de interrupção no <code>ControllerServlet</code> que foi definido anteriormente (linha 150). Todos os pontos de interrupção são lembrados entre as sessões. Para remover o ponto de interrupção, você poderia clicar no emblema do ponto de interrupção (<img alt="Emblema de ponto de interrupção" src="../../../../images_www/articles/73/javaee/ecommerce/common/breakpoint-badge.png">) na margem esquerda do editor. No entanto, como há vários pontos de interrupção já definidos no projeto, abra a janela Pontos de interrupção do depurador (Janela > Depuração > Pontos de Interrupção). <br> <img alt="Janela Pontos de Interrupção" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/breakpoints-window.png" title="Exibir todos os pontos de interrupção em seu projeto na janela Pontos de interrupção"> <br> Na janela Pontos de interrupção, você pode exibir chamar ações em todos os pontos de interrupção definidos nos projetos abertos no IDE.</li>
+
+                <li>Clique com o botão direito do mouse no ponto de interrupção definido em <code>header.jspf</code> e selecione Deletar. Em seguida, clique com o botão direito do mouse no ponto de interrupção definido no <code>ControllerServlet</code> e selecione Desativar. (Você irá reabilitá-lo mais tarde neste exercício.)</li>
+
+                <li>Clique no botão Continuar (<img alt="Botão Continuar" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/continue-btn.png">). A execução da solicitação é finalizada e a página da categoria será exibida no browser com um item adicionado ao carrinho.</li>
+
+                <li>No Monitor HTTP, procure a solicitação <code>addToCart</code> na coluna esquerda e, em seguida, selecione-a para exibir os detalhes na coluna principal. <br><br>
+                    <p class="tips">Clique no botão Classificação Ascendente (<img alt="Botão Classificação Ascendente" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/ascending-sort-btn.png">) para que os registros mais recentes sejam listados na parte superior.</p>
+
+                    <br> Na guia Solicitação, observe o URI solicitado (<code>/AffableBean/addToCart</code>), o método HTTP (<code>POST</code>) e os parâmetros da solicitação (<code>productId</code> e <code>submit</code>). <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor-add-to-cart.png" rel="lytebox" title="Exibir dados da solicitação, incluindo os parâmetros da solicitação, na guia Solicitação do Monitor HTTP"> <img alt="Monitor HTTP - guia Solicitação" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/http-monitor-add-to-cart.png" style="width:688px" title="Clique para aumentar"></a></li>
+
+                <li>Selecione a guia Cookies. Aqui você verá que existe um cookie chamado <code>JSESSIONID</code> e que foi enviado do cliente para o servidor. Observe que o valor para o cookie é igual ao do ID da Sessão exibido na guia Sessão. <br> <img alt="Monitor HTTP - guia Cookies" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cookies-tab.png" title="Cookies são exibidos na guia Cookies no Monitor HTTP"> <br> Da mesma forma, se clicar na guia Cabeçalho, verá o cookie listado, já que "<code>Cookie</code>" é um cabeçalho da solicitação enviado pelo cliente. <br> <img alt="Monitor HTTP - guia Cookies" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/headers-tab.png" title="Cookies são exibidos na guia Cookies no Monitor HTTP">
+
+                    <p class="tips">Consulte a <a href="http://en.wikipedia.org/wiki/List_of_HTTP_headers" target="_blank">Lista de cabeçalhos HTTP</a> da Wikipedia para obter mais informações sobre cabeçalhos de solicitações e de respostas.</p></li>
+
+                <li>Selecione a guia Sessão. Há uma instrução que indica: "A sessão existiu antes desta solilcitação". Note também que o atributo <code>cart</code> é listado em "Atributos de sessão depois da solicitação". Isso faz sentido, já que sabemos que o objeto <code>cart</code> está vinculado à sessão quando a solilcitação <code>addToCart</code> é processada pela primeira vez. <br> <img alt="Monitor HTTP - guia Sessão" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-tab-add-to-cart.png" title="Atributos de sessão são exibidos na guia Sessão no Monitor HTTP"> <br><br> Nas próximas etapas, localize o ID da sessão e o cookie <code>JSESSIONID</code> na janela Variáveis.</li>
+
+                <li>Reative o ponto de interrupção definido anteriormente no <code>ControllerServlet</code>. Pressione Alt-Shift-5 (Ctrl-Shift-5 no Mac) para abrir a janela Pontos de Interrupção e, em seguida, clique na caixa de seleção ao lado da entrada do ponto de interrupção para reativá-lo.</li>
+
+                <li>No browser, clique no botão "adicionar ao carrinho" para um dos produtos listados.</li>
+
+                <li>Alterne para o IDE e note que o depurador está suspenso no ponto de interrupção definido no <code>ControllerServlet</code>. Clique no botão Fazer Step Over (<img alt="Botão Fazer Step Over" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">) para que a variável <code>session</code> seja atribuída ao objeto da sessão.</li>
+
+                <li>Abra a janela Variáveis (Alt-Shift-1; Ctrl-Shift-1 no Mac) e expanda sessão > sessão. Você encontrará o ID da sessão listado como o valor para a variável <code>id</code>.</li>
+
+                <li>Para localizar o cookie <code>JSESSIONID</code>, lembre-se de que você pode acessar normalmente os cookies de um servlet chamando o método <a href="http://java.sun.com/webservices/docs/1.6/api/javax/servlet/http/HttpServletRequest.html#getCookies%28%29" target="_blank"><code>getCookies</code></a> no <code>HttpServletRequest</code>. Portanto, entre no objeto da solicitação: solicitação > Herdado > solicitação > solicitação > Herdado > cookies. Aqui você pode ver a ArrayList <code>cookies</code>. Se expandir a lista, encontrará o cookie <code>JSESSIONID</code>, cujo valor é o ID da sessão.</li>
+
+                <li>Clique no botão Finalizar Sessão (<img alt="Botão Finalizar Sessão" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png">) para encerrar a sessão de depuração.</li>
+            </ol>
+
+
+            <h3 id="url-rewrite">Mantendo Sessões com a Reescrita de URL</h3>
+
+            <p>Como mencionado, o mecanismo do servlet detecta se os cookies são suportados para o browser do cliente e, caso não sejam, ele alterna para a reescrita de URL, como uma forma de manter as sessões. Isso tudo ocorre de um modo transparente para o cliente. Para o desenvolvedor, o processo não é totalmente transparente.</p>
+
+            <p>É necessário certificar-se de que a aplicação pode reescrever os URLs, caso os cookies sejam desativados. Você faz isso chamando o método <code>encodeURL</code> de resposta em todos os URLs retornados por servlets em sua aplicação. Fazer isso permite que o ID da sessão seja acrescentado ao URL, caso o uso de cookies não seja uma opção; caso contrário, será retornado o URL sem alteração.</p>
+
+            <p>Por exemplo, o browser envia uma solicitação para a terceira categoria (padaria) do <code>AffableBean</code><code>category?3</code>. O servidor responde com o ID de sessão incluído no URL:</p>
+
+            <pre class="examplecode">/AffableBean/category<strong>;jsessionid=364b636d75d90a6e4d0085119990</strong>?3</pre>
+
+            <p>Como foi declarado acima, <em>todos os URLs retornados pelos servlets da aplicação devem estar codificados</em>. Lembre-se de que as páginas JSP são compiladas em servlets. Como é possível codificar os URLs em páginas JSP? A tag <a href="http://java.sun.com/products/jsp/jstl/1.1/docs/tlddocs/c/url.html" target="_blank"><code>&lt;c:url></code></a> do JSTL serve para esse propósito. O exercício a seguir demonstra o problema e ilustra a solução.</p>
+
+            <ol>
+                <li>Desative os cookies temporariamente no browser. Se estiver utilizando o Firefox, poderá selecionar Ferramentas > Opções (Firefox > Preferências no Mac). Na janela exibida, selecione a guia Privacidade e, em seguida, em Histórico, selecione "Utilizar definições personalizadas para o histórico" na lista drop-down fornecida. Desmarque a opção "Aceitar cookies de sites". <br> <img alt="Janela Preferências do Firefox" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/firefox.png" title="Desative os cookies temporariamente no browser."></li>
+
+                <li>Execute o projeto <code>AffableBean</code>. Quando a página de boas-vindas for exibida, clique em uma categoria e, em seguida, tente adicionar um item ao seu carrinho. Você verá que a funcionalidade da aplicação está severamente comprometida no seu estado atual. <br> <img alt="Página de categorias danificada" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/compromised.png" title="A funcionalidade da aplicação fica comprometida quando o cliente não aceita cookies" width="688px"> <br> Como antes, o servidor gera uma sessão e vincula objetos a ela. Isso mostra como a página da categoria pode exibir a categoria e os produtos selecionados. Entretanto, o servidor falhou na sua tentativa de definir um cookie <code>JSESSIONID</code>. Portanto, quando o cliente faz uma segunda solicitação (quando o usuário clica em "adicionar ao carrinho"), o servidor não tem como identificar a sessão à qual a solicitação pertence. Portanto, ele não pode localizar nenhum dos atributos definidos anteriormente na sessão, como <code>selectedCategory</code> e <code>categoryProducts</code>. Essa é a razão pela qual falta informações na resposta renderizada especificada por esses atributos.</li>
+
+                <li>Abra a página <code>category.jsp</code> do projeto no editor. Localize a linha que implementa o botão "adicionar ao carrinho" (linha 58). O atributo <code>&lt;form></code> do elemento <code>action</code> determina a solicitação enviada ao servidor.
+
+                    <pre class="examplecode">&lt;form action=&quot;addToCart&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>Modifique a solicitação de forma que seja passada pela guia <code>&lt;c.url></code>.
+
+                    <pre class="examplecode">&lt;form action=&quot;<strong>&lt;c:url value='addToCart'/&gt;</strong>&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>Pressione Ctrl-S (⌘-S no Mac) para salvar as alterações do arquivo. Lembre-se de que o IDE fornece a funcionalidade Implantar ao Salvar, que é ativada por default. Isso significa que quaisquer alterações salvas são implantadas automaticamente no servidor.</li>
+
+                <li>No browser, selecione uma categoria diferente para que a aplicação renderize a página da categoria modificada recentemente.</li>
+
+                <li>Examine o código-fonte da página. No Firefox, você pode pressionar Ctrl-U (⌘-U no Mac). O botão "adicionar ao carrinho" de cada produto é exibido com o ID da sessão acrescentado ao URL.
+
+                    <pre class="examplecode">
+&lt;form action=&quot;addToCart<strong>;jsessionid=4188657e21d72f364e0782136dde</strong>&quot; method=&quot;post&quot;&gt;</pre></li>
+
+                <li>Clique no botão "adicionar ao carrinho" de qualquer item. Você verá que o servidor agora pode determinar a sessão à qual a solicitação pertence e de renderizar a resposta de forma adequada.</li>
+
+                <li>Antes de prosseguir, certifique-se de reativar os cookies no browser.</li>
+            </ol>
+
+            <p id="encodeUrl">Novamente, cada link em que o usuário pode clicar na aplicação, cuja resposta exija alguma forma de dados relacionados à sessão, precisa ser codificado corretamente. Às vezes a implementação não é direta, como o exemplo mostrado acima. Por exemplo, o widget "limpar carrinho" utilizado no <code>cart.jsp</code> define atualmente um parâmetro <code>clear</code> como <code>true</code> quando o link é clicado.</p>
+
+            <div class="indent">
+            <pre class="examplecode" style="width:700px">
+&lt;%-- clear cart widget --%&gt;
+&lt;c:if test=&quot;${!empty cart && cart.numberOfItems != 0}&quot;&gt;
+    &lt;a href=&quot;viewCart<strong>?clear=true</strong>&quot; class=&quot;bubble hMargin&quot;&gt;clear cart&lt;/a&gt;
+&lt;/c:if&gt;</pre></div>
+
+            <p>A tag <code>&lt;c.url></code> pode ser aplicada ao URL da seguinte forma:</p>
+
+            <div class="indent">
+            <pre class="examplecode" style="width:700px">
+&lt;%-- clear cart widget --%&gt;
+&lt;c:if test=&quot;${!empty cart && cart.numberOfItems != 0}&quot;&gt;
+
+    <strong>&lt;c:url var=&quot;url&quot; value=&quot;viewCart&quot;&gt;
+        &lt;c:param name=&quot;clear&quot; value=&quot;true&quot;/&gt;
+    &lt;/c:url&gt;</strong>
+
+    &lt;a href=&quot;<strong>${url}</strong>&quot; class=&quot;bubble hMargin&quot;&gt;clear cart&lt;/a&gt;
+&lt;/c:if&gt;</pre></div>
+
+            <p>O parâmetro <code>clear=true</code> é definido quando uma tag <code>&lt;c:param</code> é adicionada entre as tags <code>&lt;c.url></code>. Uma variável chamada "<code>url</code>" é definida quando o atributo <code>var</code> de &lt;c.url> é utilizado e <code>var</code> é então acessado na tag âncora HTML utilizando a expressão <code>${url}</code>.</p>
+
+            <p>É possível fazer download e examinar o <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot6.zip">snapshot 6</a> para ver como todos os links no projeto foram codificados.</p>
+
+            <p class="alert">A reescrita de URL só deve ser utilizada no caso dos cookies não serem um método de rastreamento disponível. A reescrita de URL é geralmente considerada uma solução de qualidade inferior porque ela expõe o ID da sessão nos logs, marcadores, cabeçalhos de referência e HTML armazenados no cache, além da barra de endereço do browser. São necessários também mais recursos do lado servidor, pois o servidor precisa executar etapas adicionais para cada solicitação de entrada, para extrair o ID da sessão do URL e emparelhá-lo com uma sessão existente.</p>
+        </div>
+
+
+        <br>
+        <h2 id="time-out">Tratando Time-Outs de Sessão</h2>
+
+        <ul>
+            <li><a href="#time-interval">Definindo Intervalos de Tempo da Sessão</a></li>
+            <li><a href="#programmatically">Tratando de Forma Programática Time-outs de Sessão</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="time-interval">Definindo Intervalos de Tempo da Sessão</h3>
+
+            <p>É necessário considerar o intervalo de tempo máximo no qual o servidor mantém as sessões. No caso de o website receber um tráfego intenso, um grande número de sessões poderia usar toda a capacidade de memória do servidor. É necessário, portanto, encurtar o intervalo no intuito de remover as sessões não utilizadas. Por outro lado, você certamente não desejaria encurtar muito as sessões, já que isso poderia se tornar um problema de uso que poderia ter impacto negativo nos negócios ligados ao website. Pegando a aplicação <code>AffableBean</code> como exemplo, uma usuária faz o check-out após encher seu carrinho de compras com itens. Ela então percebe que precisa inserir os detalhes do cartão de crédito e sai para pegar a carteira. Depois de retornar ao computador com o cartão de crédito em mãos, preenche o form de check-out e clica em submeter. No entanto, durante esse tempo, sua sessão foi expirada no servidor. A usuária nota que seu carrinho de compras está vazio e é redirecionada à home page. Será que ela realmente irá passar por todo o processo novamente?</p>
+
+            <p>As etapas a seguir demonstram como definir o intervalo de time-out de sessão no projeto <code>AffableBean</code> para 10 minutos. Claro que a duração real depende, em última análise, dos recursos do servidor, dos objetivos de negócios da aplicação e da popularidade do seu website.</p>
+
+            <ol>
+                <li>Abra o descritor de implantação da aplicação no editor. Pressione Alt-Shift-O (Ctrl-Shift-O no Mac) para utilizar a caixa de diálogo do IDE Ir para Arquivo. Digite "<code>web</code>" e, em seguida, clique em OK. <br> <img alt="Caixa de diálogo Ir para Arquivo" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/go-to-file.png" title="A caixa de diálogo Ir para Arquivo permite navegação rápida para os arquivos do projeto"> <br> O editor exibirá o arquivo <code>web.xml</code> na view XML. O modelo que o NetBeans fornece para o arquivo <code>web.xml</code> inclui uma definição default de 30 minutos.
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;
+        30
+    &lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre></li>
+
+                <li>Clique na guia Geral e digite "<code>10</code>" no campo Time-out de Sessão. <br> <img alt="Guia Geral do arquivo web.xml" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-timeout.png" style="width:688px" title="Especifique o time-out de sessão para a aplicação na guia Geral do web.xml"></li>
+
+                <li>Salve o arquivo (Ctrl-S; ⌘-S no Mac). <br><br> Se voltar para a view XML, verá que o elemento <code>&lt;session-timeout></code> foi atualizado.
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;10&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre>
+                </li>
+            </ol>
+
+            <p class="notes"><strong>Observação:</strong> como alternativa, você pode remover completamente o elemento <code>&lt;session-timeout></code> e editar o elemento <code>session-properties</code> no descritor de implantação específico do GlassFish (<code>sun-web.xml</code>). Dessa forma, você definiria o time-out global para todas as aplicações no módulo web do servidor. Consulte o <a href="http://docs.sun.com/app/docs/doc/821-1752/beaha" target="_blank">Oracle GlassFish Server 3.0.1 Application Development Guide: Creating and Managing Sessions</a> para obter mais detalhes.</p>
+
+
+            <h3 id="programmatically">Tratando de Forma Programática Time-outs de Sessão</h3>
+
+            <p>Se a sua aplicação se basear em sessões, será necessário tomar medidas para garantir que ela possa tratar, de maneira primorosa, situações nas quais uma solicitação é recebida para uma sessão que teve time-out ou que não pode ser identificada. Você pode realizar isso na aplicação <code>AffableBean</code> criando um filtro simples que intercepta as solicitações enviando-as para o <code>ControllerServlet</code>. O filtro verifica se a sessão existe, se não existir, ele encaminhará a solicitação à página de boas-vindas do site.</p>
+
+            <ol>
+                <li>Comece examinando o problema que aparece quando há um time-out da sessão durante uma visita do usuário ao site. Redefina temporariamente o intervalo de time-out da sessão para um minuto. Abra o descritor de implantação web (<code>web.xml</code>) e insira "<code>1</code>" entre as tags <code>&lt;session-timeout></code>.
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;<strong>1</strong>&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre></li>
+
+                <li>Execute o projeto <code>AffableBean</code>. No browser, clique na página da categoria, adicione vários itens ao carrinho e, em seguida, clique em "ver carrinho". <br> <img alt="Página Carrinho, que exibe itens no carrinho de compras" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/cart-page-session-intact.png" style="width:688px" title="A página do carrinho depende de um objeto da sessão para exibir itens no carrinho de compras"></li>
+
+                <li>Aguarde pelo menos um minuto completo.</li>
+
+                <li>Atualize a quantidade de um dos itens exibidos na página do carrinho. (Qualquer número entre 1 e 99 é aceitável.) Clique em "atualizar". O servidor retorna uma mensagem HTTP Status 500. <br> <img alt="Relatório de erro do GlassFish exibido no browser" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/glassfish-error-report.png" style="width:688px" title="NullPointerException ocorre quando uma solicitação de sessão expirada é recebida"></li>
+
+                <li>Examine o log do GlassFish Server no IDE. Abra a janela Saída (Ctrl-4, ⌘-4 no Mac) e selecione a guia GlassFish Server. Role para a parte inferior do log para examinar o rastreamento da pilha de erro. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/gf-server-output.png" rel="lytebox" title="NullPointerException ocorre quando uma solicitação pertencente a uma sessão expirada é recebida"> <img alt="Relatório de erro do GlassFish exibido no browser" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/gf-server-output.png" style="width:688px" title="Clique para aumentar"></a> <br> O log do servidor indica que uma <code>NullPointerException</code> ocorreu na linha 184 no <code>ControllerServlet</code>. A janela Saída forma um link para a linha em que ocorreu a exceção.</li>
+
+                <li>Clique no link. Você pode navegar diretamente até a linha 184 no <code>ControllerServLet</code>. Passar o mouse sobre o emblema do erro na margem esquerda do editor fornece uma dica de ferramenta que descreve a exceção. <br> <img alt="Emblema de erro e dica de ferramenta exibidos no Editor" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/nullpointer-exception.png" title="O emblema do erro e a dica de ferramenta indicam a localização e a causa do problema"> <br> Como a sessão já havia expirado antes de a solicitação ter sido recebida, o mecanismo do servlet não poderá associar a solicitação à sua sessão correspondente. Portanto, ele não conseguiu localizar o objeto <code>cart</code> (linha 151). A exceção ocorreu finalmente na linha 184 quando o mecanismo tentou chamar um método em uma variável equivalente a <code>null</code>. <br><br> Agora que identificamos o problema, vamos corrigi-lo implementando um filtro.</li>
+
+                <li>Clique no botão Novo Arquivo (<img alt="Botão Novo Arquivo" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png">) na barra de ferramentas do IDE. (Como alternativa, pressione Ctrl-N; ⌘-N no Mac.)</li>
+
+                <li>Selecione a categoria <strong>Web</strong>e, em seguida, selecione <strong>Filtro</strong> e clique em Próximo.</li>
+
+                <li>Nomeie o filtro<code>SessionTimeoutFilter</code>. Digite <code>filter</code> no campo Pacotes, para que a classe do filtro seja colocada em um novo pacote quando for criada.</li>
+
+                <li>Clique em Próximo. Aceite as definições default e clique em Finalizar. Um modelo para o <code>SessionTimeoutFilter</code> será gerado e aberto no editor. <br><br>
+                    <p class="notes"><strong>Observação:</strong> atualmente, no NetBeans 6.9, não é possível utilizar o assistente para definir um mapeamento para um servlet que não esteja registrado no descritor de implantação da web. (O <code>ControllerServlet</code> foi registrado usando a anotação <code>@WebServlet</code>.) Portanto, modificaremos o código gerado na próxima etapa.</p></li>
+
+                <li>Modifique a assinatura da anotação <code>@WebFilter</code>, de maneira que apareça da seguinte forma.
+
+
+                    <pre class="examplecode">@WebFilter(<strong>servletNames = {&quot;Controller&quot;}</strong>)
+public class SessionTimeoutFilter implements Filter {</pre>
+
+                    Isso define o filtro para interceptar qualquer solicitação que seja tratada pelo <code>ControllerServlet</code>. (Como alternativa, você poderia ter mantido o atributo <code>urlPatterns</code> e listado todos os padrões que o <code>ControllerServlet</code> trata.) <br><br> Note que "<code>Controller</code>" é o nome do <code>ControllerServlet</code>, como especificado na assinatura da anotação <code>@WebServlet</code> do servlet. Note também que o atributo <code>filterName</code> foi removido, já que o nome da classe do filtro já foi utilizado por default. <br><br> O modelo do filtro do IDE fornece vários códigos interessantes que valem a pena inspecionar por si só. No entanto, a maioria deles não é necessária para o nosso propósito. Qualquer classe de filtro deve implementar a interface <code>Filter</code>, que define três métodos:
+
+                    <ul style="margin: 5px 0 0 -.7em">
+                        <li><strong><code>init</code>:</strong> executa qualquer ação após o filtro ter sido inicializado, mas antes de ele ser colocado em serviço</li>
+                        <li><strong><code>destroy</code>:</strong> remove o filtro do serviço. Esse método também pode ser utilizado para executar qualquer operação de limpeza.</li>
+                        <li><strong><code>doFilter</code>:</strong> utilizado para executar operações para cada solicitação que o filtro interceptar</li>
+                    </ul>
+
+                    <p class="tips">Utilize a opção Pesquisa Javadoc por Índice para puxar a documentação na interface <code>Filter</code>. Pressione Shift-F1 (fn-Shift-F1 no Mac) e, em seguida, digite "<code>Filter</code>" no campo de pesquisa e pressione Enter. Selecione a entrada "Interface no javax.servlet". A documentação Javadoc é exibida no painel inferior da ferramenta de pesquisa em índice.</p></li>
+
+                <li>Substitua o corpo do <code>SessionTimeoutFilter</code> pelo conteúdo a seguir.
+
+                    <pre class="examplecode">
+@WebFilter(servletNames = {&quot;Controller&quot;})
+public class SessionTimeoutFilter implements Filter {
+
+    <strong>public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+
+        HttpSession session = req.getSession(false);
+
+        // if session doesn't exist, forward user to welcome page
+        if (session == null) {
+            try {
+                req.getRequestDispatcher(&quot;/index.jsp&quot;).forward(request, response);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    public void init(FilterConfig filterConfig) throws ServletException {}
+
+    public void destroy() {}</strong>
+
+}</pre></li>
+
+                <li>Pressione Ctrl-Shift-I (⌘-Shift-I no Mac) para corrigir instruções de importação. (As importações precisam ser adicionadas a <code>HttpServletRequest</code> e <code>HttpSession</code>.) Além disso, use as dicas do editor para adicionar a anotação <code>@Override</code> aos métodos <code>init</code>, <code>destroy</code> e <code>doFilter</code>. <br><br> Nas etapas a seguir, você executará o depurador no projeto e percorrerá o método <code>doFilter</code> para ver como ele determina se a solicitação está vinculada a uma sessão existente.</li>
+
+                <li>Abra a janela Pontos de Interrupção (Alt-Shift-5; Ctrl-Shift-5 no Mac) e verifique se não há nenhum ponto de interrupção existente definido. Para deletar um ponto de interrupção, clique com o botão direito do mouse no ponto de interrupção e selecione Deletar. (Se tiver concluído o exercício acima, <a href="#http-monitor">Examinando a Comunicação Cliente-Servidor com o Monitor de HTTP</a>, poderá ter um ponto de verificação pendente definido no <code>ControllerServlet</code>.)</li>
+
+                <li>Execute o depurador. Clique no botão Depurar Projeto (<img alt="Botão Depurar Projeto" src="../../../../images_www/articles/73/javaee/ecommerce/common/debug-project-btn.png">) na barra de ferramentas principal do IDE.</li>
+
+                <li>Quando a página de boas-vindas for exibida no browser, selecione uma categoria e, em seguida, adicione vários itens ao seu carrinho de compras.</li>
+
+                <li>Defina um ponto de interrupção na linha no método <code>doFilter<code> do </code>SessionTimeoutFilter</code> que tenta acessar a sessão (linha 32). <br> <img alt="Ponto de interrupção definido no editor" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/filter-breakpoint.png" title="Definir um ponto de interrupção no método getSession"></li>
+
+                <li>No browser, clique no botão "ver carrinho". Alterne para o IDE e note que o depurador foi suspenso no ponto de interrupção. <br><br> Lembre-se de que <code>getSession()</code> cria um novo objeto de sessão, caso o atual não exista. Aqui, utilizamos o <code>getSession(false)</code>, que se abstém de criar um novo objeto, caso não seja encontrado nenhum. Em outras palavras, o método retorna <code>null</code>, se a sessão não existir.</li>
+
+                <li>Clique no botão Fazer Step Over (<img alt="Botão Fazer Step Over" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/step-over-btn.png">) e, em seguida, passe o ponteiro do mouse sobre a variável <code>session</code>. Contanto que não tenha se passado um minuto desde que a solicitação anterior foi enviada, você verá que a variável foi designada a <code>StandardSessionFacade</code>. Isso representa o objeto de sessão para a solicitação. <br> <img alt="Popup que exibe a variável "session" atribuída a um objeto de sessão" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-exists.png" title="Passe o mouse sobre as variáveis para determinar seus valores atuais"></li>
+
+                <li>Continue percorrendo o método, até que a solicitação seja processada. Como <code>session</code> não é igual a <code>null</code>, ignore a instrução <code>if</code> e <code>chain.doFilter</code> e, em seguida, encaminhe a solicitação ao <code>ControllerServlet</code> (linha 44).</li>
+
+                <li>No browser, certifique-se de que se passou um minuto completo e, em seguida, atualize a quantidade de um dos itens de produtos no carrinho. Esse é o mesmo procedimento que executamos anteriormente no exercício, quando foi retornada a mensagem status 500. Agora que o filtro intercepta as solicitações direcionadas ao <code>ControllerServlet</code>, veremos o que acontece quando ocorrer o time-out da sessão.</li>
+
+                <li>Depois de clicar em "atualizar", alterne para o IDE e note que o depurador é suspenso novamente no ponto de interrupção definido no filtro.</li>
+
+                <li>Realce a expressão <code>req.getSession(false)</code> e, em seguida, passe o mouse sobre ela. Aqui você verá que a expressão equivale a <code>null</code>, já que a sessão já expirou. <br> <img alt="Popup que exibe variável "session" igual a ''null"" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/session-null.png" title="Realce as expressões e passe o mouse sobre elas para determinar seu valor atual"></li>
+
+                <li>Continue percorrendo o código. Agora que a variável <code>session</code> equivale a <code>null</code>, a instrução <code>if</code> na linha 35 será processada e a solicitação será encaminhada para <code>/index.jsp</code>. Quando o depurador finalizar a execução, você verá que o browser exibirá a página de boas-vindas do site.</li>
+
+                <li>Clique no botão Finalizar Sessão (<img alt="Botão Finalizar Sessão" src="../../../../images_www/articles/73/javaee/ecommerce/manage-sessions/finish-session-btn.png">) para encerrar a sessão de depuração.</li>
+
+                <li>Abra o arquivo <code>web.xml</code> do projeto e mude o intervalo de time-out da sessão de volta para 10 minutos.
+
+                    <pre class="examplecode">
+&lt;session-config&gt;
+    &lt;session-timeout&gt;<strong>10</strong>&lt;/session-timeout&gt;
+&lt;/session-config&gt;</pre>
+                </li>
+
+                <li>Salve o arquivo (Ctrl-S; ⌘-S no Mac).</li>
+            </ol>
+        </div>
+
+        <p>O <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot6.zip">Snapshot 6</a> fornece a versão completa do projeto para esta unidade do tutorial. Um tópico final com relação ao gerenciamento de sessão deve ser mencionado. É possível encerrar explicitamente uma sessão chamando o método <code>invalidate</code> no objeto de sessão. Caso a sessão não seja mais necessária, ela deve ser removida para conservar a memória disponível para o servidor. Depois de concluir a próxima unidade, <a href="transaction.html">Integrando Lógica de Negócio Transacional</a>, você verá como o <code>ControllerServlet</code>, ao processar com sucesso um pedido do cliente, destrói o objeto <code>cart</code> do usuário e encerra a sessão usando o método <code>invalidate</code>.</p>
+
+        <div class="indent">
+            <pre class="examplecode" style="width:710px; margin-left:10px; margin-top:-2px">
+// if order processed successfully send user to confirmation page
+if (orderId != 0) {
+
+    // dissociate shopping cart from session
+    cart = null;
+
+    // end session
+    session.invalidate();
+
+    ...
+}</pre></div>
+
+        <p>Isso é demonstrado no <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">snapshot 8 do projeto</a> (e em snapshots posteriores).</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Managing Sessions">Envie-nos Seu Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">Consulte Também</h2>
+
+        <div class="indent">
+            <h3>Recursos do NetBeans</h3>
+
+            <ul>
+                <li><a href="../../../../features/java/debugger.html" target="_blank">Funcionalidades do NetBeans: Depurador</a></li>
+                <li><a href="../../java/debug-multithreaded.html" target="_blank">Depurando Aplicações Multithread</a></li>
+                <li><a href="../../java/debug-multithreaded-screencast.html" target="_blank">Vídeo de Depuração Multithread no NetBeans IDE</a></li>
+                <li><a href="../../java/debug-evaluator-screencast.html" target="_blank">Vídeo sobre o Uso do Avaliador de Snippets de Código no Depurador do NetBeans</a></li>
+                <li><a href="../../screencasts.html" target="_blank">Tutoriais e Demonstrações em Vídeo para NetBeans IDE 6.x</a></li>
+                <li><a href="https://netbeans.org/projects/www/downloads/download/shortcuts.pdf">Atalhos de Teclado e Cartão de Modelos de Código</a></li>
+                <li><a href="../javaee-gettingstarted.html" target="_blank">Introdução às Aplicações do Java EE 6</a></li>
+                <li><a href="../javaee-intro.html" target="_blank">Introdução à Tecnologia Java EE</a></li>
+                <li><a href="../../../trails/java-ee.html" target="_blank">Trilha do Aprendizado do Java EE e Java Web</a></li>
+            </ul>
+
+            <h3>Recursos do GlassFish</h3>
+
+            <ul>
+                <li><a href="http://wiki.glassfish.java.net/Wiki.jsp?page=Screencasts" target="_blank">Screencasts do GlassFish</a></li>
+                <li><a href="https://glassfish.dev.java.net/docs/index.html" target="_blank">Documentação do GlassFish v3</a></li>
+                <li><a href="http://www.sun.com/offers/details/GlassFish_Tomcat.html" target="_blank">Aprendendo GlassFish para Usuários do Tomcat</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1751" target="_blank">Guia de Administração do Oracle GlassFish Server 3.0.1</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1750" target="_blank">Guia de Implantação de Aplicações do Oracle GlassFish Server 3.0.1</a></li>
+                <li><a href="http://docs.sun.com/app/docs/doc/821-1752" target="_blank">Guia de Desenvolvimento de Aplicações do Oracle GlassFish Server 3.0.1</a></li>
+            </ul>
+
+            <h3>Artigos Técnicos &amp; Recursos Variados</h3>
+
+            <ul>
+                <li><a href="http://java.sun.com/javaee/reference/code/" target="_blank">Amostras de Código do Java EE &amp; Aplicações</a></li>
+                <li><a href="http://java.sun.com/j2se/javadoc/" target="_blank">Ferramenta Javadoc</a> [home page do produto]</li>
+                <li><a href="http://java.sun.com/j2se/javadoc/writingdoccomments/index.html" target="_blank">Como Escrever Comentários Doc na Ferramenta Javadoc</a></li>
+                <li><a href="http://java.sun.com/products/servlet/Filters.html" target="_blank">Os Fundamentos dos Filtros</a></li>
+                <li><a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/InterceptingFilter.html" target="_blank">Padrões Core J2EE: Interceptando Filtro</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/csajsp2.html" target="_blank">Tutoriais do Servlet, do JSP e do JDBC para os Níveis Iniciante e Intermediário</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/msajsp.html" target="_blank">Tutoriais Avançados do Servlet e do JSP</a></li>
+                <li><a href="http://courses.coreservlets.com/Course-Materials/java5.html" target="_blank">Tutoriais do Java 5 &amp; do Java 6</a></li>
+                <li><a href="http://www.ibm.com/developerworks/java/library/j-jstl0211.html" target="_blank">Uma cartilha JSTL, Parte 1: A linguagem da expressão</a></li>
+                <li><a href="http://www.ibm.com/developerworks/java/library/j-jstl0318/index.html" target="_blank">Uma cartilha JSTL, Parte 2: Chegando ao centro do problema</a></li>
+            </ul>
+        </div>
+
+    </body>
+</html>

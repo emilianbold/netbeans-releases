@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Visão Geral do Suporte a JDK 8 no NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+       
+        <meta name="description" content="A short guide to using JDK 7 features in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>Visão Geral do Suporte a JDK 8 no NetBeans IDE</h1>
+		<div class="articledate" style="margin-left: 0px;">Escrito por Tomas Zezula e Alyona Stashkova</div>
+        <p>O NetBeans IDE suporta as <a href="http://openjdk.java.net/projects/jdk8/features/" target="_blank">funcionalidades do JDK 8</a>, como expressões de lambda, anotações repetidas, perfis compactos etc. Quando estas construções são usadas em seu código, o IDE reconhece-as, realça os erros corretamente e permite que você corrija a sintaxe automaticamente. Assim, o NetBeans IDE ajuda você a gravar o código que é compatível com a <a href="http://download.oracle.com/otndocs/jcp/java_se-8-edr-spec/index.html">Especificação de Revisão de Rascunho do Conteúdo do Java SE Release 8</a>. </p>
+		
+        <p>Neste tutorial, você aprenderá conceitos básicos sobre o JDK 8 no NetBeans IDE e como usar o suporte do IDE para as funcionalidades de Java SE 8 como perfis compactos, expressões lambda e anotações de repetição. </p>
+        <p><b>Conteúdo</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.4 e 8.0 Beta" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.4 e 8.0 Beta">
+        <ul class="toc">
+		    <li><a href="#platform" title="Ativando o Suporte do JDK 8 no NetBeans IDE">Ativando o Suporte do JDK 8 no NetBeans IDE</a></li>
+			<li><a href="#project" title="Configurando um Projeto para usar JDK 8">Configurando um Projeto para usar JDK 8</a></li>
+			<li><a href="#compact" title="Usando Suporte de Perfis Compacto">Usando Suporte de Perfis Compacto</a></li>
+            <li><a href="#lambda" title="Usando Suporte de Expressões Lambda">Usando Suporte de Expressões Lambda</a></li>
+            <li><a href="#annot" title="Usando Suporte de Anotações de Repetição">Usando Suporte de Anotações de Repetição</a></li>
+			
+            <li><a href="#see" title="Consulte Também">Consulte Também</a></li>
+        </ul>
+
+        <p><b>Para concluir este tutorial, você precisa do software e dos recursos apresentados na tabela a seguir.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">versão 7.4 e 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">JDK (Java Development Kit)</a></td>
+                  <td class="tbltd1">versão 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>Ativando o Suporte do JDK 8 no NetBeans IDE</h2>
+        <p>Depois que o JDK 8 for submetido a download e instalado em seu sistema, ele precisa ser registrado no IDE como segue:</p>
+		
+        <ol>
+          <li>No IDE, selecione Ferramentas > Plataformas Java no menu principal.</li>
+		  <li>Clique em Adicionar Plataforma na caixa de diálogo Gerenciador de Plataforma Java. </li>
+		  <li>Na caixa de diálogo Adicionar Plataforma Java, selecione Edição Padrão Java e clique em Próximo. </li>
+		  <li>Especifique o diretório que contém o JDK e clique em Próximo. 
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/jdk8.png" rel="lytebox" title="JDK 8 selecionado"> <img alt="JDK 8 selecionado" border="1" src="../../../images_www/articles/80/java/javase-jdk8/jdk8_small.png"></a> </p></li>
+		  <li>Verifique se os locais default do arquivo zip Códigos-fonte da Plataforma e da documentação da API são válidos. Clique em Finalizar para fechar a caixa de diálogo Adicionar Plataforma Java.<br> O JDK 8 é registrado como uma plataforma no IDE. 
+		    <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/jdk8registered.png" rel="lytebox" title="Plataforma Java Registrada"> <img alt="Plataforma Java Registrada" border="1" src="../../../images_www/articles/80/java/javase-jdk8/jdk8registered_small.png"></a> </p></li>
+		<li>Assegure-se de que o JDK 1.8 esteja selecionado na lista Plataformas e clique em Fechar.</li>
+    </ol>
+	<h2><a name="project"></a>Configurando um Projeto para usar JDK 8</h2>
+	<p>Depois de registrar o JDK 8 no IDE, seu projeto precisa ser configurado para usar o JDK 8 para compilar, executar e depurar. </p>
+	<p>Começaremos criando um novo projeto Java SE com o exemplo do jogo de Anagramas que é enviado com o NetBeans IDE.</p>
+	<ol>
+	<li>No IDE, escolha Arquivo > Novo Projeto.</li>
+	<li>No assistente Novo Projeto, expanda a categoria Amostras e selecione Java.</li>
+	<li>Escolha o Jogo de Anagramas na lista Projetos. Em seguida, clique em Próximo.</li>
+	<li>No painel Nome e Local, deixe os valores default para os campos Nome do Projeto e Localização do Projeto.</li>
+	<li>Clique em Finalizar.<br> O IDE cria e abre o projeto Java SE na janela Projetos.</li>
+	</ol>
+	<p><b>Para configurar seu projeto, use o JDK 8:</b></p>
+	<ol>
+	<li>Clique com o botão direito do mouse no projeto Jogo de Anagramas na janela Projetos e selecione as Propriedades no menu de contexto. </li>
+	<li>Na caixa de diálogo Propriedades do Projeto, escolha a categoria Bibliotecas e defina JDK 1.8 como a Plataforma Java. 
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_jdk8.png" rel="lytebox" title="JDK 8 definido como Plataforma Java"> <img alt="JDK 8 definido como Plataforma Java" border="1" src="../../../images_www/articles/80/java/javase-jdk8/prj_jdk8_small.png"></a> </p></li>
+	 <li>Selecione a Categoria Código-fonte e defina o Formato de Código-origem/Binário para JDK 8.
+		
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_source_jdk8.png" rel="lytebox" title="Definindo o Formato de Código-fonte/Binário para JDK 8"> <img alt="Definindo o Formato de Código-fonte/Binário para JDK 8" border="1" src="../../../images_www/articles/80/java/javase-jdk8/prj_source_jdk8_small.png"></a> </p> </li>
+	<li>Clique em OK para salvar as alterações. <br>Seu projeto está definido para reconhecer as novas funcionalidades de linguagem do JDK 8.</li>
+	</ol>
+	<h2><a name="compact"></a>Usando Suporte de Perfis Compacto</h2>
+		 <p>O Java SE 8 apresenta os <a href="http://openjdk.java.net/jeps/161">perfis do subconjunto da especificação da plataforma do Java SE</a> que podem ser usados para implantar e executar aplicações que não exigem a plataforma completa.  </p>
+		 <p>Os três perfis que foram definidos até agora são chamados <i>compact1</i>, <i>compact2</i> e <i>compact3</i>. Cada perfil especifica um conjunto específico de pacotes de Java API e contém todas as APIs nos perfis menores que ele próprio: <i>compact1</i> é um subconjunto de <i>compact2</i>, que é um subconjunto de <i>compact3</i>, que por sua vez é um subconjunto de <i>JRE completo</i>. A tabela abaixo lista os pacotes que são compostos em cada perfil. </p>
+		 
+		 <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Compact1</th>
+                    <th class="tblheader" scope="col">Compact2</th>
+					<th class="tblheader" scope="col">Compact3</th>
+					<th class="tblheader" scope="col">JRE completo</th>
+                </tr>
+                <tr>
+                    <td>
+					<ul>
+					<li>java.lang</li>
+					<li>java.io</li>
+                    <li>java.nio</li>
+                    <li>java.text</li>
+                    <li>java.math</li>
+                    <li>java.net</li>
+                    <li>javax.net</li>
+<li>java.util</li>
+<li>java.util.logging</li>
+<li>java.security</li>
+<li>javax.crypto</li>
+<li>javax.security</li>
+					</ul></td>
+                    <td><i>compact1</i> mais o seguinte:
+					<ul>
+<li>java.sql</li>
+<li>javax.sql</li>
+<li>javax.xml</li>
+<li>org.w3c.dom</li>
+<li>org.xml.sax</li>
+<li>java.rmi</li>
+<li>javax.rmi</li>
+<li>javax.transaction</li></ul></td>
+					<td><i>compact2</i> mais o seguinte:
+					<ul>
+<li>java.lang.management</li>
+<li>javax.management</li>
+<li>javax.naming</li>
+<li>javax.sql.rowset</li>
+<li>javax.security.auth.kerberos</li>
+<li>org.ietf.jgss</li>
+<li>javax.script</li>
+<li>javax.xml.crypto</li>
+<li>java.util.prefs</li>
+<li>javax.security.sasl</li>
+<li>javax.security.acl</li>
+<li>java.lang.instrument</li>
+<li>javax.annotation.processing</li>
+<li>javax.lang.model</li>
+<li>javax.lang.model.element</li>
+<li>javax.lang.model.type</li>
+<li>javax.lang.model.util</li>
+<li>javax.tools</li>
+</ul></td>
+					<td ><i>compact3</i> mais o seguinte:
+					<ul>
+					<li>corba</li>
+					<li> awt</li> 
+					<li>swing</li></ul></td>
+                </tr>
+				<tr>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td>
+				<td class="tbltd1"></td></tr>
+		   </tbody>
+	</table>
+	<p>O IDE permite que você alterne entre os perfis e o JRE completo, quando necessário. </p>
+		 <p><b>Para definir um perfil do projeto para um Projeto Java SE:</b></p>
+		 <ol>
+		 <li>Clique com o botão direito do mouse e escolha Propriedades no menu de contexto. </li>
+		 <li>Na caixa de diálogo Propriedades do projeto, selecione a categoria Executar Códigos-fontes. </li>
+		 <li>Use a lista drop-down Perfil para especificar o perfil JDK 8 que sua aplicação suportará.
+		 
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/prj_src_profile.png" rel="lytebox" title="Lista de perfis"> <img alt="Lista de perfis" border="1" src="../../../images_www/articles/80/java/javase-jdk8/prj_src_profile_small.png"></a> </p> 
+		   </li>
+		<li>Clique em OK.</li>
+		 </ol>
+		<p>Para verificar como o IDE verifica se as classes usadas em seu projeto pertencem ao perfil especificado, selecione Compact1 como perfil para o projeto Jogo de Anagramas e clique em OK.<br> O IDE exibe os erros para notificar que o projeto Jogo de Anagramas não é compatível com o projeto <i>compact1</i>.</p>
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/profile.png" rel="lytebox" title="Perfil"> <img alt="Perfil" border="1" src="../../../images_www/articles/80/java/javase-jdk8/profile_small.png"></a> </p> 
+		 <p>Você pode voltar e definir o perfil do projeto Jogo de Anagramas para JRE Completo que é suportado pela aplicação Anagramas. </p>
+		 
+		 
+
+	 
+         <h2><a name="lambda"></a>Usando Suporte de Expressões Lambda</h2>
+    
+	<p><a href="http://openjdk.java.net/projects/lambda/">Expressões de Lambda</a> trata o volume de classes internas anônimas, expressando funcionalidade de classes internas anônimas de forma mais compacta.</p>
+	<p>A sintaxe geral de uma expressão lambda consiste em um conjunto de parâmetros, um token de seta e um corpo de função (uma expressão simples ou um bloco de instrução):</p>
+	<pre>(int a, int b) -&gt; a * a + b * b;</pre>
+	<p>O NetBeans IDE detecta expressões pré-lamba e exibe as dicas no Editor propondo ativar tais construções nas expressões lambda.</p>
+	<p>Por exemplo, o projeto Jogo de Anagramas caracteriza uma construção pré-lamda no arquivo <tt>Anagrams.java</tt>, conforme a tela abaixo.</p>
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda.png" rel="lytebox" title="Lambda"> <img alt="Lambda clicado" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_small.png"></a> </p> 
+					 <p>Depois que você clicar na lâmpada na margem ou pressionar Alt-Enter, o IDE mostra a dica Usar Lambda com um conjunto de opções disponíveis: </p>
+					  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_clicked.png" rel="lytebox" title="Lambda clicado"> <img alt="Lambda clicado" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_clicked_small.png"></a> </p> 
+					 <p>Se a dica Usar Lambda estiver selecionada, o IDE converterá a classe interna anônima em uma expressão lambda. </p>
+                     <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_converted.png" rel="lytebox" title="Lambda convertido"> <img alt="Lambda convertido" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_converted_small.png"></a> </p> 
+					 <p>Se você escolher a opção Executar Inspeção em, o IDE exibirá a caixa de diálogo Inspecionar que permite executar uma Conversão única para inspeção de Lambda no arquivo especificado.</p>
+					 <p class="notes"><b>Observação:</b> para obter mais informações sobre como iniciar a operação Inspecionar no IDE, consulte <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&amp;id=NBDAG613">Usando Dicas na Análise do Código-Fonte e Refatorando</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i>.</p>
+					 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/inspect.png" rel="lytebox" title="Executar Inspeção"> <img alt="Executar Inspeção" border="1" src="../../../images_www/articles/80/java/javase-jdk8/inspect_small.png"></a> </p> 
+					 
+					 <p>Após pressionar o botão Inspecionar para acionar a inspeção, o IDE identifica todas as construções pré-lamba do arquivo e as exibe na janela Inspetor. </p>
+					 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_inspection.png" rel="lytebox" title="Inspeção de Lambda"> <img alt="Inspeção de Lambda" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_inspection_small.png"></a> </p> 
+					 <p>Se você escolher a opção Executar Transformação da Inspeção, o IDE exibirá a caixa de diálogo Inspecionar e Transformar que permite executar uma inspeção Converter para Lambda única (ou uma configuração selecionada) no código especificado e refatorá-la, se necessário.</p>
+					 <p class="notes"><b>Observação:</b> para obter mais informações sobre a operação Inspecionar e Transformar, consulte <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&amp;id=NBDAG613">Usando Dicas na Análise do Código-Fonte e Refatorando</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i>.</p>
+					  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-jdk8/lambda_transform.png" rel="lytebox" title="Refatoração Lambda"> <img alt="Refatoração Lambda" border="1" src="../../../images_www/articles/80/java/javase-jdk8/lambda_transform_small.png"></a> </p>
+		             <h2><a name="annot"></a>Usando Suporte de Anotações de Repetição</h2>
+        <p>As funcionalidades do Java SE 8 incluem <a href="http://openjdk.java.net/jeps/120">anotações de repetição</a> que permitem que você aplique anotações com o mesmo tipo para um elemento do programa único, conforme mostrado no seguinte exemplo do código:</p>
+        
+		  <pre class="examplecode">
+@ProjectServiceProvider(service=Foo.class,&quot;org-nebeans-modules-j2seproject&quot;)
+@ProjectServiceProvider(service=Foo.class,&quot;org-nebeans-modules-j2eeproject&quot;)
+public class MyService extends Foo {}
+ </pre>
+ <p>O suporte do NetBeans IDE para anotações de repetição permite que você grave o código com as mesmas anotações fornecidas e tipos da anotação incluída que são declarados: </p>
+ <ul>
+ <li>um tipo de anotação repetida deve ser marcada com <tt>@Repeatable ()</tt>; caso contrário, você tem um erro na compilação
+ </li>
+ <li>um tipo de anotação incluído deve ter um elemento <tt>value</tt> com um tipo de array; o tipo de componente do tipo de array deve ser um tipo de anotação repetida</li>
+ </ul>
+        
+        
+
+         <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Overview%20of%20JDK%208%20Support%20in%20NetBeans%20IDE">Enviar Feedback neste Tutorial</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>Consulte Também</h2>
+        <p>Para obter mais informações sobre JDK 8, consulte: </p>
+        <ul>
+            
+			
+			<li><a href="http://jdk8.java.net/">Projeto JDK 8</a></li>
+			<li><a href="http://download.java.net/jdk8/docs/">Documentação de Acesso Antecipado do Java Platform Standard Edition 8</a></li>
+			<li><a href="http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/Lambda-QuickStart/index.html" target="_blank">Java SE 8: Início Rápido do Lambda </a> </li>
+            <li><a href="http://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html" target="_blank">Os Tutoriais do Java: Expressões Lambda</a></li>
+			<li><a href="http://docs.oracle.com/javase/tutorial/java/annotations/repeating.html">Os Tutoriais do Java: Anotações de Repetição</a></li>
+    </ul>
+
+        <p>Para obter mais informações sobre o desenvolvimento de aplicações Java no NetBeans IDE, veja: </p>
+        <ul>
+		<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&amp;id=NBDAG366">Criando Projetos Java</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></li>
+          <li><a href="javase-intro.html">Desenvolvendo Aplicações Java Gerais</a></li>
+          
+          <li><a href="../../trails/java-se.html">Trilha de Aprendizado do Desenvolvimento Geral em Java</a></li>
+        </ul>
+</body>
+</html>

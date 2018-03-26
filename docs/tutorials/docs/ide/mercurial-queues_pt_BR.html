@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Usando Suporte para Filas do Mercurial no NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Mercurial Queues in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Mercurial,
+              versioning software, open source, developers, collaborate"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+ </head>
+
+<body>
+<h1>Usando Suporte para Filas do Mercurial no NetBeans IDE</h1>
+<p>O NetBeans IDE fornece suporte para a extensão de Filas do Mercurial. O suporte de Filas do Mercurial do IDE permite que você crie, revise ou alterne entre patches dentro do IDE, bem como renovar patches com modificações locais como você corrigir bugs ou atualizar para uma nova revisão de base. Este documento demonstra como executar tarefas básicas específicas de patch no IDE o orientando pelo workflow padrão ao usar o software de controle de versão do Mercurial para gerenciar patches.</p>
+<p></p>
+
+<h3>Conteúdo</h3>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 6.8, 6.9, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.4 e 8.0" />
+
+        <ul class="toc">
+		    <li><a href="#reqs">Requisitos</a></li>
+            <li><a href="#enable">Ativando o Suporte de Filas do Mercurial</a></li>
+			<li><a href="#create">Criando um Patch</a></li>
+			<li><a href="#refresh">Atualizando um Patch com Modificações Locais </a></li>
+			<li><a href="#diff">Comparando Revisões do Patch</a></li>
+			<li><a href="#switch">Alternando Entre Patches </a></li>  
+            <li><a href="#finish">Finalizando Patches Aplicados</a></li>
+			<li><a href="#summary">Resumo</a></li>
+            <li><a href="#seealso">Consulte Também</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Requisitos</h2>
+        <p><strong>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Versão 7.4 ou 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">Versão 7 ou 8</td>
+                </tr>
+				 <tr>
+                    <td class="tbltd1"><a href="http://mercurial.selenic.com/downloads/" target="_blank">Software do cliente do Mercurial</a></td>
+                    <td class="tbltd1">1.04 ou uma versão mais recente </td>
+                </tr>
+				                 
+            </tbody>
+        </table>
+		<p class="notes"><b>Observação:</b> Consulte <a href="mercurial.html#settingUp">Usando o Suporte ao Mercurial no NetBeans IDE</a> para obter informações sobre como instalar o software do cliente Mercurial no seu sistema.</p>
+
+        
+        <div>
+		<a name ="enable"></a>
+		<h2>Ativando o Suporte de Filas do Mercurial</h2>
+		<p>Como as Filas do Mercurial é uma extensão, você deve ativá-la antes de usá-la.<br />Para iniciar a execução de Filas do Mercurial em seu repositório do Mercurial, você precisa concluir as seguintes etapas:</p>
+		 <ol>
+		 <li>Em seu sistema, procure o arquivo <tt>.hgrc</tt>. A localização default do arquivo <tt>.hgrc</tt> no OS X e Linux é <tt>$HOME/.hgrc</tt>, no Windows - <tt>%USERPROFILE%\Mercurial.ini</tt>.</li>
+		 <li>Adicione as linhas abaixo em seu arquivo <tt>.hgrc</tt>.
+		 <pre>         [extensions]
+         hgext.mq =</pre></li>
+		 <li>Salve o arquivo.</li>
+		 </ol>
+		 <p class="align-center"><a href="#top">início</a></p>		
+		</div>
+		<div>
+		<a name="create"></a>
+		<h2>Criando um Patch</h2>
+		<p>Para criar um patch, é necessário concluir as etapas a seguir:</p>
+		<ol>
+		<li>Na janela Projetos, selecione um projeto com controle de versão e escolha <tt>Equipe</tt> > <tt>Filas</tt> > <tt>Criar Patch</tt> (se preferir, clique com o botão direito no nome do projeto e selecione <tt>Mercurial</tt> > <tt>Filas</tt> > <tt>Criar Patch</tt> no menu pop-up).<br /> A caixa de diálogo Criar Patch é exibida.
+		<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/create-patch.png" rel="lytebox" title="Caixa de diálogo Criar Patch"> <img alt="Caixa de diálogo Criar Patch" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/create-patch-small.png"></a></p>
+		  </li>
+		<li>Especifique o nome de um patch no campo de texto Nome do Patch.</li>
+		<li>Forneça a descrição de um patch no campo Mensagem do Patch.<br />Se preferir, escolha uma das seguintes opções e clique em OK posteriormente:
+		  <ul>
+		<li>clique no botão Mensagens Recentes (<img alt="Mensagens Recentes" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/recent.png">) para selecionar uma mensagem de uma lista de mensagens de confirmação mais recentes </li>
+		<li>clique no botão Carregar Modelo (<img alt="Carregar Modelo" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/load.png">) para selecionar um modelo de mensagem de uma mensagem de confirmação.</li>
+		</ul>
+		<p class="notes"><b>Observação:</b> A descrição fornecida de um patch será usada como uma mensagem de confirmação ao <a href="#finish">transformar o patch em um conjunto de alterações permanente</a>.</p>
+		</li>
+		<li>Selecione os arquivos a serem incluídos no patch na tabela Arquivos a Serem Incluídos no Patch. </li>
+		<li>(Opcional) Especifique informações pertinentes a um problema relacionado ao patch criado usando os campos da área Atualizar Problema.</li>
+		<li>Clique em Criar Patch.<br /> Um novo patch é criado e adicionado ao diretório <tt>.hg/patches</tt>.
+		</li>
+		</ol>
+<p class="align-center"><a href="#top">início</a></p>				
+</div>
+<div>
+<a name="refresh"></a>
+<h2>Atualizando um Patch com Modificações Locais</h2>
+<p>Para salvar seu andamento no patch que você está criando, é necessário concluir as seguintes etapas: </p>
+<ol>
+<li>Escolha <tt>Equipe</tt> > <tt>Filas</tt> > <tt>Atualizar Patch</tt> do menu principal (se preferir, clique com o botão direito no nome do projeto e selecione <tt>Mercurial</tt> > <tt>Filas</tt> > <tt>Atualizar Patch</tt> no menu pop-up).<br /> A caixa de diálogo Atualizar Patch é exibida.
+<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch.png" rel="lytebox" title="Caixa de diálogo Atualizar Patch"> <img alt="Caixa de diálogo Atualizar Patch" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch-small.png"></a></p></li>
+<li>Forneça a descrição de um patch no campo Mensagem do Patch.<br />Se preferir, escolha uma das seguintes opções e clique em OK posteriormente:
+		  <ul>
+		<li>clique no botão Mensagens Recentes (<img alt="Mensagens Recentes" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/recent.png">) para selecionar uma mensagem de uma lista de mensagens de confirmação mais recentes </li>
+		<li>clique no botão Carregar Modelo (<img alt="Carregar Modelo" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/load.png">) para selecionar um modelo de mensagem de uma mensagem de confirmação.</li>
+		</ul>
+		<p class="notes"><b>Observação:</b> A descrição fornecida de um patch será usada como uma mensagem de confirmação ao <a href="#finish">transformar o patch em um conjunto de alterações permanente</a>.</p>
+	</li>
+		<li>Selecione os arquivos a serem incluídos no patch na tabela Arquivos a Serem Incluídos no Patch. </li>
+		<li>(Opcional) Na área Atualizar Problema, especifique as informações pertinentes a um problema relacionado às alterações que estão sendo confirmadas.</li>
+        <li>Clique em Atualizar Patch.<br />O patch no qual você está trabalhando é atualizado.</li>
+
+</ol>
+<p class="align-center"><a href="#top">início</a></p>
+</div>
+
+		<div><a name="diff"></a>
+		<h2>Comparando Revisões do Patch</h2>
+		<p>Para gerar um patch para revisar e comparar as revisões de um patch lado a lado, você precisa concluir as seguintes etapas: </p>
+<ol>
+<li>Escolha <tt>Equipe</tt> > (<tt>Filas</tt> > <tt>Diferença</tt> do menu principal (se preferir, clique com o botão direito no nome do projeto e selecione <tt>Mercurial</tt> > <tt>Filas</tt> > <tt>Atualizar Patch</tt> no menu pop-up).<br /> O Visualizador de Diferença exibe as diferenças encontradas no patch atual e todas as alterações locais não confirmadas/não atualizadas nos painéis lado a lado:
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/qdiff.png" rel="lytebox" title="Visualizador de Diferenciação"> <img alt="Visualizador de Diferenciação" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/qdiff-small.png"></a></p></li>
+<li> Revise as diferenças encontradas nos arquivos comparados usando o Visualizador de Diferenças Textual ou Gráfico.
+  <p class = "notes"><b>Observação:</b> O Visualizador Gráfico de Diferenciação é alterado nos arquivos usando a seguinte codificação colorida.</p>
+  <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>Azul</strong> ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indica as linhas alteradas desde o patch mais recente.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Verde</strong> ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indica as linhas adicionadas desde o patch anterior.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Vermelho</strong> ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indica as linhas removidas desde o patch anterior.</td>
+                </tr>
+</table>
+<p>
+Os seguintes ícones permitem que você faça alterações diretamente no Visualizador Gráfico de Diferenciação.</p>
+ <table width="600px">
+				 <tr>
+                        <th class="tblheader" scope="col">Ícone</th>
+                        <th class="tblheader" scope="col" style="width:60px">Nome</th>
+                        <th class="tblheader" scope="col">Função</th>
+        </tr>
+                    <tr>
+					 <td class="tbltd1 align-center"><img alt="Ícone Substituir" src="../../../images_www/articles/72/ide/mercurial-queues/replace.png" /></td>
+                        <td class="tbltd1 align-center" style="width:80px"><strong>Substituir</strong></td>
+                        <td class="tbltd1">Insere o texto realçado do patch anterior no patch atual.</td>
+                    </tr>
+					<tr>
+					<td class="tbltd1 align-center"><img alt="Ícone Substituir tudo" src="../../../images_www/articles/72/ide/mercurial-queues/replace-all.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Substituir Tudo</strong> </td>
+                        <td class="tbltd1">Reverte a versão atual de um patch para o estado de sua versão anterior selecionada.</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="Ícone Remover" src="../../../images_www/articles/72/ide/mercurial-queues/remove.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Remover</strong></td>
+                        <td class="tbltd1">Remove o texto destacado da versão atual de um patch, de forma que ele mostre a versão anterior de um patch.</td>
+                    </tr>
+      </table></li>
+</ol>
+		
+<p class="align-center"><a href="#top">início</a></p>
+        
+		</div>
+		
+		<div>
+		<a name="switch"></a>
+        <h2>Alternando Entre Patches</h2>
+        <p>Para alternar para um determinado patch em uma fila do Patch série, você precisa concluir as seguintes etapas: </p>
+		<p class="notes"><b>Observação:</b> para alternar entre patches <i>não</i> deve haver<i>nenhuma</i> modificação local na cópia de trabalho, caso contrário a alternância falha.</p>
+		<ol>
+		<li>Escolha <tt>Equipe</tt> > <tt>Filas</tt> > <tt>Ir para Patch</tt> no menu principal (se preferir, clique com o botão direito no nome do projeto e selecione <tt>Mercurial</tt> > <tt>Filas</tt> > <tt>Ir para Patch</tt> no menu pop-up).<br />A caixa de diálogo Ir para Patch exibe uma lista de todos os patches disponíveis em uma pilha. 
+		
+		  <p class="align-center">
+	      <img alt="Caixa de diálogo Ir para Patch" border="1/" src="../../../images_www/articles/74/ide/mercurial-queues/go-patch.png"></p>
+		  
+		<p class="notes"><b>Observações:</b></p> 
+		<ul>
+		<li>Nomes de patches aplicados são exibidos em negrito.</li>
+		<li> Escolha <tt>Equipe</tt> > <tt>Filas</tt> > <tt>Exibir Todos os Patches</tt> para remover os patches aplicados na parte superior da pilha e atualizar o diretório de trabalho para desfazer os efeitos de os patches aplicados.</li>
+		</ul>
+		</li>
+		<li>Selecione o patch necessário e clique em Ir.<br />O IDE aplica as alterações contidas no patch selecionado para o projeto escolhido, arquivo ou pasta.</li>
+		</ol> 
+		<p class="align-center"><a href="#top">início</a></p>
+		</div> 
+		<div>   
+               
+        <a name="finish"></a>
+<h2>Finalizando Patches Aplicados</h2>
+<p>Quando seu trabalho em um patch for concluído, ele pode ser transformado em um conjunto de alterações permanentes.<br />Transforme todos os patches aplicados em uma série de fila de patches em conjuntos de alterações regulares, conclua as seguintes etapas:</p>
+ <p class="notes"> <b>Observação:</b> para aplicar todos os patches salvos no repositório, escolha <tt>Equipe</tt> > (<tt>Filas</tt> > <tt>Extrair Todos os Patches</tt> no menu principal.</p>
+ 
+<ol>
+<li>Escolha <tt>Equipe</tt> > (<tt>Filas</tt> > <tt>Finalizar Patches</tt> no menu principal (se preferir, clique com o botão direito do mouse no nome do projeto e selecione <tt>Mercurial</tt> > <tt>Filas</tt> > <tt>Finalizar Patches</tt> no menu pop-up).<br /> A caixa de diálogo Finalizar Patches é exibida.
+   <p class="align-center">
+    <img alt="Finalizar Patches" border="1/" src="../../../images_www/articles/74/ide/mercurial-queues/finish-patches.png"></p></li>
+	<li>Selecione o nome de um patch a ser finalizado no campo Patches.
+	<p class="notes"><b>Observação:</b> todos os patches da série antes do patch selecionado também serão finalizados.</p></li>
+	<li>Clique em Finalizar Patches.<br />O IDE transforma todos os patches aplicados até o patch selecionado em conjuntos de alterações regulares.</li>
+		  </ol>
+<p class="align-center"><a href="#top">início</a></p>
+</div>
+<div>
+<a name="summary"></a>
+<h2>Resumo</h2>
+<p>Este tutorial mostrou como executar tarefas básicas específicas de patch no IDE o orientando pelo workflow padrão ao usar o software de controle de versão do Mercurial para gerenciar patches. Ele demonstrou como ativar o suporte Filas do Mercurial no NetBeans IDE e executar tarefas básicas sobre patches ao introduzi-los em algumas funcionalidades específicas do Mercurial incluídos no IDE.</p>
+<p class="align-center"><a href="#top">início</a></p>
+</div>
+		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Suport%20For%20Mercurial%20Queues%20in%20NetBeans%20IDE">Enviar Feedback neste Tutorial</a></div>
+
+        <br style="clear:both;"/>
+		<a name="seealso"></a>
+        <h2>Consulte Também</h2>
+        
+        <p>Para ver o material relacionado, consulte os seguintes documentos:</p>
+        <ul>
+           
+           	<li><a href="mercurial.html">Usando Suporte ao Mercurial no NetBeans IDE</a></li>
+			<li><a href="http://wiki.netbeans.org/HgNetBeansSources">Usando o Mercurial para Trabalhar com Códigos-fonte do NetBeans no IDE</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">Aplicando Controle de Versão às Aplicações com Controle de Versão</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></a></li>
+			
+        </ul>
+		<p class="align-center"><a href="#top">início</a></p>
+</body>
+</html>

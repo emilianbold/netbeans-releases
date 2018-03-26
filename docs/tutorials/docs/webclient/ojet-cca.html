@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Composite Component Architecture in Oracle JET</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that introduces the support for developing HTML5 applications in NetBeans IDE
+              and uses the jQuery JavaScript library.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+        <!--
+        Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>Composite Component Architecture in Oracle JET</h1>
+
+        <p>
+            This document provides a step-by-step set of instructions guiding
+            you through the process of creating <a href="http://www.oracle.com/webfolder/technetwork/jet/jetCookbook.html?component=composite&demo=basic">Composite Components</a> with the
+            <a href="http://oraclejet.org">Oracle JavaScript Extension Toolkit (JET)</a>. JET empowers web
+            and mobile developers
+            by providing a modular toolkit based on modern JavaScript, CSS3,
+            and HTML5 design and development principles.</p>
+
+        <!-- ++++++++++++++++ Setting Up ++++++++++++++++ -->
+        <a name="settingUp"></a>
+        <h2>Setting Up an Oracle JET Application</h2>
+        <p>In this exercise you set up an Oracle JET application and explore its default content.</p>
+        <ol>
+            <li>
+            <p>Follow the steps described in <a href="ojet-settingup.html">Setting Up an Oracle JET Application</a>.</p>
+            <li><p>Open the project into an editor or IDE of your choice, such as NetBeans IDE, which
+                displays the application as follows:</p>
+                <p><img src="../../../images_www/articles/82/web/oraclejet-gettingstarted/navdrawer.png"/></p>
+            </li>
+        </ol>    
+            <p>Spend some time browsing through the application structure.
+             In the next section, you'll be introduced to the main concepts
+             of the application structure.</p>
+        
+        <!-- ++++++++++++++++ Understanding ++++++++++++++++ -->
+        <a name="understanding"></a>
+        <h2>Creating a CCA Component</h2>
+        <p>In this exercise, you create your first <a href="http://www.oracle.com/webfolder/technetwork/jet/jetCookbook.html?component=composite&demo=basic">CCA component</a>,
+            which is Oracle's implementation of the <a href="https://www.w3.org/standards/techs/components#w3c_all">W3C Web Component Standard</a>.</p>
+        <ol>
+            <li>
+              <p>In <tt>src/js</tt> create a folder named <tt>jet-composites</tt> or any other name.
+              In that folder, create another folder, named <tt>customer</tt>. In the <tt>customer</tt> folder, create the three files you see below, that is,
+                  <tt>customer.html</tt>, <tt>customer.json</tt> and <tt>loader.js</tt>, shown below:</p>  
+              <p><img src="../../../images_www/articles/82/web/oraclejet-gettingstarted/cca-1.png"/></p>
+            </li>
+            <li>
+                <p>In <tt>customer.html</tt>, paste the below:</p>
+<pre>&lt;b data-bind="text: $props.name"&gt;&lt;/b&gt;
+&lt;i data-bind="text: $props.city"&gt;&lt;/i&gt;
+&lt;hr&gt;</pre>                
+            </li>
+            <li>
+                <p>In <tt>customer.json</tt>, paste the below:</p>
+<pre>{
+  "properties": {
+    "name": {
+      "description": "Customer name.",
+      "type": "string"
+    },
+    "city": {
+      "description": "Customer location.",
+      "type": "string"
+    }
+  }
+}</pre>                
+            </li>
+            <li>
+                <p>In <tt>loader.js</tt>, paste the below:</p>
+<pre>define(['ojs/ojcore', 
+    'text!./customer.html', 
+    'text!./customer.json', 
+    'ojs/ojcomposite'],
+  function(oj, view, metadata) {
+    oj.Composite.register('my-customer', {
+      view: {inline: view}, 
+      metadata: {inline: JSON.parse(metadata)}
+    });
+  }
+);</pre>          
+                <p class="tips">When you name your CCA component, such as <tt>my-customer</tt> above,
+                    <a href="https://www.w3.org/TR/custom-elements/#valid-custom-element-name">see this information</a> and <a href="https://mothereff.in/custom-element-name">validate your name here</a>.</p>
+            </li>
+        </ol>
+        <p>You have now created a simple CCA component, providing
+            the <tt>my-customer</tt> custom element.</p>        
+        <!-- ++++++++++++++++ Understanding ++++++++++++++++ -->
+        <a name="understanding"></a>
+        <h2>Using a CCA Component</h2>
+        <p>In this exercise, you use the CCA component you created in the previous section.</p>
+        <ol>
+            <li>
+              <p>In the HTML file of one or more of your Oracle JET modules,
+                  use the CCA component as follows:
+                </p>
+<pre>&lt;!-- ko foreach: customers --&gt;
+  &lt;my-customer name="{{name}}" city="{{city}}">&lt;/my-customer&gt;
+&lt;!-- /ko --&gt;</pre>  
+                <p class="tips">Read more about Knockout for-each loops here: <a href="http://knockoutjs.com/documentation/foreach-binding.html">http://knockoutjs.com/documentation/foreach-binding.html</a>.</p>
+            </li>
+            <li>
+                <p>In the previous step, there's an assumption that an array named <tt>customers</tt>
+                 exists. Add it to the JavaScript file in the Oracle JET module:</p>
+<pre>self.customers = [
+    {name: 'Bill Bob Thornton', city: 'New York'},
+    {name: 'Brad Pitt', city: 'Hollywood'},
+    {name: 'Val Kilmer', city: 'Seattle'}
+];</pre>
+            </li>
+            <li>
+                <p>In the <tt>define</tt> block, load the following,
+                    at the end of the list of references:</p>
+<pre>'ojs/ojcomposite', 'jet-composites/customer/loader'</pre>                
+            </li>
+            <li>
+                <p>Look in the browser and you should see the following:</p>  
+              <p><img src="../../../images_www/articles/82/web/oraclejet-gettingstarted/cca-2.png"/></p>
+            </li>
+        </ol>
+        
+        <!-- ++++++++++++++++ Understanding ++++++++++++++++ -->
+        <a name="understanding"></a>
+        <h2>Next Steps</h2>
+        
+        <p>Read <a href="http://www.oracle.com/webfolder/technetwork/jet/jetCookbook.html?component=composite&demo=basic">the related Oracle JET Cookbook section</a> in detail and
+             include another CCA component from there.
+        </p>
+        
+        <p>Also read <a href="http://docs.oracle.com/middleware/jet320/jet/developer/GUID-18F9F429-1A80-4A9F-9B78-09428EFD2530.htm#BEGIN">Creating Composite Components</a> in the Oracle JET Developer Guide.</p>
+        
+        <p>Congratulations! You have now learned how to create
+            and load CCA components in your Oracle JET applications.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20CCA">Send Feedback on This Tutorial</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+
+        <h2 id="seealso">See Also</h2>
+
+        <p>For more information about support for Oracle JET and a variety of HTML5 applications in the IDE on
+            <a href="https://netbeans.org/">netbeans.org</a>, see the following resources:</p>
+
+        <ul>
+            <li><a href="http://www.oracle.com/webfolder/technetwork/jet/globalExamples.html">"Learn" section
+                    on the Oracle JET site</a>. A set of official Oracle JET learning resources.</li>
+            <li><a href="html5-editing-css.html">Working with CSS Style Sheets in HTML5 Applications</a>.
+                A document that continues with the application that you created in this tutorial that demonstrates
+                how to use some of the CSS wizards and windows in the IDE and how to use the Inspect mode in the
+                Chrome browser to visually locate elements in your project sources.</li>
+            <li><a href="html5-js-support.html">Debugging and Testing JavaScript in HTML5 Applications</a>.
+                A document that demonstrates how the IDE provides tools that can help you debug and test
+                JavaScript files in the IDE.</li>
+        </ul>
+
+    </body>
+</html>

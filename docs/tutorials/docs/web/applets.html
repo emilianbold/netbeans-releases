@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!-- -*- xhtml -*- -->
+        <title>Integrating an Applet in a Web Application</title>
+        
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="AUTHOR" content="Geertjan Wielenga">
+        <meta name="DESCRIPTION" content="A short guide to creating and using applets in the NetBeans IDE.">
+        <!--      Copyright (c) 2009 - 2013, Oracle and/or its affiliates. All rights reserved. -->
+        <!--     Use is subject to license terms.-->
+    </head>
+    <body>
+        <h1>Integrating an Applet in a Web Application</h1>
+
+   <p>An applet is a program written in the Java programming
+   language that can be included in an HTML page, much in the same way
+   an image is included in a page. The application that you build 
+        in this tutorial shows you how to build and deploy applets in the IDE.</p>
+        
+    <p><strong class="notes">Note: </strong>Though there are no project templates that are specifically 
+            designed for creating applets in the IDE, you can easily develop them in 
+            a Java project and package them in a web project, as shown in this tutorial.</p>
+            
+            
+    <p><strong>Contents</strong></p>
+      <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+      <ul class="toc">
+         <li><a href="#create">Creating or Importing an Applet</a></li>
+         <li><a href="#runanddebug">Running an Applet</a></li>
+         <li><a href="#embed">Embedding an Applet in a Web Application</a></li>
+      </ul>
+<p><a name="00"></a><b>To follow this tutorial, you need the following software and resources.</b></p>
+
+   <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, Java Version</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition
+                        <br><em class="indent margin-around">or</em>
+                    <br>Tomcat servlet container</td>
+                    <td class="tbltd1">3.x or 4.x<br>
+                        <em class="margin-around indent">&nbsp;</em>
+                    <br>version 7.x or 8.x</td>
+                </tr>
+            </tbody>
+    </table>
+            
+        
+        <h2><a name="create"></a>Creating or Importing an Applet Source File</h2>
+        
+        <p>In this section, you create your first applet. Possibly, you already
+        have an applet and, in this case, you can use the instructions below to import
+        it into the IDE.</p>
+        
+        <div class="indent">
+            
+            <h3>Create the Java project from scratch or from existing sources</h3>
+            
+            <ol>
+                <li>Choose File &gt; New Project (Ctrl-Shift-N). 
+                Under Categories, select Java.</li>
+                <li>Choose one of the following:
+                    <ul>
+                        <li>If you are creating a new applet source file, select Java Class Library
+                        under Projects. Click Next.</li>
+                        <li>If you want to import an applet source file, select Java Project with Existing Sources. 
+                            Click Next. Specify the file's location in the
+                        Source Packages Folder text box.</li>
+                </ul></li>
+                <li>Under Project Name, type <tt>HelloApplet</tt>. Change the 
+                Project Location to any folder on your computer.</li>
+                <li>Click Finish. If you imported an applet source file, <a href="#runanddebug">run it</a>.</li> 
+            </ol>
+            
+            
+            
+            
+            <h3>Create the applet source file</h3>
+            
+            <ol>
+                <li>Right-click the HelloApplet project and choose Properties to open the Properties window.</li>
+                <li>Select the desired Source / Binary Format for the project and click OK.
+                    <p class="notes"><strong>Note:</strong> For example, if you choose JDK 6 the applet might not run
+                    on machines that have an older version of the JRE or Java browser plugin.</p>
+                </li>
+                <li>Right-click the HelloApplet project node in the Projects window 
+                and select New &gt; Other (Ctrl-N).</li>
+                <li>Under Categories, select Java. Under File Types, 
+                    select Applet. 
+                    
+                    <p>Alternatively, if you want to visually design your applet, select Swing GUI Forms &gt; JApplet Form.</p> 
+                    
+                <p>Click Next.</p></li>
+                <li>Under Class Name, type <tt>MyApplet</tt>. Under 
+                Package, type <tt>org.me.hello</tt>.</li>
+                <li>Click Finish.<p>The IDE creates the applet source file in the
+                        specified package. The applet source file opens in the Source editor.</p></li>  
+                <li>Define your applet class by copying and pasting the following
+                    code over the existing default code:
+                    <pre class="examplecode">
+     package org.me.hello;
+
+     import java.applet.Applet;
+     import java.awt.Graphics;
+
+     public class MyApplet extends Applet {
+         @Override
+         public void paint(Graphics g) {
+             g.drawString(&quot;Hello applet!&quot;, 50, 25);
+         }
+     }
+                    </pre>
+                    
+                <p>Alternatively, if you are designing an Applet Form instead, use the <a href="../java/quickstart-gui.html">Designing a Swing GUI in NetBeans IDE</a> document to create something like the following:</p>
+
+    <p  class="align-center"><img src="../../../images_www/articles/74/web/applet/movie-magic-quiz-design.png" class="align-center" alt="Applet Form design" vspace="5" hspace="5"></p>
+    
+                    <p>For detailed information on writing applets, see The Java<sup>TM</sup> Tutorial's
+                    <a href="http://download.oracle.com/javase/tutorial/deployment/applet/index.html">Applets</a> section.</p>
+                </li>
+            </ol>
+        </div>
+        
+        
+        
+        
+       
+        <h2><a name="runanddebug"></a>Running an Applet Source File</h2>
+        <p>The applet that you created can be run from the IDE. This section shows you how to do so.</p>
+        <div class="indent">
+            <h3><a name="createjavaobjects"></a>Build and run the applet source file</h3>
+            
+           
+          <p>Right-click the MyApplet.java file node in the Projects 
+            window and choose Run File from the contextual menu.  The <tt>MyApplet.html</tt> launcher file, 
+            with the applet embedded, is created 
+            in the <tt>build</tt> folder, which you can
+            see if you switch to the Files window (Ctrl-2): </p>
+            
+            <p class="align-center"><img src="../../../images_www/articles/74/web/applet/built-project-files.png" class="margin-around" alt="Files window showing built applet"></p>
+          <p>The applet is launched in the Applet Viewer:</p>
+          <p class="align-center"><img src="../../../images_www/articles/74/web/applet/appletviewer.png" class="align-center" alt="View applet" vspace="5" hspace="5"></p>
+          <p>Applet forms are also displayed in the Applet Viewer:</p>
+          <p class="align-center"><img src="../../../images_www/articles/74/web/applet/movie-magic-quiz.png" class="align-center" alt="design" vspace="5" hspace="5"></p>
+          
+            
+            
+        </div>
+        
+        <h2><a name="embed"></a>Embedding an Applet in a Web Application</h2>
+        <p>Your applet is complete. Now you need to make it available
+        to the user. To do so, you create a web application, put the applet JAR
+        on its classpath, and then add an applet tag to the web application's HTML file.</p>
+        <div class="indent">
+        <h3>Create the web project</h3>
+        
+        <ol>
+            <li>Choose File &gt; New Project.</li> 
+            <li>Select Web Application in the Java Web category. Click Next.</li>
+            <li>Under Project Name, type <tt>HelloWebApplet</tt>.</li> 
+            <li>Change the Project Location to any folder on your computer. Click Next.</li>
+            <li>Select the target server. Click Finish.</li>
+        </ol>
+        
+        
+        
+        
+        <h3>Add the applet JAR file to the web project</h3>
+        
+        <p>When you want to include an applet JAR file in a web project, 
+            you can do so by adding the Java project that contains the JAR file, or by 
+            adding the JAR file itself. Although the choice is yours, note that when you add the 
+            Java project to the web project, you enable the IDE to build 
+            the applet whenever you build the web application. Therefore, when you 
+            modify the applet in the Java project, the IDE builds a new version
+            of the applet whenever the web project is built. On the other hand, if the applet 
+            JAR file is not in a NetBeans IDE project, the applet source file is not rebuilt
+            when you build the web project.</p>
+        <p class="notes"><b>Note:</b> At this point, if you are using the <tt>HelloApplet</tt> project in the IDE, there is no <tt>HelloApplet.jar</tt> file. This is OK. The <tt>HelloApplet.jar</tt> file will be built when you build the <tt>HelloWebApplet</tt> project. </p>
+        <ol>
+            <li>In the Projects window, right-click the HelloWebApplet project node and select
+            Properties from the contextual menu.</li>
+            <li>Select the Packaging category.</li>
+            <li>Choose one of the following:
+                <ul>
+                    <li>If the applet  is in a Java project click Add Project and 
+                        locate the folder that contains the Java project. Click Add JAR/Folder.
+                        <p class="notes"><strong>Note.</strong> IDE projects are marked by the NetBeans IDE project icon.</p></li>
+                    <li>If you are using an applet JAR file that is not in an IDE project click
+            Add File/Folder and locate the folder that contains the JAR file. Click Choose.</li>
+                </ul>
+            </li>
+            <li>Confirm that the JAR that contains the applet source file is listed in the table in the Project Properties window. Click OK.
+                <p>By default, the applet JAR file will be copied to the web application's web page library, 
+                which is the <tt>build/web </tt>folder. The <tt>build/web </tt>folder is the root directory of the application and
+                is displayed as "<tt>/</tt>" in the Path in WAR column of the table. 
+                You can modify the location of the applet in the WAR by 
+                typing a new location for the applet in the Path in WAR column.</li>
+            <li>Click Close to close the Project Properties window.</li></ol> 
+                <p>When you build the <tt>HelloWebApplet</tt> project by choosing Run &gt; Build Project (HelloWebApplet) from the main IDE's menu, the applet's JAR file is generated in the original <tt>HelloApplet</tt> project and is packaged in the <tt>HelloWebApplet</tt> project's WAR file. It is also added to the <tt>build/web</tt> 
+                folder. You can follow this process in the Output window and see the results in the Files window.</p>
+                <p class="align-center"><a href="../../../images_www/articles/74/web/applet/helloapplet-jar-in-files.png" rel="lytebox"
+                       title="Applet jar file in applet and web applications"><img src="../../../images_www/articles/74/web/applet/helloapplet-jar-in-files-small.png"
+                     alt="Applet jar file in applet and web applications" border=1></a></p>
+          
+        <h3>Create and run the JSP file or HTML file</h3>
+        
+        <ol>
+            <li>Choose one of the following:
+                <ul>
+                    <li>If you want to embed the applet in a JSP file, double-click the default <tt>index.jsp</tt> file in the Projects window.
+                    This file is created by the IDE when you create a web project. It opens in the Source Editor.</li>
+                    <li>If you want to embed the applet in an HTML file, right-click the HelloWebApplet project node, and choose New &gt; Other from
+                        the contextual menu. Under Categories, select Web. Under File Types, select HTML. Click Next. Give your
+                    HTML file a name, select the Web folder for its location, and click Finish.</li>
+                </ul>
+            </li>
+            <li>Embed the applet in the file by adding the following applet tag anywhere
+                between the file's <tt>&lt;body&gt;</tt><tt>&lt;/body&gt;</tt> tags:<p>
+                <ul>
+                    <li>In an HTML file: <span class="examplecode"><tt>&lt;applet code=&quot;org.me.hello.MyApplet&quot; archive=&quot;HelloApplet.jar&quot;&gt;&lt;/applet&gt;</tt> </span></li>
+                    <li>In a JSP file: <span class="examplecode"><tt>&lt;applet code=&quot;org.me.hello.MyApplet&quot; archive=&quot;HelloApplet.jar&quot; width=&quot;600&quot; height=&quot;480&quot;/&gt;</tt></span></li>
+                </ul>
+                    
+                <p class="notes"><strong>Notes.</strong></p>
+                <ul>
+                    <li>For this tutorial you can ignore the hint glyph in the left margin if you are adding the
+                    applet code to an HTML file.</li>
+                    <li><tt>org.me.hello.MyApplet</tt> is the full classname to your applet.</li>
+                    <li><tt>HelloApplet.jar</tt> is the JAR file that contains the applet.</li>
+                </ul>
+          </li>
+            <li>Right-click the JSP node or HTML node in the Projects window 
+                and choose Run File from the contextual menu.
+                <p>The server deploys the JSP file or HTML file in the IDE's default browser.</p>
+                
+                
+                
+                <p>You should see something
+                similar to the illustration below (after you allow to run the application by clicking Run in the Security Warning dialog box):</p>
+                <p class="align-center"> <a href="../../../images_www/articles/74/web/applet/appletinbrowser.png" rel="lytebox"
+                       title="View applet"><img src="../../../images_www/articles/74/web/applet/appletinbrowser-small.png"
+                     alt="View applet" border=1></a></p>
+                
+                <p>For applet forms, you should see something similar to the following:</p>
+                
+                <p class="align-center"><img src="../../../images_www/articles/74/web/applet/movie-magic-quiz-html.png" class="align-center" alt="design" vspace="5" hspace="5"></p>
+                
+            
+            </li>
+        </ol>
+        </div>
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Developing%20Applets">Send Feedback on This Tutorial</a></div>
+        <br style="clear:both;">
+       
+  </body>
+</html>

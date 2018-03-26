@@ -1,0 +1,366 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Начало работы с веб-службами JAX-WS - учебный курс по IDE NetBeans</title>
+  <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, WEB SERVICES, SOAP, CLIENT, JAX-WS">
+  <meta name="description"
+        content="This tutorial shows how to use NetBeans IDE 7.0 or later to develop a JAX-WS web service
+        and consume it in a Java class in a Java SE application, or in
+        a servlet or JSP page">
+  <link rel="stylesheet" href="../../../netbeans.css"></head>
+<body>
+  <h1>Начало работы с веб-службами JAX-WS</h1>
+
+
+  <p><a href="http://www.jcp.org/en/jsr/detail?id=224" target="_blank">API -интерфейс Java для веб-служб XML (JAX-WS), JSR 224</a>, является важным компонентом платформы Java EE. Следующий выпуск интерфейса API Java для RPC на основе XML 1.1 (JAX-RPC), JAX-WS упрощает задачу разработки веб-служб с помощью технологии Java. В нем решены некоторые проблемы JAX-RPC 1.1, и обеспечивается поддержка нескольких протоколов, например SOAP 1.1, SOAP 1.2, XML, а также возможность поддержки дополнительных протоколов наряду с HTTP. В JAX-WS для привязки данных используется JAXB 2.0; также поддерживается индивидуальная настройка для управления интерфейсами создаваемых интерфейсов конечных точек служб. Поддержка аннотаций в JAX-WS упрощает разработку веб-служб и уменьшает размер архивов JAR.</p>
+
+  <p>В этом документе рассматриваются основные принципы использования среды IDE для разработки веб-службы JAX-WS. После создания веб-службы будут написаны три разных клиента веб-служб, использующие веб-службу по сети, т.е. &quot;потребляющие&quot; веб-службу. Этими тремя клиентами будут класс Java в приложении для Java SE, сервлет и страница JSP в веб-приложении. Более подробно работа с клиентами освещена в учебном курсе <a href="./client.html">Разработка клиентов веб-служб JAX-WS</a>.</p>
+
+
+
+  <p><b>Содержание</b></p>
+
+  <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+  <ul><li><a href="#Exercise_1">Создание веб-службы</a></li>
+    <li><a href="#Exercise_2">Проектирование веб-службы</a></li>
+    <li><a href="#Exercise_2_1">Развертывание и тестирование веб-службы</a></li>
+    <li><a href="#samples">Примеры</a></li>
+    <li>
+    Использование веб-службы
+    <ul><li><a href="#Exercise_3_1">в классе Java в приложении для Java SE</a></li>
+      <li><a href="#Exercise_3_2">в сервлете в веб-приложении</a></li>
+      <li><a href="#Exercise_3_3">в странице JSP в веб-приложении</a></li>
+    </ul>
+  </ul>
+
+
+
+
+<p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+
+  <table>
+    <tbody>
+      <tr>
+        <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+        <th class="tblheader" scope="col">Требуемая версия</th>
+      </tr>
+      <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+        <td class="tbltd1">Пакетная загрузка Java EE</td>
+      </tr>
+      <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+        <td class="tbltd1">JDK 7 или JDK 8<br></td>
+      </tr>
+      <tr>
+        <td class="tbltd1">Веб-сервер или сервер приложений, совместимый с Java EE</td>
+        <td class="tbltd1">
+          GlassFish Server Open Source Edition<br> Oracle WebLogic Server</td>
+      </tr>
+
+    </tbody>
+  </table>
+ 
+<p class="notes"><strong>Примечание. </strong>Сервер GlassFish можно установить вместе с дистрибутивом Java EE среды IDE NetBeans. Также можно воспользоваться <a href="https://glassfish.java.net/download.html">страницей загрузок GlassFish Server</a> или <a href="http://tomcat.apache.org/download-60.cgi" target="_blank">страницей загрузок Apache Tomcat</a>.</p>
+<p class="alert"><strong>Важно! </strong>Для проектов Java EE требуется GlassFish Server или Oracle WebLogic Server 12c.
+</p>
+<p class="alert">Включенный в комплект веб-сервер Tomcat лишь частично совместим с Java EE Однако веб-сервер Tomcat 7.x можно настроить так, чтобы он поддерживал определенную функциональность Java EE. Дополнительные сведения о добавлении поддержки Java EE в Tomcat см. в разделе <a href="http://openejb.apache.org/" target="_blank">Проект Apache TomEE</a>.</p>
+<!-- ===================================================================================== -->
+  <h2><a name="Exercise_1"></a>
+    <!--Exercise 1: -->
+  Создание веб-службы</h2>
+  <p>Цель этого упражнения состоит в создании проекта в соответствии с используемым контейнером развертывания. После создания проекта будет создана веб-служба.</p>
+  <div class="indent">
+    <h3 class="tutorial">Выбор контейнера</h3>
+    <p>Веб-служба может быть развернута в веб-контейнере или в контейнере EJB. Это зависит от конкретной реализации. При создании приложения Java EE всегда используйте веб-контейнер, так как это позволяет поместить компоненты EJB непосредственно в веб-приложение. Например, если развертывание планируется на веб-сервере Tomcat, предоставляющем только веб-контейнер, следует создавать веб-приложение, а не модуль EJB.</p>
+
+    <ol>
+
+      <li> Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N в Windows и Linux, ⌘-Shift-N в ОС Mac). Выберите &quot;Веб-приложение&quot; из категории &quot;Java Web&quot; или &quot;Модуль EJB&quot; из категории &quot;Java EE&quot;. 
+      <p class="notes">Веб-службу JAX-WS можно создать в проекте Maven. Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N в Linux и Windows, ⌘-Shift-N ы MacOS), а затем веб-приложение Maven или модуль Maven EJB в категории Maven. Если ранее вы не использовали Maven со средой NetBeans, ознакомьтесь с документом <a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Maven Best Practices</a> (Рекомендации по Maven).
+      </li>
+
+      <li>Дайте проекту имя <tt>CalculatorWSApplication</tt>. Выберите местоположение для проекта. Нажмите кнопку &quot;Далее&quot;.
+      <li>Выберите свой сервер и версию Java EE и щелкните &quot;Готово&quot;. 
+        <p class="notes">Для использования сервера Oracle WebLogic <a href="../web/jsf-jpa-weblogic.html#01">зарегистрируйте сервер с помощью среды IDE</a>.  Кроме этого, если вы используете сервер WebLogic, просмотрите экранную демонстрацию <a href="../javaee/weblogic-javaee-m1-screencast.html">Deploying a Web Application to Oracle WebLogic</a> (Развертывание веб-приложения на Oracle WebLogic).</p> </li>
+    </ol>
+    <h3 class="tutorial">Создание веб-службы из класса Java</h3>
+    <ol>
+
+      <li>Щелкните правой кнопкой мыши узел <tt>CalculatorWSApplication</tt> и выберите &quot;Создать &gt; Веб-служба&quot;.</li>
+
+      <li>Присвойте веб-службе имя <tt>CalculatorWS</tt> и введите <tt>org.me.calculator</tt> в поле &quot;Пакет&quot;. Оставьте установленной кнопку-переключатель &quot;Создать веб-службу с нуля&quot;.</li>
+
+      <li>При создании проекта Java EE на сервере GlassFish или WebLogic выберите 'Реализовать веб-службу' в качестве компонента сеанса без сохранения состояния. <br> <img alt="Мастер создания веб-служб для EE с параметрами компонентов" class="margin-around b-all" height="365" src="../../../images_www/articles/72/websvc/jax-ws/generate-ws-ee6.png" width="528"></li>
+      <li>Нажмите кнопку 'Готово'. В окне &quot;Проекты&quot; отображается структура новой веб-службы, а в области редактора отображается исходный код.<br>
+      </li>
+    </ol>
+  </div>
+
+  <!-- ===================================================================================== -->
+  <h2><a name="Exercise_2"></a>
+    <!--Exercise 2: -->
+  Добавление операции к веб-службам</h2>
+
+<p>Целью этого упражнения является добавление к веб-службам операции, выполняющей сложение двух чисел, полученных от клиента. IDE NetBeans обеспечивает диалоговое окно для добавления операции с веб-службой. Это диалоговое окно можно открыть либо в визуальном конструкторе, либо в контекстном меню веб-службы.  </p>
+<p class="alert"><b>Внимание!</b> В проектах Maven визуальный конструктор недоступен.</p>
+<p><strong>Для добавления операции в веб-службу выполните следующие действия.</strong></p>
+    <ol>
+
+      <li>Либо<ul>
+        <li>измените представление &quot;Конструктор&quot; в окне редактора.  <br> <img alt="Представление проектирования редактора веб-служб" class="margin-around b-all" height="454" src="../../../images_www/articles/72/websvc/jax-ws/design-view.png" width="436">  </li></ul>
+        <p>Либо</p>
+        <ul>
+          <li>Найдите узел веб-службы в окне &quot;Проекты&quot;. Щелкните узел правой кнопкой мыши. Откроется контекстное меню. <br> <img alt="Контекстное меню узла веб-службы с выделенным элементов &apos;Добавить операцию&apos;" class="margin-around b-right b-bottom" height="274" src="../../../images_www/articles/72/websvc/jax-ws/add-op-cx-menu-item.png" width="259"></li></ul></li>
+      <li>Щелкните &quot;Добавить операцию&quot; либо в визуальном конструкторе, либо в контекстном меню.  Откроется диалоговое окно &quot;Добавление операции&quot;.</li>
+      <li>В верхней части диалогового окна &quot;Добавить операцию&quot;  введите <tt>add</tt> в 'Имя' и введите  <tt>int</tt>  в раскрывающийся список &quot;Тип возвращаемого значения&quot;.</li>
+      <li>В нижней части диалогового окна &quot;Добавить операцию&quot; нажмите кнопку &quot;Добавить&quot; и создайте параметр типа <tt>int</tt> с именем <tt>i</tt>.</li>
+      <li>Снова щелкните &quot;Добавить&quot; и создайте параметр типа <tt>int</tt> с именем <tt>j</tt>.
+      <p>На экране должны быть представлены следующие параметры:</p>
+      <br><img alt="Диалоговое окно &amp;quot;Добавление операции&amp;quot;." class="margin-around b-all" src="../../../images_www/articles/72/websvc/jax-ws/jaxws-60-add-operation.png"></li>
+      <li>Нажмите кнопку &quot;ОК&quot; в нижней части диалогового окна &quot;Добавить операцию&quot;. Вы вернетесь в редактор.</li>
+      <li>Удалите операцию по умолчанию <tt>hello</tt>. Для этого либо удалите метод <tt>hello()</tt> в исходном коде, либо выберите операцию <tt>hello</tt> в визуальном конструкторе и щелкните &quot;Удалить операцию&quot;.
+
+      <p>Теперь в Visual Designer отображается следующее:</p>
+
+      <br><img alt="В Visual Designer веб-службы отображается добавленная операция" class="margin-around b-all" height="478" src="../../../images_www/articles/72/websvc/jax-ws/design-view-with-op.png" title="В Visual Designer веб-службы отображается добавленная операция" width="449"></li>
+      
+      <li>Нажмите кнопку &quot;Исходный код&quot; и посмотрите на код, созданный в результате предыдущих действий. Он будет различаться в зависимости от того, как создана служба: в качестве компонента Java EE без сохранения состояния или обычным способом. Обратите внимание на разницу в снимках экрана ниже: (Служба Java EE 6 или Java EE 7, не реализованная в качестве компонента без сохранения состояния, похожа на службу Java EE 5.)<br> <img alt="Результаты EE5" class="margin-around b-top b-left" height="441" src="../../../images_www/articles/72/websvc/jax-ws/jaxws-60-source.png" width="412"> <img alt="Результат: компонент bean EE 6 без состояния" class="margin-around b-all" height="469" src="../../../images_www/articles/72/websvc/jax-ws/stateless-ejb-code1.png" width="389">
+      <p class="notes"><strong>Примечание.</strong> При работе в IDE NetBeans 7.3 и 7.4 вы увидите, что в созданной аннотации <tt>@WebService</tt> имя службы указано явно:<br> <tt>@WebService(serviceName = "CalculatorWS")</tt>.</p>
+      </li>
+      <li>В редакторе расширьте схему операции <tt>add</tt> следующим образом (изменения выделены полужирным шрифтом):
+
+        <pre class="examplecode">    @WebMethod
+    public int add(@WebParam(name = "i") int i, @WebParam(name = "j") int j) {
+        <b>int k = i + j;</b>
+        return <b>k</b>;
+      }</pre></li>
+    </ol>
+
+<p>Как видно из указанного кода, веб-служба просто получает два числа и затем возвращает их сумму. В следующем разделе рассматривается тестирование веб-службы в среде IDE.
+
+  
+
+  <!-- ======================================================================================== -->
+
+<h2 class="tutorial"><a name="Exercise_2_1"></a>Развертывание и тестирование веб-службы</h2>
+
+  <p>После развертывания веб-службы на сервере можно использовать среду IDE для открытия клиента тестирования сервера, если у сервера имеется такой клиент. Серверы GlassFish и WebLogic предоставляют тестовые клиенты.  </p>
+  <p>Если используется веб-сервер Tomcat, клиент тестирования отсутствует. Вы можете только запустить проект и проверить, открывается ли страница веб-служб Tomcat. В этом случае, прежде чем запустить проект, необходимо сделать веб-службу точкой входа в приложение. Чтобы сделать веб-службу точкой входа в приложение щелкните правой кнопкой мыши узел проекта CalculatorWSApplication и выберите 'Свойства'. Откройте 'Свойства выполнения' и введите <tt>/CalculatorWS</tt> в поле 'Относительный адрес'. Нажмите кнопку &quot;ОК&quot;. Запустите приложение (повторно щелкните правой кнопкой мыши узел проекта и выберите 'Выполнить'). </p>
+<p><b>Для проверки успешности развертывания на сервере GlassFish или WebLogic выполните следующие действия.</b></p>
+
+  <ol>
+    <li>Щелкните проект правой кнопкой мыши и выберите команду &quot;Развернуть&quot;.  Запускается сервер приложений, выполняется сборка и развертывание приложения на сервере приложений. За ходом выполнения этих операций можно наблюдать в приложении CalculatorWSApplication (запуск-развертывание) и на вкладках серверов GlassFish или Tomcat в окне вывода.</li>
+    <li>На вкладке &quot;Проекты IDE&quot; разверните узел &quot;Веб-службы&quot; проекта &quot;CalculatorWSApplication&quot;. Щелкните правой кнопкой мыши узел &quot;CalculatorWS&quot; и выберите &quot;Тестировать веб-службу&quot;. <br> <img alt="Вкладка &apos;Проекты&apos;, на которй отображается параметр контекстного меню &apos;Тестирование веб-службы&apos;" class="margin-around b-all" src="../../../images_www/articles/72/websvc/jax-ws/jax-ws-testws.png">
+      <p>Страница тестирования открывается в браузере, если веб-приложение развернуто на сервере GlassFish. В случае использования веб-сервера Tomcat и развертывания модулей EJB ситуация отличается:</p>
+
+      <ul>
+        <li>Если развертывание выполнялось на GlassFish, введите на странице тестирования два числа, как показано ниже: <br><img alt="Страница средства тестирования веб-службы при успешном развертывании службы на сервере GlassFish" class="margin-around b-all" height="283" src="../../../images_www/articles/72/websvc/jax-ws/jax-ws-tester.png" width="497">
+          <p>Отображается сумма этих двух чисел:</p>
+        <br><img alt="Веб-страница, на которой отображается результат тестирования веб-службы" class="margin-around b-all" height="345" src="../../../images_www/articles/72/websvc/jax-ws/jax-ws-tester2.png" width="248"></li>
+      </ul>
+    </li>
+  </ol>
+
+  <!-- ======================================================================================== -->
+
+<h2><a name="samples">Примеры</a></h2>
+  <p>Можно открыть полную версию компонента сеанса Java EE без сохранения состояния службы Calculator. Для этого выберите Файл > Создать проект (Ctrl-Shift-N в Linux и Windows, ⌘ + Shift + N в MacOS) и перейдите в раздел Образцы > Веб-службы Java > Calculator (EE6).</p>
+<p>Служба и клиент калькулятора Maven  доступны в пункте &quot;Примеры &gt; Maven&quot;.</p>
+
+  <h2 class="tutorial"><a name="Exercise_3"></a>Использование веб-службы</h2>
+  <p class="tutorial">После успешного развертывания веб-службы необходимо создать клиент для использования метода веб-службы <tt>add</tt>. Ниже будет рассмотрено создание трех клиентов: класса Java в приложении для Java SE, сервлета и страницы JSP в веб-приложении.</p>
+
+  <p class="notes"><b>Примечание.</b> Более расширенный учебный курс сосредоточен на клиентах: <a href="../../../kb/docs/websvc/client.html">Разработка клиентов веб-служб JAX-WS</a>.</p>
+
+  <div class="indent">
+    <h3 class="tutorial"><a name="Exercise_3_1"></a>Клиент 1: класс Java в приложении для Java SE</h3>
+
+    <p>В этом разделе будет рассмотрено создание стандартного приложения Java.  Мастер, используемый для создания приложения, также создает и класс Java.  Затем средства среды IDE будут использоваться для создания клиента и использования веб-службы, созданной в начале этого руководства.</p>
+    <ol>
+
+      <li>Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N в Windows и Linux, ⌘-Shift-N в ОС Mac). Выберите &quot;Приложение Java&quot; в категории &quot;Java&quot;. Присвойте проекту имя <tt>CalculatorWS_Client_Application</tt>. Не снимайте флажок &quot;Создать главный класс&quot; и оставьте все прочие значения по умолчанию. Нажмите кнопку 'Готово'.</li>
+
+      <li>Щелкните правой кнопкой мыши узел <tt>CalculatorWS_Client_Application</tt> и выберите &quot;Создать &gt; Клиент веб-службы&quot;. Появится мастер создания клиента веб-службы. </li>
+
+      <li>Выберите проект в виде исходного файла WSDL.  Нажмите кнопку &quot;Обзор&quot;. В проекте CalculatorWSApplication перейдите к веб-службе CalculatorWS.  Выберите веб-службу и нажмите кнопку &quot;ОК&quot;.<br> <img alt="Диалоговое окно &apos;Обзор веб-служб&apos;, в котором отображается служба CalculatorWS" class="margin-around b-all" src="../../../images_www/articles/80/websvc/jax-ws/browse-ws.png"></li>
+
+      <li>Не выбирайте имя пакета. Оставьте это поле пустым.<br> <img alt="Мастер создания веб-служб, в котором отображается имя пакета" class="margin-around b-all" src="../../../images_www/articles/80/websvc/jax-ws/javaclient-pkg.png"></li>
+      <li>Оставьте значения остальных параметров по умолчанию и нажмите кнопку &quot;Готово&quot;.
+        <p>В окне &quot;Проекты&quot; появится новый клиент веб-службы с узлом для созданного метода<tt>add</tt>:</p>
+      <br><img alt="Новый клиент веб-службы в приложении Java SE, отображаемый в окне &apos;Проекты&apos;" class="margin-around b-right b-top" height="294" src="../../../images_www/articles/72/websvc/jax-ws/ws-ref-in-client-project.png" width="311">            </li>
+      <li>Дважды щелкните главный класс, чтобы открыть его в редакторе исходного кода.  Перетащите узел <tt>add</tt> в местоположение ниже метода <tt>main()</tt>.<br><img alt="Перетаскивание операции добавления в тело основного класса" class="margin-around b-all" height="186" src="../../../images_www/articles/72/websvc/jax-ws/dnd-add.png" width="527">
+       <p> На экране должны быть представлены следующие параметры:</p>
+
+        <pre class="examplecode">public static void main(String[] args) {
+    // TODO code application logic here
+}
+private static int add(int i, int j) {
+    org.me.calculator.CalculatorWS_Service service = new org.me.calculator.CalculatorWS_Service();
+    org.me.calculator.CalculatorWS port = service.getCalculatorWSPort();
+    return port.add(i, j);
+}</pre>
+        <p><b>Примечание.</b> В качестве альтернативы, вместо перетаскивания узла <tt>add</tt> можно щелкнуть правой кнопкой мыши в редакторе, а затем выбрать 'Вставить код' > 'Dspdfnm операцию с веб-службой'.      </li>
+      <li>В теле метода <tt>main()</tt> замените комментарий TODO кодом, который инициализирует значения для <tt>i</tt> и <tt>j</tt>, вызывает <tt>add()</tt> и распечатывает результат.
+	  <pre class="examplecode">public static void main(String[] args) {<br>    int i = 3;<br>    int j = 4;<br>    int result = add(i, j);<br>    System.out.println(&quot;Result = &quot; + result);
+}</pre></li>
+      <li>Окружите код метода <tt>main()</tt> блоком try/catch, который распечатывает исключение.
+	  <pre class="examplecode">public static void main(String[] args) {<br>    try {<br>        int i = 3;<br>        int j = 4;<br>        int result = add(i, j);<br>        System.out.println(&quot;Result = &quot; + result);<br>    } catch (Exception ex) {<br>        System.out.println(&quot;Exception: &quot; + ex);<br>    }
+}</pre> 
+      </li>
+      <li>Щелкните правой кнопкой мыши узел проекта и выберите &quot;Выполнить&quot;. 
+        <p>Теперь в окне &quot;Вывод&quot; отображается сумма:</p>
+        <pre class="examplecode">    compile:
+    run:
+    Result = 7
+      BUILD SUCCESSFUL (total time: 1 second)</pre>
+      </li>
+    </ol>
+
+    <h3><a name="Exercise_3_2"></a>Клиент 2: сервлет в веб-приложении</h3>
+
+
+    <p>В этом разделе будет рассмотрено создание нового веб-приложения и последующее создание сервлета. Затем этим сервлетом будет использоваться веб-служба, созданная в начале данного учебного курса.
+    <ol>
+
+      <li> Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N в Windows и Linux, ⌘-Shift-N в ОС Mac). Выберите &quot;Веб-приложение&quot; в категории &quot;Java Web&quot;. Дайте проекту имя <tt>CalculatorWSServletClient</tt>.  Нажмите кнопку &quot;Далее&quot;, а затем нажмите кнопку &quot;Готово&quot;.</li>
+
+      <li>Щелкните правой кнопкой мыши узел <tt>CalculatorWSServletClient</tt> и выберите &quot;Создать &gt; Клиент веб-службы&quot;.
+
+        <p>Появится мастер создания клиента веб-службы.</p>
+      </li>
+
+      <li>В качестве источника WSDL выберите "Проект" и нажмите кнопку "Обзор", чтобы открыть диалоговое окно "Обзор веб-служб".</li>
+      <li>В проекте CalculatorWSApplication выберите веб-службу CalculatorWS. Нажмите кнопку OK, чтобы закрыть диалоговое окно "Обзор веб-служб".<br> <img alt="Диалоговое окно &apos;Обзор веб-служб&apos;, в котором отображается служба CalculatorWS" class="margin-around b-all" src="../../../images_www/articles/80/websvc/jax-ws/browse-ws.png"></li>
+      <li>Оставьте поле "Имя пакета" в мастере создания клиентов веб-службы пустым и не меняйте значения всех остальных параметров, заданные по умолчанию. Нажмите "Готово".
+
+        <p>Узел "Ссылки на веб-службу" в окне "Проекты" отражает структуру только что созданного клиента, включая операцию <tt>add</tt>, рассмотренную ранее в этом учебном курсе.</p>
+      </li>
+      <li>Щелкните правой кнопкой мыши узел проекта <tt>CalculatorWSServletClient</tt> и выберите &quot;Создать &gt; Сервлет&quot;. Дайте сервлету имя <tt>ClientServlet</tt> и поместите его в пакет с именем <tt>org.me.calculator.client</tt>. Нажмите кнопку 'Готово'.
+      <li>Чтобы сделать сервлет точкой ввода в приложении щелкните правой кнопкой мыши узел проекта CalculatorWSServletClient и выберите 'Свойства'. Откройте &quot;Свойства выполнения&quot; и введите <tt>/ClientServlet</tt> в поле &quot;Относительный адрес&quot;. Нажмите кнопку &quot;ОК&quot;.
+      <li>При наличии значков ошибок для <tt>ClientServlet.java</tt> щелкните правой кнопкой мыши узел проекта и выберите 'Очистка и сборка'.
+      
+      <li>В методе <tt>processRequest()</tt> добавьте несколько пустых строк после следующей строки:
+        <pre class="examplecode">    out.println("&lt;h1&gt;Servlet ClientServlet at " + request.getContextPath () + "&lt;/h1&gt;");</pre>
+      </li>
+      <li>В редакторе исходного кода перетащите операцию <tt>add</tt> в любое место тела класса <tt>ClientServlet</tt>.  Метод <tt>add()</tt> отображается в конце кода класса.
+
+        <p class="notes"><b>Примечание.</b> В качестве альтернативы, вместо перетаскивания узла <tt>add</tt> можно щелкнуть правой кнопкой мыши в редакторе, а затем выбрать 'Вставить код' > 'Dspdfnm операцию с веб-службой'.</p> 
+	  <pre class="examplecode">private int add(int i, int j) {<br>    org.me.calculator.CalculatorWS port = service.getCalculatorWSPort();<br>    return port.add(i, j);
+}</pre>
+      </li>
+      <li>Добавьте код, который инициализирует значения для <tt>i</tt> и <tt>j</tt>, вызывает <tt>add()</tt> и распечатывает результат.  Добавленный код выделяется <b>полужирным начертанием</b>:
+        
+        <pre class="examplecode">protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+         throws ServletException, IOException {
+    response.setContentType("text/html;charset=UTF-8");
+    PrintWriter out = response.getWriter();
+    try {
+        out.println("&lt;html&gt;");
+        out.println("&lt;head&gt;");
+        out.println("&lt;title&gt;Servlet ClientServlet&lt;/title&gt;");
+        out.println("&lt;/head&gt;");
+        out.println("&lt;body&gt;");
+        out.println("&lt;h1&gt;Servlet ClientServlet at " + request.getContextPath () + "&lt;/h1&gt;");
+
+    <strong>    int i = 3;<br>        int j = 4;<br>        int result = add(i, j);<br>        out.println(&quot;Result = &quot; + result);</strong>
+
+        out.println("&lt;/body&gt;");
+        out.println("&lt;/html&gt;");
+        
+    } finally {            <br>        out.close();<br>    }<br>}</pre>
+      </li>
+      <li>Окружите добавленный код блоком try/catch, который распечатывает исключение. 
+	  <pre class="examplecode">protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+         throws ServletException, IOException {
+    response.setContentType("text/html;charset=UTF-8");
+    PrintWriter out = response.getWriter();
+    try {
+        out.println("&lt;html&gt;");
+        out.println("&lt;head&gt;");
+        out.println("&lt;title&gt;Servlet ClientServlet&lt;/title&gt;");
+        out.println("&lt;/head&gt;");
+        out.println("&lt;body&gt;");
+        out.println("&lt;h1&gt;Servlet ClientServlet at " + request.getContextPath () + "&lt;/h1&gt;");
+        <strong>try {</strong>
+            int i = 3;<br>            int j = 4;<br>            int result = add(i, j);<br>            out.println(&quot;Result = &quot; + result);
+        <strong>} catch (Exception ex) {
+            out.println(&quot;Exception: &quot; + ex);
+        }</strong>
+        out.println("&lt;/body&gt;");
+        out.println("&lt;/html&gt;");
+        
+    } finally {            <br>        out.close();<br>    }<br>}</pre>
+      </li>
+      <li>Щелкните правой кнопкой мыши узел проекта и выберите &quot;Выполнить&quot;.  
+        <p>Запускается сервер, выполняются сборка и развертывание приложения, и открывается браузер, в котором отображается результат вычисления, как показано ниже: <br><img alt="Новый клиент веб-службы в сервлете, отображаемый в окне &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/72/websvc/jax-ws/jaxws-60-webclient.png">        </li>
+    </ol>
+
+    <h3><a name="Exercise_3_3"></a>Клиент 3: страница JSP в веб-приложении</h3>
+    <p>В этом разделе описана процедура создания нового веб-приложения и использование веб-службы на странице JSP по умолчанию, созданной с помощью мастера &quot;Веб-приложение&quot;.</p>
+    <p class="notes"><b>Примечание.</b> Если необходимо запустить клиент веб-приложения JSP в Oracle WebLogic см. <a href="../web/jsf-jpa-weblogic.html">Запуск приложения Java Server Faces 2.0 в WebLogic</a>.</p>
+    <ol>
+      <li> Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N в Windows и Linux, ⌘-Shift-N в ОС Mac). Выберите &quot;Веб-приложение&quot; в категории &quot;Java Web&quot;. Дайте проекту имя <tt>CalculatorWSJSPClient</tt>.  Нажмите кнопку &quot;Далее&quot;, а затем нажмите кнопку &quot;Готово&quot;.</li>
+      <li>Раскройте узел "Веб-страницы" под узлом проекта и удалите файл <tt>index.html</tt>.</li>
+    <li>Щелкните правой кнопкой мыши узел <tt>Веб-страницы</tt> и выберите пункт меню "Создать > JSP".
+      <p>Если в меню отсутствует пункт "JSP", выберите "Создать > Другие", затем выберите JSP в категории "Веб" мастера создания файлов.</p></li>
+      <li>В качестве имени файла JSP в мастере создания файлов укажите <strong>index</strong>. Нажмите "Готово".</li>
+      <li>Щелкните правой кнопкой мыши узел <tt>CalculatorWSJSPClient</tt> и выберите &quot;Создать &gt; Клиент веб-службы&quot;.</li>
+
+      <li>Выберите проект в виде исходного файла WSDL.  Нажмите кнопку &quot;Обзор&quot;. В проекте CalculatorWSApplication перейдите к веб-службе CalculatorWS.  Выберите веб-службу и нажмите кнопку &quot;ОК&quot;.<br> <img alt="Диалоговое окно &apos;Обзор веб-служб&apos;, в котором отображается служба CalculatorWS" class="margin-around b-all" src="../../../images_www/articles/80/websvc/jax-ws/browse-ws.png"></li>
+      <li>Не выбирайте имя пакета. Оставьте это поле пустым.</li>
+      <li>Оставьте значения остальных параметров по умолчанию и нажмите кнопку &quot;Готово&quot;.
+
+        <p>В окне &quot;Проекты&quot; появится новый клиент веб-службы, как показано ниже:</p>
+
+      <img alt="Новый клиент веб-службы в сервлете, отображаемый в окне &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/72/websvc/jax-ws/ws-ref-in-jsp-client.png"></li>
+
+      <li>В узле &quot;Ссылки на веб-службы&quot; разверните узел, соответствующий веб-службе. Теперь показана операция <tt>add</tt>, которую требуется вызывать посредством клиента.</li>
+      
+      <li>Перетащите операцию <tt>add</tt> на страницу клиента <tt>index.jsp</tt> ниже тегов H1. Теперь на странице <tt>index.jsp</tt> отображается код для вызова операции службы, показанный ниже:
+
+        <pre class="examplecode">&lt;%
+try {
+    org.me.calculator.CalculatorWSService service = new org.me.calculator.CalculatorWSService();
+    org.me.calculator.CalculatorWS port = service.getCalculatorWSPort();
+     // TODO initialize WS operation arguments here
+    int i = 0;
+    int j = 0;
+    // TODO process result here
+    int result = port.add(i, j);
+    out.println("Result = "+result);
+} catch (Exception ex) {
+    // TODO handle custom exceptions here
+}
+%&gt;</pre>
+
+        <p>Измените значения для <tt>i</tt> и <tt>j</tt> с 0 на другие целые числа, например, на 3 и 4. В блоке &quot;catch&quot; замените закомментированную строчку &quot;TODO&quot; на <tt>out.println(&quot;exception&quot; + ex);</tt>.</p>
+      </li>
+
+
+      <li>Щелкните правой кнопкой мыши узел проекта и выберите &quot;Выполнить&quot;. 
+        <p>Запускается сервер, если он не был запущен ранее. После сборки и развертывания приложения открывается браузер, в котором отображается результат вычисления:</p>
+
+      <img alt="Страница JSP, на которой отображается результат" class="margin-around b-all" src="../../../images_www/articles/80/websvc/jax-ws/jax-ws-project-jsp-result.png"></li>
+    </ol>
+</div>
+  <br>
+  <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20JAX-WS%20Services%20in%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a></div>
+  <br style="clear:both;">
+  <!-- ======================================================================================= -->
+  <h2><a name="seealso"></a>Дополнительные сведения</h2>
+  <p>Подробнее об использовании IDE NetBeans для разработки приложений Java EE см. в следующих ресурсах:
+  </p>
+  <ul>
+    
+    <li><a href="./client.html">Разработка клиентов веб-служб JAX-WS</a></li>
+
+    <li><a href="./rest.html">Начало работы с веб-службами RESTful</a></li>
+    <li><a href="./wsit.html">Расширенные возможности взаимодействия веб-служб</a></li>
+    <li><a href="../../../kb/trails/web.html">Учебная карта по веб-службам</a></li>
+
+  </ul>
+  <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с Java EE IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки nbj2ee@netbeans.org</a>.</p>
+</body>

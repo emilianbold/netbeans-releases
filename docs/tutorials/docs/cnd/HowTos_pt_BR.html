@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Instruções da Aplicação C/C++ para Assistência ao Código</title>
+<link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+<meta name="description"
+content="This article discusses how to solve issues you may encounter with the C/C++ code assistance features 
+of the NetBeans IDE or Oracle Solaris Studio IDE.">
+<meta name="author" content="Vladimir Kvashin and Vladimir Voskresensky"> <!--Optional tag-->
+<meta name="keywords" content="development, NetBeans, IDE, C, C++, Oracle Solaris Studio, code assistance, namespace">
+
+
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Instruções da Aplicação C/C++ para Assistência ao Código</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+<p><em>Colaboração de <a href="mailto:vladimir.kvashin@oracle.com"><i>Vladimir Kvashin</i></a> e <a href="mailto:vladimir.voskresensky@oracle.com"><i>Vladimir Voskresensky</i></a><br> Março de 2013</em> [Número da revisão: V8.0]
+</div>
+<p>A assistência ao código é um conjunto de funcionalidades do IDE que ajuda a navegar e editar o código-fonte. Para um Projeto C/C++ com Códigos-fonte Existentes ou um Projeto C/C++ do Binário Existente, você pode especificar como seu código será submetido a parse para ativar as funcionalidades de assistência ao código do IDE.
+ </p>
+ <p>Observe que as dicas deste artigo aplicam-se principalmente a projetos de código-fonte existente ou de um binário existente. Para projetos que são criados e gerenciados pela assistência ao código IDE, a configuração não é necessária. </p>
+<h3>Conteúdo</h3>
+   <img alt="O conteúdo desta página aplica-se ao NetBeans IDE 8.0/7.4/7.3" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página aplica-se ao NetBeans IDE 8.0/7.4/7.3">
+
+   <table class="b-none vatop" cellpadding="0" cellspacing="0">
+  
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#questionmark" title="O que Fazer quando seu Projeto Tem um Ponto de Interrogação na Janela Projetos ou uma Diretiva #include é Sublinhada em Vermelho">O que Fazer quando seu Projeto Tem um Ponto de Interrogação na Janela Projetos ou uma Diretiva #include é Sublinhada em Vermelho </a></td>
+      </tr>
+     <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#analyzer" title="Configurando o Analisador de Código para a Assistência ao Código"> Configurando o Analisador de Código para a Assistência ao Código</a></td>
+      </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#multiplatform" title="Configurando a Assistência ao Código para um Projeto Multiplataforma">Configurando a Assistência ao Código para um Projeto Multiplataforma</a></td>
+      </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#cannotbuild" title="Configurando a Assistência ao Código Quando Você Não Consegue Construir o Projeto">Configurando a Assistência ao Código Quando Você não Consegue Construir o Projeto</a></td>
+      </tr>
+      <tr>
+       <td class="hyphen">-&nbsp;</td>
+      <td><a href="#definitiondeclaration" title="Quando um Hiperlink vai para uma Definição de Função e Quando vai para uma Declaração">Quando um Hiperlink vai para uma Definição de Função e Quando vai para uma Declaração</a></td>
+      </tr>
+      <tr>
+       <td class="hyphen">-&nbsp;</td>
+      <td><a href="#namespace" title="Encontrando Todas as Definições de um Namespace">Encontrando Todas as Definições de um Namespace</a></td>
+      </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#declaration" title="Vendo o Nome de Declaração de uma Declaração Feita em uma Macro">Vendo o Nome de Declaração de uma Declaração Feita em uma Macro</a></td>
+      </tr>
+      </table>
+      
+
+<h2><a name="questionmark"></a>O que Fazer quando seu Projeto Tem um Ponto de Interrogação na Janela Projetos</h2>
+      <p>
+Se seu projeto tem um ponto de interrogação na janela projetos ou uma diretiva <tt>#include</tt> está sublinhada em vermelho, então seu projeto tem políticas include não resolvidas. O IDE usa o parser interno que é usado por funcionalidades de Assistência ao Código (Autocompletar Código, janela Classes, janela Navegador etc.). As marcações significam que esse parser não conseguiu resolver algumas diretivas <tt>#include</tt>, pois o projeto IDE tem uma configuração incorreta. Isso pode ter ocorrido se o projeto tiver sido criado de fontes existentes sem a ajuda de informações de depuração ou se, por exemplo, os arquivos de origem tiverem incluído novas bibliotecas desde a criação do projeto IDE. 
+</p>
+<p>
+Estes são alguns dos possíveis motivos (organizados do mais para o menos provável):</p>
+<ul>
+<li>Caminhos include do usuário errados ou insuficientes especificados no projeto, na pasta lógica ou nas propriedades do arquivo</li>
+<li>Macros definidas pelo usuário erradas ou insuficientes especificadas no projeto, na pasta lógica ou nas propriedades do arquivo</li>
+<li>O arquivo de código-fonte foi incluído no projeto por engano</li>
+<li>O arquivo de cabeçalho não foi incluído em nenhum arquivo de código-fonte e, portanto, foi incluído no projeto por engano</li> 
+</ul>
+<p>
+Se você retiver o cursor do mouse sobre a pasta do projeto, uma dica de ferramenta exibirá algumas informações sobre o problema. Para obter mais informações, você pode clicar com o botão direito do mouse e selecionar Assistência ao Código -> Diretivas #include/#error com falha. </p>
+
+<p>
+Tente iniciar o assistente Configurar Assistência ao Código clicando com o botão direito do mouse no nó do projeto e selecionando Assistência ao Código > Configurar Assistência ao Código para resolver o problema. Se você conhece o local dos arquivos que correspondem à diretiva include com falha, poderá configurar manualmente o projeto, a pasta lógica e as propriedades do arquivo.
+</p>
+<h2><a name="analyzer"></a>Configurando o Analisador de Código para a Assistência ao Código
+      </h2>
+<p>
+Suponha que o código-fonte da sua aplicação seja gerenciado com um VCS (sistema de controle de versão) como Mercurial e você crie um projeto do IDE com o código-fonte. Se você abrir o projeto do IDe no IDE e obtiver as alterações do VCS, deverá compilar o projeto do IDE para atualizá-lo com as modificações.</p>
+<p>
+Depois que você criar seu projeto no IDE, o projeto será automaticamente atualizado pelo IDE das seguintes formas:
+<ul>
+    <li>Novas unidades de compilação serão adicionadas ao projeto do IDE.</li>
+    <li>As unidades de compilação existentes serão modificadas com inclusões e macros definidas pelo usuário novas ou alteradas.</li>
+    <li>As unidades de compilação que são excluídas da compilação não são excluídas da assistência ao código.</li>
+</ul>
+<p>O IDE usa um analisador de compilação para obter informações da compilação, usando uma técnica de interposição para obter chamadas de exec da biblioteca do sistema nas plataformas Oracle Solaris e Linux. Por padrão, o analizador de compilação é usado quando você cria um projeto com fontes existentes e quando executa manualmente Configurar Assistência ao Código. Se o analizador de compilação não for usado, o log de saída da compilação será usado para capturar informações.</p>
+<p>
+    Se você não quiser que o IDE execute atualizações no projeto, poderá desativar o analizador de compilação desta forma:
+   </p>
+<ol><li>Clique com o botão direito do mouse no nó do projeto na janela Projetos e selecione Propriedades.</li>
+    <li>Na caixa de diálogo Propriedades do Projeto, clique na categoria Assistência ao Código.</li>
+    <li>Cancele a seleção da opção Usar Analisador de Compilação.</li></ol>
+   <p class="tips">Para projetos de código-fonte que configuram o próprio ambiente no momento da compilação, o analisador de compilação nem sempre funciona bem. Se uma compilação falhar quando a opção Usar Analisador de Compilação for selecionada, você deverá verificar o script da compilação para ver se cancelou a definição da variável de ambiente <tt>LD_LIBRARY_PATH</tt>. Se <tt>LD_LIBRARY_PATH</tt> não estiver definida, você também deverá cancelar a definição de <tt>LD_PRELOAD</tt>. Quando a definição dessas duas variáveis é cancelada, o analizador de compilação é automaticamente desativado. Se você não conseguir modificar o script da compilação, poderá desativar o analizador de compilação como descrito acima e o IDE poderá usar o log de saída para obter informações da compilação.</p>
+<h2><a name="multiplatform"></a>Configurando a Assistência ao Código para um Projeto Multiplataforma</h2>
+      <p>
+      Se você estiver desenvolvendo um projeto multiplataforma usando um código existente, poderá usar o mesmo projeto IDE para diferentes plataformas. Crie uma configuração por plataforma e alterar a coleção de compiladores, opções do compilador e outras propriedades do projeto adequadamente.
+</p>
+    
+<p>O assistente Configurar Assistência ao Código também funciona por configuração: ele altera somente a configuração que está atualmente ativa. Portanto, é possível executá-lo separadamente para cada configuração e obter diferentes definições de assistência ao código para diferentes plataformas.
+</p>
+      
+<h2><a name="cannotbuild"></a>Configurando a Assistência ao Código Quando Você não Consegue Construir o Projeto</h2>
+ <p>O assistente Configurar Assistência ao Código será mais eficiente se você criar seu código com informações de depuração (as melhores opções são <tt>-g3 -gdwarf-2</tt> para compiladores GNU e somente <tt>-g</tt> para compiladores Oracle Solaris Studio.
+</p>
+
+    
+<p>Caso não seja possível compilar seu projeto ou se ele não contiver informações de depuração, o assistente Configurar Assistência ao Código tem um modo especial denominado Pesquisar Sistema de Arquivos para Arquivos de Cabeçalho C/C++. Nesse modo, o NetBeans IDE tenta solucionar diretivas include com falha procurando cabeçalhos no sistema de arquivos. O assistente permite inserir um caminho para pesquisar cabeçalhos. Por padrão, o caminho pesquisado é uma raiz de origem do projeto.
+</p>     
+<p>Para usar o assistente, clique com o botão direito do mouse e escolha Assistência ao Código > Configurar Assistência ao Código. Siga as etapas do assistente para permitir que o IDE atualize a assistência ao código. Clique no botão Ajuda para obter informações sobre cada etapa.</p>
+<p></p>
+      
+<h2><a name="definitiondeclaration"></a>Usando Hiperlinks para Navegar entre Chamadas e Declarações</h2>
+     
+<p>A navegação por hiperlinks permite passar de chamadas de uma função, classe, método, variável ou constante para sua declaração. Para usar um hiperlink, siga um destes procedimentos:</p>
+<ul>
+    <li>Passe o mouse sobre uma classe, método, variável ou constante, pressionando a tecla Ctrl. Um hiperlink é exibido juntamente com uma dica de ferramenta com informações sobre o elemento. Clique no hiperlink e o editor passará para a declaração. Pressione Alt+Seta para a esquerda para voltar para a chamada.
+</li>
+<li>Passe o mouse sobre um identificador e pressione Ctrl+B. O editor passa para a declaração.</li>
+    <li> Pressione Alt+Seta para a esquerda para voltar para a chamada. Pressione Alt+Seta para a esquerda e Alt + Seta para a direita para se mover para frente e para trás no histórico de posição do cursor.</li>
+</ul>
+<p>Você também pode clicar com o botão direito do mouse em um item e selecionar Navegar > Ir para Declaração/Definição ou outras opções para navegar pelo código.</p>
+<h2><a name="namespace"></a>Encontrando Todas as Definições de um Namespace</h2>
+      <p>
+      Um namespace pode ser definido em diferentes arquivos do projeto. Para navegar entre diferentes definições de namespace, use a janela Classes (Ctrl-9). Clique com o botão direito do mouse no namespace no qual está interessado e selecione Todas as Declarações. Você verá uma lista de todas as definições classificadas por nomes de arquivo.
+</p>
+    
+
+ <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=subject=Feedback:%20C/C++%20Application%20How-Tos%20-%20NetBeans%20IDE%208.0">Enviar Feedback neste Tutorial</a><br style="clear:both;">
+
+</div>
+
+</body>
+</html>

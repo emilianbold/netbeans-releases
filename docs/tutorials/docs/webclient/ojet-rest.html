@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Interacting with RESTful Web Services in Oracle JET</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that introduces the support for developing HTML5 applications in NetBeans IDE
+              and uses the jQuery JavaScript library.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+        <!--
+        Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>Interacting with RESTful Web Services in Oracle JET</h1>
+
+        <p>
+            This document provides a step-by-step set of instructions guiding
+            you through the process of getting started with RESTful Web Services with the
+            <a href="http://oraclejet.org">Oracle JavaScript Extension Toolkit (JET)</a>. JET empowers web
+            and mobile developers
+            by providing a modular toolkit based on modern JavaScript, CSS3,
+            and HTML5 design and development principles.</p>
+
+        <!-- ++++++++++++++++ Setting Up ++++++++++++++++ -->
+        <a name="settingUp"></a>
+        <h2>Setting Up an Oracle JET Application</h2>
+        <p>In this exercise you set up an Oracle JET application and explore its default content.</p>
+        <ol>
+            <li>
+            <p>Follow the steps described in <a href="ojet-settingup.html">Setting Up an Oracle JET Application</a>.</p>
+            <li><p>Open the project into an editor or IDE of your choice, such as NetBeans IDE, which
+                displays the application as follows:</p>
+                <p><img src="../../../images_www/articles/82/web/oraclejet-gettingstarted/navdrawer.png"/></p>
+            </li>
+        </ol>    
+            <p>Spend some time browsing through the application structure.
+             In the next section, you'll be introduced to the main concepts
+             of the application structure.</p>
+        
+        <!-- ++++++++++++++++ Understanding ++++++++++++++++ -->
+        <a name="understanding"></a>
+        <h2>Scenario 1: Standard jQuery</h2>
+        <p>In this exercise, you use <a href="http://api.jquery.com/jquery.getjson/">the standard $.getJSON construction from jQuery</a>
+             to access data via a publicly available RESTful web service.</p>
+        <ol>
+            <li>
+              <p>In your Oracle JET module's JavaScript file, add the following:</p>
+              <pre>self.data = ko.observableArray();
+$.getJSON("http://movieapp-sitepointdemos.rhcloud.com/api/movies").
+        then(function (movies) {
+            $.each(movies, function () {
+                self.data.push({
+                    title: this.title,
+                    director: this.director,
+                    releaseYear: this.releaseYear,
+                    genre: this.genre
+                });
+            });
+        });
+self.dataSource = new oj.ArrayTableDataSource(
+        self.data, 
+        {idAttribute: 'title'}
+);</pre>
+              <p class="tips">Read about <a href="http://docs.oracle.com/middleware/jet230/jet/reference-jet/oj.ArrayTableDataSource.html">ArrayTableDataSource</a> here.</p>
+            </li>
+            <li>
+                <p>In the <tt>define</tt> block, add a reference to <tt>ojs/ojtable</tt>.</p>
+            </li>
+            <li>
+                <p>In the matching HTML file, add the following:</p>
+<pre>&lt;table data-bind="ojComponent: {component: 'ojTable', 
+        data: dataSource,
+        columns: [
+            {headerText: 'Director', field: 'director'},
+            {headerText: 'Title', field: 'title'},
+            {headerText: 'Genre', field: 'genre'},
+            {headerText: 'Year', field: 'releaseYear'}
+        ]
+    }"&gt;
+&lt;/table&gt;</pre>                
+            </li>
+        </ol>
+        
+        <p>You should now see a table with data in your application:</p>
+        <p><img style="border:1px solid black" src="../../../images_www/articles/82/web/oraclejet-gettingstarted/ojtable.png"/></p>      
+        
+        <!-- ++++++++++++++++ Understanding ++++++++++++++++ -->
+        <a name="understanding"></a>
+        <h2>Scenario 2: Oracle JET Common Model</h2>
+        <p>In this exercise, you learn about the structure of <a href="http://www.oracle.com/webfolder/technetwork/jet/jetCookbook.html?component=home&demo=rootFramework_childCommonModel">Oracle JET Common Model</a>.</p>
+        <ol>
+            <li>
+                <p>The JET Common Model's oj.Model and oj.Collection allow 
+                    applications to perform CRUD operations (create, read, update, delete) 
+                    via REST services. Before going further, read about <a href="http://www.oracle.com/webfolder/technetwork/jet/jetCookbook.html?component=crud&demo=table">the Oracle JET Common Model
+                        here</a>. Also read <a href="http://www.kennethlange.com/posts/oracle_jet.html">Create a Web App with Oracle JET</a>.</p>
+            </li>
+            <li>
+                <p>In the <tt>js</tt> folder, that is, in the folder where <tt>main.js</tt>
+                    is found, create a file named <tt>MovieFactory.js</tt> and add
+                    the following to it:</p>
+<pre>define(['ojs/ojcore'], function (oj) {
+    var MovieFactory = {
+        resourceUrl: 'http://movieapp-sitepointdemos.rhcloud.com/api/movies',
+        // Create a single movie instance:
+        createMovieModel: function () {
+            var Movie = oj.Model.extend({
+                urlRoot: this.resourceUrl, 
+                idAttribute: "_id"
+            });
+            return new Movie();
+        },
+        // Create a movie collection:
+        createMovieCollection: function () {
+            var Movies = oj.Collection.extend({
+                url: this.resourceUrl, 
+                model: this.createMovieModel()
+            });
+            return new Movies();
+        }
+    };
+    return MovieFactory;
+});</pre>
+                <p class="tips">To understand the idea behind the code above, think of 
+                    it is an implementation of <a href="https://www.martinfowler.com/eaaCatalog/activeRecord.html">Martin Fowler's "Active Record" pattern</a>, while
+                    its syntax is that of <a href="http://backbonejs.org/#Model">Backbone.Model</a> 
+                    and <a href="http://backbonejs.org/#Collection">Backbone.Collection</a> in
+                    <a href="http://backbonejs.org/">Backbone.js</a>. 
+            For background reading on the Oracle JET Common Model, see the
+            <a href="http://www.oracle.com/webfolder/technetwork/jet/jetCookbook.html?component=home&demo=rootFramework_childCommonModel">Oracle JET Cookbook section on Common Model</a> and 
+            the <a href="https://docs.oracle.com/middleware/jet112/jet/developer/GUID-808434E0-CA80-405C-9450-59E0BF525700.htm#JETDG334">Using the Oracle JET Common Model and Collection Framework section 
+            in the Oracle JET Developer Guide</a>. Best of all, take a look at the JsDoc 
+            for <a href="http://docs.oracle.com/middleware/jet112/jet/reference-jet/oj.Model.html">oj.Model</a> and oj.Collection.</p>
+            </li>
+            <li>
+                <p>Replace the complete content of the JavaScript file
+                 in your Oracle JET module with the following:</p>
+<pre>define(['ojs/ojcore', 'knockout', 'MovieFactory', 
+    'ojs/ojmodel', 'ojs/ojtable', 'ojs/ojcollectiontabledatasource'],
+function (oj, ko, MovieFactory) {
+    var viewModel = {
+        movieCollection: MovieFactory.createMovieCollection(),
+        dataSource: ko.observable(),
+        // Called each time the view is shown to the user:
+        initialize: function () {
+            this.dataSource(new oj.CollectionTableDataSource(this.movieCollection));
+            this.movieCollection.fetch();
+        }
+    };
+    return viewModel;
+});</pre>
+            </li>
+            <li><p>The HTML side of your Oracle JET module does not need to change. It
+                 is exactly the same as in the previous section.</p></li>
+        </ol>
+        
+                <p>You should now see a table with data in your application.</p>
+
+        
+        <p>Congratulations! You have now learned how to get started with REST in your Oracle JET applications.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20Oracle%20JET%20Applications">Send Feedback on This Tutorial</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+
+        <h2 id="seealso">See Also</h2>
+
+        <p>For more information about support for Oracle JET and a variety of HTML5 applications in the IDE on
+            <a href="https://netbeans.org/">netbeans.org</a>, see the following resources:</p>
+
+        <ul>
+            <li><a href="http://www.oracle.com/webfolder/technetwork/jet/globalExamples.html">"Learn" section
+                    on the Oracle JET site</a>. A set of official Oracle JET learning resources.</li>
+            <li><a href="html5-editing-css.html">Working with CSS Style Sheets in HTML5 Applications</a>.
+                A document that continues with the application that you created in this tutorial that demonstrates
+                how to use some of the CSS wizards and windows in the IDE and how to use the Inspect mode in the
+                Chrome browser to visually locate elements in your project sources.</li>
+            <li><a href="html5-js-support.html">Debugging and Testing JavaScript in HTML5 Applications</a>.
+                A document that demonstrates how the IDE provides tools that can help you debug and test
+                JavaScript files in the IDE.</li>
+        </ul>
+
+    </body>
+</html>

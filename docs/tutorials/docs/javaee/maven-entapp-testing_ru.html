@@ -1,0 +1,480 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Тестирование приложения Maven уровня предприятия</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE to test a database connection in a Maven enterprise application.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+        <meta name="author" content="ken ganfield">
+        
+    </head>
+    <body>
+        <h1>Тестирование приложения Maven уровня предприятия</h1>
+        
+        <p>This tutorial demonstrates how to test a simple enterprise application using IDE NetBeans and Maven archetypes. В ходе данного учебного курса вы создадите приложение уровня предприятия, содержащее класс сущности и сеансный компонент. Вы будете использовать·мастер для создания простого тестового класса для класса компонента, а затем запустите тестирование в среде IDE. Класс теста создаст экземпляр контейнера EJB, встроенного в GlassFish, для тестирования подключения к базе данных.
+        </p>
+        <p class="notes"><strong>Примечание.</strong> Если вы используете GlassFish 3.1.x, ознакомьтесь с разделом <a href="../../73/javaee/maven-entapp-testing.html">Тестирование корпоративного приложения Maven с помощью встроенного сервера GlassFish Server 3.1</a></p>
+                       
+           <p><b>Упражнения по темам руководства</b></p>
+           <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.4 и 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.4 и 8.0">
+
+            <ul>
+                <li><a href="#intro">Использование Maven в среде IDE</a></li>
+                <li><a href="#Exercise_1">Создание приложения уровня предприятия</a>
+                    <ul>
+                        <li><a href="#Exercise_1a">Создание проекта веб-приложения</a></li>
+                        <li><a href="#Exercise_1b">Создание класса сущностей</a></li>
+                        <li><a href="#Exercise_1c">Создание сеансового компонента</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_2">Создание теста сеансного компонента</a></li>
+<!--                <li><a href="#Exercise_3">Checking Code Coverage</a></li>
+                <li><a href="#Exercise_4">Downloading the Solution Project</a></li>-->
+            </ul>
+           
+            <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">7.4, 8.0, комплект Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition 3.1.2.2</td>
+                    <td class="tbltd1">4.0</td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="notes"><strong>Примечание.</strong> Программа установки для GlassFish Server 3.1.1 включена в загружаемый пакет Java EE. You can install and register GlassFish as part of the IDE NetBeans installation process.</p>
+            <p><b>Предпосылки</b></p>
+            <p>Предполагается, что читатель обладает базовыми знаниями по следующим технологиям или опытом программирования с их использованием:</p>
+            <ul>
+                <li>Программирование на Java</li>
+                <li>IDE NetBeans</li>
+            </ul>
+
+            <p>Перед изучением этого учебного курса можно ознакомиться со следующей документацией:</p>
+            <ul>
+                <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Испытанные приемы для Apache Maven в IDE NetBeans</a></li>
+                <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Глава 1. Введение в Apache Maven</a> (из книги <a href="http://books.sonatype.com/mvnref-book/reference/index.html" target="_blank">Maven: The Complete Reference </a>)</li>
+            </ul>
+<!--            <p class="tips">You can download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FMavenEnterpriseApp.zip">a zip archive of the finished project</a>.</p>-->
+
+        <a name="intro"></a>
+        <!-- ===================================================================================== -->
+        <h2>Использование Maven в среде IDE</h2>
+        <p>Support for Maven is fully integrated in IDE NetBeans. Разработка проекта, в котором используется платформа Maven, практически идентична случаю разработки с использованием Ant. Однако в случае Maven имеются некоторые отличия, касающиеся способа сборки проектов и работы с зависимостями. Советы, приведенные ниже, могут помочь избегнуть ряда проблем при первом создании приложения Maven.</p>
+
+
+        <p class="tips"><strong>Проверка параметров Maven</strong></p>
+        <div class="indent">
+        <p>Если это ваш первый проект Maven, проверьте параметры настройки Maven в окне &quot;Параметры&quot;.  Для работы с этим учебным курсом необходимо установить Maven на локальный компьютер.  Maven включен в комплект IDE и устанавливается при установке среды IDE.</p>
+
+        <ol>
+            <li>Откройте окно 'Настройки' в IDE (Сервис > Параметры; NetBeans> Предпочтения на Mac).</li>
+            <li>Выберите в окне &quot;Параметры&quot; категорию &quot;Java&quot; и перейдите на вкладку &quot;Maven&quot;.</li>
+            <li>Подтвердите указание домашней страницы Maven.
+                <p>Можно использовать версию Maven, входящую в комплект среды IDE, либо указать местоположение локальной установки Maven (требуется версия 2.0.9 или более поздняя).</p></li>
+            <li>Для закрытия окна &quot;Параметры&quot; нажмите кнопку &quot;ОК&quot;.</li>
+        </ol>
+
+        <p class="notes"><strong>Примечания.</strong> Поддержка Maven автоматически включается при включении Java в среде IDE. Если нет, необходимо включить подключаемый модуль Java EE.
+        </div>
+
+        <p class="tips"><strong>Обновите репозитории Maven</strong></p>
+        <div class="indent">
+        <p>Локальные и удаленные репозитории Maven используются для автозавершения кода, а также при сборке проектов. Обновление индексов удаленных репозиториев Maven требуется для обеспечения немедленной доступности всех артефактов, которые могут потребоваться при разработке проекта. Частоту проверки наличия обновлений можно настроить на вкладке &quot;Maven&quot; в окне &quot;Параметры&quot; среды IDE. Вы можете выполнить немедленную проверку обновлений и проверку локальных и удаленных репозиториев Maven в окне 'Службы'.</p>
+
+        <ol>
+            <li>Выберите меню &quot;Окно&quot; &gt; &quot;Службы&quot;. Откроется окно &quot;Службы&quot;.</li>
+            <li>Разверните узел 'Репозитории Maven' в окне 'Службы'.</li>
+            <li>Щелкните правой кнопкой мыши узел репозитория и выберите во всплывающем меню 'Обновить индекс'.</li>
+        </ol>
+
+        <p>При нажатии кнопки &quot;Обновить индексы&quot; в среде IDE выполняется проверка и загрузка самого свежего индекса для каждого из настроенных удаленных репозиториев Maven. Индекс представляет текущее состояние артефактов, расположенных в репозитории, и используется для предоставления ссылок на артефакты, доступных для использования в приложении. По умолчанию артефакты не загружаются из репозитория автоматически без явно обозначенной необходимости в них.</p>
+
+        <p class="notes"><strong>Примечания.</strong></p>
+        <ul>
+            <li>Размер индексов довольно велик и обновление всех индексов может занять значительное время.</li>
+            
+        </ul>
+        </div>
+
+
+        <p class="tip">Дополнительные сведения об использовании Maven в IDE NetBeans см. в разделе <a href="https://netbeans.org/kb/docs/java/maven-hib-java-se.html#02">Настройка Maven</a> в учебном курсе <a href="https://netbeans.org/kb/docs/java/maven-hib-java-se.html">Создание приложения Swing Maven с помощью Hibernate</a>, а также в <a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">Испытанные приемы для Apache Maven в IDE NetBeans</a>.</p>
+
+
+        <a name="Exercise_1"></a> 
+            <!--Exercise 1: -->
+        <h2>Создание приложения уровня предприятия</h2>
+        <p>В данном разделе вы создадите простое веб-приложение, содержащее класс сущности и сеансный компонент, имеющий доступ к классу сущности.</p>
+        
+        <div class="indent">
+            <a name="Exercise_1a"></a> 
+            <h3>Создание проекта веб-приложения</h3>
+            <p>Цель этого упражнения заключается в создании веб-приложения Java EE на основе архетипа Maven с помощью мастера создания проектов. После создания проекта с помощью мастера необходимо указать GlassFish Server 3.1.1 в качестве целевого сервера.</p>
+            <ol>
+                <li>Выберите 'Файл' > 'Новый проект' (Ctrl-Shift-N; ⌘-Shift-N в Mac) в главном меню, чтобы открыть мастер создания проектов.</li>
+                <li>Выберите &quot;Веб-приложение&quot; в категории Maven. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Дайте проекту имя <strong>mavenwebtestapp</strong> и задайте местоположение проекта. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Выберите сервер GlassFish в раскрывающемся списке 'Сервер'.</li>
+                <li>Выберите Java EE 6 Web или Java EE 7 Web в списке 'Версия Java EE'. Нажмите кнопку "Готово".</li>
+            </ol>
+            <p>После нажатия кнопки &quot;Готово&quot; среда IDE создает веб-приложение и открывает проект в окне &quot;Проекты&quot;.</p>
+
+<img alt="В окне &apos;Проекты&apos; отображаются созданные проекты" class="margin-around b-all" src="../../../images_www/articles/73/javaee/maven-testing/maven-testing-projects.png" title="В окне &apos;Проекты&apos; отображаются созданные проекты">
+
+<p>Если развернуть узел проекта в окне 'Проекты', можно увидеть, что файл JAR <tt>javaee-web-api</tt> указан в качестве зависимости проекта, а JDK - в качестве зависимости Java. Среда IDE создала файл POM проекта <tt>pom.xml</tt>, и этот файл указан в списке в узле &quot;Файлы проекта&quot;.
+    </p>
+            
+            <a name="Exercise_1b"></a> 
+            <h3>Создание класса сущности</h3>
+            <p>В данном упражнении будет использован мастер создания файла для создания класса сущности. После создания класса сущности выберите в мастере источник данных <tt>jdbc/sampl</tt>. Нет необходимости создавать или регистрировать новый источник данных, поскольку источник данных <tt>jdbc/sample</tt> был зарегистрирован при установке сервера.
+            </p>
+
+            <p class="notes"><strong>Примечание.</strong> Если необходимо создать новый источник данных или использовать другой источник данных, источник данных должен быть зарегистрирован на сервере до тестирования приложения, используя встроенный контейнер. При тестировании приложения с помощью встроенного контейнера среда IDE не зарегистрирует источник данных, в отличие от развертывания на экземпляре сервер GlassFish. 
+            </p>
+
+            <ol>
+                <li>Щелкните узел проекта правой кнопкой мыши и выберите команду &quot;Создать&quot; &gt; &quot;Класс сущности&quot;.
+                    <p>В качестве альтернативы можно использовать 'Файл' > 'Создать файл' (Ctrl-N; ⌘-N в Mac) в главном меню и выбрать 'Класс сущности' в категории 'Сохраняемость'.</p></li>
+                <li>Введите <strong>MyEntity</strong> для имени класса.</li>
+                <li>Выберите <tt>com.mycompany.mavenwebtestapp</tt> в качестве пакета и установите тип первичного ключа <strong><tt>int</tt></strong>.</li>
+                <li>Подтвердите выбор &quot;Создать единицу сохранения состояния&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Выберите <strong>jdbc/sample</strong> из раскрывающегося списка &quot;Источник данных&quot;.</li>
+                <li>Подтвердите выбор &quot;Использовать интерфейсы API транзакций Java&quot; и выберите &quot;Удалить и создать&quot; в качестве стратегии создания таблицы. Нажмите кнопку 'Готово'.<br /> <img alt="В окне &apos;Проекты&apos; отображаются созданные проекты" class="margin-around b-all" src="../../../images_www/articles/74/javaee/maven-testing/maven-testing-pu.png" title="В окне &apos;Проекты&apos; отображаются созданные проекты">
+                    
+                    <p>После нажатия кнопки &quot;Готово&quot; среда IDE создает класс MyEntity и открывает его в редакторе исходного кода. В качестве зависимостей проекта IDE добавляет артефакты <tt>eclipselink</tt>, <tt>javax.persistence</tt> и <tt>org.eclipse.persistence.jpa.modelgen.processor</tt>.</p></li>
+                <li>В редакторе исходного поля добавьте к классу закрытое поле <tt>имя</tt>.
+                <pre class="examplecode">private String name;</pre>
+                </li>
+                <li>Правой кнопкой мыши щелкните редактор и выберите &quot;Методы получения и установки&quot; во всплывающем меню &quot;Вставка кода&quot; (Alt-Insert; Ctrl-I на Mac), чтобы создать метод получения и установки для поля <tt>имя</tt>. </li>
+                <li>Добавьте следующий конструктор. 
+                <pre class="examplecode">
+public MyEntity(int id) {
+    this.id = id;
+    name = "Entity number " + id + " created at " + new Date();
+}</pre>
+                </li>
+                <li>Добавьте следующие аннотации <tt>@NamedQueries</tt> и <tt>@NamedQuery</tt> (выделено жирным), чтобы создать запрос SQL с именем, который выполнит поиск всех записей в таблице MyEntity. 
+                <pre class="examplecode">
+@Entity
+<strong>@NamedQueries({
+    @NamedQuery(name = "MyEntity.findAll", query = "select e from MyEntity e")})</strong>
+public class MyEntity implements Serializable {</pre>
+                    <p></p>
+                </li>
+                <li>Щелкните подсказку в поле слева, рядом с объявлением класса, и выберите подсказку <strong>Создать конструктор по умолчанию</strong>.<br /> <img alt="В окне &apos;Проекты&apos; отображаются созданные проекты" class="margin-around b-all" src="../../../images_www/articles/74/javaee/maven-testing/maven-testing-createconstructor.png" title="В окне &apos;Проекты&apos; отображаются созданные проекты">
+                </li>
+                <li>Исправьте импортированные операторы (Ctrl-Shift-I; ⌘-Shift-I в Mac) для добавления операторов импорта для <tt>javax.persistence.NamedQuery</tt>, <tt>javax.persistence.NamedQueries</tt> и <tt>java.util.Date</tt>. Сохраните изменения. <br />
+                
+                </li>
+            </ol>
+
+            
+            <a name="Exercise_1c"></a> 
+            <h3>Создание компонента сеанса</h3>
+
+            <p>В данном упражнении для создания сеансного фасада для класса сущности <tt>MyEntity</tt> используется мастер. При использовании мастера для создания фасада среда IDE также создает абстрактный фасад, содержащий такие методы. как <tt>create</tt> и <tt>find</tt>, широко используемые при доступе к классам сущностей. Затем к фасаду добавляются два метода. 
+            </p>
+
+            <ol>
+                <li>Щелкните узел проекта правой кнопкой мыши и выберите команду &quot;Создать&quot; &gt; &quot;Другие&quot;.
+                    <p>В качестве альтернативы можно использовать 'Файл' > 'Создать файл' (Ctrl-N; ⌘-N в Mac) в главном меню, чтобы открыть мастер создания файлов.</p></li>
+                <li>Выберите сеансные компоненты для классов сущностей в категории Enterprise JavaBeans. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Выберите класс <tt>MyEntity</tt> из списка доступных классов сущностей и нажмите кнопку &quot;Добавить&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Используйте свойства по умолчанию на панели мастера &quot;Созданные сеансные компоненты&quot;. Нажмите кнопку 'Готово'.
+                <p>При нажатии кнопки &quot;Готово&quot; среда IDE создает <tt>AbstractFacade.java</tt> и <tt>MyEntityFacade.java</tt> в пакете <tt>com.mycompany.mavenwebtestapp</tt> и открывает классы в редакторе исходных кодов.</p>
+                <p>В редакторе исходных кодов можно увидеть, что среда IDE создала код для <tt>EntityManager</tt> и добавила аннотацию <tt>@PersistenceContext</tt> для указания единицы сохранения состояния.</p>
+<pre class="examplecode">
+@Stateless
+public class MyEntityFacade extends AbstractFacade&lt;MyEntity&gt; {
+    @PersistenceContext(unitName = "com.mycompany_mavenwebtestapp_war_1.0-SNAPSHOTPU")
+    private EntityManager em;
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return em;
+    }
+
+    public MyEntityFacade() {
+        super(MyEntity.class);
+    }
+    
+}</pre>
+
+                </li>
+                <li>Добавьте следующие методы к <tt>MyEntityFacade.java</tt>. 
+                <pre class="examplecode">
+    @PermitAll
+    public int verify() {
+        String result = null;
+        Query q = em.createNamedQuery("MyEntity.findAll");
+        Collection entities = q.getResultList();
+        int s = entities.size();
+        for (Object o : entities) {
+            MyEntity se = (MyEntity) o;
+            System.out.println("Found: " + se.getName());
+        }
+
+        return s;
+    }
+
+    @PermitAll
+    public void insert(int num) {
+        for (int i = 1; i <= num; i++) {
+            System.out.println("Inserting # " + i);
+            MyEntity e = new MyEntity(i);
+            em.persist(e);
+        }
+    }</pre>
+                </li>
+                <li>Исправьте операторы импорта, чтобы добавить импорт всего, что нужно. Сохраните изменения. <br /> <img alt="В окне &apos;Проекты&apos; отображаются созданные проекты" class="margin-around b-all" src="../../../images_www/articles/74/javaee/maven-testing/maven-testing-fiximports.png" title="В окне &apos;Проекты&apos; отображаются созданные проекты">
+                    <p class="notes"><strong>Примечание.</strong> Убедитесь, что <strong><tt>javax.persistence.Query</tt></strong> выбран в диалоговом окне 'Исправить все выражения импорта'.</p>
+                </li>
+
+            </ol>
+        </div>
+        
+        <a name="Exercise_2"></a> 
+        <h2>Создание теста сеансного компонента</h2>
+        <p>В данном разделе создается тестовый класс для сеансного фасада <tt>MyEntityFacade</tt>. Среда IDE создаст схему тестовых методов для каждого метода в классе фасада, а также для каждого метода в абстрактном фасаде. Будут аннотированы тестовые методы, созданные для методов в абстрактном фасаде, чтобы указать среде IDE и средству тестирования JUnit игнорировать их. Затем будет изменен тестовый метод для метода<tt>verify</tt>, добавленного в <tt>MyEntityFacade</tt>.
+            </p>
+            
+            
+        <p>В созданных тестах вы увидите, что среда IDE автоматически добавляет код, вызывающий <tt>EJBContainer</tt>, для создания экземпляра контейнера EJB. 
+        </p>
+        
+
+        <ol>
+            <li>Правой кнопкой мыши щелкните <tt>MyEntityFacade.java</tt> в окне 'Проекты' и выберите 'Сервис' > 'Создать тесты'.</li>
+            <li>Выберите платформу тестирования из раскрывающегося списка 'Платформа'</li>
+            <li>В диалоговом окне &quot;Создать тесты&quot; используйте параметры по умолчанию.  Нажмите кнопку &quot;ОК&quot;.
+                <p class="notes"><strong>Примечание.</strong> При первом создании теста JUnit необходимо указать версию платформы JUnit. Выберите JUnit 4.x как версию JUnit и нажмите 'Выбрать'.</p>
+               
+                <p>По умолчанию среда IDE создает скелет тестового класса, содержащий тесты для каждого из методов в <tt>MyEntityFacade</tt> и <tt>AbstractFacade</tt>.  Среда IDE автоматически добавляет к файлу POM зависимость от JUnit 4.10.</li>
+            <li>Аннотируйте каждый из тестовых методов, кроме <tt>testVerify</tt>, с помощью аннотации <tt>@Ignore</tt>.  Выполняя тесты, среда IDE пропустит все тесты с аннотацией <tt>@Ignore</tt>.
+                <p>Также можно удалить все тестовые методы, кроме <tt>testVerify</tt>.</p>
+            </li>
+            <li>Расположите метод теста <tt>testVerify</tt> в тестовом классе.
+                
+                <p>Тест содержит строку, вызывающую <tt>EJBContainer</tt>.</p>
+                <pre class="examplecode">
+    @Test
+    public void testVerify() throws Exception {
+        System.out.println("verify");
+        EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer();
+        MyEntityFacade instance = (MyEntityFacade)container.getContext().lookup("java:global/classes/MyEntityFacade");
+        int expResult = 0;
+        int result = instance.verify();
+        assertEquals(expResult, result);
+        container.close();
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }</pre>
+            </li>
+            <li>Внесите следующие изменения (выделено полужирным) в схему метода теста <tt>testVerify</tt>. 
+                <pre class="examplecode">
+@Test
+public void testVerify() throws Exception {
+    System.out.println("verify");
+    EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer();
+    MyEntityFacade instance = (MyEntityFacade)container.getContext().lookup("java:global/classes/MyEntityFacade");
+    <strong>System.out.println("Inserting entities...");
+    instance.insert(5);</strong>
+    int result = instance.verify();
+    <strong>System.out.println("JPA call returned: " + result);
+    System.out.println("Done calling EJB");
+    Assert.assertTrue("Unexpected number of entities", (result == 5));</strong>
+    container.close();
+}</pre>
+                </li>
+                <li>Исправьте выражения импорта для добавления <tt>junit.framework.Assert</tt>. Сохраните изменения.
+                <p>Теперь необходимо внести изменения в файл POM и добавить зависимость от файла <tt>&lt;glassfish.embedded-static-shell.jar></tt>, расположенного в локальном каталоге установки сервера GlassFish.</p>
+                </li>
+                <li>Откройте файл <tt>pom.xml</tt> в редакторе и найдите элемент <tt>&lt;properties></tt>.
+                <pre class="examplecode">
+    &lt;properties&gt;
+        &lt;endorsed.dir&gt;${project.build.directory}/endorsed&lt;/endorsed.dir&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;/properties&gt;
+                </pre>
+                </li>
+                <li>Отредактируйте элемент <tt>&lt;properties></tt>, добавив в него элемент <tt>&lt;glassfish.embedded-static-shell.jar></tt> (выделен <strong>полужирным шрифтом</strong>), указывающий местоположение файла JAR в локальном каталоге установки GlassFish. Затем необходимо создать ссылку на это свойство в зависимости артефакта.
+                <pre class="examplecode">
+    &lt;properties&gt;
+        &lt;endorsed.dir&gt;${project.build.directory}/endorsed&lt;/endorsed.dir&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+        <strong>&lt;glassfish.embedded-static-shell.jar&gt;<em>&lt;INSTALLATION_PATH&gt;</em>/glassfish-4.0/glassfish/lib/embedded/glassfish-embedded-static-shell.jar&lt;/glassfish.embedded-static-shell.jar&gt;</strong>
+<!--        &lt;glassfish.embedded-static-shell.jar&gt;/Applications/NetBeans/glassfish-3.1.1/glassfish/lib/embedded/glassfish-embedded-static-shell.jar&lt;/glassfish.embedded-static-shell.jar&gt;-->
+    &lt;/properties&gt;
+                </pre>
+                    <p class="notes"><strong>Примечание.</strong> <tt><em>&lt;INSTALLATION_PATH></em></tt> - абсолютный путь к локальному каталогу установки GlassFish. В случае изменения пути к локальной установке потребуется изменить этот элемент в файле POM.</p>
+                </li>
+                <li>Щелкните правой кнопкой мыши узел &quot;Зависимости&quot; в окне проектов и выберите пункт &quot;Добавить зависимость&quot;.</li>
+                <li>В диалоговом окне 'Добавление зависимости' в текстовом поле 'Запрос' введите <strong>embedded-static-shell</strong>.
+                
+                </li>
+                <li>Выделите файл 4.0 JAR в результатах поиска и нажмите 'Добавить'.<br /> <img alt="cнимок экрана окна &apos;Результаты теста&apos;" class="margin-around b-all" src="../../../images_www/articles/74/javaee/maven-testing/add-shell-dependency.png" title="Окно &apos;Результаты теста&apos;">
+                    
+                    <p>При нажатии на кнопку 'Добавить' среда IDE добавляет зависимость к файлу POM.</p>
+                    <p>Теперь нужно внести изменения в файл POM, указав локальный каталог установки GlassFish в качестве источника JAR.</p></li>
+                <li>Найдите соответствующую зависимость в файле POM и внесите изменения (выделены <strong>полужирным шрифтом</strong>). Создайте в элементе ссылку на ранее добавленное свойство <tt>&lt;glassfish.embedded-static-shell.jar></tt> и укажите область (<tt>&lt;scope></tt>). Сохраните изменения.
+                
+                <pre class="examplecode">
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.glassfish.main.extras&lt;/groupId&gt;
+            &lt;artifactId&gt;glassfish-embedded-static-shell&lt;/artifactId&gt;
+            &lt;version&gt;4.0&lt;/version&gt;
+            <strong>&lt;scope&gt;system&lt;/scope&gt;
+            &lt;systemPath&gt;${glassfish.embedded-static-shell.jar}&lt;/systemPath&gt;</strong>
+        &lt;/dependency&gt;
+                </pre>
+                </li>
+                
+                <li>В окне 'Службы' щелкните правой кнопкой мыши узел GlassFish Server и выберите 'Пуск'.
+                    <p>Сервер базы данных JavaDB будет также запускаться при запуске сервера GlassFish.</p></li>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта и выберите 'Тестирование'. </li>
+            </ol>
+
+            <p>После выбора пункта &quot;Тест&quot; среда IDE создаст приложение и запустит этап тестирования жизненного цикла сборки. Модульные тесты будут выполнены при помощи подключаемого модуля surefire, который поддерживает запуск тестов JUnit 4.x. Подробнее о подключаемом модуле surefire см. <a href="http://maven.apache.org/plugins/maven-surefire-plugin/">http://maven.apache.org/plugins/maven-surefire-plugin/</a>.</p>
+                
+            
+
+            <p>Результаты теста отображаются в окне 'Результаты теста'. Можно открыть окно 'Результаты теста', выбрав 'Окно'> 'Выходные данные'> 'Результаты тестов' в главном меню.
+            </p>
+            <img alt="cнимок экрана окна &apos;Результаты теста&apos;" class="margin-around b-all" src="../../../images_www/articles/74/javaee/maven-testing/maven-test-results.png" title="Окно &apos;Результаты теста&apos;">
+            <p>В окне 'Результаты теста' вы можете нажать на значок 'Прошел успешно' (<img alt="Значок &apos;Прошел успешно&apos;" src="../../../images_www/articles/74/javaee/maven-testing/test-ok_16.png" title="Значок &apos;Прошел успешно&apos;">), чтобы отобразить список всех тестов, которые прошли успешно. В данном примере можно увидеть девять результатов. Если посмотреть на окно 'Результаты', можно увидеть, что был запущен только один тест, а восемь было пропущено. Пропущенные тесты включены в список тестов, которые прошли в окне 'Результаты теста'.</p>
+            <pre class="examplecode">
+Running com.mycompany.mavenwebtestapp.MyEntityFacadeTest
+verify
+...
+Inserting entities...
+Inserting # 1
+Inserting # 2
+Inserting # 3
+Inserting # 4
+Inserting # 5
+Found: Entity number 2 created at Wed Oct 09 19:06:59 CEST 2013
+Found: Entity number 4 created at Wed Oct 09 19:06:59 CEST 2013
+Found: Entity number 3 created at Wed Oct 09 19:06:59 CEST 2013
+Found: Entity number 1 created at Wed Oct 09 19:06:59 CEST 2013
+Found: Entity number 5 created at Wed Oct 09 19:06:59 CEST 2013
+JPA call returned: 5
+Done calling EJB
+...
+
+Results :
+
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 8
+</pre>
+
+            <!--
+            <a name="Exercise_3"></a> 
+            <h2>Checking Code Coverage</h2>
+
+            <p>In this section you install the Maven Code Coverage plugin and configure the POM to add reporting. See http://wiki.netbeans.org/MavenCodeCoverage</p>
+            <ol>
+<li>Open the Services window in the IDE.</li>
+<li>Expand the sample datasource connection under the Database node.</li>
+<li>Expand the Tables node under the App node.</li>
+<li>Right-click the SEQUENCE table and choose Delete.</li>
+                <li>Add the following to the POM. Save your changes. 
+                <pre class="examplecode">&lt;/dependencies&gt;
+
+<strong>&lt;reporting&gt;
+  &lt;plugins&gt;
+    &lt;plugin&gt;
+      &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+      &lt;artifactId&gt;cobertura-maven-plugin&lt;/artifactId&gt;
+      &lt;version&gt;2.5.1&lt;/version&gt;
+    &lt;/plugin&gt;
+  &lt;/plugins&gt;
+&lt;/reporting&gt;</strong>
+
+&lt;build&gt;</pre>
+                </li>
+                <li>Right-click project node and choose Code Coverage &gt; Show Report.</li>
+                <li>Open MyEntityFacadeTest in the editor.</li>
+                <li>Modify the test to change the JNDI lookup for the bean from 
+                    <tt>java:global/classes/MySessionBean</tt> to <tt>java:global/cobertura/MySessionBean</tt>.
+                    <pre class="examplecode">    
+    @Test
+    public void testVerify() throws Exception {
+        System.out.println("verify");
+        EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer();
+//        MyEntityFacade instance = (MyEntityFacade)container.getContext().lookup("java:global/classes/MyEntityFacade");
+        <strong>MyEntityFacade instance = (MyEntityFacade)container.getContext().lookup("java:global/cobertura/MyEntityFacade");</strong>
+        System.out.println("Inserting entities...");
+        instance.insert(5);
+        int result = instance.verify();
+        System.out.println("JPA call returned: " + result);
+        System.out.println("Done calling EJB");
+        Assert.assertTrue("Unexpected number of entities", (result==5));
+        container.close();
+    }</pre>
+
+                </li>
+                
+                
+                <li>Click Run All Tests in Code Coverage window. 
+
+                    <p>Result displays coverage is 0% and the following is in the Output window. </p>
+                </li>
+        
+            </ol>
+        
+        -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Enterprise%20Application%20Using%20Maven">Отправить отзыв по этому учебному курсу</a></div>
+            <br style="clear:both;" >
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>Дополнительные сведения</h2>
+            <p>Подробнее об использовании IDE NetBeans для разработки приложений Java EE см. в следующих ресурсах:
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Введение в технологию Java EE </a></li>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+            <li><a href="maven-entapp.html">Создание приложения уровня предприятия с помощью Maven</a></li>
+            <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+            <p>Дополнительные сведения по использованию компонентов уровня предприятия приведены в <a href="http://download.oracle.com/javaee/6/tutorial/doc/">учебном курсе по Java EE 6</a>.</p>
+            <p>To send comments and suggestions, get support, and keep informed on the latest developments on the IDE NetBeans Java EE development features, <a href="../../../community/lists/top.html">join the nbj2ee mailing list</a>.</p>
+    </body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. --><title>Создание приложения на основе базы данных на языке PHP.  Создание демонстрационной базы данных MySQL с использованием интерфейса NetBeans</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans. ">
+<meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Create MySQL database in NetBeans">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+
+
+   <body>
+<h1>Создание приложения на основе базы данных на языке PHP </h1>
+<h1>Урок 1б: создание таблиц базы данных Oracle</h1>
+<div style="margin-left: -3px;">
+<div class="feedback-box margin-around float-left" style="margin-right: 15px;">
+<h4>Содержание учебного курса.</h4>
+<ol start="0">
+<li><a href="wish-list-tutorial-main-page.html">Создание приложения типа CRUD на языке PHP &ndash; главная страница</a></li>
+<li>
+<p>Создание базы данных</p>
+<ol type="a">
+<li><a href="wish-list-lesson1.html">Создание базы данных MySQL</a></li>
+<li>
+<p><b>=&gt; Создание таблиц базы данных Oracle</b></p>
+<ul>
+<li><a href="#CreateUser">Создание пользователя базы данных </a></li>
+<li><a href="#DatabaseStructure">Разработка структуры демонстрационной базы данных </a></li>
+<li><a href="#CreateTables">Создание таблиц </a></li>
+<li><a href="#add-sequence-trigger">Добавление последовательностей и триггеров для увеличения значений идентификатора</a></li>
+<li><a href="#EnterTestData">Ввод тестовых данных</a></li>
+</ul>
+</li>
+</ol>
+</li>
+<li><a href="wish-list-lesson2.html">Проектирование приложения. Чтение из базы данных</a></li>
+<li><a href="wish-list-lesson3.html">Создание нового пользователя приложения</a></li>
+<li><a href="wish-list-lesson4.html">Усовершенствование кода</a></li>
+<li><a href="wish-list-lesson5.html">Добавление функций безопасности. Реализация входа пользователя в приложение</a></li>
+<li><a href="wish-list-lesson6.html">Добавление к базе данных новых желаний</a></li>
+<li><a href="wish-list-lesson7.html">Обновление и удаление записей в базе данных</a></li>
+<li><a href="wish-list-lesson8.html">Усовершенствование внешнего вида приложения с использованием технологии CSS</a></li>
+<li><a href="wish-list-lesson9.html">Развертывание приложения на удаленном веб-сервере</a></li>
+</ol>
+</div>
+</div>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+<p>В данном уроке описывается последний подготовительный этап разработки приложения &quot;Wish List&quot; (&quot;Список желаний&quot;) в рамках создания демонстрационной базы данных с тестовыми данными.  Для выполнения всех этапов, предложенных в данном руководстве, необходима база данных, которая позволит сохранять данные (желания), введенные пользователями.  IDE NetBeans позволяет выполнять все эти действия с помощью интерфейса IDE. <br> Перед началом работы ознакомьтесь с требованиями, описанными в разделе <a href="wish-list-tutorial-main-page.html">Создание приложения типа CRUD на языке PHP &ndash; главная страница</a>. </p>
+<p>Текущий документ является частью краткого учебного курса "Создание приложения CRUD в IDE NetBeans для PHP". </p>
+<br style="clear: left;">
+<h2><a id="CreateUser" name="CreateUser"></a>Создание пользователя базы данных</h2>
+<p> В рамках этой процедуры вы сначала создаете пользователя, а затем &ndash; таблицы в качестве этого пользователя.</p>
+<p>Пользователя можно создать либо с помощью средств Oracle или путем соединения IDE NetBeans с базой данных и использования SQL IDE. Среда NetBeans 7.0, в настоящее время доступная в виде разработки или бета-версии, предоставляет усовершенствованные возможности подключения к базам данных Oracle.  Для получения дополнительных сведений о соединении IDE NetBeans с базой данных Oracle и создании пользователя в этой базе данных см. краткий учебный курс <a href="../ide/oracle-db.html">Соединение с базой данных Oracle</a>.</p>
+<p>Используя выбранное средство, создайте следующего пользователя:</p>
+<table border="1" width="238">
+<tbody>
+<tr>
+<th class="tblheader" scope="col" width="98">Имя пользователя</th>
+<td class="tbltd1" scope="col" width="124">phpuser</td>
+</tr>
+<tr>
+<th class="tblheader" scope="col">Пароль</th>
+<td class="tbltd1" scope="col">phpuserpw</td>
+</tr>
+<tr>
+<th class="tblheader" rowspan="4">Системные привилегии</th>
+<td class="tbltd1" scope="col">CREATE TABLE</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE VIEW</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE SEQUENCE</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE TRIGGER</td>
+</tr>
+<tr>
+<th class="tblheader" rowspan="2">Роли (база данных Oracle 10.x)</th>
+<td class="tbltd1" scope="col">CONNECT</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">RESOURCE</td>
+</tr>
+</tbody>
+</table>
+<p>Ниже приведен пример набора команд SQL для создания этого пользователя. Для выполнения этих команд предполагается, что в базе данных имеются табличные пространства USERS и TEMP.</p>
+<pre class="examplecode">drop user phpuser cascade;<br><br>create user phpuser identified by phpuserpw;<br><br>grant connect, resource to phpuser;<br><br>alter user phpuser default tablespace users temporary tablespace temp account unlock; </pre>
+<h2><a id="DatabaseStructure" name="DatabaseStructure"></a>Разработка структуры демонстрационной базы данных </h2>
+<p>Для размещения и сохранения всех необходимых данных требуются две таблицы: </p>
+<ul>
+<li>таблица &quot;wishers&quot; для сохранения имен и паролей зарегистрированных пользователей;</li>
+<li>таблица &quot;wishes&quot;, которая будет содержать описания требований.</li>
+</ul>
+<img alt="Структура образца базы данных: две таблицы связаны с помощью идентификатора пользователя" class="margin-around" height="119" src="../../../images_www/articles/72/php/wish-list-lesson1/wishlist-db.png" width="334">
+<p>Таблица &quot;wishers&quot; содержит три поля:</p>
+<ol>
+<li>&quot;id&quot; &ndash; уникальный идентификатор пользователя.  Это поле используется в качестве первичного ключа.</li>
+<li>&quot;name&quot; &ndash; имя </li>
+<li>&quot;password&quot; &ndash; пароль</li>
+</ol>
+<p>Таблица &quot;wishes&quot; содержит четыре поля:</p>
+<ol>
+<li>&quot;id&quot; &ndash; уникальный идентификатор пользователя.  Это поле используется в качестве первичного ключа.</li>
+<li>&quot;wisher_id&quot; &ndash; идентификатор пользователя, оставившего пожелание.  Это поле используется в качестве внешнего ключа. </li>
+<li>&quot;description&quot;&ndash; описание</li>
+<li>&quot;due_date&quot; &ndash; требуемая дата исполнения пожелания. </li>
+</ol>
+<p>Таблицы связаны посредством идентификатора пользователя.  Все поля таблицы &quot;wishes&quot; являются обязательными для заполнения, за исключением &quot;due_date&quot;. </p>
+<h2><a id="CreateTables" name="CreateTables"></a>Создание схемы базы данных Oracle</h2>
+<ol>
+<li>Зарегистрируйтесь в базе данных в качестве только что созданного пользователя.
+<p>При соединении с помощью IDE NetBeans создайте соединение с использованием новых имени пользователя и пароля. Убедитесь в том, что выбрана схема с именем пользователя. (См. раздел <a href="../ide/oracle-db.html#connect">Установка подключения к базе данных Oracle</a> учебного курса &quot;Подключение к базе данных Oracle&quot;). </p>
+</li>
+<li>Чтобы создать таблицу wishers, выполните следующий запрос SQL:
+<pre class="examplecode">create table wishers (<br> id number not null,<br> name varchar2(50) unique not null,<br> password varchar2(50) not null,<br> constraint wishers_pk primary key(id)<br>);</pre>
+</li>
+<li>Чтобы создать таблицу wishes, выполните следующий запрос SQL.  Обратите внимание на то, что для связывания пожеланий и пользователей, оставивших пожелания, создается внешний ключ. 
+<pre class="examplecode">create table wishes (<br> id number not null,<br> wisher_id number not null,<br> description varchar2(255) not null,<br> due_date date,<br> constraint wishes_pk primary key(id),<br> constraint wishes_fk1 foreign key(wisher_id) references wishers(id)<br>);</pre>
+</li>
+<li>Убедитесь в том, что к базе данных добавлены новые таблицы. При соединении с базой данных с помощью IDE NetBeans перейдите в окне 'Службы' к узлу соединения jdbc:oracle:thin:@localhost:1521:XE [phpuser on PHPUSER]. Новые таблицы приведены в узле &quot;Tables&quot; (Таблицы).  (Если они не отображаются, щелкните подключение правой кнопкой мыши и выберите команду &quot;Refresh&quot; (Обновить)). <br> <img alt="Таблицы баз данных, как показано в окне &apos;Службы&apos; IDE NetBeans" class="margin-around" height="384" src="../../../images_www/articles/72/php/oracle-wishlist/tables-in-services-window.png" width="365"></li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">Примечание.</span> Набор команд SQL для создания таблиц базы данных Oracle можно загрузить <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">здесь</a>.</p>
+<h2><a name="add-sequence-trigger"></a>Добавление последовательностей и триггеров для увеличения значений идентификаторов</h2>
+<p>В базе данных Oracle необходимо указать последовательность для увеличения значения. Для увеличения значения при добавлении нового элемента в таблицу следует добавить триггер.</p>
+<ol>
+<li>Чтобы добавить последовательность для таблицы wishers, выполните следующую команду SQL: 
+<pre class="examplecode">create sequence wishers_id_seq start with 1 increment by 1;</pre>
+</li>
+<li>Чтобы инициировать последовательность в столбце идентификаторов таблицы wishers при добавлении нового пользователя, оставившего запись, выполните следующую команду SQL:
+<pre class="examplecode">create or replace trigger wishers_insert<br>before insert on wishers<br>for each row<br>begin<br> select wishers_id_seq.nextval into :new.id from dual;<br>end;<br>/</pre>
+</li>
+<li>Добавьте последовательность для таблицы wishes.
+<pre class="examplecode">create sequence wishes_id_seq start with 1 increment by 1;</pre>
+</li>
+<li>Добавьте триггер, запускающий последовательность в столбце идентификаторов таблицы wishes при добавлении нового пожелания.
+<pre class="examplecode">create or replace trigger wishes_insert<br>before insert on wishes<br>for each row<br>begin<br> select wishes_id_seq.nextval into :new.id from dual;<br>end;<br>/</pre>
+</li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">Примечание.</span> Набор команд SQL для создания таблиц базы данных Oracle, включая последовательности и триггеры, можно загрузить <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">здесь</a>.</p>
+<h2><a id="EnterTestData" name="EnterTestData"></a>Ввод тестовых данных </h2>
+<p>Для тестирования приложения необходимо наличие некоторых данных в базе данных.  В приведенном ниже примере показано, каким образом можно добавить данные для двух пользователей и четырех желаний.</p>
+<ol>
+<li>Добавьте пользователя с именем Tom и паролем &quot;tomcat&quot;.
+<pre class="examplecode">insert into wishers (name, password) values ('Tom','tomcat');<br></pre>
+</li>
+<li>Добавьте пользователя с именем Jerry и паролем &quot;jerrymouse&quot;. 
+<pre class="examplecode">insert into wishers (name, password) values ('Jerry', 'jerrymouse');<br>commit;</pre>
+</li>
+<li>Добавьте пожелания. 
+<pre class="examplecode">insert into wishes (wisher_id, description, due_date) <br> values (1, 'Sausage', to_date('2008-04-01', 'YYYY-MM-DD'));<br><br>insert into wishes (wisher_id, description) <br> values (1, 'Icecream');<br><br><br>insert into wishes (wisher_id, description, due_date) values (2, 'Cheese', to_date('2008-05-01', 'YYYY-MM-DD'));<br><br>insert into wishes (wisher_id, description)<br> values (2, 'Candle');<br>commit;</pre>
+</li>
+<li>Убедитесь в том, что данные добавлены. При использовании IDE NetBeans для просмотра данных проверки, щелкните правой кнопкой мыши соответствующую таблицу и выберите в контекстном меню 'Просмотреть данные'. <br> <img alt="Просмотр введенных данных с помощью интерфейса IDE NetBeans" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/view-test-data.png"> </li>
+</ol>
+<p>Ознакомиться с общими принципами организации баз данных и их моделями можно с помощью следующего обучающего руководства: <a href="http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1</a>.</p>
+<p>Дополнительные сведения о синтаксисе операторов Oracle <tt>CREATE TABLE</tt> приведены в разделе <a href="http://download.oracle.com/docs/cd/B19306_01/server.102/b14200/statements_7002.htm" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://download.oracle.com/docs/cd/B19306_01/server.102/b14200/statements_7002.htm</a>.
+</p>
+<p class="notes"><span style="font-weight: bold;">Примечание.</span> Набор команд SQL для создания таблиц базы данных Oracle можно загрузить <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">здесь</a>.</p>
+<h2><a name="nextSteps"></a>Что дальше?</h2>
+<p><a href="wish-list-lesson2.html">Следующий урок &gt;&gt;</a></p>
+<p><a href="wish-list-tutorial-main-page.html">Назад на главную страницу руководства</a></p>
+<br>
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%201:%20Create%20Oracle%20Database%20Tables">Мы ждем ваших отзывов</a></div>
+<br style="clear: both;">
+<p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+<a href="../../trails/php.html">Возврат к учебной карте PHP</a><br>
+</body></html>

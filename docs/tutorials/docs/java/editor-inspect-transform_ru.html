@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Реорганизация при проверке и пребразовании - учебное руководство по IDE NetBeans</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Refactoring with Inspect and Transform functionality in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Java editor, refactoring, inspections, configurations"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body><a name="top"></a>
+
+<h1>Реорганизация при проверке и пребразовании в редакторе Java IDE NetBeans</h1>
+<p>Редактор Java среды IDE NetBeans оснащен новой функцией проверки и преобразования, которая представляет собой средство реорганизации для одновременного выполнения нескольких проверок и преобразований с выбранной группой файлов. Эта функция также позволяет пользователям определять пользовательскую проверку. </p>
+<p>В этом учебном курсе вы научитесь выполнять просмотр кода с помощью проверок с реорганизацией и предопределенного набора проверок, управлять настройками и создавать пользовательские проверки.</p>
+
+<h3>Содержание</h3>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="Содержимое на этой странице применимо к IDE NetBeans 8.0" />
+
+        <ul class="toc">
+            <li><a href="#setup">Установка среды учебного курса</a></li>
+			<li><a href="#run">Выполнение проверок</a></li>			
+            <li><a href="#configuration">Использование настроек</a>
+			<ul>
+			<li><a href="#migrate5">Перенос в JDK 5</a></li>
+			<li><a href="#convert">Перенос в JDK 7</a></li>
+			<li><a href="#migrate8">Перенос в JDK 8</a></li>
+			<li><a href="#organize">Упорядочение операторов импорта</a></li></ul></li>
+			<li><a href="#create">Управление пользовательскими проверками</a></li>
+			<li><a href="#summary">Заключение</a></li>
+            <li><a href="#seealso">Дополнительные сведения</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Требования</h2>
+        <p><strong>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработки приложений на языке Java</a> (JDK)</td>
+                    <td class="tbltd1">Версия 7 или 8 </td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        
+<a name="setup"></a>
+<h2>Установка среды учебного курса</h2>
+<p>Помимо обязательного ПО, перечисленного выше, пользователю требуется файл <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/inspecttransform.zip" target="_blank">InspectTransform.zip</a>, разархивированный в папку проекта NetBeans и открытый в IDE NetBeans следующим образом:</p>	
+<p class="align-center"><img alt="Проект открыт в среде IDE" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/proj.png"></p>	
+		<a name="run"></a>
+		<h2>Выполнение проверок</h2>
+		<p>Параметр &quot;Одиночная проверка&quot; в диалоговом окне &quot;Проверка и преобразование&quot; (Реорганизация кода &gt; Проверка и преобразование) предоставляет широкий набор различных проверок, связанных с конкретными преобразованиями при реорганизации кода. Полный список таких операций отобразится в диалоговом окне &quot;Управление проверками&quot; после нажатия кнопки &quot;Обзор&quot; справа от параметра &quot;Одиночная проверка&quot;. </p>
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections.png" rel="lytebox" title="Диалоговое окно &apos;Управление проверками&apos;"> <img alt="Диалоговое окно &apos;Управление проверками&apos;" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections-small.png"></a></p>	
+	<p>Можно также проверить наличие необходимой проверки, введя ключевое слово в поле поиска. Например, при поиске по ключевому слову <tt>operator</tt> выводится несколько проверок.</p>	
+	<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/search.png" rel="lytebox" title="Поиск по ключевому слову"> <img alt="Поиск по ключевому слову" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/search-small.png"></a></p>	
+     <p>Каждая проверка предоставляется с доступным описанием в поле 'Описание' в диалоговом окне 'Управление проверкой'. </p>
+	 
+	 <p><b>Чтобы запустить проверку и применить существующую проверку, выполните следующие действия.</b></p>
+	 <ol>
+	 <li>В окне 'Проекты' выберите файл <tt>InspectTransform.java</tt>.</li>
+	 <li>Выберите Реорганизация кода &gt; Проверка и преобразование в меню IDE.</li>
+	 <li>В диалоговом окне &quot;Проверка и преобразование&quot; выберите параметр &quot;Отдельная проверка&quot;, затем выберите элемент 'Обзор'.</li>
+	 <li>В диалоговом окне &quot;Управление проверками&quot; выберите проверку <tt>'Присваивание, допускающее замену операцией присваивания</tt> на узле 'Ошибки назначения'.</li>
+	 <li>Нажмите кнопку OK, чтобы закрыть диалоговое окно 'Управление проверками'.</li>
+     <li>Нажмите кнопку 'Проверка' в диалоговом окне 'Проверка и преобразование'.<br />На панели предварительного просмотра отобразятся предлагаемые изменения реорганизации кода.
+	 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection.png" rel="lytebox" title="Выполнение отдельной проверки"> <img alt="Выполнение отдельной проверки" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection-small.png"></a></p>	</li>
+     <li>Нажмите кнопку &quot;Реорганизовать код&quot;, чтобы применить изменения, если это необходимо.</li>
+</ol>
+
+		<p class="align-center"><a href="#top">В начало</a></p>
+		
+		
+
+		
+		 
+		
+		
+		
+        <a name="configuration"></a>
+		<h2>Использование настроек</h2>
+		<p>Набор сгруппированных реорганизаций кода представляет собой настройку, которую можно выполнить для соответствующих объектов, например, для класса или нескольких классов, пакетов или проектов. Среда IDE предоставляет следующие две предопределенные настройки: </p>
+		
+        <ul>
+		<li><a href="#migrate5">Перенос в JDK 5</a></li>
+		<li><a href="#convert">Перенос в JDK 7</a></li>
+		<li><a href="#migrate8">Перенос в JDK 8</a></li>
+		<li><a href="#organize">Упорядочение операторов импорта</a></li>
+		</ul>
+		<a name="migrate5"></a>
+		<h3>Перенос в JDK 5</h3>
+		<p>Настройка <tt>Перенос в JDK 5</tt>, доступная в среде IDE по умолчанию, включает в себя такие операции по реорганизации кода, как статический импорт, использование цикла со счетчиком JDK 5, необязательная упаковка и распаковка, а также применение оператора switch для перехода по переменным String. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf.png" rel="lytebox" title="Настройка по умолчанию &apos;Перенос в JDK 5&apos;"> <img alt="Настройка по умолчанию &apos;Перенос в JDK 5&apos;" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf-small.png"></a></p>
+					 <p class="notes"><b>Примечание.</b> Список реорганизаций кода в настройке можно изменить в списке &quot;Проверки&quot; диалогового окна &quot;Управление проверками&quot;, выбирая и отменяя выбор элементов в узле<tt>Поддержка переноса JDK</tt>.</p>
+                     <a name="convert"></a>
+		<h3>Перенос в JDK 7</h3>
+		<p>Настройка <tt>Перенос в JDK 7</tt>, доступная в среде IDE по умолчанию, включает в себя такие операции по реорганизации кода, как использование оператора diamond, преобразование в оператор try-with-resources, использование оператора multicatch, применение оператора switch для перехода по переменным String и т. д. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf.png" rel="lytebox" title="Конфигурация по умолчанию преобразования в JDK 7"> <img alt="Конфигурация по умолчанию преобразования в JDK 7" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf-small.png"></a></p>
+					 <p class="notes"><b>Примечание.</b> Список реорганизаций кода в настройке можно изменить в списке &quot;Проверки&quot; диалогового окна &quot;Управление проверками&quot;, выбирая и отменяя выбор элементов в узле<tt>Поддержка переноса JDK</tt>.</p>
+					 <p><b>Чтобы выполнить и применить настройку по умолчанию <tt>Перенос в JDK 7</tt>, выполните следующие действия.</b></p>
+					 <ol>
+					 <li>В окне 'Проекты' выберите файл <tt>PredefinedSet.java</tt>.</li>
+					 <li>Выберите Реорганизация кода &gt; Проверка и преобразование в меню IDE.</li>
+	                 <li>В диалоговом окне &quot;Проверка и преобразование&quot; выберите пункт &quot;Настройка&quot;, затем выберите набор проверок <tt>Перенос в JDK 7</tt> в раскрывающемся списке.</li>
+                     <li>Нажмите кнопку &quot;Проверить&quot;.<br />Изменения, приводящие к преобразованию кода в синтаксис JDK 7, отобразятся на панели предварительного просмотра.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref.png" rel="lytebox" title="Предложена реорганизация с переносом в JDK 7"> <img alt="Предложена реорганизация с переносом в JDK 7" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref-small.png"></a></p></li>
+					 <li>Нажмите кнопку &quot;Реорганизовать код&quot;, чтобы применить изменения, если это необходимо.</li></ol>	
+		<a name="migrate8"></a>
+		<h3>Перенос в JDK 8</h3>
+		<p>Настройка <tt>Перенос в JDK 8</tt>, доступная в среде IDE по умолчанию, включает в себя такие операции по реорганизации кода, как преобразование лямбда или объектной ссылки, статический импорт, использование оператора multicatch, применение оператора switch для перехода по переменным String и т. д. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf.png" rel="lytebox" title="Настройка по умолчанию &apos;Перенос в JDK 8&apos;"> <img alt="Настройка по умолчанию &apos;Перенос в JDK 8&apos;" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf-small.png"></a></p>
+					 <p class="notes"><b>Примечание.</b> Список реорганизаций кода в настройке можно изменить в списке &quot;Проверки&quot; диалогового окна &quot;Управление проверками&quot;, выбирая и отменяя выбор элементов в узле<tt>Поддержка переноса JDK</tt>.</p>
+                     <a name="organize"></a>
+		<h3>Упорядочение операторов импорта</h3>
+        <p>Настройка <tt>Упорядочение операторов импорта</tt> позволяет проверить способ упорядочения операторов импорта в коде и реорганизовать код при необходимости. По умолчанию она включает в себя одиночную проверку на соответствие операторов импорта заданным правилам стиля кода.</p>
+		<p class="notes"><b>Примечание.</b> Настройка правил стиля кода для операторов импорта</p>
+		<ol>
+		<li>  Выберите &quot;Сервис&quot; &gt; &quot;Параметры&quot; &gt; &quot;Редактор&quot; &gt; &quot;Форматирование&quot; на главной панели инструментов среды IDE.</li>
+		<li>  В раскрывающемся списке &quot;Язык&quot; выберите &quot;Java&quot;.</li> 
+		<li>В раскрывающемся списке &quot;Категория&quot; выберите &quot;Операторы импорта&quot;.</li>
+		 <li>Укажите необходимые параметры.
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/org-imports.png" rel="lytebox" title="Конфигурация по умолчанию структуризации операций импорта"> <img alt="Конфигурация по умолчанию структуризации операций импорта" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/org-imports-small.png"></a></p></li>
+		 <li>Нажмите кнопку &quot;ОК&quot;, чтобы сохранить изменения.</li>
+</ol> 
+		
+		<p><b>Чтобы запустить и применить настройку по умолчанию<tt>Упорядочение операторов импорта</tt>, выполните следующие действия.</b></p>
+		<ol>
+					 <li>В окне 'Проекты' выберите файл <tt>Imports.java</tt>.</li>
+					 <li>Выберите Реорганизация кода &gt; Проверка и преобразование в меню IDE.</li>
+	                 <li>В диалоговом окне &quot;Проверка и преобразование&quot; выберите параметр &quot;Настройка&quot;, затем выберите элемент <tt>Упорядочение операторов импорта</tt>.</li>
+                     <li>Нажмите кнопку &quot;Проверить&quot;.<br /> На панели предварительного просмотра отобразятся одно вхождение для раздела &quot;Импорт&quot; файла <tt>Imports.java</tt>, предлагаемые для его согласования с указанными правилами стиля кода.
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref.png" rel="lytebox" title="Предложена реорганизация со структуризацией операций импорта"> <img alt="Предложена реорганизация со структуризацией операций импорта" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref-small.png"></a></p></li>
+					 <li>Нажмите кнопку &quot;Реорганизовать код&quot;, чтобы применить изменения, если это необходимо.</li>
+		</ol>
+		
+
+         <p class="align-center"><a href="#top">В начало</a></p>       
+                
+               
+        <a name="create"></a>
+        <h2>Управление пользовательскими проверками</h2>
+        
+		<p>Можно создать пользовательскую проверку, чтобы указать среде IDE, какие структуры кода следует искать и как их следует преобразовать. </p>
+        <p class="notes"><b>Примечание.</b> Чтобы избежать повторяющейся проверки в IDE, выберите 'Реорганизация' > 'Проверка и преобразование' в главном меню, либо выберите 'Управление' или 'Обзор' и в диалоговом окне 'Управление проверками' используйте поле 'Поиск' для поиска необходимой проверки до создания новой проверки. </p>
+		<p><b>Чтобы создать пользовательскую проверку, выполните следующие действия.</b></p>
+		<ol>
+		<li>Выберите Реорганизация кода &gt; Проверка и преобразование в меню IDE.</li>
+		<li>В диалоговом окне &quot;Проверка и преобразование&quot; нажмите кнопку &quot;Управление&quot; или &quot;Обзор&quot;.</li>
+		<li>В диалоговом окне &quot;Управление проверками&quot; нажмите кнопку &quot;Создать&quot;.<br /> В списке &quot;Проверки&quot; будет создан узел <tt>Пользовательская проверка</tt>.
+		
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint.png" rel="lytebox" title="Создан InspectionSample"> <img alt="Создан InspectionSample" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint-small.png"></a></p></li>
+					 <li>(Дополнительно) Правой кнопкой мыши щелкните <tt>Проверка</tt>, выберите &quot;Переименовать&quot; в раскрывающемся меню, укажите имя пользовательской проверки (например, <tt>MyCustomInspection</tt>), затем нажмите ENTER.</li>
+					 <li>Нажмите кнопку &quot;Правка сценария&quot;.  Отобразится текстовое поле со сценарием.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/script.png" rel="lytebox" title="Текстовая область сценария"> <img alt="Текстовая область сценария" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/script-small.png"></a></p></li>
+					 <li>Введите описание проверки и код в текстовую область сценария или нажмите кнопку &quot;Открыть&quot; в редакторе и укажите те же данные в файле <tt>MyCustomInspection.hint</tt>.
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/hint-file.png" rel="lytebox" title="Файл MyCustomInspection.hint"> <img alt="Файл MyCustomInspection.hint" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/hint-file-small.png"></a></p></li>
+					 <li>Чтобы сохранить изменения, нажмите кнопку &quot;Сохранить&quot; под текстовым полем со сценарием или нажмите сочетание клавиш CTRL+S в редакторе.</li>
+					 <li>Нажмите кнопку &quot;ОК&quot;, чтобы закрыть диалоговое окно &quot;Управление проверками&quot; или закройте файл <tt>MyCustomInspection.hint</tt> в редакторе.<br /> Пользовательская проверка создана и может быть применена.</li>
+		</ol>
+		<p><b>Чтобы запустить созданную пользовательскую проверку, выполните следующие действия.</b></p>
+		<ol>
+	 
+	 <li>Выберите Реорганизация кода &gt; Проверка и преобразование в меню IDE.</li>
+	 <li>В списке проверок диалогового окна &quot;Проверка и преобразование&quot; укажите файл, пакет или проект(-ы), которые требуется проверить.  Либо же нажмите кнопку справа, чтобы открыть диалоговое окно &quot;Пользовательская область&quot;, и укажите пользовательский код, который требуется проверить.</li>
+	 <li>Выберите параметр &quot;Одиночная проверка&quot;, затем выберите проверку <tt>MyCustomInspection</tt>.
+	   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint.png" rel="lytebox" title="Выбрано MyCustomInspection"> <img alt="Выбрано MyCustomInspection" border="1/" src="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint-small.png"></a></p></li>
+     <li>Нажмите кнопку &quot;Проверить&quot;.<br />Предлагаемые изменения реорганизации отобразятся на панели предварительного просмотра.
+	 <!--<p class="align-center">
+		<a href="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI.png" rel="lytebox"
+                       title="MyCustomInspection run">
+					   <img src="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI-small.png"
+                     alt="MyCustomInspection run" border=1/></a></p>-->	</li>
+     <li>Нажмите кнопку &quot;Реорганизовать код&quot;, чтобы применить изменения, если это необходимо.</li>
+</ol>
+
+
+        <p class="align-center"><a href="#top">В начало</a></p> 
+		  
+               
+          
+
+                
+               
+
+<a name="summary"></a>
+<h2>Заключение</h2>
+<p> В этом учебном курсе рассматриваются наиболее распространенные способы использования функции &quot;Проверка и преобразования&quot; Обратите внимание, что с помощью функции &quot;Проверка и преобразование&quot; можно также выполнять пользовательскую реорганизацию в контексте проекта или применять специальные настройки реорганизации кода к нескольким проектам, открытым в среде IDE и т. п. </p>
+
+<p class="align-center"><a href="#top">В начало</a></p>		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Refactoring%20with%20Inspect%20and%20Transform%20in%20the%20NetBeans%20IDE%20Java%20Editor">Отправить отзыв по этому учебному курсу</a></div>
+
+        <br style="clear:both;"/>
+		
+		<a name="seealso"></a>
+        <h2>Дополнительные сведения</h2>
+        
+        <p>Связанные материалы можно найти в следующих документах:</p>
+        <ul>
+           <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">Использование подсказок при анализе и рефакторинге исходного кода</a> в разделе <i>Разработка приложений с помощью NetBeans IDE</i></a></li>
+            <li><a href="http://wiki.netbeans.org/Java_Hints">Полный список подсказок Java NetBeans</a></li>
+			<li><a href="http://wiki.netbeans.org/JavaDeclarativeHintsDescriptionSketch">Описание декларативных подсказок Java NetBeans</a></li>
+			
+			<li><a href="code-inspect.html">Статический анализ кода в редакторе Java IDE NetBeans </a></li>
+			<li><a href="http://wiki.netbeans.org/Refactoring">Упрощение реорганизации</a></li>
+			<li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">Учебный курс по модулям подсказок Java NetBeans</a></li>
+			
+          
+			
+        </ul>
+		<p class="align-center"><a href="#top">В начало</a></p>
+</body>
+</html>

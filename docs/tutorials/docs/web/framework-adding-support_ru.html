@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">        
+        <meta name="description"  content="A short guide to adding web framework support
+            to NetBeans IDE using the Plugin Manager">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            web applications, open source, frameworks, Spring, Struts, JSF, JavaServer Faces,
+            Wicket, Facelets, RichFaces, ICEfaces, PrimeFaces, components"> 
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+           
+        <title>Добавление поддержки веб-платформы</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Добавление поддержки веб-платформы</h1>
+        
+        <p>В этом документе приведено общее описание способа добавления поддержки к веб-платформе в IDE NetBeans. В приведенных действиях показано, как можно добавить эту поддержку, установив подключаемый модуль веб-платформы в среду IDE, с помощью диспетчера подключаемых модулей. После установки подключаемого модуля платформу можно будет выбирать при создании веб-проектов в мастере создания проектов. Новый веб-проект будет сразу включать всю необходимую инфраструктуру для выбранной платформы.</p>
+
+        <p>Простейшим способом добавления поддержки для определенной веб-платформы является установка подключаемого модуля NetBeans, если таковой доступен, при помощи диспетчера подключаемых модулей среды IDE.  Это удобно, если при работе в среде IDE имеется доступ к Интернету.  Подключаемые модуля для многих веб-платформ также доступны через <a href="http://plugins.netbeans.org/PluginPortal/">Портал подключаемых модулей NetBeans</a>.  При отсутствии постоянного доступа к Интернету подключаемые модули (например, с вышеупомянутого портала) можно загружать по мере возможности и устанавливать их в среду IDE позже.</p>
+        
+        <p>В этом руководстве мы добавим поддержку для платформы Apache Struts 2, загрузив подключаемый модуль с портала подключаемых модулей NetBeans и установив его с помощью диспетчера подключаемых модулей.</p>
+            
+        <p class="notes"><strong>Примечание. </strong> В комплект IDE реализована поддержка платформ <a href="../../docs/web/jsf20-support.html">JavaServer Faces 2.x</a>, <a href="../../docs/web/quickstart-webapps-struts.html">Struts 1.3.10</a>, а также <a href="../../docs/web/quickstart-webapps-spring.html">Spring 3.x и 4.x</a>. Версия включенной в комплект платформы зависит от версии IDE.</p>      
+        <a name="table"></a>
+       
+        
+        <p><strong>Содержание</strong></p>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+   
+        <ul class="toc">
+            <li><a href="#installing">Установка подключаемых модулей поддержки платформы</a>
+            
+            <ul>
+                <li><a href="#manually">Загрузка и установка вручную</a></li>
+                <li><a href="#updateCenter">Установка из центра обновлений</a></li>
+                <li><a href="#ppupdateCenter">Регистрация центра обновлений портала подключаемых модулей NetBeans </a></li>
+            </ul></li>
+                
+            <li><a href="#working">Работа с поддержкой платформы в среде IDE</a>
+            
+                <ul>
+                    <li><a href="#newProject">Создание нового проекта с поддержкой платформы</a></li>
+                    <li><a href="#existingProject">Добавление поддержки платформы к существующему проекту</a></li>
+                </ul></li>
+        </ul>
+        
+        <p><strong>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans, Java EE bundle</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Примечания:</strong></p>
+        
+        <ul>                       
+            <li>Вариант установки &quot;Web и Java EE&quot; позволяет дополнительно установить сервер GlassFish 3.1 и контейнер сервлетов Apache Tomcat 6.0.x. В зависимости от используемой платформы необходимо один из этих элементов для работы с этим учебным курсом.</li>
+            <li>Также необходимо подключение к Интернету для загрузки необходимых подключаемых модулей и/или доступа к ним через диспетчер подключаемых модулей среды IDE.</li>
+        </ul>
+        
+        <a name="installing"></a>
+        <h2>Установка подключаемых модулей поддержки платформы</h2>
+
+        <p>Поддержку определенной платформы можно добавить, установив подключаемые модуля поддержки этой платформы в среду IDE. Чтобы выполнить это, можно загрузить подключаемые модуля с внешнего веб-сайта, такого как <a href="http://plugins.netbeans.org/PluginPortal/">Портал подключаемых модулей NetBeans</a>, с последующей их установкой при помощи диспетчера подключаемых модулей, либо, если подключаемый модуль находится в центре обновлений, этот центр обновлений можно зарегистрировать в диспетчере подключаемых модулей среды IDE и затем установить подключаемый модуль напрямую через диспетчер подключаемых модулей.</p>
+
+        <ul>
+            <li><a href="#manually">Загрузка вручную</a></li>
+            <li><a href="#updateCenter">Установка из центра обновлений</a></li>
+        </ul>
+        
+        
+        <p>Некоторые подключаемые модуля доступны для загрузки с сайтов, таких как <a href="http://plugins.netbeans.org/PluginPortal/">Портал подключаемых модулей NetBeans</a> или сайты их разработчиков.  В таблице ниже приведены ссылки, по которым можно загрузить некоторые подключаемые модуля для платформ.</p>
+        
+
+        <table>
+            <tr>
+                <td class="tblheader">Платформа</td>
+                <td class="tblheader">Местоположение подключаемого модуля</td>
+                <td class="tblheader">Местоположение загрузки</td>                
+            </tr>
+<!--            <tr>
+                <td class="tbltd1"><a href="http://code.google.com/webtoolkit/">Google Web Toolkit</a></td>
+                <td class="tbltd1"><a href="http://gwt4nb.dev.java.net/">https://gwt4nb.dev.java.net</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=716">
+                    http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=716</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/">jMaki</a></td>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/jmaki-plugin.html">http://ajax.dev.java.net/jmaki-plugin.html</a></td>
+                <td class="tbltd1"><a href="http://ajax.dev.java.net/servlets/ProjectDocumentList?folderID=0">
+                    http://ajax.dev.java.net/servlets/ProjectDocumentList?folderID=7943&expandFolder=7943&folderID=0</a>
+                    <br>(Currently not listed on Plugin Portal)</td>
+            </tr>    -->
+            <tr>
+                <td class="tbltd1"><a href="http://struts.apache.org/">Apache Struts 2</a></td>
+                <td class="tbltd1"><a href="http://java.net/projects/nbstruts2support/">http://java.net/projects/nbstruts2support/</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0"> http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://wicket.apache.org/">Wicket</a></td>
+                <td class="tbltd1"><a href="http://nbwicketsupport.dev.java.net/">https://nbwicketsupport.dev.java.net</a></td>
+                <td class="tbltd1"><a href="http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=3586"> http://plugins.netbeans.org/PluginPortal/faces/PluginDetailPage.jsp?pluginid=3586</a></td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/home/">ICEfaces 2.0</a></td>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/home/">http://www.icefaces.org/main/home/</a></td>
+                <td class="tbltd1"><a href="http://www.icefaces.org/main/downloads/"> http://www.icefaces.org/main/downloads/</a></td>
+            </tr>
+                      
+        </table>
+         
+        
+        <div class="indent">
+            <a name="manually"></a>
+            <h3>Загрузка и установка подключаемого модуля поддержки Apache Struts 2</h3>
+            
+            <p>В данном разделе в качестве примера описано, как загрузить и установить подключаемый модуль <a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0">Apache Struts 2 Support Repack for NB 7.0</a> с портала подключаемых модулей NetBeans.  Этот подключаемый модуль устанавливает библиотеки и элементы интерфейса пользователя, необходимые для поддержки Apache Struts 2.</p>
+            
+            <p class="notes"><strong>Примечание.</strong> Подключаемый модуль повторно включает в упаковку <a href="http://java.net/projects/nbstruts2support/">Подключаемый модуль поддержки Struts2 NetBeans</a>, поскольку подключаемый модуль поддержки Struts2 NetBeans не обновлялся для IDE NetBeans 7.0. Для получения дополнительных сведений обо всех подключаемых модулях см. соответствующие страницы сведений о подключаемых модулях.</p>
+            
+            <ol>
+                <li>Загрузите архив zip, содержащий подключаемые модули Apache Struts 2, со <a href="http://plugins.netbeans.org/plugin/39218/struts2-support-repack-for-nb-7-0"> страницы Struts2 Support Repack for NB 7.0</a> <a href="http://plugins.netbeans.org/PluginPortal/">Портала подключаемых модулей NetBeans</a> и извлеките содержимое на свой компьютер.
+                    <p>После извлечения содержимого можно будет увидеть, что в архиве содержатся три файла.</p>
+                    <ul>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2.nbm</tt></li>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2lib218.nbm</tt> </li>
+                        <li><tt>org-netbeans-modules-web-frameworks-struts2lib20011.nbm</tt> </li>
+                    </ul>
+                    
+                
+                    <p class="tips">Подключаемые модули NetBeans можно опознать по их расширению <tt>.nbm</tt>.</p>
+                </li>
+                <li>Из основного меню среды IDE выберите Tools (&quot;Сервис&quot;) &gt; Plugins (&quot;Подключаемые модули&quot;) для открытия диспетчера подключаемых модулей.</li>
+                <li>Выберите вкладку Downloaded (&quot;Загруженные&quot;) и нажмите кнопку Add Plugins (&quot;Добавление подключаемых модулей&quot;).</li>
+                <li>В диалоговом окне добавления подключаемых модулей перейдите к содержащему их каталогу и выберите модуль NetBeans. Нажмите кнопку Open (&quot;Открыть&quot;).<br> <img alt="снимок диалогового окна &apos;Добавить подключаемые модули&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/plugin-archive-contents.png" title="Архив zip содержит подключаемые модули NetBeans">
+                
+                    <p class="tips">Нажмите и удерживайте клавишу Ctrl для выбора нескольких элементов.</p>
+                </li>
+                <li>В диспетчере подключаемых модулей выберите каждый из модулей Struts2.
+                    <p>Описание выбранного подключаемого модуля отображается на правой панели диспетчера подключаемых модулей.</p>
+                    
+                    <a href="../../../images_www/articles/72/web/add-framework/add-plugins.png" rel="lytebox" title="Вручную загруженные подключаемые модули, выбранные в диспетчера подключаемых модулей до установки"> <img alt="снимок загруженных подключаемых модулей в диспетчере подключаемых модулей." class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/add-plugins-sm.png" title="Щелкните для увеличения"></a></li>
+                        
+                <li>Щелкните 'Установить', чтобы открыть установщик IDE NetBeans, а затем щелкните 'Далее' и примите условия лицензионного соглашения.
+                    
+                    <p class="notes"><strong>Примечание.</strong> При получении предупреждения проверки для установки подключаемого модуля щелкните 'Продолжить'. Предупреждение проверки выдается при попытке установить неподписанный подключаемый модуль. Хотя обычно всем подключаемым модулям можно доверять, установка неподписанного модуля осуществляется на ваш страх и риск.</p>
+                </li>
+                <li>Перезапустите среду IDE, чтобы дать изменениям возможность вступить в силу.</li>
+            </ol>
+        
+            <p>После установки подключаемого модуля и перезапуска среды IDE можно убедиться в том, что он установлен, открыв диспетчер подключаемых модулей, щелкнув  вкладку Installed (&quot;Установленные&quot;) и найдя его в списке установленных подключаемых модулей.</p>
+        
+            <a name="updateCenter"></a>
+            <h3>Установка из центра обновлений</h3>
+            
+            <p>Если подключаемый модуль поддержки платформы поддерживается центром обновлений, может быть полезным установить центр обновлений в среду IDE. Это позволит установить подключаемый модуль поддержки платформы прямо через диспетчер подключаемых модулей. Диспетчер подключаемых модулей также записывает все обновления, вносимые в подключаемые модули в центрах обновлений, предоставляя простой и эффективный способ своевременного обновления подключаемых модулей.</p> 
+                
+            <p>Ряд центров обновлений зарегистрирован в среде IDE по умолчанию. Чтобы увидеть список центров обновлений, зарегистрированных в настоящий момент, откройте диспетчер подключаемых модулей (Tools (&quot;Средства&quot;) &gt; Plugins (&quot;Подключаемые модули&quot;)) и выберите вкладку Settings (&quot;Параметры&quot;).</p>
+                
+                <a href="../../../images_www/articles/72/web/add-framework/pluginsmanager-settings.png" rel="lytebox" title="Вкладка &apos;Настройки&apos; и список &apos;Центров обновлений&apos;, зарегистрированных в диспетчере подключаемых модулей"> <img alt="снимок вкладки &apos;Настройки&apos; и списка &apos;Центров обновлений&apos;, зарегистрированных в диспетчере подключаемых модулей" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/pluginsmanager-settings-sm.png" title="Щелкните для увеличения"></a>
+
+            <p>Если необходимо зарегистрировать новый центр обновлений, нажмите кнопку Add (&quot;Добавить&quot;) на вкладке Settings (&quot;Параметры&quot;) и введите сведения в настройщик центра обновлений.</p>
+                <img alt="снимок диалогового окна &apos;Средство настройки центра обновлений&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/uc-customizer.png" title="Диалоговое окно &apos;Средство настройки центра обновлений&apos;"> <a name="ppupdateCenter"></a>
+                <h3>Регистрация центра обновлений портала подключаемых модулей NetBeans </h3>
+                <p>Центр обновлений портала подключаемых модулей, зарегистрированный в среде IDE по умолчанию, содержит подмножество подключаемых модулей, предоставленных сообществом и проверенных на совместимость с установленной версией среды IDE.  Если необходимо использовать диспетчер подключаемых модулей для просмотра всех модулей, доступных на <a href="http://plugins.netbeans.org/">портале подключаемых модулей NetBeans</a>, то для установки подключаемого модуля и добавления центра обновлений портала подключаемых модулей NetBeans к списку зарегистрированных центров обновлений можно выполнить следующие действия.
+                </p>
+                
+                <ol>
+                    <li>Загрузите <a href="http://plugins.netbeans.org/plugin/1616/plugin-portal-update-center">подключаемый модуль центра обновлений портала подключаемых модулей NetBeans</a>. </li>
+                    <li>Откройте вкладку Downloaded (&quot;Загруженные&quot;) в диспетчере подключаемых модулей.</li>
+                    <li>Щелкните Add Plugins (&quot;Добавление подключаемых модулей&quot;) и найдите загруженный файл <tt>1252666924798_org-netbeans-pluginportaluc.nbm</tt>.  Нажмите кнопку &quot;Установить&quot;.</li>
+                </ol>
+
+                <p>После установки подключаемого модуля центр обновлений портала подключаемых модулей NetBeans добавляется к списку зарегистрированных центров обновлений на вкладке Settings (&quot;Параметры&quot;) диспетчера подключаемых модулей.</p>
+                
+                <p class="notes"><strong>Примечание.</strong> Вы можете отключить центр обновления, сняв флажок для центра обновлений в столбце 'Активный' на вкладке 'Настройки'.</p>
+                <a href="../../../images_www/articles/72/web/add-framework/portal-uc-plugin.png" rel="lytebox" title="Центр обновлений портала подключаемых модулей теперь включен в перечень зарегистрированных центров обновлений на вкладке &apos;Настройки&apos;"> <img alt="снимок вкладки &apos;Настройки&apos; с новым центром обновлений, добавленным к списку" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/portal-uc-plugin-sm.png" title="Щелкните для увеличения"></a>
+                
+                
+                <p>Если щелкнуть вкладку Available Plugins (&quot;Доступные подключаемые модули&quot;), то можно будет увидеть, что все подключаемые модули, загруженные сообществом на портал подключаемых модулей NetBeans, были внесены в список доступных подключаемых модулей.</p>
+                
+                <p class="tips">Щелкните Reload Catalog (&quot;Перезагрузить каталог&quot;), чтобы обновить список подключаемых модулей.</p>
+                
+                <a href="../../../images_www/articles/72/web/add-framework/portal-uc-list.png" rel="lytebox" title="На вкладке &apos;Доступные подключаемые модули&apos; отображается список всех подключаемых модулей от всех зарегистрированных центров обновлений"> <img alt="снимок вкладки &apos;Доступные подключаемые модули&apos; в диспетчере подключаемых модулей" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/portal-uc-list-sm.png" title="На вкладке &apos;Доступные подключаемые модули&apos; отображается список всех подключаемых модулей от всех зарегистрированных центров обновлений"></a>
+                
+                <p>Этот список можно упорядочить, щелкнув заголовок столбца, либо отфильтровать, введя условия в поле поиска.</p>
+                
+                <p class="alert"><strong> В центре обновлений портала подключаемых модулей перечислены все подключаемые модули, доступные через <a href="http://plugins.netbeans.org/">портал подключаемых модулей NetBeans</a>.  Многие из подключаемых модулей будут предназначены для устаревших версий среды IDE и будут несовместимы с используемой версией среды IDE. Установка подключаемых модулей для других версий IDE может привести к нестабильной работе имеющейся установки среды IDE.</strong> Во многих случаях, но не во всех, будет отображено сообщение с уведомлением о том, подключаемый модуль не может быть установлен. Как и при установке любого программного обеспечения, следует соблюдать осторожность и тщательно прочесть документацию перед попыткой установки подключаемого модуля.</p>
+
+        </div>    
+       
+        <a name="working"></a>
+        <h2>Работа с поддержкой платформы в среде IDE</h2>
+
+        <p>Поддержка платформа в среде IDE обычно относится к конкретной используемой платформе. Например, поддержка Struts2 предоставляет мастера, позволяющие легко создавать часто используемые классы Struts, а также автозавершение кода в файлах настройки Struts. </p>
+            
+        <p>Поддержку платформы можно добавить к веб-приложению как с помощью мастера создания проекта при создании приложения, так и путем интеграции в существующее приложение. </p>
+
+        <ul>
+            <li><a href="#newProject">Создание нового проекта с поддержкой платформы</a></li>
+            <li><a href="#existingProject">Добавление поддержки платформы к существующему проекту</a></li>
+        </ul>
+        
+        <div class="indent">
+            <a name="newProject"></a>
+            <h3>Создание нового проекта с поддержкой платформы</h3>
+    
+            <ol>
+                <li>Выберите &quot;Файл &gt; Новый проект&quot; (CTRL+SHIFT+N; &amp;#8984+SHIFT+N в Mac ОС) в главном меню. Откроется мастер создания проекта. Выберите Web (&quot;Сеть&quot;) в Categories (&quot;Категории&quot;), затем в Projects (&quot;Проекты&quot;) выберите Web Application (&quot;Веб-приложение&quot;).  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Введите имя в поле Project Name (&quot;Имя проекта&quot;) и укажите местоположение для проекта на используемом компьютере.</li>
+                <li>Пройдите через этапы работы мастера, принимая все параметры по умолчанию. Укажите серверу развернуть приложение, выбрав один из серверов приложений, уже зарегистрированных в IDE (т. е. сервер GlassFish или Tomcat).</li>
+                <li>На панели Frameworks (&quot;Платформы&quot;) мастера создания проектов выберите платформу, которую нужно добавить. Нажмите кнопку "Готово". <br> <img alt="снимок панели &apos;Платформы&apos; мастера создания проектов с выбранной поддержкой Struts 2" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/newproject-wizard-frameworks-sm.png" title="Поддержка Struts 2 указана на панели &apos;Платформы&apos; мастера создания проектов">
+                 
+                    <p>В данном примере поддержка платформы Struts 2 указана на панели Frameworks (&quot;Платформы&quot;). Можно увидеть, что панель Frameworks (&quot;Платформы&quot;) теперь предлагает выбор между Struts 1.3.8 (входящей в среду IDE) или Struts2 (добавленной посредством подключаемого модуля).  При установке подключаемого модуля поддержки Struts2 в мастер создания проектов добавляется пункт Struts2, а также вкладки с параметрами для настройки и библиотек.  Вкладка Configuration (&quot;Настройка&quot;) предоставляет возможность создать образец страницы в проекте. Вкладка Libraries (&quot;Библиотеки&quot;) позволяет выбрать версию библиотек Struts2, которую следует добавить к пути к классам.</p>
+                </li>
+                        
+            </ol>
+
+            <p>При нажатии кнопки Finish (&quot;Готово&quot;) среда IDE создаст веб-приложение.  Дополнительные файлы, создаваемые мастером, будут различными в зависимости от платформы. В этом примере мастер создал <tt>struts.xml</tt>, файл настройки XML, в папке Source Packages (&quot;Пакеты исходного кода&quot;) и добавил библиотеки Struts2 к пути к классам.  Мастер автоматически добавил класс фильтра Servlet и привязку фильтра к <tt>web.xml</tt>.</p>
+
+                <img alt="снимок окна &apos;Проекты&apos;, в котором отображается логическая структура веб-приложения Struts" class="margin-around b-all" src="../../../images_www/articles/72/web/add-framework/project-structure-frameworks.png" title="Логическая структура веб-приложения Struts отображается в окне &apos;Проекты&apos;">
+<!--            
+            <p><strong class="notes">Note: </strong>For more information on the jMaki application structure, 
+                see <a href="http://ajax.dev.java.net/jmaki-app.html">Basic jMaki Application Structure</a>.</p>-->
+
+           <a name="existingProject"></a>
+            <h3>Добавление поддержки платформы к существующему проекту</h3>
+       
+            <p>При наличии существующего веб-проекта и необходимости добавить к нему поддержку платформы можно использовать диалоговое окно Project Properties (&quot;Свойства проекта&quot;) для добавления платформ, доступных в среде IDE.</p>
+            <ol>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши узел веб-приложения и выберите 'Свойства'. В результате откроется окно 'Свойства проекта'.</li>
+                <li>В списке 'Категории' выберите 'Платформы'. 
+                    <p>После выбора значения 'Платформы' на правой панели отображается текстовая область 'Используемые платформы'. Если приложение не использует никакие платформы, эта область будет пуста.</p></li>
+                <li>Нажмите кнопку 'Добавить', выберите нужную платформу и нажмите OK. <br> <img alt="снимок диалогового окна &apos;Добавить платформу&apos; в окне &apos;Свойства проекта&apos;" class="b-all margin-around" src="../../../images_www/articles/72/web/add-framework/properties-add-framework.png" title="Платформа JavaServer Faces выбрана в диалоговом окне &apos;Добавление платформы&apos;, открытом в окне &apos;Свойства проекта&apos;"></li>
+                        
+                <li>В зависимости от выбранной платформы укажите относящиеся к этой платформе параметры конфигурации или компоненты, представленные в окне 'Свойства проекта'.<br> <img alt="снимок диалогового окна добавления библиотеки компонентов" class="b-all margin-around" src="../../../images_www/articles/72/web/add-framework/add-icefaces.png" title="Добавление библиотеки для набора компонентов ICEfaces в проект">
+                        <p>Например, если вы хотите указать набор компонентов ICEfaces, можно выбрать ICEfaces на вкладке 'Компоненты' в окне 'Свойства проекта' и указать библиотеку ICEfaces.
+                        </p>
+                        <p class="notes"><strong>Примечания.</strong> Библиотеки для компонентов JSF не входят в комплект IDE. Чтобы использовать наборы компонентов, необходимо загрузить требуемые библиотеки и создать библиотеку NetBeans, которую затем можно добавить в путь классов проекта в окне 'Свойства проекта'.</p>
+                </li>
+                <li>Нажмите кнопку &quot;OК&quot;, чтобы подтвердить свой выбор, и закройте окно Project Properties (&quot;Свойства проекта&quot;).  К проекту будут добавлены относящиеся к этой платформе артефакты и библиотеки, которые можно изучить в окне проектов.</li>
+            </ol>
+        </div>
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Adding%20Web%20Framework%20Support"> Отправить отзыв по этому учебному курсу</a></div>
+            
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>Дополнительные сведения</h2>
+
+        <p>В этом документе приведено описание способа добавления поддержки к веб-платформе в IDE NetBeans. Показано, как установить подключаемые модули поддержки платформ путем загрузки их вручную или использования диспетчера подключаемых модулей среды IDE.  Кроме того, показано, как добавить поддерживаемую средой IDE платформу к новому веб-приложению или существующему проекту.</p>
+        
+        <p>В данном руководстве в качестве примера используется платформа Struts2.  Тем, кто хочет изучить другие функции, предлагаемые этой платформой, стоит заглянуть во <a href="../../docs/web/quickstart-webapps-struts.html">Введение в веб-платформу Struts</a>. 
+            <p>
+
+        <p>Дополнительные сведения об использовании других веб-платформ в IDE NetBeans см. следующие ресурсы:</p>
+
+        <ul>
+            <li><a href="../../docs/web/quickstart-webapps-spring.html">Введение в веб-платформу Spring</a>.</li>
+            <li><a href="../../docs/web/quickstart-webapps-struts.html">Введение в веб-платформу Grails</a></li>
+            <li><a href="../../docs/web/quickstart-webapps-wicket.html">Введение в веб-платформу Wicket</a>.</li>
+        </ul>
+
+    </body>
+</html>

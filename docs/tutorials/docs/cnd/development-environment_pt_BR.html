@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>Definindo o Ambiente de Desenvolvimento do Projeto C/C++</TITLE>
+<meta name="KEYWORDS" content="NETBEANS, TUTORIAL, C/C++, tools">
+<meta name="DESCRIPTION" content="Short tutorial that demonstrates using 
+   local or remote tool collections to develop C/C++ projects in NetBeans IDE">
+       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Definindo o Ambiente de Desenvolvimento do Projeto C/C++</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<!-- Contributed by <i>Ann
+      Rice</i> and maintained by
+      <i>Susan Morgan</i><br> -->
+
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+   <p><em>Março de 2014</em> [Número da revisão: V8.0-1]</p></div>
+
+<p>O tutorial resumido a seguir conduz você pelas etapas básicas da seleção do host de compilação e da coleção de ferramentas para construção e depuração de um projeto C ou C++ no NetBeans IDE.
+</p>
+<!-- END INTRO -->
+<p><b>Conteúdo</b></p>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.3 e mais recente" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.3 e mais recente">
+<ul class="toc">
+<li><a href="#requirements" title="Requisitos">Requisitos</a></li>
+<li><a href="#installing" title="Instalando Coleções de Ferramentas">Instalando Coleções de Ferramentas</a></li>
+<li><a href="#host" title="Especificando o Host de Compilação">Especificando o Host de Compilação</a></li>
+<li><a href="#using" title="Utilizando a Lista Coleção de Ferramentas">Utilizando a Lista Coleção de Ferramentas</a></li>
+<li><a href="#changing" title="Alterando a Coleção de Ferramentas de um Projeto"> Alterando a Coleção de Ferramentas de um Projeto</a></li>
+
+</ul>
+
+<h2><a name="requirements"></a>Requisitos</h2>
+<p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b> </p>
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Software ou Recurso</th>
+<th class="tblheader" scope="col">Versão Necessária</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">versão 7.3 ou mais recente com o plug-in C/C++ do NetBeans</a></td>
+</tr>
+<tr>
+<td class="tbltd1">JDK (Java Developer Kit)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">versão 6, 7 ou 8</a></td>
+</tr>
+</table>
+<br>
+<p>Consulte as <a href="../../../community/releases/80/install.html">Instruções de Instalação do NetBeans IDE</a> para obter informações sobre o download e instalação do software NetBeans necessário. 
+</p>
+<h2><a name="installing"></a>Instalando Coleções de Ferramentas</h2>
+<p>O módulo NetBeans C/C++ requer no mínimo um compilador C, compilador C++, utilitário make e depurador gdb. Consulte <a href="../../../community/releases/80/cpp-setup-instructions.html">Configurando o NetBeans IDE para C/C++/Fortran</a> para obter instruções de instalação e configuração das ferramentas e compiladores necessários.
+   
+    
+   </p><h2><a name="host"></a>Especificando o Host de Compilação</h2>
+   <p>É possível construir, executar e depurar o projeto no host local (o sistema a partir do qual se iniciou o IDE) ou um host remoto que esteja executando um sistema operacional UNIX®. Somente os sistemas operacionais Oracle Solaris e Linux foram testados como hosts remotos de compilação. Inicialmente, o IDE está configurado para usar somente o host local.</p>
+
+<p>Você pode definir hosts de compilação remota de várias formas:
+<ul><li>Usando a janela Serviços: Selecione Janela > Serviços, em seguida, clique com o botão direito do mouse em Hosts de Compilação do C/C++ e selecione Adicionar Novo Host.
+    </li>
+    <li>Clique com o botão direito do mouse em um projeto, selecione Definir Host de Compilação > Gerenciar Hosts, em seguida, clique em Adicionar na caixa de diálogo Gerenciador de Host de Compilação.</li>
+    <li>Usando a janela Opções: Escolha Ferramentas > Opções > C/C++ > Construir Ferramentas e clique no botão Editar ao lado da lista Host de Compilação.</li>
+   </ul>
+<p>Defina o <a href="./remotedev-tutorial.html">Tutorial de Desenvolvimento Remoto do C/C++</a> para obter mais informações.
+</p>
+
+
+<h2><a name="using"></a>Utilizando a Lista Coleção de Ferramentas</h2>  
+<p>A lista Coleção de Ferramentas mostra que as coleções de ferramentas estão disponíveis para o IDE no host local e em cada host de compilação remota. Você pode ver as Coleções de Ferramentas de uma das seguintes formas:
+<ul><li>Usando a janela Serviços: escolha Janela > Serviços, expanda Hosts de Compilação C/C++ e o host no qual você está interessado. O nó Coleções de Ferramentas lista as coleções de ferramentas disponíveis no host.
+    </li>
+    <li>Use a janela Projetos: clique com o botão direito do mouse em um projeto, selecione Propriedades e clique na categoria Construir. Você pode selecionar uma coleção de ferramentas para usar para o projeto ou clicar no botão próximo à lista de Coleções de Ferramentas para abrir o Gerenciador de Coleção de Ferramentas para definir a coleção default e adicionar ou remover as coleções de ferramentas.
+     </li>
+    <li>Usando a janela Opções: escolha Ferramentas > Opções >  C/C++ > Ferramentas de Construção. Nesta folha de propriedades você pode gerenciar as coleções de ferramentas após selecionar o host na lista Host de Compilação. 
+    </li>
+</ul>
+<p>
+ Em cada caso, a lista Coleção de Ferramentas exibe as coleções encontradas no host selecionado atualmente na lista Host de Compilação. A coleção default é listada em negrito e é selecionada para qualquer novo projeto que você cria usando o host de compilação. É possível alterar a coleção de ferramentas de um projeto específico nas propriedades do projeto.</p>
+
+     <h3>Alterando a Coleção de Ferramentas Default</h3>
+     <p>Para alterar a coleção de ferramentas default, selecione uma coleção na lista Coleção de Ferramentas e clique em Default. A nova coleção de ferramentas default será selecionada para os novos projetos criados que usem o host de compilação selecionado.
+     </p>
+     <h3><a name="adding"></a>Adicionando uma Coleção de Ferramentas a um Host de Compilação</h3>
+     <p>Quando você adiciona uma coleção de ferramentas, os compiladores ficam disponíveis para o IDE. As ferramentas já devem estar instaladas no sistema.</p>
+     <p>Para adicionar uma coleção de ferramentas associada a um host de compilação:
+     </p>
+     <ol>
+     <li>Na janela Serviços, expanda o nó para o Host de Compilação C/C++ no qual você deseja adicionar a coleção.
+        </li>
+        <li>Clique com o botão direito do mouse no nó Coleções de Ferramentas e selecione Adicionar Nova Coleção de Ferramentas.<br> Você também pode adicionar coleções na guia Ferramentas > Opções > Ferramentas da Compilação C/C++ > Construir Ferramentas, clicando no botão Adicionar abaixo da lista Coleção de Ferramentas. <br><br>A caixa de diálogo Adicionar Coleção de Ferramentas é aberta. <br><br> <img alt="Tela da caixa de diálogo Adicionar Nova Coleção de Ferramentas" class="b-all margin-around" src="../../../images_www/articles/73/cnd/development-environment/add-collection.png">
+     </li>
+     <li>Na caixa de diálogo Adicionar Nova Coleção de Ferramentas, digite o caminho do diretório dos arquivos executáveis da coleção de ferramentas no campo Diretório base ou use o botão Procurar para ir até o diretório, que geralmente é chamado <tt>bin</tt>.
+     </li>
+     <li>Os campos Família de Coleções de Ferramentas e Nome da Coleção de ferramentas são preenchidos automaticamente com caminhos válidos. Você pode especificar um nome diferente para exibir no IDE para a coleção. Se você alterar a Família de Coleções de Ferramentas, certifique-se de que a família especificada seja a correta para a coleção; caso contrário, os flags do compilador talvez não sejam válidos.
+    </li>
+     <li>Clique em OK. <br><br>A nova coleção de ferramentas é adicionada à lista de Coleção de Ferramentas.</li>
+     </ol>
+     
+      <h2><a name="changing"></a>Alterando a Coleção de Ferramentas de um Projeto</h2>
+      <p>Quando você cria um projeto, a coleção de ferramentas default é selecionada como a coleção de ferramentas do projeto. É possível alterar a coleção de ferramentas do projeto por outra na lista de coleções ou é possível personalizar uma coleção especialmente para o projeto.
+      </p><p>Para selecionar outra coleção de ferramentas para um projeto existente:</p>
+     
+      <ol>
+         <li>Clique com o botão direito do mouse no nó do projeto na janela Projetos e escolha Propriedades.</li>
+         <li>
+            Na caixa de diálogo Propriedades do Projeto, selecione o nó Construir na lista Categorias.
+         </li>
+         <li>Nas propriedades das ferramentas de construção, certifique-se de que o Host de Compilação esteja definido como o host em que deseja construir.
+         </li>
+         <li>Selecione uma coleção na lista drop-down Coleção de Ferramentas. <br><br> <img alt="Tela do painel Construir da caixa de diálogo Propriedades do Projeto" class="b-all margin-around" src="../../../images_www/articles/73/cnd/development-environment/select-collection.png">
+         </li>
+         <li>Clique em OK.</li>
+      </ol>
+     <p>Na próxima vez que o projeto for construído, será usada a coleção de ferramentas selecionada.</p>
+
+   <p>
+   </p><h2>Consulte Também</h2>
+   <p>Consulte a <a href="https://netbeans.org/kb/trails/cnd.html">Trilha do Aprendizado C/C++</a> para obter mais artigos sobre o desenvolvimento com C/C++/Fortran no NetBeans IDE.</p>
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Defining%20Your%20C/C++%20Project's%20Development%20Environment%20-%20NetBeans%20IDE%207.3%20Tutorial">Enviar Feedback neste Tutorial</a></div>
+</BODY>
+</HTML>

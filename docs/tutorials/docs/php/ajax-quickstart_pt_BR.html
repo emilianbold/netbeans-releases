@@ -1,0 +1,1027 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief introduction to Ajax using the NetBeans IDE, PHP bundle">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Ajax,
+            XMLHttpRequest, XMLHttpRequest object, callback function, asynchronous, asynchronous,
+            JavaScript, JavaScript editor, PHP, PHP editor, XML, open source">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Introdução ao Ajax para aplicações Web PHP - Tutorial do NetBeans IDE</title>
+    </head>
+
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Introdução ao Ajax para Aplicações Web PHP</h1>
+
+        <p>Este documento oferece uma introdução ao Ajax e demonstra algumas das funncionalidades no NetBeans IDE que permitem que você programe de forma mais rápida e eficaz ao trabalhar com tecnologias relacionadas ao Ajax. Enquanto aprende sobre a funcionalidade de baixo nível do Ajax, você constrói uma aplicação simples que utiliza a função autocompletar em um campo de texto. O conteúdo aqui foi adaptado do artigo e da aplicação de amostra de Greg Murray <a href="http://weblogs.java.net/blog/gmurray71/archive/2005/12/using_ajax_with_1.html" target="_blank">Using Ajax with Java Technology</a>.</p>
+
+        <p>Ajax significa Asynchronous JavaScript and XML. Na essência, o Ajax é uma forma eficiente de uma aplicação web tratar as interações do usuário com uma página web: uma forma que reduz a necessidade de fazer uma atualização da página ou uma recarga completa da página para cada interação do usuário. Isso permite um comportamento detalhado (semelhante ao de uma aplicação de área de trabalho ou aplicação web com base em plug-in) na utilização de um browser. As interações do Ajax são tratadas assincronamente em segundo plano. Enquanto isso acontece, um usuário pode continuar trabalhando com a página. As interações do Ajax são iniciadas pelo código JavaScript. Quando a interação do Ajax é concluída, o JavaScript atualiza o código-fonte HTML da página. As alterações são feitas imediatamente sem requerer uma atualização da página. As interações do Ajax podem ser utilizadas para fazer coisas como validar entradas do form (enquanto o usuário as está digitando) utilizando lógica do lado do servidor, recuperar dados detalhados do servidor, atualizar dinamicamente os dados em uma página e submeter forms parciais a partir da página.</p>
+
+
+        <p><strong>Conteúdo</strong></p>
+
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+        <ul class="toc">
+            <li><a href="#overview">Visão Geral da Aplicação</a></li>
+            <li><a href="#client1">Programando o Lado do Cliente: Parte 1</a>
+                <ul>
+                    <li><a href="#html">Utilizando o Editor HTML</a></li>
+                    <li><a href="#javascript">Utilizando o Editor JavaScript</a></li>
+                </ul></li>
+            <li><a href="#serverside">Programando o Lado do Servidor</a>
+                <ul>
+                    <li><a href="#data">Criando o Armazenamento de Dados</a></li>
+                    <li><a href="#business">Criando a Lógica de Negócios</a></li>
+                </ul>
+                    </li>
+            <li><a href="#client2">Programando o Lado do Cliente: Parte 2</a>
+                <ul>
+                    <li><a href="#callback">Adicionando a Funcionalidade de Retorno de Chamada</a></li>
+                    <li><a href="#htmldom">Atualizando o HTML DOM</a></li>
+                    <li><a href="#stylesheet">Anexando uma Folha de Estilo</a></li>
+                </ul></li>
+            <li><a href="#conclusion">Conclusão</a></li>
+            <li><a href="#seeAlso">Consulte Também</a></li>
+        </ul>
+
+        <p><strong>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                  <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE, pacote PHP</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">7 ou 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.php.net/downloads.php">Mecanismo PHP</a></td>
+                    <td class="tbltd1">PHP 5</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://httpd.apache.org/download.cgi">Servidor Web Apache</a></td>
+                    <td class="tbltd1">2.2</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>Observações:</strong></p>
+
+        <ul>
+            <li>O ambiente de desenvolvimento do PHP geralmente é configurado usando-se um pacote *AMP, dependendo do seu sistema operacional. Isso inclui o mecanismo PHP e o servidor web Apache. Para obter instruções sobre como configurar o ambiente, consulte a <a href="../../trails/php.html">Trilha de Aprendizado do PHP</a>.</li>
+
+            <li>Este tutorial presume que você saiba trabalhar nas várias tecnologias que ele emprega (por ex., HTML, CSS, JavaScript e PHP). Ele tenta fornecer uma visão geral da funcionalidade fornecida pelo código, mas <em>não</em> explica como o código funciona linha por linha.</li>
+
+            <li>Se você precisar comparar seu projeto com uma solução que funciona, <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip" target="_blank">faça download da aplicação de amostra</a>. Utilize o assistente Novo Projeto do IDE (Ctrl-Shift-N; ⌘-Shift-N no Mac) e selecione o PHP com tipo de projeto Códigos-Fonte existentes. No assistente, aponte para os códigos-fonte dos quais fez download no computador.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="overview">Visão Geral da Aplicação</h2>
+
+        <p>Imagine uma página web em que um usuário pode procurar informações sobre compositores de música. A página inclui um campo onde o usuário pode digitar o nome do compositor. Na aplicação de exemplo, o campo de entrada possui uma funcionlidade autocompletar. Em outras palavras, o usuário pode digitar parte do nome do compositor e a aplicação web tentará completar o nome, listando todos os compositores cujo nome ou sobrenome começa com os caracteres digitados. A funcionalidade autocompletar poupa o usuário de ter que lembrar o nome completo do compositor e pode fornecer um caminho mais intuitivo e direto para a informação procurada.</p>
+
+        <div class="indent">
+            <img alt="Aplicação de amostra exibida no browser" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/sample-app.png" title="Aplicação de amostra exibida no browser">
+        </div>
+
+        <p>Implementar a funcionalidade autocompletar em um campo de pesquisa é algo que pode ser feito por meio do Ajax. O Ajax funciona com o emprego de um objeto <code>XMLHttpRequest</code> para passar solicitações e respostas assincronamente entre o cliente e o servidor. O diagrama a seguir ilustra o fluxo do processo da comunicação que acontece entre o cliente e o servidor.</p>
+
+        <div id="flow-diagram" class="indent">
+            <img alt="Diagrama de fluxo de processo do Ajax" class="margin-around" src="../../../images_www/articles/73/web/ajax-intro/ajax-process-flow.png" title="Diagrama de fluxo de processo do Ajax">
+        </div>
+
+        <br>
+        <p>O fluxo de processo do diagrama pode ser descrito pelas seguintes etapas:</p>
+
+        <ol>
+            <li>O usuário aciona um evento, por exemplo, liberando uma tecla ao digitar um nome. Isso resulta em uma chamada do JavaScript para uma função que inicializa um objeto <code>XMLHttpRequest</code>.</li>
+
+            <li>O objeto <code>XMLHttpRequest</code> é configurado com um parâmetro de solicitação que inclui o ID do componente que acionou o evento e qualquer valor que o usuário digitou. O objeto <code>XMLHttpRequest</code> faz uma solicitação assíncrona ao servidor web.</li>
+
+            <li>No servidor web, um objeto como um servlet ou um listener trata a solicitação. Os dados são recuperados do armazenamento de dados, e é preparada uma resposta contendo os dados do form em um documento XML.</li>
+
+            <li>Finalmente, o objeto <code>XMLHttpRequest</code> recebe os dados XML utilizando uma função de chamada de retorno, processa-os e atualiza o HTML DOM (Document Object Model) para exibir a página que contém os novos dados.</li>
+        </ol>
+
+        <p>Este tutorial demonstra como construir o cenário da funcionalidade autocompletar, seguindo o fluxo do processo indicado no diagrama acima. Primeiro você cria os arquivos do lado do cliente para a apresentação e a funcionalidade necessárias para gerar o objeto <code>XMLHttpRequest</code>. Em seguida, você define o lado do servidor, criando o armazenamento de dados e a lógica de negócios usando tecnologia baseada em PHP. Finalmente, você retorna ao lado do cliente e implementa <code>callback()</code>, e outra funcionalidade JavaScript para atualizar o HTML DOM.</p>
+
+
+        <br>
+        <h2 id="client1">Programando o Lado do Cliente: Parte 1</h2>
+
+        <p>Comece criando um novo projeto de aplicação PHP no IDE.</p>
+
+        <ol>
+            <li>Escolha Arquivo > Novo Projeto. Em Categorias, selecione <strong>PHP</strong>. Em Projetos, selecione <strong>Aplicação PHP</strong> e, em seguida, clique em <strong>Próximo</strong>.</li>
+
+            <li>Na etapa 2: Nome e Localização, nomeie o projeto <code>MyAjaxApp</code>. O campo Pasta de Códigos-Fonte permite que você especifique o local do projeto no seu computador. Deixe as outras opções como default e clique em <strong>Próximo</strong>. <br> <img alt="Assistente Novo Projeto PHP: painel Nome e Localização" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-name-location.png" title="Assistente Novo Projeto PHP: painel Nome e Localização"></li>
+
+            <li>Na etapa 3: Configuração de Execução, especifique como você deseja implantar a aplicação. Se tiver definido o ambiente de desenvolvimento do PHP configurando um pacote *AMP, deverá selecionar <strong>Local Web Site</strong> na lista drop-down e especificar o URL do projeto, como ele aparecerá em um browser.</li>
+
+            <li>Selecione a opção Copiar arquivos da Pasta de Códigos-Fonte para outra localização. Em seguida, no campo Copiar para Pasta, digite o caminho para o local de implantação no servidor. (No Apache, é o diretório <code>htdocs</code> default.) <br> <a href="../../../images_www/articles/73/web/ajax-intro/php-run-config.png"> <img alt="Assistente Novo Projeto PHP: painel Configuração de Execução" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-run-config.png" style="width:688px" title="Clique para Aumentar"> </a></li>
+
+            <li>Clique em <strong>Finalizar</strong>. O IDE criará a pasta do projeto em seu sistema de arquivos e o projeto será aberto no IDE. <br><br>
+                <p class="tips">Você também pode utilizar o assistente Projeto para adicionar <!-- Zend and --> 
+                  suporte ao framework para o projeto (fornecido na Etapa 4 do assistente).</p>
+
+              <p>Uma página de índice <code>index.php</code> default será gerada e aberta no editor do IDE. Além disso, seu projeto aparece na janela Projetos.</p>
+
+                <img alt="A janela Projetos que contém o projeto recém-criado" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-proj-win.png" title="A janela Projetos exibe o projeto MyAjaxApp"></li>
+
+                <li>Antes de começar a codificar, tente rapidamente executar a aplicação para garantir que a configuração entre o IDE, seu servidor e o browser esteja configurada corretamente. <br><br> No editor do IDE, adicione uma instrução <code>echo</code> à página de índice:
+
+<pre class="examplecode">
+&lt;?php
+    // put your code here
+    <strong>echo &quot;&lt;h2&gt;Hello World!&lt;/h2&gt;&quot;;</strong>
+?&gt;
+</pre></li>
+
+            <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto e selecione Executar. O IDE abrirá o browser default e exibirá a mensagem Olá Mundo que você acabou de criar em <code>index.php</code>. <br><br>
+                <p class="notes"><strong>Observação:</strong> se tiver dificuldade em configurar o projeto ou estabelecer comunicação entre o IDE, o servidor e o browser, consulte <a href="project-setup.html">Configurando um Projeto PHP</a> para obter uma descrição mais aprofundada. A <a href="../../trails/php.html">Trilha de Aprendizado do PHP</a> pode oferecer mais informações sobre como configurar o ambiente.</p></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="html">Usando o Editor HTML</h3>
+
+            <div class="indent">
+                <img alt="Paleta que exibe elementos HTML" class="right margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/palette.png" title="Paleta que exibe elementos HTML"> <br>
+                <p class="margin-around">Agora que você tem certeza de que seu ambiente está configurado corretamente, comece desenvolvendo a interface da funcionalidade autocompletar que será vista pelos usuários. Como a página de índice que criaremos não requer nenhum elemento de script do lado do servidor, comece criando uma página HTML e configurando-a como ponto de entrada da aplicação.</p>
+
+                <p class="margin-around">Uma das vantagens do uso de um IDE é que o editor em que você trabalha normalmente fornece a funcionalidade autocompletar código, o que, se você aprender a aplicar quando codifica, pode aumentar, rapidamente, a sua produtividade. O editor do IDE geralmente se adapta à tecnologia que você está usando, assim, se você estiver trabalhando em uma página HTML, ao pressionar a combinação de teclas para autocompletar código (Ctrl-Espaço) serão produzidas sugestões para atributos e tags HTML. Como será mostrado mais tarde, o mesmo se aplica a outras tecnologias, como CSS e JavaScript.</p>
+
+                <p class="margin-around">
+                    Uma segunda funcionalidade que pode ser utilizada é a Paleta do IDE. A Paleta fornece modelos fáceis de utilizar para elementos que são comumente aplicados na tecnologia em que você está codificando. Você simplesmente clica em um item e arrasta-o para um local no arquivo aberto no Editor de Código-Fonte.</p>
+
+                <p class="tips margin-around">Você pode exibir ícones grandes (como exibido aqui) clicando com o botão direito do mouse na Paleta e selecionando Mostrar Ícones Grandes.</p>
+            </div>
+
+            <br clear="all">
+            <ol>
+                <li>Na janela Projetos, clique com o botão direito do mouse no nó <code>MyAjaxApp</code> do projeto e selecione Novo > Arquivo HTML.</li>
+
+                <li>No assistente Arquivo HTML, nomeie o arquivo <code>index</code> e, em seguida, clique em <strong>Finalizar</strong>. O novo arquivo <code>index.html</code> será aberto no editor.</li>
+
+                <li>Substitua o conteúdo existente para os arquivos como se segue.
+
+<pre class="examplecode">
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
+    &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;Auto-Completion using AJAX&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Auto-Completion using AJAX&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre></li>
+
+                <li>Adicione algum texto explicativo para descrever a finalidade do campo de texto. Você pode copiar e colar no texto a seguir, no ponto logo abaixo das tags <code>&lt;h1></code>:
+
+<pre class="examplecode">
+&lt;p&gt;This example shows how you can do real time auto-completion using Asynchronous
+    JavaScript and XML (Ajax) interactions.&lt;/p&gt;
+
+&lt;p&gt;In the form below enter a name. Possible names that will be completed are displayed
+    below the form. For example, try typing in &quot;Bach,&quot; &quot;Mozart,&quot; or &quot;Stravinsky,&quot;
+    then click on one of the selections to see composer details.&lt;/p&gt;
+</pre>
+                </li>
+
+                <li>Adicione um form HTML à página. Faça isso utilizando os elementos listados na Paleta do IDE. Se a Paleta não estiver aberta, selecione Janela > Paleta no menu principal. Em seguida, em Forms HTML, clique e arraste um elemento Form para a página, um ponto abaixo das tags <code>&lt;p></code> que você acabou de adicionar. A caixa de diálogo Inserir Form será aberta. Especifique o seguinte: <br><br>
+                    <ul>
+                        <li>Ação: autocomplete.php</li>
+                        <li>Método: GET</li>
+                        <li>Nome: autofillform</li>
+                    </ul>
+
+                    <img alt="Caixa de diálogo Inserir form" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-insert-form.png" title="Caixa de diálogo Inserir form">
+
+                    <p>Clique em OK. As tags HTML <code>&lt;form></code> serão inseridas na página que contém os atributos especificados. (GET é aplicado por default e, portanto, não é declarado explicitamente.)</p></li>
+
+                <li>Adicione uma tabela HTML à página. Na categoria HTML na Paleta, clique em um elemento Tabela e arraste-o para um ponto entre as tags <code>&lt;form></code>. A caixa de diálogo Inserir Tabela será aberta. Especifique o seguinte: <br><br>
+                    <ul>
+                        <li>Linhas: 2</li>
+                        <li>Colunas: 2</li>
+                        <li>Tamanho da Borda: 0</li>
+                        <li>Largura: 0</li>
+                        <li>Espaçamento da Célula: 0</li>
+                        <li>Preenchimento de Células: 5</li>
+                    </ul>
+
+                  <img alt="Caixa de diálogo Inserir tabela" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/insert-table.png" title="Caixa de diálogo Inserir tabela">
+                </li>
+
+                <li>Clique com o botão direito do mouse no Editor de Código-Fonte e selecione Formatar. Isso limpa o código. Seu form agora deve ser semelhante ao abaixo:
+
+<pre class="examplecode">
+&lt;form name=&quot;autofillform&quot; action=&quot;autocomplete.php&quot;&gt;
+  &lt;table border=&quot;0&quot; cellpadding=&quot;5&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/form&gt;
+</pre></li>
+
+                <li>Na primeira linha da tabela, digite o seguinte texto na primeira coluna (alterações em <strong>negrito</strong>):
+
+<pre class="examplecode">&lt;td&gt;<strong>&lt;strong&gt;Composer Name:&lt;/strong&gt;</strong>&lt;/td&gt;</pre></li>
+
+                <li>Na segunda coluna da primeira linha, em vez de arrastar um campo Entrada de Texto da Paleta, digite o código abaixo manualmente.
+
+
+<pre class="examplecode">
+&lt;input type=&quot;text&quot;
+    size=&quot;40&quot;
+    id=&quot;complete-field&quot;
+    onkeyup=&quot;doCompletion();&quot;&gt;
+</pre>
+
+                    Enquanto digita, tente utilizar o suporte à funcionalidade autocompletar código incorporado do IDE. Por exemplo, digite <code>&lt;i</code> e, em seguida, pressione Ctrl-Espaço. Uma lista de opções sugeridas será exibida abaixo do seu cursor e uma descrição do elemento selecionado aparecerá em uma caixa acima. De fato, você pode pressionar Ctrl-Espaço a qualquer momento em que estiver codificando no Editor de Código-Fonte para ter acesso às opções possíveis. Além disso, caso só haja uma opção possível, pressionar Ctrl-Espaço completará automaticamente o nome do elemento. <br> <img alt="Função Autocompletar Código exibida no Editor de Código-Fonte" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/code-completion.png" style="width:688px" title="Ctrl-Espaço aciona a função autocompletar código no Editor de Código-Fonte"> <br> O atributo <code>onkeyup</code> que você digitou acima aponta para uma função JavaScript chamada <code>doCompletion()</code>. Essa função é chamada toda vez que uma tecla é pressionada no campo de texto do form, e mapeia para a chamada JavaScript representada no <a href="#flow-diagram">fluxograma</a> do Ajax acima.</li>
+
+                <li>Antes de prosseguir para trabalhar no editor JavaScript, faça com que o novo arquivo <code>index.html</code> substitua o arquivo <code>index.php</code> como ponto de entrada da aplicação. <br><br> Para fazê-lo, clique com o botão direito do mouse no nó do projeto na janela Projetos e selecione Propriedades. Selecione a categoria <strong>Configuração de Execução</strong> e, em seguida, digite <code>index.html</code> no campo Arquivo de Índice. <img alt="Janela Propriedades do Projeto: Configuração de Execução" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-entry-point.png" style="width:688px" title="Especificar o ponto de entrada da aplicação na janela Propriedades do Projeto"></li>
+
+                <li>Clique em OK para salvar as alterações e sair da janela Propriedades do Projeto.</li>
+
+                <li>Execute o projeto para ver como ele é em um browser. Clique no botão Executar Projeto (<img alt="Botão Executar Projeto" src="../../../images_www/articles/73/web/ajax-intro/run-project-btn.png">). O arquivo <code>index.html</code> será exibido no browser default. <br> <img alt="Página Índice exibida no browser" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/index-page.png" style="width:688px" title="Executar projeto para exibir seu status atual no browser">
+                </li>
+            </ol>
+
+
+            <h3 id="javascript">Utilizando o Editor JavaScript</h3>
+
+            <p>O novo Editor JavaScript do IDE fornece muitos recursos de edição avançados, como autocompletar código inteligente, realce de semântica, renomeação instantânea e recursos de refatoração, assim como muitas outras funcionalidades. Para obter mais informações sobre as funcionalidades de edição de JavaScript no IDE, consulte <a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/dev_html_apps.htm#BACFIFIG">Criando Arquivos JavaScript</a> em <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG">Desenvolvendo Aplicações com o NetBeans IDE - Guia do Usuário</a>. Consulte <a href="http://wiki.netbeans.org/JavaScript" target="_blank">http://wiki.netbeans.org/JavaScript</a> para obter uma especificação detalhada.</p>
+
+            <p>A funcionalidade autocompletar código JavaScript é automaticamente fornecida quando você codifica em arquivos <code>.js</code>, assim como em tags <code>&lt;script></code> quando trabalha com outras tecnologias (ou seja, HTML, RHTML, JSP, PHP). Quando você utiliza o Editor JavaScript, o IDE fornece informações sobre compatibilidade do browser, dependendo dos tipos de browser e as versões especificadas no painel Opções do JavaScript. Abra o painel Opções do JavaScript, selecionando Ferramentas > Opções (NetBeans > Preferências no Mac) e, em seguida, Diversos > JavaScript.</p>
+
+            <img alt="Painel Opções do JavaScript" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/php-javascript-options.png" title="Painel Opções do JavaScript">
+
+            <p>O IDE fornece suporte imediato para Firefox, Internet Explorer, Safari e Opera. No painel Opções do JavaScript, você também pode especificar a versão do mecanismo JavaScript à qual a funcionalidade autocompletar código se aplica.</p>
+
+            <p>Adicione um arquivo JavaScript à aplicação e comece a implementar <code>doCompletion()</code>.</p>
+
+            <ol>
+                <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto e selecione Novo > Arquivo JavaScript. (Se o arquivo JavaScript não estiver listado, selecione Outro. Em seguida, selecione o arquivo JavaScript na categoria Outro no assistente Novo Arquivo.)</li>
+
+                <li>Nomeie o arquivo como <code>javascript</code> e clique em Finalizar. O novo arquivo JavaScript aparecerá na janela Projetos e será aberto no editor.</li>
+
+                <li>Digite o código abaixo em <code>javascript.js</code>.
+
+<pre class="examplecode">
+var req;
+var isIE;
+
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+}
+
+function doCompletion() {
+        var url = &quot;autocomplete.php?action=complete&id=&quot; + escape(completeField.value);
+        req = initRequest();
+        req.open(&quot;GET&quot;, url, true);
+        req.onreadystatechange = callback;
+        req.send(null);
+}
+
+function initRequest() {
+    if (window.XMLHttpRequest) {
+        if (navigator.userAgent.indexOf('MSIE') != -1) {
+            isIE = true;
+        }
+        return new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        isIE = true;
+        return new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+    }
+}
+</pre>
+
+
+                    <p class="tips">O código acima executa um verificação simples de compatibilidade do browser para o Firefox 3 e para o Internet Explorer versões 6 e 7). Se desejar incorporar um código mais robusto para problemas de compatibilidade, considere usar este <a href="http://www.quirksmode.org/js/detect.html" target="_blank">script de detecção de browser</a> disponível em <a href="http://www.quirksmode.org" target="_blank">http://www.quirksmode.org</a>.</p></li>
+
+                <li>Volte para <code>index.html</code> e adicione uma referência ao arquivo JavaScript entre as tags <code>&lt;head></code>.
+
+<pre class="examplecode">
+&lt;script type=&quot;text/javascript&quot; src=&quot;javascript.js&quot;&gt;&lt;/script&gt;
+</pre>
+
+                    <p class="tips">Você pode alternar rapidamente entre as páginas abertas no editor pressionando Ctrl-Tab.</p></li>
+
+                <li>Insira uma chamada a <code>init()</code> na tag de abertura <code>&lt;body></code>.
+
+<pre class="examplecode">
+&lt;body <strong>onload=&quot;init()&quot;</strong>&gt;
+</pre>
+
+                    Isso garante que <code>init()</code> seja chamada toda vez que a página for carregada.</li>
+            </ol>
+
+            <p>A atribuição de <code>doCompletion()</code> é:</p>
+
+            <ul>
+                <li>criar um URL que contenha dados que possam ser utilizados pelo lado do servidor,</li>
+                <li>inicializar um objeto <code>XMLHttpRequest</code>, e</li>
+                <li>solicitar que o objeto <code>XMLHttpRequest</code> envie uma solicitação assíncrona para o servidor.</li>
+            </ul>
+
+            <p>O objeto <code>XMLHttpRequest</code> é o núcleo do Ajax e se tornou o padrão de fato para permitir que dados XML sejam passados assincronamente por HTTP. A interação <em>Assíncrona</em> implica que o browser pode continuar a processar eventos na página depois que a requisição tiver sido enviada. Os dados são passados em segundo plano, e podem ser carregados automaticamente na página sem exigir uma atualização da página.</p>
+
+            <p>Observe que o objeto <code>XMLHttpRequest</code> é realmente criado por <code>initRequest()</code>, que é chamada por <code>doCompletion()</code>. A função verifica se <code>XMLHttpRequest</code> pode ser entendido pelo browser e, se for o caso, cria um objeto <code>XMLHttpRequest</code>. Caso contrário, ela executa uma verificação em <code>ActiveXObject</code> (o <code>XMLHttpRequest</code> equivalente do Internet Explorer 6) e cria um <code>ActiveXObject</code>, se identificado.</p>
+
+            <p>Três parâmetros são especificados quando você cria um objeto <code>XMLHttpRequest</code>: um URL, o método HTTP (<code>GET</code> ou <code>POST</code>), e se a interação é assíncrona ou não. No exemplo acima, os parâmetros são:</p>
+
+            <ul>
+                <li>O URL <code>autocomplete.php</code> e o texto digitado no <code>campo de conclusão</code> pelo usuário:
+
+<pre class="examplecode">var url = &quot;autocomplete.php?action=complete&id=&quot; + escape(completeField.value);</pre></li>
+
+                <li><code>GET</code>, significando que as interações HTTP usam o método <code>GET</code>, e
+                <li><code>true</code>, significando que a interação é assíncrona:
+
+                    <pre class="examplecode">req.open(&quot;GET&quot;, url, true);</pre></li>
+            </ul>
+
+            <p>Se a interação for definida como assíncrona, uma função de chamada de retorno deve ser especificada. A função de chamada de retorno dessa interação é definida com a instrução:</p>
+
+<div class="indent">
+    <div class="indent">
+        <pre class="examplecode">req.onreadystatechange = callback;</pre>
+    </div>
+</div>
+
+            <p>e uma função <code>callback()</code> <a href="#callback">deve ser definida mais tarde</a>. A interação HTTP começa quando <code>XMLHttpRequest.send()</code> é chamada. Essa ação mapeia para a solicitação HTTP que é enviada para o servidor web no <a href="#flow-diagram">fluxograma</a> acima.</p>
+        </div>
+
+
+        <br>
+        <h2 id="serverside">Programando o Lado do Servidor</h2>
+
+        <p>O NetBeans IDE fornece um suporte abrangente para desenvolvimento na web usando PHP. Você pode configurar o ambiente de desenvolvimento usando um pacote *AMP, que permite que você edite e implante do IDE com rapidez e eficiência. O IDE permite a configuração do ambiente com um servidor local e remotamente, utilizando FTP ou SFTP. Você também pode configurar um depurador externo, como <a href="http://xdebug.org/" target="_blank">Xdebug</a> e configurar o teste da unidade com <a href="http://www.phpunit.de/" target="_blank">PHPUnit</a> da janela Opções PHP do IDE (Selecione Ferramentas > Opções; NetBeans > Preferências no Mac e, em seguida, selecione a guia PHP.) O editor do PHP fornece funcionalidades de edição padrão como funcionalidade autocompletar código, realce de sintaxe, ocorrências de marca, refatoração, modelos de código, popup de documentação, navegação em código, advertências do editor e, para NetBeans 6.9, emblemas de erro para sintaxes mal formadas. Consulte a página <a href="../intro-screencasts.html">Tutoriais e Demonstrações em Vídeo do NetBeans</a> para screencasts de suporte a PHP.</p>
+
+        <p>Em aplicações que requerem um banco de dados, o IDE oferece amplo suporte à maioria dos bancos de dados de base, especialmente o MySQL. Consulte as funcionalidades <a href="../../articles/mysql.html">screencast do NetBeans MySQL </a> e <a href="../../../features/ide/database.html">Integração do Banco de Dados</a> para obter mais detalhes.</p>
+
+        <p>A lógica de negócios para a aplicação de autocompletar que você está criando precisa processar solicitações recuperando dados do armazenamento de dados e, em seguida, preparar e enviar a resposta. Isso é implementado aqui usando-se um arquivo PHP chamado <code>autocomplete</code>. Antes de começar a codificar o arquivo, defina o armazenamento de dados e a funcionalidade exigidos pelo arquivo para acessar os dados.</p>
+
+        <ul>
+            <li><a href="#data">Criando o Armazenamento de Dados</a></li>
+            <li><a href="#business">Criando a Lógica de Negócios</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="data">Criando o Armazenamento de Dados</h3>
+
+            <p>Para esta aplicação simples, você criará uma classe chamada <code>Composer</code> que permite que a lógica de negócios recupere dados das entradas contidas em um array <code>composers</code>. Em seguida, você criará uma classe chamada <code>ComposerData</code> que retém dados do compositor utilizando o array.</p>
+
+            <ol>
+                <li>Clique com o botão direito do mouse no nó do projeto <code>MyAjaxApp</code> na janela Projetos e selecione Novo > Classe PHP.</li>
+
+                <li>Nomeie a classe como <code>Composer</code> e clique em Finalizar. A classe será criada e aberta no editor.</li>
+
+                <li>Cole no código a seguir dentro da classe (alterações em <strong>negrito</strong>).
+
+<pre class="examplecode">
+&lt;?php
+
+class Composer {
+
+    <strong>public $id;
+    public $firstName;
+    public $lastName;
+    public $category;
+
+    function __construct($id, $firstName, $lastName, $category) {
+        $this-&gt;id = $id;
+        $this-&gt;firstName = $firstName;
+        $this-&gt;lastName = $lastName;
+        $this-&gt;category = $category;
+    }</strong>
+}
+
+?&gt;</pre>
+                </li>
+            </ol>
+
+            <p>Crie a classe <code>ComposerData</code>.</p>
+
+            <ol>
+                <li>Clique com o botão direito do mouse no nó do projeto <code>MyAjaxApp</code> na janela Projetos e selecione Novo > Classe PHP.</li>
+
+                <li>Nomeie a classe como <code>ComposerData</code> e clique em Finalizar. A classe será criada e aberta no editor do IDE.</li>
+
+                <li>Adicione uma instrução <code>require</code> no topo da classe para especificar que a classe requer a classe <code>Composer.php</code> que acabou de criar (alterações em <strong>negrito</strong>).
+
+<pre class="examplecode">
+&lt;?php
+
+<strong>require &quot;Composer.php&quot;;</strong>
+
+class ComposerData {
+
+}</pre></li>
+
+                <li>No editor, cole no código a seguir dentro da classe (alterações em <strong>negrito</strong>).
+
+<pre class="examplecode">
+&lt;?php
+
+require &quot;Composer.php&quot;;
+
+class ComposerData {
+
+    <strong>public $composers;
+
+    function __construct() {
+        $this-&gt;composers = array(
+            new Composer(&quot;1&quot;, &quot;Johann Sebastian&quot;, &quot;Bach&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;2&quot;, &quot;Arcangelo&quot;, &quot;Corelli&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;3&quot;, &quot;George Frideric&quot;, &quot;Handel&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;4&quot;, &quot;Henry&quot;, &quot;Purcell&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;5&quot;, &quot;Jean-Philippe&quot;, &quot;Rameau&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;6&quot;, &quot;Domenico&quot;, &quot;Scarlatti&quot;, &quot;Baroque&quot;),
+            new Composer(&quot;7&quot;, &quot;Antonio&quot;, &quot;Vivaldi&quot;, &quot;Baroque&quot;),
+
+            new Composer(&quot;8&quot;, &quot;Ludwig van&quot;, &quot;Beethoven&quot;, &quot;Classical&quot;),
+            new Composer(&quot;9&quot;, &quot;Johannes&quot;, &quot;Brahms&quot;, &quot;Classical&quot;),
+            new Composer(&quot;10&quot;, &quot;Francesco&quot;, &quot;Cavalli&quot;, &quot;Classical&quot;),
+            new Composer(&quot;11&quot;, &quot;Fryderyk Franciszek&quot;, &quot;Chopin&quot;, &quot;Classical&quot;),
+            new Composer(&quot;12&quot;, &quot;Antonin&quot;, &quot;Dvorak&quot;, &quot;Classical&quot;),
+            new Composer(&quot;13&quot;, &quot;Franz Joseph&quot;, &quot;Haydn&quot;, &quot;Classical&quot;),
+            new Composer(&quot;14&quot;, &quot;Gustav&quot;, &quot;Mahler&quot;, &quot;Classical&quot;),
+            new Composer(&quot;15&quot;, &quot;Wolfgang Amadeus&quot;, &quot;Mozart&quot;, &quot;Classical&quot;),
+            new Composer(&quot;16&quot;, &quot;Johann&quot;, &quot;Pachelbel&quot;, &quot;Classical&quot;),
+            new Composer(&quot;17&quot;, &quot;Gioachino&quot;, &quot;Rossini&quot;, &quot;Classical&quot;),
+            new Composer(&quot;18&quot;, &quot;Dmitry&quot;, &quot;Shostakovich&quot;, &quot;Classical&quot;),
+            new Composer(&quot;19&quot;, &quot;Richard&quot;, &quot;Wagner&quot;, &quot;Classical&quot;),
+
+            new Composer(&quot;20&quot;, &quot;Louis-Hector&quot;, &quot;Berlioz&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;21&quot;, &quot;Georges&quot;, &quot;Bizet&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;22&quot;, &quot;Cesar&quot;, &quot;Cui&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;23&quot;, &quot;Claude&quot;, &quot;Debussy&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;24&quot;, &quot;Edward&quot;, &quot;Elgar&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;25&quot;, &quot;Gabriel&quot;, &quot;Faure&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;26&quot;, &quot;Cesar&quot;, &quot;Franck&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;27&quot;, &quot;Edvard&quot;, &quot;Grieg&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;28&quot;, &quot;Nikolay&quot;, &quot;Rimsky-Korsakov&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;29&quot;, &quot;Franz Joseph&quot;, &quot;Liszt&quot;, &quot;Romantic&quot;),
+
+            new Composer(&quot;30&quot;, &quot;Felix&quot;, &quot;Mendelssohn&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;31&quot;, &quot;Giacomo&quot;, &quot;Puccini&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;32&quot;, &quot;Sergei&quot;, &quot;Rachmaninoff&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;33&quot;, &quot;Camille&quot;, &quot;Saint-Saens&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;34&quot;, &quot;Franz&quot;, &quot;Schubert&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;35&quot;, &quot;Robert&quot;, &quot;Schumann&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;36&quot;, &quot;Jean&quot;, &quot;Sibelius&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;37&quot;, &quot;Bedrich&quot;, &quot;Smetana&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;38&quot;, &quot;Richard&quot;, &quot;Strauss&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;39&quot;, &quot;Pyotr Il'yich&quot;, &quot;Tchaikovsky&quot;, &quot;Romantic&quot;),
+            new Composer(&quot;40&quot;, &quot;Guiseppe&quot;, &quot;Verdi&quot;, &quot;Romantic&quot;),
+
+            new Composer(&quot;41&quot;, &quot;Bela&quot;, &quot;Bartok&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;42&quot;, &quot;Leonard&quot;, &quot;Bernstein&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;43&quot;, &quot;Benjamin&quot;, &quot;Britten&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;44&quot;, &quot;John&quot;, &quot;Cage&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;45&quot;, &quot;Aaron&quot;, &quot;Copland&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;46&quot;, &quot;George&quot;, &quot;Gershwin&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;47&quot;, &quot;Sergey&quot;, &quot;Prokofiev&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;48&quot;, &quot;Maurice&quot;, &quot;Ravel&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;49&quot;, &quot;Igor&quot;, &quot;Stravinsky&quot;, &quot;Post-Romantic&quot;),
+            new Composer(&quot;50&quot;, &quot;Carl&quot;, &quot;Orff&quot;, &quot;Post-Romantic&quot;),
+        );
+    }</strong>
+}
+
+?&gt;
+</pre>
+                </li>
+            </ol>
+
+
+            <h3 id="business">Criando a Lógica de Negócios</h3>
+
+            <p>Implemente a lógica para tratar o URL <code>autocomplete</code> que é recebido pela solicitação de entrada. Em vez de criar um novo arquivo PHP utilizando o assistente Arquivo como demonstrado na seção anterior, modifique o arquivo <code>index.php</code> existente para esse propósito.</p>
+
+            <ol>
+                <li>Na janela Projetos, clique no nó de arquivo <code>index.php</code>. O nome do arquivo se tornará editável, permitindo modificar o nome. <br> <img alt="Janela Projetos que exibe o nome do arquivo editável" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/edit-file-name.png" title="Clique nos nós dos arquivos para editar os nomes"></li>
+
+                <li>Nomeie o arquivo <code>autocomplete</code> e, em seguida, clique em Entrar. Clique duas vezes no novo arquivo <code>autocomplete.php</code> para que ele seja exibido no editor.</li>
+
+                <li>Substitua o código existente do arquivo pelo script a seguir.
+
+<pre class="examplecode">
+&lt;?php
+
+require_once(&quot;ComposerData.php&quot;);
+
+session_start();
+
+$composerData = new ComposerData();
+$composers = $composerData-&gt;composers;
+
+$results = array();
+$namesAdded = false;
+
+// simple matching for start of first or last name, or both
+if(isset($_GET['action']) && $_GET['action'] == &quot;complete&quot;) {
+    foreach($composers as $composer) {
+        if(!is_numeric($_GET['id']) &&
+
+            // if id matches first name
+            (stripos($composer-&gt;firstName, $_GET['id']) === 0 ||
+
+            // if id matches last name
+            stripos($composer-&gt;lastName, $_GET['id']) === 0) ||
+
+            // if id matches full name
+            stripos($composer-&gt;firstName.&quot; &quot;.$composer-&gt;lastName, $_GET['id']) === 0) {
+
+                $results[] = $composer;
+        }
+    }
+
+    // prepare xml data
+    if(sizeof($results) != 0) {
+        header('Content-type: text/xml');
+        echo &quot;&lt;composers&gt;&quot;;
+        foreach($results as $result) {
+            echo &quot;&lt;composer&gt;&quot;;
+            echo &quot;&lt;id&gt;&quot; . $result-&gt;id . &quot;&lt;/id&gt;&quot;;
+            echo &quot;&lt;firstName&gt;&quot; . $result-&gt;firstName . &quot;&lt;/firstName&gt;&quot;;
+            echo &quot;&lt;lastName&gt;&quot; . $result-&gt;lastName . &quot;&lt;/lastName&gt;&quot;;
+            echo &quot;&lt;/composer&gt;&quot;;
+        }
+        echo &quot;&lt;/composers&gt;&quot;;
+    }
+}
+
+// if user chooses from pop-up box
+if(isset($_GET['action']) && isset($_GET['id']) && $_GET['action'] == &quot;lookup&quot;) {
+    foreach($composers as $composer) {
+        if($composer-&gt;id == $_GET['id']) {
+            $_SESSION [&quot;id&quot;] = $composer-&gt;id;
+            $_SESSION [&quot;firstName&quot;] = $composer-&gt;firstName;
+            $_SESSION [&quot;lastName&quot;] = $composer-&gt;lastName;
+            $_SESSION [&quot;category&quot;] = $composer-&gt;category;
+
+            header(&quot;Location: composerView.php&quot;);
+        }
+    }
+}
+
+?&gt;</pre>
+                </li>
+            </ol>
+            <p class="notes"><strong>Observação: </strong> o arquivo composerView.php não é descrito neste tutorial. Você pode criar um arquivo para ver o resultado final da pesquisa. Uma amostra do arquivo é incluída na <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip" target="_blank">aplicação de amostra</a>.</p>
+            <p>Como você pode ver, não há nada realmente novo que precise ser aprendido para escrever código no servidor para processamento em Ajax. O tipo de conteúdo da resposta precisa ser definido como <code>text/xml</code> para casos em que você deseje trocar documentos XML. Com o Ajax você também pode trocar texto simples ou até mesmo snippets de JavaScript, que podem ser avaliados ou executados pela função chamada de retorno no cliente. Observe também que alguns browsers podem armazenar no cache os resultados; portanto, talvez seja necessário definir o cabeçalho Cache-Control HTTP como <code>no-cache</code>.</p>
+
+            <p>Neste exemplo, o arquivo <code>autocomplete.php</code> gera um documento XML que contém todos os criadores com um primeiro ou último nome começando com os caracteres digitados pelo usuário. Este documento mapeia para os dados XML ilustrados no <a href="#flow-diagram">fluxograma</a> acima. Aqui está um exemplo de um documento XML que é retornado para o objeto <code>XMLHttpRequest</code>:</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;composers&gt;
+    &lt;composer&gt;
+        &lt;id&gt;12&lt;/id&gt;
+        &lt;firstName&gt;Antonin&lt;/firstName&gt;
+        &lt;lastName&gt;Dvorak&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;45&lt;/id&gt;
+        &lt;firstName&gt;Aaron&lt;/firstName&gt;
+        &lt;lastName&gt;Copland&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;7&lt;/id&gt;
+        &lt;firstName&gt;Antonio&lt;/firstName&gt;
+        &lt;lastName&gt;Vivaldi&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;2&lt;/id&gt;
+        &lt;firstName&gt;Arcangelo&lt;/firstName&gt;
+        &lt;lastName&gt;Corelli&lt;/lastName&gt;
+    &lt;/composer&gt;
+&lt;/composers&gt;
+</pre>
+                </div>
+            </div>
+        </div>
+
+
+        <br>
+        <h2 id="client2">Programando o Lado do Cliente: Parte 2</h2>
+
+        <p>Você deve definir a função de chamada de retorno para tratar a resposta do servidor, e adicionar qualquer funcionalidade necessária para refletir alterações na página exibidas pelo usuário. Isso requer a modificação do HTML DOM. Finalmente, você pode trabalhar no Editor CSS do IDE para adicionar uma folha de estilo simples na apresentação.</p>
+
+        <ul>
+            <li><a href="#callback">Adicionando a Funcionalidade de Retorno de Chamada</a></li>
+            <li><a href="#htmldom">Atualizando o HTML DOM</a></li>
+            <li><a href="#stylesheet">Anexando uma Folha de Estilo</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="callback">Adicionando a Funcionalidade de Retorno de Chamada</h3>
+
+            <p>A função de retorno de chamada é chamada assincronamente em pontos específicos durante a interação HTTP quando a propriedade <code>readyState</code> do objeto <code>XMLHttpRequest</code> é alterada. Na aplicação que está sendo construída, a função chamada de retorno é <code>callback()</code>. Você lembra que em <code>doCompletion()</code>, <code>callback</code> foi definido como a propriedade <code>XMLHttpRequest.onreadystatechange</code> para uma função. Agora, implemente a função de retorno de chamada da seguinte forma.</p>
+
+            <ol>
+                <li>Abra <code>javascript.js</code> no editor e digite o código abaixo.
+
+<pre class="examplecode">
+function callback() {
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}
+</pre>
+                </li>
+            </ol>
+
+            <p>Um <code>readyState</code> de "4" significa a conclusão da interação HTTP. A API de <code>XMLHttpRequest.readState</code> indica que há 5 valores possíveis que podem ser definidos. São elas:</p>
+
+            <div class="indent">
+                <div class="indent">
+                    <table style="width:400px">
+                        <thead class="tblheader">
+                            <tr>
+                                <th class="innerpadding">Valor <code>readyState</code></th>
+                                <th class="innerpadding">Definição do Status do Objeto</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbltd0 align-center">
+                            <tr>
+                                <td>0</td>
+                                <td>não inicializado</td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>carregando</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>carregado</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>interativo</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>completo</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br>
+            <p>Observe que a função <code>parseMessages()</code> somente é chamada quando o <code>XMLHttpRequest.readyState</code> é "4" e o <code>status</code> (a definição do código de status HTTP da solicitação) é "200", significando êxito. Você definirá <code>parseMessages()</code> em seguida em <a href="#htmldom">Atualizando o HTML DOM</a>.</p>
+
+
+            <h3 id="htmldom">Atualizando o HTML DOM</h3>
+
+            <p>A função <code>parseMessages()</code> trata os dados XML de entrada. Fazendo isso, ela conta com várias funções auxiliares, como <code>appendComposer()</code>, <code>getElementY()</code> e <code>clearTable()</code>. Você também deve introduzir novos elementos na página de índice, como uma segunda tabela HTML que serve como a caixa autocompletar, e os IDs dos elementos, para que eles possam ser referenciados em <code>javascript.js</code>. Finalmente, crie novas variáveis que correspondam a IDs para os elementos em <code>index.php</code>, inicialize-as na função <code>init()</code> implementada anteriormente e adicione alguma funcionalidade que seja necessária sempre que <code>index.php</code> for carregado.</p>
+
+            <p class="notes"><strong>Observação: </strong>As funções e elementos que você cria nas etapas seguintes funcionam de forma interdependente. Recomendamos que você percorra esta seção e, em seguida, examine o código quando tudo estiver no lugar.</p>
+
+            <ol>
+                <li>Abra <code>index.html</code> no editor e digite o código abaixo para a segunda linha da tabela HTML criada anteriormente.
+
+<pre class="examplecode">
+&lt;tr&gt;
+    <strong>&lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+
+    &lt;td/&gt;</strong>
+&lt;/tr&gt;</pre>
+
+                    Essa nova linha, que pode ser identificada como "<code>auto-row</code>", funciona como um handler para o código JavaScript cujo objetivo é inserir uma nova tabela HTML que formará a caixa da funcionalidade autocompletar.</li>
+
+                <li>Abra <code>javascript.js</code> no editor e as três variáveis a seguir na parte superior do arquivo.
+
+<pre class="examplecode">
+var completeField;
+var completeTable;
+var autoRow;</pre></li>
+
+                <li>Adicione as seguintes linhas (em <strong>negrito</strong>) na função <code>init()</code>.
+
+<pre class="examplecode">
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+    <strong>completeTable = document.createElement(&quot;table&quot;);
+    completeTable.setAttribute(&quot;class&quot;, &quot;popupBox&quot;);
+    completeTable.setAttribute(&quot;style&quot;, &quot;display: none&quot;);
+    autoRow = document.getElementById(&quot;auto-row&quot;);
+    autoRow.appendChild(completeTable);
+    completeTable.style.top = getElementY(autoRow) + &quot;px&quot;;</strong>
+}</pre>
+
+                    Uma finalidade de <code>init()</code> é tornar os elementos que estão dentro de <code>index.html</code> acessíveis para outras funções que modificarão o DOM da página de índice. Acima, o script cria uma nova <code>table</code>HTML, adiciona a classe <code>popupBox</code> e modifica o estilo do elemento para <code>display: none</code>. Finalmente, atinge o elemento cujo <code>id</code> é <code>auto-row</code> e insere a nova <code>table</code> nele. Em outras palavras, o HTML modificado tem a aparência a seguir quando o código é executado.
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        <strong>&lt;table class=&quot;popupBox&quot; style=&quot;display: none&quot;&gt;&lt;/table&gt;</strong>
+    &lt;td/&gt;
+&lt;/tr&gt;</pre></li>
+
+                <li>Adicione <code>appendComposer()</code> a <code>javascript.js</code>.
+
+ <pre class="examplecode">
+function appendComposer(firstName,lastName,composerId) {
+
+    var row;
+    var cell;
+    var linkElement;
+
+    if (isIE) {
+        completeTable.style.display = 'block';
+        row = completeTable.insertRow(completeTable.rows.length);
+        cell = row.insertCell(0);
+    } else {
+        completeTable.style.display = 'table';
+        row = document.createElement(&quot;tr&quot;);
+        cell = document.createElement(&quot;td&quot;);
+        row.appendChild(cell);
+        completeTable.appendChild(row);
+    }
+
+    cell.className = &quot;popupCell&quot;;
+
+    linkElement = document.createElement(&quot;a&quot;);
+    linkElement.className = &quot;popupItem&quot;;
+    linkElement.setAttribute(&quot;href&quot;, &quot;autocomplete.php?action=lookup&id=&quot; + composerId);
+    linkElement.appendChild(document.createTextNode(firstName + &quot; &quot; + lastName));
+    cell.appendChild(linkElement);
+}</pre>
+
+                    Essa função cria uma nova linha da tabela, insere um link em um criador utilizando os dados passados para a função por meio de seus três parâmetros e insere a linha no elemento <code>complete-table</code> da página de índice.</li>
+
+                <li>Adicione <code>clearTable()</code> a <code>javascript.js</code>.
+
+ <pre class="examplecode">
+function clearTable() {
+    if (completeTable.getElementsByTagName("tr").length > 0) {
+        completeTable.style.display = 'none';
+        for (loop = completeTable.childNodes.length -1; loop >= 0 ; loop--) {
+            completeTable.removeChild(completeTable.childNodes[loop]);
+        }
+    }
+}</pre>
+
+                    Essa função define a exibição do elemento <code>complete-table</code> como "none" (ou seja, o torna invisível) e remove quaisquer entradas de nome de criador existentes que tenham sido criadas.</li>
+
+                <li>Adicione <code>getElementY()</code> a <code>javascript.js</code>.
+
+                <pre class="examplecode">
+function getElementY(element){
+
+    var targetTop = 0;
+
+    if (element.offsetParent) {
+        while (element.offsetParent) {
+            targetTop += element.offsetTop;
+            element = element.offsetParent;
+        }
+    } else if (element.y) {
+        targetTop += element.y;
+    }
+    return targetTop;
+}</pre>
+
+                    Essa função é aplicada para localizar a posição vertical do elemento pai. Isso é necessário porque a posição real do elemento, quando ele é exibido, frequentemente depende do tipo e da versão do browser. Note que o elemento <code>complete-table</code>, quando é exibido contendo nomes de criador, é deslocado para o lado direito inferior da tabela em que ele está. O posicionamento correto da altura é determinado por <code>getElementY()</code>. <br><br>
+                    <p class="notes"><strong>Observação: </strong>Consulte <a href="http://www.quirksmode.org/js/findpos.html" target="_blank">esta explicação</a> de <code>offset</code> em <a href="http://www.quirksmode.org/" target="_blank">http://www.quirksmode.org/</a>.</p></li>
+
+                <li>Modifique a função <code>callback()</code> para que chame <code>clearTable()</code> cada vez que novos dados forem recebidos do servidor. Quaisquer entradas do criador que já existam na caixa autocompletar serão, portanto, removidas, antes que esta seja preenchida com novas entradas.
+
+<pre class="examplecode">
+function callback() {
+
+    <strong>clearTable();</strong>
+
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+
+                <li>Adicione <code>parseMessages()</code> a <code>javascript.js</code>.
+
+<pre class="examplecode">
+function parseMessages(responseXML) {
+
+    // no matches returned
+    if (responseXML == null) {
+        return false;
+    } else {
+
+        var composers = responseXML.getElementsByTagName(&quot;composers&quot;)[0];
+
+        if (composers.childNodes.length &gt; 0) {
+            completeTable.setAttribute(&quot;bordercolor&quot;, &quot;black&quot;);
+            completeTable.setAttribute(&quot;border&quot;, &quot;1&quot;);
+
+            for (loop = 0; loop &lt; composers.childNodes.length; loop++) {
+                var composer = composers.childNodes[loop];
+                var firstName = composer.getElementsByTagName(&quot;firstName&quot;)[0];
+                var lastName = composer.getElementsByTagName(&quot;lastName&quot;)[0];
+                var composerId = composer.getElementsByTagName(&quot;id&quot;)[0];
+                appendComposer(firstName.childNodes[0].nodeValue,
+                    lastName.childNodes[0].nodeValue,
+                    composerId.childNodes[0].nodeValue);
+            }
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>A função <code>parseMessages()</code> recebe como um parâmetro uma representação de objeto do documento XML retornado pelo arquivo <code>autocomplete.php</code>. A função percorre programaticamente o documento XML, extraindo <code>firstName</code>, <code>lastName</code> e <code>id</code> de cada entrada e, em seguida, ela passa esses dados para <code>appendComposer()</code>. Isso resulta em uma atualização dinâmica do conteúdo do elemento <code>complete-table</code>. Por exemplo, uma entrada que é gerada e inserida em <code>complete-table</code> deve ter a seguinte aparência:</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td class=&quot;popupCell&quot;&gt;
+        &lt;a class=&quot;popupItem&quot; href=&quot;autocomplete?action=lookup&id=12&quot;&gt;Antonin Dvorak&lt;/a&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+</pre>
+                </div>
+            </div>
+
+            <p>A atualização dinâmica do elemento <code>complete-table</code> representa a etapa final do fluxo do processo de comunicação que acontece durante a comunicação por meio do Ajax. Essa atualização mapeia para os dados HTML e CSS sendo enviados para a apresentação no <a href="#flow-diagram">fluxograma</a> acima.</p>
+
+
+            <h3 id="stylesheet">Anexando uma Folha de Estilo</h3>
+
+            <p>Nesse estágio, você concluiu todo o código necessário para a funcionalidade da aplicação. Para ver os resultados dos seus esforços, tente executar a aplicação agora.</p>
+
+            <ol>
+                <li>Execute o projeto para ver como ele é em um browser. Clique no botão Executar Projeto (<img alt="Botão Executar Projeto" src="../../../images_www/articles/73/web/ajax-intro/run-project-btn.png">). O arquivo <code>index.html</code> será exibido no seu browser. <br> <img alt="Aplicação exibida no browser sem folha de estilo" class="margin-around b-all" src="../../../images_www/articles/73/web/ajax-intro/no-css.png" title="Implantação com sucesso sem folha de estilo"></li>
+            </ol>
+
+            <p>Para anexar uma folha de estilo à sua aplicação, basta criar um arquivo CSS (Cascading Style Sheet) e vincule-o a partir das suas páginas de apresentação. Quando você trabalha em arquivos CSS, o IDE fornece o suporte à funcionalidade autocompletar código, assim como várias outras funcionalidades que podem ajudar na produção de regras de folha de estilo. Entre eles se incluem:</p>
+
+            <ul>
+                <li><strong>Construtor de Estilo CSS:</strong> uma interface criada para permitir que você crie regras utilizando uma seleção de controles e widgets. (Janela > Outro > Construtor de Estilo CSS)</li>
+
+                <li><strong>Visualização de CSS:</strong> uma janela de visualização que, quando você coloca o cursor em uma regra, exibe o texto de amostra renderizado de acordo com o bloco de declaração dessa regra. (Janela > Outro > Visualização CSS)</li>
+
+                <li><strong>Editor de Regras de Estilo:</strong> uma caixa de diálogo que permite que você crie regras com base em classes, IDs e elementos HTML e que defina sua posição na hierarquia do documento. (Botão Criar Regra ( <img alt="Editor de Regra de Estilo" src="../../../images_www/articles/73/web/ajax-intro/style-rule-editor-btn.png"> ), localizado na região esquerda superior da barra de editores do CSS)</li>
+            </ul>
+
+            <p class="tips">O NetBeans 6.9 fornece o suporte Encontrar Utilidades e Refatoração Renomear. Esse suporte está disponível não somente em arquivos css, mas em todos os arquivos contendo código CSS incorporados (exemplo, HTML, PHP). Classes CSS, ids e elementos de tipo podem ser refatorados em todos os arquivos do projeto. Para fazer uso desse suporte a refatoração, pressione Ctrl-R em um dado elemento CSS e utilize a caixa de diálogo fornecida para efetuar a ação de renomear. Você também pode visualizar alterações, antes de efetuar a ação de renomear. Para utilizar o suporte a Encontrar Utilidades, clique com o botão direito do mouse em um elemento CSS e selecione Encontrar Utilidades. Consulte <a href="http://wiki.netbeans.org/wiki/index.php?title=NewAndNoteworthy69m1&section=T-25#Web_Languages" target="_blank">NewAndNoteworthy69m1</a> para obter mais detalhes.</p>
+
+            <p>Efetue as etapas a seguir para anexar uma folha de estilo à aplicação.</p>
+
+            <ol>
+                <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto e selecione Novo > Folha de Estilo em Cascata (caso Folha de Estilo em Cascata não esteja listado, selecione Outro. Em seguida, selecione Folha de Estilo em Cascata na categoria Outro no assistente Novo Arquivo.)</li>
+
+                <li>No campo de texto Nome do Arquivo CSS, digite <code>stylesheet</code>.</li>
+
+                <li>Clique em Finalizar. O novo arquivo será adicionado à janela Projetos, e aberto no editor do IDE.</li>
+
+                <li>Em <code>stylesheet.css</code>, digite as regras a seguir. Você pode utilizar o suporte à funcionalidade autocompletar código do IDE pressionando Ctrl-Espaço nos pontos em que desejar acionar sugestões.
+
+<pre class="examplecode">
+body {
+   font-family: sans-serif;
+   font-size: smaller;
+   padding: 50px;
+   color: #555;
+   width: 650px;
+}
+
+h1 {
+   letter-spacing: 6px;
+   font-size: 1.6em;
+   color: #be7429;
+   font-weight: bold;
+}
+
+h2 {
+   text-align: left;
+   letter-spacing: 6px;
+   font-size: 1.4em;
+   color: #be7429;
+   font-weight: normal;
+   width: 450px;
+}
+
+table {
+   width: 550px;
+   padding: 10px;
+   background-color: #c5e7e0;
+}
+
+td {
+   padding: 10px;
+}
+
+a {
+  color: #be7429;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.popupBox {
+  position: absolute;
+  top: 170px;
+  left: 140px;
+}
+
+.popupCell {
+   background-color: #fffafa;
+}
+
+.popupCell:hover {
+  background-color: #f5ebe9;
+}
+
+.popupItem {
+  color: #333;
+  text-decoration: none;
+  font-size: 1.2em;
+}</pre>
+
+                    <p class="tips">Execute uma verificação da validade do seu código CSS, clicando com o botão direito do mouse no Editor CSS e selecionando Verificar CSS. Quaisquer erros encontrados são exibidos na janela de Saída (Janelas > Saída).</p></li>
+
+                
+                <li>Alterne para a página <code>index.html</code> no editor (pressione Ctrl-Tab) e adicione uma referência à folha de estilo entre as tags <code>&lt;head></code>.
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;
+</pre></li>
+
+                <li>Execute a aplicação novamente. A página de índice é exibida no browser utilizando a folha de estilo recém-criada. Toda vez que você digita um caractere, uma solicitação assíncrona é enviada para o servidor e retornada com dados XML que foram preparados por <code>autocomplete.php</code>. Conforme você digita mais caracteres, o número de nomes de criador diminui para refletir a nova lista de correspondências.</li>
+
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="conclusion">Conclusão</h2>
+
+        <p>Isso conclui a Introdução ao Ajax. Esperamos que agora você saiba que o Ajax está simplesmente trocando informações por HTTP em segundo plano, e atualizando essa página dinamicamente, com base nos resultados.</p>
+
+        <p>Você talvez note que a aplicação que construiu tem vários problemas, como, por exemplo, nada acontece quando o nome de um criador é selecionado na caixa autocompletar! Fique à vontade para <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FPHP%252FMyAjaxApp.zip" target="_blank">fazer download da aplicação de amostra</a> para ver como ela pode ser implementada usando a tecnologia PHP. Além disso, você pode querer investigar a validação que impede que um usuário solicite um nome que não existe no armazenamento de dados. Você pode aprender mais sobre estas técnicas seguindo outros tutoriais na <a href="../../trails/php.html">Trilha de Aprendizado do NetBeans PHP</a>.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: Introduction to Ajax (PHP)">Envie-nos Seu Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">Consulte Também</h2>
+
+        <p>Para obter mais informações sobre a tecnologia Ajax e PHP em <a href="https://netbeans.org/" target="_blank">netbeans.org</a>, consulte os seguintes recursos:</p>
+
+        <ul>
+            <li><a href="wish-list-tutorial-main-page.html">Criando uma Aplicação CRUD de Lista de Desejos com PHP</a>. Um tutorial de 9 etapas que descreve como criar uma aplicação CRUD usando o suporte a PHP no IDE.</li>
+            <li><a href="../../docs/web/js-toolkits-jquery.html">Usando jQuery para Melhorar a Aparência e o Uso de uma Página Web</a>. Demonstra como integrar o núcleo jQuery e bibliotecas UI em um projeto NetBeans.</li>
+            <li><a href="../../docs/web/js-toolkits-dojo.html">Conectando um Dojo Tree a uma ArrayList utilizando JSON</a>. Com base em um JavaOne Hands-On Lab, esse documento mostra como implementar um widget Dojo Tree em uma página web e permitir que o servidor responda a solicitações Tree no formato JSON.</li>
+        </ul>
+
+    </body>
+</html>

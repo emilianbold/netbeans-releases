@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>Учебный курс по отладке проектов на языках C и C++</TITLE>
+   <meta name="DESCRIPTION" content="Short tutorial that demonstrates debugging C/C++
+   projects in NetBeans IDE">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Учебный курс по отладке проектов на языках C и C++</h1>
+<!-- START INTRO  -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+ <!--  <p><em>Contributed  by <i>Ann
+      Rice</i> and maintained by <i>Susan Morgan</i> --><br> Март 2013 г.</em> [Номер версии: V8.0-1]</div>
+
+<p>В этом кратком практическом руководстве рассматриваются некоторые аспекты отладки проектов C или C++ в IDE NetBeans.
+</p>
+<!-- END INTRO -->
+<h3>Содержание</h3>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.4 и 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.4 и 8.0">
+<table class="b-none vatop " cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#requirements" title="Требования">Требования</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#project" title="Создание примера проекта"></a>Создание примера проекта</td>
+   </tr>
+   <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#breakpoints" title="Создание точек останова"> Создание точек останова</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#starting" title="Запуск сеанса отладки">Запуск сеанса отладки</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#inspecting" title="Проверка состояния приложения">Проверка состояния приложения</a></td>
+   </tr>
+</table>
+
+<h2><a NAME="requirements"></a>Требования</h2>
+<p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Программное обеспечение или материал</th>
+<th class="tblheader" scope="col">Требуемая версия</th>
+</tr>
+<tr>
+<td class="tbltd1">IDE NetBeans</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">версия 7.4 или 8.0 с подключаемым модулем NetBeans C/C++</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Комплект для разработчика на языке Java (JDK)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">версия 7 или 8</a></td>
+</tr>
+</table>
+<p>Сведения о загрузке и установке необходимого программного обеспечения см. в разделах <a href="../../../community/releases/80/install.html">Инструкции по установке IDE NetBeans</a> и <a HREF="../../../community/releases/80/cpp-setup-instructions.html">Настройка IDE NetBeans для C/C++/Fortran</a>. 
+</p>
+<h2><a name="project"></a>Создание примера проекта</h2>
+<p>В IDE NetBeans с C/C++ используется отладчик <tt>gdb</tt> и обеспечиваются различные функции для отладки проектов пользователей. Для наглядного рассмотрения этих функций в этом практическом руководстве используется проект <tt>Quote</tt>. Если проект еще не создан, выполните следующие действия:
+         <ol>
+            <li>Выберите команду &quot;Файл&quot; &gt; &quot;Новый проект&quot;.</li>            
+            <li>В мастер проекта разверните категорию &quot;Образцы&quot; и подкатегорию &quot;C/C++&quot;.</li>            
+            <li>Выберите подкатегорию &quot;Приложения&quot;, затем выберите проект <tt>Quote</tt>.  Нажмите кнопку &quot;Далее&quot;, а затем нажмите кнопку &quot;Готово&quot;.
+            </li>
+         </ol>
+   <h2><a name="breakpoints"></a>Создание точек останова</h2>
+   <p>
+      Можно создавать точки останова и управлять ими в коде в любое время без запуска сеанса отладки.
+   </p>
+   <div class="indent">
+       <h3><a name="LineBreakpoint"></a>Создание и удаление точек останова на строке</h3>
+      <ol>
+         <li>
+            В проекте <tt>Quote_1</tt> откройте файл <tt>quote.cc</tt>.
+         </li>
+         <li>Установите точку останова на строке, щелкнув левое поле окна редактора исходного кода рядом со строкой 171 (<tt>response = readChar(&quot;Enter disk module type: (S for single disks, R for RAID; Q - exit)&quot;, 'S');</tt>).  Строка будет выделена красным цветом, что обозначает установку точки останова.<br> <img alt="Снимок окна &apos;Точка останова&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/line_breakpoint1.png">
+         </li>
+         <li>Чтобы удалить точку останова, щелкните значок в левом поле.
+         </li>
+         <li>Выберите &quot;Окно&quot; &gt; &quot;Отладка&quot; &gt; &quot;Точки останова&quot;, чтобы открыть окно точек останова.  Линейная точка останова находится в списке под узлом C/C++.<br> <img alt="Снимок окна &apos;Точка останова&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/line_breakpoint2.png">
+        </li>
+        <li>Разверните узел C/C++, чтобы стала видна точка останова.<br> <img alt="Снимок окна &apos;Точка останова&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/line_breakpoint2_expand.png"></li>
+      </ol>
+      <h3><a name="FunctionBreakpoint"></a>Создание точки останова на функции</h3>
+      <ol>
+         <li>Нажмите кнопку 'Создать новую точку останова' в левой части окна 'Точки останова' или выберите Отладка > Создать точку останова (Ctrl+Shift+F8)", чтобы открыть диалоговое окно 'Создание точки останова'.
+         </li>
+         <li>В списке 'Тип отладчика' выберите 'Встроенный'.</li>
+         <li>
+            В списке 'Тип точки останова' выберите 'Функция'.
+         </li>
+         <li>Введите имя функции <tt>Customer::GetDiscount</tt> в текстовом поле &quot;Имя функции&quot;. Нажмите кнопку &quot;ОК&quot;. <br> <img alt="Моментальный снимок диалогового окна &apos;Создать точку останова&apos;" class="margin-around" src="../../../images_www/articles/74/cnd/debugging/function_breakpoint1.png">
+         </li>
+         <li>Точка останова на функции установлена и добавлена в список в окне &quot;Точки останова&quot;.<br> <img alt="Снимок окна &apos;Точка останова&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/function_breakpoint2.png">
+         </li>
+         <li>Нажмите кнопку 'Выбрать группы точек останова' в левой части окна, чтобы объединить точки останова в различные группы и выбрать тип.<br> <img alt="Снимок объединения точек останова в группы в окне &apos;Точки останова&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/group_breakpoint_type.png"></li>
+         <li>Разверните группы 'Файл:Строка' и 'Функция', чтобы стали видны точки останова. <br> <img alt="Снимок точек останова, объединенных в группы" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/breakpoint_types.png"></li>
+      </ol>
+   </div>
+   
+<h2><a name="starting"></a>Запуск сеанса отладки</h2>
+<p>При запуске сеанса отладки в среде IDE запускается отладчик <tt>gdb</tt>, а затем выполняется приложение внутри отладчика. IDE автоматически открывает окна и панель инструментов отладчика и выводит результаты отладки в окне 'Результаты'.</p>
+<ol>
+   <li>Начните сеанс отладки для проекта <tt>Quote_1</tt>. Для этого нажмите кнопку 'Отладить проект' <img alt="Снимок кнопки &apos;Отладить&apos;" src="../../../images_www/articles/74/cnd/debugging/debugbutton.png"> или выберите Отладка > Отладить проект. <br>Запускается отладчик и приложение выполняется. Отображается панель инструментов отладчика. <br> <img alt="Снимок кнопок на панели инструментов отладчика" class="margin-around" src="../../../images_www/articles/74/cnd/debugging/debugger_toolbar.png">
+   </li>
+   <li>Откройте окно &quot;Сеансы&quot;: для этого выберите &quot;Окно&quot; &gt; &quot;Отладка&quot; &gt; &quot;Сеансы&quot;.  <br>Сеанс отладки показан в этом окне.
+   </li>
+</ol>
+<h2><a name="inspecting"></a>Проверка состояния приложения</h2>
+<ol>
+   <li>Приложение <tt>Quote_1</tt> отображает запрос на ввод данных в окне 'Результаты (Отладка)'.</li>
+   <li>Введите имя клиента после запроса &quot;Enter customer name:&quot; (Введите имя клиента).
+   <p>Приложение останавливается на ранее заданной точке останова функции Customer::GetDiscount, и в редакторе открывается файл customer.cc с фокусом в строке, где вызывается данная функция. В окне 'Точки останова' отобразятся две точки останова, установленные ранее. Зеленая стрелка счетчика программы отображается поверх значка точки останова функции. <br> <img alt="Снимок вкладки &apos;Точка останова&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/function_breakpoint3.png"></p>
+   </li>
+   <li>Нажмите на вкладку, чтобы открыть окно 'Стек вызовов' или выберите Окно > Отладка > Стек вызовов. В стеке вызовов отображаются три окна.<br> <img alt="Снимок вкладки &apos;Стек вызовов&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/call_stack.png">
+   </li>
+   <li>Откройте окно &quot;Переменные&quot;, в которой отображается одна переменная.  </li>
+   <!--<li>Click the <img src="../../../images_www/articles/74/cnd/debugging/autos.png" alt="Show autos button">
+   button in the left column in the Variables tab to show Autos instead of local
+   variables.</li>-->
+   <li>Щелкните значок 'Развернуть', чтобы развернуть структуру. <br> <img alt="Снимок вкладки &apos;Переменные&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/local_variables1.png">
+   </li>
+   <li>Нажмите кнопку &quot;Продолжить&quot; на панели инструментов. <br>Будет выполнена функция <tt>GetDiscount</tt>, и результаты скидки для клиента появятся в окне 'Результаты (Отладка)'. После этого отобразится запрос на ввод данных.
+   </li>
+   <li>Введите данные после отображения запроса. 
+<p>Программа остановится в следующей точке останова &ndash; в заданной ранее точке останова на строке.  В файле <tt>quote.cc</tt> вверху значка точки останова отобразится зеленая стрелка счетчика команд, обозначающая строку, на которой остановлена программа. <br><br> <img alt="Снимок окна вывода" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/line_breakpoint3.png">
+      </p>
+      </li>
+      <li>
+      Перейдите на вкладку &quot;Переменные&quot;, в которой отобразится длинный список переменных. <br> <img alt="Снимок вкладки &apos;Локальные переменные&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/local_variables2.png">
+   </li>
+   <li>Перейдите на вкладку &quot;Стек вызовов&quot;, в которой теперь отобразится одно окно в стеке.
+   </li>
+   <li>Выберите &quot;Окно&quot; &gt; &quot;Отладка&quot; &gt; &quot;Регистры&quot;.  <br>Откроется окно &quot;Регистры&quot;, отображающее текущее содержимое регистров. <br> <img alt="Снимок окна &apos;Регистрация&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/registers.png"> <br>
+   </li>
+   <li>Выберите &quot;Окно&quot; &gt; &quot;Отладка&quot; &gt; &quot;Дисассемблер&quot;.  <br>Откроется окно &quot;Дисассемблер&quot;, отображающее команды ассемблера для текущего файла исходного кода. <br> <img alt="Снимок окна &apos;Дисассемблер&apos;" class="margin-around b-all" src="../../../images_www/articles/74/cnd/debugging/disassembly.png"> <br>
+   </li> 
+   <li>
+      Нажмите кнопку 'Продолжить'; на панели инструментов и продолжите вводить данные в ответ на запросы в окно вывода, пока программа не будет завершена. </li>
+	<li>Когда вы нажимаете Enter, чтобы выйти из программы, сеанс отладки завершается. Чтобы завершить сеанс отладки до завершения выполнения программы, можно нажать кнопку 'Завершить сеанс отладчика' на панели инструментов или выбрать Отладка > Завершить сеанс отладчика.
+   </li>
+</ol>
+ <p>
+   </p><h2>См. также</h2>
+   <p>Дополнительные статьи о разработке с помощью C/C++/Fortran в IDE NetBeans см. в разделе <a href="https://netbeans.org/kb/trails/cnd.html">Учебные карты C/C++</a>.</p>
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Debugging%20C/C++%20Projects%20-%20NetBeans%20IDE%207.4%20Tutorial">Отправить отзыв по этому учебному курсу</a></div>
+
+</body>
+</html>

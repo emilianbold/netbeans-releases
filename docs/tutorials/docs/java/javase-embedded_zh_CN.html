@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>在 NetBeans IDE 中使用 Oracle Java SE 嵌入式支持</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JAVA, JAVA SE, EMBEDDED">
+       
+        <meta name="description" content="A short guide to setting up Java SE Embedded in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>在 NetBeans IDE 中使用 Oracle Java SE 嵌入式支持</h1>
+		<div class="articledate" style="margin-left: 0px;">作者：Tomas Zezula 和 Alyona Stashkova</div>
+        <p><a href="http://www.oracle.com/technetwork/java/embedded/overview/javase/index.html">Oracle Java Standard Edition 嵌入式</a>（Oracle Java SE 嵌入式）使用户能够为功能强大的嵌入式系统开发功能丰富、可靠且可移植的应用程序。NetBeans IDE 支持各种 Java SE 嵌入式功能，例如，印记、内存、电源、平台支持等。 </p>
+		
+        <p>在本教程中，您将了解如何在 NetBeans IDE 中开始使用 Java SE 嵌入式，以及如何使用 IDE 对 Java SE 嵌入式的支持。 </p>
+        <p><b>目录</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="此页上的内容适用于 NetBeans IDE 8.0">
+        <ul class="toc">
+		    <li><a href="#remote" title="在 NetBeans IDE 中设置远程平台">在 NetBeans IDE 中设置远程平台</a></li>
+			<li><a href="#calculator" title="创建项目">在 IDE 中创建和运行项目</a></li>
+			<li><a href="#project" title="将项目配置为使用远程平台">将项目配置为使用远程平台</a></li>
+			<li><a href="#use" title="在远程平台上运行项目">在远程平台上运行项目</a></li>
+            <li><a href="#see" title="另请参见">另请参见</a></li>
+        </ul>
+
+        <p><b>要学完本教程，您需要具备下表所列的软件和资源。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">版本 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+                  <td class="tbltd1">版本 7 或 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>在 NetBeans IDE 中设置远程平台</h2>
+	<p>在远程计算机上下载并安装 <a href="http://www.oracle.com/technetwork/java/embedded/downloads/javase/index.html?ssSourceSiteId=otncn">Oracle Java SE 嵌入式</a>运行时之后（在本教程中，Raspberry Pi 用于演示目的），您需要按如下方式使用远程平台设置 NetBeans IDE： </p>
+    <ul>
+
+<li>在 NetBeans IDE 中激活 Java SE 功能</li>
+<li>在 NetBeans IDE 中安装远程 Java SE 平台 </li>
+</ul>
+        <p><b>要在 IDE 中激活 Java SE 功能，请执行以下操作：</b></p>
+		
+        <ol>
+          <li>从 IDE 主工具栏中选择 "Tools"（工具）> "Plugins"（插件）。</li>
+		  <li>在 "Plugins"（插件）对话框中，单击 "Installed"（已安装）标签，并在可用功能列表中选择 "Java SE"。 
+  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/plugins.png" rel="lytebox" title="&amp;quot;Plugins&amp;quot;（插件）对话框"> <img alt="&amp;quot;Plugins&amp;quot;（插件）对话框" border="1" src="../../../images_www/articles/80/java/javase-embedded/plugins-small.png"></a></p> </li>
+		  <li>单击 "Activate"（激活）。</li>
+		  <li>在 "Installer"（安装程序）对话框的 "Welcome"（欢迎使用）面板上，单击 "Activate"（激活）。 </li>
+		  <li>在成功完成激活过程后，单击 "Finish"（完成）。</li>
+		  <li>单击 "Close"（关闭）以关闭 "Plugins"（插件）对话框。</li>
+		  
+		  
+		
+    </ol>
+	
+	<p><b>要在 NetBeans IDE 中安装远程 Java SE 平台，请执行以下操作：</b></p>
+	<ol><li>选择 "Tools"（工具）> "Java Platforms"（Java 平台）。<br> 此时将显示 "Java Platform Manager"（Java 平台管理器）对话框。
+<p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/jpmanager.png" rel="lytebox" title="&amp;quot;Name and Location&amp;quot;（名称和位置）面板"> <img alt="&amp;quot;Name and Location&amp;quot;（名称和位置）面板" border="1" src="../../../images_www/articles/80/java/javase-embedded/jpmanager-small.png"></a></p></li>
+					   <li>单击 "Add Platform"（添加平台）。</li>
+					   <li>在 "Add Java Platform"（添加 Java 平台）向导的 "Select Platform Type"（选择平台类型）中，选择 "Remote Java Standard Edition"（远程 Java Standard Edition）并单击 "Next"（下一步）。<br> IDE 将显示 "Add Java Platform"（添加 Java 平台）对话框。
+						 <p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/addjp.png" rel="lytebox" title="&amp;quot;Add Java Platform&amp;quot;（添加 Java 平台）对话框"> <img alt="&amp;quot;Add java Platform&amp;quot;（添加 Java 平台）对话框" border="1" src="../../../images_www/articles/80/java/javase-embedded/addjp-small.png"></a></p></li>
+					   <li>指定远程平台的详细信息，例如，名称、设备的 IP 地址或 DNS 名称、登录名、口令以及远程设备上 JRE 的路径。
+					   <p class="notes"><b>注：</b>目标操作系统必须是 UNIX（不支持 Windows）。</p></li>
+      <li>单击 "Finish"（完成）。IDE 将通过执行探测来验证远程 JRE，并下载远程 JRE 系统属性。<br> "Java Platform Manager"（Java 平台管理器）对话框中将显示新的远程 Java SE 平台。
+		<p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/jpremote.png" rel="lytebox" title="&amp;quot;Add Java Platform&amp;quot;（添加 Java 平台）对话框"> <img alt="&amp;quot;Add java Platform&amp;quot;（添加 Java 平台）对话框" border="1" src="../../../images_www/articles/80/java/javase-embedded/jpremote-small.png"></a></p></li>
+    </ol>
+					   <p>现已设置 NetBeans IDE 进行远程 Java SE 开发。</p>
+	<h2><a name="calculator"></a>在 IDE 中创建和运行项目 </h2>
+	<p>现在让我们创建一个项目，该项目将先在 IDE 中运行，然后在远程平台上运行。 </p>
+	<p><b>要创建项目，请执行以下操作：</b></p>
+	<ol>
+	<li>在 IDE 中，选择 "File"（文件）> "New Project"（新建项目）。</li> 
+	<li>在新建项目向导中，选择 "Java" 类别，然后在 "Projects"（项目）列表中选择 "Java Application"（Java 应用程序）。单击 "Next"（下一步）。 </li>
+	<li>在向导的 "Name and Location"（名称和位置）页中，执行以下操作：
+
+                <ul>
+                    <li>在 "Project Name"（项目名称）字段中，键入 <code>EmbeddedCalculator</code>。</li>
+                    <li>将“使用专用文件夹存储库”复选框保留为取消选中状态。</li>
+                    <li>在 "Create Main Class"（创建主类）字段中，键入 <code>embeddedcalculator.EmbeddedCalculator</code>。</li>
+                    
+                </ul>
+       <p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/wizard.png" rel="lytebox" title="新建项目向导：名称和位置"> <img alt="新建项目向导：名称和位置" border="1" src="../../../images_www/articles/80/java/javase-embedded/wizard-small.png"></a></p>         
+				
+      </li>          
+    <li>单击 "Finish"（完成）。<br>IDE 将在 "Projects"（项目）窗口中创建并打开 Java SE 项目。</li>
+	<li>将 <tt>// TODO code application logic here</tt> 一行替换为以下代码： 
+	    <pre>    int a = 1;
+    int b = 2;
+    int c = a + b;
+    System.out.println (c);</pre>
+	</li>
+	<li>通过选择 "File"（文件）> "Save"（保存）保存您所做的更改。 </li>
+	</ol>
+	<p>要测试应用程序，请右键单击项目名称，然后从上下文菜单中选择 "Run"（运行）。可以在 "Output"（输出）窗口（"Window"（窗口）> "Output"（输出））中查看计算的输出。</p>
+	<p class="align-center">
+					  <img alt="&amp;quot;Output&amp;quot;（输出）窗口" border="1" src="../../../images_www/articles/80/java/javase-embedded/run-ide.png"></p>
+	<h2><a name="project"></a>将项目配置为使用远程平台</h2>
+	<p>要使用 <a href="http://openjdk.java.net/jeps/161">compact1、compact2 或 compact3 运行时平台</a>在远程平台上开发 Java SE 嵌入式应用程序，需要在 IDE 中注册 JDK 8。 </p>
+	<p><b>要在 NetBeans IDE 中启用 JDK 8 支持，请执行以下操作：</b></p>
+	<ol>
+          <li>在 IDE 中，从主菜单中选择 "Tools"（工具）> "Java Platforms"（Java 平台）。</li>
+		  <li>在 "Java Platform Manager"（Java 平台管理器）对话框中单击 "Add Platform"（添加平台）。 </li>
+		  <li>在 "Add Java Platform"（添加 Java 平台）对话框中，选择 "Java Standard Edition"，然后单击 "Next"（下一步）。 </li>
+		  <li>指定包含 JDK 的目录，然后单击 "Next"（下一步）。 
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/jdk8.png" rel="lytebox" title="选中 JDK 8"> <img alt="选中 JDK 8" border="1" src="../../../images_www/articles/80/java/javase-embedded/jdk8-small.png"></a> </p></li>
+		  <li>验证平台源 zip 文件和 API 文档的默认位置是否有效。单击 "Finish"（完成）以关闭 "Add Java Platform"（添加 Java 平台）对话框。<br> JDK 8 作为平台注册在 IDE 中。 
+		    <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/jdk8registered.png" rel="lytebox" title="注册的 Java 平台"> <img alt="注册的 Java 平台" border="1" src="../../../images_www/articles/80/java/javase-embedded/jdk8registered-small.png"></a> </p></li>
+		<li>单击 "Close"（关闭）。</li>
+    </ol>
+	
+	<p><b>要配置项目以使用 JDK 8，请执行以下操作：</b></p>
+	<ol>
+	<li>在 "Projects"（项目）窗口中右键单击 "EmbeddedCalculator" 项目，然后从上下文菜单中选择 "Properties"（属性）。 </li>
+	<li>在 "Project Properties"（项目属性）对话框中，选择 "Libraries"（库）类别，然后将 JDK 1.8 设置为 Java 平台。 
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-jdk8.png" rel="lytebox" title="JDK 8 设置为 Java 平台"> <img alt="JDK 8 设置为 Java 平台" border="1" src="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-small.png"></a> </p></li>
+	 <li>选择 "Sources"（源）类别，然后将源代码/二进制格式设置为 "JDK 8"。
+		
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-source-jdk8.png" rel="lytebox" title="将源代码/二进制格式设置为 JDK 8"> <img alt="将源代码/二进制格式设置为 JDK 8" border="1" src="../../../images_www/articles/80/java/javase-embedded/prj-source-jdk8-small.png"></a> </p> </li>
+	<li>指定在远程平台上用作运行时的配置文件（例如，简洁 2）。
+	<p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-profile.png" rel="lytebox" title="将配置文件设置为 &amp;quot;Compact 2&amp;quot;（简洁 2）"> <img alt="将配置文件设置为 &amp;quot;Compact 2&amp;quot;（简洁 2）" border="1" src="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-profile-small.png"></a> </p>  </li>
+	<li>单击“确定”保存更改。<br> 您的项目将设置为在远程平台上识别特定的运行时。</li>
+	</ol>
+	<h2><a name="use"></a>在远程平台上运行项目</h2>
+		 <p>将项目配置设置为默认配置之外的配置之后，可以在远程设备上运行和调试应用程序。 </p>
+	<p><b>要创建一个新的配置：</b></p>
+	<ol>
+	<li>在 "Projects"（项目）窗口中右键单击项目名称，然后从上下文菜单中选择 "Properties"（属性）。</li>
+	<li>选择 "Run"（运行）类别。</li>
+	<li>单击 "Configuration"（配置）下拉列表右侧的 "New"（新建）。</li>
+	<li>在 "Create New Configuration"（创建新的配置）对话框中，指定新配置的名称，然后单击 "OK"（确定）。</li>
+	<li>在 "Runtime Platform"（运行时平台）下拉列表中选择运行时平台名称。
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/config-runtime.png" rel="lytebox" title="设置运行时平台"> <img alt="设置运行时平台" border="1" src="../../../images_www/articles/80/java/javase-embedded/config-runtime-small.png"></a> </p></li>
+	<li>单击 "OK"（确定）保存所做的编辑。 </li>
+	</ol>
+	<p>如果在远程平台上运行项目（"Run"（运行）> "Run Project (project name)"（运行项目（项目名称））），则输出将看起来类似于下图中显示的内容。 </p>
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/run-remote.png" rel="lytebox" title="设置运行时平台"> <img alt="设置运行时平台" border="1" src="../../../images_www/articles/80/java/javase-embedded/run-remote-small.png"></a> </p>	
+<p><b>要在项目配置之间切换，请执行以下操作：</b> </p> 
+<ul>
+<li>选择 "Run"（运行）> "Set Project Configuration"（设置项目配置）> "configuration name"（配置名称），或者右键单击项目名称并从上下文菜单中选择 "Set Configuration"（设置配置）> "configuration name"（配置名称）。
+<p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/switch-config.png" rel="lytebox" title="在项目配置之间切换"> <img alt="在项目配置之间切换" border="1" src="../../../images_www/articles/80/java/javase-embedded/switch-config-small.png"></a> </p></li>
+
+</ul>
+		
+		 
+
+	 
+        
+        
+        
+
+         <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Setting%20Up%20Oracle%20Java%20SE%20Embedded%20in%20NetBeans%20IDE">发送有关此教程的反馈意见</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>另请参见</h2>
+        <ul>
+            
+			
+			<li><a href="http://www.oracle.com/technetwork/java/embedded/resources/se-embeddocs/index.html?ssSourceSiteId=null">Java SE 嵌入式文档</a></li>
+			<li><a href="https://www.youtube.com/watch?v=mAnne3N0d5Y#t=149" target="_blank">简化 Java SE 嵌入式开发 - 第 1 部分，共 2 部分 </a></li>
+			<li><a href="https://www.youtube.com/watch?v=G8oMx2SJZq8">简化 Java SE 嵌入式开发 - 第 2 部分，共 2 部分</a></li>
+			<li><a href="http://www.oracle.com/technetwork/articles/java/raspberrypi-1704896.html">Raspberry Pi 上的 Java® SE 嵌入式入门指南</a></li>
+	</ul>
+			
+
+        
+</body>
+</html>

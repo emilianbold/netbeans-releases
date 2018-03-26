@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="description" content="How to integrate PHPUnit and Selenium with NetBeans IDE for writing automated tests. Includes demonstration of Code Coverage and the IDE's test result UI.">
+<meta name="keywords" content="NetBeans, IDE, integrated development environment, tutorial, guide, user, documentation, open source, PHP, testing, automated testing, PHPUnit, Selenium, Code Coverage">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+<title>Testando com o PHPUnit e Selenium -- Tutorial do NetBeans IDE</title></head>
+<body>
+<h1>Testando com o PHPUnit e Selenium</h1>
+<p>O NetBeans IDE para PHP oferece suporte aos testes <a href="http://www.phpunit.de" target="_blank">PHPUnit</a> automatizados. Graças ao PHPUnit, o NetBeans IDE fornece a cobertura de código para PHP, semelhante à cobertura de código que o IDE fornece ao Python. A saída do teste aparece na mesma janela de saída rica em funcionalidades que os executores de teste JUnit, e Python do IDE utilizam. </p>
+<p>O NetBeans IDE também suporta o framework de teste portátil Selenium, em combinação com o PHPUnit. Um plug-in Selenium está disponível na Central de Atualização. A instalação deste plug-in adiciona um servidor Selenium aos servidores registrados do IDE e adiciona opções de teste Selenium aos menus PHP.</p>
+<p><b>Conteúdo</b></p>
+ <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+<ul class="toc">
+
+  <li><a href="#installing-phpunit">Instalando o PHPUnit</a></li>
+  <li><a href="#create-test">Criando e Executando Testes PHPUnit</a></li>
+  <li><a href="#test-groups">Usando Grupos de Teste</a></li>
+  <li><a href="#result-windows">Resultados do Teste e Saída do IDE</a></li>
+  <li><a href="#code-coverage">Cobertura de Código</a></li>
+  <li><a href="#project-specific-configurations">Utilizando Configurações Específicas do Projeto</a></li>
+  <li><a href="#selenium">Executando Testes no Framework do Selenium</a></li>
+</ul>
+<p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">Software ou Recurso</th>
+      <th class="tblheader" scope="col">Versão Necessária</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+      <td class="tbltd1">
+        Pacote de download do PHP</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">Um mecanismo PHP, incluindo PEAR</td>
+      <td class="tbltd1">Versão 5. </tr>
+    <tr>
+      <td class="tbltd1">Um servidor web</td>
+      <td>É recomendado o Apache HTTP Server 2.2.<br></td>
+    </tr>
+
+    
+<tr>
+        <td class="tbltd1"><a href="http://www.phpunit.de" target="_blank">PHPUnit</a></td>
+        <td>Versão 3.4.0 ou superior.</td>
+    </tr>
+    <tr>
+    <td class="tbltd1"><a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html" target="_blank">Gerador do Esqueleto do PHPUnit</a></td><td>Como versão de PHPUnit.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="installing-phpunit">Instalando o PHPUnit</h2>
+<p>Use PEAR para instalar o PHPUnit, conforme descrito na <a href="http://www.phpunit.de/manual/current/en/installation.html" target="_blank">documentação do PHPUnit</a> e no Gerador do Esqueleto do PHPUnit, conforme descrito na <a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html">documentação do Gerador do Esqueleto</a>. Instale o PHPUnit versão 3.4.0 ou superior. Nenhuma configuração especial é necessária. Após o PHPUnit ter sido instalado, o NetBeans poderá reconhecê-lo. Note que é necessário ter o PEAR instalado com seu mecanismo PHP. Note também que a documentação PHPUnit informa que o PHPUnit é normalmente instalado no diretório PEAR local. Eles fornecem um caminho de <tt>/usr/lib/php/PHPUnit</tt>, mas no XAMPP para Windows, é <tt>XAMPP_HOME\php\PEAR\PHPUnit</tt>. </p>
+<p>Para verificar se o NetBeans IDE reconhece sua instalação PHPUnit, abra Ferramentas > Opções (No Mac, abra Preferências do NetBeans) e examine a janela PHP. Abra a guia Teste de Unidade. Os caminhos para os scripts do Gerador do Esqueleto e do PHPUnit deverão ser exibidos. Se um script não estiver lá, clique em Pesquisar, ao lado do campo vazio. O IDE procura, no sistema local, o script. Como alternativa, clique em Procurar e procure o script.</p>
+<img alt="Página Opções que mostra o camiinho para o script do PHPUnit" class="margin-around" height="477" src="../../../images_www/articles/72/php/phpunit/unittesting-options.png" width="600">
+<h2 id="create-test">Criando e Executando Testes PHPUnit</h2>
+<p>O NetBeans IDE pode criar e executar testes PHPUnit em todas as classes PHP de um arquivo. Para ter certeza de que o gerador de teste irá funcionar, forneça ao arquivo PHP o mesmo nome que a primeira classe do arquivo. </p>
+<p><strong>Para criar e executar testes PHPUnit para um classe:</strong></p>
+<ol>
+  <li>Crie um projeto PHP denominado Calculador. Nesse projeto, crie um arquivo denominado <tt>calculator.php</tt>. Nesse arquivo, digite ou cole a classe Calculator a partir do <a href="http://www.phpunit.de/manual/current/en/skeleton-generator.html" target="_blank">capítulo Gerador do Esqueleto da documentação do PHPUnit</a>.
+  <pre class="examplecode">&lt;?php
+class Calculator
+{
+    public function add($a, $b)
+    {
+        return $a + $b;
+    }
+}
+?&gt;</pre></li>
+<li>Adicione um bloco de comentário com a <a href="http://sebastian-bergmann.de/archives/628-Improved-Skeleton-Generator-in-PHPUnit-3.html" target="_blank">anotação @assert</a> e alguma amostra de entrada e saída. Observe que uma afirmação incorreta está incluída neste exemplo.
+<pre class="examplecode">&lt;?php
+class Calculator
+{
+    /**
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == 1
+     * @assert (1, 0) == 1
+     * @assert (1, 1) == 2
+     * @assert (1, 2) == 4
+     */
+    public function add($a, $b)
+    {
+        return $a + $b;
+    }
+}
+?&gt;</pre>
+<p class="notes"><strong>Observação: </strong>Você pode usar autocompletar código da anotação para adicionar aotações <code>@assert</code>. Navegue entre os parâmetros com a tecla Tab ou clique em Enter depois de preencher um valor de parâmetro.</p>
+<img alt="Autocompletar código de anotação com a anotação @assert" class="margin-around b-all" height="410" src="../../../images_www/articles/72/php/phpunit/assert-cc.png" width="501"><img alt="Preenchendo parâmetros da anotação @assert utilizando autocompletar código" class="margin-around b-all" height="230" src="../../../images_www/articles/72/php/phpunit/assert-cc-complete.png" width="374"></li>
+<li>Na janela Projetos, clique com o botão direito do mouse no nó Calulator.php e selecione Ferramentas > Criar Testes PHPUnit. Observe que você pode criar testes para todos os arquivos em um projeto a partir do menu de contexto para o nó Arquivos de Código-Fonte.<br> <img alt="Menu de contexto para o nó Arquivos de Código-Fonte do Projeto PHP, mostrando a opção Criar Testes PHPUnit" class="margin-around" height="647" src="../../../images_www/articles/72/php/phpunit/create-tests.png" width="453"></li>
+<li>Na primeira vez que você cria testes, uma caixa de diálogo é aberta perguntando pelo diretório onde deseja armazenar os arquivos de teste. Nesse exemplo, a função Procurar foi utilizada para criar um diretório <tt>testes</tt>. <br><img alt="Caixa de diálogo do diretório do arquivo de teste" class="margin-around" height="177" src="../../../images_www/articles/72/php/phpunit/test-directory.png" width="364">
+<p class="notes"><strong>Observação:</strong> você pode escrever, manualmente, vários testes para um projeto. Se escrever vários testes, você poderá organizá-los em subpastas do diretório de arquivos de teste, como "importante" ou "rápido". Em seguida, você poderá executar testes em uma subpasta clicando com o botão direito do mouse nessa pasta e selecionando Executar Testes.</p>
+<img alt="Ação de contexto da pasta Executar Teste" class="margin-around b-all" height="265" src="../../../images_www/articles/72/php/phpunit/test-in-folder.png" width="279">
+</li>
+<li>O IDE gera uma classe de teste de esqueleto em um arquivo denominado CalculatorTest.php, que aparece em sua janela Projetos e é aberta no editor. <br><img alt="Janela Projetos que mostra nova classe de teste" class="margin-around" height="245" src="../../../images_www/articles/72/php/phpunit/test-class-in-project.png" width="204">
+<p>Observe que um teste é criado para cada anotação <tt>@assert</tt>.</p>
+<pre class="examplecode">    /**
+     * Generated from @assert (1, 1) == 2.
+     */
+    public function testAdd4()
+    {
+        $this->assertEquals(
+          2,
+          $this->object->add(1, 1)
+        );
+    }</pre></li>
+    <li>É possível testar um arquivo individual ou todo o projeto. Para testar o projeto, clique com o botão direito do mouse no nó pai do projeto e selecione Testar ou pressione Alt-F6. Para testar o arquivo Calculator.php, clique com o botão direito do mouse no nó do arquivo e selecione Testar ou pressione Ctrl-F6/⌘-F6. Esse exemplo tem somente uma classe em um arquivo, portanto, os resultados são os mesmos. O IDE executa os testes e exibe os resultados na janela Resultados do Teste. <br><img alt="Janela Resultados do Teste" class="margin-around" height="254" src="../../../images_www/articles/72/php/phpunit/test-results-narrow.png" width="600"> <p>Uma versão textual mais detalhada dos resultados é exibida na janela de Saída.</p>
+    <img alt="Janela de Saída que mostra os resultados do teste" class="margin-around" height="269" src="../../../images_www/articles/72/php/phpunit/test-result-output.png" width="535"></li>
+</ol>
+<h2><a name="test-groups"></a>Usando Grupos de Teste</h2>
+<p>Você pode selecionar quais grupos de testes quer executar quando for executar o conjunto de testes. Por exemplo, você pode ter alguns testes que deseja executar em um ambiente de produção e outros testes que deseja executar nos ambientes de produção e de desenvolvimento. Os testes antigos seriam colocados num grupo <tt>produção</tt> e os testes posteriores nos grupos <tt>produção</tt> e <tt>desenvolvimento</tt>. Quando o conjunto de testes é executado no ambiente de desenvolvimento, seleciona-se somente o grupo de teste de <tt>desenvolvimento</tt> a ser executado.</p>
+<p>É preciso ativar os grupos de teste para um projeto PHP, antes de usar os grupos de teste em qualquer arquivo do projeto. </p>
+<p>Para marcar um teste como parte de um grupo de teste, anote o método de teste com <tt>@group [nome do grupo]</tt>.</p>
+<p><strong>Para criar e executar grupos de teste:</strong></p>
+<ol>
+  <li>Na janela Projetos, clique com o botão direito do mouse no nó Calculadora e selecione Propriedades. Serão Exibidas as Propriedades do Projeto.</li>
+  <li>Nas Propriedades do Projeto, selecione a categoria PhpUnit. Selecione Solicitar Grupos de Teste, Antes de Executar os Testes. Clique em OK.<br><img alt="Propriedades do projeto, categoria PhpUnit, que mostra grupos de teste ativados" class="margin-around" height="429" src="../../../images_www/articles/72/php/phpunit/test-group-properties.png" width="600"></li>
+  <li>Abra <tt>CalculatorTest.php</tt> no editor.</li>
+  <li>Para os métodos <tt>testAdd</tt>, <tt>testAdd3</tt> e <tt>testAdd5</tt>, acrescente a anotação <tt>@group production</tt>.<br><img alt="Código que mostra anotação de grupo de teste" class="margin-around b-all" height="155" src="../../../images_www/articles/72/php/phpunit/production-group-annotation.png" width="391"></li>
+  <li>para os métodos <tt>testAdd2</tt> e <tt>testAdd4</tt>, adicione as anotações <tt>@group production</tt> e <tt>desenvolvimento @group</tt>. <img alt="Código que mostra anotações de grupo de teste" class="margin-around b-all" height="172" src="../../../images_www/articles/72/php/phpunit/production-development-group-code.png" width="388"></li>
+  <li>Clique com o botão direito do mouse no nó <tt>Calculator.php</tt> e selecione Teste. Uma caixa de diálogo será aberta, perguntando quais grupos de teste serão executados. Selecione “development” e clique em OK. O IDE só executa os testes anotados com <tt>@group development</tt>.<br><img alt="Caixa de diálogo Selecionar grupo de teste" class="margin-around" height="260" src="../../../images_www/articles/72/php/phpunit/select-test-group.png" width="374"></li>
+</ol>
+<p>Para obter mais informações sobre os grupos de teste PhpUnit no NetBeans IDE, consulte o post do blog do NetBeans IDE para PHP<a href="http://blogs.oracle.com/netbeansphp/entry/using_phpunit_test_groups" target="_blank">Usando Grupos de Teste da Unidade PHP</a>.</p>
+<h2 id="result-windows">Resultados de Teste e Saída do IDE</h2>
+<p>Os resultados dos testes PHPUnit são exibidos em duas das janelas do IDE, Resultados do Teste e Saída. A janela Resultados do Teste tem um painel gráfico e um painel de texto curto. A janela de Saída fornece um versão textual mais detalhada da saída. Nesta seção você explora as janelas Resultados do teste e Saída em mais detalhes.</p>
+<p>Na janela Resultados do Teste, você obtém informações sobre os testes que falharam destas localizações:</p>
+<ul>
+  <li>As mensagens no painel IU anexado à entrada da árvore para os testes que falharam</li>
+  <li>Texto no painel direito, incluindo links para as linhas do código de teste que falhou</li>
+  <li>Texto da dica de ferramenta que aparece quando você passa o cursor sobre o teste que falhou no painel de IU</li>
+</ul>
+<img alt="Janela Resultados do teste que mostra a dica de ferramenta" class="margin-around" height="267" src="../../../images_www/articles/72/php/phpunit/test-results-tooltip.png" width="596">
+<p>A janela Resultados do teste inclui os seguintes botões no lado esquerdo:</p>
+<ul>
+    <li> Reexecutar o teste <img alt="botão reexecutar" src="../../../images_www/articles/72/php/phpunit/rerun-button.png"></li>
+  <li>Mostrar testes com falha <img alt="Botão Mostrar testes com falha" src="../../../images_www/articles/72/php/phpunit/show-failed.png"></li>
+  <li>Mostrar testes que passaram <img alt="Botão Mostrar testes que passaram" src="../../../images_www/articles/72/php/phpunit/show-passed.png"></li>
+  <li>Mostrar testes que passaram, mas com erros <img alt="Botão Mostrar testes com erros" src="../../../images_www/articles/72/php/phpunit/show-error.png"></li>
+  <li>Navegue entre mostrar o próximo resultado do teste <img alt="botão próximo teste" src="../../../images_www/articles/72/php/phpunit/next-test-button.png"> ou o resultado do teste anterior <img alt="botão teste anterior" src="../../../images_www/articles/72/php/phpunit/previous-test-button.png"></li>
+</ul>
+<p>A janela de Saída mostra a saída completa do script PHPUnit. Ela pode ser útil quando você não pode identificar a causa de um erro com as informações na janela Resultados do Teste. Como na janela Resultados do Teste, a janela de Saída inclui links para a linha da classe de teste que falhou. Também inclui botões no lado esquerdo para reexecutar o teste e para abrir a janela Opções do PHP. <img alt="Botão na janela Sída vinculando a Opções" src="../../../images_www/articles/72/php/phpunit/options-link-button.png"></p>
+<img alt="Janela de Saída que mostra os resultados completos do teste PHPUnit" class="margin-around" height="269" src="../../../images_www/articles/72/php/phpunit/test-result-output.png" width="535">
+<h2 id="code-coverage">Cobertura de Código</h2>
+<p>O NetBeans IDE para PHP oferece a cobertura de código junto com o suporte a PHPUnit. (O IDE também oferece cobertura de código para Python). A cobertura do código verifica se todos os seus métodos são cobertos pelos testes PHPUnit. Nesta seção, você vê como funciona a cobertura de código com sua classe Calculator existente.</p>
+<p><strong>Para utilizar a cobertura de código:</strong></p>
+<ol>
+  <li>Abra Calculator.php e adicione uma função <tt>add</tt> duplicada, denominada <tt>add2</tt>. A classe <tt>Calculator</tt> agora se parece com o seguinte:
+  <pre class="examplecode">&lt;?php
+class Calculator {
+    /**
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == 1
+     * @assert (1, 0) == 1
+     * @assert (1, 1) == 2
+     * @assert (1, 2) == 4
+     */
+    public function add($a, $b) {
+        return $a + $b;
+    }
+
+    public function add2($a, $b) {
+        return $a + $b;
+    }
+
+}    
+?&gt;
+</pre></li>
+<li>Clique com o botão direito do mouse no nó do projeto. No menu de contexto, selecione Cobertura de Código > Coletar e Exibir a Cobertura de Código. Por default, Mostrar Barra do Editor também é selecionado. <br><img alt="Ativando a cobertura de código no menu de contexto do nó do projeto" border="1" class="margin-around" height="251" src="../../../images_www/articles/72/php/phpunit/turn-on-code-coverage.png" width="503"></li>
+<li>O editor agora tem uma barra do editor de cobertura de código na parte inferior. Como a cobertura do código ainda não foi testada, a barra do editor informa 0% de cobertura. (Ela também exibe isso após você clicar em Limpar para limpar os resultados do teste). <br><img alt="Barra do editor para cobertura de código antes que os testes sejam executados" class="margin-around" height="428" src="../../../images_www/articles/72/php/phpunit/editor-bar-before.png" width="592"></li>
+<li>Clique em Testar para testar o arquivo aberto ou em Todos os Testes para executar todos os testes do projeto. Os Resultados do Teste serão Exibidos. Além disso, a barra Cobertura de Código lhe informa qual a porcentagem das instruções de código executáveis é coberta pelos testes. Na janela editor, o código coberto é realçado em verde e o código não coberto é realçado em vermelho.
+    <p class="alert"><b>Advertência: </b>se os arquivos de testes forem gerados novamente DEPOIS da adição da função add2, os testes PHPUnit não serão executados. Isso ocorre porque o PHPUnit cria duas funções testAdd2 conflitantes. Não diferencie funções acrescentando números no final, caso pretenda usar o PHPUnit em mais de uma função como essa. Consulte a <a href="http://www.phpunit.de/ticket/701" target="_blank">documentação do PHPUnit</a>. </p>   
+<img alt="Barra do editor para cobertura de código, antes que os testes sejam executados" class="margin-around" src="../../../images_www/articles/72/php/phpunit/editor-bar-after.png"></li>
+<li>Na Barra do Editor, clique em Relatório... O relatório de Cobertura de Código será aberto, mostrando os resultados de todos os testes executados em seu projeto. Os botões no relatório permitem limpar os resultados, reexecutar todos os testes ou desativar a cobertura de código (clique em Concluído). <br><img alt="relatório de cobertura de código" class="margin-around" height="185" src="../../../images_www/articles/72/php/phpunit/code-coverage-report.png" width="405"></li>
+<li>Você pode adicionar outra classe ao seu projeto, deletar e recriar os arquivos de teste e examinar novamente o relatório de cobertura de código. Sua nova classe será listada. No relatório a seguir, a classe <tt>Calculator</tt> tem novamente uma função que não está incluída nos testes. <br><img alt="relatório da cobertura de código que mostra segunda classe" class="margin-around" height="226" src="../../../images_www/articles/72/php/phpunit/code-coverage-report2.png" width="451"></li>
+</ol>
+<h2 id="project-specific-configurations">Utilizando Configurações Específicas do Projeto</h2>
+<p>No IDE, você pode selecionar as configurações personalizadas a seguir no seu projeto:</p>
+<ul>
+  <li>Um arquivo bootstrap</li>
+  <li>Um arquivo de configuração XML</li>
+  <li>Um conjunto de testes</li>
+  <li>Um script PHPUnit personalizado</li>
+</ul>
+<p><strong>Para definir uma configuração específica de projeto:</strong></p> 
+<ol>
+<li>Clique com o botão direito do mouse no nó do projeto ou no nó Arquivos de Teste do projeto e selecione Propriedades. Isso abre a caixa de diálogo Propriedades.<br><img alt="Menu de contexto do projeto com Propriedades selecionado" class="margin-around" height="427" src="../../../images_www/articles/72/php/phpunit/project-ctxmenu.png" width="330"></li> 
+<li>Selecione a categoria PHPUnit. Uma caixa de diálogo será aberta, na qual você pode selecionar um arquivo bootstrap personalizado, um arquivo de configuração XML ou um arquivo de conjunto de testes.<br><img alt="Caixa de diálogo propriedades do projeto, categoria PHPUnit" class="margin-around" height="456" src="../../../images_www/articles/72/php/phpunit/proj-properties.png" width="600"></li> 
+<li>Se não estiver familiarizado com a estrutura dos arquivos bootstrap ou de configuração XML, você poderá usar o NetBeans IDE para gerar um esqueleto para você. Você também pode localizar instruções sobre como utilizar a caixa de diálogo clicando em Ajuda <br><img alt="Propriedades do projeto, categoria PHPUnit, detalhes" class="margin-around" height="423" src="../../../images_www/articles/72/php/phpunit/proj-properties-selected.png" width="379"></li>
+</ol>
+
+<p>A <em>opção bootstrap</em> é necessária em projetos que utilizam um carregador de classe personalizado, por exemplo, implementando a função mágica <tt>__autoload()</tt>. Você também pode utilizar a opção bootstrap se for necessário incluir um arquivo com antecedência, como um arquivo que defina as constantes globais utilizadas por várias classes no projeto.</p>
+<p>O <em>arquivo de configuração XML</em> permite definir as opções utilizadas em uma chamada da linha de comandos. Há uma introdução completa no <a href="http://www.phpunit.de/manual/3.3/en/appendixes.configuration.html" target="_blank" title="Manual do PHPUnit">manual do PHPUnit</a>. Você também pode utilizar o arquivo de configuração XML para definir variáveis globais e definições do <tt>php.ini</tt> dos casos de teste. Você pode definir a opção bootstrap também no arquivo de configuração XML.</p>
+<p>Se você definir um <em>conjunto de testes personalizado</em>, esse conjunto será executado sempre que você selecionar Executar > Testar Projeto. Isso é particularmente útil quando você desejar executar somente um subconjunto dos testes ou caso queira utilizar as funcionalidades adicionadas recentemente de PHPUnit que devem ser adicionadas manualmente, como Provedores de Dados. Observe que você pode definir quantos conjuntos de testes quiser e executá-los de forma separada clicando com o botão direito do mouse no explorador de projetos e selecionando "executar". Para evitar confusões, o NetBeans lhe avisa se estiver utilizando um Conjunto de Testes personalizado. A notificação pode ser localizada nos Resultados do Teste e na janela de Saída.</p>
+<p>Você pode usar um <em>script de PHPUnit personalizado</em> para um projeto, em vez de o srcipt default selecionado em Ferramentas > Opções. O sript de PHPUnit personalizado pode incluir quaisquer mudanças de linha de comandos descritas no <a href="http://www.phpunit.de/manual/3.7/en/textui.html">manual de PHPUnit</a>.</p>
+<p>&nbsp;</p>
+<h2 id="selenium">Executando Testes no Framework Selenium</h2>
+<p>O Selenium é um framework de teste de software portátil para aplicações Web. Os testes podem ser escritos como tabelas HTML ou codificados em diversas linguagens de programação populares e podem ser executados diretamente na maioria dos browsers modernos da Web. O Selenium pode ser implantado no Windows, Linux e Macintosh. Para obter mais detalhes, consulte o <a href="http://docs.seleniumhq.org" target="_blank">Web site do Selenium</a>. </p>
+<p>O NetBeans IDE tem um plug-in que inclui um servidor Selenium. Com esse plug-in, você pode executar testes Selenium nos projetos PHP, aplicações Web ou Maven. Para executar testes Selenium no PHP, é preciso instalar o pacote Testing Selenium em seu mecanismo PHP.</p>
+<p><strong>Para executar testes Selenium no PHP:</strong></p>
+<ol>
+  <li>Abra um prompt de comando e execute o comando <tt>pear install Testing_Selenium-beta</tt>. É preciso ter<tt> PHP_HOME/php/PEAR</tt> em seu Caminho. Se o comando obtiver êxito, o prompt exibirá <tt>install ok: channel://pear.php.net/Testing_Selenium-0.4.3</tt>.</li>
+  <li>No IDE, abra Ferramentas > Plug-ins e instale o Módulo Selenium para PHP.</li>
+  <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto Calculador. Selecione Novo > Outro. O Assistente de Novo Arquivo será aberto. Selecione Selenium e clique em Próximo. <br><img alt="Assistente Novo Arquivo com arquivo Selenium selecionado" class="margin-around" height="413" src="../../../images_www/articles/72/php/phpunit/new-selenium.png" width="543"></li>
+  <li>Na primeira vez que você cria um teste Selenium, será exibida uma caixa de diálogo solicitando que você defina um diretório para os arquivos de teste Selenium. Esse diretório deverá ser separado do diretório dos arquivos de teste PHPUnit. Caso contrário, os testes Selenium serão executados cada vez que você executar testes de unidade. A execução de testes funcionais como o Selenium, normalmente leva mais tempo do que a execução de testes de unidade, portanto, você provavelmente não desejará executar esses testes cada vez que executar testes de unidade.</li>
+  <li>Aceite os defaults na página Nome e Localização e clique em Finalizar. O novo arquivo de teste Selenium será aberto no editor e aparecerá na janela Projetos. <br><img alt="Janela Projetos que mostra novo teste Selenium" class="margin-around" height="187" src="../../../images_www/articles/72/php/phpunit/selenium-test-in-project.png" width="279"></li>
+  <li>O item Executar Testes Selenium está agora adicionado ao menu de contexto do projeto. Clique nesse item e os resultados do teste Selenium serão exibidos na janela Resultados do Teste, da mesma forma que os resultados de testes PHPUnit.</li>
+</ol>
+<h2 id="more-exercises">Mais Exercícios</h2>
+    <p>A seguir, encontam-se mais algumas ideias para você explorar:</p>
+    <ul>
+      <li>Adicione uma segunda classe a Calculator.php, como uma classe <tt>Calculator2</tt> que multiplica $a e $b. Delete e gere novamente os testes.</li>
+      <li>Se você experimentar o <a href="./wish-list-tutorial-main-page.html">Tutorial de Criação de uma Aplicação CRUD</a> de várias partes, crie um teste Selenium para o projeto final. </li>
+    </ul>
+<div class="feedback-box">
+  <a href="/about/contact_form.html?to=3&amp;subject=Feedback:PHPUnit and Selenium on NB 6.7">Enviar Feedback neste Tutorial</a>
+</div>
+<br style="clear:both;" >
+<p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>. Esta lista é espelhada nos <a href="http://forums.netbeans.org/" target="_blank">fóruns do NetBeans IDE</a>.</p>
+<a name="seeAlso"></a>
+        <h2>Consulte Também</h2>
+
+        <p>Para obter mais informações sobre como testar o PHP no NetBeans IDE <a href="https://netbeans.org/" target="_blank"></a>, consulte os seguintes recursos:</p>
+        <ul>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/phpunit_support_added" target="_blank">Blog do NetBeans para o PHP: Suporte PHPUnit Adicionado</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/ui_for_phpunit_support" target="_blank">Blog do NetBeans para o PHP: IU para Suporte a PHPUnit</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/code_coverage_for_php_why" target="_blank">Blog do NetBeans para PHP: Cobertura de Código para PHP - Porque não?</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/entry/recent_improvements_in_phpunit_support" target="_blank">Blog do NetBeans para PHP: Melhorias Recentes no Suporte ao PHPUnit</a></li>
+            <li><a href="http://wiki.netbeans.org/SeleniumPluginPHP" target="_blank">Wiki do NetBeans IDE: Plug-in Selenium para o PHP</a></li>
+            <li><a href="./debugging.html">Depurando o Código-Fonte do PHP no NetBeans IDE</a></li>
+            
+        </ul>
+<p><a href="../../trails/php.html">Voltar à Trilha do Aprendizado PHP</a> </p>
+  
+</body>

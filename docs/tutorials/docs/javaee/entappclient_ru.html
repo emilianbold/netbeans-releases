@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Создание и запуск клиента приложения на сервере GlassFish</title>
+        <meta name="description"
+        content="A tutorial on how to use NetBeans IDE to develop and deploy an enterprise application client to GlassFish Server 3.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+    <body>
+        <!-- Begin Content Area -->
+        <h1>Создание и запуск клиента приложения на сервере GlassFish</h1>
+        
+        <p>В данном руководстве показано, как создать простой клиент приложения и выполнить доступ к компоненту Enterprise JavaBean (EJB), развернутому на сервере 3-й версии GlassFish.  В этом руководстве мы начнем с создания корпоративного приложения, содержащего простой сеансовый компонент, и проекта библиотеки классов Java, содержащей удаленный интерфейс для этого сеансового компонента. Затем мы создадим клиент приложения, выполняющий доступ к сеансовому компоненту через удаленный интерфейс в библиотеке классов. Файл JAR библиотеки классов, содержащий удаленный интерфейс, добавляется к пути класса корпоративного приложения и клиенту приложения.</p>
+
+        
+              
+        
+        <p><b>Упражнения по темам руководства</b></p>
+           <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+            <ul>
+                <li><a href="#Exercise_10">Создание библиотеки классов Java </a></li>
+                <li><a href="#Exercise_20">Создание модуля EJB</a>
+                    <ul>
+                        <li><a href="#Exercise_22">Создание сеансового компонента</a></li>
+                        <li><a href="#Exercise_23">Добавление бизнес-метода</a></li>
+                        <li><a href="#Exercise_24">Развертывание корпоративного приложения</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_30">Создание клиента приложения</a>
+                    <ul>
+                        <li><a href="#Exercise_32">Добавление библиотеки классов</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_30">Запуск клиента приложения</a></li>
+                <!--<li><a href="#Exercise_40">Downloading the Solution Project</a></li>-->
+            </ul>
+        
+        
+           
+            <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия 7.2, 7.3, 7.4, 8.0, Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition 3.1.2.2</td>
+                    <td class="tbltd1">3.x, 4.x</td>
+                </tr>
+                </tbody>
+            </table>
+            
+            
+            <p><b>Предпосылки</b></p>
+            <p>Предполагается, что читатель обладает базовыми знаниями по следующим технологиям или опытом программирования с их использованием:</p>
+            <ul>
+                <li>Программирование на Java</li>
+                <li>IDE NetBeans</li>
+            </ul>
+            <p class="tips">Можно загрузить <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/EntAppClientEE6.zip">готовый проект в виде архива ZIP</a>. If you are using GlassFish 3.0 use <a href="https://netbeans.org/projects/samples/downloads/download/NetBeans%20IDE%206.8/JavaEE/entappclient.zip">the zip archive for the IDE NetBeans 6.8 project.</a></p>
+            
+            
+        
+        <!-- ===================================================================================== -->
+
+
+        <a name="Exercise_10"></a>
+        <h2>Создание библиотеки классов Java </h2>
+        <p>В данном разделе мы создадим проект библиотеки классов Java, который будет содержать удаленный интерфейс для EJB.  Этот удаленный интерфейс ведет себя как интерфейс API для EJB, используемый клиентами для связи с EJB.</p>
+
+        <p>Файл JAR библиотеки легко разослать всем клиентам, которым может потребоваться вызвать EJB. Клиентам, которым нужен доступ к EJB, достаточно добавить  файл JAR библиотеки к пути классов проекта.  В реализации EJB тот же файл JAR используется для реализации интерфейса.</p>
+
+        
+
+        <!--appclient runs locally on client and if it needs to communicate with an EJB on server then
+        EJB must have Remote interface which appclient will use.
+        .... something like that followed by
+        "so let's start with creating class lib project"-->
+
+        <ol>
+            <li>Выберите &quot;Файл &gt; Новый проект&quot;(Ctrl-Shift-N; ⌘-Shift-N в Mac), затем выберите &quot;Библиотека классов Java&quot; в категории &quot;Java&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>Введите <strong>EJBRemoteInterface</strong> в качестве имени проекта.  Нажмите кнопку &quot;Завершить&quot;. </li>
+        </ol>
+        <img alt="снимок мастера создания проектов библиотк классов" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-newclasslibrary.png" title="Мастер создания проектов библиотк классов" />
+
+        <p>После нажатия кнопки &quot;Готово&quot; среда IDE создаст проект библиотеки классов Java.  В следующем разделе мы создадим корпоративное приложение Java EE и модуль EJB.  Затем мы используем мастер для создания сеансного компонента и удаленного интерфейса к этому сеансовому компоненту в проекте библиотеки классов. Клиент приложения выполнит доступ к сеансовому компоненту сеанса через интерфейс в библиотеке классов.</p>
+
+
+
+        <a name="Exercise_20"></a>
+        <h2>Создание модуля EJB</h2>
+        <p>В этом разделе мы создадим корпоративное приложение и модуль EJB.  При создании компонента EJB его следует создать как часть корпоративного приложения, сжать в архив EAR и развернуть на сервере.</p>
+
+        <div class="indent">
+            <a name="Exercise_21"></a>
+            <h3>Создание приложения уровня предприятия</h3>
+            <p>В этом разделе вы будете использовать мастер создания проектов для создания корпоративного приложения, содержащего модуль EJB. Данный мастер предоставляет возможность создать модуль EJB при создании приложения.
+            </p>
+
+            <ol>
+                <li>Выберите File (&quot;Файл&quot;) &gt; New Project (&quot;Создать проект&quot;) и затем выберите Enterprise Application (&quot;Корпоративное приложение&quot;) в категории Java EE.  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Введите <strong>EntAppEJB</strong> как имя проекта.  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Выберите GlassFish Server в качестве сервера.</li>
+                <li>Убедитесь, что выбрано Create EJB Module (&quot;Создать модуль EJB&quot;) и отмените выбор Create Web Application (&quot;Создать модуль веб-приложения&quot;).  Нажмите кнопку &quot;Завершить&quot;. </li>
+            </ol>
+            <img alt="моментальный снимок мастера создания приложений уровня предприятия" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-newentappejb.png" title="Выберите Create EJB Module (Создать модуль EJB) в мастере" />
+
+            <p>При нажатии кнопки &quot;Готово&quot; среда IDE создаст корпоративное приложение и модуль EJB.  В окне 'Проекты' видно, что проект модуля EJB указан в узле Java EE Modules проекта приложения корпоративного уровня.</p>
+            <img alt="снимок окна &apos;Проекты&apos; с открытыми проектами" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-projects-entappejb1.png" title="В окне &apos;Проекты&apos; отображаются открытые проекты" />
+
+            <p>Можно заметить, что теперь в окне проектов перечислены три типа проектов: библиотека классов, корпоративное приложение и модуль EJB.</p>
+
+
+            <a name="Exercise_22"></a>
+            <h3>Создание компонента сеанса</h3>
+            <p>В этом упражнении мы используем мастер для создания компонента сеанса в проекте модуля EJB. В этом мастере мы также создадим удаленный интерфейс для компонента сеанса в проекте библиотеки классов.
+            </p>
+            <ol>
+                <li>Щелкните правой кнопкой мыши проект модуля EJB и выберите New (&quot;Создать&quot;) &gt; Session Bean (&quot;Сеансный компонент&quot;).</li>
+                <li>Введите <strong>MySession</strong> в поле EJB Name (&quot;Имя EJB&quot;).</li>
+                <li>В поле Package (&quot;Пакет&quot;) введите <strong>ejb</strong>.</li>
+                <li>Выберите Stateless (&quot;Без поддержки состояния&quot;) в Session Type (&quot;Тип сеанса&quot;).</li>
+                <li>Выберите параметр Remote (&quot;Удаленный&quot;) в Create Interface (&quot;Создать интерфейс&quot;).</li>
+                <li>Выберите проект <strong>EJBRemoteInterface</strong> из раскрывающегося списка.  Нажмите кнопку &quot;Завершить&quot;. </li>
+            </ol>
+
+            <img alt="снимок мастера создания компонентов сеансов" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-wizard-newsessionbean.png" title="Мастер создания компонентов сеансов" />
+
+            <p>При нажатии &quot;Готово&quot; среда IDE создает сеансовый компонент в пакете <tt>ejb</tt> модуля EJB и открывает класс в редакторе.  Можно увидеть, что <tt>MySession</tt> реализует интерфейс <tt>MySessionRemote</tt> и что файл JAR EJBRemoteInterface был добавлен как библиотека модуля EJB.</p>
+
+            <p>Мастер также создает удаленный интерфейс под названием <tt>MySessionRemote</tt> в пакете <tt>ejb</tt> проекта EJBRemoteInterface. IDE автоматически добавляет библиотеку интерфейса API Java EE 6, необходимую интерфейсу EJB.</p>
+
+            <img alt="снимок окна &apos;Проекты&apos;, в котором отображаются компонент сеанса и удаленный интерфейс" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-projects-entappejb2.png" title="Окно &apos;Проекты&apos;, в котором отображаются компонент сеанса и удаленный интерфейс" /> <a name="Exercise_23"></a>
+            <h3>Добавление бизнес-метода</h3>
+            <p>В этом упражнении мы создадим простой бизнес-метод в сеансовом компоненте, возвращающий строку.
+            </p>
+            <ol>
+                <li>Щелкните правой кнопкой мыши редактор MySession и выберите Insert Code (&quot;Вставить код&quot;) (Alt-Insert; Ctrl-I на Mac), затем выберите Add Business Method (&quot;Добавить бизнес-метод&quot;).</li>
+                <li>Введите <strong>getResult</strong> в поле Method Name (&quot;Имя метода&quot;) и String (&quot;Строка&quot;) в поле Return Type (&quot;Тип возврата&quot;).  Нажмите кнопку &quot;ОК&quot;.
+
+                </li>
+                <li>Внесите нижеприведенные изменения, чтобы метод <tt>getResult</tt> возвращал строку.
+                <p>Класс должен выглядеть следующим образом:</p>
+                <pre class="examplecode">@Stateless
+public class MySession implements MySessionRemote {
+
+    public String getResult() {
+        return <strong>"This is My Session Bean"</strong>;
+    }
+}</pre>
+                </li>
+                <li>Сохраните изменения.</li>
+            </ol>
+
+            <p>Теперь у нас есть корпоративное приложение с простым компонентом EJB, предоставляемым через удаленный интерфейс. У нас также имеется независимая библиотека классов, содержащая интерфейс EJB, которую можно разослать другим разработчикам.  Разработчики могут добавлять библиотеку к своим проектам, если им нужна связь с EJB, предоставляемым через удаленный интерфейс, но не нужны исходные коды для EJB. При изменении кода для EJB достаточно распространить JAR обновленной библиотеки классов, если изменения затронули любой из интерфейсов. </p>
+
+            <p class="tips"> При использовании диалогового окна &quot;Добавить бизнес-метод&quot; среда IDE автоматически включает метод в удаленный интерфейс.</p>
+
+            <a name="Exercise_24"></a>
+            <h3>Развертывание корпоративного приложения</h3>
+            <p>Теперь корпоративное приложение можно собрать и запустить. При запуске приложения среда IDE развернет архив EAR на сервере.</p>
+            <ol>
+                <li>Щелкните правой кнопкой мыши корпоративное приложение EntAppEJB и выберите Deploy (&quot;Развернуть&quot;).</li>
+            </ol>
+
+            <p>После выбора &quot;Развернуть&quot; среда IDE собирает корпоративное приложение и разворачивает архив EAR на сервере.  Если взглянуть в окно Files (&quot;Файлы&quot;), можно заметить, что файл JAR EJBRemoteInterface развернут вместе с приложением.</p>
+
+            <p>Если развернуть узел 'Приложения' сервера GlassFish в окне 'Службы', можно увидеть, что компонент EntAppEJB развернут.</p>
+        </div>
+
+
+        <a name="Exercise_30"></a>
+        <h2>Создание клиента приложения</h2>
+
+        <p>В этом разделе мы создадим клиент корпоративного приложения.  При создании клиента приложения проекту нужна библиотека классов Java  EJBRemoteInterface в качестве библиотеки, чтобы установить ссылку на EJB.</p>
+
+        <p>При запуске корпоративного приложения среда IDE пакетирует клиент приложений и файл JAR библиотеки классов Java в архив EAR. Файлы JAR библиотеки должны быть упакованы в файл EAR вместе с клиентом приложения, если необходим доступ к ним из клиента приложения.
+        </p>
+
+        <div class="indent">
+            <a name="Exercise_31"></a>
+            <h3>Создание приложения уровня предприятия</h3>
+            <p>В этом упражнении мы используем мастер создания проектов, чтобы создать проект клиента приложения. Если развертывание выполняется на сервере GlassFish 3.1 или 4.x, клиент приложения можно создать и запустить как отдельный проект. Клиент приложения больше не надо будет развертывать и запускать как часть корпоративного приложения.</p>
+
+            <p class="notes"><strong>Примечание.</strong> При развертывании на GlassFish 3.0.1, необходимо создать клиентское приложение в виде модуля в проекте корпоративного приложения и запустить корпоративное приложение.</p>
+            <ol>
+                <li>Выберите Файл &gt; Создать проект и затем выберите &quot;Клиент корпоративного приложения&quot; в категории Java EE. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Введите <strong>EntAppClient</strong> в поле Project Name (&quot;Имя проекта&quot;).  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Выберите GlassFish Server в качестве сервера. Нажмите кнопку &quot;Завершить&quot;.
+                    <p>Обратите внимание, что добавлять проект к корпоративному приложению необязательно.</p>
+                </li>
+            </ol>
+            <img alt="снимок создания клиента приложения, выбранного в мастере создания проектов" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-wizard-newentappclient.png" title="Создание клиента приложения, выбранного в мастере создания проектов" />
+
+            <p>При нажатии &quot;Готово&quot; IDE создаст проект клиента приложения и откроет <tt>Main.java</tt> в редакторе.</p>
+
+            <a name="Exercise_31"></a>
+            <h3>Добавление библиотеки классов</h3>
+            <p>Теперь следует добавить библиотеку классов, содержащую удаленный интерфейс, к пути классов проекта, чтобы позволить клиенту приложения ссылаться на EJB. Проект библиотеки классов теперь открыт, так что диалоговое окно &quot;Вызвать компонент корпоративного уровня&quot; теперь можно использовать для помощи в  генерировании кода с целью вызова EJB.
+            </p>
+            <p class="tips">Если проект библиотеки классов не открыт, вы можете добавить библиотеку классов для проекта в окне 'Проекты', щелкнув правой кнопкой мыши узел 'Библиотеки' узла и выполнив поиск файла JAR проекта EJBRemoteInterface.</p>
+
+            <ol>
+                <li>Разверните узел Source Packages (&quot;Пакеты исходного кода&quot;) проекта EntAppClient и откройте <tt>Main.java</tt> в редакторе.</li>
+                <li>Щелкните правой кнопкой мыши исходный код и выберите Insert Code (&quot;Вставить код&quot;) (Alt-Insert; Ctrl-I на Mac), затем выберите Call Enterprise Bean (&quot;Вызвать компонент корпоративного уровня&quot;), чтобы открыть диалоговое окно вызова компонента корпоративного уровня.</li>
+                <li>Выберите узел проекта EntAppEJB и затем выберите MySession.  Нажмите кнопку &quot;ОК&quot;.<br /> <img alt="моментальный снимок диалогового окна &apos;Вызвать компонент корпоративного уровня&apos;" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-callenterprise.png" title="Диалоговое окно &apos;Вызвать компонент корпоративного уровня&apos;" />
+
+                <p>В данном диалоговом окне автоматически выбирается тип интерфейса Remote (&quot;Удаленный&quot;). При нажатии кнопки OK среда IDE добавит следующую аннотацию к <tt>Main.java</tt>.
+                <pre class="examplecode">@EJB
+private static MySessionRemote mySession;</pre>
+
+                <p>Среда IDE также автоматически добавит EJBRemoteInterface как библиотеку проекта.</p>
+                </li>
+                <li>Измените <tt>главный</tt> метод извлечения строки метода <tt>getResult</tt> посредством интерфейса MySessionRemote. Сохраните изменения.
+                <pre class="examplecode">
+public static void main(String[] args) {
+        <strong>System.err.println("result = " + mySession.getResult());</strong>
+    }</pre>
+                </li>
+            </ol>
+        </div>
+
+
+        <a name="Exercise_40"></a>
+        <h2>Запуск клиента приложения</h2>
+
+        <p>Теперь клиент приложения можно запустить, собрав и развернув проект  EntAppClient.</p>
+        <ol>
+            <li>Щелкните правой кнопкой мыши проект EntAppClient в окне Projects (&quot;Проекты&quot;) и выберите Run (&quot;Запустить&quot;).
+            <p>Кроме того, вы можете расширить исходный пакет и щелкнуть правой кнопкой мыши класс <tt>Main.java</tt> и выбрать 'Выполнить файл'.</p></li>
+        </ol>
+
+        <p>После выбора Run (&quot;Запустить&quot;) IDE собирает проект клиента приложения и разворачивает архив JAR на сервере.  Сообщение от клиента приложения можно увидеть в окне вывода.</p>
+        <img alt="Снимок окна вывода с отображением результата" class="margin-around b-all" src="../../../images_www/articles/72/javaee/entappclient/appclient-buildoutput.png" title="Результат в окне вывода" />
+
+        <p>Если необходимо создать дополнительные EJB, можно просто добавить новые удаленные интерфейсы EJB к проекту библиотеки классов EJBRemoteInterface.</p>
+
+<!--
+
+        <a name="Exercise_50"></a>
+        <h2>Downloading the Solution Project</h2>
+        <p>You can download the solution to this tutorial as a project in the following ways.</p>
+        <ul>
+            <li>Download <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fentappclient.zip">a zip archive of the finished project</a>.</li>
+            <li>Checkout the project sources from the NetBeans Samples by performing the following steps:
+                    <ol>
+                        <li>Choose Team &gt; Subversion &gt; Checkout from the main menu.</li>
+                        <li>In the Checkout dialog box, enter the following Repository URL:<br/>
+                            <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br/>
+                            Click Next.</li>
+                        <li>Click Browse to open the Browse Repostiory Folders dialog box.</li>
+                        <li>Expand the root node and select <strong>samples/javaee/entappclient</strong>. Click OK.</li>
+                        <li>Specify the Local Folder for the sources (the local folder must be empty).</li>
+                        <li>Click Finish.
+                            <p>When you click Finish, the IDE initializes the local folder as a Subversion repository
+                            and checks out the project sources.</p>
+                        </li>
+                        <li>Click Open Project in the dialog that appears when checkout is complete.</li>
+                    </ol>
+                <p class="notes"><strong>Notes.</strong></p>
+                <ul>
+                    <li>Steps for checking out sources from Kenai only apply to NetBeans IDE 6.7 and 6.8.</li>
+                    <li>You need a Subversion client to checkout the sources from Kenai.
+                    For more about installing Subversion, see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in NetBeans IDE</a>.</li>
+                </ul>
+            </li>
+        </ul>-->
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Application%20Client">Мы ждем ваших отзывов</a></div>
+        <br style="clear: both;">
+        <!-- ======================================================================================= -->
+        <h2><a name="nextsteps"></a>Что дальше?</h2>
+        <!--<p>For more, see the following tutorial </p>
+        <ul>
+            <li><a href="http://wiki.netbeans.org/wiki/view/RemoteApplicationClientInNetBeans">RemoteApplicationClientInNetBeans</a></li>
+        </ul>-->
+        
+        
+        <p>For more information about using IDE NetBeans to develop Java EE applications, see the following resources: </p>
+        <ul>
+            <li><a href="javaee-intro.html">Введение в технологию Java EE </a></li>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+            <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+        </ul>
+        <p>Дополнительные сведения о разработке компонентов корпоративного уровня EJB можно найти в <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Руководстве по Java EE 6</a>.</p>
+        <p>To send comments and suggestions, get support, and keep informed on the latest developments on the IDE NetBeans Java EE development features, <a href="../../../community/lists/top.html">join the nbj2ee mailing list</a>.</p>
+        <!-- End Content Area -->
+    </body>
+</html>

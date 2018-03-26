@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Introduction to the NetBeans E-commerce Tutorial.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+
+        <title>NetBeans Eコマースのチュートリアル - 概要</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans Eコマースのチュートリアル - 概要</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>チュートリアルの目次</h4>
+
+                <ol>
+                    <li><strong>概要</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#about">このチュートリアルについて</a></li>
+                            <li><a href="#whatEcommerce">Eコマース・アプリケーションとは</a></li>
+                            <li><a href="#whatJava">Javaとは</a></li>
+                            <li><a href="#jcp">Javaコミュニティ・プロセスとは</a></li>
+                            <li><a href="#ide">IDEを使用する理由</a></li>
+                            <li><a href="#netBeans">NetBeansを使用する理由</a></li>
+                            <li><a href="#seeAlso">関連項目</a></li>
+                        </ul></li>
+
+                    <li><a href="design.html">アプリケーションの設計</a></li>
+                    <li><a href="setup-dev-environ.html">開発環境の設定</a></li>
+                    <li><a href="data-model.html">データ・モデルの設計</a></li>
+                    <li><a href="page-views-controller.html">ページ・ビューおよびコントローラ・サーブレットの準備</a></li>
+                    <li><a href="connect-db.html">データベースへのアプリケーションの接続</a></li>
+                    <li><a href="entity-session.html">エンティティ・クラスおよびセッションBeanの追加</a></li>
+                    <li><a href="manage-sessions.html">セッションの管理</a></li>
+                    <li><a href="transaction.html">トランザクション・ビジネス・ロジックの統合</a></li>
+                    <li><a href="language.html">言語サポートの追加</a></li>
+                    <li><a href="security.html">アプリケーションの保護</a></li>
+                    <li><a href="test-profile.html">テストとプロファイリング</a></li>
+                    <li><a href="conclusion.html">まとめ</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="このページの内容は、NetBeans IDEバージョン6.8および6.9に適用されます" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="このページの内容は、NetBeans IDEバージョン6.8および6.9に適用されます"></p>
+
+        <p>NetBeans Eコマース・チュートリアルへようこそ。この複数の部分で構成されるチュートリアルでは、Java WebおよびEE開発の様々な重要機能を示す単純で効果的なEコマース・アプリケーションの作成方法を学習します。そうすることで、NetBeans IDEをよく理解し、各自の開発目的に適用できるようになります。</p>
+
+        <p>IDEの習得に時間を割くことで、最終的には開発者としての能力と対応力を高めることにつながります。チュートリアル・ユニットに沿って作業しながら、IDEの機能やツールを最大限に活用する方法を学習していきます。これには次のものが含まれています。</p>
+
+        <ul style="margin-left: 320px" class="toc">
+            <li><strong>各種言語用のエディタのサポート: </strong>構文の強調表示、コード補完、APIドキュメントのサポート、キーボード・ショートカット、リファクタリング機能およびコード・テンプレート</li>
+
+            <li><strong>ウィンドウ・システム: </strong>プロジェクト、「ファイル」および「サービス」ウィンドウ、「タスク」ウィンドウ、Javadocウィンドウ、HTTPモニター、ナビゲータとパレット</li>
+
+            <li><strong>他のサービスとの統合: </strong>登録されたサーバーへの自動デプロイメント、データベース接続、ブラウザの相互運用</li>
+
+            <li><strong>開発ツール: </strong>デバッガ、プロファイラ、HTTPサーバー・モニター、ローカル履歴のサポートおよびグラフィカルな差分ビューア</li>
+        </ul>
+
+        <p>チュートリアルはモジュール形式になっており、各ユニットはIDEの特定の概念、テクノロジおよび機能に焦点を当てています。チュートリアル・ユニットは、示される設定手順とアプリケーション・スナップショット(ユニット5以降)を使用すれば、自然についていくことができます。ただし、すべてのユニットを最初から最後まで通して学習することによって最大の効果が得らます。これは、開発プロセスを理解するのにも役立ちます。</p>
+
+        <p>ユニット3の<a href="setup-dev-environ.html">開発環境の設定</a>では、NetBeans IDEについて紹介します。この中で、後のチュートリアル・ユニットで行う作業の基礎となるJava Webプロジェクトを作成します。ユニット4の<a href="data-model.html">データ・モデルの設計</a>では、主にビジュアル・データベース設計ツールである<a href="http://wb.mysql.com/" target="_blank">MySQL WorkBench</a>を使用してアプリケーションのデータ・モデルを作成します。一連の各チュートリアル・ユニットには、そのユニットでのプロジェクトの開始状態に対応する<em>プロジェクト・スナップショット</em>が用意されています。これにより、Eコマース・チュートリアルの前後関係に関係なく、1つのチュートリアル・ユニットを学習できます。これらのスナップショットを使用するには、それらをコンピュータにダウンロードし、IDEのプロジェクトを開くウィザード([Ctrl]-[Shift]-[O]、Macの場合は[⌘]-[Shift]-[O])で開きます。</p>
+
+        <p>このチュートリアルでビルドするアプリケーションのライブ・デモを、<a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">NetBeans Eコマースのチュートリアルのデモ・アプリケーション</a>で表示できます。</p>
+
+        <p>このユニットの残りの部分では、チュートリアルに関連する情報とJava EE開発に必要な基本概念について説明します。開発を始める前に、下記の概念を理解しているかどうかを確認してください。</p>
+
+        <br clear="left">
+
+
+        <br>
+        <h2 id="about">このチュートリアルについて</h2>
+
+        <div class="indent">
+            <h3>このチュートリアルの対象読者</h3>
+
+            <p>このチュートリアルの内容は、4種類の読者を対象としています。</p>
+
+            <ul>
+                <li>Java EEテクノロジを取り込んでスキル・セットを伸ばすことに関心があるJava開発者</li>
+
+                <li>NetBeans IDEの初心者で、その開発環境を試してみたい人</li>
+
+                <li>Javaと他のWebベースのテクノロジを比較検討したいWeb開発者</li>
+
+                <li>単純なEコマース・アプリケーションの基本と、その開発を実際のユース・ケースに適用する方法について理解したい学生</li>
+            </ul>
+
+            <p>これらのカテゴリのいずれかに該当する場合は、このチュートリアルが役に立ちます。読者の経歴によっては、特定のチュートリアル・ユニットが他よりも理解しにくい場合があります。テクノロジがどのように機能するかを理解することが、自分の目的にあわせてIDEを活用するための鍵です。したがって、関連するテクノロジの習得に本当に興味がある場合は、このチュートリアルを<a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/" target="_blank">Java EEチュートリアル</a>の手引きとして有効活用できます。各チュートリアル・ユニットでは、Java EEチュートリアルの関連領域や他の有用なリソースへのリンクを最大限に利用してください。</p>
+
+
+            <h3>このチュートリアルで取り上げる内容</h3>
+
+            <p>このチュートリアルで開発するアプリケーションには、多くの概念、テクノロジおよびツール・コンポーネントが関係しています。</p>
+
+            <ul class="toc">
+                <li><strong>概念</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>フロント・エンド開発</li>
+                        <li>Webアプリケーション・プロジェクト構造</li>
+                        <li>データ・モデリング</li>
+                        <li>データベース接続</li>
+                        <li>オブジェクト・リレーショナル・マッピング</li>
+                        <li>セッション管理</li>
+                        <li>トランザクション・ビジネス・ロジック</li>
+                        <li>クライアントおよびサーバー側の検証</li>
+                        <li>ローカリゼーション</li>
+                        <li>Webアプリケーションのセキュリティ</li>
+                        <li><a href="http://java.sun.com/blueprints/patterns/MVC.html" target="_blank">モデル/ビュー/コントローラ(MVC)</a>や<a href="http://java.sun.com/blueprints/patterns/SessionFacade.html" target="_blank">セッション・ファサード</a>を含むデザイン・パターン</li>
+                    </ul></li>
+
+                <li><strong>テクノロジ</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>HTML、CSSおよびJavaScriptテクノロジ</li>
+                        <li>サーブレットおよびJavaServer Pages (JSP)テクノロジ</li>
+                        <li>エンタープライズJavaBeans (EJB)テクノロジ</li>
+                        <li>Java Persistence API (JPA)</li>
+                        <li>JavaServer Pages標準タグ・ライブラリ(JSTL)</li>
+                        <li>Java Database Connectivity (JDBC)</li>
+                    </ul></li>
+
+                <li><strong>開発ツール</strong>
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li>NetBeans IDE</li>
+                        <li>GlassFish、Java EEアプリケーション・サーバー</li>
+                        <li>MySQL、リレーショナル・データベース管理サーバー(RDBMS)</li>
+                        <li>MySQL Workbench、ビジュアル・データベース設計ツール</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="whatEcommerce">Eコマース・アプリケーションとは</h2>
+
+        <p>「<em>Eコマース</em>」という用語は、私たちが今日思い浮かべるように、インターネット経由での商品やサービスの購入と販売を指します。たとえば、書籍、音楽、電化製品など、様々な製品カテゴリのオンライン・ショッピングを提供する<a href="http://www.amazon.com/" target="_blank">Amazon</a>を思い浮かべるかもしれません。このEコマースの形式は、電子小売業または<em>e-tailing</em>と呼ばれ、通常は物理的な商品の輸送を伴います。<em>企業消費者間取引</em>またはB2Cとも呼ばれます。その他のよく知られた形式として、以下があります。</p>
+
+        <ul>
+            <li><strong>消費者間取引(C2C): </strong>通常はオンライン・オークションなどの第三者のサイトを介して個人間で行われる取引。C2C取引の典型的な例は、<a href="http://www.ebay.com/" target="_blank">eBay</a>です。</li>
+
+            <li><strong>企業間取引(B2B): </strong>たとえば、小売業者と卸売業者、卸売業者とメーカー間など、企業間で発生する取引。</li>
+
+            <li><strong>企業政府間取引(B2G): </strong>企業と政府機関の間で発生する取引。</li>
+        </ul>
+
+        <p>このチュートリアルでは、企業消費者間(B2C)のEコマースに焦点を当て、顧客がオンラインで買い物できるWebサイトを作成しようとしている小さな小売店という一般的なシナリオを適用します。B2Cシナリオに対応するソフトウェアは、一般に2つのコンポーネントで構成されます。</p>
+
+        <ol>
+            <li><strong>ストア・フロント: </strong>顧客がアクセスし、インターネット経由で商品を購入できるWebサイト。ストア・カタログのデータは通常、データベースに保持され、このデータを必要とするページは動的に生成されます。</li>
+
+            <li><strong>管理コンソール: </strong>パスワードで保護され、ストア・スタッフがオンライン管理のためにセキュリティ保護された接続を介してアクセスする領域。これには通常、ストア・カタログへのCRUD (作成、読取り、更新、削除)アクセス、ディスカウントの管理、出荷と支払いのオプション、および顧客注文の確認が含まれます。</li>
+        </ol>
+
+
+        <br>
+        <h2 id="whatJava">Javaとは</h2>
+
+        <p>コンピュータ・ソフトウェア業界では、「Java」という用語は<em>Javaプログラミング言語</em>とともに<em>Javaプラットフォーム</em>を指しています。</p>
+
+        <div class="feedback-box margin-around">
+            <img alt="Dukeのイメージ" class="margin-around" src="../../../../images_www/articles/73/javaee/ecommerce/intro/duke.png" title="Duke、Javaのマスコット">
+
+            <p>Duke、Javaのマスコット</p>
+        </div>
+
+        <div class="indent">
+            <h3>プログラミング言語としてのJava</h3>
+
+            <p>Java言語は、1991年にこのプロジェクトへの取組みを開始した<a href="http://en.wikipedia.org/wiki/James_Gosling" target="_blank">James Gosling</a>によって概念化されました。この言語は、以下の5つの設計原則<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>を念頭に置いて作成されました。</p>
+
+            <ol>
+                <li><strong>単純、オブジェクト指向、親しみやすさ: </strong>Javaは、すぐに理解できる小規模な一貫した基本概念を中核としています。もともとは当時一般的なC++言語をモデルとしていたため、プログラマは簡単にJavaに移行できました。また、<em>オブジェクト指向</em>のパラダイムを順守しています。システムは、互いにメッセージを渡すことによってやり取りする、カプセル化されたオブジェクトで構成されます。</li>
+
+                <li><strong>堅牢性とセキュリティ: </strong>この言語は、エラーを迅速に識別するためにコンパイル時と実行時にチェックを行います。また、ネットワークとファイル・アクセスのセキュリティ機能があるため、分散アプリケーションが侵入や破損によって侵害されません。</li>
+
+                <li><strong>アーキテクチャの中立性と移植性: </strong>Javaの主な利点の1つは、その<em>移植性</em>です。アプリケーションをほとんどまたはまったく変更せずに1つのプラットフォームから別のプラットフォームに簡単に移行できます。「Write once, run anywhere (一度書けばどこでも動く)」というスローガンは、1995年のJava 1.0のリリースにあわせて発表され、この言語が持つクロスプラットフォームの利点を示しています。</li>
+
+                <li><strong>ハイ・パフォーマンス: </strong>アプリケーションは、実行時環境から独立して実行されるJavaインタプリタの有効化、未使用のメモリーを解放する自動ガベージ・コレクタの適用など、様々な低レベル機能によってより迅速かつ効率的に実行されます。</li>
+
+                <li><strong>インタプリタ対応、スレッド対応、動的: </strong>Javaでは、開発者のソース・コードは「<em>バイト・コード</em>」と呼ばれる中間的なインタプリタ形式にコンパイルされます。バイト・コードの命令セットは、Java仮想マシン(JVM)が使用する機械語を参照します。この言語は、適切なインタプリタによって、実行するプラットフォームの<em>ネイティブ・コード</em>に変換されます。マルチスレッド機能は、主に<code>Thread</code>クラスによってサポートされ、多数のタスクの同時実行を可能にします。言語と実行時システムは、アプリケーションは実行中に環境の変化に適応できるという点で、動的です。</li>
+            </ol>
+
+            <p>Java言語の詳細は、<a href="http://java.sun.com/docs/books/tutorial/" target="_blank">Javaチュートリアル</a>を参照してください。</p>
+
+
+            <h3 id="platform">プラットフォームとしてのJava</h3>
+
+            <p>Javaプラットフォームは、2つの部分で構成されるソフトウェア・ベースのプラットフォームです。</p>
+
+            <ul>
+                <li><strong>Java仮想マシン(JVM)</strong>: JVMは、Javaコンパイラによって生成された命令を実行するエンジンです。JVMはJava実行環境(JRE)のインスタンスと見なすことができ、Webブラウザ、サーバー、オペレーティング・システムなど、様々な製品に組み込まれています。</li>
+
+                <li><strong>Javaアプリケーション・プログラミング・インタフェース(API)</strong>: 類似するトピックのパッケージに分類された作成済のコードです。たとえば、アプレットおよびAWTパッケージには、フォント、メニュー、ボタンを作成するためのクラスが含まれています。</li>
+            </ul>
+
+            <p>Java Development Kit (JDK)はJava SE版を指し、他のキットは「ソフトウェア開発キット」を表す一般的な用語である「SDK」と呼ばれます。たとえば、<a href="http://java.sun.com/javaee/sdk/" target="_blank">Java EE SDK</a>などです。<sup><a href="#footnote2" id="2" style="text-decoration:none">[2]</a></sup></p>
+
+            <p><a href="http://download.oracle.com/javase/6/docs/index.html" target="_blank">JDKドキュメント</a>に記載されているコンポーネント・テクノロジの概念図を表示することによって、Javaプラットフォームを視覚的に見ることができます。以下に示すように、この図はインタラクティブになっており、コンポーネントをクリックして個々のテクノロジの詳細を知ることができます。<br><img alt="JDK 6の図" class="margin-around" src="../../../../images_www/articles/73/javaee/ecommerce/intro/jdk-diagram.png" title="JDKで表されたJavaプラットフォーム"></p>
+
+            <p>この図が示すように、JDKにはJava Runtime Environment (JRE)が含まれています。ソフトウェアを実行するにはJREが必要であり、ソフトウェアを開発するにはJDKが必要です。どちらも<a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java SEダウンロード</a>から入手できます。</p>
+
+            <p>Javaプラットフォームには、<a href="http://java.sun.com/javase/" target="_blank">Java SE</a> (Standard Edition)、<a href="http://java.sun.com/javame/index.jsp" target="_blank">Java ME</a> (Micro Edition)、<a href="http://java.sun.com/javaee/" target="_blank">Java EE</a> (Enterprise Edition)など、複数の<em>エディション</em>があります。</p>
+
+
+            <h3>Java EE</h3>
+
+            <p>JavaプラットフォームEnterprise Edition (Java EE)は、Java SEプラットフォーム上にビルドされ、高い移植性、堅牢性、拡張性、セキュリティを備えたサーバー側アプリケーションを開発、実行するための一連のテクノロジを提供します。</p>
+
+            <p>EEテクノロジは2つのカテゴリに大きく分かれています。</p>
+
+            <ul>
+                <li><a href="http://java.sun.com/javaee/technologies/webapps/" target="_blank">Webアプリケーション・テクノロジ</a></li>
+                <li><a href="http://java.sun.com/javaee/technologies/entapps/" target="_blank">エンタープライズ・アプリケーション・テクノロジ</a></li>
+            </ul>
+
+            <p>ニーズに応じて、いずれかのカテゴリのテクノロジを使用することをお薦めします。たとえば、このチュートリアルでは「Web」テクノロジの<a href="http://java.sun.com/products/servlet/index.jsp" target="_blank">サーブレット</a>、<a href="http://java.sun.com/products/jsp/" target="_blank">JSP/EL</a>および<a href="http://java.sun.com/products/jsp/jstl/" target="_blank">JSTL</a>とともに、「エンタープライズ」テクノロジの<a href="http://java.sun.com/products/ejb/" target="_blank">EJB</a>および<a href="http://java.sun.com/javaee/technologies/persistence.jsp" target="_blank">JPA</a>を使用します。</p>
+
+            <p>Java EEは現在、特に金融部門で市場シェアの大半を占めています。以下の図は
+                <!-- <a href="http://www.sun.com/aboutsun/media/analyst/european_fsa.pdf"> -->
+                2007年に実施された<a href="http://docs.google.com/viewer?a=v&q=cache:2NNYG8LtVFIJ:www.sun.com/aboutsun/media/analyst/european_fsa.pdf+european_fsa.pdf&hl=en&pid=bl&srcid=ADGEESi3vpbc32J7GzXFiqk__DvMp7_3deYe9td-HP3_QEXh77yBABi35uvL1z7ytj6o17io7_YFPnRFmhju5PQgrpgjVxt-2qXQSUh8xGUbeNP0k00dDsiq1Tl0DWJLOEH3SNubhit5&sig=AHIEtbTKL5tks3AlgEt57h4Aku_H55OXag" target="_blank">欧州市場の独自調査</a>です。</p>
+
+                <div class="indent">
+                    <img alt="Java EE対.Netの比較調査" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/intro/java-ee-vs-net.png" title="金融市場シェアの大半を占めるJava EE">
+                </div>
+
+            <p class="tips">Java EEと .NETの最近の非公式な比較については、Java EEコミュニティの有名なメンバーによるブログ記事の<a href="http://www.adam-bien.com/roller/abien/entry/java_ee_or_net_an" target="_blank">Java EEか .NETか - ほぼ公平な意見</a>を参照してください。</p>
+
+
+            <h3>違いは何か</h3>
+
+            <p>説明の必要な略語と頭字語が数多くあります。このすべてが初耳で、上記の説明ではよくわからない場合は、以下の資料でよく使用される用語の違いの説明が役に立つかもしれません。</p>
+
+            <ul>
+                <li><a href="http://www.java.com/en/download/faq/jre_jdk.xml" target="_blank">JREとJDKの違いは何ですか</a></li>
+                <li><a href="http://www.java.com/en/download/faq/java_diff.xml" target="_blank">JREとJava SEプラットフォームの違いは何ですか</a></li>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaee-faq-jsp-135209.html#diff" target="_blank">Java EEとJ2EEの違いは何ですか</a></li>
+                <li><a href="http://java.sun.com/new2java/programming/learn/unravelingjava.html" target="_blank">Java用語の解説</a></li>
+            </ul>
+
+        </div>
+
+
+        <br>
+        <h2 id="jcp">Javaコミュニティ・プロセスとは</h2>
+
+        <p><a href="http://jcp.org/" target="_blank">Javaコミュニティ・プロセス</a> (JCP)は、Javaテクノロジの標準技術仕様の開発を管理するプログラムです。JCPは、Javaプラットフォームに追加する必要があるテクノロジをドキュメント化した正式な提案である、Java Specification Request (JSR)のカタログを作成します。JSRは、通常は業界の利害関係者である企業の代表者で構成される、<em>エキスパート・グループ</em>によって運営されています。JCPは、コミュニティのニーズや動向に従ってJavaテクノロジを拡張し、適合させることができます。</p>
+
+        <p>このチュートリアルで使用および参照したテクノロジのJSRには以下が含まれます。</p>
+
+        <ul>
+            <li><a href="http://jcp.org/en/jsr/summary?id=52" target="_blank">JSR 52: JavaServer Pagesの標準タグ・ライブラリ</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=245" target="_blank">JSR 245: JavaServer Pages 2.1</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=315" target="_blank">JSR 315: Javaサーブレット3.0</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=316" target="_blank">JSR 316: Java Platform Enterprise Edition 6</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=317" target="_blank">JSR 317: Java Persistence 2.0</a></li>
+            <li><a href="http://jcp.org/en/jsr/summary?id=318" target="_blank">JSR 318: Enterprise JavaBeans 3.1</a></li>
+        </ul>
+
+        <p><a href="http://jcp.org/" target="_blank">JCPのWebサイト</a>を使用して個々のJSRを検索できます。また、現在のすべてのEEテクノロジ(Java EE 6)を以下で表示できます。</p>
+
+        <ul>
+            <li><a href="http://java.sun.com/javaee/technologies/index.jsp" target="_blank">http://java.sun.com/javaee/technologies/index.jsp</a></li>
+        </ul>
+
+        <p>Java EE 5テクノロジの一覧は以下に掲載されています。</p>
+
+        <ul>
+            <li><a href="http://java.sun.com/javaee/technologies/javaee5.jsp" target="_blank">http://java.sun.com/javaee/technologies/javaee5.jsp</a></li>
+        </ul>
+
+        <p>JSRの最終リリースでは、テクノロジの無償の実装である<em>リファレンス実装</em>が提供されています。このチュートリアルでは、これらの実装を利用して、サンプルEコマース・アプリケーションを開発します。たとえば、<a href="https://netbeans.org/downloads/6.8/index.html" target="_blank">NetBeans 6.8</a>の標準Javaダウンロード・バンドルに含まれているGlassFish v3アプリケーション・サーバーは、Java EE 6プラットフォーム仕様(<a href="http://jcp.org/en/jsr/summary?id=316" target="_blank">JSR 316</a>)のリファレンス実装です。これは、Java EEプラットフォームのリファレンス実装として、サーブレット、EJB、JPAなどのプラットフォームに含まれるテクノロジのリファレンス実装を含んでいます。</p>
+
+
+        <br>
+        <h2 id="ide">IDEを使用する理由</h2>
+
+        <p>まず第一に、<em>IDE</em>という用語は<em>統合開発環境(integrated development environment)</em>を表しています。IDEの従来の目的は、以下のようなツールとサポートを提供して開発者の生産性を最大限に高めることでした。</p>
+
+        <ul class="toc">
+            <li>ソース・コード・エディタ</li>
+            <li>コンパイラおよびビルド自動化ツール</li>
+            <li>プロジェクトおよびプロジェクト・アーティファクトを表示するウィンドウ・システム</li>
+            <li>他の一般的に使用されるサービスとの統合</li>
+            <li>デバッグのサポート</li>
+            <li>プロファイリングのサポート</li>
+        </ul>
+
+        <p>手動でJavaベースのWebアプリケーションを作成する場合に何が必要かを考えてください。<a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">JDK (Java Development Kit)</a>をインストールした後、以下の手順を実行して開発環境を設定する必要があります。<sup><a href="#footnote3" id="3" style="text-decoration:none">[3]</a></sup></p>
+
+        <ol>
+            <li>JDKインストールを指定する<code>PATH</code>環境変数を設定します。</li>
+
+            <li>使用する予定のテクノロジを実装するサーバーをダウンロードして構成します。</li>
+
+            <li>Webアプリケーションの作成と操作を行う予定の開発ディレクトリを作成します。さらに、サーバーから識別できるアプリケーション・ディレクトリ構造を設定する責任があります。(たとえば、推奨される構造については、<a href="http://java.sun.com/blueprints/code/projectconventions.html#99632" target="_blank">Javaの設計図: Webアプリケーションの方針</a>を参照してください。)</li>
+
+            <li><code>CLASSPATH</code>環境変数を設定して、開発ディレクトリとともに必要なJARファイルを追加します。</li>
+
+            <li>デプロイメント方法(つまり、開発ディレクトリからサーバーのデプロイメント領域にリソースをコピーする方法)を設定します。</li>
+
+            <li>関連するAPIのドキュメントをブックマークに登録するか、インストールします。</li>
+        </ol>
+
+        <p>教育のためには、Java Webプロジェクトを手動で作成して実行することは、関連する必要な手順を知る上で価値があります。しかし、最終的には、特定のビジネス・ニーズを解決するコードの開発に集中できるように、退屈で繰返しの多いタスクを実行する必要性を低減または排除するツールの使用を検討することをお薦めします。前述のように、IDEはプロセスを合理化します。ユニット3の<a href="setup-dev-environ.html">開発環境の設定</a>で説明するように、NetBeans IDEをGlassFishアプリケーション・サーバーと一緒にインストールすると、単純な3ステップのウィザードを使用して従来型のディレクトリ構造を持つWebアプリケーション・プロジェクトを設定できます。また、IDEには、エディタでコーディング中に表示したり、外部ウィンドウで開いたままにしたりできる、組込みのAPIドキュメントが用意されています。</p>
+
+        <p>IDEでは、プロジェクトのコンパイルとデプロイメントも、通常は開発者に見えない方法で処理されます。たとえば、NetBeansで作成したWebプロジェクトには、プロジェクトのコンパイル、消去、パッケージ化およびデプロイに使用されるAntビルド・スクリプトが含まれています。これはIDEからプロジェクトを実行できることを意味し、プロジェクトは自動的にコンパイルおよびデプロイされてデフォルト・ブラウザで開かれます。多くのIDEは、これをさらに一歩前進させて、「保存時にデプロイ」機能をサポートします。つまり、プロジェクトの変更を保存するたびに、サーバー上にデプロイされたバージョンが自動的に更新されます。ブラウザに切り替えてページをリフレッシュするのみで、変更が表示されます。</p>
+
+        <p>また、IDEには様々なファイル・タイプのテンプレートが用意されており、多くの場合、共通の場所を提案し、必要に応じてデフォルトの構成情報を取り込むことにより、プロジェクトにそれらを追加できます。</p>
+
+        <p>上記の「基本的なサポート」以外にも、IDEには通常、Java開発を専門とするユーザーの作業に不可欠な外部のツールやサービス(たとえば、アプリケーションおよびデータベース・サーバー、Webサービス、機能のデバッグとプロファイリング、コラボレーション・ツールなど)へのインタフェースが用意されています。</p>
+
+        <p>最後に、IDEは通常、強化されたエディタ・サポートを提供します。エディタは作業時間のほとんどを費やす可能性がある場所であり、IDEエディタには通常、構文の強調表示、リファクタリング機能、キーボード・ショートカット、コード補完、ヒントとエラー・メッセージなど、いずれも作業をより効率的かつインテリジェントに行うための機能が含まれています。</p>
+
+
+        <br>
+        <h2 id="netBeans">NetBeansを使用する理由</h2>
+
+        <p>NetBeans IDEは、すべてJavaで記述された無料のオープン・ソース統合開発環境です。Java言語、C/C++、およびPHP、JavaScript、Groovy、Rubyなどのスクリプト言語を使用してプロフェッショナルなデスクトップ、エンタープライズ、Webおよびモバイル・アプリケーションを作成するための幅広いツールを提供します。</p>
+
+        <p>多くのユーザーがNetBeansのすばらしさについて述べています。証言の一覧については、<a href="../../../../features/ide/testimonials.html" target="_blank">NetBeans IDEの推薦メッセージ</a>を参照してください。多くの開発者がアプリケーションを他のIDEからNetBeansに移行しています。その理由については、<a href="../../../../switch/realstories.html" target="_blank">NetBeans IDEに切り替えたユーザーの実話</a>をお読みください。</p>
+
+        <p>このIDEには、<a href="../../../../features/web/index.html" target="_blank">Web開発のための機能</a>が数多く用意されており、他のIDEより優れている点がいくつもあります。ここでは、注目する必要がある点についていくつか紹介します。</p>
+
+        <ul>
+            <li><strong>すぐに使用できる: </strong>IDEをダウンロードしてインストールし、実行するのみです。ダウンロード・サイズが小さいので、インストールは簡単です。このIDEは、Windows、Linux、Mac OS X、Solarisを含む多くのプラットフォームで動作します。すべてのIDEツールと機能が完全に統合されているので、プラグインを探し回る必要がなく、IDEを起動すればプラグインも一緒に機能します。</li>
+
+            <li><strong>無料のオープン・ソース</strong>: NetBeans IDEを使用すると、活気に満ちた<a href="../../../../community/index.html" target="_blank">オープン・ソース・コミュニティ</a>に参加して、数千人のユーザーによる支援と貢献をいつでも受けられます。<a href="../../../../community/lists/index.html" target="_blank">NetBeansプロジェクト・メーリング・リスト</a>ではディスカッションが行われ、<a href="http://www.planetnetbeans.org/" target="_blank">プラネットNetBeans</a>にはブログが掲載され、<a href="http://wiki.netbeans.org/" target="_blank">コミュニティのwiki</a>には便利なFAQとチュートリアルが用意されています。</li>
+
+            <li><strong>プロファイリングおよびデバッグ・ツール: </strong>NetBeans IDEの<a href="../../../../features/java/profiler.html">プロファイラ</a>を使用して、メモリーの使用状況や潜在的なパフォーマンス・ボトルネックをリアル・タイムで見極めることができます。さらに、プロファイリング中のパフォーマンスの低下を避けるため、特定のコード部分のみをインストゥルメントできます。<a href="http://profiler.netbeans.org/docs/help/6.0/heapwalker.html" target="_blank">ヒープウォーカ</a>ツールは、Javaヒープ・コンテンツの評価とメモリー・リークの発見に役立ちます。</li>
+
+            <li><strong>カスタマイズ可能なプロジェクト: </strong>NetBeans IDEのビルド・プロセスは、専有のビルド・プロセスではなく<a href="http://ant.apache.org/" target="_blank">Apache Ant</a>、<a href="http://www.gnu.org/software/make/" target="_blank">make</a>、<a href="http://maven.apache.org/" target="_blank">Maven</a>、<a href="http://rake.rubyforge.org/" target="_blank">rake</a>などの業界標準を利用しているので、簡単にプロジェクトをカスタマイズして機能を追加できます。IDE以外のサーバーで、プロジェクトをビルド、実行、デプロイできます。</li>
+
+            <li><strong>コラボレーション・ツール: </strong>IDEは、CVS、Subversion、Mercurialなどのバージョン管理システムの組込みサポートを提供します。</li>
+
+            <li><strong>豊富なドキュメント: </strong>IDEの組込みヘルプ・セットには、豊富なヒントや操作手順が記載されています。IDEのコンポーネント内で[F1] (Macの場合は[fn]-[F1])を押すのみで、ヘルプ・セットが呼び出されます。また、IDEの<a href="../../../index.html" target="_blank">公式ナレッジ・ベース</a>には数百個のオンライン・チュートリアル、記事および<a href="../../intro-screencasts.html" target="_blank">スクリーンキャスト</a>があり、継続的に更新されています。</li>
+        </ul>
+
+        <p>NetBeansの選択を検討する必要がある理由の大規模な一覧については、<a href="../../../../switch/why.html" target="_blank">NetBeans IDEが開発者をつなげる</a>を参照してください。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Introduction">ご意見をお寄せください</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">関連項目</h2>
+
+        <div class="indent">
+            <h3>オンライン・リソース</h3>
+
+                <ul>
+                    <li><a href="http://java.sun.com/docs/books/tutorial/" target="_blank">Javaチュートリアル</a></li>
+                    <li><a href="http://www.oracle.com/technetwork/java/javaee/javaee-faq-jsp-135209.html" target="_blank">Java EE FAQ</a></li>
+                    <li><a href="http://java.sun.com/javaee/reference/apis/" target="_blank">Java EE APIおよびドキュメント</a></li>
+                    <li><a href="http://java.sun.com/new2java/programming/learn/unravelingjava.html" target="_blank">Java用語の解説</a></li>
+                    <li><a href="http://www.java.com/en/javahistory/index.jsp" target="_blank">Javaテクノロジの歴史</a></li>
+                    <li><a href="http://java.sun.com/new2java/gettingstarted.jsp" target="_blank">New to Java Programming Center</a></li>
+                </ul>
+
+            <h3>書籍</h3>
+
+            <ul>
+                <li><a href="http://www.apress.com/book/view/1590598954" target="_blank">Pro NetBeans IDE 6 Rich Client Platform Edition</a></li>
+
+                <li><a href="http://www.informit.com/store/product.aspx?isbn=0130092290" target="_blank">Core Servlets and JavaServer Pages, Volume 1: Core Technologies, 2nd Edition</a></li>
+
+                <li><a href="http://www.informit.com/store/product.aspx?isbn=0131482602" target="_blank">Core Servlets and JavaServer Pages, Volume 2: Advanced Technologies, 2nd Edition</a></li>
+
+                <li><a href="http://java.sun.com/docs/books/faq/" target="_blank">The Java FAQ</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>参考資料</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a><a href="http://java.sun.com/docs/white/langenv/Intro.doc2.html" target="_blank">Java言語の環境</a>というホワイト・ペーパーでは、5つの設計原則が概説されています。</li>
+
+            <li id="footnote2"><a href="#2" style="text-decoration:none">^</a>最新バージョンの名前と番号は、<a href="http://download.oracle.com/javase/6/webnotes/version-6.html" target="_blank">Java SE 6、プラットフォーム名およびバージョン番号</a>で定義されています。</li>
+
+            <li id="footnote3"><a href="#3" style="text-decoration:none">^</a>これらの手順は、Marty HallおよびLarry Brownによる『<a href="http://pdf.coreservlets.com/" target="_blank">Core Servlets and JavaServer Pages</a>』の第2章: Server Setup and Configurationで概説されている手順に大まかに基づいています。この本は、<a href="http://pdf.coreservlets.com/" target="_blank">http://pdf.coreservlets.com/</a>からPDF形式で無償提供されています。</li>
+        </ol>
+
+    </body>
+</html>

@@ -1,0 +1,1016 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="author" content="troy.giunipero@sun.com">    
+        <meta name="description" content="A preview of CVS Features in NetBeans IDE 6.x and 7.x">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, CVS,
+            Concurrent versions system, versioning, open source, developers, collaborate, GNU"> 
+            
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Using CVS Support in NetBeans IDE</title>
+    </head>
+    
+    <body>
+
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Using CVS Support in NetBeans IDE</h1>
+        
+        <p>NetBeans IDE's CVS support is designed to help streamline the development 
+            process for groups working from a shared repository, enabling you to perform 
+            versioning tasks directly from your project system within the IDE. The CVS 
+            client software comes bundled with NetBeans IDE, and no special setup is 
+            necessary in order to begin using CVS.</p>
+        
+        <p>This document demonstrates how to perform basic versioning tasks in the IDE by 
+            guiding you through the standard workflow when using versioning software.</p>
+            
+        <p>CVS, or Concurrent Versions System, is an open-source version control system 
+            that keeps track of all work and changes in a set of files. This is typically 
+            used during the implementation of a software project, allowing multiple 
+            developers to collaborate. For more information about CVS, consult the 
+            <a href="http://ximbiot.com/cvs/">official documentation</a>.</p>
+		<p class="notes"><b>Note:</b> After NetBeans IDE 7.0.1, CVS support is  available after installing the CVS plugin from the NetBeans IDE Update Center. Please see the <a href="http://wiki.netbeans.org/CVSSupport">CVS FAQ</a> page for details.</p>
+            
+        <p><strong>Contents</strong></p>
+
+    <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" 
+    class="stamp" alt="Content on this page applies to NetBeans IDE 6.9 and more recent" 
+    title="Content on this page applies to the NetBeans IDE 6.9 and more recent" >
+
+        <ul class="toc">
+            <li><a href="#synchronizing">Synchronizing Local Files with a Repository</a>
+                <ul>
+                    <li><a href="#opening">Opening a CVS Project in the IDE</a></li>
+                    <li><a href="#checking">Checking out Files from a Repository</a></li>
+                    <li><a href="#importing">Importing Files into a Repository</a></li>
+                </ul></li>
+            <li><a href="#editing">Editing Sources</a>
+                <ul>
+                    <li><a href="#viewingChanges">Viewing Changes in the Source Editor</a></li>
+                    <li><a href="#viewingFileStatus">Viewing File Status Information</a></li>
+                    <li><a href="#comparing">Comparing File Revisions</a></li>
+                    <li><a href="#merging">Merging File Revisions</a></li>
+                </ul></li>
+            <li><a href="#committing">Committing Sources to a Repository</a>
+                <ul>
+                    <li><a href="#updating">Updating Local Copies</a></li>
+                    <li><a href="#resolving">Resolving Conflicts</a></li>
+                    <li><a href="#performing">Performing the Commit</a></li>
+                </ul></li>
+            <li><a href="#seeAlso">See Also</a></li>                
+        </ul>            
+        
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans
+                        IDE</a></td>
+                    <td class="tbltd1">version 6.x and later</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java
+                        Development Kit (JDK)</a></td>
+                    <td class="tbltd1">version 6 or later</td>
+                </tr>
+            </tbody>
+        </table>
+  
+        <a name="synchronizing"></a>     
+        <h2>Synchronizing Local Files with a Repository</h2>
+        
+        <p>When using a version control system, you work by synchronizing local files
+            with a repository, making changes to your local copy, then committing them to 
+            the repository. The following list describes various ways you can synchronize 
+            a project in NetBeans IDE, depending on your specific situation:</p>
+            
+        <ul>
+            <li><a href="#opening">Opening a CVS Project in the IDE</a></li>
+            <li><a href="#checking">Checking out Files from a Repository</a></li>
+            <li><a href="#importing">Importing Files into a Repository</a></li>
+        </ul>
+        
+        <div class="indent">
+            <a name="opening"></a>
+            <h3>Opening a CVS Project in the IDE</h3>
+
+            <p>If you already have a CVS versioned project which you have been working 
+                with outside of the IDE, you can open it in the IDE and versioning features 
+                will automatically become available to you. The IDE scans your open projects 
+                and if they contain <code>CVS</code> directories, file status and context-sensitive
+                support automatically becomes active for CVS versioned projects.</p> 
+
+            <a name="checking"></a>
+            <h3>Checking out Files from a Repository</h3>
+
+            <p>If you want to connect to a remote repository from the IDE, then check out 
+                files and immediately begin working with them, do the following:</p>
+            
+            <ol>
+                <li>In NetBeans IDE, choose Team &gt; CVS &gt; Checkout from
+                    the main menu. The Checkout wizard opens.
+                    
+                    <br>
+                    <br>
+                    <strong class="notes">Note: </strong>The IDE's drop-down menus are 
+                    context-sensitive, i.e., the available options depend on the item 
+                    currently selected. Therefore, if you are already working within a 
+                    CVS project, you can choose Versioning &gt; Checkout from the main menu.</li>
+                <li>In the first panel of the wizard, enter the location of the repository
+                    as can be defined by <code>CVSROOT</code>:
+                    
+                    <br><br>                    
+                    <a name="protocolTypes"></a>
+                    The IDE supports a number of <code>CVSROOT</code> formats, depending on
+                    whether the CVS repository is local or remote, and what method you 
+                    are using to connect to it:
+                    
+                    <br><br>
+                    <table>
+                        <tr>
+                            <th class="tblheader" scope="col">Method</th>
+                            <th class="tblheader" scope="col">Description</th>
+                            <th class="tblheader" scope="col">Example</th>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>pserver</strong></td>
+                            <td class="tbltd1">Remote password server</td>
+                            <td class="tbltd1"><code>:pserver:username@hostname:/repository_path</code></td>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>ext</strong></td>
+                            <td class="tbltd1">Access using Remote Shell (RSH) or Secure Shell (SSH)</td>
+                            <td class="tbltd1"><code>:ext:username@hostname:/repository_path</code></td>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>local</strong></td>
+                            <td class="tbltd1">Access to a local repository</td>
+                            <td class="tbltd1"><code>:local:/repository_path</code>
+                                <br><span class="float-right">
+                                (requires an external CVS executable)</span></td>
+                        </tr>                        
+                        <tr>
+                            <td class="tbltd1"><strong>fork</strong></td>
+                            <td class="tbltd1">Access to local repository using a remote protocol</td>
+                            <td class="tbltd1"><code>:fork:/repository_path</code>
+                                <br><span class="float-right">
+                                (requires an external CVS executable)</span></td>
+                        </tr>
+                    </table>
+                    
+                    <br>
+                    Depending on the method you are using you may need to specify other 
+                    information, such as a password and proxy settings for connecting to 
+                    a remote repository (e.g. for <code>pserver</code>). Click Next.
+
+                    <br><br>
+                    <strong class="notes">Note:</strong>If you are trying to set up public key SSH 
+                    authentication, see: <a href="http://wiki.netbeans.org/wiki/view/FaqHowToSetUpSSHAuth">How 
+                    to set up public key SSH authentication?</a>.
+                    
+                    <br><br>
+                    For more help with accessing local repositories, see: 
+                    <a href="http://wiki.netbeans.org/wiki/view/FaqHowToAccessLocalCVS">How 
+                    can I access local repositories?</a></li>
+
+                <li>In the Modules to Checkout panel of the wizard, specify the module 
+                    that you want to check out in the Module field. If you do not know 
+                    the name of the module you want to check out, click the Browse button 
+                    to view the repository's contents. From the Browse CVS Module dialog 
+                    that appears, select any of the listed modules and click OK. Your
+                    selection is then added to the Module field:                
+                    <p class="align-center">
+                    <a href="../../../images_www/articles/73/ide/cvs/cvs-checkout.png" rel="lytebox"
+                        title="CVS Checkout Wizard: Modules to Checkout panel">
+                        <img src="../../../images_www/articles/73/ide/cvs/cvs-checkout-small.png"
+                        class="b-none margin-around" alt="CVS Checkout Wizard: Modules to Checkout panel"></a></p></li>
+                        
+                <li>In the Branch text field, enter the name of the branch to checkout. 
+                    You can click the Browse button to open the Browse Tags dialog box to 
+                    search for available branches and tags. If you do not specify a branch 
+                    or tag, the <em>trunk</em> is checked out.</li>
+                <li>In the Local Folder field, enter a location on your computer where you want 
+                    files to be checked out to, then click Finish to initiate the CVS check out.
+                    The IDE checks out the specified sources and the IDE's status bar displays 
+                    in the lower right corner, indicating progress of the files downloading from 
+                    the repository to your local directory. You can also view files as they are 
+                    being checked out from the Output window (Ctrl-4).
+                    
+                    <br><br>
+                    <strong class="notes">Note: </strong>If the checked out sources contain 
+                    NetBeans projects, a dialog appears prompting you to open them in the IDE. 
+                    If the sources do not contain a project, the dialog appears prompting you 
+                    to create a new project from the sources and then open them in the IDE. 
+                    If you create a new project for such sources, select the appropriate 
+                    project category (i.e., in the New Project wizard) and then use the With
+                    Existing Sources option within that category.</li>
+            </ol>            
+            
+            <a name="importing"></a>
+            <h3>Importing Files into a Repository</h3>        
+
+            <p>Alternately, you can import a project you have been working on in the IDE to
+                a remote repository, then continue to work on it in the IDE after it has 
+                become versioned with the CVS repository.</p>
+
+            <p><strong class="notes">Note: </strong>While you are actually <em>exporting</em>
+                files from your system, the term 'import' is used in version control systems 
+                to signify that files are being <em>imported into</em> a repository.</p>
+            
+            <p>To import a project to a repository:</p>
+            
+            <ol>
+                <li>From the Projects window (Ctrl-1), select an unversioned project and 
+                    choose Versioning &gt; Import into CVS Repository from the 
+                    node's right-click menu. The CVS Import wizard opens.</li>
+                <li>In the CVS Root panel of the Import wizard, specify the location of 
+                    the repository as defined by <a href="#protocolTypes"><code>CVSROOT</code></a>.
+                    Depending on the method you are using you may need to specify other 
+                    information, such as a password and proxy settings for connecting to 
+                    a remote repository (e.g. for <code>pserver</code>). Click Next.</li>
+                <li>In the Folder to Import panel, specify the local folder you want to 
+                    place in the repository. The name of your project is suggested for 
+                    you in the Folder to Import text field by default:
+                    
+                    <p class="align-center">
+                    <a href="../../../images_www/articles/73/ide/cvs/folder-to-import.png" rel="lytebox"
+                        title="CVS Checkout Wizard: Folder to Import panel">
+                        <img src="../../../images_www/articles/73/ide/cvs/folder-to-import-small.png"
+                        class="b-none margin-around" alt="CVS Checkout Wizard: Folder to Import panel"></a></p></li>
+                        
+                <li>In the Import Message text area, enter a description of the project you 
+                    are importing into the repository.</li> 
+                <li>Specify the location in the repository where you want to import the 
+                    project by typing in the path in the Repository Folder text field. 
+                    Alternatively, click the Browse button to navigate to a specific 
+                    location in the repository. Click Finish to initiate the import. 
+                    The IDE uploads the project files to the repository and the Output 
+                    window opens to display the progress.</li>
+            </ol>
+            
+            <p><strong class="notes">Note: </strong>The CVS client does not handle binary file imports 
+                by default. The best practice for importing binary sources is to create a <code>cvswrappers</code>
+                file within the repository. See <a href="http://wiki.netbeans.org/FaqCVSHowToImportBinaries">How 
+                to Import Binary Files Correctly</a> for more details.</p>
+        </div>
+        
+        <a name="editing"></a>
+        <h2>Editing Sources</h2>
+        
+        <p>Once you have a CVS versioned project opened in the IDE, you can begin 
+            making changes to sources. As with any project opened in NetBeans IDE, you can 
+            open files in the Source Editor by double-clicking on their nodes, as they
+            appear in the IDE's windows (e.g. Projects (Ctrl-1), Files (Ctrl-2), Favorites 
+            (Ctrl-3) windows).</p>
+        
+        <p>When working with sources in the IDE, there are various UI components at your
+            disposal, which aid in both viewing and operating version control commands:</p> 
+   
+        <ul>
+            <li><a href="#viewingChanges">Viewing Changes in the Source Editor</a></li>
+            <li><a href="#viewingFileStatus">Viewing File Status Information</a></li>
+            <li><a href="#comparing">Comparing File Revisions</a></li>
+            <li><a href="#merging">Merging File Revisions</a></li>            
+        </ul>
+            
+        <div class="indent">
+            <a name="viewingChanges"></a>
+            <h3>Viewing Changes in the Source Editor</h3>
+            
+            <p>When you open a versioned file in the IDE's Source Editor, you can view real-time
+                changes occurring to your file as you modify it against your previously checked-out
+                base version from the repository. As you work, the IDE uses color encoding in the 
+                Source Editor's margins to convey the following information:</p>
+            
+            <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>Blue</strong> 
+                        ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been changed since the earlier revision.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Green</strong> 
+                        ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been added since the earlier revision.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Red</strong> 
+                        ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been removed since the earlier revision.</td>                
+                </tr>
+            </table>                
+            
+            <br>
+            <p>The Source Editor's left margin shows changes occurring on a line-by-line basis.
+                When you modify a given line, changes are immediately shown in the left margin.</p>
+                
+            <p>You can click on a color grouping in the margin to call versioning commands. For
+                example, the screen capture below left shows widgets available to you when clicking 
+                a red icon, indicating that lines have been removed from your local copy.</p>
+                
+            <p>The Source Editor's right margin provides you with an overview that displays 
+                changes made to your file as a whole, from top to bottom. Color encoding is
+                generated immediately when you make changes to your file.</p>
+                
+            <p>Note that you can click on a specific point within the margin to bring your 
+                inline cursor immediately to that location in the file. To view the number of
+                lines affected, hover your mouse over the colored icons in the right margin:</p>                
+              
+            <table class="cell" style="width:500px">
+                <tr>
+                    <td><a href="../../../images_www/articles/73/ide/cvs/left-ui.png" rel="lytebox"
+                        title="versioning color encoding displayed in editor's left margin">
+                        <img src="../../../images_www/articles/73/ide/cvs/left-ui-small.png" class="b-all"
+                        alt="versioning color encoding displayed in editor's left margin"></a>
+                        <br><strong>Left margin</strong></td>
+                    <td><img src="../../../images_www/articles/73/ide/cvs/right-ui.png" class="b-all"
+                        alt="versioning color encoding displayed in editor's right margin"
+                        title="versioning color encoding displayed in editor's right margin">
+                        <br><strong>Right margin</strong></td>
+                </tr>
+            </table>         
+             
+            <a name="viewingFileStatus"></a>
+            <h3>Viewing File Status Information</h3>            
+             
+            <p>When you are working in the Projects (Ctrl-1), Files (Ctrl-2), Favorites 
+                (Ctrl-3), or Versioning windows, the IDE provides several visual features
+                that aid in viewing status information about your files. In the example
+                below, notice how the badge (e.g. 
+                <img src="../../../images_www/articles/73/ide/cvs/blue-badge.png"
+                alt="blue badge">), color of the file name, and adjacent status
+                label, all coincide with each other to provide you with a simple but
+                effective way to keep track of versioning information on your files:</p>
+            
+                <p class="align-center">
+                <img src="../../../images_www/articles/73/ide/cvs/badge-example.png"
+                     class="b-all margin-around" alt="blue badge displayed in Favorites window"></p>
+                
+            <p>Badges, color coding, file status labels, and perhaps most importantly,
+                the Versioning window all contribute to your ability to effectively 
+                view and manage and versioning information in the IDE.</p>
+                
+            <ul>
+                <li><a href="#badges">Badges and Color Coding</a></li>
+                <li><a href="#fileStatus">File Status Labels</a></li>
+                <li><a href="#versioning">The Versioning Window</a></li>
+            </ul>
+            
+            <div class="indent">
+                <a name="badges"></a>
+                <h4>Badges and Color Coding</h4>
+            
+                <p>Badges are applied to project, folder, and package nodes and 
+                    inform you of the status of files contained within that node:</p>
+
+                <p>The following table displays the color scheme used for badges:</p>
+
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:110px">UI Component</th>
+                        <th class="tblheader" scope="col">Description</th>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Blue Badge</strong>
+                            (<img src="../../../images_www/articles/73/ide/cvs/blue-badge.png"
+                            alt="blue badge">)</td>
+                        <td class="tbltd1">Indicates the presence of files that have been locally modified, added or
+                            deleted. For packages, this badge applies only to the package itself and 
+                            not its subpackages. For projects or folders, the badge indicates changes
+                            within that item, or any of the contained subfolders.</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Red Badge</strong>
+                            (<img src="../../../images_www/articles/73/ide/cvs/red-badge.png"
+                            alt="red badge">)</td>
+                        <td class="tbltd1">Marks projects, folders or packages that contain <em>conflicting</em> 
+                            files (i.e., local versions that conflict with versions maintained in 
+                            the repository). For packages, this badge applies only to the package 
+                            itself and not its subpackages. For projects or folders, the badge 
+                            indicates conflicts within that item, or any of the contained subfolders.</td>
+                    </tr>
+                </table>
+                
+                <br><br><a name="color-coding-table"></a>
+                <p>Color coding is applied to file names in order to indicate their current
+                    status against the repository:</p>
+                
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:40px">Color</th>
+                        <th class="tblheader" scope="col">Example</th>
+                        <th class="tblheader" scope="col">Description</th>
+                    </tr>                    
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Blue</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/73/ide/cvs/blue-text.png"
+                            alt="blue text"></td>
+                        <td class="tbltd1">Indicates that the file has been locally modified.</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Green</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/73/ide/cvs/green-text.png"
+                            alt="green text"></td>
+                        <td class="tbltd1">Indicates that the file has been locally added.</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>Red</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/73/ide/cvs/red-text.png"
+                            alt="red text"></td>
+                        <td class="tbltd1">Indicates that the file contains conflicts between your local 
+                            working copy and the repository's version.</td>
+                    </tr>
+                     <tr> 
+                        <td class="tbltd1 align-center"><strong>Gray</strong></td>
+                        <td class="tbltd1"><img src="../../../images_www/articles/73/ide/cvs/gray-text.png"
+                            alt="gray text"></td>
+                        <td class="tbltd1">Indicates that the file is ignored by CVS and will not 
+                            be included in versioning commands (e.g. Update and Commit). Files 
+                            can only be made to be ignored if they have not yet been versioned.</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Strike-Through</strong></td>
+                        <td class="tbltd1 align-center"><img alt="strike-through text" 
+                            src="../../../images_www/articles/73/ide/cvs/strike-through-text.png"></td>
+                        <td class="tbltd1">Indicates that the file is excluded from commit operations. Strike-through
+                            text only appears in specific locations, such as the Versioning window or 
+                            Commit dialog, when you choose to exclude individual files from a commit
+                            action. Such files are still affected by other CVS commands, such 
+                            as Update.</td>
+                    </tr>  
+                </table>
+                
+                <br><a name="fileStatus"></a>
+                <h4>File Status Labels</h4>
+                
+                <p>File status labels provide a textual indication of the status of versioned 
+                    files in the IDE's windows. By default, the IDE displays status (new, modified, 
+                    ignored, etc.) and tag information in gray text to the right of files, as 
+                    they are listed in windows. You can, however, modify this format to suit 
+                    your own needs. For example, if you want to add revision numbers to status 
+                    labels, do the following:</p>
+                    
+                <ol>
+                    <li>Choose Tools &gt; Options (NetBeans &gt; Preferences on Mac) from the main
+                        menu. The Options window opens.</li>
+                    <li>Select the Miscellaneous button along the top of the window, then click 
+                        the Versioning tab beneath it. Make sure CVS is selected beneath Versioning 
+                        Systems in the left panel:
+                        
+                        <p class="align-center">
+                        <a href="../../../images_www/articles/73/ide/cvs/cvs-options.png" rel="lytebox"
+                            title="CVS Options window">
+                            <img src="../../../images_www/articles/73/ide/cvs/cvs-options-small.png"
+                            class="b-none margin-around" alt="CVS Options window"></a></p></li>
+
+                    <li>Click the Add Variable button to the right of the Status Label Format 
+                        text field. In the Add Variable dialog that displays, select the 
+                        <code>{revision}</code> variable, then click OK. The revision variable
+                        is added to the status label Format text field.</li>
+                    <li>To reformat status labels so that only status and revision display to 
+                        the right of files, rearrange the contents of the status label Format 
+                        text field to the following:
+                        
+                        <pre class="examplecode">[{status}; {revision}]</pre>
+               
+                        Click OK. Status labels now list file status and revision numbers 
+                        (where applicable):
+                    
+                        <p class="align-center">
+                        <img src="../../../images_www/articles/73/ide/cvs/cvs-file-labels.png"
+                            class="b-all margin-around" alt="file labels displayed next to file names"></p></li>
+                </ol>                    
+                    
+                <p class="tips">File status labels can be toggled on and off by choosing View 
+                    &gt; Show Versioning Labels from the main menu.</p>
+
+                <a name="versioning"></a>
+                <h4>The Versioning Window</h4>
+                    
+                <p>The CVS Versioning window provides you with a real-time list of all 
+                    of the changes made to files within a selected folder of your local working 
+                    copy. It opens by default in the bottom panel of the IDE, listing added, 
+                    deleted or modified files.</p>
+                
+                <p>To open the Versioning window, select a versioned file or folder (e.g. from 
+                    the Projects, Files, or Favorites window) and either choose CVS &gt; 
+                    Show Changes from the right-click menu, or choose Versioning &gt; Show Changes 
+                    from the main menu. The following window appears in the bottom of the IDE:</p>
+                
+                   <p class="align-center">
+                        <a href="../../../images_www/articles/73/ide/cvs/cvs-versioning-window.png" rel="lytebox"
+                            title="versioning window displaying locally modified files">
+                            <img src="../../../images_www/articles/73/ide/cvs/cvs-versioning-window-small.png"
+                            class="b-none margin-around" alt="versioning window displaying locally modified files"></a></p>
+    
+                <p>By default, the Versioning window displays a list of all modified files within 
+                    the selected package or folder. Using the buttons in the toolbar, you can 
+                    choose to display all changes or limit the list of displayed files to either 
+                    locally or remotely modified files. You can also click the column headings 
+                    above the listed files to sort the files by name, status or location.</p>
+
+                <p>The Versioning window toolbar also includes buttons that enable you to invoke 
+                    the most common CVS tasks on all files displayed in the list. The 
+                    following table lists the CVS commands available in the toolbar of the 
+                    Versioning window:</p>
+                
+                <table >
+                    <tr>
+                        <th class="tblheader" scope="col">Icon</th>
+                        <th class="tblheader" scope="col" style="width:110px">Name</th>
+                        <th class="tblheader" scope="col">Function</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img src="../../../images_www/articles/73/ide/cvs/refresh.png"
+                            alt="refresh status icon"></td>
+                        <td class="tbltd1 align-center"><strong>Refresh Status</strong></td>
+                        <td class="tbltd1">Refreshes the status of the selected files and 
+                            folders. Files displayed in the Versioning window can be 
+                            refreshed to reflect any changes that may have been made 
+                            externally.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img src="../../../images_www/articles/73/ide/cvs/diff.png"
+                            alt="diff all icon"></td>
+                        <td class="tbltd1 align-center"><strong>Diff All</strong></td>
+                        <td class="tbltd1">Opens the Diff Viewer providing you with a side-by-side 
+                            comparison of your local copies and the versions maintained in the 
+                            repository.</td>
+                    </tr>     
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img src="../../../images_www/articles/73/ide/cvs/update.png"
+                            alt="update all icon"></td>
+                        <td class="tbltd1 align-center"><strong>Update All</strong></td>
+                        <td class="tbltd1">Updates all selected files from the repository.</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img src="../../../images_www/articles/73/ide/cvs/commit.png"
+                            alt="commit all icon"></td>
+                        <td class="tbltd1 align-center"><strong>Commit All</strong></td>
+                        <td class="tbltd1">Enables you to commit local changes to the repository.</td>
+                    </tr>            
+                </table>
+
+               
+                <p>You can access other CVS commands in the Versioning window by selecting a table 
+                    row that corresponds to a modified file, and choosing a command from the right-click menu:</p>
+                    
+                    <p class="align-center">
+                    <img src="../../../images_www/articles/73/ide/cvs/cvs-right-click.png" class="b-none margin-around"
+                        alt="right-click menu displayed on selected file in Versioning window"></p>
+                       
+                
+                <p>For example, you can perform the following actions on a file:</p>               
+                        
+                <table>
+                    <tr>
+                        <td>
+                            <ul><li><strong>Show Annotations</strong>:
+                                <br><br>Displays author and revision number information in the left 
+                                margin of files opened in the Source Editor.</li></ul></td>                        
+                        <td class="f-page-cell"><img src="../../../images_www/articles/73/ide/cvs/annotations.png"
+                            alt="annotations displayed in Source Editor's left margin" class="b-all"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>Search History</strong>: 
+                                <br><br>Enables you to search for and compare multiple revisions of the
+                                selected file in the IDE's History Viewer. From the History Viewer you 
+                                can also perform a <a href="#comparing">diff</a> or roll back your local 
+                                copy to a selected revision.</li></ul></td>                       
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/history-viewer.png"
+                            rel="lytebox" title="CVS History Viewer displaying multiple revisions on a file">
+                            <img src="../../../images_www/articles/73/ide/cvs/history-viewer-small.png" class="b-all"
+                            alt="CVS History Viewer displaying multiple revisions on a file"></a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>Exclude from Commit</strong>: 
+                                <br><br>Allows you to mark the file to be excluded when performing 
+                                a commit.</li></ul></td>                       
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/exclude-from-commit.png"
+                            rel="lytebox" title="files marked as excluded in the Commit dialog">
+                            <img src="../../../images_www/articles/73/ide/cvs/exclude-from-commit-small.png" class="b-all"
+                            alt="files marked as excluded in the Commit dialog"></a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>Revert Modifications</strong>:
+                                <br><br>Opens the Confirm Overwrite dialog, enabling you to 
+                                revert any actions that you have committed to files in your 
+                                local working copy.</li></ul></td>                      
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/cvs-confirm-overwrite.png"
+                            rel="lytebox" title="files marked as excluded in the Commit dialog">
+                            <img src="../../../images_www/articles/73/ide/cvs/cvs-confirm-overwrite-small.png"
+                            class="b-right" alt="files marked as excluded in the Commit dialog"></a></td>
+                    </tr>
+                </table>    
+            </div>
+        
+            <a name="comparing"></a>
+            <h3>Comparing File Revisions</h3>
+            
+            <p>Comparing file revisions is a common task when working with versioned
+                projects. The IDE enables you to compare revisions by using the Diff
+                command, which is available from the right-click menu of a selected 
+                item (CVS &gt; Diff), as well as from the Versioning window.
+                In the Versioning window, you can perform diffs by either double-clicking
+                a listed file, otherwise you can click the Diff All icon (<img alt="diff all icon" 
+                src="../../../images_www/articles/73/ide/cvs/diff.png">) located in
+                the toolbar at the top.</p>
+            
+            <p>When you perform a diff, a graphical Diff Viewer opens for the selected 
+                file(s) and revisions in the IDE's main window. The Diff Viewer displays
+                two copies in side-by-side panels. The more current copy appears on the 
+                right side, so if you are comparing a repository revision against your 
+                working copy, the working copy displays in the right panel:</p>
+
+               <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/diff-viewer.png" rel="lytebox"
+                    title="CVS Diff Viewer">
+                    <img src="../../../images_www/articles/73/ide/cvs/diff-viewer-small.png"
+                    class="b-all margin-around" alt="CVS Diff Viewer"></a></p>
+              
+            <p>The Diff Viewer makes use of the same <a href="#viewingChanges">color encoding</a> 
+                used elsewhere to display version control changes. In the screen capture 
+                displayed above, the green block indicates content that has been added to
+                the more current revision. The red block indicates that content from the 
+                earlier revision has been removed from the later.  Blue indicates that 
+                changes have occurred within the highlighted line(s).</p>
+              
+            <p>Also, when performing a diff on a group of files, such as on a project,
+                package, or folder, or when clicking Diff All
+                (<img src="../../../images_www/articles/73/ide/cvs/diff.png"
+                alt="diff all icon">), you can switch between diffs by clicking files
+                listed in the upper region of the Diff Viewer.</p>
+            
+            <p>The Diff Viewer also provides you with the following functionality:</p>
+            
+            <ul>
+                <li><a href="#makeChanges">Make Changes to your Local Working Copy</a></li>
+                <li><a href="#navigateDifferences">Navigate Among Differences</a></li>                
+                <li><a href="#changeViewCriteria">Change Viewing Criteria</a></li>
+            </ul>
+            
+            <div class="indent">
+                <a name="makeChanges"></a>
+                <h4>Make Changes to your Local Working Copy</h4>
+
+                <p>If you are performing a diff on your local working copy, the IDE enables you 
+                    to make changes directly from within the Diff Viewer. To do so, you can either 
+                    place your cursor within the right pane of the Diff Viewer and modify your 
+                    file accordingly, otherwise make use of the inline icons that display adjacent 
+                    to each highlighted change:</p>
+
+                <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Replace</strong> (<img alt="replace icon"
+                            src="../../../images_www/articles/73/ide/cvs/insert.png">):</td>
+                        <td>Inserts the highlighted text from the previous revision into 
+                            the current revision</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Move All</strong> (<img alt="move all icon"
+                            src="../../../images_www/articles/73/ide/cvs/arrow.png">):</td>
+                        <td>Reverts the file's current revision to the state of the selected 
+                            previous revision</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Remove</strong> (<img alt="remove icon"
+                            src="../../../images_www/articles/73/ide/cvs/remove.png">):</td>
+                        <td>Removes the highlighted text from the current revision so that it 
+                            mirrors the previous revision</td>                
+                    </tr>
+                </table>
+
+                <a name="navigateDifferences"></a>
+                <h4>Navigate among Differences between Compared Files</h4>
+
+                <p>If your diff contains multiple differences, you can navigate among them by 
+                    using the arrow icons displayed in the toolbar. The arrow icons enable you 
+                    to view differences as they appear from top to bottom:</p>
+
+                 <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Previous</strong> 
+                            (<img src="../../../images_www/articles/73/ide/cvs/diff-prev.png"
+                                alt="previous difference button">):</td>
+                        <td>Goes to previous difference displayed in the diff</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Next</strong> 
+                            (<img src="../../../images_www/articles/73/ide/cvs/diff-next.png"
+                                alt="next difference button">):</td>
+                        <td>Goes to next difference displayed in the diff</td>
+                    </tr>
+                </table>
+
+                <a name="changeViewCriteria"></a>
+                <h4>Change Viewing Criteria</h4>
+
+                <p>You can choose whether to view files containing changes from the local 
+                    working copy, the repository, as well as both simultaneously:</p>
+
+                 <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Local</strong> 
+                            ( <img src="../../../images_www/articles/73/ide/cvs/locally-mod.png" alt="locally modified icon"> ):</td>
+                        <td>Displays locally modified files only</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Remote</strong> 
+                            ( <img src="../../../images_www/articles/73/ide/cvs/remotely-mod.png" alt="remotely modified icon"> ):</td>
+                        <td>Displays remotely modified files only</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>Both</strong> 
+                            ( <img src="../../../images_www/articles/73/ide/cvs/both-mod.png" alt="locally and remotely modified icon"> ):</td>
+                        <td>Displays both locally and remotely modified files</td>
+                    </tr>                
+                </table>
+            </div>
+
+            <a name="merging"></a>
+            <h3>Merging File Revisions</h3>
+
+            <p>NetBeans IDE enables you to merge changes made on different branches 
+                of the repository with your local working copy. Using the CVS Merge 
+                dialog, you need only specify criteria indicating which repository 
+                sources you want merged with your working copy.</p>
+
+            <p>The following simple use-case demonstrates how you can apply the Merge 
+                dialog to merge a complete branch into the trunk's head:</p>
+                
+            <br>
+            <table >
+                <tr>
+                    <td class="tblheader valign-top align-center" style="width:80px"><strong>Use-case:</strong></td>
+                    <td class="tbltd1">
+                        There is a request to begin development of a new feature for
+                        the project, so a new branch is created from the current state
+                        of the project's trunk. After all necessary work is done and
+                        the code is stable enough in the branch, you integrate the new
+                        feature into the trunk.
+                    </td>
+                </tr>
+            </table>
+                
+            <ol>
+                <li>Create new branch for the project by right-clicking the project
+                    node and choosing CVS &gt; Branch. In the Branch dialog, enter
+                    <code>new_feature</code> as the Branch name, and make sure the
+                    Switch to this Branch Afterwards option is selected:
+                    
+                    <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-branch-dialog.png" rel="lytebox"
+                    title="Branch dialog containing user-specified data">
+                    <img src="../../../images_www/articles/73/ide/cvs/cvs-branch-dialog-small.png"
+                    class="b-all margin-around" alt="Branch dialog containing user-specified data"></a></p>
+                    
+                    Click the Branch button. A new branch is created in the repository, 
+                    and the IDE switches your target repository location to the new branch. 
+                    In the Projects window, the new branch name displays in grey text 
+                    next to versioned files, indicating that you are now working from 
+                    the branch.
+                    <p class="notes"><b>Note: </b>Make sure your 
+                    <a href="#fileStatus">file status labels</a> are activated (choose
+                    View &gt; Show Versioning Labels from the main menu).</p></li>
+                <li>Edit files, add files, delete files. Commit all changes.</li>
+                <li>When the new feature is ready, switch back to the trunk. You must 
+                    be working in the target branch (i.e., trunk in this case) when
+                    wanting to perform a merge between two branches. Right-click the
+                    project node and choose CVS &gt; Switch to Branch. In the dialog
+                    that displays, select Switch to Trunk and click Switch.
+                    
+                    <br><br>
+                    The IDE switches your target repository location to the trunk. 
+                    In the Projects window, note that file status labels automatically
+                    update to reflect your new working location.</li>
+                <li>To perform the merge, right-click the project node and choose CVS &gt; 
+                    Merge Changes from Branch. In the dialog that displays, note that the
+                    Merge Changes Into Working Branch field contains <code>Trunk</code>, indicating
+                    your current working location. 
+                    
+                    <br><br>
+                    In the dialog, specify the following criteria:
+                    
+                    <ul>
+                        <li>Leave the Starting From option set to Branch Point/Branch Root 
+                            because you want to merge all changes since the branch's creation.</li>
+                        <li>For the Until option, select Branch Head and type in the name of 
+                            the branch you want to merge into the trunk. You can also click 
+                            Browse to search amongst existing branches in the repository.</li>
+                        <li>In the event that you want to tag revisions following the merge, 
+                            select Tag Trunk after Merge and enter a tag name of your choosing.
+						<p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-merge-branches.png" rel="lytebox"
+                    title="Merge Changes from Branch dialog containing user-specified data">
+                    <img src="../../../images_www/articles/73/ide/cvs/cvs-merge-branches-small.png"
+                    class="b-all margin-around" alt="Merge Changes from Branch dialog containing user-specified data"></a></p></li>
+                    </ul>
+                   
+                    Click Merge. The IDE incorporates the branch into the trunk. If any merge 
+                    conflicts arise in the process, the project's status is updated to 
+                    <a href="#resolving">Merge Conflict</a> to indicate this.</li>
+            </ol>
+
+            <p><strong class="notes">Note: </strong>After merging file changes from a 
+                branch to your local working directory, you must still commit changes 
+                using the Commit command in order to add them to the repository.</p>
+        </div>
+
+        <a name="committing"></a>
+        <h2>Committing Sources to a Repository</h2>
+         
+        <p>After making changes to sources, you commit them to the repository. It is 
+            generally a good idea to update any copies you have against the repository 
+            prior to performing a commit in order to ensure that conflicts do not arise. 
+            Conflicts can occur however, and should be thought of as a natural event 
+            when numerous developers are working on a project simultaneously. The IDE 
+            provides flexible support that enables you to perform all of these functions. 
+            It also provides a Conflict Resolver which allows you to safely deal with any 
+            conflicts as they occur.</p>
+            
+        <ul>
+            <li><a href="#updating">Updating Local Copies</a></li>
+            <li><a href="#resolving">Resolving Conflicts</a></li>
+            <li><a href="#performing">Performing the Commit</a></li>
+        </ul>
+         
+        <div class="indent">
+            <a name="updating"></a>
+            <h3>Updating Local Copies</h3>
+            
+            <p>You can perform updates by choosing CVS &gt; Update from the 
+                right-click menu of any versioned item in the Projects, Files, or 
+                Favorites windows.  When working directly from the Versioning window, 
+                you need only right-click a listed file and choose Update.</p>
+                
+            <p>To perform an update on sources that you have modified, you can click 
+                the Update All icon (<img src="../../../images_www/articles/73/ide/cvs/update.png"
+                alt="update all icon">), which displays in the toolbars located
+                at the top of both the <a href="#versioning">Versioning Window</a>, 
+                as well as the <a href="#comparing">Diff Viewer</a>. Any changes that
+                may have occurred in the repository are displayed in the Versioning
+                Output window.</p>
+    
+            <a name="resolving"></a>
+            <h3>Resolving Conflicts</h3>
+            
+            <p>When you perform an update or a commit, the IDE's CVS support compares 
+                your files with repository sources to make sure that other changes have 
+                not already occurred in the same locations. When your previous checkout 
+                (or update) no longer matches the repository <em>HEAD</em> (i.e., most 
+                current revision), <em>and</em> the changes that you applied to your 
+                local working copy coincide with areas in the HEAD that have also changed, 
+                your update or commit results in a <em>conflict</em>.</p>
+                
+            <p>As indicated in <a href="#badges">Badges and Color Coding</a>, conflicts 
+                are displayed in the IDE with red text and are accompanied by a red badge 
+                (<img src="../../../images_www/articles/73/ide/cvs/red-badge.png"
+                alt="red badge">) when viewed in the Projects, Files, or Favorites windows.
+                When working in the Versioning window, conflicts are also indicated
+                by a file's status:</p>
+                
+                <p class="align-center">
+                <img src="../../../images_www/articles/73/ide/cvs/cvs-conflict-versioning-win.png"
+                    class="b-right margin-around" alt="file conflict displayed in Versioning window"></p>
+               
+            <p>Any conflicts that arise must be resolved before you commit files to the 
+                repository. You can resolve conflicts in the IDE using the Merge Conflicts 
+                Resolver. The Merge Conflicts Resolver provides an intuitive interface 
+                that enables you to address individual conflicts sequentially while viewing 
+                merged output as you make changes. You can access the Merge Conflicts 
+                Resolver on a file that is in conflict by right-clicking that file and
+                choosing CVS &gt; Resolve Conflicts.</p>
+      
+            <p>The Merge Conflicts Resolver displays the two conflicting revisions 
+                side-by-side in the top pane, with the conflicting areas highlighted.
+                The lower pane depicts the file as it appears while merges for individual
+                conflicts between the two revisions occur:</p>
+                
+                <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/conflict-resolver.png" rel="lytebox"
+                    title="Conflict Resolver displaying a conflicted file">
+                    <img src="../../../images_www/articles/73/ide/cvs/conflict-resolver-small.png" class="b-all margin-around"
+                    alt="Conflict Resolver displaying a conflicted file"></a></p>
+               
+                <p>You resolve a conflict by accepting one of the two revisions displayed
+                in the top pane. Click the Accept button of the revision you want to 
+                accept. The IDE merges the accepted revision with the source file, and 
+                you can immediately see the results of the merge in the bottom pane of 
+                the Merge Conflicts Resolver. Once all conflicts are resolved, click OK 
+                to exit the Merge Conflicts Resolver and save the modified file. The 
+                conflict badge is removed and you can now commit the modified file to 
+                the repository.</p>
+            
+            <a name="performing"></a>
+            <h3>Performing the Commit</h3>
+            
+            <p>After editing source files, performing an update and resolving any conflicts,
+                you commit files from your local working copy to the repository. The IDE
+                enables you to call the commit command in the following ways:</p>
+            
+            <ul>
+                <li>From the Projects, Files or Favorites windows, right-click new or 
+                    modified items and choose CVS &gt; Commit.</li>
+                <li>From the Versioning window or Diff Viewer, click the Commit All 
+                    (<img src="../../../images_www/articles/73/ide/cvs/commit.png"
+                    alt="commit all icon">) button located in the toolbar.</li>
+            </ul>
+                
+            <p>The Commit dialog opens, displaying files that are about to be committed 
+                to the repository:</p>
+                
+                <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-commit-dialog.png" rel="lytebox"
+                    title="Commit dialog displaying files about to be committed">
+                    <img src="../../../images_www/articles/73/ide/cvs/cvs-commit-dialog-small.png" class="b-none margin-around"
+                    alt="Commit dialog displaying files about to be committed"></a></p>
+                
+            <p>The Commit dialog lists:</p>
+            
+            <ul>
+                <li>all locally modified files</li>
+                <li>all files that have been deleted locally</li>                
+                <li>all new files (i.e., files that do not yet exist in the repository)</li>
+                <li>all files that you have renamed. CVS handles renamed files by
+                    deleting the original file, and creating a duplicate using the new 
+                    name.</li>
+            </ul>
+            
+            <p>From the Commit dialog, it is possible to specify whether to exclude 
+                individual files from the commit. To do so, click the Commit Action column
+                of a selected file and choose Exclude from Commit from the drop-down
+                list.</p>
+                
+            <p>When new binary files are included, such as image files, they are automatically 
+                detected as binary files. You can specify the MIME type of a file by choosing 
+                Add as Binary or Add as Text from the drop-down list within the Commit Action
+                column.</p>
+            
+            <p>To perform the commit:</p>
+            
+            <ol>
+                <li>Type in a commit message in the Commit Message text area. Alternatively,
+                    click the Recent Messages ( <img src="../../../images_www/articles/73/ide/cvs/recent-msgs.png"
+                    alt="recent messages icon"> ) icon located in the upper right corner to
+                    view and select from a list of messages that you have previously used.</li>
+                <li>After specifying actions for individual files, click Commit. The IDE 
+                    executes the commit and sends your local changes to the repository.
+                    The IDE's status bar, located in the bottom right of the interface, 
+                    displays as the commit action takes place. Upon a successful commit,
+                    versioning badges disappear in the Projects, Files and Favorites windows, 
+                    and the color encoding of committed files returns to black.</li>
+            </ol>
+        </div>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20CVS%20Support%20in%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+        
+        <br style="clear:both;">
+        
+        <a name="seeAlso"></a>
+        <h2>See Also</h2>
+        
+        <p>This concludes the Guided Tour of CVS for the NetBeans IDE. This document 
+            demonstrated how to perform basic versioning tasks in the IDE by guiding 
+            you through the standard workflow when using the IDE's CVS support. It has 
+            shown how to set up a versioned project and perform basic tasks on versioned 
+            files while introducing you to some of the new CVS features included in 
+            the IDE.</p>
+          
+        <p>For related documents, see the following resources:</p>
+        
+        <ul>
+		<li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#CVS">CVS Support FAQ for NetBeans IDE</a>. A document containing frequently asked questions describing setup and usage of CVS in NetBeans IDE.</li>
+		<li><a href="git.html">Using Git Support in NetBeans IDE</a>. An introductory guide to using Git version control client in the NetBeans IDE.</li>
+		<li><a href="mercurial.html">Using Mercurial Support in NetBeans IDE</a>. A guide to using Mercurial version control client in the NetBeans IDE.</li>
+		<li><a href="subversion.html">Using Subversion Support in NetBeans IDE</a>. An introductory guide to using Subversion version control in NetBeans IDE 6.x.</li>
+        <li><a href="clearcase.html">Using ClearCase Support in NetBeans IDE</a>. An introduction to using ClearCase versioning features in the IDE.</li>
+		<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">Versioning Applications with Version Control</a> in <i>Developing Applications with NetBeans IDE</i>.</li>
+        
+        
+				
+        </ul>
+
+    </body>
+</html>

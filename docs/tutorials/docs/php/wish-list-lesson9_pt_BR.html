@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Criando uma Aplicação Orientada pelo Banco de Dados Com o PHP. Implantando a Aplicação em um Servidor Web Remoto </title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Deploying the Application on a Remote Server" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">  
+   </head>
+   <body>
+<h1>Criando uma Aplicação Orientada pelo Banco de Dados com o PHP</h1>
+<h1>Lição 9: Implantando a Aplicação em um Servidor Web Remoto </h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Conteúdo do tutorial:</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Criando uma Aplicação Orientada pelo Banco de Dados com o PHP - Página Principal</a></li>
+    <li><p>Criando o Banco de Dados</p> <ol type="a"><li><a href="wish-list-lesson1.html">Criando um Banco de Dados MySQL</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Criando Tabelas do Banco de Dados Oracle</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">Projetando a Aplicação. Lendo o Banco de Dados</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">Criando um Novo Usuário de Aplicação</a></li>
+    <li><a href="wish-list-lesson4.html">Otimizando o Código</a></li>
+    <li><a href="wish-list-lesson5.html">Adicionando Segurança. Implementando o Log-in de Usuário da Aplicação</a></li>
+    <li><a href="wish-list-lesson6.html">Adicionando um Novo Desejo ao Banco de Dados</a></li>
+    <li>      <a href="wish-list-lesson7.html">Atualizando e Deletando Entradas no Banco de Dados</a></li>
+    <li><a href="wish-list-lesson8.html">Melhorando a Aparência da Aplicação Usando a Tecnologia CSS</a></li>
+    <li>
+      <p><b>=>Implantando a Aplicação em um Servidor Web Remoto</b></p>
+    <ul>
+    <li><a href="#previousLessonSourceCode">Código-fonte da Aplicação da Lição Anterior</a></li>
+    <li><a href="#registerEmailAccount">Registrando uma Conta de E-mail</a></li>
+    <li><a href="#registerHostingAccount">Registrando uma Conta de Hospedagem</a></li>
+    <li><a href="#registeringFTPAccount">Registrando uma Conta de FTP</a></li>
+    <li><a href="#creatingRemoteDatabase">Criando um Banco de Dados Remoto</a></li>
+    <li><a href="#settingUpPHPProjectWithSources">Configurando um Projeto PHP com Códigos-Fonte Existentes</a></li>
+    <li><a href="#updatingClassWishDB">Atualizando a Classe WishDB</a></li>
+    <li><a href="#nextSteps">Próximas Etapas</a></li></ul></li>
+        </ol>
+</div>
+</div>
+
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+<p>Normalmente, uma aplicação PHP de vida real é executada em um servidor remoto e é acessada por um Protocolo de Transferência de Arquivo (FTP - File Transfer Protocol). Para implantar a aplicação CRUD em um servidor remoto, você precisará registrar uma conta em um provedor de hospedagem, registrar uma conta de FTP e criar um banco de dados remoto.</p>
+<p>Você pode usar a hospedagem que quiser. O documento atual descreve o procedimento de implantação na hospedagem gratuita X10HOSTING. Essa hospedagem inclui um MySQL, mas não ums ervidor de banco de dados Oracle.</p>
+<p class="notes"> Todos os nomes de usuário, senhas e endereços de e-mail são fictícios e utilizados somente como exemplos. A administração da hospedagem bloqueia uma conta, se o usuário não aparecer no fórum por mais de uma semana. Assim, você pode falhar em aplicar exatamente os mesmos nomes de usuário, senhas, endereços de e-mail e outras credenciais do tutorial.</p>
+<p>Nesta lição, você aprenderá a fazer o seguinte:</p>
+<ul>
+  <li style="margin-left:40em"><a href="#hideLogonForm">Registrar uma conta de hospedagem</a></li>
+  <li style="margin-left:40em"><a href="#improveTableEmptyCells">Registrar uma conta FTP</a> </li>
+  <li style="margin-left:40em"><a href="#designStyles">Criar um banco de dados MySQL remoto</a></li>
+  <li style="margin-left:40em"><a href="#divs">Configurar o projeto para usar a hospedagem web remota registrada</a></li>
+  <li style="margin-left:40em">Alterar suas definições de conexão de banco de dados para usar o banco de dados remoto </li>
+</ul>
+<p>O documento atual é uma parte do tutorial Criando uma Aplicação CRUD no NetBeans IDE para PHP. </p>
+<br style="clear:left">
+<h2><a name="previousLessonSourceCode"></a>Código-fonte da Aplicação da Lição Anterior</h2>
+<p>Usuários MySQL: clique <a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">aqui</a> para fazer o download do código-fonte que reflete o estado do projeto depois que a lição anterior for concluída.</p>
+<h2><a name="registerEmailAccount"></a>Registrando uma Conta de E-mail</h2>
+<p>Crie uma conta de e-mail, se ainda não tiver criado. Neste exemplo, o endereço de e-mail é phpuser65@googlemail.com. </p>
+<h2><a name="registerHostingAccount"></a>Registrando uma Conta de Hospedagem </h2>
+<p>Para criar uma conta de hospedagem na hospedagem gratuita <a href="http://x10hosting.com/" target="_blank">X10HOSTING</a>, siga as etapas no assistente, digitando as seguintes definições. Você irá digitar informações similares em qualquer outro site de hospedagem.</p>
+<table>
+     <tbody>
+	   <tr>
+         <th class="tblheader" scope="col">Definição da Conta </th>
+         <th class="tblheader" scope="col">Valor</th>
+       </tr>
+	   <tr>
+	   <td>Endereço de E-mail</td>
+	   <td>phpuser65@gmail.com</td>
+	   </tr>
+       <tr>
+         <td>Nome do Domínio </td>
+         <td><a href="http://x10hosting.com/" target="_blank">x10Hosting.com</a></td>
+       </tr>
+       <tr>
+         <td>Subdomínio</td>
+         <td>phpuser
+       </tr>
+       <tr>
+         <td>Nome de Usuário da Conta de Hospedagem (também para log-in em cPanel) </td>
+         <td>phpuser</td>
+       </tr>
+       <tr>
+         <td>Senha da Conta de Hospedagem (também para log-in em cPanel) </td>
+         <td>qwerty1234</td>
+       </tr>
+	   <tr>
+         <td>Nome de Usuário do Fórum </td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+         <td>Senha do Fórum </td>
+         <td>qwerty</td>
+       </tr>
+	   <tr>
+         <td>Nome da Conta FTP </td>
+         <td>uploader</td>
+       </tr>
+	   <tr>
+         <td>Nome de Usuário do FTP </td>
+         <td>uploader@phpuser.x10hosting.com</td>
+       </tr>
+	   <tr>
+         <td>Servidor FTP </td>
+         <td>ftp.phpuser.x10hosting.com</td>
+       </tr>
+       <tr>
+         <td>Nome do Host do Banco de Dados Remoto</td>
+         <td>phpuser</td>
+       </tr>
+	   <tr>
+	   <td>Banco de Dados Remoto</td>
+	   <td>wishlist</td>
+	   </tr>
+	   <tr>
+	   <td>Nome de Usuário do Banco de Dados Remoto</td>
+	   <td>phpuser</td>
+	   </tr>
+	   <tr>
+	   <td>Senha do Usuário do Banco de Dados Remoto</td>
+	   <td>phpuserpw</td>
+	   </tr>
+     </tbody>
+   </table>
+<h2><a name="registeringFTPAccount"></a>Registrando uma Conta FTP</h2>
+<p>Agora que tem uma conta de hospedagem, você precisará de uma conta FTP na qual irá transferir o código-fonte do PHP e outros arquivos relacionados para execução no servidor. Para x10Hosting, abra o cPanel e selecione Nova Conta FTP e siga o assistente.</p>
+<h2><a name="creatingRemoteDatabase"></a>Criando um Banco de Dados Remoto</h2>
+<p>Como a aplicação CRUD usa um banco de dados, você também precisará implantar o banco de dados MySQL <tt>wishlist</tt> no servidor remoto onde tem uma <a href="#registerHostingAccount">conta de hospedagem</a>.</p>
+
+<h2><a name="settingUpPHPProjectWithSources"></a>Configurando um Projeto PHP com Códigos-Fonte Existentes e Configuração de Execução de Web Site Remoto </h2>
+<ol>
+<li><a href="#previousLessonSourceCode">Faça download dosarquivos de código-fonte</a> que correspondem ao estado da aplicação depois da conclusão da lição anterior. Extraia os arquivos. </li>
+<li>Salve os arquivos de código-fonte na pasta <tt>htdocs</tt>.</li>
+<li>Crie um <a href="project-setup.html#importSources">projeto PHP com códigos-fonte existentes</a>:
+  <ul>
+<li>Especifique o local dos códigos-fonte dos quais fez download na pasta Source</li>
+<li>Escolha a configuração de execução <a href="project-setup.html#remiteWebSite">Web Site Remoto</a> e configure a conexão FTP </li>
+</ul>
+</li>
+<li>Conclua a criação do projeto.</li>
+</ol>
+<h2><a name="updatingClassWishDB"></a>Atualizando a Classe WishDB</h2>
+<p>Até agora, você desenvolveu e executou a aplicação de Lista de Desejos no servidor Web local e usou um servidor de banco de dados MySQL ou Oracle local. Para que a aplicação funcione com o banco de dados MySQL remoto, você precisa atualizar as definições de conexão especificadas por meio das variáveis da classe <tt>WishDB</tt>.</p>
+<ol>
+<li>Abra o arquivo <tt>db.php</tt>.</li>
+<li>Altere as variáveis da classe <tt>WishDB</tt>:
+  <pre class="examplecode">
+    var $user = "&lt;the name of the remote database user&gt;";        
+    var $pass = "&lt;the password of the remote database user&gt;";
+    var $dbName = "&lt;the name of the remote database&gt;";
+    var $dbHost = "&lt;the account username specified during the hosting account creation&gt;";
+</pre>
+
+Nesse exemplo, as variáveis serão atualizadas como se segue:
+<pre class="examplecode">
+    var $user = "phpuser";        
+    var $pass = "phpuserpw";
+    var $dbName = "wishlist";
+    var $dbHost = "phpuser";
+</pre>
+</li>
+</ol>
+<h2><a name="nextSteps"></a>Próximas Etapas</h2>
+  <p><a href="wish-list-lesson8.html">&lt;&lt; Lição anterior</a></p>
+  <p>
+  <a href="wish-list-tutorial-main-page.html">Voltar à página principal do Tutorial</a></p>
+  
+  <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">Enviar Feedback neste Tutorial</a></div>
+<br style="clear:both;" >
+<p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>.
+   <p><a href="../../trails/php.html">Voltar à Trilha do Aprendizado PHP</a></p>
+
+</body>
+</html>

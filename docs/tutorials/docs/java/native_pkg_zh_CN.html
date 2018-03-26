@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>NetBeans IDE 中的本机打包</title>
+     <meta name="KEYWORDS" content="NETBEANS, NATIVE PACKAGING, JAVAFX, JAVA SE">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Native Packaging in NetBeans IDE" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+        <h1>NetBeans IDE 中的本机打包</h1>
+		<div class="articledate" style="margin-left: 0px;">作者：Petr Somol 和 Alyona Stashkova</div>
+        <p>本机打包首次作为 JavaFX 2.2 SDK 的一部分引入，使您能够将应用程序打包为<i>本机包</i>，然后安装并运行应用程序，而对系统 JRE 或 JavaFX SDK 没有任何外部依赖关系。接下来，它也变得对 Java SE 项目可用。</p>
+		<p> 本机打包不更改应用程序的部署模型：它将应用程序原样与 Java 运行时打包在一起，并生成您正在使用的操作系统通用的安装程序。关键是使整个操作都独立于用户在目标计算机上具有或不具有的任何 Java 运行时。您可以采用这样一个安装程序并将其运行在无 Java 跟踪的计算机上，该安装程序将同时安装应用程序和所需的 Java 运行时位。此类安装程序的大小非常大，因为即使是一个 "Hello world" 应用程序，自身就会带有大部分的 Java 运行时工件。</p>
+		<p>在本教程中，您将基于随 IDE 捆绑提供的样例应用程序，为 Java SE 应用程序创建 <tt>EXE</tt> 安装程序，并为 Windows 操作系统的 JavaFX 应用程序创建 <tt>MSI</tt> 安装程序。</p>
+		<p class="notes"><b>注：</b> </p>
+		<ul><li>您获得的 <tt>EXE</tt> 和 <tt>MSI</tt> 安装程序是特定于平台的，它们只在与目标 Java 平台（已为其创建 <tt>EXE</tt>/<tt>MSI</tt> 可安装包）兼容的系统上运行。（例如，如果已在安装了 64 位 JDK 的计算机上创建 <tt>EXE</tt> 或 <tt>MSI</tt> 安装程序，则必须在安装了 64 位 Windows 的计算机上运行该安装程序。）</li>
+		<li>在 Windows 上，两个应用程序都安装到 <tt>C:\Users\&lt;username>\AppData\Local\</tt> 目录中，并且在“开始”菜单中可用。 </li></ul>
+		
+		
+        <p><b>目录</b></p>
+   <p><img alt="此页上的内容适用于 NetBeans IDE 7.4 或 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="此页上的内容适用于 NetBeans IDE 7.4 或 8.0"></p>
+<ul>
+		<li><a href="#tool">将所需工具安装并添加到路径中</a></li>
+		
+		<li><a href="#se">Java SE 项目中的本机打包</a>
+        <ul>
+        <li><a href="#createse">设置 Java SE 项目</a></li>
+        <li><a href="#enable">为项目启用本机打包</a></li>
+		<li><a href="#buildse">构建应用程序</a></li>
+		<li><a href="#instse">生成 EXE 安装程序</a></li>
+        </ul>
+  </li>
+        <li><a href="#fx">JavaFX 项目中自包含的应用程序打包</a>
+        <ul>
+          <li><a href="#createfx">创建 JavaFX 项目</a></li>
+		  <li><a href="#enablefx">为项目启用本机打包</a></li>
+		  <li><a href="#buildfx">构建应用程序</a></li>
+		<li><a href="#instfx">生成 MSI 安装程序</a></li>	
+		</ul>
+		</li>
+<li><a href="#check">验证可安装的应用程序</a></li>		
+<li><a href="#see">另请参见</a></li>
+</ul>
+   
+   <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+   <table>
+     <tbody>
+       <tr>
+         <th width="208" class="tblheader" scope="col">软件或资源</th>
+         <th width="218" class="tblheader" scope="col">要求的版本</th>
+       </tr>
+       <tr>
+         <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+         <td class="tbltd1">7.4 或 8.0 </td>
+       </tr>
+       <tr>
+         <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javafx/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+       <td class="tbltd1">7 update 25（或更高版本）或 8 </td>
+       </tr>
+	   <tr>
+         <td class="tbltd1"><a href="http://www.jrsoftware.org/" target="_blank">Inno Setup</a></td>
+         <td class="tbltd1">5.5 或更高版本 </td>
+	   </tr>
+	   <tr>
+         <td class="tbltd1"><a href="http://wixtoolset.org/" target="_blank">WiX</a></td>
+         <td class="tbltd1">3.7 或更高版本 </td>
+	   </tr>
+     </tbody>
+   </table>
+   
+	    
+   <div class="indent">
+   <h2><a name="tool"></a>将所需工具安装并添加到路径中 </h2>
+   <p>要使用 IDE 对本机打包的支持，需要安装以下附加工具：</p>
+   <ul>
+   <li>需要用于在 Windows 上生成 EXE 安装程序的 <a href="http://www.jrsoftware.org/" target="_blank">Inno Setup 5.5</a>（或更高版本）。</li>
+   <li>需要用于在 Windows 上生成 MSI 安装程序的 <a href="http://wixtoolset.org/">WiX 3.7</a>（或更高版本）。</li>
+   </ul>
+  
+   <p class="notes"><b>注：</b>有关为不同平台生成安装程序所需的工具的列表，请参见<i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2508">将应用程序打包为本机安装程序</a>。</p>
+   
+   <p><b>要安装 Inno Setup，请执行以下操作：</b></p>
+   <ol>
+     <li>从 <a href="http://www.jrsoftware.org/isdl.php" target="_blank">Inno Setup 下载</a>页下载 <tt>ispack-5.5.3.exe</tt>。</li>
+     <li>双击此文件以启动安装程序。</li>
+     <li>接受 Inno Setup 许可证协议，然后单击“下一步”。 </li>
+     <li>按照安装向导中的说明安装 Inno Setup。 </li>
+     </ol>
+	 <p><b>安装 WiX：</b></p>
+     <ol>
+     <li>从 <a href="http://wix.codeplex.com/releases/view/99514" target="_blank">WiX 工具集 - 下载</a>页下载 <tt>wix37.exe</tt>。</li>
+     <li>双击此文件以启动安装程序。</li>
+     <li>按照安装向导中的说明安装 WiX。 </li>
+     </ol>
+	 <p><b>要将 Inno Setup 和/或 WiX 添加到系统 Path 变量中，请执行以下操作：</b></p>
+	 <ol>
+	 <li>在 Windows 7 上，选择“开始”>“计算机”>“系统属性”>“高级系统设置”。</li>
+	 <li>选择“高级”标签，然后单击“环境变量”按钮。</li>
+	 <li>在“系统变量”窗格中，双击 Path 变量。</li>
+	 <li>在“编辑系统变量”对话框中，向“变量值”字段中添加一个分号并后跟新路径（例如 <tt>C:\Program Files (x86)\Inno Setup 5 </tt> 或 <tt>C:\Program Files (x86)\WiX Toolset v3.6\bin</tt>）。 </li>
+	 <li>单击“确定”以关闭打开的所有对话框。</li>
+	 </ol>
+	 <p class="notes"><strong>注：</strong> </p>
+	 <ul>
+	 <li>要检查安装的工具是否位于路径中，请打开 "Command Prompt"（命令提示）窗口，然后为 Inno Setup 键入 <tt>iscc.exe</tt>，并为 WiX 键入 <tt>candle.exe</tt>。（如果 "Command Prompt"（命令提示）立即关闭，请尝试分别指定 <tt>cmd.exe /c cmd.exe /k iscc.exe</tt> 或 <tt>cmd.exe /c cmd.exe /k candle.exe</tt>。）<br> 下图显示将 Inno Setup 添加到系统 Path 变量中时 "Command Prompt"（命令提示）应显示的内容。 
+     <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/cmd.png" rel="lytebox" title="命令提示"> <img alt="命令提示" src="../../../images_www/articles/74/java/native_pkg/cmd_small.png"></a></p></li>
+	 <li>确保在将工具添加到系统 Path 变量中之后重新启动 IDE。</li>
+	 </ul>
+      
+     
+      
+   </div>
+   <h2><a name="se"></a>Java SE 项目中的本机打包</h2>
+   <p>要利用 IDE 中的本机打包支持，您需要完成以下操作： </p>
+   <ul>
+   <li><a href="#createse">创建 IDE 项目</a> </li>
+   <li><a href="#enable">在项目中启用本机打包操作</a> </li>
+   <li><a href="#buildse">清理并构建项目</a> </li>
+   <li><a href="#instse">在安装程序中打包应用程序</a> </li>
+   </ul>
+   
+   <div class="indent">
+   <h3><a name="createse"></a>设置 Java SE 项目</h3>
+   <p>在安装程序中打包应用程序之前，需要创建应用程序自身。</p>
+   <p> 您将使用 NetBeans IDE 附带的 Anagram Game 示例创建一个新的 Java SE 项目。</p>
+   <p><b>要创建 IDE 项目，请执行以下操作：</b></p>
+   <ol>
+   <li>在 IDE 中，选择 "File"（文件）> "New Project"（新建项目）。</li>
+   <li>在 "New Project"（新建项目）向导中，展开 "Samples"（样例）类别并选择 "Java"。</li>
+   <li>在 "Projects"（项目）列表中选择 "Anagram Game"。然后，单击 "Next"（下一步）。 
+   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/new_javase_prj.png" rel="lytebox" title="创建 Java SE 项目"> <img alt="创建 Java SE 项目" src="../../../images_www/articles/74/java/native_pkg/new_javase_prj_small.png"></a></p></li>
+   <li>在 "Name and Location"（名称和位置）面板中，保留 "Project Name"（项目名称）和 "Project Location"（项目位置）字段的默认值。 </li>
+   <li>单击 "Finish"（完成）。<br> IDE 将创建并打开 Java SE 项目。</li>
+   
+   </ol>
+   
+   <p>要测试创建的项目是否正常运行，请通过从主菜单中选择 "Run"（运行）> "Run Project"（运行项目）来运行该项目。<br> Anagrams 应用程序应启动并显示在您的计算机上。</p>
+	 <p class="align-center">
+		<img alt="正在运行 Anagrams 应用程序" src="../../../images_www/articles/74/java/native_pkg/anagrams.png"></p>
+    <h3><a name="enable"></a>在 IDE 中启用本机打包</h3>
+       <p>默认情况下，在 IDE 中禁用本机打包操作。</p>
+	   <p>在 "Projects"（项目）窗口中右键单击 "AnagramGame" 项目以检查可用于 IDE 中创建的 Java SE 项目的操作：在项目的上下文菜单中不存在包相关的操作。</p>
+	   <p class="align-center">
+		<img alt="不带包作为操作的上下文菜单" src="../../../images_www/articles/74/java/native_pkg/context_wo_pkg.png"></p>
+       
+       <p><b>要为项目启用本机打包操作，请执行以下操作：</b></p>
+       <ol>
+     <li>在 "Projects"（项目）窗口中右键单击项目节点，然后从上下文菜单中选择 "Properties"（属性）。</li>
+     <li>在 "Project Properties"（项目属性）对话框中，选择 "Deployment"（部署）类别，然后选择 "Enable Native Packaging Actions in Project Menu"（在项目菜单中启用本机打包操作）选项。
+	   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/enable_native_pkg.png" rel="lytebox" title="已选择 &amp;quot;Enable Native Packaging&amp;quot;（启用本机打包）"> <img alt="已选择 &amp;quot;Enable Native Packaging&amp;quot;（启用本机打包）" src="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_small.png"></a></p></li>
+     <li>单击 "OK"（确定）。<br>包将作为命令添加到项目的上下文菜单中。
+	 <p class="align-center">
+		<img alt="在上下文菜单中启用包作为操作" src="../../../images_www/articles/74/java/native_pkg/pkg_enabled.png"></p> </li>
+     
+   </ol>
+   <h3><a name="buildse"></a>构建应用程序 </h3>
+   <p>现在将清理并构建应用程序以进行部署。</p>
+   <p><b>要清理并构建项目，请执行以下操作：</b></p>
+   <ul>
+   <li>从主菜单中选择 "Run"（运行）> "Clean and Build Project"（清理并构建项目）。<br>IDE 将在 "Output"（输出）窗口中显示结果。
+   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/output.png" rel="lytebox" title="&amp;quot;Output&amp;quot;（输出）窗口"> <img alt="&amp;quot;Output&amp;quot;（输出）窗口" src="../../../images_www/articles/74/java/native_pkg/output_small.png"></a></p></li></ul>
+	 <p>将在项目文件夹中创建包含 <tt>jar</tt> 文件的 <tt>dist</tt> 文件夹。</p>
+   <h3><a name="instse"></a>生成 <tt>EXE</tt> 安装程序</h3>
+   <p>现在可在 Windows 的安装程序中打包应用程序。 </p>
+   <p><b>要构建 <tt>EXE</tt> 安装程序，请执行以下操作：</b></p>
+   <ul>
+     <li>右键单击 "AnagramGame" 项目，然后从上下文菜单中选择 "Package as"（打包为）> "EXE Installer"（EXE 安装程序）。 </li>
+   </ul>
+   <p class="notes"><b>注：</b>只有在 Inno Setup <a href="#tool">安装并添加到系统 Path 变量中</a>时，IDE 才会创建 <tt>EXE</tt> 安装程序。</p>
+   <p>IDE 将在 "Output"（输出）窗口中显示打包过程的进度和结果。</p>
+   <p class="align-center"><a href="../../../images_www/articles/74/java/native_pkg/output_se_exe.png" rel="lytebox" title="&amp;quot;Output&amp;quot;（输出）窗口显示 EXE 安装程序的构建进度"> <img alt="&amp;quot;Output&amp;quot;（输出）窗口显示 EXE 安装程序的构建进度" src="../../../images_www/articles/74/java/native_pkg/output_se_exe_small.png"></a></p>
+	 <p class="notes"><b>注：</b>IDE 会首先记录一些进度，然后会有一段时间看起来什么都没有发生，这实际上是 Inno Setup 在后台工作的时段。打包需要一些时间才能完成。</p>
+	 <p>在 <tt>EXE</tt> 安装程序就绪后，它将置于 <tt>AnagramGame/dist/bundles/</tt> 目录中。 </p>
+	 <p class="align-center"><img alt="&amp;quot;Output&amp;quot;（输出）窗口显示 EXE 安装程序的构建进度" src="../../../images_www/articles/74/java/native_pkg/anagram_exe.png"></p>
+   
+   </div>
+   <h2><a name="fx"></a>JavaFX 项目中自包含的应用程序打包</h2>
+    <div class="indent">
+	<p>要使用 IDE 中的本机打包支持构建可安装的 JavaFX 应用程序，您需要完成以下操作： </p>
+	<ul>
+	<li><a href="#createfx">在 IDE 中创建 JavaFX 项目</a></li>
+	<li><a href="#enablefx">为项目启用本机打包支持</a></li>
+	<li><a href="#buildfx">清理并构建 JavaFX 应用程序</a></li>
+	<li><a href="#instfx">构建可安装的 JavaFX 应用程序</a></li>
+	</ul>
+   <h3><a name="createfx"></a>创建 JavaFX 项目</h3>
+   <p>首先，使用随 IDE 捆绑提供的 BrickBreaker 样例项目创建 JavaFX 项目。 </p>
+   <p><b>要在 IDE 中创建 JavaFX 项目，请执行以下操作：</b></p>
+   <ol>
+   <li>在 IDE 中，选择 "File"（文件）> "New Project"（新建项目）。</li>
+   <li>在 "New Project"（新建项目）向导中，展开 "Samples"（样例）类别并选择 "JavaFX"。</li>
+   <li>在 "Projects"（项目）列表中选择 "BrickBreaker"。然后，单击 "Next"（下一步）。 </li>
+   <li>在 "Name and Location"（名称和位置）面板中，保留 "Project Name"（项目名称）、"Project Location"（项目位置）和 "JavaFX Platform"（JavaFX 平台）字段的默认值。 
+     <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/new_javafx_prj.png" rel="lytebox" title="创建 JavaFX 项目"> <img alt="创建 JavaFX 项目" src="../../../images_www/articles/74/java/native_pkg/new_javafx_prj_small.png"></a></p></li>
+   <li>单击 "Finish"（完成）。<br> BrickBreaker JavaFX 项目将显示在 IDE 的 "Projects"（项目）窗口中。</li>
+   </ol>
+    <p>要测试创建的项目是否正常运行，请通过从主菜单中选择 "Run"（运行）> "Run Project (BrickBreaker)"（运行项目 (BrickBreaker)）来运行该项目。<br> Brick Breaker 应用程序应启动并显示在您的计算机上。</p>
+	
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/brickbreaker.png" rel="lytebox" title="正在运行 Brick Breaker 应用程序"> <img alt="正在运行 Brick Breaker 应用程序" src="../../../images_www/articles/74/java/native_pkg/brickbreaker_small.png"></a></p>
+   <h3><a name="enablefx"></a>在项目中启用本机打包</h3>
+   <p>要将 IDE 中的本机打包支持用于项目，您首先需要启用它。</p>
+   <p> 如果右键单击 "Brick Breaker" 项目，您不会在该项目中看到本机打包相关的操作。 </p>
+    <p class="align-center">
+		<img alt="不带包作为操作的上下文菜单" src="../../../images_www/articles/74/java/native_pkg/javafx_wo_pkg.png"></p>
+   <p><b>要在项目上下文菜单中启用本机打包操作，请执行以下操作：</b></p>
+       <ol>
+     <li>在 "Projects"（项目）窗口中右键单击项目节点，然后从上下文菜单中选择 "Properties"（属性）。</li>
+     <li>在 "Project Properties"（项目属性）对话框中，选择 "Build"（构建）类别中的 "Deployment"（部署），然后选择 "Enable Native Packaging"（启用本机打包）选项。
+	   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_fx.png" rel="lytebox" title="在 JavaFX 项目中选中 &amp;quot;Enable Native Packaging&amp;quot;（启用本机打包）"> <img alt="在 JavaFX 项目中选中 &amp;quot;Enable Native Packaging&amp;quot;（启用本机打包）" src="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_fx_small.png"></a></p></li>
+     <li>单击 "OK"（确定）。<br>包将作为项添加到项目的上下文菜单中。
+	 <p class="align-center">
+		<img alt="在 JavaFX 项目的上下文菜单中启用包作为操作" src="../../../images_www/articles/74/java/native_pkg/pkg_fx_enabled.png"></p> </li>
+     
+   </ol>
+   <h3><a name="buildfx"></a>构建应用程序 </h3>
+   <p>现在即可清理并构建 JavaFX 应用程序。</p>
+   <p><b>要清理并构建项目，请执行以下操作：</b></p>
+   <ul>
+   <li>从主菜单中选择 "Run"（运行）> "Clean and Build Project"（清理并构建项目）。<br>IDE 将在 "Output"（输出）窗口中显示结果。
+ </li></ul>
+ <p class="notes"><b>注：</b>如果构建成功，但 IDE 在 "Output"（输出）窗口中显示 <tt>warning: [options] bootstrap class path not set in conjunction with -source 1.6</tt>（警告：[选项] 未结合 -source 1.6 设置引导类路径），则需要在项目属性中将源代码/二进制格式设置为 JDK 8，并且需要再次清理并构建项目，如下所示： </p>
+ <ol>
+   <li>在 "Projects"（项目）窗口中右键单击 "BrickBreaker" 项目，然后选择 "Properties"（属性）。 </li>
+   <li>在 "Project Properties"（项目属性）对话框中，选择 "Sources"（源）类别。 </li>
+   <li>将源代码/二进制格式设置为 "JDK 8"，然后单击 "OK"（确定）。 </li>
+   <li>在 "Projects"（项目）窗口中右键单击 "BrickBreaker"，然后从上下文菜单中选择 "Clean and Build"（清理并构建）。</li>
+ </ol> 
+ 
+   <h3><a name="instfx"></a>生成 <tt>MSI</tt> 安装程序</h3>
+   <p>现在即可将应用程序包装到 Windows 特定的可安装包中。 </p>
+   <p><b>要构建 <tt>MSI</tt> 安装程序，请执行以下操作：</b></p>
+   <ul>
+     <li>右键单击 "BrickBreaker" 项目，然后从上下文菜单中选择 "Package as"（打包为）> "MSI Installer"（MSI 安装程序）。 </li>
+   </ul>
+   <p class="notes"><b>注：</b>只有在 WiX <a href="#tool">安装并添加到系统 Path 变量中</a>时，IDE 才会创建 <tt>MSI</tt> 安装程序。</p>
+   <p>IDE 将在 "Output"（输出）窗口中显示打包过程的进度和结果。</p>
+   <p class="align-center"><a href="../../../images_www/articles/74/java/native_pkg/output_fx_msi.png" rel="lytebox" title="&amp;quot;Output&amp;quot;（输出）窗口显示 MSI 安装程序的构建进度"> <img alt="&amp;quot;Output&amp;quot;（输出）窗口显示 MSI 安装程序的构建进度" src="../../../images_www/articles/74/java/native_pkg/output_fx_msi_small.png"></a></p>
+	 <p class="notes"><b>注：</b>IDE 会首先记录一些进度，然后会有一段时间看起来什么都没有发生，这实际上是 WiX 在后台工作的时段。打包需要一些时间才能完成。</p>
+	 <p>可安装的 JavaFX 应用程序位于 <tt>BrickBreaker/dist/bundles/</tt> 目录中。 </p>
+	 <p class="align-center"><img alt="MSI 安装程序" src="../../../images_www/articles/74/java/native_pkg/brickbreaker_msi.png"></p>
+   </div>
+   <h2><a name="check">验证可安装的应用程序</a></h2>
+   在 <tt>AnagramGame-1.0.exe</tt> 和 <tt>BrickBreaker-1.0.msi</tt> 安装程序完成后，您需要检查将 Anagram 和 BrickBreaker 应用程序本机安装到的目录。
+   
+   <p><b>要检查安装程序，请执行以下操作：</b></p>
+   <ol>
+   <li>浏览至硬盘驱动器上的安装文件（<tt>AnagramGame-1.0.exe</tt> 或 <tt>BrickBreaker-1.0.msi</tt>）。</li>
+   <li>双击以运行安装程序。 </li>
+   </ol>
+   <p>两个应用程序都应安装到 <tt>C:\Users\&lt;username>\AppData\Local\</tt> 目录中，并且在“开始”菜单中可用。 </p>
+   <h2><a name="see"></a>另请参见</h2>
+   <ul>
+    
+   <li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2508">将应用程序打包为本机安装程序</a></li>
+   <li><a href="http://docs.oracle.com/javafx/2/deployment/self-contained-packaging.htm">部署 JavaFX 应用程序：自包含的应用程序打包</a></li>
+   <li><a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/packagingAppsForMac.html">在 Mac 上打包 Java 应用程序以进行分发</a></li>
+   </ul>
+   
+   <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Native%20Packaging%20In%20NetBeans%20IDE">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" >
+
+   <p><a href="../../trails/matisse.html">返回至学习资源</a></p>
+   </body>
+</html>

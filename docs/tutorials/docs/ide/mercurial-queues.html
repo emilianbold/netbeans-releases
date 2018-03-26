@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Using Support for Mercurial Queues in NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Mercurial Queues in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Mercurial,
+              versioning software, open source, developers, collaborate"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+ </head>
+
+<body>
+<h1>Using Support for Mercurial Queues in NetBeans IDE</h1>
+<p>The NetBeans IDE provides support for the Mercurial Queues extension. The IDE's Mercurial Queues support allows you to  create, review or switch between patches within the IDE, as well as refresh patches with local modifications as you fix bugs or update to a new base revision. This document demonstrates how to perform basic patch-specific tasks in the IDE by guiding you through the standard workflow when using Mercurial versioning software for managing patches.</p>
+<p></p>
+
+<h3>Contents</h3>
+<img  src="../../../images_www/articles/74/netbeans-stamp-80-74.png"
+              class="stamp" 
+              alt="Content on this page applies to NetBeans IDE 7.4 and 8.0"
+              title="Content on this page applies to the NetBeans IDE 7.4 and 8.0" />
+
+        <ul class="toc">
+		    <li><a href="#reqs">Requirements</a></li>
+            <li><a href="#enable">Enabling the Mercurial Queues Support</a></li>
+			<li><a href="#create">Creating a Patch</a></li>
+			<li><a href="#refresh">Refreshing a Patch With Local Modifications </a></li>
+			<li><a href="#diff">Comparing Patch Revisions</a></li>
+			<li><a href="#switch">Switching Between Patches </a></li>  
+            <li><a href="#finish">Finishing Applied Patches</a></li>
+			<li><a href="#summary">Summary</a></li>
+            <li><a href="#seealso">See Also</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Requirements</h2>
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Version 7.4 or 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">Version 7 or 8</td>
+                </tr>
+				 <tr>
+                    <td class="tbltd1"><a href="http://mercurial.selenic.com/downloads/" target="_blank">Mercurial client software</a></td>
+                    <td class="tbltd1">1.04 or higher </td>
+                </tr>
+				                 
+            </tbody>
+        </table>
+		<p class="notes"><b>Note:</b> Refer to the <a href="mercurial.html#settingUp">Using Mercurial Support in NetBeans IDE</a> for information on how to install Mercurial client software on your system.</p>
+
+        
+        <div>
+		<a name ="enable"></a>
+		<h2>Enabling the Mercurial Queues Support</h2>
+		<p>Since Mercurial Queues is an extension, you must explicitly enable it before you can use it.<br/>
+	      To start running Mercurial Queues on your Mercurial repository, you need to complete the following steps:</p>
+		 <ol>
+		 <li>On your system , browse to the <tt>.hgrc</tt> file. The default location of the <tt>.hgrc</tt> file on OS X and Linux is <tt>$HOME/.hgrc</tt>, on Windows - <tt>%USERPROFILE%\Mercurial.ini</tt>.</li>
+		 <li>Add the lines below to your <tt>.hgrc</tt> file.
+		 <pre>         [extensions]
+         hgext.mq =</pre></li>
+		 <li>Save the file.</li>
+		 </ol>
+		 <p class="align-center"><a href="#top">top</a></p>		
+		</div>
+		<div>
+		<a name="create"></a>
+		<h2>Creating a Patch</h2>
+		<p>To create  a patch, you need to complete the following steps:</p>
+		<ol>
+		<li>In the Projects window, select a versioned project and choose <tt>Team</tt> &gt; <tt>Queues</tt> &gt; <tt>Create Patch</tt> (alternatively, right-click the project name and select <tt>Mercurial</tt> &gt; <tt>Queues</tt> &gt; <tt>Create Patch</tt> from the pop-up menu).<br/>
+		The Create Patch dialog box displays.
+		<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/create-patch.png" rel="lytebox"
+                       title="Create Patch dialog box">
+					   <img src="../../../images_www/articles/72/ide/mercurial-queues/create-patch-small.png"
+                     alt="Create Patch dialog box" border=1/></a></p>
+		  </li>
+		<li>Specify the name for a patch in the Patch Name text field.</li>
+		<li>Provide the description of a patch in the Patch Message field.<br/>		
+		Alternatively, choose either of the following options and click OK afterwards:
+		  <ul>
+		<li>click the Recent Messages button (<img src="../../../images_www/articles/72/ide/mercurial-queues/recent.png"
+                     alt="Recent Messages" border=1/>) to select  a message from a list of most recent commit messages </li>
+		<li>click the Load Template button (<img src="../../../images_www/articles/72/ide/mercurial-queues/load.png"
+                     alt="Load Template" border=1/>) to select a message template for a commit message.</li>
+		</ul>
+		<p class="notes"><b>Note:</b> The provided description of a patch will be used as a commit message when <a href="#finish">turning the patch into a permanent changeset</a>.</p>
+		</li>
+		<li>Select files to be included into the patch in the Files To Include In Patch table. </li>
+		<li>(Optional) Specify information pertinent to an issue related to the created patch using the  fields of the Update Issue area.</li>
+		<li>Click Create Patch.<br/>
+		  A new patch is created and added to the <tt>.hg/patches</tt> directory.
+		</li>
+		</ol>
+<p class="align-center"><a href="#top">top</a></p>				
+</div>
+<div>
+<a name="refresh"></a>
+<h2>Refreshing a Patch With Local Modifications</h2>
+<p>To save your progress into the patch you are creating , you need to complete the following steps: </p>
+<ol>
+<li>Choose <tt>Team</tt> &gt; <tt>Queues</tt> &gt; <tt>Refresh Patch</tt> from the main menu (alternatively, right-click the project name and select <tt>Mercurial</tt> &gt; <tt>Queues</tt> &gt; <tt>Refresh Patch</tt> from the pop-up menu).<br/> 
+  The Refresh Patch dialog box displays.
+<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch.png" rel="lytebox"
+                       title="Refresh Patch dialog box">
+    <img src="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch-small.png"
+                     alt="Refresh Patch dialog box" border=1/></a></p></li>
+<li>Provide the description of a patch in the Patch Message field.<br/>
+		Alternatively, choose either of the following options and click OK afterwards:
+		  <ul>
+		<li>click the Recent Messages button (<img src="../../../images_www/articles/72/ide/mercurial-queues/recent.png"
+                     alt="Recent Messages" border=1/>) to select  a message from a list of most recent commit messages </li>
+		<li>click the Load Template button (<img src="../../../images_www/articles/72/ide/mercurial-queues/load.png"
+                     alt="Load Template" border=1/>) to select a message template for a commit message.</li>
+		</ul>
+		<p class="notes"><b>Note:</b> The provided description of a patch will be used as a commit message when <a href="#finish">turning the patch into a permanent changeset</a>.</p>
+	</li>
+		<li>Select files to be included into the patch in the Files To Include In Patch table. </li>
+		<li>(Optional) In the Update Issue area, specify information pertinent to an issue related to the changes being committed.</li>
+        <li>Click Refresh Patch.<br/>The patch you are working on is updated.</li>
+
+</ol>
+<p class="align-center"><a href="#top">top</a></p>
+</div>
+
+		<div><a name="diff"></a>
+		<h2>Comparing Patch Revisions</h2>
+		<p>To generate a patch for review and compare revisions of a patch side by side, you need to complete the following steps: </p>
+<ol>
+<li>Choose <tt>Team</tt> &gt; <tt>Queues</tt> &gt; <tt>Diff</tt> from the main menu (alternatively, right-click the project name and select <tt>Mercurial</tt> &gt; <tt>Queues</tt> &gt; <tt>Diff</tt> from the pop-up menu).<br/>
+The Diff Viewer displays differences found in the current patch and all your uncommitted/unrefreshed local changes in side-by-side panels:
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/qdiff.png" rel="lytebox"
+                       title="Diff Viewer">
+					   <img src="../../../images_www/articles/72/ide/mercurial-queues/qdiff-small.png"
+                     alt="Diff Viewer" border=1/></a></p></li>
+<li> Review and revise differences found in the compared files using either Graphical or Textual Diff Viewer.
+  <p class = "notes"><b>Note:</b> The Graphical Diff Viewer highlights changes in the files using the following color encoding.</p>
+  <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>Blue</strong>
+                        ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been changed since the earlier patch.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Green</strong>
+                        ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been added since the earlier patch.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Red</strong>
+                        ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                    <td>Indicates lines that have been removed since the earlier patch.</td>
+                </tr>
+</table>
+<p>
+The following icons enable you to make changes directly within the Graphical Diff Viewer.</p>
+ <table width="600px">
+				 <tr>
+                        <th class="tblheader" scope="col">Icon</th>
+                        <th class="tblheader" scope="col" style="width:60px">Name</th>
+                        <th class="tblheader" scope="col">Function</th>
+        </tr>
+                    <tr>
+					 <td class="tbltd1 align-center"><img alt="Replace icon" src="../../../images_www/articles/72/ide/mercurial-queues/replace.png"/></td>
+                        <td class="tbltd1 align-center" style="width:80px"><strong>Replace</strong></td>
+                        <td class="tbltd1">Inserts the highlighted text from the previous patch into the current patch.</td>
+                    </tr>
+					<tr>
+					<td class="tbltd1 align-center"><img alt="Replace all icon" src="../../../images_www/articles/72/ide/mercurial-queues/replace-all.png"/></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Replace All</strong> </td>
+                        <td class="tbltd1">Reverts  current version of a patch to the state of its selected previous version.</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="Remove icon" src="../../../images_www/articles/72/ide/mercurial-queues/remove.png"/></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Remove</strong></td>
+                        <td class="tbltd1">Removes the highlighted text from the current version of a patch so that it mirrors the previous version of a patch.</td>
+                    </tr>
+      </table></li>
+</ol>
+		
+<p class="align-center"><a href="#top">top</a></p>
+        
+		</div>
+		
+		<div>
+		<a name="switch"></a>
+        <h2>Switching Between Patches</h2>
+        <p>To switch to a particular patch in a patch queue series, you need to complete the following steps: </p>
+		<p class="notes"><b>Note:</b> To switch between patches there <i>must</i> be <i>no</i> local modifications in the working copy, otherwise the switch fails.</p>
+		<ol>
+		<li>Choose <tt>Team</tt> &gt; <tt>Queues</tt> &gt; <tt>Go To Patch</tt> from the main menu (alternatively, right-click the project name and select <tt>Mercurial</tt> &gt; <tt>Queues</tt> &gt;<tt> Go To Patch</tt> from the pop-up menu).<br/>
+		  The Go To Patch dialog box displays a list of all patches available in a stack. 
+		
+		  <p class="align-center">
+	      <img src="../../../images_www/articles/74/ide/mercurial-queues/go-patch.png"
+                     alt="Go To Patch dialog box" border=1/></p>
+		  
+		<p class="notes"><b>Notes:</b></p> 
+		<ul>
+		<li>Names of applied patches display in bold.</li>
+		<li> Choose <tt>Team</tt> &gt; <tt>Queues</tt> &gt; <tt>Pop All Patches</tt> to remove the applied patches from the top of the stack and update the working directory to undo the effects of the applied patches.</li>
+		</ul>
+		</li>
+		<li>Select the required patch  and click Go.<br/>
+		The IDE applies the changes contained in the selected patch to the chosen project, file, or folder.</li>
+		</ol> 
+		<p class="align-center"><a href="#top">top</a></p>
+		</div> 
+		<div>   
+               
+        <a name="finish"></a>
+<h2>Finishing Applied Patches</h2>
+<p>Once your work on a patch is done, it can be turned into a permanent changeset.<br/>
+   To turn all applied patches in a patch queue series into regular changesets, complete the following steps:</p>
+ <p class="notes"> <b>Note:</b> To apply all saved patches in the repository, choose <tt>Team</tt> &gt; <tt>Queues</tt> &gt; <tt>Push All  Patches</tt> from the main menu.</p>
+ 
+<ol>
+<li>Choose <tt>Team</tt> &gt; <tt>Queues</tt> &gt; <tt>Finish Patches</tt> from the main menu (alternatively, right-click the project name and select <tt>Mercurial</tt> &gt; <tt>Queues</tt> &gt; <tt>Finish Patches</tt> from the pop-up menu).<br/>
+   The Finish Patches dialog box displays.
+   <p class="align-center">
+    <img src="../../../images_www/articles/74/ide/mercurial-queues/finish-patches.png"
+                     alt="Finish Patches" border=1/></p></li>
+	<li>Select the name of a patch to be finished in the patches field.
+	<p class="notes"><b>Note:</b> All patches in the series before the selected patch will also be finished.</p></li>
+	<li>Click Finish Patches.<br/>The IDE turns all applied patches up to the selected patch into regular changesets.</li>
+		  </ol>
+<p class="align-center"><a href="#top">top</a></p>
+</div>
+<div>
+<a name="summary"></a>
+<h2>Summary</h2>
+<p>This tutorial showed how to perform basic patch-specific tasks in the IDE by guiding you through the standard workflow when using Mercurial versioning software for managing patches. It demonstrated how to enable the Mercurial Queues support in the NetBeans IDE and perform basic tasks on patches while introducing you to some of the Mercurial specific features included in the IDE.</p>
+<p class="align-center"><a href="#top">top</a></p>
+</div>
+		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Suport%20For%20Mercurial%20Queues%20in%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+
+        <br style="clear:both;"/>
+		<a name="seealso"></a>
+        <h2>See Also</h2>
+        
+        <p>For related material see the following documents:</p>
+        <ul>
+           
+           	<li><a href="mercurial.html">Using Mercurial Support in NetBeans IDE</a></li>
+			<li><a href="http://wiki.netbeans.org/HgNetBeansSources">Using Mercurial to Work with NetBeans Sources in the IDE</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">Versioning Applications with Version Control</a> in <i>Developing Applications with NetBeans IDE</i></a></li>
+			
+        </ul>
+		<p class="align-center"><a href="#top">top</a></p>
+</body>
+</html>

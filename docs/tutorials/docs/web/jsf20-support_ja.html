@@ -1,0 +1,626 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>NetBeans IDEでのJSF 2.xのサポート</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="An article outlining JSF 2.x support in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              JavaServer Faces, JavaServer Faces 2.0, JSF, JSF 2.1">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+    </head>
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans IDEでのJSF 2.xのサポート</h1>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <p>NetBeans IDEは、JavaServer Faces (JSF) 2.0および2.1向けの組込みサポートを有効にする多数の機能を備えています。IDEのJSF 2.xサポートは、以前のJavaServer Faces向けのサポートに基づいて作成され、Faceletsページを対象とした多彩なエディタ拡張、エンティティ・クラスと連携するための様々な機能、およびJSF管理対象Bean、Faceletsテンプレートおよび合成コンポーネントの作成などの共通の開発タスク用の一連のJSFウィザードがあります。</p>
+
+        <p>以降の項では、NetBeans IDEでの作業中に自由に利用できるJSF 2.xの機能について説明します。新しいJSFの機能を試すには、Java WebテクノロジとJava EEテクノロジが含まれている<a href="https://netbeans.org/downloads/index.html">NetBeans IDEのJavaバンドル版をダウンロード</a>します。このダウンロード・バンドルには、Java EE 6プラットフォーム仕様(JSR 316)のリファレンス実装であるGlassFish Server Open Source Editionも含まれています。</p>
+
+
+        <h3>内容</h3>
+
+        <ul id="collapsableList">
+            <li><a href="#support">プロジェクトのJSF 2.xサポート</a>
+
+                <ul>
+                    <li><a href="#creatingSupport">JSF 2.xサポートを含む新しいプロジェクトの作成</a></li>
+                    <li><a href="#addingSupport">既存のプロジェクトへのJSF 2.xサポートの追加</a></li>
+                </ul></li>
+
+            <li><a href="#editor">エディタの使用</a>
+
+                <ul>
+                    <li><a href="#facelets">Faceletsエディタ</a></li>
+                    <li><a href="#xml">Faces XML構成エディタ</a></li>
+                </ul></li>
+
+            <li><a href="#wizard">JSFのウィザード</a>
+
+                <ul>
+                    <li><a href="#jsfPage">JSFページ・ウィザード</a></li>
+                    <li><a href="#managedBean">JSF管理対象Beanウィザード</a></li>
+                    <li><a href="#facesConfig">Faces構成ウィザード</a></li>
+                    <li><a href="#composite">合成コンポーネント・ウィザード</a></li>
+                    <li><a href="#jsfPagesEntity">エンティティからのJSFページ・クラス・ウィザード</a></li>
+                    <li><a href="#faceletsTemplate">Faceletsテンプレート・ウィザード</a></li>
+                </ul></li>
+
+            <li><a href="#entity">エンティティ・クラスのサポート</a>
+
+                <ul>
+                    <li><a href="#jsfPages">エンティティ・クラスからのJSFページの作成</a></li>
+                    <li><a href="#form">エンティティからのフォーム・ダイアログ</a></li>
+                    <li><a href="#dataTable">エンティティからのデータ表ダイアログ</a></li>
+                </ul></li>
+
+            <li><a href="#palette">JSFパレットのコンポーネント</a></li>
+
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+
+        <h2 id="support">プロジェクトのJSF 2.xサポート</h2>
+
+        <p>プロジェクト用のJSFサポートは、次のように特徴付けることができます。</p>
+
+        <ul>
+            <li>プロジェクトにFaceletsテンプレート・ファイルが含まれる</li>
+            <li>JSF 2.xライブラリがプロジェクトのクラスパスに追加される</li>
+            <li>Facesサーブレットおよびサーブレットのマッピングがプロジェクトのデプロイメント・ディスクリプタに追加される</li>
+        </ul>
+
+        <p>GlassFishサーバーまたは他の任意のJava EE準拠のサーバーを使用すると、JSF 2. xサポートを含むプロジェクトを作成したり、既存のプロジェクトにJSF 2.xのサポートを追加できます。</p>
+
+        <ul>
+            <li><a href="#creatingSupport">JSF 2.xサポートを含む新しいプロジェクトの作成</a></li>
+            <li><a href="#addingSupport">既存のプロジェクトへのJSF 2.xサポートの追加</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="creatingSupport">JSF 2.xサポートを含む新しいプロジェクトの作成</h3>
+
+            <p>新しいJava Webアプリケーションを作成するには、IDEのプロジェクト・ウィザードを使用します。そのためには、IDEのメイン・ツールバーにある「新規プロジェクト」(<img alt="「新規プロジェクト」ボタン" src="../../../images_www/articles/72/web/jsf20-support/new-project-btn.png">)ボタンをクリックするか、[Ctrl]-[Shift]-[N] (Macの場合は[&#8984]-[Shift]-[N])を押します。「ステップ4: フレームワーク」で、「JavaServer Faces」を選択します。</p>
+
+            <div class="indent">
+                <img alt="新規プロジェクト・ウィザード: フレームワーク" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/new-proj-wizard-framework.png" title="プロジェクト作成時のJSFフレームワーク・サポートの追加">
+            </div>
+
+            <p>JavaServer Facesを選択すると、上のイメージに示すように、様々な構成オプションを使用できるようになります。プロジェクトからJSF 2.xライブラリにアクセスする方法を決定できます。「構成」タブをクリックすると、Facesサーブレットをプロジェクトのデプロイメント・ディスクリプタに登録する方法を指定できます。</p>
+
+            <div class="indent">
+                <img alt="「構成」タブ" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/jsf-configuration.png" title="「構成」タブでのFacesサーブレットの設定の指定">
+            </div>
+
+
+            <h3 id="addingSupport">既存のプロジェクトへのJSF 2.xサポートの追加</h3>
+
+            <p>既存のJava WebアプリケーションにJSF 2.xサポートを追加する場合は、プロジェクトの「プロパティ」ウィンドウから行えます。</p>
+
+            <ol>
+                <li>「プロジェクト」ウィンドウ([Ctrl]-[1]、Macの場合は[&#8984]-[1])で、プロジェクト・ノードを右クリックし、「プロパティ」を選択します。「プロジェクト・プロパティ」ウィンドウが表示されます。</li>
+
+                <li>「フレームワーク」カテゴリを選択し、「追加」ボタンをクリックします。 </li>
+                <li>「フレームワークの追加」ダイアログ・ボックスで、「JavaServer Faces」を選択します。「OK」をクリックします。<br> <img alt="「プロジェクト・プロパティ」ウィンドウ: 「フレームワークの追加」ダイアログ" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-intro/add-framework.png" title="既存のプロジェクトへのJSFサポートの追加">
+
+                    <p>
+                    JavaServer Facesを選択すると、JSF 2.xライブラリへのパスの指定や、プロジェクトのデプロイメント・ディスクリプタでのFacesサーブレットの登録など、様々な構成オプションを使用できるようになります。</p></li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="editor">エディタの使用</h2>
+
+        <p>IDEのエディタは言語固有であり、作業中のファイル・タイプに応じたサポートを提供します。一般的に、ファイル内の要素上で[Ctrl]-[Space]を押すと、コード補完とAPIドキュメントを呼び出すことができます。キーボード・ショートカットとコード・テンプレートを利用することもできます。</p>
+
+        <p class="tips">IDEのメイン・メニューから「ヘルプ」>「キーボード・ショートカット・カード」を選択して、よく使用するキーボード・ショートカットおよびコード・テンプレートを表示します。完全な一覧については、<a href="http://wiki.netbeans.org/KeymapProfileFor60">NetBeans IDE 6.xキーボード・ショートカットの仕様</a>を参照してください。</p>
+
+        <p>IDEは、<a href="http://javaserverfaces.java.net/nonav/docs/2.0/javadocs/index.html">JSF 2.0 API</a>および<a href="http://javaserverfaces.java.net/nonav/docs/2.1/javadocs/index.html">JSF 2.1 API</a>用の組込みのJavadocサポートに加え、JSFの<a href="http://javaserverfaces.java.net/nonav/docs/2.1/vdldocs/facelets/index.html">タグ・ライブラリ・ドキュメント</a>を備えています。これらのリソースを実際の操作で利用するには、エディタ内の指定した要素上で単純に[Ctrl]-[Space]を押します。</p>
+
+        <p class="tips">Javadocドキュメントにアクセスしたままにするには、IDEのJavadocウィンドウを開きます(「ウィンドウ」>「その他」>「Javadoc」)。Javadocウィンドウは、エディタ内のカーソルの位置に応じて自動的に最新状態にリフレッシュされます。</p>
+
+        <p>JSFプロジェクトを操作する場合、編集作業は主としてFaceletsファイル、JSF管理対象BeanおよびFaces構成ファイル(<code>faces-config.xml</code>)に対して行われます。次に、自由に使用できるエディタのサポートを簡単に説明します。</p>
+
+        <ul>
+            <li><a href="#facelets">Faceletsエディタ</a></li>
+            <li><a href="#xml">Faces XML構成エディタ</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="facelets">Faceletsエディタ</h3>
+
+            <p>IDEのFaceletsエディタには、構文の強調表示、エラーやJSFタグのチェック、ドキュメントのサポート、およびEL式、Faceletsコア・ライブラリ、名前空間でのコード補完など、JSF開発を容易に行うための機能が多数用意されています。</p>
+
+            <p>必要に応じて[Ctrl]-[Space]を押し、コード補完およびドキュメントのサポートを呼び出すことができます。</p>
+
+            <div class="indent">
+                <img alt="コード補完およびドキュメントのサポートが表示されたIDEエディタ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/doc-support.png" title="[Ctrl]-[Space]の押下によるコード補完とドキュメント・サポートの呼出し">
+            </div>
+
+            <p id="popup">カーソルがタグ上に置かれていないときに[Ctrl]-[Space]を押すと、項目のポップアップ・リストが呼び出されます。これらの項目は、IDEの「<a href="#palette">パレット</a>」([Ctrl]-[Shift]-[8]、Macの場合は[&#8984]-[Shift]-[8])からもアクセスできます。</p>
+
+            <p class="tips">また、[Ctrl]-[Space]を押す前に接頭辞(<code>jsf</code>など)を入力して、項目をフィルタすることもできます。</p>
+            
+            <div class="indent">
+                <img alt="IDEのエディタに表示されたコード補完ポップアップ・リスト" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/code-completion.png" title="エディタでの[Ctrl]-[Space]の押下による項目のリストの呼出し">
+            </div>
+
+            <p>[Ctrl]-[Space]を押してFacelets名前空間のコード補完を呼び出します。</p>
+
+            <div class="indent">
+                <img alt="IDEのエディタに表示されたコード補完ポップアップ・リスト" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/namespace.png" title="[Ctrl]-[Space]の押下によるFacelets名前空間の完成">
+            </div>
+
+            <p>同様に、ページでまだ宣言されていない名前空間を持つJSFタグを入力すると、ページの<code>&lt;html></code>タグに自動的に追加されます。</p>
+
+            <p>エディタは、式言語(EL)構文の補完サポートを備えています。暗黙オブジェクト、JSF管理対象Bean、およびそのプロパティに対する候補を呼び出すには、ELコードで[Ctrl]-[Space]を押します。</p>
+
+            <div class="indent">
+                <img alt="EL式のコード補完ポップアップ・リスト" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/el-code-completion.png" title="EL式での[Ctrl]-[Space]の押下による、暗黙オブジェクト、JSF管理対象BeanおよびBeanのプロパティに対する補完サポートの呼出し">
+            </div>
+            
+            <p>エディタでコード・スニペットを強調表示し、「合成コンポーネントに変換」を選択して、JSF合成コンポーネントを作成することもできます。詳細は、<a href="#composite">合成コンポーネント・ウィザード</a>を参照してください。</p>
+
+            <p>エディタは、基本的なエラー・チェック機能を備えています。エラーは赤い下線付きで表示され、対応するバッジが左マージンに表示されます。警告には黄色い下線が引かれ、左マージンに黄色いバッジが示されます。バッジまたは下線の付いたテキストの上にマウスを置くと、エラーの説明が表示されます。</p>
+                                
+            <p>JSFタグを入力すると、様々なチェックが実行されます。これらには次のものが含まれます。</p>
+
+            <ul>
+                <li>宣言されたライブラリが存在するかどうか</li>
+                <li>タグの接頭辞と一致するライブラリに、そのコンポーネントまたはタグが含まれているかどうか</li>
+                <li>必要なすべての属性がタグに含まれているかどうか</li>
+                <li>入力されたすべての属性がコンポーネントのインタフェースで定義されているかどうか</li>
+            </ul>
+
+            <p>エディタは次についてもチェックします。</p>
+
+            <ul>
+                <li>宣言されていないコンポーネントがあるかどうか</li>
+                <li>使用状況のないtaglib宣言があるかどうか</li>
+            </ul>
+
+
+            <h3 id="xml">Faces XML構成エディタ</h3>
+
+            <p>JSFプロジェクトに<code>faces-config.xml</code>ファイルを含めると、ナビゲーション・ルールを定義するとき、または管理対象Beanを宣言するときに、[Ctrl]-[Space]を押して、コード補完とドキュメントのサポートを呼び出すことができます。</p>
+
+            <p>手動によるコーディングではなく、ダイアログを使用してナビゲーション・ルールおよび管理対象Beanを入力する場合は、この目的のためにIDEに用意されているいくつかのJSF固有のダイアログがあります。これらのダイアログには、エディタの右クリック・メニューからアクセスできます。</p>
+
+            <div class="indent">
+                <img alt="faces-config.xmlファイル - 右クリック・メニュー" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/faces-config-menu.png" title="faces-config.xmlの右クリック・メニューで表示されるJSF固有のダイアログ">
+            </div>
+
+            <p>IDEには、<code>faces-config.xml</code>用の2つの異なる<em>ビュー</em>があります。1つはXMLソース・コードを表示するソース・ビューです。もう1つはページ・フロー・ビューで、これは<code>faces-config.xml</code>ファイルで定義されたJSFナビゲーション・ルールを表すグラフィカル・インタフェースです。</p>
+
+            <p>たとえば、ファイルに次のナビゲーション・ルールがあるとします。</p>
+
+            <div class="indent">
+                <pre class="examplecode">&lt;navigation-rule&gt;
+    &lt;from-view-id&gt;/greeting.xhtml&lt;/from-view-id&gt;
+    &lt;navigation-case&gt;
+        &lt;from-outcome&gt;response&lt;/from-outcome&gt;
+        &lt;to-view-id&gt;/success.xhtml&lt;/to-view-id&gt;
+    &lt;/navigation-case&gt;
+&lt;/navigation-rule&gt;</pre>
+            </div>
+
+            <p>「ページ・フロー」ビューには、次の関係が表示されます。これは、「<code>response</code>」がJSFの<code>NavigationHandler</code>に渡されると、<code>greeting.xhtml</code>から<code>success.xhtml</code>に移動することを示します。</p>
+
+            <div class="indent">
+                <img alt="faces-config.xmlファイル: 「ページ・フロー」ビュー" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/page-flow.png" title="ナビゲーションの関係が表示された「ページ・フロー」ビュー">
+            </div>
+
+            <p>「ページ・フロー」ビュー内のコンポーネントをダブルクリックすると、ソース・ファイルに直接移動できます。たとえば、<code>greeting.xhtml</code>コンポーネントをダブルクリックすると、エディタで<code>greeting.xhtml</code>ファイルが開かれます。同様に、2つのコンポーネントの間にある矢印をダブルクリックすると、エディタで、<code>faces-config.xml</code> XMLビューで定義されたナビゲーション・ルールがフォーカスされます。</p>
+        </div>
+
+
+        <br>
+        <h2 id="wizard">JSFのウィザード</h2>
+
+        <p>NetBeans IDEには、JSF 2.xを使用した開発に役立つ多数のウィザードが用意されています。新しいFaceletsページ、Faceletsテンプレート、JSF管理対象Bean、合成コンポーネント、Faces構成ファイルなどを作成できます。</p>
+
+        <p id="fileWizard">すべてのウィザードは、IDEの一般的なファイル・ウィザードを経由してアクセスできます。ファイル・ウィザードにアクセスするには、「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/72/web/jsf20-support/new-file-btn.png">)ボタンを押すか、メイン・メニューから「ファイル」&gt「新規ファイル」を選択します(または[Ctrl]-[N]、Macの場合は[&#8984]-[N]を押します)。JSF固有のウィザードはJavaServer Facesカテゴリに一覧表示されます。</p>
+
+            <div class="indent">
+                <img alt="ファイル・ウィザード: 「JavaServer Faces」カテゴリの選択" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/file-wizard.png" title="ファイル・ウィザードからJSF指向のウィザードにアクセス可能">
+            </div>
+
+        <p>JSFサポートを使用してJava Webプロジェクトを操作している場合は、次のウィザードを使用できます。</p>
+
+        <ul>
+            <li><a href="#jsfPage">JSFページ・ウィザード</a></li>
+            <li><a href="#managedBean">JSF管理対象Beanウィザード</a></li>
+            <li><a href="#facesConfig">Faces構成ウィザード</a></li>
+            <li><a href="#composite">合成コンポーネント・ウィザード</a></li>
+            <li><a href="#jsfPagesEntity">エンティティからのJSFページ・クラス・ウィザード</a></li>
+            <li><a href="#faceletsTemplate">Faceletsテンプレート・ウィザード</a></li>
+            <li><a href="#faceletsTemplateClient">Faceletsテンプレート・クライアント・ウィザード</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsfPage">JSFページ・ウィザード</h3>
+
+            <p>プロジェクト用にFaceletsおよびJSPページを作成するには、JSFページ・ウィザードを使用します。IDEのファイル・ウィザードで、「JavaServer Faces」カテゴリを選択し、「JSFページ」を選択します。JSF 2.xでは、JSFページを宣言する方法としてFaceletsが優先されます。デフォルトで、ウィザードの「Facelets」オプションが選択されています。新しいJSPページまたはJSPフラグメント(<code>.jspf</code>ファイル)を作成する場合は、「JSPファイル」オプションを選択します。</p>
+
+            <div class="indent">
+                <img alt="JSFファイル・ウィザード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-file-wizard.png" title="IDEのJSFファイル・ウィザードを使用したFaceletsページの作成">
+            </div>
+
+
+            <h3 id="managedBean">管理対象Beanウィザード</h3>
+
+            <p>IDEの管理対象Beanウィザードを使用して、アプリケーション用のJSF管理対象Beanを作成できます。IDEの<a href="#fileWizard">ファイル・ウィザード</a>の「JavaServer Faces」カテゴリから「JSF管理対象Bean」を選択します。</p>
+
+            <p>デフォルトでは、ウィザードで指定するメタデータは、注釈内に変換されます。この注釈は、管理対象Beanが生成されると、これらのBeanに適用されます。たとえば、次のイメージでは、<code>NewJSFManagedBean</code>という名前のセッション・スコープされたクラスを新しく作成し、これに<code>myManagedBean</code>という名前を付けています。</p>
+
+            <div class="indent">
+                <img alt="管理対象Beanウィザード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/managed-bean.png" title="IDEの管理対象Beanウィザードを使用した、JSF管理対象Beanの作成">
+            </div>
+
+            <p>管理対象Beanが生成されると、次のように適切な注釈とともに表示されます。</p>
+
+            <pre class="examplecode">package my.org;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
+<strong>@ManagedBean(name=&quot;myManagedBean&quot;)</strong>
+<strong>@SessionScoped</strong>
+public class NewJSFManagedBean {
+
+    /** Creates a new instance of NewJSFManagedBean */
+    public NewJSFManagedBean() {
+    }
+
+}</pre>
+
+            <p>プロジェクトにすでに<code>faces-config.xml</code>ファイルが含まれている場合は、ウィザードの「構成ファイルにデータを追加」オプションがアクティブになり、Faces構成ファイルで管理対象Beanを宣言するか、管理対象Beanに注釈を経由して指定したメタデータを持つことができます。</p>
+
+
+            <h3 id="facesConfig">Faces構成ウィザード</h3>
+
+            <p>JSF 2.xでは、アプリケーションを構成するための標準のFaces構成ファイル(<code>faces-config.xml</code>)の代替手段として注釈が採用されています。したがって、プロジェクトにJSF 2.xサポートを追加しても、IDEではデフォルトの<code>faces-config.xml</code>ファイルは生成<em>されません</em> (JSF 1.2では生成されました)。通常は、特定の構成設定を定義するために、<code>faces-config.xml</code>ファイルをプロジェクトに追加します。これを行うには、IDEのFaces構成ウィザードを使用します。</p>
+
+            <p>IDEの<a href="#fileWizard">ファイル・ウィザード</a>にある「JavaServer Faces」カテゴリから「JSF Faces構成」を選択します。これにより、新しい<code>faces-config.xml</code>ファイルが作成され、デフォルトでプロジェクトの<code>WEB-INF</code>フォルダに配置されます。</p>
+
+            <p class="tips"><code>faces-config.xml</code>向けのIDEのエディタ・サポートの説明については、<a href="#xml">Faces XML構成エディタ</a>を参照してください。</p>
+
+
+            <h3 id="composite">合成コンポーネント・ウィザード</h3>
+
+            <p>JSF 2.xでは、ユーザー・インタフェース(UI)の合成コンポーネントの作成プロセスが簡素化されており、これらのコンポーネントをWebページで再利用できます。IDEの合成コンポーネント・ウィザードを使用すると、JSF合成コンポーネント用のFaceletsテンプレートを生成できます。</p>
+
+            <p>すべてのJSF関連ウィザードと同様に、合成コンポーネント・ウィザードには、IDEの<a href="#fileWizard">ファイル・ウィザード</a>にある「JavaServer Faces」カテゴリからアクセスできます。ただし、ウィザードをより直観的に表示するには、エディタのFaceletsページからコード・スニペットを強調表示し、ポップアップ・メニューから「リファクタリング」>「合成コンポーネントに変換」を選択します。</p>
+
+            <p>次の例では、スニペット「<code>&lt;p>This is the composite component.&lt;/p></code>」で合成コンポーネント・ウィザードを呼び出すときに発生するアクションと、自由に使用できる機能について説明します。</p>
+
+            <div class="indent">
+                <img alt="Faceletsエディタ - 「合成コンポーネントに変換」メニュー・オプション" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/convert-comp-component.png" title="スニペットを強調表示した後の右クリック・メニューでの「合成コンポーネントに変換」の選択">
+            </div>
+
+            <p>合成コンポーネント・ウィザードが開きます。このとき、選択されたスニペットが「実装セクション」パネルに表示されます。</p>
+
+            <div class="indent">
+                <img alt="合成コンポーネント・ウィザード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/comp-component.png" title="選択されたコード・スニペットが表示された合成コンポーネント・ウィザード">
+            </div>
+
+            <p>デフォルトでは、合成コンポーネントを格納するための<code>ezcomp</code>フォルダが作成されます。たとえば、<code>myComponent</code>という名前の新しいコンポーネントを作成している場合、このウィザードにより<code>myComponent.xhtml</code> Faceletsページが生成され、アプリケーションのWebルートの<code>resources/ezcomp</code>フォルダに配置されます。</p>
+
+            <p>ウィザードを完了すると、指定したコード・スニペット用の合成コンポーネントのソース・ファイルが生成されます。テンプレートには、JSF 2.xの<code>composite</code>タグ・ライブラリへの参照が含まれます。</p>
+
+            <pre class="examplecode">&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+    <strong>xmlns:cc=&quot;http://xmlns.jcp.org/jsf/composite&quot;</strong>&gt;
+
+  &lt;!-- INTERFACE --&gt;
+  &lt;cc:interface&gt;
+  &lt;/cc:interface&gt;
+
+  &lt;!-- IMPLEMENTATION --&gt;
+  &lt;cc:implementation&gt;
+    <strong>&lt;p&gt;This is the composite component.&lt;/p&gt;</strong>
+  &lt;/cc:implementation&gt;
+&lt;/html&gt;</pre>                
+              
+            <p>また、エディタ内で強調表示したスニペットの位置に、新しいコンポーネント・タグが挿入されます。この場合、生成されるタグは<code>&lt;ez:myComponent/></code>です。IDEでは、合成コンポーネントのある名前空間が、ページの<code>&lt;html></code>タグに自動的に挿入されます。</p>
+
+            <div class="indent">
+                <img alt="合成コンポーネント・ウィザード" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-support/comp-component-editor.png" title="ページに自動的に挿入されたコンポーネント・タグ">
+            </div>
+
+            <p class="tips">IDEでは、合成コンポーネントのソース・ファイルへのハイパーリンク機能もサポートされます。コンポーネント・タグの上にマウスを置いているときに[Ctrl] (Macの場合は[&#8984])を押すと、Faceletsページから合成コンポーネントに移動できます。ハイパーリンクをクリックすると、合成コンポーネントのソース・ファイルがエディタで開かれます。</p>
+
+            
+
+            <p class="tips">JSF 2.xの合成コンポーネントの詳細は、<a href="http://blogs.oracle.com/enterprisetechtips/entry/true_abstraction_composite_ui_components">真の抽象化: JSF 2.0の合成UIコンポーネント</a>を参照してください。</p>
+
+
+            <h3 id="jsfPagesEntity">エンティティからのJSFページ・クラス・ウィザード</h3>
+
+            <p><a href="#entity">エンティティ・クラスのサポート</a>の<a href="#jsfPages">エンティティ・クラスからのJSFページの作成</a>のトピックを参照してください。</p>
+
+
+            <h3 id="faceletsTemplate">Faceletsテンプレート・ウィザード</h3>
+
+            <p>Faceletsテンプレートを生成するには、Faceletsテンプレート・ウィザードを使用します。IDEの<a href="#fileWizard">ファイル・ウィザード</a>にある「JavaServer Faces」カテゴリから「Faceletsテンプレート」を選択します。8つの独自のレイアウト・スタイルから選択できます。また、レイアウトをCSSとHTML<code>&lt;table></code>タグのどちらを使用して実装するかを指定できます。</p>
+
+            <div class="indent">
+                <img alt="Faceletsテンプレート・ウィザード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/template-wizard.png" title="Faceletsテンプレート・ウィザードを使用したFaceletsテンプレートの作成">
+            </div>
+
+            <p>このウィザードにより、<code>&lt;h:head></code>タグと<code>&lt;h:body></code>タグを使用してXHTMLテンプレート・ファイルが作成され、関連付けられたスタイル・シートはアプリケーションのWebルートにある<code>resources/css</code>フォルダに保存されます。<code>default.css</code>ファイル、および選択するレイアウトに応じて<code>cssLayout.css</code>ファイルまたは<code>tableLayout.css</code>ファイルが生成されます。</p>
+
+            <p class="tips">ブラウザにテンプレートを表示するには、エディタ内で右クリックし、「表示」を選択します。ブラウザ・ウィンドウが開き、テンプレートが表示されます。</p>
+
+            <h3 id="faceletsTemplate">Faceletsテンプレート・クライアント・ウィザード</h3>
+
+            <p>プロジェクトのFaceletsテンプレートを参照するページを生成するには、Faceletsテンプレート・クライアント・ウィザードを使用します。IDEの<a href="#fileWizard">ファイル・ウィザード</a>にある「JavaServer Faces」カテゴリから「Faceletsテンプレート・クライアント」を選択します。クライアントで使用するFaceletsテンプレートの場所を指定できます。ルート・タグを<tt>&lt;html></tt>にするか<tt>&lt;ui:composition></tt>にするかを指定できます</p>
+
+            <div class="indent">
+                <img alt="Faceletsテンプレート・クライアント・ウィザード" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/new-template-client.png" title="Faceletsテンプレート・クライアント・ウィザードを使用した、Faceletsテンプレートのクライアントの作成">
+            </div>
+            <p>Faceletsテンプレートおよびクライアントの使用の詳細は、<a href="jsf20-intro.html">NetBeans IDEでのJavaServer Faces 2.x入門</a>の<a href="jsf20-intro.html#template">Faceletsテンプレートの適用</a>の項を参照してください。</p>
+
+        </div>
+
+
+        <br>
+        <h2 id="entity">エンティティ・クラスのサポート</h2>
+
+        <p>アプリケーションでJava Persistenceを使用しており、データベース・スキーマに基づいたエンティティ・クラスがある場合、IDEでは、エンティティ・クラス・データを使用した効率的な処理を可能にする機能が提供されます。</p>
+
+        <p><strong class="notes">注意: </strong>データベース表からエンティティ・クラスを作成するには、データベース・ウィザードからIDEのエンティティ・クラスを使用します。これは、IDEの<a href="#fileWizard">ファイル・ウィザード</a>にある「持続性」カテゴリからアクセスできます。</p>
+
+        <ul>
+            <li><a href="#jsfPages">エンティティ・クラスからのJSFページの作成</a></li>
+            <li><a href="#form">エンティティ・データ用のJSFフォームの作成</a></li>
+            <li><a href="#dataTable">エンティティ・データ用のJSFデータ表の作成</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="jsfPages">エンティティ・クラスからのJSFページの作成</h3>
+
+            <p>アプリケーションにエンティティ・クラスができたら、IDEのエンティティからのJSFページ・クラス・ウィザードを使用して、エンティティ・クラス・データを表示および変更するためのWebインタフェースを作成します。ウィザードで生成されるコードは、エンティティ・クラス内に格納された持続性注釈に基づいて生成されます。</p>
+
+            <p>ウィザードでは、エンティティ・クラスごとに次のものが生成されます。</p>
+
+            <ul>
+                <li>エンティティ・インスタンスの作成、取得、変更および除去のためのステートレス・セッションBean</li>
+
+                <li>JSFセッション・スコープ指定管理対象Bean</li>
+
+                <li>CRUD機能のための4つのFaceletsファイル(<code>Create.xhtml</code>、<code>Edit.xhtml</code>、<code>List.xhtml</code>、および<code>View.xhtml</code>)を格納するディレクトリ</li>
+
+                <li>JSF管理対象Bean (<code>JsfUtil</code>、<code>PaginationHelper</code>)に使用されるユーティリティ・クラス</li>
+
+                <li>ローカライズされたメッセージのプロパティ・バンドル、およびプロジェクトのFaces構成ファイル内(このファイルがない場合、<code>faces-config.xml</code>ファイルが作成される)の対応するエントリ</li>
+
+                <li>レンダリングされるコンポーネントのデフォルトのスタイル・シートおよびFaceletsテンプレート・ファイルを含む、補助Webファイル</li>
+            </ul>
+
+            <p>エンティティからのJSFページ・クラス・ウィザードを使用するには、<a href="#fileWizard">IDEのファイル・ウィザードにアクセス</a>します。「JavaServer Faces」カテゴリを選択し、「エンティティからのJSFページ・クラス」を選択します。</p>
+
+            <p>「ステップ3: 生成されたJSFページとクラス」に到達したら、生成するファイルの保存場所を指定できます。</p>
+
+            <div class="indent">
+                <img alt="ステップ3: 生成されたJSFページとクラス" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-entity-wizard.png" title="生成されるファイルの場所の指定">
+            </div>
+
+            <p>たとえば、ウィザードを<code>Customer</code>エンティティ・クラスに適用している場合、前出のイメージに示される設定によって次のファイルが生成されます。</p>
+
+            <table class="indent">
+                <tr>
+                    <td>
+                        <img alt="「プロジェクト」ウィンドウ - ウィザードで生成されたファイル" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/projects-win-generated-files.png" title="新しく生成されたファイルが表示された「プロジェクト」ウィンドウ">
+                    </td>
+                    <td class="valign-top">
+                        <ul style="margin-top:3em">
+                            <li>プロパティのバンドルの場所を登録するための<code>faces-config.xml</code>ファイル。JSFビューのローカライズされたメッセージが格納されています。たとえば、ウィザードで「ローカリゼーション・バンドル名」に<code>/my/org/Bundle</code>を指定すると、次のエントリが生成されます。
+
+                                <pre class="examplecode" style="width:500px">
+&lt;application&gt;
+    &lt;resource-bundle&gt;
+        &lt;base-name&gt;/my/org/Bundle&lt;/base-name&gt;
+        &lt;var&gt;bundle&lt;/var&gt;
+    &lt;/resource-bundle&gt;
+&lt;/application&gt;</pre></li>
+
+                            <li>Webルートの<code>customer</code>フォルダ。CRUD機能用の4つのFaceletsファイルが格納されています。
+
+                                <ul>
+                                    <li><code>Create.xhtml</code>: 新しい顧客を作成するためのJSFフォーム。</li>
+                                    <li><code>Edit.xhtml</code>: 顧客を編集するためのJSFフォーム。</li>
+                                    <li><code>List.xhtml</code>: 顧客間をスクロールするためのJSFデータ表。</li>
+                                    <li><code>View.xhtml</code>: 顧客の詳細を表示するためのJSFフォーム。</li>
+                                </ul></li>
+
+                            <li><code>jsfcrud.css</code>: JSFフォームとデータ表のレンダリングに使用されるスタイル・シート。</li>
+
+                            <li><code>template.xhtml</code>: オプションのFaceletsテンプレート・ページ。生成された<code>jsfcrud.css</code>スタイル・シートへの参照が含まれます。</li>
+
+                            <li><code>CustomerFacade</code>という名前が付いたステートレス・セッション(エンタープライズ) Bean。<code>my.org.data</code>パッケージにあります。このクラスには、プロジェクトの「エンタープライズBean」ノードからも同様にアクセスできます。</li>
+
+                            <li><code>Bundle.properties</code>: JSFビュー用のデフォルトのローカライズ済メッセージを含むプロパティ・バンドル。</li>
+
+                            <li><code>my.org.ui</code>パッケージにある<code>CustomerController</code>という名前の、JSFのセッション・スコープされた管理対象Bean。</li>
+
+                            <li><code>my.org.ui.util</code>パッケージにある、2つのユーティリティ・クラス(<code>JsfUtil</code>および<code>PaginationHelper</code>)。これらは、<code>CustomerController</code>管理対象Beanによって使用されます。</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+
+            <h3 id="form">エンティティ・データ用のJSFフォームの作成</h3>
+
+            <p>エンティティからのフォーム・ダイアログを使用して、エンティティ・クラスに含まれるすべてのプロパティのフィールドを含むJSFフォームを生成できます。フォームに関連付けられたユーザー・データを処理するために作成された、JSF管理対象Beanが用意されている必要があります。</p>
+
+            <p><strong class="notes">注意: </strong>関連する管理対象Beanなしでこのダイアログを使用する場合は、管理対象Beanの名前をこのダイアログに入力できます。この名前は、有効かどうかにかかわらず、ページで使用されます。IDEの<a href="#managedBean">管理対象Beanウィザード</a>を使用して管理対象Beanを作成できます。または、<a href="#jsfPages">エンティティからのJSFページ・クラス・ウィザード</a>を使用すると、選択されたすべてのエンティティ・クラスに対する管理対象Beanが生成されます。</p>
+
+            <p>エンティティからのフォームのダイアログにアクセスするには、<a href="#popup">Faceletsページのエディタで[Ctrl]-[Space]を押して</a>「エンティティからのJSFフォーム」を選択するか、IDEの「<a href="#palette">パレット</a>」に一覧表示されているエンティティからのフォームの項目をダブルクリックします([Ctrl]-[Shift]-[8]、Macの場合は[&#8984]-[Shift]-[8])。</p>
+
+            <p>たとえば、次のイメージでは、「<code>Customer</code>」エンティティ・クラスが、指定したプロジェクトの<code>my.org</code>パッケージにすでにあります。<code>customerController</code>管理対象Beanも、指定されたプロジェクトにすでに存在します。この管理対象Beanには、<code>Customer</code>オブジェクトを返す<code>selected</code>という名前のプロパティがあります。</p>
+
+            <div class="indent">
+                <img alt="「エンティティからのJSFフォーム」ダイアログ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-form-from-entity.png" title="エンティティからのフォーム・ダイアログでの、エンティティ・データを使用したJSFフォームの生成">
+            </div>
+
+            <p><strong class="notes">注意: </strong>読取り専用フィールドを含むフォームを作成するには、「読取り専用ビューを生成」オプションを選択します。このオプションが選択されると、IDEは<code>&lt;h:outputText></code>タグをフォーム・フィールドに適用します。このオプションが選択されない場合は、<code>&lt;h:inputText></code>タグが適用されます。</p>
+
+            <p>このダイアログを完了すると、IDEによりFaceletsページのコードが生成されます。たとえば、<code>customerId</code>プロパティを含む<code>Customer</code>エンティティ・クラスが次の形式で表示されます。</p>
+
+            <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;Create/Edit&quot;/&gt;&lt;/h1&gt;
+        &lt;h:panelGrid columns=&quot;2&quot;&gt;
+            &lt;h:outputLabel value=&quot;CustomerId:&quot; for=&quot;customerId&quot; /&gt;
+            &lt;h:inputText id=&quot;customerId&quot; value=&quot;#{customerController.selected.customerId}&quot; title=&quot;CustomerId&quot; required=&quot;true&quot; requiredMessage=&quot;The CustomerId field is required.&quot;/&gt;
+            ...
+            <em>[ Other fields added here. ]</em>
+            ...
+        &lt;/h:panelGrid&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+
+            <p class="tips">生成されたコードで使用されるテンプレートを変更するには、エンティティからのフォーム・ダイアログにある「テンプレートのカスタマイズ」リンクをクリックします。</p>
+
+
+            <h3 id="dataTable">エンティティ・データ用のJSFデータ表の作成</h3>
+
+            <p>エンティティからのデータ表ダイアログを使用して、エンティティ・クラスに含まれるすべてのプロパティ用の列を含むJSFデータ表を生成できます。この機能を利用するには、エンティティ・クラスに関連付けられたバックエンド・データを処理するために作成されたJSF管理対象Beanを用意しておく必要があります。</p>
+
+            <p><strong class="notes">注意: </strong>関連する管理対象Beanなしでこのダイアログを使用する場合は、管理対象Beanの名前をこのダイアログに入力できます。この名前は、有効かどうかにかかわらず、ページで使用されます。IDEの<a href="#managedBean">管理対象Beanウィザード</a>を使用して管理対象Beanを作成できます。または、<a href="#jsfPages">エンティティからのJSFページ・クラス・ウィザード</a>を使用すると、選択されたすべてのエンティティ・クラスに対する管理対象Beanが生成されます。</p>
+
+            <p>エンティティからのデータ表ダイアログにアクセスするには、<a href="#popup">Faceletsページのエディタで[Ctrl]-[Space]を押して</a>「エンティティからのJSFデータ表」を選択するか、IDEの<a href="#palette">パレット</a>に一覧表示されているエンティティからのデータ表の項目をダブルクリックします([Ctrl]-[Shift]-[8]、Macの場合は[&#8984]-[Shift]-[8])。</p>
+
+            <p>たとえば、次のイメージでは、指定したプロジェクトの<code>my.org.entity</code>パッケージに<code>Product</code>エンティティ・クラスがすでにあります。<code>productController</code>管理対象Beanもプロジェクト内にあり、管理対象Beanには、<code>Product</code>オブジェクトの<code>List</code>を返す<code>getProductItems()</code>という名前のメソッドが含まれています。</p>
+
+            <div class="indent">
+                <img alt="「エンティティからのJSFデータ表」ダイアログ" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/jsf-data-table-from-entity.png" title="エンティティからのデータ表ダイアログを使用した、エンティティ・データからのJSFデータの生成">
+            </div>
+
+            <p>このダイアログを完了すると、IDEによりFaceletsページのコードが生成されます。たとえば、<code>productId</code>プロパティを含む<code>Product</code>エンティティ・クラスが次の形式で表示されます。</p>
+
+            <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;List&quot;/&gt;&lt;/h1&gt;
+        &lt;h:dataTable value=&quot;#{productController.productItems}&quot; var=&quot;item&quot;&gt;
+            &lt;h:column&gt;
+                &lt;f:facet name=&quot;header&quot;&gt;
+                    &lt;h:outputText value=&quot;ProductId&quot;/&gt;
+                &lt;/f:facet&gt;
+                &lt;h:outputText value=&quot;#{item.productId}&quot;/&gt;
+            &lt;/h:column&gt;
+            ...
+            <em>[ Other columns added here. ]</em>
+            ...
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+
+            <p class="tips">生成されたコードで使用されるテンプレートを変更するには、データ表からのフォーム・ダイアログの「テンプレートのカスタマイズ」リンクをクリックします。</p>
+        </div>
+
+
+        <br>
+        <h2 id="palette">JSFパレットのコンポーネント</h2>
+
+        <p>Faceletsページでの作業中、IDEの「パレット」を活用してJSFタグをページにドラッグ・アンド・ドロップできます。「パレット」にアクセスするには、メイン・メニューから「ウィンドウ」>「パレット」を選択するか、[Ctrl]-[Shift]-[8] (Macの場合は[&#8984]-[Shift]-[8])を押します。</p>
+
+        <div class="indent">
+            <img alt="JSFカテゴリが展開されたパレット" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/palette.png" title="IDEのパレットを使用した、「Facelets」ページへのJSFの一般的なコンポーネントのドラッグ・アンド・ドロップ">
+        </div>
+
+        <p class="tips">IDEのメイン・メニューから「ソース」>「コードを挿入」([Alt]-[Insert]、Macの場合は[Ctrl]-[I])を選択して、「パレット」内のJSF固有のコンポーネントを含むポップアップ・リストを呼び出すこともできます。</p>
+
+        <div class="indent">
+            <img alt="IDEのエディタに表示されたコード補完ポップアップ・リスト" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-support/insert-code.png" title="エディタでの[Alt]-[Insert] (Macの場合は[Ctrl]-[I])の押下による、JSF固有のコンポーネント・リストの呼出し">
+        </div>
+
+        <p>「パレット」には、5つのJSF関連コンポーネントがあります。</p>
+
+        <ul>
+            <li><strong>メタデータ: </strong> JSFメタデータ・タグ内に名前と値のペアを追加するためのダイアログを呼び出します。たとえば、名前と値のペアとして「<code>myId</code>」と「<code>myValue</code>」を指定すると、次のコード・スニペットが作成されます。
+
+                <pre class="examplecode">&lt;f:metadata&gt;
+    &lt;f:viewParam id='myId' value='myValue'/&gt;
+&lt;/f:metadata&gt;</pre></li>
+
+            <li><strong>JSFフォーム: </strong>次のコード・スニペットをページに追加します。
+
+                <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li><strong>エンティティからのJSFフォーム: </strong>エンティティ・クラスのデータをJSFフォームに含まれるフィールドに関連付けるためのダイアログを呼び出します。<a href="#form">エンティティ・データ用のJSFフォームの作成</a>を参照してください。</li>
+
+            <li><strong>JSFデータ表: </strong>次のコード・スニペットをページに追加します。
+
+                <pre class="examplecode">&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h:dataTable value=&quot;#{}&quot; var=&quot;item&quot;&gt;
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li><strong>エンティティからのJSFデータ表: </strong>エンティティ・クラスのデータをJSFデータ表に含まれるフィールドに関連付けるためのダイアログを呼び出します。<a href="#dataTable">エンティティ・データ用のJSFデータ表の作成</a>を参照してください。</li>
+        </ul>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20JSF%202.x%20Support%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">関連項目</h2>
+
+        <p>JSF 2.xの詳細は、次のリソースを参照してください。</p>
+
+        <div class="indent">
+            <h3>NetBeansの記事およびチュートリアル</h3>
+
+            <ul>
+                <li><a href="jsf20-intro.html">NetBeans IDEでのJavaServer Faces 2.x入門</a></li>
+                <li><a href="jsf20-crud.html">データベースからのJavaServer Faces 2.x CRUDアプリケーションの生成</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum Toys - JSF 2.0の完全版サンプル・アプリケーション</a></li>
+                <li><a href="../javaee/javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+                <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+            </ul>
+
+            <h3>外部リソース</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">JavaServer Facesテクノロジ</a> (公式ホーム・ページ)</li>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr314/index.html">JSR 314 JavaServer Faces 2.0の仕様</a></li>
+                <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/bnaph.html">Java EE 6チュートリアル: 第5章 - JavaServer Facesテクノロジ</a></li>
+                <li><a href="http://javaserverfaces.java.net/">GlassFishサーバー・プロジェクトMojarra</a> (JSF 2.xの公式リファレンス実装)</li>
+                <li><a href="http://forums.oracle.com/forums/forum.jspa?forumID=982">OTNディスカッション・フォーラム: JavaServer Faces</a></li>
+                <li><a href="http://www.jsfcentral.com/">JSF Central</a></li>
+            </ul>
+
+            <h3>ブログ</h3>
+
+            <ul>
+                <li><a href="http://www.java.net/blogs/edburns/">Ed Burns</a></li>
+                <li><a href="http://www.java.net/blogs/driscoll/">Jim Driscoll</a></li>
+            </ul>
+        </div>
+
+        <script type="text/javascript">
+            <!--
+            compactMenu('collapsableList', true, '&plusmn; ');
+            -->
+        </script>
+    </body>
+</html>

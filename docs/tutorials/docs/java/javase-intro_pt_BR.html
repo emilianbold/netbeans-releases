@@ -1,0 +1,313 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Desenvolvimento de Aplicações Java Gerais - Tutorial do NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="author" content="John Jullion-Ceccarelli, Patrick Keegan">
+        <meta name="description" content="A short guide to creating, running, and debugging a simple 
+        Java SE application in NetBeans IDE. Also includes information on setting the JDK.">
+    </head>
+
+    <body>
+
+        <h1>Desenvolvendo Aplicações Java Gerais</h1>
+
+        <p>O tutorial resumido a seguir orienta você por algumas etapas básicas do desenvolvimento de uma aplicação Java SE no NetBeans IDE. Este tutorial pressupõe que você já tenha alguma familiaridade com o desenvolvimento de aplicações Java. Ao longo do caminho, será possível ver algumas das funcionalidades do IDE que simplificam o desenvolvimento de aplicações.</p>
+        <p>Será criado uma aplicação que converte várias palavras em uma única palavra que contém uma letra de cada uma das outras palavras. A palavra resultante é chamada de <i>acróstico</i>.</p>
+        <p>Este tutorial demora aproximadamente 30 minutos para ser concluído. Se quiser um tutorial "Hello World" mais rápido, consulte o <a href="quickstart.html">Tutorial para Início Rápido em Java do NetBeans IDE</a>.</p>
+
+        <p><b>Conteúdo</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 6.8, 6.9, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="O conteúdo desta página se aplica ao NetBeans IDE 6.8, 6.9, 7.4 e 8.0">
+        <ul class="toc">
+            <li><a href="#setup" title="Configuração do Projeto">Configuração do Projeto</a></li>
+            <li><a href="#create" title="Criando e Editando o Código-fonte Java">Criando e Editando o Código-fonte Java</a></li>
+            <li><a href="#comp" title="Compilando e Executando a Aplicação">Compilando e Executando a Aplicação</a></li>
+            <li><a href="#test" title="Testando e Depurando a Aplicação">Testando e Depurando a Aplicação</a></li>
+            <li><a href="#build" title="Construindo, Executando e Distribuindo a Aplicação">Construindo, Executando e Distribuindo a Aplicação</a></li>
+            <li><a href="#other-tasks" title="Outras Tarefas Comuns">Outras Tarefas Comuns</a></li>
+            <li><a href="#nextsteps" title="Próximas Etapas">Próximas Etapas</a></li>
+        </ul>
+
+        <p><b>Para concluir este tutorial, você precisa do software e dos recursos apresentados na tabela a seguir.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.4 ou 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                  <td class="tbltd1">6, 7 ou 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2>Configuração do Projeto<a name="setup"></a></h2>
+        <p>A aplicação criada conterá dois projetos:</p>
+        <ul>
+            <li>Um projeto da Biblioteca de Classe Java no qual você criará uma classe do utilitário.</li>
+            <li>Um projeto da Aplicação Java com uma classe principal que implementa um método da classe do utilitário do projeto da biblioteca.</li>
+        </ul>
+        <p>Depois de criar os projetos, você adicionará o projeto da biblioteca ao classpath do projeto da aplicação. Em seguida, você codificará a aplicação. O projeto da biblioteca conterá uma classe de utilitário com um método de <code>acróstico</code>. O método <code>acróstico</code> utiliza um array de palavras como um parâmetro e, em seguida, gera um acróstico com base nessas palavras. O projeto MyApp conterá uma classe principal que chama o método <code>acróstico</code> e passa as palavras que são inseridas como argumentos quando a aplicação é executada.</p>
+
+        <p class="notes"><b>Observação:</b> falando estritamente, dois projetos não são necessários para uma aplicação tão simples. Este tutorial utiliza dois projetos para demonstrar as funcionalidades que você pode precisar para uma aplicação mais complexa.
+        </p>
+        <div class="indent">
+            <h3 class="tutorial"><a name="setup-library">Criando um Projeto de Biblioteca de Classe Java</a></h3>
+
+            <ol>
+                <li>Selecione Arquivo > Novo Projeto (Ctrl-Shift-N). Em Categorias, selecione Java. Em Projetos, selecione Biblioteca de Classe Java. Clique em Próximo. </li>
+                <li>Em Nome do Projeto, digite <code>MyLib</code>. Altere a Localização do Projeto em qualquer diretório de seu computador. De agora em diante, este tutorial se refere a esse diretório como <code><i>NetBeansProjects</i></code>.
+                    <p class="notes"><b>Observação:</b> o caminho especificado acima deve estar como a seguir no campo Pasta do Projeto do assistente: <code>/<code><i>NetBeansProjects</i></code>/MyLib/</code></p>
+                </li>
+                <li>(Opcional) Marque a caixa de seleção Utilizar Pasta Dedicada para Armazenamento de Bibliotecas e especifique o local da pasta de bibliotecas. Consulte <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">Compartilhando uma Biblioteca com Outros Usuários</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></a> para obter mais informações sobre essa opção.</li>
+                <li>Clique em Finalizar. O projeto MyLib será exibido nas janelas Projetos e Arquivos.</li>
+            </ol>
+            <h3 class="tutorial"><a name="setup-application">Criando um Projeto de Aplicação Java</a></h3>
+
+            <ol>
+                <li>Escolha Arquivo > Novo Projeto. Em Categorias, selecione Java. Em Projetos, selecione Aplicação Java. Clique em Próximo.</li>
+                <li>Em Nome do Projeto, digite <code>MyApp</code>. Certifique-se de que a Localização do Projeto esteja definida como <code><i>NetBeansProjects</i></code>. </li>
+                <li>(Opcional) Marque a caixa de seleção Utilizar Pasta Dedicada para Armazenar Bibliotecas.
+                </li>
+                <li>Insira <code>acrostic.Main</code> como classe principal. </li>
+                <li>Certifique-se de que a caixa de seleção Criar Classe Principal esteja marcada. </li>
+                <li>Clique em Finalizar. O projeto MyApp é exibido na janela Projeto e <code>Main.java</code> será exibido no Editor de Código-fonte.</li>
+            </ol>
+            <h3 class="tutorial"><a name="setup-classpath">Configurando o Classpath de Compilação</a></h3>
+
+            <p>Como o MyApp vai depender de uma classe em MyLib, é necessário adicionar a MyLib ao classpath do MyApp. Isso também garante que as classes no projeto MyApp possam se referir a classes no projeto MyLib sem causar erros de compilação. Além disso, isso permite que você utilize a funcionalidade autocompletar código no projeto MyApp para preencher o código com base no projeto MyLib. No IDE, o classpath é visualmente representado pelo nó Bibliotecas.</p>
+            <p><b>Para adicionar as classes de utilitário da biblioteca ao classpath do projeto:</b></p>
+            <ol>
+                <li>na janela Projetos, clique com o botão direito do mouse no nó Bibliotecas do projeto MyApp e selecione Adicionar Projeto, como mostrado na imagem a seguir.
+                    <p><img alt="Imagem mostrando o comando Adicionar Projeto que é oferecida quando você clica com o botão direito em um nó do projeto." class="margin-around" src="../../../images_www/articles/80/java/javase-intro/addproj.png"></p></li>
+                <li>Navegue para <code><i>NetBeansProjects</i>/</code> e selecione a pasta de projeto <code>MyLib</code>. O painel Arquivos JAR do projeto mostrará os arquivos JAR que podem ser adicionados ao projeto. Observe que um arquivo JAR do MyLib está listado, embora ainda não tenha sido construído. Esse arquivo JAR será contruído quando você construir e executar o projeto MyApp. </li>
+                <li>Clique em Adicionar Arquivos JAR do Projeto.</li>
+                <li>Expanda o nó Bibliotecas. O arquivo JAR do projeto MyLib será adicionado ao classpath do projeto MyApp.</li>            </ol>
+        </div>
+        <!-- =============================================================================== -->
+        <h2>Criando e Editando o Código-fonte Java<a name="create"></a></h2>
+        <p>Agora é necessário criar um pacote Java e adicionar o método que será utilizado para construir o acróstico. Depois disso, é necessário implementar o método <code>acróstico</code> na classe <code>Principal</code>. </p>
+        <div class="indent">
+            <h3 class="tutorial">Criando um Pacote e um Arquivo de Classe Java</h3>
+            <ol>
+                <li>Clique com o botão direito do mouse no nó do projeto MyLib e selecione Novo > Classe Java. Digite <code>LibClass</code> como nome da nova classe, digite <code>org.me.mylib</code> no campo Pacote e clique em Finalizar. <code>LibClass.java</code> será aberto no Editor de Código-fonte.
+                </li>
+                <li>Em <code>LibClass.java</code>, coloque o cursor na linha após a declaração de classe (<code>public class LibClass {</code>.</li>
+                <li>Digite ou cole este código de método: <br>
+                <pre class="examplecode">    public static String acrostic(String[] args) {
+        StringBuffer b = new StringBuffer();
+        for (int i = 0; i &lt; args.length; i++) {
+            if (args[i].length() &gt; i) {
+                b.append(args[i].charAt(i));
+            } else {
+                b.append('?');
+            }
+        }
+        return b.toString();
+                }</pre></li>
+                <li>Se o código colado não estiver formatado corretamente, pressione Alt-Shift-F para reformatar todo o arquivo.</li>
+                <!--note: reformat doesn't work for mac-->
+                <li>Pressione Ctrl-S para salvar o arquivo.</li>
+            </ol>
+            <h3 class="tutorial">Editando um Arquivo Java</h3>
+            <p>Agora, você adicionará algum código em <code>Main.java</code>. Ao fazê-lo, você pode ver as funcionalidades autocompletar código do Editor de Código-fonte e o modelo (abreviação) de código.</p>
+
+            <ol>
+                <li>Selecione a guia <code>Main.java</code> no Editor de Código-fonte. Expanda o acróstico MyApp > Pacotes de Código-fonte > na janela Projetos e clique duas vezes em <code>Main.java</code>, se ele ainda não estiver aberto. </li>
+                <li>Delete o comentário <code>// lógica da aplicação do código TODO aqui</code> no método <code>main</code>.</li>
+                <li>No lugar do comentário, digite o seguinte:
+                    <pre class="examplecode">String result = Li</pre>
+                    <p>Deixe o cursor imediatamente depois de <code>Li</code>. Na próxima etapa, você utilizará a funcionalidade autocompletar código para transformar <code>Li</code> em <code>LibClass</code>.</p>
+                </li>
+                <li>Pressione Ctrl-Espaço para abrir a caixa para autocompletar código.
+                    <p>Aparece uma lista resumida de formas possíveis para completar a palavra. Contudo, a classe que você deseja, <code>LibClass</code>, pode não existir.</p></li>
+                <li>Pressione Ctrl-Espaço novamente para exibir uma lista mais longa de possíveis correspondências.
+                <p><code>LibClass</code> deve estar na lista.</p></li>
+                <li>Selecione <code>LibClass</code> e pressione Enter. O IDE preencherá o resto do nome da classe, além de criar automaticamente uma instrução de importação para a classe.
+                    <p><b class="notes">Observação:</b> o IDE também abrirá uma caixa acima da caixa para autocompletar código que exibe informações de Javadoc da classe ou do pacote selecionado. Como não há informações Javadoc para esse pacote, a caixa exibe a mensagem "Não é possível localizar o Javadoc".</p></li>
+                <li>No método principal, digite um ponto (.) depois de <code>LibClass</code>. A caixa para autocompletar código se abrirá novamente.</li>
+                <li>Selecione o método <code>acrostic(String[]args)</code> e pressione Enter. O IDE preenche o método <code>acróstico</code> e mostra os realces do parâmetro <code>args</code>. </li>
+                <li>Pressione Enter para aceitar <code>args</code> como o parâmetro.</li>
+                <li>Insira um ponto-e-vírgula (;).
+                    <p>A linha final deve se parecer com a linha a seguir.</p>
+                    <pre class="examplecode">String result = LibClass.acrostic(args);</pre>
+                </li>
+                <li>Pressione Enter para iniciar uma nova linha. Depois, digite <code>sout</code> e pressione Tab. A abreviação <code>sout</code> se expandirá para <code>System.out.println("");</code> com o cursor posicionado entre as aspas. Digite <code>Result =</code> dentro das aspas e <code>+ result</code> após as aspas finais.
+                    <p>A linha final deve se parecer com a linha a seguir.</p>
+                    <pre class="examplecode">System.out.println(&quot;Result = &quot; + result);</pre>
+                </li>
+                <li>Pressione Ctrl-S para salvar o arquivo.</li>
+            </ol>
+            <p class="notes"><b>Observação:</b> <code>sout</code> é um dos vários modelos de código disponíveis no Editor de Código-fonte. Para encontrar e editar a lista de modelos de código, escolha Ferramentas > Opções > Editor > Modelo de Código.</p>
+        </div>
+
+        <h2>Compilando e Executando a Aplicação<a name="comp"></a></h2>
+        <p>Agora é necessário definir a classe principal e os argumentos de execução para que possa executar o projeto. </p>
+        <p class="notes"><b>Observação:</b> por default, os projetos foram criados com a funcionalidade Compilar ao Salvar ativada, assim, não é necessário compilar seu código antes de executar a aplicação no IDE. Para obter mais informações, consulte <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG525">Compilando um Único Arquivo Java</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></a>.        </p>
+        <div class="indent">
+            <h3 class="tutorial">Definindo a Classe Principal e os Argumentos de Execução</h3>
+            <p>A saída deste programa tem base nos argumentos fornecidos quando o programa é executado. Como argumentos, você fornecerá cinco palavras, das quais o acróstico "Hello" será gerado. O acróstico é montado a partir da primeira letra da primeira palavra, da segunda letra da segunda palavra, da terceira letra da terceira palavra, e assim por diante. </p>
+            <p><b>Para adicionar os argumentos que o IDE utilizará ao executar a aplicação:</b></p>
+            <ol>
+                <li>clique com o botão direito do mouse no nó do projeto MyApp, selecione Propriedades e o nó Executar no painel esquerdo da caixa de diálogo.
+                    <p>A classe principal já deve estar definida para <code>acrostic.Main</code>.</p></li>
+                <li>Digite <code>However we all feel zealous </code>no campo Argumentos e clique em OK.</li>
+            </ol>
+
+            <h3 class="tutorial">Executando a Aplicação</h3>
+            <p>Agora que você criou a aplicação e forneceu os argumentos de runtime para a aplicação, pode testar a execução da aplicação no IDE.</p>
+
+            <p><b>Para executar a aplicação no IDE:</b></p>
+            <ol>
+			<li>Clique com o botão direito do mouse no nó do projeto MyApp e escolha Limpar e Construir.</li>
+            <li>Escolha Executar > Executar Projeto (F6).
+             <p>Na janela de Saída, é possível ver a saída do programa, <code>Result = Hello </code> (o acróstico da frase que foi passada para o programa como um argumento). </p></li>
+            </ol>
+        </div>
+        <!-- =============================================================================== -->
+        <h2>Testando e Depurando a Aplicação<a name="test"></a></h2>
+        <p>Agora um teste do projeto será criado e executado utilizando JUnit e, em seguida, a aplicação será executada no depurador do IDE para verificar se há erros. No teste JUnit, a LibClass será testada com a passagem de uma frase para o método <code>acróstico</code> e com a utilização de uma asserção para indicar qual deve ser o resultado.</p>
+        <div class="indent">
+            <h3 class="tutorial">Criando Testes JUnit</h3>
+            <ol>
+                <li>Clique com o botão direito do mouse no nó <code>LibClass.java</code> na janela Projetos e selecione Ferramentas > Criar Testes JUnit (Ctrl-Shift-U).
+                    <p>Se esta é a primeira vez que criou testes JUnit no IDE, você verá a caixa de diálogo Selecionar Versão de JUnit. Pressione Enter para selecionar JUnit 4.x e prosseguir para a caixa de diálogo Criar Testes.</p></li>
+                <li>Na caixa de diálogo Criar Testes, clique em OK para executar o comando com as opções default. O IDE criará o pacote <code>org.me.mylib</code> e o arquivo <code>LibClassTest.java</code> em uma pasta de <code>teste</code> separada. É possível localizar esse arquivo expandindo o nó Testar Pacotes e o subnó <code>org.me.mylib</code>.</li>
+                <li>Em <code>LibClassTest.java</code>, delete o corpo do método <code>public void testAcrostic()</code>.
+                </li>
+                <li>No lugar das linhas deletadas, digite ou cole o seguinte:<br>
+                <pre class="examplecode">System.err.println(&quot;Running testAcrostic...&quot;);
+String result = LibClass.acrostic(new String[]
+                  {&quot;fnord&quot;, &quot;polly&quot;, &quot;tropism&quot;});
+                assertEquals(&quot;Correct value&quot;, &quot;foo&quot;, result);</pre></li>
+                <li> Salve o arquivo pressionando Ctrl-S. </li>
+            </ol>
+            <h3 class="tutorial">Executando Testes JUnit</h3>
+            <ol>
+                <li>Selecione o nó do projeto MyLib e selecione Executar > Testar Projeto (MyLib) ou pressione Alt-F6. A guia <code> MyLib (teste)</code> será exibida na janela de Saída. Os casos de teste JUnit serão compilados e executados. O resultado do teste JUnit mostra que o teste teve êxito. </li>
+                <li>Também é possível executar um único arquivo no teste em vez de testar todo o projeto. Selecione a guia <code>LibClass.java</code> no Editor de Código-fonte e escolha Executar > Testar Arquivo. </li>
+            </ol>
+            <p>A documentação da API JUnit está disponível no IDE. Escolha Ajuda > Referências de Javadoc > JUnit <code><i>VersionNumber</i></code>.</p>
+            <p>Você pode aprender mais sobre JUnit, visitando <a href="http://www.junit.org">http://www.junit.org</a></p>
+          <h3 class="tutorial">Depurando a Aplicação</h3>
+                <p>Nesta seção, o depurador será utilizado para seguir a sequência da aplicação e observar os valores das variáveis mudarem à medida que o acróstico é montado.</p>
+            
+            <p><b>Para executar a aplicação no depurador:</b></p>
+            <ol>
+                <li> No arquivo <code>LibClass.java</code>, vá para o método <code>acrostic</code> e coloque o ponto de inserção em qualquer lugar dentro de <code>b.append(args[i].charAt(i));</code>. Depois, pressione Ctrl-F8 para definir um ponto de interrupção. </li>
+                <li>Selecione Depurar > Depurar Projeto (Ctrl-F5). O IDE abrirá as janelas do Depurador e executará o projeto no depurador, até que o ponto de interrupção seja atingido.                </li>
+                <li>Selecione a janela Variáveis Locais, na parte inferior do IDE e expanda o nó <code>args</code>. O array de strings contém a frase inserida como argumentos do comando.
+                </li>
+                <li>Pressione F7 (ou selecione Depurar > Fazer Step Into) para passar pelo programa e observar a variável <code>b</code> mudar à medida que o acróstico é construído.
+                    <p>Quando o programa chegar ao fim, as janelas do depurador serão fechadas.</p>
+                </li>
+            </ol>
+            <p>Para obter mais informações, veja <a href="junit-intro.html">Escrevendo Testes JUnit no NetBeans IDE</a>.</p>
+        </div>
+        <a name="build"></a>
+        <h2>Construindo, Executando e Distribuindo a Aplicação</h2>
+        <p>Quando estiver satisfeito com o funcionamento de sua aplicação, você pode preparar a aplicação para implantação fora do IDE. Nesta seção, o arquivo JAR da aplicação será construído e, em seguida, o arquivo JAR executado a partir da linha de comandos.</p>
+        <div class="indent">
+            <h3 class="tutorial">Construindo a Aplicação</h3>
+            <p>O comando construir principal no IDE é o comando Limpar e Construir. O comando Limpar e Construir deleta as classes compiladas anteriormente e outros artefatos de construção e, em seguida, reconstrói todo o projeto.</p>
+            <p class="notes"><b>Observações:</b> há também um comando Construir, que não deleta os antigos artefatos de construção, mas que está desativado por default. Consulte <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG512">Sobre a Criação de Projetos Java</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></a> para obter mais informações.</p>
+            <p><b>Para construir a aplicação:</b></p>
+            <ul>
+                <li>Escolha Executar > Limpar e Construir Projeto (Shift-F11).</li>
+            </ul>
+            <p>A saída obtida a partir do script de construção Ant é exibida na janela de Saída. Se a janela de Saída não aparecer, é possível abrí-la manualmente selecionando Janela > Saída > Saída.</p>
+            <p>Quando você limpa e constrói seu projeto, ocorre o seguinte:</p>
+            <ul>
+                <li>As pastas de saída geradas por ações de construção anteriores são deletadas ("limpas"). (Na maioria dos casos, essas são as pastas <code>build</code> e <code>dist</code>.)</li>
+                <li>As pastas <code>build</code> e <code>dist</code> são adicionadas em sua pasta do projeto (de agora em diante chamada pasta <i>PROJECT_HOME</i>). Você pode exibir essas pastas na janela Arquivos. </li>
+                <li>Todos os códigos-fonte são compilados em arquivos <code>.class</code>, que são colocados na pasta <code><i>PROJECT_HOME</i>/build</code>.</li>
+                <li>Um arquivo JAR contendo o projeto é criado dentro da pasta <code><i>PROJECT_HOME</i>/dist</code>.</li>
+                <li>Se alguma biblioteca foi especificada para o projeto (além do JDK), uma pasta <code>lib</code> é criada na pasta <code>dist</code>. As bibliotecas são copiadas para <code>dist/lib</code>.
+                </li>
+                <li>O arquivo de manifesto no JAR é atualizado para incluir entradas que designam a classe principal e quaisquer bibliotecas que estejam no classpath do projeto.</li>
+            </ul>
+            <p class="notes"><b>Observação:</b> é possível exibir o conteúdo do manifesto na janela Arquivos do IDE. Depois de construir seu projeto, alterne para a janela Arquivos e navegue até <code>dist/MyApp.jar</code>. Expanda o nó do arquivo JAR, expanda a pasta <code>META-INF</code> e clique duas vezes em <code>MANIFEST.MF</code> para exibir o manifesto no Editor de Código-fonte.</p>
+          <pre class="examplecode">Main-Class: acrostic.Main
+            Class-Path: lib/MyLib.jar</pre>
+            <p>(Para saber mais sobre arquivos de manifesto, leia <a href="http://java.sun.com/docs/books/tutorial/deployment/jar/manifestindex.html" target="_blank">este capítulo</a> no Tutorial de Java.) </p>
+
+            <a name="running-outside-IDE"></a><h3>Executando a Aplicação fora do IDE</h3>
+            <p><b>Para executar a aplicação fora do IDE:</b></p>
+            <ol>
+                <li>em seu sistema, abra um prompt de comando ou uma janela de terminal.</li>
+                <li>No prompt de comando, altere os diretórios para o diretório <code>MyApp/dist</code>.</li>
+                <li>Na linha de comandos, digite a seguinte instrução:
+                    <pre class="examplecode">
+                java -jar MyApp.jar However we all feel zealous    </pre></li>
+            </ol>
+            <p>Em seguida, a aplicação executa e retorna a saída a seguir, como mostrado na imagem abaixo:</p>
+            <pre class="examplecode">Result = Hello
+            </pre>
+            <a href="../../../images_www/articles/80/java/javase-intro/command-prompt.png" rel="lytebox" title="Prompt de comando mostrando a saída da aplicação - Clique para Aumentar"> <img alt="Prompt de comando mostrando a saída do programa em execução." class="margin-around" src="../../../images_www/articles/80/java/javase-intro/command-prompt-smaller.png"></a>
+            <h3 class="tutorial">Distribuindo a Aplicação para Outros Usuários</h3>
+            <p>Agora que verificou que a aplicação funciona fora do IDE, você está pronto para distribuir a aplicação.</p>
+
+            <p><b>Para distribuir a aplicação:</b></p>
+            <ol>
+                <li>em seu sistema, crie um arquivo zip que contenha o arquivo JAR da aplicação (<code>MyApp.jar</code>) e a pasta <code>lib</code> correspondente que contém o <code>MyLib.jar</code>.</li>
+                <li>Envie o arquivo para as pessoas que utilizarão a aplicação. Oriente-as a descompactar o arquivo zip, certificando-se de que o arquivo <code>MyApp.jar</code> e a pasta <code>lib</code> estejam na mesma pasta.
+                </li>
+                <li>Oriente os usuários a seguir as etapas na seção <a href="#running-outside-IDE">Executando a Aplicação Fora do IDE</a> acima.</li>
+            </ol>
+        </div>
+        <a name="other-tasks"></a><h2>Outras Tarefas Comuns</h2>
+        <p>Agora a parte principal do tutorial foi concluída, mas há algumas tarefas básicas que ainda não foram abordadas. Esta seção inclui algumas dessas tarefas.</p>
+        <div class="indent">
+            <a name="projects-jdk-javadoc"></a>
+            <h3 class="tutorial">Tornando o Javadoc Disponível no IDE</h3>
+
+            <p>Para exibir a documentação de API JavaSE no NetBeans IDE, utilize o comando Código-fonte > Mostrar Documentação ou escolha Janela > Ferramentas IDE > Documentação do Javadoc no menu principal para exibir a documentação da API em outra janela.</p>
+            <p>No entanto, em algumas bibliotecas de terceiros, a documentação da API não está disponível. Nesses casos, os recursos do Javadoc devem ser associados manualmente ao IDE.</p>
+            <p><b>Para tornar a documentação da API Javadoc disponível para o comando Mostrar Javadoc:</b></p>
+            <ol>
+                <li>Faça download do código-fonte da documentação API de Javadoc (consulte a página <a href="http://wiki.netbeans.org/FaqJavaDoc#Adding_the_JDK_Javadoc_to_the_NetBeans_IDE">FaqJavaDoc</a> para obter detalhes adicionais).</li>
+                <li>Selecione Ferramentas > Plataformas Java.</li>
+                <li>Clique na guia Javadoc.</li>
+                <li>Clique no botão Adicionar ZIP/Pasta e navegue até o arquivo zip ou à pasta que contém a documentação da API Javadoc em seu sistema. Selecione o arquivo zip ou a pasta e clique no botão Adicionar ZIP/Pasta.
+				<li>Clique em Fechar.</li>
+            </ol>
+
+            <h3 class="tutorial">Gerando o Javadoc de um Projeto</h3>
+            <p>É possível gerar a documentação compilada do Javadoc de seu projeto com base nos comentários do Javadoc que foi adicionado em suas classes.</p>
+            <p><b>Para gerar documentação do Javadoc para um projeto:</b></p>
+            <ol>
+                <li>Selecione o Projeto MyLib.</li>
+                <li>No menu principal do IDE, selecione Executar > Gerar Javadoc para "MyLib". <br>O Javadoc gerado é adicionado à pasta <code>dist</code> do projeto. Além disso, o IDE abre uma janela do Web browser que exibe o Javadoc.
+                </li>
+            </ol>
+
+        </div>
+        <!--<br>-->
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Developing%20General%20Java%20Applications">Enviar Feedback neste Tutorial</a></div>
+        <br style="clear:both;" >
+        <h2><a name="nextsteps"></a>Próximas Etapas</h2>
+        <p>Para obter mais informações sobre o uso do NetBeans IDE para desenvolver aplicações Java SE, consulte os seguintes recursos:
+        </p>
+        <ul>
+            <li><a href="javase-deploy.html">Encapsulando e Implantando Aplicações Java Desktop</a></li>
+            <li><a href="annotations.html">Suporte aos Processadores de Anotação no NetBeans IDE</a></li>
+            <li><a href="debug-multithreaded.html">Depurando Aplicações Multithread</a></li>
+            <li><a href="../../trails/java-se.html">Trilha de Aprendizado do Desenvolvimento Geral em Java</a></li>
+            <li><a href="../../trails/matisse.html">Trilha do Aprendizado de Java e JavaFX GUI</a></li>
+            <li><a href="../../index.html">Página de Documentação e Suporte do NetBeans IDE</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">Criando Projetos Java</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></a></li>
+        </ul>
+
+    </body>
+</html>

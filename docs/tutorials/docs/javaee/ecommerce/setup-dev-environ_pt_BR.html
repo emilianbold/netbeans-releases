@@ -1,0 +1,421 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit introduces the IDE's interface, describes how to create a web project, and demonstrates how to set up and connect to the MySQL database server.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Tutorial do NetBeans E-commerce - Configurando o Ambiente de Desenvolvimento</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Tutorial do NetBeans E-commerce - Configurando o Ambiente de Desenvolvimento</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Conteúdo do Tutorial</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introdução</a></li>
+                    <li><a href="design.html">Criando a Aplicação</a></li>
+                    <li><strong>Configurando o Ambiente de Desenvolvimento</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#create">Criando um Projeto Web</a></li>
+                            <li><a href="#run">Executando um Projeto Web</a></li>
+                            <li><a href="#communicate">Comunicando-se com o Servidor do Banco de Dados</a></li>
+                            <li><a href="#seeAlso">Consulte Também</a></li>
+                        </ul></li>
+
+                    <li><a href="data-model.html">Criando o Modelo de Dados</a></li>
+                    <li><a href="page-views-controller.html">Preparando as Views de Página e o Servlet do Controlador</a></li>
+                    <li><a href="connect-db.html">Conectando a Aplicação ao Banco de Dados</a></li>
+                    <li><a href="entity-session.html">Adicionando Classes de Entidades e Beans de Sessão</a></li>
+                    <li><a href="manage-sessions.html">Gerenciando Sessões</a></li>
+                    <li><a href="transaction.html">Integrando a Lógica de Negócios Transacional</a></li>
+                    <li><a href="language.html">Adicionando o Suporte a Idioma</a></li>
+                    <li><a href="security.html">Protegendo a Aplicação</a></li>
+                    <li><a href="test-profile.html">Testando e Criando Perfis</a></li>
+                    <li><a href="conclusion.html">Conclusão</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="O conteúdo desta página se aplica ao NetBeans IDE, versões e 6.8 e 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="O conteúdo desta página se aplica ao NetBeans IDE, versões e 6.8 e 6.9"></p>
+
+        <p>As seguintes etapas descrevem como configurar seu ambiente de desenvolvimento. No processo, você aprenderá sobre algumas das janelas principais do IDE e compreenderá como o IDE usa o script de construção <a href="http://ant.apache.org/" target="_blank">Ant</a> para executar ações comuns em seu projeto. Ao final desta unidade do tutorial, você terá criado um projeto de aplicação web e confirmado que você pode compilar o projeto com sucesso, implantá-lo em seu servidor de desenvolvimento e executá-lo no IDE.</p>
+
+        <p>Você também aprenderá como conectar o IDE a um servidor de banco de dados MySQL, criar instâncias de bancos de dados e conectar-se a instâncias de bancos de dados a partir da janela Serviços do IDE. Nesta unidade, você criará um novo banco de dados chamado <code>affablebean</code>, que você usará durante todo o tutorial.</p>
+
+        <p>Você pode exibir uma demonstração ao vivo da aplicação construída neste tutorial: <a href="http://dot.netbeans.org:8080/AffableBean/" target="_blank">Aplicação de Demonstração do Tutorial do NetBeans E-commerce</a></p>
+
+        <br style="clear:left">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote Java, 6.8 ou 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">versão 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="#glassFish">GlassFish Server</a></td>
+                    <td class="tbltd1">v3 ou Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">Servidor de banco de dados MySQL</a></td>
+                    <td class="tbltd1">versão 5.1</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>Observações:</strong></p>
+
+        <ul>
+            <li>O NetBeans IDE requer o Java Development Kit (JDK) para ser executado adequadamente. Se você não tiver nenhum dos recursos listados acima, o JDK deverá ser o primeiro item a ser submetido a download e instalado.</li>
+
+            <li>O Pacote Java do NetBeans IDE inclui o Java Web e tecnologias EE, que são necessárias para a aplicação construída neste tutorial.</li>
+
+            <li id="glassFish">O pacote Java do NetBeans IDE também inclui o GlassFish Server, necessário para este tutorial. Você poderia <a href="https://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">fazer download do GlassFish Server independentemente</a>, mas a versão fornecida pelo NetBeans do qual fez download tem a vantagem adicional de ser registrada automaticamente no IDE.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="create">Criando um Projeto Web</h2>
+
+        <ol>
+            <li>Inicie o NetBeans IDE. Se estiver executando o IDE pela primeira vez, você verá a Página Inicial do IDE. <br> <img alt="Página Inicial do NetBeans IDE" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ide-start-page.png" title="A Página Inicial do NetBeans IDE"></li>
+
+            <li>Clique no botão Novo Projeto (<img alt="Ícone Novo Projeto" src="../../../../images_www/articles/73/javaee/ecommerce/common/new-project-btn.png">) (Ctrl-Shift-N; ⌘-Shift-N no Mac) para criar um novo projeto Java Web. O assistente Novo Projeto será aberto para guiá-lo pelo processo. Em Categorias, selecione Java Web, depois, em Projetos, selecione Aplicação Web. <br> <img alt="Assistente Novo Projeto" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/new-project-wzd.png" title="Criar um projeto usando o Assistente Novo Projeto" width="688px"></li>
+
+            <li>Clique em Próximo.</li>
+
+            <li>Na Etapa 2: Nome e Localização, dê o nome <code>AffableBean</code> ao projeto. Nesta etapa, você também pode designar a localização em seu computador onde o projeto residirá. Por default, o IDE cria a pasta <code>NetBeansProjects</code> no seu diretório home. Se você quiser alterar a localização, insira o caminho no campo de texto Localização do Projeto.</li>
+
+            <li>Clique em Próximo.</li>
+
+            <li>Na Etapa 3: Servidor e Definições, especifique o GlassFish v3 como o servidor no qual o projeto será implantado durante o desenvolvimento. Já que o GlassFish v3 foi incluído na sua instalação do NetBeans, você verá que o GlassFish v3 está listado no campo drop-down Servidor. <br><br>
+                <p class="tips">Se você quisesse implantar em um servidor que ainda não estivesse registrado no IDE, você deveria clicar no botão Adicionar e percorrer o assistente Adicionar Instância do Servidor. Você pode exibir todos os servidores registrados no IDE na janela Servidores (Selecione Ferramentas > Servidores no menu principal).</p></li>
+
+            <li>Para a versão do Java EE, selecione Java EE 6 Web. <br><br> A aplicação que você criar usará várias funcionalidades do Java EE 6, principalmente anotações de servlet (novo na <a href="http://jcp.org/en/jsr/summary?id=315" target="_blank">Especificação do Servlet 3.0</a>) e EJBs usados diretamente nos contêineres de servlets (novo na <a href="http://jcp.org/en/jsr/summary?id=318" target="_blank">Especificação do EJB 3.1</a>). O Servlet 3.0 e o EJB 3.1 são parte da plataforma Java EE 6, portanto, é necessário um servidor compatível com EE-6 como o GlassFish v3 para usar neste tutorial. Para obter mais informações, consulte <a href="entity-session.html#specification">Sobre Especificações e Implementações</a>.</li>
+
+            <li>Certifique-se de que a opção "Ativar a Injeção de Dependência e Contextos" não está selecionada. Essa opção é específica para a tecnologia CDI (Injeção de Dependência e Contextos), especificada por <a href="http://jcp.org/en/jsr/detail?id=299" target="_blank">JSR-299</a> e não será usada neste tutorial. Para obter mais informações, consulte <a href="../cdi-intro.html">Introdução à Injeção de Dependência e Contextos e ao JSF 2.0</a>. <br> <img alt="Assistente Nova Aplicação Web, Etapa 3: Servidor e Definições" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/new-project-wzd2.png" title="Especificar servidor de desenvolvimento, versão do EE e se deseja incluir suporte CDI" width="688px"> <br><br> Observe que, por default, o caminho do contexto da aplicação é o nome do projeto. Esse é o caminho no qual sua aplicação pode ser acessada após ser implantada no servidor. Por exemplo, o GlassFish usa 8080 como seu número de porta default, portanto, durante o desenvolvimento, você poderá acessar o projeto em uma janela do browser a partir de:
+
+                <pre class="examplecode">http://localhost:8080/AffableBean/</pre></li>
+
+            <li>Clique em Finalizar. O IDE gera um projeto de esqueleto chamado <code>AffableBean</code> que adota as <a href="http://java.sun.com/blueprints/code/projectconventions.html#99632" target="_blank">convenções J2EE Blueprints para aplicações web</a>. O IDE exibe as várias janelas em seu layout default. <br> <a href="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ide-default-layout.png" rel="lytebox" title="Layout default para um projeto Java Web"> <img alt="NetBeans IDE - layout default" class="b-all margin-around" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ide-default-layout.png" width="688px"></a></li>
+
+            <li>Examine o layout default do IDE. Segue aqui uma breve visão geral da janelas e guias exibidas:
+
+                <ul style="margin: 5px 0 0 -1.5em">
+                    <li><strong>O Editor:</strong> O editor (Ctrl-0; ⌘-0 no Mac) é o componente central do IDE e é onde você provavelmente gastará uma grande parte do seu tempo. O editor adapta-se, automaticamente, ao idioma no qual você está trabalhando, fornecendo suporte à documentação, autocompletar código, dicas e mensagens de erro específicas da tecnologia na qual você está codificando.</li>
+
+                    <li><strong>Janela Projetos:</strong> A janela Projetos (Ctrl-1; ⌘-1 no Mac) é o ponto de entrada para os códigos-fonte do seu projeto. Fornece uma <em>view lógica</em> do conteúdo importante do projeto e agrupa os arquivos com base em suas funções (por exemplo, <code>Configuration Files</code>). Ao clicar com o botão direito do mouse na janela Projetos, você pode chamar ações comuns às suas tarefas de desenvolvimento (ou seja, <code>Build</code>, <code>Clean</code>, <code>Deploy</code> e <code>Run</code>).</li>
+
+                    <li><strong>Janela Arquivos:</strong> A janela Arquivos (Ctrl-2; ⌘-2 no Mac) oferece uma view com base em diretório do seu projeto. Ou seja, permite que você exiba a estrutura do projeto como ele existe no sistema de arquivos do computador. Nessa janela, é possível exibir todos os arquivos que pertencem ao seu projeto, incluindo o script de construção Ant, (<code>build.xml</code>), e os arquivos necessários pelo IDE para tratar o projeto (contidos na pasta <code>nbproject</code>). Se você tiver executado o projeto, poderá ver a localização dos arquivos Java compilados (pasta <code>build</code>). Se tiver explicitamente construído o seu projeto (escolhendo Construir ou Limpar e Construir no menu de contexto do nó do projeto da janela Projetos), você poderá ver o arquivo WAR distribuível do projeto (contido na pasta <code>dist</code>).</li>
+
+                    <li><strong>Navegador:</strong> O Navegador (Ctrl-7; ⌘-7 no Mac) fornece uma visão geral estrutural do arquivo aberto no editor. Por exemplo, se uma página web HTML for exibida, o Navegador listará os nós de tags das listas, de maneira que correspondam ao Modelo de Objeto de Documento (DOM) da página. Se uma classe Java estiver aberta no editor, o Navegador exibirá as propriedades e os métodos pertencentes àquela classe. Você pode usar o Navegador para navegar até os itens no editor. Por exemplo, ao clicar duas vezes em um nó no Navegador, seu cursor será levado diretamente àquele elemento no editor.</li>
+
+                    <li><strong>Janela Tarefas:</strong> A janela Tarefas (Ctrl-6; ⌘-6 no Mac) faz a varredura do código automaticamente e lista as linhas com erros de compilação, correções rápidas e advertências de estilo. Para classes Java, também lista as linhas comentadas que contêm palavras como “<code>TODO</code>” ou “<code>FIXME</code>”.</li>
+
+                    <li><strong>Janela Serviços:</strong> A janela Serviços (Ctrl-5; ⌘-5 no Mac) fornece uma interface para gerenciar os servidores, os Web services, os bancos de dados e as conexões de bancos de dados, assim como outros serviços relacionados ao desenvolvimento de equipe.</li>
+
+                    <li><strong>Janela Saída:</strong> <em>(Não exibida)</em> A janela Saída (Ctrl-4; ⌘-4 no Mac) é exibida automaticamente quando você chama uma ação que invoca um serviço, geralmente de um recurso externo, como um servidor, e pode espelhar os arquivos de log do servidor. Em projetos Web, também permite exibir informações relacionadas às tarefas Ant (por exemplo, <code>Build</code>, <code>Clean and Build</code> e <code>Clean</code>).</li>
+
+                    <li><strong>Paleta:</strong> <em>(Não exibido)</em> A Paleta (Ctrl-Shift-8; ⌘-Shift-8 no Mac) fornece vários snippets de códigos úteis que você pode arrastar e soltar no editor. Muitos dos snippets incluídos na Paleta também são acessíveis chamando autocompletar código no editor, como será demonstrado posteriormente.</li>
+                </ul>
+
+                <p class="notes"><strong>Observação:</strong> Todas as janelas do IDE podem ser acessadas no item de menu Janela.</p>
+            </li>
+        </ol>
+
+
+        <h2 id="run">Executando o Projeto Web</h2>
+
+        <ol>
+            <li>Execute o novo projeto <code>AffableBean</code>. Na janela Projetos, você pode fazer isso clicando com o botão direito do mouse no nó do projeto e selecionando Executar. Caso contrário, clique no botão Executar Projeto (<img alt="Ícone Executar Projeto" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png">) (F6; fn-F6 no Mac) na barra de ferramentas principal do IDE. <br><br> Uma janela do browser será aberta para exibir a página de boas-vindas do projeto. <br> <img alt="Página de boas-vindas do projeto exibida no browser" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/hello-world.png" title="O projeto será automaticamente implantado no servidor e será exibido no browser"> <br> Então, o que acabou de acontecer? Quando você executa um projeto web, o IDE chama o destino Ant <code>run</code> no script de construção do seu projeto. Investigue abrindo o arquivo <code>build.xml</code> de seu projeto no editor.</li>
+
+            <li>Alterne para a janela Arquivos (Ctrl-2; ⌘-2 no Mac), expanda o nó do projeto e clique duas vezes no arquivo <code>build.xml</code> contido em seu projeto. Quando o arquivo <code>build.xml</code> é aberto no editor, o Navegador lista todos os destinos Ant disponíveis para o script. <br> <img alt="Navegador que exibe destinos Ant para build.xml" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/navigator-ant-targets.png" title="O Navegador lista todos os destinos Ant disponíveis para o script build.xml">
+
+                <p class="tips">Destinos Ant normais são exibidos usando o ícone destino Geral (<img alt="Ícone Destino Ant Normal" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ant-normal-icon.png">). O ícone do destino Ant (<img alt="Ícone de destino do Ant enfatizado" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/ant-emphasized-icon.png">) <em>enfatizado</em> simplesmente indica que o destino inclui uma descrição, que é exibida como uma dica de ferramenta (como mostrado na imagem acima). Para obter mais informações, consulte <a href="../../java/project-setup.html">Criando, Importando e Configurando Projetos Java</a>.</p></li>
+
+            <li>Clique duas vezes no destino <code>run</code>. O arquivo <code>build-impl.xml</code> será aberto no editor e exibe a definição do destino.
+
+                <pre class="examplecode">&lt;target depends=&quot;run-deploy,run-display-browser&quot; description=&quot;Deploy to server and show in browser.&quot; name=&quot;run&quot;/&gt;</pre>
+
+                Por que o arquivo <code>build-impl.xml</code> abre quando clicamos em um destino de <code>build.xml</code>? Se você alternar de volta para <code>build.xml</code> (Ctrl-Tab) e examinar o conteúdo do arquivo, você verá a seguinte linha:
+
+                <pre class="examplecode">&lt;import file=&quot;nbproject/build-impl.xml&quot;/&gt;</pre>
+
+                <p>O script de construção do projeto é basicamente um arquivo vazio que importa destinos definidos do NetBeans de <code>nbproject/build-impl.xml</code>.</p>
+
+                <p class="alert">Você pode editar livremente o script <code>build.xml</code> padrão do seu projeto adicionando novos destinos ou substituindo destinos definidos do NetBeans existentes. Entretanto, você não deve editar o arquivo <code>build-impl.xml</code>.</p>
+
+                Você pode ver na definição do destino <code>run</code> que ele é dependente dos seguintes destinos:
+
+                <ul style="margin: 5px 0 0 -1.5em">
+                    <li><code>run-deploy</code></li>
+                    <li><code>run-display-browser</code></li>
+                </ul>
+
+                Esses dois destinos, por sua vez, dependem de outros destinos, que podem ser examinados em qualquer lugar no arquivo <code>build-impl.xml</code>. Mas, essencialmente, as seguintes ações ocorrem quando o destino <code>run</code> é chamado:
+
+                <ol style="margin: 5px 0 0 -1em">
+                    <li>O projeto é compilado.</li>
+                    <li>O arquivo WAR é criado.</li>
+                    <li>O servidor é iniciado (caso já não esteja sendo executado).</li>
+                    <li>O arquivo WAR é implantado no servidor designado.</li>
+                    <li>O browser é aberto para exibir o URL do servidor e os caminhos de contexto da aplicação.</li>
+                </ol>
+
+                <p class="tips">Consulte o <a href="http://ant.apache.org/manual/index.html" target="_blank">Manual do Ant</a> oficial para obter mais informações sobre como usar o Ant.</p>
+            </li>
+
+            <li>Para gerar um arquivo WAR distribuível para seu projeto, selecione Limpar e Construir Projeto (ou Limpar e Construir Projeto Principal) no menu Executar do IDE.</li>
+
+            <li>Na janela Arquivos (Ctrl-2; ⌘-2 no Mac), expanda o nó do projeto. A pasta <code>dist</code> contém arquivo WAR do projeto. A pasta <code>build</code> contém seu projeto compilado. <br> <img alt="Janela Arquivos" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/files-window.png" title="A janela Arquivos fornece uma view baseada em diretório de seu projeto">
+
+                <p class="notes"><strong>Observação:</strong> se você <em>limpar</em> o projeto (na janela Projetos, selecione Limpar no menu de contexto do nó do projeto), essas duas pastas serão removidas.</p></li>
+
+            <li>Alterne para a janela Serviços (Ctrl-5; ⌘-5 no Mac) e expanda o nó Servidores > GlassFish Server 3 > Aplicações. <br> <img alt="Janela Serviços - Glassfish V3" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/services-win-deployed-app.png" title="A janela Serviços exibe o status do servidor, aplicações implantadas e recursos">
+
+                <p class="notes"><strong>Observação:</strong> O "GlassFish v3" é o nome default do servidor para os usuários do NetBeans 6.8.</p>
+
+                O ícone da seta verde no nó do GlassFish Server (<img alt="Nó do GlassFish Server na janela Serviços" src="../../../../images_www/articles/73/javaee/ecommerce/common/gf-server-running-node.png">) indica que o servidor está sendo executado. A pasta Aplicações lista todas as aplicações implantadas e você pode ver que a aplicação <code>AffableBean</code> foi implantada com sucesso.</li>
+        </ol>
+
+        <p>Nesta etapa, você já criou um projeto Java Web no IDE e confirmou que ele pode ser compilado e implantado com sucesso no seu servidor de desenvolvimento e aberto em um browser ao ser executado.</p>
+
+
+        <br>
+        <h2 id="communicate">Comunicando-se com o Servidor de Banco de Dados</h2>
+
+        <p>Depois de ter feito download e instalado o servidor de banco de dados MySQL, você pode conectar-se a ele a partir do IDE. Uma instalação default usa “<code>root</code>” e '’ (uma string vazia) como a conta de usuário e senha para conectar-se ao servidor de banco de dados. No entanto, devido aos problemas de conectividade com o GlassFish, recomendamos que você use uma conta com uma senha que não seja vazia.<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup> As seguintes instruções demonstram como executar o servidor de banco de dados e alterar a senha da conta <code>root</code> para “<code>nbuser</code>” na linha de comandos do MySQL. A combinação “<code>root</code>”/“<code>nbuser</code>” é usada por todo o Tutorial do NetBeans E-commerce. Com o servidor do banco de dados sendo executado e configurado adequadamente, você o registra no IDE e cria uma instância do banco de dados.</p>
+
+        <p class="notes"><strong>Observação:</strong> As instruções da linha de comandos abaixo presumem que você já adicionou o comando <code>mysql</code> à variável de ambiente <code>PATH</code>. (Se ainda não o tiver feito, você receberá um erro “<code>mysql: command not found</code>” ao inserir comandos <code>mysql</code> na linha de comandos.) <br><br> Se você ainda não tiver adicionado <code>mysql</code> a <code>PATH</code>, você pode chamar o comando inserindo o caminho completo no diretório <code>bin</code> de instalação do MySQL. Por exemplo, se o comando <code>mysql</code> estiver localizado em seu computador em <code>/usr/local/mysql/bin</code>, você deverá digitar o seguinte:</p>
+
+        <pre class="examplecode" style="width: 700px; margin-left:30px">shell&gt; <strong>/usr/local/mysql/bin/</strong>mysql -u root</pre>
+
+        <p style="margin-left:30px">Para obter mais informações, consulte o Manual de Referência oficial do MySQL:</p>
+
+        <ul>
+            <li><a href="http://dev.mysql.com/doc/refman/5.1/en/general-installation-issues.html" target="_blank">2.1. Orientações Gerais de Instalação</a></li>
+
+            <li><a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html" target="_blank">2.13.2. Protegendo as Contas MySQL Iniciais</a></li>
+
+            <li><a href="http://dev.mysql.com/doc/refman/5.1/en/invoking-programs.html" target="_blank">4.2.1. Chamando Programas MySQL</a></li>
+
+            <li><a href="http://dev.mysql.com/doc/refman/5.1/en/setting-environment-variables.html" target="_blank">4.2.4. Configurando Variáveis de Ambiente</a></li>
+        </ul>
+
+        <br>
+        <p>Execute as seguintes etapas.</p>
+
+        <ul>
+            <li><a href="#check">Verifique se o Servidor MySQL está sendo Executado</a></li>
+            <li><a href="#start">Inicie o Servidor do Banco de Dados</a></li>
+            <li><a href="#password">Altere a Senha</a></li>
+            <li><a href="#register">Registre o Servidor no IDE</a></li>
+            <li><a href="#database">Crie uma Instância de Banco de Dados</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="check">Verifique se o Servidor MySQL Server está sendo Executado</h3>
+
+            <p>Antes de se conectar ao servidor MySQL pelo IDE, certifique-se de que o servidor está sendo executado. Uma maneira de fazer isso é usar o comando <code>ping</code> do cliente do <a href="http://dev.mysql.com/doc/refman/5.1/en/mysqladmin.html" target="_blank"><code>mysqladmin</code></a>.</p>
+
+            <ol>
+                <li>Abra um prompt de linha de comandos e digite o seguinte:
+
+                    <pre class="examplecode" style="width:660px">shell&gt; mysqladmin ping</pre>
+
+                    Se o servidor estiver sendo executado, você verá uma saída semelhante a:
+
+                    <pre class="examplecode" style="width:660px">mysqld is alive</pre>
+
+                    Se o servidor não estiver sendo executado, você verá uma saída semelhante a:
+
+                    <pre class="examplecode" style="width:660px">
+mysqladmin: connect to server at 'localhost' failed
+error: 'Can't connect to local MySQL server through socket '/tmp/mysql.sock'
+Check that mysqld is running and that the socket: '/tmp/mysql.sock' exists!</pre>
+                </li>
+            </ol>
+
+
+            <h3 id="start">Inicie o Servidor do Banco de Dados</h3>
+
+            <p>No caso de o servidor MySQL não estar sendo executado, você poderá iniciá-lo com a linha de comandos. Consulte <a href="http://dev.mysql.com/doc/refman/5.1/en/automatic-start.html" target="_blank">2.13.1.2. Iniciando e Parando o MySQL Automaticamente</a> para obter uma breve visão geral entre das várias plataformas. As etapas a seguir fornecem instruções gerais, dependendo do seu sistema operacional.</p>
+
+            <h4>Sistemas tipo Unix:</h4>
+
+            <p>Para sistemas tipo Unix, é recomendado iniciar o servidor MySQL chamando <a href="http://dev.mysql.com/doc/mysql-startstop-excerpt/5.1/en/mysqld-safe.html" target="_blank"><code>mysqld_safe</code></a>.</p>
+
+            <ol>
+                <li>Abra um prompt de linha de comandos e execute o comando <code>mysqld_safe</code>:
+
+                    <pre class="examplecode" style="width:660px">shell&gt; sudo ./mysqld_safe</pre>
+
+                    Você verá uma saída semelhante à seguinte:
+
+                    <pre class="examplecode" style="width:660px">090906 02:14:37 mysqld_safe Starting mysqld daemon with databases from /usr/local/mysql/data</pre></li>
+            </ol>
+
+            <h4>Windows:</h4>
+
+            <p>O instalador MySQL do Windows permite a instalação do servidor do banco de dados como um serviço Windows, onde o MySQL é iniciado e interrompido automaticamente com o sistema operacional. Se você precisar iniciar o banco de dados manualmente, execute o comando <a href="http://dev.mysql.com/doc/mysql-startstop-excerpt/5.1/en/mysqld.html" target="_blank"><code>mysqld</code></a> a partir da pasta <code>bin</code> do diretório de instalação.</p>
+
+            <ol>
+                <li>Abra uma janela da console do Windows (no menu Iniciar, selecione Executar e digite <code>cmd</code> no campo de texto). A janela de linha de comandos será exibida.</li>
+
+                <li>Digite o seguinte comando (O caminho indicado presume que você tenha a versão 5.1 instalada na localização de instalação default):
+
+                    <pre class="examplecode" style="width:660px">C:\&gt; &quot;C:\Program Files\MySQL\MySQL Server 5.1\bin\mysqld&quot;</pre></li>
+            </ol>
+
+            <p>Para obter mais informações, consulte o Manual de referência MySQL oficial: <a href="http://dev.mysql.com/doc/refman/5.1/en/windows-start-command-line.html" target="_blank">2.4.5.5. Iniciando o MySQL a partir da linha de comandos do Windows</a>.</p>
+
+
+            <h3 id="password">Alterar a Senha</h3>
+
+            <p>Para definir a senha da conta <code>root</code> como “<code>nbuser</code>”, execute as seguintes etapas.</p>
+
+            <ol>
+                <li>Abra um prompt de linha de comandos e digite o seguinte:
+
+                    <pre class="examplecode" style="width:660px">
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('nbuser') WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+                </li>
+            </ol>
+
+            <p>Para obter mais informações, consulte o Manual de referência oficial do MySQL: <a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html" target="_blank">2.13.2. Protegendo as Contas MySQL Iniciais</a>.</p>
+
+
+            <h3 id="register">Registrar o Servidor no IDE</h3>
+
+            <p>A janela Serviços do IDE permite que você se conecte ao servidor, inicie e pare o servidor, exiba as instâncias de bancos do dados e os dados nelas contidas e também execute uma ferramenta de administração externa no servidor.</p>
+
+            <ol>
+                <li>Na janela Serviços, clique com o botão direito do mouse no nó Bancos de Dados e selecione Registrar Servidor MySQL. <br> <img alt="Janela Serviços - clique com o botão direito nas opções do nó Bancos de Dados" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/register-mysql-server.png" title="Registrar um servidor MySQL na janela Serviços do IDE"> <br> Na caixa de diálogo Propriedades do Servidor MySQL, na guia Propriedades Básicas, é possível ver as definições default da instalação do servidor MySQL. São elas:
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li><strong>Nome do Host do Servidor:</strong> <code>localhost</code></li>
+                        <li><strong>Número da Porta do Servidor:</strong> <code>3306</code></li>
+                        <li><strong>Nome do Usuário Administrador:</strong> <code>root</code></li>
+                        <li><strong>Senha do Administrador:</strong> <code>nbuser</code></li>
+                    </ul></li>
+
+                <li>Selecione a opção Salvar Senha. <br> <img alt="Caixa de diálogo do Servidor MySQL" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/mysql-server-properties.png" title="Especificar definições do servidor MySQL"></li>
+
+                <li>Clique em OK. O IDE se conecta ao seu servidor de banco de dados MySQL e lista as instâncias do bancos de dados que são mantidas pelo servidor. Se expandir o nó Drivers, você também poderá ver que o IDE contém o <a href="http://dev.mysql.com/doc/refman/5.1/en/connector-j.html" target="_blank">driver JDBC/Conector</a> para MySQL. <br> <img alt="Janela Serviços - Servidor MySQL" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/services-win-mysql.png" title="Conectar - se a um servidor MySQL na janela Serviços"> <br> O servidor de aplicações (ou seja, GlassFish) requer o driver para ativar a comunicação entre o seu código Java e o banco de dados MySQL. Devido ao IDE já conter o driver J/Conector, você não precisará fazer download dele. Além disso, como será demonstrado posteriormente, você pode especificar nas definições do servidor a ativação da implantação automática do driver JDBC no GlassFish, caso ele esteja ausente no servidor. <br><br> As etapas 4 a 7 abaixo são opcionais. Você pode configurar o IDE para iniciar e parar o servidor MySQL e também executar uma ferramenta de administração externa no servidor.</li>
+
+                <li>Clique com o botão direito do mouse no nó do servidor MySQL e selecione Propriedades. Na caixa de diálogo Propriedades do Servidor MySQL, selecione a guia Propriedades de Admin.</li>
+
+                <li>No campo “Caminho/URL para ferramenta admin”, digite o caminho no seu computador para o arquivo executável da ferramenta de administração do banco de dados, como, por exemplo, o <a href="http://dev.mysql.com/doc/administrator/en/mysql-administrator-introduction.html" target="_blank">MySQL Administrator</a>. O MySQL Administrator está incluído no pacote <a href="http://dev.mysql.com/downloads/gui-tools/" target="_blank">MySQL GUI Tools</a>.</li>
+
+                <li>No campo “Caminho para o comando iniciar”, digite o caminho para o comando iniciar do MySQL (ou seja, <code>mysqld</code> ou <code>mysqld_safe</code>), dependendo do seu sistema operacional. (Consulte <a href="#start">Iniciar o Servidor do Banco de dados</a> acima.) <br><br>
+                    <p class="notes"><strong>Observação:</strong> Para sistemas tipo Unix, você pode descobrir que só pode chamar o comando iniciar com privilégios administrativos ou como root. Para superar isso, você pode criar um script (usando <a href="http://www.nongnu.org/gksu/" target="_blank">GKSu</a> para Linux e Solaris e <a href="http://developer.apple.com/mac/library/documentation/Darwin/Reference/ManPages/man1/osascript.1.html" target="_blank">osascript</a> para Mac) que irá realizar a tarefa. Para obter mais informações, consulte <a href="http://davidvancouvering.blogspot.com/2008/09/starting-mysql-in-netbeans-as.html" target="_blank">o post deste blog</a>.</li>
+
+                <li>No campo “Caminho para o comando parar”, digite o caminho para o comando parar do MySQL (ou seja, <code>mysqladmin shutdown</code>). Devido a esse comando exigir uma conta de usuário com privilégios de shutdown, você precisa inserir as credenciais de nome de usuário/senha no campo Argumentos. Por exemplo:
+
+                    <ul style="margin: 5px 0 0 -2em">
+                        <li><strong>Argumentos:</strong> <code>-u root -pnbuser shutdown</code></li>
+                    </ul>
+                </li>
+            </ol>
+
+            <p>Depois de ter definido os campos listados na guia Propriedades Avançadas, você poderá:</p>
+
+            <ul>
+                <li><strong>Iniciar o servidor MySQL:</strong> Clique com o botão direito do mouse no nó do servidor MySQL e selecione Iniciar.</li>
+                <li><strong>Parar o servidor MySQL:</strong> Clique com o botão direito do mouse no nó do servidor MySQL e selecione Parar.</li>
+                <li><strong>Executar a ferramenta de administração externa:</strong> Clique com o botão direito do mouse no nó do servidor MySQL e selecione Executar Ferramenta de Administração.</li>
+            </ul>
+
+
+            <h3 id="database">Criar uma Instância do Banco de Dados</h3>
+
+            <ol>
+                <li>Crie a instância do banco de dados que será usada neste tutorial. Para fazer isso, clique com o botão direito do mouse no nó do servidor MySQL e selecione Criar Banco de Dados.</li>
+
+                <li>Na caixa de diálogo que é exibida, digite <code>affablebean</code>. Selecione a opção “Conceder Acesso Total para” e, em seguida, selecione <code>root@localhost</code> no campo drop-down. Isso permite que a conta <code>root</code> no host <code>localhost</code> acesse o banco de dados. Posteriormente, ao criar um pool de conexões no servidor, você precisará fornecer a conta <code>root</code> e a senha <code>nbuser</code> como as credenciais de nome de usuário/senha para conceder ao servidor o acesso ao banco de dados. <br> <img alt="Caixa de diálogo Criar Banco de Dados MySQL" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/create-mysql-db-dialog.png" title="Clique com o botão direito do mouse no nó do servidor e selecione Criar Banco de Dados para criar uma nova instância do banco de dados"></li>
+
+                <li>Clique em OK. Quando você faz isso, o banco de dados chamado <code>affablebean</code> é criado, e a conexão ao banco de dados é estabelecida automaticamente. As conexões são exibidas na janela Serviços usando um nó de conexão (<img alt="Nó de conexão do banco de dados" src="../../../../images_www/articles/73/javaee/ecommerce/common/db-connection-node.png">).
+
+                    <p class="notes"><strong>Observação:</strong> Os nós de conexão são mantidos na janela Serviços. Se você reiniciar o IDE, o nó de conexão será exibido com uma linha serrilhada (<img alt="Nó de conexão do banco de dados - desconectado" src="../../../../images_www/articles/73/javaee/ecommerce/common/connection-broken.png">), indicando que a conexão está interrompida. Para conectar-se novamente ao banco de dados, certifique-se de que o servidor do banco de dados está sendo executado e, em seguida, clique com o botão direito do mouse no nó e selecione Conectar.</p></li>
+
+                <li>Expanda o nó de conexão do banco de dados <code>affablebean</code>. A conexão contém o esquema default do banco de dados (<code>affablebean</code>), e dentro dele existem nós para tabelas, views e procedimentos. Atualmente, eles estão vazios, pois ainda não criamos nada. <br> <img alt="Janela Serviços - conexão do banco de dados para "affablebean"" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup-dev-environ/db-conn-affable-bean.png" title="As conexões de banco de dados contêm o esquema default do banco de dados e os nós de tabelas, views e procedimentos"></li>
+            </ol>
+        </div>
+
+        <p>Neste estágio, você já criou a conexão ao servidor MySQL a partir do IDE e já criou um novo bando de dados chamado <code>affablebean</code>, que você usará durante todo o tutorial. Além disso, você criou o projeto Java Web no IDE e confirmou que ele pode ser compilado e implantado com sucesso no seu servidor de desenvolvimento e aberto em um browser ao ser executado. Agora que o ambiente de desenvolvimento está pronto, você pode começar a esboçar o modelo de dados da aplicação.</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Setting up the Development Environment">Envie-nos Seu Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">Consulte Também</h2>
+
+        <div class="indent">
+            <h3>Recursos do NetBeans</h3>
+
+            <ul>
+                <li><a href="../../java/project-setup.html" target="_blank">Criando, Importando e Configurando Projetos Java</a></li>
+                <li><a href="../../../articles/mysql.html" target="_blank">MySQL e NetBeans IDE</a></li>
+                <li><a href="../../ide/mysql.html" target="_blank">Conectando a um Banco de Dados MySQL</a></li>
+                <li><a href="../../web/mysql-webapp.html" target="_blank">Criando uma Aplicação Web Simples Usando um Banco de Dados MySQL</a></li>
+            </ul>
+
+            <h3>Recursos Externos</h3>
+
+            <ul>
+                <li><a href="http://ant.apache.org/manual/index.html" target="_blank">Manual do Usuário do Apache Ant</a></li>
+                <li><a href="http://ant.apache.org/manual/tutorial-HelloWorldWithAnt.html" target="_blank">Hello World com Ant</a></li>
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/" target="_blank">Manual de Referência do MySQL 5.1</a></li>
+                <li><a href="http://dev.mysql.com/doc/administrator/en/index.html" target="_blank">Manual de Referência do MySQL Administrator</a></li>
+            </ul>
+
+            <h3>Livros</h3>
+
+            <ul>
+                <li><a href="https://netbeans.org/kb/articles/books.html" target="_blank">Livros do NetBeans</a></li>
+                <li><a href="http://www.apress.com/book/view/1590598954" target="_blank">Pro NetBeans IDE 6 Rich Client Platform Edition</a></li>
+                <li><a href="http://apress.com/book/view/1430219548" target="_blank">Iniciando a Plataforma Java EE 6 com o GlassFish 3: Do Novato ao Profissional</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>Referências</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> Usando o GlassFish v3, você pode criar um pool de conexões para um servidor de banco de dados MySQL usando uma senha vazia. O GlassFish Open Source Edition 3.0.1, incluído no NetBeans IDE 6.9, não ativa uma conexão usando uma senha vazia. Consulte <a href="https://glassfish.dev.java.net/issues/show_bug.cgi?id=12221" target="_blank">GlassFish Edição 12221</a>.</li>
+        </ol>
+
+    </body>
+</html>

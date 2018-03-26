@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+        <!--
+        Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+        --><title>PHP向けのNetBeans IDEのエディタでのPHPソース・コードのデバッグ</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, PHP, editor">
+        <meta name="DESCRIPTION" content="NetBeans, PHP editor, debugging">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></head><body>
+        <h1>NetBeans IDEでのPHPソース・コードのデバッグ </h1>
+
+        <p><b>目次</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        <ul>
+            <li><a href="#gettingReady">準備</a></li><li><a href="#howDebuggerWorks">NetBeans IDEでのXDebugによるPHPデバッグの動作方法</a></li>
+            <li><a href="#options">デバッグ・オプション</a></li>
+            <li><a href="#work">ツールバーとエディタの操作</a></li>
+            <li><a href="#editorLayout">デバッガ・ウィンドウ</a></li>
+      <li><a href="#debuggingSession">デバッグ・セッション</a></li><li><a href="#sampleDebuggingSession">デバッグ・セッションの例</a>
+                </li><li><a href="#usingAdditionalWatches">追加ウォッチの使用</a></li>
+            <li><a href="#mixedPHPHTMLCases">PHPとHTMLの混在</a></li><li><a href="#debug_url">パス・マッピング、デバッガ・プロキシ、およびカスタムURLでのデバッグ・セッションの開始</a></li>
+        </ul>
+
+        <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+
+        <table>
+
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">PHPダウンロード・バンドル</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">PHPエンジン</td>
+                    <td class="tbltd1">バージョン5
+                    </td></tr>
+                <tr>
+
+                    <td class="tbltd1">Webサーバー</td>
+                    <td><a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP Server 2.2</a> (推奨)<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">PHPデバッガ</td>
+                    <td><a href="http://www.xdebug.org/" target="_blank">XDebug 2.0以降</a></td>
+
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><a name="gettingReady"></a>準備</h2>
+
+        <p>PHP向けのNetBeans IDEでPHPアプリケーションを正常にデバッグするには、PHPエンジン、ApacheローカルWebサーバー、およびXDebugデバッガが<a href="../../trails/php.html#configuration">インストールされ、PHP開発用に構成されている</a>必要があります。XDebugの動作に問題がある場合は、<a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">XDebugに関するNetBeans Wiki</a>を参照したり、users@php.netbeans.orgのコミュニティに質問してください。</p>
+
+        <h2><a name="howDebuggerWorks"></a>NetBeans IDEでのXDebugによるPHPデバッグの動作方法</h2>
+        
+        <p>NetBeans IDEからXDebugを実行すると、PHPプログラムの実行は、ブレークポイントを設定した各行で一時休止します。プログラムの実行が一時休止しているときは、プログラム変数の値など、プログラムの現在の状態に関する情報をXDebugで取得できます。実際には、これは次のワークフローを意味します。 </p>
+
+
+        <ol>
+            <li>PHPソース・コードの実行を一時休止する行ごとにブレークポイントを設定します。</li>
+            <li>デバッグ・セッションを開始します。</li><li>ブレークポイントが設定された行に到達したら、[F7]および[F8]を押して、スクリプトを1行ずつ実行します。<a href="#editorLayout">デバッガ・ウィンドウ</a>でアプリケーションの状態をモニターします。</li>
+            <li>デバッグ・セッションを閉じます。</li>
+            
+        </ol>
+        <p>NetBeans IDEでのXDebugの使用方法の詳細なワークフローについては、<a href="#debuggingSession">デバッグ・セッション</a>を参照してください。</p>
+        <p>NetBeans IDEには、ファイルのステップ実行に役立つデバッグ・ツールバーがあります。<a href="#work">ツールバーとエディタの操作</a>を参照してください。</p>
+        <h2><a name="options"></a>デバッグ・オプション</h2>
+        <p>NetBeans IDEの「オプション」には、PHPをデバッグするための特定のデフォルト設定を変更するタブが含まれています。これらのオプションを開くには、「ツール」>「オプション」(Macの場合は「NetBeans」>「プリファレンス」)に移動し、「PHP」オプションを選択して、「デバッグ」タブを選択します。</p>
+        <p class="notes"><strong>注意: </strong>「デバッグ」タブはNetBeans IDEバージョン7.1で導入されました。以前のバージョンのNetBeansでは、デバッグ・オプションは「一般」-「PHP」タブにあります。バージョン7.1のすべてのオプションが以前のバージョンで使用できるわけではありません。</p>
+        <p><img alt="「オプション」: 「PHP」の「デバッグ」タブ" class="margin-around" src="../../../images_www/articles/72/php/debugging/php-debugging-options.png"></p>
+        <p>このパネルで次のオプションを変更できます。</p>
+        <ul>
+            <li><strong>デバッガ・ポート。</strong>これは、php.iniで設定された、XDebugが使用するポートです。デフォルトでは、これはポート9000です。<i>このダイアログのポート番号は、php.iniで設定したデバッガ・ポートと同じである必要があります。このダイアログでは、XDebugが使用するポートを変更できません。XDebugが使用するポートをNetBeans IDEに通知するのみです。</i></li>
+            <li><strong>セッションID。</strong>デバッグ・セッションの任意の名前。デフォルトでは、これはnetbeans-xdebugです。この値は、一部のリモートでのデバッグ・シナリオなどで、php.iniの<tt>xdebug.idekey</tt>プロパティを設定する必要がある場合に注意することが重要です。</li>
+            <li><strong>最初の行で停止。</strong>このオプションを選択すると、デバッガ・セッションは最初のブレークポイントではなくコードの最初の行で停止します。これにより、デバッグ・セッションを起動したとき、ブラウザ・ウィンドウに切り替わるのではなく、画面がIDEにフォーカスしたままになります。</li>
+            <li><strong>ウォッチとバルーン評価。</strong>ウォッチとバルーン評価はデフォルトで無効になっています。ウォッチとバルーン評価はXDebugを不安定化させます。         </li>
+            <li><strong>構造の最大深さ。</strong>入れ子構造(入れ子の配列、オブジェクト内のオブジェクトなど)の可視性を設定します。 </li>
+            <li><strong>子の最大数。</strong>ウォッチ評価中における配列項目の可視性を設定します。(「子の最大数」を1に設定した場合、配列が複数の項目を持つ場合でも配列の1番目の項目のみが表示されます。)</li>
+            <li><strong>リクエストされたURLを表示。</strong>デバッグ中に新しい「出力」ウィンドウを開きます。この「出力」ウィンドウは「PHPでリクエストされたURL」という名前で、現在処理されているURLを示します。URLはクリック可能です。「出力」ウィンドウのURLをクリックすると、URLがブラウザ・ウィンドウで開きます。</li>
+            <li><strong>PHPデバッガ・コンソール。</strong>デバッグされたスクリプトの出力を表示する新しい「出力」ウィンドウを開きます。
+                
+                    <p class="notes"><strong>注意:</strong> <tt>php.ini</tt>ファイルで<tt>output_buffering=Off</tt>と設定してください。そうしないと、「出力」ウィンドウにスクリプト出力が表示される際に遅延が生じます。</p>
+            </li>
+        </ul>
+        <p>このチュートリアルでは、ウォッチをオプションで有効にする場合を除いて、これらの設定を変更する必要はありません。</p>
+        
+        <h2 id="work">ツールバーとエディタの操作</h2>
+        <p>エディタではファイルの内容を表示できます。したがって、デバッグ中にエディタとデバッガ・ツールバーを組み合せて使用することで、実行中にコードをステップ実行して、ファイルの内容がブラウザ内の動作にどのように影響しているのかを確認できます。</p>
+        <ul>
+          <li><a href="#toolbar">デバッガ・ツールバーの使用</a></li>
+          <li><a href="#editorBreakpoints">ブレークポイントの設定</a></li>
+          <li><a href="#editorTooltips">ツールチップの確認</a></li>
+        </ul>
+        <div class="indent"> <a name="toolbar"></a>
+            <h3>デバッガ・ツールバーの使用</h3>
+          <p>デバッグ・セッションを実行すると、エディタの上にデバッガ・ツールバーが表示されます。            </p>
+          <p><img alt="一時停止状態のデバッガ・ツールバー" class="margin-around" src="../../../images_www/articles/72/php/debugging/debugger-toolbar2.png" title="一時停止状態のデバッガ・ツールバー"></p>
+        
+            <p>ツールバーでは次のアクションを実行できます。</p>
+          <table class="cell align-left" width="600">
+              <tr>
+                <td class="align-right cell"><strong>セッションの終了</strong>(<img alt="デバッグ・セッションの終了ボタン" src="../../../images_www/articles/72/php/debugging/finish-session-button.png">)</td>
+                <td>デバッグ・セッションを終了</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>一時休止</strong>(<img alt="一時休止ボタン" src="../../../images_www/articles/72/php/debugging/pause-button.png">)</td>
+                <td>デバッグ・セッションを一時停止</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>再開</strong>(<img alt="再開ボタン" src="../../../images_www/articles/72/php/debugging/resume-button.png">)</td>
+                <td>デバッグ・セッションを再開</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>ステップ・オーバー</strong>(<img alt="ステップ・オーバー・ボタン" src="../../../images_www/articles/72/php/debugging/step-over-button.png">)</td>
+                <td>実行文をステップ・オーバー</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>ステップ・イン</strong>(<img alt="ステップ・イン・ボタン" src="../../../images_www/articles/72/php/debugging/step-into-button.png">)</td>
+                <td>関数コールにステップ・イン</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>ステップ・アウト</strong>(<img alt="ステップ・アウト・ボタン" src="../../../images_www/articles/72/php/debugging/step-out-button.png">)</td>
+                <td>現在の関数コールからステップ・アウト</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>カーソルまで実行</strong>(<img alt="カーソルまで実行ボタン" src="../../../images_www/articles/72/php/debugging/run-to-cursor-button.png">)</td>
+                <td>カーソル位置まで実行</td>
+              </tr>
+            </table>
+          <p>&nbsp;</p>
+      <a name="editorBreakpoints"></a>
+            <h3>ブレークポイントの設定</h3>
+          <p>デバッガの実行を停止する位置を指定するには、ファイル内にブレークポイントを設定します。</p>
+          <p class="alert"><strong>重要:</strong> XDebugを使用するには、PHPコード内でブレークポイントを設定する<em>必要があります</em>。</p>
+          <p>ブレークポイントを設定するには、エディタで、ブレークポイントを設定する行の左マージンをクリックします。</p>
+          <img alt="エディタで設定されたブレークポイント" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/set-breakpoint.png" title="エディタ内でのブレークポイントの設定">
+          <p>ブレークポイントを除去するには、ブレークポイント・バッジ(<img alt="ブレークポイント・バッジ" src="../../../images_www/articles/72/php/debugging/breakpoint-badge.png">)をクリックします。</p>
+          <p>ブレークポイントは一時的に無効にすることもできます。これを行うには、ブレークポイント・バッジを右クリックし、「ブレークポイント」>「✓有効」を選択解除します。これにより、ブレークポイントが無効な状態に切り替わり、左マージンにグレーのバッジ(<img alt="ブレークポイント・バッジ" src="../../../images_www/articles/72/php/debugging/disabled-breakpoint-badge.png">)が表示されます。</p>
+          <p>デバッグの実行中にブレークポイントに到達すると、デバッガはそのブレークポイントで停止するので、デバッグ・ウィンドウで変数を確認し、ブレークポイントに続くコードをステップ実行できます。</p>
+          <img alt="ブレークポイントで一時停止したデバッガ" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/stop-on-breakpoint.png" title="ブレークポイントで一時停止したデバッガ"> <a name="editorTooltips"></a>
+            <h3>ツールチップの確認</h3>
+          <p>デバッグ・セッション中にデバッガが一時停止しているときは、エディタ内でPHP識別子の上にマウス・ポインタを置いてツールチップを表示できます。選択したコール・スタック・フレーム内で識別子が有効である場合は、その値が表示されます。PHPの式を選択することもできます。式の値がツールチップに表示されます。</p>
+           <img alt="エディタ内に表示されたツールチップ" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/tool-tip.png" title="エディタ内に表示されたツールチップ"> </div>
+        
+        <h2><a name="editorLayout"></a>デバッガ・ウィンドウ </h2>
+
+        <p>デバッグ・セッションを開始すると、一連のデバッガ・ウィンドウがメイン・エディタ・ウィンドウの下に開きます。デバッガ・ウィンドウでは、コードをステップ実行しながら変数と式の値をトラックしたり、実行中のスレッドのコール・スタックを確認したり、ソースURLを確認したり、複数のデバッグ・セッションを同時に実行している場合はセッション間を切り替えたりできます。</p>
+
+
+      <ul>
+          <li><a href="#sessions">「セッション」ウィンドウ</a></li>
+          <li><a href="#localVar">「変数」ウィンドウ</a></li>
+          <li><a href="#watches">「ウォッチ」ウィンドウ</a></li>
+          <li><a href="#callStack">「コール・スタック」ウィンドウ</a></li>
+          <li><a href="#threads">「スレッド」ウィンドウ</a></li>
+          <li><a href="#sources">「ソース」ウィンドウ</a></li>
+          <li><a href="#breakpoints">「ブレークポイント」ウィンドウ</a></li>
+        </ul>
+        <p>すべてのデバッガ・ウィンドウは、IDEの「ウィンドウ」>「デバッグ」メニューからアクセスできます。デバッグ・セッションがアクティブになると、デバッガ・ウィンドウの使用を開始できます。</p>
+         <img alt="IDEのメイン・メニューからアクセスするデバッガのメニュー" class="margin-around" src="../../../images_www/articles/72/php/debugging/debugger-menu.png" title="IDEのメイン・メニューからアクセスするデバッガのメニュー"> 
+        <div class="indent"> <a name="sessions"></a>
+            <h3>「セッション」ウィンドウ</h3>
+          <p>「セッション」ウィンドウには、現在アクティブなデバッグ・セッションが表示されます。PHPのデバッグ・セッションを開始すると、「セッション」ウィンドウにPHPデバッガのエントリが表示されます。</p>
+          <img alt="FireFoxデバッガ・セッションが表示された「セッション」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/debugging/sessions-win.png"> 
+          <p class="tip">NetBeans IDEでは、複数のデバッガ・セッションを同時に実行することもできます。たとえば、JavaとPHPのプロジェクトを同時にデバッグできます。この場合、「セッション」ウィンドウに2つのセッションがリストされているのが確認できます。</p>
+          <img alt="複数のセッションが表示された「セッション」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/debugging/sessions-win2.png">
+          <p>現在のセッション、つまりデバッガ・ツールバーを使用して制御できるセッションは、他のアイコンよりも目立つアイコン(<img alt="現在のセッション・アイコン" src="../../../images_www/articles/72/php/debugging/current-session-icon.png">)で示されます。複数のセッションを切り替えるには、現在のセッションにするセッションをダブルクリックするか、現在でないセッションを右クリックして「現在に設定」を選択します。</p>
+          <p><strong class="notes">注意: </strong>現在作業中のセッションが一時停止されている場合、セッションを切り替えることはお薦めできません。</p>
+          <p>また、右クリックして表示されるポップアップ・ウィンドウを使用して、セッションを終了したり(右クリックして「終了」を選択)、現在のスレッドのデバッグとセッション内のすべてのスレッドのデバッグを切り替えたり(右クリックして「スコープ」>「すべてのスレッドをデバッグ」または「現在のスレッドをデバッグ」を選択)できます。</p>
+          <a name="localVar"></a>
+            <h3>「変数」ウィンドウ</h3>
+          <p>デバッガが一時停止されているとき、「変数」ウィンドウには、選択したコール・スタック・フレームの現在の<code>window</code>オブジェクトの変数が表示されます。現在のウィンドウの各変数について1つのノードが表示されます。スーパーグローバルは別個のノードでグループ化されます。</p>
+    <img alt="サンプルの変数情報が表示された「ローカル変数」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/debugging/vars-win.png">
+          <p>&nbsp;</p>
+          <p>コードをステップ実行しているときに一部のローカル変数の値が変わることがあります。このようなローカル変数は、「ローカル変数」ウィンドウに太字で表示されます。「値」列内を直接クリックして、変数の値を手動で変更することもできます。</p>
+          
+          <a name="watches"></a>
+          <h3>「ウォッチ」ウィンドウ</h3>
+          <p>ウォッチを設定するとXDebugが不安定化するため、お薦めできません。ウォッチはデフォルトで無効になっています。ただし、ウォッチを設定する場合は、<a href="#usingAdditionalWatches">追加ウォッチの使用</a>を参照してください。</p>
+          <h3><a name="callStack"></a>「コール・スタック」ウィンドウ</h3>
+          <p>「コール・スタック」ウィンドウには、実行中に行われた一連のコールが一覧表示されます。デバッガが一時停止されているとき、「コール・スタック」ウィンドウには一連の関数コール(つまり、<em>コール・スタック</em>)が表示されます。最初の一時停止では、最上位のスタック・フレームが自動的に選択されます。ウィンドウ内の関数コールをダブルクリックすると、エディタ内でその行に移動します。コールがPHPクラスに対して実行された場合、そのコールをダブルクリックすると、「ナビゲータ」ウィンドウもその行に移動します。</p>
+           <img alt="一連のサンプル・コールが表示された「コール・スタック」ウィンドウ" class="margin-around b-bottom" src="../../../images_www/articles/72/php/debugging/call-stack-win.png"> 
+          <p>コール・スタック・フレームをダブルクリックして選択し、「<a href="#localVar">変数</a>」ウィンドウと「<a href="#watches">ウォッチ</a>」ウィンドウでそのフレームの変数や式の値を確認できます。<a name="threads"></a>            </p>
+          <h3>「スレッド」ウィンドウ</h3>
+          <p>「スレッド」ウィンドウは、現在アクティブなPHPスクリプトと、PHPスクリプトがブレークポイントで一時停止されているか実行中かを示します。スクリプトが実行中の場合、ブラウザ・ウィンドウに移動して、スクリプトを操作する必要があります。</p>
+          <img alt="複数のフレームのページが表示された「スレッド」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/debugging/threads-win.png"> <a name="sources"></a>
+          <h3>「ソース」ウィンドウ</h3>
+          <p>「ソース」ウィンドウには、デバッグ・セッション用にロードされたすべてのファイルとスクリプトが表示されます。現在、「ソース」ウィンドウはPHPプロジェクトで機能しません。</p>
+      <a name="breakpoints"></a>
+              <h3>「ブレークポイント」ウィンドウ</h3>
+          <p>「ブレークポイント」ウィンドウを使用すると、IDE内で設定したすべてのブレークポイントを表示できます。</p>
+            <img alt="サンプルのブレークポイントが表示された「ブレークポイント」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/debugging/breakpoints-win.png"> 
+          <p>「ブレークポイント」ウィンドウでは、コンテキスト・ウィンドウでブレークポイントを有効または無効にすることができます。ブレークポイント・グループを作成することもできます。 </p>
+        </div>
+        <h2><a name="debuggingSession"></a>デバッグ・セッション </h2>
+
+        <p>一般的なデバッグ・セッションのワークフローを次に示します。</p>
+
+        <strong>デバッグ・セッションを実行する</strong>
+
+        <ol>
+            <li>IDEを起動し、デバッグするソース・コードが含まれるファイルを開きます。 </li><li>デバッガを一時休止する必要がある各行にブレークポイントを設定します。ブレークポイントを設定するには、行の先頭にカーソルを置き、[Ctrl]-[F8]/[⌘]-[F8]を押すか、または「デバッグ」>「行ブレークポイントを切替え」を選択します。 </li><li>「プロジェクト」ウィンドウで現在のプロジェクト・ノードに移動し、マウスの右ボタンをクリックして、ポップアップ・メニューから「デバッグ」を選択します。IDEでデバッガ・ウィンドウが開き、ブレークポイントに達するまで、デバッガでプロジェクトが実行されます。<br> <strong>注意:</strong> 現在のプロジェクトがメインに設定されている場合は、「デバッグ」>「メイン・プロジェクトをデバッグ」を選択するか、[Ctrl]-[F5]を押すか、または<img alt="「メイン・プロジェクトをデバッグ」ボタン" src="../../../images_www/articles/72/php/debugging/debug-main-project-button.png">をクリックできます。 </li><li>「ローカル変数」ウィンドウに切り替えます。このウィンドウには、現在の関数内で初期化されたすべての変数、その型、および値が表示されます。 </li><li>関数外の変数の値を表示するには、その変数の出現箇所にカーソルを置きます。ツールチップに変数の値が表示されます。 </li><li>コールしているすべての関数内の行を含めてプログラムを1行ずつ実行するには、[F7]を押すか、「デバッグ」>「ステップ・イン」を選択して、「ローカル変数」ウィンドウで変数の値の変化をウォッチします。 </li><li>式の変化をウォッチしてプログラムのロジックを確認するには、次の手順で新しいウォッチを定義します。
+                <ol type="a"><li>「ウォッチ」ウィンドウを開くには、「ウィンドウ」>「デバッグ」>「ウォッチ」を選択するか、または[Ctrl]-[Shift]-[2]を押します。「ウォッチ」ウィンドウが開きます。</li><li>「ウォッチ」ウィンドウ内の任意の場所でマウスの右ボタンをクリックし、ポップアップ・メニューから「新規ウォッチ」を選択します。「新規ウォッチ」ウィンドウが開きます。</li><li>ウォッチ式を入力し、「OK」をクリックします。 </li>
+                    
+                </ol><p>これで、デバッグ中に追加の確認を行うことができます。</p>
+                <p class="alert"><strong>重要:</strong> ウォッチを設定するには、<a href="#options">PHPオプションの「デバッグ」タブ</a>でウォッチを有効にする必要があります。</p>
+            </li><li>関数内のコードの1行ずつの実行を取り消して、関数コールの次の行まで移動するには、[Ctrl]-[F7]/[⌘]-[F7]を押すか、または「デバッグ」>「ステップ・アウト」を選択します。</li><li>関数内のコードを1行ずつ実行しないで、関数から返される値を取得し、関数コールの次の行まで移動するには、[F8]を押すか、または「デバッグ」>「ステップ・オーバー」を選択します。</li><li>デバッグ・セッションを一時休止するには、「デバッグ」>「一時休止」を選択します。</li><li>デバッグ・セッションを続行するには、「デバッグ」>「続行」を選択するか、または<img alt="デバッグ・セッションの続行ボタン" src="../../../images_www/articles/72/php/debugging/continue-debugging-session.png">を押します。</li><li>デバッグ・セッションを取り消すには、<img alt="デバッグ・セッションの取消ボタン" src="../../../images_www/articles/72/php/debugging/stop-debugging-session.png">を押します。 </li><li>
+
+                <p>プログラムの最後に到達すると、デバッガ・ウィンドウが閉じます。 </p>
+            </li>
+        </ol>
+
+        <h2><a name="sampleDebuggingSession"></a>デバッグ・セッションの例</h2>
+
+        この項の例では、ステップ・インやステップ・オーバー機能などの基本的なデバッガ機能を示します。また、典型的なデバッガ・ウィンドウの出力も示します。
+        <ol>
+            <li>次のパラメータで新しいPHPプロジェクトを作成します。
+                <ul><li>プロジェクト・タイプ - PHPアプリケーション</li><li>ソースの場所 - デフォルトの<tt>htdocs</tt>フォルダ</li><li>実行構成 - ローカルWebサイト</li></ul>
+                PHPプロジェクトの設定については、ドキュメントの<a href="project-setup.html">PHPプロジェクトの設定</a>を参照してください。
+            </li><li>セッション中のホット・キーの使用を有効にするには、カーソルをプロジェクト・ノードに置き、ポップアップ・メニューから「メイン・プロジェクトとして設定」を選択します。 </li><li><tt>index.php</tt>ファイルに次のコードを入力します。
+                <pre class="examplecode">  &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"&gt;<br>  &lt;html&gt;<br>  	&lt;head&gt;<br>  		&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;<br>  			&lt;title&gt;NetBeans PHP debugging sample&lt;/title&gt;<br>		&lt;/head&gt;<br>&lt;body&gt;<br>	&lt;?php<br>  	$m=5;<br>  	$n=10;<br>  	  $sum_of_factorials = calculate_sum_of_factorials ($m, $n);<br>  	  echo "The sum of factorials of the entered integers is " . $sum_of_factorials;<br>  	<br>	    function calculate_sum_of_factorials ($argument1, $argument2) {<br>  	 	$factorial1 = calculate_factorial ($argument1);<br>  	 	$factorial2 = calculate_factorial ($argument2);<br>  	 	$result = calculate_sum ($factorial1, $factorial2);<br>  	 	return $result;<br>  		}<br>	<br>	  function calculate_factorial ($argument) {<br>  	  	$factorial_result = 1;<br>  	 	for ($i=1; $i&lt;=$argument; $i++) {<br>  	 		$factorial_result = $factorial_result*$i;<br>  	 	}<br>  			return $factorial_result;<br>  		}<br>	  <br>	    function calculate_sum ($argument1, $argument2) {<br> 			return $argument1 + $argument2;<br>     	}	<br>?&gt;<br>  &lt;/body&gt;<br>&lt;/html&gt;<br>  </pre>
+
+                このコードには次の3つの関数があります。
+                <ul><li><tt>calculate_factorial ()</tt>関数</li><li><tt>calcualte_sum ()</tt>関数</li><li> <tt>calculate_sum_of_factorials ()</tt>関数(この関数は、<tt>calculate_factorial</tt>関数を2回コールしてから<tt>calcualte_sum ()</tt>関数を1回コールし、階乗の和を返します。)</li></ul>
+            </li><li>PHPブロックの先頭にブレークポイントを設定します([Ctrl]-[F8]/[⌘]-[F8])。
+                <pre class="examplecode">&lt;?php</pre>
+            </li><li>デバッグを開始するには、<img alt="「メイン・プロジェクトをデバッグ」ボタン" src="../../../images_www/articles/72/php/debugging/debug-main-project-button.png">をクリックします。デバッガがブレークポイントで停止します。</li><li>[F7]を3回押します。関数<tt>calculate_sum_of_factorials ()</tt>をコールしている行でデバッガが停止します。「ローカル変数」ウィンドウに、変数<tt>$m</tt>と<tt>$n</tt>、およびそれらの値が表示されます。<br> <img alt="関数コールで停止したデバッガ" class="margin-around" src="../../../images_www/articles/72/php/debugging/degugger-stopped-at-function-call.png"></li><li>関数<tt>calculate_sum_of_factorials()</tt>にステップ・インするには、[F7]を押します。デバッガが関数<tt>calculate_sum_of_factorials ()</tt>内のコードの実行を開始し、関数<tt>calculate_factorial()</tt>のコールで停止します。<br><img alt="埋込み関数calculate_factorial()のコールで停止したデバッガ。" class="margin-around" src="../../../images_www/articles/72/php/debugging/call-of-embedded-function.png"><br>「ローカル変数」ウィンドウに、関数<tt>calculate_sum_of_factorials ()</tt>内で宣言されているローカル変数<tt>$argument1</tt>と<tt>$argument2</tt>が表示されます。<br><img alt="埋込み関数のコールの前にある現在の関数の変数が表示された「ローカル変数」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/debugging/variables-inside-function-call-another-function.png"></li><li>[F7]を押します。デバッガが、関数<tt>calculate_factorial()</tt>からコードの実行を開始します。「コール・スタック」ウィンドウに、関数へのコールのスタックが逆の順序で表示され、最後にコールされた関数がリストの先頭に表示されます。<br> <img alt="3つの関数コールが逆の順序で表示された「コール・スタック」ウィンドウ" class="margin-around" src="../../../images_www/articles/72/php/debugging/call-stack.png"> </li><li>[F7]を押してループにステップ・インします。「変数」ウィンドウに変数の値が表示されます。<br> <img alt="変数が表示された「ローカル変数」ウィンドウループの正確性の確認。" class="margin-around" src="../../../images_www/articles/72/php/debugging/local-variables-inside-loop.png"> </li><li>コードが正常に機能することを確認したら、[Ctrl]-[F7]/[⌘]-[F7]を押して関数の実行を取り消します。プログラムは、関数<tt>calculate_factorial()</tt>のコールの次の行に戻ります。<br><strong>注意:</strong> プログラムで関数<tt>calculate_factorial()</tt>の実行が完了するまでは、[F7]を押すこともできます。この場合も、コールの次の行に戻ります。<br> <img alt="埋込み関数calculate_factorial()の2回目のコールで停止したデバッガ。" class="margin-around" src="../../../images_www/articles/72/php/debugging/call-of-embedded-function-second-time.png"> </li><li>関数<tt>calculate_factorial()</tt>が正常に機能することを確認できたため、その実行を省略できます(ステップ・オーバー)。ステップ・オーバーするには、[F8]を押します。プログラムは、関数<tt>calculate_sum()</tt>のコールで停止します。<br> <img alt="埋込み関数calculate_sum()のコールで停止したデバッガ。" class="margin-around" src="../../../images_www/articles/72/php/debugging/cal-of-embedded-function-calculate-sum.png"> </li><li>関数<tt>calculate_sum()</tt>にステップ・インするには、[F7]を押します。</li><li>ステップ・オーバーするには、[F8]を押します。いずれの場合も、デバッガは関数<tt>calculate_sum_of_factorials()</tt>の最後の行で停止します。<br> <img alt="calcualate_sum_of_factorials()関数のreturn $result文で停止したデバッガ。" class="margin-around" src="../../../images_www/articles/72/php/debugging/return-result.png"></li><li>[F7]を押します。デバッガは<tt>echo</tt>文の行に移動します。</li><li>デバッガがプログラムを終了するまで[F7]を押します。ブラウザ・ウィンドウが開き、プログラムの実行結果が表示されます。<br> <img alt="ブラウザ・ウィンドウに表示されたプログラムの実行の出力。" class="margin-around" src="../../../images_www/articles/72/php/debugging/program-output.png">
+            </li>
+        </ol>
+
+        <div class="indent">
+            <h2><a name="usingAdditionalWatches"></a>追加ウォッチの使用</h2>
+            <p>プログラムの実行の続きとして追加のウォッチ式を定義できます。これはエラーのキャッチに役立つ場合があります。            </p>
+            <p class="alert"><strong>警告:</strong> 追加のウォッチを設定すると、XDebugが不安定化します。デフォルトでは、ウォッチは<a href="#options">デバッグ・オプション</a>で無効になっています。</p>
+          <ol><li>コードを次のように更新します(プラスをマイナスに置き換えます)。
+                    <pre class="examplecode">function calculate_sum ($argument1, $argument2) {<br> 			return $argument1 - argument2;<br>     	}<br> </pre>
+
+                    実際には和を求める必要がありますが、間違えてこのように入力したとします。 </li><li>「デバッグ」>「新規ウォッチ」を選択するか、または[Ctrl]/[⌘]-[Shift]-[F7]を押します。「新規ウォッチ」ウィンドウが開きます。</li><li>次の式を入力し、「OK」をクリックします。  
+                    <pre class="examplecode">$factorial1+$factorial2</pre>
+                    新しい式が「ウォッチ」ウィンドウに表示されます。
+                </li><li>デバッグ・セッションを実行します。デバッガが次の行で停止します。 
+                    <pre class="examplecode">return $result;</pre>「ウォッチ」ウィンドウ内の式の値と、「ローカル変数」ウィンドウ内の$resultの値を比較します。これらは同一である必要がありますが、現時点では異なります。<br> <img alt="ウォッチを使用したエラーのキャッチ" class="margin-around" src="../../../images_www/articles/72/php/debugging/watches.png">
+
+                </li></ol>
+            この例は非常に単純で、ウォッチ使用の概念を示しています。
+        </div>
+
+
+        <h2><a name="mixedPHPHTMLCases"></a>PHPとHTMLの混在</h2>
+
+        PHPとHTMLの両方のブロックを含むコードをデバッグできます。<a href="#sampleDebuggingSession">デバッグ・セッションの例</a>の項の例では、値はハードコードされています。値を入力するためのHTML入力フォームをコードに追加します。 
+        <ol>
+            <li>&lt;?php?> ブロックの上に次のHTMLコードを追加します。
+                <pre class="examplecode"> &lt;form action="index.php" method="POST"&gt;<br>       Enter the first integer, please:<br>       &lt;input type="text" name="first_integer"/&gt;&lt;br/&gt;<br>       Enter the second integer, please:<br>       &lt;input type="text" name="second_integer"/&gt;&lt;br/&gt;<br>       &lt;input type="submit" name="enter" value="Enter"/&gt;<br>&lt;/form&gt;</pre>
+
+                <p class="notes">詳細は、<a href="wish-list-lesson2.html#htmlForm">HTML入力フォーム</a>を参照してください。</p>
+            </li><li>&lt;?php?>ブロックの先頭で、次の行を置き換えます。
+                <pre class="examplecode">$m=5;<br>  	$n=10;<br>  	  $sum_of_factorials = calculate_sum_of_factorials ($m, $n);<br>  	  echo "The sum of factorials of the entered integers is " . $sum_of_factorials;<br></pre>
+
+                次のコードに置き換えます。
+                <pre class="examplecode">if (array_key_exists ("first_integer", $_POST) &amp;&amp; array_key_exists ("second_integer", $_POST)) {<br><br>    $result = calculate_sum_of_factorials ($_POST["first_integer"], $_POST["second_integer"]);<br><br>    echo "Sum of factorials is " . $result;<br><br>}</pre></li><li>ブレークポイントを&lt;?php?>ブロックの先頭に設定し、<a href="#debuggingSession">デバッグ・セッション</a>を開始します。 </li><li>[F7]を押します。デバッガがプログラムにステップ・インします。ブラウザ・ウィンドウが開きますが、入力フォームは表示されません。Webページが表示される前に、デバッガがページのソース・コード全体を通過する必要があるため、これはデバッガの正常な動作です。実際には、デバッガがコードを2回通過することを意味します。1回目は、HTML入力フォームを表示するコードがデバッガで処理されます。2回目は、デバッガでPHPコードがステップ実行されます。 </li><li>デバッガがプログラムの終わりに達し、入力フォームが開くまで[F7]を押します。 </li><li>フォームに入力して[Enter]を押します。デバッグ・セッションは、<a href="#sampleDebuggingSession">デバッグ・セッションの例</a>の項に示すように処理を続行します。 </li>
+        </ol>
+
+        <h2><a name="debug_url">パス・マッピング、デバッガ・プロキシ、およびカスタムURLでのデバッグ・セッションの開始</a></h2>
+
+        <p><a name="debug_url"></a>スクリプトとWebページの両方をデバッグすることは可能で、Webページはローカルまたはリモートのいずれかでデバッグできます。リモートのデバッグの場合、リモート・サーバー上のデバッグされるphpファイルは、ローカル・マシン上で実行中のNetBeans IDEで開いているファイルと同じではありません。したがって、NetBeansのデバッガ・サポートでは、サーバー・パスとローカル・パスをマップできる必要があります。ただし、多くの問題があるため、パス・マッピングは個々のすべてのシナリオについて自動的に解決できるわけではありません。このため、NetBeans 6.7以降では、個々の実行構成に対して、<a href="https://netbeans.org/kb/docs/php/project-setup.html" target="_blank" title="プロジェクトの設定ドキュメント">プロジェクトの設定</a>を使用してパス・マッピングを手動で定義できます。また、プロキシ・サーバーを指定したり(ある場合)、デバッグ・セッションが開始するURLを指定することもできます。このURLを指定しない場合、デバッグはインデックス・ファイルから開始します。</p>
+
+
+        <p><strong>パス・マッピングを設定してカスタムのデバッグURLを有効にする</strong></p>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、コンテキスト・メニューからプロジェクトの「プロパティ」を開きます。</li><li>「プロジェクト・プロパティ」ダイアログで「実行構成」カテゴリに移動します。</li><li>「詳細」ボタンをクリックします。「詳細Web構成」ダイアログが開きます。</li><li>パス・マッピング用のサーバー・パスとプロジェクト・パスを追加します。</li><li>「デバッグURL」で、次のいずれかを選択します(デフォルトを選択したままにしないでください)。<br><br>
+                <ul><li>毎回聞く: デバッグ・セッションを開始したとき、IDEによってURLの入力が求められます。</li><li>Webブラウザを開かない: ブラウザを開いてURLを手動で入力するようにユーザーに求めます(GET/POST XDEBUG_SESSION_START変数が必要です)。</li></ul></li><li>デバッグ用のプロキシ・サーバーを使用する場合、「デバッガ・プロキシ」セクションにサーバーのホスト名とポートを入力します。
+            </li>
+        </ol>
+
+        <p>詳細は、PHP向けのNetBeansブログに投稿された<a href="http://blogs.oracle.com/netbeansphp/entry/path_mapping_in_php_debugger" target="_blank">PHPデバッガでのパス・マッピング</a>を参照してください。</p>
+
+        <br>
+
+
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Debugging%20PHP">このチュートリアルに関するご意見をお寄せください</a></div>
+
+
+        <br style="clear: both;">
+
+        <p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+
+
+
+
+
+        <p><a href="../../trails/php.html">PHPの学習に戻る</a> </p>
+    </body>
+</html>

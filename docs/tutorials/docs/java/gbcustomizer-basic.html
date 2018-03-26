@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Designing a Basic Java Form Using the GridBag Customizer  - NetBeans IDE Tutorial</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="This tutorial guides you through the process of managing an application form layout using the NetBeans IDE GridBag Designer basic features.">
+   <meta name="KEYWORDS" content="NetBeans, GridBag, GridBag Customizer, Layout Manager, Tutorial, Guide, User, Documentation, Basic">
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Designing a Basic Java Form Using the GridBag Customizer</h1>
+    <div class="articledate" style="margin-left: 0px;">Written by Jan Stola, Tomas Pavek, and Alyona Stashkova</div>
+    <p>This tutorial is the first in a two-part series that demonstrates how to design a simple Java form using the basic features of the NetBeans IDE GridBag Customizer.<br>
+	
+    The series is intended as a guide to show how you can layout your GUI components without manually writing your layout code and then perform additional changes in an existing form to implement a specific target layout that is required by the project. </p>
+    <p>Each document in this series covers specific set of features.</p>
+    <ul>
+        <li>Part 1: Designing a Basic Java Form Using the GridBag Customizer</li>
+        <li>Part 2: <a href="../java/gbcustomizer-advanced.html">Designing an Advanced Java Form Using the GridBag Customizer</a></li>
+    </ul>
+
+   
+ 
+    
+    
+       <p><b>Contents</b></p>
+    <img  src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.1 and later" title="Content on this page applies to NetBeans IDE 7.1 and later">
+    <ul class="toc">
+        <li><a href="#zip">Opening Example Project</a></li>
+		<li><a href="#01">GridBag Customizer Overview</a>
+        <ul>
+            <li><a href="#01a">Grid Area</a></li>
+			<li><a href="#01b">Toolbar</a></li>
+			<li><a href="#01c">Property Customizer</a></li>
+			<li><a href="#01d">Property Sheet</a></li>
+        </ul>
+		</li>
+        
+        <li><a href="#02">Laying Out Components</a>
+		<ul>
+		<li><a href="#02a">Moving</a></li>
+		<li><a href="#02b">Resizing</a></li>
+		<li><a href="#02c">Specifying Fill Layout Constraint</a></li>
+		<li><a href="#02d">Previewing</a></li>
+		<li><a href="#02e">Specifying Weight X and Weight Y Constraints</a></li>
+		<li><a href="#02f">Anchoring</a></li>
+		<li><a href="#02g">Spacing</a></li>
+		</ul></li>
+        <li><a href="#summary">Summary</a></li>
+		<li><a href="#seealso">See Also</a></li>
+    </ul>
+
+   
+   <p><b>To follow this tutorial, you need the software and resources listed below.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.1 and later</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">Version 6, 7, or 8 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-basic-tutorial.zip">gbcustomizer-basic-tutorial.zip</a></td>
+                <td class="tbltd1">An archive with the demo project containing the initial and target tutorial layouts.</td>
+            </tr>
+           
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>Notes:</strong></p>
+    <div class="indent">
+    <ul>
+        <li>You can download the project that is used as the starting point for this series as a <tt>.zip</tt> archive. </li>
+        <li>This tutorial focuses on designing the layout of the container only. Adding functionality to the GUI is out of its scope.</li>
+    </ul>
+    </div>
+    <!-- ++++++++++++ Using .zip ++++++++++++ -->
+<a name="zip"></a>
+    <h2>Opening Example Project</h2>
+	<ol><li>Download and unzip the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-basic-tutorial.zip">gbcustomizer-basic-tutorial.zip</a> project to any location on your computer.</li>
+	<li>In the Projects tab, choose <tt>File</tt> &gt; <tt>Open Project</tt>, navigate to the <tt>gbcustomizer-basic-tutorial</tt> project that you extracted in the previous step, and click Open Project. The project folder might be in a containing folder that is also called <tt>gbcustomizer-basic-tutorial</tt>.</li>
+	<li>In the Reference Problem dialog box, click Resolve. The IDE automatically downloads the JUnit and JUnit 4 libraries. Follow the instructions in the NetBeans IDE installer to install the required plugins. When the installation is complete, click Finish.</li>
+    <li> Expand <tt>Source Packages</tt> &gt; <tt>Tutorial</tt> and double-click <tt>ContactsBasicInitial.java</tt>. <br>
+      The sample form opens in the GUI Builder Design view. 
+	   <p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/sampleform.png" rel="lytebox"
+                       title="Sample form initial open">
+                        <img src="../../../images_www/articles/72/java/gbcustomizer-basic/sampleform-small.png"
+                             class="margin-around b-none" alt="Sample form initial open"></a></p></li>
+	</ol>
+    <a name="01"></a>
+    <h2>GridBag Customizer Overview</h2>
+    
+     <p>The GridBag Layout Customizer is one of the most flexible and complex layout managers the Java platform provides. The Customizer places components in a grid of rows and columns, allowing specified components to span multiple rows or columns. Not all rows necessarily have the same height. Similarly, not all columns necessarily have the same width. Essentially, the GridBagLayout places components in rectangles (cells) in a grid, and then uses the components' preferred sizes to determine how big the cells should be.  </p>
+	 <p>To display the GridBag Customizer, complete the steps below: </p>
+	 <ol>
+	 <li>In the Design view, select the JFrame form.</li>
+	 
+	 <li>Right-click the form and choose <tt>Customize Layout</tt> from the context menu.<br>
+	   The Customize Layout dialog box opens as shown below.
+	  <p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/customizerdialog.png" rel="lytebox"
+                       title="GridBag Customizer">
+                        <img src="../../../images_www/articles/72/java/gbcustomizer-basic/customizerdialog-small.png"
+                             class="margin-around b-none" alt="GridBag Customizer"></a></p></li>
+				 
+	 </ol>
+<p class="notes"><b>Note:</b> In this tutorial the GridBagLayout is already set. In case you work with another form, in step 2 above, right-click the form and choose <tt>Set Layout</tt> &gt; <tt>Grid Bag Layout</tt> from the context menu (this enables the <tt>Customize Layout</tt> menu item.). Then complete the procedure.</p>					 
+
+     <div class="indent">
+        <a name="01a"></a>
+        <h3>Grid Area</h3>
+        <p>The Grid area is on the right side of the Customize Layout dialog box. It shows the grid layout of the components.<br>
+       The components in the sample form are already added but not laid out correctly. </p>
+        
+        <a name="01b"></a>
+        <h3>Toolbar</h3>
+        <p>A toolbar with five buttons is located above the Grid area. It provides convenient access to common commands, such as undoing, redoing, enabling uniform gaps, hiding empty rows and columns, and testing the layout.</p>
+		<p class="align-center"><img src="../../../images_www/articles/72/java/gbcustomizer-basic/toolbar.png"
+                     alt="Toolbar" border=1></p>
+				
+		<a name="01c"></a>
+        <h3>Property Customizer</h3>
+        <p>The Property Customizer is positioned in the top left corner of the  Customize Layout dialog box. It allows for easy modification of the most common layout constraints such as <tt>Anchor</tt>, <tt>Insets</tt>, etc. </p>
+		<p class="align-center"><img src="../../../images_www/articles/72/java/gbcustomizer-basic/propcustomizer.png"
+                     alt="Property Customizer" border=1></p>
+		
+		<a name="01d"></a>
+        <h3>Property Sheet</h3>
+        <p>The Property Sheet is located below the Property Customizer. It displays the layout constraints of the selected components. </p>
+		<p class="align-center"><img src="../../../images_www/articles/72/java/gbcustomizer-basic/propsheet.png"
+                     alt="Property Sheet" border=1></p>
+		
+
+    </div>
+
+
+<!-- ++++++++++++ Laying Out Components ++++++++++++ -->
+<a name="02"></a>
+<h2>Laying Out Components</h2>
+ <p>The components for the <tt>ContactsBasicInitial</tt> form are added and laid out in a single row. The GridBagLayout lays out the components like this when no layout constraints are specified.</p>
+
+ <div class="indent">
+<a name="02a"></a>
+<h3>Moving</h3>
+<p>You can move components using simple drag and drop as desired. The component is highlighted with green when selected. While dragging a component, its <tt>Grid X</tt> and <tt>Grid Y</tt> properties change to reflect its new position. New columns and rows are created automatically when needed.</p>
+
+<p> To create a layout like shown in the picture below, move the components from columns 2 to 11 as follows:</p>
+  <ol>
+	 <li>Drag the <tt>Surname:</tt> label and the adjacent text field into the first two cells of the second row.</li>
+	 
+     <li>Drag the <tt>Street:</tt> label, the adjacent text field, and the adjacent <tt>Browse</tt> button into the first three cells of the third row. </li>
+	 <li>Drag the <tt>City:</tt> label, the adjacent text field, and the adjacent <tt>Browse</tt> button into the first three cells of the fourth row. </li>
+	 <li>Drag the <tt>State:</tt> label and the adjacent combobox into the first two cells of the fifth row. 
+	 <p>The components are now placed in accordance with the target layout.</p>
+	 </li>
+	
+  </ol>
+<p class="align-center">
+	  <a href="../../../images_www/articles/72/java/gbcustomizer-basic/layout1.png" rel="lytebox"
+                       title="Layout with no extra columns">
+                        <img src="../../../images_www/articles/72/java/gbcustomizer-basic/layout1-small.png"
+                             class="margin-around b-none" alt="Layout with no extra columns"></a></p>
+
+ <p class="note"><b>Note:</b> When a component is moved the target cells are highlighted with green. </p>
+
+<a name="02b"></a>
+    <h3>Resizing</h3>
+    <p>A component can be resized by dragging small square resize handles that appear around its perimeter when it is selected.</p>
+	<p>To resize the <tt>First Name:</tt> and <tt>Surname:</tt> text fields and make them occupy two adjacent cells, complete the steps below:</p>
+                  <ol>
+                     <li>Control-click the two JTextField components to select them.  </li>
+                     <li>With both JTextFields selected, position the cursor over the cells right edge, click and drag until the orange highlighted guideline embraces the adjacent cells in column 2 on the right.</li>
+
+                     <li>Release the cursor to resize the components.
+                     <p> The  <tt>First Name:</tt> and <tt>Surname:</tt> text fields are extended to span between the two cells as shown in the following illustration. The occupied cells are highlighted.</p></li>
+                  </ol>
+					 <p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/tfieldsresized.png" rel="lytebox" title="Text fields resized">
+     <img src="../../../images_www/articles/72/java/gbcustomizer-basic/tfieldsresized-small.png" class="margin-around b-none" alt="Text fields resized"></a></p>
+
+    <a name="02c"></a>
+    <h3>Specifying Fill Layout Constraint</h3>
+    <p>Though the <tt>First Name:</tt> and <tt>Surname:</tt> text fields occupy two cells, they have the preferred size and are placed in the middle of the display area. Before moving on, we need to fill out the whole area of the cells using the <tt>Fill</tt> layout constraint. </p>
+	<p>To make the text fields wide enough to fill their display areas horizontally without changing their heights,  in the <tt>Fill</tt> combobox in the Property Sheet area, select <tt>Horizontal</tt>. </p>  
+	<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/horizontalset.png" rel="lytebox" title="Text fields resized">
+     <img src="../../../images_www/articles/72/java/gbcustomizer-basic/horizontalset-small.png" class="margin-around b-none" alt="Text fields resized"></a></p>
+
+    <a name="02d"></a>
+    <h3>Previewing</h3>
+    <p>Now that you have successfully completed the <tt>ContactsBasicInitial</tt> form layout, you can try your interface to see the results. You can preview your form as you work by clicking the Test Layout  button (<img src="../../../images_www/articles/72/java/gbcustomizer-basic/testbutton.png">) in the Customizer's toolbar. The form opens in its own window, allowing you to test it prior to building and running.</p>    
+	<p class="align-center"><img src="../../../images_www/articles/72/java/gbcustomizer-basic/designpreview.png"
+                     alt="Design Preview" border=1>  </p>
+   <p>The preview is useful to test dynamic behaviour of the layout, i.e. how the layout behaves when the designed container is resized.</p>
+    <a name="02e"></a>
+    <h3>Specifying Weight X and Weight Y Constraints</h3>
+   <p>Specifying weights has a significant impact on the appearance of the GridBagLayout components. Weights are used to determine how to distribute space among columns (Weight X) and among rows (Weight Y); this is important for specifying resizing behavior.<br>Generally weights are specified with 0.0 and 1.0 as the extremes: the numbers in between are used as necessary. Larger numbers indicate that the component's row or column should get more space. </p>
+   <p>If you try to resize the previewed container horizontally, you can see that the layout components remain the same size and stay clumped in the middle of the container. Even the <tt>First Name:</tt> and <tt>Surname:</tt> fields that have the Fill constraint set to Horizontal do not grow since the Fill constraint refers to the cell inner area but not the cell's size. In other words, a component with the Fill attribute set to a value different from <tt>none</tt> claims that it <b>&quot;can&quot;</b> grow,
+    but it does not claim that it <b>&quot;wants&quot;</b> to grow. <br>
+    The Weight X and Weight Y layout constraints determine whether a component <b>&quot;wants&quot;</b> to grow in horizontal and vertical directions. <br>
+    When two components in a row (or column) have a non-zero value of Weight X (or Weight Y) constraint  the values determine how much the individual components grow. For example, if the values are 0.6 and 0.4 then the first component obtains 60% of the available additional space and the second component obtains 40%.	</p>
+    <p>To make the designed container resize correctly in a horizontal direction, do the following: </p>
+    <ol>
+	<li>Select the text field to the right of the <tt>First Name:</tt> label in the Grid Area of the GridBag Customizer. </li>
+	<li>Type <tt>1.0</tt> in the <tt>Weight X</tt> layout constraint value field and press Enter. </li>
+	<li>Select the text field to the right of the <tt>Surname:</tt> label in the Grid Area of the GridBag Customizer.</li>
+	<li>Type <tt>1.0</tt> in the <tt>Weight X</tt> layout constraint value field and press Enter.</li>
+	<li>Select the  text field to the right of the <tt>Street</tt> label in the Grid Area of the GridBag Customizer.</li>
+	<li>Select <tt>Horizontal</tt> in the <tt>Fill</tt> combobox and press Enter. </li>
+	<li>Type <tt>1.0</tt> in the <tt>Weight X</tt> layout constraint value field and press Enter.</li>
+	<li>Select the  text field to the right of the <tt>City</tt> label in the Grid Area of the GridBag Customizer.</li>
+	<li>Select <tt>Horizontal</tt> in the <tt>Fill</tt> combobox and press Enter. </li>
+	<li>Type <tt>1.0</tt> in the <tt>Weight X</tt> layout constraint value field and press Enter.</li>
+	</ol>
+	
+    <p>To verify that the designed container resizes correctly in horizontal direction, click the Test Layout  button (<img src="../../../images_www/articles/72/java/gbcustomizer-basic/testbutton.png">) in the Customizer's toolbar and drag the borders of the <tt>ContactsBasicInitial</tt> form. </p>
+   <p class="align-center"><img src="../../../images_www/articles/72/java/gbcustomizer-basic/resizedpreview.png"
+                     alt="ContactsBasicInitial Resized" border=1> </p>
+    
+    <a name="02f"></a>
+    <h3>Anchoring</h3>
+    <p>Anchoring is used when the component is smaller than its display area to determine where (within the area) to place the component.</p>
+	<p>During horizontal resizing of the <tt>ContactsBasicInitial</tt> form  in the previous section you have probably noticed that the <tt>State</tt> combobox moves
+    away from the <tt>State</tt> label. Since the preferred size of the combobox is smaller
+    than the size of the corresponding cell, the GridBagLayout places the component into the center of the cell by default.</p>
+        <p>To change this behaviour, specify the <tt>Anchor</tt> layout constraint as follows:</p>
+<ol>
+<li>Select the combo-box to the right of the <tt>State</tt> label and click the arrow button (<img src="../../../images_www/articles/72/java/gbcustomizer-basic/arrowbutton.png"
+                     alt="Arrow Button">) to the right of the <tt>Anchor</tt> combobox in the <a href="#01d">Property Sheet</a> of the Customizer.</li>
+<li>Choose <tt>Line Start</tt> from the drop-down list.</li>
+</ol>
+<p>The <tt>State</tt> combo-box is anchored to the left side of the form when the latter is resized horizontally now.</p>
+<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/comboanchored.png" rel="lytebox" title="Combo-box is anchored">
+     <img src="../../../images_www/articles/72/java/gbcustomizer-basic/comboanchored-small.png" class="margin-around b-none" alt="Combo-box is anchored"></a></p>
+<p>To get the labels aligned to the left instead of to the center as they are at the moment, complete the steps below:</p>
+<ol>
+<li>Select the <tt>First name:</tt>, <tt>Surname:</tt>, <tt>Street</tt>, <tt>City</tt>, and <tt>State</tt> labels. 
+<p class="note"><b>Note:</b> You can select multiple components by  pressing the left mouse button on the first component, holding it, and dragging it pressed
+      to the last component as if drawing a rectangle that encloses all the labels. After you release the mouse all the five components are highlighted with orange borders and green background as shown below.</p>
+	 <p class="align-center"> <img src="../../../images_www/articles/72/java/gbcustomizer-basic/multiselect.png"
+                     alt="Components selected" border=1> </p></li>
+  
+  <li> Change the <tt>Anchor</tt> layout constraint of the labels to <tt>Line Start</tt>.<br>
+  The labels are anchored to the left.
+   <p class="align-center"> <img src="../../../images_www/articles/72/java/gbcustomizer-basic/linestartanchor.png"
+                     alt="The labels are anchored to the left." border=1> </p></li> 
+</ol> 	
+	<a name="02g"></a>
+    <h3>Spacing</h3>
+    <p>By default, each component has no external padding. The <tt>Inset</tt> constraint specifies the external padding of the component - the minimum amount of space between the component and the edges of its display area.</p>
+	<p>In the current layout, the components are placed too close to each other. To separate them, do the following:</p>
+	<ol>
+	<li>Ctrl-click to select all the components.</li>
+	<li>Press the button to the right of the Insets constraint text field. </li>
+	<li>In the displayed dialog box, change <tt>Top:</tt> and <tt>Left:</tt> values to <tt>5</tt> and click OK.
+	<p class="align-center"> <img src="../../../images_www/articles/72/java/gbcustomizer-basic/insets.png" alt="Insets dialog box" border=1> </p>
+	Your form should look now like the one from the <tt>ContactsBasicFinal.java</tt> file if you open it.
+	<p class="align-center"><a href="../../../images_www/articles/72/java/gbcustomizer-basic/contactsbasicfinal.png" rel="lytebox" title="ContactsBasicFinal">
+     <img src="../../../images_www/articles/72/java/gbcustomizer-basic/contactsbasicfinal-small.png" class="margin-around b-none" alt="ContactsBasicFinal"></a></p>
+	</li>
+	
+	</ol>
+
+	
+	
+
+</div>
+
+<!-- ++++++++++++ Summary ++++++++++++ -->
+<a name="summary"></a>
+<h2>Summary</h2>
+<p>In this short tutorial, you designed a simple form. When editing the layout you learned how to use the basic features of the GridBag Customizer.<br>
+  You can now go to the second in a two-part series tutorial where you will modify the <tt>ContactsAdvancedInitial</tt> form to get familiar with the GridBag Customizer advanced features.</p>
+
+
+<p>Go to <a href="../java/gbcustomizer-advanced.html">Designing an Advanced Java Form Using the GridBag Customizer</a></p>
+
+
+
+
+
+
+
+ <p class="align-center"><a href="#top">top</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Designing%20a%20Basic%20Java%20Form%20Using%20the%20GridBag%20Customizer">Send Feedback on This Tutorial</a></div>
+      <br style="clear:both;" >  
+<a name="seealso"></a>
+<h2>See Also</h2>
+<p>You have now completed the Designing a Basic Java Form Using the GridBag Customizer tutorial. For information
+      on adding functionality to the GUIs that you create, see:</p> 
+      <ul>
+         <li><a href="gui-functionality.html">Introduction to GUI Building</a> </li>
+		 
+         <li><a href="gui-image-display.html">Handling Images in a GUI Application</a></li>
+        
+         <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">
+         GUI Builder FAQ</a> </li>
+         <li><a href="../../trails/matisse.html">Java GUI Applications Learning Trail</a></li>
+		 <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementing Java GUIs</a> in <i>Developing Applications with NetBeans IDE</i></a></li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">top</a></p>
+
+   
+</body>
+</html>

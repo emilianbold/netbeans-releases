@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>Создание приложения на основе базы данных на языке PHP.  Использование классов CSS и элементов DIV </title>
+        <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Using CSS classes and divs. Hiding forms using Javascript" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+    </head>
+    <body>
+        <h1>Создание приложения на основе базы данных на языке PHP</h1>
+        <h1>Урок 8: усовершенствование внешнего облика приложения с использованием технологии CSS </h1>
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+                <h4>Содержание учебного курса.</h4>
+                <ol start="0">
+                    <li><a href="wish-list-tutorial-main-page.html">Создание приложения на основе базы данных с помощью языка PHP &ndash; главная страница</a></li>
+                    <li><p>Создание базы данных</p> <ol type="a"><li><a href="wish-list-lesson1.html">Создание базы данных MySQL</a></li>
+                            <li><a href="wish-list-oracle-lesson1.html">Создание таблиц базы данных Oracle</a></li>
+                        </ol></li>
+                    <li>
+                        <p><a href="wish-list-lesson2.html">Проектирование приложения. Чтение из базы данных</a></p>
+                    </li>
+                    <li><a href="wish-list-lesson3.html">Создание нового пользователя приложения</a></li>
+                    <li><a href="wish-list-lesson4.html">Усовершенствование кода</a></li>
+                    <li><a href="wish-list-lesson5.html">Добавление функций безопасности. Реализация входа пользователя в приложение</a></li>
+                    <li><a href="wish-list-lesson6.html">Добавление нового пожелания в базу данных</a></li>
+                    <li>      <a href="wish-list-lesson7.html">Обновление и удаление записей в базе данных</a></li>
+                    <li>
+                        <p><b>=&gt;Усовершенствование внешнего вида приложения с использованием технологии CSS</b></p>
+                        <ul class="toc">
+                            <li><a href="#previousLessonSourceCode">Исходный код приложения из предыдущего урока</a></li>
+                            <li><a href="#hideLogonForm">Скрытие форм</a>
+                                <ul>
+                                    <li><a href="#javaScriptFunctions">Функции JavaScript</a></li>
+                                    <li><a href="#showHideLogonInIndex">Обновление index.php</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#designStyles">Определение стилей с помощью каскадной таблицы стилей (CSS)</a>
+                                <ul>
+                                    <li><a href="#creatingCSSFile">Создание файла CSS</a></li>
+                                    <li><a href="#defineCSSStyles">Определение стилей CSS</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#divs">Реализация проекта с помощью элементов DIV языка HTML</a></li>
+                            <li><a href="#lessonResultSourceCode">Исходный код приложения на момент завершения текущего урока</a></li>
+                            <li><a href="#nextSteps">Следующие действия</a></li>
+                        </ul>
+
+                    </li>
+                    <li><a href="wish-list-lesson9.html">Развертывание приложения на удаленном веб-сервере</a></li>
+                </ol>
+            </div>
+        </div>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+        <p>В этом уроке вы научитесь выполнению следующих действий:</p>
+        <ul>
+            <li style="margin-left:40em"><a href="#hideLogonForm">Скрытие форм ввода, когда они не используются, с помощью реализации функций JavaScript </a></li>
+            <li style="margin-left:40em"><a href="#designStyles">Определение стилей и позиционирование элементов страницы с помощью каскадной таблицы стилей (CSS)</a></li>
+            <li style="margin-left:40em"><a href="#divs">Реализация проекта приложения с помощью элементов DIV</a>. </li>
+        </ul>
+        <p>Текущий документ является частью краткого учебного курса "Создание приложения CRUD в IDE NetBeans для PHP". </p>
+        <br style="clear:left">
+        <h2><a name="previousLessonSourceCode"></a>Исходный код приложения из предыдущего урока</h2>
+        <p>Для пользователей MySQL: перейдите по <a href="https://netbeans.org/files/documents/4/1933/lesson7.zip" target="_blank">этой ссылке</a> для загрузки исходного кода, описывающего состояние проекта на момент завершения предыдущего урока. </p>
+        <p>Для пользователей баз данных Oracle: перейдите по <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson7.zip" target="_blank">этой</a> для загрузки исходного кода, описывающего состояние проекта на момент завершения предыдущего урока.</p>
+        <h2><a id="hideLogonForm" name="hideLogonForm"></a>Скрытие форм </h2>
+        <p>Теперь на главной странице <tt>index.php</tt> приложения отображаются полные формы &quot;logon&quot; и &quot;showWishList&quot;.  Для усовершенствования внешнего вида приложения можно скрыть формы и заменить их кнопками.  При нажатии на кнопку соответствующая скрытая форма раскрывается. </p>
+        <p>Для реализации этого выполните следующие действия:</p>
+        <ol>
+            <li>Добавьте блок &lt;script&gt;&lt;/script&gt; к файлу <tt>index.php</tt> сразу перед закрывающим тегом &lt;/body&gt;.</li>
+            <li><a href="#javaScriptFunctions">Создайте две функции JavaScript внутри тегов &lt;script>&lt;/script></a>.</li>
+            <li><a href="#showHideLogonInIndex">Внесите некоторые незначительные изменения в файл &quot;index.php&quot;.</a></li>
+        </ol>
+        <div class="indent"><h3><a id="javaScriptFunctions" name="javaScriptFunctions"></a>Функции JavaScript </h3>
+            <p>Функции JavaScript не требуют входных параметров и не возвращают результат.  Следующий код проверяет состояние видимости соответствующей формы и изменяет его на противоположное.  При этом также изменяется текст на кнопке.  Для выполнения этих изменений введите следующий код внутри тегов &lt;script&gt;&lt;/script&gt;:</p>
+            <pre class="examplecode">&lt;script&gt;
+function showHideLogonForm() {
+    if (document.all.logon.style.visibility == "visible"){
+        document.all.logon.style.visibility = "hidden";
+        document.all.myWishList.value = "My Wishlist &gt;&gt;";
+    } 
+    else {
+        document.all.logon.style.visibility = "visible";
+        document.all.myWishList.value = "&lt;&lt; My Wishlist";
+    }
+}
+function showHideShowWishListForm() {
+    if (document.all.wishList.style.visibility == "visible") {
+        document.all.wishList.style.visibility = "hidden";
+        document.all.showWishList.value = "Show Wish List of >>";
+    }
+    else {
+        document.all.wishList.style.visibility = "visible";
+        document.all.showWishList.value = "&lt;&lt; Show Wish List of";
+    }
+}
+&lt;/script&gt;	</pre>
+            <h3><a id="showHideLogonInIndex" name="showHideLogonInIndex"></a>Обновление <tt>index.php</tt> </h3>
+            <ol>
+                <li>Добавьте атрибут <tt>style</tt> к форме &quot;logon&quot;: 
+                    <pre class="examplecode">&lt;form name=&quot;logon&quot; action=&quot;index.php&quot; method=&quot;POST&quot; 
+        <strong>style=&quot;visibility:&lt;?php if ($logonSuccess) echo &quot;hidden&quot;;
+        else echo &quot;visible&quot;;?&gt;&quot;</strong>&gt;</pre>
+                    Атрибут <tt>style</tt> определяет, является форма скрытой или нет.  Блок &lt;?php ? &gt; используется для поддержания отображения формы до тех пор, пока не будет выполнен успешный ввод данных пользователем.<br>
+                </li>
+                <li> Введите следующий код перед кодом формы ввода &quot;logon&quot;: 
+                    <pre class="examplecode"> &lt;input type=&quot;submit&quot; name=&quot;myWishList&quot; value=&quot;My Wishlist &gt;&gt;&quot; onclick=&quot;javascript:showHideLogonForm()&quot;/&gt;</pre>
+                    Код реализует кнопку с текстом &quot;My Wishlist &gt;&gt;&quot;.  Кнопка отображается вместо формы &quot;logon&quot;.  При нажатии кнопки вызывается функция &quot;showHideLogonForm&quot;.</li>
+                <li>Добавьте атрибут <tt>style</tt> к форме &quot;logon&quot;:
+                    <pre class="examplecode">&lt;form name=&quot;wishList&quot; action=&quot;wishlist.php&quot; method=&quot;GET&quot; <strong>style=&quot;visibility:hidden&quot;</strong>&gt;
+Show wish list of: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>            &lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>&lt;/form&gt;</pre>
+                </li>
+                <li>Вставьте следующий код над формой wishList:
+                    <pre class="examplecode">&lt;input type=&quot;submit&quot; name=&quot;showWishList&quot; value=&quot;Show Wish List of &gt;&gt;&quot; onclick=&quot;javascript:showHideShowWishListForm()&quot;/&gt;</pre>
+                </li>
+                <li>Удалите следующий код из формы, так как он уже помещен в кнопку: 
+                    <pre class="examplecode">Show wishlist of: </pre>
+                </li>
+            </ol>
+        </div>
+
+        <h2><a id="designStyles" name="designStyles"></a>Определение стилей с помощью каскадной таблицы стилей (CSS)</h2>
+        <p>В настоящее время элементы управления в приложении &quot;слипаются&quot; и размещены в верхнем левом углу экрана.  Для усовершенствования внешнего вида страниц укажите размер, положение, цвет, шрифт и другие параметры элементов управления путем определения стилей и назначения этих стилей определенным элементам управления.  Стили определяются в отдельном файле каскадной таблицы стилей (CSS). </p>
+        <p>Все рекомендации и предложения, касающиеся проектирования приложений, являются необязательными.  Приведенные ниже определения стиля являются только примером усовершенствования внешнего вида приложения.  Параметры настройки применимы для разрешения экрана 1024x768 пикселей и выше. </p>
+        <div class="indent"><h3><a name="creatingCSSFile"></a>Создание файла CSS</h3>
+            <ol>
+                <li>Щелкните правой кнопкой мыши узел &quot;Source Files&quot; и выберите в контекстном меню &quot;New &gt; Cascading Style Sheet&quot;.</li>
+                <li>На панели каскадной таблицы стилей в поле &quot;File Name&quot; введите &quot;wishlist&quot;.  Нажмите кнопку &quot;Завершить&quot;. <br> <img alt="Панель &amp;quot;Новый файл CSS&amp;quot;." class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson8/newCascadingStyleSheetFile.png"><br> В дереве проекта отображается новый файл <tt>wishlist.css</tt>.</li>
+            </ol>
+
+            <h3><a name="defineCSSStyles"></a>Определение стилей CSS</h3>
+            
+            <p>Откройте файл &quot;wishlist.css&quot;.  Файл уже содержит &quot;корневой&quot; класс, который можно удалить.  Для получения копии файла <tt>wishlist.css</tt> необходимо загрузить полную версию этого учебного курса по<a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">этой</a> ссылке.  Код интуитивно понятен и содержит следующее:</p>
+            <ul>
+                <li>Два стиля: &quot;body&quot; и &quot;input&quot;, которые автоматически применяются внутри любых тегов <tt>&lt;body&gt;&lt;/body&gt;</tt> или <tt>&lt;input/&gt;</tt>.  </li>
+                <li>Классы CSS, которые применяются при их явном указании.  Имена классов содержат точки в начале, например, <tt>.createWishList</tt>.  Некоторые классы используются многократно, например, класс &quot;.error&quot; применяется ко всем сообщениям об ошибках в приложении.  Другие классы используются только однажды, например, &quot;.showWishList&quot;, &quot;.logon&quot;.</li>
+            </ul></div>
+        <h2><a id="divs" name="divs"></a>Реализация дизайна с помощью отделений HTML </h2>
+        <p>Все рекомендации и предложения, касающиеся проектирования приложений, являются необязательными.  Равно как и определения стиля выше, они являются только примером усовершенствования внешнего вида приложения. </p>
+        <p> На примере ниже показано, как можно улучшить внешний вид страницы <tt>index.php</tt>. </p>
+
+        <ol>
+            <li>Для разрешения использования классов CSS, которые были определены, введите следующий код в блок <tt>&lt;head&gt;&lt;/head&gt;</tt>:
+                <pre class="examplecode">     &lt;link href=&quot;wishlist.css&quot; type=&quot;text/css&quot; rel=&quot;stylesheet&quot; media=&quot;all&quot; /&gt;</pre>Стили &quot;body&quot; и &quot;input&quot; автоматически применяются внутри соответствующих тегов, поэтому их необходимо указать явно.</li>
+            <li>Для применения любого другого стиля (класса) к области заключите код, который реализует область, в теги <tt>&lt;div class=&quot;&quot;&gt;&lt;/div&gt;</tt>:
+                <pre class="examplecode"> &lt;div class=&quot;showWishList&quot;&gt;<br>            &lt;input type=&quot;submit&quot; name=&quot;showWishList&quot; value=&quot;Show Wish List of &gt;&gt;&quot; onclick=&quot;javascript:showHideShowWishListForm()&quot;/&gt;<br>            <br>            &lt;form name=&quot;wishList&quot; action=&quot;wishlist.php&quot; method=&quot;GET&quot; style=&quot;visibility:hidden&quot;&gt;<br>               &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>               &lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>            &lt;/form&gt;<br>&lt;/div&gt;</pre> 
+                <p><strong>Примечание.</strong> Если класс указывается в теге &lt;div>, в начале не нужно указывать точки.</p> </li>
+            <li>Можно использовать вложенные теги &lt;div&gt;:
+                <pre class="examplecode">&lt;div class=&quot;logon&quot;&gt;<br>     &lt;input type=&quot;submit&quot; name=&quot;myWishList&quot; value=&quot;My Wishlist &gt;&gt;&quot; onclick=&quot;javascript:showHideLogonForm()&quot;/&gt;<br>            &lt;form name=&quot;logon&quot; action=&quot;index.php&quot; method=&quot;POST&quot; <br>                      style=&quot;visibility:&lt;?php if ($logonSuccess) echo &quot;hidden&quot;; else echo &quot;visible&quot;;?&gt;&quot;&gt;<br>                Username: &lt;input type=&quot;text&quot; name=&quot;user&quot;/&gt;<br>                Password:  &lt;input type=&quot;password&quot; name=&quot;userpassword&quot;/&gt;&lt;br/&gt;<br>                &lt;div class=&quot;error&quot;&gt;<br>                  &lt;?php<br>                     if (!$logonSuccess) echo &quot;Invalid name and/or password&quot;;<br>                   ?&gt;<br>                &lt;/div&gt;<br>                &lt;input type=&quot;submit&quot; value=&quot;Edit My Wish List&quot;/&gt;<br>            &lt;/form&gt;<br>&lt;/div&gt;  </pre>
+                Класс &quot;logon&quot; применяется ко всей форме, а класс &quot;error&quot; применяется к сообщению об ошибке внутри формы.  </li>
+        </ol>
+        <p>Для получения дополнительных сведений по использованию каскадных таблиц стилей (CSS) см. <span lang="ru"><a href="http://www.htmlpedia.org/wiki/List_of_CSS_Properties" onClick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.htmlpedia.org/wiki/List_of_CSS_Properties</a></span></p>
+
+        <h2><a name="lessonResultSourceCode"></a>Исходный код приложения на момент завершения текущего урока </h2>
+        <p>Для пользователей MySQL: перейдите по <a href="https://netbeans.org/files/documents/4/1934/lesson8.zip" target="_blank">этой</a> ссылке для загрузки исходного кода, включающего пример дизайна и файл CSS.</p>
+        <p>Для пользователей баз данных Oracle: перейдите по <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson8.zip" target="_blank">этой</a> ссылке для загрузки исходного кода, включающего пример дизайна и файл CSS.</p>
+        <p>PDO: благодарим Горана Мисковича (Goran Miskovic), любезно предоставившего версию PDO полного учебного курса, доступную по <a href="https://netbeans.org/projects/www/downloads/download/php/wishlist-pdo.zip" target="_blank">этой</a> ссылке.  В этом проекте можно переключаться между базами данных Oracle XE и MySQL, просто изменяя параметр DSN.  Проект включает все необходимые сценарии SQL и задокументирован в коде.  Однако следует учесть, что расширение PDO_OCI является экспериментальным.</p>
+        <p>Команда IDE NetBeans выражает благодарность Озану Хазеру (Ozan Hazer) за его вклад, а именно за CSS и усовершенствование кода в готовом образце.</p>
+        <h2><a name="nextSteps"></a>Что дальше?</h2>
+        <p><a href="wish-list-lesson7.html">&lt;&lt;Предыдущий урок</a></p>
+        <p><a href="wish-list-lesson9.html">Следующий урок &gt;&gt;</a>    </p>
+        <p>
+            <a href="wish-list-tutorial-main-page.html">Назад на главную страницу руководства</a></p>
+
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%200:%20Using%20and%20CSS">Отправить отзыв по этому учебному курсу</a></div>
+        <br style="clear:both;" >
+        <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.
+        <p><a href="../../trails/php.html">Возврат к учебной карте PHP</a></p>
+
+    </body>
+</html>

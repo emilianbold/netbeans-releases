@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, WEB SERVICES, SOAP, REST, RESTFUL, JAX-WS">
+        <meta name="description"
+              content="General information about web services for you to read before running tutorials">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <title>Introduction to Web Services - NetBeans IDE</title>
+    </head>
+    
+    <body>
+        <h1>Introduction to Web Services</h1>
+        <p>This document provides  an overview of web service concepts and technologies supported by NetBeans IDE. It is meant to help newcomers to web services before they use any tutorials. </p>
+        <p>Web services are distributed application components that are externally 
+        available. You can use them to integrate  computer applications that  are written in different languages and run on different platforms. Web services are language and platform independent because vendors have agreed on common web service standards. </p>
+        <p>Oracle is developing a java.net project called Metro. Metro is a complete web services stack, covering all of a developer's needs from simple &quot;Hello, World!&quot; demonstrations to reliable, secured, and transacted web services. For more information, see <a href="https://metro.java.net/">the Metro home page</a>.</p>
+        <p>Metro includes  Web Services Interoperability Technologies (WSIT). WSIT supports enterprise features such as security, reliability, and message optimization. WSIT ensures that Metro services with these features are interoperable with Microsoft .NET services. Within Metro, Project Tango develops and evolves the codebase for WSIT. To see how WSIT works, use  the <a href="wsit.html">Advanced Web Service Interoperability</a> tutorial.</p>
+        <p>Several programming models are available to web service developers. These models fall into two categories, both supported by the IDE:</p>
+        <ul>
+            <li><strong>REST-based.</strong> <strong>RE</strong>presentational <strong>S</strong>tate <strong>T</strong>ransfer  is a new way to create and communicate with web services. In REST, resources have URIs and are manipulated through HTTP header operations. For more details, see <a href="#rest">RESTful Web Services</a>.</li>
+            <li><strong>SOAP/WSDL-based.</strong> In traditional web service models, web service interfaces are exposed through WSDL documents (a type of XML), which have  URLs. Subsequent message exchange is in SOAP, another type of XML document. For more details, see <a href="#jaxws">SOAP-based Web Services</a>. </li>
+        </ul>
+        <h2><a name="rest"></a>RESTful Web Services </h2>
+        <p>REST-based (&quot;RESTful&quot;) web services are  collections of web resources identified by URIs. Every document and every process is modeled as a web resource with a unique URI. These web resources are manipulated by   the actions that can be specified in an HTTP header. Neither SOAP, nor WSDL,  nor WS-* standards are used. Instead, message exchange can be conducted in any format&mdash;XML, JSON, HTML, etc. In many cases a web browser can serve as the client. 
+        <p>HTTP is the protocol in REST. Only four methods are available: GET,  PUT, POST, and DELETE. Requests can be bookmarked and responses can be cached. A network administrator can easily follow what is going on with a RESTful service just by looking at the HTTP headers. <p>REST is a suitable technology for  applications that do not require security beyond what is available in the HTTP infrastructure and where HTTP is the appropriate protocol. REST services can still deliver sophisticated functionality. Flickr, Google Maps and Amazon all provide RESTful web services. NetBeans IDE Software as a Service (SaaS) functionality lets you use Facebook, Zillow, and other third-party-provided services in your own applications.
+        <p><a href="https://jersey.java.net/">Project Jersey</a> is
+        the open source reference implementation for building RESTful web services. The Jersey APIs are available as the &quot;RESTful Web Services&quot; plugin for NetBeans IDE.
+        <p>The following tutorials involve creating and consuming REST services:
+            <ul>
+                <li><a href="../../docs/websvc/rest.html">Getting Started with RESTful Web Services</a> </li>
+                <li><a href="../../docs/websvc/zillow.html">SaaS: Zillow</a></li>
+            </ul>
+            <h2><a name="jaxws"></a> SOAP-based Web Services </h2> 
+            <p>In SOAP-based web services, Java utilities create a WSDL file based on the Java code in the web service. The WSDL is exposed on the net. Parties interested in using the web service create a Java client based on the WSDL. Messages are exchanged in SOAP format. The range of operations that can be passed in SOAP is much broader than what is available in REST, especially in security. </p>
+            <p>SOAP-based web services are suitable for heavyweight applications using complicated operations and for applications requiring sophisticated security, reliability or other WS-* standards-supported features. They are also suitable when a transport protocol other than HTTP has to be used. Many of Amazon's web services, particularly those involving commercial transactions, and the web services used by banks and government agencies are SOAP-based.</p>
+            <p>The Java API for XML Web Services (JAX-WS) is the current model for SOAP-based web services in Metro. JAX-WS is built on the earlier JAX-RPC model but uses specific Java EE features, such as annotations, to simplify the task of developing web services. Because it uses SOAP for messaging, JAX-WS is transport neutral. It also supports a wide range of modular WS-* specifications, such as WS-Security and WS-ReliableMessaging. </p>
+            <p>When you create a web service client, you have the option of using either the JAX-WS or JAX-RPC model. This is because some older JAX-RPC services use a binding style that is not supported by JAX-WS. These services can only be consumed by JAX-RPC clients. 
+            
+            <!-- Many JAX-RPC services are still available for consumption, and many of them require JAX-RPC clients. -->
+        
+        <p>The following tutorials involve creating and consuming JAX-WS SOAP-based web services:</p>
+        <ul>
+            <li><a href="./jax-ws.html">Getting Started with JAX-WS Web Services</a></li>
+            <li><a href="./client.html">Developing JAX-WS Web Service Clients</a> </li>
+            <li><a href="./flower_overview.html">Web Service Passing Binary Data</a> - a separate learning trail about using web services to pass binary data which are displayed in a client using Swing components </li>
+            <li><a href="./wsit.html">Advanced Web Service Interoperability</a> (demonstrates WSIT)</li>
+        </ul>
+        
+           
+    </body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Using Oracle Java SE Embedded Support in NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JAVA, JAVA SE, EMBEDDED">
+       
+        <meta name="description" content="A short guide to setting up Java SE Embedded in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>Using Oracle Java SE Embedded Support in NetBeans IDE</h1>
+		<div class="articledate" style="margin-left: 0px;">Written by Tomas Zezula and Alyona Stashkova</div>
+        <p><a href="http://www.oracle.com/technetwork/java/embedded/overview/javase/index.html">Oracle Java Standard Edition Embedded</a> (Oracle Java SE Embedded) enables users to develop highly functional, reliable and portable applications for powerful embedded systems.  NetBeans IDE  supports Java SE Embedded features, such as footprint, memory, power, platform support, etc. </p>
+		
+        <p>In this tutorial, you will learn  how to get started with Java SE Embedded in NetBeans IDE and how to use the IDE support for Java SE Embedded. </p>
+        <p><b>Contents</b></p>
+        <img src="../../../images_www/articles/80/netbeans-stamp.png" class="stamp" alt="Content on this page applies to NetBeans IDE 8.0" title="Content on this page applies to NetBeans IDE 8.0">
+        <ul class="toc">
+		    <li><a href="#remote" title="Setting Up a Remote Platform in NetBeans IDE">Setting Up a Remote Platform in NetBeans IDE</a></li>
+			<li><a href="#calculator" title="Creating a Project">Creating and Running a Project in the IDE</a></li>
+			<li><a href="#project" title="Configuring a Project to Use a Remote Platform">Configuring a Project to Use a Remote Platform</a></li>
+			<li><a href="#use" title="Running a Project on a Remote Platfrom">Running a Project on a Remote Platfrom</a></li>
+            <li><a href="#see" title="See Also">See Also</a></li>
+        </ul>
+
+        <p><b>To complete this tutorial, you need the software and resources listed in the following
+        table.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">version 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">version 7 or 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>Setting Up a Remote Platform in NetBeans IDE</h2>
+	<p>Once <a href="http://www.oracle.com/technetwork/java/embedded/downloads/javase/index.html?ssSourceSiteId=otncn">Oracle Java SE Embedded</a> runtime  is downloaded and installed on your remote machine (Raspberry Pi is used for demonstration purposes in this tutorial),  you need to set up NetBeans IDE with the remote platform as follows: </p>
+    <ul>
+
+<li>activate the Java SE feature in  NetBeans IDE</li>
+<li>install a remote Java SE platform in  NetBeans IDE <p class="notes"><b>Note:</b> The remote operating system must be UNIX. Windows is not supported.</p>
+</li>
+</ul>
+        <p><b>To activate  the Java SE feature in the IDE:</b></p>
+		
+        <ol>
+          <li>Choose Tools &gt; Plugins from the main IDE's toolbar.</li>
+		  <li>In the Plugins dialog box, click the Installed tab and select Java SE in the list of available features. 
+  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/plugins.png" rel="lytebox" title="Plugins dialog box">
+                       <img src="../../../images_www/articles/80/java/javase-embedded/plugins-small.png" alt="Plugins dialog box" border="1"></a></p> </li>
+		  <li>Click Activate.</li>
+		  <li>At the Welcome panel of the Installer dialog box, click Activate. </li>
+		  <li>When the activation is successfully completed, click Finish.</li>
+		  <li>Click Close to close the Plugins dialog box.</li>
+		  
+		  
+		
+    </ol>
+	
+	<p><b>To install a remote Java SE platform in NetBeans IDE:</b></p>
+	<ol><li>Choose Tools &gt; Java Platforms.<br>
+The Java Platform Manager dialog box displays.
+<p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/jpmanager.png" rel="lytebox" title="Name and Location panel">
+                       <img src="../../../images_www/articles/80/java/javase-embedded/jpmanager-small.png" alt="Name and Location panel" border="1"></a></p></li>
+					   <li>Click Add Platform.</li>
+					   <li>In the Select Platform Type of the Add Java Platform wizard, select Remote Java Standard Edition and click Next.<br>
+					     The IDE  displays the Add Java Platform dialog box.
+						 <p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/addjp.png" rel="lytebox" title="Add Java Platform dialog box">
+                       <img src="../../../images_www/articles/80/java/javase-embedded/addjp-small.png" alt="Add java Platform dialog box" border="1"></a></p></li>
+					   <li>Specify the remote platform details such as the name, the IP address or DNS name of the device, login, password, and the path to the JRE on the remote device.
+					   <p class="notes"><b>Note:</b> The target operating system must be UNIX (Windows is not supported).</p></li>
+      <li>Click Finish. The IDE validates the remote JRE by executing a probe and downloads the remote JRE system properties. <br> 
+        A new remote Java SE platform displays in the Java Platform Manager dialog box.
+		<p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/jpremote.png" rel="lytebox" title="Add Java Platform dialog box">
+                       <img src="../../../images_www/articles/80/java/javase-embedded/jpremote-small.png" alt="Add java Platform dialog box" border="1"></a></p></li>
+    </ol>
+					   <p>Now your NetBeans IDE is set up for remote Java SE development.</p>
+	<h2><a name="calculator"></a>Creating and Running a Project in the IDE </h2>
+	<p>Now let us create a project that is going to be first run in the IDE and then on the remote platform. </p>
+	<p><b>To create a project:</b></p>
+	<ol>
+	<li>In the IDE, choose File &gt; New Project.</li> 
+	<li>In the New Project wizard, choose the Java category and select Java Application in the Projects list. Click Next. </li>
+	<li>In the Name and Location page of the wizard, do the following:
+
+                <ul>
+                    <li>In the Project Name field, type <code>EmbeddedCalculator</code>.</li>
+                    <li>Leave the Use Dedicated Folder for Storing Libraries checkbox unselected.</li>
+                    <li>In the Create Main Class field, type <code>embeddedcalculator.EmbeddedCalculator</code>.</li>
+                    
+                </ul>
+       <p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/wizard.png" rel="lytebox" title="New Project wizard: Name and Location">
+                       <img src="../../../images_www/articles/80/java/javase-embedded/wizard-small.png" alt="New Project wizard: Name and Location" border="1"></a></p>         
+				
+      </li>          
+    <li>Click Finish.<br>The IDE creates and opens the Java SE project in the Projects window.</li>
+	<li>Replace the <tt>// TODO code application logic here</tt> line with the following code: 
+	    <pre>    int a = 1;
+    int b = 2;
+    int c = a + b;
+    System.out.println (c);</pre>
+	</li>
+	<li>Save your changes by choosing File &gt; Save. </li>
+	</ol>
+	<p>To test your application, right-click the project name and choose  Run from the context menu. The calculated output can be viewed in the Output window (Window &gt; Output).</p>
+	<p class="align-center">
+					  <img src="../../../images_www/articles/80/java/javase-embedded/run-ide.png" alt="Output window" border="1"></p>
+	<h2><a name="project"></a>Configuring a Project to Use a Remote Platform</h2>
+	<p>To develop a Java SE embedded application on a remote platform using <a href="http://openjdk.java.net/jeps/161">compact1, compact2, or compact3 runtime platforms</a>, JDK 8 needs to be registered in the IDE. </p>
+	<p><b>To enable JDK 8 support in NetBeans IDE:</b></p>
+	<ol>
+          <li>In the IDE, choose Tools &gt; Java Platforms  from the main menu.</li>
+		  <li>Click Add Platform in the Java Platform Manager dialog. </li>
+		  <li>In the Add Java Platform dialog, select Java Standard Edition and click Next. </li>
+		  <li>Specify the directory that contains the JDK and click Next. 
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/jdk8.png" rel="lytebox" title="JDK 8 selected">
+					   <img src="../../../images_www/articles/80/java/javase-embedded/jdk8-small.png" alt="JDK 8 selected" border="1"></a> </p></li>
+		  <li>Verify that the default locations of the platform sources zip file and API documentation are valid. Click Finish to close the Add Java Platform dialog box.<br> 
+		  JDK 8  is registered as a platform in the IDE. 
+		    <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/jdk8registered.png" rel="lytebox" title="Registered Java Platform">
+	      <img src="../../../images_www/articles/80/java/javase-embedded/jdk8registered-small.png" alt="Registered Java Platform" border="1"></a> </p></li>
+		<li>Click Close.</li>
+    </ol>
+	
+	<p><b>To configure your project to use JDK 8:</b></p>
+	<ol>
+	<li>Right-click the EmbeddedCalculator project in the Projects window and select Properties from the context menu. </li>
+	<li>In the Project Properties dialog box, choose the Libraries category and set JDK 1.8 as the Java Platform. 
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-jdk8.png" rel="lytebox"
+                       title="JDK 8 set as Java Platform">
+      <img src="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-small.png"
+                     alt="JDK 8 set as Java Platform" border=1></a> </p></li>
+	 <li>Select the Sources category and set Source/Binary Format to JDK 8.
+		
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-source-jdk8.png" rel="lytebox"
+                       title="Setting Source/Binary Format to JDK 8">
+					   <img src="../../../images_www/articles/80/java/javase-embedded/prj-source-jdk8-small.png"
+                     alt="Setting Source/Binary Format to JDK 8" border=1></a> </p> </li>
+	<li>Specify the profile that is used as runtime on a remote platform (for example, Compact 2).
+	<p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-profile.png" rel="lytebox"
+                       title="Setting Profile to Compact 2">
+					   <img src="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-profile-small.png"
+                     alt="Setting Profile to Compact 2" border=1></a> </p>  </li>
+	<li>Click OK to save the changes. <br>
+	  Your project is set to recognize a particular runtime on a remote platform.</li>
+	</ol>
+	<h2><a name="use"></a>Running a Project on a Remote Platfrom</h2>
+		 <p>You can run and debug the application on a remote device after setting the project configuration to a configuration different from the default one. </p>
+	<p><b>To create a new configuration:</b></p>
+	<ol>
+	<li>Right-click the project name in the Projects window and select Properties from the context menu.</li>
+	<li>Choose the Run category.</li>
+	<li>Click New to the right of the Configuration drop-down list.</li>
+	<li>In the Create New Configuration dalog box, specify the name of a new configuration and click OK.</li>
+	<li>Select the runtime platform name in the Runtime Platform drop-down list.
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/config-runtime.png" rel="lytebox"
+                       title="Setting Runtime Platform">
+					   <img src="../../../images_www/articles/80/java/javase-embedded/config-runtime-small.png"
+                     alt="Setting Runtime Platform" border=1></a> </p></li>
+	<li>Click OK to save your edits. </li>
+	</ol>
+	<p>If you run the project on a remote platform (Run &gt; Run Project (project name)), the output will look similar to what is shown in the figure below. </p>
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/run-remote.png" rel="lytebox"
+                       title="Setting Runtime Platform">
+					   <img src="../../../images_www/articles/80/java/javase-embedded/run-remote-small.png"
+                     alt="Setting Runtime Platform" border=1></a> </p>	
+<p><b>To switch between project configurations:</b> </p> 
+<ul>
+<li>Choose Run &gt; Set Project Configuration &gt; configuration name or right-click the project name and choose Set Configuration &gt; configuration name from the context menu.
+<p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/switch-config.png" rel="lytebox"
+                       title="Switching Between Project Configuration">
+					   <img src="../../../images_www/articles/80/java/javase-embedded/switch-config-small.png"
+                     alt="Switching Between Project Configuration" border=1></a> </p></li>
+
+</ul>
+		
+		 
+
+	 
+        
+        
+        
+
+         <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Setting%20Up%20Oracle%20Java%20SE%20Embedded%20in%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>See Also</h2>
+        <ul>
+            
+			
+			<li><a href="http://www.oracle.com/technetwork/java/embedded/resources/se-embeddocs/index.html?ssSourceSiteId=null">Java SE Embedded Documentation</a></li>
+			<li><a href="https://www.youtube.com/watch?v=mAnne3N0d5Y#t=149" target="_blank">Java SE Embedded Development Made Easy - Part 1 of 2 </a></li>
+			<li><a href="https://www.youtube.com/watch?v=G8oMx2SJZq8">Java SE Embedded Development Made Easy - Part 2 of 2</a></li>
+			<li><a href="http://www.oracle.com/technetwork/articles/java/raspberrypi-1704896.html">Getting Started with Java® SE Embedded on the Raspberry Pi</a></li>
+	</ul>
+			
+
+        
+</body>
+</html>

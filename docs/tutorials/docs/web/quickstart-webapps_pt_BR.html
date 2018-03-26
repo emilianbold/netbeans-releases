@@ -1,0 +1,331 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>       
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A short guide to creating and using web
+              applications in NetBeans IDE.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              web applications, open source, JSP, JavaServer Pages, JavaBeans">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+        <title>Introdução ao Desenvolvimento de Aplicações Web - Tutorial do NetBeans IDE</title>
+    </head>
+
+    <body>
+        <h1>Introdução ao Desenvolvimento de Aplicações Web</h1>
+
+        <p>Este documento oferece os conceitos básicos sobre o uso do NetBeans IDE no desenvolvimento de aplicações Web. Ele demonstra como criar uma aplicação Web simples, implantá-lo em um servidor e exibir sua apresentação em um browser. A aplicação implanta uma página <a href="http://www.oracle.com/technetwork/java/javaee/jsp/index.html">JavaServer Pages</a>(tm) (JSP) para solicitar que você insira o seu nome. Em seguida, utiliza um componente JavaBeans para manter o nome durante a sessão HTTP e recupera o nome para saída em uma segunda página JSP.</p>
+
+        <p><strong>Conteúdo</strong></p>
+
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+        <ul class="toc">
+            <li><a href="#setting">Configurando um Projeto de Aplicação Web</a></li>
+            <li><a href="#creating">Criando e Editando Arquivos de Origem de Aplicações Web</a>
+                <ul>
+                    <li><a href="#creatingJava">Criando um Pacote Java e um Arquivo de Origem Java</a></li>
+                    <li><a href="#generating">Gerando os Métodos "Getter" e "Setter"</a></li>
+                    <li><a href="#editing">Editando o Arquivo JavaServer Pages Default</a></li>
+                    <li><a href="#creatingJSP">Criando um Arquivo JavaServer Pages</a></li>
+            </ul></li>
+            <li><a href="#building"> Executando um Projeto de Aplicação Web</a></li>
+          <li><a href="#trouble">Solução de Problemas</a></li>
+            <li><a href="#seeAlso">Consulte Também</a></li>
+        </ul>
+
+        <p><strong>Para seguir este tutorial, os recursos e softwares a seguir são necessários.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Versão Java EE 7.2, 7.3, 7.4, 8.0</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">versão 7 ou 8</td>
+              </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition <br><em class="indent margin-around">ou</em> <br>Contêiner do servlet Tomcat <br> <em class="indent margin-around">ou</em> <br> Servidor Oracle WebLogic </td>
+                    <td class="tbltd1" valign="top">4.x <br> <em class="margin-around indent">&nbsp;</em> <br>7.x ou 8.x<br> <br>11gR1 (10.3.3) ou mais recente</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong>Observações:</strong></p>
+
+        <ul>
+            <li>A instalação do Java EE (e não do Java SE!) permite instalar opcionalmente o GlassFish Server e o contêiner do servlet Apache Tomcat.</li>
+          
+          <li>Se quiser comparar seu projeto com uma solução que funciona, <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/HelloWebEE6.zip">faça download da aplicação de amostra</a>.</li>
+        </ul>
+
+        <a name="setting"></a>
+        <h2>Configurando um Projeto de Aplicação Web</h2>
+
+        <ol>
+            <li>Selecione Arquivo > Novo Projeto (Ctrl-Shift-N) no menu principal. Em Categorias, selecione Java Web. Em Projetos, selecione Aplicação Web e clique em Próximo.</li>
+            <li>Na Etapa 2, indique <tt>HelloWeb</tt> na caixa de texto Nome do Projeto. </li>
+            <li>Especifique a Localização do Projeto para qualquer diretório no computador. Para fins deste tutorial, esse diretório é chamado de <tt><i>$PROJECTHOME</i></tt>.          </li>
+            <li>(Opcional) Marque a caixa de seleção Utilizar Pasta Dedicada para Armazenamento de Bibliotecas e especifique o local da pasta de bibliotecas. Consulte <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366">Criando Projetos Java</a> em <em>Desenvolvendo Aplicações com o NetBeans IDE</em> para obter mais informações sobre essa opção.</li>
+
+            <li>Clique em Próximo. O painel Servidor e Definições é aberto. Selecione a versão de Java EE que deseja usar com seu aplicação. </li>
+            <li>Selecione o servidor no qual deseja implantar a aplicação. Somente os servidores registrados com o IDE serão listados. Observe que o Caminho de Contexto (ou seja, no servidor) se torna <tt>/HelloWeb</tt>, que se baseia no nome dado ao projeto na etapa anterior. 
+            </li>
+            <li>Clique em Finalizar. 
+                <p>O IDE cria a pasta do projeto <tt><i>$PROJECTHOME</i>/HelloWeb. </tt> Você pode exibir a estrutura de arquivos do projeto na janela Arquivos (Ctrl-2) e sua estrutura lógica na janela Projetos (Ctrl-1): </p>
+                <img alt="Estrutura lógica do projeto HelloWeb exibida na janela Projetos" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/projects-window.png">
+            </li>
+        </ol>
+                <p>A pasta do projeto contém todas as fontes e metadados do projeto, como o script de construção Ant do projeto. O projeto HelloWeb é aberto no IDE. A página de boas-vindas, <tt>index.jsp</tt>, é aberta no Editor de Código-Fonte na janela principal. </p>
+                <p class="notes"><strong>Observação.</strong> Dependendo do servidor e da versão de Java EE especificada quando você criou o projeto, o IDE pode gerar <tt>index.html</tt> como a página de boas-vindas do projeto Web. Você pode executar as etapas deste tutorial e usar o arquivo <tt>index.html</tt> ou pode usar o assistente Novo Arquivo para gerar um arquivo <tt>index.jsp</tt> para usar como a página de boas-vindas, caso você delete o arquivo <tt>index.html</tt>.</p>
+
+
+        <a name="creating"></a>
+        <h2>Criando e Editando Arquivos de Origem de Aplicações Web</h2>
+
+        <p>A criação e edição de arquivos de origem é a função mais importante do IDE. Afinal de contas, é isto o que você faz na maior parte do tempo. O IDE fornece uma ampla variedade de ferramentas que podem complementar o estilo pessoal de qualquer desenvolvedor, tanto se você preferir codificar tudo manualmente quanto se quiser que o IDE gere grandes blocos de código para você.</p>
+
+        <div class="indent">
+            <a name="creatingJava"></a>
+            <h3>Criando um Pacote Java e um Arquivo de Origem Java</h3>
+
+            <ol>
+                <li>Na janela Projetos, expanda o nó Pacotes de Códigos-Fonte. Observe que o nó Pacotes de Código-Fonte contém somente um nó de pacote default vazio.</li>
+                <li>Clique com o botão direito do mouse no nó Pacotes de Código-Fonte e selecione Nova > Classe Java. Indique <tt>NameHandler</tt> na caixa de texto Nome da Classe e digite         <tt>org.mypackage.hello</tt> na caixa de combinação Pacote. Clique em Finalizar. Observe que o novo arquivo <tt>NameHandler.java</tt> será aberto no Editor de Código-Fonte.</li>
+                <li>No Editor de Código-Fonte, declare uma variável <tt>String</tt> digitando a linha seguinte diretamente abaixo da declaração da classe.
+                <pre class="examplecode">String name;</pre></li>
+                <li>Adicione o construtor a seguir à classe:
+                <pre class="examplecode">public NameHandler() { }</pre></li>
+                <li>Adicione a linha a seguir no construtor <tt>NameHandler()</tt>:
+                <pre class="examplecode">name = null;</pre></li>
+            </ol>
+
+            <a name="generating"></a>
+            <h3>Gerando os Métodos Getter e Setter</h3>
+
+            <ol>
+                <li>Clique com o botão direito do mouse no campo <tt>name</tt> do Editor de Código-Fonte e selecione Refatorar > Encapsular Campos. 
+                    <p>A caixa de diálogo Encapsular Campos será aberta, listando o campo <tt>name</tt>. Observe que a Visibilidade do Campo é definida por default como privada, e a Visibilidade dos Acessadores como pública, indicando que o modificador de acesso da declaração da variável da classe será especificado como privado, enquanto os métodos getter e setter serão gerados com os modificadores <tt>public</tt> e <tt>private</tt>, respectivamente.</p>
+                    <img alt="Caixa de diálogo Encapsular Campos" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/encapsulatefields-dialog.png"></li>
+                <li>Clique em Refatorar. 
+                    <p>Os métodos getter e setter são gerados para o campo <tt>name</tt>. O modificador da variável de classe é definido como <tt>private</tt> enquanto os métodos getter e setter são gerados com modificadores públicos. A classe Java deverá ser semelhante a:</p>
+
+                    <pre class="examplecode">package org.mypackage.hello;
+
+/**
+ *
+ * @author nbuser
+ */
+
+public class NameHandler {
+
+    private String name;
+
+    /** Creates a new instance of NameHandler */
+    public NameHandler() {
+       name = null;
+    }
+
+    public String getName() {
+       return name;
+    }
+
+    public void setName(String name) {
+       this.name = name;
+    }
+
+}</pre>
+                </li>
+            </ol>
+
+            <a name="editing"></a>
+            <h3>Editando o Arquivo JavaServer Pages Default</h3>
+
+            <ol>
+                <li>Focalize novamente o arquivo <tt>index.jsp</tt>, clicando em sua guia exibida na parte superior do Editor de Código-Fonte.</li>
+                <li><p>Na Paleta (Ctrl-Shift-8) localizada à direita do Editor de Código-Fonte, expanda Forms HTML e arraste um item Form para um ponto após as tags <tt>&lt;h1></tt> do Editor de Código-Fonte. </p>
+             <p>  A caixa de diálogo Inserir Form será exibida.</p></li>
+                  
+                  
+          <li>        Especifique os valores a seguir:
+                  <ul>
+                    <li><strong>Ação:</strong> response.jsp
+                    <li><strong>Método:</strong> GET
+                    <li><strong>Nome:</strong> Form de Entrada de Nome
+            </ul>
+                  <p>Clique em OK. Um form HTML será adicionado ao arquivo <tt>index.jsp</tt>.</p>
+                  <img alt="Caixa de diálogo Form de Entrada" src="../../../images_www/articles/72/web/quickstart-web/input-form.png"></li>
+                <li>Arraste um item Entrada de Texto para um ponto antes da tag <tt>&lt;/form></tt>, em seguida, especifique os seguintes valores:
+
+                    <ul>
+                        <li><strong>Nome:</strong> nome
+                        <li><strong>Tipo:</strong> texto
+                    </ul>
+
+                    Clique em OK. Uma tag HTML <tt>&lt;input></tt> será adicionada entre as tags <tt>&lt;form></tt>. Delete o atributo <tt>value</tt> dessa tag.</li>
+
+                <li>Arraste um item Botão para antes da tag <tt>&lt;/form></tt>. Especifique os valores a seguir:
+
+                    <ul>
+                        <li><strong>Label:</strong> OK
+                        <li><strong>Tipo:</strong> envio
+                    </ul>
+
+                    Clique em OK. Um botão HTML será adicionado entre as tags <tt>&lt;form></tt>.</li>
+
+                <li>Digite <tt>Indique seu nome:</tt> antes da primeira tag <tt>&lt;input></tt>, em seguida, altere o texto default <tt>Hello World!</tt> entre as tags <tt>&lt;h1></tt> para <tt>Entry Form</tt>.</li>
+
+                <li>Clique com o botão direito do mouse no Editor de Código-Fonte e selecione Formatar (Alt-Shift-F) para aprimorar o formato do seu código. Seu arquivo <tt>index.jsp</tt> agora deverá ser semelhante ao seguinte:
+
+                    <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;JSP Page&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Entry Form&lt;/h1&gt;
+
+        &lt;form name=&quot;Name Input Form&quot; action=&quot;response.jsp&quot;&gt;
+            Enter your name:
+            &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;
+            &lt;input type=&quot;submit&quot; value=&quot;OK&quot; /&gt;
+        &lt;/form&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+                </li>
+            </ol>
+
+      <a name="creatingJSP"></a>
+            <h3>Criando um Arquivo JavaServer Pages</h3>
+
+            <ol>
+                <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto HelloWeb e selecione Novo > JSP. O assistente de Novo Arquivo JSF será aberto. Chame o arquivo de <tt>response</tt> e clique em Finalizar. Observe que um nó do arquivo <tt>response.jsp</tt> será exibido na janela Projetos abaixo de <tt>index.jsp</tt>, e o novo arquivo aberto no Editor de Código-Fonte.</li>
+                <li>
+                    <p>Na Paleta à direita do Editor de Código-Fonte, expanda JSP e arraste um item do Bean de Uso para baixo da tag <tt>&lt;body></tt> no Editor de Código-Fonte. A caixa de diálogo Inserir Bean de Uso será aberta. Especifique os valores mostrados na figura a seguir.</p>
+
+
+                    <img alt="Caixa de diálogo Bean de Uso contendo os campos especificados" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/usebean-dialog.png">
+
+                    <ul>
+                        <li><strong>ID:</strong> mybean
+                        <li><strong>Classe: </strong>org.mypackage.hello.NameHandler
+                        <li><strong>Escopo:</strong> sessão
+                    </ul>
+
+                    Clique em OK. Observe que a tag <tt>&lt;jsp:useBean></tt> é adicionada abaixo da tag <tt>&lt;body></tt>.</li>
+
+                <li>Arraste um item Definir Propriedade do Bean da Paleta para um ponto antes da tag <tt>&lt;h1></tt> e clique em OK. Na tag <tt>&lt;jsp:setProperty></tt> que aparece, delete o atributo <tt>value</tt> vazio e edite da seguinte forma: Delete o atributo <tt>value = ""</tt> se o IDE o tiver criado! Do contrário, ele substitui o valor de <tt>name</tt> indicado em <tt>index.jsp</tt>.
+
+                    <pre class="examplecode">&lt;jsp:setProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;</pre>
+
+                    <p>Conforme indicado na </p>documentação de <tt>&lt;jsp:setProperty></tt>, você pode definir um valor de propriedade de várias formas. Nesse caso, a entrada do usuário que vem de <tt>index.jsp</tt> se torna um par nome/valor que é passado para o objeto <tt>request</tt>. Quando você define uma propriedade usando a tag <tt>&lt;jsp:setProperty></tt>, pode especificar o valor de acordo com o nome de uma propriedade contida no objeto <tt>request</tt>. Portanto, definindo <tt>property</tt> como <tt>name</tt>, você pode recuperar o valor especificado pela entrada do usuário.</p></li>
+
+                <li>Altere o texto entre as tags &lt;h1> de forma que ele tenha a seguinte aparência:
+                    <pre class="examplecode">&lt;h1&gt;Hello, !&lt;/h1&gt;</pre>
+                </li>
+                <li>Arraste um item Propriedade Get Bean da Paleta e solte-o depois da vírgula entre as tags <tt>&lt;h1></tt>. Especifique os seguintes valores na caixa de diálogo Inserir Propriedade Get Bean:
+
+                    <ul>
+                        <li><strong>Nome do Bean: </strong>mybean
+                        <li><strong>Nome da Propriedade: </strong>nome
+                    </ul>
+
+                    <p>Clique em OK. Observe que a tag <tt>&lt;jsp:getProperty></tt> agora estará adicionada entre as tags <tt>&lt;h1></tt>.</p>
+                <p class="alert"><b>Cuidado:</b> os nomes de propriedade fazem distinção entre maiúsculas e minúsculas. A propriedade "name" deve estar com a mesma colocação de maiúsculas e minúsculas que em <tt>response.jsp</tt> e na forma de entrada em <tt>index.jsp</tt>.
+              </li>
+
+                <li>Clique com o botão direito do mouse no Editor de Código-Fonte e selecione Formatar (Alt-Shift-F) para aprimorar o formato do seu código. As tags <tt>&lt;body></tt> do seu arquivo <tt>response.jsp</tt> agora devem ser semelhantes ao seguinte:
+
+                    <pre class="examplecode">&lt;body&gt;
+    &lt;jsp:useBean id=&quot;mybean&quot; scope=&quot;session&quot; class=&quot;org.mypackage.hello.NameHandler&quot; /&gt;
+    &lt;jsp:setProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;
+    &lt;h1&gt;Hello, &lt;jsp:getProperty name=&quot;mybean&quot; property=&quot;name&quot; /&gt;!&lt;/h1&gt;
+&lt;/body&gt;</pre>
+                </li>
+            </ol>
+        </div>
+
+        <a name="building"></a>
+        <h2>Executando um Projeto de Aplicação Web</h2>
+
+    <p>O IDE utiliza um script de construção Ant para construir e executar aplicações Web. O IDE gera o script de construção com base nas opções especificadas no assistente de Novo Projeto, bem como naquelas da caixa de diálogo Propriedades do Projeto (na janela Projetos, selecione Propriedades no menu de contexto do nó do projeto).</p>
+
+        <ol>
+            <li>
+              <p>Na janela Projetos, clique com o botão direito do mouse no nó do projeto HelloWeb e selecione Executar (F6). Quando uma aplicação Web é executado, o IDE executa as seguintes etapas:</p>
+                    <ul>
+                    <li>Construção e compilação do código da aplicação (ver observação a seguir). É possível executar essa etapa isoladamente selecionando Construir ou Limpar e Construir no menu de contexto do nó do projeto.</li>
+                    <li>Inicialização do servidor.</li>
+                    <li>Implantação da aplicação no servidor. É possível executar essa etapa isoladamente, selecionando Implantar a partir do menu de contexto do nó do projeto.</li>
+                    <li>View da aplicação em uma janela de browser.</li>
+                    </ul>
+                    <p class="notes"><b>Observação:</b> Por default, o projeto foi criado com a funcionalidade Compilar ao Salvar ativado, então, não é necessário compilar o código primeiro para executar a aplicação no IDE. </p>
+            </li>
+
+            <li>
+              <p>O IDE abre uma janela de saída que mostra o andamento da execução da aplicação. Veja a guia HellWeb na janela de Saída. Nessa guia, é possível acompanhar todas as etapas executadas pelo IDE. Se houver um problema, o IDE mostrará as informações do erro nessa janela.</p>
+          <img alt="Janela de saída do NetBeans IDE para executar a aplicação Hello da Web" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/app-output-tab.png"></li>
+            <li>O IDE abre uma janela de saída mostrando a situação do servidor. Observe a guia na janela de Saída com o nome do servidor.
+              <p class="alert"><b>Importante:</b> se a inicialização do GlassFish Server falhar, inicie-o manualmente e execute novamente o projeto. É possível iniciar o servidor manualmente a partir da janela Serviços clicando com o botão direito no nó do servidor e selecionando Iniciar.</p>
+                <p class="tips">A janela de saída do servidor oferece diversas informações sobre os problemas que ocorre ao executar aplicações Web. Os logs do servidor também podem ser úteis. Eles estão localizados no diretório de domínio relevante do servidor. Também é possível exibir o log do IDE, selecionando Exibir > Log do IDE.</p>
+                <img alt="Janela de saída do NetBeans IDE para o GlassFish 3 Server, ao executar a aplicação Hello Web" class="margin-around b-all" src="../../../images_www/articles/72/web/quickstart-web/gf-output-tab.png">
+            </li>
+            <li>
+              <p>A página <tt>index.jsp</tt> será aberta no browser default. Observe que a janela do browser poderá abrir antes que o IDE exiba a saída do servidor.</p>
+              
+              <img alt="Index.jsp exibido no browser" border="1" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/result1.png"></li>
+            <li><p>Indique seu nome na caixa de texto e clique em OK. A página <tt>response.jsp</tt> é exibida com uma simples saudação.</p>
+
+
+                <img alt="response.jsp exibido no browser" border="1" class="margin-around" src="../../../images_www/articles/72/web/quickstart-web/result2.png"></li>
+        </ol>
+
+<a name="trouble"></a>
+        <h2>Solução de Problemas</h2>
+
+        <p><em>Construímos e executamos o projeto. Quando clico no botão OK do <tt>index.jsp</tt>, é exibida uma página de erro indicando que <tt>response.jsp</tt> não está disponível.</em></p>
+
+        <div class="indent">
+            <p>Você verificou a janela de Saída do IDE (Ctrl-4) na guia do projeto ou na guia do servidor? Quais mensagens de erro existem? Qual JDK seu projeto usa? Qual servidor? O JDK 7 requer o GlassFish 3.x ou o Tomcat 7.x. Clique com o botão direito do mouse no nó do projeto na janela Projetos e selecione Propriedades. O JDK está na categoria Bibliotecas, no campo Plataforma Java. A versão do servidor está na categoria Executar. Finalmente, faça download do <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java%20Web/HelloWebEE6.zip">projeto de amostra</a> e compare-o com o seu.</p>
+        </div>
+		<p><em>Construí e executei o projeto, mas nenhum nome é exibido, somente "Hello, !"</em></p>
+		<div class="indent">
+		<p>A sua tag &lt;jsp:setProperty> contém um atributo <tt>value = ""</tt>? Isso substitui o valor indicado no form <tt>index.jsp</tt> por uma string vazia. Delete o atributo <tt>value</tt>.</p></div>
+        <p><em>Construí e executei o projeto, mas recebo "Hello, null!” como resposta"</em></p>
+        <div class="indent">
+        <p>Verifique a aplicação e o servidor e, depois, o log do servidor nas janelas de saída do IDE. O servidor está em execução? A aplicação foi implantada? Se o servidor estiver em execução e a aplicação tiver sido implantada, você está recebendo <tt>org.apache.jasper.JasperException: java.lang.NullPointerException?</tt> Isso geralmente significa que um valor do seu código não foi inicializado corretamente. Neste tutorial, isso significa que provavelmente há um erro de digitação em alguma parte do nome de uma propriedade de seus arquivos JSP. Lembre-se de que os nomes de propriedade fazem distinção entre maiúsculas e minúsculas.</p>
+        </div>
+
+        <div class="feedback-box">
+        <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Developing%20Web%20Applications">Enviar Feedback neste Tutorial</a></div>
+
+        <br style="clear:both;">
+
+        <a name="seeAlso"></a>
+        <h2>Consulte Também</h2>
+
+        <p>Isso conclui o tutorial Introdução ao Desenvolvimento de Aplicações Web. Este documento demonstrou como criar uma aplicação Web simples utilizando o NetBeans IDE, implantá-la em um servidor e exibir a sua apresentação em um browser. Ele também mostrou como usar JavaServer Pages e JavaBeans na aplicação para coletar, manter e retornar dados do usuário.</p>
+
+        <p>Para obter mais informações relacionadas e avançadas sobre o desenvolvimento de aplicações Web no NetBeans IDE, consulte os seguintes recursos:</p>
+
+        <ul>
+            
+            <li><a href="quickstart-webapps-struts.html">Introdução ao Struts Web Framework</a>. Descreve os conceitos básicos do uso do NetBeans IDE para desenvolver aplicações Web que utilizam o Struts Framework.</li>
+          <li><a href="../../trails/java-ee.html">Trilha de Aprendizado do Java EE e Java Web</a></li>
+        </ul>
+
+    </body>
+</html>

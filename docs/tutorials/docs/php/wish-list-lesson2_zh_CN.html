@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+    <title>使用 PHP 创建数据库驱动的应用程序。设计 PHP 应用程序。使用 HTML 输入窗体。从 MySQL 数据库中读取数据的 PHP 实现</title>
+    <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+    <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Design PHP application. HTML input form. PHP implementation of reading from MySQL database" >
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+            <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+        <script type="text/javascript">
+ 
+function toggle(id) {
+  var e = document.getElementById(id);
+ 
+  if (e.style.display == '')
+    e.style.display = 'none';
+  else
+    e.style.display = '';
+}
+ 
+</script></head>
+<body>
+<h1>使用 PHP 创建数据库驱动的应用程序 </h1>
+<h1>第 2 课：设计应用程序。从数据库读取数据 </h1>
+
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>教程目录：</h4>
+<ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">使用 PHP 创建数据库驱动的应用程序 - 主页</a></li>
+    <li><p>创建数据库</p> <ol type="a"><li><a href="wish-list-lesson1.html">创建 MySQL 数据库</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">创建 Oracle 数据库表</a></li>
+    </ol></li>
+    <li><p><b>=&gt; 设计应用程序。从数据库读取数据</b></p>
+    <ul><li><a href="#createProject">创建 PHP 项目</a></li>
+    <li><a href="#pageFlowDiagram">定义页面流程图</a></li>
+    
+  <li><a href="#transferDataFromIndexToWishlist">将窗体添加到 index.php</a>
+                <li><a href="#createNewFile">创建 wishlist.php 和测试应用程序</a></li>
+            
+            <li><a href="#receiveAndProcessDaaInWishlist">建立连接和获取许愿者 ID</a></li>
+        
+            <li><a href="#wish-table">显示愿望表</a></li>
+          <li><a href="#lessonResultSourceCode">完成当前课程后的应用程序源代码</a></li>
+</ul>
+    </li>
+    <li><a href="wish-list-lesson3.html">创建新的应用程序用户</a></li>
+    <li><a href="wish-list-lesson4.html">优化代码</a></li>
+    <li><a href="wish-list-lesson5.html">添加安全功能。实现应用程序用户登录</a></li>
+    <li><a href="wish-list-lesson6.html">在数据库中添加新的愿望</a></li>
+    <li><a href="wish-list-lesson7.html">更新和删除数据库中的条目</a></li>
+    <li><a href="wish-list-lesson8.html">使用 CSS 技术改进应用程序的外观</a></li>
+    <li><a href="wish-list-lesson9.html">将应用程序部署到远程 Web 服务器</a></li>
+</ol>
+</div>
+</div>
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<p>在本课中，将创建和配置 PHP 项目以开发应用程序，在应用程序中创建一组页面，然后定义它们之间的关系。您还会开发基本应用程序功能，并针对在第 1 课的样例数据库中输入的数据测试该功能。 </p>
+<p>本课中编写的 PHP 代码执行以下功能：</p>
+<p>1. 获取用户所键入的个人名字。</p>
+<p>2. 检查此人是否确实在数据库中。如果此人不在数据库中，则会退出并显示错误消息。</p>
+<p>3. 显示此人的愿望表。</p>
+<p>当前文档是“在适用于 PHP 的 NetBeans IDE 中创建数据库驱动的应用程序”教程的一部分。 </p>
+
+<br style="clear:left">
+
+<h2><a name="createProject"></a>创建 PHP 项目</h2>
+<p>选择 "File"（文件）> "New Project"（新建项目）（在 Linux 和 Windows 上为 Ctrl-Shift-N 组合键，在 MacOS 上为 ⌘-Shift-N 组合键）。创建一个名为 "wishlist" 的新 PHP 项目。默认情况下，在创建 PHP 项目时，它包含 <tt>index.php</tt> 索引文件。有关创建和配置 PHP 项目的信息，请参见<a href="project-setup.html">设置 PHP 项目</a>。 </p>
+<h2><a name="pageFlowDiagram"></a>定义页面流程图 </h2>
+应用程序范围涵盖以下用例：
+<ol>
+    <li>用户查看某人的愿望列表。</li>
+    <li>用户注册为新许愿者。</li>
+    <li>用户登录并创建她/他的愿望列表。</li>
+    <li>用户登录并编辑他/她的愿望列表。 </li>
+</ol>
+要涵盖此基本功能，您需要实现以下 PHP 文件：
+<ol>
+    <li>主页 index.php，用于登录、注册和切换到其他用户的愿望列表。</li>
+    <li>wishlist.php 页，用于查看特定许愿者的愿望列表。</li>
+    <li>createNewWisher.php 页，用于注册为许愿者。 </li>
+    <li>editWishList.php 页，用于按所有者编辑愿望列表。</li>
+    <li>editWish.php 页，用于创建和编辑愿望。 </li>
+</ol>
+<img alt="该图显示各种用例中的页面之间的已计划切换" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram.png">
+
+<p>现在，您已完成了预备步骤，接下来便可开始实现基本应用程序功能了。从查看许愿者的愿望列表入手。该功能不涉及任何验证并且可以轻松进行测试，因为您已在数据库中输入了测试数据。将在两个页面（index.php 和 wishlist.php）上实现该功能。</p>
+
+<h2><a name="transferDataFromIndexToWishlist"></a>将窗体添加到 index.php</h2>
+<p>index.php 文件不包含任何 PHP 代码，因此，您可以方便地删除以下块：</p>
+<p><tt>index.php</tt> 文件有两个用途：</p>
+<ul>
+    <li>显示包含数据输入控件的页面。</li>
+    <li>将输入的数据传输到另一个 PHP 文件，并在其中处理该数据。在本教程中，数据将传送到一个名为 <tt>wishlist.php</tt> 的文件，将在下一节中创建该文件并进行编码。</li>
+</ul>
+<p>这些操作是使用 HTML 窗体执行的。每个 HTML 窗体包含：</p>
+<ul>
+    <li>与页面上的控件对应的一组字段。 </li>
+    <li>在用户提交窗体上的数据后执行的“操作”。该操作由处理数据的页面的路径表示。 </li>
+</ul>
+<p><strong>将窗体添加到 index.php：</strong></p>
+<ol>
+  <li>切换到 "Projects"（项目）窗口，展开项目节点和 "Source Files"（源文件）节点，然后双击 <tt>index.php</tt> 文件。将在主 IDE 编辑器区域中打开 <tt>index.php</tt> 文件。该文件包含一个用于输入 HTML 和 PHP 代码的模板。
+    <p class="notes"><b>注：</b>您可以忽略来自 HTML 验证器的警告。</p>
+    . </li>
+  <li>删除 PHP 块。index.php 文件将不包含任何 PHP 代码。<br> <img alt="可删除的空 PHP 块" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/remove-php-block.png"></li>
+  <li>从 "Window"（窗口）菜单中打开 "Palette"（组件面板），也可以按 Ctrl-Shift-8 组合键打开。 </li>
+  <li>从 "Palette"（组件面板）的 <strong>HTML Forms</strong>（HTML 窗体）部分中，将一个窗体拖放至 <tt>index.php</tt> 的 &lt;body&gt; 部分中。 <br><img alt="将 HTML 窗体元素从组件面板拖放到 index.php 的主体内" class="margin-around" height="254" src="../../../images_www/articles/72/php/oracle-wishlist/form-dnd.png" width="566"></li>
+  <li>"Insert Form"（插入窗体）对话框即打开。在 "Action"（操作）字段中，键入窗体将数据传输到的文件的路径。在本示例中，键入 <tt>wishlist.php</tt>。（将在与 <tt>index.php</tt> 相同的位置中创建该文件。请参见<a href="#createNewFile">创建 wishlist.php 和测试应用程序</a>。）选择 "GET" 方法以传输数据。为窗体指定任意名称，例如 <tt>wishList</tt>。完成后单击 "OK"（确定）。<br> <img alt="已填写的 &quot;Insert Form&quot;（插入窗体）表单" class="margin-around" height="249" src="../../../images_www/articles/72/php/oracle-wishlist/insert-form-dialog.png" width="430">
+  <p>现在，该文件如下所示：</p>
+  <img alt="添加了不含内容的窗体的 index.php" class="margin-around" height="271" src="../../../images_www/articles/72/php/oracle-wishlist/blank-form.png" width="480"></li>
+  <li>在窗体的开头和结尾标记之间，键入 "Show wish list of: " 文本。</li>
+  <li>从 "Palette"（组件面板）的 <strong>HTML Forms</strong>（HTML 窗体）部分中，将一个文本输入组件拖放至 "Show wish list of: " 文本后面的空白区域中。"Insert Text Input"（插入文本输入）对话框打开。  </li>
+  <li>将输入命名为 <tt>user</tt>。选择输入类型 <tt>text</tt>（文本）。将所有其他字段保留空白，然后单击 "OK"（确定）。<br> <img alt="&quot;Insert Text Input&quot;（插入文本输入）对话框" class="margin-around" height="291" src="../../../images_www/articles/72/php/oracle-wishlist/insert-text-input.png" width="349">
+  <p>现在，该文件如下所示：</p>
+  <img alt="带有文本输入窗体的 index.php" class="margin-around" height="248" src="../../../images_www/articles/72/php/oracle-wishlist/form-with-text-input.png" width="600">  </li>
+  <li>在 &lt;/form&gt; 标记上面添加一个空行。从 "Palette"（组件面板）的 <strong>HTML Forms</strong>（HTML 窗体）部分中，将一个 "Button"（按钮）组件拖放至该空行中。</li>
+  <li>"Insert Button"（插入按钮）对话框打开。在 "Label"（标签）字段中键入 <tt>Go</tt>，然后单击 "OK"（确定）。<br> <img alt="已填写的 &quot;Insert Button&quot;（插入按钮）对话框" class="margin-around" height="246" src="../../../images_www/articles/72/php/oracle-wishlist/insert-button-dialog.png" width="349"></li>
+  <li>现在，该窗体类似于下面的代码，但有一点不同。在下面的代码中，&lt;form&gt; 标记中的 <tt>method</tt> 属性是显式的。NetBeans IDE 没有在窗体中添加 method 属性，因为 GET 是该属性的默认值。不过，如果 <tt>method</tt> 属性是显式的，您可以更轻松地理解代码。
+
+    <pre class="examplecode">&lt;form action=&quot;wishlist.php&quot; method=&quot;GET&quot; name=&quot;wishList&quot;&gt;<br>      Show wish list of: &lt;input type=&quot;text&quot; name=&quot;user&quot; value=&quot;&quot;/&gt;<br>		&lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>&lt;/form&gt;</pre>
+  </li>
+</ol>
+<p>请注意以下窗体元素：</p>
+    <ul>
+        <li>起始 &lt;form&gt; 标记包含 <tt>action</tt> 属性。action 属性指定窗体将数据传输到的文件。在本示例中，该文件命名为 <tt>wishlist.php</tt>，并位于与 <tt>index.php</tt> 相同的文件夹中。（将在<a href="#createNewFile">创建 wishlist.php 和测试应用程序</a>部分中创建该文件。）</li>
+        <li>起始 &lt;form&gt; 标记还包含传输数据时应用的方法 (GET)。PHP 使用 <tt>$_GET</tt> 或 <tt>$_POST</tt> 数组存储该窗体传送的值，具体取决于 <tt>method</tt> 属性的值。在本示例中，PHP 使用 <tt>$_GET</tt>。</li>
+        <li><tt>text</tt> 输入组件。该组件是一个文本字段，用于输入用户的名字以查看其愿望列表。该文本字段的起始值是一个空字符串。该字段的名称是 <tt>user</tt>。在创建数组以存储该字段的值时，PHP 将使用该字段的名称。在本示例中，存储该字段值的数组是 <tt>htmlentities($_GET["user"])</tt>。</li>
+        <li>具有 "Go" 值的 <tt>submit</tt> 输入组件。submit 类型表示，输入字段作为按钮显示在页面上。"Go" 值是按钮的标签。当用户单击该按钮时，会将 <tt>text</tt> 组件中的数据传输至 <tt>action</tt> 属性中指定的文件。</li>
+    </ul>
+<h2><a id="createNewFile" name="createNewFile"></a>创建 wishlist.php 和测试应用程序</h2>
+<p>在<a href="#transferDataFromIndexToWishlist">将窗体添加到 index.php</a> 部分中，您创建了一个窗体，用户可以在其中提交某个人的名字以查看其愿望列表。该名字将传送到 <tt>wishlist.php</tt> 页。不过，此页面并不存在。如果运行 <tt>index.php</tt>，在提交名字时，将会出现 "404: File Not Found"（404：找不到文件）错误。在本部分中，将创建 <tt>wishlist.php</tt>，然后测试应用程序。</p>
+<p><strong>创建 wishlist.php 和测试应用程序：</strong></p>
+<ol>
+    <li>在创建的 "wishlist" 项目中，在 "Source Files"（源文件）节点上单击鼠标右键，然后从上下文菜单中选择 "New"（新建）> "PHP Web Page"（PHP Web 页）。此时将打开 "New PHP Web Page"（新建 PHP Web 页）向导。</li>
+    <li>在 "File Name"（文件名）字段中键入 <tt>wishlist</tt>，然后按 "Finish"（完成）。<br>
+    </li>
+
+        <li>在 "Sources"（源）节点上单击鼠标右键并从上下文菜单中选择 "Run Project"（运行项目），或者单击工具栏上的 "Run Main Project"（运行主项目）图标 <img alt="工具栏上的 &quot;Run Main Project&quot;（运行主项目）按钮：绿色三角形箭头" src="../../../images_www/articles/72/php/wish-list-lesson2/run-main-project-button.png">（如果您将项目设置为了“主项目”）。<br> <img alt="包含 &quot;Show wish list of&quot; 编辑框和按钮 &quot;Go&quot; 的主应用程序页 index.php" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/index-php-works.png">
+        </li>
+        <li>在 "Show wish list of:" 编辑框中，输入 Tom，然后单击 "Go"。将显示一个具有以下 URL 的空白页：http://localhost:90/Lesson2/wishlist.php?user=tom。该 URL 表示主页正常工作。 </li>
+</ol>
+<h2><a name="receiveAndProcessDaaInWishlist"></a>建立连接和获取许愿者 ID</h2>
+<p>在本部分中，先在 <tt>wishlist.php</tt> 中添加代码以创建数据库连接。然后，添加代码以检索在 <tt>index.php</tt> 窗体中键入其名字的许愿者的 ID 号。</p>
+<ol>
+<li>双击 wishlist.php 文件。打开的模板与 index.php 不同。该文件以 &lt;html&gt;&lt;/html&gt; 和 &lt;body&gt;&lt;/body&gt; 标记开头和结尾，因为该文件还包含 HTML 代码。
+    <pre class="examplecode">&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>    &lt;head&gt;<br>        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;<br>        &lt;title&gt;&lt;/title&gt;<br>    &lt;/head&gt;<br>    &lt;body&gt;<br>        &lt;?php<br>        // put your code here<br>        ?&gt;<br>    &lt;/body&gt;<br>&lt;/html&gt;</pre>
+</li>
+<li>要显示标题，请在紧靠起始 &lt;body&gt; 标记后面以及生成的 &lt;?php 标记前面的位置输入以下代码块：
+    <pre class="examplecode"> Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]).&quot;&lt;br/&gt;&quot;;?&gt;</pre>
+    <p>现在，代码如下所示：</p>
+        <pre class="examplecode">
+&lt;body&gt;Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]).&quot;&lt;br/&gt;&quot;;?&gt;<br>    &lt;?php<br>
+    // put your code here<br>
+&lt;/body&gt;
+</pre>
+
+    <p>PHP 代码块显示通过 "user" 字段中的 GET 方法接收的数据。在 "user" 文本字段中输入愿望列表所有者 Tom 的名字时，将从 <tt>index.php</tt> 中传输该数据。重复<a href="#createNewFile">测试 index.php</a> 中的步骤，以查看 wishlist.php 是否正常工作。 <br> <img alt="wishList.php 页显示文本 &quot;Wish List of Tom&quot;" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-title-works.png">          </li>
+<li><p><a name="connect-db"></a>在模板 PHP 块中删除注释部分。在该位置键入或粘贴以下代码。该代码打开数据库连接。 </p>
+
+ <p><b>对于 MySQL 数据库：</b></p>
+    <pre class="examplecode">$con = mysqli_connect(&quot;localhost&quot;, &quot;phpuser&quot;, &quot;phpuserpw&quot;);<br>if (!$con) {<br>    exit('Connect Error (' . mysqli_connect_errno() . ') '<br>           . mysqli_connect_error());<br>}<br>//set the default client character set <br>mysqli_set_charset($con, 'utf-8');</pre>
+
+<p><b>对于 Oracle 数据库：</b></p>
+<pre class="examplecode">$con = oci_connect("phpuser", "phpuserpw", "localhost/XE", "AL32UTF8");
+if (!$con) {
+    $m = oci_error();
+    exit('Connect Error ' . $m['message']);
+}</pre>
+<p>该代码尝试打开数据库连接；如果失败，则会显示一条错误消息。</p>
+<p class="notes"><b>Oracle 数据库用户注意事项：</b>您可能需要在 <tt>oci_connect</tt> 命令中修改数据库连接。标准语法为 "hostname/service name"。按照该语法，此代码片段中的 Oracle XE 数据库连接是 "localhost/XE"。 </p>
+<p class="notes"><b>注：</b>您可以使用 NetBeans IDE 的代码完成功能完成 mysqli 或 OCI8 函数。</p>
+<img alt="MySQL 调用的代码完成" class="margin-around" height="107" src="../../../images_www/articles/72/php/oracle-wishlist/codecompletion.png" width="342"><img alt="OCI8 调用的代码完成" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/codecompletion-oci.png"></li>
+<li><p>在打开数据库连接的代码下面，在同一 PHP 块中键入或粘贴以下代码。该代码检索请求其愿望列表的许愿者的 ID。如果许愿者不在数据库中，代码将终止/退出该进程，然后显示一条错误消息。</p>
+<p><b>对于 MySQL 数据库：</b></p>
+    <pre class="examplecode">mysqli_select_db($con, &quot;wishlist&quot;);<br>
+$user = mysqli_real_escape_string($con, htmlentities($_GET[&quot;user&quot;]));<br>
+$wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot; . $user . &quot;'&quot;);<br>
+if (mysqli_num_rows($wisher) &lt; 1) {
+    exit(&quot;The person &quot; . htmlentities($_GET[&quot;user&quot;]) . &quot; is not found. Please check the spelling and try again&quot;);
+}<br>$row = mysqli_fetch_row($wisher);<br>$wisherID = $row[0];<br>mysqli_free_result($wisher);</pre>
+<p><b>对于 Oracle 数据库：</b>（请注意，oci8 没有等效的 <tt>mysqli_num_rows</tt>）</p>
+<pre class="examplecode">$query = "SELECT id FROM wishers WHERE NAME = :user_bv";
+$stid = oci_parse($con, $query);
+$user = $_GET['user'];
+
+oci_bind_by_name($stid, ':user_bv', $user);
+oci_execute($stid);
+
+//Because user is a unique value I only expect one row
+$row = oci_fetch_array($stid, OCI_ASSOC);
+if (!$row) {
+    exit("The person " . $user . " is not found. Please check the spelling and try again" );
+}
+$wisherID = $row['ID'];
+oci_free_statement($stid);</pre>
+    <p>将通过 $con 连接从 <tt>wishlist</tt> 数据库中选择数据。选择条件是从 index.php 中作为 "user" 接收的名字。</p>
+    <p><tt>SELECT</tt> SQL 语句的语法可以简述如下：</p>
+    <ul>
+        <li>在 SELECT 后面，指定要从中获取数据的字段。星号 (*) 表示所有字段。</li>
+        <li>在 FROM 子句后面，指定必须从中检索数据的表的名称。 </li>
+        <li>WHERE 子句是可选的。将在其中指定过滤条件。</li>
+    </ul>
+    <p>mysqli 查询返回结果对象。OCI8 返回执行的语句。在这两种情况下，将从执行的查询结果中获取一行，并提取 ID 行的值以将其存储在 <tt>$wisherID</tt> 变量中。</p>
+    <p> 最后，释放 mysqli 结果或 OCI8 语句。在实际关闭连接之前，您需要释放使用该连接的所有资源。否则，PHP 的内部引用计数系统会让基本 DB 连接保持打开，即使 <tt>$con</tt> 在 <tt>mysqli_close()</tt> 或 <tt>oci_close()</tt> 调用后无法使用。 </p>
+    <p class="notes"><b>安全注意事项：</b>对于 MySQL，将转义 <tt>htmlentities($_GET["user"])</tt> 参数以防止 SQL 注入攻击。请参见<a href="http://en.wikipedia.org/wiki/SQL_injection" target="_blank">有关 SQL 注入的维基百科</a>和 <a href="http://us3.php.net/mysql_real_escape_string" target="_blank">mysql_real_escape_string 文档</a>。虽然在本教程的上下文中，您不会遇到有害 SQL 注入的风险，但最佳做法是转义存在此类攻击风险的 MySQL 查询中的字符串。OCI8 是通过绑定变量避免的。</p>
+</li></ol>
+
+<p>此 PHP 块现已完成。如果使用的是 MySQL 数据库，则会看到 <tt>wishlist.php</tt> 文件现在如下所示：</p>
+<pre class="examplecode">Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]) . &quot;&lt;br/&gt;&quot;; ?&gt;<br>
+&lt;?php<br>
+  $con = mysqli_connect(&quot;localhost&quot;, &quot;phpuser&quot;, &quot;phpuserpw&quot;);
+  if (!$con) {
+     exit('Connect Error (' . mysqli_connect_errno() . ') '
+            . mysqli_connect_error());
+  }<br>
+  //set the default client character set 
+  mysqli_set_charset($con, 'utf-8');
+  mysqli_select_db($con, &quot;wishlist&quot;);
+  $user = mysqli_real_escape_string($con, htmlentities($_GET[&quot;user&quot;]));
+  $wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot; . $user . &quot;'&quot;);
+  if (mysqli_num_rows($wisher) &lt; 1) {
+     exit(&quot;The person &quot; . htmlentities($_GET[&quot;user&quot;]) . &quot; is not found. Please check the spelling and try again&quot;);
+  }
+  $row = mysqli_fetch_row($wisher);
+  $wisherID = $row[0];
+  mysqli_free_result($wisher);
+  ?&gt;</pre>
+<p>如果使用的是 Oracle 数据库，则会看到 <tt>wishlist.php</tt> 文件现在如下所示：</p>
+
+<pre class="examplecode">Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]) . &quot;&lt;br/&gt;&quot;; ?&gt;
+  &lt;?php
+  $con = oci_connect(&quot;phpuser&quot;, &quot;phpuserpw&quot;, &quot;localhost/XE&quot;, &quot;AL32UTF8&quot;);
+  if (!$con) {
+     $m = oci_error();
+     exit('Connect Error ' . $m['message'];
+     exit;
+  }
+  $query = &quot;SELECT id FROM wishers WHERE name = :user_bv&quot;;
+  $stid = oci_parse($con, $query);
+  $user = htmlentities($_GET[&quot;user&quot;]);
+  oci_bind_by_name($stid, ':user_bv', $user);
+  oci_execute($stid);<br>
+//Because user is a unique value I only expect one row
+  $row = oci_fetch_array($stid, OCI_ASSOC);
+  if (!$row) {
+     exit(&quot;The person &quot; . $user . &quot; is not found. Please check the spelling and try again&quot; );
+  }
+  $wisherID = $row[&quot;ID&quot;]; 
+  oci_free_statement($stid);
+  ?&gt;</pre>
+
+ 
+ 
+<p>如果测试应用程序并输入无效的用户，则会显示以下消息。</p>
+  <img alt="wishlist.php 页显示错误消息：找不到用户" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-title-user-not-found-works.png"> 
+<h2><a name="wish-table"></a>显示愿望表</h2>
+<p>在本部分中，将添加代码以显示与许愿者关联的 HTML 愿望表。许愿者是由在上一节的代码中检索的 ID 标识的。</p>
+<ol>
+<li>在 PHP 块下面，键入或粘贴以下 HTML 代码块。该代码打开一个表，指定其边框颜色（黑色），然后使用 "Item" 和 "Due Date" 列“绘制”表标题。
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Item&lt;/th&gt;
+        &lt;th&gt;Due Date&lt;/th&gt;
+    &lt;/tr&gt;
+&lt;/table></pre>
+&lt;/table&gt; 标记用于结束表。 </li>
+<li>
+  <p>在结束 &lt;/table&gt; 标记上面，输入以下 PHP 代码块。</p>
+  <p><b>对于 MySQL 数据库：</b></p>
+    <pre class="examplecode">&lt;?php<br>$result = mysqli_query($con, &quot;SELECT description, due_date FROM wishes WHERE wisher_id=&quot; . $wisherID);<br>while ($row = mysqli_fetch_array($result)) {<br>    echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>    echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>}<br>mysqli_free_result($result);<br>mysqli_close($con);<br>?&gt;</pre>
+        <p><b>对于 Oracle 数据库：</b></p>
+        <pre class="examplecode">&lt;?php<br>$query = &quot;SELECT description, due_date FROM wishes WHERE wisher_id = :id_bv&quot;;<br>$stid = oci_parse($con, $query);<br>oci_bind_by_name($stid, &quot;:id_bv&quot;, $wisherID);<br>oci_execute($stid);<br>while ($row = oci_fetch_array($stid)) {<br>    echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;DESCRIPTION&quot;]) . &quot;&lt;/td&gt;&quot;;<br>    echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;DUE_DATE&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>}<br>oci_free_statement($stid);<br>oci_close($con);<br>?&gt;</pre>
+    <p>在代码中：</p>
+    <ul>
+        <li>SELECT 查询按在步骤 4 中检索的 ID 检索指定许愿者的愿望和截止日期，然后将愿望和截止日期存储在 $result 数组中。</li>
+        <li>当 $result 数组不为空时，一个循环将该数组的项目作为表行进行显示。 </li>
+        <li>&lt;tr&gt;&lt;/tr&gt; 标记窗体行，&lt;td&gt;&lt;/td&gt; 标记行中的窗体单元格，\n 开始一个新行。</li>
+        <li><tt>htmlentities</tt> 函数将具有等效 HTML 实体的所有字符转换为 HTML 实体。这有助于防止<a href="http://en.wikipedia.org/wiki/Cross-site_scripting" target="_blank">跨站点脚本</a>。</li>
+        <li>结尾的函数释放所有资源（mysqli 结果和 OCI8 语句）并关闭数据库连接。注意，在实际关闭连接之前，您需要释放使用该连接的所有资源。否则，PHP 的内部引用计数系统会让基本 DB 连接保持打开，即使在 <tt>oci_close()</tt> 或 <tt>mysqli_close()</tt> 调用后无法使用连接。 </li>
+    </ul>
+    <p class="alert"><strong>警告：</strong>确保键入的数据库字段名称与创建数据库表期间指定的名称完全相同。对于 Oracle，默认返回大写的列名。</p>
+</li>
+<li>要测试应用程序，请按<a href="#createNewFile">测试 index.php</a> 部分所述运行项目。<br> <img alt="wishlist.php 页显示 Tom 的愿望列表" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-works.png">          </li>
+</ol>
+
+<h2><a name="lessonResultSourceCode"></a>完成当前课程后的应用程序源代码 </h2>
+<p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1928/lesson2.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成课程后的项目状态。</p>
+<p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson2.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成课程后的项目状态。</p>
+<h2><a name="nextSteps"></a>后续步骤</h2>
+<p><a href="wish-list-lesson1.html">&lt;&lt; 上一课</a></p>
+<p><a href="wish-list-lesson3.html">下一课 &gt;&gt;</a></p>
+<p><a href="wish-list-tutorial-main-page.html">返回到教程主页</a>
+</p>
+<h2><a name="learnMoreUsefulLinks"></a>有用链接 </h2>
+<p>可以在下面找到有关使用 HTML、PHP 和 MySQL 或 Oracle 数据库的详细信息：</p>
+<ul>
+    <li><a href="http://www.w3schools.com/html/" target="_blank">HTML 教程</a></li>
+    <li><a href="http://www.htmlcodetutorial.com/" target="_blank">HTML 代码教程 - 提供 HTML 标记帮助的免费参考指南</a></li>
+    <li><a href="http://www.w3schools.com/php/default.asp" target="_blank">PHP 教程</a></li>
+    <li><a href="http://www.tizag.com/phpT/" target="_blank">PHP 教程 - 了解 PHP</a></li>
+    <li><a href="http://www.killerphp.com/" target="_blank">PHP 视频教程</a> </li>
+    <li><a href="http://dev.mysql.com/tech-resources/articles/mysql_intro.html" target="_blank">MySQL 入门指南</a> </li>
+    <li><a href="http://www.killerphp.com/" target="_blank">PHP/MySQL 教程</a> </li>
+    <li><a href="http://www.php-mysql-tutorial.com/" target="_blank">PHP MySQL 教程</a></li>
+    <li><a href="http://php.net/manual/en/book.oci8.php" target="_blank">Oracle OCI8 手册</a></li>
+    <li><a href="http://blogs.oracle.com/opal/" target="_blank">Christopher Jones 的 OCI8 博客</a></li>
+</ul>
+<br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%202:%20Designing%20the%20Application">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;">
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+<p><a href="../../trails/php.html">返回至 PHP 学习资源</a><br>
+</p>
+</body>
+</html>

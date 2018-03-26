@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>二进制 SOAP 附件 2：创建 Web 服务 - NetBeans IDE 教程</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+        <meta name="description"
+              content="This tutorial shows how to create and
+              consume an EE6 web service that sends binary data via SOAP.">
+        <link rel="stylesheet" href="../../../netbeans.css"></head>
+    <body>
+        <h1>端到端二进制 SOAP 附件 2：创建 Web 服务</h1>
+    <p>本课的目标是创建一个包含 Web 服务的 Web 应用程序。您会将 Web 服务作为一个无状态会话 Bean 来实现。 </p>
+    <p>可以从 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerAlbumService.zip" target="_blank">NetBeans 样例目录</a>中下载 Web 服务的完整样例。</p>
+    <p><b>本教程中的课程</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+        <ol>
+            <li><a href="./flower_overview.html">概述</a></li>
+          <li> =&gt; 创建 Web 服务</li>
+          <li><a href="flower-code-ws.html">对 Web 服务进行编码和测试</a></li>
+          <li><a href="./flower_wsdl_schema.html">修改方案文件和 WSDL 文件以传递二进制数据</a></li>
+            <li><a href="./flower_swing.html">创建 Swing 客户端</a></li>
+            <!--        <li><a href="./flower_wsit.html">
+            Logging and Optimizing the Web Service</a></li> -->
+        </ol>
+        <p><b>本课内容</b></p>
+        <ol>
+        <li><a href="#create-web-app">创建 Web 应用程序</a></li>
+        <li><a href="#add-ws">添加 Web 服务</a></li>
+        </ol>
+        <h2 id="create-web-app">创建 Web 应用程序</h2>
+        <p>在此部分，您将创建一个 Java EE Web 应用程序。向此应用程序中添加 Web 服务将其作为二进制数据传递的图像。 </p>
+  <p><b>创建 Web 应用程序：</b><br>
+        </p>
+        <ol>
+          <li> 选择 "File"（文件）> "New Project"（新建项目）（在 Linux 和 Windows 上为 Ctrl-Shift-N 组合键，在 MacOS 上为 ⌘-Shift-N 组合键）。此时将打开新建项目向导。从 "Java Web" 类别中选择 "Web Application"（Web 应用程序），然后单击 "Next"（下一步）。"Name and Location"（名称和位置）页打开。</li>
+          <li>在 "Project Name"（项目名称）字段中键入 <tt>FlowerAlbumService</tt>。为该项目选择所需的位置。保留其他选项为默认设置，然后单击 "Next"（下一步）。"Server and Settings"（服务器和设置）页面打开。    </li> 
+          <li>选择 "GlassFish Server"，并选择 Java EE 版本 "Java EE 6 Web" 或 "Java EE 7 Web"。 </li>               
+          <li>单击 "Finish"（完成）。将创建 <tt>FlowerAlbumService</tt> 项目并将其显示在 "Projects"（项目）窗口中。</li>
+          <li>右键单击 "Source Packages"（源包）节点，然后选择 "New"（新建）> "Java Package"（Java 包）。 
+              <p>也可以选择 "New"（新建）> "Other"（其他），然后在新建文件向导的 "Java" 类别中选择 "Java Package"（Java 包）。</p></li>
+          <li>将包命名为 <tt>org.flower.resources</tt>。单击 "Finish"（完成）。<br> <img alt="显示 org.flower.resources 包的名称和位置的新建包向导" class="margin-around" height="383" src="../../../images_www/articles/73/websvc/flower/new-package.png" width="568"></li>
+          
+          <li>将以下图像复制到 <tt>org.flower.resources</tt> 中：
+            <ul>
+              <li><a href="../../../images_www/articles/73/websvc/flower/rose.jpg">rose.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/sunflower.jpg">sunflower.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/aster.jpg">aster.jpg</a></li>
+              <li><a href="../../../images_www/articles/73/websvc/flower/honeysuckle.jpg">honeysuckle.jpg</a></li>
+            </ul>
+          </li>
+    </ol> 
+          <p>现在此项目在 "Source Package"（源包）中具有包 <tt>org.flower.resources</tt>。未添加任何其他内容。</p>
+          <img alt="仅包含鲜花图像的项目" border="1" class="margin-around" height="274" src="../../../images_www/articles/73/websvc/flower/project-w-resources.png" width="204">
+          <h2 id="add-ws">添加 Web 服务</h2>
+          <p>在此部分，将在 Web 应用程序中创建一个 Web 服务。该服务将作为无状态会话 Bean 来创建。将以下 Web 操作添加到该服务中：</p>
+          <ul>
+            <li>获取鲜花名称及其相关 <tt>Image</tt> 的操作。</li>
+            <li>获取所有鲜花图像的缩略图并将其作为 <tt>List</tt> 返回的操作。</li>
+          </ul>
+    <p><strong>添加 Web 服务：</strong></p>
+          <ol>
+          <li>在 "Projects"（项目）窗口中，右键单击 <tt>FlowerAlbumService</tt> 项目节点，然后选择 "New"（新建）> "Web Service"（Web 服务）。也可以选择 "New"（新建）> "Other"（其他），然后在新建文件向导中选择 "Web Services"（Web 服务）下的 "Web Service"（Web 服务）。此时将打开新建 Web 服务向导。</li>
+          <li>在新建 Web 服务向导中，在 "Web Service Name"（Web 服务名称）中键入 <tt>FlowerService</tt>，在 "Package Name"（包名称）中键入 <tt>org.flower.service</tt>。选择 "Create Web Service from Scratch"（从头开始创建 Web 服务）。选中 "Implement Service as Stateless Session Bean"（将 Web 服务作为无状态会话 Bean 实现）。单击 "Finish"（完成）。 <br><img alt="已完成的新建 Web 服务向导" class="margin-around" height="409" src="../../../images_www/articles/73/websvc/flower/new-service.png" width="572">
+            <p>Web 服务出现在 "Projects"（项目）窗口中的项目节点中。"Source Packages"（源包）目录包括了服务包和资源包。</p>
+            <img alt="显示鲜花图像和 Web 服务的 &quot;Projects&quot;（项目）窗口" border="1" class="margin-around" height="344" src="../../../images_www/articles/73/websvc/flower/project-w-service-and-resources.png" width="223"></li>
+            <li>在编辑器中打开 <tt>FlowerService.java</tt>。切换到 "Design"（设计）视图。随即出现一个窗体，在该窗体中可以向 Web 服务中添加操作和服务质量元素。<br> <img alt="FlowerService 设计视图，未添加任何内容" border="1" class="margin-around" height="340" src="../../../images_www/articles/73/websvc/flower/flower-service-empty-design.png" width="600"></li>
+            
+            <li>单击 "Add Operation"（添加操作）。此时将打开添加操作向导。</li>
+            <li>将操作命名为 <tt>getFlower</tt>。在 "Return Type"（返回类型）字段中，键入或浏览以找到 <tt>java.awt.Image</tt>。</li>
+            <li>在 "Parameters"（参数）标签中，单击 "Add"（添加）。将参数命名为 <tt>name</tt> 并接受默认的 <tt>java.lang.String</tt> 类型。 <br> <img alt="显示 getFlower 操作的名称和返回类型以及名称参数的 &quot;Add Operation&quot;（添加操作）标签" class="margin-around" height="406" src="../../../images_www/articles/73/websvc/flower/add-getflower-param.png" width="518"></li>
+            <li>打开 "Exceptions"（异常错误）标签。添加一个 <tt>IOException</tt>。<br> <img alt="浏览 IO 异常错误" class="margin-around" height="393" src="../../../images_www/articles/73/websvc/flower/io-exception.png" width="486"> </li>        
+          <li>单击 "OK"（确定）并关闭向导。然后再次单击 "Add Operation"（添加操作），并添加带有以下属性的操作：
+          <ul>
+          <li><b>Name（名称）：</b>getThumbnails</li>
+          <li><b>Return type（返回类型）：</b>java.util.List</li>
+          <li><b>Exception（异常错误）：</b>IOException</li>
+    </ul></li></ol>
+          
+          <p>现在 "Design"（设计）视图中显示了 <tt>getFlower</tt> 和 <tt>getThumbnails</tt> 操作。切换至这两个操作的“列表视图”，将看到其所有参数。</p><img alt="显示操作的鲜花服务设计视图" class="margin-around" height="667" src="../../../images_www/articles/73/websvc/flower/flower-service-full-design.png" width="478"> 
+          <h2>&nbsp;</h2>
+    <h2>后续步骤：</h2>
+        <p><a href="./flower-code-ws.html">对 Web 服务进行编码和测试</a></p>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Creating%20WS%20EE6">发送有关此教程的反馈意见</a></div>
+        <br style="clear:both;" >
+        <!-- ======================================================================================= -->
+
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee@netbeans.org 邮件列表</a>。</p>
+</body>
+</html>

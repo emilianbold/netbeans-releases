@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!-- -*- xhtml -*- -->
+        <title>Интеграция апплета в веб-приложение</title>
+        
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="AUTHOR" content="Geertjan Wielenga">
+        <meta name="DESCRIPTION" content="A short guide to creating and using applets in the NetBeans IDE.">
+        <!--      Copyright (c) 2009 - 2013, Oracle and/or its affiliates. All rights reserved. -->
+        <!--     Use is subject to license terms.-->
+    <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+    <body>
+        <h1>Интеграция апплета в веб-приложение</h1>
+
+   <p>Апплет — это программа, написанная на языке программирования Java и встраиваемая в страницу HTML способом, в многом похожим на вставку изображения на страницу.  Приложение, которое будет создано в этом учебном курсе, показывает, как выполнять сборку и развертывание апплетов в среде IDE.</p>
+        
+    <p><strong class="notes">Примечание. </strong>Хотя нет шаблонов проектов, которые специально разработаны для создания апплетов в IDE, их можно легко разработать в проекте Java и упаковать их в веб-проект, как показано в этом учебном курсе.</p>
+            
+            
+    <p><strong>Содержание</strong></p>
+      <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+      <ul class="toc">
+         <li><a href="#create">Создание и импорт апплета</a></li>
+         <li><a href="#runanddebug">Запуск апплета</a></li>
+         <li><a href="#embed">Интеграция апплета в веб-приложение</a></li>
+      </ul>
+<p><a name="00"></a><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+
+   <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, версия Java</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition <br><em class="indent margin-around">или</em> <br>Контейнер сервлетов Tomcat</td>
+                    <td class="tbltd1">3.x или 4.x<br> <em class="margin-around indent"> </em> <br>версия 7.x или 8.x</td>
+                </tr>
+            </tbody>
+    </table>
+            
+        
+        <h2><a name="create"></a>Создание или импорт файла исходного кода апплета</h2>
+        
+        <p>В этом разделе вы создадите свой первый апплет.  Если у вас уже есть апплет, то указания, приведенные ниже, помогут импортировать его в среду IDE.</p>
+        
+        <div class="indent">
+            
+            <h3>Создание проекта Java с нуля или с использованием имеющихся исходных кодов</h3>
+            
+            <ol>
+                <li>Выберите команду &quot;Файл&quot; &gt; &quot;Создать проект&quot; (CTRL+SHIFT+N). В области &quot;Категории&quot; выберите &quot;Java&quot;. </li>
+                <li>Выполните одно из следующих действий.
+                    <ul>
+                        <li>Для создания нового исходного файла в области &quot;Проекты&quot; выберите пункт &quot;Библиотека классов Java&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+                        <li>Для импорта исходного файла апплета выберите пункт &quot;Проект Java с существующим исходным кодом&quot;.  Нажмите кнопку &quot;Далее&quot;. Укажите местоположение файла в текстовом поле &quot;Папка с исходными файлами&quot;.</li>
+                </ul></li>
+                <li>В поле &quot;Имя проекта&quot; введите <tt>HelloApplet</tt>.  В области &quot;Расположение проекта&quot; укажите любую папку на своем компьютере.</li>
+                <li>Нажмите кнопку &quot;Завершить&quot;. Если файл исходного кода апплета был импортирован, <a href="#runanddebug">запустите его</a>.</li> 
+            </ol>
+            
+            
+            
+            
+            <h3>Создание файла исходного кода апплета</h3>
+            
+            <ol>
+                <li>Нажмите название проекта HelloApplet правой кнопкой мыши и выберите пункт &quot;Свойства&quot;, при этом откроется окно &quot;Свойства&quot;.</li>
+                <li>Выберите нужный формат исходных/двоичных файлов для проекта и нажмите ОК.
+                    <p class="notes"><strong>Примечание.</strong> Если выбрана версия JDK 1.6, апплет может не запускаться на компьютерах, на которых установлена предыдущая версия JRE или подключаемого модуля Java для браузера.</p>
+                </li>
+                <li>Нажмите узел HelloApplet в окне &quot;Проекты&quot; и выберите &quot;Новый&quot; &gt; &quot;Другое&quot; (Ctrl-N).</li>
+                <li>В области &quot;Категории&quot; выберите &quot;Java&quot;.  В области &quot;Типы файлов&quot; выберите &quot;Апплет&quot;. 
+                    
+                    <p>Если же нужно использовать визуальные средства для разработки апплета, выберите &quot;Формы Swing GUI&quot; &gt; &quot;Форма JApplet&quot;.</p> 
+                    
+                <p>Нажмите кнопку &quot;Далее&quot;.</p></li>
+                <li>В области &quot;Имя класса&quot; введите <tt>MyApplet</tt>.  В поле &quot;Пакет&quot; введите <tt>org.me.hello</tt>.</li>
+                <li>Нажмите кнопку &quot;Завершить&quot;.<p>Среда IDE создает исходный файл апплет в указанном пакете.  Исходный файл апплета открывается в редакторе исходного кода.</p></li>  
+                <li>Определите класс своего апплета, заменив существующий стандартный код следующим кодом:
+                    <pre class="examplecode">
+     package org.me.hello;
+
+     import java.applet.Applet;
+     import java.awt.Graphics;
+
+     public class MyApplet extends Applet {
+         @Override
+         public void paint(Graphics g) {
+             g.drawString(&quot;Hello applet!&quot;, 50, 25);
+         }
+     }
+                    </pre>
+                    
+                <p>В качестве альтернативы, если вместо этого выполняется разработка форма апплета используйте документ <a href="../java/quickstart-gui.html">Разработка графического интерфейса пользователя Swing в IDE NetBeans</a> для создания аналога следующему:</p>
+
+    <p  class="align-center"><img alt="Разработка формы апплета" class="align-center" hspace="5" src="../../../images_www/articles/74/web/applet/movie-magic-quiz-design.png" vspace="5"></p>
+    
+                    <p>Подробную информацию о написании апплетов см. в разделе<a href="http://download.oracle.com/javase/tutorial/deployment/applet/index.html">Апплеты</a> Руководства Java<sup>TM</sup>.</p>
+                </li>
+            </ol>
+        </div>
+        
+        
+        
+        
+       
+        <h2><a name="runanddebug"></a>Запуск файла исходного кода апплета</h2>
+        <p>Созданный апплет можно запустить из среды IDE.  В этом разделе вы узнаете, как это сделать.</p>
+        <div class="indent">
+            <h3><a name="createjavaobjects"></a>Сборка и выполнение исходного файла апплета</h3>
+            
+           
+          <p>Щелкните правой кнопкой мыши узел файла MyApplet.java в окне 'Проекты' и выберите в контекстном меню команду 'Запустить файл'. В папке <tt>сборки</tt> создается файл запуска <tt>MyApplet.html</tt> со встроенным апплетом. Его можно увидеть, перейдя в окно &quot;Файлы&quot; (CTRL+2): </p>
+            
+            <p class="align-center"><img alt="Окно &apos;Файлы&apos;, в котором отображается созданный апплет" class="margin-around" src="../../../images_www/articles/74/web/applet/built-project-files.png"></p>
+          <p>Апплет запускается в программе просмотра апплета.</p>
+          <p class="align-center"><img alt="Просмотреть апплет" class="align-center" hspace="5" src="../../../images_www/articles/74/web/applet/appletviewer.png" vspace="5"></p>
+          <p>Формы апплета также отображаются в программе просмотра апплета.</p>
+          <p class="align-center"><img alt="проектирование" class="align-center" hspace="5" src="../../../images_www/articles/74/web/applet/movie-magic-quiz.png" vspace="5"></p>
+          
+            
+            
+        </div>
+        
+        <h2><a name="embed"></a>Внедрение апплета в веб-приложение</h2>
+        <p>Итак, создание апплета завершено. Теперь необходимо предоставить к нему доступ пользователю. Для этого необходимо создать веб-приложение, добавить апплет JAR в путь к его классам, а затем добавить тег апплета в файл HTML веб-приложения.</p>
+        <div class="indent">
+        <h3>Создание веб-проекта</h3>
+        
+        <ol>
+            <li>Выберите команду &quot;Файл&quot; &gt; &quot;Новый проект&quot;.</li> 
+            <li>В категории Java Web выберите 'Веб-приложение'. Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>В области &quot;Имя проекта&quot; введите <tt>HelloWebApplet</tt>. </li> 
+            <li>В области &quot;Расположение проекта&quot; укажите любую папку на своем компьютере. Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>Выберите целевой сервер. Нажмите кнопку &quot;Завершить&quot;.</li>
+        </ol>
+        
+        
+        
+        
+        <h3>Добавление файла JAR апплета в веб-проект</h3>
+        
+        <p>Когда нужно включить файл апплета в формате JAR в веб-проект, можно добавить либо проект Java, содержащий файл JAR file, либо добавить сам файл JAR.  Можно выбрать любой из вариантов, однако следует учесть, что при добавлении проекта Java в веб-проект среда IDE запускает сборку апплета при каждой сборке веб-приложения.  Таким образом, если вы изменяете апплет в проекте Java, среда IDE собирает новую версию апплета каждый раз при сборке веб-проекта. С другой стороны, если файл JAR апплета не находится в проекте IDE NetBeans, исходный файл апплета не перестраивается при построении веб-проекта.</p>
+        <p class="notes"><b>Примечание.</b> Если на этом этапе используется проект <tt>HelloApplet</tt> в IDE файл <tt>HelloApplet.jar</tt> отсутствует. Это нормально. Файл <tt>HelloApplet.jar</tt> будет собран при сборке проекта <tt>HelloWebApplet</tt>. </p>
+        <ol>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта HelloWebApplet и выберите 'Свойства' в контекстном меню.</li>
+            <li>Выберите категорию 'Упаковка'.</li>
+            <li>Выполните одно из следующих действий.
+                <ul>
+                    <li>Если апплет находится в проекте Java, нажмите 'Добавить проект' и найдите каталог этого проекта Java. Щелкните Add JAR/Folder (&quot;Добавить JAR/Папку&quot;). 
+                        <p class="notes"><strong>Примечание.</strong> Проекты IDE помечены специальным значком 'Проект NetBeans IDE'.</p></li>
+                    <li>Если используемый файл апплета JAR не входит в проект IDE, нажмите 'Добавить файл/папку' и найдите папку с файлом JAR. Нажмите 'Выбрать'.</li>
+                </ul>
+            </li>
+            <li>Убедитесь, что JAR с исходным файлом апплета отображается в таблице в окне 'Свойства проекта'. Нажмите кнопку &quot;ОК&quot;.
+                <p>По умолчанию файл JAR апплета будет скопирован в библиотеку страницы веб-приложения (папку <tt>build/web </tt>).  Папка <tt>build/web </tt> является корневым каталогом приложения и отображается в таблице как "<tt>/</tt>" в переменной Path в столбце WAR. Вы можете изменить расположение апплета в WAR. Для этого введите новое расположение апплета в переменной Path в столбце WAR.</li>
+            <li>Нажмите ОК, чтобы закрыть диалоговое окно 'Свойства проекта'.</li></ol> 
+                <p>При сборке проекта <tt>HelloWebApplet</tt> с помощью команды 'Выполнить > Собрать проект (HelloWebApplet)' главного меню IDE JAR-файл апплета создается в исходном проекте <tt>HelloApplet</tt> и упаковывается в WAR-файл проекта <tt>HelloWebApplet</tt>. Он также добавляется в папку <tt>build/web</tt>.  Следить за процессом можно в окне &quot;Результат&quot;, а конечный результат можно посмотреть в окне &quot;Файлы&quot;.</p>
+                <p class="align-center"><a href="../../../images_www/articles/74/web/applet/helloapplet-jar-in-files.png" rel="lytebox" title="Файл jar апплета в апплете и веб-приложениях"><img alt="Файл jar апплета в апплете и веб-приложениях" border="1" src="../../../images_www/articles/74/web/applet/helloapplet-jar-in-files-small.png"></a></p>
+          
+        <h3>Создание и запуск файла JSP или HTML</h3>
+        
+        <ol>
+            <li>Выполните одно из следующих действий.
+                <ul>
+                    <li>Если необходимо встроить апплет в файл JSP, дважды нажмите стандартный файл <tt>index.jsp</tt> в окне &quot;Свойства&quot;.  Этот файл создается средой IDE при создании веб-проекта.  Файл открывается в редакторе исходного кода.</li>
+                    <li>Если необходимо внедрить апплет в файл HTML, щелкните правой кнопкой мыши узел проекта HelloWebApplet и выберите 'Создать' > 'Другие' в контекстном меню. В области &quot;Категории&quot; выберите &quot;Web&quot;.  В области &quot;Типы файлов&quot; выберите HTML.  Нажмите кнопку &quot;Далее&quot;. Укажите название файла HTML, выберите папку Web (она расположена в нужном месте) и нажмите &quot;Завершить&quot;.</li>
+                </ul>
+            </li>
+            <li>Встройте апплет в файл, добавив следующий тег апплета в любом месте в рамках тегов <tt>&lt;body&gt;</tt><tt>&lt;/body&gt;</tt>.<p>
+                <ul>
+                    <li>В файле HTML: <span class="examplecode"><tt>&lt;applet code="org.me.hello.MyApplet" archive="HelloApplet.jar">&lt;/applet></tt> </span></li>
+                    <li>В файле JSP: <span class="examplecode"><tt>&lt;applet code=&quot;org.me.hello.MyApplet&quot; archive=&quot;HelloApplet.jar&quot; width=&quot;600&quot; height=&quot;480&quot;/&gt;</tt></span></li>
+                </ul>
+                    
+                <p class="notes"><strong>Примечания.</strong></p>
+                <ul>
+                    <li>При добавлении апплета в файл HTML в рамках этой учебной задачи можно игнорировать значок подсказки, который появляется в левом поле.</li>
+                    <li><tt>org.me.hello.MyApplet</tt> - полное имя класса апплета.</li>
+                    <li><tt>HelloApplet.jar</tt> - файл JAR, содержащий апплет.</li>
+                </ul>
+          </li>
+            <li>В окне &quot;Проекты&quot; щелкните узел JSP или HTML правой кнопкой мыши и в контекстном меню выберите &quot;Выполнить файл&quot;.
+                <p>Сервер развертывает файл JSP или HTML в браузере среды IDE, установленном по умолчанию.</p>
+                
+                
+                
+                <p>Вы должны получить результат, аналогичный показанному на иллюстрации (после того как вы разрешили запуск приложения нажатием на кнопку 'Выполнить' в диалоговом окне 'Предупреждение системы безопасности'):</p>
+                <p class="align-center"> <a href="../../../images_www/articles/74/web/applet/appletinbrowser.png" rel="lytebox" title="Просмотреть апплет"><img alt="Просмотреть апплет" border="1" src="../../../images_www/articles/74/web/applet/appletinbrowser-small.png"></a></p>
+                
+                <p>В случае работы с формами апплетов ваш результат будет похож на следующий:</p>
+                
+                <p class="align-center"><img alt="проектирование" class="align-center" hspace="5" src="../../../images_www/articles/74/web/applet/movie-magic-quiz-html.png" vspace="5"></p>
+                
+            
+            </li>
+        </ol>
+        </div>
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Developing%20Applets">Отправить отзыв по этому учебному курсу</a></div>
+        <br style="clear:both;">
+       
+  </body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+  <title>Разработка диспетчера Java Management Extensions (JMX) и подключение к удаленному агенту JMX</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  <meta name="description" content="Remote manager tutorial for NetBeans JMX Wizard module">
+  <link rel="stylesheet" href="../../../netbeans.css">
+  <meta name="TOPIC" content="ADVANCED">
+  <meta name="TYPE" content="ARTICLE">
+  <meta name="AUDIENCE" content="NBUSER">
+  <meta name="author" content="Jean-Francois DENISE">
+  <meta name="author" content="Joel FERAUD">
+  <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JMX">
+  <meta name="description" content="A tutorial on how to implement and use a JMX manager and JMX agent in NetBeans IDE"/>
+  <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+</head>
+<body>
+<h1>Разработка диспетчера Java Management Extensions (JMX) и подключение к удаленному агенту JMX</h1>
+
+
+<p class="align-center"><b>Ожидаемая длительность: 30 минут</b></p>
+
+<p>Модуль NetBeans JMX Wizard интегрирует технологию JMX в рабочие процессы IDE NetBeans. Этот модуль позволяет быстро разрабатывать управляющие приложения, добавлять функции управления в существующие приложения, разрабатывать приложения-диспетчеры и контролировать состояние виртуальной машины. 
+  </p>
+
+<p>С помощью этого практического руководства вы научитесь выполнять следующие действия:</p>
+<ol>
+  <li>Запускать агент JMX, чтобы он стал доступен для диспетчера JMX.</li>
+  <li>Создавать диспетчер JMX.</li>
+  <li>Запускать диспетчер.</li>
+  <li>Обновлять диспетчер, добавляя в него собственную логику управления. </li>
+</ol>
+
+
+<h3>Упражнения по темам руководства</h3>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+<ul>
+  <li><a href="#Exercise_1">Создание проекта демонстрационного управляющего приложения Anagram</a></li>
+  <li><a href="#Exercise_2">Запуск агента</a></li>
+  <li><a href="#Exercise_3">Создание проекта диспетчера</a>
+      <ul>
+          <li><a href="#Exercise_3">Создание проекта</a></li>
+          <li><a href="#Exercise_4">Создание выполняемого класса диспетчера</a></li>
+      </ul>
+  </li>
+  <li><a href="#Exercise_5">Запуск диспетчера</a></li>
+</ul>
+
+
+<h3>Предпосылки</h3>
+<p>Предполагается, что читатель обладает базовыми знаниями или опытом программирования по следующим технологиям. </p>
+    <ul>
+        <li>Технология JMX. <a href="http://download.oracle.com/javase/6/docs/technotes/guides/jmx/index.html"> Онлайн-документация JMX</a>
+            </li>
+        <li>Технология Java. <a href="http://www.oracle.com/technetwork/java/javase/tech/index.html"> Краткий обзор технологий Java SE</a>
+            </li>
+        <li>IDE NetBeans</li>
+    </ul>
+<p>Знания в области <a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/index.html"> мониторинга и управления платформой Java</a> будут преимуществом.</p>
+
+<h3>Программное обеспечение, требуемое для работы с данным учебным курсом.</h3>
+<p>Для работы с этим учебным курсом на компьютере должно быть установлено следующее программное обеспечение.</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">Программное обеспечение или ресурс</th>
+        <th class="tblheader" scope="col">Требуемая версия</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+        <td class="tbltd1">Версии 7.2, 7.3, 7.4, 8.0, пакет для Java</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+        <td class="tbltd1">версия 7 или 8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">Подключаемый модуль JMX</td>
+        <td class="tbltd1">Доступен в Центре обновлений NetBeans</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">Подключаемый модуль JConsole</td>
+        <td class="tbltd1">Доступен в Центре обновлений NetBeans</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>Чтобы установить подключаемые модули <strong>JMX</strong> и <strong>JConsole</strong>, выберите Сервис > Подключаемые модули и загрузите модули из Центра обновлений NetBeans.</p>
+
+
+<h3>Ресурсы</h3>
+<ul>
+  <li>Содержимое справки Netbeans (Справка > Содержимое справки > JMX). Справку также можно вызвать в любом мастере.</li>
+</ul>
+
+<a name="Exercise_1"></a>
+<h2>Создание проекта демонстрационного управляющего приложения Anagram</h2>
+<p>Цель этого упражнения - создать агент JMX, к которому будет подключаться приложение-диспетчер. В состав подключаемого модуля JMX входит демонстрационный Java -проект агента JMX. В этом упражнении вы будете работать с демонстрационным проектом, чтобы не создавать агент JMX с нуля. 
+</p>
+
+<ol>
+  <li>Выберите команду &quot;Файл&quot; &gt; &quot;Новый проект&quot;.</li>
+  <li>В разделе 'Образцы' выберите категорию JMX.</li>
+  <li>Выберите проект 'Игра Anagram под управлениемJMX'. <br /> <img alt="снимок проекта &apos;Игра Anagram под управлениемJMX&apos; в мастере создания проектов" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newproject.png" title="Проект &apos;Игра Anagram под управлениемJMX&apos; в мастере создания проектов" /></li>
+ 
+  <li>Нажмите 'Далее'. Имя проекта и местоположение по умолчанию можно не менять. Проверьте, что установлен флажок 'Выбрать как основной проект', и нажмите 'Готово'.</li>
+</ol>
+
+<a name="Exercise_2"></a>
+<h2>Запуск агента</h2>
+<p>Цель этого упражнения - запустить приложение Java с включенными функциями удаленного управления JMX. Функции удаленного управления позволяют клиентским приложениям (диспетчерам JMX) подключаться к приложению (агент JMX) и визуально отображать данные мониторинга и управления.</p>
+<p class="notes"><strong>Примечание.</strong> В качестве агента JMX, для которого можно включить удаленное управление, может выступать любое рабочее приложение, созданное на платформе JDK 1.5, JDK 1.6 или JDK 1.7.</p>
+
+<ol>
+  <li>Убедитесь, что выбран проект JMXAnagramGame, и установите его в качестве основного. </li>
+  <li>Щелкните проект JMXAnagramGame правой кнопкой мыши и выберите 'Свойства'.</li>
+  <li>Выберите категорию <strong>Мониторинг и управление</strong> в диалоговом окне свойств проекта.</li>
+  <li>Снимите флажок <strong>Прикрепить JConsole к проекту</strong>.</li>
+  <li>Выберите <strong>Разрешить удаленный доступ RMI</strong>. Нажмите ОК.<br> <img alt="Настройка агента" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-properties1.png" title="Категория &apos;Мониторинг и управление&apos; в диалоговом окне свойств проекта">
+      <p>Вы можете указать порт, с которого агент будет ожидать входящие запросы от JMX. В этом руководстве будет использоваться порт по умолчанию (1099). Если вы указали другой номер порта, вам потребуется внести соответствующие изменения на всех этапах. Кроме того, в этом руководстве не указывается файл свойств. (При разработке собственных приложений файлы свойств управления можно создавать с помощью мастера.)</p>
+  </li>
+
+
+<li>Выберите 'Отладка > Запуск основного проекта с функциями мониторинга и управления' в главном меню, чтобы запустить приложение Anagram Game. 
+    <p>Также можно нажать кнопку 'Запуск основного проекта с функциями мониторинга и управления' на панели инструментов (&nbsp; <img alt="Кнопка &apos;Запуск основного проекта с функциями мониторинга и управления&apos; на панели инструментов" src="../../../images_www/articles/74/java/jmx/run-project24.png" title="Кнопка &apos;Запуск основного проекта с функциями мониторинга и управления&apos;" />).</p>
+
+<p>При запуске приложения открывается окно 'Игра Anagram'. JVM прослушивает порт локального узла 1099 на предмет доступа RMI. Запущенный агент JMX ожидает управляющих запросов от диспетчера.</p>
+  <img alt="Игра Anagram" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-anagram.png" title="Игра Anagram">
+  <p>Окно приложения Anagram можно свернуть (не закрывая приложение).</p>
+  </li>
+</ol>
+
+
+<a name="Exercise_3"></a>
+<h2>Создание проекта диспетчера</h2>
+<p>В этом упражнении показано, как создать проект приложения Java с именем <tt>JMXAnagramManager</tt> и создать выполняемый класс диспетчера с помощью мастера.</p>
+
+<div class="indent">
+<h3>Создание проекта</h3>
+<ol>
+  <li>Выберите команду &quot;Файл&quot; &gt; &quot;Создать проект&quot; (CTRL+SHIFT+N).</li>
+  <li>В категории Java выберите 'Приложение Java'. Нажмите 'Далее'.<br> <img alt="снимок мастера создания проектов Java" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newjavaproject.png" title="Мастер создания проектов Java"></li>
+  <li>В поле 'Имя проекта' введите <strong>JMXAnagramManager</strong>.</li>
+  <li>Выберите параметр 'Выбрать как основной проект' (если он еще не выбран) и снимите флажок 'Создать основной класс'. Нажмите 'Готово'.
+    <p class="notes"><strong>Примечание.</strong> В следующем упражнении вы узнаете, как создать основной выполняемый класс с помощью мастера диспетчера JMX. </p>
+    </li>
+</ol>
+  <p>При нажатии на кнопку 'Готово' новый проект появляется в дереве проектов. Как видите, проект диспетчера JMX ничем не отличается от любого другого проекта приложения Java. </p>
+
+
+<a name="Exercise_4"></a>
+<h3>Создание выполняемого класса диспетчера</h3>
+<p>В этом упражнении вы научитесь создавать выполняемый класс диспетчера с помощью мастера диспетчера JMX.</p>
+
+<ol>
+  <li>Убедитесь, что проект JMXAnagramManager выбран в качестве основного. </li>
+  <li>Выберите 'Файл > Создать файл' (Ctrl-N; ⌘-N для Mac), затем выберите 'Диспетчер JMX' в категории JMX. Нажмите кнопку &quot;Далее&quot;.<br /> <img alt="снимок шаблона диспетчера JMX в мастере создания файлов" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newjmxmanager.png" title="Шаблон диспетчера JMX в мастере создания файлов" /></li>
+  <li>В поле 'Имя класса' введите <strong>AnagramsManager</strong>.</li>
+  <li>В поле 'Имя пакета' укажите <strong>com.toys.anagrams.manager</strong>.</li>
+  <li>Убедитесь, что выбраны параметры 'Создать основной метод', 'Выбрать как основной класс проекта' и 'Создать пример кода обнаружения MBean'. Нажмите 'Далее'.</li>
+  <li>Нажмите 'Изменить' и укажите URL-адрес агента JMX, к которому будет выполняться подключение.</li> 
+  <li>Оставьте все параметры по умолчанию в диалоговом окне 'URL-адрес агента RMI JMX' без изменения. Нажмите ОК. 
+      <p>В диалоговом окне 'URL-адрес агента RMI JMX' указывается действующий URL-адрес JMX, который включает в себя протокол, узел, порт и путь URL.</p>
+  <img alt="снимок диалогового окна &apos;URL-адрес агента RMI JMX&apos;" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jmxagenturl.png" title="параметры по умолчанию в диалоговом окне &apos;URL-адрес агента RMI JMX&apos;" />
+          
+  <p>В списке 'Протокол' представлен только один элемент. Поле 'Протокол' доступно для записи, и в нем можно указать собственный протокол. По умолчанию агент RMI JVM использует протокол RMI для подключения к агенту JDK JMX. Агент, запущенный на предыдущем этапе, относится к такому же типу. </p>
+  <p>В данном случае необходимо использовать узел и порт по умолчанию, так как агент прослушивает локальный порт <tt>localhost:1099</tt>. Поле 'Путь URL' доступно только для чтения и отображает полный путь для агента RMI JVM. Данные в поле 'Путь URL' автоматически обновляются при изменении значений узла и порта.</p>
+  <p>При нажатии на кнопку ОК в поле 'URL-адрес агента JMX' появляется обновленный полный URL-адрес, составленный на основе данных, указанных в диалоговом окне 'URL-адрес агента RMI JMX'.</p>
+  
+  </li>
+  <li>Убедитесь, что выбраны параметры 'Аутентифицированное подключение' и 'Создать пример кода для аутентифицированного подключения'. Нажмите 'Готово'.<br> <a href="../../../images_www/articles/74/java/jmx/jmx-jmxagenturl2.png" id="jmxagent" rel="lytebox" title="Мастер создания диспетчера JMX с URL-адресом агента JMX"> <img alt="снимок мастера создания диспетчера JMX с панелью &apos;URL-адрес агента JMX&apos;" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jmxagenturl2-sm.png" title="Щелкните для увеличения"></a>
+    
+  <p>Подключение к агенту не аутентифицировано, так как при запуске агента не предоставлялась конфигурация аутентификации.</p>
+  </li>
+</ol>
+<p>При нажатии на кнопку 'Готово' IDE создает класс диспетчера и открывает соответствующий файл в редакторе. Также IDE создает пример кода для аутентифицированного подключения.</p> 
+
+</div>
+
+<a name="Exercise_5"></a>
+<h2>Запуск диспетчера</h2>
+<p>В этом упражнении показано, как запускать диспетчер и обнаруживать компоненты MBean. </p>
+<ol>
+  <li>В файле AnagramsManager.java удалите комментарий к коду обнаружения MBean из основного метода, чтобы метод принял следующий вид:
+      <pre>
+    public static void main(String[] args) throws Exception {
+        
+        //Manager instantiation and connection to the remote agent
+        AnagramsManager manager = AnagramsManager.getDefault();
+
+        // SAMPLE MBEAN NAME DISCOVERY. Uncomment following code:
+          Set resultSet =
+          manager.getMBeanServerConnection().queryNames(null, null);
+          for(Iterator i = resultSet.iterator(); i.hasNext();) {
+          System.out.println("MBean name: " + i.next());
+          } 
+
+        // Close connection
+        manager.close();
+        System.out.println("Connection closed.");
+    }
+      </pre>
+  </li>
+<li>Щелкните правой кнопкой мыши в редакторе и выберите 'Исправить выражения импорта' (Alt-Shift-I; ⌘-Shift-I в Mac), чтобы создать необходимые выражения импорта (<tt>java.util.Set</tt> и <tt>java.util.Iterator</tt>). Сохраните изменения.</li>
+  <li>Выберите 'Выполнить > Запуск основного проекта' в главном меню.
+      <p>Также можно щелкнуть правой кнопкой мыши узел проекта JMXAnagramManager в окне 'Проекты' и выбрать 'Выполнить'.</p>
+      <p>При выборе команды 'Выполнить' приложение JMXAnagramManager запускается, подключается к удаленному агенту, отображает имена обнаруженных компонентов MBean в окне 'Результаты' и закрывает подключение: </p>
+  <p>Проект компилируется и запускается диспетчер. Обнаруженные имена <tt>ObejctNames</tt> отображаются в окне 'Результаты'. Как видите, в окне отображается имя компонента MBean <tt>AnagramsStats</tt> и имена компонентов MBean виртуальной машины Java. Все стандартные компоненты MBean виртуальной машины Java находятся в домене JMX <tt>java.lang</tt>.</p>
+<p>При запуске проекта JMXAnagramManager в окне 'Результаты' в NetBeans должна отображаться следующая информация:</p>
+<pre>
+init:
+deps-jar:
+compile:
+run:
+MBean name: java.lang:type=MemoryManager,name=CodeCacheManager
+MBean name: java.lang:type=Compilation
+MBean name: java.lang:type=MemoryPool,name=PS Perm Gen
+MBean name: com.sun.management:type=HotSpotDiagnostic
+MBean name: java.lang:type=Runtime
+MBean name: com.toy.anagrams.mbeans:type=AnagramsStats
+MBean name: java.lang:type=ClassLoading
+MBean name: java.lang:type=Threading
+MBean name: java.lang:type=MemoryPool,name=PS Survivor Space
+MBean name: java.util.logging:type=Logging
+MBean name: java.lang:type=OperatingSystem
+MBean name: java.lang:type=Memory
+MBean name: java.lang:type=MemoryPool,name=Code Cache
+MBean name: java.lang:type=GarbageCollector,name=PS Scavenge
+MBean name: java.lang:type=MemoryPool,name=PS Eden Space
+MBean name: JMImplementation:type=MBeanServerDelegate
+MBean name: java.lang:type=GarbageCollector,name=PS MarkSweep
+MBean name: java.lang:type=MemoryPool,name=PS Old Gen
+Connection closed.
+BUILD SUCCESSFUL (total time: 1 second)
+</pre></li>
+</ol>
+
+<!--
+<a name="Exercise_6"></a>
+<h2>Exercise 6: Updating the Manager Class with Management Logic</h2>
+<p>In this exercise you will learn how to make a simple JMX request to access 
+  an MBean attribute. We will update the manager class main method in order to 
+  access the <tt>NumResolvedAnagrams</tt> attribute. This attribute represents 
+  the number of anagrams solved. </p>
+<h3>Steps to Follow</h3>
+<ol>
+  <li>In the main method, before closing the connection we are going to perform 
+    the following actions: 
+    <ul>
+      <li>Access the <tt>MBeanServerConnection</tt>.&nbsp; The <tt>MBeanServerConnection</tt> 
+        class allows you to make requests to the remote server.</li>
+
+      <li>Create the Anagrams statistics MBean <tt>ObjectName</tt>. The name is 
+        copied/pasted from the output. An object name is needed when a request 
+        is sent to a remote agent in order to specify the MBean from which to 
+        get the atribute.</li>
+
+      <li>Get the attribute <tt>NumResolvedAttribute</tt>.</li>
+
+      <li>Print the attribute value to the output.</li>
+    </ul>
+    To do so, copy and paste the four lines of code below at the end of the 
+    AnagramsManager.java main method, right before the close conection lines:
+    <pre>
+        MBeanServerConnection connection = manager.getMBeanServerConnection();
+        ObjectName name = new ObjectName("com.toy.anagrams.mbeans:type=AnagramsStats");
+        Integer num = (Integer) connection.getAttribute(name, "NumSolvedAnagrams");
+        System.out.println("NumSolvedAnagrams : " + num);
+    </pre>
+    You may need to add an import clause for <tt>javax.management.ObjectName</tt>
+  </li>
+  <li>Once you have updated the source code, you can play with the Anagrams game 
+    then run the project again in order to see the updated values. 
+    In the NetBeans Output Window of the JMXAnagramManager run you should now see
+    at the end, before the connection closed, the added line:
+<pre>
+NumSolvedAnagrams : 0
+</pre></li>
+</ol>
+-->
+<p><b>Готово! Отличная работа!</b><br /> Мы надеемся, что это практическое руководство было для вас полезно и вы получили необходимые навыки разработки диспетчеров для доступа к информации, экспортированной средствами JMX. </p>
+
+<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Developing%20a%20Java%20Management%20Extensions%20Manager">Отправить отзыв по этому учебному курсу</a></div>
+        
+        <br style="clear:both;">
+            
+<h2>См. также</h2>
+<p>Дополнительные сведения:</p>
+<ul>
+    <li><a href="jmx-getstart.html">Введение в мониторинг JMX в IDE NetBeans</a></li>
+    <li><a href="jmx-tutorial.html">Добавление оркестровки Java Management Extensions (JMX) в приложение Java</a></li>
+    
+</ul>
+
+
+</body>
+</html>

@@ -1,0 +1,618 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="author" content="troy.giunipero@sun.com">    
+        <meta name="description" content="A preview of CVS Features in NetBeans IDE 6.x and 7.x">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, CVS,
+            Concurrent versions system, versioning, open source, developers, collaborate, GNU"> 
+            
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>NetBeans IDEでのCVSサポートの使用</title>
+    </head>
+    
+    <body>
+
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>NetBeans IDEでのCVSサポートの使用</h1>
+        
+        <p>NetBeans IDEのCVSサポートは、共有リポジトリから作業するグループの開発プロセスを効率化するように設計され、IDE内で、プロジェクト・システムから直接バージョン管理タスクを実行できます。CVSクライアント・ソフトウェアは、NetBeans IDEにバンドルされているため、CVSの使用を開始するために特別な設定は必要ありません。</p>
+        
+        <p>このドキュメントでは、バージョン管理ソフトウェアを使用する場合の標準的なワークフローを説明することによって、IDEの基本的なバージョン管理タスクの実行方法を示します。</p>
+            
+        <p>CVS (Concurrent Versions System)は一連のファイルのすべての作業と変更を追跡するオープン・ソース・バージョン管理システムです。これは、一般にソフトウェア・プロジェクトの実装時に使用され、複数の開発者がコラボレーションできます。CVSの詳細は、<a href="http://ximbiot.com/cvs/">公式ドキュメント</a>をお読みください。</p>
+		<p class="notes"><b>注意:</b> NetBeans IDE 7.0.1以降、NetBeans IDE更新センターからのCVSプラグインのインストール後に、CVSサポートが使用できるようになりました。詳細は、<a href="http://wiki.netbeans.org/CVSSupport">CVS FAQ</a>ページを参照してください。</p>
+            
+        <p><strong>目次</strong></p>
+
+    <img alt="このページの内容は、NetBeans IDE 6.9以降に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 6.9以降に適用されます">
+
+        <ul class="toc">
+            <li><a href="#synchronizing">ローカル・ファイルとリポジトリの同期</a>
+                <ul>
+                    <li><a href="#opening">IDEでCVSプロジェクトを開く</a></li>
+                    <li><a href="#checking">リポジトリからのファイルのチェックアウト</a></li>
+                    <li><a href="#importing">リポジトリへのファイルのインポート</a></li>
+                </ul></li>
+            <li><a href="#editing">ソースの編集</a>
+                <ul>
+                    <li><a href="#viewingChanges">ソース・エディタでの変更の表示</a></li>
+                    <li><a href="#viewingFileStatus">ファイルのステータス情報の表示</a></li>
+                    <li><a href="#comparing">ファイル・リビジョンの比較</a></li>
+                    <li><a href="#merging">ファイル・リビジョンのマージ</a></li>
+                </ul></li>
+            <li><a href="#committing">リポジトリへのソースのコミット</a>
+                <ul>
+                    <li><a href="#updating">ローカル・コピーの更新</a></li>
+                    <li><a href="#resolving">競合の解決</a></li>
+                    <li><a href="#performing">コミットの実行</a></li>
+                </ul></li>
+            <li><a href="#seeAlso">関連項目</a></li>                
+        </ul>            
+        
+        <p><strong>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン6.x以降</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン6以降</td>
+                </tr>
+            </tbody>
+        </table>
+  
+        <a name="synchronizing"></a>     
+        <h2>ローカル・ファイルとリポジトリの同期</h2>
+        
+        <p>バージョン管理システムを使用する場合、ローカル・ファイルとリポジトリを同期させ、ローカル・コピーに変更を行い、それらをリポジトリにコミットすることによって作業します。次の一覧に、特定の状況に応じて、NetBeans IDEでプロジェクトを同期できる様々な方法を示します。</p>
+            
+        <ul>
+            <li><a href="#opening">IDEでCVSプロジェクトを開く</a></li>
+            <li><a href="#checking">リポジトリからのファイルのチェックアウト</a></li>
+            <li><a href="#importing">リポジトリへのファイルのインポート</a></li>
+        </ul>
+        
+        <div class="indent">
+            <a name="opening"></a>
+            <h3>IDEでCVSプロジェクトを開く</h3>
+
+            <p>IDEの外部で操作していたCVSバージョン管理プロジェクトがすでに存在する場合、それをIDEで開くと、バージョン管理機能が自動的に使用可能になります。IDEは開いているプロジェクトをスキャンし、それらに<code>CVS</code>ディレクトリが含まれている場合、CVSバージョン管理プロジェクトに対して、ファイル・ステータスおよびコンテキスト依存のサポートが自動的にアクティブになります。</p> 
+
+            <a name="checking"></a>
+            <h3>リポジトリからのファイルのチェックアウト</h3>
+
+            <p>IDEからリモート・リポジトリに接続し、ファイルをチェックアウトし、それらをすぐに操作する場合、次を実行します。</p>
+            
+            <ol>
+                <li>NetBeans IDEで、メイン・メニューから「チーム」>「CVS」>「チェックアウト」を選択します。チェックアウト・ウィザードが開きます。<br><br><strong class="notes">注意: </strong>IDEのドロップダウン・メニューはコンテキスト依存です。つまり、使用可能なオプションは現在選択されている項目によって異なります。そのため、すでにCVSプロジェクト内で作業している場合、メイン・メニューから「バージョン管理」>「チェックアウト」を選択できます。</li>
+                <li>ウィザードの最初のパネルで、<code>CVSROOT</code>で定義できるリポジトリの場所を入力します。<br><br><a name="protocolTypes"></a>IDEでは、CVSリポジトリがローカルかリモートか、およびそれに接続するために使用する方法に応じて、多くの<code>CVSROOT</code>形式をサポートしています。<br><br>
+                    <table>
+                        <tr>
+                            <th class="tblheader" scope="col">メソッド</th>
+                            <th class="tblheader" scope="col">説明</th>
+                            <th class="tblheader" scope="col">例</th>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>pserver</strong></td>
+                            <td class="tbltd1">リモート・パスワード・サーバー</td>
+                            <td class="tbltd1"><code>:pserver:username@hostname:/repository_path</code></td>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>ext</strong></td>
+                            <td class="tbltd1">リモート・シェル(RSH)またはSecure Shell (SSH)を使用したアクセス</td>
+                            <td class="tbltd1"><code>:ext:username@hostname:/repository_path</code></td>
+                        </tr>
+                        <tr>
+                            <td class="tbltd1"><strong>local</strong></td>
+                            <td class="tbltd1">ローカル・リポジトリへのアクセス</td>
+                            <td class="tbltd1"><code>:local:/repository_path</code><br><span class="float-right">(外部のCVS実行可能ファイルが必要)</span></td>
+                        </tr>                        
+                        <tr>
+                            <td class="tbltd1"><strong>fork</strong></td>
+                            <td class="tbltd1">リモート・プロトコルを使用したローカル・リポジトリへのアクセス</td>
+                            <td class="tbltd1"><code>:fork:/repository_path</code><br><span class="float-right">(外部のCVS実行可能ファイルが必要)</span></td>
+                        </tr>
+                    </table>
+                    
+                    <br>使用する方法に応じて、リモート・リポジトリへ接続するためのパスワードやプロキシ設定(<code>pserver</code>の場合など)などのその他の情報を指定する必要がある場合があります。「次」をクリックします。<br><br><strong class="notes">注意:</strong> 公開鍵SSH認証を設定しようとする場合は、<a href="http://wiki.netbeans.org/wiki/view/FaqHowToSetUpSSHAuth">公開鍵SSH認証の設定方法</a>を参照してください。<br><br>ローカル・リポジトリへのアクセスに関する詳細は、<a href="http://wiki.netbeans.org/wiki/view/FaqHowToAccessLocalCVS">ローカル・リポジトリにアクセスする方法</a>を参照してください。</li>
+
+                <li>ウィザードの「チェックアウトするモジュール」パネルで、「モジュール」フィールドにチェックアウトするモジュールを指定します。チェックアウトするモジュールの名前がわからない場合、「参照」ボタンをクリックして、リポジトリの内容を表示します。表示された「CVSモジュールを参照」ダイアログから、表示されているいずれかのモジュールを選択し、「OK」をクリックします。これで、選択が「モジュール」フィールドに追加されます。                
+                    <p class="align-center">
+                    <a href="../../../images_www/articles/73/ide/cvs/cvs-checkout.png" rel="lytebox" title="CVSのチェックアウト・ウィザード: チェックアウトするモジュール・パネル"> <img alt="CVSのチェックアウト・ウィザード: チェックアウトするモジュール・パネル" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-checkout-small.png"></a></p></li>
+                        
+                <li>「分岐」テキスト・フィールドで、チェックアウトする分岐の名前を入力します。「参照」ボタンをクリックすると、「タグを参照」ダイアログ・ボックスが開き、使用可能な分岐とタグを検索できます。分岐とタグのどちらも指定しなかった場合は、<em>トランク</em>がチェックアウトされます。</li>
+                <li>「ローカル・フォルダ」フィールドで、ファイルのチェックアウト先にするコンピュータ上の場所を入力し、「終了」をクリックして、CVSチェックアウトを開始します。IDEによって指定されたソースがチェックアウトされ、右下隅のIDEのステータス・バーに、リポジトリからローカル・ディレクトリへのファイルのダウンロードの進捗状況が示されます。チェックアウト中のファイルを、「出力」ウィンドウから表示することもできます(Ctrl-4)。<br><br><strong class="notes">注意: </strong>チェックアウトされたソースにNetBeansプロジェクトが含まれている場合、それらをIDEで開くように求めるダイアログが表示されます。ソースにプロジェクトが含まれていない場合は、ソースから新しいプロジェクトを作成し、IDEでそれらを開くことを求めるダイアログが表示されます。そのようなソースで新しいプロジェクトを作成する場合、適切なプロジェクト・カテゴリを選択し(新規プロジェクト・ウィザードで)、そのカテゴリ内の「既存のソースを使用する」オプションを使用します。</li>
+            </ol>            
+            
+            <a name="importing"></a>
+            <h3>リポジトリへのファイルのインポート</h3>        
+
+            <p>または、IDEで操作していたプロジェクトをリモート・リポジトリにインポートし、CVSリポジトリでバージョン管理されるようになった後に、IDEでそれを引続き操作できます。</p>
+
+            <p><strong class="notes">注意: </strong>実際にはシステムからファイルを<em>エクスポート</em>しますが、「インポート」という用語は、バージョン管理システムで、ファイルがリポジトリに<em>インポート</em>されることを示すために使用されています。</p>
+            
+            <p>プロジェクトをリポジトリにインポートするには:</p>
+            
+            <ol>
+                <li>「プロジェクト」ウィンドウ(Ctrl-1)から、バージョン管理されていないプロジェクトを選択し、ノードの右クリック・メニューから「バージョン管理」>「CVSリポジトリにインポート」を選択します。CVSのインポート・ウィザードが開きます。</li>
+                <li>インポート・ウィザードの「CVSルート」パネルで、<a href="#protocolTypes"><code>CVSROOT</code></a>で定義されるリポジトリの場所を指定します。使用する方法に応じて、リモート・リポジトリへ接続するためのパスワードやプロキシ設定(<code>pserver</code>の場合など)などのその他の情報を指定する必要がある場合があります。「次」をクリックします。</li>
+                <li>「インポートするフォルダ」パネルで、リポジトリ内に配置するローカル・フォルダを指定します。「インポートするフォルダ」テキスト・フィールドには、デフォルトで、プロジェクトの名前が自動的に提案されます。
+                    
+                    <p class="align-center">
+                    <a href="../../../images_www/articles/73/ide/cvs/folder-to-import.png" rel="lytebox" title="CVSのチェックアウト・ウィザード: インポートするフォルダ・パネル"> <img alt="CVSのチェックアウト・ウィザード: インポートするフォルダ・パネル" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/folder-to-import-small.png"></a></p></li>
+                        
+                <li>「インポート・メッセージ」テキスト領域に、リポジトリにインポートしようとしているプロジェクトの説明を入力します。</li> 
+                <li>「リポジトリ・フォルダ」テキスト・フィールドにパスを入力して、プロジェクトをインポートするリポジトリ内の場所を指定します。または、「参照」ボタンをクリックして、リポジトリ内の特定の場所に移動します。「終了」をクリックして、インポートを開始します。IDEによってプロジェクト・ファイルがリポジトリにアップロードされ、「出力」ウィンドウが開き、進捗状況が表示されます。</li>
+            </ol>
+            
+            <p><strong class="notes">注意: </strong>CVSクライアントでは、デフォルトでバイナリ・ファイルのインポートを処理しません。バイナリ・ソースをインポートする場合のベスト・プラクティスは、リポジトリ内に<code>cvswrappers</code>ファイルを作成することです。詳細は、<a href="http://wiki.netbeans.org/FaqCVSHowToImportBinaries">バイナリ・ファイルを正しくインポートする方法</a>を参照してください。</p>
+        </div>
+        
+        <a name="editing"></a>
+        <h2>ソースの編集</h2>
+        
+        <p>CVSバージョン管理プロジェクトをIDEで開くと、ソースの変更を開始できます。NetBeans IDEで開くプロジェクトは、それらのノードをダブルクリックすると、「プロジェクト」(Ctrl-1)、「ファイル」(Ctrl-2)、「お気に入り」(Ctrl-3)ウィンドウなどのIDEのウィンドウで表示されるのと同様に、ファイルをソース・エディタで開くことができます。</p>
+        
+        <p>IDEのソースを操作する場合、自由に使用できる様々なUIコンポーネントがあります。これらは、表示およびバージョン管理コマンドの操作で役立ちます。</p> 
+   
+        <ul>
+            <li><a href="#viewingChanges">ソース・エディタでの変更の表示</a></li>
+            <li><a href="#viewingFileStatus">ファイルのステータス情報の表示</a></li>
+            <li><a href="#comparing">ファイル・リビジョンの比較</a></li>
+            <li><a href="#merging">ファイル・リビジョンのマージ</a></li>            
+        </ul>
+            
+        <div class="indent">
+            <a name="viewingChanges"></a>
+            <h3>ソース・エディタでの変更の表示</h3>
+            
+            <p>IDEのソース・エディタでバージョン管理されたファイルを開くと、リポジトリから以前にチェックアウトした基本バージョンに照らしあわせながら、そのファイルに行われた変更がリアル・タイムで表示されます。作業に伴って、IDEはソース・エディタのマージンに色分けを使用し、次の情報を伝えます。</p>
+            
+            <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>青</strong> (<span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で変更された行を示します。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>緑</strong> (<span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で追加された行を示します。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>赤</strong> (<span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>古いリビジョンの後で除去された行を示します。</td>                
+                </tr>
+            </table>                
+            
+            <br>
+            <p>ソース・エディタの左側のマージンには、行ごとに発生した変更が表示されています。行を変更すると、その変更がすぐに左側のマージンに表示されます。</p>
+                
+            <p>マージンの色のグループをクリックして、バージョン管理コマンドをコールできます。たとえば、左下のスクリーン・ショットは、赤いアイコンをクリックすると使用可能なウィジェットを示しており、ローカル・コピーから行が除去されたことを示します。</p>
+                
+            <p>ソース・エディタの右側のマージンには、上から下に向かって、ファイル全体に行われた変更の概要が表示されます。ファイルに変更を行うと、すぐに色分けが生成されます。</p>
+                
+            <p>マージンの特定の場所をクリックすると、インライン・カーソルがファイルのその場所にすぐに移動します。影響を受ける行数を表示するには、右側のマージンの色つきアイコンの上にマウスを動かします。</p>                
+              
+            <table class="cell" style="width:500px">
+                <tr>
+                    <td><a href="../../../images_www/articles/73/ide/cvs/left-ui.png" rel="lytebox" title="エディタの左側のマージンに表示されたバージョン管理の色分け"><img alt="エディタの左側のマージンに表示されたバージョン管理の色分け" class="b-all" src="../../../images_www/articles/73/ide/cvs/left-ui-small.png"></a><br><strong>左側のマージン</strong></td>
+                    <td><img alt="エディタの右側のマージンに表示されたバージョン管理の色分け" class="b-all" src="../../../images_www/articles/73/ide/cvs/right-ui.png" title="エディタの右側のマージンに表示されたバージョン管理の色分け"><br><strong>右側のマージン</strong></td>
+                </tr>
+            </table>         
+             
+            <a name="viewingFileStatus"></a>
+            <h3>ファイルのステータス情報の表示</h3>            
+             
+            <p>「プロジェクト」(Ctrl-1)、「ファイル」(Ctrl-2)、「お気に入り」(Ctrl-3)または「バージョン管理」ウィンドウで作業する場合、IDEには、ファイルのステータス情報を表示するのに役立つ視覚機能がいくつかあります。次の例では、バッジ(例: <img alt="青のバッジ" src="../../../images_www/articles/73/ide/cvs/blue-badge.png">)、ファイル名の色、および隣接するステータス・ラベルすべての相互の対応方法を確認し、ファイルに対するバージョン管理情報をトラックする単純だが効果的な方法について説明します。</p>
+            
+                <p class="align-center">
+                <img alt="「お気に入り」ウィンドウに表示された青のバッジ" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/badge-example.png"></p>
+                
+            <p>バッジ、色分け、ファイル・ステータス・ラベル、およびおそらく最も重要なバージョン管理ウィンドウはすべて、効果的な表示および管理能力、およびIDEでのバージョン管理情報に貢献します。</p>
+                
+            <ul>
+                <li><a href="#badges">バッジと色分け</a></li>
+                <li><a href="#fileStatus">ファイル・ステータス・ラベル</a></li>
+                <li><a href="#versioning">バージョン管理ウィンドウ</a></li>
+            </ul>
+            
+            <div class="indent">
+                <a name="badges"></a>
+                <h4>バッジと色分け</h4>
+            
+                <p>バッジはプロジェクト、フォルダおよびパッケージ・ノードに適用され、そのノードに含まれているファイルのステータスを示します。</p>
+
+                <p>バッジに使用される色のスキームを次の表に示します。</p>
+
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:110px">UIコンポーネント</th>
+                        <th class="tblheader" scope="col">説明</th>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>青のバッジ</strong>(<img alt="青のバッジ" src="../../../images_www/articles/73/ide/cvs/blue-badge.png">)</td>
+                        <td class="tbltd1">ローカルに変更、追加、または削除されたファイルの存在を示します。パッケージの場合、このバッジは、パッケージ自体にのみ適用され、そのサブパッケージには適用されません。プロジェクトまたはフォルダの場合、このバッジはその項目または含まれるサブフォルダ内の内容の変更を示します。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>赤のバッジ</strong>(<img alt="赤のバッジ" src="../../../images_www/articles/73/ide/cvs/red-badge.png">)</td>
+                        <td class="tbltd1"><em>競合する</em>ファイル(リポジトリに保存されているバージョンと競合するローカル・バージョン)を含むプロジェクト、フォルダまたはパッケージをマークします。パッケージの場合、このバッジは、パッケージ自体にのみ適用され、そのサブパッケージには適用されません。プロジェクトまたはフォルダの場合、このバッジはその項目または含まれるサブフォルダ内の競合を示しています。</td>
+                    </tr>
+                </table>
+                
+                <br><br><a name="color-coding-table"></a>
+                <p>色分けは、リポジトリに照らして、現在のステータスを示す目的でファイル名に適用されます。</p>
+                
+                <table>
+                    <tr> 
+                        <th class="tblheader" scope="col" style="width:40px">色</th>
+                        <th class="tblheader" scope="col">例</th>
+                        <th class="tblheader" scope="col">説明</th>
+                    </tr>                    
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>青</strong></td>
+                        <td class="tbltd1"><img alt="青のテキスト" src="../../../images_www/articles/73/ide/cvs/blue-text.png"></td>
+                        <td class="tbltd1">ファイルがローカルに変更されたことを示します。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>緑</strong></td>
+                        <td class="tbltd1"><img alt="緑のテキスト" src="../../../images_www/articles/73/ide/cvs/green-text.png"></td>
+                        <td class="tbltd1">ファイルがローカルに追加されたことを示します。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center"><strong>赤</strong></td>
+                        <td class="tbltd1"><img alt="赤のテキスト" src="../../../images_www/articles/73/ide/cvs/red-text.png"></td>
+                        <td class="tbltd1">ファイルに、ローカル作業コピーとリポジトリのバージョン間の競合が含まれることを示します。</td>
+                    </tr>
+                     <tr> 
+                        <td class="tbltd1 align-center"><strong>グレー</strong></td>
+                        <td class="tbltd1"><img alt="グレーのテキスト" src="../../../images_www/articles/73/ide/cvs/gray-text.png"></td>
+                        <td class="tbltd1">ファイルがCVSによって無視され、バージョン管理コマンド(更新およびコミット)に含まれないことを示します。まだバージョン管理されていない場合にのみ、ファイルが無視されます。</td>
+                    </tr>
+                    <tr> 
+                        <td class="tbltd1 align-center" style="width:120px"><strong>取消し線</strong></td>
+                        <td class="tbltd1 align-center"><img alt="取消し線のテキスト" src="../../../images_www/articles/73/ide/cvs/strike-through-text.png"></td>
+                        <td class="tbltd1">ファイルがコミット操作から除外されることを示します。取消し線テキストは、個々のファイルをコミット・アクションから除外することを選択すると、「バージョン管理」ウィンドウや「コミット」ダイアログなどの特定の場所にのみ表示されます。そのようなファイルは、「更新」など、他のCVSコマンドの影響は引続き受けます。</td>
+                    </tr>  
+                </table>
+                
+                <br><a name="fileStatus"></a>
+                <h4>ファイル・ステータス・ラベル</h4>
+                
+                <p>ファイル・ステータス・ラベルは、バージョン管理ファイルのステータスを、IDEのウィンドウにテキストで示します。デフォルトで、IDEは、ファイルをウィンドウに一覧表示するときに、そのファイルの右側にステータス情報(新規、変更済、無視など)およびタグ情報をグレー・テキストで表示します。ただし、この形式は独自のものに変更できます。たとえば、リビジョン番号をステータス・ラベルに追加する場合は、次を実行します。</p>
+                    
+                <ol>
+                    <li>メイン・メニューから「ツール」>「オプション」(Macでは「NetBeans」>「プリファレンス」)を選択します。「オプション」ウィンドウが開きます。</li>
+                    <li>ウィンドウの上部にある「その他」ボタンを選択し、その下にある「バージョン管理」タブをクリックします。左側のパネルの「バージョン管理システム」の下の「CVS」が選択されていることを確認します。
+                        
+                        <p class="align-center">
+                        <a href="../../../images_www/articles/73/ide/cvs/cvs-options.png" rel="lytebox" title="CVSの「オプション」ウィンドウ"> <img alt="CVSの「オプション」ウィンドウ" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-options-small.png"></a></p></li>
+
+                    <li>「ステータス・ラベル形式」テキスト・フィールドの右側の「変数を追加」ボタンをクリックします。表示される「変数を追加」ダイアログで<code>{revision}</code>変数を選択し、「OK」をクリックします。「ステータス・ラベル形式」テキスト・フィールドに、リビジョン変数が追加されます。</li>
+                    <li>ファイルの右側にステータスとリビジョンのみが表示されるようにステータス・ラベルを再フォーマットするには、「ステータス・ラベル形式」テキスト・フィールドの内容を次のように再整理します。
+                        
+                        <pre class="examplecode">[{status}; {revision}]</pre>
+               
+                        「OK」をクリックします。これでステータス・ラベルにはファイルのステータスとリビジョン番号(該当する場合)が表示されます。
+                    
+                        <p class="align-center">
+                        <img alt="ファイル名の横に表示されたファイル・ラベル" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-file-labels.png"></p></li>
+                </ol>                    
+                    
+                <p class="tips">ファイル・ステータス・ラベルは、メイン・メニューから「表示」>「バージョン・ラベルを表示」を選択して、オンとオフを切り替えできます。</p>
+
+                <a name="versioning"></a>
+                <h4>バージョン管理ウィンドウ</h4>
+                    
+                <p>CVSバージョン管理ウィンドウは、ローカルの作業コピーの選択されたフォルダ内でファイルに行われた変更のすべてを、リアル・タイムで一覧表示します。これはIDEの下のパネルにデフォルトで開き、追加、削除または変更されたファイルを一覧表示します。</p>
+                
+                <p>バージョン管理ウィンドウを開くには、(「プロジェクト」ウィンドウ、「ファイル」ウィンドウ、「お気に入り」ウィンドウなどから)バージョン管理ファイルまたはフォルダを選択し、右クリック・メニューから「CVS」>「変更を表示」を選択するか、またはメイン・メニューから「バージョン管理」>「変更を表示」を選択します。IDEの最下部に次のウィンドウが表示されます。</p>
+                
+                   <p class="align-center">
+                        <a href="../../../images_www/articles/73/ide/cvs/cvs-versioning-window.png" rel="lytebox" title="ローカルで変更されたファイルが表示されたバージョン管理ウィンドウ"> <img alt="ローカルで変更されたファイルが表示されたバージョン管理ウィンドウ" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-versioning-window-small.png"></a></p>
+    
+                <p>デフォルトでは、「バージョン管理」ウィンドウは、選択されたパッケージまたはフォルダ内の変更されたすべてのファイルを一覧表示します。ツールバーにあるボタンを使用することによって、すべての変更を表示するか、表示されるファイルの一覧をローカルまたはリモートで変更されたファイルに制限できます。一覧表示されたファイルの上にある列の見出しをクリックして、名前、ステータス、または場所でファイルをソートすることもできます。</p>
+
+                <p>「バージョン管理」ウィンドウのツールバーには、一覧に表示されているすべてのファイルに対して一般的なCVSタスクを呼び出すことができるボタンも用意されています。次の表は、「バージョン管理」ウィンドウのツールバーにあるCVSコマンドをまとめています。</p>
+                
+                <table >
+                    <tr>
+                        <th class="tblheader" scope="col">アイコン</th>
+                        <th class="tblheader" scope="col" style="width:110px">名前</th>
+                        <th class="tblheader" scope="col">機能</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img alt="「ステータスのリフレッシュ」アイコン" src="../../../images_www/articles/73/ide/cvs/refresh.png"></td>
+                        <td class="tbltd1 align-center"><strong>ステータスのリフレッシュ</strong></td>
+                        <td class="tbltd1">選択したファイルとフォルダのステータスをリフレッシュします。「バージョン管理」ウィンドウに表示されたファイルは、外部で行われた可能性のある任意の変更を反映してリフレッシュできます。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img alt="「すべて差分を取得」アイコン" src="../../../images_www/articles/73/ide/cvs/diff.png"></td>
+                        <td class="tbltd1 align-center"><strong>すべて差分を取得</strong></td>
+                        <td class="tbltd1">差分ビューアを開くと、ローカルのコピーとリポジトリで保持されているバージョンを並べた比較が表示されます。</td>
+                    </tr>     
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img alt="「すべて更新」アイコン" src="../../../images_www/articles/73/ide/cvs/update.png"></td>
+                        <td class="tbltd1 align-center"><strong>すべて更新</strong></td>
+                        <td class="tbltd1">リポジトリから選択したファイルをすべて更新します。</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1 align-center">
+                            <img alt="「すべてコミット」アイコン" src="../../../images_www/articles/73/ide/cvs/commit.png"></td>
+                        <td class="tbltd1 align-center"><strong>すべてコミット</strong></td>
+                        <td class="tbltd1">ローカルの変更をリポジトリにコミットできます。</td>
+                    </tr>            
+                </table>
+
+               
+                <p>「バージョン管理」ウィンドウで、変更したファイルに対応する表の行を選択し、右クリック・メニューからコマンドを選択すると、他のCVSコマンドにアクセスできます。</p>
+                    
+                    <p class="align-center">
+                    <img alt="「バージョン管理」ウィンドウの選択したファイルに対して表示された右クリック・メニュー" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-right-click.png"></p>
+                       
+                
+                <p>たとえば、ファイルでは次のアクションを実行できます。</p>               
+                        
+                <table>
+                    <tr>
+                        <td>
+                            <ul><li><strong>注釈を表示</strong>: <br><br>ソース・エディタで開かれているファイルの左マージンに、作成者、リビジョン番号情報を表示します。</li></ul></td>                        
+                        <td class="f-page-cell"><img alt="ソース・エディタの左側のマージンに表示された注釈" class="b-all" src="../../../images_www/articles/73/ide/cvs/annotations.png"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>履歴を検索</strong>: <br><br>IDEの履歴ビューアで選択したファイルの複数のリビジョンを検索して比較できます。履歴ビューアから、<a href="#comparing">差分</a>を取得したり、選択したリビジョンにローカル・コピーをロール・バックしたりすることもできます。</li></ul></td>                       
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/history-viewer.png" rel="lytebox" title="ファイルの複数のリビジョンが表示されたCVS履歴ビューア"> <img alt="ファイルの複数のリビジョンが表示されたCVS履歴ビューア" class="b-all" src="../../../images_www/articles/73/ide/cvs/history-viewer-small.png"></a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>コミットから除外</strong>: <br><br>コミットを実行するときに除外するファイルをマークできます。</li></ul></td>                       
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/exclude-from-commit.png" rel="lytebox" title="「コミット」ダイアログで除外とマークされたファイル"> <img alt="「コミット」ダイアログで除外とマークされたファイル" class="b-all" src="../../../images_www/articles/73/ide/cvs/exclude-from-commit-small.png"></a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul><li><strong>変更内容を元に戻す</strong>: <br><br>「上書きを確認」ダイアログを開き、ローカル作業コピー内のファイルにコミットした任意のアクションを元に戻すことができます。</li></ul></td>                      
+                        <td class="f-page-cell"><a href="../../../images_www/articles/73/ide/cvs/cvs-confirm-overwrite.png" rel="lytebox" title="「コミット」ダイアログで除外とマークされたファイル"> <img alt="「コミット」ダイアログで除外とマークされたファイル" class="b-right" src="../../../images_www/articles/73/ide/cvs/cvs-confirm-overwrite-small.png"></a></td>
+                    </tr>
+                </table>    
+            </div>
+        
+            <a name="comparing"></a>
+            <h3>ファイル・リビジョンの比較</h3>
+            
+            <p>ファイル・リビジョンの比較は、バージョン管理されているプロジェクトを操作する場合に一般的なタスクです。差分コマンドを使用すると、IDEでリビジョンを比較できます。差分コマンドは、選択した項目の右クリック・メニュー(「CVS」>「差分」)および「バージョン管理」ウィンドウから使用できます。「バージョン管理」ウィンドウで、差分を実行するには、リストされているファイルをダブルクリックするか、上部のツールバーにある「すべて差分を取得」アイコン(<img alt="「すべて差分を取得」アイコン" src="../../../images_www/articles/73/ide/cvs/diff.png">)をクリックします。</p>
+            
+            <p>差分の取得を実行すると、選択したファイルとリビジョンについてグラフィカルな差分ビューアがIDEのメイン・ウィンドウで開きます。差分ビューアには2つのコピーが並んだパネルに表示されます。右側により現在に近いコピーが表示されるため、作業コピーに対してリポジトリ・リビジョンを比較すると、右パネルに作業コピーが表示されます。</p>
+
+               <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/diff-viewer.png" rel="lytebox" title="CVS差分ビューア"> <img alt="CVS差分ビューア" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/diff-viewer-small.png"></a></p>
+              
+            <p>差分ビューアは、バージョン管理の変更を表示する場所に使用されているのと同じ<a href="#viewingChanges">色分け</a>を利用します。前に表示したスクリーン・ショットの緑色のブロックは、より現在に近いリビジョンに追加された内容を示します。赤いブロックは、前のリビジョンの内容が、より最近のリビジョンから除去されたことを示します。青は、強調表示された行で変更が発生したことを示します。</p>
+              
+            <p>また、プロジェクト、パッケージまたはフォルダなどのグループで差分を実行する場合、あるいは「すべて差分を取得」(<img alt="「すべて差分を取得」アイコン" src="../../../images_www/articles/73/ide/cvs/diff.png">)をクリックする場合は、差分ビューアの上部領域にリストされているファイルをクリックすると、差分を切り替えることができます。</p>
+            
+            <p>差分ビューアには次の機能もあります。</p>
+            
+            <ul>
+                <li><a href="#makeChanges">ローカル作業コピーへの変更の実行</a></li>
+                <li><a href="#navigateDifferences">差分間の移動</a></li>                
+                <li><a href="#changeViewCriteria">表示条件の変更</a></li>
+            </ul>
+            
+            <div class="indent">
+                <a name="makeChanges"></a>
+                <h4>ローカル作業コピーへの変更の実行</h4>
+
+                <p>ローカル作業コピーで差分の取得を実行する場合、IDEの差分ビューア内から直接変更を行うことができます。これを行うには、カーソルを差分ビューアの右ペインに置き、それに従ってファイルを変更するか、または強調表示された各変更の前後で表示されるインライン・アイコンを使用します。</p>
+
+                <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>置換</strong>(<img alt="「置換」アイコン" src="../../../images_www/articles/73/ide/cvs/insert.png">):</td>
+                        <td>前のリビジョンから現在のリビジョンに、強調表示されたテキストを挿入します。</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>すべて移動</strong>(<img alt="「すべて移動」アイコン" src="../../../images_www/articles/73/ide/cvs/arrow.png">):</td>
+                        <td>ファイルの現在のリビジョンを、選択した前のリビジョンの状態に戻します。</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>除去</strong>(<img alt="「除去」アイコン" src="../../../images_www/articles/73/ide/cvs/remove.png">):</td>
+                        <td>現在のリビジョンから強調表示されているテキストを除去し、以前のリビジョンを反映させます。</td>                
+                    </tr>
+                </table>
+
+                <a name="navigateDifferences"></a>
+                <h4>比較したファイルの相違間をナビゲート</h4>
+
+                <p>差分に複数の違いが含まれている場合、ツールバーに表示された矢印アイコンを使用して、それらをナビゲートできます。矢印アイコンを使用すると、差分を上から下へ出現順に表示できます。</p>
+
+                 <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>前</strong>(<img alt="「前の差分」ボタン" src="../../../images_www/articles/73/ide/cvs/diff-prev.png">):</td>
+                        <td>差分内で、前に表示された差分に移動します。</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>次</strong>(<img alt="「次の差分」ボタン" src="../../../images_www/articles/73/ide/cvs/diff-next.png">):</td>
+                        <td>差分内で、次に表示された差分に移動します。</td>
+                    </tr>
+                </table>
+
+                <a name="changeViewCriteria"></a>
+                <h4>表示条件の変更</h4>
+
+                <p>ローカル作業コピー、リポジトリ、またはその両方からの変更を含むファイルを同時に表示するかどうかを選択できます。</p>
+
+                 <table>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>ローカル</strong>(<img alt="「ローカルで変更」アイコン" src="../../../images_www/articles/73/ide/cvs/locally-mod.png">):</td>
+                        <td>ローカルで変更されたファイルのみを表示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>リモート</strong>(<img alt="「リモートで変更」アイコン" src="../../../images_www/articles/73/ide/cvs/remotely-mod.png">):</td>
+                        <td>リモートで変更されたファイルのみを表示します。</td>
+                    </tr>
+                    <tr>
+                        <td class="align-right cell" style="width:120px"><strong>両方</strong>(<img alt="「ローカルとリモートで変更」アイコン" src="../../../images_www/articles/73/ide/cvs/both-mod.png">):</td>
+                        <td>ローカルとリモートの両方で変更されたファイルを表示します。</td>
+                    </tr>                
+                </table>
+            </div>
+
+            <a name="merging"></a>
+            <h3>ファイル・リビジョンのマージ</h3>
+
+            <p>NetBeans IDEでは、リポジトリの異なる分岐で行われた変更をローカル作業コピーにマージできます。CVS「マージ」ダイアログを使用して、作業コピーにマージするリポジトリ・ソースを示す条件を指定するのみで済みます。</p>
+
+            <p>次の単純な使用事例に、「マージ」ダイアログを適用して、完全な分岐をトランクのヘッドにマージする方法を示します。</p>
+                
+            <br>
+            <table >
+                <tr>
+                    <td class="tblheader valign-top align-center" style="width:80px"><strong>使用事例:</strong></td>
+                    <td class="tbltd1">
+                        プロジェクトの新機能の開発を開始するリクエストがあるため、プロジェクトのトランクの現在の状態から新しい分岐が作成されます。必要なすべての作業が実行され、分岐内のコードが十分に安定した後に、新しい機能をトランクに統合します。
+                    </td>
+                </tr>
+            </table>
+                
+            <ol>
+                <li>プロジェクトの新しい分岐を作成するには、プロジェクト・ノードを右クリックし、「CVS」>「分岐」を選択します。「分岐」ダイアログで、分岐名として「<code>new_feature</code>」と入力し、「完了後にこの分岐に切替え」オプションが選択されていることを確認します。
+                    
+                    <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-branch-dialog.png" rel="lytebox" title="ユーザー指定データを含む「分岐」ダイアログ"> <img alt="ユーザー指定データを含む「分岐」ダイアログ" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-branch-dialog-small.png"></a></p>
+                    
+                    「分岐」ボタンをクリックします。リポジトリに新しい分岐が作成され、IDEによってターゲット・リポジトリの場所が新しい分岐に切り替えられます。「プロジェクト」ウィンドウで、バージョン管理されるファイルの横に新しい分岐名がグレーのテキストで表示され、分岐から作業できるようになったことが示されます。
+                    <p class="notes"><b>注意: </b><a href="#fileStatus">ファイル・ステータス・ラベル</a>がアクティブ化されていることを確認してください(メイン・メニューから「表示」>「バージョン・ラベルを表示」を選択)。</p></li>
+                <li>ファイルを編集し、ファイルを追加し、ファイルを削除します。すべての変更をコミットします。</li>
+                <li>新しい機能の準備ができたら、トランクに戻ります。2つの分岐間でマージを実行する場合、ターゲット分岐(この例ではトランク)で作業している必要があります。プロジェクト・ノードを右クリックし、「CVS」>「分岐に切替え」を選択します。表示されるダイアログで、「トランクに切替え」を選択し、「切替え」をクリックします。<br><br> IDEによってターゲット・リポジトリの場所がトランクに切り替えられます。「プロジェクト」ウィンドウで、ファイル・ステータス・ラベルが新しい作業場所を反映するように自動的に更新されます。</li>
+                <li>マージを実行するには、プロジェクト・ノードを右クリックし、「CVS」>「分岐での変更をマージ」を選択します。表示されるダイアログで、作業中の分岐に変更をマージ・フィールドに<code>Trunk</code>が含まれ、現在の作業場所が示されています。<br><br>ダイアログで、次の条件を指定します。
+                    
+                    <ul>
+                        <li>分岐の作成後のすべての変更をマージするため、「開始」オプションを「分岐ポイント/ 分岐ルート」に設定されたままにします。</li>
+                        <li>「まで」オプションで、「分岐の先頭」を選択し、トランクにマージする分岐の名前を入力します。「参照」をクリックして、リポジトリ内の既存の分岐から検索することもできます。</li>
+                        <li>マージ後にリビジョンにタグ付けする場合は、「マージ後にトランクにタグ付け」を選択し、選択するタグ名を入力します。
+						<p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-merge-branches.png" rel="lytebox" title="ユーザー指定データを含む分岐での変更をマージ・ダイアログ"> <img alt="ユーザー指定データを含む分岐での変更をマージ・ダイアログ" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-merge-branches-small.png"></a></p></li>
+                    </ul>
+                   
+                    「マージ」をクリックします。IDEによって分岐がトランクに組み込まれます。処理でマージ競合が発生した場合、プロジェクトのステータスはこれを示すために「<a href="#resolving">競合をマージ</a>」に更新されます。</li>
+            </ol>
+
+            <p><strong class="notes">注意:</strong> 分岐でのファイルの変更をローカルの作業用ディレクトリにマージした後、その変更をリポジトリに追加するには、「コミット」コマンドを使用して、変更をコミットする必要があります。</p>
+        </div>
+
+        <a name="committing"></a>
+        <h2>リポジトリへのソースのコミット</h2>
+         
+        <p>ソースに変更を加えた後は、それらをリポジトリにコミットします。一般に、競合が発生しないようにするため、コミットを実行する前に、リポジトリに照らして存在するコピーをすべて更新することをお薦めします。ただし、競合は発生する可能性があり、多くの開発者がプロジェクトを同時に操作する場合には自然な出来事であると考える必要があります。IDEでは、これらのすべての機能を実行できる柔軟なサポートを提供しています。さらに、競合が発生したときに、それらを安全に処理できる競合リゾルバも提供しています。</p>
+            
+        <ul>
+            <li><a href="#updating">ローカル・コピーの更新</a></li>
+            <li><a href="#resolving">競合の解決</a></li>
+            <li><a href="#performing">コミットの実行</a></li>
+        </ul>
+         
+        <div class="indent">
+            <a name="updating"></a>
+            <h3>ローカル・コピーの更新</h3>
+            
+            <p>「プロジェクト」、「ファイル」または「お気に入り」ウィンドウのバージョン管理された項目の右クリック・メニューから、「CVS」>「更新」を選択して、更新を実行できます。「バージョン管理」ウィンドウから直接作業する場合、表示されているファイルを右クリックし、「更新」を選択するのみで済みます。</p>
+                
+            <p>変更したソースに対して更新を実行するには、「すべて更新」アイコン(<img alt="「すべて更新」アイコン" src="../../../images_www/articles/73/ide/cvs/update.png">)をクリックしますが、このアイコンは<a href="#versioning">「バージョン管理」ウィンドウ</a>と<a href="#comparing">差分ビューア</a>の両方の上部にあるツールバーに表示されます。リポジトリで行われた変更は、「バージョン管理の出力」ウィンドウに表示されます。</p>
+    
+            <a name="resolving"></a>
+            <h3>競合の解決</h3>
+            
+            <p>更新またはコミットを実行する場合、IDEのCVSサポートはファイルとリポジトリ・ソースを比較して、同じ場所で他の変更がまだ行われていないことを確認します。以前のチェックアウト(または更新)がリポジトリ<em>HEAD</em> (つまり最新のリビジョン)と一致しなくなり、<em>さらに</em>ローカル作業コピーに適用した変更が、変更されたHEADの領域と一致する場合、更新またはコミットは、<em>競合</em>になります。</p>
+                
+            <p><a href="#badges">バッジと色分け</a>に示されているように、競合はIDEで赤のテキストで表示され、「プロジェクト」、「ファイル」または「お気に入り」ウィンドウで表示した場合に、赤のバッジ(<img alt="赤のバッジ" src="../../../images_www/articles/73/ide/cvs/red-badge.png">)が付けられます。「バージョン管理」ウィンドウで作業する場合、競合はファイルのステータスによっても示されます。</p>
+                
+                <p class="align-center">
+                <img alt="「バージョン管理」ウィンドウに表示されたファイルの競合" class="b-right margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-conflict-versioning-win.png"></p>
+               
+            <p>ファイルをリポジトリにコミットする前に、発生したすべての競合を解決する必要があります。IDEで競合を解決するには、マージ競合リゾルバを使用します。マージ競合リゾルバは、変更を行ったときに、マージ済出力を表示しながら、個々の競合に順番に対処できる直観的なインタフェースを備えています。競合しているファイルについてマージ競合リゾルバにアクセスするには、そのファイルを右クリックし、「CVS」>「競合を解決」を選択します。</p>
+      
+            <p>マージ競合リゾルバは、競合のある2つのリビジョンを上のペインに横に並べて表示し、競合領域は強調表示されます。下部のペインは、2つのリビジョン間の個々の競合のマージが行われると表示されるファイルを示します。</p>
+                
+                <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/conflict-resolver.png" rel="lytebox" title="競合したファイルが表示された競合リゾルバ"> <img alt="競合したファイルが表示された競合リゾルバ" class="b-all margin-around" src="../../../images_www/articles/73/ide/cvs/conflict-resolver-small.png"></a></p>
+               
+                <p>上部のペインに表示される2つのリビジョンのいずれかを採用することで競合を解決します。採用するリビジョンの「同意」ボタンをクリックします。IDEによって、採用されたリビジョンがソース・ファイルにマージされ、マージ競合リゾルバの下のペインにマージの結果がすぐに表示されます。すべての競合を解決したら、「OK」をクリックしてマージ競合リゾルバを終了し、変更したファイルを保存します。競合を示すバッジが除去され、これで、変更したファイルをリポジトリにコミットできます。</p>
+            
+            <a name="performing"></a>
+            <h3>コミットの実行</h3>
+            
+            <p>ソース・ファイルの編集、更新の実行および競合の解決後、ローカル作業コピーからファイルをリポジトリにコミットします。IDEでは、次の方法でコミット・コマンドをコールできます。</p>
+            
+            <ul>
+                <li>「プロジェクト」、「ファイル」または「お気に入り」ウィンドウで、新規または変更した項目を右クリックし、「CVS」>「コミット」を選択します。</li>
+                <li>「バージョン管理」ウィンドウまたは差分ビューアから、ツールバーにある「すべてコミット」(<img alt="「すべてコミット」アイコン" src="../../../images_www/articles/73/ide/cvs/commit.png">)ボタンをクリックします。</li>
+            </ul>
+                
+            <p>「コミット」ダイアログが開き、リポジトリにコミットされるファイルが表示されます。</p>
+                
+                <p class="align-center">
+                <a href="../../../images_www/articles/73/ide/cvs/cvs-commit-dialog.png" rel="lytebox" title="コミット予定のファイルが表示された「コミット」ダイアログ"> <img alt="コミット予定のファイルが表示された「コミット」ダイアログ" class="b-none margin-around" src="../../../images_www/articles/73/ide/cvs/cvs-commit-dialog-small.png"></a></p>
+                
+            <p>「コミット」ダイアログには、次が表示されます。</p>
+            
+            <ul>
+                <li>ローカルで変更されたすべてのファイル</li>
+                <li>ローカルで削除されたすべてのファイル</li>                
+                <li>すべての新規ファイル(リポジトリにまだ存在しないファイル)</li>
+                <li>名前を変更したすべてのファイル。CVSは元のファイルを削除し、新しい名前で複製を作成して、名前が変更されたファイルを処理します。</li>
+            </ul>
+            
+            <p>「コミット」ダイアログで、コミットから個々のファイルを除外するかどうかを指定できます。これを行うには、選択したファイルの「コミット・アクション」列をクリックして、ドロップダウン・リストから「コミットから除外」を選択します。</p>
+                
+            <p>イメージ・ファイルなど、新しいバイナリ・ファイルが含まれる場合、それらが自動的にバイナリ・ファイルとして検出されます。「コミット・アクション」列のドロップダウン・リストから「バイナリとして追加」または「テキストとして追加」を選択して、ファイルのMIMEタイプを指定できます。</p>
+            
+            <p>コミットを実行するには:</p>
+            
+            <ol>
+                <li>「コミット・メッセージ」テキスト領域にコミット・メッセージを入力します。または、右上隅にある「最近のメッセージ」(<img alt="「最近のメッセージ」アイコン" src="../../../images_www/articles/73/ide/cvs/recent-msgs.png">)アイコンをクリックして、以前使用したメッセージのリストを表示して選択します。</li>
+                <li>個々のファイルのアクションを指定して「コミット」をクリックします。IDEによってコミットが実行され、ローカルの変更がリポジトリに送信されます。コミット・アクションが実行されると、インタフェースの右下にあるIDEのステータス・バーが表示されます。コミットに成功すると、「プロジェクト」、「ファイル」および「お気に入り」ウィンドウのバージョン管理バッジが消え、コミットされたファイルの色分けが黒に戻ります。</li>
+            </ol>
+        </div>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20CVS%20Support%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+        
+        <br style="clear:both;">
+        
+        <a name="seeAlso"></a>
+        <h2>関連項目</h2>
+        
+        <p>これで、NetBeans IDEでのCVSのガイド・ツアーは終了です。このドキュメントでは、IDEのCVSサポートを使用する場合の標準的なワークフローを説明することによって、IDEの基本的なバージョン管理タスクの実行方法を示しました。IDEに含まれる新しいCVS機能の一部を紹介しながら、バージョン管理されたプロジェクトの設定とバージョン管理されたファイルの基本タスクの実行方法を説明しました。</p>
+          
+        <p>関連するドキュメントについては、次のリソースを参照してください。</p>
+        
+        <ul>
+		<li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#CVS">NetBeans IDEでのCVSサポートのFAQ</a>。NetBeans IDEでのCVSの設定と使用方法に関して、よくある質問への説明を含むドキュメントです。</li>
+		<li><a href="git.html">NetBeans IDEでのGitサポートの使用</a>。NetBeans IDEでのGitバージョン管理クライアントの使用方法についてのガイドです。</li>
+		<li><a href="mercurial.html">NetBeans IDEでのMercurialサポートの使用</a>。NetBeans IDEでのMercurialバージョン管理クライアントの使用方法についてのガイドです。</li>
+		<li><a href="subversion.html">NetBeans IDEでのSubversionサポートの使用</a>。NetBeans IDE 6.xでのSubversionバージョン管理の使用方法についてのガイドです。</li>
+        <li><a href="clearcase.html">NetBeans IDEでのClearCaseサポートの使用</a>。IDEでのClearCaseバージョン管理機能の使用方法についての紹介です。</li>
+		<li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">バージョン管理によるアプリケーションのバージョニング</a>。</li>
+        
+        
+				
+        </ul>
+
+    </body>
+</html>

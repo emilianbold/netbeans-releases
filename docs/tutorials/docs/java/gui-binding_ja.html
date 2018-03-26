@@ -1,0 +1,405 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009 - 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <title>JavaアプリケーションでのBeansとデータのバインディング - NetBeans IDEチュートリアル</title>
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="This guide is an introduction to the support in NetBeans IDE for beans
+              binding and data binding in Java applications." >
+        <link rel="stylesheet" href="../../../netbeans.css">
+    </head>
+    <body>
+        <h1>JavaアプリケーションでのBeansとデータのバインディング</h1>
+        <p>このガイドでは、NetBeans IDEでサポートされているJavaアプリケーションでのBeans Binding機能とデータのバインディング機能の概要を示します。</p>
+        <p><b>目次</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.1、7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.1、7.2、7.3、7.4および8.0に適用されます">
+        <ul class="toc">
+            <li><a href="#intro">概要: NetBeans IDEでのBeans Binding</a></li>
+            <li><a href="#prop-binding">プロパティ間のバインディング</a></li>
+            <li><a href="#prop-custom">カスタムBeansのバインディング</a></li>
+            <li><a href="#prop-advanced">バインディング・プロパティの詳細設定</a></li>
+            <li><a href="#data-binding">コンポーネントへのデータのバインディング</a></li>
+            <li><a href="#prop-synth">特別なバインディング・プロパティ</a></li>
+        </ul>
+
+        <p><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン7.1、7.2、7.3、7.4または8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン6以降</td>
+                </tr>
+            </tbody>
+        </table>
+        <a name="intro"></a>
+        <h2>概要: NetBeans IDEでのBeans Binding</h2>
+
+        <p>Beans Bindingライブラリがリリースされるまで、UIコンポーネントをデータベースに接続したり、コンポーネントのプロパティ値の同期を保持するのは面倒でした。たとえば、標準データベースのデータをJTableに表示するには、データベースとJTableの接続を処理するユーティリティ・クラスを手動で作成する必要がありました。また、異なるBeanのプロパティの値(たとえばJTextFieldの値とビジュアルBeanのレンダリング)の同期を保持するには、リスナーやイベント・ハンドラを手動でコーディングする必要がありました。</p>
+        <p>Beans Bindingライブラリによって、このすべての処理が簡単になり、また標準化されます。どのコンポーネントのどのプロパティを同期する必要があるのかを指定する数行のコードを記述するのみで、残りの処理はBeans Bindingライブラリによって実行されます。NetBeans IDEでは、Beans Binding機能はGUIビルダーに統合されているので、アプリケーションの視覚的なデザインが完成したらすぐに動作をコーディングできます。</p>
+        <p>このガイドでは、IDEでのBeans Bindingの主要な機能について説明します。
+            </p>
+
+        <a name="prop-binding"></a>
+        <h2>プロパティ間のバインディング</h2>
+        <p>Beans Bindingは、基本的にイベント・リスナーやイベント・ハンドラのコードを使用せずにBeanのプロパティを接続する方法です。</p>
+
+        <p>Beans Bindingの概念とIDEに用意されている機能を示すために、ユーザーがスライダを調整してテキスト・フィールド内の数値を変更できる単純な例を使用します。</p>
+
+        <p><b>例を設定する</b></p>
+        <ol>
+            <li>IDEで、「ファイル」>「新規プロジェクト」を選択します。</li>
+            <li>「Java」カテゴリを選択し、「Java Application」テンプレートを選択します。「次」をクリックします。</li>
+            <li>ウィザードの名前と場所ページで、次の操作を行います。
+                <ul>
+                    <li>プロジェクト名に「<tt>NumberSlider</tt>」と入力します。</li>
+                    <li>「ライブラリの格納用に専用フォルダを使用」チェックボックスは選択されていない状態のままにします。
+                    <p class="align-center"><a href="../../../images_www/articles/80/java/gui-binding/numberslider.png" rel="lytebox" title="新規Javaアプリケーション・ウィザードの「名前と場所」ページ"><img alt="新規Javaアプリケーション・ウィザードの「名前と場所」ページ" border="1" src="../../../images_www/articles/80/java/gui-binding/numberslider-small.png"></a></p></li>
+                    <li>「メイン・クラスの作成」チェックボックスを選択解除します。</li>
+                </ul>
+                	 
+            </li>
+            <li>「終了」をクリックしてウィザードを終了し、プロジェクトを設定します。</li>
+            <li>「プロジェクト」ウィンドウで「NumberSlider」プロジェクト・ノードを右クリックし、「新規」>「JFrameフォーム」を選択します。
+                <p>(「JFrameフォーム」が「新規」メニューにない場合は、「その他」を選択します。次に、新規ファイル・ウィザードで「Swing GUIフォーム」カテゴリを選択してから「JFrameフォーム」テンプレートを選択します。)</p>
+            </li>
+            <li>ウィザードの名前と場所ページで、次の操作を行います。
+                <ul>
+                    <li>クラス名に「<tt>NumberSliderFrame</tt>」と入力します。</li>
+                    <li>パッケージ名に「<tt>numberslider</tt>」と入力します。</li>
+                </ul>
+				<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/numberslider2.png" rel="lytebox" title="「新規JFrame」ウィザードの「名前と場所」ページ"> <img alt="「新規JFrame」ウィザードの「名前と場所」ページ" border="1" src="../../../images_www/articles/80/java/gui-binding/numberslider2-small.png"></a></p>
+                
+            </li>
+            <li>「終了」をクリックしてウィザードを終了し、フォームを作成します。
+            <p><tt>NumberSliderFrame.java</tt>が編集領域にデザイン・モードで開きます。</p>
+            </li>
+            <li>パレットの「Swingコントロール」セクションからスライダ・コンポーネントをデザイン領域までドラッグします。「パレット」ウィンドウが開いていない場合は、「ウィンドウ」>「パレット」を選択します。</li>
+            <li>パレットから、テキスト・フィールド・コンポーネントをデザイン領域までドラッグします。
+                <p>フォームは次のスクリーンショットのようになります。この例では、配置は重要ではありません。</p>
+               
+				<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/slider-textfield.png" rel="lytebox" title="スライダとテキスト・フィールドの両方が追加されたフォーム"> <img alt="スライダとテキスト・フィールドの両方が追加されたフォーム" border="1" src="../../../images_www/articles/80/java/gui-binding/slider-textfield-small.png"></a></p>
+            </li>
+        </ol>
+        <div class="indent">
+            <h3>ソースとターゲット</h3>
+            <p>例を設定したので、バインディングを作成します。ただし、最初に、バインディングの<i>ソース</i>にするコンポーネントと<i>ターゲット</i>にするコンポーネントを決定する必要があります。バインディングのソース・コンポーネントは、プロパティ値のバインディング元です。</p>
+            <p>GUIエディタでバインディングを行う場合は、ターゲットでバインディングを開始してから、「バインド」ダイアログ・ボックスでソースを宣言します。</p>
+            <p>この例では、JSliderにデフォルトの値の範囲があるので、このコンポーネントをソースとして使用します。</p>
+            <p><b>注意: </b>バインディングを2方向(読取り/書込み)にして、ターゲットの変更内容がソースに自動的に反映されるようにできます。ただし、最初のバインディングの方向は常にソースからターゲットになります。詳細は、<a href="#prop-advanced">詳細なバインディング構成</a>の項で更新モードに関する説明を参照してください。</p>
+            <p><b>スライダをテキスト・フィールドにバインドする</b></p>
+            <ol>
+                <li>テキスト・フィールド・コンポーネントを右クリックし、「バインド」>「テキスト」を選択して「バインド」ダイアログ・ボックスを開きます。</li>
+                <li>「ソースをバインディング」コンボ・ボックスで「<tt>jSlider1</tt>」を選択します。</li>
+                <li>次のイメージに示すように、「式をバインディング」コンボ・ボックスで「<tt>value int</tt>」を選択します。
+                    
+					<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/bind-dialog.png" rel="lytebox" title="「ソースをバインディング」コンボ・ボックスで選択する値"> <img alt="「ソースをバインディング」コンボ・ボックスで選択する値" border="1" src="../../../images_www/articles/80/java/gui-binding/bind-dialog-small.png"></a></p>
+                </li>
+                <li>「OK」をクリックします。</li>
+            </ol>
+            <p>これで、スライダの「<tt>value</tt>」Beanプロパティがテキスト・フィールドの「<tt>text</tt>」の値にバインドされました。</p>
+            <p>デザイン領域で、テキスト・フィールドに値<tt>50</tt>が表示されます。この値は、スライダが中央の位置にあり、スライダのデフォルトの値の範囲が0から100であることを反映しています。</p>
+            <p>これでアプリケーションを実行し、バインディングが機能するところを確認できます。</p>
+
+            <p>「実行」>「ファイルを実行」を選択してファイルを実行します。</p>
+                
+            <p>アプリケーションが別のウィンドウで起動します。実行中のアプリケーションでスライダを調整し、テキスト・フィールド内の値が変わることを確認します。</p>
+            <p class="align-center"><img alt="アプリケーションの実行" class="margin-around" src="../../../images_www/articles/80/java/gui-binding/run-numberslider.png"></p>
+
+
+            <!--TODO - note The syntax shown in the
+    Binding Expression field comes from expression language syntax, which is similar to what is used in JSP and JSF
+programming.-->
+        </div>
+        <a name="prop-custom"></a>
+        <h2>カスタムBeansのバインディング</h2>
+        <p>前の項では、パレットからフォームに追加した2つの標準のSwingコンポーネントのプロパティをバインドしました。他のBeanのプロパティもバインドできます。ただし、これを行うには、いくつかの手順を実行してBeanのバインディング・コードを生成するIDEの機能を使用可能にする必要があります。次の方法のいずれかを行い、Bean用にIDEのバインディング機能を使用可能にできます。</p>
+        <ul>
+            <li>Beanをパレットに追加し、標準のSwingコンポーネントと同じようにフォームに追加できるようにします。</li>
+            <li>Beanクラスをプロジェクトに追加し、Beanをコンパイルします。</li>
+        </ul>
+        <p>「パレット」ウィンドウにBeanを追加する</p>
+        <ol>
+            <li>Beanがコンパイルされていることを確認します。</li>
+            <li>「ツール」>「パレット」>「Swing/AWTコンポーネント」を順に選択します。</li>
+            <li>Beanの新規パレット・カテゴリを作成する場合は、Beanを追加する前に「新規カテゴリ」をクリックし、使用する名前を入力します。</li>
+            <li>「JARから追加」、「ライブラリから追加」、または「プロジェクトから追加」をクリックし、ウィザードを完了してBeanを追加します。</li>
+        </ol>
+        <p>プロジェクトからBeanを追加する</p>
+        <ol>
+            <li>プロジェクトのウィンドウでBeanのノードを右クリックし、「ファイルをコンパイル」を選択します。</li>
+            <li>Beanをフォームまでドラッグします。
+                <p>これで、Beanが「インスペクタ」ウィンドウに表示されます。Beanの任意のプロパティの「バインド」ダイアログを呼び出すことができます。</p></li>
+        </ol>
+
+
+        <a name="prop-advanced"></a>
+        <h2>詳細なバインディング構成</h2>
+        <p>このチュートリアルの最初の項の例では、デフォルト動作の一部分を使用した簡単なバインディング方法を示しています。ただし、バインディングの構成の変更が必要になる場合があります。その場合は、「バインディング」ダイアログ・ボックスの「詳細」タブを使用できます。</p>
+
+        <p>このダイアログ・ボックスの「詳細」タブには、次のフィールドがあります。</p>
+        <ul>
+            <li><b>名前。</b>バインディングの名前を作成でき、これにより、バインディングをより柔軟に管理できます。名前はバインディングのコンストラクタに追加され、バインディングの<tt>getName()</tt>メソッドで参照できます。</li>
+            <li><b>モードを更新。</b>プロパティの同期を保持する方法を指定します。可能な値は次のとおりです:
+                <ul>
+                    <li><b>常に同期(読取り/書込み)。</b>ソースまたはターゲットのいずれかに変更を加えると、もう一方が更新されます。</li>
+                    <li><b>ソースから読取りのみ(読取り専用)。</b>最初にソースの値が設定されたときのみターゲットが更新されます。ソースに変更を行うと、ターゲットも更新されます。ターゲットに変更を加えても、ソースは更新されません。</li>
+                    <li><b>ソースから一度読取り(一度読取り)。</b>ターゲットとソースが最初にバインドされたときのみターゲットが更新されます。</li>
+            </ul></li>
+            <li><b>ソースの更新時期</b> (JTextFieldおよびJTextAreaコンポーネントの<tt>text</tt>プロパティでのみ使用可能)。プロパティを同期する頻度を選択できます。
+            </li>
+            <li><b>調整を無視</b> (JSliderの「<tt>value</tt>」プロパティ、JTableおよびJListの「<tt>selectedElement</tt>」プロパティ、JTableおよびJListの「<tt>selectedElements</tt>」プロパティでのみ使用可能)。このチェックボックスを選択すると、あるプロパティに対して行われた変更は、ユーザーが変更を終了するまで、もう一方のプロパティに反映されません。たとえば、アプリケーションのユーザーがスライダを移動させた場合、スライダの「<tt>value</tt>」プロパティがバインドされたプロパティの値は、ユーザーがマウスのボタンを離すまで更新されません。
+            </li>
+            <li><b>コンバータ。</b>バインディングされたプロパティに異なるデータ型が含まれる場合は、データ型の間で値を変換するコードを指定できます。Beans Bindingライブラリでは一般的な変換の多くを処理できますが、それ以外のプロパティの型の組合せが存在する場合は、独自のコンバータが必要な場合もあります。このようなコンバータは、<tt>org.jdesktop.beansbinding.Converter</tt>クラスを拡張する必要があります。
+                <p>「コンバータ」ドロップダウン・リストには、フォームにBeanとして追加されたコンバータが含まれています。また、省略符号ボタン(...)をクリックし、「コンバータ・プロパティの使用方法を選択」ドロップダウン・リストから「カスタム・コード」を選択して、変換コードを直接追加することもできます。</p>
+                <p>次の変換では、コンバータを用意する必要はありません。</p>
+                <ul>
+                    <li>BigDecimalからStringへ、StringからBigDecimalへ</li>
+                    <li>BigIntegerからStringへ、StringからBigIntegerへ</li>
+                    <li>BooleanからStringへ、StringからBooleanへ</li>
+                    <li>ByteからStringへ、StringからByteへ</li>
+                    <li>CharからStringへ、StringからCharへ</li>
+                    <li>DoubleからStringへ、StringからDoubleへ</li>
+                    <li>FloatからStringへ、StringからFloatへ</li>
+                    <li>IntからStringへ、StringからIntへ</li>
+                    <li>LongからStringへ、StringからBigDecimalへ</li>
+                    <li>ShortからStringへ、StringからShortへ</li>
+                    <li>IntからBooleanへ、BooleanからIntへ</li>
+                </ul>
+            </li>
+            <li><b>バリデータ。</b>変更をソース・プロパティに反映させる前に、ターゲット・プロパティ値の変更内容を検証するためのコードを指定できます。たとえば、整数のプロパティ値が特定の範囲内になるようにバリデータを使用できます。
+                <p>バリデータは、<tt>org.jdesktop.beansbinding.Validator</tt>クラスを拡張する必要があります。<br>「バリデータ」ドロップダウン・リストには、フォームにBeanとして追加されたバリデータが含まれています。また、省略符号ボタン(...)をクリックし、「バリデータ・プロパティの使用方法を選択」ドロップダウン・リストから「カスタム・コード」を選択して、検証コードを直接追加することもできます。</p></li>
+            <li><b>ソースの値がNULL。</b>バインディングの試行時にソース・プロパティが<tt>null</tt>値の場合、異なる値を使用するように指定できます。このフィールドは、<tt>org.jdesktop.beansbinding.Binding</tt>クラスの<tt>setSourceNullValue()</tt>メソッドに対応します。</li>
+            <li><b>読取り不可なソース値。</b>バインディングの試行時にバインディング式が解決できない場合、異なる値を使用するように指定できます。このフィールドは、<tt>org.jdesktop.beansbinding.Binding</tt>クラスの<tt>setSourceUnreadableValue()</tt>メソッドに対応します。</li>
+        </ul>
+        <p class="notes"><b>注意: </b>前述のクラスやメソッドについて詳しく理解するには、IDEからBeans Bindingに関するJavadocドキュメントに直接アクセスしてください。「ヘルプ」>「Javadoc参照」>「Beans Binding」を選択します。開かれたブラウザ・ウィンドウで、「<tt>org.jdesktop.beansbinding</tt>」リンクをクリックし、これらのクラスのドキュメントにアクセスします。</p>
+
+        <a name="data-binding"></a>
+        <h2>コンポーネントへのデータのバインディング</h2>
+
+        <p>ビジュアルSwingコンポーネントとその他のカスタムBeansのプロパティを同期する以外に、ビジュアル・コンポーネントを使用してデータベースと対話するためにBeans Bindingを使用できます。新しいJavaフォームを作成し、コンポーネントをフォームに追加したら、それらのコンポーネントをデータにバインドするためのコードを生成できます。この項では、Swing JTable、JList、およびJComboBoxの各コンポーネントにデータをバインドする方法を示します。</p>
+        <p>コンポーネントをデータベース内のデータにバインディングする前に、次の作業が行われている必要があります。</p>
+        <ul>
+            <li>IDEでデータベースに接続している。</li>
+            <li>バインドするデータベース表を表すクラスを作成している。データをコンポーネントにバインディングするためのエンティティ・クラスの作成手順は次のとおりです。</li>
+        </ul>
+       
+
+        <div class="indent">
+            <h3>エンティティ・クラスの作成</h3>
+            <!--TODO verbiage on creating of entity classes; stuff about foreign keys-->
+            <p><b>JTableにバインドするデータベースを表すエンティティ・クラスを作成する</b></p>
+            <ol>
+                <li>「プロジェクト」ウィンドウでプロジェクトを右クリックし、「新規」>「その他」を選択して「持続性」カテゴリを選択し、「データベース」テンプレートから「エンティティ・クラス」を選択します。 </li>
+                <li>ウィザードのデータベース表ページで、データベース接続を選択します。</li>
+                <li>「使用可能な表」列に内容が表示されたら、アプリケーションで使用する表を選択し、「追加」をクリックして「選択した表」列に移動します。「次」をクリックします。
+                   					<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/entity-wizard1.png" rel="lytebox" title="選択されたCUSTOMERおよびDISCOUNT_CODE表"> <img alt="選択されたCUSTOMERおよびDISCOUNT_CODE表" border="1" src="../../../images_www/articles/80/java/gui-binding/entity-wizard1-small.png"></a></p>
+                </li>
+                <li>ウィザードのエンティティ・クラス・ページで、「持続フィールド用のNamedQuery注釈を生成」および「持続性ユニットを作成」チェックボックスが選択されていることを確認します。
+				<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/entity-wizard2.png" rel="lytebox" title="データベースからの新規エンティティ・クラス・ウィザードのエンティティ・クラス・ページ"> <img alt="データベースからの新規エンティティ・クラス・ウィザードのエンティティ・クラス・ページ" border="1" src="../../../images_www/articles/80/java/gui-binding/entity-wizard2-small.png"></a></p></li>
+                <li>生成されたクラスの名前と場所をカスタマイズします。                    
+                </li>
+                <li>「終了」をクリックします。
+                <p>「プロジェクト」ウィンドウにエンティティ・クラスのノードが表示されます。</p></li>
+            </ol>
+            <h3>データを表すBeansへのコンポーネントのバインディング</h3>
+            <p>この項では、JTable、JList、およびJComboBoxの各コンポーネントにデータをバインドする方法を示します。</p>
+            <p><b>フォームにデータベース表を追加し、JTableを自動的に生成してデータベース表の内容を表示する</b></p>
+            <ol>
+                <li>「サービス」ウィンドウを開きます。</li>
+                <li>フォームに追加する表を含むデータベースに接続します。データベース接続のノードを右クリックし、「接続」を選択することでデータベースに接続できます。
+				<p class="notes"><b>注意:</b> チュートリアルでは<tt>sample [app on App]</tt>データベースを使用します。このデータベースに接続するには、「サービス」ウィンドウを選択して、データベース・ノードを展開し、データベース接続ノード(<tt>jdbc:derby://localhost:1527/sample[app on APP]</tt>)を右クリックして、コンテキスト・メニューから「接続」を選択します。<br> ユーザーIDおよびパスワードを求められたら、<tt>app</tt>をユーザーID、<tt>app</tt>をパスワードとして指定します。 </p>
+                </li>
+                <li>接続のノードを展開し、「表」ノードを展開します。</li>
+                <li>表のノードをフォームにドラッグし、[Ctrl]を押しながら表にドロップします。
+                    <p>JTableが作成され、その列はデータベース表の列にバインドされます。</p></li>
+            </ol>
+
+            <p><b>データベース表を既存のJTableコンポーネントにバインドする</b></p>
+            <ol>
+                <li>GUIビルダーでコンポーネントを右クリックし、「バインド」>「要素」を選択します。
+				<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/bind-dialog-table.png" rel="lytebox" title="「バインド」ダイアログ・ボックスで選択された値"> <img alt="「バインド」ダイアログ・ボックスで選択された値" border="1" src="../../../images_www/articles/80/java/gui-binding/bind-dialog-table-small.png"></a></p></li>
+                <li>「データをフォームにインポート」をクリックします。「データをフォームにインポート」ダイアログ・ボックスで、コンポーネントをバインドするデータベース表を選択します。「OK」をクリックします。</li>
+                <li>「ソースをバインディング」コンボ・ボックスで、エンティティ・クラスの結果リストを表す項目を選択します。たとえば、エンティティ・クラスの名前が<tt>Customer.java</tt>の場合、listオブジェクトは<tt>customerList</tt>として生成されます。
+				<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/source-selected.png" rel="lytebox" title="選択されたバインディング・ソース"> <img alt="選択されたバインディング・ソース" border="1" src="../../../images_www/articles/80/java/gui-binding/source-selected-small.png"></a></p>
+				</li>
+                <li>「式をバインディング」の値は「<tt>null</tt>」のままにしてください。</li>
+                <li>JTableに表示しないデータベース列がある場合は、「選択」リストでそれらの列を選択して「使用可能」リストに移動します。</li>
+                <li>さらにバインディングを構成するには、「詳細」タブを選択します。たとえば、バリデータやコンバータを指定したり、バインディング・ソースがnullまたは読取り不能な場合の動作を指定することができます。</li>
+                <li>「OK」をクリックします。</li>
+            </ol>
+            <p><b>データをJListコンポーネントにバインドする</b></p>
+            <ol>
+                <li>GUIビルダーでコンポーネントを右クリックし、「バインド」>「要素」を選択します。</li>
+                <li>「データをフォームにインポート」をクリックします。「データをフォームにインポート」ダイアログ・ボックスで、コンポーネントをバインドするデータベース表を選択します。「OK」をクリックします。</li>
+                <li>「ソースをバインディング」コンボ・ボックスで、エンティティ・クラスの結果リストを表す項目を選択します。たとえば、エンティティ・クラスの名前が<tt>Customer.java</tt>の場合、listオブジェクトは<tt>customerList</tt>として生成されます。
+				<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/jlist-binding.png" rel="lytebox" title="選択されたバインディング・ソース"> <img alt="選択されたバインディング・ソース" border="1" src="../../../images_www/articles/80/java/gui-binding/jlist-binding-small.png"></a></p></li>
+                <li>「式をバインディング」の値は「<tt>null</tt>」のままにしてください。</li>
+                <li>「式を表示」ドロップダウン・リストで、リストに表示する値を含むデータベース列を表すプロパティを選択します。</li>
+                <li>さらにバインディングを構成するには、「詳細」タブを選択します。 </li>
+                <li>「OK」をクリックします。</li>
+
+            </ol>
+
+            <p><b>データをJComboBoxコンポーネントにバインドする</b></p>
+            <ol>
+                <li>コンボ・ボックスを右クリックし、「バインド」>「elements」を選択します。</li>
+                <li>「データをフォームにインポート」をクリックします。「データをフォームにインポート」ダイアログ・ボックスで、コンポーネントをバインドするデータベース表を選択します。「OK」をクリックします。</li>
+                <li>「ソースをバインディング」コンボ・ボックスで、エンティティ・クラスの結果リストを表す項目を選択します。たとえば、エンティティ・クラスの名前が<tt>Customer.java</tt>の場合、listオブジェクトは<tt>customerList</tt>として生成されます。
+				<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/combo-binding.png" rel="lytebox" title="選択されたバインディング・ソース"> <img alt="選択されたバインディング・ソース" border="1" src="../../../images_www/articles/80/java/gui-binding/combo-binding-small.png"></a></p></li>
+                <li>「式をバインディング」の値を「<tt>null</tt>」のままにして、「OK」をクリックします。</li>
+                <li>コンボ・ボックスをもう一度右クリックし、「バインド」>「selectedItem」を選択します。</li>
+                <li>ユーザーの選択によって影響の出るプロパティにバインドします。 
+				<p class="align-center"><img alt="選択されたバインディング・ソース" border="1" src="../../../images_www/articles/80/java/gui-binding/combo-item.png"></p></li>
+				<li>「OK」をクリックして編集を保存します。</li>
+            </ol>
+
+            <p>JComboBoxの<i>display</i>値を取得する方法を指定できるDetailBindingクラスは、バージョン1.2.1時点ではBeans Bindingライブラリにありません。このため、カスタム・コードを記述する必要があります。1つの方法として、次に示すようにカスタムのセル・レンダラを記述できます。</p>
+            <p><b>コンボ・ボックスを正しくレンダリングする</b></p>
+            <ol>
+                <li>コンボ・ボックスを選択します。</li>
+                <li>「プロパティ」ウィンドウの「プロパティ」タブで「renderer」プロパティを選択します。</li>
+                <li>省略符号(...)ボタンをクリックします。</li>
+                <li>プロパティ・エディタの上部にあるコンボ・ボックスで「カスタム・コード」を選択します。</li>
+                <li>テキスト領域で、次のようなコードを入力します。ここで、<code>jComboBox1</code>はJComboBoxインスタンスの名前、<code>MyEntityClass</code>はエンティティ・クラス、<code>getPropertyFromMyEntityClass()</code>は、バインディングしているエンティティ・クラス内のプロパティの取得メソッドです。</li>
+            </ol>
+
+            <pre>jComboBox1.setRenderer(new DefaultListCellRenderer() {
+           @Override
+           public Component getListCellRendererComponent(
+                   JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+               super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+               if (value instanceof MyEntityClass) {
+                   MyEntityClass mec = (MyEntityClass)value;
+                   setText(mec.getPropertyFromMyEntityClass());
+               }
+               return this;
+           }
+            })</pre>
+         <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gui-binding/custom.png" rel="lytebox" title="カスタムのセル・レンダラ"> <img alt="カスタムのセル・レンダラ" border="1" src="../../../images_www/articles/80/java/gui-binding/custom-small.png"></a></p>
+            <p class="notes"><b>注意:</b> 独自のソース・ファイルでのカスタム・レンダラを作成、ファイルをコンパイル、レンダラをフォームにドラッグ、およびこのBeanを使用するようにコンボ・ボックスのレンダラ・プロパティを設定できます。</p>
+
+        </div>
+        <a name="prop-synth"></a>
+        <h2>特別なバインディング・プロパティ</h2>
+
+        <p>Beans Bindingライブラリは一部のSwingコンポーネントに対し、必要に応じてコンポーネント自身に存在しない特別な合成プロパティを提供します。これらのプロパティは、表で選択されている行などの内容を表すもので、他のプロパティにバインドするのに役立ちます。</p>
+
+        <p>次のリストに、Beans Bindingライブラリによって追加される合成プロパティを示します。</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr class="align-left" class="valign-top">
+                <th scope="col">コンポーネント</th>
+                <th scope="col">プロパティ</th>
+                <th scope="col">説明</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td>AbstractButton</td>
+                    <td>selected</td>
+                    <td>ボタンの選択状態。</td>
+                </tr>
+                <tr>
+                    <td>JComboBox</td>
+                    <td>selectedItem</td>
+                    <td>JComboBoxの選択項目。</td>
+                </tr>
+                <tr>
+                    <td rowspan="2">JSlider</td>
+                    <td>value</td>
+                    <td>JSliderの値で、すべての変更を通知します。</td>
+                </tr>
+                <tr>
+                    <td>value_IGNORE_ADJUSTING</td>
+                    <td>「value」と同じですが、スライダが値を調整している間は変更を通知しません。</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">JList</td>
+                    <td>selectedElement</td>
+                    <td>JListで選択されている要素で、すべての変更を通知します。ターゲットとしてJListを持つJListBindingが存在する場合は、選択されている要素はバインディングのソース・リストの要素として報告されます。そうでない場合、選択されている要素は、リストのモデルのオブジェクトとして報告されます。何も選択されていない場合、プロパティは<tt>null</tt>と評価されます。 </td>
+                </tr>
+                <tr>
+                    <td>selectedElements</td>
+                    <td>JListで選択されている要素を含むリストで、すべての変更を通知します。ターゲットとしてJListを持つJListBindingが存在する場合は、選択されている要素はバインディングのソース・リストの要素として報告されます。そうでない場合、選択されている要素は、リストのモデルのオブジェクトとして報告されます。何も選択されていない場合、プロパティは空のリストと評価されます。 </td>
+                </tr>
+                <tr>
+                    <td>selectedElement_IGNORE_ADJUSTING</td>
+                    <td>「selectedElement」と同じですが、リストの選択内容が更新中の場合、変更は通知されません。</td>
+                </tr>
+                <tr>
+                    <td>selectedElements_IGNORE_ADJUSTING</td>
+                    <td>「selectedElements」と同じですが、リストの選択内容が更新中の場合、変更は通知されません。</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">JTable</td>
+                    <td>selectedElement</td>
+                    <td>JTableで選択されている要素で、すべての変更を通知します。ターゲットとしてJTableを持つJTableBindingが存在する場合は、選択されている要素はバインディングのソース・リストの要素として報告されます。そうでない場合、選択されている要素はマップとして報告されます(ここで、キーは文字列「column」と列索引から構成され、値はその列のモデル値となります)。たとえば、{column0=column0value, column1=column1value, ...}などです。何も選択されていない場合、プロパティは<tt>null</tt>と評価されます。 </td>
+                </tr>
+                <tr>
+                    <td>selectedElements</td>
+                    <td>JTableで選択されている要素を含むリスト。すべての変更を通知します。ターゲットとしてJTableを持つJTableBindingが存在する場合は、選択されている要素はバインディングのソース・リストの要素として報告されます。そうでない場合、選択されている各要素はマップとして報告されます(ここで、キーは文字列「column」と列索引から構成され、値はその列のモデル値となります)。たとえば、{column0=column0value, column1=column1value, ...}などです。何も選択されていない場合は、プロパティは空のリストと評価されます。
+                    </td>
+                </tr>
+                <tr>
+                    <td>selectedElement_IGNORE_ADJUSTING</td>
+                    <td>「selectedElement」と同じですが、表の選択内容が更新中の場合、変更は通知されません。 </td>
+                </tr>
+                <tr>
+                    <td>selectedElements_IGNORE_ADJUSTING</td>
+                    <td>「selectedElements」と同じですが、表の選択内容が更新中の場合、変更は通知されません。</td>
+                </tr>
+                <tr>
+                    <td rowspan="3">JTextComponent(サブクラスのJTextField、JTextArea、およびJEditorPaneも含む)</td>
+                    <td>text</td>
+                    <td>JTextComponentのテキスト・プロパティで、すべての変更を通知します(入力中も含む)。</td>
+                </tr>
+                <tr>
+                    <td>text_ON_FOCUS_LOST</td>
+                    <td>JTextComponentのテキスト・プロパティで、コンポーネントのフォーカスが失われたときのみ変更を通知します。
+                    </td>
+                </tr>
+                <tr>
+                    <td>text_ON_ACTION_OR_FOCUS_LOST</td>
+                    <td>JTextComponentのテキスト・プロパティで、コンポーネントがactionPerformedを通知したとき、またはコンポーネントのフォーカスが失われたときのみ変更を通知します。
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Binding%20Beans%20and%20Data%20in%20Java%20Applications">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+        <br style="clear:both;">
+
+        <h2>関連項目</h2>
+		<ul>
+		<li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2649">データベース・アプリケーションおよびBeans Bindingでの作業</a></li>
+        <li><a href="gui-functionality.html">GUIビルドの概要</a></li>
+        <li><a href="http://java.net/projects/beansbinding/" target="_blank">Beans Binding - Java.net</a></li>
+        <li><a href="http://docs.oracle.com/javase/tutorial/javabeans/index.html" target="_blank">JavaチュートリアルのJavaBeans(tm)の学習</a></li>
+        <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUIエディタのFAQ</a></li>
+		</ul>
+    </body>
+</html>

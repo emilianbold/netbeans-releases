@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>NetBeans IDEでの注釈プロセッサのサポート</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a
+              simple Hello World Java console application." >
+    </head>
+
+    <body>
+
+        <h1>NetBeans IDEでの注釈プロセッサのサポート</h1>
+<p><em>Jesse Glick氏によって寄稿されたサンプル</em></p>
+       
+       <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+	    <p><b>目次</b></p>
+  
+        <ul class="toc">
+            <li><a href="#intro"><strong>概要</strong></a></li>
+            <li><a href="#map"><strong>javacオプションとIDEコマンドのマップ</strong></a> </li>
+            <li><a href="annotations-lombok.html" title="生成されたソース・ファイルへのコードの追加">カスタム注釈のためのプロジェクトLombokの使用</a></li>
+            <li><a href="annotations-custom.html">IDEでの独自のカスタム注釈プロセッサの使用</a></li>
+            <li><a href="annotations-custom.html#seealso" title="プログラムのコンパイルと実行">関連項目</a></li>
+        </ul>
+		</div>
+	</div>
+      <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+        <p>この2部構成のチュートリアルでは、IDEで注釈プロセッサをプロジェクトにアタッチして、コーディング中に使用する方法を示します。NetBeans IDEには、カスタム注釈プロセッサのサポートが組み込まれています。プロジェクトで実行する注釈プロセッサを指定したり、コード補完およびナビゲーションによって注釈処理の結果を直接Javaエディタで確認したりできるようになり、使いやすくなりました。 </p>
+        
+        <p><a href="annotations-lombok.html">1つ目のチュートリアル</a>では、サードパーティの注釈プロセッサである<a href="http://projectlombok.org/" target="_blank">プロジェクトLombok</a>をNetBeans IDEで使用する方法を示します。 </p>
+        <p><a href="annotations-custom.html">2つ目のチュートリアル</a>では、自身で記述した注釈プロセッサをプロジェクトに追加する方法を説明します。この部分のチュートリアルのサンプル・コードは、Jesse Glick氏によって寄稿されました。 </p>
+		
+		<p style="clear:both"><b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b></p>
+		<table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                  <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                  <td class="tbltd1">バージョン7または8</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+         <h2><a name="intro"></a>概要</h2>
+        <p><em>注釈</em>は、アプリケーションの要素に関するメタデータを保持するために使用される、Javaプログラミング言語の機構です。注釈には、デプロイメント時または実行時に、コンパイラが注釈付き要素を処理する方法についてのメタ情報が保持されています。つまり注釈は、他のプログラムおよびツールが処理できる、コードへのコメントです。</p>
+        <p>カスタム注釈を使用すると、アプリケーションの一部(著作権情報やテスト・メソッドなど)のマーク付け、コードの自動生成、コマンド行オプションの解析、Webサービスの開発などの様々な作業を実行できます。カスタム注釈の処理方法についての情報は、カスタム注釈プロセッサを通してJavaコンパイラに渡されます。JDK 6には<a href="http://www.jcp.org/en/jsr/detail?id=269" target="_blank">JSR 269</a>が実装され、注釈プロセッサを記述するための公式APIが提供されています。独自のカスタム注釈プロセッサを記述するか、またはサードパーティのソリューションを使用できます。</p>
+        <p>JDK 6の注釈の基本的な情報については、次のリソースを参照してください。</p>
+        <ul>
+          <li>Java SEのドキュメント - <a href="http://download.oracle.com/javase/6/docs/technotes/guides/language/annotations.html" target="_blank">注釈</a></li>
+          <li>Java SEのチュートリアル - <a href="http://download.oracle.com/javase/tutorial/java/javaOO/annotations.html" target="_blank">注釈</a> </li>
+        </ul>
+        <p>実際には、注釈は、Java EE仕様の一部であるJPA (Java Persistence API)、およびJAXB (Java Architecture for XML Binding)などの他の技術と組み合せて最も広く使用されています。JPAを使用すると、後で記憶域に持続できるエンティティとしてJavaクラスに注釈を付けられます。JPAベースのアプリケーションを開発するには、IDEにバンドルされているEclipseLinkなどのフレームワークを使用するのが便利です。NetBeans IDEでJPAベースのアプリケーションを記述するための出発点として、<a href="../javaee/javaee-gettingstarted.html">Java EEアプリケーションの開始</a>を参照してください。</p>
+        <h2><a id="map" name="map"></a>注釈処理のjavacオプションとIDEコマンドのマップ</h2>
+        <p>前述したように、Java SE 6のjavacでは注釈処理がJavaコンパイラの統合機能として取り入れられました。コンパイラは、デフォルトで自動的にユーザー・クラス・パスで注釈プロセッサを検索します(注釈処理が明示的に無効にされている場合を除く)。さらに、javacオプションを使用することで、検索パスや特定の注釈プロセッサのパスを指定できます。次の表では、注釈処理に関連するjavacオプションと、対応するIDEのコマンドのマップが確認できます。JDK 6のjavacオプションの詳細は、<a href="http://download.oracle.com/javase/6/docs/technotes/tools/windows/javac.html" target="_blank">javac - Javaプログラム言語コンパイラ</a>を参照してください。</p>
+        <p class="notes"><strong>注意:</strong>IDEでは、NetBeansプラットフォーム・アプリケーションを除くすべてのJavaアプリケーションの注釈処理オプションが「プロジェクト・プロパティ」ウィンドウで指定されます。プロジェクトの「プロパティ」ウィンドウを開くには、プロジェクトを右クリックし、「プロパティ」を選択します。</p>
+       <table>
+         <tbody>
+
+            <tr>
+               <td class="tblheader">Java 6のjavacオプション  </td>
+               <td class="tblheader">IDEのコマンド </td>
+               <td class="tblheader">説明</td>
+            </tr>
+            <tr>
+
+               <td class="tbltd0"><tt>-processor</tt></td>
+               <td class="tbltd0"><p>「プロジェクト・プロパティ」>「ビルド」>「コンパイル」>「注釈プロセッサ」フィールド </p>
+               <p>「注釈プロセッサ」フィールドで、注釈プロセッサの完全修飾名を指定します。 </p></td>
+               <td class="tbltd0">実行する注釈プロセッサを明示的に指定します。このオプションを使用すると、サービス・プロバイダの構成ファイル(META-INF/services/javax.annotation.processing.Processor)を作成する必要がなくなります。 </td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><tt>-proc:none</tt></td>
+              <td class="tbltd1"><p>「プロジェクト・プロパティ」>「ビルド」>「コンパイル」>「注釈処理を有効にする」チェックボックス </p>
+                  <p>このチェックボックスを無効にすると、どのような注釈処理もされずにプロジェクトがコンパイルされます。 </p></td>
+              <td class="tbltd1">どのような注釈処理もされずにコンパイルが処理されます。コンパイル中に注釈プロセッサ検出機構は使用されません。 </td>
+            </tr>
+            <tr>
+              <td class="tbltd0"><tt>-processorpath</tt></td>
+              <td class="tbltd0"><p>「プロジェクト・プロパティ」>「ライブラリ」>「プロセッサ」タブ </p>
+              <p>注釈プロセッサが含まれているIDEプロジェクト、ライブラリ、またはJARファイルのパスを指定します。このオプションは、注釈プロセッサと注釈が別々のJARファイルにパッケージ化されている場合に使用します。</p></td>
+              <td class="tbltd0">注釈プロセッサを検索する場所を指定します。このオプションが指定されていない場合は、クラスパスでプロセッサが検索されます(次を参照)。 </td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><tt>-classpath</tt></td>
+              <td class="tbltd1"><p>「プロジェクト・プロパティ」>「ライブラリ」>「コンパイル」タブ </p>
+              <p>注釈プロセッサおよび注釈宣言が含まれているIDEプロジェクト、ライブラリ、またはJARファイルのパスを指定します。このオプションは、注釈プロセッサと注釈が単一のJARファイルにパッケージ化されている場合に使用します。 </p></td>
+              <td class="tbltd1">ユーザー・クラス・ファイル、および(オプションで)注釈プロセッサとソース・ファイルを検索する場所を指定します。-processorpathオプションが指定されていない場合は、このパスで注釈プロセッサが検索されます。  </td>
+            </tr>
+            <tr>
+              <td class="tbltd0"><tt>-A<em>key[=value]</em></tt></td>
+              <td class="tbltd0"><p>「プロジェクト・プロパティ」>「ビルド」>「コンパイル」>「プロセッサ・オプション」フィールド </p>
+              <p>プロジェクトに関連付けられている注釈プロセッサに渡すオプションを追加します。この値はオプションです。 </p></td>
+              <td class="tbltd0">(オプション)注釈プロセッサに渡すオプション。 </td>
+            </tr>
+         </tbody>
+      </table>
+
+        <p>&nbsp; </p>
+        <h2><a id="nextsteps" name="nextsteps"></a>次の手順</h2>
+        <p>IDEでの注釈の使用方法を学習するには、次のチュートリアルの各パートを参照してください。 </p>
+        <ul>
+          <li><a href="annotations-lombok.html">パートI: カスタム注釈のためのプロジェクトLombokの使用</a> </li>
+          <li><a href="annotations-custom.html">パートII: IDEでの独自のカスタム注釈プロセッサの使用</a> </li>
+        </ul>
+        <p> </p>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Using%20the%20Annotation%20Processors%20Support%20in%20the%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a><br style="clear:both;" />
+        </div>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--      Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved. -->
+<!--     Use is subject to license terms.-->
+<html>
+<head>
+   <title>Создание, отладка и профилирование мобильных встроенных приложений - учебный курс по IDE NetBeans</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   </head>
+<body>
+<a name="top"></a>
+<h1>Создание, отладка и профилирование мобильных встроенных приложений</h1>
+<div class="articledate" style="margin-left: 0px;"> Сангмон Чо (Sungmoon Cho), Алена Сташкова (Alyona Stashkova)</div>
+<p>Мобильные встроенные приложения работают в небольших встроенных устройствах, таких как промышленные измерительные приборы, торговые автоматы, системы безопасности, модемы, устройства бытовой электроники и аналогичные устройства с простым дисплеем или без дисплея и с некоторым ограниченным подключением к сети. В этом примере показано, как разработать новые встроенные проекты Java ME в IDE NetBeans с использованием встроенной платформы Oracle Java Micro Edition, которая включает в себя поддержку <a href="http://jcp.org/en/jsr/detail?id=228">JSR 228</a>, API профиля информационного модуля нового поколения (IMP-NG). Также в этом примере описано, как выполнить отладку и профилирование собственного компонента IMlet с использованием поддержки Oracle Java ME Embedded в NetBeans.</p>
+
+
+<h3>Содержание</h3>
+<img alt="Содержимое этой страницы применимо к IDE NetBeans 7.3 и более поздним версиям" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.3 и более поздним версиям">
+<ul>
+
+<li><a href="#install" title="Установка Oracle Java ME Embedded">Установка Oracle Java ME Embedded</a></li>
+<li><a href="#create" title="Создание встроенного проекта">Создание встроенного проекта</a></li>
+<li><a href="#run" title="Выполнение приложения">Выполнение приложения</a></li>
+<li><a href="#debug" title="Отладка приложения">Отладка приложения</a></li>
+<li><a href="#profile" title="Профилирование приложений">Профилирование приложений</a></li>
+<li><a href="#nextsteps" title="См. также">См. также</a></li>
+
+</ul>
+
+<p><b>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</b></p>
+
+<table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Программное обеспечение или ресурс</th>
+                <th class="tblheader" scope="col">Требуемая версия</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans с Java ME</a></td>
+                <td class="tbltd1">Версия 7.3 и более поздние</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработки приложений на языке Java</a> (JDK)</td>
+                <td class="tbltd1">Версия 6, 7 или 8 </td>
+            </tr> 
+			 <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">Java ME SDK</a></td>
+                <td class="tbltd1">Версия 3.2 и более поздние </td>
+            </tr>      
+        </tbody>
+</table>
+<p class="alert"><b>Важно!</b>Это учебное руководство работает только на платформах, совместимых с Win32.</p>
+
+<h2><a name="install"></a>Установка Oracle Java ME Embedded</h2>
+<p>Для настройки IDE NetBeans с Oracle Java ME Embedded для платформы Windows необходимо следующее: </p>
+<ul>
+<li>установить Oracle Java ME SDK </li>
+<li>активировать функцию ME Java в среде IDE NetBeans</li>
+<li>установить встроенную платформу Oracle Java ME в среде IDE NetBeans </li>
+</ul>
+<p><b>Для установки Oracle Java ME SDK:</b></p>
+<ol>
+<li>Перейдите к странице <a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">загрузки Java ME SDK</a>.</li>
+<li>Нажмите флажок 'Принять лицензионное соглашение'.</li>
+<li>Загрузите файл установщика Oracle Java ME SDK (например, oracle-jmesdk-3-4-rr-win32-bin.exe) и сохраните его в любом каталоге на локальном компьютере.</li>
+<li>Дважды щелкните файл программы установки, чтобы запустить программу установки и следуйте инструкциям.<br> По завершении установки в системном лотке Windows появляется значок диспетчера устройств Java (TM) ME Platform SDK (<img alt="Значок диспетчера устройств Java (TM) ME Platform SDK 3.2" src="../../../images_www/articles/73/javame/imp-ng/icon.png">).</li>
+
+</ol>
+<p><b>Для активации функции Java ME:</b> </p>
+<ol>
+<li>Выберите 'Сервис' > 'Подключаемые модули' на главной панели инструментов IDE.</li>
+<li>В диалоговом окне 'Подключаемые модули' перейдите на вкладку 'Установлено' и выберите Java ME в списке доступных функций. 
+  <p class="align-center"><a href="../../../images_www/articles/73/javame/imp-ng/plugins.png" rel="lytebox" title="Диалоговое окно &apos;Подключаемые модули&apos;"> <img alt="Диалоговое окно &apos;Подключаемые модули&apos;" border="1" src="../../../images_www/articles/73/javame/imp-ng/plugins-small.png"></a></p></li>
+<li>Нажмите кнопку 'Активировать'.</li>
+<li>На панели приветствия в диалоговом окне программы установки нажмите кнопку 'Активировать'.
+<p class="align-center"><a href="../../../images_www/articles/73/javame/imp-ng/installer.png" rel="lytebox" title="Диалоговое окно программы установки"> <img alt="Диалоговое окно программы установки" border="1" src="../../../images_www/articles/73/javame/imp-ng/installer-small.png"></a></p></li>
+<li>После успешного завершения активации нажмите кнопку 'Готово'.</li>
+<li>Нажмите кнопку 'Закрыть', чтобы закрыть диалоговое окно 'Подключаемые модули'.</li>
+</ol>
+
+<p><b>Для установки встроенной платформы Oracle Java ME:</b></p>
+
+<ol>
+<li>Выберите 'Служба'> 'Платформы Java'.<br>Откроется диалоговое окно 'Диспетчер платформ Java'.
+<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpmanager.png" rel="lytebox" title="Панель &apos;Имя и расположение&apos;"> <img alt="Панель &apos;Имя и расположение&apos;" border="1" src="../../../images_www/articles/73/javame/imp-ng/jpmanager-small.png"></a></p></li>
+<li>Нажмите 'Добавить платформу'.</li>
+<li>В окне 'Выбор типа платформы' мастера платформ Java выберите эмулятор платформы Java ME CLDC и нажмите кнопку 'Далее'.<br> В IDE отображается каталог 'Выбор' для поиска диалогового окна платформ.</li>
+<li>Выберите каталог, в который выполнена установка платформы Java ME SDK (например, <tt>C:\Java_ME_Platform_SDK_3.2</tt>), и нажмите 'Открыть'.</li> 
+<li>На панели 'Папки платформы' мастера добавления платформ Java убедитесь, что выделенная на предыдущем шаге платформа выбрана и щелкните 'Далее'.</li>
+<li>Как только IDE определит платформу, нажмите кнопку 'Готово' на панели 'Обнаруженные платформы' мастера добавления платформ Java.
+<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpdetected.png" rel="lytebox" title="Обнаружена платформа J2ME"> <img alt="Обнаружена платформа J2ME" border="1" src="../../../images_www/articles/73/javame/imp-ng/jpdetected-small.png"></a></p>
+		Теперь платформа Oracle Java ME зарегистрирована в среде IDE NetBeans.
+		<p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/jpregistered.png" rel="lytebox" title="Зарегистрирована платформа J2ME"> <img alt="Зарегистрирована платформа J2ME" border="1" src="../../../images_www/articles/73/javame/imp-ng/jpregistered-small.png"></a></p></li>
+					 <li>В диалоговом окне диспетчера платформ Java нажмите кнопку 'Закрыть'.</li>
+</ol>
+<p>Теперь среда IDE NetBeans настроена для мобильной разработки.</p>
+  
+<h2><a name="create"></a>Создание встроенного проекта </h2>
+ 
+  <p>Создание нового проекта является первым шагом в разработке нового встроенного приложения Java ME с помощью IDE NetBeans. </p>
+  <ol>
+  <li>Выберите команду &quot;Файл&quot; &gt; &quot;Новый проект&quot;.<br> Отображается диалоговое окно 'Новый проект'.</li>
+  <li>Выберите категорию Java ME и проект 'Встроенное приложение'. Нажмите кнопку 'Далее'.</li>
+  <li>На панели 'Имя и местоположение' мастера создания встроенных приложений укажите<tt>EmbeddedApp</tt> в качестве имени проекта. 
+  <p class="align-center">
+					  <a href="../../../images_www/articles/73/javame/imp-ng/newappname.png" rel="lytebox" title="Панель &apos;Имя и местоположение&apos;"> <img alt="Панель &apos;Имя и местоположение&apos;" border="1" src="../../../images_www/articles/73/javame/imp-ng/newappname-small.png"></a></p></li>
+  <li>Не снимайте флажки 'Оставьте созданный пакет по умолчанию' и 'Параметр класса IMlet' и нажмите кнопку 'Далее'.</li>
+  <li>Убедитесь, что в качестве платформы эмулятора выбран CLDC Oracle Java (TM) Platform Micro Edition SDK, а в качестве устройства - IMPNGPhone1. </li>
+  <li>Нажмите кнопку 'Готово'.<br>Приложение IMP-NG с IMlet создается в стандартном проекте IDE.
+  <p class="align-center"><img alt="Создан новый проект" border="1" src="../../../images_www/articles/73/javame/imp-ng/prjcreated.png"></p></li>
+  </ol>	
+  <p class="align-center"><a href="#top">В начало</a></p>
+  <h2><a name="run"></a>Выполнение приложения</h2>			 
+  <p>Чтобы проверить, работает ли приложение должным образом, измените исходный код приложения следующим образом.</p>
+  <ol>
+  <li>В окне 'Проекты' дважды щелкните файл <tt>IMlet.java</tt> и выберите 'Правка'.<br> В IDE откроется файл <tt>IMlet.java</tt> в редакторе исходного кода. </li>
+  <li>Просмотрите исходный код и найти метод <tt>StartApp</tt>.</li>
+  <li>Вставьте следующую строку полужирным шрифтом в теле метода <tt>StartApp</tt>:
+  <pre class="examplecode"> public void startApp() {
+      <b>System.out.println(&quot;Hello, world!&quot;);</b>
+ }</pre></li>
+ <li>Выберите 'Файл' > 'Сохранить' в главном меню IDE, чтобы сохранить изменения.</li>
+</ol>
+  <p>Теперь, когда создано приложение, можно запустить приложение в IDE, как описано ниже:</p>
+  
+
+            <ol>
+			<li>Щелкните правой кнопкой мыши узел проекта <tt>EmbeddedApp</tt> и выберите 'Очистить' и 'Построить'.<br> В окне 'Выходные данные' отображается оператор BUILD SUCCESSFUL. 
+			<p class="notes"><b>Примечание.</b> Выберите 'Окно'> 'Выходные данные' > 'Выход из главного меню IDE', если окно 'Выходные данные' не отображается.</p>
+			</li>
+            <li>На панели меню IDE выберите 'Выполнить'> 'Выполнить проект'.<br> Эмулятор IMPNGPhone1 запускается, и на нем отображается запущенное приложение EmbeddedApp.
+			  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/emulator.png" rel="lytebox" title="Эмулятор"> <img alt="Эмулятор" border="1" src="../../../images_www/articles/73/javame/imp-ng/emulator-small.png"></a></p>
+<p class="notes"><b>Примечание.</b> Подробнее о встроенном эмуляторе Java ME см. в документе <a href="http://docs.oracle.com/javame/config/cldc/rel/3.2/get-started-win/title.htm">Руководство по началу работы на платформе Windows 32 с Oracle Java ME Embedded</a>.</p>
+             В окне 'Выходные данные' должны отобразиться выходные данные программы <code>Hello, world!</code>
+			 <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/output.png" rel="lytebox" title="Вывод"> <img alt="Вывод" border="1" src="../../../images_www/articles/73/javame/imp-ng/output-small.png"></a></p></li>
+		<li>В эмуляторе выберите <tt>Встроенные приложения (запущено)</tt> и выберите 'Приостановить' справа.<br> Приложение приостановлено. </li>
+		<li>Нажмите кнопку 'Возобновить'.<br>Приложение возобновило работу. </li>
+		<li>Чтобы остановить приложение и закрыть эмулятор, нажмите кнопку 'Стоп' и выберите 'Приложение' > 'Выход' в меню эмулятора.<br> Процесс выполнения завершается в IDE.</li>
+            </ol>
+			<p class="align-center"><a href="#top">В начало</a></p>
+<h2><a name="debug"></a>Отладка приложения</h2>
+<p>Отладка встроенных проектов осуществляется аналогично отладке обычных проектов Java.</p>
+<p>Щелкните правой кнопкой мыши в проекте и выберите 'Отладка', чтобы начать сеанс отладки. Эмулятор открывается, и выполнение программы останавливается на любой из заданных точек останова.</p>
+
+<p class="align-center"><a href="#top">В начало</a></p>
+<h2><a name="profile"></a>Профилирование приложений</h2>
+<p>Используйте общие задачи профилирования, такие как стандартное профилирование ЦП или памяти, чтобы построить надежное мобильное встроенное приложение.</p>
+<p>Перед началом профилирования приложения необходимо установить подключаемый модуль набора средств Java ME SDK следующим образом.</p>
+<ol>
+<!--<li>Go to the <a href="http://www.oracle.com/technetwork/java/javame/javamobile/download/sdk/index.html">Java ME SDK download</a> page.</li>
+<li>Click the Accept License Agreement option.</li>
+<li>Download the <a href="http://download.oracle.com/otn-pub/java/java_me_sdk/3.2/nb-me-sdk-plugins-uc.zip">nb-me-sdk-plugins-uc.zip</a> file and save it on your computer.</li>
+<li>Unpack the archive to a folder on your hard drive (for example, <code>C:/mesdk_nb</code>).</li>-->
+<li>В IDE NetBeans выберите 'Сервис' > 'Подключаемые модули'.</li>
+<!--<li>In the Plugins Manager, select the Settings tab and click Add.
+<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/add.png" rel="lytebox"
+                       title="The Add button highlighted">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/add-small.png"
+                     alt="The Add button highlighted" border=1></a></p></li>
+<li>In the Name field of the Update Center Customizer dialog box, type <code>Java ME SDK Plugins</code>.</li>
+<li>In the URL text field, specify the path to the <code>updates.xml</code> file in the directory where you unpacked the <code>nb-me-sdk-plugins-uc.zip</code> file (for example, <code>file:/c:/mesdk_nb/updates.xml</code>) and click OK.<br> 
+The Java ME SDK Plugins configuration displays in the Configuration of the Update Centers list on the Setting tab.
+  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/settings-plugins.png" rel="lytebox"
+                       title="Java ME SDK Plugins added">
+                       <img src="../../../images_www/articles/73/javame/imp-ng/settings-plugins-small.png"
+                     alt="Java ME SDK Plugins added" border=1></a></p></li>-->
+<li>В диспетчере подключаемых модулей выберите вкладку 'Доступные подключаемые модули'.</li>
+<li>На вкладке 'Доступные подключаемые модули' используйте прокрутку, чтобы найти подключаемый модуль набора средств Java ME SDK и выбрать его для установки. 
+<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/available-plugins.png" rel="lytebox" title="Подключаемые модули Java ME SDK добавлены"> <img alt="Подключаемые модули Java ME SDK добавлены" border="1" src="../../../images_www/articles/73/javame/imp-ng/available-plugins-small.png"></a></p></li>
+<li>Нажмите кнопку 'Установить'.</li>
+<li>На странице &quot;Добро пожаловать&quot; диалогового окна программы установки нажмите кнопку &quot;Далее&quot;. </li>
+<li>На странице &quot;Лицензионное соглашение&quot; ознакомьтесь с лицензионным соглашением, связанным с подключаемым модулем. При принятии всех условий лицензионного соглашения щелкните соответствующий параметр и щелкните 'Установить'.</li>
+<li>Когда процесс установки завершится, не снимайте флажок 'Перезапустить IDE сейчас' и нажмите кнопку 'Готово'. </li>
+</ol>
+<p>После перезапуска IDE NetBeans можно использовать функции IDE для профилирования встроенных мобильных приложений.</p>
+
+<ol>
+  <li>На вкладке 'Проекты' IDE выберите название проекта <code>EmbeddedApp</code>.</li>
+  <li>Выберите 'Профиль'> 'Профиль проекта' в главном меню, чтобы начать сеанс профилирования.
+  <p class="notes"><b>Примечание.</b> Будет отображен запрос на интеграцию профилировщика, когда проект будет профилирован в первый раз. </p>
+  <p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/enable.png" rel="lytebox" title="Подключаемые модули Java ME SDK добавлены"> <img alt="Подключаемые модули Java ME SDK добавлены" border="1" src="../../../images_www/articles/73/javame/imp-ng/enable-small.png"></a></p>
+  </li>
+  <li>(Применимо, если это первое профилирование проекта) в диалоговом окне 'Включить профилирование' нажмите 'Да', чтобы выполнить интеграцию.</li>
+  <li>В диалоговом окне 'Профиль', выберите профилировщик ЦП, и при необходимости проверьте системные классы профилей.</li>
+  <li>Нажмите кнопку 'Выполнить'.<br> Эмулятор открывается с запущенным приложением <code>EmbeddedApp</code>.</li>
+  <li>Взаимодействие с приложением.</li>
+  <li>Выход из приложения или закрытие эмулятора. <br>IDE отображает данные профиля в окне <code>ЦП:<i>время</i></code>. 
+	<p class="align-center">
+			<a href="../../../images_www/articles/73/javame/imp-ng/cpu.png" rel="lytebox" title="ЦП: окно времени"> <img alt="ЦП: окно времени" border="1" src="../../../images_www/articles/73/javame/imp-ng/cpu-small.png"></a></p>
+	<p class="notes"><b>Примечание.</b> Чтобы сохранить для дальнейшего использования данные, собранные в ходе сеанса эмуляции, вы можете:</p>
+	<ul>
+	  <li>экспортировать данные в файл <code>nps</code>, нажав кнопку 'Экспорт в' (<img alt="Кнопка &apos;Экспорт в&apos;" border="1" src="../../../images_www/articles/73/javame/imp-ng/export.png">)</li>
+	  <li>сохранить снимок в файле <code>png</code>, нажав кнопку 'Сохранить текущий вид изображения' (<img alt="Кнопка &apos;Сохранить текущий вид изображения&apos;" border="1" src="../../../images_www/articles/73/javame/imp-ng/image.png">)</li>
+	</ul>
+  </li>
+</ol>
+
+  <div class="feedback-box"><a href="/about/contact_form.html?to=6&subject=Creating,%20Debugging,%20and%20Profiling%20an%20Embedded%20Application">Отправить отзыв по этому учебному курсу</a></div>
+   <br style="clear:both;" >
+   <p class="align-center"><a href="#top">В начало</a></p>
+ <h2><a name="nextsteps"></a>См. также</h2>
+  <ul>
+    <li><a href="imp-ng-screencast.html" target="_blank">Демонстрационная версия: поддержка профиля IMP-NG в IDE NetBeans</a></li>
+    <li><a href="http://www.oracle.com/technetwork/java/javame/javamobile/training/jmesdk/index.html" target="_blank">Java Mobile - начать обучение</a></li>
+	<li><a href="http://www.oracle.com/technetwork/java/embedded/resources/me-embeddocs/index.html" target="_blank">Документация по клиенту Oracle Java ME Embedded</a></li>
+	<li><a href="https://blogs.oracle.com/javamesdk/" target="_blank">Блог команды Java ME SDK</a></li>
+	<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1552">Разработка приложений Java ME</a> в документе <i>Разработка приложений в IDE NetBeans</i></li>
+  </ul>
+<p class="align-center"><a href="#top">В начало</a></p>
+</body>
+</html>

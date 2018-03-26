@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. --><title>PHPを使用するデータベース駆動型アプリケーションの作成NetBeansのインタフェースを使用するMySQLのサンプル・データベースの作成</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans. ">
+<meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Create MySQL database in NetBeans">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+
+
+   <body>
+<h1>PHPを使用するデータベース駆動型アプリケーションの作成 </h1>
+<h1>レッスン1b: Oracleデータベース表の作成</h1>
+<div style="margin-left: -3px;">
+<div class="feedback-box margin-around float-left" style="margin-right: 15px;">
+<h4>チュートリアルの目次:</h4>
+<ol start="0">
+<li><a href="wish-list-tutorial-main-page.html">PHPを使用するCRUDアプリケーションの作成 - メイン・ページ</a></li>
+<li>
+<p>データベースの作成</p>
+<ol type="a">
+<li><a href="wish-list-lesson1.html">MySQLデータベースの作成</a></li>
+<li>
+<p><b>=> Oracleデータベース表の作成</b></p>
+<ul>
+<li><a href="#CreateUser">データベースのユーザーの作成</a></li>
+<li><a href="#DatabaseStructure">サンプル・データベースの構造の設計</a></li>
+<li><a href="#CreateTables">表の作成</a></li>
+<li><a href="#add-sequence-trigger">ID値を増分するための順序およびトリガーの追加</a></li>
+<li><a href="#EnterTestData">テスト・データの入力</a></li>
+</ul>
+</li>
+</ol>
+</li>
+<li><a href="wish-list-lesson2.html">アプリケーションの設計。データベースからの読取り</a></li>
+<li><a href="wish-list-lesson3.html">新規アプリケーション・ユーザーの作成</a></li>
+<li><a href="wish-list-lesson4.html">コードの最適化</a></li>
+<li><a href="wish-list-lesson5.html">セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</a></li>
+<li><a href="wish-list-lesson6.html">データベースへの新しいウィッシュの追加</a></li>
+<li><a href="wish-list-lesson7.html">データベース内のエントリの更新および削除</a></li>
+<li><a href="wish-list-lesson8.html">CSSテクノロジを使用したアプリケーションの外観の改良</a></li>
+<li><a href="wish-list-lesson9.html">リモートWebサーバーへのアプリケーションのデプロイ</a></li>
+</ol>
+</div>
+</div>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+<p>このレッスンでは、ウィッシュ・リスト・アプリケーションの開発での最後の準備手順である、テスト・データを持つサンプルのデータベースの作成を示します。このチュートリアルの手順を完了するには、ウィッシャのデータを格納するデータベースが必要です。NetBeans IDEでは、IDEのインタフェースを使用して、これらのアクティビティをすべて実行できます。<br>始める前に、<a href="wish-list-tutorial-main-page.html">PHPを使用するCRUDアプリケーションの作成 - メイン・ページ</a>にあるチュートリアルの要件を確認してください。 </p>
+<p>現在のドキュメントは、PHP向けのNetBeans IDEでのCRUDアプリケーションの作成というPHPチュートリアルの一部です。 </p>
+<br style="clear: left;">
+<h2><a id="CreateUser" name="CreateUser"></a>データベースのユーザーの作成</h2>
+<p> この手順では、最初にユーザーを作成し、次にそのユーザーとして表を作成します。</p>
+<p>ユーザーを作成するには、Oracleのツールを使用するか、またはNetBeans IDEからデータベースに接続してIDEのSQLエディタを使用します。NetBeans 7.0は、現在ベータ版または開発ビルドとしてのみ利用できますが、Oracleデータベースへの接続が改善されています。NetBeans IDEからOracleデータベースに接続し、そのデータベース内でユーザーを作成する方法を学習するには、<a href="../ide/oracle-db.html">Oracleデータベースへの接続</a>のチュートリアルを参照してください。</p>
+<p>選択したツールを使用して、次のユーザーを作成します。</p>
+<table border="1" width="238">
+<tbody>
+<tr>
+<th class="tblheader" scope="col" width="98">ユーザー名</th>
+<td class="tbltd1" scope="col" width="124">phpuser</td>
+</tr>
+<tr>
+<th class="tblheader" scope="col">パスワード</th>
+<td class="tbltd1" scope="col">phpuserpw</td>
+</tr>
+<tr>
+<th class="tblheader" rowspan="4">システム権限</th>
+<td class="tbltd1" scope="col">CREATE TABLE</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE VIEW</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE SEQUENCE</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE TRIGGER</td>
+</tr>
+<tr>
+<th class="tblheader" rowspan="2">ロール(Oracle Database 10.x)</th>
+<td class="tbltd1" scope="col">CONNECT</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">RESOURCE</td>
+</tr>
+</tbody>
+</table>
+<p>このユーザーを作成するためのSQLコマンド・セットの例を次に示します。これらのコマンドでは、データベースに表領域USERSおよびTEMPが存在することが前提になります。</p>
+<pre class="examplecode">drop user phpuser cascade;<br><br>create user phpuser identified by phpuserpw;<br><br>grant connect, resource to phpuser;<br><br>alter user phpuser default tablespace users temporary tablespace temp account unlock; </pre>
+<h2><a id="DatabaseStructure" name="DatabaseStructure"></a>サンプル・データベースの構造の設計 </h2>
+<p>必要なデータをすべて準備して格納するには、次の2つの表が必要です。 </p>
+<ul>
+<li>登録済ユーザーの名前とパスワードを格納するwishers表</li>
+<li>ウィッシュの説明を格納するwishes表</li>
+</ul>
+<img alt="サンプル・データベースの構造: wisher-idを介して関連付けられた2つの表" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/wishlist-db.png">
+<p>wishers表には次の3つのフィールドがあります。</p>
+<ol>
+<li>ID (id) - ウィッシャの一意のID。このフィールドは主キーとして使用されます。</li>
+<li>name </li>
+<li>password</li>
+</ol>
+<p>wishes表には次の4つのフィールドがあります。</p>
+<ol>
+<li>ID (id) - ウィッシュの一意のID。このフィールドは主キーとして使用されます。</li>
+<li>ウィッシャのID (wisher_id) - ウィッシュが属するウィッシャのID。このフィールドは外部キーとして使用されます。 </li>
+<li>description</li>
+<li>期日(due_date) - ウィッシュがリクエストされる日付 </li>
+</ol>
+<p>表はウィッシャのIDを介して関連付けられます。wishesのdue_date以外のフィールドは、すべて必須です。 </p>
+<h2><a id="CreateTables" name="CreateTables"></a>Oracleデータベース・スキーマの作成</h2>
+<ol>
+<li>作成したユーザーとしてデータベースにログインします。
+<p>NetBeans IDE経由で接続する場合、新しいユーザーの名前とパスワードを使用して接続を作成します。ユーザーと同じ名前を持つスキーマを選択するようにします。(Oracleデータベースへの接続チュートリアルの<a href="../ide/oracle-db.html#connect">Oracleデータベースへの接続の確立</a>の項を参照。) </p>
+</li>
+<li>wishers表を作成するには、次のSQL問合せを実行します。
+<pre class="examplecode">create table wishers (<br> id number not null,<br> name varchar2(50) unique not null,<br> password varchar2(50) not null,<br> constraint wishers_pk primary key(id)<br>);</pre>
+</li>
+<li>wishes表を作成するには、次のSQL問合せを実行します。wishesとwisherを関連付けるために、外部キーを作成します。
+<pre class="examplecode">create table wishes (<br> id number not null,<br> wisher_id number not null,<br> description varchar2(255) not null,<br> due_date date,<br> constraint wishes_pk primary key(id),<br> constraint wishes_fk1 foreign key(wisher_id) references wishers(id)<br>);</pre>
+</li>
+<li>新しい表がデータベースに追加されたことを確認します。NetBeans IDEを使用してデータベースに接続している場合、「サービス」ウィンドウのjdbc:oracle:thin:@localhost:1521:XE [PHPUSERのphpuser]接続ノードに移動します。新しい表が「表」ノードに一覧表示されます。(それらが表示されない場合、接続を右クリックして「リフレッシュ」を選択します。)<br> <img alt="NetBeans IDEの「サービス」ウィンドウに表示されたデータベース表" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/tables-in-services-window.png"></li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">注意:</span> Oracleデータベース表を作成するための一連のSQLコマンドは、<a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">ここ</a>からダウンロードできます。</p>
+<h2><a name="add-sequence-trigger"></a>ID値を増分するための順序およびトリガーの追加</h2>
+<p>Oracleデータベースでは、値を増分するために順序を指定する必要があります。表に新しいメンバーが追加されたときに値を増分するには、トリガーを追加します。</p>
+<ol>
+<li>wishers表の順序を追加するには、次のSQLコマンドを実行します。
+<pre class="examplecode">create sequence wishers_id_seq start with 1 increment by 1;</pre>
+</li>
+<li>新しいウィッシャを追加したときにwishers表のID列で順序をトリガーするには、次のSQLコマンドを実行します。
+<pre class="examplecode">create or replace trigger wishers_insert<br>before insert on wishers<br>for each row<br>begin<br> select wishers_id_seq.nextval into :new.id from dual;<br>end;<br>/</pre>
+</li>
+<li>wishes表の順序を追加します。
+<pre class="examplecode">create sequence wishes_id_seq start with 1 increment by 1;</pre>
+</li>
+<li>新しいウィッシュを追加したときにwishes表のID列で順序を実行するためのトリガーを追加します。
+<pre class="examplecode">create or replace trigger wishes_insert<br>before insert on wishes<br>for each row<br>begin<br> select wishes_id_seq.nextval into :new.id from dual;<br>end;<br>/</pre>
+</li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">注意:</span> 順序およびトリガーを含む、Oracleデータベース表を作成するための一連のSQLコマンドは、<a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">ここ</a>からダウンロードできます。</p>
+<h2><a id="EnterTestData" name="EnterTestData"></a>テスト・データの入力 </h2>
+<p>アプリケーションをテストするには、データベース内にいくつかのデータが必要です。以降の例では、2つのウィッシャと4つのウィッシュを追加する方法を示します。</p>
+<ol>
+<li>Tomという名前でパスワードが「tomcat」のウィッシャを追加します。
+<pre class="examplecode">insert into wishers (name, password) values ('Tom','tomcat');<br></pre>
+</li>
+<li>Jerryという名前でパスワードが「jerrymouse」のウィッシャを追加します。
+<pre class="examplecode">insert into wishers (name, password) values ('Jerry', 'jerrymouse');<br>commit;</pre>
+</li>
+<li>ウィッシュを追加します。
+<pre class="examplecode">insert into wishes (wisher_id, description, due_date) <br> values (1, 'Sausage', to_date('2008-04-01', 'YYYY-MM-DD'));<br><br>insert into wishes (wisher_id, description) <br> values (1, 'Icecream');<br><br><br>insert into wishes (wisher_id, description, due_date) values (2, 'Cheese', to_date('2008-05-01', 'YYYY-MM-DD'));<br><br>insert into wishes (wisher_id, description)<br> values (2, 'Candle');<br>commit;</pre>
+</li>
+<li>テスト・データを追加したことを確認します。NetBeans IDEを使用してテスト・データを表示する場合、関連する表でマウスの右ボタンをクリックし、コンテキスト・メニューから「データを表示」を選択します。<br> <img alt="NetBeans IDEインタフェースを使用して入力したテスト・データの表示" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/view-test-data.png"> </li>
+</ol>
+<p>データベースの原則とデザイン・パターンの一般的な知識については、チュートリアル<a href="http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1</a>を確認してください。</p>
+<p>Oracleの<tt>CREATE TABLE</tt>文の構文の詳細は、<a href="http://download.oracle.com/docs/cd/B19306_01/server.102/b14200/statements_7002.htm" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://download.oracle.com/docs/cd/B19306_01/server.102/b14200/statements_7002.htm</a>を参照してください。
+</p>
+<p class="notes"><span style="font-weight: bold;">注意:</span> Oracleデータベース表を作成するための一連のSQLコマンドは、<a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">ここ</a>からダウンロードできます。</p>
+<h2><a name="nextSteps"></a>次の手順</h2>
+<p><a href="wish-list-lesson2.html">次のレッスン>></a></p>
+<p><a href="wish-list-tutorial-main-page.html">チュートリアルのメイン・ページに戻る</a></p>
+<br>
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%201:%20Create%20Oracle%20Database%20Tables">ご意見をお寄せください</a></div>
+<br style="clear: both;">
+<p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+<a href="../../trails/php.html">PHPの学習に戻る</a><br>
+</body></html>

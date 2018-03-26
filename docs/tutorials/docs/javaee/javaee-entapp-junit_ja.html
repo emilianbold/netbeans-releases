@@ -1,0 +1,596 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>埋込みEJBコンテナを使用したエンタープライズ・アプリケーションのテスト</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use the embedded EJB container to test a session bean and entity class.">
+        <meta name="KEYWORDS" content="NetBeans, embedded, EJB, container, GlassFish, JUnit, Tutorial">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>埋込みEJBコンテナを使用したエンタープライズ・アプリケーションのテスト</h1>
+        
+        <p>このチュートリアルでは、Java EEエンタープライズ・アプリケーション用のJUnitテストを作成して実行する方法について説明します。このチュートリアルでは、エンティティ・クラスとセッションBeanを含むWebアプリケーションを作成します。最初に、セッションBean用のJUnitテスト・クラスを作成し、埋込みEJBコンテナでそのテストを実行します。次に、プロジェクトにエンティティ・クラスを追加し、テスト・クラスを変更してエンティティ・クラス用のテスト・メソッドを追加します。</p>
+
+           <p><b>チュートリアルの課題</b></p>
+           <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+            <ul>
+                <li><a href="#Exercise_1">セッションBeanのテスト</a>
+                    <ul>
+                        <li><a href="#Exercise_1a">プロジェクトの作成</a></li>
+                        <li><a href="#Exercise_1b">セッションBeanの作成</a></li>
+                        <li><a href="#Exercise_1c">セッションBeanのテスト</a></li>
+                        <li><a href="#Exercise_1d">コンテナのプロパティを指定するためのテストの変更</a></li>
+                        <li><a href="#Exercise_1e">@BeforeClassおよび@AfterClass注釈の使用</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_2">エンティティ・クラスのテスト</a>
+                    <ul>
+                        <li><a href="#Exercise_2a">エンティティ・クラスの作成</a></li>
+                        <li><a href="#Exercise_2b">セッションBeanの変更</a></li>
+                        <li><a href="#Exercise_2c">エンティティ・クラスのテスト</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_3">ソリューション・プロジェクトのダウンロード</a></li>
+<!--                <li><a href="#Exercise_4">Troubleshooting</a></li>-->
+            </ul>
+            <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="/downloads/">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバンドル版</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                    <td class="tbltd1">3.1.xまたは4.x</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="notes"><strong>注意:</strong></p>
+        <ul>
+            <li>このチュートリアルにはJUnitプラグインが必要です。IDEのインストール時にJUnitプラグインをインストールしなかった場合は、プラグイン・マネージャを開き、「使用可能なプラグイン」タブを選択してJUnitプラグインをインストールしてください。</li>
+            
+        </ul>
+            <p><b>前提条件</b></p>
+            <p>このドキュメントは、次のテクノロジについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。</p>
+            <ul>
+                <li>Javaプログラミング</li>
+                <li>NetBeans IDE</li>
+            </ul>
+            
+            <p>このチュートリアルを開始する前に、必要に応じて次のドキュメントをお読みください。</p>
+            <ul>
+                <li><a href="javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+                <li><a href="../java/junit-intro.html">NetBeans IDEでのJUnitテストの記述</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E19798-01/821-1754/gjlde/index.html">EJB 3.1の埋込み可能APIと埋込みGlassFish Serverの使用</a></li>
+            </ul>
+            <p class="tips"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FWebAppJUnit.zip">終了したプロジェクトのZIPアーカイブ</a>はダウンロードできます。</p>
+    
+        <!-- ===================================================================================== -->
+        <a name="Exercise_1"></a>
+        <!--Exercise 1: -->
+
+        <h2>セッションBeanのテスト</h2>
+        <p>この項では、セッションBeanとエンティティ・クラスを含む単純なJava EE Webアプリケーションを作成します。</p>
+
+        <div class="indent">
+        <a name="Exercise_1a"></a>
+        <h3>プロジェクトの作成</h3>
+
+        <ol>
+            <li>メイン・メニューから「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])を選択します。</li>
+            <li>「Java Web」カテゴリから「Webアプリケーション」を選択します。「次」をクリックします。 </li>
+            <li>プロジェクト名を<strong>WebAppJUnit</strong>にし、プロジェクトの場所を設定します。</li>
+            <li>専用フォルダを使用するオプションが選択されている場合は選択を解除します。<br>「次」をクリックします。</li>
+            <li>サーバーを<strong>「GlassFish Server」</strong>に設定し、「Java EEバージョン」を<strong>「Java EE 6 Web」</strong>または<strong>「Java EE 7 Web」</strong>に設定します。<br>「終了」をクリックします。</li>
+        </ol>
+
+        
+        
+
+        <a name="Exercise_1b"></a>
+        <h3>セッションBeanの作成</h3>
+        <p>この課題では、2つの数値を追加するメソッド1つを含む非常に単純なセッションBeanを作成します。</p>
+        <ol>
+            <li>「プロジェクト」ウィンドウでWebAppJUnitプロジェクトを右クリックし、「新規」>「その他」を選択します。</li>
+            <li>「Enterprise JavaBeans」カテゴリで「セッションBean」を選択します。「次」をクリックします。</li>
+            <li>「EJB名」に「<strong>MyBean</strong>」と入力します。</li>
+            <li>「パッケージ名」に「<strong>bean</strong>」と入力します。</li>
+            <li>「セッションのタイプ」として「ステートレス」を選択します。「終了」をクリックします。
+                <p>「終了」をクリックすると、新しいクラスがエディタに表示されます。</p></li>
+            <li>エディタで、クラスに以下のメソッド<tt>addNumbers</tt>を追加します。
+            <pre class="examplecode">
+@Stateless
+public class MyBean {
+    <strong>public int addNumbers(int numberA, int numberB) {
+        return numberA + numberB;
+    }</strong>
+}</pre>
+                <p class="notes"><strong>注意:</strong><tt>@LocalBean</tt>注釈を追加したり、このチュートリアルでインタフェースを実装する必要はありません。ビューが明示的に指定されていない場合、デフォルトでは、インタフェースなしのビューが公開されます。</p>
+            </li>
+            <li>変更を保存します。</li>
+        </ol>
+
+      
+
+        <a name="Exercise_1c"></a>
+        <h3>セッションBeanのテスト</h3>
+        <p>この課題では、セッションBean用の、<tt>addNumbers</tt>メソッドをテストするテスト・クラスを作成します。IDEでは、ターゲット・クラス内のメソッドに基づいて新しいテスト・クラスとスケルトン・テスト・メソッドを生成できます。</p>
+        <ol>
+            <li>「プロジェクト」ウィンドウで<tt>MyBean</tt>クラスを右クリックし、「ツール」>「テストを作成」を選択します。</li>
+            <li>「フレームワーク」ドロップダウン・リストで「JUnit」を選択します。</li>
+            <li>「テストを作成」ダイアログ・ボックスのデフォルト値を使用します。「OK」をクリックします。<br> <img alt="「テストを作成」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/create-tests-dialog.png" title="「テストを作成」ダイアログ">
+            <p class="notes"><strong>注意:</strong>JUnit単体テストを初めて作成するときは、JUnitのバージョンを指定する必要があります。「JUnitのバージョンを選択」ダイアログ・ボックスで「JUnit 4.x」を選択し、「選択」をクリックします。</p>
+                <p>「OK」をクリックすると、IDEによって<tt>MyBeanTest.java</tt>ファイルが生成され、エディタでそのクラスが開かれます。</p>
+
+            <p>「プロジェクト」ウィンドウで、IDEによって「テスト・パッケージ」ノードの下にテスト・クラスが生成されたことを確認できます。デフォルトでは、<tt>javax.ejb.embeddable.EJBContainer.createEJBContainer()</tt>をコールしてEJBコンテナ・インスタンスを作成するスケルトン・テスト・メソッドがIDEによってテスト・クラス内に生成されます。<tt>createEJBContainer()</tt>メソッドは、EJB 3.1埋込み可能APIの一部である<a href="http://download.oracle.com/javaee/6/api/javax/ejb/embeddable/EJBContainer.html"><tt>EJBContainer</tt></a>クラス内のメソッドの1つです。</p>
+                 
+            <p>「プロジェクト」ウィンドウで「テスト・ライブラリ」ノードを展開すると、IDEによってGlassFish Server(埋込み可能コンテナ)とJUnit 4.xがテスト・ライブラリとして自動的に追加されたことを確認できます。GlassFish Serverライブラリを展開すると、ライブラリに<tt>glassfish-embedded-static-shell.jar</tt>が含まれていることを確認できます。 </p>
+            <img alt="「プロジェクト」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/embedded-static-shell-jar.png" title="「プロジェクト」ウィンドウに示されたプロジェクトの構造">
+
+
+            <p class="notes"><strong>注意:</strong><tt>glassfish-embedded-static-shell.jar</tt> JARには、埋込みEJBコンテナのソースは含まれていません。<tt>glassfish-embedded-static-shell.jar</tt> JARには、GlassFishのローカル・インストールが必要です。ローカルのGlassFishインストールのクラスパスは、プロジェクトのターゲット・サーバーによって決定されます。ターゲット・サーバーは、プロジェクトの「プロパティ」ダイアログ・ボックスで変更できます。</p>
+            </li>
+            <li>生成されたスケルトン・テスト・メソッドを変更して、<tt>numberA</tt>、<tt>numberB</tt>および<tt>expResult</tt>の値を指定し、デフォルトのfailのコールを除去します。
+            <pre class="examplecode">@Test
+public void testAddNumbers() throws Exception {
+    System.out.println("addNumbers");
+    <strong>int numberA = 1;
+    int numberB = 2;</strong>
+    EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer();
+    MyBean instance = (MyBean)container.getContext().lookup("java:global/classes/MyBean");
+    <strong>int expResult = 3;</strong>
+    int result = instance.addNumbers(numberA, numberB);
+    assertEquals(expResult, result);
+    container.close();
+}</pre>
+            </li>
+            <li>「プロジェクト」ウィンドウでプロジェクトを右クリックし、「テスト」を選択します。</li>
+        </ol>
+        <p>テストを実行すると、IDEで「テスト結果」ウィンドウが開き、テストの進捗状況と結果が表示されます。</p>
+        <img alt="「テスト結果」ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/test-results1.png" title="「テスト結果」ウィンドウ">
+        <p>「出力」ウィンドウに次のような出力が表示されます。</p>
+        <pre class="examplecode">Testsuite: bean.MyBeanTest
+addNumbers
+...
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 31.272 sec
+
+------------- Standard Output ---------------
+addNumbers
+...
+------------- ---------------- ---------------
+test-report:
+test:
+BUILD SUCCESSFUL (total time: 35 seconds)</pre>
+
+
+        <a name="Exercise_1d"></a>
+        <h3>コンテナのプロパティを指定するためのテストの変更</h3>
+        <p>「テストを作成」ウィザードを使用したときに、IDEによってEJBコンテナを起動するためのコードを含むデフォルトのスケルトン・テスト・クラスが生成されました。この課題では、コンテナを起動する生成済のコードを変更して、埋込みコンテナ・インスタンスの追加のプロパティを指定できるようにします。</p>
+
+        <ol>
+            <li>テスト・クラスに以下のコード(太字部分)を追加します。
+
+
+        <pre class="examplecode">@Test
+public void testAddNumbers() throws Exception {
+    System.out.println("addNumbers");
+    int numberA = 1;
+    int numberB = 2;
+
+    // Create a properties map to pass to the embeddable container:
+    <strong>Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();</strong>
+    // Use the MODULES property to specify the set of modules to be initialized,
+    // in this case a java.io.File <!--representing an ejb-jar or exploded ejb-jar directory-->
+    <strong>properties.put(EJBContainer.MODULES, new File("build/jar"));</strong>
+
+    // Create the container instance, passing it the properties map:
+    EJBContainer container = javax.ejb.embeddable.EJBContainer.createEJBContainer(<strong>properties</strong>);
+
+    // Create the instance using the container context to look up the bean 
+    // in the directory that contains the built classes
+    MyBean instance = (MyBean) container.getContext().lookup("java:global/classes/MyBean");
+
+    int expResult = 3;
+
+    // Invoke the addNumbers method on the bean instance:
+    int result = instance.addNumbers(numberA, numberB);
+
+    assertEquals(expResult, result);
+
+    // Close the embeddable container:
+    container.close();
+}</pre></li>
+            <li>エディタを右クリックして「インポートを修正」([Alt]-[Shift]-[I]、Macの場合は[⌘]-[Shift]-[I])を選択し、<tt>java.util.HashMap</tt>および<tt>java.util.Map</tt>用のインポート文を追加します。</li>
+            <li>テストを再実行して、変更したテストが機能し、コンテナが正しく作成されることを確認します。
+            <p class="tips"> 「テスト結果」ウィンドウの「再実行」ボタンをクリックできます。</p>
+            </li>
+        </ol>
+<!-- TODO: need to check this
+        <p> If I do for example</p>
+
+        <pre class="examplecode">properties.put(EJBContainer.MODULES, new File("build/some-folder-with-classes"));</pre>
+
+        <p>then embeddable EJB container will use the folder
+            <tt>build/some-folder-with-classes</tt> to load EJBs from and the JNDI name to such
+        EJBs would be <tt>"java:global/some-folder-with-classes/&lt;my ejb name&gt;"</tt>. </p>
+        
+        <p>Or I could set it to the following.</p>
+
+        <pre class="examplecode">properties.put(EJBContainer.MODULES, new File("build/my-archive.jar"));</pre>
+
+        <p>and lookup would be <tt>"java:global/my-archive/&lt;my ejb name&gt;"</tt> and only EJBs from
+        my-archive.jar would be loaded.</p>
+
+        <p>Just for the sake of example, if I wanted to use a single JNDI name regardless
+        of my EJB being in archive or a classes folder then I would have to create
+        ejb-jar.xml and set the module name to "my-module-name" and in unit test I could do</p>
+
+        <pre class="examplecode">properties.put(EJBContainer.MODULES, new File("build/some-folder-with-classes"));</pre>
+        <p>or</p>
+        <pre class="examplecode">properties.put(EJBContainer.MODULES, new File("build/my-archive.jar"));</pre>
+        
+        <p>The JNDI name would be the same in both of the cases:<br>
+        <tt>"java:global/my-module-name/&lt;my ejb name&gt;"</tt></p>
+
+        <p>In the last example you could put this dir/jar in the classpath, skip the
+        property, and get the same result.
+        </p>
+-->
+        
+        <a name="Exercise_1e"></a>
+        <h3><tt>@BeforeClass</tt>および<tt>@AfterClass</tt>注釈の使用</h3>
+        
+        <p>この課題では、テスト・クラスを変更して、コンテナ・インスタンスを作成するメソッドと停止するメソッドを個別に作成します。これは、同じコンテナ・インスタンスを使用できる複数のテストを実行する場合に役に立つ場合があります。このようにすることで、コンテナ・インスタンスをテストごとに開いて閉じる必要がなくなり、かわりに、テストを実行する前に作成し、すべてのテストが完了した後で閉じるインスタンスを1つ作成します。</p>  
+        
+        <p>この課題では、EJBコンテナを作成するコードを<tt>setUpClass</tt>メソッドに移動します。<tt>setUpClass</tt>メソッドには、そのメソッドが最初に(テスト・クラス内の他のメソッドより前に)実行されることを示すために使用される<tt>@BeforeClass</tt>注釈が付いています。この例では、コンテナ・インスタンスが<tt>testAddNumbers</tt>テスト・メソッドの前に作成され、コンテナは停止されるまで存在します。</p>
+        
+        <p>同様に、コンテナを停止するコードを<tt>@AfterClass</tt>注釈が付いた<tt>tearDownClass</tt>メソッドに移動します。</p>
+        
+        <ol>
+            <li>テスト・クラスに以下のフィールドを追加します。
+            <pre class="examplecode">private static EJBContainer container;</pre></li>
+            <li>コンテナを作成するコードを<tt>testAddNumbers</tt>テスト・メソッドから<tt>setUpClass</tt>メソッドにコピーします。 
+            <pre class=examplecode>@BeforeClass
+public static void setUpClass() <strong>throws Exception</strong> {
+    <strong>Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();
+    properties.put(EJBContainer.MODULES, new File("build/jar"));
+    container = EJBContainer.createEJBContainer(properties);
+    System.out.println("Opening the container");</strong>
+}</pre>
+            </li>
+            <li>コンテナを閉じるコードを<tt>testAddNumbers</tt>テスト・メソッドから<tt>tearDownClass</tt>メソッドにコピーします。
+            <pre class=examplecode>@AfterClass
+public static void tearDownClass() <strong>throws Exception</strong> {
+    <strong>container.close();
+    System.out.println("Closing the container");</strong>
+}</pre>
+            </li>
+            <li><tt>testAddNumbers</tt>から余分なコードを除去します。変更を保存します。</li>
+        </ol>
+
+        <p>テスト・クラスは次のようになるはずです。</p>
+        <pre class=examplecode>public class MyBeanTest {
+    private static EJBContainer container;
+
+    public MyBeanTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();
+        properties.put(EJBContainer.MODULES, new File("build/jar"));
+        container = EJBContainer.createEJBContainer(properties);
+        System.out.println("Opening the container");
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        container.close();
+        System.out.println("Closing the container");
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of addNumbers method, of class MyBean.
+     */ 
+    @Test
+    public void testAddNumbers() throws Exception {
+        System.out.println("addNumbers");
+        int numberA = 1;
+        int numberB = 2;
+
+        // Create the instance using the container context to look up the bean 
+        // in the directory that contains the built classes
+        MyBean instance = (MyBean) container.getContext().lookup("java:global/classes/MyBean");
+
+        int expResult = 3;
+
+        // Invoke the addNumbers method on the bean instance:
+        int result = instance.addNumbers(numberA, numberB);
+
+        assertEquals(expResult, result);
+    }
+}</pre>
+
+        <p>コンテナの作成と停止が正しく行われることを確認するためにテストを再実行すると、「テスト結果」ウィンドウに以下のような出力が表示されます。</p>
+        <img alt="「テスト結果」ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/test-results2a.png" title="「テスト結果」ウィンドウ">
+        <p><tt>addNumbers</tt>テストの前に<tt>setUpClass</tt>メソッドが実行され、「Opening the container」と表示されたことがわかります。</p>
+    </div>
+
+
+
+<!-- ===================================================================================== -->
+    <a name="Exercise_2"></a>
+    <h2>エンティティ・クラスのテスト</h2>
+    <p>この項では、エンティティ・クラスと持続性ユニットを作成し、エンティティ・マネージャを注入してエンティティにアクセスするようにセッションBeanを変更します。新しいエンティティ・クラスには、エントリのID番号を出力に表示する単純なメソッドを追加します。次に、データベース内のエントリを作成および確認するための単純なメソッドをセッションBeanにいくつか追加します。
+    </p>
+
+    <div class="indent">
+        <a name="Exercise_2a"></a>
+        <h3>エンティティ・クラスの作成</h3>
+        <p>この項では、新規エンティティ・クラス・ウィザードを使用して、データベース接続の詳細とともにエンティティ・クラスと持続性ユニットを作成します。
+        <ol>
+            <li>「プロジェクト」ウィンドウでWebAppJUnitプロジェクトを右クリックし、「新規」>「その他」を選択します。</li>
+            <li>「持続性」カテゴリで「エンティティ・クラス」を選択します。「次」をクリックします。</li>
+            <li>「クラス名」に「<strong>SimpleEntity</strong>」と入力します。</li>
+            <li>「パッケージ」ドロップダウン・リストから「bean」を選択します。</li>
+            <li>「主キー型」に「<strong>int</strong>」と入力します。「次」をクリックします。</li>
+            <li>デフォルトの持続性ユニット名と持続性プロバイダを使用します。</li>
+            <li>データ・ソースとして「<tt>jdbc/sample</tt>」を選択し、戦略として「ドロップして作成」を選択します。「終了」をクリックします。<br> <img alt="「エンティティ・クラスの作成」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/create-entity-wizard.png" title="「エンティティ・クラスの作成」ダイアログ">
+                <p>「終了」をクリックすると、新しいエンティティ・クラスがエディタに表示されます。「プロジェクト」ウィンドウの「構成ファイル」ノードを展開すると、持続性ユニット<tt>WebAppJUnitPU</tt>のプロパティを定義する<tt>persistence.xml</tt>ファイルがIDEによって自動的に生成されたことを確認できます。</p></li>
+            <li>エディタで、エンティティ・クラスに以下のprivateフィールドを追加します。
+            <pre class="examplecode">private String name;</pre>
+            </li>
+            <li>ソース・エディタ内を右クリックして「コードを挿入」([Alt]-[Insert]、Macの場合は[Ctrl]-[I])を選択し、「取得メソッドおよび設定メソッド」を選択して「取得メソッドおよび設定メソッドの生成」ダイアログ・ボックスを開きます。</li>
+            <li>ダイアログ・ボックスで「<tt>name</tt>」フィールドを選択します。「生成」をクリックします。<br />
+            <li>クラスに以下のメソッドを追加します。
+            <pre class="examplecode">
+public SimpleEntity(int id) {
+    this.id = id;
+    name = "Entity number " + id + " created at " + new Date();
+}</pre>
+            </li>
+            <li><tt>@NamedQueries</tt>および<tt>NamedQuery</tt>注釈を使用して名前付きSQL問合せを作成します。
+            <pre class="examplecode">@Entity
+<strong>@NamedQueries({@NamedQuery(name = "SimpleEntity.findAll", query = "select e from SimpleEntity e")})</strong>
+public class SimpleEntity implements Serializable {</pre>
+            </li>
+            <li>デフォルト・コンストラクタを作成します。
+                <p class="tips">IDEでコンストラクタを自動生成する場合は、クラス宣言の横のガターに表示された提案アイコンをクリックできます。</p>
+            </li>
+            <li>インポートを修正して、<tt>javax.persistence.NamedQueries</tt>、<tt>javax.persistence.NamedQuery</tt>および<tt>java.util.Date</tt>のインポート文を追加します。変更を保存します。</li>
+        </ol>
+
+        <p>デフォルトで生成されるコードに加えて、エンティティ・クラスは次のようになるはずです。</p>
+
+        <pre class="examplecode">package bean;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+
+
+@Entity
+@NamedQueries({@NamedQuery(name = "SimpleEntity.findAll", query = "select e from SimpleEntity e")})
+public class SimpleEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    private String name;
+
+    public SimpleEntity() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public SimpleEntity(int id) {
+        this.id = id;
+        name = "Entity number " + id + " created at " + new Date();
+    }
+
+    
+
+    ...
+
+}</pre>
+
+
+        <a name="Exercise_2b"></a>
+        <h3>セッションBeanの変更</h3>
+        <p>この課題では、<tt>MyBean</tt>セッションBeanを編集して、データベース表のデータを挿入および取得するためのメソッドを追加します。</p>
+        <ol>
+            <li>エディタで<tt>MyBean.java</tt>を開きます。</li>
+            <li>エディタ内を右クリックして「コードを挿入」([Alt]-[Insert]、Macの場合は[Ctrl]-[I])を選択し、ポップアップ・メニューから「エンティティ・マネージャの使用」を選択します。
+            <p>「エンティティ・マネージャの使用」を選択したときに、エンティティ・マネージャを注入するためにIDEによってクラスに以下のコードが追加されました。持続性ユニットの名前が自動的に生成されていることがわかります。</p>
+            <pre class="examplecode">@PersistenceContext(unitName="WebAppJUnitPU")
+private EntityManager em;</pre>
+            </li>
+            <li>以下の<tt>verify</tt>および<tt>insert</tt>メソッドを追加します。
+            <pre class="examplecode">@PermitAll
+public int verify() {
+    String result = null;
+    Query q = em.createNamedQuery("SimpleEntity.findAll");
+    Collection entities = q.getResultList();
+    int s = entities.size();
+    for (Object o : entities) {
+        SimpleEntity se = (SimpleEntity)o;
+        System.out.println("Found: " + se.getName());
+    }
+
+    return s;
+}
+
+@PermitAll
+public void insert(int num) {
+    for (int i = 1; i &lt;= num; i++) {
+        System.out.println("Inserting # " + i);
+        SimpleEntity e = new SimpleEntity(i);
+        em.persist(e);
+    }
+}</pre></li>
+            <li><tt>javax.persistence.Query</tt>をインポートするようにインポートを修正し、変更内容を保存します。</li>
+        </ol>
+        
+
+
+        <a name="Exercise_2c"></a>
+        <h3>エンティティ・クラスのテスト</h3>
+        <p>この課題では、テスト・クラスを編集して、アプリケーションがEJBを検索すること、および<tt>insert</tt>メソッドと<tt>verify</tt>メソッドが正常に動作することをテストするメソッドを追加します。</p>
+        <ol>
+            <li>JavaDBデータベースを起動します。</li>
+            <li>エディタで<tt>MyBeanTest.java</tt>テスト・クラスを開きます。</li>
+            <li>テスト・クラスを編集して、以下の<tt>testInsert</tt>テスト・メソッドを追加します。
+            <pre class="examplecode">@Test
+public void testInsert() throws Exception {
+
+    // Lookup the EJB
+    System.out.println("Looking up EJB...");
+    MyBean instance = (MyBean) container.getContext().lookup("java:global/classes/MyBean");
+
+    System.out.println("Inserting entities...");
+    instance.insert(5);
+    int res = instance.verify();
+    System.out.println("JPA call returned: " + res);
+    System.out.println("Done calling EJB");
+
+    Assert.assertTrue("Unexpected number of entities", (res == 5));
+    System.out.println("..........SUCCESSFULLY finished embedded test");
+}</pre>
+            </li>
+<!--            <li>Fix your imports to import <tt>javax.naming.Context</tt> and <tt>junit.framework.Assert</tt>.</li>-->
+            <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、ポップアップ・メニューから「テスト」を選択します。</li>
+        </ol>
+
+        <p>「テスト結果」ウィンドウが開き、以下のような出力が表示されます。</p>
+        
+        <img alt="「テスト結果」ウィンドウ" class="margin-around b-all" src="../../../images_www/articles/72/javaee/junit-embedded-ant/test-results2b.png" title="testInsertテストを追加した後の「テスト結果」ウィンドウ">
+        
+        <p>テスト・クラスに追加された出力メッセージから、テストの進捗状況とテストの実行順序がわかります。
+        </p>
+
+    </div>
+        
+    これで、セッションBean用のテストが完成し、エンティティ・クラスの接続が機能することがわかったので、アプリケーションのWebインタフェースのコーディングを開始できます。
+       
+        
+        <!-- ===================================================================================== -->
+        <a name="Exercise_3"></a>
+       
+            <h2>ソリューション・プロジェクトのダウンロード</h2>
+            <p>次の方法で、このチュートリアルにソリューションをプロジェクトとしてダウンロードできます。</p>
+            <ul>
+                <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FWebAppJUnit.zip">終了したプロジェクトのZIPアーカイブ</a>をダウンロードします。</li>
+                <li>次の手順を実行して、プロジェクト・ソースをNetBeansのサンプルからチェックアウトします。
+                    <ol>
+                        <li>メイン・メニューから「チーム」>「Subversion」>「チェックアウト」を選択します。</li>
+                        <li>「チェックアウト」ダイアログ・ボックスで次のリポジトリURLを入力します。<br><tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br>「次」をクリックします。</li>
+                        <li>「参照」をクリックして「リポジトリ・フォルダを参照」ダイアログ・ボックスを開きます。</li>
+                        <li>ルート・ノードを展開し、<strong>samples/javaee/WebAppJUnit</strong>を選択します。「OK」をクリックします。</li>
+                        <li>ソースのローカル・フォルダを指定します(ローカル・フォルダは空である必要があります)。</li>
+                        <li>「終了」をクリックします。
+                            <p>「終了」をクリックすると、IDEではローカル・フォルダがSubversionリポジトリとして初期化され、プロジェクト・ソースがチェックアウトされます。</p>
+                        </li>
+                        <li>チェックアウトが完了するときに表示されるダイアログで、「プロジェクトを開く」をクリックします。</li>
+                    </ol>
+                    <p class="notes"><strong>注意:</strong></p>
+                    <ul>
+                        <li>ソースをチェックアウトするには、Subversionクライアントが必要です。Subversionのインストールの詳細は、<a href="../ide/subversion.html">NetBeans IDEでのSubversionガイド</a>の<a href="../ide/subversion.html#settingUp">Subversionの設定</a>の項を参照してください。</li>
+                    </ul>
+                </li>
+            </ul>
+
+                
+
+
+            <!--<a name="Exercise_4"></a>
+                
+            <h2>Troubleshooting</h2>
+            <p></p>-->
+            
+            <!--<p>If you are using this tutorial on OS X, you may encounter the following problem when testing the project.</p>
+            <div class="indent">
+                <h3>OutOfMemory Exception</h3>
+                
+                <p>To prevent an OutOfMemory (OOM) exception, you need to modify the build script.</p>
+                <ol>
+                    <li>Expand the project in the Files window.</li>
+                    <li>Expand the nbproject node and double-click <tt>build-impl.xml</tt> to open the file in the editor.</li>
+                    <li>Search for macrodef-junit in the file.</li>
+                    <li>Locate the classpath elements.
+                    <pre class="examplecode">
+    &lt;macrodef name="junit" uri="https://netbeans.org/ns/web-project/2"&gt;
+        ...
+        &lt;sequential&gt;
+            ...
+            <strong>&lt;classpath&gt;
+                &lt;path path="${run.test.classpath}"/&gt;
+                &lt;path path="${j2ee.platform.classpath}"/&gt;
+                &lt;path path="${j2ee.platform.embeddableejb.classpath}"/&gt;
+            &lt;/classpath&gt;</strong>
+            ...
+        &lt;sequential&gt;
+        ...
+    &lt;macrodef name="junit" uri="https://netbeans.org/ns/web-project/2"&gt;
+                    </pre></li>
+                    <li>Comment out the following classpath element.
+                        <pre class="examplecode">&lt;path path="${j2ee.platform.classpath}"/&gt;</pre>
+                    </li>
+                    <li>Save your changes.</li>
+                    
+                </ol>-->
+                
+                
+                
+
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20the%20Embedded%20EJB%20Container">このチュートリアルに関するご意見をお寄せください</a></div>
+            <br style="clear:both;">
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>関連項目</h2>
+            <p>NetBeans IDEを使用したJava EEアプリケーションの開発方法の詳細は、次のリソースを参照してください。
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Java EEテクノロジ入門</a></li>
+            <li><a href="javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+            <li><a href="../web/quickstart-webapps.html">Webアプリケーション開発入門</a></li>
+            <li><a href="../../trails/java-ee.html">Java EEおよびJava Webの学習</a></li>
+            </ul>
+            <p>EJB 3.1エンタープライズBeanの使用方法については、<a href="http://download.oracle.com/javaee/6/tutorial/doc/">Java EE 6チュートリアル</a>を参照してください。</p>
+            <p><a href="../../../community/lists/top.html">nbj2eeメーリング・リストに登録する</a>ことによって、NetBeans IDE Java EE開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+    </body>
+</html>

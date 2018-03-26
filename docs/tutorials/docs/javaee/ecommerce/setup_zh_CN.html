@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This document provides basic setup instructions necessary to configuring your development environment for use with the NetBeans E-commerce Tutorial.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+
+        <title>NetBeans 电子商务教程 - 设置指导</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans 电子商务教程 - 设置指导</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>教程目录</h4>
+
+                <ol>
+                    <li><a href="intro.html">简介</a></li>
+                    <li><a href="design.html">设计应用程序</a></li>
+                    <li><a href="setup-dev-environ.html">设置开发环境</a></li>
+                    <li><a href="data-model.html">设计数据模型</a></li>
+                    <li><a href="page-views-controller.html">准备页面视图和控制器 Servlet</a></li>
+                    <li><a href="connect-db.html">将应用程序与数据库连接</a></li>
+                    <li><a href="entity-session.html">添加实体类和会话 Bean</a></li>
+                    <li><a href="manage-sessions.html">管理会话</a></li>
+                    <li><a href="transaction.html">集成事务性业务逻辑</a></li>
+                    <li><a href="language.html">添加语言支持</a></li>
+                    <li><a href="security.html">保护应用程序</a></li>
+                    <li><a href="test-profile.html">测试和性能分析</a></li>
+                    <li><a href="conclusion.html">小结</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img alt="此页上的内容适用于 NetBeans IDE 版本 6.8 和 6.9" class="stamp" src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" title="此页上的内容适用于 NetBeans IDE 版本 6.8 和 6.9"></p>
+
+        <p>如果要在未完成前一教程单元的情况下继续学习下一单元，则需要执行一些预备步骤，以设置开发环境。</p>
+
+         <ol style="margin:5px 0 0 320px">
+            <li><strong>设置 MySQL 数据库服务器</strong>。按照<a href="setup-dev-environ.html#communicate">与数据库服务器进行通信</a>中所述的步骤操作。</li>
+
+            <li><strong>在数据库服务器上创建 <code>affablebean</code> 方案，并使用样例数据填充数据库：</strong>
+
+                <ol style="margin: 5px 0 0 -1.5em">
+                    <li>单击 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252Faffablebean.sql">affablebean.sql</a> 并复制（Ctrl-C；在 Mac 上为 ⌘-C）文件的所有内容。</li>
+
+                    <li>打开 IDE 的 SQL 编辑器。在 "Services"（服务）窗口（按 Ctrl-5 组合键；在 Mac 上为 ⌘-5 组合键）中，右键单击 <code>affablebean</code> 数据库连接 (<img alt="数据库连接节点" src="../../../../images_www/articles/73/javaee/ecommerce/common/db-connection-node.png">) 节点，然后选择 "Execute Command"（执行命令）。<br> <img alt=""Services"（服务）窗口 - "Execute Command"（执行命令）菜单选项" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/execute-command.png" title="从连接节点中选择 "Execute Command"（执行命令）以打开 IDE 的 SQL 编辑器"> <br> IDE 的 SQL 编辑器打开。</li>
+
+                    <li>将 <code>affablebean.sql</code> 文件的所有内容粘贴（Ctrl-V；在 Mac 上为 ⌘-V）至编辑器。</li>
+
+                    <li>在编辑器的工具栏中单击 "Run SQL"（运行 SQL）(<img alt=""Run SQL"（运行 SQL）按钮" src="../../../../images_www/articles/73/javaee/ecommerce/common/run-sql-btn.png">) 按钮。此脚本在 MySQL 服务器上运行。为数据库生成表，并将样例数据添加到 <code>product</code> 和 <code>category</code> 表。</li>
+                </ol></li>
+
+            <li><strong>在 GlassFish 上创建连接池和 JDBC 源。</strong>
+
+                <ol style="margin: 5px 0 0 -1.5em">
+                    <li>在 "Services"（服务）窗口（Ctrl-5 组合键；在 Mac 上为 ⌘-5 组合键）中，展开 "Servers"（服务器）> "GlassFish Server 3" 节点，并选择 "Properties"（属性）。在显示的 "Servers"（服务器）窗口中，请确保选中 "Enable JDBC Driver Deployment"（启用 JDBC 驱动程序部署）。如果项目需要 MySQL <a href="http://www.mysql.com/downloads/connector/j/" target="_blank">Connector/J</a> 驱动程序，则此选项会确保在部署项目时将驱动程序部署到 GlassFish 上。（如果服务器已在运行，则需要重新启动服务器。）</li>
+
+                    <li>在 "Services"（服务）窗口中，右键单击 "GlassFish Server 3" 节点并选择 "Start"（启动）。</li>
+
+                    <li>运行该服务器之后，右键单击 "GlassFish Server 3" 节点，然后选择 "View Admin Console"（查看管理控制台）。</li>
+
+                    <li>登录到（默认用户名/口令为：<code>admin/adminadmin</code>）。</li>
+
+                    <li>在管理控制台左侧的树中，展开 "Resources"（资源）> "JDBC" 节点，然后单击 "Connection Pools"（连接池）节点。</li>
+
+                    <li>在 "Connection Pools"（连接池）接口中，单击 "New"（新建）按钮，并输出以下详细信息：
+
+                        <ul style="margin: 5px 0 0 -1em">
+                            <li><strong>Name（名称）：</strong><code>AffableBeanPool</code></li>
+                            <li><strong>Resource Type（资源类型）：</strong><code>javax.sql.ConnectionPoolDataSource</code></li>
+                            <li><strong>Database Vendor（数据库供应商）：</strong><code>MySql</code></li>
+                        </ul>
+
+                        <img alt="GlassFish 管理控制台 - "Connection Pools"（连接池）接口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/connection-pool.png" title="指定设置以创建连接至 MySQL 数据库的连接池"></li>
+
+                    <li>单击 "Next"（下一步）。接受所有默认值，然后单击 "Finish"（完成）。</li>
+
+                    <li>在 "Connection Pools"（连接池）接口中，单击新创建的 <code>AffableBeanConnectionPool</code>，在 "General"（常规）标签下进行以下更改：
+
+                        <ul style="margin: 5px 0 0 -1em">
+                            <li><strong>Datasource Classname（数据源类名）：</strong><code>com.mysql.jdbc.jdbc2.optional.MysqlDataSource</code></li>
+                        </ul>
+
+                        <img alt="GlassFish 管理控制台 - "Connection Pools"（连接池）接口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/datasource-classname.png" style="width:638px" title="为连接池设置数据源类名"></li>
+
+                    <li>单击 "Save"（保存）。</li>
+
+                    <li>单击 "Additional Properties"（附加属性）标签，并确保已设置以下三个属性。（可能还列出其他属性，这些是默认设置，但是以下三个设置必须进行手动设置。）
+
+                        <ul style="margin: 5px 0 0 -1em">
+                            <li><strong>User（用户）：</strong><code>root</code></li>
+                            <li><strong>Password（口令）：</strong><code>nbuser</code></li>
+                            <li><strong>URL：</strong><code>jdbc:mysql://localhost:3306/affablebean</code></li>
+                        </ul>
+
+                        <img alt="GlassFish 管理控制台 - "Connection Pools"（连接池）接口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/additional-properties.png" style="width:638px" title="设置用户名、口令和指向数据库的 URL"></li>
+
+                    <li>单击 "Save"（保存）。</li>
+
+                    <li>单击 "General"（常规）标签，然后单击 "Ping"。应会看到一则指示 ping 已成功的消息。<code>AffableBeanPool</code> 连接池现在可以连接到 MySQL 数据库服务器。 <br> <img alt="GlassFish 管理控制台 - "Connection Pools"（连接池）接口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/ping-succeeded.png" style="width:638px" title="对 MySQL 服务器执行 ping 操作以确定连接池能否连接"></li>
+
+                    <li>在左侧列中的管理控制台树中，单击 "Resources"（资源）> "JDBC" > "JDBC Resources"（JDBC 资源）节点。在主窗口中打开 "JDBC Resources"（JDBC 资源）界面。</li>
+                    
+                    <li>单击 "New"（新建）按钮以创建新的 JDBC 资源，然后输入以下详细信息：
+                    
+                        <ul style="margin: 5px 0 0 -1em">
+                            <li><strong>JNDI Name（JNDI 名称）：</strong><code>jdbc/affablebean</code></li>
+                            <li><strong>Connection Pool（连接池）：</strong><code>AffableBeanPool</code></li>
+                        </ul>
+
+                        <img alt="GlassFish 管理控制台 - "JDBC Resource"（JDBC 资源）接口" class="margin-around b-all" src="../../../../images_www/articles/73/javaee/ecommerce/setup/jdbc-resource.png" title="指定 JNDI 名称和连接池以创建 JDBC 资源"></li>
+
+                    <li>单击 "OK"（确定）。</li>
+                </ol>
+            </li>
+        </ol>
+
+        <p style="margin-left:27em">已经设置 MySQL 服务器，并且可以从 IDE 的 "Services"（服务）窗口连接到此服务器。创建了名为 <code>affablebean</code> 的数据库，并使用样例数据填充了数据库的 <code>product</code> 和 <code>category</code> 表。然后，启动了 GlassFish Server，并创建一个连接池，服务器可通过它连接到 <code>affablebean</code> 数据库。最后，创建了一个 JDBC 资源，应用程序可使用它来引用服务器连接池的。</p>
+
+        <p style="margin-left:27em">现在，可以打开并运行教程单元中提供的任何项目屏幕快照。</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Setup Instructions">请将您的反馈意见发送给我们</a></div>
+
+        <br style="clear:both;">
+
+    </body>
+</html>

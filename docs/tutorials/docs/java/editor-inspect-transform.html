@@ -1,0 +1,288 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Refactoring with Inspect and Transform - NetBeans IDE Tutorial</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Refactoring with Inspect and Transform functionality in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Java editor, refactoring, inspections, configurations"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body><a name="top"></a>
+
+<h1>Refactoring with Inspect and Transform in the NetBeans IDE Java Editor</h1>
+<p>The NetBeans IDE  Java Editor features an  Inspect and Transform feature, which is a refactoring tool for running various inspections and transformations on the selected scope of files at once. It also enables a user to define a custom inspection. </p>
+<p>In this tutorial, you will learn to perform a code review using inspections with refactoring and predefined set of inspections, manage configurations, and create custom inspections.</p>
+
+<h3>Contents</h3>
+<img  src="../../../images_www/articles/80/netbeans-stamp.png"
+              class="stamp" alt="Content on this page applies to NetBeans IDE 8.0"
+              title="Content on this page applies to NetBeans IDE 8.0" />
+
+        <ul class="toc">
+            <li><a href="#setup">Setting Up the Tutorial Environment</a></li>
+			<li><a href="#run">Running Inspections</a></li>			
+            <li><a href="#configuration">Using Configurations</a>
+			<ul>
+			<li><a href="#migrate5">Migrate to JDK 5</a></li>
+			<li><a href="#convert">Migrate to JDK 7</a></li>
+			<li><a href="#migrate8">Migrate to JDK 8</a></li>
+			<li><a href="#organize">Organize Imports</a></li></ul></li>
+			<li><a href="#create">Managing Custom Inspections</a></li>
+			<li><a href="#summary">Summary</a></li>
+            <li><a href="#seealso">See Also</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Requirements</h2>
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Version 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">Version 7 or 8 </td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        
+<a name="setup"></a>
+<h2>Setting Up the Tutorial Environment</h2>
+<p>In addition to the required software listed above you should have the <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/inspecttransform.zip" target="_blank">InspectTransform.zip</a> file unzipped into your NetBeans project folder and opened in the NetBeans IDE as follows:</p>	
+<p class="align-center"><img src="../../../images_www/articles/80/java/editor-inspect-transform/proj.png"
+                     alt="Project open in the IDE" border=1/></p>	
+		<a name="run"></a>
+		<h2>Running Inspections</h2>
+		<p>The Single Inspection  option in the Inspect and Transform dialog box (Refactor &gt; Inspect and Transform) offers a big variety of inspections related to  particular refactoring transformations. The complete list of such operations is available in the Manage Inspections dialog box after clicking the Browse button to the right of the Single Inspection option. </p>
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections.png" rel="lytebox"
+                       title="Manage Inspections dialog box">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/manage-inspections-small.png"
+                     alt="Manage Inspections dialog box" border=1/></a></p>	
+	<p>The Search field enables you to check if a required inspection is available using a keyword lookup. For example, there are several inspections found when <tt>operator</tt> is searched for.</p>	
+	<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/search.png" rel="lytebox"
+                       title="Searching for keyword">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/search-small.png"
+                     alt="Searching for keyword" border=1/></a></p>	
+     <p>Every inspection is provided with a description available either in the Description field in the Manage Inspection dialog box. </p>
+	 
+	 <p><b>To run an inspection and apply an existing Inspection:</b></p>
+	 <ol>
+	 <li>In the Projects window, select the <tt>InspectTransform.java</tt> file.</li>
+	 <li>Choose Refactor &gt; Inspect and Transform from the IDE's menu.</li>
+	 <li>In the Inspect and Transform dialog box, select the Single Inspection option and click Browse.</li>
+	 <li>In the Manage Inspections dialog box, choose the <tt>Assignment replaceable with operator-assignment</tt> inspection in the Assignment Issues node.</li>
+	 <li>Click OK to close the Manage Inspections dialog box.</li>
+     <li>Click Inspect in the Inspect and Transform dialog box.<br/>The suggested refactoring changes display in the preview panel.
+	 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection.png" rel="lytebox"
+                       title="Single inspection run">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/single-inspection-small.png"
+                     alt="Single inspection run" border=1/></a></p>	</li>
+     <li>Click Do Refactoring to apply the changes if required.</li>
+</ol>
+
+		<p class="align-center"><a href="#top">top</a></p>
+		
+		
+
+		
+		 
+		
+		
+		
+        <a name="configuration"></a>
+		<h2>Using Configurations</h2>
+		<p>A set of refactorings grouped together constitute a configuration that can be run on your scope of interest, for example, a class or several classes, packages, or projects. The IDE offers the following two predefined configurations: </p>
+		
+        <ul>
+		<li><a href="#migrate5">Migrate to JDK 5</a></li>
+		<li><a href="#convert">Migrate to JDK 7</a></li>
+		<li><a href="#migrate8">Migrate to JDK 8</a></li>
+		<li><a href="#organize">Organize Imports</a></li>
+		</ul>
+		<a name="migrate5"></a>
+		<h3>Migrate to JDK 5</h3>
+		<p>The <tt>Migrate to JDK 5</tt> configuration available in the IDE by default incorporates such refactoring operations as static imports, JDK 5 for-loop usage, unnecessary boxing and unboxing, and switch over Strings application. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf.png" rel="lytebox"
+                       title="Migrate to JDK 5 default configuration">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/jdk5-conf-small.png"
+                     alt="Migrate to JDK 5 default configuration" border=1/></a></p>
+					 <p class="notes"><b>Note:</b> The list of refactorings in the configuration can be modified in the Inspections list of the Manage Inspections dialog box by selecting and deselecting the items under the <tt>JDK Migration Support</tt> node.</p>
+                     <a name="convert"></a>
+		<h3>Migrate to JDK 7</h3>
+		<p>The <tt>Migrate to JDK 7</tt> configuration available in the IDE by default incorporates such refactoring operations as diamond operator usage, try-with-resources conversion, multicatch usage,  switch over Strings application, and others. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf.png" rel="lytebox"
+                       title="Convert to JDK 7 default configuration">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-conf-small.png"
+                     alt="Convert to JDK 7 default configuration" border=1/></a></p>
+					 <p class="notes"><b>Note:</b> The list of refactorings in the configuration can be modified in the Inspections list of the Manage Inspections dialog box by selecting and deselecting the items under the <tt>JDK Migration Support</tt> node.</p>
+					 <p><b>To run and apply the default <tt>Migrate to JDK 7</tt> configuration:</b></p>
+					 <ol>
+					 <li>In the Projects window, select the <tt>PredefinedSet.java</tt> file.</li>
+					 <li>Choose Refactor &gt; Inspect and Transform from the IDE's menu.</li>
+	                 <li>In the Inspect and Transform dialog box, select the Configuration option and choose the <tt>Migrate to JDK 7</tt> set of inspections from the drop-down list.</li>
+                     <li>Click Inspect.<br/>Changes that convert the code to JDK 7 syntax display in the preview panel.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref.png" rel="lytebox"
+                       title="Migrate to JDK 7 refactoring suggested">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/jdk7-ref-small.png"
+                     alt="Migrate to JDK 7 refactoring suggested" border=1/></a></p></li>
+					 <li>Click Do Refactoring to apply the changes if required.</li></ol>	
+		<a name="migrate8"></a>
+		<h3>Migrate to JDK 8</h3>
+		<p>The <tt>Migrate to JDK 8</tt> configuration available in the IDE by default incorporates such refactoring operations as Lambda or Member Reference conversion, static imports,  multicatch usage, switch over Strings application, and others. </p>
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf.png" rel="lytebox"
+                       title="Migrate to JDK 8 default configuration">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/jdk8-conf-small.png"
+                     alt="Migrate to JDK 8 default configuration" border=1/></a></p>
+					 <p class="notes"><b>Note:</b> The list of refactorings in the configuration can be modified in the Inspections list of the Manage Inspections dialog box by selecting and deselecting the items under the <tt>JDK Migration Support</tt> node.</p>
+                     <a name="organize"></a>
+		<h3>Organize Imports</h3>
+        <p>The <tt>Organize Imports</tt> configuration enables you to inspect the way import statements are organized in the code and refactor your code if desired. By default it includes a single inspection that checks whether import statements correspond to the specified code style rules.</p>
+		<p class="notes"><b>Note:</b> To configure the code style rules for import statements:</p>
+		<ol>
+		<li>  Choose Tools &gt; Options &gt; Editor &gt; Formatting in the main IDE toolbar.</li>
+		<li>  Select Java in the Language drop-down list.</li> 
+		<li>Select Imports in the Category drop-down list.</li>
+		 <li>Specify the available options as required.
+		 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/org-imports.png" rel="lytebox"
+                       title="Organize Imports default configuration">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/org-imports-small.png"
+                     alt="Organize Imports default configuration" border=1/></a></p></li>
+		 <li>Click OK to save your edits.</li>
+</ol> 
+		
+		<p><b>To run and apply the default <tt>Organize Imports </tt>configuration:</b></p>
+		<ol>
+					 <li>In the Projects window, select the <tt>Imports.java</tt> file.</li>
+					 <li>Choose Refactor &gt; Inspect and Transform from the IDE's menu.</li>
+	                 <li>In the Inspect and Transform dialog box, select the Configuration option and choose the <tt>Organize Imports</tt> item.</li>
+                     <li>Click Inspect.<br/> 
+                     The preview panel displays one occurrence proposed for  the Import section of the <tt>Imports.java</tt> file to make it aligned with the specified code style rules.
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref.png" rel="lytebox"
+                       title="Organize Imports refactoring suggested">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/imports-ref-small.png"
+                     alt="Organize Imports refactoring suggested" border=1/></a></p></li>
+					 <li>Click Do Refactoring to apply the changes if necessary.</li>
+		</ol>
+		
+
+         <p class="align-center"><a href="#top">top</a></p>       
+                
+               
+        <a name="create"></a>
+        <h2>Managing Custom Inspections</h2>
+        
+		<p>A custom inspection can be created to instruct the IDE what code structures are to be found and how to transform them. </p>
+        <p class="notes"><b>Note:</b> To avoid adding a duplicate inspection to the IDE, choose Refactor &gt; Inspect and Transform from the main menu, click either Manage or Browse, and, in the Manage Inspections dialog box, use the Search field to look for the required inspection prior to creating a new inspection. </p>
+		<p><b>To create a custom inspection:</b></p>
+		<ol>
+		<li>Choose Refactor &gt; Inspect and Transform from the IDE's menu.</li>
+		<li>In the Inspect and Transform dialog box, click either Manage or Browse.</li>
+		<li>In the Manage Inspections dialog box, click New.<br/> 
+		A <tt>Custom &gt; Inspection</tt> node is created in the Inspections list.
+		
+		<p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint.png" rel="lytebox"
+                       title="InspectionSample created">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/custom-hint-small.png"
+                     alt="InspectionSample created" border=1/></a></p></li>
+					 <li>(Optional) Right-click <tt>Inspection</tt>, choose Rename from the popup menu,  specify the name required for your custom inspection (for example, <tt>MyCustomInspection</tt>), and press Enter.</li>
+					 <li>Click Edit Script. The Script text area displays.
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/script.png" rel="lytebox"
+                       title="Script text area">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/script-small.png"
+                     alt="Script text area" border=1/></a></p></li>
+					 <li>Type the inspection description and code in the Script text area or click Open in Editor and specify the same in the <tt>MyCustomInspection.hint</tt> file.
+					   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/hint-file.png" rel="lytebox"
+                       title="MyCustomInspection.hint file">
+	      <img src="../../../images_www/articles/80/java/editor-inspect-transform/hint-file-small.png"
+                     alt="MyCustomInspection.hint file" border=1/></a></p></li>
+					 <li>Click Save below the Script text area or press Ctrl-S in the Editor to save your edits.</li>
+					 <li>Click OK to close the Manage Inspections dialog box or close the <tt>MyCustomInspection.hint</tt> file in the Editor.<br/>
+					 Your custom inspection is done and ready to be applied.</li>
+		</ol>
+		<p><b>To run the custom inspection you created:</b></p>
+		<ol>
+	 
+	 <li>Choose Refactor &gt; Inspect and Transform from the IDE's menu.</li>
+	 <li>In the Inspect list of the Inspect and Transform dialog box, specify a file, package, or project(s) to be inspected. Alternatively, click the button to the right to open the Custom Scope dialog box and specify the custom code to be inspected.</li>
+	 <li>Select the Single Inspection option and choose the <tt>MyCustomInspection</tt> inspection.
+	   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint.png" rel="lytebox"
+                       title="MyCustomInspection selected">
+					   <img src="../../../images_www/articles/80/java/editor-inspect-transform/mycustomhint-small.png"
+                     alt="MyCustomInspection selected" border=1/></a></p></li>
+     <li>Click Inspect.<br/>The suggested refactoring changes display in the preview panel.
+	 <!--<p class="align-center">
+		<a href="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI.png" rel="lytebox"
+                       title="MyCustomInspection run">
+					   <img src="../../../images_www/articles/71/java/editor-inspect-transform/URL2URI-small.png"
+                     alt="MyCustomInspection run" border=1/></a></p>-->	</li>
+     <li>Click Do Refactoring to apply the changes if required.</li>
+</ol>
+
+
+        <p class="align-center"><a href="#top">top</a></p> 
+		  
+               
+          
+
+                
+               
+
+<a name="summary"></a>
+<h2>Summary</h2>
+<p>This tutorial covers most frequent usages of the Inspect and Transform feature. Please note that with the Inspect and Transform functionality you  can also perform custom refactoring at project scope, or apply particular refactoring configurations to several projects open in the IDE, etc. </p>
+
+<p class="align-center"><a href="#top">top</a></p>		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Refactoring%20with%20Inspect%20and%20Transform%20in%20the%20NetBeans%20IDE%20Java%20Editor">Send Feedback on This Tutorial</a></div>
+
+        <br style="clear:both;"/>
+		
+		<a name="seealso"></a>
+        <h2>See Also</h2>
+        
+        <p>For related material see the following documents:</p>
+        <ul>
+           <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">Using Hints in Source Code Analysis and Refactoring</a> in <i>Developing Applications with NetBeans IDE</i></a></li>
+            <li><a href="http://wiki.netbeans.org/Java_Hints">Complete List of NetBeans Java Hints</a></li>
+			<li><a href="http://wiki.netbeans.org/JavaDeclarativeHintsDescriptionSketch">Description of NetBeans Java Declarative Hints</a></li>
+			
+			<li><a href="code-inspect.html">Static Code Analysis in the NetBeans IDE Java Editor</a></li>
+			<li><a href="http://wiki.netbeans.org/Refactoring">Refactoring Simplified</a></li>
+			<li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">NetBeans Java Hint Module Tutorial</a></li>
+			
+          
+			
+        </ul>
+		<p class="align-center"><a href="#top">top</a></p>
+</body>
+</html>

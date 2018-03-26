@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Визуальные средства поддержки в конструкторе GUI &ndash; учебная программа по среде IDE NetBeans</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <meta name="KEYWORDS" content="NETBEANS, GUI BUILDER, GUIDE, USER, DOCUMENTATION">
+        <meta content="?and? 0.5.5" name="GENERATOR">
+
+    </head>
+    
+    <body>    
+    <a name="top"></a>    
+        <h1>Визуальные средства поддержки в конструкторе GUI</h1>
+<p>В этом документе описываются визуальные средства поддержки в конструкторе GUI (прежнее название &ndash; Matisse) в среде IDE при разработке графического интерфейса Java. </p>
+ <h3>Содержание</h3>
+<img alt="Содержимое этой страницы применимо к IDE NetBeans 6.9 и более поздним версиям" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 6.9 и более поздним версиям">
+
+        <ul class="toc">
+           
+			<li><a href="#alignment">Направляющие линии</a></li>
+			<li><a href="#anchor">Точки привязки</a></li>
+			<li><a href="#size">Установка размеров индикаторов</a></li>
+			<li><a href="#highlight">Выделение и ручки изменения размера</a></li>
+			<li><a href="#seealso">См. также</a></li>
+		</ul>       
+        <blockquote>
+            <a name="alignment"></a>
+			<h2>Направляющие линии</h2>
+            <p>Направляющие появляются только при добавлении или перемещении элементов и указывают предпочтительные позиции, согласно которым размещаются элементы при отпускании кнопки мыши.  После размещения направляющие заменяются сплошными линиями, обозначающими выравнивание элементов и точки их привязки.</p>
+            <br>
+            <table>
+            <tr>
+                <td class="tbltd1 align-center"><b>Отступ</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend5.png" border=1>
+                    
+                </td>
+                <td class="tbltd1">Отступы &ndash; это предпочтительные расстояния между элементами и контейнерами, в которых расположены эти элементы.  Отступы обозначаются горизонтальными и вертикальными штриховыми линиями.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>Смещение</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend30.png" border=1></td>
+                <td class="tbltd1">Смещения &ndash; это предпочтительный интервал между смежными элементами.  Предлагаемые смещения обозначаются горизонтальными и вертикальными штриховыми линиями.</td>
+            </tr>
+
+            <tr>
+                <td class="tbltd1 align-center"><b>Базовая линия</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend13.png" border=1></td>
+                <td class="tbltd1">Выравнивание по базовой линии отражает предпочтительное соотношение между смежными элементами, содержащими отображаемый текст.  Базовая линия обозначается штриховой горизонтальной линией.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><p class="align-right"><b>Граница</b></p></td>
+                <td class="tbltd1 align-center">
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend12.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend14.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend32.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend33.png" border=1></p>                    
+                </td>
+                <td class="tbltd1"><br>Границы (верхняя, нижняя, левая и правая) определяют возможные соотношения по выравниванию смежных элементов.  Предлагаемые границы обозначаются штриховыми горизонтальными и вертикальными линиями.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>Сдвиг</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend31b.png" border=1>
+                </td>
+                <td class="tbltd1">Сдвиг определяет, на сколько один элемент смещен относительно другого в направлении вниз и вправо.  Предлагаемый сдвиг обозначается двумя вертикальными штриховыми линиями.</td>
+            </tr>
+			<tr>
+			<td class="tbltd1 align-center"><b>Предпочтительное расстояние</b></td>
+                <td class="tbltd1 align-center">
+                    <img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend34.png" border=1>
+                </td>
+                <td class="tbltd1">Предпочтительные расстояния (маленькое, среднее и большое) представляют собой размеры промежутков между смежными компонентами. Предпочтительные расстояния предлагаются в виде горизонтальных или вертикальных штриховых направляющих. </td>
+			</tr>
+            </table>
+            <p class="align-center"><a href="#top">В начало</a></p>
+            <a name="anchor"></a>
+            <h2>Точки привязки</h2>
+            <p>После размещения элементов в требуемых позициях отображаются индикаторы точек привязки, обозначающие установленные настройки выравнивания элементов.</p>
+            <br>
+            <table>
+            <tr>
+                <td class="tbltd1 align-center"><b>Контейнер</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend50.png" border=1></td>
+                <td class="tbltd1">Привязки, соединяющие отдельные элементы c контейнерами, внутри которых они расположены, представлены в виде небольших полукруглых индикаторов со штриховыми линиями, идущими от границы контейнера непосредственно к элементу.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>Элемент</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend51.png" border=1></td>
+                <td class="tbltd1">Привязки, соединяющие отдельные элементы со смежным элементами, представлены в виде небольших полукруглых индикаторов со штриховыми линиями, идущими от одного элемента до другого. </td>
+            </tr>
+            </table>
+            <p class="align-center"><a href="#top">В начало</a></p>
+            <a name="size"></a>
+            <h2>Установка размеров индикаторов</h2>
+            <br>
+            <table>
+           
+            <tr>
+                <td class="tbltd1 align-center"><b>Одинаковый размер</b></td>
+                <td class="tbltd1 align-center">
+				<p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend28.png" border=1></p>
+				<p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend29.png" border=1></p></td>
+                <td class="tbltd1">Если ряд элементов (не обязательно смежных) имеет одинаковую высоту или ширину, говорят, что они имеют одинаковый размер.  Эта ситуация обозначается наличием небольших прямоугольников на верхней границе каждого элемента, имеющего это свойство.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1 align-center"><b>Автоматическое изменение размера</b></td>
+                <td class="tbltd1 align-center">
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend42.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend41.png" border=1></p>
+                    <p><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend43.png" border=1></p>
+                </td>
+                <td class="tbltd1"><br> Автоматическое изменение размера &ndash; это динамическое изменение ширины или высоты элемента во время выполнения.  Автоматическое изменение размера обозначается состоянием кнопок изменения размера в горизонтальном и вертикальном направлениях (переменность ширины и высоты соответственно) на панели инструментов Конструктора GUI. Для включения функции автоматического изменения размера выберите <tt>изменять размер</tt> в списке &quot;Другие свойства&quot; окна &quot;Свойства&quot;.</td>
+            </tr>
+            </table>
+ <p class="align-center"><a href="#top">В начало</a></p>
+ <a name="highlight"></a>
+            <h2>Выделение и ручки изменения размера</h2>
+			 <table>           
+            <tr>
+                <td class="tbltd1 align-center"><b> Выделение</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend10.png" border=1></td>
+                <td class="tbltd1">Выделение оранжевым цветом обозначает место, в которое будет перемещен выбранный компонент.</td>
+            </tr>
+			<tr>
+                <td class="tbltd1 align-center"><b>Ручки изменения размера</b></td>
+                <td class="tbltd1 align-center"><img src="../../../images_www/articles/80/java/quickstart-gui-legend/legend11.png" border=1></td>
+                <td class="tbltd1"> Маленькие квадратные ручки изменения размера отображаются по периметру выбранного компонента. Для изменения размера компонента необходимо нажать ручку и, удерживая, перетащить ее в нужную позицию. </td>
+            </tr>
+			</table>
+			<p class="align-center"><a href="#top">В начало</a></p>
+        </blockquote>
+
+          
+       
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20GUI%20Builder%20Visual%20Feedback%20Legend,%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear:both;"> 
+<h2><a name="seealso"></a>См. также</h2>
+        <ul>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Реализация Java GUI</a> в документе <i>Разработка приложений в IDE NetBeans</i></li>
+			<li><a href="../../trails/matisse.html">Учебная карта по приложениям с графическим интерфейсом Java </a></li>
+			<li><a href="../../trails/java-se.html">Учебная карта по общим сведениям о разработке на Java</a></li></ul>
+    </body>
+</html>

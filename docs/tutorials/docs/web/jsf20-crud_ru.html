@@ -1,0 +1,844 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Demonstrates how the IDE can generate robust and easily maintainable code when generating JSF pages from entity classes.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Java, Java EE, open source, web technology, CRUD, JSF, tutorial, database">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+
+        <title>Создание приложения CRUD JavaServer Faces 2.x на основе базы данных - учебный курс по IDE NetBeans</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Создание приложения JavaServer Faces 2.x CRUD на основе базы данных</h1>
+
+        <p>В этом учебном курсе описывается использование NetBeans IDE для создания веб-приложения, взаимодействующего с серверной базой данных. Приложение предоставляет возможность просмотра и изменения данных, содержащихся в базе данных, другими словами &ndash; функциональные возможности <em>CRUD</em> (Create, Read, Update, Delete &ndash; создание, чтение, обновление, удаление).  Разрабатываемое приложение основывается на следующих технологиях.</p>
+
+        <ul>
+            <li><strong>JavaServer Faces (JSF) 2.x</strong> для веб-страниц внешнего интерфейса, обработки проверки и управления циклом "запрос-ответ".</li>
+
+            <li><strong>Интерфейс API сохранения состояния Java (Java Persistence API, JPA) 2.0</strong> с использованием EclipseLink для создания классов сущностей из базы данных и управления транзакциями. (EclipseLink является образцовой реализацией JPA и поставщиком сохранения состояния для сервера GlassFish по умолчанию).</li>
+
+            <li><strong>Enterprise JavaBeans (EJB) 3.1</strong> &ndash; предоставление компонентов EJB без сохранения состояния, которые имеют доступ к классам сущностей и содержат бизнес-логику для приложения.</li>
+        </ul>
+
+        <p>В среде IDE предоставляются два мастера для создания всех строк кода приложения.  Первый &ndash; <a href="#generateEntity">мастер создания классов сущностей из базы данных</a>, позволяющий создавать классы сущностей из предоставленной базы данных.  После создания классов сущностей используйте <a href="#jsfPagesEntityClasses">мастер создания страниц JSF из классов сущностей</a> для создания управляемых компонентов JSF и компонентов EJB для классов сущностей, а также набор страниц Facelets для обработки представления данных классов сущностей.  Последний раздел руководства <a href="#explore">Анализ приложения</a> является дополнительным. В него включено множество упражнений, помогающих лучше понять приложение и ознакомиться со средой IDE.</p>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+
+        <h4>Содержание</h4>
+
+        <ul class="toc">
+            <li><a href="#createDB">Создание базы данных</a></li>
+            <li><a href="#examineDB">Изучение структуры базы данных</a></li>
+            <li><a href="#createProject">Создание проекта веб-приложения</a></li>
+            <li><a href="#generateEntity">Создание классов сущностей из базы данных</a></li>
+            <li><a href="#jsfPagesEntityClasses">Создание страниц JSF из классов сущностей</a></li>
+            <li><a href="#explore">Анализ приложения</a>
+
+                <ul>
+                    <li><a href="#completedProject">Изучение выполненного проекта</a></li>
+                    <li><a href="#populateDB">Заполнение базы данных с помощью сценария SQL</a></li>
+                    <li><a href="#editorSupport">Изучение поддержки редактора на страницах Facelets</a></li>
+                    <li><a href="#dbIntegrity">Изучение целостности базы данных с проверкой поля</a></li>
+                    <li><a href="#editEntity">Правка классов сущностей</a></li>
+                </ul></li>
+
+            <li><a href="#troubleshooting">Устранение проблем</a></li>
+            <li><a href="#seeAlso">Дополнительные сведения</a></li>
+        </ul>
+
+        <p id="requiredSoftware">Для работы с этим учебным курсом требуется программное обеспечение и материалы, перечисленные ниже.</p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">7.2, 7.3, 7.4, 8.0, пакет Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://glassfish.dev.java.net/">GlassFish Server Open Source Edition 3.1.2.2</a></td>
+                    <td class="tbltd1">3.x, 4.x </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fmysql-consult.zip">mysql-consult.zip</a> (MySQL) <br><em class="margin-around" style="margin-left:6em">или</em><br> <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fjavadb-consult.zip">javadb-consult.zip</a> (JavaDB)</td>
+                    <td class="tbltd1">неприменимо</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>Примечания</strong></p>
+
+        <div class="indent">
+            <ul>
+                <li>В комплект Java EE в среде IDE NetBeans также входит сервер GlassFish - сервер, совместимый с Java EE 6, который требуется для этого учебного курса.</li>
+
+                <li>Для проекта решения в этом учебном курсе загрузите <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FConsultingAgencyJSF20.zip">ConsultingAgencyJSF20.zip</a></li>
+            </ul>
+        </div>
+
+        <br>
+        <h2 id="createDB">Создание базы данных</h2>
+
+        <p>В целях этого руководства используется база данных консультационного агентства с именем <code>consult</code>.  Эта база данных не входит в устанавливаемую среду IDE, поэтому перед изучением этого руководства необходимо создать базу данных.</p>
+
+        <p>База данных <code>consult</code> разработана для демонстрации области поддержки среды IDE для обработки различных структур баз данных.  Таким образом, эта база данных не предназначена для использования в качестве рекомендуемого примера разработки базы данных или в качестве практической рекомендации.  Тем не менее, в нее включено множество возможностей, которые потенциально требуются при разработке базы данных.  Например, база данных <code>consult</code> содержит все возможные типы отношений, составные первичные ключи и многие другие типы данных.  Подробный обзор структуры базы данных приведен в таблице ниже.</p>
+
+        <p><strong class="notes">Примечания:</strong></p>
+
+        <ul>
+            <li>В данном учебном курсе используется сервер базы данных MySQL, однако для работы с этим учебным руководством можно также использовать сервер базы данных JavaDB. Чтобы создать базу данных в JavaDB, загрузите и извлеките архив <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fjavadb-consult.zip">javadb-consult.zip</a>.  Архив содержит сценарии SQL для создания, удаления и заполнения базы данных <code>consult</code>.</li>
+
+            <li>Для получения дополнительной информации о настройке среды IDE для работы с MySQL см. учебный курс <a href="../ide/mysql.html">Подключение к базе данных MySQL</a>.</li>
+
+            <li>Дополнительные сведения о настройке среды IDE для работы с JavaDB приведены в учебном курсе <a href="../ide/java-db.html">Работа с базой данных Java DB (Derby)</a>.</li>
+        </ul>
+
+        <div class="feedback-box float-left" style="width: 678px; margin: 0 0 10px 10px">
+            <p><strong class="alert">Сочетание MySQL с GlassFish:</strong></p>
+
+            <p>При использовании сервера баз данных MySQL и вместе с ним GlassFish версии 3 или Open Source Edition версии 3.0.1 необходимо убедиться, что база данных защищена паролем.  (Дополнительную информацию можно получить в описании <a href="https://java.net/jira/browse/GLASSFISH-12221" target="_blank">Issue 12221</a> (проблема 12221) сервера GlassFish.) При использовании учетной записи MySQL <code>root</code> по умолчанию с пустым паролем с помощью командной строки можно установить другой пароль. <br><br> К примеру, чтобы установить пароль к <code><em>nbuser</em></code>, необходимо в командную строку ввести следующие команды.</p>
+
+            <pre class="examplecode" style="width: 658px;">
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('<em>nbuser</em>') WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+
+            <p>Если в ответ получена ошибка &quot;<code>mysql: command not found</code>&quot; (mysql: не найдена команда), это означает, что команда <code>mysql</code> не была добавлена в переменную среды <code>PATH</code>. Вместо этого команду можно вызвать, выбрав полный путь к установочному каталогу MySQL <code>bin</code>. Например, если команда <code>mysql</code> находится на компьютере по пути <code>/usr/local/mysql/bin</code>, выберите следующее:</p>
+
+            <pre class="examplecode" style="width: 658px;">shell> /usr/local/mysql/bin/mysql -u root</pre>
+
+            <p>Дополнительные сведения приведены в официальном справочном руководстве по MySQL:</p>
+
+            <ul>
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html" target="_blank">Обеспечение защиты начальных счетов MySQL </a></li>
+
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/invoking-programs.html" target="_blank">4.2.1. Invoking MySQL Programs (&quot;Вызов программ MySQL&quot;)</a></li>
+
+                <li><a href="http://dev.mysql.com/doc/refman/5.1/en/setting-environment-variables.html" target="_blank">4.2.4. Setting Environment Variables (&quot;Настройка переменных среды&quot;)</a></li>
+            </ul>
+
+        </div>
+        <br style="clear: both;"/>
+
+        <br>
+        <p>Для создания базы данных и подключения к ней из среды IDE выполните следующие действия.</p>
+
+        <ol style="margin-top:0">
+            <li>Загрузите <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fmysql-consult.zip">mysql-consult.zip</a> и извлеките архив в локальную систему.  В результате извлечения архива появятся сценарии SQL для создания и заполнения базы данных.  Архив также содержит сценарии для перетаскивания таблиц.</li>
+
+            <li>В окне 'Службы' разверните узел Databases, щелкните правой кнопкой мыши узел MySQL и выберите 'Запустить сервер'.</li>
+
+            <li>Щелкните правой кнопкой мыши узел &quot;MySQL Server&quot; и выберите &quot;Create Database&quot;.</li>
+
+            <li>В диалоговом окне &quot;Создание базы данных MySQL&quot; введите <strong>consult</strong> в поле &quot;Имя базы данных&quot;.  Нажмите кнопку &quot;ОК&quot;. Под узлом &quot;Базы данных&quot; появится новый узел (<code>jdbc:mysql://localhost:3306/consult [корень в схеме по умолчанию]</code>).</li>
+
+            <li>Правой кнопкой мыши щелкните новый узел и выберите &quot;Подключить&quot;.</li>
+
+            <li>В основном меню выберите &quot;Файл &gt; Открыть файл&quot; и перейдите к извлеченному файлу <code>mysql_create_.sql</code>.  Нажмите кнопку Open (&quot;Открыть&quot;). Файл автоматически откроется в редакторе SQL. <br> <img alt="Снимок редактора SQL" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-script.png" title="Откройте файлы SQL в редакторе IDE"></li>
+
+            <li>Убедитесь, что база данных <code>consult</code> выбрана в раскрывающемся списке &quot;Соединение&quot; на панели инструментов редактора SQL, затем нажмите кнопку 'Выполнить SQL' ( <img alt="Кнопка &quot;Выполнить SQL&quot;" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-btn.png"> ).
+
+                <p>После нажатия кнопки &quot;Запустить SQL&quot; в окне вывода появятся следующие выходные данные.</p>
+
+                <img alt="Cнимок окна вывода" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-output.png" title="Окно вывода, в котором указываются сведения о выполнении SQL"></li>
+        </ol>
+
+
+        <br>
+        <h2 id="examineDB">Изучение структуры базы данных</h2>
+
+        <p>Чтобы убедиться в том, что таблицы созданы правильно, разверните узел "Таблицы" под узлом подключения к базе данных. В развернутом узле таблицы можно посмотреть столбцы, индексы и внешние ключи.  Для просмотра дополнительных сведений о столбце щелкните правой кнопкой мыши и выберите 'Свойства'.</p>
+
+        <div class="indent">
+            <img alt="Снимок окна &apos;Службы&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/services-window-tables.png" title="В окне &apos;Службы&apos; отображаются подключения к базам данных, таблицы, столбцы таблиц, индексы и внешние ключи">
+        </div>
+
+        <p class="notes"><strong>Примечание.</strong> Если таблицы не отображаются в узле 'Таблицы', щелкните правой кнопкой мыши узел 'Таблицы' и выберите 'Обновить'.</p>
+
+        <p>Анализ структуры базы данных <code>consult</code> позволяет установить, что база данных содержит таблицы с множеством отношений и различными типами полей.   При создании классов сущностей в базе данных в среде IDE автоматически создается соответствующий код для различных типов полей.</p>
+
+        <img alt="Диаграмма связей сущностей базы данных consult" class="margin-around b-all" id="er-diagram" src="../../../images_www/articles/72/web/jsf20-crud/diagram_consult.png" title="Диаграмма связей сущностей базы данных consult">
+
+        <p>В следующей таблице представлено описание таблиц, обнаруженных в базе данных <code>consult</code>.</p>
+
+        <table class="indent" style="width: 744px">
+            <tr>
+                <th class="tblheader" scope="col">Таблица базы данных</th>
+                <th class="tblheader" scope="col">Описание</th>
+                <th class="tblheader" scope="col">Функции разработки</th>
+            </tr>
+            <tr>
+                <td class="tbltd1">CLIENT</td>
+                <td class="tbltd0">Клиент консультационного агентства</td>
+                <td class="tbltd0">Несгенерированный составной первичный ключ (поля которого не являются частью внешнего ключа)</td>
+
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT</td>
+                <td class="tbltd0">Сотрудник консультационного агентства, которого могут нанять клиенты на контрактной основе.</td>
+                <td class="tbltd0">Включает в себя поле резюме типа LONG VARCHAR.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT_STATUS</td>
+                <td class="tbltd0">Состояние консультанта в консультационном агентстве (пример возможных состояний: &quot;Активно&quot; и &quot;Неактивно&quot;).</td>
+                <td class="tbltd0">Несгенерированный первичный ключ типа CHAR.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">RECRUITER</td>
+                <td class="tbltd0">Сотрудник консультационного агентства, ответственный за установление связи между клиентами и консультантами.</td>
+                <td class="tbltd0">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">PROJECT</td>
+                <td class="tbltd0">Проект, под который клиент укомплектовывает штат консультантами консультационного агентства.</td>
+                <td class="tbltd0">Несгенерированный составной первичный ключ, который содержит два поля, составляющие внешний ключ для таблицы CLIENT.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">BILLABLE</td>
+                <td class="tbltd0">Количество часов, отработанных консультантом над проектом, которые консультационное агентство выставляет в счете на оплату соответствующему клиенту.</td>
+                <td class="tbltd0">Включает в себя поле артефакта типа CLOB.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">ADDRESS</td>
+                <td class="tbltd0">Адрес для выставления счета клиенту.</td>
+                <td class="tbltd0">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">PROJECT_CONSULTANT</td>
+                <td class="tbltd0">Таблица перекрестных ссылок, определяющая текущие присвоения консультантов проектам.</td>
+                <td class="tbltd0">Перекрестные ссылки PROJECT и CONSULTANT, при этом последней соответствует составной первичный ключ.</td>
+            </tr>
+        </table>
+
+        <br>
+        <p>База данных <code>consult</code> имеет множество отношений.  При создании классов сущностей из базы данных в среде IDE автоматически создаются свойства соответствующего типа Java на основе типа SQL столбцов.  Следующая таблица описывает отношения сущностей для базы данных <code>consult</code> (обратные отношения не отображаются).</p>
+
+        <table id="relationships" class="indent" style="width: 744px">
+            <tr>
+                <th class="tblheader" scope="col">Сущность</th>
+                <th class="tblheader" scope="col">Связанная сущность</th>
+                <th class="tblheader" scope="col">Информация об отношениях</th>
+                <th class="tblheader" scope="col">Описание</th>
+            </tr>
+            <tr>
+                <td class="tbltd1">CLIENT</td>
+                <td class="tbltd0">RECRUITER</td>
+                <td class="tbltd0">нулевое, &quot;один к одному&quot;, с правкой вручную; нулевое, &quot;один ко многим&quot;, если без правки.</td>
+                <td class="tbltd0">CLIENT соответствует несколько RECRUITER, а RECRUITER соответствует нуль или один CLIENT (если без правки вручную).</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CLIENT</td>
+                <td class="tbltd0">ADDRESS</td>
+                <td class="tbltd0">ненулевое, &quot;один к одному&quot;.</td>
+                <td class="tbltd0">CLIENT соответствует один ADDRESS, а ADDRESS соответствует нуль или один CLIENT.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CLIENT</td>
+                <td class="tbltd0">PROJECT</td>
+                <td class="tbltd0">ненулевое, &quot;один ко многим&quot;; в сущности &quot;Проект&quot; значение поля клиента является частью первичного ключа проекта.</td>
+                <td class="tbltd0">CLIENT соответствует несколько PROJECT, а PROJECT соответствует один CLIENT.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT</td>
+                <td class="tbltd0">PROJECT</td>
+                <td class="tbltd0">&quot;многие ко многим&quot;.</td>
+                <td class="tbltd0">CONSULTANT соответствует несколько PROJECT, а PROJECT соответствует несколько CONSULTANT.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT</td>
+                <td class="tbltd0">BILLABLE</td>
+                <td class="tbltd0">ненулевое, &quot;один ко многим&quot;.</td>
+                <td class="tbltd0">CONSULTANT соответствует несколько BILLABLE, а BILLABLE соответствует один CONSULTANT.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT_STATUS</td>
+                <td class="tbltd0">CONSULTANT</td>
+                <td class="tbltd0">ненулевое, &quot;один ко многим&quot;.</td>
+                <td class="tbltd0">CONSULTANT_STATUS соответствует несколько CONSULTANT, а CONSULTANT соответствует один CONSULTANT_STATUS.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">CONSULTANT</td>
+                <td class="tbltd0">RECRUITER</td>
+                <td class="tbltd0">нулевое, &quot;один ко многим&quot;.</td>
+                <td class="tbltd0">CONSULTANT соответствует нуль или одного RECRUITER, а RECRUITER соответствует несколько CONSULTANT.</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">BILLABLE</td>
+                <td class="tbltd0">PROJECT</td>
+                <td class="tbltd0">ненулевое, &quot;один ко многим&quot;.</td>
+                <td class="tbltd0">BILLABLE соответствует один PROJECT, а PROJECT соответствует несколько BILLABLE.</td>
+            </tr>
+        </table>
+
+        <p>Теперь, после создания базы данных, можно создать веб-приложение и использовать мастер создания классов сущностей из базы данных для создания классов сущностей на основе таблиц баз данных.</p>
+
+
+        <h2 id="createProject">Создание проекта веб-приложения</h2>
+
+        <p>В этом упражнении будет создан веб-проект и добавлена платформа JavaServer Faces к проекту.  При создании проекта выбираем JavaServer Faces на панели &quot;Платформы&quot; мастера создания проекта.</p>
+
+        <ol>
+            <li>Выберите &quot;Файл &gt; Новый проект&quot; (CTRL+SHIFT+N; &amp;#8984+SHIFT+N в Mac ОС) в главном меню.</li>
+
+            <li>Выберите &quot;Веб-приложение&quot; в категории &quot;Java Web&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <code>ConsultingAgency</code> в качестве имени проекта и укажите местоположение проекта.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Укажите GlassFish в качестве сервера и Java 6 Web или  Java EE 7 Web в качестве версии Java EE. Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>На панели &quot;Платформы&quot; выберите параметр JavaServer Faces.  Нажмите кнопку &quot;Завершить&quot;.</li>
+
+        </ol>
+        <p>При нажатии кнопки &quot;Готово&quot; в среде IDE будет создан проект веб-приложения и открыт <code>index.xhtml</code> в редакторе.</p>
+
+
+        <h2 id="generateEntity">Создание классов сущностей из базы данных</h2>
+
+        <p>После подключения к базе данных в среде IDE можно использовать мастер создания классов сущностей из базы данных для быстрого создания классов сущностей на основе таблиц в базе данных.  В среде IDE можно создавать классы сущностей для каждой выбранной таблицы, а также создавать любые классы сущностей для соответствующих таблиц.</p>
+
+        <ol>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта <code>ConsultingAgency</code> и выберите 'Создать' > 'Классы сущностей' в базе данных. Если данная команда отсутствует, выберите пункт &quot;Прочие&quot;. После этого в мастере создания файла выберите категорию &quot;Сохранение состояния&quot;, а затем - пункт &quot;Классы сущностей из базы данных&quot;.</li>
+
+            <li>Для открытия диалогового окна &quot;Создание источника данных&quot; в раскрывающемся списке &quot;Источник данных&quot; выберите &quot;Новый источник данных&quot;.</li>
+
+            <li>В поле "Имя JNDI" введите <code>jdbc/consult</code> и выберите подключение <code>jdbc:mysql://localhost:3306/consult</code> в списке "Подключение к базе данных". <br> <img alt="Диалоговое окно &apos;Создать источник данных&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/create-datasource.png" title="Укажите имя JNDI и соединение с базой данных для создания источника данных"></li>
+
+            <li>Нажмите кнопку &quot;ОК&quot; для закрытия диалогового окна и возврата в мастер. Таблицы базы данных <code>consult</code> выводятся в окне списка &quot;Доступные таблицы&quot;.</li>
+
+            <li>Для выбора всех таблиц, имеющихся в базе данных, нажмите кнопку &quot;Добавить все&quot;.  Нажмите кнопку &quot;Далее&quot;. <br> <img alt="Новые сущности из мастера баз данных" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/new-entities-wizard.png"></li>
+
+            <li>Введите <code>jpa.entities</code> в качестве имени пакета.  </li>
+
+            <li>Убедитесь, что установлены оба флажка — и создания именованных запросов, и создания блоков сохранения состояния. Нажмите кнопку &quot;Завершить&quot;.</li>
+        </ol>
+        
+        <p>При нажатии кнопки &quot;Готово&quot; среда IDE создает классы сущностей в пакете проекта <code>jpa.entities</code>.</p>
+
+        <p>При использовании мастера создания классов сущностей из базы данных в среде IDE проверяются отношения между таблицами базы данных.  В окне 'Проекты' при развертывании узла проекта <code>jpa.entities</code> можно увидеть, что в IDE создан класс сущности для всех таблиц, кроме таблицы <code>PROJECT_CONSULTANT</code>. В среде IDE класс сущностей для таблицы <code>PROJECT_CONSULTANT</code> не создан, так как она является таблицей перекрестных ссылок.</p>
+
+        <div class="indent">
+            <img alt="снимок окна &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/projects-window-entities.png" title="снимок окна &apos;Проекты&apos;, в котором отображаются созданные классы сущностей">
+        </div>
+
+        <p>В среде IDE также создано два дополнительных класса для таблиц с составными первичными ключами: <code>CLIENT</code> и <code>PROJECT</code>.  К именам классов первичных ключей для этих таблиц (<code>ClientPK.java</code> и <code>ProjectPK.java</code>) добавлено <code>PK</code>.</p>
+
+        <p>При просмотре созданного кода для классов сущностей можно отметить, что мастером добавлены аннотации <code>@GeneratedValue</code> к автоматически созданным полям ID и аннотации <code>@Basic(optional = &quot;false&quot;)</code> к полям в классах сущностей.  На основе аннотаций <code>@Basic(optional = &quot;false&quot;)</code> мастер создания страниц JSF из классов сущностей способен создавать код с блоками проверок для предотвращения нарушений в ненулевых столбцах для этих полей.</p>
+
+
+        <br>
+        <h2 id="jsfPagesEntityClasses">Создание страниц JSF из классов сущностей</h2>
+
+        <p>Теперь, после создания классов сущностей, можно создать веб-интерфейс для отображения и изменения данных.  Для создания страниц JavaServer Faces используется страницы JSF мастера создания классов сущностей.  Код, созданный мастером, основан на аннотациях сохранения состояния, содержащихся в классах сущностей.</p>
+
+        <p>Для каждого класса сущностей мастер создает следующие файлы.</p>
+
+        <ul>
+            <li>сеансный компонент без сохранения состояния, расширяющий <tt>AbstractFacade.java</tt></li>
+
+            <li>управляемый компонент JSF в контексте сеанса;</li>
+
+            <li>каталог, содержащий четыре файла Facelets возможностей CRUD (<code>Create.xhtml</code>, <code>Edit.xhtml</code>, <code>List.xhtml</code> и <code>View.xhtml</code>);</li>
+        </ul>
+        <p>Мастер также создает следующие файлы.</p>
+        <ul>
+            <li>класс <tt>AbstractFacade.java</tt>, содержащий бизнес-логику для создания, извлечения, изменения и удаления экземпляров сущностей</li>
+            <li>служебные классы, используемые управляемыми компонентами JSF (<code>JsfUtil</code>, <code>PaginationHelper</code>);</li>
+
+            <li>набор свойств для локализованных сообщений и соответствующая запись в файле настройки Faces проекта (создается файл <code>faces-config.xml</code>, если он на данный момент отсутствует);</li>
+
+            <li>вспомогательные веб-файлы, включая стандартную таблицу стилей для отображения компонентов и файл шаблона Facelets.</li>
+        </ul>
+
+        <p>Чтобы создать страницу JSF, выполните следующие действия:</p>
+
+        <ol>
+            <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта и выберите 'Создать' > 'Страницы JSF' в 'Классы сущностей', чтобы открыть мастер. Если данная команда отсутствует, выберите пункт &quot;Прочие&quot;. После этого в мастере создания файла выберите категорию &quot;JavaServer Faces&quot;, затем &quot;Страницы JSF из классов сущностей&quot;.)
+
+                <p>
+                В окне &quot;Доступные классы сущностей&quot; выводится список из семи классов сущностей, имеющихся в этом проекте. В окне не выводятся встраиваемые классы (<code>ClientPK.java</code> и <code>ProjectPK.java</code>).</p></li>
+
+            <li>Нажмите кнопку &quot;Добавить все&quot; для переноса всех классов в окно &quot;Выбранные классы сущностей&quot;. <br> <img alt="Мастер создания страниц JSF из классов сущностей" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/newjsf-wizard.png" title="В мастере создания страниц JSF из классов сущностей отображаются все классы сущностей, содержащиеся в проекте"> <br> Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>На третьем экране мастера &quot;Создание страниц JSF и классов&quot; в поле &quot;Пакет сеансного компонента JPA&quot; введите <code>jpa.session</code>.</li>
+
+            <li>В поле &quot;Пакет классов JSF&quot; введите <code>jsf</code>.</li>
+
+            <li>В поле &quot;Имя набора локализаций&quot; введите &quot;<code>/resources/Bundle</code>&quot;.  Будет создан пакет с именем <code>resources</code>, в который входит файл <code>Bundle.properties</code>.  (Если поле оставить пустым, набор свойств будет создан в пакете проекта по умолчанию.) <br> <img alt="Мастер создания страниц JSF из классов сущностей. Шаг 3" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/newjsf-wizard2.png" title="Укажите имена пакетов и папок для созданных файлов">
+
+                <p class="tips">Для оптимизации правил проекта в среде IDE настройте файлы, созданные в мастере.  Для изменения шаблонов, используемых в мастере, щелкните ссылку &quot;Настройка шаблона&quot;. <br> <img alt="Раскрывающийся список &apos;Настройка шаблонов&apos;" class="margin-around" src="../../../images_www/articles/72/web/jsf20-crud/customize-template.png" title="Настройка шаблонов для файлов, созданных мастером"> <br> В целом, для вызова и изменения всех шаблонов, поддерживаемых в среде IDE, используйте диспетчер шаблонов (&quot;Сервис&quot; &gt; &quot;Шаблоны&quot;).</p></li>
+
+            <li>Нажмите кнопку &quot;Завершить&quot;. В среде IDE создаются сеансные компоненты без сохранения состояния в пакете <code>jpa.session</code> и управляемые компоненты JSF в контексте сеанса в пакете <code>jsf</code>.  Каждый сеансный компонент без сохранения состояния обрабатывает операции для соответствующего класса сущностей, включая создание, правку и удаление экземпляров класса сущностей, с помощью интерфейса Java Persistence API.  Каждый управляемый компонент JSF реализует интерфейс <code>javax.faces.convert.Converter</code> и играет роль экземпляров преобразования соответствующего класса сущностей в объекты <code>String</code> и наоборот.</li>
+        </ol>
+
+        <p>При развертывании узла &quot;Веб-страницы&quot; можно отметить, что в среде IDE была создана папка для каждого класса сущностей.  Каждая папка содержит файлы <code>Create.xhtml</code>, <code>Edit.xhtml</code>, <code>List.xhtml</code> и <code>View.xhtml</code>.  В среде IDE также изменен файл <code>index.xhtml</code> посредством вставки ссылок на каждую из страниц <code>List.xhtml</code>.</p>
+
+        <div class="indent">
+            <img alt="снимок каталога веб-страниц в окне &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/projects-jsfpages.png" title="Страницы Facelets для всех классов сущностей создаются мастером">
+        </div>
+
+        <p>Каждый управляемый компонент JSF относится к четырем соответствующим файлам Facelets и содержит код, вызывающий методы в соответствующем сеансном компоненте.</p>
+
+        <p>Разверните узел папки <code>resources</code> для поиска таблицы стилей по умолчанию <code>jsfcrud.css</code>, созданной в мастере.  При открытии страницы приветствия приложения (<code>index.xhtml</code>) или файла шаблона Facelets (<code>template.xhtml</code>) в редакторе отобразится ссылка на таблицу стилей.</p>
+
+        <div class="indent">
+            <pre class="examplecode">&lt;h:outputStylesheet name=&quot;css/jsfcrud.css&quot;/&gt;</pre>
+        </div>
+
+        <p>Файл шаблона Facelets используется в каждом из четырех файлов Facelets для каждого класса сущностей.</p>
+
+        <p>При развертывании узла &quot;Пакеты с исходными файлами&quot; отображаются сеансные компоненты, управляемые компоненты JSF, служебные классы и набор свойств, созданные мастером.</p>
+
+        <div class="indent">
+            <img alt="снимок каталога &apos;Исходные пакеты&apos; в окне &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/projects-generated-classes70.png" title="снимок каталога &apos;Исходные пакеты&apos; в окне &apos;Проекты&apos;, в котором отображаются созданные мастером классы сущностей">
+        </div>
+
+        <p>Также мастером был создан файл настройки Faces (<code>faces-config.xml</code>) для регистрации местоположения набора свойств.  При развертывании узла &quot;Файлы настройки&quot; и открытии <code>faces-config.xml</code> в редакторе XML отобразится следующая запись.</p>
+
+        <div class="indent">
+            <pre class="examplecode">&lt;application&gt;
+    &lt;resource-bundle&gt;
+        &lt;base-name&gt;/resources/Bundle&lt;/base-name&gt;
+        &lt;var&gt;bundle&lt;/var&gt;
+    &lt;/resource-bundle&gt;
+&lt;/application&gt;</pre>
+        </div>
+
+        <p>Кроме того, при развертывании нового пакета <code>resources</code> отображается файл <code>Bundle.properties</code>, содержащий сообщения для языка клиента по умолчанию.  Сообщения произведены из свойств класса сущностей.</p>
+
+        <p class="tips">Для добавления нового комплекта свойств щелкните правой кнопкой файл <code>Bundle.properties</code> и выберите 'Настройка'. В диалоговом окне &quot;Средство настройки&quot; можно добавить к приложению новые локали.</p>
+
+
+        <br>
+        <h2 id="explore">Анализ приложения</h2>
+
+        <p>Теперь, при наличии в проекте классов сущностей, сеансных компонентов EJB для управления классами сущностей и внешнего интерфейса на основе JSF для отображения и изменения базы данных, попробуйте выполнить проект и посмотрите результаты.</p>
+
+        <p>Ниже приведены несколько коротких дополнительных упражнений, которые помогут лучше узнать приложение, а также возможности и функции среды IDE.</p>
+
+        <ul>
+            <li><a href="#completedProject">Изучение выполненного проекта</a></li>
+            <li><a href="#populateDB">Заполнение базы данных с помощью сценария SQL</a></li>
+            <li><a href="#editorSupport">Изучение поддержки редактора на страницах Facelets</a></li>
+            <li><a href="#dbIntegrity">Изучение целостности базы данных с проверкой поля</a></li>
+            <li><a href="#editEntity">Правка классов сущностей</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="completedProject">Изучение выполненного проекта</h3>
+
+            <ol>
+                <li>Для запуска проекта щелкните правой кнопкой мыши узел проекта в окне 'Проекты' и выберите 'Запустить' или нажмите кнопку 'Запустить проект' ( <img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) на главной панели инструментов.
+
+                    <p>
+                    При отображении страницы приветствия приложения выводится список ссылок, позволяющих просмотреть записи, которые включены в каждую таблицу базы данных.
+                    </p>
+                    <img alt="Страница приветствия ConsultingAgency в браузере" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/welcome-page-links.png" title="Ссылки для отображения содержимого баз данных для всех таблиц">
+
+                    <p>
+                    После завершения выполнения всех шагов мастера создания страниц JSF из классов сущностей ссылки добавлены на страницу приветствия (<code>index.xhtml</code>). Они представлены в качестве точек входа на страницы Facelets, обеспечивающие функциональность CRUD в базе данных &quot;Консультационное агентство&quot;.</p>
+
+                    <pre class="examplecode">
+&lt;h:body&gt;
+    Hello from Facelets
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/address/List&quot; value=&quot;Show All Address Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/billable/List&quot; value=&quot;Show All Billable Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/client/List&quot; value=&quot;Show All Client Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/consultant/List&quot; value=&quot;Show All Consultant Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/consultantStatus/List&quot; value=&quot;Show All ConsultantStatus Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/project/List&quot; value=&quot;Show All Project Items&quot;/&gt;
+    &lt;/h:form&gt;
+    &lt;h:form&gt;
+        &lt;h:commandLink action=&quot;/recruiter/List&quot; value=&quot;Show All Recruiter Items&quot;/&gt;
+    &lt;/h:form&gt;
+&lt;/h:body&gt;</pre></li>
+
+                <li>Щелкните ссылку &quot;<code>Показать все элементы консультантов</code>&quot;.  При анализе приведенного выше кода можно отметить, что целевая страница &ndash; <code>/consultant/List.xhtml</code>.  (В JSF 2.x расширение файла является предполагаемым из-за неявного перехода.) <br> <img alt="Страница &apos;Consultants&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/empty-consultants-list.png" title="Таблица &apos;Consultants&apos; в настоящее вермя пуста"> <br> Текущая база данных не содержит данные примера. Данные можно добавить вручную посредством нажатия ссылки &quot;<code>Create New Consultant</code>&quot; и использования предоставленной веб-формы.  При этом инициируется отображение страницы <code>/consultant/Create.xhtml</code>.  Для заполнения таблиц данными примера также можно выполнить сценарий SQL в среде IDE.  В следующих подразделах рассматриваются оба эти варианта.</li>
+            </ol>
+
+            <p>Для возврата к списку ссылок на странице приветствия щелкните индексную ссылку.  По ссылкам открывается представление данных, хранящихся в каждой таблице базы данных, и инициируется файл <code>List.xhtml</code> для каждой отображаемой папки сущностей.  Как будет показано ниже, после внесения данных в таблицу появятся другие ссылки для каждой записи, с помощью которых можно просматривать (<code>View.xhtml</code>), править (<code>Edit.xhmtl</code>) и удалять данные отдельной записи таблицы.</p>
+            
+            <p class="notes"><strong>Примечание.</strong> Если при развертывании приложения произойдет ошибка, см. раздел <a href="#troubleshooting">устранение неполадок</a>. (См. также статью об устранении неполадок в разделе <a href="mysql-webapp.html#troubleshoot">Создание простого веб-приложения с помощью базы данных MySQL</a>.)</p>
+
+
+            <h3 id="populateDB">Заполнение базы данных с помощью сценария SQL</h3>
+
+            <p>Запустите предоставленный сценарий, создающий данные примера для таблиц базы данных.  Сценарий (<code>mysql_insert_data_consult.sql</code>) включен в файл ZIP &quot;База данных консультационного агентства&quot;, который можно загрузить из <a href="#requiredSoftware">таблицы требуемого программного обеспечения</a>.</p>
+
+            <p>В зависимости от сервера базы данных, с которым вы работаете (MySQL или JavaDB), можно выполнить запуск предоставленного сценария, создающего данные примера для таблиц базы данных.  Для MySQL таким сценарием является <code>mysql_insert_data_consult.sql</code>.  Для JavaDB таким сценарием является <code>javadb_insert_data_consult.sql</code>.  Оба сценария включены в соответствующие архивы, которые можно загрузить из <a href="#requiredSoftware">таблицы требуемого программного обеспечения</a>.</p>
+
+            <ol>
+                <li>Выберите в основном меню &quot;Файл&quot; &gt; &quot;Открыть файл&quot;, затем перейдите к папке сценария на компьютере.  Нажмите кнопку Open (&quot;Открыть&quot;). Файл автоматически открывается в редакторе SQL среды IDE.</li>
+
+                <li>Убедитесь, что база данных <code>consult</code> выбрана в раскрывающемся списке &quot;Соединение&quot; на панели инструментов редактора SQL. <br> <img alt="снимок редактора SQL и сценария вставки данных" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-insert.png" title="Откройте сценарий в редакторе SQL в IDE">
+
+                    <p>
+                    Щелкните правой кнопкой мыши в редакторе и выберите 'Запустить оператор' или нажмите кнопку 'Запустить SQL' ( <img alt="Кнопка &quot;Выполнить SQL&quot;" src="../../../images_www/articles/72/web/jsf20-crud/run-sql-btn.png"> ). Результаты выполнения сценария отображаются в окне вывода.</p></li>
+
+                <li>Перезапустите сервер приложений GlassFish.  Это необходимо для перезагрузки и кэширования новых данных при помощи сервера, содержащихся в базе данных <code>consult</code>.  Чтобы это сделать, перейдите на вкладку 'Сервер GlassFish' в окне вывода (на вкладке 'Сервер GlassFish' отображается журнал сервера). Затем нажмите кнопку 'Перезапустить сервер' в левом поле ( <img alt="Кнопка &apos;Перезапустить сервер&apos;" src="../../../images_www/articles/72/web/jsf20-crud/glassfish-restart.png"> ). Сервер остановится, затем перезапустится.</li>
+
+                <li>Выполните проект еще раз и щелкните ссылку &quot;<code>Показать все элементы консультантов</code>&quot;.  Теперь можно заметить, что список больше не пуст. <br> <a href="../../../images_www/articles/72/web/jsf20-crud/consultants-list.png" id="consultantsList" rel="lytebox" title="На странице Facelets отображаются записи, содержащиеся в таблице &apos;Consultants&apos;"> <img alt="На странице &apos;Consultants&apos; отображаются записи таблицы" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/consultants-list-small.png"></a>
+
+                <div class="feedback-box float-left" style="width: 683px;">
+
+                    <h3>Поддержка баз данных NetBeans</h3>
+
+                    <p>Можно использовать средство просмотра для таблиц базы данных в среде IDE, чтобы отображать и изменять данные таблиц, управляемые непосредственно в базе данных.  Например, щелкните правой кнопкой мыши таблицу <code>consultant</code> в окне 'Службы' и выберите 'Просмотреть данные'.</p>
+
+                    <img alt="Окно &apos;Службы&apos; - щелкните правой кнопкой мыши меню таблицы баз данных" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/view-data.png" title="В контекстном меню таблиц баз данных выберите &apos;Просмотреть данные&apos;">
+
+                    <p>Запрос SQL, который используется для выполнения действий, отображается в верхней части редактора, а графическое представление таблицы помещено ниже.</p>
+
+                    <a href="../../../images_www/articles/72/web/jsf20-crud/view-data-table.png" rel="lytebox" title="Используйте графическое представление таблиц базы данных для просмотра и изменения данных таблицы"> <img alt="В редакторе SQL отображаются данные базы данных" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/view-data-table-small.png"></a>
+
+                    <p>Дважды щелкните ячейки таблицы для выполнения внутристрочных изменений данных.  Щелкните значок 'Фиксировать записи' ( <img alt="значок &apos;Фиксировать записи&apos;" src="../../../images_www/articles/72/web/jsf20-crud/commit-records-icon.png"> ) для фиксации изменений базы данных.</p>
+
+                        <p>
+                        Графическое представление обеспечивает большую функциональность.  Дополнительные сведения см. в разделе <a href="../../docs/ide/database-improvements-screencast.html">Поддержка баз данных в IDE NetBeans</a>.</p>
+                </div>
+                <br style="clear: both;"/></li>
+            </ol>
+
+
+            <h3 id="editorSupport">Изучение поддержки редактора на страницах Facelets</h3>
+
+            <ol>
+                <li>Откройте страницу <code>/consultant/List.xhtml</code> в редакторе.  В строке 8 указывается, что визуализация страницы зависит от файла <code>template.xhtml</code> Facelets.
+
+                    <pre class="examplecode">&lt;ui:composition template=&quot;/template.xhtml&quot;&gt;</pre>
+
+                    <p class="tips">Чтобы отобразить номера строк, щелкните правой кнопкой мыши на левой границе редактора и выберите 'Показать номера строк'.</p></li>
+
+                <li>С помощью диалогового окна &quot;Переход к файлу&quot; в среде IDE откройте файл <code>template.xhtml</code>.  Нажмите сочетание клавиш ALT+SCHIFT+O (CTRL+SHIFT+O в Mac), затем введите <code>template</code>. <br> <img alt="Диалоговое окно &apos;Перейти к файлу&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/go-to-file.png" title="С помощью диалогового окна &amp;quot;Переход к файлу&amp;quot; быстро откройте файлы проекта">
+
+                    <p>Нажмите кнопку &quot;ОК&quot; (или нажмите ENTER).</p></li>
+
+                <li>В шаблоне применяются теги <code>&lt;ui:insert&gt;</code> для вставки содержимого из других файлов в заголовок и тело.  Установите курсор на тег <code>&lt;ui:insert&gt;</code>, затем нажмите сочетание клавиш CTRL+ПРОБЕЛ для вызова всплывающего окна документации. <br> <img alt="Всплывающее окно документации отображается в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/doc-popup.png" title="Нажмите сочетание клавиш CTRL+ПРОБЕЛ для вызова всплывающего окна документации в тегах Facelets">
+
+                    <p>Для вызова всплывающего окна документации можно нажать сочетание клавиш CTRL+ПРОБЕЛ, установив курсор на тегах JSF и соответствующих атрибутах.  Отображаемая документация взята из описаний, предоставленных в официальной <a href="http://javaserverfaces.java.net/nonav/docs/2.1/vdldocs/facelets/index.html">Документации о библиотеке тегов JSF</a>.</p></li>
+
+                <li>Вернитесь к файлу <code>List.xhtml</code> (нажмите CTRL+TAB).  Теги <code>&lt;ui:define&gt;</code> используются для определения содержимого, которое применяется в заголовке и теле шаблона.  Этот шаблон используется для всех четырех файлов Facelets (<code>Create.xhtml</code>, <code>Edit.xhtml</code>, <code>List.xhtml</code> и <code>View.xhtml</code>), созданных для каждого класса сущностей.</li>
+
+                <li>Установите курсор на одном из выражений на языке выражений, используемых для локализованных сообщений, содержащихся в файле <code>Bundle.properties</code>.  Для просмотра локализованного сообщения нажмите сочетание клавиш CTRL+ПРОБЕЛ. <br> <a href="../../../images_www/articles/72/web/jsf20-crud/localized-messages.png" rel="lytebox" title="Просмотрите локализованные сообщения с помощью поддержки автозавершения кода редактора"> <img alt="Всплывающее окно автозавершения кода сообщений от набора свойств" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/localized-messages-small.png"></a>
+
+                    <p>На приведенном выше изображении можно заметить, что выражение на языке выражений разрешено в списке &quot;<code>List</code>&quot;, который применяется для заголовка шаблона и проверяется из отображаемой в браузере страницы.</p></li>
+
+                <li>Выполните прокрутку до конца файла и найдите код для ссылки <code>Create New Consultant</code> (строка 92).  Это выглядит следующим образом:
+
+                    <pre class="examplecode">
+&lt;h:commandLink action=&quot;#{consultantController.prepareCreate}&quot; value=&quot;#{bundle.ListConsultantCreateLink}&quot;/&gt;</pre></li>
+
+                <li>Для вызова всплывающего окна документации нажмите сочетание клавиш CTRL+ПРОБЕЛ на атрибуте <code>action</code> для <code>commandLink</code>. <br><br> Атрибут <code>action</code> указывает на метод, обрабатывающий запрос при щелчке ссылки в браузере.  Предоставлена следующая документация: <br><br>
+                    <div class="indent" style="width:680px">
+                        <em>Компонент MethodExpression определяет вызываемую операцию приложения при его активации пользователем.  Выражение должно определять общедоступный метод, который не принимает параметры и возвращает объект (метод toString() которого вызывается для получения логического результата), передаваемый в NavigationHandler для этого приложения.</em></div>
+
+                    <br> Другими словами, значение <code>action</code> обычно относится к методу в управляемом компоненте JSF, который имеет значение <code>String</code>.  Затем строка используется в <code>NavigationHandler</code> JSF для передачи запроса в соответствующее представление.  Проверка этого осуществляется при выполнении следующих действий.</li>
+
+                <li>Установите курсор на <code>consultantController</code> и нажмите сочетание клавиш CTRL+ПРОБЕЛ. Функция автозавершения кода в редакторе указывает на то, что <code>consultantController</code> является управляемым компонентом JSF. <br> <img alt="Автозавершение кода вызвано в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/code-completion-managed-bean.png" title="Автозавершение кода обеспечено для управляемых компонентов JSF"></li>
+
+                <li>Переместите курсор на <code>prepareCreate</code> и нажмите сочетание клавиш CTRL+ПРОБЕЛ.  При вызове функции автозавершения кода выводится список методов, содержащихся в управляемом компоненте <code>ConsultantController</code>. <br> <img alt="Автозавершение кода вызвано в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/code-completion-properties.png" title="Автозавершение кода обеспечено для методов классов"></li>
+
+                <li>Нажмите CTRL (&amp;#8984 в Mac), затем наведите указатель мыши на <code>prepareCreate</code>.  Будет создана ссылка, с помощью которой можно перейти непосредственно к методу <code>prepareCreate()</code> в управляемом компоненте <code>ConsultantController</code>. <br> <img alt="Ссылка отображается в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/editor-navigation.png" title="Используйте навигацию в редакторе для быстрого перехода по исходному коду"></li>
+
+                <li>Щелкните ссылку и просмотрите метод <code>prepareCreate()</code> (отображаемый ниже).
+
+                    <pre class="examplecode">
+public String prepareCreate() {
+    current = new Consultant();
+    selectedItemIndex = -1;
+    return &quot;Create&quot;;
+}</pre>
+
+                    Метод возвращает <code>Create</code>.  Метод <code>NavigationHandler</code> собирает информацию в фоновом режиме и применяет строку <code>Create</code> в пути для открытия представления, отправленного в ответ на запрос: <code>/consultant/<strong>Create</strong>.xhtml</code>.  (В JSF 2.x расширение файла является предполагаемым из-за неявного перехода.)</li>
+            </ol>
+
+
+            <h3 id="dbIntegrity">Изучение целостности базы данных с проверкой поля</h3>
+
+            <ol>
+                <li>На <a href="#consultantsList">странице &quot;Consultants List&quot;</a> в браузере щелкните ссылку &quot;<code>Create New Consultant</code>&quot;.  Как показано в предыдущем подразделе, это инициирует визуализацию страницы <code>/consultant/Create.xhtml</code>.</li>
+
+                <li>Введите в форму следующие подробные сведения.  На данный момент оставьте оба поля <code>RecruiterId</code> и <code>StatusId</code> пустыми. <br><br>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th class="tblheader" scope="col">Поле</th>
+                                <th class="tblheader" scope="col">Значение</th>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Id консультанта</td>
+                                <td class="tbltd1">2</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Эл. почта</td>
+                                <td class="tbltd1">jack.smart@jsfcrudconsultants.com</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Пароль</td>
+                                <td class="tbltd1">jack.smart</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Почасовая ставка</td>
+                                <td class="tbltd1">75</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Оплачиваемая почасовая ставка</td>
+                                <td class="tbltd1">110</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Дата принятия на работу</td>
+                                <td class="tbltd1">07/22/2008</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">Резюме</td>
+                                <td class="tbltd1">У меня большой опыт работы консультантом. Примите меня на эту должность, и вы не разочаруетесь!</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">RecruiterId</td>
+                                <td class="tbltd1">---</td>
+                            </tr>
+                            <tr>
+                                <td class="tbltd1">StatusId</td>
+                                <td class="tbltd1">---</td>
+                            </tr>
+                        </tbody>
+                    </table></li>
+
+                <li>Нажмите кнопку &quot;Сохранить&quot;. При подобном заполнении поле <code>StatusId</code> будет отмечено ошибкой проверки. <br> <img alt="Создайте страницу &apos;New Consultant&apos;, содержащую образец данных" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/create-new-consultant.png" title="Введите в форму образец данных"> <br> Почему это произошло? Повторно проверьте <a href="#er-diagram">диаграмму &quot;сущность/отношение&quot; для базы данных консультационного агентства</a>.  Как указано выше в <a href="#relationships">таблице связей</a>, в таблицах <code>CONSULTANT</code> и <code>CONSULTANT_STATUS</code> совместно используется ненулевое отношение &quot;один ко многим&quot;.  Поэтому каждая запись в таблице <code>CONSULTANT</code> должна содержать ссылку на запись в таблице <code>CONSULTANT_STATUS</code>.  Это отмечено во внешнем ключе <code>consultant_fk_consultant_status</code>, который имеет ссылки на две таблицы.
+
+                    <p class="tips">Внешние ключи, хранящиеся в таблицах, можно просмотреть посредством развертывания узла &quot;Внешние ключи&quot; таблицы в окне &quot;Службы&quot; (CTRL+5; &amp;#8984+5 на компьютере Mac).</p>
+
+                    <img alt="В окне &apos;Службы&apos; - внешние ключи для таблицы &apos;consultant&apos;" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/consultant-fk.png" title="Проверьте атрибуты внешних ключей в окне &apos;Службы&apos;"></li>
+
+                <li>Для устранения ошибки проверки выберите <code>entity.ConsultantStatus[statusId=A]</code> в раскрывающемся списке <code>StatusId</code>. <br><br> <strong class="notes">Примечание. </strong>Поле <code>RecruiterId</code> можно оставить пустым. Как указано на <a href="#er-diagram">диаграмме &quot;сущность/отношение&quot; для базы данных</a>, между таблицами <code>CONSULTANT</code> и <code>RECRUITER</code> существует нулевое отношение &quot;один ко многим&quot;, что означает, что создавать отношение между записями в таблице <code>CONSULTANT</code> с записью <code>RECRUITER</code> не требуется.</li>
+
+                <li>Нажмите кнопку &quot;Сохранить&quot;. На экран выводится сообщение об успешном сохранении записи consultant.  При щелчке ссылки <code>Show All Consultant Items</code> в таблице появится новая запись.</li>
+            </ol>
+
+            <p>Как правило, на созданных страницах Facelets отображаются ошибки вводимой пользователем информации:</p>
+
+            <ul>
+                <li>пустые поля для ненулевых ячеек таблицы;</li>
+                <li>изменения данных, которые нельзя изменять (например, первичные ключи);</li>
+                <li>вставка данных неверного типа;</li>
+                <li>изменения данных, когда представление пользователя больше не синхронизируется с базой данных.</li>
+            </ul>
+
+
+            <h3 id="editEntity">Правка классов сущностей</h3>
+
+            <p>В предыдущем подразделе был показан не совсем интуитивно понятный параметр <code>entity.ConsultantStatus[statusId=A]</code> в раскрывающемся списке <code>StatusId</code>.  Необходимо учитывать, что текст, отображаемый для каждой позиции в этом раскрывающемся списке, является строковым представлением каждой обнаруженной сущности <code>ConsultantStatus</code> (т.е., вызывается метод <code>toString()</code> класса сущностей).</p>
+
+            <p>В этом подразделе описаны способы использования автозавершения кода в редакторе, документация и поддержка функции переходов, чтобы сделать такой вывод.  Кроме того, подготовка наиболее интуитивно понятного сообщения для раскрывающегося списка.</p>
+
+            <ol>
+                <li id="markup">Откройте в редакторе файл <code>/consultant/Create.xhtml</code>.  Это форма &quot;Create New Consultant&quot;, отображаемая в браузере.  Выполните прокрутку вниз до кода раскрывающегося списка <code>StatusId</code> (выделено ниже <strong>жирным шрифтом</strong>).
+
+                    <pre class="examplecode">
+    &lt;h:outputLabel value=&quot;#{bundle.CreateConsultantLabel_resume}&quot; for=&quot;resume&quot; /&gt;
+    &lt;h:inputTextarea rows=&quot;4&quot; cols=&quot;30&quot; id=&quot;resume&quot; value=&quot;#{consultantController.selected.resume}&quot; title=&quot;#{bundle.CreateConsultantTitle_resume}&quot; /&gt;
+    <strong>&lt;h:outputLabel value=&quot;#{bundle.CreateConsultantLabel_statusId}&quot; for=&quot;statusId&quot; /&gt;
+    &lt;h:selectOneMenu id=&quot;statusId&quot; value=&quot;#{consultantController.selected.statusId}&quot; title=&quot;#{bundle.CreateConsultantTitle_statusId}&quot; required=&quot;true&quot; requiredMessage=&quot;#{bundle.CreateConsultantRequiredMessage_statusId}&quot;&gt;
+        &lt;f:selectItems value=&quot;#{consultantStatusController.itemsAvailableSelectOne}&quot;/&gt;
+    &lt;/h:selectOneMenu&gt;</strong>
+    &lt;h:outputLabel value=&quot;#{bundle.CreateConsultantLabel_recruiterId}&quot; for=&quot;recruiterId&quot; /&gt;
+    &lt;h:selectOneMenu id=&quot;recruiterId&quot; value=&quot;#{consultantController.selected.recruiterId}&quot; title=&quot;#{bundle.CreateConsultantTitle_recruiterId}&quot; &gt;
+        &lt;f:selectItems value=&quot;#{recruiterController.itemsAvailableSelectOne}&quot;/&gt;
+    &lt;/h:selectOneMenu&gt;
+&lt;/h:panelGrid&gt;</pre></li>
+
+                 <li>Проверьте атрибут <code>value</code>, применяемый к тегу <code>&lt;f:selectItems&gt;</code>.  Атрибут <code>value</code> определяет текст, отображаемый для каждой позиции в раскрывающемся списке. <br><br> Нажмите сочетание клавиш CTRL+ПРОБЕЛ, установив курсор на <code>itemsAvailableSelectOne</code>.  Автозавершение кода в редакторе указывает, что метод <code>getItemsAvailableSelectOne()</code> для <code>ConsultantStatusController</code> возвращает массив объектов <code>SelectItem</code>. <br> <img alt="Автозавершение кода вызвано в редакторе" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/code-completion-returned-object.png" title="Автозавершение кода отображает возвращаемые классы для методов"></li>
+
+                <li>Нажмите CTRL (&amp;#8984 в Mac), затем наведите указатель мыши на <code>itemsAvailableSelectOne</code>.  Создается ссылка, позволяющая переходить непосредственно к методу <code>getItemsAvailableSelectOne()</code> в исходном коде сущностей <code>ConsultantStatus</code>.  Щелкните эту ссылку.</li>
+
+                <li>Установите курсор на значении возврата <code>SelectItem[]</code> в сигнатуре метода и нажмите сочетание клавиш CTRL+ПРОБЕЛ для вызова всплывающего окна документации. <br> <img alt="Всплывающее окно документации вызвано в классе Java" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/documentation-select-item.png" title="Для вызова поддержки документации нажмите сочетание клавиш CTRL+ПРОБЕЛ.">
+
+                    <p class="tips">Щелкните значок веб-браузера ( <img alt="Значок веб-браузера " src="../../../images_www/articles/72/web/jsf20-crud/web-browser-icon.png"> ) в окне документации, чтобы открыть Javadoc во внешнем веб-браузере.</p>
+
+                    Итак, класс <code>SelectItem</code> относится к инфраструктуре JSF.  Компонент <code>UISelectOne</code>, как упоминалось в документации, представлен тегом <code>&lt;h:selectOneMenu&gt;</code> из разметки, проверенной выше в <a href="#markup">Шаге 1</a>.</li>
+
+                <li>Нажмите CTRL (&amp;#8984 в Mac), затем наведите указатель мыши на <code>findAll()</code>.  Появится всплывающее окно, отображающее сигнатуру метода. <br> <img alt="Всплывающее окно сигнатуры метода" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/method-signature.png" title="Просмотрите всплывающее окно сигнатур методов в редакторе"> <br> Здесь можно отметить, что <code>ejbFacade.findAll()</code> возвращает <code>List</code> объектов <code>ConsultantStatus</code>.</li>
+
+                <li>Перейдите к <code>JsfUtil.getSelectItems</code>.  Наведите указатель мыши на <code>getSelectItems</code> и нажмите CTRL (&amp;#8984 на компьютере Mac), затем щелкните появившуюся ссылку. <br><br> <strong class="notes">Примечание. </strong>Помните, что <code>JsfUtil</code> является одним из классов служебных программ, созданных при завершении <a href="#jsfPagesEntityClasses">страниц JSF из мастера классов логических объектов</a>. <br><br> Этот метод организует цикл по списку сущностей (т.е., по списку <code>List</code> объектов <code>ConsultantStatus</code>) и создает <code>SelectItem</code> для каждой позиции.  Как показано ниже (<strong>выделено жирным шрифтом</strong>), каждая позиция <code>SelectItem</code> создана с помощью объекта сущностей и <em>метки</em> объекта.
+
+                    <pre class="examplecode">
+public static SelectItem[] getSelectItems(List&lt;?&gt; entities, boolean selectOne) {
+    int size = selectOne ? entities.size() + 1 : entities.size();
+    SelectItem[] items = new SelectItem[size];
+    int i = 0;
+    if (selectOne) {
+        items[0] = new SelectItem(&quot;&quot;, &quot;---&quot;);
+        i++;
+    }
+    <strong>for (Object x : entities) {
+        items[i++] = new SelectItem(x, x.toString());
+    }</strong>
+    return items;
+}</pre>
+                    <p>Эта метка создана с помощью метода <code>toString()</code> сущностей и является представлением объекта, отображаемым в этом ответе.  (См. определение документации Javadoc для конструктора <code>SelectItem(значение java.lang.Object, метка java.lang.String)</code>.)</p>
+
+                    <p>
+                    После проверки того, что методом <code>toString()</code> сущности является метод, отображаемый в браузере при просмотре позиций в раскрывающемся списке, измените метод <code>ConsultantStatus</code> <code>toString()</code>.</p>
+                </li>
+
+                <li>Откройте класс сущностей <code>ConsultantStatus</code> в редакторе.  Измените метод <code>toString</code> для возврата <code>statusId</code> и <code>description</code>.  Это свойства записей, соответствующие двум столбцам таблицы <code>CONSULTANT_STATUS</code>.
+
+                    <pre class="examplecode">public String toString() {
+    return <strong>statusId + ", " + description;</strong>
+}</pre></li>
+
+                <li>Выполните проект еще раз.  При отображении в браузере страницы приветствия щелкните ссылку <code>Show All Consultant Items</code>, затем нажмите <code>Create New Consultant</code>.
+
+                    <p>
+                    Просмотрите раскрывающийся список <code>StatusId</code>. Теперь на экран будет выведен идентификатор состояния и описание записи, содержащейся в таблице <code>CONSULTANT_STATUS</code> базы данных.</p>
+
+                    <img alt="В браузере отображается раскрывающийся список StatusId" class="margin-around b-all" src="../../../images_www/articles/72/web/jsf20-crud/drop-down.png" title="В раскрывающемся списке StatusId отображаются элементы в соответствии с методом toString() сущности ConsultantStatus">
+                </li>
+            </ol>
+        </div>
+        
+        
+        
+        <h2 id="troubleshooting">Устранение проблем</h2>
+        <p>В зависимости от конфигурации при развертывании приложения на сервере может произойти ошибка. В этом случае в окне "Результаты" отображается следующее сообщение.
+       </p>
+        
+        <pre class="examplecode">GlassFish Server 4 is running.
+In-place deployment at /MyDocuments/ConsultingAgency/build/web
+GlassFish Server 4, deploy, null, false
+/MyDocuments/ConsultingAgency/nbproject/build-impl.xml:1045: The module has not been deployed.
+See the server log for details.</pre>
+        <p>Основная причина таких ошибок - проблемы при создании ресурсов JDBC на сервере. В этом случае на вкладке "Журнал сервера" в окне "Результаты" может отобразиться следующее или аналогичное сообщение. 
+        </p>
+        
+        <pre class="examplecode">Severe:   Exception while preparing the app : Invalid resource : jdbc/consult__pm
+com.sun.appserv.connectors.internal.api.ConnectorRuntimeException: Invalid resource : jdbc/consult__pm</pre>
+        
+        <p class=tips>Если вкладка "Журнал сервера" отсутствует, ее можно добавить. Для этого щелкните правой кнопкой мыши узел GlassFish Server в окне "Службы" и выберите "Просмотр журнала доменного сервера".</p>
+
+        <p>Для этого приложения требуются два ресурса JDBC:</p>
+        <ul>
+            <li>Ресурс JDBC или источник данных. Поиск ресурса JDBC в приложении осуществляется посредством поиска JNDI. Если посмотреть на элемент постоянного соединения (<code>persistence.xml</code>), можно увидеть, что имя JNDI для источника данных JTA этого приложения - <code>jdbc/consult</code>.
+                <p>Ресурс JDBC определяет текущий пул соединений, используемый приложением.</p></li>
+            <li>Пул соединений JDBC. Пул соединений определяет параметры подключения к базе данных, в том числе местоположение, имя пользователя и пароль. Для данного приложения используется пул соединений <code>consultPool</code>.</li>
+        </ul>
+        <p>Ресурс JDBC и пул соединений указываются в файле <code>glassfish-resources.xml</code>. Чтобы открыть файл <code>glassfish-resources.xml</code> в редакторе, разверните узел "Ресурсы сервера" в окне "Проекты" и дважды щелкните этот файл. Файл имеет примерно следующий вид.</p>
+        
+        <pre class="examplecode">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd"&gt;
+&lt;resources&gt;
+  &lt;jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="32" max-wait-time-in-millis="60000" name="consultPool" non-transactional-connections="false" ping="false" pool-resize-quantity="2" pooling="true" res-type="javax.sql.DataSource" statement-cache-size="0" statement-leak-reclaim="false" statement-leak-timeout-in-seconds="0" statement-timeout-in-seconds="-1" steady-pool-size="8" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false"&gt;
+    &lt;property name="serverName" value="localhost"/&gt;
+    &lt;property name="portNumber" value="3306"/&gt;
+    &lt;property name="databaseName" value="consult"/&gt;
+    &lt;property name="User" value="root"/&gt;
+    &lt;property name="Password" value="nb"/&gt;
+    &lt;property name="URL" value="jdbc:mysql://localhost:3306/consult?zeroDateTimeBehavior=convertToNull"/&gt;
+    &lt;property name="driverClass" value="com.mysql.jdbc.Driver"/&gt;
+  /&lt;jdbc-connection-pool&gt;
+  &lt;jdbc-resource enabled="true" jndi-name="jdbc/consult" object-type="user" pool-name="consultPool"/&gt;
+/&lt;resources&gt;</pre>
+  
+        <p>Как видите, указанный в файле <code>glassfish-resources.xml</code> ресурс JDBC <code>jdbc/consult</code> определяет <code>consultPool</code> как имя пула соединений. Также здесь видны свойства <code>consultPool</code>. Для данного приложения в файле <code>glassfish-resources.xml</code> указан только один источник данных и только один пул соединений. Иногда возникает необходимость указать дополнительные ресурсы, например, временное хранилище данных, используемое только для разработки или тестирования.</p>
+        
+        <p>Если ресурс JDBC и пул соединений не созданы на сервере автоматически при запуске приложения, их можно создать вручную в консоли администрирования GlassFish.</p>
+
+        <ol>
+            <li>Если файл <code>glassfish-resources.xml</code> еще не открыт, откройте его в редакторе.
+                <p>Для создания ресурса JDBC и пула соединений потребуются значения свойств, указанные в файле <code>glassfish-resources.xml</code>.</p></li>
+            <li>Щелкните правой кнопкой мыши узел GlassFish Server в окне "Службы" и выберите пункт меню "Открыть консоль администрирования домена". Консоль GlassFish откроется в браузере.</li>
+            <li>На панели "Общие задачи" в консоли GlassFish разверните узел <strong>JDBC</strong>, а также узлы <strong>Ресурсы JDBC</strong> и <strong>Пулы соединений JDBC</strong>. <br> <a href="../../../images_www/articles/80/web/jsf20-crud/gf-admin-console-lg.png"> <img alt="Вид консоли администрирования GlassFish в браузере" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-admin-console-sm.png" title="Нажмите, чтобы просмотреть изображение консоли администрирования GlassFish в полном размере"></a>
+                <p>В консоли отображаются текущие ресурсы JDBC, зарегистрированные на сервере. Если в списке под узлом JDBC на панели навигации "Общие задачи" отсутствуют ресурсы <code>jdbc/consult</code> и <code>consultPool</code>, их необходимо создать. Некоторые ресурсы JDBC , созданные по умолчанию при установке сервера, отображаются в виде дочерних узлов. </p></li>
+            <li>Выберите узел <strong>Пулы соединений JDBC</strong>, затем в разделе "Новый пул соединений JDBC" нажмите "Создать". <br> <img alt="Вид раздела &quot;Новый пул соединений JDBC&quot; в браузере" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-new-jdbc-pool1.png" title="Раздел &quot;Новый пул соединений JDBC&quot; в консоли администрирования GlassFish"></li>
+            <li>Укажите <strong>consultPool</strong> в качестве имени пула, выберите <strong>javax.sql.ConnectionPoolDataSource</strong> в списке "Тип ресурса", затем выберите <strong>MySql</strong> в списке "Поставщик драйверов базы данных". Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>На экране 2 укажите значения свойств <strong>URL</strong>, <strong>имя пользователя</strong> и <strong>пароль</strong>, найденные в файле. Нажмите "Готово". <br> <img alt="Вид второй панели в разделе &quot;Новый пул соединений JDBC&quot; в браузере" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-new-jdbc-pool2.png" title="Панель &quot;Новый пул соединений JDBC&quot; в консоли администрирования GlassFish">
+            <p class="tips">Значения свойств можно найти в файле <code>glassfish-resources.xml</code>.</p>
+            <p>При нажатии на кнопку "Готово" на сервере создается новый пул соединений, и под узлом "Пулы соединений JDBC" в консоли появляется соответствующий узел.</p></li>
+            <li>Выберите узел <strong>Ресурсы JDBC</strong> на панели навигации "Общие задачи" и нажмите "Создать".</li>
+            <li>Укажите <strong>jdbc/consult</strong> в качестве имени JNDI и выберите <strong>consultPool</strong> в списке "Имя пула". Нажмите OK. <br> <img alt="Вид раздела &quot;Новый ресурс JDBC&quot; в браузере" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-new-jdbc-resource.png" title="Раздел &quot;Новый ресурс JDBC&quot; в консоли администрирования GlassFish">
+            <p>При нажатии на кнопку "Готово" на сервере создается новый ресурс JDBC, и под узлом "Ресурсы JDBC" в консоли появляется соответствующий узел.</p>
+            <p>В окне "Службы" в IDE раскройте узел "Ресурсы", находящийся под узлом GlassFish Server, и убедитесь, что в IDE добавлены новые ресурсы. Возможно, для отображения изменений потребуется обновить представление (щелкните правой кнопкой мыши узел "Ресурсы" и выберите "Обновить").</p>
+            <img alt="снимок окна &quot;Службы&quot; в IDE" class="margin-around b-all" src="../../../images_www/articles/80/web/jsf20-crud/gf-services-jdbc-resources.png" title="Ресурсы JDBC в окне &quot;Службы&quot; в IDE"></li>
+        </ol>
+        <p>Другие советы по устранению проблем с MySQL и IDE см. в следующих документах:</p>
+        <ul>
+            <li>Учебный курс <a href="../ide/mysql.html">Подключение к базе данных MySQL</a>.</li>
+            <li>Статья об устранении неполадок в разделе <a href="mysql-webapp.html#troubleshoot">Создание простого веб-приложения с помощью базы данных MySQL</a></li>
+        </ul>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20a%20JSF%202.0%20CRUD%20Application">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;" />
+
+
+        <h2 id="seealso">Дополнительные сведения</h2>
+
+        <p>Подробнее о JSF 2.x см. в следующих ресурсах.</p>
+
+        <div class="indent">
+            <h3>Статьи и учебные курсы по NetBeans</h3>
+
+            <ul>
+                <li><a href="jsf20-intro.html">Введение в JavaServer Faces 2.x в IDE NetBeans</a></li>
+                <li><a href="jsf20-support.html">Поддержка JSF 2.x в IDE NetBeans</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum Toys &ndash; полный пример приложения JSF 2.0</a></li>
+                <li><a href="../javaee/javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+                <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+
+            <h3>Внешние ресурсы</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">Технология JavaServer Faces</a> (официальная домашняя страница)</li>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr314/index.html">Спецификация JSR 314 для JavaServer Faces 2.0</a></li>
+                <li>Глава <a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-intro.htm">Технология JavaServer Faces</a> в учебном курсе по Java EE 7</li>
+                <li><a href="http://javaserverfaces.dev.java.net/">GlassFish Project Mojarra</a> (официальный пример реализации JSF 2.х)</li>
+                <li><a href="http://forums.oracle.com/forums/forum.jspa?forumID=982">Интернет-форум OTN: JavaServer Faces</a></li>
+                <li><a href="http://www.jsfcentral.com/">JSF Central</a></li>
+            </ul>
+
+            <h3>Блоги</h3>
+
+            <ul>
+                <li><a href="http://www.java.net/blogs/edburns/">Эд Бернс (Ed Burns)</a></li>
+                <li><a href="http://www.java.net/blogs/driscoll/">Джим Дрисколл (Jim Driscoll)</a></li>
+            </ul>
+        </div>
+
+    </body>
+</html>

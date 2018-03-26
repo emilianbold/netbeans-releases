@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>在 MAC OS X 中配置 PHP、Apache、MySQL 和 Xdebug for PHP 开发 - NetBeans IDE 教程</title>
+        <meta name="KEYWORDS" content="NetBeans, tutorial, configure, PHP, PHP engine, guide, documentation, Mamp, Apache, server, MySQL, database">
+        <meta name="DESCRIPTION" content="This document describes how to configure PHP, Apache,
+            and MySQL for PHP development in the NetBeans IDE under MAC OS 10.5 Leopard. It also
+            demonstrates how to set up Xdebug in the IDE for debugging PHP applications.">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script></head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>在 MAC OS X 中配置 PHP、Apache、MySQL 和 Xdebug for PHP 开发</h1>
+
+        <p>本教程向您演示如何在 <a href="http://www.mamp.info/en/index.php" target="_blank">MAMP</a>（<b>M</b>acintosh、<b>A</b>pache、<b>M</b>ySQL、<b>P</b>HP）包上设置 PHP，该包中含有 Apache Web 服务器、MySQL 数据库服务器和 PHP 引擎。MAMP 用作 Mac 的 PHP 开发环境，可与 NetBeans IDE 很好地配合使用。</p>
+            
+        <p><a href="http://www.Xdebug.org/" target="_blank">Xdebug</a> 是 PHP 的扩展，可帮助提供对 PHP 脚本调试有用的信息。NetBeans 调试器在 Xdebug 扩展之上运行，在您的开发环境中提供了有效的调试工具。</p>
+    <p><b>目录</b></p>
+
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+        <ul class="toc">
+            <li><a href="#installMamp">安装和配置 MAMP</a></li>
+            <li><a href="#mampMySQL">注册 MAMP 的 MySQL 数据库</a></li>
+            <li><a href="#phpProject">创建 PHP 项目</a></li>
+            <li><a href="#installEnableXdebug">使用 MAMP 启用 Xdebug</a></li>
+          <li><a href="#debug">调试 PHP 项目</a></li>
+            <li><a href="#seeAlso">另请参见</a></li>
+        </ul>
+
+        <p><b>要学完本教程，您需要具备以下软件和资源。</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">PHP 下载包</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">7 或 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.mamp.info/en/download.html" target="_blank">MAMP</a></td>
+                    <td class="tbltd1">1.7.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.Xdebug.org/download.php" target="_blank">Xdebug</a>（可选）</td>
+                    <td class="tbltd1">2.x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注：</strong>MAMP 包中包含 Apache Web 服务器、PHP 引擎和 MySQL 数据库。Mac OS X 10.5 及更高版本包含支持 PHP 的 MySQL 数据库和 Apache 服务器。尽管确定可以使用 IDE 配置内置的数据库和服务器，但是 MAMP 的集功能于一身的包提供了一种简便轻松的可配置解决方案。</p>
+
+        <a name="installMamp"></a>
+        <h2>安装和配置 MAMP</h2>
+
+        <ol>
+            <li>下载最新版本的 <a href="http://www.mamp.info/en/download.html" target="_blank">MAMP</a>。</li>
+            <li>提取下载的文件并运行 <code>.dmg</code> 文件。当安装程序显示时，将 MAMP 拖到 <code>/Applications</code> 文件夹中。<br> <img alt="显示 MAMP 和 MAMP-Pro 选项的 MAMP 安装程序面板" class="margin-around b-all" height="426" src="../../../images_www/articles/72/php/configure-php-environment-mac/mamp-install.png" title="显示 MAMP 和 MAMP-Pro 选项的 MAMP 安装程序面板" width="600"></li>
+                    
+            <li>导航到 <code>/Applications/MAMP</code> 并双击 <code>MAMP.app</code>。此时将打开 MAMP 控制面板。<br><br> <span class="tips"></span>您还可以按照 <code>MAMP/README.rtf</code> 中所述安装 MAMP 控制板窗口部件，这使您能够启动和停止服务器。<br> <img alt="MAMP 控制面板" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mamp-control-panel.png"></li>
+
+            <li>单击 "Preferences"（首选项）打开 "Preferences"（首选项）面板，然后选择 "Ports"（端口）标签。</li>
+            
+            <li>单击 "Set to Default Apache and MySQL ports"（设置为默认的 Apache 和 MySQL 端口）。Apache 端口将重置为 80，MySQL 端口将重置为 3306。<br> <img alt="在端口已更改为默认值之后带有 &amp;quot;Ports&amp;quot;（端口）标签的 MAMP 控制面板" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mamp-control-panel-preferences-ports.png" title="在端口已更改为默认值之后带有 &amp;quot;Ports&amp;quot;（端口）标签的 MAMP 控制面板"></li>
+        </ol>
+
+        <a name="mampMySQL"></a>
+        <h2>注册 MAMP 的 MySQL 数据库</h2>
+
+        <p>默认情况下，MAMP 的 MySQL 数据库位于 <code>/Applications/MAMP/db/MySQL</code>。默认的用户名和口令均为 <code>root</code>，您可以通过查看 MAMP 欢迎页中的详细信息进行验证，在运行 MAMP 时此欢迎页会在浏览器中打开。</p>
+
+        <p>IDE 从 "Services"（服务）窗口（⌘-5 组合键）中与数据库进行交互。可通过执行以下操作来注册 MAMP 的 MySQL 数据库：</p>
+
+        <ol>
+            <li>右键单击 "Databases"（数据库）> "MySQL Server"（MySQL 服务器）节点并选择 "Properties"（属性）。此时将显示 "MySQL Server Properties"（MySQL 服务器属性）对话框。可以从此对话框中配置所有 MySQL 设置。</li>
+
+            <li>输入数据库服务器的主机名和端口号及其用户名和口令。当运行服务器和数据库时，所有这些信息都会显示在 MAMP 欢迎页上。在本地运行 MAMP 的默认设置是：<br><br>
+                <ul>
+                    <li><strong>Server Host Name（服务器主机名）：</strong><code>localhost</code></li>
+                    <li><strong>Server Port Number（服务器端口号）：</strong><code>3306</code></li>
+                    <li><strong>Administrator User Name（管理员用户名）：</strong><code>root</code></li>
+                    <li><strong>Administrator Password（管理员口令）：</strong><code>root</code></li>
+                </ul>
+
+                <img alt="&amp;quot;MySQL Basic Properties&amp;quot;（MySQL 基本属性）对话框" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mysql-basic-properties.png" title="包含 MAMP 默认连接设置的 &amp;quot;MySQL Basic Properties&amp;quot;（MySQL 基本属性）对话框"></li>
+
+            <li>选择 "Admin Properties"（管理属性）标签以显示可用于从 IDE 中启动和停止数据库服务器的设置。MAMP 在 <code>bin</code> 文件夹中维护 Shell 脚本。可以在此文件夹中查找用于启动和停止服务器的脚本。您可以选择管理工具的路径；可以链接到 <code>MAMP.app</code>，这样您就可以使用 IDE 打开 MAMP 的控制面板。为此，请输入 <code>/Applications/MAMP/MAMP.app</code>。但是，替代选项将使用 <a href="http://dev.mysql.com/downloads/workbench/" target="_blank">MySQL Workbench</a>，它提供用于执行管理操作（即，配置和监视 MySQL 服务器，管理用户和连接，执行备份等）的直观 GUI 界面。要使用 MySQL Workbench，请先下载并安装它，然后在对话框中输入以下设置：<br><br>
+                <ul>
+                    <li><strong>管理工具的路径/URL：</strong><code>/Applications/MySQL Tools/MySQLWorkbench.app</code> <em>（MySQL Workbench 的默认安装）</em></li>
+                    <li><strong>启动命令的路径：</strong><code>/Applications/MAMP/bin/startMysql.sh</code></li>
+                    <li><strong>停止命令的路径：</strong><code>/Applications/MAMP/bin/stopMysql.sh</code></li>
+                </ul>
+
+                <img alt="&amp;quot;MySQL Admin Properties&amp;quot;（MySQL 管理属性）对话框" class="margin-around b-all" height="323" src="../../../images_www/articles/72/php/configure-php-environment-mac/mysql-admin-props.png" title="包含样例管理设置的 &amp;quot;MySQL Admin Properties&amp;quot;（MySQL 管理属性）对话框" width="600"></li>
+
+            <li>如果选择使用 MySQL Workbench 作为 MySQL 管理工具，则需要指定用于 MAMP 数据库连接的套接字。启动 MySQL Workbench，然后从主页中，单击 "Server Administration"（服务器管理）列中的 "New Server Instance"（新建服务器实例）。<br /> <img alt="MySQL Workbench 主页" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mysql-workbench-home.png" /></li>
+            <li>此时将打开 "Create New Server Instance Profile"（新建服务器实例配置文件）对话框。选择 "Local Socket/Pipe"（本地套接字/管道）连接方法，并在 "Parameters"（参数）标签中添加套接字文件的路径。套接字的默认位置为：<code>/Applications/MAMP/tmp/mysql/mysql.sock</code>。<br> <img alt="显示套接字默认路径的 &amp;quot;Create New Server Instance&amp;quot;（创建新服务器实例）对话框" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-mac/socket-path.png" />
+            </li>
+        </ol>
+
+        <h2 id="phpProject">创建 PHP 项目</h2>
+
+        <p>在 IDE 中使用 MAMP 资源创建 PHP 项目时，应指定 IDE 将源复制到 Apache 的 <code>htdocs</code> 文件夹中。这样，当您在进行更改之后保存文件时，会自动在已部署版本中更新源。</p>
+
+        <p>例如，创建新的 PHP 项目时，使用新建项目向导（在 IDE 的工具栏中单击 "New Project"（新建项目）图标）(<img alt="&amp;quot;New Project&amp;quot;（新建项目）图标" src="../../../images_www/articles/72/php/configure-php-environment-mac/new-project-icon.png">)。在此向导的第三步 "Run Configuration"（运行配置）中，选择 "Copy files from Sources Folder to anotherlocation"（将源文件夹中的文件复制到其他位置）选项，并键入 <code>htdocs</code> 文件夹的路径。</p>
+
+        <div class="indent">
+            <a href="../../../images_www/articles/72/php/configure-php-environment-mac/new-php-project.png" rel="lytebox"> <img alt="新建项目向导的步骤 3：运行配置" class="margin-around b-all" height="293" src="../../../images_www/articles/72/php/configure-php-environment-mac/new-php-project.png" title="输入 Apache htdocs 文件夹的路径以允许 IDE 将源复制到其已部署位置" width="600"></a>
+        </div>
+
+        <p><span class="tips"></span>IDE 会记住此位置用于将来的项目。有关在 NetBeans IDE 中创建 PHP 项目的进一步说明，请参见<a href="project-setup.html">设置 PHP 项目</a>。</p>
+
+        <a name="installEnableXdebug"></a>
+        <h2>使用 MAMP 启用 Xdebug</h2>
+        
+        <p>MAMP 包含预编译的 <tt>xdebug.so</tt> 文件。要使用此文件，请在 MAMP 的 <tt>php.ini</tt> 中启用它。Xdebug 不与 Zend 优化器一起使用，因此您还必须在 <tt>php.ini</tt> 中禁用 Zend 优化器。</p>
+        <p><strong>要使用 MAMP 启用 Xdebug，请执行以下操作：</strong><br>
+            </p>
+        <ol><li>在编辑器中打开 <code>php.ini</code> 文件。此文件位于：<br><br> <code>/Applications/MAMP/conf/php5/php.ini</code>。</li>
+
+            <li>找到 <tt>[Zend]</tt> 部分并注释掉每一行。
+            <pre class="examplecode">;[Zend]
+;zend_optimizer.optimization_level=15
+;zend_extension_manager.optimizer=/Applications/MAMP/bin/php5/zend/lib/Optimizer-3.3.3
+;zend_optimizer.version=3.3.3
+ 
+;zend_extension=/Applications/MAMP/bin/php5/zend/lib/ZendExtensionManager.so</pre>
+</li>
+
+            <li>找到 <tt>[xdebug]</tt> 部分并激活 Xdebug（将 <code>xxxxxxxx</code> 替换为实际数字）。将此部分添加到 <tt>php.ini</tt> 结尾（如果不存在）。
+
+              <pre class="examplecode">
+[xdebug]
+ 
+xdebug.default_enable=1
+ 
+xdebug.remote_enable=1
+xdebug.remote_handler=dbgp
+xdebug.remote_host=localhost
+xdebug.remote_port=9000
+xdebug.remote_autostart=1
+ 
+zend_extension="/Applications/MAMP/bin/php5/lib/php/extensions/no-debug-non-zts-xxxxxxxx/xdebug.so"</pre>
+              有关这些属性的说明，请参见 <a href="http://www.Xdebug.org/docs/remote" target="_blank">Xdebug 远程调试</a>文档中的“相关设置”。</li>
+          <li>请注意，在上一步中为 Xdebug 指定的远程端口为：9000。这是在 NetBeans 中使用的默认调试器端口。要对此进行验证，请从主菜单中选择 "NetBeans" > "Preferences"（首选项），然后在 "Options"（选项）窗口中选择 "PHP"。<br><a name="phpOptions"></a> <img alt="&amp;quot;PHP Options&amp;quot;（PHP 选项）窗口" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/php-options68.png" title="可以在 &amp;quot;PHP Options&amp;quot;（PHP 选项）窗口中设置调试端口" width="600"> <br> 如果需要，您可以在此处更改调试器端口。</li>
+
+            <li>打开 MAMP 控制面板并选择 "PHP" 标签。取消选择 "Zend Optimizer"（Zend 优化器）。<br> <img alt="取消选择 &amp;quot;Zend Optimizer&amp;quot;（Zend 优化器）之后带有 &amp;quot;PHP&amp;quot; 标签的 MAMP 控制面板" class="margin-around b-all" src="../../../images_www/articles/72/php/configure-php-environment-mac/mamp-control-panel-preferences-php.png" title="取消选择 &amp;quot;Zend Optimizer&amp;quot;（Zend 优化器）之后带有 &amp;quot;PHP&amp;quot; 标签的 MAMP 控制面板"></li>
+
+            <li>启动（或重新启动）MAMP Apache 服务器。</li>
+        </ol>
+
+<a name="debug"></a>
+        <h2>调试 PHP 项目</h2>
+
+        <p>要在 IDE 中调试 PHP 项目，请在 "Projects"（项目）窗口中右键单击该项目并选择 "Debug"（调试）。或者，如果在 "Projects"（项目）窗口中突出显示了该项目，可以单击主工具栏中的 "Debug Project"（调试项目）图标 (<img alt="&amp;quot;Debug Project&amp;quot;（调试项目）图标" src="../../../images_www/articles/72/php/configure-php-environment-mac/debug-icon.png">)。</p>
+
+        <p class="tips">通过在 <a href="#phpOptions">"PHP Options"（PHP 选项）窗口</a>中启用此选项，可以将调试器设置为在第一行代码处挂起。</p>
+
+        <p>当调试器会话处于活动状态时，将在编辑器上方显示调试器工具栏。</p>
+
+        <div class="indent">
+            <img alt="调试器工具栏" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-mac/debugger-toolbar.png" title="处于挂起状态的调试器工具栏">
+        </div>
+
+        <p>您还可以通过打开 "Sessions"（会话）窗口来验证 PHP 调试会话是否处于活动状态。从主菜单中选择 "Window"（窗口）> "Debugging"（调试）> "Sessions"（会话）。</p>
+
+        <div class="indent">
+            <img alt="调试器工具栏" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-mac/debugger-sessions-win.png" title="&amp;quot;Sessions&amp;quot;（会话）窗口指示 Xdebug 调试器会话处于活动状态">
+        </div>            
+
+        
+
+
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Configuring%20PHP%20on%20Mac%20OS">发送有关此教程的反馈意见</a></div>
+
+        <br style="clear:both;" />
+
+        <a name="seeAlso"></a>
+        <h2>另请参见</h2>
+
+        <p>有关 <a href="https://netbeans.org/" target="_blank">netbeans.org</a> 上 PHP 技术的更多信息，请参见下面的资源：</p>
+
+        <ul>
+            <li><a href="project-config-screencast.html">NetBeans IDE 6.9-7.0 中的 PHP 编辑器</a>。演示新 PHP 编辑器支持的截屏视频。</li>
+            <li><a href="debugging.html">调试 PHP 源代码</a>。说明如何在 IDE 中使用 Xdebug 进行调试的文档。</li> 
+            <li><a href="wish-list-tutorial-main-page.html">创建 CRUD 应用程序</a>。演示如何使用 IDE 的 PHP 编辑器创建 CRUD 应用程序的 9 部分教程。</li>
+            <li><a href="remote-hosting-and-ftp-account.html">在远程 Web 服务器上部署 PHP 应用程序</a>。提供有关如何将 PHP 应用程序部署到您具有托管帐户的远程服务器的指导原则的文档。</li>
+        </ul>
+
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+
+    </body>
+</html>

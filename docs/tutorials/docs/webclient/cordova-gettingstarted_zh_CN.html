@@ -1,0 +1,486 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Cordova 应用程序创建入门指南</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that describes how to configure the IDE to create a mobile application using Cordova.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Cordova 应用程序创建入门指南</h1>
+
+        <p>
+        本文档演示如何在 IDE 中创建打包为 Mobile 应用程序并且在移动设备模拟程序中运行的 HTML5 项目。当创建 HTML5 应用程序时，您可以选择使用 Apache Cordova 站点模板创建此应用程序。Apache Cordova 提供了一组 API，您可以通过这些 API 使用 HTML、CSS 和 JavaScript 开发打包为本机 Mobile 应用程序的应用程序。此应用程序运行在移动设备上，并且可以访问设备的本机功能，例如 GPS 或照相机。通过使用 Cordova API，开发者无需编写任何本机代码即可构建 Mobile 应用程序。 
+        </p>
+        
+        <p>本文档演示如何安装使用 Cordova 安装和开发应用程序时所需的软件。在安装 Cordova 之后，您将在新建项目向导中使用 Cordova 模板创建 Cordova 应用程序。然后，您将添加一些代码并在移动设备模拟程序中运行此应用程序。本教程将使用 iOS 模拟程序，如果您想使用 Android 设备仿真器，步骤是类似的。</p>
+        
+        <p class="tips">要观看演示如何将 Cordova 应用程序部署到 Android 仿真器的截屏视频，请参见 <a href="../web/html5-cordova-screencast.html">Cordova 开发入门指南的视频</a>。</p>
+        
+<!--        <p class="tips">For a tutorial on how to use jQuery in a NetBeans Java web application, see the tutorial 
+            <a href="../web/js-toolkits-jquery.html">Using jQuery to Enhance the Appearance and Usability of a Web Page</a>.</p>-->
+
+
+
+        <h3>目录</h3>
+        <img alt="此页上的内容适用于 NetBeans IDE 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="此页上的内容适用于 NetBeans IDE 7.3">
+
+        <ul class="toc">
+            <li><a href="#installcordova">安装 Cordova</a></li>
+            <li><a href="#createproject">创建 Cordova HTML5 项目</a></li>
+            <li><a href="#editapp">修改源代码</a>
+                <ul>
+                    <li><a href="#edithtml">编辑 HTML 文件</a></li>
+                    <li><a href="#editconfig">修改 Cordova 配置</a></li>
+                    <li><a href="#editjs">编辑 JavaScript 文件</a></li>
+                </ul>
+            </li>
+            <li><a href="#debug">调试应用程序</a></li>
+            <li><a href="#summary">小结</a></li>
+            <li><a href="#seealso">另请参见</a></li>
+        </ul>
+
+        <h4>要完成本教程，需要使用以下资源。</h4>
+
+        <table id="requiredSoftware">
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE，Java</a></td>
+                    <td class="tbltd1">8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 7</td>
+                </tr>
+<!--                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chrome Browser</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>-->
+<!--                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">NetBeans Connector Extension for Chrome</a></td>
+                    <td class="tbltd1">1.0.0</td>
+                </tr>-->
+                <tr>
+                    <td class="tbltd1"><a href="http://cordova.apache.org/">Apache Cordova</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://nodejs.com/">NodeJS</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://git-scm.com/">Git</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">移动平台 SDK<br /></td>
+                    <td class="tbltd1">Android 或<br />iOS</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注：</strong></p>
+
+        <ul>
+            <li>本文档假定已安装兼容的目标移动平台 SDK 和设备仿真器。</li>
+
+            <li>本文档假定您具备 HTML、CSS 和 JavaScript 的一些基本知识或编程经验。有关 NetBeans IDE 中的 HTML5 支持的详细信息，请参见 <a href="html5-gettingstarted.html">HTML5 应用程序入门指南</a></li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Installing Cordova ++++++++++++++++ -->
+        <a name="installcordova"></a>
+        <h2>安装 Cordova</h2>
+        <p>您需要在本地系统上安装 Cordova，然后才能使用 NetBeans IDE 将 HTML5 应用程序打包为本机 Mobile 应用程序。您将使用 NodeJS 包管理器 <strong>npm</strong> 来安装和更新 Cordova。您还将需要确认 Git 已安装在本地系统上并且配置正确。将应用程序打包为本机 Mobile 应用程序时，Cordova 将使用 Git 从资源库中检索所有必需的 Cordova 源文件。</p>
+
+        <p>在本练习中，您将在终端窗口中执行下面的多数步骤。</p>
+        <ol>
+            <li>下载并安装 Node.js（如果尚未安装）。
+                <p>可以从 <a href="http://nodejs.org">Node.js 站点</a>下载此安装程序。</p></li>
+            <li>打开一个终端窗口。</li>
+            <li>运行下面的命令以确认已安装 Node.js。
+                <pre class="examplecode">$ node -v</pre>
+                <p>如果已安装 node.js，您将会看到版本显示在终端窗口中。</p>
+                <p class="notes"><strong>注：</strong></p>
+                <div class="indent">
+                    <ul>
+                        <li>如果您受到代理的屏蔽，则需要配置 node.js 以使用代理访问网络。可以运行以下命令来设置代理，并将 <tt>http://proxy:8080</tt> 替换为您的代理。
+                        
+                        <pre class="examplecode">$ sudo npm config set proxy http://proxy:8080
+$ sudo npm config set https-proxy http://proxy:8080</pre>
+                        <p>可以运行以下命令来查看当前配置设置。 </p>
+                        <pre class="examplecode">$ npm config list</pre>
+                        </li>
+                        <li>有关配置 node.js 的其他信息，请参见 <a href="https://npmjs.org/doc/config.html">https://npmjs.org/doc/config.html</a>。</li>
+                    </ul>
+                </div>
+            </li>
+            <li>运行下面的命令以安装 Cordova。
+            <pre class="examplecode">$ npm install -g cordova</pre>
+            <p class="notes"><strong>注：</strong></p>
+            <div class="indent">
+                <ul>
+                    <li>如果您在运行安装命令时在终端窗口中看到错误消息，请确认代理配置正确。</li>
+                    <li>可以运行下面的命令将 Cordova 更新为最新版本。
+                    <pre class="examplecode">$ npm update -g cordova</pre>
+                    </li>
+                </ul>
+            </div>
+            </li>
+            <li>运行下面的命令以确认 Cordova 已安装并查看版本。
+            <pre class="examplecode">$ cordova --version</pre>
+            <p>如果已安装 Cordova，您将会看到版本显示在终端窗口中。</p>
+            </li>
+            <li>下载并安装 Git 版本控制系统（如果尚未安装）。
+                <p>可以从 <a href="http://git-scm.com/">Git 站点</a>下载此安装程序。</p>
+                <p class="notes"><strong>注：</strong>需要将 Git 添加到 Path 环境中。</p></li>
+            <li>运行下面的命令以确认已安装 Git。
+                <pre class="examplecode">$ git --version</pre>
+                <p>如果已安装 Git，您将会看到版本显示在终端窗口中。</p>
+                <p class="notes"><strong>注：</strong></p>
+                <div class="indent">
+                    <ul>
+                        <li>如果您受到代理的屏蔽，则需要配置 Git 以使用代理访问网络。可以运行以下命令来设置代理，并将 <tt>http://proxy:8080</tt> 替换为您的代理。
+                        <pre class="examplecode">$ git config --global http.proxy http://proxy:8080
+$ git config --global https.proxy http://proxy:8080</pre>
+                        <p>可以运行以下命令来查看当前配置设置。 </p>
+                        <pre class="examplecode">$ git config --list</pre>
+                        </li>
+                        <li>有关配置 Git 的其他信息，请参见 <a href="http://git-scm.com/book/en/Getting-Started-First-Time-Git-Setup">http://git-scm.com/book/en/Getting-Started-First-Time-Git-Setup</a> 处的设置指令。</li>
+                    </ul>
+                </div>
+            </li>
+        </ol>
+        <p>现在，您具有了在 IDE 中开发和打包本机 Mobile 应用程序所需的所有工具。在下一练习中，您将使用新建项目向导创建应用程序。</p>
+        
+        
+        
+<!-- ++++++++++++++++ Creating the Project ++++++++++++++++ -->
+        <a name="createproject"></a>
+        <h2>创建 Cordova 应用程序</h2>
+        <p>在本练习中，将在 IDE 中使用新建项目向导创建新的 Cordova 应用程序。通过在新建项目向导中选择 "Cordova Hello World" 模板作为站点模板来创建 Cordova 应用程序。Cordova 应用程序是含有一些其他库和配置文件的 HTML5 应用程序。如果您具有现有的 HTML5 应用程序，则可以在 IDE 中使用 "Project Properties"（项目属性）窗口来添加将此应用程序打包为 Cordova 应用程序所需的 Cordova 源和其他文件。</p>
+        
+        <p>在本教程中，您将创建包含一个 <tt>index.html</tt> 文件及一些 JavaScript 和 CSS 文件的非常基本的 HTML5 项目。在向导中创建此项目时，将选择一些 jQuery JavaScript 库。</p>
+        
+        <ol>
+            <li>从主菜单中选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键），以打开新建项目向导。</li>
+            <li>选择 <strong>HTML5</strong> 类别，然后选择 <strong>Cordova Application</strong>（Cordova 应用程序）。单击 "Next"（下一步）。<br> <img alt="新建项目向导中的 Cordova 应用程序模板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard1.png" title="新建项目向导中的 Cordova 应用程序模板">
+            </li>
+
+            <li>为 "Project Name"（项目名称）键入 <strong>CordovaMapApp</strong>，并指定计算机上要保存项目的目录。单击 "Next"（下一步）。</li>
+
+            <li>在第 3 步 "Site Template"（站点模板）中，确认选中 "Download Online Template"（下载联机模板），并且在列表中选中 "Cordova Hello World" 模板。单击 "Next"（下一步）。<br> <img alt="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中的 &amp;quot;Site Templates&amp;quot;（站点模板）面板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard2.png" title="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中的 &amp;quot;Site Templates&amp;quot;（站点模板）面板">
+                
+                <p><strong class="notes">注：</strong>要根据列表中的一个联机模板创建项目，您必须处于联机状态。</p></li>
+            
+            <li>在第 4 步 "JavaScript Files"（JavaScript 文件）中，从 "Available"（可用）窗格选择 <tt>jquery</tt> 和 <tt>jquery-mobile</tt> JavaScript 库，单击右箭头按钮 (&nbsp;>&nbsp;) 以将所选库移动到向导的 "Selected"（选定）窗格。默认情况下，将在项目的 <tt>js/libraries</tt> 文件夹中创建库。在本教程中，您将使用 JavaScript 库的“缩小”版本。
+                
+                <p class="tips">可以使用面板上的文本字段来过滤 JavaScript 库列表。例如，在字段中键入 <strong>jq</strong> 可帮助您查找 <tt>jquery</tt> 库。按住 Ctrl 单击库的名称可以选择多个库。</p>
+                
+            <img alt="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中 &amp;quot;JavaScript Libraries&amp;quot;（JavaScript 库）面板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard3.png" title="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中的 &amp;quot;JavaScript Libraries&amp;quot;（JavaScript 库）面板">
+            
+            <p class="notes"><strong>注：</strong></p>
+            <ul>
+                <li>可以在 "Version"（版本）列中单击库版本号以打开弹出窗口，通过该窗口可以选择库的较早版本。默认情况下，向导显示最新的版本。</li>
+                <li>JavaScript 库的最小化版本是压缩版本，在编辑器中查看时，不太容易理解代码。</li>
+            </ul>
+            </li>
+            <li>在第 5 步 "Cordova Support"（Cordova 支持）中，使用默认值。单击<strong>完成</strong>即可完成此向导。
+            
+            <p>单击 "Finish"（完成）时，IDE 将创建项目、在 "Projects"（项目）窗口中显示项目的节点并在编辑器中打开 <tt>index.html</tt> 文件。</p>
+
+            <img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-projects-window1.png" title="&amp;quot;Projects&amp;quot;（项目）窗口">
+
+            <p>如果在 "Projects"（项目）窗口中展开 <tt>js/libs</tt> 文件夹，则可以看到在新建项目向导中指定的 JavaScript 库已自动添加到项目。右键单击 JavaScript 文件并在弹出菜单中选择 "Delete"（删除）可以从项目中删除 JavaScript 库。</p>
+
+            <p class="tips">要将 JavaScript 库添加到项目，请右键单击项目节点，然后选择 "Properties"（属性）以打开 "Project Properties"（项目属性）窗口。在 "Project Properties"（项目属性）窗口的 "JavaScript Libraries"（JavaScript 库）面板中可以添加库。此外，您可以将本地系统上的 JavaScript 文件直接复制到 <tt>js</tt> 文件夹中。</p>
+            
+            <p>您现在可以测试，项目运行并且已部署到目标移动设备的仿真器中。</p>
+            </li>
+            
+            <li>单击工具栏中的浏览器选择图标，并确认在表的 "Cordova" 列中选定目标移动设备仿真器。在 "Cordova" 列中，可以选择 "Android Emulator"（Android 仿真器）或 "iOS Simulator"（iOS 模拟程序）（需要 OS X 和 XCode）。<br> <img alt="工具栏中下拉列表的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-select-browser.png" title="在工具栏下拉列表中选择的浏览器"></li>
+            <li>单击工具栏中的 "Run"（运行）图标。</li>
+        </ol>
+        
+        <p>选择 "Run"（运行）时，IDE 会将 Cordova 应用程序部署到仿真器。</p>
+        
+
+        <img alt="iOS 模拟程序中的应用程序的屏幕快照" class="margin-around " src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run.png" title="iOS 模拟程序中的应用程序">
+        <p class="notes"><strong>注：</strong>如果要部署到 iOS 模拟程序，此模拟程序应该会自动打开。如果要将应用程序部署到 Android 仿真器，则需要在运行应用程序之前配置并启动此仿真器。要观看演示如何将 Cordova 应用程序部署到 Android 仿真器的截屏视频，请参见 <a href="../web/html5-cordova-screencast.html">Cordova 开发入门指南的视频</a>。</p>
+
+        
+<!-- ++++++++++++++++ Editing the HTML File ++++++++++++++++ -->
+
+        <h2><a name="editapp"></a>修改应用程序</h2>
+        
+        <p>在本练习中，您将编辑 <tt>index.html</tt> 和 <tt>index.js</tt> 文件。将 Cordova Hello World 模板生成的代码替换为用于在应用程序中显示您的当前位置地图的代码。还将修改默认 Cordova 配置以删除应用程序中不需要的 Cordova 插件。 
+        </p>
+        
+        <div class="indent">
+        <h3><a name="edithtml"></a>编辑 HTML 文件</h3>
+        <p>在本练习中，您将在源代码编辑器中编辑 HTML 文件，以添加对库和 CSS 文件的引用以及添加页元素。</p>
+        <ol>
+            <li>在编辑器中打开 <code>index.html</code>（如果尚未打开）。
+                <p>在编辑器中，您可以看到 IDE 根据 Cordova Hello World 模板生成了一些代码。</p>
+            </li>
+            <li>在编辑器中，添加对您在创建项目时添加的 jQuery JavaScript 库和 CSS 文件的引用。在开始和结束的 <tt>&lt;head></tt> 标记之间添加下面的代码（<strong>粗体</strong>）。
+            <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta charset=UTF-8&quot;&gt;
+        &lt;meta name=&quot;format-detection&quot; content=&quot;telephone=no&quot; /&gt;
+        &lt;meta name=&quot;viewport&quot; content=&quot;user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi&quot;&gt;
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;css/index.css&quot; /&gt;
+        
+        <strong>&lt;link rel=&quot;stylesheet&quot; href=&quot;js/libs/jquery-mobile/jquery.mobile.min.css&quot;/&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery/jquery.min.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery-mobile/jquery.mobile.min.js&quot;&gt;&lt;/script&gt;</strong>
+        &lt;title&gt;Hello World&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    ...
+&lt;/html&gt;</pre>
+                    
+                <p class="tips">您可以在 "Projects"（项目）窗口中查看这些文件的路径，并且可以在编辑器中使用代码完成来帮助您操作。</p>
+                <img alt="编辑器中代码完成功能的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-code-completion.png" title="编辑器中的代码完成功能">
+            </li>
+            <li>将下面指向 Google Maps JavaScript API 的链接添加到 <code>&lt;head></code> 标记之间。
+                <pre class="examplecode">&lt;script type="text/javascript" src="http://www.google.com/jsapi"&gt;&lt;/script&gt;</pre>
+                <p class="notes"><strong>注：</strong>此链接指向已过时的 JavaScript API v2。在本教程中，此 JavaScript 将用于演示目的，在实际应用程序中应使用较新的版本。</p>
+            </li>
+            <li>删除 <code>&lt;body></code> 标记之间的所有代码，只保留下面指向 <code>index.js</code> 和 <code>cordova.js</code> JavaScript 文件的链接。
+                <pre class="examplecode">   &lt;body&gt;
+        
+        <strong>&lt;script type=&quot;text/javascript&quot; src=&quot;cordova.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/index.js&quot;&gt;&lt;/script&gt;</strong>
+        
+    &lt;/body&gt; 
+&lt;/html&gt;</pre>       
+                <p>创建项目时自动生成了 <code>index.js</code> 文件。您可以在 "Projects"（项目）窗口中的 <code>js</code> 节点下看到此文件。在本教程中，稍后您将修改 <code>index.js</code> 中的代码。</p>
+                <p><code>cordova.js</code> 在 "Projects"（项目）窗口中不可见，因为它是在构建 Cordova 应用程序时生成的。</p>
+            </li>
+            <li>在 <tt>body</tt> 标记之间添加下面的代码（<strong>粗体</strong>）。
+            <pre class="examplecode">   &lt;body&gt;
+        <strong>&lt;div data-dom-cache=&quot;false&quot; data-role=&quot;page&quot; id=&quot;mylocation&quot;>
+            &lt;div data-role=&quot;header&quot; data-theme=&quot;b&quot;>
+                &lt;h1 id=&quot;header&quot;&gt;Searching for GPS&lt;/h1&gt;
+                &lt;a data-role=&quot;button&quot; class=&quot;ui-btn-right&quot; onclick=&quot;showAbout()&quot;&gt;About&lt;/a&gt;
+            &lt;/div&gt;
+            
+            &lt;div data-role=&quot;content&quot; style=&quot;padding:0;&quot;&gt;
+                &lt;div id=&quot;map&quot; style=&quot;width:100%;height:100%; z-index:50&quot;&gt;
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+            &lt;div data-role=&quot;footer&quot; data-theme=&quot;b&quot; data-position=&quot;fixed&quot; &gt;
+                &lt;h4&gt;Google Maps&lt;/h4&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div data-dom-cache=&quot;false&quot; data-role=&quot;page&quot; id=&quot;about&quot;&gt;
+            &lt;div data-role=&quot;header&quot; data-theme=&quot;b&quot;&gt;
+                &lt;a data-role=&quot;button&quot; data-rel=&quot;back&quot; href=&quot;#mylocation&quot; data-icon=&quot;arrow-l&quot; data-iconpos=&quot;left&quot; class=&quot;ui-btn-left&quot;&gt;Back&lt;/a&gt;
+                &lt;h1&gt;About&lt;/h1&gt;&lt;/div&gt;
+            &lt;div data-role=&quot;content&quot; id=&quot;aboutContent&quot;&gt;
+            &lt;/div&gt; 
+            &lt;div data-role=&quot;footer&quot; data-theme=&quot;b&quot; data-position=&quot;fixed&quot; &gt;
+                &lt;h4&gt;Created with NetBeans IDE&lt;/h4&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        </strong>
+        &lt;script type="text/javascript" src="cordova.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/index.js"&gt;&lt;/script&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+            </li>
+        </ol>
+        
+        <h3><a name="editconfig"></a>修改 Cordova 配置</h3>
+        <p>在本练习中，您将修改在应用程序中安装的 Cordova 插件的列表。</p>
+        <ol>
+            <li>在 "Projects"（项目）窗口中右键单击项目节点，然后在弹出式菜单中选择 "Properties"（属性）。</li>
+            <li>在类别列表中选择 <strong>Cordova</strong>。<br> <img alt="&amp;quot;Project Properties&amp;quot;（项目属性）窗口中的 &amp;quot;Cordova Plugins&amp;quot;（Cordova 插件）标签的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-properties-application.png" title="&amp;quot;Project Properties&amp;quot;（项目属性）窗口中的 &amp;quot;Cordova Plugins&amp;quot;（Cordova 插件）标签">
+            <p>您可以使用 "Application"（应用程序）标签查看和编辑在 <code>config.xml</code> 中指定的有关应用程序的 Cordova 配置详细信息。</p></li>
+            <li>在 "Cordova" 面板中单击 "Plugins"（插件）标签。
+            <p>"Plugins"（插件）标签包含两个窗格。"Available"（可用）窗格显示当前可用的 Cordova 插件列表。</p>
+    
+            <p>"Selected"（选定）窗格显示在应用程序中安装的插件列表。使用 Cordova Hello World 模板创建应用程序时，默认情况下会安装所有插件。多数应用程序并不需要所有插件。可以使用 "Project Properties"（项目属性）窗口中的 "Plugins"（插件）标签删除应用程序不需要的插件。
+            </p>
+            <p class="notes"><strong>注：</strong>还可以通过在编辑器中编辑 <code>nbproject/plugins.properties</code> 文件来编辑已安装的插件。</p></li>
+            <li>删除“设备 API”、“对话框（通知）”和“地理位置”除外的所有插件。单击 "OK"（确定）。<br> <img alt="&amp;quot;Project Properties&amp;quot;（项目属性）窗口中的 &amp;quot;Cordova Plugins&amp;quot;（Cordova 插件）标签的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-properties-plugins.png" title="&amp;quot;Project Properties&amp;quot;（项目属性）窗口中的 &amp;quot;Cordova Plugins&amp;quot;（Cordova 插件）标签">
+            </li>
+        </ol>
+            
+        <h3><a name="editjs"></a>编辑 JavaScript 文件</h3>
+        <p>在本练习中，您将删除模板所生成的 JavaScript 代码，并添加一些简单方法用于显示您的当前位置地图。</p>
+        <ol>
+            <li>在编辑器中打开 <code>index.js</code>。
+            <p>在创建项目时，IDE 在 <code>index.js</code> 中生成了一些样板代码。对于此应用程序，您可以删除生成的所有代码。</p>
+            </li>
+            <li>将生成的代码替换为以下代码。保存所做的更改。
+            <pre class="examplecode">var map;
+var marker;
+var watchID;
+
+$(document).ready(function() {
+    document.addEventListener("deviceready", onDeviceReady, false);
+    //uncomment for testing in Chrome browser
+//    onDeviceReady();
+});
+
+function onDeviceReady() {
+    $(window).unbind();
+    $(window).bind('pageshow resize orientationchange', function(e) {
+        max_height();
+    });
+    max_height();
+    google.load("maps", "3.8", {"callback": map, other_params: "sensor=true&language=en"});
+}
+
+function max_height() {
+    var h = $('div[data-role="header"]').outerHeight(true);
+    var f = $('div[data-role="footer"]').outerHeight(true);
+    var w = $(window).height();
+    var c = $('div[data-role="content"]');
+    var c_h = c.height();
+    var c_oh = c.outerHeight(true);
+    var c_new = w - h - f - c_oh + c_h;
+    var total = h + f + c_oh;
+    if (c_h < c.get(0).scrollHeight) {
+        c.height(c.get(0).scrollHeight);
+    } else {
+        c.height(c_new);
+    }
+}
+
+function map() {
+    var latlng = new google.maps.LatLng(50.08, 14.42);
+    var myOptions = {
+        zoom: 15,
+        center: latlng,
+        streetViewControl: true,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        zoomControl: true
+    };
+    map = new google.maps.Map(document.getElementById("map"), myOptions);
+
+    google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+        watchID = navigator.geolocation.watchPosition(gotPosition, null, {maximumAge: 5000, timeout: 60000, enableHighAccuracy: true});
+    });
+}
+
+// Method to open the About dialog
+function showAbout() {
+    showAlert("Google Maps", "Created with NetBeans 7.4");
+}
+;
+
+function showAlert(message, title) {
+    if (window.navigator.notification) {
+        window.navigator.notification.alert(message, null, title, 'OK');
+    } else {
+        alert(title ? (title + ": " + message) : message);
+    }
+}
+
+function gotPosition(position) {
+    map.setCenter(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+
+    var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+    if (!marker) {
+        //create marker
+        marker = new google.maps.Marker({
+            position: point,
+            map: map
+        });
+    } else {
+        //move marker to new position
+        marker.setPosition(point);
+    }
+}</pre>
+
+            <p class="notes"><strong>注：</strong>在本教程中，注释掉了对 <code>onDeviceReady</code> 方法的调用，因为在将应用程序部署到移动设备仿真器时不需要此方法。如果要在 Web 浏览器中运行应用程序，则应取消注释对 <code>onDeviceReady</code> 方法的调用。</p>
+            </li>
+            <li>通过重新启动仿真器或重置设置来重置仿真器。</li>
+            <li>单击工具栏中的 "Run"（运行）将应用程序部署到仿真器。<br>
+
+            <p>在 iOS 模拟程序上，系统会提示您允许应用程序使用您的当前位置。 </p>
+            <img alt="请求当前位置的对话框的屏幕快照" class="margin-around " src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run1.png" title="应用程序中的位置提示">
+            <p>通过从 iOS 模拟程序的主菜单中选择 "Debug"（调试）> "Location"（位置）> "Custom Location"（定制位置）打开 "Custom Location"（定制位置）对话框，可以测试 iOS 模拟程序中的模拟位置。</p>
+            <img alt="iOS 模拟程序中的 &amp;quot;Custom Location&amp;quot;（定制位置）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios-customlocation.png" title="iOS 模拟程序中的 &amp;quot;Custom Location&amp;quot;（定制位置）对话框">
+            <p>对于您的当前位置，如果在 "Latitude"（纬度）字段中输入 "48.8582" 并在 "Longitude"（经度）字段中输入 "2.2945"，则应用程序会在地图上将您的位置显示为 "Eiffel Tower"（埃菲尔铁塔）。</p>
+            <img alt="在 iOS 模拟程序中使用定制位置时的应用程序的屏幕快照" class="margin-around " src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run3.png" title="在 iOS 模拟程序中使用定制位置时的应用程序">
+            </li>
+        </ol>
+        </div>
+        
+        
+        <h2>调试应用程序</h2>
+        <p>在本练习中，您将在 JavaScript 文件中设置一个断点并再次运行应用程序。</p>
+        <ol>
+            <li>重置或重新启动仿真器。</li>
+            <li>在编辑器中打开 <code>index.js</code>。</li>
+            <li>通过单击 <code>gotPosition</code> 方法的以下行中的左旁注，放置断点。
+        <pre class="examplecode">var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);</pre>
+            </li>
+            <li>单击工具栏中的 "Run"（运行）以再次运行应用程序。
+                <p>运行应用程序时，调试器将在应用程序尝试确定您的当前位置时遇到断点。</p>
+                <img alt="在断点处停止的调试器的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-breakpoint1.png" title="在断点处停止的调试器">
+                <p>如果您将光标悬停在变量上方，则可以看到显示变量的相关详细信息的工具提示。如果光标位于 <code>latitude</code> 变量上方，则此变量的值将显示在工具提示中。</p>
+                <img alt="显示变量的工具提示的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables1b.png" title="显示变量的工具提示">
+                <p>如果光标位于 <code>position</code> 或 <code>coords</code> 上方，则工具提示将包含一个箭头，您可以单击此箭头展开工具提示。</p>
+                <img alt="显示变量的工具提示的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables1a.png" title="显示变量的工具提示">
+                <p>您可以在展开的工具提示中更详细地查看值。</p>
+                <img alt="显示变量的工具提示的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables2.png" title="显示变量的工具提示">
+                <p>在这种情况下，更易于查看 "Variables"（变量）窗口中的值。在 "Variables"（变量）窗口中，可以查看您的当前位置的纬度和经度。</p>
+                <img alt="&amp;quot;Variables&amp;quot;（变量）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables.png" title="&amp;quot;Variables&amp;quot;（变量）窗口">
+                <p>在 "Network Monitor"（网络监视器）窗口中，您可以查看应用程序请求的列表。 </p>
+                <img alt="&amp;quot;Variables&amp;quot;（变量）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-network-monitor.png" title="&amp;quot;Variables&amp;quot;（变量）窗口">
+                
+            </li>
+        </ol>
+        
+        <h2 id="summary">小结</h2>
+
+        <p>在本教程中，您已了解如何安装和设置在 IDE 中创建 Cordova 应用程序所需的软件。您还了解了如何创建 Cordova 应用程序以及修改某些 Cordova 配置设置。
+            </p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20Creating%20a%20Cordova%20Applications">发送有关此教程的反馈意见</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        
+        <h2 id="seealso">另请参见</h2>
+
+        <p>有关 <a href="https://netbeans.org/">netbeans.org</a> 中 HTML5 应用程序支持的详细信息，请参见以下资源：</p>
+
+        <ul>
+            <li>[视频] <a href="../web/html5-cordova-screencast.html">Cordova 开发入门指南</a></li>
+            <li><a href="html5-editing-css.html">在 HTML5 应用程序中使用 CSS 样式表</a>。该文档继续使用在本教程中创建的应用程序，说明如何在 IDE 中使用部分 CSS 向导和窗口，以及如何在 Chrome 浏览器中使用检测模式以直观地在项目源代码中查找元素。</li>
+            <li><a href="html5-js-support.html">在 HTML5 应用程序中调试和测试 JavaScript</a>。此文档说明 IDE 如何提供工具来帮助您在 IDE 中调试和测试 JavaScript 文件。</li>
+            <li><i>使用 NetBeans IDE 开发应用程序</i>中的<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2272">创建 JavaScript 文件</a>。</li>
+        </ul>
+        
+        <p>有关 jQuery 的更多信息，请参见官方文档：</p>
+
+        <ul>
+            <li>官方主页：<a href="http://jquery.com">http://jquery.com</a></li>
+            <li>UI 主页：<a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>教程：<a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>文档主页：<a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>UI 演示和文档：<a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+    </body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>@Alternative Beanおよびライフサイクル注釈の適用 - NetBeans IDEチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial explores CDI's injection facilities to perform custom validation using NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              Contexts and Dependency Injection, CDI, Web Beans, injection, qualifier">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>@Alternative Beanおよびライフサイクル注釈の適用</h1>
+
+        <p><em>執筆: Andy Gibson</em></p>
+
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h3>コンテキストと依存性の注入</h3>
+
+                <ol>
+                    <li><a href="cdi-intro.html">CDIおよびJSF 2.0の開始</a></li>
+                    <li><a href="cdi-inject.html">CDIの注入および修飾子の操作</a></li>
+                    <li><strong>@Alternative Beanおよびライフサイクル注釈の適用</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#alternative">複数デプロイメントの処理</a></li>
+                            <li><a href="#lifecycle">管理対象Beanへのライフサイクル注釈の適用</a></li>
+                            <li><a href="#seealso">関連項目</a></li>
+                        </ul></li>
+
+                    <li><a href="cdi-events.html">CDIのイベントの操作</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+        <p><a href="http://jcp.org/en/jsr/detail?id=299">JSR-299</a>で指定されているコンテキストと依存性の注入(CDI: Contexts and Dependency Injection)はJava EE 6の不可欠な部分であり、サーブレット、エンタープライズBean、JavaBeansなどのJava EEコンポーネントが、アプリケーションのライフサイクル内で明確なスコープを持って存在できるようにするためのアーキテクチャを提供します。また、CDIサービスによって、EJBセッションBeanやJSF (JavaServer Faces)管理対象BeanなどのJava EEコンポーネントが注入可能になり、イベントの起動や監視による疎結合方式の対話が可能になります。</p>
+
+        <p>このチュートリアルは、Andy Gibson氏によって投稿された<a href="http://www.andygibson.net/blog/index.php/2009/12/22/getting-started-with-cdi-part-2-injection/">CDI入門パート2 - 注入</a>というタイトルのブログをベースにしています。ここでは、<code>@Alternative</code>注釈を利用して、異なるデプロイメント向けにアプリケーションを構成する方法や、<code>@PostConstruct</code>や<code>@PreDestroy</code>などの管理対象Beanライフサイクル注釈を使用して、CDI注入を<a href="http://jcp.org/en/jsr/detail?id=316">Java EE 6管理対象Beanの仕様</a>で提供されている機能と組み合せる方法を示します。</p>
+
+        <p>NetBeans IDEは、コンテキストと依存性の注入のサポートを組込みでサポートしています。これには、プロジェクト作成時に<code>beans.xml</code> CDI構成ファイルを生成するオプション、注釈のためのエディタおよびナビゲーション・サポート、一般的に使用されるCDIアーティファクトを作成するための各種ウィザードなどが含まれています。</p>
+
+        <br style="clear:left;">
+
+        <div class="indent">
+            <p>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</p>
+
+            <table id="requiredSoftware">
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                        <th class="tblheader" scope="col">必須バージョン</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                        <td class="tbltd1">7.2、7.3、7.4、8.0、Java EEバージョン</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                        <td class="tbltd1">バージョン7または8</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://glassfish.dev.java.net/">GlassFishサーバー</a></td>
+                        <td class="tbltd1">Open Source Edition 3.xまたは4x</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo2.zip">cdiDemo2.zip</a></td>
+                        <td class="tbltd1">n/a</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="notes"><strong>注意: </strong></p>
+        </div>
+
+        <ul>
+            <li>NetBeans IDEのJavaバンドル版には、Java EE準拠のコンテナであるGlassFish Server Open Source Editionも含まれています。</li>
+
+            <li>このチュートリアルのサンプル・ソリューション・プロジェクトをダウンロードできます: <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FcdiDemo3.zip">cdiDemo3.zip</a></li>
+        </ul>
+
+
+        <br>
+        <h2 id="alternative">複数デプロイメントの処理</h2>
+
+        <p>CDIでは、注入ポイントに一致するBeanが複数存在する場合でも、あいまい性のエラーを発生させずにパッケージ化できる<code>@Alternative</code>注釈を使用できます。つまり、2つ以上のBeanに<code>@Alternative</code>注釈を適用してから、デプロイメントに基づいて、使用するBeanをCDIの<code>beans.xml</code>構成ファイルに指定できます。</p>
+
+        <p>これを示すために、次のようなシナリオを考えます。メイン<code>ItemProcessor</code>クラスに<code>ItemValidator</code>を注入します。<code>ItemValidator</code>は、<code>DefaultItemValidator</code>と<code>RelaxedItemValidator</code>の両方によって実装されます。ここでのデプロイメント要件に基づき、ほとんどの場合に<code>DefaultItemValidator</code>を使用しますが、特定のデプロイメント向けに<code>RelaxedItemValidator</code>も必要とします。これを解決するために、両方のBeanに注釈を付けてから、アプリケーションの<code>beans.xml</code>ファイルにエントリを追加して、指定のデプロイメントにどのBeanを使用するかを指定します。</p>
+
+        <div class="indent">
+            <img alt="この課題で作成されるオブジェクトを示すCDI図" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-validate/cdi-diagram-alternative.png" title="アプリケーションの疎結合クラスへのCDI注入の使用">
+        </div>
+
+        <ol>
+            <li>まず、<code>cdiDemo2.zip</code>ファイル(上記の<a href="#requiredSoftware">必要なリソースの一覧表</a>を参照)からサンプルのスタート・プロジェクトを抽出します。「ファイル」>「プロジェクトを開く」([Ctrl]-[Shift]-[O]、Macの場合は[⌘]-[Shift]-[O])を選択してから、コンピュータ上のこのプロジェクトの場所を選択することで、IDEでプロジェクトを開きます。</li>
+            <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「プロパティ」を選択します。</li>
+            <li>「実行」カテゴリを選択し、「サーバー」ドロップダウン・リストでGlassFishインスタンスが選択されていることを確認します。 </li>
+
+            <li><code>ItemValidator</code>インタフェースを作成します。<br><br>「新規ファイル」(<img alt="「新規ファイル」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/new-file-btn.png">)ボタンをクリックするか、[Ctrl]-[N] (Macの場合は[⌘]-[N])を押してファイル・ウィザードを開きます。</li>
+
+            <li>「Java」カテゴリから「Javaインタフェース」を選択します。「次」をクリックします。</li>
+
+            <li>クラス名として「<strong>ItemValidator</strong>」、パッケージとして「<strong>exercise3</strong>」と入力します。</li>
+
+            <li>「終了」をクリックします。新しいインタフェースが生成され、エディタで開かれます。</li>
+
+            <li><code>Item</code>オブジェクトを取って<code>boolean</code>値を返す<code>isValid()</code>という名前のメソッドを追加します。
+
+                <pre class="examplecode">
+public interface ItemValidator {
+    <strong>boolean isValid(Item item);</strong>
+}</pre>
+                (エディタのヒントを使用して<code>exercise2.Item</code>のインポート文を追加します。)</li>
+
+            <li><code>ItemProcessor</code>クラスを拡張して新しい機能を組み込みます。エディタで<code>ItemProcessor</code>を開いて、次のように変更します。
+
+
+            <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    @Inject @Demo
+    private ItemDao itemDao;
+
+    <strong>@Inject
+    private ItemValidator itemValidator;</strong>
+
+    public void execute() {
+      List&lt;Item&gt;  items = itemDao.fetchItems();
+      for (Item item : items) {
+          System.out.println(<strong>&quot;Item = &quot; + item + &quot; valid = &quot; + itemValidator.isValid(item)</strong>);
+      }
+    }
+}</pre>
+                <p class="tips">エディタのヒントを使用して<code>exercise3.ItemValidator</code>のインポート文を追加します。</p></li>
+
+            <li>値の制限値をテストするのみの、<code>DefaultItemValidator</code>という名前の<code>ItemValidator</code>の実装を作成します。
+
+                <p>
+                「プロジェクト」ウィンドウで「<code>exercise3</code>」パッケージを右クリックし、「新規」>「Javaクラス」を選択します。クラスに「<strong>DefaultItemValidator</strong>」という名前を付け、「終了」をクリックします。</p></li>
+
+            <li>次のようにして、<code>DefaultItemValidator</code>で<code>ItemValidator</code>を実装し、<code>isValid()</code>メソッドをオーバーライドします。
+
+        <pre class="examplecode">
+public class DefaultItemValidator <strong>implements ItemValidator</strong> {
+
+    <strong>@Override
+    public boolean isValid(Item item) {
+        return item.getValue() &lt; item.getLimit();
+    }</strong>
+}</pre>
+
+                <p>(エディタのヒントを使用して<code>exercise2.Item</code>のインポート文を追加します。)</p></li>
+
+
+            <li>IDEのメイン・ツールバーにある「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">)ボタンをクリックします。プロジェクトがコンパイルされてGlassFishにデプロイされ、アプリケーションの開始ページ(<code>process.xhtml</code>)がブラウザで開きます。</li>
+
+            <li>ページに表示されている「<code>Execute</code>」ボタンをクリックします。IDEに戻ってGlassFishのサーバー・ログを調べます。サーバー・ログは、「出力」ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])の「GlassFish」タブの下に表示されます。項目が検証されていることが表示されます。制限値より小さい、有効な項目のみが一覧表示されます。
+
+                <pre class="examplecode">
+INFO: Item = exercise2.Item@e857ac [Value=34, Limit=7] valid = false
+INFO: Item = exercise2.Item@63124f52 [Value=4, Limit=37] valid = true
+INFO: Item = exercise2.Item@4715c34e [Value=24, Limit=19] valid = false
+INFO: Item = exercise2.Item@65c95a57 [Value=89, Limit=32] valid = false</pre>
+
+                <img alt="「出力」ウィンドウ - GlassFishサーバー・ログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-validate/output-window.png" title="「出力」ウィンドウでのサーバー・ログの表示"></li>
+
+            <li>ここで、条件を緩和して、値が制限の2倍を超える場合にのみ項目を無効と見なす別のサイトへデプロイするシナリオを考えます。このロジックのために、<code>ItemValidator</code>インタフェースを実装する別のBeanを用意します。
+
+                <p>
+                <code>RelaxedItemValidator</code>という名前の<code>ItemValidator</code>の新しい実装を作成します。「プロジェクト」ウィンドウで「<code>exercise3</code>」パッケージを右クリックし、「新規」>「Javaクラス」を選択します。クラスに「<strong>RelaxedItemValidator</strong>」という名前を付け、「終了」をクリックします。</p></li>
+
+            <li>次のようにして、<code>RelaxedItemValidator</code>で<code>ItemValidator</code>を実装し、<code>isValid()</code>メソッドをオーバーライドします。
+
+        <pre class="examplecode">
+public class RelaxedItemValidator <strong>implements ItemValidator</strong> {
+
+    <strong>@Override
+    public boolean isValid(Item item) {
+        return item.getValue() &lt; (item.getLimit() * 2);
+    }</strong>
+}</pre>
+
+                <p>(エディタのヒントを使用して<code>exercise2.Item</code>のインポート文を追加します。)</p></li>
+
+
+            <li>「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">)ボタンをクリックして、プロジェクトを実行します。今度はプロジェクトのデプロイに失敗します。</li>
+
+            <li>出力ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])でサーバー・ログを調べます。「あいまいな依存性」の問題を報告するエラー・メッセージが確認できます。これは、現時点で同じインタフェースを実装しているクラスが2つあるために起こります。
+
+                <pre class="examplecode">
+org.glassfish.deployment.common.DeploymentException: Injection point has ambiguous dependencies.
+Injection point: field exercise2.ItemProcessor.itemValidator;
+Qualifiers: [@javax.enterprise.inject.Default()];
+Possible dependencies: [exercise3.RelaxedItemValidator, exercise3.DefaultItemValidator]</pre>
+
+                <p>CDIの実装であるWeldは、特定の注入ポイントに<code>RelaxedItemValidator</code>と<code>DefaultItemValidator</code>のどちらを使用するかを決定できません。</p>
+
+                <p>
+                前述のように、唯一の違いはデプロイメントに基づいています。ほとんどのデプロイメントにはデフォルトのバリデータを使用しますが、1つのデプロイメントには「緩和された」実装を使用するようにします。CDIでは、注入ポイントに一致するBeanが複数存在する場合でも、あいまい性のエラーを発生させずにパッケージ化できる<code>@Alternative</code>注釈を使用できます。使用するBeanは、<code>beans.xml</code>に定義します。これにより、<code>beans.xml</code>の定義のみが異なる両方の実装を同じモジュール内にデプロイできます(この定義はデプロイメントごとに変更できます)。</p></li>
+
+            <li><code>@Alternative</code>注釈および対応するインポート文を、<code>RelaxedItemValidator</code>および<code>DefaultItemValidator</code>に追加します。<br><br>エディタで<code>RelaxedItemValidator</code>を開いて、次のように変更します。
+
+        <pre class="examplecode">
+<strong>import javax.enterprise.inject.Alternative;</strong>
+...
+
+<strong>@Alternative</strong>
+public class RelaxedItemValidator implements ItemValidator {
+
+    public boolean isValid(Item item) {
+        return item.getValue() &lt; (item.getLimit() * 2);
+    }
+}</pre>
+                <p class="tips">「<code>@Al</code>」を入力してから[Ctrl]-[Space]を押して、コード補完を呼び出します。1つのオプションのみがフィルタされるため、<code>@Alternative</code>注釈が完了します。また、対応する<code>javax.enterprise.inject.Alternative</code>のインポート文がファイルの最初に自動的に追加されます。通常は、注釈で[Ctrl]-[Space]を押すとJavadocドキュメントのポップアップも表示されます。</p>
+
+                
+                <img alt="エディタでのJavadocドキュメントのポップアップ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-validate/code-completion-alternative.png" title="注釈での[Ctrl]-[Space]の押下によるJavadocドキュメントの呼出し">
+
+                <p>
+                <code>DefaultItemValidator</code>に切り替え([Ctrl]-[Tab]を押し)、次のように変更します。</p>
+
+        <pre class="examplecode">
+<strong>import javax.enterprise.inject.Alternative;</strong>
+...
+
+<strong>@Alternative</strong>
+public class DefaultItemValidator implements ItemValidator {
+
+    public boolean isValid(Item item) {
+        return item.getValue() &lt; item.getLimit();
+    }
+}</pre>
+
+                <p>ここでアプリケーションをデプロイすると「満たされない依存性」というエラーが出ますが、これは、一致するBeanを選択肢として2つ定義したけれども、<code>beans.xml</code>ファイルでどちらも有効にしていないためです。</p></li>
+
+            <li>IDEの「ファイルに移動」ダイアログを使用すると、すばやく<code>beans.xml</code>を開けます。IDEのメイン・メニューで「ナビゲート」>「ファイルに移動」([Alt]-[Shift]-[O]、Macの場合は[Ctrl]-[Shift]-[O])を選択してから「<code>beans</code>」と入力します。「OK」をクリックします。 <img alt="「ファイルに移動」ダイアログ" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-validate/go-to-file.png" title="「ファイルに移動」ダイアログを使用した、プロジェクト・ファイルの速やかな検索"></li>
+
+            <li><code>beans.xml</code>ファイルに以下の変更を加えます。
+
+<pre class="examplecode">
+&lt;beans xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot;
+    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+    xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd&quot;&gt;
+
+    <strong>&lt;alternatives&gt;
+        &lt;class&gt;exercise3.RelaxedItemValidator&lt;/class&gt;
+    &lt;/alternatives&gt;</strong>
+
+&lt;/beans&gt;</pre>
+
+                <p>これによって、このデプロイメントでは<code>RelaxedItemValidator</code>を使用することがCDIに伝えられます。<code>@Alternative</code>注釈は、Beanを事実上無効にして注釈に使用できないようにする一方で、他のBeanとともに実装をパッケージ化できるようにするものと考えることができます。これを<code>beans.xml</code>ファイルに代替として追加すると、事実上、Beanを再度有効にして、注入に使用できるようにします。このタイプのメタデータを<code>beans.xml</code>ファイルへ移動することで、様々なバージョンのファイルを様々なデプロイメントでバンドルできます。</p></li>
+
+            <li>「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">)ボタンをクリックして(または[F6]、Macの場合は[fn]-[F6]を押して)、プロジェクトを実行します。ブラウザで、ページに表示されている「<code>Execute</code>」ボタンをクリックします。IDEに戻り、出力ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])に表示されたGlassFishのサーバー・ログを調べます。
+
+                <pre class="examplecode">
+INFO: Item = exercise2.Item@672f0924 [Value=34, Limit=7] valid = false
+INFO: Item = exercise2.Item@41014f68 [Value=4, Limit=37] valid = true
+INFO: Item = exercise2.Item@3d04562f [Value=24, Limit=19] valid = true
+INFO: Item = exercise2.Item@67b646f4 [Value=89, Limit=32] valid = false</pre>
+
+                <p>3つ目の項目に、提供された値(<code>24</code>)が指定された制限(<code>19</code>)より大きいにもかかわらず、有効であると表示されています。これにより、<code>RelaxedItemValidator</code>実装が使用されていることがわかります。</p></li>
+        </ol>
+
+        <br>
+        <h2 id="lifecycle">管理対象Beansへのライフサイクル注釈の適用</h2>
+
+        <p>この課題では、メイン<code>ItemProcessor</code>クラスに<code>ItemErrorHandler</code>を注入します。<code>FileErrorReporter</code>が<code>ItemErrorHandler</code>インタフェースの唯一の実装であるため、これが注入用に選択されます。クラスのライフサイクル固有のアクションを設定するには、管理対象Beanの仕様(<a href="http://jcp.org/en/jsr/detail?id=316">JSR 316: Java Platform, Enterprise Edition 6の仕様</a>に含まれます)から<code>@PostConstruct</code>および<code>@PreDestroy</code>注釈を使用します。</p>
+
+        <div class="indent">
+            <img alt="この課題で作成されるオブジェクトを示すCDI図" class="margin-around" src="../../../images_www/articles/73/javaee/cdi-validate/cdi-diagram-lifecycle.png" title="アプリケーションの疎結合クラスへのCDI注入の使用">
+        </div>
+
+        <p>例の続きとして、無効な項目が見つかったときにそれを処理する<code>ItemErrorHandler</code>インタフェースを作成します。</p>
+
+        <ol>
+            <li>「プロジェクト」ウィンドウで「<code>exercise3</code>」パッケージを右クリックし、「新規」>「Javaインタフェース」を選択します。</li>
+
+            <li>Javaインタフェース・ウィザードで、クラス名として「<strong>ItemErrorHandler</strong>」、パッケージとして「<strong>exercise3</strong>」と入力します。「終了」をクリックします。
+
+            <p>新しいインタフェースが生成され、エディタで開かれます。</p></li>
+
+            <li>引数として<code>Item</code>オブジェクトを取る<code>handleItem()</code>という名前のメソッドを追加します。
+
+                <pre class="examplecode">
+public interface ItemErrorHandler {
+    <strong>void handleItem(Item item);</strong>
+}</pre>
+                <p>(エディタのヒントを使用して<code>exercise2.Item</code>のインポート文を追加します。)</p></li>
+
+            <li>まず、項目の詳細をファイルに保存する<code>FileErrorReporter</code>という名前の偽のハンドラを持つ<code>ItemErrorHandler</code>を実装します。
+
+                <p>
+                「プロジェクト」ウィンドウで「<code>exercise3</code>」パッケージを右クリックし、「新規」>「Javaクラス」を選択します。クラスに「<strong>FileErrorReporter</strong>」という名前を付け、「終了」をクリックします。</p></li>
+
+            <li>次のようにして、<code>FileErrorReporter</code>で<code>ItemErrorHandler</code>を実装し、<code>handleItem()</code>メソッドをオーバーライドします。
+
+        <pre class="examplecode">
+public class FileErrorReporter <strong>implements ItemErrorHandler</strong> {
+
+    <strong>@Override
+    public void handleItem(Item item) {
+        System.out.println(&quot;Saving &quot; + item + &quot; to file&quot;);
+    }</strong>
+}</pre>
+
+                <p>(エディタのヒントを使用して<code>exercise2.Item</code>のインポート文を追加します。)</p>
+
+                <p>
+                項目の処理を始める前にファイルを開き、処理中は開いたままにしてファイルに内容を追加し、処理が終了したらファイルを閉じるようにします。<code>initProcess()</code>および<code>finishProcess()</code>メソッドをエラー・レポータBeanに手動で追加することもできますが、そうするとコール元がそれらのクラス固有のメソッドについて知る必要があるため、インタフェースへのコードを作成できなくなります。それらの同じメソッドを<code>ItemErrorReporter</code>インタフェースに追加することもできますが、そうするとこのインタフェースを実装するすべてのクラスに、これらのメソッドを不必要に実装する必要があります。かわりに、管理対象Beanの仕様(<a href="http://jcp.org/en/jsr/detail?id=316">JSR 316: Java Platform, Enterprise Edition 6の仕様</a>に含まれる)からいくつかのライフサイクル注釈を使用して、Beanライフサイクルの特定の時点でBean上でメソッドをコールできます。Beanが構築され、Beanが持つすべての依存性が注入されると、<code>@PostConstruct</code>注釈付きメソッドがコールされます。同様に、Beanがコンテナによって破棄される直前に<code>@PreDestroy</code>注釈付きメソッドがコールされます。</p></li>
+
+            <li>次のように、対応する<code>@PostConstruct</code>および<code>@PreDestroy</code>注釈を持つ<code>init()</code>および<code>release()</code>メソッドを追加します。
+
+                <pre class="examplecode">
+public class FileErrorReporter implements ItemErrorHandler {
+
+    <strong>@PostConstruct
+    public void init() {
+        System.out.println(&quot;Creating file error reporter&quot;);
+    }
+
+    @PreDestroy
+    public void release() {
+        System.out.println(&quot;Closing file error reporter&quot;);
+    }</strong>
+
+    @Override
+    public void handleItem(Item item) {
+        System.out.println(&quot;Saving &quot; + item + &quot; to file&quot;);
+    }
+}</pre></li>
+
+            <li>インポートを修正します。エディタを右クリックして「インポートを修正」を選択するか、[Ctrl]-[Shift]-[I] (Macの場合は[⌘]-[Shift]-[I])を押します。<code>javax.annotation.PostConstruct</code>および<code>javax.annotation.PreDestroy</code>のインポート文がファイルの最初に追加されます。</li>
+
+            <li>最後に、新しい<code>ItemErrorHandler</code> Beanを<code>ItemProcessor</code>に追加します。
+
+                <pre class="examplecode">
+@Named
+@RequestScoped
+public class ItemProcessor {
+
+    @Inject @Demo
+    private ItemDao itemDao;
+
+    @Inject
+    private ItemValidator itemValidator;
+
+    <strong>@Inject
+    private ItemErrorHandler itemErrorHandler;</strong>
+
+    public void execute() {
+        List&lt;Item&gt;  items = itemDao.fetchItems();
+        for (Item item : items) {
+            <strong>if (!itemValidator.isValid(item)) {
+                itemErrorHandler.handleItem(item);
+            }</strong>
+        }
+    }
+}</pre>
+                <p>(エディタのヒントを使用して<code>exercise3.ItemErrorHandler</code>のインポート文を追加します。)</p>
+            </li>
+
+            <li>「プロジェクトの実行」(<img alt="「プロジェクトの実行」ボタン" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">)ボタンをクリックして(または[F6]、Macの場合は[fn]-[F6]を押して)、プロジェクトを実行します。ブラウザで、ページに表示されている「<code>Execute</code>」ボタンをクリックします。IDEに戻り、出力ウィンドウ([Ctrl]-[4]、Macの場合は[⌘]-[4])に表示されたGlassFishのサーバー・ログを調べます。
+
+                <pre class="examplecode">
+INFO: Creating file error reporter
+INFO: Saving exercise2.Item@6257d812 [Value=34, Limit=7] to file
+INFO: Saving exercise2.Item@752ab82e [Value=89, Limit=32] to file
+INFO: Closing file error reporter</pre>
+            </li>
+        </ol>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20CDI%20Injection%20to%20Perform%20Custom%20Validation">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">関連項目</h2>
+
+        <p>異なるアプリケーション・デプロイメントでは、無効な項目の処理のために、項目を却下したり、個々に通知を送ったり、フラグを付けたり、単に出力ファイルに一覧表示したりするなどの、異なるルールを使用することがあります。また、これらを組み合せて使用することも考えられます(例: 注文を却下し、営業担当に電子メールを送ってから、ファイルに注文を一覧表示する)。この種の多角的な問題の処理に適した方法の1つは、<em>イベント</em>を使用する方法です。このシリーズの最終回はCDIイベントについてです:</p>
+
+        <ul>
+            <li><a href="cdi-events.html">CDIのイベントの操作</a></li>
+        </ul>
+
+        <p>CDIおよびJava EEの詳細は、次のリソースを参照してください。</p>
+
+        <ul>
+            <li><a href="cdi-intro.html">コンテキストと依存性の注入およびJSF 2.0の開始</a></li>
+            <li><a href="cdi-inject.html">CDIの注入および修飾子の操作</a></li>
+            <li><a href="javaee-gettingstarted.html">Java EEアプリケーションの開始</a></li>
+            <li><a href="http://blogs.oracle.com/enterprisetechtips/entry/using_cdi_and_dependency_injection">エンタープライズ技術ヒント: JSF 2.0アプリケーションでのJavaのCDIおよび依存性の注入の使用</a></li>
+            <li><a href="http://download.oracle.com/javaee/6/tutorial/doc/gjbnr.html">Java EE 6チュートリアル、パートV: Java EEプラットフォームのコンテキストと依存性の注入</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=299">JSR 299: コンテキストと依存性の注入の仕様</a></li>
+            <li><a href="http://jcp.org/en/jsr/detail?id=316">JSR 316: Java Platform Enterprise Edition 6の仕様</a></li>
+        </ul>
+
+    </body>
+</html>

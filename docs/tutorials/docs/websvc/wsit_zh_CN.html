@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>高级 Web 服务互操作性 - NetBeans IDE 教程</title>
+        <meta name="description"
+              content="This tutorial shows how to use the IDE to configure security mechanisms for web services.">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, WEB SERVICES, MTOM, METRO, WS-I, WS-RM, RELIABLE MESSAGING, SECURITY, WCF, WINDOWS COMMUNICATION FOUNDATION">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
+    <body>
+        <h1>Advanced Web Service Interoperability（高级 Web 服务互操作性）</h1>
+
+        <p>高级 Web 服务互操作性 (WSIT)，亦称 Web 服务的“服务质量”，包含可以实现 Java Web 服务和 .Net Web 服务间的互操作性的组件。本文档说明了 IDE 中对配置使用 WSIT 的 Web 服务和客户端的某种支持。有关使用 WSIT 的更多信息，请参见 <a href="http://docs.oracle.com/cd/E19159-01/820-1072/index.html">WSIT 教程</a>中的<a href="http://docs.oracle.com/cd/E19159-01/820-1072/ahibn/index.html">第 3 章的 WSIT 示例：使用 Web 容器和 NetBeans IDE</a></p>
+
+        <p><b>目录</b></p>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3 和 7.4" class="stamp" src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3 和 7.4">
+        <ul>
+            <li><a href="#Exercise_1">了解计算器样例</a>
+                <ul><li><a href="#Exercise_1_1">浏览样例</a></li>
+                    <li><a href="#Exercise_1_2">部署和测试计算器样例</a></li>
+                </ul>
+            <li><a href="#Exercise_2">了解安全计算器样例</a>
+                <ul><li><a href="#Exercise_2_1">浏览样例</a></li>
+                    <li><a href="#Exercise_2_2">部署和测试安全计算器样例</a></li>
+                </ul>
+        </ul>
+
+        <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java EE 下载包</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 6 或版本 7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">符合 Java EE 规范的 Web 服务器或应用服务器</td>
+                    <td class="tbltd1">
+                        GlassFish Server Open Source Edition 3.1.x、4.x<br> 或 <br><a href="http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html" target="_blank">Oracle WebLogic Server</a> 11g 或 12c              
+
+                    </td></tr>
+
+            </tbody>
+        </table>
+        <p class="notes">可以选择随同 NetBeans IDE 的 Java EE 发行版本一起安装 GlassFish Server。此外，也可以访问 <a href="https://glassfish.java.net/download.html">GlassFish Server 下载页</a>或 <a href="http://tomcat.apache.org/download-60.cgi" target="_blank">Apache Tomcat 下载页</a>。</p>
+        <p class="alert"><strong>重要说明：</strong>Java EE 项目需要使用 GlassFish Server 3.1.x、4.x 或 Oracle WebLogic Server 12c。</p>
+
+        
+
+            <!--Exercise 1: -->
+        <a name="Exercise_0"></a>
+        <h2>简介</h2>
+
+        <p>与高级 Web 服务互操作性相关的组件分为四个主要类别：</p>
+        <ul>
+            <li><b>引导和配置</b>。创建可访问和使用 Web 服务的 Web 服务客户端时执行的过程。</li>
+            <li><b>消息安全性</b>。支持以下安全配置选项：
+                <ul>
+                    <li>签名及加密目标选项</li>
+                    <li>客户端/服务 Web 服务安全性</li>
+                    <li>客户端/服务信任选项</li>
+                    <li>高级配置选项</li>
+                    <li>密钥库配置选项</li>
+                </ul>
+            </li>
+            <li><b>消息优化</b>。确保以最有效的方式在 Internet 上传输 Web 服务消息。消息优化是在 Web 服务通信中实现的，实现方式为：在传输之前对消息进行编码，然后在消息到达最终目标时对其进行解码。</li>
+            <li><b>可靠的消息传送</b>。衡量系统将消息从 A 位置无错误地传输到 B 位置的能力。</li>
+        </ul>
+
+        <p>“服务质量”是在 Web 服务属性编辑器中配置的，该编辑器可在 "Projects"（项目）窗口中通过代表 Web 服务或客户端的节点进行访问。在本文档中，将向您介绍两个随 IDE 一起分发的样例：不安全的 Web 服务样例和安全的 Web 服务样例。本文档将演示两个样例之间的一些差异，以及如何使用 IDE 为您自己的 Web 服务和客户端配置安全性。</p>
+
+        <p>有关“服务质量”主题的完整指南，请参见 <a href="http://download.oracle.com/docs/cd/E17802_01/webservices/webservices/reference/tutorials/wsit/doc/index.html" target="_blank">WSIT 教程</a>。
+
+            <!-- ===================================================================================== -->
+        <a name="Exercise_1"></a><h2>了解计算器样例</h2>
+        <p>本练习的目标是了解与 IDE 捆绑在一起的计算器样例。与下一个样例相比，此样例是非安全的，因为检查 Web 服务时将会显示该样例。</p>
+        <div class="indent">
+            <h3 class="tutorial"><a name="Exercise_1_1"></a>浏览样例</h3>
+            <p>在本练习中，将使用 "New Project"（新建项目）向导创建样例，在 IDE 中检查样例并部署应用程序。</p>
+
+            <ol>
+                <li>选择 "File"（文件）> "New Project"（新建项目）（在 Linux 和 Windows 上为 Ctrl-Shift-N 组合键；在 MacOS 上为 ⌘-Shift-N 组合键）以打开 "New Project"（新建项目）向导。</li>
+                    <li>展开 "Samples"（样例）类别，选择 "Web Services"（Web 服务）节点，然后选择 "Calculator"（计算器）样例。单击 "Next"（下一步）。<br> <img alt="显示计算器样例的新建项目向导" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-newproject.png" title="显示计算器样例的新建项目向导"></li>
+                <li>确认在 "Server"（服务器）下拉列表中选定 Java EE 兼容的服务器。单击 "Finish"（完成）。
+                    <p>单击 "Finish"（完成）后，向导将创建以下两个项目： 
+                    <ul>
+                        <li><strong>CalculatorApp</strong>，提供名为 CalculatorWS 的 Web 服务，用于公开名为 "add" 的操作。</li>
+                        <li><strong>CalculatorClientApp</strong>，提供名为 CalculatorWSService 的客户端，用于调用 Web 服务的 "add" 操作。</li>
+                    </ul>
+                    <p class="alert">可能会用一个错误图标标记 CalculatorClientApp 服务，因为 IDE 找不到 CalculatorWS 服务的 WSDL。部署 CalculatorApp，然后清理并构建 CalculatorClientApp 之后，该错误将得到解决。</p>
+                    <img alt="显示 Web 服务和客户端的 &quot;Projects&quot;（项目）窗口" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-projects.png" title="显示 Web 服务和客户端的 &quot;Projects&quot;（项目）窗口"></li>
+                <li>双击 CalculatorWS Web 服务以在编辑器中打开此文件，然后单击编辑器顶部的 "Design"（设计）标签以在可视设计器中查看 Web 服务。<br> <img alt="&quot;Design GUI&quot;（设计 GUI）（可视设计器）标签中的 CalculatorWS 服务" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-design.png" title="&quot;Design GUI&quot;（设计 GUI）（可视设计器）标签中的 CalculatorWS 服务">
+                    <p class="notes"><b>注：</b>在服务设计标签的 "Quality of Service"（服务质量）部分中，您可以看到<i>未</i>启用任何选项。因此，尚未将“服务质量”组件应用于此特定 Web 服务。您将看到创建安全 Web 服务时<em>启用</em>“服务质量”组件的 Web 服务。</p>
+                </li>
+            </ol>
+            <p>有关 IDE 中 Web 服务的完整教程，请参见 <a href="jax-ws.html">JAX-WS Web 服务入门指南</a>。
+
+            <h3 class="tutorial"><a name="Exercise_1_2"></a>部署和测试计算器样例</h3>
+            <ol>
+
+                <li>右键单击 "CalculatorApp" 项目并选择 "Run"（运行）。
+                    <p>服务器启动，并且 Web 服务部署到服务器中。您将会看到在默认浏览器中打开一个页面，其中提供服务的某些详细信息。</p>
+                        <img alt="浏览器中的 CalculatorWS 信息窗口" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser1.png" title="浏览器中的 CalculatorWS 信息窗口"></li>
+                <li>单击浏览器中此页上的 WSDL 链接以查看定义 Web 服务的 WSDL 文件。<br><img alt="浏览器中的计算器 WS WSDL" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser2.png" title="浏览器中的计算器 WS WSDL">
+                <p class="notes"><b>注：</b>如果未显示 WSDL，请检查浏览器地址栏中的 URL。它应指向 <tt>http://localhost:<em>your_port_number</em>/CalculatorApp/CalculatorWSService?WSDL</tt>。</p>
+                </li>
+                <li>在 IDE 的 "Projects"（项目）窗口中，右键单击 "Web Services"（Web 服务）节点下的 "CalculatorWS"，然后在弹出菜单中选择 "Test Web Service"（测试 Web 服务）。<br>
+                    <p>测试 Web 服务时，将在浏览器中打开用于测试该服务的页面。</p>
+                    <img alt="浏览器中的计算器 WS 测试器" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser3.png" title="浏览器中的计算器 WS 测试器"> 
+                    <p>IDE 可以提供用于测试 Web 服务的客户端并在浏览器中打开测试应用程序。您可以在测试应用程序中为 Web 服务中定义的每个字段输入值。测试应用程序具有一个按钮，该按钮标记在服务中操作的名称之后。单击此按钮时，您将会看到调用操作的结果。</p>
+                    </li>
+                <li>在 "Projects"（项目）窗口中检查 CalculatorClientApp 项目是否有任何错误标记。
+                    <p>如果 <tt>ClientServlet.java</tt> 有错误图标，请右键单击该项目节点，然后在弹出菜单中选择 "Clean and Build"（清理并构建）。显示错误的原因是未部署 CalculatorWS 服务。既然部署了该服务，IDE 就可以解析 WSDL 并编译 ClientServlet 了。</p></li>
+                <li>右键单击 "CalculatorClientApp" 项目节点，然后选择 "Run"（运行）。
+                    <p>运行应用程序时，将在浏览器中打开服务界面。</p>
+                    <img alt="浏览器中的计算器服务客户端" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser4.png" title="浏览器中的计算器服务客户端"></li>
+                <li>在这两个字段中输入值，然后单击 "Get Result"（获取结果）。
+                    <p>单击 "Get Result"（获取结果）时，将从 Web 服务中检索操作结果并将其显示在客户端中。</p></li>
+            </ol>
+
+            <p>Web 服务正常运行并且客户端检索结果，但此项目不使用“服务质量”组件。在下一部分，您将了解如何配置 "Quality of Service"（服务质量）组件。</p>
+        </div>
+
+        <!-- ===================================================================================== -->
+
+        <h2><a name="Exercise_2"></a>
+            <!--Exercise 1: -->
+            了解安全计算器样例</h2>
+        <p>本练习的目标是了解安全的 Web 服务的设置方式，以及客户端与该服务的交互方式。</p>
+        <div class="indent">
+            <h3 class="tutorial"><a name="Exercise_2_1"></a>浏览样例</h3>
+            <p>在本练习中，将使用 "New Project"（新建项目）向导创建样例，然后检查如何为应用程序配置 "Quality of Service"（服务质量）。</p>
+
+            <ol>
+                <li>选择 "File"（文件）> "New Project"（新建项目）（在 Linux 和 Windows 上为 Ctrl-Shift-N 组合键；在 MacOS 上为 ⌘-Shift-N 组合键）以打开 "New Project"（新建项目）向导。</li>
+                    <li>展开 "Samples"（样例）类别，选择 "Web Services"（Web 服务）节点，然后选择 "Secure Calculator"（安全计算器）样例。单击 "Next"（下一步）。</li>
+                <li>确认在 "Server"（服务器）下拉列表中选定 Java EE 兼容的服务器。单击 "Finish"（完成）。
+                    <p>单击 "Finish"（完成）后，向导将创建以下两个项目： 
+                    <ul>
+                        <li><strong>SecureCalculatorApp</strong>，提供名为 CalculatorWS 的 Web 服务，用于公开名为 "add" 的操作。</li>
+                        <li><strong>SecureCalculatorClientApp</strong>，提供名为 CalculatorWSService 的客户端，用于调用 Web 服务的 "add" 操作。</li>
+                    </ul>
+                <p class="alert">可能会用一个错误图标标记 SecureCalculatorClientApp 服务，因为 IDE 找不到 CalculatorWS 服务的 WSDL。部署 SecureCalculatorApp，然后清理并构建 SecureCalculatorClientApp 之后，该错误将得到解决。</p>
+                </li>
+                <li>双击 SecureCalculatorApp 的 "Web Services"（Web 服务）文件夹中的 CalculatorWS Web 服务以在编辑器中打开此文件，然后单击编辑器顶部的 "Design"（设计）标签以在可视设计器中查看 Web 服务。
+                    <p class="notes"><b>注：</b>在服务设计视图的 "Quality of Service"（服务质量）部分中，您可以看到选中了 "Secure Service"（安全服务）选项，而其他两个选项未选中。设计视图中的 "Quality of Service"（服务质量）部分用于指定当前的 Web 服务所<i>启用</i>的服务质量组件。</p>
+                </li>
+                <li>单击 "Edit Web Service Attributes"（编辑 Web 服务属性）以打开 "Web Service Attributes Editor"（Web 服务属性编辑器）。<br> <img alt="WS 属性编辑器中的 &quot;Quality of Service&quot;（服务质量）页" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-quality-dialog.png" title="WS 属性编辑器中的 &quot;Quality of Service&quot;（服务质量）页">
+                    <p>在 "Quality of Service"（服务质量）标签中，您可以看到选中了 "Version Compatibility"（版本兼容性）选项。应选择与已安装的 Metro 或 .NET 版本匹配的最新版本。</p>
+                    
+                    <p class="alert">要启用版本兼容性下拉列表，请将最新版本的 Metro 添加到项目的类路径中。要添加最新的 Metro 库，请在 "Projects"（项目）窗口中右键单击项目的节点，打开项目的 "Properties"（属性）对话框，转至 "Libraries"（库）类别，然后浏览并添加最新的 Metro 库。</p>
+                    <p>请注意，选中了 "Secure Service"（安全服务）选项，并在下拉列表中选择了安全机制。该安全机制指定用于保护 Web 服务的方法。
+                    <p>在此样例应用程序中，选中了 "Username Authentication with Symmetric Keys"（用户名验证以及对称密钥）安全机制。有关用户名验证以及对称密钥安全机制的选项和属性的描述，请参见<a href="http://docs.oracle.com/cd/E19182-01/821-0015/gggsrv/index.html">用户名验证以及对称密钥</a>。有关其他可用安全机制的描述，请参见<a href="http://docs.oracle.com/cd/E19182-01/820-0595/6ncatc2q5/index.html" target="_blank">配置安全机制</a>。</p>
+                </li>      
+                <li>在 "Quality of Service"（服务质量）标签中，展开 "Input Message"（输入消息）和 "Output Message"（输出消息）部分。<br> <img alt="已启用 &quot;Message Parts&quot;（消息部件）按钮的 &quot;Quality of Service&quot;（服务质量）页" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-quality-dialog2.png" title="已启用 &quot;Message Parts&quot;（消息部件）按钮的 &quot;Quality of Service&quot;（服务质量）页">
+                    <p>如果选择 "Username Authentication with Symmetric Keys"（用户名验证以及对称密钥）作为安全机制，则会为 "Input Message"（输入消息）和 "Output Message"（输出消息）启用 "Message Parts"（消息部件）按钮。</p>
+                    <p class="notes"><b>注：</b>不为 "Username Authentication with Symmetric Keys"（用户名验证以及对称密钥）安全机制启用 "Authentication Token"（验证标记）下拉列表和 "Input Message"（输入消息）的选项。</p>
+                </li>                    
+                <li>单击 "Input Message"（输入消息）部分中的 "Message Parts"（消息部件）按钮。<br> <img alt="&quot;Message Parts&quot;（消息部件）对话框" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-messageparts.png" title="&quot;Message Parts&quot;（消息部件）对话框">
+                    <p>在 "Message Parts"（消息部件）对话框中，可以查看不同元素的安全选项。可以选中相应复选框以启用或禁用应签名、加密和需要的部件。对于每个元素，可以指定以下选项：</p>
+                    <ul>
+                        <li>选择 <strong>Sign</strong>（签名）以指定需要完整性保护（数字签名）的消息的部件或元素。</li>
+                        <li>选择 <strong>Encrypt</strong>（加密）以指定需要机密性（加密）的消息的部件或元素。</li>
+                        <li>选择 <strong>Require</strong>（需要）以指定消息中必须包含的部件和/或元素集合。</li>
+                    </ul>
+                    <p>接下来，您将了解 Web 服务客户端的服务质量是如何配置的。</p>
+                </li>
+                <li>在 "Projects"（项目）窗口中，展开 <strong>SecureCalculatorClientApp</strong> 项目中的 "Web Service References"（Web 服务引用）节点。</li>
+                <li>右键单击 "CalculatorWSService" 节点，然后在弹出菜单中选择 "Edit Web Service Attributes"（编辑 Web 服务属性）以打开 "Web Service Attributes"（Web 服务属性）对话框。<br> <img alt="Web 服务客户端服务质量对话框" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-qos-wsservice.png" title="Web 服务客户端服务质量对话框">
+                    <p>您会看到存在默认用户 "wsitUser" 和口令。该默认用户和口令是在 "file"（文件）领域中创建的。</p>
+                        
+                    <p>如果在 "Security"（安全）部分中选择 "Use Development Defaults"（使用默认开发设置）选项，则 IDE 会将证书导入 GlassFish Server 密钥库和信任库中，然后即可供用户进行开发。</p> 
+                    <p class="alert"><strong>重要说明：</strong>在生产环境中，您可能希望提供自己的证书和用户设置，但在开发环境中，您会发现这些默认设置非常有用。</p>
+                    <p>有关如何为 Web 服务客户端配置安全性的更详细描述，请参见 <a href="http://docs.oracle.com/cd/E19159-01/820-1072/index.html">WSIT 教程</a>中的<a href="http://docs.oracle.com/cd/E19159-01/820-1072/6ncp48v3b/index.html">第 7 章：使用 WSIT 安全性</a>。</p>
+                </li>
+            </ol>
+
+            <h3 class="tutorial"><a name="Exercise_2_2"></a>部署和测试安全计算器样例</h3>
+            <ol>
+
+                <li>右键单击 Web 服务项目节点，然后选择 "Run"（运行）以部署 Web 服务。</li>
+                <li>右键单击 Web 服务客户端项目节点，然后选择 "Run"（运行）。 
+                    <p>运行客户端时，将部署应用程序，并在浏览器中打开服务界面。</p>
+                    <img alt="浏览器中的安全 Web 服务客户端" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser-secure1.png" title="浏览器中的安全 Web 服务客户端">
+                </li>
+                <li>在每个字段中键入一个数字，然后单击 "Get Result"（获取结果）。
+                    <p>单击 "Get Result"（获取结果）时，页面中将显示已验证客户端的消息并显示操作结果。</p>
+                    <img alt="显示结果的浏览器中的安全 Web 服务客户端" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser-secure2.png" title="显示结果的浏览器中的安全 Web 服务客户端">
+                </li>
+                    
+            </ol>
+            <p class="notes">如果您获得的错误消息说验证因用户名/口令对无效而失败，则表示 IDE 创建的默认用户存在问题，或者客户端上设置的凭证不匹配。在这种情况下，需要手动创建用户名/口令对。有关说明，请参见 <a href="http://docs.oracle.com/cd/E19159-01/820-1072/index.html">WSIT 教程</a>中的<a href="http://docs.oracle.com/cd/E19159-01/820-1072/6ncp48v3b/index.html">第 7 章：使用 WSIT 安全性</a>。</p>
+        </div>
+
+
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:WSIT%20Advanced%20Interoperability%20in%20NetBeans%20IDE%206.0">发送有关此教程的反馈意见</a></div>
+
+        <!-- ======================================================================================= -->
+        <br>
+        <h2><a name="seealso"></a>另请参见</h2>
+        <p>有关使用 NetBeans IDE 开发 Web 服务的详细信息，请参见以下资源：
+        </p>
+        <ul>
+            <li><a href="client.html">开发 JAX-WS Web 服务客户端</a></li>
+            <li><a href="jax-ws.html">JAX-WS Web 服务入门指南</a></li>
+            <li><a href="rest.html">REST 风格的 Web 服务入门指南</a></li>
+            <li><a href="flower_overview.html">传递二进制数据的 Web 服务应用程序</a></li>
+            <li><a href="../../74/websvc/jaxb_zh_CN.html">使用 JAXB 将 WSDL 绑定到 Java</a></li>
+            <li><a href="../../trails/web.html">Web 服务学习资源</a></li>
+
+        </ul>
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee@netbeans.org 邮件列表</a>。</p>
+    </body>

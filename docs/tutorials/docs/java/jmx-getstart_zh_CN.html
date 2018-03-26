@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+  <title>NetBeans IDE 中的 JMX 监视入门指南</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  <meta name="description" content="Getting Started with JMX module">
+  <link rel="stylesheet" href="../../../netbeans.css">
+  <meta name="author" content="Jean-Francois Denise">
+  <meta name="author" content="Joel FERAUD">
+  <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JMX">
+  <meta name="description" content="An introductory guide to using JMX technology in NetBeans IDE"/>
+
+</head>
+
+<body>
+    
+<h1>NetBeans IDE 中的 JMX 监视入门指南</h1>
+
+
+
+<p>NetBeans JMX 模块将 JMX 技术集成到 NetBeans IDE 中的工作流。此模块允许您快速开发管理应用程序，向现有应用程序添加管理，开发管理器应用程序，以及监视虚拟机的状态。 </p>
+  
+  <p>本文档已针对 JMX 向导模块版本 3.0、NetBeans IDE 6.5 及更新版本进行更新，且运行于 JDK 6 或 JDK 7 之上。可以从更新中心下载 JMX 模块。</p>
+  
+
+<p class="note"> <b>注：</b>此文档简短快速地介绍了 NetBeans IDE 的 JMX 模块。有关更详细信息，请完成 JMX 模块教程<a href="jmx-tutorial.html">将 JMX 分析添加到 Java 应用程序中</a>。</p> 
+
+
+<p>本入门文档概述了 JMX 模块功能：</p>
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<ul>
+  <li>用于创建 JMX MBean 和管理器的向导。</li>
+  <li>通过添加属性和操作，实现 <tt>MBeanRegistration</tt> 接口或实现 <tt>NotificationEmitter</tt> 接口更新现有 MBean 的操作。</li>
+  <li>根据现有 Java 类的 MBean 生成。</li>
+  <li>用于将 MBean 注册到 Java 平台 MBean 服务器的操作。</li>
+  <li>启动 Java 平台管理控制台 (JConsole) 的功能。</li>
+  <li>使用 JConsole 运行和调试应用程序的功能。</li>
+  <li>向您演示如何将 JMX 功能添加到应用程序的基于 Anagram Game 的样例应用程序。</li>
+  <li>用于生成管理属性文件以允许您启动可管理的安全 JVM 的向导。</li>
+  <li>联机帮助。
+  <li>可从 <a href="../../index.html">netbeans.org</a> 站点访问的教程。</li>
+</ul>
+
+
+<h3>先决条件</h3>
+<p>本教程假定您具备以下技术的一些基本知识或编程经验。 </p>
+    <ul>
+        <li>JMX 技术：<a href="http://download.oracle.com/javase/6/docs/technotes/guides/jmx/index.html">JMX 联机文档</a>
+            </li>
+        <li>Java 技术：<a href="http://www.oracle.com/technetwork/java/javase/tech/index.html">Java SE 技术概览</a>
+            </li>
+        <li>NetBeans IDE</li>
+    </ul>
+<p>您还将受益于在 <a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/index.html">Java 平台的监视和管理</a>方面的一些知识</p>
+
+<h3>本教程所需要的软件</h3>
+<p>在学习本教程之前，您需要在计算机上安装以下软件：</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">软件或资源</th>
+        <th class="tblheader" scope="col">要求的版本</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2、7.3、7.4、8.0、Java 包</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+        <td class="tbltd1">版本 7 或 8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JMX 插件</td>
+        <td class="tbltd1">可从 NetBeans 更新中心获得</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JConsole 插件</td>
+        <td class="tbltd1">可从 NetBeans 更新中心获得</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>要安装 <strong>JMX</strong> 和 <strong>JConsole</strong> 插件，请选择“工具”>“插件”，然后从 NetBeans 更新中心下载相应模块。</p>
+
+<h2>访问 JMX 向导</h2>
+<p>在安装 JMX 插件并打开您的项目之后，可以通过选择 "File"（文件）> "New File"（新建文件）（Ctrl-N 组合键）并选择 "JMX" 类别来访问 JMX 向导。然后可以从以下项中选择：</p>
+<ul>
+  <li><b>管理配置文件</b>。用于存储 JMX 管理（特别是远程连接和安全）的配置的标准 Java 属性文件。</li>
+    
+  <li><b>几种类型的 JMX MBean</b>。MBean 可以表示一个设备、一个应用程序或需要托管的任何资源。MBean 公开管理界面：一组可读和/或可写属性和一组可调用操作以及自我描述。在 MBean 实例的整个生命周期内，该管理界面都不会更改。MBean 还会在发生某些定义的事件时发出通知。JMX MBean 需要注册到 MBean 服务器。</li>
+
+  <li><b>JMX 管理器</b>。JMX 管理器是连接到远程 JMX MBean 服务器的任何应用程序。<br /> <img alt="JMX 新建文件向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newfile.png" title="JMX 类别中的新建文件向导" /></li>
+</ul>
+
+
+<h2>更新 MBean</h2>
+<p>可以使用 JMX 上下文菜单操作（将弹出一个对话框）来向 MBean 添加属性和操作。也可以让 MBean 实现 <tt>NotificationEmitter</tt> 接口。</p>
+
+<p>要更新 MBean，请在 "Project"（项目）树中选择 MBean 类 Java 文件并通过右键单击相应节点来访问 JMX 弹出菜单，或者在打开了 MBean 类 Java 文件的编辑器窗口中简单右键单击并访问 JMX 弹出菜单。</p>
+  
+  <p>在<a href="jmx-tutorial.html#Exercise_3">将 JMX 分析添加到 Java 应用程序中</a>教程的练习 3 中演示了这些操作。</p>
+  
+<h2>注册 MBean</h2>
+
+<p>要远程连接到 MBean 并管理您的应用程序，需要将 MBean 注册到 MBean 服务器中。</p>
+<p>MBean 服务器是 JMX 技术的主要的核心部分。该服务器保持引用注册到其中的所有 MBean，可以发送有关新 MBean 注册或删除操作的通知，并且可以接受远程连接以公开其注册的 MBean 的属性和操作。如果您不熟悉 MBean 服务器角色，请阅读<tt> <a href="http://download.oracle.com/javase/6/docs/api/javax/management/MBeanServer.html">javax.management.MBeanServer</a></tt> API 文档。</p>
+
+<p>从 JDK 5 开始，Java 平台提供一个称为“平台 MBean 服务器”的默认 MBean 服务器。使用该服务器，您可以监视 JVM，也可以将您自己的 MBean 注册到其中。有关 Java 平台 MBean 服务器的详细信息，请阅读<tt> <a href="http://download.oracle.com/javase/6/docs/api/java/lang/management/ManagementFactory.html">java.lang.management.ManagementFactory </a></tt> API 文档。</p>
+
+<p>根据逻辑，确定希望将 MBean 注册到的应用程序代码位置，通常是在主类的初始化阶段。在编辑器窗口中右键单击希望生成 MBean 注册代码的位置，选择 "JMX" 子菜单，然后选择 "Generate MBean Registration..."（生成 MBean 注册...）操作。</p>
+  
+    <p>在<a href="jmx-tutorial.html#Exercise_5">将 JMX 分析添加到 Java 应用程序中</a>教程的练习 5 中演示了此操作。</p>
+
+    
+    
+<h2>实现并执行可管理的应用程序</h2>
+
+<p>JConsole 是 JMX 兼容的图形工具，用于监视 Java 虚拟机。JConsole 可以监视本地和远程 JVM，并且可以用于监视和管理 JMX 应用程序。</p>
+
+<p>通常，实现并执行可管理的应用程序的工作流如下所示：</p>
+<ol>
+  <li>生成 MBean。 </li>
+  <li>向 MBean 添加实现 </li>
+  <li>生成 MBean 的注册代码。</li>
+  <li>使用 JConsole 运行或调试项目。</li>
+</ol> 
+
+<p>安装 JMX 和 JConsole 插件后，您将会看到工具栏上添加了以下按钮。也可以在主菜单中的 "Debug"（调试）菜单项下访问这些操作。</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">按钮</th>
+        <th class="tblheader" scope="col">描述</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="工具栏中的 &amp;quot;Run Main Project with Monitoring and Management&amp;quot;（通过监视和管理运行主项目）按钮" class="margin-around" src="../../../images_www/articles/74/java/jmx/run-project24.png" title="&amp;quot;Run Main Project with Monitoring and Management&amp;quot;（通过监视和管理运行主项目）按钮" /></td>
+        <td class="tbltd1">通过监视和管理运行主项目</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="工具栏中的 &amp;quot;Debug Main Project with Monitoring and Management&amp;quot;（通过监视和管理调试主项目）按钮" class="margin-around" src="../../../images_www/articles/74/java/jmx/debug-project24.png" title="&amp;quot;Debug Main Project with Monitoring and Management&amp;quot;（通过监视和管理调试主项目）按钮" /></td>
+        <td class="tbltd1">通过监视和管理调试主项目</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="工具栏中的 &amp;quot;Start JConsole Management Console&amp;quot;（启动 JConsole 管理控制台）按钮" class="margin-around" src="../../../images_www/articles/74/java/jmx/console24.png" title="&amp;quot;Start JConsole Management Console&amp;quot;（启动 JConsole 管理控制台）按钮" /></td>
+        <td class="tbltd1">启动 JConsole 管理控制台</td>
+    </tr>
+    </tbody>
+</table>
+
+<p class="notes"><strong>注：</strong>JConsole 是 Java 平台的一部分，可以独立于 IDE 进行使用。有关详细信息，请参阅以下资源。</p>
+<ul>
+    <li><a href="http://download.oracle.com/javase/6/docs/technotes/tools/share/jconsole.html"><tt>jconsole</tt> 手册页</a></li> 
+    <li><a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">使用 JConsole 文档</a></li>
+</ul>
+
+<h2>运行样例应用程序</h2>
+
+<p>JMX 模块包含其中内置了 JMX 监视的样例应用程序。</p>
+<ol>
+  <li>选择 "File"（文件）> "New Project"（新建项目）。</li>
+  <li>在 "Samples"（样例）中，选择 "JMX" 类别。</li>
+  <li>选择 "Anagram Game Managed with JMX"（使用 JMX 管理的 Anagram Game）项目。<br /> <img alt="&amp;quot;New Project&amp;quot;（新建项目）向导中的 &amp;quot;Anagram Game Managed with JMX&amp;quot;（使用 JMX 管理的 Anagram Game）项目的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newproject.png" title="&amp;quot;New Project&amp;quot;（新建项目）向导中的 &amp;quot;Anagram Game Managed with JMX&amp;quot;（使用 JMX 管理的 Anagram Game）" width="600" />
+ </li>
+ 
+  <li>单击 "Next"（下一步）。无需更改提供的默认项目名称或位置值。确认 "Set as Main Project"（设置为主项目）复选框处于选中状态。单击 "Finish"（完成）。
+  <p class="notes"><strong>注：</strong>如果您以前未安装 JUnit 插件，则 IDE 可能会提示您安装 JUnit 库。您可以单击 "Resolve Resource Problems"（解决资源问题）对话框中的 "Resolve"（解决）启动安装程序来安装 JUnit 插件。或者，您也可以在插件管理器中安装 JUnit 插件。</p>
+  </li>
+  <li>创建项目并将其设置为主项目之后，通过单击 "Run Main Project with Monitoring and Management"（通过监视和管理运行主项目）JConsole 按钮使用 JConsole 运行该项目。
+  <p class="notes"><strong>注：</strong>当 Java 监视和管理控制台尝试连接到 Anagram Game 进程时，您可能会在此控制台中看到 "Connection Failed"（连接失败）警告。对于本教程，当系统提示您授权连接时，您可以单击 "Insecure"（不安全）。</p>
+  
+  <p>单击此按钮将启动并显示 Anagram Game：</p>
+  <img alt="Anagram Game" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-anagram.png" title="Anagram Game" />
+  
+  <p>也将显示 "JConsole" 窗口。</p>
+  </li>
+  <li>在 "JConsole" 窗口中，选择 "MBean" 标签，然后在左侧的树布局中向下打开 <tt>anagrams.toy.com</tt> 下的所有节点，如下所示。<br /> <img alt="&amp;quot;JConsole&amp;quot; 窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jconsole1.png" title="&amp;quot;JConsole&amp;quot; 窗口" />
+  </li>
+  <li>选择 "Notifications"（通知）节点，然后单击底部的 "Subscribe"（订阅）按钮，这样在 Anagram 每次得到解决时 JConsole 都将会收到新通知。</li>
+  <li>现在转到 "Anagrams Game" 窗口，然后解决前三个或前四个 Anagram（答案位于 WordLibrary 类中，而此处它们是：abstraction、ambiguous、arithmetic、backslash...）</li>
+  <li>返回 JConsole，注意它收到了四个通知。</li>
+  <li>单击 "Attributes"（属性）节点，可以看到更新了属性值：<br /> <img alt="显示已更新值的 &amp;quot;JConsole&amp;quot; 窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jconsole2.png" title="显示已更新值的 &amp;quot;JConsole&amp;quot; 窗口" width="600" /></li>
+</ol>
+
+<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20JMX%20Monitoring">发送有关此教程的反馈意见</a></div>
+        
+        <br style="clear:both;">
+            
+<h2>另请参见</h2>
+<p>此文档简短快速地介绍了 NetBeans IDE 的 JMX 模块。有关更详细信息，请参见以下 JMX 模块教程：</p>
+<ul>
+    <li><a href="jmx-tutorial.html">将 JMX 分析添加到 Java 应用程序中</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+    <title>Создание приложения на основе базы данных на языке PHP.  Разработка приложения PHP.  Использование формы HTML для ввода информации.  Реализация чтения из базы данных MySQL на языке PHP</title>
+    <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+    <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Design PHP application. HTML input form. PHP implementation of reading from MySQL database" >
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+            <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+        <script type="text/javascript">
+ 
+function toggle(id) {
+  var e = document.getElementById(id);
+ 
+  if (e.style.display == '')
+    e.style.display = 'none';
+  else
+    e.style.display = '';
+}
+ 
+</script></head>
+<body>
+<h1>Создание приложения на основе базы данных на языке PHP </h1>
+<h1>Урок 2. Проектирование приложения.  Чтение из базы данных </h1>
+
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Содержание учебного курса.</h4>
+<ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Создание приложения на основе базы данных с помощью языка PHP &ndash; главная страница</a></li>
+    <li><p>Создание базы данных</p> <ol type="a"><li><a href="wish-list-lesson1.html">Создание базы данных MySQL</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Создание таблиц базы данных Oracle</a></li>
+    </ol></li>
+    <li><p><b>=&gt; Проектирование приложения.  Чтение из базы данных</b></p>
+    <ul><li><a href="#createProject">Создание проекта PHP</a></li>
+    <li><a href="#pageFlowDiagram">Определение диаграммы потока операций</a></li>
+    
+  <li><a href="#transferDataFromIndexToWishlist">Добавление формы к index.php</a>
+                <li><a href="#createNewFile">Создание wishlist.php и тестирование приложения</a></li>
+            
+            <li><a href="#receiveAndProcessDaaInWishlist">Установка подключения и получение идентификатора автора пожеланий</a></li>
+        
+            <li><a href="#wish-table">Отображение таблицы пожеланий</a></li>
+          <li><a href="#lessonResultSourceCode">Исходный код приложения на момент завершения текущего урока</a></li>
+</ul>
+    </li>
+    <li><a href="wish-list-lesson3.html">Создание нового пользователя приложения</a></li>
+    <li><a href="wish-list-lesson4.html">Усовершенствование кода</a></li>
+    <li><a href="wish-list-lesson5.html">Добавление функций безопасности. Реализация входа пользователя в приложение</a></li>
+    <li><a href="wish-list-lesson6.html">Добавление к базе данных новых желаний</a></li>
+    <li><a href="wish-list-lesson7.html">Обновление и удаление записей в базе данных</a></li>
+    <li><a href="wish-list-lesson8.html">Усовершенствование внешнего вида приложения с использованием технологии CSS</a></li>
+    <li><a href="wish-list-lesson9.html">Развертывание приложения на удаленном веб-сервере</a></li>
+</ol>
+</div>
+</div>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+<p>В этом уроке рассматривается создание и настройка проекта PHP для разработки приложения, создание списка страниц в приложении и определение отношений между ними.  Кроме того, основная функциональность разрабатывается и тестируется на данных, введенных в пример базы данных в уроке 1. </p>
+<p>Создаваемый в этом уроке код PHP выполняет следующие функции.</p>
+<p>1 Получает имя лица, введенного пользователем.</p>
+<p>2. Проверяет наличие этого лица в базе данных.  Если лицо отсутствует в базе данных, выполняется выход с сообщением об ошибке.</p>
+<p>3 Отображение таблицы пожеланий этого лица.</p>
+<p>Текущий документ является частью краткого учебного курса "Создание приложения, управляемого базой данных, в IDE NetBeans для PHP". </p>
+
+<br style="clear:left">
+
+<h2><a name="createProject"></a>Создание проекта PHP</h2>
+<p>Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N в Windows и Linux, ⌘-Shift-N в ОС Mac). Создайте новый проект PHP с именем &quot;wishlist&quot;.  После создания проекта PHP по умолчанию он будет содержать файл индекса <tt>index.php</tt>.  Для получения информации о создании и настройке проекта PHP см. <a href="project-setup.html">Настройка проекта PHP</a>. </p>
+<h2><a name="pageFlowDiagram"></a>Определение блок-схемы страницы </h2>
+В рамках приложения возможны следующие варианты использования:
+<ol>
+    <li>Пользователь просматривает список &quot;Wish list&quot; другого пользователя.</li>
+    <li>Пользователь регистрируется в качестве нового пользователя.</li>
+    <li>Пользователь входит в систему и создает собственный список пожеланий &quot;Wish list&quot;.</li>
+    <li>Пользователь входит в систему и редактирует свой список пожеланий. </li>
+</ol>
+Для реализации этих базовых функциональных возможностей потребуется добавить следующие файлы PHP.
+<ol>
+    <li>Первая страница index.php для входа в систему, регистрации и перехода к спискам &quot;Wish list&quot; других пользователей.</li>
+    <li>Страница wishlist.php для просмотра списка &quot;Wish list&quot; конкретного пользователя.</li>
+    <li>Страница createNewWisher.php для регистрации в качестве автора пожеланий. </li>
+    <li>Страница editWishList.php для редактирования списка его владельцем.</li>
+    <li>Страница editWish.php для создания и редактирования пожеланий. </li>
+</ol>
+<img alt="На диаграмме показаны запланированные переключения между страницами в различных вариантах использования" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram.png">
+
+<p>После выполнения предварительных действий можно приступить к реализации базовой функциональности приложения.  Начать следует с просмотра списка &quot;Wish list&quot; одного из пользователей.  Для этой функции не требуется выполнять проверку допустимости, ее можно легко протестировать, поскольку в базу данных уже внесены тестовые данные.  Функциональность компонента реализуются на двух страницах &ndash; index.php и wishlist.php.</p>
+
+<h2><a name="transferDataFromIndexToWishlist"></a>Добавление формы к index.php</h2>
+<p>Файл index.php не содержит код PHP, таким образом, можно просто удалить следующий блок:</p>
+<p>Файл <tt>index.php</tt> используется в двух целях.</p>
+<ul>
+    <li>Отображение страницы с элементами управления для ввода данных.</li>
+    <li>Передача введенных данных в другой файл PHP для обработки данных.  В этом учебном курсе данные передаются в файл с именем <tt>wishlist.php</tt>, который создается в следующем разделе.</li>
+</ul>
+<p>Эти действия выполняются с использованием формы HTML.  Каждая форма HTML содержит следующее.</p>
+<ul>
+    <li>Набор полей, соответствующих элементам управления на странице. </li>
+    <li>&quot;Действие&quot;, выполняемое после отправки пользователем данных в форме.  Действие представлено путем к странице для обработки данных. </li>
+</ul>
+<p><strong>Для добавления формы к index.php выполните следующее.</strong></p>
+<ol>
+  <li>Перейдите к окну &quot;Проекты&quot;, разверните узел проекта и узел &quot;Файлы исходного кода&quot;, затем дважды щелкните файл <tt>index.php</tt>.  Файл <tt>index.php</tt> откроется в основной области редактора IDE.  Файл содержит шаблон для ввода кодов PHP и HTML.
+    <p class="notes"><b>Примечание. </b>Можно пропустить предупреждения от средства проверки HTML.</p>
+    . </li>
+  <li>Удалите блок PHP.  Файл index.php не содержит код PHP.<br> <img alt="Пустой блок PHP, который можно удалить" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/remove-php-block.png"></li>
+  <li>Откройте &quot;Палитру&quot; из меню &quot;Окно&quot; или нажав Ctrl-Shift-8. </li>
+  <li>Из раздела <strong>Формы HTML</strong> палитры перетащите форму в раздел &lt;body&gt; файла <tt>index.php</tt>. <br><img alt="Перетаскивание элемента формы HTML из палитры в тело index.php" class="margin-around" height="254" src="../../../images_www/articles/72/php/oracle-wishlist/form-dnd.png" width="566"></li>
+  <li>Откроется диалоговое окно &quot;Вставить форму&quot;.  В поле &quot;Действие&quot; введите путь к файлу, в которой форма будет передавать данные.  В данном случае введите <tt>wishlist.php</tt>.  (Этот файл будет создан в том же местоположении, что и файл <tt>index.php</tt>.  См. <a href="#createNewFile">Создание wishlist.php и тестирование приложения</a>.)  Выберите метод GET для передачи данных.  Присвойте форме произвольное имя, например, <tt>wishList</tt>.  Нажмите кнопку &quot;ОК&quot; после выполнения действия.<br> <img alt="Форма &apos;Вставить диалоговое окно&apos; заполнена" class="margin-around" height="249" src="../../../images_www/articles/72/php/oracle-wishlist/insert-form-dialog.png" width="430">
+  <p>Теперь файл выглядит следующим образом:</p>
+  <img alt="index.php с добавленной формой без содержимого" class="margin-around" height="271" src="../../../images_www/articles/72/php/oracle-wishlist/blank-form.png" width="480"></li>
+  <li>Между открывающим и закрывающим тегами формы введите текст &quot;Показать список пожеланий: &quot;.</li>
+  <li>Перетащите компонент &quot;Ввод текста&quot; из раздела <strong>Формы HTML</strong> палитры в пространство после текста &quot;Показать список пожеланий: &quot;.  Откроется диалоговое окно &quot;Вставка ввода текста&quot;.  </li>
+  <li>Присвойте вводу название <tt>user</tt>.  Выберите тип ввода <tt>text</tt>.  Оставьте все поля пустыми и нажмите кнопку &quot;ОК&quot;.<br> <img alt="Диалоговое окно &amp;quot;Вставка ввода текста&amp;quot;." class="margin-around" height="291" src="../../../images_www/articles/72/php/oracle-wishlist/insert-text-input.png" width="349">
+  <p>Теперь файл выглядит следующим образом:</p>
+  <img alt="index.php с формой ввода текста" class="margin-around" height="248" src="../../../images_www/articles/72/php/oracle-wishlist/form-with-text-input.png" width="600">  </li>
+  <li>Добавьте пустую сроку над тегом &lt;/form&gt;.  В эту пустую строку перетащите компонент &quot;Кнопка&quot; из раздела <strong> Формы HTML</strong> палитры.</li>
+  <li>Откроется диалоговое окно &quot;Вставить кнопку&quot;.  Введите <tt>Go</tt> в поле &quot;Метка&quot; и нажмите кнопку &quot;ОК&quot;.<br> <img alt="Диалоговое окно &apos;Вставить кнопку&apos;заполнено" class="margin-around" height="246" src="../../../images_www/articles/72/php/oracle-wishlist/insert-button-dialog.png" width="349"></li>
+  <li>Теперь форма выглядит так, как показанный ниже код, с одним отличием.  В коде ниже атрибут <tt>method</tt> явно указан в теге &lt;form&gt;.  IDE NetBeans не добавил атрибут метода к используемой форме, поскольку значением по умолчанию этого атрибута является GET. Однако явное указание атрибута <tt>method</tt> упрощает понимание кода.
+
+    <pre class="examplecode">&lt;form action=&quot;wishlist.php&quot; method=&quot;GET&quot; name=&quot;wishList&quot;&gt;<br>      Show wish list of: &lt;input type=&quot;text&quot; name=&quot;user&quot; value=&quot;&quot;/&gt;<br>		&lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>&lt;/form&gt;</pre>
+  </li>
+</ol>
+<p>Обратите внимание на следующие элементы формы.</p>
+    <ul>
+        <li>Открывающий тег &lt;form&gt; содержит атрибут <tt>action</tt>.  Атрибут action указывает файл, в который форма передает данные.  В данном случае файл имеет имя <tt>wishlist.php</tt> и находится в той же папке, что и файл <tt>index.php</tt>.  (Этот файл будет создан в разделе <a href="#createNewFile">Создание wishlist.php и тестирование приложения</a>.)</li>
+        <li>Открывающий тег &lt;form&gt; также содержит метод для применения к переданным данным (GET).  PHP использует массив <tt>$_GET</tt> или <tt>$_POST</tt> для значений, переданных этой формой, в зависимости от значения атрибута <tt>method</tt>.  В данном случае PHP использует <tt>$_GET</tt>.</li>
+        <li>Компонент ввода <tt>text</tt>.  Этот компонент — текстовое поле для ввода имени пользователя, список пожеланий которого необходимо просмотреть.  Начальное значение текстового поля — пустая строка.  Имя этого поля — <tt>user</tt>.  PHP использует имя поля при создании массива для значений поля.  В данном случае массив для значений этого поля — <tt>htmlentities($_GET["user"])</tt>.</li>
+        <li>Компонент ввода <tt>submit</tt> со значением &quot;Go&quot;.  Тип &quot;submit&quot; означает, что поле ввода отображается на странице как кнопка.  Значение &quot;Go&quot; — это метка поля.  При нажатии пользователем кнопки данные в компоненте <tt>text</tt> передаются в файл, указанный в атрибуте <tt>action</tt>.</li>
+    </ul>
+<h2><a id="createNewFile" name="createNewFile">Создание wishlist.php и тестирование приложения</a></h2>
+<p>В разделе <a href="#transferDataFromIndexToWishlist">Добавление формы к index.php</a> была создана форма, с помощью которой пользователь отправляет имя лица, список пожеланий которого необходимо просмотреть.  Имя передается странице <tt>wishlist.php</tt>.  Однако этой страницы не существует.  Если выполнить <tt>index.php</tt>, при отправке имени возникнет ошибка &quot;404: Файл не найден&quot;.  В этом разделе будет создан файл <tt>wishlist.php</tt>, затем будет выполнено тестирование приложения.</p>
+<p><strong>Для создания wishlist.php и тестирования приложения выполните следующее.</strong></p>
+<ol>
+    <li>В созданном проекте 'wishlist' щелкните правой кнопкой мыши узел 'Исходные файлы' и выберите 'Создать > Файл PHP' в контекстном меню. Откроется мастер создания веб-страниц PHP.</li>
+    <li>Введите <tt>wishlist</tt> в поле &quot;Имя файла&quot; и нажмите кнопку &quot;Готово&quot;.<br>
+    </li>
+
+        <li>Щелкните правой кнопкой мыши узел 'Источники' и выберите 'Выполнить проект' в контекстном меню или щелкните значок 'Выполнить главный проект' <img alt="&amp;quot;Выполнить главный проект&amp;quot; на панели инструментов: отобразится зеленая треугольная стрелка" src="../../../images_www/articles/72/php/wish-list-lesson2/run-main-project-button.png">на панели инструментов, если проект задан как главный. <br> <img alt="Страница главного приложения index.php с &apos;Показать список пожеланий&apos; в поле редактирования и кнопка &apos;Перейти&apos;" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/index-php-works.png">
+        </li>
+        <li>В поле &quot;Show wish list of&quot; введите &quot;Tom&quot; и нажмите &quot;Go&quot;.  Появится пустая страница со следующим URL-адресом: http://localhost:90/Lesson2/wishlist.php?user=tom.  Наличие этого URL-адреса означает, что главная страница функционирует правильно. </li>
+</ol>
+<h2><a name="receiveAndProcessDaaInWishlist"></a>Установка подключения и получение идентификатора автора пожеланий</h2>
+<p>В этом разделе сначала к файлу <tt>wishlist.php</tt> будет добавлен код для создания подключения к базе данных.  Затем будет добавлен код для получения идентификатора автора пожеланий, который был введен в форме <tt>index.php</tt>.</p>
+<ol>
+<li>Дважды щелкните файл wishlist.php.  Открывшийся шаблон отличается от index.php.  Файл должен начинаться и заканчиваться тегами &lt;html&gt;&lt;/html&gt; и &lt;body&gt;&lt;/body&gt;, поскольку файл будет содержать также код HTML.
+    <pre class="examplecode">&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>    &lt;head&gt;<br>        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;<br>        &lt;title&gt;&lt;/title&gt;<br>    &lt;/head&gt;<br>    &lt;body&gt;<br>        &lt;?php<br>        // put your code here<br>        ?&gt;<br>    &lt;/body&gt;<br>&lt;/html&gt;</pre>
+</li>
+<li>Для отображения заголовка после тега открытия &lt;body&gt; и перед генерируемым тегом &lt;?php введите следующий блок кода:
+    <pre class="examplecode"> Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]).&quot;&lt;br/&gt;&quot;;?&gt;</pre>
+    <p>Теперь код должен выглядеть следующим образом:</p>
+        <pre class="examplecode">
+&lt;body&gt;Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]).&quot;&lt;br/&gt;&quot;;?&gt;<br>    &lt;?php<br>
+    // put your code here<br>
+&lt;/body&gt;
+</pre>
+
+    <p>Блок кода PHP выводит на экран данные, которые поступают посредством метода GET в поле &quot;user&quot;.  Это данные передаются со страницы <tt>index.php</tt>, где имя владельца списка &quot;Wish list&quot; &ndash; &quot;Tom&quot; &ndash; было введено в текстовом поле &quot;user&quot;.  Повторите действия, указанные на странице <a href="#createNewFile">Testing index.php</a>, для проверки того, что wishlist.php функционирует правильно. <br> <img alt="На странице wishList.php отображается список text Wish Тома" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-title-works.png">          </li>
+<li><p><a name="connect-db"></a>Удалите раздел в шаблоне блока PHP с комментарием.  В этом месте введите или вставьте следующий код.  Этот код открывает подключение к базе данных. </p>
+
+ <p><b>Для базы данных MySQL</b></p>
+    <pre class="examplecode">$con = mysqli_connect(&quot;localhost&quot;, &quot;phpuser&quot;, &quot;phpuserpw&quot;);<br>if (!$con) {<br>    exit('Connect Error (' . mysqli_connect_errno() . ') '<br>           . mysqli_connect_error());<br>}<br>//set the default client character set <br>mysqli_set_charset($con, 'utf-8');</pre>
+
+<p><b>Для базы данных Oracle</b></p>
+<pre class="examplecode">$con = oci_connect("phpuser", "phpuserpw", "localhost/XE", "AL32UTF8");
+if (!$con) {
+    $m = oci_error();
+    exit('Connect Error ' . $m['message']);
+}</pre>
+<p>В соответствии с кодом производится попытка подключения к базе данных и выдается сообщение об ошибке в случае неудачи.</p>
+<p class="notes"><b>Примечание для пользователей базы данных Oracle.</b> Может потребоваться изменить подключение к базе данных в команде <tt>oci_connect</tt>.  Стандартный синтаксис — &quot;hostname/service name&quot;.  Подключение к базе данных Oracle XE в этом фрагменте — &quot;localhost/XE&quot; в соответствии с этим синтаксисом. </p>
+<p class="notes"><b>Примечание</b> Автозавершение кода IDE NetBeans можно использовать для функций mysqli или OCI8.</p>
+<img alt="Автозавершения кода для вызовов MySQL" class="margin-around" height="107" src="../../../images_www/articles/72/php/oracle-wishlist/codecompletion.png" width="342"><img alt="Автозавершения кода для вызовов OCI8" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/codecompletion-oci.png"></li>
+<li><p>Под фрагментом кода, описывающим подключение к базе данных, в том же блоке PHP укажите следующий код.   Этот код получает идентификатор автора пожеланий, чей список был запрошен.  Если автор пожеланий отсутствует в базе данных, код уничтожает/завершает процесс и отображает сообщение об ошибке.</p>
+<p><b>Для базы данных MySQL</b></p>
+    <pre class="examplecode">mysqli_select_db($con, &quot;wishlist&quot;);<br>
+$user = mysqli_real_escape_string($con, htmlentities($_GET[&quot;user&quot;]));<br>
+$wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot; . $user . &quot;'&quot;);<br>
+if (mysqli_num_rows($wisher) &lt; 1) {
+    exit(&quot;The person &quot; . htmlentities($_GET[&quot;user&quot;]) . &quot; is not found. Please check the spelling and try again&quot;);
+}<br>$row = mysqli_fetch_row($wisher);<br>$wisherID = $row[0];<br>mysqli_free_result($wisher);</pre>
+<p><b>Для базы данных Oracle.</b> (Имейте в виду, что oci8 не имеет эквиваленту <tt>mysqli_num_rows</tt>)</p>
+<pre class="examplecode">$query = "SELECT id FROM wishers WHERE NAME = :user_bv";
+$stid = oci_parse($con, $query);
+$user = $_GET['user'];
+
+oci_bind_by_name($stid, ':user_bv', $user);
+oci_execute($stid);
+
+//Because user is a unique value I only expect one row
+$row = oci_fetch_array($stid, OCI_ASSOC);
+if (!$row) {
+    exit("The person " . $user . " is not found. Please check the spelling and try again" );
+}
+$wisherID = $row['ID'];
+oci_free_statement($stid);</pre>
+    <p>Осуществляется выбор данных из базы данных <tt>wishlist</tt> с помощью подключения $con.  Критерием выбора является имя, полученное со страницы index.php как &quot;user&quot;.</p>
+    <p>Синтаксис оператора SQL <tt>SELECT</tt> может быть кратко описан следующим образом:</p>
+    <ul>
+        <li>После выполнения оператора SELECT укажите поля, из которых должны быть получены данные.  Все поля отмечены звездочкой (*).</li>
+        <li>После блока FROM укажите имя таблицы, из которой требуется извлечь данные. </li>
+        <li>Блок WHERE является необязательным.  Укажите в нем условия фильтрации.</li>
+    </ul>
+    <p>Запрос mysqli возвращает объект результата.  OCI8 возвращает выполненное выражение.  В любом случае выполняется выборка строки из результатов выполненного запроса и извлекается значение строки идентификатора, которое сохраняется в переменной <tt>$wisherID</tt>.</p>
+    <p> Наконец, освобождается результат mysqli или оператор OCI8.  Для физического закрытия подключения необходимо освободить все ресурсы, использующие подключение.  В противном случае внутренняя система подсчета ссылок PHP сохранит нижележащее подключение к базе данным открытым, даже если <tt>$con</tt> неприменимо после вызова <tt>mysqli_close()</tt> или <tt>oci_close()</tt>. </p>
+    <p class="notes"><b>Примечание по безопасности.</b> Для MySQL параметр <tt>htmlentities($_GET["user"])</tt> используется с с escape-символом для предотвращения SQL-инъекций. См. <a href="http://en.wikipedia.org/wiki/SQL_injection" target="_blank">статью энциклопедии Wikipedia о введении SQL </a> и <a href="http://us3.php.net/mysql_real_escape_string" target="_blank">документацию mysql_real_escape_string</a>.  Несмотря на то, что в контексте этого руководства риск возникновения опасных атак внедрения SQL маловероятен, рекомендуется исключить из участия в запросах MySQL такие строки, которые могли бы быть подвержены подобной атаке. OCI8 позволяет избежать этого благодаря переменным привязки.</p>
+</li></ol>
+
+<p>На данный момент блок PHP готов.  При использовании базы данных MySQL файл <tt>wishlist.php</tt> теперь выглядит следующим образом.</p>
+<pre class="examplecode">Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]) . &quot;&lt;br/&gt;&quot;; ?&gt;<br>
+&lt;?php<br>
+  $con = mysqli_connect(&quot;localhost&quot;, &quot;phpuser&quot;, &quot;phpuserpw&quot;);
+  if (!$con) {
+     exit('Connect Error (' . mysqli_connect_errno() . ') '
+            . mysqli_connect_error());
+  }<br>
+  //set the default client character set 
+  mysqli_set_charset($con, 'utf-8');
+  mysqli_select_db($con, &quot;wishlist&quot;);
+  $user = mysqli_real_escape_string($con, htmlentities($_GET[&quot;user&quot;]));
+  $wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot; . $user . &quot;'&quot;);
+  if (mysqli_num_rows($wisher) &lt; 1) {
+     exit(&quot;The person &quot; . htmlentities($_GET[&quot;user&quot;]) . &quot; is not found. Please check the spelling and try again&quot;);
+  }
+  $row = mysqli_fetch_row($wisher);
+  $wisherID = $row[0];
+  mysqli_free_result($wisher);
+  ?&gt;</pre>
+<p>При использовании базы данных Oracle файл <tt>wishlist.php</tt> выглядит следующим образом:</p>
+
+<pre class="examplecode">Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]) . &quot;&lt;br/&gt;&quot;; ?&gt;
+  &lt;?php
+  $con = oci_connect(&quot;phpuser&quot;, &quot;phpuserpw&quot;, &quot;localhost/XE&quot;, &quot;AL32UTF8&quot;);
+  if (!$con) {
+     $m = oci_error();
+     exit('Connect Error ' . $m['message'];
+     exit;
+  }
+  $query = &quot;SELECT id FROM wishers WHERE name = :user_bv&quot;;
+  $stid = oci_parse($con, $query);
+  $user = htmlentities($_GET[&quot;user&quot;]);
+  oci_bind_by_name($stid, ':user_bv', $user);
+  oci_execute($stid);<br>
+//Because user is a unique value I only expect one row
+  $row = oci_fetch_array($stid, OCI_ASSOC);
+  if (!$row) {
+     exit(&quot;The person &quot; . $user . &quot; is not found. Please check the spelling and try again&quot; );
+  }
+  $wisherID = $row[&quot;ID&quot;]; 
+  oci_free_statement($stid);
+  ?&gt;</pre>
+
+ 
+ 
+<p>Если при тестировании приложения было неверно введено имя пользователя, появится следующее сообщение.</p>
+  <img alt="На странице wishList.php отображается сообщение об ошибке: пользователь не найден" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-title-user-not-found-works.png"> 
+<h2><a name="wish-table"></a>Отображение таблицы пожеланий</h2>
+<p>В этом разделе будет добавлен код для отображения таблицы HTML пожеланий, связанных с автором пожеланий.  Автор пожеланий определяется идентификатором, полученным в коде предыдущего раздела.</p>
+<ol>
+<li>Под блоком PHP введите или вставьте следующий блок кода HTML.  Этот код открывает таблицу, указывает цвет ее границ (черный) и определяет вид заголовка таблицы, содержащего столбцы &quot;Item&quot; и &quot;Due Date&quot;.
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Item&lt;/th&gt;
+        &lt;th&gt;Due Date&lt;/th&gt;
+    &lt;/tr&gt;
+&lt;/table></pre>
+Тег &lt;/table&gt; закрывает таблицу. </li>
+<li>
+  <p>Введите следующий код блока PHP над закрывающим тегом &lt;/table&gt;.</p>
+  <p><b>Для базы данных MySQL</b></p>
+    <pre class="examplecode">&lt;?php<br>$result = mysqli_query($con, &quot;SELECT description, due_date FROM wishes WHERE wisher_id=&quot; . $wisherID);<br>while ($row = mysqli_fetch_array($result)) {<br>    echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>    echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>}<br>mysqli_free_result($result);<br>mysqli_close($con);<br>?&gt;</pre>
+        <p><b>Для базы данных Oracle</b></p>
+        <pre class="examplecode">&lt;?php<br>$query = &quot;SELECT description, due_date FROM wishes WHERE wisher_id = :id_bv&quot;;<br>$stid = oci_parse($con, $query);<br>oci_bind_by_name($stid, &quot;:id_bv&quot;, $wisherID);<br>oci_execute($stid);<br>while ($row = oci_fetch_array($stid)) {<br>    echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;DESCRIPTION&quot;]) . &quot;&lt;/td&gt;&quot;;<br>    echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;DUE_DATE&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>}<br>oci_free_statement($stid);<br>oci_close($con);<br>?&gt;</pre>
+    <p>Внутри кода:</p>
+    <ul>
+        <li>Посредством запроса SELECT пожелания со сроками их выполнения для указанного пользователя извлекаются в соответствии с идентификатором, который, в свою очередь был извлечен в действии 4; кроме того, пожелания и соответствующие сроки выполнения сохраняются в массиве $result.</li>
+        <li>С помощью цикла отдельные элементы массива $result выводятся на экран в качестве строк таблиц, пока массив непуст. </li>
+        <li>Теги &lt;tr&gt;&lt;/tr&gt; формируют строки, теги &lt;td&gt;&lt;/td&gt; &ndash; ячейки внутри строк, а после символа \n начинается новая строка.</li>
+        <li>Функция <tt>htmlentities</tt> преобразует все символы, имеющие эквивалентные сущности HTML, в сущности HTML.  Это помогает предотвратить <a href="http://en.wikipedia.org/wiki/Cross-site_scripting" target="_blank">межсайтовые сценарии</a>.</li>
+        <li>В конце функции освобождают все ресурсы (результаты mysqli и выражения OCI8) и закрывают подключение к базе данных.  Имейте в виду, что для физического закрытия подключения необходимо освободить все ресурсы, использующие подключение.  В противном случае внутренняя система подсчета ссылок PHP сохранит нижележащее подключение к базе данным открытым, даже если подключение неприменимо после вызова <tt>oci_close()</tt> или <tt>mysqli_close()</tt>. </li>
+    </ul>
+    <p class="alert"><strong>Предостережение. </strong>Убедитесь, что названия полей базы данных введены точно так, как они указаны при создании таблицы базы данных.  Для Oracle по умолчанию названия столбцов возвращаются в верхнем регистре.</p>
+</li>
+<li>Для тестирования приложения выполните проект, как описано в разделе <a href="#createNewFile">Тестирование index.php</a>.<br> <img alt="На странице wishlist.php отображается список пожеланий Тома" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-works.png">          </li>
+</ol>
+
+<h2><a name="lessonResultSourceCode"></a>Исходный код приложения на момент завершения текущего урока </h2>
+<p>Для пользователей MySQL: щелкните <a href="https://netbeans.org/files/documents/4/1928/lesson2.zip" target="_blank">здесь</a> для загрузки исходного кода, отражающего состояние проекта по завершении данного урока.</p>
+<p>Для пользователей Oracle Database: щелкните <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson2.zip" target="_blank">сюда</a> для загрузки исходного кода, отражающего состояние проекта по завершении данного урока.</p>
+<h2><a name="nextSteps"></a>Что дальше?</h2>
+<p><a href="wish-list-lesson1.html">&lt;&lt;Предыдущий урок</a></p>
+<p><a href="wish-list-lesson3.html">Следующий урок &gt;&gt;</a></p>
+<p><a href="wish-list-tutorial-main-page.html">Назад на главную страницу учебного курса</a>
+</p>
+<h2><a name="learnMoreUsefulLinks"></a>Полезные ссылки </h2>
+<p>Дополнительные сведения об использовании HTML, PHP и MySQL или базы данных Oracle доступны в следующих материалах.</p>
+<ul>
+    <li><a href="http://www.w3schools.com/html/" target="_blank">Учебный курс по HTML</a></li>
+    <li><a href="http://www.htmlcodetutorial.com/" target="_blank">Учебный курс по коду HTML &ndash; справочное руководство с описанием тегов HTML</a></li>
+    <li><a href="http://www.w3schools.com/php/default.asp" target="_blank">Учебный курс по PHP</a></li>
+    <li><a href="http://www.tizag.com/phpT/" target="_blank">Учебный курс по PHP &ndash; изучение PHP</a></li>
+    <li><a href="http://www.killerphp.com/" target="_blank">Учебные видеокурсы по PHP</a> </li>
+    <li><a href="http://dev.mysql.com/tech-resources/articles/mysql_intro.html" target="_blank">Начало работы с MySQL</a> </li>
+    <li><a href="http://www.killerphp.com/" target="_blank">Учебный курс по PHP / MySQL</a> </li>
+    <li><a href="http://www.php-mysql-tutorial.com/" target="_blank">Учебный курс по PHP / MySQL</a></li>
+    <li><a href="http://php.net/manual/en/book.oci8.php" target="_blank">Руководство по Oracle OCI8</a></li>
+    <li><a href="http://blogs.oracle.com/opal/" target="_blank">Блог по OCI8 Кристофера Джонса</a></li>
+</ul>
+<br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%202:%20Designing%20the%20Application">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear:both;">
+<p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+<p><a href="../../trails/php.html">Возврат к учебной карте PHP</a><br>
+</p>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><title>适用于 PHP 的 NetBeans IDE 中的代码模板 - 教程</title>
+
+
+
+
+
+        <meta name="KEYWORDS" content="NetBeans, tutorial, configure, PHP, PHP engine, guide, documentation, code template">
+        <meta name="DESCRIPTION" content="This document describes the PHP code templates available in NetBeans IDE, how to use them,
+              and some common use cases.">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script></head><body>
+
+        <!--
+        Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>适用于 PHP 的 NetBeans IDE 中的代码模板</h1>
+
+        <p>代码模板是 NetBeans IDE 提供的预先编写的代码片段。可以使用代码完成或使用模板缩写并按 Tab 键，将代码片段粘贴到您的代码中。也可以将您的代码包含在相应的 PHP 代码片段中。最后，您可以定义自己的代码模板。本教程介绍了如何使用代码模板，并建议了定义您自己的代码模板的用例。</p>
+
+        <p><b>目录</b></p>
+
+        <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+        <ul class="toc">
+            <li><a href="#define">定义的 PHP 代码模板</a></li>
+            <li><a href="#using-templates">使用 PHP 代码模板</a>
+                <ul>
+                    <li><a href="#expand-with-abb">使用缩写 + Tab 键展开代码模板</a></li>
+
+                    <li><a href="#expand-with-cc">使用代码完成插入代码模板</a></li>
+                    <li><a href="#surround-code">将代码包含在模板中</a></li>
+                    <li><a href="#edit-parameters">在展开的模板中编辑参数</a></li>
+                </ul>
+            </li>
+            <li><a href="#syntax">PHP 代码模板语法</a>
+                <ul>
+                    <li><a href="#placeholder">占位符名称</a></li>
+                    <li><a href="#reserved-name">保留的名称</a></li>
+                    <li><a href="#complex">提示定义的参数</a></li>
+                    
+                </ul>
+            </li>
+            <li><a href="#create">创建您自己的代码模板</a>
+                <ul>
+                    <li><a href="#uc-html">用例：将 PHP 插入到 HTML 中</a> </li>
+                    <li><a href="#joomla">用例：Joomla</a> </li>
+                    <li><a href="#mysql-conn">用例：MySQL 连接</a> </li>
+                    <li><a href="#z-action">用例：Zend 控制器中的操作</a> </li>
+                    <li><a href="#z-form-element">用例：Zend 窗体元素</a> </li>
+                </ul>
+            </li>
+        </ul>
+
+        <p><b>要学完本教程，您需要具备以下软件和资源。</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a> </td>
+                    <td class="tbltd1">PHP 下载包</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包 (JDK)</a> </td>
+                    <td class="tbltd1">7 或 8</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>&nbsp;</p>
+
+
+        <h2><a name="define"></a>定义的 PHP 代码模板</h2>
+        <p>要查看在 NetBeans 中定义的代码模板，请打开 "Tools"（工具）> "Options"（选项）（在 Mac 上为 "NetBeans" > "Preferences"（首选项）），选择 "Editor"（编辑器）功能，然后选择 "Code Templates"（代码模板）标签。要查看 PHP 代码模板，请在 "Languages"（语言）下拉列表中选择 "PHP"。将显示一个表，其中包含代码模板缩写和展开的文本。如果在该表中选择一个代码模板，将在 "Expanded Text"（展开的文本）标签中显示它的展开文本。 </p>
+        <img alt="&quot;Options&quot;（选项）窗口中选择了 CLI 模板的 PHP 代码模板" class="margin-around" height="613" src="../../../images_www/articles/72/php/code-templates/code-template-options.png" width="597">
+        <p>在该图中，选择了新类 (<tt>cls)</tt> 代码模板，您可以在 "Expanded Text"（展开的文本）标签中看到该模板展开后的内容。在下一节中，将使用 Tab 功能在代码中展开该模板。</p>
+        <p class="notes"><strong>注：</strong><a href="#syntax">PHP 代码模板语法</a>部分讲述了新类 (<tt>cls</tt>) 代码模板的语法。</p>
+        <h2><a name="using-templates"></a>使用 PHP 代码模板</h2>
+        <p>可以使用三种方法在 PHP 代码中插入代码模板。每种插入代码模板的方法适用于不同的情况。插入代码模板的三种方法是：</p>
+        <ul>
+            <li>使用模板缩写并按 Tab 键（或您定义的不同键或组合键）<a href="#expand-with-abb">展开模板</a>。</li>
+            <li>使用代码完成<a href="#expand-with-cc">插入展开的模板</a>。</li>
+            <li>使用旁注提示或按 Alt-Enter 组合键，<a href="#surround-code">将代码包含在模板中</a>。</li>
+        </ul>
+        <p>在插入模板后，IDE 可帮助您在展开的模板代码中<a href="#edit-parameters">编辑参数</a>。</p>
+        <div class="indent">
+            <h3><a name="expand-with-abb"></a>使用缩写 + Tab 键展开代码模板</h3>
+            <p>再次查看 "Options"（选项）对话框中的 "Code Templates"（代码模板）标签。底部有一个下拉字段，用于选择 "Expand Template On"（展开模板）组合键。这是在键入代码模板缩写后按下的组合键，以便展开代码模板。默认情况下，将选择 Tab 键，但您可以选择其他组合键。</p><img alt="在下拉框上展开模板" class="margin-around" height="94" src="../../../images_www/articles/72/php/code-templates/expand-template-on.png" width="208">
+            <p>本节的其余部分假定在 "Expand Template on:"（展开模板：）字段中选择了默认 Tab 键。</p>
+            <p class="tips">如果模板缩写也是代码完成关键字的一部分，则可能很难展开该缩写。在这种情况下，使用<a href="#expand-with-cc">代码完成</a>插入模板会更容易一些。</p>
+            <p><strong>要使用缩写 + Tab 键展开新类代码模板，请执行以下操作：</strong></p>
+            <ol>
+                <li>创建一个空 PHP 文件。</li>
+                <li>在该文件的 PHP 块中，键入 <tt>cls</tt>，然后按 Tab 键。将展开 <tt>cls</tt> 代码模板。
+                    <p class="alert"><b>注：</b>应正确拼写缩写！如果拼错缩写，将无法展开缩写。 </p><img alt="展开代码模板" border="1" class="margin-around" height="166" src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png" width="586"></li>
+                <li>将自动选择占位符类名 (<tt><strong>class_name</strong></tt>)。按 Tab 键可在占位符之间移动。您可以立即键入所需的类名，该名称将覆盖占位符。在完成后，按 Enter 键，IDE 将选择第一个函数的名称，此处为构造函数。 
+                  <p class="notes"><strong>注：</strong><a href="#placeholder">占位符名称</a>部分详细讲述了占位符名称。</p>
+                    <img alt="编辑类名后选择的构造函数的函数名称" border="1" class="margin-around" height="120" src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png" width="233"></li>
+              <li>编辑函数名称或接受默认值。再次按 Enter 键，光标将移到函数主体内部。在实际情况下，您现在将开始对函数和类的其余部分进行编码。 <p class="notes">最终的光标位置是由 <tt>${cursor}</tt> 参数决定的。<a href="#reserved-name">保留的名称</a>部分中介绍了该参数。
+                    </p></li></ol>
+          <h3><a name="expand-with-cc"></a>使用代码完成插入代码模板</h3>
+
+
+            <p>要使用代码完成插入代码模板，请键入展开的代码片段的开头（而<em>不是</em>模板缩写）。此时将打开 "code completion"（代码完成）对话框，其中显示了代码片段。</p>
+            <p><strong>使用代码完成插入新类代码模板：</strong></p>
+            <ol>
+                <li>在 PHP 文件的 PHP 块中，键入 <tt>cla</tt>。</li>
+                <li>等待 "code completion"（代码完成）对话框打开。</li>
+                <li>找到新类模板，将列出该模板的缩写 (<tt>cls</tt>)。PHPDoc 框架显示了展开的模板。<br> <img alt="显示新类模板的 &quot;Code completion&quot;（代码完成）对话框" border="1" class="margin-around" height="397" src="../../../images_www/articles/72/php/code-templates/insert-template-with-cc.png" width="483"></li>
+                <li>选择新的类模板并按 Enter 键。IDE 将在代码中插入该模板。</li>
+                <li>将自动选择占位符类名 (<tt><strong>class_name</strong></tt>)。按 Tab 键可在占位符之间移动。您可以立即键入所需的类名，该名称将覆盖占位符。在完成后，按 Enter 键，IDE 将选择第一个函数的名称，此处为构造函数。<br> <img alt="编辑类名后选择的构造函数的函数名称" border="1" class="margin-around" height="120" src="../../../images_www/articles/72/php/code-templates/select-constructor-name.png" width="233"></li>
+                <li>编辑函数名称或接受默认值。再次按 Enter 键，光标将移到函数主体内部。在实际情况下，您现在将开始对函数和类的其余部分进行编码。</li>
+            </ol>
+            <h3><a name="surround-code"></a>将代码包含在模板中</h3>
+            <p>您可以将代码包含在以下 PHP 模板中：</p>
+            <ul>
+                <li><tt>while</tt></li>
+                <li><tt>do</tt><br>
+                </li>
+                <li><tt>switch</tt></li>
+                <li><tt>if</tt> / <tt>elseif</tt></li>
+                <li><tt>try</tt> &amp; <tt>catch</tt></li>
+                <li><tt>foreach</tt></li>
+                <li><tt>for</tt></li>
+                <li><tt>ob_start</tt> &amp; <tt>ob_end_clean</tt></li>
+            </ul>
+            <p>此外，您也可以<a href="#create">创建新模板</a>，如果该模板包括 <code>allowSurround</code> <a href="#complex">参数提示</a>，则可以包含代码。（感谢<a href="http://www.mybelovedphp.com/2012/05/14/tips-for-using-the-netbeans-editor-for-kohana-and-kostache-mustache-templates-using-surround-with/">“我喜爱的 PHP”博客</a>。）</p>
+            <p>要将代码包含在模板中，请选择代码，然后打开 "Surround with..."（包含方式...）对话框。要打开 "Surround with..."（包含方式...）对话框，请按 Alt-Enter 组合键或者单击 "Hint"（提示）<img alt="&quot;Hint&quot;（提示）图标" height="19" src="../../../images_www/articles/72/php/code-templates/hint-icon.png" width="14"> 图标。 </p>
+            <p><strong>将代码包含在 if(true) 模板中：</strong></p>
+            <ol>
+                <li>使用变量 <tt>$a = true</tt> 和 <tt>$b = 10</tt> 创建一个 PHP 块。
+                    <pre class="examplecode">&lt;?php<br>$a = false;<br>        <br>$b = 10;<br>?&gt;</pre>
+                </li>
+                <li>选择行 <tt>$b = 10;</tt><br> <img alt="所选变量 $b = 10" border="1" class="margin-around" height="82" src="../../../images_www/articles/72/php/code-templates/selected-variable.png" width="196">
+                </li>
+                <li>单击 "Hint"（提示）<img alt="&quot;Hint&quot;（提示）图标" height="19" src="../../../images_www/articles/72/php/code-templates/hint-icon.png" width="14"> 图标或按 Alt-Enter 组合键。此时将打开 "Surround with..."（包含方式...）对话框。<br> <img alt="打开 &quot;surround-with&quot;（包含方式）对话框" class="margin-around" height="382" src="../../../images_www/articles/72/php/code-templates/surround-hint.png" width="530"></li>
+                <li>单击 <tt>Surround with if{<strong>true</strong>){...</tt>（包含在 if{true){... 中）<br> <img alt="&quot;Surround with if(true)&quot;（包含在 if(true) 中）处于选中状态的 &quot;Surround-with&quot;（包含方式）对话框" class="margin-around" height="333" src="../../../images_www/articles/72/php/code-templates/surround-if-true.png" width="480"></li>
+                <li>IDE 将 <tt>$b = 10;</tt> 行包含在 <tt>if(<strong>true</strong>){...</tt> 模板中。<br> <img alt="插入的 if (true) 模板" border="1" class="margin-around" height="116" src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png" width="212"></li>
+            </ol>
+            <p>IDE 自动插入前面最近的适合变量作为 <tt>if</tt> 语句的条件。此处，该变量是 <tt>$a</tt>，这是因为 <tt>$a</tt> 是布尔型变量，并且 <tt>if(<strong>true</strong>){}</tt> 语句将布尔型变量作为其条件。再者，如果 IDE 插入到条件中的变量不是正确的变量，则会自动选择该条件以进行编辑。这意味着，您可以在插入模板后立即开始键入正确的变量。在这种情况下，代码完成可以帮助您选择正确的变量。</p>
+            <p class="notes"><strong>注：</strong><a href="#complex">提示定义的参数</a>部分详细介绍了 <tt>if(<strong>true</strong>){}</tt> 模板。</p>
+            <p><img alt="从代码完成中选择要用作条件的变量" border="1" class="margin-around" height="162" src="../../../images_www/articles/72/php/code-templates/change-condition.png" width="438">        </p>
+            <p>按 Enter 键以退出语句的条件。光标将移到相应的位置，此处为 <tt>$b = 10;</tt> 行的末尾。您可以编辑条件并按 Enter 键，或者接受自动插入的条件并按 Enter 键。对于这两种情况，光标将退出条件并移到相应的位置。</p>
+            <p><img alt="编辑前的光标" class="margin-around" height="138" src="../../../images_www/articles/72/php/code-templates/cursor-after-not-editing.png" width="212"><img alt="编辑后的光标" class="margin-around" height="184" src="../../../images_www/articles/72/php/code-templates/cursor-after-editing.png" width="215">        </p>
+            <p>下一节包含在展开的模板中编辑参数的详细信息。</p>
+            <h3><a name="edit-parameters"></a>在展开的模板中编辑参数</h3>
+            <p>在介绍将模板插入到代码的部分中，您了解了在展开新类模板时 IDE 如何自动选择类名以进行编辑，以及在展开 <tt>if(<strong>true</strong>)</tt> 模板时 IDE 如何自动选择条件名称以进行编辑。现在，您将了解 IDE 帮助您在展开的模板中编辑参数的一些其他方法。</p>
+            <p><strong>同时编辑参数的多个实例：</strong></p>
+            <ol>
+                <li>在一个空 PHP 块中，键入 <tt>for</tt>，然后按 Ctrl-空格键以打开代码完成。选择迭代模板（缩写为 <tt>iter</tt>），然后按 Enter 键。将在代码中插入一个新迭代。<br> <img alt="显示所选迭代模板的代码完成" class="margin-around" height="335" src="../../../images_www/articles/72/php/code-templates/iter-cc.png" width="600"></li>
+                <li>迭代将以下两个变量作为参数：<tt>$index</tt> 和 <tt>$array</tt>。将自动选择 <tt>$index</tt> 以进行编辑。（按 Tab 键可在参数之间移动。）<br> <img alt="插入的带参数的迭代行，其中选定了 $index 参数进行编辑" class="valign-bottom" height="22" src="../../../images_www/articles/72/php/code-templates/iteration1.png" width="420"> <p>键入 <tt>i</tt>。<tt>$index</tt> 的所有三个实例将变为 <tt>$i</tt>。 </p><img alt="插入的迭代行，其中的参数 $index 已更改为 $i" height="18" src="../../../images_www/articles/72/php/code-templates/iteration2.png" width="322"></li>
+              <li>按 Enter 或 Tab 键。将选择 <tt>$array</tt> 参数。 </li>
+                <li>按 Enter 键。光标将进入迭代的方法主体。 </li>
+            </ol>
+            <p>通过使用 NetBeans 中的变量名称重构功能，您只需编辑变量名称的一个实例即可更改它的所有实例。由此看出，在应用于模板参数时，该功能是多么有用！</p>
+            <p>NetBeans IDE PHP 编辑器也可以帮助确定变量的正确方法。</p>
+            <p><strong>将模板中的变量与正确的方法相关联：</strong></p>
+            <ol>
+                <li>在一个空 PHP 块中，键入以下代码：
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>?&gt;</pre></li>
+                <li>在声明 <tt>$arr</tt> 数组的行后面，键入 <tt>fore</tt>，然后使用代码完成插入 <tt>foreach</tt> 模板（缩写为 <tt>fore</tt>）。<br> <img alt="用于插入 foreach 模板的代码完成" class="margin-around" height="283" src="../../../images_www/articles/72/php/code-templates/cc-foreach.png" width="590"></li>
+                <li>将光标放在 <tt>foreach</tt> 函数主体中（可以按两次 Enter 键以将光标移到此处）并键入 <tt>$value</tt>，或者仅键入 <tt>$</tt> 并从代码完成中选择 <tt>$value</tt>。
+                    <pre class="examplecode">&lt;?php<br><br>$arr = array(new ArrayIterator($array()), new ArrayObject($array()));<br><br>foreach ($arr as $value) {<br>    $value<br>}<br><br>?&gt;</pre></li>
+                <li>在 <tt>$value</tt> 后面，键入 <tt>-&gt;</tt>。代码完成为您提供了 <tt>$value</tt> 变量的正确方法，该变量是从 <tt>$arr</tt> 数组派生的。<br> <img alt="$value 变量的代码完成，其中 $value 为数组迭代器方法" border="1" class="margin-around" height="424" src="../../../images_www/articles/72/php/code-templates/value-method-cc.png" width="527"></li>
+            </ol>
+        </div>
+
+        <h2><a name="syntax"></a>PHP 代码模板语法</h2>
+        <p>NetBeans IDE 为支持的所有语言提供了代码模板。某些语法适用于所有语言。其他语法是某种语言特有的。在本节中，您将了解最相关的通用模板语法以及 PHP 模板特有的语法。</p>
+        <p>PHP 代码模板可以包含 PHP 代码和模板参数。PHP 模板可以仅包含 PHP 代码，仅包含参数或同时包含代码和参数。 </p>
+        <p>代码模板参数语法是美元符号 <tt>$</tt>，后跟用花括号 <tt>{...}</tt> 括起来的参数定义。在该语法中，模板参数采用以下四种形式之一：</p>
+        <ul>
+            <li>任意<a href="#placeholder">占位符名称</a>，例如，<tt>${SomeName}</tt></li>
+            <li>向 IDE 提供处理指令的<a href="#reserved-name">保留名称</a></li>
+            <li>描述性参数名称和一组<a href="#complex">定义参数的提示</a></li>
+            <li><a href="#pre-defined">预定义的参数</a>。
+            </li>
+
+        </ul>
+        <p>以下几节讲述了每种形式的代码模板参数。</p>
+        <p class="notes"><strong>注：</strong><tt>$$${VARIABLE...} </tt>有时，您会在 PHP 代码模板中看到语法似乎为三个美元符号，后跟花括号 <tt>$$${...}</tt>。在这种情况下，代码模板包含变量及其名称。此处的语法是转义的美元符号，记为两个美元符号 <tt>$$</tt>，后跟变量名称参数 <tt>${VARIABLE...}</tt>。例如，<tt>catch ${Exception} $$${exc}</tt> 代码模板展开为 <span class="examplecode"><tt>catch Exception $exc</tt></span>。</p>
+        <div class="indent">
+            <h3><a name="placeholder"></a>占位符名称</h3><br>
+            <p>在最简单的情况下，代码模板参数是一个任意占位符值。在展开模板时，IDE 选择该占位符名称以进行编辑。</p><br>
+            <p>例如，请考虑本教程的<a href="#define">定义的 PHP 模板</a>和<a href="#expand-with-abb">使用缩写 + Tab 键展开代码模板</a>部分中介绍的新类模板 <tt>(cls)</tt>。新类模板的展开文本以 <tt>class ${className}</tt> 开头。此处，<tt>class</tt> 一词是 PHP 代码，<tt>${className}</tt> 是一个参数。该参数只是类名的任意占位符值。当 IDE 展开模板时，<tt>${className}</tt> 将变为 <tt><strong>class_name</strong></tt>。IDE 知道 <tt><strong>class_name</strong></tt> 只是一个占位符值，因此，自动选择该值以进行编辑。</p>
+
+            <img alt="展开代码模板" border="1" class="margin-around" height="166" src="../../../images_www/articles/72/php/code-templates/expanding-template-with-abb.png" width="586">
+            <h3><a name="reserved-name"></a>保留的名称</h3>
+            <p>IDE 保留两个参数名称以作为操作指令。</p>
+            <ul><li><tt>${cursor}</tt> 定义在展开的模板中编辑完所有自动选择的值后的光标位置。</li>
+                <li><tt>${selection}</tt> 定义编辑器选择内容的粘贴位置。只要用户在编辑器中选择文本，所谓的“选择模板”（显示为提示）就会使用该参数。如果模板包含 <tt>${selection}</tt>，它通常指与 <tt>${cursor}</tt> 相同的位置。</li></ul>
+            <p>例如，请再次考虑本教程的<a href="#define">定义的 PHP 模板</a>和<a href="#expand-with-abb">使用缩写 + Tab 键展开代码模板</a>部分中介绍的新类模板 <tt>(cls)</tt>。它包含 <tt>${ClassName}</tt> 和 <tt>$__construct</tt> 这两个占位符名称参数。在函数体中，它具有参数 <tt>${cursor}</tt> 和 <tt>${selection}</tt>。</p>
+
+            <pre class="examplecode">class ${ClassName} {<br><br>    function ${__construct} {<br>        ${selection}${cursor}<br><br>    }<br><br>}</pre>
+            <p>在展开模板后，将自动选择 <tt><strong>class_name</strong></tt> 占位符 (1)。按 Enter 键，将自动选择 <tt><strong>__construct</strong></tt> 占位符 (2)。没有要编辑的其他值。再次按 Enter 键，光标将移到模板文本中的 <tt>${cursor}</tt> 指示的位置 (3)。</p>
+
+            <p><img alt="显示光标位置从占位符名称更改到占位符名称再更改到 ${cursor} 位置的三个代码片段" class="margin-around" height="104" src="../../../images_www/articles/72/php/code-templates/cursor-position-changes.png" width="600"></p>
+            <h3><a name="complex"></a>提示定义的参数</h3><br>
+            <p>参数可以包含一个全部大写的任意描述性名称以及一个或多个提示。 </p>
+            
+            <pre class="examplecode">${PARAMETER_NAME hint1[=value] [hint2...hint n]}</pre>
+            <p>名称不会显示在代码中的任意位置。不过，如果要在代码模板中多次使用参数，这是非常有用的。您只需第一次定义参数，以后按名称引用该参数即可。例如，在下面的代码模板中，仅第一次定义了 <tt>${CONLINK}</tt> 参数，以后两次按名称引用该参数。</p><br>
+            <pre class="examplecode"><a name="complex"></a>$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre><br>
+            <p>在 IDE 展代码模板时，提示可帮助 IDE 计算模板参数的值。例如，请查看 <tt>if(<strong>true</strong>)</tt> 模板，本教程的<a href="#surround-code">将代码包含在模板中</a>部分中使用了该模板。该模板的展开文本是</p>
+            <pre class="examplecode">if (${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}) {<br>    ${selection}${cursor}<br>}</pre>
+            <p>查看 <tt>${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}</tt> 参数。该参数设置 <tt>if</tt> 语句的条件。因此，该参数命名为 CONDITION。第一个提示是 <tt>variableFromPreviousAssignment</tt>，第二个提示是 <tt>instanceof="boolean"</tt>。这两个提示共同指示 IDE 在代码模板前面的代码中查找指定的最接近布尔型变量。请添加第三个提示 <tt>default="true"</tt>，该参数将条件设置为“如果前面的最接近布尔型变量值为 true”。 </p>
+
+            <p>例如，如果将以下代码片段中的 <tt>$b = 10</tt> 行包含在 <tt>if(<strong>true</strong>)</tt> 代码模板中...</p>
+            <p><img alt="代码片段 $a = false $b = 10" border="1" class="margin-around" height="82" src="../../../images_www/articles/72/php/code-templates/selected-variable.png" width="196"></p>
+            <p>...IDE 将查找以前指定的最接近布尔型变量，结果找到了 <tt>$a</tt>，并使用 <tt>$a</tt>[=true] 条件生成一个 <tt>if</tt> 语句。将自动选择该条件以进行编辑，因此，PHP 程序员可以将 <tt>$a</tt> 更改为其他变量或 <tt>!$a</tt>。</p>
+
+            <p><img alt="展开的模板 if $a=true then $b=10，其中选定条件 $a=true 进行编辑" border="1" class="margin-around" height="116" src="../../../images_www/articles/72/php/code-templates/inserted-if-true.png" width="212"></p>
+            <p>下表列出了 PHP 代码模板中使用的提示以及提示说明。</p>
+            <table>
+
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">提示</th>
+                        <th class="tblheader" scope="col">描述</th>
+
+                    </tr>
+                    <tr>
+                        <td><tt>newVarName</tt></td>
+                        <td> 参数值应该为全新的未使用变量名称。通常与 <tt>default</tt> 一起使用。</td>
+                    </tr>
+                    <tr>
+
+                        <td><tt>default=""</tt></td>
+                        <td>参数的默认值。</td>
+                    </tr>
+                    <tr>
+                        <td><tt>instanceof=""</tt></td>
+                        <td>参数中定义的 PHP 变量类型。</td>
+                    </tr>
+
+                    <tr>
+                        <td><tt>variableFromPreviousAssignment</tt></td>
+                        <td>参数值是以前指定的最接近变量。通常与 <tt>instanceof</tt> 和 <tt>default</tt> 一起使用。</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentName</tt></td>
+
+                        <td>参数值是在代码模板后面指定的最接近变量的名称。通常与 <tt>default</tt> 一起使用。</td>
+                    </tr>
+                    <tr>
+                        <td><tt>variableFromNextAssignmentType</tt></td>
+                        <td>参数值是在代码模板后面指定的最接近变量的类型。通常与 <tt>default</tt> 一起使用。</td>
+
+                    </tr>
+                    <tr>
+                        <td><tt>editable=false</tt></td>
+                        <td>在展开模板后，无法编辑参数值。</td>
+                    </tr>
+                    <tr>
+                        <td><tt>allowSurround</tt></td>
+                        <td>允许使用模板<a href="#surround-code">包含代码</a>。</td>
+                    </tr>
+                </tbody>
+            </table>
+       </div>
+        <h2><a name="create"></a>创建您自己的代码模板</h2>
+        <p>可以在 NetBeans IDE 中创建您自己的代码模板。本节介绍了如何创建代码模板，讲述了其语法并建议了一些可创建的有用模板。</p>
+        <p><strong>创建代码模板：</strong></p>
+        <ol>
+            <li>打开 "Tools"（工具）> "Options"（选项）（在 Mac 上为 "NetBeans" > "Preferences"（首选项）），选择 "Editor"（编辑器）功能，然后选择 "Code Templates"（代码模板）标签。 <br> <img alt="&quot;Options&quot;（选项）窗口中选择了 CLI 模板的 PHP 代码模板" class="margin-around" height="613" src="../../../images_www/articles/72/php/code-templates/code-template-options.png" width="597"></li>
+            <li>单击 "New"（新建）以打开 "New Code Template"（新建代码模板）对话框。键入所需的模板缩写，然后单击 "OK"（确定）。 <br> <img alt="要求输入模板缩写的 &quot;New Code Template&quot;（新建代码模板）对话框" class="margin-around" height="118" src="../../../images_www/articles/72/php/code-templates/new-abb.png" width="304"></li>
+            <li>将在代码模板表中添加一个新行。该行仅包含您提供的缩写。光标位于 "Expanded Text"（展开的文本）标签中，IDE 自动将光标放在该位置。您可以立即开始键入模板的代码。 <p class="notes"><b>注：</b>要了解代码模板的展开文本的语法，请参见 <a href="#syntax">PHP 代码模板语法</a>部分。</p>
+                <img alt="键入新缩写模板的展开文本" class="margin-around" height="609" src="../../../images_www/articles/72/php/code-templates/new-abb-text.png" width="608"></li>
+        </ol>
+        <p>以下几节介绍了创建您自己的 PHP 代码模板的一些用例。如果您要建议任何其他用例，请在 <a href="http://forums.netbeans.org/php-users.html" target="_blank">PHP 用户论坛</a>中与社区用户进行分享。</p>
+        <div class="indent">
+            <h3><a name="uc-html"></a>用例：将 PHP 插入到 HTML 中</h3>
+            <p>如果经常将 PHP 代码片段插入到 HTML 块中，您可以创建一个 HTML 代码模板以插入 PHP，而无需反复键入 <tt>&lt;?php ?&gt;</tt>。</p>
+            <p>以下代码模板将 PHP <tt>echo</tt> 语句插入到 HTML 中。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">语言：</th>
+                        <td>HTML</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">缩写：</th>
+                        <td>php</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展开的文本：</th>
+                        <td><pre>&lt;?php echo ${cursor}&nbsp;  ?&gt;</pre></td>
+                    </tr>
+
+                </tbody></table>
+            <p><img alt="显示 HTML 模板中的新 PHP 的 &quot;Options&quot;（选项）窗口" class="margin-around" height="565" src="../../../images_www/articles/72/php/code-templates/uc-php.png" width="600"></p>
+            <h3><a name="joomla"></a>用例：Joomla</h3>
+            <p>代码模板可帮助您在 NetBeans IDE 中使用 PHP 框架，尤其是没有内置支持的框架。下面是一个用户开发的代码模板，以便与 Joomla 一起使用。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">语言：</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">缩写：</th>
+                        <td>joomdef</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展开的文本：</th>
+                        <td><pre class="examplecode">defined('_JEXEC')<br>   	or die('Restricted access');<br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="包含新 joomdef 代码模板的 &quot;Options&quot;（选项）对话框" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-joomdef.png" width="600"></p>
+            <h3><a name="mysql-conn"></a>用例：MySQL 连接</h3>
+            <p>PHP 开发者经常需要创建到 MySQL 数据库的连接。该代码模板将为您创建一个连接。指定给 MySQL 连接的变量具有占位符名称 <tt>link</tt>。请注意使用了三个美元符号 <tt>$$$</tt> -- 实际上是两个美元符号（在展开时生成单个美元符号），后跟变量名称的参数。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">语言：</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">缩写：</th>
+                        <td>my_con</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展开的文本：</th>
+                        <td><pre class="examplecode">$$${CONLINK newVarName default="link"}&nbsp;=&nbsp;mysql_connect('localhost',&nbsp;'mysql_user',&nbsp;'mysql_password');  <br>if&nbsp;(!$$${CONLINK})&nbsp;{<br>  &nbsp;&nbsp;&nbsp;&nbsp;die('Could&nbsp;not&nbsp;connect:&nbsp;'&nbsp;.&nbsp;mysql_error());  <br>}  <br>echo&nbsp;'Connected&nbsp;successfully';  <br>mysql_close($$${CONLINK});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="MySQL 连接的新代码模板" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-mycon.png" width="600"></p>
+            <h3><a name="z-action"></a>用例：Zend 控制器中的操作</h3>
+            <p>您可以使用代码模板在 Zend 框架控制器中插入操作（如 <tt>indexController{}</tt>），而不是使用 NetBeans 向导创建操作。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">语言：</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">缩写：</th>
+                        <td>zf_act</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展开的文本：</th>
+                        <td><pre class="examplecode">public function ${functionName}Action () {<br>      ${selection}${cursor}  <br>}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <p><img alt="新 Zend 操作代码模板" class="margin-around" height="569" src="../../../images_www/articles/72/php/code-templates/uc-zfact.png" width="600"></p>
+            <h3><a name="z-form-element"></a>用例：Zend 窗体元素</h3>
+            <p>该模板在 Zend 窗体中插入元素。在调用 Zend <tt>create form &lt;name&gt;</tt> 命令以生成窗体后，请使用该模板。</p>
+            <table border="1" width="200">
+                <tbody><tr>
+                        <th class="tblheader" scope="row">语言：</th>
+                        <td>PHP</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">缩写：</th>
+                        <td>zf_element</td>
+                    </tr>
+                    <tr>
+                        <th class="tblheader" scope="row">展开的文本：</th>
+                        <td><pre class="examplecode">$$${ELEMENT newVarName default="element"} = new Zend_Form_Element_Submit('submit', array('label' =&gt; 'Send data to server'));  <br>$$this-&gt;addElement($$${ELEMENT});  <br>${cursor}  </pre></td>
+                    </tr>
+                </tbody></table>
+            <img alt="用于将 Zend 框架元素插入到 ZF 窗体的新代码模板" class="margin-around" height="605" src="../../../images_www/articles/72/php/code-templates/uc-zelement.png" width="597">
+        </div>
+        <p>&nbsp;</p>
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Code%20Templates">发送有关此教程的反馈意见</a></div>
+        <p><br style="clear: both;">
+
+
+        </p>
+        <h2><a name="seeAlso"></a>另请参见</h2>
+
+        <p>有关 <a href="https://netbeans.org/" target="_blank">netbeans.org</a> 上 PHP 技术的更多信息，请参见下面的资源：</p>
+
+        <ul>
+            <li><a href="../java/editor-codereference.html">NetBeans IDE Java 编辑器中的代码帮助</a>。这是 NetBeans IDE 代码帮助的参考指南，其中包括代码模板和宏录制。</li>
+            <li><a href="http://forums.netbeans.org/php-users.html" target="_blank">NetBeans PHP 用户论坛</a></li>
+            <li><a href="http://blogs.oracle.com/netbeansphp/" target="_blank">"NetBeans for PHP" 博客</a>。这是 NetBeans PHP 编辑器开发人员撰写的博客。这是查找最新功能和改进功能的最佳位置。</li>
+        </ul>
+
+        <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。</p>
+
+    </body></html>

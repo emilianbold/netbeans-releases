@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>PHPを使用するデータベース駆動型アプリケーションの作成セキュリティの実装。ログオン。</title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Implementing Security. Logon" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+       <h1>PHPを使用するデータベース駆動型アプリケーションの作成 </h1>
+       <h1>レッスン5: セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</h1>
+       <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>チュートリアルの目次:</h4>
+<ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">PHPを使用するデータベース駆動型アプリケーションの作成 - メイン・ページ</a></li>
+    <li><p>データベースの作成</p> <ol type="a"><li><a href="wish-list-lesson1.html">MySQLデータベースの作成</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Oracleデータベース表の作成</a></li>
+    </ol></li>
+    <li><a href="wish-list-lesson2.html">アプリケーションの設計。データベースからの読取り</a></li>
+    <li><a href="wish-list-lesson3.html">新規アプリケーション・ユーザーの作成</a></li>
+    <li><a href="wish-list-lesson4.html">コードの最適化</a></li>
+    <li>
+      <p><b>=> セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</b></p>
+      <ul>
+		<li><a href="#previousLessonSourceCode">前のレッスンからのアプリケーション・ソース・コード</a></li>
+		<li><a href="#savingWisherIDInSessionUponCreation">作成時にセッションにウィッシャのIDを保存</a></li>
+		<li><a href="#validateWisherLogon">ユーザー・ログオンの検証</a>
+		  <ul>
+		<li><a href="#retrievingUserNameFromSession">セッションからのウィッシャの名前の取得</a></li>
+		<li><a href="#redirectingNotLoggedInUserToIndexPage">ログインしていないユーザーのリダイレクト</a></li>
+		</ul>
+		</li>
+		<li><a href="#logonFromIndexPage">index.phpページからのログイン</a>
+		  <ul>
+		<li><a href="#logonForm">index.php上のログオン用のHTMLフォーム</a></li>
+		<li><a href="#logonValidation">ログオンの検証</a></li>
+		<li><a href="#verifyWisherCredentials">関数verify_wisher_credentials</a></li>
+		
+		 <li><a href="#displayErrorMessage">エラー・メッセージの表示</a></li>
+		</ul>
+		</li>
+		<li><a href="#testingLogonFromIndexPage">index.phpページからのログオンのテスト</a></li>
+		<li><a href="#lessonResultSourceCode">現在のレッスン完了後のアプリケーション・ソース・コード</a></li>
+   </ul></li>
+    <li><a href="wish-list-lesson6.html">データベースへの新しいウィッシュの追加</a></li>
+    <li><a href="wish-list-lesson7.html">データベース内のエントリの更新および削除</a></li>
+    <li><a href="wish-list-lesson8.html">CSSテクノロジを使用したアプリケーションの外観の改良</a></li>
+    <li><a href="wish-list-lesson9.html">リモートWebサーバーへのアプリケーションのデプロイ</a></li>
+</ol>
+</div>
+</div>
+       <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+
+   <p>このレッスンでは、ウィッシャ用のログオン機能を実装します。これは次のファイルに影響します。 </p>
+       <ul>
+         <li style="margin-left:40em"><tt>index.php</tt></li>
+         <li style="margin-left:40em"><tt>createNewWisher.php</tt></li>
+         <li style="margin-left:40em"><tt>editWishlist.php</tt></li>
+         <li style="margin-left:40em"><tt>db.php</tt></li>
+       </ul>
+       ログオン機能の実装は、次の手順で構成されています。
+       <ol>
+         <li style="margin-left:40em"><a href="#savingWisherIDInSessionUponCreation">ウィッシャの作成時に、セッションにウィッシャのIDを保存する</a></li>
+         <li style="margin-left:40em"><a href="#validateWisherLogon">ウィッシュ・リストを編集しようとするユーザーがログインしていることを検証する</a></li>
+         <li style="margin-left:40em"><a href="#logonFromIndexPage">index.phpページからウィッシャがログオンする</a></li>
+       </ol>
+   <p>現在のドキュメントは、PHP向けのNetBeans IDEでのCRUDアプリケーションの作成というPHPチュートリアルの一部です。 </p>
+       <br style="clear:left">
+
+   <h2><a name="previousLessonSourceCode"></a>前のレッスンからのアプリケーション・ソース・コード</h2>
+<p>MySQLユーザー: 前のレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/files/documents/4/1930/lesson4.zip" target="_blank">ここ</a>をクリックします。 </p>
+<p>Oracleデータベース・ユーザー: 前のレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson4.zip" target="_blank">ここ</a>をクリックします。</p>
+<h2><a id="savingWisherIDInSessionUponCreation" name="savingWisherIDInSessionUponCreation"></a>作成時にセッションにウィッシャのIDを保存</h2>
+        <p><a href="http://us2.php.net/manual/en/ref.session.php" target="_blank">セッション</a>は、<a href="wish-list-lesson5.html#htmlForm">HTML入力フォーム</a>を使用せずに、あるページから別のページへ情報を転送する持続的記憶域です。この機能は、事前定義されたPHP配列<tt>$_SESSION</tt>によってサポートされています。 </p>
+   <p>セキュリティのために、新しいウィッシャが作成されたら、フォームに入力せずに自動的にログオンする必要があります。そのため、<tt>createNewWisher.php</tt>ファイルを変更して、次の機能を実装する必要があります。</p>
+<ul>
+          <li>データベースに新規ウィッシャを追加する。</li>
+  <li>セッションを開く。  </li>
+  <li>ウィッシャの名前をセッションに保存する。</li>
+		  <li>ウィッシャが<tt>editWishList.php</tt>ページにリダイレクトされたときに、セッションのウィッシャの名前を転送する。 </li>
+   </ul>
+       <tt>createNewWisher.php</tt>ファイル内で、次の行を検索します。
+<pre class="examplecode">WishDB::getInstance()-&gt;create_wisher($_POST[&quot;user&quot;], $_POST[&quot;password&quot;]);</pre> 
+	   そのすぐ下に、次のコード・ブロックを入力します。 
+<pre class="examplecode">session_start();
+$_SESSION['user'] = $_POST['user'];</pre>
+		このコード・ブロックはセッションを開始し、これは、データを入力または取得するための<tt>$_SESSION</tt>配列を開くことを意味します。その後、コードは<tt>$_SESSION</tt>配列に要素を追加します。追加された要素には、値と識別子(キー)が含まれています。値は、新しく作成されたウィッシャの名前で、識別子は「user」です。その後、プログラムはウィッシャを<tt>editWishList.php</tt>ページにリダイレクトします。
+        <h2><a id="validateWisherLogon" name="validateWisherLogon"></a>ユーザー・ログオンの検証 </h2>
+        <p>ユーザーが<tt>editWishList.php</tt>ページに到達すると、アプリケーションは、<tt>createNewWisher.php</tt>ページで登録されたのと同じユーザーがページにアクセスしていることを確認する必要があります。 </p>
+   <p>この機能の実装は、次の2つのステップで構成されます。
+        </p>
+        <ul>
+            <li><a href="#retrievingUserNameFromSession">セッションからのウィッシャの名前の取得</a></li>
+            <li><a href="#redirectingNotLoggedInUserToIndexPage">セッションからのウィッシャの名前の取得に失敗した場合にユーザーをindex.phpにリダイレクトする</a></li>
+        </ul>
+        <div class="indent">
+        <h3><a id="retrievingUserNameFromSession" name="retrievingUserNameFromSession"></a>セッションからのウィッシャの名前の取得</h3>
+        <tt>editWishList.php</tt>のPHPブロックのデフォルト・コードを次に置き換えます。
+        <pre class="examplecode">session_start();
+if (array_key_exists("user", $_SESSION)) {
+    echo "Hello " . $_SESSION['user'];
+}</pre>
+	    <p>このコード・ブロックは、データを取得するための<tt>$_SESSION</tt>配列を開き、<tt>$_SESSION</tt>に識別子「user」を持つ要素が含まれていることを確認します。確認が成功すると、コードは開始メッセージを出力します。  </p>
+	    セッションが正しく実装されていることを確認するには:
+	    <ol>
+	      <li>	      <tt>createNewWisher.php</tt>ファイルを実行し、Jackなどの新しいウィッシャを作成します。<br><tt>editWishList.php</tt>が開き、「Hello Jack」と表示されます。 </li>
+          <li>ブラウザのセッションCookieをクリアするか、またはセッションを終了して、IDEから<tt>editWishList.php</tt>を実行します。セッションを介して転送されたユーザーがいないため、<br><tt>editWishList.php</tt>ファイルが開き、「Hello」と表示されます。これは、未ログインおよび未登録のユーザーがウィッシュ・リストを作成したり編集できるようになるため、正しくありません。これを回避するには、ユーザーが<tt>index.php</tt>ページにリダイレクトされる必要があります。</li>
+	    </ol>
+	    <h3><a id="redirectingNotLoggedInUserToIndexPage" name="redirectingNotLoggedInUserToIndexPage"></a>ログインしていないユーザーのリダイレクト </h3>
+        次のコード・ブロックを<tt>editWishList.php</tt>の<tt>if</tt>節の下に追加します。
+        <pre class="examplecode">else {
+   header('Location: index.php');
+   exit;
+}</pre>
+        
+		<p>このコードは、ユーザーをindex.phpページにリダイレクトし、PHPコードの実行を取り消します。 </p>
+		機能が正しく実装されたことを確認するには、<tt>editWishList.php</tt>ファイルを実行します。<tt>index.php</tt>ページが開く場合は正常です。</div>
+		<h2><a id="logonFromIndexPage" name="logonFromIndexPage"></a>index.phpページからのログイン</h2>
+		<p>index.phpページからのログオンは、次の2つのステップで構成されます。</p>
+		<ul>
+		  <li><a href="#logonForm">ユーザーの名前とパスワードをHTML入力フォームに入力し、検証のためにデータをindex.phpページに送信する</a></li>
+          <li><a href="#logonValidation">ログオンを検証する</a></li>
+	</ul>
+		<div class="indent"><h3><a id="logonForm" name="logonForm"></a>index.php上のログオン用のHTMLフォーム</h3>
+        <tt>index.php</tt>ファイルで、次のコードを終了<tt>&lt;/body></tt>タグの前に入力します。
+        <pre class="examplecode">&lt;form name="logon" action="index.php" method="POST" >
+    Username: &lt;input type="text" name="user">
+    Password  &lt;input type="password" name="userpassword">
+    &lt;input type="submit" value="Edit My Wish List">
+&lt;/form></pre>
+                <p class="notes"><b>注意: </b>HTMLバリデータからの警告は無視できます。</p>
+
+このコードは、テキスト・フィールドにユーザーの名前とパスワードを入力できる<a href="wish-list-lesson3.html#htmlForm">HTMLフォーム</a>を示します。ユーザーが「Edit My Wish List」をクリックすると、データが同じindex.phpページに転送されます。  
+<h3><a id="logonValidation" name="logonValidation"></a>ログオンの検証</h3>
+<p>ログオンの検証には、次が含まれます。 </p>
+<ul>
+            <li><a href="#checkWhereUserCameFrom">ユーザーのリダイレクト元を確認する</a>。 </li>
+            <li><a href="#verifyCredentials">ユーザーの名前とパスワードを確認する</a>。 </li>
+            <li>ユーザー名をセッションに保存して、ユーザーをeditWishList.phpページにリダイレクトするか、または<a href="#displayErrorMessage">エラー・メッセージを表示する</a>。 </li>
+   </ul>
+       
+        <p> ユーザーは、アプリケーションの開始時、<tt>editWishList.php</tt>ページから、または名前とパスワードの入力後に<a href="#validateWisherLogon">index.php</a>ページからリダイレクトされたときに、<tt>index.php</tt>ページにアクセスすることがあります。</p>
+        <p>最後のケースのみ<a href="http://www.htmlcodetutorial.com/forms/_FORM_METHOD.html" target="_blank">HTMLリクエスト・メソッド</a>のPOSTが使用されるため、ユーザーが<tt>index.php</tt>にアクセスしたときに、そのユーザーがどこにいたのかを常に確認することができます。</p>
+        index.phpファイルで、次のコードを使用して、&lt;?php?>ブロックをHTMLブロックの上に作成します。 
+        <pre class="examplecode">&lt;?php
+
+require_once("Includes/db.php");
+$logonSuccess = false;<br><br>
+// verify user's credentials
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    $logonSuccess = (WishDB::getInstance()->verify_wisher_credentials($_POST['user'], $_POST['userpassword']));
+    if ($logonSuccess == true) {
+        session_start();
+        $_SESSION['user'] = $_POST['user'];
+        header('Location: editWishList.php');
+        exit;
+    }
+}
+?&gt;
+</pre>
+        <p>コード・ブロックの先頭では、<tt>db.php</tt>ファイルを使用可能にし、<tt>$logonSuccess</tt>変数を値<tt>false</tt>で初期化します。検証に成功すると、この値は<tt>true</tt>に変更されます。  </p>
+     
+       
+        <p>ユーザーの資格を確認するコードは、最初に、リクエスト・メソッドがPOSTかどうかを確認します。リクエスト・メソッドがPOSTの場合、ユーザーは<a href="#logonForm">ログオン・フォーム</a>を送信した後にリダイレクトされます。この場合、コード・ブロックはログオン・フォームに入力された名前とパスワードを使用して<tt>verify_wisher_credentials</tt>関数をコールします。 </p>
+        <p><a href="#verifyWisherCredentials">次の項</a>で記述する<tt>verify_wisher_credentials</tt>関数は、<a href="#logonForm">ログオン・フォーム</a>内で送信された値とユーザーおよびパスワードが一致するレコードが、<tt>wishers</tt>表にあるかどうかを確認します。<tt>verify_wisher_credentials</tt>関数が<tt>true</tt>を返す場合、指定された名前とパスワードの組合せを持つウィッシャがデータベースに登録されます。これは、検証が成功し、<tt>$logonSuccess</tt>の値が<tt>true</tt>に変更されることを意味します。この場合、セッションが開始し、<tt>$_SESSION</tt>配列が開きます。コードは<tt>$_SESSION</tt>配列に新しい要素を追加します。この要素には、値と識別子(キー)が含まれています。値はウィッシャの名前で、識別子は「user」です。次に、ウィッシュ・リストを編集するために、コードはユーザーを<tt>editWishList.php</tt>ページにリダイレクトします。		</p>
+		<p><tt>verify_wisher_credentials</tt>関数が<tt>false</tt>を返す場合、<tt>$logonSuccess</tt>変数の値はfalseのままです。変数の値は、<a href="#displayErrorMessage">エラー・メッセージの表示</a>で使用されます。 </p>
+		<h3><a id="verifyWisherCredentials" name="verifyWisherCredentials"></a>関数verify_wisher_credentials</h3>
+        <p>ウィッシャの資格の確認を実装するには、<tt>db.php</tt>ファイルの<tt>WishDB</tt>クラスに新しい関数を追加する必要があります。この関数は、入力パラメータとして名前とパスワードを必要とし、0または1を返します。</p>
+       <strong>MySQLデータベースの場合</strong>、次のコード・ブロックを入力します。
+        <pre class="examplecode">public function verify_wisher_credentials ($name, $password){<br>   $name = $this-&gt;real_escape_string($name);<br>
+   $password = $this-&gt;real_escape_string($password);<br>   $result = $this-&gt;query(&quot;SELECT 1 FROM wishers
+ 	           WHERE name = '&quot; . $name . &quot;' AND password = '&quot; . $password . &quot;'&quot;);
+   return $result-&gt;data_seek(0);
+}</pre>
+<p><b>Oracleデータベースの場合</b>、次のコード・ブロックを入力します(OCI8には<tt>mysql_num_rows</tt>と同等のものが存在しないため、このコードは<tt>get_wisher_id_by_name</tt>の変更された形式です)。</p>
+<pre class="examplecode">public function verify_wisher_credentials($name, $password) {
+    $query = "SELECT 1 FROM wishers WHERE name = :name_bv AND password = :pwd_bv";
+    $stid = oci_parse($this->con, $query);
+    oci_bind_by_name($stid, ':name_bv', $name);
+    oci_bind_by_name($stid, ':pwd_bv', $password);
+    oci_execute($stid);
+//Because name is a unique value I only expect one row
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    if ($row) 
+        return true;
+    else
+        return false;
+}</pre>
+<p>このコード・ブロックは、問合せ<tt> "SELECT 1 FROM wishers WHERE Name = '" . $name . "'AND Password = '" . $password . "'"</tt>を実行し、指定した問合せに一致するレコードの数を返します。そのようなレコードが見つかった場合、関数は<tt>true</tt>を返します。そのようなレコードがデータベースに存在しない場合、関数は<tt>false</tt>を返します。 
+          <h3><a id="displayErrorMessage" name="displayErrorMessage"></a>エラー・メッセージの表示</h3>
+    
+アプリケーションがエラー・メッセージを表示できるようにするには、次の&lt;? >コード・ブロックを、<tt>index.php</tt>のログオン・フォームの入力フィールドより下で、ボタンより上に入力します。
+         <pre class="examplecode">&lt;?php
+  if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;) { 
+      if (!$logonSuccess)
+          echo "Invalid name and/or password";
+  }
+?></pre>
+   このコード・ブロックは$logonSuccess変数の値を確認し、falseの場合はエラー・メッセージを表示します。</div>
+         <h2><a name="testingLogonFromIndexPage"></a>index.phpページからのログオンのテスト </h2>
+         <tt>index.php</tt>の最初のページでログオン機能が正しく動作することを確認するには:
+<ol>
+           <li>アプリケーションを実行します。</li>
+           <li><tt>index.php</tt>ページで、「Username」編集ボックスに「Tom」と入力し、「Password」編集ボックスに「Tim」と入力します。 </li>
+           <li>「Edit My Wish List」をクリックします。エラー・メッセージが表示されます(下のブラウザ・ウィンドウは幅が600pxに縮小されているため、改行がいくつか追加されています)。<br><img alt="エラー・メッセージが表示されたindex.phpページ: 間違った名前またはパスワード(あるいはその両方)" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson5/incorrectNamePasswordIndex.png"></li>
+           <li>「Username」編集ボックスに「Tom」と入力し、「Password」編集ボックスに「tomcat」と入力します。</li>
+           <li>「Edit My Wish List」をクリックします。editWishList.phpページが表示されます。<br><img alt="index.php: ログオン成功" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson5/SuccessfulLogonOnIndexRedirectToEditWishList.png"></li>
+         </ol>
+		 <h2><a name="lessonResultSourceCode"></a>現在のレッスン完了後のアプリケーション・ソース・コード </h2>
+<p>MySQLユーザー: このレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/files/documents/4/1931/lesson5.zip" target="_blank">ここ</a>をクリックします。</p>
+<p>Oracleデータベース・ユーザー: このレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson5.zip" target="_blank">ここ</a>をクリックします。</p>
+<h2><a name="nextSteps"></a>次の手順</h2>
+		 <p><a href="wish-list-lesson4.html">&lt;&lt; 前のレッスン</a></p>
+		 <p><a href="wish-list-lesson6.html">次のレッスン>></a></p>
+		 <p><a href="wish-list-tutorial-main-page.html">チュートリアルのメイン・ページに戻る</a></p><br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%205:%20Implementing%20Security">このチュートリアルに関するご意見をお寄せください</a></div>
+<br style="clear:both;" >
+<p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。
+   <p><a href="wish-list-tutorial-main-page.html"></a>
+   <p><a href="../../trails/php.html">PHPの学習に戻る</a></p>
+</body>
+</html>

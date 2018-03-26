@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. --><title>Criando uma Aplicação Orientada pelo Banco de Dados Com o PHP. Criando um Banco de Dados MySQL de Amostra usando a Interface do NetBeans</title>
+
+<meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans. ">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Create MySQL database in NetBeans">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+
+
+   <body>
+<h1>Criando uma Aplicação Orientada pelo Banco de Dados com o PHP </h1>
+<h1>Lição 1: Criando um Banco de Dados MySQL</h1>
+<div style="margin-left: -3px;">
+<div class="feedback-box margin-around float-left" style="margin-right: 15px;">
+<h4>Conteúdo do tutorial:</h4>
+<ol start="0">
+<li><a href="wish-list-tutorial-main-page.html">Criando uma Aplicação CRUD com PHP - Página Principal</a></li>
+<li>
+<p>Criando o Banco de Dados</p>
+<ol type="a"><li>
+<p><b>=> Criando um Banco de Dados MySQL</b></p>
+<ul>
+<li><a href="#register-mysql">Registrando um Servidor MySQL</a></li>
+<li><a href="#CreateUser">Criando o Usuário do Banco de Dados</a></li>
+<li><a href="#CreateDatabase">Criando um Banco de Dados da Lista de Desejos</a></li>
+<li><a href="#EstablishConnection">Estabelecendo uma Conexão com o Banco de Dados da Lista de Desejos</a></li>
+<li><a href="#DatabaseStructure">Criando a Estrutura do Banco de Dados da Lista de Desejos</a></li>
+<li><a href="#CreateTables">Criando as Tabelas</a></li>
+<li><a href="#EnterTestData">Inserindo os Dados de Teste</a></li>
+</ul>
+</li>
+<li><a href="wish-list-oracle-lesson1.html">Criando Tabelas do Banco de Dados Oracle</a></li>
+</ol>
+</li>
+<li><a href="wish-list-lesson2.html">Projetando a Aplicação. Lendo do Banco de Dados</a></li>
+<li><a href="wish-list-lesson3.html">Criando um Novo Usuário da Aplicação</a></li>
+<li><a href="wish-list-lesson4.html">Otimizando o Código</a></li>
+<li><a href="wish-list-lesson5.html">Adicionando Segurança. Implementando o Log-in de Usuário da Aplicação</a></li>
+<li><a href="wish-list-lesson6.html">Adicionando um Novo Desejo ao Banco de Dados</a></li>
+<li><a href="wish-list-lesson7.html">Atualizando e Deletando Entradas no Banco de Dados</a></li>
+<li><a href="wish-list-lesson8.html">Melhorando a Aparência da Aplicação Usando a Tecnologia CSS</a></li>
+<li><a href="wish-list-lesson9.html">Implantando a Aplicação em um Servidor Web Remoto</a></li>
+</ol>
+</div>
+</div>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+<p>Esta lição descreve a última etapa preliminar no desenvolvimento da aplicação da Lista de Desejos: a criação de um banco de dados de amostra com dados de teste. Para concluir as etapas deste tutorial, você precisará de um banco de dados para armazenar os dados dos wishers. Com o NetBeans IDE, você pode realizar todas essas atividades usando a interface do IDE. <br> Antes de começar, veja os requisitos do tutorial descritos em <a href="wish-list-tutorial-main-page.html">Criando uma Aplicação CRUD com PHP - Página Principal</a>. </p>
+<p>O documento atual é uma parte do tutorial Criando uma Aplicação CRUD no NetBeans IDE para PHP. </p>
+<br style="clear: left;">
+<h2 id="register-mysql">Registrando um Servidor MySQL</h2>
+<p>Se você não tiver um servidor de banco de dados MySQL registrado no IDE ou quiser informações gerais sobre como usar MySQL com o NetBeans IDE, consulte <a href="../ide/mysql.html">Estabelecendo Conexão com um Banco de Dados MySQL</a>.</p>
+<h2><a id="CreateUser" name="CreateUser"></a>Criando o Usuário do Banco de Dados</h2>
+<p>Antes de criar um banco de dados, você precisa criar o usuário que terá o direito de realizar todas as operações no banco de dados. A Criação de um Usuário de Banco de Dados envolve:</p>
+<ul>
+<li><a href="#connectToMySQLServer">Conectar ao servidor MySQL como o usuário raiz</a>.</li>
+<li><a href="#connectToDefaultDatabase">Conectar ao banco de dados do sistema MySQL como um usuário raiz</a>. Esta etapa é necessária para permitir a execução de um comando SQL para a criação de um usuário porque não é possível executar um comando SQL sem estar conectado a um banco de dados. </li>
+<li><a href="#createUserQuery">Executando um comando MySQL de criação de usuário</a>. </li>
+</ul>
+<ol>
+<li>Inicie o IDE, alterne para a janela Serviços (Ctrl-5) e expanda o nó do Banco de Dados.</li>
+<li>Para <a id="connectToMySQLServer" name="connectToMySQLServer"></a>conectar ao servidor de banco de dados MySQL, navegue para o nó do <tt>Servidor MySQL</tt> e, do menu de contexto, selecione Conectar. <br> <img alt="Estabelecendo conexão com o servidor MySQL usando a interface NetBeans IDE: selecionar Conectar no menu de contexto" class="margin-around b-bottom" src="../../../images_www/articles/72/php/wishlist/mysql-ctxmenu-connect.png"><br>
+</li>
+<li> O NetBeans IDE conecta-se ao servidor MySQL, verifica quais bancos de dados estão disponíveis pelo servidor, detecta o banco de dados do sistema <tt>mysql</tt>, e adiciona o novo nó correspondente <tt>mysql</tt> na árvore Bancos de Dados. <br> <img alt="Um novo nó MySQL é adicionado à árvore de Bancos de Dados" class="margin-around" height="159" src="../../../images_www/articles/72/php/wish-list-lesson1/mysql_node_added.png" width="337"> </li>
+<li>Para executar um comando SQL, você precisa estar conectado a um banco de dados. Como somente o sistema MySQL está disponível, você precisa se conectar ao mesmo. <a id="connectToDefaultDatabase" name="connectToDefaultDatabase"></a>Para conectar ao banco de dados do sistema, navegue até o nó <tt>mysql</tt> e, no menu de contexto, selecione Conectar. Se uma conexão ainda não existir, a caixa de diálogo Nova Conexão de Banco de Dados será exibida. O campo Nome do Usuário está preenchido, por default, com raiz. No campo Senha, insira a senha do usuário raiz. 
+<p class="notes"><strong>Observação: </strong>se você estabeleceu conexão ao banco de dados <code>mysql</code> antes, esta caixa de diálogo não aparecerá. Em vez disso, o novo nó de conexão simplesmente aparece na árvore.</p>
+<img alt="Criando uma nova conexão do banco de dados" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/create-new-database-connection.png"> <br> A caixa de diálogo Nova Conexão de Banco de Dados mostra a mensagem "Conexão estabelecida". Clique em OK. Um novo nó chamado <tt>jdbc:mysql://localhost:3306/mysql</tt> é adicionado na árvore do Bancos de Dados.</li>
+<li><a id="createUserQuery" name="createUserQuery"></a>Navegue até o nó <tt>jdbc:mysql://localhost:3306/mysql</tt> e no menu de contexto selecione Executar Comando. <br> <img alt="Selecionando Executar comando no menu de contexto" class="margin-around b-bottom" height="282" src="../../../images_www/articles/72/php/wish-list-lesson1/execute-command.png" width="441"> <br> Uma janela de Comando SQL é aberta. Na janela Comando SQL, use uma sintaxe similar à seguinte instrução:
+<pre class="examplecode">CREATE USER 'phpuser'@'localhost' <br>	IDENTIFIED BY 'phpuserpw'</pre>
+No menu de contexto, selecione Executar Instrução. Se o comando for executado com êxito, a barra de Status exibirá a mensagem: "Instrução(ões) SQL executada(s) com êxito". Se outra mensagem for exibida, verifique a sintaxe e siga as dicas da mensagem. </li>
+</ol>
+<h2><a id="CreateDatabase" name="CreateDatabase"></a>Criando um Banco de Dados da Lista de Desejos </h2>
+<p>Para criar o banco de dados:</p>
+<ol>
+<li>Navegue para o nó <tt>Servidor MySQL em localhost:3306</tt> e, no menu de contexto, selecione Criar Banco de Dados. A caixa de diálogo Criar Banco de Dados MySQL é exibida. Preencha os campos:
+<ul>
+<li>No campo Nome do Banco de Dados, insira a lista de desejos.</li>
+<li>Ative a caixa de seleção Conceder acesso total ao usuário e, na lista drop-down, selecione <tt>phpuser@localhost</tt>. Clique em OK.<br> <img alt="Crie a caixa de diálogo banco de dados. Concedendo direitos de acesso para o usuário recém-criado" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/create-user.png">
+<p class="alert">A função “Conceder acesso total ao usuário” nem sempre funciona. Caso não funcione, <a href="#EstablishConnection">conecte-se ao banco de dados</a> como usuário raiz e envie a consulta SQL <span class="examplecode"><tt>GRANT ALL ON wishlist.* TO phpuser@localhost</tt></span>. </p>
+</li>
+</ul>
+Uma conexão ao banco de dados é exibida na árvore. No entanto, a conexão é para o usuário <code>raiz</code>. Você precisa de uma conexão para o usuário<code>phpuser</code>.</li>
+</ol>
+<h2><a id="EstablishConnection" name="EstablishConnection"></a>Estabelecendo uma Conexão com o Banco de Dados da Lista de Desejos </h2>
+<p>No fim da seção anterior, você criou o banco de dados <code>wishlist</code> com uma conexão ao usuário <code>raiz</code>. Agora você cria uma nova conexão para o usuário <code>phpuser</code>. </p>
+<ol>
+<li>Na janela Serviços, clique com o botão direito do mouse no nó Bancos de Dados e selecione Nova Conexão. O Assistente Nova Conexão será aberto.<br> <img alt="Menu de contexto conexão ao banco de dados mostrando o item Propriedades" class="margin-around b-bottom b-right" src="../../../images_www/articles/72/php/wishlist/databases-ctxmenu-newconnection.png"></li>
+<li>No painel Novo Driver de Localização do Assistente de Conexão, selecione o <code>MySQL (Driver Conector/J).</code> Clique em Próximo. O painel Personalizar Conexão é aberto.<br> <img alt="Painel Localizar Driver do Assistente Nova Conexão" class="margin-around" height="384" src="../../../images_www/articles/72/php/wishlist/locate-driver.png" width="441"></li>
+<li>No campo Banco de Dados, digite <code>wishlist</code>.</li>
+<li>Nas caixas de edição Nome do Usuário e Senha, insira o nome e a senha especificados na seção <a href="#CreateUser">Criando o Proprietário (Usuário) do Banco de Dados</a> (em nosso exemplo <tt>phpuser</tt> e <tt>!phpuser</tt> respectivamente). Marque Lembrar Senha. Clique em Testar Conexão e se a conexão for bem-sucedida, clique em OK. <br> <img alt="Painel Personalizar Conexão Concluído do assistente Nova Conexão" class="margin-around" height="439" src="../../../images_www/articles/72/php/wishlist/phpuser-connection.png" width="455"></li></ol>
+<p>O nó correspondente à nova conexão é exibido na árvore do Bancos de Dados. Agora você pode deletar a conexão do usuário <code>raiz</code> para o banco de dados <code>wishlist</code>. Clique na conexão <tt>jdbc:mysql://localhost:3306/wishlist [raiz no esquema Default]</tt> e escolha Deletar.</p>
+  <img alt="O nó da nova conexão foi adicionado à árvore do Bancos de Dados" class="margin-around" height="120" src="../../../images_www/articles/72/php/wish-list-lesson1/new-database-connection-added.png" width="504"> 
+
+<h2><a id="DatabaseStructure" name="DatabaseStructure"></a>Criando a Estrutura do Banco de Dados da Lista de Desejos </h2>
+<p>Para organizar e armazenar todos os dados necessários, você precisa de duas tabelas: </p>
+<ul>
+<li>Uma tabela de wishers para armazenar nomes e senhas de usuários registrados</li>
+<li>Uma tabela de desejos para armazenar descrições de desejos</li>
+</ul>
+<img alt="Estrutura do banco de dados de amostra: duas tabelas estão relacionadas por meio do wisher ID" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/wishlist-db.png"><br> A tabela de wishers contém três campos:
+<ol>
+<li>id - a identificação exclusiva de um wisher. Este campo é usado como a Chave Primária</li>
+<li>nome </li>
+<li>senha</li>
+</ol>
+<p>A tabela de desejos contém quatro campos:</p>
+<ol>
+<li>id - a identificação exclusiva de um desejo. O campo é usado como a Chave Primária</li>
+<li>wisher_id - a identificação do wisher a quem o desejo pertence. O campo é usado como a Chave Estrangeira. </li>
+<li>descrição</li>
+<li>due_date - a data para a qual o desejo foi solicitado </li>
+</ol>
+<p>As tabelas são relacionadas por meio do wisher ID. Todos os campos são obrigatórios, exceto due_date em desejos. </p>
+<h2><a id="CreateTables" name="CreateTables"></a>Criando as Tabelas</h2>
+<ol>
+<li>Para conectar ao banco de dados, na conexão <tt>jdbc:mysql://localhost:3306/wishlist</tt>, clique com o botão direito do mouse e selecione Conectar no menu de contexto.<br> <strong>Observação:</strong> se o item de menu estiver desativado, você já está conectado. Prossiga com a etapa 2.</li>
+<li>No mesmo menu de contexto, selecione Executar Comando. Uma janela Comando SQL vazia é aberta. </li>
+<li>Para criar a tabela de wishers,
+<ol>
+<li type="a">Digite a seguinte Consulta SQL (observe que é preciso definir explicitamente os conjuntos de caracteres como URF-8 para internacionalização):
+<pre class="examplecode">CREATE TABLE wishers(<br> id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, <br> name CHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL UNIQUE,<br> password CHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL<br>)</pre>
+<strong>Observação:</strong> você pode obter um número exclusivo gerado automaticamente do MySQL especificando a propriedade AUTO_INCREMENT de um campo. O MySQL irá gerar um número exclusivo incrementando o último número da tabela e adicionará automaticamente ao campo incrementado. No nosso exemplo, o campo ID é incrementado automaticamente. </li>
+<li type="a">Clique com o botão direito do mouse na consulta e selecione Executar Instrução no menu de contexto.
+<p class="notes"><b>Observação: </b>O mecanismo de armazenamento default do MySQL é o MyISAM, que não é compatível com teclas estrangeiras. Caso deseje usar teclas estrangeiras, considere usar InnoDB como mecanismo de armazenamento.</p>
+</li>
+</ol>
+</li>
+<li>Para criar a tabela de desejos:
+<ol>
+<li type="a">Digite a seguinte consulta SQL:
+<pre class="examplecode">CREATE TABLE wishes(<br> id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,<br> wisher_id INT NOT NULL,<br> description CHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,<br> due_date DATE,<br> FOREIGN KEY (wisher_id) REFERENCES wishers(id)<br>)</pre>
+</li>
+<li type="a">Clique com o botão direito do mouse na consulta e selecione Executar Instrução no menu de contexto. </li>
+</ol>
+</li>
+<li>Para verificar se as novas tabelas foram adicionadas ao banco de dados, alterne para a janela Serviços e navegue para o nó da conexão jdbc:mysql://localhost:3306/wishlist. </li>
+<li>Clique com o botão direito do mouse e selecione Atualizar. Os nós de wishers e desejos aparecem na árvore.</li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">Observação:</span> você pode fazer download de um conjunto de comandos SQL para criar <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-MySQL.zip" target="_blank">aqui</a> o banco de dados da lista de desejos MySQL.</p>
+<h2><a id="EnterTestData" name="EnterTestData"></a>Inserindo os Dados de Teste </h2>
+<p>Para testar a aplicação, você precisará de alguns dados no banco de dados. O exemplo abaixo mostra como adicionar dois wishers e quatro desejos.</p>
+<ol>
+<li>Na conexão jdbc:mysql://localhost:3306/wishlist, clique com o botão direito do mouse e selecione Executar Comando. Uma janela Comando SQL vazia é aberta. </li>
+<li>Para adicionar um wisher, use uma sintaxe similar ao exemplo abaixo:
+<pre class="examplecode">INSERT INTO wishers (name, password) <br> VALUES ('Tom', 'tomcat');</pre>
+Clique com o botão direito do mouse na consulta e, no menu de contexto, selecione Executar Instrução.<br> <strong>Observação: </strong> a instrução não contém um valor para o campo <tt>id</tt>. Os valores são inseridos automaticamente porque o tipo de campo é especificado como <tt>AUTO_INCREMENT</tt>.<br> Inserir outro wisher de teste:
+<pre class="examplecode">INSERT INTO wishers (name, password) <br> VALUES ('Jerry', 'jerrymouse');</pre>
+</li>
+<li>Para adicionar os desejos, use uma sintaxe similar ao exemplo abaixo:
+<pre class="examplecode">INSERT INTO wishes (wisher_id, description, due_date) <br> VALUES (1, 'Sausage', 080401);<br>INSERT INTO wishes (wisher_id, description) <br> VALUES (1, 'Icecream');<br>INSERT INTO wishes (wisher_id, description, due_date) <br> VALUES (2, 'Cheese', 080501);<br>INSERT INTO wishes (wisher_id, description)<br> VALUES (2, 'Candle');</pre>
+<p>Selecione as consultas, clique com o botão direito do mouse em cada consulta e, no menu de contexto, selecione Executar Seleção. </p>
+<p class="notes"><strong>Observação:</strong> você também pode executar as consultas uma após a outra, conforme descrito no item 2.</p> </li>
+<li>Para visualizar os dados de teste, clique com o botão direito do mouse na tabela relevante e, no menu de contexto, selecione Exibir dados. <br> <img alt="Visualizando os dados de teste inseridos usando a interface do NetBeans IDE" class="margin-around" height="339" src="../../../images_www/articles/72/php/wish-list-lesson1/view-test-data.png" width="590"> </li>
+</ol>
+<p>Para obter um entendimento geral dos princípios de bancos de dados e padrões de design, consulte o tutorial: <a href="http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1</a>.</p>
+<p>Para obter mais informações sobre a sintaxe das instruções <tt>CREATE TABLE</tt> de MySQL, consulte <a href="http://dev.mysql.com/doc/refman/5.0/en/create-table.html" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://dev.mysql.com/doc/refman/5.0/en/create-table.html</a>.
+</p>
+<p>Para obter mais informações sobre como inserir valores na tabela, consulte <a href="http://dev.mysql.com/doc/refman/5.0/en/insert.html" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://dev.mysql.com/doc/refman/5.0/en/insert.html</a>.</p>
+<p class="notes"><span style="font-weight: bold;">Observação:</span> você pode fazer download de um conjunto de comandos SQL para criar <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-MySQL.zip" target="_blank">aqui</a> o banco de dados da lista de desejos MySQL.
+</p>
+<h2><a name="nextSteps"></a>Próxima Etapa</h2>
+<p><a href="wish-list-lesson2.html">Próxima Lição >></a></p>
+<p><a href="wish-list-tutorial-main-page.html">Voltar à página principal do Tutorial</a></p>
+<br>
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%201:%20Create%20MySQL%20Database">Envie-nos Seu Feedback</a></div>
+<br style="clear: both;">
+<p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>.</p>
+<a href="../../trails/php.html">Voltar à Trilha de Aprendizado PHP</a><br>
+</body></html>

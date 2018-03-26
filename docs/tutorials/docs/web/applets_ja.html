@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!-- -*- xhtml -*- -->
+        <title>Webアプリケーションでのアプレットの統合</title>
+        
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="AUTHOR" content="Geertjan Wielenga">
+        <meta name="DESCRIPTION" content="A short guide to creating and using applets in the NetBeans IDE.">
+        <!--      Copyright (c) 2009 - 2013, Oracle and/or its affiliates. All rights reserved. -->
+        <!--     Use is subject to license terms.-->
+    <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+    <body>
+        <h1>Webアプリケーションでのアプレットの統合</h1>
+
+   <p>アプレットとは、Javaプログラミング言語で記述されたプログラムで、イメージをページに含めるのとよく似た方法でHTMLページに含めることができるものです。このチュートリアルでビルドするアプリケーションでは、アプレットをIDE内でビルドしてデプロイする方法を示します。</p>
+        
+    <p><strong class="notes">注意: </strong>IDE内にアプレットを作成する目的で設計されたプロジェクト・テンプレートはありませんが、このようなテンプレートは、このチュートリアルで示すようにJavaプロジェクトで簡単に開発してWebプロジェクト内にパッケージ化できます。</p>
+            
+            
+    <p><strong>目次</strong></p>
+      <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+      <ul class="toc">
+         <li><a href="#create">アプレットの作成またはインポート</a></li>
+         <li><a href="#runanddebug">アプレットの実行</a></li>
+         <li><a href="#embed">アプレットのWebアプリケーションへの埋込み</a></li>
+      </ul>
+<p><a name="00"></a><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+
+   <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">7.2、7.3、7.4、8.0、Javaバージョン</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition<br><em class="indent margin-around">または</em><br>Tomcatサーブレット・コンテナ</td>
+                    <td class="tbltd1">3.xまたは4.x<br> <em class="margin-around indent"> </em> <br>バージョン7.xまたは8.x</td>
+                </tr>
+            </tbody>
+    </table>
+            
+        
+        <h2><a name="create"></a>アプレット・ソース・ファイルの作成またはインポート</h2>
+        
+        <p>この項では、最初のアプレットを作成します。作成したアプレットがすでにある場合、次の手順を使用してそのアプレットをIDEにインポートします。</p>
+        
+        <div class="indent">
+            
+            <h3>最初からまたは既存のソースからのJavaプロジェクト作成</h3>
+            
+            <ol>
+                <li>「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N])を選択します。「カテゴリ」から「Java」を選択します。</li>
+                <li>次のいずれかを選択します。
+                    <ul>
+                        <li>新しいアプレット・ソース・ファイルを作成する場合、「プロジェクト」の下の「Javaクラス・ライブラリ」を選択します。「次」をクリックします。</li>
+                        <li>アプレット・ソース・ファイルをインポートする場合、既存のソースがあるJavaプロジェクトを選択します。「次」をクリックします。「ソース・パッケージのフォルダ」テキスト・ボックスで、ファイルの場所を指定します。</li>
+                </ul></li>
+                <li>「プロジェクト名」に「<tt>HelloApplet</tt>」と入力します。「プロジェクトの場所」をローカル・コンピュータ上の任意のフォルダに変更します。</li>
+                <li>「終了」をクリックします。アプレット・ソース・ファイルをインポートした場合は、<a href="#runanddebug">それを実行</a>します。</li> 
+            </ol>
+            
+            
+            
+            
+            <h3>アプレット・ソース・ファイルの作成</h3>
+            
+            <ol>
+                <li>「HelloApplet」プロジェクトを右クリックして「プロパティ」を選択し、「プロパティ」ウィンドウを開きます。</li>
+                <li>プロジェクトに必要なソース/バイナリ形式を選択し、「OK」をクリックします。
+                    <p class="notes"><strong>注意: </strong>たとえば、JDK 6を選択した場合、それより古いバージョンのJREまたはJavaブラウザ・プラグインが存在するマシンでは、アプレットが動作しない可能性があります。</p>
+                </li>
+                <li>「プロジェクト」ウィンドウの「HelloApplet」プロジェクト・ノードを右クリックし、「新規」>「その他」([Ctrl]-[N])を選択します。</li>
+                <li>「カテゴリ」から「Java」を選択します。「ファイル・タイプ」から「アプレット」を選択します。 
+                    
+                    <p>または、新しいアプレットを視覚的にデザインする場合、「Swing GUIフォーム」>「JAppletフォーム」を選択します。</p> 
+                    
+                <p>「次」をクリックします。</p></li>
+                <li>「クラス名」に「<tt>MyApplet</tt>」と入力します。「パッケージ」に「<tt>org.me.hello</tt>」と入力します。</li>
+                <li>「終了」をクリックします。<p>IDEで、アプレット・ソース・ファイルが指定したパッケージ内に作成されます。ソース・エディタが開いて、アプレット・ソース・ファイルが表示されます。</p></li>  
+                <li>既存のデフォルト・コードの上に次のコードを コピーして貼り付け、アプレット・クラスを定義します。
+                    <pre class="examplecode">
+     package org.me.hello;
+
+     import java.applet.Applet;
+     import java.awt.Graphics;
+
+     public class MyApplet extends Applet {
+         @Override
+         public void paint(Graphics g) {
+             g.drawString(&quot;Hello applet!&quot;, 50, 25);
+         }
+     }
+                    </pre>
+                    
+                <p>または、アプレット・フォームをデザインする場合、<a href="../java/quickstart-gui.html">NetBeans IDEにおけるGUI構築</a>のドキュメントを使用して、次のようなフォームを作成します。</p>
+
+    <p  class="align-center"><img alt="アプレット・フォームのデザイン" class="align-center" hspace="5" src="../../../images_www/articles/74/web/applet/movie-magic-quiz-design.png" vspace="5"></p>
+    
+                    <p>アプレットの記述方法に関する詳細は、Java<sup>TM</sup>チュートリアルの<a href="http://download.oracle.com/javase/tutorial/deployment/applet/index.html">アプレット</a>の項を参照してください。</p>
+                </li>
+            </ol>
+        </div>
+        
+        
+        
+        
+       
+        <h2><a name="runanddebug"></a>アプレット・ソース・ファイルの実行</h2>
+        <p>作成したアプレットは、IDEから実行できます。この項でその方法を説明します。</p>
+        <div class="indent">
+            <h3><a name="createjavaobjects"></a>アプレット・ソース・ファイルのビルドと実行</h3>
+            
+           
+          <p>「プロジェクト」ウィンドウでMyApplet.javaファイル・ノードを右クリックし、コンテキスト・メニューから「ファイルの実行」を選択します。アプレットが埋め込まれる<tt>MyApplet.html</tt>起動ファイルは、<tt>build</tt>フォルダに作成され、「ファイル」ウィンドウ([Ctrl]-[2])に切り替えると確認できます。 </p>
+            
+            <p class="align-center"><img alt="ビルドされたアプレットが表示された「ファイル」ウィンドウ" class="margin-around" src="../../../images_www/articles/74/web/applet/built-project-files.png"></p>
+          <p>アプレットはアプレット・ビューアで起動します。</p>
+          <p class="align-center"><img alt="アプレットの表示" class="align-center" hspace="5" src="../../../images_www/articles/74/web/applet/appletviewer.png" vspace="5"></p>
+          <p>アプレット・フォームもアプレット・ビューアで表示されます。</p>
+          <p class="align-center"><img alt="デザイン" class="align-center" hspace="5" src="../../../images_www/articles/74/web/applet/movie-magic-quiz.png" vspace="5"></p>
+          
+            
+            
+        </div>
+        
+        <h2><a name="embed"></a>アプレットのWebアプリケーションへの埋込み</h2>
+        <p>これでアプレットの作成は完了しました。次に、これをユーザーが使用できるようにする必要があります。そのためには、Webアプリケーションを作成し、このアプレットJARをクラスパスに配置し、アプレット・タグをWebアプリケーションのHTMLファイルに追加します。</p>
+        <div class="indent">
+        <h3>Webプロジェクトの作成</h3>
+        
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択します。</li> 
+            <li>「Java Web」カテゴリから「Webアプリケーション」を選択します。「次」をクリックします。</li>
+            <li>「プロジェクト名」に「<tt>HelloWebApplet</tt>」と入力します。</li> 
+            <li>「プロジェクトの場所」をローカル・コンピュータ上の任意のフォルダに変更します。「次」をクリックします。</li>
+            <li>ターゲット・サーバーを選択します。「終了」をクリックします。</li>
+        </ol>
+        
+        
+        
+        
+        <h3>アプレットJARファイルのWebプロジェクトへの追加</h3>
+        
+        <p>アプレットJARファイルをWebプロジェクトに含める場合は、そのJARファイルが格納されたJavaプロジェクトを追加するか、またはJARファイル自体を追加します。どちらを選択することもできますが、JavaプロジェクトをWebプロジェクトに追加する場合、Webアプリケーションをビルドするたびに、IDEでそのアプレットが毎回ビルドされます。そのため、そのアプレットをJavaプロジェクトで変更すると、そのWebプロジェクトのビルド時にIDEで新しいバージョンのアプレットが常にビルドされます。一方、そのアプレットJARファイルがNetBeans IDEプロジェクト内にない場合、アプレット・ソース・ファイルはWebプロジェクトのビルド時に再ビルドされません。</p>
+        <p class="notes"><b>注意:</b> IDEで<tt>HelloApplet</tt>プロジェクトを使用している場合、この時点で<tt>HelloApplet.jar</tt>ファイルは存在しません。それで問題ありません。<tt>HelloApplet.jar</tt>ファイルは<tt>HelloWebApplet</tt>プロジェクトのビルド時にビルドされます。 </p>
+        <ol>
+            <li>「プロジェクト」ウィンドウで、「HelloWebApplet」プロジェクト・ノードを右クリックし、コンテキスト・メニューから「プロパティ」を選択します。</li>
+            <li>「パッケージング」カテゴリを選択します。</li>
+            <li>次のいずれかを選択します。
+                <ul>
+                    <li>アプレットがJavaプロジェクト内にある場合、「プロジェクトの追加」をクリックしてJavaプロジェクトを含むフォルダを特定します。「JAR/フォルダの追加」をクリックします。
+                        <p class="notes"><strong>注意:</strong>IDEプロジェクトには、NetBeans IDEプロジェクト・アイコンのマークが付きます。</p></li>
+                    <li>IDEプロジェクト内にないアプレットJARファイルを使用している場合、「ファイル/フォルダの追加」をクリックし、JARファイルを含むフォルダを特定します。「選択」をクリックします。</li>
+                </ul>
+            </li>
+            <li>アプレットのソース・ファイルを含むJARが「プロジェクト・プロパティ」ウィンドウの表にリストされていることを確認します。「OK」をクリックします。
+                <p>デフォルトでは、アプレットJARファイルはWebアプリケーションのWebページ・ライブラリ(<tt>build/web</tt>フォルダ)にコピーされます。<tt>build/web</tt>フォルダはアプリケーションのルート・ディレクトリで、表の「WAR内のパス」列に"<tt>/</tt>"と表示されます。「WAR内のパス」列にアプレットの新しい場所を入力すると、WAR内のアプレットの場所を変更できます。</li>
+            <li>「閉じる」をクリックして、「プロジェクト・プロパティ」ウィンドウを閉じます。</li></ol> 
+                <p>IDEのメイン・メニューから「実行」>「プロジェクトのビルド(HelloWebApplet)」を選択して<tt>HelloWebApplet</tt>プロジェクトをビルドすると、アプレットのJARファイルが元の<tt>HelloApplet</tt>プロジェクト内に生成され、<tt>HelloWebApplet</tt>プロジェクトのWARファイルにパッケージ化されます。<tt>build/web</tt>フォルダにも追加されます。この処理を「出力」ウィンドウで追跡し、結果を「ファイル」ウィンドウで確認できます。</p>
+                <p class="align-center"><a href="../../../images_www/articles/74/web/applet/helloapplet-jar-in-files.png" rel="lytebox" title="アプレットおよびWebアプリケーションのアプレットjarファイル"><img alt="アプレットおよびWebアプリケーションのアプレットjarファイル" border="1" src="../../../images_www/articles/74/web/applet/helloapplet-jar-in-files-small.png"></a></p>
+          
+        <h3>JSPファイルまたはHTMLファイルの作成と実行</h3>
+        
+        <ol>
+            <li>次のいずれかを選択します。
+                <ul>
+                    <li>アプレットをJSPファイルに埋め込む場合は、「プロジェクト」ウィンドウにあるデフォルトの<tt>index.jsp</tt>ファイルをダブルクリックします。このファイルは、Webプロジェクトの作成時にIDEで作成されます。ソース・エディタにこのファイルが表示されます。</li>
+                    <li>アプレットをHTMLファイルに埋め込む場合は、「HelloWebApplet」プロジェクト・ノードを右クリックし、コンテキスト・メニューから「新規」>「その他」を選択します。「カテゴリ」から「Web」を選択します。「ファイル・タイプ」から「HTML」を選択します。「次」をクリックします。HTMLファイルに名前を付け、その場所としてWebフォルダを選択し、「終了」をクリックします。</li>
+                </ul>
+            </li>
+            <li>次のように、ファイルの<tt>&lt;body></tt><tt>&lt;/body></tt>の2つのタグの間の任意の場所にアプレット・タグを追加することで、アプレットをファイルに埋め込みます。<p>
+                <ul>
+                    <li>HTMLファイル内: <span class="examplecode"><tt>&lt;applet code="org.me.hello.MyApplet" archive="HelloApplet.jar">&lt;/applet></tt> </span></li>
+                    <li>JSPファイル内: <span class="examplecode"><tt>&lt;applet code="org.me.hello.MyApplet" archive="HelloApplet.jar" width="600" height="480"/></tt></span></li>
+                </ul>
+                    
+                <p class="notes"><strong>注意:</strong></p>
+                <ul>
+                    <li>このチュートリアルでは、HTMLファイルにアプレット・コードを追加する場合は、左マージンにあるヒント・グリフを無視できます。</li>
+                    <li><tt>org.me.hello.MyApplet</tt>はアプレットの完全クラス名です。</li>
+                    <li><tt>HelloApplet.jar</tt>はアプレットを格納するJARファイル名です。</li>
+                </ul>
+          </li>
+            <li>「プロジェクト」ウィンドウでこのJSPノードまたはHTMLノードを右クリックし、コンテキスト・メニューから「ファイルを実行」を選択します。
+                <p>サーバーによって、JSPファイルまたはHTMLファイルがIDEのデフォルト・ブラウザにデプロイされます。</p>
+                
+                
+                
+                <p>次の図のような表示になります(セキュリティ警告ダイアログ・ボックスで「実行」をクリックしてアプリケーションの実行を許可した後)。</p>
+                <p class="align-center"> <a href="../../../images_www/articles/74/web/applet/appletinbrowser.png" rel="lytebox" title="アプレットの表示"><img alt="アプレットの表示" border="1" src="../../../images_www/articles/74/web/applet/appletinbrowser-small.png"></a></p>
+                
+                <p>アプレット・フォームの場合、次のように表示されるはずです。</p>
+                
+                <p class="align-center"><img alt="デザイン" class="align-center" hspace="5" src="../../../images_www/articles/74/web/applet/movie-magic-quiz-html.png" vspace="5"></p>
+                
+            
+            </li>
+        </ol>
+        </div>
+        <br>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Developing%20Applets">このチュートリアルに関するご意見をお寄せください</a></div>
+        <br style="clear:both;">
+       
+  </body>
+</html>

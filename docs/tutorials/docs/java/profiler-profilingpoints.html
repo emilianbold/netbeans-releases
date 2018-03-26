@@ -1,0 +1,394 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Using Profiling Points in NetBeans IDE</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <meta name="description" content="An introduction to profiling an application using NetBeans IDE">
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      
+   </head>
+   
+   <body>
+      <a name="top"></a>
+      <h1>Using Profiling Points in NetBeans IDE</h1>
+      
+        <p>NetBeans IDE includes a powerful profiling tool that can provide important information about the runtime
+         behavior of your application.
+         The NetBeans profiling tool easily enables you to monitor thread states, CPU performance and
+         the memory usage of your application from within the IDE, and imposes relatively low overhead.</p>
+
+        <p>This document describes how to use profiling points as an alternative way of setting up and controlling
+        the profiling session.
+        Profiling points are similar to debugger breakpoints in that
+        you place them directly in the source code and they can trigger behavior when hit.
+        Once you set a profiling point it becomes part of the project until you delete it.
+        You can open the Profiling Points window to view, modify and delete the Profiling Points in your projects.
+        </p>
+
+        <p>You can use profiling points to perform the following tasks:</p>
+        <ul>
+            <li>Reset profiling results</li>
+            <li>Take a snapshot or heap dump</li>
+            <li>Record the timestamp or execution time of a code fragment</li>
+            <li>Stop and start a load generator script (requires the load generator plugin)</li>
+        </ul>
+
+
+      
+      <p>This document will demonstrate how to use profiling points to obtain profiling data about the Anagram Game sample application,
+         a simple Java application that is included in the IDE.
+         Though the Anagram Game is a very simple Java application project, you would follow the same
+         steps to profile larger, more complex Java applications, as well as web and enterprise application projects.</p>
+
+         <p>Before starting this tutorial you may want to familiarize yourself with using the profiling tool
+         by reading the following documentation.</p>
+        <ul>
+            <li><a href="profiler-intro.html">Introduction to Profiling Java Applications in NetBeans IDE</a></li>
+        </ul>
+      
+       <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+      
+         <p><b>Contents</b></p>
+         
+         <ul class="toc">
+            <li><a href="#01">Profiling Point Basics</a>
+               <ul class="toc">
+                  <li><a href="#01a">Setting a Profiling Point</a></li>
+                  <li><a href="#01b">Enabling, Disabling and Editing Profiling Points</a></li>
+                  <li><a href="#01c">Viewing Active Profiling Points in a Project</a></li>
+               </ul>
+            </li>
+            <li><a href="#02">Working with Profiling Points</a>
+               <ul class="toc">
+                  <li><a href="#02a">Creating the Sample Project</a></li>
+                  <li><a href="#02b">Measuring Execution Time of a Code Fragment</a>
+                  <li><a href="#02c">Taking a Snapshot or Heap Dump</a></li>
+                  <li><a href="#02d">Resetting Profiling Results</a></li>
+               </ul>
+            </li>
+         </ul>
+         
+         <h2>Getting Started</h2>
+         <div class="indent">   
+            <h3>Prerequisites</h3>
+            <p>This document assumes you have some basic knowledge of, or programming experience with, the following technologies:</p>
+            <ul>
+                <li>Java Programming</li>
+                <li>NetBeans IDE</li>
+            </ul>
+            
+            <h3>Software Needed for the Tutorial</h3>
+            <p>For this tutorial you need to have the following software installed on your computer:</p>
+            <table>
+            <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2, 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">Version 7 or 8</td>
+            </tr>
+            
+            </tbody>
+            </table>
+             <p class="notes"><strong>Notes.</strong></p>
+            <ul>
+                <li>The profiling tool is bundled with NetBeans IDE, and no special setup is necessary in order to begin profiling an application.</li>
+            </ul>
+          </div>
+
+
+
+<a name="01"></a>
+<h2>Profiling Point Basics</h2>
+<p>This section is a general guide on how to set profiling points in a project and how to view
+and modify existing profiling points.
+
+There are different types of profiling points, and you choose the profiling point according to the use case.
+A project might have a number of different profiling points associated with it. 
+You can add, delete, enable and disable profiling points according to the measurements that you want to obtain
+during that profiling session. 
+</p>
+<a name="01a"></a>
+<div class="indent">
+    <h3>Setting a Profiling Point</h3>
+    <p>The easiest way to set a profiling point is in the source code in the editor window. 
+        You can simply choose the line in the code where you want to set the profiling point
+        and then open the New Profiling Point window. 
+        You can also set profiling points when you are configuring the options for the profiling session.</p>
+    <ol>
+        <li>Open the file that contains the code where you want to insert the profiling point.</li>
+        <li>In the source editor, right-click in the line where you want to add the profiling point
+            and choose <strong>Profiling</strong> &gt; <strong>Insert Profiling Point</strong> to open the New Profiling Point wizard.</li>
+        <li>Select a profiling point type and the project. Click Next.<br/>
+        <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-newstopwatch.png" width="585" height="464" class="margin-around box" alt="Screenshot of New Profiling Point dialog box" title="Screenshot of New Profiling Point dialog box">
+        </li>
+        <li>Type a name for the profiling point and customize the properties of the profiling point. Click Finish.</li>
+    </ol>
+    <p>When you click Finish, an icon representing the profiling point type appears in the left margin of the
+    source editor next to the line where you inserted the profiling point.</p>
+    <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-icons.png" width="439" height="187" class="margin-around box" alt="Screenshot of Profiling Points annotations in source editor" title="Profiling Points annotations in margin of source editor">
+    
+<a name="01b"></a>
+    <h3>Enabling, Disabling and Editing Profiling Points</h3>
+    <p>When no profiling session is running, you can edit, enable and disable individual profiling points in either the
+    source editor or in the Profiling Points window.
+    To see a list of all profiling points, open the Profiling Points window by
+    choosing <strong>Window</strong> &gt; <strong>Profiling</strong> &gt; <strong>Profiling Points</strong> from the main menu.
+    The Profiling Points window shows the current status of the profiling points.</p>
+    <p>When a profiling session is running, the Profiling Points window displays how many times each profiling point was hit and
+    enables you to view a report of the results.</p>
+    <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-window.png" width="585" height="157" class="margin-around box" alt="Screenshot of Profiling Points window" title="Screenshot of Profiling Points window">
+    <p class="tips">You can quickly navigate to a specific profiling point in your source code by opening
+    the Profiling Points window and right-clicking the profiling point name and choosing Show Source.</p>
+
+    <p>To modify the status or the settings of a profiling point, do either of the following.</p>
+    <ul>
+        <li>In the source editor, right-click the profiling point icon in the margin and choose
+        Profiling Point in the popup menu.</li>
+        <li>In the Profiling Points window, select a profiling point and then use the toolbar
+        to edit, remove, enable or disable the profiling point.
+        <p>Alternatively, you can right-click the profiling point name in the list and choose
+        a command in the popup menu.</p>
+        </li>
+    </ul>
+    <p>If you choose to edit a profiling point, the Customize Profiling Point dialog box opens.</p>
+    <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-customize.png" class="margin-around box" alt="Screenshot of Customize Profiling Point dialog box" title="Screenshot of Customize Profiling Point dialog box">
+    
+
+<a name="01c"></a>
+    <h3>Viewing Active Profiling Points in a Project</h3>
+    <p>You can use profiling points when you are analyzing memory usage or application performance.
+        When you are selecting the profiling task you can see the profiling points that are active and enabled for the profiling session.
+    </p>
+    <ol>
+        <li>Right-click the project node and choose Profile to open the Select Profiling Task dialog box.</li>
+        <li>Select the profiling task (CPU or Memory).</li>
+        <li>Select <strong>Advanced (instrumented)</strong>.</li>
+        <li>Click <strong>Show active Profiling Points</strong> in the settings pane.
+        <p>The link to show active profiling points is only available when the Advanced profiling option is selected.</p>
+        </li>
+    </ol>
+    <img src="../../../images_www/articles/72/java/profiling-ppoints/points-active.png" width="360" height="187" class="margin-around box" alt="Screenshot of Active Profiling Points dialog box" title="Screenshot of Active Profiling Points dialog box">
+    <p>When you click Show active Profiling Points, a dialog box opens that lists all the profiling points
+    that are set in the project.
+    Profiling points that are set but disabled are greyed out.</p>
+    <p class="notes"><strong>Note.</strong> If you want to enable, disable or customize the settings of a profiling point,
+    open the Profiling Points window or locate the profiling point in the project.</p>
+
+
+</div>
+<a name="02"></a>
+<h2>Working with Profiling Points</h2>
+<p>In this section you will create a sample project and then set different profiling points in the source code.
+This exercise will demonstrate how to use the different profiling points.</p>
+<a name="02a"></a>
+<div class="indent">
+    <a name="create"></a>
+     <h3>Creating the Sample Project</h3>
+     <p>In this document you will use profiling points when profiling the Anagram Game sample application.
+     To do this you will first use the New Project wizard to create the sample application.</p>
+     <p>To create the Anagram Game application, perform the following steps.</p>
+     <ol>
+        <li>Choose File &gt; New Project from the main menu.</li>
+        <li>In the New Projects wizard, select the Samples &gt; Java category.</li>
+        <li>Select the Anagram Game project.</li>
+        <li>Specify a location for the project. Click Finish.
+        <p>When you click Finish, the IDE creates the Anagram Game sample project.</p>
+        </li>
+        <li>Choose Run &gt; Set Main Project &gt; AnagramGame from the main menu.</li>
+     </ol>
+     <p>After you set the project as the main project you can see that the name of the Anagram Game project is in bold in the Projects window. 
+     By default, when using the IDE to profile a project, the IDE will profile the main project.
+     If no project is set as the main project the IDE will profile the project that is selected
+     in the Projects window.</p>
+
+
+<a name="02b"></a>
+    <h3>Measuring Execution Time of a Code Fragment</h3>
+    <p>
+    You use the Stopwatch profiling point to retrieve timestamps when the profiling point is hit.
+    You can also use the Stopwatch profiling point to measure how long it takes to execute a code fragment
+    by calculating the difference between two timestamps.
+    You can set any number of stopwatch profiling points.</p>
+
+    <p>When you set a Stopwatch profiling point you choose one of the following types.</p>
+    <ul>
+        <li><strong>Timestamp.</strong> This type retrieves a timestamp when the profiling point is hit.</li>
+        <li><strong>Timestamp and Duration.</strong> This type enables you to measure how long it takes to execute a code fragment.
+        You specify the code fragment you want to measure by setting a Stopwatch profiling point at the point where
+        you want the measurement to begin and another Stopwatch profiling point where you want the measurement to end.
+        The start and end stopwatch points are paired by their name.
+        </li>
+    </ul>
+    <p>To measure the execution time of a code fragment, perform the following steps.</p>
+    <ol>
+        <li>Open the <tt>Anagrams.java</tt> class in the editor by expanding the <tt>com.toy.anagrams.ui</tt> source
+        package and double-clicking <tt>Anagrams.java</tt>.</li>
+        <li>Locate the line in the source code where you want the measurement to start, for example at line 54.</li>
+        <li>Right-click in the line and choose <strong>Profiling &gt; Insert Profiling Point</strong> from the popup menu.</li>
+        <li>Select <strong>Stopwatch</strong> as the Profiling Point Type. Click Next.</li>
+        <li>Select <strong>Timestamp and duration</strong> as the Setting.
+        <p>When you choose Timestamp and duration, the dialog box automatically sets the stopwatch to start at
+        the beginning of the line of code and to end at the end of the following line.
+        You can modify the lines where the stopwatch starts and stops.</p></li>
+        <li>Modify the <strong>Location (stop)</strong> setting to change the end line to a couple lines after the begin line.
+        Click Finish.<br/>
+        <img src="../../../images_www/articles/72/java/profiling-ppoints/stopwatch-dialog.png" class="margin-around box" alt="Screenshot of New Profiling Point dialog box" title="Screenshot of New Profiling Point dialog box">
+        <p>When you set the profiling point, annotations for the start point and end point appear in the left margin of the editor.</p>
+        <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-editor-stopwatch.png" class="margin-around box" alt="Screenshot of Active Profiling Points dialog box" title="Profiling points active for the profiling session">
+            
+        <p>If you open the Profiling Points window you can see that the stopwatch profiling point is added to the list.</p></li>
+        <li>Click Profile Main Project in the toolbar.</li>
+        <li>In the Select Profiling Task dialog box, click the <strong>CPU</strong> profiling task
+            and select the <strong>Advanced (instrumented)</strong> option.<br/>
+        <img src="../../../images_www/articles/72/java/profiling-ppoints/select-profiling-task1.png" class="margin-around box" alt="Screenshot of Select Profiling Task dialog" title="Select Profiling Task dialog box">
+            <p class="notes"><strong>Note.</strong> Profiling points can be used when analyzing performance or memory usage.</p>
+            </li>
+        <li>Select <strong>Use defined Profiling Points.</strong> Click Run to start the profiling session.
+        <p class="tips">If you click <strong>Show active profiling points</strong> you can view the profiling
+        points that are enabled for the profiling session.</p>
+        <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-profile-stopwatch-act.png" width="360" height="187" class="margin-around box" alt="Screenshot of Active Profiling Points dialog box" title="Profiling points active for the profiling session"></li>
+    </ol>
+    <p>When you click Run, the IDE launches the Anagram Game application and starts the profiling session.
+    If you open the Profiling Points window you can see if the Stopwatch profiling point was hit.
+    After the profiling point is hit you can click <strong>report</strong> in the Results column of the window to open a window that displays data
+    about the profiling point and the length of time it took to execute the code fragment between the
+    begin and end stopwatch profiling points.</p>
+    <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-result-stopwatch.png" width="585" height="294" class="margin-around box" alt="Screenshot of report of results for Stopwatch profiling point" title="Screenshot of report of results for Stopwatch profiling point">
+
+    <p class="notes"><strong>Note.</strong> If this is the first time that you are profiling a project, see
+    <a href="profiler-intro.html">Introduction to Profiling Java Applications in NetBeans IDE</a> for details on calibration and profiler integration.</p>
+
+
+<a name="02c"></a>
+    <h3>Taking a Snapshot or Heap Dump</h3>
+    <p>If you want to capture profiling data at a very precise moment you can use a profiling point to take a snapshot
+    of profiling results or of the heap (heap dump).
+    To take a profiling results snapshot (either memory or CPU) or a heap dump, you place a Take Snapshot profiling point in the source code,
+    choose the type of snapshot and specify where you want the files to be saved.
+    If you do not specify a location, all snapshots will be saved in the main project folder (<tt>nbproject/private</tt>).
+    </p>
+    <p class="notes"><strong>Note.</strong> You should exercise caution when placing a snapshot profiling point
+    because the profiling point might be hit several hundred times if it is placed in frequently executed code.</p>
+    <p>To take a snapshot using a profiling point, perform the following steps.</p>
+    <ol>
+        <li>Open the <tt>Anagrams.java</tt> class in the editor by expanding the <tt>com.toy.anagrams.ui</tt> source
+        package and double-clicking <tt>Anagrams.java</tt>.</li>
+        <li>Locate the line in the source code where you want to place the profiling point.</li>
+        <li>Right-click in the line and choose <strong>Profiling &gt; Insert Profiling Point</strong> from the popup menu.</li>
+        <li>Select <strong>Take Snapshot</strong> as the Profiling Point Type. Click Next.</li>
+        <li>Select either <strong>Profiling data snapshot</strong> or <strong>Heap dump</strong> as the Setting.</li>
+        <li>Specify a location where you want the files to be saved or keep the default location.
+        Click Finish.<br/>
+        <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-profile-snapheap.png" width="585" height="454" class="margin-around box" alt="Screenshot of New Profiling Point dialog for heap dump" title="New Take Snapshot profiling point with heap dump selected">
+        </li>
+        <li>Click Profile Main Project in the toolbar.</li>
+        <li>In the Select Profiling Task dialog box, click either <strong>CPU</strong> or <strong>Memory</strong> 
+            and select the <strong>Advanced (instrumented)</strong> option.</li>
+        <li>Select <strong>Use defined profiling points.</strong> Click Run to start the profiling session.
+        <p>If you click <strong>Show active profiling points</strong> you can view the profiling
+        points that are enabled for the profiling session.</p></li>
+    </ol>
+    <p>When you click Run, the IDE launches the Anagram Game application and starts the profiling session.
+    If you open the Profiling Points window you can see if the Take Snapshot profiling point was hit.
+    If the profiling point was hit, you can click <strong>report</strong> in the Results column to open the Take Snapshot window that displays data
+    about the profiling point. To view the snapshot, click "open snapshot" in the Take Snapshot window.</p>
+    
+    <p class="tips">Snapshot points can be effectively paired with Reset points to produce heap deltas.</p>
+    
+    <p>When you use a Take Snapshot profiling point, the resulting snapshots or heap dumps are automatically saved to the
+    specified location.
+    If you specified that the snapshots should be saved to the project folder,
+    the saved snapshots automatically appear in the Saved Snapshots list in the Profiler window.
+    You can open snapshots in the Saved Snapshots list by selecting the item and clicking Open.
+    </p>
+    <p class="notes"><strong>Note.</strong> If you specify that snapshots should be saved in a location other than the project folder,
+    the snapshots are not automatically listed in the Saved Snapshots list.
+    To open snapshots not listed in the Saved Snapshots list, click the Load button next to the list and
+    navigate to the location of the saved snapshot.</p>
+    <img src="../../../images_www/articles/72/java/profiling-ppoints/saved-snapshots.png" width="335" height="201" class="margin-around box" alt="Screenshot of New Reset Results pane" title="Screenshot of New Reset Results pane">
+    <p>For more about working with snapshots and heap dumps, see the following documents.</p>
+    <ul>
+        <li>See the Taking Snapshots section of the <a href="profiler-intro.html">Introduction to Profiling</a>
+        tutorial for more about viewing and comparing snapshots.</li>
+    </ul>
+
+
+
+<a name="02d"></a>
+    <h3>Resetting Profiling Results</h3>
+    <p>
+    You can reset collected results (either memory or CPU) at any given precise point by placing a Reset Results profiling point
+    in the source code.</p>
+    <p>To set a Reset Results profiling point, perform the following steps.</p>
+    <ol>
+        <li>Open the <tt>Anagrams.java</tt> class in the editor by expanding the <tt>com.toy.anagrams.ui</tt> source
+        package and double-clicking <tt>Anagrams.java</tt>.</li>
+        <li>Locate the line in the source code where you want to place the profiling point.</li>
+        <li>Right-click in the line and choose <strong>Profiling &gt; Insert Profiling Point</strong> from the popup menu.</li>
+        <li>Select <strong>Reset Results</strong> as the Profiling Point Type. Click Next.</li>
+        <li>Specify a name for the profiling point and ensure the location of the profiling point is correct.
+        Click Finish.<br/>
+        <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-newreset.png" width="585" height="299" class="margin-around box" alt="Screenshot of New Reset Results pane" title="Screenshot of New Reset Results pane">
+        </li>
+        <li>Click Profile Main Project in the toolbar.</li>
+        <li>In the Select Profiling Task dialog box, click either <strong>CPU</strong> or <strong>Memory</strong>
+        and select the <strong>Advanced (instrumented)</strong> option</li>
+        <li>Select <strong>Use defined Profiling Points.</strong> Click Run to start the profiling session.
+        <p>If you click <strong>Show active profiling points</strong> you can view the profiling
+        points that are enabled for the profiling session.</p></li>
+    </ol>
+
+    
+    <p>When you click Run, the IDE launches the Anagram Game application and starts the profiling session.
+    If you open the Profiling Points window you can see if the Reset Results profiling point was hit.
+    If the profiling point was hit, you can click <strong>report</strong> in the Results column to open a window displaying data
+    about the profiling point.</p>
+
+    <img src="../../../images_www/articles/72/java/profiling-ppoints/ppoints-results-reset.png" width="585" height="325" class="margin-around box" alt="Screenshot of report of results for Reset profiling point" title="Screenshot of report of results for Reset profiling point">
+
+</div>
+
+      
+      <div class="feedback-box">
+      <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Profiling%20Points">Send Feedback on This Tutorial</a></div>
+      
+      <br style="clear:both;">
+      
+      <a name="seeAlso"></a>
+      <h2>See Also</h2>
+      
+      <p>This document demonstrated the basics of how to use profiling points when profiling a simple
+      NetBeans project. The steps outlined above can be applied
+      when profiling most projects.
+      For more detailed information about profiling settings and features not covered in this document, 
+      please consult the documentation included in the IDE and available from the Help menu item.<p>
+      <p>For related documentation, see the following resources:</p>
+      
+      <ul>
+         <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ#section-NetBeansUserFAQ-Profiler">NetBeans Profiler FAQs</a><br />
+         A document containing frequently asked questions regarding profiling applications in NetBeans IDE</li>
+         <li><a href="http://wiki.netbeans.org/wiki/view/FaqProfilerProfileFreeForm">FAQ: Profiling a Free-form project</a></li>
+         <li><a href="profiler-screencast.html">Screencast: Profiling Points, Drill Down Graph, Heap Walker</a><br />
+         Demo showing some of the profiling features in NetBeans IDE</li>
+         <li><a href="../../../community/magazine/html/04/profiler.html">Advanced Profiling: Theory in Practice</a></li>
+         <li><a href="http://profiler.netbeans.org/index.html">profiler.netbeans.org</a><br />
+         The NetBeans profiler project site</li>
+         <li><a href="http://blogs.oracle.com/nbprofiler">NetBeans Profiler blog</a></li>
+         <li><a href="http://profiler.netbeans.org/mailinglists.html">NetBeans Profiler Mailing Lists</a></li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">top</a></p>
+   </body>
+</html>

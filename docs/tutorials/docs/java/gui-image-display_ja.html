@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="Tutorial that shows how to handle images and
+              other resources when creating Swing applications in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment tutorial, guide, user, documentation, open source">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Java GUIアプリケーションでのイメージの処理 - NetBeans IDEチュートリアル</title>
+    </head>
+    <body>
+        <h1>Java GUIアプリケーションでのイメージの処理</h1>
+
+
+        <p><b>目次</b></p>
+        <img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます">
+        <ul class="toc">
+            <li><a href="#intro">概要</a></li>
+            <li><a href="#form">アプリケーション・フォームの作成</a></li>
+            <li><a href="#package">イメージ用のパッケージの追加</a></li>
+            <li><a href="#displaying">ラベルでのイメージの表示</a></li>
+            <li><a href="#building">アプリケーションのビルドと実行</a></li>
+			<li><a href="#background">フレームの背景としてのイメージの表示</a></li>
+            <li><a href="#custom">カスタム・コードの作成</a></li>
+            <li><a href="#summary">サマリー</a></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+
+        <p>
+            <b>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</b>
+        </p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン7.4または8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン6、7または8 </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <a name="intro"></a><h2>概要</h2>
+        <p>アプリケーションでのイメージの処理は、多くのJava初心者プログラマにとって共通の課題です。Javaアプリケーションでイメージにアクセスする標準的な方法は、<code><a href="http://download.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#getResource(java.lang.String)" target="_blank">getResource()</a></code>メソッドを使用することです。このチュートリアルでは、IDEのGUIビルダーを使用して、アプリケーションにイメージ(および他のリソース)を含めるためのコードを生成する方法を説明します。さらに、IDEでイメージ処理コードを生成する方法をどのようにカスタマイズするかについても学びます。</p>
+        <p>このチュートリアルで作成するアプリケーションは、単一のイメージを表示するJLabelを1つ含む、単純なJFrameです。</p>
+        <h2>アプリケーションの作成</h2>
+        <ol>
+            <li>「ファイル」>「新規プロジェクト」を選択します。</li>
+            <li>新規プロジェクト・ウィザードで、「Java」>「Javaアプリケーション」を選択し、「次」をクリックします。</li>
+            <li>「プロジェクト名」に「<code>ImageDisplayApp</code>」と入力します。</li>
+            <li>「メイン・クラスの作成」チェックボックスを選択解除します。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/newproj.png" rel="lytebox" title="新規プロジェクト・ウィザード - クリックして拡大"> <img alt="新規プロジェクト・ウィザード" border="1" src="../../../images_www/articles/72/java/gui-image-display/newproj-small.png"></a></p></li>
+            <li>「終了」をクリックします。</li>
+        </ol>
+
+        <a name="form"></a><h2>アプリケーション・フォームの作成</h2>
+
+        <p>この項では、JFrameフォームを作成し、JLabelをフォームに追加します。</p>
+        <p><b>JFrameフォームを作成するには:</b></p>
+        <ol>
+            <li>「プロジェクト」ウィンドウで、「<tt>ImageDisplayApp</tt>」ノードを展開します。</li>
+            <li>「ソース・パッケージ」ノードを右クリックし、「新規」>「JFrameフォーム」を選択します。</li>
+            <li>「クラス名」に「<code>ImageDisplay</code>」と入力します。</li>
+            <li>「パッケージ名」に「<code>org.me.myimageapp</code>」と入力します。</li>
+            <li>「終了」をクリックします。</li>
+        </ol>
+
+        <p><b>JLabelを追加するには:</b></p>
+        <ul>
+            <li>「パレット」で「ラベル」コンポーネントを選択し、JFrameにドラッグします。</li>
+        </ul>
+        <p>この段階で、フォームは次のイメージのように表示されているはずです。</p>
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/form.png" rel="lytebox" title="ラベルを追加して生成されたフォーム - クリックして拡大"> <img alt="ラベルを追加して生成されたフォーム" border="1" src="../../../images_www/articles/72/java/gui-image-display/form-small.png"></a></p>
+                <a name="package"></a><h2>イメージ用のパッケージの追加</h2>
+        <p>アプリケーションでイメージまたは他のリソースを使用する場合は、通常、リソース用のJavaパッケージを別途作成します。ローカル・ファイル・システムでは、パッケージはフォルダに対応します。</p>
+
+        <p><b>イメージ用のパッケージを作成するには:</b></p>
+        <ol>
+            <li>「プロジェクト」ウィンドウで、「<code>org.me.myimageapp</code>」ノードを右クリックし、「新規」>「Javaパッケージ」を選択します。<br>
+            
+				 <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/package.png" rel="lytebox" title="新規Javaパッケージの追加 - クリックして拡大"> <img alt="新規Javaパッケージの追加" border="1" src="../../../images_www/articles/72/java/gui-image-display/package-small.png"></a></p></li>
+
+            <li>「終了」をクリックします。</li>
+        </ol>
+        <p>「プロジェクト」ウィンドウでは、<code>Source Packages</code>フォルダ内に新規パッケージが表示されているはずです。</p>
+     <p class="align-center"><img alt="「プロジェクト」ウィンドウ" border="1" src="../../../images_www/articles/72/java/gui-image-display/project-with-imagepack.png"></p>
+
+
+        <a name="displaying"></a><h2>ラベルでのイメージの表示</h2>
+
+        <p>このアプリケーションでは、イメージがJLabelコンポーネント内に埋め込まれます。</p>
+
+        <p><b>イメージをラベルに追加するには:</b></p>
+        <ol>
+            <li>GUIデザイナで、フォームに追加したラベルを選択します。</li>
+            <li>「プロパティ」ウィンドウで、「プロパティ」カテゴリをクリックし、アイコン・プロパティまでスクロールします。</li>
+            <li>省略符号(...)ボタンをクリックします。<br>アイコン・プロパティ・エディタが表示されます。
+			  <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/importimage.png" rel="lytebox" title="アイコン・プロパティ・エディタ - クリックして拡大"> <img alt="アイコン・プロパティ・エディタ" border="1" src="../../../images_www/articles/72/java/gui-image-display/importimage-small.png"></a></p></li>
+            <li>アイコン・プロパティのダイアログ・ボックスで、「プロジェクトにインポート」をクリックします。</li>
+            <li>ファイル・チューザで、システム上にある、使用するイメージに移動します。「次」をクリックします。</li>
+            <li>ウィザードの「ターゲット・フォルダの選択」ページで、<code>newpackage</code>フォルダを選択し、「終了」をクリックします。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/targetfolder.png" rel="lytebox" title="「イメージをプロジェクトにインポート」ウィザードの「ターゲット・フォルダの選択」ページ"> <img alt="「イメージをプロジェクトにインポート」ウィザードの「ターゲット・フォルダの選択」ページ" border="1" src="../../../images_www/articles/72/java/gui-image-display/targetfolder-small.png"></a></p>
+            </li>
+			<li>「OK」をクリックしてアイコン・プロパティのダイアログ・ボックスを閉じます。</li>
+        </ol>
+
+        <p>「OK」をクリックすると、IDEでは次の処理が行われます。</p>
+        <ul>
+            <li>イメージをプロジェクトにコピー。これで、アプリケーションをビルドおよび配布するときには、イメージが配布可能JARファイルに含まれます。</li>
+            <li>イメージにアクセスするため、ImageDisplayクラスにコードを生成。</li>
+            <li>フォームの「デザイン」ビューで、イメージをラベルに表示。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/label-added.png" rel="lytebox" title="ラベルに追加されているイメージ"> <img alt="ラベルに追加されているイメージ" border="1" src="../../../images_www/articles/72/java/gui-image-display/label-added-small.png"></a></p></li>
+        </ul>
+
+        <p>この段階で、次のような基本的な操作を実行し、フォームの外観を改良できます。</p>
+        <ul>
+            <li>「プロパティ」ウィンドウで、<code>text</code>プロパティを選択し、<code>jLabel1</code>を削除します。この値は、ラベルの表示テキストとして、GUIビルダーで生成されたものです。しかし、今はテキストではなくラベルを使用してイメージを表示しているため、テキストは必要ありません。</li>
+            <li><code>jLabel1</code>をドラッグしてフォームの中央に配置します。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/centered.png" rel="lytebox" title="イメージが中央揃えされたImageDisplayクラスの「デザイン」ビュー"> <img alt="イメージが中央揃えされたImageDisplayクラスの「デザイン」ビュー" border="1" src="../../../images_www/articles/72/java/gui-image-display/centered-small.png"></a></p></li>
+        </ul>
+        
+       
+
+        
+		<p><b>生成されたコードを表示するには:</b></p>
+        <ol>
+            <li>GUIデザイナで、「ソース」ボタンをクリックします。(「ソース」ボタンが表示されない場合は、メイン・メニューから「ビュー」>「ソース・エディタ」ツールバーを選択します。)</li>
+            <li>「Generated Code」という行まで下にスクロールします。</li>
+            <li>「Generated Code」行の左にあるプラス記号(+)をクリックし、GUIデザイナで生成されたコードを表示します。</li>
+        </ol>
+        <p>主な行は次のとおりです。</p>
+
+        <pre class="examplecode">jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource(&quot;/org/me/myimageapp/newpackage/image.png&quot;))); // NOI18N</pre>
+
+        <p><code>jLabel1</code>の<code>Icon</code>プロパティにプロパティ・エディタを使用したため、IDEでは<code>setIcon</code>メソッドが生成されました。このメソッドのパラメータには、<code>ImageIcon</code>の匿名の内部クラスにある<code><a href="http://download.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#getResource(java.lang.String)" target="_blank">getResource()</a></code>メソッドへのコールが含まれます。生成されたイメージへのパスは、アプリケーションのパッケージ構造内での位置に対応します。</p>
+
+        <p class="notes"><b>注意:</b></p>
+        <ul>
+            <li>アイコン・プロパティ・エディタで「外部イメージ」オプションを使用すると、IDEではイメージをプロジェクトにコピーするかわりに、イメージへの絶対パスが生成されます。したがって、使用中のシステムでアプリケーションを実行するとイメージが表示されますが、別のシステムでアプリケーションを実行するとイメージは表示されない可能性があります。</li>
+            <li><code>getResource</code>メソッドは、アプリケーションで必要になる可能性のあるデータを含むテキスト・ファイルなど、他のタイプのリソースにアクセスする場合にも便利です。</li>
+        </ul>
+		<p><b>Jlabelに対するマウス・イベントのイベント・ハンドラを登録するには:</b></p>
+        <p>
+		「デザイン」ビューで「JLabel」を右クリックし、ポップアップ・メニューから「イベント」>「マウス」>「mouseClicked/mousePressed/mouseReleased」を選択します。<br>対応するイベントのイベント・ハンドラが生成されます。</p>
+		<p class="notes"><b>注意:</b> イベント・ハンドラでは、<code>event.getPoint()</code>、<code>event.getX()</code>、または<code>event.getY()</code>メソッドを使用してマウス座標(たとえば、マウス・クリックの場所)を取得できます。詳細は、<a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/awt/event/MouseEvent.html">クラスMouseEvent</a>を参照してください。</p>
+
+        <a name="background"></a>
+        <h2>フレームの背景としてのイメージの表示</h2>
+
+        <p> SwingにはJFrameの背景イメージに対する直接のサポートがないため、GUIビルダーにもJFrameの背景イメージに対する直接のサポートはありません。<br>いずれにしても、このような目標を達成するための様々な間接的な方法があります。このアプリケーションでは、イメージを含むJLabelがJFrameコンポーネント内に組み込まれる一方で、そのJLabelの上に透明なJPanelが配置され、すべてのコンポーネントの親として使用されます。</p>
+
+        <p><b>イメージを含むJFrameに透明なJPanelを追加するには:</b></p>
+        <ol>
+		<li>「ファイル」>「新規プロジェクト」を選択します。</li>
+        <li>新規プロジェクト・ウィザードで、「Java」>「Javaアプリケーション」を選択し、「次」をクリックします。</li>
+        <li>「プロジェクト名」に「<code>BackgroundImageApp</code>」と入力します。</li>
+		<li>「メイン・クラスの作成」チェックボックスを選択解除します。
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/prj.png" rel="lytebox" title="新規プロジェクトの作成 - クリックして拡大"> <img alt="新規プロジェクトの作成" border="1" src="../../../images_www/articles/72/java/gui-image-display/prj-small.png"></a></p></li>
+		<li>「終了」をクリックします。</li>
+		<li>「プロジェクト」ウィンドウで、「<code>BackgroundImageApp</code>」ノードを展開します。</li>
+        <li>「ソース・パッケージ」ノードを右クリックし、「新規」>「JFrameフォーム」を選択します。</li>
+        <li>「クラス名」に「<code>ImageDisplay</code>」と入力します。</li>
+        <li>「パッケージ名」に「<code>org.me.mybackgroundapp</code>」と入力します。
+		<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/newjframe.png" rel="lytebox" title="新規フォームの追加 - クリックして拡大"> <img alt="新規フォームの追加" border="1" src="../../../images_www/articles/72/java/gui-image-display/newjframe-small.png"></a></p></li>
+        <li>「終了」をクリックします。</li>
+		<li>「デザイン」ビューで「JFrame」を右クリックし、ポップアップ・メニューから「レイアウトを設定」>「グリッド・バッグ・レイアウト」を選択します。 </li>
+		<li>「JFrame」を右クリックし、ポップアップ・メニューから「パレットから追加」>「Swingコンテナ」>「パネル」を選択します。 </li>
+		<li>「プロパティ」ウィンドウで、jPanelの「<code>opaque</code>」プロパティを選択解除します。</li>
+		<li>「JFrame」を右クリックし、ポップアップ・メニューから「パレットから追加」>「Swingコントロール」>「ラベル」を選択します。</li>
+		<li>「プロジェクト」ウィンドウで、「<code>org.me.mybackgroundapp</code>」ノードを右クリックし、「新規」>「Javaパッケージ」を選択します。</li>
+            <li>「終了」をクリックします。新規パッケージが追加されます。
+			</li>
+		    <li>GUIデザイナで、フォームに追加したラベルを選択します。</li>
+		    <li>「プロパティ」ウィンドウで、「プロパティ」カテゴリをクリックし、アイコン・プロパティまでスクロールします。</li>
+		    <li>省略符号(...)ボタンをクリックします。 </li>
+			<li>アイコン・プロパティのダイアログ・ボックスで、「プロジェクトにインポート」をクリックします。</li>
+			<li>ファイル・チューザで、システム上にある、使用するイメージに移動します。「次」をクリックします。</li>
+			<li>ウィザードの「ターゲット・フォルダの選択」ページで、<code>newpackage</code>リソース・フォルダを選択し、「終了」をクリックします。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/targetfolder.png" rel="lytebox" title="「イメージをプロジェクトにインポート」ウィザードの「ターゲット・フォルダの選択」ページ - クリックして拡大"> <img alt="「イメージをプロジェクトにインポート」ウィザードの「ターゲット・フォルダの選択」ページ" border="1" src="../../../images_www/articles/72/java/gui-image-display/targetfolder-small.png"></a></p></li>
+			<li>「OK」をクリックしてアイコン・プロパティのダイアログ・ボックスを閉じます。</li>
+			<li>ナビゲータで、「jPanel」を右クリックし、ポップアップ・メニューから「プロパティ」を選択します。 </li>
+			<li>「プロパティ」ダイアログ・ボックスで、「<code>グリッドX</code>」、「<code>グリッドY</code>」、「<code>ウエイトX</code>」、および「<code>ウエイトY</code>」プロパティを「<code>1</code>」に設定し、「<code>フィル</code>」プロパティを「<code>両方</code>」に設定します。 
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/panelprops.png" rel="lytebox" title="パネルのプロパティ - クリックして拡大"> <img alt="パネルのプロパティ" border="1" src="../../../images_www/articles/72/java/gui-image-display/panelprops-small.png"></a></p></li>
+			<li>「閉じる」をクリックします。 </li>
+			<li>jLabelについて手順24と25を繰り返します。</li>
+			<li>「プロパティ」ダイアログ・ボックスで、<code>text</code>プロパティを選択して<code>jLabel1</code>を削除します。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/labelprops.png" rel="lytebox" title="ラベルのプロパティ - クリックして拡大"> <img alt="ラベルのプロパティ" border="1" src="../../../images_www/articles/72/java/gui-image-display/labelprops-small.png"></a></p>
+			  背景が完了しました。たとえば、jLabelとjTextFieldをパレットからjPanelにドラッグできるようになりました。この両方が背景イメージの上に表示されます。
+		  <p class="align-center"><img alt="Backgroundクラスの「デザイン」ビューを示すスクリーンショット。" class="margin-around" src="../../../images_www/articles/72/java/gui-image-display/background.png"></p></li>
+        </ol>
+		<p class="notes"><b>注意:</b> 説明した対処方法の利点は、背景イメージがデザイン時と実行時の両方で表示されることです。</p>
+		
+        <a name="building"></a><h2>アプリケーションのビルドと実行</h2>
+        <p>これで、イメージにアクセスして表示するためのコードが生成されたので、アプリケーションをビルドおよび実行し、イメージにアクセスしていることを確認できます。</p>
+        <p>まず、プロジェクトのメイン・クラスを設定する必要があります。メイン・クラスを設定すると、プロジェクトの実行時にどのクラスを実行するかがIDEで認識されます。さらに、アプリケーションのビルド時に、アプリケーションのJARファイルの<code>Main-Class</code>要素が確実に生成されます。</p>
+        <p><b>プロジェクトのメイン・クラスを設定するには:</b></p>
+        <ol>
+            <li>ImageDisplayAppプロジェクトのノードを右クリックし、「プロパティ」を選択します。</li>
+            <li>「プロジェクト・プロパティ」ダイアログ・ボックスで、「実行」カテゴリを選択します。</li>
+            <li>「メイン・クラス」フィールドの横の「参照」ボタンをクリックします。次に、<code>org.me.myimageapp.ImageDisplay</code>クラスを選択します。
+			<p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/mainclass.png" rel="lytebox" title="メイン・クラスの選択 - クリックして拡大"> <img alt="メイン・クラスの選択" border="1" src="../../../images_www/articles/72/java/gui-image-display/mainclass-small.png"></a></p></li>
+			<li>「メイン・クラスを選択」ボタンをクリックします。</li>
+			<li>「OK」をクリックして、「プロジェクト・プロパティ」ダイアログ・ボックスを閉じます。 </li>
+        </ol>
+        <p><b>プロジェクトをビルドするには:</b></p>
+        <ul>
+            <li>メイン・ツールバーから「実行」>「プロジェクトを消去してビルド」(<i>project_name</i>)を選択します。</li>
+        </ul>
+        <p>アプリケーションのビルド結果は、「ファイル」ウィンドウに表示できます。<code>build</code>フォルダには、コンパイル済のクラスが格納されます。<code>dist</code>フォルダには、コンパイル済のクラスとイメージを含む、実行可能なJARファイルが格納されます。</p>
+
+        <p class="align-center"><img alt="buildおよびdistフォルダが展開された「ファイル」ウィンドウ" border="1" src="../../../images_www/articles/72/java/gui-image-display/files.png"></p>
+
+        <p><b>プロジェクトを実行する</b></p>
+        <ul>
+            <li>メイン・ツールバーから「実行」>「プロジェクトの実行」(<i>project_name</i>)を選択します。</li>
+        </ul>
+
+        <a name="custom"></a><h2>カスタム・コードの作成</h2>
+
+        <p>多くのアプリケーションでは、表示するイメージは、この例に示すように静的に決定されるわけではありません。たとえば、表示するイメージは、ユーザーがクリックする対象によって決まる場合があります。 </p>
+        <p>表示するイメージをプログラムで選択できるようにする必要がある場合は、リソースにアクセスして表示するための、独自のカスタム・コードを作成できます。IDEでは、GUIビルダーで生成されたコードを含むソース・ビューの「保護されたブロック」にコードを直接記述することはできません。ただし、「プロパティ」ウィンドウからアクセスできるプロパティ・エディタから、保護されたブロックにコードを挿入できます。この方法でプロパティ・エディタを使用すると、GUIビルダーでデザインを変更してもカスタム・コードが失われません。</p>
+        <p><b>たとえば、JLabelの<code>icon</code>プロパティのカスタム・コードを作成するには:</b></p>
+        <ol>
+            <li>「デザイン」ビューまたは「ナビゲータ」ウィンドウで「JLabel」を選択します。</li>
+            <li>「プロパティ」ウィンドウで、「<code>icon</code>」プロパティの横にある省略符号(...)ボタンをクリックします。</li>
+            <li>ダイアログ・ボックスの上部にあるドロップダウン・リストから、「カスタム・コード」オプションを選択します。</li>
+        </ol>
+
+        <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/custom-code.png" rel="lytebox" title="「カスタム・コード」オプションが選択されたアイコン・プロパティ・エディタ - クリックして拡大"><img alt="「カスタム・コード」オプションが選択されたアイコン・プロパティ・エディタ" border="1" src="../../../images_www/articles/72/java/gui-image-display/custom-code-small.png"></a></p>
+        <p>このプロパティ・エディタの「カスタム・コード」オプションを使用すると、<code>setIcon</code>メソッドのパラメータを入力できます。このパラメータには、必要なロジックを入力したり、クラスの別の場所で手動でコーディングした別のメソッドへのコールを入力することもできます。</p>
+        <p class="align-center"><a href="../../../images_www/articles/72/java/gui-image-display/custom-view.png" rel="lytebox" title="setIconパラメータを入力できるテキスト領域 - クリックして拡大"> <img alt="setIconパラメータを入力できるテキスト領域" border="1" src="../../../images_www/articles/72/java/gui-image-display/custom-view-small.png"></a></p>
+        <a name="summary"></a><h2>サマリー</h2>
+        <p>このチュートリアルでは、NetBeans IDEで作成するアプリケーションからイメージにアクセスする方法を説明しました。イメージの処理は、Javaのチュートリアルでさらに説明します。 </p>
+        <p class="notes"><b>注意: </b>このチュートリアルの例は、Javaチュートリアルの<a href="http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html" target="_blank">アイコンの使用方法の項</a>にある最初の例とよく似ています。異なるのは、このチュートリアルで生成されるコードでは、アイコンをラベルに適用するために、<code><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html" target="_blank">JLabel</a></code>の<code><a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html#setIcon(javax.swing.Icon)" target="_blank">setIcon</a></code>メソッドが使用される点です。Javaチュートリアルの例では、アイコンはコンストラクタに渡されることでラベルに適用されます。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Handling%20Images%20in%20a%20GUI%20Application">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+        <br style="clear:both;" >
+
+
+        <a name="seealso"></a><h2>関連項目</h2>
+        <ul>
+            <li><a href="gui-functionality.html">GUIビルドの概要</a></li>
+            <li><a href="quickstart-gui.html">NetBeans IDEでのSwing GUIのデザイン</a></li>
+            <li><a href="../../trails/matisse.html">Java GUIアプリケーションの学習</a></li>
+            <li><a href="../../trails/java-se.html">一般的なJava開発の学習</a></li>
+            <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUIビルダー - FAQ</a></li>
+			<li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&amp;id=NBDAG920">Java GUIの実装</a></li>
+        </ul>
+
+    </body>
+</html>

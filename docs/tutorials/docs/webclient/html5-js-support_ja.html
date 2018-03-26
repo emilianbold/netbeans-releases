@@ -1,0 +1,353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>HTML5アプリケーションでのJavaScriptのデバッグとテスト - NetBeansチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial demonstrating support for debugging JavaScript and testing using JS Test Driver in the NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, JavaScript, debugging, testing, HTML5, JS Test Driver">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>HTML5アプリケーションでのJavaScriptのデバッグとテスト</h1>
+
+        <p> 
+        HTML5アプリケーションは、通常はHTML、CSSおよびJavaScriptを結合して、ブラウザで稼働し、スマートフォン、タブレット、ラップトップなどの各種デバイスに表示されるアプリケーションを作成します。このドキュメントでは、IDEでJavaScriptファイルをデバッグおよびテストするのに役立つツールをIDEが提供する方法を示します。</p>
+        
+        <p>HTML5アプリケーションでJavaScriptファイルをデバッグする場合は、ChromeブラウザのNetBeans Connector拡張機能をインストールすることをお薦めします。ブラウザでアプリケーションを実行し、拡張機能がインストールされている場合は、デバッグが自動的に有効になります。</p>
+        <p>IDEにより、JavaScriptファイルでJasmineテスト・フレームワーク、KarmaまたはJSテスト・ドライバ・テスト・ランナーを使用した単体テストを簡単に構成および実行することもできます。様々なブラウザに対して単体テストを実行するようにテスト・ランナーを構成し、テストの実行時にIDEでロードするJavaScriptライブラリ、スクリプトおよびテストをすばやく指定できます。テストに失敗した場合は、デバッガを使用して、問題のあるコードを特定できます。
+        </p>
+        
+        <p class="tips">Chromeブラウザ用のNetBeans Connector拡張機能のインストール方法の詳細は、チュートリアル<a href="html5-gettingstarted.html">HTML5アプリケーションの開始</a>を参照してください。</p>
+
+        <p class="tips">IDEでのJavaScriptの編集機能の詳細は、<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG">NetBeans IDEによるアプリケーションの開発ユーザーズ・ガイド</a>の<a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/dev_html_apps.htm#BACFIFIG">JavaScriptファイルの作成</a>を参照してください。</p>
+        <p class="tips">チュートリアルのスクリーンショットを確認するには、<a href="../web/html5-javascript-screencast.html">HTML5アプリケーションでのJavaScriptのテストとデバッグのビデオ</a>を参照してください。</p>
+
+        <h3>目次</h3>
+        <img alt="このページの内容は、NetBeans IDE 8.0に適用されます" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="このページの内容は、NetBeans IDE 8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#createproject">NetBeans HTML5アプリケーションの作成</a></li>
+            <li><a href="#debugger">JavaScriptデバッガの使用</a></li>
+            <li><a href="#unittests">JS単体テストの実行</a>
+                <ul>
+                    <li><a href="#karmatests">Karmaを使用してテストを実行する方法</a>
+                    <li><a href="#jstestdriver">JSテスト・ドライバを使用してテストを実行する方法</a>
+                </ul>
+            </li>
+            <li><a href="#debugtest">JSテスト・ドライバを使用したJS単体テストのデバッグ</a></li>
+            <li><a href="#summary">サマリー</a></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+        <h4>このチュートリアルを完了するには、次のリソースが必要です。</h4>
+
+        <table id="requiredSoftware">
+
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE、Java</a></td>
+                    <td class="tbltd1">8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chromeブラウザ</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">ChromeのNetBeans Connector拡張機能</a></td>
+                    <td class="tbltd1">1.x</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://code.google.com/p/js-test-driver/">JSテスト・ドライバJAR</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注意: </strong></p>
+
+        <ul>
+            <li>このドキュメントでは、JSテスト・ドライバ・サーバーを使用してJavaScript単体テストを実行します。<a href="http://code.google.com/p/js-test-driver/">JSテスト・ドライバ・プロジェクト・ホーム</a>でサーバーのプロパティに精通する必要があります。</li>
+
+            <li>このドキュメントは、HTML、CSSおよびJavaScriptについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。</li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Creating the Application ++++++++++++++++ -->
+        <a name="createproject"></a>
+        <h2>HTML5サンプル・アプリケーションの作成</h2>
+        <p>次の手順を実行して、サイト・テンプレートからHTML5サンプル・アプリケーションを作成します。</p>
+        <ol>
+            <li>メイン・メニューで「ファイル」→「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])を選択して新規プロジェクト・ウィザードを開きます。</li>
+            <li>新規プロジェクト・ウィザードで<strong>「サンプル」</strong>ノードを展開し、<strong>「HTML5」</strong>カテゴリを選択します。</li>
+            <li><strong>「AngularJSの端末カタログ・チュートリアル」</strong>プロジェクトを選択します。「次」をクリックします。<br> <img alt="新規ファイル・ウィザードのサンプル・プロジェクトのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-newproject.png" title="新規ファイル・ウィザードの「AngularJSの端末カタログ・チュートリアル」サンプル・プロジェクト">
+
+            </li>
+            <li>プロジェクトの場所を指定します。「終了」をクリックします。
+                <p class="notes"><strong>注意:</strong>テンプレートのURLはgithubです。IDEはネットワークにアクセスしてテンプレート・アーカイブを取得できる必要があります。アーカイブのダウンロードで問題が発生した場合は、「オプション」ウィンドウでプロキシ設定を確認します。</p>
+            <p>「終了」をクリックすると、IDEによりプロジェクトが作成され、エディタに<tt>index.html</tt>ファイルが開かれます。「プロジェクト」ウィンドウで、プロジェクトに<tt>index.html</tt>、各種CSSスタイル・シート、JavaScriptファイルおよびライブラリが含まれていることを確認できます。 </p>
+            <img alt="「プロジェクト」ウィンドウのプロジェクト・ノードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-projectswindow.png" title="「プロジェクト」ウィンドウの「AngularJSの端末カタログ・チュートリアル」プロジェクト・ノード">
+            
+            <p>プロジェクトには、デフォルトで生成された複数のJavaScript単体テストおよび構成ファイルも含まれます。 </p></li>
+            <li>NetBeans Connector付きChromeがツールバーのドロップダウン・リストで選択されていることを確認します。<br> <img alt="ツールバーのドロップダウン・リストのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-js/html5-js-selectbrowser.png" title="ツールバーのドロップダウン・リストで選択されたブラウザ"></li>
+            <li>ツールバーで「実行」ボタンをクリックするか(F6)、「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックして「実行」を選択します。 </li>
+        </ol>
+        <p>プロジェクトを実行すると、HTML5アプリケーションのフロント・ページがChromeブラウザに開き、携帯端末のリストが表示されます。携帯端末の名前をクリックすると、ページに端末の詳細が表示されます。</p>
+        <img alt="ブラウザ・ウィンドウのアプリケーションのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-runproject1.png" title="ブラウザ・ウィンドウの「AngularJSの端末カタログ・チュートリアル」アプリケーション">
+        
+        <p>NetBeans Connectorがタブをデバッグしていることを示す黄色いバーがブラウザ・タブに表示されます。黄色いバーが表示されているときは、IDEとブラウザが接続され、相互に通信できます。IDEからHTML5アプリケーションを起動すると、JavaScriptデバッガが自動的に有効になります。ファイルに変更を保存するかCSSスタイル・シートに変更を加えた場合は、ブラウザ・ウィンドウが自動的に更新されて変更が表示されるため、ページを再ロードする必要はありません。</p>
+
+        <p class="alert">黄色いバーを閉じるか「取消」をクリックした場合は、IDEとブラウザ間の接続が切断されます。接続を切断した場合、JavaScriptデバッガを使用するにはIDEからHTML5アプリケーションを再度実行する必要があります。</p>
+
+        <p>また、NetBeansアイコンがブラウザのURLの場所フィールドに表示されます。アイコンをクリックして、ブラウザの表示サイズの変更および「NetBeansでの検査」モードの有効化を行う各種オプションを提供するメニューを開くことができます。</p>
+        
+<!-- ++++++++++++++++ Using the JavaScript Debugger ++++++++++++++++ -->
+
+<a name="debugger"></a>
+<h2>JavaScriptデバッガの使用</h2>
+<p>この課題では、JavaScriptファイルにブレークポイントを配置し、アプリケーションを実行します。エディタのツールチップを使用して、変数の値をすばやく参照できます。</p>
+<ol>
+    <li>「プロジェクト」ウィンドウで「<tt>js</tt>」ノードを展開して「<tt>controllers.js</tt>」をダブルクリックし、エディタでそのファイルを開きます。</li>
+    <li>左マージンをクリックして、<tt>controllers.js</tt>の行16に行ブレークポイントを配置します。<br> <img alt="エディタで設定されたブレークポイントのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-breakpoint1.png" title="エディタで設定されたブレークポイント">
+    <p>「ウィンドウ」→「デバッグ」→「ブレークポイント」を選択して「ブレークポイント」ウィンドウを開き、プロジェクトで設定したブレークポイントを表示できます。</p>
+    <img alt="「ブレークポイント」ウィンドウのブレークポイントのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-breakpoint2.png" title="「ブレークポイント」ウィンドウのブレークポイントのリスト">
+    
+    </li>
+
+    <li>ツールバーの「実行」ボタンをクリックして、プロジェクトを再度実行します。 
+    <p>プロジェクトを実行すると、設定したブレークポイントがヒットしないため同じページが表示されます。</p></li>
+
+    <li>ブラウザで、ページのMotorola Atrix4Gなどのエントリの1つをクリックします。 
+
+        <p>データはJavaScriptに渡されておらず、レンダリングされていないため、ページは部分的にロードされ、端末のデータはないことがわかります</p>
+    <img alt="ブラウザの詳細ページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-break-details.png" title="ブラウザに部分的にロードされたアプリケーションの詳細ページ">
+    </li>
+
+    <li>IDEのエディタで、ブレークポイントがヒットし、プログラム・カウンタが現在<tt>controllers.js</tt>の行16にあることを確認できます。</li>
+    <li><tt>phone</tt>変数の上にカーソルを移動し、変数に関するツールチップ情報を表示します。<br> <img alt="エディタの変数ツールチップのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-variables1.png" title="エディタの変数ツールチップ">
+
+    <p>ツールチップに、<tt>phone = (Resource) Resource</tt>という情報が表示されます。</p>
+    </li>
+    <li>ツールチップをクリックしてツールチップを展開し、変数と値のリストを表示します。<br> <img alt="エディタの展開された変数ツールチップのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-variables.png" title="エディタの展開された変数ツールチップ">
+        <p>たとえば、「<tt>android</tt>」ノードを展開すると、文字列<tt>os</tt>および<tt>ui</tt>の値が表示されます。</p> 
+        <p class="tips">「ウィンドウ」→「デバッグ」→「変数」を選択して、「変数」ウィンドウにリストを表示することもできます。</p></li>
+
+    <li>ツールバーの手順ボタンを使用して、<tt>angular.js</tt>ライブラリでJavaScript関数をステップ実行するか、「続行」ボタン(F5)をクリックしてアプリケーションを再開します。 </li>
+</ol>
+    
+
+<!-- ++++++++++++++++ Running JS Unit Tests ++++++++++++++++ -->
+<a name="unittests"></a>
+<h2>JS単体テストの実行</h2>
+<p>KarmaまたはJSテスト・ドライバのテスト・ランナーを使用して単体テストを実行するように、IDEを容易に構成できます。KarmaおよびJSテスト・ドライバは、JavaScript単体テストを実行するターゲットであるURLを提供するテスト・ランナーです。</p>
+
+<p>このチュートリアルでは、Karmaを使用して、サンプル・プロジェクトに含まれるJavaScript単体テストを実行します。サンプル・プロジェクトには、Karma構成ファイルがすでに含まれています。テストを実行すると、テスト・ランナー・サーバーが起動し、テストの実行を待機します。ブラウザが開き、ウィンドウにサーバーが稼働および待機中であることを示すステータス・メッセージが表示されます。</p>
+
+<a name="karmatests"></a>
+<div class="indent">
+<h3>Karmaを使用してテストを実行する方法</h3>
+<p>Karmaを使用してテストを実行するには、まずKarmaをローカル・ファイル・システムにダウンロードする必要があります。Karmaをインストールしたら、Karma構成ファイルを作成し、その後プロジェクト・プロパティ・ウィンドウでインストール・ファイルと構成ファイルの場所を指定する必要があります。</p>
+<ol>
+    <li>Karmaをインストールします。
+        <p>Karmaをインストールする方法と場所を選択できます。Karmaを使用するようにプロジェクトを構成する場合は、インストールを後から指定します。<a href="http://karma-runner.github.io">Karma Webサイト</a>にKarmaをインストールするオプションについての情報を検索できます。</p></li>
+    <li>Karma構成ファイルを作成します。
+    <p>サンプル・アプリケーションにはKarma構成ファイルがすでに含まれているため、このチュートリアルでは、この手順はオプションです。新規ファイル・ウィザードの単体テスト・カテゴリでKarma構成ファイルを選択することで、スケルトンKarma構成ファイルを作成できます。</p>
+    <img alt="新規ファイル・ウィザードの新規Karma構成ファイルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/webclient/html5-js/karma-new-config.png" title="新規ファイル・ウィザードの新規Karma構成ファイル">
+    <p>コマンド・ラインでKarma <tt>init</tt>コマンドを実行することもできます。Karma <tt>init</tt>コマンドの使用の詳細は、Karmaドキュメントを参照してください。</p>
+    </li>
+        
+    <li>「プロジェクト」ウィンドウで「構成ファイル」ノードを展開して「<tt>karma.conf.js</tt>」をダブルクリックし、エディタでファイルを開きます。サンプルには、2つのKarma構成ファイルが含まれます。
+        <p>Karma構成ファイルには、テストの実行時に含められたり除外されたりするファイルが含まれます。この構成でテストを実行するのに必要なKarmaプラグインも含まれます。</p>
+    <img alt="エディタ内のKarma構成ファイルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/webclient/html5-js/karma-plugins.png" title="エディタ内のKarma構成ファイル"></li>
+    <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、ポップアップ・メニューで「プロパティ」を選択します。</li>
+    <li>プロジェクト・プロパティ・ウィンドウの「カテゴリ」ペインで「JavaScriptテスト」カテゴリを選択します。</li>
+    <li>「テスト・プロバイダ」ドロップダウン・リストで「Karma」を選択します。「OK」をクリックします。</li>
+    <li>プロジェクト・プロパティ・ウィンドウを再度開き、「カテゴリ」ペインの「JavaScriptテスト」カテゴリで「Karma」を選択します。</li>
+    <li>Karmaインストールの場所を指定します。
+        <p>Karmaをプロジェクト・ディレクトリにインストールした場合は、「検索」をクリックするとIDEでインストールが検索されます。「参照」をクリックし、ローカルのKarmaインストールを手動で見つけることもできます。</p>
+    </li>
+    <li>Karma構成ファイルの場所を指定します。「OK」をクリックします。
+        <p>このチュートリアルでは、「検索」をクリックするとIDEでデフォルトのKarma構成ファイルが検索されます。「参照」をクリックし、構成ファイルを手動で見つけることもできます。</p>
+        <img alt="プロジェクト・プロパティ・ウィンドウ内の「Karma」カテゴリのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/webclient/html5-js/karma-properties-window.png" title="プロジェクト・プロパティ・ウィンドウ内の「Karma」カテゴリ">
+        
+        <p>「OK」をクリックすると、「プロジェクト」ウィンドウの「プロジェクト」ノードの下に「Karma」ノードが表示されます。「Karma」ノードを右クリックしてKarmaサーバーを起動および停止し、ポップアップ・メニューで構成ファイルを設定します。</p>
+    </li>
+    <li>「プロジェクト」ウィンドウで「Karma」ノードを右クリックし、ポップアップ・メニューで「起動」を選択します。
+        <p>「起動」をクリックするとKarmaサーバーが起動し、サーバーのステータスを示すブラウザ・ウィンドウが開きます。</p>
+        <img alt="Chromeブラウザ・ウィンドウでのKarmaサーバーのステータスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/webclient/html5-js/karma-chrome.png" title="Chromeブラウザ・ウィンドウでのKarmaサーバーのステータス">
+        <p>「出力」ウィンドウで、サーバーのステータスを確認できます。不足するプラグインをインストールするよう求めるメッセージも表示されます。</p>
+        <img alt="「サービス」ウィンドウの「jsTestドライバの構成」ノードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/webclient/html5-js/karma-output1.png" title="「サービス」ウィンドウの「jsTestドライバの構成」ノード">
+    <p class="notes"><strong>注意:</strong>単体テストを実行するには、ブラウザ・ウィンドウが開き、Karmaサーバーが稼働している必要があります。</p>
+    </li>
+    <li>「Karma」ノードを右クリックして「構成を設定」>「<tt>karma.conf.js</tt>」の順に選択し、正しい構成ファイルが選択されていることを確認する必要があります。<img alt="「サービス」ウィンドウの「jsTestドライバの構成」ノードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/webclient/html5-js/karma-node.png" title="「サービス」ウィンドウの「jsTestドライバの構成」ノード"></li>
+    <li>プロジェクトで設定したブレークポイントを無効にします。
+        <p>「ブレークポイント」ウィンドウでブレークポイントのチェックボックスを選択解除することにより、ブレークポイントを無効にできます。</p></li>
+    <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「テスト」を選択します。
+        <p>「テスト」を選択すると、テスト・ランナーによってファイルで単体テストが実行されます。IDEにより「テスト結果」ウィンドウが開かれ、テストの結果が表示されます。</p>
+    <img alt="「テスト結果」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/webclient/html5-js/karma-test-results.png" title="Karmaテスト結果">
+    </li>
+    
+</ol>
+
+<a name="jstestdriver"></a>
+<h3>JSテスト・ドライバを使用してテストを実行する方法</h3>
+<p>JSテスト・ドライバを使用する場合のために、IDEで「サービス」の「JSテスト・ドライバ」ノードから開くことのできるJSテスト・ドライバの構成ダイアログが提供されています。構成ダイアログでは、JSテスト・ドライバ・サーバーJARの場所およびテストの実行対象のブラウザを簡単に指定できます。「JSテスト・ドライバ」ノードでは、サーバーが稼働しているかどうかをすばやく確認し、サーバーを起動および停止できます。</p>
+
+
+<p>JSテスト・ドライバ・サーバーの構成の詳細は、<a href="http://code.google.com/p/js-test-driver/wiki/GettingStarted">JsTestDriverの開始</a>ドキュメントを参照してください。</p>
+
+<ol>
+    <li><a href="http://code.google.com/p/js-test-driver/">JSテスト・ドライバJAR</a>をダウンロードし、JARをローカル・システムに保存します。</li>
+    <li>「サービス」ウィンドウで、「JSテスト・ドライバ」ノードを右クリックし、「構成」を選択します。<br> <img alt="「サービス」ウィンドウの「jsTestドライバの構成」ノードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-js/html5-js-testdriver-serviceswindow.png" title="「サービス」ウィンドウの「jsTestドライバの構成」ノード"></li>
+    <li>「構成」ダイアログ・ボックスで、「参照」をクリックし、ダウンロードしたJSテスト・ドライバJARを特定します。</li>
+    <li>ブラウザに、NetBeans Connector付きChrome (NetBeans IDE 7.3では、NetBeans JS Debugger付きChrome)を選択します。「OK」をクリックします。<br> <img alt="「jsTestドライバの構成」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-js/html5-js-testdriver-configure.png" title="「jsTestドライバの構成」ダイアログ・ボックス">
+    <p class="notes"><strong>注意:</strong>JSテスト・ドライバを初めて構成する場合にのみ、JSテスト・ドライバJARの場所を指定する必要があります。</p>
+        
+    <p>キャプチャしてテストに使用できるブラウザのリストは、システムにインストールされているブラウザに基づきます。複数のブラウザをスレーブ・ブラウザとして選択できますが、テストを実行するには、サーバーのスレーブにできるウィンドウをブラウザごとに開く必要があります。選択したブラウザは、IDEからサーバーを起動すると自動的にキャプチャされます。</p>
+    <p>NetBeans ConnectorのあるChromeを選択した場合、JSテスト・ドライバで実行されるテストをデバッグできます。</p>
+    
+    </li>
+    <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「新規」>「その他」を選択します。</li>
+    <li>「単体テスト」カテゴリで<strong>「jsTestDriver構成ファイル」</strong>を選択します。「次」をクリックします。</li>
+    <li><strong>jsTestDriver</strong>がファイル名であることを確認します。</li>
+    <li>「作成されるファイル」フィールドで、ファイルの場所がプロジェクト(<tt>AngularJSPhoneCat/config/jsTestDriver.conf</tt>)の<tt>config</tt>フォルダであることを確認します。
+        <p class="notes"><strong>注意:</strong><tt>jsTestDriver.conf</tt>構成ファイルはプロジェクトの<tt>config</tt>フォルダにある必要があります。作成されるファイルの場所が<tt>config</tt>フォルダでない場合は、「参照」をクリックし、ダイアログ・ボックスで「<tt>AngularJSPhoneCat - Configuration Files</tt>」フォルダを選択します。</p>
+    </li>
+    <li>Jasmineライブラリのダウンロードのチェックボックスが選択されていることを確認します。「終了」をクリックします。<br> <img alt="新規jsTestDriver構成ファイル・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-testdriver-configfile.png" title="新規jsTestDriver構成ファイル・ウィザード">
+    
+        <p class="notes"><strong>注意:</strong> jsTestDriverを実行するにはJasmineライブラリをダウンロードする必要があります。IDEがJasmineライブラリをダウンロードできないことを通知された場合は、「オプション」ウィンドウでIDEのプロキシ設定を確認します。</p>
+
+        <p>「終了」をクリックすると、IDEによりスケルトン<tt>jsTestDriver.conf</tt>構成ファイルが生成され、ファイルがエディタに開かれます。「プロジェクト」ウィンドウで、構成ファイルが「構成ファイル」ノードに作成されたことを確認できます。「単体テスト」ノードの「<tt>lib</tt>」フォルダを展開すると、Jasmineライブラリがプロジェクトに追加されたことを確認できます。</p>
+        <img alt="「プロジェクト」ウィンドウの「単体テスト」フォルダのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-testdriver-projectswindow.png" title="「プロジェクト」ウィンドウの「単体テスト」フォルダ">
+        <p>エディタで、デフォルトで生成される構成ファイルの次のコンテンツを確認できます。</p>
+        <pre class="examplecode">server: http://localhost:42442
+
+load:
+  - test/lib/jasmine/jasmine.js
+  - test/lib/jasmine-jstd-adapter/JasmineAdapter.js
+  - test/unit/*.js
+
+exclude:
+</pre>
+        <p>構成ファイルでは、テストの実行に使用されるローカル・サーバーのデフォルトの場所を指定します。ファイルには、ロードする必要のあるファイルもリストされます。デフォルトでは、リストには「<tt>unit</tt>」フォルダにあるJasmineライブラリおよびJavaScriptファイルが含まれます。テストは通常<tt>unit</tt>フォルダにありますが、リストを変更して、テストを実行するためにロードする必要のある他のファイルの場所を指定できます。単体テストを実行するには、テストするJavaScriptファイルとAngular JavaScriptライブラリの場所を、ロードするファイルのリストに追加する必要もあります。</p>
+        <p>このチュートリアルでは、JSテスト・ドライバを使用してテストを実行する場合、次のファイル(太字)をロードされるファイルのリストに追加できます。</p>
+        <pre class="examplecode">load:
+    - test/lib/jasmine/jasmine.js
+    - test/lib/jasmine-jstd-adapter/JasmineAdapter.js
+<strong>
+    - app/lib/angular/angular.js
+    - app/lib/angular/angular-mocks.js
+    - app/lib/angular/angular-route.js
+    - app/lib/angular/angular-animate.js
+    - app/lib/angular/angular-resource.js
+    - app/js/*.js
+</strong>
+    - test/unit/*.js</pre>
+    </li>
+    
+    
+    <li>構成ファイルの更新後、「プロジェクト」ウィンドウで「プロジェクト」ノードを右クリックして、「テスト」を選択できます。 
+
+        <p>「テスト」をクリックすると、IDEがChromeブラウザにJSテスト・ランナーを自動的に開き、「出力」ウィンドウに2つのタブを開きます。</p>
+        <img alt="ブラウザ・ウィンドウで稼働しているjsTestDriverのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-testdriver-browserwindow.png" title="ブラウザ・ウィンドウで稼働しているjsTestDriver">
+        <p>jsTestDriverサーバーの実行中は、Chromeブラウザ・ウィンドウにメッセージが表示されます。サーバーが<tt>localhost:42442</tt>で稼働していることを確認できます。「出力」ウィンドウのjs-test-driverサーバー・タブで、サーバーのステータスを確認できます。</p>
+        <p>JsTestDriverがブラウザで実行され、NetBeans Connectorがタブをデバッグしていることに注意してください。JSテスト・ドライバを使用してテストを実行し、NetBeans ConnectorのあるChromeをターゲット・ブラウザの1つとして選択する場合は、単体テストをデバッグできます。</p>
+        <img alt="「出力」ウィンドウのjs-test-driverサーバー・タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-testdriver-outputstatus.png" title="「出力」ウィンドウのjs-test-driverサーバー・タブ">
+        
+        <p class="notes"><strong>注意:</strong>単体テストを実行するには、ブラウザ・ウィンドウが開き、jsTestDriverサーバーが稼働している必要があります。「サービス」ウィンドウの「JSテスト・ドライバ」ノードを右クリックし、「起動」を選択して、サーバーを起動し、ウィンドウを開くことができます。</p>
+        
+        
+        
+        <img alt="「出力」ウィンドウの実行中のJS単体テスト・タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-testdriver-outputwindow.png" title="「出力」ウィンドウの実行中のJS単体テスト・タブ">
+    </li>
+    <li>メイン・メニューの「ウィンドウ」→「出力」→「テスト結果」を選択して、「テスト結果」ウィンドウを開き、テストの結果を確認します。<br> <img alt="「テスト結果」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/webclient/html5-js/html5-js-testdriver-testresultswindow.png" title="「テスト結果」ウィンドウ">
+
+        <p>ウィンドウの左マージンの緑のチェック・アイコンをクリックして、成功したテストの展開したリストを表示できます。 </p></li>
+</ol>
+
+</div>
+
+<!-- ++++++++++++++++ Debugging a JS Unit Test ++++++++++++++++ -->
+<a name="debugtest"></a>
+<h2>JSテスト・ドライバを使用したJS単体テストのデバッグ</h2>
+
+<p>この課題では、IDEおよびJSテスト・ドライバを使用して単体テストをデバッグする方法を示します。</p>
+<p class="notes"><strong>注意:</strong>NetBeans IDE 8.0では、Karmaテスト・ランナーで実行されるデバッグ・テストはサポートされません。</p>
+<ol>
+    <li>「プロジェクト」ウィンドウで「<tt>js</tt>」フォルダを展開して「<tt>controllers.js</tt>」をダブルクリックし、エディタでそのファイルを開きます。</li>
+    <li>ファイルの行7を修正して、次の変更(<strong>太字</strong>)を加えます。変更を保存します。
+        <pre class="examplecode">function PhoneListCtrl($scope, Phone) {
+  $scope.phones = Phone.query();
+  $scope.orderProp = '<strong>name</strong>';
+}</pre>
+        <p>変更を保存すると、ブラウザにページが自動的に再ロードされます。リスト内の端末の順序が変更されたことを確認できます。</p>
+    </li>
+    <li>JSテスト・ドライバ・サーバーが稼動中で、ステータス・メッセージがChromeブラウザ・ウィンドウに表示されていることを確認します。</li>
+    <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「テスト」を選択します。<br> <img alt="「テスト結果」ウィンドウの失敗したテストのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-testdriver-testresultswindow-fail.png" title="「テスト結果」ウィンドウの失敗したテスト">
+        <p>テストを実行すると、期待される値"age"のかわりに値"name"が検出されたことを示すメッセージでテストの1つが失敗したことを確認できます。</p></li>
+    <li>「出力」ウィンドウの実行中のJS単体テスト・タブを開きます。<br> <img alt="「出力」ウィンドウの「実行中のJS単体テスト」タブの失敗したテストのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-testdriver-outputwindow-fail.png" title="「出力」ウィンドウの「実行中のJS単体テスト」タブの失敗したテスト">
+    <p><tt>orderProp</tt>が行41に<tt>age</tt>を期待していることをメッセージで確認できます。</p>
+    </li>
+    <li>実行中のJS単体テスト・タブのリンクをクリックして、失敗したテストの行に移動します。テスト・ファイル<tt>controllersSpec.js</tt>がエディタの行41 (<strong>太字</strong>)に開きます
+        <pre class="examplecode">it('should set the default value of orderProp model', function() {
+      <strong>expect(scope.orderProp).toBe('age');</strong>
+    });</pre>
+        <p>テストでは<tt>scopeOrder.prop</tt>の値として"age"が期待されたことがわかります。</p>
+    </li>
+    <li>テストが失敗した行(行41)にブレークポイントを設定します。</li>
+    <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「テスト」を選択します。
+        <p>テストを再度実行すると、プログラム・カウンタがブレークポイントにヒットします。カーソルを<tt>scopeOrder.prop</tt>上に移動すると、ブレークポイントにヒットしたときの変数の値が"name"であることをツールチップで確認できます。</p>
+    <img alt="エディタ、「コードを評価」ウィンドウおよび「変数」ウィンドウを表示しているIDEのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-js/html5-js-testdriver-evaluate.png" title="エディタ、「コードを評価」ウィンドウおよび「変数」ウィンドウを表示しているIDE">
+        <p>または、メイン・メニューの「デバッグ」→「式の評価」を選択して、「コードを評価」ウィンドウを開くことができます。ウィンドウに式<tt>scopeOrder.prop</tt>を入力し、「コード・フラグメントを評価(Ctrl+Enter)」ボタン(<img alt="「式の評価」ボタン" src="../../../images_www/articles/73/web/html5-js/evaluate-button.png" title="「式の評価」ボタン">)をクリックすると、デバッガによって式の値が「変数」ウィンドウに表示されます。</p>
+    </li>
+    <li>ツールバーの「続行」をクリックして、テストの実行を終了します。</li>
+    
+</ol>
+
+
+
+        <h2 id="summary">サマリー</h2>
+
+        <p>このチュートリアルでは、JavaScriptファイルのデバッグおよび単体テストの実行に役立つツールをIDEがどのように提供するかについて学習しました。Chromeブラウザでアプリケーションを実行し、NetBeans Connector拡張機能が有効になっている場合、HTML5アプリケーションに対してデバッグが自動的に有効になります。IDEにより、JavaScriptファイルでJasmineテスト・フレームワークおよびJSテスト・ドライバ・サーバーを使用した単体テストを簡単に構成および実行することもできます。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Debugging%20and%20Testing%20JavaScript%20in%20HTML5%20Applications">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        <h2 id="seealso">関連項目</h2>
+
+        <p>IDEでのHTML5アプリケーションのサポートの詳細は、<a href="https://netbeans.org/">netbeans.org</a>で次のソースを参照してください。</p>
+
+        <ul>
+            <li><a href="html5-gettingstarted.html">HTML5アプリケーションの開始</a>。ChromeのNetBeans Connector拡張機能をインストールし、単純なHTML5アプリケーションを作成および実行する方法を示すドキュメントです。</li>
+            <li><a href="html5-editing-css.html">HTML5アプリケーションでのCSSスタイル・シートの操作</a>。IDEでCSSのウィザードおよびウィンドウのいくつかを使用する方法、およびChromeブラウザの「検査」モードを使用してプロジェクト・ソース内の要素をビジュアルに特定する方法を示すドキュメントです。</li>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG">NetBeans IDEによるアプリケーションの開発ユーザーズ・ガイド</a>の<a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/dev_html_apps.htm">HTML5アプリケーションの開発</a> </li>
+        </ul>
+        
+        <p>JSテスト・ドライバを使用した単体テストの実行の詳細は、次のドキュメントを参照してください。</p>
+
+        <ul>
+            <li>JSテスト・ドライバ・プロジェクト・ページ: <a href="http://code.google.com/p/js-test-driver/">http://code.google.com/p/js-test-driver/</a></li>
+            <li>Jasmineホーム・ページ: <a href="http://pivotal.github.com/jasmine/">http://pivotal.github.com/jasmine/</a></li>
+            <li><a href="http://transitioning.to/2012/07/magnum-ci-the-jenkins-chronicles-1-intro-to-jstestdriver/">JsTestDriverの概要</a>。継続的インテグレーション・サーバーでのJsTestDriverの使用の概要。</li>
+        </ul>
+
+
+    </body>
+</html>

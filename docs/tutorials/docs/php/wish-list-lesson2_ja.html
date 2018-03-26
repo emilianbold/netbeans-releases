@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+    <title>PHPを使用するデータベース駆動型アプリケーションの作成PHPアプリケーションの設計。HTML入力フォームの使用。MySQLデータベースからの読取りのPHP実装</title>
+    <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+    <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Design PHP application. HTML input form. PHP implementation of reading from MySQL database" >
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+            <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+        <script type="text/javascript">
+ 
+function toggle(id) {
+  var e = document.getElementById(id);
+ 
+  if (e.style.display == '')
+    e.style.display = 'none';
+  else
+    e.style.display = '';
+}
+ 
+</script></head>
+<body>
+<h1>PHPを使用するデータベース駆動型アプリケーションの作成 </h1>
+<h1>レッスン2: アプリケーションの設計。データベースからの読取り </h1>
+
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>チュートリアルの目次:</h4>
+<ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">PHPを使用するデータベース駆動型アプリケーションの作成 - メイン・ページ</a></li>
+    <li><p>データベースの作成</p> <ol type="a"><li><a href="wish-list-lesson1.html">MySQLデータベースの作成</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Oracleデータベース表の作成</a></li>
+    </ol></li>
+    <li><p><b>=> アプリケーションの設計。データベースからの読取り</b></p>
+    <ul><li><a href="#createProject">PHPプロジェクトの作成</a></li>
+    <li><a href="#pageFlowDiagram">ページ・フロー図の定義</a></li>
+    
+  <li><a href="#transferDataFromIndexToWishlist">index.phpへのフォームの追加</a>
+                <li><a href="#createNewFile">wishlist.phpの作成とアプリケーションのテスト</a></li>
+            
+            <li><a href="#receiveAndProcessDaaInWishlist">接続の確立とウィッシャIDの取得</a></li>
+        
+            <li><a href="#wish-table">ウィッシュ表の表示</a></li>
+          <li><a href="#lessonResultSourceCode">現在のレッスン完了後のアプリケーション・ソース・コード</a></li>
+</ul>
+    </li>
+    <li><a href="wish-list-lesson3.html">新規アプリケーション・ユーザーの作成</a></li>
+    <li><a href="wish-list-lesson4.html">コードの最適化</a></li>
+    <li><a href="wish-list-lesson5.html">セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</a></li>
+    <li><a href="wish-list-lesson6.html">データベースへの新しいウィッシュの追加</a></li>
+    <li><a href="wish-list-lesson7.html">データベース内のエントリの更新および削除</a></li>
+    <li><a href="wish-list-lesson8.html">CSSテクノロジを使用したアプリケーションの外観の改良</a></li>
+    <li><a href="wish-list-lesson9.html">リモートWebサーバーへのアプリケーションのデプロイ</a></li>
+</ol>
+</div>
+</div>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+<p>このレッスンでは、アプリケーションを開発するためにPHPプロジェクトを作成および構成し、アプリケーション内のページのリストを作成して、それらの関係を定義します。また、基本的なアプリケーションの機能を開発し、レッスン1のサンプル・データベースに入力したデータに対してテストします。 </p>
+<p>このレッスンで記述するPHPコードは次の機能を実行します。</p>
+<p>1. ユーザーが入力した個人の名前を取得します。</p>
+<p>2. その個人が実際にデータベース内に存在するかどうかを確認します。個人がデータベースに存在しない場合はエラー・メッセージを表示して終了します。</p>
+<p>3. その個人のウィッシュ表を表示します。</p>
+<p>現在のドキュメントは、PHP向けのNetBeans IDEでのデータベース駆動型アプリケーションの作成というチュートリアルの一部です。 </p>
+
+<br style="clear:left">
+
+<h2><a name="createProject"></a>PHPプロジェクトの作成</h2>
+<p>「ファイル」>「新規プロジェクト」(WindowsおよびLinuxでは[Ctrl]-[Shift]-[N]、MacOSでは[⌘]-[Shift]-[N])を選択します。「wishlist」という名前の新しいPHPプロジェクトを作成します。PHPプロジェクトを作成すると、PHPプロジェクトにはデフォルトでインデックス・ファイル<tt>index.php</tt>が含まれます。PHPプロジェクトの作成と構成については、<a href="project-setup.html">PHPプロジェクトの設定</a>を参照してください。 </p>
+<h2><a name="pageFlowDiagram"></a>ページ・フロー図の定義 </h2>
+アプリケーションのスコープは、次のユース・ケースをカバーしています。
+<ol>
+    <li>ユーザーが、個人のウィッシュ・リストを表示する。</li>
+    <li>ユーザーを新規ウィッシャとして登録する。</li>
+    <li>ユーザーがログインして自分のウィッシュ・リストを作成する。</li>
+    <li>ユーザーがログインして自分のウィッシュ・リストを編集する。 </li>
+</ol>
+この基本的な機能をカバーするには、次のPHPファイルを実装する必要があります。
+<ol>
+    <li>ログイン、登録、および他のユーザーのウィッシュ・リストに切り替えるためのフロント・ページであるindex.php。</li>
+    <li>特定のウィッシャのウィッシュ・リストを表示するためのwishlist.phpページ。</li>
+    <li>ウィッシャとして登録するためのcreateNewWisher.phpページ。 </li>
+    <li>所有者がウィッシュ・リストを編集するためのeditWishList.phpページ。</li>
+    <li>ウィッシュを作成して編集するためのeditWish.phpページ。 </li>
+</ol>
+<img alt="様々なユース・ケースのページ間で計画された切替えを示す図" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram.png">
+
+<p>準備手順が終了したので、アプリケーションの基本的な機能の実装を開始できます。ウィッシャのウィッシュ・リストの表示から始めます。この機能には検証が含まれていませんが、テスト・データをデータベースにすでに入力しているため、簡単にテストできます。この機能は、index.phpとwishlist.phpの2つのページに実装されます。</p>
+
+<h2><a name="transferDataFromIndexToWishlist"></a>index.phpへのフォームの追加</h2>
+<p>index.phpファイルにはPHPコードが含まれていないため、簡単に次のブロックを除去できます。</p>
+<p><tt>index.php</tt>ファイルは2つの目的で使用されます。</p>
+<ul>
+    <li>データを入力するためのコントロールがあるページを表示する。</li>
+    <li>入力されたデータを、データが処理される別のPHPファイルに転送する。このチュートリアルでは、データは、次の項で作成およびコーディングする<tt>wishlist.php</tt>という名前のファイルに渡されます。</li>
+</ul>
+<p>これらのアクションはHTMLフォームを使用して実行されます。それぞれのHTMLフォームには次が含まれています。</p>
+<ul>
+    <li>ページ上のコントロールに対応するフィールドのセット。 </li>
+    <li>ユーザーがフォームのデータを送信した後に実行されるアクション。アクションは、データを処理するページへのパスによって表現されます。 </li>
+</ul>
+<p><strong>index.phpにフォームを追加するには、次を実行します。</strong></p>
+<ol>
+  <li>「プロジェクト」ウィンドウに切り替え、プロジェクト・ノードおよび「ソース・ファイル」ノードを展開し、<tt>index.php</tt>ファイルをダブルクリックします。<tt>index.php</tt>ファイルがメインのIDEエディタ領域で開きます。ファイルには、HTMLおよびPHPコードを入力するためのテンプレートが含まれています。
+    <p class="notes"><b>注意: </b>HTMLバリデータからの警告は無視できます。</p>
+    . </li>
+  <li>PHPブロックを除去します。index.phpファイルにはPHPコードは含まれません。<br> <img alt="除去できる空のPHPブロック" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/remove-php-block.png"></li>
+  <li>「ウィンドウ」メニューから、または[Ctrl]-[Shift]-[8]を押して「パレット」を開きます。 </li>
+  <li>パレットの「<strong>HTMLフォーム</strong>」セクションで、「フォーム」を<tt>index.php</tt>の&lt;body>セクションにドラッグ・アンド・ドロップします。<br><img alt="パレットからindex.phpの本文へのHTMLフォーム要素のドラッグ・アンド・ドロップ" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/form-dnd.png"></li>
+  <li>「挿入フォーム」ダイアログが開きます。「アクション」フィールドで、フォームによるデータの転送先のファイルへのパスを入力します。このケースでは、「<tt>wishlist.php</tt>」と入力します。(このファイルは<tt>index.php</tt>と同じ場所に作成します。<a href="#createNewFile">wishlist.phpの作成とアプリケーションのテスト</a>を参照。)データを転送するためのGETメソッドを選択します。フォームに対して<tt>wishList</tt>などの任意の名前を付けます。完了したら、「OK」をクリックします。<br> <img alt="入力された挿入フォーム・ダイアログ" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/insert-form-dialog.png">
+  <p>ファイルは次のようになっています。</p>
+  <img alt="フォームが追加されたindex.php、フォームの内容なし" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/blank-form.png"></li>
+  <li>フォームの開始タグと終了タグの間に、「Show wish list of: 」というテキストを入力します。</li>
+  <li>パレットの「<strong>HTMLフォーム</strong>」セクションから、「テキスト入力」コンポーネントを「Show wish list of: 」の後のスペースにドラッグします。「挿入テキスト入力」ダイアログが開きます。  </li>
+  <li>入力に<tt>user</tt>という名前を付けます。入力タイプは「<tt>テキスト</tt>」を選択します。その他のすべてのフィールドを空白のままにし、「OK」をクリックします。<br> <img alt="挿入テキスト入力ダイアログ" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/insert-text-input.png">
+  <p>ファイルは次のようになっています。</p>
+  <img alt="テキスト入力フォームがあるindex.php" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/form-with-text-input.png">  </li>
+  <li>&lt;/form> タグの上に空白行を追加します。この空白行に、パレットの「<strong>HTMLフォーム</strong>」セクションから「ボタン」コンポーネントをドラッグ・アンド・ドロップします。</li>
+  <li>「挿入ボタン」ダイアログが開きます。「ラベル」フィールドに「<tt>Go</tt>」と入力して「OK」をクリックします。<br> <img alt="入力された挿入ボタン・ダイアログ" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/insert-button-dialog.png"></li>
+  <li>フォームは次のようなコードになり、違いは1つです。次のコードでは、&lt;form>タグ内の<tt>method</tt>属性が明示的になっています。NetBeans IDEはメソッド属性をフォームに追加しませんでしたが、この理由はGETがこの属性のデフォルト値であるためです。ただし、<tt>method</tt>属性が明示的であれば、コードが理解しやすくなる場合があります。
+
+    <pre class="examplecode">&lt;form action=&quot;wishlist.php&quot; method=&quot;GET&quot; name=&quot;wishList&quot;&gt;<br>      Show wish list of: &lt;input type=&quot;text&quot; name=&quot;user&quot; value=&quot;&quot;/&gt;<br>		&lt;input type=&quot;submit&quot; value=&quot;Go&quot; /&gt;<br>&lt;/form&gt;</pre>
+  </li>
+</ol>
+<p>フォームの次の要素に注意してください。</p>
+    <ul>
+        <li>開始の&lt;form>タグには<tt>action</tt>属性が含まれています。action属性は、フォームがデータを転送するファイルを指定します。このケースでは、ファイルの名前は<tt>wishlist.php</tt>で、<tt>index.php</tt>と同じフォルダに存在します。(このファイルは、<a href="#createNewFile">wishlist.phpの作成とアプリケーションのテスト</a>の項で作成します。)</li>
+        <li>開始の&lt;form>タグには、データの転送に適用されるメソッド(GET)も含まれています。PHPは<tt>method</tt>属性の値に応じて、このフォームによって渡される値について<tt>$_GET</tt>または<tt>$_POST</tt>配列を使用します。このケースでは、PHPは<tt>$_GET</tt>を使用します。</li>
+        <li><tt>text</tt>入力コンポーネント。このコンポーネントは、表示するウィッシュ・リストのユーザー名を入力するためのテキスト・フィールドです。テキスト・フィールドの開始値は、空の文字列です。このフィールドの名前は<tt>user</tt>です。PHPはフィールドの値の配列を作成するとき、フィールドの名前を使用します。この場合、このフィールドの値の配列は、<tt>htmlentities($_GET["user"])</tt>です。</li>
+        <li>値が「Go」の<tt>submit</tt>入力コンポーネント。「submit」タイプは、入力フィールドがボタンとしてページに表示されることを意味します。値「Go」はボタンのラベルです。ユーザーがボタンをクリックすると、<tt>text</tt>コンポーネント内のデータは<tt>action</tt>属性で指定されるファイルに転送されます。</li>
+    </ul>
+<h2><a id="createNewFile" name="createNewFile"></a>wishlist.phpの作成とアプリケーションのテスト</h2>
+<p><a href="#transferDataFromIndexToWishlist">index.phpへのフォームの追加</a>では、ユーザーが表示するウィッシュ・リストの所有者の名前をユーザーが送信するフォームを作成しました。名前は<tt>wishlist.php</tt>ページに渡されます。ただし、このページは存在しません。<tt>index.php</tt>を実行すると、名前を送信したときに「404: File Not Found」エラーを受け取ります。この項では、<tt>wishlist.php</tt>を作成し、アプリケーションをテストします。</p>
+<p><strong>wishlist.phpを作成してアプリケーションをテストするには、次を実行します。</strong></p>
+<ol>
+    <li>作成した「wishlist」プロジェクト内の「ソース・ファイル」ノードでマウスの右ボタンをクリックし、コンテキスト・メニューから「新規」>「PHPのWebページ」を選択します。新規PHPのWebページ・ウィザードが開きます。</li>
+    <li>「ファイル名」フィールドに「<tt>wishlist</tt>」と入力し、「終了」をクリックします。<br>
+    </li>
+
+        <li>「ソース」ノードでマウスの右ボタンをクリックしてコンテキスト・メニューから「プロジェクトの実行」をするか、または、プロジェクトをメインとして設定している場合は、ツールバーの「メイン・プロジェクトの実行」アイコン<img alt="ツールバーの「メイン・プロジェクトの実行」ボタン: 緑色の三角の矢印" src="../../../images_www/articles/72/php/wish-list-lesson2/run-main-project-button.png">をクリックします。<br><img alt="「Show wish list of」編集ボックスおよび「Go」ボタンのあるアプリケーションのメイン・ページindex.php" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/index-php-works.png">
+        </li>
+        <li>「Show wish list of:」編集ボックスに「Tom」と入力し、「Go」をクリックします。URLがhttp://localhost:90/Lesson2/wishlist.php?user=tomの空のページが表示されます。このURLは、メイン・ページが正しく動作していることを示します。 </li>
+</ol>
+<h2><a name="receiveAndProcessDaaInWishlist"></a>接続の確立とウィッシャIDの取得</h2>
+<p>この項では最初に、データベースへの接続を作成するコードを<tt>wishlist.php</tt>に追加します。次に、名前が<tt>index.php</tt>フォームに入力されたウィッシャのID番号を取得するコードを追加します。</p>
+<ol>
+<li>wishlist.phpファイルをダブルクリックします。表示されるテンプレートは、index.phpとは異なります。このファイルはHTMLコードも含むため、ファイルの開始と終わりに&lt;html>&lt;/html>タグおよび&lt;body>&lt;/body>タグがあります。
+    <pre class="examplecode">&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>    &lt;head&gt;<br>        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;<br>        &lt;title&gt;&lt;/title&gt;<br>    &lt;/head&gt;<br>    &lt;body&gt;<br>        &lt;?php<br>        // put your code here<br>        ?&gt;<br>    &lt;/body&gt;<br>&lt;/html&gt;</pre>
+</li>
+<li>タイトルを表示するには、開始の&lt;body>タグの直後で、生成された&lt;?phpタグの前に次のコード・ブロックを入力します。
+    <pre class="examplecode"> Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]).&quot;&lt;br/&gt;&quot;;?&gt;</pre>
+    <p>コードは次のようになります。</p>
+        <pre class="examplecode">
+&lt;body&gt;Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]).&quot;&lt;br/&gt;&quot;;?&gt;<br>    &lt;?php<br>
+    // put your code here<br>
+&lt;/body&gt;
+</pre>
+
+    <p>PHPコード・ブロックは、「user」フィールドの取得メソッド(GET)を介して受け取ったデータを表示します。このデータは、テキスト・フィールド「user」に、ウィッシュ・リストの所有者であるTomの名前が入力されている<tt>index.php</tt>から転送されます。wishlist.phpが正しく動作していることを確認するために、<a href="#createNewFile">index.phpのテスト</a>の手順を繰り返します。<br> <img alt="テキスト「Wish List of Tom」が表示されたwishList.phpページ" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-title-works.png">          </li>
+<li><p><a name="connect-db"></a>テンプレートPHPブロックのコメント付きセクションを削除します。その場所に、次のコードを入力するか、または貼り付けます。このコードはデータベースへの接続を開きます。 </p>
+
+ <p><b>MySQLデータベースの場合:</b></p>
+    <pre class="examplecode">$con = mysqli_connect(&quot;localhost&quot;, &quot;phpuser&quot;, &quot;phpuserpw&quot;);<br>if (!$con) {<br>    exit('Connect Error (' . mysqli_connect_errno() . ') '<br>           . mysqli_connect_error());<br>}<br>//set the default client character set <br>mysqli_set_charset($con, 'utf-8');</pre>
+
+<p><b>Oracleデータベースの場合:</b></p>
+<pre class="examplecode">$con = oci_connect("phpuser", "phpuserpw", "localhost/XE", "AL32UTF8");
+if (!$con) {
+    $m = oci_error();
+    exit('Connect Error ' . $m['message']);
+}</pre>
+<p>これはデータベースへの接続を開くためのコードで、エラーが発生した場合はエラー・メッセージが表示されます。</p>
+<p class="notes"><b>Oracleデータベース・ユーザーへの注意:</b> <tt>oci_connect</tt>コマンド内のデータベース接続を変更することが必要になる場合があります。標準の構文は「ホスト名/サービス名」です。このスニペット内でのOracle XEデータベースへの接続は、この構文に従って「localhost/XE」です。 </p>
+<p class="notes"><b>注意:</b> mysqli関数またはOCI8関数のいずれかについて、NetBeans IDEのコード補完を使用できます。</p>
+<img alt="MySQLコールのコード補完" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/codecompletion.png"><img alt="OCI8コールのコード補完" class="margin-around" src="../../../images_www/articles/72/php/oracle-wishlist/codecompletion-oci.png"></li>
+<li><p>コードの下にデータベースへの接続が開き、同じPHPブロックに次のコードを入力するか、または貼り付けます。このコードは、ウィッシュ・リストがリクエストされたウィッシャのIDを取得します。ウィッシャがデータベースに存在しない場合、コードはプロセスを終了し、エラー・メッセージを表示します。</p>
+<p><b>MySQLデータベースの場合:</b></p>
+    <pre class="examplecode">mysqli_select_db($con, &quot;wishlist&quot;);<br>
+$user = mysqli_real_escape_string($con, htmlentities($_GET[&quot;user&quot;]));<br>
+$wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot; . $user . &quot;'&quot;);<br>
+if (mysqli_num_rows($wisher) &lt; 1) {
+    exit(&quot;The person &quot; . htmlentities($_GET[&quot;user&quot;]) . &quot; is not found. Please check the spelling and try again&quot;);
+}<br>$row = mysqli_fetch_row($wisher);<br>$wisherID = $row[0];<br>mysqli_free_result($wisher);</pre>
+<p><b>Oracleデータベースの場合:</b> (oci8には<tt>mysqli_num_rows</tt>と同等のものが存在しません)</p>
+<pre class="examplecode">$query = "SELECT id FROM wishers WHERE NAME = :user_bv";
+$stid = oci_parse($con, $query);
+$user = $_GET['user'];
+
+oci_bind_by_name($stid, ':user_bv', $user);
+oci_execute($stid);
+
+//Because user is a unique value I only expect one row
+$row = oci_fetch_array($stid, OCI_ASSOC);
+if (!$row) {
+    exit("The person " . $user . " is not found. Please check the spelling and try again" );
+}
+$wisherID = $row['ID'];
+oci_free_statement($stid);</pre>
+    <p>データは、$con接続を介して<tt>wishlist</tt>データベースから選択されます。選択の基準は、index.phpから「user」として受け取った名前です。</p>
+    <p>次に、SQL文「<tt>SELECT</tt>」の構文を簡単に説明します。</p>
+    <ul>
+        <li>SELECTの後に、データの取得元のフィールドを指定します。アスタリスク(*)はすべてのフィールドを表します。</li>
+        <li>FROM節の後に、データを取得する表の名前を指定します。 </li>
+        <li>WHERE節はオプションです。フィルタ条件を指定します。</li>
+    </ul>
+    <p>mysqli問合せは結果オブジェクトを返します。OCI8は実行された文を返します。いずれの場合も、実行された問合せの結果から1行をフェッチし、ID行の値を抽出し、それを変数<tt>$wisherID</tt>に格納します。</p>
+    <p> 最後に、mysqli結果またはOCI8文を解放します。接続が物理的に切断される前に、接続を使用するすべてのリソースを解放する必要があります。そうしないと、<tt>mysqli_close()</tt>コールまたは<tt>oci_close()</tt>コールの後に<tt>$con</tt>が使用できない場合でも、PHPの内部参照カウント・システムは、ベースとなるDB接続を開き続けます。 </p>
+    <p class="notes"><b>セキュリティ上の注意: </b>MySQLの場合、「<tt>htmlentities($_GET["user"])</tt>」パラメータは、SQLインジェクション攻撃を避けるためにエスケープされます。<a href="http://en.wikipedia.org/wiki/SQL_injection" target="_blank">SQLインジェクションに関するWikipedia</a>および<a href="http://us3.php.net/mysql_real_escape_string" target="_blank">mysql_real_escape_stringのドキュメント</a>を参照してください。このチュートリアルのコンテキストでは、有害なSQLインジェクションのリスクはありませんが、そのような攻撃のリスクになるようなMySQL問合せの文字列はエスケープすることをお薦めします。OCI8では、バインド変数によってこれを回避します。</p>
+</li></ol>
+
+<p>PHPブロックはこれで完了です。MySQLデータベースを使用している場合、<tt>wishlist.php</tt>ファイルは次のようになります。</p>
+<pre class="examplecode">Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]) . &quot;&lt;br/&gt;&quot;; ?&gt;<br>
+&lt;?php<br>
+  $con = mysqli_connect(&quot;localhost&quot;, &quot;phpuser&quot;, &quot;phpuserpw&quot;);
+  if (!$con) {
+     exit('Connect Error (' . mysqli_connect_errno() . ') '
+            . mysqli_connect_error());
+  }<br>
+  //set the default client character set 
+  mysqli_set_charset($con, 'utf-8');
+  mysqli_select_db($con, &quot;wishlist&quot;);
+  $user = mysqli_real_escape_string($con, htmlentities($_GET[&quot;user&quot;]));
+  $wisher = mysqli_query($con, &quot;SELECT id FROM wishers WHERE name='&quot; . $user . &quot;'&quot;);
+  if (mysqli_num_rows($wisher) &lt; 1) {
+     exit(&quot;The person &quot; . htmlentities($_GET[&quot;user&quot;]) . &quot; is not found. Please check the spelling and try again&quot;);
+  }
+  $row = mysqli_fetch_row($wisher);
+  $wisherID = $row[0];
+  mysqli_free_result($wisher);
+  ?&gt;</pre>
+<p>Oracleデータベースを使用している場合、<tt>wishlist.php</tt>ファイルは次のようになります。</p>
+
+<pre class="examplecode">Wish List of &lt;?php echo htmlentities($_GET[&quot;user&quot;]) . &quot;&lt;br/&gt;&quot;; ?&gt;
+  &lt;?php
+  $con = oci_connect(&quot;phpuser&quot;, &quot;phpuserpw&quot;, &quot;localhost/XE&quot;, &quot;AL32UTF8&quot;);
+  if (!$con) {
+     $m = oci_error();
+     exit('Connect Error ' . $m['message'];
+     exit;
+  }
+  $query = &quot;SELECT id FROM wishers WHERE name = :user_bv&quot;;
+  $stid = oci_parse($con, $query);
+  $user = htmlentities($_GET[&quot;user&quot;]);
+  oci_bind_by_name($stid, ':user_bv', $user);
+  oci_execute($stid);<br>
+//Because user is a unique value I only expect one row
+  $row = oci_fetch_array($stid, OCI_ASSOC);
+  if (!$row) {
+     exit(&quot;The person &quot; . $user . &quot; is not found. Please check the spelling and try again&quot; );
+  }
+  $wisherID = $row[&quot;ID&quot;]; 
+  oci_free_statement($stid);
+  ?&gt;</pre>
+
+ 
+ 
+<p>アプリケーションのテストで無効なユーザーを入力すると、次のメッセージが表示されます。</p>
+  <img alt="エラー・メッセージが表示されたwishlist.phpページ: 「ユーザーが見つかりません」" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-title-user-not-found-works.png"> 
+<h2><a name="wish-table"></a>ウィッシュ表の表示</h2>
+<p>この項では、ウィッシャに関連付けられたウィッシュのHTML表を表示するコードを追加します。ウィッシャは、前の項のコードで取得したIDによって識別されます。</p>
+<ol>
+<li>PHPブロックの下に、次のHTMLコード・ブロックを入力するか、または貼り付けます。このコードは、表を開き、境界線の色を指定し(黒)、「Item」列および「Due Date」列を持つ表ヘッダーを「描画」します。
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Item&lt;/th&gt;
+        &lt;th&gt;Due Date&lt;/th&gt;
+    &lt;/tr&gt;
+&lt;/table></pre>
+&lt;/table>タグが表を閉じます。 </li>
+<li>
+  <p>次のPHPコード・ブロックを、終了&lt;/table>タグの前に入力します。</p>
+  <p><b>MySQLデータベースの場合:</b></p>
+    <pre class="examplecode">&lt;?php<br>$result = mysqli_query($con, &quot;SELECT description, due_date FROM wishes WHERE wisher_id=&quot; . $wisherID);<br>while ($row = mysqli_fetch_array($result)) {<br>    echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>    echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>}<br>mysqli_free_result($result);<br>mysqli_close($con);<br>?&gt;</pre>
+        <p><b>Oracleデータベースの場合:</b></p>
+        <pre class="examplecode">&lt;?php<br>$query = &quot;SELECT description, due_date FROM wishes WHERE wisher_id = :id_bv&quot;;<br>$stid = oci_parse($con, $query);<br>oci_bind_by_name($stid, &quot;:id_bv&quot;, $wisherID);<br>oci_execute($stid);<br>while ($row = oci_fetch_array($stid)) {<br>    echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;DESCRIPTION&quot;]) . &quot;&lt;/td&gt;&quot;;<br>    echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;DUE_DATE&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>}<br>oci_free_statement($stid);<br>oci_close($con);<br>?&gt;</pre>
+    <p>コード内は次のようになっています。</p>
+    <ul>
+        <li>SELECT問合せは、ウィッシャのID(ステップ4で取得済)を使用して、指定したウィッシャに対するウィッシュの期日およびウィッシュを取得し、そのウィッシュと期日を配列$resultに格納します。</li>
+        <li>ループは、$result配列が空でない間、この配列の項目を表の行として表示します。 </li>
+        <li>&lt;tr>&lt;/tr>タグは行を形成し、&lt;td>&lt;/td>タグは行内のセルを形成し、\nは新しい行を開始します。</li>
+        <li><tt>htmlentities</tt>関数は、HTMLエンティティと等価な意味を持つすべての文字を、HTMLエンティティに変換します。これは、<a href="http://en.wikipedia.org/wiki/Cross-site_scripting" target="_blank">クロスサイト・スクリプティング</a>の防止に役立ちます。</li>
+        <li>最後の関数はすべてのリソース(mysqli結果およびOCI8文)を解放し、データベース接続を切断します。接続が物理的に切断できるようになる前に、接続を使用するすべてのリソースを解放する必要があります。そうしないと、<tt>oci_close()</tt>コールまたは<tt>mysqli_close()</tt>コールの後に接続が使用できない場合でも、PHPの内部参照カウント・システムは、ベースとなるDB接続を開き続けます。 </li>
+    </ul>
+    <p class="alert"><strong>注意: </strong>データベース表の作成時に指定したとおりに、データベース・フィールドの名前を入力していることを確認してください。Oracleの場合、列名はデフォルトで大文字で返されます。</p>
+</li>
+<li>アプリケーションをテストするには、<a href="#createNewFile">index.phpのテスト</a>の項の説明に従ってプロジェクトを実行します。<br> <img alt="Tomのウィッシュのリストが表示されたwishlist.phpページ" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson2/wishlist-php-works.png">          </li>
+</ol>
+
+<h2><a name="lessonResultSourceCode"></a>現在のレッスン完了後のアプリケーション・ソース・コード </h2>
+<p>MySQLユーザー: このレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/files/documents/4/1928/lesson2.zip" target="_blank">ここ</a>をクリックします。</p>
+<p>Oracleデータベース・ユーザー: このレッスンが完了した後のプロジェクトの状態を反映したソース・コードをダウンロードするには、<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson2.zip" target="_blank">ここ</a>をクリックします。</p>
+<h2><a name="nextSteps"></a>次の手順</h2>
+<p><a href="wish-list-lesson1.html">&lt;&lt; 前のレッスン</a></p>
+<p><a href="wish-list-lesson3.html">次のレッスン>></a></p>
+<p><a href="wish-list-tutorial-main-page.html">チュートリアルのメイン・ページに戻る</a>
+</p>
+<h2><a name="learnMoreUsefulLinks"></a>便利なリンク </h2>
+<p>HTML、PHP、およびMySQLやOracleデータベースの使用については、次を参照してください。</p>
+<ul>
+    <li><a href="http://www.w3schools.com/html/" target="_blank">HTML Tutorial </a></li>
+    <li><a href="http://www.htmlcodetutorial.com/" target="_blank">HTML Code Tutorial - Free Reference Guide for Help with HTML Tags</a></li>
+    <li><a href="http://www.w3schools.com/php/default.asp" target="_blank">PHP Tutorial</a></li>
+    <li><a href="http://www.tizag.com/phpT/" target="_blank">PHP Tutorial - Learn PHP</a></li>
+    <li><a href="http://www.killerphp.com/" target="_blank">PHP Video Tutorials</a> </li>
+    <li><a href="http://dev.mysql.com/tech-resources/articles/mysql_intro.html" target="_blank">Getting Started with MySQL</a> </li>
+    <li><a href="http://www.killerphp.com/" target="_blank">PHP / MySQL Tutorial</a> </li>
+    <li><a href="http://www.php-mysql-tutorial.com/" target="_blank">PHP MySQL Tutorial</a></li>
+    <li><a href="http://php.net/manual/en/book.oci8.php" target="_blank">The Oracle OCI8 Manual</a></li>
+    <li><a href="http://blogs.oracle.com/opal/" target="_blank">Christopher JonesのOCI8ブログ</a></li>
+</ul>
+<br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%202:%20Designing%20the%20Application">このチュートリアルに関するご意見をお寄せください</a></div>
+<br style="clear:both;">
+<p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+<p><a href="../../trails/php.html">PHPの学習に戻る</a><br>
+</p>
+</body>
+</html>

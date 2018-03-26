@@ -1,0 +1,486 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>Начало работы по созданию приложения Cordova</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that describes how to configure the IDE to create a mobile application using Cordova.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Начало работы по созданию приложения Cordova</h1>
+
+        <p>
+        В этом документе описывается создание проекта HTML5 в среде IDE, который упакован в виде мобильного приложения и запускается в симуляторе мобильного устройства. При создании приложения HTML5 можно воспользоваться шаблоном сайта Apache Cordova. Apache Cordova предоставляет группу методов API, которые позволяют разрабатывать приложение с HTML, CSS и JavaScript, для которого создается пакет в виде оригинального мобильного приложения. Приложение запускается на мобильном устройстве и может получать доступ к оригинальным функциям устройства, таким как GPS или камера. С помощью методов API Cordova разработчик может создать мобильное приложение без необходимости написания оригинального кода. 
+        </p>
+        
+        <p>В этом документе описана установка обязательного программного обеспечения и разработка приложения с помощью Cordova. После установки Cordova можно в мастере 'Новый проект' использовать шаблон Cordova для создания приложения Cordova. Затем необходимо добавить код и запустить приложение в симуляторе мобильного устройства. В этом учебном руководстве используется симулятор iOS. Если вы собираетесь использовать эмулятор устройства под управлением Android, выполните аналогичные действия.</p>
+        
+        <p class="tips">Демонстрация развертывания приложения Cordova в эмуляторе Android: <a href="../web/html5-cordova-screencast.html">Видеоролик 'Основы разработки на Cordova'</a>.</p>
+        
+<!--        <p class="tips">For a tutorial on how to use jQuery in a NetBeans Java web application, see the tutorial 
+            <a href="../web/js-toolkits-jquery.html">Using jQuery to Enhance the Appearance and Usability of a Web Page</a>.</p>-->
+
+
+
+        <h3>Содержание</h3>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.3">
+
+        <ul class="toc">
+            <li><a href="#installcordova">Установка Cordova</a></li>
+            <li><a href="#createproject">Создание проекта HTML5 Cordova</a></li>
+            <li><a href="#editapp">Изменение исходного кода</a>
+                <ul>
+                    <li><a href="#edithtml">Редактирование файла HTML</a></li>
+                    <li><a href="#editconfig">Изменение конфигурации Cordova</a></li>
+                    <li><a href="#editjs">Редактирование файла JavaScript</a></li>
+                </ul>
+            </li>
+            <li><a href="#debug">Отладка приложения</a></li>
+            <li><a href="#summary">Заключение</a></li>
+            <li><a href="#seealso">См. также</a></li>
+        </ul>
+
+        <h4>Для выполнения этого учебного курса потребуются следующие материалы.</h4>
+
+        <table id="requiredSoftware">
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или ресурс</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans, Java</a></td>
+                    <td class="tbltd1">8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7</td>
+                </tr>
+<!--                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chrome Browser</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>-->
+<!--                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">NetBeans Connector Extension for Chrome</a></td>
+                    <td class="tbltd1">1.0.0</td>
+                </tr>-->
+                <tr>
+                    <td class="tbltd1"><a href="http://cordova.apache.org/">Apache Cordova</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://nodejs.com/">NodeJS</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://git-scm.com/">Git</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">SDK для мобильных платформ<br /></td>
+                    <td class="tbltd1">Android или<br />iOS</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">Примечания.</strong></p>
+
+        <ul>
+            <li>Предполагается, что совместимый комплект SDK для целевой мобильной платформы и эмулятор устройства уже установлены.</li>
+
+            <li>Предполагается, что читатель обладает базовыми знаниями или опытом программирования на HTML, CSS и JavaScript. Для получения дополнительных сведений о поддержке HTML5 в среде NetBeans IDE см. раздел <a href="html5-gettingstarted.html">Начало работы с приложениями HTML5</a></li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Installing Cordova ++++++++++++++++ -->
+        <a name="installcordova"></a>
+        <h2>Установка Cordova</h2>
+        <p>Вам необходимо установить Cordova в локальной системе для упаковки приложения HTML5 в виде оригинального мобильного приложения с помощью среды IDE NetBeans. Используйте <strong>npm</strong>, диспетчер пакетов NodeJS, для установки и обновления Cordova. Кроме того, убедитесь, что в локальной системе выполнена установка и корректная настройка Git. Cordova использует Git для извлечения из репозитория необходимых исходных файлов Cordova при упаковке приложения в виде внутреннего мобильного приложения.</p>
+
+        <p>Большинство следующих действий этого упражнения будут выполнены в окне терминала.</p>
+        <ol>
+            <li>Загрузите и установите Node.js, если не сделали этого раньше.
+                <p>Программу установки можно загрузить с <a href="http://nodejs.org">сайта Node.js</a>.</p></li>
+            <li>Откройте окно терминала.</li>
+            <li>Чтобы убедиться в наличии Node.js, выполните следующую команду.
+                <pre class="examplecode">$ node -v</pre>
+                <p>Если установка node.js выполнена, в окне терминала отобразится номер версии.</p>
+                <p class="notes"><strong>Примечания.</strong></p>
+                <div class="indent">
+                    <ul>
+                        <li>При использовании прокси-сервера необходимо настроить node.js на использование данного прокси-сервера для доступа к сети. Для настройки прокси-сервера можно выполнить следующие команды, заменив <tt>http://proxy:8080</tt> на нужный прокси-сервер.
+                        
+                        <pre class="examplecode">$ sudo npm config set proxy http://proxy:8080
+$ sudo npm config set https-proxy http://proxy:8080</pre>
+                        <p>Для просмотра текущих параметров конфигурации выполните следующие команды. </p>
+                        <pre class="examplecode">$ npm config list</pre>
+                        </li>
+                        <li>Для получения дополнительных сведений о настройке node.js см. <a href="https://npmjs.org/doc/config.html">https://npmjs.org/doc/config.html</a>.</li>
+                    </ul>
+                </div>
+            </li>
+            <li>Для установки Cordova выполните следующую команду.
+            <pre class="examplecode">$ npm install -g cordova</pre>
+            <p class="notes"><strong>Примечания.</strong></p>
+            <div class="indent">
+                <ul>
+                    <li>Если при выполнении команды установки в окне терминала появляется сообщение об ошибке, убедитесь, что конфигурация прокси-сервера выполнена правильно.</li>
+                    <li>Для обновления Cordova до самой последней версии выполните следующую команду.
+                    <pre class="examplecode">$ npm update -g cordova</pre>
+                    </li>
+                </ul>
+            </div>
+            </li>
+            <li>Чтобы убедиться в успешной установке Cordova и просмотр информацию об используемой версии, выполните следующую команду.
+            <pre class="examplecode">$ cordova --version</pre>
+            <p>Если установка Cordova выполнена, в окне терминала отобразится номер версии.</p>
+            </li>
+            <li>Загрузите и установите систему контроля версий Git, если не сделали этого раньше.
+                <p>Программу установки можно загрузить с <a href="http://git-scm.com/">сайта Git</a>.</p>
+                <p class="notes"><strong>Примечание.</strong> В среду Path требуется добавить Git.</p></li>
+            <li>Для проверки успешной установки Git выполните следующую команду.
+                <pre class="examplecode">$ git --version</pre>
+                <p>Если установка Git выполнена, в окне терминала отобразится номер версии.</p>
+                <p class="notes"><strong>Примечания.</strong></p>
+                <div class="indent">
+                    <ul>
+                        <li>При использовании прокси-сервера необходимо настроить Git на использование данного прокси-сервера для доступа к сети. Для настройки прокси-сервера можно выполнить следующие команды, заменив <tt>http://proxy:8080</tt> на нужный прокси-сервер.
+                        <pre class="examplecode">$ git config --global http.proxy http://proxy:8080
+$ git config --global https.proxy http://proxy:8080</pre>
+                        <p>Для просмотра текущих параметров конфигурации выполните следующие команды. </p>
+                        <pre class="examplecode">$ git config --list</pre>
+                        </li>
+                        <li>Для получения дополнительных сведений о настройке Git см. инструкции по установке <a href="http://git-scm.com/book/en/Getting-Started-First-Time-Git-Setup">http://git-scm.com/book/en/Getting-Started-First-Time-Git-Setup</a>.</li>
+                    </ul>
+                </div>
+            </li>
+        </ol>
+        <p>Теперь у вас есть все инструменты, необходимые для разработки и упаковки оригинального мобильного приложения в среде IDE. В следующем упражнении для создания приложения используется мастер создания проектов.</p>
+        
+        
+        
+<!-- ++++++++++++++++ Creating the Project ++++++++++++++++ -->
+        <a name="createproject"></a>
+        <h2>Создание приложения Cordova</h2>
+        <p>В этом упражнении мы используем мастер создания проектов в среде IDE, чтобы создать новое приложение Cordova. Приложение Cordova создается путем выбора шаблона Cordova Hello World в качестве шаблона сайта в мастере создания проекта. Приложение Cordova представляет собой приложение HTML5 с дополнительными библиотеками и файлами конфигурации. Если у вас уже есть приложение HTML5, вы можете использовать окно 'Свойства проекта' в среде IDE для добавления источников Cordova и других файлов, необходимых для упаковки приложения в виде приложения Cordova.</p>
+        
+        <p>В этом учебном курсе создается очень простой проект HTML5, который содержит файл <tt>index.html</tt> и несколько файлов JavaScript и CSS. При создании проекта в мастере мы выберем несколько библиотек jQuery JavaScript.</p>
+        
+        <ol>
+            <li>Выберите 'Файл' > 'Новый проект' (Ctrl-Shift-N; ⌘-Shift-N в Mac) в главном меню, чтобы открыть мастер создания проектов.</li>
+            <li>Выберите категорию <strong>HTML5</strong>, затем выберите <strong>Приложение Cordova</strong>. Нажмите кнопку &quot;Далее&quot;.<br> <img alt="снимок экрана шаблона приложения Cordova в мастере создания проектов" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard1.png" title="Шаблон приложения Cordova в мастере создания проектов">
+            </li>
+
+            <li>Введите <strong>CordovaMapApp</strong> в качестве имени проекта и укажите каталог на компьютере, где следует сохранить проект. Нажмите 'Далее'.</li>
+
+            <li>В шаге 3. "Шаблон сайта", убедитесь, что шаблоны Download Online и Cordova Hello World выбраны в списке. Нажмите кнопку &quot;Далее&quot;.<br> <img alt="снимок экрана панели шаблонов сайта в мастере создания приложений HTML5" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard2.png" title="Панель шаблонов сайта в мастере создания приложений HTML5">
+                
+                <p><strong class="notes">Примечание.</strong> Вы должны быть подключены к сети, чтобы создать проект, который основан на одном из интернет-шаблонов в списке.</p></li>
+            
+            <li>В шаге 4. "Файлы JavaScript" выберите библиотеки JavaScript <tt>jquery</tt> и <tt>jquery</tt> на панели 'Доступные' и щелкните кнопку со стрелкой вправо (&nbsp;>&nbsp;), чтобы переместить выбранные библиотеки на панель мастера 'Выбранное'. По умолчанию библиотеки создаются в папке проекта <tt>js/libraries</tt>. В этом учебном курсе будут использоваться "уменьшенные" версии библиотек JavaScript.
+                
+                <p class="tips">Можно использовать текстовое поле на панели, чтобы отфильтровать список библиотек JavaScript. Например, введите <strong>jq</strong> в поле, чтобы найти библиотеки <tt>jquery</tt>. Вы можете удерживать нажатой клавишу Ctrl и щелкнуть левой кнопкой мыши имена библиотек для выбора нескольких библиотек.</p>
+                
+            <img alt="снимок экрана панели &apos;Библиотеки JavaScript&apos; в мастере создания приложений HTML5" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-newproject-wizard3.png" title="Панель &apos;Библиотеки JavaScript&apos; в мастере создания приложений HTML5">
+            
+            <p class="notes"><strong>Примечания.</strong></p>
+            <ul>
+                <li>Можно нажать номер версии библиотеки в столбце 'Версия', чтобы открыть всплывающее окно, в котором можно выбрать предыдущие версии библиотек. По умолчанию в мастере отображается самая последняя версия.</li>
+                <li>Минимизированные версии библиотек JavaScript - это сжатые версии, и при просмотре в редакторе код не является доступным для понимания.</li>
+            </ul>
+            </li>
+            <li>В шаге 5. "Служба поддержки Cordova", используйте значения по умолчанию. Для завершения мастера нажмите кнопку <strong>Готово</strong>.
+            
+            <p>После нажатия кнопки 'Готово' в IDE создается проект, отображается узел проекта в окне 'Проекты' и открывается файл <tt>index.html</tt> в редакторе.</p>
+
+            <img alt="снимок окна &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-projects-window1.png" title="Окно проектов">
+
+            <p>Если развернуть папку <tt>js/libs</tt> в окне 'Проекты', будет видно, что библиотеки JavaScript, которые были указаны в мастере создания проектов, были автоматически добавлены к проекту. Можно удалить библиотеку JavaScript из проекта, щелкнув правой кнопкой мыши файл JavaScript и выбрав 'Удалить' во всплывающем меню.</p>
+
+            <p class="tips">Чтобы добавить библиотеку JavaScript к проекту, щелкните правой кнопкой мыши узел проекта и выберите 'Свойства', чтобы открыть окно 'Свойства проекта'. Можно добавлять библиотеки к панели 'Библиотеки JavaScript' в окне 'Cвойства проекта'. Кроме того, можно скопировать файл JavaScript, который находится в локальной системе, напрямую в папку <tt>js</tt>.</p>
+            
+            <p>Теперь вы можете выполнить проверку выполнения и развертывания проекта в эмуляторе для целевого мобильного устройства.</p>
+            </li>
+            
+            <li>Щелкните значок выбора браузера на панели инструментов и убедитесь, что в столбце Cordova таблицы выбран эмулятор целевого мобильного устройства. В столбце Cordova можно выбрать эмулятор Android или симулятор iOS (потребуется OS X и XCode). <br> <img alt="снимок экрана раскрывающегося списка на панели инструментов" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-select-browser.png" title="Браузер, выбранный в раскрывающемся списке на панели инструментов."></li>
+            <li>Нажмите значок 'Выполнить' на панели инструментов.</li>
+        </ol>
+        
+        <p>При нажатии кнопки 'Выполнить' среда IDE выполняет развертывание приложения Cordova в эмуляторе.</p>
+        
+
+        <img alt="снимок экрана приложения в симуляторе iOS" class="margin-around " src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run.png" title="Приложение в симуляторе iOS">
+        <p class="notes"><strong>Примечание.</strong> При развертывании симулятор iOS должен открываться автоматически. При развертывании приложения в эмуляторе Android требуется настроить и открыть симулятор перед выполнением приложения. Демонстрация развертывания приложения Cordova в эмуляторе Android: <a href="../web/html5-cordova-screencast.html">Видеоролик 'Основы разработки на Cordova'</a>.</p>
+
+        
+<!-- ++++++++++++++++ Editing the HTML File ++++++++++++++++ -->
+
+        <h2><a name="editapp"></a>Изменение приложения</h2>
+        
+        <p>В этом упражнении редактируются файлы <tt>index.html</tt> и <tt>index.js</tt>. Код, созданный в шаблоне Cordova Hello World, заменяется кодом для отображения карты текущего местоположения в приложении. Кроме того, необходимо изменить конфигурацию Cordova, удалив подключаемые модули Cordova, необязательные для приложения. 
+        </p>
+        
+        <div class="indent">
+        <h3><a name="edithtml"></a>Редактирование файла HTML</h3>
+        <p>В этом упражнении файл HTML редактируется в исходном редакторе с целью добавления ссылок в библиотеки и файлы CSS, а также для добавления элементов страниц.</p>
+        <ol>
+            <li>Откройте в редакторе <code>index.html</code> (если он еще не открыт).
+                <p>В редакторе можно увидеть, что среда IDE создала код на основе шаблона Cordova Hello World.</p>
+            </li>
+            <li>Добавьте в редакторе ссылки на библиотеки jQuery JavaScript и файлы CSS, которые добавлялись при создании проекта. Добавьте следующий код (<strong>полужирным шрифтом</strong>) между открывающим и закрывающим тегами <tt>&lt;head></tt>.
+            <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta charset=UTF-8&quot;&gt;
+        &lt;meta name=&quot;format-detection&quot; content=&quot;telephone=no&quot; /&gt;
+        &lt;meta name=&quot;viewport&quot; content=&quot;user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi&quot;&gt;
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;css/index.css&quot; /&gt;
+        
+        <strong>&lt;link rel=&quot;stylesheet&quot; href=&quot;js/libs/jquery-mobile/jquery.mobile.min.css&quot;/&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery/jquery.min.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery-mobile/jquery.mobile.min.js&quot;&gt;&lt;/script&gt;</strong>
+        &lt;title&gt;Hello World&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    ...
+&lt;/html&gt;</pre>
+                    
+                <p class="tips">В окне 'Проекты' можно увидеть путь к файлам и использовать функцию автозавершения кода в редакторе.</p>
+                <img alt="снимок экрана автозавершения кода в редакторе" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-code-completion.png" title="Автозавершение кода в редакторе">
+            </li>
+            <li>Добавьте следующую ссылку на Google Maps JavaScript API между тегами <code>&lt;head></code>.
+                <pre class="examplecode">&lt;script type="text/javascript" src="http://www.google.com/jsapi"&gt;&lt;/script&gt;</pre>
+                <p class="notes"><strong>Примечание.</strong> Это ссылка на исключенную версию v2 JavaScript API. Эта версия JavaScript используется в данной учебной программе в демонстрационных целях. При создании настоящего приложения рекомендуется использовать новую версию.</p>
+            </li>
+            <li>Удалите код между тегами <code>&lt;body></code> за исключением следующих ссылок на файлы JavaScript <code>index.js</code> и <code>cordova.js</code>.
+                <pre class="examplecode">   &lt;body&gt;
+        
+        <strong>&lt;script type=&quot;text/javascript&quot; src=&quot;cordova.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/index.js&quot;&gt;&lt;/script&gt;</strong>
+        
+    &lt;/body&gt; 
+&lt;/html&gt;</pre>       
+                <p>Файл <code>index.js</code> был автоматически сгенерирован при создании проекта. Он отображается в узле <code>js</code> в окне 'Проекты'. Далее во время учебного курса мы изменим код в <code>index.js</code>.</p>
+                <p>Файл <code>cordova.js</code> не отображается в окне 'Проекты', так как он генерируется при сборке приложения Cordova.</p>
+            </li>
+            <li>Добавьте следующий код (<strong>полужирным шрифтом</strong>) между тегами <tt>body</tt>.
+            <pre class="examplecode">   &lt;body&gt;
+        <strong>&lt;div data-dom-cache=&quot;false&quot; data-role=&quot;page&quot; id=&quot;mylocation&quot;>
+            &lt;div data-role=&quot;header&quot; data-theme=&quot;b&quot;>
+                &lt;h1 id=&quot;header&quot;&gt;Searching for GPS&lt;/h1&gt;
+                &lt;a data-role=&quot;button&quot; class=&quot;ui-btn-right&quot; onclick=&quot;showAbout()&quot;&gt;About&lt;/a&gt;
+            &lt;/div&gt;
+            
+            &lt;div data-role=&quot;content&quot; style=&quot;padding:0;&quot;&gt;
+                &lt;div id=&quot;map&quot; style=&quot;width:100%;height:100%; z-index:50&quot;&gt;
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+            &lt;div data-role=&quot;footer&quot; data-theme=&quot;b&quot; data-position=&quot;fixed&quot; &gt;
+                &lt;h4&gt;Google Maps&lt;/h4&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div data-dom-cache=&quot;false&quot; data-role=&quot;page&quot; id=&quot;about&quot;&gt;
+            &lt;div data-role=&quot;header&quot; data-theme=&quot;b&quot;&gt;
+                &lt;a data-role=&quot;button&quot; data-rel=&quot;back&quot; href=&quot;#mylocation&quot; data-icon=&quot;arrow-l&quot; data-iconpos=&quot;left&quot; class=&quot;ui-btn-left&quot;&gt;Back&lt;/a&gt;
+                &lt;h1&gt;About&lt;/h1&gt;&lt;/div&gt;
+            &lt;div data-role=&quot;content&quot; id=&quot;aboutContent&quot;&gt;
+            &lt;/div&gt; 
+            &lt;div data-role=&quot;footer&quot; data-theme=&quot;b&quot; data-position=&quot;fixed&quot; &gt;
+                &lt;h4&gt;Created with NetBeans IDE&lt;/h4&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        </strong>
+        &lt;script type="text/javascript" src="cordova.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/index.js"&gt;&lt;/script&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+            </li>
+        </ol>
+        
+        <h3><a name="editconfig"></a>Изменение конфигурации Cordova</h3>
+        <p>В этом упражнении выполняется изменение списка подключаемых модулей Cordova, установленных в приложении.</p>
+        <ol>
+            <li>Правой кнопкой мыши щелкните узел проекта в окне &quot;Проекты&quot; и выберите &quot;Свойства&quot; во всплывающем меню.</li>
+            <li>Выберите <strong>Cordova</strong> в списке категорий. <br> <img alt="Снимок экрана. Вкладка &apos;Подключаемые модули Cordova&apos; в окне &apos;Свойства проекта&apos;" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-properties-application.png" title="Вкладка &apos;Подключаемые модули Cordova&apos; в окне &apos;Свойства проекта&apos;">
+            <p>Вкладка 'Приложение' может использоваться для просмотра и изменения данных конфигурации Cordova о приложении, указанных в файле <code>config.xml</code>.</p></li>
+            <li>Щелкните вкладку 'Подключаемые модули' на панели Cordova.
+            <p>Вкладка 'Подключаемые модули' содержит две панели. На панели 'Доступно' отображается список подключаемых модулей Cordova, доступных в настоящее время.</p>
+    
+            <p>На панели 'Выбрано' отображается список подключаемых модулей Cordova, установленных в приложении. При использовании шаблона Cordova Hello World для создания приложения все подключаемые модули устанавливаются по умолчанию. Для большинства приложений не требуются все подключаемые модули. Вкладка 'Подключаемые модули' в окне 'Свойства проекта' используется для удаления подключаемых модулей, необязательных для вашего приложения.
+            </p>
+            <p class="notes"><strong>Примечание.</strong> Кроме того, список установленных подключаемых модулей можно изменить путем внесения изменений в файл <code>nbproject/plugins.properties</code> в редакторе.</p></li>
+            <li>Удалите все подключаемые модули за исключением следующих: API устройства (Device API), Диалоги (Уведомления) ( Dialogs (Notifications)) и Геолокация (Geolocation). Нажмите кнопку &quot;ОК&quot;. <br> <img alt="Снимок экрана. Вкладка &apos;Подключаемые модули Cordova&apos; в окне &apos;Свойства проекта&apos;" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-properties-plugins.png" title="Вкладка &apos;Подключаемые модули Cordova&apos; в окне &apos;Свойства проекта&apos;">
+            </li>
+        </ol>
+            
+        <h3><a name="editjs"></a>Редактирование файла JavaScript</h3>
+        <p>В данном упражнении выполняется удаление кода JavaScript, сгенерированного шаблоном, а также добавление нескольких простых методов для отображения карты текущего местоположения.</p>
+        <ol>
+            <li>Откройте <code>index.js</code> в редакторе.
+            <p>При создании проекта в <code>index.js</code> был сгенерирован шаблон кода. Для данного приложения можно удалить весь сгенерированный код.</p>
+            </li>
+            <li>Замените созданный код следующим: Сохраните изменения.
+            <pre class="examplecode">var map;
+var marker;
+var watchID;
+
+$(document).ready(function() {
+    document.addEventListener("deviceready", onDeviceReady, false);
+    //uncomment for testing in Chrome browser
+//    onDeviceReady();
+});
+
+function onDeviceReady() {
+    $(window).unbind();
+    $(window).bind('pageshow resize orientationchange', function(e) {
+        max_height();
+    });
+    max_height();
+    google.load("maps", "3.8", {"callback": map, other_params: "sensor=true&language=en"});
+}
+
+function max_height() {
+    var h = $('div[data-role="header"]').outerHeight(true);
+    var f = $('div[data-role="footer"]').outerHeight(true);
+    var w = $(window).height();
+    var c = $('div[data-role="content"]');
+    var c_h = c.height();
+    var c_oh = c.outerHeight(true);
+    var c_new = w - h - f - c_oh + c_h;
+    var total = h + f + c_oh;
+    if (c_h < c.get(0).scrollHeight) {
+        c.height(c.get(0).scrollHeight);
+    } else {
+        c.height(c_new);
+    }
+}
+
+function map() {
+    var latlng = new google.maps.LatLng(50.08, 14.42);
+    var myOptions = {
+        zoom: 15,
+        center: latlng,
+        streetViewControl: true,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        zoomControl: true
+    };
+    map = new google.maps.Map(document.getElementById("map"), myOptions);
+
+    google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+        watchID = navigator.geolocation.watchPosition(gotPosition, null, {maximumAge: 5000, timeout: 60000, enableHighAccuracy: true});
+    });
+}
+
+// Method to open the About dialog
+function showAbout() {
+    showAlert("Google Maps", "Created with NetBeans 7.4");
+}
+;
+
+function showAlert(message, title) {
+    if (window.navigator.notification) {
+        window.navigator.notification.alert(message, null, title, 'OK');
+    } else {
+        alert(title ? (title + ": " + message) : message);
+    }
+}
+
+function gotPosition(position) {
+    map.setCenter(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+
+    var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+    if (!marker) {
+        //create marker
+        marker = new google.maps.Marker({
+            position: point,
+            map: map
+        });
+    } else {
+        //move marker to new position
+        marker.setPosition(point);
+    }
+}</pre>
+
+            <p class="notes"><strong>Примечание.</strong> Для данного учебного курса вызов метода <code>onDeviceReady</code> добавлен только в виде комментария, так как метод является необязательным для развертывания приложения в эмуляторе мобильного устройства. При необходимости выполнения приложения в веб-браузере следует удалить символы комментария перед вызовом метода <code>onDeviceReady</code>.</p>
+            </li>
+            <li>Выполните сброс эмулятора, перезапустив эмулятор или сбросив его настройки.</li>
+            <li>Нажмите 'Выполнить' на панели инструментов для развертывания приложения в эмуляторе. <br>
+
+            <p>В симуляторе iOS появится запрос на разрешение приложению использовать ваше текущее месторасположение. </p>
+            <img alt="Снимок экрана. Диалоговое окно с запросом текущего местоположения" class="margin-around " src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run1.png" title="Запрос местоположения в приложении">
+            <p>Вы можете проверить смоделированное местоположение в симуляторе IOS, выбрав 'Отладка > Местоположение > Пользовательское местоположение' в главном меню симулятора IOS, чтобы открыть диалоговое окно 'Пользовательское местоположение'.</p>
+            <img alt="Снимок экрана. Диалоговое окно &apos;Пользовательское местоположение&apos; в симуляторе iOS" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios-customlocation.png" title="Диалоговое окно &apos;Пользовательское местоположение&apos; в симуляторе iOS">
+            <p>Если для вашего текущего местоположения в поле 'Широта' ввести значение 48.8582, а в поле 'Долгота' - 2.2945, приложение отобразит на карте Эйфелеву башню.</p>
+            <img alt="Снимок экрана. Приложение при использовании текущего местоположения в симуляторе iOS" class="margin-around " src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-ios7-run3.png" title="Приложение при использовании текущего местоположения в симуляторе iOS">
+            </li>
+        </ol>
+        </div>
+        
+        
+        <h2>Отладка приложения</h2>
+        <p>В этом упражнении описывается установка точки останова в файле JavaScript и повторное выполнение приложения.</p>
+        <ol>
+            <li>Выполните сброс или перезапуск эмулятора.</li>
+            <li>Откройте <code>index.js</code> в редакторе.</li>
+            <li>Установите точку останова, щелкнув в левой части следующей строки метода <code>gotPosition</code>.
+        <pre class="examplecode">var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);</pre>
+            </li>
+            <li>Нажмите 'Выполнить' на панели инструментов, чтобы повторно выполнить приложение.
+                <p>При выполнении приложения отладчик дойдет до точки останова, когда приложение попытается определить текущее местоположение.</p>
+                <img alt="Снимок экрана. Отладчик остановился по достижении точки останова" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-breakpoint1.png" title="Отладчик остановился по достижении точки останова">
+                <p>Если навести курсор на переменную, отобразится всплывающая подсказка со сведениями о данной переменной. Если навести курсор на переменную <code>latitude</code>, в подсказке отобразится значение переменной.</p>
+                <img alt="Снимок экрана. Подсказка с переменными" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables1b.png" title="Подсказка с переменными">
+                <p>Если навести курсор на переменную <code>position</code> или <code>coords</code> появится стрелка, которую можно нажать, чтобы развернуть подсказку.</p>
+                <img alt="Снимок экрана. Подсказка с переменными" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables1a.png" title="Подсказка с переменными">
+                <p>Развернутая подсказка позволяет просматривать значения более подробно.</p>
+                <img alt="Снимок экрана. Подсказка с переменными" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables2.png" title="Подсказка с переменными">
+                <p>В этом случае удобнее просматривать значения в окне 'Переменные'. В окне 'Переменные' отображается широта и долгота текущего местоположения.</p>
+                <img alt="снимок экрана с окном &apos;Переменные&apos;" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-debug-variables.png" title="Окно &amp;quot;Переменные&amp;quot;">
+                <p>В окне 'Сетевой монитор' отображается список запросов приложения. </p>
+                <img alt="снимок экрана с окном &apos;Переменные&apos;" class="margin-around b-all" src="../../../images_www/articles/80/webclient/cordova-getstart/cordova-network-monitor.png" title="Окно &amp;quot;Переменные&amp;quot;">
+                
+            </li>
+        </ol>
+        
+        <h2 id="summary">Заключение</h2>
+
+        <p>В этом учебном курсе описывается, как установить и настроить программное обеспечение, необходимое для создания приложения Cordova в среде IDE. Кроме того, вы узнаете, как создать приложение Cordova и изменить некоторые параметры конфигурации Cordova.
+            </p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20Creating%20a%20Cordova%20Applications">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        
+        <h2 id="seealso">См. также</h2>
+
+        <p>Подробнее о поддержке приложений HTML5 в IDE см. в следующих материалах на сайте <a href="https://netbeans.org/">www.netbeans.org</a>:</p>
+
+        <ul>
+            <li>[Видеоролик] <a href="../web/html5-cordova-screencast.html">Основы разработки на Cordova</a></li>
+            <li><a href="html5-editing-css.html">Работа со страницами стилей CSS в приложениях HTML5</a> Документ, который продолжает работу с приложением, которое было создано в этом учебном курсе. Он показывает, как использовать некоторые из мастеров CSS и окон в IDE и как использовать режим проверки в браузере Chrome для визуального определения элементов в источниках проекта.</li>
+            <li><a href="html5-js-support.html">Отладка и тестирование JavaScript в приложениях HTML5</a> Документ, который демонстрирует, как IDE предоставляет инструменты, которые могут использоваться в отладке и тестировании файлов сценариев JAVA в IDE.</li>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2272">Создание файлов JavaScript</a> в документе <i>Разработка приложений в IDE NetBeans</i></li>
+        </ul>
+        
+        <p>Дополнительные сведения о jQuery доступны в официальной документации:</p>
+
+        <ul>
+            <li>Официальная домашняя страница: <a href="http://jquery.com">http://jquery.com</a></li>
+            <li>Домашняя страница UI: <a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>Учебные курсы: <a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>Главная страница документации: <a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>Демонстрации интерфейса пользователя и документация: <a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+    </body>
+</html>

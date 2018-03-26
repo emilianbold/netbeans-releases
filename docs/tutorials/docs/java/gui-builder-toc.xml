@@ -1,0 +1,27 @@
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+	<channel>
+		<title>Example media RSS playlist for the JW Player</title>
+		<link>http://www.longtailvideo</link>
+
+		<item>
+			<title>Opening credits</title>
+			<media:content url="http://bits.netbeans.org/media/gui_builder.swf" start="00:00" />
+			<description>In which we meet Proog and Emo, the two characters of this movie.</description>
+			<link>https://netbeans.org/</link>
+		</item>
+
+		<item>
+			<title>Chapter 1</title>
+			<media:content url="http://bits.netbeans.org/media/gui_builder.swf"  start="00:26" />
+			<description>In which the computer world of our actors is being introduced.</description>
+			<link>https://netbeans.org/</link>
+		</item>
+		
+		<item>
+			<title>Chapter 2</title>
+			<media:content url="http://bits.netbeans.org/media/gui_builder.swf"  start="10:00" />
+			<description>In which the computer world of our actors is being introduced.</description>
+			<link>https://netbeans.org/</link>
+		</item>
+	</channel>
+</rss>

@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+        <!--
+        Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+        --><title>Depurando o Código-Fonte do PHP no NetBeans IDE para o Editor do PHP</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="KEYWORDS" content="NETBEANS, PHP, editor">
+        <meta name="DESCRIPTION" content="NetBeans, PHP editor, debugging">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></head><body>
+        <h1>Depurando o Código-Fonte do PHP no NetBeans IDE </h1>
+
+        <p><b>Conteúdo</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+        <ul>
+            <li><a href="#gettingReady">Preparando-se</a></li><li><a href="#howDebuggerWorks">Como a Depuração PHP com XDebug Funciona no NetBeans IDE</a></li>
+            <li><a href="#options">Opções de Depuração</a></li>
+            <li><a href="#work">Trabalhando com a Barra de Ferramentas e o Editor</a></li>
+            <li><a href="#editorLayout">Janelas do Depurador</a></li>
+      <li><a href="#debuggingSession">Sessão de Depuração</a></li><li><a href="#sampleDebuggingSession">Sessão de Depuração de Amostra</a>
+                </li><li><a href="#usingAdditionalWatches">Usando Watches Adicionais</a></li>
+            <li><a href="#mixedPHPHTMLCases">Casos de PHP e HTML Mistos</a></li><li><a href="#debug_url"> Mapeamento de Caminho, Proxy do Depurador e Iniciando uma Sessão de Depuração em um URL personalizado</a></li>
+        </ul>
+
+        <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+
+        <table>
+
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote de download do PHP</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Um mecanismo PHP</td>
+                    <td class="tbltd1">Versão 5
+                    </td></tr>
+                <tr>
+
+                    <td class="tbltd1">Um servidor web</td>
+                    <td>É recomendado o <a href="http://httpd.apache.org/download.cgi" target="_blank">Apache HTTP Server 2.2</a>.<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Um depurador PHP</td>
+                    <td><a href="http://www.xdebug.org/" target="_blank">XDebug 2.0 ou superior</a></td>
+
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><a name="gettingReady"></a>Preparando-se</h2>
+
+        <p>Para depurar com êxito aplicações PHP no NetBeans IDE para PHP, você precisa ter o mecanismo PHP, o servidor web local Apache e o depurador XDebug <a href="../../trails/php.html#configuration">instalados e configurados para desenvolvimento do PHP</a>. Caso tenha dificuldades em fazer o XDebug funcionar, consulte o <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">wiki do NetBeans sobre o XDebug</a> e/ou pergunte para a comunidade em users@php.netbeans.org.</p>
+
+        <h2><a name="howDebuggerWorks"></a>Como a Depuração PHP com XDebug Funciona no NetBeans IDE</h2>
+        
+        <p>Quando você executa um XDebug usando o NetBeans IDE, a execução do programa PHP pausa em cada linha onde você definiu um ponto de interrupção. Quando a execução do programa é pausada, o XDebug pode recuperar informações sobre o estado atual do programa, como os valores das variáveis do programa. Na prática, isso significa o seguinte fluxo de trabalho: </p>
+
+
+        <ol>
+            <li>Defina um ponto de interrupção em cada linha onde a execução do código-fonte PHP deveria pausar.</li>
+            <li>Inicie uma sessão de depuração.</li><li>Quando uma linha com um ponto de interrupção é alcançada, execute o script linha após linha pressionado F7 e F8. Monitore o estado da aplicação nas <a href="#editorLayout">janelas do depurador</a>.</li>
+            <li>Feche a sessão de depuração.</li>
+            
+        </ol>
+        <p>Para obter um fluxo de trabalho detalhado de como usar o XDebug com o NetBeans IDE, consulte <a href="#debuggingSession">Sessão de Depuração</a>.</p>
+        <p>O NetBeans IDE fornece uma barra de ferramentas de depuração que o ajuda a entrar em seus arquivos. Consulte <a href="#work">Trabalhando com a Barra de Ferramentas e o Editor</a>.</p>
+        <h2><a name="options"></a>Opções de Depuração</h2>
+        <p>As Opções do NetBeans IDE incluem uma guia para alterar determinadas definições default para PHP de depuração. Para abrir essas opções, acesse Ferramentas > Opções (NetBeans > Preferências no Mac), selecione as opções PHP e selecione a guia Depuração.</p>
+        <p class="notes"><strong>Observação: </strong>a guia Depuração foi introduzida no NetBeans IDE versão 7.1. Versões anteriores do NetBeans têm as opções de depuração na guia Gerais PHP. Nem todas as opções da versão 7.1 estão disponíveis em versões anteriores.</p>
+        <p><img alt="Guia Depuração em Opções: PHP" class="margin-around" height="480" src="../../../images_www/articles/72/php/debugging/php-debugging-options.png" width="586"></p>
+        <p>Você pode alterar as seguintes opções neste painel:</p>
+        <ul>
+            <li><strong>Porta do depurador </strong>esta porta é usada pelo XDebug, conforme definido no php.ini. Por default a porta é 9000. <i>O número de porta nesta caixa de diálogo precisa ser o mesmo da porta do depurador definida no php.ini. Você não pode afetar a porta usada pelo XDebug nesta caixa de diálogo. Você informa ao NetBeans IDE somente sobre a porta usada pelo XDebug.</i></li>
+            <li><strong>ID da Sessão</strong> Nome arbitrário da sessão de depuração. Por default é netbeans-xdebug. É importante anotar este valor, para os casos em que seja necessário definir a propriedade <tt>xdebug.idekey</tt> no php.ini, como em alguns cenários de depuração remota.</li>
+            <li><strong>Parar na Primeira Linha</strong> marque esta opção para que a sessão do depurador pare na primeira linha do código, em vez de parar no primeiro ponto de interrupção. Isso mantém sua tela focada no IDE, em vez de alternar para uma janela do browser ao acionar uma sessão de depuração.</li>
+            <li><strong>Avaliação de Watches e Balões</strong> A avaliação de watches e balões é desativada por default. A avaliação de watches e balões desestabiliza o XDebug.         </li>
+            <li><strong>Profundidade Máxima de Estruturas.</strong> Definir a visibilidade de estruturas aninhadas (como arrays aninhados, objetos em objetos, etc.) </li>
+            <li><strong>Número Máximo de Filhos.</strong> Define a visibilidade dos itens do array durante a avaliação do Watch. (Caso Número Máximo de Filhos tenha sido definido como 1, você verá somente o primeiro item de um array, mesmo se ele tiver mais de um item).</li>
+            <li><strong>Mostrar URLs Solicitados.</strong> Abre uma nova janela de Saída durante a depuração. A janela de Saída é nomeada como URLs Solicitados por PHP e mostra os URLs processados atualmente. Os URLs são clicáveis. Clique em um URL na janela de Saída para abrir o URL em uma janela do browser.</li>
+            <li><strong>Console do Depurador PHP</strong> Abre uma nova janela de Saída que mostra a saída de scrpts depurados.
+                
+                    <p class="notes"><strong>Observação:</strong> defina <tt>output_buffering = Off</tt> em seu arquivo <tt>php.ini</tt>. Caso contrário, haverá um atraso em ver a saída do script na janela de Saída.</p>
+            </li>
+        </ul>
+        <p>Para o propósito deste tutorial, não é preciso alterar nenhuma destas definições, exceto, como opção, para ativar watches.</p>
+        
+        <h2 id="work">Trabalhando com a Barra de Ferramentas e o Editor</h2>
+        <p>O editor permite que você exiba o conteúdo dos arquivos. Sendo assim, quando você está depurando, o editor, em combinação com a barra de ferramentas do depurador, lhe oferece a possibilidade de entrar no código durante a execução, a fim de ver como o conteúdo dos seus arquivos afeta o que está acontecendo em um browser.</p>
+        <ul>
+          <li><a href="#toolbar">Usando a Barra de Ferramentas do Depurador</a></li>
+          <li><a href="#editorBreakpoints">Configurando Pontos de Interrupção</a></li>
+          <li><a href="#editorTooltips">Examinando Dicas de Ferramentas</a></li>
+        </ul>
+        <div class="indent"> <a name="toolbar"></a>
+            <h3>Usando a Barra de Ferramentas do Depurador</h3>
+          <p>Quando você executa uma sessão de depuração, a barra de ferramentas do depurador é exibida acima do editor.            </p>
+          <p><img alt="Barra de ferramentas do depurador no estado suspenso" class="margin-around" src="../../../images_www/articles/72/php/debugging/debugger-toolbar2.png" title="Barra de ferramentas do depurador no estado suspenso"></p>
+        
+            <p>A barra de ferramentas oferece as seguintes ações:</p>
+          <table class="cell align-left" width="600">
+              <tr>
+                <td class="align-right cell"><strong>Finalizar Sessão</strong> (&nbsp;<img alt="Botão Finalizar Sessão de Depuração" src="../../../images_www/articles/72/php/debugging/finish-session-button.png">&nbsp;)</td>
+                <td>Finalizar sessão de depuração</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Pausar</strong> (&nbsp;<img alt="Botão Pausar" src="../../../images_www/articles/72/php/debugging/pause-button.png">&nbsp;)</td>
+                <td>Suspender sessão de depuração</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Retomar</strong> (&nbsp;<img alt="Botão Retomar" src="../../../images_www/articles/72/php/debugging/resume-button.png">&nbsp;)</td>
+                <td>Retomar sessão de depuração</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Fazer Step Over</strong> (&nbsp;<img alt="Botão Fazer Step Over" src="../../../images_www/articles/72/php/debugging/step-over-button.png">&nbsp;)</td>
+                <td>Fazer step over de uma instrução de execução</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Fazer Step Into</strong> (&nbsp;<img alt="Botão Fazer Step Into" src="../../../images_www/articles/72/php/debugging/step-into-button.png">&nbsp;)</td>
+                <td>Fazer step into em uma chamada de função</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Fazer Step Out</strong> (&nbsp;<img alt="Botão Fazer Step Out" src="../../../images_www/articles/72/php/debugging/step-out-button.png">&nbsp;)</td>
+                <td>Fazer step out da chamada de função atual</td>
+              </tr>
+              <tr>
+                <td class="align-right cell"><strong>Executar até o Cursor</strong> (&nbsp;<img alt="Botão Executar até o Cursor" src="../../../images_www/articles/72/php/debugging/run-to-cursor-button.png">&nbsp;)</td>
+                <td>Executar até a posição do cursor</td>
+              </tr>
+            </table>
+          <p>&nbsp;</p>
+      <a name="editorBreakpoints"></a>
+            <h3>Configurando Pontos de Interrupção</h3>
+          <p>Defina pontos de interrupção em seus arquivos para informar ao depurador onde parar durante a execução.</p>
+          <p class="alert"><strong>Importante:</strong> É <em>preciso</em> definir pontos de interrupção em seu código PHP para usar o XDebug.</p>
+          <p>Para definir um ponto de interrupção, clique na margem esquerda do editor na linha em que deseja definir o ponto de interrupção.</p>
+          <img alt="Ponto de interrupção definido no editor" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/set-breakpoint.png" title="Pontos de interrupção podem ser definidos no editor">
+          <p>Você pode remover o ponto de interrupção clicando no emblema do ponto de interrupção (&nbsp;<img alt="Emblema de ponto de interrupção" src="../../../images_www/articles/72/php/debugging/breakpoint-badge.png">&nbsp;).</p>
+          <p>Também é possível desativar temporariamente os pontos de interrupção. Para isso, clique com o botão direito do mouse em um emblema de ponto de interrupção e desfaça a seleção de Ponto de interrupção > ✔Ativado. Isso alterna o ponto de interrupção para um estado desativado, resultando em um emblema cinza (&nbsp;<img alt="Emblema de ponto de interrupção" src="../../../images_www/articles/72/php/debugging/disabled-breakpoint-badge.png">&nbsp;) sendo exibido na margem esquerda.</p>
+          <p>Se o depurador encontrar um ponto de interrupção durante a execução, ele parará no ponto de interrupção, permitindo que você examine as variáveis nas janelas de depuração e entre em qualquer código depois do ponto de interrupção.</p>
+          <img alt="O depurador é suspenso em um ponto de interrupção" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/stop-on-breakpoint.png" title="O depurador é suspenso nos pontos de interrupção"> <a name="editorTooltips"></a>
+            <h3>Examinando Dicas de Ferramentas</h3>
+          <p>Quando o depurador é suspenso durante uma sessão de depuração, você pode passar o mouse sobre um identificador PHP no editor para exibir uma dica de ferramenta. Se o identificador for válido no quadro da pilha de chamadas selecionado, seu valor será exibido. Você também pode selecionar expressões PHP. O valor da expressão será mostrado em uma dica de ferramentas.</p>
+           <img alt="Dica de ferramenta exibida no editor" class="margin-around b-all" src="../../../images_www/articles/72/php/debugging/tool-tip.png" title="Dicas de ferramentas são exibidas no editor"> </div>
+        
+        <h2><a name="editorLayout"></a>Janelas do Depurador </h2>
+
+        <p>Quando você inicia uma sessão de depuração, um conjunto de janelas do depurador é aberto abaixo da janela principal do editor. As janelas do depurador permitem manter controle dos valores de expressão ao entrar no código, examinar a pilha de chamadas de um thread sendo executado, verificar URLs de origem e alternar entre sessões, se estiver executando sessões de depuração concorrentes.</p>
+
+
+      <ul>
+          <li><a href="#sessions">Janela Sessões</a></li>
+          <li><a href="#localVar">Janela Variáveis</a></li>
+          <li><a href="#watches">Janela Watches</a></li>
+          <li><a href="#callStack">Janela Pilha de Chamadas</a></li>
+          <li><a href="#threads">Janela Threads</a></li>
+          <li><a href="#sources">Janela Códigos-Fonte</a></li>
+          <li><a href="#breakpoints">Janela Pontos de Interrupção</a></li>
+        </ul>
+        <p>Todas as janelas do depurador podem ser acessadas no menu Janela > Depuração do IDE. Quando uma sessão de depuração está ativa, você pode começar a usar as janelas do depurador.</p>
+         <img alt="Menu do depurador acessado do menu principal do IDE" class="margin-around" src="../../../images_www/articles/72/php/debugging/debugger-menu.png" title="Menu do depurador acessado do menu principal do IDE"> 
+        <div class="indent"> <a name="sessions"></a>
+            <h3>Janela Sessões</h3>
+          <p>A janela Sessões mostra quaisquer sessões de depuração que estejam ativas no momento. Ao iniciar uma sessão de depuração PHP, você pode ver uma entrada para o depurador PHP na janela Sessões.</p>
+          <img alt="Janela Sessões que exibe uma sessão do Depurador do FireFox" class="margin-around" src="../../../images_www/articles/72/php/debugging/sessions-win.png"> 
+          <p class="tip">O NetBeans IDE também permite que você execute várias sessões do depurador simultaneamente. Por exemplo, você pode depurar um projeto Java e um projeto PHP ao mesmo tempo. Neste caso, você pode identificar duas sessões listadas na janela Sessões.</p>
+          <img alt="Janela Sessões que exibe várias sessões" class="margin-around" src="../../../images_www/articles/72/php/debugging/sessions-win2.png">
+          <p>A sessão atual (ou seja, a sessão que você pode controlar utilizando a barra de ferramentas do depurador) é indicada pelo ícone mais proeminente (<img alt="Ícone da sessão atual" src="../../../images_www/articles/72/php/debugging/current-session-icon.png"> ). Para alternar sessões, você pode clicar duas vezes na sessão que deseja tornar atual, ou clicar com o botão direito do mouse em uma sessão não atual e selecionar Tornar Atual.</p>
+          <p><strong class="notes">Observação: </strong>Não recomendamos alternar entre sessões se a sessão em que está trabalhando no momento estiver suspensa.</p>
+          <p>Você também pode usar a janela pop-up do lado direito do mouse para encerrar uma sessão (clicar com o botão direito do mouse e selecionar Finalizar), ou alternar entre a depuração do thread atual ou todos os threads da sessão (clicar com o botão direito do mouse e selecionar Escopo > Depurar Todos os Threads ou Depurar Thread Atual).</p>
+          <a name="localVar"></a>
+            <h3>Janela Variáveis</h3>
+          <p>Quando o depurador é suspenso, a janela Variáveis exibe as variáveis do objeto <code>window</code> atual do quadro da pilha de chamadas selecionado. Um nó é exibido para cada variável na janela atual. Os Superglobais são agrupados em um nó separado.</p>
+    <img alt="Janela Variáveis Locais que exibe informações da variável de amostra" class="margin-around" src="../../../images_www/articles/72/php/debugging/vars-win.png">
+          <p>&nbsp;</p>
+          <p>Quando você entra no código, os valores de algumas variáveis locais podem ser alterados. Essas variáveis locais são mostradas em negrito na janela Variáveis locais. Você também pode clicar diretamente na coluna Valor e alterar manualmente os valores das variáveis.</p>
+          
+          <a name="watches"></a>
+          <h3>Janela Watches</h3>
+          <p>A definição de watches desestabiliza o XDebug e não é recomendado. Os watches são desativados por default. No entanto, se você deseja definir watches, consulte <a href="#usingAdditionalWatches">Usando Watches Adicionais</a>.</p>
+          <h3><a name="callStack"></a>Janela Pilha de Chamadas</h3>
+          <p>A janela Pilha de Chamadas lista a seqüência de chamadas feitas durante a execução. Quando o depurador é suspenso, a janela Pilha de Chamadas mostra a seqüência das chamadas de função (ou seja, a <em>pilha de chamadas</em>). Na suspensão inicial, o quadro da pilha mais superior é selecionado automaticamente. Clique duas vezes em uma chamada de função na janela para ir para aquela linha no editor. Se a chamada for feita para uma classe PHP, a janela Navegador também irá para aquela linha quando você clicar duas vezes na chamada.</p>
+           <img alt="Janela Pilha de Chamadas que exibe uma sequência de amostra de chamadas" class="margin-around b-bottom" src="../../../images_www/articles/72/php/debugging/call-stack-win.png"> 
+          <p>Você pode clicar duas vezes em um quadro da pilha de chamadas para selecioná-lo, e, em seguida, explorar os valores de variável ou de expressão desse quadro nas janelas <a href="#localVar">Variáveis</a> e <a href="#watches">Watches</a>.<a name="threads"></a>            </p>
+          <h3>Janela Threads</h3>
+          <p>A janela Threads indica qual script PHP está no momento ativo e se ele é suspenso em um ponto de interrupção ou em execução. Se o script estiver em execução, é preciso ir para a janela do browser e interagir com o script.</p>
+          <img alt="A janela Threads que exibe uma página de vários quadros" class="margin-around" src="../../../images_www/articles/72/php/debugging/threads-win.png"> <a name="sources"></a>
+          <h3>Janela Códigos-Fonte</h3>
+          <p>A janela Códigos-Fonte exibe todos os arquivos e scripts carregados para a sessão de depuração. A janela Códigos-Fonte não funciona no momento para projetos PHP.</p>
+      <a name="breakpoints"></a>
+              <h3>Janela Pontos de Interrupção</h3>
+          <p>Você pode usar a janela Pontos de Interrupção para exibir todos os pontos de interrupção definidos no IDE.</p>
+            <img alt="Janela Pontos de Interrupção que mostra pontos de interrupção de amostra" class="margin-around" src="../../../images_www/articles/72/php/debugging/breakpoints-win.png"> 
+          <p>Na janela Pontos de Interrupção, você pode ativar ou desativar pontos de interrupção na janela Contexto. Você também pode criar grupos de pontos de interrupção. </p>
+        </div>
+        <h2><a name="debuggingSession"></a>Sessão de Depuração </h2>
+
+        <p>O seguinte procedimento é o fluxo de trabalho de uma típica sessão de depuração.</p>
+
+        <strong>Para executar uma sessão de depuração:</strong>
+
+        <ol>
+            <li>Inicie o ide e abra o arquivo que contém o código-fonte que você deseja depurar. </li><li>Defina um ponto de interrupção em cada linha onde deseja que o depurador pause. Para definir um ponto de interrupção, coloque o cursor no início de uma linha e pressione Ctrl-F8⌘-F8 ou selecione Depurar > Alternar Ponto de Interrupção de Linha. </li><li>Na janela Projetos, navegue para o nó do projeto atual, clique com o botão direito do mouse e selecione Depurar do menu pop-up. O IDE abrirá as janelas do Depurador e executará o projeto no depurador, até que o ponto de interrupção seja atingido. <br> <strong>Observação:</strong> se o projeto atual for definido como Principal, você poderá selecionar Depurar &nbsp;> Depurar Projeto Principal ou pressione Ctrl-F5 ou clique em <img alt="Botão Depurar projeto principal" src="../../../images_www/articles/72/php/debugging/debug-main-project-button.png">. </li><li>Alterne para a janela Variáveis Locais. A janela mostra todas as variáveis que foram inicializadas na função atual, seus tipos e valores. </li><li>Para exibir o valor de uma variável fora da função, coloque o cursor em uma ocorrência da variável. A dica de ferramenta mostra o valor da variável. </li><li>Para executar o programa linha a linha, incluindo as linhas de todas as funções chamadas, pressione F7 ou selecione Depurar > Fazer Step Into e observe as alterações nos valores das variáveis na janela Variáveis Locais. </li><li>Para verificar a lógica do programa observando as alterações das expressões, defina um novo watch:
+                <ol type="a"><li>Para abrir a janela Watches, selecione Janela > Depuração > Watches ou pressione Ctrl-Shift-2. A janela Watches será aberta.</li><li>Em qualquer lugar na janela Watches, clique com o botão direito do mouse e selecione Novo Watch do menu pop-up. A Janela Novo Watch será Aberta.</li><li>Digite a expressão do watch e clique em OK. </li>
+                    
+                </ol><p>Agora você pode fazer uma verificação adicional durante a depuração.</p>
+                <p class="alert"><strong>Importante:</strong> você precisa ativar os watches na <a href="#options">guia Depuração das Opções PHP</a> para poder definir watches.</p>
+            </li><li>Para cancelar a execução linha a linha do código em uma função e passar para a próxima linha depois da chamada da função, pressione Ctrl-F7/⌘-F7 ou selecione Depurar > Fazer Step Out.</li><li>Para ignorar a execução linha a linha do código em uma função, obtenha o valor retornado pela função e passe para a próxima linha depois da chamada da função, pressione F8 ou selecione Depurar > Fazer Step Over.</li><li>Para pausar a sessão de depuração, selecione Depurar > Pausar.</li><li>Para continuar a sessão de depuração, selecione Depurar > Continuar ou pressione <img alt="Botão Continuar Sessão de Depuração" src="../../../images_www/articles/72/php/debugging/continue-debugging-session.png">.</li><li>Para cancelar a sessão de depuração, pressione <img alt="Botão Cancelar sessão de depuração" src="../../../images_www/articles/72/php/debugging/stop-debugging-session.png">. </li><li>
+
+                <p>Quando o programa chegar ao fim, as janelas do depurador serão fechadas. </p>
+            </li>
+        </ol>
+
+        <h2><a name="sampleDebuggingSession"></a>Sessão de Depuração de Amostra</h2>
+
+        A amostra nesta sessão ilustra as funções básicas do depurador, incluindo entrar e sair de funções. Ela também mostra um saída típica da janela do depurador.
+        <ol>
+            <li>Crie um novo projeto PHP com os seguintes parâmetros:
+                <ul><li>Tipo de projeto: aplicação PHP</li><li>Local dos códigos-fonte - o local default da pasta <tt>htdocs</tt></li><li>Executar configuração: Web Site Local</li></ul>
+                Encontre mais detalhes sobre como configurar um projeto PHP no documento <a href="project-setup.html">Configurando um Projeto PHP</a>.
+            </li><li>Para permitir o uso de teclas de atalho durante a sessão, posicione o cursor no nó do projeto e selecione Definir como Projeto Principal no menu pop-up. </li><li>No arquivo <tt>index.php</tt>, digite o seguinte código:
+                <pre class="examplecode">  &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"&gt;<br>  &lt;html&gt;<br>  	&lt;head&gt;<br>  		&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;<br>  			&lt;title&gt;NetBeans PHP debugging sample&lt;/title&gt;<br>		&lt;/head&gt;<br>&lt;body&gt;<br>	&lt;?php<br>  	$m=5;<br>  	$n=10;<br>  	  $sum_of_factorials = calculate_sum_of_factorials ($m, $n);<br>  	  echo "The sum of factorials of the entered integers is " . $sum_of_factorials;<br>  	<br>	    function calculate_sum_of_factorials ($argument1, $argument2) {<br>  	 	$factorial1 = calculate_factorial ($argument1);<br>  	 	$factorial2 = calculate_factorial ($argument2);<br>  	 	$result = calculate_sum ($factorial1, $factorial2);<br>  	 	return $result;<br>  		}<br>	<br>	  function calculate_factorial ($argument) {<br>  	  	$factorial_result = 1;<br>  	 	for ($i=1; $i&lt;=$argument; $i++) {<br>  	 		$factorial_result = $factorial_result*$i;<br>  	 	}<br>  			return $factorial_result;<br>  		}<br>	  <br>	    function calculate_sum ($argument1, $argument2) {<br> 			return $argument1 + $argument2;<br>     	}	<br>?&gt;<br>  &lt;/body&gt;<br>&lt;/html&gt;<br>  </pre>
+
+                O código contém três funções:
+                <ul><li>A função <tt>calculate_factorial ()</tt></li><li>A função <tt>calcualte_sum ()</tt></li><li> A função <tt>calculate_sum_of_factorials ()</tt> que chama a função <tt>calculate_factorial</tt> duas vezes, depois chama a função <tt>calcualte_sum ()</tt> uma vez e retorna a soma calculada dos fatoriais.</li></ul>
+            </li><li>Definir um ponto de interrupção (Ctrl-F8/⌘-F8) no início do bloco PHP:
+                <pre class="examplecode">&lt;?php</pre>
+            </li><li>Para iniciar a depuração, clique em <img alt="Botão Depurar projeto principal" src="../../../images_www/articles/72/php/debugging/debug-main-project-button.png">. O depurador para no ponto de interrupção.</li><li>Pressione F7 três vezes. O depurador para na linha em que a função <tt>calculate_sum_of_factorials ()</tt> é chamada. A janela Variáveis Locais mostra as variáveis <tt>$m</tt> e <tt>$n</tt> com seus valores:<br> <img alt="O depurador parou na chamada de função" class="margin-around" src="../../../images_www/articles/72/php/debugging/degugger-stopped-at-function-call.png"></li><li>Para fazer step into na função <tt>calculate_sum_of_factorials()</tt>, pressione F7. O depurador começa a executar o código na função <tt>calculate_sum_of_factorials ()</tt> e para na chamada da função <tt>calculate_factorial()</tt>. <br> <img alt="O depurador parou na chamada da função incorporada calculate_factorial()." class="margin-around" src="../../../images_www/articles/72/php/debugging/call-of-embedded-function.png"> <br> A janela Variáveis Locais agora mostra as variáveis locais <tt>$argument1</tt> e <tt>$argument2</tt> declaradas na função <tt>calculate_sum_of_factorials ()</tt>. <br> <img alt="A janela Variáveis Locais mostra as variáveis da função atual, antes da chamada de uma função incorporada" class="margin-around" src="../../../images_www/articles/72/php/debugging/variables-inside-function-call-another-function.png"></li><li>Pressione F7. O depurador começa a executar o código com a função <tt>calculate_factorial()</tt>. A janela Pilha de Chamadas mostra a pilha de chamadas para as funções na ordem inversa, com a última função chamada na parte superior da lista: <br> <img alt="A janela Pilha de Chamadas com três chamadas de função listadas na ordem inversa." class="margin-around" src="../../../images_www/articles/72/php/debugging/call-stack.png"> </li><li>Pressione F7 para fazer step into no loop. Exiba os valores das variáveis na janela Variáveis. <br> <img alt="A janela Variáveis Locais com as variáveis. Procurando corretude no loop." class="margin-around" src="../../../images_www/articles/72/php/debugging/local-variables-inside-loop.png"> </li><li>Quando você se certificar de que o código está funcionando corretamente, pressione Ctrl-F7/⌘-F7 para cancelar a execução da função. O programa retorna para a linha após a chamada da função <tt>calculate_factorial()</tt>. <br> <strong>Observação:</strong> como alternativa, você pode pressionar F7, até que o programa conclua a execução da função <tt>calculate_factorial()</tt>. Você também retornará para a linha após essa chamada. <br> <img alt="O depurador parou na segunda chamada da função incorporada calculate_factorial()." class="margin-around" src="../../../images_www/articles/72/php/debugging/call-of-embedded-function-second-time.png"> </li><li>Como você acabou de verificar a função <tt>calculate_factorial()</tt> e sabe que ela está funcionando corretamente, pode pular sua execução ("fazer step over"). Para fazer step over, pressione F8. O programa para na chamada da função <tt>calculate_sum()</tt>. <br> <img alt="O depurador parou na chamada da função incorporada calculate_sum()." class="margin-around" src="../../../images_www/articles/72/php/debugging/cal-of-embedded-function-calculate-sum.png"> </li><li>Para fazer step into na função <tt>calculate_sum()</tt>, pressione F7.</li><li>Para fazer step over, pressione F8. Em qualquer um dos casos, o depurador para na última linha na função <tt>calculate_sum_of_factorials()</tt>.<br> <img alt="O depurador parou na instrução $result de retorno na função calcualate_sum_of_factorials()." class="margin-around" src="../../../images_www/articles/72/php/debugging/return-result.png"></li><li>Pressione F7. O depurador vai para a linha com a instrução <tt>echo</tt>.</li><li>Pressione F7, até que o depurador saia do programa. A janela do browser será aberta e mostrará o resultado da execução do programa:<br> <img alt="Saída da execução do programa na janela do browser." class="margin-around" src="../../../images_www/articles/72/php/debugging/program-output.png">
+            </li>
+        </ol>
+
+        <div class="indent">
+            <h2><a name="usingAdditionalWatches"></a>Usando Watches Adicionais</h2>
+            <p>Você pode definir uma expressão do watch adicional para acompanhar a execução do programa. Isso pode ajudá-lo a pegar um erro.            </p>
+            <p class="alert"><strong>Advertência:</strong> a definição de watches adicionais desestabiliza o XDebug. Os watches são desativados por default em <a href="#options">Opções de Depuração</a>.</p>
+          <ol><li>Atualize o código como se segue (substitua um mais por um menos):
+                    <pre class="examplecode">function calculate_sum ($argument1, $argument2) {<br> 			return $argument1 - argument2;<br>     	}<br> </pre>
+
+                    Imagine que isso tenha resultado de um erro de digitação, mas você na verdade precise calcular a soma. </li><li>Selecione Depurar > Novo Watch ou pressione Ctrl/⌘-shift-F7. A Janela Novo Watch será Aberta.</li><li>Digite a seguinte expressão e clique em OK.  
+                    <pre class="examplecode">$factorial1+$factorial2</pre>
+                    A nova expressão aparece na janela Watches.
+                </li><li>Execute a sessão de depuração. Quando o depurador parar na linha 
+                    <pre class="examplecode">return $result;</pre>compare o valor da expressão na janela Watches e o valor de $result na janela Variáveis Locais. Eles devem ser iguais, mas estão diferentes. <br> <img alt="Pegando erros utilizando watches" class="margin-around" src="../../../images_www/articles/72/php/debugging/watches.png">
+
+                </li></ol>
+            Este exemplo é muito simples e deve dar uma noção geral do uso de watches.
+        </div>
+
+
+        <h2><a name="mixedPHPHTMLCases"></a>Casos de PHP e HTML Mistos</h2>
+
+        Você pode depurar código que contenha blocos PHP e HTML. No exemplo da seção <a href="#sampleDebuggingSession">Sessão de Depuração de Amostra</a>, os valores estão em hard code. Expanda o código com um form de entrada de HTML para digitar valores. 
+        <ol>
+            <li>Adicione o seguinte código HTML acima do bloco &lt;?php ?>:
+                <pre class="examplecode"> &lt;form action="index.php" method="POST"&gt;<br>       Enter the first integer, please:<br>       &lt;input type="text" name="first_integer"/&gt;&lt;br/&gt;<br>       Enter the second integer, please:<br>       &lt;input type="text" name="second_integer"/&gt;&lt;br/&gt;<br>       &lt;input type="submit" name="enter" value="Enter"/&gt;<br>&lt;/form&gt;</pre>
+
+                <p class="notes">Encontre mais informações sobre <a href="wish-list-lesson2.html#htmlForm">forms de entrada HTML</a>.</p>
+            </li><li>Substitua as seguintes linhas na parte superior do bloco &lt;?php ?>:
+                <pre class="examplecode">$m=5;<br>  	$n=10;<br>  	  $sum_of_factorials = calculate_sum_of_factorials ($m, $n);<br>  	  echo "The sum of factorials of the entered integers is " . $sum_of_factorials;<br></pre>
+
+                pelo seguinte código:
+                <pre class="examplecode">if (array_key_exists ("first_integer", $_POST) &amp;&amp; array_key_exists ("second_integer", $_POST)) {<br><br>    $result = calculate_sum_of_factorials ($_POST["first_integer"], $_POST["second_integer"]);<br><br>    echo "Sum of factorials is " . $result;<br><br>}</pre></li><li>Defina um ponto de interrupção no início do bloco &lt;?php ?> e inicie a <a href="#debuggingSession">sessão de depuração</a>. </li><li>Pressione F7. O depurador entra no programa. A janela do browser é aberta mas o form de entrada não é exibido. Esse é o comportamento correto do depurador, porque ele tem que entrar em todo o código-fonte de uma página web, antes que a página possa ser exibida. Praticamente, isso significa que o depurador entra no código duas vezes. Na primeira vez, o depurador processa o código para exibir o form de entrada de HTML. Na segunda vez, o depurador executa o código PHP passo a passo. </li><li>Pressione F7, até que o depurador alcance o final do programa e o form de entrada seja aberto. </li><li>Preencha o form e clique em Enter. A sessão de depuração continua conforme descrito na seção <a href="#sampleDebuggingSession">Sessão de Depuração de Amostra</a>. </li>
+        </ol>
+
+        <h2><a name="debug_url"> Mapeamento de Caminho, Proxy do Depurador e Iniciando uma Sessão de Depuração em um URL Personalizado</a></h2>
+
+        <p><a name="debug_url"></a>É possível depurar scripts e páginas web, e estas podem ser depuradas local ou remotamente. Infelizmente, para a Depuração Remota, o arquivo php depurado no servidor remoto não é o mesmo que o arquivo aberto no NetBeans IDE em execução em uma máquina local. O suporte para o depurador no NetBeans precisa, portanto, conseguir mapear os caminhos do servidor para caminhos locais. No entanto, devido a muitas complicações, o mapeamento de caminho não pode ser resolvido automaticamente para cada cenário individual. Portanto, começando no NetBeans 6.7, você pode definir manualmente o mapeamento do caminho por meio da <a href="https://netbeans.org/kb/docs/php/project-setup.html" target="_blank" title="Documentação de Configuração do Projeto">configuração do projeto</a> para execução de configurações individuais. Você também pode especificar o servidor proxy, se houver, e o URL no qual a sessão de depuração é iniciada. Caso você não especifique esse URL, a depuração será iniciada em seu arquivo de índice.</p>
+
+
+        <p><strong>Para configurar o mapeamento do caminho e ativar URLs de depuração personalizados:</strong></p>
+
+        <ol>
+            <li>Clique com o botão direito do mouse no nó do projeto na janela Projetos e abra as Propriedades do projeto no menu de contexto.</li><li>Na caixa de diálogo Propriedades do Projeto, vá para a categoria Executar Configuração.</li><li>Clique no botão Avançado. A caixa de diálogo Configuração Avançada da Web será aberta.</li><li>Adicione o caminho do servidor e o caminho do projeto para o mapeamento do caminho.</li><li>No "URL do Depurador", selecione um dos seguintes (não deixe o default selecionado): <br> <br>
+                <ul><li>Perguntar Todas as Vezes, que faz com que o IDE solicite o URL quando você inicia uma sessão de depuração.</li><li>Não Abrir o Web Browser, que requer que você abra o browser e insira manualmente o URL (é preciso ter a variável GET/POST XDEBUG_SESSION_START).</li></ul></li><li>Se você estiver usando um servidor proxy para a depuração, digite o nome do host e a porta do servidor na seção Proxy do Depurador.
+            </li>
+        </ol>
+
+        <p>Para obter mais informações, consulte o post <a href="http://blogs.oracle.com/netbeansphp/entry/path_mapping_in_php_debugger" target="_blank">Mapeamento do Caminho no Depurador PHP</a> no blog Net Beans para o PHP.</p>
+
+        <br>
+
+
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Debugging%20PHP">Enviar Feedback neste Tutorial</a></div>
+
+
+        <br style="clear: both;">
+
+        <p>Para enviar comentários e sugestões, obter suporte e manter-se informado sobre os desenvolvimentos mais recentes das funcionalidades de desenvolvimento PHP do NetBeans IDE, <a href="../../../community/lists/top.html">junte-se à lista de correspondência users@php.netbeans.org</a>.</p>
+
+
+
+
+
+        <p><a href="../../trails/php.html">Voltar à Trilha do Aprendizado PHP</a> </p>
+    </body>
+</html>

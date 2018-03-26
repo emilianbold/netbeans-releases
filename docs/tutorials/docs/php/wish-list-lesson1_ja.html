@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. --><title>PHPを使用するデータベース駆動型アプリケーションの作成NetBeansのインタフェースを使用するMySQLのサンプル・データベースの作成</title>
+
+<meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans. ">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Create MySQL database in NetBeans">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+
+
+   <body>
+<h1>PHPを使用するデータベース駆動型アプリケーションの作成 </h1>
+<h1>レッスン1a: MySQLデータベースの作成</h1>
+<div style="margin-left: -3px;">
+<div class="feedback-box margin-around float-left" style="margin-right: 15px;">
+<h4>チュートリアルの目次:</h4>
+<ol start="0">
+<li><a href="wish-list-tutorial-main-page.html">PHPを使用するCRUDアプリケーションの作成 - メイン・ページ</a></li>
+<li>
+<p>データベースの作成</p>
+<ol type="a"><li>
+<p><b>=> MySQLデータベースの作成</b></p>
+<ul>
+<li><a href="#register-mysql">MySQLサーバーの登録</a></li>
+<li><a href="#CreateUser">データベースのユーザーの作成</a></li>
+<li><a href="#CreateDatabase">ウィッシュリスト・データベースの作成</a></li>
+<li><a href="#EstablishConnection">ウィッシュリスト・データベースへの接続の確立</a></li>
+<li><a href="#DatabaseStructure">ウィッシュリスト・データベースの構造の設計</a></li>
+<li><a href="#CreateTables">表の作成</a></li>
+<li><a href="#EnterTestData">テスト・データの入力</a></li>
+</ul>
+</li>
+<li><a href="wish-list-oracle-lesson1.html">Oracleデータベース表の作成</a></li>
+</ol>
+</li>
+<li><a href="wish-list-lesson2.html">アプリケーションの設計。データベースからの読取り</a></li>
+<li><a href="wish-list-lesson3.html">新規アプリケーション・ユーザーの作成</a></li>
+<li><a href="wish-list-lesson4.html">コードの最適化</a></li>
+<li><a href="wish-list-lesson5.html">セキュリティの追加。アプリケーション・ユーザー・ログオンの実装</a></li>
+<li><a href="wish-list-lesson6.html">データベースへの新しいウィッシュの追加</a></li>
+<li><a href="wish-list-lesson7.html">データベース内のエントリの更新および削除</a></li>
+<li><a href="wish-list-lesson8.html">CSSテクノロジを使用したアプリケーションの外観の改良</a></li>
+<li><a href="wish-list-lesson9.html">リモートWebサーバーへのアプリケーションのデプロイ</a></li>
+</ol>
+</div>
+</div>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+<p>このレッスンでは、ウィッシュ・リスト・アプリケーションの開発での最後の準備手順である、テスト・データを持つサンプルのデータベースの作成を示します。このチュートリアルの手順を完了するには、ウィッシャのデータを格納するデータベースが必要です。NetBeans IDEでは、IDEのインタフェースを使用して、これらのアクティビティをすべて実行できます。<br>始める前に、<a href="wish-list-tutorial-main-page.html">PHPを使用するCRUDアプリケーションの作成 - メイン・ページ</a>にあるチュートリアルの要件を確認してください。 </p>
+<p>現在のドキュメントは、PHP向けのNetBeans IDEでのCRUDアプリケーションの作成というPHPチュートリアルの一部です。 </p>
+<br style="clear: left;">
+<h2 id="register-mysql">MySQLサーバーの登録</h2>
+<p>MySQLデータベース・サーバーをIDEに登録していない場合、またはMySQLとNetBeans IDEを組み合せて使用する場合の一般的な情報が必要な場合、<a href="../ide/mysql.html">MySQLデータベースへの接続</a>を参照してください。</p>
+<h2><a id="CreateUser" name="CreateUser"></a>データベースのユーザーの作成</h2>
+<p>データベースを作成する前に、データベースですべての操作を実行する権限が与えられているユーザーを作成する必要があります。データベースのユーザーを作成するには、次を行う必要があります。</p>
+<ul>
+<li><a href="#connectToMySQLServer">MySQLサーバーにルート・ユーザーとして接続する</a>。</li>
+<li><a href="#connectToDefaultDatabase">MySQLシステム・データベースにルート・ユーザーとして接続する</a>。データベースに接続しないとSQLコマンドを実行できないため、これは、ユーザーを作成するSQLコマンドを実行できるようにするために必要なステップです。 </li>
+<li><a href="#createUserQuery">ユーザー作成のMySQL文を実行する</a>。 </li>
+</ul>
+<ol>
+<li>IDEを起動し、「サービス」ウィンドウに切り替えて([Ctrl]-[5])、「データベース」ノードを展開します。</li>
+<li>MySQLデータベース・サーバーに<a id="connectToMySQLServer" name="connectToMySQLServer"></a>接続するには、「<tt>MySQLサーバー</tt>」ノードに移動して、コンテキスト・メニューから「接続」を選択します。 <br> <img alt="NetBeans IDEのインタフェースを使用したMySQLサーバーへの接続の確立: コンテキスト・メニューから「接続」を選択" class="margin-around b-bottom" src="../../../images_www/articles/72/php/wishlist/mysql-ctxmenu-connect.png"><br>
+</li>
+<li> NetBeans IDEはMySQLサーバーに接続し、サーバー経由で使用できるデータベースを確認して、システムの<tt>mysql</tt>データベースを検出し、対応する新しい<tt>mysql</tt>ノードをデータベース・ツリーに追加します。 <br> <img alt="データベース・ツリーに追加された新しいmysqlノード" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/mysql_node_added.png"> </li>
+<li>SQLコマンドを実行するには、データベースに接続する必要があります。MySQLシステムのみ使用可能なので、それに接続する必要があります。<a id="connectToDefaultDatabase" name="connectToDefaultDatabase"></a>システム・データベースに接続するには、「<tt>mysql</tt>」ノードに移動し、コンテキスト・メニューから「接続」を選択します。接続がまだ存在していない場合は、「データベースの新規接続」ダイアログ・ボックスが表示されます。「ユーザー名」フィールドは、デフォルトで「root」と入力されています。「パスワード」フィールドに、ルート・ユーザーのパスワードを入力します。 
+<p class="notes"><strong>注意: </strong>以前に<code>mysql</code>データベースに接続したことがある場合、このダイアログは表示されません。かわりに、新しい接続ノードがツリーに表示されるだけです。</p>
+<img alt="新規データベース接続の作成" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/create-new-database-connection.png"> <br> 「データベースの新規接続」ダイアログ・ボックスに、「接続が確立されました。」というメッセージが表示されます。「OK」をクリックします。<tt>jdbc:mysql://localhost:3306/mysql</tt>という名前の新しいノードがデータベース・ツリーに追加されます。</li>
+<li><a id="createUserQuery" name="createUserQuery"></a>「<tt>jdbc:mysql://localhost:3306/mysql</tt>」ノードに移動し、コンテキスト・メニューから「コマンドの実行」を選択します。<br><img alt="コンテキスト・メニューから「コマンドの実行」を選択" class="margin-around b-bottom" src="../../../images_www/articles/72/php/wish-list-lesson1/execute-command.png"><br>「SQLコマンド」ウィンドウが開きます。「SQLコマンド」ウィンドウで、次の文のような構文を使用します。
+<pre class="examplecode">CREATE USER 'phpuser'@'localhost' <br>	IDENTIFIED BY 'phpuserpw'</pre>
+コンテキスト・メニューから「文の実行」を選択します。コマンドが正常に実行された場合、ステータス・バーに「SQL文の実行に成功しました。」というメッセージが表示されます。別のメッセージが表示された場合は、構文を確認し、メッセージ・ヒントに従います。 </li>
+</ol>
+<h2><a id="CreateDatabase" name="CreateDatabase"></a>ウィッシュリスト・データベースの作成 </h2>
+<p>データベースを作成するには:</p>
+<ol>
+<li>「<tt>MySQLサーバーlocalhost:3306</tt>」ノードに移動し、コンテキスト・メニューから「データベースを作成」を選択します。「MySQLデータベースの作成」ダイアログ・ボックスが表示されます。フィールドに次のように入力します。
+<ul>
+<li>「データベース名」フィールドに、「wishlist」と入力します。</li>
+<li>「ユーザーにフル・アクセスを許可」チェックボックスをオンにし、ドロップダウン・リストから「<tt>phpuser@localhost</tt>」を選択して「OK」をクリックします。<br> <img alt="「データベースを作成」ダイアログ・ボックス。新しく作成したユーザーにアクセス権を付与" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/create-user.png">
+<p class="alert">「ユーザーにフル・アクセスを許可」機能は常に動作するわけではありません。これが動作しない場合、ルート・ユーザーとして<a href="#EstablishConnection">データベースに接続</a>し、SQL問合せ<span class="examplecode"><tt>GRANT ALL ON wishlist.* TO phpuser@localhost</tt></span>を送信します。 </p>
+</li>
+</ul>
+データベースへの接続が、ツリーに表示されます。ただし、接続は<code>root</code>ユーザー用です。<code>phpuser</code>ユーザー用の接続が必要です。</li>
+</ol>
+<h2><a id="EstablishConnection" name="EstablishConnection"></a>ウィッシュリスト・データベースへの接続の確立 </h2>
+<p>前の項の最後に、<code>wishlist</code>データベースと<code>root</code>ユーザーへの接続が作成されました。ここで、<code>phpuser</code>ユーザー用に新しい接続を作成します。 </p>
+<ol>
+<li>「サービス」ウィンドウで、「データベース」ノードを右クリックし、「新規接続」を選択します。新規接続ウィザードが開きます。<br> <img alt="プロパティ項目を表示したデータベース接続コンテキスト・メニュー" class="margin-around b-bottom b-right" src="../../../images_www/articles/72/php/wishlist/databases-ctxmenu-newconnection.png"></li>
+<li>新規接続ウィザードの「ドライバを検索」パネルで、「<code>MySQL (Connector/J Driver)</code>」を選択します。「次」をクリックします。「接続をカスタマイズ」パネルが開きます。<br> <img alt="新規接続ウィザードの「ドライバを検索」パネル" class="margin-around" src="../../../images_www/articles/72/php/wishlist/locate-driver.png"></li>
+<li>「データベース」フィールドに「<code>wishlist</code>」と入力します。</li>
+<li>「ユーザー名」および「パスワード」編集ボックスで、<a href="#CreateUser">データベースの所有者(ユーザー)の作成</a>の項で指定したユーザー名とパスワード(この例ではそれぞれ<tt>phpuser</tt>と<tt>phpuserpw</tt>)を入力します。「パスワードを保存」を選択します。「接続をテスト」をクリックし、接続が成功したら、「OK」をクリックします。<br> <img alt="完成した新規接続ウィザードの「接続をカスタマイズ」パネル" class="margin-around" src="../../../images_www/articles/72/php/wishlist/phpuser-connection.png"></li></ol>
+<p>対応する新規接続ノードがデータベース・ツリーに表示されます。ここで、<code>root</code>ユーザーの<code>wishlist</code>データベースへの接続を削除できます。「<tt>jdbc:mysql://localhost:3306/wishlist [root on Default schema]</tt>」接続をクリックし、「削除」を選択します。</p>
+  <img alt="データベース・ツリーに追加された新規接続ノード" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/new-database-connection-added.png"> 
+
+<h2><a id="DatabaseStructure" name="DatabaseStructure"></a>ウィッシュリスト・データベースの構造の設計 </h2>
+<p>必要なデータをすべて準備して格納するには、次の2つの表が必要です。 </p>
+<ul>
+<li>登録済ユーザーの名前とパスワードを格納するwishers表</li>
+<li>ウィッシュの説明を格納するwishes表</li>
+</ul>
+<img alt="サンプル・データベースの構造: wisher-idを介して関連付けられた2つの表" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/wishlist-db.png"><br>wishers表には次の3つのフィールドがあります。
+<ol>
+<li>ID (id) - ウィッシャの一意のID。このフィールドは主キーとして使用されます。</li>
+<li>name </li>
+<li>password</li>
+</ol>
+<p>wishes表には次の4つのフィールドがあります。</p>
+<ol>
+<li>ID (id) - ウィッシュの一意のID。このフィールドは主キーとして使用されます。</li>
+<li>ウィッシャのID (wisher_id) - ウィッシュが属するウィッシャのID。このフィールドは外部キーとして使用されます。 </li>
+<li>description</li>
+<li>期日(due_date) - ウィッシュがリクエストされる日付 </li>
+</ol>
+<p>表はウィッシャのIDを介して関連付けられます。wishesのdue_date以外のフィールドは、すべて必須です。 </p>
+<h2><a id="CreateTables" name="CreateTables"></a>表の作成</h2>
+<ol>
+<li>データベースに接続するには、<tt>jdbc:mysql://localhost:3306/wishlist</tt>接続で、マウスの右ボタンをクリックし、コンテキスト・メニューから「接続」を選択します。<br><strong>注意: </strong>メニュー項目が無効になっている場合は、すでに接続されています。ステップ2へ進んでください。</li>
+<li>同じコンテキスト・メニューから「コマンドの実行」を選択します。空の「SQLコマンド」ウィンドウが開きます。 </li>
+<li>wishers表を作成するには:
+<ol>
+<li type="a">次のSQL問合せを入力します(国際化のためには文字セットを明示的にUTF-8に設定する必要があります)。
+<pre class="examplecode">CREATE TABLE wishers(<br> id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, <br> name CHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL UNIQUE,<br> password CHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL<br>)</pre>
+<strong>注意: </strong>フィールドに「AUTO_INCREMENT」プロパティを指定すると、MySQLから自動生成される一意の番号を取得できます。MySQLは、表の最後の数字を増分して一意の番号を生成し、自動増分フィールドに自動的に追加します。この例では、IDフィールドが自動的に増分されます。 </li>
+<li type="a">問合せでマウスの右ボタンをクリックし、コンテキスト・メニューから「文の実行」を選択します。
+<p class="notes"><b>注意: </b>MySQLのデフォルトのストレージ・エンジンはMyISAMで、外部キーをサポートしません。外部キーを使用する場合、ストレージ・エンジンとしてInnoDBを使用することを検討してください。</p>
+</li>
+</ol>
+</li>
+<li>wishes表を作成するには:
+<ol>
+<li type="a">次のSQL問合せを入力します。
+<pre class="examplecode">CREATE TABLE wishes(<br> id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,<br> wisher_id INT NOT NULL,<br> description CHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,<br> due_date DATE,<br> FOREIGN KEY (wisher_id) REFERENCES wishers(id)<br>)</pre>
+</li>
+<li type="a">問合せでマウスの右ボタンをクリックし、コンテキスト・メニューから「文の実行」を選択します。 </li>
+</ol>
+</li>
+<li>新しい表がデータベースに追加されたことを確認するには、「サービス」ウィンドウに切り替えて、jdbc:mysql://localhost:3306/wishlistの接続ノードに移動します。 </li>
+<li>マウスの右ボタンをクリックし、「リフレッシュ」を選択します。「wishers」ノードと「wishes」ノードがツリーに表示されます。</li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">注意:</span> MySQL wishlistデータベースを作成するための一連のSQLコマンドは、<a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-MySQL.zip" target="_blank">ここ</a>からダウンロードできます。</p>
+<h2><a id="EnterTestData" name="EnterTestData"></a>テスト・データの入力 </h2>
+<p>アプリケーションをテストするには、データベース内にいくつかのデータが必要です。以降の例では、2つのウィッシャと4つのウィッシュを追加する方法を示します。</p>
+<ol>
+<li>jdbc:mysql://localhost:3306/wishlistの接続で、マウスの右ボタンをクリックして「コマンドの実行」を選択します。空の「SQLコマンド」ウィンドウが開きます。 </li>
+<li>ウィッシャを追加するには、次の例のような構文を使用します。
+<pre class="examplecode">INSERT INTO wishers (name, password) <br> VALUES ('Tom', 'tomcat');</pre>
+問合せでマウスの右ボタンをクリックし、コンテキスト・メニューから「文の実行」を選択します。<br><strong>注意: </strong>文には<tt>id</tt>フィールドの値は含まれていません。フィールドの型が<tt>AUTO_INCREMENT</tt>に指定されているので、値は自動的に入力されます。<br>別のテスト・ウィッシャを入力します。
+<pre class="examplecode">INSERT INTO wishers (name, password) <br> VALUES ('Jerry', 'jerrymouse');</pre>
+</li>
+<li>ウィッシュを追加するには、次の例のような構文を使用します。
+<pre class="examplecode">INSERT INTO wishes (wisher_id, description, due_date) <br> VALUES (1, 'Sausage', 080401);<br>INSERT INTO wishes (wisher_id, description) <br> VALUES (1, 'Icecream');<br>INSERT INTO wishes (wisher_id, description, due_date) <br> VALUES (2, 'Cheese', 080501);<br>INSERT INTO wishes (wisher_id, description)<br> VALUES (2, 'Candle');</pre>
+<p>問合せを選択し、各問合せでマウスの右ボタンをクリックして、コンテキスト・メニューから「セクションの実行」を選択します。 </p>
+<p class="notes"><strong>注意: </strong>項目2で説明しているように、問合せを次々に実行することもできます。</p> </li>
+<li>テスト・データを表示するには、関連する表でマウスの右ボタンをクリックし、コンテキスト・メニューから「データを表示」を選択します。<br> <img alt="NetBeans IDEインタフェースを使用して入力したテスト・データの表示" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/view-test-data.png"> </li>
+</ol>
+<p>データベースの原則とデザイン・パターンの一般的な知識については、チュートリアル<a href="http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1</a>を確認してください。</p>
+<p>MySQLの<tt>CREATE TABLE</tt>文の構文の詳細は、<a href="http://dev.mysql.com/doc/refman/5.0/en/create-table.html" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://dev.mysql.com/doc/refman/5.0/en/create-table.html</a>を参照してください。
+</p>
+<p>表への値の挿入の詳細は、<a href="http://dev.mysql.com/doc/refman/5.0/en/insert.html" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://dev.mysql.com/doc/refman/5.0/en/insert.html</a>を参照してください。</p>
+<p class="notes"><span style="font-weight: bold;">注意:</span> MySQL wishlistデータベースを作成するための一連のSQLコマンドは、<a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-MySQL.zip" target="_blank">ここ</a>からダウンロードできます。
+</p>
+<h2><a name="nextSteps"></a>次の手順</h2>
+<p><a href="wish-list-lesson2.html">次のレッスン>></a></p>
+<p><a href="wish-list-tutorial-main-page.html">チュートリアルのメイン・ページに戻る</a></p>
+<br>
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%201:%20Create%20MySQL%20Database">ご意見をお寄せください</a></div>
+<br style="clear: both;">
+<p><a href="../../../community/lists/top.html">users@php.netbeans.orgメーリング・リストに登録する</a>ことによって、NetBeans IDE PHP開発機能に関するご意見やご提案を送信したり、サポートを受けたり、最新の開発情報を入手したりできます。</p>
+<a href="../../trails/php.html">PHPの学習に戻る</a><br>
+</body></html>

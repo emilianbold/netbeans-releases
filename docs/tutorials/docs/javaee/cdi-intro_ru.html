@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Общие сведения о внедрении контекстов и зависимостей и JSF 2.x - Учебный курс по IDE NetBeans</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A demonstration of how to set up a JSF 2.0 project with CDI support in NetBeans IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, JSF 2.0, JavaServer Faces,
+              Contexts and Dependency Injection, CDI, Web Beans">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Общие сведения о внедрении контекстов и зависимостей и JSF 2.x</h1>
+
+        <p><em>Предоставлено Энди Гибсоном (Andy Gibson)</em></p>
+
+        <div class="margin-around">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h3>Внедрение контекстов и зависимостей</h3>
+
+                <ol>
+                    <li><strong>Введение в CDI и JSF 2.0</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#creating">Создание веб-проекта Java с поддержкой CDI </a></li>
+                            <li><a href="#named">Доступ к компонентам из языка выражений JSF</a></li>
+                            <li><a href="#upgrading">Переход к EJB</a></li>
+                            <li><a href="#seealso">Дополнительные сведения</a></li>
+                        </ul></li>
+
+                    <li><a href="cdi-inject.html">Работа с внедрением и квалификаторами в CDI</a></li>
+                    <li><a href="cdi-validate.html">Применение аннотации @Alternative и аннотаций жизненного цикла</a></li>
+                    <li><a href="cdi-events.html">Обработка событий в CDI</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+        <p>Внедрение контекстов и зависимостей (CDI), определяемое документом <a href="http://jcp.org/en/jsr/detail?id=299">JSR-299</a>, является неотъемлемой частью Java EE 6 и обеспечивает архитектуру, позволяющую компонентам Java EE (например, сервлетам, компонентам EJB и JavaBeans) существовать в жизненном цикле приложения с четко определенными контекстами. Кроме того, службы CDI позволяют компонентам Java EE (например, компонентам сеансов EJB и управляемым компонентам JavaServer Faces) внедряться и свободно взаимодействовать путем запуска и обработки событий.</p>
+
+        <p>Этот учебный курс основан на записи блога Энди Гибсона (Andy Gibson) <a href="http://www.andygibson.net/blog/index.php/2009/12/16/getting-started-with-jsf-2-0-and-cdi-in-jee-6-part-1/">Введение в JSF 2.0 и CDI в JEE 6</a>. В нем рассматривается использование среды IDE для настройки веб-проекта Java с поддержкой JSF 2.0 и CDI. Затем описано связывание управляемых компонентов CDI со страницами Facelets и приводится краткий пример интеграции CDI и технологии EJB.</p>
+
+        <p>В NetBeans IDE обеспечена встроенная поддержка для внедрения контекстов и зависимостей, включая поддержку создания файла конфигурации CDI <code>beans.xml</code> при создании проекта, поддержку редактора и навигации для аннотаций, а также различных мастеров для создания часто используемых артефактов CD.</p>
+
+        <br style="clear:left;">
+
+        <div class="indent">
+            <p>Для работы с этим учебным курсом требуется программное обеспечение и материалы, перечисленные ниже.</p>
+
+            <table>
+                <tbody>
+                    <tr>
+                        <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                        <th class="tblheader" scope="col">Требуемая версия</th>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                        <td class="tbltd1">7.2, 7.3, 7.4, 8.0, пакет Java EE</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                        <td class="tbltd1">версия 7 или 8</td>
+                    </tr>
+                    <tr>
+                        <td class="tbltd1"><a href="http://glassfish.dev.java.net/">Сервер GlassFish</a></td>
+                        <td class="tbltd1">Open Source Edition 3.x или 4.x</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="notes"><strong>Примечания</strong></p>
+        </div>
+
+        <ul>
+            <li>В комплект Java для IDE NetBeans также входит компонент GlassFish Server Open Source Edition, являющийся контейнером, совместимым с Java EE.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="creating">Создание веб-проекта Java с поддержкой CDI </h2>
+
+        <p>В этом упражнении выполняется создание веб-проекта Java с поддержкой JSF 2.x и CDI.</p>
+
+        <ol>
+            <li>Нажмите кнопку 'Создать проект' ( <img alt="Кнопка &apos;Создать проект&apos;" src="../../../images_www/articles/73/javaee/cdi-intro/new-project-btn.png"> ) на главной панели инструментов IDE (Ctrl-Shift-N; ⌘-Shift-N в Mac).</li>
+
+            <li>В мастере создания проекта выберите категорию Java Web и команду &quot;Веб-приложение&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Введите <code>cdiDemo</code> в качестве имени проекта и укажите местоположение проекта.  Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>Выберите GlassFish в качестве сервера.</li>
+            <li>В качестве версии Java EE выберите Java EE 6 или Java EE 7 Web.
+                    
+
+                <p class="notes"><strong>Примечание.</strong> От выбранной версии Java EE зависит, какая версия CDI будет поддерживаться в приложении. Следует помнить, что между версиями CDI 1.0 и CDI 1.1 существует ряд различий.</p>
+                <div class="indent">
+                    <ul>
+                    <li>Если в качестве версии Java EE выбрана Java EE 6 Web, убедитесь, что выбран параметр "Разрешить внедрение контекстов и зависимостей". При выборе параметра &quot;Включить внедрение контекстов и зависимостей&quot; создается файл <code>beans.xml</code> в папке проекта <code>WEB-INF</code> при создании шаблона проекта. Файл <code>beans.xml</code>  используется CDI для указания серверу, совместимому с Java EE, что проект является модулем, содержащим компоненты CDI. Java EE 6 Web поддерживает CDI 1.0, и в создаваемом файле <code>beans.xml</code> будет указана версия CDI 1.0.</li>
+                
+                <li>Если в качестве версии Java EE указана Java EE 7 Web, по умолчанию включается поддержка версии CDI 1.1, и файл <tt>beans.xml</tt> не требуется. В Java EE 7 при отсутствии файла <tt>beans.xml</tt> развертываемый архив считается <strong>архивом неявного компонента bean</strong>. Файл <code>beans.xml</code> в приложениях Java EE 7 Web создается с помощью мастера создания файлов IDE. По умолчанию развернутый архив становится <strong>архивом явного компонента bean</strong>, поскольку в файле <code>beans.xml</code> указывается версия CDI 1.1 и атрибут <tt>bean-discovery-mode</tt> получает значение <tt>all</tt>.</li>
+                </ul>
+                    <p>Подробные сведения о типах архивов CDI см. в разделе <a href="http://docs.oracle.com/javaee/7/tutorial/doc/cdi-adv001.htm">Упаковка приложений CDI</a> в руководстве по Java EE 7.</p>
+                    </div>
+            <img alt="Включить параметр CDI, предоставленный в мастере создания веб-приложений" class="margin-around b-all" src="../../../images_www/articles/74/javaee/cdi-intro/new-web-application1.png" title="Если выбран параметр CDI, он создает файл beans.xml для проекта"></li>
+
+            <li>Нажмите кнопку &quot;Далее&quot;.</li>
+
+            <li>На панели &quot;Платформы&quot; выберите параметр JavaServer Faces. </li>
+            <li>Перейдите на вкладку &quot;Настройка&quot; и убедитесь, что в качестве предпочтительного языка страницы выбран &quot;Facelets&quot;. Нажмите кнопку &quot;Завершить&quot;.
+
+                <p>При нажатии кнопки &quot;Завершить&quot; в среде IDE создается проект веб-приложения и в редакторе открывается страница приветствия <code>index.xhtml</code>.</p></li>
+
+            <li>В окне "Проекты" разверните узел "Библиотеки > GlassFish Server". Вы увидите, что в этот узел автоматически добавлена библиотека <code>weld-osgi-bundle.jar</code>. В состав сервера GlassFish входит Weld, который является реализацией спецификации CDI JSR-299 от JBoss. <br /> <img alt="Новый проект отображается в окне &apos;Проекты&apos;" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-intro/projects-window1.png" title="Новый проект содержит файл beans.xml CDI, а библиотека GlassFish включает файл Weld JAR">
+
+                <p>Обратите внимание, что если при создании проекта была выбрана версия Java EE 6 Web, папка "Web Pages > WEB-INF" будет содержать файл <code>beans.xml</code>. Файл пуст, но может использоваться как альтернатива аннотациям для указания информации, связанной с компонентами, в формате XML.</p>
+                </li>
+        </ol>
+
+        <h2 id="named">Доступ к Beans из языка выражений JSF</h2>
+
+        <p>В этом упражнении демонстрируется способ связи компонентов, управляемых CDI, со страницами Facelets с помощью синтаксиса EL.</p>
+
+        <ol>
+            <li>В окне &quot;Проекты&quot; щелкните правой кнопкой узел &quot;Исходные файлы&quot; и выберите команду &quot;Создать&quot; &gt; &quot;Класс Java&quot;.</li>
+
+            <li>В мастере создания класса Java введите имя класса <strong>MessageServerBean</strong> и введите <strong>exercise1</strong> в поле &quot;Пакет&quot;.  Новый пакет будет создан после завершения работы мастера. Нажмите "Готово". <br> <img alt="Мастер создания классов Java" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-intro/new-java-class.png" title="Создайте новые классы Java с помощью мастера классов Java" width="580">
+
+            <p>Создаются новый пакет и класс, после чего класс открывается в редакторе.</p></li>
+
+            <li>Добавьте к классу аннотации <code>@Named</code> и <code>@Dependent</code> и создайте одиночный метод для возврата строки.
+
+        <pre class="examplecode">
+package exercise1;
+
+<strong>import javax.enterprise.context.Dependent;
+import javax.inject.Named;</strong>
+
+<strong>@Dependent
+@Named</strong>
+public class MessageServerBean {
+
+    <strong>public String getMessage() {
+        return "Hello World!";
+    }</strong>
+}</pre>
+                <p class="tips">Во время добавления аннотаций <code>@Dependent</code> и <code>@Named</code> нажмите сочетание клавиш Ctrl-Пробел, чтобы включить в редакторе поддержку автозавершения кода и документации Javadoc. Если применить аннотацию с помощью функций автозавершения кода редактора (например, выбрав подходящую аннотацию и нажав ENTER), в файл автоматически добавляется оператор <code>импорта </code>. Во всплывающем окне Javadoc также можно нажать кнопку 'Показывать документацию во внешнем веб-браузере' ( <img alt="Показать документацию с помощью кнопки во внешнем веб-браузере" src="../../../images_www/articles/73/javaee/cdi-intro/external-web-browser-btn.png"> ) для отображения полноразмерного Javadoc в отдельном окне.</p>
+            
+                <p class="notes"><strong>Примечание.</strong> Аннотация <tt>@Dependent</tt> определяет область действия управляемого компонента bean. В <strong>архиве неявного компонента bean</strong> управляемый компонент bean доступен только для обнаружения и может управляться контейнером, только если указана область действия. В данном упражнении приложение будет упаковано как архив неявного компонента bean (при условии, что в качестве версии проекта выбрана Java EE 7 и не создан файл <tt>beans.xml</tt>). Подробные сведения об области действия управляемых компонентов bean см. в разделе <a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-configure001.htm">Настройка управляемых компонентов bean с помощью аннотаций</a> учебного курса по Java EE 7.</p>
+            </li>
+
+            <li>Сохраните файл (сочетание клавиш Ctrl-S; ⌘-S в Mac). После добавления аннотации <code>@Named</code> класс <code>MessageServerBean</code> стал <em> управляемым компонентом </em>, в соответствии с определением CDI.</li>
+
+            <li>Переключитесь в редакторе на страницу Facelets <code>index.xhtml</code>(нажмите сочетание клавиш CTRL+TAB) и добавьте следующий текст в теги <code>&lt;h:body&gt;</code>. 
+
+                <pre class="examplecode">
+&lt;h:body&gt;
+    Hello from Facelets
+    <strong>&lt;br/&gt;
+    Message is: #{messageServerBean.message}
+    &lt;br/&gt;
+    Message Server Bean is: #{messageServerBean}</strong>
+&lt;/h:body&gt;</pre>
+
+                <span class="tips">Для отображения подсказок автозавершения кода можно нажать сочетание клавиш CTRL+ПРОБЕЛ внутри выражения EL. Списки автозавершения редактора содержат управляемые компоненты и их свойства. Поскольку аннотация <code>@Named</code> преобразует класс <code>MessageServerBean</code> в управляемый компонент, он становится доступным в синтаксисе EL, как если бы он был управляемым компонентом JSF.</span> <br> <img alt="Мастер создания классов Java" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-intro/facelets-el-completion.png" title="Создайте новые классы Java с помощью мастера классов Java"></li>
+
+            <li>Нажмите кнопку 'Запустить проект' (<img alt="Кнопка &apos;Выполнить проект&apos;" src="../../../images_www/articles/73/javaee/cdi-common/run-project-btn.png">) на главной панели инструментов IDE. Файл компилируется и развертывается в GlassFish, и страница приветствия приложения (<code>index.xhtml </code>) отображается в веб-браузере.  На странице отображается текст &quot;Hello World!&quot; из <code>MessageServerBean</code>. <br> <img alt="Страница приветствия отображается в браузере" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-intro/browser-output1.png" title="На странице приветствия приложения отображаются сведения о MessageServerBean"></li>
+
+            <li>Вернитесь к компоненту сообщения и измените сообщение на другое (например, &quot;Hello Weld!&quot;). Сохраните файл (Ctrl-S; ⌘-S в Mac), затем обновите браузер. Автоматически отображается новое сообщение. Это происходит благодаря возможности &quot;Развертывание при сохранении&quot; среды IDE, все сохраненные изменения вызывают компиляцию и повторное развертывание на сервере. <br><br> В третьей строке на этой странице видно, что имя класса &ndash; <code>exercise1.MessageServerBean</code> Обратите внимание, что компонент представляет собой объект POJO (Plain Old Java Object, простой старый объект Java). Несмотря на использование Java EE, при разработке отсутствует комплексная иерархия классов, связанная уровнями транзакций, перехватами и другие сложные особенности. </li>
+        </ol>
+
+        <div class="indent">
+            <h3>Порядок действий</h3>
+
+            <p>При развертывании приложения сервер осуществляет поиск управляемых bean-компонентов CDI. В приложениях Java EE 7 классы на пути по умолчанию проверяются на наличие аннотаций CDI. В приложениях Java EE 6 классы проверяются на наличие аннотаций CDI, если модуль содержит файл <code>beans.xml</code>. В модуле CDI все компоненты регистрируются в Weld, и для сопоставления компонентов с точками внедрения используется аннотация <code>@Named</code>. При отображении страницы <code>index.xhtml</code> JSF пытается разрешить значение <code>messageServerBean</code> на странице с применением зарегистрированных средств разрешения выражений JSF.  Одно из них &ndash; средство разрешения Weld EL имеет класс <code>MessageServerBean</code>, зарегистрированный под именем <code>MessageServerBean</code> Можно было указать другое имя в аннотации <code>@Named</code>, но поскольку это не было сделано, класс был зарегистрирован под именем по умолчанию, которое совпадает с именем класса, первая буква которого находится в нижнем регистре.  Средство разрешения Weld возвращает экземпляр этого компонента в ответ на запрос JSF. Именование компонентов требуется только при использовании выражений EL и не должно использоваться в качестве механизма внедрения, поскольку CDI обеспечивает безопасность по типу при внедрении по типу класса и аннотациям квалификатора.</p>
+        </div>
+
+
+        <br>
+        <h2 id="upgrading">Переход к EJB</h2>
+
+        <p>Благодаря EJB 3.1 и использованию стека Java EE можно с небольшими изменениями легко развертывать компонент в качестве EJB.</p>
+
+        <ol>
+            <li>Откройте <code>MessageServerBean</code> и добавьте аннотацию <code>javax.ejb.Stateless</code> на уровне класса, затем замените строку на &quot;Hello EJB!&quot;.
+
+                <pre class="examplecode">
+package exercise1;
+
+<strong>import javax.ejb.Stateless;</strong>
+import javax.enterprise.context.Dependent;
+import javax.inject.Named;
+
+/**
+ *
+ * @author nbuser
+ */
+@Dependent
+@Named
+<strong>@Stateless</strong>
+public class MessageServerBean {
+
+    public String getMessage() {
+        return &quot;<strong>Hello EJB!</strong>&quot;;
+    }
+}</pre></li>
+
+            <li>Сохраните файл (Ctrl-S; ⌘-S в Mac), затем перейдите в браузер и обновите. Отображается приблизительно следующее: <br> <img alt="Сведения о EJB отображается в браузере" class="margin-around b-all" src="../../../images_www/articles/73/javaee/cdi-intro/browser-output-ejb1.png" title="Использование аннотации @Stateless преобразует MessageServerBean в EJB"> <br> Поразительно, POJO превратился в полнофункциональный EJB с помощью всего одной аннотации. После сохранения изменений и обновления страницы были отображены изменения. Для этого не потребовалось проводить комплексную настройку проекта, создавать локальные интерфейсы или сложные дескрипторы развертывания.</li>
+        </ol>
+
+        <div class="indent">
+            <h3>Различные типы EJB</h3>
+
+            <p>Также можно использовать аннотацию <code>@Stateful</code>.  В качестве альтернативы можно использовать новую аннотацию <code>@Singleton</code> для экземпляров единичных классов. При этом существует две аннотации: <code>javax.ejb.Singleton</code> и <code>javax.inject.Singleton</code>. Эти аннотации соответствуют двум видам единичных классов. Единичный класс CDI <code>javax.inject.Singleton</code> позволяет определить экземпляр единичного класса вне EJB при использовании CDI в окружении, отличном от EJB.  Единичный класс EJB <code>javax.ejb.Singleton</code> предоставляет все возможности EJB, например управление транзакциями. Поэтому можно сделать выбор в зависимости от потребностей и от того, используется ли среда EJB.</p>
+        </div>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20CDI%20and%20JSF%202.0">Отправить отзыв по этому учебному курсу</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Дополнительные сведения</h2>
+
+        <p>В следующей части рассматривается внедрение CDI и приводятся подробные сведения об использовании CDI для управления зависимостями в среде Java EE.</p>
+
+        <ul>
+            <li><a href="cdi-inject.html">Работа с внедрением и квалификаторами в CDI</a></li>
+        </ul>
+
+        <p>Дополнительные сведения о CDI и JSF 2.0 приведены в следующих материалах.</p>
+
+        <div class="indent">
+            <h3>Внедрение контекстов и зависимостей</h3>
+
+            <ul>
+                <li><a href="cdi-validate.html">Применение аннотации @Alternative и аннотаций жизненного цикла</a></li>
+                <li><a href="cdi-events.html">Обработка событий в CDI</a></li>
+                <li><a href="http://blogs.oracle.com/enterprisetechtips/entry/using_cdi_and_dependency_injection">Технические рекомендации по Java EE: использование CDI и внедрения зависимостей для Java в приложении JSF 2.0</a></li>
+                <li><a href="http://docs.oracle.com/javaee/7/tutorial/doc/cdi-basic.htm">Учебный курс по Java EE 6. Вводная информация о внедрении контекстов и зависимостей для Java EE</a></li>
+                <li><a href="http://jcp.org/en/jsr/detail?id=299">JSR 299: спецификация внедрения контекстов и зависимостей</a></li>
+            </ul>
+
+            <h3>JavaServer Faces 2.0</h3>
+
+            <ul>
+                <li><a href="../web/jsf20-intro.html">Введение в JavaServer Faces 2.x</a></li>
+                <li><a href="../web/jsf20-crud.html">Создание приложения JavaServer Faces 2.x CRUD на основе базы данных</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum Toys &ndash; полный пример приложения JSF 2.0</a></li>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">Технология JavaServer Faces</a> (официальная домашняя страница)</li>
+                <li><a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-page.htm">Учебный курс по Java EE 7. Использование технологии JavaServer Faces на веб-страницах</a></li>
+                <li><a href="http://jcp.org/en/jsr/summary?id=314">Спецификация JSR 314 для JavaServer Faces 2.0</a></li>
+            </ul>
+        </div>
+    </body>
+</html>

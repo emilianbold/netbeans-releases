@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head><link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+        <title>Interoperabilidade avançada do Web service - Tutorial do NetBeans IDE</title>
+        <meta name="description"
+              content="This tutorial shows how to use the IDE to configure security mechanisms for web services.">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, WEB SERVICES, MTOM, METRO, WS-I, WS-RM, RELIABLE MESSAGING, SECURITY, WCF, WINDOWS COMMUNICATION FOUNDATION">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
+    <body>
+        <h1>Interoperabilidade Avançada do Web Service</h1>
+
+        <p>A Interoperabilidade Avançada do Web Service (WSIT), também conhecida como “Qualidade de Serviço” do Web Service, abrange os componentes que ativam a interoperabilidade entre os Web services Java e os Web services .Net. Este documento demonstra o suporte no IDE para configurar um web service e um cliente que usa WSIT. Para obter mais informações sobre como usar WSIT, consulte o <a href="http://docs.oracle.com/cd/E19159-01/820-1072/ahibn/index.html">Capítulo 3 Exemplo de WSIT Usando um Contêiner Web e NetBeans IDE</a> em <a href="http://docs.oracle.com/cd/E19159-01/820-1072/index.html">O Tutorial do WSIT</a></p>
+
+        <p><b>Conteúdo</b></p>
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3 e 7.4" class="stamp" src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3 e 7.4">
+        <ul>
+            <li><a href="#Exercise_1">Conhecendo a Amostra de Calculadora</a>
+                <ul><li><a href="#Exercise_1_1">Explorando a Amostra</a></li>
+                    <li><a href="#Exercise_1_2">Implantando e Testando a Amostra de Calculadora</a></li>
+                </ul>
+            <li><a href="#Exercise_2">Conhecendo a Amostra da Calculadora Segura</a>
+                <ul><li><a href="#Exercise_2_1">Explorando a Amostra</a></li>
+                    <li><a href="#Exercise_2_2">Implantando e Testando a Amostra de Calculadora Segura</a></li>
+                </ul>
+        </ul>
+
+        <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote de download do Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">versão 6 ou versão 7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Servidor de aplicações ou Web compatível com Java EE</td>
+                    <td class="tbltd1">
+                        GlassFish Server Open Source Edition 3.1.x, 4.x<br> ou <br><a href="http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html" target="_blank">Oracle WebLogic Server</a> 11g ou 12c              
+
+                    </td></tr>
+
+            </tbody>
+        </table>
+        <p class="notes">O GlassFish Server pode ser instalado com a distribuição Web e Java EE do NetBeans IDE. Como alternativa, você pode visitar a <a href="https://glassfish.java.net/download.html">página de downloads do GlassFish Server</a> ou a <a href="http://tomcat.apache.org/download-60.cgi" target="_blank">página de downloads do Apache Tomcat</a>.</p>
+        <p class="alert"><strong>Importante: </strong>os projetos Java EE requerem GlassFish Server 3.1.x, 4.x ou Oracle WebLogic Server 12c.</p>
+
+        
+
+            <!--Exercise 1: -->
+        <a name="Exercise_0"></a>
+        <h2>Introdução</h2>
+
+        <p>Os componentes relacionados à interoperabilidade avançada de Web services entram em quatro categorias principais:</p>
+        <ul>
+            <li><b>Bootstrapping e configuração.</b> O processo que é executado para criar um cliente de Web service que pode acessar e consumir um Web service.</li>
+            <li><b>Segurança da mensagem</b> As opções de configuração de segurança a seguir são suportadas:
+                <ul>
+                    <li>Destinos para opções de autenticação e criptografia</li>
+                    <li>Segurança de Web services do Cliente/serviço</li>
+                    <li>Opções de confiança do cliente/serviço</li>
+                    <li>Opções avançadas de configuração</li>
+                    <li>Opções de configuração de armazenamento de chaves</li>
+                </ul>
+            </li>
+            <li><b>Otimização da mensagem.</b> Garante que as mensagens de Web services sejam transmitidas pela Internet da maneira mais eficiente. A otimização de mensagens é alcançada na comunicação dos Web services codificando as mensagens antes da sua transmissão e decodificando-as quando elas alcançam seu destino final.</li>
+            <li><b>Mensagem confiável.</b> Medido pela capacidade do sistema de distribuir mensagens do ponto A para o ponto B sem erros.</li>
+        </ul>
+
+        <p>A “Qualidade de serviço” é configurada no Editor de Atributos do Web Service, que pode ser acessado na janela Projetos, no nó que representa o Web service ou o cliente. Este documento apresentará duas amostras que são distribuídas com o IDE: uma amostra de web service e uma amostra de web service seguro. Este documento mostrará algumas diferenças entre as amostras e também como usar o IDE para configurar a segurança para seus próprios web services e clientes.</p>
+
+        <p>Para obter um guia completo e abrangente sobre os tópicos relacionados à “Qualidade de Serviço”, consulte <a href="http://download.oracle.com/docs/cd/E17802_01/webservices/webservices/reference/tutorials/wsit/doc/index.html" target="_blank">O tutorial do WSIT</a>.
+
+            <!-- ===================================================================================== -->
+        <a name="Exercise_1"></a><h2>Conhecendo a amostra de calculadora</h2>
+        <p>O objetivo deste exercício é conhecer a amostra de Calculadora que está incorporada no IDE. Em contraste com o próximo exemplo, este exemplo não é seguro, como poderá ser visto ao examinar o Web service.</p>
+        <div class="indent">
+            <h3 class="tutorial"><a name="Exercise_1_1"></a>Explorando a Amostra</h3>
+            <p>Neste exercício você usará o assistente Novo Projeto para criar a amostra, examinará a amostra no IDE e implantará a aplicação.</p>
+
+            <ol>
+                <li>Escolha Arquivos > Novo Projeto (Ctrl-Shift-N no Linux e no Windows, ⌘-Shift-N no MacOS) para abrir o assistente Novo Projeto.</li>
+                    <li>Expanda a categoria Amostras e selecione o nó Web Services e, em seguida, selecione a amostra Calculadora. Clique em Próximo.<br> <img alt="Assistente Novo Projeto que mostra a amostra da calculadora" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-newproject.png" title="Assistente Novo Projeto que mostra a amostra da calculadora"></li>
+                <li>Confirme se um servidor compatível com Java EE está selecionado na lista drop-down Servidor. Clique em Finalizar.
+                    <p>Quando clicar em Finalizar o assistente criará dois projetos: 
+                    <ul>
+                        <li><strong>CalculatorApp</strong> fornece um Web service chamado CalculatorWS que expõe uma operação de nome “add”.</li>
+                        <li><strong>CalculatorClientApp</strong> fornece um cliente, de nome CalculatorWSService, que invoca a operação “add” do Web service.</li>
+                    </ul>
+                    <p class="alert">O serviço CalculatorClientApp pode ser marcado com um ícone de erro porque o IDE não pode localizar o WSDL para o serviço CalculatorWS. O erro será resolvido depois que você implantar CalculatorApp e limpar e construir o CalculatorClientApp.</p>
+                    <img alt="Janela Projetos que exibe o Web service e o cliente" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-projects.png" title="Janela Projetos que exibe o Web service e o cliente"></li>
+                <li>Clique duas vezes no web service CalculatorWS para abrir o arquivo no editor e clique na guia Design na parte superior do editor para exibir o web service no designer visual.<br> <img alt="Serviço CalculatorWS noa guia Design GUI (Visual Designer)" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-design.png" title="Serviço CalculatorWS noa guia Design GUI (Visual Designer)">
+                    <p class="notes"><b>Observação:</b> na seção Qualidade de Serviço na guia design do serviço você pode ver que <i>nenhuma</i> opção está ativada. Como resultado, os componentes da Qualidade de Serviço não foram aplicados a esse Web service em questão. Você verá um web service no qual um componente da Qualidade de Serviço <em>é</em> ativado quando você criar o web service protegido.</p>
+                </li>
+            </ol>
+            <p>Para obter um tutorial completo sobre Web services no IDE, consulte <a href="jax-ws.html">Introdução aos Web services JAX-WS</a>.
+
+            <h3 class="tutorial"><a name="Exercise_1_2"></a>Implantando e Testando o Exemplo de Calculadora</h3>
+            <ol>
+
+                <li>Clique com o botão direito do mouse no projeto CalculatorApp e selecione Executar.
+                    <p>O servidor é iniciado e o web service é implantado no servidor. Você verá uma página aberta em seu browser default que fornece alguns detalhes do serviço.</p>
+                        <img alt="Janela de informações do CalculatorWS no browser" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser1.png" title="Janela de informações do CalculatorWS no browser"></li>
+                <li>Clique no link WSDL na página do browser para ver o arquivo WSDL que define o web service. <br><img alt="WSDL do Calculator WS no browser" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser2.png" title="WSDL do Calculator WS no browser">
+                <p class="notes"><b>Observação.</b> Se o WSDL não for exibido, verifique o URL na barra de localização do browser. Ele deverá apontar para <tt>http://localhost:<em>seu_número_de_porta</em>/CalculatorApp/CalculatorWSService?WSDL</tt>.</p>
+                </li>
+                <li>Na janela Projetos do IDE, clique com o botão direito do mouse em CalculatorWS no nó do Web Services e escolha Testar Web Service no menu pop-up.<br>
+                    <p>Quando você testa o web service, uma página para testar o serviço é aberta em seu browser.</p>
+                    <img alt="Calculator WS Tester no browser" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser3.png" title="Calculator WS Tester no browser"> 
+                    <p>O IDE pode fornecer um cliente para testar seu web service e abrir a aplicação de teste em seu browser. Na aplicação de teste é possível inserir os valores para cada campo definido no Web service. A aplicação de teste tem um botão é identificado depois do nome da operação no serviço. Quando clicar no botão você verá o resultado da chamada da operação.</p>
+                    </li>
+                <li>Examine o projeto CalculatorClientApp na janela Projetos para obter emblemas de erros.
+                    <p>Se houver ícones de erro para <tt>ClientServlet.java</tt>, clique com o botão direito no nó do projeto e escolha Limpar e Construir no menu pop-up. Os erros surgiram porque o serviço CalculatorWS não foi implantado. Agora que ele está implantado, o IDE pode fazer parsing de seu WSDL e a compilação do ClientServlet.</p></li>
+                <li>Clique com o botão direito do mouse no nó do projeto CalculatorClientApp e selecione Executar.
+                    <p>Ao executar a aplicação, uma interface do serviço será aberta em seu browser.</p>
+                    <img alt="Cliente do Serviço da Calculadora no browser" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser4.png" title="Cliente do Serviço da Calculadora no browser"></li>
+                <li>Informe os valores nos dois campos e clique em Obter Resultado.
+                    <p>Ao clicar em Obter Resultado, o resultado da operação será recuperado no web service e exibido no cliente.</p></li>
+            </ol>
+
+            <p>O web service está funcionando corretamente e o cliente recupera os resultados, mas este projeto não usar os componentes da Qualidade de Serviço. Na próxima seção, você verá como pode configurar os componentes da Qualidade de Serviço.</p>
+        </div>
+
+        <!-- ===================================================================================== -->
+
+        <h2><a name="Exercise_2"></a>
+            <!--Exercise 1: -->
+            Conhecendo o Exemplo de Calculadora Segura</h2>
+        <p>O objetivo deste exercício é examinar como um Web service seguro é configurado, e como um cliente interage com ele.</p>
+        <div class="indent">
+            <h3 class="tutorial"><a name="Exercise_2_1"></a>Explorando a Amostra</h3>
+            <p>Neste exercício você usa o assistente Novo Projeto para criar a amostra e, em seguida, examinará como a Qualidade de Serviço é configurada para a aplicação.</p>
+
+            <ol>
+                <li>Escolha Arquivos > Novo Projeto (Ctrl-Shift-N no Linux e no Windows, ⌘-Shift-N no MacOS) para abrir o assistente Novo Projeto.</li>
+                    <li>Expanda a categoria Amostras e selecione o nó Web Services e, em seguida, selecione a amostra Calculadora Segura. Clique em Próximo.</li>
+                <li>Confirme se um servidor compatível com Java EE está selecionado na lista drop-down Servidor. Clique em Finalizar.
+                    <p>Quando clicar em Finalizar o assistente criará dois projetos: 
+                    <ul>
+                        <li><strong>SecureCalculatorApp</strong> fornece um Web service chamado CalculatorWS que expõe uma operação de nome “add”.</li>
+                        <li><strong>SecureCalculatorClientApp</strong> fornece um cliente, de nome CalculatorWSService, que invoca a operação “add” do Web service.</li>
+                    </ul>
+                <p class="alert">O serviço SecureCalculatorClientApp pode ser marcado com um ícone de erro porque o IDE não pode localizar o WSDL para o serviço CalculatorWS. O erro será resolvido depois que você implantar SecureCalculatorApp e limpar e construir o SecureCalculatorClientApp.</p>
+                </li>
+                <li>Clique duas vezes no web service CalculatorWS na pasta Web Services de SecureCalculatorApp para abrir o arquivo no editor e clique na guia Design na parte superior do editor para exibir o web service no designer visual.
+                    <p class="notes"><b>Observação:</b> Na seção Qualidade de Serviço na view design do serviço você pode ver que a opção Serviço Seguro está selecionada e que as outras duas opções não foram selecionadas. A seção Qualidade de Serviço no Visual Designer especifica quais componentes da Qualidade de Serviço estão <i>ativados</i> para o Web service atual.</p>
+                </li>
+                <li>Clique em Editar Atributos do Web Service para abrir o Editor de Atributos do Web Service.<br> <img alt="Página Qualidade de Serviço no Editor de Atributos do WS" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-quality-dialog.png" title="Página Qualidade de Serviço no Editor de Atributos do WS">
+                    <p>Na guia Qualidade de Serviço você pode ver que uma opção de Compatibilidade de Versão foi selecionada. Selecione a versão mais recente que corresponda à versão do Metro ou do .NET que você tem instalada.</p>
+                    
+                    <p class="alert">Para ativar a lista drop-down de compatibilidade da versão, adicione a versão mais recente do Metro no classpath do projeto. Para adicionar a biblioteca mais recente do Metro, clique com o botão direito do mouse no nó do projeto na janela Projetos, abra as Propriedades do projeto, vá até a categoria Bibliotecas e procure e adicione a versão mais recente da biblioteca do Metro.</p>
+                    <p>Observe que a opção Serviço Seguro é selecionada e que um mecanismo de segurança é selecionado na lista drop-down. O mecanismo de segurança especifica a abordagem usada para proteger o web service.
+                    <p>Nesta aplicação de amostra a Autenticação de Nome de Usuário com o mecanismo de segurança Chaves Simétrica é selecionada. Para obter uma descrição das opções e propriedades do mecanismo de segurança Autenticação do Nome de Usuário com Chaves Simétricas, consulte <a href="http://docs.oracle.com/cd/E19182-01/821-0015/gggsrv/index.html">Autenticação do Nome de Usuário com Chaves Simétricas</a>. Para obte uma descrição de outros mecanismos de segurança disponíveis. consulte <a href="http://docs.oracle.com/cd/E19182-01/820-0595/6ncatc2q5/index.html" target="_blank">Configurando Mecanismos de Segurança</a>.</p>
+                </li>      
+                <li>Expanda as seções Mensagem de Entrada e Mensagem de Saída na guia Qualidade de Serviço.<br> <img alt="Página Qualidade de Serviço com o botão Partes da Mensagem ativado" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-quality-dialog2.png" title="Página Qualidade de Serviço com o botão Partes da Mensagem ativado">
+                    <p>O botão Partes da Mensagem é ativado para Mensagem de Entrada e Mensagem de Saída se você selecionar Autenticação do Nome de Usuário com Chaves Simétricas como o mecanismo de segurança.</p>
+                    <p class="notes"><b>Observação:</b> a lista drop-down Token de Autenticação e as opções de Mensagem de Entrada não são ativadas para o mecanismo de segurança Autenticação de Nome de Usuário com Chaves Simétricas.</p>
+                </li>                    
+                <li>Clique no botão Partes da Mensagem na seção Mensagem de Entrada.<br> <img alt="Caixa de diálogo Partes da Mensagem" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-messageparts.png" title="Caixa de diálogo Partes da Mensagem">
+                    <p>Na caixa de diálogo Partes da Mensagem você pode ver as opções de segurança de diferentes elementos. Você pode marcar uma caixa de seleção para ativar ou desativar as partes que devem ser assinadas, criptografadas e obrigatórias. Para cada elemento você pode especificar as seguintes opções:</p>
+                    <ul>
+                        <li>Selecione  <strong>Assinar</strong> para especificar as partes ou os elementos de uma mensagem que requerem a proteção de integridade (assinatura digital).</li>
+                        <li>Selecione <strong>Criptografar</strong> para especificar as partes ou os elementos de uma mensagem que requerem confidencialidade (criptografia).</li>
+                        <li>Selecione <strong>Exigir</strong>  para especificar um conjunto de partes e/ou elementos que uma mensagem deve conter.</li>
+                    </ul>
+                    <p>Em seguida, verifique como a qualidade de serviço do cliente do Web service é configurada.</p>
+                </li>
+                <li>Na janeja Projetos, expanda o nó Referências de Web Service no projeto <strong>SecureCalculatorClientApp</strong>.</li>
+                <li>Clique com o botão direito do mouse no nó CalculatorWSService e escolha Editar Atributos do Web Service no menu pop-up para abrir a caixa de diálogo Atributos do Web Service. <br> <img alt="Caixa de diálogo de qualidade de serviço do cliente do Web service" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-qos-wsservice.png" title="Caixa de diálogo de qualidade de serviço do cliente do Web service">
+                    <p>Você pode ver que um usuário "wsitUser" e senha default existem. O usuário e a senha default foram criados no realm "arquivo".</p>
+                        
+                    <p>Se você selecionar a opção Usar Defaults de Desenvolvimento na seção Segurança, o IDE importa certificados para o armazenamento de chaves e o truststore do GlassFish Server para que eles possam ser usados imediatamente para desenvolvimento.</p> 
+                    <p class="alert"><strong>Importante: </strong> Em um ambiente de produção, você provavelmente desejará fornecer seus próprios certificados e definições de usuário. Entretanto, em um ambiente de desenvolvimento, você poderá considerar esses defaults úteis.</p>
+                    <p>Para obter uma descrição detalhada de como configurar a segurança para um cliente de web service, consulte o <a href="http://docs.oracle.com/cd/E19159-01/820-1072/6ncp48v3b/index.html">Capítulo 7 Usando a Segurança de WSIT</a> em <a href="http://docs.oracle.com/cd/E19159-01/820-1072/index.html">O Tutorial de WSIT</a>.</p>
+                </li>
+            </ol>
+
+            <h3 class="tutorial"><a name="Exercise_2_2"></a>Implantando e Testando o Exemplo de Calculadora Segura</h3>
+            <ol>
+
+                <li>Clique com o botão direito do mouse no nó do projeto de serviço e escolha Executar para implantar o web service.</li>
+                <li>Clique com o botão direito do mouse no nó do projeto do cliente do Web service e selecione Executar. 
+                    <p>Quando executar o cliente, a aplicação é implantada e a interface do serviço é aberta no browser.</p>
+                    <img alt="Cliente de Web service segudo no browser" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser-secure1.png" title="Cliente de Web service segudo no browser">
+                </li>
+                <li>Digite um número em cada um dos campos e clique em Obter Resultado.
+                    <p>Ao clicar em Obter Resultado, a página exibirá uma mensagem informando que o cliente foi autenticado e exibirá o resultado da operação.</p>
+                    <img alt="Cliente de Web service segurno no browser mostrando resultados" class="margin-around b-all" src="../../../images_www/articles/74/websvc/wsit/wsit-browser-secure2.png" title="Cliente de Web service segurno no browser mostrando resultados">
+                </li>
+                    
+            </ol>
+            <p class="notes">Se uma mensagem de erro aparecer constatando que a autenticação falhou devido a um par usuário/senha inválido, ou existe um problema com o usuário default criado pelo IDE, ou existem credenciais não correspondentes definidas no cliente. Nesse caso, é necessário criar um par usuário/senha manualmente. Para obter instruções, consulte <a href="http://docs.oracle.com/cd/E19159-01/820-1072/6ncp48v3b/index.html">Capítulo 7 Usando Segurança de WSIT</a> em <a href="http://docs.oracle.com/cd/E19159-01/820-1072/index.html">O Tutorial de WSIT</a>.</p>
+        </div>
+
+
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:WSIT%20Advanced%20Interoperability%20in%20NetBeans%20IDE%206.0">Enviar Feedback neste Tutorial</a></div>
+
+        <!-- ======================================================================================= -->
+        <br>
+        <h2><a name="seealso"></a>Consulte Também</h2>
+        <p>Para obter mais informações sobre como usar o NetBeans IDE para desenvolver Web Services, consulte os seguintes recursos:
+        </p>
+        <ul>
+            <li><a href="client.html">Desenvolvendo Clientes de Web Service JAX-WS</a></li>
+            <li><a href="jax-ws.html">Introdução aos Web Services JAX-WS</a></li>
+            <li><a href="rest.html">Introdução ao RESTful Web Services</a></li>
+            <li><a href="flower_overview.html">Aplicação de Web service passando dados binários</a></li>
+            <li><a href="../../74/websvc/jaxb_pt_BR.html">Vinculando WSDL a Java com JAXB</a></li>
+            <li><a href="../../trails/web.html">Trilha do Aprendizado de Web services</a></li>
+
+        </ul>
+        <p>Para enviar comentários e sugestões, obter suporte e se manter informado sobre os mais recentes desenvolvimentos das funcionalidades de desenvolvimento Java EE do NetBeans IDE, <a href="../../../community/lists/top.html">inscreva-se na lista de notícias nbj2ee@netbeans.org</a>.</p>
+    </body>

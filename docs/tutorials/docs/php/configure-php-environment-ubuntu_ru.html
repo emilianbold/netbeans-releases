@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Настройка среды разработки PHP в Linux Ubuntu</title>
+     <meta name="KEYWORDS" content="NETBEANS, CONFIGURE, PHP, Apache, MySQL, Linux, Ubuntu">
+      <meta name="DESCRIPTION" content="Install, configure, and enable PHP, Apache, MySQL, XDebug for PHP development in the NetBeans IDE under Linux Ubuntu. Virtual host" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
+   <body>
+
+<h1>Настройка среды разработки PHP в Linux Ubuntu</h1>
+<p>В данном учебном курсе рассматривается процедура настройки среды разработки PHP в операционной системе Ubuntu (версия 7.10 и более поздние).  Эта процедура предполагает установку и настройку механизма PHP, базы данных MySQL, веб-сервера Apache и отладчика XDebug.</p>
+
+<p><b>Содержание</b></p>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+<ul>
+<!--<li><a href="#requiredSoftware">Required Software</a></li> -->
+
+<li><a href="#installingSoftware">Установка PHP Web Stack</a>
+  <ul>
+<li><a href="#lamp">Одновременная установка всех пакетов программного обеспечения</a></li>
+<li><a href="#separate-packages">Установка пакетов программного обеспечения по отдельности</a></li>
+<li><a href="#checkInstallation">Проверка установки</a></li>
+<li><a href="#troubleshooting">Устранение проблем</a></li>
+  </ul>
+</li>
+<li><a href="#specifyDocumentRoot">Указание корневого узла документов для сервера HTTP Apache2</a>
+  <ul>
+<li><a href="#createDocumentRootLocation">Создание местоположения корневого узла документов</a></li>
+<li><a href="#createNewVirtualHost">Создание нового виртуального узла</a></li>
+<li><a href="#activateNewVirtualHost">Активация нового виртуального узла</a></li>
+</ul>
+</li>
+<li><a href="#configureMySQL">Настройка сервера базы данных MySQL</a></li>
+<li><a href="#installAndConfigureXDebug">Установка и включение отладчика XDebug</a><a href="#installXDebug"></a>
+  <ul>
+<li><a href="#xdebug-package">Установка пакета XDebug (Ubuntu, версия 8.05 и выше)</a></li>
+<li><a href="#InstallingPHP5andPEARModules">Сборка XDebug из исходных компонентов (Ubuntu 7.10)</a></li>
+<li><a href="#enableXDebug">Включение XDebug</a></li>
+</ul>
+</li>
+</ul>
+<p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+<table>
+  <tbody>
+    <tr>
+      <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+      <th class="tblheader" scope="col">Требуемая версия</th>
+    </tr>
+    <tr>
+      <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+      <td class="tbltd1">
+        Пакет загрузки PHP</td>
+    </tr>
+    <tr>
+      <td class="tbltd1">Механизм PHP</td>
+      <td class="tbltd1">Версия 5. </tr>
+    <tr>
+      <td class="tbltd1">Веб-сервер</td>
+      <td>Рекомендуется использовать HTTP-сервер Apache 2.2.<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">Сервер базы данных</td>
+      <td>Рекомендуется использовать сервер MySQL 5.0.<br></td>
+    </tr>
+    <tr>
+      <td class="tbltd1">Отладчик PHP (не обязательно)</td>
+      <td>Версия XDebug 2.0 или более поздняя</td>
+    </tr>
+  </tbody>
+</table>
+<p class="notes">Как правило, разработка и отладка выполняются на локальном веб-сервере, в то время как производственная среда размещена на удаленном веб-сервере.  Настройка удаленного веб-сервера описана в разделе <a href="./remote-hosting-and-ftp-account.html"> Развертывание приложения PHP на удаленном веб-сервере с помощью IDE NetBeans</a>. Этот учебный курс содержит информацию, необходимую для настройки локального веб-сервера.  Поддержка PHP может добавляться к целому ряду локальных веб-серверов (IIS, Xitami и т.д.), но обычно используется <a href="http://httpd.apache.org/download.cgi" target="_blank">сервер HTTP Apache</a>.   </p>
+
+<h2><a id="installingSoftware" name="installingSoftware"></a>Установка программного обеспечения</h2>
+<p>В данном учебном курсе рассматривается процедура настройки среды разработки PHP в операционной системе Ubuntu (версия 7.04 и более поздние).  Необходимо выполнить следующие действия: </p>
+<ol>
+  <li>Установить сервер Apache2 HTTP, механизм PHP5, сервер базы данных MySQL 5.0 и модуль PHP5-MySQL.  Эти пакеты можно <a href="#lamp">установить одновременно как стек LAMP</a> или <a href="#separate-packages">установить по отдельности</a>.</li>
+  <li><a href="#specifyDocumentRoot">Указать корневой узел документов для сервера HTTP Apache2</a></li>
+  <li><a href="#configureMySQL">Выполнить настройку сервера базы данных MySQL</a></li>
+  <li><a href="#installXDebug">Установить и активировать отладчик XDebug 2.0</a></li>
+</ol>
+Для получения дополнительных сведений об установке Apache, MySQL и PHP см. <a href="https://help.ubuntu.com/community/ApacheMySQLPHP">Сообщество Ubuntu</a>.
+<div class="indent"><h3 id="lamp">Одновременная установка всех пакетов программного обеспечения</h3>
+<p>Ubuntu предоставляет пакет Linux AMP (LAMP), который содержит все необходимые пакеты для среды PHP.  Для установки программного обеспечения можно выполнить следующую команду в командной строке в окне терминала:
+</p>
+<pre class="examplecode">sudo tasksel install lamp-server</pre>
+<p>Пакет <tt>lamp-server</tt> включает в себя наиболее удобную версию PHP, Apache 2, MySQL и PHP5-MySQL.</p>
+<h3 id="separate-packages">Установка пакетов программного обеспечения по отдельности</h3>
+<p>Вместо установки целого набора коллекций LAMP пакеты можно также установить индивидуально.  Эта функция используется, если один из компонентов (например, сервер Apache или сервер базы данных MySQL) уже установлен.  Можно использовать средства командной строки или графический пользовательский интерфейс Synaptic Package Manager.</p>
+<p>Отдельно могут быть установлены следующие пакеты:</p>
+<ul>
+      <li>apache2</li>
+      <li>php5</li>
+      <li>mysql-server</li>
+      <li>php5-mysql</li>
+  </ul>
+<h3>&nbsp;</h3>
+<h3><a id="checkInstallation" name="checkInstallation"></a>Проверка установки</h3>
+<p>После настройки пакета PHP Web Stack убедитесь в том, что он установлен правильно, а сервер Apache распознает механизм PHP.</p>
+<p>Чтобы убедиться, что Apache и PHP установлены и запущены, откройте IDE NetBeans и <a href="./project-setup.html">создайте проект PHP</a>. В файле <tt>index.php</tt> введите метод PHP <tt>phpinfo()</tt>.  Запустите файл.  При этом должна отобразиться стандартная информационная страница PHP. <br /> <img alt="страница теста phpinfo в браузере по Ubuntu" class="margin-around" height="478" src="../../../images_www/articles/72/php/configure-php-environment-ubuntu/ubuntu-phpinfo.png" width="639" /></p>
+<h3 id="troubleshooting">Устранение проблем</h3>
+<p>Ниже перечислены часто возникающие проблемы при проверке установки стека PHP в Ubuntu:</p>
+<ul>
+  <li><strong>В окне браузера отображается ошибка &quot;Not Found&quot; для <tt>~USER/PROJECT/index.php</tt></strong>.  Удалите строку <tt>~USER</tt> из URL-адреса.  Например, если эта ошибка происходит для URL-адреса <tt>~ubuntu/test1/index.php</tt>, измените его на <tt>test1/index.php</tt>.  Обратите внимание, что можно настроить адрес URL для проекта PHP в IDE NetBeans либо при создании проекта или путем щелчка правой кнопки мыши узла проекта и перехода в 'Свойства' > 'Запустить конфигурацию'.</li>
+  <li><strong>В браузере отображается всплывающее окно с запросом на открытие файла, как если бы механизм PHP не распознавался.</strong> Пакет <tt>php5-common</tt> содержит ошибку. Замените его пакетами <tt>php5</tt> и <tt>phpmyadmin</tt>.  Для замены пакета <tt>php5-common</tt> необходимо выполнить следующие две команды:
+    <pre class="examplecode">apt-get --purge remove php5-common<br/>
+apt-get install php5 phpmyadmin</pre></li>
+</ul>
+</div>
+<h2><a id="specifyDocumentRoot" name="specifyDocumentRoot"></a>Указание корневого узла документа для сервера HTTP Apache2</h2>
+Корневой узел документов представляет собой папку, из которой сервер HTTP Apache извлекает файлы для отображения в браузере.  Корневой узел документов указан в файле, определяющем виртуальный узел. Файл настройки, определяющий виртуальный узел по умолчанию:
+<pre class="examplecode">/etc/apache2/sites-available/default</pre>
+с корневым узлом документов
+<pre class="examplecode">/var/www/</pre>
+Вместо изменения узла по умолчанию рекомендуется создать и активировать собственный виртуальный узел.
+<ul>
+  <li><a href="#createDocumentRootLocation">Создайте местоположение корневого узла документов</a></li>
+  <li><a href="#createNewVirtualHost">Укажите новый корневой узел документов в новом виртуальном узле.</a></li>
+  <li><a href="#activateNewVirtualHost">Активируйте новый виртуальный узел</a></li>
+</ul>
+<div class="indent">
+<h3><a id="createDocumentRootLocation" name="createDocumentRootLocation"></a>Создание местоположения корневого узла документов</h3>
+<ol>
+  <li>Выберите &quot;Places &gt; Home Folder&quot;.</li>
+  <li>В контекстном меню выберите &quot;Create Folder&quot;.</li>
+  <li>Введите имя папки, например public_html.</li>
+</ol>
+<h3><a id="createNewVirtualHost" name="createNewVirtualHost"></a>Создание нового виртуального узла</h3>
+<ol>
+  <li>Для <a id="launchTerminal" name="launchTerminal"></a>запуска терминала выберите &quot;Applications&gt;Accessories&gt;Terminal&quot;.  Откроется окно терминала.</li>
+  <li>Для копирования файла настройки из виртуального узла по умолчанию в новый файл (<tt>mysite</tt>) введите в командной строке следующую команду:
+    <pre class="examplecode">sudo cp /etc/apache2/sites-available/default /etc/apache2/sites-available/mysite</pre>
+  </li>
+  <li>Запустите приложение <tt><a id="gedit" name="gedit"></a>gedit</tt> и отредактируйте в нем новый файл настройки (<tt>mysite</tt>):
+    <pre class="examplecode">gksudo gedit /etc/apache2/sites-available/mysite </pre>
+    При появлении запроса введите пароль, определенный для пользователя root во время установки операционной системы.</li>
+  <li>Измените корневой узел документов, указав в нем новое местоположение:
+    <pre class="examplecode">/home/&lt;user&gt;/public_html/</pre>
+  </li>
+  <li>Измените директиву Directory путем замены
+    <pre class="examplecode">&lt;Directory /var/www/&gt;</pre>
+    на
+    <pre class="examplecode">&lt;Directory /home/user/public_html/&gt;</pre>
+  <img alt="Изменить корневой каталог в Ubuntu" class="margin-around" src="../../../images_www/articles/72/php/configure-php-environment-ubuntu/ubuntu-change-directory-root.png">  </li>
+  <li>Сохраните файл <tt>mysite</tt></li>
+</ol>
+<h3><a id="activateNewVirtualHost" name="activateNewVirtualHost"></a>Активация нового виртуального узла</h3>
+<ol>
+  <li>Для отключения виртуального узла по умолчанию и включения нового узла <a href="#launchTerminal">запустите терминал</a> и выполните следующие служебные программы в окне терминала:
+    <pre class="examplecode">sudo a2dissite default &amp;&amp; sudo a2ensite mysite</pre>
+  </li>
+  <li>Перезапустите сервер HTTP Apache:
+    <pre class="examplecode">sudo /etc/init.d/apache2 reload</pre>
+</li>
+</ol></div>
+<h2><a id="configureMySQL" name="configureMySQL"></a>Настройка сервера базы данных MySQL</h2>
+Во время установки сервера базы данных MySQL создается учетная запись пользователя root (администратора).  В ходе установки открывается диалоговое окно, в котором требуется указать пароль пользователя root (администратора).  Если это диалоговое окно не открылось или если в нем не был задан пароль, необходимо создать пароль пользователя root (администратора) MySQL сейчас.  Этот пароль требуется для создания других пользователей сервера MySQL.
+<ol>
+  <li>Для подключения к серверу MySQL<a href="#launchTerminal"> запустите терминал</a> и в окне терминала введите следующую команду:
+    <pre class="examplecode">mysql -u root -p</pre>
+  Появится командная строка MySQL.</li>
+  <li>В этой командной строке введите следующую команду и нажмите ENTER:
+    <pre class="examplecode">SET PASSWORD FOR 'root'@'localhost' = PASSWORD('&lt;yourpassword&gt;');</pre>
+    В случае успешного выполнения команды появляется следующее сообщение:
+    <pre class="examplecode">Query OK, 0 rows affected (0.00 sec)</pre>
+  </li>
+</ol>
+<h2><a id="installAndConfigureXDebug" name="installAndConfigureXDebug"></a>Установка и включение отладчика XDebug</h2>
+<p>Выполнение перечисленных ниже действий является необходимым только в том случае, если может потребоваться использование отладчика XDebug, который не является обязательным для разработки PHP.  Отладчик XDebug является расширением для PHP.  IDE NetBeans использует его автоматически, если он правильно настроек для используемого PHP Web Stack. Дополнительные сведения по XDebug и IDE NetBeans см. в разделе <a href="./debugging.html">Отладка исходного кода PHP в IDE NetBeans</a>. См. также <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">Вики-страницу NetBeans в XDebug</a>.</p>
+<div class="indent">
+    <h3 id="xdebug-package">Установка пакета XDebug (Ubuntu, версия 8.05 и более поздние)</h3>
+<p>При начале работы в Ubuntu 8.05 пакет XDebug доступен под именем <tt>php5-xdebug</tt>.  Поддерживается версия XDebug 2.0.3-1.  Ее можно установить с помощью средств командной строки или пользовательского интерфейса Synaptic Package Manager.  После установки отладчика XDebug следует изменить <tt>php.ini</tt>, следуя описанию в разделе <a href="#enableXDebug">Активация XDebug</a>.</p>
+<h3><a name="InstallingPHP5andPEARModules"></a>Создание отладчика XDebug из исходных компонентов (Ubuntu 7.10) </h3>
+<p>Для создания отладчика XDebug из исходных компонентов требуются два дополнительных модуля: PHP5 Development и PEAR. </p>
+<ol>
+  <li>Запустите <a href="#startSynapticPackageManager">диспетчер пакетов Synaptic</a>.</li>
+  <li>Перейдите на панель &quot;Installed&quot; (&quot;Установлено&quot;) и убедитесь в том, что модуль make уже установлен.</li>
+  <li>Перейдите на вкладку &quot;All&quot; (&quot;Все&quot;) и установите флажки для следующих пакетов:
+    <ul>
+        <li>php5-dev</li>
+      <li>php-pear</li>
+    </ul>
+    В контекстном меню для каждого элемента выберите &quot;Mark for installation&quot;.</li>
+  <li>Появится диалоговое окно &quot;Mark additional required changes&quot;, содержащее список зависимых пакетов, установка которых также является необходимой для функционирования программного обеспечения.  Нажмите кнопку &quot;Mark&quot;.</li>
+  <li>Происходит автоматический возврат к экрану &quot;Synaptic Package Manager&quot;, на котором представлены выбранные пакеты, отмеченные для установки.</li>
+  <li>На панели инструментов выберите &quot;Apply&quot;.  Появится экран &quot;Apply the following changes summary&quot; со списком пакетов, выбранных для установки.  Нажмите кнопку &quot;Apply&quot;.</li>
+  <li>После успешного завершения загрузки и установки появляется экран &quot;Changes applied&quot;.  Выберите &quot;Close&quot; (Закрыть).<p class="notes"><strong>Примечание.</strong> Модули также можно установить путем запуска следующей команды в окне 'Терминал': <tt class="examplecode">aptitude install php5-dev php-pear</tt></p>
+</li>
+    <li>После этого можно загрузить и установить отладчик XDebug.  Введите следующую команду в окне &quot;Terminal&quot;:
+<pre class="examplecode">sudo pecl install xdebug</pre></li>
+</ol>
+<h3><a name="enableXDebug"></a>Включение XDebug</h3>
+Для включения отладчика XDebug следует изменить файл php.ini в текстовом процессоре <a href="#gedit"><tt>gedit</tt></a>.
+<ol>
+  <li>Для запуска текстового процессора <tt>gedit</tt> запустите <a href="#launchTerminal">терминал</a> и в командной строке введите следующую команду:
+    <pre class="examplecode">gksudo gedit</pre>
+    При появлении запроса введите пароль, определенный для пользователя root во время установки операционной системы.</li>
+  <li>Откройте файл <tt>/etc/php5/apache2/php.ini</tt>.</li>
+  <li>Добавьте в файл следующие строки:
+    <pre class="examplecode">zend_extension=/usr/lib/php5/&lt;DATE+lfs&gt;/xdebug.so
+xdebug.remote_enable=on
+</pre>  
+  </li>
+</ol>
+<p>Дополнительные сведения о настройке отладчика XDebug приведены <a href="http://2bits.com/articles/setting-up-xdebug-dbgp-for-php-on-debian-ubuntu.html" target="_blank">здесь</a>.</p></div>
+<br style="clear:both;" />
+
+   <p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+<a href="../../trails/php.html">Возврат к учебной карте PHP</a>
+   </body>
+</html>

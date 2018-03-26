@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>HTML5 应用程序入门 - NetBeans 教程</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that introduces the support for developing HTML5 applications in NetBeans IDE 
+              and uses the jQuery JavaScript library.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, JavaScript, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>HTML5 应用程序入门</h1>
+
+        <p>
+        本文档说明了如何在 IDE 中创建 HTML5 项目，以及 IDE 中支持在项目中使用 JavaScript 和 CSS 的一些功能。在本文档中，您将创建简单的 HTML5 应用程序，以使用 jQuery JavaScript 库来修改 Web 页中的列表。</p>
+        
+        <p>本文档还演示了如何从 Chrome Web Store 为 Chrome 浏览器安装 NetBeans Connector 扩展。</p>
+
+        <p class="tips">要观看此教程的截屏视频，请参阅 <a href="../web/html5-gettingstarted-screencast.html">HTML5 应用程序入门的视频</a>。</p>
+        
+        <p class="tips">有关如何在 NetBeans Java Web 应用程序中使用 jQuery 的教程，请参阅教程<a href="../web/js-toolkits-jquery.html">使用 jQuery 改善 Web 页的外观和可用性</a>。</p>
+
+
+
+        <h3>目录</h3>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.4 和 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="此页上的内容适用于 NetBeans IDE 7.4 和 8.0">
+
+        <ul class="toc">
+            <li><a href="#installchrome">将 IDE 用于 Chrome 浏览器</a>
+                <ul>
+                    <li><a href="#installchrome1">从 Chrome Web Store 安装扩展</a></li>
+                    <li><a href="#installchrome2">脱机安装扩展</a></li>
+                </ul></li>
+            <li><a href="#webkit">使用嵌入式 WebKit 浏览器</a></li>
+            <li><a href="#createproject">创建 NetBeans HTML5 项目</a></li>
+            <li><a href="#editingpage">编辑 HTML 文件</a></li>
+            <li><a href="#saving">将项目另存为站点模板</a></li>
+            <li><a href="#summary">小结</a></li>
+            <li><a href="#seealso">另请参见</a></li>
+        </ul>
+
+        <h4>要完成本教程，需要使用以下资源。</h4>
+
+        <table id="requiredSoftware">
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE，Java</a></td>
+                    <td class="tbltd1">7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                    <td class="tbltd1">版本 7 或 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chrome 浏览器</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">用于 Chrome 的 NetBeans Connector 扩展</a></td>
+                    <td class="tbltd1">1.0.0 或更高版本</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">HTML5 演示项目资源</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">已完成项目的站点模板</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注：</strong></p>
+
+        <ul>
+            <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">项目资源 zip 文件</a>包含在本教程中需要添加到项目内的 JPG 图像和 CSS 文件。</li>
+
+            <li>如果要将您的项目与工作解决方案进行比较，可以下载已完成项目的<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">站点模板</a>。</li>
+
+            <li>本文档假定您具备 HTML、CSS 和 JavaScript 的一些基本知识或编程经验。</li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Installing the Extension ++++++++++++++++ -->
+        <a name="installchrome"></a>
+        <h2>将 IDE 用于 Chrome 浏览器</h2>
+        <p>要充分利用 IDE 中提供的支持 HTML5 应用程序开发的一些工具，建议使用 Chrome 浏览器并从 <a href="https://chrome.google.com/webstore/">Chrome Web Store</a> 安装 NetBeans Connector 扩展。只需要安装一次扩展。
+        </p>
+        
+        <p>安装 NetBeans Connector 扩展之后，它会添加 NetBeans 的 "Actions"（操作）菜单，在 Chrome 浏览器中运行 NetBeans HTML5 项目时可从 URL 地址栏访问该菜单。使用 NetBeans 的 "Actions"（操作）菜单可以启用 "Inspect in NetBeans Mode"（在 NetBeans 中检查模式），并快速将浏览器窗口的大小调整为常用显示设备的尺寸。JavaScript 调试器也会在运行 HTML5 应用程序时自动启用。 
+        </p>
+        
+        
+        
+        <a name="installchrome1"></a>
+        <div class="indent">
+        <h3>从 Chrome Web Store 安装扩展</h3>
+        <p>如果您从 IDE 运行 NetBeans HTML5 应用程序项目，并选择了 "Chrome with NetBeans Integration"（带有 NetBeans 集成的 Chrome），则系统将自动提示您安装 NetBeans Connector 扩展。本练习说明如何通过创建和运行伪 HTML5 项目来安装扩展。您可以跳过此练习，然后在 IDE 提示时安装扩展，或者直接从 Chrome Web Store 安装 NetBeans Connector 扩展。
+        </p>
+        
+        
+        <p class="notes"><strong>注：</strong>IDE 将在默认浏览器中打开 Chrome Web Store。如果 Chrome 未设置为 IDE 的默认浏览器，则需要打开 "Options"（选项）窗口并在 "General"（常规）类别的 "Web Browser"（Web 浏览器）下拉列表中选择 Chrome，然后再执行以下步骤。
+        </p>
+        <ol>
+            <li>选择 "File"（文件）> "New Project"（新建项目）以打开新建项目向导。</li>
+            <li>在 "HTML/JavaScript" 类别中选择 "HTML5 Application"（HTML5 应用程序）。单击 "Next"（下一步）。</li>
+            <li>指定项目的名称和位置。单击 "Next"（下一步）。
+                <p>对于本练习，名称不重要。</p></li>
+            <li>选择 "No Site Template"（无站点模板）。单击 "Finish"（完成）。
+                <p>单击 "Finish"（完成）时，IDE 会创建新的 HTML5 项目并在编辑器中打开 <tt>index.html</tt>。</p></li>
+            <li>确认在工具栏的下拉列表中选择了 "Chrome with NetBeans Integration"（带有 NetBeans 集成的 Chrome）。</li>
+            <li>单击工具栏中的 "Run"（运行）。</li>
+            <li>在 "Install Chrome Extension"（安装 Chrome 扩展）对话框中单击 "Go to Chrome Web Store"（转到 Chrome Web Store）。<br> <img alt="&amp;quot;Install Chrome Extension&amp;quot;（安装 Chrome 扩展）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension1.png" title="&amp;quot;Install Chrome Extension&amp;quot;（安装 Chrome 扩展）对话框">
+                <p>单击 "Go to Chrome Web Store"（转到 Chrome Web Store）时，Chrome 浏览器中将打开 Chrome Web Store 的 NetBeans Connector 页面。 </p>
+                <p class="notes"><strong>注：</strong>"Install Chrome Extension"（安装 Chrome 扩展）将显示一个按钮，安装扩展之后单击该按钮。</p>
+            <img alt="&amp;quot;Install Chrome Extension&amp;quot;（安装 Chrome 扩展）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-rerun-dialog.png" title="&amp;quot;Install Chrome Extension&amp;quot;（安装 Chrome 扩展）对话框"></li>
+            <li>转到 Chrome 浏览器并单击 NetBeans Connector 页面中的 "Add to Chrome"（添加到 Chrome）。出现提示时，单击 "Add"（添加）以确认要添加扩展。<br> <img alt="Chrome Web Store 中 NetBeans Connector 页面的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-chrome-netbeanshome.png" title="Chrome Web Store 中的 NetBeans Connector 页">
+                <p>安装扩展之后，您可以看到通知，声明扩展已添加，并且当您在 Chrome 浏览器中运行 NetBeans HTML5 项目时，NetBeans Connector 图标将在 URL 地址栏中可见。</p>
+                <img alt="确认该扩展已安装的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension2.png" title="确认该扩展已安装">
+            </li>
+            <li>在 IDE 的 "Install Chrome Extension"（安装 Chrome 扩展）对话框中，单击 "Re-Run Project"（重新运行项目）。
+                <p>单击 "Re-Run Project"（重新运行项目）时，Chrome 浏览器中将打开一个新标签，您可以看到 HTML5 应用程序的索引页。</p>
+                <p>安装扩展之后，当您在 Chrome 浏览器中运行 NetBeans HTML5 项目时，NetBeans Connector 图标将在 URL 地址栏中可见。</p> 
+            </li>
+            
+            </ol>
+            <p>如果您打开 Chrome 浏览器的 Chrome 扩展页面 (<tt>chrome://extensions/</tt>)，则将看到扩展现在已启用。</p>
+            <img alt="Chrome 扩展的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension3.png" title="Chrome 扩展中已启用 NetBeans Connector 扩展">
+
+        <p class="notes"><strong>注：</strong>此外，您可以执行以下步骤，直接从 Chrome Web Store 安装 NetBeans Connector 扩展。</p>
+            <ol>
+            <li>启动 Chrome 浏览器，然后转到 <a href="https://chrome.google.com/webstore/">Chrome Web Store</a>。</li>
+            <li>在 Chrome Web Store 中搜索 Netbeans Connector 扩展。</li>
+            <li>在搜索结果页中单击 "Add To Chrome"（添加到 Chrome），系统提示添加扩展时，单击 "Add"（添加）。<br> <img alt="Chrome Web Store 中的 NetBeans Connector 扩展的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-install-extension1.png" title="Chrome Web Store 中的 NetBeans Connector 扩展"></li>
+        </ol>
+              
+        
+        <a name="installchrome2"></a>
+        <h3>脱机安装扩展</h3>
+        <p>如果无法连接到 Chrome Web Store，则可以安装与 IDE 绑定的 NetBeans Connector 扩展。在运行 NetBeans HTML5 项目时，如果提示安装 NetBeans Connector 扩展，但您无法访问 Chrome Web Store，则可以执行以下步骤以安装扩展。</p>
+        <ol>
+            <li>在 "Install Chrome Extension"（安装 Chrome 扩展）对话框中单击 "Not Connected"（未连接）。<br> <img alt="&amp;quot;Install Chrome Extension&amp;quot;（安装 Chrome 扩展）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension1.png" title="&amp;quot;Install Chrome Extension&amp;quot;（安装 Chrome 扩展）对话框">
+            </li>
+            <li>在对话框中单击 <strong>locate（定位）</strong>以打开本地系统上包含 <strong><tt>netbeans-chrome-connector.crx</tt></strong> 扩展的 NetBeans IDE 安装文件夹。<br> <img alt="Chrome 扩展的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension2.png" title="Chrome 扩展中已启用 NetBeans Connector 扩展">
+            </li>
+            <li>在 Chrome 浏览器中打开 Chrome 扩展页面 (<tt>chrome://extensions/</tt>)。<br> <img alt="Chrome 扩展的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-offline-extension3.png" title="Chrome 扩展中已启用 NetBeans Connector 扩展">
+            </li>
+            <li>将 <tt>netbeans-chrome-connector.crx</tt> 扩展拖动到浏览器中的 "Extensions"（扩展）页面，然后单击 "Add"（添加）以确认要添加扩展。
+                <p>添加扩展之后，您可以看到 NetBeans Connector 扩展添加到了已安装扩展列表中。</p></li>
+            <li>在 "Install Chrome Extension"（安装 Chrome 扩展）对话框中单击 <strong>Yes, the plugin is installed now（是，插件现在已安装）</strong>可在 Chrome 浏览器中打开 NetBeans HTML5 项目。在浏览器标签的地址栏中可以看到 NetBeans Connector 图标。
+            </li>
+        </ol>
+        </div>
+
+        
+<!-- ++++++++++++++++ Using the WebKit Browser ++++++++++++++++ -->
+        <a name="webkit"></a>
+        <h2>使用嵌入式 WebKit 浏览器</h2>
+        <p>开发应用程序时，建议在安装了 NetBeans Connector 扩展的 Chrome 浏览器中运行 HTML5 应用程序。创建 HTML5 应用程序时，默认情况下将选择<strong>带有 NetBeans 集成的 Chrome</strong> 选项作为运行目标。不过，也可以在 IDE 所绑定的嵌入式 WebKit 浏览器中运行 HTML5 应用程序。</p>
+        
+        <p>在嵌入式 WebKit 浏览器中运行 HTML5 应用程序时，IDE 将在 IDE 中打开 Web 浏览器窗口。嵌入式 WebKit 浏览器支持 Chrome 浏览器中安装了 NetBeans Connector 扩展时启用的多种功能，包括检查模式、不同屏幕大小选项和 JavaScript 调试。
+        </p>
+        <p class="notes"><strong>注：</strong>在 IDE 的主菜单中选择 "Window"（窗口）> "Web" > "Web Browser"（Web 浏览器）将打开在“选项”窗口中指定作为 Web 浏览器的浏览器。 </p>
+        <p>执行以下步骤可在嵌入式 WebKit 浏览器中运行 HTML5 应用程序。</p>
+        <ol>
+            <li>在工具栏的下拉列表中选择 "Embedded WebKit Browser"（嵌入式 WebKit 浏览器）。<br> <img alt="工具栏中目标浏览器下拉列表的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-embedded1.png" title="工具栏下拉列表中 HTML5 应用程序的目标浏览器列表">
+            </li>
+            <li>在工具栏中单击 "Run"（运行），或者在 "Projects"（项目）窗口中右键单击项目节点并选择 "Run"（运行）。
+                <p>运行应用程序时，IDE 中将打开 Web 浏览器窗口。</p>
+                <img alt="&amp;quot;Embedded WebKit Browser&amp;quot;（嵌入式 WebKit 浏览器）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-embedded2.png" title="&amp;quot;Embedded WebKit Browser&amp;quot;（嵌入式 WebKit 浏览器）窗口">
+                <p>单击 Web 浏览器标签的工具栏中的图标可以启用检查模式以及在不同显示大小之间快速切换。</p></li>
+        </ol>
+        
+        
+<!-- ++++++++++++++++ Creating the Project ++++++++++++++++ -->
+        <a name="createproject"></a>
+        <h2>创建 NetBeans HTML5 项目</h2>
+        <p>本练习将在 IDE 中使用新建项目向导创建新的 HTML5 项目。在本指南中，您将创建只有一个 <tt>index.html</tt> 文件的非常基本的 HTML5 项目。在向导中，您还可以选择要在项目中使用的一些 jQuery JavaScript 库。
+        </p>
+        <ol>
+            <li>从主菜单中选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键），以打开新建项目向导。</li>
+            <li>选择 <strong>HTML5</strong> 类别，然后选择 <strong>HTML5 Application</strong>（HTML5 应用程序）。单击 "Next"（下一步）。<br> <img alt="新建项目向导中的 HTML5 应用程序模板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-newproject1.png" title="新建项目向导中的 HTML5 应用程序模板">
+            </li>
+
+            <li>为 "Project Name"（项目名称）键入 <strong>HTML5Demo</strong>，并指定计算机中用于保存项目的目录。单击 "Next"（下一步）。</li>
+
+            <li>在第 3 步 "Site Template"（站点模板）中，选择 "No Site Template"（无站点模板）。单击 "Next"（下一步）。<br> <img alt="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中的 &amp;quot;Site Templates&amp;quot;（站点模板）面板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-newproject2.png" title="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中的 &amp;quot;Site Templates&amp;quot;（站点模板）面板">
+                <p>选择 "No Site Template"（无站点模板）选项时，向导将生成基本的空 NetBeans HTML5 项目。如果立即单击 "Finish"（完成），则现在项目将仅包含站点根文件夹，该文件夹中有一个 <tt>index.html</tt> 文件。</p>
+                
+                <p>使用向导的 "Site Template"（站点模板）页可以从 HTML5 项目的常用联机模板列表中进行选择，也可以指定站点模板的 <tt>.zip</tt> 归档文件的位置。可以键入 <tt>.zip</tt> 归档文件的 URL 或者单击 "Browse"（浏览）以指定本地系统上的位置。当您基于某个站点模板创建项目时，项目的文件、库和结构由该模板确定。</p>
+                <p><strong class="notes">注：</strong>要根据列表中的一个联机模板创建项目，您必须处于联机状态。</p></li>
+            
+            <li>在第 4 步 "JavaScript Files"（JavaScript 文件）中，从 "Available"（可用）窗格选择 <tt>jquery</tt> 和 <tt>jqueryui</tt> JavaScript 库，单击右箭头图标 (&nbsp;>&nbsp;) 以将所选库移动到向导的 "Selected"（选定）窗格。默认情况下，将在项目的 <tt>js/libraries</tt> 文件夹中创建库。在本教程中，您将使用 JavaScript 库的“缩小”版本。
+                
+                <p class="tips">可以使用面板上的文本字段来过滤 JavaScript 库列表。例如，在字段中键入 <strong>jq</strong> 可帮助您查找 <tt>jquery</tt> 库。按住 Ctrl 单击库的名称可以选择多个库。</p>
+                
+            <img alt="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中 &amp;quot;JavaScript Libraries&amp;quot;（JavaScript 库）面板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-newproject3.png" title="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中的 &amp;quot;JavaScript Libraries&amp;quot;（JavaScript 库）面板">
+            
+            <p class="notes"><strong>注：</strong></p>
+            <ul>
+                <li>可以在 "Version"（版本）列中单击库版本号以打开弹出窗口，通过该窗口可以选择库的较早版本。默认情况下，向导显示最新的版本。</li>
+                <li>JavaScript 库的最小化版本是压缩版本，在编辑器中查看时，不太容易理解代码。</li>
+            </ul>
+            <li>单击<strong>完成</strong>即可完成此向导。
+            
+            <p>单击 "Finish"（完成）时，IDE 将创建项目、在 "Projects"（项目）窗口中显示项目的节点并在编辑器中打开 <tt>index.html</tt> 文件。</p>
+
+            <img alt="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中 &amp;quot;JavaScript Libraries&amp;quot;（JavaScript 库）面板的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-projectswindow1.png" title="&amp;quot;New HTML5 Application&amp;quot;（新建 HTML5 应用程序）向导中的 &amp;quot;JavaScript Libraries&amp;quot;（JavaScript 库）面板">
+
+            <p>如果在 "Projects"（项目）窗口中展开 <tt>js/libs</tt> 文件夹，则可以看到在新建项目向导中指定的 JavaScript 库已自动添加到项目。右键单击 JavaScript 文件并在弹出菜单中选择 "Delete"（删除）可以从项目中删除 JavaScript 库。</p>
+
+            <p class="tips">要将 JavaScript 库添加到项目，请右键单击项目节点，然后选择 "Properties"（属性）以打开 "Project Properties"（项目属性）窗口。在 "Project Properties"（项目属性）窗口的 "JavaScript Libraries"（JavaScript 库）面板中可以添加库。此外，您可以将本地系统上的 JavaScript 文件直接复制到 <tt>js</tt> 文件夹中。</p>
+            
+            <p>现在，您可以测试项目在 Chrome 浏览器中是否正确显示。</p>
+            </li>
+            <li>确认在工具栏的浏览器下拉表中选择了 "Chrome with NetBeans Connector integration"（集成 NetBeans Connector 的 Chrome）。<br> <img alt="工具栏中下拉列表的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-js/html5-js-selectbrowser.png" title="在工具栏下拉列表中选择的浏览器"></li>
+            <li>在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "Run"（运行）。</li>
+        </ol>
+        
+        <p>选择 "Run"（运行）时，IDE 将在 Chrome 浏览器中打开一个标签，然后显示应用程序的默认 <tt>index.html</tt> 页面。"Browser DOM"（浏览器 DOM）窗口将在 IDE 中打开，并显示在浏览器中打开的页面的 DOM 树。</p>
+
+        <img alt="Chrome 浏览器标签中应用程序的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject.png" title="Chrome 浏览器标签中的应用程序">
+
+        <p>您可以看到，浏览器标签中有一个黄色的栏，通知您 NetBeans Connector 正在调试标签。在黄色栏可见时，IDE 和浏览器已连接，能够彼此通信。从 IDE 启动 HTML5 应用程序时，JavaScript 调试器将自动启用。将对文件所做的更改保存到 CSS 样式表时，您无需重新加载页，因为浏览器窗口将自动更新以显示更改。</p>
+
+        <p class="alert">如果选择关闭黄色栏或者单击 "Cancel"（取消），您将断开 IDE 与浏览器之间的连接。如果断开了连接，则需要重新从 IDE 运行 HTML5 应用程序。</p>
+
+        <p>您还可以看到，NetBeans 图标在浏览器的 URL 位置字段中可见。您可以单击图标以打开提供了各种选项的菜单，用于更改浏览器的显示大小和启用在 NetBeans 中检查模式。</p>
+
+        <img alt="Chrome 浏览器标签中 NetBeans 菜单的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject2.png" title="Chrome 浏览器标签中的 NetBeans 菜单">
+        
+        <p>如果在菜单中选择了默认设备之一，则浏览器窗口将调整到该设备尺寸的大小。这使您可以查看应用程序在所选设备上的外观如何。HTML5 应用程序通常设计为可以根据查看这些应用程序所用设备的屏幕大小做出响应。您可以使用响应屏幕大小的 JavaScript 和 CSS 规则并修改应用程序的显示方式，这样就可以针对设备优化布局。 </p>
+
+        
+<!-- ++++++++++++++++ Editing the HTML File ++++++++++++++++ -->
+
+        <a name="editingpage"></a>
+        <h2>编辑 HTML 文件</h2>
+        <p>在本练习中，您会将项目资源添加到项目，并编辑 <tt>index.html</tt> 文件以添加指向资源的链接，然后添加几个 CSS 规则。您可以看到，将一些简单的 CSS 选择器与 JavaScript 结合使用即可显著更改页面在浏览器中的显示。</p>    
+        
+        <ol>
+            <li>下载<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5Demo-projectresources.zip">项目资源</a>归档文件并提取内容。
+            <p>Zip 归档文件包含两个文件夹，其中带有需要添加到项目的文件：<tt>pix</tt> 和 <tt>css</tt>。</p></li>
+            <li>将 <tt>pix</tt> 和 <tt>css</tt> 文件夹复制到站点根文件夹。
+            <p class="notes"><strong>注：</strong>如果要查看项目的目录结构，需要将文件夹复制到 <tt>public_html</tt> 文件夹。</p>
+            <img alt="Chrome 浏览器标签中 NetBeans 菜单的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-fileswindow.png" title="Chrome 浏览器标签中的 NetBeans 菜单">
+            </li>
+            <li>在编辑器中打开 <code>index.html</code>（如果尚未打开）。</li>
+            <li>在编辑器中，通过在 <tt>&lt;head></tt> 左右标记之间添加以下代码（粗体）来添加引用，指向在创建项目时添加的 JavaScript 库。
+            <pre class="examplecode">
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;&lt;/title&gt;
+    &lt;meta charset=UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+    <strong>&lt;script type="text/javascript" src="js/libs/jquery/jquery.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="js/libs/jqueryui/jquery-ui.js"&gt;&lt;/script&gt;</strong>
+  &lt;/head&gt;
+  &lt;body&gt;
+    TODO write content
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+                    
+                <p class="tips">您可以在编辑器中使用代码完成功能来获取帮助。</p>
+                <img alt="编辑器中代码完成功能的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-editor1.png" title="编辑器中的代码完成功能">
+            </li>
+            <li>删除默认的 <code>TODO write content</code> 注释，并在 <tt>body</tt> 标记之间键入以下代码。
+    <pre class="examplecode">
+    &lt;body&gt;
+        &lt;div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Mary Adams&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/maryadams.jpg" alt="Mary Adams"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Vice President&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x8234&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 102 Bldg 1&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; m.adams@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;John Matthews&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/johnmatthews.jpg" alt="John Matthews"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Middle Manager&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x3082&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 307 Bldg 1&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; j.matthews@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Sam Jackson&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/samjackson.jpg" alt="Sam Jackson"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Deputy Assistant&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x3494&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 457 Bldg 2&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; s.jackson@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+
+            &lt;h3&gt;&lt;a href="#"&gt;Jennifer Brooks&lt;/a&gt;&lt;/h3&gt;
+            &lt;div&gt;
+                &lt;img src="pix/jeniferapplethwaite.jpg" alt="Jenifer Applethwaite"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;h4&gt;Senior Technician&lt;/h4&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;phone:&lt;/b&gt; x9430&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;office:&lt;/b&gt; 327 Bldg 2&lt;/li&gt;
+                    &lt;li&gt;&lt;b&gt;email:&lt;/b&gt; j.brooks@company.com&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;br clear="all"&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;</pre>
+            </li>
+            <li>保存所做的更改。
+            <p>保存更改时，将在浏览器中自动重新加载页面，其外观应该类似于以下图像。</p>
+            <img alt="在 Chrome 浏览器标签中重新加载的页面的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject3.png" title="在 Chrome 浏览器标签中重新加载的页面">
+            </li>
+            <li>在文件的 <tt>&lt;head></tt> 标记之间键入以下内联 CSS 规则。 
+            <pre class="examplecode">&lt;style type=&quot;text/css&quot;&gt;
+    ul {list-style-type: none}
+    img {
+        margin-right: 20px; 
+        float:left; 
+        border: 1px solid;
+    }
+&lt;/style&gt;</pre>
+
+            <p class="tips">添加 CSS 规则时，在编辑器中按 Ctrl-Space 可使用代码完成功能。</p>
+
+            <img alt="编辑器中 CSS 规则的代码完成功能的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-editor2.png" title="编辑器中 CSS 规则的代码完成功能">
+                
+            <p>打开 "Browser DOM"（浏览器 DOM）窗口可以看到页面的当前结构。</p>
+            <img alt="显示 DOM 树的 &amp;quot;Browser DOM&amp;quot;（浏览器 DOM）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/dom-browser.png" title="显示 DOM 树的 &amp;quot;Browser DOM&amp;quot;（浏览器 DOM）窗口">
+            </li>
+            <li>将以下样式表链接（<strong>粗体</strong>）添加到 <code>&lt;head></code> 标记之间。 
+            <pre class="examplecode">&lt;head&gt;
+...
+    &lt;script type="text/javascript" src="js/libs/jqueryui/jquery-ui.js"&gt;&lt;/script&gt;
+    <strong>&lt;link type="text/css" rel="stylesheet" href="css/basecss.css"&gt;</strong>
+...
+&lt;/head&gt;</pre>
+            
+            <p><tt>basecss.css</tt> 样式表基于在 jQuery "UI lightness" 主题的定制 CSS 样式表中定义的一些 CSS 规则。</p>
+            
+            <p class="tips">可以在编辑器中打开 <tt>basecss.css</tt> 样式表并修改样式表，用于添加在之前步骤中添加的 CSS 规则或者为 CSS 规则创建新样式表。</p>
+            </li>
+            
+            <li>在 <tt>&lt;head></tt> 标记之间添加以下代码以便在加载页中的元素时运行 jQuery 脚本。
+<pre class="examplecode">
+    <strong>&lt;script type=&quot;text/javascript&quot;&gt;
+        $(document).ready(function() {
+
+        });
+    &lt;/script&gt;</strong>
+&lt;/head&gt;</pre>
+    
+            <p>jQuery 的原理是将动态应用的 JavaScript 属性和行为与 DOM（文档对象模型）元素连接在一起。本例中使用的 jQuery 指令必须在浏览器加载所有 DOM 元素之后才能执行。这点很重要，因为 jQuery 行为与 DOM 元素连接在一起，jQuery 必须可以使用这些元素，以便得到预期结果。jQuery 通过其内置的 <code>(document).ready</code> 函数帮助实现此目的，该函数在 jQuery 对象之后，由 <code>$</code> 表示。</p>
+
+            <p class="tips">还可以使用此函数的以下缩写版。</p>
+            <pre class="examplecode">$(function(){
+
+});</pre>
+
+            <p>jQuery 指令采用 JavaScript 方法的形式，通过一个可选的对象字面值来表示参数数组，且必须置于 <code>(document).ready</code> 函数内的花括号 <code>{}</code> 之间，从而只在合适的时间执行，也就是在 DOM 完全加载后。</p>
+            </li>
+
+            <li>在 <code>(document).ready</code> 函数的花括号 <code>{}</code> 内输入下面的代码（粗体）。
+<pre class="examplecode">
+    &lt;script type=&quot;text/javascript&quot;&gt;
+        $(document).ready(function() {
+            <strong>$("#infolist").accordion({
+                autoHeight: false
+            });</strong>
+        });
+    &lt;/script&gt;
+&lt;/head&gt;</pre>
+                
+            <p>此代码将调用包含在 <a href="http://jqueryui.com/">jQuery UI 库</a>中的 <a href="http://jqueryui.com/demos/accordion/">jQuery 折叠窗口部件</a>脚本。折叠脚本将修改标识为 <tt>infolist</tt> 的 DOM 对象中的元素。在此代码中，<code>#infolist</code> 是一个 CSS 选择器，连接到一个唯一的 DOM 元素中，该元素有一个值为 <code>infolist</code> 的 <code>id</code> 属性。它使用典型的 JavaScript 点表示法 ("<code>.</code>") 连接到使用 <code>accordion()</code> 方法的 jQuery 指令，以显示此元素。</p>
+            
+            <p>在下一步中，将页中的元素标识为 <tt>infolist</tt>。</p>
+
+            <p class="notes"><strong>注：</strong>您还在上面的代码片段中指定了 <code>autoHeight: false</code>。这样可以防止可折叠面板窗口部件根据标记内包含的最高内容部分设置每个面板的高度。有关详细信息，请参见<a href="http://docs.jquery.com/UI/Accordion">可折叠面板 API 文档</a>。</p>
+            
+            <p><code>index.html</code> 文件的 <tt>&lt;head></tt> 部分应该类似于以下内容。
+ <pre class="examplecode">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;&lt;/title&gt;
+        &lt;meta charset=&quot;UTF-8&quot;&gt;        
+        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jquery/jquery.js&quot;&gt;&lt;/script&gt;
+        &lt;script type=&quot;text/javascript&quot; src=&quot;js/libs/jqueryui/jquery-ui.js&quot;&gt;&lt;/script&gt;
+        &lt;link type="text/css" rel="stylesheet" href="css/basecss.css"&gt;
+
+        &lt;style type=&quot;text/css&quot;&gt;
+            ul {list-style-type: none}
+            img {
+                margin-right: 20px; 
+                float:left; 
+                border: 1px solid;
+            }
+        &lt;/style&gt;
+        &lt;script type=&quot;text/javascript&quot;&gt;
+            $(document).ready(function() {
+                $("#infolist").accordion({
+                    autoHeight: false
+                });
+            });
+        &lt;/script&gt;
+    &lt;/head&gt;</pre>
+
+            <p class="tips">通过在编辑器中单击右键并选择 "Format"（格式化代码）可以清理代码。</p>
+            </li>
+
+            <li>通过添加以下 <code>id</code> 选择器和值（粗体），修改包含页面内容的 <tt>&lt;div></tt> 元素。
+            <pre class="examplecode">&lt;body&gt;
+    &lt;div <strong>id="infolist"</strong>&gt;
+            </pre>
+            <p>此 <code>&lt;div></code> 元素包含页面的内容（在本教程前面部分中添加的四组 <code>&lt;h3></code> 标记和 <code>&lt;div></code> 标记）。</p>
+            
+            <p class="tips">在 "Edit CSS Rules"（编辑 CSS 规则）对话框中，可以将选择器添加到元素。要打开 "Edit CSS Rules"（编辑 CSS 规则）对话框，请在编辑器中右键单击 <tt>&lt;div></tt> 标记，然后在弹出式菜单中选择 "Edit CSS Rules"（编辑 CSS 规则）。或者，如果插入光标位于编辑器中的 <tt>&lt;div></tt> 标记内，则可以在 "CSS Styles"（CSS 样式）窗口（"Window"（窗口）> "Web" > "CSS Styles"（CSS 样式））中单击 "Edit CSS Rules"（编辑 CSS 规则）按钮 (<img alt="编辑器中代码完成功能的屏幕快照" src="../../../images_www/articles/73/web/html5-gettingstarted/newcssrule.png" title="编辑器中的代码完成功能">)。</p>
+            <div class="indent">
+            
+                    <img alt="&amp;quot;CSS Styles&amp;quot;（CSS 样式）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-cssstyles.png" title="&amp;quot;CSS Styles&amp;quot;（CSS 样式）窗口">
+                <p>在 "CSS Rules"（CSS 规则）对话框中，为 "Selector Type"（选择器类型）选择 <tt>id</tt>，然后为 "Selector"（选择器）键入 <strong>infolist</strong>。确认选中了 "Apply Changes to the Element"（应用对元素的更改）。
+                </p>
+                <img alt="&amp;quot;Edit CSS Rules&amp;quot;（编辑 CSS 规则）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-cssrules.png" title="&amp;quot;Edit CSS Rules&amp;quot;（编辑 CSS 规则）对话框">
+                <p>在对话框中单击 "OK"（确定）时，<tt>infolist</tt> 选择器的 CSS 规则将自动添加到 <tt>basecss.css</tt> 样式表。</p>
+            </div>
+ 
+            </li>
+            <li>将更改保存到 <tt>index.html</tt>（Ctrl-S；在 Mac 上为 ⌘-S）。 
+            <p>保存更改时，Web 浏览器中的页面将自动加载。可以看到，页面的布局已更改，现在页面将使用在 <tt>basecss.css</tt> 样式表中定义的 CSS 样式规则。将打开 <tt>&lt;h3></tt> 下的一个列表，但其他列表现在折叠。可以单击 <tt>&lt;h3></tt> 元素以展开列表。</p>
+            
+            <img alt="在浏览器中加载的项目的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-gettingstarted/html5-runproject5.png" title="最终项目加载到浏览器中">
+
+            
+            <p>jQuery 折叠函数现在将修改 <tt>infolist</tt> DOM 对象中包含的所有页面元素。在 "Navigator"（导航器）窗口中，可以查看 HTML 文件的结构以及由 <tt>id=infolist</tt> 标识的 <tt>div</tt> 元素。</p>
+            
+            <img alt="&amp;quot;Navigator&amp;quot;（导航器）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/navigator3.png" title="&amp;quot;Browser DOM&amp;quot;（浏览器 DOM）窗口">
+            <p class="tips">可以在 "Navigator"（导航器）窗口中右键单击某个元素并选择 "Go To Source"（转至源）以快速导航到该元素在源文件中的位置。</p>
+            <p>在 "Browser DOM"（浏览器 DOM）窗口中，可以查看在浏览器中呈现的页中 DOM 元素以及应用到这些元素的 JQuery 样式。
+            </p>
+            <img alt="&amp;quot;Browser DOM&amp;quot;（浏览器 DOM）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/dom-browser3.png" title="&amp;quot;Browser DOM&amp;quot;（浏览器 DOM）窗口">
+            <p class="tips">如果在浏览器中启用了 "Inspect in NetBeans"（在 NetBeans 中检查）模式，则在浏览器窗口中选择某个元素时，将在 "Browser DOM"（浏览器 DOM）窗口中突出显示此元素。</p>
+            </li>
+        </ol>
+
+        
+<!-- ++++++++++++++++ Saving the Project  ++++++++++++++++ -->
+        <a name="saving"></a>
+        <h2 id="template">将项目另存为站点模板</h2>
+        <p>您可以将项目另存为站点模板，使用该模板基于此项目来创建其他 HTML5 站点。站点模板可以包括 HTML 文件的 JavaScript 库、CSS 文件、图像和模板。IDE 提供了向导，用于帮助您选择要包括在站点模板中的文件。</p>
+            
+        <ol>
+            <li>在 "Projects"（项目）窗口中右键单击项目，然后从弹出菜单中选择 "Save as Template"（另存为模板）。</li>
+            <li>在 "Name"（名称）字段中键入 <strong>HTML5DemoSiteTemplate</strong> 并指定要将模板保存到的位置。</li>
+            <li>确认所有文件已选中。单击 "Finish"（完成）。
+                <p>如果在对话框的树中展开节点，则可以看到文件将包含在站点模板中。</p>
+                <img alt="&amp;quot;Create Site Template&amp;quot;（创建站点模板）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-gettingstarted/html5-sitetemplate.png" title="&amp;quot;Create Site Template&amp;quot;（创建站点模板）对话框">
+                <p>您可以看到站点模板包括 <tt>index.html</tt> 文件、CSS 样式表、项目中使用的图像以及 JavaScript 库。站点模板还可以包含任意配置文件和测试。</p>
+                <p>单击 "Finish"（完成）时，IDE 将生成 <tt>.zip</tt> 归档文件格式的站点模板。</p>
+            </li>
+        </ol>
+        
+        <p>
+        在需要根据站点模板创建项目时，请在新建项目向导的 "Site Template"（站点模板）面板中指定 <tt>.zip</tt> 归档文件的位置。</p>
+        
+        <h2 id="summary">小结</h2>
+
+        <p>在本教程中，您已学习了如何创建使用多个 jQuery JavaScript 库的空 HTML5 项目。您还学习了如何为 Chrome 浏览器安装 NetBeans Connector 扩展以及在浏览器中运行 HTML5 项目。编辑 <tt>index.html</tt> 文件时，可以看到 IDE 提供了一些工具，可以帮助您编辑 HTML 和 CSS 文件。
+            </p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20HTML5%20Applications">发送有关此教程的反馈意见</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        
+        <h2 id="seealso">另请参见</h2>
+
+        <p>有关 <a href="https://netbeans.org/">netbeans.org</a> 中 HTML5 应用程序支持的详细信息，请参见以下资源：</p>
+
+        <ul>
+            <li><a href="html5-editing-css.html">在 HTML5 应用程序中使用 CSS 样式表</a>。该文档继续使用在本教程中创建的应用程序，说明如何在 IDE 中使用部分 CSS 向导和窗口，以及如何在 Chrome 浏览器中使用检测模式以直观地在项目源代码中查找元素。</li>
+            <li><a href="html5-js-support.html">在 HTML5 应用程序中调试和测试 JavaScript</a>。此文档说明 IDE 如何提供工具来帮助您在 IDE 中调试和测试 JavaScript 文件。</li>
+        </ul>
+        
+        <p>有关 jQuery 的更多信息，请参见官方文档：</p>
+
+        <ul>
+            <li>官方主页：<a href="http://jquery.com">http://jquery.com</a></li>
+            <li>UI 主页：<a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>教程：<a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>文档主页：<a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>UI 演示和文档：<a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+    </body>
+</html>

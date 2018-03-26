@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Использование поддержки Oracle Java SE Embedded в среде NetBeans IDE</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JAVA, JAVA SE, EMBEDDED">
+       
+        <meta name="description" content="A short guide to setting up Java SE Embedded in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>Использование поддержки Oracle Java SE Embedded в среде NetBeans IDE</h1>
+		<div class="articledate" style="margin-left: 0px;">Авторы: Томас Зезула (Tomas Zezula) и Алена Сташкова (Alyona Stashkova)</div>
+        <p><a href="http://www.oracle.com/technetwork/java/embedded/overview/javase/index.html">Oracle Java Standard Edition Embedded</a> (Oracle Java SE Embedded) позволяет пользователям разрабатывать надежные портативные приложения с широкими функциональными возможностями для крупных встраиваемых систем. Среда NetBeans IDE поддерживает функции Java SE Embedded, такие как рабочая зона, память, питание, поддержка платформы и т. д. </p>
+		
+        <p>Это практическое руководство научит вас работать с Java SE Embedded в среде IDE NetBeans и использовать поддержку IDE для Java SE Embedded. </p>
+        <p><b>Содержание</b></p>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="Содержимое на этой странице применимо к IDE NetBeans 8.0">
+        <ul class="toc">
+		    <li><a href="#remote" title="Настройка удаленной платформы в NetBeans IDE">Настройка удаленной платформы в NetBeans IDE</a></li>
+			<li><a href="#calculator" title="Создание проекта">Создание и выполнение проекта в IDE</a></li>
+			<li><a href="#project" title="Настройка проекта для использования удаленной платформы">Настройка проекта для использования удаленной платформы</a></li>
+			<li><a href="#use" title="Выполнение проекта на удаленной платформе">Выполнение проекта на удаленной платформе</a></li>
+            <li><a href="#see" title="См. также">См. также</a></li>
+        </ul>
+
+        <p><b>Для работы с этим учебным курсом требуются программное обеспечение и материалы, перечисленные в таблице ниже.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">версия 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+                  <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>Настройка удаленной платформы в среде NetBeans IDE</h2>
+	<p>После загрузки и установки <a href="http://www.oracle.com/technetwork/java/embedded/downloads/javase/index.html?ssSourceSiteId=otncn">Oracle Java SE Embedded</a> на удаленной машине (Raspberry Pi используется в данной учебной программе для демонстрации целей), необходимо установить среду NetBeans IDE с удаленной платформой следующим способом: </p>
+    <ul>
+
+<li>Активировать компонент Java SE в среде IDE NetBeans</li>
+<li>Установить удаленную платформу Java SE в среде NetBeans IDE </li>
+</ul>
+        <p><b>Для активации функции Java SE в IDE:</b></p>
+		
+        <ol>
+          <li>Выберите 'Сервис' > 'Подключаемые модули' на главной панели инструментов IDE.</li>
+		  <li>В диалоговом окне 'Подключаемые модули' перейдите на вкладку 'Установлено' и выберите Java SE в списке доступных функций. 
+  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/plugins.png" rel="lytebox" title="Диалоговое окно &apos;Подключаемые модули&apos;"> <img alt="Диалоговое окно &apos;Подключаемые модули&apos;" border="1" src="../../../images_www/articles/80/java/javase-embedded/plugins-small.png"></a></p> </li>
+		  <li>Нажмите кнопку 'Активировать'.</li>
+		  <li>На панели приветствия в диалоговом окне программы установки нажмите кнопку 'Активировать'. </li>
+		  <li>После успешного завершения активации нажмите кнопку 'Готово'.</li>
+		  <li>Нажмите кнопку 'Закрыть', чтобы закрыть диалоговое окно 'Подключаемые модули'.</li>
+		  
+		  
+		
+    </ol>
+	
+	<p><b>Для установки удаленной платформы Java SE в среде NetBeans IDE:</b></p>
+	<ol><li>Выберите 'Служба'> 'Платформы Java'.<br>Откроется диалоговое окно 'Диспетчер платформ Java'.
+<p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/jpmanager.png" rel="lytebox" title="Панель &apos;Имя и местоположение&apos;"> <img alt="Панель &apos;Имя и местоположение&apos;" border="1" src="../../../images_www/articles/80/java/javase-embedded/jpmanager-small.png"></a></p></li>
+					   <li>Нажмите 'Добавить платформу'.</li>
+					   <li>В окне 'Выбор типа платформы' мастера платформ Java выберите Remote Java Standard Edition и нажмите кнопку 'Далее'.<br> IDE отображает диалоговое окно 'Добавить платформу Java'.
+						 <p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/addjp.png" rel="lytebox" title="Диалоговое окно &amp;quot;Добавить платформу Java&amp;quot;"> <img alt="Диалоговое окно &amp;quot;Добавить платформу Java&amp;quot;" border="1" src="../../../images_www/articles/80/java/javase-embedded/addjp-small.png"></a></p></li>
+					   <li>Укажите следующие сведения об удаленной платформе: имя, IP-адрес или DNS-имя устройства, имя пользователя, пароль и путь в JRE на удаленном устройстве.
+					   <p class="notes"><b>Примечание.</b> Целевая операционная система - UNIX (Windows не поддерживается).</p></li>
+      <li>Нажмите кнопку &quot;Завершить&quot;. Среда IDE проверяет удаленную среду JRE, выполняя исследование, и загружает свойства удаленной системы JRE. <br> Новая удаленная платформа Java SE отображается в диалоговом окне 'Диспетчер платформ Java'.
+		<p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/jpremote.png" rel="lytebox" title="Диалоговое окно &amp;quot;Добавить платформу Java&amp;quot;"> <img alt="Диалоговое окно &amp;quot;Добавить платформу Java&amp;quot;" border="1" src="../../../images_www/articles/80/java/javase-embedded/jpremote-small.png"></a></p></li>
+    </ol>
+					   <p>Теперь среда NetBeans IDE настроена для удаленной разработки Java SE.</p>
+	<h2><a name="calculator"></a>Создание и выполнение проекта в IDE </h2>
+	<p>Теперь предлагаем создать проект, который сначала выполняется в IDE, а затем на удаленной платформе. </p>
+	<p><b>Для создания проекта:</b></p>
+	<ol>
+	<li>В меню IDE выберите Файл > Создать проект.</li> 
+	<li>В мастере создания проекта выберите категорию &quot;Java&quot; и выберите &quot;Приложение Java&quot; в списке Проекты. Нажмите 'Далее'. </li>
+	<li>На странице Name and Location (&quot;Имя и местоположение&quot;) мастера выполните следующие действия:
+
+                <ul>
+                    <li>Введите <code>EmbeddedCalculator</code> в поле &quot;Имя проекта&quot;.</li>
+                    <li>Не устанавливайте флажок &quot;Использовать отдельную папку для хранения библиотек&quot;.</li>
+                    <li>В поле &quot;Создать главный класс&quot; введите <code>embeddedcalculator.EmbeddedCalculator</code>.</li>
+                    
+                </ul>
+       <p class="align-center">
+					  <a href="../../../images_www/articles/80/java/javase-embedded/wizard.png" rel="lytebox" title="Мастер создания проектов: имя и местоположение"> <img alt="Мастер создания проектов: имя и местоположение" border="1" src="../../../images_www/articles/80/java/javase-embedded/wizard-small.png"></a></p>         
+				
+      </li>          
+    <li>Нажмите 'Готово'.<br>IDE создает проект Java SE и открывает его в окне 'Проекты'.</li>
+	<li>Замените строку <tt>// TODO code application logic here</tt> следующим кодом: 
+	    <pre>    int a = 1;
+    int b = 2;
+    int c = a + b;
+    System.out.println (c);</pre>
+	</li>
+	<li>Сохраните изменения, выбрав &quot;Файл&quot; &gt; &quot;Сохранить&quot;. </li>
+	</ol>
+	<p>Для тестирования приложения щелкните на проекте правой кнопкой мыши и выберите &quot;Выполнить&quot; в контекстном меню. Рассчитанные выходные данные можно просматривать в диалоговом окне 'Выходные данные' (Окно > Выходные данные).</p>
+	<p class="align-center">
+					  <img alt="Окно вывода" border="1" src="../../../images_www/articles/80/java/javase-embedded/run-ide.png"></p>
+	<h2><a name="project"></a>Настройка проекта для использования удаленной платформы</h2>
+	<p>Для разработки встроенного приложения Java SE на удаленной платформе с помощью <a href="http://openjdk.java.net/jeps/161"> платформы на стадии выполнения сcompact1, compact2 или compact3 runtime platforms</a> JDK 8 требует зарегистрироваться в IDE. </p>
+	<p><b>Включение поддержки JDK 8 в IDE NetBeans:</b></p>
+	<ol>
+          <li>В среде IDE выберите &quot;Сервис&quot; &gt; &quot;Платформы Java&quot;.</li>
+		  <li>В диалоговом окне 'Диспетчер платформ Java' нажмите 'Добавить платформу'. </li>
+		  <li>В диалоговом окне 'Добавление платформы Java' выберите Java Standard Edition и нажмите 'Далее'. </li>
+		  <li>Укажите каталог, в котором находится JDK, и нажмите 'Далее'. 
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/jdk8.png" rel="lytebox" title="Выбрана платформа JDK 8"> <img alt="Выбрана платформа JDK 8" border="1" src="../../../images_www/articles/80/java/javase-embedded/jdk8-small.png"></a> </p></li>
+		  <li>Проверьте правильность местоположений по умолчанию для zip-архива Platform Sources и документации API. Для закрытия диалога добавления платформы Java нажмите кнопку &quot;Готово&quot;.<br> Платформа JDK 8 зарегистрирована в IDE. 
+		    <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/jdk8registered.png" rel="lytebox" title="Зарегистрированная платформа Java"> <img alt="Зарегистрированная платформа Java" border="1" src="../../../images_www/articles/80/java/javase-embedded/jdk8registered-small.png"></a> </p></li>
+		<li>Выберите &quot;Close&quot; (Закрыть).</li>
+    </ol>
+	
+	<p><b>Настройка проекта для работы с JDK 8:</b></p>
+	<ol>
+	<li>В окне 'Проекты' щелкните правой кнопкой мыши проект EmbeddedCalculator и выберите 'Свойства' в контекстном меню. </li>
+	<li>В диалоговом окне 'Свойства проекта' выберите категорию 'Библиотеки' и выберите JDK 1.8 в качестве платформы Java. 
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-jdk8.png" rel="lytebox" title="JDK 8 выбрана в качестве платформы Java"> <img alt="JDK 8 выбрана в качестве платформы Java" border="1" src="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-small.png"></a> </p></li>
+	 <li>Выберите категорию 'Источники', затем выберите JDK 8 в списке 'Исходный/двоичный формат'.
+		
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-source-jdk8.png" rel="lytebox" title="Выбор JDK 8 в качестве исходного/двоичного формата"> <img alt="Выбор JDK 8 в качестве исходного/двоичного формата" border="1" src="../../../images_www/articles/80/java/javase-embedded/prj-source-jdk8-small.png"></a> </p> </li>
+	<li>Укажите профиль, который используется в качестве стадии выполнения на удаленной платформе (например, Compact 2).
+	<p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-profile.png" rel="lytebox" title="Настройка профиля - Compact 2"> <img alt="Настройка профиля - Compact 2" border="1" src="../../../images_www/articles/80/java/javase-embedded/prj-jdk8-profile-small.png"></a> </p>  </li>
+	<li>Нажмите OK для сохранения изменений. <br> Ваш проект настроен на распознавание определенной стадии выполнения на удаленной платформе.</li>
+	</ol>
+	<h2><a name="use"></a>Запуск проекта на удаленной платформе</h2>
+		 <p>Вы можете запустить и отладить приложение на удаленном устройстве после настройки конфигурации проекта, отличной от конфигурации по умолчанию. </p>
+	<p><b>Для создания новой настройки выполните следующие действия.</b></p>
+	<ol>
+	<li>В окне 'Проекты' щелкните правой кнопкой мыши имя проекта и выберите 'Свойства' в контекстном меню.</li>
+	<li>Выберите категорию 'Выполнение'.</li>
+	<li>Нажмите 'Создать' справа от раскрывающегося списка 'Конфигурация'.</li>
+	<li>В диалоговом окне 'Создать новую конфигурацию' укажите имя новой конфигурации и нажмите ОК.</li>
+	<li>Выберите имя платформы стадии выполнения в раскрывающемся списке 'Платформа стадии выполнения'.
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/config-runtime.png" rel="lytebox" title="Настройка платформы стадии выполнения"> <img alt="Настройка платформы стадии выполнения" border="1" src="../../../images_www/articles/80/java/javase-embedded/config-runtime-small.png"></a> </p></li>
+	<li>Нажмите кнопку &quot;ОК&quot;, чтобы сохранить изменения. </li>
+	</ol>
+	<p>При запуске проекта на удаленной платформе (Запуск > Запуск проекта (имя проекта)) выходные данные выглядят практически так, как показано на рисунке ниже. </p>
+	 <p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/run-remote.png" rel="lytebox" title="Настройка платформы стадии выполнения"> <img alt="Настройка платформы стадии выполнения" border="1" src="../../../images_www/articles/80/java/javase-embedded/run-remote-small.png"></a> </p>	
+<p><b>Для переключения между конфигурациями проекта:</b> </p> 
+<ul>
+<li>Выберите Выполнение > Настройка конфигурации проекта > Имя конфигурации или щелкните правой кнопкой мыши по проекту и выберите Установить конфигурацию > Имя конфигурации из контекстного меню.
+<p class="align-center"><a href="../../../images_www/articles/80/java/javase-embedded/switch-config.png" rel="lytebox" title="Переключение между конфигурациями проекта"> <img alt="Переключение между конфигурациями проекта" border="1" src="../../../images_www/articles/80/java/javase-embedded/switch-config-small.png"></a> </p></li>
+
+</ul>
+		
+		 
+
+	 
+        
+        
+        
+
+         <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20Setting%20Up%20Oracle%20Java%20SE%20Embedded%20in%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>Дополнительные сведения</h2>
+        <ul>
+            
+			
+			<li><a href="http://www.oracle.com/technetwork/java/embedded/resources/se-embeddocs/index.html?ssSourceSiteId=null">Документация по Java SE Embedded</a></li>
+			<li><a href="https://www.youtube.com/watch?v=mAnne3N0d5Y#t=149" target="_blank">Разработка встроенных приложений Java SE стала проще - часть 1 из 2 </a></li>
+			<li><a href="https://www.youtube.com/watch?v=G8oMx2SJZq8">Разработка встроенных приложений Java SE стала проще - часть 2 из 2 </a></li>
+			<li><a href="http://www.oracle.com/technetwork/articles/java/raspberrypi-1704896.html">Начало работы с встроенными приложениями Java® SE на Raspberry Pi</a></li>
+	</ul>
+			
+
+        
+</body>
+</html>

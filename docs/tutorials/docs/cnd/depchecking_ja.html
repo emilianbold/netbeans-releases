@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="keywords" content="NetBeans, IDE, Oracle Solaris Studio, integrated development environment, user, documentation, open source">
+<meta name="description" content="This article describes the Make Dependency Checking feature for C and C++ 
+      projects in NetBeans IDE and Oracle Solaris Studio IDE. ">
+   <meta name="author" content="Alexey Vladykin">
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+<title>依存性の確認 - NetBeans IDE</title>
+</head>
+<body>
+<a name="top"></a>
+
+<h1>依存性の確認</h1>
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+    執筆: Alexey Vladykin<br> 2014年3月 [リビジョン番号: V8.0-1]
+</div>
+<!-- maintained by susanm -->
+
+<p>このチュートリアルでは、NetBeans IDEで、プロジェクトのビルド時におけるファイル依存性の確認を有効にする方法を示します。依存性チェックは、<tt>Makefile</tt>の手順に従って<tt>make</tt>ユーティリティによって実行されます。</p>
+
+<p><b>目次</b></p>
+<img alt="このページの内容は、NetBeans IDE 7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.3、7.4および8.0に適用されます">
+
+<ul class="toc">
+<li><a href="#requirements" title="要件">要件</a></li>
+<li><a href="#introduction" title="概要">概要</a></li>
+<li><a href="#build" title="ビルド・プロセス(makeおよびmakefile)">ビルド・プロセス(makeおよびmakefile)</a></li>
+<li><a href="#basics" title="依存性生成の基本">依存性生成の基本</a></li>
+<li><a href="#implementation" title="実装">実装</a></li>
+</ul>
+<h2><a NAME="requirements"></a>要件</h2>
+<p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b> </p>
+<table>
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">ソフトウェア</th>
+    <th class="tblheader" scope="col">必須バージョン</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE (C/C++のサポートを含む)</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">バージョン7.3、7.4または8.0とNetBeans C/C++プラグイン</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Java Development Kit (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">バージョン7または8</a></td>
+</tr>
+</tbody>
+</table>
+      <br>
+<p>必要なソフトウェアのダウンロードとインストールについては、<a href="../../../community/releases/80/install.html">NetBeans IDEのインストール手順</a>および<a HREF="../../../community/releases/80/cpp-setup-instructions.html">C/C++/Fortran向けのNetBeans IDEの構成</a>を参照してください。<br></p>
+
+
+<h2><a name="introduction"></a>概要</h2>
+
+<p>
+    大規模なC/C++プロジェクトは何千ものファイルで構成されます。たとえば、Linuxカーネルには約20,000ファイルが含まれます。このようなプロジェクトの開発中に、小さな変更(1行の修正など)の後にプロジェクトを再ビルドする場合、2つのオプションがあります。
+
+<ul>
+<li>
+    完全再ビルド(消去してビルド・アクション)。低速ですが、ビルド結果の整合性は保証されます。
+</li>
+<li>
+    増分再ビルド(ビルド・アクション)。高速ですが、再ビルドを必要とするものがすべて正確に再ビルドされるでしょうか。
+</li>
+</ul>
+
+<p>
+    増分再ビルドの主な問題は、あるファイルの内容を別のファイルにインクルードする<tt>#include</tt>ディレクティブの存在です。インクルード・ファイルはファイル依存性として知られています。インクルード・ファイルの変更は、そのファイルをインクルードするすべてのファイルの変更として扱う必要があります。間接インクルード(AがBをインクルードし、BがCをインクルードする=> AがCをインクルードする)がある場合は問題がさらに複雑になります。
+</p>
+
+<p>
+    NetBeans IDEではファイル依存性の自動確認がサポートされており、増分再ビルドが正しく機能するように動作します。一部のソース・ファイルに含まれるヘッダー・ファイルを変更して「ビルド」をクリックすると、IDEでは、変更されたヘッダーに実際に依存しているプロジェクトの要素のみが再ビルドされます。この機能によって時間が節約され、ビルド結果の整合性が保証されます。
+</p>
+
+<h3>プロジェクトの依存性チェックの有効化</h3>
+
+<p>
+    依存性チェックは特定のプロジェクトごとに制御できます。この機能が有効であることを確認する場合があります。
+</p>
+      <p><b>プロジェクトの依存性チェックを有効化する手順:</b></p>
+
+      <ol>
+         <li>「プロジェクト」ウィンドウでプロジェクトを右クリックし、「プロパティ」を選択します。</li>
+         <li>
+            「プロジェクト・プロパティ」ダイアログ・ボックスで、「カテゴリ」リストの「ビルド」ノードを選択します。
+         </li>
+         <li>ビルド・プロパティで、「依存性チェックを有効化」のチェックボックスを選択します。</li>
+      </ol>
+      <br> <img alt="プロジェクト・プロパティの依存性チェックのチェックボックス" class="margin-around" src="../../../images_www/articles/73/cnd/depchecking/project-checkbox.png"> <br>
+    <h3>新規プロジェクトのデフォルトによる依存性チェックの有効化</h3>
+<p>作成した新しいプロジェクトの依存性チェックが自動的に有効になるように、依存性チェックのデフォルトの状態を設定できます。</p>
+ <p><b>IDEで作成されるすべての新規プロジェクトの依存性チェックを有効化する手順:</b></p>
+
+ <ol>
+         <li>IDEメイン・メニューで「ツール」>「オプション」を選択します。</li>
+         <li>
+            最上部ペインで「C/C++」ボタンをクリックします。
+         </li>
+         <li>「プロジェクト・オプション」タブをクリックします。</li>
+         <li>生成したMakefileでの依存性チェックを有効化するチェックボックスを選択します。</li>
+
+        
+      </ol>
+      <br> <img alt="NetBeansオプションでの依存性チェックのチェックボックス" class="margin-around" src="../../../images_www/articles/73/cnd/depchecking/global-checkbox.png">
+
+
+<h3 class="notes">注意</h3>
+
+<ul>
+<li>
+    自動依存性チェックはIDEで作成されたC/C++プロジェクト(管理対象プロジェクト)で機能します。IDEは生成された<tt>Makefile</tt>内に依存性チェック・ロジックをビルドします。既存のソースによって作成されたプロジェクトの場合は、既存の<tt>Makefile</tt>の依存性チェック・ロジック(ある場合)に依存する必要があります。
+</li>
+<li>
+    依存性チェックにはツール・コレクション(<tt>make</tt>およびコンパイラ)からのサポートが必要です。これはOracle Solaris Studioツール・コレクションと、CygwinおよびMinGWが含まれるGNUツール・コレクションによってテストされています。
+</li>
+<li>
+    依存性チェックは、Oracle Solaris StudioコンパイラがOracle Solaris <tt>make</tt>とともに使用され、GNUコンパイラがGNU <tt>gmake</tt>とともに使用される際に機能します。Oracle Solaris <tt>make</tt>とGNUコンパイラの混在、あるいはその反対はサポートされていません。
+</li>
+</ul>
+
+<p>
+    この記事の後半は、IDEの内部動作に関する上級ユーザー向けの内容です。
+</p>
+
+
+<h2><a name="build"></a>ビルド・プロセス(makeおよびmakefile)</h2>
+<p>
+    NetBeansでのすべてのC/C++プロジェクトのビルド・プロセスは、<tt>make</tt>ユーティリティで理解される特殊な形式のファイルである、<tt>Makefile</tt>に記述があります。GUIからプロジェクトをビルドまたは消去すると、IDEは<tt>make</tt>を呼び出し、これによってMakefileが実行されます。このアプローチでは、<tt>make</tt>を使用することでプロジェクトをIDE外部で簡単にビルドできます。プロジェクト・ディレクトリに移動し、<tt>make help</tt>と入力して指示を得るだけです。
+</p>
+
+<p>
+    NetBeans IDEでC/C++プロジェクトのために使用されるMakefileを次に示します。
+</p>
+
+<img alt="NetBeansでC/C++プロジェクトのために使用されるMakefile" class="margin-around" src="../../../images_www/articles/73/cnd/depchecking/makefiles.png">
+
+<p>
+    マスター<tt>Makefile</tt>は一度生成されると、手動で編集することができます。<tt>nbproject</tt>ディレクトリ内のMakefileは手動で編集できません。これらは、IDEによって自動的に更新されます。図中のファイル<tt>Makefile-<i>CONF</i>.mk</tt>は、<tt>Makefile-Release.mk</tt>、<tt>Makefile-Debug.mk</tt>などの、すべてのプロジェクト構成のための複数のファイルを表しています。
+</p>
+
+<p>
+    管理対象プロジェクトの場合、IDE自体がすべてのmakefileを生成し、依存性チェックの適切な手順を挿入します。既存のソースから作成されたプロジェクトの場合、依存性チェックは、既存の<tt>Makefile</tt>にこのような手順が含まれる場合のみ機能します。NetBeans IDEでは既存の<tt>Makefile</tt>は変更されないためです。
+</p>
+
+
+<h2><a name="basics"></a>依存性生成の基本</h2>
+
+<p>
+    <tt>make</tt>でビルド中にインクルード・ファイル依存性をチェックする場合は、依存性情報を<tt>Makefile</tt>内に挿入する必要があります。しかしながら、すべての<tt>make</tt>ユーティリティおよびコンパイラに対してこれを行う移植可能な方法はありません。まず、稼働中の<tt>make</tt>を検出してから、対応する依存性チェック手順を生成する必要があります。
+</p>
+
+<p>
+    Oracle Solarisの<tt>make</tt>には非常に単純なソリューションがあります。<tt>Makefile</tt>内の特殊な<tt>.KEEP_STATE:</tt>ルールは、インクルード・ファイル依存性に関してコンパイラに問合せを行い、それを一時ファイルに格納するように<tt>make</tt>に指示します。次回プロジェクトが再ビルドされるとき、<tt>make</tt>はその一時ファイルをロードして、格納された依存性を分析してから、変更されたヘッダーと再コンパイルが必要なオブジェクト・ファイルを決定します。
+</p>
+
+<p>
+    GNU <tt>make</tt> (<tt>gmake</tt>と呼ばれる)の場合、ソリューションはより複雑になります。依存性情報を生成することをコンパイラに明示的に要求してから、それを明示的に<tt>Makefile</tt>に含める必要があります。特殊なフラグをコンパイラに渡すことで、コンパイルされた個々のソース・ファイルの依存性情報をコンパイラが生成するようになります。次回プロジェクトが再ビルドされるとき、依存性情報が収集されて<tt>Makefile</tt>内に含まれます。
+</p>
+
+
+<h2><a name="implementation"></a>実装</h2>
+
+<p>
+    次のコードが<tt>nbproject/Makefile-impl.mk</tt>に追加されます。これによって稼働中の<tt>make</tt>が検出されてから、対応する依存性チェック・コードが<tt>.dep.inc</tt>ファイル内に含まれます。GNU <tt>make</tt>は<tt>MAKE_VERSION</tt>変数の存在によって検出されます。<tt>MAKE_VERSION</tt>が設定されていない場合は、Solaris <tt>make</tt>固有の手順が生成されます。
+</p>
+
+<pre class="examplecode"># dependency checking support
+.depcheck-impl:
+	@echo "# This code depends on make tool being used" &gt;.dep.inc
+	@if [ -n "${MAKE_VERSION}" ]; then \
+	    echo "DEPFILES=\$$(wildcard \$$(addsuffix .d, \$${OBJECTFILES}))" &gt;&gt;.dep.inc; \
+	    echo "ifneq (\$${DEPFILES},)" &gt;&gt;.dep.inc; \
+	    echo "include \$${DEPFILES}" &gt;&gt;.dep.inc; \
+	    echo "endif" &gt;&gt;.dep.inc; \
+	else \
+	    echo ".KEEP_STATE:" &gt;&gt;.dep.inc; \
+	    echo ".KEEP_STATE_FILE:.make.state.\$${CONF}" &gt;&gt;.dep.inc; \
+	fi</pre>
+
+<p>
+    次のコードが<tt>nbproject/Makefile-${CONF}.mk</tt>に追加されます。これによって、前に生成された<tt>.dep.inc</tt>を読み取ってその手順を実行するように、<tt>make</tt>が指示されます。
+</p>
+
+<pre class="examplecode"># Enable dependency checking
+.dep.inc: .depcheck-impl
+
+include .dep.inc</pre>
+
+<p>
+    ルール<tt>.dep.inc: .depcheck-impl</tt>が、<tt>.dep.inc</tt>が存在しない場合にビルドの失敗を防ぐために追加されます。このことが発生するのは1つのケースのみ、すなわち「プロジェクト」ウィンドウから単一ファイルをコンパイルする場合です。この場合、<tt>make</tt>は<tt>nbproject/Makefile-${CONF}.mk</tt>ファイルを直接実行します。
+</p>
+
+
+<h2>参考資料</h2>
+
+<ol>
+<li>
+    <a href="http://en.wikipedia.org/wiki/Make_%28software%29" target="_blank"><tt>make</tt>に関するWikipedia記事</a>
+</li>
+<li>
+    <a href="http://make.paulandlesley.org/autodep.html" target="_blank">高度な自動依存性の生成</a>
+</li>
+</ol>
+<h2>関連項目</h2>
+   <p>NetBeans IDEでのC/C++/Fortranを使用した開発に関する詳細な記事は、<a href="https://netbeans.org/kb/trails/cnd.html">C/C++の学習</a>を参照してください。</p>
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Make%20Dependency%20Checking%20-%20NetBeans%20IDE%208.0%20Tutorial">このチュートリアルに関するご意見をお寄せください</a></div>
+
+</body></html>

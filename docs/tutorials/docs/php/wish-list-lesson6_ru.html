@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Создание приложения на основе базы данных на языке PHP.  Создание новой записи в базе данных MySQL</title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Creating new record in MySQL database" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+<h1>Создание приложения на основе базы данных на языке PHP </h1>
+<h1>Урок 6. Добавление нового пожелания в базу данных</h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>Содержание учебного курса.</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">Создание приложения на основе базы данных с помощью языка PHP &ndash; главная страница</a></li>
+    <li><p>Создание базы данных</p> <ol type="a"><li><a href="wish-list-lesson1.html">Создание базы данных MySQL</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">Создание таблиц базы данных Oracle</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">Проектирование приложения. Чтение из базы данных</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">Создание нового пользователя приложения</a></li>
+    <li><a href="wish-list-lesson4.html">Усовершенствование кода</a></li>
+    <li><a href="wish-list-lesson5.html">Добавление функций безопасности. Реализация входа пользователя в приложение</a></li>
+    <li>
+      <p><b>=&gt; Добавление нового пожелания в базу данных</b></p>
+      <ul>
+<li><a href="#previousLessonSourceCode">Исходный код приложения из предыдущего урока</a></li>
+<li><a href="#addNewWish">Отправка нового пожелания</a>
+  <ul>
+<li><a href="#add-wish-ui-elements">Добавление компонентов интерфейса пользователя</a></li>
+
+<li><a href="#inputFormAfterunsuccessfulSave">Повторное отображение срока выполнения после <br>неудавшейся отправки</a></li>
+</ul></li>
+<li><a href="#logonVerification">Проверка входа пользователя</a></li>
+<li><a href="#insert-new-wish">Добавление нового пожелания в базу данных</a>
+<ul>
+<li><a href="#add-insert-wish">Добавление к базе данных WishDB функции insert_wish</a></li>
+<li><a href="#add-format-date-for-sql">Добавление к базе данных WishDB функции format_date_for_sql</a></li>
+<li><a href="#validateAndEnterWishToDatabase">Создание новой записи пожелания в базе данных</a></li>
+<li><a href="#displayingErrorMessages">Отображение сообщений об ошибках</a></li>
+</ul>
+</li>
+
+
+<li><a href="#backToIndex">Возврат к первой странице &quot;index.php&quot;</a></li>
+<li><a href="#testingAddWishFunctionality">Тестирование функциональной возможности добавления пожелания</a></li>
+<li><a href="#lessonResultSourceCode">Исходный код приложения на момент завершения текущего урока</a></li>
+</ul>
+    </li>
+    <li><a href="wish-list-lesson7.html">Обновление и удаление записей в базе данных</a></li>
+    <li><a href="wish-list-lesson8.html">Усовершенствование внешнего вида приложения с использованием технологии CSS</a></li>
+    <li><a href="wish-list-lesson9.html">Развертывание приложения на удаленном веб-сервере</a></li>
+</ol>
+</div>
+</div>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+<p>В этом уроке функциональные возможности приложения будут расширены двумя компонентами:</p>
+<ul>
+  <li style="margin-left:42em"><a href="#addNewWish">Добавление нового пожелания</a></li>
+  <li style="margin-left:42em"><a href="#backToIndex">Возврат к первой странице &quot;index.php&quot;</a></li>
+</ul>
+<p>Для реализации этих функциональных возможностей следует изменить файл <tt>editWishList.php</tt> и создать новый файл <tt>editWish.php</tt>.</p>
+<img alt="В диаграмме потоков страниц выделены добавления из занятия 6" height="368" src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram-l6.png" width="439">
+<p>Текущий документ является частью краткого учебного курса <a href="wish-list-tutorial-main-page.html">Создание приложения CRUD в IDE NetBeans для PHP</a>. </p>
+<br style="clear:left">
+<h2><a name="previousLessonSourceCode"></a>Исходный код приложения из предыдущего урока</h2>
+<p>Для пользователей MySQL: щелкните <a href="https://netbeans.org/files/documents/4/1931/lesson5.zip" target="_blank"> здесь</a>, чтобы загрузить исходный код, отражающий состояние проекта после завершения предыдущего урока.</p>
+<p>Для пользователей баз данных Oracle: перейдите по <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson5.zip" target="_blank">этой</a> для загрузки исходного кода, описывающего состояние проекта на момент завершения предыдущего урока.</p>
+<h2><a id="addNewWish" name="addNewWish"></a>Отправка нового пожелания </h2>
+<p>Пользователь выполняет отправку нового пожелания путем выполнения следующих действий: </p>
+<ol>
+  <li>Пользователь входит в систему, переключается на страницу <tt>editWishList.php</tt> и нажимает кнопку &quot;Add Wish&quot;.  Откроется страница <tt>editWish.php</tt>, на которой отображается форма HTML.</li>
+  <li>В форме HTML пользователь вводит описание пожелания и, возможно, дату, до наступления которой пожелание должно быть выполнено, а затем нажимает кнопку &quot;Save Changes&quot;. </li>
+  <li>Если форма отправляется без описания пожелания, то выполняется возврат к этой же форме для повторной попытки ввода.  Если пользователь указал срок выполнения пожелания, но не ввел описание, то при перезагрузке формы эти данные вновь отображаются.</li>
+</ol>
+
+
+<!--<ul>
+   <li>If the description is not filled in, an error message is displayed and the user returns to the editWish.php page. </li>
+  <li>Else, if a description is filled in, the application returns to the editWishList.php page with the list of wishes expanded with the new wish. </li>
+
+</ul> -->
+<p>Для предоставления пользователю возможности использования этой процедуры необходимо добавить к приложению следующие функциональные возможности:</p>
+<ul>
+  <li><a href="#add-wish-ui-elements">Компоненты интерфейса пользователя</a>, состоящие из формы HTML для добавления пожелания и кнопки на странице <tt>editWishList.php </tt>, перенаправляющей пользователя в форму. </li>
+  <li>Код для <a href="#inputFormAfterunsuccessfulSave">повторного отображения срока выполнения</a>, если была отправлена неполная форма. </li>
+</ul>
+<div class="indent">
+    <h3 id="add-wish-ui-elements">Добавление компонентов пользовательского интерфейса</h3>
+<p><strong>Для реализации функции добавления нового пожелания выполните следующее:</strong></p>
+<ol>
+  <li><a id="addWishButton" name="addWishButton"></a>Создайте кнопку &quot;Add Wish&quot;.  В файле <tt>editWishList.php</tt> ниже блока PHP добавьте следующий код HTML.
+    <pre class="examplecode">
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+&lt;html&gt;
+    &lt;head&gt;
+
+       &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;form name="addNewWish" action="editWish.php">            
+            &lt;input type="submit" value="Add Wish">
+        &lt;/form>
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+              <p class="notes"><b>Примечание. </b>Можно пропустить предупреждения от средства проверки HTML.</p>
+
+  <p>Форма содержит поле ввода &quot;Add Wish&quot; типа <tt>submit</tt>.  Это поле реализует кнопку &quot;Add Wish&quot;.  При нажатии кнопки &quot;Add Wish&quot; пользователь перенаправляется на страницу <tt>editWish.php</tt>.  Метод запроса к серверу не используется, т.к. данные посредством этой формы не передаются.</p>
+  </li>
+  <li>Выше формы addNewWish добавьте таблицу, в которой отображаются пожелания данного лица. Этот код сходен с кодом <tt>wishlist.php</tt>. 
+    <p><strong>Для базы данных MySQL</strong></p>
+  <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;<br>    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;<br>    &lt;?php<br>    require_once(&quot;Includes/db.php&quot;);<br>    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);<br>    $result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);<br>    while($row = mysqli_fetch_array($result)) {<br>
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row['description']) . &quot;&lt;/td&gt;&quot;;<br>
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row['due_date']) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>    }<br>    ?&gt;<br>&lt;/table&gt;</pre>
+  <p><b>Для базы данных Oracle</b></p>
+  <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $stid = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while ($row = oci_fetch_array($stid)) {<br>        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row['DESCRIPTION']) . &quot;&lt;/td&gt;&quot;;<br>
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row['DUE_DATE']) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;
+    }
+    ?&gt;
+&lt;/table&gt;</pre>
+  </li>
+  <li>В папке исходных файлов создайте файл PHP <tt>editWish.php</tt>.</li>
+  <li><a id="EmptyAddWishForm" name="EmptyAddWishForm"></a>На станице <tt>editWish.php</tt> реализуйте форму &quot;Add Wish&quot;.  Введите или вставьте следующий код под блоком &lt;? php ? &gt;:
+   <pre class="examplecode">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+
+       &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;POST&quot;&gt;<br>            Describe your wish: &lt;input type=&quot;text&quot; name=&quot;wish&quot;  value=&quot;&quot; /&gt;&lt;br/&gt;<br>            When do you want to get it? &lt;input type=&quot;text&quot; name=&quot;dueDate&quot; value=&quot;&quot;/&gt;&lt;br/&gt;<br>            &lt;input type=&quot;submit&quot; name=&quot;saveWish&quot; value=&quot;Save Changes&quot;/&gt;<br>            &lt;input type=&quot;submit&quot; name=&quot;back&quot; value=&quot;Back to the List&quot;/&gt;
+        &lt;/form>
+    &lt;/body&gt;
+&lt;/html&gt; </pre></li>
+</ol>
+  <p>Форма &quot;Add Wish&quot; содержит следующие элементы:</p>
+    <ul>
+      <li>Два пустых текстовых поля для ввода пожелания и срока выполнения.</li>
+      <li>Текст, который будет напечатан рядом с полями ввода.</li>
+      <li>Поле <tt>submit</tt>, представляющее кнопку &quot;Save Changes&quot; </li>
+      <li>Поле <tt>submit</tt>, представляющее кнопку &quot;Back to the List&quot; для возврата к странице <tt>editWishList.php</tt> </li>
+    </ul>
+<p>После нажатия кнопки &quot;Add Wish&quot; форма отправляет введенные данные на ту же страницу <tt>editWish.php</tt> с использованием метода &quot;Request&quot; &quot;POST&quot;. </p>
+  
+
+
+<h3><a id="inputFormAfterunsuccessfulSave" name="inputFormAfterunsuccessfulSave"></a>Повторное отображение срока выполнения после неудавшейся отправки </h3>
+    <p>Если пользователь не указал описание в форме &quot;Add Wish&quot;, то появится сообщение об ошибке, и будет выполнен возврат к странице <tt>editWish.php</tt>.  В случае возврата пользователя к странице <tt>editWish.php</tt> в форме &quot;Add Wish&quot; должно отображаться значение <tt>dueDate</tt> (если оно было до этого введено).  В текущей реализации формы оба поля остаются пустыми.  Для того чтобы введенные значения остались в полях, необходимо сохранить данные нового пожелания в массиве.  Массив будет состоять из двух элементов с именами <tt>description</tt> и <tt>due_date</tt>.  Затем следует изменить форму &quot;Add Wish&quot; таким образом, чтобы в нее из массива извлекалось значение поля <tt>dueDate</tt>.</p>
+  <p><strong>Примечание.</strong> Код, перезагружающий форму ввода, если описание не введено в <a href="#validateAndEnterWishToDatabase">код, проверяющий данные и вводит их в базу данных</a>. Этот код не рассматривается в этом разделе.  В соответствии с кодом в этом разделе значение <tt>dueDate</tt> будет отображаться в поле в случае перезагрузки формы.</p>
+   <p><strong>Для обеспечения повторного вывода формы ввода после неудачной отправки формы пользователем необходимо выполнить следующее:</strong></p>
+    <ol><li>Введите или вставьте следующий блок кода в элемент HTML  &lt;body&gt; на странице <tt>editWish.php</tt> непосредственно над формой ввода:
+   <pre class="examplecode">&lt;?php 
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;)<br>    $wish = array(&quot;description&quot; =&gt; $_POST[&quot;wish&quot;], <br>    &quot;due_date&quot; =&gt; $_POST[&quot;dueDate&quot;]);<br>else<br>    $wish = array(&quot;description&quot; =&gt; &quot;&quot;, <br>    &quot;due_date&quot; =&gt; &quot;&quot;);
+?&gt;  </pre>
+   <p>В соответствии с кодом определяется тот метод &quot;Request Server&quot;, который использовался для передачи данных, а также создается массив с именем $wish.  Если использовался метод &quot;POST&quot; (что означает, что входная форма отображается после неудачной попытки сохранить пожелание с пустым описанием), то элементы <tt>description</tt> и <tt>due_date</tt> принимают значения, переданные с использованием метода &quot;POST&quot;. </p>
+   <p>Если использовался другой метод (что означает, что входная форма отображается впервые после переадресации со страницы <tt>editWishList.php</tt>), то элементы <tt>description</tt> и <tt>due_date</tt> являются пустыми.</p>
+   <p class="notes"> <strong>Примечание.</strong>В любом случае описание пустое. Единственным отличием является <tt>dueDate</tt>. </p></li>
+   <li>Обновите форму &quot;Add Wish&quot; таким образом, чтобы значения ее полей ввода были извлечены из массива <tt>$wish</tt>.  Замените строки форме &quot;Add Wish&quot;:
+     <pre class="examplecode">Describe your wish: &lt;input type=&quot;text&quot; name=&quot;wish&quot;  value=&quot;&quot; /&gt;&lt;br/&gt;
+When do you want to get it? &lt;input type=&quot;text&quot; name=&quot;dueDate&quot; value=&quot;&quot;/&gt;&lt;br/&gt;</pre>
+следующим блоком кода:
+    <pre class="examplecode">Describe your wish: &lt;input type=&quot;text&quot; name=&quot;wish&quot;  value=&quot;&lt;?php echo $wish['description'];?&gt;&quot; /&gt;&lt;br/&gt;
+When do you want to get it? &lt;input type=&quot;text&quot; name=&quot;dueDate&quot; value=&quot;&lt;?php echo $wish['due_date']; ?&gt;&quot;/&gt;&lt;br/&gt;</pre></li></ol>
+ </div>    
+<h2><a id="logonVerification" name="logonVerification"></a>Проверка входа пользователя    </h2>
+    В файле <tt>editWish.php</tt> введите следующий код обработки сеанса в блоке &lt;? php ? &gt; в начале файла:
+      <pre class="examplecode">session_start();
+if (!array_key_exists("user", $_SESSION)) {
+    header('Location: index.php');
+    exit;
+}</pre>
+Код:   
+      <ul>
+        <li>Для извлечения данных открывается массив &quot;$_SESSION&quot;.</li>
+        <li>Выполняется проверка того, что массив &quot;$_SESSION&quot; содержит элемент с идентификатором &quot;user&quot;.</li>
+        <li>При неудачном завершении проверки (что означает, что пользователь не зарегистрирован) выполняется перенаправление на первую страницу &quot;index.php&quot; и обработка кода PHP прерывается. </li>
+      </ul>
+   <p>Для проверки правильности обработки сеанса запустите из среды IDE файл &quot;editWish.php&quot;.  Откроется страница index.php, поскольку в сеансе ни один пользователь не был перемещен на страницу editWish.page. </p>
+      
+   <h2 id="insert-new-wish">Вставка нового пожелания в базу данных</h2>
+      <p>После подтверждения пользователем нового пожелания приложение добавляет пожелание к базе данных &quot;Wishes&quot;.  Для включения этой функциональной возможности вставьте в приложение следующий код:</p>
+      <ul>
+        <li>Добавьте еще две дополнительных функции к классу <tt>WishDB</tt> в <tt>db.php</tt>. 
+        <ul><li>Первая функция добавляет новую запись в таблицу пожеланий.</li><li> Вторая функция преобразовывает даты в формат, поддерживаемый сервером баз данных MySQL. </li></ul></li>
+        <li>Добавьте к <tt>editWish.php</tt> код, который будет использовать новые вспомогательные функции в <tt>WishDB</tt> для ввода нового пожелания в базу данных.</li>
+      </ul>
+      <h3 id="add-insert-wish">Добавление функции insert_wish в класс WishDB</h3>
+   <p>Эта функция требует в качестве входных параметров идентификатор пользователя, описание нового пожелания и срок выполнения пожелания, после чего добавляет эти данные к базе данных как новую запись.  Функция не возвращает какого-либо значения.   </p>
+   <p>Откройте <tt>db.php </tt> и добавьте функцию <tt>insert_wish</tt> в класс <tt>WishDB</tt>.</p>
+   <p><b>Для базы данных MySQL</b></p>
+ <pre class="examplecode">function insert_wish($wisherID, $description, $duedate){
+    $description = $this-&gt;real_escape_string($description);<br>    if ($this->format_date_for_sql($duedate)==null){<br>        $this->query("INSERT INTO wishes (wisher_id, description)" .<br>             " VALUES (" . $wisherID . ", '" . $description . "')");<br>    } else<br>    $this-&gt;query(&quot;INSERT INTO wishes (wisher_id, description, due_date)&quot; . <br>                       &quot; VALUES (&quot; . $wisherID . &quot;, '&quot; . $description . &quot;', &quot; <br>                       . $this-&gt;format_date_for_sql($duedate) . &quot;)&quot;);
+}</pre>
+    <p><b>Для базы данных Oracle</b></p>
+   <pre class="examplecode">function insert_wish($wisherID, $description, $duedate) {
+  $query = "INSERT INTO wishes (wisher_id, description, due_date) VALUES (:wisher_id_bv, :desc_bv, to_date(:due_date_bv, 'YYYY-MM-DD'))"; 
+  $stid = oci_parse($this->con, $query);
+  oci_bind_by_name($stid, ':wisher_id_bv', $wisherID);
+  oci_bind_by_name($stid, ':desc_bv', $description);
+  oci_bind_by_name($stid, ':due_date_bv', $this->format_date_for_sql($duedate));
+  oci_execute($stid);
+  oci_free_statement($stid);
+}</pre>
+<p>В этом коде вызывается функция format_date_for_sql для преобразования введенного срока выполнения в формат, который может быть обработан сервером базы данных. Затем для ввода нового пожелания в базу данных выполняется запрос &quot;INSERT INTO wishes (wisher_id, description, due_date)&quot;.</p>
+<h3 id="add-format-date-for-sql">Добавление функции format_date_for_sql в класс WishDB</h3>
+<p>В файле <tt>db.php</tt> добавьте в класс <tt>WishDB</tt> функцию <tt>format_date_for_sql</tt>.  Для выполнения функции качестве входного параметра требуется строка, в которой указана дата.  Эта функция возвращает дату в формате, который может быть обработан сервером базы данных, или <tt>null</tt>, если входная строка пустая.</p>
+<p class="notes"><b>Примечание.</b> Функция в этом примере использует функцию PHP <tt>date_parse</tt>. Эта функция работает только с англоязычными датами, такими как &quot;December 25, 2010&quot;, и только с арабскими цифрами.  На профессиональном веб-сайте следует использовать управляющий элемент выбора даты.</p>
+<strong>Для базы данных MySQL</strong>
+<pre class="examplecode">function format_date_for_sql($date){<br>    if ($date == &quot;&quot;)<br>        return null;<br>    else {<br>        $dateParts = date_parse($date);<br>        return $dateParts[&quot;year&quot;]*10000 + $dateParts[&quot;month&quot;]*100 + $dateParts[&quot;day&quot;];<br>   }<br>
+}</pre>
+<p><strong>Для базы данных Oracle</strong></p>
+<pre class="examplecode">function format_date_for_sql($date){
+    if ($date == "")
+        return null;
+    else {
+        $dateParts = date_parse($date);
+        return $dateParts['year']*10000 + '-' + $dateParts['month']*100 + '-' + $dateParts['day'];
+   }
+}</pre>
+<p>При пустой входной строке код возвращает значение &quot;NULL&quot;.  В противном случае внутренняя функция <tt>date_parse</tt> вызывается с входным параметром <tt>$date</tt>.  Функция <tt>date_parse</tt> возвращает массив, состоящий из трех элементов с именами <tt>$dateParts[&quot;year&quot;]</tt>, <tt>$dateParts[&quot;month&quot;]</tt> и <tt>$dateParts[&quot;day&quot;]</tt>.  Окончательная строка вывода создается из элементов массива <tt>$dateParts</tt>.  </p>
+<p class="alert"><strong>Важно!</strong> Функция <tt>date_parse</tt> распознает только англоязычные даты.  Например, она воспринимает и интерпретирует дату &quot;February 2, 2016&quot; но не дату &quot;2 Unora, 2016&quot;.</p>
+<!--Note to translators: Please replace "2 Unora, 2016" with a date in your own language. -->
+<p class="notes"><strong>Примечание для пользователей базы данных Oracle.</strong> Единственное требование, предъявляемое к формату, состоит в том, что формат даты в операторе <tt>return $dateParts...</tt> должен совпадать с форматом даты в функции SQL <tt>to_date</tt> из запроса <tt>insert_wish</tt>.</p>
+<h3 id="validateAndEnterWishToDatabase">Ввод в базу данных новой записи с пожеланием </h3>
+ <p>На этом этапе, после окончания разработки дополнительных функций, добавьте код для проверки допустимости данных нового пожелания и ввода данных в базу данных при их корректности.  Если данные некорректны, то должна быть выполнена перезагрузка формы &quot;Add Wish&quot;.  Если данные некорректны, поскольку отсутствует описание пожелания, но при этом указан срок выполнения пожелания, введенные данные сохраняются в поле и отображаются в случае перезагрузке формы благодаря <a href="#inputFormAfterunsuccessfulSave">предварительно написанному </a>коду.</p>
+     В верхний блок &lt;? php ? &gt; файла <tt>editWish.php</tt> введите ниже кода обработки сеанса следующий код.
+     <pre class="examplecode">require_once("Includes/db.php");
+    $wisherID = WishDB::getInstance()->get_wisher_id_by_name($_SESSION['user']);
+
+    $wishDescriptionIsEmpty = false;
+    if ($_SERVER['REQUEST_METHOD'] == "POST"){
+        if (array_key_exists("back", $_POST)) {
+           header('Location: editWishList.php' ); 
+           exit;
+        } else
+        if ($_POST['wish'] == &quot;&quot;) {
+            $wishDescriptionIsEmpty =  true;
+        } 
+		 else {
+           WishDB::getInstance()->insert_wish($wisherID, $_POST['wish'], $_POST['dueDate']);
+           header('Location: editWishList.php' );
+           exit;
+        }
+    }
+	</pre>
+	
+     <p>Код выполняет следующие функции:</p>
+     <ul>
+       <li>активация использования файла <tt>db.php</tt>;</li>
+       <li>получение или создание экземпляра класса <tt>WishDB</tt>; </li>
+       <li>извлечение идентификатора пользователя, осуществляющего попытку добавления пожелания путем вызова функции <tt>get_wisher_id_by_name</tt>;</li>
+       <li>инициализация флага <tt>$wishDescriptionIsEmpty</tt>, который будет использован позже для отображения сообщений об ошибках;</li>
+       <li>проверка того, что используется метод запроса &quot;POST&quot; (соответствует передаче данных из формы для ввода данных пожелания непосредственно на странице <tt>editWish.php</tt>); </li>
+       <li>проверка того, содержит ли массив <tt>$_POST</tt> элемент с ключом &quot;back&quot;.</li>
+     </ul>
+     <p>Если массив <tt>$_POST</tt> содержит элемент с ключом &quot;back&quot;, то перед передачей формы была нажата кнопка &quot;Back to the List&quot;.  В этом случае осуществляется перенаправление на страницу <tt>editWishList.php</tt> без сохранения данных, введенных в полях, и прекращается обработка блока PHP. </p>
+     <p>Если массив $_POST <em>не</em> содержит элемент с ключом &quot;back&quot;, то данные были переданы путем нажатия кнопки &quot;Save Changes&quot;.  В этом случае в соответствии с кодом выполняется проверка наличия описания пожелания.  Это реализуется путем проверки того, является ли элемент с ключом &quot;wish&quot; в массиве &quot;$_POST&quot; пустым. Если ключ пуст, значение флага $wishDescriptionIsEmpty изменяется на &quot;true&quot;.  Следует отметить, что если выполнение дальнейшего кода в блоке PHP прерывается, форма &quot;Add Wish&quot; перезагружается.</p>
+	  <p>Если не была нажата кнопка &quot;Back to the List&quot;, но при этом указано описание пожелания, то код вызывает функцию <tt>insert_wish</tt> с идентификатором пользователя, описанием и сроком выполнения пожелания в качестве входных параметров.  Затем код перенаправляет пользователя на страницу <tt>editWishList.php</tt> и прекращает обработку PHP.</p>
+	
+	  <h3><a name="displayingErrorMessages"></a>Отображение сообщений об ошибках</h3>
+При попытке пользователя сохранить пожелание без описания должно отобразиться сообщение об ошибке.<br> Введите следующий блок &lt;? php ? &gt; в форме ввода HTML ниже поля ввода &quot;Describe your wish&quot;: 
+	  <pre class="examplecode">&lt;?php<br>  if ($wishDescriptionIsEmpty) echo &quot;Please enter description&lt;br/&gt;&quot;;<br>?&gt;</pre>
+	  Сообщение об ошибке отображается в случае значения &quot;true&quot; для флага <tt>$wishDescriptionIsEmpty</tt>.  Флаг обрабатывается в течение проверки допустимости формы ввода.
+   <h2><a id="backToIndex" name="backToIndex"></a>Возврат к первой странице &quot;index.php&quot; </h2>
+      Пользователь должен иметь возможность, нажав кнопку, в любой момент вернуться на первую страницу приложения. <br> Для реализации этих функции введите следующую форму ввода HTML в файл <tt>editWishList.php</tt> перед закрывающим тегом &lt;/body&gt;:
+   <pre class="examplecode">&lt;form name=&quot;backToMainPage&quot; action=&quot;index.php&quot;&gt;<br>&lt;input type=&quot;submit&quot; value=&quot;Back To Main Page&quot;/&gt;<br>&lt;/form&gt;</pre>
+Форма перенаправляет пользователя на первую страницу &quot;index.php&quot; после нажатия кнопки &quot;Back to Main Page&quot;.
+<h2><a name="testingAddWishFunctionality"></a>Тестирование функциональной возможности добавления пожелания </h2>
+<ol>
+  <li>Запустите приложение. На странице <tt>index.php</tt> заполните следующие поля: в поле &quot;Username&quot; введите &quot;Tom&quot;, в поле &quot;Password&quot; введите &quot;tomcat&quot;.<br> <img alt="Пользователь входит в систему для редактирования своего списка пожеланий." class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson6/user-logon-to-edit-wish-list.png">  </li>
+  <li>Нажмите кнопку &quot;Edit My Wish List&quot;.  Откроется страница <tt>editWishList.php</tt>. <br> <img alt="Редактирования списка пожеланий с помощью добавленной кнопки &apos;Добавить&apos;" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson6/edit-wish-list-add-wish.png"></li>
+  <li>Нажмите кнопку &quot;Back to Main Page&quot;.  Откроется страница <tt>index.php</tt>. </li>
+  <li>Войдите в систему под именем &quot;Tom&quot; и снова нажмите кнопку &quot;Edit My Wish List&quot;.  Откроется страница <tt>editWishList.php</tt>. </li>
+  <li>Нажмите кнопку &quot;Add Wish&quot;.  Откроется страница <tt>editWish.php</tt>. Заполните форму.<br> <img alt="Форма для нового пожелания заполнена" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson6/new-wish.png"> <br> Нажмите кнопку &quot;Back to the List&quot;.  Откроется страница <tt>editWishList.php</tt>, но новое пожелание в списке отсутствует.</li>
+  <li>Снова нажмите кнопку &quot;Add Wish&quot;.  Откроется страница <tt>editWish.php</tt>. Укажите срок выполнения пожелания, а поле описания оставьте пустым.  Нажмите кнопку &quot;Save Changes&quot;.  На странице <tt>editWish.php</tt> отображается форма ввода с сообщением об ошибке и заполненным полем срока выполнения пожелания. </li>
+  <li>Снова нажмите кнопку &quot;Add Wish&quot;.  Откроется страница <tt>editWish.php</tt>. Заполните форму и нажмите кнопку &quot;Save Changes&quot;.  На странице <tt>editWishList.php</tt> отображается обновленный список пожеланий. <br> <img alt="Новое пожелание добавлено в список пожеланий." class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson6/edit-wish-list-updated.png"></li>
+</ol>
+<h2><a name="lessonResultSourceCode"></a>Исходный код приложения на момент завершения текущего урока </h2>
+<p>Для пользователей MySQL: щелкните <a href="https://netbeans.org/files/documents/4/1932/lesson6.zip" target="_blank">здесь</a> для загрузки исходного кода, отражающего состояние проекта по завершении данного урока.</p>
+<p>Для пользователей Oracle Database: щелкните <a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson6.zip" target="_blank">здесь</a> для загрузки исходного кода, отражающего состояние проекта по завершении данного урока.</p>
+<h2><a name="nextSteps"></a>Что дальше?</h2>
+            <p><a href="wish-list-lesson5.html">&lt;&lt;Предыдущий урок</a><br> <br> <a href="wish-list-lesson7.html">Следующий урок &gt;&gt;</a><br> <br> <a href="wish-list-tutorial-main-page.html">Назад на главную страницу руководства</a></p>
+            <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%206:%20Writing%20New%20DB%20Entry">Отправить отзыв по этому учебному курсу</a></div>
+<br style="clear:both;" >
+<p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.
+   <p><a href="wish-list-tutorial-main-page.html"></a>
+   <p><a href="../../trails/php.html">Возврат к учебной карте PHP</a></p>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Determinando um perfil de uma Aplicação Corporativa no NetBeans IDE</title>
+      <meta name="description" content="A tutorial about profiling an enterprise application using NetBeans IDE">
+      <meta name="KEYWORDS" content="NetBeans, Java EE, enterprise, EJB, application, profiling, Tutorial, performance, troubleshooting, profiler">
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      
+   <meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+   
+   <body>
+      <a name="top"></a>
+      <h1>Determinando um perfil de uma Aplicação Corporativa no NetBeans IDE</h1>
+      
+      <p>O NetBeans IDE inclui uma ferramenta de determinação de perfil poderosa que pode fornecer informações importantes sobre o comportamento de runtime das aplicações corporativas. Usando a ferramenta de determinação de perfil, é possível monitorar facilmente os estados do thread e obter dados sobre o desempenho da CPU e uso de memória de uma aplicação.</p>
+      
+      <p>Este documento demonstrará como usar a ferramenta de determinação de perfil para obter dados sobre uma aplicação corporativa simples, que é implantada como um WAR em um servidor de aplicações. Este documento mostra como usar o IDE para obter resultados de determinação de perfil acerca do seguinte.</p>
+      <ul>
+         <li>Comportamento de uma aplicação em runtime</li>
+         <li>Tempo de CPU usado por um dos métodos de aplicação</li>
+         <li>Criação do objeto</li>
+      </ul>
+      
+      <p>Se você estiver implantando uma aplicação em um Tomcat local registrado, GlassFish Server ou instalação JBoss, será possível determinar um perfil da aplicação com apenas alguns cliques e quase nenhuma configuração. O processo de determinação de perfil do projeto é muito parecido com o uso do comando Executar no IDE. Você poderá começar a determinar facilmente perfis de projetos de aplicações corporativas ou módulos Web e EJB individuais selecionando Perfil > Determinar Perfil do Projeto Principal no menu principal.</p>
+
+    <p><b>Conteúdo</b></p>
+    <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.3, 7.4 e 8.0">
+         <ul>
+            <li><a href="#aboutear">Sobre a Determinação de Perfil de Aplicações Corporativas</a>
+            <ul>
+                <li><a href="#profear">Criando Perfis de Projetos de Aplicações Corporativas</a></li>
+                <li><a href="#profejb">Criando perfis de Subprojetos do Módulo Web e EJB</a></li>
+            </ul>
+            </li>
+            <li><a href="#create">Criando o Projeto de Amostra</a></li>
+            <li><a href="#monitor">Monitorando a Aplicação</a></li>
+            <li><a href="#cpu">Analisando o Desempenho da Aplicação</a>
+            <ul>
+                <li><a href="#instfilter">Usando os Filtros de Instrumentação</a></li>
+                <li><a href="#sample">Amostragem da Aplicação</a></li>
+                <li><a href="#cpuentire">Instrumentando Todos os Métodos</a></li>
+                <li><a href="#profroot">Usando Métodos Raiz de Determinação de Perfil</a></li>
+            </ul>
+            </li>
+            <li><a href="#memory">Analisando o Uso da Memória</a></li>
+         </ul>
+         
+          <p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+            <table>
+            <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software ou Recurso</th>
+                <th class="tblheader" scope="col">Versão Necessária</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">Pacote Java EE 7.3, 7.4, 8.0</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                <td class="tbltd1">JDK 7 ou 8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">GlassFish Server</td>
+                <td class="tbltd1">3.1, 4.0</td>
+            </tr>
+            
+            </tbody>
+            </table>
+
+            <p class="notes"><b>Observações.</b></p>
+            <div class="indent">
+            <ul>
+                <li>Caso esteja usando um determinador de perfil pela primeira vez, é recomendada a leitura de <a href="../java/profiler-intro.html">Introdução à Determinação de Perfil de aplicações Java no NetBeans IDE</a>, que fornece uma visão geral das tarefas de monitoramento e determinação de perfil.</li>
+                <li>Se você estiver usando o NetBeans IDE 7.2 ou anterior, consulte <a href="../../72/javaee/profiler-javaee.html">Criando Perfis de Aplicações Corporativas no NetBeans IDE 7.2</a></li>
+                <li> Neste documento, você determinará um perfil de uma aplicação corporativa implantada no GlassFish Server. A configuração preferencial e mais fácil para a determinação de um perfil de uma aplicação Web ou corporativa durante o desenvolvimento é quando a aplicação está em execução em um servidor Tomcat, GlassFish ou JBoss local.</li>
+            </ul>
+            </div>
+      <a name="aboutear"></a>
+      <h2>Sobre a determinação de perfil de Aplicações Corporativas no IDE</h2>
+      <p>Na determinação de perfil de aplicações corporativas, na maioria dos casos, você desejará analisar o desempenho da aplicação para ver o tempo de execução dos métodos do projeto. Isso permite solucionar problemas na aplicação e tentar melhorar seu desempenho. Em alguns casos, você também pode desejar obter dados sobre o uso da memória para otimizar a coleta de lixo.</p>
+      
+      <p>O processo de determinação de perfil de aplicações corporativas, módulos EJB e aplicações Web é basicamente o mesmo utilizado para executar o projeto usando o comando Executar. Após selecionar a tarefa e especificar as opções de determinação de perfil, clique em Executar na caixa de diálogo Selecionar Tarefa de Determinação de Perfil para iniciar a sessão de determinação de perfil. Quando você inicia a sessão de determinação de perfil, o IDE faz o seguinte:</p>
+      <ul>
+          <li>Compila a aplicação</li>
+          <li>Inicia o servidor de destino no modo de determinação de perfil</li>
+          <li>Implanta a aplicação</li>
+          <li>Anexa à aplicação</li>
+          <li>Abre o browser da página web (se especificado nas propriedades do projeto)</li>
+          <li>Abre a guia de Resultados de Determinação Ao Vivo de Perfil</li>
+      </ul>
+
+      <p>Dependendo das opções de determinação de perfil, o IDE iniciará imediatamente a exibição dos resultados de determinação de perfil na guia Resultados da Determinação Ao Vivo de Perfil. Em alguns casos, como quando os métodos raiz de determinação de perfil foram especificados, pode ser necessário realizar algumas ações no browser Web antes de os resultados serem exibidos.</p>
+      
+      <div class="indent">
+<a name="profear"></a>
+          <h3>Projetos de Determinação de Perfil de Aplicações Corporativas</h3>
+          <p>Uma aplicação corporativa, criada no IDE, normalmente, será um projeto de aplicação Web implantado em um servidor de aplicações como um arquivo da Web (WAR), ou um projeto de aplicação corporativa que contém uma aplicação Web e bibliotecas adicionais e é implantado como um arquivo de aplicação corporativa (EAR).</p>
+
+          <p>Caso deseje implantar a aplicação como um arquivo compactado EAR, você pode criar um projeto de aplicação corporativa NetBeans que contenha os subprojetos e as bibliotecas. O projeto de aplicação corporativa não contém arquivos de código-fonte, apenas informações sobre construção e implantação da aplicação e os metadados de configuração do servidor. Em um projeto de aplicação corporativa, a lógica da aplicação geralmente está contida no módulo EJB e o código-fonte da camada de apresentação está contido no módulo Web.</p>
+          
+          <p>Se você tiver todos os códigos-fonte do projeto da aplicação corporativa, o método mais fácil e prático para a determinação de perfil da aplicação é determinar o perfil do projeto em vez de um dos subprojetos do projeto. Isso garante que todo o código necessário seja compilado e implantado e que a aplicação se comporte corretamente. É possível determinar o perfil de um projeto de aplicação corporativa adotando um dos seguintes procedimentos:</p>
+          <ul>
+              <li>Se o projeto de aplicação corporativa estiver definido como o Projeto Principal, clique em Determinar Perfil do Projeto Principal na barra de ferramentas do IDE ou selecione Perfil > Determinar Perfil do Projeto Principal no menu principal.</li>
+              <li>Clique com o botão direito do mouse no nó do projeto de aplicação corporativa na janela Projetos e selecione Determinar Perfil no menu pop-up.</li>
+          </ul>
+
+          <p>Na determinação de perfil de uma aplicação corporativa, é possível aumentar a relevância dos resultados da determinação de perfil especificando os métodos raiz e usando filtros de instrumentação para limitar as classes que terão o perfil determinado. Isso ajuda a minimizar o impacto que a sobrecarga da determinação de perfil impõe ao desempenho da aplicação e aumenta a relevância dos resultados da determinação de perfil.
+          </p>
+
+          <p>Diferentemente das aplicações Web, ao executar uma aplicação corporativa, o browser nem sempre abre automaticamente. (Isso depende da configuração do projeto.) Isso significa que, em alguns casos, pode ser necessário iniciar manualmente o front end da aplicação Web e, em seguida, chamar o código, como a lógica de negócios em um módulo EJB do browser.</p>
+
+<a name="profejb"></a>
+          <h3>Determinando o Perfil de Subprojetos do Módulo EJB e Web</h3>
+          <p>É possível iniciar uma sessão de determinação de perfil de qualquer projeto de módulo EJB ou de módulo Web. Nesse caso, talvez você queira tentar uma das seguintes abordagens:</p>
+
+          <ul>
+              <li><b>Determinando o perfil de um módulo EJB.</b> Ao optar por essa abordagem, você provavelmente precisará chamar o código de aplicação manualmente no browser da Web ou outro cliente porque os projetos do módulo EJB não são, geralmente, configurados para abrir um browser. Depois que o módulo EJB estiver implantado no servidor, chame seu código da mesma forma que faria para depurar ou avaliar a funcionalidade da aplicação, normalmente iniciando o front end da aplicação e, em seguida, realizando ações no browser.</li>
+
+              <li><b>Determinando o perfil de um módulo Web.</b> Quando você optar por essa abordagem, será necessário compilar e implantar o módulo EJB ao servidor antes de determinar o perfil do projeto do módulo Web. Normalmente, o código do EJB é executado como resultado de uma ação de usuário em um browser. Se essa ação for executada/tratada pelo código da aplicação Web, será possível ver o código do EJB em sua árvore de chamadas.</li>
+          </ul>
+
+      </div>
+      
+      
+<a name="create"></a>
+     <h2>Criando o Projeto de Amostra</h2>
+     <p>Neste documento, você irá determinar o perfil da amostra da aplicação ServletStateless. A aplicação ServletStateless é uma aplicação Web corporativa simples que está incluída como uma amostra de projeto no IDE.
+     </p>
+     <p>Para criar a aplicação ServletStateless , realize as etapas a seguir.</p>
+     <ol>
+        <li>Selecione Arquivo > Novo Projeto (Ctrl-Shift-N; ⌘-Shift-N no Mac) no menu principal.</li>
+        <li>No assistente para Novos Projetos, selecione a categoria Amostras > Java EE.</li>
+        <li>Selecione o projeto Servlet Stateless. Clique em Próximo.</li>
+        <li>Selecione uma localização para o projeto. Clique em Finalizar.</li>
+     </ol>
+     <p>Quando você clicar em Finalizar, o IDE criará a amostra de projeto ServletStateless. Você pode ver o projeto ServletStateless na janela Projetos.</p>
+     <p class="notes"><strong>Observação.</strong></p>
+        <div class="indent">
+            <ul>
+            <li>Por default, quando se utiliza o IDE para determinar o perfil de um projeto, o IDE determinará o perfil do projeto selecionado na janela Projetos se mais de um projeto estiver aberto. Quando você selecionar Executar >Definir Projeto Principal no menu principal e definir um projeto como Projeto Principal, o Projeto Principal é determinado por defaut. Você pode clicar com o botão direito do mouse em um nó de projeto na janela Projetos e selecionar Perfil no menu pop-up.</li>
+
+                <li>Caso deseje determinar o perfil de um arquivo como uma página <tt>.jsp</tt> ou um servlet, clique com o botão direito do mouse no arquivo e selecione Determinar o Perfil do Arquivo no menu pop-up. O comportamento é parecido com o de Determinar Perfil do Projeto (Principal), mas ao iniciar a sessão de determinação de perfil, a página web selecionada será aberta no browser em vez de na página web default do projeto.</li>
+            </ul>
+        </div>
+
+
+        
+        
+<a name="monitor"></a>
+    <h2>Monitorando a Aplicação</h2>
+    <p>Monitorar uma aplicação permite que informações de alto nível sobre as propriedades do JVM de destino sejam obtidas, incluindo atividade de thread e alocações de memória. Como o monitoramento de uma aplicação impõe um custo adicional muito baixo, você pode executar a aplicação neste modo por períodos maiores. Quando você escolhe a tarefa Monitorar, a aplicação de destino é iniciada sem nenhuma instrumentação. </p>
+    <p>Para monitorar a aplicação ServletStateless, realize as etapas a seguir.</p>
+     <ol>
+        <li>Selecione Executar >Definir Projeto Principal > ServletStateless para definir o projeto como principal.
+            <p>Quando você definir o projeto como Projeto Principal, o nome do projeto estará em negrito na janela Projetos.</p></li>
+        <li>Escolha Perfil > Perfil do Projeto Principal no menu principal.
+        <p class="notes"><strong>Observação.</strong> Selecione o JDK 1.7 ou JDK 1.8 caso seja solicitado a selecionar uma plataforma Java para determinação de perfil.</p></li>
+        <li>Selecione Monitorar na caixa de diálogo Selecionar Tarefa de Criação de Perfil.</li>
+        <li>Clique em Executar.
+            <p class="notes"><strong>Observação.</strong> Caso não tenha usado o determinador de perfil antes, você pode ser solicitado a calibrá-lo antes que possa clicar em Executar. Para obter mais informações sobre a calibração do determinador de perfil, consulte a seção <a href="../java/profiler-intro.html#calibrate">Usando o Determinador de Perfil pela Primeira Vez</a> na <a href="../java/profiler-intro.html">Introdução à Determinação de Perfil de Aplicações Java no NetBeans IDE</a>.
+        </li>
+     </ol>
+     
+
+     <p>Quando você clica em Executar, o IDE constrói a aplicação, inicia o servidor no modo de perfil e a implanta a aplicação no servidor. Em seguida, o IDE se liga à aplicação e inicia a recuperação de dados.</p>
+     <p>Os dados em threads no JVM de destino são exibidos na guia Threads. A guia Threads exibe dados em todos os threads, threads de servidor, assim como threads na aplicação.</p>
+
+     <p>É possível visualizar informações adicionais de monitoramento clicando no botão Visão Geral de Telemetria na janela Perfil para abrir a janela Visão Geral de Telemetria VM. A janela Visão Geral de Telemetria VM permite que você obtenha rapidamente uma visão geral dos dados de monitoramento em tempo real. É possível clicar duas vezes em qualquer um dos gráficos na janela Visão Geral de Telemetria VM para abrir uma versão maior do gráfico.</p>
+     <p>Durante a monitoração de uma aplicação corporativa, os gráficos de Memória (Heap) e Memória (GC) podem ajudá-lo a visualizar rapidamente o uso de memória da aplicação. Coloque o cursor sobre o gráfico para abrir uma dica de ferramenta com informações mais detalhadas. Se o tamanho do heap ou o número de gerações sobreviventes estiver crescendo constantemente, isso pode indicar um vazamento de memória. Caso haja a suspeita de fuga de memória, talvez seja melhor determinar o perfil do uso de memória da aplicação.</p> 
+     <img alt="Tela do gráfico de Memória (GC)" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/monitor-memory-telemetry.png" title="Gráfico da memória (GC) mostrando informações do GC"> <a name="cpu"></a>
+     <h2>Analisando o Desempenho da Aplicação</h2>
+     <p>A tarefa de Análise do Desempenho da CPU permite a visualização de dados no nível de método (runtime) do desempenho da CPU da sua aplicação e o número de vezes que os métodos são chamados. Você pode optar por analisar o desempenho da aplicação inteira ou selecionar uma raiz de determinação de perfil para limitar a determinação a uma parte do código da aplicação.</p>
+     <img alt="Tela do painel da CPU da caixa de diálogo Selecionar Tarefa de Determinação de Perfil" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/sample-task.png" title="Modo de Amostra de Aplicação selecionado no painel da CPU da caixa de diálogo Selecionar Tarefa de Determinação de Perfil">
+
+
+     <p>Ao selecionar a tarefa de análise do desempenho da CPU na janela Tarefas de Determinação de Perfil, você pode escolher o quanto você deseja determinar da aplicação selecionando uma das seguintes opções.</p>
+     <ul>
+        <li><b>Rápido (usado como exemplo).</b> Neste modo, o IDE faz as amostras da aplicação e e usa um rastreamento de pilha periodicamente. Essa opção é menos precisa do que os métodos de instrumentação, mas o custo adicional é menor. Essa opção ajuda a localizar métodos que talvez você queira instrumentar.</li>
+        
+        <li><b>Advançado (instrumentado).</b> Neste modo, os métodos definidos da aplicação são instrumentados. O IDE registra onde os threads entram e saem dos métodos do projeto, permitindo ver quanto tempo é gasto em cada método. Quando você insere um método, os threads geram um evento "entrada de método". Os threads geram um evento "saída de método" correspondente ao sair do método. Os timestamps para os dois eventos são registrados. Esses dados são processados em tempo real.
+            
+            <p>Você pode escolher instrumentar todos os métodos na aplicação ou limitar a instrumentação a um subconjunto do código da aplicação ao especificar um ou mais <b>métodos-raiz</b>. Especificar um método raiz pode reduzir significativamente a sobrecarga da determinação de perfil. Um método-raiz é um método, classe ou pacote em seu código-fonte que você especifica como uma raiz da instrumentação. Os dados de criação de perfil são coletados quando um dos threads da aplicação entra e sai da raiz de instrumentação. Nenhum dado de criação de perfil é coletado até que um dos threads da aplicação entre no método-raiz. Você pode especificar um método-raiz usando o menu pop-up no código-fonte ou clicando em <b>personalizar</b> para abrir a caixa de diálogo Editar Raízes da Criação de Perfil.</p>
+        </li>
+     </ul>
+    
+    <div class="indent">
+    <p class="tips"><strong>Dicas para a Determinação de Perfil de Aplicações Web</strong></p>
+    <ul>
+        <li>Além as principais classes Java, uma aplicação corporativa geralmente chamará uma série de métodos em classes no servidor-alvo. Por esse motivo, é importante escolher um filtro para limitar os códigos-fonte que são instrumentados. É recomendado usar o filtro <b>Determinar Perfil somente para classes de projeto</b> ao determinar o perfil de aplicações corporativas.</li>
+        
+        <li>Os resultados da determinação de perfil são coletados assim que a sessão é iniciada. Se você estiver usando o método Avançado e os métodos raiz de determinação de perfil não foram especificados, alguns dados interessantes estarão disponíveis imediatamente após a inicialização do servidor, mais especificamente a inicialização de filtros e listeners da aplicação Web. Caso tenha especificado alguns métodos raiz de determinação de perfil, esses dados provavelmente não serão obtidos, dependendo dos métodos raiz selecionados.</li>
+
+        <li>Normalmente, não existe o interesse em dados sobre listeners e filtros, então clique em Redefinir Resultados Coletados para limpar esses dados. Os primeiros dados utilizáveis serão coletados após algum código ser chamado como um resultado de alguma ação no browser, normalmente exibindo uma página JSP que usa JavaBeans e/ou tags personalizadas ou processando o método <tt>doGet</tt>/<tt>doPost</tt> do servlet. Observe que os dados coletados quando a aplicação é inicializada pela primeira vez, frequentemente, representam somente o comportamento de inicialização da aplicação Web.</li>
+
+        <li>Se uma página JSP estiver sendo exibida pela primeira vez, ela é compilada internamente no servlet pelo servidor, o que afeta a árvore de chamadas e o tempo dos métodos. Além disso, o comportamento dos servlets e de outro código da aplicação pode ser levemente diferente durante a primeira execução do que em um ambiente de produção verdadeiro, onde a aplicação está em constante execução. Para obter os dados de determinação de perfil que melhor representem o desempenho verdadeiro da aplicação, você deve gerar alguma carga de trabalho no código de perfil determinado antes de medir qualquer tempo (árvores de chamadas não devem ser afetadas por isso). É possível utilizar geradores de carga para ajudá-lo com isso. (Para saber mais, consulte <a href="../java/profile-loadgenerator.html">Usando um Gerador de Carga no NetBeans IDE</a>). A capacidade de cache de diversos browsers também pode impactar o desempenho.</li>
+    </ul>
+    
+     <p class="notes"><strong>Observação.</strong> Se você criar o perfil de aplicações web no servidor de aplicações GlassFish em uma máquina Windows, a inicialização do servidor para criação de perfil poderá falhar se o NetBeans IDE estiver instalado em um caminho que contenha espaços (como a instalação padrão em <tt>C:\Program Files\netbeans-7.4</tt>). A solução é instalar/copiar o diretório de instalação do NetBeans IDE em um local que não contenha espaços no caminho (como <tt>C:\netbeans-7.4</tt>).</p>
+
+<a name="sample"></a>
+        <h3>Amostragem da Aplicação</h3>
+        <p>Escolha a opção Rápido da aplicação caso precise de uma visão geral do comportamento da aplicação inteira e não deseje instrumentar os métodos. No modo de perfil Rápido, o IDE obtém periodicamente rastreamentos de pilha. A sobrecarga do modo de perfil Rápido é menor que no modo de perfil Avançado.</p>
+        
+        <p>Neste exercício, você analisará o desempenho da aplicação ao selecionar o modo de perfil Rápido.</p>
+         
+         <ol>
+            <li>Pare a sessão de monitoramento clicando no botão Parar na janela Determinador de Perfil.</li>
+            <li>Escolha Perfil > Perfil do Projeto Principal no menu principal.</li> 
+            <li>Selecione CPU na caixa de diálogo Selecionar Tarefa de Criação de Perfil.</li>
+            <li>Selecione o modo <b>Rápido (usado como exemplo)</b>.</li>
+            <li>Selecione <b>Determinar Perfil somente das classes do projeto</b> na lista drop-down do Filtro. Clique em Executar.
+                <p class="notes"><strong>Observação.</strong> Este filtro limita as classes instrumentadas para as classes encontradas no projeto de aplicação corporativa. Clique em <b>Exibir valor do filtro</b> para visualizar uma lista das classes filtradas.</p>
+            <img alt="Tela do painel da CPU da caixa de diálogo Selecionar Tarefa de Determinação de Perfil" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/sample-task.png" title="Modo de Amostra de Aplicação selecionado no painel da CPU da caixa de diálogo Selecionar Tarefa de Determinação de Perfil">
+            <p>Observe na escala da caixa de diálogo que a sobrecarga estará relativamente baixa.</p>
+            </li>
+            <li>Clique no botão Resultados da Determinação Ao Vivo de Perfil na janela Determinador de Perfil para abrir a guia Resultados da Determinação Ao Vivo de Perfil.</li>
+        </ol>
+        
+        <img alt="Tela dos resultados de Amostragem da Aplicação" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/sample-task-results.png" title="Modo dos Resultados Amostragem da Aplicação">
+        <p>Na guia Resultados da Determinação Ao Vivo de Perfil, pode ser observado o runtime do método <tt>serviço</tt> para o servlet na classe <tt>Servlet2Stateless</tt> e que o método foi chamado uma única vez.
+        </p>
+        
+        <a name="cpuentire"></a>
+         <h3>Instrumentando Todos os Métodos</h3>
+         
+         <p>No modo de Determinação de Perfil da Aplicação, os métodos da sua aplicação são instrumentados. Embora uma medição mais exata do desempenho da aplicação seja recebida, a sobrecarga da determinação de perfil é maior do que se o modo de amostra tivesse sido escolhido. Métodos raiz de determinação de perfil podem ser especificados para limitar os métodos que são instrumentados e reduzir a sobrecarga da determinação de perfil. Para algumas aplicações, a especificação de um método-raiz pode ser a única forma de obter dados detalhados e/ou realistas de desempenho, pois a criação de perfil da aplicação inteira pode gerar dados de perfil demais, fazendo com que a aplicação se torne inútil ou até mesmo causar um erro fatal da aplicação.</p>
+         
+         <p>Neste exercício, você analisará o desempenho da aplicação instrumentando todos os métodos na aplicação corporativa.</p>
+         
+         <ol>
+            <li>Pare a sessão de monitoramento clicando no botão Parar na janela Determinador de Perfil.</li>
+            <li>Escolha Perfil > Perfil do Projeto Principal no menu principal.</li> 
+            <li>Selecione CPU na caixa de diálogo Selecionar Tarefa de Criação de Perfil.</li>
+            <li>Selecione o modo <b>Avançado (instrumentado)</b>.</li>
+            <li>Selecione <b>Determinar Perfil somente das classes do projeto</b> na lista drop-down do Filtro. Clique em Executar.<br> <img alt="Tela do painel da CPU da caixa de diálogo Selecionar Tarefa de Determinação de Perfil" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/advanced-cpu-task.png" title="Modo de Determinação de Perfil da Aplicação selecionado no painel da CPU da caixa de diálogo Selecionar Tarefa de Determinação de Perfil">
+            <p>Observe na escala na caixa de diálogo que a sobrecarga estará maior que no modo Rápido da aplicação.</p>
+            </li>
+            <li>Clique no botão Resultados da Determinação Ao Vivo de Perfil na janela Determinador de Perfil para abrir a guia Resultados da Determinação Ao Vivo de Perfil.
+        
+        <p>É possível ver que a guia Resultados da Determinação Ao Vivo de Perfil exibe o runtime dos métodos <tt>init</tt> e <tt>serviço</tt> para o servlet na classe <tt>Servlet2Stateless</tt> e que cada método foi chamado uma única vez. O método <tt>init</tt> na classe <tt>StatelessSessionBean</tt> também foi chamado.</p>
+        <img alt="Tela dos resultados de Determinação de Perfil da Aplicação" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/cpu-pane1-results.png" title="Modo dos Resultados de Determinação de Perfil da Aplicação">
+        
+
+        <p class="notes"><strong>Observação.</strong> Por defaut, o modo de atualização automática está ativo para que os dados exibidos sejam atualizados continuamente, a cada poucos segundos. É possível ativar e desativar o modo de atualização automática clicando no botão Atualização Automática na barra de ferramentas.</p>
+        
+        <p class="tips">Para melhorar a legibilidade dos dados coletados, é possível usar o filtro Resultados, na exibição de Hot Spots da janela Resultados da Determinação Ao Vivo de Perfil, para filtrar os resultados exibidos. O filtro Resultados filtra apenas a exibição dos resultados e não afeta as classes que são instrumentadas. Quando você usa o filtro Resultados, os resultados que iniciam com, contêm ou terminam com um padrão definido são filtrados. Também é possível usar expressões regulares mais complexas para filtragem. Os dados são filtrados com base nos nomes de pacote/classe/método exatamente como eles aparecem na primeira coluna da tabela de resultados. Mais de um padrão pode ser especificado, separando os padrões por um espaço ou uma vírgula com espaço.</p>
+        </li>
+
+        <li>No browser, digite seu nome no campo e clique em Enviar Consulta.<br> <img alt="Tela dos resultados de Determinação de Perfil da Aplicação" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/cpu-pane1-results1.png" title="Modo dos Resultados de Determinação de Perfil da Aplicação">
+            
+            <p>Ao clicar em Enviar Consulta, você poderá ver que a guia Resultados da Determinação Ao Vivo de Perfil é atualizada para refletir a ação no browser. O clique no botão chamou o método <tt>sayHello</tt> na classe <tt>StatelessSessionBean</tt> e chamou o método <tt>init</tt> novamente. O método <tt>serviço</tt> do servlet na classe <tt>Servlet2Stateless</tt> também foi chamado novamente. A guia também exibe quanto tempo foi gasto em cada um dos métodos.</p>
+        </li>
+         </ol>
+         
+        <p class="tips">É possível clicar no botão Análise Detalhada para ver uma representação gráfica do tempo relativo gasto em diversas áreas da aplicação, por exemplo, servlets, listeners etc. Clique no gráfico para obter uma análise detalhada dos resultados de determinação de perfil exibidos. </p>
+        <img alt="Tela do gráfico de Análise Detalhada" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/drill-down.png" title="Gráfico de Análise Detalhada do tempo relativo gasto em servlets na aplicação">
+        
+
+        
+        <p>Instrumentar uma aplicação sempre irá impor uma sobrecarga ao determinar o perfil da aplicação. Em uma aplicação simples como essa, a sobrecarga não é perceptível, porém, em uma aplicação complexa, a sobrecarga pode ser bem significativa. É possível reduzir a sobrecarga limitando as classes, que têm seu perfil determinado, selecionando um método raiz de determinação de perfil.</p>
+        
+
+<a name="profroot"></a>
+        <h3>Usando Métodos Raiz de Determinação de Perfil</h3>
+
+        <p>Neste exercício, você irá determinar o perfil de apenas uma parte da aplicação. Este método de determinação de perfil deve ser usado caso você saiba onde possa existir uma carência no desempenho, ou se deseja determinar o perfil de alguma parte específica do código, como um ou vários servlets. Esse método normalmente impõe uma sobrecarga de determinação de perfil significativamente menor que a instrumentação de todos os métodos da aplicação. Quando você instrumenta apenas parte da aplicação, somente os dados nos quais você tem interesse serão coletados e exibidos.</p>
+        
+        <p>Para determinar o perfil de parte de uma aplicação, é necessário definir um ou mais métodos raiz de determinação de perfil. O IDE instrumenta apenas os métodos que são chamados por um thread inserindo um método raiz de determinação de perfil. Por exemplo, se você definir o método <tt>sayHello</tt> na classe <tt>StatelessSessionBean</tt> como o método raiz e usar o filtro Determinar Perfil somente das classes do projeto, o IDE iniciará a instrumentação dos métodos quando o método for chamado e um thread de aplicação inserir o método. Nessa aplicação, o construtor <tt>init</tt> não será instrumentado, pois ele foi chamado antes do <tt>sayHello</tt>.</p>
+        <img alt="Tela do gráfico de Análise Detalhada" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/profileroot-sayhello-project.png" title="Gráfico de Análise Detalhada do tempo relativo gasto em servlets na aplicação">
+        <p>Caso selecione o filtro Determinar Perfil de todas as classes, o IDE instrumentará todos os métodos chamados pelo <tt>sayHello</tt>, incluindo as classes principais do Java.</p>
+        <img alt="Tela do gráfico de Análise Detalhada" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/profileroot-sayhello-all.png" title="Gráfico de Análise Detalhada do tempo relativo gasto em servlets na aplicação">
+        
+        <p class="notes"><b>Observação:</b> Em uma aplicação mais complexa, talvez seja melhor especificar vários métodos raiz. É possível selecionar métodos individuais, classes inteiras ou pacotes como raiz de determinação de perfil.</p>
+
+        <p>Para especificar uma raiz de determinação de perfil e analisar o desempenho da aplicação, execute as etapas a seguir.</p>
+        <ol>
+            <li>Pare a sessão anterior de determinação de perfil (se ainda estiver em execução) clicando no botão Parar na janela Determinação de Perfil.</li>
+            <li>Escolha Perfil > Perfil do Projeto Principal no menu principal.</li> 
+            <li>Selecione CPU na caixa de diálogo Selecionar Tarefa de Criação de Perfil.</li>
+            <li>Selecione o modo <b>Avançado (instrumentado)</b>.</li>
+            <li>Clique em <b>Personalizar</b> para abrir a caixa de diálogo Editar raízes da Determinação de perfil.
+            <p>Para determinar o perfil de parte de uma aplicação, é necessário primeiro especificar os métodos raiz. Ao selecionar a raiz da determinação de perfil, você limita a determinação de perfis aos métodos chamados pelo thread inserindo a raiz de determinação de perfil.</p>
+            </li>
+            <li>Na caixa de diálogo Editar Raízes da Determinação de Perfil, selecione Exibir Aplicação Web na lista drop-down Selecionar Exibição.</li>
+            <li>Expanda o nó do ServletStateless e selecione o método <tt>serviço</tt> no pacote Servlets. Clique em OK.<br> <img alt="Tela da Exibição da Aplicação Web na caixa de diálogo Editar Raízes de Determinação de Perfil" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/edit-profiling-roots.png" title="Exibir Aplicação Web na caixa de diálogo Editar Raízes de Determinação de Perfil">
+                <p>Como alternativa, é possível selecionar Exibir Pacote para exibir todos os pacotes de códigos-fonte na aplicação e selecionar o método <tt>service</tt> na classe <tt>Servlet2Stateless</tt> no pacote <tt>servlet.stateless</tt>.</p>
+                <img alt="Tela da Exibição de Pacote na caixa de diálogo Editar Raízes de Determinação de Perfil" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/edit-profiling-roots-pkg.png" title="Exibir Pacote na caixa de diálogo Editar Raízes de Determinação de Perfil">
+    
+
+                <p class="notes"><strong>Observação.</strong> Observe que o construtor <tt>servlet2stateless</tt> não está selecionado. É possível usar a caixa de diálogo Editar Raízes da Determinação de Perfil para limitar a instrumentação a métodos específicos em uma classe. Caso não queira limitar a instrumentação para métodos específicos, use a Exibição de Pacote para selecionar uma classe ou um pacote inteiro. Por exemplo, se você selecionar a classe <tt>Servlet2Stateless</tt> em Exibir Pacote da caixa de diálogo Editar Raízes da Determinação de Perfil, o IDE instrumentará o construtor <tt>init</tt> e o método <tt>service</tt>.</p>
+                
+                <p>Ao clicar no botão Avançado, você poderá ver que o método <tt>serviço</tt> está listado como o único método raiz na caixa de diálogo Editar Raízes da Determinação de Perfil (Avançado). Clique em Adicionar para definir explicitamente um método digitando a assinatura e classe do método.</p>
+                <img alt="Tela da caixa de diálogo Editar Raízes de Determinação de Perfil (Avançado)" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/edit-profilingroots-pkg-adv.png" title="Caixa de diálogo Editar Raízes de Determinação de Perfil (Avançado)">
+
+
+            </li>
+            <li>Clique em OK na caixa de diálogo Editar Raízes de Determinação de Perfil.
+                <p>Na caixa de diálogo Selecionar Tarefa de Determinação de Perfil, você pode ver que o modo Avançado de determinação de perfil será executado usando raízes personalizadas de determinação de perfil. É possível clicar em <b>editar</b> para visualizar e modificar o método raiz selecionado. Observe que a sobrecarga da determinação de perfil agora é menor do que quando nenhum método raiz foi especificado.</p></li>
+            <li>Selecione <b>Determinar Perfil somente das classes do projeto</b> na lista drop-down do Filtro. Clique em Executar.<br> <img alt="Tela do painel da CPU da caixa de diálogo Selecionar Tarefa de Determinação de Perfil com uma raiz de determinação de perfil personalizada" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/advanced-cpu-task-custom.png" title="Modo de Perfil da Aplicação selecionado com uma raiz de determinação de perfil personalizada">
+            
+            <p>Quando você clica em Executar, o IDE constrói e implanta a aplicação e abre o browser da Web na página do servlet.</p>
+            <p>O IDE exibe os resultados da determinação de perfil na guia Resultados Ao Vivo da Determinação de Perfil.</p>
+                <img alt="Tela de resultados de métodos de instrumentação usando uma raiz de determinação de perfil" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/cpu-pane2-results.png" title="Resultados de métodos de instrumentação utilizando uma raiz de determinação de perfil">
+            <p>Observe que o IDE exibe somente os resultados para o método especificado como raiz de determinação de perfil. O thread da aplicação não inseriu nenhum outro método na aplicação após inserir a raiz de determinação de perfil.</p>
+            <p>Embora a aplicação tenha inserido outros métodos após inserir a raiz de determinação de perfil, esses outros métodos não são exibidos, pois o filtro de instrumentação limita a instrumentação para classes que são parte do projeto.</p>
+            </li>
+            <li>No browser, digite seu nome no campo e clique em Enviar Consulta.<br> <img alt="Tela dos resultados de métodos de instrumentação utilizando uma raiz de determinação de perfil após chamar o método" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/cpu-pane2-results1.png" title="Resultados de métodos de instrumentação utilizando uma raiz de determinação de perfil após chamar o método sayHello">
+            
+            <p>Ao clicar em Enviar Consulta, você poderá ver que a guia Resultados da Determinação Ao Vivo de Perfil é atualizada para refletir a ação no browser. Clicar no botão chamou o método <tt>sayHello</tt> na classe <tt>StatelessSessionBean</tt> uma única vez. O método <tt>serviço</tt> também foi chamado novamente.</p>
+            <p>Os resultados exibem o desempenho da aplicação, mas podem não representar precisamente o desempenho de uma aplicação que vem sendo executada há algum tempo. Uma maneira de emular o desempenho de uma aplicação Web em condições mais realistas é executar um script gerador de carga.</p>
+            
+            </li>
+            <li>Repita a etapa anterior algumas vezes no browser e clique em Redefinir Resultados na guia Resultados da Determinação Ao Vivo de Perfil para limpar os resultados.
+            </li>
+            <li>Depois que os resultados de determinação de perfil forem redefinidos, digite seu nome e clique em Enviar Consulta mais uma vez.<br> <img alt="Tela dos resultados de métodos de instrumentação utilizando uma raiz de determinação de perfil após chamar o método" class="margin-around b-all" src="../../../images_www/articles/74/javaee/profile-entapp/cpu-pane2-results2.png" title="Resultados de métodos de instrumentação utilizando uma raiz de determinação de perfil após chamar o método sayHello">
+            <p>Se você olhar os resultados de determinação de perfil, em muitos casos, verá que o desempenho melhorou.</p>
+            </li>
+         </ol>
+        
+        <a name="instfilter"></a>
+     <h3>Usando os Filtros de Instrumentação</h3>
+     <p>Ao analisar o desempenho da CPU, você pode reduzir a sobrecarga da determinação de perfil selecionando um filtro de instrumentação na lista drop-down para limitar a determinação de perfis para o código-fonte no qual você tem interesse. Use o filtro para especificar as classes ou os pacotes que são instrumentados. Você pode selecionar entre os seguintes filtros default ou criar um filtro personalizado.</p>
+     <ul>
+         <li><b>Determinar Perfil de todas as classes.</b> Se você selecionar este filtro durante a determinação de perfil de uma aplicação Web ou aplicação corporativa, todas as classes, incluindo as principais classes Java e classes do servidor serão instrumentadas. É preciso ter cuidado ao escolher essa opção de filtro, pois instrumentar muitas classes pode impor uma sobrecarga <b>muito</b> significativa.</li>
+
+         <li><b>Determinar Perfil somente das classes do projeto.</b> Caso esteja determinando o perfil de uma aplicação corporativa, é recomendado que você use esse filtro para limitar o código instrumentado para as classes no projeto. As classes do servidor não serão instrumentadas.</li>
+
+         <li><b>Determinar Perfil das classes de projeto e subprojeto.</b> Ao determinar o perfil de um projeto de aplicação corporativa contém subprojetos como uma aplicação Web, módulos EJB ou bibliotecas de classe, você pode escolher este filtro para limitar o código instrumentado para as classes de subprojetos.</li>
+     </ul>
+
+    <p>É possível criar filtros personalizados para uso em projetos específicos ou para tipos específicos de determinação de perfil. Por exemplo, se você quiser um filtro de instrumentação ao determinar o perfil de aplicações Web no Oracle WebLogic Server, clique em “Editar conjuntos de filtros” para criar um conjunto de filtros que exclui as classes principais do Java, as classes do Oracle WebLogic e do NetBeans (útil quando o Monitor HTTP está ativado). Em seguida, atribua um nome ao conjunto de filtros, como “WebLogic Webapp Exclusive” e selecione esse filtro na lista drop-down Filtro ao determinar o perfil de aplicações implantadas no WebLogic Server.</p>
+    <img alt="Tela da caixa de diálogo ao integrar o determinador de perfil com o projeto" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/custom-filter.png" title="Caixa de diálogo que aparece ao determinar um perfil pela primeira vez">
+
+    <p>É possível definir um filtro de instrumentação simples selecionando Filtro Rápido na lista drop-down Filtro para abrir a caixa de diálogo Definir Filtro Rápido. A seguir, é possível editar rapidamente a lista de pacotes ou classes que são instrumentados. Isso cria um Filtro Rápido que pode ser selecionado na lista drop-down Filtro.</p>
+    <img alt="Tela da caixa de diálogo ao integrar o determinador de perfil com o projeto" class="margin-around b-all" src="../../../images_www/articles/72/javaee/profile-entapp/set-quick-filter.png" title="Caixa de diálogo que aparece ao determinar um perfil pela primeira vez">
+
+    <p>Para obter mais informações sobre definição e uso de filtros de instrumentação, consulte a documentação de determinação de perfil no IDE.</p>
+         
+     </div>
+     
+    <a name="memory"></a>
+    <h2>Analisando o Uso da Memória da Aplicação</h2>
+    <p>É possível usar a ferramenta de determinação de perfil do IDE para analisar o uso de memória da aplicação corporativa para obter dados detalhados sobre a alocação de objeto ou coleta de lixo. A tarefa Analisar Uso da Memória fornece dados sobre objetos que foram alocados na aplicação alvo, como o número, o tipo e a localização dos objetos alocados.</p>
+
+    <p>Ao determinar o perfil do uso da memória, você não pode definir métodos-raiz de determinação de perfil e/ou filtros de instrumentação, para que todos os objetos criados durante a vida do servidor sejam rastreados. Isso pode levar a uma sobrecarga de determinação de perfil e consumo de memória significativos para servidores de aplicações complexas. Portanto, esteja ciente das possíveis limitações da sua máquina antes de realizar esse tipo de determinação de perfil. Para reduzir a sobrecarga da determinação de perfil, é possível modificar a definição, assim, o perfil será determinado apenas a cada dez objetos. Também é aconselhável desativar (limitar) o registro de rastreamentos da pilha para alocações de objeto.</p>
+
+    <p>Quando você determinar o perfil de aplicações corporativas para detectar vazamentos de memória, usar as métricas de Gerações Sobreviventes pode ser muito útil. Quando você rastreia o número de diversos ciclos de coleta de lixo do objetivo das gerações sobreviventes, a ferramenta poderá ajudá-lo a detectar vazamentos de memória antecipadamente, antes da aplicação usar qualquer quantidade perceptível de memória.</p>
+
+    <p>Para analisar o desempenho da memória, você escolhe o volume de dados que deseja obter ao selecionar uma das seguintes opções:</p>
+
+    <ul>
+        <li><b>Rápida.</b> Quando esta opção é selecionada, o criador de perfil faz amostras da aplicação para oferecer dados limitados a objetos ativos. Os objetos ativos são todos aqueles acessíveis (e inacessíveis) que não foram reivindicados pelo Coletor de Lixo. Esta opção só rastreia os objetos ativos e não rastreia alocações ao instrumentar. Não é possível para registrar rastreamentos de pilha ou para usar pontos de criação de perfil se você selecionar esta opção. Esta opção incorre em um overhead significativamente mais baixo que a opção Avançado.
+        </li>
+        <li><b>Avançado.</b> A seleção dessa opção permite que você obtenha informações sobre número, tipo e local dos objetos alocados. Os objetos alocados são aqueles criados desde o início da aplicação (ou desde que os Resultados Coletados no criador de perfil foram redefinidos pela última vez). Todas as classes carregadas atualmente pelo destino JVM (e cada nova classe, conforme é carregada) são instrumentadas para produzir informações sobre alocações de objeto. É necessário selecionar esta opção se você quiser usar pontos de criação de perfil ao analisar o uso de memória ou se você desejar gravar a pilha de chamada. Estas opções incorrem em um overhead de criação de perfil maior que a opção Rápido.</li>
+    </ul>
+    
+    <p>Se você selecionar a opção Avançado, também poderá definir as opções a seguir.</p>
+    <ul>
+        <li><strong>Registrar Estilo de Vida Completo do Objeto </strong> Selecione esta opção para registrar todas as informações de cada objeto, incluindo o número de gerações sobrevividas.</li>
+        <li><strong>Registrar Rastreamentos de Pilha para Alocação</strong>. Selecione esta opção para registrar a pilha de chamadas completa. Essa opção permite exibir a árvore de chamadas reversa das chamadas de método durante a exibição de uma tela da memória.</li>
+        <li><strong>Usar Pontos de Criação de Perfil definidos.</strong> Selecione esta opção para ativar pontos de criação de perfil. Os pontos de criação de perfil desativados são ignorados. Quando essa opção está desmarcada, todos os pontos de criação de perfil no projeto são ignorados.</li>
+    </ul>
+
+    <p>
+    O medidor de Custo Adicional na janela Selecionar Tarefas de Criação de Perfil oferece uma aproximação do aumento ou diminuição no custo adicional da criação de perfil de acordo com as opções de criação de perfil selecionadas.</p>
+    
+    <p>Agora você usará o IDE para analisar o desempenho da memória da aplicação corporativa. Se você quiser obter informações sobre gerações sobreviventes, escolha a opção <b>Avançada</b>. Como alternativa, se você quiser apenas dados sobre os objetos ativos, pode selecionar a opção <strong>Rápido</strong>.</p>
+
+     <ol>
+        <li>Pare a sessão anterior de determinação de perfil (se ainda estiver em execução) clicando no botão Parar na janela Determinação de Perfil.<br> Quando você clica em Parar, o IDE se desconecta da aplicação.</li>
+        <li>Escolha Perfil > Perfil do Projeto Principal no menu principal.</li> 
+        <li>Selecione <b>Memória</b> na caixa de diálogo Selecionar Tarefa de Determinação de Perfil.</li>
+        <li>Selecione <b>Avançado</b>.</li>
+        <li>Selecione <b>Registrar ciclo de vida completo do objeto</b> para obter dados sobre gerações sobreviventes.
+            <p class="notes"><strong>Observação.</strong> Se selecionar essa opção, você notará que o medidor de Sobrecarga aumentará consideravelmente. Ao determinar o perfil da aplicação corporativa, pode ser que você precise aumentar a memória do IDE, devido à quantidade de dados coletados.</p></li>
+        <li>Desmarque a seleção de <b>Usar Pontos de Determinação de Perfil definidos</b> (se selecionado). Clique em Executar.<br> <img alt="Tela da caixa de diálogo Selecionar Tarefa de Determinação de Perfil da Memória" class="margin-around b-all" src="../../../images_www/articles/73/javaee/profile-javaee/profile-memory-advanced.png" title="Caixa de diálogo Selecionar Tarefa de Determinação de Perfil diálogo mostrando tarefas e opções de Memória">
+     </ol>
+
+     <p>Quando você clica em Executar, o IDE compila a aplicação, inicia o servidor no modo de perfil e a implanta a aplicação no servidor. Para exibir os resultados da criação de perfil, clique em Resultados em tempo real na janela Criador de Perfil para abrir a janela Resultados em Tempo Real. A janela Resultados Ao Vivo exibe informações sobre o tamanho e o número de objetos que estão alocados no JVM de destino. Além dos objetos alocados pela aplicação corporativa, os resultados também incluem todos os objetos alocados pelo servidor de aplicações.</p>
+
+     <img alt="Tela da guia de Resultados da Determinação de Perfil mostrando resultados de determinação de perfil do uso da memória" class="margin-around b-all" src="../../../images_www/articles/73/javaee/profile-javaee/profile-memory-results.png" title="Guia de Resultados da Determinação de Perfil mostrando resultados de determinação de perfil do uso da memória">
+     
+     <p>Por default, os resultados são armazenados e exibidos pelo número de bytes em tempo real, mas você pode clicar em um cabeçalho de coluna para alterar como os resultados são exibidos. Você também pode filtrar os resultados ao digitar um nome de classe na caixa de filtro abaixo da lista.</p>
+
+      
+      <div class="feedback-box">
+      <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Profiling%20Enterprise%20Applications">Enviar Feedback neste Tutorial</a></div>
+      
+      <br style="clear:both;">
+      
+      <a name="seeAlso"></a>
+      <h2>Consulte Também</h2>
+      
+      <p>Este documento demonstrou as abordagens básicas para obter os dados de determinação de perfil ao determinar o perfil da aplicação corporativa que é implantada no servidor de aplicações do GlassFish.</p>
+      <p>Para obter informações mais detalhadas sobre as definições e funcionalidades de criação de perfil não abordadas neste documento, consulte a documentação incluída no produto e disponível no item de menu Ajuda.<p>
+      <p>Para ver documentos relacionados, consulte os seguintes recursos:</p>
+      
+      <ul>
+         <li><a href="http://wiki.netbeans.org/wiki/view/NetBeansUserFAQ#section-NetBeansUserFAQ-Profiler">Perguntas mais frequentes do Determinador de Perfil do NetBeans</a><br> Um documento contendo as perguntas frequentes sobre a determinação de perfil de aplicações no NetBeans IDE</li>
+         <li><a href="http://wiki.netbeans.org/wiki/view/FaqProfilerProfileFreeForm">FAQ: Criando o Perfil de um projeto de Forma livre</a></li>
+         <li><a href="../java/profiler-screencast.html">Screencast: Pontos de Determinação de Perfil, Gráfico de Análise Detalhada, Heap Walker</a><br> Demonstração de algumas das funcionalidades da determinação de perfis no NetBeans IDE.</li>
+         <li><a href="../../../community/magazine/html/04/profiler.html">Criação Avançada de Perfil: Teoria na Prática</a></li>
+         <li><a href="http://profiler.netbeans.org/index.html">profiler.netbeans.org</a><br> Site do projeto de determinação de perfil do NetBeans</li>
+         <li><a href="http://blogs.oracle.com/nbprofiler/">Blog do Profiler do NetBeans</a></li>
+         <li><a href="http://profiler.netbeans.org/mailinglists.html">Listas de Correspondência do Profiler do NetBeans</a></li>
+         <li><a href="http://profiler.netbeans.org/docs/help/5.5/index.html">Usando o Determinador de Perfil do NetBeans 5.5</a></li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">início</a></p>
+   </body>
+</html>

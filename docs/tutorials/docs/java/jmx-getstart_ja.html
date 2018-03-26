@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+  <title>NetBeans IDEでのJMXモニタリングの開始</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  <meta name="description" content="Getting Started with JMX module">
+  <link rel="stylesheet" href="../../../netbeans.css">
+  <meta name="author" content="Jean-Francois Denise">
+  <meta name="author" content="Joel FERAUD">
+  <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, JMX">
+  <meta name="description" content="An introductory guide to using JMX technology in NetBeans IDE"/>
+
+</head>
+
+<body>
+    
+<h1>NetBeans IDEでのJMXモニタリングの開始</h1>
+
+
+
+<p>NetBeans JMXモジュールは、JMXテクノロジを直接、NetBeans IDEの対象ワークフローに統合します。このモジュールを使用すると、管理アプリケーションの迅速な開発、既存アプリケーションへの管理の追加、マネージャ・アプリケーションの開発、仮想マシンの状態のモニターが可能になります。 </p>
+  
+  <p>このドキュメントは、NetBeans IDE 6.5以降を対象とする、JDK 6またはJDK 7の最上部で実行中のJMXウィザード・モジュール・バージョン3.0のために更新されています。JMXモジュールは更新センターからダウンロードできます。</p>
+  
+
+<p class="note"> <b>注意:</b> このドキュメントはNetBeans IDE用のJMXモジュールの簡単な概要を示しています。より詳しい情報については、JMXモジュール・チュートリアルの<a href="jmx-tutorial.html">JavaアプリケーションへのJMXインストゥルメントの追加</a>を参照してください。</p> 
+
+
+<p>この開始ドキュメントでは、次のようなJMXモジュール機能の概要を示します。</p>
+<img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+<ul>
+  <li>JMX MBeansおよびマネージャを作成するためのウィザード。</li>
+  <li>属性および操作を追加し、<tt>MBeanRegistration</tt>インタフェースまたは<tt>NotificationEmitter</tt>インタフェースを実装することで、既存のMBeansを更新するアクション。</li>
+  <li>既存のJavaクラスからのMBeanの生成。</li>
+  <li>MBeansをJavaプラットフォームMBeanサーバー内に登録するアクション。</li>
+  <li>Javaプラットフォーム管理コンソール(JConsole)を起動する機能。</li>
+  <li>JConsoleを使用してアプリケーションを実行およびデバッグする機能。</li>
+  <li>JMX機能のアプリケーションへの追加方法を示すAnagramゲームに基づくサンプル・アプリケーション。</li>
+  <li>セキュアで管理可能なJVMの起動を可能にする、管理プロパティ・ファイルを生成するウィザード。</li>
+  <li>オンライン・ヘルプ。
+  <li><a href="../../index.html">netbeans.org</a>サイトからアクセス可能なチュートリアル。</li>
+</ul>
+
+
+<h3>前提条件</h3>
+<p>このチュートリアルは、次のテクノロジについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。 </p>
+    <ul>
+        <li>JMXテクノロジ: <a href="http://download.oracle.com/javase/6/docs/technotes/guides/jmx/index.html">JMXオンライン・ドキュメント</a>
+            </li>
+        <li>Javaテクノロジ: <a href="http://www.oracle.com/technetwork/java/javase/tech/index.html">Java SEテクノロジ早見表</a>
+            </li>
+        <li>NetBeans IDE</li>
+    </ul>
+<p><a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/index.html">Javaプラットフォームのモニタリングおよび管理</a>の内容が参考になる場合もあります。</p>
+
+<h3>チュートリアルに必要なソフトウェア</h3>
+<p>このチュートリアルでは、コンピュータに次のソフトウェアをインストールしておく必要があります。</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+        <th class="tblheader" scope="col">必須バージョン</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+        <td class="tbltd1">7.2、7.3、7.4、8.0、Javaバンドル</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+        <td class="tbltd1">バージョン7または8</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JMXプラグイン</td>
+        <td class="tbltd1">NetBeans更新センターから入手可能</td>
+    </tr>
+    <tr>
+        <td class="tbltd1">JConsoleプラグイン</td>
+        <td class="tbltd1">NetBeans更新センターから入手可能</td>
+    </tr>
+    </tbody>
+</table>
+
+<p><strong>JMX</strong>および<strong>JConsole</strong>プラグインをインストールするには、「ツール」>「プラグイン」を選択してNetBeans更新センターからモジュールをダウンロードします。</p>
+
+<h2>JMXウィザードへのアクセス</h2>
+<p>JMXプラグインをインストールし、プロジェクトが開いたら、「ファイル」>「新規ファイル」([Ctrl]+[N])を選択してJMXカテゴリを選択するとJMXウィザードにアクセスできます。次の中から選択できます。</p>
+<ul>
+  <li><b>管理構成ファイル。</b>JMX管理、特にリモート接続およびセキュリティのための構成を格納する標準のJavaプロパティ・ファイル。</li>
+    
+  <li><b>各種のJMX MBeansタイプ。</b>MBeanは、管理対象となるデバイス、アプリケーションまたは任意のリソースを表示できます。MBeansは管理インタフェース、つまり読取りまたは書込み(あるいはその両方が)可能な一連の属性と、起動可能な一連の操作を、各説明とともに公開します。管理インタフェースは、MBeanインスタンスのライフサイクルを通して変更されません。MBeansは、特定の定義済イベントが発生したときに通知も送信できます。JMX MBeansはMBeanサーバー内に登録する必要があります。</li>
+
+  <li><b>JMXマネージャ。</b>JMXマネージャは、リモートJMX MBeanサーバーに接続する任意のアプリケーションです。<br /> <img alt="JMX新規ファイル・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newfile.png" title="JMXカテゴリの新規ファイル・ウィザード" /></li>
+</ul>
+
+
+<h2>MBeansの更新</h2>
+<p>ダイアログ・ボックスをポップアップするJMXコンテキスト・メニューのアクションで、MBeansに属性と操作を追加できます。MBeansで<tt>NotificationEmitter</tt>インタフェースを実装することもできます。</p>
+
+<p>MBeanを更新するには、「プロジェクト」ツリーでMBeanクラスJavaファイルを選択し、ノードを右クリックしてJMXポップアップ・メニューにアクセスするか、単純にMBeanクラスJavaファイルが開かれているエディタ・ウィンドウ内を右クリックして、JMXポップアップ・メニューにアクセスします。</p>
+  
+  <p>このアクションのデモは、<a href="jmx-tutorial.html#Exercise_3">JavaアプリケーションへのJMXインストゥルメントの追加</a>チュートリアルのエクササイズ3で示されています。</p>
+  
+<h2>MBeansの登録</h2>
+
+<p>MBeansにリモート接続してアプリケーションを管理するには、MBeansをMBeanサーバー内に登録する必要があります。</p>
+<p>MBeanサーバーは、JMXテクノロジの中心的な部分です。このサーバーは、登録されたすべてのMBeanの参照を保持し、新しいMBeanの登録または削除の通知を送信し、登録されたMBeansの属性と操作を公開するためのリモート接続を受け入れることができます。MBeanサーバーの役割について詳しくない場合は、<tt><a href="http://download.oracle.com/javase/6/docs/api/javax/management/MBeanServer.html">javax.management.MBeanServer</a></tt> APIのドキュメントを参照してください。</p>
+
+<p>JDK 5から、JavaプラットフォームはデフォルトのMBeanサーバーである、プラットフォームMBeanサーバーを提供するようになりました。これによってJVMのモニターが可能になり、独自のMBeansの登録にも使用できます。JavaプラットフォームMBeanサーバーの詳細は、<tt><a href="http://download.oracle.com/javase/6/docs/api/java/lang/management/ManagementFactory.html">java.lang.management.ManagementFactory</a></tt> APIのドキュメントを参照してください。</p>
+
+<p>ロジックに応じて、通常はメイン・クラスの初期化フェーズで、アプリケーション・コード内でMBeansを登録する場所を決定します。エディタ・ウィンドウ内でMBeanの登録コードを生成する場所を右クリックして、JMXサブメニューを選択してから「MBean登録を生成...」アクションを選択します。</p>
+  
+    <p>このアクションのデモは、<a href="jmx-tutorial.html#Exercise_5">JavaアプリケーションへのJMXインストゥルメントの追加</a>チュートリアルのエクササイズ5で示されています。</p>
+
+    
+    
+<h2>管理可能なアプリケーションの実装および実行</h2>
+
+<p>JConsoleは、Java仮想マシンをモニタリングするためのJMX準拠のグラフィカル・ツールです。JConsoleは、ローカルおよびリモートのJVMの両方をモニターすることが可能で、JMXアプリケーションのモニターおよび管理に使用できます。</p>
+
+<p>一般的に、管理可能なアプリケーションの実装および実行のワークフローは次のようになります。</p>
+<ol>
+  <li>MBeansを生成します。 </li>
+  <li>MBeansに実装を追加します。 </li>
+  <li>MBeanの登録コードを生成します。</li>
+  <li>JConsoleを使用してプロジェクトを実行またはデバッグします。</li>
+</ol> 
+
+<p>JMXおよびJConsoleプラグインをインストールした後は、次のボタンがツールバーに追加されます。このアクションは、メイン・メニューの「デバッグ」メニュー項目下でもアクセスできます。</p>
+<table>
+    <tbody>
+    <tr>
+        <th class="tblheader" scope="col">ボタン</th>
+        <th class="tblheader" scope="col">説明</th>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="ツールバー内の、モニタリングおよび管理によるメイン・プロジェクトの実行のボタン" class="margin-around" src="../../../images_www/articles/74/java/jmx/run-project24.png" title="モニタリングおよび管理によるメイン・プロジェクトの実行のボタン" /></td>
+        <td class="tbltd1">モニタリングおよび管理によるメイン・プロジェクトの実行</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="ツールバー内の、モニタリングおよび管理によるメイン・プロジェクトのデバッグのボタン" class="margin-around" src="../../../images_www/articles/74/java/jmx/debug-project24.png" title="モニタリングおよび管理によるメイン・プロジェクトのデバッグのボタン" /></td>
+        <td class="tbltd1">モニタリングおよび管理によるメイン・プロジェクトのデバッグ</td>
+    </tr>
+    <tr>
+        <td class="tbltd1"><img alt="ツールバー内の、JConsole管理コンソールの起動のボタン" class="margin-around" src="../../../images_www/articles/74/java/jmx/console24.png" title="JConsole管理コンソールの起動のボタン" /></td>
+        <td class="tbltd1">JConsole管理コンソールの起動</td>
+    </tr>
+    </tbody>
+</table>
+
+<p class="notes"><strong>注意:</strong>JConsoleは、Javaプラットフォームの一部であり、IDEから独立して使用できます。詳細は、次のリソースを参照してください。</p>
+<ul>
+    <li><a href="http://download.oracle.com/javase/6/docs/technotes/tools/share/jconsole.html"><tt>jconsole</tt>のマニュアル・ページ</a></li> 
+    <li><a href="http://download.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">JConsoleドキュメントの使用</a></li>
+</ul>
+
+<h2>サンプル・アプリケーションの実行</h2>
+
+<p>JMXモジュールには、JMXモニタリングが組み込まれたサンプル・アプリケーションが含まれます。</p>
+<ol>
+  <li>「ファイル」>「新規プロジェクト」を選択します。</li>
+  <li>「サンプル」でJMXカテゴリを選択します。</li>
+  <li>JMXで管理されたアナグラム・ゲーム・プロジェクトを選択します。<br /> <img alt="新規プロジェクト・ウィザードのJMXで管理されたアナグラム・ゲーム・プロジェクトのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-newproject.png" title="新規プロジェクト・ウィザードのJMXで管理されたアナグラム・ゲーム" />
+ </li>
+ 
+  <li>「次」をクリックします。指定されているデフォルトのプロジェクト名や場所の値を変更する必要はありません。「メイン・プロジェクトとして設定」チェックボックスが選択されていることを確認します。「終了」をクリックします。
+  <p class="notes"><strong>注意:</strong>JUnitプラグインを以前にインストールしていない場合、JUnitライブラリのインストールを求めるメッセージが表示されることがあります。「リソースの問題を解決」ダイアログ・ボックスで「解決」をクリックしてインストーラを起動し、JUnitプラグインをインストールできます。プラグイン・マネージャでJUnitプラグインをインストールすることもできます。</p>
+  </li>
+  <li>プロジェクトを作成し、メイン・プロジェクトとして設定したら、モニタリングおよび管理によるメイン・プロジェクトの実行のJConsoleボタンをクリックして、JConsoleで実行します。
+  <p class="notes"><strong>注意:</strong>コンソールからアナグラム・ゲーム・プロセスに接続しようとすると、Java Monitoring &amp; Management Consoleに「接続に失敗しました。」という警告が表示されることがあります。このチュートリアルでは、接続の認証を求めるメッセージが表示されたら、「非セキュア」をクリックできます。</p>
+  
+  <p>このボタンをクリックすると、アナグラム・ゲームが起動されて表示されます。</p>
+  <img alt="アナグラム・ゲーム" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-anagram.png" title="アナグラム・ゲーム" />
+  
+  <p>JConsoleウィンドウも表示されます。</p>
+  </li>
+  <li>JConsoleウィンドウで、「MBeans」タブを選択して、次に示すように、左側のツリー・レイアウトで<tt>anagrams.toy.com</tt>の下のすべてのノードを展開します。<br /> <img alt="JConsoleウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jconsole1.png" title="JConsoleウィンドウ" />
+  </li>
+  <li>「通知」ノードを選択し、下にある「サブスクライブ」ボタンをクリックして、アナグラムが解決されるたびにJConsoleが新規通知を受け取れるようにします。</li>
+  <li>「アナグラム・ゲーム」ウィンドウに移動し、最初の3つか4つのアナグラムを解きます(解答はWordLibraryクラス内にありますが、次のとおりです: abstraction、ambiguous、arithmetic、backslash、...)</li>
+  <li>JConsoleに戻り、4つの通知を受信したことを確認します。</li>
+  <li>「属性」ノードをクリックし、属性値が更新されていることを確認します。<br /> <img alt="更新された値を示すJConsoleウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/java/jmx/jmx-jconsole2.png" title="更新された値を示すJConsoleウィンドウ" /></li>
+</ol>
+
+<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Getting%20Started%20with%20JMX%20Monitoring">このチュートリアルに関するご意見をお寄せください</a></div>
+        
+        <br style="clear:both;">
+            
+<h2>関連項目</h2>
+<p>このドキュメントではNetBeans IDE用のJMXモジュールの簡単な概要を示しました。より詳しい情報については、次のJMXモジュール・チュートリアルを参照してください。</p>
+<ul>
+    <li><a href="jmx-tutorial.html">JavaアプリケーションへのJMXインストゥルメントの追加</a></li>
+</ul>
+</body>
+</html>

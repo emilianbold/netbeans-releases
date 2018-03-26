@@ -1,0 +1,565 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>将单元测试添加到 C/C++ 项目</title>
+        <meta name="DESCRIPTION" content="A tutorial for using unit testing in C/++ projects in NetBeans IDE and
+              Oracle Solaris Studio IDE">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,Oracle Solaris Studio
+              tutorial, guide, user, documentation, open source, unit testing, CUnit, CppUnit, C, C++">
+        <meta name="author" content="Susan Morgan"><!--Optional tag-->
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+    </head>
+    <body>
+        <h1>将单元测试添加到 C 项目 - NetBeans IDE 教程</h1>
+        <!-- START INTRO ---------------------------------------------------------------------------------------* -->
+        <div class="articledate" style="margin-left: 0px;font-style:italic;">
+           <p><em>撰稿人：<a href="mailto:susanm@netbeans.org"><i>Susan Morgan</i></a> <br> 2014 年 3 月</em> [修订版本号：V8.0-1]</div>
+        <!-- END INTRO -->
+        <h3>目录</h3>
+        <img alt="此页上的内容适用于 NetBeans IDE 7.4 和 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="此页上的内容适用于 NetBeans IDE 7.4 和 8.0">
+        <table class="b-none vatop" cellpadding="0" cellspacing="0">
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#requirements">要求</a></td>
+            </tr>
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#intro">简介</a></td>
+            </tr>
+             <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#cunit">安装 CUnit 测试框架</a></td>
+            </tr>
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#project">为教程创建项目</a></td>
+            </tr>
+           
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#addtest">将 CUnit 测试添加到 NetBeans 管理的项目中</a></td>
+            </tr>
+
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#runtest">运行 CUnit 测试</a></td>
+            </tr>
+
+        <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#addmore"> 添加其他 CUnit 测试</a></td>
+        </tr>
+
+         <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#debug">调试测试</a></td>
+            </tr>
+
+            <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#addsimple">添加简单测试</a></td>
+            </tr>
+              <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#editsimple">编辑简单测试</a></td>
+            </tr>
+              <tr>
+                <td class="hyphen">- </td>
+                <td><a href="#commandline">从命令行运行测试</a></td>
+            </tr>
+
+
+        </table>
+
+        <h2><a NAME="requirements"></a>要求</h2>
+        <p><b>要学习本教程，您需要具备以下软件。</b></p>
+
+<table>
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">软件</th>
+    <th class="tblheader" scope="col">要求的版本</th>
+</tr>
+
+<tr>
+<td class="tbltd1">NetBeans IDE（支持 C/C++/Fortran） </td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">带有 NetBeans C/C++ 插件的版本 7.4 或 8.0</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Java 开发工具包 (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">版本 7 或 8</a></td>
+</tr>
+
+<tr>
+     <td class="tbltd1">
+        CUnit 2.1 测试框架
+    </td>
+    <td class="tbltd1">
+       <a href="http://sourceforge.net/projects/cunit/">sourceforge 上的 C 单元测试框架项目</a>。
+</tr>
+</tbody>
+</table>
+      <br>
+<p>请参见 <a href="../../../community/releases/80/install.html">NetBeans IDE 安装说明</a>和<a href="../../../community/releases/80/cpp-setup-instructions.html">配置 NetBeans IDE 以使用 C/C++/Fortran</a>，<br>以获取有关下载并安装所需 NetBeans 软件的信息。</p>
+
+        <a name="intro"></a>
+        <h2>简介</h2>
+         <p>
+        带有 C/C++/Fortran 插件的 NetBeans IDE 支持 C/C++ 项目中的单元测试。可以使用 IDE 创建、运行、调试 C 和 C++ 测试以及查看这些测试的结果。本文向您演示如何将 IDE 中的单元测试用于 C/C++ 项目。
+    </p>
+    <p>使用名为“测试文件”的逻辑文件夹创建一个受管项目，您可在该文件夹中管理该项目的单元测试。可以直接在此“测试文件”文件夹下创建测试，也可以在逻辑子文件夹中组织测试。“测试文件”文件夹中的测试节点是含有测试相关操作的特殊文件夹。构建测试时，它将从项目中排除主文件，并使用所有其他项目设置。 </p>
+        <p>
+        IDE 仅支持 CUnit、CppUnit 及其自己的“简单”输出格式，这意味着您的测试应生成其中某种类型的测试的输出。IDE 提供单元测试的模板：
+    <ul>
+        <li>C 简单测试</li>
+        <li>C++ 简单测试</li>
+        <li>CUnit 测试</li>
+        <li>CppUnit 测试</li>
+        <li>CppUnit 测试运行器</li>
+    </ul>
+        <p>本教程在 Ubuntu Linux 上使用 CUnit 测试框架和 NetBeans C 简单测试，不过，演示的技术也可以帮助您在其他平台上进行其他类型的测试。本教程不解释 CUnit 或 CppUnit 测试框架。有关如何使用这些框架的信息，您需要参阅相应文档。</p>
+
+        <h2><a name="cunit"></a>安装 CUnit 测试框架</h2>
+    <p>要遵循本教程，必须先在您的系统上安装 CUnit。有关 CUnit 框架的更多信息，请参见 <a href="http://sourceforge.net/projects/cunit/">sourceforge 上的 C 单元测试框架项目</a>。</p>
+    
+    <p>CUnit 文档包含在 CUnit 下载中，您也可以在 <a href="http://cunit.sourceforge.net/doc/index.html">http://cunit.sourceforge.net/doc/index.html</a> 上查看该文档。</p>
+    <p>请参见相应部分以了解适合于您的平台的安装说明：</p>
+    <ul>
+        <li><a href="#linux">如何在 Linux 或 Mac OS 上安装 CUnit</a></li>
+        <li><a href="#solaris">如何在 Oracle Solaris 11 上安装 CUnit</a></li>
+        <li><a href="#mingw">如何在 Windows 和 MinGW 上安装 CUnit</a></li>
+        <li><a href="#cygwin">如何在 Windows 和 Cygwin 上安装 CUnit</a></li>
+    </ul>
+
+          
+    <h3><a name='linux'></a>如何在 Linux 或 Mac OS 上安装 CUnit</h3>
+    
+    <p>在 Linux 系统上，您应当能够从包资源库中安装 libcunitl、libcunitl-doc 和 libcunitl-dev 包。 </p>
+    <p>在 Mac OS 上，或者在 Linux 上（如果 libcunitl* 包不可用），您可以下载 CUnit 源并构建该源，如此处所述。 </p>
+     <p>以下说明假定您将 CUnit-2.1-2-src.tar.bz2 文件下载到了目录 /tmp 中。如果您的下载文件具有不同的名称，请确保指定实际 CUnit 下载文件和保存该文件的实际目录。</p>
+    <ol>
+        <li>从 <a href="http://sourceforge.net/projects/cunit/files">CUnit 文件页</a>下载 CUnit-2.1-2-src.tar.bz2 源并保存到诸如 /tmp 等临时目录中。
+        </li>
+         <li>在终端窗口中解压缩 <tt>CUnit-2.1-2-src.tar.bz2</tt> 文件，如下所示：
+             <pre>$ cd /tmp
+$ bunzip2 CUnit-2.1-2-src.tar.bz2
+$ tar -xvf CUnit-2.1-2-src.tar</pre></li>
+        <li>从 /tmp 配置、构建和安装 CUinit，如下所示：
+            <pre>$ cd CUnit-2.1-2
+$ ./configure --prefix=/usr
+$ make
+$ sudo make install</pre></li>
+    </ol>
+<p>"make install" 完成后，即可在 IDE 中使用 CUnit 测试框架，并且您可以继续<a href='#project'>为教程创建项目</a>。
+</p>
+   
+    <h3 name='solaris'>如何在 Oracle Solaris 上安装 CUnit</h3>
+ <p>必须使用 <a href="http://en.wikipedia.org/wiki/GNU_build_system">GNU 构建系统</a>构建 CUnit，然后才能使用 CUnit 测试。默认情况下，在 Oracle Solaris 11 系统上，通常不安装 GNU 构建系统。您可以使用以下命令从 Oracle Solaris 11 包资料库中获取 GNU 构建系统组件：</p>
+    <pre>pkg install pkg://solaris/developer/build/gnu-make
+pkg install pkg://solaris/developer/build/make
+pkg install pkg://solaris/developer/gcc-45
+pkg install pkg://solaris/system/header
+pkg install pkg://solaris/developer/build/autoconf
+pkg install pkg://solaris/developer/build/automake-110</pre>
+
+   <p>以下说明假定您将 CUnit-2.1-2-src.tar.bz2 文件下载到了目录 /tmp 中。如果您的下载文件具有不同的名称，请确保指定实际 CUnit 下载文件和保存该文件的实际目录。</p>
+    <ol>
+        <li>从 <a href="http://sourceforge.net/projects/cunit/files">CUnit 文件页</a>下载 CUnit-2.1-2-src.tar.bz2 源并保存到诸如 /tmp 等临时目录中。
+        </li>
+         <li>在终端窗口中解压缩 <tt>CUnit-2.1-2-src.tar.bz2</tt> 文件，如下所示：
+             <pre>$ cd /tmp
+$ bunzip2 CUnit-2.1-2-src.tar.bz2
+$ tar -xvf CUnit-2.1-2-src.tar</pre></li>
+        <li>从 /tmp 配置、构建和安装 CUinit，如下所示：
+            <pre>$ cd CUnit-2.1-2
+$ ./configure --prefix=/usr
+$ make
+$ make install</pre></li>
+    </ol>
+<p>"make install" 完成后，即可在 IDE 中使用 CUnit 测试框架，并且您可以继续<a href='#project'>为教程创建项目</a>。
+</p>
+
+<h3><a name='mingw'></a>如何在 Windows 和 MinGW 上安装 CUnit</h3>
+    <p>以下说明假定您将 CUnit-2.1-2-src.tar.bz2 文件下载到了目录 C:/distr 中。如果您的下载文件具有不同的名称，请确保指定实际 CUnit 下载文件和保存该文件的实际目录。</p>
+    <ol>
+        <li>从 <a href="http://sourceforge.net/projects/cunit/files">CUnit 文件页</a>下载 CUnit-2.1-2-src.tar.bz2 源并保存到诸如 C:/distr 等临时目录中。
+        </li><li>通过选择“开始”>“所有程序”> "MinGW" > "MinGW Shell"，在 Windows 中启动 MinGW Shell 应用程序。</li>
+        <li>在 "MinGW Shell" 窗口中解压缩 <tt>CUnit-2.1-2-src.tar.bz2</tt> 文件，如下所示：
+             <pre>$ cd c:/distr
+$ bunzip2.exe CUnit-2.1-2-src.tar.bz2
+$ tar xvf CUnit-2.1-2-src.tar
+$ cd ./CUnit-2.1-2</pre></li>
+          <li>使用 mount 命令查找 MinGW 的 Unix 路径。
+              <pre>$ mount</pre>
+              您将看到类似于以下内容的输出：
+              <pre>C:\Users\username\AppData\Local\Temp on /tmp type user (binmode,noumount)
+C:\MinGW\msys\1.0 on /usr type user (binmode,noumount)
+C:\MinGW\msys\1.0 on / type user (binmode,noumount)
+<b>C:\MinGW on /mingw type user (binmode)</b></pre>
+          上面粗体显示的最后一行显示 Unix 路径为 /mingw。您的系统可能会报告不同的路径，因此请记下该路径，因为您需要在下一条命令中指定该路径。</li>
+           <li>使用以下命令配置 Makefile。<br>如果您的 MinGW 不在 /mingw 中，请确保使用 --prefix= 选项为 MinGW 指定适当的 Unix 位置。
+
+               <pre>$ ./configure --prefix=/mingw
+<i>(lots of output about checking and configuring)<br>
+...</i>
+config.status: executing depfiles commands
+config.status: executing libtool commands
+</pre></li>
+<li>为 CUnit 构建库：
+    <pre>$ make
+make all-recursive
+make[1]: Entering directory 'c/distr/CUnit-2.1-2'
+Making all in CUnit
+...
+<i>(lots of other output)</i>
+make[1]: Leaving directory 'c/distr/CUnit-2.1-2'
+$</pre>
+ </li>
+<li>通过运行 make install 将 CUnit 库安装到 C:/MinGW/include/CUnit、C:/MinGW/share/CUnit 和 C:/MinGW/doc/CUnit：
+  <pre>$ make install
+Making install in CUnit
+make[1]: Entering directory 'c/distr/CUnit-2.1-2/CUnit'
+Making install in Sources
+make[1]: Entering directory 'c/distr/CUnit-2.1-2/Cunit/Sources'
+...
+ <i>(lots of other output)</i>
+make[1]: Leaving directory 'c/distr/CUnit-2.1-2'
+$</pre>
+   </li>
+<li>如果使用 Java 7 update 21、25 或 40，则必须执行以下解决方法来解决<a href='https://netbeans.org/bugzilla/show_bug.cgi?id=236867'>问题 236867</a>，以使 CUnit 和本教程工作。<br><br>
+        <ol type="a">
+            <li>转到“工具”>“选项”> "C/C++" >“构建工具”，然后选择 MinGW 工具集合。</li>
+        <li>将 Make 命令条目更改为不含完整路径的 make.exe。</li>
+        <li>退出 IDE。</li>
+        <li>在 Windows 7 及更高版本上，在“开始”菜单的搜索框中键入 <b>var</b> 以便快速查找指向“编辑系统环境变量”的链接。</li>
+        <li>选择“高级”标签，然后单击“环境变量”。</li>
+        <li>在“环境变量”对话框的“系统变量”面板中，单击“新建”。</li>
+        <li>将“变量名称”设置为 "MAKE" 并将“变量值”设置为 "make.exe"。</li>
+        <li>在每个对话框中单击“确定”以保存更改。</li>
+        <li>启动 IDE 并继续下一部分。</li></ol></li>
+    </ol>
+     <p>"make install" 完成后，即可在 IDE 中使用 CUnit，并且您可以继续<a href='#project'>为教程创建项目</a>。
+        </p>
+
+        <h3><a name='cygwin'></a>如何在 Windows 和 Cygwin 上安装 CUnit</h3>
+     <p>
+     在 Cygwin 中，您可以使用标准 Cygwin 安装程序 setup-x86.exe 或 setup-x86_64.exe（从 http://cygwin.com/install.html 中获得）来安装 CUnit。CUnit 包位于“库”类别中，您可以通过安装其他包的相同方式来安装该包。</p>
+     <p class="notes">确保使用正确的版本。如果正在运行 64 位 NetBeans IDE，则必须使用 64 位 Cygwin 和 CUnit。</p>
+     <p>如果您尚未安装 Cygwin，请参见<a href='../../../community/releases/80/cpp-setup-instructions.html#cygwin'>为 C/C++/Fortran 配置 NetBeans IDE</a> 中的常规 Cygwin 安装信息。可通过在安装程序的“库”类别中选择 CUnit 来安装它。
+     </p>
+     
+        <h2><a name="project"></a>为教程创建项目</h2>
+        <p>要了解单元测试功能，应当先创建新的 C 应用程序：
+         <ol>
+            <li>选择 "File"（文件）> "New Project"（新建项目）。</li>
+            <li>在项目向导中，单击 "C/C++"，然后选择 "C/C++ Application"（C/C++ 应用程序）。</li>
+            <li>在 "New C/C++ Application"（新建 C/C++ 应用程序）对话框中，选择 "Create Main File"（创建主文件）并选择 "C language"（C 语言）。接受所有其他选项的默认值。<br /> <img alt="&amp;quot;New Project&amp;quot;（新建项目）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-new-project.png">
+             </li>
+            <li>单击 "Finish"（完成）后，将创建 Cpp_Application_<i>x</i> 项目。</li>
+            <li>在 "Projects"（项目）窗口中，打开 "Source Files"（源文件）文件夹并双击 <code>main.c</code> 文件以将其在编辑器中打开。此文件的内容类似于此处所示的内容：<br /> <img alt="编辑前 main.c 文件的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-initial.png">
+            </li>
+         <li>要使该程序执行某种操作，请将 <code>main.c</code> 文件中的代码替换为以下代码以创建简单的阶乘计算器：
+<pre class="examplecode">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+long factorial(int arg) {
+    long result = 1;
+    int i;
+    for (i = 2; i <= arg; ++i) {
+        result *= i;
+     }
+    return result;
+}
+
+int main(int argc, char** argv) {
+    printf("Type an integer and press Enter to calculate the integer's factorial: \n");
+    int arg;
+    fflush(stdout);
+    scanf("%d", &arg);
+    
+    printf("factorial(%d) = %ld\n", arg, factorial(arg));
+
+    return (EXIT_SUCCESS);
+}
+ </pre>
+
+   <p>编辑后此文件应看起来如下所示：</p>
+             <img alt="编辑后 main.c 文件的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-edited.png">
+         </li>
+         <li>通过按 Ctrl+S 组合键保存此文件。</li>
+
+         <li>通过单击 IDE 工具栏中的 "Run"（运行）按钮，构建并运行项目以确保其工作。<br> 如果输入 8 作为整数，则输出应看起来类似于以下内容：<br /> <img alt="阶乘程序输出的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-output-factorial.png">
+         <p class="tips">
+        在某些平台上，您可能需要按两次 Enter 键。
+    </p>
+         </li>
+
+         </ol>
+
+        <h2><a name="addtest"></a>将 CUnit 测试添加到 NetBeans 管理的项目中</h2>
+    <p>当您在开发应用程序时，最好在开发过程中添加单元测试。
+     </p>
+     <p class="tips">
+        每个测试都应包含一个 <code>main</code> 函数并生成一个可执行文件。
+    </p>
+     <ol>
+         <li>
+     在 "Projects"（项目）窗口中，右键单击 <code>main.c</code> 源文件，然后选择 "Create Test"（创建测试）> "New CUnit Test"（新 CUnit 测试）。<br /> <img alt="创建新测试的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-create-test.png">
+    <p>将打开一个向导以帮助您创建测试。</p>
+    </li>
+    <li>在该向导的 "Select Elements"（选择元素）窗口中，单击 <code>main</code> 函数对应的复选框。这将导致同时选中 <code>main</code> 内的所有函数。在此程序中，仅另外存在一个 <code>factorial()</code> 函数。</li>
+    <li>单击 "Next"（下一步）。</li>
+
+    <li>保留默认名称 "New CUnit Test"（新 CUnit 测试）并单击 "Finish"（完成）。
+        <p>"New CUnit Test"（新 CUnit 测试）节点将显示在 "Test Files"（测试文件）文件夹下。</p>
+    
+        "New CUnit Test"（新 CUnit 测试）文件夹包含该测试的模板文件。可通过右键单击该文件夹以将源文件添加到项目的相同方式将新文件添加到该文件夹。
+    </li>
+    <li>展开 "New CUnit Test"（新 CUnit 测试）文件夹，可以看到它包含一个应在源代码编辑器中打开的文件 <code>newcunittest.c</code>。</li>
+   
+    <li>在 <code>newcunittest.c</code> 文件中包含 <code>#include "CUnit/Basic.h"</code> 语句用于访问 CUnit 库。<code>newcunittest.c</code> 文件包含一个自动生成的测试函数 <code>testFactorial</code>，该函数属于 <code>main.c</code> 的 <code>factorial()</code> 函数。        
+     </li>
+     </ol>
+
+     <img alt="newcunittest.c includes 的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-includes.png">
+     <p class="tips">
+        如果 IDE 未找到 <code>CUnit/Basic.h</code> 文件，则可以编辑 include 路径以指向正确的位置。例如，如果在 Windows 中将 CUnit 安装到 <code>C:\Tools\CUnit-2.1-2</code>，则编辑路径以指向以下位置：<br> <br> <code>#include &lt;C:\Tools\CUnit-2.1-2\CUnit\Headers\Basic.h></code>
+    </p>
+     <p>生成的测试是一个桩模块，必须进行编辑以生成有用的测试，但生成的测试即使在没有编辑的情况下也能成功运行。</p>
+
+    <h2><a name="runtest"></a>运行 C 单元测试</h2>
+
+        <p>IDE 提供了几种测试运行方式。可以右键单击项目节点或 "Test Files"（测试文件）文件夹或测试子文件夹，然后选择 "Test"（测试）。也可以使用菜单栏并选择 "Run"（运行）> "Test Project"（测试项目），或者按 Alt+F6 组合键。
+         </p>
+
+    <ol>
+     <li>通过右键单击 "New CUnit Test"（新 CUnit 测试）文件夹并选择 "Test"（测试）来运行测试。 
+         <p>IDE 将打开新的 "Test Results"（测试结果）窗口，您应该会看到类似于以下内容的输出，显示测试失败。</p>
+         <p class="tips">如果您看不到 "Test Results"（测试结果）窗口，请通过选择 "Window"（窗口）> "IDE Tools"（IDE 工具）> "Test Results"（测试结果）或通过按 Alt+Shift+R 组合键来打开该窗口。</p>
+
+     <img alt="初始测试运行的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-test-orig.png">
+     </li>
+     <li>请注意，"Test Results"（测试结果）窗口拆分为两个面板。<br> 右侧面板显示测试的控制台输出。左侧面板显示通过的测试和失败的测试的概要以及失败的测试的描述。</li>
+     <li>在 "Test Results"（测试结果）窗口中，双击节点 <code>testFactorial caused an ERROR</code> 以跳至源代码编辑器中的 <code>testFactorial</code> 函数。<br>如果查看该函数，您会看到它实际上并没有测试任何内容，而只是通过设置 CU_ASSERT(0) 断言单元测试失败。此条件求值为 0，这等效于 FALSE，因此 CUnit 框架将此解释为测试失败。 </li>
+
+     <li>将 CU_ASSERT(0) 行更改为 CU_ASSERT(1) 并保存文件 (Ctrl+S)。</li>
+     <li>通过右键单击 "New CUnit Test"（新 CUnit 测试）文件夹并选择 "Test"（测试），再次运行测试。<br> "Test Results"（测试结果）窗口应指示测试已通过。<br /> <img alt="更改 CU_ASSERT 后测试运行的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-test-pass.png">
+    </li>
+
+    </ol>
+
+         <h2><a name="addmore"></a>添加其他 CUnit 测试</h2>
+     <ol>
+     <li>通过右键单击 "Test Files"（测试文件）文件夹并选择 "New CUnit Test"（新 CUnit 测试），创建通用 CUnit 测试模板。<br /> <img alt="将新 CUnit 测试添加到测试文件的屏幕快照 " class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-new-cunit-test.png">
+    </li>
+     <li>将测试命名为 "My CUnit Test"（我的 CUnit 测试）并将测试文件名命名为 <code>mycunittest</code>，然后单击 "Finish"（完成）。<br /> <img alt="&amp;quot;Create Test&amp;quot;（创建测试）向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-create-mycunittest.png">
+    </li>
+         <li>将创建一个名为 "My CUnit Test"（我的 CUnit 测试）的新测试文件夹，该文件夹中包含在编辑器中打开的 <code>mycunittest.c</code> 文件。</li>
+
+     <li>检查 <code>mycunittest.c</code> 测试文件，可以看到该文件包含两个测试。test1 将因求值为 TRUE 而通过，而 test2 将因求值为 FALSE 而失败，因为 2*2 不等于 5。
+         <pre class="examplecode">
+void test1()
+{
+CU_ASSERT(2*2 == 4);
+}
+void test2()
+{
+CU_ASSERT(2*2 == 5);
+}    </pre>
+</li>
+     <li>像以前一样运行测试，您应该会看到：<br /> <img alt="通过测试和失败测试的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-run-mytest1.png">
+    </li>
+     <li>通过选择 "Run"（运行）> "Test Project (Cpp_Application_<i>x</i>)"（测试项目 (Cpp_Application_x)）从 IDE 主菜单运行所有测试，您会看到两个测试套件都运行，并在 "Test Results"（测试结果）窗口中显示其成功和失败情况。
+     </li>
+    
+     <li>将鼠标放在失败的测试上方可查看有关失败情况的详细信息。<br /> <img alt="失败测试的标注的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-test-fail-annotation.png">
+     </li>
+     <li>单击 "Test Results"（测试结果）窗口左旁注中的按钮可显示和隐藏通过或失败的测试。
+     </ol>
+
+
+         <h2><a name="debug"></a>调试我的 CUnit 测试</h2>
+     <p>可以使用您用于调试项目源文件的相同技术来调试测试，如<a href="https://netbeans.org/kb/docs/cnd/debugging.html">调试 C/C++ 项目教程</a>中所述。</p>
+
+     <ol>
+     <li>在 "Projects"（项目）窗口中，右键单击 "My CUnit Test"（我的 CUnit 测试）文件夹，然后选择 "Step Into Test"（步入测试）。
+          <p class="tips">也可以通过在 "Test Results"（测试结果）窗口中右键单击测试并选择 "Debug"（调试）来运行调试器。</p>
+         <br>将显示调试器工具栏。
+         </li>
+     <li>单击 "Step Into"（步入）按钮将执行程序，每单击一次此按钮将会执行一条语句。<br /> <img alt="调试步入图标的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-debug-icons.png">
+</li>
+  <li>通过选择 "Window"（窗口）> "Debugging"（调试）> "Call Stack"（调用堆栈）打开 "Call Stack"（调用堆栈）窗口，以便您可以在逐步执行测试时观看函数调用情况。</li>
+     </ol>
+
+    
+     <h2><a name="addsimple"></a>添加简单测试</h2>
+     <p>C 简单测试使用 IDE 自己的简单测试框架。您无需下载任何测试框架即可使用简单测试。</p>
+
+       <ol>
+         <li>
+     在 "Projects"（项目）窗口中，右键单击 <tt>main.c</tt> 源文件，然后选择 "Create Test"（创建测试）> "New C Simple Test"（新 C 简单测试）。<br /> <img alt="新建简单测试的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test.png">
+        </li>
+        <li>在向导的 "Select Elements"（选择元素）窗口中，单击 <tt>main</tt> 函数对应的复选框，然后单击 "Next"（下一步）。<br /> <img alt="测试向导的 &amp;quot;Select Elements&amp;quot;（选择元素）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-select.png">
+        </li>
+    <li>在 "Name and Location"（名称和位置）窗口中，保留默认名称 "New C Simple Test"（新 C 简单测试）并单击 "Finish"（完成）。
+
+        <p>"New C Simple Test"（新 C 简单测试）节点将显示在 "Test Files"（测试文件）文件夹下。</p>
+    </li>
+    <li>展开 "New C Simple Test"（新 C 简单测试）文件夹，可以看到它包含文件 <code>newsimpletest.c</code>。此文件应在源代码编辑器中打开。<br /> <img alt="&amp;quot;New C Simple Test&amp;quot;（新 C 简单测试）文件夹的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-folder.png">
+    </li>
+    <li>注意 <code>newsimpletest.c</code> 文件包含一个自动生成的测试函数 <code>testFactorial</code>，该函数属于 <code>main.c</code> 的 <code>factorial()</code> 函数，就像 CUnit 测试一样。<br /> <img alt="&amp;quot;New C Simple Test&amp;quot;（新 C 简单测试）代码的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-mainc-new-simple-test-code.png">
+
+     <p><tt>if</tt> 语句应测试一个条件，如果该条件为 true，则指示测试失败。<tt>%%TEST_FAILED%%</tt> 标记触发在 "Test Results"（测试结果）窗口中显示测试失败的图形指示符。生成的测试中的 <tt>if</tt> 语句通过将条件设置为 1 来将其设置为 true，这样在无修改情况下运行时测试始终失败。</p>
+     <p><tt>main</tt> 函数中的其他标记（例如 <tt>%%TEST_STARTED%%</tt> 和 <tt>%%TEST_FINISHED%%</tt>）旨在帮助您在运行测试时读取命令行输出。</p>
+     <p><tt>time=0</tt> 选项用于向测试中添加时间测量。</p>
+     <p>使用 <tt>message</tt> 选项可以使测试输出有关测试失败的消息。</p>
+    </li>
+     <li>运行测试以查看其是否生成 "Test Results"（测试结果）窗口中显示的失败。</li>
+       </ol>
+
+     <p class="note">接下来，编辑测试文件以查看通过的测试。</p>
+
+     <h2><a name="editsimple"></a>编辑 C 简单测试</h2>
+     <ol>
+         <li>在 <code>testFactorial</code> 函数下方复制并粘贴新函数。<br>新函数是：
+         <pre class="examplecode">
+void testNew() {
+    int arg = 8;
+    long result = factorial(arg);
+    if(result != 40320) {
+        printf("%%TEST_FAILED%% time=0 testname=testNew (newsimpletest) message=Error calculating %d factorial.\n", arg);
+    }
+}</pre>
+         <p><code>main</code> 函数也必须经过修改才能调用新测试函数。</p>
+ 
+     </li>
+
+     <li>在 <code>main</code> 函数中，复制以下行：
+    <pre class="examplecode">
+printf("%%TEST_STARTED%%  testFactorial (newsimpletest)\n");
+    testFactorial();
+    printf("%%TEST_FINISHED%% time=0 testFactorial (newsimpletest)\n");
+    </pre>
+</li>
+<li>在您复制的行正下方粘贴这些行，并在粘贴的行中将名称 <code>testFactorial</code> 更改为 <code>testNew</code>。出现了三处需要更改。<br>完整的 <code>newsimpletest.c</code> 文件应如下所示：
+<pre class="examplecode">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+/*
+ * Simple C Test Suite
+ */
+
+long factorial(int arg);
+
+void testFactorial() {
+    int arg;
+    long result = factorial(arg);
+    if(1 /*check result*/) {
+        printf("%%TEST_FAILED%% time=0 testname=testFactorial (newsimpletest) message=When value is 1 this statement is executed.\n");
+    }
+}
+
+
+void testNew() {
+    int arg = 8;
+    long result = factorial(arg);
+    if(result != 40320) {
+        printf("%%TEST_FAILED%% time=0 testname=testNew (newsimpletest) message=Error calculating %d factorial.\n", arg);
+    }
+}
+
+
+int main(int argc, char** argv) {
+    printf("%%SUITE_STARTING%% newsimpletest\n");
+    printf("%%SUITE_STARTED%%\n");
+
+    printf("%%TEST_STARTED%%  testFactorial (newsimpletest)\n");
+    testFactorial();
+    printf("%%TEST_FINISHED%% time=0 testFactorial (newsimpletest)\n");
+
+    printf("%%TEST_STARTED%%  testNew (newsimpletest)\n");
+    testNew();
+    printf("%%TEST_FINISHED%% time=0 testNew (newsimpletest)\n");
+
+    printf("%%SUITE_FINISHED%% time=0\n");
+
+    return (EXIT_SUCCESS);
+}
+
+</pre></li>
+<li>在 "Projects"（项目）窗口中，通过右键单击 "New C Simple Test"（新 C 简单测试）并选择 "Test"（测试）来运行测试。<br>测试结果应如下所示：<br /> <img alt="简单测试结果的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/c-unit/c-unit-simpletest-results.png">
+  <p>如果您看不到 testNew 通过，请单击 "Test Results"（测试结果）窗口左旁注中的绿色选中按钮以显示通过的测试。</p>
+  <p class="tips">%%TEST_FAILED%% 标记触发在 "Test Results"（测试结果）窗口中显示测试失败情况。if 语句应测试一个条件，如果该条件不为 true，则测试失败。 </p>
+  <p class="tips">%%SUITE_STARTING%% 及其他类似标记不显示在 IDE 的输出中。它们用于控制台输出。
+      </li>
+       </ol>
+
+
+    <h2><a name="commandline"></a>从命令行运行测试</h2>
+    <p>
+        可以在 IDE 外部使用 <code>make build-tests</code> 从命令行构建测试并使用 <code>make test</code> 运行测试。当项目位于 Linux 系统上的 ~/NetBeansProjects/Cpp_Application_<i>x</i> 中，将按如下方式构建并运行本文中的示例。
+    <ol>
+        <li>通过选择“窗口”>“输出”并单击“输出”窗口左旁注中的“终端”按钮，在 IDE 中打开终端窗口。这将在当前项目的工作目录中打开终端窗口。
+    </li>
+        <li>在终端中键入粗体显示的命令：
+            <pre class="examplecode">
+ <b>make test</b></pre>
+            <p>测试构建和运行的输出应看起来类似于以下内容。请注意，已删除某个 <code>make</code> 输出。</p>
+    
+    <pre class="examplecode">
+"make" -f nbproject/Makefile-Debug.mk QMAKE= SUBPROJECTS= .build-conf
+make[1]: Entering directory `/home/tester/NetBeansProjects/CppApplication_1'
+"make"  -f nbproject/Makefile-Debug.mk dist/Debug/GNU-Linux-x86/cppapplication_1
+make[2]: Entering directory `/home/tester/NetBeansProjects/CppApplication_1'
+make[2]: `dist/Debug/GNU-Linux-x86/cppapplication_1' is up to date.
+...
+
+     CUnit - A Unit testing framework for C - Version 2.1-2
+     http://cunit.sourceforge.net/
+
+
+Suite: mycunittest
+  Test: test1 ... passed
+  Test: test2 ... FAILED
+    1. tests/mycunittest.c:33  - 2*2 == 5
+  Test: test3 ... passed
+
+--Run Summary: Type      Total     Ran  Passed  Failed
+               suites        1       1     n/a       0
+               tests         3       3       2       1
+               asserts       3       3       2       1
+%SUITE_STARTING% newsimpletest
+%SUITE_STARTED%
+%TEST_STARTED%  testFactorial (newsimpletest)
+%TEST_FAILED% time=0 testname=testFactorial (newsimpletest) message=error message sample
+%TEST_FINISHED% time=0 testFactorial (newsimpletest)
+%SUITE_FINISHED% time=0
+
+
+     CUnit - A Unit testing framework for C - Version 2.1-2
+     http://cunit.sourceforge.net/
+
+
+Suite: newcunittest
+  Test: testFactorial ... passed
+
+--Run Summary: Type      Total     Ran  Passed  Failed
+               suites        1       1     n/a       0
+               tests         1       1       1       0
+               asserts       1       1       1       0
+make[1]: Leaving directory `/home/tester/NetBeansProjects/CppApplication_1'
+
+    </pre>
+    </li>
+    </ol>
+    
+    <h2>添加对其他测试框架的支持</h2>
+    <p>可通过创建 NetBeans 模块来添加对您喜欢的 C/C++ 测试框架的支持。请参见 NetBeans wiki 上的 NetBeans 开发者的 <a href="http://wiki.netbeans.org/CND69UnitTestsPluginTutotial" target="_blank">C/C++ 单元测试插件教程</a>。 </p>
+
+   
+
+        <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Adding%20Unit%20Tests%20to%20a%20C/C++%20Project%20-%20NetBeans%20IDE%207.4%20Tutorial">发送有关此教程的反馈意见</a></div>
+        <br style="clear: both;">
+</body></html>

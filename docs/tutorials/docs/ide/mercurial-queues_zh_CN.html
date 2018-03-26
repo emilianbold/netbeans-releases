@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>在 NetBeans IDE 中使用 Mercurial 队列支持</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Mercurial Queues in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Mercurial,
+              versioning software, open source, developers, collaborate"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+ </head>
+
+<body>
+<h1>在 NetBeans IDE 中使用 Mercurial 队列支持</h1>
+<p>NetBeans IDE 提供对 Mercurial 队列扩展的支持。使用 IDE 的 Mercurial 队列支持可以创建、检查或在 IDE 中切换补丁程序，以及在修复错误或更新到新的基本修订版本时使用本地修改刷新补丁程序。本文档通过指导您完成使用 Mercurial 版本控制软件管理补丁程序的标准工作流，介绍了如何在 IDE 中执行基本的补丁程序特定任务。</p>
+<p></p>
+
+<h3>目录</h3>
+<img alt="此页上的内容适用于 NetBeans IDE 7.4 和 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="此页上的内容适用于 NetBeans IDE 7.4 和 8.0" />
+
+        <ul class="toc">
+		    <li><a href="#reqs">要求</a></li>
+            <li><a href="#enable">启用 Mercurial 队列支持</a></li>
+			<li><a href="#create">创建补丁程序</a></li>
+			<li><a href="#refresh">使用本地修改刷新补丁程序</a></li>
+			<li><a href="#diff">比较补丁程序修订版本</a></li>
+			<li><a href="#switch">在补丁程序之间切换</a></li>  
+            <li><a href="#finish">完成应用的补丁程序</a></li>
+			<li><a href="#summary">小结</a></li>
+            <li><a href="#seealso">另请参见</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>要求</h2>
+        <p><strong>要学完本教程，您需要具备以下软件和资源。</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">软件或资源</th>
+                    <th class="tblheader" scope="col">要求的版本</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">版本 7.4 或 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java 开发工具包</a> (JDK)</td>
+                    <td class="tbltd1">版本 7 或 8</td>
+                </tr>
+				 <tr>
+                    <td class="tbltd1"><a href="http://mercurial.selenic.com/downloads/" target="_blank">Mercurial 客户端软件</a></td>
+                    <td class="tbltd1">1.04 或更高版本 </td>
+                </tr>
+				                 
+            </tbody>
+        </table>
+		<p class="notes"><b>注：</b>有关如何在系统上安装 Mercurial 客户端软件的信息，请参见<a href="mercurial.html#settingUp">在 NetBeans IDE 中使用 Mercurial 支持</a>。</p>
+
+        
+        <div>
+		<a name ="enable"></a>
+		<h2>启用 Mercurial 队列支持</h2>
+		<p>由于 Mercurial 队列是一种扩展，必须先明确启用，然后才能使用。<br /> 要开始在 Mercurial 资源库上运行 Mercurial 队列，需要完成以下步骤：</p>
+		 <ol>
+		 <li>在系统上，浏览到 <tt>.hgrc</tt> 文件。<tt>.hgrc</tt> 文件在 OS X 和 Linux 上的默认位置是 <tt>$HOME/.hgrc</tt>，在 Windows 上是 <tt>%USERPROFILE%\Mercurial.ini</tt>。</li>
+		 <li>将以下行添加到 <tt>.hgrc</tt> 文件中。
+		 <pre>         [extensions]
+         hgext.mq =</pre></li>
+		 <li>保存该文件。</li>
+		 </ol>
+		 <p class="align-center"><a href="#top">返回页首</a></p>		
+		</div>
+		<div>
+		<a name="create"></a>
+		<h2>创建补丁程序</h2>
+		<p>要创建补丁程序，需要完成以下步骤：</p>
+		<ol>
+		<li>在 "Projects"（项目）窗口中，选择版本控制项目，然后选择 <tt>Team</tt>（团队开发）> <tt>Queues</tt>（队列）> <tt>Create Patch</tt>（创建补丁程序）；也可以右键单击项目名称，然后从弹出菜单中选择 <tt>Mercurial</tt> > <tt>Queues</tt>（队列）> <tt>Create Patch</tt>（创建补丁程序）。<br />此时将显示 "Create Patch"（创建补丁程序）对话框。
+		<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/create-patch.png" rel="lytebox" title="&amp;quot;Create Patch&amp;quot;（创建补丁程序）对话框"> <img alt="&amp;quot;Create Patch&amp;quot;（创建补丁程序）对话框" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/create-patch-small.png"></a></p>
+		  </li>
+		<li>在 "Patch Name"（补丁程序名）文本字段中指定补丁程序的名称。</li>
+		<li>在 "Patch Message"（补丁程序消息）字段中提供补丁程序的说明。<br /> 此外，还可选择以下选项之一，然后单击 "OK"（确定）：
+		  <ul>
+		<li>单击 "Recent Messages"（近期的消息）按钮 (<img alt="近期的消息" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/recent.png">) 可从最近提交的消息列表中选择消息 </li>
+		<li>单击 "Load Template"（加载模板）按钮 (<img alt="加载模板" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/load.png">) 可为提交消息选择消息模板。</li>
+		</ul>
+		<p class="notes"><b>注：</b><a href="#finish">将补丁程序转到永久更改集</a>时，提供的补丁程序说明将用作提交消息。</p>
+		</li>
+		<li>在 "Files To Include In Patch"（要包含在补丁程序中的文件）表中选择要包含在补丁程序中的文件。 </li>
+		<li>(可选) 使用 "Update Issue"（更新问题）区域中的字段指定与已创建补丁程序有关的问题的相关信息。</li>
+		<li>单击 "Create Patch"（创建补丁程序）。<br /> 此时将创建新的补丁程序并将其添加到 <tt>.hg/patches</tt> 目录。
+		</li>
+		</ol>
+<p class="align-center"><a href="#top">返回页首</a></p>				
+</div>
+<div>
+<a name="refresh"></a>
+<h2>使用本地修改刷新补丁程序</h2>
+<p>要将进行中工作保存到所创建的补丁程序中，需要完成以下步骤： </p>
+<ol>
+<li>从主菜单中选择 <tt>Team</tt>（团队开发）> <tt>Queues</tt>（队列）> <tt>Refresh Patch</tt>（刷新补丁程序）；也可以右键单击项目名称，然后从弹出菜单中选择 <tt>Mercurial</tt> > <tt>Queues</tt>（队列）> <tt>Refresh Patch</tt>（刷新补丁程序）。<br /> 此时将显示 "Refresh Patch"（刷新补丁程序）对话框。
+<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch.png" rel="lytebox" title="&amp;quot;Refresh Patch&amp;quot;（刷新补丁程序）对话框"> <img alt="&amp;quot;Refresh Patch&amp;quot;（刷新补丁程序）对话框" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch-small.png"></a></p></li>
+<li>在 "Patch Message"（补丁程序消息）字段中提供补丁程序的说明。<br /> 此外，还可选择以下选项之一，然后单击 "OK"（确定）：
+		  <ul>
+		<li>单击 "Recent Messages"（近期的消息）按钮 (<img alt="近期的消息" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/recent.png">) 可从最近提交的消息列表中选择消息 </li>
+		<li>单击 "Load Template"（加载模板）按钮 (<img alt="加载模板" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/load.png">) 可为提交消息选择消息模板。</li>
+		</ul>
+		<p class="notes"><b>注：</b><a href="#finish">将补丁程序转到永久更改集</a>时，提供的补丁程序说明将用作提交消息。</p>
+	</li>
+		<li>在 "Files To Include In Patch"（要包含在补丁程序中的文件）表中选择要包含在补丁程序中的文件。 </li>
+		<li>（可选）在 "Update Issue"（更新问题）区域中，指定与所提交更改有关的问题的相关信息。</li>
+        <li>单击 "Refresh Patch"（刷新补丁程序）。<br />此时将更新所处理的补丁程序。</li>
+
+</ol>
+<p class="align-center"><a href="#top">返回页首</a></p>
+</div>
+
+		<div><a name="diff"></a>
+		<h2>比较补丁程序修订版本</h2>
+		<p>要生成补丁程序以用于逐个检查和比较补丁程序修订版本，需要完成以下步骤： </p>
+<ol>
+<li>从主菜单中选择 <tt>Team</tt>（团队开发）> <tt>Queues</tt>（队列）> <tt>Diff</tt>（比较）；也可以右键单击项目名称，然后从弹出菜单中选择 <tt>Mercurial</tt> > <tt>Queues</tt>（队列）> <tt>Diff</tt>（比较）。<br /> 比较查看器在并排的面板中显示在当前补丁程序中发现的差异，以及所有未提交/未刷新的本地更改：
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/qdiff.png" rel="lytebox" title="比较查看器"> <img alt="比较查看器" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/qdiff-small.png"></a></p></li>
+<li> 检查并修订使用图形化比较查看器或文本式比较查看器在所比较文件中发现的差异。
+  <p class = "notes"><b>注：</b>图形化比较查看器使用以下颜色编码来突出显示文件中的更改。</p>
+  <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>蓝色</strong> (<span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>表示自上一个补丁程序以来更改过的行。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>绿色</strong> (<span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>表示自上一个补丁程序以来添加的行。</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>红色</strong> (<span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)</td>
+                    <td>表示自上一个补丁程序以来删除的行。</td>
+                </tr>
+</table>
+<p>
+使用以下图标可以直接在图形化比较查看器中进行更改。</p>
+ <table width="600px">
+				 <tr>
+                        <th class="tblheader" scope="col">图标</th>
+                        <th class="tblheader" scope="col" style="width:60px">名称</th>
+                        <th class="tblheader" scope="col">功能</th>
+        </tr>
+                    <tr>
+					 <td class="tbltd1 align-center"><img alt="&amp;quot;replace&amp;quot;（替换）图标" src="../../../images_www/articles/72/ide/mercurial-queues/replace.png" /></td>
+                        <td class="tbltd1 align-center" style="width:80px"><strong>替换</strong></td>
+                        <td class="tbltd1">将突出显示的文本从上一补丁程序插入当前补丁程序中。</td>
+                    </tr>
+					<tr>
+					<td class="tbltd1 align-center"><img alt="&amp;quot;Replace all&amp;quot;（全部替换）图标" src="../../../images_www/articles/72/ide/mercurial-queues/replace-all.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>全部替换</strong> </td>
+                        <td class="tbltd1">将补丁程序的当前版本还原到其选定的以前版本的状态。</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="&amp;quot;Remove&amp;quot;（删除）图标" src="../../../images_www/articles/72/ide/mercurial-queues/remove.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>删除</strong></td>
+                        <td class="tbltd1">从补丁程序的当前版本中删除突出显示的文本，使之与以前的补丁程序版本完全匹配。</td>
+                    </tr>
+      </table></li>
+</ol>
+		
+<p class="align-center"><a href="#top">返回页首</a></p>
+        
+		</div>
+		
+		<div>
+		<a name="switch"></a>
+        <h2>在补丁程序之间切换</h2>
+        <p>要在补丁程序队列系列中切换特定补丁程序，需要执行以下步骤： </p>
+		<p class="notes"><b>注：</b>要在补丁程序之间切换，工作副本中<i>不能</i><i>有</i>本地修改，否则切换将失败。</p>
+		<ol>
+		<li>从主菜单中选择 <tt>Team</tt>（团队开发）> <tt>Queues</tt>（队列）> <tt>Go To Patch</tt>（转至补丁程序）；也可以右键单击项目名称，然后从弹出菜单中选择 <tt>Mercurial</tt> > <tt>Queues</tt>（队列）> <tt>Go to Patch</tt>（转至补丁程序）。<br /> "Go To Patch"（转至补丁程序）对话框显示堆栈中可用的所有补丁程序的列表。 
+		
+		  <p class="align-center">
+	      <img alt="&amp;quot;Go To Patch&amp;quot;（转至补丁程序）对话框" border="1/" src="../../../images_www/articles/74/ide/mercurial-queues/go-patch.png"></p>
+		  
+		<p class="notes"><b>注：</b></p> 
+		<ul>
+		<li>已应用补丁程序的名称以粗体显示。</li>
+		<li> 选择 <tt>Team</tt>（团队开发）> <tt>Queues</tt>（队列）> <tt>Pop All Patches</tt>（弹出所有补丁程序）可从堆栈顶层删除已应用补丁程序，并更新工作目录以撤消所应用补丁程序的效果。</li>
+		</ul>
+		</li>
+		<li>选择所需的补丁程序，然后单击 "Go"（开始）。<br /> IDE 将所选补丁程序中包含的更改应用到所选项目、文件或文件夹。</li>
+		</ol> 
+		<p class="align-center"><a href="#top">返回页首</a></p>
+		</div> 
+		<div>   
+               
+        <a name="finish"></a>
+<h2>完成应用的补丁程序</h2>
+<p>完成处理补丁程序时，可以将其转到永久更改集中。<br /> 要将补丁程序队列系列中的所有已应用补丁程序转到常规更改集中，请完成以下步骤：</p>
+ <p class="notes"> <b>注：</b>要应用资源库中所有已保存的补丁程序，请从主菜单中选择 <tt>Team</tt>（团队开发）> <tt>Queues</tt>（队列）> <tt>Push All Patches</tt>（推入所有补丁程序）。</p>
+ 
+<ol>
+<li>从主菜单中选择 <tt>Team</tt>（团队开发）> <tt>Queues</tt>（队列）> <tt>Finish Patches</tt>（完成补丁程序）；也可以右键单击项目名称，然后从弹出菜单中选择 <tt>Mercurial</tt> > <tt>Queues</tt>（队列）> <tt>Finish Patches</tt>（完成补丁程序）。<br /> 此时将显示 "Finish Patches"（完成补丁程序）对话框。
+   <p class="align-center">
+    <img alt="完成补丁程序" border="1/" src="../../../images_www/articles/74/ide/mercurial-queues/finish-patches.png"></p></li>
+	<li>在补丁程序字段中选择要完成的补丁程序的名称。
+	<p class="notes"><b>注：</b>还将完成系列中位于所选补丁程序之前的所有补丁程序。</p></li>
+	<li>单击 "Finish Patches"（完成补丁程序）。<br />IDE 会将所选补丁程序及该补丁程序之前的所有已应用补丁程序转入常规更改集中。</li>
+		  </ol>
+<p class="align-center"><a href="#top">返回页首</a></p>
+</div>
+<div>
+<a name="summary"></a>
+<h2>小结</h2>
+<p>本教程通过指导您完成使用 Mercurial 版本控制软件管理补丁程序的标准工作流，介绍了如何在 IDE 中执行基本的补丁程序特定任务。它还介绍了如何在 NetBeans IDE 中启用 Mercurial 队列支持以及如何对补丁程序执行基本任务，同时简要说明了 IDE 中包含的一些特定于 Mercurial 的功能。</p>
+<p class="align-center"><a href="#top">返回页首</a></p>
+</div>
+		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Suport%20For%20Mercurial%20Queues%20in%20NetBeans%20IDE">发送有关此教程的反馈意见</a></div>
+
+        <br style="clear:both;"/>
+		<a name="seealso"></a>
+        <h2>另请参见</h2>
+        
+        <p>相关资料请参见以下文档：</p>
+        <ul>
+           
+           	<li><a href="mercurial.html">在 NetBeans IDE 中使用 Mercurial 支持</a></li>
+			<li><a href="http://wiki.netbeans.org/HgNetBeansSources">在 IDE 中使用 Mercurial 处理 NetBeans 源</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">使用 NetBeans IDE 开发应用程序</a>中的<i>使用版本控制对应用程序进行版本控制</i></a></li>
+			
+        </ul>
+		<p class="align-center"><a href="#top">返回页首</a></p>
+</body>
+</html>

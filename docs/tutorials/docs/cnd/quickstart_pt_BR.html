@@ -1,0 +1,342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   <title>Tutorial para Início Rápido de Projetos C/C++ do NetBeans IDE</title>
+   <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, C/C++, PROJECTS">
+   <meta name="DESCRIPTION" content="Short tutorial that demonstrates working with C/C++
+   projects in NetBeans IDE">
+
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Tutorial para Início Rápido de Projetos C/C++</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+<p>Colaboração de <i>Ann Rice</i> e mantida por <i>Susan Morgan</i> <br> <em>Março de 2014</em> [Número da revisão: V8.0-1]</div>
+
+<p>O curto tutorial a seguir orienta você pelas etapas básicas da criação e configuração de um projeto no NetBeans IDE.
+</p>
+<!-- END INTRO -->
+<p><b>Conteúdo</b></p>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2 e mais recente" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2 e mais recente">
+<ul class="toc">
+    <li><a href="#requirements" title="Requisitos">Requisitos</a></li>
+<li><a href="#projects" title="Criando Projetos em C e C++">Criando Projetos em C e C++</a></li>
+    <li><a href="#running" title="Executando um Projeto">Executando um Projeto</a></li>
+    <li><a href="#existingsourcesprojects" title="Criando um Projeto C/C ++ de Código Existente">Criando um Projeto C/C++ com Códigos-fonte Existentes</a></li>
+    <li><a href="#frombinaryprojects" title="Criando um Projeto C/C ++ de um Arquivo Binário">Criando um Projeto C/C ++ de um Arquivo Binário</a></li>
+    <li><a href="#nextsteps" title="Próximas Etapas">Próximas Etapas</a></li>
+</ul>
+
+<h2><a NAME="requirements"></a>Requisitos</h2>
+<p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b> </p>
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">Software ou Recurso</th>
+<th class="tblheader" scope="col">Versão Necessária</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">versão 7.2 ou mais recente com o plug-in C/C++ do NetBeans</a></td>
+</tr>
+<tr>
+<td class="tbltd1">JDK (Java Developer Kit)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">versão 6, 7 ou 8</a> </td>
+</tr>
+
+<tr>
+    <td class="tbltd1">
+    Compiladores C e C++, <tt>make</tt>, <tt>gdb</tt>
+    </td>
+    <td class="tbltd1">
+    
+   <a href="../../../community/releases/80/cpp-setup-instructions.html">Configurando o NetBeans IDE para C/C++/Fortran</a>
+</tr>
+</tbody>
+</table>
+<br>
+<p>Consulte as <a href="../../../community/releases/80/install.html">Instruções de Instalação do NetBeans IDE</a> e a <a HREF="../../../community/releases/80/cpp-setup-instructions.html"> Configuração do NetBeans IDE para o C/C++/Fortran</a><br> para obter informações sobre o download e a instalação do software necessário.</p>
+
+<p><b>Projetos de Amostra</b> 
+</p>
+<p>Se quiser apenas conhecer alguns projetos de amostra fornecidos pelo IDE, escolha Arquivo > Novo Projeto, em seguida, abra a categoria Amostras e a subcategoria C/C++. O IDE fornece vários projetos C e C++ de amostra para ajudá-lo a se familiarizar com o IDE. 
+</p>
+<h2><a name="projects"></a>Criando Projetos em C e C++</h2>
+<p>O suporte a C/C++ do NetBeans permite criar projetos da Biblioteca e Aplicação C e C++ com makefiles gerados, bem como projetos em C e C++ com códigos-fonte existentes.
+</p>
+<p>É possível construir, executar e depurar o projeto no host local (o sistema a partir do qual se iniciou o IDE) ou um host remoto que esteja executando um sistema operacional UNIX®. Para obter informações sobre a especificação da coleção de ferramentas do projeto e sobre a definição e o uso de hosts remotos, consulte <a href="development-environment.html">Definindo Ambiente de Desenvolvimento de Projeto C/C++</a>.
+</p>
+<p>
+   Com um Aplicação C/C++, Biblioteca Estática ou D, o IDE controla todos os aspectos quanto a como a aplicação é construída, executada e depurada. As definições do projeto são especificadas na criação do projeto e na caixa de diálogo Propriedades do Projeto. O IDE gera um makefile no qual todas as definições são armazenadas.
+</p>
+<div class="indent">
+
+   <h3><a name="CreatingApp"></a>Criando um Projeto da Aplicação C/C++</h3>
+   <ol>
+      <li>Abra o assistente para Novo Projeto em Arquivo > Novo Projeto.</li>
+      <li>No assistente, selecione a categoria C/C++.</li>
+      <li>
+         O assistente fornece a escolha de diversos tipos de novos projetos. Selecione Aplicação C/C++ e clique em Próximo. <br> <img alt="Tela do Assistente de Novo Projeto" class="margin-around" src="../../../images_www/articles/72/cnd/quickstart/creating_application.png">
+      </li>
+      <li>
+         Crie um novo projeto de Aplicação C/C++ no assistente usando os defaults. É possível escolher o nome do projeto e a localização do projeto.
+      </li>
+      <li>Clique em Finalizar para sair do assistente.</li>
+   </ol>
+   <p>
+      Um projeto é criado com pastas lógicas. A pasta lógica não é um diretório. Trata-se de uma forma de organizar os arquivos e não reflete onde os arquivos estão armazenados fisicamente. Os arquivos adicionados a pastas lógicas são automaticamente parte do projeto e são construídos quando você constrói o projeto.
+   </p>
+   <p>
+      Os arquivos adicionados à pasta Arquivos Importantes não fazem parte do projeto e não são construídos quando você contrói o projeto. Esses arquivos são apenas para referência e são convenientes quando você tem um projeto com um makefile existente. 
+   </p>
+      <h3><a name="SwitchingViews"></a>Alternando entre a View Lógica e a View Física do Projeto</h3>
+      <p>Um projeto possui uma view lógica e uma física. É possível alternar entre a view lógica e a view física de seu projeto.
+      </p>
+      <ol>
+         <li>
+            Selecione a guia Arquivos. Esta janela exibe a view física do projeto. Isso exibe os arquivos e as pastas conforme eles estão armazenados no disco. <br> <img alt="Tela da guia Arquivos" class="b-all margin-around" src="../../../images_www/articles/72/cnd/quickstart/files_tab.png">
+         </li>
+         <li>
+            Selecione a guia Projetos. Esta janela exibe a view lógica do projeto. <br> <img alt="Tela da guia Projetos" class="b-all margin-around" src="../../../images_www/articles/72/cnd/quickstart/projects_tab.png">
+
+         <p class="tips">A maioria dos comandos que são executados em um projeto estão disponíveis na guia de Projetos, não na guia Arquivos.</p>
+         </li>
+      </ol>
+      
+      <h3><a name="AddingFilesandFolders"></a>Adicionando Arquivos e Pastas ao Projeto</h3>
+      <p>É possível adicionar pastas lógicas ao projeto.
+      </p>
+      <ol>
+         <li>
+            Clique com o botão direito do mouse no nó do projeto do projeto da Aplicação e escolha Nova Pasta Lógica. Uma nova pasta lógica é adicionada ao projeto.
+         </li>
+         <li>
+            Clique com o botão direito do mouse na nova pasta lógica e selecione Renomear. Digite o nome que você gostaria de dar à nova pasta.
+         </li>
+         
+      </ol>
+      <p>É possível adicionar ambos arquivos e pastas a uma pasta existente. As pastas lógicas podem ser aninhadas.
+      </p>
+      <h3><a name="AddingNewFiles"></a>Adicionando Novos Arquivos ao Projeto</h3>
+      <p>É possível adicionar novos arquivos ao projeto.
+      </p>
+      <ol>
+         <li>Clique com o botão direito do mouse na pasta Arquivos de Código-fonte e escolha Novo > Arquivo de Código-fonte C.</li>
+         <li>Na página de Nome e Localização da caixa de diálogo Novo Arquivo, digite <tt>newfile</tt> no campo de Nome de Arquivo. <br><br> <img alt="Tela da caixa de diálogo Novo Arquivo" src="../../../images_www/articles/72/cnd/quickstart/adding_files.png"> <br><br>
+              </li>
+         <li>Clique em Finalizar.</li>
+      </ol>
+      <p>
+         O arquivo <tt>newfile.cpp</tt> é criado no disco no diretório especificado no assistente e adicionado à pasta Arquivos de Código-fonte. É possível adicionar qualquer tipo de arquivo a essa pasta, não somente arquivos de código-fonte. 
+      </p>
+      <h3><a name="MoreNewFiles"></a>Adicionando Mais Arquivos Novos ao Projeto</h3>
+      <ol>
+         <li>Clique com o botão direito do mouse na pasta Arquivos de cabeçalho e escolha Novo > Arquivo de Cabeçalho C++.
+         </li>
+         <li>Na página de Nome e Localização da caixa de diálogo Novo Arquivo, digite <tt>newfile</tt> no campo de Nome de Arquivo.</li>
+         
+         <li>Clique em Finalizar.</li>
+      </ol>
+      <p>
+         O arquivo <tt>newfile.c</tt> é criado no disco no diretório especificado no assistente e adicionado à pasta Arquivos de Cabeçalho.
+      </p> 
+      <h3><a name="AddingExistingFiles"></a>Adicionando Arquivos Existentes ao Projeto</h3>
+      <p>
+         É possível adicionar arquivos existentes ao projeto de duas formas:
+      </p>
+      <ul>
+         <li>
+            Clique com o botão direito do mouse na pasta Arquivos de Código-fonte e escolha Adicionar Item Existente. É possível apontar para um arquivo existente no disco utilizando a caixa de diálogo Selecionar Item e adicionar o arquivo ao projeto.
+         </li>
+         <li>Clique com o botão direito do mouse na pasta Arquivos de Código-fonte e escolha Adicionar Itens Existentes das Pastas. Use a caixa de diálogo Adicionar Arquivos para adicionar pastas que contêm arquivos existentes.
+      </ul>
+      
+      <p class="tips">
+         Não use o item de menu Novo para adicionar itens existentes. O painel Nome e Localização informa que o arquivo já existe.
+      </p>
+      <h3><a name="ProjectProperties"></a>Definindo Propriedades do Projeto</h3>
+      <p>
+      <p>Quando o projeto é criado, ele possui duas configurações: Depuração e Release. Uma configuração é uma coleção de definições utilizadas para o projeto, que permite alternar com facilidade muitas definições de uma só vez quando você seleciona uma configuração. A configuração Depuração constrói uma versão da aplicação que inclui informações de depuração. A configuração da Release constrói uma versão otimizada.
+      </p>
+      <p>A caixa de diálogo Propriedades do Projeto contém informações de construção e de configuração para o projeto: Para abrir a caixa de diálogo Propriedades do Projeto:
+      </p>
+      <ul>
+         <li>
+            Clique com o botão direito do mouse no nó do projeto<tt>CppApplication_1</tt> e escolha Propriedades. <br> <img alt="Tela da caixa de diálogo Propriedades do Projeto" class="margin-around" src="../../../images_www/articles/72/cnd/quickstart/project_properties.png">
+         </li>
+      </ul>
+      <p>
+      É possível modificar os defaults da ferramenta de construção, as definições do compilador e outras definições de configuração na caixa de diálogo Propriedades do Projeto, selecionando um nó no painel esquerdo e modificando as propriedades no painel direito. Selecione alguns dos nós e valores de propriedade e observe as propriedades que você pode definir. Ao definir as propriedades da guia Gerais, você está definindo as propriedades em todas as configurações do projeto. Ao definir as propriedades de Construir, Executar ou Depurar, você está definindo as propriedades na configuração selecionada no momento.
+      <h3><a name="Configurations"></a>Gerenciando Configurações</h3>
+      <p>As propriedades alteradas na janela Propriedades do Projeto são armazenadas no makefile da configuração atual. É possível editar as configurações default ou criar novas. Para criar uma nova configuração:
+      </p>
+      <ol>
+         <li>
+            Clique no botão Gerenciar Configurações na caixa de diálogo Propriedades do Projeto.
+         </li>
+         <li> 
+            Na caixa de diálogo Configurações, selecione a configuração que corresponde de forma mais próxima à configuração desejada. Nesse caso, selecione a configuração Release e clique no botão Duplicar. Em seguida, clique em Renomear.
+         </li>
+         <li>
+            Na caixa de diálogo Renomear, renomeie a configuração para PerformanceRelease. Clique em OK. 
+         </li>
+         <li>Clique em OK na caixa de diálogo Configurações.</li>
+         <li>
+            No painel esquerdo, selecione o nó Compilador C. 
+         </li>
+         <li>
+            Na caixa de diálogo Propriedades do Projeto, observe que a configuração PerformanceRelease está selecionada na lista drop-down Configuração.
+         </li>
+         <li>
+            Na folha de propriedades no painel direito, altere o Modo de Desenvolvimento de Release para PerformanceRelease. Clique em OK.
+         </li>
+      </ol>
+      <p>
+         Você criou uma nova configuração que compilará a aplicação com um conjunto de opções diferente.
+      </p>
+      
+      <h3><a name="FileProperties"></a>Definindo Propriedades do Arquivo de Código-fonte</h3>
+      <p>
+      <p>Quando você define as propriedades do projeto em C ou C++, as propriedades relevantes são aplicadas a todos os arquivos do projeto. É possível também definir algumas propriedades de arquivos individuais.
+      </p>
+      <ol>
+         <li>
+            Clique com o botão direito no arquivo de código-fonte <tt>newfile.cpp</tt> na guia Projetos e escolha Propriedades.
+         </li>
+         <li>Clique na categoria Geral e veja se é possível especificar um compilador diferente ou outra ferramenta para construir esse arquivo. É possível também utilizar uma caixa de seleção para excluir o arquivo da construção da configuração do projeto atualmente selecionado.
+
+         <li>Clique no compilador C++ e veja se é possível substituir as definições do compilador de projeto e outras propriedades para esse arquivo.</li>
+         
+         <li>Caixa de diálogo Cancelar as Propriedades do Arquivo</li>
+      </ol>
+      
+      
+         
+      <h3><a name="BuildingProject"></a>Construindo e Reconstruindo o Projeto</h3>
+      <p>Para construir o projeto:
+      <ol>
+         <li>
+            Clique com o botão direito no nó do projeto e escolha Construir e o projeto é construído. A saída da construção é exibida na janela de Saída.
+         </li>
+         <li>
+            Alterne a configuração de Depuração para PerformanceRelease na lista drop-down Configuração na barra de ferramentas principal. Agora o projeto será construído por meio da configuração PerformanceRelease.
+         </li>
+         
+         <li>
+            Clique com o botão direito no nó do projeto e escolha Construir e o projeto é construído. A saída da construção é exibida na janela de Saída.
+         </li>
+      </ol>
+<p>Para reconstruir seu projeto:</p>
+      <ul><li>Clique com o botão direito no nó do projeto e escolha Limpar e Construir para fazer uma reconstrução completa após remover produtos da construção anterior.</li>
+          <li>Clique com o botão direito do mouse no nó do projeto e escolha Construir para fazer uma construção incremental. Os produtos anteriores construídos são mantidos, se os arquivos de origem não forem alterados.</li></ul>
+      <p>
+         É possível construir, limpar, ou limpar e construir o projeto, escolhendo ações no menu Executar ou usar os botões da barra de ferramentas. O projeto também mantém arquivos de objeto e executáveis de configurações diferentes separados, de forma que você não tenha que se preocupar em misturar arquivos de várias configurações.
+      </p>
+      <h3><a name="CompilingFile"></a>Compilando um Único Arquivo</h3>
+      <p>
+         Para compilar um único arquivo de código-fonte:
+      </p>
+      <ul>
+         <li>
+            
+            Clique com o botão direito do mouse no arquivo <tt>main.cpp</tt> e escolha Compilar Arquivo. Somente esse arquivo é compilado.
+         </li>
+      </ul>
+      <p class="notes">
+         A compilação de arquivo único não é suportada para o tipo de Projeto C/C++ com Códigos-fonte Existentes.
+      </p>
+ 
+      
+      </div>
+   <h2><a name="running"></a>Executando um Projeto</h2>
+   <p>
+      Para visualizar como executar um projeto, será utilizado o projeto <tt>Argumentos</tt> da amostra do IDE. O programa <tt>Argumentos</tt> imprime os argumentos de linha de comandos. Antes de executar o programa, será necessário definir alguns argumentos na configuração atual. A seguir o programa será executado.
+   </p>
+   <p>
+      Para criar o projeto <tt>Argumentos</tt>, defina alguns argumentos e execute o projeto:
+   </p>
+   <ol>
+      <li>Escolha Arquivo > Novo Projeto.</li>
+      <li>No assistente do projeto, expanda a categoria Amostras.</li>
+      <li>Selecione a subcategoria C/C++ e, em seguida, selecione o projeto <tt>Argumentos</tt>. Clique em Próximo e, em seguida, Finalizar.
+      </li>
+      <li>Clique com o botão direito do mouse no nó do projeto <tt>Arguments_1</tt> e escolha Construir. O projeto é construído.</li>
+      <li>Clique com o botão direito do mouse no nó do projeto <tt>Arguments_1</tt> e escolha Propriedades.</li>
+      <li>Na caixa de diálogo Propriedades do projeto, selecione o nó Executar.</li>
+      <li>
+         No campo de texto Executar Comando, digite 1111 2222 3333. Clique em OK. <br> <img alt="Tela da caixa de diálogo Propriedades do Projeto" class="margin-around" src="../../../images_www/articles/72/cnd/quickstart/setting_arguments.png">
+      </li>
+      <li>Clique com o botão direito no nó do projeto e escolha Executar. A aplicação é executada. Seus argumentos são exibidos na janela de Saída.</li>
+   </ol>
+
+   
+<h2><a name="existingsourcesprojects"></a>Criando um Projeto C/C++ com Códigos-fonte Existentes</h2>
+<p>Quando você cria um Projeto C/C++ com  Código-fonte Existente, o IDE se baseia no makefile existente para obter instruções sobre como compilar e executar a aplicação. </p>
+<p>Nesse exercício, será efetuado o download e a instalação dos códigos-fonte para o código-fonte aberto da biblioteca Loki C++. O Loki requer a biblioteca Pthreads para construir, que está disponível por default no Linux, Solaris e Mac OS X. Se você estiver usando o Windows, você deve fazer download da biblioteca Pthreads antes que você possa criar um projeto usando os arquivos-fonte do Loki.</p>
+
+<div class="indent">
+   <h3><a name="CreateExistingSourcesProject"></a>Criando um Projeto C/C++ com Códigos-fonte Existentes</h3>
+   <ol>
+       <li>Se estiver executando o IDE no Windows, instale a biblioteca Pthreads de <a href="http://sourceware.org/pthreads-win32" target="_blank"> <tt>http://sourceware.org/pthreads-win32</tt></a>.
+         <p>Por conveniência, é possível utilizar esse <a href="ftp://sourceware.org/pub/pthreads-win32/pthreads-2005-03-08.exe">link direto</a> para o instalador pthreads-2005-03-08.exe.</p>
+         <p>
+         Extraia a biblioteca pthreads no diretório de usuário do Windows.</p>
+       </li>
+      <li>Faça o download da biblioteca <tt>loki-0.1.7</tt> em <a href="http://sourceforge.net/projects/loki-lib" target="_blank"> <tt>http://sourceforge.net/projects/loki-lib</tt></a>.
+      </li>     
+      <li>Descompacte <tt>loki-0.1.7</tt> em um diretório da sua escolha.
+      </li>
+      <li>Abra o assistente para Novo Projeto em Arquivo > Novo Projeto.
+      </li>      
+      <li>Selecione a categoria C/C++.</li>      
+      <li>Selecione Projeto C/C++ com Códigos-fonte Existentes e clique em Próximo.</li>
+      <li>Na página Selecionar Modo, clique no botão Procurar. Na caixa de diálogo Selecionar Pasta do Projeto, vá ao diretório no qual salvou <tt>loki-0.1.7</tt>. Selecione o diretório <tt>loki-0.1.7</tt>. Clique em Selecionar. <br><br> <img alt="Tela da página Modo de Seleção do Assistente do Projeto" class="margin-around b-all" src="../../../images_www/articles/72/cnd/quickstart/existing_sources_project1.png"> <br><br>
+      </li>
+      <li>Utilize o Modo de Configuração default, Automático. Clique em Finalizar.
+      <p>
+      O projeto é criado e aberto na guia Projeto, e o IDE executa automaticamente as ações Limpar e Construir especificadas no Makefile existente. O projeto também é automaticamente configurado para a assistência ao código.</p>     
+    
+      <img alt="Tela de criação com êxito do Projeto com Códigos-fonte Existentes" class="margin-around" src="../../../images_www/articles/72/cnd/quickstart/existing_sources_project2.png">
+    
+      </li>
+   </ol>
+
+   <h3><a name="frombinaryprojects"></a>Criando um Projeto C/C++ de um Arquivo Binário</h3>
+    <p>Você pode criar um projeto C/C ++ de um arquivo binário existente.</p>
+    <ol>
+    <li>Escolha Arquivo > Novo Projeto.</li>
+    <li>Selecione a categoria C/C++.</li>
+    <li>Selecione Projeto C/C ++ de um Arquivo Binário e clique em Próximo.
+    </li>
+    <li><p>Na página Selecionar Arquivo Binário do Assistente de Novo projeto, clique no botão Procurar. Na caixa de diálogo Selecionar Arquivo Binário, navegue até o arquivo binário do qual você deseja criar um projeto. </p>
+    <p>O diretório-raiz para os arquivos de origem do qual o binário foi construído é preenchido automaticamente. Por default, apenas os arquivos de código-fonte do qual o binário foi construída são incluídos no projeto. Por default, as dependências são incluídas no projeto. As bibliotecas compartilhadas necessárias pelo projeto são automaticamente listadas.</p>
+    <img alt="Tela da página Selecionar Arquivo Binário no Assistente Novo Projeto" class="margin-around" src="../../../images_www/articles/72/cnd/quickstart/binary_project.png">
+    </li>
+    <li>Clique em Próximo.</li>
+    <li>Na página Nome do Projeto e Localização, você pode escolher o nome e a localização do projeto. Clique em Finalizar.</li>
+    </ol>
+  
+   <h3><a name="BuildingRebuilding"></a>Construindo e Reconstruindo o Projeto</h3>
+   <p>Para construir o projeto:
+      <ul>
+         <li>Clique com o botão direito do mouse no nó do projeto e escolha Construir.</li>
+      </ul>
+      <p>Para reconstruir o projeto:
+      <ul>
+         <li>Clique com o botão direito do mouse no nó do projeto e escolha Limpar e Construir.</li>
+      </ul>
+      
+      </div>
+      <h2><a name="nextsteps">Próximas Etapas</a></h2>
+      <p>Consulte <a href="navigating-editing.html">Editando e Navegando em Códigos-fonte C/C++</a> para um tutorial sobre como utilizar a navegação avançada e funcionalidades de edição no NetBeans IDE 6.9 para exibir e modificar o código-fonte.
+      </p>   
+ <p>Consulte a <a href="https://netbeans.org/kb/trails/cnd.html">Trilha do Aprendizado C/C++</a> para obter mais artigos sobre o desenvolvimento com C/C++/Fortran no NetBeans IDE.</p>
+
+  <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20C/C++%20Projects%20Quick%20Start%20-%20NetBeans%20IDE%207.4%20Tutorial">Enviar Feedback neste Tutorial</a></div>
+
+</body>
+</html>

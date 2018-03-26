@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>Native Packaging in NetBeans IDE</title>
+     <meta name="KEYWORDS" content="NETBEANS, NATIVE PACKAGING, JAVAFX, JAVA SE">
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="DESCRIPTION" content="Native Packaging in NetBeans IDE" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+   <body>
+        <h1>Native Packaging in NetBeans IDE</h1>
+		<div class="articledate" style="margin-left: 0px;">Written by Petr Somol and Alyona Stashkova</div>
+        <p>Native packaging was first introduced as a part of the JavaFX 2.2 SDK enabling you to package an application as a <i>native bundle</i> and then  installing and running the application without any external   dependencies on a system JRE or JavaFX SDK. Next it became usable for Java SE projects as well.</p>
+		<p> Native packaging does not change the deployment model of your application: it takes your application as it is,  packages it together with Java runtime, and produces an installer that is common for the operating system you are using. The point is to make the whole thing independent on whatever Java runtime users have or do not have on the target machine. You can take such an installer and run it on a machine where there is no trace of Java, and it will install both the application and the necessary Java runtime bits.The size of such installers is quite big,  because even a &quot;Hello world&quot; application will carry with itself a large portion of Java runtime artifacts.</p>
+		<p>In this tutorial you will create an  <tt>EXE</tt> installer for a Java SE application and an <tt>MSI</tt> installer for a JavaFX application for the Windows operating system based on the sample applications bundled with the IDE.</p>
+		<p class="notes"><b>Note:</b> </p>
+		<ul><li>The <tt>EXE</tt> and <tt>MSI</tt> installers you get are platform-specific, they will run only on a system that is compatible with the target Java platform for which the <tt>EXE</tt>/<tt>MSI</tt> installable packages have been created. (For example, if an <tt>EXE</tt> or <tt>MSI</tt> installer has been created on a machine with a 64-bit JDK installed, it must be run on a machine with  64-bit Windows installed.)</li>
+		<li>On Windows, both the applications are installed into the <tt>C:\Users\&lt;username&gt;\AppData\Local\</tt> directory and are available in the Start menu. </li></ul>
+		
+		
+        <p><b>Contents</b></p>
+   <p><img src="../../../images_www/articles/74/netbeans-stamp-80-74.png" class="stamp" 
+                     alt="Content on this page applies to NetBeans IDE 7.4 or 8.0"
+                 title="Content on this page applies to NetBeans IDE 7.4 or 8.0"></p>
+<ul>
+		<li><a href="#tool">Installing and Adding Required Tools to the Path</a></li>
+		
+		<li><a href="#se">Native Packaging in Java SE Projects</a>
+        <ul>
+        <li><a href="#createse">Setting Up a Java SE Project</a></li>
+        <li><a href="#enable">Enabling Native Packaging for the Project</a></li>
+		<li><a href="#buildse">Building an Application</a></li>
+		<li><a href="#instse">Making an EXE Installer</a></li>
+        </ul>
+  </li>
+        <li><a href="#fx">Self-Contained Application Packaging in JavaFX Projects</a>
+        <ul>
+          <li><a href="#createfx">Creating a JavaFX Project</a></li>
+		  <li><a href="#enablefx">Enabling Native Packaging for the Project</a></li>
+		  <li><a href="#buildfx">Building an Application</a></li>
+		<li><a href="#instfx">Making an MSI Installer</a></li>	
+		</ul>
+		</li>
+<li><a href="#check">Verifying the Installable Applications</a></li>		
+<li><a href="#see">See Also</a></li>
+</ul>
+   
+   <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+   <table>
+     <tbody>
+       <tr>
+         <th width="208" class="tblheader" scope="col">Software or Resource</th>
+         <th width="218" class="tblheader" scope="col">Version Required</th>
+       </tr>
+       <tr>
+         <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+         <td class="tbltd1">7.4 or 8.0 </td>
+       </tr>
+       <tr>
+         <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javafx/downloads/index.html" target="_blank">Java Development Kit (JDK)</a></td>
+       <td class="tbltd1">7 update 25 (or more recent) or 8 </td>
+       </tr>
+	   <tr>
+         <td class="tbltd1"><a href="http://www.jrsoftware.org/" target="_blank">Inno Setup</a></td>
+         <td class="tbltd1">5.5 or more recent </td>
+	   </tr>
+	   <tr>
+         <td class="tbltd1"><a href="http://wixtoolset.org/" target="_blank">WiX</a></td>
+         <td class="tbltd1">3.7 or more recent </td>
+	   </tr>
+     </tbody>
+   </table>
+   
+	    
+   <div class="indent">
+   <h2><a name="tool"></a>Installing and Adding Required Tools to the Path </h2>
+   <p>To use the IDE's support for native packaging, the following additional tools need to be installed:</p>
+   <ul>
+   <li><a href="http://www.jrsoftware.org/" target="_blank">Inno Setup 5.5</a> (or more recent) for producing EXE installers on Windows is required.</li>
+   <li><a href="http://wixtoolset.org/">WiX 3.7</a> (or more recent) for producing MSI installers on Windows is required.</li>
+   </ul>
+  
+   <p class="notes"><b>Note:</b>  For a list of tools required for making installers for different platforms, see &quot;<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2508">Packaging an Application as a Native Installer</a>&quot; in <i>Developing Applications with NetBeans IDE</i>.</p>
+   
+   <p><b>To install Inno Setup:</b></p>
+   <ol>
+     <li>Download <tt>ispack-5.5.3.exe</tt> from the <a href="http://www.jrsoftware.org/isdl.php" target="_blank">Inno Setup Downloads</a> page.</li>
+     <li>Double-click the file to launch the installer.</li>
+     <li>Accept the Inno Setup license agreement and click Next. </li>
+     <li>Follow the instructions in the install wizard for installing Inno Setup. </li>
+     </ol>
+	 <p><b>To install WiX:</b></p>
+     <ol>
+     <li>Download <tt>wix37.exe</tt> from the <a href="http://wix.codeplex.com/releases/view/99514" target="_blank">WiX Toolset - Download</a> page.</li>
+     <li>Double-click the file to launch the installer.</li>
+     <li>Follow the instructions in the install wizard for installing WiX. </li>
+     </ol>
+	 <p><b>To add Inno Setup and/or WiX to the system Path variable:</b></p>
+	 <ol>
+	 <li>On Windows 7, select Start &gt; Computer &gt; System Properties &gt; Advanced system settings.</li>
+	 <li>Select the Advanced tab and click the Environment Variables button.</li>
+	 <li>In the System Variables pane, double-click the Path variable.</li>
+	 <li>In the Edit System Variable dialog box, add a semicolon followed by a new path to the Variable value field (for example, <tt>C:\Program Files (x86)\Inno Setup 5 </tt> or <tt>C:\Program Files (x86)\WiX Toolset v3.6\bin</tt>). </li>
+	 <li>Click OK to close all the open dialog boxes.</li>
+	 </ol>
+	 <p class="notes"><strong>Notes:</strong> </p>
+	 <ul>
+	 <li>To check if the installed tool is in the Path, open the Command Prompt window and type <tt>iscc.exe</tt> for Inno Setup or <tt>candle.exe</tt> for WiX.
+(In case the Command Prompt closes instantly, try specifying <tt>cmd.exe /c cmd.exe /k iscc.exe</tt> or <tt>cmd.exe /c cmd.exe /k candle.exe</tt> respectively.)<br>
+The following figure shows what the Command Prompt should display if Inno Setup is added to the system Path variable. 
+     <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/cmd.png" rel="lytebox" title="Command Prompt">
+     <img src="../../../images_www/articles/74/java/native_pkg/cmd_small.png" alt="Command Prompt"></a></p></li>
+	 <li>Make sure the IDE is restarted after the  tools are added to the system Path variable.</li>
+	 </ul>
+      
+     
+      
+   </div>
+   <h2><a name="se"></a>Native Packaging in Java SE Projects</h2>
+   <p>To utilize the native packaging support in the IDE, you need to complete the following: </p>
+   <ul>
+   <li><a href="#createse">create an IDE project</a> </li>
+   <li><a href="#enable">enable the native packaging actions in the project</a> </li>
+   <li><a href="#buildse">clean and build the project</a> </li>
+   <li><a href="#instse">package the application in an installer</a> </li>
+   </ul>
+   
+   <div class="indent">
+   <h3><a name="createse"></a>Setting Up a Java SE Project</h3>
+   <p>Before packaging an application in an installer an application itself needs to be created.</p>
+   <p> You will create a new Java SE project with the Anagram game example which is shipped with NetBeans IDE.</p>
+   <p><b>To create an IDE project:</b></p>
+   <ol>
+   <li>In the IDE, choose File &gt; New Project.</li>
+   <li>In the New Project wizard, expand the Samples category and select Java.</li>
+   <li>Choose Anagram Game in the Projects list.  Then click Next. 
+   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/new_javase_prj.png" rel="lytebox" title="Creating a Java SE project">
+     <img src="../../../images_www/articles/74/java/native_pkg/new_javase_prj_small.png" alt="Creating a Java SE project" ></a></p></li>
+   <li>In the Name and Location panel, leave the default values for the Project Name and Project Location fields. </li>
+   <li>Click Finish.<br> The IDE creates and opens the Java SE project.</li>
+   
+   </ol>
+   
+   <p>To test that the created project works fine, run it by choosing Run &gt; Run Project from the main menu.<br>
+     The Anagrams application should launch and display on your machine.</p>
+	 <p class="align-center">
+		<img src="../../../images_www/articles/74/java/native_pkg/anagrams.png" alt="Anagrams application running"></p>
+    <h3><a name="enable"></a>Enabling Native Packaging in the IDE</h3>
+       <p>The native packaging actions are disabled in the IDE by default.</p>
+	   <p>Right-click the AnagramGame project in the Projects window, to check the actions available for the created Java SE project in the IDE: there are no package related actions in the project's context menu.</p>
+	   <p class="align-center">
+		<img src="../../../images_www/articles/74/java/native_pkg/context_wo_pkg.png" alt="Context menu without Package as actions"></p>
+       
+       <p><b>To enable native packaging actions for the project:</b></p>
+       <ol>
+     <li>Right-click the project node in the Projects window and select Properties from the context menu.</li>
+     <li>In the Project Properties dialog box, choose the Deployment category and select the Enable Native Packaging Actions in Project Menu option.
+	   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/enable_native_pkg.png" rel="lytebox" title="Enable Native Packaging selected">
+     <img src="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_small.png" alt="Enable Native Packaging selected" ></a></p></li>
+     <li>Click OK.<br>A Package as command is added to the project's context menu.
+	 <p class="align-center">
+		<img src="../../../images_www/articles/74/java/native_pkg/pkg_enabled.png" alt="Package as actions enabled in the Context menu"></p> </li>
+     
+   </ol>
+   <h3><a name="buildse"></a>Building an Application </h3>
+   <p>It is time to clean and build your application for deployment.</p>
+   <p><b>To clean and build your project:</b></p>
+   <ul>
+   <li>Choose Run &gt; Clean and Build Project from the main menu.<br>The IDE displays the results in the Output window.
+   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/output.png" rel="lytebox" title="Output window">
+     <img src="../../../images_www/articles/74/java/native_pkg/output_small.png" alt="Output window" ></a></p></li></ul>
+	 <p>A <tt>dist</tt> folder that contains a <tt>jar</tt> file is created in the project folder.</p>
+   <h3><a name="instse"></a>Making an <tt>EXE</tt> Installer</h3>
+   <p>The application can now be packaged in an installer for Windows. </p>
+   <p><b>To build an <tt>EXE</tt> installer:</b></p>
+   <ul>
+     <li>Right-click the AnagramGame project and choose Package as &gt; EXE Installer from the context menu. </li>
+   </ul>
+   <p class="notes"><b>Note:</b> The IDE creates an <tt>EXE</tt> installer only if Inno Setup is <a href="#tool">installed and added to the system Path variable</a>.</p>
+   <p>The IDE displays the progress and result of the packaging process in the Output window.</p>
+   <p class="align-center"><a href="../../../images_www/articles/74/java/native_pkg/output_se_exe.png" rel="lytebox" title="Output window displays the progress of building an EXE installer">
+     <img src="../../../images_www/articles/74/java/native_pkg/output_se_exe_small.png" alt="Output window displays the progress of building an EXE installer" ></a></p>
+	 <p class="notes"><b>Note:</b> The IDE  first logs some progress and then for some time it looks as if nothing is happening - this is exactly the moment when Inno Setup is working in the background. It takes a while for the packaging to get completed.</p>
+	 <p>When the <tt>EXE</tt> installer is ready, it is placed in the <tt>AnagramGame/dist/bundles/</tt> directory. </p>
+	 <p class="align-center"><img src="../../../images_www/articles/74/java/native_pkg/anagram_exe.png" alt="Output window displays the progress of building an EXE installer" ></p>
+   
+   </div>
+   <h2><a name="fx"></a>Self-Contained Application Packaging in JavaFX Projects</h2>
+    <div class="indent">
+	<p>To build an installable JavaFX application using the native packaging support in the IDE, you need to complete the following: </p>
+	<ul>
+	<li><a href="#createfx">create a JavaFX project in the IDE</a></li>
+	<li><a href="#enablefx">enable native packaging support for the project</a></li>
+	<li><a href="#buildfx">clean and build a JavaFX application</a></li>
+	<li><a href="#instfx">build an installable JavaFX application</a></li>
+	</ul>
+   <h3><a name="createfx"></a>Creating a JavaFX Project</h3>
+   <p>You begin by creating a JavaFX project using the BrickBreaker sample project bundled with the IDE. </p>
+   <p><b>To create a JavaFX  project in the IDE:</b></p>
+   <ol>
+   <li>In the IDE, choose File &gt; New Project.</li>
+   <li>In the New Project wizard, expand the Samples category and select JavaFX.</li>
+   <li>Choose BrickBreaker in the Projects list.  Then click Next. </li>
+   <li>In the Name and Location panel, leave the default values for the Project Name, Project Location, and JavaFX Platform fields. 
+     <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/new_javafx_prj.png" rel="lytebox" title="Creating a JavaFX project">
+     <img src="../../../images_www/articles/74/java/native_pkg/new_javafx_prj_small.png" alt="Creating a JavaFX project" ></a></p></li>
+   <li>Click Finish.
+   <br>
+   The BrickBreaker JavaFX project displays in the Projects window in the IDE.</li>
+   </ol>
+    <p>To test that the created project works fine, run it by choosing Run &gt; Run Project(BrickBreaker) from the main menu.<br>
+     The Brick Breaker application should launch and display on your machine.</p>
+	
+		<p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/brickbreaker.png" rel="lytebox" title="Brick Breaker application running">
+     <img src="../../../images_www/articles/74/java/native_pkg/brickbreaker_small.png" alt="Brick Breaker application running" ></a></p>
+   <h3><a name="enablefx"></a>Enabling Native Packaging in the Project</h3>
+   <p>To use the native packaging support in the IDE for your project, you need to enable it first.</p>
+   <p> If you right-click the Brick Breaker project, you will see no native packaging related actions in it. </p>
+    <p class="align-center">
+		<img src="../../../images_www/articles/74/java/native_pkg/javafx_wo_pkg.png" alt="Context menu without Package as actions"></p>
+   <p><b>To enable native packaging actions in the project context menu:</b></p>
+       <ol>
+     <li>Right-click the project node in the Projects window and select Properties from the context menu.</li>
+     <li>In the Project Properties dialog box, choose  Deployment in the Build category and select the Enable Native Packaging option.
+	   <p class="align-center">
+		<a href="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_fx.png" rel="lytebox" title="Enable Native Packaging selected in a JavaFX project">
+     <img src="../../../images_www/articles/74/java/native_pkg/enable_native_pkg_fx_small.png" alt="Enable Native Packaging selected in a JavaFX project" ></a></p></li>
+     <li>Click OK.<br>The Package as item is added to the project's context menu.
+	 <p class="align-center">
+		<img src="../../../images_www/articles/74/java/native_pkg/pkg_fx_enabled.png" alt="Package as actions enabled in the context menu of the JavaFX project"></p> </li>
+     
+   </ol>
+   <h3><a name="buildfx"></a>Building an Application </h3>
+   <p>Your JavaFX application is now ready to be cleaned and built.</p>
+   <p><b>To clean and build your project:</b></p>
+   <ul>
+   <li>Choose Run &gt; Clean and Build Project from the main menu.<br>The IDE displays the results in the Output window.
+ </li></ul>
+ <p class="notes"><b>Note:</b> If the build is successful but the IDE displays <tt>warning: [options] bootstrap class path not set in conjunction with -source 1.6</tt>  in the Output window, the Source/Binary format needs to be set to JDK 8 in the project properties and the project needs to be cleaned and built again as follows: </p>
+ <ol>
+   <li>Right-click the BrickBreaker project in the Projects windows and choose Properties. </li>
+   <li>In the Project Properties dialog box, select the Sources category. </li>
+   <li>Set the Source/Binary format  to  JDK 8 and click OK. </li>
+   <li>Right-click BrickBreaker in the Projects window and choose Clean and Build from the context menu.</li>
+ </ol> 
+ 
+   <h3><a name="instfx"></a>Making an <tt>MSI</tt> Installer</h3>
+   <p>The application can now be wrapped into a Windows-specific installable package. </p>
+   <p><b>To build an <tt>MSI</tt> installer:</b></p>
+   <ul>
+     <li>Right-click the BrickBreaker project and choose Package as &gt; MSI Installer from the context menu. </li>
+   </ul>
+   <p class="notes"><b>Note:</b> The IDE creates an <tt>MSI</tt> installer only if WiX is <a href="#tool">installed and added to the system Path variable</a>.</p>
+   <p>The IDE displays the progress and result of the packaging process in the Output window.</p>
+   <p class="align-center"><a href="../../../images_www/articles/74/java/native_pkg/output_fx_msi.png" rel="lytebox" title="Output window displays the progress of building an MSI installer">
+     <img src="../../../images_www/articles/74/java/native_pkg/output_fx_msi_small.png" alt="Output window displays the progress of building an MSI installer" ></a></p>
+	 <p class="notes"><b>Note:</b> The IDE  first logs some progress and then for some time it looks as if nothing is happening - this is exactly the moment when WiX is working in the background. It takes a while for the packaging to get completed.</p>
+	 <p>The installable JavaFX application is located in the <tt>BrickBreaker/dist/bundles/</tt> directory. </p>
+	 <p class="align-center"><img src="../../../images_www/articles/74/java/native_pkg/brickbreaker_msi.png" alt="MSI installer" ></p>
+   </div>
+   <h2><a name="check">Verifying the Installable Applications</a></h2>
+   When the <tt>AnagramGame-1.0.exe</tt> and <tt>BrickBreaker-1.0.msi</tt> installers are done, you need to check which directory the Anagram and BrickBreaker applications  are installed natively into.
+   
+   <p><b>To check the installers:</b></p>
+   <ol>
+   <li>Browse to the installer file (<tt>AnagramGame-1.0.exe</tt> or <tt>BrickBreaker-1.0.msi</tt>) on your hard drive.</li>
+   <li>Double-click to run the installer. </li>
+   </ol>
+   <p>Both the applications should be installed into the <tt>C:\Users\&lt;username&gt;\AppData\Local\</tt> directory and be available in the Start menu. </p>
+   <h2><a name="see"></a>See Also</h2>
+   <ul>
+    
+   <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2508">Packaging an Application as a Native Installer</a> in <i>Developing Applications with NetBeans IDE</i></li>
+   <li><a href="http://docs.oracle.com/javafx/2/deployment/self-contained-packaging.htm">Deploying JavaFX Applications: Self-Contained Application Packaging</a></li>
+   <li><a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/packagingAppsForMac.html">Packaging a Java App for Distribution on a Mac</a></li>
+   </ul>
+   
+   <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Native%20Packaging%20In%20NetBeans%20IDE">Send Feedback on This Tutorial</a></div>
+<br style="clear:both;" >
+
+   <p><a href="../../trails/matisse.html">Back to the Learning Trail</a></p>
+   </body>
+</html>

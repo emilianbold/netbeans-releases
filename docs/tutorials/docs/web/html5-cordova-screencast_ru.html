@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>HTML5 - Введение в разработку на Cordova</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A screencast that introduces Cordova in NetBeans IDE.">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+
+        <!--
+        Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+        -->
+
+        <h1>HTML5 - Введение в разработку на Cordova</h1>
+
+        <table>
+            <tr>
+                <td class="valign-top">
+
+                    <p>В этой экранной демонстрации рассматривается поддержка разработки мобильных приложений HTML, JavaScript и CSS по технологии Cordova в IDE NetBeans.
+                    </p>
+
+                    <p><a href="http://bits.netbeans.org/media/html5-gettingstarted-cordova-final-screencast.mp4">Загрузить / Смотреть видео целиком</a> (36 МБ)</p>
+
+                </td>
+
+                <td width="486" class="valign-top align-center">
+
+                    <script src="/images_www/js/mediaplayer-5.9/jwplayer.js" type="text/javascript"></script>                   
+                    <div id="player" >
+                        <center>
+                            <div id="flashContent"></div>
+                        </center>
+                    </div>
+                    <script type="text/javascript">
+                        $(function() {
+                            var targetFile = 'http://bits.netbeans.org/media/html5-gettingstarted-cordova-final-screencast.mp4';
+                            jwplayer('flashContent').setup({
+                                'id': 'flashContentId',
+                                'width': '530',
+                                'height': '340',
+                                'autostart': 'true',
+                                'file': targetFile,
+                                'controlbar': {position: 'bottom'},
+                                'modes': [
+                                    {type: 'html5'},
+                                    {type: 'flash', src: '/images_www/js/mediaplayer-5.9/player.swf'},
+                                    {type: 'download'}
+                                ]
+                            });
+                        });
+                    </script>
+
+
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <p>Дополнительные сведения о работе с приложениями HTML5 в IDE NetBeans см. в следующих экранных демонстрациях.</p>
+                    <ul>
+                        <li><a href="html5-gettingstarted-screencast.html"> HTML5 - Часть 1. Начало работы с приложениями HTML5</a></li>
+                        <li><a href="html5-css-screencast.html"> HTML5 - Часть 2. Работа с таблицами стилей CSS в приложениях HTML5</a></li>
+                        <li><a href="html5-javascript-screencast.html"> HTML5 - Часть 3. Тестирование и отладка JavaScript в приложениях HTML5</a></li>
+                    </ul>
+                    <br style="clear:both;">
+                    <div class="feedback-box">
+                        <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Video%20of%20Getting%20Started%20with%20Cordova%20Applications">Отправить отзыв по этому учебному курсу</a>
+                    </div>
+                    <br style="clear:both;">
+                </td>
+            </tr>
+
+        </table>
+
+        <h2>Связанные ссылки</h2>
+
+        <ul>
+            <li><a href="../webclient/cordova-gettingstarted.html">Общие сведения о создании приложений Cordova</a></li>
+            <li><a href="../webclient/html5-gettingstarted.html">Начало работы с приложениями HTML5 </a></li>
+            <li><a href="../webclient/html5-editing-css.html">Работа со страницами стилей CSS в приложениях HTML5</a></li>
+            <li><a href="../webclient/html5-js-support.html">Отладка и тестирование JavaScript в приложениях HTML5</a></li>
+            <li><a href="http://wiki.netbeans.org/HTML5">Страница WIKI поддержки HTML5 в IDE NetBeans</a></li>
+            <li><a href="../../trails/php.html">Учебная карта по PHP и HTML5</a></li>
+        </ul>
+
+    </body>
+
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Использование поддержки Mercurial Queues в IDE NetBeans</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of Mercurial Queues in NetBeans IDE"></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Mercurial,
+              versioning software, open source, developers, collaborate"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+ </head>
+
+<body>
+<h1>Использование поддержки Mercurial Queues в IDE NetBeans</h1>
+<p>IDE NetBeans обеспечивает поддержку для расширения Mercurial Queues. Поддержка Mercurial Queues в среде IDE позволяет создавать, просматривать и переключаться между исправлениями в среде IDE, а также обновлять исправления с учетом локальных изменений по мере исправлений ошибок и обновлений до новой базовой редакции. В этом документе демонстрируется выполнение основных задач, связанных с исправлениями в среде IDE путем предоставления пошаговых инструкций для работы со стандартной последовательностью действий при использовании программного обеспечения управления версиями Mercurial для управления исправлениями.</p>
+<p></p>
+
+<h3>Содержание</h3>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.4 и 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.4 и 8.0" />
+
+        <ul class="toc">
+		    <li><a href="#reqs">Требования</a></li>
+            <li><a href="#enable">Включение поддержки Mercurial Queues </a></li>
+			<li><a href="#create">Создание исправлений</a></li>
+			<li><a href="#refresh">Обновление исправления с учетом локальных изменений </a></li>
+			<li><a href="#diff">Сравнение версий исправлений</a></li>
+			<li><a href="#switch">Переключение между исправлениями</a></li>  
+            <li><a href="#finish">Завершение примененных исправлений</a></li>
+			<li><a href="#summary">Заключение</a></li>
+            <li><a href="#seealso">Дополнительные сведения</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Требования</h2>
+        <p><strong>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия 7.4 или 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработки приложений на языке Java</a> (JDK)</td>
+                    <td class="tbltd1">Версия 7 или 8</td>
+                </tr>
+				 <tr>
+                    <td class="tbltd1"><a href="http://mercurial.selenic.com/downloads/" target="_blank">Клиентское программное обеспечение Mercurial</a></td>
+                    <td class="tbltd1">1.04 или более поздняя версия </td>
+                </tr>
+				                 
+            </tbody>
+        </table>
+		<p class="notes"><b>Примечание.</b> См. <a href="mercurial.html#settingUp">Использование поддержки Mercurial в NetBeans IDE</a> для получения сведений об установке клиентского ПО Mercurial в системе.</p>
+
+        
+        <div>
+		<a name ="enable"></a>
+		<h2>Включение поддержки Mercurial Queues</h2>
+		<p>Поскольку Mercurial Queues является расширением, необходимо явно включить его до начала его использования.<br /> Для начала выполнения Mercurial Queues в репозитории Mercurial необходимо выполнить следующие шаги:</p>
+		 <ol>
+		 <li>В системе перейдите к файлу <tt>.hgrc</tt>. По умолчанию для файла <tt>.hgrc</tt> в OS X и Linux задается местоположение <tt>$HOME/.hgrc</tt>, а в Windows - <tt>%USERPROFILE%\Mercurial.ini</tt>.</li>
+		 <li>Добавьте строки ниже к файлу <tt>.hgrc</tt>.
+		 <pre>         [extensions]
+         hgext.mq =</pre></li>
+		 <li>Сохраните файл.</li>
+		 </ol>
+		 <p class="align-center"><a href="#top">В начало</a></p>		
+		</div>
+		<div>
+		<a name="create"></a>
+		<h2>Создание исправления</h2>
+		<p>Чтобы создать исправление, выполните следующие шаги:</p>
+		<ol>
+		<li>В окне 'Проекты' выберите проект, который находится под управлением системы контроля версий, затем выберите <tt>Группа</tt> > <tt>Queues</tt> > <tt>Создать исправление</tt> (также можно щелкнуть правой кнопкой мыши узел проекта и выбрать <tt>Mercurial</tt> > <tt>Queues</tt> > <tt>Создать исправление</tt> в раскрывающемся меню).<br /> Откроется диалоговое окно 'Создать исправление'
+		<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/create-patch.png" rel="lytebox" title="Диалоговое окно &apos;Создать исправление&apos;"> <img alt="Диалоговое окно &apos;Создать исправление&apos;" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/create-patch-small.png"></a></p>
+		  </li>
+		<li>Укажите имя исправления в текстовом поле 'Имя исправления'.</li>
+		<li>Укажите описание исправления в поле 'Сообщение исправления'.<br /> В качестве альтернативы выберите один из следующих вариантов и нажмите ОК:
+		  <ul>
+		<li>нажмите кнопку 'Последние сообщения' (<img alt="Последние сообщения" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/recent.png">), чтобы выбрать сообщение из списка последних сообщений фиксации </li>
+		<li>нажмите кнопку 'Загрузить шаблон' (<img alt="Загрузить шаблон" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/load.png">), чтобы выбрать шаблон сообщения для сообщения фиксации</li>
+		</ul>
+		<p class="notes"><b>Примечание.</b> Предоставленное описание исправления будет использовано как сообщение фиксации при <a href="#finish">преобразовании исправление в повтоянный набор изменений</a>.</p>
+		</li>
+		<li>Выберите файлы для включения в исправления в таблице 'Файлы для включения в исправление'. </li>
+		<li>(Необязательно) Укажите данные, связанные с ошибкой созданного исправления с помощью полей области 'Ошибка обновления'.</li>
+		<li>Нажмите кнопку &quot;Создать исправление&quot;.<br /> Создается новое исправление и добавляется к каталогу <tt>.hg/patches</tt>.
+		</li>
+		</ol>
+<p class="align-center"><a href="#top">В начало</a></p>				
+</div>
+<div>
+<a name="refresh"></a>
+<h2>Обновление исправления с учетом локальных изменений</h2>
+<p>Чтобы сохранить ход выполнения в создаваемом исправлении необходимо выполнить следующие шаги. </p>
+<ol>
+<li>Выберите <tt>Группа</tt> > <tt>Queues</tt> > <tt>Обновить исправление</tt> в главном меню (также можно щелкнуть правой кнопкой мыши имя проекта и выбрать <tt>Mercurial</tt> > <tt>Queues</tt> > <tt>Обновить исправление</tt> в раскрывающемся меню).<br /> Откроется диалоговое окно 'Обновить исправление'.
+<p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch.png" rel="lytebox" title="Диалоговое окно &apos;Обновить исправление&apos;"> <img alt="Диалоговое окно &apos;Обновить исправление&apos;" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/refresh-patch-small.png"></a></p></li>
+<li>Укажите описание исправления в поле 'Сообщение исправления'.<br /> В качестве альтернативы выберите один из следующих вариантов и нажмите ОК:
+		  <ul>
+		<li>нажмите кнопку 'Последние сообщения' (<img alt="Последние сообщения" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/recent.png">), чтобы выбрать сообщение из списка последних сообщений фиксации </li>
+		<li>нажмите кнопку 'Загрузить шаблон' (<img alt="Загрузить шаблон" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/load.png">), чтобы выбрать шаблон сообщения для сообщения фиксации</li>
+		</ul>
+		<p class="notes"><b>Примечание.</b> Предоставленное описание исправления будет использовано как сообщение фиксации при <a href="#finish">преобразовании исправление в повтоянный набор изменений</a>.</p>
+	</li>
+		<li>Выберите файлы для включения в исправления в таблице 'Файлы для включения в исправление'. </li>
+		<li>(Необязательно) В области 'Ошибка обновления' укажите данные, связанные с ошибкой фиксации изменений.</li>
+        <li>Щелкните 'Обновить исправление'.<br />Исправление, над которым ведется работа, обновляется.</li>
+
+</ol>
+<p class="align-center"><a href="#top">В начало</a></p>
+</div>
+
+		<div><a name="diff"></a>
+		<h2>Сравнение версий исправлений</h2>
+		<p>Для создания исправления для просмотра и одновременного сравнения редакций необходимо выполнить следующие шаги: </p>
+<ol>
+<li>Выберите <tt>Группа</tt> > <tt>Queues</tt> > <tt>Различие</tt> в главном меню (также можно щелкнуть правой кнопкой мыши имя проекта и выбрать <tt>Mercurial</tt> > <tt>Queues</tt> > <tt>Различие</tt> в раскрывающемся меню).<br /> В 'Средстве просмотра различий' отображаются различия, выявленные в текущем исправлении и все не зафиксированные и не обновленные локальные изменения на панелях, расположенных параллельно:
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/ide/mercurial-queues/qdiff.png" rel="lytebox" title="Средство просмотра различий"> <img alt="Средство просмотра различий" border="1/" src="../../../images_www/articles/72/ide/mercurial-queues/qdiff-small.png"></a></p></li>
+<li> Просмотрите и откорректируйте различия, найденные в сравненных файлах с помощью графического или текстового средства просмотра различий.
+  <p class = "notes"><b>Примечание.</b> Графическое представление различий выделяет изменения в файлах с помощью следующих цветовых кодов.</p>
+  <table class="cell">
+                <tr>
+                    <td class="align-right cell"><strong>Синий</strong> ( <span style="background-color:#b8cfe5">     </span> )</td>
+                    <td>Строки, измененные по сравнению с предыдущей версией.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Зеленый</strong> ( <span style="background-color:#b4ffb4">     </span> )</td>
+                    <td>Обозначает строки, добавленные к более раннему исправлению.</td>
+                </tr>
+                <tr>
+                    <td class="align-right cell"><strong>Красный</strong> ( <span style="background-color:#ffa0b4">     </span> )</td>
+                    <td>Строки, удаленные из предыдущего исправления.</td>
+                </tr>
+</table>
+<p>
+Следующие значки позволяют вносить изменения напрямую в графическом средстве просмотра различий.</p>
+ <table width="600px">
+				 <tr>
+                        <th class="tblheader" scope="col">Значок</th>
+                        <th class="tblheader" scope="col" style="width:60px">Имя</th>
+                        <th class="tblheader" scope="col">Функция</th>
+        </tr>
+                    <tr>
+					 <td class="tbltd1 align-center"><img alt="Значок &apos;Заменить&apos;" src="../../../images_www/articles/72/ide/mercurial-queues/replace.png" /></td>
+                        <td class="tbltd1 align-center" style="width:80px"><strong>Заменить</strong></td>
+                        <td class="tbltd1">Вставка выделенного текста из предыдущеuj исправления в текущее исправление.</td>
+                    </tr>
+					<tr>
+					<td class="tbltd1 align-center"><img alt="Значок &apos;Заменить все&apos;" src="../../../images_www/articles/72/ide/mercurial-queues/replace-all.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Заменить все</strong> </td>
+                        <td class="tbltd1">Восстанавливает для текущей версии исправления состояние выбранной предыдущей версии.</td>
+                    </tr>
+                    <tr>
+					<td class="tbltd1 align-center"><img alt="Значок &apos;Удалить&apos;" src="../../../images_www/articles/72/ide/mercurial-queues/remove.png" /></td>
+                        <td class="tbltd1 align-center" style="width:120px"><strong>Удалить </strong></td>
+                        <td class="tbltd1">Удаляет выделенный текст из текущей версии исправления, чтобы она отражала предыдущую версию исправления.</td>
+                    </tr>
+      </table></li>
+</ol>
+		
+<p class="align-center"><a href="#top">В начало</a></p>
+        
+		</div>
+		
+		<div>
+		<a name="switch"></a>
+        <h2>Переключение между исправлениями</h2>
+        <p>Для переключения на определенное исправление в серии очередей исправлений необходимо выполнить следующие шаги: </p>
+		<p class="notes"><b>Примечание.</b> Для переключения между изменениями <i>требуется</i> <i>отсутствие</i> локальных изменений в рабочей копии. В противном случае переключение завершится ошибкой.</p>
+		<ol>
+		<li>Выберите <tt>Группа</tt> > <tt>Queues</tt> > <tt>Перейти к исправлению</tt> в главном меню (также можно щелкнуть правой кнопкой мыши имя проекта и выбрать <tt>Mercurial</tt> > <tt>Queues</tt> > <tt>Перейти к исправлению</tt> в раскрывающемся меню).<br /> В диалоговом окне 'Перейти к исправлению' отображается сисок всех исправлений. доступных в стеке. 
+		
+		  <p class="align-center">
+	      <img alt="Диалоговое окно &apos;Перейти к исправлению&apos;" border="1/" src="../../../images_www/articles/74/ide/mercurial-queues/go-patch.png"></p>
+		  
+		<p class="notes"><b>Примечания</b></p> 
+		<ul>
+		<li>Имена отображенных примененных исправлений, выделенных полужирным.</li>
+		<li> Выберите <tt>Группа</tt> > <tt>Queues</tt> > <tt>Откат всех исправлений</tt>, чтобы удалить примененные исправления из верхней части стека, обновить рабочий каталог и отменить изменения, внесенные установленными исправлениями.</li>
+		</ul>
+		</li>
+		<li>Выберите необходимое исправление и щелкните 'Перейти'.<br /> В IDE применяются изменения, содержащиеся в выбранном исправлении выбранного проекта, файла или папки.</li>
+		</ol> 
+		<p class="align-center"><a href="#top">В начало</a></p>
+		</div> 
+		<div>   
+               
+        <a name="finish"></a>
+<h2>Завершение примененных исправлений</h2>
+<p>После завершения работы с исправлениями оно может быть преобразовано в постоянный набор изменений.<br /> Для преобразования всех примененных исправлений в серии очередей исправлений в стандартные наборы изменений завершите следующие шаги:</p>
+ <p class="notes"> <b>Примечание.</b> Для применения всех сохраненных исправлений в репозитории выберите <tt>Группа</tt> > <tt>Queues</tt> > <tt>Принудительно применить все исправления</tt> в главном меню.</p>
+ 
+<ol>
+<li>Выберите <tt>Группа</tt> > <tt>Queues</tt> > <tt>Завершить исправления</tt> в главном меню (также можно щелкнуть правой кнопкой мыши имя проекта и выбрать <tt>Mercurial</tt> > <tt>Queues</tt> > <tt>Завершить исправления</tt> в раскрывающемся меню).<br /> Откроется диалоговое окно 'Завершить исправления'
+   <p class="align-center">
+    <img alt="Завершить исправления" border="1/" src="../../../images_www/articles/74/ide/mercurial-queues/finish-patches.png"></p></li>
+	<li>Выберите имя исправления, которое будет завершено в поле исправлений.
+	<p class="notes"><b>Примечание.</b> Все исправления в серии до выбранного исправления также будет завершены.</p></li>
+	<li>Щелкните 'Завершить исправления'.<br />IDE преобразует все примененные изменения вплоть до выбранного исправления в стандартные наборы изменений.</li>
+		  </ol>
+<p class="align-center"><a href="#top">В начало</a></p>
+</div>
+<div>
+<a name="summary"></a>
+<h2>Заключение</h2>
+<p>В этом учебном курсе демонстрируется выполнение основных задач, связанных с исправлениями в среде IDE путем предоставления пошаговых инструкций для работы со стандартной последовательностью действий при использовании программного обеспечения управления версиями Mercurial для управления исправлениями. Здесь демонстрируется включение поддержки Mercurial Queues в IDE NetBeans и выполнение базовых задач с исправлениями, а также представлении определенных специализированных функций Mercurial, включенных в IDE.</p>
+<p class="align-center"><a href="#top">В начало</a></p>
+</div>
+		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Suport%20For%20Mercurial%20Queues%20in%20NetBeans%20IDE">Отправить отзыв по этому учебному курсу</a></div>
+
+        <br style="clear:both;"/>
+		<a name="seealso"></a>
+        <h2>Дополнительные сведения</h2>
+        
+        <p>Связанные материалы можно найти в следующих документах:</p>
+        <ul>
+           
+           	<li><a href="mercurial.html">Использование поддержки Mercurial в IDE NetBeans</a></li>
+			<li><a href="http://wiki.netbeans.org/HgNetBeansSources">Использование Mercurial для работы с исходными файлами NetBeans в среде IDE</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG234">Управление версиями приложений в системах контроля версий</a> в документе <i>Разработка приложений в IDE NetBeans</i></a></li>
+			
+        </ul>
+		<p class="align-center"><a href="#top">В начало</a></p>
+</body>
+</html>

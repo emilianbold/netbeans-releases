@@ -1,0 +1,869 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>在 Web 应用程序中使用 Hibernate - NetBeans IDE 教程</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <meta name="description" content="Demonstrates how to add support for Hibernate to the IDE and use Hibernate with JSF components in a Web application.">
+   <meta name="KEYWORDS" content="NetBeans, Hibernate, JSF, Tutorial, Database">
+   <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>在 Web 应用程序中使用 Hibernate</h1>
+<!-- Currently this tutorial does not work -- #243018 -->
+    <p>在本教程中，您将使用 NetBeans IDE 创建和部署显示数据库中数据的 Web 应用程序。Web 应用程序将 Hibernate 框架用作持久性层，以便检索简单的传统 Java 对象 (POJO)，并将其存储到关系数据库中。</p>
+    
+    <p>Hibernate 是一个为对象关系映射 (ORM) 提供工具的框架。本教程介绍了如何向 IDE 添加对 Hibernate 框架的支持，以及如何创建所需的 Hibernate 文件。在创建 Java 对象并配置应用程序以使用 Hibernate 后，创建一个 JSF 受管 Bean 和 JSF 2.0 页面以显示数据。</p>
+    
+    <p>在开始本教程之前，您可能需要熟悉以下文档。</p>
+    <ul>
+        <li><a href="http://www.hibernate.org/" target="_blank">hibernate.org</a> 上的 Hibernate 文档</li>
+        <li><a href="quickstart-webapps.html">Web 应用程序开发简介</a></li>
+        <li><a href="jsf20-intro.html">JavaServer Faces 2.x 简介</a></li>
+    </ul>
+
+    <p><b>目录</b></p>
+    <img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3 和 7.4" class="stamp" src="../../../images_www/articles/72/netbeans-stamp-74-73-72.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3 和 7.4">
+    <ul>
+        <li><a href="#01">创建数据库</a></li>
+        <li><a href="#02">创建 Web 应用程序项目</a></li>
+        <li><a href="#03">修改 Hibernate 配置文件</a></li>
+        <li><a href="#04">创建 <tt>HibernateUtil.java</tt> 帮助文件</a></li>
+        <li><a href="#05">生成 Hibernate 映射文件和 Java 类</a></li>
+        <li><a href="#06">创建 <tt>FilmHelper.java</tt> Helper 类</a></li>
+        <li><a href="#07">创建 JSF 受管 Bean</a>
+        <li><a href="#08">创建 Web 页面</a></li>
+        <li><a href="#09">运行项目</a></li>
+        <li><a href="#10">下载解决方案项目</a></li>
+        <li><a href="#11">疑难解答</a></li>
+    </ul>
+
+   
+   <p><b>要学习本教程，您需要具备以下软件和资源。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">软件或资源</th>
+                <th class="tblheader" scope="col">要求的版本</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.1、7.2、7.3、7.4、Java EE 版本</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java 开发工具包 (JDK)</a></td>
+                <td class="tbltd1">版本 6 或 7</td>
+            </tr>
+             <tr>
+                <td class="tbltd1">GlassFish Server Open Source Edition</td>
+                <td class="tbltd1">3.x 或 4.x</td>
+            </tr>   
+            <tr>
+                <td class="tbltd1"><a href="http://www.mysql.com/">MySQL 数据库服务器</a></td>
+                <td class="tbltd1">版本 5.x</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Sakila 数据库</td>
+                <td class="tbltd1">更新中心上可用的插件</td>
+            </tr>
+        </tbody>
+</table>
+
+
+<p class="tips">您可以下载<a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/DVDStoreEE6.zip">已完成项目的 zip 档案文件</a>。</p>
+
+<a name="01"></a>
+<h2>创建数据库</h2>
+    <p>本教程使用一个名为 <tt>sakila</tt> 的 MySQL 数据库，这是一个免费的 MySQL 数据库，可从 MySQL 网站获得。安装 IDE 时并未包含 sakila 数据库，因此首先需要创建该数据库，以继续学习本教程。</p>
+
+    <p>要创建 sakila 数据库，可使用 "Plugins"（插件）管理器下载并安装 "Sakila Sample Database"（Sakila 样例数据库）插件。安装该插件后，sakila 数据库将添加到 "Create MySQL Database"（创建 MySQL 数据库）对话框的数据库列表中。</p>
+    <p>有关配置 IDE 使用 MySQL 的详细信息，请参见<a href="../ide/mysql.html">连接 MySQL 数据库</a>教程。</p>
+
+    <ol>
+        <li>打开 "Plugins"（插件）管理器，并安装 "Sakila Sample Database"（Sakila 样例数据库）插件。</li>
+        <li>安装插件后，在 "Services"（服务）窗口展开 "Databases"（数据库）节点以启动 MySQL 数据库，右键单击 MySQL 服务器节点并选择 "Start"（启动）。</li>
+        <li>右键单击 MySQL 服务器节点并选择 "Create Database"（创建数据库）。</li>
+        <li>在 "Create MySQL Database"（创建 MySQL 数据库）对话框的 "New Database Name"（新数据库名称）下拉列表中选择 "Sakila" 数据库。单击 "OK"（确定）。<br /> <img alt="&quot;Create MySQL Database&quot;（创建 MySQL 数据库）对话框的屏幕快照" class="margin-around b-all" height="176" src="../../../images_www/articles/72/web/hibernate-webapp/create-sakila-mysql.png" title="&quot;Create MySQL Database&quot;（创建 MySQL 数据库）对话框的屏幕快照" width="393">
+
+        <p>单击 "OK"（确定），MySQL 服务器节点下随即出现一个 Sakila 节点。</p>
+        <li>右键单击 "Sakila" 节点，然后选择 "Connect"（连接）。</li>
+    </ol>
+    <p>单击 "Connect"（连接）后，"Databases"（数据库）节点下面将列出 Sakila 数据库连接节点 (<tt>jdbc:mysql://localhost:3306/sakila [<i>username</i> on Default]</tt>)。打开连接时，可通过展开该连接节点查看数据库中数据。</p>
+
+
+    
+<a name="02"></a>
+<h2>创建 Web 应用程序项目</h2>
+    <p>在本练习中，您将创建一个 Web 应用程序项目并为该项目添加 Hibernate 库。创建该项目时，请在新建项目向导的 "Frameworks"（框架）面板中选择 "Hibernate"，并指定数据库。</p>
+    <ol>
+        <li>从主菜单中，选择 "File"（文件）> "New Project"（新建项目）（Ctrl-Shift-N 组合键；在 Mac 上为 ⌘-Shift-N 组合键）。从 "Java Web" 类别中选择 "Web Application"（Web 应用程序），然后单击 "Next"（下一步）。 </li>
+        <li>键入 <strong>DVDStore</strong> 作为项目名称，并设置项目位置。</li>
+        <li>取消选中 "Use Dedicated Folder"（使用专用文件夹）选项（如果该选项处于选中状态）。单击 "Next"（下一步）。
+            <p>（对于本教程，没有理由将项目库复制到指定文件夹，因为您将需要与其他用户共享库）。</p>
+            </li>
+        <li>将服务器设置为 "GlassFish Server"，并将 Java EE 版本设置为 "Java EE 6 Web" 或 "Java EE 7 Web"。单击 "Next"（下一步）。</li>
+        <li>选中 "JavaServer Faces" 复选框并使用默认 JSF 2.x 库。</li>
+        <li>在框架列表中选中 "Hibernate" 复选框。</li>
+        <li>从 "Database Connection"（数据库连接）下拉列表中选择 sakila 数据库。单击 "Finish"（完成）。</li>
+    </ol>
+    <p class="notes"> <b>注：</b> 如果向导的 "Frameworks"（框架）面板中没有 sakila 数据库这一选项，请查看该连接是否列在 "Services"（服务）窗口的 "Databases"（数据库）节点下。如果此处没有该连接，则需要创建数据库连接。</p>
+    <img alt="新建项目向导的 &quot;Frameworks&quot;（框架）面板" class="margin-around b-all" src="../../../images_www/articles/74/web/hibernate-webapp/hib-newwebapp.png" title="新建项目向导的 &quot;Frameworks&quot;（框架）面板，其中显示向项目中添加 Hibernate 支持">
+
+    
+    <p>单击 "Finish"（完成），此时 IDE 将创建 Web 应用程序项目，并在编辑器中打开 <tt>hibernate.cfg.xml</tt> 文件和 <tt>index.xhtml</tt>。</p>
+    <p>如果展开 "Projects"（项目）窗口中的 "Libraries"（库）节点，则可以看到 IDE 已向项目中添加了 Hibernate 库。</p>
+    <img alt="显示 Hibernate 库的 &quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-libraries.png" title="显示 Hibernate 库的 &quot;Projects&quot;（项目）窗口的屏幕快照"> <a name="03"></a>
+<h2>修改 Hibernate 配置文件</h2>
+    <p>创建使用 Hibernate 框架的新项目时，IDE 会自动在应用程序的上下文类路径的根路径（"Files"（文件）窗口中的 <tt>src/java</tt>）上创建 <tt>hibernate.cfg.xml</tt> 配置文件。该文件位于 "Projects"（项目）窗口的 "Source Packages"（源包）节点下的 <tt>&lt;默认包&gt;</tt> 中。该配置文件包含有关数据库连接、资源映射和其他连接属性的信息。您可以使用多视图编辑器编辑该文件或直接在 XML 编辑器中编辑 XML。</p>
+
+    <p>在本练习中，您将编辑在 <tt>hibernate.cfg.xml</tt> 中指定的默认属性，以启用 SQL 语句的调试日志记录以及 Hibernate 的会话上下文管理。</p>
+    <ol>
+        <li>在 "Design"（设计）标签中打开 <tt>hibernate.cfg.xml</tt>。可以通过展开 "Projects"（项目）窗口中 "Source Packages"（源包）下的 <tt>&lt;default package&gt;</tt> 节点并双击 <tt>hibernate.cfg.xml</tt> 来打开该文件。</li>
+        <li>在多视图 XML 编辑器中，展开 "Configuration Properties"（可选属性）下的 "Configuration Properties"（配置属性）节点。</li>
+        <li>单击 "Add"（添加）以打开 "Add Hibernate Property"（添加 Hibernate 属性）对话框。</li>
+        <li>在此对话框中，选择 <tt>hibernate.show_sql</tt> 属性并将值设置为 <tt>true</tt>。这将启用 SQL 语句的调试日志记录。<br /> <img alt="&quot;Add Hibernate Property&quot;（添加 Hibernate 属性）对话框，hibernate.show_sql 属性" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-showsql.png" title="显示 hibernate.show_sql 属性的设置值的 &quot;Add Hibernate Property&quot;（添加 Hibernate 属性）对话框">
+        </li>
+        <li>展开 "Miscellaneous Properties"（其他属性）节点并单击 "Add"（添加）。</li>
+        <li>在此对话框中，选择 <tt>properties hibernate.current_session_context_class</tt> 并将值设置为 <tt>thread</tt> 以启用 Hibernate 的自动会话上下文管理。<br /> <img alt="属性 hibernate.current_session_context_class 的 &quot;Add Hibernate Property&quot;（添加 Hibernate 属性）对话框" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-sessioncontext.png" title="显示为 hibernate.current_session_context_class 属性设置值的 &quot;Add Hibernate Property&quot;（添加 Hibernate 属性）对话框"></li>
+        <li>在 "Miscellaneous Properties"（其他属性）节点下再次单击 "Add"（添加），然后在 "Property Name"（属性名称）下拉列表中选择 <tt>hibernate.query.factory_class</tt>。</li>
+        <li>选择 <strong>org.hibernate.hql.classic.ClassicQueryTranslatorFactory</strong> 作为属性值。单击 "OK"（确定）。<br /> <img alt="属性 hibernate.query.factory_class 的 &quot;Add Hibernate Property&quot;（添加 Hibernate 属性）对话框" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/add-property-factoryclass.png" title="显示 hibernate.query.factory_class 属性的设置值的 &quot;Add Hibernate Property&quot;（添加 Hibernate 属性）对话框">
+        <p>如果单击编辑器中的 XML 标签，则可以在 XML 视图中看到此文件。文件应如下所示（三个新属性以粗体显示）：</p>
+        <pre class="examplecode">&lt;hibernate-configuration&gt;
+    &lt;session-factory name="session1"&gt;
+        &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+        &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+        &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+        &lt;property name="hibernate.connection.username"&gt;root&lt;/property&gt;
+        &lt;property name="hibernate.connection.password"&gt;######&lt;/property&gt;
+        <strong>&lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+        &lt;property name="hibernate.current_session_context_class"&gt;thread&lt;/property&gt;
+        &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.classic.ClassicQueryTranslatorFactory&lt;/property&gt;</strong>
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+        </li>
+        <li>保存对该文件所做的更改。</li>
+    </ol>
+    <p>由于不需要再次编辑该文件，因此可以关闭该文件。</p>
+
+
+
+<a name="04"></a>
+<h2>创建 <tt>HibernateUtil.java</tt> 帮助文件</h2>
+<p>要使用 Hibernate，您需要创建一个 helper 类，该类处理启动并访问 Hibernate 的 <tt>SessionFactory</tt> 以获取 "Session"（会话）对象。该类调用 <tt>configure()</tt> 并加载 <tt>hibernate.cfg.xml</tt> 配置文件，然后构建 <tt>SessionFactory</tt> 以获取 "Session"（会话）对象。
+</p>
+
+<p>在此部分，使用新建文件向导创建 helper 类 <tt>HibernateUtil.java</tt>。</p>
+<ol>
+    <li>右键单击 "Source Packages"（源包）节点并选择 "New"（新建）> "Other"（其他），打开新建文件向导。</li>
+    <li>从 "Categories"（类别）列表中选择 "Hibernate"，从 "File Types"（文件类型）列表中选择 HibernateUtil.java。单击 "Next"（下一步）。</li>
+    <li>键入 <strong>HibernateUtil</strong> 作为类名，并键入 <strong>dvdrental</strong> 作为包名。单击 "Finish"（完成）。</li>
+
+</ol>
+<img alt="&quot;HibernateUtil&quot; 向导的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-util-wizard.png" title="&quot;HibernateUtil&quot; 向导的屏幕快照" width="600">
+<p>单击 "Finish"（完成），此时 <tt>HibernateUtil.java</tt> 将在编辑器中打开。由于不需要编辑该文件，因此可以关闭该文件。</p>
+
+
+<a name="05"></a>
+<h2>生成 Hibernate 映射文件和 Java 类</h2>
+
+<p>在本教程中，您将使用一个 POJO（简单传统 Java 对象）来表示您将要用到的数据库中的每个表中的数据。Java 类指定表的列字段，并使用简单的 setter 和 getter 方法检索数据和写数据。要将该 POJO 映射到表，可使用 Hibernate 映射文件或使用类标注。</p>
+
+<p>您可以使用 "Hibernate Mapping Files and POJOs from a Database"（通过数据库生成 Hibernate 映射文件和 POJO）向导根据数据库表创建多个 POJO 和映射文件。使用该向导时，选择希望从中创建 POJO 和映射文件的所有表，IDE 然后根据该数据库表生成文件并将映射条目添加到 <tt>hibernate.cfg.xml</tt>。使用向导时可选择希望 IDE 生成的文件（比如，只生成 POJO）并选择代码生成选项（例如，生成使用 EJB 3 标注的代码）。</p>
+
+<p class="notes"><strong>注：</strong>IDE 还具有可帮助您从头创建各个 POJO 和映射文件的向导。</p>
+
+<div class="indent">
+<a name="05a"></a>
+<h3>创建 Hibernate 逆向工程文件</h3>
+<p>如果要使用 "Hibernate Mapping Files and POJOs from a Database"（通过数据库生成 Hibernate 映射文件和 POJO）向导，您首先需要创建一个 <tt>hibernate.reveng.xml</tt> 逆向工程文件。"Hibernate Mapping Files and POJOs from a Database"（通过数据库生成 Hibernate 映射文件和 POJO）向导需要 <tt>hibernate.reveng.xml</tt> 和 <tt>hibernate.cfg.xml</tt>。</p>
+<p>通过使用逆向工程文件，您可以更好地控制数据库映射策略。Hibernate 逆向工程向导创建一个具有默认配置的逆向工程文件，可以在 XML 编辑器中编辑该文件。</p>
+<p>要创建 Hibernate 逆向工程文件，请执行以下步骤。</p>
+
+<ol>
+    <li>在 "Projects"（项目）窗口中右键单击 "Source Packages"（源包）节点，并选择 "New"（新建）> "Other"（其他）以打开新建文件向导。</li>
+    <li>从 "Hibernate" 类别中选择 Hibernate 逆向工程向导。单击 "Next"（下一步）。</li>
+    <li>指定 <tt>hibernate.reveng</tt> 作为文件名，指定 <tt>src/java</tt> 作为文件夹。单击 "Next"（下一步）。</li>
+    <li>在 "Configuration File"（配置文件）下拉列表中选择 <tt>hibernate.cfg.xml</tt>（如果尚未选定）。</li>
+    <li>从 "Available Tables"（可用表）中选择以下表，并单击 "Add"（添加）将表添加到 "Selected Tables"（选定的表）。
+    <ul>
+        <li>actor</li>
+        <li>category</li>
+        <li>film</li>
+        <li>film_actor</li>
+        <li>film_category</li>
+        <li>language</li>
+    </ul>
+    <p>单击 "Finish"（完成）。</p>
+    <img alt="新建 Hibernate 逆向工程向导" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-reveng-wizard.png" title="新建 Hibernate 逆向工程向导" width="600">
+    </li>
+</ol>
+<p>该向导生成一个 <tt>hibernate.reveng.xml</tt> 逆向工程文件，并在编辑器中打开该文件。可将该逆向工程文件关闭，因为无需对其进行编辑。</p>
+
+<p class="tips">有关使用 <tt>hibernate.reveng.xml</tt> 文件的详细信息，请参见以下指南中的<a href="http://docs.jboss.org/tools/2.1.0.Beta1/hibernatetools/html/reverseengineering.html" target="_blank">第 5 章“控制逆向工程”</a>：<a href="http://docs.jboss.org/tools/2.1.0.Beta1/hibernatetools/html/" target="_blank">《Hibernate 工具参考指南》</a>。</p>
+
+<h3>创建 Hibernate 映射文件和 POJO</h3>
+<p>可以使用 "Hibernate Mapping Files and POJOs from a Database"（通过数据库生成 Hibernate 映射文件和 POJO）向导来生成文件。该向导可以为您在向导中选择的每个表生成 POJO 和相应的映射文件。映射文件是 XML 文件，其中包含有关如何将表中的列映射到 POJO 中的字段的数据。您需要有 <tt>hibernate.reveng.xml</tt> 和 <tt>hibernate.cfg.xml</tt> 文件才能使用该向导。</p>
+
+<p>要使用向导创建 POJO 和映射文件，请执行以下步骤。</p>
+<ol>
+    <li>在 "Projects"（项目）窗口中右键单击 "Source Packages"（源包）节点，并选择 "New"（新建）> "Other"（其他）以打开新建文件向导。</li>
+    <li>在 "Hibernate" 类别中选择 "Hibernate Mapping Files and POJOs from a Database"（通过数据库生成 Hibernate 映射文件和 POJO）。单击 "Next"（下一步）。</li>
+    <li>确保在下拉列表中选择 <tt>hibernate.cfg.xml</tt> 和 <tt>hibernate.reveng.xml</tt> 文件。</li>
+    <li>在 "General Settings"（常规设置）选项中选择 <strong>JDK 5 Language Features</strong>（JDK 5 语言功能）。</li>
+    <li>确保选中了 <strong>Domain Code</strong>（域代码）和 <strong>Hibernate XML Mappings</strong>（Hibernate XML 映射）选项。</li>
+    <li>选择 <strong>dvdrental</strong> 作为包名。单击 "Finish"（完成）。<br /> <img alt="&quot;Generate Hibernate Mapping Files and POJOs&quot;（生成 Hibernate 映射文件和 POJO）向导" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-pojo-wizard2.png" title="&quot;Generate Hibernate Mapping Files and POJOs&quot;（生成 Hibernate 映射文件和 POJO）向导" width="600">
+    </li>
+</ol>
+<p>单击 "Finish"（完成）后，IDE 生成 POJO 和 Hibernate 映射文件，并将字段映射到在 <tt>hibernate.reveng.xml</tt> 中指定的列。IDE 也添加映射条目到 <tt>hibernate.cfg.xml</tt> 中。</p>
+
+<pre class="examplecode">&lt;hibernate-configuration&gt;
+  &lt;session-factory&gt;
+    &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+    &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+    &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+    &lt;property name="hibernate.connection.username"&gt;myusername&lt;/property&gt;
+    &lt;property name="hibernate.connection.password"&gt;mypassword&lt;/property&gt;
+    &lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+    &lt;property name="hibernate.current_session_context_class"&gt;thread&lt;/property&gt;
+    &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.classic.ClassicQueryTranslatorFactory&lt;/property&gt;
+    &lt;mapping resource="dvdrental/FilmActor.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Language.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Film.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Category.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/Actor.hbm.xml"/&gt;
+    &lt;mapping resource="dvdrental/FilmCategory.hbm.xml"/&gt;
+  &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+
+<p class="notes"><strong>注：</strong>确认 <tt>mapping</tt> 元素在 <tt>hibernate.cfg.xml</tt> 文件中列在 <tt>property</tt> 元素后面。</p>
+
+<p>展开 <tt>dvdrental</tt> 包查看由向导生成的文件。</p>
+
+<img alt="显示生成的 POJO 的 &quot;Projects&quot;（项目）窗口屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-projectswindow.png" title="显示生成的 POJO 的 &quot;Projects&quot;（项目）窗口">
+
+<p class="tips">如果要创建 Hibernate 映射文件以将特定表映射到特定类，您可以使用 Hibernate 映射向导。</p>
+
+<p class="tips">有关使用 <tt>hibernate.reveng.xml</tt> 文件的详细信息，请参见以下指南中的<a href="http://docs.jboss.org/hibernate/core/3.3/reference/en/html/mapping.html" target="_blank">第 5 章“基本 O/R 映射”</a>：<a href="http://docs.jboss.org/hibernate/stable/core/reference/en/html/" target="_blank">《Hibernate 参考文档》</a>。</p>
+
+
+</div>
+
+<a name="06"></a>
+<h2>创建 <tt>FilmHelper.java</tt> Helper 类</h2>
+
+<p>现在，您将在 <tt>dvdrental</tt> 包中创建一个 helper 类，将用于在数据库中执行 Hibernate 查询。您将使用“Hibernate 查询语言（HQL）”编辑器来构造并测试用于检索数据的查询。测试了查询后，将在构造并运行查询的 helper 类中创建方法。然后，通过 JSF 受管 Bean 调用 helper 类中的方法。</p>
+
+<a name="06a"></a>
+<div class="indent">
+    <h3>创建类</h3>
+    <p>在此部分，使用新建文件向导在 <tt>dvdrental</tt> 包中创建 helper 类 <tt>FilmHelper.java</tt>。您将通过调用 <tt>HibernateUtil.java</tt> 中的 <tt>getSessionFactory</tt> 来创建一个 Hibernate 会话，并创建一些 helper 方法以创建查询来检索数据库中的数据。将从 JSP 页面中调用这些 helper 方法。</p>
+    <ol>
+        <li>右键单击 <tt>dvdrental</tt> 源包节点，并选择 "New"（新建）> "Java Class"（Java 类）以打开新建文件向导。</li>
+        <li>键入 <strong>FilmHelper</strong> 作为类名。 </li>
+        <li>确认已将 <strong>dvdrental</strong> 选作 "Package"（包）。单击 "Finish"（完成）。</li>
+        <li>添加以下代码（粗体），创建一个 Hibernate 会话。
+        <pre class="examplecode">public class FilmHelper {
+
+    <strong>Session session = null;
+
+    public FilmHelper() {
+        this.session = HibernateUtil.getSessionFactory().getCurrentSession();
+    }</strong>
+
+}</pre>
+        </li>
+        <li>在编辑器中右键单击并选择 "Fix Imports"（修复导入）（Alt-Shift-I 组合键；在 Mac 上为 ⌘-Shift-I 组合键）以添加任何需要的 import 语句 (<tt>org.hibernate.Session</tt>)，并保存更改。</li>
+    </ol>
+
+    <p>现在将修改 <tt>FilmHelper.java</tt> 以添加查询数据库的方法。</p>
+
+<a name="06b"></a>
+    <h3>使用 HQL 查询列举影片名称并检索演员</h3>
+    <p>在本练习中，将创建一个 Hibernate 查询语言 (HQL) 查询，以便查询数据库以从 Film 表中检索影片名称列表。然后，添加一个方法以查询 Actor 和 Film_actor 表，以便获取特定影片中涉及的演员。</p>
+
+    <p>Film 表包含 1000 条记录，因此检索影片列表的方法应该能够基于 <tt>filmId</tt> 主键检索记录。您将使用 HQL 编辑器构造和测试 HQL 查询。在创建正确的查询后，将在类中添加一个方法以生成相应的查询。
+    </p>
+    <ol>
+        <li>在 "Projects"（项目）窗口中右键单击项目节点，然后选择 "Clean and Build"（清理并构建）。</li>
+        <li>在 "Projects"（项目）窗口中右键单击 <tt>hibernate.cfg.xml</tt> 并选择 "Run HQL Query"（运行 HQL 查询）以打开 HQL 查询编辑器。</li>
+        <li>从工具栏的下拉列表中选择 hibernate.cfg。</li>
+        <li>通过在编辑器中键入以下内容并单击工具栏中的 "Run HQL Query"（运行 HQL 查询）按钮 (<img alt="&quot;Run HQL Query&quot;（运行 HQL 查询）按钮" height="16" src="../../../images_www/articles/72/web/hibernate-webapp/run_hql_query_16.png" title="&quot;Run HQL Query&quot;（运行 HQL 查询）按钮" width="16" />)，测试连接。
+        <pre class="examplecode">from Film</pre>
+        <p>单击 "Run HQL Query"（运行 HQL 查询）可在 HQL 查询编辑器的底部窗口看到查询结果。</p>
+        <img alt="&quot;Generate Hibernate Mapping Files and POJOs&quot;（生成 Hibernate 映射文件和 POJO）向导" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hibernate-hqleditor1.png" title="&quot;Generate Hibernate Mapping Files and POJOs&quot;（生成 Hibernate 映射文件和 POJO）向导">
+        <p>如果单击 SQL 按钮，可以看到起相同作用的 SQL 查询。</p>
+        <pre class="examplecode">select film0_.film_id as col_0_0_ from sakila.film film0_</pre>
+        </li>
+        <li>键入以下查询在 film id 为 100 到 200 的 Film 表中检索记录。
+        <pre class="examplecode">from Film as film where film.filmId between 100 and 200</pre>
+        <p>结果窗口中显示了一个记录列表。测试过该查询可返回期待的结果后，可在 helper 类中使用该查询。</p>
+        </li>
+        <li>将下面的 <tt>getFilmTitles</tt> 方法添加到 <tt>FilmHelper.java</tt> 以检索影片，其中 film id 介于变量 <tt>startID</tt> 和 <tt>endID</tt> 所指定的特定范围之间。
+        <pre class="examplecode">public List getFilmTitles(int startID, int endID) {
+    List&lt;Film&gt; filmList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery ("from Film as film where film.filmId between '"+startID+"' and '"+endID+"'");
+        filmList = (List&lt;Film&gt;) q.list();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return filmList;
+}</pre>
+        </li>
+        <li>添加下面的 <tt>getActorsByID</tt> 方法以检索特定影片中的演员。该方法将 <tt>filmId</tt> 作为输入变量以构造查询。
+        <pre class="examplecode">public List getActorsByID(int filmId){
+    List&lt;Actor&gt; actorList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery ("from Actor as actor where actor.actorId in (select filmActor.actor.actorId from FilmActor as filmActor where filmActor.film.filmId='" + filmId + "')");
+        actorList = (List&lt;Actor&gt;) q.list();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return actorList;
+}</pre>
+        </li>
+
+        <li>修复导入并保存更改。
+        <p>修复导入时，要选择 <tt>java.util.List</tt> 和 <tt>org.hibernate.Query</tt>。</p>
+        </li>
+    </ol>
+
+<a name="06d"></a>
+    <h3>添加额外的 helper 方法</h3>
+    <p>现在将添加一些额外的 helper 方法，创建基于输入变量的查询。可在 HQL 查询编辑器中检查这些查询。</p>
+
+
+
+    <ol>
+        <li>添加以下方法以根据 <tt>filmId</tt> 检索类别列表。
+<pre class="examplecode">public Category getCategoryByID(int filmId){
+    List&lt;Category&gt; categoryList = null;
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Category as category where category.categoryId in (select filmCat.category.categoryId from FilmCategory as filmCat where filmCat.film.filmId='" + filmId + "')");
+        categoryList = (List&lt;Category&gt;) q.list();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return categoryList.get(0);
+}</pre>
+        </li>
+        <li>添加以下方法以根据 <tt>filmId</tt> 检索单个影片。
+        <pre class="examplecode">public Film getFilmByID(int filmId){
+
+    Film film = null;
+
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Film as film where film.filmId=" + filmId);
+        film = (Film) q.uniqueResult();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return film;
+}</pre>
+        </li>
+        <li>添加以下方法以根据 <tt>langId</tt> 检索影片语言。
+        <pre class="examplecode">public String getLangByID(int langId){
+
+    Language language = null;
+
+    try {
+        org.hibernate.Transaction tx = session.beginTransaction();
+        Query q = session.createQuery("from Language as lang where lang.languageId=" + langId);
+        language = (Language) q.uniqueResult();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return language.getName();
+}</pre>
+        </li>
+        <li>保存所做的更改。</li>
+    </ol>
+</div>
+
+
+
+        <a name="07"></a>
+        <h2>创建 JSF 受管 Bean</h2>
+        <p>在本练习中，将创建一个 JSF 受管 Bean。受管 Bean 中的方法用于显示 JSF 页面中的数据，以及访问 helper 类中的方法以检索记录。JSF 2.0 规范允许在 Bean 类中使用标注以将类标识为 JSF 受管 Bean，以及指定范围和 Bean 名称。</p>
+
+        <p>要创建受管 Bean，请执行以下步骤。</p>
+        <ol>
+            <li>右键单击 <tt>dvdrental</tt> 源包节点，然后选择 "New"（新建）> "Other"（其他）。</li>
+           <li>从 "JavaServer Faces" 类别中选择 "JSF Managed Bean"（JSF 受管 Bean）。单击 "Next"（下一步）。</li>
+           <li>键入 <strong>FilmController</strong> 作为类名。
+                <p>在调用受管 Bean 中的方法时，将使用 Bean 名称 <tt>filmController</tt> 作为 JSF 页面 <tt>index.xhtml</tt> 中的 <tt>inputText</tt> 和 <tt>commandButton</tt> 的值。</p>
+           </li>
+           <li>选择 <strong>dvdrental</strong> 作为包。</li>
+           <li>键入 <strong>filmController</strong> 作为将用于受管 Bean 的名称。</li>
+           <li>将 "Scope"（范围）设置为 "Session"（会话）。单击 "Finish"（完成）。</li>
+        </ol>
+        <img alt="新建 JSF 受管 Bean 向导" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-newmanagedbean.png" title="新建 JSF 受管 Bean 向导">
+
+        <p>单击 "Finish"（完成），此时 IDE 创建 Bean 类并在编辑器中打开该类。IDE 添加了 <tt>@ManagedBean</tt> 和 <tt>@SessionScoped</tt> 标注。</p>
+<pre class="examplecode">
+@ManagedBean
+@SessionScoped
+public class FilmController {
+
+    /** Creates a new instance of FilmController */
+    public FilmController() {
+    }
+
+}
+</pre>
+
+        <p class="notes"><strong>注：</strong>请注意，未明确指定受管 Bean 的名称。默认情况下，Bean 的名称与类名相同，并以小写字母开头。如果您希望 Bean 的名称与类名不同，则可将该名称显式指定为 <tt>@ManagedBean</tt> 标注的参数（例如，<tt>@ManagedBean(name="myBeanName"）</tt>。</p>
+        
+        <ol>
+            <li>将以下字段（以粗体显示）添加到类中。
+                <pre class="examplecode">
+@ManagedBean
+@SessionScoped
+public class FilmController {
+    <strong>int startId;
+    int endId;
+    DataModel filmTitles;
+    FilmHelper helper;
+    private int recordCount = 1000;
+    private int pageSize = 10;
+
+    private Film current;
+    private int selectedItemIndex;</strong>
+}</pre>
+            </li>
+            <li>添加以下代码（以粗体显示），创建 FilmController 实例并检索影片。
+                <pre class="examplecode">
+    /** Creates a new instance of FilmController */
+    public FilmController() {
+        <strong>helper = new FilmHelper();
+        startId = 1;
+        endId = 10;
+    }
+
+    public FilmController(int startId, int endId) {
+        helper = new FilmHelper();
+        this.startId = startId;
+        this.endId = endId;
+    }
+
+    public Film getSelected() {
+        if (current == null) {
+            current = new Film();
+            selectedItemIndex = -1;
+        }
+        return current;
+    }
+
+
+    public DataModel getFilmTitles() {
+        if (filmTitles == null) {
+            filmTitles = new ListDataModel(helper.getFilmTitles(startId, endId));
+        }
+        return filmTitles;
+    }
+
+    void recreateModel() {
+        filmTitles = null;
+    }</strong></pre>
+        </li>
+        <li>添加用于显示表和导航页面的以下方法。
+
+<pre class="examplecode"><strong>    public boolean isHasNextPage() {
+        if (endId + pageSize <= recordCount) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isHasPreviousPage() {
+        if (startId-pageSize > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public String next() {
+        startId = endId+1;
+        endId = endId + pageSize;
+        recreateModel();
+        return "index";
+    }
+
+    public String previous() {
+        startId = startId - pageSize;
+        endId = endId - pageSize;
+        recreateModel();
+        return "index";
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public String prepareView(){
+        current = (Film) getFilmTitles().getRowData();
+        return "browse";
+    }
+    public String prepareList(){
+        recreateModel();
+        return "index";
+    }
+</strong></pre>
+        <p>返回 "index" 或 "browse" 的方法将提示 JSF 导航处理程序尝试打开名为 <tt>index.xhtml</tt> 或 <tt>browse.xhtml</tt> 的页面。JSF 2.0 规范允许在使用 Facelets 技术的应用程序中使用隐式导航规则。此应用程序中，没有在 <tt>faces-config.xml</tt> 中配置任何导航规则。导航处理程序将尝试在应用程序中查找合适的页面。</p>
+    </li>
+    <li>添加以下方法以访问 helper 类，以便检索其他影片详细信息。
+<pre class="examplecode"><strong>    public String getLanguage() {
+        int langID = current.getLanguageByLanguageId().getLanguageId().intValue();
+        String language = helper.getLangByID(langID);
+        return language;
+    }
+
+    public String getActors() {
+        List actors = helper.getActorsByID(current.getFilmId());
+        StringBuffer totalCast = new StringBuffer();
+        for (int i = 0; i < actors.size(); i++) {
+            Actor actor = (Actor) actors.get(i);
+            totalCast.append(actor.getFirstName());
+            totalCast.append(" ");
+            totalCast.append(actor.getLastName());
+            totalCast.append("  ");
+        }
+        return totalCast.toString();
+    }
+
+    public String getCategory() {
+        Category category = helper.getCategoryByID(current.getFilmId());
+        return  category.getName();
+    }</strong>
+</pre>
+            </li>
+            <li>修复导入（Ctrl-Shift-I 组合键）并保存更改。</li>
+        </ol>
+        <p class="tips">您可以在编辑器中使用代码完成以帮助键入代码。</p>
+
+
+<!-- **************** Creating the Web Pages **************** -->
+
+<a name="08"></a>
+<h2>创建 Web 页面</h2>
+<p>在本练习中，将创建两个 Web 页以显示数据。您将修改 IDE 生成的 <tt>index.xhtml</tt> 以添加一个表，以便显示数据库中的影片。然后创建 <tt>browse.xhtml</tt>，以便在单击表中的 "View" 链接时显示影片的详细信息。还会创建一个 JSF 模板页面以供 <tt>index.xhtml</tt> 和 <tt>browse.xhtml</tt> 使用。</p>
+
+<p class="tips">有关使用 JSF 2.0 和 Facelets 模板的更多信息，请参见 <a href="jsf20-intro.html">JavaServer Faces 2.0 简介</a>。</p>
+
+<div class="indent">
+    <a name="07a"></a>
+    <h3>创建 <tt>template.xhtml</tt></h3>
+    <p>首先，创建 JSF Facelets 模板 <tt>template.xhtml</tt>，在创建 <tt>index.xhtml</tt> 和 <tt>browse.xhtml</tt> 页面时将使用该模板。</p>
+    <ol>
+        <li>在 "Projects"（项目）窗口中右键单击 DVDStore 项目节点，然后选择 "New"（新建）> "Other"（其他）。</li>
+        <li>在 "JavaServer Faces" 类别中选择 "Facelets Template"（Facelets 模板）。单击 "Next"（下一步）。</li>
+        <li>键入 <strong>template</strong> 作为文件名，并选择第一个 CSS 布局样式。</li>
+        <li>单击 "Finish"（完成）。
+        <p>单击 "Finish"（完成），此时 <tt>template.xhtml</tt> 文件将在编辑器中打开。该模板包含以下默认代码。</p>
+            <pre class="examplecode">&lt;h:body&gt;
+
+    &lt;div id="top" class="top"&gt;
+        &lt;ui:insert name="top"&gt;Top&lt;/ui:insert&gt;
+    &lt;/div&gt;
+
+    &lt;div id="content" class="center_content"&gt;
+        &lt;ui:insert name="content"&gt;Content&lt;/ui:insert&gt;
+    &lt;/div&gt;
+
+&lt;/h:body&gt;</pre></li>
+    <li>修改 <tt>&lt;ui:insert&gt;</tt> 元素，以将生成的默认名称更改为 "body"。
+<pre class="examplecode">&lt;div id="content" class="center_content"&gt;
+        &lt;ui:insert name="<strong>body</strong>"&gt;Content&lt;/ui:insert&gt;
+&lt;/div&gt;</pre>
+    </li>
+    <li>保存所做的更改。</li>
+    </ol>
+
+    <p><tt>index.xhtml</tt> 和 <tt>browse.xhtml</tt> 中的 <tt>&lt;ui:define name="body"&gt;</tt> 元素包含的内容将插入到使用模板中的 <tt>&lt;ui:insert name="body"&gt;Content&lt;/ui:insert&gt;</tt> 指定的位置。</p>
+
+
+
+
+    <h3>修改 <tt>index.xhtml</tt></h3>
+    <p>在创建 Web 应用程序时，IDE 将自动生成 <tt>index.xhtml</tt> 页面。在本练习中，将修改该页面以显示影片名称列表。JSF 页面调用 JSF 受管 Bean FilmController 中的方法以检索影片列表，然后显示一个包含影片名称和说明的表格。</p>
+    <ol>
+        <li>展开 "Projects"（项目）窗口的 "Web Pages"（Web 页）文件夹，并在编辑器中打开 <tt>index.xhtml</tt>。
+        <p>新建项目向导生成了以下默认 <tt>index.xhtml</tt> 页面。</p>
+<pre class="examplecode">&lt;html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"&gt;
+&lt;h:head&gt;
+        &lt;title&gt;Facelet Title&lt;/title&gt;
+    &lt;/h:head&gt;
+    &lt;h:body&gt;
+        Hello from Facelets
+    &lt;/h:body&gt;
+&lt;/html&gt;</pre></li>
+
+<li>修改该页面以使用 JSF <tt>&lt;ui:composition&gt;</tt> 和 <tt>&lt;ui:define&gt;</tt> 元素，并添加 <tt>&lt;h:form&gt;</tt> 元素。
+    <pre class="examplecode">&lt;html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://java.sun.com/jsf/html"
+  <strong>xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+    &lt;ui:composition template="./template.xhtml"&gt;
+        &lt;ui:define name="body"&gt;
+            &lt;h:form&gt;
+
+            &lt;/h:form&gt;
+        &lt;/ui:define&gt;
+    &lt;/ui:composition&gt;</strong>
+&lt;/html&gt;</pre>
+    <p>开始键入标记时，IDE 将添加 <tt>xmlns:ui="http://java.sun.com/jsf/facelets"</tt> 标记库声明。</p>
+    <p><tt>&lt;ui:composition&gt;</tt> 和 <tt>&lt;ui:define&gt;</tt> 元素将与所创建的页面模板结合使用。<tt>&lt;ui:composition&gt;</tt> 元素引用此页面将使用的模板的位置。<tt>&lt;ui:define&gt;</tt> 元素引用包含的代码将占用的模板位置。</p>
+</li>
+<li>添加以下导航链接以调用 JSF 受管 Bean 中的 <tt>previous</tt> 和 <tt>next</tt> 方法。
+    <pre class="examplecode">
+    &lt;ui:define name="body"&gt;
+            &lt;h:form&gt;
+                <strong>&lt;h:commandLink action="#{filmController.previous}" value="Previous #{filmController.pageSize}" rendered="#{filmController.hasPreviousPage}"/&gt;&nbsp;
+                &lt;h:commandLink action="#{filmController.next}" value="Next #{filmController.pageSize}" rendered="#{filmController.hasNextPage}"/&gt;&nbsp;</strong>
+            &lt;/h:form&gt;
+    &lt;/ui:define&gt;</pre>
+</li>
+
+<li>添加以下 <tt>dataTable</tt> 元素（以粗体显示）来生成表，以便显示检索到的条目。
+<pre class="examplecode">
+            &lt;h:form styleClass="jsfcrud_list_form"&gt;
+                &lt;h:commandLink action="#{filmController.previous}" value="Previous #{filmController.pageSize}" rendered="#{filmController.hasPreviousPage}"/&gt;&nbsp;
+                &lt;h:commandLink action="#{filmController.next}" value="Next #{filmController.pageSize}" rendered="#{filmController.hasNextPage}"/&gt;&nbsp;
+                <strong>&lt;h:dataTable value="#{filmController.filmTitles}" var="item" border="0" cellpadding="2" cellspacing="0" rowClasses="jsfcrud_odd_row,jsfcrud_even_row" rules="all" style="border:solid 1px"&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="Title"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:outputText value="#{item.title}"/&gt;
+                    &lt;/h:column&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="Description"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:outputText value="#{item.description}"/&gt;
+                    &lt;/h:column&gt;
+                    &lt;h:column&gt;
+                        &lt;f:facet name="header"&gt;
+                            &lt;h:outputText value="&nbsp;"/&gt;
+                        &lt;/f:facet&gt;
+                        &lt;h:commandLink action="#{filmController.prepareView}" value="View"/&gt;
+                    &lt;/h:column&gt;
+                &lt;/h:dataTable&gt;
+                &lt;br/&gt;</strong>
+            &lt;/h:form&gt;
+</pre>
+        
+        <li>保存所做的更改。</li>
+    </ol>
+    <p>现在，index 页面将显示数据库中的影片名称列表。表中的每一行都包含 "View" 链接，用于调用受管 Bean 中的 <tt>prepareView</tt> 方法。<tt>prepareView</tt> 方法返回 "browse" 并打开 <tt>browse.xhtml</tt>。</p>
+
+    <p class="notes"><strong>注：</strong>键入 <tt>&lt;f:facet&gt;</tt> 标记时，IDE 将添加 <tt>xmlns:f="http://java.sun.com/jsf/core</tt> 标记库声明。<strong>确认已在文件中声明标记库。</strong></p>
+
+    
+    <!-- +++++++++++++++ Create browse.xhtml +++++++++++++++  -->
+    <a name="07b"></a>
+    <h3>创建 <tt>browse.xhtml</tt></h3>
+    <p>现在，将创建 <tt>browse.xhtml</tt> 页面以显示所选影片的详细信息。可以使用 Facelets 模板客户端向导基于所创建的 JSF Facelets 模板 <tt>template.xhtml</tt> 创建该页面。</p>
+    <ol>
+        <li>在 "Projects"（项目）窗口中右键单击 DVDStore 项目节点，然后选择 "New"（新建）> "Other"（其他）。</li>
+        <li>在 "JavaServer Faces" 类别中选择 "Facelets Template Client"（Facelets 模板客户端）。单击 "Next"（下一步）。<br /> <img alt="新建文件向导中的 &quot;Facelets Template Client&quot;（Facelets 模板客户端）屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-faceletsclient.png" title="新建文件向导中的 &quot;Facelets Template Client&quot;（Facelets 模板客户端）文件类型"></li>
+        <li>键入 <strong>browse</strong> 作为文件名。</li>
+        <li>通过单击 "Browse"（浏览）打开 "Browse Files"（浏览文件）对话框，以查找页面模板。</li>
+        <li>展开 "Web Pages"（Web 页）文件夹并选择 <tt>template.xhtml</tt>。单击 "Select File"（选择文件）。<br /> <img alt="&quot;Browse Files&quot;（浏览文件）对话框的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-browsetemplate.png" title="在 &quot;Browse Files&quot;（浏览文件）对话框中选择模板"></li>
+        <li>选择 <strong>&lt;ui:composition&gt;</strong> 作为生成的根标记。单击 "Finish"（完成）。
+        <p>单击 "Finish"（完成），此时 <tt>browse.xhtml</tt> 文件将在编辑器中打开，其中包含以下代码。</p>
+        <pre class="examplecode">&lt;ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="./template.xhtml"&gt;
+
+    &lt;ui:define name="top"&gt;
+        top
+    &lt;/ui:define&gt;
+
+    &lt;ui:define name="body"&gt;
+        body
+    &lt;/ui:define&gt;
+
+&lt;/ui:composition&gt;</pre>
+        <p>您可以看到新文件指定了 <tt>template.xhtml</tt> 文件，并且 <tt>&lt;ui:define&gt;</tt> 标记具有属性 <tt>name="body"</tt> </p>
+        </li>
+        <li>在 <tt>&lt;ui:define&gt;</tt> 标记之间添加以下代码（以粗体显示）以创建窗体，并调用受管 Bean FilmController 中的方法以检索数据和填充窗体。
+            <pre class="examplecode">&lt;ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="./template.xhtml"
+    <strong>xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"</strong>&gt;
+
+        &lt;ui:define name="top"&gt;
+            top
+        &lt;/ui:define&gt;
+
+        &lt;ui:define name="body"&gt;
+        <strong>
+            &lt;h:form&gt;
+                &lt;h:panelGrid columns="2"&gt;
+                    &lt;h:outputText value="Title:"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.title}" title="Title"/&gt;
+                    &lt;h:outputText value="Description"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.description}" title="Description"/&gt;
+                    &lt;h:outputText value="Genre"/&gt;
+                    &lt;h:outputText value="#{filmController.category}"/&gt;
+
+                    &lt;h:outputText value="Cast"/&gt;
+                    &lt;h:outputText value="#{filmController.actors}"/&gt;
+
+
+                    &lt;h:outputText value="Film Length"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.length} min" title="Film Length"/&gt;
+
+                    &lt;h:outputText value="Language"/&gt;
+                    &lt;h:outputText value="#{filmController.language}" title="Film Length"/&gt;
+
+                    &lt;h:outputText value="Release Year"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.releaseYear}" title="Release Year"&gt;
+                        &lt;f:convertDateTime pattern="MM/dd/yyyy" /&gt;
+                    &lt;/h:outputText&gt;
+                    &lt;h:outputText value="Rental Duration"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rentalDuration}" title="Rental DUration"/&gt;
+                    &lt;h:outputText value="Rental Rate"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rentalRate}" title="Rental Rate"/&gt;
+                    &lt;h:outputText value="Replacement Cost"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.replacementCost}" title="Replacement Cost"/&gt;
+                    &lt;h:outputText value="Rating"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.rating}" title="Rating"/&gt;
+                    &lt;h:outputText value="Special Features"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.specialFeatures}" title="Special Features"/&gt;
+                    &lt;h:outputText value="Last Update"/&gt;
+                    &lt;h:outputText value="#{filmController.selected.lastUpdate}" title="Last Update"&gt;
+                        &lt;f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" /&gt;
+                    &lt;/h:outputText&gt;
+                &lt;/h:panelGrid&gt;
+                &lt;br/&gt;
+                &lt;br/&gt;
+                &lt;h:commandLink action="#{filmController.prepareList}" value="View All List"/&gt;
+                &lt;br/&gt;
+            &lt;/h:form&gt;
+</strong>
+        &lt;/ui:define&gt;
+    &lt;/ui:composition&gt;
+&lt;/html&gt;</pre>
+        <p>您可以看到 <tt>browse.xhtml</tt> 和 <tt>index.xhtml</tt> 使用相同的页面模板。</p>
+        </li>
+        <li>保存所做的更改。</li>
+    </ol>
+
+
+     <a name="07b"></a>
+    
+</div>
+
+<a name="09"></a>
+<h2>运行项目</h2>
+<p>应用程序的基础部分现已完成。现在，您可以运行应用程序以检查其是否正常运行。</p>
+<ol>
+    <li>在主工具栏中单击 "Run Main Project"（运行主项目）或在 "Projects"（项目）窗口中右键单击 DVDStore 应用程序节点并选择 "Run"（运行）。
+    <p>IDE 保存所有更改过的文件，构建应用程序并将应用程序部署到服务器。IDE 将打开浏览器窗口并指向 URL <tt>http://localhost:8080/DVDStore/</tt> 以显示影片列表。</p>
+
+    <img alt="在索引页上显示影片列表的浏览器的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/72/web/hibernate-webapp/hib-browser1.png" title="在索引页上显示影片列表的浏览器的屏幕快照">
+    </li>
+    <li>在浏览器中，单击 "View" 加载 <tt>browse.xhtml</tt> 以查看影片详细信息。<br />
+    </li>
+</ol>
+
+
+
+    <a name="10"></a>
+    <h3>下载解决方案项目</h3>
+    <p>您可以采用下列方法下载本教程的解决方案（作为一个项目）。</p>
+    <ul>
+        <li>下载<a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/DVDStoreEE6.zip">已完成项目的 zip 档案文件</a>。</li>
+        <li>通过执行以下步骤从 NetBeans 样例检出项目源代码：
+            <ol>
+                <li>从主菜单中选择 "Team"（团队开发）> "Subversion" > "Checkout"（检出）。</li>
+                <li>在 "Checkout"（检出）对话框中，输入以下资源库 URL：<br /> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br /> 单击 "Next"（下一步）。</li>
+                <li>单击 "Browse"（浏览）以打开 "Browse Repostiory Folders"（浏览资源库文件夹）对话框。</li>
+                <li>展开根目录节点，然后选择 <strong>samples/javaee/DVDStoreEE6</strong>。单击 "OK"（确定）。</li>
+                <li>指定用于存储源代码的 "Local Folder"（本地文件夹）。</li>
+                <li>单击 "Finish"（完成）。
+                    <p>单击 "Finish"（完成），此时 IDE 会将本地文件夹初始化为 Subversion 资源库，并检出项目源代码。</p>
+                </li>
+                <li>在完成检出操作后将会显示一个对话框，在该对话框中单击 "Open Project"（打开项目）。</li>
+            </ol>
+            <p class="notes"><strong>注：</strong>有关安装 Subversion 的更多信息，请参见 <a href="../ide/subversion.html">NetBeans IDE 中的 Subversion 指南</a>中有关<a href="../ide/subversion.html#settingUp">设置 Subversion</a> 的部分。</p>
+        </li>
+    </ul>
+
+
+    <a name="11"></a>
+    <h3>疑难解答</h3>
+    <p>教程应用程序出现的大多数问题是由于 GlassFish Server Open Source Edition 与 MySQL 数据库服务器之间的通信发生问题。如果应用程序显示不正确或者您收到服务器错误，您可能需要查看<a href="mysql-webapp.html">使用 MySQL 数据库创建简单 Web 应用程序</a>教程或<a href="../ide/mysql.html">连接到 MySQL 数据库</a>教程的<a href="mysql-webapp.html#troubleshoot">疑难解答</a>部分。</p>
+    
+    <p>如果您是首次部署了使用 MySQL 数据库的应用程序，则在下载和运行解决方案项目时，可能会在 "Output"（输出）窗口中看到以下错误。</p>
+    
+    <pre class="examplecode">
+    SEVERE: JDBC Driver class not found: com.mysql.jdbc.Driver
+    java.lang.ClassNotFoundException: com.mysql.jdbc.Driver
+	at org.glassfish.web.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1509)
+
+        [...]
+
+	at java.lang.Thread.run(Thread.java:680)
+
+    SEVERE: Initial SessionFactory creation failed.org.hibernate.HibernateException: JDBC Driver class not found: com.mysql.jdbc.Driver
+    INFO: cleaning up connection pool: null
+    INFO: Domain Pinged: stable.glassfish.org</pre>
+    
+    <p>在浏览器窗口中，您可能会看到 <tt>java.lang.ExceptionInInitializerError</tt> 以及以下堆栈跟踪。</p>
+    <pre class="examplecode">
+    java.lang.ExceptionInInitializerError
+	at dvdrental.HibernateUtil.&lt;clinit&gt;(HibernateUtil.java:28)
+	...
+    Caused by: org.hibernate.HibernateException: JDBC Driver class not found: com.mysql.jdbc.Driver
+	
+	... 
+    Caused by: java.lang.ClassNotFoundException: com.mysql.jdbc.Driver
+	... </pre>
+    
+    <p>输出消息指出未找到 MySQL 数据库的 JDBC 驱动程序。最可能的原因是，您需要将 MySQL JDBC 驱动程序文件添加到 GlassFish Server 安装中。要确认缺少此驱动程序，请导航至本地系统上的 <tt><em>GLASSFISH-INSTALL</em>/glassfish/domains/domain1/lib</tt> 目录（其中 <em>GLASSFISH-INSTALL</em> 是 GlassFish 安装目录）。如果 <tt>domain1/lib</tt> 目录不包含 JDBC 驱动程序文件（例如 <code>mysql-connector-java-5.1.13-bin.jar</code>），则您需要将 JDBC 驱动程序复制到此目录中。安装服务器时，未将 MySQL JDBC 驱动程序添加到 GlassFish 安装中。
+    </p>
+        
+    <p>通过执行以下步骤，可以将 MySQL JDBC 驱动程序的副本添加到 GlassFish 安装中。
+    <ol>
+        <li>下载 <a href="http://dev.mysql.com/downloads/connector/j/">MySQL Connector/J JDBC 驱动程序</a>。</li>
+        <li>提取此驱动程序并将驱动程序文件（例如 <code>mysql-connector-java-5.1.13-bin.jar</code>）复制到 GlassFish 安装的 <tt>domain1/lib</tt> 目录中。</li>
+    </ol>
+        
+    <p>或者，当您使用 IDE 创建使用 MySQL 数据库的应用程序时，IDE 也可以在部署项目时自动将捆绑的 MySQL JDBC 驱动程序复制到 GlassFish Server（如果需要）。要确认 IDE 将复制所需的 JDBC 驱动程序，请从主菜单中选择“工具”>“服务器”以打开“服务器管理器”，然后确认为 GlassFish Server 选定了“启用 JDBC 驱动程序部署”选项。</p>
+    <p>在创建并部署使用 MySQL 数据库的 Web 应用程序之后，如果导航至本地 GlassFish 安装的 <code>domain1/lib</code> 目录，您将会看到该目录包含 JDBC 驱动程序文件。</p>
+
+    
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Using%20Hibernate%20in%20a%20Web%20Application">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" />
+
+<h2>另请参见</h2>
+    <ul>
+        <li><a href="jsf20-support.html">NetBeans IDE 中的 JSF 2.x 支持</a></li>
+        <li><a href="jsf20-intro.html">JavaServer Faces 2.x 简介</a></li>
+        <li><a href="../../trails/java-ee.html">Java EE 和 Java Web 学习资源</a></li>
+    </ul>
+
+   
+</body>
+</html>

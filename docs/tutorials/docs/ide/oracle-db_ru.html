@@ -1,0 +1,359 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011, 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+<head>
+    <meta name="description" content="An introductory tutorial describing how to connect
+          to an Oracle Database in NetBeans IDE">
+
+    <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+          Orace database, SQL, structured query language, multi-user database
+          management system, Oracle XE, open source">
+
+    <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    <script type="text/javascript" src="../../../images_www/js/window_opener.js"></script>
+
+    <title>Соединение с базой данных Oracle - учебное руководство по IDE NetBeans</title><meta HTTP-EQUIV="Content-Type" Content="text/html; charset=UTF-8"></head>
+
+<body>
+<h1>Соединение с базой данных Oracle из IDE NetBeans</h1>
+        <p>IDE NetBeans включает встроенную поддержку для баз данных Oracle. Пользователь может без труда установить подключение к ней из среды IDE и начать работу в базе данных. В данном учебном курсе показано, как использовать локально установленный экземпляр базы данных Oracle 10<em>g</em> Express Edition (Oracle Database XE), упрощенной базы данных, открытой для бесплатных развертывания, распространения и разработки для нее. </p>
+        
+<p>В этом документе описывается <a href="#connect">настройка соединения для локальной установки</a> базы данных Oracle XE из IDE NetBeans, использования встроенного редактора SQL IDE для <a href="#createuser">обработки данных базы данных</a>, а также <a href="#oci8">включения расширения PHP OCI 8</a> для написания кода PHP, выполняющего соединения с базой данных Oracle. </p>
+
+<p><strong>Содержание</strong></p>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+
+<ul class="toc">
+    <li><a href="#start">Перед началом работы</a> </li>
+    <li><a href="#connect">Установка подключения к базе данных Oracle</a></li>
+    <li><a href="#handledata">Управление данными в Oracle из среды IDE</a>
+      <ul>
+        <li><a href="#createuser">Создание нового пользователя</a></li>
+        <li><a href="#createtable">Создание таблицы</a></li>
+        <li><a href="#altertable">Работа с данными в таблице</a></li>
+      </ul>
+    </li>
+    <li><a href="#tips">Советы по работе в редакторе SQL IDE NetBeans</a></li>
+    <li><a href="#oci8">OCI 8 и IDE NetBeans для PHP</a></li>
+    <li><a href="#oci">Использование драйвера JDBC OCI с IDE NetBeans</a> </li>
+    <li><a href="#troubleshoot">Устранение проблем</a></li>
+    <li><a href="#seeAlso">Дополнительные сведения</a></li>
+</ul> 
+
+<p><strong>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</strong></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                <th class="tblheader" scope="col">Требуемая версия</th>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">IDE NetBeans</a></td>
+                <td class="tbltd1">7.2, 7.3, 7.4, 8.0, пакет Java EE</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+                <td class="tbltd1">Версия 7 или 8</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://www.oracle.com/technetwork/database/express-edition/overview/index.html" target="_blank">База данных Oracle </a></td>
+              <td class="tbltd1">10 <em>g</em> Express Edition</td>
+            </tr>
+            <tr>
+              <td class="tbltd1"><a href="http://www.oracle.com/technetwork/database/enterprise-edition/jdbc-112010-090769.html" target="_blank">Драйвер JDBC Oracle</a></td>
+              <td class="tbltd1"><a href="http://download.oracle.com/otn/utilities_drivers/jdbc/11202/ojdbc6.jar" target="_blank">ojdbc6.jar</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2><a id="start" name="start"></a>Перед началом работы</h2>
+    <p>Перед началом прохождения данного учебного курса обратите внимание на следующее:  </p>
+    <ul>
+      <li>В данном учебном курсе описано подключение к экземпляру базы данных Oracle XE на локальном компьютере, но те же действия также могут быть применены при подключении к удаленному экземпляру. В случае подключения к локальном экземпляру необходимо <a href="http://www.oracle.com/technetwork/database/express-edition/overview/index.html" target="_blank">загрузить</a> и установить базу данных Oracle XE.  Процесс установки прост и интуитивен, но если все же возникнут проблемы, ознакомьтесь с <a href="http://www.oracle.com/pls/xe102/homepage" target="_blank">Руководством по установке базы данных Oracle XE</a> для своей платформы.</li>
+      <li>Существуют две категории драйверов JDBC Oracle: OCI и JDBC Thin.
+        <ul>
+          <li>Драйвер Oracle JDBC Thin основан на Java и не зависит от платформы. Этот автономный драйвер не требует присутствия других библиотек Oracle и обеспечивает прямое подключение к базе данных Oracle. Он используется для подключения к базе данных Oracle в данном учебном курсе.  Перед прохождением данного учебного курса необходимо <a href="http://www.oracle.com/technetwork/database/enterprise-edition/jdbc-112010-090769.html" target="_blank">загрузить</a> файл <tt>ojdbc6.jar</tt> и сохранить его на своей системе.  <p class="notes"><b>Примечание для пользователей Windows.</b> Windows может изменить расширение загруженного файла с .jar на .zip. Но он при этом остается файлом .jar. Расширение можно просто заменить на .jar.</p></li>
+          <li>Драйвер OCI Oracle использует встроенные клиентские библиотеки Oracle для связи с базами данных.  Эти библиотеки входят в состав Oracle Instant Client. Хотя драйвер Thin являеся достаточным в большей части случаев, также рекомендуется использовать драйвер OCI путем выполнения шагов, описанных в разделе <a href="#oci">Использование драйвера OCI JDBC с IDE NetBeans</a>. <br> Хорошим примером использования драйвера OCI является подключение к удаленной базе данных Oracle из приложения PHP с помощью библиотек Oracle Instant Client.  Дополнительные сведения о включении расширения OCI8 для PHP см. в разделе этого учебного руководства <a href="#oci8">OCI 8 и IDE NetBeans для PHP</a>.</li>
+        </ul>
+      </li>
+      <li>Если вы не использовали базу данных Oracle XE ранее, прочитайте <a href="http://download.oracle.com/docs/cd/B25329_01/doc/admin.102/b25610/toc.htm">Руководство по началу работы</a> с базой данных Oracle XE.</li></ul>
+      <p class="alert"><strong>Предупреждение для пользователей GlassFish.</strong> Домашняя страница базы данных Oracle XE, используемая для администрирования базы данных, использует по умолчанию порт 8080. Oracle GlassFish Application Server также использует по умолчанию 8080. Если запустить обе программы одновременно, база данных Oracle XE заблокирует доступ браузеров к GlassFish на localhost:8080. В этом случае все приложения, развернутые на GlassFish, будут возвращать ошибку 404. Проще всего отключать базу данных Oracle XE, если она не нужна во время работы с GlassFish. Если нужно использовать обе эти программы одновременно, измените порт по умолчанию, используемый базой данных Oracle XE. Это проще, чем изменить порт GlassFish по умолчанию. В Интернете можно найти много описаний процесса изменения порта базы данных Oracle XE по умолчанию, включая одно на <a href="https://forums.oracle.com/forums/thread.jspa?threadID=336855">форумах Oracle</a>.</p>
+
+  
+<h2><a id="connect" name="connect"></a>Установка подключения к базе данных Oracle</h2>
+    <p>В этом упражнении мы создадим и протестируем новое подключение к базе данных. </p>
+    <ol>
+      <li>Запустите базу данных Oracle.</li>
+      <li>Откройте окно &quot;Службы&quot;, выбрав меню &quot;Окно&quot; &gt; &quot;Службы&quot; или Ctrl-5;⌘-5 в Mac. В окне 'Службы' щелкните правой кнопкой мыши узел 'Базы данных' и выберите 'Создать подключение'. <br> <img alt="Элемент &apos;Новое подключение&apos; во всплывающем меню узла &apos;Базы данных&apos;" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/new-connection.png"></li>
+      <li>В мастере создания подключений выберите Oracle Thin из раскрывающегося списка Driver (&quot;Драйвер&quot;).</li>
+      <li>Нажмите кнопку Add (&quot;Добавить&quot;) и найдите ранее загруженный файл <tt>ojdbc6.jar</tt>.  Нажмите кнопку &quot;Далее&quot;.      </li>
+      <li>На панели Customize Connection (&quot;Настроить подключение&quot;) мастера введите следующие значения и нажмите кнопку Next (&quot;Далее&quot;). <br>
+        <table width="85%" >
+          <tr>
+            <th width="25%" class="tblheader" scope="col">Имя</th>
+            <th width="75%" class="tblheader" scope="col">Значение</th>
+          </tr>
+          <tr>
+            <td class="tbltd1">Имя драйвера </td>
+            <td class="tbltd1">Oracle Thin (с идентификатором службы (SID)) </td>
+          </tr>
+          <tr>
+            <td class="tbltd1">Адрес</td>
+            <td class="tbltd1"><tt>localhost</tt> или 127.0.0.1. <br> <em>Примечание.</em> В случае удаленного соединения, укажите IP-адрес или разрешаемое имя узла компьютера, на котором установлена ​​база данных. </td>
+          </tr>
+          <tr>
+            <td class="tbltd1">Порт</td>
+            <td class="tbltd1">1521 (по умолчанию)</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">Идентификатор службы (SID) </td>
+            <td class="tbltd1"><tt>XE</tt> (SID по умолчанию для базы данных Oracle XE).<br> <em>Примечание.</em> В случае подключения к удаленной базе данных запросите SID у администратора базы данных. </td>
+          </tr>
+          <tr>
+            <td class="tbltd1">Имя пользователя</td>
+            <td class="tbltd1"><p>Введите имя пользователя. <br> В целях данного учебного курса введите<tt>system</tt> (учетная запись по умолчанию администратора базы данных) и пароль, использованный во время установки базы данных. </p></td>
+          </tr>
+          <tr>
+            <td class="tbltd1">Пароль</td>
+            <td class="tbltd1">Введите пароль для выбранного имени пользователя. </td>
+          </tr>
+        </table>
+      </li>
+      <li>Щелкните Test Connection (&quot;Проверить подключение&quot;), чтобы убедиться в наличии у среды IDE возможности подключиться к базе данных. Нажмите кнопку &quot;Далее&quot;.
+          <p>Если попытка будет успешна, в мастере отобразиться сообщение Connection succeeded (&quot;Подключение успешно&quot;). </p>
+      <img alt="Установленное подключение" border="0" class="margin-around" height="471" src="../../../images_www/articles/73/ide/oracle-db/customize-conn.png" width="378"></li>
+      <li>Выберите <tt>HR</tt> в раскрывающемся списке Select Schema (&quot;Выбор схемы&quot;).  Нажмите кнопку &quot;Завершить&quot;.
+      <p class="notes"><b>Примечание.</b> До получения доступа к NetBeans необходимо разблокировать схему HR. Разблокирование базы данных HR описано в <a href="http://download.oracle.com/docs/cd/B25329_01/doc/admin.102/b25610/toc.htm">Руководстве по началу работы</a> с базой данных Oracle XE.</p></li>
+    </ol>
+<p>Новое подключение появится в узле Databases (&quot;Базы данных&quot;) окна Services (&quot;Службы&quot;).  Его можно будет развернуть и приступить к просмотру структуры объекта базы данных. <br> Измените отображаемое имя для узла подключения: выберите Properties (&quot;Свойства&quot;) из всплывающего меню узла и нажмите кнопку многоточия, чтобы вывести свойство Display Name (&quot;Отображаемое имя&quot;).  Введите OracleDB в качестве отображаемого имени и нажмите кнопку OK.</p>
+    <img alt="Установленное подключение" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/connection.png"><br>
+    <p class="notes"><strong>Примечание.</strong> Хотя приведенные выше шаги описывают случай подключения к экземпляру локальной базы данных, шаги для подключения к <em>удаленной</em> базе данных такие же. Единственное отличие состоит в том, что вместо указания <tt>localhost</tt> как имени узла следует ввести IP-адрес или имя узла удаленного компьютера, на котором установлена база данных Oracle.</p>
+
+
+    <h2><a name="handledata"></a>Управление данными в базе данных Oracle </h2>
+    <p>Обычными способами взаимодействия с базами данных является выполнение команд SQL в редакторе SQL или использование интерфейсов управления базами данных.  Например, у базы данных Oracle XE имеется интерфейс на основе браузера, посредством которого можно осуществлять администрирование базы данных, управлять объектами базы данных и манипулировать данными.  </p>
+    <p>Хотя пользователи могут выполнить большую часть задач, связанных с базами данных с помощью интерфейса управления базами данных Oracle в этом учебном руководстве демонстрируется использование редактора SQL в IDE NetBeans для выполнения некоторых из этих задач. В приведенных ниже упражнениях показано, как создавать новых пользователей, быстро воссоздавать таблицы и копировать данные таблиц. </p>
+    
+    <div class="indent">
+    <h3><a name="createuser"></a>Создание пользователя</h3>
+    <p>Давайте создадим новую учетную запись пользователя базы данных для управления таблицами и данными в базе данных. Чтобы создать нового пользователя, необходимо войти в систему, используя учетную запись администратора базы данных, в нашем случае учетную запись по умолчанию <tt>system</tt>, созданную при установке базы данных.</p>
+    <ol>
+      <li>В окне 'Службы' щелкните правой кнопкой мыши узел подключения OracleDB и выберите 'Выполнить команду'. При этом открывается редактор SQL IDE NetBeans, в котором можно указать команды, которые будут отправлены базе данных.<br> <img alt="Элемент меню &apos;Выполнить команду&apos;, отображаемый в окне &apos;Службы&apos;" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/execute.png"></li>
+      <li>Чтобы создать нового пользователя, введите приведенную ниже команду в окне редактора SQL и нажмите кнопку Run SQL (&quot;Выполнить SQL&quot;) на панели инструментов. <br> <img alt="Команда создания пользователя" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/create-user.png"><br>
+      <pre class="examplecode">create user jim<br>identified by mypassword<br>default tablespace users<br>temporary tablespace temp<br>quota unlimited on users;</pre>
+      <p>В результате выполнения данной команды будет создан новый пользователь <tt>jim</tt> с паролем <tt>mypassword</tt>. Табличным пространством по умолчанию является <tt>users</tt>, а выделенное пространство не ограничено. </p></li>
+      <li>Следующий этап &ndash; предоставить <tt>jim</tt> права учетной записи пользователя на выполнение действий с базой данных. Необходимо разрешить пользователю подключаться к базе данных, создавать и изменять таблицы в табличном пространстве пользователя по умолчанию и выполнять доступ к таблице <tt>Employees</tt> в примере базы данных <tt>hr</tt>.
+
+          <p class="notes">На практике администратор базы данных обычно создает особые роли и аккуратно настраивает полномочия для каждой из них. Но в целях нашего учебного курса мы можем использовать заранее определенную роль, такую как <tt>CONNECT</tt>. Дополнительные сведения о ролях и полномочиях приведены в документе <a href="http://download.oracle.com/docs/cd/E11882_01/network.112/e16543/toc.htm" target="_blank">Oracle Database Security Guide (&quot;Руководство по безопасности базы данных Oracle&quot;)</a>.</p>
+        <pre class="examplecode">
+grant connect to jim;
+grant create table to jim;
+grant select on hr.departments to jim;</pre>
+      </li>
+    </ol>
+
+    <div class="feedback-box float-left" style="width: 723px;">
+        
+        <h3>Табличные пространства в базах данных Oracle </h3>
+        <p>Табличное пространство &ndash; это блок логической памяти во всех базах данных Oracle. На самом деле, все данные баз данных хранятся в табличных пространствах. Таблицы создаются внутри выделенных табличных пространств. Если табличное пространство по умолчанию не выделяется пользователю напрямую, то, по умолчанию, используется табличное пространство системы (этой ситуации лучше избегать). </p>
+        <p>Дополнительные сведения о концепции табличного пространства см. <a href="http://www.orafaq.com/wiki/Tablespace" target="_blank">Часто задаваемые вопросы по Oracle: табличные простнранства</a></p>
+    </div>
+
+    <br style="clear: left">
+
+
+    <h3><a name="createtable"></a>Создание таблицы</h3>
+    <p>Существует несколько способов создания таблицы в базе данных с помощью IDE NetBeans. Например, можно запустить файл SQL (щелкните правой кнопкой мыши файл и выберите 'Запустить файл'), выполните команду SQL (щелкните правой кнопкой мыши узел подключения и выберите 'Выполнить команду') или используйте диалоговое окно 'Создать таблицу' (щелкните правой кнопкой мыши узел 'Таблицы' и выберите 'Создать таблицу'). В этом упражнении мы воссоздадим таблицу, используя структуру другой таблицы. </p>
+
+    <p>В данном примере нам нужно, чтобы пользователь <tt>jim</tt> создал копию таблицы <tt>Departments</tt> в своей схеме, воссоздав таблицу из базы данных <tt>hr</tt>. Перед созданием таблицы будет необходимо отключиться от сервера и войти в систему как пользователь <tt>jim</tt>.</p>
+
+    <ol>
+        <li>Щелкните правой кнопкой мыши узел подключения <tt>OracleDB</tt> в окне Services (&quot;Службы&quot;) и выберите Disconnect (&quot;Отключить&quot;).</li>
+        <li>Щелкните правой кнопкой мыши узел подключения <tt>OracleDB</tt>, выберите Connect (&quot;Подключить&quot;) и войдите как <tt>jim</tt>.</li>
+        <li>Разверните узел Tables (&quot;Таблицы&quot;) под схемой HR и убедитесь, что только таблица <tt>Departments</tt> доступна пользователю <tt>jim</tt>.
+        <p>При создании пользователя <tt>jim</tt> право выполнения выбора было ограничено таблицей <tt>Departments</tt>.   </p>
+        <img alt="Структура таблицы Grab" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/hr-view.png"></li>
+        <li>Щелкните правой кнопкой мыши узел таблицы <tt>Departments</tt> и выберите Grab Structure (&quot;Копировать структуру&quot;).  Сохраните файл <tt>.grab</tt> у себя на диске.</li>
+        <li>Раверните схему <tt>JIM</tt>, щелкните правой кнопкой мыши узел <tt>Таблицы</tt> и выберите 'Повторно создать таблицу'. <br> Укажите на созданный файл <tt>.grab</tt>. <br> <img alt="Воссоздание таблицы в схеме другого пользователя" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/recreate.png"></li>
+        <li>Проверьте сценарий SQL, который будет использован для создания данной таблицы.  Нажмите кнопку &quot;ОК&quot;. <br> <img alt="Воссоздание таблицы в схеме другого пользователя" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/nametable.png"><br> При нажатии кнопки &quot;ОК&quot; новая таблица <tt>DEPARTMENTS</tt> будет создана и появится под узлом схемы <tt>JIM</tt>. При щелчке правой кнопкой мыши узла таблицы и выборе 'Просмотреть данные' будет видно, что таблица пустая. </li>
+    </ol>
+    <p>Если нужно скопировать данные из исходной таблицы <tt>Departments</tt> в новую таблицу, данные можно ввести вручную в редактор таблиц, либо выполнить сценарий  SQL для заполнения новой таблицы.</p>
+
+    <p><strong>Для ввода данных вручную выполните следующие действия.</strong></p>
+    <ol>
+        <li>Щелкните правой кнопкой мыши таблицу <tt>DEPARTMENTS</tt> в схеме <tt>JIM</tt> и выберите View Data (&quot;Просмотр данных&quot;).</li>
+        <li>Щелкните значок Insert Records (&quot;Вставить записи&quot;) на панели инструментов View Data (&quot;Просмотр данных&quot;), чтобы открыть окно вставления записей. <br> <img alt="значок &apos;Вставить записи&apos;" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/insert-rec.png"></li>
+        <li>Введите данные в поля для них. Нажмите кнопку &quot;ОК&quot;.
+            <p>Например, можно ввести следующие значения из исходной таблицы <tt>DEPARTMENTS</tt>.</p>
+            <table width="25%" >
+          <tr>
+            <th width="50%" class="tblheader" scope="col">Столбец</th>
+            <th width="50%" class="tblheader" scope="col">Значение</th>
+          </tr>
+          <tr>
+            <td class="tbltd1">DEPARTMENT_ID</td>
+            <td class="tbltd1">10</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">DEPARTMENT_NAME</td>
+            <td class="tbltd1">Администрирование</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">MANAGER_ID</td>
+            <td class="tbltd1">200</td>
+          </tr>
+          <tr>
+            <td class="tbltd1">LOCATION_ID</td>
+            <td class="tbltd1">1700</td>
+          </tr>
+        </table>
+        </li>
+    </ol>
+
+    <p><strong>Для заполнения страницы с помощью сценария SQL выполните следующие действия.</strong></p>
+    <ol>
+        <li>Щелкните правой кнопкой мыши таблицу <tt>DEPARTMENTS</tt> в схеме <tt>JIM</tt> и выберите Execute Command (&quot;Исполнить команду&quot;).</li>
+        <li>Введите сценарий на вкладке команд SQL. Нажмите кнопку Run (&quot;Выполнить&quot;) на панели инструментов.
+        <p>Следующий сценарий заполнит первую строку новой таблицы данными из исходной таблицы.</p>
+        <pre class="examplecode">INSERT INTO JIM.DEPARTMENTS (DEPARTMENT_ID, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID) VALUES (10, 'Administration', 200, 1700);</pre>
+        </li>
+    </ol>
+    <p class="tips">Извлечь этот сценарий SQL для заполнения таблицы из исходной таблицы можно посредством следующих действий.</p>
+    <ol>
+        <li>Щелкните правой кнопкой мыши таблицу <tt>DEPARTMENTS</tt> в схеме <tt>HR</tt> и выберите View Data (&quot;Просмотр данных&quot;).</li>
+        <li>Выберите все строки в окне 'Просмотреть данные', затем щелкните правой кнопкой мыши в таблице и выберите 'Показать сценарий SQL' для INSERT во всплывающем меню, чтобы открыть диалоговое окно 'Показать SQL', содержащее сценарий.
+        <p>После этого сценарий можно скопировать и модифицировать, насколько это необходимо, для вставки данных в новую таблицу.</p>
+        </li>
+    </ol>
+
+
+    <p>См. <a href="#tips">раздел советов</a> для получения дополнительных сведений о работе с редактором SQL.</p>
+
+
+    <h3><a name="altertable"></a>Работа с данными в таблице </h3>
+    <p>Для работы с табличными данными можно использовать редактор SQL в IDE NetBeans. Выполняя запросы SQL, можно добавлять, изменять и удалять данные, находящиеся в структурах таблицы. </p>
+    <p>В первую очередь создайте вторую таблицу под названием Locations в схеме <tt>jim</tt> (оставайтесь в системе как пользователь jim).  На этот раз мы просто выполним готовый к использованию файл SQL в среде IDE:</p>
+    <ol>
+        <li>Загрузите и сохраните файл <a href="https://netbeans.org/project_downloads/samples/Samples/Java/locations.sql" target="_blank">locations.sql</a> в каталог <em>USER_HOME</em> на своем компьютере.
+        </li>
+        <li>Откройте окно Favorites (&quot;Избранное&quot;) среды IDE и найдите файл <tt>locations.sql</tt>.
+            <p class="tips">Чтобы открыть окно избранного, выберите Window (&quot;Окно&quot;) &gt; Favorites (&quot;Избранное&quot;) в главном меню (нажмите Ctrl-3). Каталог <em>USER_HOME</em> приводится в окне избранного по умолчанию.</p>
+        </li>
+        <li>Щелкните файл <tt>locations.sql</tt> правой кнопкой мыши и выберите Run File (&quot;Запустить файл&quot;).<br> <img alt="значок &apos;Вставить записи&apos;" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/run-file.png">
+        <p class="notes"><strong>Примечание.</strong> Если зарегистрировано более одного соединения с базой данных в IDE, в IDE может отобразиться запрос на выбор правильного подключения.</p></li>
+        <li>В окне 'Службы' щелкните правой кнопкой мыши узел 'Таблицы' и выберите 'Обновить' во всплывающем меню.
+            <p>Можно будет увидеть, что таблица <tt>Locations</tt> с данными была добавлена к схеме <tt>JIM</tt>.</p>
+        <img alt="Вторая таблица добавлена к схеме jim" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/second-table.png"></li>
+        <li>Щелкните правой кнопкой мыши узел таблицы Locations и выберите View Data (&quot;Просмотр данных&quot;) для просмотра содержимого таблицы.  Можно будет увидеть содержимое таблицы Locations.<br> В этом окне просмотра можно напрямую вставлять новые записи и изменять существующие данные. <br> <img alt="Просмотр всех данных в таблице Locations" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/view-data1.png"></li>
+        <li>Далее мы выполним запрос для просмотра информации из двух таблиц Departments и Locations.
+            <p>В этом случае мы используем простое &quot;естественное слияние&quot;, поскольку столбец &quot;location_id&quot; обеих таблиц одинаков и содержит значения одного типа данных. Этот тип слияния выбирает только строки, имеющие одинаковые значения в соответствующем столбце location_id.</p>
+            <p>Откройте окно команд SQL (щелкните правой кнопкой мыши узел <tt>Таблицы</tt> в схеме <tt>JIM</tt> и выберите 'Выполнить команду'), введите следующий оператор SQL и щелкните значок 'Запустить SQL'.</p>
+            <pre class="examplecode">
+SELECT DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID, STREET_ADDRESS, POSTAL_CODE, CITY, STATE_PROVINCE 
+FROM departments NATURAL JOIN locations
+ORDER by DEPARTMENT_NAME;</pre>
+            <p>Данный запрос SQL возвращает строки из таблицы Departments, location_id которых равен значениям в соответствующем столбце таблицы Locations. Результаты упорядочены по именам в таблице Departments. Обратите внимание, что новые записи нельзя вставлять напрямую в результаты данного запроса, как это можно делать в представлении одной таблицы. </p>
+            <img alt="Объединение данных из нескольких местоположений" class="margin-around" src="../../../images_www/articles/73/ide/oracle-db/join.png"><br>
+            <p class="tips">Запрос присоединения SQL как представление (щелкните правой кнопкой мыши узел 'Представление' и выберите 'Создать представление') и запустите его в удобное время. Но для этого пользователь базы данных должен иметь право на создание представлений, которого нет у созданного в нашем примере пользователя. Можно войти в систему, используя системную учетную запись, предоставить  <tt>jim</tt> право на создание представлений (с помощью следующего оператора SQL: &quot;grant create view to jim;&quot;) и попробовать создать собственное представление. </p>
+        </li>
+<!-- <li>Now we need to add a foreign key.<br>
+  <br>
+ALTER TABLE jim.departments<br>
+ADD CONSTRAINT location_fk FOREIGN KEY (location_id)<br>
+REFERENCES jim.locations (location_id) enable;</li> -->
+    </ol>
+    
+    
+    <div class="feedback-box float-left" style="width: 723px;">
+        
+        <h3><a name="tips"></a>Советы по работе в редакторе SQL IDE NetBeans</h3>
+        <p>Если этот учебный курс последовательно изучался, то функции редактора SQL IDE NetBeans уже использовались. Здесь приведен список других функций редактор SQL IDE NetBeans, которые могут оказаться полезными для пользователей. 
+        <ol>
+            <li><strong>Представление графического интерфейса таблиц баз данных</strong>. Если щелкнуть правой кнопкой мыши узел таблицы в окне 'Службы' и выбрать 'Просмотреть данные', IDE отображает визуальное представление таблицы и ее данных (как показано на рисунке выше). Данные таблицы также можно добавлять, изменять и удалять прямо в этом представлении.
+                <ul>
+                <li>Чтобы добавить запись, щелкните значок 'Вставить записи' <img alt="значок &apos;Вставить записи&apos;" src="../../../images_www/articles/73/ide/oracle-db/row-add.png"> и вставьте новые данные в открывшееся окно 'Вставка записей'. Нажмите кнопку Show SQL (&quot;Показать SQL&quot;), чтобы просмотреть код SQL для данной операции. Таблица будет автоматически обновлена со включением новых записей. </li>
+                <li>Чтобы изменить запись, дважды щелкните внутри любой ячейки в представлении графического интерфейса таблицы и введите новое значение. Пока изменение не зафиксировано, измененный текст выделяется зеленым цветом. Для фиксации изменений щелкните значок 'Фиксировать изменения' <img alt="значок &apos;Фиксировать изменения&apos;" height="16" src="../../../images_www/articles/73/ide/oracle-db/row-commit.png" width="16">. Для отмены изменений щелкните значок 'Отменить правки' <img alt="значок &apos;Отменить правки&apos;" height="16" src="../../../images_www/articles/73/ide/oracle-db/row-commit.png" width="16"> icon.</li>
+                <li>Чтобы удалить строку, выделите ее и щелкните значок 'Удалить выбранные записи' <img alt="Значок &apos;Удалить выбранные записи&apos; " height="16" src="../../../images_www/articles/73/ide/oracle-db/row-commit.png" width="16">. </li>
+            </ul>
+            <li><strong>Сохранение предыдущих вкладок</strong> Щелкните значок 'Сохранить предыдущие вкладки' <img alt="Значок &apos;Сохранить предыдущие вкладки&apos;" height="16" src="../../../images_www/articles/73/ide/oracle-db/keepoldresulttabs.png" width="16"> на панели инструментов редактора SQL, чтобы держать окна с результатами предыдущих запросов открытыми. Это может быть полезно, если необходимо сравнить результаты нескольких запросов. </li>
+            <li><strong>Журнал SQL</strong> (Ctrl-Alt-Shift-H).  С помощью значка 'Хронология SQL' <img alt="Значок &apos;Хронология SQL&apos;" height="16" src="../../../images_www/articles/73/ide/oracle-db/sql-history.png" width="16"> на панели инструментов редактора SQL можно просмотреть все операторы SQL, запущенные для каждого из соединений с базой данных. Выберите подключение из раскрывающегося списка, найдите необходимый оператор SQL и щелкните Insert (&quot;Вставить&quot;) для помещения оператора в окно команд SQL. </li>
+            <li><strong>Список подключений</strong>.  При наличии нескольких подключений к базам данных и необходимости быстро переключаться между ними в редакторе SQL используйте раскрывающийся список Connections (&quot;Подключения&quot;). </li>
+            <li><strong>Выполнение операторов SQL</strong>.  Для выполнения всего оператора, в настоящее время находящегося в окне 'Команды SQL' щелкните значок 'Выполнить SQL' <img alt="Значок &apos;Выполните SQL&apos;" height="16" src="../../../images_www/articles/73/ide/oracle-db/runsql.png" width="16">. Если необходимо запустить только часть SQL, выберите ее в окне 'Команды SQL', щелкните правой кнопкой мыши выбранное и выберите 'Выполнить выбранное'. В данном случае будет выполнена только выбранная часть. </li>
+        </ol>
+    </div>
+
+    </div>
+
+
+  <br style="clear: left">
+  <h2><a name="oci8" /></a>OCI 8 и IDE NetBeans для PHP </h2>
+  <p>Можно использовать расширение OCI 8 PHP и IDE NetBeans для PHP для записи кода PHP, который используется для взаимодействия с базой данных Oracle. Использование IDE NetBeans для PHP и базы данных Oracle</p>
+  <ol>
+    <li>Настройте среду PHP, как описано в разделе &quot;Настройка среды для разработки на языке PHP&quot; <a href="../../trails/php.html">Учебной карты по PHP</a>.  Обратите внимание, что IDE NetBeans поддерживает только PHP 5.2 или 5.3.</li>
+    <li>Откройте свой файл <tt>php.ini</tt> в редакторе. Убедитесь, что свойство <tt>extension_dir</tt> настроено на каталог расширений PHP. Обычно этим каталогом является <tt>PHP_HOME/ext</tt>.  Например, если PHP 5.2.9 установлен в корневой каталог <tt>C:</tt>, настройкой <tt>extension_dir</tt> должно быть <tt>extension_dir=&quot;C:\php-5.2.9\ext&quot;</tt>.</li>
+    <li>Найдите строку <tt>extension=php_oci8_11g.dll</tt> (для Oracle 11g) или <tt>extension=php_oci8.dll</tt> (для Oracle 10.2 или XE) и снимите с нее комментарий.  В каждый конкретный момент времени может быть включено лишь одно из этих расширений.
+<p class="alert"><strong>Важно!</strong> Если в <tt>php.ini</tt> нет такой строки, поищите в папке расширений файл расширения OCI 8. В случае отсутствия файла расширения OCI 8 в папке расширений информацию о загрузке и установке OCI 8 можно найти в документе <a href="http://www.oracle.com/technetwork/articles/technote-php-instant-084410.html" target="_blank">Installing PHP and the Oracle Instant Client for Linux and Windows (&quot;Установка PHP и Oracle Instant Client для Linux и Windows&quot;)</a>.
+    <li>Перезапустите Apache.  (Пользователям Windows следует перезагрузить компьютер). </li>
+    <li>Выполните <tt>phpinfo()</tt>.  Если OCI 8 успешно включен, раздел OCI 8 появится в выводе <tt>phpinfo()</tt>.</li>
+  </ol>
+  <p>Дополнительные сведения о включении OCI 8 и, в особенности, об использовании OCI 8 с удаленным сервером Oracle DB приведены в документе <a href="http://www.oracle.com/technetwork/articles/technote-php-instant-084410.html" target="_blank">Installing PHP and the Oracle Instant Client for Linux and Windows (&quot;Установка PHP и Oracle Instant Client для Linux и Windows&quot;)</a>.</p>
+  <p>Если включена поддержка OCI 8, IDE NetBeans для PHP получает доступ к этому расширению для завершения кода и отладки.</p>
+  <p><img alt="Окно редактора с параметрами автозавершения кода OCI 8" border="1" class="margin-around" height="130" src="../../../images_www/articles/73/ide/oracle-db/oci-cc.png" width="401"></p>
+  <h2><a name="oci"></a>Использование драйвера JDBC OCI с IDE NetBeans</h2>
+  <p>Пакеты драйверов OCI доступны в том же файле JAR, что и драйвер JDBC Thin (<tt>ojdbc6.jar</tt>). Выбор драйвера, который следует использовать, зависит от интерфейса: <tt>oracle.jdbc.OracleDriver</tt> для драйвера Thin и <tt>oracle.jdbc.driver.OracleDriver</tt> для драйвера OCI. Чтобы использовать драйвер OCI, необходимо также установить Oracle Database Instant Client, поскольку он содержит все библиотеки, необходимые драйверу OCI для связи с базой данных. </p>
+  <p><strong>Соединение с базой данных Oracle из IDE NetBeans с помощью драйвера OCI Oracle:</strong> </p>
+  <ol>
+    <li><a href="http://www.oracle.com/technetwork/database/features/instant-client/index-100365.html" target="_blank">Загрузите</a> &quot;Базовый&quot; пакет Oracle Database Instant Client для своей платформы.  Выполните инструкции по установке на <a href="http://www.oracle.com/technetwork/database/features/instant-client/index-100365.html" target="_blank">данной странице</a>. </li>
+    <li>В окне 'Службы' в IDE щелкните правой кнопкой мыши узел 'Базы данных' и выберите 'Создать подключение'.</li>
+    <li>В действии Locate Driver (&quot;Обнаружение драйвера&quot;) выберите OCI Oracle, нажмите кнопку Add (&quot;Добавить&quot;) и укажите файл <tt>ojdbc6.jar</tt>. </li>
+    <li>В диалоговом окне Customize Connection (&quot;Настроить подключение&quot;) предоставьте сведения о подключении: IP-адрес, порт, SID, имя пользователя и пароль.<br> Обратите внимание, что URL-адреса JDBC для драйверов OCI и Thin различаются. <br> <img alt="Окно редактора с параметрами автозавершения кода OCI 8" border="1" class="margin-around" height="467" src="../../../images_www/articles/73/ide/oracle-db/oci-connection.png" width="358"><br>
+</li>
+  </ol>
+  <h2><a id="troubleshoot" name="troubleshoot"></a>Устранение проблем</h2>
+<p>В приведенных ниже советах по устранению неполадок описаны лишь некоторые из встреченных исключений. Если вы не нашли ответа на свой вопрос, выполните поиск самостоятельно или воспользуйтесь ссылкой "Отправить отзыв об этом учебном курсе" и направьте нам свои комментарии и предложения. </p>
+<ul>
+<li>
+Встречена ошибка следующего типа:<br>
+ <pre class="examplecode" style="width: 700px">Shutting down v3 due to startup exception : No free port within range:
+>> 8080=com.sun.enterprise.v3.services.impl.monitor.MonitorableSelectorHandler@7dedad</pre>
+Это вызвано тем, что как сервер приложений GlassFish, так и Oracle Database используют порт 8080.  Если нужно использовать оба приложения одновременно, следует изменить этот порт по умолчанию для одного из них. Чтобы сбросить порт базы данных Oracle по умолчанию, можно использовать следующую команду:
+<pre>CONNECT SYSTEM/password<br>EXEC DBMS_XDB.SETHTTPPORT(&lt;new port number&gt;);</pre> 
+</li>
+  <li>Получена следующая ошибка:<br>
+    <pre class="examplecode" style="width: 700px">Listener refused the connection with the following error: ORA-12505, TNS:listener does not currently know of SID given in connect descriptor.</pre>
+    Это происходит, когда идентификатор службы (SID) экземпляра базы данных, переданный дескриптором подключения, неизвестен прослушивающему процессу. Такое исключение может быть вызвано рядом причин. Например, база данных Oracle может не работать (простейший случай). Либо SID может быть неверен или неизвестен прослушивателю. Если использовать SID по умолчанию (например, SID по умолчанию для базы данных Oracle Express Edition &ndash; XE), эта проблема маловероятна. SID входит в части CONNECT DATA файла <tt>tnsnames.ora</tt> (на компьютере Windows этот файл расположен по адресу <tt>%ORACLE_HOME%\network\admin\tnsnames.ora</tt>).  </li>
+  <li>Получена следующая ошибка: <br>
+  <pre class="examplecode" style="width: 700px">ORA-12705: Cannot access NLS data files or invalid environment specified.</pre>
+  </li>
+</ul>
+<p>Как правило, это означает, что переменная среды NLS_LANG содержит недопустимое значение языка, территории или набора символов. Если это так, недопустимые настройки NLS_LANG следует отключить на уровне операционной системы. В случае Windows, переименуйте подключ NLS_LANG в реестре Windows, расположенный в \HKEY_LOCAL_MACHINE\SOFTWARE\ORACLE.  В случае Linux/Unix, выполните команду &quot;unset NLS_LANG&quot;.</p>
+<div class="feedback-box">
+    <a href="/about/contact_form.html?to=3&subject=Feedback:%20Connecting%20to%20Oracle%20Database%20from%20NetBeans%20IDE">Мы ждем ваших отзывов</a></div>
+
+<br style="clear:both;">
+
+<a name="seeAlso"></a>
+<h2>Дополнительные сведения</h2>
+
+<p>Более подробные сведения об администрировании и использовании базы данных Oracle доступны в соответствующей документации по Oracle. Далее приведен краткий список наиболее часто используемой документации.  </p>
+
+<ul>
+    <li><a href="http://download.oracle.com/docs/cd/E11882_01/server.112/e17118/toc.htm" target="_blank">Oracle Database SQL Reference (&quot;Справка по SQL для Oracle Database&quot;)</a>.  Полное описание инструкций SQL, используемых для обработки информации в Oracle Database. </li>
+    <li><a href="http://download.oracle.com/docs/cd/E11882_01/network.112/e16543/toc.htm" target="_blank">Oracle Database Security Guide (&quot;Руководство по безопасности Oracle Database&quot;)</a>.  показаны и объяснены основные концепции, используемые для управления базой данных Oracle Database. </li>
+    <li>Руководство по <a href="http://st-curriculum.oracle.com/tutorial/DBXETutorial/index.htm" target="_blank">Oracle Database 10<em>g</em> Express Edition</a>.  Быстрое, но подробное введение в работу с базой данных Oracle XE. </li>
+    <li><a href="http://www.oracle.com/technetwork/articles/technote-php-instant-084410.html">Installing PHP and the Oracle Instant Client for Linux and Windows (&quot;Установка PHP и Oracle Instant Client для Linux и Windows&quot;)</a>.  Статья с простыми практическими указаниями по установке PHP и Oracle Instant Client. </li>
+</ul>
+
+<p>Дополнительные сведения о работе с другими базами данных в IDE NetBeans см.</p>
+<ul>
+  <li><a href="java-db.html">Работа с базой данных Java DB (Derby)</a> </li>
+  <li><a href="mysql.html">Подключение к базе данных MySQL</a></li>
+  <li><a href="../web/mysql-webapp.html">Создание простого веб-приложения, использующего базу данных MySQL</a></li>
+</ul>
+</body>
+</html>

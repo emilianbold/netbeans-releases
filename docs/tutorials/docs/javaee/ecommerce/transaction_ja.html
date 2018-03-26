@@ -1,0 +1,1105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<!--
+Copyright (c) 2010, 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+-->
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>The NetBeans Eコマース　チュートリアル - トランザクションビジネスロジックの統合</title>
+<meta name="author" content="&#116;&#114;&#111;&#121;&#46;&#103;&#105;&#117;&#110;&#105;&#112;&#101;&#114;&#111; &#x40; &#115;&#117;&#110;&#46;&#99;&#111;&#109; ">
+<meta name="description" content="This tutorial unit demonstrates how to implement transactional logic using EJB 3.">
+<meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce, EJB 3, Enterprise JavaBeans,
+            JPA, Java Persistence, persistence provider, Eclipselink">
+
+<link rel="SHORTCUT ICON" href="/images_www/favicon.ico">
+<link rel="stylesheet" type="text/css" href="/netbeans.css" media="screen">
+<script type="text/javascript" src="/images_www/js/jquery-1.3.2.min.js"></script>
+<script src="/images_www/js/lang-pulldown.js" type="text/javascript"></script>
+<script src="/images_www/js/switcher.js" type="text/javascript"></script>
+<script src="/images_www/js/companion-projects.js" type="text/javascript"></script>
+<script language="JavaScript" type="text/javascript">
+ <!--
+ var username="guest";
+ //-->
+ </script>
+<script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script><link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+<link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+</head>
+	<body class="blue-bg"><div style="background-color:white;"><div class="f-page-auto-cell" id="doc" >
+
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>NetBeans　Eコマース チュートリアル－トランザクションビジネスロジックの統合</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>チュートリアルの内容</h4>
+
+                <ol>
+                    <li><a href="intro_ja.html">はじめに</a></li>
+                    <li><a href="design_ja.html">アプリケーションの設計</a></li>
+                    <li><a href="setup-dev-environ_ja.html">開発環境の設定</a></li>
+                    <li><a href="data-model_ja.html">データモデルの設計</a></li>
+                    <li><a href="page-views-controller_ja.html">ページビューとコントローラサーブレットの準備</a></li>
+                    <li><a href="connect-db_ja.html">データベースへのアプリケーションの接続</a></li>
+                    <li><a href="entity-session_ja.html">エンティティクラスとセッションBeanの追加</a></li>
+                    <li><a href="manage-sessions_ja.html">セッションの管理</a></li>
+
+                    <li><strong>トランザクションビジネスロジックの統合</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#overview">トランザクションの概要</a></li>
+                            <li><a href="#projSnapshot">プロジェクトスナップショットを確認する</a></li>
+                            <li><a href="#orderManager"><code>OrderManager</code> EJB を作成する</a></li>
+                            <li><a href="#requestParam">リクエストパラメータを処理する</a></li>
+                            <li><a href="#placeOrder"><code>placeOrder</code> と Helper Methods を実装する</a></li>
+                            <li><a href="#entityManager">JPA の EntityManager を利用する</a></li>
+                            <li><a href="#persistenceContext">永続性コンテキストとデータベースを同期させる</a></li>
+                            <li><a href="#transaction">トランザクションプログラムをセットアップする</a></li>
+                            <li><a href="#validate">ユーザー入力を検証する</a></li>
+                            <li><a href="#seeAlso">関連参照</a></li>
+                        </ul></li>
+
+                    <li><a href="language_ja.html">言語サポートの追加</a></li>
+                    <li><a href="security.html">アプリケーションの保護</a></li>
+                    <li><a href="test-profile.html">アプリケーションの負荷テスト</a></li>
+                    <li><a href="conclusion_ja.html">まとめ</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>この単元の目的は、Webリクエストからデータを収集し、それをバックエンドのデータベースに書き込む（EJBとJPAの技術によって提供された）オブジェクトリレーショナルマッピング（ ORM）機能の使い方をデモすることです。特に興味深いのは、 <em>container-managed</em> (コンテナ管理) トランザクション（ <a href="entity-session.html#gf-java-ee-container">GlassFish v3のJava EEのコンテナ図</a>を参照）のための EJB サポートです。いくつかの非侵入型の注釈を適用することにより、EJBクラスをトランザクションマネージャに変換することができます、それによってデータベースに含まれているデータの整合性を確保します。言い換えれば、トランザクションマネージャは、一つの作業単位（一つの仕事の固まり）として、データベースへの複数書き込みアクションを処理します。これは、作業単位がそれをまとめて処理するか、または、もし処理中のある時点でエラーが発生したら、それまでのデータベースへの変更をすべて処理前の状態に戻し（ロールバックし）ます。
+        </p>
+
+        <p> <code>AffableBean</code> アプリケーションのコンテキスト内で、この単元はチェックアウトフォームからデータが受信された時の customer order (顧客注文)の処理に焦点を当てています。あなたは <code>OrderManager</code> EJB を作成して、セッション <code>cart</code> オブジェクトと共にチェックアウトのフォームデータを処理します。 <code>OrderManager</code> は <code>affablebean</code> データベースへの複数の書き込みアクションの入ったトランザクションを実行します。いずれかのアクションが失敗した場合、トランザクションはロールバックされます。
+        </p>
+
+        <p>あなたはこのチュートリアルで構築するアプリケーションのライブデモを見ることができます： <a href="http://services.netbeans.org/AffableBean/" target="_blank">NetBeans E コマース チュートリアル デモアプリケーション</a>。
+        </p>
+
+        <br style="clear:left;">
+
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java バンドル版, 6.8 または 6.9</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp" target="_blank">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">バージョン 6</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish server</td>
+                    <td class="tbltd1">v3または Open Source Edition 3.0.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://dev.mysql.com/downloads/mysql/" target="_blank">MySQL データベースサーバー</a></td>
+                    <td class="tbltd1">バージョン 5.1</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot7.zip">AffableBean
+                        プロジェクト</a></td>
+                    <td class="tbltd1">スナップショット 7</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong class="notes">メモ：</strong></p>
+
+        <ul>
+            <li>NetBeans IDE を正常に実行するには Java 開発キット（ JDK）が必要です。上記のリソースが全くない場合、あなたは、JDK を最初にダウンロードしてインストールする必要があります。 
+            </li><p>
+
+            <li>NetBeans IDE Java バンドル版には、このチュートリアルで構築するアプリケーションで必要とされる Java Web と JAVA EE 技術が入っています。 
+            </li><p>
+
+            <li>NetBeans IDE Java バンドル版には、また、このチュートリアルに必要な GlassFish サーバーが入っています。あなたは <a href="https://glassfish.dev.java.net/public/downloadsindex.html" target="_blank">個別にGlassFishサーバーをダウンロード</a>できますが、NetBeans の提供するバージョンをダウンロードすれば、自動的に IDE に登録される利点があります。
+            </li><p>
+
+            <li>あなたは、以前の単元を完了することなく、このチュートリアルで単元を追うことができます。そうするには、<a href="setup.html">セットアップ手順</a>を参照してください、手順には、データベースを準備する方法と、 IDEと GlassFishとMySQL 間の接続を確立する方法について説明してあります。
+            </li><p>
+        </ul>
+
+
+        <br>
+        <h2 id="overview">トランザクションの概要</h2>
+
+        <p>顧客のショッピングカートに入っているアイテム(商品)、同様にチェックアウトフォームからのデータを処理するために、あなたは、<code>OrderManager</code> EJB を作成します。 <code>OrderManager</code> は 提供されたデータを使用して、データベースに以下の書き込みアクションを実行します：
+</p>
+
+        <ul style="margin: 5px 0 0 -.7em" class="toc">
+            <li>新しい <code>Customer</code> レコードが追加されます。</li><p>
+            <li>新しい <code>CustomerOrder</code> レコードが追加されます。</li><p>
+            <li>新しい <code>OrderedProduct</code> レコードは、<code>ShoppingCart</code> に入っているアイテム順に追加されます。</li><p>
+        </ul>
+
+        <p>我々は、<code>placeOrder</code> メソッドを作成してこれを実装します。このメソッドは３つの書き込みアクションを実行します。プライベートヘルパーメソッド、 <code>addCustomer</code>、  <code>addOrder</code>、および <code>addOrderedItems</code> を順次呼び出すことによって実行されます。また、3つのヘルパーメソッドをクラスに実装します。EJB コンテナ管理のトランザクションサービスを活用するには、２つのアノテーションだけが必要です。これらは：
+        </p>
+
+        <ul style="margin: 5px 0 0 -.7em" class="toc">
+            <li><a href="http://java.sun.com/javaee/6/docs/api/javax/ejb/TransactionManagement.html" target="_blank"><code>@TransactionManagement</code></a><code>(</code><a href="http://java.sun.com/javaee/6/docs/api/javax/ejb/TransactionManagementType.html"><code>TransactionManagementType</code></a>.<code><em>CONTAINER</em>)</code>:クラスで発生する全てのトランザクションがコンテナ管理されることを指示するために使われます。
+            </li><p>
+            <li><a href="http://java.sun.com/javaee/6/docs/api/javax/ejb/TransactionAttribute.html" target="_blank"><code>@TransactionAttribute</code></a><code>(</code><a href="http://java.sun.com/javaee/6/docs/api/javax/ejb/TransactionAttributeType.html"><code>TransactionAttributeType</code></a>.<code><em>REQUIRED</em>)</code>: 作成されるべき新しいトランザクションを指示するためのトランザクションを起動するメソッドで使われます。（まだ存在していない場合）。 
+            </li><p>
+        </ul>
+
+        <div class="indent" id="transactionDiagram">
+        <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/transaction-diagram.png"
+             alt="Diagram of transaction implemented in AffableBean" class="margin-around"
+             title="Several write actions are performed within a single transaction">
+        </div>
+
+        <p>我々はより大きなコンテキストの中にトランザクションを実装しているので、我々はそれをいくつかの簡単に消化しやすタスクに分けてこの課題に取り組みます。
+        </p>
+
+        <ul>
+            <li><a href="#projSnapshot">プロジェクトスナップショットを調べる</a></li><p>
+            <li><a href="#orderManager">OrderManager EJBを作成する</a></li><p>
+            <li><a href="#requestParam">リクエストパラメータを処理する</a></li><p>
+            <li><a href="#placeOrder"><code>placeOrder</code> とヘルパーメソッド を実装する</a></li><p>
+            <li><a href="#entityManager">JPA EntityManager を利用する</a></li><p>
+            <li><a href="#persistenceContext">データベースと永続性コンテキストを同期させる</a></li><p>
+            <li><a href="#transaction">トランザクションプログラムをセットアップする</a></li><p>
+        </ul>
+
+
+        <br>
+        <h2 id="projSnapshot">プロジェクトスナップショットを調べる</h2>
+
+この単元に関連付けられたプロジェクト スナップショットを調べることから始めます。 
+
+
+        <ol>
+            <li>IDEに、この単元用の<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot7.zip">プロジェクト スナップショット</a>を開きます。プロジェクトを開く(
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/open-project-btn.png"
+                alt="Open Project button"> ) ボタンををクリックして、ウィザードを使用し、お使いのコンピュータにプロジェクトをダウンロードした場所を指示します。あなたが<a href="manage-sessions.html">前の単元</a>から進んでいる場合 、注意して下さい。このプロジェクトのスナップショットは、前の単元の完了後のプロジェクトの状態と同一ですが、以下の例外があります： 
+                <p>
+
+                <ul style="margin: 5px 0 0 -.7em">
+                    <li><code>confirmation.jsp</code> ページが完全に実装されています。</li><p>
+                    <li> <code>affablebean.css</code> スタイルシートに <code>confirmation.jsp</code> ページを実装するための特有のルールが入っています。
+                    </li><p>
+                </ul></li><p>
+
+            <li>プロジェクトを実行 (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/run-project-btn.png"
+                alt="Run Project button"> )し、データベースとアプリケーションサーバを適切に構成していることを確認してください。 
+
+                <br><br>
+                <p class="alert">プロジェクトを実行した時、エラーを受け取った場合は、<a href="setup.html">セットアップ手順</a>を再び見ます。そこに「データベースを準備して、IDE、GlassFish 、MySQL 間の接続を確立する方法」が書かれています。
+                </p></li><p>
+
+            <li>ブラウザでアプリケーションの機能をテストします。具体的には、全ての <a href="design.html#business"> ビジネスプロセスフロー</a> をステップ実行します。チェックアウトのページから [ submit an order(注文を送信する) ] をクリックすると、現在の確認ページが以下のように表示されます： 
+
+                <br><br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/confirmation-page-start.png"
+                     alt="Confirmation page displayed in browser" class="margin-around b-all" style="width:688px"
+                     title="Confirmation page displays without any data relating to the processed order">
+
+                <br><br>
+               確認ページには、注文に関するデータは何も表示されません。実際、現在の状態で、アプリケーションはチェックアウトのフォームからのデータに何もしていません。この単元の終わりには、アプリケーションは顧客データを収集しそれを使って注文を処理しているでしょう。最終の状態では、アプリケーションは確認ページに処理した注文の要約を表示し、ユーザの <code>ShoppingCart（ショッピングカート）</code> を削除して、ユーザセッションを終了しているでしょう。  (<a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">スナップショット8</a>チェックアウトフォームが送信された時、リクエスト－レスポンスサイクルを完了する。)
+
+            </li><p>
+        </ol>
+
+
+        <br>
+        <h2 id="orderManager">OrderManager EJB を作成する</h2>
+
+        <ol>
+            <li> IDE ツールバーの [ New File(新規ファイル)] (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/new-file-btn.png"
+                alt="New File button"> ) ボタンをクリックします。（または Ctrl - n を押す、⌘ - n　Mac）。[New File(新規ファイル)] のウィザードで、[ Java EE カテゴリ] を選択し、次に [Session BeanセッションBean] を選択します。 
+                </li><p>
+
+            <li>[次へ]をクリック。[EJB Name]に [ <code>OrderManager</code> ] と入れ、Package(パッケージ) に [<code>session</code> (セッション)] 　をセット、他のデフォルト設定を受け入れます。 （ステートレスセッションBeanを作成します。ウィザードは Bean のインターフェイスを生成しません。 ） 
+
+                <br><br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/ejb-wizard.png"
+                     alt="Session Bean wizard" class="margin-around b-all"
+                     title="Create a stateless EJB session bean using the Session Bean wizard"></li><p>
+
+            <li>[Finish] をクリックします。新しい <code>OrderManager</code> クラスが生成され、エディタに開きます。 
+            </li><p>
+        </ol>
+
+        <br>
+        <h2 id="requestParam">リクエストパラメータを処理する</h2>
+
+        <ol>
+            <li>プロジェクトの <code>ControllerServlet</code> を開きます。（プロジェクトウィンドウで ControllerServlet を選ぶか、またはAlt - Shift - O（Ctrl - Shift - O  Mac）を押し [Go to File] ダイアログを使います。）
+            </li><p>
+
+            <li><code>/purchase</code>リクエストが実装されいる doPost メソッド内のエリアに行きます（１９０行目）。
+
+                <br><br>
+                <p class="tips">Ctrl - G を押し、[Go To Line] ダイアログを使用します。</p>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/go-to-line.png"
+                     alt="Go to Line dialog" class="margin-around b-all"
+                     title="Use the Go to Line dialog to quickly navigate to a specific line"></li><p>
+
+            <li>送信されたチェックアウトフォームからパラメータを抽出するコードを実装します。「<code>TODO: Implement purchase action</code>」コメントを探し、それを削除し、以下を追加します： 
+            <p>
+
+                <pre class="examplecode">
+// if purchase action is called
+} else if (userPath.equals(&quot;/purchase&quot;)) {
+
+    <strong>if (cart != null) {
+
+        // extract user data from request
+        String name = request.getParameter(&quot;name&quot;);
+        String email = request.getParameter(&quot;email&quot;);
+        String phone = request.getParameter(&quot;phone&quot;);
+        String address = request.getParameter(&quot;address&quot;);
+        String cityRegion = request.getParameter(&quot;cityRegion&quot;);
+        String ccNumber = request.getParameter(&quot;creditcard&quot;);
+    }</strong>
+
+    userPath = &quot;/confirmation&quot;;
+}</pre></li><p>
+        </ol>
+
+
+        <br>
+        <h2 id="placeOrder">placeOrder とヘルパーメソッドの実装</h2>
+
+        <ol>
+            <li> <code>ControllerServlet</code> で、<code>OrderManager</code> EJB への参照を追加します。そのクラスの先頭にスクロールし、すでにリストされている session facade EJB（セッションファサード EJB）の下に参照を追加します。
+            <p>
+
+                <pre class="examplecode">
+public class ControllerServlet extends HttpServlet {
+
+    private String userPath;
+    private String surcharge;
+    private ShoppingCart cart;
+
+    @EJB
+    private CategoryFacade categoryFacade;
+    @EJB
+    private ProductFacade productFacade;
+    <strong>@EJB
+    private OrderManager orderManager;</strong></pre></li><p>
+
+            <li>Ctrl - Shift - I （⌘：- Shift  Mac）を押し、エディタが <code>session.OrderManager</code> にインポート文を追加できるようにします。
+            </li><p>
+
+            <li>抽出されたパラメータとセッション <code>cart</code> オブジェクトも同様に、<code>OrderManager.placeOrder</code> メソッドの引数として使います。次のコードを追加します：
+            <p>
+
+                <pre class="examplecode">
+// if purchase action is called
+} else if (userPath.equals(&quot;/purchase&quot;)) {
+
+    if (cart != null) {
+
+        // extract user data from request
+        String name = request.getParameter(&quot;name&quot;);
+        String email = request.getParameter(&quot;email&quot;);
+        String phone = request.getParameter(&quot;phone&quot;);
+        String address = request.getParameter(&quot;address&quot;);
+        String cityRegion = request.getParameter(&quot;cityRegion&quot;);
+        String ccNumber = request.getParameter(&quot;creditcard&quot;);
+
+        <strong>int orderId = orderManager.placeOrder(name, email, phone, address, cityRegion, ccNumber, cart);</strong>
+    }
+
+    userPath = &quot;/confirmation&quot;;
+}</pre>
+
+                私たちは、まだ <code>placeOrder</code> メソッドを作成していないことに注意してください。エディタがエラーフラグを立てている理由がこれです。あなたは左余白に表示されるチップを使用できます。チップは、あなたが適切なクラスの中にメソッドのシグネチャを生成することができるようにします。
+
+                <br><br>
+                <a href="../../../../images_www/articles/73/javaee/ecommerce/transaction/tool-tip-create-method.png"
+                   rel="lytebox" title="Use editor tips to generate method signatures in other classes">
+                   <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/tool-tip-create-method.png"
+                        alt="Tip displayed in editor" class="margin-around b-all" style="width:688px"
+                        title="Click to enlarge"></a></li><p>
+
+            <li>[ tip ] をクリックします。 IDE は <code>placeOrder</code> メソッド を <code>OrderManager</code> クラスの中に 生成します。
+            <p>
+
+                <pre class="examplecode">
+@Stateless
+public class OrderManager {
+
+    <strong>public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+        throw new UnsupportedOperationException(&quot;Not yet implemented&quot;);
+    }</strong>
+
+    ...
+}</pre>
+
+                <code>cart.ShoppingCart</code> の import 文も同様に自動的にファイルの先頭に挿入されます。 
+                </li><p>
+
+            <li>新しい <code>placeOrder</code> メソッドで、メソッドの引数を使用して、 ヘルパーメソッド（まだ存在しない）への呼び出しを行います。次のように入力してください： 
+            <p>
+
+                <pre class="examplecode">
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    <strong>Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+    CustomerOrder order = addOrder(customer, cart);
+    addOrderedItems(order, cart);</strong>
+}</pre>
+
+<p>
+                私たちは、データベースの制約のために特定の順序に従う必要があります。たとえば、 <code>Customer</code> レコードは、<code>CustomerOrder</code> の前に作成される必要があります。というのは、<code>CustomerOrder</code> は <code>Customer</code>を参照する必要があるからです。同様に <code>OrderedItem</code> レコードは既にある <code>CustomerOrder</code> への参照を必要とします。
+                </li><p>
+
+            <li>Ctrl-Shift-I （⌘-Shift  Macの場合）を押して、import を固定します。 <code>entity.Customer</code>  と <code>entity.CustomerOrder</code> のインポート文が、自動的にファイルの先頭に追加されます。 
+            </li><p>
+
+            <li>エディターのヒントを使い、<code>addCustomer</code>,
+                <code>addOrder</code>, と <code>addOrderedItems</code> 用のメソッドシグニチャをIDEに生成させます。３つのヒントを利用した後の、<code>OrderManager</code> クラスは以下のようになります。
+                <p>
+
+                <pre class="examplecode">
+@Stateless
+public class OrderManager {
+
+    public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+        Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+        CustomerOrder order = addOrder(customer, cart);
+        addOrderedItems(order, cart);
+    }
+
+    <strong>private Customer addCustomer(String name, String email, String phone, String address, String cityRegion, String ccNumber) {
+        throw new UnsupportedOperationException(&quot;Not yet implemented&quot;);
+    }
+
+    private CustomerOrder addOrder(Customer customer, ShoppingCart cart) {
+        throw new UnsupportedOperationException(&quot;Not yet implemented&quot;);
+    }
+
+    private void addOrderedItems(CustomerOrder order, ShoppingCart cart) {
+        throw new UnsupportedOperationException(&quot;Not yet implemented&quot;);
+    }</strong>
+
+}</pre>
+<p>
+            ここで留意すべきは、まだエディタにエラーフラグが立っていることです。そのメソッドに現在 return 文がないという事実によります。<code>placeOrder</code> シグニチャは、「そのメソッドは <code>int</code> を返す」ように指示しています。あとでデモしますが、それが成功裏に処理されると、そのメソッドは order ID を返します。それ以外の場合は、 <code>0</code> が返されます。
+            </li><p>
+
+            <li>次の return 文を入力します。
+            <p>
+
+                <pre class="examplecode">
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+    CustomerOrder order = addOrder(customer, cart);
+    addOrderedItems(order, cart);
+    <strong>return order.getId();</strong>
+}</pre>
+<p>
+            この段階で、<code>OrderManager</code> クラスのエラー はすべて解決されます。
+            </li><p>
+
+            <li>3つのヘルパーメソッドの実装から始めます。今のところ、各メソッドの入力パラメータに新しいエンティティオブジェクトを生成させるコードを単に追加するだけです。
+
+                <br><br>
+                <h4>addCustomer</h4>
+
+                <p>新しい <code>Customer</code> オブジェクトを作成しそのオブジェクトを返します。
+                </p>
+
+                <pre class="examplecode">
+private Customer addCustomer(String name, String email, String phone, String address, String cityRegion, String ccNumber) {
+
+    <strong>Customer customer = new Customer();
+    customer.setName(name);
+    customer.setEmail(email);
+    customer.setPhone(phone);
+    customer.setAddress(address);
+    customer.setCityRegion(cityRegion);
+    customer.setCcNumber(ccNumber);
+
+    return customer;</strong>
+}</pre>
+
+                <br><br>
+                <h4>addOrder</h4>
+
+                <p>新しい <code>CustomerOrder</code> オブジェクトを作成しそのオブジェクトを返します。 <code>java.util.Random</code> クラスを使いランダムな confirmation（確認）番号を生成します。
+                </p>
+
+                <pre class="examplecode">
+private CustomerOrder addOrder(Customer customer, ShoppingCart cart) {
+
+    <strong>// set up customer order
+    CustomerOrder order = new CustomerOrder();
+    order.setCustomer(customer);
+    order.setAmount(BigDecimal.valueOf(cart.getTotal()));
+
+    // create confirmation number
+    Random random = new Random();
+    int i = random.nextInt(999999999);
+    order.setConfirmationNumber(i);
+
+    return order;</strong>
+}</pre>
+
+                <br><br>
+                <h4>addOrderedItems</h4>
+
+                <p><code>ShoppingCart</code> を反復処理して、<code>OrderedProduct</code> を作成します。 <code>OrderedProduct</code> を生成するために、あなたは <code>OrderedProductPK</code> エンティティクラス使用することができます。インスタンス化した <code>OrderedProductPK</code> は、<code>OrderedProduct</code> コンストラクタに渡すことができます は、デモを以下に示します。
+                </p>
+
+                <pre class="examplecode">
+private void addOrderedItems(CustomerOrder order, ShoppingCart cart) {
+
+    <strong>List&lt;ShoppingCartItem&gt; items = cart.getItems();
+
+    // iterate through shopping cart and create OrderedProducts
+    for (ShoppingCartItem scItem : items) {
+
+        int productId = scItem.getProduct().getId();
+
+        // set up primary key object
+        OrderedProductPK orderedProductPK = new OrderedProductPK();
+        orderedProductPK.setCustomerOrderId(order.getId());
+        orderedProductPK.setProductId(productId);
+
+        // create ordered item using PK object
+        OrderedProduct orderedItem = new OrderedProduct(orderedProductPK);
+
+        // set quantity
+        orderedItem.setQuantity(scItem.getQuantity());
+    }</strong>
+}</pre></li><p>
+
+            <li>Ctrl-Shift-I（⌘-Shift　Macの場合）を押して、importを固定します。ダイアログが開き、インポートされるすべてのクラスを表示します。ダイアログに<code>java.util.List</code> が正しく示されていることに注意してください。
+
+                <br><br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/fix-all-imports.png"
+                     alt="Fix All Imports dialog" class="margin-around b-all"
+                     title="Press Ctrl-Shift-I to fix imports in a file"></li><p>
+
+            <li>[ OK ]をクリックします。必要なすべてのインポート文が追加され、そのクラスのコンパイラエラーがなくなります。
+            </li><p>
+        </ol>
+
+
+        <br>
+        <h2 id="entityManager">JPA EntityManager を利用する</h2>
+
+        <p><a href="entity-session.html">「エンティティクラスとセッションBeanを追加する」</a>で説明したように 、 <code>EntityManager</code> API は JPA に含まれており、データベースの永続性操作を実行する責任を持っています。<code>AffableBean</code> プロジェクトで、すべての EJB は <code>EntityManager</code> を採用しています。デモのために、エディタで任意のセッションファサード Bean を開きます。注意してください。そのクラスは  <code>@PersistenceContext</code> 注釈を使用して、コンテナ管理 <code>EntityManager</code> への依存関係と、それに関連した永続コンテキスト ( <code>persistence.xml</code> ファイルに指定されているように<code>AffableBeanPU</code> ）を表現します。たとえば、 <code>ProductFacade</code> Bean は次のようになります：
+        </p>
+
+        <pre class="examplecode" style="width:720px">
+@Stateless
+public class ProductFacade extends AbstractFacade&lt;Product&gt; {
+    <strong>@PersistenceContext(unitName = &quot;AffableBeanPU&quot;)
+    private EntityManager em;</strong>
+
+    protected EntityManager getEntityManager() {
+        return em;
+    }
+
+    ...
+
+    // manually created
+    public List&lt;Product&gt; findForCategory(Category category) {
+        return em.createQuery(&quot;SELECT p FROM Product p WHERE p.category = :category&quot;).
+               setParameter(&quot;category&quot;, category).getResultList();
+    }
+
+}</pre>
+
+        <p>データベースへ書き込みできるようにするために、<code>OrderManager</code> EJB は同様の手段を取る必要があります。<code>EntityManager</code> インスタンスで、そこで我々はヘルパーメソッド（<code>addCustomer</code>、<code>addOrder</code>、  <code>addOrderedItems</code>）を変更することができます。そして、ヘルパーメソッドが作成したエンティティオブジェクトがデータベースに書き込まれます。
+        </p>
+
+        <ol>
+            <li><code>OrderManager</code> で、<code>@PersistenceContext</code> 注釈を適用して、コンテナ管理 <code>EntityManager</code> と <code>AffableBeanPU</code> 永続コンテキストとの依存関係を表現します。また、 <code>EntityManager</code> インスタンスを宣言します。
+            <p>
+
+                <pre class="examplecode">
+@Stateless
+public class OrderManager {
+
+    <strong>@PersistenceContext(unitName = &quot;AffableBeanPU&quot;)
+    private EntityManager em;</strong>
+
+    ...
+}</pre></li><p>
+            <li>Ctrl-Shift-I（&#8984:-Shift-I　Macの場合）を押して、import を固定します。 <code>javax.persistence.EntityManager</code> と <code>javax.persistence.PersistenceContext</code> 用のインポート文がそのクラスの先頭に追加されます。
+            </li><p>
+
+            <li><code>EntityManager</code> を使用して、 データベースに書き込まれるエンティティオブジェクトをマークします。これは、 <code>EntityManager</code> API の <code>persist</code> メソッドを使用して達成されます。ヘルパーメソッドに次の変更をします。
+                <br><br>
+                
+                <h4>addCustomer</h4>
+
+                <pre class="examplecode" style="margin-top:0">
+private Customer addCustomer(String name, String email, String phone, String address, String cityRegion, String ccNumber) {
+
+    Customer customer = new Customer();
+    customer.setName(name);
+    customer.setEmail(email);
+    customer.setPhone(phone);
+    customer.setAddress(address);
+    customer.setCityRegion(cityRegion);
+    customer.setCcNumber(ccNumber);
+
+    <strong>em.persist(customer);</strong>
+    return customer;
+}</pre>
+
+                <br>
+                <h4>addOrder</h4>
+
+                <pre class="examplecode" style="margin-top:0">
+private CustomerOrder addOrder(Customer customer, ShoppingCart cart) {
+
+    // set up customer order
+    CustomerOrder order = new CustomerOrder();
+    order.setCustomer(customer);
+    order.setAmount(BigDecimal.valueOf(cart.getTotal()));
+
+    // create confirmation number
+    Random random = new Random();
+    int i = random.nextInt(999999999);
+    order.setConfirmationNumber(i);
+
+    <strong>em.persist(order);</strong>
+    return order;
+}</pre>
+
+                <br>
+                <h4>addOrderedItems</h4>
+
+                <pre class="examplecode" style="margin-top:0">
+private void addOrderedItems(CustomerOrder order, ShoppingCart cart) {
+
+    List&lt;ShoppingCartItem&gt; items = cart.getItems();
+
+    // iterate through shopping cart and create OrderedProducts
+    for (ShoppingCartItem scItem : items) {
+
+        int productId = scItem.getProduct().getId();
+
+        // set up primary key object
+        OrderedProductPK orderedProductPK = new OrderedProductPK();
+        orderedProductPK.setCustomerOrderId(order.getId());
+        orderedProductPK.setProductId(productId);
+
+        // create ordered item using PK object
+        OrderedProduct orderedItem = new OrderedProduct(orderedProductPK);
+
+        // set quantity
+        orderedItem.setQuantity(String.valueOf(scItem.getQuantity()));
+
+        <strong>em.persist(orderedItem);</strong>
+    }
+}</pre>
+
+            <code>EntityManager</code> の <code>persist</code>メソッドは、すぐにターゲットオブジェクトをデータベースへ書き込みしません。これをより正確に説明するために、 <code>persist</code> メソッドはオブジェクトを <em>persistence context</em> に配置します。つまり、 <code>EntityManager</code> は、そのエンティティオブジェクトがデータベースと同期されることを保障する責任を取ります。永続コンテキストを <code>EntityManager</code> で使われる中間物と考えて、オブジェクト 領域とリレーショナル領域の間でエンティティを渡します。（だから、オブジェクトリレーショナルマッピング'といいます）
+            <br><br>
+            
+            永続コンテキストのスコープ(範囲)は何ですか？　あなたが、IDE Javadoc 索引検索（ Shift-F1、Shift-fn Macで）を開いて、<a href="http://java.sun.com/javaee/6/docs/api/javax/persistence/PersistenceContext.html" target="_blank"><code>@PersistenceContext</code></a> 注釈の Javadoc ドキュメントを調べる場合、次のことに注意してください。タイプ要素は、「トランザクション永続化コンテキストか、または拡張された永続化コンテキストのどちらが使われるうべきかを指示する）」)ために使われます。<em>transaction-scoped</em> の永続コンテキストが、または拡張永続コンテキストが使用されます。<em>transaction-scoped</em> 永続コンテキストはトランザクションの開始時に作成され、トランザクション エンドで終了します。
+            そして、<em>extended</em> (拡張) 永続コンテキストは、ステートフルセッション Bean だけに適用されます、そして複数のトランザクションの橋渡しをします。 Javadoc ドキュメントはまた、私たちに「 <code>javax.persistence.PersistenceContextType.TRANSACTION</code> は <code>type</code> 要素のデフォルト値である。」と教えています。したがって、我々は、<code>EntityManager</code> がトランザクションスコープ永続コンテキストにオブジェクトを置くよう指示しませんでしたが、実際に、これがコンテナ管理 <code>EntityManager</code> が デフォルトでふるまう方法なのです。
+           </li><p>
+        </ol>
+
+
+        <br>
+        <h2 id="persistenceContext">永続性コンテキストをデータベースに同期させる</h2>
+
+        <p>この段階では、そのトランザクションまたはトランザクションがないと思うかもしれませんが、 <code>OrderManager</code> は正常にエンティティオブジェクトをデータベースに書くことができます。プロジェクトを実行し、どのようにcustomer orders(顧客の注文)が、現在、処理されるか見てください。
+        </p>
+
+        <ol>
+            <li>F6 キーを押し（ fn-F6  Macの場合）、プロジェクトを実行します。</li><p>
+
+            <li> <a href="design.html#business">ビジネスプロセスフロー</a>をステップ実行します。チェックアウトのページに到着する時に書き込み動作が実行されるてもSQLエラーを起こさないとあなたが知っているデータを確実に入力してください。（検証は後の単元で説明します。 ）たとえば、チェックアウトのフォームに次のように入力してください： 
+            <p>
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li><strong>name:</strong> <code>Hugo Reyes</code></li><p>
+                    <li><strong>email:</strong> <code><script language="JavaScript" type="text/javascript"><!--
+var user = "&#104;&#117;&#114;&#108;&#101;&#121;";
+var domain = "&#109;&#114;&#99;&#108;&#117;&#99;&#107;&#46;&#99;&#111;&#109;";
+var at = "&#x40;";
+document.write(user + at + domain);
+//--></script><noscript>
+&#104;&#117;&#114;&#108;&#101;&#121;
+&#x40;
+&#109;&#114;&#99;&#108;&#117;&#99;&#107;&#46;&#99;&#111;&#109;
+</noscript></code></li><p>
+                    <li><strong>phone:</strong> <code>606252924</code></li><p>
+                    <li><strong>address:</strong> <code>Karlova 33</code></li><p>
+                    <li><strong>prague:</strong> <code>1</code></li><p>
+                    <li><strong>credit card number:</strong> <code>1111222233334444</code></li><p>
+                </ul>
+
+                <p class="tips">以後の手順では、IDE の出力ウィンドウのサーバーログを調べます。チェックアウトフォームを送信する前に、出力ウィンドウを開いてサーバーのログをクリアします。あなたはサーバーログを右クリックして[ Clear クリア] (Ctrl-L; &#8984;-L  Mac)を選択することでできます。
+                </p></li><p>
+
+            <li>['submit purchase' (購入送信)] ボタンををクリックします。サーバーは HTTP ステータス500 メッセージを返します。 
+                <br><br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/gf-error-report.png"
+                     alt="Browser window displaying HTTP status 500 message" class="margin-around b-all"
+                     title="Server responds with an HTTP status 500 message" style="width:688px"></li><p>
+
+            <li>DEにスイッチして、サーバーログを調べます。サーバーログは、[ GlassFish サーバー]タブの下の[Output(出力)ウィンドウ]（Ctrl-4 、&#8984;-4  Macの場合）にあります。あなたは次のテキストを見つけます。
+            <p>
+
+                <pre class="examplecode">WARNING: A system exception occurred during an invocation on EJB OrderManager method
+public int session.OrderManager.placeOrder(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,cart.ShoppingCart)
+javax.ejb.EJBException
+...
+Caused by: java.lang.NullPointerException
+        <u>at session.OrderManager.addOrderedItems(OrderManager.java:75)</u>
+        <u>at session.OrderManager.placeOrder(OrderManager.java:33)</u></pre>
+
+                <p class="tips">出力ウィンドウを最大化するには、Shift + Esc キーを押します。
+                </p>
+
+                サーバーログに表示された下線は、エラーが発生したソースファイルの該当行への直接リンクです。
+                </li><p>
+
+            <li><code>session.OrderManager.addOrderedItems</code> リンクをクリックします。エディタは例外を引き起こしている行を表示します。 
+
+                <br><br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/null-pointer-exception.png"
+                     alt="Editor displaying NullPointerException error" class="margin-around b-all"
+                     title="Click links in server output window to navigate directly to offending lines in source files">
+
+                <br><br>
+                なぜ、<code>order.getId</code> メソッドが<code>null</code>を返したかを理解するために、どのようなコードが実際に実行されようとしているか考えてみましょう。 
+                
+                <code>getId</code> メソッドは、生成されたプロセスに現在存在する order の ID 取得を試みます。IDは自動でインクリメントされる主キーなので、データベースは、レコードが追加された時のみ自動的に値を生成します。これを行うもう一つの方法は、手動で永続コンテキストとデータベースとを同期させることです。これは <code>EntityManager</code> の <a href="http://java.sun.com/javaee/6/docs/api/javax/persistence/EntityManager.html#flush%28%29" target="_blank"><code>flush</code></a> メソッドを使用して行うことができます。
+                </li><p>
+
+            <li> <code>addOrderedItems</code> メソッドで、flush を呼び出して、データベースに永続化コンテキストを追加します。
+            <p>
+
+                <pre class="examplecode">
+private void addOrderedItems(CustomerOrder order, ShoppingCart cart) {
+
+    <strong>em.flush();</strong>
+
+    List&lt;ShoppingCartItem&gt; items = cart.getItems();
+
+    // iterate through shopping cart and create OrderedProducts
+    for (ShoppingCartItem scItem : items) {
+
+        int productId = scItem.getProduct().getId();
+
+        // set up primary key object
+        OrderedProductPK orderedProductPK = new OrderedProductPK();
+        orderedProductPK.setCustomerOrderId(order.getId());
+        orderedProductPK.setProductId(productId);
+
+        // create ordered item using PK object
+        OrderedProduct orderedItem = new OrderedProduct(orderedProductPK);
+
+        // set quantity
+        orderedItem.setQuantity(String.valueOf(scItem.getQuantity()));
+
+        em.persist(orderedItem);
+    }
+}</pre></li><p>
+
+            <li>プロジェクトに戻り、ビジネスプロセスの流れをステップ実行します。今回は、チェックアウトフォームを送信したとき、確認ページが表示されます。
+            </li><p>
+
+            <li>データベースに記録されている詳細を確認するために、IDE の [サービス] ウィンドウを開きます。（Ctrl-5; &#8984;-5  Macの場合) 。[ <code>affablebean</code> ] 接続ノードに行きます。もしノードが壊れて (
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/common/connection-broken.png"
+                alt="Broken connection node"> )表示される場合、ノードを右クリックし、[ Connect (接続)] を選択します。
+                </li><p>
+
+            <li>connection を展開します。そして <code>affablebean</code> データベースの <code>customer</code> テーブルに行きます。テーブルを右クリックし、[ View Data(データを表示)] を選択します。<code>customer</code>(顧客) テーブルがエディターにグラフィック表示されます。チェックアウトフォームに追加された customer(顧客)の詳細がテーブル内のレコードとして表示されます。
+
+                <br><br>
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/customer-record.png"
+                     alt="Graphical display of affablebean customer table" class="margin-around b-all" style="width:688px"
+                     title="View Data menu option performs a 'select *' query on the selected table">
+
+                <br><br>
+                このように、あなたも <code>customer_order</code> と <code>ordered_product</code> テーブルを調べることができ、データが記録されているかどうかを判断できます。 
+                </li><p>
+        </ol>
+
+
+        <br>
+        <h2 id="transaction">トランザクションプログラムをセットアップする</h2>
+
+        <p>トランザクションの主な機能はすべての操作が正常に実行されることを保障することです。もしそうでなければ、個々の操作のいずれも実行されなかったことにします。<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup>。以下の手順で、どのように <code>placeOrder</code> メソッドでなされる書き込み操作が単一のトランザクションとして扱われるかをデモします。
+        </p>
+
+        <ol>
+            <li>上記の <a href="#transactionDiagram">transaction diagram</a> (トランザクションの図)を参照します。二つのトランザクションに関係したアノテーションを <code>OrderManager</code> EJB に追加します。
+            <p>
+
+                <pre class="examplecode">
+@Stateless
+<strong>@TransactionManagement(TransactionManagementType.CONTAINER)</strong>
+public class OrderManager {
+
+    @PersistenceContext(unitName = &quot;AffableBeanPU&quot;)
+    private EntityManager em;
+
+    <strong>@TransactionAttribute(TransactionAttributeType.REQUIRED)</strong>
+    public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+        try {
+            ...</pre>
+            
+            <code>@TransactionManagement</code> アノテーション（注釈）は、<code>OrderManager</code> EJB で発生するすべてのトランザクションはコンテナ管理されるよう指示するために使います。 <code>placeOrder</code> メソッド上に配置 された <code>@TransactionAttribute</code> 注釈は、メソッドで発生するすべての操作はトランザクションの一部として扱われなければならないと指示します。 
+                <br><br>
+                
+                <p class="tips"><a href="http://jcp.org/aboutJava/communityprocess/final/jsr318/index.html" target="_blank">EJB 仕様</a>によると、 コンテナ管理トランザクションは、セッションBeanではデフォルトで有効になっています。さらに、あなたは上記の二つのアノテーションの Javadoc を調べると、<code>CONTAINER</code> はデフォルトの  <code>TransactionManagementType</code> であり、および <code>REQUIRED</code> はデフォルトの <code>TransactionAttributeType</code> であるとあなたは正しく指摘するかもしれません。言い換えれば、2つのアノテーションのどちらもあなたのコードを正常に実行するためには必要ではありません。しかしながら、しばしば明示的にソースにデフォルト設定を入れることは読みやすさを向上させるために有用です。
+                </p></li><p>
+
+            <li>現在、 <code>placeOrder</code> メソッドは処理した order の ID を返します。トランザクションが失敗し、注文が処理できない場合、メソッドは  '<code>0</code>' を返します。<code>try-catch</code> 句を使用します。 
+            <p>
+
+                <pre class="examplecode">
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    <strong>try {</strong>
+        Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+        CustomerOrder order = addOrder(customer, cart);
+        addOrderedItems(order, cart);
+        return order.getId();
+    <strong>} catch (Exception e) {
+        return 0;
+    }</strong></pre>
+
+            <div class="feedback-box float-left" style="width: 683px;">
+
+                <h3>NetBeans はコードテンプレートをサポートします</h3>
+
+                <p>エディタで仕事をする場合は、コードテンプレート用の IDE サポートを活用してください。達人になるためにコードテンプレートを使用して、最後にはより効率的かつ確実に仕事をすることができるようになります。
+                </p>
+
+                <br>
+                <p>たとえば、上記の手順で、<code>trycatch</code> テンプレートを適用することができます 。 '<code>trycatch</code>' と入力して Tab キーを押します。テンプレートがあなたのファイルに追加されます。
+                </p>
+
+                <div class="indent">
+                    <pre class="examplecode" style="width:630px">
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    <strong>try {
+
+    } catch (Exception e) {
+    }</strong>
+    Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+    CustomerOrder order = addOrder(customer, cart);
+    addOrderedItems(order, cart);
+    return order.getId();</pre></div>
+
+                <p>その後、あなたは、4つの既存行を <code>try</code> 節の中に移動することができます。そうするには、行を強調表示して、Alt-Shift （ Ctrl-Shift  Macの場合）キーを押しながら上矢印キーを押して移動します。終了するときは、Alt -  Shift キーを（Ctrl - Shift  Macの場合）を押しながらＦ を押し、コードをフォーマットします。
+                </p>
+
+                <div class="indent">
+                    <pre class="examplecode" style="width:630px">
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    try {
+        <strong>Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+        CustomerOrder order = addOrder(customer, cart);
+        addOrderedItems(order, cart);
+        return order.getId();</strong>
+    } catch (Exception e) {
+    }</pre></div>
+
+                <p>また、既存のコードテンプレートを表示し編集し、新しいテンプレートをＩＤＥに追加することもできます。 [ツール] 　>　 [オプション] （Macでは、 [NetBeans]　>　[Preference設定]）オプションを選び、オプションウィンドウを開きます。[Editor エディタ]　>　［Code Templates (コードテンプレート)］を選択します。
+                </p>
+
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/code-templates.png"
+                     class="margin-around b-all" title="View default code templates and define new templates in the Options window"
+                     alt="Options window - Code Templates" style="width:660px"/>
+
+                <br>
+                <p class="tips">もっと多くのテンプレートを見たいならば、キーボードショートカットカードを参照してください。キーボードショートカットカードは一般的に使用されるコードテンプレートのリストとキーボードショートカットを提供します。メインメニューから、[ Help (ヘルプ)]  >  [ Keyboard Shortcuts Card (キーボードショートカットカード)] を選択します。
+                </p>
+
+            </div>
+            <br style="clear: both;"/></li><p>
+
+            <li>次のコードを追加します。説明は後に示します。
+            <p>
+                <pre class="examplecode">
+@PersistenceContext(unitName = &quot;AffableBeanPU&quot;)
+private EntityManager em;
+<strong>@Resource
+private SessionContext context;</strong>
+
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public int placeOrder(String name, String email, String phone, String address, String cityRegion, String ccNumber, ShoppingCart cart) {
+
+    try {
+        Customer customer = addCustomer(name, email, phone, address, cityRegion, ccNumber);
+        CustomerOrder order = addOrder(customer, cart);
+        addOrderedItems(order, cart);
+        return order.getId();
+    } catch (Exception e) {
+        <strong>context.setRollbackOnly();</strong>
+        return 0;
+    }
+}</pre>
+
+                残念ながら、 <code>try</code>  句の中に3つのメソッドを配置すると、 実行時にそれらのうちの1つが失敗した場合、エンジンはすぐに <code>catch</code> 句にジャンプすることを意味します。このように、通常次に続くいくつかのロールバック操作をスキップします。
+
+                <br><br>
+                <p class="tips">あなたは、以前に追加した <code>em.flush()</code> 行をコメントアウトしてこれをテストすることができます 。この方法では、あなたは知っていると思いますが、最初の2つのメソッド (<code>addCustomer</code> と <code>addOrder</code>) が正常に処理され、３番目のメソッド（<code>addOrderedItems</code>）は失敗します。プロジェクトを実行し、ブラウザでチェックアウトフォームを送信します。トランザクションがロールバックしないしないため、顧客と注文のレコードがデータベースに書かれますが、注文したアイテムは書かれません。これはデータベースが破損している状況につながります。
+                </p>
+
+                この問題を解決するために、あなたは <code>catch</code> 句の中にロールバック用のトランザクションを明示的に設定します 。上記の <code>@Resource</code> 注釈は、EJBの現在の <code>SessionContext</code> のインスタンスをつかむために適用されます。<code>setRollbackOnly</code> メソッドを使用して、トランザクションがロールバックするようにマークします。
+                </li><p>
+
+            <li>プロジェクトを実行し、ビジネスプロセスフローをステップ実行します。order(注文)を送信したときに、IDE に戻りサーバーのログを調べます。出力が次のように表示されています： 
+                <p>
+
+                <a href="../../../../images_www/articles/73/javaee/ecommerce/transaction/transaction-output.png"
+                   rel="lytebox" title="Persistence provider output can be examined in the server log">
+                   <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/transaction-output.png"
+                        class="margin-around b-all" style="width:688px" alt="Output window - server output"
+                        title="Click to enlarge"></a>
+
+                <p class="tips">Shift - Esc キーを押し、[出力]ウィンドウを最大化します。</p>
+
+                上の画像に示すように、緑色のテキストは EclipseLink からの出力を示しています。 <a href="entity-session.html">エンティティクラスとセッション Bean を追加する</a>方法を思い出して、あなたは EclipseLink のログレベルを 永続ユニットで <code>FINEST</code> に設定します。この出力を調べることができるようになるには、永続化プロバイダがデータベースとやり取りする方法を理解することがキーになります。そうすれば、あなたのプロジェクトをデバッグする必要がある時に大きな助けになります。
+                </li><p>
+        </ol>
+
+        <p>これで <code>AffableBean</code> プロジェクトにトランザクションを正常に統合できました。 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">スナップショット8をダウンロード</a>して、チェックアウトフォームが送信される時リクエストとレスポンスのサイクルを行うコードを調べることができます。スナップショットは <code>OrderManager</code> に <code>getOrderDetails</code> メソッドを実装しています。これは、セットされた order にかかわるすべての詳細を収集します。トランザクションが成功した場合、 <code>ControllerServlet</code> は、order の詳細をリクエストスコープの中に置き、ユーザーの <code>cart</code> オブジェクトを破壊して、セッションを終了し、リクエストを確認ビューに転送します。トランザクションが失敗した場合、 <code>ControllerServlet</code> は、エラーフラグを立て、レスポンスをチェックアウトViewに転送し、ユーザーが再送信できるようにします。
+        </p>
+
+        <div class="indent">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/checkout-page.png"
+                 alt="Checkout page displayed with process failure message" class="margin-around b-all" style="width:708px"
+                 title="Upon transaction failure, the checkout page redisplays with error message">
+        </div>
+
+
+        <br>
+        <h2 id="validate">ユーザー入力を検証する</h2>
+
+        <p> <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">スナップショット8</a> には、チェックアウト フォームのクライアントとサーバー側の検証が実装されています。フォームの検証とは、フォームが処理される前にフォームが正しく記入されているかチェックする処理です。これは、無効な入力フィールドに意味のあるフィードバックを返すことによってユーザを支援するだけでなく、それはまた、処理やストレージに悪影響を与えるコンテンツを送信しようとする悪意のある試みを阻止するのに役立ちます。
+        </p>
+
+        <p>フォームを検証するための2つの主要メソッドは：サーバー側（この例では、 Javaを使用） とクライアント側の（ JavaScriptを使用）二つです。どちらの方法も通常必要不可欠で、快適なユーザーエクスペリエンスを提供するだけでなく、アプリケーションの堅牢なセキュリティを提供します。クライアント側の検証は、ブラウザとサーバー間の往復を起動する必要なく、ユーザに即座にフィードバックするのに役立ちます。そのため、ネットワークトラフィックトラフィックを抑制し、サーバーの負荷を減少させます。クライアント側検証の近代的なフォームは、しばしばユーザに即座にフィールド固有のフィードバックを返すために実装されます。クライアント側の JavaScript はブラウザ上で実行され、ブラウザは一般的に JavaScript を無効にすることができます。この理由だけで、アプリケーションは、極悪非道な入力に対する保護の唯一の手段としてクライアント側の検証だけに依存することはできません。フォームデータがサーバーに到着するその時に、サーバー側の検証を実行する必要があります。データは、リクエストから抽出され、処理/または保存される前にチェックされます。検証エラーが検出された場合、サーバーはユーザーに適切なメッセージを持つフォームを返すことによってレスポンス(応答)します。
+        </p>
+
+        <ul>
+            <li><a href="#client">クライアント側の検証 </a></li><p>
+            <li><a href="#server">サーバー側の検証 </a></li><p>
+        </ul>
+
+        <div class="indent">
+            <h3 id="client">クライアント側の検証</h3>
+
+            <p><code>AffableBean</code> アプリケーション用に 、クライアント側の検証は人気のある <a href="http://plugins.jquery.com/project/validate" target="_blank">jQuery
+                プラグイン</a>を利用して提供されています。 jQuery はクロスブラウザの JavaScript ライブラリであり、クライアント側の HTML スクリプトを簡素化するように設計されています。
+                </p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/client-side-validation.png"
+                 alt="jQuery field validation displayed on checkout form" class="margin-around b-all"
+                 title="Field validation messages appear upon clicking 'submit purchase'">
+
+            <p><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_snapshot8.zip">スナップショット8</a> には <code>js</code> フォルダがあり、そこには、 jQuery コアライブラリ (<code>jquery-1.4.2.js</code>) 、同様に検証プラグイン用スクリプト (<code>jquery.validate.js</code>) が含まれています。コアライブラリーはアプリケーションの <code>header.jspf</code> ファイルの中で参照されています。同時に検証プラグイン スクリプトは <code>checkout.jsp</code> ファイルの中で直接参照されています。それゆえ、検証用プラグインは、checkout.jspファイルだけに必要とされます。checkout.jsp の中で、プラグインは、<a href="http://docs.jquery.com/Plugins/Validation/validate#toptions" target="_blank">利用可能なドキュメント</a>に従ったチェックアウトフォームに合うようにカスタマイズされます 。
+            <p>
+
+            <pre class="examplecode" style="margin-top: 0">
+&lt;script type=&quot;text/javascript&quot;&gt;
+
+    $(document).ready(function(){
+        $(&quot;#checkoutForm&quot;).validate({
+            rules: {
+                name: &quot;required&quot;,
+                email: {
+                    required: true,
+                    email: true
+                },
+                phone: {
+                    required: true,
+                    number: true,
+                    minlength: 9
+                },
+                address: {
+                    required: true
+                },
+                creditcard: {
+                    required: true,
+                    creditcard: true
+                }
+            }
+        });
+    });
+&lt;/script&gt;</pre>
+
+            <p>IDE は jQuery をサポートします。Ctrl-Space キーを押すと、エディタでコード補完やドキュメントを呼び出すことができるようになります。
+            </p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/jquery-editor-support.png"
+                 alt="jQuery documentation popup window in editor" class="margin-around b-all" style="width:688px"
+                 title="Press Ctrl-Space on JavaScript code to invoke jQuery documentation">
+
+            <p>JavaScript でコードするとき、アプリケーションで使おうとしているブラウザを IDE に指定することができます。オプションウィンドウを開き（ [ツール] > [オプション]。Mac では  [NetBeans] > [Preferences 設定]）、            [Miscellaneous(その他)]  を選択し、 [ JavaScript ] タブを選択します。
+            </p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/javascript-window.png"
+                 alt="Options window - JavaScript pane" class="margin-around b-all"
+                 title="Specify targetted browsers for your application in the Options window">
+
+            <p>ドキュメントを呼び出している関数が、あなたが使おうとしているブラウザで全くサポートされていない場合、そのドキュメントは警告フラグをポップアップします。下の画像例で、Internet Explorerバージョン5.5はアプリケーションで使用できるブラウザに含まれていますが、警告フラグが出ています。
+            </p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/ie-55.png"
+                 alt="JavaScript documentation popup" class="margin-around b-all"
+                 title="Documentation popup warns of method calls to non-compatible browser versions">
+
+
+            <h3 id="server">サーバー側の検証</h3>
+
+            <p>AffableBean プロジェクトのサーバー側の検証は、<code>Validator</code> クラスにより実装されています。 <code>ControllerServlet</code> は <code>Validator</code> オブジェクトを作成し、ユーザデータに対しその <code>validateForm</code> メソッドを呼び出します。：
+            </p>
+
+            <pre class="examplecode" style="margin-top: 0">
+// validate user data
+boolean validationErrorFlag = false;
+validationErrorFlag = validator.validateForm(name, email, phone, address, cityRegion, ccNumber, request);
+
+// if validation error found, return user to checkout
+if (validationErrorFlag == true) {
+    request.setAttribute(&quot;validationErrorFlag&quot;, validationErrorFlag);
+    userPath = &quot;/checkout&quot;;
+
+    // otherwise, save order to database
+} else {
+
+    ...
+}</pre>
+
+            <p>検証エラーが見つかった場合（つまり、<code>validateForm</code> が<code>true</code> を返す場合）、フラグはリクエストスコープ属性の形式で発生します。サーバーはクライアントにチェックアウトのページを送り返します。<code>checkout.jsp</code> でフラグが検出されると、新しいテーブル行が作成されエラーメッセージをそのテーブルのトップに表示します。
+            </p>
+
+            <pre class="examplecode" style="margin-top: 0">
+&lt;form id=&quot;checkoutForm&quot; action=&quot;&lt;c:url value='purchase'/&gt;&quot; method=&quot;post&quot;&gt;
+    &lt;table id=&quot;checkoutTable&quot; class=&quot;rounded&quot;&gt;
+      &lt;c:if test=&quot;${!empty validationErrorFlag}&quot;&gt;
+        &lt;tr&gt;
+            &lt;td colspan=&quot;2&quot; style=&quot;text-align:left&quot;&gt;
+                &lt;span class=&quot;error smallText&quot;&gt;Please provide valid entries for the following field(s):
+
+                  &lt;c:if test=&quot;${!empty nameError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;name&lt;/strong&gt; (e.g., Bilbo Baggins)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty emailError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;email&lt;/strong&gt; (e.g., <script language="JavaScript" type="text/javascript"><!--
+var user = "&#98;&#46;&#98;&#97;&#103;&#103;&#105;&#110;&#115;";
+var domain = "&#104;&#111;&#98;&#98;&#105;&#116;&#46;&#99;&#111;&#109;";
+var at = "&#x40;";
+document.write(user + at + domain);
+//--></script><noscript>
+&#98;&#46;&#98;&#97;&#103;&#103;&#105;&#110;&#115;
+&#x40;
+&#104;&#111;&#98;&#98;&#105;&#116;&#46;&#99;&#111;&#109;
+</noscript>)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty phoneError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;phone&lt;/strong&gt; (e.g., 222333444)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty addressError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;address&lt;/strong&gt; (e.g., Korunní 56)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty cityRegionError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;city region&lt;/strong&gt; (e.g., 2)&lt;/span&gt;
+                  &lt;/c:if&gt;
+                  &lt;c:if test=&quot;${!empty ccNumberError}&quot;&gt;
+                    &lt;br&gt;&lt;span class=&quot;indent&quot;&gt;&lt;strong&gt;credit card&lt;/strong&gt; (e.g., 1111222233334444)&lt;/span&gt;
+                  &lt;/c:if&gt;
+
+                &lt;/span&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/c:if&gt;
+
+      ...
+    &lt;/table&gt;
+&lt;/form&gt;</pre>
+
+            <p>あなたは一時的にお使いのブラウザで JavaScript を無効にして、サーバー側の検証をテストできます。
+            </p>
+
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/transaction/server-side-validation.png"
+                 alt="Server-side validation displayed on checkout form" class="margin-around b-all"
+                 title="Temporarily disable JavaScript in your browser to test server-side validation">
+
+            <p class="alert">提供されているサーバー側の検証の実装は、単に、プロジェクトでサーバー側の検証をセットアップする方法を説明するのに役立つだけです。<code>Validator</code>クラスに含まれている実際の検証ロジック は、ほとんど基本的なチェック以外には何も実行しません。決して運用環境では使用しないでください！
+            </p>
+        </div>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Integrating Transactional Business Logic">ご意見をお寄せ下さい</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">関連参照</h2>
+
+        <div class="indent">
+            <h3>NetBeans リソース</h3>
+
+            <ul>
+                <li><a href="../javaee-intro_ja.html" target="_blank">Java EE 技術の概要</a></li><p>
+                <li><a href="../javaee-gettingstarted_ja.html" target="_blank">Java EE 6 アプリケーション入門</a></li><p>
+                <li><a href="https://netbeans.org/projects/www/downloads/download/shortcuts.pdf">キーボードショートカットとコードテンプレートカード</a></li><p>
+                <li><a href="../../../trails/java-ee_ja.html" target="_blank">Java EE と Java Web 学習</a></li><p>
+            </ul>
+
+            <h3>外部リソース</h3>
+
+            <ul>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr318/index.html" target="_blank">JSR 318: EJB 3.1 最終リリース</a> [仕様のダウンロード]</li><p>
+                <li><a href="http://download.oracle.com/docs/cd/E17410_01/javaee/6/tutorial/doc/bncih.html" target="_blank">Java EE 6 チュートリアル: トランザクション</a></li><p>
+                <li><a href="http://www.manning.com/panda/" target="_blank">EJB 3 in Action</a> [書籍]</li><p>
+                <li><a href="http://en.wikipedia.org/wiki/Database_transaction" target="_blank">データベース　トランザクション</a> [Wikipedia]</li><p>
+                <li><a href="http://en.wikipedia.org/wiki/Ejb" target="_blank">Enterprise JavaBean</a> [Wikipedia]</li><p>
+                <li><a href="http://en.wikipedia.org/wiki/ACID" target="_blank">ACID</a> [Wikipedia]</li><p>
+                <li><a href="http://jquery.com/" target="_blank">jQuery</a></li><p>
+                <li><a href="http://en.wikipedia.org/wiki/Jquery" target="_blank">jQuery</a> [Wikipedia]</li><p>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>参照</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> この 「<em>all or nothing</em>(するかしないか)」の コンセプトから、トランザクションの4つの特徴的な性質を推定することができます： <em>atomicity</em>(原子性)、 <em>consistency</em>(一貫性)、 <em>isolation</em>(分離)、および<em>durability</em>(耐久性)（ACID）。詳細については、ここを参照してください： <a href="http://en.wikipedia.org/wiki/ACID" target="_blank">ACID</a> [ウィキペディア]。 
+        </ol>
+
+訳者注。原子性〔データベースの更新などの〕◆トランザクションが完全に成功するか、またはエラーが起きたら全部取り消し、中途半端に終わらない性質。
+    
+</div>
+
+	</div>
+	</body>
+</html>

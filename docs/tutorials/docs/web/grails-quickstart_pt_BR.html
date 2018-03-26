@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+   <head>
+      <title>Introdução ao Framework do Grails na Web</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+      <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+      <meta name="description" content="A very simple and quick introduction to 
+      the Grails application development workflow by walking you through the creation of a
+         simple Hello World Java console application." >
+   </head>
+   
+   <body>
+
+<h1>Introdução ao Framework do Grails na Web</h1>
+<p>
+    Este documento introduz o <a href="http://www.grails.org">Grails</a> no NetBeans IDE. No site do Grails: "O objetivo do Grails é trazer o paradigma 'codificação por convenção' para o Groovy. Trata-se de um framework de aplicações Web de código-fonte aberto que utiliza a linguagem Groovy e complementa o desenvolvimento Java Web. É possível utilizar o Grails como um ambiente de desenvolvimento standalone que oculta todos os detalhes da configuração ou integra sua lógica de negócios de Java. O Grails tem por objetivo tornar o desenvolvimento o mais simples possível e, portanto, deve recorrer para uma ampla gama de desenvolvedores, não apenas aqueles da comunidade Java."
+</p>
+
+<p><b>Conteúdo</b></p>
+    <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+    <ul>
+        <li><a href="#application"> Criando a Aplicação</a></li>
+        <li><a href="#domain">Criando a Classe de Domínio</a></li>
+        <li><a href="#controller">Criando o Controlador</a></li>
+      <li><a href="#running"> Executando a Aplicação</a></li>
+
+    </ul>
+
+
+
+
+<p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software ou Recurso</th>
+                <th class="tblheader" scope="col">Versão Necessária</th>
+            </tr> 
+            <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Java versão 7.2 ou acima</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">versão 7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a class="pageLink" href="http://www.grails.org/Installation">Grails</a></td>
+                    <td class="tbltd1">versão atual</td>
+                </tr>
+            
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>Observações.</strong></p>
+    <div class="indent">
+        <ul>
+            <li>Use o JDK 7 como Plataforma Java. O Grails atualmente não é executado no JDK 8.</li>
+            <li>Ative o plug-in do Groovy para desenvolver aplicações Grails no IDE.</li>
+            <li>Abra a janela Opções do IDE e defina o local do Grails na guia Groovy da categoria Diversos.
+            <p>Se você quiser utilizar o Groovy, defina também a localização do Groovy aqui.</p></li>
+            <li>Leia o <a class="pageLink" href="http://grails.org/Quick%20Start">Guia de início rápido do Grails</a> oficial, que apresenta o cenário que reproduziremos nas seções a seguir.</li>
+        </ul>
+    </div>
+
+
+<a name="application"></a>
+<h2>Criando a Aplicação</h2>
+
+<p>Nesta seção, executamos o comando "grails create-app" no IDE, utilizando o modelo de projeto "Aplicação do Grails" para criar uma nova aplicação do Grails.</p>
+
+<ol>
+    <li>Instale o Grails no sistema local e confirme se ele foi configurado corretamente.
+        <p>Você pode confirmar se ele está funcionando corretamente executando o Grails na linha de comandos (isto é, digite "grails" no prompt de comandos).</p></li>
+<li>Selecione Arquivo > Novo Projeto (Ctrl-Shift-N) e selecione "Aplicação do Grails" na categoria "Groovy". Clique em Próximo.</li>
+<li>Em Nome do Projeto, digite "BookDemo"; em Localização do Projeto, selecione a pasta em que a aplicação será criada. Clique em Finalizar.</li>
+</ol>
+
+<p>O IDE executa o comando "grails create-app", mostrando a saída na janela de Saída. A janela Projetos deverá mostrar o seguinte:</p>
+
+<img alt="" border="0" src="../../../images_www/articles/72/web/grails/grails-65-4.png">
+<p>Expanda as pastas e observe a estrutura do código-fonte criado pelo IDE usando os scripts do Grails. Além disso, observe os arquivos gerados e veja que muitos deles têm os valores default preenchidos.</p>
+
+ <a name="domain"></a>
+<h2>Criando a Classe de Domínio</h2>
+<p>Nesta seção, usamos o IDE para executar o script "grails create-domain-class".</p>
+<ol>
+<li>Clique com o botão direito do mouse no nó Classes de Domínio e selecione Novo > Classe de Domínio do Grails.
+<li>Nomeie a classe de domínio como "Book" e clique em Finalizar. O domínio "Book.groovy" é criado no nó Classes de Domínio.
+<li>Abra a classe Book e preencha duas Strings, "title" e "author". O seguinte deverá ser exibido:<br> <img alt="captura de tela da classe book no editor de código-fonte" border="1" src="../../../images_www/articles/72/web/grails/grails-65-8.png"><br></li>
+<li>Crie alguns valores iniciais na classe Bootstrap.groovy, que está no nó Configuração. O código adicionado à classe é mostrado em negrito a seguir:
+<pre class="examplecode">class BootStrap {
+
+     def init = { servletContext ->
+         <b>new Book(author:"Stephen King",title:"The Shining").save()
+         new Book(author:"James Patterson",title:"Along Came a Spider").save()</b>
+     }
+     
+     def destroy = {
+     }
+     
+}</pre>
+ <p class="notes"><strong>Observação.</strong> Adicione uma importação de <tt>bookdemo.Book</tt> se você vir uma advertência na margem esquerda do editor de código-fonte. </p>
+</li>
+</ol>
+
+<a name="controller"></a>
+<h2>Criando o Controlador</h2>
+
+<p>Nesta seção, usamos o script "grails create-controller" para criar um controlador para nossa classe de domínio:</p>
+
+<ol>
+    <li>Clique com o botão direito do mouse no nó Controladores e selecione Novo > Controlador do Grails.</li>
+<li>Digite "Book" em Nome da Classe e observe que a classe gerada se chamará "BookController":<br> <img alt="captura de tela da caixa de diálogo Novo Controlador" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-11.png">
+  <p>Clique em Finalizar. O controlador é gerado.</p></li>
+<li>Comente a linha gerada entre as chaves e adicione "def scaffold = Book". O seguinte deverá ser exibido: <br> <img alt="captura de tela da classe no editor" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-13.png"></li>
+</ol>   
+
+<a name="running"></a>
+<h2>Executando a Aplicação</h2>
+<p>Nossa aplicação Grails simples está completa. Nesta seção, ela será implantada.</p>
+<ol>
+<li>Clique com o botão direito do mouse na aplicação e escolha "Executar". A aplicação é implantada no Jetty, como você pode ver na janela Serviços: <br><img alt="tela da janela Serviços" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-19.png"></li>
+<li>O URL é mostrado na janela de Saída. Se o browser não abrir automaticamente, cole o URL em um browser e você verá sua aplicação. Clique no link "BookController" e você verá isto: <br><img alt="captura de tela da lista na janela do browser" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-14.png"></li>
+<li>Clique em Novo Livro e crie uma nova entrada: <br><img alt="captura de tela da página criar entrada na janela do browser" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-15.png"></li>
+<li>Quando você clicar em Criar, observe que poderá editar ou deletar a entrada: <br><img alt="captura de tela da página de edição na janela do browser" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-17.png"></li>
+<li>...e que a entrada é refletida na lista de entradas: <br><img alt="captura de tela da página de listagem na janela do browser com nova entrada" class="margin-around b-all" src="../../../images_www/articles/72/web/grails/grails-65-18.png"></li>
+</ol>
+
+      
+      <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans IDE 6.5 Grails Quick Start Guide">Enviar Feedback neste Tutorial</a></div>
+      <br style="clear:both;" />
+      
+      
+        <a name="seeAlso"></a>
+        <h2>Consulte Também</h2>
+        
+        <p>Isso conclui a introdução ao Grails no NetBeans IDE. Agora você sabe como criar um aplicação básica no framework do Grails utilizando o IDE.</p>
+            
+        <p>Para obter mais informações sobre a tecnologia Grails e Groovy em <a href="https://netbeans.org/">netbeans.org</a>, consulte <a href="../java/groovy-quickstart.html">Introdução ao Groovy</a>.
+
+     
+   </body>
+
+</html>

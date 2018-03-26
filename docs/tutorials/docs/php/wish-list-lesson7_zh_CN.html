@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+   <head>
+      <title>使用 PHP 创建数据库驱动的应用程序。编辑、更新和删除 MySQL 数据库中的记录</title>
+     <meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans">
+     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Edit / Update  and Delete record in MySQL database" >
+      <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+   <body>
+<h1>使用 PHP 创建数据库驱动的应用程序 </h1>
+<h1>第 7 课：更新和删除数据库中的条目 </h1>
+<div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+<h4>教程目录：</h4>
+        <ol start="0">
+    <li><a href="wish-list-tutorial-main-page.html">使用 PHP 创建数据库驱动的应用程序 - 主页</a></li>
+    <li><p>创建数据库</p> <ol type="a"><li><a href="wish-list-lesson1.html">创建 MySQL 数据库</a></li>
+    <li><a href="wish-list-oracle-lesson1.html">创建 Oracle 数据库表</a></li>
+    </ol></li>
+    <li>
+    <p><a href="wish-list-lesson2.html">设计应用程序。从数据库读取数据</a></p>
+    </li>
+    <li><a href="wish-list-lesson3.html">创建新的应用程序用户</a></li>
+    <li><a href="wish-list-lesson4.html">优化代码</a></li>
+    <li><a href="wish-list-lesson5.html">添加安全功能。实现应用程序用户登录</a></li>
+    <li><a href="wish-list-lesson6.html">在数据库中添加新的愿望</a></li>
+    <li>
+      <p><b>=&gt; 更新和删除数据库中的条目</b></p>
+      <ul>
+<li><a href="#previousLessonSourceCode">来自上一课的应用程序源代码</a></li>
+<li><a href="#editWish">编辑愿望</a>
+  <ul>
+<li><a href="#addEditButton">实现 "Edit" 按钮</a></li>
+<li><a href="#wishArrayUpdate">扩充 $wish 数组</a></li>
+<li><a href="#updateInputForm">更新 HTML 输入窗体</a></li>
+<li><a href="#updateWishRecord">更新数据库中的愿望</a></li>
+</ul>
+</li>
+<li><a href="#testingEditWishFunctionality">测试编辑愿望功能</a></li>
+<li><a href="#deleteWish">删除愿望</a></li>
+<li><a href="#testingDeleteWishFunctionality">测试删除愿望功能</a></li>
+<li><a href="#lessonResultSourceCode">完成当前课程后的<br>应用程序源代码</a></li>
+<li><a href="#nextSteps">后续步骤</a></li>
+</ul>
+    </li>
+    <li><a href="wish-list-lesson8.html">使用 CSS 技术改进应用程序的外观</a></li>
+    <li><a href="wish-list-lesson9.html">将应用程序部署到远程 Web 服务器</a></li>
+</ol>
+</div>
+</div>
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+
+<p>在本课中，将使用以下两个功能扩展应用程序功能：</p>
+<ul>
+  <li style="margin-left:40em"><a href="#editWish">编辑愿望</a></li>
+  <li style="margin-left:40em"><a href="#deleteWish">删除愿望</a></li>
+</ul>
+<p>要实现这些功能，请编辑 <tt>editWishList.php</tt> 和 <tt>editWish.php</tt> 文件。您还会创建一个名为 <tt>deleteWish.php</tt> 的新文件。</p>
+<img alt="在第 7 课中受影响的 PHP 项目流" class="margin-around" height="384" src="../../../images_www/articles/72/php/oracle-wishlist/page-flow-diagram-l7.png" width="500">
+<p>当前文档是“在适用于 PHP 的 NetBeans IDE 中创建 CRUD 应用程序”教程的一部分。</p><br style="clear:left">
+
+<h2><a name="previousLessonSourceCode"></a>来自上一课的应用程序源代码</h2>
+<p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1932/lesson6.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。 </p>
+<p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson6.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成上一课之后的项目状态。</p>
+<h2><a id="editWish" name="editWish"></a>编辑愿望</h2>
+该功能支持以下用例： 
+<ul>
+  <li>在 <tt>editWishList.php</tt> 页上，用户按愿望右侧的 "Edit" 按钮。包含选定愿望数据的 <tt>editWish.php</tt> 页打开。</li>
+  <li>用户更改愿望说明和/或截止日期，然后按 "Save Changes" 按钮。 </li>
+  <li>如果<em>未</em>填写说明，则会显示一条错误消息，且用户将返回到 <tt>editWish.php</tt> 页。 </li>
+  <li>如果填写了说明，应用程序将返回到 <tt>editWishList.php</tt> 页，将在其中更新愿望。</li>
+</ul>
+<p>该实现包括以下步骤：</p>
+<ul>
+  <li><a href="#addEditButton">在 editWishList 页上添加 "Edit" 按钮</a></li>
+  <li><a href="#wishArrayUpdate">在 editWish.php 页上更新 $wish 数组以存储愿望数据</a></li>
+  <li><a href="#updateInputForm">在 editWish.php 页上更新输入窗体</a></li>
+  <li><a href="#updateWishRecord">验证提交的数据并更新数据库中的愿望</a> </li>
+</ul>
+<div class="indent"><h3><a id="addEditButton" name="addEditButton"></a>实现 "Edit" 按钮 </h3>
+<p>在 <tt>editWishList.php</tt> 中，通过一个循环（<tt>while</tt> 语句）实现包含许愿者愿望的表；从数据库中选择愿望时，该循环将显示包含愿望的行。添加 "Edit" 按钮作为行中最右侧的单元格。</p>
+<ol><li>要通过 HTML 输入窗体传输愿望 ID，请将其存储在变量中。在 <tt>while </tt>循环末尾，输入以下代码行：
+    <pre class="examplecode">while ($row = ...) {<br>    echo ...<br>    echo ...<br>    <strong>$wishID = $row[&quot;id&quot;];</strong><br>
+}
+?&gt;</pre>
+  </li>
+  <li>实现 "Edit" 按钮。在结束 &lt;/table&gt; 标记前面，使用 editWish 窗体添加另一个窗体元格。该窗体包含一个按钮组件和一个隐藏组件；在单击该按钮时，该隐藏组件将发送 <tt>$wishID</tt> 值。（显示的是 MySQL 数据库代码，但为 Oracle 数据库添加的代码是相同的并位于相同的位置。）
+    <pre class="examplecode">
+   Hello &lt;?php echo $_SESSION[&quot;user&quot;]; ?&gt;&lt;br/&gt;<br>        &lt;table border=&quot;black&quot;&gt;<br>            &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;<br>            &lt;?php<br>            require_once(&quot;Includes/db.php&quot;);<br>            $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);<br>            $result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);<br>            while ($row = mysqli_fetch_array($result)) {<br>                echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>                echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br>            }<br>            mysqli_free_result($result);<br>            ?&gt;
+            <strong>&lt;td>
+                &lt;form name="editWish" action="editWish.php" method="GET">
+                    &lt;input type="hidden" name="wishID" value="&lt;?php echo <tt>$wish</tt>ID; ?>">
+                    &lt;input type="submit" name="editWish" value="Edit">
+                    &lt;/form>
+            &lt;/td></strong><br>        &lt;/table&gt;</pre>
+    </li>
+  <li>更改 <tt>while</tt> 循环以使用<a href="http://www.php.net/manual/en/control-structures.alternative-syntax.php" target="_blank">替代语法</a>。这可简化在 <tt>while</tt> 循环中执行 HTML 块的过程。在替代 <tt>while</tt> 循环语法中，左花括号 { 将替换为冒号 (:)，右花括号 } 将替换为 <tt>endwhile;</tt> 语句。将左花括号替换为冒号，删除右花括号，然后在结束 &lt;/table&gt; 标记前面使用 <tt>endwhile;</tt> 语句添加一个新 PHP 块。这会将新表单元格包含在 <tt>while</tt> 循环中。将释放结果/释放语句代码移到 <tt>endwhile;</tt> 语句后面。（同样，显示的是 MySQL 数据库代码，但 Oracle 数据库的代码更改和位置是相同的。）
+    <pre class="examplecode">    while ($row = mysqli_fetch_array($result))<del>{</del><strong>:</strong><br>        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;;<br><del>    }<br>    mysqli_free_result($result);</del><br>    ?&gt;
+    &lt;td>
+        &lt;form name="editWish" action="editWish.php" method="GET">
+           &lt;input type="hidden" name="wishID" value="&lt;?php echo <tt>$wish</tt>ID; ?>">
+           &lt;input type="submit" name="editWish" value="Edit">
+        &lt;/form>
+    &lt;/td>
+<strong>    &lt;?php
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;</strong>
+&lt;/table&gt;</pre>
+  </li>
+  <li>
+    <p>修复表行语法。将行结束 &lt;/tr&gt;\n 字符从截止日期回显语句移到新回显语句（紧靠 <tt>endwhile;</tt> 上面）。</p>
+    <pre class="examplecode">    while ($row = mysqli_fetch_array($result))<del></del><strong>:</strong><br>        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;<del>&lt;/tr&gt;\n</del>&quot;;<br>    ?&gt;
+    &lt;td>
+        &lt;form name="editWish" action="editWish.php" method="GET">
+           &lt;input type="hidden" name="wishID" value="&lt;?php echo <tt>$wish</tt>ID; ?>">
+           &lt;input type="submit" name="editWish" value="Edit">
+        &lt;/form>
+    &lt;/td>
+    &lt;?php
+    <strong>echo &quot;&lt;/tr&gt;\n&quot;;</strong>
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;
+&lt;/table&gt;</pre>
+  </li>
+  <li>
+    <p>整个表（包括将 "Edit" 按钮放在 <tt>while</tt> 循环内的窗体）现在显示如下：</p>
+    <p><b>对于 MySQL 数据库：</b></p>
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while($row = mysqli_fetch_array($result)):
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row['description']) . &quot;&lt;/td&gt;&quot;;
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row['due_date']) . &quot;&lt;/td&gt;&quot;;
+        $wishID = $row[&quot;id&quot;];
+    ?&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;GET&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;editWish&quot; value=&quot;Edit&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;
+&lt;/table&gt;</pre>
+    <p><b>对于 Oracle 数据库：</b></p>
+    
+    
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $stid = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while ($row = oci_fetch_array($stid)):
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;DESCRIPTION&quot;]) . &quot;&lt;/td&gt;&quot;;
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;DUE_DATE&quot;]) . &quot;&lt;/td&gt;&quot;;
+        $wishID = $row[&quot;ID&quot;];
+    ?&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;GET&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;editWish&quot; value=&quot;Edit&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;deleteWish&quot; action=&quot;deleteWish.php&quot; method=&quot;POST&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;deleteWish&quot; value=&quot;Delete&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    oci_free_statement($stid);
+   ?&gt;
+&lt;/table&gt;</pre>
+  </li>
+  </ol>
+<h3><a id="wishArrayUpdate" name="wishArrayUpdate"></a>扩充 <tt>$wish</tt> 数组    </h3>
+<p>在 <tt>editWishList.php</tt> 页上按 "Edit" 按钮时，选定愿望的 ID 将通过服务器请求方法 GET 传输到 <tt>editWish.php</tt> 页。要存储愿望 ID，您需要在 <tt>$wish</tt> 数组中添加新元素。 </p>
+<p>与添加新愿望一样，保存尝试失败后可以从 <tt>editWishList.php</tt> 页和 <tt>editWish.php</tt> 页访问输入窗体。因此，可通过传输数据时使用的服务器请求方法来区分这两种情况。GET 表示在用户第一次通过按 "Edit Wish" 访问页面时显示窗体。POST 表示在尝试保存没有说明的愿望后将用户重定向到窗体。 </p>
+<p>在 <tt>editWish.php</tt> 中，将 <tt>EditWish</tt> 输入窗体上面 HTML &lt;body&gt; 中的 PHP 块替换为扩展的 <tt>$wish</tt> 数组代码。</p>
+<p><strong>对于 MySQL 数据库：</strong></p>
+<pre class="examplecode">&lt;?php<br>if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;)<br>$wish = array(&quot;id&quot; =&gt; $_POST[&quot;wishID&quot;], &quot;description&quot; =&gt; 
+        $_POST[&quot;wish&quot;], &quot;due_date&quot; =&gt; $_POST[&quot;dueDate&quot;]);<br>else if (array_key_exists(&quot;wishID&quot;, $_GET))<br>$wish = mysqli_fetch_array(WishDB::getInstance()-&gt;get_wish_by_wish_id($_GET[&quot;wishID&quot;]));<br>else<br>$wish = array(&quot;id&quot; =&gt; &quot;&quot;, &quot;description&quot; =&gt; &quot;&quot;, &quot;due_date&quot; =&gt; &quot;&quot;);<br>?&gt;</pre>
+<p><strong>对于 Oracle 数据库：</strong></p>
+  <pre class="examplecode">&lt;?php
+if ($_SERVER[&quot;REQUEST_METHOD&quot;] == &quot;POST&quot;)
+    $wish = array(&quot;id&quot; =&gt; $_POST[&quot;wishID&quot;], &quot;description&quot; =&gt;
+            $_POST[&quot;wish&quot;], &quot;due_date&quot; =&gt; $_POST[&quot;dueDate&quot;]);
+else if (array_key_exists(&quot;wishID&quot;, $_GET)) {
+    $stid = WishDB::getInstance()-&gt;get_wish_by_wish_id($_GET[&quot;wishID&quot;]);
+    $row = oci_fetch_array($stid, OCI_ASSOC);
+    $wish = array(&quot;id&quot; =&gt; $row[&quot;ID&quot;], &quot;description&quot; =&gt;
+                $row[&quot;DESCRIPTION&quot;], &quot;due_date&quot; =&gt; $row[&quot;DUE_DATE&quot;]);
+    oci_free_statement($stid);
+} else
+$wish = array(&quot;id&quot; =&gt; &quot;&quot;, &quot;description&quot; =&gt; &quot;&quot;, &quot;due_date&quot; =&gt; &quot;&quot;);
+?&gt;</pre>
+
+<p>该代码使用以下三个元素初始化 <tt>$wish</tt> 数组：<tt>id</tt>、<tt>description</tt> 和 <tt>due_date</tt>。这些元素的值取决于服务器请求方法。如果服务器请求方法是 POST，则从输入窗体中接收这些值。否则，如果服务器请求方法是 GET，并且 $_GET 数组包含具有 "wishID" 键的元素，则通过 get_wish_by_wish_id 函数从数据库中检索这些值。最后，如果服务器请求方法既不是 "POST" 也不是 "GET"（表示是“添加新的愿望”用例），则这些元素为空。 </p>
+<p>前面的代码涉及创建和编辑愿望的用例。现在，您需要更新输入窗体，以便将其用于这两种情况。 </p>
+<h3><a id="updateInputForm" name="updateInputForm"></a>更新 HTML 输入窗体</h3>
+目前，输入窗体适用于以下情况：您要创建新的愿望，并且没有愿望 ID。要使窗体适用于编辑现有愿望的情况，您需要添加一个隐藏字段以传输愿望 ID。必须从 $wish 数组中检索隐藏字段的值。在创建新的愿望期间，该值必须是一个空字符串。如果编辑了愿望，则必须将隐藏字段的值更改为愿望 ID。要创建该隐藏字段，请在 <tt>editWish.php</tt> 中的 <tt>EditWish</tt> 输入窗体上面添加以下行：
+<pre class="examplecode">&lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo <tt>$wish</tt>[&quot;id&quot;];?&gt;&quot; /&gt;</pre>
+<h3><a id="updateWishRecord" name="updateWishRecord"></a>更新数据库中的愿望 </h3>
+<p>现在，您需要更新用于验证输入数据和将愿望插入到数据库的代码。当前代码不区分创建新的愿望和更新现有愿望的情况。在当前实现中，始终将新记录添加到数据库中，因为该代码不验证从输入窗体传输的愿望 ID 值。 </p>
+<p>您需要添加以下函数：</p>
+<ul>
+  <li>如果传输的元素 "wishID" 是一个空字符串，则创建一个新愿望。</li>
+  <li>否则，如果元素 "wishID" 不是空字符串，则更新该愿望。</li>
+  </ul>
+<p><strong>更新 editWish.php 以验证愿望是否为新愿望并在愿望不是新愿望时进行更新：</strong></p>
+<ol>
+<li>
+  <p>将 <tt>update_wish</tt> 函数添加到 <tt>db.php</tt> 中。  </p>
+  <p><b>对于 MySQL 数据库：</b></p>
+    <pre class="examplecode">public function update_wish($wishID, $description, $duedate){
+    $description = $this-&gt;real_escape_string($description);<br>    if ($duedate==''){<br>        $this-&gt;query(&quot;UPDATE wishes SET description = '&quot; . $description . &quot;',<br>             due_date = NULL WHERE id = &quot; . $wishID);<br>    } else<br>        $this-&gt;query(&quot;UPDATE wishes SET description = '&quot; . $description .<br>            &quot;', due_date = &quot; . $this-&gt;format_date_for_sql($duedate)<br>            . &quot; WHERE id = &quot; . $wishID);<br>}  </pre>
+                       <p><b>对于 Oracle 数据库：</b></p>
+                       <pre class="examplecode">public function update_wish($wishID, $description, $duedate) {
+    $query = "UPDATE wishes SET description = :desc_bv, due_date = to_date(:due_date_bv, 
+              'YYYY-MM-DD')  WHERE id = :wish_id_bv";
+    $stid = oci_parse($this->con, $query);
+    oci_bind_by_name($stid, ':wish_id_bv', $wishID);
+    oci_bind_by_name($stid, ':desc_bv', $description);
+    oci_bind_by_name($stid, ':due_date_bv', $this->format_date_for_sql($duedate));
+    oci_execute($stid);
+
+}</pre>
+  </li>
+  <li>
+    <p>将 <tt>get_wish_by_wish_id</tt> 函数添加到 <tt>db.php</tt> 中。    </p>
+    <p><b>对于 MySQL 数据库：</b></p>
+    <pre class="examplecode">public function get_wish_by_wish_id ($wishID) {<br>    return $this-&gt;query(&quot;SELECT id, description, due_date FROM wishes WHERE id = &quot; . $wishID);<br>}</pre>
+    <p><b>对于 Oracle 数据库：</b></p>
+      <pre class="examplecode">public function get_wish_by_wish_id($wishID) {
+    $query = &quot;SELECT id, description, due_date FROM wishes WHERE id = :wish_id_bv&quot;;
+    $stid = oci_parse($this-&gt;con, $query);
+    oci_bind_by_name($stid, ':wish_id_bv', $wishID);
+    oci_execute($stid);
+    return $stid;
+}</pre>
+    
+  </li>
+  <li>在 <tt>editWish.php</tt> 顶部的主 PHP 块中，在最终的 <code>else</code> 语句中添加一个条件。这是将愿望插入到数据库的 <tt>else</tt> 语句。将其更改为 <tt>else if</tt> 语句：
+    <pre class="examplecode">else if ($_POST[&quot;wishID&quot;]==&quot;&quot;) {<br>    WishDB::getInstance()-&gt;insert_wish($wisherID, $_POST[&quot;wish&quot;], $_POST[&quot;dueDate&quot;]);<br>    header('Location: <tt>editWishList.php</tt>' );<br>    exit;<br>}</pre></li>
+  <li>
+
+在刚编辑的语句下面，键入或粘贴另一个 <tt>else if</tt> 语句：
+
+  <pre class="examplecode">else if ($_POST[&quot;wishID&quot;]!=&quot;&quot;) {<br>    WishDB::getInstance()-&gt;update_wish($_POST[&quot;wishID&quot;], $_POST[&quot;wish&quot;], $_POST[&quot;dueDate&quot;]);<br>    header('Location: <tt>editWishList.php</tt>' );<br>    exit;
+} </pre>
+  </li>
+</ol>
+<p>该代码检查 <tt>$_POST</tt> 数组中的 <tt>wishID</tt> 元素是否为空字符串，这意味着通过按 "Edit" 按钮从 <tt>editWishList.php</tt> 页重定向了用户，并且用户填写了愿望说明。如果检查成功，则该代码将使用输入参数 <tt>wishID</tt>、<tt>description</tt> 和 <tt>dueDate</tt> 调用函数 <tt>update_wish</tt>。通过 POST 方法从 HTML 输入窗体接收这些参数。在调用 <tt>update_wish</tt> 后，应用程序将重定向到 <tt>editWishList.php</tt> 页并取消 PHP 处理。 </p>
+</div>
+<h2><a name="testingEditWishFunctionality"></a>测试编辑愿望功能 </h2>
+<ol>
+  <li>运行应用程序。在 index.php 页上，填写以下字段：在 "Username" 字段中输入 "Tom"，在 "Password" 字段中输入 "tomcat"。<br> <img alt="用户登录以编辑其愿望列表" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/user-logon-to-edit-wish-list.png"></li>
+  <li> 按 "Edit My Wish List" 按钮。<tt>editWishList.php</tt> 页打开。<br> <img alt="&quot;Edit&quot;（编辑）按钮已添加到 &lt;tt&gt;editWishList.php&lt;/tt&gt; 页中" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/edit-wish-list-edit-wish.png"></li>
+ <li>单击 Icecream 旁边的 "Edit"。<tt>editWish.php</tt> 页打开。<br><img alt="包含用于编辑愿望的窗体的 &lt;tt&gt;editWish.php&lt;/tt&gt; 页。字段用愿望数据填写。" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/edit-wish.png"></li>
+ <li>编辑这些字段，然后按 "Back to the List"。<tt>editWishList.php</tt> 页打开，但未保存更改。</li>
+ <li>按 Icecream 旁边的 "Edit"。清除 "Describe your wish" 字段，然后按 "Save Changes"。将显示一条错误消息。<br><img alt="用于编辑愿望的窗体显示错误消息：未填写描述" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/editWishEmptyDescription.png"></li>
+ <li>在 "Describe your wish" 字段中输入 Chocolate icecream，然后按 "Save Changes"。<tt>editWishList.php</tt> 页打开，并更新列表。<br><img alt="editWishList.php 页：updatedwish 位于列表上" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/editWishListWishAdded.png"> </li>
+</ol>
+
+<h2><a id="deleteWish" name="deleteWish"></a>删除愿望   </h2>
+<p>现在，您可以创建、读取和更新愿望，添加一个用于删除愿望的方法。</p>
+<p><strong>允许用户删除愿望：</strong></p>
+<ol>
+<li><p>将 <tt>delete_wish</tt> 函数添加到 <tt>db.php</tt> 中。</p>
+<p><b>对于 MySQL 数据库：</b></p>
+<pre class="examplecode">function delete_wish ($wishID){<br>    $this-&gt;query(&quot;DELETE FROM wishes WHERE id = &quot; . $wishID);<br>}
+</pre>
+<p><b>对于 Oracle 数据库：</b></p>
+  <pre class="examplecode">public function delete_wish($wishID) {
+    $query = &quot;DELETE FROM wishes WHERE id = :wish_id_bv&quot;;
+    $stid = oci_parse($this-&gt;con, $query);
+    oci_bind_by_name($stid, ':wish_id_bv', $wishID);
+    oci_execute($stid); 
+}</pre>
+
+</li>
+  <li>创建一个名为 <tt>deleteWish.php</tt> 的新 PHP 文件，然后在 &lt;? php ?&gt; 块下键入或粘贴以下代码： 
+    <pre class="examplecode">require_once(&quot;Includes/db.php&quot;);<br>WishDB::getInstance()-&gt;delete_wish ($_POST[&quot;wishID&quot;]);<br>header('Location: <tt>editWishList.php</tt>' );</pre>  
+该代码允许使用 <tt>db.php</tt> 文件。然后，它会从 WishDB 实例中调用 <tt>delete_wish</tt> 函数，并将 <tt>wishID</tt> 作为输入参数。最后，应用程序将重定向到 <tt>editWishList.php</tt> 页。</li>
+<li>要实现 "Delete" 按钮，请在 <tt>editWishList.php</tt> 的 <tt>while</tt> 循环中添加另一个 HTML 表单元格，紧靠 <tt>editWish</tt> 按钮的代码块下面。HTML 输入窗体包含 <tt>wishID</tt> 隐藏字段以及一个标记为 "Delete" 的提交按钮。（显示的是 MySQL 数据库代码，但为 Oracle 数据库添加的代码是相同的并位于相同的位置。）
+    
+  <pre class="examplecode">    while ($row = mysqli_fetch_array($result))<del></del><strong>:</strong><br>        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;description&quot;]) . &quot;&lt;/td&gt;&quot;;<br>        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;due_date&quot;]) . &quot;&lt;/td&gt;<del>&lt;/tr&gt;\n</del>&quot;;<br>    ?&gt;
+    &lt;td>
+        &lt;form name="editWish" action="editWish.php" method="GET">
+           &lt;input type="hidden" name="wishID" value="&lt;?php echo <tt>$wish</tt>ID; ?>">
+           &lt;input type="submit" name="editWish" value="Edit">
+        &lt;/form>
+    &lt;/td>
+    <strong>&lt;td&gt;
+        &lt;form name=&quot;deleteWish&quot; action=&quot;deleteWish.php&quot; method=&quot;POST&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;deleteWish&quot; value=&quot;Delete&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;</strong>
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;
+&lt;/table&gt;</pre>
+  </li></ol>
+ 
+    <p>整个表（包括将 "Edit" 按钮放在 <tt>while</tt> 循环内的窗体）现在显示如下：</p>
+    <p><b>对于 MySQL 数据库：</b></p>
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $result = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while($row = mysqli_fetch_array($result)):
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row['description") . &quot;&lt;/td&gt;&quot;;
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row['due_date']) . &quot;&lt;/td&gt;&quot;;
+        $wishID = $row[&quot;id&quot;];
+    ?&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;GET&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;editWish&quot; value=&quot;Edit&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;deleteWish&quot; action=&quot;deleteWish.php&quot; method=&quot;POST&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;deleteWish&quot; value=&quot;Delete&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    mysqli_free_result($result);
+    ?&gt;
+&lt;/table&gt;</pre>
+    <p><b>对于 Oracle 数据库：</b>    </p>
+    <pre class="examplecode">&lt;table border=&quot;black&quot;&gt;
+    &lt;tr&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Due Date&lt;/th&gt;&lt;/tr&gt;
+    &lt;?php
+    require_once(&quot;Includes/db.php&quot;);
+    $wisherID = WishDB::getInstance()-&gt;get_wisher_id_by_name($_SESSION[&quot;user&quot;]);
+    $stid = WishDB::getInstance()-&gt;get_wishes_by_wisher_id($wisherID);
+    while ($row = oci_fetch_array($stid)):
+        echo &quot;&lt;tr&gt;&lt;td&gt;&quot; . htmlentities($row[&quot;DESCRIPTION&quot;]) . &quot;&lt;/td&gt;&quot;;
+        echo &quot;&lt;td&gt;&quot; . htmlentities($row[&quot;DUE_DATE&quot;]) . &quot;&lt;/td&gt;&quot;;
+        $wishID = $row[&quot;ID&quot;];
+    ?&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;editWish&quot; action=&quot;editWish.php&quot; method=&quot;GET&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;editWish&quot; value=&quot;Edit&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;form name=&quot;deleteWish&quot; action=&quot;deleteWish.php&quot; method=&quot;POST&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;wishID&quot; value=&quot;&lt;?php echo $wishID; ?&gt;&quot;/&gt;
+            &lt;input type=&quot;submit&quot; name=&quot;deleteWish&quot; value=&quot;Delete&quot;/&gt;
+        &lt;/form&gt;
+    &lt;/td&gt;
+    &lt;?php
+    echo &quot;&lt;/tr&gt;\n&quot;;
+    endwhile;
+    oci_free_statement($stid);
+   ?&gt;
+&lt;/table&gt;</pre>
+ 
+<h2><a name="testingDeleteWishFunctionality"></a>测试删除愿望功能</h2>
+<p>要检查是否正确实现了该功能，请在 <tt>editWishList.php</tt> 页上按任何项目旁边的 "Delete"。该项目将不再出现在列表中。</p> 
+  <img alt="editWishList.php 页：愿望已删除" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson7/deleteWish.png">
+  
+<h2><a name="lessonResultSourceCode"></a>完成当前课程后的应用程序源代码 </h2>
+<p>MySQL 用户：单击<a href="https://netbeans.org/files/documents/4/1933/lesson7.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成课程后的项目状态。</p>
+<p>Oracle 数据库用户：单击<a href="https://netbeans.org/projects/www/downloads/download/php%252Foracle-lesson7.zip" target="_blank">此处</a>以下载源代码，该代码反映了在完成课程后的项目状态。</p>
+<h2><a name="nextSteps"></a>后续步骤</h2>
+<p>  <a href="wish-list-lesson6.html">&lt;&lt; 上一课</a> <br> <br> <a href="wish-list-lesson8.html">下一课 &gt;&gt;</a> <br> <br> <a href="wish-list-tutorial-main-page.html">返回到教程主页</a> </p>
+  <br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%207:%20Updating%20and%20Deleting%20DB%20Entries">发送有关此教程的反馈意见</a></div>
+<br style="clear:both;" >
+<p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE PHP 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 users@php.netbeans.org 邮件列表</a>。
+   <p><a href="wish-list-tutorial-main-page.html"></a>
+  <p>
+<a href="../../trails/php.html">返回至 PHP 学习资源</a><br>
+  
+</p>
+</body>
+</html>

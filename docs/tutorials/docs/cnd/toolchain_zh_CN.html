@@ -1,0 +1,609 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="author" content="alexander.simon@oracle.com">
+        <meta name="description" content="A short guide to modify or create a new tool collection for C/C++ in NetBeans IDE 8.0.  Most content
+              also applies to Oracle Solaris Studio IDE.">
+        <meta name="keywords" content="NetBeans, Oracle Solaris Studio, Sun Studio, Solaris Studio, IDE, tool collection,
+            tutorial, guide, user, documentation, open source, C, C++, make, dbx, gdb">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>使用 C/C++ 工具集合描述符 - NetBeans IDE 教程</title>
+    </head><body style="padding: 2px;">
+<h1>使用 C/C++ 工具集合描述符 - NetBeans IDE 教程</h1>
+      <div class="articledate" style="margin-left: 0px;font-style:italic;">
+   <p><em>撰稿人：<a href="mailto:alexander.simon@oracle.com"><i>Alexander Simon</i></a><!-- maintained by susan.morgan@oracle.com --><br> 2014 年 3 月</em> [修订版本号：V8.0-1]</div>
+<p><b>目录</b></p>
+<img alt="此页上的内容适用于 NetBeans IDE 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="此页上的内容适用于 NetBeans IDE 8.0">     
+<ul class="toc">
+         <li><a href="#intro">简介</a></li>
+         <li><a href="#tool">工具集合</a></li>
+         <li><a href="#community">社区提供的工具集合</a></li>
+         <li><a href="#edit">编辑工具集合描述符</a></li>
+         <li><a href="#create">创建定制工具集合</a></li>
+         <li><a href="#details">工具集合 XML 文件的详细信息</a></li>
+         <li><a href="#provider">创建定制编译器提供器</a></li>
+         <li><a href="#errorhandler">创建定制编译器错误处理程序</a></li>
+      </ul>
+
+<p><b>要学习本教程，您需要具备以下软件。</b></p>
+
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">软件</th>
+    <th class="tblheader" scope="col">要求的版本</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE（支持 C/C++）</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">版本 8.0</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Java 开发工具包 (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">版本 7 或 8</a>  </td>
+</tr>
+</tbody>
+</table>
+      <br>
+<p>有关下载并安装所需软件的信息，请参见 <a href="../../../community/releases/80/install.html">NetBeans IDE 安装说明</a>和<a HREF="../../../community/releases/80/cpp-setup-instructions.html">配置 NetBeans IDE 以使用 C/C++/Fortran</a>。</p>
+
+
+<a id="intro"></a>
+<h2>简介</h2>
+
+<p>本教程说明了如何在 NetBeans IDE 8.0 中编辑现有工具集合或创建现有工具集合的定制版本。</p>
+<p>显示的示例适用于 Oracle Solaris 和 Linux 的 GNU 工具集合，但概念也可以适用于 Windows 和 Mac。通过使用这些信息，您可以了解如何执行以下操作：
+</p>
+<ul>
+	<li>更改 IDE 用于编译 C/C++ 文件的默认编译器标志</li>
+	<li>添加 IDE 不支持的编译器</li>
+</ul>
+
+<h2><a name="tool"></a>工具集合</h2>
+
+<p>工具集合包含在 IDE 中通过<em>工具集合描述符</em>指定的一组编译器、一个 make 实用程序和一个调试器。每次编译、生成或调试代码时，IDE 都会运行一个在工具集合描述符（项目配置为使用的工具集合的工具集合描述符）中描述的可执行文件。代码帮助功能使用从工具集合描述符中获取的包含路径和宏。</p>
+
+<p>工具集合描述符是一个 XML 文件，位于文件夹 <tt>org/netbeans/modules/cnd/toolchain/resources/toolchaindefinition/</tt> 的模块 <tt><em>IDE_HOME</em>/cnd/modules/org-netbeans-modules-cnd-toolchain.jar</tt> 中。不应编辑这些原始 IDE 工具描述符 XML 文件。 </p>
+<p>本文向您介绍如何在您自己的 NetBeans 用户目录中创建可编辑的工具描述符重复项。IDE 随后将使用位于您的用户目录中的工具集合描述符中的信息而非原始版本。 </p>
+<h2><a name="community"></a>社区提供的工具集合</h2>
+<p>NetBeans 社区中的用户提供了一些工具集合插件：</p>
+<ul><li><a href="http://plugins.netbeans.org/plugin/36176/cuda-plugin">Cuda</a></li>
+	<li><a href="http://plugins.netbeans.org/plugin/27033/msp430-toolchain">TI msp430 microcontroller toolchain</a></li>
+    <li><a href="http://plugins.netbeans.org/plugin/42519/">Visual Studio</a></li>
+</ul>
+<p>请注意，这些插件未正式受支持，在此处引用它们是为了能帮助您创建自己的插件。</p>
+<p>Windows 用户也可能对 NetBeans 社区中的用户提供的文章感兴趣：<a href="http://minghuasweblog.wordpress.com/2012/09/27/netbeans-setup-and-gnu-cross-toolchain-configuration-for-arm-developmen/">用于 ARM 开发的 NetBeans 设置和 GNU Cross-Toolchain 配置</a>。
+</p>
+
+<h2><a name="edit"></a>编辑工具集合描述符</h2>
+<p>编辑工具集合描述符有些棘手，因为 NetBeans IDE 没有提供编辑描述符的 GUI。此部分描述如何生成工具集合描述符的重复“影子”副本，您可以编辑这些副本以更改 IDE 使用工具的方式。 </p>
+<ol>
+<li>退出 IDE（如果正在运行）。</li>
+<li>编辑文件 <tt><em>IDE-HOME</em>/etc/netbeans.conf</tt>，其中 <tt><em>IDE-HOME</em></tt> 是 NetBeans 安装目录。</li>
+<li>将以下标志添加到 <tt>netbeans_default_options</tt> 条目中：
+<pre>-J-Dcnd.toolchain.personality.create_shadow=true</pre>
+</li>
+<li>
+启动 IDE，选择“工具”>“选项”，然后在“选项”窗口的顶部窗格中选择 "C/C++"。 <br>
+<p>IDE 将在 NetBeans 用户目录中创建包含工具集合描述符的“影子”版本的目录： </p>
+<pre><em>userdir</em>/config/CND/ToolChain</pre>
+
+<p class="note">NetBeans 用户目录的位置因操作系统不同而异。<tt><em>userdir</em>/config/CND/ToolChain</tt> 目录的一些可能位置包括：</p>
+<ul>
+	<li>﻿Windows：<tt>C:\Documents and Settings\<em>username</em>\Application Data\NetBeans\<em>version</em>\config\CND\ToolChain</tt></li>
+	<li>Mac：<tt>/Users/<em>username</em>/Library/Application Support/NetBeans/<em>version</em>/config/CND/ToolChain</tt></li>
+	<li>Linux 和 Solaris：<tt>/home/<em>username</em>/.netbeans/<em>version</em>/config/CND/ToolChain</tt></li>
+</ul>
+
+<p>
+    创建的描述符列表应如下所示：</p>
+<pre>CLang.xml                             SunStudio.xml
+CLang_mac.xml                         SunStudio_10.xml
+CLang_solaris.xml                     SunStudio_11.xml
+Cygwin.xml                            SunStudio_12.1_solaris-sparc.xml
+Cygwin_4.x.xml                        SunStudio_12.1_solaris-x86_linux.xml
+GNU.xml                               SunStudio_12.2_linuxCompatGNU.xml
+GNU_mac.xml                           SunStudio_12.2_solaris-sparc.xml
+GNU_solaris.xml                       SunStudio_12.2_solaris-x86_linux.xml
+Intel.xml                             SunStudio_12.3_linuxCompatGNU.xml
+Interix.xml                           SunStudio_12.3_solaris-sparc.xml
+MinGW.xml                             SunStudio_12.3_solaris-x86_linux.xml
+MinGW_TDM.xml                         SunStudio_12.xml
+OSS_linuxCompatGNU.xml                SunStudio_8.xml
+OSS_solaris-sparc.xml                 SunStudio_9.xml
+OSS_solaris-x86_linux.xml             WinAVR.xml
+OracleSolarisStudio.xml
+</pre>
+
+
+<p>您可以编辑正在使用的 toolchain 的描述符。例如，如果您正在 Solaris 上使用 GNU，则编辑 <tt>GNU_solaris.xml</tt> 文件；如果您正在 Windows 上使用 MinGW，则应编辑 <tt>MinGW.xml</tt> 文件。 </p>
+<p>有关这些描述符 XML 文件中使用的标记的信息，请参见<a href="#details">工具集合 XML 文件的详细信息</a>。可以更改标记的值以更改 IDE 中工具的行为。</p>
+<p>此目录中的描述符优先于 <em>IDE-HOME</em> 目录中的正式版本。您应删除用户目录中不希望 IDE 使用的工具描述符。</p></li>
+<li>从 <tt><em>IDE-HOME</em>/etc/netbeans.conf</tt> 中删除 <tt>-J-Dcnd.toolchain.personality.create_shadow=true</tt> 标志，这样 IDE 就不会再次创建影子描述符。</li>
+<li>完成更改后，重新启动 IDE 以使用修改后的工具描述符。 </li>
+
+</ol>
+
+
+<h2><a name="create"></a>创建定制工具集合</h2>
+<p>此部分演示如何创建基于 GNU 工具集合的工具集合，并对编译器标志进行一些更改，以便于调试。此示例演示用于创建新 NetBeans 模块的步骤，该模块包含新工具集合，以使您能够共享该工具集合或者在 IDE 的其他实例中使用该工具集合。</p> 
+<p>有关创建 NetBeans 模块的一般信息，请参见 <a href="http://platform.netbeans.org/tutorials/nbm-google.html">NetBeans 插件快速入门</a>。</p>
+<br><b>创建定制工具集合：</b>
+<ol>
+    <li>确保您的 NetBeans 安装包含 NetBeans 插件开发模块。<br><br> 选择“工具”>“插件”，然后单击“已安装”标签。如果未安装 Netbeans 插件开发模块，请单击“可用插件”标签并安装该模块。可以在搜索框中键入“插件”以快速找到该插件。</li>
+<li>选择“文件”>“新建项目”以创建新的 NetBeans 模块。在新建项目向导的“选择项目”页中，在向导的第一步中选择“NetBeans 模块”类别和“模块”项目。单击 "Next"（下一步）。 
+</li>
+<li>在“名称和位置”页中键入项目名称（如 <tt>mytoolchain</tt>），并将所有其他字段保持不变。单击 "Next"（下一步）。</li>
+<li>在“基本模块配置”页上，键入 <tt>org.myhome.mytoolchain</tt> 作为代码名称基，它定义用于标识创建的模块的唯一字符串。代码名称基也用作模块的主包。 </li>
+<li>请勿选中“生成 OSGi 包”复选框，因为您将使用默认 NetBeans 模块系统而不是 OSGi。</li>
+<li>单击 "Finish"（完成）。IDE 将创建名为 mytoolchain 的新项目。</li>
+<li>在“项目”标签中，右键单击 "mytoolchain" 项目节点并选择“新建”>“其他”。 </li>
+<li>在“新建文件”向导中，选择类别“模块开发”和文件类型“XML 层”，然后单击“下一步”并单击“完成”。<br><br> IDE 将在主包 <tt>org.myhome.mytoolchain</tt> 内部的“源包”节点下创建 <tt>layer.xml</tt> 并在编辑器中打开 <tt>layer.xml</tt>。</li>
+<li>如果此文件包含 <tt>&lt;filesystem/></tt> 标记，请将其替换为开始和结束的 <tt>filesystem</tt> 标记：<pre><tt>&lt;filesystem&gt;</tt>
+
+<tt>&lt;/filesystem&gt;</tt></pre></li>
+
+<li>复制以下文本并粘贴在 <tt>filesystem</tt> 标记内部的 <tt>layer.xml</tt> 中：
+    <pre>
+&lt;folder name="CND"&gt;
+        &lt;folder name="Tool"&gt;
+            &lt;file name="GNU_tuned_flavor" url="toolchain/GNU_tuned_flavor.xml"&gt;
+                &lt;attr name="extends" stringvalue="GNU_flavor"/&gt;
+            &lt;/file&gt;
+            &lt;file name="GNU_tuned_cpp" url="toolchain/GNU_tuned_cpp.xml"&gt;
+                &lt;attr name="extends" stringvalue="GNU_cpp"/&gt;
+            &lt;/file&gt;
+        &lt;/folder&gt;
+        &lt;folder name="ToolChains"&gt;
+            &lt;folder name="GNU_tuned"&gt;
+                &lt;attr name="position" intvalue="5000"/&gt;
+                &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="org.myhome.mytoolchain.Bundle"/&gt;
+                &lt;file name="flavor.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_tuned_flavor"/&gt;
+                &lt;/file&gt;
+                &lt;file name="c.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_c"/&gt;
+                &lt;/file&gt;
+                &lt;file name="cpp.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_tuned_cpp"/&gt;
+                &lt;/file&gt;
+                &lt;file name="fortran.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_fortran"/&gt;
+                &lt;/file&gt;
+                &lt;file name="assembler.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_assembler"/&gt;
+                &lt;/file&gt;
+                &lt;file name="scanner.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_scanner"/&gt;
+                &lt;/file&gt;
+                &lt;file name="linker.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_linker"/&gt;
+                &lt;/file&gt;
+                &lt;file name="make.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_make"/&gt;
+                &lt;/file&gt;
+                &lt;file name="debugger.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/&gt;
+                &lt;/file&gt;
+                &lt;file name="qmake.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_qmake"/&gt;
+                &lt;/file&gt;
+                &lt;file name="cmake.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;
+    </pre>
+   
+</li>
+<li>打开 <tt>Bundle.properties</tt> 文件，并添加以下字符串：<br> <tt>CND/ToolChains/GNU_tuned=My GNU Tuned Tool Collection</tt></li>
+
+<li>创建 <tt>toolchain</tt> 子包：右键单击“源包”下的 <tt>org.myhome.mytoolchain</tt> 包，然后选择“新建”>“Java 包”。将默认包名 <tt>newpackage</tt> 替换为 <tt>toolchain</tt>，然后单击“完成”。IDE 将创建 <tt>org.myhome.mytoolchain.toolchain</tt> 子包。 </li>
+<li>创建新文件：右键单击 <tt>org.myhome.mytoolchain.toolchain</tt> 子包，然后选择“新建”>“空文件”。将文件命名为 <tt>GNU_tuned_flavor.xml</tt>，然后单击“完成”。
+	<p class="notes">如果您看不到“空文件”选项，请选择“其他”，然后在“新建文件”向导中选择类别“其他”和文件类型“空文件”，再单击“下一步”。</p>
+	<p>此文件是新工具集合的工具集合描述符。</p></li>
+
+<li>复制以下文本并粘贴在 <tt>GNU_tuned_flavor.xml</tt> 中：
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;toolchaindefinition xmlns="https://netbeans.org/ns/cnd-toolchain-definition/1"&gt;
+    &lt;toolchain name="GNU_tuned_flavor" display="GNU_tuned" family="GNU" qmakespec="${os}-g++"/&gt;
+    &lt;platforms stringvalue="linux,sun_intel,sun_sparc"/&gt;
+&lt;/toolchaindefinition&gt;
+</pre>
+</li>
+<li>创建另一个新文件：右键单击 <tt>org.myhome.mytoolchain.toolchain</tt> 子包，然后选择“新建”>“空文件”。将文件命名为 <tt>GNU_tuned_cpp.xml</tt>，然后单击“下一步”。
+    
+<li>复制以下文本并粘贴在 <tt>GNU_tuned_cpp.xml</tt> 中：
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;toolchaindefinition xmlns="https://netbeans.org/ns/cnd-toolchain-definition/1"&gt;
+    &lt;cpp&gt;
+        &lt;compiler name="g++"/&gt;
+        &lt;development_mode&gt;
+            &lt;fast_build flags=""/&gt;
+            &lt;debug flags="-g3 -gdwarf-2" default="true"/&gt;
+            &lt;performance_debug flags="-g -O"/&gt;
+            &lt;test_coverage flags="-g"/&gt;
+            &lt;diagnosable_release flags="-g -O2"/&gt;
+            &lt;release flags="-O2"/&gt;
+            &lt;performance_release flags="-O3"/&gt;
+        &lt;/development_mode&gt;
+    &lt;/cpp&gt;
+&lt;/toolchaindefinition&gt;
+</pre>
+    <p>注意，调试标志设置为 -g3 和 -gdwarf-2，这不同于默认 GNU 工具集合描述中设置的标志。</p>
+    <p>项目树应看起来类似于以下内容：</p>
+<img alt="项目树的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/cnd/toolchain/project.png" title="项目树">
+<p>单元测试文件夹可能不存在。</p>
+</li>
+<li>在“项目”窗口中，右键单击 <tt>mytoolchain</tt> 项目节点并选择“运行主项目”。将构建该模块，并将其安装在 IDE（模块的默认目标平台）的新实例中。此时将打开目标平台，您可以在其中试用新模块。</li>
+<li>在运行的模块中，选择“工具”>“选项”，从“选项”窗口的顶部窗格中选择 "C/C++"，然后选择“构建工具”标签。</li>
+<li>如果未显示新工具集合 (GNU_tuned)，请单击“恢复默认值”。在提示重新扫描环境时，单击“是”继续。
+    <p>IDE 将显示新的工具集合：</p>
+<img alt="&amp;quot;Options&amp;quot;（选项）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/73/cnd/toolchain/options.png" title="&quot;Options&quot;（选项）面板">
+</li>
+<li>选择“文件”>“新建项目”>“样例”> "C/C++" > "Welcome" 以创建新的 C/C++ 样例项目 <tt>Welcome</tt>。
+<li>右键单击项目节点，然后选择 "Properties"（属性）。在“项目属性”对话框中，选择“构建”节点，将“工具集合”设置为 GNU_tuned 工具集合，然后单击“确定”。 </li>
+<li>构建项目。请注意，编译器具有 <tt>-g3 -gdwarf-2</tt> 标志：
+<pre class="examplecode">g++ -c -g3 -gdwarf-2 -MMD -MP -MF build/Debug/GNU_tuned-Solaris-x86/welcome.o.d -o build/Debug/GNU_tuned-Solaris-x86/welcome.o welcome.cc</pre>
+</li>
+<li>在“项目属性”对话框中，选择 GNU 工具集合，然后单击“确定”。</li>
+<li>重新构建项目，并在输出窗口中比较编译行：
+<pre class ="examplecode">g++ -c -g -MMD -MP -MF build/Debug/GNU-Solaris-x86/welcome.o.d -o build/Debug/GNU-Solaris-x86/welcome.o welcome.cc</pre>
+</li>
+</ol>
+<p>您应该能够看到 GNU_tuned 工具集合具有不同的用于调试的编译器标志以及 GNU 编译器的开发模式。</p>
+<p class="notes">如果要在常规 IDE 中使用 GNU_tuned 工具集合的新模块，可以创建一个二进制文件（.nbm 文件）并将其添加为插件：</p>
+<ol><li>右键单击 mytoolchain 模块项目，然后选择“创建 NBM”。将在项目的构建子目录中创建 .nbm 文件，可以在“文件”标签中看到该文件。</li>
+    <li>选择“工具”>“插件”，然后单击“插件”对话框中的“已下载”标签。
+    </li>
+    <li>单击“添加插件”，导航至构建目录，选择模块 .nbm 文件，然后单击“打开”。该插件模块将添加到“已下载”标签的列表中。</li>
+    <li>单击复选框以在“已下载”标签中选择该模块，然后单击“安装”按钮。将会打开 NetBeans 插件安装程序。
+    </li>
+    <li>单击“下一步”以执行安装程序，并一直执行到安装程序完成。</li>
+    <li>重新启动 IDE，选择“工具”>“选项”，从“选项”窗口的顶部窗格中选择 "C/C++"，然后选择“构建工具”标签。</li>
+<li>如果未显示新工具集合 (GNU_tuned)，请单击“恢复默认值”。在提示重新扫描环境时，单击“是”继续。
+    </li></ol>
+
+
+
+<h3><a name="details"></a>工具集合 XML 文件的详细信息</h3>
+<p>下面介绍了工具集合 XML 文件中的最重要标记。 
+    </p>
+    <p class="tips">对于 toolchain xml 文件支持的所有标记和属性的方案，您可以在 <a href="http://hg.netbeans.org/cnd-main">NetBeans IDE 源树</a>中搜索文件 <tt>toolchaindefinition.xsd</tt>。</p>
+
+<h4>工具集合定义标记</h4>
+<table>
+    <tbody>
+        <tr>
+            <th class="tblheader" scope="col">标记</th>
+            <th class="tblheader" scope="col">属性</th>
+            <th class="tblheader" scope="col">描述</th>
+        </tr>
+<tr>
+            <td class="tbltd1">toolchain</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">工具集合的名称</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">name</td>
+            <td class="tbltd1">工具集合的名称</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">display</td>
+            <td class="tbltd1">工具集合的显示名称</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">family</td>
+            <td class="tbltd1">工具集合的组名称</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">platforms</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">支持的平台</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">stringvalue</td>
+            <td class="tbltd1">以逗号分隔的支持平台列表。<br> 可能的值是：
+                <ul>
+                <li>linux</li>
+                <li>unix</li>
+                <li>sun_intel</li>
+                <li>sun_sparc</li>
+                <li>windows</li>
+                <li>mac</li>
+                <li>无</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="tbltd1">makefile_writer</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">定制 makefile 编写器。</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">class</td>
+            <td class="tbltd1">定制 makefile 编写器的类名。它应实现<br> org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter。</td>
+
+
+        <tr>
+            <td class="tbltd1">drive_letter_prefix</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">文件名的特殊前缀</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">stringvalue</td>
+            <td class="tbltd1">unix 为 "/"<br>Windows 上的 cygwin 为 "/cygdrive/"</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">base_folders</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">base_folder 标记的容器。<br> 一个 base_folders 标记中包含一个或多个 base_folder 标记。 </td>
+        </tr>
+
+        <tr>
+            <td class="tbltd1">base_folder</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">编译器基目录的描述。<br> 此标记可以包含以下标记：</td></tr>
+
+      
+
+    
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">regestry</td>
+            <td class="tbltd1">工具的 Windows 注册表项。请注意，该 XML 标记必须拼写为 "regestry"，尽管该拼写是错误的。 </td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">pattern</td>
+            <td class="tbltd1">允许 NetBeans IDE 在注册表中查找编译器的正则表达式</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">suffix</td>
+            <td class="tbltd1">包含可执行文件的文件夹</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">path_patern</td>
+            <td class="tbltd1">允许 NetBeans IDE 通过扫描路径查找编译器的正则表达式。请注意，该 XML 标记必须拼写为 "path_patern"，尽管该拼写是错误的。</td>
+           </tr>
+  
+       
+    <tr>
+            <td class="tbltd1">command_folders</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">command_folder 标记的容器。<br> 一个 command_folders 标记中包含一个或多个 command_folder 标记。 </td>
+        </tr>
+        <tr>
+            <td class="tbltd1">command_folder</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">描述类似 UNIX 的命令所在的目录。<br> 仅 Windows 上的 MinGW 编译器需要。command_folder 标记可以包含以下标记：</td></tr>
+      
+           
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">regestry</td>
+            <td class="tbltd1">命令的 Windows 注册表项。请注意，该 XML 标记必须拼写为 "regestry"，尽管该拼写是错误的。</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">pattern</td>
+            <td class="tbltd1">允许 NetBeans IDE 在注册表中查找命令文件夹的正则表达式</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">suffix</td>
+            <td class="tbltd1">包含可执行文件的文件夹</td>
+        </tr>
+        <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">path_patern</td>
+            <td class="tbltd1">允许 NetBeans IDE 查找命令的正则表达式。请注意，该 XML 标记必须拼写为 "path_patern"，尽管该拼写是错误的。
+
+       </td>
+    </tr>
+    <tr>
+            <td class="tbltd1">scanner</td>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">错误解析器服务的名称，请参见<a href="#errorhandler">创建定制编译器错误处理程序</a> </td>
+        </tr>
+         <tr>
+            <td class="tbltd1"></td>
+            <td class="tbltd1">id</td>
+            <td class="tbltd1">错误解析器服务的名称</td>
+        </tr>
+    </tbody>
+</table>
+<h4>编译器标志</h4>
+<p>下表列出了用于描述编译器并为 toolchain 指定编译器标志的标记。</p>
+<table>
+    <tbody>
+        <tr>
+            <th class="tblheader" scope="col">标记</th>
+            <th class="tblheader" scope="col">描述</th>
+            <th class="tblheader" scope="col">GNU 编译器示例</th>
+        </tr>
+        <tr>
+            <td class="tbltd1">c、cpp</td>
+            <td class="tbltd1">一组位于以下子节点的编译器标志</td>
+            <td class="tbltd1"></td>
+        </tr>
+  
+        <tr>
+            <td class="tbltd1">recognizer</td>
+            <td class="tbltd1">允许 IDE 查找编译器的正则表达式</td>
+            <td class="tbltd1">对于 Windows 上的 cygwin 中的 GNU<br>.*[\\/].*cygwin.*[\\/]bin[\\/]?$</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">compiler</td>
+            <td class="tbltd1">编译器名称（可执行文件的名称）</td>
+            <td class="tbltd1">gcc 或 g++</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">version</td>
+            <td class="tbltd1">版本标志</td>
+            <td class="tbltd1">--version</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">system_include_paths</td>
+            <td class="tbltd1">用于获取系统包含路径的标志</td>
+            <td class="tbltd1">-x c -E -v</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">system_macros</td>
+            <td class="tbltd1">用于获取系统宏的标志</td>
+            <td class="tbltd1">-x c -E -dM</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">user_include</td>
+            <td class="tbltd1">用于添加用户包含路径的标志</td>
+            <td class="tbltd1">-I</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">user_file</td>
+            <td class="tbltd1">用于在其他文件之前包含 <i>file</i> 的内容的标志 </td>
+            <td class="tbltd1">-include <i>file</i></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">user_macro</td>
+            <td class="tbltd1">用于添加用户宏的标志</td>
+            <td class="tbltd1">-D</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">development_mode</td>
+            <td class="tbltd1">用于不同开发模式的标志组</td>
+            <td class="tbltd1"></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">warning_level</td>
+            <td class="tbltd1">用于不同警告级别的标志组</td>
+            <td class="tbltd1"></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">architecture</td>
+            <td class="tbltd1">用于不同体系结构的标志组</td>
+            <td class="tbltd1"></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">strip</td>
+            <td class="tbltd1">用于去除调试信息的标志</td>
+            <td class="tbltd1">-s</td>
+        </tr>
+                 <tr>
+            <td class="tbltd1">c_standard</td>
+            <td class="tbltd1">指定要用于 C 标准的标志。与 c89、c99 和 c11 标记一起使用。</td>
+            <td class="tbltd1"> c89 flags="-std=c89"<br> c99 flags="-std=c99"<br> c11 flags="-std=c11"</td>
+           </tr>
+        <tr>
+            <td class="tbltd1">cpp_standard</td>
+            <td class="tbltd1">指定要用于 C++ 标准的标志。与 cpp98 和 cpp11 标记一起使用。</td>
+            <td class="tbltd1"> cpp98 flags="-std=c++98"<br> cpp11 flags="-std=c++11"<br> cpp11 flags="-std=gnu++0x"</td>
+        </tr>
+          <tr>
+            <td class="tbltd1">output_object_file</td>
+            <td class="tbltd1">用于指定对象文件的标志</td>
+            <td class="tbltd1">-o <i>（-o 后必须有一个空格）</i></td>
+        </tr>
+        <tr>
+            <td class="tbltd1">dependency_generation</td>
+            <td class="tbltd1">用于依赖关系生成的标志</td>
+            <td class="tbltd1">-MMD -MP -MF $@.d</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">precompiled_header</td>
+            <td class="tbltd1">用于已预编译头的标志</td>
+            <td class="tbltd1">-o $@</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">important_flags</td>
+            <td class="tbltd1">正则表达式，指定哪些编译器标志更改默认系统包含路径和预定义宏以获得代码帮助 </td>
+            <td class="tbltd1">-O1|-O2|-O3|-O4|-O5|-Ofast|-Og|-Os|-ansi|-fPIC|-fPIE|-fasynchronous-unwind-tables|-fbuilding-libgcc|-fexceptions|-ffast-math|-ffinite-math-only|-ffreestanding|-fgnu-tm|-fhandle-exceptions|-fleading-underscore|-fno-exceptions|-fno-rtti|-fnon-call-exceptions|-fnon-call-exceptions|-fopenmp|-fpic|-fpie|-fsanitize=address|-fshort-double|-fshort-wchar|-fsignaling-nans|-fstack-protector(\W|$|-)|-fstack-protector-all|-funsigned-char|-funwind-tables|-g(\W|$|-)|-ggdb|-gsplit-dwarf|-gtoggle|-m128bit-long-double|-m3dnow|-m64|-mabm|-madx|-maes|-march=.*|-mavx|-mavx2|-mbmi|-mbmi2|-mf16c|-mfma(\W|$|-)|-mfma4|-mfsgsbase|-mlong-double-64|-mlwp|-mlzcnt|-mpclmul|-mpopcnt|-mprfchw|-mrdrnd|-mrdseed|-mrtm|-msse3|-msse4(\W|$|-)|-msse4.1|-msse4.2|-msse4a|-msse5|-mssse3|-mtbm|-mtune=.*|-mx32|-mxop|-mxsave|-mxsaveopt|-pthreads|-std=.*|-xc($|\+\+$) </td>
+        </tr>
+        <tr>
+            <td class="tbltd1">multithreading</td>
+            <td class="tbltd1">用于多线程支持的标志组</td>
+            <td class="tbltd1">仅用于 Oracle Solaris Studio 工具集合，不在基于 GNU 的工具集合中使用</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">standard</td>
+            <td class="tbltd1">用于不同语言标准的标志组</td>
+            <td class="tbltd1">仅用于 Oracle Solaris Studio 工具集合，不在基于 GNU 的工具集合中使用</td>
+        </tr>
+        <tr>
+            <td class="tbltd1">language_extension</td>
+            <td class="tbltd1">用于不同语言扩展的标志组</td>
+            <td class="tbltd1">仅用于 Oracle Solaris Studio 工具集合，不在基于 GNU 的工具集合中使用</td>
+        </tr>
+    </tbody>
+</table>
+<h2><a name="provider"></a>创建定制编译器提供器</h2>
+<p>NetBeans IDE 具有一个默认编译器提供器：<br> org.netbeans.modules.cnd.toolchain.compilers.MakeProjectCompilerProvider <br> 该提供器可满足大多数 toolchain 的需要，但您也可以创建自己的提供器。</p>
+<p>
+    <b>创建您自己的编译器提供器：</b></p>
+<ul>
+<li>扩展抽象类 org.netbeans.modules.cnd.api.compilers.CompilerProvider
+    </li>
+    <li>将类定义为服务并放在默认提供器之前：
+<pre>
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.toolchain.CompilerProvider.class,
+position=500)
+public class CustomCompilerProvider extends CompilerProvider {
+...
+}
+</pre>
+position=500 属性保证在默认提供器之前调用定制提供器。对于应覆盖的工具，定制提供器应在 "createCompiler()" 方法中返回非空值 "Tool"。
+</li>
+</ul>
+
+<h2><a name="errorhandler"></a>创建定制编译器错误处理程序</h2>
+
+<p>NetBeans IDE 有两个默认编译器错误处理程序。</p>
+<ul><li>用于 GNU 编译器</li>
+    <li>用于 Sun Studio 编译器</li>
+</ul>
+
+<p>GNU 编译器处理程序可满足任何 GNU 编译器的需要，但您也可以根据需要定义自己的编译器错误处理程序。</p>
+<p>
+<b>创建您自己的编译器错误处理程序：</b>
+</p>
+<ul><li>扩展抽象类 org.netbeans.modules.cnd.spi.toolchain.CompilerProvider
+
+    </li>
+<li>将类定义为服务：
+    <pre>@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.toolchain.CompilerProvider.class)
+      public class CustomCompilerProvider extends ErrorParserProvider {
+          ...
+          @Override
+          public String getID() {
+      	return "MyParser";  // NOI18N
+          }
+      }</pre>
+
+    </li>
+<li>按 ID 链接错误扫描程序和工具集合描述：
+    <pre>&lt;/scanner id="MyParser"&gt;
+...
+  &lt;/scanner&gt;</pre>
+    </li>
+</ul>
+
+<h2>另请参见</h2>
+   <p>有关在 NetBeans IDE 中使用 C/C++/Fortran 进行开发的更多文章，请参见 <a href="https://netbeans.org/kb/trails/cnd.html">C/C++ 学习资源</a>。</p>
+
+
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:Using%20the%20C/C++%20Tool%20Collection%20Descriptors%20-%20NetBeans%20IDE%208.0%20Tutorial">发送有关此教程的反馈意见</a></div>
+<br style="clear: both;">
+</body></html>

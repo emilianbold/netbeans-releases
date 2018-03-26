@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. --><title>Creating a Database Driven Application With PHP. Creating a Sample
+MySQL Database using the NetBeans Interface</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans. ">
+<meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Create MySQL database in NetBeans">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+
+
+   <body>
+<h1>Creating a Database Driven Application With PHP </h1>
+<h1>Lesson 1b: Creating Oracle Database Tables</h1>
+<div style="margin-left: -3px;">
+<div class="feedback-box margin-around float-left" style="margin-right: 15px;">
+<h4>Tutorial contents:</h4>
+<ol start="0">
+<li><a href="wish-list-tutorial-main-page.html">Creating
+a CRUD Application with PHP - Main page</a></li>
+<li>
+<p>Creating the Database</p>
+<ol type="a">
+<li><a href="wish-list-lesson1.html">Creating
+a MySQL Database</a></li>
+<li>
+<p><b>=&gt; Creating Oracle Database Tables</b></p>
+<ul>
+<li><a href="#CreateUser">Creating the
+Database User</a></li>
+<li><a href="#DatabaseStructure">Designing
+the Structure of the Sample Database </a></li>
+<li><a href="#CreateTables">Creating the
+Tables </a></li>
+<li><a href="#add-sequence-trigger">Adding
+Sequences and Triggers to Increment the ID Values</a></li>
+<li><a href="#EnterTestData">Entering the
+Test Data</a></li>
+</ul>
+</li>
+</ol>
+</li>
+<li><a href="wish-list-lesson2.html"> Designing
+the Application. Reading from the Database</a></li>
+<li><a href="wish-list-lesson3.html">Creating a
+New Application User</a></li>
+<li><a href="wish-list-lesson4.html">Optimizing
+the Code</a></li>
+<li><a href="wish-list-lesson5.html">Adding
+Security. Implementing Application User Logon</a></li>
+<li><a href="wish-list-lesson6.html">Adding a New
+Wish to the Database</a></li>
+<li><a href="wish-list-lesson7.html">Updating and
+Deleting Entries in the Database</a></li>
+<li><a href="wish-list-lesson8.html">Making the
+Application Look Better Using the CSS Technology</a></li>
+<li><a href="wish-list-lesson9.html">Deploying the
+Application on a Remote Web Server</a></li>
+</ol>
+</div>
+</div>
+<img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+<p>This lesson describes the last preliminary step in developing
+the Wish List application, that of creating a sample database with test
+data. To complete the steps in this tutorial, you will need a database
+in which to store data of wishers. With the NetBeans IDE you can
+perform all these activities through the IDE interface. <br>
+Before starting, see the tutorial requirements described in <a href="wish-list-tutorial-main-page.html">Creating a CRUD
+Application with PHP - Main page</a>. </p>
+<p>The current document is a part of the Creating a CRUD
+Application in the NetBeans IDE for PHP tutorial. </p>
+<br style="clear: left;">
+<h2><a name="CreateUser" id="CreateUser"></a>Creating
+the Database User</h2>
+<p> In this procedure you first create a user and then create
+tables as that user.</p>
+<p>You can create a user either by using Oracle's tools, or by
+connecting NetBeans IDE to the database and using the IDE's SQL editor.
+NetBeans 7.0, currently available only as beta or development builds,
+provides improved connection to Oracle databases. To learn how to
+connect NetBeans IDE to Oracle Database and to create a user in that
+database, see the <a href="../ide/oracle-db.html">Connecting
+to an Oracle Database</a> tutorial.</p>
+<p>Using the tool of your choice, create the following user:</p>
+<table border="1" width="238">
+<tbody>
+<tr>
+<th class="tblheader" scope="col" width="98">User
+Name</th>
+<td class="tbltd1" scope="col" width="124">phpuser</td>
+</tr>
+<tr>
+<th class="tblheader" scope="col">Password</th>
+<td class="tbltd1" scope="col">phpuserpw</td>
+</tr>
+<tr>
+<th class="tblheader" rowspan="4">System
+Privileges</th>
+<td class="tbltd1" scope="col">CREATE TABLE</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE VIEW</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE SEQUENCE</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">CREATE TRIGGER</td>
+</tr>
+<tr>
+<th class="tblheader" rowspan="2">Roles
+(Oracle Database 10.x)</th>
+<td class="tbltd1" scope="col">CONNECT</td>
+</tr>
+<tr>
+<td class="tbltd1" scope="col">RESOURCE</td>
+</tr>
+</tbody>
+</table>
+<p>An example set of SQL commands for creating this user follows.
+These commands assume the database has the tablespaces USERS and TEMP.</p>
+<pre class="examplecode">drop user phpuser cascade;<br><br>create user phpuser identified by phpuserpw;<br><br>grant connect, resource to phpuser;<br><br>alter user phpuser default tablespace users temporary tablespace temp account unlock; </pre>
+<h2><a name="DatabaseStructure" id="DatabaseStructure"></a>Designing
+the Structure of the Sample Database </h2>
+<p>To arrange and store all the necessary data you need two
+tables: </p>
+<ul>
+<li>A wishers table for storing names and passwords of
+registered users</li>
+<li>A wishes table for storing descriptions of wishes</li>
+</ul>
+<img src="../../../images_www/articles/72/php/wish-list-lesson1/wishlist-db.png" alt="The structure of the sample database: two tables are related through the wisher-id" class="margin-around" height="119" width="334">
+<p>The wishers table contains three fields:</p>
+<ol>
+<li>id - the unique ID of a wisher. This field is used as the
+Primary Key</li>
+<li>name </li>
+<li>password</li>
+</ol>
+<p>The wishes table contains four fields:</p>
+<ol>
+<li>id - the unique ID of a wish. The field is used as the
+Primary Key</li>
+<li>wisher_id - the ID of the wisher to whom the wish belongs.
+The field is used as the Foreign Key. </li>
+<li>description</li>
+<li>due_date - the date by when the wish is requested </li>
+</ol>
+<p>The tables are related through the wisher's ID. All the fields
+are mandatory except due_date in wishes. </p>
+<h2><a name="CreateTables" id="CreateTables"></a>Creating
+the Oracle Database Schema</h2>
+<ol>
+<li>Log into the database as the user you have created.
+<p>If you are connecting through NetBeans IDE, create a
+connection with the new user's name and password. Be certain to select
+the schema with the same name as the user. (See the <a href="../ide/oracle-db.html#connect">Establishing a
+Connection to Oracle DB</a> section of the Connecting to an
+Oracle Database tutorial.) </p>
+</li>
+<li>To create the wishers table, run the following SQL query:
+<pre class="examplecode">create table wishers (<br> id number not null,<br> name varchar2(50) unique not null,<br> password varchar2(50) not null,<br> constraint wishers_pk primary key(id)<br>);</pre>
+</li>
+<li>To create the wishes table. run the following SQL query.
+Note that you create a foreign key, to associate wishes with a wisher.
+<pre class="examplecode">create table wishes (<br> id number not null,<br> wisher_id number not null,<br> description varchar2(255) not null,<br> due_date date,<br> constraint wishes_pk primary key(id),<br> constraint wishes_fk1 foreign key(wisher_id) references wishers(id)<br>);</pre>
+</li>
+<li>Verify that the new tables are added to the database. If
+you are using NetBeans IDE to connect to the database, go to the
+Services window to the jdbc:oracle:thin:@localhost:1521:XE [phpuser on
+PHPUSER] connection node. The new tables are listed in the Tables node.
+(If they do not appear, right-click the connection and choose Refresh.)
+<br>
+<img src="../../../images_www/articles/72/php/oracle-wishlist/tables-in-services-window.png" class="margin-around" alt="Database tables as shown in NetBeans IDE Services window" height="384" width="365"></li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">Note:</span>
+You
+can download a set of SQL commands for creating the Oracle Database
+tables <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">here</a>.</p>
+<h2><a name="add-sequence-trigger"></a>Adding
+Sequences and Triggers to Increment the ID Values</h2>
+<p>With Oracle Database, you must specify a sequence in order to
+increment a value. For the value to increment when a new member is
+added to a table, you add a trigger.</p>
+<ol>
+<li>To add a sequence for the wishers table, run the following
+SQL command:
+<pre class="examplecode">create sequence wishers_id_seq start with 1 increment by 1;</pre>
+</li>
+<li>To trigger the sequence on the ID column of the wishers
+table when you add a new wisher, run the following SQL command:
+<pre class="examplecode">create or replace trigger wishers_insert<br>before insert on wishers<br>for each row<br>begin<br> select wishers_id_seq.nextval into :new.id from dual;<br>end;<br>/</pre>
+</li>
+<li>Add a sequence for the wishes table.
+<pre class="examplecode">create sequence wishes_id_seq start with 1 increment by 1;</pre>
+</li>
+<li>Add a trigger to run the sequence on the ID column of the
+wishes table when you add a new wish.
+<pre class="examplecode">create or replace trigger wishes_insert<br>before insert on wishes<br>for each row<br>begin<br> select wishes_id_seq.nextval into :new.id from dual;<br>end;<br>/</pre>
+</li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">Note:</span>
+You
+can download a set of SQL commands for creating the Oracle Database
+tables, including sequences and triggers, <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">here</a>.</p>
+<h2><a name="EnterTestData" id="EnterTestData"></a>Entering
+the Test Data </h2>
+<p>To test your application you will need some data in the
+database. The example below shows how to add two wishers and four
+wishes.</p>
+<ol>
+<li>Add a wisher named Tom, with the password 'tomcat.'
+<pre class="examplecode">insert into wishers (name, password) values ('Tom','tomcat');<br></pre>
+</li>
+<li>Add a wisher named Jerry, with the password 'jerrymouse.'
+<pre class="examplecode">insert into wishers (name, password) values ('Jerry', 'jerrymouse');<br>commit;</pre>
+</li>
+<li>Add the wishes.
+<pre class="examplecode">insert into wishes (wisher_id, description, due_date) <br> values (1, 'Sausage', to_date('2008-04-01', 'YYYY-MM-DD'));<br><br>insert into wishes (wisher_id, description) <br> values (1, 'Icecream');<br><br><br>insert into wishes (wisher_id, description, due_date) values (2, 'Cheese', to_date('2008-05-01', 'YYYY-MM-DD'));<br><br>insert into wishes (wisher_id, description)<br> values (2, 'Candle');<br>commit;</pre>
+</li>
+<li>Verify that you added test data. If you are using NetBeans
+IDE to view the test data, click the right mouse button on the relevant
+table and from the context menu choose View Data. <br>
+<img src="../../../images_www/articles/72/php/wish-list-lesson1/view-test-data.png" alt="Viewing the entered test data using the NetBeans IDE interface" class="margin-around"> </li>
+</ol>
+<p>To get some general understanding of database principles and
+design patterns, check the following tutorial: <a onclick="return top.js.OpenExtLink(window,event,this)" href="http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1" target="_blank">http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1</a>.</p>
+<p>For more information on the syntax of Oracle <tt>CREATE
+TABLE</tt> statements, see <a onclick="return top.js.OpenExtLink(window,event,this)" href="http://download.oracle.com/docs/cd/B19306_01/server.102/b14200/statements_7002.htm" target="_blank">http://download.oracle.com/docs/cd/B19306_01/server.102/b14200/statements_7002.htm</a>.
+</p>
+<p class="notes"><span style="font-weight: bold;">Note:</span> You
+can download a set of SQL commands for creating the Oracle Database
+tables <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-Oracle.zip" target="_blank">here</a>.</p>
+<h2><a name="nextSteps"></a>Next Step</h2>
+<p><a href="wish-list-lesson2.html">Next Lesson
+&gt;&gt;</a></p>
+<p><a href="wish-list-tutorial-main-page.html">Back
+to the Tutorial main page</a></p>
+<br>
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%201:%20Create%20Oracle%20Database%20Tables">Send
+Us Your Feedback</a></div>
+<br style="clear: both;">
+<p>To send comments and suggestions, get support, and keep
+informed on the latest developments on the NetBeans IDE PHP development
+features, <a href="../../../community/lists/top.html">join
+the users@php.netbeans.org mailing list</a>.</p>
+<a href="../../trails/php.html">Back to the PHP Learning
+Trail</a><br>
+</body></html>

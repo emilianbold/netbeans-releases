@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Обзор поддержки JDK 7 в IDE NetBeans</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+       
+        <meta name="description" content="A short guide to using JDK 7 features in NetBeans IDE.">
+    </head>
+
+    <body>
+
+        <h1>Обзор поддержки JDK 7 в IDE NetBeans</h1>
+        <p>В IDE NetBeans реализована поддержка для новых языковых функций Java 7, таких как оператор diamond, оператор switch для перехода по переменным string, оператор multicatch и т.д. При использовании этих конструкций в коде, среда IDE распознает их, предлагает корректные классы при завершении кода, правильно выделяет ошибки и позволяет автоматически исправлять синтаксис. Таким образом, IDE NetBeans позволяет писать код, соответствующий <a href="http://docs.oracle.com/javase/specs/jls/se7/html/index.html">спецификации языка Java, Java SE 7 Edition</a>. </p>
+        <p>В этом практическом руководстве вы узнаете, как в IDE обрабатываются языковые конструкции Java 7. </p>
+        <p><b>Содержание</b></p>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.4 и 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое на этой странице применимо к IDE NetBeans 7.4 и 8.0">
+        <ul class="toc">
+		    <li><a href="#platform">Проверка регистрации JDK 7 в IDE</a></li>
+			<li><a href="#project">Проверка конфигурации проекта</a></li>
+            <li><a href="#switch">Использование новых языковых конструкций JDK 7: оператор переключения</a></li>
+            <li><a href="#more">Поддержка JDK 7: дополнительные примеры</a></li>
+            <li><a href="#see" title="Что дальше?">Следующие действия</a></li>
+        </ul>
+
+        <p><b>Для работы с этим учебным курсом требуются программное обеспечение и материалы, перечисленные в таблице ниже.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">версия 7.4 или 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Комплект для разработчика на языке Java (JDK)</a></td>
+                  <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="platform"></a>Проверка регистрации JDK 7 в IDE NetBeans</h2>
+        
+        <p>Проверка регистрации JDK 7 в IDE NetBeans:</p>
+        <ol>
+          <li>В среде IDE выберите &quot;Сервис&quot; &gt; &quot;Платформы Java&quot;.</li>
+          <li>Проверьте, что в списке 'Платформы' в диалоговом окне 'Диспетчер платформ Java' выбрана версия JDK 1.7.
+		  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/platform.png" rel="lytebox" title="Зарегистрированная платформа Java"> <img alt="Зарегистрированная платформа Java" border="1" src="../../../images_www/articles/74/java/javase-jdk7/platform-small.png"></a></p>
+		  </li>
+		  <li>Выберите &quot;Close&quot; (Закрыть).</li>
+        </ol>
+    <h2><a name="project"></a>Проверка конфигурации проекта</h2>
+    <p>Проверка пригодности конфигурации проекта для работы с зарегистрированной платформой JDK, включая компиляцию, запуск и отладку:</p>
+    <ol>
+      <li>Создайте проект Java (выберите 'Файл > Создать проект', затем в списке 'Тип проекта' выберите 'Приложение Java').</li>
+	  <li>Нажмите кнопку &quot;Далее&quot;.</li>
+      <li>В качестве имени проекта введите  <tt>SwitchTest</tt> и укажите его местоположение.  </li>
+	  <li>Нажмите 'Готово'.</li>
+      <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта <tt>SwitchTest</tt> и выберите 'Свойства > Библиотеки'. Убедитесь, что в списке 'Платформы Java' на этой вкладке выбрана версия JDK 1.7.
+	  			  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/props-libs.png" rel="lytebox" title="Платформа JDK 7 выбрана в качестве целевого формата"> <img alt="Платформа JDK 7 выбрана в качестве целевого формата" border="1" src="../../../images_www/articles/74/java/javase-jdk7/props-libs-small.png"></a></p></li>
+      <li>В окне 'Свойства проекта' перейдите на вкладку 'Исходный код'. В списке 'Исходный/двоичный формат' должна быть выбрана версия JDK 7. 
+	  <p class="align-center">
+		<a href="../../../images_www/articles/74/java/javase-jdk7/props-sources.png" rel="lytebox" title="Платформа JDK 7 выбрана в качестве исходного формата"> <img alt="Платформа JDK 7 выбрана в качестве исходного формата" border="1" src="../../../images_www/articles/74/java/javase-jdk7/props-sources-small.png"></a></p>
+     </li>
+      <li>Нажмите кнопку &quot;ОК&quot; для закрытия диалогового окна &quot;Свойства проекта&quot;. Ваш проект настроен для работы с компонентами языка Java 7.<br>
+      </li>
+    </ol>
+	
+    <h2><a name="switch"></a>Использование новых языковых конструкций JDK 7: оператор переключения</h2>
+    <p>JDK 7 содержит <a href="http://openjdk.java.net/projects/jdk7/features/" target="_blank">множество новых функций и расширений</a> в различных аспектах, в том числе при интернационализации, вводе-выводе, работе с сетью, безопасности и т.д. Для ознакомления с поддержкой JDK 7 в редакторе Java среды IDE проще всего продемонстрировать некоторые изменения, введенные в проекте Coin. </p>
+        <p>Одним из таких изменений является использование типа String в операторе switch. В предыдущих версиях Java аргументами оператора <tt>switch</tt> могли быть только такие простейшие типы данных как <tt>byte</tt>, <tt>short</tt>, <tt>char</tt>, <tt>int</tt> и <tt>enum</tt>.  Начиная с JDK 7, аргументы типа <tt>String</tt> также можно использовать в выражении оператора <tt>switch</tt>. </p>
+        <ol>
+          <li>Откройте файл <tt>SwitchTest.java</tt> и вставьте следующий код.  В этом примере отображаются коды RGB для различных цветов. <br> JDK 7 позволяет переменной <tt>color</tt> иметь тип <tt>String</tt>. 
+            <pre class="examplecode">package switchtest;
+
+    public class SwitchTest {
+
+    public static void main(String[] args) {
+
+        String color = &quot;red&quot;;
+        String colorRGB;
+        switch (color.toLowerCase()) {
+            case &quot;black&quot;: colorRGB = &quot;000000&quot;; break;
+            case &quot;red&quot;: colorRGB = &quot;ff0000&quot;; break;
+            case &quot;green&quot;: colorRGB = &quot;008000&quot;; break;
+            case &quot;blue&quot;: colorRGB = &quot;0000ff&quot;; break;
+            default: colorRGB = &quot;Invalid color&quot;; break;
+        }
+        System.out.println(colorRGB);
+        }
+    }
+</pre>
+            
+          <p class="tips">Если вставленный код некорректно форматируется в редакторе, нажмите сочетание клавиш ALT+SHIFT+F для выполнения повторного форматирования.</p>
+          </li>
+          <li>В окне 'Проекты' щелкните правой кнопкой мыши узел проекта и выберите 'Запустить файл'. На экране отобразится вывод приложения, который представляет собой код RGB для красного цвета. <br> Таким образом, сборка выполнена успешно, а приложение успешно работает при указании целевой платформы и исходного формата JDK 7. 
+			 <p class="align-center">
+          <img alt="Выходные данные запуска проекта" border="1" src="../../../images_www/articles/74/java/javase-jdk7/output.png"></p></li>
+          <li>Вернемся к JDK 6 и проверим компилирование приложения с помощью компилятора JDK 6.  <br> В окне 'Проекты' щелкните правой кнопкой мыши узел проекта и выберите 'Свойства'. В категории 'Источники' в списке 'Исходный/двоичный формат' выберите <tt>JDK 6</tt> и нажмите ОК.<br> Сразу видно, что синтаксический анализатор JDK6 не распознает синтаксис. Компиляция завершается с ошибкой из-за несовместимого типа переменной.
+          <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/error.png" rel="lytebox" title="Ошибка"> <img alt="Ошибка" border="1" src="../../../images_www/articles/74/java/javase-jdk7/error-small.png"></a></p>
+			 </li>
+          <li>Теперь перепишите код, используя оператор <tt>if-then-else</tt> вместо оператора <tt>switch</tt>: 
+		  <pre class="examplecode">package switchtest;
+
+    public class SwitchTest {
+
+    public static void main(String[] args) {
+
+        String color = &quot;red&quot;;
+        String colorRGB;
+        if (color.equals(&quot;black&quot;)) {
+            colorRGB = &quot;000000&quot;;
+        } else if (color.equals(&quot;red&quot;)) {
+            colorRGB = &quot;ff0000&quot;;
+        } else if (color.equals(&quot;green&quot;)) {
+            colorRGB = &quot;008000&quot;;
+        } else if (color.equals(&quot;blue&quot;)) { 
+            colorRGB = &quot;0000ff&quot;;
+        } else {
+            colorRGB = &quot;Invalid color&quot;;
+        }
+        System.out.println(colorRGB);
+        }
+    }
+</pre>
+		 
+          Если в качестве исходного/двоичного формата выбрана версия JDK 7, IDE распознает такие случаи и предлагает преобразовать их в <tt>switch</tt>, как показано на рисунке. 
+		  <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/convert.png" rel="lytebox" title="Подсказка для преобразования в switch"> <img alt="Подсказка для преобразования в switch" border="1" src="../../../images_www/articles/74/java/javase-jdk7/convert-small.png"></a></p>
+          Щелкните подсказку, и конструкция <tt>if-then-else</tt> будет автоматически преобразована в конструкцию <tt>switch</tt>, которая использовалась ранее.</li>
+         </ol>
+		<h2><a id="more" name="more"></a>Поддержка JDK 7: дополнительные примеры</h2>
+        <p>Чтобы проиллюстрировать возможности распознавания и автоматического исправления кода в редакторе Java среды IDE для обеспечения совместимости со спецификациями языка JDK 7, воспользуемся фрагментом кода, который не имеет смысла, но содержит все основные улучшения. </p>
+        <p>При анализе этого фрагмента кода и применении подсказок редактора будут продемонстрированы следующие возможности. </p>
+        <ul>
+          <li>Автоматический вывод типов, при котором компилятор Java определяет тип общего экземпляра без необходимости его явного указания. Так называемый <em>оператор &quot;бубна&quot;</em> позволяет отметить случаи вывода типа. </li>
+          <li>Улучшенная обработка исключений или <em>мультизахват</em>, при котором один блок <tt>catch</tt> может использоваться для нескольких типов исключений. <br>
+          </li>
+          <li>Новый синтаксис операторов закрытия ресурсов, используемый функцией автоматического управления ресурсами. </li>
+        </ul>
+        <ol>
+          <li>Замените существующий код приложения в том же файле <tt>SwitchTest.java</tt> следующим кодом:<br>
+		  <pre class="examplecode">
+package switchtest;
+
+
+import java.io.FileInputStream;
+import java.lang.reflect.Method;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+public class SwitchTest {
+
+    public void test() throws IOException {
+        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+        HashMap&lt;String, Integer&gt; map = new HashMap&lt;String, Integer&gt;();
+        HashMap&lt;String, Integer&gt; map2 = new HashMap&lt;String, Integer&gt;();
+        String a = &quot;ehlo&quot;;
+
+        try {
+            Method m = Object.class.getMethod(&quot;toString&quot;);
+            m.invoke(this);
+        } catch(NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch(InvocationTargetException e) {
+            e.printStackTrace();
+        } catch(IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(&quot;foo.txt&quot;);
+
+            int k;
+            while ((k = in.read()) != -1) {
+                System.out.write(k);
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+}
+ </pre>
+          </li>
+          <li>Обратите внимание, что в среде IDE отображаются подсказки по оптимизации кода в соответствии со спецификациями JDK 7.  Щелкните подсказки и выберите предложенные действия. <br>
+</li>
+          <li>По принятии всех предложений будет создан код, совместимый с JDK 7. Этот код будет выглядеть так же, как код, показанный ниже.
+		  <p class="align-center">
+		  <a href="../../../images_www/articles/74/java/javase-jdk7/converted.png" rel="lytebox" title="Фрагмент преобразованного кода"> <img alt="Фрагмент преобразованного кода" border="1" src="../../../images_www/articles/74/java/javase-jdk7/converted-small.png"></a></p>
+            
+          </li>
+        </ol>
+       
+        <div class="indent"></div>
+        
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback: Overview of JDK 7 Support in NetBeans IDE">Отправить отзыв по этому учебному курсу</a></div>
+        <br style="clear:both;" >
+        <h2><a name="see"></a>См. также</h2>
+        <p>Дополнительные сведения о JDK 7 и IDE NetBeans см.: </p>
+        <ul>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG465" target="_blank">Настройка целевого JDK</a> в документе <i>Разработка приложений с помощью NetBeans IDE</i></a></li>
+            <li><a href="http://download.oracle.com/javase/tutorial/essential/io/fileio.html" target="_blank">Учебные курсы по Java: ввод-вывод файлов</a> — раздел учебных курсов Java, содержащий многочисленные примеры об изменениях JDK 7 во вводе-выводе.</li>
+            <li><a href="http://download.oracle.com/javase/tutorial/essential/concurrency/forkjoin.html" target="_blank">Учебные курсы по Java: ветвление и объединение</a> — описание новой платформы ветвления и объединения в JDK7. </li>
+        </ul>
+
+        <p>Дополнительные сведения о разработке приложений в IDE NetBeans см. следующие ресурсы: </p>
+        <ul>
+          <li><a href="javase-intro.html">Разработка общих приложений, написанных на Java</a></li>
+          <li><a href="../../trails/java-se.html">Учебная карта по общим сведениям о разработке на Java</a></li>
+		   <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG366" target="_blank">Создание проектов Java</a> в документе <i>Разработка приложений в IDE NetBeans</i></a></li>
+        </ul>
+</body>
+</html>

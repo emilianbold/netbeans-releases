@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. --><title>Создание приложения на основе базы данных на языке PHP.  Создание демонстрационной базы данных MySQL с использованием интерфейса NetBeans</title>
+
+<meta name="KEYWORDS" content="CRUD, Update, Delete, MySQL, PHP, NetBeans. ">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="DESCRIPTION" content="Creating a Database Driven Application With PHP. Create MySQL database in NetBeans">
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen">
+</head>
+
+
+   <body>
+<h1>Создание приложения на основе базы данных на языке PHP </h1>
+<h1>Урок 1a: создание базы данных MySQL</h1>
+<div style="margin-left: -3px;">
+<div class="feedback-box margin-around float-left" style="margin-right: 15px;">
+<h4>Содержание учебного курса.</h4>
+<ol start="0">
+<li><a href="wish-list-tutorial-main-page.html">Создание приложения типа CRUD на языке PHP &ndash; главная страница</a></li>
+<li>
+<p>Создание базы данных</p>
+<ol type="a"><li>
+<p><b>=&gt; Создание базы данных MySQL</b></p>
+<ul>
+<li><a href="#register-mysql">Регистрация сервера MySQL</a></li>
+<li><a href="#CreateUser">Создание пользователя базы данных </a></li>
+<li><a href="#CreateDatabase">Создание базы данных Wishlist</a></li>
+<li><a href="#EstablishConnection">Установление подключения к базе данных Wishlist</a></li>
+<li><a href="#DatabaseStructure">Проектирование структуры базы данных Wishlist</a></li>
+<li><a href="#CreateTables">Создание таблиц</a></li>
+<li><a href="#EnterTestData">Ввод тестовых данных</a></li>
+</ul>
+</li>
+<li><a href="wish-list-oracle-lesson1.html"> Создание таблиц базы данных Oracle</a></li>
+</ol>
+</li>
+<li><a href="wish-list-lesson2.html">Проектирование приложения. Чтение из базы данных</a></li>
+<li><a href="wish-list-lesson3.html">Создание нового пользователя приложения</a></li>
+<li><a href="wish-list-lesson4.html">Усовершенствование кода</a></li>
+<li><a href="wish-list-lesson5.html">Добавление функций безопасности. Реализация входа пользователя в приложение</a></li>
+<li><a href="wish-list-lesson6.html">Добавление к базе данных новых желаний</a></li>
+<li><a href="wish-list-lesson7.html">Обновление и удаление записей в базе данных</a></li>
+<li><a href="wish-list-lesson8.html">Усовершенствование внешнего вида приложения с использованием технологии CSS</a></li>
+<li><a href="wish-list-lesson9.html">Развертывание приложения на удаленном веб-сервере</a></li>
+</ol>
+</div>
+</div>
+<img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+<p>В данном уроке описывается последний подготовительный этап разработки приложения &quot;Wish List&quot; (&quot;Список желаний&quot;) в рамках создания демонстрационной базы данных с тестовыми данными.  Для выполнения всех этапов, предложенных в данном руководстве, необходима база данных, которая позволит сохранять данные (желания), введенные пользователями.  IDE NetBeans позволяет выполнять все эти действия с помощью интерфейса IDE. <br> Перед началом работы ознакомьтесь с требованиями, описанными в разделе <a href="wish-list-tutorial-main-page.html">Создание приложения типа CRUD на языке PHP &ndash; главная страница</a>. </p>
+<p>Текущий документ является частью краткого учебного курса "Создание приложения CRUD в IDE NetBeans для PHP". </p>
+<br style="clear: left;">
+<h2 id="register-mysql">Регистрация сервера MySQL</h2>
+<p>Если в IDE еще не зарегистрирован сервер баз данных MySQL или вам требуется общая информация об использовании MySQL в IDE NetBeans, см. раздел <a href="../ide/mysql.html">Подключение к базе данных MySQL</a>.</p>
+<h2><a id="CreateUser" name="CreateUser"></a>Создание пользователя базы данных</h2>
+<p>Перед созданием базы данных необходимо создать соответствующего пользователя, которому будет предоставлено право на выполнение любых операций в базе данных.  Создание пользователя базы данных включает в себя следующие действия:</p>
+<ul>
+<li><a href="#connectToMySQLServer">Подключение к серверу MySQL пользователя с ролью root</a>.</li>
+<li><a href="#connectToDefaultDatabase">Подключение к базе данных системы MySQL пользователя с ролью root</a>.  Поскольку выполнение команды SQL невозможно без подключения к какой-либо базе данных, это действие позволяет запустить команду SQL, необходимую для создания пользователя. </li>
+<li><a href="#createUserQuery">Выполнение оператора создания пользователя в MySQL</a>. </li>
+</ul>
+<ol>
+<li>Запустите IDE, перейдите в окно 'Службы' (Ctrl-5) и разверните узел 'Базы данных'.</li>
+<li>Для <a id="connectToMySQLServer" name="connectToMySQLServer"></a>подключения к серверу базы данных MySQL перейдите к узлу <tt>MySQL Server</tt> и выберите &quot;Connect&quot; в контекстном меню. <br> <img alt="Создание соединений с сервером MySQL с помощью интерфейса IDE NetBeans: выбор &apos;Соединение&apos; в контекстном меню" class="margin-around b-bottom" src="../../../images_www/articles/72/php/wishlist/mysql-ctxmenu-connect.png"><br>
+</li>
+<li> IDE NetBeans устанавливает соединение с сервером MySQL, проверяет наличие доступных баз данных с помощью сервера, обнаруживает системную базу данных <tt>mysql</tt> и добавляет соответствующий новый узел <tt>mysql</tt> к дереву баз данных. <br> <img alt="К дереву баз данных добавлен новый узел mysql" class="margin-around" height="159" src="../../../images_www/articles/72/php/wish-list-lesson1/mysql_node_added.png" width="337"> </li>
+<li>Для выполнения команды SQL необходимо подключение к базе данных.  Поскольку доступна только система MySQL, следует подключиться к этой системе.  <a id="connectToDefaultDatabase" name="connectToDefaultDatabase"></a>Для подключения к системной базе данных перейдите к узлу <tt>mysql</tt> и выберите &quot;Connect&quot; в контекстном меню.  Если подключение на данный момент отсутствует, появится диалоговое окно &quot;New Database Connection&quot;.  В поле &quot;User Name&quot; по умолчанию вводится значение &quot;root&quot;.  В поле &quot;Password&quot; введите пароль пользователя root. 
+<p class="notes"><strong>Примечание.</strong>Если вы уже подключались к базе данных <code>mysql</code>, это диалоговое окно не отобразится. Вместо этого в дереве просто появится новый узел подключения.</p>
+<img alt="Создание нового подключения к базе данных" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/create-new-database-connection.png"> <br> В диалоговом окне &quot;New Database Connection&quot; появится сообщение &quot;Connection established&quot;. Нажмите кнопку &quot;ОК&quot;. К дереву баз данных добавлен новый узел с именем <tt>jdbc:mysql://localhost:3306/mysql</tt>.</li>
+<li><a id="createUserQuery" name="createUserQuery"></a>Перейдите к узлу <tt>jdbc:mysql://localhost:3306/mysql</tt> и выберите в контекстном меню &quot;Execute Command&quot;. <br> <img alt="Выбор команды &apos;Выполнить&apos; в контекстном меню" class="margin-around b-bottom" height="282" src="../../../images_www/articles/72/php/wish-list-lesson1/execute-command.png" width="441"> <br> Откроется окно &quot;SQL Command&quot;.  В окне &quot;SQL Command&quot; введите следующие команды:
+<pre class="examplecode">CREATE USER 'phpuser'@'localhost' <br>	IDENTIFIED BY 'phpuserpw'</pre>
+Выберите в контекстном меню &quot;Run Statement&quot;.  Если команда выполнена успешно, в строке состояния выводится следующее сообщение: &quot;SQL Statement(s) executed successfully&quot;.  Если выводится другое сообщение, проверьте синтаксическую правильность введенных команд и выполните советы, относящиеся к данному сообщению. </li>
+</ol>
+<h2><a id="CreateDatabase" name="CreateDatabase"></a>Создание базы данных Wishlist </h2>
+<p>Для создания базы данных выполните следующие действия:</p>
+<ol>
+<li>Перейдите к узлу <tt>MySQL Server at localhost:3306</tt> и выберите из контекстного меню &quot;Create Database&quot;.  Появится диалоговое окно &quot;Create MySQL Database&quot;.  Заполните поля следующим образом:
+<ul>
+<li>В поле имени &quot;Database Name&quot; введите &quot;wishlist&quot;.</li>
+<li>Установите флажок &quot;Grant full access to user&quot; и выберите в раскрывающемся списке <tt>phpuser@localhost</tt>. Нажмите кнопку &quot;OK&quot;.<br> <img alt="Диалоговое окно создания базы данных. Предоставление прав доступа новому созданному пользователю" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/create-user.png">
+<p class="alert">Функция &quot;Grant full access to user&quot;, предоставляющая пользователю полные права доступа, срабатывает не всегда.  Если она не работает, <a href="#EstablishConnection">подключитесь к базе данных</a> как пользователь root и отправьте запрос SQL <span class="examplecode"><tt>GRANT ALL ON wishlist.* TO phpuser@localhost</tt></span>. </p>
+</li>
+</ul>
+Подключение к базе данных появится в дереве. Однако это подключение создано для пользователя <code>root</code>. Вам требуется подключение для пользователя <code> phpuser</code>.</li>
+</ol>
+<h2><a id="EstablishConnection" name="EstablishConnection"></a>Установление подключения к базе данных Wishlist </h2>
+<p>На предыдущем этапе вы создали базу данных <code>wishlist</code> с подключением для пользователя <code>root</code>. Теперь необходимо создать подключение для пользователя <code>phpuser</code>. </p>
+<ol>
+<li>В окне 'Службы' щелкните правой кнопкой мыши узел 'Базы данных' и выберите 'Создать подключение'. Открывается мастер создания подключений.<br> <img alt="Пункт &apos;Свойства&apos; в контекстном меню подключения к базе данных" class="margin-around b-bottom b-right" src="../../../images_www/articles/72/php/wishlist/databases-ctxmenu-newconnection.png"></li>
+<li>На панели 'Обнаружение драйвера' в мастере создания подключений выберите <code>MySQL (Connector/J Driver).</code> Нажмите 'Далее'. Открывается панель 'Настройка соединения'.<br> <img alt="Панель &apos;Обнаружение драйвера&apos; в мастере создания подключений" class="margin-around" height="384" src="../../../images_www/articles/72/php/wishlist/locate-driver.png" width="441"></li>
+<li>В поле 'База данных' введите <code>wishlist</code>.</li>
+<li>В полях &quot;User Name&quot; и &quot;Password&quot; введите соответственно имя и пароль пользователя, указанные в разделе <a href="#CreateUser">Создание владельца (пользователя) базы данных</a> (в нашем примере это <tt>phpuser</tt> и <tt>phpuserpw</tt>).  Установите флажок 'Запомнить пароль'. Нажмите 'Проверить подключение'. Если соединение установлено успешно, нажмите "OK". <br> <img alt="Заполненные поля на панели &apos;Настройка соединения&apos; в мастере создания подключений" class="margin-around" height="439" src="../../../images_www/articles/72/php/wishlist/phpuser-connection.png" width="455"></li></ol>
+<p>В дереве баз данных будет отображаться соответствующий новый узел подключения. Подключение для пользователя <code>root</code> к базе данных <code>wishlist</code> можно удалить. Нажмите на подключение <tt>jdbc:mysql://localhost:3306/wishlist [корневой элемент в схеме по умолчанию]</tt> и выберите 'Удалить'.</p>
+  <img alt="К дереву баз данных будет добавлен новый узел подключения" class="margin-around" height="120" src="../../../images_www/articles/72/php/wish-list-lesson1/new-database-connection-added.png" width="504"> 
+
+<h2><a id="DatabaseStructure" name="DatabaseStructure"></a>Проектирование структуры базы данных Wishlist </h2>
+<p>Для размещения и сохранения всех необходимых данных требуются две таблицы: </p>
+<ul>
+<li>таблица &quot;wishers&quot; для сохранения имен и паролей зарегистрированных пользователей;</li>
+<li>таблица &quot;wishes&quot;, которая будет содержать описания требований.</li>
+</ul>
+<img alt="Структура образца базы данных: две таблицы связаны с помощью идентификатора пользователя" class="margin-around" src="../../../images_www/articles/72/php/wish-list-lesson1/wishlist-db.png"><br> Таблица &quot;wishers&quot; содержит три поля:
+<ol>
+<li>&quot;id&quot; &ndash; уникальный идентификатор пользователя.  Это поле используется в качестве первичного ключа.</li>
+<li>&quot;name&quot; &ndash; имя </li>
+<li>&quot;password&quot; &ndash; пароль</li>
+</ol>
+<p>Таблица &quot;wishes&quot; содержит четыре поля:</p>
+<ol>
+<li>&quot;id&quot; &ndash; уникальный идентификатор пользователя.  Это поле используется в качестве первичного ключа.</li>
+<li>&quot;wisher_id&quot; &ndash; идентификатор пользователя, оставившего пожелание.  Это поле используется в качестве внешнего ключа. </li>
+<li>&quot;description&quot;&ndash; описание</li>
+<li>&quot;due_date&quot; &ndash; требуемая дата исполнения пожелания. </li>
+</ol>
+<p>Таблицы связаны посредством идентификатора пользователя.  Все поля таблицы &quot;wishes&quot; являются обязательными для заполнения, за исключением &quot;due_date&quot;. </p>
+<h2><a id="CreateTables" name="CreateTables"></a>Создание таблиц</h2>
+<ol>
+<li>Для подключения к базе данных щелкните правой кнопкой мыши узел подключения <tt>jdbc:mysql://localhost:3306/wishlist</tt> и выберите &quot;Connect&quot; в контекстном меню.<br> <strong>Примечание.</strong> Если пункт меню недоступен, пользователь уже подключен. Перейдите к действию 2.</li>
+<li>В том же контекстном меню выберите &quot;Execute Command&quot;.  Откроется пустое окно &quot;SQL Command&quot;. </li>
+<li>Для создания таблицы &quot;wishers&quot;
+<ol>
+<li type="a">Введите следующий запрос SQL (отметьте, что как набор символов следует прямо установить UTF-8 для интернационализации):
+<pre class="examplecode">CREATE TABLE wishers(<br> id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, <br> name CHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL UNIQUE,<br> password CHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL<br>)</pre>
+<strong>Примечание.</strong> Можно получить уникальный номер, автоматически создаваемый MySQL, задав свойство AUTO_INCREMENT для поля. MySQL создаст уникальный номер посредством увеличения на единицу последнего номера в таблице и автоматически добавит его к значению поля с этим свойством.  В нашем примере автоматически должно увеличиваться значение в поле &quot;ID&quot;. </li>
+<li type="a">Щелкните запрос правой кнопкой мыши, затем выберите &quot;Run Statement&quot; в контекстном меню.
+<p class="notes"><b>Примечание. </b>Механизмом хранения по умолчанию для MySQL является MyISAM, не поддерживающий внешние ключи. Если нужна поддержка внешних ключей, используйте в качестве механизма хранения InnoDB.</p>
+</li>
+</ol>
+</li>
+<li>Для создания таблицы &quot;Wishes&quot;
+<ol>
+<li type="a">введите следующий запрос SQL:
+<pre class="examplecode">CREATE TABLE wishes(<br> id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,<br> wisher_id INT NOT NULL,<br> description CHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,<br> due_date DATE,<br> FOREIGN KEY (wisher_id) REFERENCES wishers(id)<br>)</pre>
+</li>
+<li type="a">Щелкните запрос правой кнопкой мыши, затем выберите &quot;Run Statement&quot; в контекстном меню. </li>
+</ol>
+</li>
+<li>Для проверки того, что новые таблицы добавлены к базе данных, перейдите к окну &quot;Services&quot;, а затем к узлу подключения jdbc:mysql://localhost:3306/wishlist. </li>
+<li>Нажмите правую кнопку мыши и выберите &quot;Refresh&quot;.  В дереве появятся узлы &quot;wishers&quot; и &quot;wishes&quot;.</li>
+</ol>
+<p class="notes"><span style="font-weight: bold;">Примечание.</span> Набор команд SQL для создания базы данных wishlist MySQL можно загрузить <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-MySQL.zip" target="_blank">здесь</a>.</p>
+<h2><a id="EnterTestData" name="EnterTestData"></a>Ввод тестовых данных </h2>
+<p>Для тестирования приложения необходимо наличие некоторых данных в базе данных.  В приведенном ниже примере показано, каким образом можно добавить данные для двух пользователей и четырех желаний.</p>
+<ol>
+<li>В узле подключения jdbc:mysql://localhost:3306/wishlist щелкните правой кнопкой мыши и выберите &quot;Execute Command&quot;.  Откроется пустое окно &quot;SQL Command&quot;. </li>
+<li>Для добавления данных пользователя введите следующие команды:
+<pre class="examplecode">INSERT INTO wishers (name, password) <br> VALUES ('Tom', 'tomcat');</pre>
+Щелкните запрос правой кнопкой мыши и выберите из контекстного меню &quot;Run Statement&quot;.<br> <strong>Примечание: </strong>. Оператор не содержит значения для поля <tt>идентификатора</tt>. Значения вводятся автоматически, поскольку указан тип поля <tt>AUTO_INCREMENT</tt>.<br> Введите данные другого тестового пользователя:
+<pre class="examplecode">INSERT INTO wishers (name, password) <br> VALUES ('Jerry', 'jerrymouse');</pre>
+</li>
+<li>Для добавления пожеланий (&quot;wishes&quot;) введите следующие команды:
+<pre class="examplecode">INSERT INTO wishes (wisher_id, description, due_date) <br> VALUES (1, 'Sausage', 080401);<br>INSERT INTO wishes (wisher_id, description) <br> VALUES (1, 'Icecream');<br>INSERT INTO wishes (wisher_id, description, due_date) <br> VALUES (2, 'Cheese', 080501);<br>INSERT INTO wishes (wisher_id, description)<br> VALUES (2, 'Candle');</pre>
+<p>Выберите запросы, щелкните каждый правой кнопкой мыши по каждому из них и выберите &quot;Run Selection&quot; в контекстном меню. </p>
+<p class="notes"><strong>Примечание.</strong> Также можно выполнять запросы один за другим, как описано в пункте 2.</p> </li>
+<li>Для просмотра тестовых данных щелкните соответствующую таблицу правой кнопкой мыши и выберите из контекстного меню &quot;View Data&quot;. <br> <img alt="Просмотр введенных данных с помощью интерфейса IDE NetBeans" class="margin-around" height="339" src="../../../images_www/articles/72/php/wish-list-lesson1/view-test-data.png" width="590"> </li>
+</ol>
+<p>Ознакомиться с общими принципами организации баз данных и их моделями можно с помощью следующего обучающего руководства: <a href="http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://www.tekstenuitleg.net/en/articles/database_design_tutorial/1</a>.</p>
+<p>Для получения дополнительной информации о синтаксисе операторов MySQL <tt>CREATE TABLE</tt> см. <a href="http://dev.mysql.com/doc/refman/5.0/en/create-table.html" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://dev.mysql.com/doc/refman/5.0/en/create-table.html</a>.
+</p>
+<p>Для получения дополнительной информации о вставке значений в таблицу см. <a href="http://dev.mysql.com/doc/refman/5.0/en/insert.html" onclick="return top.js.OpenExtLink(window,event,this)" target="_blank">http://dev.mysql.com/doc/refman/5.0/en/insert.html</a>.</p>
+<p class="notes"><span style="font-weight: bold;">Примечание.</span> Набор команд SQL для создания базы данных wishlist MySQL можно загрузить <a href="https://netbeans.org/projects/www/downloads/download/php%252FSQL-files-for-MySQL.zip" target="_blank">здесь</a>.
+</p>
+<h2><a name="nextSteps"></a>Что дальше?</h2>
+<p><a href="wish-list-lesson2.html">Следующий урок &gt;&gt;</a></p>
+<p><a href="wish-list-tutorial-main-page.html">Назад на главную страницу руководства</a></p>
+<br>
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Wish%20List%20CRUD%201:%20Create%20MySQL%20Database">Мы ждем ваших отзывов</a></div>
+<br style="clear: both;">
+<p>Для отправки комментариев и предложений, получения поддержки и новостей о последних разработках, связанных с PHP IDE NetBeans <a href="../../../community/lists/top.html">присоединяйтесь к списку рассылки users@php.netbeans.org</a>.</p>
+<a href="../../trails/php.html">Возврат к учебной карте PHP</a><br>
+</body></html>

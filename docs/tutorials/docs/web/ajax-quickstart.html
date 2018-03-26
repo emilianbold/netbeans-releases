@@ -1,0 +1,1538 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A brief introduction to Ajax using the NetBeans IDE, Java bundle">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Ajax, XML,
+            XMLHttpRequest, XMLHttpRequest object, callback function, asynchronous, Java, JavaScript,
+            JavaScript Editor, open source, web technology">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+
+        <title>Introduction to Ajax for Java Web Applications - NetBeans IDE Tutorial</title>
+    </head>
+
+    <body>
+
+<!--
+Copyright (c) 2009, 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>Introduction to Ajax for Java Web Applications</h1>
+
+        <p>This document provides an introduction to Ajax and demonstrates some of the features in the
+            NetBeans IDE that allow you to program faster and more efficiently when working with Ajax-related
+            technologies. While learning about the low-level functionality of Ajax, you build a simple
+            application that employs auto-completion in a text field. Content here has been adapted from
+            Greg Murray's article and sample application from
+            <a href="http://weblogs.java.net/blog/gmurray71/archive/2005/12/using_ajax_with_1.html">Using
+            Ajax with Java Technology</a>.</p>
+
+        <p>Ajax stands for Asynchronous JavaScript and XML. In essence, Ajax is an efficient way for
+            a web application to handle user interactions with a web page - a way that reduces the need
+            to do a page refresh or full page reload for every user interaction. This enables rich behavior
+            (similar to that of a desktop application or plugin-based web application) using a browser.
+            Ajax interactions are handled asynchronously in the background. As this happens, a user can
+            continue working with the page. Ajax interactions are initiated by JavaScript code. When
+            the Ajax interaction is complete, JavaScript updates the HTML source of the page. The changes
+            are made immediately without requiring a page refresh. Ajax interactions can be used to do
+            things such as validate form entries (while the user is entering them) using server-side
+            logic, retrieve detailed data from the server, dynamically update data on a page, and submit
+            partial forms from the page.</p>
+
+
+        <p><strong>Contents</strong></p>
+
+       <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+
+        <ul class="toc">
+            <li><a href="#overview">Overview of the Application</a></li>
+            <li><a href="#client1">Programming the Client-Side: Part 1</a>
+                <ul>
+                    <li><a href="#html">Using the HTML Editor</a></li>
+                    <li><a href="#javascript">Using the JavaScript Editor</a></li>
+                </ul></li>
+            <li><a href="#serverside">Programming the Server-Side</a>
+                <ul>
+                    <li><a href="#data">Creating the Data Store</a></li>
+                    <li><a href="#servlet">Creating a Servlet</a></li>
+                </ul></li>
+            <li><a href="#client2">Programming the Client-Side: Part 2</a>
+                <ul>
+                    <li><a href="#callback">Adding Callback Functionality</a></li>
+                    <li><a href="#htmldom">Updating the HTML DOM</a></li>
+                    <li><a href="#stylesheet">Attaching a Stylesheet</a></li>
+                </ul></li>
+            <li><a href="#run">Running the Application</a>
+                <ul>
+                    <li><a href="#httpMonitor">Using the HTTP Server Monitor</a></li>
+                </ul></li>
+            <li><a href="#conclusion">Conclusion</a></li>
+            <li><a href="#seeAlso">See Also</a></li>
+        </ul>
+
+        <p><strong>To complete this tutorial, you need the following software and resources.</strong></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans
+                        IDE, Java EE bundle</a></td>
+                    <td class="tbltd1">7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7 or 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://glassfish.java.net/">GlassFish server</a>
+                        <br><em class="indent margin-around">or</em>
+                        <br><a href="http://tomcat.apache.org/index.html">Tomcat server</a></td>
+                    <td class="tbltd1">Open Source Edition 3.1.x or 4.x
+                        <br><em class="margin-around indent">&nbsp;</em>
+                        <br>version 7.x or 8.x</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>Notes:</strong></p>
+
+        <ul>
+            <li>The Java EE installation of the IDE enables you to optionally install the  GlassFish server
+                and the Apache Tomcat servlet container.</li>
+
+            <li>This tutorial assumes that you have a working knowledge of the various technologies it
+                employs (i.e., HTML, CSS, JavaScript, Java and JSP). It attempts to provide
+                an overview of the functionality provided by the code, but <em>does not</em> explain
+                how the code works on a line-to-line basis.</li>
+
+            <li>If you need to compare your project with a working solution, you can <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaScript%252FMyAjaxApp.zip">download
+                the sample application</a>.</li>
+        </ul>
+
+
+        <br>
+        <h2 id="overview">Overview of the Application</h2>
+
+        <p>Imagine a web page in which a user can search for information about musical composers. The
+            page includes a field where the user can enter the name of the composer. In the example application,
+            the entry field has an auto-complete feature. In other words, the user can type in part of
+            the composer name, and the web application attempts to complete the name by listing all composers
+            whose first or last name begins with the characters entered. The auto-complete feature saves
+            the user from having to remember the complete name of the composer and can provide a more
+            intuitive and direct path to the sought-after information.</p>
+
+        <div class="indent">
+            <img src="../../../images_www/articles/73/web/ajax-intro/sample-app.png"
+                alt="Sample application displayed in browser" class="margin-around b-all"
+                title="Sample application displayed in browser">
+        </div>
+
+        <p>Implementing auto-completion in a search field is something that can be performed using Ajax.
+            Ajax works by employing an <code>XMLHttpRequest</code> object to pass requests and responses
+            asynchronously between the client and server. The following diagram illustrates the process
+            flow of the communication that takes place between the client and server.</p>
+
+        <div id="flow-diagram" class="indent">
+            <img src="../../../images_www/articles/73/web/ajax-intro/ajax-process-flow.png"
+                alt="Ajax process flow diagram" class="margin-around"
+                title="Ajax process flow diagram">
+        </div>
+
+        <br>
+        <p>The process flow of the diagram can be described by the following steps:</p>
+
+        <ol>
+            <li>The user triggers an event, for example by releasing a key when typing in a name. This
+                results in a JavaScript call to a function that initializes an <code>XMLHttpRequest</code>
+                object.</li>
+
+            <li>The <code>XMLHttpRequest</code> object is configured with a request parameter that includes
+                the ID of the component that triggered the event, and any value that the user entered.
+                The <code>XMLHttpRequest</code> object then makes an asynchronous request to the web
+                server.</li>
+
+            <li>On the web server, an object such as a servlet or listener handles the request. Data
+                is retrieved from the data store, and a response is prepared containing the data in the
+                form of an XML document.</li>
+
+            <li>Finally, the <code>XMLHttpRequest</code> object receives the XML data using a callback
+                function, processes it, and updates the HTML DOM (Document Object Model) to display the
+                page containing the new data.</li>
+        </ol>
+
+        <p>This tutorial demonstrates how to construct the auto-complete scenario by following the
+            process flow indicated in the above diagram. You first create the client-side files for the
+            presentation and functionality needed to generate the <code>XMLHttpRequest</code> object.
+            Then, you set up the server-side by creating the data store and business logic using Java-based
+            technology. Finally, you return to the client-side and implement <code>callback()</code>,
+            and other JavaScript functionality to update the HTML DOM.</p>
+
+
+        <br>
+        <h2 id="client1">Programming the Client-Side: Part 1</h2>
+
+        <p>Begin by creating a new web application project in the IDE. The IDE contains built-in templates
+            for numerous project types.</p>
+
+        <ol>
+            <li>Choose File &gt; New Project. Under Categories, select Java Web. Under Projects, select Web
+                Application then click Next.</li>
+
+            <li>In the Name and Location panel, enter <code>MyAjaxApp</code> for Project Name. The Project
+                Location field enables you to specify the location of the project on your computer. Leave
+                other options at their defaults and click Next.
+
+                <br>
+                <img src="../../../images_www/articles/73/web/ajax-intro/java-name-location.png"
+                     title="Specify the name and location for your application project" 
+                     class="margin-around b-all" alt="New Web Application wizard - Name and Location panel"></li>
+
+            <li>In the Server and Settings panel, select the server you want to deploy your application
+                to. Only servers that are registered with the IDE are listed.
+
+                <br>
+                <img src="../../../images_www/articles/73/web/ajax-intro/java-server-settings.png"
+                     title="Specify the server your application will be deployed to" 
+                     class="margin-around b-all" alt="New Web Application wizard - Server Settings panel"></li>
+
+            <li>Accept other default settings and click Finish. The project is generated in your
+                file system and opens in the IDE.</li>
+        </ol>
+
+        <p>When Java-based web projects are created, an <a href="http://ant.apache.org/">Ant</a> build
+            script is automatically generated which enables you to compile the project so that it can
+            be immediately deployed and run on a server that has been registered in the IDE.</p>
+
+        <p>A default entry page is generated and opens in the IDE's Source Editor.
+            Depending on the target server, the entry page will be either <code>index.jsp</code> or <code>index.html</code>.
+            </p>
+
+        <div class="indent">
+            <div class="indent">
+                <img src="../../../images_www/articles/73/web/ajax-intro/java-proj-win.png"
+                    alt="Projects window containing newly created project" class="margin-around b-all"
+                    title="Projects window displays MyAjaxApp project">
+            </div>
+        </div>
+
+        <p>Before beginning to code, quickly try running the application to ensure that configuration
+            between the IDE, your server, and browser is set up properly.</p>
+
+        <ol>
+            <li><p>In the Projects window, right-click the project node and choose Run.</p>
+
+                <p>The application is compiled, the application server starts and the application is
+                    deployed to it and run. The IDE opens your default browser and displays the default
+                    entry page.</p>
+            </li>
+        </ol>
+
+        <div class="indent">
+            <a name="html"></a>
+            <h3>Using the HTML Editor</h3>
+
+            <div class="indent">
+                <img src="../../../images_www/articles/73/web/ajax-intro/palette.png"
+                    alt="Palette displaying HTML elements" class="right margin-around b-all"
+                    title="Palette displaying HTML elements">
+
+                <br>
+                <p class="margin-around">Now that you are certain your environment is set up correctly,
+                    begin by transforming your index page into the auto-completion interface that will
+                    be viewed by users.</p>
+
+                <p class="margin-around">One of the advantages of using an IDE is that the editor you
+                    work in often provides you with code completion which, if you learn to apply it when
+                    you code, can rapidly increase your productivity. The IDE's Source Editor generally
+                    adapts to the technology you are using, so if you are working in an HTML page, pressing
+                    the code completion key combination (Ctrl-Space) will produce suggestions for HTML
+                    tags and attributes. As will later be shown, the same applies for other technologies,
+                    such as CSS and JavaScript.</p>
+
+                <p class="margin-around">
+                    A second feature you can make use of is the IDE's Palette. The Palette provides easy-to-use
+                    templates for elements that are commonly applied in the technology you are coding
+                    in. You simply click on an item, and drag it to a location in the file open in the
+                    Source Editor.</p>
+
+                <p class="tips margin-around">You can view large icons (as displayed here) by right-clicking
+                    in the Palette and choosing Show Big Icons.</p>
+            </div>
+
+            <br clear="all">
+            <ol>
+                <li>Replace the content for the <code>&lt;title&gt;</code> and <code>&lt;h1&gt;</code>tags to read: <code>Auto-Completion
+                        using AJAX</code>. The index
+                    page requires no server-side scripting code, so you can safely delete any remnants
+                    that were created by default. The index page should now appear as shown below.
+
+<pre class="examplecode">
+&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;Auto-Completion using AJAX&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Auto-Completion using AJAX&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre></li>
+
+                <li>Add some explanatory text to describe the purpose of the text field. You can copy
+                    and paste in the following text at a point just beneath the <code>&lt;h1&gt;</code>
+                    tags:
+
+<pre class="examplecode">
+&lt;p&gt;This example shows how you can do real time auto-completion using Asynchronous
+    JavaScript and XML (Ajax) interactions.&lt;/p&gt;
+
+&lt;p&gt;In the form below enter a name. Possible names that will be completed are displayed
+    below the form. For example, try typing in &quot;Bach,&quot &quot;Mozart,&quot; or &quot;Stravinsky,&quot;
+    then click on one of the selections to see composer details.&lt;/p&gt;
+</pre></li>
+
+                <li>Add an HTML form to the page. You can do this by making use of the elements listed
+                    in the IDE's Palette. If the Palette is not open, choose Window &gt; Palette from
+                    the main menu. Then, under HTML Forms, click on and drag a Form element into the
+                    page to a point beneath the <code>&lt;p&gt;</code> tags that you just added. The
+                    Insert Form dialog box opens. Specify the following:
+
+                    <br><br>
+                    <ul>
+                        <li>Action: autocomplete</li>
+                        <li>Method: GET</li>
+                        <li>Name: autofillform</li>
+                    </ul>
+
+                    <img src="../../../images_www/articles/73/web/ajax-intro/insert-form.png"
+                        alt="Insert form dialog" class="margin-around b-all"
+                        title="Insert form dialog">
+
+                    <p>Click OK. The HTML <code>&lt;form&gt;</code> tags are inserted into the page containing
+                        the attributes you specified. (GET is applied by default, and so is not explicitly
+                        declared.)</p></li>
+
+                <li>Add an HTML table to the page. Under the HTML category in the Palette, click on a
+                    Table element and drag it to a point between the <code>&lt;form&gt;</code> tags.
+                    The Insert Table dialog box opens. Specify the following:
+
+                    <br><br>
+                    <ul>
+                        <li>Rows: 2</li>
+                        <li>Columns: 2</li>
+                        <li>Border Size: 0</li>
+                        <li>Cell Padding: 5</li>
+                    </ul>
+
+                    <img src="../../../images_www/articles/73/web/ajax-intro/insert-table.png"
+                        alt="Insert table dialog" class="margin-around b-all"
+                        title="Insert table dialog">
+                </li>
+
+                <li>Right-click inside the Source Editor and choose Format. This tidies up the code.
+                    Your form should now display similar to that below:
+
+<pre class="examplecode">
+&lt;form name=&quot;autofillform&quot; action=&quot;autocomplete&quot;&gt;
+  &lt;table border=&quot;0&quot; cellpadding=&quot;5&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/form&gt;
+</pre></li>
+
+                <li>Within the first row of the table, type the following text into the first column
+                    (changes in <strong>bold</strong>):
+
+<pre class="examplecode">&lt;td&gt;<strong>&lt;strong&gt;Composer Name:&lt;/strong&gt;</strong>&lt;/td&gt;</pre></li>
+
+                <li>Within the second column of the first row, instead of dragging a Text Input field
+                    from the Palette, type in the code below manually (changes in <strong>bold</strong>):
+
+
+<pre class="examplecode">
+&lt;td&gt;
+    <strong>&lt;input type=&quot;text&quot;
+        size=&quot;40&quot;
+        id=&quot;complete-field&quot;
+        onkeyup=&quot;doCompletion();&quot;&gt;</strong>
+&lt;/td&gt;
+</pre>
+
+                    When you type, try using the IDE's built-in code completion support. For example,
+                    type in <code>&lt;i</code>, then press Ctrl-Space. A list of suggested options displays
+                    below your cursor, and a description of the selected element appears in a box above.
+                    You can in fact press Ctrl-Space at anytime you are coding in the Source Editor to
+                    bring up possible options. Also, if there is only one possible option, pressing Ctrl-Space
+                    will automatically complete the element name.
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/code-completion.png"
+                         class="margin-around b-all" alt="Code completion displayed in the Source Editor"
+                         style="width:688px" title="Press Ctrl-Space in the editor to invoke code completion and documentation support">
+                </li>
+
+            </ol>
+
+            <p>The <code>onkeyup</code> attribute that you typed in above points to a JavaScript function
+                named <code>doCompletion()</code>. This function is called each time a key is pressed
+                in the form text field, and maps to the JavaScript call depicted in the Ajax <a href="#flow-diagram">flow
+                diagram</a> above.</p>
+
+
+            <h3 id="javascript">Using the JavaScript Editor</h3>
+
+            <p>The IDE's JavaScript Editor provides many advanced editing capabilities, such as intelligent
+                code completion, semantic highlighting, instant renaming and refactoring capabilities,
+                as well as many more features. </p>
+
+            <p>JavaScript code completion is automatically provided when you code in <code>.js</code>
+                files, as well as within <code>&lt;script&gt;</code> tags when you work with other technologies
+                (i.e., HTML, RHTML, JSP, PHP). 
+                The IDE can provide you with some hints when you are editing JavaScript code.
+                You can specify the JavaScript hints options by choosing 
+                Tools &gt; Options (NetBeans &gt; Preferences on Mac) to open the Options window
+                and then selecting the JavaScript language in the Hints tab in the Editor category.
+            You can also add your own JavaScript code templates in the Code Templates tab in the Options window.</p>
+
+            <img src="../../../images_www/articles/73/web/ajax-intro/javascript-options.png"
+                alt="JavaScript Hint 0ptions in Options window" class="margin-around b-all"
+                title="JavaScript Hint 0ptions in Options window">
+
+            <p>Add a JavaScript file to the application and begin implementing <code>doCompletion()</code>.</p>
+
+            <ol>
+                <li>In the Projects window, right-click the Web Pages node and choose New &gt; JavaScript
+                    file. (If JavaScript file is not listed, choose Other. Then choose JavaScript file
+                    from the Web category in the New File wizard.)</li>
+                <li>Name the file <code>javascript</code> and click Finish. 
+                The new JavaScript file appears in the Projects window within the Web Pages folder.</li>
+                <li>Type the code below into <code>javascript.js</code>.
+
+<pre class="examplecode">
+var req;
+var isIE;
+
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+}
+
+function doCompletion() {
+        var url = &quot;autocomplete?action=complete&id=&quot; + escape(completeField.value);
+        req = initRequest();
+        req.open(&quot;GET&quot;, url, true);
+        req.onreadystatechange = callback;
+        req.send(null);
+}
+
+function initRequest() {
+    if (window.XMLHttpRequest) {
+        if (navigator.userAgent.indexOf('MSIE') != -1) {
+            isIE = true;
+        }
+        return new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        isIE = true;
+        return new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+    }
+}</pre>
+
+                    <p class="tips">The above code performs a simple browser compatibility check
+                        for Firefox 3 and Internet Explorer versions 6 and 7). If you would like
+                        to incorporate more robust code for compatibility issues, consider using
+                        this <a href="http://www.quirksmode.org/js/detect.html">browser detect
+                        script</a> from <a href="http://www.quirksmode.org">http://www.quirksmode.org</a>.</p></li>
+
+                <li>Switch back to the index page and add a reference to the JavaScript file
+                    between the <code>&lt;head&gt;</code> tags.
+
+<pre class="examplecode">
+&lt;script type=&quot;text/javascript&quot; src=&quot;javascript.js&quot;&gt;&lt;/script&gt;</pre>
+
+                    <p class="tips">You can quickly toggle between pages opened in the Source Editor
+                        by pressing Ctrl-Tab.</p></li>
+
+                <li>Insert a call to <code>init()</code> in the opening <code>&lt;body&gt;</code> tag.
+
+<pre class="examplecode">
+&lt;body <strong>onload=&quot;init()&quot;</strong>&gt;</pre>
+
+                    This ensures that <code>init()</code> is called each time the page is loaded.</li>
+            </ol>
+
+            <p>The role of <code>doCompletion()</code> is to:</p>
+
+            <ul>
+                <li>create a URL that contains data that can be utilized by the server-side,</li>
+                <li>initialize an <code>XMLHttpRequest</code> object, and</li>
+                <li>prompt the <code>XMLHttpRequest</code> object to send an asynchronous request to
+                    the server.</li>
+            </ul>
+
+            <p>The <code>XMLHttpRequest</code> object is at the heart of Ajax and has become the de facto
+                standard for enabling XML data to be passed asynchronously over HTTP. <em>Asynchronous</em>
+                interaction implies that the browser can continue to process events in the page after the
+                request is sent. Data is passed in the background, and can be automatically loaded into
+                the page without requiring a page refresh.</p>
+
+            <p>Notice that the <code>XMLHttpRequest</code> object is actually created by <code>initRequest()</code>,
+                which is called by <code>doCompletion()</code>. The function checks whether <code>XMLHttpRequest</code>
+                can be understood by the browser, and if so it creates an <code>XMLHttpRequest</code>
+                object. Otherwise, it performs a check on <code>ActiveXObject</code> (the <code>XMLHttpRequest</code>
+                equivalent for Internet Explorer 6), and creates an <code>ActiveXObject</code> if identified.</p>
+
+            <p>Three parameters are specified when you create an <code>XMLHttpRequest</code> object:
+                a URL, the HTTP method (<code>GET</code> or <code>POST</code>), and whether or not the
+                interaction is asynchronous. In the above example, the parameters are:</p>
+
+            <ul>
+                <li>The URL <code>autocomplete</code>, and the text entered into the <code>complete-field</code>
+                    by the user:
+
+<pre class="examplecode">var url = &quot;autocomplete?action=complete&id=&quot; + escape(completeField.value);</pre></li>
+
+                <li><code>GET</code>, signifying that HTTP interactions use the <code>GET</code> method,
+                    and
+                <li><code>true</code>, signifying that the interaction is asynchronous:
+
+                    <pre class="examplecode">req.open(&quot;GET&quot;, url, true);</pre></li>
+            </ul>
+
+            <p>If the interaction is set as asynchronous, a callback function must be specified. The
+                callback function for this interaction is set with the statement:</p>
+
+<div class="indent">
+    <div class="indent">
+        <pre class="examplecode">req.onreadystatechange = callback;</pre>
+    </div>
+</div>
+
+            <p>and a <code>callback()</code> function <a href="#callback">must later be defined</a>.
+                The HTTP interaction begins when <code>XMLHttpRequest.send()</code> is called. This action
+                maps to the HTTP request that is sent to the web server in the above <a href="#flow-diagram">flow
+                diagram</a>.</p>
+        </div>
+
+
+        <br>
+        <h2 id="serverside">Programming the Server-Side</h2>
+
+        <p>The IDE provides comprehensive support for server-side web programming. While this includes
+            basic editor support for many popular programming and scripting languages, it also encompasses
+            web services, such as SOAP, REST, SaaS, and MVC-oriented frameworks, such as JSF, Spring
+            and Struts. Several NetBeans plugins are available from the 
+            <a href="http://plugins.netbeans.org/">NetBeans Plugin Portal</a>
+            for Ajax-driven frameworks, including <a href="https://developers.google.com/web-toolkit/">GWT</a> and
+            <a href="http://struts.apache.org/2.x/">Struts2</a>.</p>
+
+        <p>The application's business logic processes requests by retrieving data from the data store,
+            then preparing and sending the response. This is implemented here using a servlet. Before
+            you begin coding the servlet, set up the data store and the functionality required by the
+            servlet to access data.</p>
+
+        <ul>
+            <li><a href="#data">Creating the Data Store</a></li>
+            <li><a href="#servlet">Creating a Servlet</a></li>
+        </ul>
+
+        <div class="indent">
+            <a name="data"></a>
+            <h3>Creating the Data Store</h3>
+
+            <p>For this simple application, you create a class called <code>ComposerData</code> that
+                retains composer data using a <a href="http://download.oracle.com/javase/1.5.0/docs/api/java/util/HashMap.html"><code>HashMap</code></a>.
+                A <code>HashMap</code> allows you to store pairs of linked items in key-value pairs.
+                You also create a <code>Composer</code> class that enables the servlet to retrieve data
+                from entries in the <code>HashMap</code>.</p>
+
+            <ol>
+                <li>Right-click on the project node in the Projects window and choose New &gt; Java Class.</li>
+                <li>Name the class <code>ComposerData</code>, and enter <code>com.ajax</code> in the
+                    Package field. This creates a new package to contain the class, as well as other
+                    classes that will later be created.</li>
+                <li>Click Finish. The class is created and opens in the Source Editor.</li>
+                <li>In the Source Editor, paste in the following code:
+
+<pre class="examplecode">
+package com.ajax;
+
+import java.util.HashMap;
+
+/**
+ *
+ * @author nbuser
+ */
+public class ComposerData {
+
+    private HashMap composers = new HashMap();
+
+    public HashMap getComposers() {
+        return composers;
+    }
+
+    public ComposerData() {
+
+        composers.put(&quot;1&quot;, new Composer(&quot;1&quot;, &quot;Johann Sebastian&quot;, &quot;Bach&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;2&quot;, new Composer(&quot;2&quot;, &quot;Arcangelo&quot;, &quot;Corelli&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;3&quot;, new Composer(&quot;3&quot;, &quot;George Frideric&quot;, &quot;Handel&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;4&quot;, new Composer(&quot;4&quot;, &quot;Henry&quot;, &quot;Purcell&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;5&quot;, new Composer(&quot;5&quot;, &quot;Jean-Philippe&quot;, &quot;Rameau&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;6&quot;, new Composer(&quot;6&quot;, &quot;Domenico&quot;, &quot;Scarlatti&quot;, &quot;Baroque&quot;));
+        composers.put(&quot;7&quot;, new Composer(&quot;7&quot;, &quot;Antonio&quot;, &quot;Vivaldi&quot;, &quot;Baroque&quot;));
+
+        composers.put(&quot;8&quot;, new Composer(&quot;8&quot;, &quot;Ludwig van&quot;, &quot;Beethoven&quot;, &quot;Classical&quot;));
+        composers.put(&quot;9&quot;, new Composer(&quot;9&quot;, &quot;Johannes&quot;, &quot;Brahms&quot;, &quot;Classical&quot;));
+        composers.put(&quot;10&quot;, new Composer(&quot;10&quot;, &quot;Francesco&quot;, &quot;Cavalli&quot;, &quot;Classical&quot;));
+        composers.put(&quot;11&quot;, new Composer(&quot;11&quot;, &quot;Fryderyk Franciszek&quot;, &quot;Chopin&quot;, &quot;Classical&quot;));
+        composers.put(&quot;12&quot;, new Composer(&quot;12&quot;, &quot;Antonin&quot;, &quot;Dvorak&quot;, &quot;Classical&quot;));
+        composers.put(&quot;13&quot;, new Composer(&quot;13&quot;, &quot;Franz Joseph&quot;, &quot;Haydn&quot;, &quot;Classical&quot;));
+        composers.put(&quot;14&quot;, new Composer(&quot;14&quot;, &quot;Gustav&quot;, &quot;Mahler&quot;, &quot;Classical&quot;));
+        composers.put(&quot;15&quot;, new Composer(&quot;15&quot;, &quot;Wolfgang Amadeus&quot;, &quot;Mozart&quot;, &quot;Classical&quot;));
+        composers.put(&quot;16&quot;, new Composer(&quot;16&quot;, &quot;Johann&quot;, &quot;Pachelbel&quot;, &quot;Classical&quot;));
+        composers.put(&quot;17&quot;, new Composer(&quot;17&quot;, &quot;Gioachino&quot;, &quot;Rossini&quot;, &quot;Classical&quot;));
+        composers.put(&quot;18&quot;, new Composer(&quot;18&quot;, &quot;Dmitry&quot;, &quot;Shostakovich&quot;, &quot;Classical&quot;));
+        composers.put(&quot;19&quot;, new Composer(&quot;19&quot;, &quot;Richard&quot;, &quot;Wagner&quot;, &quot;Classical&quot;));
+
+        composers.put(&quot;20&quot;, new Composer(&quot;20&quot;, &quot;Louis-Hector&quot;, &quot;Berlioz&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;21&quot;, new Composer(&quot;21&quot;, &quot;Georges&quot;, &quot;Bizet&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;22&quot;, new Composer(&quot;22&quot;, &quot;Cesar&quot;, &quot;Cui&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;23&quot;, new Composer(&quot;23&quot;, &quot;Claude&quot;, &quot;Debussy&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;24&quot;, new Composer(&quot;24&quot;, &quot;Edward&quot;, &quot;Elgar&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;25&quot;, new Composer(&quot;25&quot;, &quot;Gabriel&quot;, &quot;Faure&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;26&quot;, new Composer(&quot;26&quot;, &quot;Cesar&quot;, &quot;Franck&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;27&quot;, new Composer(&quot;27&quot;, &quot;Edvard&quot;, &quot;Grieg&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;28&quot;, new Composer(&quot;28&quot;, &quot;Nikolay&quot;, &quot;Rimsky-Korsakov&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;29&quot;, new Composer(&quot;29&quot;, &quot;Franz Joseph&quot;, &quot;Liszt&quot;, &quot;Romantic&quot;));
+
+        composers.put(&quot;30&quot;, new Composer(&quot;30&quot;, &quot;Felix&quot;, &quot;Mendelssohn&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;31&quot;, new Composer(&quot;31&quot;, &quot;Giacomo&quot;, &quot;Puccini&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;32&quot;, new Composer(&quot;32&quot;, &quot;Sergei&quot;, &quot;Rachmaninoff&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;33&quot;, new Composer(&quot;33&quot;, &quot;Camille&quot;, &quot;Saint-Saens&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;34&quot;, new Composer(&quot;34&quot;, &quot;Franz&quot;, &quot;Schubert&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;35&quot;, new Composer(&quot;35&quot;, &quot;Robert&quot;, &quot;Schumann&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;36&quot;, new Composer(&quot;36&quot;, &quot;Jean&quot;, &quot;Sibelius&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;37&quot;, new Composer(&quot;37&quot;, &quot;Bedrich&quot;, &quot;Smetana&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;38&quot;, new Composer(&quot;38&quot;, &quot;Richard&quot;, &quot;Strauss&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;39&quot;, new Composer(&quot;39&quot;, &quot;Pyotr Il'yich&quot;, &quot;Tchaikovsky&quot;, &quot;Romantic&quot;));
+        composers.put(&quot;40&quot;, new Composer(&quot;40&quot;, &quot;Guiseppe&quot;, &quot;Verdi&quot;, &quot;Romantic&quot;));
+
+        composers.put(&quot;41&quot;, new Composer(&quot;41&quot;, &quot;Bela&quot;, &quot;Bartok&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;42&quot;, new Composer(&quot;42&quot;, &quot;Leonard&quot;, &quot;Bernstein&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;43&quot;, new Composer(&quot;43&quot;, &quot;Benjamin&quot;, &quot;Britten&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;44&quot;, new Composer(&quot;44&quot;, &quot;John&quot;, &quot;Cage&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;45&quot;, new Composer(&quot;45&quot;, &quot;Aaron&quot;, &quot;Copland&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;46&quot;, new Composer(&quot;46&quot;, &quot;George&quot;, &quot;Gershwin&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;47&quot;, new Composer(&quot;47&quot;, &quot;Sergey&quot;, &quot;Prokofiev&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;48&quot;, new Composer(&quot;48&quot;, &quot;Maurice&quot;, &quot;Ravel&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;49&quot;, new Composer(&quot;49&quot;, &quot;Igor&quot;, &quot;Stravinsky&quot;, &quot;Post-Romantic&quot;));
+        composers.put(&quot;50&quot;, new Composer(&quot;50&quot;, &quot;Carl&quot;, &quot;Orff&quot;, &quot;Post-Romantic&quot;));
+
+    }
+}</pre></li>
+            </ol>
+            <p>You will notice that a warning is displayed in the left margin of the editor because the <tt>Composer</tt>
+            class cannot be found. Perform the following steps to create the <code>Composer</code> class.</p>
+
+            <ol>
+                <li>Right-click on the project node in the Projects window and choose New &gt; Java Class.</li>
+                <li>Name the class <code>Composer</code>, and choose <code>com.ajax</code> from the drop-down
+                    list in the Package field. Click Finish.
+                <p>When you click Finish the IDE creates the class and opens the file in the Source Editor.</p></li>
+                <li>In the Source Editor, paste in the following code:
+
+<pre class="examplecode">
+package com.ajax;
+
+public class Composer {
+
+    private String id;
+    private String firstName;
+    private String lastName;
+    private String category;
+
+    public Composer (String id, String firstName, String lastName, String category) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.category = category;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+}</pre></li>
+            </ol>
+            <p>After you create the <tt>Composer</tt> class if you look at the <tt>ComposerData</tt> class
+                in the editor you can see that the warning annotations are no longer there.
+            If you still see warning annotations in <tt>ComposerData</tt> you can try to resolve the error 
+            by adding any missing import statements.</p>
+            
+            <h3 id="servlet">Creating a Servlet</h3>
+
+            <p>Create a servlet to handle the <code>autocomplete</code> URL that is received by the incoming
+                request.</p>
+
+            <ol>
+                <li>Right-click on the project node in the Projects window and choose New &gt; Servlet to open the New Servlet wizard.
+                    (Choose Other and select Servlet from the Web category if Servlet is not displayed by default in the popup menu.)</li>
+                <li>Name the servlet <code>AutoCompleteServlet</code>, and choose <code>com.ajax</code>
+                    from the drop-down list in the Package field. Click Next.<br>
+                <img src="../../../images_www/articles/73/web/ajax-intro/newservlet-name-location.png" alt="New Servlet wizard, completed Name and Location pane" class="margin-around b-all"></li>
+                <li>In the Configure Servlet Deployment panel, change the URL pattern to <strong><code>/autocomplete</code></strong> so that it matches the URL that
+                    you previously set in the <code>XMLHttpRequest</code> object. <br>
+                    <img alt="New Servlet wizard, completed Configure Servlet Deployment panel" src="../../../images_www/articles/73/web/ajax-intro/newservlet-configure-deployment.png" class="margin-around b-all" >
+                    
+                    <p>This panel saves you
+                    the step of needing to manually add these details to the deployment descriptor.</p></li>
+                <li>Optionally, select "Add servlet information to  deployment descriptor." 
+                    This is so your project is the same as the downloaded sample. 
+                    With later versions of the IDE, by default the servlet is registered by a <code>@WebServlet</code> 
+                    annotation instead of in a deployment descriptor. 
+                    The project will still work if you use the <code>@WebServlet</code> annotation instead of a deployment descriptor.</li>
+                <li>Click Finish. The servlet is created and opens in the Source Editor.</li>
+            </ol>
+
+            <p>The only methods you need to override are <code>doGet()</code>, to define how the servlet
+                handles the <code>autocomplete</code> <code>GET</code> request, and <code>init()</code>,
+                which needs to initiate a <code>ServletContext</code> so the servlet can access other
+                classes in the application once it is put into service.</p>
+
+            <p>You can override methods from superclasses using the IDE's Insert Code popup menu. Implement
+                <code>init()</code> by performing the following steps.</p>
+
+            <ol>
+                <li>Place your cursor beneath the <code>AutoCompleteServlet</code> class declaration
+                    in the Source Editor. Press Alt-Insert (Ctrl-I on Mac) to open the Generate Code popup
+                    menu.
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/insert-code.png"
+                        alt="Insert Code popup menu displayed in Source Editor" class="margin-around b-all"
+                        title="Insert Code popup menu displayed in Source Editor"></li>
+
+                <li>Choose Override Method. In the dialog that displays, all classes that <code>AutoCompleteServlet</code>
+                    inherits from are displayed. Expand the GenericServlet node and select <code>init(Servlet Config config)</code>.
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/new-override.png"
+                        alt="Override dialog listing inherited classes" class="margin-around b-all"
+                        title="Override dialog lists inherited classes"></li>
+
+                <li>Click OK. The <code>init()</code> method is added in the Source Editor.</li>
+
+                <li>Add a variable for a <code>ServletContext</code> object and modify <code>init()</code>
+                    (changes in <strong>bold</strong>):
+
+<pre class="examplecode">
+<strong>private ServletContext context;</strong>
+
+@Override
+public void init(ServletConfig <strong>config</strong>) throws ServletException {
+    <strong>this.context = config.getServletContext();</strong>
+}</pre></li>
+
+                <li>Add an import statement for <code>ServletContext</code>. You can do this by clicking
+                    on the lightbulb icon that displays in the left margin of the Source Editor
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/import-hint.png"
+                        alt="Import hint displayed in left margin of Source Editor" class="margin-around b-all"
+                        title="Import hints display in left margin of the Source Editor"></li>
+            </ol>
+
+            <p>The <code>doGet()</code> method needs to parse the URL of the request, retrieve data from
+                the data store, and prepare a response in XML format. Note that the method declaration
+                was generated when you created the class. To view it, you may need to expand the HttpServlet
+                methods by clicking on the expand icon (<img src="../../../images_www/articles/73/web/ajax-intro/expand-icon.png"
+                alt="expand icon">) in the left margin.</p>
+
+            <ol>
+                <li>Add the following variable declarations beneath the <code>AutocompleteServlet</code>
+                    class declaration.
+
+<pre class="examplecode">
+private ComposerData compData = new ComposerData();
+private HashMap composers = compData.getComposers();</pre>
+
+                    This creates a <code>HashMap</code> of all composer data, which is then employed
+                    by <code>doGet()</code>.</li>
+
+                <li>Scroll down to <code>doGet()</code> and implement the method as follows:
+
+<pre class="examplecode">
+@Override
+public void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
+
+    String action = request.getParameter(&quot;action&quot;);
+    String targetId = request.getParameter(&quot;id&quot;);
+    StringBuffer sb = new StringBuffer();
+
+    if (targetId != null) {
+        targetId = targetId.trim().toLowerCase();
+    } else {
+        context.getRequestDispatcher(&quot;/error.jsp&quot;).forward(request, response);
+    }
+
+    boolean namesAdded = false;
+    if (action.equals(&quot;complete&quot;)) {
+
+        // check if user sent empty string
+        if (!targetId.equals(&quot;&quot;)) {
+
+            Iterator it = composers.keySet().iterator();
+
+            while (it.hasNext()) {
+                String id = (String) it.next();
+                Composer composer = (Composer) composers.get(id);
+
+                if ( // targetId matches first name
+                     composer.getFirstName().toLowerCase().startsWith(targetId) ||
+                     // targetId matches last name
+                     composer.getLastName().toLowerCase().startsWith(targetId) ||
+                     // targetId matches full name
+                     composer.getFirstName().toLowerCase().concat(&quot; &quot;)
+                        .concat(composer.getLastName().toLowerCase()).startsWith(targetId)) {
+
+                    sb.append(&quot;&lt;composer&gt;&quot;);
+                    sb.append(&quot;&lt;id&gt;&quot; + composer.getId() + &quot;&lt;/id&gt;&quot;);
+                    sb.append(&quot;&lt;firstName&gt;&quot; + composer.getFirstName() + &quot;&lt;/firstName&gt;&quot;);
+                    sb.append(&quot;&lt;lastName&gt;&quot; + composer.getLastName() + &quot;&lt;/lastName&gt;&quot;);
+                    sb.append(&quot;&lt;/composer&gt;&quot;);
+                    namesAdded = true;
+                }
+            }
+        }
+
+        if (namesAdded) {
+            response.setContentType(&quot;text/xml&quot;);
+            response.setHeader(&quot;Cache-Control&quot;, &quot;no-cache&quot;);
+            response.getWriter().write(&quot;&lt;composers&gt;&quot; + sb.toString() + &quot;&lt;/composers&gt;&quot;);
+        } else {
+            //nothing to show
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
+    }
+    if (action.equals("lookup")) {
+
+        // put the target composer in the request scope to display 
+        if ((targetId != null) && composers.containsKey(targetId.trim())) {
+            request.setAttribute("composer", composers.get(targetId));
+            context.getRequestDispatcher("/composer.jsp").forward(request, response);
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>As you can see in this servlet, there is nothing really new you need to learn to write
+                server-side code for Ajax processing. The response content type needs to be set to <code>text/xml</code>
+                for cases where you want to exchange XML documents. With Ajax, you can also exchange
+                plain text or even snippets of JavaScript which may be evaluated or executed by the callback
+                function on the client. Note too that some browsers might cache the results, and so it
+                may be necessary to set the Cache-Control HTTP header to <code>no-cache</code>.</p>
+
+            <p>In this example, the servlet generates an XML document that contains all composers with
+                a first or last name beginning with the characters typed in by the user. This document
+                maps to the XML Data depicted in the <a href="#flow-diagram">flow diagram</a> above.
+                Here is an example of an XML document that is returned to the <code>XMLHttpRequest</code>
+                object:</p>
+
+            <div class="indent">
+                <div class="indent">
+<pre class="examplecode">
+&lt;composers&gt;
+    &lt;composer&gt;
+        &lt;id&gt;12&lt;/id&gt;
+        &lt;firstName&gt;Antonin&lt;/firstName&gt;
+        &lt;lastName&gt;Dvorak&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;45&lt;/id&gt;
+        &lt;firstName&gt;Aaron&lt;/firstName&gt;
+        &lt;lastName&gt;Copland&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;7&lt;/id&gt;
+        &lt;firstName&gt;Antonio&lt;/firstName&gt;
+        &lt;lastName&gt;Vivaldi&lt;/lastName&gt;
+    &lt;/composer&gt;
+    &lt;composer&gt;
+        &lt;id&gt;2&lt;/id&gt;
+        &lt;firstName&gt;Arcangelo&lt;/firstName&gt;
+        &lt;lastName&gt;Corelli&lt;/lastName&gt;
+    &lt;/composer&gt;
+&lt;/composers&gt;
+</pre>
+                </div>
+            </div>
+
+            <p class="tips">You can use the IDE's <a href="#httpMonitor">HTTP Monitor</a>
+                to view the returned XML data once you complete the application.</p>
+
+        </div>
+
+
+        <h2 id="client2">Programming the Client-Side: Part 2</h2>
+
+        <p>You must now define the callback function to handle the server's response, and add any functionality
+            necessary to reflect changes in the page that is viewed by the user. This requires modifying
+            the HTML DOM. You need to create JSP pages to display the results of a successful request or the error messages of a failed request. 
+            You can then create a simple stylesheet for the presentation.</p>
+
+        <ul>
+            <li><a href="#callback">Adding Callback Functionality</a></li>
+            <li><a href="#htmldom">Updating the HTML DOM</a></li>
+            <li><a href="#displayresults">Displaying the Results</a></li>
+            <li><a href="#stylesheet">Attaching a Stylesheet</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <a name="callback"></a>
+            <h3>Adding Callback Functionality</h3>
+
+            <p>The callback function is called asynchronously at specific points during HTTP interaction
+                when the <code>readyState</code> property of the <code>XMLHttpRequest</code> object changes.
+                In the application you are building, the callback function is <code>callback()</code>.
+                You recall that in <code>doCompletion()</code>, <code>callback</code> was set as the
+                <code>XMLHttpRequest.onreadystatechange</code> property to a function. Now, implement
+                the callback function as follows.</p>
+
+            <ol>
+                <li>Open <code>javascript.js</code> in the Source Editor and type in the code below.
+
+<pre class="examplecode">
+function callback() {
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>A <code>readyState</code> of &quot;4&quot; signifies the completion of the HTTP interaction.
+                The API for <code>XMLHttpRequest.readState</code> indicates that there are 5 possible
+                values that can be set. These are:</p>
+
+            <div class="indent">
+                <div class="indent">
+                    <table class="half-width">
+                        <thead class="tblheader">
+                            <tr>
+                                <th class="innerpadding"><code>readyState</code> Value</th>
+                                <th class="innerpadding">Object Status Definition</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbltd0 align-center">
+                            <tr>
+                                <td>0</td>
+                                <td>uninitialized</td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>loading</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>loaded</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>interactive</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>complete</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br>
+            <p>Notice that the <code>parseMessages()</code> function is called only when the
+                <code>XMLHttpRequest.readyState</code> is &quot;4&quot; and the <code>status</code>
+                -- the HTTP status code definition of the request -- is &quot;200&quot;, signifying a
+                success. You will define <code>parseMessages()</code> next in <a href="#htmldom">Updating
+                the HTML DOM</a>.</p>
+
+            <a name="htmldom"></a>
+            <h3>Updating the HTML DOM</h3>
+
+            <p>The <code>parseMessages()</code> function handles the incoming XML data. In doing so,
+                it relies on several ancillary functions, such as <code>appendComposer()</code>, <code>getElementY()</code>,
+                and <code>clearTable()</code>. You must also introduce new elements to the index page,
+                such as a second HTML table which serves as the auto-complete box, and ID's for elements
+                so they can be referenced in <code>javascript.js</code>. Finally, you create new variables
+                corresponding to ID's for elements in the index page, initialize them in the
+                <code>init()</code> function that you previously implemented, and add some functionality
+                that is needed each time the index page is loaded.</p>
+
+            <p class="notes"><strong>Note:</strong> The functions and elements that you create in the
+                following steps work interdependently. It is recommended that you work through this section,
+                then examine the code once it is all in place.</p>
+
+            <ol>
+                <li>Open the index page in the Source Editor and type in the below code for the
+                    second row of the HTML table you previously created.
+
+<pre class="examplecode">
+&lt;tr&gt;
+    <strong>&lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        &lt;table id=&quot;complete-table&quot; /&gt;
+    &lt;/td&gt;</strong>
+&lt;/tr&gt;</pre>
+
+                    The second row of the table contains another HTML table. This table represents the
+                    auto-complete box that will be used to populate composer names.</li>
+
+                <li>Open <code>javascript.js</code> in the Source Editor and the following three variables
+                    to the top of the file.
+
+<pre class="examplecode">
+var completeField;
+var completeTable;
+var autoRow;</pre></li>
+
+                <li>Add the following lines (in <strong>bold</strong>) to the <code>init()</code> function.
+
+<pre class="examplecode">
+function init() {
+    completeField = document.getElementById(&quot;complete-field&quot;);
+    <strong>completeTable = document.getElementById(&quot;complete-table&quot;);
+    autoRow = document.getElementById(&quot;auto-row&quot;);
+    completeTable.style.top = getElementY(autoRow) + &quot;px&quot;;</strong>
+}</pre>
+
+                    One purpose of <code>init()</code> is to make elements inside the index page
+                    accessible to other functions that will modify the index page's DOM.</li>
+
+                <li>Add <code>appendComposer()</code> to <code>javascript.js</code>.
+
+ <pre class="examplecode">
+function appendComposer(firstName,lastName,composerId) {
+
+    var row;
+    var cell;
+    var linkElement;
+
+    if (isIE) {
+        completeTable.style.display = 'block';
+        row = completeTable.insertRow(completeTable.rows.length);
+        cell = row.insertCell(0);
+    } else {
+        completeTable.style.display = 'table';
+        row = document.createElement(&quot;tr&quot;);
+        cell = document.createElement(&quot;td&quot;);
+        row.appendChild(cell);
+        completeTable.appendChild(row);
+    }
+
+    cell.className = &quot;popupCell&quot;;
+
+    linkElement = document.createElement(&quot;a&quot;);
+    linkElement.className = &quot;popupItem&quot;;
+    linkElement.setAttribute(&quot;href&quot;, &quot;autocomplete?action=lookup&id=&quot; + composerId);
+    linkElement.appendChild(document.createTextNode(firstName + &quot; &quot; + lastName));
+    cell.appendChild(linkElement);
+}</pre>
+
+                    This function creates a new table row, inserts a link to a composer into it using
+                    the data passed to the function via its three parameters, and inserts the row into
+                    the index page's <code>complete-table</code> element.</li>
+
+                <li>Add <code>getElementY()</code> to <code>javascript.js</code>.
+
+                <pre class="examplecode">
+function getElementY(element){
+
+    var targetTop = 0;
+
+    if (element.offsetParent) {
+        while (element.offsetParent) {
+            targetTop += element.offsetTop;
+            element = element.offsetParent;
+        }
+    } else if (element.y) {
+        targetTop += element.y;
+    }
+    return targetTop;
+}</pre>
+
+                    This function is applied to find the vertical position of the parent element. This
+                    is necessary because the actual position of the element, when it is displayed, is
+                    often dependent on browser type and version. Note that the <code>complete-table</code>
+                    element, when displayed containing composer names, is shifted to the lower right
+                    of the table in which it exists. The correct height positioning is determined by
+                    <code>getElementY()</code>.
+
+                    <br><br>
+                    <p class="notes"><strong>Note:</strong> See <a href="http://www.quirksmode.org/js/findpos.html">this
+                    explanation</a> of <code>offset</code> on <a href="http://www.quirksmode.org/">http://www.quirksmode.org/</a>.</p></li>
+
+                <li>Add <code>clearTable()</code> to <code>javascript.js</code>.
+
+ <pre class="examplecode">
+function clearTable() {
+    if (completeTable.getElementsByTagName("tr").length > 0) {
+        completeTable.style.display = 'none';
+        for (loop = completeTable.childNodes.length -1; loop >= 0 ; loop--) {
+            completeTable.removeChild(completeTable.childNodes[loop]);
+        }
+    }
+}</pre>
+
+                    This function sets the display of the <code>complete-table</code> element to 'none',
+                    (i.e., makes it invisible), and it removes any existing composer name entries that
+                    were created.</li>
+
+                <li>Modify the <code>callback()</code> function to call <code>clearTable()</code>
+                    each time new data is received from the server. Any composer entries that already
+                    exist in the auto-complete box are therefore removed before it becomes populated
+                    with new entries.
+
+<pre class="examplecode">
+function callback() {
+
+    <strong>clearTable();</strong>
+
+    if (req.readyState == 4) {
+        if (req.status == 200) {
+            parseMessages(req.responseXML);
+        }
+    }
+}</pre></li>
+
+                <li>Add <code>parseMessages()</code> to <code>javascript.js</code>.
+
+<pre class="examplecode">
+function parseMessages(responseXML) {
+
+    // no matches returned
+    if (responseXML == null) {
+        return false;
+    } else {
+
+        var composers = responseXML.getElementsByTagName(&quot;composers&quot;)[0];
+
+        if (composers.childNodes.length &gt; 0) {
+            completeTable.setAttribute(&quot;bordercolor&quot;, &quot;black&quot;);
+            completeTable.setAttribute(&quot;border&quot;, &quot;1&quot;);
+
+            for (loop = 0; loop &lt; composers.childNodes.length; loop++) {
+                var composer = composers.childNodes[loop];
+                var firstName = composer.getElementsByTagName(&quot;firstName&quot;)[0];
+                var lastName = composer.getElementsByTagName(&quot;lastName&quot;)[0];
+                var composerId = composer.getElementsByTagName(&quot;id&quot;)[0];
+                appendComposer(firstName.childNodes[0].nodeValue,
+                    lastName.childNodes[0].nodeValue,
+                    composerId.childNodes[0].nodeValue);
+            }
+        }
+    }
+}</pre></li>
+            </ol>
+
+            <p>The <code>parseMessages()</code> function receives as a parameter an object representation
+                of the XML document returned by the <code>AutoComplete</code> servlet. The function programmatically
+                traverses the XML document, extracting the <code>firstName</code>, <code>lastName</code>,
+                and <code>id</code> of each entry, then passes this data to <code>appendComposer()</code>.
+                This results in a dynamic update to the contents of the <code>complete-table</code> element.
+                For example, an entry that is generated and inserted into <code>complete-table</code>
+                might look as follows:
+
+                <div class="indent">
+                    <div class="indent">
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td class=&quot;popupCell&quot;&gt;
+        &lt;a class=&quot;popupItem&quot; href=&quot;autocomplete?action=lookup&id=12&quot;&gt;Antonin Dvorak&lt;/a&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+
+                    </div>
+                </div>
+
+            <p>The dynamic update to the <code>complete-table</code> element represents the final step
+                of the process flow of communication that takes place during communication using Ajax.
+                This update maps to the HTML & CSS data being sent to the presentation in the <a href="#flow-diagram">flow
+                diagram</a> above.</p>
+
+            <h3 id="displayresults">Displaying the Results</h3>
+            <p>To display the results, you need a JSP file named <code>composers.jsp</code>. This page is called from <code>AutoCompleteServlet</code> during a lookup action. You also need an <code>error.jsp</code> file, which is called from <code>AutoCompleteServlet</code> if the composer cannot be found.</p>
+            <p><strong>To display results and errors:</strong></p>
+            <ol>
+                <li>In the Projects window, right-click the application's Web Pages folder and select New &gt; JSP. The New JSP wizard opens.</li>
+                <li>In the File Name field, type <code>composer</code>. In the Created File field, you should see a path ending in <code>/web/composer.jsp</code>.</li>
+                <li>Click Finish. The file <code>composer.jsp</code> opens in the editor. A node for the file appears in the Projects window in the Web Pages folder. </li>
+                <li>Replace the placeholder code in <code>composer.jsp</code> with the following code:
+                    <pre class="examplecode">&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Composer Information&lt;/title&gt;
+
+    &lt;link rel="stylesheet" type="text/css" href="stylesheet.css"&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+
+    &lt;table&gt;
+      &lt;tr&gt;
+        &lt;th colspan="2"&gt;Composer Information&lt;/th&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;First Name: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.firstName}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Last Name: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.lastName}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;ID: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.id}&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Category: &lt;/td&gt;
+        &lt;td&gt;${requestScope.composer.category}&lt;/td&gt;
+      &lt;/tr&gt;      
+    &lt;/table&gt;
+
+    &lt;p&gt;Go back to &lt;a href="index.html" class="link"&gt;application home&lt;/a&gt;.&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+                <p class="notes"><strong>Note.</strong> You will need to change the link to return to the index page
+        if your index page is <tt>index.jsp</tt>.</p>
+                </li>
+<li>Create another JSP file in the project's Web Pages folder. Name the file <code>error.jsp</code>.</li>
+<li>Replace the placeholder code in <code>error.jsp</code> with the following code:
+    <pre class="examplecode">&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;link rel="stylesheet" type="text/css" href="stylesheet.css"&gt;      
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+        &lt;title&gt;Seach Error&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h2&gt;Seach Error&lt;/h2&gt;
+        
+        &lt;p&gt;An error occurred while performing the search. Please try again.&lt;/p&gt;
+        
+        &lt;p&gt;Go back to &lt;a href="index.html" class="link"&gt;application home&lt;/a&gt;.&lt;/p&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+    <p class="notes"><strong>Note.</strong> You will need to change the link to return to the index page
+        if your index page is <tt>index.jsp</tt>.</p>
+</li>
+            </ol>
+            <h3 id="stylesheet">Attaching a Stylesheet</h3>
+
+            <p>At this stage, you have completed all the code needed for the functionality of the application.
+                To see the results of your efforts, try running the application now.</p>
+
+            <ol>
+                <li>In the Projects window, right-click the project node and choose Run. The project
+                    is recompiled and deployed to the target server. Your browser opens, and you can
+                    see the index page.
+
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/no-css.png"
+                        alt="Application displayed in browser without stylesheet" class="margin-around b-all"
+                        title="Successful deployment without stylesheet"></li>
+            </ol>
+
+            <p>To add a stylesheet to your application, simply create a <code>.css</code> file
+                and link to it from your presentation page(s). When you work in <code>.css</code> files,
+                the IDE provides you with code completion support, as well as the following windows
+                to help you generate and edit stylesheet rules.</p>
+
+            <ul>
+                <li><strong>CSS Styles window.</strong> The CSS Styles window enables you to edit the declarations 
+                    of rules for HTML elements and selectors in a CSS file.</li>
+                <li><strong>Create CSS Rules dialog box.</strong> The Create CSS Rule dialog box enables you to 
+                    create new rules in a CSS style sheet. </li>
+                <li><strong>Add CSS Property dialog box.</strong>The Add CSS Property dialog box enables you to 
+                    add declarations to a CSS rule in a style sheet by adding properties and values. </li>
+            </ul>
+
+            <p>To add a stylesheet to your application perform the following steps.</p>
+
+            <ol>
+                <li>In the Projects window, right-click the Web Pages node and choose New &gt; Cascading
+                    Style Sheet (If Cascading Style Sheet is not listed, choose Other. Then choose
+                    Cascading Style Sheet from the Web category in the New File wizard.)</li>
+
+                <li>In the CSS File Name text field, type <strong><code>stylesheet</code></strong>.
+                    Click Finish. 
+                    <p>The new file is created and opens in the editor.</p></li>
+
+                <li>Type the following rules in <code>stylesheet.css</code> in the editor. You can make use of
+                    the IDE's code completion support by pressing Ctrl-Space at points when you want
+                    to call up suggestions.
+
+<pre class="examplecode">
+body {
+   font-family: Verdana, Arial, sans-serif;
+   font-size: smaller;
+   padding: 50px;
+   color: #555;
+   width: 650px;
+}
+
+h1 {
+   letter-spacing: 6px;
+   font-size: 1.6em;
+   color: #be7429;
+   font-weight: bold;
+}
+
+h2 {
+   text-align: left;
+   letter-spacing: 6px;
+   font-size: 1.4em;
+   color: #be7429;
+   font-weight: normal;
+   width: 450px;
+}
+
+table {
+   width: 550px;
+   padding: 10px;
+   background-color: #c5e7e0;
+}
+
+td {
+   padding: 10px;
+}
+
+a {
+  color: #be7429;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.popupBox {
+  position: absolute;
+  top: 170px;
+  left: 140px;
+}
+
+.popupCell {
+   background-color: #fffafa;
+}
+
+.popupCell:hover {
+  background-color: #f5ebe9;
+}
+
+.popupItem {
+  color: #333;
+  text-decoration: none;
+  font-size: 1.2em;
+}</pre>
+
+                </li>
+                <li>Open the CSS Styles window by choosing Window &gt; Web &gt; CSS Styles.
+                    <br>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/css-styles-window.png"
+                        alt="CSS Styles window displaying h1 rule properties" class="margin-around b-all"
+                        title="CSS Styles window displaying h1 rule properties">
+
+                <p>You can use the CSS Styles window to quickly view the properties and edit
+                    style rules. 
+                    When you select a rule in the upper pane of the CSS Style window 
+                    you can see the properties of the rule in the lower pane.
+                    You can add a CSS Rules to the stylesheet by clicking the Edit CSS Rules icon
+                    (<img src="../../../images_www/articles/73/web/ajax-intro/newcssrule.png"
+                    alt="New CSS Property icon" title="New CSS Property icon">)
+                    in the toolbar of the upper pane.
+                    You can modify rules in the lower pane by editing the property sheet and 
+                    add properties by clicking the Add Property icon
+                    (<img src="../../../images_www/articles/73/web/ajax-intro/newcssproperty.png"
+                    alt="New CSS Property icon" title="New CSS Property icon">)
+                    in the toolbar of the lower pane.
+                </li>
+
+                <li>Switch to the index page in the Source Editor, and add a reference
+                    to the stylesheet between the <code>&lt;head&gt;</code> tags.
+
+<pre class="examplecode">
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;stylesheet.css&quot;&gt;</pre></li>
+
+
+                <li>Add the <code>popupBox</code> class that is defined in the stylesheet to the
+                    <code>complete-table</code> element (changes in <strong>bold</strong>).
+
+<pre class="examplecode">
+&lt;tr&gt;
+    &lt;td id=&quot;auto-row&quot; colspan=&quot;2&quot;&gt;
+        &lt;table id=&quot;complete-table&quot; <strong>class=&quot;popupBox&quot;</strong> /&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+                    <p>You can use the code completion in the editor to help you select the
+                    style rule that you want to apply to the selector.</p>
+                    <img src="../../../images_www/articles/73/web/ajax-intro/css-completion.png"
+                        alt="CSS code completion in the editor" class="margin-around b-all"
+                        title="CSS code completion in the editor">
+
+                    <p>As indicated in <code>stylesheet.css</code>, this rule positions the <code>complete-table</code>
+                    element so that it displays slightly to the right of its parent element.</p></li>
+            </ol>
+            <p>When you save the index page the application is automatically redeployed to the server.
+            If the page is still open in your browser you can reload the page to see that the 
+            page is now rendered according to the rules in the CSS stylesheet. </p>
+        </div>
+
+
+        <br>
+        <h2 id="run">Running the Project</h2>
+
+        <p>When you run the application again, it displays in the browser using the stylesheet
+            you just created. Each time you type in a character, an asynchronous request is sent
+            to the server, and returned with XML data that has been prepared by <code>AutoCompleteServlet</code>.
+            As you enter more characters, the number of composer names decreases to reflect the new
+            list of matches.</p>
+
+
+        <h3 id="httpMonitor">Using the HTTP Server Monitor</h3>
+
+        <p>You can use the IDE's HTTP Server monitor to verify the HTTP communication that takes place
+            as requests and responses are passed between the client and server. The HTTP Server Monitor
+            displays information such as client and server headers, session properties, cookie details,
+            as well as request parameters.</p>
+
+        <p>Before you begin using the HTTP monitor, you must first enable it on the server you
+            are using.</p>
+
+        <ol>
+            <li>Open the Servers window by choosing Tools &gt; Servers from the main menu.</li>
+
+            <li>In the left pane, select the server you are using with the project. Then,
+                in the right pane, select the Enable HTTP Monitor option.
+                <p class="notes"><strong>Note:</strong> This option displays under the Common tab
+                    for the GlassFish server. For Tomcat, it resides under the Connection tab.</p></li>
+            <li>Click Close.</li>
+        </ol>
+
+        <p class="alert">If the server is already running, you need to restart it in order to
+            allow changes to take effect. You can restart the server by opening the Services
+            window (Window &gt; Services), then right-clicking your server beneath the Servers
+            node and choosing Restart.</p>
+
+        <p>Now, when you run the application again, the HTTP monitor opens in the lower region
+            of the IDE. You can select a record in the left pane, then click the tabs in the
+            main window to view information concerning each request that is made.</p>
+
+        <div class="indent">
+            <img src="../../../images_www/articles/73/web/ajax-intro/http-monitor.png"
+            class="margin-around b-all" alt="HTTP Server monitor displays in the IDE"
+            title="HTTP Server monitor displays in the IDE" style="width:688px"></div>
+
+        <p>You can verify the XML data that is sent from the server as a result of the asynchronous
+            request made when a user enters a character in the auto-complete field.</p>
+
+        <ol>
+            <li>In the tree view on the left side of the HTTP monitor, right-click a request
+                record and choose Replay.</li>
+        </ol>
+
+        <p>The response is generated in your browser. In this case, because the response
+            consists of XML data, the browser displays the data in it's native XML viewer.</p>
+
+        <div class="indent">
+            <img src="../../../images_www/articles/73/web/ajax-intro/xml-data.png"
+                 class="margin-around b-all" alt="HTTP Server monitor displays in the IDE"
+                 title="HTTP Server monitor displays in the IDE" style="width:688px"></div>
+
+
+        <h3 id="conclusion">Conclusion</h3>
+
+        <p>This concludes the Introduction to Ajax. Hopefully by now you realize that Ajax is simply
+            exchanging information over HTTP in the background, and updating that page dynamically based
+            on the results.</p>
+
+        <p>You may note that the application you built has numerous shortcomings, for example nothing
+            happens when a composer name is selected from the auto-complete box! You are welcome to
+            <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaScript%252FMyAjaxApp.zip">download
+            the solution project</a> to see how this can be implemented using JSP technology. Furthermore,
+            you might want to investigate server-side validation that prevents a user from requesting a
+            name that does not exist in the data store. You can learn more about these techniques and
+            technologies by following other tutorials on the
+            <a href="../../trails/java-ee.html">Java EE &amp; Java Web Learning Trail</a>.</p>
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20Ajax%20(Java)">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">See Also</h2>
+
+        <p>For more information about Ajax and Java technology on <a href="https://netbeans.org/">netbeans.org</a>,
+            see the following resources:</p>
+
+        <ul>
+            <li><a href="../../docs/web/js-toolkits-jquery.html">Using jQuery to Enhance the Appearance
+                    and Usability of a Web Page</a>. Demonstrates how to integrate jQuery core and UI
+                    libraries into a NetBeans project.</li>
+
+            <li><a href="../../docs/web/js-toolkits-dojo.html">Connecting a Dojo Tree to an ArrayList
+                    using JSON</a>. Based on a JavaOne Hands-On Lab, this document shows how to implement
+                    a Dojo Tree widget into a web page and enable the server-side to respond to Tree
+                    requests in JSON format.</li>
+
+            	<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2272">Creating JavaScript Files</a> in <i>Developing Applications with NetBeans IDE</i>.</li>
+
+            <li><a href="quickstart-webapps-wicket.html">Introduction to the Wicket Web Framework</a>.
+                An introduction to creating reusable components and applying them to a web application
+                using the Wicket framework.</li>
+
+            
+            
+        </ul>
+
+    </body>
+</html>

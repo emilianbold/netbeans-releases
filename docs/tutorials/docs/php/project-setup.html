@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+-->
+<html>
+    <head>
+        <title>NetBeans IDE for PHP: Project Setup </title>
+        <meta name="KEYWORDS" content="NETBEANS, start, PHP development, create project">
+        <meta name="DESCRIPTION" content="Start PHP development in NetBeans IDE, create project" >
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css" media="screen"></head>
+    <body>
+        <h1>Setting Up a PHP Project</h1>
+        <p>This tutorial shows you how to set up a PHP project in NetBeans IDE. </p>
+        <p><b>Contents</b></p>
+        <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to the NetBeans IDE 7.2, 7.3, 7.4 and 8.0" >
+        <ul class="toc">
+            <li><a href="#gettingReady">Getting Ready</a></li>
+            <li><a href="#location">Specifying the Name and Location of the New Project</a>
+                <ul>
+                    <li><a href="#projectNoExistingSources">Project without Previously Developed Sources</a></li>
+                    <li><a href="#importSources">Importing  Existing Local Source Files into a Project</a></li>
+                    <li><a href="#remote-sources">Importing Existing Remote Source Files into a Project</a></li>
+                </ul>
+            </li>
+            <li><a href="#runConfiguration">Specifying the Run Configuration  of the New Project</a>
+                <ul>
+                    <li><a href="#localServer">Local Web Site</a></li>
+                    <li><a href="#remiteWebSite">Remote Web Site</a></li>
+                    <li><a href="#scriptCommandLine">Script</a></li>
+                </ul>
+            </li>
+            <li><a href="#managingProjectSetup">Customizing the Project Setup</a>
+                <ul>
+                    <li><a href="#sources">Sources</a></li>
+                    <li><a href="#run-configuration-panel">Run Configuration</a></li>
+                    <li><a href="#phpIncludePath">PHP Include Path</a></li>
+                    <li><a href="#formatting">Formatting</a></li>
+                    <li><a href="#add-js-libraries">Adding JavaScript Libraries</a></li>
+                </ul>
+            </li>
+
+        </ul>
+        <p><b>To follow this tutorial, you need the following software and resources.</b></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software or Resource</th>
+                    <th class="tblheader" scope="col">Version Required</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a target="_blank" href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">PHP download bundle</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">A PHP engine</td>
+                    <td class="tbltd1">Version 5
+                </tr>
+                <tr>
+                    <td class="tbltd1">A web server</td>
+                    <td><a target="_blank" href="http://httpd.apache.org/download.cgi">Apache HTTP Server 2.2</a> is recommended.<br></td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">A PHP debugger</td>
+                    <td><a target="_blank" href="http://www.xdebug.org">XDebug 2.0 or later</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <h2><a name="gettingReady"></a>Getting Ready</h2>
+        <p>Before creating  a PHP project, you need to download and install the <a target="_blank" href="https://netbeans.org/downloads/index.html">NetBeans IDE for PHP</a> and <a href="../../trails/php.html#configuration">prepare your environment</a> for PHP development. 
+        </p>
+
+        <p>To set up a PHP project:   </p>
+        <ul>
+            <li><a href="#location">Specify the project name and the location for the project's source files</a></li>
+            <li><a href="#runConfiguration">Specify the way to deploy your project</a></li>
+        </ul>
+        To change the settings of an existing project, position the cursor on the project node and choose Properties from the popup menu. Proceed as described in section 
+        <a href="#managingProjectSetup">Customizing  the Project Setup</a>.
+        <h2><a name="location"></a>Specifying the Project Name and Location of the Source Files   </h2>
+        <ol>
+            <li>Start the IDE and switch to the Projects window. </li>
+            <li>Choose File &gt; New Project. 
+                The Choose Project panel opens. </li>
+            <li>In the Categories list, choose PHP. </li></ol>
+        <p>Depending on your needs, you can create a completely new PHP project <a href="#projectNoExistingSources">without any previously developed source files</a>, or <a href="#importSources">import an existing local PHP application</a> or remote PHP application into a new project. </p>
+        <div class="indent">
+            <h3><a name="projectNoExistingSources"></a>Project without Previously Developed Source Files</h3>
+            <ol>
+                <li>In the Projects area, choose PHP Application and click Next. The New PHP Project &gt; Name and Location panel opens. </li>
+                <li>In the Project Name text field, enter the name of the project. </li>
+                <li><a name="sources-folder"></a>In the Sources  Folder field, specify the subfolder of your document root where you want to store your source files. 
+                    <p>The document root is the folder where the local web server looks for files to open in the browser. The document root is specified in the web server <a href="../../trails/php.html#configuration">configuration file</a>. After installation, the New Project wizard  locates the document root and by default specifies the following path: <tt>&lt;Document Root&gt;\&lt;New PHP Project&gt;</tt>.</p>
+                    <p class="notes">A copy of the source files must be kept in a subfolder of the document root. However, you can have your Sources Folder in a different location than the document root and copy source files from this location to the document root. See <a href="#copy-sources">Specifying the Run Configuration</a>.</p>
+                </li>
+                <li>From the Default Encoding dropdown list, choose the default encoding for your project.  </li>
+                <li>If you want to store NetBeans metadata in a different location than your source files, select &quot;Put NetBeans metadata into a separate directory.&quot; For example, you might want to store your sources in your document root but the NetBeans metadata in your  NetBeansProjects directory.
+                    <br>
+                    <img src="../../../images_www/articles/72/php/project-setup/new-php-project-m1.png" alt="New PHP Project Panel with the fields filled in" class="margin-around"></li>
+                <li> Click Next. The Run Configuration panel opens. </li>
+            </ol>
+            <h3><a name="importSources"></a>Importing Existing Local Source Files into a Project</h3>
+            <ol>
+                <li>In the Projects area, choose PHP Application with Existing Sources and click Next. The New PHP Project &gt; Name and Location panel opens. </li>
+                <li>In the Project Name text field, enter the name of the project. </li>
+                <li>In the Sources  Folder field, specify the folder from where you want to import the source files.<br>
+                    <strong>Note:</strong> If you are going to run the <a href="#localServer">project on a local web server</a>, do not forget to specify <a href="#copyFilesFromSourcesFolder">copying the source files</a> to it.</li>
+                <li>From the Default Encoding dropdown list, choose the default encoding for your project. </li>
+                <li>If you want to store NetBeans metadata in a different location than your source files, select &quot;Put NetBeans metadata into a separate directory.&quot; For example, you might want to store your sources in your document root but the NetBeans metadata in your  NetBeansProjects directory. <br>
+                    <img src="../../../images_www/articles/72/php/project-setup/new-php-project-with-ssources.png" alt="New PHP Project Panel with existing sources the fields filled in" class="margin-around"></li>
+                <li> Click Next. The Run Configuration panel opens. </li>
+            </ol>
+
+            <h3><a name="remote-sources"></a>Importing Existing Remote Source Files into a Project</h3>
+            <ol>
+                <li>In the Projects area, choose PHP Application from Remote Server and click Next. The New PHP Project &gt; Name and Location panel opens. </li>
+                <li>In the Project Name text field, enter the name of the project. </li>
+                <li>In the Sources  Folder field, specify the subfolder of your <em>local</em> document root where you want to store your source files.
+                    <p>The document root is the folder where the local web server looks for files to open in the browser. The document root is specified in the web server <a href="../../trails/php.html#configuration">configuration file</a>. After installation, the New Project wizard  locates the document root and by default specifies the following path: <tt>&lt;Document Root&gt;\&lt;New PHP Project&gt;</tt>. Note that it is useful to be able to test the project on a local server.</p>
+                </li>
+                <li>If you want to store NetBeans metadata in a different location than your source files, select &quot;Put NetBeans metadata into a separate directory.&quot; For example, you might want to store your sources in your document root but the NetBeans metadata in your  NetBeansProjects directory. </li>
+                <li> Click Next. The Remote Connection panel opens.  The tutorial <a href="remote-hosting-and-ftp-account.html" target="_blank">Deploying a PHP Application to a Remote Web Server</a> describes how to set up remote connections.</li>
+            </ol>
+        </div>
+        <h2><a name="runConfiguration" id="runConfiguration"></a>Specifying the  Default Run Configuration of the New Project    </h2>
+        <p>A run configuration is a stored setting  for running a PHP project. You can define several configurations for one project and switch between them back and forth. For example, if an application has been developed locally and needs to be uploaded to a remote production server, you only need to choose another run configuration. Run configurations apply to both running and  debugging. Run configurations accommodate the following common use cases: </p>
+        <ul>
+            <li>Developing PHP web pages on a local machine with a local web server. </li>
+            <li>Executing PHP scripts using a local PHP engine. This approach is applied to PHP files that are not intended for outputting HTML. Therefore such scripts can be run without  a browser.</li>
+            <li>Remote Development. The PHP source code and other application files are uploaded to a remote web server via FTP. This use case is common when the development is shared across multiple people.</li>
+            <li>A combination of the above use cases: an application is developed locally and deployed on a remote production server upon completion. During development, PHP scripts are executed if necessary.</li>
+        </ul>
+        <p>When you create a new PHP project, you create the project's default run configuration. To set the default run configuration for your project, choose the relevant option from the Run As dropdown list on the Run Configuration panel. The following options are available:<ul>
+            <li><a href="#localServer">Local Web Site</a>. To use this run configuration, you need the <a href="../../trails/php.html#configuration">Apache http server installed</a> and running. </li>
+            <li><a href="remote-hosting-and-ftp-account.html" target="_blank">Remote Web Site (FTP/SFTP) (Separate tutorial)</a>. To use this configuration, you need a <a href="remote-hosting-and-ftp-account.html#registerHostingAccount">hosting account</a> on a remote server and  an <a href="remote-hosting-and-ftp-account.html#createFTPAccount">FTP account</a> on this server. </li>
+            <li><a href="#scriptCommandLine">Script</a>. This run configuration does not require that a web server be installed and running. You only need a <a href="../../trails/php.html#configuration">PHP engine</a>.</li>
+        </ul>
+        <p>The process for creating additional run configurations, or editing the default run configuration, is described in <a href="#runConfiguration">Customizing the Project Setup: Run Configuration</a>. It is almost identical to the process for creating the default run configuration, except that you use the Properties dialog of the existing project instead of the new project wizard.</p>
+        <div class="indent">
+            <h3><a name="localServer"></a>Local Web Site</h3>
+            <p>A local web site configuration involves a copy of your PHP source folders in the Web folder of the Apache web server installed on your machine. It is common practice for a project to have both a local and a remote web site configuration. Note that the procedure for setting up the local web site run configuration differs slightly depending on whether you are creating a project from existing sources or without existing sources.</p>
+            <p><strong>To set up a local web site configuration:</strong></p>
+            <ol>
+                <li>From the Run As dropdown list, choose Local Web Site.</li>
+                <li>In the Project URL field, check the automatically generated URL address. Make sure that the Apache HTTP server listens to the default port 80. If not, specify the port number explicitly, in the format <tt>localhost:&lt;port number&gt;</tt>.<br>
+                    <img src="../../../images_www/articles/72/php/project-setup/run-configuration-local-server-project-with-existing-sources.png" alt="Project Run Configuration: Local Web Server" class="margin-around"></li>
+
+                <li>If you are creating the project from existing sources, you can choose which source file to use as the index file.</li>
+                <li>To store  the project's source files in a different directory than the NetBeans IDE project, select &quot;Copy files from Sources Folder to another location&quot;. <em>If you are creating a project from existing sources, this is a required step, unless the existing sources were already in the web folder of your Apache server.</em><br>
+                    The field by default specifies the following path:<tt> &lt;Document Root&gt;\&lt;New PHP Project&gt;</tt>. Use the Browse button to specify a different path, if necessary.<br>
+                    The document root is the folder where the web server looks for files to open in the browser. The document root is specified in the web server <a href="../../trails/php.html#configuration">configuration file</a>. <br>
+                    The wizard detects the Apache installation type, either a component or within a package, and provides the path  to the default location of the <tt>htdocs</tt> folder for the current installation type. Therefore, if you accepted the default settings during the installation of the Apache server or the AMP package, choose the path from the dropdown list. </li>
+                <li>Click Finish. The IDE creates your PHP project.</li>
+            </ol>
+
+            <h3><a name="remiteWebSite"></a>Remote Web Site</h3>
+            <p>See the tutorial <a href="remote-hosting-and-ftp-account.html">Deploying a PHP Application to a Remote Web Server</a>.</p>
+            <h3><a name="scriptCommandLine"></a>Script</h3>
+            <ol>
+                <li>From the Run As dropdown list, choose Script.<br>
+                    <img src="../../../images_www/articles/72/php/project-setup/project-properties-script.png" alt="Project Properties dialog
+                         showing Run Configuration properties, with Run As...Script selected" height="467" width="600" class="margin-around"></li>
+                <li>To specify the location of the PHP engine, click the Configure button next to the Use Default PHP Interpreter box. The PHP Options dialog opens on the General tab.<br><img src="../../../images_www/articles/72/php/project-setup/run-config-script-options-m1.png" alt="Project Run Configuration: Script. Specifying the path to the PHP engine and the output location" class="margin-around" height="199" width="565"> </li> 
+                <li>In the PHP 5 Interpreter field, specify the path to the <tt>php.exe</tt> file. Use the Browse or Search... button, if necessary.
+                </li>
+                <li>To specify how the script execution results will be shown, select the relevant checkbox in the Open Result In area. The following options are available:<br>
+                    <br>
+                    <ul>
+                        <li>Output Window. The results of executing a script will appear in the output window in the bottom of the NetBeans IDE window. </li>
+                        <li>Web Browser. The default browser window will open with the results of executing a script in the form of an HTML file.  </li>
+                        <li>Editor. The results of executing a script will open as an HTML file in the IDE editor window. </li>
+                    </ul>
+                </li>
+                <li>Click OK. The Options dialog box closes and the system returns to the Run Configuration panel. <br>
+                </li>
+                <li>Add any arguments, such as <tt>debug=true</tt>, and any <a href="http://www.php.net/manual/en/features.commandline.options.php" target="_blank" >PHP command-line options</a>.</li>
+            </ol>
+        </div>
+        <h2><a name="managingProjectSetup"></a>Customizing the Project Setup</h2>
+        <p>During the project creation, the basic project settings are defined: the project type, location of the project source files, and the default run configuration. To expand the project setup with new settings, customize the project. Position the cursor on the project node and choose Properties from the popup menu. The Project Properties panel opens with a list of settings categories.
+        <div class="indent">
+            <h3><a name="sources"></a>Sources</h3>
+            <br>On the Sources panel:
+            <ol>
+                <li>The Web Root field shows the  root folder of your application site. By default, the field shows the Sources folder. To change the web root, click Browse and select another folder. </li>
+                <li>Select the <a href="#location">Copy files from Sources Folder</a> to another location, if necessary, and specify the path to the storage folder. </li>
+                <li>Change the encoding, if necessary <br>
+                    <img src="../../../images_www/articles/72/php/project-setup/pprop-sources.png" alt="Managing project setup: Project Properties dialog box" class="margin-around"></li>	 
+                <li>To complete the project customization, click OK.</li>
+            </ol>
+            <h3><a name="run-configuration-panel"></a>Run Configuration</h3>
+            <br>
+            On the Run Configuration panel, modify the default run configuration and/or define new run configurations, if necessary. 
+            <br>
+            <ol>
+                <li>To modify the default settings, <a href="#runConfiguration">update the fields as during the project creation</a>. </li>
+                <li>To define a new run configuration, click New next to the Configuration dropdown list. The Create New Configuration dialog box opens.</li>
+                <li>In the Configuration Name field, enter the name of the new run configuration and click OK. You return to the Run Configuration panel.</li>
+                <li>Define the run configuration settings in the same way as you defined the <a href="#runConfiguration">default run configuration</a> during the project creation and click OK.   The new configuration is added to the Configuration dropdown list.</li>
+                <li>To remove a configuration, select it from the Configuration dropdown list and click Delete. <br> 
+                    <img src="../../../images_www/articles/72/php/project-setup/pprop-runconfig.png" alt="Managing project setup: Run configuration" class="margin-around">	</li>
+                <li>To complete the project customization, click OK.</li> 
+            </ol>
+            <h3><a name="phpIncludePath"></a>PHP Include Path</h3>
+            <br>
+            On the Include Path panel, specify the location of the files that you need to use in the project but do not need to locate  together with the source files.
+            <ol>
+                <li>To add a folder, click Add Folder. The Select Folder(s) dialog box opens.</li>
+                <li>Select the relevant folders and click Open. You return to the PHP Include Path panel. The new folder is added to the list. </li>
+                <li>To navigate through the list, use the buttons Move Up and Move Down.  </li>
+                <li>To remove a folder from the list of included folder, select the folder and click Remove.<br>
+                    <img src="../../../images_www/articles/72/php/project-setup/pprop-include-path.png" alt="Managing project setup: PHP Include Path" class="margin-around">	 </li>
+                <li>To complete the project customization, click OK.</li>
+            </ol>
+
+            <h3><a name="formatting"></a>Formatting</h3>  
+            <p>On the Formatting panel, define the formatting style you want to apply to your source files in the editor. You may define either global or project-specific
+                formatting.</p>
+            <p><b>To define global IDE formatting:</b></p>
+            <ol>
+                <li>Choose &quot;Use global options&quot;.</li>
+                <li>Click Edit Global Options. The IDE Options dialog opens, on the
+                    Editor &gt; Formatting tab. <br>
+                    <img src="../../../images_www/articles/72/php/project-setup/global-formatting.png" alt="Global formatting dialog" class="margin-around"></li>
+                <li>From the Language dropdown list, select the language to which the settings should be applied.</li>
+                <li>From the Categories dropdown list,   select the format items to which the setting will be applied.</li>
+                <li>Set your desired formatting and click OK.</li>
+                <li class="tips"> Click the Help button for detailed information.</li>
+            </ol>
+            <p><b>To define project-specific formatting:</b></p>
+            <ol>
+                <li>Choose &quot;Use project-specific options&quot;. The hidden area displays. <img src="../../../images_www/articles/72/php/project-setup/pprop-formatting.png" alt="Managing project setup: Formatting" class="margin-around"></li>
+                <li>From the Language dropdown list, select All Languages or PHP. In this case, All Languages means PHP and all other languages you have in your PHP project.</li>
+                <li>From the Categories dropdown list,   select the format items to which the setting will be applied.</li>
+                <li>Set your desired formatting and click OK.</li>
+                <li class="tips"> Click the Help button for detailed information.</li>
+                
+            </ol>
+            <h3><a name="add-js-libraries"></a>Adding JavaScript Libraries</h3>
+            <p>Built-in JavaScript libraries were removed in NetBeans IDE 6.7 because they were very large and slowed performance and it is easy to add libraries manually. Manually adding JavaScript libraries to your project enables Code Completion and all other JavaScript-related functionality in the IDE for your project.</p>
+            <p><strong>To add JavaScript Libraries to your project:</strong></p>
+            <ol>
+                <li>Download the JavaScript libraries you need, or locate them if you already have them.</li>
+                <li>Copy the JavaScript libraries to your PHP project folder, using the IDE or a file explorer.</li>
+            </ol>
+            <p>If your project properties are set so that project sources are copied to another location (see <a href="#sources">Sources</a>), the JavaScript libraries are also copied to this location. If your project is deployed on a remote server, the JavaScript libraries are uploaded to that server the next time your project sources are uploaded to the server.</p>
+        </div>
+        <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20PHP%20Project%20Setup">Send Feedback on This Tutorial</a></div>
+        <br style="clear:both;">
+        <p>To send comments and suggestions, get support, and keep informed on the latest
+            developments on the NetBeans IDE PHP development features, <a href="../../../community/lists/top.html">join
+                the users@php.netbeans.org mailing list</a>.</p>
+        <p><a href="../../trails/php.html">Back to the PHP Learning Trail</a></p>
+    </body>
+</html>

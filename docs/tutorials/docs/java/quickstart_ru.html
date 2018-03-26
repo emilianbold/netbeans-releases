@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009 - 2014, Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Быстрое учебное руководство по Java IDE NetBeans</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <meta name="keywords" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION">
+        <meta name="description" content="A very simple and quick introduction to the NetBeans IDE workflow by walking you through the creation of a simple Hello World Java console application." >
+    </head>
+
+    <body>
+
+        <h1>Быстрое учебное руководство по Java IDE NetBeans</h1>
+
+        <p>Добро пожаловать в IDE NetBeans!</p>
+        <p>В этом учебной курсе приводится очень простое и быстрое введение в поток операций IDE NetBeans путем пошагового описание создания простого консольного приложения "Hello World" Java. Ознакомление с этим руководством даст общее представление о создании, сборке и выполнении приложений в среде IDE.</p>
+        <p>Изучение материала, представленного в этом руководстве, занимает приблизительно 10 минут.</p>
+        <p>После завершения этого учебного курса можно перейти к учебным картам, на которые имеются ссылки на странице <a href="../../index.html">Документация, обучение &amp; поддержка</a>. Учебные карты обеспечивают полные учебные руководства, в которых описываются широкий диапазон функций IDE и приемов программирования для различных типов приложений. Если не нужно использовать приложение "Здравствуй, мир", можно пропустить это учебное руководство и перейти напрямую к учебным картам.
+        </p>
+        <p><b>Содержание</b></p>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2 или более поздней версии" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2 или более поздней версии">
+        <ul class="toc">
+            <li><a href="#setup" title="Настройка проекта">Настройка проекта</a></li>
+            <li><a href="#code" title="Добавление кода к автоматически созданному исходному файлу">Добавление кода к автоматически созданному исходному файлу</a></li>
+            <li><a href="#run" title="Компиляция и выполнение проекта">Компиляция и выполнение приложения</a></li>
+            <li><a href="#build" title="Сборка и развертывание приложения">Сборка и развертывание приложения</a></li>
+            <li><a href="#nextsteps" title="Что дальше?">Следующие действия</a></li>
+        </ul>
+
+        <p><b>Для работы с этим учебным курсом требуются программное обеспечение и ресурсы, перечисленные ниже.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">версия 7.2, 7.3, 7.4 или 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 6, 7 или 8</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <h2>Настройка проекта<a name="setup"></a></h2>
+        <p>Для создания проекта IDE выполните следующие действия:</p>
+
+        <ol>
+            <li>Start IDE NetBeans.</li>
+            <li>В меню IDE выберите 'Файл > Создать проект', как показано на рисунке.
+                <p class="align-center"><img alt="IDE NetBeans with the File &gt; New Project menu item selected." class="margin-around" src="../../../images_www/articles/72/java/quickstart/new-proj.png"></p>
+          </li>
+            <li>В мастере создания проекта разверните категорию &quot;Java&quot; и выберите &quot;Приложение Java&quot;.  Затем нажмите кнопку &quot;Дальше&quot;. 
+               
+			   <p class="align-center">
+		<a href="../../../images_www/articles/72/java/quickstart/proj-wizard.png" rel="lytebox" title="Мастер создания проектов: выбор проекта"> <img alt="Мастер создания проектов: выбор проекта" border="1" src="../../../images_www/articles/72/java/quickstart/proj-wizard-small.png"></a></p>
+            </li>
+            <li>На странице мастера &quot;Имя и местоположение&quot; выполните следующие действия (см. рисунок ниже):
+
+                <ul>
+                    <li>введите <code>HelloWorldApp</code> в поле &quot;Имя проекта&quot;;</li>
+                    <li>Не устанавливайте флажок &quot;Использовать отдельную папку для хранения библиотек&quot;.</li>
+                    <li>в поле &quot;Создать главный класс&quot; введите <code>helloworldapp.HelloWorldApp</code>;</li>
+                    
+                </ul>
+                
+				<p class="align-center"><a href="../../../images_www/articles/72/java/quickstart/proj-wizard2.png" rel="lytebox" title="Мастер создания проектов: имя и местоположение"> <img alt="Мастер создания проектов: имя и местоположение" border="1" src="../../../images_www/articles/72/java/quickstart/proj-wizard2-small.png"></a></p>
+            </li>
+            <li>Нажмите кнопку &quot;Завершить&quot;.</li>
+        </ol>
+        <p>Проект будет создан и открыт в среде IDE.  На экране должны быть представлены следующие элементы:</p>
+        <ul>
+            <li>окно &quot;Проекты&quot;, которое содержит дерево элементов проекта, в том числе исходные файлы, библиотеки, от которых зависит код, и т.д.;
+            </li>
+            <li>окно редактора исходного кода с открытым файлом <code>HelloWorldApp</code>;
+            </li>
+            <li>окно &quot;Переходы&quot;, которое можно использовать для быстрого перемещения между элементами внутри выбранного класса.</li>
+            
+        </ul>
+        
+		<p class="align-center"> <a href="../../../images_www/articles/72/java/quickstart/proj-opened.png" rel="lytebox" title="IDE NetBeans with the HelloWorldApp project open."> <img alt="IDE NetBeans with the HelloWorldApp project open." border="1" src="../../../images_www/articles/72/java/quickstart/proj-opened-small.png"></a></p>
+        <h2><a name="code"></a>Добавление кода к автоматически созданному исходному файлу
+        </h2>
+        <p>Поскольку в мастере создания проекта не был снят флажок &quot;Создать главный класс&quot;, средой IDE был создан новый главный класс.  К коду этого класса можно добавить, например, сообщение &quot;Hello World!&quot; путем замены строки</p>
+
+        <pre class="examplecode">
+            // TODO code application logic here
+        </pre>
+
+        строкой
+
+        <pre class="examplecode">
+            System.out.println(&quot;Hello World!&quot;);
+        </pre>
+
+        <p>Сохраните изменения путем выбора команды &quot;Файл&quot; &gt; &quot;Сохранить&quot;.</p>
+
+        <p>Файл должен быть похож на следующий пример:</p>
+        <pre class="examplecode">
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package helloworldapp;
+
+/**
+ *
+ * @author &lt;your name&gt;
+ */
+public class HelloWorldApp {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+            System.out.println(&quot;Hello World!&quot;);
+    }
+
+}
+
+        </pre>
+
+        <a name="run"></a><h2>Компиляция и выполнение проекта</h2>
+        <p>Благодаря функции среды IDE &quot;Компиляция при сохранении&quot; компилировать проект вручную для выполнения в среде IDE не требуется.  При сохранении исходного файла Java в среде IDE выполняется автоматическая компиляция.</p>
+        <p class="notes">Функция компиляции при сохранении отключается в окне &quot;Свойства проекта&quot;.  Щелкните проект правой кнопкой мыши, выберите &quot;Свойства&quot;.  В окне &quot;Свойства&quot; перейдите на вкладку &quot;Компиляция&quot;. Флажок &quot;Компиляция при сохранении&quot; расположен вверху справа.  Обратите внимание, что в окне &quot;Свойства проекта&quot; можно выполнять настройку многочисленных параметров проекта: библиотеки проекта, пакетирование, сборка, выполнение и т. д. </p>
+        <p><b>Для запуска программы выполните следующие действия.</b></p>
+        <ul>
+            <li>Выберите 'Выполнить > Запуск проекта'.</li>
+        </ul>
+
+        <p>На экране должны появиться сообщения, подобные приведенным ниже.</p>
+        <p class="align-center"><img ALT="Программа выведет Hello World! в окно вывода (вместе с другими выходными данными из сценария сборки)." class="margin-around" src="../../../images_www/articles/72/java/quickstart/run-output.png"></p>
+        <p>
+            Поздравляем!  Программа работает!
+        </p>
+
+        <p>Если при компиляции возникли ошибки, они отмечаются специальными красными символами в левом и правом полях редактора исходного кода.  Символы в левом поле указывают на ошибки в соответствующих строках.  Символы в правом поле указывают на все области файла, в которых есть ошибки, в том числе не отображаемые визуально ошибки в строках.  Для получения описания ошибки можно навести курсор на метку ошибки.  Для перехода к строке с ошибкой щелкните специальный символ в правом поле.
+        </p>
+
+        <a name="build"></a>
+        <h2>Сборка и развертывание приложения </h2>
+
+        <p>После сборки и тестирования приложения для подготовки его к развертыванию можно использовать команду &quot;Очистить и собрать&quot;.  При использовании команды &quot;Очистить и собрать&quot; в среде IDE автоматически запускается сценарий сборки, выполняющий следующие задачи:</p>
+        <ul>
+            <li>удаление предварительно скомпилированных файлов и других результатов сборки;</li>
+            <li>повторная компиляция приложения и формирование файла JAR, содержащего скомпилированные файлы.</li>
+        </ul>
+        <p><b>Для сборки приложения выполните следующие действия</b></p>
+        <ul>
+            <li>Выберите 'Выполнить > Очистить и собрать проект'.  </li>
+        </ul>
+
+        <p>Для просмотра выходных файлов сборки можно открыть окно &quot;Файлы&quot; и развернуть узел <tt>HelloWorldApp</tt>.  Скомпилированный файл байтового кода <code>HelloWorldApp.class</code> находится в подузле <code>build/classes/helloworldapp</code>.  Развертываемый архив JAR, содержащий <code>HelloWorldApp.class</code>, находится в узле <code>dist</code>.</p>
+        <p class="align-center"><img alt="Изображение, на котором показано окно &apos;Файлы&apos; с узлами для HelloWorldApp, расширено для отображения содержимого подузлов build и dist." class="margin-around" src="../../../images_www/articles/72/java/quickstart/files-window.png"></p>
+<p>Итак, теперь вы можете выполнять базовые задачи по программированию в среде IDE.</p>
+<p>Подробнее о том, как запустить приложение из командной строки, см. главу <a href="javase-deploy.html#startapp" target="_blank">Запуск приложений Java</a> учебного руководства по упаковке и распределению приложений Java. </p>
+
+        <div class="feedback-box"><a href="/about/contact_form.html?to=3&subject=Feedback:%20NetBeans%20IDE%20Java%20Quick%20Start%20Tutorial">Отправить отзыв по этому учебному курсу</a></div>
+       <br style="clear:both;">
+        <h2><a name="nextsteps"></a>Дополнительные сведения</h2>
+      
+        <p>Информацию о создании стандартных и произвольных проектов Java и работе с ними см. в разделе <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&amp;id=NBDAG366">Создание проектов Java</a> в документе <i>Разработка приложений в IDE NetBeans</i>.</p>
+        <p>Дополнительные сведения о разработке приложений Java в среде IDE, включая управление путем к классам, доступны в документе <a href="javase-intro.html">Разработка базовых приложений Java</a>.</p>
+       
+		<p>Для получения подробных инструкций о том, как скомпилировать и выполнить простое приложение "Hello World!" в используемой операционной системе, см. занятие <a href="http://docs.oracle.com/javase/tutorial/getStarted/cupojava/index.html" target="_blank">Приложение "Hello World"</a> в учебных курсах по Java.</p>
+		
+        <p>Чтобы найти сведения, связанные с определенным типом разрабатываемых приложений, используйте карту обучения для этого типа приложений. Каждая учебная карта содержит ряд учебных курсов и руководств различных уровней сложности.  Доступны следующие учебные карты:</p>
+        <table width="100%">
+            <tr>
+                <td>
+                    <ul>
+                        <li><a href="../../trails/java-se.html">Общие сведения о разработке на Java </a></li>
+                        <li><a href="../../trails/tools.html">Интеграция со внешними средствами и службами</a></li>
+                        <li><a href="../../trails/matisse.html">Приложения на Java с графическим интерфейсом</a></li>
+                        <li><a href="../../trails/web.html">Приложения веб-служб</a></li>
+                        <li><a href="../../trails/java-ee.html">Приложения Java EE и веб-приложения Java</a></li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li><a href="../../trails/php.html">Приложения PHP и HTML5</a></li>
+                        <li><a href="../../trails/platform.html">Платформа NetBeans и разработка модулей</a></li>
+                        <li><a href="../../trails/cnd.html">Приложения на C/C++</a></li>
+                        <li><a href="../../trails/mobility.html">Мобильные приложения</a></li>
+                    </ul>
+              </td>
+            </tr>
+        </table>
+
+    </body>
+</html>

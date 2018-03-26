@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Обеспечение защиты веб-приложения в IDE NetBeans</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Style-Type" content="text/css">
+        <meta name="keywords"
+              content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, IDE, Platform, free, open source, developer">
+        <meta name="description"
+              content="This document takes you through the basics of adding security to a web application that is deployed to either the Tomcat server or the Oracle GlassFish Open Source server.">
+        <meta name="author" content="Dan Kolar">
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+    </head>
+    <body>
+        <h1>Обеспечение защиты веб-приложения в IDE NetBeans</h1>
+        <div class="articledate" style="margin-left: 0px;">Составитель &ndash; Дэн Колар (Dan Kolar). Обновляется Джеймсом Бранэмом (James Branam) и Джеффом Рубиноффом (Jeff Rubinoff). </div>
+        <p>Данный документ освещает основы добавления функций безопасности к веб-приложению, развернутому на сервере Oracle GlassFish Open Source Edition, Oracle WebLogic или Apache Tomcat.</p>
+        <p>В данном документе показано, как настроить проверку подлинности на компьютере с помощью простого окна входа и формы входа на веб-странице. В данном документе дан обзор действий для создания пользователей на сервере Tomcat и сервере GlassFish. После создания пользователей мы создадим роли безопасности, установив свойства безопасности в дескрипторе развертывания. Данный документ также показывает, как можно использовать проверку подлинности JDBC для обеспечения безопасности приложения при развертывании на сервере GlassFish.</p>
+        <!-- END VCD1 OVERVIEW COMPONENT  -->
+        <p class="align-center"><b>Ожидаемая продолжительность: <i>40</i> минут</b></p>
+        <!-- BEGIN VCD5 ANCHOR LINKS COMPONENT  -->
+        <p><b>Содержание</b></p>
+        <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+        <ul class="toc">
+
+            <li><a href="#Exercise_0">Установка и настройка рабочей среды</a></li>
+            <li><a href="#Creating_Web_App">Создание веб-приложения</a>
+                <ul>
+                    <li><a href="#createdir">Создание безопасных каталогов</a></li>
+                    <li><a href="#indexpage">Создание страницы индекса JSP</a></li>
+                    <li><a href="#loginform">Создание формы входа (обязательно для сервера Tomcat, необязательно для сервера GlassFish или WebLogic)</a></li>
+                </ul>
+            </li>
+            <li><a href="#Creating_users_roles">Создание пользователей и ролей на целевом сервере</a>
+                <ul>
+                    <li><a href="#SJSAS">Определение ролей на сервере GlassFish</a></li>
+                    <li><a href="#Tomcat">Определение ролей на сервере Tomcat</a></li>
+                    <li><a href="#wl">Определение ролей и групп на сервере WebLogic</a></li>
+
+                </ul>
+            </li>
+            <li><a href="#Basic_login_config">Настройка метода входа</a>
+
+                <ul>
+
+                    <li><a href="#Basic">Простой вход</a></li>
+                    <li><a href="#Form">Вход с помощью формы</a></li>
+                </ul></li>
+
+            <li><a href="#sec-dd">Настройка дескрипторов развертывания сервера</a>
+                <ul>
+                    <li><a href="#gf-dd">Настройка дескриптора развертывания сервера GlassFish</a></li>
+                    <li><a href="#wl-dd">Настройка дескриптора развертывания сервера WebLogic</a> </li>
+                </ul>
+            </li>
+            <li><a href="#Deploy_run">Развертывание и выполнение приложения</a></li>
+
+        </ul>
+        <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">Версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Платформа Java EE</td>
+                    <td class="tbltd1">Java EE 6 или 7</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">База данных TRAVEL</td>
+                    <td class="tbltd1">Не требуется </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">Веб-сервер или сервер приложений, совместимый с Java EE</td>
+                    <td class="tbltd1">Веб-сервер Tomcat 7.x или 8.x, Oracle WebLogic 11g или<br /> GlassFish Server Open Source Edition 4.x
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <!-- ===================================================================================== -->
+        <h2><a name="Exercise_0"></a>Установка и настройка рабочей среды</h2>
+        <p>Установите и запустите IDE NetBeans. С данным учебным курсом можно работать, используя имеющийся в комплекте среды сервер Tomcat или сервер GlassFish.</p>
+        <p>Убедитесь, что сервер установлен и экземпляр сервера зарегистрирован в среде IDE. Для регистрации установленного экземпляра сервера можно использовать диспетчер серверов. (Выберите Tools (&quot;Сервис&quot;) &gt; Servers (&quot;Серверы&quot;) &gt; Add Server (&quot;Добавить сервер&quot;).  Выберите &quot;GlassFish Server &lt;номер версии&gt;&quot; или &quot;Tomcat &lt;номер версии&gt; и нажмите кнопку Next (&quot;Далее&quot;). Нажмите кнопку Browse (&quot;Обзор&quot;) и найдите каталог установки сервера приложений.  Нажмите кнопку Finish (&quot;Готово&quot;).)</p>
+        <!-- ===================================================================================== -->
+
+        <h2 class="tutorial"><a name="Creating_Web_App"></a><!--Exercise 1: -->
+            Создание веб-приложения</h2>
+        <p>Мы начнем это упражнение с создания проекта веб-приложения и структуры каталогов.  Затем мы создадим несколько простых файлов <tt>html</tt> в каждом из безопасных каталогов. Созданное веб-приложение использует простую проверку подлинности при входе, чтобы предотвратить несанкционированный доступ к защищенным каталогам. Если для проверки подлинности нужно использовать форму входа, то можно добавить страницу <tt>jsp</tt> с формой.</p>
+        <div class="indent">
+            <a name="createdir"></a>
+            <h3 class="tutorial">Создание безопасных каталогов</h3>
+
+            <ol>
+                <li>Выберите Файл > Создать проект (Ctrl-Shift-N), затем выберите 'Веб-приложение' в категории 'Веб' и нажмите 'Далее'.</li>
+                <li>Назовите проект <tt>WebApplicationSecurity</tt>.  Примите параметры по умолчанию.</li>
+                <li>Установите флажок &quot;Использовать отдельную папку для хранения библиотек&quot; и укажите местоположение папки библиотек (необязательно).  Дополнительные сведения об этой функции см. в разделе <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">Предоставление общего доступа к библиотеке другим пользователям</a> в документе <em>Разработка приложений в IDE NetBeans</em>.</li>
+                <li>Нажмите кнопку &quot;Далее&quot;.</li><li>Выберите сервер, на котором требуется выполнить развертывание приложения.  В списке представлены только те серверы, которые зарегистрированы в среде IDE. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>В добавлении платформы нет необходимости, так что нажмите кнопку Finish (&quot;Готово&quot;).</li>
+                <li>Если создано приложение EE 6 перейдите в окно 'Проекты' среды IDE, щелкните правой кнопкой мыши узел проекта и выберите 'Создать' > 'Другие' > Web > 'Стандартный дескриптор развертывания' (web.xml). Пройдите по этапам работы мастера, принимая параметры по умолчанию.
+                    <p class="notes" ><b>Примечание.</b> В этом учебном курсе показано, как настроить параметры безопасности в дескрипторе развертывания, но приложения EE 6 и EE 7 по умолчанию используют аннотации вместо дескриптора развертывания.</p></li>
+                <li>При использовании сервера GlassFish или WebLogic и IDE NetBeans 7.0.1 или более поздней версии необходимо создать дескриптор для этого сервера. Щелкните правой кнопкой мыши узел проекта и выберите New (&quot;Создать&quot;) &gt; Other (&quot;Другое&quot;) &gt; GlassFish &gt; GlassFish Descriptor (&quot;Дескриптор GlassFish&quot;), либо New (&quot;Создать&quot;) &gt; Other (&quot;Другое&quot;) &gt; WebLogic &gt; WebLogic Descriptor (&quot;Дескриптор WebLogic&quot;). Откроется диалоговое окно создание дескриптора для конкретного сервера. Примите параметры по умолчанию и нажмите кнопку &quot;Готово&quot;. Дескриптор для конкретного сервера, именуемый <tt>glassfish-web.xml</tt> либо <tt>weblogic.xml</tt>, появится в папке Configuration Files (&quot;Файлы настройки&quot;) проекта.</li>
+                <li>В окне 'Проекты' в IDE щелкните правой кнопкой мыши 'Веб-страницы' и выберите 'Создать' > 'Другое'.</li>
+                <li>В мастере создания новых файлов выберите Other (&quot;Другое&quot;) в качестве категории и Folder (&quot;Папка&quot;) в качестве типа файла. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>
+                    <p>В мастере создания новых папок назовите папку secureAdmin и нажмите кнопку Finish (&quot;Готово&quot;).</p>
+                    Папка secureAdmin появится в окне Projects (&quot;Проекты&quot;), в папке Web Pages (&quot;Веб-страницы&quot;).
+                </li>
+                <li>Повторите 3 предыдущих действия для создания еще одной папки, именуемой secureUser.</li>
+                <li>Создайте новый файл <tt>html</tt> в папке secureUser. Для этого щелкните правой кнопкой мыши папку secureUser в окне 'Проекты' и выберите Создать > Другие.</li>
+                <li>В категории 'Другие' выберите тип файла HTML. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Назовите новый файл pageU и нажмите кнопку Finish (&quot;Готово&quot;).
+                    <p>При нажатии этой кнопки файл <tt>pageU.html</tt> откроется в редакторе файлов исходного кода.</p></li>
+                <li>В редакторе файлов исходного кода замените существующий код в файле <tt>pageU.html</tt> следующим кодом.
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+   &lt;head&gt;
+      &lt;title&gt;</span>User secure area<span class="html-tag">&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h1&gt;</span>User Secure Area<span class="html-tag">&lt;/h1&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+                <li>Щелкните правой кнопкой мыши папку secureAdmin и создайте новый файл<tt>html</tt> под названием pageA.</li>
+                <li>В редакторе файлов исходного кода замените существующий код в <tt>pageA.html</tt> следующим кодом.
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+   &lt;head&gt;
+      &lt;title&gt;</span>Admin secure area<span class="html-tag">&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h1&gt;</span>Admin secure area<span class="html-tag">&lt;/h1&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+            </ol>
+
+            <a name="indexpage"></a>
+            <h3 class="tutorial">Создание страницы индекса JSP</h3>
+            <p>Теперь мы создадим страницу индекса JSP, содержащую ссылки на безопасные области. Если пользователь щелкнет такую ссылку, у него будут запрошены имя пользователя и пароль. В случае использования простого входа будет выведено окно входа по умолчанию используемого браузера. В случае использования страницы формы входа пользователь вводит имя пользователя и пароль в форму.</p>
+            <ol>
+                <li>Откройте <tt>index.jsp</tt> в редакторе файлов исходного кода и добавьте следующие ссылки на <tt>pageA.html</tt> и <tt>pageU.html</tt>:
+                    <pre class="examplecode"><span class="jsp-html-tag">&lt;p&gt;</span>Request a secure Admin page <span
+ class="jsp-html-tag">&lt;a</span> <span
+ class="jsp-html-argument">href=</span><span class="jsp-xml-value">"secureAdmin/pageA.html"</span><span
+ class="jsp-html-tag">&gt;</span>here!<span class="jsp-html-tag">&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;</span>Request a secure User page <span
+ class="jsp-html-tag">&lt;a</span> <span
+ class="jsp-html-argument">href=</span><span
+ class="jsp-xml-value">"secureUser/pageU.html"</span> <span
+                class="jsp-html-tag">&gt;</span>here!<span class="jsp-html-tag">&lt;/a&gt;&lt;/p&gt;</span></pre>
+                </li>
+                <li>Сохраните изменения.</li>
+            </ol>
+
+
+            <a name="loginform"></a>
+            <h3 class="tutorial">Создание формы входа (обязательно для сервера Tomcat, не обязательно для сервера GlassFish или WebLogic)</h3>
+            <p>Если вместо простого входа желательно использовать форму входа, то можно создать страницу <tt>jsp</tt>, содержащую форму. После этого можно указать страницы входа и ошибки при входе, в ходе <a href="#Basic_login_config">настройки метода входа</a>.</p>
+            <p class="alert"><strong>Важно!</strong> Для пользователей Tomcat создание формы входа обязательно.</p>
+            <ol>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши папку 'Веб-страницы' и выберите 'Создать' > JSP.</li>
+                <li>Назовите файл <tt>login</tt>, оставьте значения по умолчанию для остальных полей и нажмите кнопку Finish (&quot;Готово&quot;).</li>
+                <li>В редакторе файлов исходного кода вставьте следующий код между тегами <tt>&lt;body&gt;</tt> <tt>login.jsp</tt>.<br>
+                    <pre class="examplecode">&lt;<span class="jsp-html-tag">form</span> <span
+              class="jsp-html-argument">action=</span><span
+              class="jsp-xml-value">"j_security_check"</span> <span
+              class="jsp-html-argument">method=</span><span
+              class="jsp-xml-value">"POST"</span><span class="jsp-html-tag">&gt;</span>
+   Username:<span class="jsp-html-tag">&lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"text"</span> <span class="jsp-html-argument">name=</span><span class="jsp-xml-value">"j_username"</span><span
+              class="jsp-html-tag">&gt;&lt;br&gt;</span>
+   Password:<span class="jsp-html-tag">&lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"password"</span> <span class="jsp-html-argument">name=</span><span class="jsp-xml-value">"j_password"</span><span
+                  class="jsp-html-tag">&gt;
+   &lt;input</span> <span
+              class="jsp-html-argument">type=</span><span
+              class="jsp-xml-value">"submit"</span> <span class="jsp-html-argument">value=</span><span class="jsp-xml-value">"Login"</span><span class="jsp-html-tag">&gt;
+&lt;/form&gt;</span></pre>
+                </li>
+                <li>Создайте новый файл <tt>html</tt> под названием <tt>loginError.html</tt> в папке Web Pages (&quot;Веб-страницы&quot;). Это простая страница ошибки.</li>
+                <li>В редакторе файлов исходного кода замените существующий код в <tt>loginError.html</tt> следующим кодом.
+                    <pre class="examplecode"><span class="html-tag">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;</span>Login Test: Error logging in<span class="html-tag">&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;</span>Error Logging In<span class="html-tag">&lt;/h1&gt;
+        &lt;br/&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</span></pre>
+                </li>
+            </ol>
+
+
+        </div>
+        <!-- ======================================================================================== -->
+        <h2 class="tutorial"><a name="Creating_users_roles"></a>Создание пользователей на целевом сервере</h2>
+        <p class="tutorial">Чтобы в веб-приложениях можно было использовать безопасность на основе проверки подлинности с помощью имени пользователя и пароля (простой вход или вход на основе формы), для целевого пользователя необходимо определить пользователей и соответствующие роли для них. Для входа в систему на сервере на этом сервере должна существовать учетная запись пользователя.</p>
+        <p>Определения пользователей и ролей варьируются в зависимости от указанного целевого сервера. В данном руководстве для тестирования параметров безопасности используются определения <tt>admin</tt> и <tt>user</tt>. Необходимо подтвердить, что эти пользователи существуют на соответствующих серверах и что им назначены соответствующие роли.</p>
+
+        <div class="indent">
+            <h3 class="tutorial"><a name="SJSAS"></a>Определение пользователей на сервере GlassFish </h3>
+            <p>В этом сценарии нам нужно использовать консоль администрирования сервера GlassFish для создания двух новых пользователей, <tt>user</tt> и <tt>admin</tt>. У пользователя <tt>user</tt> будет ограниченный доступ к приложению, а у пользователя <tt>admin</tt> &ndash; права администратора. 
+            <ol>
+                <li>
+                    <p>Откройте консоль администрирования. Для этого перейдите в окно 'Службы' среды IDE и щелкните правой кнопкой мыши Серверы > Сервер GlassFish > Просмотр консоли администратора домена. В окне браузера откроется страница входа в систему сервера GlassFish. Для доступа к консоли администрирования необходимо войти, используя имя и пароль администратора.</p>
+                    <p class="notes"><b>Примечание. </b> До получения доступа к консоли администрирования необходимо запустить сервер приложений. Чтобы запустить сервер, щелкните правой кнопкой мыши узел сервера GlassFish и выберите 'Пуск'.</p>
+                </li>
+                <li>В консоли администрирования перейдите к Configurations (&quot;Настройки&quot;) &gt; server-config &gt; Security (&quot;Безопасность&quot;) &gt; Realms (&quot;Области&quot;) &gt; File (&quot;Файл&quot;).  Откроется панель редактирования области.<br> <img alt="Область файлов для server-donfig на консоли администрирования GlassFish 3.1" class="margin-around" src="../../../images_www/articles/72/web/security/edit-realm.png"></li>
+
+                <li>Нажмите кнопку Manage Users (&quot;Управлять пользователями&quot;) наверху панели редактирования области. Откроется панель File Users (&quot;Пользователи файла&quot;).<br> <img alt="Панель &apos;Пользователи файлов&apos; с выделенной кнопкой &apos;Новый пользователь&apos;" class="margin-around" src="../../../images_www/articles/72/web/security/file-users.png">
+                </li>
+                <li>Нажмите кнопку New (&quot;Создать&quot;). Откроется панель New File Realm User (&quot;Новый пользователь области файла&quot;). Введите <tt>user</tt> в качестве идентификатора пользователя и <tt>userpw01</tt> в качестве пароля. Нажмите кнопку &quot;ОК&quot;.          </li>
+                <li>Выполните приведенные выше действия, чтобы создать пользователя <tt>admin</tt> с паролем <tt>adminpw1</tt> в области <tt>file</tt>.</li>
+            </ol>
+            <h3 class="tutorial"><a name="Tomcat"></a>Определение ролей и пользователей на сервере Tomcat</h3>
+            <p>При использовании Tomcat 7 создается пользователь с ролью сценария диспетчера и пароль для этого пользователя при регистрации сервера в IDE NetBeans.</p>
+            <p>Базовые пользователи и роли для сервера Tomcat содержатся в <tt>tomcat-users.xml</tt>. Файл <tt>tomcat-users.xml</tt> можно найти в каталоге <tt><i>&lt;CATALINA_BASE&gt;</i>\conf</tt>.</p>
+            <p class="notes"><b>Примечание.</b> Расположение CATALINA_BASE можно определить, щелкнув правой кнопкой мыши узел сервера Tomcat в окне 'Службы' и выбрав 'Свойства'. Откроется окно свойств сервера. CATALINA_BASE расположен во вкладке Connection (&quot;Подключение&quot;).</p>
+            <img alt="Окно &apos;Службы&apos;, в котором отображается контекстное меню для открытия свойств Tomcat 7.0" class="margin-around" src="../../../images_www/articles/72/web/security/tomcat-properties.png"> <img alt="Диалоговое окно свойств Tomcat 7, в котором отображается местоположение CATALINA_BASE" class="margin-around" src="../../../images_www/articles/72/web/security/catalina-base.png">
+
+
+            <p class="notes"><b>Примечание.</b> Если Tomcat 6 используется вместе с более ранними версиями IDE, этот сервер имеет <tt>ide</tt>, определенные пользователем с помощью пароля и администратора и диспетчера ролей. Пароль для пользователя <tt>ide</tt> создается при установке Tomcat 6. Пароль для пользователя <tt>ide</tt> можно изменить, либо скопировать его в <tt>tomcat-users.xml</tt>.</p>
+            <p><b>Для добавления пользователей в Tomcat выполните следующие действия.</b></p>
+            <ol>
+                <li>Откройте в редакторе <tt><i>&lt;CATALINA_BASE&gt;</i>/conf/tomcat-users.xml</tt>. 
+                </li>
+                <li>Добавьте роль под названием <tt>AdminRole</tt>. <pre class="examplecode">&lt;role rolename="AdminRole"/&gt;</pre></li>
+                <li>Добавьте роль под названием <tt>UserRole</tt>.<pre class="examplecode">&lt;role rolename="UserRole"/&gt;</pre></li>
+                <li>Добавьте пользователя с именем <tt>admin</tt>, паролем <tt>adminpw1</tt> и ролью <tt>AdminRole</tt>.
+                    <pre class="examplecode">&lt;user username="admin" password="adminpw1" roles="AdminRole"/&gt;</pre></li>
+                <li>Добавьте пользователя с именем <tt>user</tt>, паролем <tt>userpw01</tt> и ролью <tt>UserRole</tt>.
+                    <pre class="examplecode">&lt;user username="user" password="userpw01" roles="UserRole"/&gt;</pre></li>
+
+
+            </ol>
+            <p>Файл <tt>tomcat-users.xml</tt> теперь выглядит следующим образом:</p>
+            <pre class="examplecode">&lt;tomcat-users&gt;
+&lt;!--
+  &lt;role rolename="tomcat"/&gt;
+  &lt;role rolename="role1"/&gt;
+  &lt;user username="tomcat" password="tomcat" roles="tomcat"/&gt;
+  &lt;user username="both" password="tomcat" roles="tomcat,role1"/&gt;
+  &lt;user username="role1" password="tomcat" roles="role1"/&gt;
+--&gt;
+...
+&lt;role rolename="AdminRole"/&gt;
+&lt;role rolename="UserRole"/&gt;
+&lt;user username="user" password="userpw01" roles="UserRole"/&gt;
+&lt;user username="admin" password="adminpw1" roles="AdminRole"/&gt;
+[User with manager-script role, defined when Tomcat 7 was registered with the IDE]
+...
+&lt;/tomcat-users&gt;</pre>
+            <h3><a name="wl"></a>Определение ролей и групп на сервере WebLogic</h3>
+            <p>В этой ситуации нам нужно использовать консоль администрирования сервера WebLogic для создания двух новых пользователей, <tt>user</tt> и <tt>admin</tt>. Добавьте этих пользователей к группам <tt>userGroup</tt> и <tt>adminGroup</tt> соответственно. Позже можно будет назначить роли безопасности для этих групп. У <tt>userGroup</tt> будет ограниченный доступ к приложению, а у <tt>adminGroup</tt> &ndash; права администратора.</p>
+            <p>Общие инструкции по добавлению пользователей и групп к серверу Web Logic можно найти в <a href="http://download.oracle.com/docs/cd/E21764_01/apirefs.1111/e13952/taskhelp/security/ManageUsersAndGroups.html">Интерактивной справке по консоли администрирования</a> WebLogic. </p>
+            <p><b>Чтобы добавить пользователей и группы &quot;user&quot; и &quot;admin&quot; к WebLogic, выполните следующие действия:</b></p>
+            <ol>
+                <li>
+                    <p>Откройте консоль администрирования, перейдя в окно 'Службы' среды IDE и щелкнув правой кнопкой мыши 'Серверы' > 'Сервер WebLogic' > 'Просмотр консоли администратора'. В окне браузера откроется страница входа в систему сервера GlassFish. Для доступа к консоли администрирования необходимо войти, используя имя и пароль администратора.</p>
+                    <p class="notes"><b>Примечание. </b> До получения доступа к консоли администрирования необходимо запустить сервер приложений. Чтобы запустить сервер, щелкните правой кнопкой мыши узел сервера WebLogic и выберите 'Пуск'.</p>
+                </li>
+                <li>В левой панели выберите Security Realms (&quot;Области безопасности&quot;).  Откроется страница сводки областей безопасности.</li>
+                <li>На этой странице выберите имя области безопасности (имя по умолчанию &ndash; &quot;myrealm&quot;). Откроется страница Settings for Realm Name (&quot;Настройки имени области&quot;).</li>
+                <li>На этой странице выберите Users and Groups (&quot;Пользователи и группы&quot;) &gt; Users (&quot;Пользователи&quot;). Появится таблица пользователей.
+                </li>
+                <li>В таблице пользователей щелкните New (&quot;Создать&quot;). Откроется страница создания нового пользователя.</li>
+                <li>Введите там имя &quot;user&quot; и пароль &quot;userpw01&quot;.  Если хочется, введите описание пользователя. Примите поставщика проверки подлинности по умолчанию. <br><img alt="Консоль администрирования WebLogic, на которой отображается диалоговое окно &apos;Новый пользователь&apos;" class="margin-around" src="../../../images_www/articles/72/web/security/wl-admin-newuser.png"></li>
+                <li>Нажмите кнопку &quot;ОК&quot;. Мы вернемся к таблице пользователей.</li>
+                <li>Щелкните New (&quot;Создать&quot;) и добавьте пользователя с именем&quot;admin&quot; и паролем &quot;admin1&quot;.</li>
+                <li>Откройте вкладку Groups (&quot;Группы&quot;). Появится таблица групп. </li>
+                <li>Нажмите кнопку New (&quot;Создать&quot;). Откроется окно создания новой группы.</li>
+                <li>Назовите группу userGroup. Примите поставщика по умолчанию и нажмите кнопку &quot;OK&quot;.  Это вернет нас к таблице групп.</li>
+                <li>Щелкните New (&quot;Создать&quot;) и создайте группу adminGroup.</li>
+                <li>Откройте вкладку Users (&quot;Пользователи&quot;) для следующей процедуры.</li>
+
+            </ol>
+            <p>Теперь добавьте пользователя <tt>admin</tt> к <tt>adminGroup</tt> и пользователя <tt>user</tt> к <tt>userGroup</tt>.</p>
+            <p><b></b>Для добавления пользователей к группам:</p>
+            <ol>
+                <li>На вкладке Users (&quot;Пользователи&quot;) щелкните пользователя <tt>admin</tt>. Откроется страница параметров пользователя.</li>
+                <li>На этой странице откройте вкладку Groups (&quot;Группы&quot;).</li>
+                <li>В таблице Parent Groups: Available: (&quot;Родительские группы: Доступные&quot;) выберите <tt>adminGroup</tt>.</li>
+                <li>Щелкните стрелку вправо &gt;. <tt>adminGroup</tt> появится в таблице Parent Groups: Chosen: (&quot;Родительские группы: Выбранные:&quot;). <br><img alt="Консоль администрирования WebLogic, на которой отображаются настройки для пользователя с правами администратора" class="margin-around" src="../../../images_www/articles/72/web/security/wl-admin-usersettings.png"></li>
+                <li>Нажмите кнопку &quot;Сохранить&quot;.</li>
+                <li>Вернитесь на вкладку Users (&quot;Пользователи&quot;).</li>
+                <li>Щелкните пользователя <tt>user</tt> и добавьте его к <tt>userGroup</tt>.</li>
+
+            </ol>
+        </div>
+
+        <a name="Basic_login_config"></a>
+        <h2 class="tutorial">Настройка метода входа</h2>
+        <p>При настройке метода входа для приложения для проверки подлинности при простом входе можно использовать окно входа, предоставляемое браузером. Либо можно создать веб-страницу с формой входа. Оба типа проверки подлинности при входе основаны на использовании имени пользователя/пароля.</p>
+        <p>Для настройки входа следует создать <em>ограничения безопасности </em>и назначить роли этим ограничениям безопасности. Ограничения безопасности определяют набор файлов. При назначении роли ограничению безопасности пользователи с этой ролью получат доступ к набору файлов, определенных ограничением. Для примера, в этом учебном курсе мы назначаем AdminRole ограничению AdminConstraint, а ограничению UserConstraint &ndash; и UserRole и AdminRole. Это означает, что у пользователей с AdminRole будет доступ к файлам и для администраторов и для простых пользователей, а у пользователей с UserRole &ndash; только к файлам для пользователей.</p>
+        <p class="notes"><b>Примечание.</b> Доступ с отдельной ролью администратора к файлам пользователя предоставляется редко. Как вариант, можно назначить UserConstraint только UserRole, а на стороне сервера предоставить AdminRole конкретным пользователям, которые также являются администраторы. Лучший способ предоставления доступа зависит от конкретной ситуации. </p>
+    <p>Настройка метода входа для приложения выполняется посредством настройки <tt>web.xml</tt>. Файл <tt>web.xml</tt> может быть найден в каталоге Configuration Files (&quot;Файлы конфигурации&quot;) окна Projects (&quot;Проекты&quot;).</p>
+
+        <div class="indent">
+            <a name="Basic"></a>
+            <h3 class="tutorial">Простой вход</h3>
+            <p>При использовании простого входа окно входа предоставляется браузером. Для доступа к защищенному содержимому необходимы правильные имя пользователя и пароль.</p>
+
+            <p>Ниже показано, как настроить простой вход для серверов GlassFish и WebLogic. Пользователям Tomcat необходимо использовать <a href="#form-login">форму входа</a>.</p>
+            <p><b>Для настройки простого входа выполните следующие действия.</b></p>
+            <ol>
+                <li>В окне 'Проекты' разверните узел 'Файлы конфигурации' и дважды щелкните <tt>web.xml</tt>. В визуальном редакторе откроется файл <tt>web.xml</tt>.</li>
+                <li>Щелкните Security (&quot;Безопасность&quot;) на панели инструментов, чтобы открыть файл в представлении безопасности.</li>
+                <li>Разверните узел Login Configuration (&quot;Конфигурация входа&quot;) и установите настройку входа на Basic (&quot;Простая&quot;).
+                    <p class="notes"><b>Примечание. </b> Если необходимо использовать формы, выберите 'Форма', а не 'Основные' и укажите имя входа и страницы входа с ошибками.          </li>
+                <li>Введите имя области, в зависимости от используемого сервера.
+                    <ul>
+                        <li><b>GlassFish:</b> введите <tt>file</tt> в поле Realm Name (&quot;Имя области&quot;).  Это имя области по умолчанию при создании пользователей на сервере GlassFish.</li>
+                        <li><b>Tomcat:</b> не вводите имя области.</li>
+                        <li><b>WebLogic:</b> введите имя своей области. Областью по умолчанию является <tt>myrealm</tt>.</li>
+                    </ul>
+
+                    <img alt="Добавление базового имени входа и ролей к web.xml" class="margin-around" src="../../../images_www/articles/72/web/security/security-roles.png"></li>
+                <li>Разверните узел Security Roles (&quot;Роли безопасности&quot;) и нажмите кнопку Add (&quot;Добавить&quot;) для добавления имени роли.</li>
+                <li>Добавьте следующие роли безопасности:
+                    <ul>
+                        <li><tt>AdminRole</tt>.  Пользователи, добавленные к этой роли, получат доступ к каталогу <tt>secureAdmin</tt> на сервере.</li>
+                        <li><tt>UserRole</tt>.  Пользователи, добавленные к этой роли, получат доступ к каталогу <tt>secureUser</tt> на сервере.</li>
+                    </ul>
+                    <p class="alert"><b>Внимание!</b> Имена ролей GlassFish должны начинаться с прописной буквы.</p>
+                </li>
+                <li>Создайте и настройте ограничение безопасности под названием <tt>AdminConstraint</tt>, выполнив следующее:
+                    <ol>
+                        <li>Щелкните Add Security Constraint (&quot;Добавить ограничение безопасности&quot;).  Появится раздел для нового ограничения безопасности.</li>
+                        <li>Введите <tt>AdminConstraint</tt> в качестве Display Name (&quot;Отображаемое имя&quot;) нового ограничения безопасности.<br> <img alt="Добавление AdminConstraint" class="margin-around" src="../../../images_www/articles/72/web/security/admin-constraint.png"></li>
+                        <li>Нажмите кнопку &quot;Add&quot;. Откроется диалоговое окно Add Web Resource (&quot;Добавление веб-ресурса&quot;).</li>
+                        <li><p>В этом диалоговом окне установите Resource Name (&quot;Имя ресурса&quot;) на <tt>Admin</tt> и шаблон URL на <tt>/secureAdmin/*</tt>, после чего нажмите кнопку &quot;OK&quot;.  Диалоговое окно закроется.</p>
+                            <p class="notes"><b>Примечание. </b> При использовании звездочки (*), пользователю предоставляется доступ ко всем файлам в этой папке.</p><img alt="Диалоговое окно Add Web Resource (&amp;quot;Добавление веб-ресурса&amp;quot;)" class="margin-around" height="370" src="../../../images_www/articles/72/web/security/addwebresource.png" width="455"></li>
+                        <li>Выберите Enable Authentication Constraint (&quot;Включить ограничение проверки подлинности&quot;) и нажмите кнопку Edit (&quot;Изменить&quot;).  Откроется диалоговое окно изменения имен роли.</li>
+                        <li>В этом окне выберите AdminRole на левой панели, нажмите кнопку Add (&quot;Добавить&quot;), затем нажмите кнопку OK.
+                            <p>После завершения этих действий результат должен быть подобен этому рисунку:</p>
+                            <img alt="Ограничения администраторов и пользователей" border="1" class="margin-around" src="../../../images_www/articles/72/web/security/constraints.png" width="600"></li>
+                    </ol>
+                </li>
+                <li>Создайте и настройте ограничение безопасности под названием <tt>UserConstraint</tt>, выполнив следующее:
+                    <ol>
+                        <li>Щелкните Add Security Constraint (&quot;Добавить ограничение безопасности&quot;), чтобы добавить новое ограничение безопасности.</li>
+                        <li>Введите <tt>UserConstraint</tt> в качестве Display Name (&quot;Отображаемое имя&quot;) нового ограничения безопасности.</li>
+                        <li>Нажмите кнопку Add (&quot;Добавить&quot;) для добавления Web Resource Collection (&quot;Коллекция веб-ресурсов&quot;).</li>
+                        <li>В диалоговом окне добавления ресурсов установите Resource Name (&quot;Имя ресурса&quot;) на <tt>User</tt> и шаблон URL на <tt>/secureUser/*</tt>, после чего нажмите кнопку &quot;OK&quot;.</li>
+                        <li>Выберите Enable Authentication Constraint (&quot;Включить ограничение проверки подлинности&quot;) и нажмите кнопку Edit (&quot;Изменить&quot;), чтобы изменить поле Role Name (&quot;Имя роли&quot;).</li>
+                        <li>В диалоговом окне изменения имени роли выберите AdminRole и UserRole на левой панели, нажмите кнопку Add (&quot;Добавить&quot;), затем нажмите кнопку OK. </li>
+                    </ol>
+                    Примечание. Также можно задать время ожидания для сеанса в web.xml. Для настройки времени ожидания щелкните вкладку General (&quot;Общие&quot;) визуального редактора и укажите, сколько должен продолжаться сеанс. Продолжительность по умолчанию &ndash; 30 минут. <a name="Form"></a> <a name="form-login" /></a>
+                    <h3 class="tutorial">Вход с помощью формы</h3>
+                    <p>Использование формы для входа позволяет настраивать содержимое страниц входа и ошибки входа. Этапы настройки входа с помощью формы идентичны настройке простого входа, за исключением того, что надо указать созданные страницы <a href="#loginform">входа и ошибки</a>.</p>
+                    <p>Настройка формы входа показана ниже:</p>
+                    <ol>
+                        <li>В окне 'Проекты' дважды щелкните <tt>web.xml</tt>, расположенный в каталоге <tt>Веб-страницы/WEB-INF</tt>, чтобы открыть файл в Visual Editor.</li>
+
+                        <li>Щелкните Security (&quot;Безопасность&quot;) на панели инструментов, чтобы открыть файл на панели безопасности и развернуть узел Login Configuration (&quot;Настройка входа&quot;).</li>
+                        <li>Установите настройку входа на Form (&quot;Форма&quot;).</li>
+                        <li>Установите Form Login Page (&quot;Страница входа с помощью формы&quot;), щелкнув Browse (&quot;Просмотр&quot;) и найдя <tt>login.jsp</tt>.</li>
+                        <li>
+                            <p>Установите Form Login Page (&quot;Страница ошибки входа с помощью формы&quot;), щелкнув Browse (&quot;Просмотр&quot;) и найдя <tt>loginError.html</tt>.</p><img alt="Настройка форм входа в web.xml" class="margin-around" src="../../../images_www/articles/72/web/security/login-forms.png">  </li>
+                        <li>Введите имя области, в зависимости от используемого сервера.
+                            <ul>
+                                <li><b>GlassFish:</b> введите <tt>file</tt> в поле Realm Name (&quot;Имя области&quot;).  Это имя области по умолчанию при создании пользователей на сервере GlassFish.</li>
+                                <li><b>Tomcat:</b> не вводите имя области.</li>
+                                <li><b>WebLogic:</b> введите имя своей области. Областью по умолчанию является <tt>myrealm</tt>.</li>
+                            </ul>
+                        </li>
+                        <li>Разверните узел Security Roles (&quot;Роли безопасности&quot;) и нажмите кнопку Add (&quot;Добавить&quot;) для добавления имени роли.</li>
+                        <li>Добавьте следующие роли безопасности:
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <th class="tblheader" scope="col">Роль сервера</th>
+
+                                        <th class="tblheader" scope="col">Описание</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1">AdminRole</td>
+
+                                        <td class="tbltd1">Пользователи, добавленные к этой роли, получат доступ к каталогу <tt> secureAdmin</tt> на сервере.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tbltd1">UserRole</td>
+
+                                        <td class="tbltd1">Пользователи, добавленные к этой роли, получат доступ к каталогу <tt>secureUser</tt> на сервере.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </li>
+                        <li>Создайте и настройте ограничение безопасности под названием <tt>AdminConstraint</tt>, выполнив следующее:
+                            <ol>
+                                <li>Щелкните Add Security Constraint (&quot;Добавить ограничение безопасности&quot;), чтобы добавить новое ограничение безопасности.</li>
+                                <li>Введите <tt>AdminConstraint</tt> в качестве Display Name (&quot;Отображаемое имя&quot;) нового ограничения безопасности.</li>
+                                <li>Нажмите кнопку Add (&quot;Добавить&quot;) для добавления Web Resource Collection (&quot;Коллекция веб-ресурсов&quot;).</li>
+                                <li>
+                                    <p>В этом диалоговом окне установите Resource Name (&quot;Имя ресурса&quot;) на <tt>Admin</tt> и шаблон URL на <tt>/secureAdmin/*</tt>, после чего нажмите кнопку &quot;OK&quot;.</p>
+                                    <p class="notes"><b>Примечание. </b> При использовании звездочки (*), пользователю предоставляется доступ ко всем файлам в этой папке.</p>
+                                    <img alt="Диалоговое окно Add Web Resource (&amp;quot;Добавление веб-ресурса&amp;quot;)" class="margin-around" height="370" src="../../../images_www/articles/72/web/security/addwebresource.png" width="455"></li>
+                                <li>Выберите Enable Authentication Constraint (&quot;Включить ограничение проверки подлинности&quot;) и нажмите кнопку Edit (&quot;Изменить&quot;).  Откроется диалоговое окно изменения имен роли.</li>
+                                <li>В этом окне выберите AdminRole на левой панели, нажмите кнопку Add (&quot;Добавить&quot;), затем нажмите кнопку OK.
+                                    <p>После завершения этих действий результат должен быть подобен этому рисунку:</p>
+                                    <img alt="Ограничения администраторов и пользователей" border="1" class="margin-around" src="../../../images_www/articles/72/web/security/constraints.png" width="600"></li>
+                            </ol>
+                        </li>
+                        <li>Создайте и настройте ограничение безопасности под названием <tt>UserConstraint</tt>, выполнив следующее:
+                            <ol>
+                                <li>Щелкните Add Security Constraint (&quot;Добавить ограничение безопасности&quot;), чтобы добавить новое ограничение безопасности.</li>
+                                <li>Введите <tt>UserConstraint</tt> в качестве Display Name (&quot;Отображаемое имя&quot;) нового ограничения безопасности.</li>
+                                <li>Нажмите кнопку Add (&quot;Добавить&quot;) для добавления Web Resource Collection (&quot;Коллекция веб-ресурсов&quot;).</li>
+                                <li>В диалоговом окне добавления ресурсов установите Resource Name (&quot;Имя ресурса&quot;) на <tt>User</tt> и шаблон URL на <tt>/secureUser/*</tt>, после чего нажмите кнопку &quot;OK&quot;.</li>
+                                <li>Выберите Enable Authentication Constraint (&quot;Включить ограничение проверки подлинности&quot;) и нажмите кнопку Edit (&quot;Изменить&quot;), чтобы изменить поле Role Name (&quot;Имя роли&quot;).</li>
+                                <li>В диалоговом окне изменения имени роли выберите AdminRole и UserRole на левой панели, нажмите кнопку Add (&quot;Добавить&quot;), затем нажмите кнопку OK. </li>
+                            </ol>
+                            Примечание. Также можно задать время ожидания для сеанса в web.xml. Для настройки времени ожидания щелкните вкладку General (&quot;Общие&quot;) визуального редактора и укажите, сколько должен продолжаться сеанс. Продолжительность по умолчанию &ndash; 30 минут.<a name="Form"></a>            
+                    </ol>
+
+                    <!--<li>Add Admin and Tomcat (<span style="color: rgb(204, 51, 204);">User</span>) role</li>-->
+            </ol>
+
+        </div>
+        <h2><a name="sec-dd"></a>Настройка дескрипторов развертывания сервера</h2>
+        <p>В случае развертывания приложения на сервере GlassFish или WebLogic, необходимо настроить дескриптор развертывания сервера, чтобы он соответствовал ролям безопасности, определенным в <tt>web.xml</tt>. Дескриптор развертывания сервера указан в узле Configuration Files (&quot;Файлы конфигурации&quot;) созданного проекта в окне Projects (&quot;Проекты&quot;). </p>
+        <div class="indent">
+            <h3><a name="gf-dd"></a>Настройка дескриптора развертывания сервера GlassFish</h3>
+            <p>Дескриптор развертывания сервера GlassFish именуется <tt>glassfish-web.xml</tt>. Дескриптор развертывания сервера в папке Configuration Files (&quot;Файлы конфигурации&quot;).  Если отсутствует, создайте его, щелкнув правой кнопкой мыши узел проекта и перейдя в 'Создать' > 'Другие' > GlassFish > 'Дескриптор развертывания GlassFish'. Примите все параметры по умолчанию.</p>
+            <p>Обратите внимание, что значения, введенные в <tt>web.xml</tt>, отображаются в <tt>glassfish-web.xml</tt>.  Среда IDE извлекает эти значения из <tt>web.xml</tt> для нас.</p>
+            <p><b>Для настройки дескриптора развертывания GlassFish:</b></p>
+            <ol>
+                <li>В окне 'Проекты' разверните узел 'Файлы конфигурации' и дважды щелкните <tt>glassfish-web.xml</tt>. Дескриптор развертывания <tt>glassfish-web.xml</tt> открывается в специальном редакторе со вкладками для дескрипторов развертывания GlassFish.
+                    <p class="notes"><b>Примечание.</b> Для сервера GlassFish с более поздними версиями, чем 3.1, для этого файла задается имя <tt>sun-web.xml</tt>.</p></li>
+                <li>Выберите вкладку Security (&quot;Безопасность&quot;) для раскрытия ролей безопасности.</li>
+                <li>Выберите узел роли безопасности AdminRole, чтобы открыть страницу Security Role Mapping (&quot;Сопоставление ролей безопасности&quot;).</li>
+                <li><p>Щелкните Add Principal (&quot;Добавить участника&quot;) и введите <tt>admin</tt> в качестве имени участника. Нажмите кнопку &quot;ОК&quot;.</p>
+                    <img alt="Диалоговое окно &apos;Добавить участника&apos;" class="marin-around" height="335" src="../../../images_www/articles/72/web/security/add-principal.png" width="454"></li>
+                <li>Выберите узел роли безопасности UserRole, чтобы открыть страницу Security Role Mapping (&quot;Сопоставление ролей безопасности&quot;).</li>
+                <li>Щелкните Add Principal (&quot;Добавить участника&quot;) и введите <tt>user</tt> в качестве имени участника. Нажмите кнопку &quot;OK&quot;.</li>
+                <li>Сохраните изменения в <tt>glassfish-web.xml</tt>.</li>
+            </ol>
+            <p><tt>glassfish-web.xml</tt> также можно просматривать и редактировать в редакторе XML, щелкнув вкладку XML. Если открыть <tt>glassfish-web.xml</tt> в редакторе XML, то можно будет увидеть, что <tt>glassfish-web.xml</tt> содержит следующую информацию о сопоставлении ролей безопасности:</p>
+            <pre class="examplecode"><span class="xml-tag">&lt;security-role-mapping&gt;
+    &lt;role-name&gt;</span>AdminRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>admin<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-mapping&gt;
+&lt;security-role-mapping&gt;
+    &lt;role-name&gt;</span>UserRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>user<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-mapping&gt;</span></pre>
+
+            <!--<a name="jdbc"></a>
+            <h2 class="tutorial">Using JDBC Authorization</h2>
+            <p>If you are deploying your application to the Sun Java System Application Server, you can also configure your application to retrieve the authorization information from a JDBC database table. 
+            Using this method, managing user accounts is much easier than managing user accounts directly on the server.</p>
+            <p>The JDBC authorization method is already supported in <a href="http://glassfish.dev.java.net/downloads/31May06.html">the GlassFish server
+            2.1</a>, but if you are using Sun Java System Application Server 9.0 you need to use a <a
+             href="http://glassfish.dev.java.net/nonav/issues/showattachment.cgi/65/JDBCRealm.jar">precompiled jar</a>.
+            To enable the realm <tt>jdbc-realm</tt> on the Sun Java System Application Server you need to do the following steps. 
+            (The steps are based on <a href="http://glassfish.dev.java.net/issues/show_bug.cgi?id=171">JDBCRealm for the GlassFish server.</a>)</p>
+            <ol>
+              <li>Download <a href="http://glassfish.dev.java.net/nonav/issues/showattachment.cgi/65/JDBCRealm.jar">JDBCRealm.jar</a>.</li>
+              <li>Copy the <tt>jar</tt> to the <tt>lib</tt> directory located in the Sun Java System Application Server installation directory.</li>
+              <li>Add the following to the <tt>login.conf</tt> file located in the <tt><i>&lt;APPSERVER_HOME&gt;</i>/domains/domain1/config/</tt><br>
+            <pre class="examplecode">jdbcRealm {
+            net.java.the GlassFish server.security.auth.realm.jdbc.JDBCLoginModule required;
+            };
+            </pre></li>
+              <li>Start the server and open the Admin Console.</li>
+              <li>In Configuration &gt; Security &gt; Realms, create a new Realm named
+            "jdbc-realm" and enter the following classname:
+            <pre>net.java.the GlassFish server.security.auth.realm.jdbc.JDBCRealm</pre></li>
+             <li>Add the following properties and values to the realm:
+              <ul>
+                <li>jaas-context : jdbcRealm</li>
+                <li>datasource : jdbc/__default</li>
+                <li>user : APP</li>
+                <li>password : APP</li>
+                <li>find user query : A SQL query that return the user's identifier
+            when injected two parameters (username/password), like<br>
+            "SELECT IDENTIFIER FROM PERSON WHERE USERID = ? AND PASSWORD = ?" </li>
+                <li>find-groups-query : A SQL query that return group name(s) when
+            injected the user name, like<br>
+            "SELECT GROUP_NAME FROM PERSON P, GROUP G WHERE P.GROUP_ID = G.ID AND
+            USERID = ?"</li>
+              </ul>
+              <p><b>Note:</b> The user and password are for the Java DB database server bundled with the Sun Java System Application Server.</p>
+              </li>
+              <li>In the Admin Console, locate Application Server/JVM Settings/Path Settings/Classpath suffix and
+            add the following line:<pre> ${com.sun.aas.installRoot}/lib/JDBCRealm.jar</pre></li>
+              <li>Create the appropriate tables in <tt>jdbc/__default</tt> and add the proper data to the table.</li>
+            </ol>
+            -->
+            <h3><a name="wl-dd"></a>Настройка дескриптора развертывания сервера WebLogic</h3>
+            <p>Дескриптор развертывания WebLogic именуется <tt>weblogic.xml</tt>.  На данный момент <a href="#gf-dd">поддержка дескрипторов развертывания GlassFish</a> в среде IDE не распространяется на дескрипторы развертывания WebLogic. Поэтому все изменения в <tt>weblogic.xml</tt> необходимо будет внести вручную.</p>
+            <p>Дескриптор развертывания сервера WebLogic в папке Configuration Files (&quot;Файлы конфигурации&quot;).  Если отсутствует, создайте его, щелкнув правой кнопкой мыши узел проекта и перейдя в 'Создать' > 'Другие' > WebLogic > 'Дескриптор развертывания WebLogic'. Примите все параметры по умолчанию.</p></p>
+            <p class="notes" ><b>Примечание.</b> Дополнительную информацию об обеспечении безопасности веб-приложений в WebLogic, включая декларативную и программную безопасность, можно найти в <a href="http://download.oracle.com/docs/cd/E21764_01/web.1111/e13711/thin_client.htm" target="_blank">Oracle Fusion Middleware Programming Security for Oracle WebLogic Server (&quot;Программная безопасность Oracle Fusion Middleware для Oracle WebLogic Server&quot;)</a>. </p>
+            <p><b></b>Для настройки дескриптора развертывания WebLogic:</p>
+            <ol>
+                <li>В окне 'Проекты' разверните узел 'Файлы конфигурации' и дважды щелкните <tt>weblogic.xml</tt>. Дескриптор развертывания <tt>weblogic.xml</tt> откроется в редакторе.</li>
+                <li>Внутри элемента <tt>&lt;weblogic-web-app&gt;</tt> введите или скопируйте следующие элементы назначения роли безопасности:
+                    <pre class="examplecode"><span class="xml-tag">&lt;security-role-assignment&gt;
+    &lt;role-name&gt;</span>AdminRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>adminGroup<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-assignment&gt;
+&lt;security-role-assignment&gt;
+    &lt;role-name&gt;</span>UserRole<span class="xml-tag">&lt;/role-name&gt;
+    &lt;principal-name&gt;</span>userGroup<span class="xml-tag">&lt;/principal-name&gt;
+&lt;/security-role-assignment&gt;</span></pre>
+                </li>
+                <li>Сохраните изменения в <tt>weblogic.xml</tt>.</li>
+            </ol>
+        </div>
+        <a name="Deploy_run"></a>
+        <h2 class="tutorial">Развертывание и выполнение приложения</h2>
+        <p>В окне &quot;Проекты&quot; щелкните правой кнопкой мыши узел проекта и выберите команду &quot;Выполнить&quot;.</p>
+        <p class="notes"><b>Примечание.</b> По умолчанию, проект создается с включенной функцией 'Компилировать при сохранении', так что не нужно сначала компилировать код. Дополнительные сведения о функции "Компилировать при сохранении" см. в разделе <a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG510">Сборка проектов Java</a> в <em>Руководстве по разработке приложений в IDE NetBeans</em>.</p>
+        <p>После сборки приложения и развертывания его на сервере в веб-браузере откроется начальная страница. Выберите безопасную область, к которой необходимо получить доступ, щелкнув <b>admin</b> либо <b>user</b>.</p>
+        <img alt="Развернутое приложение 1" border="0" class="margin-around" height="385" src="../../../images_www/articles/72/web/security/deploy1.png" width="459">
+        <p>После ввода имени пользователя и пароля возможны следующие результаты:
+        <ul>
+            <li><p>Пароль пользователя верен и у пользователя есть права на доступ к защищенному содержимому -&gt; отобразится страница защищенного содержимого.</p><img alt="Защищенная область пользователей" border="0" class="margin-around" height="385" src="../../../images_www/articles/72/web/security/deploy2.png" width="459"></li>
+            <li><p>Пароль пользователя неверен -&gt; отобразится страница ошибки.</p><img alt="Страница ошибок входа" border="0" class="margin-around" height="398" src="../../../images_www/articles/72/web/security/deploy3.png" width="484"></li>
+            <li><p>Пароль пользователя верен, но у пользователя нет прав на доступ к защищенному содержимому -&gt; браузер выведет ошибку 403, &quot;В доступе к запрошенному ресурсу отказано&quot;.</p><img alt="Доступ запрещен" border="0" class="margin-around" height="438" src="../../../images_www/articles/72/web/security/deploy4.png" width="510"></li>
+        </ul>
+        <h2><a name="06"></a>Заключение</h2>
+        <p>В этом учебном курсе мы создали веб-приложение. Затем мы изменили настройки его безопасности, используя редакторы дескрипторов web.xml и glassfish-web.xml, создав веб-страницы с безопасным входом и несколькими удостоверениями.</p>
+
+        <br>
+        <h2>Дополнительные сведения</h2>
+        <ul>
+
+            <li><a href="quickstart-webapps.html">Введение в разработку веб-приложений</a></li>
+            <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+        </ul>
+        <hr class="light">
+        <br>
+        
+        <table class="b-none" cellpadding="10" cellspacing="0" width="100%">
+            <!-- BEGIN SPACER ROW -->
+            <tr>
+                <td><br>
+                    <div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback: Securing a Web Application">Отправить отзыв по этому учебному курсу</a></div>
+                    <br style="clear:both;" />
+
+
+                    <br style="clear:both;" />
+                </td>
+            </tr>
+            <!-- END SPACER ROW -->
+        </table>
+        <!-- END WRAPPER TABLE, 2 COLUMN, MAIN/RIGHT -->
+    </body>
+</html>
+
+</body>
+</html>

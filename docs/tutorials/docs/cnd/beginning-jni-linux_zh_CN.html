@@ -1,0 +1,306 @@
+<html>
+<head>
+   <title>在 Linux 上使用 NetBeans IDE 和 C/C++ 插件开始开发 JNI</title>
+   <meta name="DESCRIPTION" content="A tutorial describing how to compile
+and run JNI powered Java applications using NetBeans IDE or Oracle Solaris Studio IDE.">
+   <meta name="author" content="Susan Morgan"><!--Optional tag-->
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+  </head>
+<body>
+<a name="top"></a>
+
+<h1>在 Linux 上使用 NetBeans IDE 和 C/C++ 插件开始开发 JNI</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+ <!--  <p><em>Contributed by <i>Susan Morgan</i> <br> -->
+ <em>2014 年 3 月</em> [修订版本号：V8.0-1]</div>
+
+<p>本教程将指导您如何创建使用 Java<sup><small>TM</small></sup> 本机接口 (JNI) 代码（采用 C 编程语言编写）的简单应用程序。
+<p class="notes">本教程特定于 Linux。</p>
+<!-- END INTRO -->
+
+<h3>目录</h3>
+<img alt="此页上的内容适用于 NetBeans IDE 7.4 和 8.0" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="此页上的内容适用于 NetBeans IDE 7.4 和 8.0">
+
+<table class="b-none vatop" cellpadding="0" cellspacing="0">
+   <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#requirements" title="要求">要求</a></td>
+   </tr>
+    <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#modules" title="为教程设置环境"> 为教程设置环境</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#javaproject" title="设置 Java 应用程序项目">设置 Java 应用程序项目</a></td>
+   </tr>
+   <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#c-library" title="设置新的 C/C++ 动态库项目"> 设置新的 C/C++ 动态库项目</a>
+</td>
+   </tr>
+    <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#running" title="构建和运行应用程序">构建和运行应用程序</a></td>
+      </tr>
+       <tr>
+      <td class="hyphen">- </td>
+      <td><a href="#next" title="后续步骤">后续步骤</a></td>
+      </tr>
+</table>
+
+<h2><a NAME="requirements"></a>要求</h2>
+<p><b>要学习本教程，您需要具备以下软件和资源。</b> </p>
+
+<table>
+<tbody>
+<tr>
+<th class="tblheader" scope="col">软件或资源</th>
+<th class="tblheader" scope="col">要求的版本</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">带有 NetBeans C/C++ 插件的版本 7.4 或 8.0</a></td>
+</tr>
+<tr>
+<td class="tbltd1">Java 开发者工具包 (JDK)</td>
+<td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">版本 7 或 8</a></td>
+</tr>
+<tr>
+<td class="tbltd1">
+C 和 C++ 编译器、<tt>make</tt>、<tt>gdb</tt></td>
+   <td class="tbltd1">
+   <a HREF="../../../community/releases/80/cpp-setup-instructions.html"> 配置 NetBeans IDE 以使用 C/C++/Fortran</a></td>
+</tr>
+</table>
+<p>有关下载并安装必需软件的信息，请参见 <a href="../../../community/releases/80/install.html">NetBeans IDE 8.0 安装说明</a>和<a HREF="../../../community/releases/80/cpp-setup-instructions.html">配置 NetBeans IDE 以使用 C/C++/Fortran</a>。 
+</p>
+
+<h2><a name="modules"></a>为教程设置环境</h2>
+<p>本教程需要使用 Java 模块和 C/C++ 模块。如果您已下载 NetBeans IDE C/C++ 包，则可以单独下载其他 Java 模块。</p>
+<p>要确定是否拥有 Java 和 C/C++ 模块，请选择 "File"（文件）> "New Project"（新建项目）。项目类别应该包括 Java 和 C/C++。
+<p><b>下载可能缺少的 Java 和 C/C++ 模块：</b></p>
+<ol><li>在 NetBeans IDE 中，选择 "Tools"（工具）> "Plugins"（插件）。</li>
+<li>在 "Available Plugins"（可用插件）标签中选中 Java 或 C/C++ 的复选框，具体取决于您的 IDE 中缺少哪个模块。如果您已拥有插件，则 "Installed"（已安装）标签中将会列出这些插件。
+</li>
+<li>单击 "Install"（安装）。</li>
+<li>在 "NetBeans IDE Installer"（NetBeans IDE 安装程序）对话框中，单击 "Next"（下一步），接受许可证条款复选框，然后单击 "Install"（安装）。</li>
+<li>安装完成之后，单击 "Finish"（完成）。</li></ol>
+
+<h2><a name="javaproject"></a>设置 Java 应用程序项目</h2>
+<p>
+本课程中需要用到 Java 项目和 C 项目。在本部分中，将为要开发的 JNI 应用程序创建并配置 Java 项目。此外，还将创建新的 Java 应用程序项目，初始化其主类，并向此类中添加本机方法。
+</p>
+<ol>
+<li>选择 "File"（文件）> "New Project"（新建项目）。选择 "Java" 类别和 "Java Application"（Java 应用程序）项目类型。单击 "Next"（下一步）。<br> <img alt="新建项目向导的屏幕快照" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-project-java.png"></li>
+<li>在 "Project Name"（项目名称）字段中，键入 <tt>JNIDemoJava</tt>。</li>
+<li>您可以将 "Project Location"（项目位置）更改为计算机上的任何目录，但在这里，我们使用用户目录中默认的 NetBeansProjects。
+</li>
+<li>让 "Create Main Class"（创建主类）复选框保持选中状态，然后将主类名更改为 <tt>jnidemojava.Main</tt>。<br> <br> <img alt="新建 Java 应用程序向导的 &quot;Name and Location&quot;（名称和位置）页的屏幕快照" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-java-app.png">
+</li>
+<li>单击 "Finish"（完成）。<br> <br>
+<p>
+IDE 将创建 <tt>NetBeansProjects/JNIDemoJava</tt> 项目文件夹。
+</p>
+</li>
+</ol>
+
+<h3>编辑主类源代码</h3>
+<ol>
+<li>要在编辑器中打开主类源代码，请右键单击 <tt>Main.java</tt> 类节点，然后选择 "Open"（打开）。</li>
+<li>将 <tt>main</tt> 方法中的 <tt>//TODO code application logic here</tt> 一行替换为以下内容：
+<pre class="examplecode">new Main().nativePrint();</pre>
+</li>
+<li>请注意左旁注中显示错误和灯泡的指示符。单击该指示符，系统将会提示您一个快捷键，用于创建方法 <tt>nativePrint</tt>。  </li>
+<li>单击此快捷键，IDE 将会插入以下代码：
+<pre class="examplecode">private void nativePrint() {
+      throw new UnsupportedOperationException("Not supported yet");
+   }</pre>
+   
+</li>
+<li>删除以下行
+    <pre class="examplecode">throw new UnsupportedOperationException("Not supported yet");</pre>
+ </li>
+<li>通过将 <tt>native</tt> 关键字插入方法签名中来修改 <tt>nativePrint()</tt> 方法，使其现在看起来如下所示：
+<pre class="examplecode">private native void nativePrint();</pre>
+<p>
+<tt>native</tt> 关键字表示该方法的实现位于外部本机库中。但在运行时，该库的位置并不明确。
+</p>
+
+<p>新的主方法看起来应如下所示：</p>
+<pre class="examplecode">public static void main(String[] args) {
+       new Main().nativePrint();
+   }
+
+   private native void nativePrint();
+}</pre>
+
+</li>
+
+<li>右键单击项目名称，然后选择 "Clean and Build"（清理并构建）。项目应该成功构建。
+</li>
+</ol>
+<h3><a name="header"></a>创建本机库头文件</h3>
+在本部分中，我们将使用 <tt>javah</tt>，这是一种用于从 Java 类创建 C 头文件的 Java 工具。
+<ol>
+<li>在终端窗口中，导航至 <tt>NetBeansProjects</tt> 目录。
+</li>
+<li>键入以下命令：
+<pre class="examplecode">
+javah -o JNIDemoJava.h -classpath JNIDemoJava/build/classes jnidemojava.Main
+</pre>
+<p>
+<tt>JNIDemoJava.h</tt> C 头文件是在 NetBeansProjects 目录中生成的。需要此文件才能为 <tt>nativePrint()</tt> 方法的本机实现提供正确的函数声明。您在以后创建此应用程序的 C 部分时需要用到它。</p>
+</li>
+<li>切换回 NetBeans IDE 窗口。
+</li>
+</ol>
+<p><b>小结</b>
+<p>在本练习中，创建了新的 Java 应用程序项目，指定了其位置，并定义了该项目中主类的包和名称。此外，还向主类中添加了新方法，并将其标记为具有本机实现的方法。最后，创建了 C 头文件，它在稍后编译本机库时需要用到。</p>
+
+<h2><a name="c-library"></a>设置新的 C/C++ 动态库项目</h2>
+<p>本部分向您说明了如何创建应用程序的本机部分。您将创建 C++ 动态库项目，并对其进行配置，使之能够构建 JNI 代码。
+</p>
+<p>设置了项目后，您将为先前在应用程序的 Java 部分中声明的本机方法创建实现。
+
+<ol>
+<li>
+选择 "File"（文件）> "New Project"（新建项目）。在 "Categories"（类别）下，选择 "C/C++"。在 "Projects"（项目）下，选择 "C/C++ Dynamic Library"（C/C++ 动态库）。单击 "Next"（下一步）。 <br> <img alt="新建项目向导的 &quot;Choose Project&quot;（选择项目）页的屏幕快照" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-new-project-c.png">
+</li>
+<li>在 "Project Name"（项目名称）字段中，键入 <tt>JNIDemoCdl</tt>。
+</li>
+<li>在 "Project Location"（项目位置）字段中，使用 Java 应用程序项目所用的相同位置，即 <tt>NetBeansProjects</tt>。该位置应显示为默认值。
+</li>
+<li>接受所有其他字段的默认值，然后单击 "Finish"（完成）。
+
+<p>IDE 将创建 <tt>NetBeansProjects/JNIDemoCdl</tt> 项目文件夹。
+</p>
+</li>
+</ol>
+<h3>设置项目属性</h3>
+<ol>
+<li>右键单击 "JNIDemoCdl" 项目节点，然后选择 "Properties"（属性）。</li>
+<li>在 "Properties"（属性）对话框中，选择 "Build"（构建）属性下方的 "C Compiler"（C 编译器）节点。</li>
+<li>单击 "Include Directories and Headers..."（包含目录和头文件...）按钮，然后在 "Include Directories and Headers"（包含目录和头文件）对话框中单击 "Add"（添加）。
+<li>浏览到 JDK 目录，然后选择 <tt>include</tt> 子目录。 </li>
+<li>选择 "Store path as Absolute"（存储为绝对路径）选项，然后单击 "Select"（选择），将此目录添加到此项目的 "Include Directories"（包括目录）中。</li>
+<li>以同样的方式添加 JDK 的 <tt>include/linux</tt> 目录，然后单击 "OK"（确定）。 <br> <img alt="&quot;Project Properties&quot;（项目属性）对话框和 &quot;Debug-Include Directories&quot;（调试包含目录）对话框的屏幕快照" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-include-directories.png">
+
+<p>从 C 代码中启用对 Java <tt>jni.h</tt> 库的引用时需要这些设置。
+</p>
+</li>
+<li>
+找到 "C Compiler"（C 编译器）选项的 "Compilation Line"（编译行）区域。单击 "Additional Options"（其他选项）属性的文本字段，然后键入 <tt>-shared -m32</tt>。<img alt="编辑的 &quot;Debug-Additional Options&quot;（调试其他选项）文本字段的屏幕快照" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-project-properties-cmd-options.png">
+
+<p>
+<tt>-shared</tt> 选项用于通知编译器生成动态库。<br> <tt>-m32</tt> 选项用于通知编译器创建 32 位二进制文件。默认情况下，在 64 位系统上，已编译二进制文件是 64 位的，这会导致很多与 32 位 JDK 相关的问题。
+</p>
+</li>
+<li>
+单击左面板中的 "Linker"（链接器）类别。</li>
+<li>单击 "Output"（输出）文本字段，然后将字符串
+ <pre class="examplecode">${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libJNIDemoCdl.so</pre>
+
+ 替换为字符串
+ <pre class="examplecode">dist/libJNIDemoCdl.so</pre>
+ 以简化生成的共享对象文件的路径。这将简化从 Java 引用文件的过程。<br> <img alt="具有 &quot;Linker&quot;（链接器）属性的 &quot;Project Properties&quot;（项目属性）对话框的屏幕快照" class="margin-around" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-project-properties-linker.png">
+
+
+
+</li>
+<li>单击 "OK"（确定）。此时将保存已定义的设置。
+</li>
+</ol>
+
+<h3>添加头文件</h3>
+<ol>
+<li>转至终端窗口，然后将以前生成的 <tt>JNIDemoJava.h</tt> 头文件从 <tt>NetBeansProjects</tt> 目录移至 C/C++ 库项目目录，即 <tt>NetBeansProjects/JNIDemoCdl</tt>。
+</li>
+<li>
+<p>在 "Projects"（项目）窗口中，右键单击 <tt>JNIDemoCdl</tt> 项目的 "Header Files"（头文件）节点，然后选择 "Add Existing Item"（添加现有项）。导航到 <tt>NetBeansProjects/JNIDemoCdl</tt> 目录并选择 <tt>JNIDemoJava.h</tt> 文件，然后单击 "Select"（选择）。
+</p>
+<p><tt>JNIDemoJava.h</tt> 文件显示在 "Header Files"（头文件）的下方。
+</p>
+
+<img alt="&quot;Projects&quot;（项目）窗口的屏幕快照" class="margin-around b-all" src="../../../images_www/articles/74/cnd/beginning-jni-linux/jni-source-files-include-file.png">
+</li>
+</ol>
+<h3>实现方法</h3>
+
+<ol>
+<li>右键单击 <tt>JNIDemoCdl</tt> 项目的“源文件”节点，然后选择 "New"（新建）> "C Source File"（C 源文件）。在 "File Name"（文件名）字段中，键入 <tt>JNIDemo</tt>，然后单击 "Finish"（完成）。编辑器将打开 <tt>JNIDemo.c</tt> 文件。
+</li>
+<li>键入以下代码，以编辑 <tt>JNIDemo.c</tt> 文件：
+<pre class="examplecode">
+#include &lt;jni.h&gt;
+#include &lt;stdio.h&gt;
+#include "JNIDemoJava.h"
+
+JNIEXPORT void JNICALL Java_jnidemojava_Main_nativePrint
+        (JNIEnv *env, jobject obj)
+{
+
+    printf("\nHello World from C\n");
+
+}
+</pre>
+</li>
+<li>保存 <tt>JNIDemo.c</tt> 文件。</li>
+<li>
+右键单击 <tt>JNIDemoCdl</tt> 项目节点，然后选择 "Build"（构建）。"Output"（输出）窗口将显示 <tt>BUILD SUCCESSFUL (total time 171ms)</tt>（构建成功（总时间为 171 毫秒））或类似内容。
+</li>
+</ol>
+<p><b>小结</b></p>
+
+<p>在本练习中，创建了新的 C/C++ 动态库，指定了其位置，并对其进行了配置，使之能够构建 Java 方法的 JNI 实现。此外，还为您在 Java 应用程序中声明的本机方法添加了已生成的头文件，并实现了它。
+</p>
+
+<h2><a name="running"></a>构建和运行应用程序</h2>
+<p>
+在本练习中，将对应用程序的 Java 部分执行一些最后的修改。为了确保 Java 部分正确加载您在上一个练习中编译的本机库，需要进行这些更改。然后，您将编译并运行生成的应用程序。
+</p>
+<div class="indent">
+<h3>配置 Java 项目</h3>
+<ol>
+<li>在编辑器中打开 <tt>Main.java</tt> 文件。
+<li>使用上一个练习的缩写输出文件路径，在 <tt>public class Main</tt> 行之后为 C++ 动态库添加以下初始化代码：
+<pre class="examplecode">
+static {
+        System.load("<i>full-path-to-NetBeansProjects-dir</i>/JNIDemoCdl/dist/libJNIDemoCdl.so");
+       }
+</pre>
+将 <i>full-path-to-NetBeansProjects-dir</i> 替换为 NetBeansProjects 目录的路径，该路径应类似于 <tt>/home/<i>username</i>/NetBeansProjects</tt>
+
+</li>
+<li>保存 <tt>Main.java</tt> 文件。</li>
+
+</ol>
+<h3>运行 JNIDemoJava 应用程序</h3>
+<ol><li>在 "Projects"（项目）窗口中选择 JNIDemoJava 应用程序。</li>
+<li>按 F6 或单击工具栏中的 "Run"（运行）按钮，以运行应用程序。程序应正确执行，并且 "Output"（输出）窗口应显示类似以下内容的输出：<br> <img alt="&quot;Output&quot;（输出）窗口的屏幕快照" class="margin-around" src="../../../images_www/articles/72/cnd/beginning-jni-linux/jni-build-success.png">
+</li>
+</ol>
+<h3>小结</h3>
+<p>在本练习中，执行了一些最后的配置步骤，并运行了应用程序，以验证本机方法的实现来自于本机 C 库。
+</p>
+</div>
+<h2><a name="next"></a>后续步骤</h2>
+<p>如果要对照工作示例检查工作，则可以从 netbeans.org <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FCPlusPlus%252FJNIDemo.zip" target="_blank">下载包含源代码的 zip 文件</a>。
+</p>
+   
+
+<p>
+您可以使用以下文档获取更多的信息：
+<ul>
+<li><a href="quickstart.html">C/C++ 项目快速入门教程</a>
+<li><a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jni/" target="_blank">JNI 规范</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Java_Native_Interface" target="_blank">Java 本机接口</a>
+
+</ul>
+  <DIV CLASS="feedback-box">
+   <a HREF="https://netbeans.org/about/contact_form.html?to=7&amp;subject=Feedback:%20Beginning%20JNI%20with%20NetBeans%20IDE%20and%20C/C++%20Plugin%20on%20Linux">发送有关此教程的反馈意见</a>
+</DIV>
+</body>
+</html>

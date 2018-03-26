@@ -1,0 +1,318 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>NetBeans IDE Javaエディタでの静的コード分析</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of static analysis of the java code functionality in the NetBeans IDE."></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Java editor, code analysis, inspections, configurations"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body><a name="top"></a>
+
+<h1>NetBeans IDE Javaエディタでの静的コード分析</h1>
+ <div class="articledate" style="margin-left: 0px;">Jan Lahoda、Alyona Stashkova</div>
+<p>NetBeans IDE Javaエディタには、ソース・コード内の潜在的な問題を検索して不整合を検出するツールとして、静的コード分析機能があります。 </p>
+<p>このチュートリアルでは、アプリケーションを実際には実行せずに、FindBugsおよびNetBeans Javaヒントを使用してJavaコードの静的分析を実行する方法を学習します。</p>
+
+<h3>内容</h3>
+<img alt="このページの内容は、NetBeans IDE 8.0に適用されます" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="このページの内容は、NetBeans IDE 8.0に適用されます" />
+
+        <ul class="toc">
+            <li><a href="#setup">チュートリアルの環境の設定</a></li>
+			
+			<li><a href="#config">構成の使用</a>
+			<ul>
+			<li><a href="#all">「すべてのアナライザ」の実行</a></li>
+			<li><a href="#hints">NetBeans Javaヒントに対するJavaコードの確認</a></li>
+			<li><a href="#fb">FindBugsによるJavaコード内の潜在的な問題の検索</a></li>
+			<li><a href="#default">「デフォルト」構成のカスタマイズ</a></li>
+			</ul>
+			</li>
+			<li><a href="#create">構成の作成と削除</a></li>
+			<li><a href="#inspect">単一の検査の実行</a></li>
+			
+			<li><a href="#summary">サマリー</a></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>要件</h2>
+        <p><strong>このチュートリアルを完了するには、次のソフトウェアとリソースが必要です。</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">バージョン8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">バージョン7以降</td>
+                </tr>
+				<tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/library.zip" target="_blank">library.zip</a></td>
+                    <td class="tbltd1">NetBeansプロジェクト</td>
+                </tr>
+				<tr>
+                    <td class="tbltd1"><a href="http://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.0/jsr305-2.0.0.jar">jsr305-2.0.0.jar</a></td>
+                    <td class="tbltd1">静的分析ツールの効率を向上させるためのJava Specification Request</td>
+                </tr>
+                
+            </tbody>
+        </table>
+<p class="notes"><b>注意:</b> <tt>jsr305-2.0.0.jar</tt>は、このチュートリアルの目的のために<tt>library.zip</tt>内に含まれています。 </p>
+<p>別のNetBeansプロジェクトを使用中の場合、<a href="http://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.0/jsr305-2.0.0.jar">jsr305-2.0.0.jar</a>をダウンロードし、次の手順に従って、IDEのプロジェクトの「ライブラリ」フォルダに追加します。</p>
+  <ol>
+<li>「ライブラリ」フォルダを右クリックし、ポップアップ・メニューから「JAR/フォルダの追加」を選択します。 </li>
+<li>「JAR/フォルダの追加」ダイアログ・ボックスで、ダウンロードされた<tt>jsr305-2.0.0.jar</tt>ファイルのパスを指定し、「開く」をクリックします。 
+  <p class="align-center"><img alt="jsr305-2.0.0.jarの追加" border="1/" src="../../../images_www/articles/80/java/code-inspect/jar.png"></p></li>
+</ol>
+        
+<a name="setup"></a>
+<h2>チュートリアルの環境の設定</h2>
+<p>前出の一覧表示された必須ソフトウェアに加え、次のものもコンピュータにインストールしておくようにしてください。</p>
+<ul>
+<li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/library.zip" target="_blank">library.zip</a>ファイルをNetBeansプロジェクト・フォルダに解凍し、NetBeans IDEで開きます。</li>	
+
+<li><a name="plugin"></a>FindBugsプラグインをダウンロードし、次の手順でNetBeans IDEにインストールする必要があります。
+  <ol>
+<li>IDEのメイン・メニューから「ソース」>「検査」を選択します。</li>
+<li>「検査」ダイアログ・ボックスで、「インストール」をクリックします。 
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/inspect.png" rel="lytebox" title="「検査」ダイアログ・ボックス - クリックして拡大"> <img alt="「検査」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/80/java/code-inspect/inspect-small.png"></a></p></li>
+<li>「インストーラ」ダイアログ・ボックスで「次」をクリックし、インストールを続行します。
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/plugin.png" rel="lytebox" title="プラグインのインストール - クリックして拡大"> <img alt="プラグインのインストール" border="1/" src="../../../images_www/articles/80/java/code-inspect/plugin-small.png"></a></p></li>
+<li>ライセンス契約を確認し、ライセンス契約オプションを選択して、「インストール」をクリックします。</li> 
+<li>インストールが完了したら、「終了」をクリックします。</li>
+</ol></li>
+</ul>
+<a name="config"></a>
+<h2>事前定義された構成の使用</h2>
+<p>NetBeans IDEでコードを検査するとき、事前定義された次の構成を使用できます。</p>
+<ul>
+			<li><a href="#all">すべてのアナライザ</a></li>
+			<li><a href="#hints">NetBeans Javaヒント</a></li>
+			<li><a href="#fb">FindBugs</a></li>
+			<li><a href="#default">デフォルト</a></li>
+			
+</ul>
+
+        <a name="all"></a>
+        <h3>「すべてのアナライザ」の実行</h3> 
+        <p>「<tt>すべてのアナライザ</tt>」構成によって、IDEで使用可能なすべての静的コード分析ツールがデプロイされます。</p>
+		<p><b>「<tt>すべてのアナライザ</tt>」構成を実行するには:</b></p>
+		<ol>
+           <li>IDEのメイン・ツールバーから「ソース」>「検査」を選択します。</li>
+           <li>「検査」ダイアログ・ボックスの「スコープ」ドロップダウン・リストで、「<tt>現在のプロジェクト(library)</tt>」を選択します。</li>
+           <li>「構成」ドロップダウン・リストで、「<tt>すべてのアナライザ</tt>」構成を選択します。
+             <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/allconfig.png" rel="lytebox" title="選択された「すべてのアナライザ」構成 - クリックして拡大"> <img alt="選択された「すべてのアナライザ」構成" border="1/" src="../../../images_www/articles/80/java/code-inspect/allconfig-small.png"></a></p>
+		  <p class="notes"><b>注意:</b> この構成を最初に実行する前に、<a href="#plugin">FindBugs</a>プラグインをインストールする必要があります。</p></li>
+           <li>「検査」をクリックします。<br />分析の結果が「インスペクタ・ウィンドウ」の左にツリー・ビューとして表示されます。
+		     <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/all.png" rel="lytebox" title="実行された「すべてのアナライザ」構成 - クリックして拡大"> <img alt="実行された「すべてのアナライザ」構成" border="1/" src="../../../images_www/articles/80/java/code-inspect/all-small.png"></a></p>
+		   右には、ツリー・ビューで現在選択されている項目の説明が表示されます。 
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/alldescription.png" rel="lytebox" title="説明 - クリックして拡大"> <img alt="説明" border="1/" src="../../../images_www/articles/80/java/code-inspect/alldescription-small.png"></a></p>
+		   
+		   <p class="notes"><b>注意:</b> コードの一部が問題ありと報告され、そのコードを変更せずにそのまま使用する場合、IDEでは、このコードに対する警告を抑制できます。「インスペクタ・ウィンドウ」のツリー・ビューの警告をダブルクリックし、ソース・エディタに移動します。[Alt]-[Enter]を押し、表示されたヒントの末尾にある黒い右矢印をクリックして、「<tt>警告の抑制 - <i>(警告名)</i></tt>」を選択します。</p>
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/suppress.png" rel="lytebox" title="警告の抑制 - クリックして拡大"> <img alt="警告の抑制" border="1/" src="../../../images_www/articles/80/java/code-inspect/suppress-small.png"></a></p>
+           </li>
+       
+	   </ol>
+	   
+	   
+         <a name="hints"></a>
+		<h3>NetBeans Javaヒントに対するJavaコードの確認</h3>
+		<p>IDEで使用可能な「<tt>NetBeans Javaヒント</tt>」構成を使用すると、対象のソース・コードが、事前定義されたコーディング標準ルールを満たしているかどうかを確認できます。つまり、一連のNetBeans Javaヒント(コード検査とも呼ばれます)をJavaソース・ファイルに適用します。</p>
+		<p><b>「<tt>NetBeans Javaヒント</tt>」構成を実行するには:</b></p>
+		<ol>
+		<li>IDEのメイン・ツールバーから「ソース」>「検査」を選択します。</li>
+		<li>「検査」ダイアログ・ボックスの「スコープ」ドロップダウン・リストで、「<tt>開いているプロジェクト</tt>」(1つの<tt>library</tt>プロジェクトのみがIDEで開いている場合)、または「<tt>現在のプロジェクト(library)</tt>」を選択します。
+		<p class="notes"><b>注意:</b> 「<tt>NetBeans Javaヒント</tt>」構成のスコープ(ファイル、パッケージ、またはプロジェクト)を定義できます。</p>
+		</li>
+		<li>「構成」ラジオ・ボタンを選択し、ドロップダウン・リストで「<tt>NetBeans Javaヒント</tt>」を選択します。
+		 <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/hints.png" rel="lytebox" title="「NetBeans Javaヒント」の選択 - クリックして拡大"> <img alt="「NetBeans Javaヒント」の選択" border="1/" src="../../../images_www/articles/80/java/code-inspect/hints-small.png"></a></p> </li>
+		<li>「検査」をクリックします。<br /> IDEでは、「インスペクタ・ウィンドウ」内のツリー・ビューに、「<tt>NetBeans Javaヒント</tt>」構成を使用した分析の結果が表示されます。
+		<p class="align-center"><img alt="実行された「NetBeans Javaヒント」構成" border="1/" src="../../../images_www/articles/80/java/code-inspect/hintsconfig.png"></p></li>
+		<li>「インスペクタ」ウィンドウで、左のツールバーの<a href="#categorize">カテゴリ化</a>ボタンをクリックし、カテゴリにグループ化された問題を表示します。 
+		<p class="align-center"><img alt="カテゴリにグループ化された検出済の問題" border="1/" src="../../../images_www/articles/80/java/code-inspect/catview.png"></p>		
+		次の表に、「インスペクタ・ウィンドウ」で使用可能なコマンドを示します。  
+		    <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col">アイコン</th>
+                        <th class="tblheader" scope="col" style="width:110px">名前</th>
+                        <th class="tblheader" scope="col">機能</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「リフレッシュ」アイコン" src="../../../images_www/articles/80/java/code-inspect/refreshbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>リフレッシュ</strong></td>
+                        <td class="tbltd1">静的分析結果のリフレッシュされたリストを表示します。 </td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「前」アイコン" src="../../../images_www/articles/80/java/code-inspect/upbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>前の問題</strong></td>
+                        <td class="tbltd1">静的分析結果リスト内の前の問題を表示します。</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="「次」アイコン" src="../../../images_www/articles/80/java/code-inspect/downbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>次の問題</strong></td>
+                        <td class="tbltd1">静的分析結果リスト内の次の問題を表示します。</td>
+                    </tr>					
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="カテゴリ化アイコン" src="../../../images_www/articles/80/java/code-inspect/categorizebutton.png" /></td>
+                        <td class="tbltd1 align-center"><a name="categorize"></a><strong>カテゴリ化</strong></td>
+                        <td class="tbltd1">ファイル、プロジェクト、またはパッケージ内で検出された問題の縮小したビューと、検出されたすべての問題をカテゴリ化したビューを切り替えます。 </td>
+                    </tr>
+          </table>
+</li>
+		</ol>
+		
+        <a name="fb"></a>
+		<h3>FindBugsによるJavaコード内の潜在的な問題の検索</h3>		
+		<p>IDEで使用可能な「<tt>FindBugs</tt>」構成を使用すると、コード内の潜在的な問題を広範囲に検索できます。これは、Javaでコード分析を行うためのポピュラなオープン・ソースであるFindBugsツールを呼び出します。bug報告が生成され、検出されたすべての問題がカテゴリ化されてNetBeans IDEの「インスペクタ・ウィンドウ」に表示され、報告内のbugから疑いのあるコードに直接移動できます。また、隣接するウィンドウでbugの説明を参照したり、左フレームの最上部にあるポインタを使用して<a href="http://findbugs.sourceforge.net/bugDescriptions.html">FindbugsのBugの説明</a>ページでbugを確認できます。 </p>
+		<p class="notes"><b>注意:</b> この構成を最初に実行する前に、<a href="#plugin">FindBugs</a>プラグインをインストールする必要があります。</p>
+		<p><b>「<tt>FindBugs</tt>」構成を使用してJavaコード内の潜在的なエラーを識別するには、次の手順を行います:</b></p>
+		<ol>
+		<li>NetBeans IDEで<tt>library</tt>プロジェクトを開き、メイン・ツールバーから「ソース」>「検査」を選択します。</li>
+		<li>「検査」ダイアログ・ボックスの「スコープ」ドロップダウン・リストで、「<tt>現在のプロジェクト(library)</tt>」を選択します。
+		<p class="notes"><b>注意:</b> 「<tt>FindBugs</tt>」構成を使用して、ファイル、パッケージまたはプロジェクトを検査できます。</p></li>
+		<li>「検査」ダイアログ・ボックスで、「<tt>FindBugs</tt>」構成を選択します。
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fb.png" rel="lytebox" title="選択された「FindBugs」構成 - クリックして拡大"> <img alt="選択された「FindBugs」構成" border="1/" src="../../../images_www/articles/80/java/code-inspect/fb-small.png"></a></p></li>
+		<li>「検査」ボタンをクリックして、静的コード分析を開始します。<br />ソース・エディタの下にある「インスペクタ・ウィンドウ」に、静的コード分析の結果が表示されます。<br> 右のフレームに、選択したbugの説明が表示されます。
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/inspector.png" rel="lytebox" title="「インスペクタ」ウィンドウ - クリックして拡大"> <img alt="インスペクタ・ウィンドウ" border="1/" src="../../../images_www/articles/80/java/code-inspect/inspector-small.png"></a></p></li>
+		<li>または、左のツールバーの<a href="#categorize">カテゴリ化</a>ボタンをクリックし、カテゴリにグループ化されたbugを表示します。 
+		  <p class="align-center"><img alt="カテゴリにグループ化された検出済のbug" border="1/" src="../../../images_www/articles/80/java/code-inspect/fbcat.png"></p></li>
+		
+		</ol>
+		<p class="notes"><b>注意:</b></p>
+		<ul>
+		<li>展開したリストで問題をダブルクリックすると、IDEでは、報告された問題がソース・エディタに表示されます。<br />[Alt]-[Enter]を押し、ソース・コード内にbugの説明を表示します。
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/source-editor.png" rel="lytebox" title="ソース・エディタ内の報告された問題 - クリックして拡大"> <img alt="ソース・エディタ内の報告された問題" border="1/" src="../../../images_www/articles/80/java/code-inspect/source-editor-small.png"></a></p></li>
+		<li>潜在的なエラーがコード内で強調表示され、ソース・エディタの左マージンに感嘆符アイコン(<img alt="感嘆符アイコン" src="../../../images_www/articles/80/java/code-inspect/exclamation.png" />)が表示されます。</li>
+		</ul>
+		
+		<p><b>JavaエディタでFindBugsを有効にするには:</b></p>
+		<ol>
+		<li>IDEのメイン・ツールバーから「ツール」>「オプション」を選択します。</li>
+		<li>「エディタ」タブを選択し、「ヒント」を選択します。 </li>
+		<li>「言語」ドロップダウン・リストで「<tt>FindBugs</tt>」を選択します。 
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fb-editor.png" rel="lytebox" title="ソース・エディタでのFindBugsの有効化 - クリックして拡大"> <img alt="ソース・エディタでのFindBugsの有効化" border="1/" src="../../../images_www/articles/80/java/code-inspect/fb-editor-small.png"></a></p></li>
+		<li>「エディタ」オプションで「FindBugsの実行」を選択します。</li>
+		<li>「OK」をクリックします。<br />ここで、bugが報告されたソース・コード内で[Alt]-[Enter]を押し、表示されたヒントの末尾にある黒い右矢印をクリックすると、IDEでは、潜在的なbugに対するいくつかの修正オプションが表示されます。
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fbenabled.png" rel="lytebox" title="ソース・エディタで有効化されたFindBugs - クリックして拡大"> <img alt="ソース・エディタで有効化されたFindBugs" border="1/" src="../../../images_www/articles/80/java/code-inspect/fbenabled-small.png"></a></p></li>
+		</ol>
+		 <a name="default"></a>
+        <h3>「デフォルト」構成のカスタマイズ</h3>
+        <p>コードでの作業中に、事前定義された構成に独自のNetBeans JavaヒントやFindbugsのbugが含まれるように、構成のカスタマイズが必要になる場合があります。</p>		
+<p><b>事前定義された「<tt>デフォルト</tt>」構成を独自のニーズにあわせて調整するには、次の手順を行います:</b></p>
+<ol>
+<li>IDEのメイン・ツールバーから「ソース」>「検査」を選択します。</li>
+<li>「検査」ダイアログ・ボックスで「構成」ラジオ・ボタンを選択し、<tt>「デフォルト」</tt>構成を選択します。
+<li> 「管理」をクリックします。<br />IDEで「構成」ダイアログ・ボックスが表示されます。
+<p class="align-center">
+	      <img alt="「構成」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/80/java/code-inspect/configurations-db.png"></p></li>
+<li>「構成」ドロップダウン・リストで「<tt>デフォルト</tt>」が選択されていることを確認します。 </li>
+<li>「アナライザ」ドロップダウン・リストで<tt>「JRE 8プロファイル準拠」</tt>、<tt>「NetBeans Javaヒント」</tt>または<tt>「FindBugs」</tt>アナライザを選択します。</li>
+<li>前のステップで選択したアナライザに応じて、検証するプロファイル、<tt>デフォルト</tt>構成に含める検査またはbugを選択します。 
+  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/select-inspections.png" rel="lytebox" title="検査の選択 - クリックして拡大"> <img alt="検査の選択" border="1/" src="../../../images_www/articles/80/java/code-inspect/select-inspections-small.png"></a></p></li>
+<li>「OK」をクリックして「<tt>デフォルト</tt>」構成を保存します。</li>
+</ol>	
+
+		<a name="create"></a>
+<h2>構成の作成と削除</h2>
+<p>Javaコードの静的分析で使用する独自の構成を作成および削除できます。</p>	
+<p><b>構成を作成するには、次の手順を行います:</b> </p>
+<ol>
+		<li>IDEのメイン・ツールバーから「ソース」>「検査」を選択します。</li>
+		<li>「検査」ダイアログ・ボックスで「構成」ラジオ・ボタンを選択し、<tt>「デフォルト」</tt>構成を選択します。
+        <li> 「管理」をクリックします。</li>
+		<li>「構成」ダイアログ・ボックスで、「構成」ドロップダウン・リストの末尾にある黒い矢印をクリックし、「新規」をクリックします。 
+		<p class="align-center">
+  <img alt="構成の作成" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig.png"></p>
+         「<tt>newConfig</tt>」構成が作成され、「構成」ドロップダウン・リストに追加されます。 
+		 <p class="align-center">
+  <img alt="「構成」リスト内の「newConfig」" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig-created.png"></p></li>
+		<li>「アナライザ」ドロップダウン・リストで<tt>「JRE 8プロファイル準拠」</tt>、<tt>「NetBeans Javaヒント」</tt>または<tt>「FindBugs」</tt>選択します。</li>
+		<li>構成に含めるプロファイル、検査またはbugを指定します。 </li>
+		<li>「OK」をクリックして編集内容を保存し、「構成」ダイアログ・ボックスを閉じます。<br />作成された「<tt>newConfig</tt>」構成が、「検査」ダイアログ・ボックスの「構成」ドロップダウン・リストで選択可能になります。
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/newconfig-inspect.png" rel="lytebox" title="作成された新しい構成 - クリックして拡大"> <img alt="作成された新しい構成" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig-inspect-small.png"></a></p></li>
+</ol>
+<p class="notes"><b>注意:</b> 構成を名前変更するには、「構成」ドロップダウン・リストで「<tt>newConfig</tt>」構成を選択し、「構成」ドロップダウン・リストの末尾にある黒い矢印をクリックして、「名前変更」を選択します。新しい名前(たとえば、<tt>renamedConfig</tt>)を入力し、[Enter]を押して編集内容を保存します。</p>
+<p class="align-center">
+  <img alt="名前変更したnewConfig" border="1/" src="../../../images_www/articles/80/java/code-inspect/renamedconfig.png"></p>
+  <p><b>構成を削除するには、次の手順を行います:</b> </p>
+<ol>
+		<li>IDEのメイン・ツールバーから「ソース」>「検査」を選択します。</li>
+		<li>「検査」ダイアログ・ボックスで「構成」ラジオ・ボタンを選択し、削除する構成(この例では<tt>renamedConfig</tt>)を選択します。
+        <li> 「管理」をクリックします。</li>
+		<li>「構成」ダイアログ・ボックスで、「構成」ドロップダウン・リストの末尾にある黒い矢印をクリックし、「削除」をクリックします。
+		<p class="align-center">
+  <img alt="renamedConfigの削除" border="1/" src="../../../images_www/articles/80/java/code-inspect/delete.png"></p></li>
+  <li>「構成の削除」ダイアログ・ボックスで、「はい」をクリックして構成の削除を確認します。
+  <p class="align-center"><img alt="renamedConfigの削除の確認" border="1/" src="../../../images_www/articles/80/java/code-inspect/delete-confirm.png"></p>
+  「<tt>renamedConfig</tt>」構成が「構成」リストから削除されます。
+  <!--<p class="align-center"><a href="../../../images_www/articles/72/java/code-inspect/norenamedconfig.png" rel="lytebox" title="No renamedConfig in the Configurations list- Click to enlarge">
+  <img src="../../../images_www/articles/72/java/code-inspect/norenamedconfig-small.png" alt="No renamedConfig in the Configurations list" border=1/></a></p>--></li>
+</ol>
+
+<p class="notes"><b>注意:</b> 1つ以上のNetBeans Javaヒントを提供するNetBeansモジュールの作成方法については、<a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">NetBeans Javaヒント・モジュールのチュートリアル</a>を参照してください。
+</p>
+
+		<a name="inspect"></a>
+<h2>単一の検査の実行</h2>
+<p>NetBeans IDEで静的コード分析機能を使用すると、ソース・コード内の特定の欠陥についてコードを検査できます。 </p>
+<p><b>単一の検査でJavaソース・コード内の特定の不整合や問題を検出するには、次の手順を行います:</b></p>
+<ol>
+<li>IDEのメイン・メニューから「ソース」>「検査」を選択します。</li>
+<li>「検査」ダイアログ・ボックスの「スコープ」ドロップダウン・リストで、検査対象のファイル、パッケージ、またはプロジェクトを選択します。 </li>
+<li>「単一の検査」を選択し、次のいずれかを実行します。
+  <ul>
+<li>「単一の検査」ドロップダウン・リストで、ソース・コード分析で使用する<i>単一</i>のNetBeans JavaヒントまたはFindbugsのbugまでスクロールして選択します。 
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/single-inspection.png" rel="lytebox" title="「単一の検査」ドロップダウン・リスト - クリックして拡大"> <img alt="「単一の検査」ドロップダウン・リスト" border="1/" src="../../../images_www/articles/80/java/code-inspect/single-inspection-small.png"></a></p></li>
+<li>「参照」をクリックして「構成」ダイアログ・ボックスを開き、「アナライザ」ドロップダウン・リストでアナライザを指定し、ソース・コード分析で使用するプロファイル(JRE 8プロファイル準拠アナライザの場合)、<i>単一</i>の検査(NetBeans Javaヒント・アナライザの場合)または<i>単一</i>のbug (FindBugsアナライザの場合)を指定します。「OK」をクリックして「構成」ダイアログ・ボックスを閉じます。
+  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/hint-inspection.png" rel="lytebox" title="「検査の参照」ダイアログ・ボックス - クリックして拡大"> <img alt="「検査の参照」ダイアログ・ボックス" border="1/" src="../../../images_www/articles/80/java/code-inspect/hint-inspection-small.png"></a></p></li>
+</ul>
+</li>
+<li>「検査」ダイアログ・ボックスで、「検査」をクリックしてソース・コード分析を実行します。<br />検査操作が完了すると、ソース・エディタの下にある「インスペクタ・ウィンドウ」に、検出されたコードまたはbugに適用可能なヒントが表示されます。 </li>
+</ol>
+        <a name="summary"></a>
+<h2>サマリー</h2>
+<p>このチュートリアルでは、NetBeans IDEの静的コード分析機能の最も頻繁に使用される方法を説明しています。この静的コード分析機能では、プロジェクト・スコープでカスタム・リファクタリングを実行したり、IDEで開かれている複数のプロジェクトに特定のリファクタリング構成を適用したりすることもできます。 </p>
+
+<p class="align-center"><a href="#top">先頭</a></p>		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Static%20Code%20Analysis%20in%20NetBeans%20IDE">このチュートリアルに関するご意見をお寄せください</a></div>
+
+        <br style="clear:both;"/>
+		
+		<a name="seealso"></a>
+        <h2>関連項目</h2>
+        
+        <p>関連する資料については、次のドキュメントを参照してください。</p>
+        <ul>     
+            	
+			<li><a href="code-inspect-screencast.html">NetBeans IDEでの静的コード分析機能のビデオ</a></li>
+			<li><a href="http://wiki.netbeans.org/Java_Hints">NetBeans Javaヒントの完全リスト</a></li>
+			<li><a href="http://wiki.netbeans.org/JavaDeclarativeHintsDescriptionSketch">NetBeansのJava宣言型のヒントの説明</a></li>
+			<li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">NetBeans Javaヒント・モジュールのチュートリアル</a></li>
+			<li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">ソース・コード分析およびリファクタリングでのヒントの使用</a></li>
+			
+			
+			
+          
+			
+        </ul>
+		<p class="align-center"><a href="#top">先頭</a></p>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Разработка расширенной формы Java с помощью настройщика GridBag – учебный курс по IDE NetBeans</title>
+   <!-- BEGIN METADATA -->
+   <meta name="author" content="Alyona.Stashkova@oracle.com">
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="This tutorial guides you through the process of modifying an application form layout using the NetBeans IDE GridBag Designer Advanced Features.">
+   <meta name="KEYWORDS" content="NetBeans, GridBag, Layout Manager, Tutorial, Guide, User, Documentation, Advanced">
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Создание расширенной формы Java с помощью настройщика GridBag</h1>
+    <div class="articledate" style="margin-left: 0px;">Авторы: Ян Стола (Jan Stola), Томас Павек (Tomas Pavek), Алена Сташкова (Alyona Stashkova)</div>
+
+<p>Этот учебный курс является второй частью в комплекте из двух частей, в которой описывается разработка расширенной формы Java с помощью расширенных функций настройщика GridBag IDE NetBeans.<br> Этот курс разработан как руководство по созданию компоновки компонентов интерфейса пользователя, не требующему написания кода компоновки вручную, а также по процессу внесения дополнительных изменений в существующую форму для реализации конкретной компоновки, необходимой для проекта. </p>
+    <p>Каждая из статей в этом курсе охватывает свой набор функций.</p>
+    <ul>
+        <li>Часть 1. <a href="../java/gbcustomizer-basic.html">Создание простой формы Java с помощью настройщика GridBag</a></li>
+        <li>Часть 2. Создание расширенной формы Java с помощью настройщика GridBag</li>
+       
+    </ul>
+
+    <p>В <a href="../java/gbcustomizer-basic.html">первом учебном курсе в этой серии</a> описывается изменение простой формы Java с помощью базовых функций настройщика GridBag IDE NetBeans. Этот учебный курс позволяет изучить использование дополнительных функции настройщика GridBag для изменения компоновки существующей формы.    </p>
+
+    
+
+      
+    <p><b>Содержание</b></p>
+    <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.1 или более поздней версии" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.1 или более поздней версии">
+    <ul class="toc">
+        <li><a href="#zip">Открытие примера проекта</a></li>
+		<li><a href="#invokegb">Вызов настройщика GridBag</a></li>
+		<li><a href="#01">Расширенные функции</a>
+        <ul>
+            <li><a href="#01a">Вставка новой строки</a></li>
+			<li><a href="#01b">Добавление нового компонента</a></li>
+			<li><a href="#01c">Реорганизация компоновки</a></li>
+			<li><a href="#01d">Введение подконтейнеров</a></li>
+			<li><a href="#01e">Переходы между контейнерами</a></li>
+					
+        </ul></li>
+		
+		<li><a href="#summary">Заключение</a></li>
+		<li><a href="#seealso">Дополнительные сведения</a></li>
+       
+        
+       
+    </ul>
+
+   
+   <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                <th class="tblheader" scope="col">Требуемая версия</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                <td class="tbltd1">Версия 7.1 или более поздние </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                <td class="tbltd1">Версия 6, 7 или 8 </td>
+            </tr>
+            
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-advanced-tutorial.zip">gbcustomizer-advanced-tutorial.zip</a></td>
+                <td class="tbltd1">Архив с демонстрационным проектом, содержащим начальную и целевую компоновки учебного курса. </td>
+            </tr>
+           
+        </tbody>
+</table>
+
+   <p class="notes"><b>Примечания</b></p>
+   
+    <div class="indent">
+    <ul>
+       
+        <li>Проект, используемый в качестве отправной точки для данной серии, можно загрузить в форме архива <tt>.zip</tt>. </li>
+        <li>В данном руководстве основное внимание уделено созданию структуры контейнера. Добавление функциональных возможностей к графическому интерфейсу выходит за его рамки.</li>
+    </ul>
+
+    
+    </div>
+
+
+<!-- ++++++++++++ Using .zip ++++++++++++ -->
+<a name="zip"></a>
+<h2>Открытие примера проекта</h2>
+
+<p>До начала компоновки компонентов с помощью настройщика GridBag, загрузите  <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-advanced-tutorial.zip">gbcustomizer-advanced-tutorial.zip</a>, разархивируйте проект <tt>GridBagCustomizerAdvancedTutorial</tt> на жесткий диск и откройте его в IDE NetBeans.</p>
+<ol><li>Загрузите проект <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252Fgbcustomizer-advanced-tutorial.zip">gbcustomizer-advanced-tutorial.zip</a> в любое место на своем компьютере.</li>
+	<li>На вкладке 'Проекты' в IDE NetBeans выберите 'Открыть проект' в меню 'Файл', перейдите в проект <tt>GridBagCustomizerAdvancedTutorial</tt>, распакованный на предыдущем этапе, и нажмите 'Открыть проект'. Папка проекта может находиться в содержащей его папке, также именуемой <tt>GridBagCustomizerAdvancedTutorial</tt>.
+	<p class="notes"><b>Примечание.</b> В проекте <tt>GridBagCustomizerAdvancedTutorial</tt> используются библиотеки классов <tt>JUnit</tt> и <tt>JUnit 4</tt>, которые можно найти в центре обновлений. Необходимо щелкнуть 'Решить проблемы' в диалоговом окне 'Открыть проект', затем щелкните 'Решить' в диалоговом окне 'решить проблемы ссылок' и установить подключаемый модуль в соответствии с инструкциями в установщике IDE NetBeans. После завершения установки нажмите 'Готово', чтобы закрыть диалоговое окно установщика IDE NetBeans, затем нажмите 'Закрыть', чтобы закрыть диалоговое окно 'Разрешение проблем ссылок'. </p>
+	</li>
+    <li> Разверните <tt>Пакеты исходного кода</tt> > учебное руководство и дважды щелкните <tt>ContactsAdvancedInitial.java</tt>. <br>В конструкторе графического интерфейса откроется образец формы в режиме конструктора. </li>
+</ol>
+<p class="align-center">
+		<a href="../../../images_www/articles/80/java/gbcustomizer-advanced/sampleform.png" rel="lytebox" title="Настройщик GridBag"> <img alt="Настройщик GridBag" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/sampleform-small.png"></a></p>
+					
+
+
+<!-- ++++++++++++ Invoking GBCustomizer ++++++++++++ -->
+<a name="invokegb"></a>
+<h2>Вызов настройщика GridBag</h2>
+
+<p>Для отображения настройщика GridBag выполните следующие действия: </p>
+	 <ol>
+	 <li>В режиме конструктора выберите форму JFrame.</li>
+	 
+	 <li>Щелкните форму правой кнопкой мыши и выберите <tt>Customize Layout</tt> (&quot;Настроить компоновку&quot;).<br> Откроется диалоговое окно настройки компоновки, как показано ниже.</li>
+	  
+	 </ol>
+	 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gbcustomizer-advanced/customizerdialog.png" rel="lytebox" title="Настройщик GridBag"> <img alt="Настройщик GridBag" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/customizerdialog-small.png"></a></p>
+
+					 <p class="notes"><b>Примечание.</b> В этом учебном курсе GridBagLayout уже задан. При работе с другой формой, в шаге 2 выше, щелкните правой кнопкой мыши форму и выберите <tt>Настроить компоновку</tt> > <tt>Компоновка GridBag</tt> (при этом будет включен элемент меню <tt>Настройка компоновки</tt>) и завершите процедуру.</p>
+
+
+                     <a name="01"></a>
+<h2>Расширенные функции</h2>
+<p>В данном разделе мы используем расширенные функции настройщика GridBag для реорганизации компонентов формы <tt>ContactsAdvancedInitial</tt> в соответствии с целевой компоновкой, показанной ниже. </p>
+<p class="align-center"><img alt="Компоновка целевого элемента" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/targetlayout.png"></p>
+					 <p class="notes"><b>Примечание.</b> Для просмотра целевой компоновки в используемой IDE NetBeans на вкладке 'Проекты' разверните <tt>учебный курс 'Исходные пакеты' ></tt> и дважды щелкните <tt>ContactsAdvancedFinal.java</tt>. <br> Форма <tt>ContactsAdvancedFinal</tt>, включающая целевую компоновку, откроется в представлении проектирования конструктора графического интерфейса.</p>
+
+                     <!-- ++++++++++++ Inserting New Row ++++++++++++ -->
+<a name="01a"></a>
+<h3>Вставка новой строки</h3>
+<p>Раздел <tt>Phone</tt> (&quot;Телефон&quot;) существующей компоновки включает три записи телефонов.  Чтобы дополнить его добавлением новой метки и тестового поля (например, имени пользователя Skype между <tt>Cell Phone:</tt> (&quot;Мобильный телефон:&quot;) и <tt>Home Phone:</tt> (&quot;Домашний телефон&quot;)), создайте там новую строку:</p>
+<ol> 
+
+<li>В диалоговом окне 'Настройка компоновки' щелкните правой кнопкой мыши заголовок строки, содержащей данные <tt>Домашний телефон</tt>. </li>
+<li>Выберите <tt>Insert Row Before</tt> (&quot;Вставить строку перед&quot;). 
+<p class="align-center"><img alt="Контекстное меню - Вставить строку" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/insertrow.png"></p>
+<p>Добавляется новая строка, как показано на следующем рисунке.</p>
+<p class="align-center"><img alt="Контекстное меню - Строка вставлена" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/rowinserted.png"></p></li>
+</ol>
+
+
+<!-- ++++++++++++ Adding New Components ++++++++++++ -->
+<a name="01b"></a>
+<h3>Добавление новых компонентов</h3>
+<p>Чтобы добавить новую метку и текстовое поле к новой добавленной строке, выполните следующие шаги: </p>
+<ol>
+  <li>Щелкните правой кнопкой мыши первую ячейку добавленной строки.</li>
+  <li>Выберите в контекстном меню <tt>Add Components (&quot;Добавление компонентов&quot;) &gt; Swing Controls (&quot;Элементы управления Swing&quot;) &gt; Label (&quot;Метка&quot;)</tt>, как показано ниже.
+   <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gbcustomizer-advanced/addcomponent.png" rel="lytebox" title="Контекстное меню - Добавить метку"> <img alt="Контекстное меню - Добавить метку" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/addcomponent-small.png"></a></p>
+  
+					 <p>Выделенное <tt>JLabel1</tt> отображается в первой ячейке.</p></li>
+<li>Щелкните правой кнопкой мыши первую ячейку добавленной строки.</li>
+<li>В контекстном меню выберите <tt>Add Components (&quot;Добавление компонентов&quot;) &gt; Swing Controls (&quot;Элементы управления Swing&quot;)  &gt; Text Field (&quot;Текстовое поле&quot;)</tt>.<br>Выделенное поле<tt>JTextField1</tt> отображается во второй ячейке.
+<p class="align-center"><img alt="Контекстное меню - Выделенный jTextField1" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/highlightedtextfield.png"></p></li>
+
+</ol>
+<p>После добавления компонентов необходимо указать их ограничения gridbag, чтобы выровнять их с другими компонентами. </p>
+<p>
+Выберите поле <tt>JTextField1</tt> в области сетки и выполните следующие действия в Property Sheet (&quot;Таблица свойств&quot;):</p>
+<ol>
+<li>В поле со списком Grid Width (&quot;Ширина сетки&quot;) введите <tt>3</tt> и нажмите ENTER. </li>
+<li>В поле со списком Fill (&quot;Заполнение&quot;) выберите <tt>horizontal</tt>.</li>
+<li>В поле со списком Anchor (&quot;Привязка&quot;) прокрутите вниз и выберите <tt>Baseline</tt>. </li>
+<li>В текстовом поле Weight X (&quot;Вес по Х&quot;) введите <tt>1.0</tt> и нажмите ENTER. </li>
+</ol>
+<p class="align-center"><img alt="jTextField1 - Ограничения указаны" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/textfieldconstraints.png"></p>
+					 <p>В области сетки выберите компонент <tt>JLabel1</tt> и укажите его ограничение <tt>Anchor</tt> (&quot;Привязка&quot;), прокрутив вниз и выбрав <tt>Baseline Leading</tt> в Property Sheet (&quot;Таблица свойств&quot;).</p>
+					 <p>Выберите компоненты <tt>JLabel1</tt> и <tt>JTextField1</tt> в области сетки, щелкните кнопку обзора (<img alt="Кнопка обзора" src="../../../images_www/articles/80/java/gbcustomizer-advanced/browsebutton.png">) справа от текстового поля <tt>Вставки</tt>. Отобразится диалоговое окно <tt>Insets</tt> (&quot;Вставки&quot;). Введите <tt>5</tt> в текстовое поле <tt>Top:</tt> (&quot;Верх:&quot;) и нажмите кнопку &quot;OК&quot;. </p>
+					 <p>Форма должна выглядеть, как показано ниже.</p>
+<p class="align-center"><img alt="Ограничения указаны" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/constraintsset.png"></p>
+					 <p class="notes"><b>Примечание.</b> Настройщик GridBag позволяет добавлять, удалять и изменять положение компонентов в макете. Для изменения свойств компонентов компоновки, таких как фон или текст, используйте окно проектирования конструктора графического интерфейса.</p>	
+					 <p>Чтобы установить отображаемый текст для <tt>JLabel1</tt>, выполните следующие действия:</p>
+					 <ol>
+					   <li> Нажмите кнопку Close (&quot;Закрыть&quot;), чтобы закрыть диалоговое окно Customize Layout (&quot;Настройка компоновки&quot;).</li>
+					   <li>В представлении Design (&quot;Проект&quot;) выберите <tt>JLabel1</tt> и нажмите клавишу F2 (либо выберите Edit Text (&quot;Изменить текст&quot;) из контекстного меню).</li>
+					 <li>Удалите выбранный текст и введите <tt>Skype:</tt>. </li>
+					 <li>Нажмите ENTER.</li>
+					 </ol>	
+					 <p>Чтобы удалить текст компонента <tt>JTextField1</tt>, выполните следующие действия:</p>
+					 <ol>
+					 <li>В представлении Design (&quot;Проект&quot;) выберите <tt>JTextField1</tt> и нажмите клавишу F2 (либо выберите Edit Text (&quot;Изменить текст&quot;) из контекстного меню).</li>
+					 <li>Удалите выбранный текст и нажмите ENTER. </li>
+					 </ol>				 
+					 
+
+
+
+
+
+
+
+                     <!-- ++++++++++++ Reorganizing Layout ++++++++++++ -->
+<a name="01c"></a>
+<h3>Реорганизация компоновки</h3>
+<p>Настройщик GridBag позволяет сэкономить время и усилия, быстро меняя положение компонентов формы на нужное.</p>
+<p>Чтобы сменить компоновку раздела <tt>Phone</tt> (&quot;Телефон&quot;) и положение четырех существующих текстовых полей с одного столбца на два столбца с двумя текстовыми полями каждый, выполните следующие действия:</p>
+<ol>
+<li>Щелкните форму правой кнопкой мыши и выберите <tt>Customize Layout</tt> (&quot;Настроить структуру&quot;) из контекстного меню.</li>
+<li>В диалоговом окне настройки структуры щелкните четыре компонента <tt>JTextField</tt>, удерживая клавишу CTRL, чтобы выбрать их все.</li>
+<li>Перетащите правый край текстовых полей влево в положение, при котором текстовые поля занимают только второй столбец сетки (и не занимают третий и четвертый столбцы сетки).
+<p class="align-center"><img alt="Текстовые поля занимают один столбец" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/textfieldsonecolumn.png"></p>	
+					 <p>Настройщик GridBag может изменить размер нескольких компонентов одновременно, тем самым давая место для второго столбца текстовых полей.</p></li>
+					 <li>Щелкните вне формы, чтобы отменить выбор текстовых полей, размер которых был изменен.</li>
+<li>Удерживая клавишу CTRL, щелкните компоненты <tt>Skype:</tt>, <tt>Home Phone:</tt>, <tt>JLabel</tt> и <tt>JTextField</tt> в разделе <tt>Phone</tt>, чтобы выбрать их. </li>
+<li>Наведите курсор на выбранные компоненты и перетащите их направо от двух верхних текстовых полей. 
+<p class="align-center"><img alt="Текстовые поля перемещаются во второй столбец" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/movesecondcolumn.png"></p>	
+<p class="notes"><b>Примечание.</b> Перед перетаскиванием убедитесь, что курсор не преобразовался в двустороннюю стрелку, в противном случае будет изменен размер выборки. </p>
+<p>После перемещения компонентов форма должна выглядеть как показано ниже. </p>
+<p class="align-center"><img alt="Дополнительные строки" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/extrarows.png"></p>
+<p>
+Чтобы удалить ненужные строки 10 и 11 (индексы строк 9 и 10 соответственно), щелкните правой кнопкой мыши заголовки строк и выберите <tt>Удалить строку</tt> в контекстном меню. </p>
+<p>Раздел <tt>Phone</tt> станет более компактным.</p>
+<p class="align-center"><img alt="Текстовые поля перемещены во второй столбец" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/textfieldsmoved.png"></p>	</li>
+</ol>
+<p>Чтобы исправить расстояние между строками во втором столбце, выполните следующие действия.</p>
+<ol><li>Удерживая клавишу CTRL, щелкните метки <tt>Skype:</tt> и <tt>Home Phone:</tt>, чтобы выбрать их в области сетки.</li>
+<li>Нажмите кнопку обзора (<img alt="Кнопка обзора" src="../../../images_www/articles/80/java/gbcustomizer-advanced/browsebutton.png">) справа от текстового поля <tt>Вставки</tt>.<br> Отобразится диалоговое окно <tt>Insets</tt> (&quot;Вставки&quot;). </li>
+<li>Введите <tt>5</tt> в текстовое поле <tt>Left:</tt> (&quot;Лево:&quot;) и нажмите кнопку &quot;OК&quot;.</li>
+</ol>
+
+<!-- ++++++++++++ Introducing Subcontainers ++++++++++++ -->
+<a name="01d"></a>
+<h3>Введение подконтейнеров</h3>
+<p>Компоновка на основе сетки порой создает ненужные зависимости, которые необходимо решать посредством подконтейнеров.</p>
+<p>Если нажать кнопку 'Проверить макет' на панели инструментов (<img alt="Кнопка &apos;Проверка компоновки&apos;" src="../../../images_www/articles/80/java/gbcustomizer-advanced/testlayoutbutton.png"> ) и проверить изменение размера по горизонтали для текущего макета, будет заметно, что вокруг кнопок 'Обзор', 'ОК' и 'Отмена' создаются нежелательные пустые места.</p>
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gbcustomizer-advanced/unwantedspace.png" rel="lytebox" title="Ненужное пространство"> <img alt="Ненужное пространство" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/unwantedspace-small.png"></a></p>
+  
+<p>Это происходит потому, что четвертый столбец состоит как из текстовых полей, так и из кнопок (первые должны вырасти, вторые же нет). Необходимо изменить компоновку, чтобы дополнительное пространство вокруг кнопок <tt>Browse</tt> (&quot;Просмотр&quot;) было занято текстовыми полями <tt>Street</tt> и <tt>City:</tt>.  Текущий макет гарантирует, что правый край текстовых полей <tt>Улица:</tt> и <tt>Город:</tt> находятся на той же высоте, что и левый край текстового поля <tt>Домашний телефон:</tt>. Чтобы сделать эти позиции независимыми, выполните следующие действия:</p>
+					 <ol><li>Удерживая клавишу CTRL, щелкните текстовое поле<tt>Street:</tt> и кнопку <tt>Browse</tt> справа от него, чтобы выбрать их.</li>
+					 <li>Щелкните выбранное правой кнопкой мыши и выберите <tt>Enclose in Container</tt> (&quot;Заключить в контейнер&quot;) из контекстного меню.
+					 
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gbcustomizer-advanced/enclose.png" rel="lytebox" title="Заключить в контейнер"> <img alt="Заключить в контейнер" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/enclose-small.png"></a></p>	
+					 <p>После заключения компонентов в подконтейнер граница между меткой <tt>Home Phone:</tt> и текстовым полем становится независимой от границы между текстовым полем <tt>Street</tt> и кнопкой. </p>
+					 <p class="notes"><b>Примечание.</b> Действие <tt>Заключить в контейнер</tt> создает новый вложенный контейнер в ячейках, занятых выбранными компонентами. Выбранные компоненты перемещаются в новый контейнер, но их относительное расположение и другие ограничения компоновки сохраняются.</p></li>
+					 </ol>
+<p>Повторите два действия, приведенных выше, для текстового поля <tt>City:</tt> и кнопки <tt>Browse</tt> справа от него, чтобы заключить их в подконтейнер, как показано ниже.</p>
+
+<p class="align-center"><img alt="Заключить в контейнер" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/enclosecity.png"></p>
+
+<p>Теперь нужно устранить нежелательное пустое пространство вокруг кнопок <tt>OК</tt> и <tt>Cancel</tt>. Это делается следующим образом:</p>
+<ol>
+<li>Щелкните 'Закрыть', чтобы отменить выделение заключенных во вложенный контейнер компонентов, щелкните правой кнопкой мыши форму и выберите <tt>Настроить компоновку</tt> в контекстном меню.</li>
+<li>Удерживая клавишу CTRL, щелкните кнопки<tt>OК</tt> и <tt>Cancel</tt> внизу формы, чтобы выбрать их.</li>
+<li>Щелкните выбранное правой кнопкой мыши и выберите <tt>Enclose in Container</tt> (&quot;Заключить в контейнер&quot;) из контекстного меню.<br>Для кнопок будет создан новый подконтейнер.
+<p class="align-center"><img alt="Кнопки во вложенном контейнере" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/subcontainerbuttons.png"></p>
+<p class="notes"><b>Примечание.</b> Ни для одного из компонентов во вложенном контейнере нельзя изменить размер. Поэтому они размещаются рядом друг с другом в точке привязки по умолчанию, центре контейнера.</p></li>
+</ol>
+
+<p>Чтобы изменить привязку для всего подконтейнера, выполните следующие действия:</p>
+<ol>
+<li>Убедитесь, что выбран вложенный контейнер с кнопками <tt>OK</tt> и <tt>Отмена</tt> и щелкните кнопку со стрелкой (<img alt="Кнопка &apos;Проверка компоновки&apos;" src="../../../images_www/articles/80/java/gbcustomizer-advanced/arrowbutton.png">) справа от поля со списком <tt>Привязка</tt>.</li>
+<li>Прокрутите вниз и выберите <tt>Line End</tt> (&quot;Конец строки&quot;) из списка.
+<p class="align-center"><img alt="Кнопки, привязанные к концу строки" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/subcontainerlineend.png"></p></li>
+									 
+</ol>
+ <p>Теперь компоновка выглядит нормально, но подконтейнер с кнопками <tt>OК</tt> и <tt>Cancel</tt> занимает только последние две ячейки последней строки. <br> Если кнопки <tt>OК</tt> и <tt>Cancel</tt> станут шире (например при переводе на другой язык), они отодвинут правые края текстовых полей <tt>Work Phone:</tt> и <tt>Cell Phone:</tt>. <br> Чтобы избежать этой потенциальной проблемы и позволить подконтейнеру занять все ячейки в нижней строке, выберите подконтейнер и перетащите его левую границу в начало строки. </p>
+ <p class="align-center"><img alt="Вложенный контейнер с измененным размеров" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/subcontainerresized.png"></p>
+					 <p>Теперь подконтейнер занимает все ячейки в нижней строке.</p>
+ 
+
+ <!-- ++++++++++++ Navigating Between Containers ++++++++++++ -->
+<a name="01e"></a>
+<h3>Переходы между контейнерами</h3>
+<p>Для добавления к подконтейнеру новых компонентов (например, кнопки <tt>Help</tt> к имеющимся кнопкам <tt>OК</tt> и <tt>Cancel</tt>) необходимо переключиться с основного контейнера на подконтейнер перед редактированием компоновки последнего. </p>
+<p>Выполните описанные ниже действия для добавления кнопки к существующему подконтейнеру. </p>
+<ol><li>Щелкните подконтейнер с кнопками <tt>OК</tt> и <tt>Cancel</tt>, чтобы выбрать его.</li>
+<li>Щелкните контейнер правой кнопкой мыши, чтобы вывести контекстное меню, и выберите из меню <tt>Design This Container</tt> (&quot;Редактировать данный контейнер&quot;).
+
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gbcustomizer-advanced/designsubcontainer.png" rel="lytebox" title="Разработка вложенного контейнера"> <img alt="Разработка вложенного контейнера" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/designsubcontainer-small.png"></a></p>
+  </li>
+					 <li>Щелкните правой кнопкой мыши второй заголовок столбца и выберите <tt>Insert Column After</tt> (&quot;Вставить столбец после&quot;) из контекстного меню.<br> Отобразится пустая ячейка для новой кнопки.
+					 
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gbcustomizer-advanced/emptycell.png" rel="lytebox" title="Пустая ячейка"> <img alt="Пустая ячейка" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/emptycell-small.png"></a></p></li>
+					 <li>Щелкните созданную ячейку правой кнопкой мыши и выберите <tt>Add Component</tt> (&quot;Добавить компонент&quot;) &gt; <tt>Swing Controls</tt> (&quot;Элементы управления Swing&quot;) &gt; <tt>Button</tt> (&quot;Кнопка&quot;) из контекстного меню.<br> Будет добавлена новая кнопка <tt>jButton1</tt>. 
+					 <p class="align-center">
+		<a href="../../../images_www/articles/80/java/gbcustomizer-advanced/newbutton.png" rel="lytebox" title="Добавлена новая кнопка"> <img alt="Добавлена новая кнопка" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/newbutton-small.png"></a></p></li>
+					<li>Нажмите кнопку привязки, связанной с базовой линией, (<img alt="Привязка, связанная с базовой линией" src="../../../images_www/articles/80/java/gbcustomizer-advanced/baselineanchor.png">) в 'Средстве настройки свойств' для выравнивания новой кнопки с двумя существующими в строке.</li>
+					 <li>Нажмите кнопку обзора (<img alt="Кнопка обзора" src="../../../images_www/articles/80/java/gbcustomizer-advanced/browsebutton.png">) справа от текстового поля 'Вставки'. Отобразится диалоговое окно &quot;Вставки&quot;. Введите 5 в текстовое поле 'Вверх' и нажмите OK.</li>
+					
+					 <li>Чтобы проверить, как основной макет контейнера выглядит сейчас, щелкните правой кнопкой мыши разработанный вложенный контейнер и выберите в контекстном меню <tt>Конструировать родительский контейнер</tt>. 
+					 <p class="align-center"><img alt="Редактировать родительский контейнер" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/designparentcontainer.png"></p>
+					 <p class="notes"><b>Примечание.</b> Контекстное меню не отображается, если щелкнуть правой кнопкой мыши кнопки.</p>
+</li>					 
+</ol>
+
+<p>Создание компоновки завершено.<br> Осталось последнее изменение, не относящееся к компоновке контейнера.<br> Для переименования кнопки выполните следующие действия:</p>
+<ol>
+  <li>Нажмите кнопку Close (&quot;Закрыть&quot;), чтобы закрыть диалоговое окно Customize Layout (&quot;Настройка компоновки&quot;).</li>
+					 <li>В представлении Design (&quot;Проект&quot;) выберите компонент <tt>jButton1</tt> и нажмите клавишу F2 (либо выберите Edit Text (&quot;Изменить текст&quot;) из контекстного меню).</li>
+					 <li>Удалите выбранный текст и введите <tt>Help</tt>. </li>
+					 <li>Нажмите ENTER.
+					 <p class="align-center"><img alt="Окончательная компоновка" border="1" src="../../../images_www/articles/80/java/gbcustomizer-advanced/finallayout.png"></p></li>
+</ol>
+
+
+
+<a name="summary"></a>
+<h2>Заключение</h2>
+<p>В этом учебном курсе в существующую форму были добавлены новые компоненты, вставлены строки и т.д. В ходе изменения компоновки мы научились использовать расширенные функции настройщика GridBag, позволяющих изменять компоновку формы.</p>
+<p>Перейти к разделу <a href="../java/gbcustomizer-basic.html">Создание простой формы Java с помощью настройщика GridBag</a></p>
+
+
+ <p class="align-center"><a href="#top">В начало</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Designing%20an%20Advanced%20Java%20Form%20Using%20the%20GridBag%20Customizer">Отправить отзыв по этому учебному курсу</a></div>
+      <br style="clear:both;" >  
+
+
+<a name="seealso"></a>
+<h2>Дополнительные сведения</h2>
+ 
+ <p>Вы закончили учебный курс по созданию расширенной формы Java с помощью настройщика GridBag. Сведения о добавлении функциональных возможностей к создаваемому графическому интерфейсу приведены в разделах:</p> 
+      <ul>
+         <li><a href="gui-functionality.html">Введение в разработку графического интерфейса </a> </li>
+		
+         <li><a href="gui-image-display.html">Обработка изображений в приложении с графическим интерфейсом</a></li>
+         
+         
+         <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">Часто задаваемые вопросы по GUI Builder</a> </li>
+         <li><a href="../../trails/matisse.html">Учебная карта по приложениям с графическим интерфейсом Java </a> </li>
+		 <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Реализация Java GUI</a> в документе <i>Разработка приложений в IDE NetBeans</i></a></li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">В начало</a></p>
+</body>
+</html>

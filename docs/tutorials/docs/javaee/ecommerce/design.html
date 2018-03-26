@@ -1,0 +1,792 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This tutorial unit introduces a scenario, lists requirements, and discusses the procedure involved in designing the application. A description of the MVC pattern is provided.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, e-commerce">
+
+        <link rel="stylesheet" type="text/css" href="../../../../netbeans.css">
+        <link rel="stylesheet" type="text/css" href="../../../../print.css" media="print">
+        <link rel="stylesheet" type="text/css" href="../../../../lytebox.css" media="screen">
+        <script type="text/javascript" src="../../../../images_www/js/lytebox-compressed.js"></script>
+
+        <script src="../../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+
+        <title>The NetBeans E-commerce Tutorial - Designing the Application</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>The NetBeans E-commerce Tutorial - Designing the Application</h1>
+
+        <div style="margin-left:-3px">
+            <div class="feedback-box margin-around float-left" style="margin-right:15px">
+
+                <h4>Tutorial Contents</h4>
+
+                <ol>
+                    <li><a href="intro.html">Introduction</a></li>
+                    <li><strong>Designing the Application</strong>
+
+                        <ul style="margin: 5px 0 0 -2em">
+                            <li><a href="#scenario">The Scenario</a></li>
+                            <li><a href="#requirements">Gathering Customer Requirements</a></li>
+                            <li><a href="#mockups">Preparing Mockups</a></li>
+                            <li><a href="#architecture">Determining the Architecture</a></li>
+                            <li><a href="#planning">Planning the Project</a></li>
+                            <li><a href="#seeAlso">See Also</a></li>
+                        </ul></li>
+
+                    <li><a href="setup-dev-environ.html">Setting up the Development Environment</a></li>
+                    <li><a href="data-model.html">Designing the Data Model</a></li>
+                    <li><a href="page-views-controller.html">Preparing the Page Views and Controller Servlet</a></li>
+                    <li><a href="connect-db.html">Connecting the Application to the Database</a></li>
+                    <li><a href="entity-session.html">Adding Entity Classes and Session Beans</a></li>
+                    <li><a href="manage-sessions.html">Managing Sessions</a></li>
+                    <li><a href="transaction.html">Integrating Transactional Business Logic</a></li>
+                    <li><a href="language.html">Adding Language Support</a></li>
+                    <li><a href="security.html">Securing the Application</a></li>
+                    <li><a href="test-profile.html">Testing and Profiling</a></li>
+                    <li><a href="conclusion.html">Conclusion</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <p><img src="../../../../images_www/articles/68/netbeans-stamp-68-69.png" class="stamp"
+            alt="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"
+            title="Content on this page applies to NetBeans IDE, versions 6.8 and 6.9"></p>
+
+        <p>The application that you design in this tutorial is based on a real-world scenario. After
+            being introduced to the tutorial scenario, you consolidate a high-level list of customer
+            requirements. You then prepare a diagram of the application's business process flow,
+            and a series of <em>mockups</em> which help both you and your customer get a clearer
+            picture of how the final application will look to an end-user. Finally, you break down
+            the customer requirements into a set of implementation tasks, and structure your application
+            so that the responsibilities and interactions among functional components are clearly
+            defined.</p>
+
+        <p>This tutorial unit discusses the MVC (Model-View-Controller) design pattern. After
+            investigating the benefits that this pattern offers, you set about mapping JSP, Servlet,
+            and other technologies to the MVC architecture, and draft a diagram that illustrates
+            the components of the application in terms of MVC.</p>
+
+        <p>This unit makes various references to the book <em>Designing
+            Enterprise Applications with the J2EE Platform, Second Edition</em>. This book contains
+            guidelines promoted by <a href="http://www.oracle.com/technetwork/java/blueprints-141945.html" target="_blank">Java
+            BluePrints</a>.</p>
+
+        <p>Although this tutorial unit does not require use of the NetBeans IDE, it is essential
+            because it lays the groundwork for tasks that will be covered in the following units.</p>
+
+        <p>You can view a live demo of the application that you build in this tutorial:
+            <a href="http://services.netbeans.org/AffableBean/" target="_blank">NetBeans E-commerce
+            Tutorial Demo Application</a>.</p>
+
+        <br style="clear:left">
+
+
+        <br>
+        <h2 id="scenario">The Scenario</h2>
+
+        <p>This tutorial is based on the following scenario. Although this is a fictitious
+            scenario, it demonstrates how the software you are about to develop can be applied
+            to real-world business needs. It also serves as a platform from which you can derive
+            customer requirements. Customer requirements should be established as clearly as possible
+            before any design or implementation begins.</p>
+
+        <div class="indent">
+            <div class="feedback-box margin-around float-left" style="width:700px">
+
+                <h4>The Scenario</h4>
+
+                <p>A small grocery store, the Affable Bean, collaborates with several local farms to
+                    supply a community with organic produce and foods. Due to a long-standing customer
+                    base and increasing affluence to the area, the store has decided to investigate
+                    the possibility of providing an online delivery service to customers. A recent
+                    survey has indicated that 90% of its regular clientele has continuous Internet
+                    access, and 65% percent would be interested in using this service.</p>
+
+                <p>The grocery store staff have asked you, the Java web developer, to create a website
+                    that will enable their customers to shop online. They have also asked that you
+                    create an administration console alongside the website, which will allow staff
+                    members to keep track of orders.</p>
+
+                <p>The store's location is in Prague, in the Czech Republic. Because regular clientele
+                    are both English and Czech-speaking, staff have requested that the website support
+                    both languages.</p>
+
+                <p>The grocery store has already purchased a domain and web hosting plan that provides
+                    a Java EE 6-compliant server and MySQL database server. Staff have indicated that
+                    one technically-oriented member is able to deploy the application to the production
+                    server once it is ready.</p>
+            </div>
+        </div>
+
+        <br style="clear:both">
+
+
+        <br>
+        <h2 id="requirements">Gathering Customer Requirements</h2>
+
+        <p>The initial phase of any project involves gathering information before making any design
+            or implementation decisions. In its most common form, this involves direct and frequent
+            communication with a customer. Based on the provided scenario, the Affable Bean staff
+            have communicated to you that the application you are to create should fulfill the
+            following requirements:</p>
+
+        <ol>
+            <li>An online representation of the products that are sold in the physical store.
+                There are four categories (dairy, meats, bakery, fruit & veg), and four products
+                for each category, which online shoppers can browse. Details are provided for each
+                product (i.e., name, image, description, price).</li>
+
+            <li>Shopping cart functionality, which includes the ability to:
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>add items to a virtual shopping cart.</li>
+                    <li>remove items from the shopping cart.</li>
+                    <li>update item quantities in the shopping cart.</li>
+                    <li>view a summary of all items and quantities in the shopping cart.</li>
+                    <li>place an order and make payment through a secure checkout process.</li>
+                </ul></li>
+
+            <li>An administration console, enabling staff to view customer orders.</li>
+
+            <li>Security, in the form of protecting sensitive customer data while it is
+                transferred over the Internet, and preventing unauthorized access to the
+                administration console.</li>
+
+            <li>Language support for both English and Czech. (Website only)</li>
+        </ol>
+
+        <p>The company staff are able to provide you with product and category images,
+            descriptions and price details, as well as any website graphics that are to
+            be used. The staff are also able to provide all text and language translations
+            for the website.</p>
+
+        <p class="tips">There are many practices and methods devoted to software
+            development management. <a href="http://en.wikipedia.org/wiki/Agile_software_development" target="_blank">Agile
+            software development</a> is one methodology that encourages frequent customer
+            inspection, and places importance on adaptation during the development cycle.
+            Although this is outside the scope of this tutorial, each tutorial unit concludes
+            with a functional piece of software that could be presented to a customer for
+            further communication and feedback.</p>
+
+
+        <br>
+        <h2 id="mockups">Preparing Mockups</h2>
+
+        <p>After gathering customer requirements, you work with the Affable Bean staff
+            to gain a clearer picture of how they expect the website to look and behave.
+            You create a use-case that describes how the application will be used and
+            encapsulates its behavior:</p>
+
+        <div class="indent">
+            <div class="feedback-box margin-around float-left" style="width:700px">
+
+                <h3 id="useCase">Use-Case</h3>
+
+                <p>Customer visits the welcome page and selects a product category. Customer browses
+                    products within the selected category page, then adds a product to his or her
+                    shopping cart. Customer continues shopping and selects a different category.
+                    Customer adds several products from this category to shopping cart. Customer
+                    selects 'view cart' option and updates quantities for cart products in the cart
+                    page. Customer verifies shopping cart contents and proceeds to checkout. In the
+                    checkout page, customer views the cost of the order and other information, fills
+                    in personal data, then submits his or her details. The order is processed and
+                    customer is taken to a confirmation page. The confirmation page provides a unique
+                    reference number for tracking the customer order, as well as a summary of the order.</p>
+            </div>
+        </div>
+
+        <br style="clear:both">
+        <br>
+
+        <p>You also begin creating mockups. There are numerous ways to go about this task. For
+            example, you could use storyboard software, or create a set of wireframes to relay
+            the relationships between pages. Another common method is known as
+            <a href="http://en.wikipedia.org/wiki/Paper_prototyping" target="_blank">paper
+            prototyping</a>, where you collaborate with the customer by sketching ideas on paper.</p>
+
+        <p>In this scenario, we've produced <em>mockups</em> of the primary pages the user expects
+            see when navigating through the website. When we later discuss the MVC design pattern,
+            you'll note that these pages map to the <em>views</em> used by the application.</p>
+
+        <table>
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-index.png"
+                       rel="lytebox" title="Mockup of welcome page" id="index">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-index-small.png"
+                             style="width:400px" alt="Mockup of welcome page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>welcome page</h4>
+
+                    <p>The welcome page is the website's home page, and entry point for the
+                        application. It introduces the business and service to the user, and
+                        enables the user to navigate to any of the four product categories.</p>
+                </td>
+            </tr>
+
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-category.png"
+                       rel="lytebox" title="Mockup of category page" id="category">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-category-small.png"
+                             alt="Mockup of category page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>category page</h4>
+
+                    <p>The category page provides a listing of all products within the
+                        selected category. From this page, a user is able to view all
+                        product information, and add any of the listed products to his
+                        or her shopping cart. A user can also navigate to any of the
+                        provided categories.</p>
+                </td>
+            </tr>
+
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-cart.png"
+                       rel="lytebox" title="Mockup of cart page" id="cart">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-cart-small.png"
+                             alt="Mockup of cart page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>cart page</h4>
+
+                    <p>The cart page lists all items held in the user's shopping cart.
+                        It displays product details for each item, and tallies the subtotal
+                        for the items in the cart. From this page, a user can:</p>
+
+                    <ul>
+                        <li>Clear all items in his or her cart
+                            <br>
+                            (Clicking 'clear cart' causes the 'proceed to checkout' buttons
+                            and shopping cart table to disappear.)</li>
+
+                        <li>Update the quantity for any listed item
+                            <br>
+                            (The price and quantity are updated; the subtotal is recalculated.
+                            If user sets quantity to '0', the product table row is removed.)</li>
+
+                        <li>Return to the previous category by clicking 'continue shopping'</li>
+
+                        <li>Proceed to checkout</li>
+                    </ul>
+                </td>
+            </tr>
+
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-checkout.png"
+                       rel="lytebox" title="Mockup of checkout page" id="checkout">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-checkout-small.png"
+                             alt="Mockup of checkout page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>checkout page</h4>
+
+                    <p>The checkout page collects information from the customer using a
+                        form. This page also displays purchase conditions, and summarizes
+                        the order by providing calculations for the total cost.</p>
+
+                    <p>The user is able to send personal details over a secure channel.</p>
+                </td>
+            </tr>
+
+            <tr style="vertical-align:top">
+                <td style="width:420px; padding:10px">
+                    <a href="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-confirmation.png"
+                       rel="lytebox" title="Mockup of confirmation page" id="confirmation">
+
+                        <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mockup-confirmation-small.png"
+                             alt="Mockup of confirmation page" class="b-all margin-around"></a>
+                </td>
+
+                <td style="width:350px; padding:10px">
+                    <br>
+                    <h4>confirmation page</h4>
+
+                    <p>The confirmation page returns a message to the customer confirming
+                        that the order was successfully recorded. An order reference number
+                        is provided to the customer, as well as a summary listing order
+                        details.</p>
+
+                    <p>Order summary and customer personal details are returned over a secure channel.</p>
+                </td>
+            </tr>
+        </table>
+
+        <p>Also, you agree with staff on the following rules, which apply to multiple pages:</p>
+
+        <ul>
+            <li>The user is able to proceed to checkout from any page, provided that:
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>The shopping cart is not empty</li>
+                    <li>The user is not already on the checkout page</li>
+                    <li>The user has not already checked out (i.e., is on the confirmation page)</li>
+                </ul></li>
+
+            <li>From all pages, the user is able to:
+
+                <ul style="margin: 5px 0 0 -2em">
+                    <li>View the status of his or her shopping cart (if it is not empty)</li>
+                    <li>Return to the welcome page by clicking the logo image</li>
+                </ul></li>
+
+            <li>The user is able to select the language (English or Czech) to view the page
+                in for all pages except the confirmation page.</li>
+        </ul>
+
+        <p class="notes"><strong>Note:</strong> Although not presented here, you would equally
+            need to work with the client to produce use-cases and mockups, and establish rules
+            for the administration console. The NetBeans E-commerce Tutorial focuses on developing
+            the store front (i.e., the website). However, Unit 11, <a href="security.html">Securing the
+            Application</a> demonstrates how to create a login mechanism to access the administration
+            console. Also, you can examine the provided implementation of the administration console by
+            <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252Fecommerce%252FAffableBean_complete.zip">downloading
+            the completed application</a>.</p>
+
+        <div class="indent">
+            <h3 id="business">The Business Process Flow</h3>
+
+            <p>To help consolidate the relationships between the proposed mockups and better
+                illustrate the functionality that each page should provide, you prepare a
+                diagram that demonstrates the process flow of the application.</p>
+
+            <p>The diagram displays the visual and functional components of each page, and
+                highlights the primary actions available to the user in order to navigate
+                through the site to complete a purchase.</p>
+
+            <div class="indent">
+                <img src="../../../../images_www/articles/73/javaee/ecommerce/design/process-flow.png"
+                     class="margin-around" alt="Process-flow diagram of the AffableBean application"
+                     title="The process flow of the AffableBean application"
+                     id="processFlowDiagram">
+            </div>
+        </div>
+
+
+        <br>
+        <h2 id="architecture">Determining the Architecture</h2>
+
+        <p>Before you start coding, let's examine the ways in which you can architect
+            the project. Specifically, you need to outline the responsibilities among
+            functional components, and determine how they will interact with each other.</p>
+
+        <p>When you work with JSP technologies, you can code all of your business logic
+            into JSP pages using scriptlets. Scriptlets are snippets of Java code enclosed
+            in <code>&lt;% %&gt;</code> tags. As you may already be aware, JSP pages are
+            compiled into servlets before they are run, so Java code is perfectly valid in
+            JSP pages. However, there are several reasons why this practice should be avoided,
+            especially when working in large projects. Some reasons are outlined in
+            <a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/" target="_blank">Designing
+            Enterprise Applications with the J2EE Platform, Second Edition</a> as
+            follows:<sup><a href="#footnote1" id="1" style="text-decoration:none">[1]</a></sup></p>
+
+        <ul>
+            <li><strong>Scriptlet code is not reusable: </strong>Scriptlet code appears
+                in exactly one place: the JSP page that defines it. If the same logic is
+                needed elsewhere, it must be either included (decreasing readability) or
+                copied and pasted into the new context.</li>
+
+            <li><strong>Scriptlets mix logic with presentation: </strong>Scriptlets are
+                islands of program code in a sea of presentation code. Changing either
+                requires some understanding of what the other is doing to avoid breaking
+                the relationship between the two. Scriptlets can easily confuse the intent
+                of a JSP page by expressing program logic within the presentation.</li>
+
+            <li><strong>Scriptlets break developer role separation:</strong> Because scriptlets
+                mingle programming and Web content, Web page designers need to know either
+                how to program or which parts of their pages to avoid modifying.</li>
+
+            <li><strong>Scriptlets make JSP pages difficult to read and to maintain: </strong>
+                JSP pages with scriptlets mix structured tags with JSP page delimiters and
+                Java language code.</li>
+
+            <li><strong>Scriptlet code is difficult to test: </strong>Unit testing of scriptlet
+                code is virtually impossible. Because scriptlets are embedded in JSP pages,
+                the only way to execute them is to execute the page and test the
+                results.</li>
+        </ul>
+
+        <p>There are various design patterns already in existence which provide considerable
+            benefits when applied. One such pattern is the MVC (Model-View-Controller)
+            paradigm, which divides your application into three interoperable
+            components:<sup><a href="#footnote2" id="2" style="text-decoration:none">[2]</a></sup></p>
+
+        <ul>
+            <li><strong>Model:</strong> Represents the business data and any business logic
+                that govern access to and modification of the data. The model notifies views
+                when it changes and lets the view query the model about its state. It also
+                lets the controller access application functionality encapsulated by the model.</li>
+
+            <li><strong>View:</strong> The view renders the contents of a model. It gets data
+                from the model and specifies how that data should be presented. It updates
+                data presentation when the model changes. A view also forwards user input to
+                a controller.</li>
+
+            <li><strong>Controller:</strong> The controller defines application behavior. It
+                dispatches user requests and selects views for presentation. It interprets user
+                inputs and maps them into actions to be performed by the model. In a web
+                application, user inputs are HTTP GET and POST requests. A controller selects
+                the next view to display based on the user interactions and the outcome of the
+                model operations.</li>
+        </ul>
+
+        <div class="indent">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mvc-model.png"
+                 class="margin-around" alt="Diagram of the MVC pattern"
+                 title="The Model View Controller pattern"
+                 id="mvcModel">
+        </div>
+        <br>
+
+        <p>Adhering to the MVC design pattern provides you with numerous benefits:</p>
+
+        <ul>
+            <li><strong>Separation of design concerns:</strong> Because of the decoupling
+                of presentation, control, and data persistence and behavior, the application
+                becomes more flexible; modifications to one component have minimal impact on
+                other components. You can, for example, create new views without needing to
+                rewrite the model.</li>
+
+            <li><strong>More easily maintainable and extensible:</strong> Good structure can
+                reduce code complexity. As such, code duplication is minimized.</li>
+
+            <li><strong>Promotes division of labor:</strong> Developers with different skill
+                sets are able to focus on their core skills and collaborate through clearly
+                defined interfaces.</li>
+        </ul>
+
+        <p class="notes"><strong>Note:</strong> When JSP technology was first introduced in
+            1999, the early specifications included a description of two model architectures:
+            Model 1 and Model 2. Model 1 involves implementing business logic directly within
+            JSP pages, whereas Model 2 applies the MVC pattern. For more information on Model
+            1 and Model 2 architectures, see
+            <a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier5.html#1078527" target="_blank">Designing
+            Enterprise Applications with the J2EE Platform, section 4.4.1: Structuring the Web
+            Tier</a>.</p>
+
+        <p>You can apply the MVC pattern to the application that you develop for the Affable
+            Bean company. You can use a servlet as a <em>controller</em> to handle incoming
+            requests. The pages from the <a href="#processFlowDiagram">business process flow
+            diagram</a> can be mapped to <em>views</em>. Finally, the business data, which will
+            be maintained in a database, can be accessed and modified in the application using
+            <a href="http://java.sun.com/products/ejb/" target="_blank">EJB</a> session beans with
+            <a href="http://java.sun.com/javaee/technologies/persistence.jsp" target="_blank">JPA</a>
+            entity classes. These components represent the <em>model</em>.</p>
+
+        <div class="indent" id="mvcDiagram">
+            <img src="../../../../images_www/articles/73/javaee/ecommerce/design/mvc-diagram.png"
+                 class="margin-around" alt="MVC diagram of the AffableBean application"
+                 title="MVC diagram of the AffableBean application">
+        </div>
+        <br>
+
+        <br>
+        <h2 id="planning">Planning the Project</h2>
+
+        <p>In order to plan the project, you need to extrapolate functional tasks from the customer
+            requirements. The tasks that we produce will structure the implementation plan for the
+            project, and form the outline for tutorial units that follow. In practice, the more capable
+            you are of identifying tasks and the work they entail, the better you'll be able to stick
+            to the schedule that you and your customer agree upon. Therefore, begin with a high-level
+            task list, then try to drill down from these tasks dividing each task into multiple sub-tasks,
+            and possibly dividing sub-tasks further until each list item represents a single unit of work.</p>
+
+        <ul id="collapsableList">
+            <li>Set up the development environment
+
+                <ul>
+                    <li>Register the development server in the IDE</li>
+                    <li>Create a web project in the IDE</li>
+                    <li>Run the web project from the IDE (test compilation, deployment, run
+                        capabilities, and ensure interoperability between IDE, server and browser)</li>
+                    <li>Register the database server in the IDE</li>
+                    <li>Establish a connection to the database server from the IDE</li>
+                    <li>Create a database instance on the database server</li>
+                </ul>
+            </li>
+
+            <li>Prepare the data model for the application
+
+                <ul>
+                    <li>Create an entity-relationship diagram (use a visual database design tool)
+
+                        <ul>
+                            <li>Identify objects</li>
+                            <li>Create a schema</li>
+                            <li>Create entities</li>
+                            <li>Add entity properties</li>
+                            <li>Identify relationships between entities
+
+                                <ul>
+                                    <li>One-to-Many relationships</li>
+                                    <li>Many-to-Many relationships</li>
+                                </ul>
+                            </li>
+                        </ul></li>
+
+                    <li>Forward-engineer the entity-relationship diagram into an SQL script</li>
+
+                    <li>Run the script on the database server to generate the schema</li>
+                </ul>
+            </li>
+
+            <li>Create front-end project files
+
+                <ul>
+                    <li>Stylesheet</li>
+                    <li>Placeholders for JSP pages (requires implementing HTML and CSS
+                        content to get pages to display like mockups)
+
+                        <ul>
+                            <li>welcome page</li>
+                            <li>category page</li>
+                            <li>cart page</li>
+                            <li>checkout page</li>
+                            <li>confirmation page</li>
+                        </ul>
+                    </li>
+                </ul></li>
+
+            <li>Organize the application front-end
+
+                <ul>
+                    <li>Place JSP pages in the application's <code>WEB-INF</code> directory</li>
+                    <li>Create page header and footer</li>
+                    <li>Remove instances of code duplication (header and footer code from JSP pages)</li>
+                    <li>Register header and footer includes with the web deployment descriptor</li>
+                </ul></li>
+
+            <li>Create a controller servlet
+
+                <ul>
+                    <li>Create mappings for views in deployment descriptor</li>
+                    <li>Create skeleton code in servlet to handle client requests</li>
+                </ul></li>
+
+            <li>Connect the application to the database
+
+                <ul>
+                    <li>Add sample data to the database</li>
+                    <li>Create data source and connection pool on server</li>
+                    <li>Test data source (ping connection pool)</li>
+                    <li>Ensure that views can access data from the database
+
+                        <ul>
+                            <li>Add database driver JAR to server</li>
+                            <li>Create a resource reference to the data source in the application</li>
+                            <li>Query the database from a JSP page</li>
+                        </ul></li>
+
+                    <li>Set any necessary application-wide parameters</li>
+                    <li>Code database-access and conditional logic in views that do not require user session (welcome, category)</li>
+
+                </ul></li>
+
+
+            <li>Develop the business logic
+
+                <ul>
+                    <li>Set up the model
+                        <ul>
+                            <li>Create JPA entity classes from database tables</li>
+                            <li>Create and configure persistence unit</li>
+                            <li>Create EJB stateless bean facades for entity classes</li>
+                        </ul></li>
+
+                    <li>Integrate EJB model with views
+
+                        <ul>
+                            <li>Integrate EJB facades in controller servlet</li>
+                            <li>Modify views to use data from scoped variables (instead of any JSTL <code>&lt;sql&gt;</code> queries)</li>
+                        </ul></li>
+
+                    <li>Create shopping cart functionality
+
+                        <ul>
+                            <li>Create Java classes to hold temporary data (<code>ShoppingCart</code>, <code>ShoppingCartItem</code>)</li>
+                            <li>Integrate code for <code>HttpSession</code> object into controller servlet</li>
+                            <li>Add session-related actions to controller servlet</li>
+                            <li>Create shopping cart widget in page header</li>
+                            <li>Integrate session-related data into views (cart, checkout)</li>
+                            <li>Apply JSTL <code>&lt;c:url&gt;</code> tags to enable url-rewriting in the event that user has disabled cookies</li>
+                            <li>Configure session time-out in web deployment descriptor</li>
+                            <li>Add logic to controller servlet handle requests in the event of session time-out</li>
+                        </ul></li>
+
+                    <li>Integrate transactional logic
+
+                        <ul>
+                            <li>Create code to extract and validate user data from checkout form</li>
+                            <li>Create an EJB stateless session bean to handle inserting orders and customers into database</li>
+                            <li>Implement logic to query the database on newly-created orders</li>
+                            <li>Implement order and customer details display in confirmation page</li>
+                        </ul>
+                    </li>
+                </ul></li>
+
+            <li>Add language support
+
+                <ul>
+                    <li>Create a properties file containing messages for all text in
+                        the application
+                        <ul>
+                            <li>default language (English)</li>
+                            <li>English</li>
+                            <li>Czech</li>
+                        </ul></li>
+
+                    <li>Register a localization context parameter in deployment descriptor</li>
+
+                    <li>Add logic to view that sets page language based on language value
+                        saved in user's session</li>
+
+                    <li>Apply <code>&lt;fmt:message&gt;</code> tags to all text contained in view</li>
+
+                    <li>Factor out English description from database (<em>optional</em>), use resource bundles instead</li>
+                </ul></li>
+
+            <li>Create administration console
+
+                <ul>
+                    <li>Create new artifacts
+
+                        <ul>
+                            <li>Views
+
+                                <ul>
+                                    <li>login</li>
+                                    <li>welcome</li>
+                                    <li>error</li>
+                                </ul></li>
+
+                            <li>Controller servlet</li>
+                        </ul></li>
+
+                    <li>Create login functionality
+
+                        <ul>
+                            <li>Create interface</li>
+                            <li>Add actions to controller servlet</li>
+                            <li>Configure login functionality in deployment descriptor</li>
+                        </ul></li>
+
+                    <li>Implement admin functionality (in welcome page)
+
+                        <ul>
+                            <li>For viewing order details</li>
+                            <li>For viewing customer details</li>
+                        </ul>
+                    </li>
+                </ul></li>
+
+            <li>Secure the application
+
+                <ul>
+                    <li>Configure SSL connection for checkout, confirmation views, and administration console
+
+                        <ul>
+                            <li>Enable SSL on server</li>
+                            <li>Register security settings in deployment descriptor</li>
+                        </ul></li>
+
+                    <li>Create user roles and permissions for administration console
+
+                        <ul>
+                            <li>Create security roles on server</li>
+                            <li>Declare security roles, constraints in deployment descriptor</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback: NetBeans E-commerce Tutorial - Designing the Application">Send
+                Us Your Feedback</a></div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seeAlso">See Also</h2>
+
+        <div class="indent">
+            <h3>Online Resources</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/blueprints-141945.html" target="_blank">Java BluePrints</a></li>
+                <li><a href="http://www.oracle.com/technetwork/java/catalog-137601.html" target="_blank">J2EE Patterns Catalog</a></li>
+                <li><a href="http://java.net/projects/bpcatalog/" target="_blank">Java BluePrints Solutions Catalog</a></li>
+                <li><a href="http://java.sun.com/blueprints/patterns/MVC-detailed.html" target="_blank">Java BluePrints: Model-View-Controller</a></li>
+                <li><a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier5.html" target="_blank">Web-Tier Application Framework Design</a></li>
+                <li><a href="http://download.oracle.com/docs/cd/E17477_01/javaee/5/tutorial/doc/bnadr.html" target="_blank">The Java EE 5 Tutorial - Chapter 3: Getting Started with Web Applications</a></li>
+            </ul>
+
+            <h3>Technical Articles</h3>
+
+            <ul>
+                <li><a href="http://java.sun.com/developer/technicalArticles/javaserverpages/servlets_jsp/" target="_blank">Servlets and JSP Pages Best Practices</a></li>
+                <li><a href="http://java.sun.com/developer/technicalArticles/J2EE/despat/" target="_blank">Design Patterns for Building Flexible and Maintainable J2EE Applications</a></li>
+            </ul>
+
+            <h3>Books</h3>
+
+            <ul>
+                <li><a href="http://volume1.coreservlets.com/" target="_blank">Core Servlets and JavaServer Pages, Volume 1:
+                        Core Technologies, 2nd Edition</a></li>
+                <li><a href="http://volume2.coreservlets.com/" target="_blank">Core Servlets and JavaServer Pages, Volume 2:
+                        Advanced Technologies, 2nd Edition</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2>References</h2>
+
+        <ol>
+            <li id="footnote1"><a href="#1" style="text-decoration:none">^</a> For a more extensive
+                list, see <a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier3.html#1097966" target="_blank">Designing
+                Enterprise Applications with the J2EE Platform, section 4.2.6.8: Using Custom Tags
+                to Avoid Scriptlets</a>.</li>
+
+            <li id="footnote2"><a href="#2" style="text-decoration:none">^</a> For more information
+                on the MVC pattern, see
+                <a href="http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/app-arch/app-arch2.html#1105854" target="_blank">Designing
+                Enterprise Applications with the J2EE Platform, section 11.1.1: Model-View-Controller
+                Architecture</a>.</li>
+        </ol>
+
+        <script type="text/javascript">
+            <!--
+            compactMenu('collapsableList', true, '&plusmn; ');
+            -->
+        </script>
+
+    </body>
+</html>

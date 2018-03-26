@@ -1,0 +1,589 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<html>
+    <head>
+        <title>Создание приложения J2EE с помощью EJB 3.1</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+        <meta name="description" content="A tutorial on how to use NetBeans IDE to develop an enterprise application using EJB 3.1 technology.">
+        <link rel="stylesheet" href="../../../netbeans.css">
+        <meta name="author" content="ken ganfield">
+    </head>
+    <body>
+        <h1>Создание приложения J2EE с помощью EJB 3.1</h1>
+        
+        <p>В этом руководстве представлены базовые аспекты разработки приложений Java EE 6 и некоторые возможности технологии EJB 3.1, добавленные в спецификацию Java EE 6.  В рамках этого руководства будет создано приложение J2EE, позволяющее пользователю отправлять и получать сообщения из базы данных.</p>
+
+        <p>Это приложение содержит модуль EJB и веб-модуль.  Модуль EJB включает в себя класс сущностей, фасад сеанса класса сущностей и управляемый сообщениями компонент.  Веб-модуль содержит сервлеты для отображения и отправки сообщений и единичный сеансный компонент для подсчета числа пользователей в сеансе.</p>
+
+        <p>Перед изучением этого руководства необходимо ознакомиться со следующей документацией.</p>
+        <ul>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+        </ul>
+
+                       
+           <p><b>Упражнения по темам руководства</b></p>
+           <img alt="Содержимое на этой странице применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="Содержимое этой страницы применимо к IDE NetBeans 7.2, 7.3, 7.4 и 8.0">
+            <ul>
+                <li><a href="#intro">О приложении J2EE NewsApp</a></li>
+                <li><a href="#Exercise_1">Создание проекта приложения J2EE</a></li>
+                <li><a href="#Exercise_2">Написание кода модуля EJB</a>
+                    <ul>
+                        <li><a href="#Exercise_2a">Создание класса сущностей</a></li>
+                        <li><a href="#Exercise_2b">Создание управляемого сообщениями компонента</a></li>
+                        <li><a href="#Exercise_2c">Создание фасада сеанса</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_3">Написание кода веб-модуля</a>
+                    <ul>
+                        <li><a href="#Exercise_3a">Создание единичного сеансного компонента</a></li>
+                        <li><a href="#Exercise_3b">Создание сервлета ListNews</a></li>
+                        <li><a href="#Exercise_3c">Создание сервлета PostMessage</a></li>
+                    </ul>
+                </li>
+                <li><a href="#Exercise_4">Выполнение проекта</a></li>
+                <li><a href="#Exercise_5">Загрузка проекта решения</a></li>
+                <li><a href="#Exercise_6">Устранение проблем</a></li>
+            </ul>
+            <p><b>Для работы с этим учебным курсом требуется следующее программное обеспечение и ресурсы.</b></p>
+            <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Программное обеспечение или материал</th>
+                    <th class="tblheader" scope="col">Требуемая версия</th>
+                </tr> 
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">IDE NetBeans</a></td>
+                    <td class="tbltd1">Версия 7.2, 7.3, 7.4, 8.0, Java EE</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Комплект для разработчика на языке Java (JDK)</a></td>
+                    <td class="tbltd1">версия 7 или 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">GlassFish Server Open Source Edition 3.1.2.2</td>
+                    <td class="tbltd1">3.x, 4.x</td>
+                </tr>
+            </tbody>
+        </table>
+        
+            <p><b>Предпосылки</b></p>
+            <p>Предполагается, что читатель обладает базовыми знаниями по следующим технологиям или опытом программирования с их использованием:</p>
+            <ul>
+                <li>Программирование на Java</li>
+                <li>IDE NetBeans</li>
+            </ul>
+            <p class="tips">Можно загрузить <a href="https://netbeans.org/projects/samples/downloads/download/Samples/JavaEE/NewsAppEE6.zip">готовый проект в виде архива ZIP</a>.</p>
+    
+        <!-- ===================================================================================== -->
+        <a name="intro"></a>
+            <!--Exercise 1: -->
+        <h2>О приложении J2EE NewsApp</h2>
+        <p>В этом руководстве приводится несложный пример создания многоуровневого приложения Java EE 6 с именем NewsApp.  В приложении NewsApp используется несколько функций, внедренных в спецификации Java EE 6.</p>
+        
+        <p>Структура приложения NewsApp, как правило, соответствует следующим уровням.</p>
+        
+        <ul>
+            <li><strong>Веб-уровень.</strong> Веб-уровень содержит логику представления приложения и запускается на сервере Java EE. В приложении NewsApp веб-уровень представлен веб-модулем и содержит сервлеты, через которые осуществляется доступ к бизнес-логике в модуле EJB.</li>
+            <li><strong>Бизнес-уровень.</strong> Приложения бизнес-уровня также выполняются на серверах Java EE и содержат бизнес-логику приложения. В приложении NewsApp бизнес-уровень представлен модулем EJB.  Модуль EJB содержит код для обработки запросов от клиентов веб-уровня и для управления транзакциями и способами сохранения объектов в базе данных.</li>
+            <li><strong>EIS-уровень.</strong> EIS-уровень - это надежный уровень хранения приложения. В приложении NewsApp этот уровень представлен базой данных для сохранения сообщений.</li>
+        </ul>
+
+        <p>При сборке приложения J2EE в среде IDE модуль EJB и модуль веб-приложения упаковываются в архивный файл EAR, который затем развертывается на сервере.  Затем доступ к приложению обычно получается из <strong>клиентского уровня.</strong> Уровень клиента является средой, в которой клиент запускается и часто является веб-браузером в локальной системе пользователя.</p>
+
+        <p class="notes"><strong>Примечание.</strong> В примере в этом учебном курсе будет использоваться один компьютер для размещения сервера Java EE, базы данных и просмотра веб-страниц. В больших приложениях J2EE разные уровни часто распределены между несколькими машинами.  Приложения веб-уровня и бизнес-уровня зачастую разворачиваются на серверах Java EE, которые размещаются на разных машинах.</p>
+
+
+        <p class="tips">Подробные сведения о структуре приложений J2EE Java EE см. в главе <a href="http://download.oracle.com/javaee/6/tutorial/doc/bnaay.html">Распределенные многоуровневые приложения</a> в <a href="http://download.oracle.com/javaee/6/tutorial/doc/">руководстве по Java EE 6, часть I</a>.</p>
+
+
+        <a name="Exercise_1"></a>
+            <!--Exercise 1: -->
+        <h2>Создание проекта приложения J2EE</h2>
+        <p>Цель этого упражнения состоит в создании проекта приложения J2EE NewsApp.  Для создания приложения J2EE, содержащего EJB-модуль и веб-модуль, используется мастер создания проекта.</p>
+        
+
+        <ol>
+            <li>Выберите 'Файл' > 'Создать проект' (Ctrl-Shift-N; ⌘-Shift-N в Mac) в главном меню.</li>
+            <li>В категории &quot;Java EE&quot; выберите приложение J2EE и нажмите &quot;Далее&quot;. </li>
+            <li>Введите имя проекта <b>NewsApp</b> и укажите местоположение проекта.</li>
+            <li>Снимите флажок &quot;Использовать отдельную папку&quot;, если он установлен.<br /> (В рамках этого руководства копирование библиотек проекта в отдельную папку нецелесообразно, поскольку совместное использование библиотек с другими пользователями или проектами не требуется.)<br /> Нажмите кнопку &quot;Далее&quot;.</li>
+            <li>В качестве сервера выберите сервер GlassFish, а в качестве версии Java EE укажите Java EE 6 или Java EE 7.</li>
+            <li>Выберите пункты &quot;Создать модуль EJB&quot; и &quot;Создать модуль веб-приложения&quot;.  Нажмите кнопку &quot;Завершить&quot;.</li>
+        </ol>
+
+        <img alt="Мастер создания проектов" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/new-entapp-wizard.png" title="Мастер создания проектов" />
+
+        <p>После нажатия кнопки &quot;Готово&quot; среда IDE создает три проекта: NewsApp, NewsApp-ejb и NewsApp-war При разворачивании узла NewsApp в окне &quot;Проекты&quot; можно увидеть, что проект приложения J2EE не содержит исходные файлы.  Все исходные файлы содержатся в двух модулях, созданных мастером и выведенных в узле &quot;Модули Java EE&quot;.</p>
+        <p>Проекты корпоративных приложений содержат только сведения о конфигурации и упаковке приложения. При сборке и запуске корпоративного приложения IDE создает архив EAR и развертывает этот архив EAR на сервере. В некоторых случаях проект корпоративного приложения может содержать файлы дескриптора развертывания с дополнительными сведениями, но файлы дескриптора развертывания не требуются при создании корпоративных приложений Java EE, развертываемых на сервере GlassFish.
+        </p>
+        <img alt="Окно &apos;Проекты&apos;, в котором отображается структура приложения" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/ejb-projectswindow.png" title="Окно &apos;Проекты&apos;, в котором отображается структура приложения" /> <a name="Exercise_2"></a>
+        <h2>Написание кода модуля EJB</h2>
+        <p>В этом упражнении будет создан класс сущностей, управляемый сообщениями компонент и фасад сеанса в модуле EJB.  Также будет создана единица сохранения состояния для обеспечения контейнера информацией об источнике данных и о способах управления сущностями, а также ресурсы службы передачи сообщений Java (Java Message Service, JMS), используемые управляемым сообщениями компонентом.</p>
+
+        
+        <div class="indent">
+            
+            <a name="Exercise_2a"></a>
+            <h3>Создание класса сущности</h3>
+            <p>В этом упражнении будет создан класс сущностей <tt>NewsEntity</tt>.  Класс сущностей &ndash; это простой класс Java, как правило, соответствующий таблице в базе данных.  При создании класса сущностей в среде IDE для определения класса как класса сущностей добавляется аннотация <tt>@Entity</tt>.  После создания класса в нем создаются поля для представления требуемых данных в таблице.</p>
+            <p>Каждый класс сущностей должен иметь первичный ключ.  При создании класса сущностей в среде IDE добавляется аннотация <tt>@Id</tt> для объявления, какое поле необходимо использовать в качестве первичного ключа.  Также в среде IDE добавляется аннотация <tt>@GeneratedValue</tt> и указывается стратегия создания ключей для первичного идентификатора.</p>
+            <p>Для создания класса <tt>NewsEntity</tt> выполните следующие действия.</p>
+            <ol>
+                <li>Щелкните правой кнопкой мыши модуль EJB в окне &quot;Проекты&quot; и выберите &quot;Создать &gt; Прочее&quot; для открытия мастера создания файла.</li>
+                <li>Выберите &quot;Класс сущностей&quot; из категории &quot;Сохранение состояния&quot; и нажмите &quot;Далее&quot;.</li>
+                <li>В поле &quot;Имя класса&quot; введите <strong>NewsEntity</strong>.</li>
+                <li>В поле Package (&quot;Пакет&quot;) введите <strong>ejb</strong>.</li>
+                <li>В мастере создания класса сущностей оставьте тип первичного ключа <tt>Long</tt>.</li>
+                <li>Выберите команду &quot;Создать блок сохранения состояния&quot;. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Оставьте имя блока сохранения состояния по умолчанию.</li>
+                <li>Для Поставщика сохранения состояния выберите <tt>EclipseLink (JPA2.0)(по умолчанию)</tt>.</li>
+                <li>В поле &quot;Источник данных&quot; укажите источник данных (например, выберите <tt>jdbc/sample</tt>, если необходимо использовать JavaDB).</li>
+                <li>Убедитесь в том, что для блока сохранения состояния используется интерфейс API транзакций Java и что для стратегии создания таблиц установлено значение &quot;Создать&quot;, т. е. таблицы на основе классов сущностей создаются при развертывании приложения.<br /> <img alt="снимок панели &apos;Поставщик и база данных&apos;" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/new-pu-wizard.png" title="Панель &apos;Поставщик и база данных&apos;" />
+                </li>
+                <li>Нажмите кнопку &quot;Завершить&quot;.</li>
+            </ol>
+            <p>При нажатии кнопки &quot;Завершить&quot; в среде IDE будет создан файл <tt>persistence.xml</tt> и класс сущностей <tt>NewsEntity.java</tt>.  <tt>NewsEntity.java</tt> будет открыт средой IDE в редакторе исходного кода.</p>
+            
+            <p>В редакторе исходного кода выполните следующие действия.</p>
+
+            <ol>
+                <li>Добавьте к классу следующие объявления полей: 
+                    <pre class="examplecode">
+private String title;
+private String body;</pre>
+                </li>
+                <li>Щелкните правой кнопкой мыши в редакторе исходного кода, выберите пункт &quot;Вставить код&quot; (Alt-Insert; Ctrl-I на Mac) и выберите пункт &quot;Методы получения и установки&quot;, чтобы открыть диалоговое окно &quot;Создать методы получения и установки&quot;.</li>
+                <li>В диалоговом окне выберите поля <tt>body</tt> и <tt>title</tt>.  Нажмите кнопку &quot;Создать&quot;.<br /> <img alt="Диалоговое окно &apos;Создание методов получения и установки&apos;" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/ejb-gettersetter.png" title="Диалоговое окно &apos;Создание методов получения и установки&apos;" />
+                <p>При нажатии кнопки &quot;Создать&quot; в среде IDE добавляются методы получения и установки для полей.</p>
+                </li>
+                <li>Сохраните изменения в <tt>NewsEntity.java</tt>.</li>
+            </ol>
+            <p><tt>NewsEntity.java</tt> можно закрыть.</p>
+
+            <p class="tips">Для получения подробных сведений о классах сущностей см. главу <a href="http://java.sun.com/javaee/6/docs/tutorial/doc/bnbpz.html">Введение в интерфейс API сохранения состояния Java</a> в <a href="http://download.oracle.com/javaee/6/tutorial/doc/">Руководство по Java EE 6. Часть I</a>.</p>
+
+
+
+            <a name="Exercise_2b"></a>
+            <h3>Создание управляемого сообщениями компонента</h3>
+            <p>В этом упражнении используется мастер создания управляемого сообщениями компонента NewMessage в модуле EJB.  Кроме того, с помощью этого мастера можно создавать необходимые ресурсы JMS.  Управляемый сообщениями компонент предназначен для получения и обработки сообщений, передаваемых в очередь сервлетом в веб-модуле.</p>
+            
+            <p>Для создания управляемого сообщениями компонента выполните следующие действия:</p>
+            <ol>
+                <li>Щелкните правой кнопкой мыши модуль EJB в окне &quot;Проекты&quot; и выберите &quot;Создать &gt; Прочее&quot; для открытия мастера создания файла.</li>
+                <li>В категории &quot;Enterprise JavaBeans&quot; выберите тип файла &quot;Компонент, определяемый сообщениями&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>В поле &quot;Имя EJB&quot; введите <strong>NewMessage</strong>.</li>
+                <li>В раскрывающемся списке &quot;Пакет&quot; выберите <tt>ejb</tt>.</li>
+                <li>Для открытия диалогового окна &quot;Добавление адресата сообщения&quot; нажмите кнопку &quot;Добавить&quot; рядом с полем &quot;Адресат проекта&quot;.</li>
+                <li>В диалоговом окне &quot;Добавление адресата сообщения&quot; введите <b>jms/NewMessage</b> и выберите &quot;Очередь&quot; для типа адресата.  Нажмите кнопку &quot;ОК&quot;.</li>
+                <li>Подтвердите, что адресат проекта выбран правильно.  Нажмите кнопку &quot;Завершить&quot;.</li>
+            </ol>
+            <img alt="Мастер создания компонентов, управляемых сообщениями" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/ejb-newmessage.png" title="Мастер создания компонентов, управляемых сообщениями" />
+            <p>При нажатии кнопки &quot;Завершить&quot; в редакторе исходного кода откроется класс компонента <tt>NewMessage.java</tt>.  При этом в среде IDE добавляется аннотация <tt>@MessageDriven</tt> и свойства настройки для класса.</p>
+            <pre class="examplecode">       
+@MessageDriven(mappedName = &quot;jms/NewMessage&quot;, activationConfig =  {
+        @ActivationConfigProperty(propertyName = &quot;acknowledgeMode&quot;, propertyValue = &quot;Auto-acknowledge&quot;),
+        @ActivationConfigProperty(propertyName = &quot;destinationType&quot;, propertyValue = &quot;javax.jms.Queue&quot;)
+    })
+public class NewMessage implements MessageListener {</pre>
+            <p>Аннотация <tt>@MessageDriven</tt> указывает на то, что данный компонент является управляемым сообщениями, а также определяет ресурс JMS, используемый компонентом.  При создании класса в среде IDE отображаемое имя ресурса (<tt>jms/NewMessage</tt>) определяется на основе имени класса (<tt>NewMessage.java</tt>).  Ресурс JMS привязан к имени JNDI адресата, от которого в компонент поступают сообщения.  Мастер создания управляемых сообщениями компонентов также добавляет в файл <tt>glassfish-resources.xml</tt> информацию о ресурсах JMS. Для указания ресурсов JMS не требуется настраивать дескрипторы развертывания.  Если в среде IDE для развертывания приложения на сервере GlassFish выбрать операцию &quot;Выполнить&quot;, то ресурсы JMS создаются на сервере при развертывании.</p>
+
+            <p>В спецификации EJB предусмотрена возможность ввода ресурсов непосредственно в класс с помощью аннотаций.  В следующем примере показано, как можно использовать аннотации для ввода в класс ресурса <tt>MessageDrivenContext</tt>, а затем ресурса <tt>PersistenceContext</tt>, который используется в интерфейсе API EntityManager для управления устойчивыми экземплярами сущностей.  В редакторе исходного кода к классу будут добавлены аннотации.</p>
+            <ol>
+                <li>Введите в класс ресурс <tt>MessageDrivenContext</tt> посредством добавления к классу следующего аннотированного поля (выделено полужирным шрифтом):
+                    <pre class="examplecode">
+public class NewMessage implements MessageListener {
+
+<b>@Resource
+private MessageDrivenContext mdc;</b></pre>
+                </li>
+                <li>Добавьте диспетчер сущностей в класс, щелкнув правой кнопкой мыши в коде и выбрав 'Вставить код' (Alt-Insert, Ctrl-I в Mac) и выбрав 'Использовать диспетчер сущностей' из всплывающего меню. В среде IDE к исходному коду добавляется следующая аннотация <tt>@PersistenceContext</tt>.
+                    <pre class="examplecode">
+@PersistenceContext(unitName = "NewsApp-ejbPU")
+private EntityManager em;</pre>
+                    Кроме того, в среде IDE создается следующий метод <tt>persist</tt>.
+                    <pre class="examplecode">
+public void persist(Object object) {
+    em.persist(object);
+}</pre>
+                </li>
+                <li>Для изменения имени на <tt>save</tt> измените метод <tt>persist</tt>.  В результате метод должен выглядеть следующим образом:
+                    <pre class="examplecode">
+public void <b>save</b>(Object object) {     
+    em.persist(object);
+}</pre>
+                </li>
+                <li>Измените метод <tt>onMessage</tt> путем добавления следующих строк кода (выделено полужирным шрифтом) в тело метода.
+                    <pre class="examplecode">public void onMessage(Message message) {
+    <strong>ObjectMessage msg = null;
+    try {
+        if (message instanceof ObjectMessage) {
+            msg = (ObjectMessage) message;
+            NewsEntity e = (NewsEntity) msg.getObject();
+            save(e);            
+        }
+    } catch (JMSException e) {
+        e.printStackTrace();
+        mdc.setRollbackOnly();
+    } catch (Throwable te) {
+        te.printStackTrace();
+    }</strong>
+}</pre>
+                </li>
+                <li>Щелкните правой кнопкой мыши в редакторе и выберите 'Исправить выражения импорта' (Alt-Shift-I; ⌘-Shift-I в Mac) для создания необходимых операторов импорта. Сохраните изменения.</li>
+            </ol>
+            <p class="notes"><strong>Примечание.</strong> При создании операторов импорта необходимо <strong>убедиться в импорте библиотек <tt>javax.jms</tt> и <tt>javax.annotation.Resource</tt></strong>.</p>
+
+            <p class="tips">Подробные сведения об управляемых сообщениями компонентах приведены в главе <a href="http://java.sun.com/javaee/6/docs/tutorial/doc/gipko.html">Что такое управляемый сообщениями компонент?</a> в <a href="http://download.oracle.com/javaee/6/tutorial/doc/">руководстве по Java EE 6. Часть I</a>.</p>
+
+            <a name="Exercise_2c"></a>
+            <h3>Создание фасада сеанса</h3>
+            <p>В этом упражнении будет создан фасад сеанса для класса сущностей NewsEntity.  В спецификации EJB 3.0 упрощено создание сеансных компонентов за счет сокращения объема работ по написанию кода и добавления возможности использования аннотаций для объявления класса как сеансного компонента.  Кроме того, в спецификации EJB 3.1 упрощены требования к сеансным компонентам, поскольку выбор бизнес-интерфейсов не является обязательным. Локальные клиенты получают доступ к сеансным компонентам посредством представления с локальным интерфейсом или без интерфейса.  В рамках этого руководства будет создан интерфейс для такого компонента. Сервлеты в веб-приложении получают доступ к компоненту через представление без интерфейса.</p>
+
+            <p>Для создания фасада сеанса выполните следующие действия:</p>
+            <ol>
+                <li>Щелкните модуль EJB правой кнопкой мыши и выберите команду &quot;Создать&quot; &gt; &quot;Другие&quot;.</li>
+                <li>Из категории &quot;Сохранение состояния&quot; выберите &quot;Сеансные компоненты для классов сущностей&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Из списка доступных классов сущностей выберите <tt>ejb.NewsEntity</tt> и нажмите кнопку &quot;Добавить&quot;, чтобы переместить класс на панель &quot;Выбранные классы сущностей&quot;.  Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>Убедитесь в том, что для параметра &quot;Пакет&quot; установлено значение <tt>ejb</tt>.  Нажмите кнопку &quot;Завершить&quot;.</li>
+            </ol>
+            <img alt="Мастер создания компонентов, управляемых сообщениями" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/ejb-sessionforentity.png" title="Мастер создания компонентов, управляемых сообщениями" />
+
+
+            <p>При нажатии кнопки &quot;Готово&quot; среда IDE создает класс фасада сеанса <tt>NewsEntityFacade.java</tt> и <tt>AbstractFacade.java</tt> и открывает файлы в редакторе.  Как видите из созданного кода, аннотация <tt>@Stateless</tt> используется для объявления <tt>NewsEntityFacade.java</tt> в качестве простого сеансного компонента без сохранения состояния.  Также в среде IDE добавляется аннотация <tt>PersistenceContext</tt> для внедрения ресурса непосредственно в элемент сеансного компонента. Класс <tt>NewsEntityFacade.java</tt> расширяет класс <tt>AbstractFacade.java</tt>, который содержит бизнес-логику и управляет транзакцией.</p>
+
+            <p class="notes"><strong>Примечание.</strong> Удаленный интерфейс все еще является обязательным, если доступ к компонентам будет осуществляться с использованием удаленных клиентов.</p>
+
+            <p class="tips">Для получения подробных сведений о сеансных компонентах см. главу <a href="http://java.sun.com/javaee/6/docs/tutorial/doc/gipjg.html">Что такое сеансный компонент?</a> в <a href="http://download.oracle.com/javaee/6/tutorial/doc/">руководстве по Java EE 6, часть I</a>.</p>
+            
+        </div>
+        
+        
+        
+        <!-- ===================================================================================== -->
+        <a name="Exercise_3"></a> 
+        <h2>Написание кода веб-модуля</h2>
+        <p>В примере в этом разделе будет создано два сервлета в веб-модуле.  Сервлет ListNews извлекает сообщения из базы данных через фасад сущностей в модуле EJB.  Сервлет PostMessage используется для отправки сообщений JMS.</p>
+
+        <p>Кроме того, в примере в этом разделе будет создан единичный сеансный компонент в веб-модуле для подсчета количества пользователей, участвующих в настоящий момент в этом сеансе.  Спецификация EJB 3.1 позволяет создавать компоненты EJB в веб-приложениях.  В версиях EJB, предшествующих 3.1, все компоненты EJB должны были находиться в модулях EJB.</p>
+
+        <div class="indent">
+            <a name="Exercise_3a"></a>
+            <h3>Создание единичного сеансного компонента</h3>
+            
+            <p>В спецификацию EJB 3.1 добавлена возможность использования аннотации <tt>@Singleton</tt>, которая обеспечивает упрощенное создание единичных сеансных компонентов.  В EJB 3.1 также определяются дополнительные аннотации для свойств настройки единичных сеансных компонентов, например, при создании экземпляра для компонента.
+            </p>
+            <p>После создания экземпляра единичного сеансного компонента данный компонент доступен в жизненном цикле приложения.  Как понятно из его названия, в приложении может быть только один экземпляр единичного сеансного компонента. Аналогично сеансным компонентам без сохранения состояния единичные сеансные компоненты могут иметь несколько клиентов.</p>
+
+            <p>Для создания единичного сеансного компонента выполните следующие действия. </p>
+
+            <ol>
+                <li>Для открытия мастера создания файла щелкните веб-модуль правой кнопкой мыши и выберите &quot;Создать&quot; &gt; &quot;Другие&quot;.</li>
+                <li>Выберите &quot;Сеансный компонент&quot; в категории Enterprise JavaBeans. Нажмите кнопку &quot;Далее&quot;.</li>
+                <li>В поле &quot;Имя EJB&quot; введите <strong>SessionManagerBean</strong>.</li>
+                <li>В качестве имени параметра &quot;Пакет&quot; введите <strong>ejb</strong>.</li>
+                <li>Выберите &quot;Единичный&quot;.  Нажмите кнопку &quot;Завершить&quot;.</li>
+            </ol>
+            <img alt="Создание отдельного компонента в мастере создания компонентов сеансов" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/ejb-newsingleton.png" title="Создание отдельного компонента в мастере создания компонентов сеансов" />
+            <p>При нажатии кнопки &quot;Завершить&quot; в среде IDE будет создан класс единичного сеансного компонента, который откроется в редакторе.  При этом в среде IDE добавляется аннотация <tt>@Singleton</tt> к классу для объявления единичного сеансного компонента.  В мастере также создается аннотация <tt>@LocalBean</tt> для класса.</p>
+
+            <pre class="examplecode">@Singleton
+@LocalBean
+public class SessionManagerBean {
+
+}</pre>
+
+            <ol>
+                 <li>Создайте аннотацию <tt>@WebListener</tt> для класса и реализуйте <tt>HttpSessionListener</tt>.
+                <pre class="examplecode">@Singleton
+@LocalBean
+<strong>@WebListener</strong>
+public class SessionManagerBean <strong>implements HttpSessionListener</strong>{
+
+}</pre>
+                     <p>Аннотация <tt>@WebListener</tt> является частью интерфейса API сервлета 3.0 и позволяет реализовать прослушивающий процесс непосредственно в коде.</p>
+
+                     <p>При реализации <tt>HttpSessionListener</tt> в среде IDE в поле отображается предупреждение.</p>
+                </li>
+                <li>Щелкните значок предупреждения в левом поле и выберите &quot;Реализовать все абстрактные методы&quot;.<br /> <img alt="Подсказка редактора о реализации абстрактных методов" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/ejb-implementabstract.png" title="Подсказка редактора о реализации абстрактных методов" />
+                    <p>В среде IDE добавляются методы <tt>sessionCreated</tt> и <tt>sessionDestroyed</tt>.</p></li>
+                <li>Добавьте статическое поле <tt>counter</tt> и установите начальное значение на <tt>0</tt>.
+                    <pre class="examplecode">@LocalBean
+@WebListener
+public class SessionManagerBean implements HttpSessionListener{
+    <strong>private static int counter = 0;</strong></pre>
+                </li>
+                <li>Измените созданные тела методов <tt>sessionCreated</tt> и <tt>sessionDestroyed</tt> для увеличения значения поля при запуске нового сеанса и для уменьшения значения при завершении сеанса.  Значение сохраняется в поле <tt>counter</tt>.
+
+                <pre class="examplecode">public void sessionCreated(HttpSessionEvent se) {
+    <strong>counter++;</strong>
+}
+
+public void sessionDestroyed(HttpSessionEvent se) {
+    <strong>counter--;</strong>
+}</pre>
+                    
+                </li>
+                <li>Добавьте следующий метод, возвращающий текущее значение поля <tt>counter</tt>.
+                <pre class="examplecode">public int getActiveSessionsCount() {
+        return counter;
+    }</pre>
+                    <p>Этот метод вызывается из сервлета для отображения текущего количества пользователей/открытых сеансов.</p>
+                </li>
+                <li>Сохраните изменения.</li>
+            </ol>
+
+
+            <p>Теперь код сеансного компонента должен выглядеть следующим образом.</p>
+            <pre class="examplecode">@Singleton
+@LocalBean
+@WebListener
+public class SessionManagerBean implements HttpSessionListener {
+    private static int counter = 0;
+
+    public void sessionCreated(HttpSessionEvent se) {
+        counter++;
+    }
+
+    public void sessionDestroyed(HttpSessionEvent se) {
+        counter--;
+    }
+
+    public int getActiveSessionsCount() {
+        return counter;
+    }
+
+}</pre>
+            <p class="tips">Подробные сведения об единичных сеансных компонентах см. в главе <a href="http://java.sun.com/javaee/6/docs/tutorial/doc/gipjg.html">Что такое сеансный компонент?</a> в <a href="http://download.oracle.com/javaee/6/tutorial/doc/">руководстве по Java EE 6, часть I</a>.</p>
+
+
+
+
+            <a name="Exercise_3b"></a>
+            <h3>Создание сервлета <tt>ListNews</tt></h3>
+            <p>В этом упражнении будет создан простой сервлет для отображения сохраненных сообщений.  Аннотации используются для вызова компонента EJB NewsEntityFacade из сервлета.</p>
+            <ol>
+                <li>Щелкните проект веб-модуля правой кнопкой мыши и выберите &quot;Создать&quot; &gt; &quot;Сервлет&quot;.</li>
+                <li>В поле &quot;Имя класса&quot; введите <strong>ListNews</strong>.</li>
+                <li>В качестве имени параметра &quot;Пакет&quot; введите <strong>web</strong>.  Нажмите кнопку &quot;Завершить&quot;.</li>
+            </ol>
+            <p>При нажатии кнопки &quot;Готово&quot; класс <tt>ListNews.java</tt> будет открыт в редакторе исходного кода. В редакторе исходного кода выполните следующие шаги.</p>
+            <ol>
+                <li>Щелкните правой кнопкой мыши в редакторе исходного кода, выберите пункт &quot;Вставить код&quot; (Alt-Insert; Ctrl-I на Mac) и выберите пункт &quot;Вызов компонента EJB&quot;.</li>
+                <li>В диалоговом окне &quot;Вызов компонента EJB&quot; разверните узел NewsApp-ejb и выберите NewsEntityFacade.  Нажмите кнопку &quot;ОК&quot;.
+                    <p>В среде IDE добавляется аннотация <tt>@EJB</tt> для ввода компонента EJB.</p>
+                </li>
+                <li>Используйте диалоговое окно &quot;Вызов компонента EJB&quot; еще раз для ввода компонента SessionManagerBean в узел NewsApp-war.
+                    <p>В коде можно увидеть следующие аннотации для ввода двух компонентов EJB.</p>
+                <pre class="examplecode">@WebServlet(name = "ListNews", urlPatterns = {"/ListNews"})
+public class ListNews extends HttpServlet {
+
+    @EJB
+    private SessionManagerBean sessionManagerBean;
+    @EJB
+    private NewsEntityFacade newsEntityFacade;
+                </pre>
+                    <p>Кроме того, можно увидеть, что аннотация <tt>@WebServlet</tt> используется для объявления класса сервлета и для указания имени сервлета.  Аннотация <tt>@WebServlet</tt> является частью интерфейса API сервлета 3.0, представленного в спецификации Java EE 6.  Сервлеты можно определить с помощью аннотации вместо дескриптора развертывания в <tt>web.xml</tt>.  Приложение NewsApp не содержит <tt>web.xml</tt>.</p>
+                </li>
+
+                <li>В методе <tt>processRequest</tt> добавьте следующий код (выделено полужирным шрифтом) для возврата к текущему сеансу или создания нового.
+                    <pre class="examplecode">protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+        <strong>request.getSession(true);</strong>
+        response.setContentType("text/html;charset=UTF-8");</pre>
+
+                <li>Добавьте следующий код (выделен жирным шрифтом) к методу <tt>processRequest</tt> для вывода сообщений и добавления ссылки на сервлет PostMessage.  (При необходимости удалите знак комментария для кода в методе.)
+                    <pre class="examplecode">
+out.println(&quot;&lt;h1&gt;Servlet ListNews at &quot; + request.getContextPath () + &quot;&lt;/h1&gt;&quot;);
+
+<strong>List news = newsEntityFacade.findAll();
+for (Iterator it = news.iterator(); it.hasNext();) {
+    NewsEntity elem = (NewsEntity) it.next();
+    out.println(&quot; &lt;b&gt;&quot;+elem.getTitle()+&quot; &lt;/b&gt;&lt;br /&gt;&quot;);
+    out.println(elem.getBody()+&quot;&lt;br /&gt; &quot;);
+}
+out.println(&quot;&lt;a href='PostMessage'&gt;Add new message&lt;/a&gt;&quot;);</strong>
+
+out.println(&quot;&lt;/body&gt;&quot;);
+                    </pre>
+                </li>
+                <li>Добавьте следующий код (выделено полужирным шрифтом) для получения и отображения количества пользователей/открытых сеансов.
+                    <pre class="examplecode">out.println(&quot;&lt;a href='PostMessage'&gt;Add new message&lt;/a&gt;&quot;);
+
+<strong>out.println(&quot;&lt;br&gt;&lt;br&gt;&quot;);
+out.println(sessionManagerBean.getActiveSessionsCount() + " user(s) reading the news.");</strong>
+
+out.println(&quot;&lt;/body&gt;&quot;);
+                    </pre>
+                </li>
+                <li>Нажмите сочетание клавиш Ctrl+Shift+I для создания обязательных операторов импорта для класса.  При создании операторов импорта может потребоваться <b>импортировать библиотеки <tt>java.util</tt></b>.</li>
+                <li>Сохраните измененный файл.</li>
+            </ol>
+            
+            
+            <a name="Exercise_3c"></a>
+            <h3>Создание сервлета <tt>PostMessage</tt></h3>
+            <p>В этом упражнении будет создан сервлет <tt>PostMessage</tt>, используемый для отправки сообщений.  Для добавления созданных ресурсов JMS непосредственно в сервлет используются аннотации с указанием имени переменной и имени, на которое она отображается.  Затем необходимо написать код для отправки сообщения JMS и код для формы HTML, предназначенной для добавления сообщения.</p>
+            <ol>
+                <li>Щелкните проект веб-модуля правой кнопкой мыши и выберите &quot;Создать&quot; &gt; &quot;Сервлет&quot;.</li>
+                <li>В поле &quot;Имя класса&quot; введите <tt>PostMessage</tt>.</li>
+                <li>Для имени параметра &quot;Пакет&quot; введите <tt>web</tt> и нажмите &quot;Завершить&quot;.</li>
+            </ol>
+            <p>При нажатии кнопки &quot;Готово&quot; в редакторе исходного кода будет открыт класс <tt>PostMessage.java</tt>. В редакторе исходного кода выполните следующие шаги.</p>
+            <ol>
+                <li>Используйте аннотации для ввода ресурсов <tt>ConnectionFactory</tt> и <tt>Queue</tt> путем добавления следующих объявлений полей (выделено полужирным шрифтом):
+                    <pre class="examplecode">@WebServlet(name="PostMessage", urlPatterns={"/PostMessage"})
+public class PostMessage extends HttpServlet {                
+    <b>@Resource(mappedName=&quot;jms/NewMessageFactory&quot;)
+    private  ConnectionFactory connectionFactory;
+
+    @Resource(mappedName=&quot;jms/NewMessage&quot;)
+    private  Queue queue;</b></pre>
+                </li>
+                <li>Теперь создадим код для передачи сообщения JMS путем добавления в метод <tt>processRequest</tt> следующих строк кода, выделенных полужирным шрифтом:
+                    <pre class="examplecode">
+response.setContentType(&quot;text/html;charset=UTF-8&quot;);
+
+// Add the following code to send the JMS message
+<b>String title=request.getParameter(&quot;title&quot;);
+String body=request.getParameter(&quot;body&quot;);
+if ((title!=null) &amp;&amp; (body!=null)) {
+    try {
+        Connection connection = connectionFactory.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        MessageProducer messageProducer = session.createProducer(queue);
+
+        ObjectMessage message = session.createObjectMessage();
+        // here we create NewsEntity, that will be sent in JMS message
+        NewsEntity e = new NewsEntity();
+        e.setTitle(title);
+        e.setBody(body);
+
+        message.setObject(e);                
+        messageProducer.send(message);
+        messageProducer.close();
+        connection.close();
+        response.sendRedirect(&quot;ListNews&quot;);
+
+    } catch (JMSException ex) {
+        ex.printStackTrace();
+    }
+}</b>
+                        
+PrintWriter out = response.getWriter();
+                    </pre>
+                </li>
+                <li>Добавьте следующие строки (выделены жирным шрифтом) к методу <tt>processRequest</tt>, чтобы добавить веб-форму добавления сообщения.  (При необходимости, уберите знак комментария для вывода кода HTML)
+                <pre class="examplecode">
+out.println(&quot;Servlet PostMessage at &quot; + request.getContextPath() + &quot;&lt;/h1&gt;&quot;);
+
+// The following code adds the form to the web page
+<b>out.println(&quot;&lt;form&gt;&quot;);
+out.println(&quot;Title: &lt;input type='text' name='title'&gt;&lt;br/&gt;&quot;);
+out.println(&quot;Message: &lt;textarea name='body'&gt;&lt;/textarea&gt;&lt;br/&gt;&quot;);
+out.println(&quot;&lt;input type='submit'&gt;&lt;br/&gt;&quot;);
+out.println(&quot;&lt;/form&gt;&quot;);</b>
+
+out.println(&quot;&lt;/body&gt;&quot;);
+                </pre>
+                <li>Нажмите сочетание клавиш Ctrl+Shift+I для создания обязательных операторов импорта для класса. 
+                    <p class="notes"><b>Примечание.</b> При выборе библиотек для импорта для <tt>Connection</tt>, <tt>ConnectionFactory</tt>, <tt>Session</tt> и <tt>Queue</tt>, <b>убедитесь, что импортируются библиотеки <tt>javax.jms</tt></b>. </p>
+                <img alt="снимок диалогового окна &apos;Исправить все выражения импорта&apos;" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/import-jms.png" title="Выберите библиотеки JMS в диалоговом окне &apos;Исправить все выражения импорта&apos;" />
+                </li>
+                <li>Сохраните измененный файл.</li>
+            </ol>
+            </div>
+            
+            
+            <h2><a name="Exercise_4"></a> Выполнение проекта</h2>
+            <p>Теперь проект можно выполнить.  При выполнении проекта страница с сервлетом <tt>ListNews</tt> должна открыться в браузере.  Для этого в диалоговом окне &quot;Свойства&quot; для приложения J2EE вводится URL-адрес.  Это относительный URL-адрес, связанный с контекстным путем к приложению.  После ввода относительного URL-адреса приложение можно собрать, развернуть и запустить в  окне &quot;Проекты&quot;.</p>
+            <p>Для указания относительного URL-адреса и запуска приложения необходимо выполнить следующие действия:</p>
+            <ol>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши узел приложения корпоративного уровня NewsApp и выберите во всплывающем меню 'Свойства'.</li>
+                <li>В панели &quot;Категории&quot; выберите &quot;Выполнить&quot;.</li>
+                <li>В текстовое поле &quot;Относительный URL-адрес&quot; введите <strong>/ListNews</strong>.</li>
+                <li>Нажмите кнопку &quot;ОК&quot;.</li>
+                <li>В окне 'Проекты' щелкните правой кнопкой мыши узел приложения корпоративного уровня NewsApp и выберите 'Выполнить'.</li>
+            </ol>
+            
+            <p>При выполнении проекта в браузере откроется сервлет <tt>ListNews</tt>. В нем отображается список сообщений в базе данных.  При первом выполнении проекта база данных пуста, но сообщение можно добавить путем щелчка по ссылке &quot;Добавить сообщение&quot;.</p>
+            <img alt="Страница сервлета ListNews" class="margin-around b-all" src="../../../images_www/articles/72/javaee/ejbentapp/ejb-browser1.png" title="Страница сервлета ListNews" />
+            <p>При добавлении сообщения с помощью сервлета <tt>PostMessage</tt> оно передается на постоянное хранение в управляемый сообщениями компонент. Для просмотра сообщений в базе данных вызывается сервлет <tt>ListNews</tt>.  Список сообщений в базе данных, извлеченных сервлетом <tt>ListNews</tt>, часто выводится без нового сообщения, поскольку служба передачи сообщений работает асинхронно.
+            </p>
+
+            <a name="Exercise_5"></a>
+            <h2>Загрузка проекта решения</h2>
+            <p>Решение для данного учебного курса в виде проекта можно загрузить несколькими способами.</p>
+            <ul>
+                <li>Загрузите <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FNewsAppEE6.zip">архив завершенного проекта в формате zip</a>.</li>
+                <li>Выполните проверку исходных файлов проекта на выходе из примеров NetBeans, выполнив перечисленные ниже действия.
+                    <ol>
+                        <li>Выберите в главном меню &quot;Группа &gt; Subversion &gt; Проверить&quot;.</li>
+                        <li>В диалоговом окне &quot;Проверка&quot; введите следующий URL-адрес репозитория:<br /> <tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br /> Нажмите кнопку &quot;Далее&quot;.</li>
+                        <li>Нажмите кнопку Browse (&quot;Обзор&quot;) для открытия диалогового окна Browse Repository Folders (&quot;Обзор папок репозитория&quot;).</li>
+                        <li>Разверните корневой узел и выберите <strong>samples/javaee/NewsAppEE6</strong>.  Нажмите кнопку &quot;ОК&quot;.</li>
+                        <li>Укажите локальную папку для исходных файлов (папка должна быть пустой).</li>
+                        <li>Нажмите кнопку &quot;Завершить&quot;.
+                            <p>После нажатия кнопки &quot;Готово&quot; среда IDE инициализирует локальную папку в качестве репозитория Subversion и выполняет проверку исходных файлов проекта на выходе.</p>
+                        </li>
+                        <li>Щелкните команду &quot;Открыть проект&quot; в диалоговом окне, которое появится после завершения проверки.</li>
+                    </ol>
+                    <p class="notes"><strong>Примечания.</strong></p>
+                    <ul>
+                        <li>Для получения исходных файлов на редактирование требуется клиент Subversion. For more about installing Subversion, see the section on <a href="../ide/subversion.html#settingUp">Setting up Subversion</a> in the <a href="../ide/subversion.html">Guide to Subversion in IDE NetBeans</a>.</li>
+                    </ul>
+                </li>
+            </ul>
+
+
+                
+
+
+            
+            <a name="Exercise_6"></a>
+                
+            <h2>Устранение проблем</h2>
+            <p>Ниже приводится ряд проблем, которые могут возникнуть при создании проекта.</p>
+            <div class="indent">
+                <h3 class="tutorial">Проблема с ресурсами JMS</h3>
+                <p>При создании ресурсов JMS с помощью мастера в окне вывода может появиться следующее сообщение об ошибке сервера:</p>
+                <pre>[com.sun.enterprise.connectors.ConnectorRuntimeException:
+                    JMS resource not created : jms/Queue]
+                </pre>
+                <p>Это сообщение указывает на то, что ресурс JMS не создан или не зарегистрирован на сервере приложений.  Для проверки, создания и изменения ресурсов JMS используйте консоль администратора сервера приложений.</p>
+                <p>Для вызова консоли администратора необходимо выполнить следующие действия.</p>
+                <ol>
+                    <li>Убедитесь в том, что сервер приложений запущен. Для этого разверните узел &quot;Серверы&quot; в окне &quot;Службы&quot; среды IDE.  Работающий сервер обозначается зеленой стрелкой рядом с узлом сервера приложений.</li>
+                    <li>Щелкните правой кнопкой мыши узел сервера приложений и выберите &quot;Просмотр консоли администратора&quot; для открытия в браузере окна входа в систему.</li>
+                    <li>Выполните вход в систему сервера.  По умолчанию используется имя пользователя <tt>admin</tt> и пароль <tt>adminadmin</tt>.</li>
+                    <li>Разверните узлы &quot;Ресурсы&quot; и &quot;Ресурсы JMS&quot; в левом поле консоли администратора в браузере.</li>
+                    <li>Щелкните ссылки &quot;Фабрики подключений&quot; и &quot;Ресурсы адресатов&quot; в левом поле и проверьте, зарегистрированы ли ресурсы на сервере; при необходимости внесите требуемые изменения.  Если ресурсы не существуют, их можно создать при помощи консоли администратора.</li>
+                </ol>
+                <p>Необходимо убедиться в том, что ресурс фабрики подключений JMS в сервлете PostMessage связан с правильным именем JNDI ресурса фабрики подключений JMS, зарегистрированного на сервере приложений Sun Java System Application Server.</p>
+                <p>На сервере Sun Java System Application Server должны быть зарегистрированы следующие ресурсы:</p>
+                <ul>
+                    <li>ресурс адресата с именем JNDI <tt>jms/NewMessage</tt> и типом <tt>javax.jms.Queue</tt>;</li>
+                    <li>ресурс фабрики подключений с именем JNDI <tt>jms/NewMessageFactory</tt> и типом <tt> javax.jms.QueueConnectionFactory</tt>.</li>
+                </ul>
+                
+            </div>
+            <br>
+            <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20an%20Enterprise%20Application%20with%20EJB%203.1">Отправить отзыв по этому учебному курсу</a></div>
+            <br style="clear:both;" />
+            <!-- ======================================================================================= -->
+            <h2><a name="nextsteps"></a>Дополнительные сведения</h2>
+            <p>For more information about using IDE NetBeans to develop Java EE applications, see the following resources:
+            </p>
+            <ul>
+            <li><a href="javaee-intro.html">Введение в технологию Java EE </a></li>
+            <li><a href="javaee-gettingstarted.html">Начало работы с приложениями Java EE</a></li>
+            <li><a href="../web/quickstart-webapps.html">Введение в разработку веб-приложений</a></li>
+            <li><a href="../../trails/java-ee.html">Учебная карта по Java EE и Java Web</a></li>
+            </ul>
+            <p>Дополнительные сведения об использовании корпоративных компонентов см. в <a href="http://docs.oracle.com/javaee/7/tutorial/doc/ejb-intro.htm">Учебном курсе по Java EE 7</a>.</p>
+            <p>To send comments and suggestions, get support, and keep informed on the latest developments on the IDE NetBeans Java EE development features, <a href="../../../community/lists/top.html">join the nbj2ee mailing list</a>.</p>
+    </body>
+</html>

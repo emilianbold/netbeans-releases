@@ -1,0 +1,688 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+    <title>Hibernateを使用したMaven Swingアプリケーションの作成 - NetBeans IDEチュートリアル</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <meta name="description" content="Demonstrates how to create a Maven Swing application that uses Hibernate as the persistence layer.">
+   <meta name="KEYWORDS" content="NetBeans, Maven, Hibernate, Swing, J2SE, Java SE, MySQL, mapping, reveng.xml">
+   <link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Hibernateを使用したMaven Swingアプリケーションの作成 - NetBeans IDEチュートリアル</h1>
+
+    <p>このチュートリアルでは、NetBeans IDEを使用して、Mavenの原型からJava Swingアプリケーションを作成します。このアプリケーションではHibernateフレームワークを持続性レイヤーとして使用し、リレーショナル・データベースからPOJO (plain old Java objects)を取得します。このチュートリアルでは、IDEのウィザードを使用して必要なHibernateファイルを作成し、Hibernateの依存性をPOMに追加する方法をデモンストレーションします。Javaオブジェクトを作成し、Hibernateを使用するようにアプリケーションを構成した後、データを検索および表示するGUIインタフェースを作成します。
+    </p>
+
+    <p>MavenのサポートはNetBeans IDEに完全に統合され、Maven 3がIDEにバンドルされています。バンドルされたMavenの原型から、または新規プロジェクト・ウィザード内のリモート・リポジトリの原型からアプリケーションを作成できます。「Mavenリポジトリ・ブラウザ」では、ローカルおよびリモートのMavenリポジトリの操作、アーティファクトの調査、プロジェクトのPOMへのプロジェクトの依存性の追加を実行できます。
+    </p>
+
+    <p class="tips">Antを使用してこのアプリケーションをビルドするには、<a href="hibernate-java-se.html">Java SwingアプリケーションでのHibernateの使用</a>を参照してください。</p>
+    <p class="tips">Maven Java EEアプリケーションをビルドするには、<a href="../javaee/maven-entapp.html">Mavenを使用したエンタープライズ・アプリケーションの作成</a>を参照してください。</p>
+
+   
+    <p><b>目次</b></p>
+    <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+    <ul class="toc">
+        <li><a href="#01">データベースの作成</a></li>
+        <li><a href="#02">Mavenの構成</a>
+            <ul>
+                <li><a href="#02a">Mavenリポジトリの表示</a></li>
+            </ul>
+        </li>
+        <li><a href="#03">Mavenアプリケーションの作成</a>
+            <ul>
+                <li><a href="#03b">Mavenプロジェクトのプロパティの変更</a></li>
+            </ul>
+        </li>
+        <li><a href="#04">Hibernateのファイルと依存性の追加</a>
+        <ul>
+            <li><a href="#04a">Hibernate構成ファイルの作成</a></li>
+            <li><a href="#04b">Hibernate構成ファイルの変更</a></li>
+            <li><a href="#04c"><tt>HibernateUtil.java</tt>ヘルパー・ファイルの作成</a></li>
+        </ul>
+        </li>
+        <li><a href="#05">Hibernateのマッピング・ファイルおよびJavaクラスの生成</a>
+        <ul>
+             <li><a href="#05a">データベースからのHibernateのマッピング・ファイルとPOJOの作成</a></li>
+        </ul>
+        </li>
+        <li><a href="#06">アプリケーションGUIの作成</a>
+        <ul>
+             <li><a href="#06a">JFrameフォームの作成</a></li>
+             <li><a href="#06b">要素のフォームへの追加</a></li>
+        </ul>
+        
+        </li>
+        <li><a href="#07">HQL問合せエディタでの問合せの作成</a></li>
+        <li><a href="#08">問合せのフォームへの追加</a></li>
+        <li><a href="#09">Mavenプロジェクトの実行</a>
+        <ul>
+            <li><a href="#09a">ソリューション・プロジェクトのダウンロード</a></li>
+        </ul>
+        </li>
+        <li><a href="#10">個別のPOJOおよびマッピング・ファイルの作成</a>(オプション)</li>
+    </ul>
+
+   
+   <p><b>このチュートリアルに従うには、次のソフトウェアとリソースが必要です。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="http://download.netbeans.org/">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4、8.0、Javaバンドル</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">バージョン7または8</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://maven.apache.org/">Maven</a></td>
+                <td class="tbltd1">バージョン2.09以降</td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://www.mysql.com/">MySQLデータベース・サーバー</a></td>
+                <td class="tbltd1">バージョン5.x</td>
+            </tr>
+            <tr>
+                <td class="tbltd1">Sakilaデータベース</td>
+                <td class="tbltd1">更新センターから入手できるプラグイン</td>
+            </tr>            
+        </tbody>
+</table>
+
+      <p>このチュートリアルを開始する前に、必要に応じて次のドキュメントをお読みください。</p>
+    <ul>
+        <li><a href="http://wiki.netbeans.org/MavenBestPractices" target="_blank">NetBeans 6.xでのApache Mavenのベスト・プラクティス</a></li>
+        <li><a href="http://books.sonatype.com/mvnref-book/reference/introduction.html" target="_blank">Chapter 1. Introducing Apache Maven</a> (<a href="http://books.sonatype.com/mvnex-book/reference/public-book.html" target="_blank">Maven by Example</a>)</li>
+        <li><a href="http://www.hibernate.org/" target="_blank">hibernate.org</a>のHibernateドキュメント</li>
+        <li><a href="gui-functionality.html">GUIビルドの概要</a></li>
+        <li><a href="../ide/mysql.html">MySQLデータベースへの接続</a>のチュートリアル</li>
+    </ul>
+
+<p class="tips"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/DVDStoreAdmin-Maven.zip">終了したプロジェクトのZIPアーカイブ</a>はダウンロードできます。</p>
+
+<!-- ++++++++++++++ Creating Database ++++++++++++++ -->
+
+<a name="01"></a>
+<h2>データベースの作成</h2>
+    <p>このチュートリアルでは、<tt>sakila</tt>という名前のMySQLデータベースを使用します。IDEのインストールにはサンプル・データベースが含まれていないため、このチュートリアルを開始する前に、まずデータベースを作成する必要があります。
+    </p>
+    <p>Sakilaデータベースは、MySQLのサイトから入手できる、無料のMySQLサンプル・データベースです。sakilaデータベースを作成するには、プラグイン・マネージャを使用してSakilaサンプル・データベース・プラグインをダウンロードしてインストールできます。プラグインのインストール後、「サービス」ウィンドウからSakilaデータベースを作成できます。Sakilaデータベースは、「MySQLデータベースの作成」ダイアログ・ボックスのデータベース一覧に追加されます。</p>
+    <p>MySQLを操作するためのIDEの構成については、<a href="../ide/mysql.html">MySQLデータベースへの接続</a>のチュートリアルを参照してください。</p>
+        
+    <ol>
+        <li>プラグイン・マネージャを開き、Sakilaサンプル・データベース・プラグインをインストールします。</li>
+        <li>プラグインをインストールした後、「サービス」ウィンドウで「データベース」ノードを展開し、「MySQLサーバー」ノードを右クリックして「起動」を選択して、MySQLデータベース・サーバーを起動します。</li>
+        <li>「MySQLサーバー」ノードを右クリックし、「データベースを作成」を選択します。</li>
+        <li>「MySQLデータベースの作成」ダイアログ・ボックスで「新規データベース名」ドロップダウン・リストから「Sakilaデータベース」を選択します。「OK」をクリックします。<br /><img alt="「MySQLデータベースの作成」ダイアログのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/create-sakila-mysql.png" title="「MySQLデータベースの作成」ダイアログのスクリーンショット">
+        
+        <p>「OK」をクリックすると、Sakilaデータベースを作成し、データベース表を生成するためのスクリプトがIDEによって実行されます。スクリプトを実行した結果は、「出力」ウィンドウで確認できます。「MySQLサーバー」ノードの下にSakilaデータベースのノードも追加されます。</p>
+        <li>「Sakila」ノードを右クリックし、「接続」を選択します。</li>
+    </ol>
+    <p>「接続」をクリックすると、Sakilaデータベースのデータベース接続ノード(<tt>jdbc:mysql://localhost:3306/sakila [デフォルトの<i>ユーザー名</i>]</tt>)が「データベース」ノードの下に一覧表示されます。接続が開いたら、接続ノードを展開してデータベースのデータを表示できます。</p>
+
+
+<!-- ++++++++++++++ Configuring Maven ++++++++++++++ -->
+
+<a name="02"></a>
+<h2>Mavenの構成</h2>
+
+    <p>MavenはIDEにバンドルされており、IDEをインストールするとインストールされますが、これが初めてのMavenプロジェクトの場合、「オプション」ウィンドウでMavenの構成設定を確認します。
+    </p>
+
+    <ol>
+        <li>IDEで「オプション」ウィンドウを開きます(「ツール」→「オプション」、Macの場合は「NetBeans」→プリファレンス)。</li>
+        <li>「オプション」ウィンドウで「Java」カテゴリを選択し、「Maven」タブをクリックします。</li>
+        <li>「Mavenのホーム」が指定されていることを確認します。
+            <p>IDEにバンドルされているMavenバージョンを使用することも、ローカルのMavenインストール(2.0.9以降が必要)の場所を指定することもできます。</p></li>
+        <li>「OK」をクリックして「オプション」ウィンドウを閉じます。</li>
+    </ol>
+    <p class="notes"><strong>注意:</strong></p>
+        <ul>
+            <li>Mavenサポートは、IDEでJavaが有効になっている場合に自動的に有効になります。Java EEプラグインが有効になっていない場合は、有効にする必要があります。</li>
+            <li>NetBeans IDE 7.1およびIDEの以前のバージョンでは、「オプション」ウィンドウの「Maven」タブは「その他」カテゴリ内にあります。</li>
+        </ul>
+
+
+    <div class="indent">
+    <a name="02a"></a>
+        <h3>Mavenリポジトリの表示</h3>
+        <p>Mavenですべてのプロジェクトをビルドするために使用されるアーティファクトは、ローカルMavenリポジトリに格納されます。アーティファクトがプロジェクトの依存性として宣言されると、そのアーティファクトは登録されたリモート・リポジトリの1つからローカル・リポジトリにダウンロードされます。</p>
+
+        <p>デフォルトで、よく知られている索引付きのMavenリポジトリがいくつか登録され、リポジトリ・ブラウザに一覧表示されます。登録されたリポジトリには、プロジェクトのビルドに必要な、ほとんどの公開アーティファクトが含まれています。ほとんどの場合、プライベート・リポジトリにのみに存在するアーティファクトがプロジェクトで必要にならないかぎり、追加のリポジトリを登録する必要はありません。
+        </p>
+
+        <p>ローカルおよびリモートのMavenリポジトリを調べて、「サービス」ウィンドウで更新の即時確認を実行できます。ローカル・リポジトリまたはリモート・リポジトリにあるアーティファクトは、プロジェクトの依存性として追加することができます。「サービス」ウィンドウで「ローカル」リポジトリ・ノードを展開すると、ローカルに存在するアーティファクトを表示できます。リモート・リポジトリ・ノードの下に一覧表示されているアーティファクトは、プロジェクトの依存性として追加することができますが、すべてのアーティファクトがローカルにあるわけではありません。これらはプロジェクトの依存性として宣言されたときのみ、ローカル・リポジトリに追加されます。</p>
+
+        <p>Mavenリポジトリを参照して更新するには:</p>
+        <ol>
+            <li>「ウィンドウ」>「サービス」を選択し、「サービス」ウィンドウを開きます。</li>
+            <li>「サービス」ウィンドウで「Mavenリポジトリ」ノードを展開し、リポジトリを表示します。</li>
+            <li>リポジトリ・ノードを展開してアーティファクトを表示します。</li>
+            <li>リポジトリ・ノードを右クリックし、ポップアップ・メニューで「索引の更新」を選択して、リポジトリを更新します。</li>
+        </ol>
+
+        <img alt="「サービス」ウィンドウの「Mavenリポジトリ」のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/maven-create-se/maven-repositories.png" title="「サービス」ウィンドウの「Mavenリポジトリ」">
+
+        <p>カーソルをアーティファクトの上に置くと、アーティファクトのコーディネートとともにツールチップが表示されます。アーティファクトのJARファイルをダブルクリックすると、アーティファクトについての追加詳細を表示できます。</p>
+
+        <p class="tips">アーティファクトを検索するには、「サービス」ウィンドウで「Mavenリポジトリ」ノードを右クリックし、「検索」を選択します。</p>
+        <p class="tips">IDEでのMavenのクラスパス依存性の管理、およびMavenリポジトリの操作の詳細は、<a href="http://wiki.netbeans.org/MavenBestPractices">NetBeans IDEでのApache Mavenのベスト・プラクティス</a>の<a href="http://wiki.netbeans.org/MavenBestPractices#section-MavenBestPractices-DependencyManagement">依存性管理</a>の項を参照してください。
+        </p>
+        <p class="notes"><strong>NetBeans IDE 7.1、およびIDEの以前のバージョンに関するノート</strong></p>
+        <ul>
+            <li>Mavenリポジトリを表示するには、「ウィンドウ」>「その他」>「Mavenリポジトリ・ブラウザ」を選択します。</li>
+            <li>「Mavenリポジトリ・ブラウザ」のツールバーのボタンを使用して、索引を更新したり、アーティファクトを検索できます。</li>
+        </ul>
+</div>
+
+<a name="03"></a>
+<h2>Mavenアプリケーションの作成</h2>
+<p>このチュートリアルでは、DVDStoreAdminという名前の単純なJava Swingアプリケーション・プロジェクトを作成します。バンドルされたMavenの原型の1つからプロジェクトを作成し、デフォルトのプロジェクト設定を変更します。</p>
+<div class="indent">
+    <a name="03a"></a>
+    <h3>原型の選択</h3>
+    <p>新規プロジェクト・ウィザードを使用すると、Maven原型からMavenプロジェクトを作成できます。IDEには、一般的なNetBeansプロジェクト・タイプ用のいくつかの原型が含まれていますが、ウィザードでリモート・リポジトリにある原型を検索して選択することもできます。</p>
+    <ol>
+        <li>メイン・メニューから「ファイル」>「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])を選択して新規プロジェクト・ウィザードを開きます。 </li>
+        <li>「Maven」カテゴリから「Javaアプリケーション」を選択します。「次」をクリックします。<br> <img alt="新規プロジェクト・ウィザードでのMaven原型のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/maven-create-se/maven-project-wizard.png" title="新規プロジェクト・ウィザードでのMaven原型"></li>
+        <li>プロジェクト名に「<strong>DVDStoreAdmin</strong>」と入力し、プロジェクトの場所を設定します。</li>
+        <li>デフォルトの「グループID」と「バージョン」を変更します(オプション)。
+            <p>プロジェクトのビルド時に、ローカル・リポジトリのアーティファクトのコーディネートとして「グループID」と「バージョン」が使用されます。</p></li>
+        <li>「終了」をクリックします。</li>
+
+   </ol>
+
+
+
+    <p>「終了」をクリックすると、IDEがMavenプロジェクトを作成し、そのプロジェクトが「プロジェクト」ウィンドウで開きます。IDEでは、<tt>com.mycompany.dvdstoreadmin</tt>パッケージに<tt>App.java</tt>クラスが自動的に作成されます。アプリケーションでは必要ないため、<tt>App.java</tt>は削除してかまいません。</p>
+
+    <p class="notes"><strong>注意:</strong>初めてMavenプロジェクトを作成する場合は、いくつかの必要なプラグインとアーティファクトをローカル・リポジトリにダウンロードする必要があります。これにはある程度の時間がかかります。
+    </p>
+
+    
+    <a name="03b"></a>
+    <h3>プロジェクト・プロパティの変更</h3>
+    <p>ウィザードを使用してMavenプロジェクトを作成する場合、デフォルトのプロジェクト・プロパティは原型に基づいています。場合によっては、システム要件やプロジェクト要件にあわせて、デフォルトのプロパティの変更が必要になることがあります。たとえば、このプロジェクトの場合は、プロジェクトで注釈が使用されるため、ソース・レベルが1.5以上に設定されていることを確認する必要があります。</p>
+    <ol>
+        <li>プロジェクト・ノードを右クリックし、「プロパティ」を選択します。</li>
+        <li>「プロパティ」ウィンドウで「ソース」カテゴリを選択します。</li>
+        <li>ドロップダウン・リストから選択されたソース/バイナリ形式が1.5以上であることを確認します。</li>
+        <li>「エンコーディング」プロパティには、ドロップダウン・リストから「UTF-8」を選択します。「OK」をクリックします。 </li>
+    </ol>
+</div>
+
+<a name="04"></a>
+    <h2>Hibernateのファイルと依存性の追加</h2>
+    <p>Hibernateに対するサポートを追加するには、必要なアーティファクトをPOMで依存性として宣言することで、Hibernateライブラリを使用可能にする必要があります。IDEには、プロジェクトに必要なHibernateファイルの作成に役立つウィザードが複数用意されています。IDEのウィザードを使用し、Hibernate構成ファイルとユーティリティ・ヘルパー・クラスを作成できます。ウィザードを使用してHibernate構成ファイルを作成すると、IDEによって自動的にPOMが更新され、Hibernateの依存性がプロジェクトに追加されます。</p>
+
+   <p>プロジェクトへの依存性の追加は、「プロジェクト」ウィンドウで行うか、または<tt>pom.xml</tt>を直接編集して行います。「プロジェクト」ウィンドウで依存性を追加するには、「プロジェクト」ウィンドウの「依存性」ノードを右クリックし、ポップアップ・メニューから「依存性の追加」を選択して「依存性の追加」ダイアログ・ボックスを開きます。依存性を追加すると、IDEによってPOMが更新され、まだローカルにない必須のアーティファクトがローカル・リポジトリにダウンロードされます。</p>
+
+   <p><tt>pom.xml</tt>を直接編集するには、「プロジェクト」ウィンドウで「プロジェクト・ファイル」ノードを展開し、<tt>pom.xml</tt>をダブルクリックしてファイルを開きます。
+        </p>
+
+    
+<a name="04a"></a>
+    <div class="indent">
+    <h3>Hibernate構成ファイルの作成</h3>
+    <p>Hibernate構成ファイル(<tt>hibernate.cfg.xml</tt>)には、データベース接続、リソース・マッピング、およびその他の接続プロパティに関する情報が格納されます。ウィザードを使用してHibernate構成ファイルを作成する場合、IDEに登録されているデータベース接続のリストからデータベース接続を指定します。構成ファイルを生成すると、IDEでは接続の詳細および選択したデータベース接続に基づくダイアレクト情報が自動的に追加されます。さらに、必須のHibernate依存性を追加するようにPOMが自動的に変更されます。構成ファイルの作成後、ファイルはマルチビュー・エディタを使用して編集するか、またはXMLエディタで直接XMLを編集できます。</p>
+
+    <ol>
+        <li>「サービス」ウィンドウでSakilaデータベース接続を右クリックし、「接続」を選択します。</li>
+        <li>「プロジェクト」ウィンドウで「ソース・パッケージ」ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+        <li>「Hibernate」カテゴリから「Hibernate構成ウィザード」を選択します。「次」をクリックします。</li>
+        <li>デフォルトのファイル名(<tt>hibernate.cfg</tt>)をそのまま使用します。</li>
+        <li>「参照」をクリックし、「場所」として<tt>src/main/resources</tt>ディレクトリを指定します(まだ指定されていない場合)。「次」をクリックします。</li>
+        <li>Sakila接続を「データベース接続」ドロップダウン・リストから選択します。「終了」をクリックします。</li>
+    
+    </ol>
+    <img alt="データベース接続作成のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/hib-config.png" title="データベース接続を選択するダイアログ">
+    
+    <p>「終了」をクリックすると、エディタに<tt>hibernate.cfg.xml</tt>が表示されます。構成ファイルには、単一のデータベースに関する情報が含まれます。
+    </p>
+    
+    <p>「プロジェクト」ウィンドウで「依存性」ノードを展開すると、必要なHibernateアーティファクトがIDEによって追加されたことがわかります。IDEによって、プロジェクトをコンパイルするために必要な直接および推移的な依存性が、「依存性」ノードの下にすべて一覧表示されます。直接依存性であるアーティファクト(プロジェクトのPOMで指定された依存性)は、色付きのJARアイコンで示されます。アーティファクトが推移的な依存性(1つまたは複数の直接依存性の依存性であるアーティファクト)の場合は灰色で表示されます。 </p>
+    <img alt="「プロジェクト」ウィンドウ内の「ライブラリ」ノードの下にある依存性のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/80/java/maven-create-se/maven-project-libs.png" title="「プロジェクト」ウィンドウ内の「ライブラリ」ノードの下にある依存性">
+    
+    <p>JARを右クリックし、「アーティファクトの詳細を表示」を選択すると、アーティファクトの詳細を確認できます。Artifact Viewerには、選択されたアーティファクトに関する詳細情報を示すタブが含まれています。たとえば、「基本」タブは、アーティファクトのコーディネートと使用可能なバージョンに関する詳細を示します。「グラフ」タブは、選択したアーティファクトの依存性を視覚的に表現します。</p>
+    <img alt="依存性を示す「グラフ」タブまたはアーティファクト・ビューアのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/maven-create-se/maven-artifacts-viewer.png" title="依存性を示す「グラフ」タブまたはアーティファクト・ビューア">
+    <p class="tips">「グラフ」タブを使用して、依存性間のバージョンの競合を検出し、解決することもできます。</p>
+
+    
+
+    <a name="04b"></a>
+    <h3>Hibernate構成ファイルの変更</h3>
+    <p>この課題では、<tt>hibernate.cfg.xml</tt>で指定されたデフォルト・プロパティを、SQL文のデバッグ・ロギングが有効になるように編集します。この課題はオプションです。</p>
+    <ol>
+        <li>「デザイン」タブで<tt>hibernate.cfg.xml</tt>を開きます。このファイルを開くには、「プロジェクト」ウィンドウでプロジェクトの「構成ファイル」ノードを展開し、<tt>hibernate.cfg.xml</tt>をダブルクリックします。</li>
+        <li>「オプションのプロパティ」の下の「構成プロパティ」ノードを展開します。</li>
+        <li>「追加」をクリックして「Hibernateのプロパティの追加」ダイアログ・ボックスを開きます。</li>
+        <li>このダイアログ・ボックスで、「<tt>hibernate.show_sql</tt>」プロパティを選択し、値を「<tt>true</tt>」に設定します。「OK」をクリックします。これにより、SQL文のデバッグ・ロギングが有効になります。<br /><img alt="hibernate.show_sqlプロパティが表示された「Hibernateのプロパティの追加」ダイアログ・ボックス" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/add-property-showsql.png" title="hibernate.show_sqlプロパティの設定値が表示された「Hibernateのプロパティの追加」ダイアログ・ボックス"></li>
+        <li>「その他のプロパティ」ノードの下にある「追加」をクリックし、「プロパティ名」ドロップダウン・リストで「<tt>hibernate.query.factory_class</tt>」を選択します。</li>
+        <li>テキスト・フィールドに<strong>org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory</strong>を入力します。「OK」をクリックします。
+            <p class="notes"><strong>注意:</strong>ドロップダウン・リストから値を選択しないでください。</p>
+        <img alt="hibernate.query.factory_classプロパティが表示された「Hibernateのプロパティの追加」ダイアログ・ボックス" class="margin-around b-all" src="../../../images_www/articles/80/web/hibernate-webapp/add-property-factoryclass-4.png" title="hibernate.query.factory_classプロパティの設定値が表示された「Hibernateのプロパティの追加」ダイアログ・ボックス">
+        <p>エディタの「XML」タブをクリックすると、ファイルがXMLビューに表示されます。ファイルの内容は次のようになります。</p>
+        <pre class="examplecode">&lt;hibernate-configuration&gt;
+    &lt;session-factory name="session1"&gt;
+        &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+        &lt;property name="hibernate.connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+        &lt;property name="hibernate.connection.url"&gt;jdbc:mysql://localhost:3306/sakila&lt;/property&gt;
+        &lt;property name="hibernate.connection.username"&gt;root&lt;/property&gt;
+        &lt;property name="hibernate.connection.password"&gt;######&lt;/property&gt;
+        &lt;property name="hibernate.show_sql"&gt;true&lt;/property&gt;
+        &lt;property name="hibernate.query.factory_class"&gt;org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory&lt;/property&gt;
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+        </li>
+        <li>変更内容をファイルに保存します。</li>
+    </ol>
+    <p>プロジェクトを実行すると、IDEの出力ウィンドウにSQL問合せが表示されます。</p>
+
+    <a name="04c"></a>
+    <h3><tt>HibernateUtil.java</tt>ヘルパー・ファイルの作成</h3>
+    <p>Hibernateを使用するには、起動を処理し、Hibernateの<tt>SessionFactory</tt>にアクセスしてセッション・オブジェクトを取得するヘルパー・クラスを作成する必要があります。このクラスは、Hibernateの<tt>configure()</tt>メソッドをコールし、<tt>hibernate.cfg.xml</tt>構成ファイルをロードし、次に<tt>SessionFactory</tt>をビルドしてセッション・オブジェクトを取得します。
+    </p>
+
+    <p>この項では、新規ファイル・ウィザードを使用してヘルパー・クラスである<tt>HibernateUtil.java</tt>を作成します。</p>
+    <ol>
+        <li>「ソース・パッケージ」ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+        <li>「カテゴリ」の一覧から「Hibernate」を選択し、「ファイル・タイプ」の一覧から「HibernateUtil.java」を選択します。「次」をクリックします。</li>
+        <li>クラス名として「<strong>HibernateUtil</strong>」を入力し、パッケージ名として「<strong>sakila.util</strong>」を入力します。「終了」をクリックします。</li>
+
+    </ol>
+    <img alt="Hibernate Utilの作成ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/maven-hibutil-wizard.png" title="Hibernate Utilウィザード">
+    <p>「終了」をクリックすると、<tt>HibernateUtil.java</tt>がエディタに表示されます。このファイルは、編集する必要がないため閉じてかまいません。</p>
+    
+    
+</div>
+
+
+
+<a name="05"></a>
+<h2>Hibernateのマッピング・ファイルおよびJavaクラスの生成</h2>
+
+<p>このチュートリアルでは、POJO (Plain Old Java Object)である<tt>Actor.java</tt>を使用してデータベース内のACTOR表のデータを表示します。このクラスは、表内の列のフィールドを指定し、データを取得および書込みするための単純な取得メソッドおよび設定メソッドを使用します。<tt>Actor.java</tt>をACTOR表にマップするには、Hibernateのマッピング・ファイルを使用するか、クラスの注釈を使用します。</p>
+
+<p>リバース・エンジニアリング・ウィザード、およびデータベースからのHibernateのマッピング・ファイルとPOJOウィザードを使用して、選択するデータベース表に基づいて複数のPOJOとマッピング・ファイルを作成できます。かわりに、IDEのウィザードを使用して個別のPOJOとマッピング・ファイルを最初から作成することもできます。
+</p>
+
+<p class="notes"><strong>注意:</strong>複数の表に対するファイルを作成する場合は、このウィザードを使用すると便利です。このチュートリアルでは、POJOを1つとマッピング・ファイルを1つのみ作成する必要があるため、ファイルを個々に作成する方法が簡単です。<a href="#10">POJOとマッピング・ファイルを個別に作成する</a>手順については、このチュートリアルの最後に紹介します。</p>
+
+<div class="indent">
+    <a name="05a"></a>
+    <h3>リバース・エンジニアリング・ファイルの作成</h3>
+    <p>データベースからのPOJOおよびマッピング・ファイル・ウィザードを使用するには、まず、<tt>hibernate.cfg.xml</tt>を作成した<tt>src/main/resources</tt>ディレクトリに<tt>reveng.xml</tt>リバース・エンジニアリング・ファイルを作成する必要があります。
+    </p>
+
+    <ol>
+        <li>「ソース・パッケージ」ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+        <li>「カテゴリ」の一覧から「Hibernate」を選択し、「ファイル・タイプ」の一覧から「Hibernateリバース・エンジニアリング・ウィザード」を選択します。「次」をクリックします。</li>
+        <li>ファイル名に「<strong>hibernate.reveng</strong>」と入力します。</li>
+        <li>場所として<strong><tt>src/main/resources</tt></strong>を指定します。「次」をクリックします。</li>
+        <li>「使用可能な表」ペインで<strong>actor</strong>を選択し、「追加」をクリックします。「終了」をクリックします。</li>
+    </ol>
+    <p>このウィザードにより<tt>hibernate.reveng.xml</tt>リバース・エンジニアリング・ファイルが生成されます。リバース・エンジニアリング・ファイルは、編集する必要がないため閉じてかまいません。</p>
+
+    <p class="notes"><strong>注意:</strong>このプロジェクトには、MySQLコネクタjarライブラリ(たとえば、<tt>mysql-connector-jar-5.1.13.jar</tt>)が必要です。「依存性」ノードの下にプロジェクトの依存性として適切なJARが一覧表示されていない場合は、「依存性」ノードを右クリックし、「依存性の追加」を選択することによって依存性を追加できます。</p>
+
+    <h3>データベースからのHibernateのマッピング・ファイルとPOJOの作成</h3>
+    <p>データベースからのHibernateのマッピング・ファイルとPOJOウィザードでデータベース内の表に基づいてファイルを生成します。ウィザードを使用すると、IDEにより、<tt>hibernate.reveng.xml</tt>で指定されたデータベース表に基づいてPOJOとマッピング・ファイルが生成され、マッピング・エントリが<tt>hibernate.cfg.xml</tt>に追加されます。ウィザードを使用する場合、たとえばPOJOのみにするなど、IDEで生成するファイルを選択でき、また、たとえばEJB 3注釈を使用するコードの生成するなど、コード生成オプションを選択できます。</p>
+
+    <ol>
+        <li>「プロジェクト」ウィンドウで「ソース・パッケージ」ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+        <li>「データベースからのHibernateのマッピング・ファイルとPOJO」を「Hibernate」カテゴリから選択します。「次」をクリックします。</li>
+        <li>選択されていない場合、<tt>hibernate.cfg.xml</tt>を「Hibernate構成ファイル」ドロップダウン・リストから選択します。</li>
+        <li>選択されていない場合、<tt>hibernate.reveng.xml</tt>を「Hibernateリバース・エンジニアリング・ファイル」ドロップダウン・リストから選択します。</li>
+        <li>「<strong>ドメイン・コード</strong>」および「<strong>Hibernate XMLのマッピング</strong>」オプションが選択されていることを確認します。</li>
+        <li>パッケージ名に「<strong>sakila.entity</strong>」と入力します。「終了」をクリックします。</li>
+    </ol>
+    <img alt="「Hibernateのマッピング・ファイルとPOJOの生成」ウィザード" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/mapping-pojos-wizard.png" title="「Hibernateのマッピング・ファイルとPOJOの生成」ウィザード">
+    <p>
+        「終了」をクリックすると、IDEでPOJOの<tt>Actor.java</tt>がすべての必須フィールドともに<tt>src/main/java/sakila/entity</tt>ディレクトリに生成されます。また、Hibernateマッピング・ファイルも<tt>src/main/resources/sakila/entity</tt>ディレクトリに作成され、マッピング・エントリが<tt>hibernate.cfg.xml</tt>に追加されます。
+        </p>
+
+</div>
+
+
+<p>
+これで、POJOと必要なHibernate関連ファイルが準備できたので、アプリケーションの単純なJava GUIフロント・エンドを作成できます。また、データベースを問い合せてデータを取得するHQL問合せを作成し、追加できます。また、このプロセスで、HQLエディタを使用して問合せをビルドおよびテストします。</p>
+
+<a name="06"></a>
+<h2>アプリケーションGUIの作成</h2>
+<p>この課題では、データを入力および表示するためのフィールドを含む、単純なJFrameフォームを作成します。また、データを取得するためのデータベース問合せをトリガーするボタンを追加します。</p>
+<p class="tips">GUIビルダーを使用したフォームの作成に慣れていない場合は、<a href="gui-functionality.html">GUIビルドの概要</a>のチュートリアルを見直すことをお薦めします。
+</p>
+
+<a name="06a"></a>
+<div class="indent">
+    <h3>JFrameフォームの作成</h3>
+    <ol>
+        <li>「プロジェクト」ウィンドウでプロジェクト・ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+        <li>JFrameフォームを「Swing GUIフォーム」カテゴリから選択します。「次」をクリックします。</li>
+        <li>クラス名に「<strong>DVDStoreAdmin</strong>」と入力し、パッケージ名に「<strong>sakila.ui</strong>」と入力します。「終了」をクリックします。</li>
+    </ol>
+    <p>「終了」をクリックすると、IDEでクラスが作成され、JFrameフォームがエディタの「デザイン」ビューに開きます。</p>
+
+<a name="06b"></a>
+    <h3>要素のフォームへの追加</h3>
+    <p>次に、UI要素をフォームに追加する必要があります。エディタの「デザイン」ビューにフォームが表示されると、IDEの右側に「パレット」が表示されます。要素をフォームに追加するには、要素をパレットからフォーム領域にドラッグします。要素をフォームに追加した後、その要素の「変数名」プロパティのデフォルト値を変更する必要があります。</p>
+
+    <ol>
+        <li>「ラベル」要素をパレットからドラッグし、テキストを「<strong>俳優のプロ・フィール</strong>」に変更します。 </li>
+        <li>「ラベル」要素をパレットからドラッグし、「<strong>名</strong>」のテキストを変更します。</li>
+        <li>「テキスト・フィールド」要素を「名」ラベルの隣にドラッグし、デフォルトのテキストを削除します。
+            <p>デフォルトのテキストを削除すると、テキスト・フィールドが縮小されます。テキスト・フィールドは、フォーム要素の位置を調整するために、後でサイズ変更できます。</p></li>
+        <li>「ラベル」要素をパレットからドラッグし、「<strong>姓</strong>」のテキストを変更します。</li>
+        <li>「テキスト・フィールド」要素を「姓」ラベルの隣にドラッグし、デフォルトのテキストを削除します。</li>
+        <li>「ボタン」要素をパレットからドラッグし、テキストを「<strong>問合せ</strong>」に変更します。</li>
+        <li>「表」要素をパレットからフォームにドラッグします。</li>
+        <li>次のUI要素の「変数名」の値を、次の表の値に従って変更します。
+        <p>要素の「変数名」の値は、その要素を「デザイン」ビューの中で右クリックし、「変数名を変更」を選択することで変更できます。または、「変数名」を「インスペクタ」ウィンドウで直接変更することもできます。</p>
+        <p class="notes">「変数名」値を「ラベル」要素に割り当てる必要はありません。</p>
+
+        <table>
+            <tr>
+                <th class="tblheader" scope="col">要素</th><th class="tblheader" scope="col">変数名</th>
+            </tr>
+            <tr>
+                <td class="tbltd1">「名」テキスト・フィールド</td><td class="tbltd1"><tt>firstNameTextField</tt></td>
+            </tr>
+            <tr>
+                <td class="tbltd1">「姓」テキスト・フィールド</td><td class="tbltd1"><tt>lastNameTextField</tt></td>
+            </tr>
+            <tr>
+                <td class="tbltd1">「問合せ」ボタン</td><td class="tbltd1"><tt>queryButton</tt></td>
+            </tr>
+            <tr>
+                <td class="tbltd1">表</td><td class="tbltd1"><tt>resultTable</tt></td>
+            </tr>
+
+        </table>
+        </li>
+        <li>テキスト・フィールドのサイズを変更し、フォーム要素の位置揃えを行います。
+        <p>テキスト・フィールドの「水平方向にサイズ変更可能」プロパティを有効にして、要素間のスペースを維持したまま、テキスト・フィールドをウィンドウにあわせてサイズ変更することができます。</p></li>
+        <li>変更を保存します。</li>
+    </ol>
+    <p>デザイン・ビューのフォームは、次のイメージのような外観になります。</p>
+    <img alt="エディタの「デザイン」ビューのGUIフォーム" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/hib-jframe-form.png" title="エディタの「デザイン」ビューのGUIフォーム">
+    <p>これで、フォーム要素にイベントを割り当てるためのコードを作成するフォームが準備できました。次の課題では、Hibernate問合せ言語に基づいて、データを取得する問合せを構築します。問合せの構築後、「問合せ」ボタンを押したときに適切な問合せを呼び出すメソッドをフォームに追加します。</p> 
+</div>
+
+<a name="07"></a>
+<h2>HQL問合せエディタでの問合せの作成</h2>
+<p>IDEで、HQL問合せエディタを使用してHibernate問合せ言語(HQL)に基づく問合せを構築およびテストできます。問合せを入力すると、それに相当する(変換された) SQL問合せがエディタに表示されます。ツールバーの「HQL問合せの実行」ボタンをクリックすると、IDEが問合せを実行し、エディタ下部に結果が表示されます。
+</p>
+<p>この課題では、HQLエディタを使用して、姓または名の一致に基づいて俳優の詳細リストを取得する、単純なHQL問合せを構築します。問合せをクラスに追加する前に、HQL問合せエディタを使用して、接続が正しく動作し、問合せで目的の結果が生成されることをテストします。この問合せを実行するには、まずアプリケーションをコンパイルする必要があります。</p>
+
+<ol>
+    <li>プロジェクト・ノードを右クリックし、「ビルド」を選択します。
+        <p>「ビルド」をクリックすると、IDEによって、必要なアーティファクトがローカルMavenリポジトリにダウンロードされます。</p></li>
+    <li>「プロジェクト」ウィンドウの「その他のソース」ノードの下にある、<tt>&lt;デフォルト・パッケージ></tt>ソース・パッケージ・ノードを展開します。</li>
+    <li>「<tt>hibernate.cfg.xml</tt>」を右クリックし、「HQL問合せの実行」を選択してHQL問合せエディタを開きます。</li>
+    <li>HQL問合せエディタに「<tt>from Actor</tt>」と入力して、接続をテストします。ツールバーの「HQL問合せの実行」ボタン(<img alt="「HQL問合せの実行」ボタン" src="../../../images_www/articles/72/java/hibernate-j2se/run_hql_query_16.png" title="「HQL問合せの実行」ボタン" />)をクリックします。
+        <p>「HQL問合せの実行」をクリックすると、問合せ結果がHQL問合せエディタの下のペインに表示されるはずです。</p>
+        <img alt="HQL問合せ結果が表示されたHQL問合せエディタ" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/hib-query-hqlresults.png" title="HQL問合せ結果が表示されたHQL問合せエディタ">
+    </li>
+    <li>検索文字列が「PE」の場合、次の問合せをHQL問合せエディタに入力して「HQL問合せの実行」をクリックし、問合せ結果を確認します。
+    <pre class="examplecode">from Actor a where a.firstName like 'PE%'</pre>
+    <p>問合せによって名前が「PE」で始まる俳優の詳細リストが返されます。</p>
+    <p>結果の上にある「SQL」ボタンをクリックすると、次のようなSQL問合せが表示されるはずです。</p>
+    <pre class="examplecode">select actor0_.actor_id as col_0_0_ from sakila.actor actor0_ where (actor0_.first_name like 'PE%' )</pre>
+    </li>
+    <li>新しいHQL問合せエディタのタブを開き、次の問合せをエディタ・ペインに入力します。「HQL問合せの実行」をクリックします。
+    <pre class="examplecode">from Actor a where a.lastName like 'MO%'</pre>
+    <p>問合せによって姓が「MO」で始まる俳優の詳細リストが返されます。
+    </p>
+    </li>
+</ol>
+<p>問合せをテストすると、その問合せが目的の結果を返すことがわかります。次の手順では、フォームで「問合せ」ボタンをクリックすると適切な問合せが呼び出されるように、問合せをアプリケーションに実装します。</p>
+
+<a name="08"></a>
+<h2>問合せのフォームへの追加</h2>
+<p><tt>DVDStoreAdmin.java</tt>を変更して、問合せ文字列を追加し、入力変数を組み込む問合せを構築して呼び出すメソッドを作成する必要があります。また、ボタン・イベント・ハンドラを変更して、正しい問合せを呼び出し、問合せ結果を表に表示するメソッドを追加する必要があります。</p>
+
+<ol>
+    <li><tt>DVDStoreAdmin.java</tt>を開き、「ソース」タブをクリックします。</li>
+    <li>このクラスに、次の問合せ文字列(太字部分)を追加します。 
+    <pre class="examplecode">public DVDStoreAdmin() {
+    initComponents();
+}
+
+<strong>private static String QUERY_BASED_ON_FIRST_NAME="from Actor a where a.firstName like '";
+private static String QUERY_BASED_ON_LAST_NAME="from Actor a where a.lastName like '";</strong></pre>
+    <p class="tips">問合せをHQL問合せエディタのタブからファイルにコピーし、コードを変更できます。</p>
+    </li>
+    <li>次のメソッドを追加し、ユーザー入力文字列に基づく問合せを作成します。
+<pre class="examplecode">private void runQueryBasedOnFirstName() {
+    executeHQLQuery(QUERY_BASED_ON_FIRST_NAME + firstNameTextField.getText() + "%'");
+}
+    
+private void runQueryBasedOnLastName() {
+    executeHQLQuery(QUERY_BASED_ON_LAST_NAME + lastNameTextField.getText() + "%'");
+}</pre>
+    <p>このメソッドは、<tt>executeHQLQuery()</tt>というメソッドをコールし、問合せ文字列をユーザーが入力した検索文字列と組み合せて問合せを作成します。</p>
+    </li>
+    <li><tt>executeHQLQuery()</tt>メソッドを追加します。 
+
+<pre class="examplecode">private void executeHQLQuery(String hql) {
+    try {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+        Query q = session.createQuery(hql);
+        List resultList = q.list();
+        displayResult(resultList);
+        session.getTransaction().commit();
+    } catch (HibernateException he) {
+        he.printStackTrace();
+    }
+}</pre>
+    <p><tt>executeHQLQuery()</tt>メソッドは、Hibernateをコールして、選択した問合せを実行します。このメソッドは、<tt>HibernateUtil.java</tt>ユーティリティ・クラスを使用してHibernateセッションを取得します。</p>
+    </li>
+    <li>Hibernateライブラリ(<tt>org.hibernate.Query</tt>、<tt>org.hibernate.Session</tt>)と<tt>java.util.List</tt>に対するインポート文を追加するように、インポートを修正します。</li>
+    <li>デザイン・ビューに切り替えて「問合せ」ボタンをダブルクリックすることで、「問合せ」ボタン・イベント・ハンドラを作成します。
+    <p>IDEで<tt>queryButtonActionPerformed</tt>メソッドが作成され、このメソッドがソース・ビューに表示されます。</p></li>
+    <li>ユーザーがボタンをクリックすると問合せが実行されるように、ソース・ビューの<tt>queryButtonActionPerformed</tt>メソッドに次のコードを追加して変更します。
+
+<pre class="examplecode">private void queryButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    <strong>if(!firstNameTextField.getText().trim().equals("")) {
+        runQueryBasedOnFirstName();
+    } else if(!lastNameTextField.getText().trim().equals("")) {
+        runQueryBasedOnLastName();
+    }</strong>
+}</pre>
+    </li>
+    <li>次のメソッドを追加し、結果がJTableに表示されるようにします。
+    <pre class="examplecode">private void displayResult(List resultList) {
+    Vector&lt;String&gt; tableHeaders = new Vector&lt;String&gt;();
+    Vector tableData = new Vector();
+    tableHeaders.add("ActorId"); 
+    tableHeaders.add("FirstName");
+    tableHeaders.add("LastName");
+    tableHeaders.add("LastUpdated");
+
+    for(Object o : resultList) {
+        Actor actor = (Actor)o;
+        Vector&lt;Object&gt; oneRow = new Vector&lt;Object&gt;();
+        oneRow.add(actor.getActorId());
+        oneRow.add(actor.getFirstName());
+        oneRow.add(actor.getLastName());
+        oneRow.add(actor.getLastUpdate());
+        tableData.add(oneRow);
+    }
+    resultTable.setModel(new DefaultTableModel(tableData, tableHeaders));
+}</pre>
+    </li>
+    <li><tt>java.util.Vector</tt>を追加するようにインポートを修正し([Ctrl]-[Shift]-[I])、変更内容を保存します。</li>
+</ol>
+
+<p>フォームの保存後、プロジェクトを実行できます。</p>
+
+
+
+
+<!-- Running a Maven Project -->
+<a name="09"></a>
+<h2>Mavenプロジェクトの実行</h2>
+<p>
+    これでコーディングが終了したので、プロジェクトをビルドしてアプリケーションを起動できます。IDEでMavenプロジェクトをビルドすると、MavenはプロジェクトのPOMを読み取ってプロジェクトの依存性を特定します。依存性として指定されたすべてのアーティファクトは、プロジェクトをビルドするために、ローカルMavenリポジトリ内にある必要があります。必須のアーティファクトがローカル・リポジトリにない場合、Mavenは、プロジェクトをビルドおよび実行する前に、アーティファクトをリモート・リポジトリからチェックアウトします。プロジェクトのビルド後、Mavenは結果のバイナリをアーティファクトとしてローカル・リポジトリにインストールします。
+</p>
+
+<p class="notes"><strong>注意:</strong></p>
+<div class="indent">
+    <ul>
+        <li>プロジェクトを初めてビルドおよび実行する際に、IDEで任意のプロジェクトの依存性をチェックアウトする必要がある場合は、時間がかかることがあります。それ以降のビルドは、より高速に処理されます。</li>
+        <li>このアプリケーションを実行するには、メイン・クラスを指定する必要があります。</li>
+    </ul>
+</div>
+
+<p>このアプリケーションをコンパイルして起動するには、次のタスクを実行します。</p>
+
+<ol>
+    <li>「プロジェクト」ウィンドウでプロジェクトのノードを右クリックし、「プロパティ」を選択します。</li>
+    <li>「プロジェクト・プロパティ」ダイアログ・ボックスで「実行」カテゴリを選択します。</li>
+    <li>「メイン・クラス」に「<strong>sakila.ui.DVDStoreAdmin</strong>」と入力します。「OK」をクリックします。
+    <p>または、「参照」ボタンをクリックし、ダイアログ・ボックスでメイン・クラスを選択できます。</p>
+    <img alt="「メイン・クラスの参照」ダイアログでのメイン・クラスの設定" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/browse-main-class.png" title="「メイン・クラスの参照」ダイアログでのメイン・クラスの設定">
+    </li>
+    <li>メイン・ツールバーの「プロジェクトの実行」をクリックし、アプリケーションを起動します。</li>
+</ol>
+
+<p>IDEのMavenプロジェクトで「実行」アクションを呼び出すと、IDEは「実行」アクションに関連付けられたMavenゴールを実行します。IDEには、プロジェクトのパッケージに応じてIDEのアクションにバインドされたデフォルトのゴールがあります。プロジェクトの「プロパティ」ウィンドウの「アクション」ペインで、「実行」アクションにバインドされたゴールを表示できます。</p>
+
+
+<img alt="DVDStoreAdminプロジェクトの「プロパティ」ウィンドウの「アクション」ペイン" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/maven-projectproperties.png" title="DVDStoreAdminプロジェクトの「プロパティ」ウィンドウの「アクション」ペイン">
+
+
+<p class="tips">アクションに対するゴールのバインディングは、プロジェクトの「プロパティ」ウィンドウにある「アクション」ペインでカスタマイズできます。</p>
+
+<p>アプリケーションを起動すると、GUIフォームが表示されます。検索文字列を「名」または「姓」テキスト・フィールドに入力し、「問合せ」をクリックして俳優を検索し、詳細を確認します。 </p>
+<img alt="結果が表示されたDVDStoreAdminアプリケーション" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/application-run.png" title="結果が表示されたDVDStoreAdminアプリケーション">
+<p>IDEの「出力」ウィンドウを見ると、表示された結果を取得したSQL問合せを確認できます。</p>
+
+<div class="indent">
+    <a name="09a"></a>
+    <h3>ソリューション・プロジェクトのダウンロード</h3>
+    <p>次の方法で、このチュートリアルにソリューションをプロジェクトとしてダウンロードできます。</p>
+    <ul>
+        <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/DVDStoreAdmin-Maven.zip">終了したプロジェクトのZIPアーカイブ</a>をダウンロードします。</li>
+        <li>次の手順を実行して、プロジェクト・ソースをNetBeansのサンプルからチェックアウトします。
+            <ol>
+                <li>メイン・メニューから「チーム」>「Subversion」>「チェックアウト」を選択します。</li>
+                <li>「チェックアウト」ダイアログ・ボックスで次のリポジトリURLを入力します。<br /><tt>https://svn.netbeans.org/svn/samples~samples-source-code</tt><br />「次」をクリックします。</li>
+                <li>「参照」をクリックして「リポジトリ・フォルダを参照」ダイアログ・ボックスを開きます。</li>
+                <li>ルート・ノードを展開し、<strong>samples/java/DVDStoreAdmin-Maven</strong>を選択します。「OK」をクリックします。</li>
+                <li>ソースのローカル・フォルダを指定します(ローカル・フォルダは空である必要があります)。</li>
+                <li>「終了」をクリックします。
+                    <p>「終了」をクリックすると、IDEではローカル・フォルダがSubversionリポジトリとして初期化され、プロジェクト・ソースがチェックアウトされます。</p>
+                </li>
+                <li>チェックアウトが完了するときに表示されるダイアログで、「プロジェクトを開く」をクリックします。</li>
+            </ol>
+            <p class="notes"><strong>注意:</strong></p>
+            <ul>
+                <li>Kenaiからソースをチェックアウトする手順は、NetBeans IDE 6.7および6.8にのみ適用されます。</li>
+                <li>Kenaiからソースをチェックアウトするには、Subversionクライアントが必要です。Subversionのインストールの詳細は、<a href="../ide/subversion.html">NetBeans IDEでのSubversionガイド</a>の<a href="../ide/subversion.html#settingUp">Subversionの設定</a>の項を参照してください。</li>
+            </ul>
+        </li>
+    </ul>
+ </div>
+
+
+<a name="10"></a>
+    <h2>個別のPOJOおよびマッピング・ファイルの作成</h2>
+    <p>POJOは単純なJavaクラスのため、新規Javaクラス・ウィザードを使用してクラスを作成し、そのクラスをソース・エディタで編集して、必要なフィールド、取得メソッドおよび設定メソッドを追加できます。POJOの作成後、ウィザードを使用してHibernateマッピング・ファイルを作成し、そのクラスを表にマップしてマッピング情報を<tt>hibernate.cfg.xml</tt>に追加します。マッピング・ファイルを最初から作成する場合、XMLエディタでフィールドを列にマップする必要があります。</p>
+
+<p class="notes"><strong>注意:</strong>この課題はオプションで、「データベースからのHibernateのマッピング・ファイルとPOJO」ウィザードを使用して作成したPOJOおよびマッピング・ファイルの作成方法を説明します。</p>
+    <ol>
+        <li>「プロジェクト」ウィンドウの「ソース・パッケージ」ノードを右クリックし、「新規」>「Javaクラス」を選択して新規Javaクラス・ウィザードを開きます。</li>
+        <li>このウィザードで、クラス名に「<b>Actor</b>」と入力し、パッケージに「<b>sakila.entity</b>」と入力します。「終了」をクリックします。</li>
+        <li>次の太字で表示されている変更をクラスに加え、シリアライズ可能なインタフェースを実装して、表の列のフィールドを追加します。
+        <pre class="examplecode">public class Actor <b>implements Serializable</b> {
+    <b>private Short actorId;
+    private String firstName;
+    private String lastName;
+    private Date lastUpdate;</b>
+}</pre>
+        </li>
+        <li>フィールドに対する取得メソッドと設定メソッドは、挿入カーソルをソース・エディタに置き、[Alt]-[Insert]を押して「取得メソッドおよび設定メソッド」を選択することで生成します。</li>
+        <li>「取得メソッドおよび設定メソッドの生成」ダイアログ・ボックスですべてのフィールドを選択し、「生成」をクリックします。<br /><img alt="「取得メソッドおよび設定メソッドの生成」ダイアログ・ボックス" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/getters-setters.png" title="「取得メソッドおよび設定メソッドの生成」ダイアログ・ボックス">
+
+        <p class="tips">「取得メソッドおよび設定メソッドの生成」ダイアログ・ボックスでは、キーボードの[↑]を使用して、選択した項目を「Actor」ノードまで移動してから、[Space]バーを押してActor内のすべてのフィールドを選択できます。</p></li>
+        <li>インポートを修正して変更内容を保存します。</li>
+    </ol>
+
+    <p>表のためのPOJOの作成後、<tt>Actor.java</tt>のHibernateマッピング・ファイルを作成します。</p>
+    <ol>
+        <li>「プロジェクト」ウィンドウで「<tt>sakila.entity</tt>」ノードを右クリックし、「新規」>「その他」を選択して新規ファイル・ウィザードを開きます。</li>
+        <li>「Hibernate」カテゴリの「Hibernateマッピング・ウィザード」を選択します。「次」をクリックします。</li>
+        <li>「ファイル名」に「<strong>Actor.hbm</strong>」と入力し、「フォルダ」を<b>src/main/resources/sakila/entity</b>に設定します。「次」をクリックします。</li>
+        <li>「マップするクラス」に「<b>sakila.entity.Actor</b>」と入力します。</li>
+        <li>選択されていない場合、<b>actor</b>を「データベース表」ドロップダウン・リストから選択します。「終了」をクリックします。<br /><img alt="「Hibernateのマッピング・ファイルの生成」ウィザード" class="margin-around b-all" src="../../../images_www/articles/72/java/hibernate-j2se/mapping-wizard.png" title="「Hibernateのマッピング・ファイルの生成」ウィザード">
+        <p>「終了」をクリックすると、<tt>Actor.hbm.xml</tt> Hibernateのマッピング・ファイルがソース・エディタで開きます。また、IDEでマッピング・リソースに対するエントリが<tt>hibernate.cfg.xml</tt>に自動的に追加されます。このエントリの詳細は、<tt>hibernate.cfg.xml</tt>のデザイン・ビューで「マッピング」ノードを展開するか、またはXMLビューで表示できます。XMLビューの<tt>mapping</tt>エントリは、次のようになります。
+        </p>
+        <pre class="examplecode">
+        &lt;mapping resource="sakila/entity/Actor.hbm.xml"/&gt;
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+        </li>
+        <li>次の太字部分の変更を<tt>Actor.hbm.xml</tt>に加えて、<tt>Actor.java</tt>のフィールドをACTOR表の列にマップします。
+
+<pre class="examplecode">&lt;hibernate-mapping>
+  &lt;class name="sakila.entity.Actor" <strong>table="actor"&gt;
+    &lt;id name="actorId" type="java.lang.Short"&gt;
+      &lt;column name="actor_id"/&gt;
+      &lt;generator class="identity"/&gt;
+    &lt;/id&gt;
+    &lt;property name="firstName" type="string"&gt;
+      &lt;column length="45" name="first_name" not-null="true"/&gt;
+    &lt;/property&gt;
+    &lt;property name="lastName" type="string"&gt;
+      &lt;column length="45" name="last_name" not-null="true"/&gt;
+    &lt;/property&gt;
+    &lt;property name="lastUpdate" type="timestamp"&gt;
+      &lt;column length="19" name="last_update" not-null="true"/&gt;
+    &lt;/property&gt;
+  &lt;/class&gt;</strong>
+&lt;/hibernate-mapping&gt;</pre>
+
+        <p class="tips">エディタでコード補完を使用すると、マッピング・ファイルの変更時に値を補完できます。</p>
+        <p class="notes"><b>注意:</b> デフォルトでは、生成される<tt>class</tt>要素には終了タグがあります。開始と終了の<tt>class</tt>要素タグの間にプロパティ要素を追加する必要があるため、次の変更(太字で表示)を加えます。変更後、<tt>class</tt>タグの間でコード補完を使用できます。</p>
+        <pre class="examplecode">&lt;hibernate-mapping&gt;
+  &lt;class name="sakila.entity.Actor" <strong>table="actor"&gt;
+  &lt;/class&gt;</strong>
+&lt;/hibernate-mapping&gt;</pre>
+
+        </li>
+        <li>ツールバーの「XMLの検証」ボタンをクリックし、変更内容を保存します。</li>
+    </ol>
+
+  <p>POJOとHibernateのマッピング・ファイルを個別に作成すると、アプリケーションをさらにカスタマイズするときに役立つ場合があります。</p>
+
+
+<div class="feedback-box"><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Creating%20a%20Maven%20Project">このチュートリアルに関するご意見をお寄せください</a></div>
+<br style="clear:both;" />
+
+<h2>関連項目</h2>
+<p>Swing GUIアプリケーションの作成に関する追加情報は、次のチュートリアルを参照してください。</p>
+    <ul>
+        <li><a href="quickstart-gui.html">NetBeans IDEでのSwing GUIのデザイン</a></li>
+        <li><a href="gui-functionality.html">GUIビルドの概要</a></li>
+        <li><a href="../../trails/matisse.html">Java GUIアプリケーションの学習</a></li>
+    </ul>
+
+   
+</body>
+</html>

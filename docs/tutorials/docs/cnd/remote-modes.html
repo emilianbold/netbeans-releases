@@ -1,0 +1,398 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>C/C++ Remote Development Modes</title>
+    <meta name="DESCRIPTION" content="A short guide to using C/C++ remote development in NetBeans IDE
+          and Oracle Solaris Studio IDE.">
+    <meta name="keywords" content="NetBeans, IDE, Oracle Solaris Studio, integrated development environment,
+          tutorial, guide, user, documentation, open source, remote development, C, C++">
+   
+<link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+<link rel="stylesheet" type="text/css" href="../../../print.css" media="print">
+<link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen">
+<script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+</head>
+<body>
+
+
+<img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp"
+alt="Content on this page applies to NetBeans IDE 7.3 and 7.4 and 8.0" 
+title="Content on this page applies to the NetBeans IDE 7.3 and 7.4 and 8.0">
+
+<h1>Modes of C/C++ Remote Development in the IDE</h1>
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+    March 2014 [Revision number: V8.0-1]</div>
+<p>This article describes the remote development features available in the NetBeans IDE when you have the C/C++ module installed, and how to choose the best way to use them in your development environment.</p>
+<p><b>Contents</b></p>
+<ul class="toc">
+<li><p><a href="#glxfe">What Remote Development Is</a></p>
+
+</li>
+<li><p><a href="#glxir">When to Use Remote Development</a></p>
+
+</li>
+<li><p><a href="#glxiu">How Remote Development Works</a></p>
+
+</li>
+<li><p><a href="#glxie">Benefits of Remote Development</a></p>
+
+</li>
+<li><p><a href="#glxhr">Remote Development Modes</a></p>
+
+</li>
+<li><p><a href="#glxhu">Deciding Which Remote Development Mode to Use</a></p>
+
+</li>
+<li><p><a href="#glxjy">Selecting Your Remote Development Mode</a></p>
+
+</li>
+<li><p><a href="#gmvfz">Full Remote Development Using the Tool Bar</a></p>
+
+</li>
+<li><p><a href="#glyqe">Caches and Security</a></p>
+
+</li>
+<li><p><a href="#gmbed">For More Information</a></p>
+
+</li></ul>
+
+
+<a name="glxfe"></a>
+
+<h2>What Remote Development Is</h2>
+<p>Remote development is a feature of the NetBeans IDE that allows you to
+run the IDE on a computer running Microsoft Windows, Mac OS X,
+Oracle Solaris, or Linux; and build, run, and debug your program on another
+computer running Oracle Solaris or Linux.</p>
+
+
+
+<a name="glxir"></a>
+
+<h2>When to Use Remote Development</h2>
+<p>You might want to use remote development if some of the following
+circumstances are true for you:</p>
+
+
+<ul>
+    <li><p>Your desktop system is not running Oracle Solaris or Linux.</p>
+
+</li>
+<li><p>You are running the IDE on a shared Solaris system that sometimes experiences high loads.</p>
+
+</li>
+<li><p>Your access to systems running Oracle Solaris or Linux is limited to Secure Shell (SSH) for security reasons.</p>
+
+</li>
+<li><p>Running graphical user interface tools in the Solaris environment is difficult.</p>
+
+</li>
+<li><p>The software you are developing must compile and run on multiple platforms including Solaris or Linux.</p>
+
+</li></ul>
+
+
+<a name="glxiu"></a>
+
+<h2>How Remote Development Works</h2>
+<p>The IDE provides features for managing remote hosts. You can configure a remote
+host to use for building, running, and debugging your C, C++, and Fortran
+projects. The remote host must meet the following conditions:</p>
+
+
+<ul><li><p>The remote host operating system must be Oracle Solaris or Linux.</p>
+
+</li>
+<li><p>The remote host must run the SSH daemon, <code>sshd</code>.</p>
+
+</li>
+<li><p>At least one tool collection (GNU, Oracle Solaris Studio, or Sun Studio) must be accessible on the remote host.</p>
+
+</li>
+<li><p>You must have a user account on the host.</p>
+
+</li></ul>
+<p>You can manage your remote hosts in the Services window of the
+IDE.</p>
+
+<img src="../../../images_www/articles/73/cnd/remote-modes/services_window.png" alt="Services window" width="353" height="336">
+<p>Once you have configured the remote host and connected to it, you
+can build, run, and debug projects just as you do on your local
+system. Remote IDE commands are executed over SSH. </p>
+
+<p>When you use a remote development host, the local and remote hosts
+both need to access the project files. This access can be accomplished through file
+sharing or securely copying the files. Before the IDE can use file
+sharing between the local and remote systems, the shared filesystem or folder must be
+set up and accessible to both systems. Remote files are accessed through SFTP
+or another file sharing mechanism available in the operating system the host is
+running (for example, Network File System (NFS), Samba, or WebDAV).</p>
+
+<p>If file sharing is not possible, you can use Automatic Copying to
+copy the files to the server using SSH.</p>
+
+
+
+<a name="glxie"></a>
+
+<h2>Benefits of Remote Development</h2>
+<p>Remote development provides the following benefits:</p>
+
+
+<ul><li><p>You can use the same development environment for all of your projects.</p>
+
+</li>
+<li><p>The resources of your desktop system are better utilized.</p>
+
+</li>
+<li><p>Network traffic is optimized.</p>
+
+</li>
+<li><p>Your IDE response time is better.</p>
+
+</li>
+<li><p>You can browse remote file systems from the IDE.</p>
+
+</li>
+<li><p>You can open a terminal window in the IDE for a remote host.</p>
+
+</li>
+<li><p>You can use it in SSH-only secure environments.</p>
+
+</li></ul>
+
+
+<a name="glxhr"></a>
+
+<img src="../../../images_www/articles/73/cnd/remote-modes/modes_diagram.png" 
+     alt="Diagram showing location of source files and how they are accessed in each mode" width="589" height="354">
+<p>In simple mode, the source files reside primarily on your local host. When
+you build your project, the source files are delivered on demand to
+the remote host using SSH File Transfer Protocol (SFTP).</p>
+
+<p>In mixed or shared mode, the source files reside in a location
+that is shared between the local host and remote host using NFS, Samba,
+WebDAV, or another file sharing system.</p>
+
+<p>In full remote mode, the source files reside on the remote host.
+The IDE accesses the files using SFTP.</p>
+
+
+
+<a name="glxhu"></a>
+
+<h2>Deciding Which Remote Development Mode to Use</h2>
+<p>Which development mode is best for your specific situation depends on the development
+environment in which you work. Each of the following sections describes an example
+of a development environment in which one development mode provides the most benefits.</p>
+
+
+
+<a name="glxod"></a><h3>Simple Mode</h3>
+<p>Simple mode might be the best remote mode for your needs if
+the following diagram describes your development environment.</p>
+
+<img src="../../../images_www/articles/73/cnd/remote-modes/simple_mode_diagram.png" alt="Diagram showing a development environment where source files reside locally, and the developer develops locally for multiple remote target platforms" width="637" height="371">
+<p>In this environment, simple mode provides these benefits:</p>
+
+
+<ul><li><p>You can use the same IDE for local and remote development.</p>
+
+</li>
+<li><p>You can switch easily between hosts and platforms in the IDE.</p>
+
+</li>
+<li><p>You can use the IDE in an SSH-only environment.</p>
+
+</li>
+<li><p>Your mobility is improved.</p>
+
+</li></ul>
+
+
+<a name="glxjk"></a><h3>Mixed (Shared) Mode</h3>
+<p>Mixed or shared mode might be a good choice if your development
+environment resembles the one shown in the following diagram.</p>
+
+<img src="../../../images_www/articles/73/cnd/remote-modes/mixed_mode_diagram.png" 
+     alt="Diagram showing an NFS-intensive development environment with source files located on servers on the network" width="627" height="318">
+<p>The benefits of using mixed mode in this environment are:</p>
+
+
+<ul><li><p>You can easily switch between hosts and platforms in the IDE.</p>
+
+</li>
+<li><p>There is no duplication of files (caching) such as would occur in the other two modes.</p>
+
+</li>
+<li><p>The network throughput will be as good as your file sharing mechanism (for example, NFS, Samba, or WebDAV) can provide.</p>
+
+</li></ul>
+
+
+<a name="glxlz"></a><h3>Full Mode</h3>
+<p>Full mode might be the best mode for you if your development
+environment resembles the one shown in the following diagram.</p>
+
+<img src="../../../images_www/articles/73/cnd/remote-modes/full_mode_diagram.png" alt="Diagram showing a development environment on a shared and heavily-loaded server accessed using X-windows and VNC" width="606" height="312"><p>In this environment, the benefits of using full remote mode are:</p>
+
+
+<ul><li><p>Migration from using X-window forwarding or VNC is virtually seamless.</p>
+
+</li>
+<li><p>Your IDE response time improves. </p>
+
+</li>
+<li><p>You are less dependent on the resources of the development host.</p>
+
+</li>
+<li><p>A smaller load on the development host reduces the load on Oracle Solaris.</p>
+
+</li>
+<li><p>You can create new remote projects from remote binary files.</p>
+
+</li></ul>
+
+
+<a name="glxjy"></a>
+
+<h2>Selecting Your Remote Development Mode</h2>
+<p>The remote development mode that you use is determined by the way you
+configure a remote build host, but also by the way you access the
+project in the IDE.</p>
+
+<p>For each mode, you must first configure a remote build host, as described
+in the <a href="./remotedev-tutorial.html">C/C++ Remote Development tutorial</a> and in the IDE help.</p>
+
+<p>You can select simple mode or mixed mode for your remote host
+in the IDE using the Host Properties dialog box to specify how project
+files should be accessed when you use the host.</p>
+
+<p>Open the Services window, expand the C/C++ Build Hosts node, right click a
+remote host, and select Properties.</p>
+
+<img src="../../../images_www/articles/73/cnd/remote-modes/host_properties_dialog.png" alt="Host Properties dialog box" width="506" height="399"><br>
+<h3>Simple mode</h3>
+<p>For simple mode, set Access project files via to Automatic copying.</p>
+
+<p>You can right-click a project, select Set Build Host, and select the remote host that you have configured to access project files via automatic copying. Then you are using simple remote development mode. When you build the project, the project files will be copied automatically to your NetBeans user directory on the remote host.</p>
+
+<h3>Mixed mode</h3>
+<p>For mixed mode, set Access project files via to System level file sharing.</p>
+
+<p>You can right-click a project, select Set Build Host, and select the remote host that you have configured to access project files via system level file sharing. Then you are using mixed remote development mode. When you build the project, the project files stay where they are because they can be accessed from the local host and the remote build host.</p>
+
+<h3>Full remote mode</h3>
+<p>To use full remote mode in the IDE, use the Remote Development
+tool bar described in the following section.</p>
+
+
+
+<a name="gmvfz"></a>
+
+<h2>Full Remote Development Using the Tool Bar</h2>
+<p>In full remote mode, you can use the IDE running on your
+local host to work on projects that are located on a remote host
+by using the remote development tool bar.</p>
+
+<p>The tool bar is shown in the following figure.</p>
+
+<img src="../../../images_www/articles/73/cnd/remote-modes/RemoteToolbar.gif" alt="Remote tool bar picture" width="299" height="37">
+<br><p>If you do not see the tool bar in the IDE, you
+can display it by choosing View > Toolbars > Remote.</p>
+
+<p>You can use the remote tool bar to select a remote host
+you have already configured and work on projects and files on the remote
+host the same as if they were local.</p>
+
+<p>Use the icons as described in the following table.</p>
+
+<table><col width="8%"><col width="91%"><tr><td align="left" valign="top" scope="row"><img src="../../../images_www/articles/73/cnd/remote-modes/connected24.gif" alt="Connected Status icon" width="24" height="24"><br></td>
+<td align="left" valign="top" scope="row"><p>Connection status. Click the
+icon to connect to the server selected in the list next to the
+icon. If you are already connected, you can click this icon to disconnect
+from the server.</p>
+
+<p>The icon indicates connection status by turning green when connected and
+red when not connected.</p>
+
+</td>
+</tr>
+<tr><td align="left" valign="top" scope="row"><img src="../../../images_www/articles/73/cnd/remote-modes/newProject24.gif" alt="Create remote project icon" width="24" height="24"><br></td>
+<td align="left" valign="top" scope="row"><p>Create remote project. Click the icon to create a
+new project on the currently connected host.</p>
+
+<p>By default, the project is created in
+your <code>~/NetBeansProjects</code> directory on the remote host.</p>
+
+</td>
+</tr>
+<tr><td align="left" valign="top" scope="row"><img src="../../../images_www/articles/73/cnd/remote-modes/openProject24.gif" alt="Open remote project icon" width="24" height="24"><br></td>
+<td align="left" valign="top" scope="row"><p>Open remote project. Click the icon to
+open an existing project on the currently connected host.</p>
+
+<p>You can browse to the
+project on the remote file system.</p>
+
+</td>
+</tr>
+<tr><td align="left" valign="top" scope="row"><img src="../../../images_www/articles/73/cnd/remote-modes/openFile24.gif" alt="Open remote file icon" width="24" height="24"><br></td>
+<td align="left" valign="top" scope="row"><p>Open remote file. Click the icon to
+open a file on the currently connected host.</p>
+
+<p>You can browse to the file
+on the remote file system.</p>
+
+</td>
+</tr>
+</table>
+
+<a name="glyqe"></a>
+
+<h2>Caches and Security</h2>
+<p>To provide fast access to remote files, the IDE uses a disk cache on the local system.  
+    The cache is located in <code><em>userdir</em>/var/cache/remote-files</code> where
+<code><em>userdir</em></code> is unique to the user and its location varies 
+by the platform where you are running the IDE. </p>
+<p class='tips"'>See a description of the <code><em>userdir</em></code> and locations for
+    each platform at 
+    <a href="http://wiki.netbeans.org/FaqWhatIsUserdir">http://wiki.netbeans.org/FaqWhatIsUserdir</a>.</p>
+<p>
+When using remote development in simple and shared modes, only system headers will be accessed through the local cache
+so there is no security risk.</p>
+<p>
+In full remote mode, although the files are located on the remote host, the project is parsed on the local computer.
+As the source files are accessed for parsing, they are cached on the local host in  
+<code><em>userdir</em>/var/cache/remote-files</code> and eventually all the source files are in the cache. </p>
+<p>On mobile computers this might be considered a security risk. For increased security, the cache directory can be encrypted or can be deleted
+on a regular basis.</p>
+<p class="notes">Caches that reside at <code> ~/.netbeans/remote</code> on the remote host are created when you use simple
+mode and source files are copied automatically on demand from the local host to the remote host when you build
+the project.  These files are as secure as any others on the server, so are not a security concern.
+</p>
+
+
+<a name="gmbed"></a>
+
+<h2>For More Information</h2>
+<p>See the following locations for more information:</p>
+
+
+<ul><li><p>The Help menu in the IDE provides access to extensive information about using the IDE.</p>
+
+</li>
+<li><p>The <a href="./remotedev-tutorial.html">C/C++ Remote Development tutorial</a> tells how to do simple remote development step-by-step</p></li>
+<li><p>The <a href="https://netbeans.org/kb/trails/cnd.html">C/C++ Learning Trail</a> provides several articles and tutorials for developing in C/C++ in the IDE.</p>
+
+</li></ul>
+
+
+
+
+<br>
+<div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20C/C++%20Remote%20Development%20Modes%20-%20NetBeans%20IDE%20Article">Send Us Your Feedback</a></div>
+  <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20C/C++%20Remote%20Development%20Modes%20-%20NetBeans%20IDE%20Article">Send Feedback on This Article</a></div>
+<br style="clear:both;">
+
+</body>
+</html>

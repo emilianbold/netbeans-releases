@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="KEYWORDS" content="NETBEANS, TUTORIAL, GUIDE, USER, DOCUMENTATION, WEB SERVICE, SOAP, EJB, BINARY ATTACHMENT, JAX-WS">
+        <meta name="description"
+              content="This tutorial shows how to create and
+              consume an EE6 web service that sends binary data via SOAP.">
+<title>二进制 SOAP 附件第 3 部分：对 Web 服务进行编码和测试 - NetBeans IDE 教程</title>
+<link href="../../../netbeans.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="../../../print.css" type="text/css" media="print">
+</head>
+
+<body>
+<h1>端到端二进制 SOAP 附件第 3 部分：对 Web 服务进行编码和测试</h1>
+<p>在本课中，将学习如何向 Web 服务/会话 Bean 类中添加代码，以将 JPEG 文件转换为字节数组以及将字节数组转换为 <tt>java.awt.Image</tt> 对象。您还将向公共 Web 服务操作中添加代码以便操作可返回这些 <tt>Image</tt> 对象。最后，将使用 NetBeans IDE 的 "Test Web Service"（测试 Web 服务）实用程序来在浏览器中对 Web 服务进行测试。</p>
+<p>可以从 <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FWeb%2520Services%252FWeb%2520Service%2520Passing%2520Binary%2520Data%2520--%2520EE6%252FFlowerAlbumService.zip" target="_blank">NetBeans 样例目录</a>中下载 Web 服务的完整样例。</p>
+<p><b>本教程中的课程</b></p>
+<img alt="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="此页上的内容适用于 NetBeans IDE 7.2、7.3、7.4 和 8.0">
+<ol>
+  <li><a href="./flower_overview.html">概述</a></li>
+  <li><a href="flower_ws.html">创建 Web 服务</a></li>
+  <li>=&gt; 对 Web 服务进行编码和测试</li>
+  <li><a href="./flower_wsdl_schema.html">修改方案文件和 WSDL 文件以传递二进制数据</a></li>
+  <li><a href="./flower_swing.html">创建 Swing 客户端</a></li>
+  <!--        <li><a href="./flower_wsit.html">
+            Logging and Optimizing the Web Service</a></li> -->
+</ol>
+<p><b>本课内容</b></p>
+<ol>
+  <li><p><a href="#coding-ws">对 Web 服务进行编码</a></p>
+  <ol>
+  <li><a href="#retrieve-jpeg-as-bytes">以字节数组形式获取 JPEG 文件</a></li>
+  <li><a href="#read-bytes-as-image">读取字节数组作为图像</a></li>
+  <li><a href="#implement-getflower">实现 getFlower</a></li>
+  <li><a href="#create-byte-array-list">为所有 JPEG 文件创建字节数组列表</a></li>
+  <li><a href="#implement-getthumbnails">实现 getThumbnails</a></li>
+  </ol>
+  </li>
+  <li><a href="#test-ws">测试 Web 服务</a></li>
+</ol>
+<h2 id="coding-ws">对 Web 服务进行编码</h2>
+<p>现在得到了包含一组 JPEG 文件和一个 Web 服务的 Web 应用程序。Web 服务被实现为一个无状态会话 Bean。Web 服务包含两个空 Web 操作。在本课中，您将向 Web 服务中添加代码，以将 JPEG 文件转换为字节数组以及将字节数组转换为 <tt>java.awt.Image</tt> 对象。您还将向公共 Web 服务操作中添加代码以便操作可返回这些 <tt>Image</tt> 对象。
+  
+<div class="indent">
+    <h3 id="retrieve-jpeg-as-bytes">以字节数组形式获取 JPEG 文件</h3>
+  <p>在此部分，将向 <tt>FlowerService</tt> 类主体中添加一对私有方法。这些方法采用鲜花的名称，创建到鲜花的 JPEG 文件的路径，并返回 JPEG 文件的二进制表示（字节数组）。在后续部分中，将向公共 Web 服务操作中添加代码以使操作调用这些私有方法。</p>
+  <ol>
+    <li>打开项目的 "Source"（源）视图。需要添加代码，该代码采用图像的名称，基于该名称创建到图像的路径，以及检索图像以作为字节数组。将以下代码键入或粘贴到 <tt>FlowerService</tt> 类主体中：
+      <pre class="examplecode">
+private byte[] getFlowerBytes(String name) throws IOException {
+    URL resource = this.getClass().getResource("/org/flower/resources/"+name+".jpg");
+    return getBytes(resource);
+}</pre>
+    </li>
+    <li>随即出现 IDE 无法找到类 <tt>URL</tt> 的警告。通过手动方式或者按 Ctrl-Shift-I 组合键（在 Mac 上为 ⌘-Shift-I 组合键）为 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/net/URL.html" target="_blank">java.net.URL</a></tt> 添加一条导入语句。</li>
+    <li>随即出现新的警告。警告表明 IDE 无法找到 <tt>getBytes</tt> 方法。左键单击警告图标然后单击提示以创建 <tt>getBytes</tt> 方法。<br> <img alt="创建缺少的方法的提示" border="1" class="margin-around" height="159" src="../../../images_www/articles/73/websvc/flower/create-method-tip.png" width="507"></li>
+    <li>编辑器会将焦点置于刚刚创建的 <tt>getBytes</tt> 方法上。将以下代码添加到方法中。此代码<a href="http://download.oracle.com/javase/6/docs/api/java/net/URL.html#openStream%28%29" target="_blank">打开到 URL 的连接</a>，通过 <tt>getFlowerBytes</tt> 方法传递该 URL 并返回一个 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/io/InputStream.html" target="_blank">InputStream</a></tt>。然后此代码读取输入流（一次 1024 个字节），将字节存储在字节数组缓冲区中，接着再从缓冲区写入 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/io/ByteArrayOutputStream.html" target="_blank">ByteArrayOutputStream</a></tt>。
+      <pre class="examplecode">private byte[] getBytes(URL resource) throws IOException {
+    InputStream in = resource.openStream();
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    byte[] buf = new byte[1024];
+    for(int read; (read = in.read(buf)) != -1;) {
+        bos.write(buf, 0, read);
+    }
+    return bos.toByteArray();
+}</pre>
+    </li>
+    <li>为 <tt>java.io.InputStream</tt> 和 <tt>java.io.ByteArrayOutputStream</tt> 添加导入语句。</li>
+  </ol>
+  <h3 id="read-bytes-as-image">读取字节数组作为图像</h3>
+  <p>在此部分，将向 <tt>FlowerService</tt> 类主体中添加一个私有方法。该方法传入一个代表 JPEG 文件的字节数组，并返回 <tt>java.awt.Image</tt> 对象。请注意，字节数组是由 <tt>getBytes(URL)</tt> 方法所创建的，该方法在<a href="#retrieve-jpeg-as-bytes">以字节数组形式获取 JPEG 文件</a>部分中创建。</p>
+  <ol>
+    <li>在 <tt>FlowerService</tt> 类主体中，添加以下名为 <tt>getImage</tt> 的私有方法。<tt>getImage</tt> 方法的返回类型为 <tt>Image</tt>。该方法采用两个参数。第一个参数是由 <tt>getBytes</tt> 方法创建的字节数组。第二个参数是一个布尔值，用于表示该图像是否为缩略图。<tt>getImage</tt> 方法抛出一个 <tt>IOException</tt>。
+      <pre class="examplecode">private Image getImage(byte[] bytes, boolean isThumbnail) throws IOException {
+    }</pre></li>
+    <li>在 <tt>getImage</tt> 方法主体中，添加一行代码，以通过该方法作为参数传入的字节数组来创建 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/io/ByteArrayInputStream.html" target="_blank">ByteArrayInputStream</a></tt>。
+      <pre class="examplecode">ByteArrayInputStream bis = new ByteArrayInputStream(bytes);</pre></li>
+    <li>添加一行代码，以通过 <tt>ByteArrayInputStream</tt> 创建一个 <tt>Object</tt>。 <pre class="examplecode">Object source = bis;</pre></li>
+    <li>添加一行代码，以通过通用 <tt>Object</tt> 创建一个 <tt><a href="http://download.oracle.com/javase/6/docs/api/javax/imageio/stream/ImageInputStream.html" target="_blank">ImageInputStream</a></tt>。 <pre class="examplecode">ImageInputStream iis = ImageIO.createImageInputStream(source);</pre></li>
+    <li>添加一行代码来为所有当前注册的可以解码 JPEG 文件的 <tt><a href="http://download.oracle.com/javase/6/docs/api/javax/imageio/ImageReader.html" target="_blank">ImageReader</a></tt> 创建一个 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/util/Iterator.html" target="_blank">Iterator</a></tt>。 
+      <pre class="examplecode">Iterator readers = ImageIO.getImageReadersByFormatName("jpeg");</pre>
+    </li>
+    <li>添加一行代码，用于通过 <tt>Iterator</tt> 中的下一个元素创建 <tt>ImageReader</tt>。 
+      <pre class="examplecode">ImageReader reader = (ImageReader) readers.next();</pre></li>
+    <li>添加代码行以创建默认的<a href="http://download.oracle.com/javase/6/docs/api/javax/imageio/IIOParam.html" target="_blank">图像读取参数</a>，但是如果 <tt>Image</tt> 代表缩略图，请将四种<a href="http://download.oracle.com/javase/6/docs/api/javax/imageio/IIOParam.html#setSourceSubsampling%28int,%20int,%20int,%20int%29" target="_blank">二次采样</a>中的一种添加到图像读取参数<tt></tt>中。 
+      <pre class="examplecode">ImageReadParam param = reader.getDefaultReadParam();
+if (isThumbnail) {
+    param.setSourceSubsampling(4, 4, 0, 0);
+}</pre>
+    </li>
+    <li>最后，添加代码以使用 <tt>ImageReader</tt> 对象来读取 <tt>ImageInputStream</tt> 对象，并基于该对象和图像读取参数来返回 <tt>Image</tt>。 
+      <pre class="examplecode">reader.setInput(iis, true);
+return reader.read(0, param);</pre></li>
+<li>按 Ctrl-Shift-I 组合键（在 MacOS 上按 ⌘-Shift-I 组合键）。"Fix All Imports"（修复所有导入）对话框即打开。接受 "Fix All Imports"（修复所有导入）对话框的默认建议，然后单击 "OK"（确定）。 <br> <img alt="显示已选定默认 java.util.Iterator 类的 &quot;Fix All Imports&quot;（修复所有导入）对话框" class="margin-around" height="357" src="../../../images_www/articles/73/websvc/flower/fix-getimage-imports.png" width="568"></li></ol>
+    <p><tt>getImage</tt> 方法现在已完成。 </p>
+      <pre class="examplecode">private Image getImage(byte[] bytes, boolean isThumbnail) throws IOException {
+    ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+    Object source = bis; // File or InputStream
+    ImageInputStream iis = ImageIO.createImageInputStream(source);
+    Iterator readers = ImageIO.getImageReadersByFormatName("jpeg");
+    ImageReader reader = (ImageReader) readers.next();
+    ImageReadParam param = reader.getDefaultReadParam();
+    if (isThumbnail) {
+        param.setSourceSubsampling(4, 4, 0, 0);
+    }
+    reader.setInput(iis, true);
+    return reader.read(0, param);
+}</pre>
+    
+    
+ 
+    <h3 id="implement-getflower">实现 getFlower</h3>
+  <p>将以下实现代码添加到 <tt>getFlower()</tt> 方法中以通过花的名称来获取鲜花并返回该花的图像，如下所示。请注意，此代码调用私有的 <tt>getFlowerBytes(name)</tt> 方法来以字节数组形式获取 JPEG 文件。然后该代码调用私有的 <tt>getImage</tt> 方法来返回字节数组以作为 <tt>Image</tt> 对象。</p>
+  <pre class="examplecode">@WebMethod(operationName = "getFlower")
+public Image getFlower(@WebParam(name = "name") String name) throws IOException {
+    byte[] bytes = getFlowerBytes(name);
+    return getImage(bytes, false);
+}</pre>
+  <h3 id="create-byte-array-list">为所有 JPEG 文件创建字节数组列表</h3>
+  <ol>
+    <li>在 <tt>FlowerService</tt> 类主体的顶部，创建一个用于表示每朵花名称的 String 数组。
+      <pre class="examplecode">private static final String[] FLOWERS = {"aster", "honeysuckle", "rose", "sunflower"};</pre>
+    </li>
+    <li>添加一个方法，该方法创建一个 <tt><a href="http://download.oracle.com/javase/6/docs/api/java/util/ArrayList.html" target="_blank">ArrayList</a></tt>，并将每朵花的字节数组添加到 <tt>List</tt> 中。
+      
+      <pre class="examplecode">private List allFlowers() throws IOException {
+    List flowers = new ArrayList();
+    for (String flower:FLOWERS) {
+        URL resource = this.getClass().getResource("/org/flower/resources/"+flower+".jpg");
+        flowers.add(getBytes(resource));
+    }
+    return flowers;
+}</pre>
+    </li>
+    <li>为 <tt>java.util.ArrayList</tt> 和 <tt>java.util.List</tt> 添加导入语句。 </li>
+  </ol>
+  <h3 id="implement-getthumbnails">实现 getThumbnails</h3>
+  <p>按照如下所示更改 <tt>getThumbnails()</tt> 方法。请注意，添加实现代码并将返回类型从 <tt>List</tt> 更改为 <tt>List&lt;Image&gt;</tt>。还请注意，将布尔型 <tt>isThumbnail</tt> 的值 <tt>true</tt> 传递到 <tt>getImage</tt> 方法。<tt>getThumbnails</tt> 的实现代码调用 <tt>allFlowers</tt> 方法来<a href="#create-byte-array-list">为所有 JPEG 文件创建字节数组列表</a>。然后 <tt>getThumbnails</tt> 方法创建一个 <tt>Image</tt> 的 <tt>List</tt> 并为每朵花调用 <tt>getImage</tt> 方法，从而将该花的字节数组作为 <tt>Image</tt> 对象返回，并将该 <tt>Image</tt> 添加到 <tt>List</tt> 中。 </p>
+  <pre class="examplecode">@WebMethod(operationName = "getThumbnails")
+public List&lt;Image&gt; getThumbnails() throws IOException {
+    List&lt;byte[]&gt; flowers = allFlowers();
+    List&lt;Image&gt; flowerList = new ArrayList&lt;Image&gt;(flowers.size());
+    for (byte[] flower : flowers) {
+        flowerList.add(getImage(flower, true));
+    }
+    return flowerList;
+}</pre>
+</div>
+<p>结合的 Web 服务/会话 Bean 现在已完成。Web 服务类的最终窗体如下：</p>
+<pre class="examplecode">package org.flower.service;<br>
+<br>
+import java.awt.Image;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import javax.ejb.Stateless;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;<br>
+<br>
+@WebService(serviceName = "FlowerService")
+@Stateless()
+public class FlowerService {<br>
+<br>
+    private static final String[] FLOWERS = {"aster", "honeysuckle", "rose", "sunflower"};<br>
+<br>
+    @WebMethod(operationName = "getFlower")
+    public Image getFlower(@WebParam(name = "name") String name) throws IOException {
+        byte[] bytes = getFlowerBytes(name);
+        return getImage(bytes, false);
+    }<br>
+<br>
+    @WebMethod(operationName = "getThumbnails")
+    public List&lt;Image&gt; getThumbnails() throws IOException {
+        List flowers = allFlowers();
+        List&lt;Image&gt; flowerList = new ArrayList&lt;Image&gt;(flowers.size());
+        for (byte[] flower : flowers) {
+            flowerList.add(getImage(flower, true));
+        }
+        return flowerList;
+    }<br>
+<br>
+    private byte[] getFlowerBytes(String name) throws IOException {
+        URL resource = this.getClass().getResource("/org/flower/resources/" + name + ".jpg");
+        return getBytes(resource);
+    }<br>
+<br>
+    private byte[] getBytes(URL resource) throws IOException {
+        InputStream in = resource.openStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024];
+        for (int read; (read = in.read(buf)) != -1;) {
+            bos.write(buf, 0, read);
+        }
+        return bos.toByteArray();
+    }<br>
+<br>
+    private Image getImage(byte[] bytes, boolean isThumbnail) throws IOException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        Iterator readers = ImageIO.getImageReadersByFormatName("jpeg");
+        ImageReader reader = (ImageReader) readers.next();
+        Object source = bis; // File or InputStream
+        ImageInputStream iis = ImageIO.createImageInputStream(source);
+        reader.setInput(iis, true);
+        ImageReadParam param = reader.getDefaultReadParam();
+        if (isThumbnail) {
+            param.setSourceSubsampling(4, 4, 0, 0);
+        }
+        return reader.read(0, param);
+    }<br>
+<br>
+    private List allFlowers() throws IOException {
+        List flowers = new ArrayList();
+        for (String flower : FLOWERS) {
+            URL resource = this.getClass().getResource("/flower/album/resources/" + flower + ".jpg");
+            flowers.add(getBytes(resource));
+        }
+        return flowers;
+    }
+}</pre>
+<h2 id="test-ws">测试 Web 服务</h2>
+<p>既然 Web 服务已完成，您可以对其进行部署和测试。</p>
+<p><strong>测试 Web 服务：</strong></p>
+<ol>
+  <li>右键单击 "FlowerAlbumService" 节点，然后选择 "Deploy"（部署）。IDE 编译源代码，启动 GlassFish Server，并将项目的 WAR 文件部署到服务器。如果打开 "Services"（服务）窗口，将在服务器的 "Applications"（应用程序）节点中看到已部署的 <tt>FlowerService</tt>。 
+      <p class="alert"><b>重要说明：</b>GlassFish Server Open Source Edition 的版本必须是 3.1 或更高版本。</p>
+  <img alt="&quot;Services&quot;（服务）窗口中的已部署 FlowerService" border="1" class="margin-around" src="../../../images_www/articles/73/websvc/flower/deployed-service.png"></li>
+  <li>展开项目的 "Web Services"（Web 服务）节点。右键单击 "FlowerService" 然后选择 "Test Web Service"（测试 Web 服务）。 <br> <img alt="显示 &quot;Test Web Service&quot;（测试 Web 服务）选项的上下文菜单" border="1" class="margin-around" height="505" src="../../../images_www/articles/73/websvc/flower/test-ws-node.png" width="323"></li>
+  <li>Web 服务测试器在浏览器中打开。在 <tt>getFlower</tt> 参数字段中键入 "rose"。<br> <img alt="打开 Web 服务测试器" border="1" class="margin-around" height="455" src="../../../images_www/articles/73/websvc/flower/ws-tester.png" width="574"> </li>
+  <li>按 <tt>getFlower</tt> 按钮。IDE 在浏览器中显示有关调用的信息。查看“Method Returned”时，会看到乱码。您想要看到一幅图像，而不是一系列的符号。但是，由于 <tt>java.awt.Image</tt> 不是有效的方案类型，需要手动配置方案文件以返回二进制 image/jpeg 数据。这将在下一个教程中完成。 <br> <img alt="浏览器窗口中的 Web 服务测试器的结果" border="1" class="margin-around" height="579" src="../../../images_www/articles/73/websvc/flower/ws-tester-badschema.png" width="600"></li>
+  <li>
+    <h2>后续步骤：</h2>
+    <p><a href="./flower_wsdl_schema.html">修改方案文件和 WSDL 文件以传递二进制数据</a></p>
+    <div class="feedback-box" ><a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Flower%20Coding%20WS%20EE6">发送有关此教程的反馈意见</a></div>
+    <br style="clear:both;" >
+    <!-- ======================================================================================= -->
+    <p>要发送意见和建议、获得支持以及随时了解 NetBeans IDE Java EE 开发功能的最新开发情况，请<a href="../../../community/lists/top.html">加入 nbj2ee@netbeans.org 邮件列表</a>。</p>
+  </li>
+</ol>
+</body>
+</html>

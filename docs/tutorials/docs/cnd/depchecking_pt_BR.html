@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="keywords" content="NetBeans, IDE, Oracle Solaris Studio, integrated development environment, user, documentation, open source">
+<meta name="description" content="This article describes the Make Dependency Checking feature for C and C++ 
+      projects in NetBeans IDE and Oracle Solaris Studio IDE. ">
+   <meta name="author" content="Alexey Vladykin">
+   <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+<title>Verificação de Dependência de Make - NetBeans IDE</title>
+</head>
+<body>
+<a name="top"></a>
+
+<h1>Verificação da Dependência de Make</h1>
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+    Contribuição de Alexey Vladykin<br> Março de 2014 [Número da revisão: V8.0-1]
+</div>
+<!-- maintained by susanm -->
+
+<p>Este tutorial mostra como ativar o NetBeans IDE para verificar as dependências do arquivo em seus projetos durante a criação. A verificação de dependência é executada pelo utilitário <tt>make</tt> por meio de instruções em <tt>Makefile</tt>.</p>
+
+<p><b>Conteúdo</b></p>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.3, 7.4 e 8.0">
+
+<ul class="toc">
+<li><a href="#requirements" title="Requisitos">Requisitos</a></li>
+<li><a href="#introduction" title="Introdução">Introdução</a></li>
+<li><a href="#build" title="Processo de Construção (make e Makefiles)">Processo de Construção (make e Makefiles)</a></li>
+<li><a href="#basics" title="Conceitos Básicos sobre Geração de Dependência">Conceitos Básicos sobre Geração de Dependência</a></li>
+<li><a href="#implementation" title="Implementação">Implementação</a></li>
+</ul>
+<h2><a NAME="requirements"></a>Requisitos</h2>
+<p><b>Para seguir este tutorial, são necessários os recursos e o software a seguir.</b> </p>
+<table>
+<tbody>
+<tr>
+    <th class="tblheader" scope="col">Software</th>
+    <th class="tblheader" scope="col">Versão Necessária</th>
+</tr>
+<tr>
+<td class="tbltd1">NetBeans IDE (incluindo o suporte ao C/C++)</td>
+<td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">versão 7.3, 7.4 ou 8.0 do NetBeans com o plug-in C/C++</a></td>
+</tr>
+<tr>
+    <td class="tbltd1">Java Development Kit (JDK)</td>
+    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">versão 7 ou 8</a></td>
+</tr>
+</tbody>
+</table>
+      <br>
+<p>Consulte as <a href="../../../community/releases/80/install.html">Instruções de Instalação do NetBeans IDE</a> e a <a HREF="../../../community/releases/80/cpp-setup-instructions.html"> Configuração do NetBeans IDE para o C/C++/Fortran</a><br> para obter informações sobre o download e a instalação do software necessário.</p>
+
+
+<h2><a name="introduction"></a>Introdução</h2>
+
+<p>
+    Grandes projetos C/C++ consistem em milhares de arquivos. Por exemplo, o kernel Linux tem cerca de 20.000 arquivos. Se estiver desenvolvendo um projeto e quiser recriá-lo após uma pequena alteração, por exemplo, correção de uma linha, há duas opções.
+
+<ul>
+<li>
+    Recriação integral (ação Limpar e Construir). É menor, mas garante um resultado de construção consistente.
+</li>
+<li>
+    Reconstrução incremental (ação Construir). É mais rápida, mas recriará corretamente tudo que deve ser recriado?
+</li>
+</ul>
+
+<p>
+    O maior problema da recriação incremental é a presença de diretivas <tt>#include</tt>, que incluem o conteúdo de um arquivo em outro arquivo. O arquivo incluído é conhecido como dependência de arquivo. A modificação do arquivo incluído deve ser tratada como modificação de todos os arquivos que o incluem. As inclusões indiretas (A inclui B, B inclui C => A inclui C) tornam o problema até mais difícil.
+</p>
+
+<p>
+    O NetBeans IDE suporta verificação automática das dependências do arquivo e faz seu melhor para tornar o trabalho de construção incremental correto. Se você alterar um arquivo do cabeçalho que estiver incluído em algum de seus arquivos de código-fonte e, em seguida, clicar em Construir, o IDE recriará somente estas partes do projeto que realmente dependem do cabeçalho alterado. Esta funcionalidade economiza tempo e garante resultados de construção consistentes.
+</p>
+
+<h3>Ativando a Verificação de Dependência de um Projeto</h3>
+
+<p>
+    A verificação de dependência pode ser controlada para cada projeto específico. Talvez você queira certificar-se de que ela está ativada.
+</p>
+      <p><b>Para ativar a verificação de dependência para um projeto:</b></p>
+
+      <ol>
+         <li>clique com o botão direito do mouse no projeto na janela Projetos e escolha Propriedades.</li>
+         <li>
+            Na caixa de diálogo Propriedades do Projeto, selecione o nó Construir na lista Categorias.
+         </li>
+         <li>Nas propriedades de construção, marque a caixa de seleção Ativar Verificação de Dependência de Make.</li>
+      </ol>
+      <br> <img alt="Caixa de seleção Verificação de Dependência de Make nas propriedades do projeto" class="margin-around" src="../../../images_www/articles/73/cnd/depchecking/project-checkbox.png"> <br>
+    <h3>Ativando a Verificação de Dependência por Default para Novos Projetos</h3>
+<p>Você pode definir um estado default para verificação de dependência, de forma que novos projetos que você criar sejam ativados automaticamente para verificação de dependência de make.</p>
+ <p><b>Para ativar a verificação de dependência para todos os novos projetos criados no IDE:</b></p>
+
+ <ol>
+         <li>Escolha Ferramentas > Opções no menu principal do IDE.</li>
+         <li>
+            Clique no botão C/C++ no painel superior.
+         </li>
+         <li>Clique na guia Opções do Projeto.</li>
+         <li>Marque a caixa de seleção para Ativar verificação de dependência nos makefiles gerados</li>
+
+        
+      </ol>
+      <br> <img alt="Caixa de seleção Verificação de dependência nas opções do NetBeans" class="margin-around" src="../../../images_www/articles/73/cnd/depchecking/global-checkbox.png">
+
+
+<h3 class="notes">Observações</h3>
+
+<ul>
+<li>
+    A verificação de dependência automática trabalha para projetos C/C++ que foram criados no IDE (projetos gerenciados). O IDE cria lógica de verificação de dependência para o <tt>Makefile</tt> gerado. Para projetos criados com os códigos-fonte existentes você pode contar com a lógica de verificação de dependência (se houver) no <tt>Makefile</tt> existente.
+</li>
+<li>
+    A verificação de dependência requer suporte de sua coleção de ferramentas (<tt>make</tt> e compiladores). Ela foi testada com a coleção de ferramentas do Oracle Solaris Studio e as coleções de ferramentas GNU, incluindo Cygwin e MinGW.
+</li>
+<li>
+    A verificação de dependência funciona quando os compiladores do Oracle Solaris Studio são usados com o <tt>make</tt> do Oracle Solaris e quando os compiladores GNU são usados com <tt>gmake</tt> de GNU. A mistura de <tt>make</tt> do Oracle Solaris com os compiladores GNU e vice-versa não é suportada.
+</li>
+</ul>
+
+<p>
+    O restante do artigo é para os usuários avançados que querem saber o que acontece nos bastidores do IDE.
+</p>
+
+
+<h2><a name="build"></a>Processo de Construção (make e makefiles)</h2>
+<p>
+    O processo de construção de cada projeto C/C++ no NetBeans é descrito em um <tt>Makefile</tt>, um arquivo de formato especial conhecido pelo utilitário <tt>make</tt>. Quando você constrói ou limpa seu projeto do GUI, o IDE chama <tt>make</tt>, que executa o Makefile. Esta abordagem permite que você construa facilmente seu projeto fora do IDE usando <tt>make</tt>: vá para seu diretório de projeto e digite <tt>make help</tt> para obter instruções.
+</p>
+
+<p>
+    Os Makefiles usados pelo NetBeans IDE para um projeto C/C++ são mostrados abaixo.
+</p>
+
+<img alt="Makefiles usados pelo NetBeans para projetos C/C++" class="margin-around" src="../../../images_www/articles/73/cnd/depchecking/makefiles.png">
+
+<p>
+    O <tt>Makefile</tt> mestre é gerado uma vez e você pode editá-lo manualmente. Os makefiles no diretório <tt>nbproject</tt> não são destinados para edição manual; eles são atualizados automaticamente pelo IDE. O arquivo <tt>Makefile-<i>CONF</i>.mk</tt> na ilustração representa vários arquivos para todas as configurações de seu projeto, como <tt>Makefile-Release.mk</tt>, <tt>Makefile-Debug.mk</tt> etc.
+</p>
+
+<p>
+    Para um projeto gerenciado, o IDE gera todos os makefiles e insere instruções adequadas para a verificação de dependência. Para um projeto criado dos códigos de origem existentes, a verificação de dependência funcionará só se o <tt>Makefile</tt> contiver tais instruções, porque o NetBeans IDE não altera o <tt>Makefile</tt> existente.
+</p>
+
+
+<h2><a name="basics"></a>Conceitos Básicos sobre a Geração de Dependência</h2>
+
+<p>
+    Se quiser que o <tt>make</tt> verifique as dependências do arquivo incluídas durante a construção, então insira as informações de dependência no <tt>Makefile</tt>. Infelizmente não há nenhuma forma conveniente de fazer isso para todos os utilitários e compiladores de <tt>make</tt>. Primeiro, você deve detectar qual <tt>make</tt> está sendo executado e, em seguida, gerar as instruções de verificação de dependência correspondentes.
+</p>
+
+<p>
+    O <tt>make</tt> do Oracle Solaris tem uma solução muito simples. Uma regra especial <tt>.KEEP_STATE:</tt> no <tt>Makefile</tt> instrui <tt>make</tt> para consultar o compilador sobre as dependências de arquivo e as armazena em um arquivo temporário. Na próxima vez que o projeto for reconstruído, o <tt>make</tt> carrega esse arquivo temporário, analisa as dependências armazenadas lá e determina quais cabeçalhos foram alterados e quais arquivos de objetos devem ser recompilados.
+</p>
+
+<p>
+    Para <tt>make</tt> de GNU (chamado <tt>gmake</tt>) a solução é muito mais complexa. Você deve solicitar explicitamente ao compilador para gerar as informações de dependência e, em seguida, incluí-la no <tt>Makefile</tt>. A ideia é informar flags especiais para o compilador, de forma que o compilador gere informações de dependência para cada arquivo do código-fonte compilado. Na próxima vez que o projeto for recriado, as informações de dependência serão coletadas e incluídas no <tt>Makefile</tt>.
+</p>
+
+
+<h2><a name="implementation"></a>Implementação</h2>
+
+<p>
+    O código a seguir é adicionado ao <tt>nbproject/Makefile-impl.mk</tt>. Ele detecta qual <tt>make</tt> está sendo executado e coloca o código de verificação de dependência correspondente no arquivo <tt>.dep.inc</tt>. O <tt>make</tt> de GNU detectou a presença da variável <tt>MAKE_VERSION</tt>. Se <tt>MAKE_VERSION</tt> não for definida, então as instruções específicas de  <tt>make</tt> do Solaris são geradas.
+</p>
+
+<pre class="examplecode"># dependency checking support
+.depcheck-impl:
+	@echo "# This code depends on make tool being used" &gt;.dep.inc
+	@if [ -n "${MAKE_VERSION}" ]; then \
+	    echo "DEPFILES=\$$(wildcard \$$(addsuffix .d, \$${OBJECTFILES}))" &gt;&gt;.dep.inc; \
+	    echo "ifneq (\$${DEPFILES},)" &gt;&gt;.dep.inc; \
+	    echo "include \$${DEPFILES}" &gt;&gt;.dep.inc; \
+	    echo "endif" &gt;&gt;.dep.inc; \
+	else \
+	    echo ".KEEP_STATE:" &gt;&gt;.dep.inc; \
+	    echo ".KEEP_STATE_FILE:.make.state.\$${CONF}" &gt;&gt;.dep.inc; \
+	fi</pre>
+
+<p>
+    O código a seguir é adicionado ao <tt>nbproject/Makefile-${CONF}.mk</tt>. Ele instruiu <tt>make</tt> para ler o <tt>.dep.inc</tt> gerado anteriormente e executa instruções dele.
+</p>
+
+<pre class="examplecode"># Enable dependency checking
+.dep.inc: .depcheck-impl
+
+include .dep.inc</pre>
+
+<p>
+    A regra <tt>.dep.inc: .depcheck-impl</tt> é adicionada para evitar a falha de construção quando <tt>.dep.inc</tt> não existe. Há apenas um caso em que isso ocorre: quando você compila o arquivo único da janela Projetos. Neste caso, <tt>make</tt> executa o arquivo <tt>nbproject/Makefile-${CONF}.mk</tt> diretamente.
+</p>
+
+
+<h2>Referências</h2>
+
+<ol>
+<li>
+    <a href="http://en.wikipedia.org/wiki/Make_%28software%29" target="_blank">Artigo da Wikipédia sobre <tt>make</tt></a>
+</li>
+<li>
+    <a href="http://make.paulandlesley.org/autodep.html" target="_blank">Geração de Dependência Automática Avançada</a>
+</li>
+</ol>
+<h2>Consulte Também</h2>
+   <p>Consulte a <a href="https://netbeans.org/kb/trails/cnd.html">Trilha do Aprendizado C/C++</a> para obter mais artigos sobre o desenvolvimento com C/C++/Fortran no NetBeans IDE.</p>
+
+<div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=Feedback:%20Make%20Dependency%20Checking%20-%20NetBeans%20IDE%208.0%20Tutorial">Enviar Feedback neste Tutorial</a></div>
+
+</body></html>

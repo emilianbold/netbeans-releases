@@ -1,0 +1,351 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+        <title>HTML5アプリケーションでのCSSスタイル・シートの操作 - NetBeansチュートリアル</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial that demonstrates how the IDE provides tools that can help you work with CSS rules to modify the layout of
+        an application.">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, jQuery, CSS, HTML5">
+    </head>
+    <body>
+
+<!--
+Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+-->
+
+        <h1>HTML5アプリケーションでのCSSスタイル・シートの操作</h1>
+
+        <p>HTML5アプリケーションは、通常はHTML、CSSおよびJavaScriptを結合して、ブラウザで稼働し、スマートフォン、タブレット、ラップトップなどの各種デバイスに表示されるアプリケーションを作成します。このドキュメントでは、CSSルールを操作してアプリケーションのレイアウトを変更するのに役立つツールをIDEが提供する方法を示します。IDEでは、アプリケーションでのSassおよびLESS CSSプリプロセッサの作成および使用もサポートされます。</p>
+        
+        <p>ChromeブラウザのNetBeans Connector拡張機能は、各種デバイスに表示されるアプリケーションの表示に役立ちます。拡張機能により、ChromeブラウザとIDEは相互に通信できます。「NetBeansでの検査」モードでは、ブラウザで選択することによりソース・コード内の要素を特定できます。ブラウザで要素を選択した後で、IDEを使用して、その要素に適用されるCSSルールおよびプロパティを表示できます。
+        </p>
+        
+        <p>Chromeブラウザ用のNetBeans Connector拡張機能のインストール方法の詳細は、チュートリアル<a href="html5-gettingstarted.html">HTML5アプリケーションの開始</a>を参照してください。</p>
+        
+        <p class="tips">このチュートリアルのスクリーンショットを確認するには、<a href="../web/html5-css-screencast.html">HTML5アプリケーションでのCSSスタイル・シートの操作のビデオ</a>を参照してください。</p>
+
+        <h3>目次</h3>
+        <img alt="このページの内容は、NetBeans IDE 7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/74/netbeans-stamp-80-74.png" title="このページの内容は、NetBeans IDE 7.4および8.0に適用されます">
+
+        <ul class="toc">
+            <li><a href="#create">NetBeans HTML5アプリケーションの作成</a></li>
+            <li><a href="#viewing">異なるデバイスでのアプリケーションの表示</a></li>
+            <li><a href="#layout">レイアウトの変更</a>
+                <ul>
+                    <li><a href="#newstylesheet">メディア・スタイル・シートの作成</a>
+                    <li><a href="#addrules">CSSルールの追加</a>
+                </ul>
+            </li>
+            <li><a href="#preprocessors">CSSプリプロセッサの使用</a></li>
+            <li><a href="#summary">サマリー</a></li>
+            <li><a href="#seealso">関連項目</a></li>
+        </ul>
+
+        <h4>このチュートリアルを完了するには、次のリソースが必要です。</h4>
+
+        <table id="requiredSoftware">
+
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                    <th class="tblheader" scope="col">必須バージョン</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE、Java</a></td>
+                    <td class="tbltd1">7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Development Kit (JDK)</a></td>
+                    <td class="tbltd1">7または8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.google.com/chrome">Chromeブラウザ</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?utm_source=chrome-ntp-icon">ChromeのNetBeans Connector拡張機能</a></td>
+                    <td class="tbltd1">1.1以降</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">HTML5DemoSiteTemplate.zip</a></td>
+                    <td class="tbltd1">--</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1">CSSプリプロセッサ</td>
+                    <td class="tbltd1"><a href="http://sass-lang.com/install" target="_blank">Sass</a>または<br> <a href="http://lesscss.org/">LESS</a></td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        <p><strong class="notes">注意: </strong></p>
+
+        <ul>
+            <li><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">HTML5DemoSiteTemplate.zip</a>は、プロジェクトの作成時に使用するサイト・テンプレートです。</li>
+
+            <li>プロジェクトを動作中のソリューションと比較する場合は、完成したプロジェクトの<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoCssSiteTemplate.zip">サイト・テンプレート</a>をダウンロードできます。</li>
+
+            <li>このドキュメントは、HTML、CSSおよびJavaScriptについて基本的な知識またはプログラミング経験を持つ読者を想定して書かれています。</li>
+        </ul>
+        
+        
+<!-- ++++++++++++++++ Creating the Application ++++++++++++++++ -->
+        <a name="create"></a>
+        <h2>HTML5アプリケーションの作成</h2>
+        <p>このチュートリアルでは、サイト・テンプレートを使用してHTML5プロジェクトを作成します。このチュートリアルで使用するサイト・テンプレートは、<a href="html5-gettingstarted.html">HTML5アプリケーションの開始</a>チュートリアルでサイト・テンプレートとして保存したのと同じテンプレートです。開始チュートリアルの手順を実行した場合は、最後の項で保存したサイト・テンプレートを使用できます。または、HTML5DemoSiteTemplate.zipサイト・テンプレートをダウンロードできます。</p>
+        
+        <p>次の手順を実行して、サイト・テンプレートからアプリケーションを作成します。</p>
+        <ol>
+            <li>HTML5サイト・テンプレート(<a href="https://netbeans.org/projects/samples/downloads/download/Samples/Web%20Client/HTML5DemoSiteTemplate.zip">HTML5DemoSiteTemplate</a>)をダウンロードします。</li>
+            <li>メイン・メニューで「ファイル」→「新規プロジェクト」([Ctrl]-[Shift]-[N]、Macの場合は[⌘]-[Shift]-[N])を選択して新規プロジェクト・ウィザードを開きます。</li>
+            <li><strong>HTML5</strong>カテゴリを選択し、<strong>「HTML5アプリケーション」</strong>を選択します。「次」をクリックします。</li>
+            <li>プロジェクト名として<strong>「HTML5DemoCss」</strong>と入力し、場所を指定します。「次」をクリックします。</li>
+            <li><strong>「テンプレートを選択」</strong>オプションを選択し、「参照」をクリックしてサイト・テンプレート(<tt>HTML5DemoSiteTemplate.zip</tt>)を特定します。「終了」をクリックします。 <br> <img alt="新規HTML5アプリケーション・ウィザードのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-newproject.png" title="新規HTML5アプリケーション・ウィザードでサイト・テンプレートを指定">
+            </li>
+        </ol>
+        
+        <p>「終了」をクリックすると、IDEによりプロジェクトが作成され、エディタに<tt>index.html</tt>ファイルが開かれます。「プロジェクト」ウィンドウで、プロジェクトに<tt>index.html</tt>、CSSスタイル・シート、いくつかのJavaScriptライブラリおよびいくつかのイメージが含まれていることを確認できます。CSSルールおよび「ナビゲータ」ウィンドウもIDEに開きます。</p>
+
+        
+<!-- ++++++++++++++++ Viewing the Application ++++++++++++++++ -->
+        <a name="viewing"></a>
+        <h2>異なるデバイスでのアプリケーションの表示</h2>
+        <p>このチュートリアルでは、NetBeans Connector機能拡張がインストールされたChromeブラウザでアプリケーションを実行します。拡張機能がインストールされている場合は、ブラウザのNetBeansメニューを使用してブラウザ・ウィンドウを簡単にサイズ変更し、いくつかの一般的なデバイスで表示される際のアプリケーションを表示できます。 
+            </p>
+            
+            <p class="notes"><strong>注意:</strong>このチュートリアルでは、Chromeブラウザを使用し、Chrome用のNetBeans拡張機能をインストールすることをお薦めします。NetBeans Connector拡張機能のインストール方法の詳細は、チュートリアル<a href="html5-gettingstarted.html">HTML5アプリケーションの開始</a>を参照してください。</p>
+        
+            <p>次の手順を実行して、Chromeブラウザでアプリケーションを実行します。</p>
+        <ol>
+            <li>NetBeans統合のあるChromeがツールバーのドロップダウン・リストで選択されていることを確認します。
+                </li>
+            <li>ツールバーの「実行」ボタンをクリックして、Chromeブラウザでプロジェクトを実行します。 
+                
+                <p>ブラウザで、単純な展開可能メニューを表示できます。</p>
+                <p>NetBeans Connectorがタブをデバッグしていることを示す黄色いバーがブラウザ・タブに表示されます。黄色いバーが表示されているときは、IDEとブラウザが接続され、相互に通信できます。IDEからHTML5アプリケーションを起動すると、JavaScriptデバッガが自動的に有効になります。ファイルに変更を保存するかCSSスタイル・シートに変更を加えた場合は、ブラウザ・ウィンドウが自動的に更新されて変更が表示されるため、ページを再ロードする必要はありません。</p>
+
+                <p class="alert">黄色いバーを閉じるか「取消」をクリックした場合は、IDEとブラウザ間の接続が切断されます。接続を切断した場合は、IDEからHTML5アプリケーションを起動する必要があります。</p>
+                
+                <p>また、NetBeansアイコンがブラウザのURLの場所フィールドに表示されます。アイコンをクリックして、ブラウザの表示サイズの変更および「NetBeansでの検査」モードの有効化を行う各種オプションを提供するメニューを開くことができます。</p>
+            </li>
+            <li>ブラウザの「URL」フィールドで「NetBeansアクションを開く」アイコンをクリックしてNetBeansメニューを開き、メニューで「タブレット縦」を選択します。 
+                <p>ウィンドウが縦モードのタブレット・ブラウザのサイズに変更されます。メニューが右側に合せて伸張し、メニュー全体が表示されます。</p>
+            <img alt="「タブレット縦」ビューのブラウザのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-tabletbrowser1.png" title="ブラウザの「タブレット縦」表示サイズ">
+            <p>メニューでデフォルト・デバイスの1つを選択した場合、ブラウザ・ウィンドウがデバイスのサイズに変更されます。これにより、アプリケーションが選択したデバイスでどのように表示されるかを確認できます。HTML5アプリケーションは、通常、表示されるデバイスの画面サイズに対応するように設計されています。画面サイズに対応するJavaScriptおよびCSSルールを使用し、レイアウトがデバイスに対して最適化されるようにアプリケーションの表示方法を変更できます。 </p></li>
+            
+            <li>もう一度NetBeansアイコンをクリックし、「NetBeans」メニューで「スマートフォン横」を選択します。<br> <img alt="ブラウザのNetBeansメニューのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-tabletbrowser2.png" title="ブラウザのNetBeansメニューで「スマートフォン横」を選択">
+                <p>ウィンドウが横方向のスマートフォンのサイズに変更され、スクロールしないとメニューの下部が表示されないことを確認できます。</p>
+            <img alt="「スマートフォン横」にサイズ変更されたブラウザ・ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-smartphonebrowser1.png" title="「スマートフォン横」にサイズ変更されたブラウザ・ウィンドウ"></li>
+        </ol>
+        
+        <p>次の項では、横表示のスマートフォンでスクロールしなくてもメニュー全体を表示できるようにスタイル・シートを変更します。</p>
+            
+            
+            
+<!-- ++++++++++++++++ Modifying the Application Layout ++++++++++++++++ -->
+        <a name="layout"></a>
+        <h2>レイアウトの変更</h2>
+            
+        <p>スクロールが不要になるように、ページの要素にいくつかの小さな変更を加えることができます。これらの変更は、ブラウザのサイズがスマートフォンのサイズ以下の場合にのみ適用する必要があります。横方向に表示されている場合、スマートフォンのブラウザ・ウィンドウは幅480ピクセル、高さ320ピクセルです。</p>
+        
+        <div class="indent">
+<!-- ++++++++++++++++ Media Style Sheet ++++++++++++++++ -->
+        <a name="newstylesheet"></a>
+        <h3>メディア・スタイル・シートの作成</h3>
+        <p>この課題では、新規スタイル・シートを作成し、スマートフォン画面を持つデバイスのメディア・ルールを追加します。次に、いくつかのCSSルールをメディア・ルールに追加します。</p>
+        <ol>
+            <li>「プロジェクト」ウィンドウの「<tt>css</tt>」フォルダ・ノードを右クリックし、ポップアップ・メニューで「新規」→「Cascading Style Sheet」を選択します。</li>
+            <li>「ファイル名」として「<strong>mycss</strong>」と入力します。「終了」をクリックします。
+                <p>「終了」をクリックすると、新規スタイル・シートがエディタに開きます。</p></li>
+            <li>スタイル・シートに次のメディア・ルールを追加します。
+                <pre class="examplecode">/*My rule for smartphone*/
+@media (max-width: 480px) {
+
+}</pre>
+                <p>このルールの中括弧の間に追加するCSSルールは、ブラウザのサイズが幅480ピクセル以下の場合にのみ適用されます。</p>
+                <p class="tips">頻繁に使用する可能性のあるコード・スニペットのコード・テンプレートを作成します。「オプション」ウィンドウの「エディタ」カテゴリの「コード・テンプレート」タブで、CSSコード・テンプレートを作成できます。</p>
+            </li>
+            <li>変更を保存します。</li>
+            <li>エディタで<tt>index.html</tt>を開きます。</li>
+            <li>スタイル・シートの<tt>index.html</tt>の<tt>&lt;head></tt>タグの間に次のリンクを追加します。変更を保存します。
+                <pre class="examplecode">&lt;link type="text/css" rel="stylesheet" href="css/mycss.css"&gt;</pre>
+                <p class="tips">エディタでコード補完を使用して、スタイル・シートへのリンクを追加できます。</p>
+            </li>
+        </ol>
+        
+<!-- ++++++++++++++++ Add CSS Rules ++++++++++++++++ -->
+        <a name="addrules"></a>
+        <h3>CSSルールの追加</h3>
+        <ol>
+            <li>Chromeブラウザで、NetBeansアイコンをクリックし、メニューでNetBeansでの検査モードを選択します。</li>
+            <li>ブラウザでイメージをクリックします。
+                <p>「検査」モードで選択されている場合に要素がハイライト表示されます。このスクリーンショットで、イメージが青でハイライト表示されていることを確認できます。</p>
+            <img alt="ブラウザで選択されているイメージのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-selectimage.png" title="Chromeブラウザで選択されているイメージ">
+            <p>IDEで、<tt>img</tt>に適用されているCSSルールおよびプロパティが「CSSスタイル」ウィンドウにリストされていることを確認できます。「CSSスタイル」ウィンドウの「選択」タブには、選択した要素の詳細を示す3つのペインがあります。</p>
+            <img alt="イメージが選択されているときの「CSSスタイル」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-styleswindow1.png" style="float:left;" title="イメージが選択されているときの「CSSスタイル」ウィンドウ">
+            <h4>上部ペイン</h4>
+            <p>
+            ウィンドウの上部の「プロパティ」ペインでは、6つのプロパティと値のペアが<tt>img</tt>要素に適用されていることを確認できます。3つのペア(<tt>border</tt>、<tt>float</tt>および<tt>margin</tt>)は、<tt>img</tt>要素のCSSルールを介して適用されます。<tt>img</tt>要素は、<tt>img</tt>要素を含むオブジェクトに適用されるクラス・セレクタのプロパティを継承するため、残りの3つのペアが適用されます。「ナビゲータ」ウィンドウでDOMの構造を明確に確認できます。現在、「CSSスタイル」ウィンドウの「プロパティ」ペインでは<tt>border</tt>プロパティが選択されています。 
+            </p>
+            <h4>中央ペイン</h4>
+            <p>中央の適用されたスタイル・ペインでは、<tt>border</tt>プロパティおよび値が<tt>img</tt>要素を定義するCSSルールで指定されていることを確認できます。ルールは、<tt>basecss.css</tt>ファイルの行12にあります。ペインで場所をクリックして、エディタにスタイル・シートを開くことができます。</p>
+            
+            <h4>下部ペイン</h4>
+            <p>下部ペインには、中央ペインで選択したルールのCSSルールで定義されているすべてのプロパティが表示されます。この場合、<tt>img</tt>のルールが<tt>border</tt>、<tt>float</tt>、<tt>margin-right</tt>の各プロパティを定義していることを確認できます。</p>
+            
+
+            <br clear="all">
+            </li>
+            <li>「CSSスタイル」ウィンドウで「ドキュメント」タブをクリックします。</li>
+            
+            <li>「<tt>css/mycss.css</tt>」ノードを選択し、「CSSルールの編集」ボタン(<img alt="「CSSルールの編集」ボタン" src="../../../images_www/articles/73/web/html5-gettingstarted/newcssrule.png" title="「CSSルールの編集」ボタン">)をクリックして、「CSSルールの編集」ダイアログ・ボックスを開きます。<br> <img alt="「CSSルールの編集」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-css/html5-css-styleswindow2.png" title="「CSSルールの編集」ダイアログ・ボックス。">
+            </li>
+            <li>「セレクタ・タイプ」として「要素」を選択し、「セレクタ」として「<strong>img</strong>」を入力します。</li>
+            <li>「スタイルシート」として「<tt>css/mycss.css</tt>」を選択し、「@規則」として<strong>(最大幅:480px)</strong>を選択します。「OK」をクリックします。<br> <img alt="「CSSルールの編集」ダイアログ・ボックスのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-css/html5-css-editcssrules.png" title="「CSSルールの編集」ダイアログ・ボックス。">
+            <p>「OK」をクリックすると、IDEにより<tt>css/mycss.css</tt>スタイル・シートのメディア・ルールの中括弧内に<tt>img</tt>のCSSルールが作成されます。新しいルールが適用されたスタイル・ペインにリストされます。</li>
+            <li>「CSSスタイル」ウィンドウで「選択」タブをクリックします。
+            <p><tt>img</tt>に2つのCSSルールがあることがわかります。一方のルールは<tt>mycss.css</tt>にあり、もう一方は<tt>basecss.css</tt>にあります。</p></li>
+            <li>「CSSスタイル」ウィンドウの適用されたスタイル・ペインで新しい<tt>img</tt>ルール(<tt>mycss.css</tt>で定義)を選択します。<br> <img alt="「CSSスタイル」ウィンドウの選択した要素のスタイルのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-styleswindow2.png" title="「CSSスタイル」ウィンドウの選択した要素のスタイル">
+                <p>ウィンドウの下部ペインで、ルールにプロパティがないことを確認できます。</p>
+            </li>
+            <li>「CSSスタイル」ウィンドウの下部ペインの左側の列で「プロパティの追加」をクリックして、<strong>「width」</strong>と入力します。</li>
+            <li>「<tt>width</tt>」プロパティの右側の列に<strong>「90px」</strong>と入力し、キーボードのリターン・キーを押します。<br> <img alt="「CSSスタイル」ウィンドウのイメージ・プロパティ・ペインのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-css/html5-css-styleswindow3.png" title="「CSSスタイル」ウィンドウのイメージ・プロパティ・ペイン">
+            <p>値列への入力を始めると、ドロップダウン・リストに「<tt>width</tt>」プロパティの一般的な値が表示されるのを確認できます。</p>
+            <p>リターン・キーを押すと、ブラウザのイメージが自動的に90ピクセル幅にサイズ変更されます。IDEは、<tt>mycss.css</tt>スタイル・シートのCSSルールにプロパティを追加しました。エディタで、スタイル・シートに次のルールが含まれています。</p>
+            
+            <pre class="examplecode">/*My rule for smartphone*/
+@media (max-width: 480px) {
+
+    img {
+        width: 90px;
+    }
+
+}</pre>
+            <p>メニューはまだウィンドウ内に収まらないため、いくつかの変更をスタイル・シートに追加で行う必要があります。 </p>
+            </li>
+            <li>ブラウザ・ウィンドウで、順序なしリスト(<tt>&lt;ul></tt>)要素を選択します。<br> <img alt="ブラウザで選択したリスト要素のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-smartphonebrowser2.png" title="ブラウザで選択したリスト要素">
+                <p>要素を選択すると、「ブラウザDOM」ウィンドウで「<tt>&lt;ul></tt>」が選択され、「CSSスタイル」ウィンドウでその要素に適用されているスタイルを確認できます。</p>
+                <img alt="「ブラウザDOM」ウィンドウのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-css/html5-css-browserdom.png" title="「ブラウザDOM」ウィンドウで選択したリスト要素">
+                <p>「CSSスタイル」ウィンドウで「<tt>font-family</tt>」を選択すると、<tt>font-family</tt>プロパティと値が<tt>.ui-widget</tt>クラス・セレクタで定義されていることを確認できます。</p>
+            </li>
+            <li>エディタで<tt>index.html</tt>ファイルをクリックし、「CSSスタイル」ウィンドウの「ドキュメント」タブをクリックします。</li>
+            <li>「CSSスタイル」ウィンドウで「<tt>css/mycss.css</tt>」ノードを展開します。<br> <img alt="「CSSスタイル」ウィンドウの「ドキュメント」タブのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-css/html5-css-styleswindow4.png" title="「CSSスタイル」ウィンドウの「ドキュメント」タブで選択されたスタイル・シート">
+            </li>
+            <li>「CSSスタイル」ウィンドウの「CSSルールの編集」ボタン(<img alt="「CSSルールの編集」ボタン" src="../../../images_www/articles/73/web/html5-gettingstarted/newcssrule.png" title="「CSSルールの編集」ボタン">)をクリックして、「CSSルールの編集」ダイアログ・ボックスを開きます。</li>
+            <li>「セレクタ・タイプ」として「クラス」を選択し、「セレクタ」として「<strong>ui-widget</strong>」を入力します。</li>
+            <li>「スタイルシート」として<strong>「<tt>css/mycss.css</tt>」</strong>を選択し、「@規則」として<strong>(最大幅:480px)</strong>を選択します。「OK」をクリックします。
+                <p>「OK」をクリックすると、IDEにより新規ルールが<tt>mycss.css</tt>スタイル・シートに追加され、エディタにファイルが開きます。ファイルがエディタに開かない場合は、「CSSスタイル」ウィンドウの「<tt>css/mycss.css</tt>」ノードで「<tt>ui-widget</tt>」ルールをダブルクリックしてスタイル・シートを開くことができます。カーソルは、スタイル・シートのルールを含む行に配置されます。</p></li>
+            <li>次のプロパティと値(太字)を<tt>ui-widget</tt>のルールに追加します。
+                <pre class="examplecode">.ui-widget {
+    <strong>font-size: 0.9em;</strong>
+}</pre>
+                <p>スタイル・シートの値を変更すると、ブラウザ・ウィンドウでページが自動的に更新されます。</p>
+                <p class="tips">エディタにプロパティと値を入力し、コード補完を使用できます。または、上部ペインで「<tt>.ui-widget</tt>」ルールを選択し、下部ペインの「プロパティの追加」ボタンをクリックして「プロパティの追加」ダイアログ・ボックスを開くことができます。</p>
+                <img alt="エディタでのCSSコード補完のスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-csseditor1.png" title="エディタでのCSSコード補完">
+                <p>ルールを追加した後で、メニューがページに収まることを確認できます。</p>
+                <img alt="CSSルールの適用後のブラウザのページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/73/web/html5-css/html5-css-smartphonebrowser3.png" title="新しいCSSルールが適用された、ブラウザに表示されるページ">
+            </li>
+            <li>ブラウザのNetBeansアイコンをクリックし、メニューで「タブレット縦」を選択します。
+                <p>ブラウザ・ウィンドウがサイズ変更されたら、画面サイズが480ピクセル幅より大きい場合にスタイル・シートが表示に影響しないことを確認できます。</p></li>
+            
+        </ol>
+    </div>
+        
+        <a name="preprocessors"></a>
+        <h2>CSSプリプロセッサの使用</h2>
+        <p>標準のCSSファイルの編集ツールに加えて、IDEでは、SassおよびLESS CSSプリプロセッサを使用したアプリケーションのスタイルシートの生成がサポートされます。IDEには、CSSプリプロセッサの生成や監視対象ディレクトリの指定を行うためのウィザードが用意されています。監視対象ディレクトリを指定すると、ディレクトリ内のCSSプリプロセッサを変更するたびにCSSファイルが自動的に生成されます。</p>
+        
+        
+        <p class="notes"><strong>注意:</strong>CSSプリプロセッサを使用するには、プリプロセッサ・ソフトウェアをインストールし、実行可能ファイルの場所を指定する必要があります。「オプション」ウィンドウで、実行可能ファイルの場所を指定できます。
+        </p>
+        <ol>
+            <li>ローカル・システムにCSSプリプロセッサ・ソフトウェアをインストールします。
+                <p>IDEでは、<a href="http://sass-lang.com/" target="_blank">Sass</a>および<a href="http://lesscss.org/">LESS</a>プリプロセッサがサポートされます。このチュートリアルでは、Sassを使用してCSSファイルを生成する方法について説明しますが、LESSの構成も同様です。</p>
+                <p class="notes"><strong>注意:</strong>LESSをOS Xにインストールする場合、Node.jsが<tt>usr/bin</tt>ディレクトリにあることを確認する必要がある場合があります。詳細は、次の<a href="http://stackoverflow.com/questions/8638808/problems-with-less-sublime-text-build-system">ノート</a>を参照してください。</p></li>
+            <li>「ファイル」ウィンドウでHTML5Demoプロジェクトを展開します。</li>
+            <li>「ファイル」ウィンドウで「<tt>public_html</tt>」フォルダを右クリックし、ポップアップ・メニューで「新規」>「フォルダ」を選択します。
+            <p>ポップアップ・メニューのオプションに「フォルダ」がない場合、「その他」を選択し、新規ファイル・ウィザードの「その他」カテゴリで「フォルダ」ファイル・タイプを選択します。</p>
+            </li>
+            <li>「ファイル名」に<strong>「scss」</strong>と入力します。「終了」をクリックします。
+                <p>「終了」をクリックすると、<tt>public_html</tt>フォルダに新しいフォルダが生成されます。</p></li>
+            <li>「プロジェクト」ウィンドウで「<tt>css</tt>」フォルダ・ノードを右クリックし、ポップアップ・メニューで「新規」>「Sassファイル」を選択します。</li>
+            <li>「ファイル名」に<strong>「mysass」</strong>と入力します。</li>
+            <li>「構成」をクリックし、「オプション」ウィンドウで「CSSプリプロセッサ」タブを開きます。</li>
+            <li>Sass実行可能ファイルのパスを入力するか、「参照」をクリックしてローカル・システムで実行可能ファイルを検索します。「OK」をクリックして「オプション」ウィンドウを閉じます。<br> <img alt="CSSルールの適用後のブラウザのページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-css/html5-css-cssoptions.png" title="新しいCSSルールが適用された、ブラウザに表示されるページ">
+            </li>
+            <li>新規ファイル・ウィザードで「保存時にSassファイルをコンパイル」を選択します。「OK」をクリックします。<br> <img alt="CSSルールの適用後のブラウザのページのスクリーンショット" class="margin-around b-all" src="../../../images_www/articles/74/web/html5-css/html5-css-newsass.png" title="新しいCSSルールが適用された、ブラウザに表示されるページ">
+                
+                <p>「OK」をクリックすると、新しいSassファイル<tt>mysass.scss</tt>がエディタで開きます。</p></li>
+            <li>次の内容を<tt>mysass.scss</tt>に追加し、変更を保存します。
+                    
+                <pre class="examplecode">img {
+    margin-right: 20px; 
+    float:left; 
+    border: 1px solid;
+
+    @media (max-width: 480px) {
+        width: 90px;
+    }
+}
+
+
+.ui-widget {
+    @media (max-width: 480px) {
+        font-size: 0.9em;
+        li {
+            color: red; 
+        }
+    }
+}</pre>
+                
+                <p>ファイルを保存すると、Sassプリプロセッサによって新しいCSSファイル<tt>mysass.css</tt>が<tt>css</tt>フォルダに生成されます。エディタで<tt>mysass.css</tt>を開くと、<tt>scss</tt>ファイルから生成されたルールを確認できます。デフォルトでは、CSSデバッグ情報は<tt>mysass.css</tt>に生成されます。デバッグ情報を生成する必要がなくなったら、「オプション」ウィンドウの「CSSプリプロセッサ」タブで生成を無効にできます。</p>
+                <p class="notes"><strong>注意:</strong> 
+                <div class="indent">
+                    <ul>
+                        <li>プリプロセッサ・ファイルが変更されて保存されるたびにスタイル・シートが再生成されるため、CSSルールを変更する場合、<tt>mysass.css</tt>スタイル・シートではなく、Sassプリプロセッサ・ファイル<tt>mysass.scss</tt>を編集します。</li>
+                        <li>Sassの構文およびその他のSassの機能に関するドキュメントとしては、<a href="http://sass-lang.com/documentation/file.SASS_REFERENCE.html#">Sass reference</a>を参照してください。</li>
+                </ul></div>
+            </li>
+            <li><tt>index.html</tt>を開いて次の変更を加え、スタイル・シートへのリンクを<tt>mycss.css</tt>から<tt>mysass.css</tt>に変更します。変更を保存します。
+                <pre class="examplecode">&lt;link type="text/css" rel="stylesheet" href="css/<strong>mysass.css</strong>"&gt;</pre>
+                <p>ファイルを保存すると、ブラウザでページが自動的に更新されます。リスト・アイテム要素が赤色になったことが確認できます。</p>
+            </li>
+        </ol>
+
+
+        <h2 id="summary">サマリー</h2>
+
+        <p>このチュートリアルでは、HTML5アプリケーションのCSSルールを追加および変更して、より小さいスクリーン・サイズのデバイスでのアプリケーションの表示を改善する方法を学習しました。標準スマートフォンのブラウザに合せてサイズ変更されたアプリケーションをブラウザに表示しました。ChromeブラウザのNetBeansでの検査モードを使用してCSSスタイル・ルールを特定し、より小さい画面サイズのレイアウトを最適化するようにルールを変更しました。</p>
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Working%20With%20CSS%20Style%20Sheets%20in%20an%20HTML5%20Application">このチュートリアルに関するご意見をお寄せください</a>
+        </div>
+
+        <br style="clear:both;">
+
+        <br>
+        <h2 id="seealso">関連項目</h2>
+
+
+        <p>IDEでのHTML5アプリケーションのサポートの詳細は、<a href="https://netbeans.org/">netbeans.org</a>で次のソースを参照してください。</p>
+
+        <ul>
+            <li><a href="html5-gettingstarted.html">HTML5アプリケーションの開始</a>。ChromeのNetBeans Connector拡張機能をインストールし、単純なHTML5アプリケーションを作成および実行する方法を示すドキュメントです。</li>
+            <li><a href="html5-js-support.html">HTML5アプリケーションでのJavaScriptのデバッグとテスト</a>。IDEでJavaScriptファイルをデバッグおよびテストするのに役立つツールをIDEが提供する方法を示すドキュメントです。</li>
+            <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG">NetBeans IDEによるアプリケーションの開発ユーザーズ・ガイド</a>の<a href="http://docs.oracle.com/cd/E50453_01/doc.80/e50452/dev_html_apps.htm">HTML5アプリケーションの開発</a> </li>
+        </ul>
+        
+        <p>jQueryの詳細は、公式ドキュメントを参照してください。</p>
+        <ul>
+            <li>公式ホーム・ページ: <a href="http://jquery.com">http://jquery.com</a></li>
+            <li>UIホーム・ページ: <a href="http://jqueryui.com/">http://jqueryui.com/</a></li>
+            <li>チュートリアル: <a href="http://docs.jquery.com/Tutorials">http://docs.jquery.com/Tutorials</a></li>
+            <li>ドキュメントのメイン・ページ: <a href="http://docs.jquery.com/Main_Page">http://docs.jquery.com/Main_Page</a></li>
+            <li>UIデモおよびドキュメント: <a href="http://jqueryui.com/demos/">http://jqueryui.com/demos/</a></li>
+        </ul>
+
+
+    </body>
+</html>

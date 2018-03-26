@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009 - 2014, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>NetBeans GUIビルダーでのギャップ編集機能のサポート</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="This tutorial is intended as a guide to show how to utilize gap editing in the NetBeans GUI Builder without concern for the underlying layout manager.">
+   <meta name="KEYWORDS" content="NetBeans, Free Design, Tutorial, Guide, User, Documentation, Basic">
+   <link rel="stylesheet" href="../../../netbeans.css">
+   
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>NetBeans GUIビルダーでのギャップ編集機能のサポート</h1>
+    <div class="articledate" style="margin-left: 0px;">Jan Stola、Alyona Stashkova</div>
+    <p>フリー・デザイン・モードのコンテナのレイアウトは、複数のコンポーネントおよびそれらのコンポーネント間のギャップで構成されます。コンポーネントとギャップは両方とも、GUIビルダーのデザイン・ビューに視覚化されます。NetBeans IDEを使用すると、GUIビルダーでギャップを直接編集できます。 </p>
+	<p>このチュートリアルでは、ギャップ編集機能を使用して他のコンポーネントとの間に新しいUIコンポーネントを挿入する方法、および基礎となるレイアウト・マネージャを考慮せずにNetBeans GUIビルダーでコンポーネントをフレームに沿って簡単に中央揃えする方法について説明しています。このチュートリアルは、プロジェクトに必要な特定のターゲット・レイアウトを実装するために、フリー・デザイン・モードで既存のフォーム内の変更を実行する方法を示すためのガイドとして作成されています。 </p>
+	
+    
+ 
+    
+    
+       <p><b>目次</b></p>
+    <img alt="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="このページの内容は、NetBeans IDE 7.2、7.3、7.4および8.0に適用されます">
+    <ul class="toc">
+        <li><a href="#zip">サンプル・プロジェクトを開く</a></li>
+		<li><a href="#drag">端のドラッグ・アンド・ドロップによるギャップのサイズ変更</a></li>
+        <li><a href="#wheel">マウス・ホイールを使用したギャップのサイズ変更</a></li>
+		<li><a href="#container">コンポーネント周囲のギャップの編集</a></li>
+        <li><a href="#summary">サマリー</a></li>
+		<li><a href="#seealso">関連項目</a></li>
+    </ul>
+
+   
+   <p><b>このチュートリアルに従うには、次に示すソフトウェアとリソースが必要です。</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">ソフトウェアまたはリソース</th>
+                <th class="tblheader" scope="col">必須バージョン</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2、7.3、7.4または8.0 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">バージョン6、7または8 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FGapSupport.zip">GapSupport.zip</a></td>
+                <td class="tbltd1">初期およびターゲット・チュートリアルのレイアウトを含むソース・ファイルが含まれているアーカイブ。</td>
+            </tr>
+           
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>注意: </strong></p>
+    <div class="indent">
+    <ul>
+        <li>このチュートリアルの開始点として使用されるプロジェクトを<tt>.zip</tt>アーカイブとしてダウンロードできます。 </li>
+        <li>このチュートリアルは、コンテナのレイアウトのデザインにのみ焦点を置いています。GUIへの機能の追加は範囲に含まれていません。</li>
+		<li>ギャップの視覚化をオンまたはオフにするには、IDEのメイン・メニューで「<tt>ツール</tt>」>「<tt>オプション</tt>」>「<tt>Java</tt>」>「<tt>GUIビルダー</tt>」を選択し、「<tt>追加のレイアウト情報を視覚化</tt>」オプションを使用します。 </li>
+    </ul>
+</div>
+    <!-- ++++++++++++ Using .zip ++++++++++++ -->
+<a name="zip"></a>
+    <h2>サンプル・プロジェクトを開く</h2>
+	
+	<ol><li><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FGapSupport.zip">GapSupport.zip</a>アーカイブをコンピュータ上の任意の場所にダウンロードして解凍します。</li>
+	<li>NetBeans IDEのメイン・メニューで「<tt>ファイル</tt>」>「<tt>プロジェクトを開く</tt>」を選択し、解凍したファイルおよび前のステップで抽出した<tt>GapSupport</tt>プロジェクトを含むフォルダに移動します。</li>
+	<li>「プロジェクトを開く」をクリックします。<br>「プロジェクト」ウィンドウは次のようになります。
+	<p class="align-center"><img alt="「プロジェクト」ウィンドウ" border="1" src="../../../images_www/articles/72/java/gui-gaps/prj.png"></p></li>
+    <li> <tt>Initial.java</tt>ファイルをダブルクリックします。<br>サンプル・フォームがGUIビルダーの「デザイン」ビューで開きます。 
+	<p class="align-center"><img alt="開いているInitial.java" border="1" src="../../../images_www/articles/72/java/gui-gaps/initialform.png"></p>
+					 <p class="notes"><b>注意:</b> 「ナビゲータ」ウィンドウにフォームのコンポーネント階層を表示するには、メイン・ツールバーから「ウィンドウ」>「ナビゲータ」を選択します。</p>
+<p class="align-center"><img alt="「ナビゲータ」ウィンドウ" border="1" src="../../../images_www/articles/72/java/gui-gaps/navigator.png"></p></li>
+	</ol>
+
+
+<p class="align-center"><a href="#top">先頭</a></p>
+ <!-- ++++++++++++ DnD an Edge of a Gap ++++++++++++ -->
+    <a name="drag"></a>
+    <h2>端のドラッグ・アンド・ドロップによるギャップのサイズ変更 </h2>
+	<p>IDEのデザイン・ビューで、端をドラッグ・アンド・ドロップしてギャップを編集する方法を説明します。</p>
+	<p> 「<tt>First Name</tt>」行と「<tt>Last Name</tt>」行の間に「<tt>Middle Name</tt>」行を追加するには、次の手順を完了する必要があります。</p>
+	
+    <ol>
+<li>「<tt>First Name</tt>」ラベルと「<tt>Last Name</tt>」ラベルの間のギャップをクリックします。<br>ギャップが緑色で強調表示されます。
+<p class="align-center"><img alt="強調表示されたギャップ" border="1" src="../../../images_www/articles/72/java/gui-gaps/gap-highlighted.png"></p></li>
+<li>強調表示されたギャップの下部にマウス・ポインタを置きます。<br>ポインタは、垂直方向にサイズ変更可能なポインタに変わります。
+  <p class="align-center"><img alt="サイズ変更可能に変わったポインタ" border="1" src="../../../images_www/articles/72/java/gui-gaps/gap-resizable.png"></p></li>
+<li>マウスの左ボタンを押しながらポインタを下へドラッグして選択したギャップを50まで拡大し、マウスの左ボタンを離します。<br>ギャップの新しいサイズがツールチップに表示されます。
+  <p class="align-center"><img alt="ギャップの拡大" border="1" src="../../../images_www/articles/72/java/gui-gaps/resizing.png"></p></li>
+<li>パレットの「Swingコントロール」セクションから新しいラベルをドラッグし、作成したギャップにドロップします。これにより、左端が「<tt>First Name</tt>」ラベルの左端にそろい、上端には「<tt>First Name</tt>」行からの提案された優先ギャップが確保されます。 
+  <p class="align-center"><img alt="ラベルの追加" border="1" src="../../../images_www/articles/72/java/gui-gaps/jlabel.png"></p></li>
+<li>ラベルをダブルクリックし、ラベルのテキストを「<tt>Middle Name:</tt>」に変更します。
+<p class="align-center"><img alt="「Middle Name:」に変更されたテキスト" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-name.png"></p></li>
+<li>パレットの「Swingコントロール」セクションから新しいテキスト・フィールドをドラッグして「<tt>Middle Name:</tt>」ラベルの右に追加します。これにより、新しいテキスト・フィールドはベースラインが「<tt>Middle Name</tt>」ラベルとそろい、左端が他のテキスト・フィールドとそろいます。
+<p class="align-center"><img alt="テキスト・フィールドの追加" border="1" src="../../../images_www/articles/72/java/gui-gaps/textfield.png"></p></li>
+<li>テキスト・フィールドの右端をドラッグして、他のテキスト・フィールドの右端とそろえます。 
+<p class="align-center"><img alt="テキスト・フィールドのサイズ変更" border="1" src="../../../images_www/articles/72/java/gui-gaps/textfield-resized.png"></p></li>
+<li>テキスト・フィールド内のテキストを右クリックし、ポップアップ・メニューから「テキストを編集」を選択します。テキストを除去します。 </li>
+</ol>
+<p>「<tt>Middle Name</tt>」行がフォーム・コンポーネント間に挿入されます。</p>
+<p class="align-center"><img alt="テキスト・フィールドのサイズ変更" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-inserted-gap.png"></p>
+<p class="align-center"><a href="#top">先頭</a></p>
+    
+     
+
+<!-- ++++++++++++ Using Mouse Wheel When Resizing ++++++++++++ -->
+<a name="wheel"></a>
+<h2>マウス・ホイールを使用したギャップのサイズ変更</h2>
+
+<p>IDEでギャップをサイズ変更するには、マウス・ホイールをクリックしてスクロールし、ギャップ・サイズを調整します。 </p>
+<p>「<tt>Middle Name</tt>」行と「<tt>Last Name</tt>」行の間の余分なスペースを除去するには、下のギャップをクリックしてマウス・ホイールを下方向にスクロールし、新しいサイズを「<tt>デフォルト小</tt>」に設定してギャップの高さを小さくします。</p>
+<p class="notes"><b>注意:</b> NetBeans GUIビルダーでは、コンポーネントの配置用に、「<tt>デフォルト小</tt>」、「<tt>デフォルト中</tt>」、および「<tt>デフォルト大</tt>」の3つの優先ギャップがサポートされています。 </p>
+<p class="align-center"><img alt="デフォルト小" border="1" src="../../../images_www/articles/72/java/gui-gaps/default-small.png"></p>
+
+
+<p>フォーム・コンポーネント間のギャップは、マウス・ホイールおよび優先ギャップを使用してサイズ変更されます。</p> 
+<p class="align-center"><img alt="挿入された「Middle Name」行" border="1" src="../../../images_www/articles/72/java/gui-gaps/middle-inserted.png"></p>
+
+<p class="align-center"><a href="#top">先頭</a></p>
+<!-- ++++++++++++ Resizing a Gap Around a Container ++++++++++++ -->
+<a name="container"></a>
+<h2>コンポーネント周囲のギャップの編集</h2>
+<p>コンポーネントを中央揃えするには、すでにサイズ変更可能とマークされた2つの同じギャップにコンポーネントを含めます。</p>
+<p class="notes"><b>注意:</b> コンテナは、コンポーネントを中央揃えする場所を指定するのに役立ちます。ボタンは新しいパネルに含めなくても中央揃えできますが、GUIビルダーでこの作業を行うのはより難しく、完成したレイアウトが壊れやすい場合があります。このため、可能な場合は、中央揃えするコンポーネントをパネルに含めることをお薦めします。</p>
+<p><b>ボタンおよびサイズ変更可能なギャップを個別のコンテナに含めるには、次を行います:</b> </p>
+
+<ol>
+<li>フォーム内の4つのボタンをすべて選択します。 </li>
+<li>選択範囲を右クリックし、ポップアップ・メニューから「<tt>含める</tt>」>「<tt>パネル</tt>」を選択します。
+<p class="align-center"><img alt="ポップアップ・メニューで「パネル」を選択" border="1" src="../../../images_www/articles/72/java/gui-gaps/enclose-panel.png"></p>
+ボタンが1つのコンテナに含まれます。
+<p class="align-center"><img alt="1つのパネルに含まれたボタン" border="1" src="../../../images_www/articles/72/java/gui-gaps/buttons-enclosed.png"></p></li>
+</ol>
+
+<p><b>ボタンの左右に新たに作成されたギャップを除去するには、次の手順を行います:</b></p>
+<ol>
+<li>いずれかのボタンを右クリックし、ポップアップ・メニューから「レイアウト・スペースを編集」を選択します。<br>「レイアウト・スペースを編集」ダイアログ・ボックスが表示されます。
+<p class="align-center"><img alt="「レイアウト・スペースを編集」ダイアログ・ボックス" border="1" src="../../../images_www/articles/72/java/gui-gaps/edit-layout-space.png"></p></li>
+<li> 左右のギャップのサイズを0に設定し、「OK」をクリックします。<br>「レイアウト・スペースを編集」ダイアログ・ボックスを使用して、ボタンの左右のギャップが除去されます。
+  <p class="align-center"><img alt="除去された左右のギャップ" border="1" src="../../../images_www/articles/72/java/gui-gaps/gaps-removed.png"></p></li>
+</ol>
+<p><b>コンテナの上下のギャップをサイズ変更可能にするには、次を行います:</b></p>
+
+<ol>
+<li> 最後のボタンの下部にあるギャップをダブルクリックします。<br>「レイアウト・スペースを編集」ダイアログ・ボックスが表示されます。</li>
+<li>「レイアウト・スペースを編集」ダイアログ・ボックスで、「<tt>サイズ変更可能</tt>」オプションを選択し、「OK」をクリックします。
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-gaps/bottom.png" rel="lytebox" title="サイズ変更される下部のギャップ"> <img alt="サイズ変更される下部のギャップ" border="1" src="../../../images_www/articles/72/java/gui-gaps/bottom-small.png"></a></p></li>
+<li> 一番上のボタンの上にあるギャップについて、ステップ1と2を繰り返します。<br>ボタンが含まれるコンテナの上下のギャップがサイズ変更可能になります。</li>
+</ol>
+
+<p><b>サンプル・フォームのボタンを中央揃えするには:</b></p>
+<p>次に示すように、ボタンが含まれるコンテナの下端をドラッグして、リストの下端にそろえます。 </p>
+<p class="align-center"><img alt="ボタンが含まれるコンテナの中央揃え" border="1" src="../../../images_www/articles/72/java/gui-gaps/align.png"></p>
+<p>コンテナは、「<tt>Available Topics</tt>」リストと「<tt>Selected Topics</tt>」リストの高さと一致するように拡張されます。周囲のギャップはサイズ変更可能とマークされているため、ボタンを囲むコンテナによって決められたスペース内でボタンが中央揃えされます。  </p>
+<p class="align-center"><img alt="中央揃えされたボタン" border="1" src="../../../images_www/articles/72/java/gui-gaps/buttons-centered.png"></p>
+
+
+
+<p class="align-center"><a href="#top">先頭</a></p>
+
+ 
+<!-- ++++++++++++ Summary ++++++++++++ -->
+<a name="summary"></a>
+<h2>サマリー</h2>
+<p>このチュートリアルでは、基本的なフォームを拡張しました。ギャップを操作するとき、フリー・デザイン・モードで空のスペースを管理し、レイアウト実装の詳細の微調整に余分な時間をかけずに魅力的なUIをデザインする方法を学習しました。</p>
+
+
+
+
+
+
+
+
+
+ <p class="align-center"><a href="#top">先頭</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Gap%20Support">このチュートリアルに関するご意見をお寄せください</a></div>
+      <br style="clear:both;" >  
+<a name="seealso"></a>
+<h2>関連項目</h2>
+<p>これで、NetBeans GUIビルダーでのギャップ編集機能のサポートのチュートリアルを完了しました。作成するGUIに機能を追加する方法については、次のドキュメントを参照してください。</p> 
+      <ul>
+	     <li><i>NetBeans IDEによるアプリケーションの開発</i>の<a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Java GUIの実装</a></li>
+         <li><a href="gui-functionality.html">Java GUIビルドの概要</a></li>
+		 <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUIビルダーのFAQ</a> </li>
+         <li><a href="../../trails/matisse.html">Java GUIアプリケーションの学習</a> </li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">先頭</a></p>
+
+   
+</body>
+</html>

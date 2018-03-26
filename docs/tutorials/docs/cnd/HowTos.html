@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>C/C++ Application How-Tos for Code Assistance</title>
+<link rel="stylesheet" href="../../../netbeans.css" type="text/css">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+<meta name="description"
+content="This article discusses how to solve issues you may encounter with the C/C++ code assistance features 
+of the NetBeans IDE or Oracle Solaris Studio IDE.">
+<meta name="author" content="Vladimir Kvashin and Vladimir Voskresensky"> <!--Optional tag-->
+<meta name="keywords" content="development, NetBeans, IDE, C, C++, Oracle Solaris Studio, code assistance, namespace">
+
+
+</head>
+<body>
+<a name="top"></a>
+
+<h1>C/C++ Application How-Tos for Code Assistance</h1>
+<!-- START INTRO ---------------------------------------------------------------------------------------* -->
+<div class="articledate" style="margin-left: 0px;font-style:italic;">
+<p><em>Contributed by <a
+href="mailto:vladimir.kvashin@oracle.com"><i>Vladimir Kvashin</i></a> and <a
+href="mailto:vladimir.voskresensky@oracle.com"><i>Vladimir Voskresensky</i></a><br>
+
+March 2013</em> [Revision number: V8.0]
+</div>
+<p>Code assistance is a set of IDE features that help you navigate and edit source code.
+    For a C/C++ Project With Existing Sources or a C/C++ Project From Existing Binary, 
+    you can specify how your code will be parsed to enable the code assistance features of the IDE.
+ </p>
+ <p>Note that the tips in this article mostly apply to projects from existing source or from
+ an existing binary.  For projects that are created and managed by the IDE
+ code assistance configuration is not necessary. </p>
+<h3>Contents</h3>
+   <img src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp"
+alt="Content on this page applies to NetBeans IDE 8.0/7.4/7.3" title="Content on this page applies to the NetBeans IDE 8.0/7.4/7.3">
+
+   <table class="b-none vatop" cellpadding="0" cellspacing="0">
+  
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#questionmark" title="What To Do When Your Project Has a
+      Question Mark in the Projects Window or a #include Directive is Underlined
+      in Red">What To Do When Your Project Has a
+      Question Mark in the Projects Window or a #include Directive is Underlined
+      in Red</a></td>
+      </tr>
+     <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#analyzer" title="Configuring Build Analyzer for Code Assistance">
+              Configuring Build Analyzer for Code Assistance</a></td>
+      </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#multiplatform" title="Configuring Code Assistance for a
+      Multi-Platform Project">Configuring Code Assistance for a
+      Multi-Platform Project</a></td>
+      </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#cannotbuild" title="Configuring Code Assistance When You
+      Cannot Build the Project">Configuring Code Assistance When You
+      Cannot Build the Project</a></td>
+      </tr>
+      <tr>
+       <td class="hyphen">-&nbsp;</td>
+      <td><a href="#definitiondeclaration" title="When a Hyperlink Goes to a
+      Function Definition and When to a Declaration">When a Hyperlink Goes to a
+      Function Definition and When to a Declaration</a></td>
+      </tr>
+      <tr>
+       <td class="hyphen">-&nbsp;</td>
+      <td><a href="#namespace" title="Finding All Definitions of a
+      Namespace">Finding All Definitions of a Namespace</a></td>
+      </tr>
+      <tr>
+      <td class="hyphen">-&nbsp;</td>
+      <td><a href="#declaration" title="Seeing the Declaration Name of a
+      Declaration Made in a Macro">Seeing the Declaration Name of a
+      Declaration Made in a Macro</a></td>
+      </tr>
+      </table>
+      
+
+<h2><a name="questionmark"></a>What To Do When Your Project Has a
+      Question Mark in the Projects Window</h2>
+      <p>
+If your project has a question mark in the Projects window, or an
+<tt>#include</tt> 
+directive is underlined in red, then your project has unresolved include directives. 
+The IDE uses an internal parser 
+that is used by Code Assistance features (Code Completion, Classes window, 
+Navigator window, etc). The markings mean that this parser cannot resolve some
+<tt>#include</tt> directives, because the IDE project has an incorrect configuration.
+This might happen if the project was created from existing sources without help 
+from debugging information or if, for example, the source files included new 
+libraries since the IDE project was created. 
+</p>
+<p>
+Here are some possible reasons (arranged from most to least 
+probable):</p>
+<ul>
+<li>Wrong or insufficient user include paths specified in the project, logical 
+folder, or file properties</li>
+<li>Wrong or insufficient user-defined macros specified in the project, logical 
+folder, or file properties</li>
+<li>Source file is included in the project by mistake</li>
+<li>Header file is not included in any source files and hence is included in 
+the project by mistake</li> 
+</ul>
+<p>
+If you hold the mouse cursor over the project folder, a tooltip displays some information about the problem. 
+For more information, 
+you can right-click the project and select Code Assistance -> Failed #include/#error directives. </p>
+
+<p>
+Try launching the Configure Code Assistance wizard by right-clicking the
+project and choosing Code 
+Assistance &gt; Configure Code Assistance to resolve the problem. 
+If you know the location of the files that correspond to the failed include 
+directive, then you can set up the project, logical folder, and file 
+properties manually.
+</p>
+<h2><a name="analyzer"></a>Configuring Build Analyzer for Code Assistance
+      </h2>
+<p>
+Suppose your application source code is managed with a version control system (VCS) such as Mercurial, 
+and you create an IDE project from the source code. If you open the IDE project in the IDE and pull in 
+changes from the VCS, you should build the IDE project so it is up to date with the modifications.</p>
+<p>
+After you build your project in the IDE, the project is automatically updated by the IDE in the following ways:
+<ul>
+    <li>New compilation units are added to the IDE project.</li>
+    <li>Existing compilation units are modified with new or changed user-defined includes and macros.</li>
+    <li>Compilation units that are excluded from building are not excluded from code assistance.</li>
+</ul>
+<p>The IDE uses a build analyzer to gather information from the build, using an interposing technique to catch system library exec calls on Oracle Solaris and Linux platforms. By default, the build analyzer is used when you create a project with existing sources and when you manually run Configure Code Assistance. If the build analyzer is not used, the output log of the build is used to capture information.</p>
+<p>
+    If you do not want the IDE to perform the project updates, you can disable the build analyzer as follows:
+   </p>
+<ol><li>Right-click the project node in the Projects window and select Properties.</li>
+    <li>In the Project Properties dialog box, click the Code Assistance category.</li>
+    <li>Deselect the Use Build Analyzer option.</li></ol>
+   <p class="tips">For source code projects that set up their own environment at build time, the build analyzer might not always work well. If a build fails when the Use Build Analyzer option is selected, you should check your build script to see if you have unset the <tt>LD_LIBRARY_PATH</tt> environment variable. If <tt>LD_LIBRARY_PATH</tt> is unset, you should also unset <tt>LD_PRELOAD</tt>. When these two variables are unset, the build analyzer is automatically disabled. If you cannot modify the build script, you can disable the build analyzer as described above, and the IDE can use the output log for build information.</p>
+<h2><a name="multiplatform"></a>Configuring Code Assistance for a
+      Multi-Platform Project</h2>
+      <p>
+      If you are developing a multi-platform project from existing code, you can use 
+the same IDE project for different platforms. Create a configuration per 
+platform and change the compiler collection, compiler options, and other 
+project properties appropriately.
+</p>
+    
+<p>The Configure Code Assistance wizard also works on a per-configuration 
+basis: it alters only the configuration that is currently active. So you can 
+run it separately for each configuration and get different code assistance 
+settings for different platforms.
+</p>
+      
+<h2><a name="cannotbuild"></a>Configuring Code Assistance When You Cannot Build the Project</h2>
+ <p>The Configure Code Assistance wizard is most efficient if you built 
+your code with debugging information (the best options are <tt>-g3
+-gdwarf-2</tt> for GNU compilers and just<tt>-g</tt> for Oracle Solaris Studio compilers.
+</p>
+
+    
+<p>If your project cannot be built or does not contain debugging 
+information, the Configure Code Assistance wizard has a special mode called Search 
+File System for C/C++ Header Files. In this mode, the NetBeans IDE tries to 
+resolve failed include directives by searching the file system for headers. 
+The wizard asks you to enter a path to search for headers.
+By default, the path searched is a project source root.
+</p>     
+<p>To use the wizard, right-click the project and choose Code Assistance &gt; Configure Code Assistance. Follow the steps of the wizard to enable the IDE to update code assistance. Click the Help button to get information about each step.</p>
+<p></p>
+      
+<h2><a name="definitiondeclaration"></a>Using Hyperlinks to Navigate Between Invocations and Declarations</h2>
+     
+<p>Hyperlink navigation lets you jump from the invocation of a function, class, method, variable, or constant to its declaration. To use a hyperlink, do one of the following:</p>
+<ul>
+    <li>Mouse over a class, method, variable, or constant while pressing Ctrl. A hyperlink appears along with a tooltip with information about the element. Click the hyperlink and the editor jumps to the declaration. Press Alt+Left to jump back to the invocation.
+</li>
+<li>Mouse over an identifier and press Ctrl+B. The editor jumps to the declaration.</li>
+    <li> Press Alt+Left to jump back to the invocation.  Press Alt+Left and Alt+Right to move backward and forward through the history of the cursor position.</li>
+</ul>
+<p>You can also right-click the item and select Navigate &gt; Go to Declaration/Definition, or other options to navigate through your code.</p>
+<h2><a name="namespace"></a>Finding All Definitions of a Namespace</h2>
+      <p>
+      A namespace can be defined in different files of the project. To navigate
+between different namespace definitions, use the Classes window (Ctrl-9). 
+Right-click the namespace you are interested in and 
+choose All Declarations. You will see a list of all definitions sorted by file 
+names.
+</p>
+    
+
+ <div class="feedback-box"><a href="mailto:users@cnd.netbeans.org?subject=subject=Feedback:%20C/C++%20Application%20How-Tos%20-%20NetBeans%20IDE%208.0">Send Feedback on This Tutorial</a><br style="clear:both;">
+
+</div>
+
+</body>
+</html>

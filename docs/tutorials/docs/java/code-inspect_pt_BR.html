@@ -1,0 +1,318 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+* Copyright © 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+        <title>Análise de Código Estático no Editor de Java NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+        <meta name="author" content="Alyona.Stashkova@netbeans.org"></meta>
+        <meta name="description" content="Overview of static analysis of the java code functionality in the NetBeans IDE."></meta>
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment, Java editor, code analysis, inspections, configurations"></meta>
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css"></link>
+        <link rel="stylesheet" type="text/css" href="../../../lytebox.css" media="screen"></link>
+        <script type="text/javascript" src="../../../images_www/js/lytebox-compressed.js"></script>
+    </head>
+
+<body><a name="top"></a>
+
+<h1>Análise de Código Estático no Editor de Java NetBeans IDE</h1>
+ <div class="articledate" style="margin-left: 0px;">Jan Lahoda, Alyona Stashkova</div>
+<p>O Editor Java do NetBeans IDE tem uma nova funcionalidade de análise de código estático, que é uma ferramenta para localizar possíveis problemas e detectar inconsistências no código-fonte. </p>
+<p>Neste tutorial, você aprenderá como executar análise estática de seu código Java usando FindBugs e Dicas Java NetBeans sem realmente executar suas aplicações.</p>
+
+<h3>Conteúdo</h3>
+<img alt="O conteúdo desta página se aplica ao NetBeans IDE 8.0" class="stamp" src="../../../images_www/articles/80/netbeans-stamp.png" title="O conteúdo desta página se aplica ao NetBeans IDE 8.0" />
+
+        <ul class="toc">
+            <li><a href="#setup">Configurando o Ambiente do Tutorial</a></li>
+			
+			<li><a href="#config">Usando Configurações</a>
+			<ul>
+			<li><a href="#all">Executando Todos os Analisadores</a></li>
+			<li><a href="#hints">Verificando Código Java com Dicas Java NetBeans</a></li>
+			<li><a href="#fb">Localizando Problemas em Potencial no Código Java com Findbugs</a></li>
+			<li><a href="#default">Personalizando uma Configuração Default</a></li>
+			</ul>
+			</li>
+			<li><a href="#create">Criando e Deletando Configurações</a></li>
+			<li><a href="#inspect">Executando Inspeções Únicas</a></li>
+			
+			<li><a href="#summary">Resumo</a></li>
+            <li><a href="#seealso">Consulte Também</a></li>
+        </ul>
+
+        <h2><a name="reqs"></a>Requisitos</h2>
+        <p><strong>Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</strong></p>
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://netbeans.org/downloads/index.html" target="_blank">NetBeans IDE</a></td>
+                    <td class="tbltd1">Versão 8.0 </td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html" target="_blank">Java Development Kit</a> (JDK)</td>
+                    <td class="tbltd1">Versão 7 e superior</td>
+                </tr>
+				<tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/library.zip" target="_blank">library.zip</a></td>
+                    <td class="tbltd1">Projeto NetBeans</td>
+                </tr>
+				<tr>
+                    <td class="tbltd1"><a href="http://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.0/jsr305-2.0.0.jar">jsr305-2.0.0.jar </a></td>
+                    <td class="tbltd1">Solicitação de Especificação Java pretendida para melhorar a eficácia das ferramentas de análise estática</td>
+                </tr>
+                
+            </tbody>
+        </table>
+<p class="notes"><b>Observação:</b> <tt>jsr305-2.0.0.jar</tt> está incluído no <tt>library.zip</tt> para a finalidade deste tutorial. </p>
+<p>Se você estiver usando outro projeto NetBeans, o <a href="http://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.0/jsr305-2.0.0.jar">jsr305-2.0.0.jar</a> deverá ser submetido a download e adicionado à pasta Bibliotecas de seu projeto no IDE, conforme mostrado a seguir:</p>
+  <ol>
+<li>Clique com o botão direito na pasta Bibliotecas e escolha Adicionar JAR/Pasta no menu pop-up. </li>
+<li>Na caixa de diálogo Adicionar JAR/Pasta, especifique o caminho para o arquivo <tt>jsr305-2.0.0.jar</tt> submetido a download e clique em Abrir. 
+  <p class="align-center"><img alt="jsr305-2.0.0.jar adicionado" border="1/" src="../../../images_www/articles/80/java/code-inspect/jar.png"></p></li>
+</ol>
+        
+<a name="setup"></a>
+<h2>Configurando o Ambiente do Tutorial</h2>
+<p>Além do software necessário listado acima, você deve ter instalado em seu computador o seguinte:</p>
+<ul>
+<li>O arquivo <a href="https://netbeans.org/projects/samples/downloads/download/Samples/Java/library.zip" target="_blank">library.zip</a> deve ser descompactado na sua pasta de projeto e aberto no NetBeans IDE.</li>	
+
+<li><a name="plugin"></a>O plug-in FindBugs deve ser submetido a download e instalado no NetBeans IDE como segue:
+  <ol>
+<li>Escolha Origem > Inspecionar o menu IDE principal.</li>
+<li>Na caixa de diálogo Inspecionar, clique em Instalar. 
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/inspect.png" rel="lytebox" title="Caixa de diálogo Inspecionar - Clique para aumentar"> <img alt="Caixa de diálogo Inspecionar" border="1/" src="../../../images_www/articles/80/java/code-inspect/inspect-small.png"></a></p></li>
+<li>Na caixa de diálogo Instalador, clique em Próximo para continuar com a instalação.
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/plugin.png" rel="lytebox" title="Instalar o plug-in - Clique para aumentar"> <img alt="Instalando o plug-in" border="1/" src="../../../images_www/articles/80/java/code-inspect/plugin-small.png"></a></p></li>
+<li>Revise o acordo de licença, selecione a opção do contrato de licença e clique em Instalar.</li> 
+<li>Quando a instalação for concluída, clique em Finalizar.</li>
+</ol></li>
+</ul>
+<a name="config"></a>
+<h2>Usando Configurações Predefinidas</h2>
+<p>Você pode usar as seguintes configurações predefinidas ao inspecionar seu código no NetBeans IDE:</p>
+<ul>
+			<li><a href="#all">Todos os Analisadores</a></li>
+			<li><a href="#hints">Dicas Java NetBeans</a></li>
+			<li><a href="#fb">FindBugs</a></li>
+			<li><a href="#default">Default</a></li>
+			
+</ul>
+
+        <a name="all"></a>
+        <h3>Executando Todos os Analisadores</h3> 
+        <p>A configuração <tt>Todos os Analisadores</tt> implanta todas as ferramentas de análise de código estático disponível no IDE.</p>
+		<p><b>Para executar a configuração de <tt>Todos os Analisadores</tt>, execute as seguintes etapas: </b></p>
+		<ol>
+           <li>Escolha Origem > Inspecionar na barra de ferramentas do IDE principal.</li>
+           <li>Na lista drop-down Escopo da caixa de diálogo Inspeção, selecione <tt>Projeto Atual (biblioteca)</tt>.</li>
+           <li>Na lista drop-down Configuração, selecione a configuração <tt>Todos os Analisadores</tt>.
+             <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/allconfig.png" rel="lytebox" title="Configuração Todos os Analisadores selecionada - Clique para aumentar"> <img alt="Configuração Todos os Analisadores selecionada" border="1/" src="../../../images_www/articles/80/java/code-inspect/allconfig-small.png"></a></p>
+		  <p class="notes"><b>Observação:</b> você precisa instalar o plug-in <a href="#plugin">Findbugs</a> para executar esta configuração pela primeira vez.</p></li>
+           <li>Clique em Inspecionar.<br />Os resultados da análise são exibidos na janela Inspetor como uma view em árvore à esquerda.
+		     <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/all.png" rel="lytebox" title="Execução de configuração Todos os Analisadores - Clique para aumentar"> <img alt="Execução da configuração Todos os Analisadores" border="1/" src="../../../images_www/articles/80/java/code-inspect/all-small.png"></a></p>
+		   A descrição da atualmente selecionada na view em árvore Localizar é exibida à direita. 
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/alldescription.png" rel="lytebox" title="Descrição - Clique para aumentar"> <img alt="Descrição" border="1/" src="../../../images_www/articles/80/java/code-inspect/alldescription-small.png"></a></p>
+		   
+		   <p class="notes"><b>Observação:</b> se você quiser deixar alguma parte de seu código que está reportado como problemáticos como está, o IDE permite que você suprima a advertência deste código para deixá-lo sem nenhuma alteração. Você pode clicar duas vezes em uma advertência na view em árvore da Janela Inspetor para ir para o Editor de Código-fonte. Pressione Alt-Enter, clique na seta preta apontando para a direita no final da dica exibida, e escolha <tt>SuppressWarning - <i>(nome da advertência)</i></tt>.</p>
+		   <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/suppress.png" rel="lytebox" title="Suprimindo uma advertência - Clique para aumentar"> <img alt="Suprimindo uma advertência" border="1/" src="../../../images_www/articles/80/java/code-inspect/suppress-small.png"></a></p>
+           </li>
+       
+	   </ol>
+	   
+	   
+         <a name="hints"></a>
+		<h3>Verificando Código Java com Dicas Java NetBeans</h3>
+		<p>A configuração de <tt>Dicas Java NetBeans</tt> disponível no IDE permite que você verifique se as regras padrão de codificação predefinidas foram atendidas pelo Código-fonte em consideração. Em outras palavras, ele se aplica um conjunto de Dicas Java NetBeans (também conhecido como inspeções do código) para seus arquivos de código-fonte Java.</p>
+		<p><b>Para executar a configuração de <tt>Dicas Java NetBeans</tt>, conclua as seguintes etapas: </b></p>
+		<ol>
+		<li>Escolha Origem > Inspecionar na barra de ferramentas do IDE principal.</li>
+		<li>Na lista drop-down Escopo da caixa de diálogo Inspecionar, selecionar <tt>Abrir Projetos</tt> (se tiver apenas um projeto da <tt>biblioteca</tt> aberto no IDE) ou <tt>Projeto Atual (biblioteca)</tt>.
+		<p class="notes"><b>Observação:</b> você pode definir um escopo (um arquivo, pacote ou projeto) para a configuração de <tt>Dicas Java NetBeans</tt>.</p>
+		</li>
+		<li>Selecione o botão de rádio Configuração e escolha <tt>Dicas Java NetBeans</tt> na lista drop-down.
+		 <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/hints.png" rel="lytebox" title="Selecionando Dicas Java NetBeans - Clique para aumentar"> <img alt="Selecionando Dicas Java NetBeans" border="1/" src="../../../images_www/articles/80/java/code-inspect/hints-small.png"></a></p> </li>
+		<li>Clique em Inspecionar.<br />O IDE exibe a view em árvore com os resultados da análise, com a configuração <tt>Dicas Java NetBeans</tt> na Janela Inspetor.
+		<p class="align-center"><img alt="Execução de configuração de Dicas Java NetBeans" border="1/" src="../../../images_www/articles/80/java/code-inspect/hintsconfig.png"></p></li>
+		<li>Na Janela Inspetor, clique no botão <a href="#categorize">Categorizar</a> na barra de ferramentas à esquerda para exibir os problemas agrupados em categorias. 
+		<p class="align-center"><img alt="Problemas encontrados agrupados em categorias" border="1/" src="../../../images_www/articles/80/java/code-inspect/catview.png"></p>		
+		A tabela a seguir exibe os comandos disponíveis na Janela Inspetor.  
+		    <table width="600px">
+                    <tr>
+                        <th class="tblheader" scope="col">Ícone</th>
+                        <th class="tblheader" scope="col" style="width:110px">Nome</th>
+                        <th class="tblheader" scope="col">Função</th>
+                    </tr>
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="Ícone Atualizar" src="../../../images_www/articles/80/java/code-inspect/refreshbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>Atualizar</strong></td>
+                        <td class="tbltd1">Exibe uma lista atualizada dos resultados da análise estática. </td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="Ícone anterior" src="../../../images_www/articles/80/java/code-inspect/upbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>Problema Anterior</strong></td>
+                        <td class="tbltd1">Exibe o problema anterior na lista de resultados da análise estática.</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="tbltd1 align-center"><img alt="Ícone próximo" src="../../../images_www/articles/80/java/code-inspect/downbutton.png" /></td>
+                        <td class="tbltd1 align-center"><strong>Próximo Problema</strong></td>
+                        <td class="tbltd1">Exibe o seguinte problema na lista de resultados da análise estática.</td>
+                    </tr>					
+                    <tr>
+                        <td class="tbltd1 align-center"><img alt="Ícone Categorizar" src="../../../images_www/articles/80/java/code-inspect/categorizebutton.png" /></td>
+                        <td class="tbltd1 align-center"><a name="categorize"></a><strong>Categorizar</strong></td>
+                        <td class="tbltd1">Alterna a view contraída dos problemas detectados em um arquivo, projeto ou pacote ou a view categorizada de todos os problemas detectados. </td>
+                    </tr>
+          </table>
+</li>
+		</ol>
+		
+        <a name="fb"></a>
+		<h3>Localizando Problemas em Potencial no Código Java com Findbugs</h3>		
+		<p>A configuração <tt>FindBugs</tt> disponível no IDE permite localizar uma ampla variedade de problemas potenciais em seu código. Ele chama a ferramenta FindBugs de código-fonte aberta popular para análise de código em Java. O relatório de erros é gerado e é exibido na janela do Inspetor do NetBeans IDE, que categoriza todos os problemas encontrados e permite navegação direta de erros no relatório para o código suspeito. Você também pode ler uma descrição do erro na janela adjacente ou revisá-la na página <a href="http://findbugs.sourceforge.net/bugDescriptions.html">Descrições de Erro de FindBugs</a> pelo ponteiro fornecido na parte superior do quadro esquerdo. </p>
+		<p class="notes"><b>Observação:</b> você precisa instalar o plug-in <a href="#plugin">Findbugs</a> para executar esta configuração pela primeira vez.</p>
+		<p><b>Para identificar possíveis erros em seu código Java com a configuração <tt>FindBugs</tt>, execute as seguintes etapas:</b></p>
+		<ol>
+		<li>Abrir o projeto da <tt>biblioteca</tt> no NetBeans IDE e escolha Código-fonte > Inspecionar na barra de ferramentas principal.</li>
+		<li>Na lista drop-down Escopo da caixa de diálogo Inspeção, selecione <tt>Projeto Atual (biblioteca)</tt>.
+		<p class="notes"><b>Observação:</b> Você pode inspecionar um arquivo, pacote ou projeto(s) com a configuração <tt>FindBugs</tt>.</p></li>
+		<li>Na caixa de diálogo Inspecionar, selecione a configuração <tt>FindBugs</tt>.
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fb.png" rel="lytebox" title="Configuração FindBugs selecionada - Clique para aumentar"> <img alt="Configuração FindBugs selecionada" border="1/" src="../../../images_www/articles/80/java/code-inspect/fb-small.png"></a></p></li>
+		<li>Clique no botão Inspecionar para iniciar a análise de código estático.<br />O resultado da análise de código estático é exibido na Janela do Inspetor abaixo do editor de código-fonte.<br> A descrição do erro selecionado é exibida no quadro à direita.
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/inspector.png" rel="lytebox" title="Janela Inspetor - Clique para ampliar"> <img alt="Janela Inspetor" border="1/" src="../../../images_www/articles/80/java/code-inspect/inspector-small.png"></a></p></li>
+		<li>Se preferir, clique no botão <a href="#categorize">Categorizar</a> na barra de ferramentas à esquerda para exibir os erros agrupados em categorias. 
+		  <p class="align-center"><img alt="Erros encontrados agrupados em categorias" border="1/" src="../../../images_www/articles/80/java/code-inspect/fbcat.png"></p></li>
+		
+		</ol>
+		<p class="notes"><b>Observações:</b></p>
+		<ul>
+		<li>Se você clica duas vezes em um problema na lista expandida, o IDE exibe o problema relatado no editor de código-fonte. <br />pressione Alt-Enter para exibir a descrição do erro no código-fonte.
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/source-editor.png" rel="lytebox" title="Problema reportado no Editor de Código-fonte - Clique para aumentar"> <img alt="Problema reportado no Editor de Código-fonte" border="1/" src="../../../images_www/articles/80/java/code-inspect/source-editor-small.png"></a></p></li>
+		<li>Erros potenciais são destacados no código com ícones do ponto de exclamação (<img alt="ícone de ponto de exclamação" src="../../../images_www/articles/80/java/code-inspect/exclamation.png" />) na margem à esquerda do Editor de Código-fonte.</li>
+		</ul>
+		
+		<p><b>Para ativar FindBugs no Editor Java, conclua as seguintes etapas:</b></p>
+		<ol>
+		<li>Escolha Ferramentas > Opções na barra de ferramentas do IDE principal.</li>
+		<li>Selecione a guia Editor e escolha Dicas. </li>
+		<li>Escolha <tt>FindBugs</tt> na lista drop-down Idioma. 
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fb-editor.png" rel="lytebox" title="Ativando FindBugs no Editor de Código-fonte - Clique para aumentar"> <img alt="Ativando Findbugs no Editor de Código-fonte" border="1/" src="../../../images_www/articles/80/java/code-inspect/fb-editor-small.png"></a></p></li>
+		<li>Selecione a opção Executar FindBugs no Editor.</li>
+		<li>Clique em OK.<br />Se você agora pressionar Alt-Enter o código-fonte onde um erro é reportado e clique na seta preta apontando para a direita no final da dica exibida, o IDE mostra algumas opções de correção para um possível erro.
+		  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/fbenabled.png" rel="lytebox" title="FindBugs ativados no Editor de Código-fonte - Clique para aumentar"> <img alt="Findbugs ativado no Editor de Código-fonte" border="1/" src="../../../images_www/articles/80/java/code-inspect/fbenabled-small.png"></a></p></li>
+		</ol>
+		 <a name="default"></a>
+        <h3>Personalizando uma Configuração Default</h3>
+        <p>Enquanto trabalha em seu código pode ser necessário personalizar uma configuração predefinida que inclui suas próprias dicas Java NetBeans ou erros do FindBugs.</p>		
+<p><b>Para adaptar uma configuração <tt>Default</tt> predefinida em suas próprias necessidades, conclua as etapas a seguir:</b></p>
+<ol>
+<li>Escolha Origem > Inspecionar na barra de ferramentas do IDE principal.</li>
+<li>Na caixa de diálogo Inspecionar, selecione o botão de rádio Configuração e selecione a configuração <tt>Padrão</tt>.
+<li> Clique em Gerenciar.<br /> O IDE exibe a caixa de diálogo Configurações.
+<p class="align-center">
+	      <img alt="Caixa de diálogo Configurações" border="1/" src="../../../images_www/articles/80/java/code-inspect/configurations-db.png"></p></li>
+<li>Garantir <tt>Default</tt> é selecionado na lista drop-down Configurações. </li>
+<li>Na lista drop-down Analisador, selecione o analisador <tt>Conformidade de Perfis do JRE 8</tt>, <tt>Dicas Java Netbeans</tt> ou <tt>FindBugs</tt>.</li>
+<li>Dependendo da escolha do analisador na etapa anterior, selecione o perfil a ser validado, as inspeções ou os erros que você precisa incluir na configuração <tt>Padrão</tt>. 
+  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/select-inspections.png" rel="lytebox" title="Selecionando inspeções - Clique para aumentar"> <img alt="Selecionando inspeções" border="1/" src="../../../images_www/articles/80/java/code-inspect/select-inspections-small.png"></a></p></li>
+<li>Clique em OK para salvar sua configuração <tt>Default</tt>.</li>
+</ol>	
+
+		<a name="create"></a>
+<h2>Criando e Deletando Configurações</h2>
+<p>Você pode criar e deletar suas próprias configurações para ser usada na análise estática de seu código Java.</p>	
+<p><b>Para criar uma configuração, execute as seguintes etapas:</b> </p>
+<ol>
+		<li>Escolha Origem > Inspecionar na barra de ferramentas do IDE principal.</li>
+		<li>Na caixa de diálogo Inspecionar, selecione o botão de rádio Configuração e selecione a configuração <tt>Padrão</tt>.
+        <li> Clique em Gerenciar.</li>
+		<li>Na caixa de diálogo Configurações, clique na seta preta no fim da lista drop-down Configurações e escolha Novo. 
+		<p class="align-center">
+  <img alt="Criando uma configuração" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig.png"></p>
+         Uma configuração <tt>newConfig</tt> será criada e adicionada à lista drop-down Configurações. 
+		 <p class="align-center">
+  <img alt="newConfig na lista de Configuração" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig-created.png"></p></li>
+		<li>Na lista drop-down Analisador, escolha <tt>Conformidade de Perfis do JRE 8</tt>, <tt>Dicas Java Netbeans</tt> ou <tt>FindBugs</tt>.</li>
+		<li>Especifique o perfil, as inspeções ou os erros a serem incluídos na sua própria configuração. </li>
+		<li>Clique em OK para salvar suas edições e fechar a caixa de diálogo Configurações.<br /> A configuração <tt>newConfig</tt> criada está disponível na lista drop-down Configuração da caixa de diálogo Inspecionar.
+		<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/newconfig-inspect.png" rel="lytebox" title="Nova configuração criada - Clique para aumentar"> <img alt="Nova configuração criada" border="1/" src="../../../images_www/articles/80/java/code-inspect/newconfig-inspect-small.png"></a></p></li>
+</ol>
+<p class="notes"><b>Observação:</b> para renomear uma configuração, selecione a configuração <tt>newConfig</tt> na lista drop-down Configurações, clique na seta preta no fim da lista drop-down Configurações e selecione Renomear. Digite um novo nome (por exemplo, <tt>renamedconfig</tt>) e pressione Enter para salvar as edições.</p>
+<p class="align-center">
+  <img alt="newConfig renomeado" border="1/" src="../../../images_www/articles/80/java/code-inspect/renamedconfig.png"></p>
+  <p><b>Para deletar uma configuração, execute as seguintes etapas:</b> </p>
+<ol>
+		<li>Escolha Origem > Inspecionar na barra de ferramentas do IDE principal.</li>
+		<li>Na caixa de diálogo Inspecionar, selecione o botão de rádio Configuração e selecione a configuração a ser excluída (<tt>renamedConfig</tt> neste exemplo).
+        <li> Clique em Gerenciar.</li>
+		<li>Na caixa de diálogo Configurações, clique na seta preta no fim da lista drop-down Configurações e escolha Excluir.
+		<p class="align-center">
+  <img alt="Deletando renamedConfig" border="1/" src="../../../images_www/articles/80/java/code-inspect/delete.png"></p></li>
+  <li>Na caixa de diálogo Deletar Configuração, clique em Sim para confirmar a exclusão da configuração.
+  <p class="align-center"><img alt="Confirmando a exclusão de renamedConfig" border="1/" src="../../../images_www/articles/80/java/code-inspect/delete-confirm.png"></p>
+  A configuração <tt>renamedConfig</tt> é deletada da lista de Configurações.
+  <!--<p class="align-center"><a href="../../../images_www/articles/72/java/code-inspect/norenamedconfig.png" rel="lytebox" title="No renamedConfig in the Configurations list- Click to enlarge">
+  <img src="../../../images_www/articles/72/java/code-inspect/norenamedconfig-small.png" alt="No renamedConfig in the Configurations list" border=1/></a></p>--></li>
+</ol>
+
+<p class="notes"><b>Observação:</b> Consulte o <a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">Tutorial do Módulo de Dicas Java NetBeans</a> para obter informações sobre como criar um módulo NetBeans que fornece uma ou mais dicas Java NetBeans.
+</p>
+
+		<a name="inspect"></a>
+<h2>Executando Inspeções Únicas</h2>
+<p>Você pode inspecionar seu código para uma determinada deficiência em seu código-fonte usando a funcionalidade de análise de código estático no NetBeans IDE. </p>
+<p><b>Para detectar uma inconsistência específica ou problema em seu código-fonte Java com uma inspeção única, conclua as seguintes etapas:</b></p>
+<ol>
+<li>Escolha Origem > Inspecionar o menu IDE principal.</li>
+<li>Na lista drop-down Escopo da caixa de diálogo Inspecionar, selecione um arquivo, pacote ou projeto a ser inspecionado. </li>
+<li>Selecione Inspeção Única e faça o seguinte:
+  <ul>
+<li>Na lista drop-down de Inspeção Simples, role e selecione uma dica <i>única</i> do Java Netbeans ou erro de FindBugs para ser usado na análise do código-fonte. 
+<p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/single-inspection.png" rel="lytebox" title="Lista drop-down de Inspeção Única - Clique para aumentar"> <img alt="Lista drop-down de Inspeção Única" border="1/" src="../../../images_www/articles/80/java/code-inspect/single-inspection-small.png"></a></p></li>
+<li>Clique em Procurar para abrir a caixa de diálogo Configurações e, na lista drop-down Analisador, especifique o analisador e, em seguida, escolha um perfil (para o analisador Conformidade de Perfil do JRE 8), uma <i>única</i> inspeção (para o analisador Dicas Java NetBeans) ou um <i>único</i> erro (para o analisador FindBugs) para uso na análise de código-fonte. Clique em OK para fechar a caixa de diálogo Configurações.
+  <p class="align-center"><a href="../../../images_www/articles/80/java/code-inspect/hint-inspection.png" rel="lytebox" title="Caixa de diálogo Procurar Inspeções - Clique para aumentar"> <img alt="Caixa de diálogo Procurar Inspeções" border="1/" src="../../../images_www/articles/80/java/code-inspect/hint-inspection-small.png"></a></p></li>
+</ul>
+</li>
+<li>Na caixa de diálogo Inspecionar, clique em Inspecionar para executar a análise de código-fonte. <br />Após a operação Inspecionar ser concluída, as dicas que podem ser aplicadas a seu código ou erros que foram encontradas são exibidas na janela Inspetor abaixo o Editor de Código-fonte. </li>
+</ol>
+        <a name="summary"></a>
+<h2>Resumo</h2>
+<p>Este tutorial abrange mais frequente usos da funcionalidade na análise de código estático NetBeans IDE. Observe que com a funcionalidade de análise de código estático você também pode executar as refatorações personalizadas no escopo do projeto, ou aplicar determinadas configurações de refatoração à diversos projetos abertos no IDE, etc.. </p>
+
+<p class="align-center"><a href="#top">início</a></p>		
+		<div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Static%20Code%20Analysis%20in%20NetBeans%20IDE">Enviar Feedback neste Tutorial</a></div>
+
+        <br style="clear:both;"/>
+		
+		<a name="seealso"></a>
+        <h2>Consulte Também</h2>
+        
+        <p>Para ver o material relacionado, consulte os seguintes documentos:</p>
+        <ul>     
+            	
+			<li><a href="code-inspect-screencast.html">Vídeo da Funcionalidade Código Estático no NetBeans IDE</a></li>
+			<li><a href="http://wiki.netbeans.org/Java_Hints">Lista Completa de Dicas Java NetBeans</a></li>
+			<li><a href="http://wiki.netbeans.org/JavaDeclarativeHintsDescriptionSketch">Descrição de Dicas Declarativas do Java NetBeans</a></li>
+			<li><a href="http://platform.netbeans.org/tutorials/nbm-java-hint.html">Tutorial do Módulo de Dicas Java NetBeans</a></li>
+			<li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">Usando Dicas de Análise de Código-fonte e Refatoração</a> em <i>Desenvolvendo Aplicações com o NetBeans IDE</i></li>
+			
+			
+			
+          
+			
+        </ul>
+		<p class="align-center"><a href="#top">início</a></p>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright (c) 2009 - 2014, Oracle and/or its affiliates. All rights reserved.
+--> 
+<html>
+<head>
+   <title>Gap Editing Support in the NetBeans GUI Builder</title>
+   <!-- BEGIN METADATA -->
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+   <meta name="description" content="This tutorial is intended as a guide to show how to utilize gap editing in the NetBeans GUI Builder without concern for the underlying layout manager.">
+   <meta name="KEYWORDS" content="NetBeans, Free Design, Tutorial, Guide, User, Documentation, Basic">
+   <link rel="stylesheet" href="../../../netbeans.css">
+   
+   <!-- END METADATA -->
+   
+</head>
+<body>
+   
+    <a name="top"></a>
+    <h1>Gap Editing Support in the NetBeans GUI Builder</h1>
+    <div class="articledate" style="margin-left: 0px;">Jan Stola, Alyona Stashkova</div>
+    <p>A layout of a container in the Free Design mode consists of components and gaps between these components. Both the components and gaps are visualized in the Design view of the GUI Builder. The NetBeans IDE enables you to edit gaps directly in the GUI Builder. </p>
+	<p>This tutorial demonstrates how to utilize gap editing to insert new UI components between other components as well as how to center components easily around a frame in the NetBeans GUI Builder without concern for the underlying layout manager. The tutorial is intended as a guide to show how you can perform changes in an existing form in the Free Design mode to implement a specific target layout that is required by the project. </p>
+	
+    
+ 
+    
+    
+       <p><b>Contents</b></p>
+    <img  src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" class="stamp" alt="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0" title="Content on this page applies to NetBeans IDE 7.2, 7.3, 7.4 and 8.0">
+    <ul class="toc">
+        <li><a href="#zip">Opening Example Project</a></li>
+		<li><a href="#drag">Resizing a Gap by Dragging and Dropping Its Edge</a></li>
+        <li><a href="#wheel">Resizing a Gap using the Mouse Wheel</a></li>
+		<li><a href="#container">Editing Gaps Around a Component</a></li>
+        <li><a href="#summary">Summary</a></li>
+		<li><a href="#seealso">See Also</a></li>
+    </ul>
+
+   
+   <p><b>To follow this tutorial, you need the software and resources listed below.</b></p>
+
+    <table>
+        <tbody>
+            <tr>
+                <th class="tblheader" scope="col">Software or Resource</th>
+                <th class="tblheader" scope="col">Version Required</th>
+            </tr> 
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                <td class="tbltd1">7.2, 7.3, 7.4, or 8.0 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="http://java.sun.com/javase/downloads/index.jsp">Java Development Kit (JDK)</a></td>
+                <td class="tbltd1">Version 6, 7, or 8 </td>
+            </tr>
+            <tr>
+                <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FGapSupport.zip">GapSupport.zip</a></td>
+                <td class="tbltd1">An archive with the source files containing the initial and target tutorial layouts.</td>
+            </tr>
+           
+        </tbody>
+    </table>
+
+    <p class="notes"><strong>Notes:</strong></p>
+    <div class="indent">
+    <ul>
+        <li>You can download the project that is used as the starting point for this tutorial as a <tt>.zip</tt> archive. </li>
+        <li>This tutorial focuses on designing the layout of the container only. Adding functionality to the GUI is out of its scope.</li>
+		<li>You can turn on and off visualization of the gaps by using the <tt>Visualize Additional Layout Information</tt> option after choosing <tt>Tools</tt> &gt; <tt>Options</tt> &gt; <tt>Java</tt> &gt; <tt>GUI Builder</tt> in the main IDE's menu. </li>
+    </ul>
+</div>
+    <!-- ++++++++++++ Using .zip ++++++++++++ -->
+<a name="zip"></a>
+    <h2>Opening Example Project</h2>
+	
+	<ol><li>Download and unzip the <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJava%252FGapSupport.zip">GapSupport.zip</a> archive to any location on your computer.</li>
+	<li>In the NetBeans IDE main menu, choose <tt>File</tt> &gt; <tt>Open Project</tt>, navigate to the folder that contains the unzipped files with the <tt>GapSupport</tt> project that you extracted in the previous step.</li>
+	<li>Click Open Project.<br>
+	The Projects window should look like the following:
+	<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/prj.png"
+                     alt="The Projects window" border=1></p></li>
+    <li> Double-click the <tt>Initial.java</tt> file.<br>
+    The sample form opens in the GUI Builder Design view. 
+	<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/initialform.png"
+                     alt="Initial.java open" border=1></p>
+					 <p class="notes"><b>Note:</b> You can view the component hierarchy of the form in the Navigator window by choosing Window &gt; Navigator from the main toolbar.</p>
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/navigator.png"
+                     alt="Navigator window" border=1></p></li>
+	</ol>
+
+
+<p class="align-center"><a href="#top">top</a></p>
+ <!-- ++++++++++++ DnD an Edge of a Gap ++++++++++++ -->
+    <a name="drag"></a>
+    <h2>Resizing a Gap by Dragging and Dropping Its Edge </h2>
+	<p>Let us explore how to edit a gap by dragging and dropping its edge in the Design view of the IDE.</p>
+	<p> To add a <tt>Middle Name</tt> row between the <tt>First Name</tt> and <tt>Last Name</tt> rows, you need to complete the following steps:</p>
+	
+    <ol>
+<li>Click on the gap between the <tt>First Name</tt> and <tt>Last Name</tt> labels.<br> 
+The gap is highlighted with green.
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/gap-highlighted.png" alt="Gap highlighted" border=1></p></li>
+<li>Hover the mouse pointer over the bottom part of the highlighted gap.<br>
+  The pointer is changed to a vertical resizable one.
+  <p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/gap-resizable.png" alt="Pointer changed to resizable" border=1></p></li>
+<li>Enlarge the selected gap to 50 by pressing the left mouse button, dragging the pointer downward, and releasing the left mouse button.<br>
+The new size of the gap is displayed in a tooltip.
+  <p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/resizing.png" alt="Enlarging the gap" border=1></p></li>
+<li>Add a new label into the created gap by dragging it from the Swing Controls section of the Palette and dropping it so that its left edge is aligned with the left edge of the <tt>First Name</tt> label and its top edge has the suggested preferred gap from the <tt>First Name</tt> row. 
+  <p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/jlabel.png" alt="Adding a label" border=1></p></li>
+<li>Double-click the label and change the text of the label to <tt>Middle Name:</tt>.
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/middle-name.png" alt="Text changed to Middle Name:" border=1></p></li>
+<li>Add a new text field to the right of the <tt>Middle Name:</tt> label by dragging it from the Swing Controls section of the Palette and dropping it so that it is baseline-aligned with the <tt>Middle Name</tt> label and its left edge is aligned with the other text fields.
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/textfield.png" alt="Adding a text field" border=1></p></li>
+<li>Drag the  right edge of the text field to align it with the right edge of the other text fields. 
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/textfield-resized.png" alt="Resizing the text field" border=1></p></li>
+<li>Right-click the text inside the text field and choose Edit Text from the popup menu. Remove the text. </li>
+</ol>
+<p>The <tt>Middle Name</tt> row is inserted between the form components.</p>
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/middle-inserted-gap.png" alt="Resizing the text field" border=1></p>
+<p class="align-center"><a href="#top">top</a></p>
+    
+     
+
+<!-- ++++++++++++ Using Mouse Wheel When Resizing ++++++++++++ -->
+<a name="wheel"></a>
+<h2>Resizing a Gap Using the Mouse Wheel</h2>
+
+<p>The IDE enables you to resize a gap by clicking and then scrolling a mouse wheel to tune the gap size. </p>
+<p>To remove the remaining space between the <tt>Middle Name</tt> and <tt>Last Name</tt> rows, click the gap below and decrease the height of the gap by scrolling the mouse wheel downward and setting the new size to <tt>default small</tt>.</p>
+<p class="notes"><b>Note:</b> The NetBeans GUI Builder supports three preferred gaps for component placement - <tt>default small</tt>, <tt>default medium</tt>, and <tt>default large</tt>. </p>
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/default-small.png" alt="default small" border=1></p>
+
+
+<p>The gap between the form components is resized by using the mouse wheel and utilizing a preferred gap.</p> 
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/middle-inserted.png" alt="Middle Name row inserted" border=1></p>
+
+<p class="align-center"><a href="#top">top</a></p>
+<!-- ++++++++++++ Resizing a Gap Around a Container ++++++++++++ -->
+<a name="container"></a>
+<h2>Editing Gaps Around a Component</h2>
+<p>You can center a component by enclosing it into two identical  gaps that have prior been marked as resizable.</p>
+<p class="notes"><b>Note:</b> A container helps specify where the components should be centered. It is possible to center the buttons without enclosing them in a new panel but it is more difficult to accomplish in the GUI Builder and the resulting layout is a bit fragile. Therefore, we suggest to enclose the component being centered in a panel whenever it is possible.</p>
+<p><b>To enclose the buttons and  resizable gaps into a separate container,  do as  follows:</b> </p>
+
+<ol>
+<li>Select all the four buttons in the form. </li>
+<li>Right-click the selection and choose <tt>Enclose In</tt> &gt; <tt>Panel</tt> from the popup menu.
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/enclose-panel.png" alt="Choosing Panel in the popup menu" border=1></p>
+The buttons are enclosed into a container.
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/buttons-enclosed.png" alt="Buttons enclosed into a panel" border=1></p></li>
+</ol>
+
+<p><b>To remove the newly created gaps on the left and right side of the buttons, complete the following steps:</b></p>
+<ol>
+<li>Right-click one of the buttons and choose Edit Layout Space from the popup menu.<br>
+The Edit Layout Space dialog box is displayed.
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/edit-layout-space.png" alt="Edit Layout Space dialog box" border=1></p></li>
+<li> Set the size of the Left and Right gaps to 0 and click OK.<br>
+  The gaps to the left and right of the buttons are removed using the Edit Layout Space dialog box.
+  <p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/gaps-removed.png" alt="Left and Right Gaps Removed" border=1></p></li>
+</ol>
+<p><b>To make the gaps above and below the container resizable,  do as follows:</b></p>
+
+<ol>
+<li> Double-click  the gap at the bottom of the last button.<br> 
+The Edit Layout Space dialog box is displayed.</li>
+<li>In the Edit Layout Space dialog box, select the <tt>Resizable</tt> option and click OK.
+  <p class="align-center">
+		<a href="../../../images_www/articles/72/java/gui-gaps/bottom.png" rel="lytebox"
+                       title="Gap at the bottom being resized">
+					   <img src="../../../images_www/articles/72/java/gui-gaps/bottom-small.png"
+                     alt="Gap at the bottom being resized" border=1></a></p></li>
+<li> Repeat steps 1 and 2 for the gap above the topmost button.<br>
+The gaps above and below the container with the buttons are made resizable.</li>
+</ol>
+
+<p><b>To center the buttons of the sample form</b>:</p>
+<p>Drag the bottom edge of the container with the buttons to align with the bottom edges of the lists as shown below: </p>
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/align.png" alt="Centering the container with the buttons" border=1></p>
+<p>The container is stretched to match the height of the <tt>Available Topics</tt> and <tt>Selected Topics</tt> lists. The buttons are centered  within the space determined by the enclosing container since  the surrounding gaps have been marked as resizable.  </p>
+<p class="align-center"><img src="../../../images_www/articles/72/java/gui-gaps/buttons-centered.png" alt="Buttons are centered" border=1></p>
+
+
+
+<p class="align-center"><a href="#top">top</a></p>
+
+ 
+<!-- ++++++++++++ Summary ++++++++++++ -->
+<a name="summary"></a>
+<h2>Summary</h2>
+<p>In this  tutorial you enhanced a simple form. When manipulating gaps you learned how to manage empty spaces in the Free Design mode and design an appealing UI without spending extra time on tweaking every detail of the layout implementation.</p>
+
+
+
+
+
+
+
+
+
+ <p class="align-center"><a href="#top">top</a></p>
+
+      
+      <div class="feedback-box" ><a href="/about/contact_form.html?to=3&subject=Feedback:%20Gap%20Support">Send Feedback on This Tutorial</a></div>
+      <br style="clear:both;" >  
+<a name="seealso"></a>
+<h2>See Also</h2>
+<p>You have now completed the Gap Editing Support in the NetBeans GUI Builder tutorial. For information on adding functionality to the GUIs that you create, see:</p> 
+      <ul>
+	     <li><a href="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG920">Implementing Java GUIs</a> in <i>Developing Applications with NetBeans IDE</i></li>
+         <li><a href="gui-functionality.html">Introduction to Java GUI Building</a></li>
+		 <li><a href="http://wiki.netbeans.org/NetBeansUserFAQ#GUI_Editor_.28Matisse.29" target="_blank">GUI Builder FAQ</a> </li>
+         <li><a href="../../trails/matisse.html">Java GUI Applications Learning Trail</a> </li>
+      </ul>
+      
+      <p class="align-center"><a href="#top">top</a></p>
+
+   
+</body>
+</html>

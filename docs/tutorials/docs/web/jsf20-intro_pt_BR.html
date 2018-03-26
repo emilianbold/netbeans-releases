@@ -1,0 +1,896 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Introdução ao JavaServer Faces 2.x - Tutorial do NetBeans IDE</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="A tutorial demonstrating how to create a web
+              application with JSF 2.x support in NetBeans">
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+              JavaServer Faces, JavaServer Faces 2.0, JSF, JSF 2.1, web application">
+
+        <link rel="stylesheet" type="text/css" href="../../../netbeans.css">
+
+        <script src="../../../images_www/js/listCollapse.js" type="text/javascript"></script>
+    </head>
+    
+    <body>
+
+<!-- Copyright (c) 2009, 2010, 2011, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Introdução ao JavaServer Faces 2.x</h1>
+
+        <p>O JavaServer Faces (JSF) é um framework de interface de usuário (IU) para aplicações Java Web. Foi projetado para facilitar significativamente a trabalhosa tarefa de escrever e manter os aplicações que são executadas em um servidor de aplicações Java e renderizar as IUs de volta a um cliente de destino. O JSF oferece facilidade de uso das seguintes formas:</p>
+
+        <ul class="toc">
+            <li>Facilita a construção de uma IU usando um conjunto de componentes de IU reutilizáveis</li>
+            <li>Simplifica a migração de dados da aplicação para a IU e provenientes dela</li>
+            <li>Ajuda a gerenciar o estado da IU nas solicitações do servidor</li>
+            <li>Oferece um modelo simples para conectar os eventos gerados pelo cliente ao código da aplicação do servidor</li>
+            <li>Permite personalizar os componentes de UI para que sejam facilmente construídos e reutilizados</li>
+        </ul>
+
+        <p>Para obter uma descrição mais completa do framework JSF, consulte o <a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop.htm">Tutorial do Java EE 7, Capítulo 12: Desenvolvendo Tecnologia do JavaServer Faces</a>.</p>
+
+        <p>Este tutorial demonstra como você pode aplicar o suporte do JSF 2.x a uma aplicação Web utilizando o NetBeans IDE. Comece adicionando o suporte ao framework JSF 2.x a uma aplicação Web básica e continue para executar as seguintes tarefas:</p>
+
+        <ul class="toc">
+            <li>crie um bean gerenciado pelo JSF para manipular os dados solicitados,</li>
+            <li>conecte o bean gerenciado às páginas Web da aplicação e</li>
+            <li>converta as páginas Web em arquivos de modelo de Facelets.</li>
+        </ul>
+
+        <p>O NetBeans IDE oferece, há muito tempo, suporte ao JavaServer Faces. A partir da release JSF 2.0 e Java EE 6, O NetBeans IDE oferece suporte para JSF 2.0 e JSF 2.1. Para obter mais informações, consulte <a href="jsf20-support.html">Suporte JSF 2.x no NetBeans IDE</a>.</p>
+
+
+        <h3>Conteúdo</h3>
+
+        <img alt="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0" class="stamp" src="../../../images_www/articles/73/netbeans-stamp-80-74-73.png" title="O conteúdo desta página se aplica ao NetBeans IDE 7.2, 7.3, 7.4 e 8.0">
+
+        <ul id="collapsableList">
+            <li><a href="#support">Adicionando Suporte JSF 2.x a uma Aplicação Web</a></li>
+            <li><a href="#managedBean">Criando um Bean Gerenciado</a>
+
+                <ul>
+                    <li><a href="#usingManagedBean">Utilizando o Assistente de Bean Gerenciado</a></li>
+                    <li><a href="#creatingConstructor">Criando um Construtor</a></li>
+                    <li><a href="#addingProperties">Adicionando Propriedades</a></li>
+                </ul></li>
+
+            <li><a href="#wire">Conectando o Bean Gerenciado a Páginas</a>
+
+                <ul>
+                    <li><a href="#index">index.xhtml</a></li>
+                    <li><a href="#response">response.xhtml</a></li>
+                </ul></li>
+
+            <li><a href="#template">Aplicando um Modelo de Facelets</a>
+
+                <ul>
+                    <li><a href="#templateFile">Criando o Arquivo de Modelo de Facelets</a></li>
+                    <li><a href="#templateClient">Criando Arquivos Clientes de Modelo</a></li>
+                </ul></li>
+            <li><a href="#seealso">Consulte Também</a></li>
+        </ul>
+
+        <p id="requiredSoftware">Para concluir este tutorial, você precisa dos seguintes recursos e softwares.</p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <th class="tblheader" scope="col">Software ou Recurso</th>
+                    <th class="tblheader" scope="col">Versão Necessária</th>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/downloads/index.html">NetBeans IDE</a></td>
+                    <td class="tbltd1">Pacote Java EE 7.2, 7.3, 7.4, 8.0</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK (Java Development Kit)</a></td>
+                    <td class="tbltd1">7 ou 8</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="http://glassfish.dev.java.net/">GlassFish Server</a></td>
+                    <td class="tbltd1">Open Source Edition 3.x ou 4</td>
+                </tr>
+                <tr>
+                    <td class="tbltd1"><a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FjsfDemo.zip"><code>jsfDemo</code> projeto de aplicação Web</a></td>
+                    <td class="tbltd1">n/d</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="notes"><strong>Observações:</strong></p>
+
+        <div class="indent">
+            <ul>
+                <li>O pacote Java do NetBeans IDE também inclui o GlassFish Server, um servidor compatível com Java EE necessário para este tutorial.</li>
+
+                <li>Para comparar seu projeto a uma solução que funcione, faça o download do <a href="https://netbeans.org/projects/samples/downloads/download/Samples%252FJavaEE%252FjsfDemoCompleted.zip">projeto de amostra completo</a>.</li>
+            </ul>
+        </div>
+
+
+        <br>
+        <h2 id="support">Adicionando Suporte JSF 2.x a uma Aplicação Web</h2>
+
+        <p>Comece abrindo o <a href="#requiredSoftware"><code>jsfDemo</code> projeto da aplicação Web</a> no IDE. Depois de abrir o projeto no IDE, você pode adicionar suporte ao framework utilizando a janela Propriedades do projeto.</p>
+
+        <p class="tips">O IDE também permite criar novos projetos com o suporte JSF 2.x. Para obter mais informações, consulte <a href="jsf20-support.html#creatingSupport">Criando um Novo Projeto com o Suporte a JSF 2.x</a>.</p>
+
+        <ol>
+            <li>Clique no botão ( <img alt="Botão Abrir Projeto" src="../../../images_www/articles/72/web/jsf20-intro/open-project-btn.png"> ) para Abrir o Projeto na barra de ferramentas principal do IDE ou pressione Ctrl-Shift-O (&#8984-Shift-O no Mac).</li>
+
+            <li>Na caixa de diálogo Abrir Projeto, navegue até o local do computador onde você armazenou o projeto descompactado do tutorial. Selecione-o e clique em Abrir Projeto para abri-lo no IDE.
+                <p class="notes"><strong>Observação.</strong> Você será solicitado a resolver a referência às bibliotecas JUnit quando abrir o projeto NetBeans, caso não tiver instalado o plug-in JUnit quando instalou o IDE.</p>
+            </li>
+
+            <li>Execute o projeto para ver como ele é em um browser. Clique com o botão direito do mouse no nó <code>jsfDemo</code> do projeto, na janela Projetos e selecione Executar ou clique no botão ( <img alt="Botão Executar Projeto" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) Executar Projeto na barra de ferramentas principal. O projeto é encapsulado e implantado no GlassFish Server e o browser é aberto para exibir a página de boas-vindas (<code>index.xhtml</code>).<br><img alt="Tela da página de boas-vindas no browser" class="margin-around b-all" id="staticPage" src="../../../images_www/articles/72/web/jsf20-intro/run-project.png" title="Executar o projeto para exibi-lo em um browser"></li>
+
+            <li>Clique no botão Submeter. A página de resposta (<code>response.xhtml</code>) é exibida desta forma: <br> <img alt="Tela da página de resposta no browser" class="margin-around b-all" id="originalVersion" src="../../../images_www/articles/72/web/jsf20-intro/response.png" title="A página de boas-vindas e de resposta, atualmente, são páginas estáticas">
+
+                <p>
+                No momento, as páginas de boas-vindas e resposta são estáticas e, juntamente com o arquivo <code>stylesheet.css</code> e a imagem <code>duke.png</code>, são os únicos arquivos da aplicação acessíveis do browser.</p></li>
+
+            <li>Na janela Projetos (Ctrl-1; &#8984-1 no Mac), clique com o botão direito do mouse no nó do projeto e escolha Propriedades para abrir a janela Propriedades do Projeto.</li>
+
+            <li>Selecione a categoria Frameworks e, em seguida e clique no botão Adicionar. </li>
+            <li>Selecione JavaServer Faces na caixa de diálogo Adicionar um Framework. Clique em OK. <br> <img alt="Janela Propriedades do Projeto: Caixa de diálogo Adicionar Framework" class="b-all margin-around" src="../../../images_www/articles/80/web/jsf20-intro/add-framework.png" title="Adicionar suporte JSF a um projeto existente">
+
+                <p>
+                Após selecionar JavaServer Faces, diversas opções de configuração ficarão disponíveis. Na guia Bibliotecas, você pode especificar como o projeto acessa as bibliotecas JSF 2.x. A versão de JFS disponível dependerá da versão do IDE e do GlassFish Server. A opção default é utilizar as bibliotecas fornecidas com o servidor (o GlassFish Server). No entanto, o IDE também integra as bibliotecas JSF 2.x. (É possível selecionar a opção Bibliotecas Registradas se desejar que seu projeto as utilize.)</p>
+
+                <img alt="Definições de configuração do JSF: guia Bibliotecas" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/libraries-tab.png" title="Especificar o acesso a bibliotecas do JSF 2.x"></li>
+
+            <li>Clique na guia Configuração. É possível especificar como o servlet Faces é registrado no descritor de implantação do projeto. Também é possível indicar se você deseja utilizar Facelets ou páginas JSP no projeto. <br> <img alt="Definições de configuração do JSF: guia Configuração" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/jsf-configuration.png" title="Especificar idioma preferencial e opções de servlet do Faces">
+                
+                <p>Você também pode configurar facilmente seus projetos para usar vários conjuntos de componentes do JSF, na guia Componentes. Para usar um conjunto de componentes, é preciso fazer o download das bibliotecas necessárias e usar o Gerenciador de bibliotecas Ant para criar uma nova biblioteca contendo as bibliotecas do conjunto de componentes.</p>
+                
+                <img alt="Definições de configuração do JSF: guia Configuração" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/jsf-components.png" title="Especificar idioma preferencial e opções de servlet do Faces">
+            </li>
+
+            <li>Clique em OK para concluir as alterações e sair da janela Propriedades do Projeto.</li>
+        </ol>
+
+        <p>Depois de adicionar o suporte JSF ao seu projeto, o descritor de implantação <code>web.xml</code> do projeto é modificado para que tenha a aparência a seguir: (Alterações em <strong>negrito</strong>.)</p>
+
+        <div class="indent">
+        <pre class="examplecode">
+&lt;web-app version=&quot;3.0&quot; xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;&gt;
+    <strong>&lt;context-param&gt;
+        &lt;param-name&gt;javax.faces.PROJECT_STAGE&lt;/param-name&gt;
+        &lt;param-value&gt;Development&lt;/param-value&gt;
+    &lt;/context-param&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;javax.faces.webapp.FacesServlet&lt;/servlet-class&gt;
+        &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+    &lt;/servlet&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/faces/*&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;</strong>
+    &lt;welcome-file-list&gt;
+        &lt;welcome-file&gt;<strong>faces/</strong>index.xhtml&lt;/welcome-file&gt;
+    &lt;/welcome-file-list&gt;
+&lt;/web-app&gt;</pre></div>
+
+        <p class="alert"><strong>Importante:</strong> confirme se <code>web.xml</code> contém só uma entrada <code>&lt;welcome-file></code> e se a entrada contém '<code>faces/</code>' conforme mostrado no exemplo. Isso assegura que a página de boas-vindas do projeto (<code>index.xhtml</code>) passe pelo servlet do Faces antes de ser exibida no browser. Isso é necessário para renderizar apropriadamente os componentes da biblioteca de tags do Facelets. </p>
+
+        <p>O servlet do Faces é registrado no projeto e a página de boas-vindas <code>index.xhtml</code> passa pelo servlet do Faces quando é solicitada. Observe também que foi adicionada uma entrada no parâmetro de contexto <code>PROJECT_STAGE</code>. A definição desse parâmetro como '<code>Desenvolvimento</code>' fornece informações úteis quando a aplicação é depurado. Consulte
+            <!--<a href="http://java.sun.com/javaee/6/docs/tutorial/doc/giqxl.html">http://java.sun.com/javaee/6/docs/tutorial/doc/giqxl.html</a>
+            and-->
+            <a href="http://blogs.oracle.com/rlubke/entry/jsf_2_0_new_feature2">http://blogs.oracle.com/rlubke/entry/jsf_2_0_new_feature2</a> para obter mais informações.</p>
+
+        <p>É possível localizar as bibliotecas JSF expandindo o nó Bibliotecas do projeto na janela Projetos. Se você estiver usando as bibliotecas default incluídas com o GlassFish Server 3.1.2 ou GlassFish Server 4, este será o <code>javax.faces.jar</code> visível no nó GlassFish Server. (Se você estiver usando uma versão mais antiga do GlassFish, verá as bibliotecas <code>jsf-api.jar</code> e <code>jsf-impl.jar</code> em vez de  <code>javax.faces.jar</code>.)</p>
+
+        <p>O suporte JSF 2.x do IDE inclui principalmente vários assistentes específicos do JSF e a funcionalidade especial fornecida pelo editor de Facelets. Você ira explorar esses recursos funcionais nas etapas a seguir. Para obter mais informações, consulte <a href="jsf20-support.html">Suporte JSF 2.x no NetBeans IDE</a>.</p>
+
+
+        <h2 id="managedBean">Criando um Bean Gerenciado</h2>
+
+        <p>É possível utilizar os beans gerenciados do JSF para processar dados do usuário e retê-los entre as solicitações. Um bean gerenciado é um <a href="http://en.wikipedia.org/wiki/Plain_Old_Java_Object">POJO</a> (Objeto Java Simples Antigo) que pode ser utilizado para armazenar dados e é gerenciado pelo contêiner (por exemplo, o GlassFish Server) utilizando o framework JSF.</p>
+
+        <p id="pojo" class="tips">Um POJO é essencialmente uma classe Java que contém um construtor público sem argumentos e está em conformidade com as convenções de nomenclatura do <a href="http://download.oracle.com/javase/tutorial/javabeans/">JavaBeans</a> para suas propriedades.</p>
+
+        <p>Ao observar a <a href="#staticPage">página estática</a> produzida ao executar o projeto, você precisará de um mecanismo que determine que o número inserido pelo usuário corresponde ao número selecionado atualmente e que ele retorne uma view apropriada para esse resultado. Utilize o <a href="jsf20-support.html#managedBean">assistente de Bean Gerenciado</a> para criar um bean gerenciado para essa finalidade. As páginas de Facelets que você criará na próxima seção precisarão acessar o número digitado pelo usuário e a resposta gerada. Para ativar esta opção, adicione as propriedades <code>userNumber</code> e <code>response</code> ao Bean gerenciado.</p>
+
+        <ul>
+            <li><a href="#usingManagedBean">Utilizando o Assistente de Bean Gerenciado</a></li>
+            <li><a href="#creatingConstructor">Criando um Construtor</a></li>
+            <li><a href="#addingProperties">Adicionando Propriedades</a></li>
+        </ul>
+
+        <div class="indent">
+            <h3 id="usingManagedBean">Utilizando o Assistente de Bean Gerenciado</h3>
+
+            <ol>
+                <li>Na janela Projetos, clique com o botão direito do mouse no nó do projeto <code>jsfDemo</code> e selecione Novo > Bean Gerenciado pelo JSF. (Se o Bean Gerenciado não estiver listado, selecione Outros. Em seguida, selecione a opção Bean Gerenciado pelo JSF na categoria JavaServer Faces. Clique em Próximo.)</li>
+
+                <li>No assistente, informe o seguinte:
+
+                    <ul class="toc">
+                        <li><strong>Nome da Classe:</strong> UserNumberBean</li>
+                        <li><strong>Pacote:</strong> guessNumber</li>
+                        <li><strong>Nome:</strong> UserNumberBean</li>
+                        <li><strong>Escopo:</strong> Session</li>
+                    </ul>
+
+                    <img alt="Assistente de Bean Gerenciado pelo JSF" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/managed-bean.png" title="Utilizar o Ben Gerenciado pelo JSF para criar um novo Bean gerenciado"></li>
+
+                <li>Clique em Finalizar. A classe <code>UserNumberBean</code> é gerada e aberta no editor. Observe as anotações a seguir (mostradas em <strong>negrito</strong>):
+
+                    <pre class="examplecode">
+package guessNumber;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
+/**
+ *
+ * @author nbuser
+ */
+<strong>@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped</strong>
+public class UserNumberBean {
+
+    /** Creates a new instance of UserNumberBean */
+    public UserNumberBean() {
+    }
+
+}</pre>
+                    <p>Como você está utilizando o JSF 2.x, você pode declarar todos os componentes específicos do JSF utilizando as anotações. Nas versões anteriores, era necessário declará-los no arquivo de configuração do Faces (<code>faces-config.xml</code>).</p>
+
+                    <span class="tips">Para exibir o Javadoc para todas as anotações JSF 2.1, consulte <a href="http://javaserverfaces.java.net/nonav/docs/2.1/managed-bean-javadocs/index.html">Especificações de Anotações de Bean Gerenciado pelo Faces</a>.</span></li>
+            </ol>
+
+
+            <h3 id="creatingConstructor">Criando um Construtor</h3>
+
+            <p>O construtor <code>UserNumberBean</code> deve gerar um número aleatório entre 0 e 10 e armazená-lo em uma variável de instância. Isso forma parcialmente a lógica de negócios da aplicação.</p>
+
+            <ol>
+                <li>Defina um construtor para a classe <code>UserNumberBean</code>. Insira o código a seguir (alterações exibidas em <strong>negrito</strong>).
+
+                    <pre class="examplecode">
+public class UserNumberBean {
+
+    <strong>Integer randomInt;</strong>
+
+    /** Creates a new instance of UserNumberBean */
+    public UserNumberBean() {
+        <strong><a href="http://docs.oracle.com/javase/7/docs/api/java/util/Random.html">Random</a> randomGR = new Random();
+        randomInt = new Integer(randomGR.<a href="http://docs.oracle.com/javase/7/docs/api/java/util/Random.html#nextInt%28int%29">nextInt</a>(10));
+        System.out.println(&quot;Duke's number: &quot; + randomInt);</strong>
+    }
+
+}</pre>
+
+                    <p>O código acima gera um número aleatório entre 0 e 10, e o número é exibido no log do servidor.</p></li>
+
+                <li>Corrigir importações. Para isso, clique no indicador de dica ( <img alt="indicador de dica" src="../../../images_www/articles/72/web/jsf20-intro/hint-icon.png"> ) exibido na margem esquerda do editor, em seguida, selecione a opção para importar <code>java.util.Random</code> para a classe.</li>
+
+                <li>Execute o projeto novamente (clique no botão ( <img alt="Botão Executar Projeto" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) Executar Projeto ou pressione F6; fn-F6 no Mac). Quando você executa seu projeto, o arquivo de log do servidor é aberto automaticamente na janela de Saída. <br> <img alt="Log do servidor na janela de Saída" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/output1.png" title="O arquivo de log do servidor é aberto automaticamente na janela de Saída">
+
+                <p>Observe que você não vê o "<code>número do Duke: </code>" listado na saída (como deveria ser indicado no construtor). Um objeto <code>UserNumberBean</code> não foi criado porque o JSF utiliza <em>instanciação lenta</em> por default. Ou seja, os Beans em determinados escopos são criados e inicializados somente quando a aplicação precisa deles.</p>
+
+                    <p>
+                    O <a href="http://javaserverfaces.java.net/nonav/docs/2.1/managed-bean-javadocs/index.html">Javadoc da anotação<code>@ManagedBean</code></a> afirma:</p>
+
+                    <div class="indent">
+                        <em>Se o valor do atributo <code>eager()</code> for <code>true</code> e o valor de <code>managed-bean-scope</code> for "application", o runtime deverá instanciar essa classe quando a aplicação for iniciada. Essa instanciação e o armazenamento da instância devem ocorrer antes das solicitações serem processadas. Se <em>eager</em> não estiver especificado ou for <code>false</code>, ou se o <code>managed-bean-scope</code> for diferente de "application", ocorrerá a instanciação "lenta" default e o armazenamento com escopo do Bean gerenciado.</em>
+                    </div></li>
+
+
+                <li>Como o <code>UserNumberBean</code> está no escopo da sessão, implemente-o na interface <code>Serializable</code>.
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean <strong>implements Serializable</strong> {</pre>
+
+                    Utilize o indicador de dica ( <img alt="indicador de dica" src="../../../images_www/articles/72/web/jsf20-intro/hint-icon.png"> ) para importar <code>java.io.Serializable</code> para a classe.</li>
+            </ol>
+
+            <h3 id="addingProperties">Adicionando Propriedades</h3>
+
+            <p>As páginas de Facelets que você criará na próxima seção precisarão acessar o número digitado pelo usuário e a resposta gerada. Para facilitar essa tarefa, adicione as propriedades <code>userNumber</code> e <code>response</code> à classe.</p>
+
+            <ol>
+                <li>Comece declarando um <code>Integer</code> denominado <code>userNumber</code>.
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean implements Serializable {
+
+    Integer randomInt;
+    <strong>Integer userNumber;</strong></pre></li>
+
+                <li>Clique com o botão direito do mouse no editor e selecione Inserir Código (Alt-Insert; Ctrl-I no Mac). Escolha Getter e Setter. <br> <img alt="Janela pop-up Gerar Código" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/getter-setter.png" title="Utilizar o IDE para gerar métodos de acesso para as propriedades"></li>
+
+                <li>Selecione a opção <code>userNumber</code> : <code>Integer</code>. Clique em Gerar. <br> <img alt="Caixa de diálogo Gerar Getters e Setters" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/generate-getters-setters.png" title="Utilizar o IDE para gerar métodos de acesso para as propriedades">
+
+                    <p>Observe que os métodos <code>getUserNumber()</code> e <code>setUserNumber(Integer userNumber)</code> são adicionados à classe.</p></li>
+
+                <li>Crie uma propriedade <code>response</code>. Declare uma <code>String</code> denominada <code>response</code>.
+
+                    <pre class="examplecode">
+@ManagedBean(name=&quot;UserNumberBean&quot;)
+@SessionScoped
+public class UserNumberBean implements Serializable {
+
+    Integer randomInt;
+    Integer userNumber;
+    <strong>String response;</strong></pre></li>
+
+                <li id="getResponse">Crie um método getter para <code>response</code>. (Esta aplicação não precisará de um setter.) Você pode utilizar a janela pop-up Gerar código do IDE mostrada acima, na etapa 2, para gerar o código do modelo. Neste tutorial, basta colar o método a seguir na classe.
+
+                    <pre class="examplecode">
+public String getResponse() {
+    if ((userNumber != null) && (userNumber.<a href="http://download.oracle.com/javase/6/docs/api/java/lang/Integer.html#compareTo(java.lang.Integer)">compareTo</a>(randomInt) == 0)) {
+
+        //invalidate user session
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpSession session = (HttpSession) context.getExternalContext().getSession(false);
+        session.invalidate();
+
+        return &quot;Yay! You got it!&quot;;
+    } else {
+
+        return &quot;&lt;p&gt;Sorry, &quot; + userNumber + &quot; isn't it.&lt;/p&gt;&quot;
+                + &quot;&lt;p&gt;Guess again...&lt;/p&gt;&quot;;
+    }
+}</pre>
+
+                    O método acima realiza duas funções:
+
+                    <ol>
+                        <li>Testa se o número informado pelo usuário (<code>userNumber</code>) é igual ao número aleatório gerado para a sessão (<code>randomInt</code>) e retorna uma resposta <code>String</code> apropriada.</li>
+
+                        <li>Isso invalida a sessão do usuário se o usuário adivinhar o número correto (isto é, se <code>userNumber</code> for igual a <code>randomInt</code>). Isso é necessário para que um novo número seja gerado, caso o usuário queira jogar novamente.</li>
+                    </ol></li>
+
+                <li>Clique com o botão direito do mouse no editor e selecione Corrigir Importações (Alt-Shift-I; &amp;#8984-Shift-I no Mac). As instruções de importação são criadas automaticamente para:
+
+                    <ul>
+                        <li><code>javax.servlet.http.HttpSession</code></li>
+                        <li><code>javax.faces.context.FacesContext</code></li>
+                    </ul>
+
+                    <p class="tips">Você pode pressionar Ctrl-Espaço nos itens do editor para chamar as sugestões da funcionalidade autocompletar código e o suporte da documentação. Pressione Ctrl-Espaço no <code>FacesContext</code> para exibir a descrição da classe do Javadoc.</p>
+
+                    <br> <img alt="Janela pop-up Documentação" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/documentation-support.png" title="Pressione Ctrl-Espaço para chamar a funcionalidade autocompletar código e o suporte à documentação"> <br> Clique no ícone ( <img alt="Ícone Web browser" src="../../../images_www/articles/72/web/jsf20-crud/web-browser-icon.png"> ) do Web browser na janela da documentação para abrir o Javadoc em um Web browser externo.
+                </li>
+            </ol>
+        </div>
+
+
+        <br>
+        <h2 id="wire">Conectando Beans Gerenciados às Páginas</h2>
+
+        <p>Uma das principais finalidades do JSF é remover a necessidade de escrever códigos clichês para gerenciar <a href="#pojo">POJOs</a> e suas interações com views da aplicação. Você viu um exemplo disso na seção anterior, na qual o JSF instanciou um objeto <code>UserNumberBean</code> quando a aplicação foi executada. Este conceito é denominado <a href="http://martinfowler.com/articles/injection.html">Inversão de Controle</a> (IoC), que permite que o contêiner se responsabilize pelo gerenciamento de partes da aplicação que, do contrário, exigiriam que o desenvolvedor escrevesse códigos repetitivos.</p>
+
+        <p>Na seção anterior, você criou um bean gerenciado que gera um número aleatório entre 0 e 10. Você também criou duas propriedades, <code>userNumber</code> e <code>response</code>, que representam o número informado pelo usuário e a resposta a uma tentativa do usuário, respectivamente.</p>
+
+        <p>Nesta seção, você irá explorar como é possível utilizar <code>UserNumberBean</code> e suas propriedades em páginas Web. O JSF permite que você faça isso utilizando a sua linguagem de expressão (EL). A linguagem de expressão é utilizada para vincular os valores da propriedade aos componentes da IU do JSF contidos nas páginas Web da aplicação. Esta seção demonstra como você pode aproveitar a funcionalidade de navegação implícita do JSF 2.x para navegar entre o índice e as páginas de resposta.</p>
+
+        <p>O IDE oferece suporte a esta tarefa por meio das funcionalidades autocompletar código e documentação, que podem ser chamadas pressionando Ctrl-Espaço nos itens do editor.</p>
+
+        <p>Comece fazendo alterações em <code>index.xhtml</code> e, em seguida, em <code>response.xhtml</code>. Em ambas as páginas, substitua os elementos do form HTML por seus equivalente JSF, conforme estão definidos na <a href="http://javaserverfaces.java.net/nonav/docs/2.1/vdldocs/facelets/index.html">biblioteca de tags HTML JSF</a>. Em seguida, utilize a linguagem de expressão JSF para vincular os valores da propriedade aos componentes da IU selecionada.</p>
+
+        <ul>
+            <li><a href="#index">index.xhtml</a></li>
+            <li><a href="#response">response.xhtml</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="index">index.xhtml</h3>
+
+            <ol>
+                <li>Abra a página <code>index.xhtml</code> no editor. Clique duas vezes no nó <code>index.xhtml</code> da janela Projetos, ou pressione Alt-Shift-O para utilizar a caixa de diálogo Ir para Arquivo. <br><br> As páginas de índice e resposta já contêm os componentes de IU do JSF necessários para este exercício. Basta eliminar os comentários existentes e fazer comentários nos elementos HTML que estiverem sendo usados.</li>
+
+                <li>Comente no elemento do form HTML. Para isso, realce o elemento de form HTML, como na imagem a seguir, e pressione Ctrl-/ (&amp;#8984-/ no Mac). <br><br> <strong class="notes">Observação: </strong>para realçar, clique e arraste o elemento no editor com o mouse ou, utilizando o teclado, mantenha Shift pressionado e pressione as teclas de seta.<br><img alt="Código relaçado no editor" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/comment-out.png" title="Realce o código, em seguida, pressione Ctrl-/ para comentá-lo">
+
+                    <p class="tips">Utilize Ctrl-/ (&amp;#8984-/ no Mac) para alternar entre comentários no editor. É possível aplicar esse atalho do teclado em outros tipos de arquivo, como Java e CSS.</p></li>
+
+                <li>Elimine o comentário do componente do form HTML JSF. Realce o componente, conforme indicado na imagem a seguir, e pressione Ctrl-/ (&amp;#8984-/ no Mac).
+                    <p class="notes"><strong>Observação.</strong> Pode ser necessário pressionar Ctrl-/ duas vezes para remover os comentários do código.</p>
+
+                    <br> <img alt="Código relaçado no editor" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/comment.png" title="Realce o código comentado e, em seguida, pressione Ctrl-/ para eliminar o comentário">
+
+                    <p>
+                    Após eliminar o comentário do componente de form HTML JSF, o editor indicará que as tags <code>&lt;h:form></code>, <code>&lt;h:inputText></code> e <code>&lt;h:commandButton></code> não foram declaradas.</p>
+
+                    <img alt="Mensagem de erro no editor" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/undeclared-component.png" title="O editor fornecerá mensagens de erro para os componentes não declarados"></li>
+
+                <li>Para declarar esses componentes, utilize a funcionalidade autocompletar código do IDE para adicionar o namespace da biblioteca de tag à tag <code>&lt;html></code> da página. Coloque o cursor em qualquer uma das tags não declaradas, pressione Alt-Enter e clique em Inserir para adicionar a biblioteca de tags sugerida. (Se houver várias opções, certifique-se de selecionar a tag exibida no editor antes de clicar em Inserir.) O namespace da biblioteca de tags HTML JSF será adicionado à tag <code>&lt;html></code> (mostrado em <strong>negrito</strong> abaixo), e os indicadores de erro desaparecerão.
+                    <p class="notes"><strong>Observação.</strong> Se o IDE não fornecer a opção de adicionar a biblioteca de tags, será necessário modificar manualmente o elemento <tt>&lt;html></tt>. </p>
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre></li>
+
+                <li>Utilize a linguagem de expressão JSF para vincular a propriedade <code>userNumber</code> do <code>UserNumberBean</code> ao componente <code>inputText</code>. O atributo <code>value</code> pode ser utilizado para especificar o valor atual do componente renderizado. Digite o código exibido em <strong>negrito</strong> abaixo.
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+    &lt;h:inputText id=&quot;userNumber&quot; size=&quot;2&quot; maxlength=&quot;2&quot; <strong>value=&quot;#{UserNumberBean.userNumber}&quot;</strong> /&gt;</pre>
+
+                    <p>A linguagem de expressão JSF utiliza a sintaxe <code>#{}</code>. Dentro desses delimitadores, especifique o nome do bean gerenciado e a propriedade do Bean que deseja aplicar, separados por um ponto (<code>.</code>). Agora, quando os dados do form forem enviados ao servidor, o valor será salvo automaticamente na propriedade <code>userNumber</code> utilizando o setter da propriedade (<code>setUserNumber()</code>). Além disso, quando a página for solicitada e um valor para <code>userNumber</code> já tiver sido definido, o valor será exibido automaticamente no componente <code>inputText</code> renderizado. Para obter mais informações, consulte o <a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop001.htm#BNAQP">Tutorial do Java EE 7: 12.1.2 Usando o EL para Beans Gerenciados de Referência</a>.</p></li>
+
+                <li>Especifique o destino da solicitação chamada ao clicar no botão do form. Na versão HTML do form, você pode fazer isso utilizando o atributo <code>action</code> da tag <code>&lt;form></code>. Com o JSF, você pode utilizar o atributo <code>action</code> do <code>commandButton</code>. Além disso, devido à funcionalidade de navegação implícita do JSF 2.x, basta especificar apenas o nome do arquivo de destino, sem a sua extensão.
+
+                    <p>Digite o código exibido em <strong>negrito</strong> abaixo.</p>
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+    &lt;h:inputText id=&quot;userNumber&quot; size=&quot;2&quot; maxlength=&quot;2&quot; value=&quot;#{UserNumberBean.userNumber}&quot; /&gt;
+    &lt;h:commandButton id=&quot;submit&quot; value=&quot;submit&quot; <strong>action=&quot;response&quot;</strong> /&gt;
+&lt;/h:form&gt;</pre>
+
+                    <p>O runtime do JSF procura um arquivo denominado <code>response</code>. Ele supõe que a extensão do arquivo é a mesma utilizada pelo arquivo que originou a solicitação (<code>index<strong>.xhtml</strong></code>) e procura o arquivo <code>response.xhtml</code> no mesmo diretório do arquivo de origem (por exemplo, webroot).</p>
+
+                    <p class="notes"><strong>Observação: </strong>o JSF 2.x tem o objetivo de tornar as tarefas dos desenvolvedores muito mais fácil. Se você utilizou o JSF 1.2 para este projeto, você teria que declarar uma regra de navegação em um arquivo de configuração do Faces que tem a seguinte aparência:</p>
+
+                    <pre class="examplecode">
+&lt;navigation-rule&gt;
+    &lt;from-view-id&gt;/index.xhtml&lt;/from-view-id&gt;
+
+    &lt;navigation-case&gt;
+        &lt;from-outcome&gt;response&lt;/from-outcome&gt;
+        &lt;to-view-id&gt;/response.xhtml&lt;/to-view-id&gt;
+    &lt;/navigation-case&gt;
+&lt;/navigation-rule&gt;</pre>
+
+                    <p>As etapas de 7 a 12 a seguir são opcionais. Se quiser construir o projeto rapidamente, passe para <a href="#response"><code>response.xhtml</code></a>.</p></li>
+
+                <li>Verifique se a expressão EL acima chama o método <code>setUserNumber()</code> quando a solicitação é processada. Para isso, utilize o depurador Java do IDE.
+
+                    <p>Alterne para a classe <code>UserNumberBean</code> (Pressione Ctrl-Tab e selecione o arquivo na lista.) Defina um ponto de interrupção na assinatura do método <code>setUserNumber()</code>. É possível fazer isso clicando na margem esquerda. É exibido um indicador vermelho, mostrando que um ponto de interrupção do método foi definido.</p>
+
+                    <img alt="Ponto de interrupção na margem esquerda do editor" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/set-breakpoint.png" title="Clique no margem esquerda do editor para definir pontos de interrupção"></li>
+
+                <li>Clique no botão Depurar Projeto (<img alt="Botão Depurar Projeto" src="../../../images_www/articles/72/web/jsf20-intro/breakpoint-btn.png">) na barra de ferramentas principal do IDE. A sessão de depuração é iniciada, e a página de boas-vindas do projeto é aberta no browser.
+
+                    <p class="notes"><strong>Observações.</strong></p>
+                    <ul>
+                        <li>Talvez seja necessário confirmar a porta do servidor para depurar a aplicação.</li>
+                        <li>Se uma caixa de diálogo Depurar Projeto for exibida, selecione a opção 'Java do Servidor' default e clique em Depurar.</li>
+                    </ul></li>
+                <li>No browser, digite um número no form e clique no botão "Submeter".</li>
+
+                <li>Volte ao IDE e inspecione a classe <code>UserNumberBean</code>. O depurador será interrompido no método <code>setUserNumber()</code>.<br><img alt="Editor exibindo o depurador suspenso" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/debugger-suspended.png" title="O depurador é suspenso de acordo com pontos de interrupção"></li>
+
+                <li>Abra a janela Variáveis do Depurador (Selecione Janela > Depuração > Variáveis, ou pressione Ctrl-Shift-1). Você verá os valores das variáveis no ponto em que o depurador foi suspenso. <br><img alt="Janela Variáveis" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/variables-window.png" title="Monitorar valores das variáveis utilizando a janela Variáveis do Depurador">
+
+                    <p>
+                    Na imagem acima, o valor '<code>4</code>' foi fornecido à variável <code>userNumber</code> na assinatura <code>setUserNumber()</code>. (O número 4 foi inserido no form.) '<code>this</code>' se refere ao objeto <code>UserNumberBean</code> criado para a sessão do usuário. Abaixo dele, você verá que o valor da propriedade <code>userNumber</code> é atualmente <code>null</code>.</p></li>
+
+                <li>Na barra de ferramentas do Depurador, clique no botão Fazer Step Into (<img alt="Botão Fazer Step Into" src="../../../images_www/articles/72/web/jsf20-intro/step-into-btn.png">). O depurador executará a linha na qual ele está atualmente suspenso. A janela Variáveis se será atualiza, indicando as alterações na execução. <br><img alt="Janela Variáveis" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/variables-window2.png" title="A janela de variáveis é atualizada ao percorrer o código"><br>
+                    <p>A propriedade <code>userNumber</code> agora está definida com o valor inserido no form.</p></li>
+                <li>Escolha Depurar > Finalizar Sessão do Depurador (Shift-F5; Shift-Fn-F5 no Mac) no menu principal para interromper o depurador.</li>
+            </ol>
+
+
+            <h3 id="response">response.xhtml</h3>
+
+            <ol>
+                <li>Abra a página <code>response.xhtml</code> no editor. Clique duas vezes no nó <code>response.xhtml</code> da janela Projetos ou pressione Alt-Shift-O para utilizar a caixa de diálogo Ir para Arquivo.</li>
+
+                <li>Comente no elemento do form HTML. Realce as tags HTML <code>&lt;form></code> de abertura e fechamento e o código entre elas, depois pressione Ctrl-/ (&amp;#8984-/ no Mac).
+
+                    <p class="notes"><strong>Observação: </strong>Para realçar, clique e arraste o mouse no editor ou, utilizando o teclado, mantenha Shift pressionado e utilize as teclas de seta.</p></li>
+
+                <li>Elimine o comentário do componente do form HTML JSF. Realce as tags <code>&lt;h:form></code> de abertura e fechamento e o código entre elas, depois pressione Ctrl-/ (&amp;#8984-/ no Mac).
+
+                    <p>Neste estágio, o código entre as tags <code>&lt;body></code> terão a seguinte aparência:</p>
+
+                    <pre class="examplecode">
+&lt;body&gt;
+    &lt;div id=&quot;mainContainer&quot;&gt;
+
+        &lt;div id=&quot;left&quot; class=&quot;subContainer greyBox&quot;&gt;
+
+            &lt;h4&gt;[ response here ]&lt;/h4&gt;
+
+            &lt;!--&lt;form action=&quot;index.xhtml&quot;&gt;
+
+                &lt;input type=&quot;submit&quot; id=&quot;backButton&quot; value=&quot;Back&quot;/&gt;
+
+            &lt;/form&gt;--&gt;
+
+            &lt;h:form&gt;
+
+                &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; /&gt;
+
+            &lt;/h:form&gt;
+
+        &lt;/div&gt;
+
+        &lt;div id=&quot;right&quot; class=&quot;subContainer&quot;&gt;
+
+            &lt;img src=&quot;duke.png&quot; alt=&quot;Duke waving&quot; /&gt;
+             &lt;!--&lt;h:graphicImage url=&quot;/duke.png&quot; alt=&quot;Duke waving&quot; /&gt;--&gt;
+
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;</pre>
+
+                    <p>Após eliminar o comentário do componente de form HTML JSF, o editor indicará que as tags <code>&lt;h:form></code> e <code>&lt;h:commandButton></code> não foram declaradas.</p></li>
+
+                <li>Para declarar esses componentes, utilize a funcionalidade autocompletar código do IDE para adicionar o namespace da biblioteca de tag à tag <code>&lt;html></code> da página.
+
+                    <p class="tips">Utilize o suporte para a funcionalidade autocompletar código do editor para adicionar os namespaces JSF necessários ao arquivo. Quando você seleciona uma tag JSF ou Facelets por meio da funcionalidade autocompletar código, o namespace necessário é automaticamente adicionado ao elemento raiz do documento. Para obter mais informações, consulte <a href="jsf20-support.html#facelets">Suporte JSF 2.x no NetBeans IDE</a>.</p>
+
+                    <p>Coloque o cursor em qualquer uma das tags não declaradas e pressione Ctrl-Espaço. As sugestões da funcionalidade autocompletar código e o suporte da documentação serão exibidos.</p>
+
+                    <img alt="Janela pop-up com sugestões da funcionalidade autocompletar código e a documentação" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/code-completion2.png" title="Pressione Ctrl-Espaço para chamar uma janela pop-up com as sugestões da funcionalidade autocompletar código e a documentação">
+
+                    <p>Clique em Inserir. (Se houver várias opções, certifique-se de selecionar a tag exibida no editor antes de clicar em Inserir.) O namespace da biblioteca de tags HTML JSF será adicionado à tag <code>&lt;html></code> (mostrado em <strong>negrito</strong> abaixo), e os indicadores de erro desaparecerão.</p>
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre></li>
+
+                <li>Especifique o destino da solicitação que é chamada quando o usuário clica no botão do form. Você deseja definir o botão para que um usuário retorne à página de índice ao clicar nele. Para isso, utilize, o atributo <code>action</code> do <code>commandButton</code>. Digite o código exibido em <strong>negrito</strong>.
+
+                    <pre class="examplecode">
+&lt;h:form&gt;
+
+    &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; <strong>action=&quot;index&quot;</strong> /&gt;
+
+&lt;/h:form&gt;</pre>
+
+                    <p class="notes"><strong>Observação: </strong>Ao digitar <code>action="index"</code>, você estará confiando na funcionalidade de navegação implícita do JSF. Quando um usuário clica no botão do form, o runtime do JSF procura um arquivo denominado <code>índice</code>. Ele supõe que a extensão do arquivo é a mesma extensão utilizada pelo arquivo que originou a solicitação (<code>response<strong>.xhtml</strong></code>) e procura o arquivo <code>index.xhtml</code> no mesmo diretório do arquivo de origem (por exemplo, webroot).</p></li>
+
+                <li>Substitua o texto estático "[ response here ]" pelo valor da propriedade <code>response</code> do <code>UserNumberBean</code>. Para isso, utilize a linguagem de expressão JSF. Digite (em <strong>negrito</strong>):
+
+                    <pre class="examplecode">
+&lt;div id=&quot;left&quot; class=&quot;subContainer greyBox&quot;&gt;
+
+    &lt;h4&gt;<strong>&lt;h:outputText value=&quot;#{UserNumberBean.response}&quot;/&gt;</strong>&lt;/h4&gt;</pre></li>
+
+                <li>Execute o projeto (clique no botão ( <img alt="Botão Executar Projeto" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) Executar Projeto ou pressione F6; fn-F6 no Mac). Quando a página de boas-vindas for exibida no browser, informe um número e clique em <code>submeter</code>. Você verá a página de resposta com uma aparência semelhante à seguinte (contanto que você não adivinhe o número correto):<br><img alt="página de resposta exibida no browser" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/response2.png" title="Exibir o status atual do projeto em um browser">
+
+                    <p>Há duas coisas erradas no status atual da página de resposta:</p>
+
+                    <ol>
+                        <li>As tags html <code>&lt;p></code> são exibidas na mensagem de resposta.</li>
+                        <li>O botão Voltar não está sendo exibido no lugar correto. (Compare-a à <a href="#originalVersion">versão original</a>.)</li>
+                    </ol>
+
+                    <p>As duas etapas a seguir corrigirão estes pontos, respectivamente.</p></li>
+
+                <li>Defina o atributo <code>escape</code> da tag <code>&lt;h:outputText></code> como <code>false</code>. Coloque o cursor entre <code>outputText</code> e <code>value</code>, insira um espaço e pressione Ctrl-Espaço para chamar a funcionalidade autocompletar código. Role para baixo para selecionar o atributo <code>escape</code> e inspecione a documentação.<br><img alt="Sugestões da funcionalidade autocompletar código e documentação são exibidas no editor" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/escape-false.png" title="Pressione Ctrl-Espaço para exibir possíveis valores do atributo e a documentação">
+
+                    <p>Conforme indicado pela documentação, o valor <code>escape</code> está definido como <code>true</code> por default. Isso significa que os caracteres que normalmente são submetidos a parse como html serão incluídos na string, conforme ilustrado acima. Definir o valor como <code>false</code> permite aos caracteres que podem ser submetidos a parse como html sejam renderizados como tal.</p>
+
+                    <p>Clique em Inserir e digite <code>false</code> como valor.</p>
+
+                    <pre class="examplecode">
+&lt;h4&gt;&lt;h:outputText <strong>escape=&quot;false&quot;</strong> value=&quot;#{UserNumberBean.response}&quot;/&gt;&lt;/h4&gt;</pre></li>
+
+                <li>Defina, o atributo <code>prependId</code> da tag <code>&lt;h:form></code> como <code>false</code>. Coloque o cursor logo depois de '<code>m</code>' em <code>&lt;h:form></code>, insira um espaço, em seguida, pressione Ctrl-Espaço para chamar a funcionalidade autocompletar código. Role para baixo para selecionar o atributo <code>prependId</code> e inspecione a documentação. Clique em Inserir e digite <code>false</code> como valor.
+
+                    <pre class="examplecode">&lt;h:form <strong>prependId=&quot;false&quot;</strong>&gt;</pre>
+
+                    <p>O JSF aplica IDs internos para manter o controle dos componentes da IU. No exemplo atual, se você inspecionar o código-fonte da página renderizada, você verá algo semelhante ao seguinte:</p>
+
+                    <pre class="examplecode">
+&lt;form id=&quot;j_idt5&quot; name=&quot;j_idt5&quot; method=&quot;post&quot; action=&quot;/jsfDemo/faces/response.xhtml&quot; enctype=&quot;application/x-www-form-urlencoded&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;j_idt5&quot; value=&quot;j_idt5&quot; /&gt;
+    &lt;input <strong>id=&quot;j_idt5:backButton&quot;</strong> type=&quot;submit&quot; name=&quot;j_idt5:backButton&quot; value=&quot;Back&quot; /&gt;
+    &lt;input type=&quot;hidden&quot; name=&quot;javax.faces.ViewState&quot; id=&quot;javax.faces.ViewState&quot; value=&quot;7464469350430442643:-8628336969383888926&quot; autocomplete=&quot;off&quot; /&gt;
+&lt;/form&gt;</pre>
+
+                    <p>O ID do elemento do form é <code>j_idt5</code> e esse ID é <em>precedido</em> pelo ID do botão Voltar incluído no form (mostrado em <strong>negrito</strong> acima). Como o botão Voltar depende da regra de estilo do <code>#backButton</code> (definido em <code>stylesheet.css</code>), essa regra se torna um empecilho quando o ID do JSF é inserido como prefixo. Isso pode ser evitado ao definir <code>prependId</code> como <code>false</code>.</p></li>
+
+                <li>Execute o projeto novamente (clique no botão ( <img alt="Botão Executar Projeto" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png"> ) Executar Projeto ou pressione F6; fn-F6 no Mac). Insira um número na página de boas-vindas e clique em Submeter. A página de resposta agora exibe a mensagem de resposta sem as tags <code>&lt;p></code> e o botão Voltar está no lugar correto. <br> <img alt="página de resposta exibida no browser" class="b-all margin-around" id="responsePage" src="../../../images_www/articles/72/web/jsf20-intro/response3.png" title="Exibir o status atual do projeto em um browser"></li>
+
+                <li>Clique no botão Voltar. Como o valor atual da propriedade <code>userNumber</code> do <code>UserNumberBean</code> está vinculado ao componente JSF <code>inputText</code>, o número inserido anteriormente agora será exibido no campo de texto.</li>
+
+                <li>Inspecione o log do servidor na janela de Saída do IDE (Ctrl-4; &amp;#8984-4 no Mac) para determinar qual é o suposto número correto.
+
+                    <p class="tips">Se, por alguma razão, você não puder ver o log do servidor, você poderá abri-lo alternando para a janela Serviços (Ctrl-5; &amp;#8984-5 no Mac) e expandindo o nó Servidores. Em seguida, clique com o botão direito do mouse no GlassFish Server no qual o projeto está implantado e selecione Exibir Log do Servidor. Se você não conseguir ver o número no log do servidor, tente construir novamente a aplicação clicando com o botão direito do mouse no nó do projeto e selecionando Limpar e Construir Projeto.</p></li>
+
+                <li>Digite o número correto e clique em Submeter. A aplicação irá comparar a sua entrada com o número atualmente salvo e exibirá a mensagem apropriada.<br><img alt="página de resposta exibida no browser" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/yay.png" title="A resposta correta será exibida ao inserir o número correspondente"></li>
+
+                <li>Clique novamente no botão Voltar. Observe que o número inserido anteriormente não será mais exibido no campo de texto. Lembre-se de que o método <code>getResponse()</code> do <code>UserNumberBean</code> <a href="#getResponse">invalida a sessão atual do usuário</a> quando o número correto é descoberto.</li>
+            </ol>
+        </div>
+        <br>
+        <h2 id="template">Aplicando um Modelo de Facelets</h2>
+
+        <p>O Facelets se tornou a tecnologia padrão de exibição para o JSF 2.x. O Facelets é um framework de modelos leve que suporta todos os componentes de IU do JSF e é usado para compilar e renderizar a árvore de componentes do JSF para views da aplicação. Também oferece suporte ao desenvolvimento quando ocorrem erros de EL, permitindo que você inspecione o rastreamento de pilha, a árvore de componentes e as variáveis com escopo.</p>
+
+        <p>Embora você talvez não tenha percebido, os arquivos <code>index.xhtml</code> e <code>response.xhtml</code> com os quais você está trabalhando até o momento no tutorial são páginas de Facelets. As páginas de Facelets utilizam a extensão <code>.xhtml</code> e, desde que você esteja trabalhando em um projeto JSF 2.x (As bibliotecas JSF 2.x incluem arquivos JAR Facelets.), as views poderão renderizar apropriadamente a árvore de componentes JSF.</p>
+
+        <p>O objetivo desta seção é familiarizar você com modelos de Facelets. Em projetos que contêm várias views, geralmente é mais vantajoso aplicar um arquivo de modelo que defina a estrutura e a aparência das diversas views. Quando você atende às solicitações, a aplicação insere dinamicamente o conteúdo preparado no arquivo de modelo e envia o resultado de volta ao cliente. Embora esse projeto contenha somente duas views (a página de boas-vindas e página de resposta), é fácil ver que elas contêm uma grande quantidade de conteúdo duplicado. É possível fatorar esse conteúdo duplicado em um modelo de Facelets e criar arquivos do cliente de modelo para manipular o conteúdo específico das páginas de boas-vindas e resposta.</p>
+
+        <p>O IDE oferece um <a href="jsf20-support.html#faceletsTemplate">assistente de Modelo de Facelets</a> para a criação de modelos de Facelets e um assistente de Cliente de modelo de Facelets para a criação de arquivos que dependem de um modelo. Esta seção utiliza esses assistentes.</p>
+
+        <p><strong class="notes">Observação:</strong> O IDE também oferece um assistente de Página JSF que permite criar páginas de Facelets individuais para seu projeto. Para obter mais informações, consulte <a href="jsf20-support.html#jsfPage">Suporte JSF 2.x no NetBeans IDE</a>.</p>
+
+        <ul>
+            <li><a href="#templateFile">Criando o Arquivo de Modelo de Facelets</a></li>
+            <li><a href="#templateClient">Criando Arquivos Clientes de Modelo</a></li>
+        </ul>
+
+        <div class="indent">
+
+            <h3 id="templateFile">Criando o Arquivo de Modelo de Facelets</h3>
+
+            <ol>
+                <li>Crie um arquivo de modelo de Facelets. Pressione Ctrl-N (&amp;#8984-N no Mac) para abrir o assistente Arquivo. Selecione a categoria JavaServer Faces e, em seguida, Modelo de Facelets. Clique em Próximo.</li>
+
+                <li>Digite <code>template</code> como nome do arquivo.</li>
+
+                <li>Escolha um dos oito estilos de layout e clique em Finalizar. (Você utilizará a folha de estilo existente, portanto, não importa qual estilo de layout você escolherá.) <br> <img alt="Estilos de layout apresentados no assistente de Modelo de Facelets" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/layout-style.png" title="O assistente de Modelo de Facelets permite selecionar entre estilos de layout comuns"> <br> O assistente gera o arquivo <code>template.xhtml</code> e as folhas de estilo relacionadas com base na seleção feita, a seguir, coloca-as em uma pasta <code>resources</code> > <code>css</code> dentro da raiz da Web do projeto.
+
+                    <p class="tips">Depois de concluir o assistente, o arquivo de modelo é aberto no editor. Para exibir o modelo em um browser, clique com o botão direito do mouse no Editor e selecione Exibir.</p></li>
+
+                <li>Examine a marcação do arquivo de modelo. Observe os pontos a seguir:
+
+                    <ul>
+                        <li>A biblioteca de tags <code>facelets</code> é declarada na tag <code>&lt;html></code> da página. A biblioteca de tags possui o prefixo <code>ui</code>.
+
+                            <pre class="examplecode" style="width:639px">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      <strong>xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;</strong>
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;</pre></li>
+
+                        <li>A página de Facelets utiliza as tags <code>&lt;h:head></code> e <code>&lt;h:body></code> em vez das tags <code>&lt;head></code> e <code>&lt;body></code>. Quando você utiliza essas tags, o Facelets pode construir uma árvore de componentes que abrange toda a página.</li>
+
+                        <li>A página faz referência às folhas de estilo que também foram criadas ao concluir o assistente.
+
+                            <pre class="examplecode" style="width:639px">
+&lt;h:head&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    <strong>&lt;link href=&quot;./resources/css/default.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;</strong>
+    <strong>&lt;link href=&quot;./resources/css/cssLayout.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;</strong>
+    &lt;title&gt;Facelets Template&lt;/title&gt;
+&lt;/h:head&gt;</pre></li>
+
+                        <li>As tags <code>&lt;ui:insert></code> são utilizadas no corpo da página em todos os compartimentos associados ao estilo de layout que você escolheu. Cada tag <code>&lt;ui:insert></code> possui um atributo <code>name</code> que identifica o compartimento. Por exemplo:
+
+                            <pre class="examplecode" style="width:639px">
+&lt;div id=&quot;top&quot;&gt;
+    <strong>&lt;ui:insert name=&quot;top&quot;&gt;Top&lt;/ui:insert&gt;</strong>
+&lt;/div&gt;</pre></li>
+                    </ul>
+                </li>
+
+                <li>Examine novamente as páginas de <a href="#staticPage">boas-vindas</a> e de <a href="#responsePage">resposta</a>. O único conteúdo que é alterado nas duas páginas é o título e o texto contido no quadro cinza. O modelo, portanto, pode fornecer todo o conteúdo restante.</li>
+
+                <li>Substitua todo o conteúdo de seu arquivo de modelo pelo conteúdo abaixo.
+
+                    <pre class="examplecode">
+&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;
+
+    &lt;h:head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+        &lt;link href=&quot;css/stylesheet.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+        &lt;title&gt;&lt;ui:insert name=&quot;title&quot;&gt;Facelets Template&lt;/ui:insert&gt;&lt;/title&gt;
+    &lt;/h:head&gt;
+
+    &lt;h:body&gt;
+
+        &lt;div id=&quot;left&quot;&gt;
+            &lt;ui:insert name=&quot;box&quot;&gt;Box Content Here&lt;/ui:insert&gt;
+        &lt;/div&gt;
+
+    &lt;/h:body&gt;
+
+&lt;/html&gt;</pre>
+
+                    O código acima implementa as seguintes alterações:
+
+                    <ul>
+                        <li>O arquivo <code>stylesheet.css</code> do projeto substitui as referências da folha de estilo do modelo criadas pelo assistente.</li>
+
+                        <li>Todas as tags <code>&lt;ui:insert></code> (e suas tags <code>&lt;div></code>) foram removidas, exceto uma denominada <code>box</code>.</li>
+
+                        <li>Um par de tags <code>&lt;ui:insert></code> foi colocado no título da página e foi denominado <code>title</code>.</li>
+                    </ul></li>
+
+                <li>Copie o código relevante do arquivo <code>index.xhtml</code> ou <code>response.xhtml</code> para o modelo. Adicione o conteúdo mostrado em <strong>negrito</strong> abaixo das tags <code>&lt;h:body></code> do arquivo de modelo.
+
+                    <pre class="examplecode">
+&lt;h:body&gt;
+    <strong>&lt;div id=&quot;mainContainer&quot;&gt;</strong>
+        &lt;div id=&quot;left&quot; <strong>class=&quot;subContainer greyBox&quot;</strong>&gt;
+            &lt;ui:insert name=&quot;box&quot;&gt;Box Content Here&lt;/ui:insert&gt;
+        &lt;/div&gt;
+        <strong>&lt;div id=&quot;right&quot; class=&quot;subContainer&quot;&gt;
+            &lt;img src=&quot;duke.png&quot; alt=&quot;Duke waving&quot; /&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;</strong>
+&lt;/h:body&gt;</pre></li>
+
+                <li>Execute o projeto. Quando a página de boas-vindas abrir no browser, modifique o URL para o seguinte:
+
+                    <pre class="examplecode">http://localhost:8080/jsfDemo/faces/template.xhtml</pre>
+
+                    O arquivo de modelo é exibido da seguinte forma: <br><img alt="Modelo de Facelets exibido no browser" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/facelets-template.png" title="Exibir o modelo de Facelets em um browser">
+                </li>
+            </ol>
+
+            <p>O projeto agora contém um arquivo de modelo que fornece a aparência e a estrutura de todas as views. Agora é possível criar arquivos de clientes que chamem o modelo.</p>
+
+
+            <h3 id="templateClient">Criando Arquivos de Clientes de Modelo</h3>
+
+            <p>Crie os arquivos de clientes de modelo das páginas de boas-vindas e resposta. Nomeie o arquivo de cliente de modelo da página de boas-vindas <code>greeting.xhtml</code>. Para a página de resposta, o arquivo será <code>response.xhtml</code>.</p>
+
+            <h4>greeting.xhtml</h4>
+
+            <ol>
+                <li>Pressione Ctrl-N (⌘-N no Mac) para abrir o assistente de Novo Arquivo. Selecione a categoria JavaServer Faces e, em seguida, Cliente de Modelo de Facelets. Clique em Próximo.</li>
+
+                <li>Digite <code>greeting</code> como nome do arquivo.</li>
+
+                <li>Clique no botão Procurar ao lado do campo Modelo e, em seguida, utilize a caixa de diálogo exibida para navegar até o arquivo <code>template.xhtml</code> criado na seção anterior. <br> <img alt="Assistente de Cliente de Modelo de Facelets" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/template-client.png" title="Assistente de Cliente de Modelo de Facelets"></li>
+
+                <li>Clique em Finalizar. O novo arquivo de cliente de modelo <code>greeting.xhtml</code> é gerado e exibido no editor.</li>
+
+                <li>Examine a marcação. Observe o conteúdo realçado em <strong>negrito</strong>.
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;&gt;
+
+    &lt;body&gt;
+
+        &lt;ui:composition <strong>template=&quot;./template.xhtml&quot;</strong>&gt;
+
+            &lt;ui:define <strong>name=&quot;title&quot;</strong>&gt;
+                title
+            &lt;/ui:define&gt;
+
+            &lt;ui:define <strong>name=&quot;box&quot;</strong>&gt;
+                box
+            &lt;/ui:define&gt;
+
+        &lt;/ui:composition&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+                    O arquivo de cliente de modelo faz referência a um modelo utilizando o atributo <code>template</code> da tag <code>&lt;ui:composition></code>. Como o modelo contém tags <code>&lt;ui:insert></code> de <code>title</code> e <code>box</code>, esse cliente de modelo contém as tags <code>&lt;ui:define></code> desses dois nomes. O conteúdo especificado entre as tags <code>&lt;ui:define></code> será o conteúdo inserido no modelo entre as tags <code>&lt;ui:insert></code> do nome correspondente.</li>
+
+                <li>Especifique <code>greeting</code> como o título do arquivo. Faça a seguinte alteração em <strong>negrito</strong>.
+
+                    <pre class="examplecode">
+&lt;ui:define name=&quot;title&quot;&gt;
+    <strong>Greeting</strong>
+&lt;/ui:define&gt;</pre></li>
+
+                <li>Alterne para o arquivo <code>index.xhtml</code> (pressione Ctrl-Tab) e copie o conteúdo que normalmente aparece no quadro cinza exibido na página renderizada. Em seguida, volte ao <code>greeting.xhtml</code> e cole-o no arquivo de cliente de modelo. (Alterações em <strong>negrito</strong>.)
+
+                    <pre class="examplecode">
+&lt;ui:define name=&quot;box&quot;&gt;
+    <strong>&lt;h4&gt;Hi, my name is Duke!&lt;/h4&gt;
+
+    &lt;h5&gt;I'm thinking of a number
+
+        &lt;br/&gt;
+        between
+        &lt;span class=&quot;highlight&quot;&gt;0&lt;/span&gt; and
+        &lt;span class=&quot;highlight&quot;&gt;10&lt;/span&gt;.&lt;/h5&gt;
+
+    &lt;h5&gt;Can you guess it?&lt;/h5&gt;
+
+    &lt;h:form&gt;
+        &lt;h:inputText size=&quot;2&quot; maxlength=&quot;2&quot; value=&quot;#{UserNumberBean.userNumber}&quot; /&gt;
+        &lt;h:commandButton id=&quot;submit&quot; value=&quot;submit&quot; action=&quot;response&quot; /&gt;
+    &lt;/h:form&gt;</strong>
+&lt;/ui:define&gt;</pre></li>
+
+                <li>Declare a biblioteca de tags HTML JSF do arquivo. Coloque o cursor em qualquer um das tags sinalizadas com um erro (qualquer tag com o prefixo <code>h</code>') e pressione Ctrl-Espaço. Em seguida, selecione a tag na lista de sugestões da funcionalidade autocompletar código. O namespace da biblioteca de tags será adicionado à tag <code>&lt;html></code> do arquivo (mostrado em <strong>negrito</strong> abaixo) e os indicadores de erro desaparecerão.
+
+                    <pre class="examplecode">
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      <strong>xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;</strong>&gt;</pre>
+
+                    <p class="tips">Se você colocar o cursor depois de '<code>m</code>' no <code>&lt;h:form></code> e pressionar Ctrl-Espaço, o namespace será automaticamente adicionado ao arquivo. Se somente uma opção lógica estiver disponível ao pressionar Ctrl-Espaço, ela será imediatamente aplicada ao arquivo. As bibliotecas de tags JSF são automaticamente declaradas ao chamar a funcionalidade autocompletar código nas tags.</p>
+                </li>
+            </ol>
+
+            <h4>response.xhtml</h4>
+
+            <p>Como o projeto já contém um arquivo com o nome <code>response.xhtml</code>, e visto que você já sabe qual é a aparência do arquivo de cliente de modelo, modifique o arquivo <code>response.xhtml</code> para que se torne o arquivo de cliente de modelo. (Neste tutorial, basta copiar e colar o código fornecido.)</p>
+
+            <ol>
+                <li>Abra <code>response.xhtml</code> no editor. (Se já estiver aberto, pressione Ctrl-Tab e selecione-o.) Substitua o conteúdo de todo o arquivo pelo código abaixo.
+
+                    <pre class="examplecode">
+&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;
+      xmlns:ui=&quot;http://xmlns.jcp.org/jsf/facelets&quot;
+      xmlns:h=&quot;http://xmlns.jcp.org/jsf/html&quot;&gt;
+
+    &lt;body&gt;
+
+        &lt;ui:composition template=&quot;./template.xhtml&quot;&gt;
+
+            &lt;ui:define name=&quot;title&quot;&gt;
+                Response
+            &lt;/ui:define&gt;
+
+            &lt;ui:define name=&quot;box&quot;&gt;
+                &lt;h4&gt;&lt;h:outputText escape=&quot;false&quot; value=&quot;#{UserNumberBean.response}&quot;/&gt;&lt;/h4&gt;
+
+                &lt;h:form prependId=&quot;false&quot;&gt;
+
+                    &lt;h:commandButton id=&quot;backButton&quot; value=&quot;Back&quot; action=&quot;greeting&quot; /&gt;
+
+                &lt;/h:form&gt;
+            &lt;/ui:define&gt;
+
+        &lt;/ui:composition&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+                    Observe que o arquivo é idêntico a <code>greeting.xhtml</code>, exceto pelo conteúdo especificado entre as tags <code>&lt;ui:define></code> de <code>title</code> e <code>box</code>.</li>
+
+                <li>No descritor de implantação <code>web.xml</code> do projeto, modifique a entrada do arquivo de boas-vindas para que <code>greeting.xhtml</code> seja a página exibida quando a aplicação for executada. <br><br> Na janela Projetos, clique duas vezes em Arquivos de Configuração > <code>web.xml</code> para abri-lo no editor. Na guia Páginas, altere o campo Arquivos de Boas-Vindas para <code>faces/greeting.xhtml</code>.<br><img alt="Interface do Descritor de Implantação" class="b-all margin-around" src="../../../images_www/articles/72/web/jsf20-intro/welcome-files.png" title="Alterar a entrada de Arquivos de Boas-Vindas no descritor de implantação"></li>
+
+                <li>Execute o projeto para ver como ele é em um browser. Pressione F6 (fn-F6 no Mac) ou clique no botão (<img alt="Botão Executar Projeto" src="../../../images_www/articles/72/web/jsf20-crud/run-project-btn.png">) Executar Projeto na barra de ferramentas principal. O projeto será implantado no GlassFish Server e aberto em um browser.</li>
+            </ol>
+
+            <p>Quando você utiliza o modelo de Facelets e os arquivos de clientes de modelo, a aplicação se comportará exatamente da mesma forma que antes. Fatorando o código duplicado nas páginas de boas-vindas e de resposta da aplicação, você consegue reduzir o tamanho da aplicação e eliminar a possibilidade de escrever mais códigos duplicados, caso mais páginas sejam adicionadas posteriormente. Isso pode tornar o desenvolvimento mais fácil e eficiente ao trabalhar em grandes projetos.</p>
+        </div>
+
+
+
+        <div class="feedback-box">
+            <a href="/about/contact_form.html?to=3&amp;subject=Feedback:%20Introduction%20to%20JSF%202.0">Enviar Feedback neste Tutorial</a>
+        </div>
+
+        <br style="clear:both;">
+
+
+        <h2 id="seealso">Consulte Também</h2>
+
+        <p>Para obter mais informações sobre o JSF 2.x, consulte os recursos a seguir:</p>
+
+        <div class="indent">
+            <h3>Tutoriais e Artigos NetBeans</h3>
+
+            <ul>
+                <li><a href="jsf20-support.html">Suporte a JSF 2.x no NetBeans IDE</a></li>
+                <li><a href="jsf20-crud.html">Gerando uma Aplicação CRUD JavaServer Faces 2.x Usando um Banco de Dados</a></li>
+                <li><a href="../../samples/scrum-toys.html">Scrum Toys: A Aplicação de Amostra Completa do JSF 2.0</a></li>
+                <li><a href="../javaee/javaee-gettingstarted.html">Conceitos Básicos sobre Aplicações do Java EE</a></li>
+                <li><a href="../../trails/java-ee.html">Trilha do Aprendizado do Java EE e Java Web</a></li>
+            </ul>
+
+            <h3>Recursos Externos</h3>
+
+            <ul>
+                <li><a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">Tecnologia JavaServer Faces</a> (homepage Oficial)</li>
+                <li><a href="http://jcp.org/aboutJava/communityprocess/final/jsr314/index.html">Especificação do JSR 314 para o JavaServer Faces 2.0</a></li>
+                <li><a href="http://docs.oracle.com/javaee/7/tutorial/doc/jsf-develop.htm">O Tutorial do Java EE 7, Capítulo 12: Desenvolvendo a Tecnologia JavaServer Faces</a></li>
+                <li><a href="http://javaserverfaces.dev.java.net/">Projeto Mojarra GlassFish</a> (Implementação oficial de referência do JSF 2.x)</li>
+                <li><a href="http://forums.oracle.com/forums/forum.jspa?forumID=982">Fóruns de Discussão OTN: JavaServer Faces</a></li>
+                <li><a href="http://www.jsfcentral.com/">Central do JSF</a></li>
+            </ul>
+
+            <h3>Blogs</h3>
+
+            <ul>
+                <li><a href="http://www.java.net/blogs/edburns/">Ed Burns</a></li>
+                <li><a href="http://www.java.net/blogs/driscoll/">Jim Driscoll</a></li>
+            </ul>
+        </div>
+    </body>
+</html>
