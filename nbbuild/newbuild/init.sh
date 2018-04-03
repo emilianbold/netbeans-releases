@@ -141,7 +141,7 @@ fi
 #JDK8_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/8u141/promoted/all/
 if [ -z ${JDK8_BUILDS_PATH} ]; then
 #    JDK8_BUILDS_PATH=java/re/jdk/8u141/promoted/ #for builds before 8u141
-    JDK8_BUILDS_PATH=artifactory/re-release-local/jdk/8u171/b10/bundles/
+    JDK8_BUILDS_PATH=artifactory/re-release-local/jdk/8u171/b11/bundles/
     export JDK8_BUILDS_PATH
 fi
 
