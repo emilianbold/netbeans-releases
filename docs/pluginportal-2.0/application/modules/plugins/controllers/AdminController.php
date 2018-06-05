@@ -506,10 +506,10 @@ class AdminController extends Zend_Controller_Action {
                 // send notification about new versin to Marian
                 if (!$data['id']) {
                     $transport = new Zend_Mail_Transport_Smtp('localhost');
-                    Zend_Mail::setDefaultFrom('jiri.kovalsky@oracle.com', 'Jiri Kovalsky ');
-                    Zend_Mail::setDefaultReplyTo('jiri.kovalsky@oracle.com', 'Jiri Kovalsky ');
+                    Zend_Mail::setDefaultFrom('geertjan@apache.org', 'Geertjan Wielenga ');
+                    Zend_Mail::setDefaultReplyTo('geertjan@apache.org', 'Geertjan Wielenga ');
                     $mail = new Zend_Mail();
-                    $mail->addTo('marian.mirilovic@oracle.com', '');
+                    $mail->addTo('geertjan@apache.org', '');
                     $mail->setSubject('New UC catalog on Plugin Portal');
                     $mail->setBodyText('Cau Marian,
 this is an automatic email to inform you, that there is new NetBeans version added to
@@ -872,13 +872,13 @@ Jirka');
                 ->orderBy('plugin_name')
                 ->execute(null, Doctrine_Core::HYDRATE_ARRAY);
         $transport = new Zend_Mail_Transport_Smtp('localhost');
-        Zend_Mail::setDefaultFrom('jiri.kovalsky@oracle.com', 'Jiri Kovalsky ');
-        Zend_Mail::setDefaultReplyTo('jiri.kovalsky@oracle.com', 'Jiri Kovalsky ');
+        Zend_Mail::setDefaultFrom('geertjan@apache.org', 'Geertjan Wielenga ');
+        Zend_Mail::setDefaultReplyTo('geertjan@apache.org', 'Geertjan Wielenga ');
         foreach ($plugins as $p) {
             echo $p['pluginid'] . ' ' . $p['plugin_name'] . ' [' . $p['author_userid'] . ']<br/>';
             $mail = new Zend_Mail();
             $mail->addTo($p['author_userid'] . '@netbeans.org', '');
-            //$mail->addTo('jan.pirek@oracle.com', '');
+            //$mail->addTo('geertjan@apache.org', '');
             $mail->setSubject('Your plugin ' . $p['plugin_name'] . ' has no category assigned');
             $mail->setBodyText('Hello ' . $p['author_userid'] . ',
 
@@ -902,7 +902,7 @@ regarding this matter, don\'t hesitate to contact me.
 
 Thanks for your cooperation!
 --
-Jiri Kovalsky
+Geertjan Wielenga
 NetBeans Community Manager
 http://www.netbeans.org ');
             $mail->send($transport);
@@ -919,13 +919,13 @@ http://www.netbeans.org ');
                 ->orderBy('p.plugin_name')
                 ->execute(null, Doctrine_Core::HYDRATE_ARRAY);
         $transport = new Zend_Mail_Transport_Smtp('localhost');
-        Zend_Mail::setDefaultFrom('jiri.kovalsky@oracle.com', 'Jiri Kovalsky ');
-        Zend_Mail::setDefaultReplyTo('jiri.kovalsky@oracle.com', 'Jiri Kovalsky ');
+        Zend_Mail::setDefaultFrom('geertjan@apache.org', 'Geertjan Wielenga ');
+        Zend_Mail::setDefaultReplyTo('geertjan@apache.org', 'Geertjan Wielenga ');
         foreach ($plugins as $p) {
             echo $p['pluginid'] . ' ' . $p['plugin_name'] . ' [' . $p['author_userid'] . ']<br/>';
             $mail = new Zend_Mail();
             $mail->addTo($p['author_userid'] . '@netbeans.org', '');
-            //$mail->addTo('jan.pirek@oracle.com', '');
+            //$mail->addTo('geertjan@apache.org', '');
             $mail->setSubject('Your plugin ' . $p['plugin_name'] . ' has no NetBeans version ');
             $mail->setBodyText('Hello ' . $p['author_userid'] . ',
 
@@ -949,7 +949,7 @@ hesitate to contact me.
 
 Thanks for your cooperation!
 --
-Jiri Kovalsky
+Geertjan Wielenga
 NetBeans Community Manager
 http://www.netbeans.org ');
             $mail->send($transport);
@@ -1036,7 +1036,7 @@ http://www.netbeans.org ');
         $mail = $this->_getParam('mail');
         $version = $this->_getParam('version');
         $subject = $this->_getParam('subject');
-        $from = $this->_getParam('from') ? $this->_getParam('from') : 'jiri.kovalsky@oracle.com';
+        $from = $this->_getParam('from') ? $this->_getParam('from') : 'geertjan@apache.org';
         if (!empty($owners) && $mail && $version) {
             $mail = str_replace('[VERSION]', $version, $mail);
             Zend_Mail::setDefaultFrom($from, '');

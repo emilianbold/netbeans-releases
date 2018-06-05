@@ -463,7 +463,7 @@ class IndexController extends Zend_Controller_Action {
                 if(!$isNotSpamPost) {
                     // oups, it's SPAM, notify user and do not continue
                     $this->view->plugin = $plugin;
-                    $_SESSION['flash']['msg'].='<li>Either your plugin description contains spam or your account was blocked due to some malicious activity in the past. If you believe this happened in error, please <a href="mailto:jiri.kovalsky@oracle.com?subject=Spam">let us know</a>.</li>';
+                    $_SESSION['flash']['msg'].='<li>Either your plugin description contains spam or your account was blocked due to some malicious activity in the past. If you believe this happened in error, please <a href="mailto:geertjan@apache.org?subject=Spam">let us know</a>.</li>';
                     $_SESSION['flash']['type'] = 'error';
                 }
 
@@ -605,7 +605,7 @@ class IndexController extends Zend_Controller_Action {
             $antiSpam = new AntiSpamValidator($this->config['antispam']['url'], $this->config['sso']['proxyHost'], $this->config['sso']['proxyPort']);
             if(!$antiSpam->validate($bin->whats_new, $plugin->plugin_name, $_SERVER['REMOTE_ADDR'], NbSsoUser::getInstance()->getUsername())) {
                 // oups, it's SPAM, notify user and do not continue
-                $_SESSION['flash']['msg'].='<li>Either your plugin description contains spam or your account was blocked due to some malicious activity in the past. If you believe this happened in error, please <a href="mailto:jiri.kovalsky@oracle.com?subject=Spam">let us know</a>.</li>';
+                $_SESSION['flash']['msg'].='<li>Either your plugin description contains spam or your account was blocked due to some malicious activity in the past. If you believe this happened in error, please <a href="mailto:geertjan@apache.org?subject=Spam">let us know</a>.</li>';
                 $_SESSION['flash']['type'] = 'error';
                 return;
             }
@@ -766,7 +766,7 @@ class IndexController extends Zend_Controller_Action {
                 if(!$isNotSpam) {
                     // oups, it's SPAM, notify user and do not continue
                     $this->view->plugin = $plugin;
-                    $_SESSION['flash']['msg'].='<li>Either your plugin description contains spam or your account was blocked due to some malicious activity in the past. If you believe this happened in error, please <a href="mailto:jiri.kovalsky@oracle.com?subject=Spam">let us know</a>.</li>';
+                    $_SESSION['flash']['msg'].='<li>Either your plugin description contains spam or your account was blocked due to some malicious activity in the past. If you believe this happened in error, please <a href="mailto:geertjan@apache.org?subject=Spam">let us know</a>.</li>';
                     $_SESSION['flash']['type'] = 'error';
                 }
                 if ($valid && $valid2 && $isNotSpam) {

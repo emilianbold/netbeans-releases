@@ -24,11 +24,11 @@ class BinController extends Zend_Controller_Action {
         // send notification if there are just 2 remaining
         if($fpQueue->count()<=1) {
             $transport = new Zend_Mail_Transport_Smtp('localhost');
-                    Zend_Mail::setDefaultFrom('jan.pirek@oracle.com', 'Honza Pirek');
-                    Zend_Mail::setDefaultReplyTo('jan.pirek@oracle.com', 'Honza Pirek');
+                    Zend_Mail::setDefaultFrom('geertjan@apache.org', 'Geertjan');
+                    Zend_Mail::setDefaultReplyTo('geertjan@apache.org', 'Geertjan');
                     $mail = new Zend_Mail();
                     $mail->addTo($this->config['featured']['notificationEmail'].'@netbeans.org', '');
-                    $mail->addCc('jan.pirek@oracle.com', '');
+                    $mail->addCc('geertjan@apache.org', '');
                     $mail->setSubject('[NetBeans PluginPortal] Featured plugin queue running low on items.');
                     $mail->setBodyText('Hello,
 this is to let you know that there is last plugin in the queue of featured plugins.
