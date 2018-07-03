@@ -1,0 +1,96 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>{{suite.title}} <small class="pull-right">{{project}} {{suite.version}} Test Suite</small></h1>
+        <h2><small>Specification: <a href="#/specification/{{suite.specificationId}}">{{suite.specificationTitle}}</a></small></h2>
+
+
+        <h3 data-ng-show="suite.desc && suite.desc.length > 0">Setup</h3>
+        <div class="well" data-ng-bind-html-unsafe="suite.desc" data-ng-show="suite.desc && suite.desc.length > 0">
+
+        </div>
+        <h3>Test cases <small>({{(suite.testCases).length}})</small></h3>
+        <table>
+            <tr data-ng-repeat="testCase in suite.testCases">
+                <td><a href="#/case/{{testCase.id}}/suite/{{suite.id}}/v/1">&rightarrow; {{testCase.title}}&nbsp;&nbsp;</a></td>
+                <td>
+                    <span data-ng-repeat="keyword in testCase.keywords">
+                        <sylabel label="keyword"></sylabel>
+                    </span>    
+                </td>
+                <td data-ng-repeat="action in testCase.controls">
+                    <div class="btn-toolbar">
+                        <div class="btn-group" >
+                            <button class="btn" data-ng-click="performCase(action.onClick, testCase.id)" data-ng-disabled="!action.isEnabled" title="{{action.title}}"><i class="{{action.iconName}}"></i>&nbsp; {{action.title}}</button>
+
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+        </table><br/>
+        <a data-ng-disabled="suite.isUsed" data-ng-show="rights == 1" data-ng-href="#/case/-1/suite/{{id}}/create" class="btn btn-small" title="Create new test case" data-ng-click="redirectToNewCase();"><i class="icon-plus"></i>&nbsp; Create new</a>
+        <button data-ng-disabled="suite.isUsed" data-ng-show="rights == 1" class="btn btn-small" title="Add existing test case" data-ng-click="showAddCaseModal();"><i class="icon-list"></i>&nbsp; Add existing</button>
+
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button data-ng-repeat="action in suite.controls" data-ng-disabled="!action.isEnabled" class="btn" data-ng-click="performSuite(action.onClick)" title="{{action.title}}"><i class="{{action.iconName}}"></i>&nbsp; {{action.title}}</button>
+                </div>
+            </div>
+            <small data-ng-hide="!suite.isUsed" class="label label-frozen" title="Specification is used in paused test assignment and cannot be updated right now">Closed for editing </small>
+        </div>
+        <div class="clearfix"></div>
+        <div>
+            <h3><img src="img/clock.png" class="clockIcon" title="Estimated time to test" alt="Clock"/> {{suite.estimation}} mins.</h3>
+        </div>
+        <div>
+            <h4>Product: <span data-ng-bind-html-unsafe="suite.product"></span></h4>
+            <h4>Component: <span data-ng-bind-html-unsafe="suite.component"></span></h4>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>
+
+<div class="modal fade hide" id="addCaseModal" tabindex="-1" role="dialog" aria-labelledby="addCaseModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="addCaseModalLabel">Add case to suite</h3>
+    </div>
+    <div class="modal-body" id="addCaseModalBody">
+        Test Case:
+        <input style="width: 40%" type="text" data-ng-change="filterCases()" data-ng-model="caseToBeAdded">
+
+
+
+
+        <table class="table table-striped table-condensed table-bordered table-hover" style="width: 70%">
+            <tr style="cursor: pointer" data-ng-repeat="s in case_suggestions" >
+                <td id="c{{s.id}}" >{{s.title}}</td>
+                <td><a href="#/case/{{s.id}}/suite/-1/v/1">view</a></td>
+                <td>
+                    <span class="btn btn-small" title="Add" data-ng-click="addCase(s.id);">Add</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" id="modal_confirm_ok" data-dismiss="modal" data-ng-click="fetch();">Done</button>
+    </div>
+</div>

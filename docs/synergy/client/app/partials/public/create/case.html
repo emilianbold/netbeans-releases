@@ -1,0 +1,63 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Create new test case <small class="pull-right">{{project}} {{c_suite.version}} Test Case</small></h1>
+        <small data-ng-hide="!c_suite.isUsed" class="label label-frozen" title="Specification is used in paused test assignment and cannot be updated right now">Closed for editing </small><br/>
+        <br/>
+        <tabset>
+            <tab heading="Edit">
+                <div>
+                <form name="myForm" >
+                    <h3>Title:</h3>
+                    <input style="width: 70%" type="text" data-ng-model="testCase.title" name="title" required="required" />
+                    <h3>Steps:</h3>
+                    <textarea rows="10" data-ui-codemirror="{theme:'default', mode : 'text/html', lineWrapping : true, lineNumbers: true}" data-ng-model="testCase.steps"></textarea>
+                    <h3>Expected result:</h3>
+                    <textarea rows="10" data-ui-codemirror="{theme:'default', mode : 'text/html', lineWrapping : true, lineNumbers: true}" data-ng-model="testCase.result"></textarea>
+                </form></div>
+            </tab>
+            <tab heading="Preview" select="loadPreview()">
+                <div data-ng-bind-html-unsafe="preview"></div>
+            </tab>
+        </tabset>
+
+
+
+
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button class="btn" data-ng-click="create()" title="Create case" data-ng-disabled="myForm.$invalid || myForm2.$invalid || c_suite.isUsed"><i class="icon-ok"></i>&nbsp; Save</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+            <form name="myForm2" >
+                <h3>Duration (mins):</h3>
+                <input class="input-small" type="text" data-ng-model="testCase.duration" name="duration" required="required" />
+                <h3>Order:</h3>
+                <input class="input-small" type="text" data-ng-model="testCase.order" name="order" required="required" />
+            </form>
+        </div>
+        <div class="clearfix"></div>
+        <h2><small>Test Suite:  <a href="#/suite/{{c_suite.id}}">{{c_suite.title}}</a></small></h2>
+        <h2><small>Specification: <a href="#/specification/{{c_suite.specificationId}}">{{c_suite.specificationTitle}}</a></small></h2>
+        <h2><small>Version: {{c_suite.version}}</small></h2>
+
+    </div>
+
+</div>
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>

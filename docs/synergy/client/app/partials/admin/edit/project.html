@@ -1,0 +1,74 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Project {{project.name}}</h1>
+        <form name="myForm" class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label" for="fname">Name: </label>
+                <div class="controls">
+                    <input id="fname" required="" type="text" data-ng-model="project.name"/>
+                </div>
+
+            </div>
+            <h4>Bug tracking system setting</h4>
+            <div><small>If you are not using bug tracking system, please select "Other"</small></div>
+            <div class="control-group">
+                <label class="control-label" for="bugtype">Bug tracking system type: </label>
+                <div class="controls">
+                    <select style="width: 40%" name="bugtype" id="bugtype" required="required" ui-select2 data-ng-model="project.bugTrackingSystem">
+                        <option value="other" >Other</option>
+                        <option value="bugzilla">Bugzilla</option>
+                        <!--<option value="jira">JIRA</option>-->
+                    </select> 
+                </div>
+            </div>
+            <div class="control-group">
+                <h5>View link (multiple issues)</h5>
+                <div><small>Enter a JavaScript function that takes 2 parameters: array of numbers (IDs of bugs) and the second one boolean to indicate if (if false) the function should return a string that represents link to the issues in your bug tracking system or if it should
+                        return an object with 2 fields: link and text.
+                    </small></div>
+                <label class="control-label" for="viewLink">View link script: </label>
+
+                <div class="controls">
+
+                    <textarea rows="8" id="viewLink" data-ui-refresh="refreshCodemirror"  data-ui-codemirror="{theme:'default', mode : 'text/javascript', lineWrapping : true, lineNumbers: true}" data-ng-model="project.multiViewLink"></textarea>
+                </div>
+            </div>
+            <div class="control-group">
+                <h5>View link (single issue)</h5>
+                <div><small>Enter a JavaScript function that takes 2 parameters: bug ID and the second one boolean to indicate if (if false) the function should return a string that represents link to the issues in your bug tracking system or if it should
+                        return an object with 2 fields: link and text</small></div>
+                <label class="control-label" for="viewLink2">View link script: </label>
+
+                <div class="controls">
+
+                    <textarea rows="8" id="viewLink2" data-ui-refresh="refreshCodemirror"  data-ui-codemirror="{theme:'default', mode : 'text/javascript', lineWrapping : true, lineNumbers: true}" data-ng-model="project.viewLink"></textarea>
+                </div>
+            </div>
+            <div class="control-group">
+                <h5>Report link</h5>
+                <div><small>Enter a JavaScript function that takes 4 string parameters - product, component, version, summary,  and returns a string that represents link to your bug tracking system for reporting issues (please note that parameters can be all undefined)</small></div>
+                <label class="control-label" for="reportLink">Report link script: </label>
+                <div class="controls">
+
+                    <textarea rows="8" id="reportLink" data-ui-refresh="refreshCodemirror"  data-ui-codemirror="{theme:'default', mode : 'text/javascript', lineWrapping : true, lineNumbers: true}" data-ng-model="project.reportLink"></textarea>
+                </div>
+            </div>
+        </form>
+
+
+    </div>
+
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button data-ng-disabled="myForm.$invalid" class="btn" data-ng-click="save()" title="Save changes"><i class="icon-ok"></i>&nbsp; Save</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+    </div>
+</div>
+

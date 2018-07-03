@@ -1,0 +1,130 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Edit user: {{user.username}}</h1>
+        <form name="myForm" class="form-horizontal" novalidate="">           
+            <div class="control-group">
+                <label class="control-label" for="fname">First name: </label>
+                <div class="controls">
+                    <input id="fname" required="" type="text" data-ng-model="user.firstName"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="lname">Last name:  </label>
+                <div class="controls">
+                    <input type="text" required="" data-ng-model="user.lastName" id="lname"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="uname">Username:  <small>without @domain.org</small></label>
+                <div class="controls">
+                    <input type="text" required="" data-ng-model="user.username" id="uname"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="email">Email: </label>
+                <div class="controls">
+                    <input type="email" required="" id="email" data-ng-model="user.email"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="notifications">Email notifications: </label>
+                <div class="controls">
+                    <input type="checkbox" id="notifications" data-ng-model="user.emailNotifications" >
+                </div>
+            </div>
+            <div class="control-group" data-ng-hide="passwordChangeAllowed == false">
+                <label class="control-label" for="changePsswd">Change password: </label>
+                <div class="controls">
+                    <input type="checkbox" id="changePsswd" data-ng-model="updatePassword" >
+                </div>
+            </div>
+            <div class="control-group" data-ng-hide="updatePassword == false">
+                <label class="control-label" for="pass">Password:</label>
+                <div class="controls">
+                    <input type="password" autocomplete="off"  data-ng-model="user.password" id="pass"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="role">Role: </label>
+                <div class="controls">
+                    <select data-ng-model="user.role" id="role" name="role">
+                        <option value="admin">Administrator</option>
+                        <option value="manager">Manager</option>
+                        <option value="privilegedTester">Privileged Tester</option>
+                        <option value="tester">Tester</option>
+                        <option value="formerUser">Former user</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+        <br/><br/>
+        <table class="table table-condensed table-bordered">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Manipulation with specification</th>
+                    <th>Manipulation with suite</th>
+                    <th>Manipulation with test case</th>
+                    <th>Read permissions</th>
+                    <th>Access to administration</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tester</td>
+                    <td colspan="3" style="text-align: center">Limited*</td>
+                    <td>Yes</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Privileged tester</td>
+                    <td colspan="3" style="text-align: center">Yes</td>
+                    <td>Yes</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Manager</td>
+                    <td colspan="3" style="text-align: center">Yes</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                </tr>
+                <tr>
+                    <td>Admin</td>
+                    <td colspan="3" style="text-align: center">Yes</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                </tr>
+                <tr>
+                    <td>Former user</td>
+                    <td colspan="3" style="text-align: center">No</td>
+                    <td>Yes</td>
+                    <td>No</td>
+                </tr>
+            </tbody>
+        </table>
+        <div>*Limited: Tester can edit specification/suite only if any of following is true:
+            <ul>
+                <li>user is author or owner</li>
+                <li>user is in tribe that "owns" given specification</li>
+                <li>user can edit test case if it belongs to suite which he can edit</li>
+            </ul>
+        </div>
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button class="btn" data-ng-click="edit()" title="Save changes" data-ng-disabled="myForm.$invalid"><i class="icon-ok"></i>&nbsp; Save</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+
+
+    </div>
+
+</div>
+

@@ -1,0 +1,66 @@
+<div class="custom" id="specpool_partial">
+    <div class="row-fluid">
+        <h1><a href="#/run/{{review.testRunId}}" target="_blank" title="Open in new window">{{review.testRunTitle}}</a>&nbsp;<small>{{SYNERGY.product}}</small></h1>
+        <h2>Tutorial review</h2>
+        <h5>Page to review: <a data-ng-href="{{review.reviewUrl}}">{{review.title}}</a></h5>
+        <h5>Page owner: {{review.owner}}</h5><br/>
+       <i> <strong>How to do a review?</strong>&nbsp; All your comments are binded to elements on the page below. First click on some element (place) on the page below to select
+        part of the page and then enter your comment into the text field on the right and press Add comment button to create a new comment. If you click again on already selected element,
+        this element will be deselected. Each comment requires text and at least one selected element. When you are done with commenting,  submit by pressing Submit button.</i><br/><br/> 
+   </div>
+    <div class="row-fluid">
+        <div class="span9" id="frameContainer">
+        </div>
+        <div class="span3">
+            <h3>Comments</h3>
+            <textarea placeholder="Comment text" rows="8" data-ng-model="currentComment.text">
+            </textarea>
+            <button title="Make sure comment has some text and corresponding element has been selected in tutorial page" class="btn btn-small btn-success pull-right" type="button" data-ng-click="addComment()" data-ng-disabled="currentComment.text.length < 1 || currentComment.elements.length < 1">{{commentAction}} comment</button>
+            &nbsp;&nbsp;
+            <button class="btn btn-small pull-left" type="button" data-ng-click="cancelEditing()" data-ng-show="isEditing">Cancel</button>
+            <br/><br/><br/>
+
+            <table class="table table-condensed table-bordered table-hover">
+                <tr data-ng-repeat="c in review.comments">
+                    <td >
+                        <b>Comment #{{$index + 1}}</b> <br/>
+                        <small>{{c.text}}</small><br/>
+
+                        <button class="btn btn-mini pull-right" data-ng-click="editComment($index)">Edit</button>
+                        <button class="btn btn-mini btn-danger pull-right" data-ng-click="removeComment($index)">Delete</button>
+                    </td> 
+                </tr>
+            </table>
+            <form class="form-inline pull-right">
+            <button type="button" class="btn" data-ng-click="submit(0)" data-ng-disabled="comments.length < 1" title="Data will be saved for later resume">Pause</button>
+            <button type="button" class="btn btn-primary" data-ng-click="submit(1)" data-ng-disabled="comments.length < 1" title="Data will be saved and no further comments will be possible. Owner of this tutorial will be notified.">Finish</button>
+            </form>
+        </div>
+    </div> 
+</div>
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel">Failed to send results, retry?</h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="submit()">Yes</button>
+    </div>
+</div>
+<div class="modal fade hide" id="attemptModal" tabindex="-1" role="dialog" aria-labelledby="attemptModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="attemptModalLabel">Found old and probably not submitted data, do you want to send it now?</h3>
+    </div>
+    <div class="modal-body" id="attemptModalBody">
+        Found data are from {{cacheDate}}
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" data-ng-click="sendCached(false)" aria-hidden="true">No</button>
+        <button class="btn btn-primary" data-ng-click="sendCached(true)">Yes</button>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+{
+    "elements": {
+        "tab": {
+            "attributes": {
+                "select": {},
+                "heading": {}
+            }
+        },
+        "syspecificationsall": {},
+        "syissue": {
+            "attributes": {
+                "issue": {}
+            }
+        },
+        "sylabel": {
+            "attributes": {
+                "label": {}
+            }
+        },
+        "tabset": {},
+        "syspecifications": {}
+    },
+    "attributes": {
+        "infinite-scroll-disabled": {},
+        "infinite-scroll": {}
+    }
+}

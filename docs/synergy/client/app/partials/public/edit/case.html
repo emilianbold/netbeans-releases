@@ -1,0 +1,149 @@
+<div class="custom" id="specpool_partial" data-ng-show="rights == 1">
+    <div class="span8">
+        <h1>Edit: {{testCase.title}}&nbsp;<small class="pull-right">{{project}} {{testCase.version}} Test Case</small></h1>
+        Please note that this test case might be used in several test suites. 
+        <ul>
+            <li>If you want to make minor changes (e.g. typos, better steps), save your changes using <strong>Save for all test suites</strong> button.</li>
+            <li>If you want to make changes only to this particular test case in this test suite, save your changes using <strong>Save only for this test suite</strong></li>
+            <li>All <strong>modifications made to issues/labels/images</strong> in this test case are propagated <strong>by default to all test suites</strong> where this test case is used. 
+                If you want <strong>to avoid that</strong>, please save this test case first using <strong>Save only for this test suite</strong>. 
+                This will clone this case only for this test suite and redirect you back to specification (or suite) page. After that, <strong>edit the case again</strong> and all changes you will make will be propagated to the new cloned test case only</li>
+        </ul>
+        <br/><br/>
+        <tabset>
+            <tab heading="Edit">
+                <form name="myForm" >
+                    <h3>Title:</h3>
+                    <input style="width: 70%" type="text" data-ng-model="testCase.title" name="title" required="required" />
+                    <h3>Steps:</h3>
+                    <textarea data-ui-refresh="refreshCodemirror" rows="10" data-ui-codemirror="{theme:'default', mode : 'text/html', lineWrapping : true, lineNumbers: true}" data-ng-model="testCase.steps"></textarea>
+                    <h3>Expected result:</h3>
+                    <textarea data-ui-refresh="refreshCodemirror" rows="10" data-ui-codemirror="{theme:'default', mode : 'text/html', lineWrapping : true, lineNumbers: true}" data-ng-model="testCase.result"></textarea>
+                </form>
+            </tab>
+            <tab heading="Preview" select="loadPreview()">
+                <div data-ng-bind-html-unsafe="preview"></div>
+            </tab>
+        </tabset>
+        <h3>Images:</h3>
+        <ul class="thumbnails">
+            <li class="span6" data-ng-repeat="image in testCase.images">
+                <div class="thumbnail">
+                    <a href="{{image.src}}" target="_blank" title="Open in new window">
+                        <img data-ng-src="{{image.src}}" alt="{{image.title}}">
+                    </a>
+                    <div class="caption">
+                        <p>{{image.title}}</p>
+                        <p>
+                            <button data-ng-repeat="action in image.controls" class="btn btn-small" data-ng-click="performImage(action.onClick, image.id)" title="{{action.title}}"><i class="{{action.iconName}}"></i>&nbsp; {{action.title}}</button>
+                        </p>
+                    </div>
+                </div>
+            </li>
+        </ul>
+                <div data-ng-show="rights == 1" class="well dropbox" id="dropbox">
+            Drag & Drop new image here
+        </div>
+        <div class="progress hide" id="progressContainer">
+
+            <div class="bar" id="progressBar" style="width: 0%;"></div>
+        </div>
+
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group  btn-group-vertical"  >
+                    <button data-ng-disabled="myForm.$invalid || myForm2.$invalid || testCase.isUsed" class="btn" data-ng-click="save(0)" title="If it is major change"><i class="icon-ok"></i>&nbsp; Save only for this test suite</button>
+                    <small data-ng-hide="!testCase.isUsed" class="label label-frozen" title="Specification is used in paused test assignment and this action is not possible right now">Closed for editing, action not possible</small>
+                    <button data-ng-disabled="myForm.$invalid || myForm2.$invalid" class="btn btn-danger" data-ng-click="save(1)" title="This will affect all test suites for this and newer version that contain this case. Use only in case of small changes (e.g. typo)"><i class="icon-ok"></i>&nbsp; Save for all test suites</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <label class="checkbox" title="Do not show in history">
+                        <input type="checkbox" data-ng-model="minorEdit"> Minor modifications
+                    </label>
+                </div>
+            </div>
+            <form name="myForm2" >
+                <h3>Duration (mins):</h3>
+                <input class="input-small" type="text" data-ng-model="testCase.duration" name="duration" required="required" />
+                <h3>Order:</h3>
+                <input class="input-small" type="text" data-ng-model="testCase.order" data-ng-disabled="testCase.isUsed" name="order" required="required" />
+                <br/><small data-ng-hide="!testCase.isUsed" class="label label-frozen" title="Specification is used in paused test assignment and order property cannot be changed right now">Closed for editing, order cannot be changed</small>
+            </form>
+
+        </div>
+        <div class="clearfix"></div>
+        <h2><small>Test Suite:  <a href="#/suite/{{parentSuite}}">{{testCase.suiteTitle}}</a></small></h2>
+        <h2><small>Specification: <a href="#/specification/{{testCase.specificationId}}">{{testCase.specificationTitle}}</a></small></h2>
+        <h2><small>Version: {{testCase.version}}</small></h2>
+        <h2>Labels</h2>
+        <ul class="unstyled" data-ng-repeat="label in testCase.keywords">
+            <li><span class="label label-{{label}}">{{label}}&nbsp;</span>&nbsp;&nbsp;<button data-ng-click="removeLabel(label)" data-ng-disabled="testCase.isUsed" class="btn btn-mini" type="button">Remove</button></li>
+        </ul>
+        <form class="form-inline">
+            <input type="text" class="input-small" data-ng-model="labelToBeAdded" placeholder="New label">
+            <button class="btn btn" data-ng-click="addLabel()" data-ng-disabled="!labelToBeAdded || testCase.isUsed" type="button">Add</button>
+        </form>
+        <small data-ng-hide="!testCase.isUsed" class="label label-frozen" title="Specification is used in paused test assignment and labels cannot be changed right now">Closed for editing, labels cannot be changed</small>
+        <h2>Issues</h2>
+        <ul class="unstyled" data-ng-model="testCase.issues" data-ng-repeat="issue in testCase.issues">
+            <li>
+                    <syissue baseurl="SYNERGY.issues.singleIssueLink(project,issue.bugId)" issue="issue"></syissue>
+                &nbsp;&nbsp;<button data-ng-click="removeIssue(issue.bugId)" class="btn btn-mini" type="button">Remove</button></li>
+        </ul>
+        <form class="form-inline">
+            <input type="text" class="input-small" data-ng-model="issueToBeAdded" placeholder="New issue">
+            <button data-ng-click="addIssue()" class="btn btn" data-ng-disabled="!issueToBeAdded || issueToBeAdded < 0" type="button">Add</button>
+        </form>
+        <small data-ng-hide="!testCase.isUsed" class="label label-frozen" title="Specification is used in paused test assignment and issues cannot be changed right now">Closed for editing, issues cannot be changed</small>
+    </div>
+
+</div>
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>
+
+<div class="modal fade hide" id="addImageModal" tabindex="-1" role="dialog" aria-labelledby="addImageModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="addImageModalLabel">Add image</h3>
+    </div>
+    <div class="modal-body" id="addImageModalBody">
+        <h4>Title:</h4>
+        <form class="form-inline">
+            <input style="width: 40%" type="text" data-ng-model="imageTitle">
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-disabled="!imageTitle" data-dismiss="modal" data-ng-click="uploadFile();">Done</button>
+    </div>
+</div>
+<!--Delete image-->
+<div class="modal fade hide" id="deleteImageModal" tabindex="-1" role="dialog" aria-labelledby="deleteImageModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteImageModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteImageModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>

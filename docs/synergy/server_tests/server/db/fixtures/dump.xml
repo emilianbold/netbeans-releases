@@ -1,0 +1,1315 @@
+<?xml version="1.0"?>
+<mysqldump xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <database name="st">
+        <table_data name="assignment_progress">
+            <row>
+                <field name="data">var http = require('http');
+                    http.createServer(function (req, res) {
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.end('Hello World\n');
+                    }).listen(1337, '192.168.0.101');
+                    console.log('Server running at http://127.0.0.1:1337/');
+</field>
+                <field name="test_assignement_id">1</field>
+            </row>
+            <row>
+                <field name="data">var http = require('http');
+                    http.createServer(function (req, res) {
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.end('Hello World\n');
+                    }).listen(1337, '192.168.0.101');
+                    console.log('Server running at http://127.0.0.1:1337/');
+</field>
+                <field name="test_assignement_id">2</field>
+            </row>
+            <row>
+                <field name="data">var http = require('http');
+                    http.createServer(function (req, res) {
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.end('Hello World\n');
+                    }).listen(1337, '192.168.0.101');
+                    console.log('Server running at http://127.0.0.1:1337/');
+</field>
+                <field name="test_assignement_id">3</field>
+            </row>
+        </table_data>
+        <table_data name="bug">
+            <row>
+                <field name="id">1</field>
+                <field name="bug_id">123456</field>
+                <field name="case_id">16</field>
+            </row>
+        </table_data>
+        <table_data name="removal_request">
+            <row>
+                <field name="id">1</field>
+                <field name="user_id">-1</field>
+                <field name="specification_id">-1</field>
+            </row>
+        </table_data>
+         <table_data name="user_image">
+            <row>
+                <field name="id">1</field>
+                <field name="user_id">6</field>
+                <field name="image_path">aaaa</field>
+            </row>
+        </table_data>
+        <table_data name="case">
+            <row>
+                <field name="id">15</field>
+                <field name="duration">1</field>
+                <field name="title">New Project</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new HTML5 project (&quot;HTML5 Application&quot; type)
+&lt;/li&gt;&lt;li&gt; Finish wizard with default values
+&lt;/li&gt;&lt;li&gt; After project is created, go to Tools|Options|Misc.|Mobile Platforms and set up path to Android SDK
+&lt;/li&gt;&lt;li&gt; Use browser picker in main toolbar and set browser to Cordova (Android emulator)
+&lt;/li&gt;&lt;li&gt; Run project
+&lt;/li&gt;&lt;li&gt; Android simulator should be either started or IDE should tell you to start simulator so if necessary start it and once it is ready, confirm dialog in IDE
+&lt;/li&gt;&lt;li&gt; IDE asks you to setup resources, confirm
+&lt;/li&gt;&lt;li&gt; New files/folders are created in your project (config.xml etc.)
+&lt;/li&gt;&lt;li&gt; Wait for run process to finish and make sure it won't fail.
+&lt;/li&gt;&lt;li&gt; Right on project node and check that 3 new actions are there: Clean, Build, Clean &amp; Build
+&lt;/li&gt;&lt;li&gt; Open project properties and select Cordova
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Panel shows Cordova resources, application is started in Android Emulator. Try Clean &amp; Build action. If possible, repeat these steps also for iOS Device</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">16</field>
+                <field name="duration">1</field>
+                <field name="title">New Project II</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new HTML5 project, now &quot;Cordova Application&quot; type
+&lt;/li&gt;&lt;li&gt; Finish wizard with default values
+&lt;/li&gt;&lt;li&gt; Project is being created with template files, wait for this process to successfully finish 
+&lt;/li&gt;&lt;li&gt; Browser picker shows Cordova (Android device) as target browser (on Mac, iOS Simulator is displayed)
+&lt;/li&gt;&lt;li&gt; Connect your device, enable USB debugging and run project. If you don't have Android device, use again Emulator instead
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Application is installed on device and starts OK. Again try Clean &amp; Build action. If possible, repeat these steps also for iOS Simulator</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">17</field>
+                <field name="duration">1</field>
+                <field name="title">Cordova plugins</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new HTML5 project, &quot;Cordova Application&quot; type
+&lt;/li&gt;&lt;li&gt; Finish wizard with default values
+&lt;/li&gt;&lt;li&gt; Open project properties and select Cordova category
+&lt;/li&gt;&lt;li&gt; Switch to Plugins panel
+&lt;/li&gt;&lt;li&gt; All core plugins are enabled (in right column)
+&lt;/li&gt;&lt;li&gt; Try to remove some plugins by selecting them in Selected column and pressing left arrow button
+&lt;/li&gt;&lt;li&gt; Press OK
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Open nbproject/plugin.properties and make sure that list of plugins fits selected plugins in project properties</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">18</field>
+                <field name="duration">1</field>
+                <field name="title">Cordova plugins II</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Use project from previous case
+&lt;/li&gt;&lt;li&gt; Open project properties and select Cordova category
+&lt;/li&gt;&lt;li&gt; Switch to Plugins panel
+&lt;/li&gt;&lt;li&gt; Try to add some plugins to the project
+&lt;/li&gt;&lt;li&gt; Press OK
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Open nbproject/plugin.properties and make sure that list of plugins fits selected plugins in project properties</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">19</field>
+                <field name="duration">1</field>
+                <field name="title">New Project</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new HTML5 sample project &quot;Cordova Maps Sample&quot;
+&lt;/li&gt;&lt;li&gt; Finish wizard with default values
+&lt;/li&gt;&lt;li&gt; Open index.html and make sure that there is a script element pointing to cordova.js.
+&lt;/li&gt;&lt;li&gt; Run project on any Cordova target
+&lt;/li&gt;&lt;li&gt; Clean and build project
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Everything is OK</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">20</field>
+                <field name="duration">1</field>
+                <field name="title">Syntax coloring</field>
+                <field name="steps">&lt;ol&gt;
+                    TS_74_LessSupport_coloring.png
+&lt;li&gt; Open &lt;a href=&quot;../../server/api/attachment.php?id=1&quot;&gt;TS_74_LessSupport_sample.less&lt;/a&gt; file in editor and compare syntax highlighting with the picture above
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Syntax highlighting is same as one the picture</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">21</field>
+                <field name="duration">1</field>
+                <field name="title">Elements completion</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file
+&lt;/li&gt;&lt;li&gt; type &quot;d&quot; and invoke code completion
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Items like datalist, dd, div etc. are offered</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">22</field>
+                <field name="duration">1</field>
+                <field name="title">Properties completion</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file and paste following
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt; 
+                    a {  
+  
+                    // cc here 
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Invoke code completion
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">CSS Properties are offered, like in css file</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">23</field>
+                <field name="duration">1</field>
+                <field name="title">Values completion</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file and paste following
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt; 
+                    a {  
+  
+                    color: // cc here 
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Invoke code completion
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Values for color property are offered</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">24</field>
+                <field name="duration">1</field>
+                <field name="title">Variables completion</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file
+&lt;/li&gt;&lt;li&gt; Paste following into the file
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt;@nice-blue: #5B83AD;
+                    @light-blue: (@nice-blue + #111);
+                    #header { 
+                    color: @; 
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Invoke code completion after @ on inside header rule
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Both variables are offered</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">25</field>
+                <field name="duration">1</field>
+                <field name="title">Mixin completion</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file
+&lt;/li&gt;&lt;li&gt; Paste following into the file
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt;.mixinA (@c){
+                    border-top: dotted 1px black;
+                    }
+                    .mixinB {
+                    border-top: dotted 1px black;
+                    }
+                    #menu a {
+                    color: #111;
+                    .
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Invoke code completion after the dot on inside the rule
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Both mixins are offered, if you remove the dot and invoke cc again, only common CSS properties are offered</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">26</field>
+                <field name="duration">1</field>
+                <field name="title">Mixin completion II</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create 3 new LESS files: A.less, B.less and partial.less
+&lt;/li&gt;&lt;li&gt; Declare a mixin in both, B.less and partial.less file
+&lt;/li&gt;&lt;li&gt; In A.less, paste following
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt;@import &amp;quot;partial.less&amp;quot;;
+                    div {
+                    color: #111;
+                    .
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Invoke code completion after the dot on inside the rule
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Mixin from included file is offered, not included is either not offered or with different color</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">27</field>
+                <field name="duration">1</field>
+                <field name="title">Parameter completion</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file
+&lt;/li&gt;&lt;li&gt; Paste following
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt;@rad:1;
+                    .test(@radius){
+                    border-radius: @
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Invoke code completion after the @ inside the mixin
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">rad and radius are offered</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">28</field>
+                <field name="duration">1</field>
+                <field name="title">Parameter completion II</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file
+&lt;/li&gt;&lt;li&gt; Paste following
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt;@oops:1;
+                    .mixin(@oops2) {
+                    color-2: @o;
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Invoke code completion after the @o inside the mixin
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">oops and oops2 should be offered (see issue 231777)</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">29</field>
+                <field name="duration">1</field>
+                <field name="title">Completion in mixin</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file
+&lt;/li&gt;&lt;li&gt; Paste following
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt;@oops:1;
+                    .mixin(@oops2) {
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Invoke code completion at empty line inside mixin
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">CSS Properties and HTML elements are offered. If you type something, list is reduced</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">30</field>
+                <field name="duration">1</field>
+                <field name="title">&quot;Import code completion&quot;</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new Less file and in the same folder create a new folder &quot;test&quot; with another Less file inside
+&lt;/li&gt;&lt;li&gt; type &lt;pre&gt;@import &amp;quot;&amp;quot;&lt;/pre&gt; in the first Less file
+&lt;/li&gt;&lt;li&gt; invoke code completion inside the quotes
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">&quot;List of files/folders in current directory is offered, type t to reduce the list to all starting with t. Finish completion for the test folder, press / and invoke cc again. File should be offered &quot;</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">31</field>
+                <field name="duration">1</field>
+                <field name="title">&quot;Navigation from import&quot;</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Use the files from previous case
+&lt;/li&gt;&lt;li&gt; Press Ctrl+Left Click on value of the import statement
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">&quot;Imported Less file is opened in editor&quot;</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">32</field>
+                <field name="duration">1</field>
+                <field name="title">Directives</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Paste following code to less file
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt;@attr:1;
+                    @name:1;
+
+                    .jejda(@test){
+                    color: @test;
+                    font-size: @attr;
+                    }
+                    .pre{    
+                    .jejda(red);
+                    }&lt;/pre&gt;
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Navigator shows variables and mixins, if variable is declared, it is bold</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">33</field>
+                <field name="duration">1</field>
+                <field name="title">New file wizard</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new LESS file, all default values
+&lt;/li&gt;&lt;li&gt; Edit the file and save
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Upon first save, you are asked if you want to enable compile on save feature. If you press yes, then Project properties is opened</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">34</field>
+                <field name="duration">1</field>
+                <field name="title">New file wizard II</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new HTML5 project 
+&lt;/li&gt;&lt;li&gt; Open new file wizard, select Less file, press Next
+&lt;/li&gt;&lt;li&gt; Check compile on save and let the default values for watched directories
+&lt;/li&gt;&lt;li&gt; place new less file into public_html/less directory 
+&lt;/li&gt;&lt;li&gt; Edit created file and save it
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Corresponding CSS file is created, if you change source less file, then CSS file is re-created</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">35</field>
+                <field name="duration">1</field>
+                <field name="title">Partials</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new HTML5 project 
+&lt;/li&gt;&lt;li&gt; Open new file wizard, select LESS file, press Next
+&lt;/li&gt;&lt;li&gt; Check compile on save and let the default values for watched directories
+&lt;/li&gt;&lt;li&gt; place new less file into public_html/less directory 
+&lt;/li&gt;&lt;li&gt; Create new less file: public_html/less/view/partial.less
+&lt;/li&gt;&lt;li&gt; Paste following into the less file in less directory (so not partial.less):
+&lt;/li&gt;&lt;li&gt; &lt;pre&gt;@import &amp;quot;view/partial.less&amp;quot;;&lt;/pre&gt;
+&lt;/li&gt;&lt;li&gt; Create a simple CSS rule in partial.less
+&lt;/li&gt;&lt;li&gt; save the file
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">&quot;Parent&quot; file with @imports is refreshed when imported file is modified and saved</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">36</field>
+                <field name="duration">1</field>
+                <field name="title">Watched directories</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Create a new HTML5 project
+&lt;/li&gt;&lt;li&gt; Open project properties, enable Compile on Save for LESS in CSS Preprocessors and have 2 lines in watch field:
+&lt;pre&gt;
+                    /less/folder -&amp;gt; /css2
+                    /less/       -&amp;gt; /css
+&lt;/pre&gt;
+
+&lt;/li&gt;&lt;li&gt; Create corresponding less files in both directories
+&lt;/li&gt;&lt;li&gt; Edit them and save
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Corresponding CSS file are created</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">37</field>
+                <field name="duration">1</field>
+                <field name="title">Mixins</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Paste code above to less file
+&lt;/li&gt;&lt;li&gt; Select place cursor inside &quot;test2&quot; name
+&lt;/li&gt;&lt;li&gt; All instances/usages are highlighted
+&lt;/li&gt;&lt;li&gt; Press Ctrl+R and type new name, confirm it with Enter 
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Mixin is renamed</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">38</field>
+                <field name="duration">1</field>
+                <field name="title">Variables</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Paste code above to less file
+&lt;/li&gt;&lt;li&gt; Select place cursor inside &quot;attr&quot; name
+&lt;/li&gt;&lt;li&gt; All instances/usages are highlighted
+&lt;/li&gt;&lt;li&gt; Press Ctrl+R and type new name, confirm it with Enter 
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Variable is renamed</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">39</field>
+                <field name="duration">1</field>
+                <field name="title">Parameters</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Paste code above to less file
+&lt;/li&gt;&lt;li&gt; Select place cursor inside &quot;@j&quot; name
+&lt;/li&gt;&lt;li&gt; All instances/usages are highlighted
+&lt;/li&gt;&lt;li&gt; Press Ctrl+R and type new name, confirm it with Enter 
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Parameter is renamed</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">40</field>
+                <field name="duration">1</field>
+                <field name="title">CSS Styles window</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Run index file in attached project in Chrome with NB integration or in Embedded browser
+&lt;/li&gt;&lt;li&gt; Use inspect mode to select either div or span element
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">CSS Styles shows information that given rule is generated and changes will be lost after recompilation. If you double click on css property or rule in either Properties or Applied rules part of CSS Styles window, proper scss file is opened. If you double click on property in Rule Editor part, generated css file is opened</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">41</field>
+                <field name="duration">1</field>
+                <field name="title">Live Reload</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Run the sample project in browser with NB integration
+&lt;/li&gt;&lt;li&gt; open main.less and change color @color variable
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Change is visible in browser</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+            <row>
+                <field name="id">42</field>
+                <field name="duration">1</field>
+                <field name="title">Disable debug information</field>
+                <field name="steps">&lt;ol&gt;
+&lt;li&gt; Go to Tools|Options|Miscellaneous|CSS Preprocessors and disable &quot;Generate extra information (debug)&quot; for LESS compiler
+&lt;/li&gt;&lt;li&gt; re-save your less file 
+&lt;/li&gt;&lt;/ol&gt;</field>
+                <field name="result">Generated CSS file no longer contains debug information</field>
+                <field name="order">1</field>
+                <field name="duration_count">1</field>
+            </row>
+        </table_data>
+        <table_data name="case_has_keyword">
+            <row>
+                <field name="case_id">15</field>
+                <field name="keyword_id">1</field>
+            </row>
+        </table_data>
+        <table_data name="case_image">
+            <row>
+                <field name="id">6</field>
+                <field name="title">TS_74_LessSupport_coloring.png</field>
+                <field name="path">/var/www/media/1384162433_TS_74_LessSupport_coloring.png</field>
+                <field name="case_id">20</field>
+            </row>
+        </table_data>
+        <table_data name="jobs">
+            <row>
+                <field name="id">1</field>
+                <field name="specification_id">4</field>
+                <field name="job_url">http://fakeURL</field>
+            </row>
+        </table_data>
+        <table_data name="keyword">
+            <row>
+                <field name="id">1</field>
+                <field name="keyword">sanity</field>
+            </row>
+        </table_data>
+        <table_data name="platform">
+            <row>
+                <field name="id">1</field>
+                <field name="name">Windows</field>
+                <field name="is_active">1</field>
+            </row>
+            <row>
+                <field name="id">2</field>
+                <field name="name">Ubuntu</field>
+                <field name="is_active">1</field>
+            </row>
+            <row>
+                <field name="id">3</field>
+                <field name="name">Mac</field>
+                <field name="is_active">0</field>
+            </row>
+        </table_data>
+        <table_data name="run_attachement">
+            <row>
+                <field name="id">1</field>
+                <field name="path">/empty</field>
+                <field name="test_run_id">1</field>
+            </row>
+        </table_data>
+        <table_data name="settings">
+            <row>
+                <field name="key">ATTACHMENT_PATH</field>
+                <field name="value">/var/www/att/</field>
+                <field name="label">Absolute path where attachments are being saved to</field>
+            </row>
+            <row>
+                <field name="key">DOMAIN</field>
+                <field name="value">localhost.com</field>
+                <field name="label">Domain for sending emails</field>
+            </row>
+            <row>
+                <field name="key">IMAGE_BASE</field>
+                <field name="value">http://localhost/media/</field>
+                <field name="label">URL equivalent to IMAGE_PATH</field>
+            </row>
+            <row>
+                <field name="key">IMAGE_PATH</field>
+                <field name="value">/var/www/media/</field>
+                <field name="label">Absolute path where images are being saved to</field>
+            </row>
+            <row>
+                <field name="key">LABEL_PAGE</field>
+                <field name="value">25</field>
+                <field name="label">Number of cases per page to be shown on search by label page</field>
+            </row>
+            <row>
+                <field name="key">RUNS_PAGE</field>
+                <field name="value">25</field>
+                <field name="label">Number of tests runs per page to be shown</field>
+            </row>
+            <row>
+                <field name="key">USERS_PAGE</field>
+                <field name="value">50</field>
+                <field name="label">Number of users to be shown per page</field>
+            </row>
+            <row>
+                <field name="key">anonym</field>
+                <field name="value">import</field>
+                <field name="label">anonymous username for import</field>
+            </row>
+        </table_data>
+        <table_data name="specification">
+            <row>
+                <field name="id">1</field>
+                <field name="is_active">1</field>
+                <field name="title">Test</field>
+                <field name="description">Test</field>
+                <field name="author_id">6</field>
+                <field name="version_id">2</field>
+                <field name="owner_id">6</field>
+                <field name="last_updated">2013-11-11 09:33:52</field>
+                <field name="simpleName">test</field>
+            </row>
+            <row>
+                <field name="id">4</field>
+                <field name="is_active">1</field>
+                <field name="title">Cordova support Test Specification for test 7.4</field>
+                <field name="description">desc</field>
+                <field name="author_id">6</field>
+                <field name="version_id">3</field>
+                <field name="owner_id">6</field>
+                <field name="last_updated">2013-11-11 09:33:46</field>
+                <field name="simpleName">cordova_support_test_specification_for_test_7.4</field>
+            </row>
+            <row>
+                <field name="id">7</field>
+                <field name="is_active">1</field>
+                <field name="title">Cordova support Test Specification for test 6.0</field>
+                <field name="description">desc</field>
+                <field name="author_id">6</field>
+                <field name="version_id">5</field>
+                <field name="owner_id">6</field>
+                <field name="last_updated">2013-11-11 09:33:46</field>
+                <field name="simpleName">cordova_support_test_specification_for_test_7.4</field>
+            </row>
+            <row>
+                <field name="id">8</field>
+                <field name="is_active">1</field>
+                <field name="title">Cordova support Test Specification for test 8.0</field>
+                <field name="description">desc</field>
+                <field name="author_id">6</field>
+                <field name="version_id">4</field>
+                <field name="owner_id">6</field>
+                <field name="last_updated">2013-11-11 09:33:46</field>
+                <field name="simpleName">cordova_support_test_specification_for_test_7.4</field>
+            </row>
+            <row>
+                <field name="id">5</field>
+                <field name="is_active">1</field>
+                <field name="title">LESS support Test Specification for test 7.4</field>
+                <field name="description">desc</field>
+                <field name="author_id">7</field>
+                <field name="version_id">3</field>
+                <field name="owner_id">7</field>
+                <field name="last_updated">2013-11-11 09:33:58</field>
+                <field name="simpleName">less_support_test_specification_for_test_7.4</field>
+            </row>
+            <row>
+                <field name="id">12</field>
+                <field name="is_active">0</field>
+                <field name="title">Cordova support Test Specification for test 8.0</field>
+                <field name="description">desc</field>
+                <field name="author_id">6</field>
+                <field name="version_id">4</field>
+                <field name="owner_id">6</field>
+                <field name="last_updated">2013-11-11 09:33:46</field>
+                <field name="simpleName">cordova_support_test_specification_for_test_7.4</field>
+            </row>
+            <row>
+                <field name="id">15</field>
+                <field name="is_active">0</field>
+                <field name="title">LESS support Test Specification for test 7.4</field>
+                <field name="description">desc</field>
+                <field name="author_id">7</field>
+                <field name="version_id">3</field>
+                <field name="owner_id">7</field>
+                <field name="last_updated">2013-11-11 09:33:58</field>
+                <field name="simpleName">less_support_test_specification_for_test_7.4</field>
+            </row>
+        </table_data>
+        <table_data name="specification_attachement">
+            <row>
+                <field name="id">1</field>
+                <field name="path">/var/www/att/1384162432_TS_74_LessSupport_sample.less</field>
+                <field name="specification_id">5</field>
+            </row>
+            <row>
+                <field name="id">2</field>
+                <field name="path">/var/www/att/1384162432_TS_74_LessSupport_Less_debug.zip</field>
+                <field name="specification_id">5</field>
+            </row>
+        </table_data>
+        <table_data name="specification_revisions">
+            <row>
+                <field name="id">10</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">4</field>
+                <field name="date">2013-11-11 09:33:44</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">11</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">4</field>
+                <field name="date">2013-11-11 09:33:45</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">12</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">4</field>
+                <field name="date">2013-11-11 09:33:45</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">13</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">4</field>
+                <field name="date">2013-11-11 09:33:45</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">14</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">4</field>
+                <field name="date">2013-11-11 09:33:45</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">15</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">4</field>
+                <field name="date">2013-11-11 09:33:45</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">16</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">4</field>
+                <field name="date">2013-11-11 09:33:46</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">17</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">4</field>
+                <field name="date">2013-11-11 09:33:46</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">18</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:53</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">19</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:53</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">20</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:53</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">21</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:53</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">22</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:54</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">23</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:54</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">24</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:54</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">25</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:55</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">26</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:55</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">27</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:55</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">28</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:55</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">29</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:55</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">30</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:56</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">31</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:56</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">32</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:56</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">33</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:56</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">34</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:56</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">35</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:57</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">36</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:57</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">37</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:57</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">38</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:57</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">39</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:57</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">40</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:58</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">41</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:58</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">42</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:58</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">43</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:58</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">44</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:59</field>
+                <field name="author">import</field>
+            </row>
+            <row>
+                <field name="id">45</field>
+                <field name="content">Cordova support Test Specification for test 7.4</field>
+                <field name="specification_id">5</field>
+                <field name="date">2013-11-11 09:33:59</field>
+                <field name="author">import</field>
+            </row>
+        </table_data>
+        <table_data name="suite">
+            <row>
+                <field name="id">8</field>
+                <field name="title">Project</field>
+                <field name="description">
+                    Prerequisites: Set up device in Android emulator and start emulator
+ 
+                </field>
+                <field name="product">unknown</field>
+                <field name="component">unknown</field>
+                <field name="specification_id">4</field>
+                <field name="order">1</field>
+            </row>
+            <row>
+                <field name="id">9</field>
+                <field name="title">Sample Project</field>
+                <field name="description"></field>
+                <field name="product">unknown</field>
+                <field name="component">unknown</field>
+                <field name="specification_id">4</field>
+                <field name="order">1</field>
+            </row>
+            <row>
+                <field name="id">10</field>
+                <field name="title">Web inspection</field>
+                <field name="description">
+                    Web inspection works only on either iOS Simulator or iOS Device. So you need to have Mac OS and Developer certificate to be able to debug. If you have it, you can follow sanity specification for web inspection &lt;a href=&quot;#/search/STS_74_WebInspection&quot;&gt;STS_74_WebInspection&lt;/a&gt;, you can skip &quot;Browser extension&quot; test suite and you must use Cordova project, e.g. sample Map project</field>
+                <field name="product">unknown</field>
+                <field name="component">unknown</field>
+                <field name="specification_id">4</field>
+                <field name="order">1</field>
+            </row>
+            <row>
+                <field name="id">11</field>
+                <field name="title">Editor</field>
+                <field name="description"></field>
+                <field name="product">unknown</field>
+                <field name="component">unknown</field>
+                <field name="specification_id">5</field>
+                <field name="order">1</field>
+            </row>
+            <row>
+                <field name="id">12</field>
+                <field name="title">Navigator</field>
+                <field name="description"></field>
+                <field name="product">unknown</field>
+                <field name="component">unknown</field>
+                <field name="specification_id">5</field>
+                <field name="order">1</field>
+            </row>
+            <row>
+                <field name="id">13</field>
+                <field name="title">Compile on save</field>
+                <field name="description"></field>
+                <field name="product">unknown</field>
+                <field name="component">unknown</field>
+                <field name="specification_id">5</field>
+                <field name="order">1</field>
+            </row>
+            <row>
+                <field name="id">14</field>
+                <field name="title">Refactoring</field>
+                <field name="description">
+&lt;pre&gt;
+                    @attr2:2;
+                    @attr:1;
+
+                    .test2(@j){
+                    color: @j;
+                    font-size: @attr;
+                    }
+                    pre {    
+                    .test2(red);
+                    }
+
+&lt;/pre&gt;
+                </field>
+                <field name="product">unknown</field>
+                <field name="component">unknown</field>
+                <field name="specification_id">5</field>
+                <field name="order">1</field>
+            </row>
+            <row>
+                <field name="id">15</field>
+                <field name="title">Debugging Information</field>
+                <field name="description">
+
+                    Sample project &lt;a href=&quot;../../server/api/attachment.php?id=2&quot;&gt;TS_74_LessSupport_Less_debug.zip&lt;/a&gt;
+
+                    Create a new HTML5 project and use the link above as a template. Once project is created, go to project properties and enable Less compiler
+
+                    Following requires to have checked option &quot;Generate extra information (debug)&quot; for LESS compiler in Tools|Options|Miscellaneous|CSS Preprocessors. This property generates information into target css file that help to identify source less file.
+ 
+                </field>
+                <field name="product">unknown</field>
+                <field name="component">unknown</field>
+                <field name="specification_id">5</field>
+                <field name="order">1</field>
+            </row>
+        </table_data>
+        <table_data name="suite_has_case">
+            <row>
+                <field name="suite_id">8</field>
+                <field name="case_id">15</field>
+            </row>
+            <row>
+                <field name="suite_id">8</field>
+                <field name="case_id">16</field>
+            </row>
+            <row>
+                <field name="suite_id">8</field>
+                <field name="case_id">17</field>
+            </row>
+            <row>
+                <field name="suite_id">8</field>
+                <field name="case_id">18</field>
+            </row>
+            <row>
+                <field name="suite_id">9</field>
+                <field name="case_id">19</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">20</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">21</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">22</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">23</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">24</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">25</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">26</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">27</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">28</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">29</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">30</field>
+            </row>
+            <row>
+                <field name="suite_id">11</field>
+                <field name="case_id">31</field>
+            </row>
+            <row>
+                <field name="suite_id">12</field>
+                <field name="case_id">32</field>
+            </row>
+            <row>
+                <field name="suite_id">13</field>
+                <field name="case_id">33</field>
+            </row>
+            <row>
+                <field name="suite_id">13</field>
+                <field name="case_id">34</field>
+            </row>
+            <row>
+                <field name="suite_id">13</field>
+                <field name="case_id">35</field>
+            </row>
+            <row>
+                <field name="suite_id">13</field>
+                <field name="case_id">36</field>
+            </row>
+            <row>
+                <field name="suite_id">14</field>
+                <field name="case_id">37</field>
+            </row>
+            <row>
+                <field name="suite_id">14</field>
+                <field name="case_id">38</field>
+            </row>
+            <row>
+                <field name="suite_id">14</field>
+                <field name="case_id">39</field>
+            </row>
+            <row>
+                <field name="suite_id">15</field>
+                <field name="case_id">40</field>
+            </row>
+            <row>
+                <field name="suite_id">15</field>
+                <field name="case_id">41</field>
+            </row>
+            <row>
+                <field name="suite_id">15</field>
+                <field name="case_id">42</field>
+            </row>
+        </table_data>
+        <table_data name="test_assignement">
+            <row>
+                <field name="id">1</field>
+                <field name="user_id">6</field>
+                <field name="platform_id">1</field>
+                <field name="specification_id">5</field>
+                <field name="state" xsi:nil="true" />
+                <field name="test_run_id">1</field>
+                <field name="number_of_cases">20</field>
+                <field name="number_of_completed_cases">0</field>
+                <field name="label">sanity</field>
+                <field name="keyword_id">1</field>
+                <field name="passed_cases">1</field>
+                <field name="skipped_cases">2</field>
+                <field name="failed_cases">4</field>
+                <field name="started">2013-11-11 00:00:00</field>
+                <field name="time_taken">0</field>
+                <field name="created_by">1</field>
+                <field name="issues">1</field>
+                <field name="last_updated" xsi:nil="true" />
+            </row>
+            <row>
+                <field name="id">2</field>
+                <field name="user_id">6</field>
+                <field name="platform_id">2</field>
+                <field name="specification_id">5</field>
+                <field name="state" xsi:nil="true" />
+                <field name="test_run_id">1</field>
+                <field name="number_of_cases">20</field>
+                <field name="number_of_completed_cases">0</field>
+                <field name="label">sanity</field>
+                <field name="keyword_id">1</field>
+                <field name="passed_cases">0</field>
+                <field name="skipped_cases">0</field>
+                <field name="time_taken">0</field>
+                <field name="failed_cases">0</field>
+                <field name="started">2013-11-11 00:00:00</field>
+                <field name="last_updated" xsi:nil="true" />
+                <field name="issues">1</field>
+                <field name="created_by">1</field>
+            </row>
+            <row>
+                <field name="id">3</field>
+                <field name="user_id">6</field>
+                <field name="platform_id">2</field>
+                <field name="specification_id">4</field>
+                <field name="state" xsi:nil="true" />
+                <field name="test_run_id">1</field>
+                <field name="number_of_cases">20</field>
+                <field name="number_of_completed_cases">20</field>
+                <field name="label"></field>
+                <field name="keyword_id"></field>
+                <field name="passed_cases">14</field>
+                <field name="skipped_cases">2</field>
+                <field name="time_taken">0</field>
+                <field name="failed_cases">4</field>
+                <field name="started">2013-11-11 00:00:00</field>
+                <field name="last_updated" xsi:nil="true" />
+                <field name="issues">1</field>
+                <field name="created_by">1</field>
+            </row>
+        </table_data>
+        <table_data name="test_run">
+            <row>
+                <field name="id">1</field>
+                <field name="is_active">1</field>
+                <field name="title">Sample test run</field>
+                <field name="description">Desc</field>
+                <field name="start">2013-11-01 00:00:00</field>
+                <field name="end">2013-11-28 00:00:00</field>
+                <field name="notifications_deadline">1</field>
+            </row>
+            <row>
+                <field name="id">2</field>
+                <field name="is_active">1</field>
+                <field name="title">Sample test run2</field>
+                <field name="description">Desc</field>
+                <field name="start">2013-11-02 00:00:00</field>
+                <field name="end">2013-11-28 00:00:00</field>
+                <field name="notifications_deadline">1</field>
+            </row>
+        </table_data>
+        <table_data name="tribe">
+            <row>
+                <field name="id">1</field>
+                <field name="name">Web</field>
+                <field name="description">Desc.</field>
+                <field name="leader_id">6</field>
+            </row>
+            <row>
+                <field name="id">2</field>
+                <field name="name">PHP</field>
+                <field name="description">Desc.</field>
+                <field name="leader_id">7</field>
+            </row>
+        </table_data>
+        <table_data name="user">
+            <row>
+                <field name="id">6</field>
+                <field name="username">import</field>
+                <field name="first_name">import</field>
+                <field name="last_name">import</field>
+                <field name="role">tester</field>
+                <field name="email_notifications">1</field>
+            </row>
+            <row>
+                <field name="id">7</field>
+                <field name="username">jack</field>
+                <field name="first_name">jack</field>
+                <field name="last_name">jack</field>
+                <field name="role">tester</field>
+                <field name="email_notifications">1</field>
+            </row>
+        </table_data>
+        <table_data name="user_has_favorite">
+            <row>
+                <field name="user_id">6</field>
+                <field name="specification_id">4</field>
+            </row>
+            <row>
+                <field name="user_id">7</field>
+                <field name="specification_id">5</field>
+            </row>
+        </table_data>
+        <table_data name="tribe_has_specification">
+            <row>
+                <field name="tribe_id">1</field>
+                <field name="specification_id">4</field>
+            </row>
+            <row>
+                <field name="tribe_id">1</field>
+                <field name="specification_id">5</field>
+            </row>
+        </table_data>
+        <table_data name="user_is_member_of">
+            <row>
+                <field name="user_id">6</field>
+                <field name="tribe_id">1</field>
+            </row>
+        </table_data>
+        <table_data name="version">
+            <row>
+                <field name="version">1</field>
+                <field name="id">2</field>
+                <field name="id">2</field>
+                <field name="isObsolete">0</field>
+            </row>
+            <row>
+                <field name="version">8.0</field>
+                <field name="id">4</field>
+                <field name="isObsolete">0</field>
+            </row>
+            <row>
+                <field name="version">6.0</field>
+                <field name="id">5</field>
+                <field name="isObsolete">1</field>
+            </row>
+            <row>
+                <field name="version">7.4</field>
+                <field name="id">3</field>
+                <field name="isObsolete">0</field>
+            </row>
+        </table_data>
+    </database>
+</mysqldump>

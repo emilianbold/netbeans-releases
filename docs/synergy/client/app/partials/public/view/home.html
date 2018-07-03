@@ -1,0 +1,57 @@
+<div class="custom" id="specpool_partial">
+    <div class="row-fluid"> <div class=" span3"><h2>Synergy</h2>
+            <table>
+                <tr>
+                    <td><a href="#/specifications">&rightarrow;&nbsp;Specifications</a></td></tr>
+                <tr><td><a href="#/tribes">&rightarrow;&nbsp;Tribes</a></td></tr>
+                <tr><td><a href="#/runs">&rightarrow;&nbsp;Test runs</a></td></tr>
+                <tr><td><a href="#/calendar">&rightarrow;&nbsp;Calendar</a></td>
+                </tr>
+            </table>
+        </div>
+        <div data-ng-hide="specs.length == 0" class="span5" >
+            <h2>Latest specifications</h2>
+
+            <table class="">
+                <tr data-ng-repeat="spec in specs">
+                    <td style="vertical-align: central"><a href="#/title/{{encodeURIComponent(encodeURIComponent(spec.simpleName))}}/{{spec.version}}">&rightarrow;&nbsp;{{spec.title}}</a>&nbsp;&nbsp;</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class=" span4">
+            <h2>Calendar</h2>
+            <div id="cal"></div>
+
+        </div> </div>
+
+    <div class="row-fluid"> <div data-ng-hide="runs.testRuns.length == 0" class=" span12">
+            <h2>Current test runs</h2>
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Assignments</th>
+                        <th>Total Cases</th>
+                        <th>Completed Cases</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-ng-repeat="v in runs.testRuns" class="{{v.status}}">
+                        <td>{{$index + 1}}</td>
+                        <td><a href="#run/{{v.id}}">{{v.title}}&nbsp;<small style="color: #999">{{v.projectName}}</small></a></td>
+                        <td title="{{v.start}} UTC">{{getLocalTime(v.start, true)}}</td>
+                        <td title="{{v.end}} UTC">{{getLocalTime(v.end, true)}}</td>
+                        <td>{{v.membersCount}}</td>
+                        <td>{{v.total}}</td>
+                        <td>{{v.completed}}</td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div> </div>   
+</div>

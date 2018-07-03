@@ -1,0 +1,61 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Create new suite <small class="pull-right">{{project}} {{c_version}} Test Suite</small></h1>
+        <small data-ng-hide="!c_specification.isUsed" class="label label-frozen" title="Specification is used in paused test assignment and cannot be updated right now">Closed for editing </small><br/>
+        <h2><small>Specification: <a href="#/specification/{{c_specificationId}}">{{c_specification.title}}</a></small></h2>
+        <tabset>
+            <tab heading="Edit">
+                <form name="myForm" >
+                    <h3>Title:</h3>
+                    <input style="width: 70%" type="text" data-ng-model="suite.title" name="title" required="required" />
+                    <h3>Setup:</h3>
+                    <textarea rows="10" data-ui-codemirror="{theme:'default', mode : 'text/html', lineWrapping : true, lineNumbers: true}" data-ng-model="suite.desc"></textarea>
+                </form>
+            </tab>
+            <tab heading="Preview" select="loadPreview()">
+                <div data-ng-bind-html-unsafe="preview"></div>
+            </tab>
+        </tabset>
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button class="btn" data-ng-click="create()" title="Create suite" data-ng-disabled="myForm.$invalid || myForm2.$invalid || c_specification.isUsed"><i class="icon-ok"></i>&nbsp; Save</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div>
+            <form name="myForm2" >
+                <h4>Product: </h4>
+                <input data-ng-hide="availableProducts" style="width: 20%" type="text" data-ng-model="suite.product" name="pid" required="required" />
+                <select name="pid" required="required" data-ng-hide="!availableProducts" data-ng-model="suite.product" data-ng-options="p.name for p in products" data-ng-change="productChanged()"></select><br>
+                <h4>Component: </h4>
+                <input data-ng-hide="availableProducts" style="width: 20%" type="text" data-ng-model="suite.component" name="cid" required="required" />
+                <select data-ng-hide="!availableProducts" required="required" data-ng-model="suite.component" name="cid" data-ng-options="c.name for c in components"></select><br>
+                <h4>Order: </h4>
+                <input style="width: 20%" type="text" data-ng-model="suite.order" name="order" required="required" />
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>

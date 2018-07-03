@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--to run:
+
+cd synergy
+ant -Dyui_compressor=/pathTo/yuicompressor-2.4.7.jar
+--> 
+<project name="Synergy build tool" default="build" basedir=".">
+    <property name="yui_compressor" value="/home/vriha/javalib/yuicompressor-2.4.7/build/yuicompressor-2.4.7.jar"/>
+    <property name="client_root" value="client/app"/>
+    <property name="min_css_folder" value="${basedir}/${client_root}/css/min"/>
+    <property name="css_folder" value="${basedir}/${client_root}/css"/>
+    <property name="min_js_folder" value="${basedir}/${client_root}/js/min"/>
+    <property name="js_folder" value="${basedir}/${client_root}/js"/>
+    <property name="index" value="${basedir}/${client_root}/index.html"/>
+    <property name="index_dev" value="${basedir}/${client_root}/index_dev.html"/>
+    <tstamp>
+        <format property="timestamp" pattern="mmss" />
+    </tstamp>
+
+    <target name="browser_cache">
+        <echo message="increasing cache parameters"/>
+        <exec executable="sed">
+            <arg line="-i s/synergy\.js?v=[0-9]*/synergy\.js?v=${timestamp}/ client/app/index.html"/>
+        </exec>
+        <exec executable="sed">
+            <arg line="-i s/synergy\.js?v=[0-9]*/synergy\.js?v=${timestamp}/ client/app/index2.html"/>
+        </exec>
+        <exec executable="sed">
+            <arg line="-i s/.html'/.html?v=${timestamp}'/ client/app/js/app.js"/>
+        </exec>
+    </target>
+    <target name="revert_browser_cache">
+        <echo message="removing partials cache parameters"/>
+         <exec executable="sed">
+            <arg line="-i s/.html?v=[0-9]*'/.html'/ client/app/js/app.js"/>
+        </exec>
+    </target>
+    
+    <target name="clean_css">
+        <delete>
+            <fileset dir="${min_css_folder}" includes="**/*.css"/>
+        </delete>
+        <echo message="Removing CSS files"/>
+    </target>
+    <target name="min_css" depends="clean_css">       
+        <echo message="minifying CSS files"/>
+        <apply executable="java"> 
+            <arg value="-jar"/> 
+            <arg value="${yui_compressor}"/> 
+            <arg line="--charset utf-8"/>
+            <arg line="--nomunge"/>
+            <srcfile/>
+            <arg line="-o"/>
+            <targetfile/>
+            <fileset dir="${css_folder}" includes="*.css"/> 
+            <mapper type="regexp" from="(.*)" to="${min_css_folder}/\0" />
+        </apply> 
+    </target>
+    <target name="clean_js">
+        <delete>
+            <fileset dir="${min_js_folder}" includes="**/*.js"/>
+        </delete>
+        <echo message="Removing JS files"/>
+    </target>
+    <target name="min_js" depends="clean_js">       
+        <echo message="minifying JS files"/>
+        <apply executable="java"> 
+            <arg value="-jar"/> 
+            <arg value="${yui_compressor}"/> 
+            <arg line="--charset utf-8"/>
+            <arg line="--nomunge"/>
+            <srcfile/>
+            <arg line="-o"/>
+            <targetfile/>
+            <fileset dir="${js_folder}" includes="*.js"/> 
+            <mapper type="regexp" from="(.*)" to="${min_js_folder}/\0" />
+        </apply> 
+    </target>
+    <target name="combine_js" depends="min_js">
+        <echo message="combining js files"/>
+        <concat destfile="${min_js_folder}/synergy.js">
+            <fileset dir="${min_js_folder}" includes="**/*.js"/>
+        </concat>
+    </target>
+    <target name="build" depends="min_css, browser_cache, min_js, combine_js, revert_browser_cache">
+    </target>
+</project>

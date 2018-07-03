@@ -1,0 +1,230 @@
+[
+    {
+        "id": "14",
+        "name": "8.0",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "3",
+        "name": "7.4",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "2",
+        "name": "7.3",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "4",
+        "name": "7.2",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "5",
+        "name": "7.1",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "6",
+        "name": "7.0",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "7",
+        "name": "6.9",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "12",
+        "name": "6.8",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "11",
+        "name": "6.7",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "8",
+        "name": "6.5",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "10",
+        "name": "6.1",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    },
+    {
+        "id": "9",
+        "name": "6.0",
+        "isObsolete": 0,
+        "controls": [
+            {
+                "title": "Edit",
+                "onClick": "edit",
+                "desc": "",
+                "iconName": "icon-pencil"
+            },
+            {
+                "title": "Delete",
+                "onClick": "delete",
+                "desc": "",
+                "iconName": "icon-trash"
+            }
+        ]
+    }
+]

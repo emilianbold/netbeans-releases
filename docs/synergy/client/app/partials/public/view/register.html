@@ -1,0 +1,52 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Register <small>Synergy</small></h1>
+        <div class="hero-unit">    
+
+            <form class="form-horizontal" novalidate name="registerForm">
+                <div class="control-group">
+                    <label class="control-label" for="username">Username</label>
+                    <div class="controls">
+                        <input type="text" id="username"  data-ng-model="username" required placeholder="Username">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="firstname">First name</label>
+                    <div class="controls">
+                        <input type="text" id="firstname" data-ng-model="firstname" required placeholder="First name">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="lastname">Last name</label>
+                    <div class="controls">
+                        <input type="text" id="lastname" data-ng-model="lastname" required placeholder="Last name">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="email">Email</label>
+                    <div class="controls">
+                        <input type="email" id="email" data-ng-model="email" required placeholder="Email">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="inputPassword">Password</label>
+                    <div class="controls">
+                        <input type="password" id="inputPassword" required data-ng-model="password" placeholder="Password">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="inputPassword2">Verify password</label>
+                    <div class="controls">
+                        <input type="password" id="inputPassword2" required data-ng-model="password2" placeholder="Repeat password">
+                    </div>
+                </div>
+                <button type="button" class="btn pull-right" data-ng-click="register();" data-ng-disabled="!registerForm.$valid || password != password2" >Register</button>
+
+            </form>
+        </div>
+    </div>
+    <div class="span4">
+
+    </div>
+
+</div>

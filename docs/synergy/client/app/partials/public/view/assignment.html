@@ -1,0 +1,115 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1><a href="#/run/{{assignment.testRunId}}" target="_blank" title="Open in new window">{{assignment.testRunTitle}}</a> <small>{{project.name}} {{assignment.specificationData.version}} Test Run</small></h1>
+
+        <button type="button" class="btn btn-small btn-primary" data-ng-hide="currentCase.suiteSetup.trim().length < 1" data-ng-click="toggleSetup()" data-target="#demo">Press to {{toggleAction}} suite setup</button>
+        <br/><br/>
+        <div id="demo" data-ng-show="suiteSetupDisplayed && currentCase.suiteSetup.trim().length > 0" > 
+            <div class="well" data-ng-bind-html-unsafe="currentCase.suiteSetup">
+
+            </div>
+        </div>
+       
+        <br/>
+        <h1 id="caseTitle">{{currentCase.title}} <small>Test Case&nbsp;&nbsp;<a target="_blank" data-ng-href="#/case/{{currentCase.caseId}}/suite/{{currentCase.suiteId}}/edit" >[edit]</a></small></h1>
+        <br/>Jump to test case (<strong>experimental</strong>): <select id="jumpToCase" class="input-large" data-ng-model="caseToPrint" data-ng-options="c|addCaseStatus:{scope:this,item:c, selectId: 'jumpToCase'} as c.name for c in allCases" name="comment" data-ng-change="traverseCase()"></select>
+        <h3>Steps</h3>
+        <div data-ng-bind-html-unsafe="currentCase.steps">
+
+        </div>
+        <h3>Expected result:</h3>
+        <div class="well result" data-ng-bind-html-unsafe="currentCase.result">
+
+        </div>
+        <h3 data-ng-hide="currentCase.images.length==0">Images:</h3>
+        <ul class="thumbnails">
+            <li class="span6" data-ng-repeat="image in currentCase.images">
+                <div class="thumbnail">
+                    <a href="{{image.src}}" target="_blank" title="Open in new window">
+                        <img data-ng-src="{{image.src}}" alt="{{image.title}}">
+                    </a>
+                    <div class="caption">
+                        <p>{{image.title}}</p>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <h3 data-ng-hide="filteredIssues.length == 0"><small>Issues:</small>&nbsp;</h3>
+
+        <span  data-ng-repeat="issue in filteredIssues = (currentCase.issues|stillValidIssues)">
+                <syissue baseurl="SYNERGY.issues.singleIssueLink(project.name,issue.bugId)" issue="issue"></syissue>   
+            </span>
+        <br/><br/>
+
+
+        <div class="pull-right" style="margin: 0;">
+            <form class="form-inline pull-right">
+
+                <button class="btn" data-ng-click="next('skipped')">Skip</button>
+                <button class="btn btn-success" data-ng-click="next('passed')">Passed</button>
+
+                <input style="margin: 0 1em 0 1em" type="text" title="Insert issue numbers separated with space" placeholder="space separated issue numbers" class="input" data-ng-model="newIssue">
+
+                <button class="btn btn-danger" data-ng-click="next('failed')">Failed</button>
+                <button class="btn btn-warning" data-ng-disabled="!somethingCompleted" data-ng-click="sendResults()" title="{{pauseButtonTitle}}">Pause</button>
+            </form>
+            <br/>
+              <form class="form-inline pull-right">
+                  Comment to test case:&nbsp;
+                  <select class="input-xxlarge" data-ng-model="currentCase.comment" data-ng-options="c.id as c.name for c in comments" name="comment"></select>
+                  <div data-ng-hide="!currentCase.comment || currentCase.comment == -1">
+                  <br/>Short comment text (optional): 
+                  <span class="pull-right">Characters left: {{100 - currentCase.commentFreeText.length}}</span>
+                  <textarea style="width: 100%; height: 5em" data-ng-model="currentCase.commentFreeText"></textarea>
+                  </div>
+            </form>
+          
+        </div>
+    </div>
+    <div class="span4">
+        <h3><a href="#/specification/{{assignment.specificationData.id}}" target="_blank" title="Open in new window">{{assignment.specificationData.title}}</a> <small>Test specification</small></h3>
+        <h4><a href="#/suite/{{currentSuiteId}}/v/1" target="_blank" title="Open in new window">{{currentCase.suiteTitle}}</a> <small>Test Suite</small></h4>
+        <h4>{{assignment.platform}} <small>Platform</small></h4>
+        <h4>{{casesFinished}}% <small>cases finished</small> {{timeLeft}} <small>minutes to finish</small></h4>
+        <br/>
+        <h4><a data-ng-href="{{SYNERGY.issues.reportLink(project.name, currentCase.product, currentCase.component, assignment.specificationData.version, currentCase.title, currentCase.caseId, currentSuiteId)}}" target="_blank">Report issue <small>(opens in new window)</small> &UpperRightArrow;</a></h4>
+        <br/>
+        <h5>Attachments: </h5>
+        <ul>
+            <li data-ng-repeat="at in assignment.specificationData.attachments">
+                <a data-ng-href="{{attachmentBase}}?id={{at.id}}">{{at.name}}</a>
+            </li>
+        </ul>
+        <br/>
+        <i>No data are submitted to server unless you press Pause button or finish testing the last case</i>
+    </div>
+
+</div>
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel">Failed to send results, retry?</h3>
+        {{errorMsg}}
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="sendResults()">Yes</button>
+    </div>
+</div>
+<div class="modal fade hide" id="attemptModal" tabindex="-1" role="dialog" aria-labelledby="attemptModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="attemptModalLabel">Found old and probably not submitted data, do you want to send it now?</h3>
+    </div>
+    <div class="modal-body" id="attemptModalBody">
+        Found data are from {{cacheDate}}
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" data-ng-click="sendCached(false)" aria-hidden="true">No</button>
+        <button class="btn btn-primary" data-ng-click="sendCached(true)">Yes</button>
+    </div>
+</div>

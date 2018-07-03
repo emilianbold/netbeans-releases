@@ -1,0 +1,58 @@
+    <div class="custom" id="specpool_partial">
+        <h1>Create new assignment <small data-ng-hide="ready > 3">loading data, please wait...</small></h1>
+        <b>Assignments will be created after submitting data using Save button.</b> You can limit which cases should be tested by specifying Label (if set to None, all cases will be tested)
+        <div class="clearfix"></div>
+    <div class="span7">
+        <form name="myForm">
+            <h3>Platform:</h3>
+            <select name="name" class="input" required="required" data-ng-model="value.platform" data-ng-options="p as p.name for p in platforms"></select>
+            <h3>Specification:</h3>
+            <select name="name" data-placeholder="select specification" ui-select2 style="width:100%" required="required" data-ng-model="value.specification" data-ng-options="p as p.value for p in specifications"></select>
+            <br/>
+            <h3>User:</h3>
+            <select name="tribe" ui-select2 style="width:100%"  data-placeholder="select user" required="required" data-ng-model="value.user" data-ng-options="p as (p.firstName+' '+p.lastName+' ('+p.username+')') for p in users"></select>
+            <br/>
+            <h3>Label:</h3>
+            <select name="name" class="input-small" required="required" data-ng-model="value.label" data-ng-options="p as p.label for p in labels"></select>
+        </form>
+        <button type="submit" data-ng-click="addAssignment()" class="btn btn-primary pull-right">Add</button>
+        <div class="clearfix"></div>
+        <h2>Assignments to be created</h2>
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Platform</th>
+                        <th>Specifications</th>
+                        <th>Label</th>
+                         <th>Duplicate?</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-ng-repeat="assignment in assignments">
+                        <td>{{assignment.display.user}}</td>
+                        <td>{{assignment.display.platform}}</td>
+                        <td>{{assignment.display.specification}}</td>
+                        <td>{{assignment.display.label}}</td>
+                        <td><span data-ng-hide="!assignment.display.duplicates" class="label label-warning" title="Other assignment with same parameters exists">Yes</span></td>
+                        <td><button type="submit" data-ng-click="removeAssignment($index)" class="btn btn-warning">Delete</button></td>
+                    </tr>
+                </tbody>
+            </table> 
+
+    </div>
+    <div class="span3">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button class="btn" data-ng-click="create()" title="Save changes" data-ng-disabled="myForm.$invalid || assignments.length < 1"><i class="icon-ok"></i>&nbsp; Save</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+    </div>
+
+</div>

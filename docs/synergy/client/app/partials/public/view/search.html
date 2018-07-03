@@ -1,0 +1,17 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Search results <small>{{escapedSearched}}</small></h1>
+        <h2>Specifications:</h2>
+        <ul>
+            <li data-ng-repeat="item in results" data-ng-show="item.type == 'specification'" data-ng-bind-html-unsafe="printResult(item)"></li>
+        </ul>
+        <h2>Test suites:</h2>
+        <ul>
+            <li data-ng-repeat="item in results" data-ng-show="item.type == 'suite'" data-ng-bind-html-unsafe="printResult(item)"></li>
+        </ul>
+    </div>
+    <div class="span4">
+
+    </div>
+
+</div>

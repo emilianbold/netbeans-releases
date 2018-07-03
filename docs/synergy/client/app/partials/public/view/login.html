@@ -1,0 +1,28 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Login <small>Synergy</small></h1>
+        <div class="hero-unit">    
+
+            <form class="form-horizontal" novalidate name="loginForm">
+                <div class="control-group">
+                    <label class="control-label" for="username">Username</label>
+                    <div class="controls">
+                        <input type="text" id="username"  data-ng-model="username" required placeholder="Username">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="inputPassword">Password</label>
+                    <div class="controls">
+                        <input type="password" id="inputPassword" required data-ng-model="password" placeholder="Password">
+                    </div>
+                </div>
+                <button type="button" class="btn pull-right" data-ng-click="login();" data-ng-disabled="!loginForm.$valid" >Login</button>
+                <div><a data-ng-href="#/recover">Forgot your password?</a></div>
+            </form>
+        </div>
+    </div>
+    <div class="span4">
+
+    </div>
+
+</div>

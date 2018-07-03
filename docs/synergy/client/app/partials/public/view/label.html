@@ -1,0 +1,17 @@
+<div class="custom" id="specpool_partial">
+
+    <h1>Test cases <span style="font-size: 36px" class="label label-{{label}}">{{label}}</span></h1>
+
+
+
+    <table>
+        <tr data-ng-repeat="testCase in result.cases">
+            <td><a href="#/case/{{testCase.id}}/suite/{{testCase.suiteId}}">&rightarrow; {{testCase.title}} <small>({{testCase.suiteTitle}})</small></a></td>
+        </tr>
+    </table>
+    <ul class="pager">
+        <li data-ng-show="prev == 1"><a href="#/label/{{label}}/page/{{prevPage}}">Previous</a></li>
+        <li data-ng-show="next == 1 "><a href="#/label/{{label}}/page/{{nextPage}}">Next</a></li>
+    </ul>
+
+</div>

@@ -1,0 +1,50 @@
+Migration to AngularJS 1.2.x
+
+This is a first (incomplete) list of tasks needed when updating AngularJS from version 1.0.8 to 1.2.X. 
+Items 2-4 could be handled programatically as angular object has property version {codeName: "debilitating-awesomeness", dot: 2, full: "1.0.2", major: 1, minor: 0}
+
+
+ 1) Open index.html and add 3 AngularJS scripts
+
+<script src="edge/angular.js"></script>
+<script src="edge/angular-route.min.js"></script>
+<script src="edge/angular-sanitize.min.js"></script>
+<script src="edge/angular-cookies.min.js"></script>
+
+ 2) in app.js, add dependency for ngRoute and ngSanitize modules
+
+ var synergy_module = angular.module('synergy', ['ngSanitize','ngRoute', 'ui.codemirror', 'infinite-scroll', 'ui.select2', 'ngCookies', 'ngProgress', 'ui.bootstrap'])
+
+ 3) in app.js, replace http interceptor with
+
+             $provide.factory('myHttpInterceptor', function($q, $rootScope) {
+                return {
+                    // optional method
+                    'response': function(response) {
+                        $rootScope.$broadcast('busyMode', false);
+                        window.document.body.style.cursor = 'default';
+                        return response || $q.when(response);
+                    },
+                    // optional method
+                    'responseError': function(rejection) {
+                        $rootScope.$broadcast('busyMode', false);
+                        window.document.body.style.cursor = 'default';
+                        return $q.reject(rejection);
+                    }
+                };
+            });
+
+            $httpProvider.interceptors.push('myHttpInterceptor');
+
+4) Declare custom directive ngBindHtmlUnsafe (it is used in several places and was removed in Angular 1.2)
+
+directive('ngBindHtmlUnsafe', [function() {
+    return function(scope, element, attr) {
+        element.addClass('ng-binding').data('$binding', attr.ngBindHtmlUnsafe);
+        scope.$watch(attr.ngBindHtmlUnsafe, function ngBindHtmlUnsafeWatchAction(value) {
+            element.html(value || '');
+        });
+    };
+}])
+
+5) See http://stackoverflow.com/questions/22148234/angularjs-1-2-x-change-in-decoding-url-in-routing

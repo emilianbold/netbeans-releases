@@ -1,0 +1,60 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+    <h1>Users</h1>
+    <h3>Retire all testers</h3>
+    Will change role of all users with role 'tester' to role 'formerUser'<br/>
+    <button data-ng-click="retireUsers()"  type="button" class="btn btn-small">Retire</button>
+    <h3>Import users from service</h3>
+    <small>all users will be imported with role <i>tester</i> and role of existing users that are also in import will be changed to <i>tester</i></small>
+    <form class="form-inline">
+        <input type="text" class="input-xxlarge" data-ng-model="importUsersUrl" />&nbsp;<button data-ng-click="importUsers()"  type="button" class="btn btn-small">Import</button>
+    </form>
+    <h3>Existing users</h3>
+    <table class="table table-striped table-hover table-condensed">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tr data-ng-repeat="user in users">
+            <td>
+                <a href="#/user/{{user.username}}">{{user.firstName}} {{user.lastName}}</a>
+            </td>
+            <td>
+                {{user.username}}
+            </td>
+            <td>
+                {{user.role}}
+            </td>
+            <td>
+
+                <span data-ng-repeat="action in user.controls" class="btn btn-small" title="{{action.title}}" data-ng-click="perform(action.onClick, user.username)"><i class="{{action.iconName}}"></i>&nbsp; {{action.title}}</span>
+
+            </td>
+        </tr>
+    </table>
+    <ul class="pager">
+        <li data-ng-show="prev == 1"><a href="#/administration/users/page/{{prevPage}}">Previous</a></li>
+        <li data-ng-show="next == 1 "><a href="#/administration/users/page/{{nextPage}}">Next</a></li>
+    </ul>
+    </div>
+        <div class="span4">
+            <span class="btn btn-small" title="Create new user" data-ng-click="newuser();"><i class="icon-plus-sign"></i>&nbsp; Create new</span><br/><br/>
+        </div>
+</div>
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel">Delete user?</h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+        Do you really want to delete user <b>{{currentUser}}</b>?
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="deleteUser()">Yes</button>
+    </div>
+</div>

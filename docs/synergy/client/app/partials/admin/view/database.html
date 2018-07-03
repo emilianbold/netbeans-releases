@@ -1,0 +1,39 @@
+<div class="custom" id="specpool_partial">
+
+    <h1>Database debug</h1>
+    <label> Table: </label>
+    <select name="name" required="required" data-ng-change="loadTable()" data-ng-model="selectedTable" data-ng-options="p as p for p in tables"></select>
+
+    <div>
+        <label> Order By: </label>
+        <select name="name" required="required" data-ng-model="orderBy" data-ng-options="p as p for p in columns"></select>
+        <label> Limit: </label>
+        <input type="text" name="name" required="required" data-ng-model="limit" />
+        <label> Order: </label>
+        <select name="name" data-ng-model="order">
+            <option value="ASC">ASC</option>
+            <option value="DESC">DESC</option>
+        </select>
+        <div class="btn-group">
+            <button class="btn" data-ng-click="show()" data-ng-disabled="selectedTable.length < 1" >Show</button>
+        </div>
+    </div>
+    <br/>
+    <h2>Results</h2>
+    <table data-ng-hide="data.length < 1" class="table table-bordered table-striped table-hover">
+        
+        <thead>
+            <tr>
+                <th></th>
+                <th data-ng-repeat="(key, value) in data[0]">{{key}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-ng-repeat="v in data">
+                <td>#{{$index}}</td>
+                <td data-ng-repeat="r in v">{{r}}</td>
+            </tr>
+        </tbody>
+    </table>
+    
+</div>

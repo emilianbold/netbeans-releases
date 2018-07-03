@@ -1,0 +1,17 @@
+<div class="custom" id="specpool_partial">
+    <div class="span12">
+        <h1>Reset your password&nbsp;<small>Synergy</small></h1>
+        <div class="hero-unit">  
+            <div style="margin: 0 0 2em 0">Enter your username to reset your password. New password will be sent to your email address.</div>
+            <form class="form-horizontal" novalidate name="resetForm">
+                <div class="control-group">
+                    <label class="control-label" for="text">Username:</label>
+                    <div class="controls">
+                        <input type="text" id="text" data-ng-model="username" required placeholder="Username">
+                    </div>
+                </div>
+                <button type="button" class="btn pull-right" data-ng-click="reset();" data-ng-disabled="!resetForm.$valid" >Reset password</button>
+            </form>
+        </div>
+    </div>
+</div>

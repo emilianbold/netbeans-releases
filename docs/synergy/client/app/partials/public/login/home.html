@@ -1,0 +1,11 @@
+<div class="custom" id="specpool_partial">
+    This window will be closed once finished<br/><br/>
+    Connecting to server...<br/>
+    {{msg}}
+    <center>
+        <img src="img/ajax-loader.gif" alt="loading..." data-ng-show="isOK"/>
+    </center>
+    <div data-ng-hide="isOK" class="alert alert-error">
+        {{err}}
+    </div>
+</div>

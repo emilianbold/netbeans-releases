@@ -1,0 +1,71 @@
+<div class="custom" id="specpool_partial">
+    <h1>Create new volunteer assignment <small data-ng-hide="ready > 3">loading data, please wait...</small></h1>
+
+    <div class="clearfix"></div>
+    <div class="span5">
+        <form class="form-inline">
+            <label>Assignment type</label>
+            <select name="assignmentType" data-ng-model="assignmentType" data-ng-change="initData()">
+                <option value="test" selected="selected">Test assignment</option>
+                <option value="review">Review assignment</option>
+            </select>
+        </form>
+
+        <div data-ng-hide="assignmentType == 'review'">
+            <form name="myForm">
+                <h3>Assignee:</h3>
+                <input type="text" value="{{SYNERGY.session.username}}" data-ng-disabled="true"/>
+                <h3>Platform:</h3>
+                <select name="name" required="required" data-ng-model="assignment.platform" data-ng-options="p.id as p.name for p in platforms"></select>
+                <h3>Specification:</h3>
+                <label>For version&nbsp;&nbsp;<select class="input-small" name="version" data-ng-model="selectedVersion" data-ng-change="filter()" data-ng-options="p.name as p.name for p in versions"></select></label>
+                <br/>
+                <select style="width: 90%" ui-select2 data-ng-model="assignment.specificationId" required="" data-placeholder="type specification name" >
+                    <option value=""></option>
+                    <option ng-repeat="s in suggestions" value="{{s.id}}">{{s.value}}</option>
+                </select>
+                <h3>Label:</h3>
+                <select name="label" required="required" data-ng-model="assignment.label" data-ng-options="p.id as p.label for p in labels"></select>
+            </form>
+        </div>
+        <div data-ng-hide="assignmentType == 'test'">
+            <form name="myForm" class="form-inline">
+                <h3>Assignee:</h3>
+                <input type="text" value="{{SYNERGY.session.username}}" data-ng-disabled="true"/>
+                <h3>Page to review</h3>
+                <label class="checkbox" for="allReviews"><input id="allReviews" type="checkbox" data-ng-change="changeAvailablePages()" data-ng-model="showOnlyNotUsedPages"/> Show only pages without any existing assignment</label>
+                <br/><br/>
+                 <select style="width: 90%" ui-select2 data-ng-model="reviewPage" ng-options="p as p.title for p in availablePages" required="" data-placeholder="type name" >
+                   
+                     
+                </select>
+            </form>
+        </div>
+    </div>
+    <div class="span3">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button class="btn" data-ng-click="create(false)" title="Save changes"><i class="icon-ok"></i>&nbsp; Create</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div>
+        </div>
+    </div>
+</div>
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel">Continue?</h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+        Similar test assignment already exists. Do you want to create it anyway?
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="create(true)">Yes</button>
+    </div>
+</div>

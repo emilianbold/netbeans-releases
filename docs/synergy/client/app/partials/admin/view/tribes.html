@@ -1,0 +1,42 @@
+<div class="custom" id="specpool_partial">
+    <div class="row-fluid">
+        <div class="span8">
+            <h1>Tribes</h1>
+            <h3>Import tribes from service</h3>
+            <small>all tribes will be imported (created if needed) and their members added to newly created tribes (if uses exists in Synergy). This will empty all tribes before performing import action</small>
+            <form class="form-inline">
+                <input type="text" class="input-xxlarge" data-ng-model="importTribesUrl" />&nbsp;<button data-ng-click="importTribes()"  type="button" class="btn btn-small">Import</button>
+            </form>
+            <h3>Existing tribes</h3>
+
+        </div>
+        <div class="span4">
+            <span class="btn btn-small" title="Create new tribe" data-ng-click="perform('create', -1, '');"><i class="icon-plus-sign"></i>&nbsp; Create new</span><br/><br/>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span4">      
+            <table class="table table-condensed table-hover table-striped">
+                <tr data-ng-repeat="v in tribes"><td><a href="#/tribe/{{v.id}}">{{v.name}} Tribe</a></td>
+                    <td>
+                        <span class="btn btn-small" title="Delete tribe" data-ng-click="deleteModal(v.id, v.name)"><i class="icon-trash"></i>&nbsp; {{action.title}}</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel">Delete tribe?</h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+        Do you really want to delete tribe {{tribeAffected}}?
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="deleteTribe()">Yes</button>
+    </div>
+</div>

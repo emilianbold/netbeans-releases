@@ -1,0 +1,150 @@
+<div class="custom" id="specpool_partial" data-ng-show="rights == 1">
+    <div class="span8">
+        <h1>Edit: {{specification.title}} <small class="pull-right">{{project.name}} {{specification.version}} Test Specification</small></h1>
+        <tabset>
+            <tab heading="Edit">
+                <h3>Title:</h3>
+                <form name="myForm" >
+                    <input style="width: 70%" type="text" data-ng-model="specification.title" name="title" required="required" />
+                    <span class="error" data-ng-show="myForm.input.$error.REQUIRED">Required!</span><br>
+                    <div class="row-fluid">
+                        <div class="span6">
+                            <h3>Owner:</h3>
+                            <select style="width: 80%" name="owner" required="required" ui-select2 data-ng-disabled="specification.originalOwner != SYNERGY.session.username && !SYNERGY.session.hasAdminRights()" data-ng-model="specification.owner">
+                                <option value=""></option>
+                                <option ng-repeat="p in users" value="{{p.username}}">{{p.firstName}} {{p.lastName}} ({{p.username}})</option>
+                            </select> 
+                        </div>
+                        <div class="span6">
+                            <h3>Project:</h3>
+                            <select style="width: 80%" name="project" required="required" ui-select2 data-ng-model="project.id">
+                                <option value=""></option>
+                                <option ng-repeat="pr in projects" value="{{pr.id}}">{{pr.name}}</option>
+                            </select> 
+
+                        </div>
+                    </div>
+                    <h3>Description:</h3>
+                    <textarea rows="10" data-ui-refresh="refreshCodemirror"  data-ui-codemirror="{theme:'default', mode : 'text/html', lineWrapping : true, lineNumbers: true}" data-ng-model="specification.desc"></textarea>
+                </form>
+            </tab>
+            <tab heading="Preview" select="loadPreview()">
+                <div data-ng-bind-html-unsafe="preview"></div>
+            </tab>
+        </tabset>
+        <h3>Attachments <small>({{(specification.attachments).length}})</small></h3>
+        <table>
+            <tr data-ng-repeat="attachment in specification.attachments">
+                <td><a data-ng-href="{{attachmentBase}}?id={{attachment.id}}">&rightarrow; {{attachment.name}}&nbsp;&nbsp;</a></td>
+                <td data-ng-repeat="action in attachment.controls">
+                    <div class="btn-toolbar">
+                        <div class="btn-group" >
+                            <button class="btn" data-ng-click="performAttachment(action.onClick, attachment.id)" title="{{action.title}}"><i class="{{action.iconName}}"></i>&nbsp; {{action.title}}</button>
+
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+        </table><br/>
+        <div class="row-fluid">
+            <div data-ng-show="rights == 1" class="span9 well dropbox" id="dropbox">
+                Drag & Drop new attachment here
+            </div>
+            <div class="span2 pull-right">
+                <form id="form1" class="form" enctype="multipart/form-data" method="post" action="{{SYNERGY.server.buildURL('attachment', {'id': id, 'type': 'specification'})}}">
+                    <div class="row">
+                        <input type="file" name="fileToUpload" id="fileToUpload" />
+                    </div>
+                    <div id="fileName"></div>
+                    <div id="fileSize"></div>
+                    <div id="fileType"></div>
+                    <div class="row">
+                        <input type="button"  data-ng-click="uploadFile()" value="Upload" />
+                    </div>
+                    <div id="progressNumber"></div>
+                </form>  
+            </div>
+        </div>
+
+
+
+
+
+        <div class="progress hide" id="progressContainer">
+
+            <div class="bar" id="progressBar" style="width: 0%;"></div>
+        </div>
+
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button data-ng-disabled="myForm.$invalid" class="btn" data-ng-click="save()" title="Save changes"><i class="icon-ok"></i>&nbsp; Save</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <label class="checkbox" title="Do not show in history">
+                        <input type="checkbox" data-ng-model="minorEdit"> Minor modifications
+                    </label>
+                    <form class="form-inline">
+                        <label class="checkbox" title="Do not show in history">
+                            <input type="checkbox" data-ng-model="keepSimpleNameTrack"> Keep track of simple name&nbsp;&nbsp;
+                        </label><span style="cursor: pointer" data-toggle="collapse" data-target="#split" class="badge badge-info">?</span>
+                    </form>
+                    <div id="split" class="collapse out" > 
+                        <div>
+                            Similar specifications are being found by so called simple name. Simple name is constructed from specification title. <br/><br/>
+                            By default, if you change title, new simple name is created and simple name of all specifications with original simple name (prior changes) is updated to the new value. This way Synergy can find relations between specifications with different titles. <br/><br/>
+                            If you uncheck this option, other specifications with simple names equal to original (before this editing) value will not be updated and relation between this specification and similar specifications will be broken. <strong>Keep this option check unless you are 100% sure you want to change it.</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br/>
+        <h3>Continuous jobs</h3>
+        <span data-ng-show="rights == 1" class="btn btn-small" title="Add job" data-ng-click="showJobsModal()"><i class="icon-th-large"></i>&nbsp; Add/Remove</span>
+        <div class="clearfix"></div>
+
+    </div>
+</div>
+<div class="modal fade hide" id="jobsModal" tabindex="-1" role="dialog" aria-labelledby="jobsModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="jobsModalLabel">Manage jobs</h3>
+    </div>
+    <div class="modal-body" id="jobsModalBody">
+        <h4>Add new</h4>
+        <div>Paste URL of your job (Hudson and Jenkins are supported), e.g. http://myhudson.org/view/Personal/job/MyJob<br/></div><br/>
+        <form class="form-inline">
+            <input style="width: 40%" type="url" data-ng-model="jobToBeAdded">
+            <button class="btn" data-ng-click="addJob()" data-ng-disabled="!jobToBeAdded">Add</button>
+        </form>
+        <h4>Remove existing</h4>
+        <div >
+            <ul>
+                <li data-ng-repeat="job in specification.ext.continuous_integration"><a data-ng-href='{{job.jobUrl}}'>{{job.jobUrl}}</a> <button class="btn" data-ng-click="removeJob(job.id)"><i class="icon-trash"></i></button></li>
+            </ul>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" id="modal_confirm_ok" data-dismiss="modal" >Done</button>
+    </div>
+</div>
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>

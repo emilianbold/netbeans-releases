@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+- phpMyAdmin XML Dump
+- version 3.4.10.1deb1
+- http://www.phpmyadmin.net
+-
+- Host: localhost
+- Generation Time: Nov 11, 2013 at 10:17 AM
+- Server version: 5.5.34
+- PHP Version: 5.4.4-1~oneiric+1
+-->
+
+<mysqldump version="1.0">
+    <!--
+    - Database: 'synergy'
+    -->
+    <database name="synergy">
+        <!-- Table specification -->
+        <table name="specification">
+            <column name="id">4</column>
+            <column name="title">Test</column>
+            <column name="description">aaa</column>
+            <column name="author_id">6</column>
+            <column name="version_id">2</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-11-05 14:24:30</column>
+            <column name="simpleName">test</column>
+        </table>
+        <table name="specification">
+            <column name="id">7</column>
+            <column name="title">Test Specification: Maven Support Test Specification</column>
+            <column name="description">desc</column>
+            <column name="author_id">6</column>
+            <column name="version_id">3</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:12:00</column>
+            <column name="simpleName">AAAA</column>
+        </table>
+        <table name="specification">
+            <column name="id">8</column>
+            <column name="title">Maven OSGI test Specification</column>
+            <column name="description">desc</column>
+            <column name="author_id">6</column>
+            <column name="version_id">4</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:13:07</column>
+            <column name="simpleName">maven_osgi_test_specification</column>
+        </table>
+        <table name="specification">
+            <column name="id">9</column>
+            <column name="title">test Ant Test Specification</column>
+            <column name="description">&lt;b&gt;Author:&lt;</column>
+            <column name="author_id">6</column>
+            <column name="version_id">5</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:13:22</column>
+            <column name="simpleName">test_ant_test_specification</column>
+        </table>
+        <table name="specification">
+            <column name="id">10</column>
+            <column name="title">Projects Test Specification for Projects actions</column>
+            <column name="description">desc</column>
+            <column name="author_id">6</column>
+            <column name="version_id">6</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:13:31</column>
+            <column name="simpleName">projects_test_specification_for_projects_actions</column>
+        </table>
+        <table name="specification">
+            <column name="id">11</column>
+            <column name="title">Projects Test Specification for Projects Properties</column>
+            <column name="description">desc</column>
+            <column name="author_id">6</column>
+            <column name="version_id">5</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:13:39</column>
+            <column name="simpleName">projects_test_specification_for_projects_properties</column>
+        </table>
+        <table name="specification">
+            <column name="id">12</column>
+            <column name="title">Projects Test Specification for Projects libraries</column>
+            <column name="description">desc</column>
+            <column name="author_id">6</column>
+            <column name="version_id">6</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:13:44</column>
+            <column name="simpleName">projects_test_specification_for_projects_libraries</column>
+        </table>
+        <table name="specification">
+            <column name="id">13</column>
+            <column name="title">Projects Test Specification for Projects types</column>
+            <column name="description">desc</column>
+            <column name="author_id">6</column>
+            <column name="version_id">6</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:13:51</column>
+            <column name="simpleName">projects_test_specification_for_projects_types</column>
+        </table>
+        <table name="specification">
+            <column name="id">14</column>
+            <column name="title">Projects Test Specification for Opening and Closing Project Groups Using Command Line</column>
+            <column name="description">desc</column>
+            <column name="author_id">6</column>
+            <column name="version_id">7</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:13:53</column>
+            <column name="simpleName">projects_test_specification_for_opening_and_closing_project_groups_using_command_line</column>
+        </table>
+        <table name="specification">
+            <column name="id">15</column>
+            <column name="title">test J2SE project webstart</column>
+            <column name="description">desc</column>
+            <column name="author_id">6</column>
+            <column name="version_id">8</column>
+            <column name="owner_id">6</column>
+            <column name="last_updated">2013-10-08 15:13:56</column>
+            <column name="simpleName">test_j2se_project_webstart</column>
+        </table>
+    </database>
+</mysqldump>

@@ -1,0 +1,55 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Test runs</h1>
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <td>#</td>
+                    <td>Name</td>
+                    <td>Start</td>
+                    <td>End</td>
+                    <td>Assignments</td>
+                    <td>Total Cases</td>
+                    <td>Completed Cases</td>
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-ng-repeat="v in runs.testRuns" class="{{v.status}}">
+                    <td>{{$index+1}}</td>
+                    <td><a href="#/run/{{v.id}}">{{v.title}}&nbsp;<small style="color: #999">{{v.projectName}}</small></a></td>
+                    <td title="{{v.start}} UTC">{{getLocalTime(v.start, true)}}</td>
+                    <td title="{{v.end}} UTC">{{getLocalTime(v.end, true)}}</td>
+                    <td>{{v.membersCount}}</td>
+                    <td>{{v.total}}</td>
+                    <td>{{v.completed}}</td>
+
+                </tr>
+            </tbody>
+        </table>
+
+        <ul class="pager">
+            <li data-ng-show="prev == 1"><a href="#/administration/runs/page/{{prevPage}}">Previous</a></li>
+            <li data-ng-show="next == 1 "><a href="#/administration/runs/page/{{nextPage}}">Next</a></li>
+        </ul>
+    </div>
+
+    <div class="span4">
+
+    </div>
+</div>
+
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel">Delete test run?</h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+        This action will also delete all test assignments for this test run. Do you want to continue?
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="remove()">Yes</button>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+<div class="custom" id="specpool_partial">
+    <div class="row-fluid">
+        <h1><a href="#/run/{{review.testRunId}}" target="_blank" title="Open in new window">{{review.testRunTitle}}</a>&nbsp;<small>{{SYNERGY.product}}</small></h1>
+        <h2>Tutorial review</h2>
+        <h5>Reviewer: <a data-ng-href="#/user/{{review.username}}">{{review.userDisplayName}}</a></h5>
+        <h5>Page to review: <a data-ng-href="{{review.reviewUrl}}">{{review.title}}</a></h5>
+        <h5>Page owner: {{review.owner}}</h5><br/>
+    </div>
+    <div class="row-fluid">
+        <div class="span9" id="frameContainer">
+        </div>
+        <div class="span3">
+            <h3>Comments</h3>
+            <small title="{{review.lastUpdated}}">Last update: {{getLocalTime(review.lastUpdated)}}</small><br/><br/>
+            <table class="table table-condensed table-bordered table-hover">
+                <tr data-ng-repeat="c in review.comments" data-ng-click="viewComment($index)" style="cursor: pointer">
+                    <td >
+                        <b>Comment #{{$index + 1}}</b> <br/>
+                        <small>{{c.text}}</small><br/>
+                        <button class="btn btn-mini pull-right" data-ng-click="viewComment($index)">Highlight</button>
+                    </td> 
+                </tr>
+            </table>
+        </div>
+    </div> 
+</div>

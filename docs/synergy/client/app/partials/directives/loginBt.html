@@ -1,0 +1,17 @@
+<!--not used right now because of problems with older browsers-->
+<div>
+    <form  data-ng-show="!SYNERGY.loginLink" class="navbar-form pull-right" id="synergy_login_form_log" >
+        <input class="span2" type="text" placeholder="Email" data-ng-model="username" >
+        <input class="span2" type="password" placeholder="Password" data-ng-model="password" >
+        <button type="submit" class="btn" data-ng-click="login();">Sign in</button>
+    </form>
+    <button data-ng-show="SYNERGY.loginLink" id="synergy_login_form" class="btn pull-right" data-ng-click="login();" >Sign in</button>
+    <div id="synergy_usermenu" style="display:none">
+        <ul class="nav pull-right"><li class="dropdown"><a href="#" class="dropdown-toggle btn-primary" data-toggle="dropdown" id="usermenu_user" style="color: white">USER <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li><a href="#/user">Me</a></li>
+                    <li data-ng-show="role == 'admin' || role == 'manager'"><a href="#/administration">Administration</a></li>
+                    <li><a href="#logout" data-ng-click="logout();">Logout</a></li>
+                </ul></li></ul>
+    </div>
+</div>

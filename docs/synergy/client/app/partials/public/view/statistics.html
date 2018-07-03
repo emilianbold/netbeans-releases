@@ -1,0 +1,215 @@
+<div class="custom" id="specpool_partial">
+    <div class="row-fluid">
+        <h1>Statistics for {{data.testRun.title}} <small><a href="#/run/{{id}}">back to test run</a></small></h1>
+        <div class="span6">
+
+            <select data-ng-model="timeView" data-ng-change="getAllTimeData()">
+                <option value="all">All time</option>
+                <option value="filter">Specific time period</option>
+            </select>
+            <div style="margin: 0 0 0em 2em" class="well well-small" data-ng-hide="timeView == 'all'">
+                <form name="myForm2" class="form form-inline"  >
+                    <span>From: </span>
+                    <input class="input-medium" type="text" name="pid" required="required" id="start" />
+                    <span>To: </span>
+                    <input class="input-medium" type="text" name="pid" required="required" id="end" />
+                    <button type="button" data-ng-click="filterStatistics()" class="btn btn-primary pull-right">Filter</button><br/>
+                    <small>local time</small>
+                </form>
+            </div>
+            <br/>
+
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span11">
+            <div class="pull-left"><h6>Test cases</h6>
+                <canvas id="canvas1" width="260" height="150"></canvas>
+                <canvas id="canvas2" width="260" height="150"></canvas>
+            </div>
+            <div class="pull-right">     <h6>Issues</h6>
+                <canvas id="issuesResolution" width="260" height="150"></canvas>  
+                <canvas id="issuesPriority" width="260" height="150"></canvas>  </div>
+
+        </div>
+        <div class="span5"></div>
+    </div>
+    <h2>Test assignments</h2>
+    <div class="row-fluid">
+        <div class="span7">   
+            <ul>
+                <li><b>Test run: </b>{{data.testRun.title}}</li>
+                <li><b>Number of testers: </b>{{computed.testersCount}}</li>
+                <li><b>Contributed hours: </b>{{computed.time}}</li>
+                <li><b>Executed test cases: </b>{{data.testRun.completed}} out of {{data.testRun.total}} ({{computed.completedRelative}} %)</li>
+                <li><b>Pass rate: </b>{{computed.passRate}} % </li>
+            </ul>
+        </div>
+        <div class="span4">
+            <div class="well well-large pull-left {{issueColor}}">
+                <b>Found bugs</b>
+                <span data-ng-switch="issuesTotal">
+                    <span data-ng-switch-when="0">0</span>
+                    <span data-ng-switch-default>
+                        <a data-ng-href="{{issuesUrl}}">{{issuesTotal}}</a>
+                        <br/>
+                        <span data-ng-hide="unresolvedIssues.length == 0"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(data.testRun.projectName,unresolvedIssues)}}">Unresolved issues: {{unresolvedIssues.length}}</a><br/></span>
+                        <span data-ng-hide="P1Issues.length == 0"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(data.testRun.projectName,P1Issues)}}">P1 issues {{P1Issues.length}}</a><br/></span>
+                        <span data-ng-hide="P2Issues.length == 0"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(data.testRun.projectName,P2Issues)}}">P2 issues: {{P2Issues.length}}</a><br/></span>
+                        <span data-ng-hide="P3Issues.length == 0"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(data.testRun.projectName,P3Issues)}}">P3 issues: {{P3Issues.length}}</a><br/></span>
+                        <span data-ng-hide="unknownIssues.length == 0"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(data.testRun.projectName,unknownIssues)}}">Unknown issues: {{unknownIssues.length}}</a><br/></span>
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span5"> 
+            <div data-ng-hide="computed.testers.length < 1">            <h3>Testers</h3>
+                <table class="table-condensed table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tester
+                                <br/>
+                                <small><span data-ng-click="sortUsers('name')" style="cursor: pointer"> <i class="icon-arrow-up user{{orderPropU.prop == 'name' && !orderPropU.descending}}"></i>/<i class="user{{orderPropU.prop == 'name' && orderPropU.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                            <th>Username
+                                <br/>
+                                <small><span data-ng-click="sortUsers('username')" style="cursor: pointer"> <i class="icon-arrow-up user{{orderPropU.prop == 'username' && !orderPropU.descending}}"></i>/<i class="user{{orderPropU.prop == 'username' && orderPropU.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                            <th>Completed TC
+                                <br/>
+                                <small><span data-ng-click="sortUsers('completedCases')" style="cursor: pointer"> <i class="icon-arrow-up compl{{orderPropU.prop == 'completedCases' && !orderPropU.descending}}"></i>/<i class="compl{{orderPropU.prop == 'completedCases' && orderPropU.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                            <th>Time
+                                <br/>
+                                <small><span data-ng-click="sortUsers('time')" style="cursor: pointer"> <i class="icon-arrow-up ttime{{orderPropU.prop == 'time' && !orderPropU.descending}}"></i>/<i class="ttime{{orderPropU.prop == 'time' && orderPropU.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-ng-repeat="tester in computed.testers|orderBy:orderPropU.prop:orderPropU.descending">
+                            <td>{{$index + 1}}</td>
+                            <td><a data-ng-href="#/user/{{tester.username}}">{{tester.name}}</a></td>
+                            <td>{{tester.username}}</td>
+                            <td>{{tester.completedCases}}</td>
+                            <td>{{tester.prettyTime}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="span7">
+            <div data-ng-hide="tribes.length < 1">          
+                <h3>Tribes</h3>
+                <table class="table-condensed table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tribe<br/>
+                                <small><span data-ng-click="sortTribes('name')" style="cursor: pointer"> <i class="icon-arrow-up tribe{{orderProp.prop == 'name' && !orderProp.descending}}"></i>/<i class="tribe{{orderProp.prop == 'name' && orderProp.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                            <th>Passed<br/>
+                                <small><span data-ng-click="sortTribes('passedRate')" style="cursor: pointer"> <i class="icon-arrow-up passed{{orderProp.prop == 'passedRate' && !orderProp.descending}}"></i>/<i class="passed{{orderProp.prop == 'passedRate' && orderProp.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                            <th>Tested TC<br/>
+                                <small><span data-ng-click="sortTribes('testedTotal')" style="cursor: pointer"> <i class="icon-arrow-up tested{{orderProp.prop == 'testedTotal' && !orderProp.descending}}"></i>/<i class="tested{{orderProp.prop == 'testedTotal' && orderProp.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                            <th>Time<br/>
+                                <small><span data-ng-click="sortTribes('time')" style="cursor: pointer"> <i class="icon-arrow-up time{{orderProp.prop == 'time' && !orderProp.descending}}"></i>/<i class="time{{orderProp.prop == 'time' && orderProp.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                            <th>Testers<br/>
+                                <small><span data-ng-click="sortTribes('users')" style="cursor: pointer"> <i class="icon-arrow-up testers{{orderProp.prop == 'users' && !orderProp.descending}}"></i>/<i class="testers{{orderProp.prop == 'users' && orderProp.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                            <th>Tested TC/Testers<br/>
+                                <small><span data-ng-click="sortTribes('productivity')" style="cursor: pointer"> <i class="icon-arrow-up productivity{{orderProp.prop == 'productivity' && orderProp.descending}}"></i>/<i class="productivity{{orderProp.prop == 'productivity' && !orderProp.descending}} icon-arrow-down"></i> </span></small>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-ng-repeat="tribe in tribes|orderBy:orderProp.prop:orderProp.descending">
+                            <td>{{$index + 1}}</td>
+                            <td><a data-ng-href="#/tribe/{{tribe.id}}">{{tribe.name}}</a></td>
+                            <td>{{tribe.passedRate}} %</td>
+                            <td>{{tribe.testedTotal}}</td>
+                            <td>{{tribe.prettyTime}}</td>
+                            <td>{{tribe.users}}</td>
+                            <td>{{(tribe.testedTotal / tribe.users)|number:1}}</td>
+                        </tr>
+                    </tbody>
+                </table></div>
+        </div>
+    </div>
+
+    
+    <div class="row-fluid" data-ng-hide="data.reviews.length < 1">
+        <h2>Review assignments</h2>
+        <div class="span7">   
+            <ul>
+                <li><b>Test run: </b>{{data.testRun.title}}</li>
+                <li><b>Number of reviewers </b>{{reviewTotal.reviewers}}</li>
+                <li><b>Contributed hours: </b>{{reviewTotal.time}}</li>
+                <li><b>Reviewed documents: </b>{{reviewTotal.completed}} completed out of {{reviewTotal.total}} started ({{reviewTotal.finishRate}} %)</li>
+                <li><b>Total comments: </b>{{reviewTotal.comments}} </li>
+            </ul>
+        </div>
+        <div class="span4">
+        </div>
+    </div>
+
+    <div class="row-fluid" data-ng-hide="data.reviews.length < 1">
+        <div class="span7"> 
+            <h3>Reviewers</h3>
+            <table class="table-condensed table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tester
+                            <br/>
+                            <small><span data-ng-click="sortReviewers('name')" style="cursor: pointer"> <i class="icon-arrow-up reviewer{{orderPropR.prop == 'name' && !orderPropR.descending}}"></i>/<i class="reviewer{{orderPropR.prop == 'name' && orderPropR.descending}} icon-arrow-down"></i> </span></small>
+                        </th>
+                        <th>Username
+                            <br/>
+                            <small><span data-ng-click="sortReviewers('username')" style="cursor: pointer"> <i class="icon-arrow-up reviewerR{{orderPropR.prop == 'username' && !orderPropR.descending}}"></i>/<i class="reviewerR{{orderPropR.prop == 'username' && orderPropR.descending}} icon-arrow-down"></i> </span></small>
+                        </th>
+                        <th>Completed reviews
+                            <br/>
+                            <small><span data-ng-click="sortReviewers('completed')" style="cursor: pointer"> <i class="icon-arrow-up complR{{orderPropR.prop == 'completed' && !orderPropR.descending}}"></i>/<i class="complR{{orderPropR.prop == 'completed' && orderPropR.descending}} icon-arrow-down"></i> </span></small>
+                        </th>
+                        <th>Started reviews
+                            <br/>
+                            <small><span data-ng-click="sortReviewers('started')" style="cursor: pointer"> <i class="icon-arrow-up startedR{{orderPropR.prop == 'started' && !orderPropR.descending}}"></i>/<i class="startedR{{orderPropR.prop == 'started' && orderPropR.descending}} icon-arrow-down"></i> </span></small>
+                        </th>
+                        <th>Comments
+                            <br/>
+                            <small><span data-ng-click="sortReviewers('comments')" style="cursor: pointer"> <i class="icon-arrow-up commentsR{{orderPropR.prop == 'comments' && !orderPropR.descending}}"></i>/<i class="commentsR{{orderPropR.prop == 'comments' && orderPropR.descending}} icon-arrow-down"></i> </span></small>
+                        </th>
+                        <th title="Based on number of words in reviewed document">Score
+                            <br/>
+                            <small><span data-ng-click="sortReviewers('weight')" style="cursor: pointer"> <i class="icon-arrow-up weightR{{orderPropR.prop == 'weight' && !orderPropR.descending}}"></i>/<i class="weightR{{orderPropR.prop == 'weight' && orderPropR.descending}} icon-arrow-down"></i> </span></small>
+                        </th>
+                        <th>Time
+                            <br/>
+                            <small><span data-ng-click="sortReviewers('time')" style="cursor: pointer"> <i class="icon-arrow-up timeR{{orderPropR.prop == 'time' && !orderPropR.descending}}"></i>/<i class="timeR{{orderPropR.prop == 'time' && orderPropR.descending}} icon-arrow-down"></i> </span></small>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-ng-repeat="tester in reviews|orderBy:orderPropR.prop:orderPropR.descending">
+                        <td>{{$index + 1}}</td>
+                        <td><a data-ng-href="#/user/{{tester.username}}">{{tester.name}}</a></td>
+                        <td>{{tester.username}}</td>
+                        <td>{{tester.completed}}</td>
+                        <td>{{tester.total}}</td>
+                        <td>{{tester.comments}}</td>
+                        <td>{{tester.weight}}</td>
+                        <td>{{tester.prettyTime}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="span5">  </div>
+    </div>
+
+</div>

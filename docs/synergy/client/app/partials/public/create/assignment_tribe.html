@@ -1,0 +1,73 @@
+<div class="custom" id="specpool_partial">
+
+    <div class="row-fluid">
+        <div class="span7">
+            <h1>Create new assignment for tribe members <small data-ng-hide="ready > 2">loading data, please wait...</small></h1>
+            <b>Assignments will be created after submitting data using Save button.</b> You can limit which cases should be tested by specifying Label (if set to None, all cases will be tested)
+            <br/><br/>
+        </div>
+        <!--</div>-->
+
+        <div class="span3">
+            <div >
+                <div class="btn-toolbar">
+                    <div class="btn-group"  >
+                        <button class="btn" data-ng-click="create()" title="Save changes" data-ng-disabled="assignments.length < 1"><i class="icon-ok"></i>&nbsp; Save</button>
+                        <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+  </div>  
+  <div class="row-fluid">
+      <div class="span11">
+
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                    <th>Tribe</th>
+                    <th>User</th>
+                    <th>Platform</th>
+                    <th>Specifications</th>
+                    <th>Label</th>
+                    <th>Duplicate?</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-ng-repeat="assignment in assignments">
+                    <td>{{assignment.display.tribe}}</td>
+                    <td>{{assignment.display.user}}</td>
+                    <td>{{assignment.display.platform}}</td>
+                    <td>{{assignment.display.specification}}</td>
+                    <td>{{assignment.display.label}}</td>
+                    <td><span data-ng-hide="!assignment.display.duplicates" class="label label-warning" title="Other assignment with same parameters exists">Yes</span></td>
+                    <td><button type="submit" data-ng-click="removeAssignment($index)" class="btn btn-warning">Delete</button></td>
+                </tr>
+                <tr>
+                    <td>
+                        <select name="tribe" required="required" data-ng-model="selectedTribe" data-ng-change="filterTribe()" data-ng-options="p as p.name for p in tribes"></select>
+                    </td>
+                    <td>
+                        <select name="tribe" required="required" data-ng-model="value.user" data-ng-options="p as (p.firstName+' '+p.lastName+' ('+p.username+')') for p in selectedTribe.members"></select>
+                    </td>
+                    <td>
+                        <select name="name" required="required" data-ng-model="value.platform" data-ng-options="p as p.name for p in platforms"></select>
+                    </td>
+                    <td>
+                        <select name="name" required="required" data-ng-model="value.specification" data-ng-options="p as (p.title + ' ('+p._project+' ' + p.version+')' ) for p in selectedTribe.ext.specifications"></select>
+                        <span class="label label-info" data-ng-hide="value.specification.newerId < 0">newer version exists, see <a style="color:white; text-decoration: underline" data-ng-href="#/specification/{{value.specification.newerId}}">here</a></span>
+                    </td>
+                    <td>
+                        <select name="name" required="required" data-ng-model="value.label" data-ng-options="p as p.label for p in labels"></select>
+                    </td>
+                    <td></td>
+                    <td>
+                        <button type="submit" data-ng-click="addAssignment()" class="btn btn-primary">Add</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>       
+    </div>
+    </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="custom" id="specpool_partial">
+    <div class="span9">
+        <h1>Synergy configuration</h1>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-ng-repeat="v in settings">
+                    <td>{{v.key}}</td>
+                    <td><input type="text" value="{{v.value}}" data-ng-model="v.value"/></td>
+                    <td>{{v.label}}</td>
+                </tr>
+                <tr>
+                    <td><input type="text" class="input-medium" data-ng-model="newKey"/></td>
+                    <td><input type="text"  data-ng-model="newValue"/></td>
+                    <td>
+                    
+                        <form class="form-inline">
+                            <input type="text" class="input-large"  data-ng-model="newDesc"/>
+                            <button type="submit" data-ng-disabled="!newKey || !newValue || !newDesc" data-ng-click="addSetting()" class="btn btn-primary">Add</button>
+                        </form>
+                    
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    <div class="span3">
+        <span class="btn btn-small" title="Saves settings" data-ng-click="save();"><i class="icon-plus-sign"></i>&nbsp; Save</span><br/><br/>
+    </div>
+</div>

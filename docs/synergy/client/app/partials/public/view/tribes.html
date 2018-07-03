@@ -1,0 +1,11 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>Tribes</h1>
+        <table class="table">
+            <tr data-ng-repeat="v in tribes"><td style="border: none"><h5><a href="#/tribe/{{v.id}}">{{v.name}} Tribe</a></h5>
+                    <div class="well" data-ng-hide="!v.description" ><small data-ng-bind-html-unsafe="v.description"></small></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

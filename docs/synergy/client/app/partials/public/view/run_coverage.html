@@ -1,0 +1,57 @@
+<div class="custom" id="specpool_partial">
+    <h1>Coverage for{{testRunTitle}}&nbsp;<small><a href="#/run/{{testRunId}}">back to test run</a></small>&nbsp;</h1>
+    <h4>Selected versions</h4>
+    <div class="row-fluid">
+        <span class="span1" data-ng-repeat="version in selectedVersions" data-ng-click="$parent.removeCoveredVersion($index)" style="cursor: pointer" title="Click to remove">
+            <span class="label label-info label-big" >{{version.name}}</span>    
+        </span>
+    </div>
+    <div>
+        <select style="width: 40%" data-ui-select2 data-ng-model="versionToCover" data-placeholder="Select a version" >
+            <option value=""></option>
+            <option ng-repeat="s in allVersions| filter:isVisible" value="{{s.index}}">{{s.name}}</option>
+        </select>
+        <button type="button" data-ng-click="addVersion()" style="margin: 0 0 0 2em" class="btn btn-primary">Add</button>
+    </div>
+    <br/>
+    <button type="button" data-ng-click="loadCoverage()" data-ng-disabled="syncCounter != syncTarget || selectedVersions.length < 1" style="margin: 0 0 0 2em" class="btn btn-primary">Show coverage</button>
+    <h2>Coverage</h2>
+    <div class="row-fluid">
+        <div class="span12">
+
+            <table class="table-bordered table-hover table-condensed table-striped table">
+                <thead>
+                    <tr>
+                        <th>Specification</th>
+                        <th data-ng-repeat="p in platforms">
+                            <input type="checkbox" data-ng-model="p.isVisible" data-ng-change="toggle()"/>
+                            {{p.name}}</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr><th>Total</th>
+                        <th data-ng-repeat="p in platforms" data-ng-class="'platformVisible' + p.isVisible +' '+getProgressClass(coverageTotals[p.name].finishedCases, coverageTotals[p.name].totalCases)">
+                            {{getPercentage(coverageTotals[p.name].finishedCases, coverageTotals[p.name].totalCases)}} % 
+                            <small>({{coverageTotals[p.name].finishedCases}}/{{coverageTotals[p.name].totalCases}})</small>
+                        </th>
+                        <th data-ng-class="getProgressClass(totals.finishedCases, totals.totalCases)">
+                            {{getPercentage(totals.finishedCases, totals.totalCases)}} % 
+                            <small>({{totals.finishedCases}}/{{totals.totalCases}})</small>
+                        </th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    <tr data-ng-repeat="spec in specifications" data-ng-class="'specVisible' + spec.isVisible">
+                        <td data-version="{{spec.version}}" data-latest="{{spec.id}}">
+                            <input type="checkbox" data-ng-model="spec.isVisible" data-ng-change="toggle()"/>
+                            {{spec.title}}</td>
+                        <td data-ng-repeat="p in platforms" data-ng-class="'platformVisible' + p.isVisible+' '+getProgressClass(spec.coverage[p.name].finishedCases, spec.coverage[p.name].totalCases)">{{getPercentage(spec.coverage[p.name].finishedCases, spec.coverage[p.name].totalCases)}} % <small  data-ng-class="'grey specVisible' + spec.isVisible">{{spec.coverage[p.name].finishedCases}}/{{spec.coverage[p.name].totalCases}}</small></td>
+                        <td data-ng-class="'bold ' + getProgressClass(specificationTotals[$index].finishedCases, specificationTotals[$index].totalCases)">{{getPercentage(specificationTotals[$index].finishedCases, specificationTotals[$index].totalCases)}} % <small data-ng-class="'grey specVisible' + spec.isVisible">({{specificationTotals[$index].finishedCases}}/{{specificationTotals[$index].totalCases}})</small></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

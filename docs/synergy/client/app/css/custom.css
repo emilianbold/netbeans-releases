@@ -1,0 +1,477 @@
+/* Custom keywords/labels for test cases */
+.label-fails, .badge-fails {
+    background-color: #333;
+}
+
+.label-sanity, .badge-sanity {
+    background-color: #B94A48;
+}
+
+.label-obsolete, .badge-obsolete {
+    background-color: #999;
+}
+
+
+/*custom labels end*/
+
+.dropbox{
+    border: 4px dashed rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: #999999;
+}
+.dropbox.hover{
+    border: 4px dashed #08C;
+}
+
+.table tbody tr.finished td, .table tbody tr td.finished, .finished, .row-passed td {
+    background-color: #dff0d8 !important;
+}
+
+.table tbody tr.unfinished td, .table tbody tr td.unfinished, .unfinished {
+    background-color: #fcf8e3 !important;
+}
+
+.table tbody tr.warning td, .table tbody tr td.warning, .warning, .row-failed td {
+    background-color: #fbdcbc !important;
+}
+
+.table tbody tr.pending td, .table tbody tr td.pending, .row-passed_with_issues td {
+    background-color: #d9edf7 !important;
+}
+
+.table-hover tbody tr.finished:hover td, .table tbody tr td.finished:hover, .row-passed:hover td{
+    background-color: #d0e9c6 !important;
+}
+
+.table-hover tbody tr.unfinished:hover td, .table tbody tr td.unfinished:hover {
+    background-color: #faf2cc !important;
+}
+
+.table-hover tbody tr.warning:hover td, .table tbody tr td.warning:hover, .row-failed:hover td {
+    background-color: #f8c592 !important;
+}
+
+.table-hover tbody tr.pending:hover td, .table tbody tr td.pending:hover, .row-passed_with_issues:hover td {
+    background-color: #c4e3f3 !important;
+}
+
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; }
+.ui-timepicker-rtl dl dd { margin: 0 65px 10px 10px; }
+
+div.thumbnail > img:hover {
+    cursor: pointer;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    border: 1px solid #0088cc;
+    -webkit-box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);
+    -moz-box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);
+    box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);
+}
+
+[ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
+}
+
+.well, .well-large, .well-small, .table-bordered, .breadcrumb{
+    box-shadow: 2px 2px 2px #ccc;
+}
+#usermenu_user{
+    background-color: #006dcc !important;
+    background-image: none;
+    text-shadow: none;
+}
+
+.likelink{
+    color: #08c;
+    text-decoration: none;
+    cursor: pointer;
+}
+.likelink:hover{
+    color: #005580;
+    text-decoration: underline;
+    cursor: pointer;
+}
+/*.result pre{
+    background-color:white;
+    border:none;
+}*/
+
+.brand_busy{
+    color: #999;
+    -webkit-animation-name: glow;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: infinite;
+    -ms-animation-name: glow;
+    -ms-animation-duration: 1s;
+    -ms-animation-iteration-count: infinite;
+    -moz-animation-name: glow;
+    -moz-animation-duration: 1s;
+    -moz-animation-iteration-count: infinite;
+    -o-animation-name: glow;
+    -o-animation-duration: 1s;
+    -o-animation-iteration-count: infinite;
+    animation-name: glow;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+}
+@-webkit-keyframes glow{
+    0%{
+        color: #999;
+    }
+    10%{
+        color: #9197a4;
+    }
+    20%{
+        color: #7182aa;
+    }
+    30%{
+        color: #516db0;
+    }
+    40%{
+        color: #3057b6;
+    }
+    50%{
+        color: #1042bc;
+    }
+    60%{
+        color: #3057b6;
+    }
+    70%{
+        color: #516db0;
+    }
+    80%{
+        color: #7182aa;
+    }
+    90%{
+        color: #9197a4;
+    }
+    100%{
+        color: #999;
+    }
+}
+@-moz-keyframes glow{
+    0%{
+        color: #999;
+    }
+    10%{
+        color: #9197a4;
+    }
+    20%{
+        color: #7182aa;
+    }
+    30%{
+        color: #516db0;
+    }
+    40%{
+        color: #3057b6;
+    }
+    50%{
+        color: #1042bc;
+    }
+    60%{
+        color: #3057b6;
+    }
+    70%{
+        color: #516db0;
+    }
+    80%{
+        color: #7182aa;
+    }
+    90%{
+        color: #9197a4;
+    }
+    100%{
+        color: #999;
+    }
+}
+@keyframes glow{
+    0%{
+        color: #999;
+    }
+    10%{
+        color: #9197a4;
+    }
+    20%{
+        color: #7182aa;
+    }
+    30%{
+        color: #516db0;
+    }
+    40%{
+        color: #3057b6;
+    }
+    50%{
+        color: #1042bc;
+    }
+    60%{
+        color: #3057b6;
+    }
+    70%{
+        color: #516db0;
+    }
+    80%{
+        color: #7182aa;
+    }
+    90%{
+        color: #9197a4;
+    }
+    100%{
+        color: #999;
+    }
+}
+
+@-ms-keyframes glow{
+    0%{
+        color: #999;
+    }
+    10%{
+        color: #9197a4;
+    }
+    20%{
+        color: #7182aa;
+    }
+    30%{
+        color: #516db0;
+    }
+    40%{
+        color: #3057b6;
+    }
+    50%{
+        color: #1042bc;
+    }
+    60%{
+        color: #3057b6;
+    }
+    70%{
+        color: #516db0;
+    }
+    80%{
+        color: #7182aa;
+    }
+    90%{
+        color: #9197a4;
+    }
+    100%{
+        color: #999;
+    }
+}
+
+@-o-keyframes glow{
+    0%{
+        color: #999;
+    }
+    10%{
+        color: #9197a4;
+    }
+    20%{
+        color: #7182aa;
+    }
+    30%{
+        color: #516db0;
+    }
+    40%{
+        color: #3057b6;
+    }
+    50%{
+        color: #1042bc;
+    }
+    60%{
+        color: #3057b6;
+    }
+    70%{
+        color: #516db0;
+    }
+    80%{
+        color: #7182aa;
+    }
+    90%{
+        color: #9197a4;
+    }
+    100%{
+        color: #999;
+    }
+}
+
+.obsolete1{
+    color: gray;
+    font-style: italic;
+}
+.active0{
+    color: gray;
+    font-style: italic;
+}
+
+
+/* Styling for the ngProgress itself */
+#ngProgress {
+    margin: 0;
+    padding: 0;
+    z-index: 99998;
+    background-color: green;
+    color: green;
+    box-shadow: 0 0 10px 0;
+    /* Inherits the font color */
+
+    height: 2px;
+    opacity: 0;
+    /* Add CSS3 styles for transition smoothing */
+    -webkit-transition: all 0.5s ease-in-out;
+    -moz-transition: all 0.5s ease-in-out;
+    -o-transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+}
+
+/* Styling for the ngProgress-container */
+#ngProgress-container {
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 99999;
+}
+
+#userCaret{
+    border-top-color: #fff;
+    border-bottom-color: #fff;
+}
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+@media (max-width: 979px) {
+    body {
+        padding-top: 0px;
+    }
+}
+
+.bugs-error{
+    background-color: #f2dede;
+}
+.bugs-warning{
+    background-color: #fcf8e3;
+}
+.bugs-success{
+    background-color: #dff0d8;
+}
+.bugs-orange{
+    background-color: #ffcc66;
+}
+
+.userfalse, .specificationfalse, .platformfalse, .tribefalse, .passedfalse, .testedfalse, .timefalse, .testersfalse, .ratiofalse, .ttimefalse, .complfalse, .userfalse, .productivityfalse,
+.reviewerfalse,.reviewerRfalse,.complRfalse,.startedRfalse,.commentsRfalse, .weightRfalse,.timeRfalse {
+    opacity: 0.5;
+}
+.usertrue, .specificationtrue, .platformtrue, .tribetrue, .passedtrue, .testedtrue, .timetrue, .testerstrue, .ratiotrue, .ttimetrue, .compltrue, .usertrue, .productivitytrue,
+.reviewertrue,.reviewerRtrue,.complRtrue,.startedRtrue,.commentsRtrue, .weightRtrue,.timeRtrue{
+    opacity: 1;
+}
+.label-frozen{
+    background-color: #FF7878;
+}
+.small_cells td{
+    padding: 5px;
+}
+.casefailed{
+    background-color: #fbdcbc;
+}
+.casepassed{
+    background-color: #dff0d8;
+}
+.caseskipped{
+    background-color: #f5f5f5;
+}
+#cal .fc-header-title h2 {
+    font-size: .9em;
+    white-space: normal !important;
+}
+#cal .fc-view-month .fc-event, .fc-view-agendaWeek .fc-event {
+    font-size: 0;
+    overflow: hidden;
+    height: 2px;
+}
+#cal .fc-view-agendaWeek .fc-event-vert {
+    font-size: 0;
+    overflow: hidden;
+    width: 2px !important;
+}
+#cal .fc-agenda-axis {
+    width: 20px !important;
+    font-size: .7em;
+}
+
+#cal .fc-button-content {
+    padding: 0;
+}
+#typeahead_search{
+    display: block;
+    visibility: visible
+}
+.owner_formerUser{
+    color: #888;
+}
+
+.clockIcon{
+    width: 1.5em;
+}
+.label-aborted, .badge-aborted,.label-ABORTED, .badge-ABORTED, .label-disabled, .badge-disabled,.label-DISABLED, .badge-DISABLED {
+    background-color: #999;   
+}
+.label-failed, .badge-failed,.label-FAILED, .badge-FAILED, .label-failure, .badge-failure,.label-FAILURE, .badge-FAILURE {
+    background-color: #B94A48;
+}
+.label-unstable, .badge-unstable,.label-UNSTABLE, .badge-UNSTABLE {
+    background-color: #f89406;
+}
+.label-SUCCESS, .badge-SUCCESS{
+    background-color: #468847;
+}
+.jobContainer{
+    margin: 0.5em 0;
+}
+.label-big{
+    font-size: 1.3em;
+    margin: 0.5em;
+}
+.grey{
+    color: #777;
+}
+.specVisiblefalse, .platformVisiblefalse{
+    color: #aaa;
+}
+.bold{
+    font-weight: bold;
+}
+.x-controls{
+    font-size: 14px;
+    margin: 1em 0 2em 0;
+}
+.x-controls label, .x-controls input{
+    display: inline !important;
+    margin: 0 !important;
+}
+.x-controls .pull-left{
+    margin: 0 1em 0 0;
+}
+.x-controls .pull-left:nth-child(2){
+    margin: 0 1em 0 2em;
+}
+.x-controls .select2-search-choice-close:after {
+    content: 'x';
+    width: 14px;
+    height: 14px;
+    color: #000;
+    font-size: 14px;
+}
+.x-labels{
+    width: 30vw;
+}

@@ -1,0 +1,9 @@
+# protect log file
+<Files errors.log>
+order allow,deny
+deny from all
+</Files>
+<Files errors.log.php>
+order allow,deny
+deny from all
+</Files>

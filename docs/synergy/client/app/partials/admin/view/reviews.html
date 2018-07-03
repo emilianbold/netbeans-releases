@@ -1,0 +1,61 @@
+<div class="custom" id="specpool_partial">
+    <div class="row-fluid">
+        <div class="span12"><h1>Refresh list of tutorials for review assignments</h1>
+            <small>all existing tutorials will be removed and replaced</small>
+            <form class="form-inline">
+                <input type="url" class="input-xxlarge" data-ng-model="importUrl" />&nbsp;<button data-ng-click="importData()" data-ng-disabled="!importUrl || importUrl.length < 1"  type="button" class="btn btn-small">Import</button>
+            </form></div>
+    </div>
+    <div class="row-fluid">
+        <div class="span8">
+            <h2>Current pages avaliable for review</h2>
+        </div>
+        <div class="span4">
+            <span class="btn btn-small" title="Create new tutorial page" data-ng-click="perform('create');"><i class="icon-plus-sign"></i>&nbsp; Create new</span><br/><br/>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span12">
+            <table class="table-striped table-condensed table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>URL</th>
+                        <th>Owner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-ng-repeat="r in existingReviewPages">
+                        <td>{{$index + 1}}</td>
+                        <td>{{r.title}}</td>
+                        <td>{{r.url}}</td>
+                        <td>{{r.owner}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="modal fade hide" id="createTutorialModal" tabindex="-1" role="dialog" aria-labelledby="createTutorialModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="createVersionModal">Create tutorial</h3>
+    </div>
+    <div class="modal-body" id="createVersionModalBody">
+
+        <form class="form-inline" name="myForm2">
+            <label>Title</label>&nbsp;
+            <input style="width: 60%" type="text" data-ng-model="newReview.title" required>
+            <br/> <br/>
+            <label>URL</label>&nbsp;
+            <input style="width: 60%" type="text" data-ng-model="newReview.url" required>
+            <br/> <br/>
+            <label>Owner</label>&nbsp;
+            <input style="width: 60%" type="text" data-ng-model="newReview.owner" required>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" id="modal_confirm_ok" data-dismiss="modal" data-ng-disabled="!newReview.title || !newReview.url || !newReview.owner" data-ng-click="create();">Create</button>
+    </div>
+</div>

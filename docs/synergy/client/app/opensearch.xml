@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+    <ShortName>Synergy</ShortName>
+    <LongName>Search engine for Synergy</LongName>
+    <Description>Search engine for Synergy</Description>
+    <InputEncoding>UTF-8</InputEncoding>
+    <OutputEncoding>UTF-8</OutputEncoding>
+    <Image height="16" width="16" type="image/x-icon">http://services.netbeans.org/synergy/client/app/favicon.ico</Image>
+    <Url type="text/html" method="get" template="http://services.netbeans.org/synergy/client/app/#/search/{searchTerms}"/>
+    <Query role="example" searchTerms="test"/>
+</OpenSearchDescription>

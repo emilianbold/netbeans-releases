@@ -1,0 +1,116 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+
+        <div data-ng-show="preview == 1" class="alert alert-info">
+            Preview mode, information about suite and specification may not be available/accurate
+        </div>
+
+        <h1>{{testCase.title}} <small class="pull-right">{{project}} {{testCase.version}} Test Case</small></h1>
+
+
+
+        <h3>Steps</h3>
+        <div data-ng-bind-html-unsafe="testCase.steps">
+
+        </div>
+        <h3>Expected result:</h3>
+        <div class="well result" data-ng-bind-html-unsafe="testCase.result">
+
+        </div>
+        <h3 data-ng-hide="testCase.images.length < 1">Images:</h3>
+        <ul class="thumbnails">
+            <li class="span6" data-ng-repeat="image in testCase.images">
+                <div class="thumbnail">
+                    <a href="{{image.src}}" target="_blank" title="Open in new window">
+                        <img data-ng-src="{{image.src}}" alt="{{image.title}}">
+                    </a>
+                    <div class="caption">
+                        <p>{{image.title}}</p>
+                        <p>
+                            <button data-ng-disabled="testCase.isUsed" data-ng-repeat="action in image.controls" class="btn btn-small" data-ng-click="performImage(action.onClick, image.id)" title="{{action.title}}"><i class="{{action.iconName}}"></i>&nbsp; {{action.title}}</button>
+                        </p>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button data-ng-repeat="action in testCase.controls" data-ng-disabled="!action.isEnabled" class="btn" data-ng-click="performCase(action.onClick)" title="{{action.title}}"><i class="{{action.iconName}}"></i>&nbsp; {{action.title}}</button>
+                </div>
+            </div>
+            <small data-ng-hide="!testCase.isUsed" class="label label-frozen" title="Specification is used in paused test assignment and test case cannot be deleted right now">Closed for structure changes</small>
+        </div>
+        <div class="clearfix"></div>
+
+        <h2><small>Test Suite:  <a href="#/suite/{{parentSuite}}">{{testCase.suiteTitle}}</a></small></h2>
+        <h2><small>Specification: <a href="#/specification/{{testCase.specificationId}}">{{testCase.specificationTitle}}</a></small></h2>
+        <div>
+            <h2 data-ng-hide="testCase.keywords.length < 1"><small>Labels:</small></h2>
+            <span data-ng-repeat="keyword in testCase.keywords">
+                <sylabel label="keyword"></sylabel>
+            </span>
+            <!--<br/><br/><span data-ng-show="rights == 1" class="btn btn-small" title="Add issue" data-ng-click="showAddLabelModal()"><i class="icon-tags"></i>&nbsp; Manage</span>-->
+        </div>
+        <div>
+            <h2 data-ng-hide="testCase.issues.length < 1"><small>Issues:</small>&nbsp;</h2>
+
+            <span  data-ng-repeat="issue in testCase.issues|stillValidIssues">
+                <syissue-detail baseurl="SYNERGY.issues.singleIssueLink(project,issue.bugId)" issue="issue"></syissue-detail>
+            </span>
+            <!--<br/><br/><span data-ng-show="rights == 1" class="btn btn-small" title="Add issue" data-ng-click="showAddIssueModal()"><i class="icon-th-large"></i>&nbsp; Manage</span>-->
+        </div>
+        <div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>
+<!--Add image title dialog-->
+<div class="modal fade hide" id="addImageModal" tabindex="-1" role="dialog" aria-labelledby="addImageModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="addImageModalLabel">Add image</h3>
+    </div>
+    <div class="modal-body" id="addImageModalBody">
+        <h4>Title:</h4>
+        <form class="form-inline">
+            <input style="width: 40%" type="text" data-ng-model="imageTitle">
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-disabled="!imageTitle" data-dismiss="modal" data-ng-click="uploadFile();">Done</button>
+    </div>
+</div>
+<!--Delete image-->
+<div class="modal fade hide" id="deleteImageModal" tabindex="-1" role="dialog" aria-labelledby="deleteImageModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteImageModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteImageModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>

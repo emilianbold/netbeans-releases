@@ -1,0 +1,91 @@
+<div class="custom" id="specpool_partial">
+    <div class="span9">
+        <h1>{{run.title}}&nbsp;<small>Test Cases Overview</small>&nbsp;<small><a href="#/run/{{id}}">back to test run</a></small></h1>
+        <div class="thumbnail"  style="margin: 0 0 1em 0 ">
+            <div class="caption">
+                <h3>Overview</h3>
+                <ul>
+                    <li><b>Test run took: </b> {{overview.duration}}</li>
+                    <li><b>Pass rate: </b>{{overview.pRate}}</li>
+                    <li><b>Number of test cases: </b>{{overview.totalTc}}</li>
+                    <li><b>Number of testers: </b>{{overview.testers}}</li>
+                    <li><b>Contributed time: </b>{{overview.time}}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="span3">
+        <div>
+            <h4 title="{{run.start}} UTC">Start: {{getLocalTime(run.start)}}</h4>
+            <h4 title="{{run.end}} UTC">End: {{getLocalTime(run.end)}}</h4>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row-fluid">
+        <h3>Test Specifications
+            <a class="btn" title="Toggle expand all" data-ng-click="toggleAll()">Expand/collapse all</a>
+        </h3>
+        <div class="x-controls">
+            <div class="pull-left">Show labels</div>
+            <div class="pull-left x-labels">
+                <!--                <select name="name" class="input" required="required" data-ng-model="value.platform" data-ng-options="p as p.name for p in platforms"></select>-->
+                <select multiple="multiple" style="width: 100%" class="input"  data-ui-select2 data-ng-model="selectedLabels" data-ng-change="filter()" data-placeholder="filter by labels" >
+                    <option ng-repeat="s in labels" value="{{s}}">{{s}}</option>
+                </select>
+            </div>
+            <div class="clearfix"></div>
+            <div>Show test cases:</div>
+            <div class="pull-left">
+                <label for="xpassed">Passed</label>
+                <input type="checkbox" id="xpassed" data-ng-model="resultFilter.passed" data-ng-click="filter()" >
+            </div>
+            <div class="pull-left">
+                <label for="xpassedw">Passed with issues</label>
+                <input type="checkbox" id="xpassedw" data-ng-model="resultFilter.passed_with_issues" data-ng-click="filter()" >
+            </div>
+            <div class="pull-left">
+                <label for="xfailed">Failed</label>
+                <input type="checkbox" id="xfailed" data-ng-model="resultFilter.failed" data-ng-click="filter()" >
+            </div>
+            <div class="pull-left">
+                <label for="xskipped">Skipped</label>
+                <input type="checkbox" id="xskipped" data-ng-model="resultFilter.skipped" data-ng-click="filter()">
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div data-ng-repeat="s in specs" data-id="spec">
+            <h4 style="cursor: pointer" title="Click to expand/collapse" data-ng-click="toggleExpand(s)">
+                <a data-ng-href="{{'#/specification/' + s.id}}">{{$index + 1}}.&nbsp;{{s.name}}</a>&nbsp;<small>Test Specification, version {{s.version}}</small><i  class="icon-arrow-{{s.expanded && 'down'|| 'right'}}"></i></h4>
+            <div id="spec{{s.id}}" class="collapse" >
+                <div  data-ng-repeat="ts in s.suites" data-id="suite" style="margin: 0 0 0 1em" >
+                    <h5 style="cursor: pointer" title="Click to expand/collapse" data-ng-click="toggleExpand(ts)">
+                        <a data-ng-href="{{'#/suite/' + ts.id}}">{{$parent.$index + 1}}.{{$index + 1}}&nbsp;{{ts.name}}</a>&nbsp;<small>Test Suite</small><i  class="icon-arrow-{{ts.expanded && 'down'|| 'right'}}"></i></h5>
+                    <div id="suite{{ts.id}}" class="collapse" >
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Test Case</th>
+                                    <th>Tested By</th>
+                                    <th>Platform</th>
+                                    <th>Result</th>
+                                    <th>Issues</th>
+                                </tr>
+                            </thead>
+                            <tbody ng-repeat="tc in ts.testCases">
+                                <tr data-ng-repeat="r in tc.results" class="row-{{r.resultClass}}" data-ng-hide="!r.visible">
+                                    <td><a data-ng-href="{{r.link}}">{{tc.name}}</a></td>
+                                    <td>{{r.user}}</td>
+                                    <td>{{r.platform}}</td>
+                                    <td>{{r.result}}</td>
+                                    <td><span data-ng-hide="r.issues.length < 1">
+                                            <a data-ng-href="{{SYNERGY.issues.viewLinkObjects(project.name, r.issues)}}">{{r.issuesLbl}}</a>
+                                        </span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </div>
+</div>

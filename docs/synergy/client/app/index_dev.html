@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:ng="http://angularjs.org" id="ng-app" data-ng-app="synergy" class="ng-app:synergy">
+    <head>
+        <link rel="SHORTCUT ICON" href="favicon.ico"/>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=10" />
+        <title>Dev Synergy - Test Management Tool</title>
+        <link rel="stylesheet" href="lib/angular-ui/fullcalendar.min.css" >
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.22/themes/base/jquery-ui.css">
+        <link href="css/min/bootstrap.css" rel="stylesheet">
+        <link href="css/custom.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="js/libs/codemirror/codemirror.min.css">
+        <link href="css/min/bootstrap-responsive.css" rel="stylesheet">
+        <link href="lib/angular-ui/select2.css" rel="stylesheet">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-migrate/1.2.1/jquery-migrate.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.22/jquery-ui.min.js"></script>       
+        <script src="js/libs/timepicker/picker.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <script src="js/libs/codemirror/codemirror.min.js"></script>
+        <script src="js/libs/codemirror/xml.min.js"></script>
+        <script src="js/libs/codemirror/javascript.min.js"></script>
+        <script src="js/libs/codemirror/css.min.js"></script>
+        <script src="js/libs/codemirror/htmlmixed.min.js"></script>
+        <script src="js/libs/jquery-qrcode-master/jquery.qrcode.min.js"></script>
+        <script src="lib/angular-ui/fullcalendar.min.js"></script>     
+        <script src="js/libs/jsdifflib/diffview.js"></script> 
+        <link href="js/libs/jsdifflib/diffview.css" rel="stylesheet">
+        <script src="js/libs/jsdifflib/difflib.js"></script>      
+
+        <style type="text/css">
+            body {
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+        </style>
+        <script src="js/libs/json/json2-min.js"></script>
+        <script src="js/exts.js"></script>
+        <style>
+
+
+        </style>
+        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+          <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+    </head>
+    <body id="synergy_session" data-ng-controller="SynergyCtrl" >
+        <div class="navbar navbar-inverse navbar-fixed-top" id="navbar-top" >
+            <div class="navbar-inner"  >
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="#" data-ng-class="busyBrand" >Synergy</a>
+                    <div class="nav-collapse" id="synergy_mainbar">
+                        <ul class="nav" id="navbar" >
+                            <li class="active" id="nav_home"><a href="#">Home</a></li>
+                            <li id="nav_runs"><a href="#/runs">Test Runs</a></li>
+                            <li id="nav_specs"><a href="#/specifications">Test Specifications</a></li>
+                            <li class="dropdown " id="nav_other" >
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Other <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#/tribes">Tribes</a></li>
+                                    <li><a href="#/calendar">Calendar</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="#/about">About</a></li>
+                                </ul>
+                            </li>
+                            <li id="nav_admin" class="dropdown" data-ng-show="role == 'admin' || role == 'manager'">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Administration <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#/administration/runs">Test Runs</a></li>
+                                    <li><a href="#/administration/versions">Versions</a></li>
+                                    <li><a href="#/administration/platforms">Platforms</a></li>
+                                    <li><a href="#/administration/projects">Projects</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="#/administration/users">Users</a></li>
+                                    <li><a href="#/administration/tribes">Tribes</a></li>
+                                    <li><a href="#/administration/reviews">Tutorials</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="#/administration/setting">Server setting</a></li>
+                                    <li><a href="#/administration/log">View log</a></li>
+                                    <li><a href="#/administration/database">Database</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                            <typeaheads items="suggestions" prompt="Search" model="searchedItem"  data-type="searchAhead()" on-select="goToSearch()"  data-enter="synergySearch()" />
+                            </li>
+                        </ul>
+                        <div class="pull-right">
+                            <button id="synergy_login_form" class="btn " data-ng-click="login();" >Sign in</button>
+                            <div id="synergy_usermenu" style="display:none">
+                                <ul class="nav pull-right"><li class="dropdown"><a href="#" class="dropdown-toggle btn-primary" data-toggle="dropdown" id="usermenu_user" style="color: white">USER <b class="caret"></b></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="#/user">Me</a></li>
+                                            <li data-ng-show="role == 'admin' || role == 'manager'"><a href="#/administration">Administration</a></li>
+                                            <li><a href="#logout" data-ng-click="logout();">Logout</a></li>
+                                        </ul></li></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+
+
+            <div class="row-fluid" data-ng-cloak>
+                <div class="span12">
+                    <ul class="breadcrumb">
+                        <li><a href="index.html">Home</a> <span class="divider">/</span></li>
+                        <li data-ng-repeat="b in breadcrumbs"><a href="#/{{b.link}}">{{b.title}}</a> <span class="divider">/</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row-fluid"  >
+                <div class="span5">
+                    <div data-ng-cloak data-ng-show="SYNERGY.logger.print" class="alert {{SYNERGY.logger.style}}">
+                        <strong>{{SYNERGY.logger.title}}</strong>&nbsp;<span>{{SYNERGY.logger.msg}}</span><br/>
+                        {{SYNERGY.logger.date}}
+                    </div>
+                </div></div>
+            <div class="row-fluid"  >
+                <div class="span12">
+                    <div data-ng-view data-ng-cloak></div>
+                </div>
+                <div class="span2">
+                </div>
+            </div>
+            <hr>
+            <footer>
+                <div>
+                    <div></div> <small class="pull-right" data-ng-click="toggleBusyBrand()">Synergy v<span>{{SYNERGY.version}}</span> | <a data-ng-show="!SYNERGY.useSSO" href="#/register">Register</a></small>
+                </div>
+            </footer>
+
+        </div> 
+        <div class="modal hide" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">Modal header</h3>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <p>One fine body 2…</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+        <script src="js/bootstrap/bootstrap-transition.js"></script>
+        <script src="js/bootstrap/bootstrap-alert.js"></script>
+        <script src="js/bootstrap/bootstrap-typeahead.js"></script>
+        <script src="js/bootstrap/bootstrap-modal.js"></script>
+        <script src="js/bootstrap/bootstrap-dropdown.js"></script>
+        <script src="js/bootstrap/bootstrap-tooltip.js"></script>
+        <script src="js/bootstrap/bootstrap-collapse.js"></script>
+        <script src="lib/angular/angular.js"></script>
+        <script src="lib/angular/angular-cookies.js"></script>
+        <script src="lib/angular-ui/ui-codemirror.js"></script>
+        <script src="lib/angular-ui/select2_combined.min.js"></script>
+        <script src="lib/bootstrap-custom/ui-bootstrap-custom-tpls-0.6.0.min.js"></script>
+        <script src="js/legacy/polyfills.js" type="text/javascript"></script>
+        <script src="js/app.js"></script>
+        <script src="js/models.js" type="text/javascript"></script>
+        <script src="js/utils.js" type="text/javascript"></script>
+        <script src="js/configuration.js"></script>
+        <script src="js/handlers.js" type="text/javascript"></script>
+        <script src="js/filters.js" type="text/javascript"></script>
+        <script src="js/controllers.js"></script>
+        <script src="js/factories.js"></script>
+        <script src="js/directives.js"></script>        
+    </body>
+</html>

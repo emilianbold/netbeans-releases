@@ -1,0 +1,10 @@
+# protect this file
+<Files .htaccess>
+order allow,deny
+deny from all
+</Files>
+
+AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/xml application/xhtml+xml application/rss+xml application/javascript application/x-javascript application/json
+<FilesMatch "\\.(js|css|html|htm|php|xml)$">
+SetOutputFilter DEFLATE
+</FilesMatch>

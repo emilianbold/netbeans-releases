@@ -1,0 +1,5 @@
+# protect log file
+<Files manual.zip>
+order allow,deny
+deny from all
+</Files>

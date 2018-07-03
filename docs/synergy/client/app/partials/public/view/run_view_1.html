@@ -1,0 +1,305 @@
+<div class="custom" id="specpool_partial">
+    <div class="span8">
+        <h1>{{run.title}}&nbsp;<small>{{project.name}} Test Run</small> &nbsp; <a class="btn" data-ng-href="#/run/{{run.id}}/v/2" title="Switch view mode"><i class="icon-eye-open"></i></a></h1>
+        <h3>Description</h3>
+        <div class="well" data-ng-bind-html-unsafe="run.desc">
+
+        </div>
+        <div class="thumbnail">  <h3 class="caption">Coverage</h3>
+            <div class="pull-left" data-ng-repeat="p in coverage" >
+                <h6 class="caption" style="margin:0; padding: 0 9px 9px 9px;">{{p.name}}</h6>
+                <canvas id="coverage{{p.name}}" width="200" height="100"></canvas>  
+                {{createCoverageChart(p)}}
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <br/>
+        <div class="thumbnail">
+            <h3 class="caption">Issues</h3>
+            <canvas id="issuesResolution" width="200" height="100"></canvas>  
+            <canvas id="issuesPriority" width="200" height="100"></canvas>  
+            <div class="pull-left span3">
+                <b>Links:</b><br/>
+                <div data-ng-hide="allIssues.length + 0 < 1"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(project.name, allIssues)}}">All issues</a></div>
+                <div data-ng-hide="unresolvedIssues.length < 1"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(project.name, unresolvedIssues)}}">Unresolved issues</a></div>
+                <div data-ng-hide="P1Issues.length < 1"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(project.name, P1Issues)}}">P1 issues</a></div>
+                <div data-ng-hide="P2Issues.length < 1"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(project.name, P2Issues)}}">P2 issues</a></div>
+                <div data-ng-hide="P3Issues.length < 1"><a data-ng-href="{{SYNERGY.issues.viewLinkObjects(project.name, P3Issues)}}">P3 issues</a></div>                 
+            </div>
+            <div class="clearfix"></div>
+
+        </div><br/>
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button data-ng-repeat="action in run.controls" class="btn" data-ng-click="performRun(action.onClick)" title="{{action.title}}"><i class="{{action.iconName}}"></i>&nbsp; {{action.title}}</button>
+                </div>
+            </div>
+        </div><br/>
+        <div>
+            <h4 title="{{run.start}} UTC">Start: {{getLocalTime(run.start)}}</h4>
+            <h4 title="{{run.end}} UTC">End: {{getLocalTime(run.end)}}</h4>
+            <h5 class="pull-right" data-ng-show="run.isActive == 0" ><i>Test run is closed</i></h5>
+        </div>
+        <br/>
+        <h4>Progress</h4>
+        <canvas id="canvas2" width="300" height="150"></canvas>
+        <h4>Results of finished cases</h4>
+        <canvas id="canvas1" width="300" height="150"></canvas>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row-fluid">
+
+        <ul class="thumbnails">
+            <li class="span3">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h3>Statistics</h3>
+                        <div data-ng-switch="run.isActive">
+                            <a data-ng-switch-when="1" data-ng-href="#/statistics/{{id}}">continue here</a>
+                            <a data-ng-switch-default data-ng-href="#/statistics/{{id}}/archive">continue here</a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="span2">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h3>Coverage</h3>
+                        <a data-ng-href="#/run/{{id}}/coverage">continue here</a>
+                    </div>
+                </div>
+            </li>
+            <li class="span2">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h3>Comments</h3>
+                        <a data-ng-href="#/assignment_comments/{{id}}">continue here</a>
+                    </div>
+                </div>
+            </li>
+            <li class="span2">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h3>Test Cases</h3>
+                        <a data-ng-href="#/run/{{id}}/v/3">continue here</a>
+                    </div>
+                </div>
+            </li>
+            <li class="span3">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h3>Attachments</h3>
+                        <table>
+                            <tr data-ng-repeat="attachment in run.attachments">
+                                <td><a href="{{attachmentBase}}?id={{attachment.id}}">&rightarrow; {{attachment.name}}&nbsp;&nbsp;</a></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+
+
+
+    </div>
+    <div class="row-fluid">
+        <h3>Assignments 
+            <a data-ng-show="rights == 1" class="btn" data-ng-disabled="run.isActive == 0" data-ng-href="#/administration/assignment/create/run/{{id}}" title="Create assignment"><i class="icon-plus"></i></a>
+            <a data-ng-show="rights == 1" class="btn" data-ng-disabled="run.isActive == 0" data-ng-href="#/administration/assignment/creatematrix/run/{{id}}" title="Create matrix assignment"><i class="icon-th-large"></i></a>
+            <a data-ng-show="SYNERGY.session.username.length > 0" data-ng-disabled="run.isActive == 0" class="btn" data-ng-href="#/assignment/create/run/{{run.id}}" title="Volunteer"><i class="icon-user"></i></a>
+            <a data-ng-show="SYNERGY.session.username.length > 0" data-ng-disabled="run.isActive == 0" class="btn" data-ng-href="#/assignment/create/tribe/run/{{run.id}}" title="Create a new assignment for tribe"><i class="icon-globe"></i></a>     
+        </h3>
+        <div data-ng-hide="run.reviewAssignments.length < 1">
+            <h4 style="cursor: pointer" title="Click to expand/collapse list of review assignments" data-ng-click="toggleReivewSection()">Review Assignments&nbsp;&nbsp;<i  class="icon-arrow-{{pageReviewsExpanded && 'down'|| 'right'}}"></i></h4>
+            <div id="pageReviews" class="collapse">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>User</th>
+                            <th>Page to review</th>
+                            <th>Page owner</th>
+                            <th>Last update</th>
+                            <th>Is finished?</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-ng-repeat="r in run.reviewAssignments" class="{{r.info}}">
+                            <td>{{$index + 1}}</td>
+                            <td><a href="#/user/{{r.username}}">{{r.userDisplayName}}</a></td>
+                            <td><a href="{{r.reviewUrl}}">{{r.title}}</a></td>
+                            <td>{{r.owner}}</td>
+                            <td>{{r.lastUpdated.length > 0 && r.lastUpdated|| ''}}</td>
+                            <td>{{r.isFinished && "Yes"|| "No"}}</td>
+                            <td>
+                                <div data-ng-switch="!!(r.controls.length > 0)">
+                                    <div data-ng-switch-when="true">
+                                        <div >
+                                            <div class="btn-group pull-right" >
+                                                <button data-ng-repeat="action in r.controls" class="btn btn-mini" title="{{action.title}}" data-ng-click="performReviewAssignment(action.onClick, r.id, r.createdBy)"><i class="{{action.iconName}}"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-ng-switch-default>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div data-ng-switch="!!(r.username == username) && !r.isFinished">
+                                    <div data-ng-switch-when="true">
+                                        <div class="pull-right">
+                                            <div class="btn-group" data-ng-hide="!testRunIsAvailable" >
+                                                <button class="btn btn-mini" title="Start (continue if saved)" data-ng-click="startReviewAssignment(1, r.id)"><i class="icon-play"></i></button>
+                                                <button class="btn btn-mini" title="Restart (start over)" data-ng-click="startReviewAssignment(2, r.id)"><i class="icon-repeat"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-ng-switch-default></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <br/>
+        </div>
+
+
+        <h4>Test Assignments</h4>
+        <span class="pull-right">Filter assignments by tribe&nbsp;<select class="input" data-ng-model="filter.tribe" data-ng-options="l as l for l in tribes"></select></span>
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>User
+                        <span class="pull-right" style="cursor: pointer"> <i data-ng-click="changeSorting('userDisplayName', false)" class="icon-arrow-up user{{orderingProperties['userDisplayName'].desc}}"></i>/<i data-ng-click="changeSorting('userDisplayName', true)" class="user{{orderingProperties['userDisplayName'].asc}} icon-arrow-down"></i> </span>
+                        <br/><select class="input" data-ng-model="filter.assignee" data-ng-options="l as l for l in assignees"></select></th>
+                    <th>Specification
+                        <span class="pull-right" style="cursor: pointer"> <i data-ng-click="changeSorting('specification', false)" class="icon-arrow-up specification{{orderingProperties['specification'].desc}}"></i>/<i data-ng-click="changeSorting('specification', true)" class="specification{{orderingProperties['specification'].asc}} icon-arrow-down"></i> </span>
+                        <br/>
+                        <select class="input" data-ng-model="filter.specification" data-ng-options="l as l for l in specifications"></select>
+                    </th>
+                    <th>Platform
+                        <span class="pull-right" style="cursor: pointer"> <i data-ng-click="changeSorting('platform', false)" class="icon-arrow-up platform{{orderingProperties['platform'].desc}}"></i>/<i data-ng-click="changeSorting('platform', true)" class="platform{{orderingProperties['platform'].asc}} icon-arrow-down"></i> </span>
+                        <br/><select class="input" data-ng-model="filter.platform" data-ng-options="l as l for l in platforms"></select></th>
+                    <th>Completed/<br/>Total Cases</th>
+                    <th>Passed/<br/>Skipped/<br/>Failed</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody infinite-scroll="nextPage()" infinite-scroll-disabled="isLoading" infinite-scroll-distance="0">
+                <tr data-ng-repeat="v in run.assignments|filter:assignessFilter|orderBy:sortConfig.property|limitTo:pageSize" class="{{v.info}}">
+                    <td>{{$index + 1}}</td>
+                    <td><a href="#/user/{{v.username}}">{{v.userDisplayName}}</a></td>
+                    <td><a href="#/specification/{{v.specificationId}}">{{v.specification}}</a> <span data-ng-hide="v.labelId == -1"><sylabel label="v.label"></sylabel></span></td>
+                    <td>{{v.platform}}</td>
+                    <td title="{{v.started.length > 0 && 'Started: ' + v.started + ';'|| ''}} {{v.lastUpdated.length > 0 && 'Last updated' + v.lastUpdated|| ''}}">{{v.completed}} / {{v.total}}</td>
+                    <td title="{{v.started.length > 0 && 'Started: ' + v.started + ';'|| ''}} {{v.lastUpdated.length > 0 && 'Last updated' + v.lastUpdated|| ''}}">{{v.passed}} / {{v.skipped}} / {{v.failed}}</td>
+                    <td>
+                        <div data-ng-switch="!!(v.controls.length > 0)">
+                            <div data-ng-switch-when="true">
+                                <div >
+                                    <div class="btn-group pull-right" >
+                                        <button data-ng-repeat="action in v.controls" class="btn btn-mini" title="{{action.title}}" data-ng-click="performAssignment(action.onClick, v.id, v.createdBy)"><i class="{{action.iconName}}"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-ng-switch-default>
+                            </div>
+                        </div>
+                    </td><td>
+                        <div data-ng-switch="!!(v.username == username)">
+                            <div data-ng-switch-when="true">
+                                <div class="pull-right">
+                                    <div class="btn-group" data-ng-hide="!testRunIsAvailable" >
+                                        <button class="btn btn-mini" title="Start (continue if saved)" data-ng-click="startAssignment(1, v.id)"><i class="icon-play"></i></button>
+                                        <button class="btn btn-mini" title="Restart (start over)" data-ng-click="startAssignment(2, v.id)"><i class="icon-repeat"></i></button>
+                                        <button data-ng-show="v.issues.length > 0 && v.total == v.completed" class="btn btn-mini" title="Alter reported bugs" data-ng-click="alterBugs(v)"><i class="icon-pencil"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-ng-switch-default></div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>
+<div class="modal fade hide" id="explainModal" tabindex="-1" role="dialog" aria-labelledby="explainModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="explainModalLabel">Message for assignee</h3>
+    </div>
+    <div class="modal-body" id="explainModalBody">
+        Please provide short explanation for assignee.
+        <form class="form-inline">
+            <textarea style="width: 80%; height: 5em" data-ng-model="explanation"></textarea>
+            <!--<input style="width: 40%" type="text" >-->
+        </form>
+        <small>Characters left {{250 - explanation.length}}</small>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-disabled="!explanation || explanation.length > 250" data-dismiss="modal" data-ng-click="deleteAssignment();">OK</button>
+    </div>
+</div>
+<div class="modal fade hide" id="ticketsModal" tabindex="-1" role="dialog" aria-labelledby="ticketsModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="ticketsModalLabel">Update assignment issues</h3>
+    </div>
+    <div class="modal-body" id="ticketsModalBody">
+        <div>You can remove reported bugs from test assignment and optionally change number of passed or failed test cases. </div>
+        <div> If you check 'Increase number of passed test cases' option,
+            then for each issue that is no longer valid, total number of passed test cases will be increased by 1 and total number of failed test cases will be decreased by 1.</div>
+        <table  class="table table-bordered table-striped table-hover small_cells">
+            <thead>
+                <tr>
+                    <th>Issue number</th>
+                    <th>Still valid?</th>
+                    <th>Increase number of passed test cases?</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-ng-repeat="b in bugs">
+                    <td>{{b.id}}</td>
+                    <td>
+                        <div class="controls">
+                            <input type="checkbox" id="changePsswd" data-ng-model="b.stillValid" >
+                        </div>                   
+                    </td>
+                    <td>
+                        <div class="controls">
+                            <input type="checkbox" id="changePsswd" data-ng-disabled="b.stillValid" data-ng-model="b.changeCount" >
+                        </div>    
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAlterBugs()">Update</button>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+<div class="custom" id="specpool_partial">
+
+    <h1>Create new matrix assignment <small data-ng-hide="ready > 4">loading data, please wait...</small></h1>
+
+    <div class="clearfix"></div>
+    <div class="span5">
+        This will create new assignments for selected users (and/or tribes) on all selected platforms.<br/> You don't have to specify which specifications should be tested, only version. Synergy will 
+        then create assignments in this order: For each user, find specifications for given version where the user is owner and for each such specification, create a new assignment on each selected platform.
+       
+        
+        <form name="myForm">
+            <h3>Platforms:</h3>
+            <div><span data-ng-repeat="s in assignment.platforms" ><span title="click to remove" class="label label-inverse" data-ng-click="removeSelectedPlatform(s.id)">{{s.name}}</span>&nbsp;&nbsp;</span></div><br/>
+            <select style="width: 90%" data-ui-select2 data-ng-model="platformId" data-ng-change="addSelectedPlatform()" data-placeholder="select platforms" >
+                <option value=""></option>
+                <option ng-repeat="s in platforms" value="{{s.id}}">{{s.name}}</option>
+            </select>
+
+            <h3>Version:</h3>
+            <select style="width: 90%" data-ui-select2 data-ng-model="assignment.versionId" data-placeholder="select version" >
+                <option value=""></option>
+                <option ng-repeat="s in versions" value="{{s.id}}">{{s.name}}</option>
+            </select>
+            
+            <h3>Users:</h3>
+            <div><span data-ng-repeat="s in assignment.users" ><span title="click to remove" class="label label-inverse" data-ng-click="removeSelectedUser(s.username)">{{s.displayName}}</span>&nbsp;&nbsp;</span></div><br/>
+            <select style="width: 90%" data-ui-select2 data-ng-model="username" data-ng-change="addSelectedUser()" data-placeholder="select users" >
+                <option value=""></option>
+                <option ng-repeat="s in users" value="{{s.username}}">{{s.displayName}}</option>
+            </select>
+
+            <h3>Tribes:</h3>
+            <div><span data-ng-repeat="s in assignment.tribes" ><span title="click to remove" class="label label-inverse" data-ng-click="removeSelectedTribe(s.id)">{{s.name}}</span>&nbsp;&nbsp;</span></div><br/>
+            <select style="width: 90%" data-ui-select2 data-ng-model="tribeId" data-ng-change="addSelectedTribe()" data-placeholder="select tribes" >
+                <option value=""></option>
+                <option ng-repeat="s in tribes" value="{{s.id}}">{{s.name}}</option>
+            </select>
+            <h3>Label:</h3>
+            <select style="width: 90%" data-ui-select2 data-ng-model="assignment.labelId" data-placeholder="select tribes" >
+                <option value=""></option>
+                <option ng-repeat="p in labels" value="{{p.id}}">{{p.label}}</option>
+            </select>
+        </form>
+
+    </div>
+    <div class="span3">
+        
+    </div>
+    <div class="span3">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button class="btn" data-ng-click="create()" title="Save changes"><i class="icon-ok"></i>&nbsp; Save</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div>
+
+
+
+
+
+
+        </div>
+
+    </div>
+
+</div>

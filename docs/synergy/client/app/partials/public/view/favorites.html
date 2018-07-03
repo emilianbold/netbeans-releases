@@ -1,0 +1,20 @@
+<div class="custom" id="specpool_partial">
+
+    <h1>Favorites</h1>
+
+
+
+    <table>
+        <tr data-ng-repeat="spec in specs">
+            <td><a href="#specification/{{spec.id}}">{{spec.version}} - {{spec.title}}</a></td>
+            <td data-ng-repeat="action in spec.controls">
+                <div class="btn-toolbar">
+                    <div class="btn-group" >
+                        <button class="btn" data-ng-click="perform(action.onClick, spec.id)">{{action.title}}</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+</div>

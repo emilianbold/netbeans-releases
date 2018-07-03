@@ -1,0 +1,175 @@
+<div class="custom" id="specpool_partial">
+    <div class="span12">
+
+        <div class="row-fluid">        <h1>{{user.username}}&nbsp;<small>Profile Page</small></h1>
+            <div class="span4">
+                <img data-ng-hide="!user.id" data-ng-src="{{user.profileImg}}" alt="profile photo" width="128" height="128" style="width: 128px; height: 128px; border-radius: 64px"/>
+                <form data-ng-show="rights == 1" id="form1" name="profileForm" class="form form-inline" enctype="multipart/form-data" method="post" action="{{SYNERGY.server.buildURL('profile_img', {'id': user.id})}}">
+                    <div class="row">
+                        <input type="file" name="fileToUpload" id="fileToUpload" />
+                    </div>
+                    <div id="fileName"></div>
+                    <div id="fileSize"></div>
+                    <div id="fileType"></div>
+                    <div class="row">
+                        <input type="button" class="btn btn-small"  data-ng-click="uploadFile()" value="Upload" />
+                        <input type="button" class="btn btn-small"  data-ng-click="resetFile()" value="Reset image" />
+                        <small>&nbsp;Recommended size 128px x 128px</small><br/>
+                    </div>
+                    <div id="progressNumber"></div>
+                </form>
+
+            </div>
+
+
+            <div class="span7">   <h3 data-ng-hide="rights == 1"><span data-ng-bind="user.firstName"></span>&nbsp;<span data-ng-bind="user.lastName"></span></h3>
+                <form data-ng-show="rights == 1" class="form-horizontal" novalidate="" name="userForm">
+                    <div class="control-group">
+                        <label class="control-label" for="fname">First name: </label>
+                        <div class="controls">
+                            <input id="fname" required="" type="text" data-ng-model="user.firstName"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="lname">Last name:  </label>
+                        <div class="controls">
+                            <input type="text" required="" data-ng-model="user.lastName" id="lname"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="email">Email: </label>
+                        <div class="controls">
+                            <input type="email" required="" id="email" data-ng-model="user.email"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="notifications">Email notifications </label>
+                        <div class="controls">
+                            <input type="checkbox" id="notifications" data-ng-model="user.emailNotifications" >
+                        </div>
+                    </div>
+
+                    <div class="control-group" data-ng-hide="passwordChangeAllowed == false">
+                        <label class="control-label" for="changePsswd">Change password: </label>
+                        <div class="controls">
+                            <input type="checkbox" id="changePsswd" data-ng-model="updatePassword" >
+                        </div>
+                    </div>
+                    <div class="control-group" data-ng-hide="updatePassword == false">
+                        <label class="control-label" for="pass">Password:</label>
+                        <div class="controls">
+                            <input type="password" autocomplete="off"  data-ng-model="user.password" id="pass"/>
+                        </div>
+                    </div>
+
+                    <button class="pull-right btn" type="button" data-ng-click="editName()" data-ng-disabled="!userForm.$valid" title="Update name"><i class="icon-check"></i> Edit</button>
+                </form>               
+            </div>
+        </div>
+
+        <div class="row-fluid">   
+
+            <div class="span5">         <h3 data-ng-hide="user.authorOf.length == 0">Author of test specifications:</h3>
+
+                <table data-ng-hide="user.authorOf.length == 0">
+                    <tr data-ng-repeat="spec in user.authorOf">
+                        <td style="vertical-align: central"><a href="#specification/{{spec.id}}">&rightarrow;&nbsp;{{spec.title}} <small  style="color: #999">{{spec._project}} {{spec.version}}</small></a>&nbsp;&nbsp;</td>
+                    </tr>
+
+                </table></div>
+
+            <div class="span5">        <h3 data-ng-hide="user.ownerOf.length == 0">Owner of test specifications:</h3>
+
+                <table data-ng-hide="user.ownerOf.length == 0">
+                    <tr data-ng-repeat="spec in user.ownerOf">
+                        <td style="vertical-align: central"><a href="#specification/{{spec.id}}">&rightarrow;&nbsp;{{spec.title}} <small  style="color: #999">{{spec._project}} {{spec.version}}</small></a>&nbsp;&nbsp;</td>
+                    </tr>
+
+                </table></div>
+        </div> <div class="row-fluid">  
+            <h3 data-ng-hide="user.membership.length == 0">Tribes</h3>
+            <table>
+                <tr data-ng-repeat="m in user.membership">
+                    <td style="vertical-align: central"><a href="#tribe/{{m.id}}">&rightarrow;&nbsp;{{m.name}} ({{m.role}})</a>&nbsp;&nbsp;</td>
+                </tr>
+
+            </table>
+            <h3 data-ng-hide="user.favorites.length == 0">Favorite specifications</h3>
+            <table data-ng-hide="user.favorites.length == 0">
+                <tr data-ng-repeat="spec in user.favorites">
+                    <td style="vertical-align: central"><a href="#specification/{{spec.id}}">&rightarrow;&nbsp;{{spec.title}} <small  style="color: #999">{{spec._project}} {{spec.version}}</small></a>&nbsp;&nbsp;</td>
+                    <td data-ng-show="rights == 1">
+                        <div class="btn-toolbar">
+                            <div class="btn-group " >
+                                <span class="btn btn-small" title="Remove from favorites"  data-ng-click="toggleFavorite(spec.id, 0)" id="abutton{{spec.id}}" ><i id="aspec{{spec.id}}" class="icon-star"></i>&nbsp;</span>
+                            </div>
+                        </div></td>
+                </tr>
+
+            </table>
+            <div >
+
+            </div>
+
+
+            <h3 data-ng-hide="user.assignments.length == 0">Assigned not finished test runs</h3>
+
+            <div data-ng-hide="user.assignments.length == 0">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Test Run</th>
+                            <th>Specification</th>
+                            <th>Platform</th>
+                            <th>Label</th>
+                            <th>Completed/Total Cases</th>
+                            <th>Passed/Skipped/Failed</th>
+                            <th>
+
+                            </th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-ng-repeat="v in user.assignments" class="{{v.info}}">
+                            <td>{{$index + 1}}</td>
+                            <td><a href="#/run/{{v.testRunId}}">{{v.testRunTitle}}&nbsp;<small style="color: #999">{{v.projectName}}</small></a></td>
+                            <td><a href="#/specification/{{v.specificationId}}">{{v.specification}}</a></td>
+                            <td>{{v.platform}}</td>
+                            <td><span class="label label-{{v.label}}" data-ng-show="v.label">{{v.label}}</span></td>
+                            <td>{{v.completed}} / {{v.total}}</td>
+                            <td>{{v.passed}} / {{v.skipped}} / {{v.failed}}</td>
+
+                            <td>
+                                <div class="btn-toolbar" data-ng-show="rights == 1">
+                                    <div class="btn-group" >
+                                        <a data-ng-href="#/assignment/{{v.id}}/v/1" class="btn btn-small" title="Start (continue if saved)" data-ng-click="startAssignment(1, v.id)">Start/Continue</a>
+                                        <a data-ng-href="#/assignment/{{v.id}}/v/2" class="btn btn-small" title="Restart (start over)" data-ng-click="startAssignment(2, v.id)">Restart</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div></div>
+
+
+    </div>
+
+
+</div>
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+<div class="custom" id="specpool_partial" data-ng-show="rights == 1">
+    <div class="span8">
+        <h1>Edit: {{tribe.name}} <small>Tribe</small></h1>
+        <tabset>
+            <tab heading="Edit">
+                <form name="myForm" >
+                    <h3>Name:</h3>
+                    <input style="width: 70%" type="text" data-ng-model="tribe.name" name="name" required="required" />
+                    <h3>Description:</h3>
+                    <textarea rows="10" data-ui-refresh="refreshCodemirror"  data-ui-codemirror="{theme:'default', mode : 'text/html', lineWrapping : true, lineNumbers: true}" data-ng-model="tribe.description"></textarea>
+                </form>
+            </tab>
+            <tab heading="Preview" select="loadPreview()">
+                <div data-ng-bind-html-unsafe="preview"></div>
+            </tab>
+        </tabset>
+        <h3>Specifications:</h3>
+        <table style="width: 100%">
+            <tr data-ng-repeat="m in tribe.ext.specifications">
+                <td><a data-ng-href="#/specification/{{m.id}}">&nbsp;{{m.title}} <small  style="color: #999">{{m._project}} {{m.version}}</small></a>&nbsp;&nbsp; <button class="btn btn-small" data-ng-click="removeSpecification(m.id)">Remove</button></td>
+            </tr>
+
+            <tr><td><form class="form-inline">            
+                        <select style="width: 90%" ui-select2 required="" data-ng-model="newSpecification" data-placeholder="type specification name" >
+                            <option value=""></option>
+                            <option ng-repeat="s in specifications" value="{{s.id}}">{{s.value}}</option>
+                        </select>
+                        &nbsp;&nbsp;<button class="btn btn-primary" data-ng-click="addSpecification()" data-ng-disabled="specifications.length < 1 || !newSpecification">Add</button></form></td></tr>
+        </table>
+    </div>
+    <div class="span4">
+        <div >
+            <div class="btn-toolbar">
+                <div class="btn-group"  >
+                    <button data-ng-disabled="myForm.$invalid || myForm2.$invalid" class="btn" data-ng-click="save()" title="Save changes"><i class="icon-ok"></i>&nbsp; Save</button>
+                    <button class="btn" data-ng-click="cancel()" title="Cancel"><i class="icon-remove"></i>&nbsp; Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div>
+            <form name="myForm2" >
+                <h4>Leader: </h4>
+                <select style="width: 90%" ui-select2 required="" data-ng-model="tribe.leaderUsername" data-placeholder="type leader name" >
+                            <option value=""></option>
+                            <option ng-repeat="p in users" value="{{p.username}}">{{p.displayName}}</option>
+                </select>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade hide" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel"></h3>
+    </div>
+    <div class="modal-body" id="deleteModalBody">
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="performAction()">Yes</button>
+    </div>
+</div>
+

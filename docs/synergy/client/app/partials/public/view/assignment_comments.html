@@ -1,0 +1,64 @@
+<div class="custom" id="specpool_partial">
+    <div class="row-fluid">
+        <h1>Comments for {{data.testRunTitle}} <small><a href="#/run/{{id}}">back to test run</a></small></h1>
+    </div>
+    <div class="row-fluid">
+        <div class="span12"> 
+            <table class="table-condensed table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Test case
+                        <br/><select class="input" data-ng-model="filter.case" data-ng-options="l as l for l in filters.cases"></select>
+                        </th>
+                        <th>Specification
+                        <br/><select class="input" data-ng-model="filter.specification" data-ng-options="l as l for l in filters.specifications"></select>
+                        </th>
+                        <th>Reporter
+                        <br/><select class="input" data-ng-model="filter.reporter" data-ng-options="l as l for l in filters.reporters"></select>
+                        </th>
+                        <th>Comment
+                        <br/><select class="input" data-ng-model="filter.comment" data-ng-options="l as l for l in filters.comments"></select>
+                        </th>
+                        <th>Status
+                        <br/><select class="input input-small" data-ng-model="filter.status" data-ng-options="l as l for l in filters.status"></select>
+                        </th>
+                        <th>Resolver
+                        <br/><select class="input" data-ng-model="filter.resolver" data-ng-options="l as l for l in filters.resolvers"></select>
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody infinite-scroll="nextPage()" infinite-scroll-disabled="isLoading" infinite-scroll-distance="0">
+                    <tr data-ng-repeat="c in data.comments|filter:commentFilter|limitTo:pageSize">
+                        <td>{{$index + 1}}</td>
+                        <td><a data-ng-href="#/case/{{c.caseId}}/suite/{{c.suiteId}}">{{c.caseTitle}}</a></td>
+                        <td><a data-ng-href="#/specification/{{c.specificationId}}">{{c.specificationTitle}}</a></td>
+                        <td><a data-ng-href="#/user/{{c.authorUsername}}">{{c.authorDisplayName}}</a></td>
+                        <td>{{c.commentText}}
+                            <div><small><i>{{c.commentFreeText}}</i></small></div>
+                        </td>
+                        <td>{{c.resolution}}</td>
+                        <td><a data-ng-href="#/user/{{c.resolverUsername}}">{{c.resolverDisplayName}}</a></td>
+                        <td><button data-ng-disabled="SYNERGY.session.username.length < 1 || c.resolution=='resolved'" data-ng-click="resolveComment(c)"  class="btn btn-small btn-primary" >Mark as resolved</button> </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+<div class="modal fade hide" id="resolveModal" tabindex="-1" role="dialog" aria-labelledby="resolveModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="resolveModalLabel">Resolve similar cases?</h3>
+    </div>
+    <div class="modal-body" id="resolveModalBody">
+        Found {{duplicates.length}} similar comments with same test case, test suite and comment. Do you want to mark them as resolved as well?
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true" data-ng-click="resolveContinue(false)">No</button>
+        <button class="btn btn-primary" id="modal_confirm_ok" data-ng-click="resolveContinue(true)">Yes</button>
+    </div>
+</div>
