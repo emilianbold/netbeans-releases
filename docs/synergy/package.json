@@ -1,7 +1,6 @@
 {
   "name": "Synergy",
   "version": "0.6.0",
-  "author": "Vladimir Riha <http://linkedin.com/in/ladariha/>",
   "description": "Test case management system",
   "devDependencies": {
     "grunt": "0.4.0",
