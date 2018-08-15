@@ -8,7 +8,6 @@ use Synergy\Model\Registration\Registration;
 /**
  * Description of RegistrationDAO
  *
- * @author Vladimir Riha
  */
 class RegistrationDAO {
 

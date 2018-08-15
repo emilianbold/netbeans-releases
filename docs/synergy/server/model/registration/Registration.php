@@ -5,7 +5,6 @@ namespace Synergy\Model\Registration;
 /**
  * Description of Registration
  *
- * @author Vladimir Riha
  */
 class Registration {
 

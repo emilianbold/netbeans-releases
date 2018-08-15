@@ -10,7 +10,6 @@ use Synergy\Model\Project\Project;
 /**
  * Description of ProjectDAO
  *
- * @author Vladimir Riha
  */
 class ProjectDAO {
 

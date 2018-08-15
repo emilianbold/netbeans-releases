@@ -7,7 +7,6 @@ use Synergy\DB\ProjectDAO;
 /**
  * Description of ProjectCtrl
  *
- * @author Vladimir Riha
  */
 class ProjectCtrl {
 

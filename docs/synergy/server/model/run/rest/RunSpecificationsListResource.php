@@ -7,7 +7,6 @@ use Synergy\Model\Specification\Rest\SpecificationListItemResource;
 /**
  * Description of RunSpecificationsListResource
  *
- * @author Vladimir Riha
  */
 class RunSpecificationsListResource {
 

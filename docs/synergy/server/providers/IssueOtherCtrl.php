@@ -8,7 +8,6 @@ use Synergy\Model\Bug;
 /**
  * Description of IssueOtherCtrl
  *
- * @author Vladimir Riha
  */
 class IssueOtherCtrl implements IssueProvider {
 

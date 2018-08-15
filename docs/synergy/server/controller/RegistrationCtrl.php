@@ -16,7 +16,6 @@ use Synergy\Model\Exception\UserException;
 /**
  * Description of RegistrationCtrl
  *
- * @author Vladimir Riha
  */
 class RegistrationCtrl {
 

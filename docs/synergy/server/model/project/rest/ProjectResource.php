@@ -5,7 +5,6 @@ namespace Synergy\Model\Project\Rest;
 /**
  * Description of ProjectResource
  *
- * @author Vladimir Riha
  */
 class ProjectResource {
 

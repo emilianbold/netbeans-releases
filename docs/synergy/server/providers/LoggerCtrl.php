@@ -12,7 +12,6 @@ use Synergy\Interfaces\LoggerProvider;
 /**
  * Description of LogerCtrl
  *
- * @author Vladimir Riha
  */
 class LoggerCtrl implements LoggerProvider {
 

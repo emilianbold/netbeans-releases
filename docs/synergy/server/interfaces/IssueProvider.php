@@ -7,7 +7,6 @@ namespace Synergy\Interfaces;
 
 /**
  *
- * @author Vladimir Riha
  */
 interface IssueProvider {
     

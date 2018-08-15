@@ -9,7 +9,6 @@ use Synergy\Model\Specification;
 /**
  * Description of ProjectExtension
  *
- * @author Vladimir Riha
  */
 class ProjectExtension implements ExtensionInterface {
 

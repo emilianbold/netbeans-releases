@@ -9,7 +9,6 @@ use Synergy\Model\TestCase;
 /**
  * Description of ProjectExtension
  *
- * @author Vladimir Riha
  */
 class ProjectExtension implements ExtensionInterface {
 

@@ -11,7 +11,6 @@ use Synergy\Model\Bug;
  * use this provider, you must modify the methods below to return same data type, even if it should
  * be "empty" objects.
  *
- * @author Vladimir Riha
  */
 class IssueCtrl implements IssueProvider {
 

@@ -8,7 +8,6 @@ use Synergy\Model\Action;
 /**
  * Description of Project
  *
- * @author Vladimir Riha
  */
 class Project {
 
