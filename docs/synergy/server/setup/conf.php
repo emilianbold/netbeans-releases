@@ -16,8 +16,8 @@ if (configFileExists()) {
     require_once '/usr/local/db_config.php';
 } else {
     define('DHOST', 'mysql:host=localhost;dbname=synergy;charset=UTF8');
-    define('DUSER', 'synergyrw');
-    define('DPASS', 'synergyrw');
+    define('user', 'password');
+    define('user', 'password');
     define('DB', 'synergy');
     define('DBHOST', 'localhost');
 }
@@ -26,8 +26,8 @@ if (configFileExists()) {
 // BUGZILLA DATABASE
 // dev
 define('BZ_DHOST', 'mysql:host=localhost;dbname=bugzilla;charset=UTF8');
-define('BZ_DUSER', 'synergyrw');
-define('BZ_DPASS', 'synergyrw');
+define('BZ_DUSER', 'user');
+define('BZ_DPASS', 'password');
 define('BZ_DB', 'bugzilla');
 define('BZ_DBHOST', 'localhost');
 

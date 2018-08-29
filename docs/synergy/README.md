@@ -30,8 +30,8 @@ update file `server/setup/conf.php` from line 18 which contains database connect
 
 ```
 define('DHOST', 'mysql:host=localhost;dbname=synergy;charset=UTF8');
-define('DUSER', 'synergyrw');
-define('DPASS', 'synergyrw');
+define('DUSER', 'user');
+define('DPASS', 'password');
 define('DB', 'synergy');
 define('DBHOST', 'localhost');
 ```

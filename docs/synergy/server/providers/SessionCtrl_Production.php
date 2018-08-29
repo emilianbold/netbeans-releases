@@ -35,16 +35,6 @@ class SessionCtrl_Production implements SessionProvider {
         $this->origin = $origin;
     }
 
-    public function fakeAuthenticate() { // TODO DO NOT COMMIT!!!!
-        session_start();
-        $s = new Session("tester", "admin", date("Y-m-d H:i:s"), 6);
-        $s->firstName = "tester";
-        $s->lastName = "tester";
-        $_SESSION['user'] = $s;
-        session_write_close();
-        return true;
-    }
-
     /**
      * Returns true or false if user is logged in
      * @return boolean

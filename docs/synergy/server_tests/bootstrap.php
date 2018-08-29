@@ -60,8 +60,8 @@ define('DBHOST', 'localhost');
 // BUGZILLA DATABASE
 // dev
 define('BZ_DHOST', 'mysql:host=localhost;dbname=bugzilla;charset=UTF8');
-define('BZ_DUSER', 'synergyrw');
-define('BZ_DPASS', 'synergyrw');
+define('BZ_DUSER', 'user');
+define('BZ_DPASS', 'password');
 define('BZ_DB', 'bugzilla');
 define('BZ_DBHOST', 'localhost');
 

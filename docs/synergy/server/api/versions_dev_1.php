@@ -19,7 +19,7 @@ class Version {
 
 }
 
-$db = new PDO('mysql:host=localhost;dbname=synergy;charset=UTF8', 'synergyrw', 'synergyrw', array(PDO::ATTR_PERSISTENT => true, PDO::ATTR_EMULATE_PREPARES => true));
+$db = new PDO('mysql:host=localhost;dbname=synergy;charset=UTF8', 'password', 'password', array(PDO::ATTR_PERSISTENT => true, PDO::ATTR_EMULATE_PREPARES => true));
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
 
 $handler = $db->prepare("SELECT version, id FROM version ORDER BY version DESC LIMIT 0,100");
