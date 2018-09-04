@@ -48,7 +48,7 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author Mikhail Vaysman
+
  */
 public class TestInstallerAndUninstallerCPP extends Installer {
 

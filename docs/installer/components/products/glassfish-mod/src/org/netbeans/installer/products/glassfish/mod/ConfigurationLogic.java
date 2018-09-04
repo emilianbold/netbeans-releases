@@ -64,8 +64,6 @@ import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 
 /**
  *
- * @author Kirill Sorokin
- * @author Dmitry Lipin
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

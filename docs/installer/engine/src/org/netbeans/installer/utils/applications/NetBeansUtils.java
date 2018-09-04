@@ -57,8 +57,8 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Kirill Sorokin
- * @author Dmitry Lipin
+ 
+ 
  */
 public class NetBeansUtils {
     /////////////////////////////////////////////////////////////////////////////////

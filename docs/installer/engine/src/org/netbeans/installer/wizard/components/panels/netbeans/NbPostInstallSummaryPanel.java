@@ -74,7 +74,7 @@ import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_UNINS
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public class NbPostInstallSummaryPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////

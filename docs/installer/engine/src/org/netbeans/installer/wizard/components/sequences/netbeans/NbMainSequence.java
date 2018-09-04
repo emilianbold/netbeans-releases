@@ -78,8 +78,8 @@ import org.netbeans.installer.wizard.components.sequences.ProductWizardSequence;
 
 /**
  *
- * @author Kirill Sorokin
- * @author Dmitry Lipin
+ 
+ 
  */
 public class NbMainSequence extends WizardSequence {
     /////////////////////////////////////////////////////////////////////////////////

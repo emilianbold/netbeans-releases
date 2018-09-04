@@ -40,7 +40,7 @@ Contributor(s):
 -->
 <project name="TestRunner" default="all-master-check" basedir=".">
 
-    <property name="script.version" value="1.0.7 modified by Mikhail Vaysman"/>
+    <property name="script.version" value="1.0.7 modified"/>
     <property name="btd.repo.dir" value="${ide.repo.dir}"/>
     <property environment="env"/>
 

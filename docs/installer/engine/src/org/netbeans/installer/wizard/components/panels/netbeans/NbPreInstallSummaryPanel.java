@@ -93,7 +93,7 @@ import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     private boolean removeNBInstallationLocation = false;

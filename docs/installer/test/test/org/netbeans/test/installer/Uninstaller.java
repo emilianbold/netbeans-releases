@@ -46,7 +46,7 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author Mikhail Vaysman
+
  */
 public class Uninstaller {
 

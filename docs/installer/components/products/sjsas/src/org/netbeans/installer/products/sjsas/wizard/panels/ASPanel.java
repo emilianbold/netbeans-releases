@@ -89,7 +89,7 @@ import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public class ASPanel extends DestinationPanel {
     /////////////////////////////////////////////////////////////////////////////////

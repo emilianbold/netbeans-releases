@@ -59,7 +59,7 @@ import java.util.jar.JarFile;
  *
  * @see org.netbeans.installer.infra.build.ant.Package
  *
- * @author Kirill Sorokin
+ 
  */
 public class VerifyFile {
     /**

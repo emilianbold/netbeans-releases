@@ -62,7 +62,7 @@ import org.netbeans.installer.wizard.components.actions.SetInstallationLocationA
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public abstract class NbClusterConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

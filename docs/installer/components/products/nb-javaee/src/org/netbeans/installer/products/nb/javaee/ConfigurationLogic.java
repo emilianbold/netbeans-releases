@@ -60,7 +60,6 @@ import org.netbeans.installer.utils.progress.Progress;
 
 /**
  *
- * @author Kirill Sorokin
  */
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

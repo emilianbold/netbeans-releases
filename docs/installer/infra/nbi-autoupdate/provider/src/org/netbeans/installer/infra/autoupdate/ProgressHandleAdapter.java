@@ -45,7 +45,6 @@ import org.netbeans.installer.utils.progress.ProgressListener;
 
 /**
  *
- * @author ks152834
  */
 public class ProgressHandleAdapter implements ProgressListener {
     /////////////////////////////////////////////////////////////////////////////////

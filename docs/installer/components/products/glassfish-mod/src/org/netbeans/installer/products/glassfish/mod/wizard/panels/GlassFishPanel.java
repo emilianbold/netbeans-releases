@@ -80,7 +80,6 @@ import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
  *
- * @author Kirill Sorokin
  */
 public class GlassFishPanel extends DestinationPanel {
     /////////////////////////////////////////////////////////////////////////////////

@@ -55,7 +55,6 @@ import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
  *
- * @author Kirill Sorokin
  */
 public class JDKPanel extends DestinationPanel {
     public JDKPanel() {

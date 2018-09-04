@@ -58,7 +58,6 @@ import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel;
 
 /**
  *
- * @author Kirill Sorokin
  */
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

@@ -58,7 +58,7 @@ import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 
 /**
  *
- * @author Dmitry Lipin
+ 
  */
 public class NbInitializationAction extends WizardAction {
     

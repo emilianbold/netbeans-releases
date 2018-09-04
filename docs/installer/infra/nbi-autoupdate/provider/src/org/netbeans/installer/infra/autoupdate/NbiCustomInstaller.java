@@ -58,7 +58,6 @@ import org.netbeans.spi.autoupdate.CustomInstaller;
 
 /**
  *
- * @author ks152834
  */
 public class NbiCustomInstaller implements CustomInstaller {
     

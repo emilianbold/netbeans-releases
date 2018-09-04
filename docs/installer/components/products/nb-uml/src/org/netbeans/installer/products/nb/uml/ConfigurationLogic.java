@@ -64,7 +64,6 @@ import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 
 /**
  *
- * @author Kirill Sorokin
  */
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

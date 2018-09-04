@@ -44,7 +44,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 
 /**
  *
- * @author Dmitry Lipin
+ 
  */
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

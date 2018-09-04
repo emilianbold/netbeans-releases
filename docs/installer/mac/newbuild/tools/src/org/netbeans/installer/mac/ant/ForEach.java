@@ -65,7 +65,7 @@ import org.apache.tools.ant.TaskContainer;
  * <p>
  * If a mixture of attributes is supplied, iterating over a list is preferred.
  *
- * @author Kirill Sorokin
+ 
  */
 public class ForEach extends Task implements TaskContainer {
     /////////////////////////////////////////////////////////////////////////////////

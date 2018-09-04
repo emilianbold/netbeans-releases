@@ -61,7 +61,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public class WebLogicUtils {
    // private static Map<File, Version> knownVersions = new HashMap<File, Version>();

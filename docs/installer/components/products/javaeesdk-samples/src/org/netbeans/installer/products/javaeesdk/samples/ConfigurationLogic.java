@@ -64,7 +64,7 @@ import org.netbeans.installer.wizard.components.WizardComponent;
  * as it requires <samples>/common.properties file to exist
  * 
  * 
- * @author Dmitry Lipin
+ 
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

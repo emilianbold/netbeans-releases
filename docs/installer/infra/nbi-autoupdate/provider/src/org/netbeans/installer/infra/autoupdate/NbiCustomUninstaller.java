@@ -49,7 +49,6 @@ import org.netbeans.spi.autoupdate.CustomUninstaller;
 
 /**
  *
- * @author ks152834
  */
 public class NbiCustomUninstaller implements CustomUninstaller {
     private Product product;

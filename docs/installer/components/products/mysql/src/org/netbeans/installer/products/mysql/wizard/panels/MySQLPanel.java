@@ -62,7 +62,7 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
- * @author Dmitry Lipin
+ 
  */
 public class MySQLPanel extends DestinationPanel {
 

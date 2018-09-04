@@ -44,7 +44,7 @@ import org.netbeans.installer.wizard.components.panels.DestinationPanel;
 
 /**
  *
- * @author Dmitry Lipin
+ 
  */
 public class TomcatPanel extends DestinationPanel {
     

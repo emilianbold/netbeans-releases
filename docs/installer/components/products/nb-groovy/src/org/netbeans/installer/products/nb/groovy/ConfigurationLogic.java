@@ -44,7 +44,7 @@ import org.netbeans.installer.utils.helper.Text;
 
 /**
  *
- * @author Dmitry Lipin
+ 
  */
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

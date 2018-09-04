@@ -67,8 +67,8 @@ import org.netbeans.installer.utils.helper.Status;
 
 /**
  *
- * @author Kirill Sorokin
- * @author Dmitry Lipin
+ 
+ 
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

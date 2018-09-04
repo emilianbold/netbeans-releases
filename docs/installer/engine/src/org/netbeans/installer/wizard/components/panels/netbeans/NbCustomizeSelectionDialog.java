@@ -106,7 +106,7 @@ import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public class NbCustomizeSelectionDialog extends NbiDialog {
     /////////////////////////////////////////////////////////////////////////////////

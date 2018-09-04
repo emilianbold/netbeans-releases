@@ -57,7 +57,6 @@ import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 
 /**
  *
- * @author Kirill Sorokin
  */
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

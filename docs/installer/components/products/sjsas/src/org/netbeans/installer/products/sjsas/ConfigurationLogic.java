@@ -77,8 +77,8 @@ import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 
 /**
  *
- * @author Kirill Sorokin
- * @author Dmitry Lipin
+ 
+ 
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

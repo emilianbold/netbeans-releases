@@ -77,7 +77,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public class GlassFishUtils {
     private static Map<File, Version> knownVersions = new HashMap<File, Version>();

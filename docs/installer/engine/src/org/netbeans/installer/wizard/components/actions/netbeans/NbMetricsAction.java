@@ -52,7 +52,7 @@ import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
  *
- * @author Dmitry Lipin
+ 
  */
 public class NbMetricsAction extends WizardAction {
 

@@ -86,7 +86,7 @@ import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public class WebLogicPanel extends DestinationPanel {
     /////////////////////////////////////////////////////////////////////////////////

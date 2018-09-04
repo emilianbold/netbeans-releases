@@ -80,7 +80,7 @@ import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 
 /**
  *
- * @author Dmitry Lipin
+ 
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

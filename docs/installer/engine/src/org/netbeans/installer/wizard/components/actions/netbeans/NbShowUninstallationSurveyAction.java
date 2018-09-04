@@ -49,7 +49,7 @@ import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
  *
- * @author Dmitry Lipin
+ 
  */
 public class NbShowUninstallationSurveyAction extends WizardAction {
 

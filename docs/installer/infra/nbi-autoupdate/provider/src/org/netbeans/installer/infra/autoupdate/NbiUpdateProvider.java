@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ks152834
  */
 public class NbiUpdateProvider implements UpdateProvider {
     /////////////////////////////////////////////////////////////////////////////////

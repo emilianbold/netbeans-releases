@@ -42,7 +42,6 @@ package org.netbeans.jnlp;
 /**
  * Just start core main. Note: there is another main
  * in core/bootstrap. I hope that the one from core/src is fine.
- * @author David Strupl
  */
 public class Main {
     

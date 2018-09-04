@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Mikhail Vaysman
+
  */
 public class TestData implements Serializable {
     

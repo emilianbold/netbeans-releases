@@ -63,7 +63,7 @@ import org.netbeans.installer.wizard.components.WizardComponent;
 
 /**
  *
- * @author Kirill Sorokin
+ 
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////

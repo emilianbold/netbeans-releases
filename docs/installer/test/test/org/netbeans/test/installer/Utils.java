@@ -67,7 +67,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
- * @author Mikhail Vaysman
+
  */
 public class Utils {
 
