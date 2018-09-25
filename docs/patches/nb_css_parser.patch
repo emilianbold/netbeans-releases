@@ -58,7 +58,6 @@
 +//2) implemented custom error recovery
 +//3) removed whitespaces from the alpha token fragments
 +//
-+//Author: Marek Fukala (mfukala@netbeans.org)
 +//Please be aware that the grammar doesn't properly and fully reflect the whole css3 specification!!!
 +
 +grammar Css3;
