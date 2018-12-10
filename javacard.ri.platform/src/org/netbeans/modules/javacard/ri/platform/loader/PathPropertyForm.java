@@ -61,7 +61,6 @@ import org.netbeans.modules.javacard.common.JarOrDirectoryFilter;
 /**
  * Panel which reads and writes a : delimited path from a properties file.
  *
- * @author Tim Boudreau
  */
 public class PathPropertyForm extends javax.swing.JPanel implements ListSelectionListener, ActionListener {
     private final DefaultListModel mdl = new DefaultListModel();

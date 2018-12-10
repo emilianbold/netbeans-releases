@@ -69,7 +69,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Tim Boudreau
  */
 abstract class PlatformValidator implements Runnable {
 

@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim Boudreau
  */
 public final class RefreshChildrenAction extends Single<NodeRefresher> {
     public RefreshChildrenAction() {

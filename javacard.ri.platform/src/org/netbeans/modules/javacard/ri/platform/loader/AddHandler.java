@@ -67,7 +67,6 @@ import org.openide.util.NbBundle;
 /**
  * AddDeviceHandler registered in the system filesystem for adding devices
  * to platforms with platform kind "RI"
- * @author Tim Boudreau
  */
 public class AddHandler extends AddCardHandler {
     public AddHandler() {

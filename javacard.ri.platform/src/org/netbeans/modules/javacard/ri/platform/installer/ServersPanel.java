@@ -87,7 +87,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, AddCardHandler.CardCreatedCallback, Lookup.Provider, Runnable {
 

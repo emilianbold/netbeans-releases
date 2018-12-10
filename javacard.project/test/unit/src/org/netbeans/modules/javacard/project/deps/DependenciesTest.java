@@ -54,7 +54,6 @@ import org.xml.sax.InputSource;
 
 /**
  *
- * @author Tim
  */
 public class DependenciesTest {
 

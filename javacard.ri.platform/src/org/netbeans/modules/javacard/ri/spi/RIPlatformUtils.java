@@ -54,7 +54,6 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class RIPlatformUtils {
     private static EditableProperties mergeDefaultRI (DataObject platformDef) throws IOException {

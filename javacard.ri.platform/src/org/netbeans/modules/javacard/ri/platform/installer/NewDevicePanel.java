@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class NewDevicePanel extends javax.swing.JPanel {
 

@@ -65,7 +65,6 @@ import org.openide.util.lookup.Lookups;
  * Children of a Card node, which get their contents by calling
  * $CARDMANAGER_URL/xlist/
  *
- * @author Tim Boudreau
  */
 public class CardChildren extends ChildFactory.Detachable<XListEntry> implements PropertyChangeListener {
     //XXX this is a near-duplicate of org.netbeans.modules.javacard.spi - replace

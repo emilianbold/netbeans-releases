@@ -57,7 +57,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class PlatformCustomizerPanel extends javax.swing.JPanel implements ChangeListener {
     private final JavacardPlatformDataObject dob;

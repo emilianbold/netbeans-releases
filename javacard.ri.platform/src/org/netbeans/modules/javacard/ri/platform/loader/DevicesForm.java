@@ -62,7 +62,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class DevicesForm extends javax.swing.JPanel implements ExplorerManager.Provider, ActionListener {
     private final ExplorerManager mgr = new ExplorerManager();

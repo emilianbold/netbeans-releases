@@ -112,7 +112,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class RICardTest {
 

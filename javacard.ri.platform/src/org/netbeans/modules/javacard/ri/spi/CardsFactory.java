@@ -74,7 +74,6 @@ import org.openide.util.lookup.Lookups;
  * simply by specifying a different platform kind, provides its own support for
  * detecting attached cards and allowing the user to deploy to them.
  *
- * @author Tim Boudreau
  */
 public abstract class CardsFactory {
     private Map<String, Reference<Cards>> cache = new HashMap<String, Reference<Cards>>();

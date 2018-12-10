@@ -57,7 +57,6 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  *
- * @author tim
  */
 public class PreupgradedAntTasksTest extends NbTestCase {
     EditableProperties pprops;

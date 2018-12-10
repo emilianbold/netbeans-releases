@@ -84,7 +84,6 @@ import org.openide.util.Parameters;
  * Class which takes a Java Card RI platform directory and creates a
  * Java Platform in the IDE for it, initializes default device, etc.
  *
- * @author Tim Boudreau
  */
 public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
 

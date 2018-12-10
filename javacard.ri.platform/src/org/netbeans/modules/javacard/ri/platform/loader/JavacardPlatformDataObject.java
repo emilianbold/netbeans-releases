@@ -93,7 +93,6 @@ import org.openide.util.Utilities;
  * Registering a file type has more overhead (?) than a DTD, but is
  * hundreds of lines less code.
  *
- * @author Tim Boudreau
  */
 public class JavacardPlatformDataObject extends PropertiesBasedDataObject<JavacardPlatform> implements DeviceManagerDialogProvider {
 

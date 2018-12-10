@@ -64,7 +64,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class PlatformPanel extends javax.swing.JPanel implements FocusListener, DocumentListener {
 

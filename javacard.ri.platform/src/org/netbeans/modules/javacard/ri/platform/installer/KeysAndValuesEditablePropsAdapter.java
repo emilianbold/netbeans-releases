@@ -47,7 +47,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 /**
  * Implements KeysAndValues over EditableProperties.
  *
- * @author Tim Boudreau
  */
 public final class KeysAndValuesEditablePropsAdapter implements KeysAndValues<EditableProperties> {
 

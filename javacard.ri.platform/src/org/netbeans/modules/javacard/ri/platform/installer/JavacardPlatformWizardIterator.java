@@ -76,7 +76,6 @@ import org.netbeans.modules.propdos.AntStyleResolvingProperties;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class JavacardPlatformWizardIterator implements ProgressInstantiatingIterator<WizardDescriptor>, ChangeListener {
 

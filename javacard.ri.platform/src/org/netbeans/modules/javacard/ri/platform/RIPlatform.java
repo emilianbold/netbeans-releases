@@ -74,7 +74,6 @@ import org.openide.util.Lookup.Provider;
 import org.openide.util.*;
 /**
  * Implementation of JavacardPlatform for the Java Card Reference Implementation
- * @author Tim Boudreau
  */
 public class RIPlatform extends JavacardPlatform {
     private final Properties props;
