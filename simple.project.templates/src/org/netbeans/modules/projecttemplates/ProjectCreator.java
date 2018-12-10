@@ -178,7 +178,6 @@ import org.openide.util.Parameters;
  * can be a runtime-only dependency).  This will make sure all the templates
  * you need are there.
  *
- * @author Tim Boudreau
  */
 public final class ProjectCreator {
 

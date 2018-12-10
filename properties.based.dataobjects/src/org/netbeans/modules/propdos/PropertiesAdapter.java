@@ -55,7 +55,6 @@ package org.netbeans.modules.propdos;
  * <p>
  * @see SelfSavingProperties
  *
- * @author Tim Boudreau
  */
 public interface PropertiesAdapter {
     public ObservableProperties asProperties();

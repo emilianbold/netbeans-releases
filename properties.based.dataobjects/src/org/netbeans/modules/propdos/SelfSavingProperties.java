@@ -59,7 +59,6 @@ import org.openide.filesystems.FileSystem;
  * changes are fired on the event queue, only *after* the changes have
  * been written to disk.
  *
- * @author Tim Boudreau
  */
 abstract class SelfSavingProperties extends AntStyleResolvingProperties {
 

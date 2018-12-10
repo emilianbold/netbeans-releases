@@ -68,7 +68,6 @@ import org.openide.util.RequestProcessor;
  * by <code>${propertyName}</code> and getProperty() will dereference
  * such values).
  *
- * @author Tim Boudreau
  */
 public class AntStyleResolvingProperties extends ObservableProperties {
     //This does not need synchronization directly as long as it is accessed

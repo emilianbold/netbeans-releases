@@ -49,7 +49,6 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class Issue164431WorkaroundTest {
     @Test

@@ -49,7 +49,6 @@ import java.util.Properties;
 /**
  * Properties object which can be listened to for changes.
  *
- * @author Tim Boudreau
  */
 public abstract class ObservableProperties extends Properties {
     public abstract void addPropertyChangeListener(PropertyChangeListener pcl);

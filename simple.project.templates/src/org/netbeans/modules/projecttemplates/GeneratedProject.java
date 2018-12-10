@@ -55,7 +55,6 @@ import java.util.Set;
  * that should be opened in the editor (i.e. return the set of files
  * from your new project WizardIterator's instantiate() method or similar).
  *
- * @author Tim Boudreau
  */
 public class GeneratedProject {
     public final FileObject projectDir; //public for unit tests

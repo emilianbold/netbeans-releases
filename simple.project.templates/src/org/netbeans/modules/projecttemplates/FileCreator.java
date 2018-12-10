@@ -51,7 +51,6 @@ import org.openide.loaders.DataObject;
 /**
  * Factory which will write one file on project creation.
  *
- * @author Tim Boudreau
  */
 public abstract class FileCreator {
     /**

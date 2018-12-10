@@ -94,7 +94,6 @@ import org.openide.util.WeakListeners;
  * The object in question can be gotten directly from the lookup (triggering
  * a file read on first-call), or via an InstanceCookie.
  *
- * @author Tim Boudreau
  */
 public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
 

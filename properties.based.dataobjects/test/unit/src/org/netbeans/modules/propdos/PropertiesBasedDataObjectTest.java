@@ -68,7 +68,6 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class PropertiesBasedDataObjectTest extends NbTestCase {
     private FileSystem dfs;

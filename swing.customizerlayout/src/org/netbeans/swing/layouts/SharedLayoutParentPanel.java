@@ -55,7 +55,6 @@ import javax.swing.*;
  * This allows components to have nested components within them, but child
  * components are visually aligned.
  *
- * @author Tim Boudreau
  */
 public class SharedLayoutParentPanel extends JPanel implements SharedLayoutData {
     private final SharedLayoutData data = new DefaultSharedLayoutData();
