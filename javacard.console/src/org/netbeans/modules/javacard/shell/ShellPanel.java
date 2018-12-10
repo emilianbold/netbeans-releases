@@ -73,7 +73,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Anki R Nelaturu
  */
 final class ShellPanel extends javax.swing.JPanel implements  CardStateObserver, KeyListener {
     private static final String STYLE_COMMAND = "command"; //NOI18N

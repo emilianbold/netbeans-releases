@@ -64,7 +64,6 @@ import org.netbeans.modules.javacard.spi.JavacardPlatform;
 /**
  * Copied with modifications from java.api.common
  *
- * @author Tomas Zezula
  */
 final class SourceLevelComboBoxModel extends AbstractListModel implements ComboBoxModel {
     private static final SpecificationVersion JDK_1_5 = new SpecificationVersion("1.5"); //NOI18N

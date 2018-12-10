@@ -57,7 +57,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Tim Boudreau
  */
 class DependenciesParser extends DefaultHandler {
     private boolean inDependencies;

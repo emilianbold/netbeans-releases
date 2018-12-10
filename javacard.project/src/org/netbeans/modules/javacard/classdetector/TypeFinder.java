@@ -66,7 +66,6 @@ import java.util.logging.Logger;
 /**
  * Scans a classpath and finds all subtypes of a given type.
  *
- * @author Tim Boudreau
  */
 public class TypeFinder implements CancellableTask<CompilationController> {
     private volatile boolean cancelled;

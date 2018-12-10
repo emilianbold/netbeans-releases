@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
  * NN - integer
  * other - byte value of char or a unicode-escaped 6-character string
  *
- * @author Tim Boudreau
  */
 final class APDUParser {
 

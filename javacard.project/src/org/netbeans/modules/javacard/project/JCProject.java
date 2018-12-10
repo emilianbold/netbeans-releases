@@ -162,7 +162,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Anki R Nelaturu, Tim Boudreau
  */
 public class JCProject implements Project, AntProjectListener, PropertyChangeListener, ChangeListener {
     private final Object classpathLock = new Object();

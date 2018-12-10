@@ -72,7 +72,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class ProjectDependenciesTest extends AbstractJCProjectTest {
     public ProjectDependenciesTest() {

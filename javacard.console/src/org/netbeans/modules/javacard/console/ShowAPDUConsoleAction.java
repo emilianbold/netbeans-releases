@@ -54,7 +54,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Anki R Nelaturu, Tim Boudreau
  */
 public class ShowAPDUConsoleAction extends Single<Card> {
 

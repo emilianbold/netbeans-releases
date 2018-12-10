@@ -88,7 +88,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class AppletCustomizer extends AllClassesOfTypeExplorerPanel implements NodeCheckObserver, PropertyChangeListener, ActionListener, ChangeListener, DocumentListener {
 

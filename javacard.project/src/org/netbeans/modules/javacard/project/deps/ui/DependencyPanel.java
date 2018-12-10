@@ -57,7 +57,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public abstract class DependencyPanel extends javax.swing.JPanel implements MouseListener, FocusListener {
     private boolean selected;

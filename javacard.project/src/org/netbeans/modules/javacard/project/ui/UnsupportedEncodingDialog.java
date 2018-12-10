@@ -58,7 +58,6 @@ import java.util.SortedMap;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class UnsupportedEncodingDialog extends javax.swing.JPanel implements Runnable {
 

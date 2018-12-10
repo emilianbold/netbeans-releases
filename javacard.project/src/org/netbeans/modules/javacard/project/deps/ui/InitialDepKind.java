@@ -45,7 +45,6 @@ package org.netbeans.modules.javacard.project.deps.ui;
 /**
  * Initial dependency kind as determined on the first step of the wizard
  *
- * @author Tim Boudreau
  */
 enum InitialDepKind {
     PROJECT,

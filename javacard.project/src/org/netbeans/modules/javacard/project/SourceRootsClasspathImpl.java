@@ -60,7 +60,6 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
  * classpath while the project is still being created from template,
  * so we need a classpath that responds to metadata changes during that time.
  *
- * @author Tim Boudreau
  */
 final class SourceRootsClasspathImpl extends ListenerProxy<SourceRoots> implements ClassPathImplementation {
     private final Res res;

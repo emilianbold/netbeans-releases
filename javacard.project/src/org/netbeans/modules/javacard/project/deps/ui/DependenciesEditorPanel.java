@@ -66,7 +66,6 @@ import org.openide.util.Parameters;
 /**
  * Panel that appears in the project customizer dialog for handling dependencies.
  *
- * @author Tim Boudreau
  */
 class DependenciesEditorPanel extends javax.swing.JPanel implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
 

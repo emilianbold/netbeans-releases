@@ -54,7 +54,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class PackageAIDPanel extends javax.swing.JPanel implements ChangeListener {
     private WizardDescriptor wiz;

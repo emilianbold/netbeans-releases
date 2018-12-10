@@ -93,7 +93,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class WithRealPlatformTest extends AbstractJCProjectTest {
     public static final String SYSTEM_PROP_UNIT_TEST = "JCProject.test";

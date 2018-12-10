@@ -63,7 +63,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Tim Boudreau
  */
 public final class JCUtil {
 

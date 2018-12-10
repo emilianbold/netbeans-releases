@@ -50,7 +50,6 @@ import javax.swing.text.StyledDocument;
 
 /**
  *
- * @author Anki R. Nelaturu
  */
 public class NoWrapTextPane extends JTextPane {
 

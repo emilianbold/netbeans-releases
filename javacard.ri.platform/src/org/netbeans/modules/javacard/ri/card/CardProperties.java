@@ -72,7 +72,6 @@ import org.openide.util.NbCollections;
 /**
  * Bean for card properties which reads and writes to a Properties object
  *
- * @author Tim Boudreau
  */
 @MIMEResolver.ExtensionRegistration(
     extension="jcplatform", displayName="",

@@ -97,7 +97,6 @@ import org.openide.modules.SpecificationVersion;
  * however you want</li>
  * </ol>
  *
- * @author Tim Boudreau
  */
 public abstract class JavacardPlatform extends JavaPlatform {
     /**

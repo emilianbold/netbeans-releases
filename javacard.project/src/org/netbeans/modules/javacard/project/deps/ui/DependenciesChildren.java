@@ -83,7 +83,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Dependencies node children factory
  *
- * @author Tim Boudreau
  */
 final class DependenciesChildren extends ChildFactory.Detachable<DependencyDescriptor> implements ChangeListener {
     private final JCProject project;

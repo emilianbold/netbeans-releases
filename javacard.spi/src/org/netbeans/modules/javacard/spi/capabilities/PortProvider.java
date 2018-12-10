@@ -55,7 +55,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * and by other services (such as the APDU Shell, and listing device contents)
  * to determine what port to connect to.
  *
- * @author Tim Boudreau
  */
 public interface PortProvider extends ICardCapability {
     /**

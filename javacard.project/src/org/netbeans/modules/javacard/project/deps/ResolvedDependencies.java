@@ -67,7 +67,6 @@ import org.openide.util.ChangeSupport;
  * to get the icon, display name, and whatever else you need, and then throw
  * away the actual instance of ResolvedDependency.
  *
- * @author Tim Boudreau
  */
 public abstract class ResolvedDependencies {
     private final List<ResolvedDependency> deps = Collections.synchronizedList(new ArrayList<ResolvedDependency>());

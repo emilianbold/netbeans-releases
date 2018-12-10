@@ -52,7 +52,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * sense (the concept of stopping a card that is connected via a USB cable
  * would not make much sense).
  *
- * @author Tim Boudreau
  */
 public interface StopCapability extends ICardCapability {
     /**

@@ -77,7 +77,6 @@ import java.util.Set;
  *  fully qualified paths usable by Ant when it copies the platform.properties
  *  file into its own configuration on installation.
  *
- * @author Tim Boudreau
  */
 public final class JavacardPlatformKeyNames {
     /**

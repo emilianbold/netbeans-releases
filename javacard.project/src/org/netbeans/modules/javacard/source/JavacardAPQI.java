@@ -61,7 +61,6 @@ import org.openide.filesystems.FileObject;
  * by a javacard project, and if so, if it should use classic or Java Card
  * 3 limitations on language features.
  *
- * @author Tim Boudreau
  */
 public class JavacardAPQI implements AnnotationProcessingQueryImplementation {
     private final JCProject project;

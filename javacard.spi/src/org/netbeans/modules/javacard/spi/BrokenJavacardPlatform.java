@@ -70,7 +70,6 @@ import org.openide.util.Lookup;
  * <p/>
  * Use this where a platform cannot be found, but null is not allowed.
  *
- * @author Tim Boudreau
  */
 final class BrokenJavacardPlatform extends JavacardPlatform {
     private final String displayName;

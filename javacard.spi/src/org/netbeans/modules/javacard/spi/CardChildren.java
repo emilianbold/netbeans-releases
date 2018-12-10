@@ -60,7 +60,6 @@ import org.openide.util.lookup.Lookups;
  * Children of a Card node, which get their contents by calling
  * from the Card's CardContentsProvider capability, if present.
  *
- * @author Tim Boudreau
  */
 final class CardChildren extends ChildFactory.Detachable<XListEntry> implements PropertyChangeListener {
 

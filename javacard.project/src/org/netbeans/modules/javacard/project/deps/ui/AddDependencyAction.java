@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class AddDependencyAction extends Single <JCProject> {
 

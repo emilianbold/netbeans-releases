@@ -73,7 +73,6 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Tim Boudreau
  */
 public final class DependenciesResolver {
 

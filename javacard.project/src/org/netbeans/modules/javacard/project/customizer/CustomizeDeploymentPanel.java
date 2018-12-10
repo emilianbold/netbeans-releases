@@ -64,7 +64,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class CustomizeDeploymentPanel extends javax.swing.JPanel implements ChangeListener, ListSelectionListener, DocumentListener, ListCellRenderer, ActionListener {
 

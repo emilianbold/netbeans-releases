@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 /**
  * Simple implementation of a single smart card.
  *
- * @author Tim Boudreau
  */
 final class CardImpl extends AbstractCard {
     public static final String SINGLE_CARD_ID = "card"; //NOI18N

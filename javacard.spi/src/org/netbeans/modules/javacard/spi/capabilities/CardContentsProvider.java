@@ -49,7 +49,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * Provider of a model for card contents.  Used by the list command in the
  * Java Card console and to create child nodes of card instances in the UI.
  *
- * @author Tim Boudreau
  */
 public interface CardContentsProvider extends ICardCapability {
     /**

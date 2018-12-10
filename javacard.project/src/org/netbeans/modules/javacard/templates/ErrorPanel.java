@@ -51,7 +51,6 @@ import java.awt.*;
 
 /**
  *
- * @author  Anki R. Nelaturu
  */
 public class ErrorPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
 

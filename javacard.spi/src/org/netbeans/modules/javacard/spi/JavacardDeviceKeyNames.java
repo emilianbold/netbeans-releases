@@ -46,7 +46,6 @@ package org.netbeans.modules.javacard.spi;
 /**
  * Constants used in Java Card device definition (.jcard) files
  *
- * @author Tim Boudreau
  */
 public final class JavacardDeviceKeyNames {
     //These are keys which should appear in .jcard files, which are properties

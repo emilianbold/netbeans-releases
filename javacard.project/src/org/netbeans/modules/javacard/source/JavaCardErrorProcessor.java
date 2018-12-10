@@ -70,7 +70,6 @@ import org.openide.util.NbBundle;
 /**
  * Provides error markings for uses of floating point and other unsupported
  * java language features in Java Card.
- * @author Tim Boudreau
  */
 @SupportedAnnotationTypes("*") //NOI18N
 @SupportedSourceVersion(SourceVersion.RELEASE_7)

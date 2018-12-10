@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anki R. Nelaturu
  */
 public class APDUSender {
 

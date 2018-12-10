@@ -59,7 +59,6 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class JCStoreGroup extends StoreGroup {
 

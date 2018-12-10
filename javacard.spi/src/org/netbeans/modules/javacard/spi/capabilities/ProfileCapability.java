@@ -50,7 +50,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * future-proofing.  Used to determine if the Profile action on a project
  * should be enabled.
  *
- * @author Tim Boudreau
  */
 public interface ProfileCapability extends ICardCapability {
 

@@ -77,7 +77,6 @@ import org.w3c.dom.Text;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class Updater implements UpdateImplementation {
 

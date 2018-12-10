@@ -74,7 +74,6 @@ import org.openide.util.Parameters;
  * The search of the classpath is done in a background thread while a wait
  * node is displayed.  When the search is completed
  *
- * @author Tim Boudreau
  */
 public class AllClassesOfTypeExplorerPanel extends JPanel implements ExplorerManager.Provider {
 

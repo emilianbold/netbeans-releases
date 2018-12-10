@@ -50,7 +50,6 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 final class PowerdownCommand implements Command {
 

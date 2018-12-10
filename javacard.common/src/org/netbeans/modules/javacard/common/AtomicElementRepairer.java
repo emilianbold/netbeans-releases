@@ -56,7 +56,6 @@ import java.util.List;
  * <code>-lineswitch arg -lineswitch -lineswitch arg</code> but follow each
  * other with no -.  See Utils.shellSplit().
  *
- * @author Tim Boudreau
  */
 final class AtomicElementRepairer {
 

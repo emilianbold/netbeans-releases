@@ -61,7 +61,6 @@ import org.openide.util.MutexException;
 
 /**
  *
- * @author Tim Boudreau
  */
 public final class ProjectXmlCreator extends FileCreator { //public for unit tests
     private final String projectName;

@@ -58,7 +58,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class EditOneDependencyPanel extends javax.swing.JPanel {
     private final ResolvedDependency dep;

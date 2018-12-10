@@ -49,7 +49,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * card.  Used to determine if the Debug menu action should be enabled
  * on a project using this Card.
  *
- * @author Tim Boudreau
  */
 public interface DebugCapability extends ICardCapability {
 

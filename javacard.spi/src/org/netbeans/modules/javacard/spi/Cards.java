@@ -78,7 +78,6 @@ import org.openide.util.lookup.Lookups;
  * the case of the Java Card RI.  However, the only requirement is that it be
  * a Lookup.Provider with an instance of Card in its Lookup.
  *
- * @author Tim Boudreau
  */
 public abstract class Cards {
     private final ChangeSupport supp = new ChangeSupport(this);

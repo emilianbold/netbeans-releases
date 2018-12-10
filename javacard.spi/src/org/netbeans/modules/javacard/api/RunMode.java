@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
  * also debug mode may determine the command-line arguments passed to
  * a launcher executable.
  *
- * @author Tim Boudreau
  */
 public enum RunMode {
     /** Simply start the card */

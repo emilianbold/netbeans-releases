@@ -62,7 +62,6 @@ import org.xml.sax.SAXException;
  * project.properties and project.xml.  This class simply represents the
  * data in project.xml only.
  *
- * @author Tim Boudreau
  */
 public final class Dependencies {
     private final List <Dependency> dependencies = Collections.synchronizedList(new ArrayList<Dependency>());

@@ -51,7 +51,6 @@ import java.awt.event.ActionListener;
 
 /**
  *
- * @author Tim Boudreau
  */
 public final class AppletEditorUnlockPanel extends javax.swing.JPanel {
 

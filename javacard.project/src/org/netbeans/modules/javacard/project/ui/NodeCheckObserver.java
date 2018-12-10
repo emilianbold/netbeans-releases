@@ -47,7 +47,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Tim Boudreau
  */
 public interface NodeCheckObserver {
     public void onNodeChecked (Node node);

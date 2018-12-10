@@ -54,7 +54,6 @@ import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 final class GetCommand implements Command {
 

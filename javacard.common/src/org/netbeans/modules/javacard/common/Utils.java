@@ -65,7 +65,6 @@ import org.openide.util.Parameters;
 /**
  * Miscellaneous utility methods which are generally useful.
  *
- * @author Tim Boudreau
  */
 public final class Utils {
     public static final String STRING_ANNOTATION_PREPROCESSOR_JAR_PATH = "lib/api_classic_annotations.jar"; // NOI18N

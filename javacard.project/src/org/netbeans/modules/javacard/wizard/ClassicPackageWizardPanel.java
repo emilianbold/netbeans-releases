@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim Boudreau
  */
 public final class ClassicPackageWizardPanel implements
         WizardDescriptor.Panel<WizardDescriptor>,

@@ -53,7 +53,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * this amounts to passing the <code>-resume -e2pfile $EEPROM_FILE</code>
  * arguments to the emulator)
  *
- * @author Tim Boudreau
  */
 public interface ResumeCapability extends ICardCapability {
     /**

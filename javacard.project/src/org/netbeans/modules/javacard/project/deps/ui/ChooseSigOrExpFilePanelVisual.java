@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements DocumentListener {
 

@@ -52,7 +52,6 @@ import java.util.logging.Logger;
  * The poll() method will update the state of the card based on whether
  * it can connect to its URL.
  *
- * @author Tim Boudreau
  */
 final class StateUpdaterCallback implements org.netbeans.modules.javacard.spi.ConnectionWatchdog.Callback<CardImpl> {
 

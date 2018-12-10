@@ -51,7 +51,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * Card instances are expected to provide an instance of CardInfo as a
  * capability.
  *
- * @author Tim Boudreau
  */
 public interface CardInfo extends ICardCapability {
     public String getSystemId();

@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim
  */
 public class SendAction extends Single<DataObject> {
     public SendAction() {

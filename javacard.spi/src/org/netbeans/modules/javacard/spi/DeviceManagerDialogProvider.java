@@ -49,7 +49,6 @@ import java.awt.Component;
  * allow management/creation of devices.  If present, a Manage Devices
  * button will be enabled in the various select platform/card UIs.
  *
- * @author Tim Boudreau
  */
 public interface DeviceManagerDialogProvider {
     /**

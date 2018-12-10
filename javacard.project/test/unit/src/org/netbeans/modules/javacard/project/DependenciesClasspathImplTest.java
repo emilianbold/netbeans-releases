@@ -72,7 +72,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class DependenciesClasspathImplTest extends AbstractJCProjectTest {
     private JCProject project;

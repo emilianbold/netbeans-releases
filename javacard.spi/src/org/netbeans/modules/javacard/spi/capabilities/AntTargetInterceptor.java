@@ -72,7 +72,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * Receive notification after a target has been run.
  * </li>
  *
- * @author Tim Boudreau
  */
 public interface AntTargetInterceptor extends ICardCapability {
     /**

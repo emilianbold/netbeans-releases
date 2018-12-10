@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 final class StopCommand implements Command {
 

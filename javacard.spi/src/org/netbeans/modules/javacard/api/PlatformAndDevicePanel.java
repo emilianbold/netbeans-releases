@@ -110,7 +110,6 @@ import org.openide.util.lookup.InstanceContent;
  * Use its ValidationGroup to attach to a ValidationUI to show invalid
  * selections.
  *
- * @author Tim Boudreau
  */
 public final class PlatformAndDevicePanel extends JPanel implements ActionListener, ValidationGroupProvider, Lookup.Provider {
     private final JComboBox platforms;

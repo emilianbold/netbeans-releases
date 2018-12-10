@@ -46,7 +46,6 @@ package org.netbeans.modules.javacard.project;
  * Useless class which we simply use to bundle into our fake jar file
  * to ensure we can really find a class on the classpath.
  *
- * @author Tim Boudreau
  */
 public class StillSomethingElse {
     public String foo() {

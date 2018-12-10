@@ -51,7 +51,6 @@ import org.openide.util.Cancellable;
  * mechanism to ensure project.xml and property resolving is done on a
  * background thread without holding any locks that could be problematic.
  *
- * @author Tim Boudreau
  */
 public interface DependenciesProvider {
 

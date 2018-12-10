@@ -52,7 +52,6 @@ import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
  * a node for a ResolvedDependency without holding a reference to the
  * ResolvedDependency (which would keep all sorts of other things in memory).
  *
- * @author Tim Boudreau
  */
 class DependencyDescriptor {
     private final Image icon;

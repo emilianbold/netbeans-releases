@@ -56,7 +56,6 @@ import org.openide.util.Lookup;
  * lookup to allow it to be used when searching for Java Card installs on
  * disk in Tools > Java Platforms.
  *
- * @author Tim Boudreau
  */
 public abstract class JavacardPlatformLocator {
     /**

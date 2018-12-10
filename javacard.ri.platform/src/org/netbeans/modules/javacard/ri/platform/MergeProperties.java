@@ -84,7 +84,6 @@ import org.openide.util.NbCollections;
  * <i>not</i> saved - saving this object results in a file that represents
  * the combined state.
  *
- * @author Tim Boudreau
  */
 public final class MergeProperties extends AntStyleResolvingProperties implements PropertyChangeListener {
     private final PropertyChangeSupport supp = new PropertyChangeSupport(this);

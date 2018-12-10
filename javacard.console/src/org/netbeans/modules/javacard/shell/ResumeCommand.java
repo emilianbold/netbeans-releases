@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 final class ResumeCommand implements Command {
 

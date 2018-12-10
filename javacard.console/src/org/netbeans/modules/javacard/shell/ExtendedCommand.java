@@ -49,7 +49,6 @@ import org.netbeans.modules.javacard.common.Utils;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 class ExtendedCommand implements Command {
 

@@ -47,7 +47,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * this card, and a few other Java Card RI-specific things (which may return
  * null if those aspects of the RI are not supported by the providing platform)
  *
- * @author Tim Boudreau
  */
 public interface UrlCapability extends ICardCapability {
     /**

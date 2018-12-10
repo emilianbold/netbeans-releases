@@ -58,7 +58,6 @@ import static org.netbeans.modules.javacard.spi.ProjectKind.*;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class ProjectKindTest {
     @Test

@@ -54,7 +54,6 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class DeploymentXmlModelTest {
 

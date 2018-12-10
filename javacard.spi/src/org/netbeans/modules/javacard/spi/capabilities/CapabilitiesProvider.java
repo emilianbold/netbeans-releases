@@ -50,7 +50,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * card extending BaseCard, which lists the types of other capability that
  * a particular card supports.
  *
- * @author Tim Boudreau
  */
 public interface CapabilitiesProvider extends ICardCapability {
     /** Get the set of capabilities expected to be available from this Card.

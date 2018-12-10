@@ -56,7 +56,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * is an error and the OK button is disabled, nothing should be saved -
  * a normal Beans customizer is always live).
  *
- * @author Tim Boudreau
  */
 public interface CardCustomizerProvider extends ICardCapability {
     public CardCustomizer getCardCustomizer(Card card);

@@ -93,7 +93,6 @@ import org.openide.util.lookup.Lookups;
  * Note that some capabilities go hand-in-hand - if you support StartCapability,
  * you probably also support StopCapability and perhaps ResumeCapability.
  *
- * @author Tim Boudreau
  */
 public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractCard {
     protected final RequestProcessor rp;

@@ -64,7 +64,6 @@ import org.openide.util.HelpCtx;
 /**
  * Panel which allows the user to select the platform they will run with.
  *
- * @author Tim Boudreau
  */
 final class PlatformPanel extends SharedLayoutPanel implements ActionListener {
 

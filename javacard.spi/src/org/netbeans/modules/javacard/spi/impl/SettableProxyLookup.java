@@ -49,7 +49,6 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  * Workaround for issues with ChoiceView & ExplorerManager.createLookup()
  *
- * @author Tim Boudreau
  */
 final class SettableProxyLookup extends ProxyLookup {
     private final Lookup[] lkps = new Lookup[] { Lookup.EMPTY, Lookup.EMPTY };

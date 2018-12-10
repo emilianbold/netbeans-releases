@@ -63,7 +63,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author suchys
  */
 public final class PlatformInstallerWizardPanel implements
         WizardDescriptor.Panel<WizardDescriptor>, PropertyChangeListener, ChangeListener {

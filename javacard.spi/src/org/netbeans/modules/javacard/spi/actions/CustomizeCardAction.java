@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class CustomizeCardAction extends Single<Card> {
     CustomizeCardAction() {

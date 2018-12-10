@@ -51,7 +51,6 @@ import java.util.Properties;
  * Interface mimicking a Map or Properties, so that the same code in
  * PlatformPropertiesPanel can write into either a Properties or a
  * WizardDescriptor or an EditableProperties.
- * @author Tim Boudreau
  */
 public interface KeysAndValues<T> {
     public T getStorage();

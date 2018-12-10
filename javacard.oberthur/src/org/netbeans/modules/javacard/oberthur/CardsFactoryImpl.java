@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
  * Factory which is registered to provide Card instances for Java Card
  * platforms with the kind "oberthur".
  *
- * @author Tim Boudreau
  */
 public final class CardsFactoryImpl extends CardsFactory {
 

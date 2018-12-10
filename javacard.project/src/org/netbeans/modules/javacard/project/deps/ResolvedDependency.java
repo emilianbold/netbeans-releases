@@ -54,7 +54,6 @@ import org.openide.filesystems.FileObject;
  * Represents one "resolved" dependency which is mutable, and is able to
  * provide actual files for its various artifact kinds.
  *
- * @author Tim Boudreau
  */
 public class ResolvedDependency {
     private Dependency dep;

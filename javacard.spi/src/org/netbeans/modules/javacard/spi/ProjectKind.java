@@ -75,7 +75,6 @@ import org.openide.util.NbCollections;
  * Most differences between the various project subtypes are encoded here,
  * as they are largely ones of strings and templates, not logic.
  *
- * @author Tim Boudreau
  */
 public enum ProjectKind {
 

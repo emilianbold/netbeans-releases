@@ -47,7 +47,6 @@ package org.netbeans.modules.javacard.spi;
  * getting/setting the platform and device.  Used in various dialogs where
  * a platform/device may be chosen, as a common interface to PlatformAndDevicePanel
  *
- * @author Tim Boudreau
  */
 public interface PlatformAndDeviceProvider {
     public String getActiveDevice();

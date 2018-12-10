@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 final class ListCommand implements Command {
 

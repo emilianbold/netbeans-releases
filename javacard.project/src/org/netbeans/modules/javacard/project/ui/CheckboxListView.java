@@ -60,7 +60,6 @@ import java.awt.event.MouseListener;
 /**
  * A JList-based list of Nodes which show checkboxes.
  *
- * @author Tim Boudreau
  */
 public class CheckboxListView extends ListView {
     public static final String SELECTED = "selected"; //NOI18N

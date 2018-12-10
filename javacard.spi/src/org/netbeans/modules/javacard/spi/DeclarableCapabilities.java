@@ -64,7 +64,6 @@ import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
  * to indicate whether or not the Card object should expose capabilities for
  * them.  Corresponding types are made available in the Card's Lookup.
  *
- * @author Tim
  */
 public enum DeclarableCapabilities {
     START,

@@ -45,7 +45,6 @@ package org.netbeans.modules.javacard.shell;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class ShellException extends Exception {
     ShellException(String localizedMessage) {

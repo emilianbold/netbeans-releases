@@ -76,7 +76,6 @@ import org.openide.windows.WindowManager;
  * collected, and listeners on the main window which track activation
  * will be removed, thus avoiding memory leaks.
  *
- * @author Tim Boudreau
  */
 public final class ConnectionWatchdog<CardImpl extends Card> {
     private final R r = new R();

@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 class CommandManager {
 

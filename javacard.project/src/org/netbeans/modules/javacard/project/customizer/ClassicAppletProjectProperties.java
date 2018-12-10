@@ -77,7 +77,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tim Boudreau
  */
 public final class ClassicAppletProjectProperties extends AppletProjectProperties {
 

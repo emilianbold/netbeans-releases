@@ -49,7 +49,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * this means deleting the file on disk, and this capability is only available
  * when the card is not running.
  *
- * @author Tim Boudreau
  */
 public interface ClearEpromCapability extends ICardCapability {
     /**

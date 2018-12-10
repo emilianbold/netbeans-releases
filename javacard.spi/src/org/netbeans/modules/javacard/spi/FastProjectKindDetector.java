@@ -51,7 +51,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * Use SAX to determine project type - much better performance than XPath or DOM
  * in the critical path of project creation.
  *
- * @author Tim Boudreau
  */
 final class FastProjectKindDetector extends DefaultHandler {
     private String[] tags = new String[10];

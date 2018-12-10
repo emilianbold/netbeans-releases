@@ -54,7 +54,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * could be usefully used with an SDK which starts a local process to connect
  * to and interrogate attached devices).
  *
- * @author Tim Boudreau
  */
 public interface StartCapability extends ICardCapability {
     /**

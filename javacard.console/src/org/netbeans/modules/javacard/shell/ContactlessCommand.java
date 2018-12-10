@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 final class ContactlessCommand implements Command {
 

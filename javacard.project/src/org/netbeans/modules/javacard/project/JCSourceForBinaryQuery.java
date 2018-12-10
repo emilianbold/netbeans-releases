@@ -67,7 +67,6 @@ import org.xml.sax.SAXException;
  * Provides SourceForBinaryQuery implementation over libraries belonging to
  * a JCProject
  *
- * @author Tim Boudreau
  */
 class JCSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 

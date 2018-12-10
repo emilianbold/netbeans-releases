@@ -62,7 +62,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author tim
  */
 public class BadPlatformOrDevicePanel extends JPanel implements ActionListener {
     private final PlatformAndDevicePanel pnl;

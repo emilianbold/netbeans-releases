@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim
  */
 public class RefreshStatusAction extends Single<CardImpl> {
     public RefreshStatusAction() {

@@ -52,7 +52,6 @@ import org.openide.filesystems.FileObject;
  * shown in a hex editor, deleted, etc.
  *
  * @see ClearEpromCapability
- * @author Tim Boudreau
  */
 public interface EpromFileCapability extends ICardCapability {
     public FileObject getEpromFile();

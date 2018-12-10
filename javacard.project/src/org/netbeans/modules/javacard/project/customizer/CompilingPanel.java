@@ -52,7 +52,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class CompilingPanel extends javax.swing.JPanel {
 

@@ -53,7 +53,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class CardsImpl extends Cards implements Lookup.Provider {
     private final DataObject dob;

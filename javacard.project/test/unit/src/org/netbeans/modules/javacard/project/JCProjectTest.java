@@ -82,7 +82,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class JCProjectTest extends AbstractJCProjectTest {
     public static final String SYSTEM_PROP_UNIT_TEST = "JCProject.test";

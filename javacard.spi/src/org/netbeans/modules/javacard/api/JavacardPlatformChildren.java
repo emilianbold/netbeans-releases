@@ -66,7 +66,6 @@ import org.openide.filesystems.FileRenameEvent;
 /**
  * Node Children factory which shows only registered JavacardPlatforms (the folder
  * they are registered in contains other kinds of files).
- * @author Tim Boudreau
  */
 public class JavacardPlatformChildren extends ChildFactory.Detachable<FileObject> implements FileChangeListener, Runnable {
     private final FileObject folder;

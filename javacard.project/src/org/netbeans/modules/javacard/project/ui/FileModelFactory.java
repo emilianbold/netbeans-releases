@@ -54,7 +54,6 @@ import java.util.List;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class FileModelFactory {
 

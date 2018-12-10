@@ -68,7 +68,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor>, ChangeListener {
 

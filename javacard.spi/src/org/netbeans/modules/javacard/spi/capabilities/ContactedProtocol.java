@@ -43,7 +43,6 @@ package org.netbeans.modules.javacard.spi.capabilities;
 
 /**
  * Enum of supported Contacted Protocol kinds.
- * @author Tim Boudreau
  */
 public enum ContactedProtocol {
 

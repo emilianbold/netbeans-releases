@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim
  */
 final class StartCardAction extends ContextAction<StartCapability> {
 

@@ -57,7 +57,6 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class BootClassPathImpl extends ListenerProxy<JCProject> implements ClassPathImplementation, ChangeListener {
     private ClassPath bootPath;

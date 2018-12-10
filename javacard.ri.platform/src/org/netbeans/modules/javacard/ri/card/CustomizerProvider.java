@@ -60,7 +60,6 @@ import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
  * Implementation of CardCustomizerProvider for RI cards.  Registered in
  * layer file against the RI platform kind.
  *
- * @author Tim Boudreau
  */
 public class CustomizerProvider implements CardCustomizerProvider {
     private final WeakHashMap<Card, Reference<CardCustomizer>> m = new WeakHashMap<Card, Reference<CardCustomizer>>();

@@ -57,7 +57,6 @@ import javax.swing.Timer;
 /**
  * A node that displays a spinning wait icon
  *
- * @author Tim Boudreau
  */
 final class WaitNode extends AbstractNode implements ActionListener, PropertyChangeListener {
     private int cycle = 0;

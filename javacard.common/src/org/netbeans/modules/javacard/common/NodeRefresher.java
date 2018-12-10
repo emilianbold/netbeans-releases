@@ -52,7 +52,6 @@ package org.netbeans.modules.javacard.common;
  * Cards class, in the lookup of the Lookup.Provider used to find the card),
  * then the Refresh action will be enabled.
  *
- * @author Tim Boudreau
  */
 public interface NodeRefresher {
     public void refreshNode();

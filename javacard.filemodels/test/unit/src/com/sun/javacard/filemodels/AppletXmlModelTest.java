@@ -60,7 +60,6 @@ import org.junit.Test;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class AppletXmlModelTest {
 

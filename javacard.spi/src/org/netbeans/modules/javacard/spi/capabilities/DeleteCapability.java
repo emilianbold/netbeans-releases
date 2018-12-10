@@ -48,7 +48,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
 /**
  * Capability for a card to be deleted.
  *
- * @author Tim Boudreau
  */
 public interface DeleteCapability extends ICardCapability {
     public void delete() throws IOException;

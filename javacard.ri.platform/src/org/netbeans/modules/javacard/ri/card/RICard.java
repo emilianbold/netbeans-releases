@@ -103,7 +103,6 @@ import org.openide.util.lookup.Lookups;
  * Implementation of Card for the Java Card Reference Implementation (and
  * possibly others)
  *
- * @author Tim Boudreau
  */
 public class RICard extends BaseCard<CardProperties> { //non-final only for unit tests
 

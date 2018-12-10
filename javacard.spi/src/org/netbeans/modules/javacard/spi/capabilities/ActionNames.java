@@ -48,7 +48,6 @@ import org.netbeans.modules.javacard.spi.*;
 /**
  * Action names which can be passed into AntTargetInterceptor.
  *
- * @author Tim Boudreau
  */
 public class ActionNames {
     //Commands used by the ActionProvider

@@ -45,7 +45,6 @@ import org.netbeans.modules.javacard.spi.ActionNames;
 
 /**
  * Targets which may be passed to <code>AntTargetInterceptor.on*InvokeTarget()</code>
- * @author Tim Boudreau
  */
 public enum AntTarget {
 

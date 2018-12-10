@@ -51,7 +51,6 @@ import java.awt.event.ActionListener;
 
 /**
  *
- * @author Tim Boudreau
  */
 public final class WebEditorUnlockPanel extends javax.swing.JPanel {
 

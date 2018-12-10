@@ -96,7 +96,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class AbstractJCProjectTest extends NbTestCase {
 

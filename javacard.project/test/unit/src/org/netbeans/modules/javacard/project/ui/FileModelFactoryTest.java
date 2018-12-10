@@ -59,7 +59,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 /**
  *
- * @author Tim Boudreau
  */
 public class FileModelFactoryTest {
 

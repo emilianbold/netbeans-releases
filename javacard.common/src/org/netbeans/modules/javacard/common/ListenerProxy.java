@@ -52,7 +52,6 @@ import org.openide.util.Exceptions;
  * changes on something else and fire its own changes in turn, but which
  * should not listen to that object unless something is listening to it.
  *
- * @author Tim Boudreau
  */
 public abstract class ListenerProxy<T> {
     private final List<PropertyChangeListener> l = new LinkedList<PropertyChangeListener>();

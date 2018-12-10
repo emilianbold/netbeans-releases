@@ -56,7 +56,6 @@ import org.openide.nodes.Node;
  * the ICardCapability that controls them through the lookup of the Card
  * instance in the selected node (if any).
  *
- * @author Tim Boudreau
  */
 public final class CardActions {
     private CardActions(){}

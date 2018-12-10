@@ -45,7 +45,6 @@ package org.netbeans.modules.javacard.project.deps;
 /**
  * Represents a file path and indicates if it is relative or absolute
  *
- * @author Tim Boudreau
  */
 public final class Path {
     private final boolean relative;

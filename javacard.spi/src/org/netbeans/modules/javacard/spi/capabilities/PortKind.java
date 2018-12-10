@@ -47,7 +47,6 @@ package org.netbeans.modules.javacard.spi.capabilities;
  * Kinds of ports which a Card may use.
  *
  * @see PortProvider
- * @author Tim Boudreau
  */
 public enum PortKind {
     /** The HTTP port for communicating with this card via http */

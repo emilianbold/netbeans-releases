@@ -45,7 +45,6 @@ package org.netbeans.modules.javacard.shell;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 interface Command {
     String execute(ShellPanel shellPanel, String[] args) throws ShellException;

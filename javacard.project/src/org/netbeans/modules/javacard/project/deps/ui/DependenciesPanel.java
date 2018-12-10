@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class DependenciesPanel extends JPanel {
     private final JCProjectProperties props;

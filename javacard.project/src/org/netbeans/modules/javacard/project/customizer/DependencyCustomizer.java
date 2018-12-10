@@ -57,7 +57,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Anki R. Nelaturu
  */
 public class DependencyCustomizer extends javax.swing.JPanel implements ActionListener, MouseListener, ListSelectionListener {
 

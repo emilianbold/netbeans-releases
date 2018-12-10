@@ -87,7 +87,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class JCProjectProperties implements PlatformAndDeviceProvider {
 

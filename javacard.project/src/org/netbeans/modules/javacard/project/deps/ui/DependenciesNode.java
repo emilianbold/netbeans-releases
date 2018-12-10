@@ -55,7 +55,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class DependenciesNode extends AbstractNode {
     /**

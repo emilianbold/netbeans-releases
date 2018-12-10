@@ -55,7 +55,6 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 
 /**
- * @author Tim Boudreau
  */
 final class ScriptsSourceGroup implements SourceGroup {
     private final AntProjectHelper helper;

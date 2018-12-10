@@ -59,7 +59,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class PortabilityTest {
 

@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 /**
  * Different flavors of things a project may have a dependency on.
  *
- * @author Tim Boudreau
  */
 public enum DependencyKind {
     CLASSIC_LIB,

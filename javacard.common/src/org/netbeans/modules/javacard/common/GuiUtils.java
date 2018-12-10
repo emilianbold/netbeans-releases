@@ -82,7 +82,6 @@ import org.openide.nodes.Node;
 /**
  * Misc Swing-specific utility methods.
  *
- * @author Tim Boudreau
  */
 public class GuiUtils {
 

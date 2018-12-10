@@ -65,7 +65,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class ProcessorClasspathImpl implements ClassPathImplementation {
 

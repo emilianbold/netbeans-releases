@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
  * AntArtifactProvider for projects that do not provide an
  * AntClasspathClosureProvider.
  *
- * @author Tim Boudreau
  */
 public abstract class AntClasspathClosureProvider {
     public abstract String getClasspathClosureAsString();

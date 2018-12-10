@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 /**
  * Describes what the build script should do with a given dependency.
  *
- * @author Tim Boudreau
  */
 public enum DeploymentStrategy {
     //DO NOT REFACTOR!  These names are used in build-impl.xsl and project.xml

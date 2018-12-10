@@ -75,7 +75,6 @@ import org.netbeans.modules.javacard.common.GuiUtils;
 
 /**
  * Customizer panel "Sources": source roots, level, includes/excludes.
- * @author  Tomas Zezula
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider, ActionListener {
     

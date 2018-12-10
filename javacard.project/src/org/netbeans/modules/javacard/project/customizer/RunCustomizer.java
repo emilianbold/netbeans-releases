@@ -55,7 +55,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Anki R. Nelaturu
  */
 public class RunCustomizer extends javax.swing.JPanel implements ValidationGroupProvider {
     private final JCProjectProperties props;

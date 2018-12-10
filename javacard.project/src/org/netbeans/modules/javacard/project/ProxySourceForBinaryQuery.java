@@ -56,7 +56,6 @@ import org.openide.util.ChangeSupport;
 /**
  * Merges multiple SFBQs together.
  *
- * @author Tim Boudreau
  */
 final class ProxySourceForBinaryQuery implements SourceForBinaryQueryImplementation {
     private final SourceForBinaryQueryImplementation[] impls;

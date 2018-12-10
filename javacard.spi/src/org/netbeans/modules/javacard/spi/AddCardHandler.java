@@ -91,7 +91,6 @@ import org.openide.util.lookup.Lookups;
  * to include any registered AddDeviceHandlers in the list of popup menu actions
  * for their Nodes.
  * 
- * @author Tim Boudreau
  */
 public abstract class AddCardHandler {
 

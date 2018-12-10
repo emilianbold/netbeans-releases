@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim
  */
 final class ClearEpromAction extends ContextAction<ClearEpromCapability> {
 

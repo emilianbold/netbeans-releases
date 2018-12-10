@@ -66,7 +66,6 @@ import org.openide.util.HelpCtx;
 /**
  * Security customizer
  *
- * @author Tim Boudreau
  */
 public class SecurityCustomizer extends JPanel implements DocumentListener, FocusListener, ActionListener {
 

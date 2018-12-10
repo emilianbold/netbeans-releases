@@ -81,7 +81,6 @@ import org.openide.util.HelpCtx;
 /**
  * Customizer for servlets
  *
- * @author Tim Boudreau
  */
 public class WebCustomizer extends AllClassesOfTypeExplorerPanel implements DocumentListener, PropertyChangeListener, NodeCheckObserver, FocusListener, ActionListener {
 

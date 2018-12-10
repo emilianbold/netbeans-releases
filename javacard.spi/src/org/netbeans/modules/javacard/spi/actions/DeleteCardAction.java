@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author tim
  */
 final class DeleteCardAction extends ContextAction<DeleteCapability> {
     public DeleteCardAction() {

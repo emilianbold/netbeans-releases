@@ -68,7 +68,6 @@ import org.openide.filesystems.FileObject;
 /**
  * Project properties for EAP and CAP projects.
  *
- * @author Tim Boudreau
  */
 public class AppletProjectProperties extends JCProjectProperties {
 

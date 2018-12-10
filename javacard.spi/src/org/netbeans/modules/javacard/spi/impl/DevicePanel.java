@@ -73,7 +73,6 @@ import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class DevicePanel extends SharedLayoutPanel implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
 

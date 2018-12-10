@@ -51,7 +51,6 @@ import java.io.File;
 /**
  * JFileChooser file filter which allows the user to select JAR files or
  * folders.
- * @author Tim Boudreau
  */
 public final class JarOrDirectoryFilter extends FileFilter {
 

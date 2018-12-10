@@ -79,7 +79,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class DependenciesClasspathImpl extends ListenerProxy<JCProject> implements ClassPathImplementation, ChangeListener {
     private final Set<DependencyPathResourceImplementation> resources = new TreeSet<DependencyPathResourceImplementation>();

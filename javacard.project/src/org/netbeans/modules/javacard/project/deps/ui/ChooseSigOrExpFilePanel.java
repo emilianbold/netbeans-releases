@@ -54,7 +54,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Tim Boudreau
  */
 final class ChooseSigOrExpFilePanel implements WizardDescriptor.Panel<Map<String, Object>>, ChangeListener {
     private final WizardDescriptor wiz;

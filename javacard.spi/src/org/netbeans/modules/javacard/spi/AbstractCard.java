@@ -64,7 +64,6 @@ import org.openide.util.lookup.ProxyLookup;
  * Convenience implementation of Card which provides standard handling for
  * CardStateObservers, and capability addition/removal.
  *
- * @author Tim Boudreau
  */
 public abstract class AbstractCard implements Card {
     private CardState state = CardState.NEW;

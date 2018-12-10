@@ -59,7 +59,6 @@ import org.openide.util.Parameters;
  * and ResolvedDependencies.  These will actually read from the project.properties
  * and allow getting/setting of targets, etc.
  *
- * @author Tim Boudreau
  */
 public final class Dependency {
     private final DependencyKind kind;

@@ -48,7 +48,6 @@ import java.util.EventListener;
 /**
  * Observer which is notified of changes in the state of a Card instance.
  *
- * @author Tim Boudreau
  */
 public interface CardStateObserver extends EventListener {
     public void onStateChange (Card card, CardState old, CardState nue);

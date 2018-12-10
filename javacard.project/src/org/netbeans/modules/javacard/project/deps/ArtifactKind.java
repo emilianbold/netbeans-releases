@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 /**
  * Kinds of artifacts supported by a given DependencyKind
  *
- * @author Tim Boudreau
  */
 public enum ArtifactKind {
     ORIGIN,

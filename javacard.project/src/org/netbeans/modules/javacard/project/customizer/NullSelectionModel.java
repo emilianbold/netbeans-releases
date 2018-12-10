@@ -52,7 +52,6 @@ import javax.swing.event.ListSelectionListener;
  * it would be confusing if you could select one because nothing
  * is sensitive to the selection there.
  *
- * @author Tim Boudreau
  */
 final class NullSelectionModel implements ListSelectionModel {
     public void setSelectionInterval(int index0, int index1) {

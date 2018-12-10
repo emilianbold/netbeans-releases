@@ -49,7 +49,6 @@ import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 
 /**
  *
- * @author Tim Boudreau
  */
 public interface CardCustomizer extends ValidationGroupProvider {
     public void save();

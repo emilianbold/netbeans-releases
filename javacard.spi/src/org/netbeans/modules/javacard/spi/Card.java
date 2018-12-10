@@ -104,7 +104,6 @@ import org.openide.util.Lookup;
  * miscellaneous properties somewhat specific to the RI</li>
  * </ul>
  *
- * @author Tim Boudreau
  */
 public interface Card extends Lookup.Provider {
     /**

@@ -45,7 +45,6 @@ package org.netbeans.modules.javacard.shell;
 
 /**
  *
- * @author Anki R Nelaturu
  */
 final class ClearCommand implements Command {
 
