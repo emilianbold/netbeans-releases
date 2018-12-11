@@ -47,7 +47,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider (service = PasswordProviderFactory.class, position = 200)
 public class CertPassphraseDlgFactory implements PasswordProviderFactory{

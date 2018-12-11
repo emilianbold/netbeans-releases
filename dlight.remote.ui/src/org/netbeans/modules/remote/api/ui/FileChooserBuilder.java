@@ -77,7 +77,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author ak119685
  */
 public final class FileChooserBuilder extends org.openide.filesystems.FileChooserBuilder {
 

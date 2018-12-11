@@ -63,7 +63,6 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author vkvashin
  */
 public class FastPasteAction extends CookieAction {
 

@@ -53,7 +53,6 @@ import javax.swing.JFileChooser;
 
 /**
  *
- * @author ak119685
  */
 public class SSHKeysPanel extends javax.swing.JPanel {
 

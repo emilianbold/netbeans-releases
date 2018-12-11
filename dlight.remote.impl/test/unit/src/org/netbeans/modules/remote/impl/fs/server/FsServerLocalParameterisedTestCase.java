@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.test.RcFile;
 
 /**
  *
- * @author vkvashin
  */
 public class FsServerLocalParameterisedTestCase extends FsServerLocalTestBase {
 

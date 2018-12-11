@@ -60,7 +60,6 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  * Keeps information about all files that reside in the directory
- * @author Vladimir Kvashin
  */
 public class DirectoryStorage {
 

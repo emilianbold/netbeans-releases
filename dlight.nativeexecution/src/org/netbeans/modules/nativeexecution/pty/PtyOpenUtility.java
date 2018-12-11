@@ -48,7 +48,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author ak119685
  */
 final class PtyOpenUtility extends HelperUtility {
 

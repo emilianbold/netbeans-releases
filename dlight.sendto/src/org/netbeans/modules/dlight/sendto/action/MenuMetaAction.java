@@ -65,7 +65,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  * Meta action to be registered in Tools menu....
- * @author akrasny
  */
 @ActionID(id = "org.netbeans.modules.dlight.sendto.action.MenuMetaAction", category = "Tools/SendTo")
 @ActionRegistration(displayName = "#SendToMenuName", lazy = false)

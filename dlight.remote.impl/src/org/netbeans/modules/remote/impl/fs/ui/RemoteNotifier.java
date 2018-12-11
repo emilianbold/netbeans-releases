@@ -48,7 +48,6 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author vkvashin
  */
 public class RemoteNotifier {
 

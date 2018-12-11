@@ -51,7 +51,6 @@ import org.openide.util.Utilities;
 /**
  * Stores the list of hosts;
  * each host is represented by ServerRecord instance
- * @author Vladimir Kvashin
  */
 public final class ServerList {
 

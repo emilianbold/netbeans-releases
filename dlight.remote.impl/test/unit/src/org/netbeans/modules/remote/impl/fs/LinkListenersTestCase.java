@@ -57,7 +57,6 @@ import org.openide.util.Utilities;
  * There hardly is a way to unit test remote operations.
  * This is just an entry point for manual validation.
  *
- * @author Vladimir Kvashin
  */
 public class LinkListenersTestCase extends RemoteFileTestBase {
 

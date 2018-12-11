@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author akrasny
  */
 public final class Configuration implements Cloneable, Comparable<Configuration> {
 

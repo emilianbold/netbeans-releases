@@ -76,7 +76,6 @@ import org.openide.util.RequestProcessor;
  *
  * UTF-8 charset is used for I/O.
  *
- * @author ak119685
  */
 public final class ShellSession {
 

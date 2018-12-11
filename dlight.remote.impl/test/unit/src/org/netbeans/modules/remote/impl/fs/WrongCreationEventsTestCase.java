@@ -58,7 +58,6 @@ import org.openide.filesystems.*;
  * There hardly is a way to unit test remote operations.
  * This is just an entry point for manual validation.
  *
- * @author Vladimir Kvashin
  */
 public class WrongCreationEventsTestCase extends RemoteFileTestBase {
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.remote.spi;
 
 /**
  *
- * @author vkvashin
  */
 public interface RemoteFileSystemHintsProvider {
     /**

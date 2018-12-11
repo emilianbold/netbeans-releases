@@ -74,7 +74,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author akrasny
  */
 @ServiceProvider(service = Handler.class)
 public final class DefaultScriptHandler extends Handler<DefaultConfigurationPanel> {

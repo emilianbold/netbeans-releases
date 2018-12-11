@@ -67,7 +67,6 @@ import org.openide.util.RequestProcessor.Task;
  * Searches for all executables in paths and matches their names for
  * autocompletion options.
  * 
- * @author ak119685
  */
 
 // DISABLED - FindBasedExecutablesCompletionProviderFactory is used instead

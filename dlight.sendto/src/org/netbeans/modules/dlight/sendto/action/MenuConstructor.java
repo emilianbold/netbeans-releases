@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author akrasny
  */
 public class MenuConstructor {
 

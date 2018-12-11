@@ -45,7 +45,6 @@ import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 
 /**
  *
- * @author ak119685
  */
 public final class PtyProcessStartUtility extends HelperUtility {
 

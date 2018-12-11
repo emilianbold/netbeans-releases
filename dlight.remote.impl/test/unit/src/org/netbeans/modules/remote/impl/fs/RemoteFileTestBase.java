@@ -72,7 +72,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 

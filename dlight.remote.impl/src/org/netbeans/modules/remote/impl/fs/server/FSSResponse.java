@@ -52,7 +52,6 @@ import org.openide.util.NotImplementedException;
 
 /**
  *
- * @author vkvashin
  */
 /*package*/ final class FSSResponse {
 

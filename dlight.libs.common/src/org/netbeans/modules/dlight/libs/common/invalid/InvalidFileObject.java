@@ -56,7 +56,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author vkvashin
  */
 public class InvalidFileObject extends FileObject {
     

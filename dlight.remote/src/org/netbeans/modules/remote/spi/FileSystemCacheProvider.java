@@ -49,7 +49,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class FileSystemCacheProvider {
 

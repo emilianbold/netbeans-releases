@@ -52,7 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
  * Default implementation of HostsPropertiesPanelProvider that returns a panel
  * with authentication settings.
  *
- * @author akrasny
  */
 @ServiceProvider(service = HostPropertiesPanelProvider.class,   position = 100)
 public class HostPropertiesPanelProviderImpl implements HostPropertiesPanelProvider {

@@ -65,7 +65,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author ak119685
  */
 public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 

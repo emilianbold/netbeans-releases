@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
 /**
  *
- * @author vkvashin
  */
 public class FSSExitCodes {
 

@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
  *
- * @author ak119685
  */
 public final class JschSupport {
 

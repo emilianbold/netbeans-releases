@@ -45,7 +45,6 @@ import org.netbeans.modules.nativeexecution.api.ProcessStatusEx;
 
 /**
  *
- * @author Andrew
  */
 public abstract class ProcessStatusAccessor {
         private static volatile ProcessStatusAccessor DEFAULT;

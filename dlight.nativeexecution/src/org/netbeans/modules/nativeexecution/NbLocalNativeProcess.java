@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 /**
  *
- * @author Andrew
  */
 public final class NbLocalNativeProcess extends NbNativeProcess {
 

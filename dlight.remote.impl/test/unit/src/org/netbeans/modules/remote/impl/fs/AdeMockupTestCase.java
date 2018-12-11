@@ -52,7 +52,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author vk155633
  */
 public class AdeMockupTestCase  extends RemoteFileTestBase  {
     

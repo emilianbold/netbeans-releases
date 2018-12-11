@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 /**
  * Aid class to avoid multiple ProgressHandles...
  *
- * @author akrasny
  */
 public final class ConnectingProgressHandle {
 

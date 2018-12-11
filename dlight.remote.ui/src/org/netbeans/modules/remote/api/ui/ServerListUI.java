@@ -49,7 +49,6 @@ import org.openide.util.NotImplementedException;
 
 /**
  * Displayes Edit Servers List dialog.
- * @author Vladimir Kvashin
  */
 public final class ServerListUI {
 

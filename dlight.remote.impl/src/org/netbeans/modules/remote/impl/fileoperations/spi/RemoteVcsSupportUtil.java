@@ -82,7 +82,6 @@ import org.openide.util.Lookup;
 
 /**
  * Static methods that are need for RemoteVcsSupportImpl
- * @author vkvashin
  */
 public class RemoteVcsSupportUtil {
 

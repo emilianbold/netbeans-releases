@@ -51,7 +51,6 @@ import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 /**
  *
- * @author Vladimir Kvashin
  */
 public class CaseSensivityTestCase extends RemoteFileTestBase {
 

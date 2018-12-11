@@ -47,7 +47,6 @@ import org.netbeans.modules.remote.api.ConnectionNotifier;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface ConnectionNotifierImplementation {
     void addTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);

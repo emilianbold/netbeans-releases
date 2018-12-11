@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ak119685
  */
 public final class AuthTypeSelectorDlg extends javax.swing.JPanel {
 

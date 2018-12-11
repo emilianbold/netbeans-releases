@@ -52,7 +52,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class Md5checkerTest extends NativeExecutionBaseTestCase {
 

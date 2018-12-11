@@ -53,7 +53,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author akrasny
  */
 public class SSHKeyFileFilter implements FileFilter {
 

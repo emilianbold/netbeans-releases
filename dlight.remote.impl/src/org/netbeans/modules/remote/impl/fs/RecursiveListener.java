@@ -59,8 +59,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- * @author Vladimir Kvashin
  */
 final class RecursiveListener extends WeakReference<FileObject>
 implements FileChangeListener {

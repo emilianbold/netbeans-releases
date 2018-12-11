@@ -51,7 +51,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author akrasny
  */
 public final class ConfigurationsModel implements Cloneable {
 

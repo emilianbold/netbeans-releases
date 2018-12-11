@@ -71,8 +71,6 @@ import org.openide.util.Utilities;
 
 /**
  * A temporary solution until we have an official file system provider in thus module
- * @author Andrew Krasny
- * @author Vladimir Kvashin
  */
 public final class FileSystemProvider {
 

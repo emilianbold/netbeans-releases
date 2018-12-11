@@ -54,7 +54,6 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  *
- * @author Andrew
  */
 public class NbStartUtility extends HelperUtility {
 

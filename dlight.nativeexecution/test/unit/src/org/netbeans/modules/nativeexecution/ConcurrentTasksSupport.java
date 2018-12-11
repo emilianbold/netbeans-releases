@@ -56,7 +56,6 @@ import junit.framework.Assert;
 
 /**
  *
- * @author ak119685
  */
 public final class ConcurrentTasksSupport {
 

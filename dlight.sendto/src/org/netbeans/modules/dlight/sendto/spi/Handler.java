@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author akrasny
  */
 public abstract class Handler<T extends ConfigurationPanel> {
 

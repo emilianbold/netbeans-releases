@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ak119685
  */
 public class ShellValidationStatusPanel extends javax.swing.JPanel {
     private ActionListener actionListener = null;

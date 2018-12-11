@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
- * @author Andrew
  */
 public class ShellSessionTest extends NativeExecutionBaseTestCase {
 

@@ -56,7 +56,6 @@ import javax.swing.event.*;
 /**
  * Blocks user's input when FileChooser is busy.
  *
- * @author Soot Phengsy
  */
 class InputBlocker extends JComponent implements MouseInputListener {
     

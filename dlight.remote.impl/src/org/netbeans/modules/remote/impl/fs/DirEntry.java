@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.F
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class DirEntry {
 

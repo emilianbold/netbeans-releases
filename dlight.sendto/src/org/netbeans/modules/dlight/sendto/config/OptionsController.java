@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author akrasny
  */
 @OptionsPanelController.SubRegistration(id = OptionsController.ID, displayName = "#LBL_Options")
 public final class OptionsController extends OptionsPanelController {

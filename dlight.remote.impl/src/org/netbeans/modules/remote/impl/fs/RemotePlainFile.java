@@ -75,7 +75,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public final class RemotePlainFile extends RemoteFileObjectWithCache {
 

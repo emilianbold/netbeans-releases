@@ -66,7 +66,6 @@ import org.netbeans.modules.dlight.libs.common.invalid.InvalidFileObject;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class InvalidFileObjectSupport {
 

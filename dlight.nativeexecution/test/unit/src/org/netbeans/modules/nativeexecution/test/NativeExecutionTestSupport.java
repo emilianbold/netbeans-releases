@@ -80,7 +80,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author vk155633
  */
 public class NativeExecutionTestSupport {
 

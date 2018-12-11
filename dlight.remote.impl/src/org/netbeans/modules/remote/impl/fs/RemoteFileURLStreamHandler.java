@@ -50,7 +50,6 @@ import org.openide.util.URLStreamHandlerRegistration;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @URLStreamHandlerRegistration(protocol="rfs")
 public class RemoteFileURLStreamHandler extends URLStreamHandler {

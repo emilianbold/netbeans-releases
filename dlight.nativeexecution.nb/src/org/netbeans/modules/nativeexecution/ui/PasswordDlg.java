@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author vv159170
  */
 public class PasswordDlg extends javax.swing.JPanel implements PromptPasswordDialog, PasswordProvider {
 

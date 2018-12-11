@@ -74,7 +74,6 @@ import org.openide.windows.IOContainer;
 
 /**
  * Top component which displays something.
- * @author Vladimir Voskresensky
  */
 @ConvertAsProperties(dtd = "-//org.netbeans.modules.dlight.terminal.ui//TerminalContainer//EN",// NOI18N
 autostore = false)

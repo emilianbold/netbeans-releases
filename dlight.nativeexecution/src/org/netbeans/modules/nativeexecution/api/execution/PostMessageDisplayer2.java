@@ -46,7 +46,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author akrasny
  * @since 1.30.1
  */
 public interface PostMessageDisplayer2 extends PostMessageDisplayer {

@@ -55,7 +55,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
 

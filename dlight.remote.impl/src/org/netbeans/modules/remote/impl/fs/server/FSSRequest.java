@@ -46,7 +46,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
- * @author vkvashin
  */
 public final class FSSRequest {
     

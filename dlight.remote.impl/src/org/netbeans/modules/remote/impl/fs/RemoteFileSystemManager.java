@@ -58,7 +58,6 @@ import org.openide.util.Exceptions;
  *
  * TODO: release instances when they are not used
  *
- * @author Vladimir Kvashin
  */
 public class RemoteFileSystemManager {
     

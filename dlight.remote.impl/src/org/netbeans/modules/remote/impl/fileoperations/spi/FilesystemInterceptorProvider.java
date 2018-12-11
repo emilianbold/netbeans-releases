@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 abstract public class FilesystemInterceptorProvider {
     private static FilesystemInterceptorProvider defaultProvider;

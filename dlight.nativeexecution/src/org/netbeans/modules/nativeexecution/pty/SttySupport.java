@@ -50,7 +50,6 @@ import org.netbeans.modules.nativeexecution.support.ShellSession;
 
 /**
  *
- * @author ak119685
  */
 public final class SttySupport {
 

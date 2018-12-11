@@ -72,7 +72,6 @@ import org.openide.filesystems.FileRenameEvent;
 /**
  * The only class that comes outside.
  * Fixing #208084 - Remote file system should keep FileObject instances when a file is replaced with symlink and vice versa 
- * @author vk155633
  */
 public final class RemoteFileObject extends FileObject implements Serializable {
 

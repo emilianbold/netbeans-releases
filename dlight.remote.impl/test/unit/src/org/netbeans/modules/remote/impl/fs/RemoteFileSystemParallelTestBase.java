@@ -51,7 +51,6 @@ import static org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestC
 
 /**
  *
- * @author vkvashin
  */
 public class RemoteFileSystemParallelTestBase extends RemoteFileTestBase {
 

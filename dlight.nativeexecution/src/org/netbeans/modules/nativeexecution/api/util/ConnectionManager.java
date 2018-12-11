@@ -85,7 +85,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ak119685
  */
 public final class ConnectionManager {
 

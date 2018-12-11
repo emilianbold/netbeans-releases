@@ -45,7 +45,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author masha
  */
 public interface PasswordProvider {
 

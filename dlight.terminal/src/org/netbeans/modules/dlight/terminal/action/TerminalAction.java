@@ -54,7 +54,6 @@ import org.openide.windows.IOProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class TerminalAction extends AbstractAction implements Presenter.Toolbar {
     

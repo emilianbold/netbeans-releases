@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ak119685
  */
 public class NativeProcessTest extends NativeExecutionBaseTestCase {
 

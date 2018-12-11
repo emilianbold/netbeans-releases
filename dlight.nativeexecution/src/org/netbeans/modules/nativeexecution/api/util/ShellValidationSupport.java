@@ -59,7 +59,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author ak119685
  */
 public final class ShellValidationSupport {
     

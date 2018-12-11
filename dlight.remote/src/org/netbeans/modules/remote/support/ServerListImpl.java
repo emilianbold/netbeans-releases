@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /**
  * Stores the list of hosts;
  * each host is represented by ServerRecord instance
- * @author Vladimir Kvashin
  */
 public final class ServerListImpl {
 

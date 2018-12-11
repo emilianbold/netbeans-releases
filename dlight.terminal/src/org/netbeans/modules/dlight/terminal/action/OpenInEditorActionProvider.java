@@ -61,7 +61,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author igromov
  */
 @ServiceProvider(service = ExternalCommandActionProvider.class)
 public class OpenInEditorActionProvider extends ExternalCommandActionProvider {

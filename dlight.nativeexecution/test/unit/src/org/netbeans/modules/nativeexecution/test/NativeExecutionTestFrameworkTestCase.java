@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * This class test test framework as such -
  * NativeExecutionBaseTestSuite, NativeExecutionBaseTestCase classes,
  * ForAllEnvironments annotation, etc
- * @author Vladimir Kvashin
  */
 public class NativeExecutionTestFrameworkTestCase extends NativeExecutionBaseTestCase {
 

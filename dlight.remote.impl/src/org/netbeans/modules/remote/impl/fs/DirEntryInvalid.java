@@ -48,7 +48,6 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  *
- * @author vk155633
  */
 public final class DirEntryInvalid extends DirEntry {
 

@@ -67,7 +67,6 @@ import org.netbeans.modules.nativeexecution.support.Logger;
  *
  * Supported platforms: MacOSX
  *
- * @author Andrew
  */
 public abstract class NbNativeProcess extends AbstractNativeProcess {
 

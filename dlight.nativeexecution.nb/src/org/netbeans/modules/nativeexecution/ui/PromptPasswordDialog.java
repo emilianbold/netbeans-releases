@@ -45,7 +45,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author akrasny
  */
 public interface PromptPasswordDialog {
 

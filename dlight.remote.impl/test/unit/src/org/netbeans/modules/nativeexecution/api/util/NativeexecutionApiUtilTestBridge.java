@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 /**
  * A bridge that allows to call HostInfoUtils pacjage methods
- * @author vk155633
  */
 public class NativeexecutionApiUtilTestBridge {
 

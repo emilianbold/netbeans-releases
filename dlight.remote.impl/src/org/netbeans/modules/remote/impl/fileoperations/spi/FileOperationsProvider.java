@@ -83,7 +83,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 abstract public class FileOperationsProvider {
     public static final String ATTRIBUTE = "FileProxyOperations"; // NOI18N        

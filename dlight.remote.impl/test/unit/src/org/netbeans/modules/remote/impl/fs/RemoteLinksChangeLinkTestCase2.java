@@ -58,7 +58,6 @@ import org.netbeans.modules.remote.test.RemoteApiTest;
  * There hardly is a way to unit test remote operations.
  * This is just an entry point for manual validation.
  *
- * @author Vladimir Kvashin
  */
 public class RemoteLinksChangeLinkTestCase2 extends RemoteFileTestBase {
 

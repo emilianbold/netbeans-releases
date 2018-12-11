@@ -53,7 +53,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author vkvashin
  */
 public class CopyTestCase extends RemoteFileTestBase  {
 

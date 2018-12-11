@@ -59,7 +59,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class NativeExecutionBaseTestSuite extends NbTestSuite {
 

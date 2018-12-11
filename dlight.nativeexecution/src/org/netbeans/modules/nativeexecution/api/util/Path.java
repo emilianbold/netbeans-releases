@@ -52,7 +52,6 @@ import org.openide.util.Utilities;
 /**
  * Get path. Remembers additions to the path.
  *
- * @author gordonp
  */
 public final class Path {
     

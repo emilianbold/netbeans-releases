@@ -43,7 +43,6 @@ package org.netbeans.modules.dlight.sendto.api;
 
 /**
  *
- * @author akrasny
  */
 public enum OutputMode {
 

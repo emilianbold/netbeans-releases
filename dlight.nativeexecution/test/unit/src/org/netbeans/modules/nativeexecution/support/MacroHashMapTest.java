@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
- * @author ak119685
  */
 public class MacroHashMapTest extends NativeExecutionBaseTestCase {
 

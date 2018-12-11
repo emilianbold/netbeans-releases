@@ -62,7 +62,6 @@ import org.openide.windows.InputOutput;
 /**
  * An utility class for pty-related stuff...
  *
- * @author ak119685
  */
 public final class PtySupport {
 

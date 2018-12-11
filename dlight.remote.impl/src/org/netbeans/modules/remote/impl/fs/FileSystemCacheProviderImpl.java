@@ -53,7 +53,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemCacheProvider.class, position=100)
 public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {

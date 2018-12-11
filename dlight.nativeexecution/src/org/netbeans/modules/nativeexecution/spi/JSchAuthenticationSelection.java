@@ -47,7 +47,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author masha
  */
 abstract public class JSchAuthenticationSelection {
     private static final JSchAuthenticationSelection INSTANCE = new JSchAuthenticationSelectionImpl();

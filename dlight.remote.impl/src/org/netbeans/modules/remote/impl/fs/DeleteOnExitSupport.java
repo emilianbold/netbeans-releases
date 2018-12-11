@@ -58,7 +58,6 @@ import org.openide.util.Exceptions;
 
 /**
  * Manages paths that are marked as "delete on exit".
- * @author vkvashin
  */
 public class DeleteOnExitSupport {
 

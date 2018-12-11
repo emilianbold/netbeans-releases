@@ -70,7 +70,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author ak119685
  */
 public final class JSchChannelsSupport {
 

@@ -49,7 +49,6 @@ import javax.swing.Timer;
 
 /**
  *
- * @author vkvashin
  */
 class SlowListenerDetector {
     

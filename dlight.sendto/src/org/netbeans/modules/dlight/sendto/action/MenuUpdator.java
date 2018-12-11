@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author akrasny
  */
 public class MenuUpdator {
 

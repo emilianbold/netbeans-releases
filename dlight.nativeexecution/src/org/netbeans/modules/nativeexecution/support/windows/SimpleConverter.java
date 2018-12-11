@@ -53,7 +53,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author ak119685
  */
 public final class SimpleConverter implements PathConverter {
 

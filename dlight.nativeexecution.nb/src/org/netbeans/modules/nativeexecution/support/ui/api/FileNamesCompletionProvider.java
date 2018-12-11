@@ -54,7 +54,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author akrasny
  */
 public abstract class FileNamesCompletionProvider implements AutocompletionProvider {
 

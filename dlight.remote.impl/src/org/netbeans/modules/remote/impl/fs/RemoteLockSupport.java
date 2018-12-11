@@ -59,7 +59,6 @@ import org.openide.filesystems.FileLock;
 
 /**
  *
- * @author vkvashin
  */
 public class RemoteLockSupport {
 

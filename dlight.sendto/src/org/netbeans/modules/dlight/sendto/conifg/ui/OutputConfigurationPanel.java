@@ -47,7 +47,6 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author akrasny
  */
 public class OutputConfigurationPanel extends JPanel {
 

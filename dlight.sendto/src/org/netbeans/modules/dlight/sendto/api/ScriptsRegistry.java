@@ -63,7 +63,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author akrasny
  */
 public final class ScriptsRegistry {
 

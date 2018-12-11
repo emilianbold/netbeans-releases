@@ -57,7 +57,6 @@ import org.openide.util.RequestProcessor;
 /**
  * Logger for internal profiling performance issues.
  * 
- * @author Alexander Simon
  */
 public class PerformanceLogger {
     

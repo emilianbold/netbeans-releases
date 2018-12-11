@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 
 /**
  *
- * @author vk155633
  */
 public interface ServerRecordUIController {
     

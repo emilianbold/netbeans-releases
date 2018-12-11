@@ -57,7 +57,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author ak119685
  */
 public final class AutocompletionSupport implements ConnectionListener {
 

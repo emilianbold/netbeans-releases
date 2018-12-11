@@ -55,7 +55,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author akrasny
  */
 public final class FutureAction {
 

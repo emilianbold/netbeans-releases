@@ -95,8 +95,6 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author Andrew Krasny
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service = org.netbeans.modules.remote.spi.FileSystemProviderImplementation.class, position=100)
 public final class LocalFileSystemProvider implements FileSystemProviderImplementation {

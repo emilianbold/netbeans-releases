@@ -50,7 +50,6 @@ import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 
 /**
  *
- * @author vkvashin
  */
 /*package*/ class FSSUtil  {
 

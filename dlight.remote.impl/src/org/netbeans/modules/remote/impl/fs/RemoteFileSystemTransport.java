@@ -57,7 +57,6 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 /**
  *
- * @author vk155633
  */
 public abstract class RemoteFileSystemTransport {
 

@@ -45,7 +45,6 @@ import java.awt.event.KeyListener;
 
 /**
  *
- * @author ak119685
  */
 public interface Completable {
 

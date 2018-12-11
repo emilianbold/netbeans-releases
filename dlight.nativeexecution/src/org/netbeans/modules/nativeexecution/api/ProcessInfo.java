@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit;
  * changed... (?)
  * I.e. for now, if it is created - all calls to getters are fast.
  *
- * @author ak119685
  */
 public interface ProcessInfo {
 

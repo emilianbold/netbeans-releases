@@ -47,7 +47,6 @@ import org.netbeans.modules.remote.api.ServerRecord;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface ServerRecordUIProvider {
 

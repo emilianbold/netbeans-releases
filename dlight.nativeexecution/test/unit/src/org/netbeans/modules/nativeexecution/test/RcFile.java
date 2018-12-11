@@ -65,7 +65,6 @@ import org.openide.util.Utilities;
  *      key1=value1
  *      key2=value2
  *      ...
- * @author vk155633
  */
 public final class RcFile {
 

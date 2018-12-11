@@ -49,7 +49,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service=KeyringProvider.class, position=0)
 public class DummyKeyringProvider implements KeyringProvider {

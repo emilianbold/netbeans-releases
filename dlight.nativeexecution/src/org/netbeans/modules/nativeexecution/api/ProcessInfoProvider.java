@@ -44,7 +44,6 @@ package org.netbeans.modules.nativeexecution.api;
 
 /**
  *
- * @author ak119685
  */
 public interface ProcessInfoProvider {
     /**

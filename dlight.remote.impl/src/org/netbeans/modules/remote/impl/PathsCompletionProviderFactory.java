@@ -63,7 +63,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author ak119685
  */
 @ServiceProvider(service = AutocompletionProviderFactory.class)
 public class PathsCompletionProviderFactory implements AutocompletionProviderFactory {

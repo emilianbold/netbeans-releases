@@ -53,7 +53,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class FileSystemProviderTestCase extends RemoteFileTestBase {
 

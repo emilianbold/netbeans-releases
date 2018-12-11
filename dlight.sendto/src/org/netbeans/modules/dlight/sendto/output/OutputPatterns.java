@@ -59,7 +59,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author akrasny
  */
 public final class OutputPatterns {
 

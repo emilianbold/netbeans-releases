@@ -72,7 +72,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author vkvashin
  */
 public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
 

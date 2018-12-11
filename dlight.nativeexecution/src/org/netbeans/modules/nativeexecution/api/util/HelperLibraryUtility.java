@@ -59,7 +59,6 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  *
- * @author Alexander Simon
  */
 public class HelperLibraryUtility {
 

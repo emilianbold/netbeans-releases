@@ -66,7 +66,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author vkvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=ExternalDropHandler.class, position = 500)
 public class RemoteExternalDropHandler extends ExternalDropHandler {

@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  *
- * @author akrasny
  */
 public final class RedirectErrorTest extends NativeExecutionBaseTestCase {
 

@@ -60,7 +60,6 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 
 /**
  *
- * @author vkvashin
  */
     public class RemoteTestSuiteBase extends NativeExecutionBaseTestSuite {
 

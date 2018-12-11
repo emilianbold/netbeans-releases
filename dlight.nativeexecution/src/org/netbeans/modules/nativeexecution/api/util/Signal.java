@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 /**
  *
- * @author ak119685
  */
 public enum Signal {
     // IDs are taken from signal_iso.h on Solaris

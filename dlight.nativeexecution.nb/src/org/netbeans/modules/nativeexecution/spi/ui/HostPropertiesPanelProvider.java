@@ -50,7 +50,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
  * <p> See:
  * {@link ConnectionManager#getConfigurationPanel(ExecutionEnvironment)} </p>
  *
- * @author akrasny
  */
 public interface HostPropertiesPanelProvider {
 

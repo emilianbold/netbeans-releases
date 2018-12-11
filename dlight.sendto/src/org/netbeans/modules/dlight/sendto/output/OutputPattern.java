@@ -46,7 +46,6 @@ import java.util.regex.Pattern;
 
 /**
  *
- * @author akrasny
  */
 public final class OutputPattern {
 

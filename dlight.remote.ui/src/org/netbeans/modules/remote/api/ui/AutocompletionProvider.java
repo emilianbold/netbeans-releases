@@ -46,7 +46,6 @@ import java.util.List;
 
 /**
  *
- * @author ak119685
  */
 public interface AutocompletionProvider {
 

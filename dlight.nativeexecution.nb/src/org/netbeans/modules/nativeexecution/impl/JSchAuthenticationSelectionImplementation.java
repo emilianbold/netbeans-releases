@@ -48,7 +48,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service = JSchAuthenticationSelection.class, position = 100)
 public class JSchAuthenticationSelectionImplementation extends JSchAuthenticationSelection{

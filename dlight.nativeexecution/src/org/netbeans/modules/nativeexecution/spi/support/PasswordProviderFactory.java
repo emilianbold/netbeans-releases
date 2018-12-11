@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.spi.support;
 
 /**
  *
- * @author masha
  */
 abstract public interface PasswordProviderFactory {
     /**

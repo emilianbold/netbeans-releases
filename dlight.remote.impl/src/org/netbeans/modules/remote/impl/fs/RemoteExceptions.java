@@ -50,7 +50,6 @@ import java.net.ConnectException;
 
 /**
  * Inspired by org.netbeans.modules.masterfs.filebasedfs.utils.FSException
- * @author vkvashin
  */
 public final class RemoteExceptions {
 

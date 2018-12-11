@@ -59,7 +59,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteFileURLConnection extends URLConnection {
 
@@ -185,7 +184,6 @@ public class RemoteFileURLConnection extends URLConnection {
      * interface the document has html format. Taken from
      * org.openide.filesystems.FileURL
      *
-     * @author Ales Novak
      * @version 0.10 May 15, 1998
      */
     private static final class FIS extends InputStream {

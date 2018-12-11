@@ -58,7 +58,6 @@ import org.openide.filesystems.FileRenameEvent;
 
 /**
  *
- * @author vkvashin
  */
 public class PlainFileWriteEventsTestCase extends RemoteFileTestBase {
 

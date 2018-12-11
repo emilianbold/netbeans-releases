@@ -53,7 +53,6 @@ import org.openide.windows.InputOutput;
  * @see ExecutionDescriptor
  * @see NativeExecutionService
  *
- * @author ak119685
  */
 public final class NativeExecutionDescriptor {
 

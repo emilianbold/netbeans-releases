@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ActionID(id = "LocalTerminalAction", category = "Window")
 @ActionRegistration(iconInMenu = true, displayName = "#LocalTerminalShortDescr", iconBase = "org/netbeans/modules/dlight/terminal/action/local_term.png")

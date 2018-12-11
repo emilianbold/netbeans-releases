@@ -67,7 +67,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author akrasny
  */
 public final class OptionsPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
 

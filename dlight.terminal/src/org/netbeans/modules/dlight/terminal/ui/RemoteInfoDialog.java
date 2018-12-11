@@ -61,7 +61,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class RemoteInfoDialog extends javax.swing.JPanel {
     private static final String LAST_SELECTED_HOST = "lastSelectedHost"; // NOI18N

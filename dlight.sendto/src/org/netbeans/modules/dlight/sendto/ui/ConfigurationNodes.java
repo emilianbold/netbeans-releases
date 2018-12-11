@@ -58,7 +58,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author akrasny
  */
 public final class ConfigurationNodes extends Children.Keys<Configuration> {
 

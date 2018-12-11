@@ -86,7 +86,6 @@ import org.openide.windows.OutputWriter;
  * @see ExecutionService
  * @see NativeExecutionDescriptor
  *
- * @author ak119685
  */
 public final class NativeExecutionService {
 

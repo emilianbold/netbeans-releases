@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
- * @author ak119685
  */
 public class RemoveTaskTest {
 

@@ -53,7 +53,6 @@ import org.openide.util.NotImplementedException;
  * inside a suspended directory and its children.
  * When you suspend a directory, all child directories become suspended as well,
  * but SuspendInfo corresponds exactly to the directory suspend was called on.
- * @author vkvashin
  */
 public class SuspendInfo {
     

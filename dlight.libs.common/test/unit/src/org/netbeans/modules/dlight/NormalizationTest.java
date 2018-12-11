@@ -52,7 +52,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class NormalizationTest {
     

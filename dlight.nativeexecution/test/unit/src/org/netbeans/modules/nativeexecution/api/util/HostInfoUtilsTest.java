@@ -66,7 +66,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 

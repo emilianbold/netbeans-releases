@@ -50,7 +50,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 
 /**
  *
- * @author Alexander Simon
  */
 public class Agent {
     public static void main(String[] args){

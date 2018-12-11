@@ -71,7 +71,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemProviderImplementation.class, position=150)
 public class RemoteFileSystemProvider implements FileSystemProviderImplementation {

@@ -73,7 +73,6 @@ import org.openide.filesystems.FileUtil;
  * each should be available by the same path
  * from both local and remote host
  * 
- * @author Vladimir Kvashin
  */
 public class PerformanceTestCase extends RemoteFileTestBase {
 

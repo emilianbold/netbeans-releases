@@ -47,7 +47,6 @@ import java.util.List;
 
 /**
  *
- * @author vkvashin
  */
 public class DirEntryList {
     private final List<DirEntry> entries;

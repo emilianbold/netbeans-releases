@@ -77,7 +77,6 @@ import org.openide.xml.XMLUtil;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class ConnectionNotifierDelegate implements ConnectionListener {
 

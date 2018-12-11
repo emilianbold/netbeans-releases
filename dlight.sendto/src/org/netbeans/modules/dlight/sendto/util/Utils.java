@@ -52,7 +52,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author ak119685
  */
 public final class Utils {
     private static final String SHELL_MACRO = "${SHELL}"; //NOI18N

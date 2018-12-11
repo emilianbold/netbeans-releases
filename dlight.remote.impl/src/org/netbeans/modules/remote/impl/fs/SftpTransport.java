@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
 /**
  * Note: public access is needed for tests
  * 
- * @author Vladimir Kvashin
  */
 public class SftpTransport extends RemoteFileSystemTransport {
 

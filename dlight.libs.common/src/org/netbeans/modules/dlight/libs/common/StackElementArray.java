@@ -50,7 +50,6 @@ import java.util.Set;
  * (for frequent problematic code invocations).
  * Copied from Lexer
  *
- * @author Miloslav Metelka
  */
 class StackElementArray {
 

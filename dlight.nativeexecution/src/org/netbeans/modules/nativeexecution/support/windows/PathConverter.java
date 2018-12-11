@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.support.windows;
 
 /**
  *
- * @author ak119685
  */
 public interface PathConverter {
 

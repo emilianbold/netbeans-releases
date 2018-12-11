@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.util.HostPropertyValidator;
 
 /**
  *
- * @author ak119685
  */
 public abstract class ValidateablePanel extends JPanel implements HostPropertyValidator{
 

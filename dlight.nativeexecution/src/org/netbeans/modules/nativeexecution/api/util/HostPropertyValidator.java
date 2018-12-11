@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 /**
  *
- * @author masha
  */
 public interface HostPropertyValidator {
     

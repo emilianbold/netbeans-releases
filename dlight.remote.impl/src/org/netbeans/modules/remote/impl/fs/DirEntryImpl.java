@@ -56,7 +56,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author vkvashin
  */
 public class DirEntryImpl extends DirEntry {
 

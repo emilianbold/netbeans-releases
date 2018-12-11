@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
  *
- * @author akrasny
  */
 final class PortForwarding {
 

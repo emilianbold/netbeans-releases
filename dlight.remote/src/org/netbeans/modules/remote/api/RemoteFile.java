@@ -43,7 +43,6 @@ package org.netbeans.modules.remote.api;
 
 /**
  * Marker interface
- * @author masha
  */
 public interface RemoteFile {
     

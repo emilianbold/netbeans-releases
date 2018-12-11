@@ -46,7 +46,6 @@ import javax.swing.AbstractAction;
 
 /**
  *
- * @author ak119685
  */
 final class MessageAction extends AbstractAction {
 

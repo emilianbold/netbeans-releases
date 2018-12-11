@@ -60,7 +60,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 /**
  * A directory tree node.
  *
- * @author Soot Phengsy
  */
 class FileNode extends DefaultMutableTreeNode {
     

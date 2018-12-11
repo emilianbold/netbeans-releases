@@ -49,7 +49,6 @@ import org.openide.util.NotImplementedException;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public final class ServerRecord implements Lookup.Provider {
 

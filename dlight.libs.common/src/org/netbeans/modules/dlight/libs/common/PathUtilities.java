@@ -51,7 +51,6 @@ import sun.nio.cs.ThreadLocalCoders;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class PathUtilities {
 

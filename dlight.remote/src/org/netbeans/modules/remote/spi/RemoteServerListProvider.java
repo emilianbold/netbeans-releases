@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Provides a list of remote servers that have been set up in the IDE
- * @author vkvashin
  */
 public interface RemoteServerListProvider {
     /**

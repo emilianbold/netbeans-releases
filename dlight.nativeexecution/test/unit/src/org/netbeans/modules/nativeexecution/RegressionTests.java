@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  *
- * @author ak119685
  */
 public class RegressionTests extends NativeExecutionBaseTestCase {
 

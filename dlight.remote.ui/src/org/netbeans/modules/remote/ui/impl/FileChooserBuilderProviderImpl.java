@@ -46,7 +46,6 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.lookup.ServiceProvider;
 /**
  *
- * @author Danila Sergeyev
  */
 @ServiceProvider(service=FileChooserBuilderProvider.class, position=10)
 public class FileChooserBuilderProviderImpl extends FileChooserBuilderProvider {

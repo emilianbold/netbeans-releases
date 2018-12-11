@@ -48,7 +48,6 @@ import org.openide.filesystems.URLMapperTestHidden;
 
 /**
  *
- * @author vv159170
  */
 public class RemoteFSTCKUrlMapperTest extends RemoteFSTCKTestCase {
    

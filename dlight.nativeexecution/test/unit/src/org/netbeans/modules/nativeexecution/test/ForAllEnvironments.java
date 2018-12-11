@@ -71,7 +71,6 @@ import java.lang.annotation.Target;
  * method for adding tests.
  * Otherwise the annotation is just ignored.
  *
- * @author Vladimir Kvashin
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

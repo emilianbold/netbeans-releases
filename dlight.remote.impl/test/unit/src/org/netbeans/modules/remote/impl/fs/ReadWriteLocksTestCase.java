@@ -71,7 +71,6 @@ import org.openide.util.Exceptions;
  * That's not for including in daily tests,
  * but rather to reproducing the situation when a file can not be open because it is locked
  *
- * @author vkvashin
  */
 public class ReadWriteLocksTestCase extends RemoteFileTestBase {
 

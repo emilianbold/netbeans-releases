@@ -48,7 +48,6 @@ import org.openide.util.URLStreamHandlerRegistration;
 
 /**
  *
- * @author vkvashin
  */
 @URLStreamHandlerRegistration(protocol="invalid")
 public class InvalidFileURLStreamHandler extends URLStreamHandler {

@@ -67,7 +67,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Andrew
  */
 public class NbStartLocalTest extends NativeExecutionBaseTestCase {
 

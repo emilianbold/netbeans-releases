@@ -48,7 +48,6 @@ import org.openide.filesystems.FileUtilTestHidden;
 
 /**
  *
- * @author vv159170
  */
 public class RemoteFSTCKFileUtilTest extends RemoteFSTCKTestCase {
    

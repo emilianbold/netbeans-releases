@@ -59,7 +59,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 /*package-local*/ class Md5checker {
 

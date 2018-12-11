@@ -56,7 +56,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author ak119685
  */
 public final class Authentication {
 

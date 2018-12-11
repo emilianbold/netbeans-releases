@@ -73,7 +73,6 @@ import org.openide.util.Utilities;
  * This is not a full implementation of File - only those
  * methods are supported that are used for file browsing...
  *
- * @author ak119685
  */
 public final class FileObjectBasedFile extends File implements RemoteFile{
 

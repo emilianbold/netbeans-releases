@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.api.ui.util;
 
 /**
  *
- * @author ak119685
  */
 public interface ValidatablePanelListener {
 

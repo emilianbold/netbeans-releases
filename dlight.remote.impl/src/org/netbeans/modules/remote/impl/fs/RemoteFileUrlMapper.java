@@ -56,7 +56,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
 public class RemoteFileUrlMapper extends URLMapper {

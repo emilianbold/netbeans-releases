@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author in220748
  */
 public final class AuthenticationUtils {
 

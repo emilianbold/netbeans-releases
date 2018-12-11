@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author vkvashin
  */
 public class FSSTransport extends RemoteFileSystemTransport implements ConnectionListener {
 

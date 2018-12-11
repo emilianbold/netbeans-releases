@@ -51,7 +51,6 @@ import org.openide.filesystems.FileLock;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public final class RemoteLink extends RemoteLinkBase {
     

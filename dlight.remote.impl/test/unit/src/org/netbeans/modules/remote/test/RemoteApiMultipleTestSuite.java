@@ -51,7 +51,6 @@ import org.netbeans.modules.remote.impl.fs.ScheduleRefreshParityTestCase;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteApiMultipleTestSuite extends RemoteTestSuiteBase {
 

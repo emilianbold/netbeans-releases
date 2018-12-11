@@ -52,7 +52,6 @@ import org.openide.util.Utilities;
 /**
  * Doesn't work on Windows
  * 
- * @author akrasny
  */
 public final class SSHKeyFileCompletionProvider extends FileNamesCompletionProvider {
 

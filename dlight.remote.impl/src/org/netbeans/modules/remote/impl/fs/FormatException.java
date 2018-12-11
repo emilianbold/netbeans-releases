@@ -48,7 +48,6 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class FormatException extends Exception {
 

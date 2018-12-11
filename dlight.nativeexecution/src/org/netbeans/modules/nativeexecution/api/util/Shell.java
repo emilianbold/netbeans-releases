@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.support.windows.PathConverter.PathTy
 
 /**
  *
- * @author ak119685
  */
 public class Shell {
 

@@ -49,7 +49,6 @@ import org.openide.awt.Mnemonics;
 
 /**
  *
- * @author akrasny
  */
 public final class ScriptPanel extends JPanel {
 

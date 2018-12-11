@@ -70,7 +70,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider (service = NativeExecutionUserNotification.class, position = 100)
 public class NativeExecutionUserNotificationImpl extends NativeExecutionUserNotification {

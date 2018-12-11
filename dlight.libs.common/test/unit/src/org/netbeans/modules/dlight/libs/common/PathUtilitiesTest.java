@@ -46,7 +46,6 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class PathUtilitiesTest {
     

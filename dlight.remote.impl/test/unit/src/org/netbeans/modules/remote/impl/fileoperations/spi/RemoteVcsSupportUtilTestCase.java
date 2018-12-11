@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author vkvashin
  */
 public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
 

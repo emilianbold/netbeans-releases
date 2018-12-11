@@ -102,7 +102,6 @@ import org.openide.windows.WindowManager;
  * gets files on demand from a remote host.
  * It is read-only
  * 
- * @author Vladimir Kvashin
  */
 @org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
 public final class RemoteFileSystem extends FileSystem implements ConnectionListener {

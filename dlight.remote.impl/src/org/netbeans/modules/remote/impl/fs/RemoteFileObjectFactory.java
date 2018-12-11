@@ -59,7 +59,6 @@ import org.openide.filesystems.FileChangeListener;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteFileObjectFactory {
 

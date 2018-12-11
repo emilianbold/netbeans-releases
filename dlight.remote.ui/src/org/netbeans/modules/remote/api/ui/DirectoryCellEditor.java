@@ -61,7 +61,6 @@ import javax.swing.JTree;
 
 /**
  * A simple tree cell editor helper used to properly display a node while in editing mode.
- * @author Soot Phengsy
  */
 class DirectoryCellEditor extends DefaultCellEditor {
     

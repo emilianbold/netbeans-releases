@@ -46,7 +46,6 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author akrasny
  */
 public abstract class ConfigurationPanel extends JPanel {
 

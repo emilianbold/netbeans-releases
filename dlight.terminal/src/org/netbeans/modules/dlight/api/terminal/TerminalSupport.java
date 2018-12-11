@@ -50,7 +50,6 @@ import org.openide.windows.IOContainer;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class TerminalSupport {
 

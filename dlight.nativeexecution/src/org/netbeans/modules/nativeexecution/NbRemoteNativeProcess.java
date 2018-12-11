@@ -47,7 +47,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Andrew
  */
 public final class NbRemoteNativeProcess extends NbNativeProcess {
 

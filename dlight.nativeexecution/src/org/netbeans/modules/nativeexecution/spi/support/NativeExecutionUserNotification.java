@@ -46,7 +46,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author masha
  */
 abstract public class NativeExecutionUserNotification {
 

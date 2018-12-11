@@ -77,7 +77,6 @@ import javax.swing.text.JTextComponent;
 /**
  * A class that handles the "File Name:" text field auto-completion drop-down selection list.
  *
- * @author Soot Phengsy
  */
 class FileCompletionPopup extends JPopupMenu implements KeyListener {
     

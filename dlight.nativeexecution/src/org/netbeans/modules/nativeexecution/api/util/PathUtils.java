@@ -56,7 +56,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class PathUtils {
 

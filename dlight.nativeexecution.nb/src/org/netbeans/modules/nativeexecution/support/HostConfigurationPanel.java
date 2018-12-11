@@ -63,7 +63,6 @@ import org.openide.util.Lookup;
  * <code>GridBagLayout</code> layout and all panels are placed one under another
  * (in the order, of providers registration)</p>
  *
- * @author akrasny
  */
 public final class HostConfigurationPanel extends ValidateablePanel {
 

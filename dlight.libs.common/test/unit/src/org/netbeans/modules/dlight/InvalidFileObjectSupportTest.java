@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class InvalidFileObjectSupportTest {
 

@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.api;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteException extends Exception {
 

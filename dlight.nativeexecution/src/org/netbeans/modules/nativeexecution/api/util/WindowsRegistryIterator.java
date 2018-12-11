@@ -81,7 +81,6 @@ import java.util.NoSuchElementException;
  * Note: if a subKey starts (case-insensitively) with "HKLM\\" or "HKCU\\", it
  * is modified not to contain this root prefix before proceeding with a search.
  *
- * @author akrasny
  * @since 1.30.2
  */
 public final class WindowsRegistryIterator implements Iterator<String[]> {

@@ -65,7 +65,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author ak119685
  */
 public final class PtyAllocator {
 

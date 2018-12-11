@@ -60,7 +60,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface FileSystemProviderImplementation {
     FileSystem getFileSystem(ExecutionEnvironment env, String root);

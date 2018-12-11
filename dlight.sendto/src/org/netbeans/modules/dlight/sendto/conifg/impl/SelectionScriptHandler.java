@@ -67,7 +67,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author akrasny
  */
 @ServiceProvider(service = Handler.class)
 public class SelectionScriptHandler extends Handler<SelectionConfigurationPanel> {

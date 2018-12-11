@@ -83,7 +83,6 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
 /**
- * @author Vladimir Kvashin
  */
 class SftpSupport {
 

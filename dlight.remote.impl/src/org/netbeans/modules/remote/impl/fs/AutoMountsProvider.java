@@ -64,7 +64,6 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.util.NbPreferences;
 
 /**
- * @author vkvashin
  */
 public class AutoMountsProvider {
 

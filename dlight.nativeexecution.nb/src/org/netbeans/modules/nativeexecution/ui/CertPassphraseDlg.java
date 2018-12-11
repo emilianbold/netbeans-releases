@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ak119685
  */
 public class CertPassphraseDlg extends javax.swing.JPanel implements PromptPasswordDialog, PasswordProvider {
 

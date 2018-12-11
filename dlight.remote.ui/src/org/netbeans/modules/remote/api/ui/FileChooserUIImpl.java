@@ -165,7 +165,6 @@ import sun.swing.FilePane;
 /**
  * An implementation of a customized filechooser.
  *
- * @author Soot Phengsy, inspired by Jeff Dinkins' Swing version
  */
 final class FileChooserUIImpl extends BasicFileChooserUI{
 

@@ -48,8 +48,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
- * @author Alexey Vladykin
- * @author Vladimir Kvashin
  */
 public class DLightLibsCommonLogger {
 

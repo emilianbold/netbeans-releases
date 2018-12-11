@@ -64,7 +64,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MagicCache {
     static final int BUF_LENGTH = 4000;

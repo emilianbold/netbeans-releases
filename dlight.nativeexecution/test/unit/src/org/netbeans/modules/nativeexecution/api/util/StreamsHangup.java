@@ -58,7 +58,6 @@ import javax.accessibility.AccessibleRole;
 
 /**
  *
- * @author vkvashin
  */
 
 public class StreamsHangup {

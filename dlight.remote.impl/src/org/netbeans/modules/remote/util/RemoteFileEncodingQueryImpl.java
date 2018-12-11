@@ -53,7 +53,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vkvashin
  */
 @ServiceProvider(service = FileEncodingQueryImplementation.class, position = 1000)
 public class RemoteFileEncodingQueryImpl extends FileEncodingQueryImplementation {

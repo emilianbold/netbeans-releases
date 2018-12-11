@@ -47,7 +47,6 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class ServerSetupWorker {
     /**

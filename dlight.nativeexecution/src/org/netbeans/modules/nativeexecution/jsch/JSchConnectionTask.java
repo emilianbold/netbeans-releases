@@ -65,7 +65,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Thread safe. Started only once.
- * @author ak119685
  */
 public final class JSchConnectionTask implements Cancellable {
 

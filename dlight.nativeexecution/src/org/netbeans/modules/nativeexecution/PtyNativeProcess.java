@@ -62,7 +62,6 @@ import org.netbeans.modules.nativeexecution.pty.PtyUtility;
 
 /**
  *
- * @author ak119685
  */
 public final class PtyNativeProcess extends AbstractNativeProcess {
 

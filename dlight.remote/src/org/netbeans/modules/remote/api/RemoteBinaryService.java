@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
  * In the case it is shared, returns just a path to the same physical binary.
  * In the case it is not shared, ensures that the file is copied to the local host
  * and returns full path to the copy
- * @author Vladimir Kvashin
  */
 public abstract class RemoteBinaryService {
 

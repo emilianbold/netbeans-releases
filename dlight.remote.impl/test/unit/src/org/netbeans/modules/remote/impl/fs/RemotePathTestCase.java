@@ -51,7 +51,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemotePathTestCase extends RemoteFileTestBase {
 

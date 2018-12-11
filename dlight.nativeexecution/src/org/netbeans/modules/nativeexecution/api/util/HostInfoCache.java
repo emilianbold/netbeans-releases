@@ -53,7 +53,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author vk155633
  */
 /*package*/ class HostInfoCache implements ConnectionListener {
 

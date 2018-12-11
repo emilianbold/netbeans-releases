@@ -57,7 +57,6 @@ import org.openide.modules.OnStop;
 
 /**
  *
- * @author vkvashin
  */
 public class FileStatistics {
     

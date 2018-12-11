@@ -63,7 +63,6 @@ import org.openide.filesystems.URLMapper;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteURLTestCase extends RemoteFileTestBase {
 

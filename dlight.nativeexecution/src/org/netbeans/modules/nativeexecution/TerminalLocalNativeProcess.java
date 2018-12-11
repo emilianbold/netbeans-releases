@@ -76,7 +76,6 @@ import org.openide.util.Utilities;
 
 /**
  * A process to be run in *external* terminal
- * @author akrasny
  */
 public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 

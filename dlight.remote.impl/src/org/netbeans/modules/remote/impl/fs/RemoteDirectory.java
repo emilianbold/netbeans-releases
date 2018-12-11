@@ -92,7 +92,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteDirectory extends RemoteFileObjectWithCache {
 

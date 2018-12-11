@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * A generic interface for some service that can be applicable to an
  * ExecutionEnvironment
  *
- * @author ak119685
  */
 public interface ExecutionEnvironmentServiceProvider {
 

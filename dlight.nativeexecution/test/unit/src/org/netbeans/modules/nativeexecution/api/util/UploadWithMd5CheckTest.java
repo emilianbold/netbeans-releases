@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
 

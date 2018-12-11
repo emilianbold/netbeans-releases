@@ -64,7 +64,6 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author vkvashin
  */
 public class RemoteFileZipper {
 

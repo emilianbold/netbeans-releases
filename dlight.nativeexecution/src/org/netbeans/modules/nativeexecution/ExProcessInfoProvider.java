@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution;
 
 /**
  *
- * @author akrasny
  */
 public interface ExProcessInfoProvider {
     String getTTY();

@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.support.HostConfigurationPanel;
 
 /**
  *
- * @author masha
  */
 public class NativeExecutionUIUtils {
     

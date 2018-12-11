@@ -64,7 +64,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  *
- * @author vkvashin
  */
 public class StreamsHangupTestCase extends NativeExecutionBaseTestCase {
 

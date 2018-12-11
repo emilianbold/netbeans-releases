@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.pty.Pty;
 
 /**
  *
- * @author ak119685
  */
 public abstract class NativeProcessBuilderAccessor {
 

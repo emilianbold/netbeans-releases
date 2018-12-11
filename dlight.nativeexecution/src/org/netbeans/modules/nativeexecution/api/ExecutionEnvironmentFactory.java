@@ -64,7 +64,6 @@ import org.openide.util.LookupListener;
  * and the class will be moved to
  * org.netbeans.modules.nativeexecution.api
  *
- * @author Vladimir Kvashin
  */
 public class ExecutionEnvironmentFactory {
 

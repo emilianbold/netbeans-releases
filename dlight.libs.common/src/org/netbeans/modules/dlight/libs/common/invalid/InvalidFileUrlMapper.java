@@ -52,7 +52,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author vkvashin
  */
 @org.openide.util.lookup.ServiceProvider(service = org.openide.filesystems.URLMapper.class)
 public class InvalidFileUrlMapper extends URLMapper {

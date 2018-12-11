@@ -54,7 +54,6 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * A cache that holds soft references to its values and
  * removes entries when values are collected
- * @author Vladimir Kvashin
  */
 public class WeakCache<K, V> {
 

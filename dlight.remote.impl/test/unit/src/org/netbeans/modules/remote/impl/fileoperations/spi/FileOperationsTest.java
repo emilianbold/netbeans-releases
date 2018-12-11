@@ -47,7 +47,6 @@ import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FileOperationsTest extends RemoteTestSuiteBase {
     

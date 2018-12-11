@@ -94,7 +94,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author vkvashin
  */
 /*package*/ final class FSSDispatcher implements Disposer<FSSResponse> {
 

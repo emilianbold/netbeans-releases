@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Listens connect events
- * @author Vladimir Kvashin
  */
 public interface ConnectionListener extends EventListener {
     /**

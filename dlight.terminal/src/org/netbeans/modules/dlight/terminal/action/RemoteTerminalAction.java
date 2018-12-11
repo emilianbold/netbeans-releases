@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ActionID(id = "RemoteTerminalAction", category = "Window")
 @ActionRegistration(iconInMenu = true, displayName = "#RemoteTerminalShortDescr", iconBase = "org/netbeans/modules/dlight/terminal/action/remote_term.png")

@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author ak119685
  */
 public interface AutocompletionProviderFactory {
 

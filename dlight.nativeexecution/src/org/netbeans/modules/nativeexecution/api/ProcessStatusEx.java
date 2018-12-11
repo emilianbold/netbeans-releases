@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.ProcessStatusAccessor;
 
 /**
  *
- * @author Andrew
  */
 public final class ProcessStatusEx {
 

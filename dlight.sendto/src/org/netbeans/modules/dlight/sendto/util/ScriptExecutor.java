@@ -76,7 +76,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author ak119685
  */
 public final class ScriptExecutor {
 

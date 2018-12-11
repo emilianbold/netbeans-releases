@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.impl.fs.server;
 
 /**
  *
- * @author vkvashin
  */
 /*package-local*/ interface Disposer<E> {
     void dispose(E object);

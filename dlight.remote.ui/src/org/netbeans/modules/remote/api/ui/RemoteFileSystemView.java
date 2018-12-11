@@ -65,7 +65,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author ak119685
  */
 /*package*/ final class RemoteFileSystemView extends FileSystemView {
 

@@ -58,7 +58,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ak119685
  */
 public class IZ182478 extends NativeExecutionBaseTestCase {
 

@@ -60,7 +60,6 @@ import org.openide.util.Lookup;
  * As soon as the connection is established (via confirming this dialog or other way),
  * the runnable is called.
  *
- * @author Vladimir Kvashin
  */
 public class ConnectionNotifier {
     

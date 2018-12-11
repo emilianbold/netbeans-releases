@@ -56,7 +56,6 @@ import org.openide.windows.InputOutput;
  * in that previous IO is already finished and it's status == 0, then that tab
  * will be closed before new tab is open.
  *
- * @author ak119685
  */
 public final class CachedIOProvider {
 

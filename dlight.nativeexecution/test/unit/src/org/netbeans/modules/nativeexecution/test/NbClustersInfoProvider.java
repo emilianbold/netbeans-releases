@@ -49,7 +49,6 @@ import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author akrasny
  */
 public final class NbClustersInfoProvider {
 

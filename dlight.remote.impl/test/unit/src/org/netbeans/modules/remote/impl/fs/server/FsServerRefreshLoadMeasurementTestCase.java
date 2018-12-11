@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.test.RcFile;
 
 /**
  *
- * @author vkvashin
  */
 public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBase {
 

@@ -69,7 +69,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author ak119685
  */
 public class EnvironmentTest extends NativeExecutionBaseTestCase {
 

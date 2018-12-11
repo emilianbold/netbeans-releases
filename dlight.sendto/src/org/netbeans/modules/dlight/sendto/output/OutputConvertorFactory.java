@@ -53,7 +53,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author akrasny
  */
 public final class OutputConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
 

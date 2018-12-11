@@ -76,7 +76,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class RemoteFileObjectBase {
 

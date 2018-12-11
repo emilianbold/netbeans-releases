@@ -49,7 +49,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service=ConnectionNotifierImplementation.class)
 public class ConnectionNotifierImpl implements ConnectionNotifierImplementation {

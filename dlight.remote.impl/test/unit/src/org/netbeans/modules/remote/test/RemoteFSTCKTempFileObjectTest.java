@@ -48,7 +48,6 @@ import org.openide.filesystems.TempFileObjectTestHid;
 
 /**
  *
- * @author vv159170
  */
 public class RemoteFSTCKTempFileObjectTest extends RemoteFSTCKTestCase {
    

@@ -58,7 +58,6 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 /**
  *
  *
- * @author Alexander Simon
  */
 final class CachedRemoteInputStream extends InputStream {
 

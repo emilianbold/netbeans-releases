@@ -60,7 +60,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ak119685
  */
 
 //@ServiceProvider(service = AutocompletionProviderFactory.class)

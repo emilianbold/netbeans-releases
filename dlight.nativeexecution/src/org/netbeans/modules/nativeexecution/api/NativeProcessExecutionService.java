@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 
 /**
  * This is a very light-weigth version of ExecutionService from org.netbeans.api.extexecution
- * @author ak119685
  */
 public final class NativeProcessExecutionService {
 

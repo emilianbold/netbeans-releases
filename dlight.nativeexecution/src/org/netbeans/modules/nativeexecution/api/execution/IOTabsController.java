@@ -55,7 +55,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author akrasny
  */
 public final class IOTabsController {
 

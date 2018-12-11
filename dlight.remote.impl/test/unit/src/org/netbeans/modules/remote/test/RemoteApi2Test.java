@@ -49,7 +49,6 @@ import org.netbeans.modules.remote.impl.fs.*;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteApi2Test extends RemoteTestSuiteBase {
 

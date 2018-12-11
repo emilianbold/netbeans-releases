@@ -50,7 +50,6 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 
 /**
  *
- * @author ak119685
  */
 public class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
     private final Writer writer;

@@ -97,7 +97,6 @@ import org.netbeans.modules.terminal.api.ui.IOTerm;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class TerminalSupportImpl {
 

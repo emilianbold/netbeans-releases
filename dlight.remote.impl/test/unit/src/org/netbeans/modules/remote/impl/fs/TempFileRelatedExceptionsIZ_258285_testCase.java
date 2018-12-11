@@ -66,7 +66,6 @@ import org.openide.util.Exceptions;
  * There hardly is a way to unit test remote operations.
  * This is just an entry point for manual validation.
  *
- * @author Vladimir Kvashin
  */
 public class TempFileRelatedExceptionsIZ_258285_testCase extends RemoteFileTestBase {
 

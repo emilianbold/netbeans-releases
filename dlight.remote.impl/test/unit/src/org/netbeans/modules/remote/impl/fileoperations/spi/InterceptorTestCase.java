@@ -59,7 +59,6 @@ import org.openide.filesystems.*;
 
 /**
  *
- * @author Alexander Simon
  */
 public class InterceptorTestCase extends RemoteFileTestBase {
     private String remoteDir;

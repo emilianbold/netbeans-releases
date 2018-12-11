@@ -51,7 +51,6 @@ import org.openide.awt.ActionRegistration;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ActionID(id = "ShowTerminalTCAction", category = "Window")
 @ActionRegistration(iconInMenu = true, displayName = "#CTL_ShowTerminalAction", iconBase = "org/netbeans/modules/dlight/terminal/action/local_term.png")

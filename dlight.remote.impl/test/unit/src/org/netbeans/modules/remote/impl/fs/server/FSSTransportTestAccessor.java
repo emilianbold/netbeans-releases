@@ -52,7 +52,6 @@ import org.netbeans.modules.remote.impl.fs.DirEntry;
 
 /**
  *
- * @author vkvashin
  */
 public class FSSTransportTestAccessor {
  

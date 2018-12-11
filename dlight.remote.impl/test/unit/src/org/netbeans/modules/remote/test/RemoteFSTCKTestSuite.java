@@ -48,7 +48,6 @@ import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
 
 /**
  *
- * @author vkvashin
  */
 public class RemoteFSTCKTestSuite extends RemoteFSTCKTestCase {
 

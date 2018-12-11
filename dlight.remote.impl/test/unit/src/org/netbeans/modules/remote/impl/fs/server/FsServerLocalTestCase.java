@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.impl.fs.server;
 
 /**
  *
- * @author vkvashin
  */
 public class FsServerLocalTestCase extends FsServerLocalTestBase {
 

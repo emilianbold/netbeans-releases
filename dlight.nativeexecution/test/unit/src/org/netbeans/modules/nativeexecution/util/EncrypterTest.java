@@ -52,7 +52,6 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author ak119685
  */
 public class EncrypterTest {
 

@@ -94,7 +94,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author ak119685
  */
 public class AuthenticationSettingsPanel extends ValidateablePanel {
 

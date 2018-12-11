@@ -55,7 +55,6 @@ import org.netbeans.modules.remote.test.RemoteApiTest;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class DirectoryStorageTestCase extends RemoteFileTestBase {
 

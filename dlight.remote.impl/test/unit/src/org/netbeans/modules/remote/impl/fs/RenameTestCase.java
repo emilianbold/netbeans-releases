@@ -52,7 +52,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author vk155633
  */
 public class RenameTestCase extends RemoteFileTestBase  {
 

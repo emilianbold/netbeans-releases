@@ -54,7 +54,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 abstract public class AnnotationProvider {
 
