@@ -58,7 +58,6 @@ import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
 
 /**
  *
- * @author  Michal Skvor
  */
 public class ServerGeneralInfoPanel extends SectionInnerPanel {
     

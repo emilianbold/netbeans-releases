@@ -47,7 +47,6 @@ import org.netbeans.modules.e2e.api.wsdl.Part;
 
 /**
  *
- * @author Michal Skvor
  */
 public class PartImpl implements Part {
     

@@ -53,7 +53,6 @@ package org.netbeans.modules.mobility.end2end.classdata;
 /**
  * Contains data for Port
  *
- * @author Michal Skvor
  */
 public class PortData extends ClassData {
     

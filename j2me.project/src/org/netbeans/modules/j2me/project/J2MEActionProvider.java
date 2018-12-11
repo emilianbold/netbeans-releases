@@ -97,7 +97,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Zezula
  */
 final class J2MEActionProvider extends BaseActionProvider {
 

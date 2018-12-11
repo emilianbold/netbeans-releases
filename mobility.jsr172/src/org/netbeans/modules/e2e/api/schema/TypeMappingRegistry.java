@@ -48,7 +48,6 @@ import javax.xml.namespace.QName;
 
 /**
  *
- * @author Michal Skvor
  */
 public class TypeMappingRegistry {
     

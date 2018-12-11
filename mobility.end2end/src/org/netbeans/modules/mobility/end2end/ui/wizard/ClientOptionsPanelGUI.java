@@ -78,7 +78,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Michal Skvor
  */
 public class ClientOptionsPanelGUI extends javax.swing.JPanel implements DocumentListener, ActionListener {
     

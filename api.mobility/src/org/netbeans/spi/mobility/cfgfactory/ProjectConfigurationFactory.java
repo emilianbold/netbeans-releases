@@ -52,7 +52,6 @@ import java.util.Map;
  * User can select from the tree during each new project configuration creation.
  * Selected configuration template(s) then provide information for the newly created project configuration(s). 
  * If you want to plug a custom device database provider then this is your entry point.
- * @author Adam Sotona
  */
 public interface ProjectConfigurationFactory {
     

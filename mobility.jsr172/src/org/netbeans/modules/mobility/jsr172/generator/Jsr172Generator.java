@@ -92,7 +92,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author suchys
  */
 public class Jsr172Generator {
     

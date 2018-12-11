@@ -65,7 +65,6 @@ import org.netbeans.modules.mobility.javon.Traversable;
 import org.openide.util.Lookup;
 
 /**
- * @author Jirka Prazak, Michal Skvor
  */
 public class ClassDataRegistry {
 

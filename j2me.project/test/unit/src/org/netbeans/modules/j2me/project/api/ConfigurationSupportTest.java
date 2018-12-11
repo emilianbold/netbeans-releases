@@ -70,7 +70,6 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author Tomas Zezula
  */
 public class ConfigurationSupportTest extends NbTestCase {
 

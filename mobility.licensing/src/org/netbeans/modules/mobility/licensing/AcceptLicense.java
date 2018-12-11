@@ -73,7 +73,6 @@ import org.openide.util.Utilities;
  * <p>
  * removed from manifest.mf: OpenIDE-Module-Install: org/netbeans/modules/mobility/licensing/AcceptLicense.class
  *
- * @author  Marek Slama, Adam Sotona
  */
 
 public final class AcceptLicense extends ModuleInstall {

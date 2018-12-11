@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author rsvitanic
  */
 public class LibletListCellRenderer implements ListCellRenderer {
 

@@ -54,7 +54,6 @@ import java.util.List;
 /**
  * CLDCPlatformDescriptor is used to describe a platform detected by CustomCLDCPlatformConfigurator.
  * This class is only a holder of information about platform type, devices, classpath, command lines, etc...
- * @author Adam Sotona
  */
 public final class CLDCPlatformDescriptor {
     

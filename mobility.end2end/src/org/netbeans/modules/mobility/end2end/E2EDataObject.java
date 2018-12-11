@@ -109,7 +109,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Michal Skvor, Anton Chechel
  */
 @Messages({
     "CTL_SourceTabCaption=Source",

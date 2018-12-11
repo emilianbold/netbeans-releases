@@ -70,7 +70,6 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Michal Skvor
  */
 public class ConfigurationReader {
     

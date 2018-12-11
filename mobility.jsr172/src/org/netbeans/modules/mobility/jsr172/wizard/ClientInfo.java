@@ -87,7 +87,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Peter Williams
  */
 public final class ClientInfo extends JPanel implements WsdlRetriever.MessageReceiver {
     

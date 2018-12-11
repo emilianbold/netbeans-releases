@@ -78,8 +78,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author David Kaspar
- * @author rsvitanic
  */
 public class ExportPanel extends javax.swing.JPanel implements ItemListener, ListSelectionListener {
 

@@ -45,7 +45,6 @@ import java.util.Vector;
 
 /**
  *
- * @author Lukas
  */
 public class VectorStackHastable {
 

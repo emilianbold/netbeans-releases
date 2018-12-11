@@ -67,7 +67,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Anton Chechel
  */
 public class PlatformConvertorTest extends NbTestCase {
     private PlatformConvertor instance;

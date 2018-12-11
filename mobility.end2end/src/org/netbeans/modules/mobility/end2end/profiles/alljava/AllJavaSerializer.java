@@ -67,7 +67,6 @@ import java.util.Set;
 
 /**
  *
- * @author bohemius
  */
 public class AllJavaSerializer implements JavonSerializer {
     

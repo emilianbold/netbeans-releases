@@ -50,7 +50,6 @@ import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface Traversable {
     

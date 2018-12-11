@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Michal Skvor
  */
 public class E2EDataLoader extends UniFileLoader {
     

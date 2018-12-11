@@ -63,7 +63,6 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author lukas
  */
 public class RunTaskTest extends NbTestCase {
     

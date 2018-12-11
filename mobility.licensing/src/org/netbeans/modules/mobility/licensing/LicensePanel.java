@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 /**
  * This class displays license during first start of IDE.
  *
- * @author  Marek Slama
  */
 
 final class LicensePanel extends javax.swing.JPanel {

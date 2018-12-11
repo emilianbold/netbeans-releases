@@ -87,7 +87,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  *
- * @author  dave
  */
 public class DetectPanel extends javax.swing.JPanel {
     

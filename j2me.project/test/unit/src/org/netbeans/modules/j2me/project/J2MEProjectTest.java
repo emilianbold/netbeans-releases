@@ -57,7 +57,6 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author Tomas Zezula
  */
 public class J2MEProjectTest extends NbTestCase {
 

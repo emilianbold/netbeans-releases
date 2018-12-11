@@ -49,7 +49,6 @@ import javax.xml.namespace.QName;
 
 /**
  *
- * @author Michal Skvor
  */
 public class Type extends RepeatableSchemaConstruct {
         

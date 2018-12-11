@@ -55,7 +55,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Roman Svitanic
  */
 public class LibletInfo {
 

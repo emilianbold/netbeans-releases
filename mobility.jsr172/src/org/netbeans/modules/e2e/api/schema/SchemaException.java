@@ -44,7 +44,6 @@ package org.netbeans.modules.e2e.api.schema;
 
 /**
  *
- * @author Michal Skvor
  */
 public class SchemaException extends Exception {
     

@@ -52,7 +52,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Tomas Zezula
  */
 class J2MEProjectUpdates implements UpdateImplementation {
 

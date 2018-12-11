@@ -85,7 +85,6 @@ import org.openide.util.Utilities;
 
 /** Customizer for general project attributes.
  *
- * @author  Theofanis Oikonomou
  */
 public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, ListDataListener {
     

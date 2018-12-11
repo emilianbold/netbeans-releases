@@ -74,7 +74,6 @@ import org.netbeans.modules.classfile.Method;
 
 /**
  *
- * @author Adam Sotona
  */
 public class StackTraceTranslator
 {

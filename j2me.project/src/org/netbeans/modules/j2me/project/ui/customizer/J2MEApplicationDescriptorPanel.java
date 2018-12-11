@@ -46,7 +46,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Theofanis Oikonomou
  */
 public class J2MEApplicationDescriptorPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 

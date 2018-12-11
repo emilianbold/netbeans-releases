@@ -63,7 +63,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author suchys
  */
 public final class WebServiceNodeManager {
     

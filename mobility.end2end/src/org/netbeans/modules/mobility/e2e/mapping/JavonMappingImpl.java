@@ -57,7 +57,6 @@ import org.netbeans.modules.mobility.javon.JavonMapping;
 
 /**
  *
- * @author Michal Skvor
  */
 public class JavonMappingImpl implements JavonMapping {
     

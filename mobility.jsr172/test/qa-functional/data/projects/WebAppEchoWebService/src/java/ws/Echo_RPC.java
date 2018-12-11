@@ -46,7 +46,6 @@ import javax.jws.soap.SOAPBinding;
 
 /**
  *
- * @author Lukas
  */
 @WebService()
 @SOAPBinding(style=SOAPBinding.Style.RPC, use=SOAPBinding.Use.LITERAL, parameterStyle=SOAPBinding.ParameterStyle.WRAPPED)

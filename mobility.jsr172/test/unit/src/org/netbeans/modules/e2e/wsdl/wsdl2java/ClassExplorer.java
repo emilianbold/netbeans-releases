@@ -70,7 +70,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author luky
  */
 public class ClassExplorer
 {

@@ -90,7 +90,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author suchys
  */
 public final class Util {
 

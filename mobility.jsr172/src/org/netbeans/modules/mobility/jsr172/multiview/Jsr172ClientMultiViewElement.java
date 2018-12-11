@@ -67,7 +67,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Michal Skvor, Anton Chechel
  */
 public class Jsr172ClientMultiViewElement extends ToolBarMultiViewElement {
     private static final String CLIENT_NODE_ICON_BASE = "org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"; // NOI18N

@@ -57,7 +57,6 @@ import org.netbeans.modules.e2e.api.wsdl.Service;
 
 /**
  *
- * @author Michal Skvor
  */
 public class DefinitionImpl implements Definition {
     

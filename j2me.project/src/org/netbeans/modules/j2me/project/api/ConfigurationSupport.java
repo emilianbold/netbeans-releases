@@ -71,7 +71,6 @@ import org.openide.util.Parameters;
  * Support for {@link ProjectConfiguration}s.
  * Allows to list project configurations, retrieve active configuration
  * and get and set configuration specific properties.
- * @author Tomas Zezula
  * @since 1.2
  */
 //@ThreadSafe

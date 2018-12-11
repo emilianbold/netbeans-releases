@@ -47,7 +47,6 @@ import javax.swing.JPanel;
 import org.openide.util.HelpCtx;
 
 /**
- * @author Roman Svitanic
  */
 public class J2MEJavadocPanel extends JPanel implements HelpCtx.Provider {
     

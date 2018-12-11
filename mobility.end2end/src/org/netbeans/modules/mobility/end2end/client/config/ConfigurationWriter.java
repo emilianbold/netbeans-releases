@@ -71,7 +71,6 @@ import org.w3c.dom.Node;
 
 /**
  *
- * @author Michal Skvor
  */
 public class ConfigurationWriter {
     

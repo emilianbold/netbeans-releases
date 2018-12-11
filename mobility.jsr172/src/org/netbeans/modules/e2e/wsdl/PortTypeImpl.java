@@ -55,7 +55,6 @@ import org.netbeans.modules.e2e.api.wsdl.PortType;
 
 /**
  *
- * @author Michal Skvor
  */
 public class PortTypeImpl implements PortType {
     

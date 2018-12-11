@@ -105,7 +105,6 @@ import org.apache.tools.ant.types.Reference;
  * <li>ObfuscationLevel = 9: Everything except public methods of MIDlet classes. Used mainly for applications.
  * </ol>
  *
- * @author  Adam Sotona, David Kaspar
  */
 public class ObfuscateTask extends Task
 {

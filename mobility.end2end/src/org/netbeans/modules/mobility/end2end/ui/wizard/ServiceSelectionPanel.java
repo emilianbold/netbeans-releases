@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Michal Skvor
  */
 public class ServiceSelectionPanel implements TemplateWizard.Panel, ChangeListener {
     

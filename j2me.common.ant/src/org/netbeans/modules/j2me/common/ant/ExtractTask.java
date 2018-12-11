@@ -73,7 +73,6 @@ import org.apache.tools.ant.types.Reference;
  * <li>ExcludeManifest - Optional. Specifies if META-INF/Manifest.mf files should be excluded from extraction. Default: false.
  * </ol>
  *
- * @author David Kaspar, Adam Sotona
  */
 public class ExtractTask extends Task
 {

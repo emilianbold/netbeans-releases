@@ -49,7 +49,6 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 /**
  *
- * @author Roman Svitanic
  */
 public class JavaMEProjectUtils {
 

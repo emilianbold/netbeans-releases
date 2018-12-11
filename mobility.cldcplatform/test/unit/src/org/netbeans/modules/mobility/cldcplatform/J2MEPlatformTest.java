@@ -65,7 +65,6 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author Anton Chechel
  */
 public class J2MEPlatformTest extends NbTestCase {
     

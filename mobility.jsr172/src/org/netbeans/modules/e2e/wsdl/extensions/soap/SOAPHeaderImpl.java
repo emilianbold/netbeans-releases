@@ -49,7 +49,6 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPHeader;
 
 /**
  *
- * @author Michal Skvor
  */
 public class SOAPHeaderImpl implements SOAPHeader {
     

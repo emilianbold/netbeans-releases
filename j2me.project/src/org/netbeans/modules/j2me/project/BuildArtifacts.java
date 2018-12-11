@@ -53,7 +53,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Tomas  Zezula
  */
 final class BuildArtifacts implements AntArtifactProvider {
 

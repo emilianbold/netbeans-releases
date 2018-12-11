@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Michal Skvor
  */
 public class ValidationNotifier extends javax.swing.JPanel {
 

@@ -69,7 +69,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Michal Skvor
  */
 public class ClientOptionsPanel implements TemplateWizard.Panel, ChangeListener {
     

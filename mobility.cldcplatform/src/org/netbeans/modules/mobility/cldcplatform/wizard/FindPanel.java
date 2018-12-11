@@ -72,7 +72,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Adam Sotona
  */
 final public class FindPanel extends javax.swing.JPanel implements SearchRunnable.Notifier {
     

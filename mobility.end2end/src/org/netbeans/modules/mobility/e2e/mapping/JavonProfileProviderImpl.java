@@ -53,7 +53,6 @@ import org.netbeans.modules.mobility.javon.JavonTemplate;
 
 /**
  *
- * @author Michal Skvor
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mobility.javon.JavonProfileProvider.class)
 public class JavonProfileProviderImpl implements JavonProfileProvider {

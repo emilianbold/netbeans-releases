@@ -65,7 +65,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
- * @author David Kaspar
  */
 public class SearchRunnable implements Runnable {
     

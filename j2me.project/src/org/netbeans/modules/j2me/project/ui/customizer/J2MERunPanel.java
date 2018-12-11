@@ -69,7 +69,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Roman Svitanic
  */
 public class J2MERunPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 

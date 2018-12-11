@@ -47,7 +47,6 @@ import org.netbeans.modules.e2e.api.wsdl.Message;
 
 /**
  *
- * @author Michal Skvor
  */
 public class InputImpl implements Input {
     

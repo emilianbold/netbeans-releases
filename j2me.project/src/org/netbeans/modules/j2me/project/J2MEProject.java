@@ -95,7 +95,6 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Tomas Zezula
  */
 @AntBasedProjectRegistration(
     type=J2MEProject.TYPE,

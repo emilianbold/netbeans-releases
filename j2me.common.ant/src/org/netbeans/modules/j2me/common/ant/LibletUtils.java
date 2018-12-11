@@ -53,7 +53,6 @@ import org.apache.tools.ant.Project;
 
 /**
  *
- * @author rsvitanic
  */
 public class LibletUtils {
 

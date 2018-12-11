@@ -57,7 +57,6 @@ import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 
 /**
  *
- * @author Michal Skvor
  */
 public class Jsr172ClientViewFactory implements InnerPanelFactory {
     

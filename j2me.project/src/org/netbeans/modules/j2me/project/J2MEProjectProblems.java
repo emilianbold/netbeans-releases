@@ -86,7 +86,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Roman Svitanic
  */
 @ProjectServiceProvider(
         service = ProjectProblemsProvider.class,

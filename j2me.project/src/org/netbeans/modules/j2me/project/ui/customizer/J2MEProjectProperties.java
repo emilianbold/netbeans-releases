@@ -129,7 +129,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Tomas Zezula
  */
 public final class J2MEProjectProperties {
 

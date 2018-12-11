@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Michal Skvor,Sigal Duek
  *
  */
 

@@ -44,7 +44,6 @@ package org.netbeans.modules.e2e.api.wsdl;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface Input {
     

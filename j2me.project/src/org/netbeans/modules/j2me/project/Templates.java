@@ -49,7 +49,6 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 /**
  *
- * @author Tomas Zezula
  */
 final class Templates implements RecommendedTemplates, PrivilegedTemplates {
 

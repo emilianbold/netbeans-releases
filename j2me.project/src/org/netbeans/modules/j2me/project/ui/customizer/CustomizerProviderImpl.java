@@ -65,7 +65,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Tomas Zezula
  */
 public final class CustomizerProviderImpl implements CustomizerProvider3 {
     

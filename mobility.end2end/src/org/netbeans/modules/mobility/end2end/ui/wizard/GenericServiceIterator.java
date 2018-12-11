@@ -74,7 +74,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Michal Skvor
  */
 public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeListener {
     

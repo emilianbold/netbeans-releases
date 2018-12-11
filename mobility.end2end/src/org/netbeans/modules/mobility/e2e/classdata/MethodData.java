@@ -49,7 +49,6 @@ import java.util.List;
 
 /**
  *
- * @author Michal Skvor
  */
 public class MethodData {
     

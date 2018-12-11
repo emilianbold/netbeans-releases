@@ -70,7 +70,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author  Theofanis Oikonomou
  */
 public class MIDletScanner implements Runnable {
     

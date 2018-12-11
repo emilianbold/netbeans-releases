@@ -47,7 +47,6 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPOperation;
 
 /**
  *
- * @author Michal Skvor
  */
 public class SOAPOperationImpl implements SOAPOperation {
     

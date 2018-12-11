@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  tom
  */
 public class BrokenPlatformCustomizer extends javax.swing.JPanel {
     

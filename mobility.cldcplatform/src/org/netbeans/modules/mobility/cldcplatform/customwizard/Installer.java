@@ -50,7 +50,6 @@ import org.netbeans.spi.java.platform.CustomPlatformInstall;
 /**
  * Installer factory for standard UEI Emulator
  *
- * @author Adam Sotona
  */
 public class Installer extends CustomPlatformInstall {
     

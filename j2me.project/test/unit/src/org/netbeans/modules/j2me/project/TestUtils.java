@@ -67,7 +67,6 @@ import org.openide.modules.SpecificationVersion;
 
 /**
  *
- * @author Tomas Zezula
  */
 public final class TestUtils {
 

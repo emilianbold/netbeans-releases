@@ -53,7 +53,6 @@ import javax.swing.event.DocumentListener;
 
 /**
  *
- * @author Dusan Balek
  */
 class AddAnnotationProcessor extends javax.swing.JPanel {
 

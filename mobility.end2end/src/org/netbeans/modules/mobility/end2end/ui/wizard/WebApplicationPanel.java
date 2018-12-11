@@ -107,7 +107,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Michal Skvor
  */
 final public class WebApplicationPanel extends JPanel
         implements ChangeListener, ActionListener, DocumentListener {
@@ -915,7 +914,6 @@ final public class WebApplicationPanel extends JPanel
     /**
      * Comparator which compares names of projects depending on the locale
      *
-     * @author Sigal Duek
      */
     public static class ProjectByDisplayNameComparator implements Comparator<Project> {
         

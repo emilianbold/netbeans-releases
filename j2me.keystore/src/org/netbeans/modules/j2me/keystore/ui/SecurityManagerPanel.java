@@ -63,8 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona
- * @author rsvitanic
  */
 public class SecurityManagerPanel extends JPanel implements ListSelectionListener, ActionListener {
 

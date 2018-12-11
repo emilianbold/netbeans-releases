@@ -75,7 +75,6 @@ import org.openide.util.RequestProcessor;
  * Permits user to select a package to place a Java class (or other resource)
  * into.
  *
- * @author Roman Svitanic
  */
 public class J2METargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
 

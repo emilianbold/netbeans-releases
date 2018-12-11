@@ -43,7 +43,6 @@ package echo.arrays;
 
 /**
  *
- * @author Lukas Hasik
  */
 public class MultiDimensionalArrays {
 

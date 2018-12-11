@@ -90,7 +90,6 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 
 /**
  *
- * @author  Michal Skvor, Bohemius
  */
 public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.Provider, PropertyChangeListener {
     

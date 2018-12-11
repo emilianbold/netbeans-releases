@@ -48,7 +48,6 @@ import javax.xml.namespace.QName;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface PortType {
     
@@ -60,7 +59,6 @@ public interface PortType {
      * simple way to realize reference in current
      * impl ) from some wsdl entity ( f.e. binding references to
      * PortType ).  
-     * @author ads
      *
      */
     public interface PortTypeReference extends PortType {

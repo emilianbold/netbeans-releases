@@ -43,7 +43,6 @@ package echo.simple;
 
 /**
  *
- * @author Lukas Hasik
  */
 public class SimpleTypes {
     /**

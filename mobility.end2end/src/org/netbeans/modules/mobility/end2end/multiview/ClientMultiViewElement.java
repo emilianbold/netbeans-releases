@@ -67,7 +67,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Michal Skvor, Anton Chechel
  */
 @Messages("CTL_ClientTabCaption=Client") // NOI18N
 public class ClientMultiViewElement extends ToolBarMultiViewElement {

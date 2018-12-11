@@ -62,7 +62,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Adam Sotona
  */
 public class WindowsRegistryReader {
     

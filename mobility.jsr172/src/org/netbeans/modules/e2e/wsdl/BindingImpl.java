@@ -54,7 +54,6 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.ExtensibilityElement;
 
 /**
  *
- * @author Michal Skvor
  */
 public class BindingImpl implements Binding {
     

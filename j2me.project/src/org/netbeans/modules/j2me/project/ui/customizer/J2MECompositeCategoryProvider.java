@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Theofanis Oikonomou
  */
 public class J2MECompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 

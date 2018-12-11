@@ -60,7 +60,6 @@ import org.openide.ErrorManager;
 
 /**
  *
- * @author Michal Skvor
  */
 public class OutputFileFormatter {
     

@@ -67,7 +67,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomas Zezula
  */
 final class PlatformListener implements Runnable, PropertyChangeListener {
 

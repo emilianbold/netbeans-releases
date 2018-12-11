@@ -51,7 +51,6 @@ import org.netbeans.modules.mobility.e2e.classdata.MethodData;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface JavonMapping {
 

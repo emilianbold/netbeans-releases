@@ -59,7 +59,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 
 /**
  *
- * @author Peter Williams
  */
 public class WebServiceClientWizardDescriptor implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
     

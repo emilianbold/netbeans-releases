@@ -82,7 +82,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar
  */
 final public class CustomizerPanel extends javax.swing.JPanel implements ChangeListener, DocumentListener, FocusListener {
     

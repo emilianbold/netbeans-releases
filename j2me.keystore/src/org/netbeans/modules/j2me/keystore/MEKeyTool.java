@@ -64,8 +64,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
- * @author David Kaspar
- * @author rsvitanic
  */
 public class MEKeyTool {
 

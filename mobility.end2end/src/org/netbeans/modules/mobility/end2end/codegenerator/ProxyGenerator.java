@@ -99,7 +99,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author suchys
  */
 public class ProxyGenerator {
     final private E2EDataObject dataObject;

@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Theofanis Oikonomou
  */
 public class AddPushRegistryPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
     

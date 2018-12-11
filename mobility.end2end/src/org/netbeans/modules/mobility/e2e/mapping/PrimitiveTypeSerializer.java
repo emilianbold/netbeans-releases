@@ -64,7 +64,6 @@ import org.netbeans.modules.mobility.javon.Traversable;
  * <p>Supported types are:<br>
  * boolean, byte, char, int, short, String
  * 
- * @author Michal Skvor
  */
 public class PrimitiveTypeSerializer implements JavonSerializer {
     

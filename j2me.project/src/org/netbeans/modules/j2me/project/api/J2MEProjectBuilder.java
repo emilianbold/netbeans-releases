@@ -90,7 +90,6 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Tomas Zezula
  */
 public final class J2MEProjectBuilder {
 

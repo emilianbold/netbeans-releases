@@ -69,7 +69,6 @@ import static org.netbeans.modules.j2me.project.wizard.Bundle.*;
 import org.netbeans.modules.j2me.project.wizard.NewJ2MEFileWizardIterator.Type;
 
 /**
- * @author Roman Svitanic
  */
 public final class J2METargetChooserPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 

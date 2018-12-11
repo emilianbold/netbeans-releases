@@ -54,7 +54,6 @@ import java.util.List;
 
 /**
  *
- * @author suchys
  */
 public abstract class AbstractService {
     

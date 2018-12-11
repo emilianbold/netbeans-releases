@@ -79,7 +79,6 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 
 /**
- * @author David Kaspar
  */
 public class DefaultEmulatorInstall extends ModuleInstall {
     static private final String EMU_MARKER="emu_installed.mark";

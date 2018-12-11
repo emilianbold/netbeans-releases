@@ -44,7 +44,6 @@ package echo.simple;
 
 /**
  *
- * @author Lukas Hasik
  */
 public class WrapperTypes {
 

@@ -57,7 +57,6 @@ import javax.lang.model.element.VariableElement;
 
 /**
  *
- * @author Michal Skvor, Jirka Prazak
  */
 public class ClassData {
     

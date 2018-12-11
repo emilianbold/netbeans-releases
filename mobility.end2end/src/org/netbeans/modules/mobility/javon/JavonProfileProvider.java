@@ -48,7 +48,6 @@ import org.netbeans.modules.mobility.e2e.mapping.JavonMappingImpl;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface JavonProfileProvider {
     

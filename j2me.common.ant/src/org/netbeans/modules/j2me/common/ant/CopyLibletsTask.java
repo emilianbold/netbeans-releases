@@ -56,7 +56,6 @@ import org.apache.tools.ant.util.FileUtils;
 
 /**
  *
- * @author rsvitanic
  */
 public class CopyLibletsTask extends Task {
 

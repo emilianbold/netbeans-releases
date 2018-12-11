@@ -97,8 +97,6 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.*;
 
 /**
- * @author Theofanis Oikonomou
- * @author Roman Svitanic
  */
 public class PlatformDevicesPanel extends SettingsPanel {
 

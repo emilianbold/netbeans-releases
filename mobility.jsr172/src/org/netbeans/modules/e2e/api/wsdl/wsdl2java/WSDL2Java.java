@@ -47,7 +47,6 @@ import java.util.List;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface WSDL2Java {
         

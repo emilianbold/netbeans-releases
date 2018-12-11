@@ -57,7 +57,6 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Lukas Waldmann
  */
 public class StackTraceTranslatorTest extends NbTestCase {
     

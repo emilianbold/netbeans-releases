@@ -45,7 +45,6 @@ import javax.jws.WebService;
 
 /**
  *
- * @author Lukas
  */
 @WebService()
 public class EchoArrays_DOCUMENT {

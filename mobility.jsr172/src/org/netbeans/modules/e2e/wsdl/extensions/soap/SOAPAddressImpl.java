@@ -47,7 +47,6 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPAddress;
 
 /**
  *
- * @author Michal Skvor
  */
 public class SOAPAddressImpl implements SOAPAddress {
 

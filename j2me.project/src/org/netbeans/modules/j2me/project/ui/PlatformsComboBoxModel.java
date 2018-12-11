@@ -48,7 +48,6 @@ import javax.swing.event.ListDataListener;
 
 /**
  *
- * @author Roman Svitanic
  */
 public class PlatformsComboBoxModel implements ComboBoxModel {
 

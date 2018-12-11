@@ -55,7 +55,6 @@ package org.netbeans.spi.mobility.end2end;
 
 /**
  *
- * @author suchys
  */
 public class ServiceGeneratorResult {
     

@@ -52,7 +52,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Lukas Waldmann
  */
 public class WSDL2JavaImplTest extends TestCase
 {

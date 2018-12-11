@@ -70,7 +70,6 @@ import org.openide.util.NbBundle;
 
 /**
  * Customizer panel "Sources": source roots, level, includes/excludes.
- * @author  Theofanis Oikonomou
  */
 public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 

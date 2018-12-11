@@ -54,7 +54,6 @@ import org.netbeans.modules.e2e.api.schema.Type;
 
 /**
  *
- * @author Michal Skvor
  */
 public class SchemaHolderImpl implements SchemaHolder {
     

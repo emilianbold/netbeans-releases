@@ -54,7 +54,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author suchys
  */
 public interface E2EServiceProvider {
     /**

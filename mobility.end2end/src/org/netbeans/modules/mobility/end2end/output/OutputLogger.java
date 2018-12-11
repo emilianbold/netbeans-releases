@@ -53,7 +53,6 @@ import org.openide.windows.OutputWriter;
 
 
 /**
- * @author ads
  *
  */
 public class OutputLogger {

@@ -58,7 +58,6 @@ import javax.lang.model.type.TypeMirror;
 
 /**
  *
- * @author Michal Skvor
  */
 public class Utils {
 

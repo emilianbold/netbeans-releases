@@ -59,7 +59,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author suchys
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.end2end.E2EServiceProvider.class, position=10)
 public class ClassServiceProvider implements E2EServiceProvider {

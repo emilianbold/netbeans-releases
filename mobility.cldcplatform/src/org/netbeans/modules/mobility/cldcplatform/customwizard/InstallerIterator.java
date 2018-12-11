@@ -55,7 +55,6 @@ import java.util.*;
 import java.io.IOException;
 
 /**
- * @author David Kaspar
  */
 public class InstallerIterator implements WizardDescriptor.InstantiatingIterator {
     

@@ -54,7 +54,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Adam Sotona
  */
 public class LibraryConverter extends FileChangeAdapter {
     

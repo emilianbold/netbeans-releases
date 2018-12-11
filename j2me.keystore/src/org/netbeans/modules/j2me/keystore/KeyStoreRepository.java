@@ -60,8 +60,6 @@ import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 
 /**
- * @author David Kaspar
- * @author rsvitanic
  */
 public class KeyStoreRepository implements java.io.Externalizable, PropertyChangeListener {
 

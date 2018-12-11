@@ -88,7 +88,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author suchys
  */
 public class ConnectionGenerator {
     

@@ -63,7 +63,6 @@ import org.netbeans.junit.NbTestCase
         
 ;/**
  *
- * @author Lukas Waldmann
  */public class ExtractTaskTest extends NbTestCase {
     
     public ExtractTaskTest(String testName) {

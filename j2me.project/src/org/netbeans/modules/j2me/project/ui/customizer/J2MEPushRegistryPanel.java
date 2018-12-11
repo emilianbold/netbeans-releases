@@ -72,7 +72,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Theofanis Oikonomou
  */
 public class J2MEPushRegistryPanel extends javax.swing.JPanel {
     

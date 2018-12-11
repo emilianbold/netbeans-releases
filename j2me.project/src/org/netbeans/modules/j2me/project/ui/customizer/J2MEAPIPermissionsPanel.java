@@ -68,8 +68,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Theofanis Oikonomou
- * @author Roman Svitanic
  */
 public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
     

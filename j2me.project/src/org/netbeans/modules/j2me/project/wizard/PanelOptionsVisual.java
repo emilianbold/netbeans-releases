@@ -62,7 +62,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 
 /**
- * @author Roman Svitanic
  */
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener, DocumentListener {
 

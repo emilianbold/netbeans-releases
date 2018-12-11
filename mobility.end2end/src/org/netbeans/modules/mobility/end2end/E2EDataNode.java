@@ -61,7 +61,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Michal Skvor
  */
 public class E2EDataNode extends DataNode {
     

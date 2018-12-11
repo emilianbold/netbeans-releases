@@ -96,7 +96,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Michal Skvor
  */
 public class WSDLParser extends DefaultHandler {
 

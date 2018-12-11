@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Theofanis Oikonomou
  */
 public class AddAttributePanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
     

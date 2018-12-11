@@ -83,7 +83,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Michal Skvor
  */
 public class WSDL2JavaImpl implements WSDL2Java {
         

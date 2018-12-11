@@ -73,7 +73,6 @@ import org.openide.util.MutexException;
 /**
  * Reads and writes the standard platform format implemented by PlatformImpl2.
  *
- * @author Adam Sotona, Svata Dedic
  */
 public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of,
         PropertyChangeListener, Runnable, InstanceContent.Convertor {

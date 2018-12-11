@@ -68,7 +68,6 @@ import org.openide.filesystems.FileStateInvalidException;
 
 /**
  *
- * @author suchys
  */
 public class WebServiceClassPathProvider implements ClassPathProvider {
     

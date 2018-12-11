@@ -54,7 +54,6 @@ import org.openide.util.test.MockLookup;
 /**
  * Test of MEProjectSupport class.
  *
- * @author Roman Svitanic
  */
 @RandomlyFails
 public class MEProjectSupportTest extends NbTestCase {

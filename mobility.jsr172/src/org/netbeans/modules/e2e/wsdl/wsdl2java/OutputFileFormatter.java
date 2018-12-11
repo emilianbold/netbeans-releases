@@ -55,7 +55,6 @@ import org.openide.text.IndentEngine;
 
 /**
  *
- * @author Michal Skvor
  */
 public class OutputFileFormatter {
     

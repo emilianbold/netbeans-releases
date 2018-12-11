@@ -58,7 +58,6 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author lukas
  */
 public class JadTaskTest extends NbTestCase
 {

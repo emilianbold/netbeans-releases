@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona, rsvitanic
  */
 public class KeystoreCellRenderer extends DefaultListCellRenderer {
 

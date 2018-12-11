@@ -74,7 +74,6 @@ import org.openide.util.Exceptions;
 /**
  * Wizard to create a new J2ME file.
  *
- * @author Roman Svitanic
  */
 public class NewJ2MEFileWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
 

@@ -50,7 +50,6 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPBinding;
 
 /**
  *
- * @author Michal Skvor
  */
 public class SOAPBindingImpl implements SOAPBinding {
     

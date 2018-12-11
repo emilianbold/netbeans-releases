@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Roman Svitanic
  */
 public class J2MEObfuscatingPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 

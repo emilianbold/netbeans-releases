@@ -51,7 +51,6 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Roman Svitanic
  */
 @ActionID(
         category = "Tools",

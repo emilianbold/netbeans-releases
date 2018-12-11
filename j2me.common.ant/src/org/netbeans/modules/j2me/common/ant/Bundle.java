@@ -54,7 +54,6 @@ import java.util.ResourceBundle;
 
 /**
  * Helper class for getting messages from resource bundle which is located in the same package as this class.
- * @author  Adam Sotona
  */
 public class Bundle
 {

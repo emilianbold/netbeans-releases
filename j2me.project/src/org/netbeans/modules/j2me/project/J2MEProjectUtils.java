@@ -83,7 +83,6 @@ import org.openide.modules.SpecificationVersion;
 
 /**
  *
- * @author Roman Svitanic
  */
 public class J2MEProjectUtils {
 

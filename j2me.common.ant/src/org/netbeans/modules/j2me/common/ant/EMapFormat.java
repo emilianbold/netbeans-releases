@@ -72,7 +72,6 @@ import java.util.StringTokenizer;
  * or
  * java
  *
- * @author  Martin Ryzl
  */
 public class EMapFormat extends Format
 {

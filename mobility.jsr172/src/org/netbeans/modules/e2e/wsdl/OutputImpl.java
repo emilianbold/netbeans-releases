@@ -47,7 +47,6 @@ import org.netbeans.modules.e2e.api.wsdl.Output;
 
 /**
  *
- * @author Michal Skvor
  */
 public class OutputImpl implements Output {
     

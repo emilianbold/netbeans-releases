@@ -46,7 +46,6 @@ package org.netbeans.modules.mobility.e2e.classdata;
 
 /**
  *
- * @author Michal Skvor
  */
 public class MethodParameter {
     

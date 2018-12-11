@@ -60,7 +60,6 @@ import org.openide.util.actions.CookieAction;
  * An Action for execution of Javon run method. This action on node
  * performs generation of stubs given by node data object configuration
  *
- * @author Michal Skvor
  */
 public class GenerateAction extends CookieAction {
     

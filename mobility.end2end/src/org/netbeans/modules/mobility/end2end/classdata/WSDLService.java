@@ -52,7 +52,6 @@ package org.netbeans.modules.mobility.end2end.classdata;
 
 /**
  *
- * @author Michal Skvor
  */
 public class WSDLService extends AbstractService {
     

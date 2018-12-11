@@ -48,7 +48,6 @@ import javax.xml.namespace.QName;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface Message {
     
@@ -59,7 +58,6 @@ public interface Message {
      * simple way to realize reference in current
      * impl ) from some wsdl entity ( f.e. input or output 
      * reference to Message ).  
-     * @author ads
      *
      */
     public interface MessageReference extends Message {

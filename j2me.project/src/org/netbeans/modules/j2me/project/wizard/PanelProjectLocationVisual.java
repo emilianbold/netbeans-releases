@@ -61,8 +61,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Petr Hrebejk
- * @author Roman Svitanic
  */
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
 

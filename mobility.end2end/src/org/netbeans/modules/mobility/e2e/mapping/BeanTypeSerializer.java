@@ -70,7 +70,6 @@ import org.netbeans.modules.mobility.javon.Traversable;
 
 /**
  *
- * @author Michal Skvor
  */
 public class BeanTypeSerializer implements JavonSerializer {
     

@@ -55,7 +55,6 @@ import java.io.IOException;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
  */
 public class InstallerIterator implements WizardDescriptor.InstantiatingIterator {
     

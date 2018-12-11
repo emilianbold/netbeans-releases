@@ -57,7 +57,6 @@ import org.netbeans.modules.mobility.javon.Traversable;
 
 /**
  *
- * @author Michal Skvor, Jirka Prazak
  */
 public class ArrayTypeSerializer implements JavonSerializer {
     

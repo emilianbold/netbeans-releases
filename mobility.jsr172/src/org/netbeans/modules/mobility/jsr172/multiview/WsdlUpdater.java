@@ -76,7 +76,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author suchys
  */
 public class WsdlUpdater implements WsdlRetriever.MessageReceiver, Cancellable{
     

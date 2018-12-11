@@ -57,7 +57,6 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author misk
  */
 public class Base64Test extends NbTestCase {
     

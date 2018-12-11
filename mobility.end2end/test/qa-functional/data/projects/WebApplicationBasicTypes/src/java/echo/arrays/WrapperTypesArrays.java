@@ -43,7 +43,6 @@ package echo.arrays;
 
 /**
  *
- * @author tester
  */
 public class WrapperTypesArrays {
 

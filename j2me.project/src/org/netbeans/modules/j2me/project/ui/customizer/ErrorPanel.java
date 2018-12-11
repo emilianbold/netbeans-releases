@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Theofanis Oikonomou
  */
 public class ErrorPanel extends javax.swing.JPanel {
     

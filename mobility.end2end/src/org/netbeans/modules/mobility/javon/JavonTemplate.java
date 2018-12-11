@@ -51,7 +51,6 @@ import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 
 /**
  *
- * @author Michal Skvor
  */
 public abstract class JavonTemplate {
     

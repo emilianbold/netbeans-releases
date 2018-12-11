@@ -46,7 +46,6 @@ import javax.jws.WebService;
 
 /**
  *
- * @author Lukas Hasik
  */
 @WebService(serviceName = "EchoNoArrays_DOCUMENT")
 public class EchoNoArrays_DOCUMENT {

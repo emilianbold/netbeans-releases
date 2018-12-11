@@ -56,7 +56,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Anton Chechel
  */
 public class TestUtil extends ProxyLookup {
     private static TestUtil instance;

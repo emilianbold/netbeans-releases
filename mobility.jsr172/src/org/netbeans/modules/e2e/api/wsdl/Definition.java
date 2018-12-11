@@ -48,7 +48,6 @@ import org.netbeans.modules.e2e.api.schema.SchemaHolder;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface Definition {
     

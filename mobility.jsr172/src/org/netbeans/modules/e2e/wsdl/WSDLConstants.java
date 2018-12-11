@@ -46,7 +46,6 @@ import javax.xml.namespace.QName;
 
 /**
  *
- * @author Michal Skvor
  */
 public interface WSDLConstants {
         

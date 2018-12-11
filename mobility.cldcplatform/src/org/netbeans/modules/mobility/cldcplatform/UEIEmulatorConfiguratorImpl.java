@@ -82,8 +82,6 @@ import org.openide.ErrorManager;
 
 /**
  *
- * @author  Martin Ryzl, David Kaspar
- * @author Roman Svitanic
  */
 public final class UEIEmulatorConfiguratorImpl {
     

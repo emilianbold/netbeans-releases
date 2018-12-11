@@ -54,7 +54,6 @@ import javax.microedition.lcdui.*;
 
 /**
  *
- * @author bohemius
  */
 public class HelloMidlet extends MIDlet implements javax.microedition.lcdui.CommandListener {
     

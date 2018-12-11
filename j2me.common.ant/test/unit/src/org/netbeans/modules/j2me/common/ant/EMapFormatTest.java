@@ -58,7 +58,6 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Michal Skvor
  */
 public class EMapFormatTest extends NbTestCase
 {

@@ -67,7 +67,6 @@ import org.openide.filesystems.FileChooserBuilder;
 
 /**
  *
- * @author  David Kaspar
  */
 public class SrcDocPathsPanel extends javax.swing.JPanel implements ListSelectionListener {
     

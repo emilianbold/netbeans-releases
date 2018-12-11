@@ -96,7 +96,6 @@ import org.apache.tools.ant.Task;
  *
  * <p>Jad file is updated if and only if source jad file or jar file is newer than destination jad file.
  *
- * @author Adam Sotona, David Kaspar, Roman Svitanic
  */
 public class JadTask extends Task {
 

@@ -69,7 +69,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Theofanis Oikonomou
  */
 public class J2MEMIDletsPanel extends javax.swing.JPanel {
 

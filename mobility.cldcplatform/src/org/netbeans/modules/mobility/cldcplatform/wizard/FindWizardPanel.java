@@ -52,7 +52,6 @@ import java.awt.*;
 import java.util.ArrayList;
 
 /**
- * @author Adam Sotona
  */
 public class FindWizardPanel implements WizardDescriptor.FinishablePanel {
     

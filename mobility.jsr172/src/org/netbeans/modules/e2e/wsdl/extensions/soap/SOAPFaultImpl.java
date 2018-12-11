@@ -49,7 +49,6 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPFault;
 
 /**
  *
- * @author Michal Skvor
  */
 public class SOAPFaultImpl implements SOAPFault {
 

@@ -58,8 +58,6 @@ import java.io.IOException;
 
 /**
  *
- * @author David Kaspar
- * @author rsvitanic
  */
 public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentListener {
 

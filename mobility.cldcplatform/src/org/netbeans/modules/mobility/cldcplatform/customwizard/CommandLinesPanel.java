@@ -71,7 +71,6 @@ import org.openide.filesystems.FileChooserBuilder;
 
 /**
  *
- * @author  dave
  */
 public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel.ComponentDescriptor {
     

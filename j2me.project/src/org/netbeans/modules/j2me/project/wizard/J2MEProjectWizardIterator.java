@@ -70,7 +70,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Roman Svitanic
  */
 public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 

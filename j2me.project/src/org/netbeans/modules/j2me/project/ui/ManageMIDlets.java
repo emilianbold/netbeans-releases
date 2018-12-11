@@ -57,8 +57,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Tomas Zezula
- * @author Roman Svitanic
  */
 public final class ManageMIDlets extends javax.swing.JPanel {
 

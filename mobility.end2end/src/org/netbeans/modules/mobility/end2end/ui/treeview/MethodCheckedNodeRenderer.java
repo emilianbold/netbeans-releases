@@ -71,7 +71,6 @@ import org.openide.xml.XMLUtil;
 
 /**
  *
- * @author  Adam
  */
 public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRenderer {
 

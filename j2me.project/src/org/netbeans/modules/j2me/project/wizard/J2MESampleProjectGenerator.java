@@ -68,7 +68,6 @@ import org.xml.sax.SAXException;
  * Create a sample java project by unzipping a template into some directory.
  * Modify active platform and Java ME related properties.
  *
- * @author Roman Svitanic
  */
 public class J2MESampleProjectGenerator {
 

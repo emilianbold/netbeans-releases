@@ -67,7 +67,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Michal Skvor, Anton Chechel
  */
 @Messages("CTL_ServerTabCaption=Server") // NOI18N
 public class ServerMultiViewElement extends ToolBarMultiViewElement {

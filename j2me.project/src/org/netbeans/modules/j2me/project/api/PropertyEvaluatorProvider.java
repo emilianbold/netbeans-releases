@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 /**
  * Provides J2ME project {@link PropertyEvaluator}.
  * The {@link PropertyEvaluatorProvider} can be obtained from {@link Project}'s {@link Lookup}.
- * @author Tomas Zezula
  * @since 1.1
  */
 public interface PropertyEvaluatorProvider {

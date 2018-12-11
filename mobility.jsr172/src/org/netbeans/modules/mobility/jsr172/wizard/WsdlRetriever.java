@@ -86,7 +86,6 @@ import org.openide.util.NbBundle;
  *      connection to an HTTP server, sends a request, and that server never
  *      responds.
  *
- * @author Peter Williams
  */
 public class WsdlRetriever implements Runnable {
     

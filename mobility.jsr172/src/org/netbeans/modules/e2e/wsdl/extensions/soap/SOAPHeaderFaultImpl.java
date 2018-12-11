@@ -49,7 +49,6 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPHeaderFault;
 
 /**
  *
- * @author Michal Skvor
  */
 public class SOAPHeaderFaultImpl implements SOAPHeaderFault {
     

@@ -83,7 +83,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Theofanis Oikonomou
  */
 public class J2MEAttributesPanel extends javax.swing.JPanel {
     

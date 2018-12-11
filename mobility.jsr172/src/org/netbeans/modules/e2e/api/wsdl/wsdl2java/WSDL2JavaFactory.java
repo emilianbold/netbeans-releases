@@ -46,7 +46,6 @@ import org.netbeans.modules.e2e.wsdl.wsdl2java.WSDL2JavaImpl;
 
 /**
  *
- * @author Michal Skvor
  */
 public class WSDL2JavaFactory {
 

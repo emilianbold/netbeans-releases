@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona
  */
 public class EnterPasswordTask extends Task {
 

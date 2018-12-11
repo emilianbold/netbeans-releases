@@ -52,7 +52,6 @@ package org.netbeans.modules.mobility.end2end.client.config;
 
 /**
  *
- * @author Michal Skvor
  */
 public class InvalidConfigFileException extends Exception {
     

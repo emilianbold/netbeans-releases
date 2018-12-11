@@ -59,7 +59,6 @@ import java.util.Map;
  * <li>set of project properties, their default values, and customizer (for usage in each project customizer)</li></ul>
  * <p>
  * Default deployment plugins bundled with NetBeans Mobility are for example: <samp>Copy, Ftp, Scp, WebDAV, SonyEricsson</samp>, etc....
- * @author Adam Sotona
  */
 public interface DeploymentPlugin {
     

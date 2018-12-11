@@ -56,7 +56,6 @@ import org.netbeans.modules.mobility.end2end.classdata.AbstractService;
 
 /**
  *
- * @author Michal Skvor
  */
 public class Configuration {
     

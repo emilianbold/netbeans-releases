@@ -54,7 +54,6 @@ import java.util.Properties;
 
 /**
  *
- * @author Michal Skvor
  */
 public class ClientConfiguration {
     

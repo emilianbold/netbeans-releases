@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Roman Svitanic
  */
 public class SourceLevelComboBoxModel extends AbstractListModel implements ComboBoxModel, ListDataListener {
 

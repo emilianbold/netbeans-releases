@@ -56,7 +56,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Roman Svitanic
  */
 public final class ChooseOtherPlatformPanel extends javax.swing.JPanel {
 
