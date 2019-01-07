@@ -40,7 +40,7 @@
 
 /* 
  * File:   killall.h
- * Author: akrasny
+ * Author: 
  *
  * Created on October 1, 2012, 3:25 PM
  */

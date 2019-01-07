@@ -40,7 +40,7 @@
 
 /* 
  * File:   pfind.h
- * Author: akrasny
+ * Author: 
  *
  * Created on 10 Октябрь 2012 г., 17:58
  */

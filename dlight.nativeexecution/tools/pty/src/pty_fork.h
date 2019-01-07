@@ -40,7 +40,7 @@
 
 /* 
  * File:   pty.h
- * Author: ak119685
+ * Author: 
  *
  * Created on 22 Апрель 2010 г., 12:33
  */

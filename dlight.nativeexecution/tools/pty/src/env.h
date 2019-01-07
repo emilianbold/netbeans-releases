@@ -40,7 +40,7 @@
 
 /* 
  * File:   env.h
- * Author: akrasny
+ * Author: 
  *
  * Created on 26 Сентябрь 2012 г., 13:13
  */

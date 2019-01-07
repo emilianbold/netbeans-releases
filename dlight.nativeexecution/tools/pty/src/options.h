@@ -40,7 +40,7 @@
 
 /* 
  * File:   options.h
- * Author: akrasny
+ * Author: 
  *
  * Created on 27 Сентябрь 2012 г., 14:44
  */

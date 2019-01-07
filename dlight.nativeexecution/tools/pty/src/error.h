@@ -40,7 +40,7 @@
 
 /* 
  * File:   err.h
- * Author: ak119685
+ * Author: 
  *
  * Created on 23 Апрель 2010 г., 0:25
  */
