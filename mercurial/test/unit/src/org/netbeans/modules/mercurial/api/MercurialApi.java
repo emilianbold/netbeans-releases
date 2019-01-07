@@ -51,7 +51,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 
 /**
  *
- * @author ondra vrabec
+ * 
  */
 public class MercurialApi extends AbstractHgTestCase {
 

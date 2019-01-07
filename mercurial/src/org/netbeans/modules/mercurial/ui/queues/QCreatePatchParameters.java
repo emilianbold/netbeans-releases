@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class QCreatePatchParameters extends DefaultCommitParameters implements ItemListener, DocumentListener,
         ActionListener {

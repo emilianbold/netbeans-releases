@@ -71,7 +71,7 @@ import org.openide.util.WeakListeners;
 /**
  * Shows Search History results in a table with Diff pane below it.
  * 
- * @author Maros Sandor
+ * 
  */
 class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffSetupSource {
 

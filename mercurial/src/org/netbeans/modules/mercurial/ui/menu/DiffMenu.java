@@ -61,7 +61,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for diff actions.
  *
- * @author Ondra
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_DiffMenu=&Diff",

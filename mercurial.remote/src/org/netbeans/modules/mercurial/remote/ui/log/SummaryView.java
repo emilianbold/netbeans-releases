@@ -93,12 +93,12 @@ import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
- * @author Maros Sandor
+ * 
  */
 /**
  * Shows Search History results in a JList.
  * 
- * @author Maros Sandor
+ * 
  */
 final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 

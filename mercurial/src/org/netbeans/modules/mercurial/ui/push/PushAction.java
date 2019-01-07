@@ -84,7 +84,7 @@ import org.openide.filesystems.FileUtil;
  * Push action for mercurial:
  * hg push - push changes to the specified destination
  *
- * @author John Rice
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_PushLocal=Push &All Branches",

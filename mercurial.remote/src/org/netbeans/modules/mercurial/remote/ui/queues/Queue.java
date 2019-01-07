@@ -43,7 +43,7 @@ package org.netbeans.modules.mercurial.remote.ui.queues;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public final class Queue {
 

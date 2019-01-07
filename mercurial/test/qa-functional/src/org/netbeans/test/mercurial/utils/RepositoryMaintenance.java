@@ -49,7 +49,7 @@ import java.io.IOException;
 
 /**
  *
- * @author peter
+ * 
  */
 public final class RepositoryMaintenance {
     

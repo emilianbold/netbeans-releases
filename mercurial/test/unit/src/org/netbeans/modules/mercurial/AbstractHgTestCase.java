@@ -64,7 +64,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author tomas
+ * 
  */
 public abstract class AbstractHgTestCase extends NbTestCase {
 

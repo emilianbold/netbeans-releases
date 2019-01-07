@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_PushBranchLocal=Pu&sh Current Branch",

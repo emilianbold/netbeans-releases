@@ -95,8 +95,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * @author Tomas Stupka
- * @author Marian Petras
+ * 
+ * 
  */
 public class Repository implements ActionListener, FocusListener, ItemListener {
     

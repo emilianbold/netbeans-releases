@@ -75,7 +75,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 @ActionID(id = "org.netbeans.modules.mercurial.remote.ui.shelve.ShelveChangesAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_ShelveChanges_Title")

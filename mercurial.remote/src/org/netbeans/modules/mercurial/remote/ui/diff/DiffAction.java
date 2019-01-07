@@ -64,7 +64,7 @@ import org.openide.util.NbBundle.Messages;
  * Diff action for mercurial: 
  * hg diff - diff repository (or selected files)
  * 
- * @author John Rice
+ * 
  */
 @Messages({
     "CTL_MenuItem_Diff=&Diff To Base",

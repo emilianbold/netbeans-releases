@@ -55,7 +55,7 @@ import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 /**
  * Represents real or virtual (non-local) file.
  *
- * @author Padraig O'Briain
+ * 
  */
 public final class HgFileNode extends VCSFileNode<FileInformation> {
 

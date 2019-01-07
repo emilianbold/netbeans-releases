@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Padraig O'Briain
+ * 
  */
 public class RevertModificationsPanel extends ChangesetPickerPanel {
 

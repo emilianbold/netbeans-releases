@@ -34,7 +34,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author novakm
+ * 
  */
 public class HgPropertiesAction extends ActionNoBlock {
     /** "Mercurial" menu item. */

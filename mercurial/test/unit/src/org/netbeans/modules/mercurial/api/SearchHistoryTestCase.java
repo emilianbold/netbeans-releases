@@ -57,7 +57,7 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class SearchHistoryTestCase extends AbstractHgTestCase {
 

@@ -56,7 +56,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class Clone implements PropertyChangeListener {
 

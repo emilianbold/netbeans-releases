@@ -66,7 +66,7 @@ import org.openide.nodes.Node;
  * Pull action for mercurial: 
  * hg pull - pull changes from the specified source
  * 
- * @author John Rice
+ * 
  */
 public class RollbackAction extends ContextAction {
     

@@ -62,7 +62,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 @NbBundle.Messages({
     "MSG_NO_REPOSITORY_ERR=Mercurial repository could not be found"

@@ -73,7 +73,7 @@ import org.openide.util.NbBundle.Messages;
  * Merge action for mercurial:
  * hg merge - attempts to merge changes when the repository has 2 heads
  *
- * @author John Rice
+ * 
  */
 @Messages({
     "CTL_MenuItem_Merge=&Merge Changes"

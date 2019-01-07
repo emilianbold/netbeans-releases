@@ -64,7 +64,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class HgHistoryProvider implements VCSHistoryProvider {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

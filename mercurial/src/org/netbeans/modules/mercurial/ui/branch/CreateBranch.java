@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * 
  */
 class CreateBranch {
     private final CreateBranchPanel panel;

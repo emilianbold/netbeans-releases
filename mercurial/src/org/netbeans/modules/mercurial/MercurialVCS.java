@@ -59,7 +59,7 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 /**
  * Extends framework <code>VersioningSystem</code> to Mercurial module functionality.
  * 
- * @author Maros Sandor
+ * 
  */
 @VersioningSystem.Registration(
     displayName="#CTL_Mercurial_DisplayName",

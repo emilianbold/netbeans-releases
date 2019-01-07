@@ -57,7 +57,7 @@ import java.awt.LayoutManager;
  * <p>Uses components preferred height
  * but forces them fixed width.
  *
- * @author Petr Kuzel
+ * 
  */
 public class VerticalFlowLayout implements LayoutManager {
 

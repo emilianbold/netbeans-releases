@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * 
  */
 class FinishPatch {
 

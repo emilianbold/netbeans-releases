@@ -56,7 +56,7 @@ import org.netbeans.modules.versioning.util.ProjectUtilities;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class CloneCompleted {
 

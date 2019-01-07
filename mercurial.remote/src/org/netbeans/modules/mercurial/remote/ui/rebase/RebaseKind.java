@@ -55,7 +55,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 abstract class RebaseKind {
     

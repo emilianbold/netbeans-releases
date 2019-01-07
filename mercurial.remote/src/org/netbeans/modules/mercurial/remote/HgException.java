@@ -44,7 +44,7 @@ package org.netbeans.modules.mercurial.remote;
 
 /**
  *
- * @author jr140578
+ * 
  */
 public class HgException extends Exception {
     

@@ -91,7 +91,7 @@ import org.openide.util.NbBundle.Messages;
  * working copy and BASE repository version.
  * </ul>
  *  
- * @author Petr Kuzel
+ * 
  */
 @Messages({
     "CTL_MenuItem_ExportDiffChanges=Export &Uncommitted Changes...",

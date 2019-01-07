@@ -80,12 +80,12 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
- * @author Maros Sandor
+ * 
  */
 /**
  * Shows Search History results in a JList.
  * 
- * @author Maros Sandor
+ * 
  */
 final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 

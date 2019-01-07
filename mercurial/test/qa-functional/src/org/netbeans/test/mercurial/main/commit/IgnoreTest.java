@@ -64,7 +64,7 @@ import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
  *
- * @author peter pis
+ * 
  */
 public class IgnoreTest extends JellyTestCase {
     

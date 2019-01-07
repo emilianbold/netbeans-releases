@@ -54,7 +54,7 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiff
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 public class ExportAsFilePanel extends AbstractExportDiffPanel {
 

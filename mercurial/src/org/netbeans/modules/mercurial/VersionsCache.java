@@ -56,7 +56,7 @@ import org.netbeans.modules.versioning.util.Utils;
  *
  * XXX and what exactly is cached here?!
  * 
- * @author Petr Kuzel
+ * 
  */
 public class VersionsCache {
 

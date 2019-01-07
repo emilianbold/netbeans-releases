@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 public class UserCredentialsSupport {
 

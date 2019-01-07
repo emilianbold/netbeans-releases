@@ -53,7 +53,7 @@ import org.netbeans.modules.mercurial.config.HgConfigFiles;
 /**
  * A class to encapsulate a Repository and allow us to cache some values
  *
- * @author John Rice
+ * 
  */
 public class HgRepositoryContextCache {
     private Map<File, Map<String, String>> rootToDefaultPaths;

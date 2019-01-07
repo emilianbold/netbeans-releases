@@ -49,7 +49,7 @@ package org.netbeans.modules.mercurial.remote.ui.tag;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class TagManagerPanel extends javax.swing.JPanel {
 

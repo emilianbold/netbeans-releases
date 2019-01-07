@@ -67,7 +67,7 @@ import org.openide.util.actions.SystemAction;
  * The node that is rendered in the SyncTable view. It gets values to display from the
  * HgFileNode which serves as the 'data' node for this 'visual' node.
  * 
- * @author Maros Sandor
+ * 
  */
 public class SyncFileNode extends AbstractNode {
     

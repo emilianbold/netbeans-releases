@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Kuzel
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_IncludeInCommit=In&clude in Commit",

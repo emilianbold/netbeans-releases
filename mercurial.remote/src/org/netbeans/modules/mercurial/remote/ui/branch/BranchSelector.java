@@ -80,7 +80,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class BranchSelector implements ListSelectionListener, DocumentListener {
 

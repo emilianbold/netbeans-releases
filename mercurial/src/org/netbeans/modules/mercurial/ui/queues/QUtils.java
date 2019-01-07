@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 class QUtils {
     

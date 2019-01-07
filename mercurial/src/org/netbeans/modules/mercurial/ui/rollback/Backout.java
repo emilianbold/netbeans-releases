@@ -55,7 +55,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class Backout implements PropertyChangeListener {
 

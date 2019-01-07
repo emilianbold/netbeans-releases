@@ -52,7 +52,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class StatusTest extends AbstractHgTestCase {
 

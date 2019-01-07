@@ -71,7 +71,7 @@ import org.openide.util.Utilities;
 /**
  * Stores Mercurial module configuration.
  *
- * @author Padraig O'Briain
+ * 
  */
 public class HgModuleConfig {
     

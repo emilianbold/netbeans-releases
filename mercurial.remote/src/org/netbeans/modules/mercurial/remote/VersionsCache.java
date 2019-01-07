@@ -61,7 +61,7 @@ import org.netbeans.modules.versioning.historystore.StorageManager;
  *
  * XXX and what exactly is cached here?!
  * 
- * @author Petr Kuzel
+ * 
  */
 public class VersionsCache {
 

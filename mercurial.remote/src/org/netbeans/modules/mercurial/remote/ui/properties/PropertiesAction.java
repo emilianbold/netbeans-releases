@@ -62,7 +62,7 @@ import org.openide.util.NbBundle.Messages;
  * Properties for mercurial: 
  * Set hg repository properties
  * 
- * @author John Rice
+ * 
  */
 @Messages({
     "CTL_MenuItem_Properties=Pr&operties..."

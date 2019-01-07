@@ -50,7 +50,7 @@ package org.netbeans.modules.mercurial.ui.repository;
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 public class UserPasswordPanel extends javax.swing.JPanel {
 

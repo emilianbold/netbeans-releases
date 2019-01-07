@@ -43,7 +43,7 @@ package org.netbeans.modules.mercurial.remote.ui.queues;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class QPatch {
     

@@ -44,7 +44,7 @@ package org.netbeans.modules.mercurial.ui.log;
 
 /**
  *
- * @author jr140578
+ * 140578
  */
 public class HgLogMessageChangedPath {
     private String path;

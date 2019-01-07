@@ -69,7 +69,7 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
 /**
  * Container menu for remote repository actions.
  *
- * @author Maros Sandor
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_RemoteMenu=R&emote",

@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * 
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QCreatePatch")

@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class HgCommandTest extends AbstractHgTestCase {
 

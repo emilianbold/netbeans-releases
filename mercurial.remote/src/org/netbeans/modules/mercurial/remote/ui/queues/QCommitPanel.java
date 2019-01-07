@@ -93,7 +93,7 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 

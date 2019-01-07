@@ -83,7 +83,7 @@ import org.openide.nodes.Node;
  * working copy and BASE repository version.
  * </ul>
  *  
- * @author Petr Kuzel
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_ExportDiffChanges=Export &Uncommitted Changes...",

@@ -85,7 +85,7 @@ import org.openide.util.RequestProcessor;
  * Create action for mercurial: 
  * hg init - create a new repository in the given directory
  * 
- * @author John Rice
+ * 
  */
 @ActionID(id = "org.netbeans.modules.mercurial.remote.ui.create.CreateAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_Create", popupText="#CTL_PopupMenuItem_Create", menuText="#CTL_MenuItem_Create")

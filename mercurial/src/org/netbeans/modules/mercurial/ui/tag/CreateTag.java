@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * 
  */
 class CreateTag implements ActionListener {
     private final CreateTagPanel panel;

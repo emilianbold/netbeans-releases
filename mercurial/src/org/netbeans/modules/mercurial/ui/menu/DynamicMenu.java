@@ -52,7 +52,7 @@ import org.openide.awt.DynamicMenuContent;
 
 /**
  *
- * @author ondra
+ * 
  */
 public abstract class DynamicMenu extends AbstractAction implements DynamicMenuContent {
     

@@ -54,7 +54,7 @@ import java.io.File;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class Strip implements PropertyChangeListener {
 

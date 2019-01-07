@@ -79,7 +79,7 @@ import org.openide.util.RequestProcessor;
  * Clone action for mercurial: 
  * hg clone - Create a copy of an existing repository in a new directory.
  * 
- * @author John Rice
+ * 
  */
 @Messages({
     "# {0} - repository folder name",

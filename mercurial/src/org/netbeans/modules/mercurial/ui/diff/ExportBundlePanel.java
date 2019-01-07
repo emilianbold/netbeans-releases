@@ -57,7 +57,7 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiff
 
 /**
  *
- * @author ondra
+ * 
  */
 public class ExportBundlePanel extends JPanel {
 

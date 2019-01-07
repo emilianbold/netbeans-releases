@@ -81,7 +81,7 @@ import org.openide.util.NbBundle.Messages;
  * ImportDiff action for mercurial: 
  * hg export
  * 
- * @author Padraig O'Briain
+ * 
  */
 @Messages({
     "CTL_MenuItem_ImportDiff=&Import Changesets...",

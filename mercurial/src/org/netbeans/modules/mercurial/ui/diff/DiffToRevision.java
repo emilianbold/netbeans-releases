@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class DiffToRevision  implements ActionListener {
     

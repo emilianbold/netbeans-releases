@@ -48,7 +48,7 @@ import java.io.File;
 /**
  * Holds detailed information about status of a mercurial-managed file, ie repository URL, remote path, branch, etc.
  * 
- * @author Maros Sandor
+ * 
  */
 public class FileStatus {
     private File mFile;

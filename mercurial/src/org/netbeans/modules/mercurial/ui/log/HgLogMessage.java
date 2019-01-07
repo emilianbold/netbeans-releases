@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author jr140578
+ * 140578
  */
 public class HgLogMessage {
     public static char HgModStatus = 'M';

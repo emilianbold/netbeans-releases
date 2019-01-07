@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * 
  */
 final class RefreshPanelModifier extends VCSCommitPanelModifier {
 

@@ -54,7 +54,7 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public abstract class ExportDiff extends ExportDiffSupport {
 

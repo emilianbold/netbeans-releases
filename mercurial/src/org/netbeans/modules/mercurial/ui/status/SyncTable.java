@@ -97,7 +97,7 @@ import org.openide.util.actions.SystemAction;
  * in the Versioning view. The table is  {@link #setTableModel populated)
  * from VersioningPanel.
  * 
- * @author Maros Sandor
+ * 
  */
 class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
 

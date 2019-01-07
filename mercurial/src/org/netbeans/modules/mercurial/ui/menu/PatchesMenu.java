@@ -64,7 +64,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for export/import actions.
  *
- * @author Ondra
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_PatchesMenu=&Patches",

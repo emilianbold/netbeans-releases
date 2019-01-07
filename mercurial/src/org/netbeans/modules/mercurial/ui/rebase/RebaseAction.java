@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
 
 /**
  * 
- * @author Ondrej Vrabec
+ * 
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.rebase.RebaseAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_MenuItem_RebaseAction")

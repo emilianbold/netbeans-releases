@@ -63,7 +63,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for ignore/exclude actions.
  *
- * @author Ondra
+ * 
  */
 @Messages({
     "CTL_MenuItem_IgnoreMenu=&Ignore",

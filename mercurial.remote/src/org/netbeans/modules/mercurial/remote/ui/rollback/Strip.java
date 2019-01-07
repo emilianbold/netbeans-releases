@@ -54,7 +54,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class Strip implements PropertyChangeListener {
 

@@ -83,7 +83,7 @@ import org.openide.util.RequestProcessor;
  * Push action for mercurial:
  * hg push - push changes to the specified destination
  *
- * @author John Rice
+ * 
  */
 @Messages({
     "CTL_MenuItem_PushLocal=Push &All Branches",

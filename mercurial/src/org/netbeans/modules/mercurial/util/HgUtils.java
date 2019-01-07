@@ -127,7 +127,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author jrice
+ * 
  */
 public class HgUtils {    
     private static final Pattern httpPasswordPattern = Pattern.compile("(https*://)(\\w+\\b):(\\b\\S*)@"); //NOI18N

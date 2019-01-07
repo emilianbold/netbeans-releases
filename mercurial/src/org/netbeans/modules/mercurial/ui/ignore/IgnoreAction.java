@@ -60,7 +60,7 @@ import org.openide.nodes.Node;
 /**
  * Adds/removes files to repository .hgignore.
  *
- * @author Maros Sandor
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_Ignore=Toggle &Ignore"

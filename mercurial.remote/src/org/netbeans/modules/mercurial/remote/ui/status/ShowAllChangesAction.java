@@ -64,7 +64,7 @@ import java.awt.event.ActionEvent;
 /**
  * Open the Versioning status view for all projects.
  *
- * @author Maros Sandor
+ * 
  */
 public class ShowAllChangesAction extends SystemAction {
 

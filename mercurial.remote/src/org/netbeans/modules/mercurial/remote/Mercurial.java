@@ -79,7 +79,7 @@ import org.openide.util.Lookup.Result;
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
  *
- * @author Maros Sandor
+ * 
  */
 public class Mercurial {
     public static final int HG_FETCH_20_REVISIONS = 20;

@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  * Update action for mercurial: 
  * hg update - update or merge working directory
  * 
- * @author John Rice
+ * 
  */
 public class UpdateAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/remote/resources/icons/update.png"; //NOI18N

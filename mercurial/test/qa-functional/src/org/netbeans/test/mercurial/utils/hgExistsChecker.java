@@ -53,7 +53,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author tester
+ * 
  */
 public class hgExistsChecker {
 

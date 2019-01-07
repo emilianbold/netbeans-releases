@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ondra
+ * 
  */
 class ExportBundle extends ExportDiffSupport implements ActionListener, PropertyChangeListener {
 

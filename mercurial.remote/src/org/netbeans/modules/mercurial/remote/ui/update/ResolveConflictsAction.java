@@ -61,7 +61,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * Show basic conflict resolver UI (provided by the diff module).
  *
- * @author Petr Kuzel
+ * 
  */
 @Messages({
     "CTL_MenuItem_Resolve=Resolve Con&flicts"

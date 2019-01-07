@@ -71,7 +71,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Executes searches in Search History panel.
  * 
- * @author Maros Sandor
+ * 
  */
 class SearchExecutor extends HgProgressSupport {
 

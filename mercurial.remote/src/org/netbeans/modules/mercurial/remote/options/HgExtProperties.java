@@ -72,7 +72,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class HgExtProperties implements ActionListener, DocumentListener {
     

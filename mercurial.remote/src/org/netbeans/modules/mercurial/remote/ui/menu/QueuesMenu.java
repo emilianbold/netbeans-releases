@@ -67,7 +67,7 @@ import org.openide.util.actions.Presenter;
 /**
  * Container menu for mqueues actions.
  *
- * @author Ondra Vrabec
+ * 
  */
 @Messages({
     "CTL_MenuItem_QueuesMenu=&Queues",

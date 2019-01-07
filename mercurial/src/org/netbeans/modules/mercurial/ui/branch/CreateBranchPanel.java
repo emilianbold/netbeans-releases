@@ -49,7 +49,7 @@ package org.netbeans.modules.mercurial.ui.branch;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class CreateBranchPanel extends javax.swing.JPanel {
 

@@ -43,7 +43,7 @@ package org.netbeans.modules.mercurial.ui.rebase;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class SelectBasePanel extends javax.swing.JPanel {
 

@@ -56,7 +56,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author ondra
+ * 
  */
 @ActionID(id = "org.netbeans.modules.mercurial.remote.ui.queues.QCreatePatchAction", category = "MercurialRemote/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QCreatePatch")

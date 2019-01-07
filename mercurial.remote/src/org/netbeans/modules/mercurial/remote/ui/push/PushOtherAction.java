@@ -74,7 +74,7 @@ import org.openide.util.NbBundle.Messages;
  * Push Other action for mercurial: 
  * hg push - push changes to the specified target
  * 
- * @author John Rice
+ * 
  */
 @Messages({
     "CTL_MenuItem_PushOther=Pus&h..."

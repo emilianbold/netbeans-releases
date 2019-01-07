@@ -48,7 +48,7 @@ import java.util.Date;
 /**
  * One line of annotation, this is copied from CVS so that other support classes stay the same.
  *
- * @author Maros Sandor
+ * 
  */
 public class AnnotateLine {
 

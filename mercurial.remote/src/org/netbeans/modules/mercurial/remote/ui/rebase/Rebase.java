@@ -63,7 +63,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class Rebase implements ActionListener, PropertyChangeListener {
     

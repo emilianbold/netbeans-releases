@@ -58,8 +58,8 @@ import org.openide.util.Utilities;
  * (see http://java.sun.com/developer/onlineTraining/protocolhandlers/index.html)
  * but that is overkill for what we want which is a string to represent the URL.
  *
- * @author Padraig O'Briain
- * @author Marian Petras
+ * 
+ * 
  */
 public final class HgURL {
 

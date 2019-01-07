@@ -55,7 +55,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author tomas
+ * 
  */
 @ClassForAllEnvironments(section = "remote.svn")
 public class DeleteInterceptorTest extends  RemoteVersioningTestBase {

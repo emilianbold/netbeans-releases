@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificationListener {
 

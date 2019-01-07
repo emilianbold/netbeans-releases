@@ -55,7 +55,7 @@ import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class RevertModifications implements PropertyChangeListener {
 

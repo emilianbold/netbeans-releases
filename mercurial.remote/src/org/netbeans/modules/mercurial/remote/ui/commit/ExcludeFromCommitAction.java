@@ -60,7 +60,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Petr Kuzel
+ * 
  */
 @Messages({
     "CTL_MenuItem_IncludeInCommit=In&clude in Commit",

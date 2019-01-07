@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  * Log action for mercurial:
  * hg log - show revision history of entire repository or files
  *
- * @author John Rice
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_ShowIncoming=Show &Incoming"

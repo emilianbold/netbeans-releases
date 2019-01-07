@@ -82,7 +82,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
+ * 
  */
 class TagManager implements ListSelectionListener, DocumentListener, ActionListener {
     private final VCSFileProxy repository;

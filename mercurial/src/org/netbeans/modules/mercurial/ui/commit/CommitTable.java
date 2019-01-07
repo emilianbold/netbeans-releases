@@ -75,7 +75,7 @@ import org.openide.awt.Mnemonics;
 /**
  * {@link #getComponent Table} that displays nodes in the commit dialog.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CommitTable implements AncestorListener, TableModelListener, MouseListener {
 

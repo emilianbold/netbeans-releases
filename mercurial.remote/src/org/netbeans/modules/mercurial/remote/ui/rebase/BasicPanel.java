@@ -43,7 +43,7 @@ package org.netbeans.modules.mercurial.remote.ui.rebase;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class BasicPanel extends javax.swing.JPanel {
 

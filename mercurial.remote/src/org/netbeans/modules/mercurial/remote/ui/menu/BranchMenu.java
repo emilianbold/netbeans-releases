@@ -72,7 +72,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * Container menu for branch actions.
  *
- * @author Maros Sandor
+ * 
  */
 @Messages({
     "CTL_MenuItem_BranchMenu=&Branch/Tag",

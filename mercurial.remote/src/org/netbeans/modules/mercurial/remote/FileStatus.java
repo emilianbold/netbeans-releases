@@ -48,7 +48,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Holds detailed information about status of a mercurial-managed file, ie repository URL, remote path, branch, etc.
  * 
- * @author Maros Sandor
+ * 
  */
 public class FileStatus {
     private final VCSFileProxy mFile;

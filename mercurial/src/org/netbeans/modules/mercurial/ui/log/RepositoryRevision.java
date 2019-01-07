@@ -76,7 +76,7 @@ import org.openide.util.actions.SystemAction;
  * cvs log command. The fields in instances of this object are populated
  * by response handlers.
  *
- * @author Maros Sandor
+ * 
  */
 public class RepositoryRevision {
 

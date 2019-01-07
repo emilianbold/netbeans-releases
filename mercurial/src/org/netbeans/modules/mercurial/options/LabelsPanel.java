@@ -45,7 +45,7 @@ package org.netbeans.modules.mercurial.options;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class LabelsPanel extends javax.swing.JPanel {
 

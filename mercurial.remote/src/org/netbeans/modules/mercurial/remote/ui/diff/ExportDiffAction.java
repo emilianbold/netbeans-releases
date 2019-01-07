@@ -72,7 +72,7 @@ import org.openide.util.NbBundle.Messages;
  * ExportDiff action for mercurial:
  * hg export
  *
- * @author Padraig O'Briain
+ * 
  */
 @Messages({
     "CTL_MenuItem_ExportDiff=Export &Diff...",

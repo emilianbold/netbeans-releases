@@ -48,7 +48,7 @@ import java.net.URISyntaxException;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class RepositoryConnection {
     

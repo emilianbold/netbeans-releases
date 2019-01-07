@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         

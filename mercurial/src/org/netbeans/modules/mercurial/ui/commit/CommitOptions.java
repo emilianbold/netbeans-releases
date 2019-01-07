@@ -47,7 +47,7 @@ package org.netbeans.modules.mercurial.ui.commit;
 import org.openide.util.NbBundle;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public abstract class CommitOptions {
 

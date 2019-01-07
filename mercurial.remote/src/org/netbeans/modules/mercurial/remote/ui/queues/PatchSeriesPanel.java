@@ -49,7 +49,7 @@ package org.netbeans.modules.mercurial.remote.ui.queues;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class PatchSeriesPanel extends javax.swing.JPanel {
 

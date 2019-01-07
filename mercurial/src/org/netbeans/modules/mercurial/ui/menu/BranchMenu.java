@@ -72,7 +72,7 @@ import org.netbeans.modules.mercurial.ui.tag.ManageTagsAction;
 /**
  * Container menu for branch actions.
  *
- * @author Maros Sandor
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_BranchMenu=&Branch/Tag",

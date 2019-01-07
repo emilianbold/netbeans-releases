@@ -84,7 +84,7 @@ import org.openide.windows.WindowManager;
  * Annotate action for mercurial: 
  * hg annotate - show changeset information per file line 
  * 
- * @author John Rice
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_ShowAnnotations=Show A&nnotations",

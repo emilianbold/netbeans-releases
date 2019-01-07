@@ -82,7 +82,7 @@ import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNA
  * Clone action for mercurial: 
  * hg clone - Create a copy of an existing repository in a new directory.
  * 
- * @author John Rice
+ * 
  */
 @NbBundle.Messages({
     "# {0} - repository folder name",

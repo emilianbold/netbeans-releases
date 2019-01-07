@@ -67,7 +67,7 @@ import org.openide.filesystems.FileSystem;
  *
  * Handles the Mercurial <b>hgrc</b> configuration file.</br>
  *
- * @author Padraig O'Briain
+ * 
  */
 public class HgConfigFiles {    
     public static final String HG_EXTENSIONS = "extensions";  // NOI18N

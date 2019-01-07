@@ -43,7 +43,7 @@ package org.netbeans.modules.mercurial.ui.queues;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public final class Queue {
 

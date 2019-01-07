@@ -85,7 +85,7 @@ import org.openide.util.actions.SystemAction;
  * merged, and the result of the merge is committed.  Otherwise, the
  * working directory is updated.
  * 
- * @author John Rice
+ * 
  */
 @Messages({
     "CTL_MenuItem_FetchLocal=&Fetch",

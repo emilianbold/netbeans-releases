@@ -64,7 +64,7 @@ import org.openide.windows.OutputListener;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class OutputLogger {
 

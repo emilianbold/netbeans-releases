@@ -52,7 +52,7 @@ import org.netbeans.modules.versioning.util.SearchHistorySupport;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class HgSearchHistorySupport extends SearchHistorySupport {
 

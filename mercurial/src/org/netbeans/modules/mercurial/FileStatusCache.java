@@ -62,7 +62,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Central part of status management, deduces and caches statuses of files under version control.
  *
- * @author Ondra Vrabec
+ * 
  */
 public class FileStatusCache {
 

@@ -67,7 +67,7 @@ import org.openide.nodes.CookieSet;
 /**
  * Stream source for diffing CVS managed files.
  *
- * @author Maros Sandor
+ * 
  */
 public class DiffStreamSource extends StreamSource {
 

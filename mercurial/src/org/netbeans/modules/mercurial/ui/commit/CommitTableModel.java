@@ -57,7 +57,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 /**
  * Table model for the Commit dialog table.
  *
- * @author Maros Sandor
+ * 
  */
 public class CommitTableModel extends AbstractTableModel {
 

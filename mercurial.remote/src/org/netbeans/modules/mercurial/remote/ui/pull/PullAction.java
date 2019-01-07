@@ -103,7 +103,7 @@ import org.openide.util.lookup.Lookups;
  * Pull action for mercurial:
  * hg pull - pull changes from the specified source
  *
- * @author John Rice
+ * 
  */
 @Messages({
     "CTL_MenuItem_PullLocal=P&ull All Branches",

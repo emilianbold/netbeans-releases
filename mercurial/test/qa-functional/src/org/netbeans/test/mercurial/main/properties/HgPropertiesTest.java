@@ -49,7 +49,7 @@ import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
  *
- * @author novakm
+ * 
  */
 public class HgPropertiesTest extends JellyTestCase {
 

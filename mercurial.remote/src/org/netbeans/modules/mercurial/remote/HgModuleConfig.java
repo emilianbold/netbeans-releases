@@ -80,7 +80,7 @@ import org.openide.util.NbPreferences;
 /**
  * Stores Mercurial module configuration.
  *
- * @author Padraig O'Briain
+ * 
  */
 public class HgModuleConfig {
     

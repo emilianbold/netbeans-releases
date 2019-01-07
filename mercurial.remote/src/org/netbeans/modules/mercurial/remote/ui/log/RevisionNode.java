@@ -66,7 +66,7 @@ import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMa
 /**
  * Visible in the Search History Diff view.
  * 
- * @author Maros Sandor
+ * 
  */
 class RevisionNode extends AbstractNode {
     

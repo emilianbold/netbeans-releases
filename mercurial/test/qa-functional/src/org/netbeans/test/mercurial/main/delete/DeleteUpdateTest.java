@@ -62,7 +62,7 @@ import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
  *
- * @author pvcs
+ * 
  */
 public class DeleteUpdateTest extends JellyTestCase {
     

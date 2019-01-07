@@ -57,7 +57,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_DiffToRevision=Diff &To Revision...",

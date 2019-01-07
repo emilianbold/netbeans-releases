@@ -69,7 +69,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * Container menu for remote repository actions.
  *
- * @author Maros Sandor
+ * 
  */
 @Messages({
     "CTL_MenuItem_RemoteMenu=R&emote",

@@ -62,7 +62,7 @@ import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public class SearchHistoryTopComponent extends TopComponent implements DiffSetupSource {
 

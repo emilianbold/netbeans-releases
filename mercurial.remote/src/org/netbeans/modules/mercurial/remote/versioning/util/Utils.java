@@ -57,7 +57,7 @@ import org.openide.filesystems.FileObject;
 /**
  * clone missed methods from org.netbeans.modules.versioning.util.Utils
  *
- * @author alsimon
+ * 
  */
 public class Utils {
     private static final Logger LOG = Logger.getLogger(Utils.class.getName());

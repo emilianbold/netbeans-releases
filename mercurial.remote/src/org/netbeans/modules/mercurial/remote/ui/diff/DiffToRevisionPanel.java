@@ -43,7 +43,7 @@ package org.netbeans.modules.mercurial.remote.ui.diff;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class DiffToRevisionPanel extends javax.swing.JPanel {
 

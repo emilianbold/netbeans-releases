@@ -66,7 +66,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class InterceptorTest extends AbstractHgTestCase {
 

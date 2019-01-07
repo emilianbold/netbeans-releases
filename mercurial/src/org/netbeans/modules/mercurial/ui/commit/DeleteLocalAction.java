@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
 /**
  * Delete action enabled for new local files and added but not yet committed files.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class DeleteLocalAction extends ContextAction {
 

@@ -126,7 +126,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author jrice
+ * 
  */
 public class HgUtils {    
     private static final Pattern httpPasswordPattern = Pattern.compile("(https*://)(\\w+\\b):(\\b\\S*)@"); //NOI18N

@@ -52,7 +52,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author tomas
+ * 
  */
 @ClassForAllEnvironments(section = "remote.svn")
 public class MoveInterceptorTest extends  RemoteVersioningTestBase {

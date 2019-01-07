@@ -55,7 +55,7 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 @NbBundle.Messages({
     "MSG_HgCommand.Rebase.failed=Rebase failed!"

@@ -53,7 +53,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * A class to encapsulate a Repository and allow us to cache some values
  *
- * @author John Rice
+ * 
  */
 public class HgRepositoryContextCache {
     private Map<VCSFileProxy, Map<String, String>> rootToDefaultPaths;

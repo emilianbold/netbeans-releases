@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class PropertiesTable implements AncestorListener, TableModelListener {
     

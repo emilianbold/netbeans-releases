@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  * ExportBundleaction for mercurial:
  * hg bundle
  *
- * @author Ondra Vrabec
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_ExportBundle=Export &Changeset Bundle...",

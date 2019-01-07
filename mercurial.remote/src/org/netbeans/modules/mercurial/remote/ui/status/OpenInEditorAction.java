@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 /**
  * Opens the file under {@link SyncFileNode} in editor.
  *
- * @author Maros Sandor
+ * 
  */
 public class OpenInEditorAction extends AbstractAction {
 

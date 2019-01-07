@@ -71,7 +71,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Reverts local changes.
  *
- * @author Padraig O'Briain
+ * 
  */
 public class RevertModificationsAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/remote/resources/icons/get_clean.png"; //NOI18N

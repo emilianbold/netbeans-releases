@@ -142,7 +142,7 @@ import org.openide.xml.XMLUtil;
  *   <li> {@link #annotate} message
  * </ul>
  *
- * @author Petr Kuzel
+ * 
  */
 final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener {
 

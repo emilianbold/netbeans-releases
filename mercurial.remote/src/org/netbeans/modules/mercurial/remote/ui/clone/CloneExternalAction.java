@@ -63,7 +63,7 @@ import org.openide.util.NbBundle.Messages;
  * Clone an external repository. This invokes a wizard to determine the
  * location of the repository and the target location of the repository.
  * 
- * @author Padraig O'Briain
+ * 
  */
 @ActionID(id = "org.netbeans.modules.mercurial.remote.ui.clone.CloneExternalAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_CloneExternal")

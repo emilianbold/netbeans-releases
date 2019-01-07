@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.filesystems.*;
 
 /**
- * @author Tomas Stupka
+ * 
  */
 public class MercurialFileSystemTestCase extends FileSystemFactoryHid {
         

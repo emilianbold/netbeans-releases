@@ -75,7 +75,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author ondra
+ * 
  */
 class GoToPatch {
 

@@ -48,7 +48,7 @@ import org.netbeans.test.mercurial.operators.actions.HgPropertiesAction;
 
 /** Class implementing all necessary methods for handling "Hg Properties Editor" NbDialog.
  *
- * @author novakm
+ * 
  * @version 1.0
  */
 public class HgPropertiesOperator extends NbDialogOperator {

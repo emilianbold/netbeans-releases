@@ -58,7 +58,7 @@ import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
  *
- * @author peter
+ * 
  */
 public class CommitUiTest extends JellyTestCase{
     

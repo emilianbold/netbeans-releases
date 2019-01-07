@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
 /**
  * Listens on file system changes and reacts appropriately, mainly refreshing affected files' status.
  * 
- * @author Maros Sandor
+ * 
  */
 public class MercurialInterceptor extends VCSInterceptor {
 

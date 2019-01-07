@@ -76,7 +76,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * Top component of the Versioning view.
  * 
- * @author Maros Sandor
+ * 
  */
 @TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_ALWAYS, preferredID=HgVersioningTopComponent.PREFERRED_ID)
 @TopComponent.Registration(mode="output", openAtStartup=false, position=3109)

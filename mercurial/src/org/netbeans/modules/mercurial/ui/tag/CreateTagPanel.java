@@ -49,7 +49,7 @@ package org.netbeans.modules.mercurial.ui.tag;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class CreateTagPanel extends javax.swing.JPanel {
 

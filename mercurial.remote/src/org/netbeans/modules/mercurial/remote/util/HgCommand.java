@@ -110,7 +110,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author jrice
+ * 
  */
 public abstract class HgCommand<T> implements Callable<T> {
     public static final String HG_COMMAND = "hg";  // NOI18N

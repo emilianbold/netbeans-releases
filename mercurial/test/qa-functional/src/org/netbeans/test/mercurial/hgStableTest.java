@@ -56,7 +56,7 @@ import org.netbeans.test.mercurial.utils.hgExistsChecker;
 
 /**
  *
- * @author tester
+ * 
  */
 public class hgStableTest extends JellyTestCase {
 

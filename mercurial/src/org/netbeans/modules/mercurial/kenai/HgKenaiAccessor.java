@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Tomas Stupka, Ondra Vrabec
+ * 
  */
 public class HgKenaiAccessor {
 

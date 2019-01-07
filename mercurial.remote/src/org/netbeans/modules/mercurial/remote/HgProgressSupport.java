@@ -61,7 +61,7 @@ import org.openide.util.TaskListener;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class HgProgressSupport implements Runnable, Cancellable {
 

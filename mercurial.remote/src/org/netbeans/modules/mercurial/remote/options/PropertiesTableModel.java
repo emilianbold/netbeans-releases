@@ -53,7 +53,7 @@ import org.netbeans.modules.mercurial.remote.ui.properties.HgPropertiesNode;
 
 /**
  *
- * @author Peter Pis
+ * 
  */
 public class PropertiesTableModel extends AbstractTableModel {
     

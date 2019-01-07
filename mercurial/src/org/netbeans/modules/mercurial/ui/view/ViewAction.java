@@ -66,7 +66,7 @@ import org.openide.util.Utilities;
  * View action for mercurial: 
  * hg view - launch hg view to view the dependency tree for the repository
  * 
- * @author John Rice
+ * 
  */
 public class ViewAction extends ContextAction {
     

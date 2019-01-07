@@ -121,7 +121,7 @@ import org.openide.util.RequestProcessor;
  * Commit action for mercurial:
  * hg commit -  commit the specified files or all outstanding changes
  *
- * @author John Rice
+ * 
  */
 public class CommitAction extends ContextAction {
 

@@ -45,7 +45,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class HgBranch {
     private final HgLogMessage revisionInfo;

@@ -73,7 +73,7 @@ import org.openide.util.NbBundle.Messages;
  * Pull Other action for mercurial: 
  * hg pull - pull changes from the specified source
  * 
- * @author John Rice
+ * 
  */
 @Messages({
     "CTL_MenuItem_PullOther=Pu&ll..."

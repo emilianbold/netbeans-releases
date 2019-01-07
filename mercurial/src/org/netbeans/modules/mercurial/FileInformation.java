@@ -56,7 +56,7 @@ import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 /**
  * Immutable class encapsulating status of a file.
  *
- * @author Maros Sandor
+ * 
  */
 public class FileInformation extends VCSFileInformation implements Serializable {
 

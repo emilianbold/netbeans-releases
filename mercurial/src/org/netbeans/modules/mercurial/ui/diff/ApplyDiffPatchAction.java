@@ -70,7 +70,7 @@ import org.openide.nodes.Node;
  * ImportDiff action for mercurial: 
  * hg export
  * 
- * @author Padraig O'Briain
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_ApplyDiffPatch=Appl&y Diff Patch...",

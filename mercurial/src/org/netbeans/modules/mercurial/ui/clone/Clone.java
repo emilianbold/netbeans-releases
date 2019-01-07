@@ -60,7 +60,7 @@ import java.io.File;
 
 /**
  *
- * @author Padraig O'Briain
+ * 
  */
 public class Clone implements PropertyChangeListener {
 

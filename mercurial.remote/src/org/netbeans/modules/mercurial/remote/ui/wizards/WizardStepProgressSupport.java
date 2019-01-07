@@ -63,8 +63,8 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  *
- * @author Tomas Stupka
- * @author Marian Petras
+ * 
+ * 
  */
 public abstract class WizardStepProgressSupport extends HgProgressSupport {   
 

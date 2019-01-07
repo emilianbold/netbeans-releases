@@ -73,7 +73,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     

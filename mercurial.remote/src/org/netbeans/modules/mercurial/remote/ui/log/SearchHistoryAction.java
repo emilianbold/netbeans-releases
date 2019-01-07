@@ -59,7 +59,7 @@ import org.openide.nodes.Node;
 /**
  * Opens Search History Component.
  * 
- * @author Maros Sandor
+ * 
  */
 public abstract class SearchHistoryAction extends ContextAction {
     

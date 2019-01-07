@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * 
  */
 abstract class CreateRefreshAction extends ContextAction {
 

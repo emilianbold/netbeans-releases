@@ -45,7 +45,7 @@ package org.netbeans.modules.mercurial.remote.ui.properties;
 
 /**
  *
- * @author Peter Pis
+ * 
  */
 public class HgPropertiesNode {
 

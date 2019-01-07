@@ -64,7 +64,7 @@ import  org.openide.util.NbBundle;
 /**
  * Allow files who have Conlfict Status to be manually resolved.
  *
- * @author Petr Kuzel
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_MarkResolved=&Mark as Resolved"

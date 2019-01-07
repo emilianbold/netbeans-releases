@@ -72,7 +72,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * Stream source for diffing CVS managed files.
  *
- * @author Maros Sandor
+ * 
  */
 public class DiffStreamSource extends StreamSource {
 

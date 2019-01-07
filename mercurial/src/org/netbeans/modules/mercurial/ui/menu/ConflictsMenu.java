@@ -61,7 +61,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for actions handling conflicts.
  *
- * @author Ondra
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_ConflictsMenu=Con&flicts",

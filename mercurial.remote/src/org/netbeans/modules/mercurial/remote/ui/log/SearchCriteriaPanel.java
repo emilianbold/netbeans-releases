@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 /**
  * Packages search criteria in Search History panel.
  *
- * @author Maros Sandor
+ * 
  */
 class SearchCriteriaPanel extends javax.swing.JPanel {
     

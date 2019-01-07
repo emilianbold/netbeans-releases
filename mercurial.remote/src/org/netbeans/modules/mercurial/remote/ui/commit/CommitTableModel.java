@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 /**
  * Table model for the Commit dialog table.
  *
- * @author Maros Sandor
+ * 
  */
 public class CommitTableModel extends AbstractTableModel {
 

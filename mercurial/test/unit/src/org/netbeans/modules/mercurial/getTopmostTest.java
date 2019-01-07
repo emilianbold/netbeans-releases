@@ -54,7 +54,7 @@ import org.netbeans.modules.versioning.core.Utils;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class getTopmostTest extends NbTestCase {
 

@@ -59,7 +59,7 @@ import org.openide.nodes.Node;
  * Status action for mercurial: 
  * hg status - show changed files in the working directory
  * 
- * @author John Rice
+ * 
  */
 public class StatusAction extends ContextAction {
     

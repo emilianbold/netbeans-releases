@@ -65,7 +65,7 @@ import static org.netbeans.modules.mercurial.ui.diff.Bundle.*;
  * Diff action for mercurial: 
  * hg diff - diff repository (or selected files)
  * 
- * @author John Rice
+ * 
  */
 @NbBundle.Messages({
     "CTL_MenuItem_Diff=&Diff To Base",

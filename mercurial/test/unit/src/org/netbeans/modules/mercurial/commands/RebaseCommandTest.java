@@ -52,7 +52,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class RebaseCommandTest extends AbstractHgTestCase {
 

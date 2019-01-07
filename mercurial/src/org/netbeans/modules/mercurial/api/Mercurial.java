@@ -79,7 +79,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Marian Petras
+ * 
  */
 public class Mercurial {
 

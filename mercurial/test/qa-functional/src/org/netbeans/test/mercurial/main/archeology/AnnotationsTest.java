@@ -61,7 +61,7 @@ import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
  *
- * @author pvcs
+ * 
  */
 public class AnnotationsTest extends JellyTestCase {
     

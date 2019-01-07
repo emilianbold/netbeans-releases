@@ -58,7 +58,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class MergeTest extends AbstractHgTestCase {
 
